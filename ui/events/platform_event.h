@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_EVENT_TYPES_H_
-#define BASE_EVENT_TYPES_H_
+#ifndef UI_EVENTS_PLATFORM_EVENT_H_
+#define UI_EVENTS_PLATFORM_EVENT_H_
 
 #include "build/build_config.h"
 
@@ -14,24 +14,30 @@ typedef union _XEvent XEvent;
 #elif defined(OS_MACOSX)
 #if defined(__OBJC__)
 @class NSEvent;
-#else  // __OBJC__
+#else   // __OBJC__
 class NSEvent;
-#endif // __OBJC__
+#endif  // __OBJC__
 #endif
 
-namespace base {
+namespace ui {
+class Event;
+}
+
+namespace ui {
 
 // Cross platform typedefs for native event types.
 #if defined(OS_WIN)
-typedef MSG NativeEvent;
+using PlatformEvent = MSG;
 #elif defined(USE_X11)
-typedef XEvent* NativeEvent;
+using PlatformEvent = XEvent*;
 #elif defined(OS_MACOSX)
-typedef NSEvent* NativeEvent;
+using PlatformEvent = NSEvent*;
+#elif defined(USE_OZONE)
+using PlatformEvent = ui::Event*;
 #else
-typedef void* NativeEvent;
+using PlatformEvent = void*;
 #endif
 
-} // namespace base
+}  // namespace ui
 
-#endif  // BASE_EVENT_TYPES_H_
+#endif  // UI_EVENTS_PLATFORM_EVENT_H_

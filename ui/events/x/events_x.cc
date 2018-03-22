@@ -72,60 +72,58 @@ unsigned int UpdateX11EventButton(int ui_flag, unsigned int old_x_button) {
 
 namespace ui {
 
-EventType EventTypeFromNative(const base::NativeEvent& native_event) {
+EventType EventTypeFromNative(const PlatformEvent& native_event) {
   return EventTypeFromXEvent(*native_event);
 }
 
-int EventFlagsFromNative(const base::NativeEvent& native_event) {
+int EventFlagsFromNative(const PlatformEvent& native_event) {
   return EventFlagsFromXEvent(*native_event);
 }
 
-base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
+base::TimeTicks EventTimeFromNative(const PlatformEvent& native_event) {
   base::TimeTicks timestamp = EventTimeFromXEvent(*native_event);
   ValidateEventTimeClock(&timestamp);
   return timestamp;
 }
 
-gfx::PointF EventLocationFromNative(const base::NativeEvent& native_event) {
+gfx::PointF EventLocationFromNative(const PlatformEvent& native_event) {
   return gfx::PointF(EventLocationFromXEvent(*native_event));
 }
 
-gfx::Point EventSystemLocationFromNative(
-    const base::NativeEvent& native_event) {
+gfx::Point EventSystemLocationFromNative(const PlatformEvent& native_event) {
   return EventSystemLocationFromXEvent(*native_event);
 }
 
-int EventButtonFromNative(const base::NativeEvent& native_event) {
+int EventButtonFromNative(const PlatformEvent& native_event) {
   return EventButtonFromXEvent(*native_event);
 }
 
-KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
+KeyboardCode KeyboardCodeFromNative(const PlatformEvent& native_event) {
   return KeyboardCodeFromXKeyEvent(native_event);
 }
 
-DomCode CodeFromNative(const base::NativeEvent& native_event) {
+DomCode CodeFromNative(const PlatformEvent& native_event) {
   return CodeFromXEvent(native_event);
 }
 
-bool IsCharFromNative(const base::NativeEvent& native_event) {
+bool IsCharFromNative(const PlatformEvent& native_event) {
   return false;
 }
 
-int GetChangedMouseButtonFlagsFromNative(
-    const base::NativeEvent& native_event) {
+int GetChangedMouseButtonFlagsFromNative(const PlatformEvent& native_event) {
   return GetChangedMouseButtonFlagsFromXEvent(*native_event);
 }
 
 PointerDetails GetMousePointerDetailsFromNative(
-    const base::NativeEvent& native_event) {
+    const PlatformEvent& native_event) {
   return PointerDetails(EventPointerType::POINTER_TYPE_MOUSE);
 }
 
-gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
+gfx::Vector2d GetMouseWheelOffset(const PlatformEvent& native_event) {
   return GetMouseWheelOffsetFromXEvent(*native_event);
 }
 
-base::NativeEvent CopyNativeEvent(const base::NativeEvent& native_event) {
+PlatformEvent CopyNativeEvent(const PlatformEvent& native_event) {
   if (!native_event || native_event->type == GenericEvent)
     return NULL;
   XEvent* copy = new XEvent;
@@ -133,20 +131,20 @@ base::NativeEvent CopyNativeEvent(const base::NativeEvent& native_event) {
   return copy;
 }
 
-void ReleaseCopiedNativeEvent(const base::NativeEvent& native_event) {
+void ReleaseCopiedNativeEvent(const PlatformEvent& native_event) {
   delete native_event;
 }
 
-void ClearTouchIdIfReleased(const base::NativeEvent& native_event) {
+void ClearTouchIdIfReleased(const PlatformEvent& native_event) {
   ClearTouchIdIfReleasedFromXEvent(*native_event);
 }
 
-int GetTouchId(const base::NativeEvent& native_event) {
+int GetTouchId(const PlatformEvent& native_event) {
   return GetTouchIdFromXEvent(*native_event);
 }
 
 PointerDetails GetTouchPointerDetailsFromNative(
-    const base::NativeEvent& native_event) {
+    const PlatformEvent& native_event) {
   return PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
                         GetTouchIdFromXEvent(*native_event),
                         GetTouchRadiusXFromXEvent(*native_event),
@@ -155,7 +153,7 @@ PointerDetails GetTouchPointerDetailsFromNative(
                         GetTouchAngleFromXEvent(*native_event));
 }
 
-bool GetScrollOffsets(const base::NativeEvent& native_event,
+bool GetScrollOffsets(const PlatformEvent& native_event,
                       float* x_offset,
                       float* y_offset,
                       float* x_offset_ordinal,
@@ -167,7 +165,7 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
                                     finger_count);
 }
 
-bool GetFlingData(const base::NativeEvent& native_event,
+bool GetFlingData(const PlatformEvent& native_event,
                   float* vx,
                   float* vy,
                   float* vx_ordinal,

@@ -102,7 +102,7 @@ void Gtk2KeyBindingsHandler::EditCommandMatched(TextEditCommand command,
 }
 
 void Gtk2KeyBindingsHandler::BuildGdkEventKeyFromXEvent(
-    const base::NativeEvent& xevent,
+    const ui::PlatformEvent& xevent,
     GdkEventKey* gdk_event) {
   GdkKeymap* keymap = gdk_keymap_get_for_display(gdk_display_get_default());
   GdkModifierType consumed, state;

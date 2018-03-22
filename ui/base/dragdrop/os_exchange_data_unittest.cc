@@ -23,7 +23,7 @@ class OSExchangeDataTest : public PlatformTest {
   OSExchangeDataTest()
       : scoped_task_environment_(
             base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        event_source_(ui::PlatformEventSource::CreateDefault()) {}
+        event_source_(PlatformEventSource::CreateDefault()) {}
 
  private:
   base::test::ScopedTaskEnvironment scoped_task_environment_;

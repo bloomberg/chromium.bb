@@ -28,7 +28,7 @@ namespace {
 #define SIGNATURE_MASK 0xFFFFFF00
 
 // Get the native mouse key state from the native event message type.
-int GetNativeMouseKey(const base::NativeEvent& native_event) {
+int GetNativeMouseKey(const PlatformEvent& native_event) {
   switch (native_event.message) {
     case WM_LBUTTONDBLCLK:
     case WM_LBUTTONDOWN:
@@ -62,36 +62,36 @@ int GetNativeMouseKey(const base::NativeEvent& native_event) {
   return 0;
 }
 
-bool IsButtonDown(const base::NativeEvent& native_event) {
+bool IsButtonDown(const PlatformEvent& native_event) {
   return ((MK_LBUTTON | MK_MBUTTON | MK_RBUTTON | MK_XBUTTON1 | MK_XBUTTON2) &
           native_event.wParam) != 0;
 }
 
-bool IsClientMouseEvent(const base::NativeEvent& native_event) {
+bool IsClientMouseEvent(const PlatformEvent& native_event) {
   return native_event.message == WM_MOUSELEAVE ||
          native_event.message == WM_MOUSEHOVER ||
         (native_event.message >= WM_MOUSEFIRST &&
          native_event.message <= WM_MOUSELAST);
 }
 
-bool IsNonClientMouseEvent(const base::NativeEvent& native_event) {
+bool IsNonClientMouseEvent(const PlatformEvent& native_event) {
   return native_event.message == WM_NCMOUSELEAVE ||
          native_event.message == WM_NCMOUSEHOVER ||
         (native_event.message >= WM_NCMOUSEMOVE &&
          native_event.message <= WM_NCXBUTTONDBLCLK);
 }
 
-bool IsMouseEvent(const base::NativeEvent& native_event) {
+bool IsMouseEvent(const PlatformEvent& native_event) {
   return IsClientMouseEvent(native_event) ||
          IsNonClientMouseEvent(native_event);
 }
 
-bool IsMouseWheelEvent(const base::NativeEvent& native_event) {
+bool IsMouseWheelEvent(const PlatformEvent& native_event) {
   return native_event.message == WM_MOUSEWHEEL ||
          native_event.message == WM_MOUSEHWHEEL;
 }
 
-bool IsKeyEvent(const base::NativeEvent& native_event) {
+bool IsKeyEvent(const PlatformEvent& native_event) {
   return native_event.message == WM_KEYDOWN ||
          native_event.message == WM_SYSKEYDOWN ||
          native_event.message == WM_CHAR ||
@@ -100,14 +100,14 @@ bool IsKeyEvent(const base::NativeEvent& native_event) {
          native_event.message == WM_SYSKEYUP;
 }
 
-bool IsScrollEvent(const base::NativeEvent& native_event) {
+bool IsScrollEvent(const PlatformEvent& native_event) {
   return native_event.message == WM_VSCROLL ||
          native_event.message == WM_HSCROLL;
 }
 
 // Returns a mask corresponding to the set of pressed modifier keys.
 // Checks the current global state and the state sent by client mouse messages.
-int KeyStateFlagsFromNative(const base::NativeEvent& native_event) {
+int KeyStateFlagsFromNative(const PlatformEvent& native_event) {
   int flags = GetModifiersFromKeyState();
 
   // Check key messages for the extended key flag.
@@ -126,7 +126,7 @@ int KeyStateFlagsFromNative(const base::NativeEvent& native_event) {
 
 // Returns a mask corresponding to the set of pressed mouse buttons.
 // This includes the button of the given message, even if it is being released.
-int MouseStateFlagsFromNative(const base::NativeEvent& native_event) {
+int MouseStateFlagsFromNative(const PlatformEvent& native_event) {
   int win_flags = GetNativeMouseKey(native_event);
 
   // Client mouse messages provide key states in their WPARAMs.
@@ -143,7 +143,7 @@ int MouseStateFlagsFromNative(const base::NativeEvent& native_event) {
 
 }  // namespace
 
-EventType EventTypeFromNative(const base::NativeEvent& native_event) {
+EventType EventTypeFromNative(const PlatformEvent& native_event) {
   switch (native_event.message) {
     case WM_KEYDOWN:
     case WM_SYSKEYDOWN:
@@ -208,7 +208,7 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   return ET_UNKNOWN;
 }
 
-int EventFlagsFromNative(const base::NativeEvent& native_event) {
+int EventFlagsFromNative(const PlatformEvent& native_event) {
   int flags = KeyStateFlagsFromNative(native_event);
   if (IsMouseEvent(native_event))
     flags |= MouseStateFlagsFromNative(native_event);
@@ -216,7 +216,7 @@ int EventFlagsFromNative(const base::NativeEvent& native_event) {
   return flags;
 }
 
-base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
+base::TimeTicks EventTimeFromNative(const PlatformEvent& native_event) {
   // On Windows, the native input event timestamp (|native_event.time|) is
   // coming from |GetTickCount()| clock [1], while in platform independent code
   // path we get timestamps by calling |TimeTicks::Now()|, which, if using high-
@@ -230,7 +230,7 @@ base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
   return EventTimeForNow();
 }
 
-gfx::PointF EventLocationFromNative(const base::NativeEvent& native_event) {
+gfx::PointF EventLocationFromNative(const PlatformEvent& native_event) {
   POINT native_point;
   if ((native_event.message == WM_MOUSELEAVE ||
        native_event.message == WM_NCMOUSELEAVE) ||
@@ -256,8 +256,7 @@ gfx::PointF EventLocationFromNative(const base::NativeEvent& native_event) {
   return gfx::PointF(gfx::Point(native_point));
 }
 
-gfx::Point EventSystemLocationFromNative(
-    const base::NativeEvent& native_event) {
+gfx::Point EventSystemLocationFromNative(const PlatformEvent& native_event) {
   POINT global_point = {GET_X_LPARAM(native_event.lParam),
                         GET_Y_LPARAM(native_event.lParam)};
   // Wheel events have position in screen coordinates.
@@ -266,21 +265,20 @@ gfx::Point EventSystemLocationFromNative(
   return gfx::Point(global_point);
 }
 
-KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
+KeyboardCode KeyboardCodeFromNative(const PlatformEvent& native_event) {
   return KeyboardCodeForWindowsKeyCode(static_cast<WORD>(native_event.wParam));
 }
 
-DomCode CodeFromNative(const base::NativeEvent& native_event) {
+DomCode CodeFromNative(const PlatformEvent& native_event) {
   const uint16_t scan_code = GetScanCodeFromLParam(native_event.lParam);
   return CodeForWindowsScanCode(scan_code);
 }
 
-bool IsCharFromNative(const base::NativeEvent& native_event) {
+bool IsCharFromNative(const PlatformEvent& native_event) {
   return native_event.message == WM_CHAR || native_event.message == WM_SYSCHAR;
 }
 
-int GetChangedMouseButtonFlagsFromNative(
-    const base::NativeEvent& native_event) {
+int GetChangedMouseButtonFlagsFromNative(const PlatformEvent& native_event) {
   switch (GetNativeMouseKey(native_event)) {
     case MK_LBUTTON:
       return EF_LEFT_MOUSE_BUTTON;
@@ -296,7 +294,7 @@ int GetChangedMouseButtonFlagsFromNative(
 }
 
 PointerDetails GetMousePointerDetailsFromNative(
-    const base::NativeEvent& native_event) {
+    const PlatformEvent& native_event) {
   // We should filter out all the mouse events Synthesized from touch events.
   // TODO(lanwei): Will set the pointer ID, see https://crbug.com/616771.
   if ((GetMessageExtraInfo() & SIGNATURE_MASK) != MOUSEEVENTF_FROMTOUCHPEN)
@@ -305,7 +303,7 @@ PointerDetails GetMousePointerDetailsFromNative(
   return PointerDetails(EventPointerType::POINTER_TYPE_PEN);
 }
 
-gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
+gfx::Vector2d GetMouseWheelOffset(const PlatformEvent& native_event) {
   DCHECK(native_event.message == WM_MOUSEWHEEL ||
          native_event.message == WM_MOUSEHWHEEL);
   if (native_event.message == WM_MOUSEWHEEL)
@@ -313,24 +311,23 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
   return gfx::Vector2d(GET_WHEEL_DELTA_WPARAM(native_event.wParam), 0);
 }
 
-base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
+PlatformEvent CopyNativeEvent(const PlatformEvent& event) {
   return event;
 }
 
-void ReleaseCopiedNativeEvent(const base::NativeEvent& event) {
-}
+void ReleaseCopiedNativeEvent(const PlatformEvent& event) {}
 
-void ClearTouchIdIfReleased(const base::NativeEvent& xev) {
+void ClearTouchIdIfReleased(const PlatformEvent& xev) {
   NOTIMPLEMENTED();
 }
 
-int GetTouchId(const base::NativeEvent& xev) {
+int GetTouchId(const PlatformEvent& xev) {
   NOTIMPLEMENTED();
   return 0;
 }
 
 PointerDetails GetTouchPointerDetailsFromNative(
-    const base::NativeEvent& native_event) {
+    const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return PointerDetails(EventPointerType::POINTER_TYPE_TOUCH,
                         /* pointer_id*/ 0,
@@ -339,7 +336,7 @@ PointerDetails GetTouchPointerDetailsFromNative(
                         /* force */ 0.f);
 }
 
-bool GetScrollOffsets(const base::NativeEvent& native_event,
+bool GetScrollOffsets(const PlatformEvent& native_event,
                       float* x_offset,
                       float* y_offset,
                       float* x_offset_ordinal,
@@ -353,7 +350,7 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
   return false;
 }
 
-bool GetFlingData(const base::NativeEvent& native_event,
+bool GetFlingData(const PlatformEvent& native_event,
                   float* vx,
                   float* vy,
                   float* vx_ordinal,

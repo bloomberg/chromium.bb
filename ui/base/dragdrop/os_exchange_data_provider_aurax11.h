@@ -29,7 +29,7 @@ class OSExchangeDataProviderAuraX11Test;
 // OSExchangeData::Provider implementation for aura on linux.
 class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
     : public OSExchangeData::Provider,
-      public ui::PlatformEventDispatcher {
+      public PlatformEventDispatcher {
  public:
   // |x_window| is the window the cursor is over, and |selection| is the set of
   // data being offered.
@@ -91,7 +91,7 @@ class UI_BASE_EXPORT OSExchangeDataProviderAuraX11
   gfx::ImageSkia GetDragImage() const override;
   gfx::Vector2d GetDragImageOffset() const override;
 
-  // ui::PlatformEventDispatcher:
+  // PlatformEventDispatcher:
   bool CanDispatchEvent(const PlatformEvent& event) override;
   uint32_t DispatchEvent(const PlatformEvent& event) override;
 

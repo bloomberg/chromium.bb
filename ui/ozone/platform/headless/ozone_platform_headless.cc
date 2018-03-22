@@ -31,7 +31,7 @@ namespace {
 // A headless implementation of PlatformEventSource that we can instantiate to
 // make
 // sure that the PlatformEventSource has an instance while in unit tests.
-class HeadlessPlatformEventSource : public ui::PlatformEventSource {
+class HeadlessPlatformEventSource : public PlatformEventSource {
  public:
   HeadlessPlatformEventSource() = default;
   ~HeadlessPlatformEventSource() override = default;

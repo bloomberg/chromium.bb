@@ -17,12 +17,12 @@
 #include <vector>
 
 #include "base/containers/flat_set.h"
-#include "base/event_types.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "ui/base/x/ui_base_x_export.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/platform_event.h"
 #include "ui/gfx/x/x11_types.h"
 
 typedef unsigned long XSharedMemoryId;  // ShmSeg in the X headers.

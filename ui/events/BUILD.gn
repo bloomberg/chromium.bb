@@ -41,6 +41,12 @@ source_set("event_constants") {
   ]
 }
 
+source_set("platform_event") {
+  sources = [
+    "platform_event.h",
+  ]
+}
+
 component("events_base") {
   sources = [
     "android/scroller.cc",
@@ -80,6 +86,7 @@ component("events_base") {
   public_deps = [
     ":dom_keycode_converter",
     ":event_constants",
+    ":platform_event",
     "//base",
     "//ui/events/platform",
     "//ui/gfx/geometry",

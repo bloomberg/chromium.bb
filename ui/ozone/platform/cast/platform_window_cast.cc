@@ -18,15 +18,13 @@ PlatformWindowCast::PlatformWindowCast(PlatformWindowDelegate* delegate,
   widget_ = (bounds.width() << 16) + bounds.height();
   delegate_->OnAcceleratedWidgetAvailable(widget_, 1.f);
 
-  if (ui::PlatformEventSource::GetInstance()) {
-    ui::PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
-  }
+  if (PlatformEventSource::GetInstance())
+    PlatformEventSource::GetInstance()->AddPlatformEventDispatcher(this);
 }
 
 PlatformWindowCast::~PlatformWindowCast() {
-  if (ui::PlatformEventSource::GetInstance()) {
-    ui::PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
-  }
+  if (PlatformEventSource::GetInstance())
+    PlatformEventSource::GetInstance()->RemovePlatformEventDispatcher(this);
 }
 
 gfx::Rect PlatformWindowCast::GetBounds() {
@@ -45,12 +43,11 @@ PlatformImeController* PlatformWindowCast::GetPlatformImeController() {
   return nullptr;
 }
 
-bool PlatformWindowCast::CanDispatchEvent(const ui::PlatformEvent& ne) {
+bool PlatformWindowCast::CanDispatchEvent(const PlatformEvent& ne) {
   return true;
 }
 
-uint32_t PlatformWindowCast::DispatchEvent(
-    const ui::PlatformEvent& native_event) {
+uint32_t PlatformWindowCast::DispatchEvent(const PlatformEvent& native_event) {
   DispatchEventFromNativeUiEvent(
       native_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
                                    base::Unretained(delegate_)));

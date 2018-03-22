@@ -1,5 +1,6 @@
 include_rules = [
   "+chromeos",
+  "+ui/events/platform_event.h",
   # DeviceDataManager is not created in all environments (such as ash when
   # running in mus/mash).
   "-ui/events/devices/device_data_manager.h",

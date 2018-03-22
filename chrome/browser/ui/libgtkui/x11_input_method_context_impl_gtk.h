@@ -8,12 +8,12 @@
 #include <vector>
 
 #include "base/containers/hash_tables.h"
-#include "base/event_types.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
 #include "ui/base/glib/glib_integers.h"
 #include "ui/base/glib/glib_signal.h"
 #include "ui/base/ime/linux/linux_input_method_context.h"
+#include "ui/events/platform_event.h"
 #include "ui/gfx/geometry/rect.h"
 
 typedef union _GdkEvent GdkEvent;
@@ -44,7 +44,7 @@ class X11InputMethodContextImplGtk2 : public ui::LinuxInputMethodContext {
 
   // Constructs a GdkEventKey from a XKeyEvent and returns it.  Otherwise,
   // returns nullptr.  The returned GdkEvent must be freed by gdk_event_free.
-  GdkEvent* GdkEventFromNativeEvent(const base::NativeEvent& native_event);
+  GdkEvent* GdkEventFromNativeEvent(const ui::PlatformEvent& native_event);
 
   // Returns true if the hardware |keycode| is assigned to a modifier key.
   bool IsKeycodeModifierKey(unsigned int keycode) const;

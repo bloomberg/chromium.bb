@@ -6,7 +6,7 @@
 #define UI_EVENTS_PLATFORM_PLATFORM_EVENT_OBSERVER_H_
 
 #include "ui/events/events_export.h"
-#include "ui/events/platform/platform_event_types.h"
+#include "ui/events/platform_event.h"
 
 namespace ui {
 

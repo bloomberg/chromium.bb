@@ -21,7 +21,7 @@
 
 namespace ui {
 
-EventType EventTypeFromNative(const base::NativeEvent& native_event) {
+EventType EventTypeFromNative(const PlatformEvent& native_event) {
   NSEventType type = [native_event type];
   switch (type) {
     case NSKeyDown:
@@ -72,19 +72,19 @@ EventType EventTypeFromNative(const base::NativeEvent& native_event) {
   return ET_UNKNOWN;
 }
 
-int EventFlagsFromNative(const base::NativeEvent& event) {
+int EventFlagsFromNative(const PlatformEvent& event) {
   NSUInteger modifiers = [event modifierFlags];
   return EventFlagsFromNSEventWithModifiers(event, modifiers);
 }
 
-base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
+base::TimeTicks EventTimeFromNative(const PlatformEvent& native_event) {
   base::TimeTicks timestamp =
       ui::EventTimeStampFromSeconds([native_event timestamp]);
   ValidateEventTimeClock(&timestamp);
   return timestamp;
 }
 
-gfx::PointF EventLocationFromNative(const base::NativeEvent& native_event) {
+gfx::PointF EventLocationFromNative(const PlatformEvent& native_event) {
   NSWindow* window = [native_event window];
   if (!window) {
     NOTIMPLEMENTED();  // Point will be in screen coordinates.
@@ -95,19 +95,17 @@ gfx::PointF EventLocationFromNative(const base::NativeEvent& native_event) {
   return gfx::PointF(location.x, NSHeight(content_rect) - location.y);
 }
 
-gfx::Point EventSystemLocationFromNative(
-    const base::NativeEvent& native_event) {
+gfx::Point EventSystemLocationFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return gfx::Point();
 }
 
-int EventButtonFromNative(const base::NativeEvent& native_event) {
+int EventButtonFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
 
-int GetChangedMouseButtonFlagsFromNative(
-    const base::NativeEvent& native_event) {
+int GetChangedMouseButtonFlagsFromNative(const PlatformEvent& native_event) {
   NSEventType type = [native_event type];
   switch (type) {
     case NSLeftMouseDown:
@@ -129,11 +127,11 @@ int GetChangedMouseButtonFlagsFromNative(
 }
 
 PointerDetails GetMousePointerDetailsFromNative(
-    const base::NativeEvent& native_event) {
+    const PlatformEvent& native_event) {
   return PointerDetails(EventPointerType::POINTER_TYPE_MOUSE);
 }
 
-gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& event) {
+gfx::Vector2d GetMouseWheelOffset(const PlatformEvent& event) {
   if ([event hasPreciseScrollingDeltas]) {
     // Handle continuous scrolling devices such as a Magic Mouse or a trackpad.
     // -scrollingDelta{X|Y} have float return types but they return values that
@@ -154,25 +152,25 @@ gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& event) {
   }
 }
 
-base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
+PlatformEvent CopyNativeEvent(const PlatformEvent& event) {
   return [event copy];
 }
 
-void ReleaseCopiedNativeEvent(const base::NativeEvent& event) {
+void ReleaseCopiedNativeEvent(const PlatformEvent& event) {
   [event release];
 }
 
-void ClearTouchIdIfReleased(const base::NativeEvent& native_event) {
+void ClearTouchIdIfReleased(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
 }
 
-int GetTouchId(const base::NativeEvent& native_event) {
+int GetTouchId(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
 
 PointerDetails GetTouchPointerDetailsFromNative(
-    const base::NativeEvent& native_event) {
+    const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return PointerDetails(EventPointerType::POINTER_TYPE_UNKNOWN,
                         /* pointer_id*/ 0,
@@ -181,7 +179,7 @@ PointerDetails GetTouchPointerDetailsFromNative(
                         /* force */ 0.f);
 }
 
-bool GetScrollOffsets(const base::NativeEvent& native_event,
+bool GetScrollOffsets(const PlatformEvent& native_event,
                       float* x_offset,
                       float* y_offset,
                       float* x_offset_ordinal,
@@ -230,7 +228,7 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
   return true;
 }
 
-bool GetFlingData(const base::NativeEvent& native_event,
+bool GetFlingData(const PlatformEvent& native_event,
                   float* vx,
                   float* vy,
                   float* vx_ordinal,
@@ -240,19 +238,19 @@ bool GetFlingData(const base::NativeEvent& native_event,
   return false;
 }
 
-KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
+KeyboardCode KeyboardCodeFromNative(const PlatformEvent& native_event) {
   return KeyboardCodeFromNSEvent(native_event);
 }
 
-DomCode CodeFromNative(const base::NativeEvent& native_event) {
+DomCode CodeFromNative(const PlatformEvent& native_event) {
   return DomCodeFromNSEvent(native_event);
 }
 
-uint32_t WindowsKeycodeFromNative(const base::NativeEvent& native_event) {
+uint32_t WindowsKeycodeFromNative(const PlatformEvent& native_event) {
   return static_cast<uint32_t>(KeyboardCodeFromNSEvent(native_event));
 }
 
-uint16_t TextFromNative(const base::NativeEvent& native_event) {
+uint16_t TextFromNative(const PlatformEvent& native_event) {
   NSString* text = @"";
   if ([native_event type] != NSFlagsChanged)
     text = [native_event characters];
@@ -271,7 +269,7 @@ uint16_t TextFromNative(const base::NativeEvent& native_event) {
   return return_value;
 }
 
-uint16_t UnmodifiedTextFromNative(const base::NativeEvent& native_event) {
+uint16_t UnmodifiedTextFromNative(const PlatformEvent& native_event) {
   NSString* text = @"";
   if ([native_event type] != NSFlagsChanged)
     text = [native_event charactersIgnoringModifiers];
@@ -290,7 +288,7 @@ uint16_t UnmodifiedTextFromNative(const base::NativeEvent& native_event) {
   return return_value;
 }
 
-bool IsCharFromNative(const base::NativeEvent& native_event) {
+bool IsCharFromNative(const PlatformEvent& native_event) {
   return false;
 }
 

@@ -43,7 +43,7 @@ Atom MarkerEventAtom() {
 }
 
 // Returns true when the event is a marker event.
-bool Matcher(const base::NativeEvent& event) {
+bool Matcher(const ui::PlatformEvent& event) {
   return event->xany.type == ClientMessage &&
       event->xclient.message_type == MarkerEventAtom();
 }

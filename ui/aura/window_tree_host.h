@@ -10,7 +10,6 @@
 #include <memory>
 
 #include "base/containers/flat_set.h"
-#include "base/event_types.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
@@ -22,6 +21,7 @@
 #include "ui/compositor/compositor_observer.h"
 #include "ui/display/display_observer.h"
 #include "ui/events/event_source.h"
+#include "ui/events/platform_event.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gfx {

@@ -10,8 +10,8 @@
 #include <string>
 #include <vector>
 
-#include "base/event_types.h"
 #include "ui/base/ime/linux/text_edit_command_auralinux.h"
+#include "ui/events/platform_event.h"
 
 namespace ui {
 class Event;
@@ -70,7 +70,7 @@ class Gtk2KeyBindingsHandler {
                           const std::string& value);
 
   // Builds a fake GdkEventKey from an XEvent.
-  void BuildGdkEventKeyFromXEvent(const base::NativeEvent& xevent,
+  void BuildGdkEventKeyFromXEvent(const ui::PlatformEvent& xevent,
                                   GdkEventKey* gdk_event);
 
   // Initializes Handler structure.

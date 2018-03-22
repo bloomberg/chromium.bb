@@ -12,12 +12,12 @@
 #include <set>
 #include <vector>
 
-#include "base/event_types.h"
 #include "base/macros.h"
 #include "ui/events/devices/device_data_manager.h"
 #include "ui/events/devices/x11/events_devices_x11_export.h"
 #include "ui/events/event_constants.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/platform_event.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/x/x11.h"
 #include "ui/gfx/x/x11_types.h"

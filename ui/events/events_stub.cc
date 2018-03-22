@@ -17,73 +17,69 @@ namespace ui {
 // Stub implementations of platform-specific methods in events_util.h, built
 // on platforms that currently do not have a complete implementation of events.
 
-EventType EventTypeFromNative(const base::NativeEvent& native_event) {
+EventType EventTypeFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return ET_UNKNOWN;
 }
 
-int EventFlagsFromNative(const base::NativeEvent& native_event) {
+int EventFlagsFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
 
-base::TimeTicks EventTimeFromNative(const base::NativeEvent& native_event) {
+base::TimeTicks EventTimeFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return base::TimeTicks();
 }
 
-gfx::PointF EventLocationFromNative(const base::NativeEvent& native_event) {
+gfx::PointF EventLocationFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return gfx::PointF();
 }
 
-gfx::Point EventSystemLocationFromNative(
-    const base::NativeEvent& native_event) {
+gfx::Point EventSystemLocationFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return gfx::Point();
 }
 
-int EventButtonFromNative(const base::NativeEvent& native_event) {
+int EventButtonFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
 
-int GetChangedMouseButtonFlagsFromNative(
-    const base::NativeEvent& native_event) {
+int GetChangedMouseButtonFlagsFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
 
 PointerDetails GetMousePointerDetailsFromNative(
-    const base::NativeEvent& native_event) {
+    const PlatformEvent& native_event) {
   return PointerDetails(EventPointerType::POINTER_TYPE_MOUSE);
 }
 
-gfx::Vector2d GetMouseWheelOffset(const base::NativeEvent& native_event) {
+gfx::Vector2d GetMouseWheelOffset(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return gfx::Vector2d();
 }
 
-base::NativeEvent CopyNativeEvent(const base::NativeEvent& event) {
-  NOTIMPLEMENTED() <<
-      "Don't know how to copy base::NativeEvent for this platform";
+PlatformEvent CopyNativeEvent(const PlatformEvent& event) {
+  NOTIMPLEMENTED() << "Don't know how to copy PlatformEvent for this platform";
   return NULL;
 }
 
-void ReleaseCopiedNativeEvent(const base::NativeEvent& event) {
-}
+void ReleaseCopiedNativeEvent(const PlatformEvent& event) {}
 
-void ClearTouchIdIfReleased(const base::NativeEvent& native_event) {
+void ClearTouchIdIfReleased(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
 }
 
-int GetTouchId(const base::NativeEvent& native_event) {
+int GetTouchId(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
 
 PointerDetails GetTouchPointerDetailsFromNative(
-    const base::NativeEvent& native_event) {
+    const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return PointerDetails(EventPointerType::POINTER_TYPE_UNKNOWN,
                         /* radius_x */ 1.0,
@@ -94,7 +90,7 @@ PointerDetails GetTouchPointerDetailsFromNative(
                         /* tilt_y */ 0.f);
 }
 
-bool GetScrollOffsets(const base::NativeEvent& native_event,
+bool GetScrollOffsets(const PlatformEvent& native_event,
                       float* x_offset,
                       float* y_offset,
                       float* x_offset_ordinal,
@@ -105,7 +101,7 @@ bool GetScrollOffsets(const base::NativeEvent& native_event,
   return false;
 }
 
-bool GetFlingData(const base::NativeEvent& native_event,
+bool GetFlingData(const PlatformEvent& native_event,
                   float* vx,
                   float* vy,
                   float* vx_ordinal,
@@ -115,32 +111,32 @@ bool GetFlingData(const base::NativeEvent& native_event,
   return false;
 }
 
-KeyboardCode KeyboardCodeFromNative(const base::NativeEvent& native_event) {
+KeyboardCode KeyboardCodeFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return static_cast<KeyboardCode>(0);
 }
 
-DomCode CodeFromNative(const base::NativeEvent& native_event) {
+DomCode CodeFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return DomCode::NONE;
 }
 
-bool IsCharFromNative(const base::NativeEvent& native_event) {
+bool IsCharFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return false;
 }
 
-uint32_t WindowsKeycodeFromNative(const base::NativeEvent& native_event) {
+uint32_t WindowsKeycodeFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
 
-uint16_t TextFromNative(const base::NativeEvent& native_event) {
+uint16_t TextFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }
 
-uint16_t UnmodifiedTextFromNative(const base::NativeEvent& native_event) {
+uint16_t UnmodifiedTextFromNative(const PlatformEvent& native_event) {
   NOTIMPLEMENTED();
   return 0;
 }

@@ -9,7 +9,7 @@
 namespace ui {
 
 void DispatchEventFromNativeUiEvent(
-    const base::NativeEvent& native_event,
+    const PlatformEvent& native_event,
     base::OnceCallback<void(ui::Event*)> callback) {
   ui::Event* native_ui_event = static_cast<ui::Event*>(native_event);
   if (native_ui_event->IsKeyEvent()) {

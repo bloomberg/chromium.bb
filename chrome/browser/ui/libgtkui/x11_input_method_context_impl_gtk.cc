@@ -166,7 +166,7 @@ void X11InputMethodContextImplGtk2::ResetXModifierKeycodesCache() {
 }
 
 GdkEvent* X11InputMethodContextImplGtk2::GdkEventFromNativeEvent(
-    const base::NativeEvent& native_event) {
+    const ui::PlatformEvent& native_event) {
   XEvent xkeyevent;
   if (native_event->type == GenericEvent) {
     // If this is an XI2 key event, build a matching core X event, to avoid

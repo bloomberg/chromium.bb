@@ -12,7 +12,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "ui/events/platform/platform_event_dispatcher.h"
-#include "ui/events/platform/platform_event_types.h"
+#include "ui/events/platform_event.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {

@@ -183,6 +183,7 @@ Time X11EventSource::GetTimestamp() {
   return GetCurrentServerTime();
 }
 
+#if !defined(USE_OZONE)
 base::Optional<gfx::Point>
 X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
   if (!dispatching_event_)
@@ -218,6 +219,7 @@ X11EventSource::GetRootCursorLocationFromCurrentEvent() const {
     return ui::EventSystemLocationFromNative(event);
   return base::nullopt;
 }
+#endif
 
 ////////////////////////////////////////////////////////////////////////////////
 // X11EventSource, protected

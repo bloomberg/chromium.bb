@@ -179,7 +179,7 @@ SourceEventType EventTypeToLatencySourceEventType(EventType type) {
   return SourceEventType::UNKNOWN;
 }
 
-bool IsX11SendEventTrue(const base::NativeEvent& event) {
+bool IsX11SendEventTrue(const PlatformEvent& event) {
 #if defined(USE_X11)
   return event && event->xany.send_event;
 #else
@@ -188,7 +188,7 @@ bool IsX11SendEventTrue(const base::NativeEvent& event) {
 }
 
 #if defined(USE_X11)
-bool X11EventHasNonStandardState(const base::NativeEvent& event) {
+bool X11EventHasNonStandardState(const PlatformEvent& event) {
   const unsigned int kAllStateMask =
       Button1Mask | Button2Mask | Button3Mask | Button4Mask | Button5Mask |
       Mod1Mask | Mod2Mask | Mod3Mask | Mod4Mask | Mod5Mask | ShiftMask |
@@ -362,7 +362,7 @@ const TouchEvent* Event::AsTouchEvent() const {
 }
 
 bool Event::HasNativeEvent() const {
-  base::NativeEvent null_event;
+  PlatformEvent null_event;
   std::memset(&null_event, 0, sizeof(null_event));
   return !!std::memcmp(&native_event_, &null_event, sizeof(null_event));
 }
@@ -387,7 +387,7 @@ Event::Event(EventType type, base::TimeTicks time_stamp, int flags)
     : type_(type),
       time_stamp_(time_stamp),
       flags_(flags),
-      native_event_(base::NativeEvent()),
+      native_event_(PlatformEvent()),
       delete_native_event_(false),
       cancelable_(true),
       target_(NULL),
@@ -398,9 +398,7 @@ Event::Event(EventType type, base::TimeTicks time_stamp, int flags)
     latency()->set_source_event_type(EventTypeToLatencySourceEventType(type));
 }
 
-Event::Event(const base::NativeEvent& native_event,
-             EventType type,
-             int flags)
+Event::Event(const PlatformEvent& native_event, EventType type, int flags)
     : type_(type),
       time_stamp_(EventTimeFromNative(native_event)),
       flags_(flags),
@@ -464,7 +462,7 @@ CancelModeEvent::~CancelModeEvent() {
 
 LocatedEvent::~LocatedEvent() = default;
 
-LocatedEvent::LocatedEvent(const base::NativeEvent& native_event)
+LocatedEvent::LocatedEvent(const PlatformEvent& native_event)
     : Event(native_event,
             EventTypeFromNative(native_event),
             EventFlagsFromNative(native_event)),
@@ -555,7 +553,7 @@ const PointerId PointerDetails::kUnknownPointerId = -1;
 ////////////////////////////////////////////////////////////////////////////////
 // MouseEvent
 
-MouseEvent::MouseEvent(const base::NativeEvent& native_event)
+MouseEvent::MouseEvent(const PlatformEvent& native_event)
     : LocatedEvent(native_event),
       changed_button_flags_(GetChangedMouseButtonFlagsFromNative(native_event)),
       pointer_details_(GetMousePointerDetailsFromNative(native_event)) {
@@ -765,10 +763,8 @@ const PointerId MouseEvent::kMousePointerId =
 ////////////////////////////////////////////////////////////////////////////////
 // MouseWheelEvent
 
-MouseWheelEvent::MouseWheelEvent(const base::NativeEvent& native_event)
-    : MouseEvent(native_event),
-      offset_(GetMouseWheelOffset(native_event)) {
-}
+MouseWheelEvent::MouseWheelEvent(const PlatformEvent& native_event)
+    : MouseEvent(native_event), offset_(GetMouseWheelOffset(native_event)) {}
 
 MouseWheelEvent::MouseWheelEvent(const ScrollEvent& scroll_event)
     : MouseEvent(scroll_event),
@@ -830,7 +826,7 @@ const int MouseWheelEvent::kWheelDelta = 53;
 ////////////////////////////////////////////////////////////////////////////////
 // TouchEvent
 
-TouchEvent::TouchEvent(const base::NativeEvent& native_event)
+TouchEvent::TouchEvent(const PlatformEvent& native_event)
     : LocatedEvent(native_event),
       unique_event_id_(ui::GetNextTouchEventId()),
       may_cause_scrolling_(false),
@@ -1167,10 +1163,10 @@ bool KeyEvent::IsRepeated(const KeyEvent& event) {
   return false;
 }
 
-KeyEvent::KeyEvent(const base::NativeEvent& native_event)
+KeyEvent::KeyEvent(const PlatformEvent& native_event)
     : KeyEvent(native_event, EventFlagsFromNative(native_event)) {}
 
-KeyEvent::KeyEvent(const base::NativeEvent& native_event, int event_flags)
+KeyEvent::KeyEvent(const PlatformEvent& native_event, int event_flags)
     : Event(native_event, EventTypeFromNative(native_event), event_flags),
       key_code_(KeyboardCodeFromNative(native_event)),
       code_(CodeFromNative(native_event)),
@@ -1417,7 +1413,7 @@ std::string KeyEvent::GetCodeString() const {
 ////////////////////////////////////////////////////////////////////////////////
 // ScrollEvent
 
-ScrollEvent::ScrollEvent(const base::NativeEvent& native_event)
+ScrollEvent::ScrollEvent(const PlatformEvent& native_event)
     : MouseEvent(native_event),
       x_offset_(0.0f),
       y_offset_(0.0f),

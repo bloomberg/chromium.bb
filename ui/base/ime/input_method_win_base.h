@@ -36,7 +36,7 @@ class UI_BASE_IME_EXPORT InputMethodWinBase : public InputMethodBase {
                  UINT message,
                  WPARAM wparam,
                  LPARAM lparam,
-                 const base::NativeEvent& event,
+                 const PlatformEvent& event,
                  BOOL* handled);
 
   // Some IMEs rely on WM_IME_REQUEST message even when TSF is enabled. So

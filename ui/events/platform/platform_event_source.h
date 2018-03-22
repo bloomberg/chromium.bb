@@ -15,7 +15,7 @@
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "ui/events/events_export.h"
-#include "ui/events/platform/platform_event_types.h"
+#include "ui/events/platform_event.h"
 
 namespace ui {
 

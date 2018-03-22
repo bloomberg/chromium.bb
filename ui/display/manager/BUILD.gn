@@ -59,6 +59,7 @@ jumbo_component("manager") {
     "//ui/base",
     "//ui/display/mojo:interfaces",
     "//ui/display/util",
+    "//ui/events:platform_event",
     "//ui/events/devices",
     "//ui/strings",
   ]

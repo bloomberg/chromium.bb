@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/compiler_specific.h"
-#include "base/event_types.h"
 #include "base/gtest_prod_util.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -24,6 +23,7 @@
 #include "ui/events/gestures/gesture_types.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
+#include "ui/events/platform_event.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/latency/latency_info.h"
@@ -77,7 +77,7 @@ class EVENTS_EXPORT Event {
     DISALLOW_COPY_AND_ASSIGN(DispatcherApi);
   };
 
-  const base::NativeEvent& native_event() const { return native_event_; }
+  const PlatformEvent& native_event() const { return native_event_; }
   EventType type() const { return type_; }
   // time_stamp represents time since machine was booted.
   const base::TimeTicks time_stamp() const { return time_stamp_; }
@@ -308,7 +308,7 @@ class EVENTS_EXPORT Event {
 
  protected:
   Event(EventType type, base::TimeTicks time_stamp, int flags);
-  Event(const base::NativeEvent& native_event, EventType type, int flags);
+  Event(const PlatformEvent& native_event, EventType type, int flags);
   Event(const Event& copy);
   void SetType(EventType type);
   void set_cancelable(bool cancelable) { cancelable_ = cancelable; }
@@ -324,7 +324,7 @@ class EVENTS_EXPORT Event {
   base::TimeTicks time_stamp_;
   LatencyInfo latency_;
   int flags_;
-  base::NativeEvent native_event_;
+  PlatformEvent native_event_;
   bool delete_native_event_;
   bool cancelable_;
   EventTarget* target_;
@@ -394,7 +394,7 @@ class EVENTS_EXPORT LocatedEvent : public Event {
 
   LocatedEvent(const LocatedEvent& copy);
 
-  explicit LocatedEvent(const base::NativeEvent& native_event);
+  explicit LocatedEvent(const PlatformEvent& native_event);
 
   // Create a new LocatedEvent which is identical to the provided model.
   // If source / target windows are provided, the model location will be
@@ -506,8 +506,8 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   static const PointerId kMousePointerId;
 
   // NOTE: On some platforms this will allow an event to be constructed from a
-  // void*, see base::NativeEvent.
-  explicit MouseEvent(const base::NativeEvent& native_event);
+  // void*, see PlatformEvent.
+  explicit MouseEvent(const PlatformEvent& native_event);
 
   // |pointer_event.IsMousePointerEvent()| must be true.
   // Note: If |pointer_event| is a mouse wheel pointer event, use the
@@ -645,7 +645,7 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
   // See |offset| for details.
   static const int kWheelDelta;
 
-  explicit MouseWheelEvent(const base::NativeEvent& native_event);
+  explicit MouseWheelEvent(const PlatformEvent& native_event);
   explicit MouseWheelEvent(const ScrollEvent& scroll_event);
   explicit MouseWheelEvent(const PointerEvent& pointer_event);
   MouseWheelEvent(const MouseEvent& mouse_event, int x_offset, int y_offset);
@@ -683,7 +683,7 @@ class EVENTS_EXPORT MouseWheelEvent : public MouseEvent {
 // decided not to show hover effects for pen.
 class EVENTS_EXPORT TouchEvent : public LocatedEvent {
  public:
-  explicit TouchEvent(const base::NativeEvent& native_event);
+  explicit TouchEvent(const PlatformEvent& native_event);
 
   // |pointer_event.IsTouchPointerEvent()| must be true.
   explicit TouchEvent(const PointerEvent& pointer_event);
@@ -836,11 +836,11 @@ class EVENTS_EXPORT KeyEvent : public Event {
   // Create a KeyEvent from a NativeEvent. For Windows this native event can
   // be either a keystroke message (WM_KEYUP/WM_KEYDOWN) or a character message
   // (WM_CHAR). Other systems have only keystroke events.
-  explicit KeyEvent(const base::NativeEvent& native_event);
+  explicit KeyEvent(const PlatformEvent& native_event);
 
   // Create a KeyEvent from a NativeEvent but with mocked flags.
   // This method is necessary for Windows since MSG does not contain all flags.
-  KeyEvent(const base::NativeEvent& native_event, int event_flags);
+  KeyEvent(const PlatformEvent& native_event, int event_flags);
 
   // Create a keystroke event from a legacy KeyboardCode.
   // This should not be used in new code.
@@ -995,7 +995,7 @@ class EVENTS_EXPORT KeyEvent : public Event {
 
 class EVENTS_EXPORT ScrollEvent : public MouseEvent {
  public:
-  explicit ScrollEvent(const base::NativeEvent& native_event);
+  explicit ScrollEvent(const PlatformEvent& native_event);
   template <class T>
   ScrollEvent(const ScrollEvent& model,
               T* source,

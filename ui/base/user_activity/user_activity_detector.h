@@ -18,7 +18,7 @@ namespace ui {
 class UserActivityObserver;
 
 // Watches for input events and notifies observers that the user is active.
-class UI_BASE_EXPORT UserActivityDetector : public ui::PlatformEventObserver {
+class UI_BASE_EXPORT UserActivityDetector : public PlatformEventObserver {
  public:
   // Minimum amount of time between notifications to observers.
   static const int kNotifyIntervalMs;
@@ -49,7 +49,7 @@ class UI_BASE_EXPORT UserActivityDetector : public ui::PlatformEventObserver {
   // PlatformEventSource (e.g. the window server).
   void HandleExternalUserActivity();
 
-  // ui::PlatformEventObserver:
+  // PlatformEventObserver:
   void WillProcessEvent(const PlatformEvent& platform_event) override {}
   void DidProcessEvent(const PlatformEvent& platform_event) override;
 
