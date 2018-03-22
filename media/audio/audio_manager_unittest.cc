@@ -180,10 +180,10 @@ const AudioNode kUSBCameraMic(true,
                               0);
 #endif  // defined(USE_CRAS)
 
-const char kRealDefaultInputDeviceID[] = "input3";
-const char kRealDefaultOutputDeviceID[] = "output4";
-const char kRealCommunicationsInputDeviceID[] = "input2";
-const char kRealCommunicationsOutputDeviceID[] = "output2";
+const char kRealDefaultInputDeviceID[] = "input2";
+const char kRealDefaultOutputDeviceID[] = "output3";
+const char kRealCommunicationsInputDeviceID[] = "input1";
+const char kRealCommunicationsOutputDeviceID[] = "output1";
 
 void CheckDescriptionLabels(const AudioDeviceDescriptions& descriptions,
                             const std::string& real_default_id,
@@ -632,51 +632,64 @@ class TestAudioManager : public FakeAudioManager {
       const std::string& input_id) override {
     if (input_id == "input1")
       return "output1";
-    if (input_id == "input2")
+    DCHECK_EQ(std::string(kRealDefaultInputDeviceID), "input2");
+    if (input_id == AudioDeviceDescription::kDefaultDeviceId ||
+        input_id == kRealDefaultInputDeviceID)
       return "output2";
-    if (input_id == "default")
-      return "output1";
-    return "";
+    return std::string();
   }
 
  private:
   void GetAudioInputDeviceNames(AudioDeviceNames* device_names) override {
+    DCHECK(device_names->empty());
+    device_names->emplace_back(AudioDeviceName::CreateDefault());
     device_names->emplace_back("Input 1", "input1");
     device_names->emplace_back("Input 2", "input2");
     device_names->emplace_back("Input 3", "input3");
-    device_names->push_front(AudioDeviceName::CreateDefault());
   }
 
   void GetAudioOutputDeviceNames(AudioDeviceNames* device_names) override {
+    DCHECK(device_names->empty());
+    device_names->emplace_back(AudioDeviceName::CreateDefault());
     device_names->emplace_back("Output 1", "output1");
     device_names->emplace_back("Output 2", "output2");
     device_names->emplace_back("Output 3", "output3");
-    device_names->emplace_back("Output 4", "output4");
-    device_names->push_front(AudioDeviceName::CreateDefault());
   }
 };
 
 TEST_F(AudioManagerTest, GroupId) {
   CreateAudioManagerForTesting<TestAudioManager>();
   // Groups:
-  // input1, output1, default input
-  // input2, output2
-  // input3,
-  // output3
-  // output4, default output
+  // input1, output1
+  // input2, output2, default input
+  // input3
+  // output3, default output
   AudioDeviceDescriptions inputs;
   device_info_accessor_->GetAudioInputDeviceDescriptions(&inputs);
   AudioDeviceDescriptions outputs;
   device_info_accessor_->GetAudioOutputDeviceDescriptions(&outputs);
-  EXPECT_EQ(inputs[0].group_id, outputs[1].group_id);
+  // default input
+  EXPECT_EQ(inputs[0].group_id, outputs[2].group_id);
+  // default input and default output are not associated
+  EXPECT_NE(inputs[0].group_id, outputs[0].group_id);
+
+  // default output
+  EXPECT_EQ(outputs[0].group_id, outputs[3].group_id);
+
+  // real inputs and outputs that are associated
   EXPECT_EQ(inputs[1].group_id, outputs[1].group_id);
   EXPECT_EQ(inputs[2].group_id, outputs[2].group_id);
+
+  // real inputs and outputs that are not associated
   EXPECT_NE(inputs[3].group_id, outputs[3].group_id);
-  EXPECT_EQ(outputs[4].group_id, outputs[0].group_id);
-  EXPECT_NE(inputs[0].group_id, outputs[0].group_id);
-  EXPECT_NE(inputs[1].group_id, outputs[2].group_id);
-  EXPECT_NE(inputs[2].group_id, outputs[3].group_id);
-  EXPECT_NE(inputs[1].group_id, outputs[3].group_id);
+
+  // group IDs of different devices should differ.
+  EXPECT_NE(inputs[1].group_id, inputs[2].group_id);
+  EXPECT_NE(inputs[1].group_id, inputs[3].group_id);
+  EXPECT_NE(inputs[2].group_id, inputs[3].group_id);
+  EXPECT_NE(outputs[1].group_id, outputs[2].group_id);
+  EXPECT_NE(outputs[1].group_id, outputs[3].group_id);
+  EXPECT_NE(outputs[2].group_id, outputs[3].group_id);
 }
 
 TEST_F(AudioManagerTest, DefaultCommunicationsLabelsContainRealLabels) {

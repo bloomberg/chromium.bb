@@ -515,16 +515,27 @@ std::string AudioManagerBase::GetGroupIDOutput(
     const std::string& output_device_id) {
   if (output_device_id == AudioDeviceDescription::kDefaultDeviceId) {
     std::string real_device_id = GetDefaultOutputDeviceID();
-    if (!real_device_id.empty()) {
+    if (!real_device_id.empty())
       return real_device_id;
-    }
+  } else if (output_device_id ==
+             AudioDeviceDescription::kCommunicationsDeviceId) {
+    std::string real_device_id = GetCommunicationsOutputDeviceID();
+    if (!real_device_id.empty())
+      return real_device_id;
   }
   return output_device_id;
 }
 
 std::string AudioManagerBase::GetGroupIDInput(
     const std::string& input_device_id) {
-  std::string output_device_id = GetAssociatedOutputDeviceID(input_device_id);
+  const std::string& real_input_device_id =
+      input_device_id == AudioDeviceDescription::kDefaultDeviceId
+          ? GetDefaultInputDeviceID()
+          : input_device_id == AudioDeviceDescription::kCommunicationsDeviceId
+                ? GetCommunicationsInputDeviceID()
+                : input_device_id;
+  std::string output_device_id =
+      GetAssociatedOutputDeviceID(real_input_device_id);
   if (output_device_id.empty()) {
     // Some characters are added to avoid accidentally
     // giving the input the same group id as an output.
