@@ -31,4 +31,25 @@ static INLINE void mult_add_store(CONV_BUF_TYPE *const dst,
   _mm_store_si128((__m128i *)dst, d);
 }
 
+#if CONFIG_LOWPRECISION_BLEND
+static INLINE __m128i highbd_comp_avg_sse4_1(const __m128i *const data_ref_0,
+                                             const __m128i *const res_unsigned,
+                                             const __m128i *const wt0,
+                                             const __m128i *const wt1,
+                                             const int use_jnt_comp_avg) {
+  __m128i res;
+  if (use_jnt_comp_avg) {
+    const __m128i wt0_res = _mm_mullo_epi32(*data_ref_0, *wt0);
+    const __m128i wt1_res = _mm_mullo_epi32(*res_unsigned, *wt1);
+
+    const __m128i wt_res = _mm_add_epi32(wt0_res, wt1_res);
+    res = _mm_srai_epi32(wt_res, DIST_PRECISION_BITS);
+  } else {
+    const __m128i wt_res = _mm_add_epi32(*data_ref_0, *res_unsigned);
+    res = _mm_srai_epi32(wt_res, 1);
+  }
+  return res;
+}
+#endif
+
 #endif  // _AOM_DSP_X86_TXFM_COMMON_INTRIN_H_

@@ -325,9 +325,9 @@ if (aom_config("CONFIG_LOWPRECISION_BLEND") eq "yes") {
   specialize qw/av1_highbd_convolve_y_sr ssse3 avx2/;
   specialize qw/av1_highbd_convolve_2d_scale sse4_1/;
   specialize qw/av1_highbd_jnt_convolve_2d sse4_1 avx2/;
-  specialize qw/av1_highbd_jnt_convolve_x avx2/;
-  specialize qw/av1_highbd_jnt_convolve_y avx2/;
-  specialize qw/av1_highbd_jnt_convolve_2d_copy avx2/;
+  specialize qw/av1_highbd_jnt_convolve_x sse4_1 avx2/;
+  specialize qw/av1_highbd_jnt_convolve_y sse4_1 avx2/;
+  specialize qw/av1_highbd_jnt_convolve_2d_copy sse4_1 avx2/;
 }
 else
 {

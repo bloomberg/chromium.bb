@@ -108,6 +108,17 @@ static INLINE __m128i convolve_rounding(const __m128i *const res_unsigned,
       _mm_srai_epi16(_mm_add_epi16(res_signed, *round_const), round_shift);
   return res_round;
 }
+
+static INLINE __m128i highbd_convolve_rounding_sse2(
+    const __m128i *const res_unsigned, const __m128i *const offset_const,
+    const __m128i *const round_const, const int round_shift) {
+  const __m128i res_signed = _mm_sub_epi32(*res_unsigned, *offset_const);
+  const __m128i res_round =
+      _mm_srai_epi32(_mm_add_epi32(res_signed, *round_const), round_shift);
+
+  return res_round;
+}
+
 #endif
 
 #endif
