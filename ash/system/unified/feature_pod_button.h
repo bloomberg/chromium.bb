@@ -5,6 +5,7 @@
 #ifndef ASH_SYSTEM_UNIFIED_FEATURE_POD_BUTTON_H_
 #define ASH_SYSTEM_UNIFIED_FEATURE_POD_BUTTON_H_
 
+#include "ash/ash_export.h"
 #include "ui/gfx/vector_icon_types.h"
 #include "ui/views/controls/button/image_button.h"
 #include "ui/views/view.h"
@@ -48,7 +49,8 @@ class FeaturePodIconButton : public views::ImageButton {
 // vertically. They are also togglable and the background color indicates the
 // current state.
 // See the comment in FeaturePodsView for detail.
-class FeaturePodButton : public views::View, public views::ButtonListener {
+class ASH_EXPORT FeaturePodButton : public views::View,
+                                    public views::ButtonListener {
  public:
   explicit FeaturePodButton(FeaturePodControllerBase* controller);
   ~FeaturePodButton() override;
@@ -65,11 +67,22 @@ class FeaturePodButton : public views::View, public views::ButtonListener {
   // Change the toggled state. If toggled, the background color of the circle
   // will change.
   void SetToggled(bool toggled);
+  bool IsToggled() const { return icon_button_->toggled(); }
+
+  // Change the expanded state. If not expanded, the labels are not shown.
+  void SetExpanded(bool expanded);
+
+  // Only called by the container. Same as SetVisible but doesn't change
+  // |visible_preferred_| flag.
+  void SetVisibleByContainer(bool visible);
+
+  // views::View:
+  void SetVisible(bool visible) override;
 
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
-  bool IsToggled() const { return icon_button_->toggled(); }
+  bool visible_preferred() { return visible_preferred_; }
 
  protected:
   FeaturePodIconButton* icon_button() const { return icon_button_; }
@@ -82,6 +95,13 @@ class FeaturePodButton : public views::View, public views::ButtonListener {
   FeaturePodIconButton* const icon_button_;
   views::Label* const label_;
   views::Label* sub_label_ = nullptr;
+
+  // If true, it is preferred by the FeaturePodController that the view is
+  // visible. Usually, this should match visible(), but in case that the
+  // container does not have enough space, it might not match.
+  // In such case, the preferred visibility is reflected after the container is
+  // expanded.
+  bool visible_preferred_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(FeaturePodButton);
 };

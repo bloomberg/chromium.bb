@@ -85,6 +85,8 @@ class ASH_EXPORT UnifiedSystemTrayController {
   std::unique_ptr<UnifiedBrightnessSliderController>
       brightness_slider_controller_;
 
+  bool expanded_ = true;
+
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayController);
 };
 

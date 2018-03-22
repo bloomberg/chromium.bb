@@ -11,7 +11,9 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/paint_recorder.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/skbitmap_operations.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_highlight.h"
 #include "ui/views/animation/ink_drop_impl.h"
@@ -64,9 +66,7 @@ void CollapseButtonInkDropMask::OnPaintLayer(const ui::PaintContext& context) {
 
 CollapseButton::CollapseButton(views::ButtonListener* listener)
     : ImageButton(listener) {
-  SetImage(views::Button::STATE_NORMAL,
-           gfx::CreateVectorIcon(kNotificationCenterCollapseIcon,
-                                 kCollapseIconSize, kUnifiedMenuIconColor));
+  UpdateIcon(true /* expanded */);
   SetImageAlignment(HorizontalAlignment::ALIGN_CENTER,
                     VerticalAlignment::ALIGN_BOTTOM);
   SetTooltipText(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_COLLAPSE));
@@ -77,6 +77,16 @@ CollapseButton::CollapseButton(views::ButtonListener* listener)
 }
 
 CollapseButton::~CollapseButton() = default;
+
+void CollapseButton::UpdateIcon(bool expanded) {
+  gfx::ImageSkia icon =
+      gfx::CreateVectorIcon(kNotificationCenterCollapseIcon, kCollapseIconSize,
+                            kUnifiedMenuIconColor);
+  if (!expanded)
+    icon = gfx::ImageSkiaOperations::CreateRotatedImage(
+        icon, SkBitmapOperations::ROTATION_180_CW);
+  SetImage(views::Button::STATE_NORMAL, icon);
+}
 
 gfx::Size CollapseButton::CalculatePreferredSize() const {
   return gfx::Size(kTrayItemSize, kTrayItemSize * 3 / 2);

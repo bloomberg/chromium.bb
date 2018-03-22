@@ -18,6 +18,9 @@ class CollapseButton : public views::ImageButton {
   CollapseButton(views::ButtonListener* listener);
   ~CollapseButton() override;
 
+  // Change the icon for the |expanded| state.
+  void UpdateIcon(bool expanded);
+
   // views::ImageButton:
   gfx::Size CalculatePreferredSize() const override;
   int GetHeightForWidth(int width) const override;

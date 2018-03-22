@@ -96,6 +96,10 @@ TopShortcutsView::TopShortcutsView(UnifiedSystemTrayController* controller)
 
 TopShortcutsView::~TopShortcutsView() = default;
 
+void TopShortcutsView::SetExpanded(bool expanded) {
+  collapse_button_->UpdateIcon(expanded);
+}
+
 void TopShortcutsView::ButtonPressed(views::Button* sender,
                                      const ui::Event& event) {
   if (sender == sign_out_button_)

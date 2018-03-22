@@ -11,6 +11,7 @@ namespace ash {
 
 class FeaturePodButton;
 class FeaturePodsContainerView;
+class TopShortcutsView;
 class UnifiedSystemInfoView;
 class UnifiedSystemTrayController;
 
@@ -26,12 +27,17 @@ class UnifiedSystemTrayView : public views::View {
   // Add slider view.
   void AddSliderView(views::View* slider_view);
 
+  // Change the expanded state.
+  void SetExpanded(bool expanded);
+
  private:
   // Unowned.
   UnifiedSystemTrayController* controller_;
 
   // Owned by views hierarchy.
+  TopShortcutsView* top_shortcuts_view_;
   FeaturePodsContainerView* feature_pods_container_;
+  views::View* sliders_container_;
   UnifiedSystemInfoView* system_info_view_;
 
   DISALLOW_COPY_AND_ASSIGN(UnifiedSystemTrayView);

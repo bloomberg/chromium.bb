@@ -18,7 +18,9 @@ namespace ash {
 UnifiedSystemTrayView::UnifiedSystemTrayView(
     UnifiedSystemTrayController* controller)
     : controller_(controller),
+      top_shortcuts_view_(new TopShortcutsView(controller_)),
       feature_pods_container_(new FeaturePodsContainerView()),
+      sliders_container_(new views::View),
       system_info_view_(new UnifiedSystemInfoView()) {
   DCHECK(controller_);
 
@@ -32,8 +34,12 @@ UnifiedSystemTrayView::UnifiedSystemTrayView(
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
-  AddChildView(new TopShortcutsView(controller_));
+  sliders_container_->SetLayoutManager(
+      std::make_unique<views::BoxLayout>(views::BoxLayout::kVertical));
+
+  AddChildView(top_shortcuts_view_);
   AddChildView(feature_pods_container_);
+  AddChildView(sliders_container_);
   AddChildView(system_info_view_);
 }
 
@@ -44,7 +50,14 @@ void UnifiedSystemTrayView::AddFeaturePodButton(FeaturePodButton* button) {
 }
 
 void UnifiedSystemTrayView::AddSliderView(views::View* slider_view) {
-  AddChildViewAt(slider_view, GetIndexOf(system_info_view_));
+  sliders_container_->AddChildView(slider_view);
+}
+
+void UnifiedSystemTrayView::SetExpanded(bool expanded) {
+  top_shortcuts_view_->SetExpanded(expanded);
+  feature_pods_container_->SetExpanded(expanded);
+  sliders_container_->SetVisible(expanded);
+  PreferredSizeChanged();
 }
 
 }  // namespace ash
