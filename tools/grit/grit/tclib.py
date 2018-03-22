@@ -20,6 +20,8 @@ import grit.extern.tclib
 # with spaces.
 _FOLD_WHITESPACE = re.compile(r'\s+')
 
+# Caches compiled regexp used to split tags in BaseMessage.__init__()
+_RE_CACHE = {}
 
 def Identity(i):
   return i
@@ -53,7 +55,16 @@ class BaseMessage(object):
         tags = tag_map.keys()
         tags.sort(cmp=lambda x,y: len(x) - len(y) or cmp(x, y), reverse=True)
         tag_re = '(' + '|'.join(tags) + ')'
-        chunked_text = re.split(tag_re, text)
+
+        # This caching improves the time to build
+        # chrome/app:generated_resources from 21.562s to 17.672s on Linux.
+        compiled_re = _RE_CACHE.get(tag_re, None)
+        if compiled_re is None:
+          compiled_re = re.compile(tag_re)
+          _RE_CACHE[tag_re] = compiled_re
+
+        chunked_text = compiled_re.split(text)
+
         for chunk in chunked_text:
           if chunk: # ignore empty chunk
             if tag_map.has_key(chunk):
@@ -231,5 +242,3 @@ class Placeholder(grit.extern.tclib.Placeholder):
 
   def GetExample(self):
     return self.example
-
-
