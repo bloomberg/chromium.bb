@@ -85,6 +85,23 @@ void PrintJob::Initialize(PrintJobWorkerOwner* job,
                  content::Source<PrintJob>(this));
 }
 
+#if defined(OS_WIN)
+void PrintJob::ResetPageMapping() {
+  std::vector<int> pages = PageRange::GetPages(settings_.ranges());
+  if (pages.empty())
+    return;
+
+  pdf_page_mapping_ = std::vector<int>(document_->page_count(), -1);
+  for (int page_number : pages) {
+    // Make sure the page is in range.
+    if (page_number >= 0 &&
+        page_number < static_cast<int>(pdf_page_mapping_.size())) {
+      pdf_page_mapping_[page_number] = page_number;
+    }
+  }
+}
+#endif
+
 void PrintJob::Observe(int type,
                        const content::NotificationSource& source,
                        const content::NotificationDetails& details) {
@@ -297,10 +314,14 @@ void PrintJob::OnPdfPageConverted(int page_number,
     return;
   }
 
-  // Update the rendered document. It will send notifications to the listener.
-  document_->SetPage(pdf_page_mapping_[page_number], std::move(metafile),
-                     scale_factor, pdf_conversion_state_->page_size(),
-                     pdf_conversion_state_->content_area());
+  // Add the page to the document if it is one of the pages requested by the
+  // user. If it is not, ignore it.
+  if (pdf_page_mapping_[page_number] != -1) {
+    // Update the rendered document. It will send notifications to the listener.
+    document_->SetPage(pdf_page_mapping_[page_number], std::move(metafile),
+                       scale_factor, pdf_conversion_state_->page_size(),
+                       pdf_conversion_state_->content_area());
+  }
 
   pdf_conversion_state_->GetMorePages(
       base::Bind(&PrintJob::OnPdfPageConverted, this));
