@@ -44,8 +44,6 @@ namespace content {
 
 namespace {
 
-const int kAndroidLSDKVersion = 21;
-
 // True if we want to disable Android native event batching and use
 // compositor event queue.
 bool ShouldRequestUnbufferedDispatch() {
@@ -53,7 +51,7 @@ bool ShouldRequestUnbufferedDispatch() {
       base::FeatureList::IsEnabled(
           content::android::kRequestUnbufferedDispatch) &&
       base::android::BuildInfo::GetInstance()->sdk_int() >=
-          kAndroidLSDKVersion &&
+          base::android::SDK_VERSION_LOLLIPOP &&
       !content::GetContentClient()->UsingSynchronousCompositing();
   return should_request_unbuffered_dispatch;
 }
