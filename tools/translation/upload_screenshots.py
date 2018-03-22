@@ -40,8 +40,8 @@ TRANSLATION_EXPECTATIONS_PATH = os.path.join('tools', 'gritsettings',
                                              'translation_expectations.pyl')
 
 # URL of the bucket used for storing screenshots.
-BUCKET_URL = 'gs://chrome-screenshots'
-
+# This is writable by @google.com accounts, readable by everyone.
+BUCKET_URL = 'gs://chromium-translation-screenshots'
 
 
 def query_yes_no(question, default='yes'):
@@ -149,6 +149,7 @@ def main():
                                               TRANSLATION_EXPECTATIONS_PATH))
   if not screenshots:
     print 'No screenshots found, exiting.'
+    exit(0)
 
   print 'Found %d updated screenshot(s): ' % len(screenshots)
   for s in screenshots:
