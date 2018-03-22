@@ -54,19 +54,24 @@ std::unique_ptr<VaapiPicture> VaapiPictureFactory::Create(
 
   // Select DRM(egl) / TFP(glx) at runtime with --use-gl=egl / --use-gl=desktop
   switch (GetVaapiImplementation(gl::GetGLImplementation())) {
-    case kVaapiImplementationDrm:
 #if defined(USE_OZONE)
+    // We can be called without GL initialized, which is valid if we use Ozone.
+    case kVaapiImplementationNone:
+      FALLTHROUGH;
+    case kVaapiImplementationDrm:
       picture.reset(new VaapiPictureNativePixmapOzone(
           vaapi_wrapper, make_context_current_cb, bind_image_cb,
           picture_buffer_id, size, texture_id, client_texture_id,
           texture_target));
+      break;
 #elif defined(USE_EGL)
+    case kVaapiImplementationDrm:
       picture.reset(new VaapiPictureNativePixmapEgl(
           vaapi_wrapper, make_context_current_cb, bind_image_cb,
           picture_buffer_id, size, texture_id, client_texture_id,
           texture_target));
-#endif
       break;
+#endif
 
 #if defined(USE_X11)
     case kVaapiImplementationX11:
