@@ -91,11 +91,25 @@ check_constraints_pass(
   {height: 47});
 
 check_constraints_pass(
-  'Constraint with boolean value should be parsed',
+  'echoCancellation constraint with boolean value should be parsed',
   {'echoCancellation': {exact: true}});
 check_constraints_pass(
-  'Constraint with boolean naked value should be parsed',
+  'echoCancellation constraint with boolean naked value should be parsed',
   {'echoCancellation': true});
+
+check_constraints_pass(
+  'autoGainControl constraint with boolean value should be parsed',
+  {'autoGainControl': {exact: true}});
+check_constraints_pass(
+  'autoGainControl constraint with boolean naked value should be parsed',
+  {'autoGainControl': true});
+
+check_constraints_pass(
+  'noiseSuppression constraint with boolean value should be parsed',
+  {'noiseSuppression': {exact: true}});
+check_constraints_pass(
+  'noiseSuppression constraint with boolean naked value should be parsed',
+  {'noiseSuppression': true});
 
 check_constraints_pass(
   'Constraint with string value should work on exact with array',

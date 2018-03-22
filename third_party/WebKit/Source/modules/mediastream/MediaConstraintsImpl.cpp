@@ -677,6 +677,14 @@ void CopyConstraintSet(const MediaTrackConstraintSet& constraints_in,
     CopyBooleanConstraint(constraints_in.echoCancellation(), naked_treatment,
                           constraint_buffer.echo_cancellation);
   }
+  if (constraints_in.hasAutoGainControl()) {
+    CopyBooleanConstraint(constraints_in.autoGainControl(), naked_treatment,
+                          constraint_buffer.goog_auto_gain_control);
+  }
+  if (constraints_in.hasNoiseSuppression()) {
+    CopyBooleanConstraint(constraints_in.noiseSuppression(), naked_treatment,
+                          constraint_buffer.goog_noise_suppression);
+  }
   if (constraints_in.hasLatency()) {
     CopyDoubleConstraint(constraints_in.latency(), naked_treatment,
                          constraint_buffer.latency);
@@ -930,6 +938,14 @@ void ConvertConstraintSet(const WebMediaTrackConstraintSet& input,
   if (!input.echo_cancellation.IsEmpty()) {
     output.setEchoCancellation(
         ConvertBoolean(input.echo_cancellation, naked_treatment));
+  }
+  if (!input.goog_auto_gain_control.IsEmpty()) {
+    output.setAutoGainControl(
+        ConvertBoolean(input.goog_auto_gain_control, naked_treatment));
+  }
+  if (!input.goog_noise_suppression.IsEmpty()) {
+    output.setNoiseSuppression(
+        ConvertBoolean(input.goog_noise_suppression, naked_treatment));
   }
   if (!input.latency.IsEmpty())
     output.setLatency(ConvertDouble(input.latency, naked_treatment));

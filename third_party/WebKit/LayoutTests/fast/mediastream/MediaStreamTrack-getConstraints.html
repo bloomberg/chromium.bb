@@ -9,12 +9,16 @@
 
 // If a constraint is specified, it should come back in getConstraints().
 promise_test(function() {
-  return navigator.mediaDevices.getUserMedia({audio: { echoCancellation: { exact: true}}})
+  return navigator.mediaDevices.getUserMedia({audio: { echoCancellation: { exact: true}, autoGainControl: { exact: true }, noiseSuppression: { exact: true }}})
       .then(function(s) {
     constraints = s.getAudioTracks()[0].getConstraints();
-    assert_equals(Object.keys(constraints).length, 1);
+    assert_equals(Object.keys(constraints).length, 3);
     assert_true(constraints.hasOwnProperty('echoCancellation'));
     assert_true(constraints.echoCancellation.exact);
+    assert_true(constraints.hasOwnProperty('autoGainControl'));
+    assert_true(constraints.autoGainControl.exact);
+    assert_true(constraints.hasOwnProperty('noiseSuppression'));
+    assert_true(constraints.noiseSuppression.exact);
   });
 }, 'A set constraint is returned on getConstraints');
 
@@ -68,6 +72,8 @@ promise_test(function() {
     sampleRate: { ideal: 42 },
     sampleSize: { ideal: 3 },
     echoCancellation: { ideal: false },
+    autoGainControl: { ideal: false },
+    noiseSuppression: { ideal: false },
     latency: { ideal: 0.22 },
     channelCount: { ideal: 2 },
     deviceId: { ideal: ["foo", "fooz"] },
@@ -131,10 +137,20 @@ constraintSyntaxTestWithChange('Single Bracketed string unwrapped',
     { 'facingMode': ["user5"]}, { facingMode: "user5" });
 constraintSyntaxTest('Both Ideal and Exact string', { facingMode: { ideal: "user6", exact: "left6" }});
 
-constraintSyntaxTest('Simple boolean', { echoCancellation: true });
-constraintSyntaxTest('Ideal boolean', { echoCancellation: { ideal: true }});
-constraintSyntaxTestWithChange('Exact unwrapped boolean',
+constraintSyntaxTest('echoCancellation with simple boolean value', { echoCancellation: true });
+constraintSyntaxTest('echoCancellation with ideal boolean value', { echoCancellation: { ideal: true }});
+constraintSyntaxTestWithChange('echoCancellation with exact unwrapped boolean value',
     { echoCancellation: { exact: true } }, { echoCancellation: true });
+
+constraintSyntaxTest('autoGainControl with simple boolean value', { autoGainControl: true });
+constraintSyntaxTest('autoGainControl with ideal boolean value', { autoGainControl: { ideal: true }});
+constraintSyntaxTestWithChange('autoGainControl with exact unwrapped boolean value',
+    { autoGainControl: { exact: true } }, { autoGainControl: true });
+
+constraintSyntaxTest('noiseSuppression with simple boolean value', { noiseSuppression: true });
+constraintSyntaxTest('noiseSuppression with ideal boolean value', { noiseSuppression: { ideal: true }});
+constraintSyntaxTestWithChange('noiseSuppression with exact unwrapped boolean value',
+    { noiseSuppression: { exact: true } }, { noiseSuppression: true });
 
 </script>
 </body>

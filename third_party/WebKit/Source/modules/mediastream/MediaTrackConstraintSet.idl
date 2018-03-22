@@ -20,6 +20,8 @@ dictionary MediaTrackConstraintSet {
     ConstrainLong sampleRate;
     ConstrainLong sampleSize;
     ConstrainBoolean echoCancellation;
+    ConstrainBoolean autoGainControl;
+    ConstrainBoolean noiseSuppression;
     ConstrainDouble latency;
     ConstrainLong channelCount;
     ConstrainDOMString deviceId;
