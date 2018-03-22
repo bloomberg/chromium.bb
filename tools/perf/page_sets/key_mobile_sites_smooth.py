@@ -6,6 +6,87 @@ from telemetry.page import shared_page_state
 from telemetry import story
 
 
+FASTPATH_URLS = [
+    # Why: Top news site.
+    ('http://nytimes.com/', 'nytimes'),
+    # Why: Image-heavy site.
+    ('http://cuteoverload.com', 'cuteoverload'),
+    # Why: #5 Alexa news.
+    ('http://www.reddit.com/r/programming/comments/1g96ve', 'reddit'),
+    # Why: Problematic use of fixed position elements.
+    ('http://www.boingboing.net', 'boingboing'),
+    # Why: crbug.com/169827
+    ('http://slashdot.org', 'slashdot'),
+]
+
+
+URLS_LIST = [
+    # Why: #11 (Alexa global), google property; some blogger layouts
+    # have infinite scroll but more interesting.
+    ('http://googlewebmastercentral.blogspot.com/', 'blogspot'),
+    # Why: #18 (Alexa global), Picked an interesting post
+    ('http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
+     'wordpress'),
+    # Why: #6 (Alexa) most visited worldwide, picked an interesting page
+    ('http://en.wikipedia.org/wiki/Wikipedia', 'wikipedia'),
+    # Why: #8 (Alexa global), picked an interesting page
+    ('http://twitter.com/katyperry', 'twitter'),
+    # Why: #37 (Alexa global).
+    ('http://pinterest.com', 'pinterest'),
+    # Why: #1 sports.
+    ('http://espn.go.com', 'espn'),
+    # Why: crbug.com/231413
+    ('http://forecast.io', 'forecast.io'),
+    # Why: Social; top Google property; Public profile; infinite scrolls.
+    ('https://plus.google.com/app/basic/110031535020051778989/posts?source=apppromo',
+     'google_plus'),
+    # Why: crbug.com/242544
+    # pylint: disable=line-too-long
+    ('http://www.androidpolice.com/2012/10/03/rumor-evidence-mounts-that-an-lg-optimus-g-nexus-is-coming-along-with-a-nexus-phone-certification-program/',
+     'androidpolice'),
+    # Why: crbug.com/149958
+    ('http://gsp.ro', 'gsp.ro'),
+    # Why: Top tech blog
+    ('http://theverge.com', 'theverge'),
+    # Why: Top tech site
+    ('http://digg.com', 'digg'),
+    # Why: Top Google property; a Google tab is often open
+    ('https://www.google.co.uk/search?hl=en&q=barack+obama&cad=h',
+     'google_web_search'),
+    # Why: #1 news worldwide (Alexa global)
+    ('http://news.yahoo.com', 'yahoo_news'),
+    # Why: #2 news worldwide
+    ('http://www.cnn.com', 'cnn'),
+    # Why: #1 commerce website by time spent by users in US
+    ('http://shop.mobileweb.ebay.com/searchresults?kw=viking+helmet', 'ebay'),
+    # Why: #1 Alexa recreation
+    # pylint: disable=line-too-long
+    ('http://www.booking.com/searchresults.html?src=searchresults&latitude=65.0500&longitude=25.4667',
+     'booking.com'),
+    # Why: Top tech blog
+    ('http://techcrunch.com', 'techcrunch'),
+    # Why: #6 Alexa sports
+    ('http://mlb.com/', 'mlb'),
+    # Why: #14 Alexa California
+    ('http://www.sfgate.com/', 'sfgate'),
+    # Why: Non-latin character set
+    ('http://worldjournal.com/', 'worldjournal'),
+    # Why: #15 Alexa news
+    ('http://online.wsj.com/home-page', 'wsj'),
+    # Why: Image-heavy mobile site
+    ('http://www.deviantart.com/', 'deviantart'),
+    # Why: Top search engine
+    # pylint: disable=line-too-long
+    ('http://www.baidu.com/s?wd=barack+obama&rsv_bp=0&rsv_spt=3&rsv_sug3=9&rsv_sug=0&rsv_sug4=3824&rsv_sug1=3&inputT=4920',
+     'baidu'),
+    # Why: Top search engine
+    ('http://www.bing.com/search?q=sloths', 'bing'),
+    # Why: Good example of poor initial scrolling
+    ('http://ftw.usatoday.com/2014/05/spelling-bee-rules-shenanigans',
+     'usatoday'),
+]
+
+
 def _IssueMarkerAndScroll(action_runner):
   with action_runner.CreateGestureInteraction('ScrollAction'):
     action_runner.ScrollPage()
@@ -281,39 +362,27 @@ class WowwikiPage(KeyMobileSitesSmoothPage):
     super(WowwikiPage, self).RunNavigateSteps(action_runner)
 
 
+PREDEFINED_PAGE_CLASSES = [
+    (CapitolVolkswagenPage, 'capitolvolkswagen'),
+    (TheVergeArticlePage, 'theverge_article'),
+    (FacebookPage, 'facebook'),
+    (YoutubeMobilePage, 'youtube'),
+    (YahooAnswersPage, 'yahoo_answers'),
+    (GoogleNewsMobilePage, 'google_news'),
+    (LinkedInPage, 'linkedin'),
+    (WowwikiPage, 'wowwiki'),
+    (AmazonNicolasCagePage, 'amazon'),
+    (CnnArticlePage, 'cnn_article'),
+]
+
+
 def AddPagesToPageSet(page_set):
   # Add pages with predefined classes that contain custom navigation logic.
-  predefined_page_classes = [
-      (CapitolVolkswagenPage, 'capitolvolkswagen'),
-      (TheVergeArticlePage, 'theverge_article'),
-      (FacebookPage, 'facebook'),
-      (YoutubeMobilePage, 'youtube'),
-      (YahooAnswersPage, 'yahoo_answers'),
-      (GoogleNewsMobilePage, 'google_news'),
-      (LinkedInPage, 'linkedin'),
-      (WowwikiPage, 'wowwiki'),
-      (AmazonNicolasCagePage, 'amazon'),
-      (CnnArticlePage, 'cnn_article'),
-  ]
-
-  for page_class, page_name in predefined_page_classes:
+  for page_class, page_name in PREDEFINED_PAGE_CLASSES:
     page_set.AddStory(page_class(page_set=page_set, name=page_name))
 
   # Add pages with custom tags.
-  fastpath_urls = [
-      # Why: Top news site.
-      ('http://nytimes.com/', 'nytimes'),
-      # Why: Image-heavy site.
-      ('http://cuteoverload.com', 'cuteoverload'),
-      # Why: #5 Alexa news.
-      ('http://www.reddit.com/r/programming/comments/1g96ve', 'reddit'),
-      # Why: Problematic use of fixed position elements.
-      ('http://www.boingboing.net', 'boingboing'),
-      # Why: crbug.com/169827
-      ('http://slashdot.org', 'slashdot'),
-  ]
-
-  for page_url, page_name in fastpath_urls:
+  for page_url, page_name in FASTPATH_URLS:
     page_set.AddStory(
         KeyMobileSitesSmoothPage(
             url=page_url, page_set=page_set, name=page_name, tags=['fastpath']))
@@ -327,73 +396,7 @@ def AddPagesToPageSet(page_set):
           action_on_load_complete=True))
 
   # Add simple pages with no custom navigation logic or tags.
-  urls_list = [
-      # Why: #11 (Alexa global), google property; some blogger layouts
-      # have infinite scroll but more interesting.
-      ('http://googlewebmastercentral.blogspot.com/', 'blogspot'),
-      # Why: #18 (Alexa global), Picked an interesting post
-      ('http://en.blog.wordpress.com/2012/09/04/freshly-pressed-editors-picks-for-august-2012/',
-       'wordpress'),
-      # Why: #6 (Alexa) most visited worldwide, picked an interesting page
-      ('http://en.wikipedia.org/wiki/Wikipedia', 'wikipedia'),
-      # Why: #8 (Alexa global), picked an interesting page
-      ('http://twitter.com/katyperry', 'twitter'),
-      # Why: #37 (Alexa global).
-      ('http://pinterest.com', 'pinterest'),
-      # Why: #1 sports.
-      ('http://espn.go.com', 'espn'),
-      # Why: crbug.com/231413
-      ('http://forecast.io', 'forecast.io'),
-      # Why: Social; top Google property; Public profile; infinite scrolls.
-      ('https://plus.google.com/app/basic/110031535020051778989/posts?source=apppromo',
-       'google_plus'),
-      # Why: crbug.com/242544
-      # pylint: disable=line-too-long
-      ('http://www.androidpolice.com/2012/10/03/rumor-evidence-mounts-that-an-lg-optimus-g-nexus-is-coming-along-with-a-nexus-phone-certification-program/',
-       'androidpolice'),
-      # Why: crbug.com/149958
-      ('http://gsp.ro', 'gsp.ro'),
-      # Why: Top tech blog
-      ('http://theverge.com', 'theverge'),
-      # Why: Top tech site
-      ('http://digg.com', 'digg'),
-      # Why: Top Google property; a Google tab is often open
-      ('https://www.google.co.uk/search?hl=en&q=barack+obama&cad=h',
-       'google_web_search'),
-      # Why: #1 news worldwide (Alexa global)
-      ('http://news.yahoo.com', 'yahoo_news'),
-      # Why: #2 news worldwide
-      ('http://www.cnn.com', 'cnn'),
-      # Why: #1 commerce website by time spent by users in US
-      ('http://shop.mobileweb.ebay.com/searchresults?kw=viking+helmet', 'ebay'),
-      # Why: #1 Alexa recreation
-      # pylint: disable=line-too-long
-      ('http://www.booking.com/searchresults.html?src=searchresults&latitude=65.0500&longitude=25.4667',
-       'booking.com'),
-      # Why: Top tech blog
-      ('http://techcrunch.com', 'techcrunch'),
-      # Why: #6 Alexa sports
-      ('http://mlb.com/', 'mlb'),
-      # Why: #14 Alexa California
-      ('http://www.sfgate.com/', 'sfgate'),
-      # Why: Non-latin character set
-      ('http://worldjournal.com/', 'worldjournal'),
-      # Why: #15 Alexa news
-      ('http://online.wsj.com/home-page', 'wsj'),
-      # Why: Image-heavy mobile site
-      ('http://www.deviantart.com/', 'deviantart'),
-      # Why: Top search engine
-      # pylint: disable=line-too-long
-      ('http://www.baidu.com/s?wd=barack+obama&rsv_bp=0&rsv_spt=3&rsv_sug3=9&rsv_sug=0&rsv_sug4=3824&rsv_sug1=3&inputT=4920',
-       'baidu'),
-      # Why: Top search engine
-      ('http://www.bing.com/search?q=sloths', 'bing'),
-      # Why: Good example of poor initial scrolling
-      ('http://ftw.usatoday.com/2014/05/spelling-bee-rules-shenanigans',
-       'usatoday'),
-  ]
-
-  for page_url, page_name in urls_list:
+  for page_url, page_name in URLS_LIST:
     page_set.AddStory(
         KeyMobileSitesSmoothPage(
             url=page_url, page_set=page_set, name=page_name))
