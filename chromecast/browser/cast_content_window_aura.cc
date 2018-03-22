@@ -16,27 +16,51 @@ namespace shell {
 
 class TouchBlocker : public ui::EventHandler, public aura::WindowObserver {
  public:
-  explicit TouchBlocker(aura::Window* window) : window_(window) {
+  TouchBlocker(aura::Window* window, bool activated)
+      : window_(window), activated_(activated) {
     DCHECK(window_);
     window_->AddObserver(this);
-    window_->AddPreTargetHandler(this);
+    if (activated_) {
+      window_->AddPreTargetHandler(this);
+    }
   }
 
   ~TouchBlocker() override {
     if (window_) {
       window_->RemoveObserver(this);
+      if (activated_) {
+        window_->RemovePreTargetHandler(this);
+      }
+    }
+  }
+
+  void Activate(bool activate) {
+    if (!window_ || activate == activated_) {
+      return;
+    }
+
+    if (activate) {
+      window_->AddPreTargetHandler(this);
+    } else {
       window_->RemovePreTargetHandler(this);
     }
+
+    activated_ = activate;
   }
 
  private:
   // Overriden from ui::EventHandler.
-  void OnTouchEvent(ui::TouchEvent* touch) override { touch->SetHandled(); }
+  void OnTouchEvent(ui::TouchEvent* touch) override {
+    if (activated_) {
+      touch->SetHandled();
+    }
+  }
 
   // Overriden from aura::WindowObserver.
   void OnWindowDestroyed(aura::Window* window) override { window_ = nullptr; }
 
   aura::Window* window_;
+  bool activated_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchBlocker);
 };
@@ -65,9 +89,7 @@ void CastContentWindowAura::CreateWindowForWebContents(
   window_manager->SetWindowId(window, CastWindowManager::APP);
   window_manager->AddWindow(window);
 
-  if (!is_touch_enabled_) {
-    touch_blocker_ = std::make_unique<TouchBlocker>(window);
-  }
+  touch_blocker_ = std::make_unique<TouchBlocker>(window, !is_touch_enabled_);
 
   if (is_visible) {
     window->Show();
@@ -77,7 +99,9 @@ void CastContentWindowAura::CreateWindowForWebContents(
 }
 
 void CastContentWindowAura::EnableTouchInput(bool enabled) {
-  // TODO(halliwell): implement this
+  if (touch_blocker_) {
+    touch_blocker_->Activate(!enabled);
+  }
 }
 
 void CastContentWindowAura::RequestVisibility(
