@@ -88,7 +88,7 @@ class WebMediaPlayerMS::FrameDeliverer {
   ~FrameDeliverer() {
     DCHECK(io_thread_checker_.CalledOnValidThread());
     if (gpu_memory_buffer_pool_) {
-      gpu_memory_buffer_pool_->Abort();
+      DropCurrentPoolTasks();
       media_task_runner_->DeleteSoon(FROM_HERE,
                                      gpu_memory_buffer_pool_.release());
     }
@@ -104,7 +104,7 @@ class WebMediaPlayerMS::FrameDeliverer {
 #endif  // defined(OS_ANDROID)
 
     if (!gpu_memory_buffer_pool_) {
-      FrameReady(frame);
+      EnqueueFrame(std::move(frame));
       return;
     }
 
@@ -113,38 +113,50 @@ class WebMediaPlayerMS::FrameDeliverer {
     // frames is unnecessary, because the frames are not going to be shown for
     // the time period.
     if (render_frame_suspended_) {
-      FrameReady(frame);
+      EnqueueFrame(std::move(frame));
       // If there are any existing MaybeCreateHardwareFrame() calls, we do not
       // want those frames to be placed after the current one, so just drop
       // them.
-      gpu_memory_buffer_pool_->Abort();
-      weak_factory_for_pool_.InvalidateWeakPtrs();
+      DropCurrentPoolTasks();
       return;
     }
 
-    //  |gpu_memory_buffer_pool_| deletion is going to be posted to
-    //  |media_task_runner_|. base::Unretained() usage is fine since
-    //  |gpu_memory_buffer_pool_| outlives the task.
+    // |gpu_memory_buffer_pool_| deletion is going to be posted to
+    // |media_task_runner_|. base::Unretained() usage is fine since
+    // |gpu_memory_buffer_pool_| outlives the task.
     media_task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(
             &media::GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
             base::Unretained(gpu_memory_buffer_pool_.get()), frame,
             media::BindToCurrentLoop(
-                base::BindOnce(&FrameDeliverer::FrameReady,
+                base::BindOnce(&FrameDeliverer::EnqueueFrame,
                                weak_factory_for_pool_.GetWeakPtr()))));
   }
 
-  void FrameReady(const scoped_refptr<media::VideoFrame>& frame) {
+  void SetRenderFrameSuspended(bool render_frame_suspended) {
+    DCHECK(io_thread_checker_.CalledOnValidThread());
+    render_frame_suspended_ = render_frame_suspended;
+  }
+
+  MediaStreamVideoRenderer::RepaintCB GetRepaintCallback() {
+    return base::Bind(&FrameDeliverer::OnVideoFrame,
+                      weak_factory_.GetWeakPtr());
+  }
+
+ private:
+  friend class WebMediaPlayerMS;
+
+  void EnqueueFrame(const scoped_refptr<media::VideoFrame>& frame) {
     DCHECK(io_thread_checker_.CalledOnValidThread());
 
     base::TimeTicks render_time;
     if (frame->metadata()->GetTimeTicks(
             media::VideoFrameMetadata::REFERENCE_TIME, &render_time)) {
-      TRACE_EVENT1("media", "FrameReady", "Ideal Render Instant",
+      TRACE_EVENT1("media", "EnqueueFrame", "Ideal Render Instant",
                    render_time.ToInternalValue());
     } else {
-      TRACE_EVENT0("media", "FrameReady");
+      TRACE_EVENT0("media", "EnqueueFrame");
     }
 
     const bool is_opaque = media::IsOpaque(frame->format());
@@ -177,18 +189,22 @@ class WebMediaPlayerMS::FrameDeliverer {
     enqueue_frame_cb_.Run(frame);
   }
 
-  void SetRenderFrameSuspended(bool render_frame_suspended) {
+  void DropCurrentPoolTasks() {
     DCHECK(io_thread_checker_.CalledOnValidThread());
-    render_frame_suspended_ = render_frame_suspended;
-  }
+    DCHECK(gpu_memory_buffer_pool_);
 
-  MediaStreamVideoRenderer::RepaintCB GetRepaintCallback() {
-    return base::Bind(&FrameDeliverer::OnVideoFrame,
-                      weak_factory_.GetWeakPtr());
-  }
+    if (!weak_factory_for_pool_.HasWeakPtrs())
+      return;
 
- private:
-  friend class WebMediaPlayerMS;
+    //  |gpu_memory_buffer_pool_| deletion is going to be posted to
+    //  |media_task_runner_|. base::Unretained() usage is fine since
+    //  |gpu_memory_buffer_pool_| outlives the task.
+    media_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&media::GpuMemoryBufferVideoFramePool::Abort,
+                       base::Unretained(gpu_memory_buffer_pool_.get())));
+    weak_factory_for_pool_.InvalidateWeakPtrs();
+  }
 
   bool last_frame_opaque_;
   media::VideoRotation last_frame_rotation_;
