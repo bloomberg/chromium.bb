@@ -6708,8 +6708,8 @@ static int64_t interpolation_filter_search(
           tmp_skip_sb = 0;
           tmp_skip_sse = INT64_MAX;
 
-          if (cm->seq_params.enable_dual_filter == 0)
-            if (filter_sets[i][0] != filter_sets[i][1]) continue;
+          mbmi->interp_filters =
+              av1_make_interp_filters(filter_sets[i][0], filter_sets[i][1]);
 
           tmp_rs = av1_get_switchable_rate(cm, x, xd);
           av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst,
