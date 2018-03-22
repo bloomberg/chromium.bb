@@ -7,6 +7,9 @@
     RuntimeEnabled=KeyboardLock,
     SecureContext
 ] interface Keyboard {
-    [CallWith=ScriptState] Promise<void> lock(optional sequence<DOMString> keyCodes = []);
-    void unlock();
+    [CallWith=ScriptState,
+     MeasureAs=KeyboardApiLock
+    ] Promise<void> lock(optional sequence<DOMString> keyCodes = []);
+
+    [MeasureAs=KeyboardApiUnlock] void unlock();
 };
