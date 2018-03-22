@@ -177,7 +177,8 @@ class PLATFORM_EXPORT HeapCompact final {
 
 // Logging macros activated by debug switches.
 
-#define LOG_HEAP_COMPACTION_INTERNAL(msg, ...) DataLogF(msg, ##__VA_ARGS__)
+#define LOG_HEAP_COMPACTION_INTERNAL(msg, ...) \
+  DeprecatedDataLogF(msg, ##__VA_ARGS__)
 
 #if DEBUG_HEAP_COMPACTION
 #define LOG_HEAP_COMPACTION(msg, ...) \

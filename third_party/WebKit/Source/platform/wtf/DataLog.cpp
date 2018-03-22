@@ -73,7 +73,7 @@ static FILE* OpenLogFile() {
   return file;
 }
 
-void DataLogF(const char* format, ...) {
+void DeprecatedDataLogF(const char* format, ...) {
   static FILE* file = OpenLogFile();
   va_list arg_list;
   va_start(arg_list, format);

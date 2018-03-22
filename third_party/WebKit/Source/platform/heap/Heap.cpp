@@ -49,7 +49,6 @@
 #include "platform/instrumentation/tracing/web_memory_allocator_dump.h"
 #include "platform/instrumentation/tracing/web_process_memory_dump.h"
 #include "platform/wtf/Assertions.h"
-#include "platform/wtf/DataLog.h"
 #include "platform/wtf/LeakAnnotations.h"
 #include "platform/wtf/Time.h"
 #include "platform/wtf/allocator/Partitions.h"
@@ -469,17 +468,6 @@ void ThreadHeap::ReportMemoryUsageHistogram() {
 }
 
 void ThreadHeap::ReportMemoryUsageForTracing() {
-#if PRINT_HEAP_STATS
-// dataLogF("allocatedSpace=%ldMB, allocatedObjectSize=%ldMB, "
-//          "markedObjectSize=%ldMB, partitionAllocSize=%ldMB, "
-//          "wrapperCount=%ld, collectedWrapperCount=%ld\n",
-//          ThreadHeap::allocatedSpace() / 1024 / 1024,
-//          ThreadHeap::allocatedObjectSize() / 1024 / 1024,
-//          ThreadHeap::markedObjectSize() / 1024 / 1024,
-//          WTF::Partitions::totalSizeOfCommittedPages() / 1024 / 1024,
-//          ThreadHeap::wrapperCount(), ThreadHeap::collectedWrapperCount());
-#endif
-
   bool gc_tracing_enabled;
   TRACE_EVENT_CATEGORY_GROUP_ENABLED(TRACE_DISABLED_BY_DEFAULT("blink_gc"),
                                      &gc_tracing_enabled);
