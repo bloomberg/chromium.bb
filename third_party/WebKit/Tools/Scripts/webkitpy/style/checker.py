@@ -125,12 +125,6 @@ _PATH_RULES_SPECIFIER = [
       '+pep8/W291',  # Trailing white space
       '+whitespace/carriage_return']),
 
-    ([  # Jinja templates: files have .cpp or .h extensions, but contain
-        # template code, which can't be handled, so disable tests.
-        'Source/bindings/templates',
-        'Source/build/scripts/templates'],
-     ['-']),
-
     ([  # IDL compiler reference output
         # Conforming to style significantly increases the complexity of the code
         # generator and decreases *its* readability, which is of more concern
@@ -187,30 +181,12 @@ _XML_FILE_EXTENSIONS = [
 
 _PNG_FILE_EXTENSION = 'png'
 
-# Files to skip that are less obvious.
-#
-# Some files should be skipped when checking style. For example,
-# WebKit maintains some files in Mozilla style on purpose to ease
-# future merges.
-_SKIPPED_FILES_WITH_WARNING = [
-    'Source/WebKit/gtk/tests/',
-    # All WebKit*.h files in Source/WebKit2/UIProcess/API/gtk,
-    # except those ending in ...Private.h are GTK+ API headers,
-    # which differ greatly from WebKit coding style.
-    re.compile(r'Source/WebKit2/UIProcess/API/gtk/WebKit(?!.*Private\.h).*\.h$'),
-    re.compile(r'Source/WebKit2/WebProcess/InjectedBundle/API/gtk/WebKit(?!.*Private\.h).*\.h$'),
-    'Source/WebKit2/UIProcess/API/gtk/webkit2.h',
-    'Source/WebKit2/WebProcess/InjectedBundle/API/gtk/webkit-web-extension.h']
-
 # Files to skip that are more common or obvious.
 #
 # This list should be in addition to files with FileType.NONE.  Files
 # with FileType.NONE are automatically skipped without warning.
 _SKIPPED_FILES_WITHOUT_WARNING = [
     'LayoutTests' + os.path.sep,
-    'Source/ThirdParty/leveldb' + os.path.sep,
-    # Prevents this being recognized as a text file.
-    'Source/WebCore/GNUmakefile.features.am.in',
 ]
 
 # Extensions of files which are allowed to contain carriage returns.
@@ -396,13 +372,6 @@ class CheckerDispatcher(object):
                 return True
         elif skip_array_entry.match(file_path):
             return True
-        return False
-
-    def should_skip_with_warning(self, file_path):
-        """Return whether the given file should be skipped with a warning."""
-        for skipped_file in _SKIPPED_FILES_WITH_WARNING:
-            if self._should_skip_file_path(file_path, skipped_file):
-                return True
         return False
 
     def should_skip_without_warning(self, file_path):
@@ -680,9 +649,6 @@ class StyleProcessor(ProcessorBase):
     def should_process(self, file_path):
         """Return whether the file should be checked for style."""
         if self._dispatcher.should_skip_without_warning(file_path):
-            return False
-        if self._dispatcher.should_skip_with_warning(file_path):
-            _log.warning('File exempt from style guide. Skipping: "%s"', file_path)
             return False
         return True
 
