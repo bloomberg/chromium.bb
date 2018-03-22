@@ -496,6 +496,48 @@ bool DisplayResourceProvider::InUse(viz::ResourceId id) {
   return resource->lock_for_read_count > 0 || resource->lost;
 }
 
+viz::ResourceMetadata
+DisplayResourceProvider::GetResourceMetadataForExternalUse(
+    viz::ResourceId id,
+    const gpu::SyncToken& release_sync_token) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  ResourceMap::iterator it = resources_.find(id);
+  DCHECK(it != resources_.end());
+
+  viz::internal::Resource* resource = &it->second;
+  viz::ResourceMetadata metadata;
+  // TODO(xing.xu): remove locked_for_write.
+  DCHECK(!resource->locked_for_write)
+      << "locked for write: " << resource->locked_for_write;
+  DCHECK_EQ(resource->exported_count, 0);
+  // Uninitialized! Call SetPixels or LockForWrite first.
+  DCHECK(resource->allocated);
+  // TODO(penghuang): support software resource.
+  DCHECK(resource->is_gpu_resource_type());
+
+  metadata.mailbox = resource->mailbox;
+  metadata.backend_format = GrBackendFormat::MakeGL(
+      TextureStorageFormat(resource->format), resource->target);
+  metadata.size = resource->size;
+  metadata.mip_mapped = GrMipMapped::kNo;
+  metadata.origin = kTopLeft_GrSurfaceOrigin;
+  metadata.color_type = ResourceFormatToClosestSkColorType(resource->format);
+  metadata.alpha_type = kPremul_SkAlphaType;
+  metadata.color_space = nullptr;
+  metadata.sync_token = resource->sync_token();
+
+  // Update the resource sync token to |release_sync_token|. When the next frame
+  // is being composited, the DeclareUsedResourcesFromChild() will be called
+  // with resources belong to every child for the next frame. If the resource
+  // is not used by the next frame, the resource will be returned to a child
+  // which owns it with the |release_sync_token|. The child is responsible for
+  // issuing a WaitSyncToken GL command with the |release_sync_token| before
+  // reusing it.
+  resource->UpdateSyncToken(release_sync_token);
+
+  return metadata;
+}
+
 DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
     DisplayResourceProvider* resource_provider,
     viz::ResourceId resource_id)
