@@ -96,42 +96,64 @@ class MediaComboboxModel : public ui::ComboboxModel {
   DISALLOW_COPY_AND_ASSIGN(MediaComboboxModel);
 };
 
-// A view representing a label and combobox pair that allows the user to select
-// which device is being used for the media type (either microphone or camera).
-class MediaMenuRow : public views::View {
+// A view representing one or more rows, each containing a label and combobox
+// pair, that allow the user to select a device for each media type (microphone
+// and/or camera).
+class MediaMenuBlock : public views::View {
  public:
-  MediaMenuRow(views::ComboboxListener* listener,
-               content::MediaStreamType stream_type,
-               const ContentSettingBubbleModel::MediaMenu& menu) {
+  MediaMenuBlock(views::ComboboxListener* listener,
+                 ContentSettingBubbleModel::MediaMenuMap media) {
     const ChromeLayoutProvider* provider = ChromeLayoutProvider::Get();
-    SetLayoutManager(std::make_unique<views::BoxLayout>(
-        views::BoxLayout::kHorizontal, gfx::Insets(),
-        provider->GetDistanceMetric(
-            views::DISTANCE_RELATED_CONTROL_HORIZONTAL)));
 
-    views::Label* label = new views::Label(menu.label);
-    label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    AddChildView(label);
+    views::GridLayout* layout =
+        SetLayoutManager(std::make_unique<views::GridLayout>(this));
+    constexpr int kColumnSetId = 0;
+    views::ColumnSet* column_set = layout->AddColumnSet(kColumnSetId);
+    column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
+                          0, views::GridLayout::USE_PREF, 0, 0);
+    column_set->AddPaddingColumn(
+        0, provider->GetDistanceMetric(
+               views::DISTANCE_RELATED_CONTROL_HORIZONTAL));
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                          views::GridLayout::FIXED, 0, 0);
 
-    auto combobox_model = std::make_unique<MediaComboboxModel>(stream_type);
-    // Disable the device selection when the website is managing the devices
-    // itself or if there are no devices present.
-    const bool combobox_enabled =
-        !menu.disabled && !combobox_model->GetDevices().empty();
-    const int combobox_selected_index =
-        combobox_model->GetDevices().empty()
-            ? 0
-            : combobox_model->GetDeviceIndex(menu.selected_device);
-    // The combobox takes ownership of the model.
-    views::Combobox* combobox = new views::Combobox(std::move(combobox_model));
-    combobox->SetEnabled(combobox_enabled);
-    combobox->set_listener(listener);
-    combobox->SetSelectedIndex(combobox_selected_index);
-    AddChildView(combobox);
+    bool first_row = true;
+    for (auto i = media.cbegin(); i != media.cend(); ++i) {
+      if (!first_row) {
+        layout->AddPaddingRow(0, provider->GetDistanceMetric(
+                                     views::DISTANCE_RELATED_CONTROL_VERTICAL));
+      }
+      first_row = false;
+
+      layout->StartRow(0, kColumnSetId);
+      content::MediaStreamType stream_type = i->first;
+      const ContentSettingBubbleModel::MediaMenu& menu = i->second;
+
+      views::Label* label = new views::Label(menu.label);
+      label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+      layout->AddView(label);
+
+      auto combobox_model = std::make_unique<MediaComboboxModel>(stream_type);
+      // Disable the device selection when the website is managing the devices
+      // itself or if there are no devices present.
+      const bool combobox_enabled =
+          !menu.disabled && !combobox_model->GetDevices().empty();
+      const int combobox_selected_index =
+          combobox_model->GetDevices().empty()
+              ? 0
+              : combobox_model->GetDeviceIndex(menu.selected_device);
+      // The combobox takes ownership of the model.
+      views::Combobox* combobox =
+          new views::Combobox(std::move(combobox_model));
+      combobox->SetEnabled(combobox_enabled);
+      combobox->set_listener(listener);
+      combobox->SetSelectedIndex(combobox_selected_index);
+      layout->AddView(combobox);
+    }
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MediaMenuRow);
+  DISALLOW_COPY_AND_ASSIGN(MediaMenuBlock);
 };
 
 }  // namespace
@@ -482,12 +504,9 @@ void ContentSettingBubbleContents::Init() {
 
   // Layout code for the media device menus.
   if (content_setting_bubble_model_->AsMediaStreamBubbleModel()) {
-    for (ContentSettingBubbleModel::MediaMenuMap::const_iterator i(
-         bubble_content.media_menus.begin());
-         i != bubble_content.media_menus.end(); ++i) {
-      rows.push_back({std::make_unique<MediaMenuRow>(this, i->first, i->second),
-                      LayoutRowType::INDENTED});
-    }
+    rows.push_back(
+        {std::make_unique<MediaMenuBlock>(this, bubble_content.media_menus),
+         LayoutRowType::INDENTED});
   }
 
   for (std::vector<ContentSettingBubbleModel::DomainList>::const_iterator i(
