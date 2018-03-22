@@ -9,12 +9,12 @@
 
 #include <unordered_map>
 
-#include "base/event_types.h"
 #include "base/hash.h"
 #include "ui/events/event.h"
 #include "ui/events/events_export.h"
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes_win.h"
+#include "ui/events/platform_event.h"
 
 namespace ui {
 

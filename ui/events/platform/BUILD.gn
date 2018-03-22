@@ -15,7 +15,6 @@ jumbo_component("platform") {
     "platform_event_source.cc",
     "platform_event_source.h",
     "platform_event_source_stub.cc",
-    "platform_event_types.h",
     "scoped_event_dispatcher.cc",
     "scoped_event_dispatcher.h",
   ]
@@ -24,6 +23,7 @@ jumbo_component("platform") {
 
   deps = [
     "//base",
+    "//ui/events:platform_event",
   ]
 
   if (use_x11) {

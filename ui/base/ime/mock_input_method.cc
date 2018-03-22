@@ -55,7 +55,7 @@ void MockInputMethod::OnBlur() {
     observer.OnBlur();
 }
 
-bool MockInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
+bool MockInputMethod::OnUntranslatedIMEMessage(const PlatformEvent& event,
                                                NativeEventResult* result) {
   if (result)
     *result = NativeEventResult();

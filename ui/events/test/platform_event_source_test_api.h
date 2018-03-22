@@ -6,7 +6,7 @@
 #define UI_EVENTS_TEST_PLATFORM_EVENT_SOURCE_TEST_API_H_
 
 #include "base/macros.h"
-#include "ui/events/platform/platform_event_types.h"
+#include "ui/events/platform_event.h"
 
 namespace ui {
 

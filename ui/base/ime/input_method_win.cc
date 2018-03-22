@@ -52,7 +52,7 @@ void InputMethodWin::OnFocus() {
 }
 
 bool InputMethodWin::OnUntranslatedIMEMessage(
-    const base::NativeEvent& event,
+    const PlatformEvent& event,
     InputMethod::NativeEventResult* result) {
   LRESULT original_result = 0;
   BOOL handled = FALSE;
@@ -100,7 +100,7 @@ ui::EventDispatchDetails InputMethodWin::DispatchKeyEvent(ui::KeyEvent* event) {
   if (!event->HasNativeEvent())
     return DispatchFabricatedKeyEvent(event);
 
-  const base::NativeEvent& native_key_event = event->native_event();
+  const PlatformEvent& native_key_event = event->native_event();
   BOOL handled = FALSE;
   if (native_key_event.message == WM_CHAR) {
     auto ref = weak_ptr_factory_.GetWeakPtr();

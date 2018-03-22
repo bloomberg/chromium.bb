@@ -11,11 +11,11 @@
 #include <string>
 #include <vector>
 
-#include "base/event_types.h"
 #include "build/build_config.h"
 #include "ui/base/ime/text_input_mode.h"
 #include "ui/base/ime/text_input_type.h"
 #include "ui/events/event_dispatcher.h"
+#include "ui/events/platform_event.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace extensions {
@@ -80,7 +80,7 @@ class InputMethod {
   // translated into other predefined event callbacks. Currently this method is
   // used only for IME functionalities specific to Windows.
   // TODO(ime): Break down these messages into platform-neutral methods.
-  virtual bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+  virtual bool OnUntranslatedIMEMessage(const PlatformEvent& event,
                                         NativeEventResult* result) = 0;
 
   // Sets the text input client which receives text input events such as

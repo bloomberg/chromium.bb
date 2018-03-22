@@ -54,7 +54,7 @@ void InputMethodWinTSF::OnBlur() {
 }
 
 bool InputMethodWinTSF::OnUntranslatedIMEMessage(
-    const base::NativeEvent& event,
+    const PlatformEvent& event,
     InputMethod::NativeEventResult* result) {
   LRESULT original_result = 0;
   BOOL handled = FALSE;

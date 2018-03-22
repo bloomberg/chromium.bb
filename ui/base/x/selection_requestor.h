@@ -10,12 +10,12 @@
 #include <vector>
 
 #include "base/callback.h"
-#include "base/event_types.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_memory.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "ui/base/ui_base_export.h"
+#include "ui/events/platform_event.h"
 #include "ui/gfx/x/x11_types.h"
 
 namespace ui {

@@ -68,7 +68,7 @@ blink::WebGestureEvent MakeWebGestureEventFromUIEvent(
 // construct our pre-translated events.
 
 blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
-    const base::NativeEvent& native_event,
+    const PlatformEvent& native_event,
     const base::TimeTicks& time_stamp,
     blink::WebPointerProperties::PointerType pointer_type) {
   return WebMouseEventBuilder::Build(
@@ -77,7 +77,7 @@ blink::WebMouseEvent MakeUntranslatedWebMouseEventFromNativeEvent(
 }
 
 blink::WebMouseWheelEvent MakeUntranslatedWebMouseWheelEventFromNativeEvent(
-    const base::NativeEvent& native_event,
+    const PlatformEvent& native_event,
     const base::TimeTicks& time_stamp,
     blink::WebPointerProperties::PointerType pointer_type) {
   return WebMouseWheelEventBuilder::Build(
@@ -193,13 +193,13 @@ blink::WebMouseWheelEvent MakeWebMouseWheelEventFromUiEvent(
 // information cleanly and consistently.
 //
 // The only place where an Event's data differs from what the underlying
-// base::NativeEvent would provide is position data. We would like to provide
+// PlatformEvent would provide is position data. We would like to provide
 // coordinates relative to its hosting window, rather than the top level
 // platform window. To do this a callback is accepted to allow for clients to
 // map the coordinates.
 //
 // The approach is to fully construct a blink::WebInputEvent from the
-// Event's base::NativeEvent, and then replace the coordinate fields with
+// Event's PlatformEvent, and then replace the coordinate fields with
 // the translated values from the Event.
 //
 // The exception is mouse events on linux. The MouseEvent contains enough
@@ -312,7 +312,7 @@ blink::WebKeyboardEvent MakeWebKeyboardEvent(const KeyEvent& event) {
   blink::WebKeyboardEvent webkit_event = MakeWebKeyboardEventFromUiEvent(event);
 #if defined(OS_WIN)
   if (event.HasNativeEvent()) {
-    const base::NativeEvent& native_event = event.native_event();
+    const PlatformEvent& native_event = event.native_event();
 
     // System key events are explicitly distinguished, under Windows.
     webkit_event.is_system_key = native_event.message == WM_SYSCHAR ||
@@ -382,7 +382,7 @@ blink::WebMouseEvent MakeWebMouseEventFromUiEvent(const MouseEvent& event) {
       // NotifyVirtual events are created for intermediate windows that the
       // pointer crosses through. These occur when middle clicking.
       // Change these into mouse move events.
-      const base::NativeEvent& native_event = event.native_event();
+      const PlatformEvent& native_event = event.native_event();
 
       if (native_event && native_event->type == LeaveNotify &&
           native_event->xcrossing.detail == NotifyVirtual) {

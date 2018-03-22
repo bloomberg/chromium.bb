@@ -41,7 +41,7 @@ class TestUserActivityObserver : public UserActivityObserver {
 
 // A test implementation of PlatformEventSource that we can instantiate to make
 // sure that the PlatformEventSource has an instance while in unit tests.
-class TestPlatformEventSource : public ui::PlatformEventSource {
+class TestPlatformEventSource : public PlatformEventSource {
  public:
   TestPlatformEventSource() {}
   ~TestPlatformEventSource() override {}

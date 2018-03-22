@@ -51,15 +51,15 @@ UserActivityDetector::UserActivityDetector() {
   CHECK(!g_instance);
   g_instance = this;
 
-  ui::PlatformEventSource* platform_event_source =
-      ui::PlatformEventSource::GetInstance();
+  PlatformEventSource* platform_event_source =
+      PlatformEventSource::GetInstance();
   if (platform_event_source)
     platform_event_source->AddPlatformEventObserver(this);
 }
 
 UserActivityDetector::~UserActivityDetector() {
-  ui::PlatformEventSource* platform_event_source =
-      ui::PlatformEventSource::GetInstance();
+  PlatformEventSource* platform_event_source =
+      PlatformEventSource::GetInstance();
   if (platform_event_source)
     platform_event_source->RemovePlatformEventObserver(this);
   g_instance = nullptr;

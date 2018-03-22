@@ -61,7 +61,7 @@ LRESULT InputMethodWinBase::OnChar(HWND window_handle,
                                    UINT message,
                                    WPARAM wparam,
                                    LPARAM lparam,
-                                   const base::NativeEvent& event,
+                                   const PlatformEvent& event,
                                    BOOL* handled) {
   *handled = TRUE;
 

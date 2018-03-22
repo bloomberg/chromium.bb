@@ -15,7 +15,7 @@ InputMethodMac::InputMethodMac(internal::InputMethodDelegate* delegate) {
 InputMethodMac::~InputMethodMac() {
 }
 
-bool InputMethodMac::OnUntranslatedIMEMessage(const base::NativeEvent& event,
+bool InputMethodMac::OnUntranslatedIMEMessage(const PlatformEvent& event,
                                               NativeEventResult* result) {
   return false;
 }

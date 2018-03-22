@@ -16,7 +16,7 @@ namespace {
 int g_custom_event_types = ET_LAST;
 }  // namespace
 
-std::unique_ptr<Event> EventFromNative(const base::NativeEvent& native_event) {
+std::unique_ptr<Event> EventFromNative(const PlatformEvent& native_event) {
   std::unique_ptr<Event> event;
   EventType type = EventTypeFromNative(native_event);
   switch(type) {
@@ -103,7 +103,7 @@ display::Display::TouchSupport GetInternalDisplayTouchSupport() {
   return display::Display::TouchSupport::UNAVAILABLE;
 }
 
-void ComputeEventLatencyOS(const base::NativeEvent& native_event) {
+void ComputeEventLatencyOS(const PlatformEvent& native_event) {
   base::TimeTicks current_time = EventTimeForNow();
   base::TimeTicks time_stamp = EventTimeFromNative(native_event);
   base::TimeDelta delta = current_time - time_stamp;

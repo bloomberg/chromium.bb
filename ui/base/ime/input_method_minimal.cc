@@ -19,9 +19,8 @@ InputMethodMinimal::InputMethodMinimal(
 
 InputMethodMinimal::~InputMethodMinimal() {}
 
-bool InputMethodMinimal::OnUntranslatedIMEMessage(
-    const base::NativeEvent& event,
-    NativeEventResult* result) {
+bool InputMethodMinimal::OnUntranslatedIMEMessage(const PlatformEvent& event,
+                                                  NativeEventResult* result) {
   return false;
 }
 

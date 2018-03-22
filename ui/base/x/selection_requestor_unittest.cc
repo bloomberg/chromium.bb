@@ -67,8 +67,8 @@ class SelectionRequestorTest : public testing::Test {
                               0,
                               NULL);
 
-    event_source_ = ui::PlatformEventSource::CreateDefault();
-    CHECK(ui::PlatformEventSource::GetInstance());
+    event_source_ = PlatformEventSource::CreateDefault();
+    CHECK(PlatformEventSource::GetInstance());
     requestor_.reset(new SelectionRequestor(x_display_, x_window_, NULL));
   }
 
@@ -84,7 +84,7 @@ class SelectionRequestorTest : public testing::Test {
   // |requestor_|'s window.
   XID x_window_;
 
-  std::unique_ptr<ui::PlatformEventSource> event_source_;
+  std::unique_ptr<PlatformEventSource> event_source_;
   std::unique_ptr<SelectionRequestor> requestor_;
 
   base::MessageLoopForUI message_loop_;

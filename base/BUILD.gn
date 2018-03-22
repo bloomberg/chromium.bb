@@ -322,7 +322,6 @@ jumbo_component("base") {
     "deferred_sequenced_task_runner.h",
     "environment.cc",
     "environment.h",
-    "event_types.h",
     "export_template.h",
     "feature_list.cc",
     "feature_list.h",

@@ -22,7 +22,7 @@ void DummyInputMethod::OnFocus() {
 void DummyInputMethod::OnBlur() {
 }
 
-bool DummyInputMethod::OnUntranslatedIMEMessage(const base::NativeEvent& event,
+bool DummyInputMethod::OnUntranslatedIMEMessage(const PlatformEvent& event,
                                                 NativeEventResult* result) {
   return false;
 }

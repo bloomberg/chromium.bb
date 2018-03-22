@@ -6,8 +6,8 @@
 #define UI_EVENTS_OZONE_EVENTS_OZONE_H_
 
 #include "base/callback.h"
-#include "base/event_types.h"
 #include "ui/events/events_export.h"
+#include "ui/events/platform_event.h"
 
 namespace ui {
 
@@ -31,7 +31,7 @@ class Event;
 // define NativeEvent == ui::Event.
 //
 EVENTS_EXPORT void DispatchEventFromNativeUiEvent(
-    const base::NativeEvent& native_event,
+    const PlatformEvent& native_event,
     base::OnceCallback<void(ui::Event*)> callback);
 
 }  // namespace ui

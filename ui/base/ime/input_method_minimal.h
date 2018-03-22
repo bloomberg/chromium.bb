@@ -18,7 +18,7 @@ class UI_BASE_IME_EXPORT InputMethodMinimal : public InputMethodBase {
   ~InputMethodMinimal() override;
 
   // Overriden from InputMethod.
-  bool OnUntranslatedIMEMessage(const base::NativeEvent& event,
+  bool OnUntranslatedIMEMessage(const PlatformEvent& event,
                                 NativeEventResult* result) override;
   ui::EventDispatchDetails DispatchKeyEvent(ui::KeyEvent* event) override;
   void OnCaretBoundsChanged(const TextInputClient* client) override;

@@ -7,13 +7,13 @@
 
 #include <map>
 
-#include "base/event_types.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/observer_list.h"
 #include "base/synchronization/lock.h"
 #include "ui/display/display.h"
 #include "ui/events/ozone/events_ozone_export.h"
+#include "ui/events/platform_event.h"
 #include "ui/gfx/geometry/point_f.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 #include "ui/gfx/native_widget_types.h"

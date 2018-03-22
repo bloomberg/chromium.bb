@@ -30,7 +30,7 @@
 #include "ui/events/event.h"
 #include "ui/events/event_utils.h"
 #include "ui/events/platform/platform_event_source.h"
-#include "ui/events/platform/platform_event_types.h"
+#include "ui/events/platform_event.h"
 
 using ::testing::_;
 using ::testing::Invoke;

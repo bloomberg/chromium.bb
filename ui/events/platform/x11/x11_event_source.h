@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/optional.h"
+#include "build/build_config.h"
 #include "ui/events/events_export.h"
 #include "ui/gfx/x/x11_types.h"
 
@@ -69,9 +70,11 @@ class EVENTS_EXPORT X11EventSource {
   // current event does not have a timestamp.
   Time GetTimestamp();
 
+#if !defined(USE_OZONE)
   // Returns the root pointer location only if there is an event being
   // dispatched that contains that information.
   base::Optional<gfx::Point> GetRootCursorLocationFromCurrentEvent() const;
+#endif
 
   void StopCurrentEventStream();
   void OnDispatcherListChanged();

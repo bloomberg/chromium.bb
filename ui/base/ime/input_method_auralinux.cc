@@ -46,9 +46,8 @@ LinuxInputMethodContext* InputMethodAuraLinux::GetContextForTesting(
 
 // Overriden from InputMethod.
 
-bool InputMethodAuraLinux::OnUntranslatedIMEMessage(
-    const base::NativeEvent& event,
-    NativeEventResult* result) {
+bool InputMethodAuraLinux::OnUntranslatedIMEMessage(const PlatformEvent& event,
+                                                    NativeEventResult* result) {
   return false;
 }
 
