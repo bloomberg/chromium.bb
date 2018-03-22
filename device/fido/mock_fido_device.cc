@@ -8,7 +8,7 @@
 
 #include "components/apdu/apdu_response.h"
 #include "device/fido/fido_constants.h"
-#include "device/fido/u2f_response_test_data.h"
+#include "device/fido/fido_response_test_data.h"
 
 namespace device {
 
@@ -40,6 +40,28 @@ void MockFidoDevice::WrongData(const std::vector<uint8_t>& command,
       apdu::ApduResponse(std::vector<uint8_t>(),
                          apdu::ApduResponse::Status::SW_WRONG_DATA)
           .GetEncodedResponse());
+}
+
+// static
+void MockFidoDevice::NoErrorGetInfo(const std::vector<uint8_t>& command,
+                                    DeviceCallback& cb) {
+  std::move(cb).Run(std::vector<uint8_t>(
+      std::begin(test_data::kTestAuthenticatorGetInfoResponse),
+      std::end(test_data::kTestAuthenticatorGetInfoResponse)));
+}
+
+// static
+void MockFidoDevice::CtapDeviceError(const std::vector<uint8_t>& command,
+                                     DeviceCallback& cb) {
+  std::move(cb).Run(base::nullopt);
+}
+
+// static
+void MockFidoDevice::NoErrorMakeCredential(const std::vector<uint8_t>& command,
+                                           DeviceCallback& cb) {
+  std::move(cb).Run(
+      std::vector<uint8_t>(std::begin(test_data::kTestMakeCredentialResponse),
+                           std::end(test_data::kTestMakeCredentialResponse)));
 }
 
 // static
