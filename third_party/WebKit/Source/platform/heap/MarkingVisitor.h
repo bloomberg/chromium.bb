@@ -151,6 +151,9 @@ inline bool MarkingVisitor::MarkHeaderNoTracing(HeapObjectHeader* header) {
   // A GC should only mark the objects that belong in its heap.
   DCHECK_EQ(State(),
             PageFromObject(header->Payload())->Arena()->GetThreadState());
+  // Never mark free space objects. This would e.g. hint to marking a promptly
+  // freed backing store.
+  DCHECK(!header->IsFree());
 
   return header->TryMark();
 }
