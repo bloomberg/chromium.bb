@@ -145,6 +145,13 @@ void aom_flat_block_finder_extract_block(
     int w, int h, int stride, int offsx, int offsy, double *plane,
     double *block);
 
+/*!\brief Runs the flat block finder on the input data.
+ *
+ * Find flat blocks in the input image data. Returns a map of
+ * flat_blocks, where the value of flat_blocks map will be non-zero
+ * when a block is determined to be flat. A higher value indicates a bigger
+ * confidence in the decision.
+ */
 int aom_flat_block_finder_run(const aom_flat_block_finder_t *block_finder,
                               const uint8_t *const data, int w, int h,
                               int stride, uint8_t *flat_blocks);

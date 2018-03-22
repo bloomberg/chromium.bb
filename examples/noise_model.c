@@ -58,8 +58,10 @@ static const arg_def_t output_grain_table_arg =
     ARG_DEF("n", "output-grain-table", 1, "Output noise file");
 static const arg_def_t input_denoised_arg =
     ARG_DEF("d", "input-denoised", 1, "Input denoised filename (YUV) only");
+static const arg_def_t flat_block_finder_arg =
+    ARG_DEF("b", "flat-block-finder", 1, "Run the flat block finder");
 static const arg_def_t block_size_arg =
-    ARG_DEF("b", "block_size", 1, "Block size");
+    ARG_DEF("b", "block-size", 1, "Block size");
 static const arg_def_t bit_depth_arg =
     ARG_DEF(NULL, "bit-depth", 1, "Bit depth of input");
 static const arg_def_t use_i420 =
@@ -117,6 +119,8 @@ void parse_args(noise_model_args_t *noise_args, int *argc, char **argv) {
       noise_args->block_size = atoi(arg.val);
     } else if (arg_match(&arg, &bit_depth_arg, argv)) {
       noise_args->bit_depth = atoi(arg.val);
+    } else if (arg_match(&arg, &flat_block_finder_arg, argv)) {
+      noise_args->run_flat_block_finder = atoi(arg.val);
     } else if (arg_match(&arg, &fps_arg, argv)) {
       noise_args->fps = arg_parse_rational(&arg);
     } else if (arg_match(&arg, &use_i420, argv)) {
@@ -140,7 +144,7 @@ void parse_args(noise_model_args_t *noise_args, int *argc, char **argv) {
 
 int main(int argc, char *argv[]) {
   noise_model_args_t args = { 0,  0, { 1, 25 }, 0, 0, 0, AOM_IMG_FMT_I420,
-                              32, 8, 0,         0, 1 };
+                              32, 8, 1,         0, 1 };
   aom_image_t raw, denoised;
   FILE *infile = NULL;
   AvxVideoInfo info;
