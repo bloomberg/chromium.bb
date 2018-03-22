@@ -793,7 +793,7 @@ static INLINE int av1_get_txb_size_index(BLOCK_SIZE bsize, int blk_row,
     txs = sub_tx_size_map[1][txs];
   const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
   const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
-  const int bw_log2 = b_width_log2_lookup[bsize];
+  const int bw_log2 = mi_size_wide_log2[bsize];
   const int stride_log2 = bw_log2 - tx_w_log2;
   const int index =
       ((blk_row >> tx_h_log2) << stride_log2) + (blk_col >> tx_w_log2);
@@ -808,7 +808,7 @@ static INLINE int av1_get_txk_type_index(BLOCK_SIZE bsize, int blk_row,
     txs = sub_tx_size_map[1][txs];
   const int tx_w_log2 = tx_size_wide_log2[txs] - MI_SIZE_LOG2;
   const int tx_h_log2 = tx_size_high_log2[txs] - MI_SIZE_LOG2;
-  const int bw_uint_log2 = b_width_log2_lookup[bsize];
+  const int bw_uint_log2 = mi_size_wide_log2[bsize];
   const int stride_log2 = bw_uint_log2 - tx_w_log2;
   const int index =
       ((blk_row >> tx_h_log2) << stride_log2) + (blk_col >> tx_w_log2);

@@ -971,8 +971,8 @@ static int prune_two_for_sby(const AV1_COMP *cpi, BLOCK_SIZE bsize,
   if (dct_idtx) {
     av1_subtract_plane(x, bsize, 0);
     const struct macroblock_plane *const p = &x->plane[0];
-    const int bw = 4 << (b_width_log2_lookup[bsize]);
-    const int bh = 4 << (b_height_log2_lookup[bsize]);
+    const int bw = 4 << (mi_size_wide_log2[bsize]);
+    const int bh = 4 << (mi_size_high_log2[bsize]);
     prune |= dct_vs_idtx(p->src_diff, bw, bw, bh);
   }
 
@@ -5637,14 +5637,14 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
 
   if (cpi->sf.adaptive_motion_search && bsize < cm->seq_params.sb_size) {
     int boffset =
-        2 * (b_width_log2_lookup[cm->seq_params.sb_size] -
-             AOMMIN(b_height_log2_lookup[bsize], b_width_log2_lookup[bsize]));
+        2 * (mi_size_wide_log2[cm->seq_params.sb_size] -
+             AOMMIN(mi_size_high_log2[bsize], mi_size_wide_log2[bsize]));
     step_param = AOMMAX(step_param, boffset);
   }
 
   if (cpi->sf.adaptive_motion_search) {
-    int bwl = b_width_log2_lookup[bsize];
-    int bhl = b_height_log2_lookup[bsize];
+    int bwl = mi_size_wide_log2[bsize];
+    int bhl = mi_size_high_log2[bsize];
     int tlevel = x->pred_mv_sad[ref] >> (bwl + bhl + 4);
 
     if (tlevel < 5) {
@@ -10161,7 +10161,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
     struct calc_target_weighted_pred_ctxt ctxt = { x, above, above_stride,
                                                    overlap };
     foreach_overlappable_nb_above(cm, (MACROBLOCKD *)xd, mi_col,
-                                  max_neighbor_obmc[b_width_log2_lookup[bsize]],
+                                  max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                   calc_target_weighted_pred_above, &ctxt);
   }
 
@@ -10177,7 +10177,7 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
     struct calc_target_weighted_pred_ctxt ctxt = { x, left, left_stride,
                                                    overlap };
     foreach_overlappable_nb_left(cm, (MACROBLOCKD *)xd, mi_row,
-                                 max_neighbor_obmc[b_height_log2_lookup[bsize]],
+                                 max_neighbor_obmc[mi_size_high_log2[bsize]],
                                  calc_target_weighted_pred_left, &ctxt);
   }
 

@@ -1913,8 +1913,8 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
     return this_sad;
   }
 
-  const int bw = 4 << b_width_log2_lookup[bsize];
-  const int bh = 4 << b_height_log2_lookup[bsize];
+  const int bw = 4 << mi_size_wide_log2[bsize];
+  const int bh = 4 << mi_size_high_log2[bsize];
   const int search_width = bw << 1;
   const int search_height = bh << 1;
   const int norm_factor = 3 + (bw >> 5);
@@ -1945,8 +1945,8 @@ unsigned int av1_int_pro_motion_estimation(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 
   // Find the best match per 1-D search
-  tmp_mv->col = aom_vector_match(hbuf, src_hbuf, b_width_log2_lookup[bsize]);
-  tmp_mv->row = aom_vector_match(vbuf, src_vbuf, b_height_log2_lookup[bsize]);
+  tmp_mv->col = aom_vector_match(hbuf, src_hbuf, mi_size_wide_log2[bsize]);
+  tmp_mv->row = aom_vector_match(vbuf, src_vbuf, mi_size_high_log2[bsize]);
 
   this_mv = *tmp_mv;
   src_buf = x->plane[0].src.buf;
@@ -2541,7 +2541,7 @@ int av1_full_pixel_search(const AV1_COMP *cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
       if (is_exhaustive_allowed(cpi, x)) {
         int exhuastive_thr = sf->exhaustive_searches_thresh;
         exhuastive_thr >>=
-            10 - (b_width_log2_lookup[bsize] + b_height_log2_lookup[bsize]);
+            10 - (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]);
 
         // Threshold variance for an exhaustive full search.
         if (var > exhuastive_thr) {

@@ -321,8 +321,7 @@ static void update_global_motion_used(PREDICTION_MODE mode, BLOCK_SIZE bsize,
                                       const MB_MODE_INFO *mbmi,
                                       RD_COUNTS *rdc) {
   if (mode == GLOBALMV || mode == GLOBAL_GLOBALMV) {
-    const int num_4x4s =
-        num_4x4_blocks_wide_lookup[bsize] * num_4x4_blocks_high_lookup[bsize];
+    const int num_4x4s = mi_size_wide[bsize] * mi_size_high[bsize];
     int ref;
     for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
       rdc->global_motion_used[mbmi->ref_frame[ref]] += num_4x4s;
@@ -1683,8 +1682,7 @@ static void rd_use_partition(AV1_COMP *cpi, ThreadData *td,
 
   if (mi_row >= cm->mi_rows || mi_col >= cm->mi_cols) return;
 
-  assert(num_4x4_blocks_wide_lookup[bsize] ==
-         num_4x4_blocks_high_lookup[bsize]);
+  assert(mi_size_wide[bsize] == mi_size_high[bsize]);
 
   av1_invalid_rd_stats(&last_part_rdc);
   av1_invalid_rd_stats(&none_rdc);
@@ -2431,7 +2429,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
         const int64_t dist_breakout_thr =
             cpi->sf.partition_search_breakout_dist_thr >>
             ((2 * (MAX_SB_SIZE_LOG2 - 2)) -
-             (b_width_log2_lookup[bsize] + b_height_log2_lookup[bsize]));
+             (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]));
         const int rate_breakout_thr =
             cpi->sf.partition_search_breakout_rate_thr *
             num_pels_log2_lookup[bsize];
@@ -2819,7 +2817,7 @@ BEGIN_PARTITION_SEARCH:
         const int64_t dist_breakout_thr =
             cpi->sf.partition_search_breakout_dist_thr >>
             ((2 * (MAX_SB_SIZE_LOG2 - 2)) -
-             (b_width_log2_lookup[bsize] + b_height_log2_lookup[bsize]));
+             (mi_size_wide_log2[bsize] + mi_size_high_log2[bsize]));
         const int rate_breakout_thr =
             cpi->sf.partition_search_breakout_rate_thr *
             num_pels_log2_lookup[bsize];

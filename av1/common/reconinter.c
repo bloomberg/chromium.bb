@@ -611,8 +611,8 @@ static void build_masked_compound_no_round(
     int w, ConvolveParams *conv_params, MACROBLOCKD *xd) {
   // Derive subsampling from h and w passed in. May be refactored to
   // pass in subsampling factors directly.
-  const int subh = (2 << b_height_log2_lookup[sb_type]) == h;
-  const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
+  const int subh = (2 << mi_size_high_log2[sb_type]) == h;
+  const int subw = (2 << mi_size_wide_log2[sb_type]) == w;
   const uint8_t *mask = av1_get_compound_type_mask(comp_data, sb_type);
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
     aom_highbd_blend_a64_d16_mask(dst, dst_stride, src0, src0_stride, src1,
@@ -631,8 +631,8 @@ static void build_masked_compound_no_round(
     int w) {
   // Derive subsampling from h and w passed in. May be refactored to
   // pass in subsampling factors directly.
-  const int subh = (2 << b_height_log2_lookup[sb_type]) == h;
-  const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
+  const int subh = (2 << mi_size_high_log2[sb_type]) == h;
+  const int subw = (2 << mi_size_wide_log2[sb_type]) == w;
   const uint8_t *mask = av1_get_compound_type_mask(comp_data, sb_type);
   aom_blend_a64_d32_mask(dst, dst_stride, src0, src0_stride, src1, src1_stride,
                          mask, block_size_wide[sb_type], h, w, subh, subw);
@@ -646,8 +646,8 @@ static void build_masked_compound(
     int w) {
   // Derive subsampling from h and w passed in. May be refactored to
   // pass in subsampling factors directly.
-  const int subh = (2 << b_height_log2_lookup[sb_type]) == h;
-  const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
+  const int subh = (2 << mi_size_high_log2[sb_type]) == h;
+  const int subw = (2 << mi_size_wide_log2[sb_type]) == w;
   const uint8_t *mask = av1_get_compound_type_mask(comp_data, sb_type);
   aom_blend_a64_mask(dst, dst_stride, src0, src0_stride, src1, src1_stride,
                      mask, block_size_wide[sb_type], h, w, subh, subw);
@@ -660,8 +660,8 @@ static void build_masked_compound_highbd(
     int w, int bd) {
   // Derive subsampling from h and w passed in. May be refactored to
   // pass in subsampling factors directly.
-  const int subh = (2 << b_height_log2_lookup[sb_type]) == h;
-  const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
+  const int subh = (2 << mi_size_high_log2[sb_type]) == h;
+  const int subw = (2 << mi_size_wide_log2[sb_type]) == w;
   const uint8_t *mask = av1_get_compound_type_mask(comp_data, sb_type);
   // const uint8_t *mask =
   //     av1_get_contiguous_soft_mask(wedge_index, wedge_sign, sb_type);
@@ -1440,13 +1440,13 @@ void av1_build_obmc_inter_prediction(const AV1_COMMON *cm, MACROBLOCKD *xd,
   // handle above row
   struct obmc_inter_pred_ctxt ctxt_above = { above, above_stride };
   foreach_overlappable_nb_above(cm, xd, mi_col,
-                                max_neighbor_obmc[b_width_log2_lookup[bsize]],
+                                max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                 build_obmc_inter_pred_above, &ctxt_above);
 
   // handle left column
   struct obmc_inter_pred_ctxt ctxt_left = { left, left_stride };
   foreach_overlappable_nb_left(cm, xd, mi_row,
-                               max_neighbor_obmc[b_height_log2_lookup[bsize]],
+                               max_neighbor_obmc[mi_size_high_log2[bsize]],
                                build_obmc_inter_pred_left, &ctxt_left);
 }
 
@@ -1537,7 +1537,7 @@ void av1_build_prediction_by_above_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         tmp_stride, xd->mb_to_right_edge };
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   foreach_overlappable_nb_above(cm, xd, mi_col,
-                                max_neighbor_obmc[b_width_log2_lookup[bsize]],
+                                max_neighbor_obmc[mi_size_wide_log2[bsize]],
                                 build_prediction_by_above_pred, &ctxt);
 
   xd->mb_to_left_edge = -((mi_col * MI_SIZE) * 8);
@@ -1622,7 +1622,7 @@ void av1_build_prediction_by_left_preds(const AV1_COMMON *cm, MACROBLOCKD *xd,
                                         tmp_stride, xd->mb_to_bottom_edge };
   BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   foreach_overlappable_nb_left(cm, xd, mi_row,
-                               max_neighbor_obmc[b_height_log2_lookup[bsize]],
+                               max_neighbor_obmc[mi_size_high_log2[bsize]],
                                build_prediction_by_left_pred, &ctxt);
 
   xd->mb_to_top_edge = -((mi_row * MI_SIZE) * 8);
@@ -1740,8 +1740,8 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
     if (is_interintra_wedge_used(bsize)) {
       const uint8_t *mask =
           av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
-      const int subw = 2 * num_4x4_blocks_wide_lookup[bsize] == bw;
-      const int subh = 2 * num_4x4_blocks_high_lookup[bsize] == bh;
+      const int subw = 2 * mi_size_wide[bsize] == bw;
+      const int subh = 2 * mi_size_high[bsize] == bh;
       aom_blend_a64_mask(comppred, compstride, intrapred, intrastride,
                          interpred, interstride, mask, block_size_wide[bsize],
                          bh, bw, subh, subw);
@@ -1767,8 +1767,8 @@ static void combine_interintra_highbd(
     if (is_interintra_wedge_used(bsize)) {
       const uint8_t *mask =
           av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
-      const int subh = 2 * num_4x4_blocks_high_lookup[bsize] == bh;
-      const int subw = 2 * num_4x4_blocks_wide_lookup[bsize] == bw;
+      const int subh = 2 * mi_size_high[bsize] == bh;
+      const int subw = 2 * mi_size_wide[bsize] == bw;
       aom_highbd_blend_a64_mask(comppred8, compstride, intrapred8, intrastride,
                                 interpred8, interstride, mask,
                                 block_size_wide[bsize], bh, bw, subh, subw, bd);

@@ -219,8 +219,8 @@ static int has_top_right(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
     // All top-right pixels are in the block above, which is already available.
     if (col_off + top_right_count_unit < plane_bw_unit) return 1;
 
-    const int bw_in_mi_log2 = mi_width_log2_lookup[bsize];
-    const int bh_in_mi_log2 = mi_height_log2_lookup[bsize];
+    const int bw_in_mi_log2 = mi_size_wide_log2[bsize];
+    const int bh_in_mi_log2 = mi_size_high_log2[bsize];
     const int sb_mi_size = mi_size_high[cm->seq_params.sb_size];
     const int blk_row_in_sb = (mi_row & (sb_mi_size - 1)) >> bh_in_mi_log2;
     const int blk_col_in_sb = (mi_col & (sb_mi_size - 1)) >> bw_in_mi_log2;
@@ -411,8 +411,8 @@ static int has_bottom_left(const AV1_COMMON *cm, BLOCK_SIZE bsize, int mi_row,
     // All bottom-left pixels are in the left block, which is already available.
     if (row_off + bottom_left_count_unit < plane_bh_unit) return 1;
 
-    const int bw_in_mi_log2 = mi_width_log2_lookup[bsize];
-    const int bh_in_mi_log2 = mi_height_log2_lookup[bsize];
+    const int bw_in_mi_log2 = mi_size_wide_log2[bsize];
+    const int bh_in_mi_log2 = mi_size_high_log2[bsize];
     const int sb_mi_size = mi_size_high[cm->seq_params.sb_size];
     const int blk_row_in_sb = (mi_row & (sb_mi_size - 1)) >> bh_in_mi_log2;
     const int blk_col_in_sb = (mi_col & (sb_mi_size - 1)) >> bw_in_mi_log2;

@@ -23,8 +23,8 @@ extern "C" {
 #define IF_EXT_PARTITION(...) __VA_ARGS__,
 
 /* clang-format off */
-// Log 2 conversion lookup tables for block width and height
-static const uint8_t b_width_log2_lookup[BLOCK_SIZES_ALL] = {
+// Log 2 conversion lookup tables in units of mode info(4x4).
+static const uint8_t mi_size_wide_log2[BLOCK_SIZES_ALL] = {
   0, 0,
   1, 1,
   1, 2,
@@ -36,32 +36,7 @@ static const uint8_t b_width_log2_lookup[BLOCK_SIZES_ALL] = {
   3, 2,
   4
 };
-static const uint8_t b_height_log2_lookup[BLOCK_SIZES_ALL] = {
-  0, 1,
-  0, 1,
-  2, 1,
-  2, 3,
-  2, 3,
-  4, 3,
-  4, IF_EXT_PARTITION(5, 4, 5) 2,
-  0, 3,
-  1, 4,
-  2
-};
-// Log 2 conversion lookup tables for modeinfo width and height
-static const uint8_t mi_width_log2_lookup[BLOCK_SIZES_ALL] = {
-  0, 0,
-  1, 1,
-  1, 2,
-  2, 2,
-  3, 3,
-  3, 4,
-  4, IF_EXT_PARTITION(4, 5, 5) 0,
-  2, 1,
-  3, 2,
-  4
-};
-static const uint8_t mi_height_log2_lookup[BLOCK_SIZES_ALL] = {
+static const uint8_t mi_size_high_log2[BLOCK_SIZES_ALL] = {
   0, 1,
   0, 1,
   2, 1,
@@ -111,30 +86,6 @@ static const uint8_t block_size_high[BLOCK_SIZES_ALL] = {
   16
 };
 
-static const uint8_t num_4x4_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
-  1,  1,
-  2,  2,
-  2,  4,
-  4,  4,
-  8,  8,
-  8,  16,
-  16, IF_EXT_PARTITION(16, 32, 32) 1,
-  4,  2,
-  8,  4,
-  16
-};
-static const uint8_t num_4x4_blocks_high_lookup[BLOCK_SIZES_ALL] = {
-  1,  2,
-  1,  2,
-  4,  2,
-  4,  8,
-  4,  8,
-  16, 8,
-  16, IF_EXT_PARTITION(32, 16, 32) 4,
-  1,  8,
-  2,  16,
-  4
-};
 static const uint8_t num_8x8_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
   1, 1,
   1, 1,

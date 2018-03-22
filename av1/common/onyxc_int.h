@@ -994,10 +994,10 @@ static INLINE int partition_plane_context(const MACROBLOCKD *xd, int mi_row,
   const PARTITION_CONTEXT *left_ctx =
       xd->left_seg_context + (mi_row & MAX_MIB_MASK);
   // Minimum partition point is 8x8. Offset the bsl accordingly.
-  const int bsl = mi_width_log2_lookup[bsize] - mi_width_log2_lookup[BLOCK_8X8];
+  const int bsl = mi_size_wide_log2[bsize] - mi_size_wide_log2[BLOCK_8X8];
   int above = (*above_ctx >> bsl) & 1, left = (*left_ctx >> bsl) & 1;
 
-  assert(b_width_log2_lookup[bsize] == b_height_log2_lookup[bsize]);
+  assert(mi_size_wide_log2[bsize] == mi_size_high_log2[bsize]);
   assert(bsl >= 0);
 
   return (left * 2 + above) + bsl * PARTITION_PLOFFSET;
@@ -1293,7 +1293,7 @@ static INLINE void set_sb_size(SequenceHeader *const seq_params,
                                BLOCK_SIZE sb_size) {
   seq_params->sb_size = sb_size;
   seq_params->mib_size = mi_size_wide[seq_params->sb_size];
-  seq_params->mib_size_log2 = b_width_log2_lookup[seq_params->sb_size];
+  seq_params->mib_size_log2 = mi_size_wide_log2[seq_params->sb_size];
 }
 
 static INLINE int all_lossless(const AV1_COMMON *cm, const MACROBLOCKD *xd) {
