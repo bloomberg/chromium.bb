@@ -500,8 +500,9 @@ static void HostGetImportMetaProperties(v8::Local<v8::Context> context,
   if (!modulator)
     return;
 
-  ModuleImportMeta host_meta =
-      modulator->HostGetImportMetaProperties(ScriptModule(isolate, module));
+  // TODO(shivanisha): Can a valid source url be passed to the constructor.
+  ModuleImportMeta host_meta = modulator->HostGetImportMetaProperties(
+      ScriptModule(isolate, module, KURL()));
 
   // 3. Return <<Record { [[Key]]: "url", [[Value]]: urlString }>>. [spec text]
   v8::Local<v8::String> url_key = V8String(isolate, "url");

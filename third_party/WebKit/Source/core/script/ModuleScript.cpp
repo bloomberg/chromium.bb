@@ -51,8 +51,9 @@ ModuleScript* ModuleScript::Create(const String& source_text,
   // Steps 8-13 before Step 6. In a case that compile failed, we will
   // immediately turn the script into errored state. Thus the members will not
   // be used for the speced algorithms, but may be used from inspector.
-  ModuleScript* script = CreateInternal(source_text, modulator, result,
-                                        base_url, options, start_position);
+  ModuleScript* script =
+      CreateInternal(source_text, modulator, result, source_url, base_url,
+                     options, start_position);
 
   // Step 6. "If result is a list of errors, then:" [spec text]
   if (exception_state.HadException()) {
@@ -101,13 +102,15 @@ ModuleScript* ModuleScript::CreateForTest(Modulator* modulator,
                                           const KURL& base_url,
                                           const ScriptFetchOptions& options) {
   String dummy_source_text = "";
-  return CreateInternal(dummy_source_text, modulator, record, base_url, options,
-                        TextPosition::MinimumPosition());
+  KURL dummy_source_url;
+  return CreateInternal(dummy_source_text, modulator, record, dummy_source_url,
+                        base_url, options, TextPosition::MinimumPosition());
 }
 
 ModuleScript* ModuleScript::CreateInternal(const String& source_text,
                                            Modulator* modulator,
                                            ScriptModule result,
+                                           const KURL& source_url,
                                            const KURL& base_url,
                                            const ScriptFetchOptions& options,
                                            const TextPosition& start_position) {
@@ -117,8 +120,9 @@ ModuleScript* ModuleScript::CreateInternal(const String& source_text,
   // Step 9. Set script's base URL to baseURL.
   // Step 10. Set script's fetch options to options.
   // [nospec] |source_text| is saved for CSP checks.
-  ModuleScript* module_script = new ModuleScript(
-      modulator, result, base_url, options, source_text, start_position);
+  ModuleScript* module_script =
+      new ModuleScript(modulator, result, source_url, base_url, options,
+                       source_text, start_position);
 
   // Step 5, a part of ParseModule(): Passing script as the last parameter
   // here ensures result.[[HostDefined]] will be script.
@@ -129,6 +133,7 @@ ModuleScript* ModuleScript::CreateInternal(const String& source_text,
 
 ModuleScript::ModuleScript(Modulator* settings_object,
                            ScriptModule record,
+                           const KURL& source_url,
                            const KURL& base_url,
                            const ScriptFetchOptions& fetch_options,
                            const String& source_text,
@@ -136,7 +141,8 @@ ModuleScript::ModuleScript(Modulator* settings_object,
     : Script(fetch_options, base_url),
       settings_object_(settings_object),
       source_text_(source_text),
-      start_position_(start_position) {
+      start_position_(start_position),
+      source_url_(source_url) {
   if (record.IsNull()) {
     // We allow empty records for module infra tests which never touch records.
     // This should never happen outside unit tests.
@@ -155,7 +161,7 @@ ScriptModule ModuleScript::Record() const {
 
   v8::Isolate* isolate = settings_object_->GetScriptState()->GetIsolate();
   v8::HandleScope scope(isolate);
-  return ScriptModule(isolate, record_.NewLocal(isolate));
+  return ScriptModule(isolate, record_.NewLocal(isolate), source_url_);
 }
 
 bool ModuleScript::HasEmptyRecord() const {

@@ -46,7 +46,7 @@ class CORE_EXPORT ScriptModule final {
   ScriptModule();
   ~ScriptModule();
 
-  ScriptModule(v8::Isolate*, v8::Local<v8::Module>);
+  ScriptModule(v8::Isolate*, v8::Local<v8::Module>, const KURL&);
 
   // Returns exception, if any.
   ScriptValue Instantiate(ScriptState*);
@@ -83,6 +83,7 @@ class CORE_EXPORT ScriptModule final {
 
   scoped_refptr<SharedPersistent<v8::Module>> module_;
   unsigned identity_hash_ = 0;
+  String source_url_;
 
   friend struct ScriptModuleHash;
   friend struct WTF::HashTraits<blink::ScriptModule>;

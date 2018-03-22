@@ -9,6 +9,15 @@
     ],
   },
   observers: {
+    AdTracker: {
+      class: "AdTracker",
+      include_path: "core/frame",
+      probes: [
+        "CallFunction",
+        "ExecuteScript",
+        "willSendRequest",
+      ]
+    },
     Animation: {
       probes: [
         "animationPlayStateChanged",

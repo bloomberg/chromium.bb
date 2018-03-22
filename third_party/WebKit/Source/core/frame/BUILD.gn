@@ -6,6 +6,8 @@ import("//third_party/WebKit/Source/core/core.gni")
 
 blink_core_sources("frame") {
   sources = [
+    "AdTracker.cpp",
+    "AdTracker.h",
     "BarProp.cpp",
     "BarProp.h",
     "BrowserControls.cpp",

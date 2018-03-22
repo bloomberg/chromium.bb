@@ -54,6 +54,7 @@ class InterfaceProvider;
 
 namespace blink {
 
+class AdTracker;
 class AssociatedInterfaceProvider;
 class Color;
 class ComputedAccessibleNode;
@@ -265,6 +266,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
 
   PerformanceMonitor* GetPerformanceMonitor() { return performance_monitor_; }
   IdlenessDetector* GetIdlenessDetector() { return idleness_detector_; }
+  AdTracker* GetAdTracker() { return ad_tracker_; }
 
   // Convenience function to allow loading image placeholders for the request if
   // either the flag in Settings() for using image placeholders is set, or if
@@ -390,6 +392,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   Member<CoreProbeSink> probe_sink_;
   scoped_refptr<InspectorTaskRunner> inspector_task_runner_;
   Member<PerformanceMonitor> performance_monitor_;
+  Member<AdTracker> ad_tracker_;
   Member<IdlenessDetector> idleness_detector_;
   Member<InspectorTraceEvents> inspector_trace_events_;
 

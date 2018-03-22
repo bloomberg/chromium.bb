@@ -32,6 +32,7 @@
 
 #include <memory>
 #include "core/dom/Document.h"
+#include "core/frame/AdTracker.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/FrameTypes.h"
 #include "core/frame/LocalFrameView.h"
@@ -225,6 +226,26 @@ class FrameFetchContextSubresourceFilterTest : public FrameFetchContextTest {
                                 url, Resource::kMock,
                                 WebURLRequest::kRequestContextUnspecified));
     return reason;
+  }
+
+  bool DispatchWillSendRequestAndVerifyIsAd(const KURL& url) {
+    ResourceRequest request(url);
+    ResourceResponse response;
+    FetchInitiatorInfo initiator_info;
+
+    fetch_context->DispatchWillSendRequest(1, request, response,
+                                           Resource::kImage, initiator_info);
+    return request.IsAdResource();
+  }
+
+  void AppendExecutingScriptToAdTracker(const String& url) {
+    AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
+    ad_tracker->WillExecuteScript(url);
+  }
+
+  void AppendAdScriptToAdTracker(const KURL& ad_script_url) {
+    AdTracker* ad_tracker = document->GetFrame()->GetAdTracker();
+    ad_tracker->AppendToKnownAdScripts(ad_script_url);
   }
 
  private:
@@ -1271,6 +1292,27 @@ TEST_F(FrameFetchContextSubresourceFilterTest, AdTaggingBasedOnFrame) {
 
   EXPECT_EQ(ResourceRequestBlockedReason::kNone, CanRequestAndVerifyIsAd(true));
   EXPECT_EQ(0, GetFilteredLoadCallCount());
+}
+
+// Tests that if a subresource is allowed as per subresource filter ruleset and
+// is not fetched from a frame that is tagged as an ad, then the subresource
+// should be tagged as ad if one of the executing scripts is tagged as an ad.
+TEST_F(FrameFetchContextSubresourceFilterTest,
+       AdTaggingBasedOnExecutingScript) {
+  SetFilterPolicy(WebDocumentSubresourceFilter::kAllow,
+                  false /* is_associated_with_ad_subframe */);
+
+  KURL ad_script_url("https://example.com/bar.js");
+  AppendAdScriptToAdTracker(ad_script_url);
+  AppendExecutingScriptToAdTracker(ad_script_url.GetString());
+
+  EXPECT_EQ(ResourceRequestBlockedReason::kNone,
+            CanRequestAndVerifyIsAd(false));
+  EXPECT_EQ(0, GetFilteredLoadCallCount());
+
+  // After WillSendRequest probe, it should be marked as an ad.
+  EXPECT_TRUE(DispatchWillSendRequestAndVerifyIsAd(
+      KURL("https://www.example.com/image.jpg")));
 }
 
 TEST_F(FrameFetchContextTest, AddAdditionalRequestHeadersWhenDetached) {

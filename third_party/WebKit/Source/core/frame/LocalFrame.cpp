@@ -48,6 +48,7 @@
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/editing/suggestion/TextSuggestionController.h"
 #include "core/exported/WebPluginContainerImpl.h"
+#include "core/frame/AdTracker.h"
 #include "core/frame/ContentSettingsClient.h"
 #include "core/frame/EventHandlerRegistry.h"
 #include "core/frame/FrameConsole.h"
@@ -265,6 +266,7 @@ LocalFrame::~LocalFrame() {
 }
 
 void LocalFrame::Trace(blink::Visitor* visitor) {
+  visitor->Trace(ad_tracker_);
   visitor->Trace(probe_sink_);
   visitor->Trace(performance_monitor_);
   visitor->Trace(idleness_detector_);
@@ -328,8 +330,10 @@ void LocalFrame::Detach(FrameDetachType type) {
   // DCHECK(isAttached()) here.
   lifecycle_.AdvanceTo(FrameLifecycle::kDetaching);
 
-  if (IsLocalRoot())
+  if (IsLocalRoot()) {
     performance_monitor_->Shutdown();
+    ad_tracker_->Shutdown();
+  }
   idleness_detector_->Shutdown();
   if (inspector_trace_events_)
     probe_sink_->removeInspectorTraceEvents(inspector_trace_events_);
@@ -867,6 +871,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
       interface_registry_(interface_registry) {
   if (IsLocalRoot()) {
     probe_sink_ = new CoreProbeSink();
+    ad_tracker_ = new AdTracker(this);
     performance_monitor_ = new PerformanceMonitor(this);
     inspector_trace_events_ = new InspectorTraceEvents();
     probe_sink_->addInspectorTraceEvents(inspector_trace_events_);
@@ -876,6 +881,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
     // it will be updated later.
     UpdateInertIfPossible();
     probe_sink_ = LocalFrameRoot().probe_sink_;
+    ad_tracker_ = LocalFrameRoot().ad_tracker_;
     performance_monitor_ = LocalFrameRoot().performance_monitor_;
   }
   idleness_detector_ = new IdlenessDetector(this);
