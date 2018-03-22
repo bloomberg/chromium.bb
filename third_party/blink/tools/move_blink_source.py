@@ -372,6 +372,8 @@ Bug: 768828
         # export_header_blink exists outside of Blink too.
         content = content.replace('export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"',
                                   'export_header_blink = "third_party/blink/public/platform/web_common.h"')
+        content = content.replace('$root_gen_dir/blink/public', '$root_gen_dir/third_party/blink/public')
+        content = content.replace('$root_gen_dir/blink', '$root_gen_dir/third_party/blink/renderer')
         return content
 
     def _update_blink_build(self, content):
@@ -387,6 +389,11 @@ Bug: 768828
                                   'export_header = "third_party/blink/common')
         content = content.replace('export_header_blink = "third_party/WebKit/Source',
                                   'export_header_blink = "third_party/blink/renderer')
+
+        # Update buildflag_header() rules
+        content = content.replace('header_dir = "blink/',
+                                  'header_dir = "third_party/blink/renderer/')
+
         return self._update_basename(content)
 
     def _update_owners(self, content):
@@ -518,16 +525,23 @@ Bug: 768828
         include_or_import = match.group(1)
         path = match.group(2)
 
+        # If |path| starts with 'blink/public/resources', we should prepend
+        # 'third_party/'.
+        #
         # If |path| starts with 'third_party/WebKit', we should adjust the
         # directory name for third_party/blink, and replace its basename by
         # self._basename_map.
         #
         # If |path| starts with a Blink-internal directory such as bindings,
         # core, modules, platform, public, it refers to a checked-in file, or a
-        # generated file. For the former, we should add
-        # 'third_party/blink/renderer/' and replace the basename.  For the
-        # latter, we should update the basename for a name mapped from an IDL
-        # renaming, and should not add 'third_party/blink/renderer'.
+        # generated file. For the former, we should add 'third_party/blink/' and
+        # replace the basename.  For the latter, we should update the basename
+        # for a name mapped from an IDL renaming, and should add
+        # 'third_party/blink/'.
+
+        if path.startswith('blink/public/resources'):
+            path = path.replace('blink/public', 'third_party/blink/public')
+            return '#%s "%s"' % (include_or_import, path)
 
         if path.startswith('third_party/WebKit'):
             path = path.replace('third_party/WebKit/Source', 'third_party/blink/renderer')
@@ -538,13 +552,8 @@ Bug: 768828
 
         match = self._checked_in_header_re.search(path)
         if match:
-            new_relative_path = path
             if match.group(1) in self._basename_map:
-                new_relative_path = path[:match.start(1)] + self._basename_map[match.group(1)]
-            if path.startswith('public'):
-                path = 'third_party/blink/' + new_relative_path
-            else:
-                path = 'third_party/blink/renderer/' + new_relative_path
+                path = path[:match.start(1)] + self._basename_map[match.group(1)]
         elif 'core/inspector/protocol/' not in path:
             basename_start = path.rfind('/') + 1
             basename = path[basename_start:]
@@ -552,11 +561,15 @@ Bug: 768828
                 path = path[:basename_start] + self._basename_map[basename]
             elif basename.startswith('V8'):
                 path = path[:basename_start] + NameStyleConverter(basename[:len(basename) - 2]).to_snake_case() + '.h'
+        if path.startswith('public'):
+            path = 'third_party/blink/' + path
+        else:
+            path = 'third_party/blink/renderer/' + path
         return '#%s "%s"' % (include_or_import, path)
 
     def _update_cpp_includes(self, content):
-        pattern = re.compile(r'#(include|import)\s+"((bindings|controller||core|modules|platform|public|' +
-                             r'third_party/WebKit/(Source|common|public))/[-_\w/.]+)"')
+        pattern = re.compile(r'#(include|import)\s+"((bindings|controller|core|modules|platform|public|' +
+                             r'third_party/WebKit/(Source|common|public)|blink/public/resources)/[-_\w/.]+)"')
         return pattern.sub(self._replace_include_path, content)
 
     def _replace_basename_only_include(self, subdir, source_path, match):
