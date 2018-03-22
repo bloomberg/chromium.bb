@@ -1504,6 +1504,10 @@ IN_PROC_BROWSER_TEST_F(OmniboxViewTest, MAYBE_TabTraverseResultsTest) {
 #if defined(OS_LINUX)
 #define MAYBE_PersistKeywordModeOnTabSwitch \
     DISABLED_PersistKeywordModeOnTabSwitch
+#elif defined(OS_MACOSX)
+// Getting text from textfields doesn't always work: https://crbug.com/823532
+#define MAYBE_PersistKeywordModeOnTabSwitch \
+    DISABLED_PersistKeywordModeOnTabSwitch
 #else
 #define MAYBE_PersistKeywordModeOnTabSwitch PersistKeywordModeOnTabSwitch
 #endif
