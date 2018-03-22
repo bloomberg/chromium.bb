@@ -61,8 +61,9 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
   ExecuteJavaScriptAPI(web_contents, kInitiateCloseFromReceiverPageScript);
 }
 
+// TODO(crbug.com/824889): Flaky in Chromium waterfall.
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationOneUABrowserTest,
-                       Fail_SendMessage) {
+                       MANUAL_Fail_SendMessage) {
   RunFailToSendMessageTest();
 }
 
