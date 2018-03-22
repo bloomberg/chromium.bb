@@ -25,6 +25,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/values.h"
 #include "net/base/address_list.h"
 #include "net/base/ip_address.h"
 #include "net/base/mock_network_change_notifier.h"

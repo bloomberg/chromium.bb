@@ -232,12 +232,6 @@ AddressSorter* MockDnsClient::GetAddressSorter() {
   return address_sorter_.get();
 }
 
-void MockDnsClient::ApplyPersistentData(const base::Value& data) {}
-
-std::unique_ptr<const base::Value> MockDnsClient::GetPersistentData() const {
-  return std::unique_ptr<const base::Value>();
-}
-
 void MockDnsClient::CompleteDelayedTransactions() {
   factory_->CompleteDelayedTransactions();
 }

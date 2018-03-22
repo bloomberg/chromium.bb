@@ -208,16 +208,6 @@ class NET_EXPORT HostResolver {
   // nullptr if it's configured to always use the system host resolver.
   virtual std::unique_ptr<base::Value> GetDnsConfigAsValue() const;
 
-  typedef base::Callback<void(std::unique_ptr<const base::Value>)>
-      PersistCallback;
-  // Configures the HostResolver to be able to persist data (e.g. observed
-  // performance) between sessions. |persist_callback| is a callback that will
-  // be called when the HostResolver wants to persist data; |old_data| is the
-  // data last persisted by the resolver on the previous session.
-  virtual void InitializePersistence(
-      const PersistCallback& persist_callback,
-      std::unique_ptr<const base::Value> old_data);
-
   // Sets the HostResolver to assume that IPv6 is unreachable when on a wifi
   // connection. See https://crbug.com/696569 for further context.
   virtual void SetNoIPv6OnWifi(bool no_ipv6_on_wifi);

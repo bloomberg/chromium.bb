@@ -159,10 +159,6 @@ class NET_EXPORT HostResolverImpl
   // Returns the number of entries in the host cache, or 0 if there is no cache.
   size_t CacheSize() const;
 
-  void InitializePersistence(
-      const PersistCallback& persist_callback,
-      std::unique_ptr<const base::Value> old_data) override;
-
   void SetNoIPv6OnWifi(bool no_ipv6_on_wifi) override;
   bool GetNoIPv6OnWifi() override;
 
@@ -316,12 +312,6 @@ class NET_EXPORT HostResolverImpl
   // and resulted in |net_error|.
   void OnDnsTaskResolve(int net_error);
 
-  void ApplyPersistentData(std::unique_ptr<const base::Value>);
-  std::unique_ptr<const base::Value> GetPersistentData();
-
-  void SchedulePersist();
-  void DoPersist();
-
   // Allows the tests to catch slots leaking out of the dispatcher.  One
   // HostResolverImpl::Job could occupy multiple PrioritizedDispatcher job
   // slots.
@@ -376,10 +366,6 @@ class NET_EXPORT HostResolverImpl
   // Task runner used for DNS lookups using the system resolver. Normally a
   // TaskScheduler task runner, but can be overridden for tests.
   scoped_refptr<base::TaskRunner> proc_task_runner_;
-
-  bool persist_initialized_;
-  PersistCallback persist_callback_;
-  base::OneShotTimer persist_timer_;
 
   URLRequestContext* url_request_context_;
   std::vector<DnsConfig::DnsOverHttpsServerConfig> dns_over_https_servers_;

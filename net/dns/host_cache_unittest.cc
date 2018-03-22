@@ -392,58 +392,6 @@ TEST(HostCacheTest, Evict) {
   EXPECT_TRUE(cache.Lookup(key3, now));
 }
 
-void TestEvictionCallback(int* evict_count,
-                          HostCache::Key* key_out,
-                          const HostCache::Key& key,
-                          const HostCache::Entry& entry) {
-  ++*evict_count;
-  *key_out = key;
-}
-
-// Try to add too many entries to cache; it should evict the one with the oldest
-// expiration time.
-TEST(HostCacheTest, EvictWithCallback) {
-  HostCache cache(2);
-
-  int evict_count = 0;
-  HostCache::Key evicted_key = Key("nothingevicted.com");
-  cache.set_eviction_callback(
-      base::Bind(&TestEvictionCallback, &evict_count, &evicted_key));
-
-  base::TimeTicks now;
-
-  HostCache::Key key1 = Key("foobar.com");
-  HostCache::Key key2 = Key("foobar2.com");
-  HostCache::Key key3 = Key("foobar3.com");
-  HostCache::Entry entry =
-      HostCache::Entry(OK, AddressList(), HostCache::Entry::SOURCE_UNKNOWN);
-
-  EXPECT_EQ(0u, cache.size());
-  EXPECT_FALSE(cache.Lookup(key1, now));
-  EXPECT_FALSE(cache.Lookup(key2, now));
-  EXPECT_FALSE(cache.Lookup(key3, now));
-
-  // |key1| expires in 10 seconds, but |key2| in just 5.
-  cache.Set(key1, entry, now, base::TimeDelta::FromSeconds(10));
-  cache.Set(key2, entry, now, base::TimeDelta::FromSeconds(5));
-  EXPECT_EQ(2u, cache.size());
-  EXPECT_TRUE(cache.Lookup(key1, now));
-  EXPECT_TRUE(cache.Lookup(key2, now));
-  EXPECT_FALSE(cache.Lookup(key3, now));
-
-  EXPECT_EQ(0, evict_count);
-
-  // |key2| should be chosen for eviction, since it expires sooner.
-  cache.Set(key3, entry, now, base::TimeDelta::FromSeconds(10));
-  EXPECT_EQ(2u, cache.size());
-  EXPECT_TRUE(cache.Lookup(key1, now));
-  EXPECT_FALSE(cache.Lookup(key2, now));
-  EXPECT_TRUE(cache.Lookup(key3, now));
-
-  EXPECT_EQ(1, evict_count);
-  EXPECT_EQ(key2.hostname, evicted_key.hostname);
-}
-
 // Try to retrieve stale entries from the cache. They should be returned by
 // |LookupStale()| but not |Lookup()|, with correct |EntryStaleness| data.
 TEST(HostCacheTest, Stale) {
