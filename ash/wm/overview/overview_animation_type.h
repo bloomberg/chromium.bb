@@ -30,9 +30,6 @@ enum OverviewAnimationType {
   // Used to animate hiding of a window that is closed while overview mode is
   // active.
   OVERVIEW_ANIMATION_CLOSE_SELECTOR_ITEM,
-  // Used to animate scaling up of a window that is about to get dragged while
-  // overview mode is active.
-  OVERVIEW_ANIMATION_DRAGGING_SELECTOR_ITEM,
 };
 
 }  // namespace ash

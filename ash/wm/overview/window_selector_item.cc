@@ -1360,7 +1360,7 @@ void WindowSelectorItem::StartDrag() {
   scaled_bounds.Inset(-target_bounds_.width() * kDragWindowScale,
                       -target_bounds_.height() * kDragWindowScale);
   OverviewAnimationType animation_type =
-      OverviewAnimationType::OVERVIEW_ANIMATION_DRAGGING_SELECTOR_ITEM;
+      OverviewAnimationType::OVERVIEW_ANIMATION_NONE;
   SetBounds(scaled_bounds, animation_type);
 
   aura::Window* widget_window = item_widget_->GetNativeWindow();
