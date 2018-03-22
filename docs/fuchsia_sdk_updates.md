@@ -4,7 +4,7 @@
    job](https://luci-scheduler.appspot.com/jobs/fuchsia/sdk-x86_64-linux) for a
    recent green archive. On the "SUCCEEDED" link, copy the SHA-1 from the
    `gsutil.upload` link of the `upload fuchsia-sdk` step.
-0. Put that into Chromium's src.git `build/fuchsia/update_sdk.py` as `SDK_HASH`.
+0. Put that into Chromium's src.git `build/fuchsia/sdk.sha1`.
 0. `gclient sync && ninja ...` and make sure things go OK locally.
 0. Upload the roll CL, making sure to include the `fuchsia` trybot. Tag the roll
    with `Bug: 707030`.
@@ -31,4 +31,4 @@ Chromium-related projects like Crashpad, instead of directly pulling the
 `cipd describe fuchsia/sdk/linux-amd64 -version <CIPD_HASH_HERE>`
 
 This description will show the `jiri_snapshot` "tag" for the CIPD package which
-corresponds to the SDK revision that's specified `update_sdk.py` here.
+corresponds to the SDK revision that's specified in `sdk.sha1` here.
