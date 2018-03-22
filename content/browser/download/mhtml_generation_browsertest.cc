@@ -120,9 +120,8 @@ class MHTMLGenerationTest : public ContentBrowserTest {
     histogram_tester_.reset(new base::HistogramTester());
 
     shell()->web_contents()->GenerateMHTML(
-        params, base::Bind(&MHTMLGenerationTest::MHTMLGenerated,
-                           base::Unretained(this),
-                           run_loop.QuitClosure()));
+        params, base::BindOnce(&MHTMLGenerationTest::MHTMLGenerated,
+                               base::Unretained(this), run_loop.QuitClosure()));
 
     // Block until the MHTML is generated.
     run_loop.Run();
