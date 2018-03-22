@@ -68,6 +68,8 @@ protodb::DownloadClient ProtoConversions::DownloadClientToProto(
       return protodb::DownloadClient::BACKGROUND_FETCH;
     case DownloadClient::DEBUGGING:
       return protodb::DownloadClient::DEBUGGING;
+    case DownloadClient::MOUNTAIN_INTERNAL:
+      return protodb::DownloadClient::MOUNTAIN_INTERNAL;
     case DownloadClient::BOUNDARY:
       return protodb::DownloadClient::BOUNDARY;
   }
@@ -93,6 +95,8 @@ DownloadClient ProtoConversions::DownloadClientFromProto(
       return DownloadClient::BACKGROUND_FETCH;
     case protodb::DownloadClient::DEBUGGING:
       return DownloadClient::DEBUGGING;
+    case protodb::DownloadClient::MOUNTAIN_INTERNAL:
+      return DownloadClient::MOUNTAIN_INTERNAL;
     case protodb::DownloadClient::BOUNDARY:
       return DownloadClient::BOUNDARY;
   }
