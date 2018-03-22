@@ -105,16 +105,23 @@
   // of the overall animation duration.
   // (1) Fading out the view being dismissed. This happens during the first 20%
   //     of the overall animation.
-  // (2) Zooming the selected cell into position. This starts immediately and
-  //     has a duration of |staggeredDuration|.
-  // (3) Fading in the selected cell highlight indicator. This starts after a
+  // (2) Fading in the selected cell highlight indicator. This starts after a
   //     delay of |staggeredDuration| and runs to the end of the transition.
-  //     This means it starts as soon as (2) ends.
+  //     This means it starts as soon as (3) ends.
+  // (3) Zooming the selected cell into position. This starts immediately and
+  //     has a duration of |staggeredDuration|.
   // (4) Zooming all other cells into position. This ends at the end of the
   //     transition and has a duration of |staggeredDuration|.
   //
   // Animation (4) always runs the whole duration of the transition, so it's
   // where the completion block that does overall cleanup is run.
+
+  // In the case where there is only a single cell to animate (the selected
+  // one), not all of the above animations are required. Instead of animations
+  // (3), and (4), instead the following animation will be used:
+  // (5) Zooming the selected cell into position as in (3), but running the
+  //     whole duration of the transition.
+  // In this case animation (5) will run the completion block.
 
   // TODO(crbug.com/804539): Factor all of these animations into a single
   // Orchestrator object that the present and dismiss animation can both use.
@@ -122,8 +129,28 @@
   // TODO(crbug.com/820410): Tune the timing, relative pacing, and curves of
   // these animations.
 
+  // Completion block to be run when the transition completes.
+  auto completion = ^(BOOL finished) {
+    // Clean up all of the proxy cells.
+    for (GridTransitionLayoutItem* item in layout.items) {
+      [item.cell removeFromSuperview];
+    }
+    // If the transition was cancelled, restore the dismissing view and
+    // remove the grid view.
+    // If not, remove the dismissing view.
+    if (transitionContext.transitionWasCancelled) {
+      dismissingView.alpha = 1.0;
+      [gridView removeFromSuperview];
+    } else {
+      [dismissingView removeFromSuperview];
+    }
+    // Mark the transition as completed.
+    [transitionContext completeTransition:YES];
+  };
+
   NSTimeInterval duration = [self transitionDuration:transitionContext];
   CGFloat staggeredDuration = duration * 0.7;
+  UICollectionViewCell* selectedCell = layout.selectedItem.cell;
 
   // (1) Fade out active tab view.
   [UIView animateWithDuration:duration / 5
@@ -132,24 +159,7 @@
                    }
                    completion:nil];
 
-  // (2) Zoom selected cell into place. Also round its corners.
-  UICollectionViewCell* selectedCell = layout.selectedItem.cell;
-  [UIView animateWithDuration:staggeredDuration
-                        delay:0.0
-                      options:UIViewAnimationOptionCurveEaseOut
-                   animations:^{
-                     selectedCell.center = [containerView
-                         convertPoint:layout.selectedItem.attributes.center
-                             fromView:nil];
-                     selectedCell.bounds =
-                         layout.selectedItem.attributes.bounds;
-                     selectedCell.transform = CGAffineTransformIdentity;
-                     selectedCell.contentView.layer.cornerRadius =
-                         finalSelectedCellCornerRadius;
-                   }
-                   completion:nil];
-
-  // (3) Show highlight state on selected cell.
+  // (2) Show highlight state on selected cell.
   [UIView animateWithDuration:duration - staggeredDuration
                         delay:staggeredDuration
                       options:UIViewAnimationOptionCurveEaseIn
@@ -158,37 +168,53 @@
                    }
                    completion:nil];
 
-  // (4) Zoom other cells into place.
-  [UIView animateWithDuration:staggeredDuration
-      delay:duration - staggeredDuration
-      options:UIViewAnimationOptionCurveEaseOut
-      animations:^{
-        for (GridTransitionLayoutItem* item in layout.items) {
-          if (item == layout.selectedItem)
-            continue;
-          UIView* cell = item.cell;
-          cell.center =
-              [containerView convertPoint:item.attributes.center fromView:nil];
-          cell.transform = CGAffineTransformIdentity;
-        }
+  // Animation block for zooming the selected cell into place and rounding
+  // its corners.
+  auto selectedCellAnimation = ^{
+    selectedCell.center =
+        [containerView convertPoint:layout.selectedItem.attributes.center
+                           fromView:nil];
+    selectedCell.bounds = layout.selectedItem.attributes.bounds;
+    selectedCell.transform = CGAffineTransformIdentity;
+    selectedCell.contentView.layer.cornerRadius = finalSelectedCellCornerRadius;
+  };
+
+  // If there's more than one cell to animate, run animations (3) and (4), and
+  // call the completion block after (4). If there's only one cell to animate,
+  // run (5) and have it call the completion block.
+  if (layout.items.count > 1) {
+    // (3) Zoom selected cell into place.
+    [UIView animateWithDuration:staggeredDuration
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:selectedCellAnimation
+                     completion:nil];
+
+    // (4) Zoom other cells into place.
+    auto unselectedCellsAnimation = ^{
+      for (GridTransitionLayoutItem* item in layout.items) {
+        if (item == layout.selectedItem)
+          continue;
+        UIView* cell = item.cell;
+        cell.center =
+            [containerView convertPoint:item.attributes.center fromView:nil];
+        cell.transform = CGAffineTransformIdentity;
       }
-      completion:^(BOOL finished) {
-        // Clean up all of the proxy cells.
-        for (GridTransitionLayoutItem* item in layout.items) {
-          [item.cell removeFromSuperview];
-        }
-        // If the transition was cancelled, restore the dismissing view and
-        // remove the grid view.
-        // If not, remove the dismissing view.
-        if (transitionContext.transitionWasCancelled) {
-          dismissingView.alpha = 1.0;
-          [gridView removeFromSuperview];
-        } else {
-          [dismissingView removeFromSuperview];
-        }
-        // Mark the transition as completed.
-        [transitionContext completeTransition:YES];
-      }];
+    };
+
+    [UIView animateWithDuration:staggeredDuration
+                          delay:duration - staggeredDuration
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:unselectedCellsAnimation
+                     completion:completion];
+  } else {
+    // (5) Zoom selected cell into place over whole duration, with completion.
+    [UIView animateWithDuration:duration
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:selectedCellAnimation
+                     completion:completion];
+  }
 }
 
 @end
