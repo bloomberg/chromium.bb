@@ -27,8 +27,6 @@
 #define OBU_DETECTION_SIZE \
   (OBU_HEADER_SIZE + OBU_EXTENSION_SIZE + OBU_MAX_LENGTH_FIELD_SIZE)
 
-#if CONFIG_OBU_NO_IVF
-
 // Reads unsigned LEB128 integer and returns 0 upon successful read and decode.
 // Stores raw bytes in 'value_buffer', length of the number in 'value_length',
 // and decoded value in 'value'.
@@ -297,5 +295,3 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
 }
 
 void obudec_free(struct ObuDecInputContext *obu_ctx) { free(obu_ctx->buffer); }
-
-#endif  // CONFIG_OBU_NO_IVF

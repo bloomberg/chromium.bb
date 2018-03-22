@@ -171,12 +171,10 @@ set(AOM_COMMON_APP_UTIL_SOURCES
 set(AOM_DECODER_APP_UTIL_SOURCES
     "${AOM_ROOT}/ivfdec.c"
     "${AOM_ROOT}/ivfdec.h"
+    "${AOM_ROOT}/obudec.c"
+    "${AOM_ROOT}/obudec.h"
     "${AOM_ROOT}/video_reader.c"
     "${AOM_ROOT}/video_reader.h")
-
-if (CONFIG_OBU_NO_IVF)
-  list(APPEND AOM_DECODER_APP_UTIL_SOURCES "${AOM_ROOT}/obudec.c" "${AOM_ROOT}/obudec.h")
-endif ()
 
 set(AOM_ENCODER_APP_UTIL_SOURCES
     "${AOM_ROOT}/ivfenc.c"
@@ -313,9 +311,7 @@ if (CONFIG_UNIT_TESTS OR ENABLE_EXAMPLES OR ENABLE_TOOLS)
   if (CONFIG_AV1_DECODER)
     add_library(aom_decoder_app_util OBJECT ${AOM_DECODER_APP_UTIL_SOURCES})
     # obudec depends on internal headers that require *rtcd.h
-    if (CONFIG_OBU_NO_IVF)
-      add_dependencies(aom_decoder_app_util aom_rtcd)
-    endif ()
+    add_dependencies(aom_decoder_app_util aom_rtcd)
   endif ()
   if (CONFIG_AV1_ENCODER)
     add_library(aom_encoder_app_util OBJECT ${AOM_ENCODER_APP_UTIL_SOURCES})

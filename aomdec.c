@@ -42,12 +42,9 @@
 #endif
 
 #include "./md5_utils.h"
-
-#if CONFIG_OBU_NO_IVF
 #include "./obudec.h"
-#endif
-
 #include "./tools_common.h"
+
 #if CONFIG_WEBM_IO
 #include "./webmdec.h"
 #endif
@@ -245,7 +242,6 @@ static int read_frame(struct AvxDecInputContext *input, uint8_t **buf,
     case FILE_TYPE_IVF:
       return ivf_read_frame(input->aom_input_ctx->file, buf, bytes_in_buffer,
                             buffer_size);
-#if CONFIG_OBU_NO_IVF
     case FILE_TYPE_OBU:
       return obudec_read_temporal_unit(input->obu_ctx, buf,
 #if CONFIG_SCALABILITY
@@ -254,7 +250,6 @@ static int read_frame(struct AvxDecInputContext *input, uint8_t **buf,
                                        bytes_in_buffer, buffer_size
 #endif
       );
-#endif
     default: return 1;
   }
 }
@@ -537,11 +532,9 @@ static int main_loop(int argc, const char **argv_) {
   memset(&webm_ctx, 0, sizeof(webm_ctx));
   input.webm_ctx = &webm_ctx;
 #endif
-#if CONFIG_OBU_NO_IVF
   struct ObuDecInputContext obu_ctx = { NULL, NULL, 0, 0 };
   obu_ctx.avx_ctx = &aom_input_ctx;
   input.obu_ctx = &obu_ctx;
-#endif
   input.aom_input_ctx = &aom_input_ctx;
 
   /* Parse command line */
@@ -661,10 +654,8 @@ static int main_loop(int argc, const char **argv_) {
   else if (file_is_webm(input.webm_ctx, input.aom_input_ctx))
     input.aom_input_ctx->file_type = FILE_TYPE_WEBM;
 #endif
-#if CONFIG_OBU_NO_IVF
   else if (file_is_obu(&obu_ctx))
     input.aom_input_ctx->file_type = FILE_TYPE_OBU;
-#endif
   else if (file_is_raw(input.aom_input_ctx))
     input.aom_input_ctx->file_type = FILE_TYPE_RAW;
   else {
@@ -1032,10 +1023,8 @@ fail2:
   if (input.aom_input_ctx->file_type == FILE_TYPE_WEBM)
     webm_free(input.webm_ctx);
 #endif
-#if CONFIG_OBU_NO_IVF
   if (input.aom_input_ctx->file_type == FILE_TYPE_OBU)
     obudec_free(input.obu_ctx);
-#endif
 
   if (input.aom_input_ctx->file_type != FILE_TYPE_WEBM) free(buf);
 

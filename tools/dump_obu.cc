@@ -36,19 +36,15 @@ struct InputContext {
 
   void Init() {
     memset(avx_ctx, 0, sizeof(*avx_ctx));
-#if CONFIG_OBU_NO_IVF
     memset(obu_ctx, 0, sizeof(*obu_ctx));
     obu_ctx->avx_ctx = avx_ctx;
-#endif  // CONFIG_OBU_NO_IVF
 #if CONFIG_WEBM_IO
     memset(webm_ctx, 0, sizeof(*webm_ctx));
 #endif
   }
 
   AvxInputContext *avx_ctx = nullptr;
-#if CONFIG_OBU_NO_IVF
   ObuDecInputContext *obu_ctx = nullptr;
-#endif
 #if CONFIG_WEBM_IO
   WebmInputContext *webm_ctx = nullptr;
 #endif
@@ -62,9 +58,7 @@ void PrintUsage() {
 
 VideoFileType GetFileType(InputContext *ctx) {
   if (file_is_ivf(ctx->avx_ctx)) return FILE_TYPE_IVF;
-#if CONFIG_OBU_NO_IVF
   if (file_is_obu(ctx->obu_ctx)) return FILE_TYPE_OBU;
-#endif
 #if CONFIG_WEBM_IO
   if (file_is_webm(ctx->webm_ctx, ctx->avx_ctx)) return FILE_TYPE_WEBM;
 #endif
@@ -81,7 +75,6 @@ bool ReadTemporalUnit(InputContext *ctx, size_t *unit_size) {
       }
       break;
     }
-#if CONFIG_OBU_NO_IVF
     case FILE_TYPE_OBU: {
       if (obudec_read_temporal_unit(ctx->obu_ctx, &ctx->unit_buffer, unit_size,
 #if CONFIG_SCALABILITY
@@ -94,7 +87,6 @@ bool ReadTemporalUnit(InputContext *ctx, size_t *unit_size) {
       }
       break;
     }
-#endif
 #if CONFIG_WEBM_IO
     case FILE_TYPE_WEBM: {
       size_t frame_size = ctx->unit_buffer_size;
@@ -143,10 +135,8 @@ int main(int argc, const char *argv[]) {
   AvxInputContext avx_ctx;
   InputContext input_ctx;
   input_ctx.avx_ctx = &avx_ctx;
-#if CONFIG_OBU_NO_IVF
   ObuDecInputContext obu_ctx;
   input_ctx.obu_ctx = &obu_ctx;
-#endif
 #if CONFIG_WEBM_IO
   WebmInputContext webm_ctx;
   input_ctx.webm_ctx = &webm_ctx;
