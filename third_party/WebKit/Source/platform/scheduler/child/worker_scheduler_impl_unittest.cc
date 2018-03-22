@@ -55,7 +55,9 @@ class WorkerSchedulerImplForTest : public WorkerSchedulerImpl {
  public:
   WorkerSchedulerImplForTest(std::unique_ptr<TaskQueueManager> manager,
                              base::SimpleTestTickClock* clock_)
-      : WorkerSchedulerImpl(std::move(manager), nullptr),
+      : WorkerSchedulerImpl(WebThreadType::kTestThread,
+                            std::move(manager),
+                            nullptr),
         clock_(clock_),
         timeline_(nullptr) {}
 

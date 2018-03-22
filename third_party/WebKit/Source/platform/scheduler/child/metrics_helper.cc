@@ -80,9 +80,5 @@ void MetricsHelper::RecordCommonTaskMetrics(
   }
 }
 
-void MetricsHelper::SetThreadType(WebThreadType thread_type) {
-  thread_type_ = thread_type;
-}
-
 }  // namespace scheduler
 }  // namespace blink

@@ -25,7 +25,9 @@ class WorkerSchedulerImplForTest : public WorkerSchedulerImpl {
   WorkerSchedulerImplForTest(std::unique_ptr<TaskQueueManager> manager,
                              WorkerSchedulerProxy* proxy,
                              WaitableEvent* throtting_state_changed)
-      : WorkerSchedulerImpl(std::move(manager), proxy),
+      : WorkerSchedulerImpl(WebThreadType::kTestThread,
+                            std::move(manager),
+                            proxy),
         throtting_state_changed_(throtting_state_changed) {}
 
   void OnThrottlingStateChanged(

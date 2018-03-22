@@ -9,8 +9,8 @@
 namespace blink {
 namespace scheduler {
 
-WorkerMetricsHelper::WorkerMetricsHelper()
-    : MetricsHelper(WebThreadType::kUnspecifiedWorkerThread),
+WorkerMetricsHelper::WorkerMetricsHelper(WebThreadType thread_type)
+    : MetricsHelper(thread_type),
       dedicated_worker_per_task_type_duration_reporter_(
           "RendererScheduler.TaskDurationPerTaskType.DedicatedWorker"),
       dedicated_worker_per_task_type_cpu_duration_reporter_(
