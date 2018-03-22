@@ -145,10 +145,6 @@ Polymer({
   /** @private {?ShowAtPositionConfig} */
   lastConfig_: null,
 
-  hostAttributes: {
-    tabindex: 0,
-  },
-
   properties: {
     // Setting this flag will make the menu listen for content size changes and
     // reposition to its anchor accordingly.
