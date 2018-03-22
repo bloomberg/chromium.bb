@@ -7,9 +7,11 @@
 #import <AppKit/AppKit.h>
 
 #include "base/logging.h"
-#include "base/macros.h"
+#include "base/no_destructor.h"
+#include "build/buildflag.h"
 #include "chrome/app/chrome_command_ids.h"
 #import "chrome/browser/ui/cocoa/nsmenuitem_additions.h"
+#include "chrome/browser/ui/views_mode_controller.h"
 
 namespace {
 
@@ -91,7 +93,111 @@ int CommandForKeyboardShortcut(const std::vector<KeyboardShortcutData>& table,
   return -1;
 }
 
+// Given a set of Views keyboard shortcuts and a set of Cocoa keyboard
+// shortcuts, returns the appropriate set depending on which browser window is
+// in use.
+const std::vector<KeyboardShortcutData>& ViewsOrCocoaKeys(
+    const std::vector<KeyboardShortcutData>& views_keys,
+    const std::vector<KeyboardShortcutData>& cocoa_keys) {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  if (!views_mode_controller::IsViewsBrowserCocoa())
+    return views_keys;
+#endif
+  return cocoa_keys;
+}
+
 }  // namespace
+
+// Basically, there are two kinds of keyboard shortcuts: Ones that should work
+// only if the tab contents is focused (BrowserKeyboardShortcut), and ones that
+// should work in all other cases (WindowKeyboardShortcut). In the latter case,
+// we differentiate between shortcuts that are checked before any other view
+// gets the chance to handle them (WindowKeyboardShortcut) or after all views
+// had a chance but did not handle the keypress event
+// (DelayedWindowKeyboardShortcut).
+
+const std::vector<KeyboardShortcutData>& GetWindowKeyboardShortcutTable() {
+  // clang-format off
+  // Lists shortcuts that are impossible to migrate to accelerator_table.cc
+  // (https://crbug.com/25946). Most of the entries in cocoa_keys are already
+  // present in accelerator_table.cc, so for Views browser windows, those
+  // definitions are used.
+  static base::NoDestructor<std::vector<KeyboardShortcutData>> views_keys({
+    //cmd  shift  cntrl  option vkeycode char command
+    //---  -----  -----  ------ -------- ---- -------
+    // '{' / '}' characters should be matched earlier than virtual key codes
+    // (so we can match alt-8 as '{' on German keyboards).
+    {true, false, false, false, 0,       '}', IDC_SELECT_NEXT_TAB},
+    {true, false, false, false, 0,       '{', IDC_SELECT_PREVIOUS_TAB},
+  });
+  static base::NoDestructor<std::vector<KeyboardShortcutData>> cocoa_keys({
+    //cmd   shift  cntrl  option vkeycode               char command
+    //---   -----  -----  ------ --------               ---- -------
+    // '{' / '}' characters should be matched earlier than virtual key codes
+    // (so we can match alt-8 as '{' on German keyboards).
+    {true,  false, false, false, 0,                     '}', IDC_SELECT_NEXT_TAB},
+    {true,  false, false, false, 0,                     '{', IDC_SELECT_PREVIOUS_TAB},
+    {true,  true,  false, false, kVK_ANSI_RightBracket, 0,   IDC_SELECT_NEXT_TAB},
+    {true,  true,  false, false, kVK_ANSI_LeftBracket,  0,   IDC_SELECT_PREVIOUS_TAB},
+    {false, false, true,  false, kVK_PageDown,          0,   IDC_SELECT_NEXT_TAB},
+    {false, false, true,  false, kVK_Tab,               0,   IDC_SELECT_NEXT_TAB},
+    {false, false, true,  false, kVK_PageUp,            0,   IDC_SELECT_PREVIOUS_TAB},
+    {false, true,  true,  false, kVK_Tab,               0,   IDC_SELECT_PREVIOUS_TAB},
+
+    //cmd  shift  cntrl  option vkeycode                char command
+    //---  -----  -----  ------ --------                ---- -------
+    // Cmd-0..8 select the nth tab, with cmd-9 being "last tab".
+    {true, false, false, false, kVK_ANSI_1,             0,   IDC_SELECT_TAB_0},
+    {true, false, false, false, kVK_ANSI_Keypad1,       0,   IDC_SELECT_TAB_0},
+    {true, false, false, false, kVK_ANSI_2,             0,   IDC_SELECT_TAB_1},
+    {true, false, false, false, kVK_ANSI_Keypad2,       0,   IDC_SELECT_TAB_1},
+    {true, false, false, false, kVK_ANSI_3,             0,   IDC_SELECT_TAB_2},
+    {true, false, false, false, kVK_ANSI_Keypad3,       0,   IDC_SELECT_TAB_2},
+    {true, false, false, false, kVK_ANSI_4,             0,   IDC_SELECT_TAB_3},
+    {true, false, false, false, kVK_ANSI_Keypad4,       0,   IDC_SELECT_TAB_3},
+    {true, false, false, false, kVK_ANSI_5,             0,   IDC_SELECT_TAB_4},
+    {true, false, false, false, kVK_ANSI_Keypad5,       0,   IDC_SELECT_TAB_4},
+    {true, false, false, false, kVK_ANSI_6,             0,   IDC_SELECT_TAB_5},
+    {true, false, false, false, kVK_ANSI_Keypad6,       0,   IDC_SELECT_TAB_5},
+    {true, false, false, false, kVK_ANSI_7,             0,   IDC_SELECT_TAB_6},
+    {true, false, false, false, kVK_ANSI_Keypad7,       0,   IDC_SELECT_TAB_6},
+    {true, false, false, false, kVK_ANSI_8,             0,   IDC_SELECT_TAB_7},
+    {true, false, false, false, kVK_ANSI_Keypad8,       0,   IDC_SELECT_TAB_7},
+    {true, false, false, false, kVK_ANSI_9,             0,   IDC_SELECT_LAST_TAB},
+    {true, false, false, false, kVK_ANSI_Keypad9,       0,   IDC_SELECT_LAST_TAB},
+    {true, true,  false, false, kVK_ANSI_M,             0,   IDC_SHOW_AVATAR_MENU},
+    {true, false, false, true,  kVK_ANSI_L,             0,   IDC_SHOW_DOWNLOADS},
+  });
+  // clang-format on
+  return ViewsOrCocoaKeys(*views_keys, *cocoa_keys);
+}
+
+const std::vector<KeyboardShortcutData>&
+GetDelayedWindowKeyboardShortcutTable() {
+  // clang-format off
+  static base::NoDestructor<std::vector<KeyboardShortcutData>> views_keys({});
+  static base::NoDestructor<std::vector<KeyboardShortcutData>> cocoa_keys({
+    //cmd   shift  cntrl  option vkeycode    char command
+    //---   -----  -----  ------ --------    ---- -------
+    {false, false, false, false, kVK_Escape, 0,   IDC_STOP},
+  });
+  // clang-format on
+  return ViewsOrCocoaKeys(*views_keys, *cocoa_keys);
+}
+
+const std::vector<KeyboardShortcutData>& GetBrowserKeyboardShortcutTable() {
+  // clang-format off
+  static base::NoDestructor<std::vector<KeyboardShortcutData>> views_keys({});
+  static base::NoDestructor<std::vector<KeyboardShortcutData>> cocoa_keys({
+    //cmd   shift  cntrl  option vkeycode        char command
+    //---   -----  -----  ------ --------        ---- -------
+    {true,  false, false, false, kVK_LeftArrow,  0,   IDC_BACK},
+    {true,  false, false, false, kVK_RightArrow, 0,   IDC_FORWARD},
+    {true,  true,  false, false, 0,              'c', IDC_DEV_TOOLS_INSPECT},
+  });
+  // clang-format on
+  return ViewsOrCocoaKeys(*views_keys, *cocoa_keys);
+}
 
 int CommandForWindowKeyboardShortcut(
     bool command_key, bool shift_key, bool cntrl_key, bool opt_key,
