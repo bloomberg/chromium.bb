@@ -14,7 +14,7 @@ class PageCoordinationUnitImpl;
 class ProcessCoordinationUnitImpl;
 
 // The following coordination unit graph topology is created to emulate a
-// scenario when a single page are executes in a single process:
+// scenario when a single page executes in a single process:
 //
 // P'  P
 //  \ /
@@ -54,7 +54,7 @@ struct MockMultiplePagesInSingleProcessCoordinationUnitGraph
 };
 
 // The following coordination unit graph topology is created to emulate a
-// scenario where a single page that has frames executing in different
+// scenario where a single page that has frames is executing in different
 // processes (e.g. out-of-process iFrames):
 //
 // P'  P

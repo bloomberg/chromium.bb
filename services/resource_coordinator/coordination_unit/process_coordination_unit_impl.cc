@@ -18,7 +18,7 @@ ProcessCoordinationUnitImpl::GetAllProcessCoordinationUnits() {
   std::vector<ProcessCoordinationUnitImpl*> process_cus;
   for (auto* process_cu : cus) {
     process_cus.push_back(
-        static_cast<ProcessCoordinationUnitImpl*>(process_cu));
+        ProcessCoordinationUnitImpl::FromCoordinationUnitBase(process_cu));
   }
   return process_cus;
 }
