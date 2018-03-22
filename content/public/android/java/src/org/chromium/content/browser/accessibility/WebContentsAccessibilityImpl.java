@@ -32,6 +32,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.WindowEventObserver;
+import org.chromium.content.browser.accessibility.captioning.CaptioningController;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
@@ -97,6 +98,7 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     protected int mSelectionNodeId;
     private Runnable mSendWindowContentChangedRunnable;
     private View mAutofillPopupView;
+    private CaptioningController mCaptioningController;
 
     // Whether native accessibility is allowed.
     private boolean mNativeAccessibilityAllowed;
@@ -162,6 +164,8 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
         mProductVersion = productVersion;
         mAccessibilityManager =
                 (AccessibilityManager) mContext.getSystemService(Context.ACCESSIBILITY_SERVICE);
+        mCaptioningController = new CaptioningController(mWebContents, mContext);
+
         mInitialized = true;
         // Native is initialized lazily, when node provider is actually requested.
     }
@@ -205,12 +209,14 @@ public class WebContentsAccessibilityImpl extends AccessibilityNodeProvider
     @Override
     public void onDetachedFromWindow() {
         mAccessibilityManager.removeAccessibilityStateChangeListener(this);
+        mCaptioningController.stopListening();
     }
 
     @Override
     public void onAttachedToWindow() {
         mAccessibilityManager.addAccessibilityStateChangeListener(this);
         refreshState();
+        mCaptioningController.startListening();
     }
 
     /**

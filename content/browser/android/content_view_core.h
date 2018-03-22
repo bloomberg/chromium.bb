@@ -5,35 +5,21 @@
 #ifndef CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_H_
 #define CONTENT_BROWSER_ANDROID_CONTENT_VIEW_CORE_H_
 
-#include <stdint.h>
-
-#include <memory>
-#include <vector>
-
 #include "base/android/jni_android.h"
 #include "base/android/jni_weak_ref.h"
 #include "base/android/scoped_java_ref.h"
-#include "base/compiler_specific.h"
-#include "base/i18n/rtl.h"
 #include "base/macros.h"
-#include "base/process/process.h"
-#include "content/browser/renderer_host/render_widget_host_view_android.h"
-#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/public/browser/web_contents_observer.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "ui/android/view_android.h"
-#include "ui/gfx/geometry/rect.h"
-#include "ui/gfx/geometry/rect_f.h"
-#include "ui/gfx/selection_bound.h"
-#include "url/gurl.h"
 
 namespace ui {
+class ViewAndroid;
 class WindowAndroid;
 }
 
 namespace content {
 
 class RenderWidgetHostViewAndroid;
+class WebContentsImpl;
 
 class ContentViewCore : public WebContentsObserver {
  public:
@@ -93,18 +79,6 @@ class ContentViewCore : public WebContentsObserver {
   void SetDIPScale(JNIEnv* env,
                    const base::android::JavaParamRef<jobject>& obj,
                    jfloat dipScale);
-
-  void SetTextTrackSettings(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj,
-      jboolean textTracksEnabled,
-      const base::android::JavaParamRef<jstring>& textTrackBackgroundColor,
-      const base::android::JavaParamRef<jstring>& textTrackFontFamily,
-      const base::android::JavaParamRef<jstring>& textTrackFontStyle,
-      const base::android::JavaParamRef<jstring>& textTrackFontVariant,
-      const base::android::JavaParamRef<jstring>& textTrackTextColor,
-      const base::android::JavaParamRef<jstring>& textTrackTextShadow,
-      const base::android::JavaParamRef<jstring>& textTrackTextSize);
 
   // --------------------------------------------------------------------------
   // Methods called from native code
