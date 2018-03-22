@@ -33,18 +33,17 @@ using ui::OverscrollRefresh;
 namespace content {
 namespace {
 
-// Used for conditional creation of EdgeEffect types for the overscroll glow.
-const int kAndroidLSDKVersion = 21;
-
 // If the glow effect alpha is greater than this value, the refresh effect will
 // be suppressed. This value was experimentally determined to provide a
 // reasonable balance between avoiding accidental refresh activation and
 // minimizing the wait required to refresh after the glow has been triggered.
 const float kMinGlowAlphaToDisableRefreshOnL = 0.085f;
 
+// Used for conditional creation of EdgeEffect types for the overscroll glow.
 bool IsAndroidLOrNewer() {
   static bool android_l_or_newer =
-      base::android::BuildInfo::GetInstance()->sdk_int() >= kAndroidLSDKVersion;
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_LOLLIPOP;
   return android_l_or_newer;
 }
 
