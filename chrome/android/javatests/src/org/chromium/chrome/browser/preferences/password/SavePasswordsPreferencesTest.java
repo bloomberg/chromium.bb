@@ -296,8 +296,9 @@ public class SavePasswordsPreferencesTest {
                 // Disable the timer for progress bar.
                 SavePasswordsPreferences fragment =
                         (SavePasswordsPreferences) preferences.getFragmentForTest();
-                fragment.getDialogManagerForTesting().replaceCallbackDelayerForTesting(
-                        mManualDelayer);
+                fragment.getExportFlowForTesting()
+                        .getDialogManagerForTesting()
+                        .replaceCallbackDelayerForTesting(mManualDelayer);
                 // Now call onResume to nudge Chrome into continuing the export flow.
                 preferences.getFragmentForTest().onResume();
             }
@@ -342,9 +343,9 @@ public class SavePasswordsPreferencesTest {
                 // To show an error, the error type for UMA needs to be specified. Because it is not
                 // relevant for cases when the error is forcibly displayed in tests,
                 // EXPORT_RESULT_NO_CONSUMER is passed as an arbitrarily chosen value.
-                fragment.showExportErrorAndAbort(R.string.save_password_preferences_export_no_app,
-                        null, positiveButtonLabelId,
-                        SavePasswordsPreferences.EXPORT_RESULT_NO_CONSUMER);
+                fragment.getExportFlowForTesting().showExportErrorAndAbort(
+                        R.string.save_password_preferences_export_no_app, null,
+                        positiveButtonLabelId, ExportFlow.EXPORT_RESULT_NO_CONSUMER);
             }
         });
     }
@@ -627,7 +628,7 @@ public class SavePasswordsPreferencesTest {
 
         MetricsUtils.HistogramDelta userAbortedDelta =
                 new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        SavePasswordsPreferences.EXPORT_RESULT_USER_ABORTED);
+                        ExportFlow.EXPORT_RESULT_USER_ABORTED);
 
         // Hit the Cancel button to cancel the flow.
         Espresso.onView(withText(R.string.cancel)).perform(click());
@@ -852,16 +853,15 @@ public class SavePasswordsPreferencesTest {
         intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
 
-        MetricsUtils.HistogramDelta successDelta =
-                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        SavePasswordsPreferences.EXPORT_RESULT_SUCCESS);
+        MetricsUtils.HistogramDelta successDelta = new MetricsUtils.HistogramDelta(
+                "PasswordManager.ExportPasswordsToCSVResult", ExportFlow.EXPORT_RESULT_SUCCESS);
 
         MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.ExportedPasswordsPerUserInCSV", 123);
 
         MetricsUtils.HistogramDelta progressBarDelta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.Android.ExportPasswordsProgressBarUsage",
-                SavePasswordsPreferences.PROGRESS_NOT_SHOWN);
+                ExportFlow.PROGRESS_NOT_SHOWN);
 
         // Confirm the export warning to fire the sharing intent.
         Espresso.onView(withText(R.string.save_password_preferences_export_action_title))
@@ -918,9 +918,8 @@ public class SavePasswordsPreferencesTest {
         intending(hasAction(equalTo(Intent.ACTION_CHOOSER)))
                 .respondWith(new Instrumentation.ActivityResult(Activity.RESULT_OK, null));
 
-        MetricsUtils.HistogramDelta successDelta =
-                new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        SavePasswordsPreferences.EXPORT_RESULT_SUCCESS);
+        MetricsUtils.HistogramDelta successDelta = new MetricsUtils.HistogramDelta(
+                "PasswordManager.ExportPasswordsToCSVResult", ExportFlow.EXPORT_RESULT_SUCCESS);
 
         MetricsUtils.HistogramDelta countDelta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.ExportedPasswordsPerUserInCSV", 56);
@@ -1128,7 +1127,7 @@ public class SavePasswordsPreferencesTest {
 
         MetricsUtils.HistogramDelta progressBarDelta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.Android.ExportPasswordsProgressBarUsage",
-                SavePasswordsPreferences.PROGRESS_HIDDEN_DELAYED);
+                ExportFlow.PROGRESS_HIDDEN_DELAYED);
 
         // Now pretend that passwords have been serialized.
         mHandler.getExportCallback().onResult(new byte[] {5, 6, 7}, 12);
@@ -1190,7 +1189,7 @@ public class SavePasswordsPreferencesTest {
 
         MetricsUtils.HistogramDelta progressBarDelta = new MetricsUtils.HistogramDelta(
                 "PasswordManager.Android.ExportPasswordsProgressBarUsage",
-                SavePasswordsPreferences.PROGRESS_HIDDEN_DIRECTLY);
+                ExportFlow.PROGRESS_HIDDEN_DIRECTLY);
 
         // Now pretend that passwords have been serialized.
         allowProgressBarToBeHidden(preferences);
@@ -1243,7 +1242,7 @@ public class SavePasswordsPreferencesTest {
 
         MetricsUtils.HistogramDelta userAbortedDelta =
                 new MetricsUtils.HistogramDelta("PasswordManager.ExportPasswordsToCSVResult",
-                        SavePasswordsPreferences.EXPORT_RESULT_USER_ABORTED);
+                        ExportFlow.EXPORT_RESULT_USER_ABORTED);
 
         // Hit the Cancel button.
         Espresso.onView(withText(R.string.cancel)).perform(click());
