@@ -22,4 +22,19 @@ enum class DownloadedFileAction {
   Count,
 };
 
+// Values of the UMA Download.IOSDownloadFileResult histogram. This action is
+// reported only for started downloads.
+enum class DownloadFileResult {
+  // Download has successfully completed.
+  Completed = 0,
+  // In progress download was cancelled by the user.
+  Cancelled = 1,
+  // Download has completed with error.
+  Failure = 2,
+  // In progress download did no finish because the tab was closed or user has
+  // quit the app.
+  Other = 3,
+  Count
+};
+
 #endif  // IOS_CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_METRIC_NAMES_H_
