@@ -1084,8 +1084,9 @@ bool LayoutBox::CanAutoscroll() const {
   return CanBeScrolledAndHasScrollableArea();
 }
 
-// If specified point is in border belt, returned offset denotes direction of
-// scrolling.
+// If specified point is outside the border-belt-excluded box (the border box
+// inset by the autoscroll activation threshold), returned offset denotes
+// direction of scrolling.
 IntSize LayoutBox::CalculateAutoscrollDirection(
     const IntPoint& point_in_root_frame) const {
   if (!GetFrame())
@@ -1095,34 +1096,36 @@ IntSize LayoutBox::CalculateAutoscrollDirection(
   if (!frame_view)
     return IntSize();
 
-  LayoutRect box(AbsoluteBoundingBoxRect());
-  // TODO(bokan): This is wrong. Subtracting the scroll offset would get you to
-  // frame coordinates (pre-RLS) but *adding* the scroll offset to an absolute
-  // location never makes sense (and we assume below it's in content
-  // coordinates).
-  box.Move(View()->GetFrameView()->ScrollOffsetInt());
+  LayoutRect absolute_scrolling_box;
 
-  // Exclude scrollbars so the border belt (activation area) starts from the
-  // scrollbar-content edge rather than the window edge.
-  ExcludeScrollbars(box, kExcludeOverlayScrollbarSizeForHitTesting);
+  if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled() && IsLayoutView()) {
+    absolute_scrolling_box =
+        LayoutRect(frame_view->VisibleContentRect(kExcludeScrollbars));
+  } else {
+    absolute_scrolling_box = LayoutRect(AbsoluteBoundingBoxRect());
 
-  IntRect window_box =
-      View()->GetFrameView()->ContentsToRootFrame(PixelSnappedIntRect(box));
-  IntPoint window_autoscroll_point = point_in_root_frame;
+    // Exclude scrollbars so the border belt (activation area) starts from the
+    // scrollbar-content edge rather than the window edge.
+    ExcludeScrollbars(absolute_scrolling_box,
+                      kExcludeOverlayScrollbarSizeForHitTesting);
+  }
 
-  if (window_autoscroll_point.X() < window_box.X() + kAutoscrollBeltSize)
-    window_autoscroll_point.Move(-kAutoscrollBeltSize, 0);
-  else if (window_autoscroll_point.X() >
-           window_box.MaxX() - kAutoscrollBeltSize)
-    window_autoscroll_point.Move(kAutoscrollBeltSize, 0);
+  IntRect belt_box = View()->GetFrameView()->AbsoluteToRootFrame(
+      PixelSnappedIntRect(absolute_scrolling_box));
+  belt_box.Inflate(-kAutoscrollBeltSize);
+  IntPoint point = point_in_root_frame;
 
-  if (window_autoscroll_point.Y() < window_box.Y() + kAutoscrollBeltSize)
-    window_autoscroll_point.Move(0, -kAutoscrollBeltSize);
-  else if (window_autoscroll_point.Y() >
-           window_box.MaxY() - kAutoscrollBeltSize)
-    window_autoscroll_point.Move(0, kAutoscrollBeltSize);
+  if (point.X() < belt_box.X())
+    point.Move(-kAutoscrollBeltSize, 0);
+  else if (point.X() > belt_box.MaxX())
+    point.Move(kAutoscrollBeltSize, 0);
 
-  return window_autoscroll_point - point_in_root_frame;
+  if (point.Y() < belt_box.Y())
+    point.Move(0, -kAutoscrollBeltSize);
+  else if (point.Y() > belt_box.MaxY())
+    point.Move(0, kAutoscrollBeltSize);
+
+  return point - point_in_root_frame;
 }
 
 LayoutBox* LayoutBox::FindAutoscrollable(LayoutObject* layout_object) {

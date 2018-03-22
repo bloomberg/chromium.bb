@@ -1,55 +1,123 @@
 function $(id) { return document.getElementById(id); }
 
+// Convert client coordinates in this frame into client coordinates of the root
+// frame, usable with event sender.
+function toRootWindow(rect) {
+    var w = window;
+    var curRect = {
+      left: rect.left,
+      top: rect.top,
+      right: rect.right,
+      bottom: rect.bottom
+    };
+    while(w.parent != w) {
+      var frameRect = w.frameElement.getBoundingClientRect();
+      curRect.left += frameRect.left;
+      curRect.right += frameRect.left;
+      curRect.top += frameRect.top;
+      curRect.bottom += frameRect.top;
+      w = window.parent;
+    }
+    return curRect
+}
+
 var lastScrollLeft;
 var lastScrollTop;
+
 window.onload = function() {
+    const test = async_test("DragAndDrop Autoscroll");
+    test.add_cleanup(() => {
+        eventSender.mouseUp();
+    });
+
     var draggable = $('draggable');
-    var sample = $('sample');
     var scrollBarWidth = $('scrollbars').offsetWidth - $('scrollbars').firstChild.offsetWidth;
     var scrollBarHeight = $('scrollbars').offsetHeight - $('scrollbars').firstChild.offsetHeight;
-    var eastX = window.innerWidth - scrollBarWidth - 10;
-    var northY = 10;
-    var southY= window.innerHeight - scrollBarHeight - 10;
-    var westX = 10;
+
+    var scroller = $('scrollable');
+    var scrollerRect;
+    if (scroller) {
+      scrollerRect = scroller.getBoundingClientRect();
+    } else {
+      scroller = document.scrollingElement;
+      scrollerRect = {
+          left: 0,
+          top: 0,
+          right: window.innerWidth,
+          bottom: window.innerHeight,
+      };
+    }
+
+    scrollerRect = toRootWindow(scrollerRect);
+
+    var eastX = scrollerRect.right - scrollBarWidth - 10;
+    var northY = scrollerRect.top + 10;
+    var southY= scrollerRect.bottom - scrollBarHeight - 10;
+    var westX = scrollerRect.left + 10;
 
     function moveTo(newState, x, y)
     {
         state = newState;
-        lastScrollLeft = document.scrollingElement.scrollLeft;
-        lastScrollTop = document.scrollingElement.scrollTop;
+        lastScrollLeft = scroller.scrollLeft;
+        lastScrollTop = scroller.scrollTop;
         eventSender.mouseMoveTo(x, y);
     }
 
     var state = 'START';
     function process(event)
     {
-        debug('state=' + state);
         switch (state) {
         case 'NE':
-            shouldBeTrue('document.scrollingElement.scrollLeft > 0');
-            shouldBeTrue('!document.scrollingElement.scrollTop');
-            moveTo('SE', westX, southY);
+            test.step(() => {
+              assert_greater_than(
+                  scroller.scrollLeft,
+                  lastScrollLeft,
+                  "NE should scroll right");
+              assert_less_than(
+                  scroller.scrollTop,
+                  lastScrollTop,
+                  "NE should scroll up");
+            });
+            moveTo('SE', eastX, southY);
             break;
         case 'SE':
-            shouldBeTrue('document.scrollingElement.scrollLeft > 0');
-            shouldBeTrue('document.scrollingElement.scrollTop > 0');
+            test.step(() => {
+              assert_greater_than(
+                  scroller.scrollLeft,
+                  lastScrollLeft,
+                  "SE should scroll right");
+              assert_greater_than(
+                  scroller.scrollTop,
+                  lastScrollTop,
+                  "SE should scroll down");
+            });
             moveTo('SW', westX, southY);
             break;
         case 'SW':
-            shouldBeTrue('document.scrollingElement.scrollLeft < lastScrollLeft');
-            shouldBeTrue('document.scrollingElement.scrollTop > 0');
+            test.step(() => {
+              assert_less_than(
+                  scroller.scrollLeft,
+                  lastScrollLeft,
+                  "SW should scroll left");
+              assert_greater_than(
+                  scroller.scrollTop,
+                  lastScrollTop,
+                  "SW should scroll down");
+            });
             moveTo('NW', westX, northY);
             break;
         case 'NW':
-            shouldBeTrue('document.scrollingElement.scrollLeft <= lastScrollLeft');
-            shouldBeTrue('document.scrollingElement.scrollTop < lastScrollTop');
-            eventSender.mouseUp();
-            $('container').outerHTML = '';
-            if (window.parent !== window)
-                window.jsTestIsAsync = false;
-            finishJSTest();
-            if (!window.jsTestIsAsync)
-                window.parent.postMessage($('console').innerHTML, '*');
+            test.step(() => {
+              assert_less_than(
+                  scroller.scrollLeft,
+                  lastScrollLeft,
+                  "NW should scroll left");
+              assert_less_than(
+                  scroller.scrollTop,
+                  lastScrollTop,
+                  "NW should scroll up");
+            });
+            test.done();
             state = 'DONE';
             break;
         case 'DONE':
@@ -58,20 +126,27 @@ window.onload = function() {
             moveTo('NE', eastX, northY);
             break;
         default:
-            testFailed('Bad state ' + state);
+            console.error('Bad state ' + state);
             break;
         }
     };
 
-    if (!window.eventSender)
+    if (!window.eventSender) {
+        $("container").scrollIntoView();
         return;
+    }
+
+    if (scroller === document.scrollingElement)
+      window.addEventListener('scroll', process);
+    else
+      scroller.addEventListener('scroll', process);
+
+    $("container").scrollIntoView();
 
     eventSender.dragMode = false;
 
     // Grab draggable
-    eventSender.mouseMoveTo(draggable.offsetLeft + 5, draggable.offsetTop + 5);
+    const draggable_rect = toRootWindow(draggable.getBoundingClientRect());
+    eventSender.mouseMoveTo(draggable_rect.left + 5, draggable_rect.top + 5);
     eventSender.mouseDown();
-
-    window.onscroll = process;
-    process();
 };
