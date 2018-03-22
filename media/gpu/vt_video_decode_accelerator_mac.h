@@ -27,7 +27,6 @@
 #include "media/video/h264_poc.h"
 #include "media/video/video_decode_accelerator.h"
 #include "ui/gfx/geometry/size.h"
-#include "ui/gl/gl_context_cgl.h"
 #include "ui/gl/gl_image_io_surface.h"
 
 namespace media {
@@ -40,9 +39,7 @@ MEDIA_GPU_EXPORT bool InitializeVideoToolbox();
 class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
                                  public base::trace_event::MemoryDumpProvider {
  public:
-  explicit VTVideoDecodeAccelerator(
-      const MakeGLContextCurrentCallback& make_context_current_cb,
-      const BindGLImageCallback& bind_image_cb);
+  explicit VTVideoDecodeAccelerator(const BindGLImageCallback& bind_image_cb);
 
   ~VTVideoDecodeAccelerator() override;
 
@@ -194,7 +191,6 @@ class VTVideoDecodeAccelerator : public VideoDecodeAccelerator,
   //
   // GPU thread state.
   //
-  MakeGLContextCurrentCallback make_context_current_cb_;
   BindGLImageCallback bind_image_cb_;
 
   VideoDecodeAccelerator::Client* client_ = nullptr;
