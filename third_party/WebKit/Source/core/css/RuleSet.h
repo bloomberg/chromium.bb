@@ -218,6 +218,10 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
     DCHECK(!pending_rules_);
     return &shadow_host_rules_;
   }
+  const HeapVector<RuleData>* PartPseudoRules() const {
+    DCHECK(!pending_rules_);
+    return &part_pseudo_rules_;
+  }
   const HeapVector<Member<StyleRulePage>>& PageRules() const {
     DCHECK(!pending_rules_);
     return page_rules_;
@@ -318,6 +322,7 @@ class CORE_EXPORT RuleSet : public GarbageCollectedFinalized<RuleSet> {
   HeapVector<RuleData> focus_pseudo_class_rules_;
   HeapVector<RuleData> universal_rules_;
   HeapVector<RuleData> shadow_host_rules_;
+  HeapVector<RuleData> part_pseudo_rules_;
   RuleFeatureSet features_;
   HeapVector<Member<StyleRulePage>> page_rules_;
   HeapVector<Member<StyleRuleFontFace>> font_face_rules_;
