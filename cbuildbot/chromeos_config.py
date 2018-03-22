@@ -3334,6 +3334,7 @@ def ReleaseBuilders(site_config, boards_dict, ge_build_config):
       chrome_sdk=False,
       afdo_use=False,
       branch_util_test=True,
+      important=True,
   )
 
   ### Release configs.
