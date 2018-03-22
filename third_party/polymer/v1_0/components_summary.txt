@@ -36,9 +36,9 @@ Tree link: https://github.com/PolymerElements/iron-behaviors/tree/v1.0.17
 
 Name: iron-checked-element-behavior
 Repository: https://github.com/PolymerElements/iron-checked-element-behavior.git
-Tree: v1.0.5
-Revision: c70add47a9af62d30746587e8a1303fb390787c6
-Tree link: https://github.com/PolymerElements/iron-checked-element-behavior/tree/v1.0.5
+Tree: v2.1.0
+Revision: 3bd74f1dda95020aad873467ca25c37dc09d6ee4
+Tree link: https://github.com/PolymerElements/iron-checked-element-behavior/tree/v2.1.0
 
 Name: iron-collapse
 Repository: https://github.com/PolymerElements/iron-collapse.git
@@ -66,9 +66,9 @@ Tree link: https://github.com/PolymerElements/iron-flex-layout/tree/v1.3.1
 
 Name: iron-form-element-behavior
 Repository: https://github.com/PolymerElements/iron-form-element-behavior.git
-Tree: v1.0.6
-Revision: cf9e09ded62daf3363852ce98260aaad1ed0fae1
-Tree link: https://github.com/PolymerElements/iron-form-element-behavior/tree/v1.0.6
+Tree: v2.1.1
+Revision: 89568e9b7ae3ebfa86f67395085b7f1f34df505e
+Tree link: https://github.com/PolymerElements/iron-form-element-behavior/tree/v2.1.1
 
 Name: iron-icon
 Repository: https://github.com/PolymerElements/iron-icon.git
@@ -186,9 +186,9 @@ Tree link: https://github.com/PolymerElements/neon-animation/tree/v2.1.0
 
 Name: paper-behaviors
 Repository: https://github.com/PolymerElements/paper-behaviors.git
-Tree: v1.0.12
-Revision: 424919089ce3a68dfac1de17e6a56f4e09048e95
-Tree link: https://github.com/PolymerElements/paper-behaviors/tree/v1.0.12
+Tree: v2.1.0
+Revision: ddde7f8cf41078b7a7b724473558421d6bc37f57
+Tree link: https://github.com/PolymerElements/paper-behaviors/tree/v2.1.0
 
 Name: paper-button
 Repository: https://github.com/PolymerElements/paper-button.git

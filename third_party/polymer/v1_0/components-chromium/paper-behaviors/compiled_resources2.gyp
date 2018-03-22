@@ -32,6 +32,7 @@
     {
       'target_name': 'paper-ripple-behavior-extracted',
       'dependencies': [
+        '../iron-behaviors/compiled_resources2.gyp:iron-button-state-extracted',
         '../paper-ripple/compiled_resources2.gyp:paper-ripple-extracted',
       ],
       'includes': ['../../../../closure_compiler/compile_js2.gypi'],

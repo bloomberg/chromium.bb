@@ -29,6 +29,7 @@ js_library("paper-inky-focus-behavior-extracted") {
 
 js_library("paper-ripple-behavior-extracted") {
   deps = [
+    "../iron-behaviors:iron-button-state-extracted",
     "../paper-ripple:paper-ripple-extracted",
   ]
 }

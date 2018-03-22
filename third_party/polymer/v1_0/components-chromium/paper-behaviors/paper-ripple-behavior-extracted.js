@@ -99,8 +99,9 @@
      * @return {!PaperRippleElement} Returns a `<paper-ripple>` element.
      */
     _createRipple: function() {
-      return /** @type {!PaperRippleElement} */ (
+      var element = /** @type {!PaperRippleElement} */ (
           document.createElement('paper-ripple'));
+      return element;
     },
 
     _noinkChanged: function(noink) {
