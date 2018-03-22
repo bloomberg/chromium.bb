@@ -3826,8 +3826,14 @@ ChromeContentBrowserClient::CreateURLLoaderThrottles(
   std::vector<std::unique_ptr<content::URLLoaderThrottle>> result;
 
 #if defined(SAFE_BROWSING_DB_LOCAL) || defined(SAFE_BROWSING_DB_REMOTE)
-  if (network_service_enabled ||
-      base::FeatureList::IsEnabled(safe_browsing::kCheckByURLLoaderThrottle)) {
+  ProfileIOData* io_data = ProfileIOData::FromResourceContext(resource_context);
+  bool matches_enterprise_whitelist =
+      io_data && safe_browsing::IsURLWhitelistedByPolicy(
+                     request.url, io_data->safe_browsing_whitelist_domains());
+  if (!matches_enterprise_whitelist &&
+      (network_service_enabled ||
+       base::FeatureList::IsEnabled(
+           safe_browsing::kCheckByURLLoaderThrottle))) {
     auto* delegate = GetSafeBrowsingUrlCheckerDelegate(resource_context);
     if (delegate && !delegate->ShouldSkipRequestCheck(
                         resource_context, request.url, frame_tree_node_id,
@@ -4249,9 +4255,9 @@ ChromeContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate(
   // |safe_browsing_service_| may be unavailable in tests.
   if (safe_browsing_service_ && !safe_browsing_url_checker_delegate_) {
     safe_browsing_url_checker_delegate_ =
-        new safe_browsing::UrlCheckerDelegateImpl(
+        base::MakeRefCounted<safe_browsing::UrlCheckerDelegateImpl>(
             safe_browsing_service_->database_manager(),
-            safe_browsing_service_->ui_manager(), io_data);
+            safe_browsing_service_->ui_manager());
   }
 
   return safe_browsing_url_checker_delegate_.get();
