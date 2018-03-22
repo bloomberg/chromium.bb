@@ -82,6 +82,10 @@ static_library("webrtc") {
       "field_trial.cc",
       "runtime_enabled_features.cc",
     ]
+    deps += [
+      "//base",
+      "//third_party/webrtc/system_wrappers:runtime_enabled_features_api",
+    ]
   }
 
   configs += [
@@ -112,6 +116,9 @@ static_library("init_webrtc") {
   ]
   deps = [
     ":task_queue_impl",
+    "//base",
+    "//third_party/webrtc/rtc_base",
+    "//third_party/webrtc/system_wrappers",
   ]
 }
 
@@ -144,6 +151,7 @@ source_set("task_queue_impl") {
   ]
   deps = [
     "//base",
+    "//third_party/webrtc/rtc_base:refcount",
     "//third_party/webrtc/rtc_base:rtc_task_queue_api",
   ]
 }
