@@ -587,6 +587,15 @@ function (setup_av1_targets)
     endif ()
   endif ()
 
+  if (HAVE_VSX)
+    if (AOM_AV1_COMMON_INTRIN_VSX)
+      add_intrinsics_object_library("-mvsx -maltivec"
+                                    "vsx"
+                                    "aom_av1_common"
+                                    "AOM_AV1_COMMON_INTRIN_VSX" "aom")
+    endif ()
+  endif ()
+
   if (HAVE_MSA)
     add_intrinsics_object_library("" "msa" "aom_av1_common"
                                   "AOM_AV1_COMMON_INTRIN_MSA" "aom")

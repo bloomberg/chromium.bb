@@ -36,6 +36,9 @@ option(ENABLE_NEON_ASM "Enables NEON ASM optimizations on ARM targets." ON)
 option(ENABLE_DSPR2 "Enables DSPR2 optimizations on MIPS targets." OFF)
 option(ENABLE_MSA "Enables MSA optimizations on MIPS targets." OFF)
 
+# VSX intrinsics flags.
+option(ENABLE_VSX "Enables VSX optimizations on PowerPC targets." ON)
+
 # x86/x86_64 assembly/intrinsics flags.
 option(ENABLE_MMX "Enables MMX optimizations on x86/x86_64 targets." ON)
 option(ENABLE_SSE "Enables SSE optimizations on x86/x86_64 targets." ON)
