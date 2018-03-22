@@ -168,6 +168,8 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
         'UNKNOWN',
     ],
 
+    # TODO(tkent): Remove this entry after the move is completed.
+    # crbug.com/622551
     'third_party/WebKit': [
         'UNKNOWN',
     ],
@@ -179,6 +181,10 @@ PATH_SPECIFIC_WHITELISTED_LICENSES = {
 
     # http://code.google.com/p/angleproject/issues/detail?id=217
     'third_party/angle': [
+        'UNKNOWN',
+    ],
+
+    'third_party/blink': [
         'UNKNOWN',
     ],
 
