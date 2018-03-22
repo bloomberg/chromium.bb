@@ -21,6 +21,7 @@ MockScanoutBuffer::MockScanoutBuffer(const gfx::Size& size,
       format_(format),
       modifier_(modifier),
       id_(g_current_framebuffer_id++),
+      opaque_id_(g_current_framebuffer_id++),
       drm_(drm) {}
 
 MockScanoutBuffer::~MockScanoutBuffer() {}
@@ -30,7 +31,7 @@ uint32_t MockScanoutBuffer::GetFramebufferId() const {
 }
 
 uint32_t MockScanoutBuffer::GetOpaqueFramebufferId() const {
-  return 2;
+  return opaque_id_;
 }
 
 uint32_t MockScanoutBuffer::GetHandle() const {
