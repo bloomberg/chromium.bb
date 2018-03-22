@@ -2736,9 +2736,8 @@ uploading your change for review.  These are checked by presubmit scripts.
 </enum>
 
 <enum name="BackingStoreResults">
-  <int value="0" label="Unused"/>
-  <int value="1" label="Success"/>
-  <int value="2" label="Failure"/>
+  <int value="0" label="Success"/>
+  <int value="1" label="Failure"/>
 </enum>
 
 <enum name="BadMessageReasonChrome">
