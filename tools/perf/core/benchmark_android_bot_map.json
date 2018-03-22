@@ -50,28 +50,22 @@
   },
   "15": {
     "benchmarks": [
-      "dromaeo.domcoreattr",
       "smoothness.sync_scroll.key_mobile_sites_smooth",
       "v8.runtime_stats.top_25"
     ]
   },
   "16": {
     "benchmarks": [
-      "dromaeo.domcoremodify",
-      "smoothness.top_25_smooth",
-      "v8.runtimestats.browsing_desktop"
+      "smoothness.top_25_smooth"
     ]
   },
   "17": {
     "benchmarks": [
-      "dromaeo.domcorequery",
-      "smoothness.tough_ad_cases",
-      "v8.runtimestats.browsing_mobile"
+      "smoothness.tough_ad_cases"
     ]
   },
   "18": {
     "benchmarks": [
-      "dromaeo.domcoretraverse",
       "smoothness.tough_animation_cases",
       "wasm"
     ]
