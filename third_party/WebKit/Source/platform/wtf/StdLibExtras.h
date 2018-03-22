@@ -247,21 +247,6 @@ TypePtr unsafe_reinterpret_cast_ptr(const void* ptr) {
 
 namespace WTF {
 
-/*
- * C++'s idea of a reinterpret_cast lacks sufficient cojones.
- */
-template <typename TO, typename FROM>
-inline TO BitwiseCast(FROM from) {
-  static_assert(sizeof(TO) == sizeof(FROM),
-                "WTF::bitwiseCast sizeof casted types should be equal");
-  union {
-    FROM from;
-    TO to;
-  } u;
-  u.from = from;
-  return u.to;
-}
-
 template <typename To, typename From>
 inline To SafeCast(From value) {
   return base::checked_cast<To>(value);
@@ -317,7 +302,6 @@ char (&ArrayLengthHelperFunction(T (&)[0]))[0];
 
 }  // namespace WTF
 
-using WTF::BitwiseCast;
 using WTF::SafeCast;
 
 #endif  // WTF_StdLibExtras_h

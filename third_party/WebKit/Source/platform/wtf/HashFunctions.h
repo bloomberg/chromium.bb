@@ -24,6 +24,7 @@
 #include <stdint.h>
 #include <memory>
 #include <type_traits>
+#include "base/bit_cast.h"
 #include "base/memory/scoped_refptr.h"
 #include "build/build_config.h"
 #include "platform/wtf/StdLibExtras.h"
@@ -118,10 +119,8 @@ struct IntHash {
 template <typename T>
 struct FloatHash {
   typedef typename IntTypes<sizeof(T)>::UnsignedType Bits;
-  static unsigned GetHash(T key) { return HashInt(BitwiseCast<Bits>(key)); }
-  static bool Equal(T a, T b) {
-    return BitwiseCast<Bits>(a) == BitwiseCast<Bits>(b);
-  }
+  static unsigned GetHash(T key) { return HashInt(bit_cast<Bits>(key)); }
+  static bool Equal(T a, T b) { return bit_cast<Bits>(a) == bit_cast<Bits>(b); }
   static const bool safe_to_compare_to_empty_or_deleted = true;
 };
 
