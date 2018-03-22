@@ -161,15 +161,15 @@ class ConversionContext {
   Vector<StateEntry> state_stack_;
 
   // This structure accumulates bounds of all chunks under an effect. When an
-  // effect starts, we emit a SaveLayerOp with null bounds starts, and push a
-  // new |EffectBoundsInfo| onto |effect_bounds_stack_|. When the effect ends,
-  // we update the bounds of the SaveLayerOp.
+  // effect starts, we emit a SaveLayer[Alpha]Op with null bounds starts, and
+  // push a new |EffectBoundsInfo| onto |effect_bounds_stack_|. When the effect
+  // ends, we update the bounds of the op.
   struct EffectBoundsInfo {
-    // The id of the SaveLayerOp for this effect. It's recorded when we push the
-    // SaveLayerOp for this effect, and used when this effect ends in
+    // The id of the SaveLayer[Alpha]Op for this effect. It's recorded when we
+    // push the op for this effect, and used when this effect ends in
     // UpdateSaveLayerBounds().
     size_t save_layer_id;
-    // The transform space when the SaveLayerOp was emitted.
+    // The transform space when the SaveLayer[Alpha]Op was emitted.
     const TransformPaintPropertyNode* transform;
     // Records the bounds of the effect which initiated the entry. Note that
     // the effect is not |this->effect| (which is the previous effect), but the
@@ -359,23 +359,31 @@ void ConversionContext::SwitchToEffect(
     // We always create separate effect nodes for normal effects and filter
     // effects, so we can handle them separately.
     bool has_filter = !sub_effect->Filter().IsEmpty();
-    bool has_other_effects = sub_effect->Opacity() != 1.f ||
-                             sub_effect->BlendMode() != SkBlendMode::kSrcOver ||
+    bool has_opacity = sub_effect->Opacity() != 1.f;
+    bool has_other_effects = sub_effect->BlendMode() != SkBlendMode::kSrcOver ||
                              sub_effect->GetColorFilter() != kColorFilterNone;
-    DCHECK(!has_filter || !has_other_effects);
+    DCHECK(!has_filter || !(has_opacity || has_other_effects));
 
     if (!has_filter) {
       // No need to adjust transform for non-filter effects because transform
       // doesn't matter.
-      cc::PaintFlags flags;
-      flags.setBlendMode(sub_effect->BlendMode());
       // TODO(ajuma): This should really be rounding instead of flooring the
       // alpha value, but that breaks slimming paint reftests.
-      flags.setAlpha(
-          static_cast<uint8_t>(gfx::ToFlooredInt(255 * sub_effect->Opacity())));
-      flags.setColorFilter(GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
-          sub_effect->GetColorFilter()));
-      save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
+      auto alpha =
+          static_cast<uint8_t>(gfx::ToFlooredInt(255 * sub_effect->Opacity()));
+      if (has_other_effects) {
+        cc::PaintFlags flags;
+        flags.setBlendMode(sub_effect->BlendMode());
+        flags.setAlpha(alpha);
+        flags.setColorFilter(
+            GraphicsContext::WebCoreColorFilterToSkiaColorFilter(
+                sub_effect->GetColorFilter()));
+        save_layer_id = cc_list_.push<cc::SaveLayerOp>(nullptr, &flags);
+      } else {
+        constexpr bool preserve_lcd_text_requests = false;
+        save_layer_id = cc_list_.push<cc::SaveLayerAlphaOp>(
+            nullptr, alpha, preserve_lcd_text_requests);
+      }
       saved_count++;
     } else {
       // Handle filter effect. Adjust transform first.
@@ -436,7 +444,7 @@ void ConversionContext::UpdateEffectBounds(
 }
 
 // Pop clip states (if any) and one effect state (if any) on the top of the
-// stack. Update the bounds of the SaveLayerOp of the effect.
+// stack. Update the bounds of the SaveLayer[Alpha]Op of the effect.
 void ConversionContext::PopToParentEffect() {
   DCHECK(state_stack_.size());
   PopClips();
@@ -455,9 +463,9 @@ void ConversionContext::PopToParentEffect() {
     if (current_effect_->Filter().IsEmpty()) {
       cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id, bounds);
     } else {
-      // The bounds for the SaveLayerOp should be the source bounds before the
-      // filter is applied, in the space of the TranslateOp which was emitted
-      // before the SaveLayerOp.
+      // The bounds for the SaveLayer[Alpha]Op should be the source bounds
+      // before the filter is applied, in the space of the TranslateOp which was
+      // emitted before the SaveLayer[Alpha]Op.
       auto save_layer_bounds = bounds;
       save_layer_bounds.MoveBy(-current_effect_->PaintOffset());
       cc_list_.UpdateSaveLayerBounds(bounds_info.save_layer_id,

@@ -83,9 +83,9 @@ class CC_PAINT_EXPORT DisplayItemList
   }
 
   // Called by blink::PaintChunksToCcLayer when an effect ends, to update the
-  // bounds of a SaveLayerOp which was emitted when the effect started. This is
-  // needed because blink doesn't know the bounds when an effect starts. Don't
-  // add other mutation methods like this if there is better alternative.
+  // bounds of a SaveLayer[Alpha]Op which was emitted when the effect started.
+  // This is needed because blink doesn't know the bounds when an effect starts.
+  // Don't add other mutation methods like this if there is better alternative.
   void UpdateSaveLayerBounds(size_t id, const SkRect& bounds) {
     paint_op_buffer_.UpdateSaveLayerBounds(id, bounds);
   }
