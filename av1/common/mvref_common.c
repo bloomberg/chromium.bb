@@ -1788,6 +1788,7 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
   // Assign all the remaining frame(s), if any, to the earliest reference frame.
   for (; ref_idx < (INTER_REFS_PER_FRAME - 2); ref_idx++) {
     const MV_REFERENCE_FRAME ref_frame = ref_frame_list[ref_idx];
+    if (ref_flag_list[ref_frame - LAST_FRAME] == 1) continue;
     set_ref_frame_info(cm, ref_frame - LAST_FRAME,
                        &ref_frame_info[fwd_start_idx]);
     ref_flag_list[ref_frame - LAST_FRAME] = 1;
