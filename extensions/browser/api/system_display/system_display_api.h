@@ -25,14 +25,16 @@ class SystemDisplayFunction : public UIThreadExtensionFunction {
   virtual bool ShouldRestrictToKioskAndWebUI();
 };
 
-// This function inherits from UIThreadExtensionFunction because, unlike the
-// rest of this API, it's available on all platforms.
-class SystemDisplayGetInfoFunction : public UIThreadExtensionFunction {
+// GetInfo is a SystemDisplayFunction to limit some of the fields to kiosk mode
+// and web UI. The method itself is not kiosk-mode only.
+class SystemDisplayGetInfoFunction : public SystemDisplayFunction {
  public:
   DECLARE_EXTENSION_FUNCTION("system.display.getInfo", SYSTEM_DISPLAY_GETINFO);
 
  protected:
   ~SystemDisplayGetInfoFunction() override {}
+
+  bool PreRunValidation(std::string* error) override;
   ResponseAction Run() override;
 };
 

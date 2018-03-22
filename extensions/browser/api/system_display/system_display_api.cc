@@ -185,6 +185,12 @@ bool SystemDisplayFunction::ShouldRestrictToKioskAndWebUI() {
   return true;
 }
 
+bool SystemDisplayGetInfoFunction::PreRunValidation(std::string* error) {
+  // Returns true to not block the method completely when in non-kiosk mode.
+  // Only the |edid| property is conditional to kiosk mode.
+  return true;
+}
+
 ExtensionFunction::ResponseAction SystemDisplayGetInfoFunction::Run() {
   std::unique_ptr<display::GetInfo::Params> params(
       display::GetInfo::Params::Create(*args_));
@@ -192,6 +198,12 @@ ExtensionFunction::ResponseAction SystemDisplayGetInfoFunction::Run() {
                         *params->flags->single_unified;
   DisplayInfoProvider::DisplayUnitInfoList all_displays_info =
       DisplayInfoProvider::Get()->GetAllDisplaysInfo(single_unified);
+
+  // Only |edid| is meant to be restricted to kiosk mode.
+  if (ShouldRestrictToKioskAndWebUI())
+    for (auto& display_info : all_displays_info)
+      display_info.edid.release();
+
   return RespondNow(
       ArgumentList(display::GetInfo::Results::Create(all_displays_info)));
 }
