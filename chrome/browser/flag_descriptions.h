@@ -1306,6 +1306,9 @@ extern const char kOfflinePagesLoadSignalCollectingDescription[];
 extern const char kOfflinePagesDescriptivePendingStatusName[];
 extern const char kOfflinePagesDescriptivePendingStatusDescription[];
 
+extern const char kOfflinePagesInDownloadHomeOpenInCctName[];
+extern const char kOfflinePagesInDownloadHomeOpenInCctDescription[];
+
 extern const char kOfflinePagesPrefetchingName[];
 extern const char kOfflinePagesPrefetchingDescription[];
 
