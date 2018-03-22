@@ -198,12 +198,14 @@ NSIndexPath* CreateIndexPath(NSInteger index) {
         selectedIndex:(NSUInteger)selectedIndex {
   self.items = [items mutableCopy];
   self.selectedIndex = selectedIndex;
-  if (![self isViewVisible])
-    return;
-  [self.collectionView reloadData];
-  [self.collectionView selectItemAtIndexPath:CreateIndexPath(selectedIndex)
-                                    animated:YES
-                              scrollPosition:UICollectionViewScrollPositionTop];
+  if ([self isViewVisible]) {
+    [self.collectionView reloadData];
+    [self.collectionView
+        selectItemAtIndexPath:CreateIndexPath(selectedIndex)
+                     animated:YES
+               scrollPosition:UICollectionViewScrollPositionTop];
+  }
+  // Whether the view is visible or not, the delegate must be updated.
   [self.delegate gridViewController:self didChangeItemCount:self.items.count];
 }
 
