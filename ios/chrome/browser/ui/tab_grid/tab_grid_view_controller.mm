@@ -103,6 +103,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   // Call the current page setter to sync the scroll view offset to the current
   // page value.
   self.currentPage = _currentPage;
+  [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
   [self configureViewControllerForCurrentSizeClassesAndPage];
   if (animated && self.transitionCoordinator) {
     [self animateToolbarsForAppearance];
@@ -155,16 +156,17 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
         self.scrollView.contentSize.width - self.scrollView.frame.size.width;
     CGFloat offset = scrollView.contentOffset.x / offsetWidth;
     self.topToolbar.pageControl.sliderPosition = offset;
-  }
-}
 
-- (void)scrollViewDidEndDecelerating:(UIScrollView*)scrollView {
-  // Bookkeeping for the current page.
-  CGFloat pageWidth = scrollView.frame.size.width;
-  float fractionalPage = scrollView.contentOffset.x / pageWidth;
-  NSUInteger page = lround(fractionalPage);
-  _currentPage = static_cast<TabGridPage>(page);
-  [self configureButtonsForCurrentPage];
+    // Bookkeeping for the current page.
+    // TODO(crbug.com/822328) : Fix for RTL.
+    CGFloat pageWidth = scrollView.frame.size.width;
+    float fractionalPage = scrollView.contentOffset.x / pageWidth;
+    NSUInteger page = lround(fractionalPage);
+    if (page != self.currentPage) {
+      _currentPage = static_cast<TabGridPage>(page);
+      [self configureButtonsForCurrentPage];
+    }
+  }
 }
 
 #pragma mark - UIScrollViewAccessibilityDelegate
@@ -553,7 +555,6 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 }
 
 - (void)configureButtonsForCurrentPage {
-  [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
   self.newTabButton.page = self.currentPage;
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
