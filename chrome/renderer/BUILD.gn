@@ -313,7 +313,6 @@ static_library("renderer") {
       "resources/extensions/declarative_content_custom_bindings.js",
       "resources/extensions/easy_unlock_proximity_required.js",
       "resources/extensions/enterprise_platform_keys_custom_bindings.js",
-      "resources/extensions/feedback_private_custom_bindings.js",
       "resources/extensions/gcm_custom_bindings.js",
       "resources/extensions/identity_custom_bindings.js",
       "resources/extensions/image_writer_private_custom_bindings.js",

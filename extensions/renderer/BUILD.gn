@@ -193,6 +193,7 @@ jumbo_source_set("renderer") {
     "resources/extension.css",
     "resources/extension_custom_bindings.js",
     "resources/extension_fonts.css",
+    "resources/feedback_private_custom_bindings.js",
     "resources/file_entry_binding_util.js",
     "resources/file_system_custom_bindings.js",
     "resources/greasemonkey_api.js",
