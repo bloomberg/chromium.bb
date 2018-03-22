@@ -400,6 +400,11 @@ void KeyboardController::HideAnimationFinished() {
   }
 }
 
+void KeyboardController::ShowAnimationFinished() {
+  MarkKeyboardLoadFinished();
+  NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
+}
+
 void KeyboardController::SetContainerBehaviorInternal(
     const ContainerType type) {
   switch (type) {
@@ -642,8 +647,9 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
 
   ui_->ShowKeyboardContainer(container_.get());
 
-  animation_observer_ = std::make_unique<CallbackAnimationObserver>(
-      base::BindOnce(&MarkKeyboardLoadFinished));
+  animation_observer_ =
+      std::make_unique<CallbackAnimationObserver>(base::BindOnce(
+          &KeyboardController::ShowAnimationFinished, base::Unretained(this)));
   ui::ScopedLayerAnimationSettings settings(container_animator);
   settings.AddObserver(animation_observer_.get());
 
@@ -654,7 +660,6 @@ void KeyboardController::PopulateKeyboardContent(int64_t display_id,
   queued_container_type_ = nullptr;
 
   ChangeState(KeyboardControllerState::SHOWN);
-  NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
 }
 
 bool KeyboardController::WillHideKeyboard() const {
