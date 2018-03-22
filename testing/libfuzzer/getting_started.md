@@ -54,7 +54,7 @@ extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
 }
 ```
 
-*Note*: You should create the fuzz target file `<my_fuzzer>.cc next to the code
+*Note*: You should create the fuzz target file `<my_fuzzer>.cc` next to the code
 that is being tested and in the same directory as your other unit tests. Please
 do not use `testing/libfuzzer/fuzzers` directory, this was a directory used for
 initial sample fuzz targets and is no longer recommended for landing new fuzz
