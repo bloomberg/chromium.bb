@@ -95,6 +95,17 @@ public final class UrlResponseInfoImpl extends UrlResponseInfo {
         mReceivedByteCount = new AtomicLong(receivedByteCount);
     }
 
+    /**
+     * Constructor for backwards compatibility.  See main constructor above for more info.
+     */
+    @Deprecated
+    public UrlResponseInfoImpl(List<String> urlChain, int httpStatusCode, String httpStatusText,
+            List<Map.Entry<String, String>> allHeadersList, boolean wasCached,
+            String negotiatedProtocol, String proxyServer) {
+        this(urlChain, httpStatusCode, httpStatusText, allHeadersList, wasCached,
+                negotiatedProtocol, proxyServer, 0);
+    }
+
     @Override
     public String getUrl() {
         return mResponseInfoUrlChain.get(mResponseInfoUrlChain.size() - 1);
