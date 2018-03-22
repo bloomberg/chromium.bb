@@ -10928,14 +10928,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest,
   GURL popup_url(embedded_test_server()->GetURL(
       "b.com", "/cross_site_iframe_factory.html?b(b)"));
   Shell* popup_shell = OpenPopup(shell()->web_contents(), popup_url, "popup");
-
-#if defined(OS_ANDROID)
-  // Workaround for https://crbug.com/823493 on Android content shell, where
-  // window.open() won't initially show the contents of the new window, and
-  // resizing it will force the contents to be shown.
-  popup_shell->SizeTo(gfx::Size(500, 500));
-#endif
-
   FrameTreeNode* popup_child =
       static_cast<WebContentsImpl*>(popup_shell->web_contents())
           ->GetFrameTree()
