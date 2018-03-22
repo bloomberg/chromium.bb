@@ -309,16 +309,17 @@ class Cache::BarrierCallbackForPut final
       return;
     completed_ = true;
     ScriptState* state = resolver_->GetScriptState();
-    RejectWithState(state, V8ThrowException::CreateTypeError(
-                               state->GetIsolate(), error_message));
+    ScriptState::Scope scope(state);
+    resolver_->Reject(
+        V8ThrowException::CreateTypeError(state->GetIsolate(), error_message));
   }
 
   void Abort() {
     if (!StillActive())
       return;
     completed_ = true;
-    RejectWithState(resolver_->GetScriptState(),
-                    DOMException::Create(kAbortError));
+    ScriptState::Scope scope(resolver_->GetScriptState());
+    resolver_->Reject(DOMException::Create(kAbortError));
   }
 
   virtual void Trace(blink::Visitor* visitor) {
@@ -335,12 +336,6 @@ class Cache::BarrierCallbackForPut final
       return false;
 
     return true;
-  }
-
-  template <typename T>
-  void RejectWithState(ScriptState* state, T value) {
-    ScriptState::Scope scope(state);
-    resolver_->Reject(value);
   }
 
   // Report the script stats if this cache storage is for service worker
