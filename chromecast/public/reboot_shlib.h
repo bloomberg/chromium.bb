@@ -15,6 +15,7 @@ namespace chromecast {
 // All methods in the RebootShlib interface can be called from any thread.
 class CHROMECAST_EXPORT RebootShlib {
  public:
+  // GENERATED_JAVA_ENUM_PACKAGE: com.google.android.apps.cast
   enum RebootSource {
     // A default value to use if the source of a reboot is not known.
     UNKNOWN = 0,
