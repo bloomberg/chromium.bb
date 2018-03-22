@@ -194,6 +194,7 @@ void PwgRasterConverterHelper::RunCallback(bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (callback_)
     std::move(callback_).Run(success, files_->GetPwgPath());
+  pdf_to_pwg_raster_converter_ptr_.reset();
 }
 
 class PwgRasterConverterImpl : public PwgRasterConverter {
