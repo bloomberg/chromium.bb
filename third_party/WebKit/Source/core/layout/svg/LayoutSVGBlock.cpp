@@ -35,6 +35,10 @@ namespace blink {
 LayoutSVGBlock::LayoutSVGBlock(SVGElement* element)
     : LayoutBlockFlow(element) {}
 
+SVGElement* LayoutSVGBlock::GetElement() const {
+  return ToSVGElement(LayoutObject::GetNode());
+}
+
 void LayoutSVGBlock::AbsoluteRects(Vector<IntRect>&, const LayoutPoint&) const {
   // This code path should never be taken for SVG, as we're assuming
   // useTransforms=true everywhere, absoluteQuads should be used.
