@@ -13,6 +13,7 @@
 #include "ash/frame/frame_header.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/immersive/immersive_fullscreen_controller_test_api.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/splitview/split_view_controller.h"
@@ -28,6 +29,7 @@
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_test.h"
+#include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
 #include "chrome/browser/ui/browser_commands.h"
@@ -63,6 +65,7 @@
 #include "ui/events/event.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/window_util.h"
 
 namespace {
 
@@ -416,6 +419,40 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   ASSERT_NE(nullptr, min_window_size);
   EXPECT_GT(min_window_size->height(), min_height_no_bookmarks);
   EXPECT_EQ(*min_window_size, frame_view->GetMinimumSize());
+}
+
+// Tests that when browser frame is minimized, toggling tablet mode doesn't
+// trigger caption button update (https://crbug.com/822890).
+IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
+                       ToggleTabletModeOnMinimizedWindow) {
+  BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
+  Widget* widget = browser_view->GetWidget();
+  // We know we're using Ash, so static cast.
+  BrowserNonClientFrameViewAsh* frame_view =
+      static_cast<BrowserNonClientFrameViewAsh*>(
+          widget->non_client_view()->frame_view());
+  ash::FrameCaptionButtonContainerView::TestApi test(
+      frame_view->caption_button_container_);
+  widget->Maximize();
+  // Restore icon for size button in maximized window state.
+  EXPECT_EQ(&ash::kWindowControlRestoreIcon,
+            test.size_button()->icon_definition_for_test());
+  widget->Minimize();
+  // When entering tablet mode in minimized window state, size button should not
+  // get updated.
+  TabletModeClient::Get()->OnTabletModeToggled(true);
+  EXPECT_EQ(&ash::kWindowControlRestoreIcon,
+            test.size_button()->icon_definition_for_test());
+  // When leaving tablet mode in minimized window state, size button should not
+  // get updated.
+  TabletModeClient::Get()->OnTabletModeToggled(false);
+  EXPECT_EQ(&ash::kWindowControlRestoreIcon,
+            test.size_button()->icon_definition_for_test());
+  // When unminimizing in non-tablet mode, size button should match with
+  // maximized window state, which is restore icon.
+  ::wm::Unminimize(widget->GetNativeWindow());
+  EXPECT_EQ(&ash::kWindowControlRestoreIcon,
+            test.size_button()->icon_definition_for_test());
 }
 
 namespace {
