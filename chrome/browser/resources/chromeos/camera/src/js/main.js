@@ -196,7 +196,8 @@ camera.Camera.ViewsStack.prototype.pop = function(opt_result) {
   entry.view.inactivate();
   entry.view.leave();
 
-  this.current.activate();
+  if (this.current)
+    this.current.activate();
   if (entry.callback)
     entry.callback(opt_result);
 };
