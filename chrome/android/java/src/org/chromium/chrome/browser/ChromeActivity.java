@@ -1726,10 +1726,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
     }
 
     private static boolean isInVrUiMode(int uiMode) {
-        // TODO(mthiesse): Use Configuration.UI_MODE_TYPE_VR_HEADSET when building against the O
-        // sdk.
-        final int uiModeTypeVrHeadset = 0x07;
-        return (uiMode & Configuration.UI_MODE_TYPE_MASK) == uiModeTypeVrHeadset;
+        return (uiMode & Configuration.UI_MODE_TYPE_MASK) == Configuration.UI_MODE_TYPE_VR_HEADSET;
     }
 
     /**

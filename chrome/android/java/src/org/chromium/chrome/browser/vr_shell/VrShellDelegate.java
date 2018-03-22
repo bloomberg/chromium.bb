@@ -733,6 +733,17 @@ public class VrShellDelegate
 
     // TODO(mthiesse): Should have package visibility only. We need to unify our vr and vr_shell
     // packages.
+    public static boolean isInVrSession(Activity activty) {
+        if (sInstance != null) return sInstance.mVrDaydreamApi.isInVrSession();
+        VrClassesWrapper wrapper = getVrClassesWrapper();
+        if (wrapper == null) return false;
+        VrDaydreamApi api = wrapper.createVrDaydreamApi(activty);
+        if (api == null) return false;
+        return api.isInVrSession();
+    }
+
+    // TODO(mthiesse): Should have package visibility only. We need to unify our vr and vr_shell
+    // packages.
     public static boolean willChangeDensityInVr(ChromeActivity activity) {
         // Only N+ support launching in VR at all, other OS versions don't care about this.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;

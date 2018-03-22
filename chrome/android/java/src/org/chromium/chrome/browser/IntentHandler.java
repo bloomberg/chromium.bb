@@ -1164,4 +1164,11 @@ public class IntentHandler {
     public static TabLaunchType getTabLaunchType(Intent intent) {
         return IntentUtils.safeGetSerializableExtra(intent, EXTRA_TAB_LAUNCH_TYPE);
     }
+
+    /**
+     * @param intent An Intent to remove any TrustedIntent extras from.
+     */
+    public static void removeTrustedIntentExtras(Intent intent) {
+        intent.removeExtra(IntentHandler.TRUSTED_APPLICATION_CODE_EXTRA);
+    }
 }

@@ -5,47 +5,101 @@
 package org.chromium.chrome.browser.vr;
 
 import android.app.Activity;
+import android.content.res.Configuration;
+import android.os.Build;
 import android.os.Bundle;
 
+import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 
 import java.lang.ref.WeakReference;
 
 /**
- * This is the VR equivalent of {@link ChromeLauncherActivity}. It exists only because the Android
- * platform doesn't inherently support hybrid VR apps (like Chrome). All VR intents for Chrome
- * should eventually be routed through this activity as its manifest entry contains VR specific
- * attributes to ensure a smooth transition into Chrome VR.
+ * This is the VR equivalent of {@link ChromeLauncherActivity}. It exists because the Android
+ * platform doesn't inherently support hybrid VR Activities (like Chrome uses). All VR intents for
+ * Chrome are routed through this activity as its manifest entry contains VR specific attributes to
+ * ensure a smooth transition into Chrome VR, and allows us to properly handle both implicit and
+ * explicit VR intents that may be missing VR categories when they get sent.
  *
- * More specifically, a special VR theme disables the Preview Window feature to prevent the system
- * UI from showing up while Chrome prepares to enter VR mode. The android:enabledVrMode attribute
- * ensures that the system doesn't kick us out of VR mode during the transition as this as this can
- * result in a screen brightness flicker. Both of these sound minor but look jarring from a VR
- * headset.
+ * This Activity doesn't inherit from ChromeLauncherActivity because we need to be able to finish
+ * and relaunch this Launcher without calling ChromeLauncherActivity#onCreate which would fire the
+ * intent we don't yet want to fire.
  */
-public class VrMainActivity extends ChromeLauncherActivity {
+public class VrMainActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
-        // This Launcher may be launched through an alias, which leads to vrmode not being correctly
-        // set, so we need to set it here as a fallback. b/65271215
-        VrShellDelegate.setVrModeEnabled(this);
+        TraceEvent.begin("VrMainActivity.onCreate");
+        try {
+            super.onCreate(savedInstanceState);
 
-        for (WeakReference<Activity> weakActivity : ApplicationStatus.getRunningActivities()) {
-            final Activity activity = weakActivity.get();
-            if (activity == null) continue;
-            if (activity instanceof ChromeActivity) {
-                if (VrShellDelegate.willChangeDensityInVr((ChromeActivity) activity)) {
-                    // In the rare case that entering VR will trigger a density change (and hence
-                    // an Activity recreation), just return to Daydream home and kill the process,
-                    // as there's no good way to recreate without showing 2D UI in-headset.
-                    finish();
-                    System.exit(0);
+            // If the launcher was launched from a 2D context (without calling
+            // DaydreamApi#launchInVr), then we need to relaunch the launcher in VR to allow
+            // downstream Activities to make assumptions about whether they're in VR or not, and
+            // ensure the VR configuration is set before launching Activities as they use the VR
+            // configuration to set style attributes.
+            boolean needsRelaunch;
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+                needsRelaunch = !VrShellDelegate.isInVrSession(this);
+            } else {
+                Configuration config = getResources().getConfiguration();
+                int uiMode = config.uiMode & Configuration.UI_MODE_TYPE_MASK;
+                needsRelaunch = uiMode != Configuration.UI_MODE_TYPE_VR_HEADSET;
+            }
+            if (needsRelaunch) {
+                VrIntentUtils.launchInVr(getIntent(), this);
+                finish();
+                return;
+            }
+
+            // We don't set VrMode for the launcher in the manifest because that causes weird things
+            // to happen when you send a VR intent to Chrome from a non-VR app, so we need to set it
+            // here.
+            VrShellDelegate.setVrModeEnabled(this);
+
+            // Daydream likes to remove the Daydream category from explicit intents for some reason.
+            // Since only implicit intents with the Daydream category can be routed here, it's safe
+            // to assume that the intent *should* have the Daydream category, which simplifies our
+            // intent handling.
+            getIntent().addCategory(VrIntentUtils.DAYDREAM_CATEGORY);
+
+            for (WeakReference<Activity> weakActivity : ApplicationStatus.getRunningActivities()) {
+                final Activity activity = weakActivity.get();
+                if (activity == null) continue;
+                if (activity instanceof ChromeActivity) {
+                    if (VrShellDelegate.willChangeDensityInVr((ChromeActivity) activity)) {
+                        // In the rare case that entering VR will trigger a density change (and
+                        // hence an Activity recreation), just return to Daydream home and kill the
+                        // process, as there's no good way to recreate without showing 2D UI
+                        // in-headset.
+                        finish();
+                        System.exit(0);
+                    }
                 }
             }
+
+            @LaunchIntentDispatcher.Action
+            int dispatchAction = LaunchIntentDispatcher.dispatch(this, getIntent());
+            switch (dispatchAction) {
+                case LaunchIntentDispatcher.Action.FINISH_ACTIVITY:
+                    finish();
+                    break;
+                case LaunchIntentDispatcher.Action.FINISH_ACTIVITY_REMOVE_TASK:
+                    ApiCompatibilityUtils.finishAndRemoveTask(this);
+                    break;
+                default:
+                    assert false : "Intent dispatcher finished with action " + dispatchAction
+                                   + ", finishing anyway";
+                    finish();
+                    break;
+            }
+        } finally {
+            TraceEvent.end("VrMainActivity.onCreate");
         }
-        super.onCreate(savedInstanceState);
     }
 }
