@@ -34,7 +34,9 @@ using ::gl::MockGLInterface;
 using ::testing::_;
 using ::testing::AnyNumber;
 using ::testing::AtMost;
+using ::testing::Between;
 using ::testing::InSequence;
+using ::testing::Ne;
 using ::testing::Pointee;
 using ::testing::Return;
 using ::testing::SetArgPointee;
@@ -73,11 +75,15 @@ void RasterDecoderTestBase::OnDescheduleUntilFinished() {}
 void RasterDecoderTestBase::OnRescheduleAfterFinished() {}
 
 void RasterDecoderTestBase::SetUp() {
-  InitDecoderWithWorkarounds();
+  InitDecoderWithWorkarounds({"GL_ARB_sync"});
 }
 
-void RasterDecoderTestBase::InitDecoderWithWorkarounds() {
-  const std::string extensions("GL_ARB_sync ");
+void RasterDecoderTestBase::InitDecoderWithWorkarounds(
+    std::initializer_list<std::string> extensions) {
+  std::string all_extensions;
+  for (const std::string& extension : extensions) {
+    all_extensions += extension + " ";
+  }
   const std::string gl_version("2.1");
   const bool bind_generates_resource(false);
   const bool lose_context_when_out_of_memory(false);
@@ -108,14 +114,14 @@ void RasterDecoderTestBase::InitDecoderWithWorkarounds() {
   // in turn initialize FeatureInfo, which needs a context to determine
   // extension support.
   context_ = new StrictMock<GLContextMock>();
-  context_->SetExtensionsString(extensions.c_str());
+  context_->SetExtensionsString(all_extensions.c_str());
   context_->SetGLVersionString(gl_version.c_str());
 
   context_->GLContextStub::MakeCurrent(surface_.get());
 
   TestHelper::SetupContextGroupInitExpectations(
-      gl_.get(), DisallowedFeatures(), extensions.c_str(), gl_version.c_str(),
-      context_type, bind_generates_resource);
+      gl_.get(), DisallowedFeatures(), all_extensions.c_str(),
+      gl_version.c_str(), context_type, bind_generates_resource);
 
   // We initialize the ContextGroup with a MockRasterDecoder so that
   // we can use the ContextGroup to figure out how the real RasterDecoder
@@ -284,6 +290,44 @@ void RasterDecoderTestBase::DoDeleteTexture(GLuint client_id,
   }
 }
 
+void RasterDecoderTestBase::SetScopedTextureBinderExpectations(GLenum target) {
+  // ScopedTextureBinder
+  EXPECT_CALL(*gl_, ActiveTexture(_))
+      .Times(Between(1, 2))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(target, Ne(0U))).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindTexture(target, 0)).Times(1).RetiresOnSaturation();
+}
+
+void RasterDecoderTestBase::DoTexStorage2D(GLuint client_id,
+                                           GLint levels,
+                                           GLsizei width,
+                                           GLsizei height) {
+  cmds::TexStorage2D tex_storage_cmd;
+  tex_storage_cmd.Init(client_id, levels, width, height);
+
+  SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+
+  if (decoder_->GetCapabilities().texture_storage) {
+    EXPECT_CALL(*gl_, TexStorage2DEXT(GL_TEXTURE_2D, levels, _, width, height))
+        .Times(1)
+        .RetiresOnSaturation();
+  } else {
+    // Currently only supports levels == 1
+    DCHECK_EQ(levels, 1);
+
+    EXPECT_CALL(*gl_, GetError())
+        .WillOnce(Return(GL_NO_ERROR))
+        .WillOnce(Return(GL_NO_ERROR))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_,
+                TexImage2D(GL_TEXTURE_2D, _, _, width, height, _, _, _, _))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+  EXPECT_EQ(error::kNoError, ExecuteCmd(tex_storage_cmd));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
 
 // Include the auto-generated part of this file. We split this because it means
 // we can easily edit the non-auto generated parts right here in this file

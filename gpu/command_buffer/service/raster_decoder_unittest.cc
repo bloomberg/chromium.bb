@@ -9,6 +9,7 @@
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/memory_tracking.h"
 #include "gpu/command_buffer/service/program_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
 #include "gpu/command_buffer/service/raster_decoder_unittest_base.h"
@@ -24,31 +25,73 @@ using namespace gpu::raster::cmds;
 namespace gpu {
 namespace raster {
 
+namespace {
+const GLsizei kWidth = 10;
+const GLsizei kHeight = 20;
+
+class MockMemoryTracker : public gles2::MemoryTracker {
+ public:
+  MockMemoryTracker() {}
+
+  // Ensure a certain amount of GPU memory is free. Returns true on success.
+  MOCK_METHOD1(EnsureGPUMemoryAvailable, bool(size_t size_needed));
+
+  void TrackMemoryAllocatedChange(size_t old_size, size_t new_size) override {}
+
+  uint64_t ClientTracingId() const override { return 0; }
+  int ClientId() const override { return 0; }
+  uint64_t ShareGroupTracingGUID() const override { return 0; }
+
+ private:
+  virtual ~MockMemoryTracker() = default;
+};
+
+}  // namespace
+
 class RasterDecoderTest : public RasterDecoderTestBase {
  public:
   RasterDecoderTest() = default;
 };
 
+class RasterDecoderManualInitTest : public RasterDecoderTestBase {
+ public:
+  RasterDecoderManualInitTest() = default;
+
+  // Override default setup so nothing gets setup.
+  void SetUp() override {}
+};
+
 INSTANTIATE_TEST_CASE_P(Service, RasterDecoderTest, ::testing::Bool());
+INSTANTIATE_TEST_CASE_P(Service,
+                        RasterDecoderManualInitTest,
+                        ::testing::Bool());
 
 TEST_P(RasterDecoderTest, TexParameteriValidArgs) {
-  EXPECT_CALL(*gl_, TexParameteri(_, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
+  SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+  EXPECT_CALL(*gl_,
+              TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST));
   cmds::TexParameteri cmd;
   cmd.Init(client_texture_id_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  EXPECT_CALL(*gl_, TexParameteri(_, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
+  SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+  EXPECT_CALL(*gl_,
+              TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST));
   cmd.Init(client_texture_id_, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  EXPECT_CALL(*gl_, TexParameteri(_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
+  SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+  EXPECT_CALL(
+      *gl_, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE));
   cmd.Init(client_texture_id_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  EXPECT_CALL(*gl_, TexParameteri(_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
+  SetScopedTextureBinderExpectations(GL_TEXTURE_2D);
+  EXPECT_CALL(
+      *gl_, TexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE));
   cmd.Init(client_texture_id_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -186,18 +229,91 @@ TEST_P(RasterDecoderTest, BeginEndQueryEXTCommandsIssuedCHROMIUM) {
   EXPECT_FALSE(query->IsPending());
 }
 
-TEST_P(RasterDecoderTest, ProduceAndConsumeTexture) {
-  Mailbox mailbox = Mailbox::Generate();
-  GLuint new_texture_id = kNewClientId;
-
-  // TODO(backer): Use TexStorage2D to set some attributes like width and
-  // height.
+TEST_P(RasterDecoderTest, TexStorage2D) {
+  DoTexStorage2D(client_texture_id_, 1 /* levels */, kWidth, kHeight);
 
   gles2::TextureRef* texture_ref =
       group().texture_manager()->GetTexture(client_texture_id_);
   ASSERT_TRUE(texture_ref != nullptr);
   gles2::Texture* texture = texture_ref->texture();
+
   EXPECT_EQ(kServiceTextureId, texture->service_id());
+
+  GLsizei width;
+  GLsizei height;
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
+  EXPECT_EQ(width, kWidth);
+  EXPECT_EQ(height, kHeight);
+}
+
+TEST_P(RasterDecoderManualInitTest, TexStorage2DWithEXTTextureStorage) {
+  InitDecoderWithWorkarounds({"GL_ARB_sync", "GL_EXT_texture_storage"});
+  DoTexStorage2D(client_texture_id_, 2 /* levels */, kWidth, kHeight);
+
+  gles2::TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(client_texture_id_);
+  ASSERT_TRUE(texture_ref != nullptr);
+  gles2::Texture* texture = texture_ref->texture();
+
+  EXPECT_EQ(kServiceTextureId, texture->service_id());
+
+  GLsizei width;
+  GLsizei height;
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
+  EXPECT_EQ(width, kWidth);
+  EXPECT_EQ(height, kHeight);
+
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 1, &width, &height, nullptr));
+  EXPECT_EQ(width, kWidth / 2);
+  EXPECT_EQ(height, kHeight / 2);
+}
+
+TEST_P(RasterDecoderManualInitTest, TexStorage2DOutOfMemory) {
+  scoped_refptr<MockMemoryTracker> memory_tracker = new MockMemoryTracker();
+  set_memory_tracker(memory_tracker.get());
+  InitDecoderWithWorkarounds({"GL_ARB_sync"});
+
+  EXPECT_CALL(*memory_tracker.get(), EnsureGPUMemoryAvailable(_))
+      .WillOnce(Return(false))
+      .RetiresOnSaturation();
+
+  cmds::TexStorage2D cmd;
+  cmd.Init(client_texture_id_, 1 /* levels */, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_OUT_OF_MEMORY, GetGLError());
+}
+
+TEST_P(RasterDecoderTest, TexStorage2DInvalid) {
+  // Bad client id
+  cmds::TexStorage2D cmd;
+  cmd.Init(kInvalidClientId, 1 /* levels */, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Bad levels
+  cmd.Init(client_texture_id_, 0 /* levels */, kWidth, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Bad width
+  cmd.Init(client_texture_id_, 1 /* levels */, 0, kHeight);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Bad height
+  cmd.Init(client_texture_id_, 1 /* levels */, kWidth, 0);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_P(RasterDecoderTest, ProduceAndConsumeTexture) {
+  Mailbox mailbox = Mailbox::Generate();
+  GLuint new_texture_id = kNewClientId;
+
+  DoTexStorage2D(client_texture_id_, 1 /* levels */, kWidth, kHeight);
 
   ProduceTextureDirectImmediate& produce_cmd =
       *GetImmediateAs<ProduceTextureDirectImmediate>();
@@ -206,10 +322,17 @@ TEST_P(RasterDecoderTest, ProduceAndConsumeTexture) {
             ExecuteImmediateCmd(produce_cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  // TODO(backer): Check that ProduceTextureDirect did not change attributes
-  // like width and height.
+  // Check that ProduceTextureDirect did not change attributes.
+  gles2::TextureRef* texture_ref =
+      group().texture_manager()->GetTexture(client_texture_id_);
+  ASSERT_TRUE(texture_ref != nullptr);
+  gles2::Texture* texture = texture_ref->texture();
 
-  // Service ID has not changed.
+  GLsizei width, height;
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
+  EXPECT_EQ(width, kWidth);
+  EXPECT_EQ(height, kHeight);
   EXPECT_EQ(kServiceTextureId, texture->service_id());
 
   CreateAndConsumeTextureINTERNALImmediate& consume_cmd =
@@ -221,13 +344,15 @@ TEST_P(RasterDecoderTest, ProduceAndConsumeTexture) {
             ExecuteImmediateCmd(consume_cmd, sizeof(mailbox.name)));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
-  // TODO(backer): Check that new_texture_id has appropriate attributes like
-  // width and height.
-
-  // Service ID is restored.
+  // Check that new_texture_id has appropriate attributes like width and height.
   texture_ref = group().texture_manager()->GetTexture(new_texture_id);
   ASSERT_NE(texture_ref, nullptr);
-  EXPECT_EQ(kServiceTextureId, texture_ref->service_id());
+  texture = texture_ref->texture();
+  EXPECT_TRUE(
+      texture->GetLevelSize(GL_TEXTURE_2D, 0, &width, &height, nullptr));
+  EXPECT_EQ(width, kWidth);
+  EXPECT_EQ(height, kHeight);
+  EXPECT_EQ(kServiceTextureId, texture->service_id());
 }
 
 }  // namespace raster
