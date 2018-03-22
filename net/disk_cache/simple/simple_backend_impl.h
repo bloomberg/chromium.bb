@@ -21,12 +21,17 @@
 #include "base/strings/string_split.h"
 #include "base/task_runner.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "net/base/cache_type.h"
 #include "net/base/net_export.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/disk_cache/simple/simple_entry_impl.h"
 #include "net/disk_cache/simple/simple_experiment.h"
 #include "net/disk_cache/simple/simple_index_delegate.h"
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+#include "base/timer/timer.h"
+#endif
 
 namespace base {
 class SequencedTaskRunner;
@@ -237,6 +242,11 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
                            const CompletionCallback& callback,
                            int result);
 
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  // update limit of max files to be created
+  void OnUpdateMaxFiles();
+#endif
+
   // We want this destroyed after every other field.
   scoped_refptr<BackendCleanupTracker> cleanup_tracker_;
 
@@ -266,6 +276,10 @@ class NET_EXPORT_PRIVATE SimpleBackendImpl : public Backend,
       entries_pending_doom_;
 
   net::NetLog* const net_log_;
+
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  base::RepeatingTimer update_timer_;
+#endif
 };
 
 }  // namespace disk_cache

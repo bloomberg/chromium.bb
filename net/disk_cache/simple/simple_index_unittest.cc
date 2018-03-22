@@ -176,7 +176,7 @@ class SimpleIndexTest  : public testing::Test, public SimpleIndexDelegate {
   }
   int doom_entries_calls() const { return doom_entries_calls_; }
 
-  const simple_util::ImmutableArray<uint64_t, 16> hashes_;
+  const simple_util::ImmutableArray<uint64_t, 20> hashes_;
   std::unique_ptr<SimpleIndex> index_;
   base::WeakPtr<MockSimpleIndexFile> index_file_;
 
@@ -695,6 +695,66 @@ TEST_F(SimpleIndexTest, EvictBySize2) {
   EXPECT_FALSE(index()->Has(hashes_.at<2>()));
   EXPECT_TRUE(index()->Has(hashes_.at<3>()));
   ASSERT_EQ(2u, last_doom_entry_hashes().size());
+}
+
+TEST_F(SimpleIndexTest, EvictByFileCount) {
+  base::Time now(base::Time::Now());
+  index()->SetMaxSize(50000);
+  InsertIntoIndexFileReturn(hashes_.at<0>(),
+                            now - base::TimeDelta::FromDays(21), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<1>(),
+                            now - base::TimeDelta::FromDays(20), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<2>(),
+                            now - base::TimeDelta::FromDays(19), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<3>(),
+                            now - base::TimeDelta::FromDays(18), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<4>(),
+                            now - base::TimeDelta::FromDays(17), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<5>(),
+                            now - base::TimeDelta::FromDays(16), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<6>(),
+                            now - base::TimeDelta::FromDays(15), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<7>(),
+                            now - base::TimeDelta::FromDays(14), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<8>(),
+                            now - base::TimeDelta::FromDays(13), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<9>(),
+                            now - base::TimeDelta::FromDays(12), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<10>(),
+                            now - base::TimeDelta::FromDays(11), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<11>(),
+                            now - base::TimeDelta::FromDays(10), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<12>(),
+                            now - base::TimeDelta::FromDays(9), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<13>(),
+                            now - base::TimeDelta::FromDays(8), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<14>(),
+                            now - base::TimeDelta::FromDays(7), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<15>(),
+                            now - base::TimeDelta::FromDays(6), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<16>(),
+                            now - base::TimeDelta::FromDays(5), 10u);
+  InsertIntoIndexFileReturn(hashes_.at<17>(),
+                            now - base::TimeDelta::FromDays(4), 10u);
+  index()->UpdateMaxFiles(50, 200);
+  // This should set the max files limit to 20, so the high watermark is 19 and
+  // the lower watermark is 18.
+  ReturnIndexFile();
+  WaitForTimeChange();
+
+  // No eviction should have happened yet.
+  EXPECT_EQ(18, index()->GetEntryCount());
+
+  index()->Insert(hashes_.at<18>());
+  index()->UpdateEntrySize(hashes_.at<18>(), 10u);
+  index()->Insert(hashes_.at<19>());
+  index()->UpdateEntrySize(hashes_.at<19>(), 10u);
+
+  // Eviction has happened, we get back to 18 elements
+  EXPECT_EQ(18, index()->GetEntryCount());
+  EXPECT_EQ(1, doom_entries_calls());
+  EXPECT_TRUE(index()->Has(hashes_.at<2>()));
+  EXPECT_FALSE(index()->Has(hashes_.at<1>()));
 }
 
 // Confirm all the operations queue a disk write at some point in the

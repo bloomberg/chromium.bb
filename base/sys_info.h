@@ -64,6 +64,16 @@ class BASE_EXPORT SysInfo {
   // on failure.
   static int64_t AmountOfTotalDiskSpace(const FilePath& path);
 
+#if defined(OS_POSIX) && !defined(OS_ANDROID)
+  // Returns the total number of inodes on the volume containing |path|, or -1
+  // on failure.
+  static int64_t AmountOfMaxDiskInode(const FilePath& path);
+
+  // Returns the number of inodes available to non-root on the volume containing
+  // |path|, or -1 on failure.
+  static int64_t AmountOfAvailableDiskInode(const FilePath& path);
+#endif
+
   // Returns system uptime.
   static TimeDelta Uptime();
 

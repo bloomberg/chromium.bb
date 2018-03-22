@@ -194,6 +194,8 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   void SetLastUsedTimeForTest(uint64_t entry_hash, const base::Time last_used);
 
+  void UpdateMaxFiles(uint64_t available, uint64_t total);
+
  private:
   friend class SimpleIndexTest;
   FRIEND_TEST_ALL_PREFIXES(SimpleIndexTest, IndexSizeCorrectOnMerge);
@@ -231,6 +233,10 @@ class NET_EXPORT_PRIVATE SimpleIndex
   uint64_t max_size_;
   uint64_t high_watermark_;
   uint64_t low_watermark_;
+  uint64_t max_files_;  // Maximum number of files allowed (0 if unlimited).
+  // High and low thresholds for allowed number of files (0 if unlimited).
+  uint64_t files_high_watermark_;
+  uint64_t files_low_watermark_;
   bool eviction_in_progress_;
   base::TimeTicks eviction_start_time_;
 
@@ -255,6 +261,7 @@ class NET_EXPORT_PRIVATE SimpleIndex
 
   base::OneShotTimer write_to_disk_timer_;
   base::Closure write_to_disk_cb_;
+  base::OnceClosure update_max_files_cb_;
 
   typedef std::list<net::CompletionCallback> CallbackList;
   CallbackList to_run_when_initialized_;

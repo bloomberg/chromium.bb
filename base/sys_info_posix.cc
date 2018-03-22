@@ -237,4 +237,20 @@ size_t SysInfo::VMAllocationGranularity() {
   return getpagesize();
 }
 
+#if !defined(OS_ANDROID)
+int64_t SysInfo::AmountOfMaxDiskInode(const FilePath& path) {
+  struct statvfs stats;
+  if (HANDLE_EINTR(statvfs(path.value().c_str(), &stats)) != 0)
+    return -1;
+  return static_cast<int64_t>(stats.f_files);
+}
+
+int64_t SysInfo::AmountOfAvailableDiskInode(const FilePath& path) {
+  struct statvfs stats;
+  if (HANDLE_EINTR(statvfs(path.value().c_str(), &stats)) != 0)
+    return -1;
+  return static_cast<int64_t>(stats.f_favail);
+}
+#endif  // !defined(OS_ANDROID)
+
 }  // namespace base
