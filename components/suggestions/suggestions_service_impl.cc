@@ -137,9 +137,8 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
       blacklist_upload_timer_(tick_clock_),
       weak_ptr_factory_(this) {
   // |sync_service_| is null if switches::kDisableSync is set (tests use that).
-  if (sync_service_) {
+  if (sync_service_)
     sync_service_observer_.Add(sync_service_);
-  }
   // Immediately get the current sync state, so we'll flush the cache if
   // necessary.
   OnStateChanged(sync_service_);
@@ -147,14 +146,13 @@ SuggestionsServiceImpl::SuggestionsServiceImpl(
   blacklist_upload_backoff_.InformOfRequest(/*succeeded=*/true);
 }
 
-SuggestionsServiceImpl::~SuggestionsServiceImpl() {}
+SuggestionsServiceImpl::~SuggestionsServiceImpl() = default;
 
 bool SuggestionsServiceImpl::FetchSuggestionsData() {
   DCHECK(thread_checker_.CalledOnValidThread());
   // If sync state allows, issue a network request to refresh the suggestions.
-  if (history_sync_state_ != syncer::UploadState::ACTIVE) {
+  if (history_sync_state_ != syncer::UploadState::ACTIVE)
     return false;
-  }
   IssueRequestIfNoneOngoing(BuildSuggestionsURL());
   return true;
 }
@@ -163,12 +161,11 @@ base::Optional<SuggestionsProfile>
 SuggestionsServiceImpl::GetSuggestionsDataFromCache() const {
   SuggestionsProfile suggestions;
   // In case of empty cache or error, return empty.
-  if (!suggestions_store_->LoadSuggestions(&suggestions)) {
-    return base::Optional<SuggestionsProfile>();
-  }
+  if (!suggestions_store_->LoadSuggestions(&suggestions))
+    return base::nullopt;
   thumbnail_manager_->Initialize(suggestions);
   blacklist_store_->FilterSuggestions(&suggestions);
-  return base::Optional<SuggestionsProfile>(suggestions);
+  return suggestions;
 }
 
 std::unique_ptr<SuggestionsServiceImpl::ResponseCallbackList::Subscription>
@@ -360,13 +357,11 @@ void SuggestionsServiceImpl::OnStateChanged(syncer::SyncService* sync) {
 void SuggestionsServiceImpl::SetDefaultExpiryTimestamp(
     SuggestionsProfile* suggestions,
     int64_t default_timestamp_usec) {
-  for (int i = 0; i < suggestions->suggestions_size(); ++i) {
-    ChromeSuggestion* suggestion = suggestions->mutable_suggestions(i);
+  for (ChromeSuggestion& suggestion : *suggestions->mutable_suggestions()) {
     // Do not set expiry if the server has already provided a more specific
     // expiry time for this suggestion.
-    if (!suggestion->has_expiry_ts()) {
-      suggestion->set_expiry_ts(default_timestamp_usec);
-    }
+    if (!suggestion.has_expiry_ts())
+      suggestion.set_expiry_ts(default_timestamp_usec);
   }
 }
 
@@ -376,13 +371,11 @@ void SuggestionsServiceImpl::IssueRequestIfNoneOngoing(const GURL& url) {
   // request happens to be ongoing.
   // TODO(treib): Queue such requests and send them after the current one
   // completes.
-  if (pending_request_.get()) {
+  if (pending_request_.get())
     return;
-  }
   // If there is an ongoing token request, also wait for that.
-  if (token_fetcher_) {
+  if (token_fetcher_)
     return;
-  }
 
   OAuth2TokenService::ScopeSet scopes{GaiaConstants::kChromeSyncOAuth2Scope};
   token_fetcher_ = identity_manager_->CreateAccessTokenFetcherForPrimaryAccount(
@@ -517,9 +510,8 @@ void SuggestionsServiceImpl::OnURLFetchComplete(const net::URLFetcher* source) {
 
   // Handle a successful blacklisting.
   GURL blacklisted_url;
-  if (GetBlacklistedUrl(*source, &blacklisted_url)) {
+  if (GetBlacklistedUrl(*source, &blacklisted_url))
     blacklist_store_->RemoveUrl(blacklisted_url);
-  }
 
   std::string suggestions_data;
   bool success = request->GetResponseAsString(&suggestions_data);
@@ -552,10 +544,10 @@ void SuggestionsServiceImpl::OnURLFetchComplete(const net::URLFetcher* source) {
 
 void SuggestionsServiceImpl::PopulateExtraData(
     SuggestionsProfile* suggestions) {
-  for (int i = 0; i < suggestions->suggestions_size(); ++i) {
-    suggestions::ChromeSuggestion* s = suggestions->mutable_suggestions(i);
-    if (!s->has_favicon_url() || s->favicon_url().empty()) {
-      s->set_favicon_url(base::StringPrintf(kFaviconURL, s->url().c_str()));
+  for (ChromeSuggestion& suggestion : *suggestions->mutable_suggestions()) {
+    if (!suggestion.has_favicon_url() || suggestion.favicon_url().empty()) {
+      suggestion.set_favicon_url(
+          base::StringPrintf(kFaviconURL, suggestion.url().c_str()));
     }
   }
 }
