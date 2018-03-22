@@ -71,8 +71,9 @@ if (NOT AOM_TARGET_CPU)
   elseif ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "aarch64")
     set(AOM_TARGET_CPU "arm64")
   else ()
-    message(WARNING "The architecture ${CMAKE_SYSTEM_PROCESSOR} is not supported")
-    set(AOM_TARGET_CPU "${CMAKE_SYSTEM_PROCESSOR}")
+    message(WARNING "The architecture ${CMAKE_SYSTEM_PROCESSOR} is not "
+            "supported, falling back to the generic target")
+    set(AOM_TARGET_CPU "generic")
   endif ()
 endif ()
 
