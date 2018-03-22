@@ -13,12 +13,12 @@
 #include "device/fido/attestation_object.h"
 #include "device/fido/attested_credential_data.h"
 #include "device/fido/authenticator_data.h"
+#include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ec_public_key.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fido_attestation_statement.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/mock_fido_device.h"
-#include "device/fido/register_response_data.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_parsing_utils.h"
 #include "device/fido/u2f_response_test_data.h"
@@ -290,7 +290,7 @@ std::vector<uint8_t> GetTestAttestationObjectBytes() {
 
 using TestRegisterCallback = ::device::test::StatusAndValueCallbackReceiver<
     U2fReturnCode,
-    base::Optional<RegisterResponseData>>;
+    base::Optional<AuthenticatorMakeCredentialResponse>>;
 
 }  // namespace
 
@@ -441,7 +441,7 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_id());
+            register_callback_receiver().value()->raw_credential_id());
 }
 
 TEST_F(U2fRegisterTest, TestRegisterSuccessWithFake) {
@@ -457,7 +457,8 @@ TEST_F(U2fRegisterTest, TestRegisterSuccessWithFake) {
 
   // We don't verify the response from the fake, but do a quick sanity check.
   ASSERT_TRUE(register_callback_receiver().value());
-  EXPECT_EQ(32ul, register_callback_receiver().value()->raw_id().size());
+  EXPECT_EQ(32ul,
+            register_callback_receiver().value()->raw_credential_id().size());
 }
 
 TEST_F(U2fRegisterTest, TestDelayedSuccess) {
@@ -480,7 +481,7 @@ TEST_F(U2fRegisterTest, TestDelayedSuccess) {
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_id());
+            register_callback_receiver().value()->raw_credential_id());
 }
 
 TEST_F(U2fRegisterTest, TestMultipleDevices) {
@@ -511,7 +512,7 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_id());
+            register_callback_receiver().value()->raw_credential_id());
 }
 
 // Tests a scenario where a single device is connected and registration call
@@ -550,7 +551,7 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_id());
+            register_callback_receiver().value()->raw_credential_id());
 }
 
 // Tests a scenario where two devices are connected and registration call is
@@ -603,7 +604,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
-            register_callback_receiver().value()->raw_id());
+            register_callback_receiver().value()->raw_credential_id());
 }
 
 // Tests a scenario where single device is connected and registration is called
@@ -788,18 +789,18 @@ TEST_F(U2fRegisterTest, TestU2fAttestationObject) {
 
 // Test that a U2F register response is properly parsed.
 TEST_F(U2fRegisterTest, TestRegisterResponseData) {
-  base::Optional<RegisterResponseData> response =
-      RegisterResponseData::CreateFromU2fRegisterResponse(
+  base::Optional<AuthenticatorMakeCredentialResponse> response =
+      AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
           std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
                                kTestRelyingPartyIdSHA256 + 32),
           GetTestRegisterResponse());
-  EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_id());
+  EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_credential_id());
   EXPECT_EQ(GetTestAttestationObjectBytes(),
             response->GetCBOREncodedAttestationObject());
 }
 
 MATCHER_P(IndicatesIndividualAttestation, expected, "") {
-  return arg.size() >= 2 && ((arg[2] & 0x80) == 0x80) == expected;
+  return arg.size() > 2 && ((arg[2] & 0x80) == 0x80) == expected;
 }
 
 TEST_F(U2fRegisterTest, TestIndividualAttestation) {
@@ -832,7 +833,7 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
     cb.WaitForCallback();
     EXPECT_EQ(U2fReturnCode::SUCCESS, cb.status());
     ASSERT_TRUE(cb.value());
-    EXPECT_EQ(GetTestCredentialRawIdBytes(), cb.value()->raw_id());
+    EXPECT_EQ(GetTestCredentialRawIdBytes(), cb.value()->raw_credential_id());
   }
 }
 

@@ -106,8 +106,9 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
             application_parameter_type == ApplicationParameterType::kPrimary
                 ? &application_parameter_
                 : &alt_application_parameter_.value();
-        auto sign_response = SignResponseData::CreateFromU2fSignResponse(
-            *application_parameter_used, std::move(response_data), *it);
+        auto sign_response =
+            AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
+                *application_parameter_used, std::move(response_data), *it);
         if (!sign_response) {
           std::move(completion_callback_)
               .Run(U2fReturnCode::FAILURE, base::nullopt);

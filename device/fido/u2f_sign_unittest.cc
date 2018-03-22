@@ -11,9 +11,9 @@
 #include "crypto/ec_private_key.h"
 #include "crypto/sha2.h"
 #include "device/fido/authenticator_data.h"
+#include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/fake_fido_discovery.h"
 #include "device/fido/mock_fido_device.h"
-#include "device/fido/sign_response_data.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_response_test_data.h"
 #include "device/fido/virtual_u2f_device.h"
@@ -110,7 +110,7 @@ std::vector<uint8_t> GetTestCorruptedSignResponse(size_t length) {
 
 using TestSignCallback = ::device::test::StatusAndValueCallbackReceiver<
     U2fReturnCode,
-    base::Optional<SignResponseData>>;
+    base::Optional<AuthenticatorGetAssertionResponse>>;
 
 }  // namespace
 
@@ -241,7 +241,8 @@ TEST_F(U2fSignTest, TestSignSuccess) {
             sign_callback_receiver().value()->signature());
 
   // Verify that we get the key handle used for signing.
-  EXPECT_EQ(signing_key_handle, sign_callback_receiver().value()->raw_id());
+  EXPECT_EQ(signing_key_handle,
+            sign_callback_receiver().value()->raw_credential_id());
 }
 
 TEST_F(U2fSignTest, TestSignSuccessWithFake) {
@@ -265,17 +266,21 @@ TEST_F(U2fSignTest, TestSignSuccessWithFake) {
   EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
 
   // Just a sanity check, we don't verify the actual signature.
-  ASSERT_GE(
-      (size_t)(32 + 1 + 4 + 8),  // Minimal ECDSA signature is 8 bytes
-      sign_callback_receiver().value()->GetAuthenticatorDataBytes().size());
+  ASSERT_GE(32u + 1u + 4u + 8u,  // Minimal ECDSA signature is 8 bytes
+            sign_callback_receiver()
+                .value()
+                ->auth_data()
+                .SerializeToByteArray()
+                .size());
   EXPECT_EQ(0x01,
             sign_callback_receiver()
                 .value()
-                ->GetAuthenticatorDataBytes()[32]);  // UP flag
-  EXPECT_EQ(43,
-            sign_callback_receiver()
-                .value()
-                ->GetAuthenticatorDataBytes()[36]);  // counter
+                ->auth_data()
+                .SerializeToByteArray()[32]);  // UP flag
+  EXPECT_EQ(43, sign_callback_receiver()
+                    .value()
+                    ->auth_data()
+                    .SerializeToByteArray()[36]);  // counter
 }
 
 TEST_F(U2fSignTest, TestDelayedSuccess) {
@@ -303,7 +308,8 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
             sign_callback_receiver().value()->signature());
 
   // Verify that we get the key handle used for signing.
-  EXPECT_EQ(signing_key_handle, sign_callback_receiver().value()->raw_id());
+  EXPECT_EQ(signing_key_handle,
+            sign_callback_receiver().value()->raw_credential_id());
 }
 
 TEST_F(U2fSignTest, TestMultipleHandles) {
@@ -337,7 +343,8 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
             sign_callback_receiver().value()->signature());
 
   // Verify that we get the key handle used for signing.
-  EXPECT_EQ(correct_key_handle, sign_callback_receiver().value()->raw_id());
+  EXPECT_EQ(correct_key_handle,
+            sign_callback_receiver().value()->raw_credential_id());
 }
 
 TEST_F(U2fSignTest, TestMultipleDevices) {
@@ -375,7 +382,8 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
             sign_callback_receiver().value()->signature());
 
   // Verify that we get the key handle used for signing.
-  EXPECT_EQ(correct_key_handle, sign_callback_receiver().value()->raw_id());
+  EXPECT_EQ(correct_key_handle,
+            sign_callback_receiver().value()->raw_credential_id());
 }
 
 TEST_F(U2fSignTest, TestFakeEnroll) {
@@ -428,20 +436,21 @@ TEST_F(U2fSignTest, TestAuthenticatorDataForSign) {
 }
 
 TEST_F(U2fSignTest, TestSignResponseData) {
-  base::Optional<SignResponseData> response =
-      SignResponseData::CreateFromU2fSignResponse(
+  base::Optional<AuthenticatorGetAssertionResponse> response =
+      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
           std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
                                kTestRelyingPartyIdSHA256 + 32),
           GetTestSignResponse(), GetTestCredentialRawIdBytes());
   ASSERT_TRUE(response.has_value());
-  EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_id());
-  EXPECT_EQ(GetTestAuthenticatorData(), response->GetAuthenticatorDataBytes());
+  EXPECT_EQ(GetTestCredentialRawIdBytes(), response->raw_credential_id());
+  EXPECT_EQ(GetTestAuthenticatorData(),
+            response->auth_data().SerializeToByteArray());
   EXPECT_EQ(GetTestAssertionSignature(), response->signature());
 }
 
 TEST_F(U2fSignTest, TestNullKeyHandle) {
-  base::Optional<SignResponseData> response =
-      SignResponseData::CreateFromU2fSignResponse(
+  base::Optional<AuthenticatorGetAssertionResponse> response =
+      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
           std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
                                kTestRelyingPartyIdSHA256 + 32),
           GetTestSignResponse(), std::vector<uint8_t>());
@@ -449,8 +458,8 @@ TEST_F(U2fSignTest, TestNullKeyHandle) {
 }
 
 TEST_F(U2fSignTest, TestNullResponse) {
-  base::Optional<SignResponseData> response =
-      SignResponseData::CreateFromU2fSignResponse(
+  base::Optional<AuthenticatorGetAssertionResponse> response =
+      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
           std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
                                kTestRelyingPartyIdSHA256 + 32),
           std::vector<uint8_t>(), GetTestCredentialRawIdBytes());
@@ -459,8 +468,8 @@ TEST_F(U2fSignTest, TestNullResponse) {
 
 TEST_F(U2fSignTest, TestCorruptedCounter) {
   // A sign response of less than 5 bytes.
-  base::Optional<SignResponseData> response =
-      SignResponseData::CreateFromU2fSignResponse(
+  base::Optional<AuthenticatorGetAssertionResponse> response =
+      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
           std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
                                kTestRelyingPartyIdSHA256 + 32),
           GetTestCorruptedSignResponse(3), GetTestCredentialRawIdBytes());
@@ -469,8 +478,8 @@ TEST_F(U2fSignTest, TestCorruptedCounter) {
 
 TEST_F(U2fSignTest, TestCorruptedSignature) {
   // A sign response no more than 5 bytes.
-  base::Optional<SignResponseData> response =
-      SignResponseData::CreateFromU2fSignResponse(
+  base::Optional<AuthenticatorGetAssertionResponse> response =
+      AuthenticatorGetAssertionResponse::CreateFromU2fSignResponse(
           std::vector<uint8_t>(kTestRelyingPartyIdSHA256,
                                kTestRelyingPartyIdSHA256 + 32),
           GetTestCorruptedSignResponse(5), GetTestCredentialRawIdBytes());
@@ -546,7 +555,8 @@ TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
 
   EXPECT_EQ(GetTestAssertionSignature(),
             sign_callback_receiver().value()->signature());
-  EXPECT_EQ(signing_key_handle, sign_callback_receiver().value()->raw_id());
+  EXPECT_EQ(signing_key_handle,
+            sign_callback_receiver().value()->raw_credential_id());
 }
 
 }  // namespace device

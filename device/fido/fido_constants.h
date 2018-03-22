@@ -188,6 +188,9 @@ enum class U2fApduInstruction : uint8_t {
   kVenderLast = 0xBF,
 };
 
+// Credential type used for U2F requests.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kU2fCredentialType[];
+
 // Parameters for fake U2F registration used to check for user presence.
 COMPONENT_EXPORT(DEVICE_FIDO)
 extern const std::array<uint8_t, 32> kBogusAppParam;
@@ -246,6 +249,13 @@ extern const std::array<uint8_t, 6> kU2fVersionResponse;
 
 // Maximum wait time before client error outs on device.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const base::TimeDelta kDeviceTimeout;
+
+// String key values for attestation object as a response to MakeCredential
+// request.
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kFormatKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kAttestationStatementKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kAuthDataKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kNoneAttestationValue[];
 
 }  // namespace device
 

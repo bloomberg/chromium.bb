@@ -24,7 +24,7 @@ namespace device {
 // Parses response code from response received from the authenticator. If
 // unknown response code value is received, then CTAP2_ERR_OTHER is returned.
 COMPONENT_EXPORT(DEVICE_FIDO)
-CtapDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer);
+CtapDeviceResponseCode GetResponseCode(base::span<const uint8_t> buffer);
 
 // De-serializes CBOR encoded response, checks for valid CBOR map formatting,
 // and converts response to AuthenticatorMakeCredentialResponse object with
@@ -32,23 +32,20 @@ CtapDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer);
 // WebAuthN spec : https://w3c.github.io/webauthn/#fig-attStructs
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorMakeCredentialResponse>
-ReadCTAPMakeCredentialResponse(CtapDeviceResponseCode response_code,
-                               const std::vector<uint8_t>& buffer);
+ReadCTAPMakeCredentialResponse(base::span<const uint8_t> buffer);
 
 // De-serializes CBOR encoded response to AuthenticatorGetAssertion /
 // AuthenticatorGetNextAssertion request to AuthenticatorGetAssertionResponse
 // object.
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
-    CtapDeviceResponseCode response_code,
-    const std::vector<uint8_t>& buffer);
+    base::span<const uint8_t> buffer);
 
 // De-serializes CBOR encoded response to AuthenticatorGetInfo request to
 // AuthenticatorGetInfoResponse object.
 COMPONENT_EXPORT(DEVICE_FIDO)
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
-    CtapDeviceResponseCode response_code,
-    const std::vector<uint8_t>& buffer);
+    base::span<const uint8_t> buffer);
 
 }  // namespace device
 

@@ -4,6 +4,7 @@
 
 #include "device/fido/device_response_converter.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
@@ -12,14 +13,20 @@
 #include "base/stl_util.h"
 #include "components/cbor/cbor_reader.h"
 #include "components/cbor/cbor_writer.h"
+#include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_supported_options.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/opaque_attestation_statement.h"
 
 namespace device {
 
+namespace {
+constexpr size_t kResponseCodeLength = 1;
+}
+
 using CBOR = cbor::CBORValue;
 
-CtapDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer) {
+CtapDeviceResponseCode GetResponseCode(base::span<const uint8_t> buffer) {
   if (buffer.empty())
     return CtapDeviceResponseCode::kCtap2ErrInvalidCBOR;
 
@@ -30,87 +37,87 @@ CtapDeviceResponseCode GetResponseCode(const std::vector<uint8_t>& buffer) {
 }
 
 // Decodes byte array response from authenticator to CBOR value object and
-// checks for correct encoding format. Then re-serialize the decoded CBOR value
-// to byte array in format specified by the WebAuthN spec (i.e the keys for
-// CBOR map value are converted from unsigned integers to string type.)
+// checks for correct encoding format.
 base::Optional<AuthenticatorMakeCredentialResponse>
-ReadCTAPMakeCredentialResponse(CtapDeviceResponseCode response_code,
-                               const std::vector<uint8_t>& buffer) {
-  base::Optional<CBOR> decoded_response = cbor::CBORReader::Read(buffer);
+ReadCTAPMakeCredentialResponse(base::span<const uint8_t> buffer) {
+  if (buffer.size() <= kResponseCodeLength)
+    return base::nullopt;
 
+  base::Optional<CBOR> decoded_response =
+      cbor::CBORReader::Read(buffer.subspan(1));
   if (!decoded_response || !decoded_response->is_map())
     return base::nullopt;
 
   const auto& decoded_map = decoded_response->GetMap();
-  CBOR::MapValue response_map;
-
   auto it = decoded_map.find(CBOR(1));
   if (it == decoded_map.end() || !it->second.is_string())
     return base::nullopt;
-
-  response_map[CBOR("fmt")] = it->second.Clone();
+  auto format = it->second.GetString();
 
   it = decoded_map.find(CBOR(2));
   if (it == decoded_map.end() || !it->second.is_bytestring())
     return base::nullopt;
 
-  response_map[CBOR("authData")] = it->second.Clone();
+  auto authenticator_data =
+      AuthenticatorData::DecodeAuthenticatorData(it->second.GetBytestring());
+  if (!authenticator_data)
+    return base::nullopt;
 
   it = decoded_map.find(CBOR(3));
   if (it == decoded_map.end() || !it->second.is_map())
     return base::nullopt;
 
-  response_map[CBOR("attStmt")] = it->second.Clone();
-
-  auto attestation_object =
-      cbor::CBORWriter::Write(CBOR(std::move(response_map)));
-  if (!attestation_object)
-    return base::nullopt;
-
-  return AuthenticatorMakeCredentialResponse(response_code,
-                                             std::move(*attestation_object));
+  return AuthenticatorMakeCredentialResponse(
+      AttestationObject(std::move(*authenticator_data),
+                        std::make_unique<OpaqueAttestationStatement>(
+                            format, it->second.Clone())));
 }
 
 base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
-    CtapDeviceResponseCode response_code,
-    const std::vector<uint8_t>& buffer) {
-  base::Optional<CBOR> decoded_response = cbor::CBORReader::Read(buffer);
+    base::span<const uint8_t> buffer) {
+  if (buffer.size() <= kResponseCodeLength)
+    return base::nullopt;
+
+  base::Optional<CBOR> decoded_response =
+      cbor::CBORReader::Read(buffer.subspan(1));
 
   if (!decoded_response || !decoded_response->is_map())
     return base::nullopt;
 
   auto& response_map = decoded_response->GetMap();
 
-  auto it = response_map.find(CBOR(4));
-  if (it == response_map.end() || !it->second.is_map())
-    return base::nullopt;
-
-  auto user = PublicKeyCredentialUserEntity::CreateFromCBORValue(it->second);
-  if (!user)
-    return base::nullopt;
-
-  it = response_map.find(CBOR(2));
+  auto it = response_map.find(CBOR(2));
   if (it == response_map.end() || !it->second.is_bytestring())
     return base::nullopt;
-  auto auth_data = it->second.GetBytestring();
+
+  auto auth_data =
+      AuthenticatorData::DecodeAuthenticatorData(it->second.GetBytestring());
+  if (!auth_data)
+    return base::nullopt;
 
   it = response_map.find(CBOR(3));
   if (it == response_map.end() || !it->second.is_bytestring())
     return base::nullopt;
-  auto signature = it->second.GetBytestring();
 
-  AuthenticatorGetAssertionResponse response(
-      response_code, std::move(auth_data), std::move(signature),
-      std::move(*user));
+  auto signature = it->second.GetBytestring();
+  AuthenticatorGetAssertionResponse response(std::move(*auth_data),
+                                             std::move(signature));
 
   it = response_map.find(CBOR(1));
   if (it != response_map.end()) {
-    auto descriptor =
+    auto credential =
         PublicKeyCredentialDescriptor::CreateFromCBORValue(it->second);
-    if (!descriptor)
+    if (!credential)
       return base::nullopt;
+    response.SetCredential(std::move(*credential));
+  }
 
-    response.SetCredential(std::move(*descriptor));
+  it = response_map.find(CBOR(4));
+  if (it != response_map.end()) {
+    auto user = PublicKeyCredentialUserEntity::CreateFromCBORValue(it->second);
+    if (!user)
+      return base::nullopt;
+    response.SetUserEntity(std::move(*user));
   }
 
   it = response_map.find(CBOR(5));
@@ -125,9 +132,12 @@ base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
 }
 
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
-    CtapDeviceResponseCode response_code,
-    const std::vector<uint8_t>& buffer) {
-  base::Optional<CBOR> decoded_response = cbor::CBORReader::Read(buffer);
+    base::span<const uint8_t> buffer) {
+  if (buffer.size() <= kResponseCodeLength)
+    return base::nullopt;
+
+  base::Optional<CBOR> decoded_response =
+      cbor::CBORReader::Read(buffer.subspan(1));
 
   if (!decoded_response || !decoded_response->is_map())
     return base::nullopt;
@@ -150,7 +160,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
   if (it == response_map.end() || !it->second.is_bytestring())
     return base::nullopt;
 
-  AuthenticatorGetInfoResponse response(response_code, std::move(versions),
+  AuthenticatorGetInfoResponse response(std::move(versions),
                                         it->second.GetBytestring());
 
   it = response_map.find(CBOR(2));

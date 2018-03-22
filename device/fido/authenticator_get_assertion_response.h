@@ -12,48 +12,56 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "device/fido/authenticator_data.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/public_key_credential_descriptor.h"
 #include "device/fido/public_key_credential_user_entity.h"
+#include "device/fido/response_data.h"
 
 namespace device {
 
 // Represents response from authenticators for AuthenticatorGetAssertion and
 // AuthenticatorGetNextAssertion requests.
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticatorGetAssertion
-class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse {
+class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetAssertionResponse
+    : public ResponseData {
  public:
-  AuthenticatorGetAssertionResponse(CtapDeviceResponseCode response_code,
-                                    std::vector<uint8_t> auth_data,
-                                    std::vector<uint8_t> signature,
-                                    PublicKeyCredentialUserEntity user);
+  static base::Optional<AuthenticatorGetAssertionResponse>
+  CreateFromU2fSignResponse(const std::vector<uint8_t>& relying_party_id_hash,
+                            const std::vector<uint8_t>& u2f_data,
+                            const std::vector<uint8_t>& key_handle);
+
+  AuthenticatorGetAssertionResponse(AuthenticatorData authenticator_data,
+                                    std::vector<uint8_t> signature);
   AuthenticatorGetAssertionResponse(AuthenticatorGetAssertionResponse&& that);
   AuthenticatorGetAssertionResponse& operator=(
       AuthenticatorGetAssertionResponse&& other);
   ~AuthenticatorGetAssertionResponse();
 
-  AuthenticatorGetAssertionResponse& SetNumCredentials(uint8_t num_credentials);
   AuthenticatorGetAssertionResponse& SetCredential(
       PublicKeyCredentialDescriptor credential);
+  AuthenticatorGetAssertionResponse& SetUserEntity(
+      PublicKeyCredentialUserEntity user_entity);
+  AuthenticatorGetAssertionResponse& SetNumCredentials(uint8_t num_credentials);
 
-  CtapDeviceResponseCode response_code() const { return response_code_; }
-  const std::vector<uint8_t>& auth_data() const { return auth_data_; }
-  const std::vector<uint8_t>& signature() const { return signature_; }
-  const PublicKeyCredentialUserEntity& user() const { return user_; }
-  const base::Optional<uint8_t>& num_credentials() const {
-    return num_credentials_;
-  }
   const base::Optional<PublicKeyCredentialDescriptor>& credential() const {
     return credential_;
   }
+  const AuthenticatorData& auth_data() const { return authenticator_data_; }
+  const std::vector<uint8_t>& signature() const { return signature_; }
+  const base::Optional<PublicKeyCredentialUserEntity>& user_entity() const {
+    return user_entity_;
+  }
+  const base::Optional<uint8_t>& num_credentials() const {
+    return num_credentials_;
+  }
 
  private:
-  CtapDeviceResponseCode response_code_;
-  std::vector<uint8_t> auth_data_;
-  std::vector<uint8_t> signature_;
-  PublicKeyCredentialUserEntity user_;
-  base::Optional<uint8_t> num_credentials_;
   base::Optional<PublicKeyCredentialDescriptor> credential_;
+  AuthenticatorData authenticator_data_;
+  std::vector<uint8_t> signature_;
+  base::Optional<PublicKeyCredentialUserEntity> user_entity_;
+  base::Optional<uint8_t> num_credentials_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorGetAssertionResponse);
 };
