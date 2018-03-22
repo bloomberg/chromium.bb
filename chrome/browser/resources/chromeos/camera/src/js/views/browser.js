@@ -142,7 +142,7 @@ camera.views.Browser.prototype.onLeave = function() {
  */
 camera.views.Browser.prototype.onResize = function() {
   this.pictures.forEach(function(picture) {
-    this.updateImageSize_(picture.element.firstChild);
+    this.updateElementSize(picture.element);
   }.bind(this));
 
   this.scrollBar_.onResize();
@@ -258,7 +258,8 @@ camera.views.Browser.prototype.updateScrollbarThumb_ = function() {
 /**
  * Updates resolutions of the pictures. The selected picture will be high
  * resolution, and all the rest low. This method waits until CSS transitions
- * are finished (if any).
+ * are finished (if any). Element sizes would also be updated here after
+ * updating resolutions.
  *
  * @private
  */
@@ -280,13 +281,17 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
         var video = wrappedElement(wrapper, 'VIDEO');
         if (video) {
           wrapper.replaceChild(img, video);
+          this.updateElementSize(wrapper);
         }
-      };
+      }.bind(this);
       img.src = url;
     } else if (img.src != url) {
+      img.onload = function() {
+        this.updateElementSize(wrapper);
+      }.bind(this);
       img.src = url;
     }
-  };
+  }.bind(this);
 
   var updateVideo = function(wrapper, url) {
     // Use a video element to play back the selected motion picture.
@@ -301,6 +306,7 @@ camera.views.Browser.prototype.updatePicturesResolutions_ = function() {
         var img = wrappedElement(wrapper, 'IMG');
         if (img) {
           wrapper.replaceChild(video, img);
+          this.updateElementSize(wrapper);
         }
       }
     }.bind(this);
@@ -418,19 +424,6 @@ camera.views.Browser.prototype.onPictureDeleting = function(picture) {
 };
 
 /**
- * Workaround for broken flex layout model. Possibly crbug.com/240765.
- * TODO(mtomasz, yuli): Reevaluate after 2017/09/01.
- * @param {Image} img Image object to update.
- */
-camera.views.Browser.prototype.updateImageSize_ = function(img) {
-  var heightScale = 0.72;  // Keep in sync with main.css
-  var height = heightScale * document.body.offsetHeight;
-  var width = img.width * (height / img.height);
-  img.style.width = width + 'px';
-  img.style.height = height + 'px';
-};
-
-/**
  * @override
  */
 camera.views.Browser.prototype.addPictureToDOM = function(picture) {
@@ -442,15 +435,16 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
   wrapper.tabIndex = -1;
   wrapper.setAttribute('aria-role', 'option');
   wrapper.setAttribute('aria-selected', 'false');
+
   var img = document.createElement('img');
   img.tabIndex = -1;
+  img.onload = function() {
+    this.updateElementSize(wrapper);
+  }.bind(this);
   img.src = picture.thumbnailURL;
+
   wrapper.appendChild(img);
   browser.insertBefore(wrapper, boundsPadder.nextSibling);
-
-  img.onload = function(e) {
-    this.updateImageSize_(img);
-  }.bind(this);
 
   // Add to the collection.
   var domPicture = new camera.views.GalleryBase.DOMPicture(picture, wrapper);
@@ -475,6 +469,22 @@ camera.views.Browser.prototype.addPictureToDOM = function(picture) {
     if (this.lastSelectedIndex() != index)
       this.setSelectedIndex(index);
   }.bind(this));
+};
+
+/**
+ * @override
+ */
+camera.views.Browser.prototype.updateElementSize = function(wrapper) {
+  // Set the picture element's max dimension (not larger than the window size).
+  // Scaling up the selected element is still done in css rather than here as
+  // calculating the element size after loading the high-resolution content
+  // makes DOM tree relayout and unsmooth UI experience.
+  // TODO(yuli): Fix the blurriness in CSS scaled-up content.
+  var maxWidth = wrapper.parentElement.clientWidth * 0.72;
+  var maxHeight = wrapper.parentElement.clientHeight * 0.72;
+
+  camera.views.GalleryBase.prototype.updateElementSize.call(
+      this, wrapper, maxWidth, maxHeight);
 };
 
 /**
