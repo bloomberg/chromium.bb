@@ -193,10 +193,10 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   void HandleFrameChanged() override;
   void HandleNativeFocus(HWND last_focused_window) override;
   void HandleNativeBlur(HWND focused_window) override;
-  bool HandleMouseEvent(const ui::MouseEvent& event) override;
+  bool HandleMouseEvent(ui::MouseEvent* event) override;
   bool HandlePointerEvent(ui::PointerEvent* event) override;
   void HandleKeyEvent(ui::KeyEvent* event) override;
-  void HandleTouchEvent(const ui::TouchEvent& event) override;
+  void HandleTouchEvent(ui::TouchEvent* event) override;
   bool HandleIMEMessage(UINT message,
                         WPARAM w_param,
                         LPARAM l_param,
@@ -213,7 +213,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
                     LPARAM l_param,
                     LRESULT* result) override;
   void PostHandleMSG(UINT message, WPARAM w_param, LPARAM l_param) override;
-  bool HandleScrollEvent(const ui::ScrollEvent& event) override;
+  bool HandleScrollEvent(ui::ScrollEvent* event) override;
   bool HandleGestureEvent(ui::GestureEvent* event) override;
   void HandleWindowSizeChanging() override;
   void HandleWindowSizeUnchanged() override;

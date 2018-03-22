@@ -858,9 +858,9 @@ void DesktopWindowTreeHostWin::HandleNativeBlur(HWND focused_window) {
   // TODO(beng): inform the native_widget_delegate_.
 }
 
-bool DesktopWindowTreeHostWin::HandleMouseEvent(const ui::MouseEvent& event) {
-  SendEventToSink(const_cast<ui::MouseEvent*>(&event));
-  return event.handled();
+bool DesktopWindowTreeHostWin::HandleMouseEvent(ui::MouseEvent* event) {
+  SendEventToSink(event);
+  return event->handled();
 }
 
 bool DesktopWindowTreeHostWin::HandlePointerEvent(ui::PointerEvent* event) {
@@ -872,8 +872,7 @@ void DesktopWindowTreeHostWin::HandleKeyEvent(ui::KeyEvent* event) {
   SendEventToSink(event);
 }
 
-void DesktopWindowTreeHostWin::HandleTouchEvent(
-    const ui::TouchEvent& event) {
+void DesktopWindowTreeHostWin::HandleTouchEvent(ui::TouchEvent* event) {
   // HWNDMessageHandler asynchronously processes touch events. Because of this
   // it's possible for the aura::WindowEventDispatcher to have been destroyed
   // by the time we attempt to process them.
@@ -887,10 +886,10 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(
     DesktopWindowTreeHostWin* target =
         host->window()->GetProperty(kDesktopWindowTreeHostKey);
     if (target && target->HasCapture() && target != this) {
-      POINT target_location(event.location().ToPOINT());
+      POINT target_location(event->location().ToPOINT());
       ClientToScreen(GetHWND(), &target_location);
       ScreenToClient(target->GetHWND(), &target_location);
-      ui::TouchEvent target_event(event, static_cast<View*>(NULL),
+      ui::TouchEvent target_event(*event, static_cast<View*>(NULL),
                                   static_cast<View*>(NULL));
       target_event.set_location(gfx::Point(target_location));
       target_event.set_root_location(target_event.location());
@@ -898,7 +897,7 @@ void DesktopWindowTreeHostWin::HandleTouchEvent(
       return;
     }
   }
-  SendEventToSink(const_cast<ui::TouchEvent*>(&event));
+  SendEventToSink(event);
 }
 
 bool DesktopWindowTreeHostWin::HandleIMEMessage(UINT message,
@@ -951,10 +950,9 @@ void DesktopWindowTreeHostWin::PostHandleMSG(UINT message,
                                              LPARAM l_param) {
 }
 
-bool DesktopWindowTreeHostWin::HandleScrollEvent(
-    const ui::ScrollEvent& event) {
-  SendEventToSink(const_cast<ui::ScrollEvent*>(&event));
-  return event.handled();
+bool DesktopWindowTreeHostWin::HandleScrollEvent(ui::ScrollEvent* event) {
+  SendEventToSink(event);
+  return event->handled();
 }
 
 bool DesktopWindowTreeHostWin::HandleGestureEvent(ui::GestureEvent* event) {

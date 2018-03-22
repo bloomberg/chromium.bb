@@ -1114,7 +1114,7 @@ void HWNDMessageHandler::ApplyPanGestureScroll(int scroll_x, int scroll_y) {
       offset, cursor_location, cursor_root_location, base::TimeTicks::Now(),
       ui::EF_PRECISION_SCROLLING_DELTA, ui::EF_NONE);
 
-  delegate_->HandleMouseEvent(wheel_event);
+  delegate_->HandleMouseEvent(&wheel_event);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -2176,7 +2176,7 @@ LRESULT HWNDMessageHandler::OnScrollMessage(UINT message,
   MSG msg = {
       hwnd(), message, w_param, l_param, static_cast<DWORD>(GetMessageTime())};
   ui::ScrollEvent event(msg);
-  delegate_->HandleScrollEvent(event);
+  delegate_->HandleScrollEvent(&event);
   return 0;
 }
 
@@ -2620,8 +2620,10 @@ void HWNDMessageHandler::OnSessionChange(WPARAM status_code) {
 
 void HWNDMessageHandler::HandleTouchEvents(const TouchEvents& touch_events) {
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
-  for (size_t i = 0; i < touch_events.size() && ref; ++i)
-    delegate_->HandleTouchEvent(touch_events[i]);
+  for (size_t i = 0; i < touch_events.size() && ref; ++i) {
+    ui::TouchEvent* touch_event = const_cast<ui::TouchEvent*>(&touch_events[i]);
+    delegate_->HandleTouchEvent(touch_event);
+  }
 }
 
 void HWNDMessageHandler::ResetTouchDownContext() {
@@ -2731,15 +2733,18 @@ LRESULT HWNDMessageHandler::HandleMouseEventInternal(UINT message,
     // OnMouseEvent.
     active_mouse_tracking_flags_ = 0;
   } else if (event.type() == ui::ET_MOUSEWHEEL) {
+    ui::MouseWheelEvent mouse_wheel_event(msg);
     // Reroute the mouse wheel to the window under the pointer if applicable.
     return (ui::RerouteMouseWheel(hwnd(), w_param, l_param) ||
-            delegate_->HandleMouseEvent(ui::MouseWheelEvent(msg))) ? 0 : 1;
+            delegate_->HandleMouseEvent(&mouse_wheel_event))
+               ? 0
+               : 1;
   }
 
   // There are cases where the code handling the message destroys the window,
   // so use the weak ptr to check if destruction occured or not.
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
-  bool handled = delegate_->HandleMouseEvent(event);
+  bool handled = delegate_->HandleMouseEvent(&event);
 
   if (!ref.get())
     return 0;
@@ -2838,7 +2843,7 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypeTouch(UINT message,
   // There are cases where the code handling the message destroys the
   // window, so use the weak ptr to check if destruction occurred or not.
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
-  delegate_->HandleTouchEvent(event);
+  delegate_->HandleTouchEvent(&event);
 
   if (event_type == ui::ET_TOUCH_RELEASED)
     id_generator_.ReleaseNumber(pointer_id);
@@ -2874,9 +2879,9 @@ LRESULT HWNDMessageHandler::HandlePointerEventTypePen(UINT message,
   base::WeakPtr<HWNDMessageHandler> ref(weak_factory_.GetWeakPtr());
   if (event) {
     if (event->IsTouchEvent()) {
-      delegate_->HandleTouchEvent(*event->AsTouchEvent());
+      delegate_->HandleTouchEvent(event->AsTouchEvent());
     } else if (event->IsMouseEvent()) {
-      delegate_->HandleMouseEvent(*event->AsMouseEvent());
+      delegate_->HandleMouseEvent(event->AsMouseEvent());
     } else {
       NOTREACHED();
     }
