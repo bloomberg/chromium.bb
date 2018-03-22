@@ -271,6 +271,10 @@ class FakeReposBase(object):
     self.git_dirty = False
     return True
 
+  def _git_rev_parse(self, path):
+    return subprocess2.check_output(
+        ['git', 'rev-parse', 'HEAD'], cwd=path).strip()
+
   def _commit_git(self, repo, tree):
     repo_root = join(self.git_root, repo)
     self._genTree(repo_root, tree)
@@ -861,6 +865,10 @@ class FakeReposTestBase(trial_dir.TestCase):
   def gittree(self, repo, rev):
     """Sort-hand: returns the directory tree for a git 'revision'."""
     return self.FAKE_REPOS.git_hashes[repo][int(rev)][1]
+
+  def gitrevparse(self, repo):
+    """Returns the actual revision for a given repo."""
+    return self.FAKE_REPOS._git_rev_parse(repo)
 
 
 def main(argv):

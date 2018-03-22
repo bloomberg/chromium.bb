@@ -261,7 +261,7 @@ class GclientTest(trial_dir.TestCase):
     work_queue = gclient_utils.ExecutionQueue(options.jobs, None, False)
     for s in client.dependencies:
       work_queue.enqueue(s)
-    work_queue.flush({}, None, [], options=options)
+    work_queue.flush({}, None, [], options=options, patch_refs={})
     self.assertEqual(
         [h.action for h in client.GetHooks(options)],
         [tuple(x['action']) for x in hooks])
@@ -312,7 +312,7 @@ class GclientTest(trial_dir.TestCase):
     work_queue = gclient_utils.ExecutionQueue(options.jobs, None, False)
     for s in client.dependencies:
       work_queue.enqueue(s)
-    work_queue.flush({}, None, [], options=options)
+    work_queue.flush({}, None, [], options=options, patch_refs={})
     self.assertEqual(
         [h.action for h in client.GetHooks(options)],
         [tuple(x['action']) for x in hooks + extra_hooks + sub_hooks])

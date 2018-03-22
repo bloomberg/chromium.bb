@@ -936,7 +936,8 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
 
   # Arguments number differs from overridden method
   # pylint: disable=arguments-differ
-  def run(self, revision_overrides, command, args, work_queue, options):
+  def run(self, revision_overrides, command, args, work_queue, options,
+          patch_refs):
     """Runs |command| then parse the DEPS file."""
     logging.info('Dependency(%s).run()' % self.name)
     assert self._file_list == []
@@ -963,6 +964,13 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
           out_cb=work_queue.out_cb)
       self._got_revision = self._used_scm.RunCommand(command, options, args,
                                                      file_list)
+
+      patch_repo = parsed_url.split('@')[0]
+      patch_ref = patch_refs.pop(patch_repo, patch_refs.pop(self.name, None))
+      if command == 'update' and patch_ref is not None:
+        self._used_scm.apply_patch_ref(patch_repo, patch_ref, options,
+                                        file_list)
+
       if file_list:
         file_list = [os.path.join(self.name, f.strip()) for f in file_list]
 
@@ -1596,6 +1604,20 @@ it or fix the checkout.
       index += 1
     return revision_overrides
 
+  def _EnforcePatchRefs(self):
+    """Checks for patch refs."""
+    patch_refs = {}
+    if not self._options.patch_refs:
+      return patch_refs
+    for given_patch_ref in self._options.patch_refs:
+      patch_repo, _, patch_ref = given_patch_ref.partition('@')
+      if not patch_repo or not patch_ref:
+        raise gclient_utils.Error(
+            'Wrong revision format: %s should be of the form '
+            'patch_repo@patch_ref.' % given_patch_ref)
+      patch_refs[patch_repo] = patch_ref
+    return patch_refs
+
   def RunOnDeps(self, command, args, ignore_requirements=False, progress=True):
     """Runs a command on each dependency in a client and its dependencies.
 
@@ -1607,12 +1629,16 @@ it or fix the checkout.
       raise gclient_utils.Error('No solution specified')
 
     revision_overrides = {}
+    patch_refs = {}
     # It's unnecessary to check for revision overrides for 'recurse'.
     # Save a few seconds by not calling _EnforceRevisions() in that case.
     if command not in ('diff', 'recurse', 'runhooks', 'status', 'revert',
                        'validate'):
       self._CheckConfig()
       revision_overrides = self._EnforceRevisions()
+
+    if command == 'update':
+      patch_refs = self._EnforcePatchRefs()
     # Disable progress for non-tty stdout.
     should_show_progress = (
         setup_color.IS_TTY and not self._options.verbose and progress)
@@ -1628,10 +1654,19 @@ it or fix the checkout.
     for s in self.dependencies:
       if s.should_process:
         work_queue.enqueue(s)
-    work_queue.flush(revision_overrides, command, args, options=self._options)
+    work_queue.flush(revision_overrides, command, args, options=self._options,
+                     patch_refs=patch_refs)
+
     if revision_overrides:
       print('Please fix your script, having invalid --revision flags will soon '
-            'considered an error.', file=sys.stderr)
+            'be considered an error.', file=sys.stderr)
+
+    if patch_refs:
+      raise gclient_utils.Error(
+          'The following --patch-ref flags were not used. Please fix it:\n%s' %
+          ('\n'.join(
+              patch_repo + '@' + patch_ref
+              for patch_repo, patch_ref in patch_refs.iteritems())))
 
     if self._cipd_root:
       self._cipd_root.run(command)
@@ -1749,7 +1784,7 @@ it or fix the checkout.
     for s in self.dependencies:
       if s.should_process:
         work_queue.enqueue(s)
-    work_queue.flush({}, None, [], options=self._options)
+    work_queue.flush({}, None, [], options=self._options, patch_refs=None)
 
     def ShouldPrintRevision(path, rev):
       if not self._options.path and not self._options.url:
@@ -1920,14 +1955,15 @@ class CipdDependency(Dependency):
     self._package_version = version
 
   #override
-  def run(self, revision_overrides, command, args, work_queue, options):
+  def run(self, revision_overrides, command, args, work_queue, options,
+          patch_refs):
     """Runs |command| then parse the DEPS file."""
     logging.info('CipdDependency(%s).run()' % self.name)
     if not self.should_process:
       return
     self._CreatePackageIfNecessary()
     super(CipdDependency, self).run(revision_overrides, command, args,
-                                    work_queue, options)
+                                    work_queue, options, patch_refs)
 
   def _CreatePackageIfNecessary(self):
     # We lazily create the CIPD package to make sure that only packages
@@ -2637,6 +2673,15 @@ def CMDsync(parser, args):
                          'takes precedence. -r can be used multiple times when '
                          '.gclient has multiple solutions configured, and will '
                          'work even if the src@ part is skipped.')
+  parser.add_option('--patch-ref', action='append',
+                    dest='patch_refs', metavar='GERRIT_REF', default=[],
+                    help='Patches the given reference with the format dep@ref. '
+                         'For dep, you can specify URLs as well as paths, with '
+                         'URLs taking preference. The reference will be '
+                         'applied to the necessary path, will be rebased on '
+                         'top what the dep was synced to, and then will do a '
+                         'soft reset. Use --no-rebase-patch-ref and '
+                         '--reset-patch-ref to disable this behavior.')
   parser.add_option('--with_branch_heads', action='store_true',
                     help='Clone git "branch_heads" refspecs in addition to '
                          'the default refspecs. This adds about 1/2GB to a '
@@ -2708,6 +2753,12 @@ def CMDsync(parser, args):
   parser.add_option('--disable-syntax-validation', action='store_false',
                     dest='validate_syntax',
                     help='Disable validation of .gclient and DEPS syntax.')
+  parser.add_option('--no-rebase-patch-ref', action='store_false',
+                    dest='rebase_patch_ref', default=True,
+                    help='Bypass rebase of the patch ref after checkout.')
+  parser.add_option('--no-reset-patch-ref', action='store_false',
+                    dest='reset_patch_ref', default=True,
+                    help='Bypass calling reset after patching the ref.')
   (options, args) = parser.parse_args(args)
   client = GClient.LoadCurrentConfig(options)
 

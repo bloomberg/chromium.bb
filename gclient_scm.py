@@ -340,6 +340,31 @@ class GitWrapper(SCMWrapper):
               self.Print('FAILED to break lock: %s: %s' % (to_break, ex))
               raise
 
+  def apply_patch_ref(self, patch_repo, patch_ref, options, file_list):
+    base_rev = self._Capture(['rev-parse', 'HEAD'])
+    self.Print('===Applying patch ref===')
+    self.Print('Repo is %r @ %r, ref is %r, root is %r' % (
+        patch_repo, patch_ref, base_rev, self.checkout_path))
+    self._Capture(['reset', '--hard'])
+    self._Capture(['fetch', patch_repo, patch_ref])
+    file_list.extend(self._GetDiffFilenames('FETCH_HEAD'))
+    self._Capture(['checkout', 'FETCH_HEAD'])
+
+    if options.rebase_patch_ref:
+      try:
+        # TODO(ehmaldonado): Look into cherry-picking to avoid an expensive
+        # checkout + rebase.
+        self._Capture(['rebase', base_rev])
+      except subprocess2.CalledProcessError as e:
+        self._Capture(['rebase', '--abort'])
+        self.Print('Failed to apply %r @ %r to %r at %r' % (
+                patch_repo, patch_ref, base_rev, self.checkout_path))
+        self.Print('git returned non-zero exit status %s:\n%s' % (
+            e.returncode, e.stderr))
+        raise
+    if options.reset_patch_ref:
+      self._Capture(['reset', '--soft', base_rev])
+
   def update(self, options, args, file_list):
     """Runs git to update or transparently checkout the working copy.
 
