@@ -158,6 +158,15 @@ ScrollableUsersListView::ScrollableUsersListView(
 
 ScrollableUsersListView::~ScrollableUsersListView() = default;
 
+LoginUserView* ScrollableUsersListView::GetUserView(
+    const AccountId& account_id) {
+  for (auto* view : user_views_) {
+    if (view->current_user()->basic_user_info->account_id == account_id)
+      return view;
+  }
+  return nullptr;
+}
+
 void ScrollableUsersListView::Layout() {
   DCHECK(layout_);
   bool should_show_landscape =

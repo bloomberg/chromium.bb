@@ -16,8 +16,10 @@
 #include "ash/login/ui/layout_util.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_auth_user_view.h"
+#include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_detachable_base_model.h"
+#include "ash/login/ui/login_public_account_user_view.h"
 #include "ash/login/ui/login_user_view.h"
 #include "ash/login/ui/non_accessible_view.h"
 #include "ash/login/ui/note_action_launch_button.h"
@@ -32,6 +34,7 @@
 #include "ash/system/tray/system_tray_notifier.h"
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
+#include "components/user_manager/user_type.h"
 #include "mojo/common/values_struct_traits.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -175,18 +178,22 @@ keyboard::KeyboardController* GetKeyboardControllerForWidget(
   return keyboard_window == this_window ? keyboard_controller : nullptr;
 }
 
+bool IsPublicAccountUser(const mojom::LoginUserInfoPtr& user) {
+  return user->basic_user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
+}
+
 }  // namespace
 
 LockContentsView::TestApi::TestApi(LockContentsView* view) : view_(view) {}
 
 LockContentsView::TestApi::~TestApi() = default;
 
-LoginAuthUserView* LockContentsView::TestApi::primary_auth() const {
-  return view_->primary_auth_;
+LoginBigUserView* LockContentsView::TestApi::primary_big_view() const {
+  return view_->primary_big_view_;
 }
 
-LoginAuthUserView* LockContentsView::TestApi::opt_secondary_auth() const {
-  return view_->opt_secondary_auth_;
+LoginBigUserView* LockContentsView::TestApi::opt_secondary_big_view() const {
+  return view_->opt_secondary_big_view_;
 }
 
 ScrollableUsersListView* LockContentsView::TestApi::users_list() const {
@@ -310,17 +317,17 @@ void LockContentsView::AddedToWidget() {
   DoLayout();
 
   // Focus the primary user when showing the UI. This will focus the password.
-  if (primary_auth_)
-    primary_auth_->RequestFocus();
+  if (primary_big_view_)
+    primary_big_view_->RequestFocus();
 }
 
 void LockContentsView::OnFocus() {
   // If LockContentsView somehow gains focus (ie, a test, but it should not
   // under typical circumstances), immediately forward the focus to the
-  // primary_auth_ since LockContentsView has no real focusable content by
+  // primary_big_view_ since LockContentsView has no real focusable content by
   // itself.
-  if (primary_auth_)
-    primary_auth_->RequestFocus();
+  if (primary_big_view_)
+    primary_big_view_->RequestFocus();
 }
 
 void LockContentsView::AboutToRequestFocusFromTabTraversal(bool reverse) {
@@ -353,7 +360,7 @@ void LockContentsView::OnUsersChanged(
   // The debug view will potentially call this method many times. Make sure to
   // invalidate any child references.
   main_view_->RemoveAllChildViews(true /*delete_children*/);
-  opt_secondary_auth_ = nullptr;
+  opt_secondary_big_view_ = nullptr;
   users_list_ = nullptr;
   rotation_actions_.clear();
   users_.clear();
@@ -377,9 +384,9 @@ void LockContentsView::OnUsersChanged(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   main_view_->SetLayoutManager(std::move(box_layout));
 
-  // Add auth user.
-  primary_auth_ = AllocateLoginAuthUserView(users[0], true /*is_primary*/);
-  main_view_->AddChildView(primary_auth_);
+  // Add big user.
+  primary_big_view_ = AllocateLoginBigUserView(users[0], true /*is_primary*/);
+  main_view_->AddChildView(primary_big_view_);
 
   // Build layout for additional users.
   if (users.size() == 2)
@@ -389,10 +396,10 @@ void LockContentsView::OnUsersChanged(
   else if (users.size() >= 7)
     CreateHighDensityLayout(users);
 
-  LayoutAuth(primary_auth_, opt_secondary_auth_, false /*animate*/);
+  LayoutAuth(primary_big_view_, opt_secondary_big_view_, false /*animate*/);
 
-  // Auth user may be the same if we already built lock screen.
-  OnAuthUserChanged();
+  // Big user may be the same if we already built lock screen.
+  OnBigUserChanged();
 
   // Force layout.
   PreferredSizeChanged();
@@ -409,10 +416,10 @@ void LockContentsView::OnPinEnabledForUserChanged(const AccountId& user,
 
   state->show_pin = enabled;
 
-  LoginAuthUserView* auth_user =
-      TryToFindAuthUser(user, true /*require_auth_active*/);
-  if (auth_user)
-    LayoutAuth(auth_user, nullptr /*opt_to_hide*/, true /*animate*/);
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, true /*require_auth_active*/);
+  if (big_user && big_user->auth_user())
+    LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
 void LockContentsView::OnClickToUnlockEnabledForUserChanged(
@@ -425,10 +432,10 @@ void LockContentsView::OnClickToUnlockEnabledForUserChanged(
   }
   state->enable_tap_auth = enabled;
 
-  LoginAuthUserView* auth_user =
-      TryToFindAuthUser(user, true /*require_auth_active*/);
-  if (auth_user)
-    LayoutAuth(auth_user, nullptr /*opt_to_hide*/, true /*animate*/);
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, true /*require_auth_active*/);
+  if (big_user && big_user->auth_user())
+    LayoutAuth(big_user, nullptr /*opt_to_hide*/, true /*animate*/);
 }
 
 void LockContentsView::OnShowEasyUnlockIcon(
@@ -442,14 +449,15 @@ void LockContentsView::OnShowEasyUnlockIcon(
   UpdateEasyUnlockIconForUser(user);
 
   // Show tooltip only if the user is actively showing auth.
-  auto* auth_user = TryToFindAuthUser(user, true /*require_auth_active*/);
-  if (auth_user) {
-    tooltip_bubble_->Close();
-    if (icon->autoshow_tooltip) {
-      tooltip_bubble_->ShowTooltip(
-          icon->tooltip,
-          CurrentAuthUserView()->password_view() /*anchor_view*/);
-    }
+  LoginBigUserView* big_user =
+      TryToFindBigUser(user, true /*require_auth_active*/);
+  if (!big_user || !big_user->auth_user())
+    return;
+
+  tooltip_bubble_->Close();
+  if (icon->autoshow_tooltip) {
+    tooltip_bubble_->ShowTooltip(
+        icon->tooltip, big_user->auth_user()->password_view() /*anchor_view*/);
   }
 }
 
@@ -462,8 +470,9 @@ void LockContentsView::OnLockScreenNoteStateChanged(
 
   // If lock screen apps just got deactivated - request focus for primary auth,
   // which should focus the password field.
-  if (old_lock_screen_apps_active && !lock_screen_apps_active_ && primary_auth_)
-    primary_auth_->RequestFocus();
+  if (old_lock_screen_apps_active && !lock_screen_apps_active_ &&
+      primary_big_view_)
+    primary_big_view_->RequestFocus();
 }
 
 void LockContentsView::OnDevChannelInfoChanged(
@@ -501,7 +510,13 @@ void LockContentsView::OnDevChannelInfoChanged(
 void LockContentsView::OnPublicSessionDisplayNameChanged(
     const AccountId& account_id,
     const std::string& display_name) {
-  NOTIMPLEMENTED();
+  LoginUserView* user_view = TryToFindUserView(account_id);
+  if (!user_view || !IsPublicAccountUser(user_view->current_user()))
+    return;
+
+  mojom::LoginUserInfoPtr user_info = user_view->current_user()->Clone();
+  user_info->basic_user_info->display_name = display_name;
+  user_view->UpdateForUser(user_info, false /*animate*/);
 }
 
 void LockContentsView::OnPublicSessionLocalesChanged(
@@ -509,17 +524,28 @@ void LockContentsView::OnPublicSessionLocalesChanged(
     const base::ListValue& locales,
     const std::string& default_locale,
     bool show_advanced_view) {
-  NOTIMPLEMENTED();
+  LoginUserView* user_view = TryToFindUserView(account_id);
+  if (!user_view || !IsPublicAccountUser(user_view->current_user()))
+    return;
+
+  mojom::LoginUserInfoPtr user_info = user_view->current_user()->Clone();
+  user_info->public_account_info->available_locales =
+      std::make_unique<base::ListValue>(locales.Clone().GetList());
+  user_info->public_account_info->default_locale = default_locale;
+  user_info->public_account_info->show_advanced_view = show_advanced_view;
+  user_view->UpdateForUser(user_info, false /*animate*/);
 }
 
 void LockContentsView::OnDetachableBasePairingStatusChanged(
     DetachableBasePairingStatus pairing_status) {
   const mojom::UserInfoPtr& user_info =
-      CurrentAuthUserView()->current_user()->basic_user_info;
-  // If the base is not paired, or the paired base matches the last used by the
-  // current user, the detachable base error bubble should be hidden. Otherwise,
-  // the bubble should be shown.
-  if (pairing_status == DetachableBasePairingStatus::kNone ||
+      CurrentBigUserView()->GetCurrentUser()->basic_user_info;
+  // If the current big user is public account user, or the base is not paired,
+  // or the paired base matches the last used by the current user, the
+  // detachable base error bubble should be hidden. Otherwise, the bubble should
+  // be shown.
+  if (!CurrentBigUserView()->auth_user() ||
+      pairing_status == DetachableBasePairingStatus::kNone ||
       (pairing_status == DetachableBasePairingStatus::kAuthenticated &&
        detachable_base_model_->PairedBaseMatchesLastUsedByUser(*user_info))) {
     detachable_base_error_bubble_->Close();
@@ -540,7 +566,7 @@ void LockContentsView::OnDetachableBasePairingStatusChanged(
   label->SetEnabledColor(SK_ColorWHITE);
 
   detachable_base_error_bubble_->ShowErrorBubble(
-      label, CurrentAuthUserView()->password_view() /*anchor_view*/,
+      label, CurrentBigUserView()->auth_user()->password_view() /*anchor_view*/,
       LoginBubble::kFlagPersistent);
 
   // Remove the focus from the password field, to make user less likely to enter
@@ -605,7 +631,7 @@ void LockContentsView::OnStateChanged(
     const keyboard::KeyboardControllerState state) {
   if (state == keyboard::KeyboardControllerState::SHOWN ||
       state == keyboard::KeyboardControllerState::HIDDEN) {
-    LayoutAuth(primary_auth_, opt_secondary_auth_, false /*animate*/);
+    LayoutAuth(primary_big_view_, opt_secondary_big_view_, false /*animate*/);
   }
 }
 
@@ -634,10 +660,9 @@ void LockContentsView::CreateLowDensityLayout(
       kLowDensityDistanceBetweenUsersInPortraitDp));
 
   // Build auth user.
-  opt_secondary_auth_ =
-      AllocateLoginAuthUserView(users[1], false /*is_primary*/);
-  opt_secondary_auth_->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
-  main_view_->AddChildView(opt_secondary_auth_);
+  opt_secondary_big_view_ =
+      AllocateLoginBigUserView(users[1], false /*is_primary*/);
+  main_view_->AddChildView(opt_secondary_big_view_);
 }
 
 void LockContentsView::CreateMediumDensityLayout(
@@ -735,15 +760,13 @@ void LockContentsView::AddRotationAction(const OnRotate& on_rotate) {
 
 void LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary(
     bool is_primary) {
-  if (is_primary &&
-      primary_auth_->auth_methods() == LoginAuthUserView::AUTH_NONE) {
-    LayoutAuth(primary_auth_, opt_secondary_auth_, true /*animate*/);
-    OnAuthUserChanged();
-  } else if (!is_primary && opt_secondary_auth_ &&
-             opt_secondary_auth_->auth_methods() ==
-                 LoginAuthUserView::AUTH_NONE) {
-    LayoutAuth(opt_secondary_auth_, primary_auth_, true /*animate*/);
-    OnAuthUserChanged();
+  if (is_primary && !primary_big_view_->auth_enabled()) {
+    LayoutAuth(primary_big_view_, opt_secondary_big_view_, true /*animate*/);
+    OnBigUserChanged();
+  } else if (!is_primary && opt_secondary_big_view_ &&
+             !opt_secondary_big_view_->auth_enabled()) {
+    LayoutAuth(opt_secondary_big_view_, primary_big_view_, true /*animate*/);
+    OnBigUserChanged();
   }
 }
 
@@ -756,10 +779,11 @@ void LockContentsView::OnAuthenticate(bool auth_success) {
     // detachable base (if one is attached). This will prevent further
     // detachable base change notifications from appearing for this base (until
     // the user uses another detachable base).
-    if (detachable_base_model_->GetPairingStatus() ==
-        DetachableBasePairingStatus::kAuthenticated) {
+    if (CurrentBigUserView()->auth_user() &&
+        detachable_base_model_->GetPairingStatus() ==
+            DetachableBasePairingStatus::kAuthenticated) {
       detachable_base_model_->SetPairedBaseAsLastUsedByUser(
-          *CurrentAuthUserView()->current_user()->basic_user_info);
+          *CurrentBigUserView()->GetCurrentUser()->basic_user_info);
     }
   } else {
     ShowAuthErrorMessage();
@@ -777,53 +801,30 @@ LockContentsView::UserState* LockContentsView::FindStateForUser(
   return nullptr;
 }
 
-void LockContentsView::LayoutAuth(LoginAuthUserView* to_update,
-                                  LoginAuthUserView* opt_to_hide,
+void LockContentsView::LayoutAuth(LoginBigUserView* to_update,
+                                  LoginBigUserView* opt_to_hide,
                                   bool animate) {
-  // Capture animation metadata before we changing state.
-  if (animate) {
-    to_update->CaptureStateForAnimationPreLayout();
-    if (opt_to_hide)
-      opt_to_hide->CaptureStateForAnimationPreLayout();
-  }
-
-  // Update auth methods for |to_update|. Disable auth on |opt_to_hide|.
-  uint32_t to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
-  UserState* state =
-      FindStateForUser(to_update->current_user()->basic_user_info->account_id);
-  keyboard::KeyboardController* keyboard_controller = GetKeyboardController();
-  bool keyboard_visible =
-      keyboard_controller ? keyboard_controller->keyboard_visible() : false;
-  if (state->show_pin && !keyboard_visible)
-    to_update_auth |= LoginAuthUserView::AUTH_PIN;
-  if (state->enable_tap_auth)
-    to_update_auth |= LoginAuthUserView::AUTH_TAP;
-  to_update->SetAuthMethods(to_update_auth);
-  if (opt_to_hide)
-    opt_to_hide->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
-
-  Layout();
-
-  // Apply animations.
-  if (animate) {
-    to_update->ApplyAnimationPostLayout();
-    if (opt_to_hide)
-      opt_to_hide->ApplyAnimationPostLayout();
-  }
+  DCHECK(to_update);
+  UpdateAuthForAuthUser(to_update->auth_user(),
+                        opt_to_hide ? opt_to_hide->auth_user() : nullptr,
+                        animate);
+  UpdateAuthForPublicAccount(
+      to_update->public_account(),
+      opt_to_hide ? opt_to_hide->public_account() : nullptr, animate);
 }
 
-void LockContentsView::SwapToAuthUser(int user_index) {
+void LockContentsView::SwapToBigUser(int user_index) {
   DCHECK(users_list_);
   LoginUserView* view = users_list_->user_view_at(user_index);
   DCHECK(view);
-  mojom::LoginUserInfoPtr previous_auth_user =
-      primary_auth_->current_user()->Clone();
-  mojom::LoginUserInfoPtr new_auth_user = view->current_user()->Clone();
+  mojom::LoginUserInfoPtr previous_big_user =
+      primary_big_view_->GetCurrentUser()->Clone();
+  mojom::LoginUserInfoPtr new_big_user = view->current_user()->Clone();
 
-  view->UpdateForUser(previous_auth_user, true /*animate*/);
-  primary_auth_->UpdateForUser(new_auth_user);
-  LayoutAuth(primary_auth_, nullptr, true /*animate*/);
-  OnAuthUserChanged();
+  view->UpdateForUser(previous_big_user, true /*animate*/);
+  primary_big_view_->UpdateForUser(new_big_user);
+  LayoutAuth(primary_big_view_, nullptr, true /*animate*/);
+  OnBigUserChanged();
 }
 
 void LockContentsView::OnRemoveUserWarningShown(bool is_primary) {
@@ -831,10 +832,10 @@ void LockContentsView::OnRemoveUserWarningShown(bool is_primary) {
 }
 
 void LockContentsView::RemoveUser(bool is_primary) {
-  LoginAuthUserView* to_remove =
-      is_primary ? primary_auth_ : opt_secondary_auth_;
-  DCHECK(to_remove->current_user()->can_remove);
-  AccountId user = to_remove->current_user()->basic_user_info->account_id;
+  LoginBigUserView* to_remove =
+      is_primary ? primary_big_view_ : opt_secondary_big_view_;
+  DCHECK(to_remove->GetCurrentUser()->can_remove);
+  AccountId user = to_remove->GetCurrentUser()->basic_user_info->account_id;
 
   // Ask chrome to remove the user.
   Shell::Get()->login_screen_controller()->RemoveUser(user);
@@ -842,9 +843,9 @@ void LockContentsView::RemoveUser(bool is_primary) {
   // Display the new user list less |user|.
   std::vector<mojom::LoginUserInfoPtr> new_users;
   if (!is_primary)
-    new_users.push_back(primary_auth_->current_user()->Clone());
-  if (is_primary && opt_secondary_auth_)
-    new_users.push_back(opt_secondary_auth_->current_user()->Clone());
+    new_users.push_back(primary_big_view_->GetCurrentUser()->Clone());
+  if (is_primary && opt_secondary_big_view_)
+    new_users.push_back(opt_secondary_big_view_->GetCurrentUser()->Clone());
   if (users_list_) {
     for (int i = 0; i < users_list_->user_count(); ++i) {
       new_users.push_back(
@@ -854,12 +855,12 @@ void LockContentsView::RemoveUser(bool is_primary) {
   data_dispatcher_->NotifyUsers(new_users);
 }
 
-void LockContentsView::OnAuthUserChanged() {
-  const AccountId new_auth_user =
-      CurrentAuthUserView()->current_user()->basic_user_info->account_id;
+void LockContentsView::OnBigUserChanged() {
+  const AccountId new_big_user =
+      CurrentBigUserView()->GetCurrentUser()->basic_user_info->account_id;
 
-  Shell::Get()->login_screen_controller()->OnFocusPod(new_auth_user);
-  UpdateEasyUnlockIconForUser(new_auth_user);
+  Shell::Get()->login_screen_controller()->OnFocusPod(new_big_user);
+  UpdateEasyUnlockIconForUser(new_big_user);
 
   if (unlock_attempt_ > 0) {
     // Times a password was incorrectly entered until user gives up (change
@@ -878,11 +879,11 @@ void LockContentsView::OnAuthUserChanged() {
 }
 
 void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
-  // Try to find an auth view for |user|. If there is none, there is no state to
+  // Try to find an big view for |user|. If there is none, there is no state to
   // update.
-  LoginAuthUserView* auth_view =
-      TryToFindAuthUser(user, false /*require_auth_active*/);
-  if (!auth_view)
+  LoginBigUserView* big_view =
+      TryToFindBigUser(user, false /*require_auth_active*/);
+  if (!big_view || !big_view->auth_user())
     return;
 
   UserState* state = FindStateForUser(user);
@@ -890,8 +891,8 @@ void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
 
   // Hide easy unlock icon if there is no data is available.
   if (!state->easy_unlock_state) {
-    auth_view->SetEasyUnlockIcon(mojom::EasyUnlockIconId::NONE,
-                                 base::string16());
+    big_view->auth_user()->SetEasyUnlockIcon(mojom::EasyUnlockIconId::NONE,
+                                             base::string16());
     return;
   }
 
@@ -901,21 +902,24 @@ void LockContentsView::UpdateEasyUnlockIconForUser(const AccountId& user) {
   if (accessibility_label.empty())
     accessibility_label = state->easy_unlock_state->tooltip;
 
-  auth_view->SetEasyUnlockIcon(state->easy_unlock_state->icon,
-                               accessibility_label);
+  big_view->auth_user()->SetEasyUnlockIcon(state->easy_unlock_state->icon,
+                                           accessibility_label);
 }
 
-LoginAuthUserView* LockContentsView::CurrentAuthUserView() {
-  if (opt_secondary_auth_ &&
-      opt_secondary_auth_->auth_methods() != LoginAuthUserView::AUTH_NONE) {
-    DCHECK(primary_auth_->auth_methods() == LoginAuthUserView::AUTH_NONE);
-    return opt_secondary_auth_;
+LoginBigUserView* LockContentsView::CurrentBigUserView() {
+  if (opt_secondary_big_view_ && opt_secondary_big_view_->auth_enabled()) {
+    DCHECK(!primary_big_view_->auth_enabled());
+    return opt_secondary_big_view_;
   }
 
-  return primary_auth_;
+  return primary_big_view_;
 }
 
 void LockContentsView::ShowAuthErrorMessage() {
+  LoginBigUserView* big_view = CurrentBigUserView();
+  if (!big_view->auth_user())
+    return;
+
   base::string16 error_text = l10n_util::GetStringUTF16(
       unlock_attempt_ ? IDS_ASH_LOGIN_ERROR_AUTHENTICATING_2ND_TIME
                       : IDS_ASH_LOGIN_ERROR_AUTHENTICATING);
@@ -948,13 +952,17 @@ void LockContentsView::ShowAuthErrorMessage() {
   label->set_auto_color_readability_enabled(false);
 
   auth_error_bubble_->ShowErrorBubble(
-      label, CurrentAuthUserView()->password_view() /*anchor_view*/,
+      label, big_view->auth_user()->password_view() /*anchor_view*/,
       LoginBubble::kFlagsNone);
 }
 
 void LockContentsView::OnEasyUnlockIconHovered() {
-  UserState* state = FindStateForUser(
-      CurrentAuthUserView()->current_user()->basic_user_info->account_id);
+  LoginBigUserView* big_view = CurrentBigUserView();
+  if (!big_view->auth_user())
+    return;
+
+  UserState* state =
+      FindStateForUser(big_view->GetCurrentUser()->basic_user_info->account_id);
   DCHECK(state);
   mojom::EasyUnlockIconOptionsPtr& easy_unlock_state = state->easy_unlock_state;
   DCHECK(easy_unlock_state);
@@ -962,20 +970,20 @@ void LockContentsView::OnEasyUnlockIconHovered() {
   if (!easy_unlock_state->tooltip.empty()) {
     tooltip_bubble_->ShowTooltip(
         easy_unlock_state->tooltip,
-        CurrentAuthUserView()->password_view() /*anchor_view*/);
+        big_view->auth_user()->password_view() /*anchor_view*/);
   }
 }
 
 void LockContentsView::OnEasyUnlockIconTapped() {
   UserState* state = FindStateForUser(
-      CurrentAuthUserView()->current_user()->basic_user_info->account_id);
+      CurrentBigUserView()->GetCurrentUser()->basic_user_info->account_id);
   DCHECK(state);
   mojom::EasyUnlockIconOptionsPtr& easy_unlock_state = state->easy_unlock_state;
   DCHECK(easy_unlock_state);
 
   if (easy_unlock_state->hardlock_on_click) {
     AccountId user =
-        CurrentAuthUserView()->current_user()->basic_user_info->account_id;
+        CurrentBigUserView()->GetCurrentUser()->basic_user_info->account_id;
     Shell::Get()->login_screen_controller()->HardlockPod(user);
     // TODO(jdufault): This should get called as a result of HardlockPod.
     OnClickToUnlockEnabledForUserChanged(user, false /*enabled*/);
@@ -986,48 +994,67 @@ keyboard::KeyboardController* LockContentsView::GetKeyboardController() const {
   return GetWidget() ? GetKeyboardControllerForWidget(GetWidget()) : nullptr;
 }
 
-LoginAuthUserView* LockContentsView::AllocateLoginAuthUserView(
-    const mojom::LoginUserInfoPtr& user,
-    bool is_primary) {
-  LoginAuthUserView::Callbacks callbacks;
-  callbacks.on_auth = base::BindRepeating(&LockContentsView::OnAuthenticate,
-                                          base::Unretained(this)),
-  callbacks.on_tap = base::BindRepeating(
-      &LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary,
-      base::Unretained(this), is_primary),
-  callbacks.on_remove_warning_shown =
-      base::BindRepeating(&LockContentsView::OnRemoveUserWarningShown,
-                          base::Unretained(this), is_primary);
-  callbacks.on_remove = base::BindRepeating(&LockContentsView::RemoveUser,
-                                            base::Unretained(this), is_primary);
-  callbacks.on_easy_unlock_icon_hovered = base::BindRepeating(
-      &LockContentsView::OnEasyUnlockIconHovered, base::Unretained(this));
-  callbacks.on_easy_unlock_icon_tapped = base::BindRepeating(
-      &LockContentsView::OnEasyUnlockIconTapped, base::Unretained(this));
-  return new LoginAuthUserView(user, callbacks);
+void LockContentsView::OnPublicAccountTapped() {
+  NOTIMPLEMENTED();
 }
 
-LoginAuthUserView* LockContentsView::TryToFindAuthUser(
-    const AccountId& user,
-    bool require_auth_active) {
-  LoginAuthUserView* view = nullptr;
+LoginBigUserView* LockContentsView::AllocateLoginBigUserView(
+    const mojom::LoginUserInfoPtr& user,
+    bool is_primary) {
+  LoginAuthUserView::Callbacks auth_user_callbacks;
+  auth_user_callbacks.on_auth = base::BindRepeating(
+      &LockContentsView::OnAuthenticate, base::Unretained(this)),
+  auth_user_callbacks.on_tap = base::BindRepeating(
+      &LockContentsView::SwapActiveAuthBetweenPrimaryAndSecondary,
+      base::Unretained(this), is_primary),
+  auth_user_callbacks.on_remove_warning_shown =
+      base::BindRepeating(&LockContentsView::OnRemoveUserWarningShown,
+                          base::Unretained(this), is_primary);
+  auth_user_callbacks.on_remove = base::BindRepeating(
+      &LockContentsView::RemoveUser, base::Unretained(this), is_primary);
+  auth_user_callbacks.on_easy_unlock_icon_hovered = base::BindRepeating(
+      &LockContentsView::OnEasyUnlockIconHovered, base::Unretained(this));
+  auth_user_callbacks.on_easy_unlock_icon_tapped = base::BindRepeating(
+      &LockContentsView::OnEasyUnlockIconTapped, base::Unretained(this));
+
+  LoginPublicAccountUserView::Callbacks public_account_callbacks;
+  public_account_callbacks.on_tap = auth_user_callbacks.on_tap;
+  public_account_callbacks.on_public_account_tapped = base::BindRepeating(
+      &LockContentsView::OnPublicAccountTapped, base::Unretained(this));
+  return new LoginBigUserView(user, auth_user_callbacks,
+                              public_account_callbacks);
+}
+
+LoginBigUserView* LockContentsView::TryToFindBigUser(const AccountId& user,
+                                                     bool require_auth_active) {
+  LoginBigUserView* view = nullptr;
 
   // Find auth instance.
-  if (primary_auth_->current_user()->basic_user_info->account_id == user) {
-    view = primary_auth_;
-  } else if (opt_secondary_auth_ &&
-             opt_secondary_auth_->current_user()->basic_user_info->account_id ==
-                 user) {
-    view = opt_secondary_auth_;
+  if (primary_big_view_->GetCurrentUser()->basic_user_info->account_id ==
+      user) {
+    view = primary_big_view_;
+  } else if (opt_secondary_big_view_ &&
+             opt_secondary_big_view_->GetCurrentUser()
+                     ->basic_user_info->account_id == user) {
+    view = opt_secondary_big_view_;
   }
 
   // Make sure auth instance is active if required.
-  if (require_auth_active && view &&
-      view->auth_methods() == LoginAuthUserView::AUTH_NONE) {
+  if (require_auth_active && view && !view->auth_enabled())
     view = nullptr;
-  }
 
   return view;
+}
+
+LoginUserView* LockContentsView::TryToFindUserView(const AccountId& user) {
+  // Try to find |user| in big user view first.
+  LoginBigUserView* big_view =
+      TryToFindBigUser(user, false /*require_auth_active*/);
+  if (big_view)
+    return big_view->GetUserView();
+
+  // Try to find |user| in users_list_.
+  return users_list_->GetUserView(user);
 }
 
 ScrollableUsersListView* LockContentsView::BuildScrollableUsersListView(
@@ -1035,11 +1062,60 @@ ScrollableUsersListView* LockContentsView::BuildScrollableUsersListView(
     LoginDisplayStyle display_style) {
   auto* view = new ScrollableUsersListView(
       users,
-      base::BindRepeating(&LockContentsView::SwapToAuthUser,
+      base::BindRepeating(&LockContentsView::SwapToBigUser,
                           base::Unretained(this)),
       display_style);
   view->ClipHeightTo(view->contents()->size().height(), size().height());
   return view;
+}
+
+void LockContentsView::UpdateAuthForPublicAccount(
+    LoginPublicAccountUserView* opt_to_update,
+    LoginPublicAccountUserView* opt_to_hide,
+    bool animate) {
+  if (opt_to_update)
+    opt_to_update->SetAuthEnabled(true /*enabled*/, animate);
+  if (opt_to_hide)
+    opt_to_hide->SetAuthEnabled(false /*enabled*/, animate);
+}
+
+void LockContentsView::UpdateAuthForAuthUser(LoginAuthUserView* opt_to_update,
+                                             LoginAuthUserView* opt_to_hide,
+                                             bool animate) {
+  // Capture animation metadata before we changing state.
+  if (animate) {
+    if (opt_to_update)
+      opt_to_update->CaptureStateForAnimationPreLayout();
+    if (opt_to_hide)
+      opt_to_hide->CaptureStateForAnimationPreLayout();
+  }
+
+  // Update auth methods for |opt_to_update|. Disable auth on |opt_to_hide|.
+  if (opt_to_update) {
+    uint32_t to_update_auth = LoginAuthUserView::AUTH_PASSWORD;
+    UserState* state = FindStateForUser(
+        opt_to_update->current_user()->basic_user_info->account_id);
+    keyboard::KeyboardController* keyboard_controller = GetKeyboardController();
+    const bool keyboard_visible =
+        keyboard_controller ? keyboard_controller->keyboard_visible() : false;
+    if (state->show_pin && !keyboard_visible)
+      to_update_auth |= LoginAuthUserView::AUTH_PIN;
+    if (state->enable_tap_auth)
+      to_update_auth |= LoginAuthUserView::AUTH_TAP;
+    opt_to_update->SetAuthMethods(to_update_auth);
+  }
+  if (opt_to_hide)
+    opt_to_hide->SetAuthMethods(LoginAuthUserView::AUTH_NONE);
+
+  Layout();
+
+  // Apply animations.
+  if (animate) {
+    if (opt_to_update)
+      opt_to_update->ApplyAnimationPostLayout();
+    if (opt_to_hide)
+      opt_to_hide->ApplyAnimationPostLayout();
+  }
 }
 
 }  // namespace ash

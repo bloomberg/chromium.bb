@@ -521,6 +521,7 @@ void LoginUserView::UpdateCurrentUserState() {
   }
 
   if (user_domain_) {
+    DCHECK(current_user_->public_account_info);
     const base::Optional<std::string>& enterprise_domain =
         current_user_->public_account_info->enterprise_domain;
     if (enterprise_domain) {

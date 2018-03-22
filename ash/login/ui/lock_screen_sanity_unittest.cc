@@ -9,6 +9,7 @@
 #include "ash/login/ui/fake_login_detachable_base_model.h"
 #include "ash/login/ui/lock_contents_view.h"
 #include "ash/login/ui/login_auth_user_view.h"
+#include "ash/login/ui/login_big_user_view.h"
 #include "ash/login/ui/login_bubble.h"
 #include "ash/login/ui/login_test_base.h"
 #include "ash/login/ui/login_test_utils.h"
@@ -434,10 +435,10 @@ TEST_F(LockScreenSanityTest, RemoveUser) {
   submit();
 
   // Secondary auth should be gone because it is now the primary auth.
-  EXPECT_FALSE(MakeLockContentsViewTestApi(contents).opt_secondary_auth());
+  EXPECT_FALSE(MakeLockContentsViewTestApi(contents).opt_secondary_big_view());
   EXPECT_TRUE(MakeLockContentsViewTestApi(contents)
-                  .primary_auth()
-                  ->current_user()
+                  .primary_big_view()
+                  ->GetCurrentUser()
                   ->basic_user_info->account_id ==
               users()[1]->basic_user_info->account_id);
 }

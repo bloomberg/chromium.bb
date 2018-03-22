@@ -101,9 +101,11 @@ LoginPinView* LoginAuthUserView::TestApi::pin_view() const {
   return view_->pin_view_;
 }
 
-LoginAuthUserView::Callbacks::Callbacks() {}
+LoginAuthUserView::Callbacks::Callbacks() = default;
 
-LoginAuthUserView::Callbacks::~Callbacks() {}
+LoginAuthUserView::Callbacks::Callbacks(const Callbacks& other) = default;
+
+LoginAuthUserView::Callbacks::~Callbacks() = default;
 
 LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
                                      const Callbacks& callbacks)
@@ -148,7 +150,6 @@ LoginAuthUserView::LoginAuthUserView(const mojom::LoginUserInfoPtr& user,
       callbacks.on_easy_unlock_icon_hovered,
       callbacks.on_easy_unlock_icon_tapped);
 
-  // Child views animate outside view bounds.
   SetPaintToLayer(ui::LayerType::LAYER_NOT_DRAWN);
 
   // Build layout.
