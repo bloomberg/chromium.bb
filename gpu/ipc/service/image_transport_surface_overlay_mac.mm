@@ -284,7 +284,8 @@ bool ImageTransportSurfaceOverlayMac::ScheduleOverlayPlane(
     gfx::OverlayTransform transform,
     gl::GLImage* image,
     const gfx::Rect& pixel_frame_rect,
-    const gfx::RectF& crop_rect) {
+    const gfx::RectF& crop_rect,
+    bool enable_blend) {
   if (transform != gfx::OVERLAY_TRANSFORM_NONE) {
     DLOG(ERROR) << "Invalid overlay plane transform.";
     return false;

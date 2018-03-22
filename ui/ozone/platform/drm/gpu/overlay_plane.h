@@ -30,6 +30,7 @@ struct OverlayPlane {
                gfx::OverlayTransform plane_transform,
                const gfx::Rect& display_bounds,
                const gfx::RectF& crop_rect,
+               bool enable_blend,
                int fence_fd);
   OverlayPlane(const OverlayPlane& other);
 
@@ -45,6 +46,7 @@ struct OverlayPlane {
   gfx::OverlayTransform plane_transform;
   gfx::Rect display_bounds;
   gfx::RectF crop_rect;
+  bool enable_blend;
   int fence_fd;
 };
 

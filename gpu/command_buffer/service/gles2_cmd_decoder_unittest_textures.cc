@@ -3664,11 +3664,13 @@ class MockGLImage : public gl::GLImage {
   MOCK_METHOD1(CopyTexImage, bool(unsigned));
   MOCK_METHOD3(CopyTexSubImage,
                bool(unsigned, const gfx::Point&, const gfx::Rect&));
-  MOCK_METHOD5(ScheduleOverlayPlane, bool(gfx::AcceleratedWidget,
-                                          int,
-                                          gfx::OverlayTransform,
-                                          const gfx::Rect&,
-                                          const gfx::RectF&));
+  MOCK_METHOD6(ScheduleOverlayPlane,
+               bool(gfx::AcceleratedWidget,
+                    int,
+                    gfx::OverlayTransform,
+                    const gfx::Rect&,
+                    const gfx::RectF&,
+                    bool));
   MOCK_METHOD1(SetColorSpace, void(const gfx::ColorSpace&));
   MOCK_METHOD0(Flush, void());
   MOCK_METHOD3(OnMemoryDump,

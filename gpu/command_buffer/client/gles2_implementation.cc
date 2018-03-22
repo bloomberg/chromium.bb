@@ -4726,18 +4726,13 @@ void GLES2Implementation::ScheduleOverlayPlane(
     gfx::OverlayTransform plane_transform,
     unsigned overlay_texture_id,
     const gfx::Rect& display_bounds,
-    const gfx::RectF& uv_rect) {
-  ScheduleOverlayPlaneCHROMIUM(plane_z_order,
-                               GetGLESOverlayTransform(plane_transform),
-                               overlay_texture_id,
-                               display_bounds.x(),
-                               display_bounds.y(),
-                               display_bounds.width(),
-                               display_bounds.height(),
-                               uv_rect.x(),
-                               uv_rect.y(),
-                               uv_rect.width(),
-                               uv_rect.height());
+    const gfx::RectF& uv_rect,
+    bool enable_blend) {
+  ScheduleOverlayPlaneCHROMIUM(
+      plane_z_order, GetGLESOverlayTransform(plane_transform),
+      overlay_texture_id, display_bounds.x(), display_bounds.y(),
+      display_bounds.width(), display_bounds.height(), uv_rect.x(), uv_rect.y(),
+      uv_rect.width(), uv_rect.height(), enable_blend);
 }
 
 void GLES2Implementation::ScheduleCALayerSharedStateCHROMIUM(

@@ -63,7 +63,8 @@ class ContextSupport {
                                     gfx::OverlayTransform plane_transform,
                                     unsigned overlay_texture_id,
                                     const gfx::Rect& display_bounds,
-                                    const gfx::RectF& uv_rect) = 0;
+                                    const gfx::RectF& uv_rect,
+                                    bool enable_blend) = 0;
 
   // Returns an ID that can be used to globally identify the share group that
   // this context's resources belong to.

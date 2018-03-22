@@ -157,7 +157,8 @@ bool GLSurface::ScheduleOverlayPlane(int z_order,
                                      gfx::OverlayTransform transform,
                                      GLImage* image,
                                      const gfx::Rect& bounds_rect,
-                                     const gfx::RectF& crop_rect) {
+                                     const gfx::RectF& crop_rect,
+                                     bool enable_blend) {
   NOTIMPLEMENTED();
   return false;
 }
@@ -404,9 +405,10 @@ bool GLSurfaceAdapter::ScheduleOverlayPlane(int z_order,
                                             gfx::OverlayTransform transform,
                                             GLImage* image,
                                             const gfx::Rect& bounds_rect,
-                                            const gfx::RectF& crop_rect) {
-  return surface_->ScheduleOverlayPlane(
-      z_order, transform, image, bounds_rect, crop_rect);
+                                            const gfx::RectF& crop_rect,
+                                            bool enable_blend) {
+  return surface_->ScheduleOverlayPlane(z_order, transform, image, bounds_rect,
+                                        crop_rect, enable_blend);
 }
 
 bool GLSurfaceAdapter::ScheduleDCLayer(

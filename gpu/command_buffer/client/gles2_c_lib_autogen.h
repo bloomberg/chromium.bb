@@ -1469,10 +1469,12 @@ void GL_APIENTRY GLES2ScheduleOverlayPlaneCHROMIUM(GLint plane_z_order,
                                                    GLfloat uv_x,
                                                    GLfloat uv_y,
                                                    GLfloat uv_width,
-                                                   GLfloat uv_height) {
+                                                   GLfloat uv_height,
+                                                   GLboolean enable_blend) {
   gles2::GetGLContext()->ScheduleOverlayPlaneCHROMIUM(
       plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
-      bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
+      bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height,
+      enable_blend);
 }
 void GL_APIENTRY
 GLES2ScheduleCALayerSharedStateCHROMIUM(GLfloat opacity,

@@ -215,7 +215,8 @@ void RasterImplementation::ScheduleOverlayPlane(
     gfx::OverlayTransform /* plane_transform */,
     unsigned /* overlay_texture_id */,
     const gfx::Rect& /* display_bounds */,
-    const gfx::RectF& /* uv_rect */) {
+    const gfx::RectF& /* uv_rect */,
+    bool /* enable_blend */) {
   NOTREACHED();
 }
 

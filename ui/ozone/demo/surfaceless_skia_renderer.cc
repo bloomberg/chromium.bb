@@ -246,13 +246,13 @@ void SurfacelessSkiaRenderer::RenderFrame() {
     CHECK(overlay_list.front().overlay_handled);
     gl_surface_->ScheduleOverlayPlane(
         0, gfx::OVERLAY_TRANSFORM_NONE, buffers_[back_buffer_]->image(),
-        primary_plane_rect_, gfx::RectF(0, 0, 1, 1));
+        primary_plane_rect_, gfx::RectF(0, 0, 1, 1), /* enable_blend */ true);
   }
 
   if (overlay_buffer_[0] && overlay_list.back().overlay_handled) {
-    gl_surface_->ScheduleOverlayPlane(1, gfx::OVERLAY_TRANSFORM_NONE,
-                                      overlay_buffer_[back_buffer_]->image(),
-                                      overlay_rect, gfx::RectF(0, 0, 1, 1));
+    gl_surface_->ScheduleOverlayPlane(
+        1, gfx::OVERLAY_TRANSFORM_NONE, overlay_buffer_[back_buffer_]->image(),
+        overlay_rect, gfx::RectF(0, 0, 1, 1), /* enable_blend */ true);
   }
 
   back_buffer_ ^= 1;

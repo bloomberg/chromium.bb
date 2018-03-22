@@ -3311,17 +3311,20 @@ void GLES2Implementation::ScheduleOverlayPlaneCHROMIUM(
     GLfloat uv_x,
     GLfloat uv_y,
     GLfloat uv_width,
-    GLfloat uv_height) {
+    GLfloat uv_height,
+    GLboolean enable_blend) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG(
       "[" << GetLogPrefix() << "] glScheduleOverlayPlaneCHROMIUM("
           << plane_z_order << ", " << GLES2Util::GetStringEnum(plane_transform)
           << ", " << overlay_texture_id << ", " << bounds_x << ", " << bounds_y
           << ", " << bounds_width << ", " << bounds_height << ", " << uv_x
-          << ", " << uv_y << ", " << uv_width << ", " << uv_height << ")");
-  helper_->ScheduleOverlayPlaneCHROMIUM(
-      plane_z_order, plane_transform, overlay_texture_id, bounds_x, bounds_y,
-      bounds_width, bounds_height, uv_x, uv_y, uv_width, uv_height);
+          << ", " << uv_y << ", " << uv_width << ", " << uv_height << ", "
+          << GLES2Util::GetStringBool(enable_blend) << ")");
+  helper_->ScheduleOverlayPlaneCHROMIUM(plane_z_order, plane_transform,
+                                        overlay_texture_id, bounds_x, bounds_y,
+                                        bounds_width, bounds_height, uv_x, uv_y,
+                                        uv_width, uv_height, enable_blend);
   CheckGLError();
 }
 

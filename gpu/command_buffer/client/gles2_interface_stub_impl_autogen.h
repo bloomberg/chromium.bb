@@ -1003,7 +1003,8 @@ void GLES2InterfaceStub::ScheduleOverlayPlaneCHROMIUM(
     GLfloat /* uv_x */,
     GLfloat /* uv_y */,
     GLfloat /* uv_width */,
-    GLfloat /* uv_height */) {}
+    GLfloat /* uv_height */,
+    GLboolean /* enable_blend */) {}
 void GLES2InterfaceStub::ScheduleCALayerSharedStateCHROMIUM(
     GLfloat /* opacity */,
     GLboolean /* is_clipped */,

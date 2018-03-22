@@ -4526,12 +4526,12 @@ TEST_F(GLES2FormatTest, DiscardBackbufferCHROMIUM) {
 TEST_F(GLES2FormatTest, ScheduleOverlayPlaneCHROMIUM) {
   cmds::ScheduleOverlayPlaneCHROMIUM& cmd =
       *GetBufferAs<cmds::ScheduleOverlayPlaneCHROMIUM>();
-  void* next_cmd = cmd.Set(&cmd, static_cast<GLint>(11),
-                           static_cast<GLenum>(12), static_cast<GLuint>(13),
-                           static_cast<GLint>(14), static_cast<GLint>(15),
-                           static_cast<GLint>(16), static_cast<GLint>(17),
-                           static_cast<GLfloat>(18), static_cast<GLfloat>(19),
-                           static_cast<GLfloat>(20), static_cast<GLfloat>(21));
+  void* next_cmd = cmd.Set(
+      &cmd, static_cast<GLint>(11), static_cast<GLenum>(12),
+      static_cast<GLuint>(13), static_cast<GLint>(14), static_cast<GLint>(15),
+      static_cast<GLint>(16), static_cast<GLint>(17), static_cast<GLfloat>(18),
+      static_cast<GLfloat>(19), static_cast<GLfloat>(20),
+      static_cast<GLfloat>(21), static_cast<GLboolean>(22));
   EXPECT_EQ(static_cast<uint32_t>(cmds::ScheduleOverlayPlaneCHROMIUM::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -4546,6 +4546,7 @@ TEST_F(GLES2FormatTest, ScheduleOverlayPlaneCHROMIUM) {
   EXPECT_EQ(static_cast<GLfloat>(19), cmd.uv_y);
   EXPECT_EQ(static_cast<GLfloat>(20), cmd.uv_width);
   EXPECT_EQ(static_cast<GLfloat>(21), cmd.uv_height);
+  EXPECT_EQ(static_cast<GLboolean>(22), cmd.enable_blend);
   CheckBytesWrittenMatchesExpectedSize(next_cmd, sizeof(cmd));
 }
 

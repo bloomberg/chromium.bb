@@ -1363,13 +1363,14 @@ bool NativeViewGLSurfaceEGL::ScheduleOverlayPlane(
     gfx::OverlayTransform transform,
     GLImage* image,
     const gfx::Rect& bounds_rect,
-    const gfx::RectF& crop_rect) {
+    const gfx::RectF& crop_rect,
+    bool enable_blend) {
 #if !defined(OS_ANDROID)
   NOTIMPLEMENTED();
   return false;
 #else
-  pending_overlays_.push_back(
-      GLSurfaceOverlay(z_order, transform, image, bounds_rect, crop_rect));
+  pending_overlays_.push_back(GLSurfaceOverlay(z_order, transform, image,
+                                               bounds_rect, crop_rect, true));
   return true;
 #endif
 }

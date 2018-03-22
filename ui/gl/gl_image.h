@@ -71,7 +71,8 @@ class GL_EXPORT GLImage : public base::RefCounted<GLImage> {
                                     int z_order,
                                     gfx::OverlayTransform transform,
                                     const gfx::Rect& bounds_rect,
-                                    const gfx::RectF& crop_rect) = 0;
+                                    const gfx::RectF& crop_rect,
+                                    bool enable_blend) = 0;
 
   // Set the color space when image is used as an overlay.
   virtual void SetColorSpace(const gfx::ColorSpace& color_space) = 0;

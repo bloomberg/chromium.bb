@@ -162,7 +162,8 @@ class GLStreamTextureImageStub : public GLStreamTextureImage {
                             int z_order,
                             gfx::OverlayTransform transform,
                             const gfx::Rect& bounds_rect,
-                            const gfx::RectF& crop_rect) override {
+                            const gfx::RectF& crop_rect,
+                            bool enable_blend) override {
     return false;
   }
   void SetColorSpace(const gfx::ColorSpace& color_space) override {}

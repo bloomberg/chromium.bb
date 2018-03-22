@@ -384,7 +384,8 @@ bool GLImageIOSurface::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                             int z_order,
                                             gfx::OverlayTransform transform,
                                             const gfx::Rect& bounds_rect,
-                                            const gfx::RectF& crop_rect) {
+                                            const gfx::RectF& crop_rect,
+                                            bool enable_blend) {
   NOTREACHED();
   return false;
 }

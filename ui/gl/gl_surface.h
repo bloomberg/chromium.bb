@@ -216,11 +216,14 @@ class GL_EXPORT GLSurface : public base::RefCounted<GLSurface> {
   // |bounds_rect| specify where it is supposed to be on the screen in pixels.
   // |crop_rect| specifies the region within the buffer to be placed inside
   // |bounds_rect|.
+  // |enable_blend| specifies if alpha blending, with premultiplied alpha
+  // should be applied at scanout.
   virtual bool ScheduleOverlayPlane(int z_order,
                                     gfx::OverlayTransform transform,
                                     GLImage* image,
                                     const gfx::Rect& bounds_rect,
-                                    const gfx::RectF& crop_rect);
+                                    const gfx::RectF& crop_rect,
+                                    bool enable_blend);
 
   // Schedule a CALayer to be shown at swap time.
   // All arguments correspond to their CALayer properties.
@@ -347,7 +350,8 @@ class GL_EXPORT GLSurfaceAdapter : public GLSurface {
                             gfx::OverlayTransform transform,
                             GLImage* image,
                             const gfx::Rect& bounds_rect,
-                            const gfx::RectF& crop_rect) override;
+                            const gfx::RectF& crop_rect,
+                            bool enable_blend) override;
   bool ScheduleDCLayer(const ui::DCRendererLayerParams& params) override;
   bool SetEnableDCLayers(bool enable) override;
   bool IsSurfaceless() const override;

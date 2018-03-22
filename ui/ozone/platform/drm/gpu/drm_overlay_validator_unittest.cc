@@ -138,7 +138,7 @@ void DrmOverlayValidatorTest::AddPlane(const ui::OverlayCheck_Params& params) {
       params.buffer_size);
   ui::OverlayPlane plane(std::move(scanout_buffer), params.plane_z_order,
                          params.transform, params.display_rect,
-                         params.crop_rect, base::kInvalidPlatformFile);
+                         params.crop_rect, true, base::kInvalidPlatformFile);
   plane_list_.push_back(plane);
 }
 
