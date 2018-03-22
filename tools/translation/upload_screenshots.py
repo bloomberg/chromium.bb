@@ -97,12 +97,20 @@ def git_add(files, repo_root):
 
 
 def find_screenshots(repo_root, translation_expectations):
-  grd_files = translation_helper.get_translatable_grds(
+  """Returns a list of translation related .png files in the repository."""
+  translatable_grds = translation_helper.get_translatable_grds(
       repo_root, list_grds_in_repository(repo_root), translation_expectations)
 
+  # Add the paths of grds and any files they include. This includes grdp files
+  # and files included via <structure> elements.
+  src_paths = []
+  for grd in translatable_grds:
+    src_paths.append(grd.path)
+    src_paths.extend(grd.grdp_paths)
+    src_paths.extend(grd.structure_paths)
+
   screenshots = []
-  for grd_file in grd_files:
-    grd_path = grd_file.path
+  for grd_path in src_paths:
     # Convert grd_path.grd to grd_path_grd/ directory.
     name, ext = os.path.splitext(os.path.basename(grd_path))
     relative_screenshots_dir = os.path.relpath(
