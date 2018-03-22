@@ -74,6 +74,17 @@ const char kAshEnableScaleSettingsTray[] = "ash-enable-scale-settings-tray";
 // Enables the stylus tools next to the status area.
 const char kAshForceEnableStylusTools[] = "force-enable-stylus-tools";
 
+// Power button position includes the power button's physical display side and
+// the percentage for power button center position to the display's
+// width/height in landscape_primary screen orientation. The value is a JSON
+// object containing a "position" property with the value "left", "right",
+// "top", or "bottom". For "left" and "right", a "y" property specifies the
+// button's center position as a fraction of the display's height (in [0.0,
+// 1.0]) relative to the top of the display. For "top" and "bottom", an "x"
+// property gives the position as a fraction of the display's width relative to
+// the left side of the display.
+const char kAshPowerButtonPosition[] = "ash-power-button-position";
+
 // Enables required things for the selected UI mode, regardless of whether the
 // Chromebook is currently in the selected UI mode.
 const char kAshUiMode[] = "force-tablet-mode";
