@@ -62,8 +62,6 @@ void ActivationStateComputingNavigationThrottle::
         VerifiedRuleset::Handle* ruleset_handle,
         const ActivationState& page_activation_state) {
   DCHECK(navigation_handle()->IsInMainFrame());
-  DCHECK(!parent_activation_state_);
-  DCHECK(!ruleset_handle_);
   DCHECK_NE(ActivationLevel::DISABLED, page_activation_state.activation_level);
   parent_activation_state_ = page_activation_state;
   ruleset_handle_ = ruleset_handle;
@@ -71,14 +69,14 @@ void ActivationStateComputingNavigationThrottle::
 
 content::NavigationThrottle::ThrottleCheckResult
 ActivationStateComputingNavigationThrottle::WillStartRequest() {
-  if (!navigation_handle()->IsInMainFrame())
+  if (parent_activation_state_)
     CheckActivationState();
   return content::NavigationThrottle::PROCEED;
 }
 
 content::NavigationThrottle::ThrottleCheckResult
 ActivationStateComputingNavigationThrottle::WillRedirectRequest() {
-  if (!navigation_handle()->IsInMainFrame())
+  if (parent_activation_state_)
     CheckActivationState();
   return content::NavigationThrottle::PROCEED;
 }
@@ -100,6 +98,8 @@ ActivationStateComputingNavigationThrottle::WillProcessResponse() {
   // check.
   if (async_filter_ && async_filter_->has_activation_state()) {
     LogDelayMetrics(base::TimeDelta::FromMilliseconds(0));
+    if (navigation_handle()->IsInMainFrame())
+      UpdateWithMoreAccurateState();
     return content::NavigationThrottle::PROCEED;
   }
   DCHECK(!defer_timer_);
@@ -142,8 +142,20 @@ void ActivationStateComputingNavigationThrottle::OnActivationStateComputed(
     ActivationState state) {
   if (defer_timer_) {
     LogDelayMetrics(defer_timer_->Elapsed());
+    if (navigation_handle()->IsInMainFrame())
+      UpdateWithMoreAccurateState();
     Resume();
   }
+}
+
+void ActivationStateComputingNavigationThrottle::UpdateWithMoreAccurateState() {
+  // This method is only needed for main frame navigations that are notified of
+  // page activation more than once. Even for those that are updated once, it
+  // should be a no-op.
+  DCHECK(navigation_handle()->IsInMainFrame());
+  DCHECK(parent_activation_state_);
+  DCHECK(async_filter_);
+  async_filter_->UpdateWithMoreAccurateState(*parent_activation_state_);
 }
 
 void ActivationStateComputingNavigationThrottle::LogDelayMetrics(

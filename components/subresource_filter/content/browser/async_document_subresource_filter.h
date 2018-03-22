@@ -116,6 +116,11 @@ class AsyncDocumentSubresourceFilter {
   // |task_runner|.
   void ReportDisallowedLoad();
 
+  // Should only be called for main frames. Updates |activation_state_| with the
+  // more accurate |updated_page_state|, but retains ruleset specific properties
+  // like document whitelisting.
+  void UpdateWithMoreAccurateState(const ActivationState& updated_page_state);
+
   // Must be called after activation state computation is finished.
   const ActivationState& activation_state() const;
 

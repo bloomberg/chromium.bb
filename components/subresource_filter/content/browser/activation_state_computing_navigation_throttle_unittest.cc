@@ -34,13 +34,17 @@ namespace subresource_filter {
 
 namespace proto = url_pattern_index::proto;
 
+// The tests are parameterized by a bool which enables speculative main frame
+// activation computation in DRYRUN mode. In practice, this will correspond to
+// the kAdTagging feature.
 class ActivationStateComputingNavigationThrottleTest
     : public content::RenderViewHostTestHarness,
-      public content::WebContentsObserver {
+      public content::WebContentsObserver,
+      public ::testing::WithParamInterface<bool> {
  public:
   ActivationStateComputingNavigationThrottleTest()
-      : simple_task_runner_(
-            base::MakeRefCounted<base::TestSimpleTaskRunner>()) {}
+      : simple_task_runner_(base::MakeRefCounted<base::TestSimpleTaskRunner>()),
+        dryrun_speculation_(GetParam()) {}
   ~ActivationStateComputingNavigationThrottleTest() override {}
 
   void SetUp() override {
@@ -177,6 +181,10 @@ class ActivationStateComputingNavigationThrottleTest
             : ActivationStateComputingNavigationThrottle::CreateForSubframe(
                   navigation_handle, ruleset_handle_.get(),
                   parent_activation_state_.value());
+    if (navigation_handle->IsInMainFrame() && dryrun_speculation_) {
+      throttle->NotifyPageActivationWithRuleset(
+          ruleset_handle_.get(), ActivationState(ActivationLevel::DRYRUN));
+    }
     test_throttle_ = throttle.get();
     navigation_handle->RegisterThrottleForTesting(std::move(throttle));
   }
@@ -206,6 +214,8 @@ class ActivationStateComputingNavigationThrottleTest
     test_throttle_ = nullptr;
   }
 
+  bool dryrun_speculation() const { return dryrun_speculation_; }
+
  private:
   testing::TestRulesetCreator test_ruleset_creator_;
   testing::TestRulesetPair test_ruleset_pair_;
@@ -225,6 +235,8 @@ class ActivationStateComputingNavigationThrottleTest
   // Needed for potential cross process navigations which swap hosts.
   content::RenderFrameHost* last_committed_frame_host_ = nullptr;
 
+  bool dryrun_speculation_;
+
   DISALLOW_COPY_AND_ASSIGN(ActivationStateComputingNavigationThrottleTest);
 };
 
@@ -233,7 +245,7 @@ typedef ActivationStateComputingNavigationThrottleTest
 typedef ActivationStateComputingNavigationThrottleTest
     ActivationStateComputingThrottleSubFrameTest;
 
-TEST_F(ActivationStateComputingThrottleMainFrameTest, Activate) {
+TEST_P(ActivationStateComputingThrottleMainFrameTest, Activate) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://example.test/"), ActivationState(ActivationLevel::ENABLED));
   ActivationState state = last_activation_state();
@@ -241,7 +253,7 @@ TEST_F(ActivationStateComputingThrottleMainFrameTest, Activate) {
   EXPECT_FALSE(state.filtering_disabled_for_document);
 }
 
-TEST_F(ActivationStateComputingThrottleMainFrameTest,
+TEST_P(ActivationStateComputingThrottleMainFrameTest,
        NoPageActivationNotification_NoActivation) {
   CreateTestNavigationForMainFrame(GURL("http://example.test/"));
   SimulateStartAndExpectToProceed();
@@ -254,7 +266,7 @@ TEST_F(ActivationStateComputingThrottleMainFrameTest,
   EXPECT_EQ(ActivationLevel::DISABLED, state.activation_level);
 }
 
-TEST_F(ActivationStateComputingThrottleMainFrameTest,
+TEST_P(ActivationStateComputingThrottleMainFrameTest,
        WhitelistDoesNotApply_CausesActivation) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
@@ -270,7 +282,7 @@ TEST_F(ActivationStateComputingThrottleMainFrameTest,
   EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
 }
 
-TEST_F(ActivationStateComputingThrottleMainFrameTest,
+TEST_P(ActivationStateComputingThrottleMainFrameTest,
        Whitelisted_DisablesFiltering) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://whitelisted-always.com/"),
@@ -282,7 +294,7 @@ TEST_F(ActivationStateComputingThrottleMainFrameTest,
   EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest, Activate) {
+TEST_P(ActivationStateComputingThrottleSubFrameTest, Activate) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://example.test/"), ActivationState(ActivationLevel::ENABLED));
 
@@ -299,7 +311,7 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest, Activate) {
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest,
+TEST_P(ActivationStateComputingThrottleSubFrameTest,
        WhitelistDoesNotApply_CausesActivation) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://disallows-child-to-be-whitelisted.com/"),
@@ -317,7 +329,7 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest,
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest,
+TEST_P(ActivationStateComputingThrottleSubFrameTest,
        Whitelisted_DisableDocumentFiltering) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
@@ -335,7 +347,7 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest,
   EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest,
+TEST_P(ActivationStateComputingThrottleSubFrameTest,
        Whitelisted_DisablesGenericRules) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
@@ -353,7 +365,7 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest,
   EXPECT_EQ(ActivationLevel::ENABLED, state.activation_level);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest, DryRunIsPropagated) {
+TEST_P(ActivationStateComputingThrottleSubFrameTest, DryRunIsPropagated) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://example.test/"), ActivationState(ActivationLevel::DRYRUN));
   EXPECT_EQ(ActivationLevel::DRYRUN, last_activation_state().activation_level);
@@ -371,7 +383,7 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest, DryRunIsPropagated) {
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest,
+TEST_P(ActivationStateComputingThrottleSubFrameTest,
        DryRunWithLoggingIsPropagated) {
   ActivationState page_state(ActivationLevel::DRYRUN);
   page_state.enable_logging = true;
@@ -393,7 +405,7 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest,
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated) {
+TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
       ActivationState(ActivationLevel::ENABLED));
@@ -416,7 +428,7 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated) {
   EXPECT_FALSE(state.generic_blocking_rules_disabled);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
+TEST_P(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://allow-child-to-be-whitelisted.com/"),
       ActivationState(ActivationLevel::ENABLED));
@@ -443,7 +455,7 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest, DisabledStatePropagated2) {
   EXPECT_TRUE(state.generic_blocking_rules_disabled);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest, DelayMetrics) {
+TEST_P(ActivationStateComputingThrottleSubFrameTest, DelayMetrics) {
   base::HistogramTester histogram_tester;
   NavigateAndCommitMainFrameWithPageActivationState(
       GURL("http://example.test/"), ActivationState(ActivationLevel::ENABLED));
@@ -473,49 +485,56 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest, DelayMetrics) {
   SimulateCommitAndExpectToProceed();
 
   state = last_activation_state();
-  EXPECT_EQ(ActivationLevel::DISABLED, state.activation_level);
-  histogram_tester.ExpectTotalCount(kActivationDelay, 2);
-  histogram_tester.ExpectTotalCount(kActivationDelayMainFrame, 1);
+  EXPECT_EQ(dryrun_speculation() ? ActivationLevel::DRYRUN
+                                 : ActivationLevel::DISABLED,
+            state.activation_level);
+  int extra_activation = dryrun_speculation() ? 1 : 0;
+  histogram_tester.ExpectTotalCount(kActivationDelay, 2 + extra_activation);
+  histogram_tester.ExpectTotalCount(kActivationDelayMainFrame,
+                                    1 + extra_activation);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest, SpeculativeSubframes) {
+TEST_P(ActivationStateComputingThrottleSubFrameTest, Speculation) {
   // Use the activation performance metric as a proxy for how many times
   // activation computation occurred.
-  base::HistogramTester histogram_tester;
   const char kActivationCPU[] =
       "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
 
   // Main frames don't do speculative lookups, a navigation commit should only
   // trigger a single ruleset lookup.
+  base::HistogramTester main_histogram_tester;
   CreateTestNavigationForMainFrame(GURL("http://example.test/"));
   SimulateStartAndExpectToProceed();
-  histogram_tester.ExpectTotalCount(kActivationCPU, 0);
+  int main_frame_checks = dryrun_speculation() ? 1 : 0;
+  main_histogram_tester.ExpectTotalCount(kActivationCPU, main_frame_checks);
 
   SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
-  histogram_tester.ExpectTotalCount(kActivationCPU, 0);
+  main_frame_checks += dryrun_speculation() ? 1 : 0;
+  main_histogram_tester.ExpectTotalCount(kActivationCPU, main_frame_checks);
 
   NotifyPageActivation(ActivationState(ActivationLevel::ENABLED));
   SimulateCommitAndExpectToProceed();
-  histogram_tester.ExpectTotalCount(kActivationCPU, 1);
+  main_frame_checks += dryrun_speculation() ? 0 : 1;
+  main_histogram_tester.ExpectTotalCount(kActivationCPU, main_frame_checks);
 
+  base::HistogramTester sub_histogram_tester;
   CreateSubframeAndInitTestNavigation(GURL("http://example.test/"),
                                       last_committed_frame_host(),
                                       last_activation_state());
   // For subframes, do a ruleset lookup at the start and every redirect.
   SimulateStartAndExpectToProceed();
-  histogram_tester.ExpectTotalCount(kActivationCPU, 2);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 1);
 
   SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
-  histogram_tester.ExpectTotalCount(kActivationCPU, 3);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 2);
 
   // No ruleset lookup required at commit because we've already checked the
   // latest URL.
   SimulateCommitAndExpectToProceed();
-  histogram_tester.ExpectTotalCount(kActivationCPU, 3);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 2);
 }
 
-TEST_F(ActivationStateComputingThrottleSubFrameTest,
-       SpeculativeSubframesWithDelay) {
+TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
   InitializeRulesetHandles(simple_task_runner());
 
   // TODO(csharrison): Once crbug.com/822275 is resolved, implement this via a
@@ -532,24 +551,27 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest,
 
   // Use the activation performance metric as a proxy for how many times
   // activation computation occurred.
-  base::HistogramTester histogram_tester;
+  base::HistogramTester main_histogram_tester;
   const char kActivationCPU[] =
       "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
 
-  // Main frames don't do speculative lookups, a navigation commit should only
-  // trigger a single ruleset lookup.
+  // Main frames will do speculative lookup only in some cases.
   CreateTestNavigationForMainFrame(GURL("http://example.test/"));
   SimulateStartAndExpectToProceed();
-  histogram_tester.ExpectTotalCount(kActivationCPU, 0);
+  main_histogram_tester.ExpectTotalCount(kActivationCPU, 0);
 
   SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
-  histogram_tester.ExpectTotalCount(kActivationCPU, 0);
+  main_histogram_tester.ExpectTotalCount(kActivationCPU, 0);
 
   NotifyPageActivation(ActivationState(ActivationLevel::ENABLED));
   post_advance();
   SimulateCommitAndExpectToProceed();
-  histogram_tester.ExpectTotalCount(kActivationCPU, 1);
+  // If speculation was enabled for this test, will do a lookup at start and
+  // redirect.
+  main_histogram_tester.ExpectTotalCount(kActivationCPU,
+                                         dryrun_speculation() ? 2 : 1);
 
+  base::HistogramTester sub_histogram_tester;
   CreateSubframeAndInitTestNavigation(GURL("http://example.test/"),
                                       last_committed_frame_host(),
                                       last_activation_state());
@@ -557,19 +579,26 @@ TEST_F(ActivationStateComputingThrottleSubFrameTest,
   // Simulate slow ruleset checks for the subframe, these should not delay the
   // navigation until commit time.
   SimulateStartAndExpectToProceed();
-  histogram_tester.ExpectTotalCount(kActivationCPU, 1);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 0);
 
   // Calling redirect should ensure that the throttle does not receive the
   // results of the check, but the task to actually perform the check will still
   // happen.
   SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
-  histogram_tester.ExpectTotalCount(kActivationCPU, 1);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 0);
 
   // Finish the checks dispatched in the start and redirect phase when the
   // navigation is ready to commit.
   post_advance();
   SimulateCommitAndExpectToProceed();
-  histogram_tester.ExpectTotalCount(kActivationCPU, 3);
+  sub_histogram_tester.ExpectTotalCount(kActivationCPU, 2);
 }
+
+INSTANTIATE_TEST_CASE_P(,
+                        ActivationStateComputingNavigationThrottleTest,
+                        ::testing::Values(true, false));
+INSTANTIATE_TEST_CASE_P(,
+                        ActivationStateComputingThrottleSubFrameTest,
+                        ::testing::Values(true, false));
 
 }  // namespace subresource_filter
