@@ -56,8 +56,7 @@
         focus-config="[[focusConfig_]]">
       <neon-animatable route-path="default">
 <if expr="chromeos">
-        <button icon-class="icon-external" id="wallpaperButton"
-            is="cr-link-row"
+        <cr-link-row icon-class="icon-external" id="wallpaperButton"
             hidden="[[!pageVisibility.setWallpaper]]"
             on-click="openWallpaperManager_"
             label="$i18n{setWallpaper}" sub-label="$i18n{openWallpaperApp}"
@@ -67,15 +66,15 @@
                 indicator-type="devicePolicy">
             </cr-policy-indicator>
           </template>
-        </button>
+        </cr-link-row>
         <div class="hr"></div>
 </if>
         <div class="settings-row continuation" id="themeRow"
             hidden="[[!pageVisibility.setTheme]]">
-          <button class="first" icon-class="icon-external" is="cr-link-row"
+          <cr-link-row class="first" icon-class="icon-external"
               hidden="[[!pageVisibility.setTheme]]"
               label="$i18n{themes}" sub-label="[[themeSublabel_]]"
-              on-click="openThemeUrl_"></button>
+              on-click="openThemeUrl_"></cr-link-row>
 <if expr="not is_linux or chromeos">
           <template is="dom-if" if="[[prefs.extensions.theme.id.value]]">
             <div class="separator"></div>
@@ -165,10 +164,10 @@
               menu-options="[[fontSizeOptions_]]">
           </settings-dropdown-menu>
         </div>
-        <button class="hr" is="cr-link-row"
+        <cr-link-row class="hr"
             icon-class="subpage-arrow" id="customize-fonts-subpage-trigger"
             label="$i18n{customizeFonts}" on-click="onCustomizeFontsTap_">
-        </button>
+        </cr-link-row>
         <div class="settings-box" hidden="[[!pageVisibility.pageZoom]]">
           <div id="pageZoom" class="start">$i18n{pageZoom}</div>
           <div class="md-select-wrapper">
