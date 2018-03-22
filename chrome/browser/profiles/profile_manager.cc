@@ -884,7 +884,6 @@ void ProfileManager::AutoloadProfiles() {
 
 void ProfileManager::CleanUpEphemeralProfiles() {
   const std::string last_used_profile = GetLastUsedProfileName();
-
   bool last_active_profile_deleted = false;
   base::FilePath new_profile_path;
   std::vector<base::FilePath> profiles_to_delete;
@@ -902,8 +901,11 @@ void ProfileManager::CleanUpEphemeralProfiles() {
     }
   }
 
-  // If the last active profile was ephemeral, set a new one.
-  if (last_active_profile_deleted) {
+  // If the last active profile was ephemeral or all profiles are deleted due to
+  // ephemeral, set a new one.
+  if (last_active_profile_deleted ||
+      (entries.size() == profiles_to_delete.size() &&
+       profiles_to_delete.size() > 0)) {
     if (new_profile_path.empty())
       new_profile_path = GenerateNextProfileDirectoryPath();
 

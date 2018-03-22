@@ -1129,6 +1129,32 @@ TEST_F(ProfileManagerTest, CleanUpEphemeralProfiles) {
   EXPECT_EQ("Profile 1", local_state->GetString(prefs::kProfileLastUsed));
 }
 
+TEST_F(ProfileManagerTest, CleanUpEphemeralProfilesWithGuestLastUsedProfile) {
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  ProfileAttributesStorage& storage =
+      profile_manager->GetProfileAttributesStorage();
+  ASSERT_EQ(0u, storage.GetNumberOfProfiles());
+
+  const std::string profile_name1 = "Homer";
+  base::FilePath path1 =
+      profile_manager->user_data_dir().AppendASCII(profile_name1);
+  storage.AddProfile(path1, base::UTF8ToUTF16(profile_name1), std::string(),
+                     base::UTF8ToUTF16(profile_name1), 0, std::string());
+  storage.GetAllProfilesAttributes()[0u]->SetIsEphemeral(true);
+  ASSERT_TRUE(base::CreateDirectory(path1));
+  ASSERT_EQ(1u, storage.GetNumberOfProfiles());
+
+  // Set the active profile.
+  PrefService* local_state = g_browser_process->local_state();
+  local_state->SetString(prefs::kProfileLastUsed, std::string("Guest Profile"));
+
+  profile_manager->CleanUpEphemeralProfiles();
+  content::RunAllTasksUntilIdle();
+
+  ASSERT_EQ(0u, storage.GetNumberOfProfiles());
+  EXPECT_EQ("Profile 1", local_state->GetString(prefs::kProfileLastUsed));
+}
+
 TEST_F(ProfileManagerTest, ActiveProfileDeleted) {
   ProfileManager* profile_manager = g_browser_process->profile_manager();
   ASSERT_TRUE(profile_manager);
