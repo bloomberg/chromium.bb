@@ -61,11 +61,6 @@ class PayloadDecoderBaseTest : public RandomDecoderTest {
     frame_header_is_set_ = true;
   }
 
-  const Http2FrameHeader& frame_header() const {
-    CHECK(frame_header_is_set_);
-    return frame_header_;
-  }
-
   FrameDecoderState* mutable_state() { return &frame_decoder_state_; }
 
   // Randomize the payload decoder, sets the payload decoder's frame_header_,
