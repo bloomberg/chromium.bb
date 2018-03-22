@@ -164,6 +164,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLLoader
   // as BodyReadFromNetBeforePaused.
   int64_t body_read_before_paused_ = -1;
 
+  // This is used to compute the delta since last time received
+  // encoded body size was reported to the client.
+  int64_t reported_total_encoded_bytes_ = 0;
+
   scoped_refptr<ResourceSchedulerClient> resource_scheduler_client_;
 
   mojom::SSLPrivateKeyPtr ssl_private_key_;
