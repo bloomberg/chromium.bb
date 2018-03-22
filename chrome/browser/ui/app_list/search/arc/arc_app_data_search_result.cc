@@ -85,10 +85,16 @@ ArcAppDataSearchResult::ArcAppDataSearchResult(
   set_id(kAppDataSearchPrefix + launch_intent_uri());
   set_display_type(ash::SearchResultDisplayType::kTile);
 
+  // TODO(warx): set default images when icon_png_data() is not available.
+  if (!icon_png_data()) {
+    SetIconToAvatarIcon(gfx::ImageSkia());
+    return;
+  }
+
   icon_decode_request_ = std::make_unique<IconDecodeRequest>(
       base::BindOnce(&ArcAppDataSearchResult::SetIconToAvatarIcon,
                      weak_ptr_factory_.GetWeakPtr()));
-  icon_decode_request_->StartWithOptions(icon_png_data());
+  icon_decode_request_->StartWithOptions(icon_png_data().value());
 }
 
 ArcAppDataSearchResult::~ArcAppDataSearchResult() = default;
