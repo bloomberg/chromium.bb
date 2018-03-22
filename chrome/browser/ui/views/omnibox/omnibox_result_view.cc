@@ -73,7 +73,7 @@ bool IsTwoLineLayout() {
 
 // Creates a views::Background for the current result style.
 std::unique_ptr<views::Background> CreateBackgroundWithColor(SkColor bg_color) {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+  return ui::MaterialDesignController::IsNewerMaterialUi()
              ? views::CreateSolidBackground(bg_color)
              : std::make_unique<BackgroundWith1PxBorder>(bg_color, bg_color);
 }

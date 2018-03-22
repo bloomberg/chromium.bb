@@ -12,6 +12,7 @@ int GetLayoutConstant(LayoutConstant constant) {
   const bool hybrid = mode == ui::MaterialDesignController::MATERIAL_HYBRID;
   const bool touch_optimized_material =
       mode == ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
+  const bool newer_material = ui::MaterialDesignController::IsNewerMaterialUi();
   switch (constant) {
     case BOOKMARK_BAR_HEIGHT:
       return touch_optimized_material ? 40 : 28;
@@ -36,7 +37,7 @@ int GetLayoutConstant(LayoutConstant constant) {
       // TODO(tapted): This should match BubbleBorder::GetBorderRadius() once
       // MD is default for secondary UI everywhere. That is, the constant should
       // move to views/layout_provider.h so that all bubbles are consistent.
-      return touch_optimized_material ? 8 : 2;
+      return newer_material ? 8 : 2;
     case LOCATION_BAR_BUBBLE_ANCHOR_VERTICAL_INSET:
       if (ui::MaterialDesignController::IsSecondaryUiMaterial())
         return 1;
@@ -46,13 +47,13 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_PADDING:
       return hybrid ? 3 : 1;
     case LOCATION_BAR_HEIGHT: {
-      constexpr int kHeights[] = {28, 32, 36};
+      constexpr int kHeights[] = {28, 32, 36, 36};
       return kHeights[mode];
     }
     case LOCATION_BAR_ICON_SIZE:
       return 16;
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
-      return touch_optimized_material ? 8 : 4;
+      return newer_material ? 8 : 4;
     case TABSTRIP_NEW_TAB_BUTTON_SPACING: {
       // In non-touch optimized UI, we make the new tab button overlap with the
       // last tab in the tabstrip (i.e negative spacing). However, in
@@ -60,7 +61,7 @@ int GetLayoutConstant(LayoutConstant constant) {
       // further away from the tab. The distance is 8 DIP from the point at
       // which the last tab's endcap intersects with the tabstrip separator,
       // which is actually 6 DIP from the last tab's right point.
-      constexpr int kSpacing[] = {-5, -6, 6};
+      constexpr int kSpacing[] = {-5, -6, 6, -5};
       return kSpacing[mode];
     }
     case TAB_AFTER_TITLE_PADDING:
@@ -70,7 +71,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case TAB_ALERT_INDICATOR_ICON_WIDTH:
       return touch_optimized_material ? 12 : 16;
     case TAB_HEIGHT: {
-      constexpr int kTabHeight[] = {29, 33, 41};
+      constexpr int kTabHeight[] = {29, 33, 41, 29};
       return kTabHeight[mode];
     }
     case TAB_PRE_TITLE_PADDING:
@@ -84,7 +85,7 @@ int GetLayoutConstant(LayoutConstant constant) {
     case TOOLBAR_ELEMENT_PADDING:
       return hybrid ? 8 : 0;
     case TOOLBAR_STANDARD_SPACING: {
-      constexpr int kSpacings[] = {4, 8, 12};
+      constexpr int kSpacings[] = {4, 8, 12, 4};
       return kSpacings[mode];
     }
   }
@@ -96,7 +97,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
   const int mode = ui::MaterialDesignController::GetMode();
   switch (inset) {
     case TAB: {
-      constexpr int kTabHorizontalInset[] = {16, 18, 24};
+      constexpr int kTabHorizontalInset[] = {16, 18, 24, 16};
       return gfx::Insets(1, kTabHorizontalInset[mode]);
     }
     case TOOLBAR_BUTTON:
@@ -119,7 +120,7 @@ gfx::Size GetLayoutSize(LayoutSize size, bool is_incognito) {
   switch (size) {
     case NEW_TAB_BUTTON: {
       const gfx::Size sizes[] = {
-          {36, 18}, {39, 21}, {(is_incognito ? 42 : 24), 24}};
+          {36, 18}, {39, 21}, {(is_incognito ? 42 : 24), 24}, {36, 18}};
       return sizes[mode];
     }
   }

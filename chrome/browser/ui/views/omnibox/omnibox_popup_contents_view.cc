@@ -16,6 +16,7 @@
 #include "chrome/browser/search/search.h"
 #include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
+#include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_result_view.h"
 #include "chrome/browser/ui/views/omnibox/rounded_omnibox_results_frame.h"
@@ -52,12 +53,8 @@ base::LazyInstance<gfx::ImageSkia>::DestructorAtExit g_bottom_shadow =
 
 constexpr int kPopupVerticalPadding = 4;
 
-bool IsRounded() {
-  return ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
-}
-
 bool IsNarrow() {
-  return IsRounded() ||
+  return BackgroundWith1PxBorder::IsRounded() ||
          base::FeatureList::IsEnabled(omnibox::kUIExperimentNarrowDropdown);
 }
 
@@ -166,7 +163,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
     params.bounds = bounds;
     params.context = parent_widget->GetNativeWindow();
 
-    if (IsRounded())
+    if (BackgroundWith1PxBorder::IsRounded())
       RoundedOmniboxResultsFrame::OnBeforeWidgetInit(&params);
     else
       animator_ = std::make_unique<WidgetShrinkAnimation>(this, bounds);
@@ -175,7 +172,7 @@ class OmniboxPopupContentsView::AutocompletePopupWidget
   }
 
   void SetPopupContentsView(OmniboxPopupContentsView* contents) {
-    if (IsRounded()) {
+    if (BackgroundWith1PxBorder::IsRounded()) {
       SetContentsView(new RoundedOmniboxResultsFrame(
           contents, contents->location_bar_view_));
     } else {
@@ -317,7 +314,7 @@ void OmniboxPopupContentsView::UpdatePopupAppearance() {
     child_at(i)->SetVisible(false);
 
   gfx::Rect new_target_bounds = UpdateMarginsAndGetTargetBounds();
-  if (IsNarrow() && !IsRounded()) {
+  if (IsNarrow() && !BackgroundWith1PxBorder::IsRounded()) {
     SkColor background_color =
         GetOmniboxColor(OmniboxPart::RESULTS_BACKGROUND, GetTint());
     auto border = std::make_unique<views::BubbleBorder>(
@@ -441,7 +438,7 @@ void OmniboxPopupContentsView::OnGestureEvent(ui::GestureEvent* event) {
 // OmniboxPopupContentsView, private:
 
 gfx::Rect OmniboxPopupContentsView::UpdateMarginsAndGetTargetBounds() {
-  if (IsRounded()) {
+  if (BackgroundWith1PxBorder::IsRounded()) {
     // The rounded popup is always offset the same amount from the omnibox.
     gfx::Rect content_rect = location_bar_view_->GetBoundsInScreen();
     content_rect.Inset(
@@ -492,7 +489,7 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
   // amount of space between the text and the popup border as there is in the
   // interior between each row of text.
   int height = popup_height;
-  if (IsRounded()) {
+  if (BackgroundWith1PxBorder::IsRounded()) {
     height += RoundedOmniboxResultsFrame::GetAlignmentInsets(location_bar_view_)
                   .height();
   } else {
@@ -504,7 +501,7 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
 
 void OmniboxPopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
-  if (!IsRounded()) {
+  if (!BackgroundWith1PxBorder::IsRounded()) {
     contents_rect.Inset(gfx::Insets(kPopupVerticalPadding, 0));
     contents_rect.Inset(start_margin_, g_top_shadow.Get().height(), end_margin_,
                         0);

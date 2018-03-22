@@ -655,9 +655,9 @@ OmniboxFieldTrial::GetEmphasizeTitlesConditionForInput(
     return EMPHASIZE_WHEN_NONEMPTY;
   }
 
-  // Touch devices also always swap title and URL.
+  // Touch-optimized UI and MD Refresh also always swap title and URL.
   if (ui::MaterialDesignController::is_mode_initialized() &&
-      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+      ui::MaterialDesignController::IsNewerMaterialUi()) {
     return EMPHASIZE_WHEN_NONEMPTY;
   }
 

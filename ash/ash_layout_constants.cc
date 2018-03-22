@@ -8,27 +8,20 @@
 #include "ui/base/material_design/material_design_controller.h"
 
 gfx::Size GetAshLayoutSize(AshLayoutSize size) {
-  const int kBrowserMaximizedCaptionButtonHeight[] = {29, 33, 41};
-  const int kBrowserMaximizedCaptionButtonWidth[] = {32, 32, 32};
-  const int kBrowserRestoredCaptionButtonHeight[] = {36, 40, 48};
-  const int kBrowserRestoredCaptionButtonWidth[] = {32, 32, 32};
-  const int kNonBrowserCaptionButtonHeight[] = {33, 33, 33};
-  const int kNonBrowserCaptionButtonWidth[] = {32, 32, 32};
-
+  constexpr int kButtonWidth = 32;
   const int mode = ui::MaterialDesignController::GetMode();
   switch (size) {
     case AshLayoutSize::BROWSER_MAXIMIZED_CAPTION_BUTTON: {
-      return gfx::Size(kBrowserMaximizedCaptionButtonWidth[mode],
+      constexpr int kBrowserMaximizedCaptionButtonHeight[] = {29, 33, 41, 29};
+      return gfx::Size(kButtonWidth,
                        kBrowserMaximizedCaptionButtonHeight[mode]);
     }
     case AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON: {
-      return gfx::Size(kBrowserRestoredCaptionButtonWidth[mode],
-                       kBrowserRestoredCaptionButtonHeight[mode]);
+      constexpr int kBrowserRestoredCaptionButtonHeight[] = {36, 40, 48, 36};
+      return gfx::Size(kButtonWidth, kBrowserRestoredCaptionButtonHeight[mode]);
     }
-    case AshLayoutSize::NON_BROWSER_CAPTION_BUTTON: {
-      return gfx::Size(kNonBrowserCaptionButtonWidth[mode],
-                       kNonBrowserCaptionButtonHeight[mode]);
-    }
+    case AshLayoutSize::NON_BROWSER_CAPTION_BUTTON:
+      return gfx::Size(kButtonWidth, 33);
   }
 
   NOTREACHED();
