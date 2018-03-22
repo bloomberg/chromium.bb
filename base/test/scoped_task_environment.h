@@ -12,6 +12,11 @@
 
 namespace base {
 
+namespace internal {
+class ScopedSetSequenceLocalStorageMapForCurrentThread;
+class SequenceLocalStorageMap;
+}  // namespace internal
+
 class MessageLoop;
 class TaskScheduler;
 class TestMockTimeTaskRunner;
@@ -125,6 +130,14 @@ class ScopedTaskEnvironment {
   // the backing implementation of each MainThreadType may change over time.
   const std::unique_ptr<MessageLoop> message_loop_;
   const scoped_refptr<TestMockTimeTaskRunner> mock_time_task_runner_;
+
+  // Non-null in MOCK_TIME, where an explicit SequenceLocalStorageMap needs to
+  // be provided. TODO(gab): This can be removed once mock time support is added
+  // to MessageLoop directly.
+  const std::unique_ptr<internal::SequenceLocalStorageMap> slsm_for_mock_time_;
+  const std::unique_ptr<
+      internal::ScopedSetSequenceLocalStorageMapForCurrentThread>
+      slsm_registration_for_mock_time_;
 
   const TaskScheduler* task_scheduler_ = nullptr;
 

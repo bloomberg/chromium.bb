@@ -15,6 +15,7 @@
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/task_scheduler/task_scheduler_impl.h"
 #include "base/test/test_mock_time_task_runner.h"
+#include "base/threading/sequence_local_storage_map.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 
@@ -94,6 +95,16 @@ ScopedTaskEnvironment::ScopedTaskEnvironment(
           main_thread_type == MainThreadType::MOCK_TIME
               ? MakeRefCounted<TestMockTimeTaskRunner>(
                     TestMockTimeTaskRunner::Type::kBoundToThread)
+              : nullptr),
+      slsm_for_mock_time_(
+          main_thread_type == MainThreadType::MOCK_TIME
+              ? std::make_unique<internal::SequenceLocalStorageMap>()
+              : nullptr),
+      slsm_registration_for_mock_time_(
+          main_thread_type == MainThreadType::MOCK_TIME
+              ? std::make_unique<
+                    internal::ScopedSetSequenceLocalStorageMapForCurrentThread>(
+                    slsm_for_mock_time_.get())
               : nullptr),
       task_tracker_(new TestTaskTracker()) {
   CHECK(!TaskScheduler::GetInstance());
