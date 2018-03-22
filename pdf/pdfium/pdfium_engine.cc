@@ -4705,10 +4705,14 @@ bool PDFiumEngineExports::GetPDFDocInfo(const void* pdf_buffer,
       FPDF_LoadMemDocument(pdf_buffer, buffer_size, nullptr));
   if (!doc)
     return false;
+
+  if (!page_count && !max_page_width)
+    return true;
+
   int page_count_local = FPDF_GetPageCount(doc.get());
-  if (page_count) {
+  if (page_count)
     *page_count = page_count_local;
-  }
+
   if (max_page_width) {
     *max_page_width = 0;
     for (int page_number = 0; page_number < page_count_local; page_number++) {
