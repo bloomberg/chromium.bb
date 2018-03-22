@@ -6,15 +6,28 @@
 
 #include <utility>
 
+#include "base/base_paths.h"
 #include "base/bind.h"
 #include "base/location.h"
+#include "base/path_service.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/conflicts/installed_programs_win.h"
 #include "chrome/browser/conflicts/module_database_win.h"
+#include "chrome/browser/conflicts/module_info_util_win.h"
 #include "chrome/browser/conflicts/module_list_filter_win.h"
 #include "chrome/browser/conflicts/problematic_programs_updater_win.h"
 
 namespace {
+
+std::unique_ptr<CertificateInfo> CreateExeCertificateInfo() {
+  auto certificate_info = std::make_unique<CertificateInfo>();
+
+  base::FilePath exe_path;
+  if (base::PathService::Get(base::FILE_EXE, &exe_path))
+    GetCertificateInfo(exe_path, certificate_info.get());
+
+  return certificate_info;
+}
 
 std::unique_ptr<ModuleListFilter> CreateModuleListFilter(
     const base::FilePath& module_list_path) {
@@ -33,7 +46,15 @@ ThirdPartyConflictsManager::ThirdPartyConflictsManager(
     : module_database_(module_database),
       module_list_received_(false),
       on_module_database_idle_called_(false),
-      weak_ptr_factory_(this) {}
+      weak_ptr_factory_(this) {
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE,
+      {base::MayBlock(), base::TaskPriority::BACKGROUND,
+       base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN},
+      base::BindOnce(&CreateExeCertificateInfo),
+      base::BindOnce(&ThirdPartyConflictsManager::OnExeCertificateCreated,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
 
 ThirdPartyConflictsManager::~ThirdPartyConflictsManager() = default;
 
@@ -67,6 +88,14 @@ void ThirdPartyConflictsManager::LoadModuleList(const base::FilePath& path) {
                      weak_ptr_factory_.GetWeakPtr()));
 }
 
+void ThirdPartyConflictsManager::OnExeCertificateCreated(
+    std::unique_ptr<CertificateInfo> exe_certificate_info) {
+  exe_certificate_info_ = std::move(exe_certificate_info);
+
+  if (module_list_filter_ && installed_programs_)
+    InitializeProblematicProgramsUpdater();
+}
+
 void ThirdPartyConflictsManager::OnModuleListFilterCreated(
     std::unique_ptr<ModuleListFilter> module_list_filter) {
   module_list_filter_ = std::move(module_list_filter);
@@ -82,7 +111,7 @@ void ThirdPartyConflictsManager::OnModuleListFilterCreated(
     return;
   }
 
-  if (installed_programs_)
+  if (exe_certificate_info_ && installed_programs_)
     InitializeProblematicProgramsUpdater();
 }
 
@@ -90,15 +119,16 @@ void ThirdPartyConflictsManager::OnInstalledProgramsCreated(
     std::unique_ptr<InstalledPrograms> installed_programs) {
   installed_programs_ = std::move(installed_programs);
 
-  if (module_list_filter_)
+  if (exe_certificate_info_ && module_list_filter_)
     InitializeProblematicProgramsUpdater();
 }
 
 void ThirdPartyConflictsManager::InitializeProblematicProgramsUpdater() {
+  DCHECK(exe_certificate_info_);
   DCHECK(module_list_filter_);
   DCHECK(installed_programs_);
 
   problematic_programs_updater_ = std::make_unique<ProblematicProgramsUpdater>(
-      *module_list_filter_, *installed_programs_);
+      *exe_certificate_info_, *module_list_filter_, *installed_programs_);
   module_database_->AddObserver(problematic_programs_updater_.get());
 }

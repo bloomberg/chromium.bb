@@ -6,12 +6,10 @@
 
 #include <string>
 
-#include "base/base_paths.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/i18n/case_conversion.h"
 #include "base/logging.h"
-#include "base/path_service.h"
 #include "base/sha1.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
@@ -63,14 +61,9 @@ ModuleListFilter::~ModuleListFilter() = default;
 bool ModuleListFilter::Initialize(const base::FilePath& module_list_path) {
   DCHECK(!initialized_);
 
-  base::FilePath exe_path;
   std::string contents;
-  initialized_ = base::PathService::Get(base::FILE_EXE, &exe_path) &&
-                 base::ReadFileToString(module_list_path, &contents) &&
+  initialized_ = base::ReadFileToString(module_list_path, &contents) &&
                  module_list_.ParseFromString(contents);
-
-  if (initialized_)
-    GetCertificateInfo(exe_path, &exe_certificate_info_);
 
   return initialized_;
 }
@@ -99,15 +92,6 @@ std::unique_ptr<chrome::conflicts::BlacklistAction>
 ModuleListFilter::IsBlacklisted(const ModuleInfoKey& module_key,
                                 const ModuleInfoData& module_data) const {
   DCHECK(initialized_);
-
-  // Ignore modules whose signing cert's Subject field matches the one in the
-  // current executable. No attempt is made to check the validity of module
-  // signatures or of signing certs.
-  if (exe_certificate_info_.type != CertificateType::NO_CERTIFICATE &&
-      exe_certificate_info_.subject ==
-          module_data.inspection_result->certificate_info.subject) {
-    return nullptr;
-  }
 
   // Precompute the hash of the basename and of the code id.
   const std::string module_basename_hash =

@@ -13,6 +13,7 @@
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 #include "chrome/browser/conflicts/proto/module_list.pb.h"
 
+struct CertificateInfo;
 class ModuleListFilter;
 class PrefRegistrySimple;
 
@@ -37,9 +38,10 @@ class ProblematicProgramsUpdater : public ModuleDatabaseObserver {
     std::unique_ptr<chrome::conflicts::BlacklistAction> blacklist_action;
   };
 
-  // Creates an instance of the updater. |module_list_filter| and
-  // |installed_programs| must outlive the lifetime of this class.
-  ProblematicProgramsUpdater(const ModuleListFilter& module_list_filter,
+  // Creates an instance of the updater.
+  // The parameters must outlive the lifetime of this class.
+  ProblematicProgramsUpdater(const CertificateInfo& exe_certificate_info,
+                             const ModuleListFilter& module_list_filter,
                              const InstalledPrograms& installed_programs);
   ~ProblematicProgramsUpdater() override;
 
@@ -63,6 +65,8 @@ class ProblematicProgramsUpdater : public ModuleDatabaseObserver {
   void OnModuleDatabaseIdle() override;
 
  private:
+  const CertificateInfo& exe_certificate_info_;
+
   const ModuleListFilter& module_list_filter_;
 
   const InstalledPrograms& installed_programs_;
