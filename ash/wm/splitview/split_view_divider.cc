@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/ash_constants.h"
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "ash/wm/splitview/split_view_controller.h"

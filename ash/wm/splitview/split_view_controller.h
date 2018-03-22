@@ -6,7 +6,7 @@
 #define ASH_WM_SPLITSVIEW_SPLIT_VIEW_CONTROLLER_H_
 
 #include "ash/ash_export.h"
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/interfaces/split_view.mojom.h"
 #include "ash/shell_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"

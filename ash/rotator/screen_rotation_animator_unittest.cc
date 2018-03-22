@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "ash/display/display_configuration_controller_test_api.h"
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/ash_switches.h"

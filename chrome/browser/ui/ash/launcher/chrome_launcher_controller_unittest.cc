@@ -15,7 +15,7 @@
 #include <vector>
 
 #include "ash/display/display_configuration_controller.h"
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/shelf_item.h"
 #include "ash/public/cpp/shelf_item_delegate.h"
 #include "ash/public/cpp/shelf_model.h"

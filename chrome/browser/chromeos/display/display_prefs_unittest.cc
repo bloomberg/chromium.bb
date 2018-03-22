@@ -13,7 +13,7 @@
 
 #include "ash/display/display_util.h"
 #include "ash/display/resolution_notification_controller.h"
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"

@@ -10,7 +10,7 @@
 #include "ash/display/display_util.h"
 #include "ash/display/mirror_window_controller.h"
 #include "ash/display/mirror_window_test_api.h"
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/display/window_tree_host_manager.h"
 #include "ash/public/cpp/app_types.h"

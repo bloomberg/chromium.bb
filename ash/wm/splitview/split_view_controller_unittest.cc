@@ -4,7 +4,7 @@
 
 #include "ash/wm/splitview/split_view_controller.h"
 
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/screen_util.h"
 #include "ash/shell.h"

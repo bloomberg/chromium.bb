@@ -10,7 +10,7 @@
 #include "ash/display/display_configuration_controller.h"
 #include "ash/display/overscan_calibrator.h"
 #include "ash/display/resolution_notification_controller.h"
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/display/touch_calibrator_controller.h"
 #include "ash/shell.h"
 #include "ash/touch/ash_touch_transform_controller.h"

@@ -4,7 +4,7 @@
 
 #include "ash/metrics/pointer_metrics_recorder.h"
 
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/app_types.h"
 #include "ash/shell.h"
 #include "ash/shell_port.h"

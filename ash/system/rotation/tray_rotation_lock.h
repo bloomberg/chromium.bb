@@ -5,7 +5,7 @@
 #ifndef ASH_SYSTEM_ROTATION_TRAY_ROTATION_LOCK_H_
 #define ASH_SYSTEM_ROTATION_TRAY_ROTATION_LOCK_H_
 
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "base/macros.h"

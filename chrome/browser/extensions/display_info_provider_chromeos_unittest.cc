@@ -6,7 +6,7 @@
 
 #include <stdint.h>
 
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"

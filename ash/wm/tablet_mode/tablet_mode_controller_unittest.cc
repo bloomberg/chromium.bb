@@ -8,7 +8,7 @@
 #include <utility>
 #include <vector>
 
-#include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
