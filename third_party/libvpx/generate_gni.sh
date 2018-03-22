@@ -422,7 +422,11 @@ if [ -z $ONLY_CONFIGS ]; then
   cp vpx_version.h $BASE_DIR/$LIBVPX_CONFIG_DIR
 
   echo "Generate X86_64 source list."
-  config=$(print_config linux/x64)
+  # Windows needs float_control_word.asm for Windows. This was previously
+  # emms_mmx.asm but a refactoring pulled out the cross platform bits. Because
+  # of this, use the win/x64 configuration as the reference. The empty asm
+  # object should not perturb the other builds.
+  config=$(print_config win/x64)
   make_clean
   make libvpx_srcs.txt target=libs $config > /dev/null
   convert_srcs_to_project_files libvpx_srcs.txt libvpx_srcs_x86_64
