@@ -52,10 +52,8 @@ const TransformPaintPropertyNode* FragmentData::PostScrollTranslation() const {
   return LocalBorderBoxProperties().Transform();
 }
 
-const ClipPaintPropertyNode* FragmentData::PreCssClip() const {
+const ClipPaintPropertyNode* FragmentData::ClipPathClip() const {
   if (const auto* properties = PaintProperties()) {
-    if (properties->CssClip())
-      return properties->CssClip()->Parent();
     if (properties->ClipPathClip()) {
       // SPv1 composited clip-path has an alternative clip tree structure.
       // If the clip-path is parented by the mask clip, it is only used
@@ -65,6 +63,8 @@ const ClipPaintPropertyNode* FragmentData::PreCssClip() const {
     }
     if (properties->MaskClip())
       return properties->MaskClip()->Parent();
+    if (properties->CssClip())
+      return properties->CssClip()->Parent();
   }
   return LocalBorderBoxProperties().Clip();
 }
