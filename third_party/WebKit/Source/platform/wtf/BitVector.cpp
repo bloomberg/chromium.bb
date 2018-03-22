@@ -39,7 +39,7 @@ void BitVector::SetSlow(const BitVector& other) {
   } else {
     OutOfLineBits* new_out_of_line_bits = OutOfLineBits::Create(other.size());
     memcpy(new_out_of_line_bits->Bits(), other.Bits(), ByteCount(other.size()));
-    new_bits_or_pointer = BitwiseCast<uintptr_t>(new_out_of_line_bits) >> 1;
+    new_bits_or_pointer = bit_cast<uintptr_t>(new_out_of_line_bits) >> 1;
   }
   if (!IsInline())
     OutOfLineBits::Destroy(GetOutOfLineBits());
@@ -108,7 +108,7 @@ void BitVector::ResizeOutOfLine(size_t num_bits) {
     }
     OutOfLineBits::Destroy(GetOutOfLineBits());
   }
-  bits_or_pointer_ = BitwiseCast<uintptr_t>(new_out_of_line_bits) >> 1;
+  bits_or_pointer_ = bit_cast<uintptr_t>(new_out_of_line_bits) >> 1;
 }
 
 }  // namespace WTF
