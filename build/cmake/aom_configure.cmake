@@ -17,7 +17,7 @@ include(FindThreads)
 include(FindwxWidgets)
 
 set(AOM_SUPPORTED_CPU_TARGETS
-    "arm64 armv7 armv7s generic mips32 mips64 x86 x86_64")
+    "arm64 armv7 armv7s generic mips32 mips64 ppc x86 x86_64")
 
 # Generate the user config settings. This must occur before include of
 # aom_config_defaults.cmake (because it turns every config variable into a cache
@@ -70,6 +70,8 @@ if (NOT AOM_TARGET_CPU)
     set(AOM_TARGET_CPU "${CMAKE_SYSTEM_PROCESSOR}")
   elseif ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "aarch64")
     set(AOM_TARGET_CPU "arm64")
+  elseif ("${CMAKE_SYSTEM_PROCESSOR}" MATCHES "^ppc")
+    set(AOM_TARGET_CPU "ppc")
   else ()
     message(WARNING "The architecture ${CMAKE_SYSTEM_PROCESSOR} is not "
             "supported, falling back to the generic target")

@@ -343,6 +343,27 @@ EOF
   common_bottom;
 }
 
+sub ppc() {
+  determine_indirection("c", @ALL_ARCHS);
+  common_top;
+
+  print <<EOF;
+#include "aom_config.h"
+
+#ifdef RTCD_C
+static void setup_rtcd_internal(void)
+{
+EOF
+
+  set_function_pointers("c", @ALL_ARCHS);
+
+  print <<EOF;
+}
+#endif
+EOF
+  common_bottom;
+}
+
 sub unoptimized() {
   determine_indirection "c";
   common_top;
@@ -399,6 +420,9 @@ if ($opts{arch} eq 'x86') {
 } elsif ($opts{arch} eq 'armv8' || $opts{arch} eq 'arm64' ) {
   @ALL_ARCHS = filter(qw/neon/);
   arm;
+} elsif ($opts{arch} eq 'ppc') {
+  @ALL_ARCHS = filter(qw/vsx/);
+  ppc;
 } else {
   unoptimized;
 }
