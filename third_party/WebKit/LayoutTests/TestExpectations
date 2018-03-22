@@ -1456,6 +1456,9 @@ crbug.com/548765 http/tests/devtools/console-fetch-logging.js [ Failure Pass ]
 crbug.com/v8/7486 http/tests/devtools/startup/console/console-format-startup-bigint.js [ Skip ]
 crbug.com/v8/7486 http/tests/devtools/console/console-format-bigint.js [ Skip ]
 
+# Changing signature of console function.
+crbug.com/v8/178 inspector-protocol/console/console-let-const-with-api.js [ NeedsManualRebaseline ]
+
 crbug.com/564109 [ Win ]  http/tests/webfont/font-display-intervention.html [ Pass Failure Timeout ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]

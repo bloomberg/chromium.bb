@@ -19,7 +19,7 @@ function inspect(object) { [Command Line API] }
 function copy(value) { [Command Line API] }
 function clear() { [Command Line API] }
 function getEventListeners(node) { [Command Line API] }
-function debug(function) { [Command Line API] }
+function debug(function, condition) { [Command Line API] }
 function undebug(function) { [Command Line API] }
 function monitor(function) { [Command Line API] }
 function unmonitor(function) { [Command Line API] }
