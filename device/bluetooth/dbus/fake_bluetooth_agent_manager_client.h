@@ -27,7 +27,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothAgentManagerClient
   ~FakeBluetoothAgentManagerClient() override;
 
   // BluetoothAgentManagerClient overrides
-  void Init(dbus::Bus* bus) override;
+  void Init(dbus::Bus* bus, const std::string& bluetooth_service_name) override;
   void RegisterAgent(const dbus::ObjectPath& agent_path,
                      const std::string& capability,
                      const base::Closure& callback,

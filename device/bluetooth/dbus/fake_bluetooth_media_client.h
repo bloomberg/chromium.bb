@@ -30,7 +30,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothMediaClient
   ~FakeBluetoothMediaClient() override;
 
   // DBusClient override.
-  void Init(dbus::Bus* bus) override;
+  void Init(dbus::Bus* bus, const std::string& bluetooth_service_name) override;
 
   // BluetoothMediaClient overrides.
   void AddObserver(BluetoothMediaClient::Observer* observer) override;

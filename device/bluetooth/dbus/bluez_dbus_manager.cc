@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
@@ -16,6 +17,7 @@
 #include "dbus/message.h"
 #include "dbus/object_manager.h"
 #include "dbus/object_proxy.h"
+#include "device/base/features.h"
 #include "device/bluetooth/dbus/bluetooth_adapter_client.h"
 #include "device/bluetooth/dbus/bluetooth_agent_manager_client.h"
 #include "device/bluetooth/dbus/bluetooth_device_client.h"
@@ -182,19 +184,34 @@ void BluezDBusManager::OnObjectManagerNotSupported(
 }
 
 void BluezDBusManager::InitializeClients() {
-  client_bundle_->bluetooth_adapter_client()->Init(GetSystemBus());
-  client_bundle_->bluetooth_agent_manager_client()->Init(GetSystemBus());
-  client_bundle_->bluetooth_device_client()->Init(GetSystemBus());
-  client_bundle_->bluetooth_gatt_characteristic_client()->Init(GetSystemBus());
-  client_bundle_->bluetooth_gatt_descriptor_client()->Init(GetSystemBus());
-  client_bundle_->bluetooth_gatt_manager_client()->Init(GetSystemBus());
-  client_bundle_->bluetooth_gatt_service_client()->Init(GetSystemBus());
-  client_bundle_->bluetooth_input_client()->Init(GetSystemBus());
+  std::string bluetooth_service_name =
+      base::FeatureList::IsEnabled(device::kNewblueDaemon)
+          ? bluetooth_object_manager::kBluetoothObjectManagerServiceName
+          : bluez_object_manager::kBluezObjectManagerServiceName;
+  client_bundle_->bluetooth_adapter_client()->Init(GetSystemBus(),
+                                                   bluetooth_service_name);
+  client_bundle_->bluetooth_agent_manager_client()->Init(
+      GetSystemBus(), bluetooth_service_name);
+  client_bundle_->bluetooth_device_client()->Init(GetSystemBus(),
+                                                  bluetooth_service_name);
+  client_bundle_->bluetooth_gatt_characteristic_client()->Init(
+      GetSystemBus(), bluetooth_service_name);
+  client_bundle_->bluetooth_gatt_descriptor_client()->Init(
+      GetSystemBus(), bluetooth_service_name);
+  client_bundle_->bluetooth_gatt_manager_client()->Init(GetSystemBus(),
+                                                        bluetooth_service_name);
+  client_bundle_->bluetooth_gatt_service_client()->Init(GetSystemBus(),
+                                                        bluetooth_service_name);
+  client_bundle_->bluetooth_input_client()->Init(GetSystemBus(),
+                                                 bluetooth_service_name);
   client_bundle_->bluetooth_le_advertising_manager_client()->Init(
-      GetSystemBus());
-  client_bundle_->bluetooth_media_client()->Init(GetSystemBus());
-  client_bundle_->bluetooth_media_transport_client()->Init(GetSystemBus());
-  client_bundle_->bluetooth_profile_manager_client()->Init(GetSystemBus());
+      GetSystemBus(), bluetooth_service_name);
+  client_bundle_->bluetooth_media_client()->Init(GetSystemBus(),
+                                                 bluetooth_service_name);
+  client_bundle_->bluetooth_media_transport_client()->Init(
+      GetSystemBus(), bluetooth_service_name);
+  client_bundle_->bluetooth_profile_manager_client()->Init(
+      GetSystemBus(), bluetooth_service_name);
 }
 
 // static

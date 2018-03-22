@@ -41,7 +41,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothGattServiceClient
   ~FakeBluetoothGattServiceClient() override;
 
   // DBusClient override.
-  void Init(dbus::Bus* bus) override;
+  void Init(dbus::Bus* bus, const std::string& bluetooth_service_name) override;
 
   // BluetoothGattServiceClient overrides.
   void AddObserver(Observer* observer) override;

@@ -60,7 +60,9 @@ FakeBluetoothGattServiceClient::FakeBluetoothGattServiceClient()
 
 FakeBluetoothGattServiceClient::~FakeBluetoothGattServiceClient() = default;
 
-void FakeBluetoothGattServiceClient::Init(dbus::Bus* bus) {}
+void FakeBluetoothGattServiceClient::Init(
+    dbus::Bus* bus,
+    const std::string& bluetooth_service_name) {}
 
 void FakeBluetoothGattServiceClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);

@@ -30,7 +30,7 @@ class DEVICE_BLUETOOTH_EXPORT FakeBluetoothProfileManagerClient
   ~FakeBluetoothProfileManagerClient() override;
 
   // BluetoothProfileManagerClient overrides
-  void Init(dbus::Bus* bus) override;
+  void Init(dbus::Bus* bus, const std::string& bluetooth_service_name) override;
   void RegisterProfile(const dbus::ObjectPath& profile_path,
                        const std::string& uuid,
                        const Options& options,

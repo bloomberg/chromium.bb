@@ -34,7 +34,9 @@ FakeBluetoothMediaClient::FakeBluetoothMediaClient()
 
 FakeBluetoothMediaClient::~FakeBluetoothMediaClient() = default;
 
-void FakeBluetoothMediaClient::Init(dbus::Bus* bus) {}
+void FakeBluetoothMediaClient::Init(dbus::Bus* bus,
+                                    const std::string& bluetooth_service_name) {
+}
 
 void FakeBluetoothMediaClient::AddObserver(
     BluetoothMediaClient::Observer* observer) {

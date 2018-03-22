@@ -29,7 +29,9 @@ FakeBluetoothProfileManagerClient::FakeBluetoothProfileManagerClient() =
 FakeBluetoothProfileManagerClient::~FakeBluetoothProfileManagerClient() =
     default;
 
-void FakeBluetoothProfileManagerClient::Init(dbus::Bus* bus) {}
+void FakeBluetoothProfileManagerClient::Init(
+    dbus::Bus* bus,
+    const std::string& bluetooth_service_name) {}
 
 void FakeBluetoothProfileManagerClient::RegisterProfile(
     const dbus::ObjectPath& profile_path,

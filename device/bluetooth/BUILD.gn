@@ -209,6 +209,7 @@ component("bluetooth") {
     "//base",
     "//components/device_event_log",
     "//crypto",
+    "//device/base",
     "//device/bluetooth/strings",
     "//device/bluetooth/uribeacon",
     "//ipc",
