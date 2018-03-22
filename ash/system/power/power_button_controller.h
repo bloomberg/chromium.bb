@@ -57,6 +57,9 @@ class ASH_EXPORT PowerButtonController
     LEGACY,
   };
 
+  // The physical display side of power button.
+  enum class PowerButtonPosition { NONE, LEFT, TOP, RIGHT, BOTTOM };
+
   // Amount of time since last screen state change that power button event needs
   // to be ignored.
   static constexpr base::TimeDelta kScreenStateChangeDelay =
@@ -72,6 +75,18 @@ class ASH_EXPORT PowerButtonController
   // ignored.
   static constexpr base::TimeDelta kIgnorePowerButtonAfterResumeDelay =
       base::TimeDelta::FromSeconds(2);
+
+  // Value of switches::kAshPowerButtonPosition stored in JSON format. These
+  // are the field names of the flag.
+  static constexpr const char* kPositionField = "position";
+  static constexpr const char* kXField = "x";
+  static constexpr const char* kYField = "y";
+
+  // Value of |kPositionField|.
+  static constexpr const char* kLeftPosition = "left";
+  static constexpr const char* kRightPosition = "right";
+  static constexpr const char* kTopPosition = "top";
+  static constexpr const char* kBottomPosition = "bottom";
 
   explicit PowerButtonController(
       BacklightsForcedOffSetter* backlights_forced_off_setter);
@@ -157,6 +172,10 @@ class ASH_EXPORT PowerButtonController
   // Sets |show_menu_animation_done_| to true.
   void SetShowMenuAnimationDone();
 
+  // A helper function called by ProcessCommandLine to parse the value of
+  // switches::kAshPowerButtonPosition.
+  void ParsePowerButtonPositionSwitch();
+
   // Are the power or lock buttons currently held?
   bool power_button_down_ = false;
   bool lock_button_down_ = false;
@@ -227,6 +246,15 @@ class ASH_EXPORT PowerButtonController
 
   // The fullscreen widget of power button menu.
   std::unique_ptr<views::Widget> menu_widget_;
+
+  // The physical display side of power button in landscape primary.
+  PowerButtonPosition power_button_position_ = PowerButtonPosition::NONE;
+
+  // The center of the power button's offset from the top of the screen (for
+  // left/right) or left side of the screen (for top/bottom) in
+  // landscape_primary. Values are in [0.0, 1.0] and express a fraction of the
+  // display's height or width, respectively.
+  double power_button_offset_percentage_ = 0.f;
 
   ScopedObserver<BacklightsForcedOffSetter, BacklightsForcedOffSetter::Observer>
       backlights_forced_off_observer_;
