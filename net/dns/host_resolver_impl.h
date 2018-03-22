@@ -31,11 +31,11 @@ class NetLog;
 class NetLogWithSource;
 
 // For each hostname that is requested, HostResolver creates a
-// HostResolverImpl::Job. When this job gets dispatched it creates a ProcTask
-// which runs the given HostResolverProc in TaskScheduler. If requests for that
-// same host are made during the job's lifetime, they are attached to the
-// existing job rather than creating a new one. This avoids doing parallel
-// resolves for the same host.
+// HostResolverImpl::Job. When this job gets dispatched it creates a task
+// (ProcTask for the system resolver or DnsTask for the async resolver) which
+// resolves the hostname. If requests for that same host are made during the
+// job's lifetime, they are attached to the existing job rather than creating a
+// new one. This avoids doing parallel resolves for the same host.
 //
 // The way these classes fit together is illustrated by:
 //
