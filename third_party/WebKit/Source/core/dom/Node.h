@@ -265,6 +265,9 @@ class CORE_EXPORT Node : public EventTarget {
     return static_cast<CustomElementState>(node_flags_ &
                                            kCustomElementStateMask);
   }
+  bool IsCustomElement() const {
+    return GetCustomElementState() != CustomElementState::kUncustomized;
+  }
   void SetCustomElementState(CustomElementState);
   bool IsV0CustomElement() const { return GetFlag(kV0CustomElementFlag); }
   enum V0CustomElementState {
