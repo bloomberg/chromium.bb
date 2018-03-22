@@ -43,6 +43,7 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "bindings/core/v8/custom/V8CustomXPathNSResolver.h"
+#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
@@ -256,9 +257,14 @@ static inline T ToSmallerUInt(v8::Isolate* isolate,
   if (std::isinf(number_value))
     return 0;
 
-  number_value =
-      number_value < 0 ? -floor(fabs(number_value)) : floor(fabs(number_value));
-  return static_cast<T>(fmod(number_value, LimitsTrait::kNumberOfValues));
+  // Confine number to (-kNumberOfValues, kNumberOfValues).
+  double number = fmod(trunc(number_value), LimitsTrait::kNumberOfValues);
+
+  // Adjust range to [0, kNumberOfValues).
+  if (number < 0)
+    number += LimitsTrait::kNumberOfValues;
+
+  return static_cast<T>(number);
 }
 
 int8_t ToInt8(v8::Isolate* isolate,

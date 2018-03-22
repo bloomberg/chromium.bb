@@ -185,6 +185,7 @@ external/wpt/dom/nodes/Document-contentType/contentType/createHTMLDocument.html
 external/wpt/dom/nodes/Node-lookupPrefix.xhtml
 external/wpt/domparsing/innerhtml-03.xhtml
 external/wpt/domparsing/innerhtml-04.html
+external/wpt/dom/ranges/Range-compareBoundaryPoints.html
 external/wpt/dom/ranges/Range-constructor.html
 external/wpt/dom/traversal/NodeFilter-constants.html
 external/wpt/dom/traversal/TreeWalker-walking-outside-a-tree.html
