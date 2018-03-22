@@ -36,15 +36,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
 
-// Borrowed from chrome/browser/ui/views/bookmarks/bookmark_bar_view_test.cc,
-// since these are also disabled on Linux for drag and drop.
-// TODO(erg): Fix DND tests on linux_aura. crbug.com/163931
-#if defined(OS_LINUX) && defined(USE_AURA)
-#define MAYBE(x) DISABLED_##x
-#else
-#define MAYBE(x) x
-#endif
-
 using bookmarks::BookmarkModel;
 
 class ToolbarViewInteractiveUITest : public ExtensionBrowserTest {
@@ -162,8 +153,19 @@ void ToolbarViewInteractiveUITest::TearDownOnMainThread() {
   AppMenuButton::g_open_app_immediately_for_testing = false;
 }
 
+// Borrowed from chrome/browser/ui/views/bookmarks/bookmark_bar_view_test.cc,
+// since these are also disabled on Linux for drag and drop.
+// TODO(erg): Fix DND tests on linux_aura. crbug.com/163931
+#if defined(OS_LINUX) && defined(USE_AURA)
+#define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
+#elif defined(OS_MACOSX)
+// Illegal thread join on the UI thread, may fix above: http://crbug.com/824570
+#define MAYBE_TestAppMenuOpensOnDrag DISABLED_TestAppMenuOpensOnDrag
+#else
+#define MAYBE_TestAppMenuOpensOnDrag TestAppMenuOpensOnDrag
+#endif
 IN_PROC_BROWSER_TEST_F(ToolbarViewInteractiveUITest,
-                       MAYBE(TestAppMenuOpensOnDrag)) {
+                       MAYBE_TestAppMenuOpensOnDrag) {
   // Load an extension that has a browser action.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
                                           .AppendASCII("browser_action")
