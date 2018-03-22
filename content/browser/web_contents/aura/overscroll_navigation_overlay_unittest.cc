@@ -444,7 +444,8 @@ TEST_F(OverscrollNavigationOverlayTest, CloseDuringAnimation) {
   ui::ScopedAnimationDurationScaleMode normal_duration_(
       ui::ScopedAnimationDurationScaleMode::NORMAL_DURATION);
   GetOverlay()->owa_->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                             OverscrollSource::TOUCHSCREEN);
+                                             OverscrollSource::TOUCHSCREEN,
+                                             cc::OverscrollBehavior());
   GetOverlay()->owa_->OnOverscrollComplete(OVERSCROLL_EAST);
   EXPECT_EQ(GetOverlay()->direction_, NavigationDirection::BACK);
   OverscrollTestWebContents* test_web_contents =
@@ -463,7 +464,8 @@ TEST_F(OverscrollNavigationOverlayTest, ImmediateLoadOnNavigate) {
   // navigation starts.
   ImmediateLoadObserver immediate_nav(contents());
   GetOverlay()->owa_->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                             OverscrollSource::TOUCHPAD);
+                                             OverscrollSource::TOUCHPAD,
+                                             cc::OverscrollBehavior());
   // This will start and immediately complete the navigation.
   GetOverlay()->owa_->OnOverscrollComplete(OVERSCROLL_EAST);
   EXPECT_FALSE(GetOverlay()->window_.get());

@@ -128,7 +128,8 @@ TEST_F(OverscrollWindowAnimationTest, BasicOverscroll) {
 
   // Start an OVERSCROLL_EAST gesture.
   owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                OverscrollSource::TOUCHPAD);
+                                OverscrollSource::TOUCHPAD,
+                                cc::OverscrollBehavior());
   EXPECT_TRUE(owa()->is_active());
   EXPECT_EQ(OverscrollSource::TOUCHPAD, owa()->overscroll_source());
   EXPECT_TRUE(overscroll_started());
@@ -149,11 +150,13 @@ TEST_F(OverscrollWindowAnimationTest, BasicOverscroll) {
 TEST_F(OverscrollWindowAnimationTest, BasicAbort) {
   // Start an OVERSCROLL_EAST gesture.
   owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                OverscrollSource::TOUCHSCREEN);
+                                OverscrollSource::TOUCHSCREEN,
+                                cc::OverscrollBehavior());
   EXPECT_EQ(OverscrollSource::TOUCHSCREEN, owa()->overscroll_source());
   // Abort the overscroll.
   owa()->OnOverscrollModeChange(OVERSCROLL_EAST, OVERSCROLL_NONE,
-                                OverscrollSource::TOUCHSCREEN);
+                                OverscrollSource::TOUCHSCREEN,
+                                cc::OverscrollBehavior());
   EXPECT_EQ(OverscrollSource::NONE, owa()->overscroll_source());
   EXPECT_FALSE(owa()->is_active());
   EXPECT_TRUE(overscroll_started());
@@ -167,7 +170,8 @@ TEST_F(OverscrollWindowAnimationTest, BasicCannotNavigate) {
   set_create_window(false);
   // Start an OVERSCROLL_EAST gesture.
   owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                OverscrollSource::TOUCHPAD);
+                                OverscrollSource::TOUCHPAD,
+                                cc::OverscrollBehavior());
   EXPECT_FALSE(owa()->is_active());
   EXPECT_EQ(OverscrollSource::NONE, owa()->overscroll_source());
   EXPECT_TRUE(overscroll_started());
@@ -190,7 +194,8 @@ TEST_F(OverscrollWindowAnimationTest, NewOverscrollCompletesPreviousGesture) {
   ui::LayerAnimatorTestController test_controller(animator);
   // Start an OVERSCROLL_EAST gesture.
   owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                OverscrollSource::TOUCHPAD);
+                                OverscrollSource::TOUCHPAD,
+                                cc::OverscrollBehavior());
 
   // Finishes the OVERSCROLL_EAST gesture. At this point the window should be
   // being animated to its final position.
@@ -204,7 +209,8 @@ TEST_F(OverscrollWindowAnimationTest, NewOverscrollCompletesPreviousGesture) {
 
   // Start another OVERSCROLL_EAST gesture.
   owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                OverscrollSource::TOUCHSCREEN);
+                                OverscrollSource::TOUCHSCREEN,
+                                cc::OverscrollBehavior());
   EXPECT_TRUE(owa()->is_active());
   EXPECT_EQ(OverscrollSource::TOUCHSCREEN, owa()->overscroll_source());
   EXPECT_TRUE(overscroll_started());
@@ -249,9 +255,9 @@ TEST_F(OverscrollWindowAnimationTest, OverscrollBehaviorAutoAllowsOverscroll) {
   cc::OverscrollBehavior overscroll_behavior;
   overscroll_behavior.x = cc::OverscrollBehavior::OverscrollBehaviorType::
       kOverscrollBehaviorTypeAuto;
-  owa()->OnOverscrollBehaviorUpdate(overscroll_behavior);
   owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                OverscrollSource::TOUCHPAD);
+                                OverscrollSource::TOUCHPAD,
+                                overscroll_behavior);
   EXPECT_TRUE(owa()->is_active());
   EXPECT_EQ(OverscrollSource::TOUCHPAD, owa()->overscroll_source());
   EXPECT_TRUE(overscroll_started());
@@ -271,9 +277,9 @@ TEST_F(OverscrollWindowAnimationTest,
   cc::OverscrollBehavior overscroll_behavior;
   overscroll_behavior.x = cc::OverscrollBehavior::OverscrollBehaviorType::
       kOverscrollBehaviorTypeContain;
-  owa()->OnOverscrollBehaviorUpdate(overscroll_behavior);
   owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                OverscrollSource::TOUCHPAD);
+                                OverscrollSource::TOUCHPAD,
+                                overscroll_behavior);
   EXPECT_FALSE(owa()->is_active());
   EXPECT_FALSE(overscroll_started());
   EXPECT_FALSE(overscroll_completing());
@@ -292,9 +298,9 @@ TEST_F(OverscrollWindowAnimationTest,
   cc::OverscrollBehavior overscroll_behavior;
   overscroll_behavior.x = cc::OverscrollBehavior::OverscrollBehaviorType::
       kOverscrollBehaviorTypeNone;
-  owa()->OnOverscrollBehaviorUpdate(overscroll_behavior);
   owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                OverscrollSource::TOUCHPAD);
+                                OverscrollSource::TOUCHPAD,
+                                overscroll_behavior);
   EXPECT_FALSE(owa()->is_active());
   EXPECT_FALSE(overscroll_started());
   EXPECT_FALSE(overscroll_completing());
@@ -315,9 +321,9 @@ TEST_F(OverscrollWindowAnimationTest,
       kOverscrollBehaviorTypeAuto;
   overscroll_behavior.y = cc::OverscrollBehavior::OverscrollBehaviorType::
       kOverscrollBehaviorTypeNone;
-  owa()->OnOverscrollBehaviorUpdate(overscroll_behavior);
   owa()->OnOverscrollModeChange(OVERSCROLL_NONE, OVERSCROLL_EAST,
-                                OverscrollSource::TOUCHPAD);
+                                OverscrollSource::TOUCHPAD,
+                                overscroll_behavior);
   EXPECT_TRUE(owa()->is_active());
   EXPECT_EQ(OverscrollSource::TOUCHPAD, owa()->overscroll_source());
   EXPECT_TRUE(overscroll_started());

@@ -993,12 +993,6 @@ gfx::Size WebContentsViewAura::GetDisplaySize() const {
       .size();
 }
 
-void WebContentsViewAura::OnOverscrollBehaviorUpdate(
-    cc::OverscrollBehavior overscroll_behavior) {
-  navigation_overlay_->relay_delegate()->OnOverscrollBehaviorUpdate(
-      overscroll_behavior);
-}
-
 bool WebContentsViewAura::OnOverscrollUpdate(float delta_x, float delta_y) {
   if (current_overscroll_gesture_ != OVERSCROLL_EAST &&
       current_overscroll_gesture_ != OVERSCROLL_WEST) {
@@ -1013,12 +1007,14 @@ void WebContentsViewAura::OnOverscrollComplete(OverscrollMode mode) {
   CompleteOverscrollNavigation(mode);
 }
 
-void WebContentsViewAura::OnOverscrollModeChange(OverscrollMode old_mode,
-                                                 OverscrollMode new_mode,
-                                                 OverscrollSource source) {
+void WebContentsViewAura::OnOverscrollModeChange(
+    OverscrollMode old_mode,
+    OverscrollMode new_mode,
+    OverscrollSource source,
+    cc::OverscrollBehavior behavior) {
   current_overscroll_gesture_ = new_mode;
   navigation_overlay_->relay_delegate()->OnOverscrollModeChange(
-      old_mode, new_mode, source);
+      old_mode, new_mode, source, behavior);
   completed_overscroll_gesture_ = OVERSCROLL_NONE;
 }
 

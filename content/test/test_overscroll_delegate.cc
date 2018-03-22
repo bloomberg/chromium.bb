@@ -39,9 +39,11 @@ void TestOverscrollDelegate::OnOverscrollComplete(
   current_mode_ = OVERSCROLL_NONE;
 }
 
-void TestOverscrollDelegate::OnOverscrollModeChange(OverscrollMode old_mode,
-                                                    OverscrollMode new_mode,
-                                                    OverscrollSource source) {
+void TestOverscrollDelegate::OnOverscrollModeChange(
+    OverscrollMode old_mode,
+    OverscrollMode new_mode,
+    OverscrollSource source,
+    cc::OverscrollBehavior behavior) {
   DCHECK_EQ(current_mode_, old_mode);
   current_mode_ = new_mode;
   historical_modes_.push_back(new_mode);

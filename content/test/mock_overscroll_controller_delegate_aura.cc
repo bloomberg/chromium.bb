@@ -46,7 +46,8 @@ void MockOverscrollControllerDelegateAura::OnOverscrollComplete(
 void MockOverscrollControllerDelegateAura::OnOverscrollModeChange(
     OverscrollMode old_mode,
     OverscrollMode new_mode,
-    OverscrollSource source) {
+    OverscrollSource source,
+    cc::OverscrollBehavior behavior) {
   if (new_mode == OVERSCROLL_NONE)
     OnOverscrollEnd();
 }

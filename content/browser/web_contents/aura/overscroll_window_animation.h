@@ -85,13 +85,12 @@ class CONTENT_EXPORT OverscrollWindowAnimation
 
   // OverscrollControllerDelegate:
   gfx::Size GetDisplaySize() const override;
-  void OnOverscrollBehaviorUpdate(
-      cc::OverscrollBehavior overscroll_behavior) override;
   bool OnOverscrollUpdate(float delta_x, float delta_y) override;
   void OnOverscrollComplete(OverscrollMode overscroll_mode) override;
   void OnOverscrollModeChange(OverscrollMode old_mode,
                               OverscrollMode new_mode,
-                              OverscrollSource source) override;
+                              OverscrollSource source,
+                              cc::OverscrollBehavior behavior) override;
   base::Optional<float> GetMaxOverscrollDelta() const override;
 
  private:
@@ -136,12 +135,6 @@ class CONTENT_EXPORT OverscrollWindowAnimation
   // overscroll gesture starts, before CreateFront/BackWindow callback is called
   // on the delegate.
   OverscrollSource overscroll_source_ = OverscrollSource::NONE;
-
-  // OverscrollBehavior of the current overscroll gesture. Updated by
-  // OnOverscrollBehaviorUpdate(). This happens before before
-  // OnOverscrollModeChange and OnOverscrollUpdate. It prevents overscroll
-  // navigation if its x value is not auto.
-  cc::OverscrollBehavior overscroll_behavior_;
 
   // Indicates if the current slide has been cancelled. True while the cancel
   // animation is in progress.

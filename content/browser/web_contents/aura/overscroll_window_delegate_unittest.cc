@@ -81,9 +81,6 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
     return gfx::Size(kTestDisplayWidth, kTestDisplayWidth);
   }
 
-  void OnOverscrollBehaviorUpdate(
-      cc::OverscrollBehavior overscroll_behavior) override {}
-
   bool OnOverscrollUpdate(float delta_x, float delta_y) override {
     return true;
   }
@@ -94,7 +91,8 @@ class OverscrollWindowDelegateTest : public aura::test::AuraTestBase,
 
   void OnOverscrollModeChange(OverscrollMode old_mode,
                               OverscrollMode new_mode,
-                              OverscrollSource source) override {
+                              OverscrollSource source,
+                              cc::OverscrollBehavior behavior) override {
     mode_changed_ = true;
     current_mode_ = new_mode;
     if (current_mode_ != OVERSCROLL_NONE)
