@@ -255,7 +255,7 @@ typedef struct FRAME_COUNTS {
 #endif  // CONFIG_ENTROPY_STATS
   unsigned int filter_intra_mode[FILTER_INTRA_MODES];
   unsigned int filter_intra[BLOCK_SIZES_ALL][2];
-  unsigned int switchable_restore[3];
+  unsigned int switchable_restore[RESTORE_SWITCHABLE_TYPES];
   unsigned int wiener_restore[2];
   unsigned int sgrproj_restore[2];
 } FRAME_COUNTS;
