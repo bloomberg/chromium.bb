@@ -53,10 +53,10 @@
     <div class="property-box indented"
         hidden$="[[!matches_(proxy_.Type, ProxySettingsType_.PAC)]]">
       <div>[[i18n('networkProxyAutoConfig')]]</div>
-      <paper-input no-label-float class="middle" value="{{proxy_.PAC}}"
+      <paper-input id="pacInput" no-label-float class="middle"
+          value="{{proxy_.PAC}}" on-change="onPACChange_"
           disabled="[[!isEditable_('PAC', networkProperties, editable,
-              useSharedProxies)]]"
-          on-change="onPACChange_">
+              useSharedProxies)]]">
       </paper-input>
     </div>
 
@@ -144,7 +144,7 @@
       <paper-button id="saveManualProxy"
           on-tap="onSaveProxyTap_" class="action-button"
           disabled="[[!isSaveManualProxyEnabled_(networkProperties,
-              proxyModified_, proxy_.*)]]">
+              proxyIsUserModified_, proxy_.*)]]">
         [[i18n('save')]]
       </paper-button>
     </div>
