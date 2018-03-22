@@ -36,19 +36,19 @@ class DecryptingDemuxerStream;
 
 // Wraps a DemuxerStream and a list of Decoders and provides decoded
 // output to its client (e.g. Audio/VideoRendererImpl).
-template<DemuxerStream::Type StreamType>
+template <DemuxerStream::Type StreamType>
 class MEDIA_EXPORT DecoderStream {
  public:
-  typedef DecoderStreamTraits<StreamType> StreamTraits;
-  typedef typename StreamTraits::DecoderType Decoder;
-  typedef typename StreamTraits::OutputType Output;
-  typedef typename StreamTraits::DecoderConfigType DecoderConfig;
+  using StreamTraits = DecoderStreamTraits<StreamType>;
+  using Decoder = typename StreamTraits::DecoderType;
+  using Output = typename StreamTraits::OutputType;
+  using DecoderConfig = typename StreamTraits::DecoderConfigType;
 
   enum Status {
-    OK,  // Everything went as planned.
-    ABORTED,  // Read aborted due to Reset() during pending read.
+    OK,                    // Everything went as planned.
+    ABORTED,               // Read aborted due to Reset() during pending read.
     DEMUXER_READ_ABORTED,  // Demuxer returned aborted read.
-    DECODE_ERROR,  // Decoder returned decode error.
+    DECODE_ERROR,          // Decoder returned decode error.
   };
 
   // Callback to create a list of decoders.
@@ -56,10 +56,11 @@ class MEDIA_EXPORT DecoderStream {
       base::RepeatingCallback<std::vector<std::unique_ptr<Decoder>>()>;
 
   // Indicates completion of a DecoderStream initialization.
-  using InitCB = base::Callback<void(bool success)>;
+  using InitCB = base::RepeatingCallback<void(bool success)>;
 
   // Indicates completion of a DecoderStream read.
-  using ReadCB = base::Callback<void(Status, const scoped_refptr<Output>&)>;
+  using ReadCB =
+      base::RepeatingCallback<void(Status, const scoped_refptr<Output>&)>;
 
   DecoderStream(const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
                 CreateDecodersCB create_decoders_cb,
@@ -96,8 +97,6 @@ class MEDIA_EXPORT DecoderStream {
 
   // Returns true if the decoder currently has the ability to decode and return
   // an Output.
-  // TODO(rileya): Remove the need for this by refactoring Decoder queueing
-  // behavior.
   bool CanReadWithoutStalling() const;
 
   // Returns maximum concurrent decode requests for the current |decoder_|.
@@ -159,8 +158,7 @@ class MEDIA_EXPORT DecoderStream {
       std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream);
 
   // Satisfy pending |read_cb_| with |status| and |output|.
-  void SatisfyRead(Status status,
-                   const scoped_refptr<Output>& output);
+  void SatisfyRead(Status status, const scoped_refptr<Output>& output);
 
   // Decodes |buffer| and returns the result via OnDecodeOutputReady().
   // Saves |buffer| into |pending_buffers_| if appropriate.
@@ -244,7 +242,7 @@ class MEDIA_EXPORT DecoderStream {
 
   // Decoded buffers that haven't been read yet. Used when the decoder supports
   // parallel decoding.
-  std::list<scoped_refptr<Output> > ready_outputs_;
+  std::list<scoped_refptr<Output>> ready_outputs_;
 
   // Number of outstanding decode requests sent to the |decoder_|.
   int pending_decode_requests_;
@@ -285,8 +283,8 @@ bool DecoderStream<DemuxerStream::AUDIO>::CanReadWithoutStalling() const;
 template <>
 int DecoderStream<DemuxerStream::AUDIO>::GetMaxDecodeRequests() const;
 
-typedef DecoderStream<DemuxerStream::VIDEO> VideoFrameStream;
-typedef DecoderStream<DemuxerStream::AUDIO> AudioBufferStream;
+using VideoFrameStream = DecoderStream<DemuxerStream::VIDEO>;
+using AudioBufferStream = DecoderStream<DemuxerStream::AUDIO>;
 
 }  // namespace media
 
