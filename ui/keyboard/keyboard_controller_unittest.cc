@@ -709,11 +709,11 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   gfx::Transform transform;
   transform.Translate(0, keyboard::kFullWidthKeyboardAnimationDistance);
   EXPECT_EQ(transform, layer->transform());
-  // animation occurs in a cloned layer, so the actual final bounds should
-  // already be applied to the container.
-  EXPECT_EQ(keyboard_container()->bounds(), notified_visible_bounds());
-  EXPECT_EQ(keyboard_container()->bounds(), notified_occluding_bounds());
-  EXPECT_TRUE(notified_is_available());
+  // Actual final bounds should be notified after animation finishes to avoid
+  // flash of background being seen.
+  EXPECT_EQ(gfx::Rect(), notified_visible_bounds());
+  EXPECT_EQ(gfx::Rect(), notified_occluding_bounds());
+  EXPECT_FALSE(notified_is_available());
 
   RunAnimationForLayer(layer);
   EXPECT_TRUE(keyboard_container()->IsVisible());

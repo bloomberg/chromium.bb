@@ -225,8 +225,10 @@ class KEYBOARD_EXPORT KeyboardController : public ui::InputMethodObserver,
   // Returns true if keyboard is scheduled to hide.
   bool WillHideKeyboard() const;
 
-  // Called when the hide animation finishes.
+  // Called when the hide animation finished.
   void HideAnimationFinished();
+  // Called when the show animation finished.
+  void ShowAnimationFinished();
 
   void NotifyKeyboardBoundsChangingAndEnsureCaretInWorkArea();
 
