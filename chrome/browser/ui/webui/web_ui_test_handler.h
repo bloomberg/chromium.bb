@@ -23,6 +23,7 @@ class RenderViewHost;
 class WebUITestHandler : public content::WebUIMessageHandler {
  public:
   WebUITestHandler();
+  ~WebUITestHandler() override;
 
   // Sends a message through |preload_host| with the |js_text| to preload at the
   // appropriate time before the onload call is made.
@@ -66,8 +67,8 @@ class WebUITestHandler : public content::WebUIMessageHandler {
   // pass/fail.
   bool run_test_succeeded_;
 
-  // Waiting for a test to finish.
-  bool is_waiting_;
+  // Quits the currently running RunLoop.
+  base::Closure quit_closure_;
 
   DISALLOW_COPY_AND_ASSIGN(WebUITestHandler);
 };

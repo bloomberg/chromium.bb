@@ -29,9 +29,10 @@ WebUITestHandler::WebUITestHandler()
     : test_done_(false),
       test_succeeded_(false),
       run_test_done_(false),
-      run_test_succeeded_(false),
-      is_waiting_(false) {
+      run_test_succeeded_(false) {
 }
+
+WebUITestHandler::~WebUITestHandler() = default;
 
 void WebUITestHandler::PreloadJavaScript(const base::string16& js_text,
                                          RenderViewHost* preload_host) {
@@ -64,10 +65,8 @@ void WebUITestHandler::RegisterMessages() {
 }
 
 void WebUITestHandler::HandleTestResult(const base::ListValue* test_result) {
-  // Quit the message loop if |is_waiting_| so waiting process can get result or
-  // error. To ensure this gets done, do this before ASSERT* calls.
-  if (is_waiting_)
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  // To ensure this gets done, do this before ASSERT* calls.
+  quit_closure_.Run();
 
   SCOPED_TRACE("WebUITestHandler::HandleTestResult");
 
@@ -84,10 +83,8 @@ void WebUITestHandler::HandleTestResult(const base::ListValue* test_result) {
 }
 
 void WebUITestHandler::JavaScriptComplete(const base::Value* result) {
-  // Quit the message loop if |is_waiting_| so waiting process can get result or
-  // error. To ensure this gets done, do this before ASSERT* calls.
-  if (is_waiting_)
-    base::RunLoop::QuitCurrentWhenIdleDeprecated();
+  // To ensure this gets done, do this before ASSERT* calls.
+  quit_closure_.Run();
 
   SCOPED_TRACE("WebUITestHandler::JavaScriptComplete");
 
@@ -102,20 +99,23 @@ bool WebUITestHandler::WaitForResult() {
   SCOPED_TRACE("WebUITestHandler::WaitForResult");
   test_done_ = false;
   run_test_done_ = false;
-  is_waiting_ = true;
 
   // Either sync test completion or the testDone() will cause message loop
   // to quit.
-  content::RunMessageLoop();
+  {
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitWhenIdleClosure();
+    content::RunThisRunLoop(&run_loop);
+  }
 
   // Run a second message loop when not |run_test_done_| so that the sync test
   // completes, or |run_test_succeeded_| but not |test_done_| so async tests
   // complete.
   if (!run_test_done_ || (run_test_succeeded_ && !test_done_)) {
-    content::RunMessageLoop();
+    base::RunLoop run_loop;
+    quit_closure_ = run_loop.QuitWhenIdleClosure();
+    content::RunThisRunLoop(&run_loop);
   }
-
-  is_waiting_ = false;
 
   // To succeed the test must execute as well as pass the test.
   return run_test_succeeded_ && test_succeeded_;
