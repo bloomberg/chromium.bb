@@ -87,6 +87,9 @@ class MockSyncService : public syncer::FakeSyncService {
   MOCK_CONST_METHOD0(CanSyncStart, bool());
   MOCK_CONST_METHOD0(IsSyncActive, bool());
   MOCK_CONST_METHOD0(ConfigurationDone, bool());
+  MOCK_CONST_METHOD0(IsLocalSyncEnabled, bool());
+  MOCK_CONST_METHOD0(IsUsingSecondaryPassphrase, bool());
+  MOCK_CONST_METHOD0(GetPreferredDataTypes, syncer::ModelTypeSet());
   MOCK_CONST_METHOD0(GetActiveDataTypes, syncer::ModelTypeSet());
 };
 
@@ -157,6 +160,16 @@ class SuggestionsServiceTest : public testing::Test {
     EXPECT_CALL(*sync_service(), ConfigurationDone())
         .Times(AnyNumber())
         .WillRepeatedly(Return(true));
+    EXPECT_CALL(*sync_service(), IsLocalSyncEnabled())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*sync_service(), IsUsingSecondaryPassphrase())
+        .Times(AnyNumber())
+        .WillRepeatedly(Return(false));
+    EXPECT_CALL(*sync_service(), GetPreferredDataTypes())
+        .Times(AnyNumber())
+        .WillRepeatedly(
+            Return(syncer::ModelTypeSet(syncer::HISTORY_DELETE_DIRECTIVES)));
     EXPECT_CALL(*sync_service(), GetActiveDataTypes())
         .Times(AnyNumber())
         .WillRepeatedly(
