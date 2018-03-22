@@ -2118,8 +2118,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   }
 
   search_txk_type(cpi, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-                  a, l, 0, args->use_fast_coef_costing, INT64_MAX,
-                  &this_rd_stats);
+                  a, l, 0, args->use_fast_coef_costing,
+                  args->best_rd - args->this_rd, &this_rd_stats);
 
   if (plane == AOM_PLANE_Y && xd->cfl.store_y && is_cfl_allowed(mbmi)) {
     assert(!is_inter_block(mbmi) || plane_bsize < BLOCK_8X8);
