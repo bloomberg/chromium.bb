@@ -11,9 +11,10 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/conflicts/module_database_observer_win.h"
 
+struct CertificateInfo;
+class InstalledPrograms;
 class ModuleDatabase;
 class ModuleListFilter;
-class InstalledPrograms;
 class ProblematicProgramsUpdater;
 
 namespace base {
@@ -34,15 +35,20 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
   void LoadModuleList(const base::FilePath& path);
 
  private:
+  // Called when |exe_certificate_info_| finishes its initialization.
+  void OnExeCertificateCreated(
+      std::unique_ptr<CertificateInfo> exe_certificate_info);
+
   // Called when |module_list_filter_| finishes its initialization.
-  void OnModuleListFilterCreated(std::unique_ptr<ModuleListFilter>);
+  void OnModuleListFilterCreated(
+      std::unique_ptr<ModuleListFilter> module_list_filter);
 
   // Called when |installed_programs_| finishes its initialization.
   void OnInstalledProgramsCreated(
       std::unique_ptr<InstalledPrograms> installed_programs);
 
-  // Initializes |problematic_programs_updater_| when both the ModuleListFilter
-  // and the InstalledPrograms are available.
+  // Initializes |problematic_programs_updater_| when the exe_certificate_info_,
+  // the module_list_filter_ and the installed_programs_ are available.
   void InitializeProblematicProgramsUpdater();
 
   ModuleDatabase* module_database_;
@@ -55,6 +61,9 @@ class ThirdPartyConflictsManager : public ModuleDatabaseObserver {
   // already. Used to prevent the creation of multiple InstalledPrograms
   // instances.
   bool on_module_database_idle_called_;
+
+  // The certificate info of the current executable.
+  std::unique_ptr<CertificateInfo> exe_certificate_info_;
 
   // Filters third-party modules against a whitelist and a blacklist.
   std::unique_ptr<ModuleListFilter> module_list_filter_;
