@@ -41,6 +41,7 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient.AwWebResourceRequest;
 import org.chromium.android_webview.AwWebResourceResponse;
 import org.chromium.android_webview.test.AwActivityTestRule.TestDependencyFactory;
+import org.chromium.base.BuildInfo;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -768,7 +769,12 @@ public class AwAutofillTest {
             assertEquals(1, values.size());
             assertEquals("a", values.get(0).second.getTextValue());
             executeJavaScriptAndWaitForResult("document.getElementById('text1').value='c';");
-            assertEquals(5, getCallbackCount());
+            if (BuildInfo.isAtLeastP()) {
+                // There is no AUTOFILL_CANCEL from Android P.
+                assertEquals(4, getCallbackCount());
+            } else {
+                assertEquals(5, getCallbackCount());
+            }
             dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_B);
             // Check if NotifyVirtualValueChanged() called one more time and value is 'cb', this
             // means javascript change didn't trigger the NotifyVirtualValueChanged().
@@ -1207,23 +1213,35 @@ public class AwAutofillTest {
      */
     private int waitForCallbackAndVerifyTypes(int currentCallCount, Integer[] expectedEventArray)
             throws InterruptedException, TimeoutException {
+        Integer[] adjustedEventArray;
+        // Didn't call cancel after Android P.
+        if (BuildInfo.isAtLeastP()) {
+            ArrayList<Integer> adjusted = new ArrayList<Integer>();
+            for (Integer event : expectedEventArray) {
+                if (event != AUTOFILL_CANCEL) adjusted.add(event);
+            }
+            adjustedEventArray = new Integer[adjusted.size()];
+            adjusted.toArray(adjustedEventArray);
+        } else {
+            adjustedEventArray = expectedEventArray;
+        }
         try {
             // Check against the call count to avoid missing out a callback in between waits, while
             // exposing it so that the test can control where the call count starts.
-            mCallbackHelper.waitForCallback(currentCallCount, expectedEventArray.length);
+            mCallbackHelper.waitForCallback(currentCallCount, adjustedEventArray.length);
             Object[] objectArray = mEventQueue.toArray();
             mEventQueue.clear();
             Integer[] resultArray = Arrays.copyOf(objectArray, objectArray.length, Integer[].class);
-            Assert.assertArrayEquals("Expect: " + Arrays.toString(expectedEventArray)
+            Assert.assertArrayEquals("Expect: " + Arrays.toString(adjustedEventArray)
                             + " Result: " + Arrays.toString(resultArray),
-                    expectedEventArray, resultArray);
-            return expectedEventArray.length;
+                    adjustedEventArray, resultArray);
+            return adjustedEventArray.length;
         } catch (TimeoutException e) {
             Object[] objectArray = mEventQueue.toArray();
             Integer[] resultArray = Arrays.copyOf(objectArray, objectArray.length, Integer[].class);
-            Assert.assertArrayEquals("Expect:" + Arrays.toString(expectedEventArray)
+            Assert.assertArrayEquals("Expect:" + Arrays.toString(adjustedEventArray)
                             + " Result:" + Arrays.toString(resultArray),
-                    expectedEventArray, resultArray);
+                    adjustedEventArray, resultArray);
             throw e;
         }
     }
