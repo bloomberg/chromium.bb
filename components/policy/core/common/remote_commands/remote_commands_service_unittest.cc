@@ -181,7 +181,7 @@ class RemoteCommandsServiceTest : public testing::Test {
 
   void SetUp() override {
     server_.reset(new TestingRemoteCommandsServer());
-    server_->SetClock(mock_task_runner_->DeprecatedGetMockTickClock());
+    server_->SetClock(mock_task_runner_->GetMockTickClock());
     cloud_policy_client_.reset(
         new TestingCloudPolicyClientForRemoteCommands(server_.get()));
   }
@@ -196,7 +196,7 @@ class RemoteCommandsServiceTest : public testing::Test {
     remote_commands_service_.reset(new RemoteCommandsService(
         std::move(factory), cloud_policy_client_.get()));
     remote_commands_service_->SetClockForTesting(
-        mock_task_runner_->DeprecatedGetMockTickClock());
+        mock_task_runner_->GetMockTickClock());
   }
 
   void FlushAllTasks() { mock_task_runner_->FastForwardUntilNoTasksRemain(); }

@@ -74,7 +74,7 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
       enterprise_management::DeviceRegisterRequest::Type type,
       CloudPolicyCore* core,
       const scoped_refptr<base::SequencedTaskRunner>& task_runner,
-      std::unique_ptr<base::Clock> clock,
+      base::Clock* clock,
       int64_t highest_handled_invalidation_version);
   ~CloudPolicyInvalidator() override;
 
@@ -186,7 +186,7 @@ class CloudPolicyInvalidator : public syncer::InvalidationHandler,
   const scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   // The clock.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   // The invalidation service.
   invalidation::InvalidationService* invalidation_service_;

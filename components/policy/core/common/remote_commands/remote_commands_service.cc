@@ -76,9 +76,8 @@ bool RemoteCommandsService::FetchRemoteCommands() {
   return true;
 }
 
-void RemoteCommandsService::SetClockForTesting(
-    std::unique_ptr<base::TickClock> clock) {
-  queue_.SetClockForTesting(std::move(clock));
+void RemoteCommandsService::SetClockForTesting(base::TickClock* clock) {
+  queue_.SetClockForTesting(clock);
 }
 
 void RemoteCommandsService::EnqueueCommand(

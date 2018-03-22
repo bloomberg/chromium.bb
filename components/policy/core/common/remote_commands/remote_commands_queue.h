@@ -55,7 +55,7 @@ class POLICY_EXPORT RemoteCommandsQueue {
   void AddJob(std::unique_ptr<RemoteCommandJob> job);
 
   // Set an alternative clock for testing.
-  void SetClockForTesting(std::unique_ptr<base::TickClock> clock);
+  void SetClockForTesting(base::TickClock* clock);
 
   // Helper function to get the current time.
   base::TimeTicks GetNowTicks();
@@ -76,7 +76,7 @@ class POLICY_EXPORT RemoteCommandsQueue {
 
   std::unique_ptr<RemoteCommandJob> running_command_;
 
-  std::unique_ptr<base::TickClock> clock_;
+  base::TickClock* clock_;
   base::OneShotTimer execution_timeout_timer_;
 
   base::ObserverList<Observer, true> observer_list_;
