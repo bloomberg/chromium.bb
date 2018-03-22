@@ -81,6 +81,7 @@ class FakePeripheral : public device::BluetoothDevice {
   bool IsGattConnected() const override;
   bool IsConnectable() const override;
   bool IsConnecting() const override;
+  UUIDSet GetUUIDs() const override;
   bool ExpectingPinCode() const override;
   bool ExpectingPasskey() const override;
   bool ExpectingConfirmation() const override;
