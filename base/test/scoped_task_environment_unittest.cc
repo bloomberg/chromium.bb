@@ -14,6 +14,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/test/test_timeouts.h"
 #include "base/threading/platform_thread.h"
+#include "base/threading/sequence_local_storage_slot.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/tick_clock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -228,6 +229,16 @@ TEST_P(ScopedTaskEnvironmentTest, DelayedTasks) {
     expected_value += 16;
     EXPECT_EQ(expected_value, counter);
   }
+}
+
+// Regression test for https://crbug.com/824770.
+TEST_P(ScopedTaskEnvironmentTest, SupportsSequenceLocalStorageOnMainThread) {
+  ScopedTaskEnvironment scoped_task_environment(
+      GetParam(), ScopedTaskEnvironment::ExecutionMode::ASYNC);
+
+  SequenceLocalStorageSlot<int> sls_slot;
+  sls_slot.Set(5);
+  EXPECT_EQ(5, sls_slot.Get());
 }
 
 // Verify that the TickClock returned by
