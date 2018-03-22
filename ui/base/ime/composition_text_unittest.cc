@@ -13,17 +13,18 @@ namespace ui {
 
 TEST(CompositionTextTest, CopyTest) {
   const base::string16 kSampleText = base::UTF8ToUTF16("Sample Text");
-  const ImeTextSpan kSampleUnderline1(
-      ImeTextSpan::Type::kComposition, 10, 20, SK_ColorBLACK,
-      ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT);
+  const ImeTextSpan kSampleUnderline1(ImeTextSpan::Type::kComposition, 10, 20,
+                                      ImeTextSpan::Thickness::kThin,
+                                      SK_ColorTRANSPARENT);
 
-  const ImeTextSpan kSampleUnderline2(
-      ImeTextSpan::Type::kComposition, 11, 21, SK_ColorBLACK,
-      ImeTextSpan::Thickness::kThick, SK_ColorTRANSPARENT);
+  const ImeTextSpan kSampleUnderline2(ImeTextSpan::Type::kComposition, 11, 21,
+                                      ImeTextSpan::Thickness::kThick,
+                                      SK_ColorTRANSPARENT);
 
-  const ImeTextSpan kSampleUnderline3(
-      ImeTextSpan::Type::kComposition, 12, 22, SK_ColorRED,
-      ImeTextSpan::Thickness::kThin, SK_ColorTRANSPARENT);
+  ImeTextSpan kSampleUnderline3(ImeTextSpan::Type::kComposition, 12, 22,
+                                ImeTextSpan::Thickness::kThin,
+                                SK_ColorTRANSPARENT);
+  kSampleUnderline3.underline_color = SK_ColorRED;
 
   // Make CompositionText
   CompositionText text;

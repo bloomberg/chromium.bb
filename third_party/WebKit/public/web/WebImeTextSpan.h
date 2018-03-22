@@ -57,7 +57,6 @@ struct WebImeTextSpan {
       : type(Type::kComposition),
         start_offset(0),
         end_offset(0),
-        underline_color(0),
         thickness(ui::mojom::ImeTextSpanThickness::kThin),
         background_color(0),
         suggestion_highlight_color(0),
@@ -67,7 +66,6 @@ struct WebImeTextSpan {
       Type ty,
       unsigned s,
       unsigned e,
-      WebColor uc,
       ui::mojom::ImeTextSpanThickness th,
       WebColor bc,
       WebColor shc = 0,
@@ -75,7 +73,6 @@ struct WebImeTextSpan {
       : type(ty),
         start_offset(s),
         end_offset(e),
-        underline_color(uc),
         thickness(th),
         background_color(bc),
         suggestion_highlight_color(shc),
@@ -92,7 +89,7 @@ struct WebImeTextSpan {
   Type type;
   unsigned start_offset;
   unsigned end_offset;
-  WebColor underline_color;
+  WebColor underline_color = 0xFF000000;
   ui::mojom::ImeTextSpanThickness thickness;
   WebColor background_color;
   WebColor suggestion_highlight_color;

@@ -22,20 +22,9 @@ void LegacyIPCFrameInputHandler::SetCompositionFromExistingText(
     int32_t start,
     int32_t end,
     const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  std::vector<blink::WebImeTextSpan> ime_text_spans;
-  for (const auto& ime_text_span : ui_ime_text_spans) {
-    blink::WebImeTextSpan blink_ime_text_span(
-        ConvertUiImeTextSpanTypeToWebType(ime_text_span.type),
-        ime_text_span.start_offset, ime_text_span.end_offset,
-        ime_text_span.underline_color,
-        ConvertUiThicknessToUiImeTextSpanThickness(ime_text_span.thickness),
-        ime_text_span.background_color,
-        ime_text_span.suggestion_highlight_color, ime_text_span.suggestions);
-    ime_text_spans.push_back(blink_ime_text_span);
-  }
-
   SendInput(std::make_unique<InputMsg_SetCompositionFromExistingText>(
-      routing_id_, start, end, ime_text_spans));
+      routing_id_, start, end,
+      ConvertUiImeTextSpansToBlinkImeTextSpans(ui_ime_text_spans)));
 }
 
 void LegacyIPCFrameInputHandler::ExtendSelectionAndDelete(int32_t before,

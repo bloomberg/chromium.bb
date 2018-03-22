@@ -68,4 +68,50 @@ ui::ImeTextSpan::Thickness ConvertUiImeTextSpanThicknessToUiThickness(
   return ui::ImeTextSpan::Thickness::kThin;
 }
 
+blink::WebImeTextSpan ConvertUiImeTextSpanToBlinkImeTextSpan(
+    const ui::ImeTextSpan& ui_ime_text_span) {
+  blink::WebImeTextSpan blink_ime_text_span = blink::WebImeTextSpan(
+      ConvertUiImeTextSpanTypeToWebType(ui_ime_text_span.type),
+      ui_ime_text_span.start_offset, ui_ime_text_span.end_offset,
+      ConvertUiThicknessToUiImeTextSpanThickness(ui_ime_text_span.thickness),
+      ui_ime_text_span.background_color,
+      ui_ime_text_span.suggestion_highlight_color,
+      ui_ime_text_span.suggestions);
+  blink_ime_text_span.underline_color = ui_ime_text_span.underline_color;
+  return blink_ime_text_span;
+}
+
+std::vector<blink::WebImeTextSpan> ConvertUiImeTextSpansToBlinkImeTextSpans(
+    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
+  std::vector<blink::WebImeTextSpan> blink_ime_text_spans;
+  for (const auto& ui_ime_text_span : ui_ime_text_spans) {
+    blink_ime_text_spans.push_back(
+        ConvertUiImeTextSpanToBlinkImeTextSpan(ui_ime_text_span));
+  }
+  return blink_ime_text_spans;
+}
+
+ui::ImeTextSpan ConvertBlinkImeTextSpanToUiImeTextSpan(
+    const blink::WebImeTextSpan& blink_ime_text_span) {
+  ui::ImeTextSpan ui_ime_text_span = ui::ImeTextSpan(
+      ConvertWebImeTextSpanTypeToUiType(blink_ime_text_span.type),
+      blink_ime_text_span.start_offset, blink_ime_text_span.end_offset,
+      ConvertUiImeTextSpanThicknessToUiThickness(blink_ime_text_span.thickness),
+      blink_ime_text_span.background_color,
+      blink_ime_text_span.suggestion_highlight_color,
+      blink_ime_text_span.suggestions);
+  ui_ime_text_span.underline_color = blink_ime_text_span.underline_color;
+  return ui_ime_text_span;
+}
+
+std::vector<ui::ImeTextSpan> ConvertBlinkImeTextSpansToUiImeTextSpans(
+    const std::vector<blink::WebImeTextSpan>& blink_ime_text_spans) {
+  std::vector<ui::ImeTextSpan> ui_ime_text_spans;
+  for (const auto& blink_ime_text_span : blink_ime_text_spans) {
+    ui_ime_text_spans.push_back(
+        ConvertBlinkImeTextSpanToUiImeTextSpan(blink_ime_text_span));
+  }
+  return ui_ime_text_spans;
+}
+
 }  // namespace content

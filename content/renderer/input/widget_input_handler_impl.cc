@@ -25,22 +25,6 @@ namespace content {
 
 namespace {
 
-std::vector<blink::WebImeTextSpan> ConvertUIImeTextSpansToBlinkImeTextSpans(
-    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  std::vector<blink::WebImeTextSpan> ime_text_spans;
-  for (const auto& ime_text_span : ui_ime_text_spans) {
-    blink::WebImeTextSpan blink_ime_text_span(
-        ConvertUiImeTextSpanTypeToWebType(ime_text_span.type),
-        ime_text_span.start_offset, ime_text_span.end_offset,
-        ime_text_span.underline_color,
-        ConvertUiThicknessToUiImeTextSpanThickness(ime_text_span.thickness),
-        ime_text_span.background_color,
-        ime_text_span.suggestion_highlight_color, ime_text_span.suggestions);
-    ime_text_spans.push_back(blink_ime_text_span);
-  }
-  return ime_text_spans;
-}
-
 void RunClosureIfNotSwappedOut(base::WeakPtr<RenderWidget> render_widget,
                                base::OnceClosure closure) {
   // Input messages must not be processed if the RenderWidget is in swapped out
@@ -112,7 +96,7 @@ void WidgetInputHandlerImpl::ImeSetComposition(
     int32_t end) {
   RunOnMainThread(
       base::BindOnce(&RenderWidget::OnImeSetComposition, render_widget_, text,
-                     ConvertUIImeTextSpansToBlinkImeTextSpans(ime_text_spans),
+                     ConvertUiImeTextSpansToBlinkImeTextSpans(ime_text_spans),
                      range, start, end));
 }
 
@@ -123,7 +107,7 @@ void WidgetInputHandlerImpl::ImeCommitText(
     int32_t relative_cursor_position) {
   RunOnMainThread(
       base::BindOnce(&RenderWidget::OnImeCommitText, render_widget_, text,
-                     ConvertUIImeTextSpansToBlinkImeTextSpans(ime_text_spans),
+                     ConvertUiImeTextSpansToBlinkImeTextSpans(ime_text_spans),
                      range, relative_cursor_position));
 }
 

@@ -13,25 +13,6 @@
 
 namespace content {
 
-namespace {
-
-std::vector<blink::WebImeTextSpan> ConvertToBlinkImeTextSpan(
-    const std::vector<ui::ImeTextSpan>& ui_ime_text_spans) {
-  std::vector<blink::WebImeTextSpan> ime_text_spans;
-  for (const auto& ime_text_span : ui_ime_text_spans) {
-    ime_text_spans.emplace_back(blink::WebImeTextSpan(
-        ConvertUiImeTextSpanTypeToWebType(ime_text_span.type),
-        ime_text_span.start_offset, ime_text_span.end_offset,
-        ime_text_span.underline_color,
-        ConvertUiThicknessToUiImeTextSpanThickness(ime_text_span.thickness),
-        ime_text_span.background_color,
-        ime_text_span.suggestion_highlight_color, ime_text_span.suggestions));
-  }
-  return ime_text_spans;
-}
-
-}  // namespace
-
 LegacyIPCWidgetInputHandler::LegacyIPCWidgetInputHandler(
     LegacyInputRouterImpl* input_router)
     : input_router_(input_router) {}
@@ -62,7 +43,7 @@ void LegacyIPCWidgetInputHandler::ImeSetComposition(
     int32_t start,
     int32_t end) {
   std::vector<blink::WebImeTextSpan> ime_text_spans =
-      ConvertToBlinkImeTextSpan(ui_ime_text_spans);
+      ConvertUiImeTextSpansToBlinkImeTextSpans(ui_ime_text_spans);
   SendInput(std::make_unique<InputMsg_ImeSetComposition>(
       input_router_->routing_id(), text, ime_text_spans, range, start, end));
 }
@@ -73,7 +54,7 @@ void LegacyIPCWidgetInputHandler::ImeCommitText(
     const gfx::Range& range,
     int32_t relative_cursor_position) {
   std::vector<blink::WebImeTextSpan> ime_text_spans =
-      ConvertToBlinkImeTextSpan(ui_ime_text_spans);
+      ConvertUiImeTextSpansToBlinkImeTextSpans(ui_ime_text_spans);
   SendInput(std::make_unique<InputMsg_ImeCommitText>(
       input_router_->routing_id(), text, ime_text_spans, range,
       relative_cursor_position));

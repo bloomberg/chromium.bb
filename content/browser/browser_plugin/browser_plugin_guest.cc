@@ -61,25 +61,6 @@
 
 namespace content {
 
-namespace {
-
-std::vector<ui::ImeTextSpan> ConvertToUiImeTextSpan(
-    const std::vector<blink::WebImeTextSpan>& ime_text_spans) {
-  std::vector<ui::ImeTextSpan> ui_ime_text_spans;
-  for (const auto& ime_text_span : ime_text_spans) {
-    ui_ime_text_spans.emplace_back(ui::ImeTextSpan(
-        ConvertWebImeTextSpanTypeToUiType(ime_text_span.type),
-        ime_text_span.start_offset, ime_text_span.end_offset,
-        ime_text_span.underline_color,
-        ConvertUiImeTextSpanThicknessToUiThickness(ime_text_span.thickness),
-        ime_text_span.background_color,
-        ime_text_span.suggestion_highlight_color, ime_text_span.suggestions));
-  }
-  return ui_ime_text_spans;
-}
-
-};  // namespace
-
 class BrowserPluginGuest::EmbedderVisibilityObserver
     : public WebContentsObserver {
  public:
@@ -913,7 +894,7 @@ void BrowserPluginGuest::OnImeSetComposition(
     int browser_plugin_instance_id,
     const BrowserPluginHostMsg_SetComposition_Params& params) {
   std::vector<ui::ImeTextSpan> ui_ime_text_spans =
-      ConvertToUiImeTextSpan(params.ime_text_spans);
+      ConvertBlinkImeTextSpansToUiImeTextSpans(params.ime_text_spans);
   GetWebContents()
       ->GetRenderViewHost()
       ->GetWidget()
@@ -930,7 +911,7 @@ void BrowserPluginGuest::OnImeCommitText(
     const gfx::Range& replacement_range,
     int relative_cursor_pos) {
   std::vector<ui::ImeTextSpan> ui_ime_text_spans =
-      ConvertToUiImeTextSpan(ime_text_spans);
+      ConvertBlinkImeTextSpansToUiImeTextSpans(ime_text_spans);
   GetWebContents()
       ->GetRenderViewHost()
       ->GetWidget()
