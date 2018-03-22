@@ -464,6 +464,7 @@ TEST_F(PaintLayerClipperTest, CSSClip) {
       #target {
         width: 400px; height: 400px; position: absolute;
         clip: rect(0, 50px, 100px, 0);
+        clip-path: inset(0%);
       }
     </style>
     <div id='target'></div>

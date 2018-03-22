@@ -1780,11 +1780,11 @@ void FragmentPaintPropertyTreeBuilder::UpdateForSelf() {
 
   if (properties_) {
     UpdateTransform();
-    UpdateCssClip();
     UpdateClipPathClip(false);
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
       UpdateEffect();
     UpdateClipPathClip(true);  // Special pass for SPv1 composited clip-path.
+    UpdateCssClip();
     UpdateFilter();
     UpdateOverflowControlsClip();
   }

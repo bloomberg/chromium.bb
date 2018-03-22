@@ -3,11 +3,11 @@
 // found in the LICENSE file.
 
 #include "core/paint/FragmentData.h"
-#include "testing/gtest/include/gtest/gtest.h"
+#include "core/testing/CoreUnitTestHelper.h"
 
 namespace blink {
 
-class FragmentDataTest : public ::testing::Test {
+class FragmentDataTest : public RenderingTest {
  protected:
   bool HasRareData(const FragmentData& data) { return !!data.rare_data_; }
 };
@@ -38,6 +38,28 @@ TEST_F(FragmentDataTest, LocationInBackingAndSelectionVisualRect) {
   EXPECT_TRUE(HasRareData(fragment));
   EXPECT_EQ(LayoutPoint(10, 20), fragment.LocationInBacking());
   EXPECT_EQ(LayoutRect(), fragment.SelectionVisualRect());
+}
+
+TEST_F(FragmentDataTest, PreEffectClipProperties) {
+  SetBodyInnerHTML(R"HTML(
+    <style>
+      #target {
+        width: 400px; height: 400px; position: absolute;
+        clip: rect(0, 50px, 100px, 0);
+        clip-path: inset(0%);
+      }
+    </style>
+    <div id='target'></div>
+  )HTML");
+
+  LayoutObject* target = GetLayoutObjectByElementId("target");
+  const ObjectPaintProperties* properties =
+      target->FirstFragment().PaintProperties();
+  EXPECT_TRUE(properties->ClipPathClip());
+  EXPECT_TRUE(properties->CssClip());
+  EXPECT_EQ(properties->ClipPathClip(), properties->CssClip()->Parent());
+  EXPECT_EQ(properties->ClipPathClip()->Parent(),
+            target->FirstFragment().PreEffectProperties().Clip());
 }
 
 }  // namespace blink
