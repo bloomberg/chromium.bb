@@ -35,10 +35,6 @@ class RendererPermissionsPolicyDelegate;
 class ResourceRequestPolicy;
 }
 
-namespace url {
-class Origin;
-}
-
 class ChromeExtensionsRendererClient
     : public extensions::ExtensionsRendererClient {
  public:
@@ -63,12 +59,10 @@ class ChromeExtensionsRendererClient
   bool OverrideCreatePlugin(content::RenderFrame* render_frame,
                             const blink::WebPluginParams& params);
   bool AllowPopup();
-  void WillSendRequest(blink::WebLocalFrame* frame,
+  bool WillSendRequest(blink::WebLocalFrame* frame,
                        ui::PageTransition transition_type,
                        const blink::WebURL& url,
-                       base::Optional<url::Origin> initiator_origin,
-                       GURL* new_url,
-                       bool* attach_same_site_cookies);
+                       GURL* new_url);
   void SetExtensionDispatcherForTest(
       std::unique_ptr<extensions::Dispatcher> extension_dispatcher);
   extensions::Dispatcher* GetExtensionDispatcherForTest();

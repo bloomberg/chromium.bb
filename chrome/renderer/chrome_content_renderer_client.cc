@@ -1295,25 +1295,22 @@ bool ChromeContentRendererClient::ShouldFork(WebLocalFrame* frame,
   return false;
 }
 
-void ChromeContentRendererClient::WillSendRequest(
+bool ChromeContentRendererClient::WillSendRequest(
     WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
-    base::Optional<url::Origin> initiator_origin,
-    GURL* new_url,
-    bool* attach_same_site_cookies) {
+    GURL* new_url) {
 // Check whether the request should be allowed. If not allowed, we reset the
 // URL to something invalid to prevent the request and cause an error.
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  ChromeExtensionsRendererClient::GetInstance()->WillSendRequest(
-      frame, transition_type, url, initiator_origin, new_url,
-      attach_same_site_cookies);
-  if (!new_url->is_empty())
-    return;
+  if (ChromeExtensionsRendererClient::GetInstance()->WillSendRequest(
+          frame, transition_type, url, new_url)) {
+    return true;
+  }
 #endif
 
   if (!url.ProtocolIs(chrome::kChromeSearchScheme))
-    return;
+    return false;
 
 #if !defined(OS_ANDROID)
   SearchBox* search_box =
@@ -1328,9 +1325,11 @@ void ChromeContentRendererClient::WillSendRequest(
       type = SearchBox::THUMB;
 
     if (type != SearchBox::NONE)
-      search_box->GenerateImageURLFromTransientURL(url, type, new_url);
+      return search_box->GenerateImageURLFromTransientURL(url, type, new_url);
   }
 #endif  // !defined(OS_ANDROID)
+
+  return false;
 }
 
 bool ChromeContentRendererClient::IsPrefetchOnly(

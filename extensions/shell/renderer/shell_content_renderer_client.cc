@@ -84,15 +84,13 @@ blink::WebPlugin* ShellContentRendererClient::CreatePluginReplacement(
   return NULL;
 }
 
-void ShellContentRendererClient::WillSendRequest(
+bool ShellContentRendererClient::WillSendRequest(
     blink::WebLocalFrame* frame,
     ui::PageTransition transition_type,
     const blink::WebURL& url,
-    base::Optional<url::Origin> initiator_origin,
-    GURL* new_url,
-    bool* attach_same_site_cookies) {
-  *attach_same_site_cookies = false;
+    GURL* new_url) {
   // TODO(jamescook): Cause an error for bad extension scheme requests?
+  return false;
 }
 
 bool ShellContentRendererClient::IsExternalPepperPlugin(
