@@ -1258,7 +1258,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
       Create<Text>(kWebVrTimeoutMessageButtonText, kPhaseForeground,
                    kTimeoutMessageTextFontHeightDMM);
 
-  // Disk-style button text is not uppercase. See crbug.com/787654.
+  // Disc-style button text is not uppercase. See https://crbug.com/787654.
   timeout_button_text->SetText(
       l10n_util::GetStringUTF16(IDS_VR_WEB_VR_EXIT_BUTTON_LABEL));
   timeout_button_text->SetColor(model_->color_scheme().web_vr_timeout_spinner);
@@ -1969,9 +1969,9 @@ void UiSceneCreator::CreateOverflowMenu() {
           {kOverflowMenuReloadButton, RIGHT, vector_icons::kReloadIcon},
       };
   for (auto& item : menu_buttons) {
-    auto button = Create<DiscButton>(std::get<0>(item), kPhaseForeground,
-                                     base::DoNothing(), std::get<2>(item),
-                                     audio_delegate_);
+    auto button = Create<VectorIconButton>(std::get<0>(item), kPhaseForeground,
+                                           base::DoNothing(), std::get<2>(item),
+                                           audio_delegate_);
     button->SetType(kTypeOverflowMenuButton);
     button->SetDrawPhase(kPhaseForeground);
     button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
@@ -2317,7 +2317,7 @@ void UiSceneCreator::CreateOmnibox() {
           },
           base::Unretained(omnibox_text_field.get()))));
 
-  auto mic_button = Create<DiscButton>(
+  auto mic_button = Create<VectorIconButton>(
       kOmniboxVoiceSearchButton, kPhaseForeground,
       base::BindRepeating(
           [](UiBrowserInterface* b, Ui* ui) { b->SetVoiceSearchActive(true); },
