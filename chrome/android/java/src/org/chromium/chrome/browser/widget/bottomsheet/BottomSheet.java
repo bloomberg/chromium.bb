@@ -179,6 +179,13 @@ public class BottomSheet
     /** The height of the view that contains the bottom sheet. */
     private float mContainerHeight;
 
+    /**
+     * The current offset of the sheet from the bottom of the screen in px. This does not include
+     * added offset from the scrolling of the browser controls which allows the sheet's toolbar to
+     * show and hide in-sync with the top toolbar.
+     */
+    private float mCurrentOffsetPx;
+
     /** The current state that the sheet is in. */
     @SheetState
     private int mCurrentState = SHEET_STATE_HIDDEN;
@@ -319,7 +326,10 @@ public class BottomSheet
     public boolean shouldGestureMoveSheet(MotionEvent initialEvent, MotionEvent currentEvent) {
         // If the sheet is scrolling off-screen or in the process of hiding, gestures should not
         // affect it.
-        if (getCurrentOffsetPx() < getSheetHeightForState(SHEET_STATE_PEEK)) return false;
+        if (getCurrentOffsetPx() < getSheetHeightForState(SHEET_STATE_PEEK)
+                || getOffsetFromBrowserControls() > 0) {
+            return false;
+        }
 
         // If the sheet is already open, the experiment is not enabled, or accessibility is enabled
         // there is no need to restrict the swipe area.
@@ -634,10 +644,8 @@ public class BottomSheet
                 if (getSheetState() == SHEET_STATE_HIDDEN) return;
                 if (getCurrentOffsetPx() > getSheetHeightForState(SHEET_STATE_PEEK)) return;
 
-                float hiddenRatio = -topOffset / mFullscreenManager.getTopControlsHeight();
-                float peekHeight = getPeekRatio() * mContainerHeight;
-
-                setSheetOffsetFromBottom(peekHeight - hiddenRatio * peekHeight);
+                // Updating the offset will automatically account for the browser controls.
+                setSheetOffsetFromBottom(getCurrentOffsetPx());
             }
 
             @Override
@@ -707,7 +715,7 @@ public class BottomSheet
 
     @Override
     public float getCurrentOffsetPx() {
-        return mContainerHeight - getTranslationY();
+        return mCurrentOffsetPx;
     }
 
     @Override
@@ -1027,13 +1035,27 @@ public class BottomSheet
     }
 
     /**
+     * @return Get the height in px that the peeking bar is offset due to the browser controls.
+     */
+    private float getOffsetFromBrowserControls() {
+        float peekHeight = getPeekRatio() * mContainerHeight;
+        return peekHeight * mFullscreenManager.getBrowserControlHiddenRatio();
+    }
+
+    /**
      * Sets the sheet's offset relative to the bottom of the screen.
      * @param offset The offset that the sheet should be.
      */
     private void setSheetOffsetFromBottom(float offset) {
-        if (MathUtils.areFloatsEqual(offset, getCurrentOffsetPx())) return;
+        mCurrentOffsetPx = offset;
 
-        setTranslationY(mContainerHeight - offset);
+        // The browser controls offset is added here so that the sheet's toolbar behaves like the
+        // browser controls do.
+        float translationY = (mContainerHeight - mCurrentOffsetPx) + getOffsetFromBrowserControls();
+
+        if (MathUtils.areFloatsEqual(translationY, getTranslationY())) return;
+
+        setTranslationY(translationY);
         sendOffsetChangeEvents();
     }
 
@@ -1362,7 +1384,7 @@ public class BottomSheet
 
         float threshold =
                 shouldSkipHalfState ? THRESHOLD_TO_NEXT_STATE_2 : THRESHOLD_TO_NEXT_STATE_3;
-        float thresholdToNextState = yVelocity < 0.0f ? 1.0f - threshold : threshold;
+        float thresholdToNextState = yVelocity < 0.0f ? 1 - threshold : threshold;
 
         if ((sheetHeight - lowerBound) / distance > thresholdToNextState) {
             return nextState;
