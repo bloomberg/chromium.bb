@@ -34,58 +34,6 @@ static const int delta_lf_id_lut[MAX_MB_PLANE][2] = {
 #endif  // CONFIG_EXT_DELTA_Q
 
 typedef enum EDGE_DIR { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } EDGE_DIR;
-static const uint32_t av1_prediction_masks[NUM_EDGE_DIRS][BLOCK_SIZES_ALL] = {
-  // mask for vertical edges filtering
-  {
-      4 - 1,    // BLOCK_4X4
-      4 - 1,    // BLOCK_4X8
-      8 - 1,    // BLOCK_8X4
-      8 - 1,    // BLOCK_8X8
-      8 - 1,    // BLOCK_8X16
-      16 - 1,   // BLOCK_16X8
-      16 - 1,   // BLOCK_16X16
-      16 - 1,   // BLOCK_16X32
-      32 - 1,   // BLOCK_32X16
-      32 - 1,   // BLOCK_32X32
-      32 - 1,   // BLOCK_32X64
-      64 - 1,   // BLOCK_64X32
-      64 - 1,   // BLOCK_64X64
-      64 - 1,   // BLOCK_64X128
-      128 - 1,  // BLOCK_128X64
-      128 - 1,  // BLOCK_128X128
-      4 - 1,    // BLOCK_4X16,
-      16 - 1,   // BLOCK_16X4,
-      8 - 1,    // BLOCK_8X32,
-      32 - 1,   // BLOCK_32X8,
-      16 - 1,   // BLOCK_16X64,
-      64 - 1,   // BLOCK_64X16
-  },
-  // mask for horizontal edges filtering
-  {
-      4 - 1,    // BLOCK_4X4
-      8 - 1,    // BLOCK_4X8
-      4 - 1,    // BLOCK_8X4
-      8 - 1,    // BLOCK_8X8
-      16 - 1,   // BLOCK_8X16
-      8 - 1,    // BLOCK_16X8
-      16 - 1,   // BLOCK_16X16
-      32 - 1,   // BLOCK_16X32
-      16 - 1,   // BLOCK_32X16
-      32 - 1,   // BLOCK_32X32
-      64 - 1,   // BLOCK_32X64
-      32 - 1,   // BLOCK_64X32
-      64 - 1,   // BLOCK_64X64
-      128 - 1,  // BLOCK_64X128
-      64 - 1,   // BLOCK_128X64
-      128 - 1,  // BLOCK_128X128
-      16 - 1,   // BLOCK_4X16,
-      4 - 1,    // BLOCK_16X4,
-      32 - 1,   // BLOCK_8X32,
-      8 - 1,    // BLOCK_32X8,
-      64 - 1,   // BLOCK_16X64,
-      16 - 1,   // BLOCK_64X16
-  },
-};
 
 extern void aom_highbd_lpf_horizontal_6_c(uint16_t *s, int p,
                                           const uint8_t *blimit,
@@ -854,10 +802,11 @@ static void setup_masks(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
     const uint8_t level_prev = get_filter_level(&cm->lf_info, mbmi_prev);
 #endif  // CONFIG_EXT_DELTA_Q
     const int prev_skip = mbmi_prev->skip && is_inter_block(mbmi_prev);
-    const int is_coding_block_border =
-        !(row_or_col &
-          av1_prediction_masks[dir][ss_size_lookup[mbmi->sb_type][subsampling_x]
-                                                  [subsampling_y]]);
+    const BLOCK_SIZE bsize =
+        ss_size_lookup[mbmi->sb_type][subsampling_x][subsampling_y];
+    const int prediction_masks = dir == VERT_EDGE ? block_size_wide[bsize] - 1
+                                                  : block_size_high[bsize] - 1;
+    const int is_coding_block_border = !(row_or_col & prediction_masks);
     const int is_edge = (level || level_prev) &&
                         (!curr_skip || !prev_skip || is_coding_block_border);
     if (is_edge) {
@@ -1668,13 +1617,12 @@ static TX_SIZE set_lpf_parameters(
 
           const int pv_skip =
               mi_prev->mbmi.skip && is_inter_block(&mi_prev->mbmi);
-          const int32_t pu_edge =
-              (coord &
-               av1_prediction_masks[edge_dir]
-                                   [ss_size_lookup[mbmi->sb_type][scale_horz]
-                                                  [scale_vert]])
-                  ? (0)
-                  : (1);
+          const BLOCK_SIZE bsize =
+              ss_size_lookup[mbmi->sb_type][scale_horz][scale_vert];
+          const int prediction_masks = edge_dir == VERT_EDGE
+                                           ? block_size_wide[bsize] - 1
+                                           : block_size_high[bsize] - 1;
+          const int32_t pu_edge = !(coord & prediction_masks);
           // if the current and the previous blocks are skipped,
           // deblock the edge if the edge belongs to a PU's edge only.
           if ((curr_level || pv_lvl) &&
