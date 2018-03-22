@@ -36,6 +36,7 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
 
     // Initialization guarded by mAwInit.getLock()
     private InvocationHandler mStatics;
+    private InvocationHandler mServiceWorkerController;
 
     public SupportLibWebViewChromiumFactory(
             /* SupportLibraryInfo */ InvocationHandler supportLibraryInfo) {
@@ -100,5 +101,18 @@ class SupportLibWebViewChromiumFactory implements WebViewProviderFactoryBoundary
     @Override
     public String[] getSupportedFeatures() {
         return mWebViewSupportedFeatures;
+    }
+
+    @Override
+    public InvocationHandler getServiceWorkerController() {
+        synchronized (mAwInit.getLock()) {
+            if (mServiceWorkerController == null) {
+                mServiceWorkerController =
+                        BoundaryInterfaceReflectionUtil.createInvocationHandlerFor(
+                                new SupportLibServiceWorkerControllerAdapter(
+                                        mAwInit.getServiceWorkerController()));
+            }
+        }
+        return mServiceWorkerController;
     }
 }
