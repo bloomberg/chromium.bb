@@ -137,6 +137,7 @@
           "autofill::mojom::PasswordManagerDriver",
           "blink::mojom::BackgroundFetchService",
           "blink::mojom::BudgetService",
+          "blink::mojom::CacheStorage",
           "blink::mojom::ColorChooserFactory",
           "blink::mojom::DedicatedWorkerFactory",
           "blink::mojom::LockManager",
@@ -201,6 +202,7 @@
       "provides": {
         "renderer": [
           "blink::mojom::BudgetService",
+          "blink::mojom::CacheStorage",
           "blink::mojom::LockManager",
           "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
@@ -217,6 +219,7 @@
         "renderer": [
           "blink::mojom::BackgroundFetchService",
           "blink::mojom::BudgetService",
+          "blink::mojom::CacheStorage",
           "blink::mojom::LockManager",
           "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",
@@ -234,6 +237,7 @@
       "provides": {
         "renderer": [
           "blink::mojom::BudgetService",
+          "blink::mojom::CacheStorage",
           "blink::mojom::LockManager",
           "blink::mojom::NotificationService",
           "blink::mojom::PermissionService",

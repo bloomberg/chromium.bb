@@ -62,10 +62,16 @@ class GlobalCacheStorageImpl final
     }
 
     if (!caches_) {
-      caches_ = CacheStorage::Create(
-          GlobalFetch::ScopedFetcher::From(fetching_scope),
-          Platform::Current()->CreateCacheStorage(
-              WebSecurityOrigin(context->GetSecurityOrigin())));
+      if (!context->GetInterfaceProvider()) {
+        exception_state.ThrowSecurityError(
+            "Cache storage isn't available on detached context. No interface "
+            "provider.");
+        return nullptr;
+      }
+      caches_ =
+          CacheStorage::Create(GlobalFetch::ScopedFetcher::From(fetching_scope),
+                               Platform::Current()->CreateCacheStorage(
+                                   context->GetInterfaceProvider()));
     }
     return caches_;
   }

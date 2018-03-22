@@ -145,6 +145,12 @@ class CacheStorageManagerTest : public testing::Test {
     run_loop->Quit();
   }
 
+  void ErrorCallback(base::RunLoop* run_loop, CacheStorageError error) {
+    callback_error_ = error;
+    callback_bool_ = error == CacheStorageError::kSuccess;
+    run_loop->Quit();
+  }
+
   void BoolAndErrorCallback(base::RunLoop* run_loop,
                             bool value,
                             CacheStorageError error) {
@@ -310,7 +316,7 @@ class CacheStorageManagerTest : public testing::Test {
     base::RunLoop loop;
     cache_manager_->DeleteCache(
         origin, cache_name,
-        base::BindOnce(&CacheStorageManagerTest::BoolAndErrorCallback,
+        base::BindOnce(&CacheStorageManagerTest::ErrorCallback,
                        base::Unretained(this), base::Unretained(&loop)));
     loop.Run();
 

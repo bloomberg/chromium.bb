@@ -69,7 +69,7 @@ class CONTENT_EXPORT CacheStorageManager {
                 CacheStorage::BoolAndErrorCallback callback);
   void DeleteCache(const url::Origin& origin,
                    const std::string& cache_name,
-                   CacheStorage::BoolAndErrorCallback callback);
+                   CacheStorage::ErrorCallback callback);
   void EnumerateCaches(const url::Origin& origin,
                        CacheStorage::IndexCallback callback);
   void MatchCache(const url::Origin& origin,

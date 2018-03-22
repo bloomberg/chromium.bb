@@ -32,6 +32,7 @@
 #include "services/shape_detection/public/mojom/constants.mojom.h"
 #include "services/shape_detection/public/mojom/facedetection_provider.mojom.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
+#include "third_party/WebKit/public/platform/modules/cache_storage/cache_storage.mojom.h"
 #include "third_party/WebKit/public/platform/modules/notifications/notification_service.mojom.h"
 #include "url/origin.h"
 
@@ -137,6 +138,12 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
         static_cast<StoragePartitionImpl*>(host->GetStoragePartition())
             ->GetPaymentAppContext()
             ->CreatePaymentManager(std::move(request));
+      }));
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](blink::mojom::CacheStorageRequest request, RenderProcessHost* host,
+         const url::Origin& origin) {
+        static_cast<RenderProcessHostImpl*>(host)->BindCacheStorage(
+            std::move(request), origin);
       }));
   parameterized_binder_registry_.AddInterface(
       base::Bind([](blink::mojom::PermissionServiceRequest request,

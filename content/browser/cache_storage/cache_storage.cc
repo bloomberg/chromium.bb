@@ -635,7 +635,7 @@ void CacheStorage::HasCache(const std::string& cache_name,
 }
 
 void CacheStorage::DoomCache(const std::string& cache_name,
-                             BoolAndErrorCallback callback) {
+                             ErrorCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   if (!initialized_)
@@ -908,12 +908,12 @@ void CacheStorage::HasCacheImpl(const std::string& cache_name,
 }
 
 void CacheStorage::DoomCacheImpl(const std::string& cache_name,
-                                 BoolAndErrorCallback callback) {
+                                 ErrorCallback callback) {
   CacheStorageCacheHandle cache_handle = GetLoadedCache(cache_name);
   if (!cache_handle.value()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback), false,
-                                  CacheStorageError::kErrorNotFound));
+        FROM_HERE,
+        base::BindOnce(std::move(callback), CacheStorageError::kErrorNotFound));
     return;
   }
 
@@ -928,7 +928,7 @@ void CacheStorage::DoomCacheImpl(const std::string& cache_name,
 
 void CacheStorage::DeleteCacheDidWriteIndex(
     CacheStorageCacheHandle cache_handle,
-    BoolAndErrorCallback callback,
+    ErrorCallback callback,
     bool success) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -936,7 +936,7 @@ void CacheStorage::DeleteCacheDidWriteIndex(
     // Undo any changes if the index couldn't be written to disk.
     cache_index_->RestoreDoomedCache();
     cache_handle.value()->SetObserver(this);
-    std::move(callback).Run(false, CacheStorageError::kErrorStorage);
+    std::move(callback).Run(CacheStorageError::kErrorStorage);
     return;
   }
 
@@ -954,7 +954,7 @@ void CacheStorage::DeleteCacheDidWriteIndex(
   if (cache_storage_manager_)
     cache_storage_manager_->NotifyCacheListChanged(origin_);
 
-  std::move(callback).Run(true, CacheStorageError::kSuccess);
+  std::move(callback).Run(CacheStorageError::kSuccess);
 }
 
 // Call this once the last handle to a doomed cache is gone. It's okay if this

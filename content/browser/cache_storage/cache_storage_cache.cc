@@ -541,8 +541,7 @@ void CacheStorageCache::BatchOperation(
   }
   if (!safe_space_required.IsValid() || !safe_side_data_size.IsValid()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(bad_message_callback),
-                                  bad_message::CSDH_UNEXPECTED_OPERATION));
+        FROM_HERE, std::move(bad_message_callback));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), CacheStorageError::kErrorStorage));
@@ -588,8 +587,7 @@ void CacheStorageCache::BatchDidGetUsageAndQuota(
   if (!safe_space_required.IsValid() ||
       !safe_space_required_with_side_data.IsValid()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(bad_message_callback),
-                                  bad_message::CSDH_UNEXPECTED_OPERATION));
+        FROM_HERE, std::move(bad_message_callback));
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::BindOnce(std::move(callback), CacheStorageError::kErrorStorage));

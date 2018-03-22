@@ -16,8 +16,6 @@
 
 namespace blink {
 
-class WebServiceWorkerCache;
-
 // An interface to the CacheStorage API, implemented by the embedder and passed
 // in to Blink. Blink's implementation of the ServiceWorker spec will call these
 // methods to create/open caches, and expect callbacks from the embedder after

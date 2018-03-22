@@ -51,8 +51,7 @@ struct BatchOperation {
 // Result of Open method. |status| is only set if there is a failure.
 union OpenResult {
   CacheStorageError status;
-  // TODO(lucmult): Enable attribute below when crrev.com/c/875510 is merged.
-  // associated CacheStorageCache cache;
+  associated CacheStorageCache cache;
 };
 
 // Result of Match for both interfaces CacheStorage and CacheStorageCache
@@ -73,4 +72,52 @@ union MatchAllResult {
 union CacheKeysResult {
   CacheStorageError status;
   array<blink.mojom.FetchAPIRequest> keys;
+};
+
+// Handles calls for each individual cache. A cache relates directly to Cache
+// defined on spec: https://w3c.github.io/ServiceWorker/#cache-interface
+interface CacheStorageCache {
+  // Returns the first cached response that matches |request| according to
+  // options specified on |query_params|.
+  Match(blink.mojom.FetchAPIRequest request, QueryParams query_params)
+      => (MatchResult result);
+
+  // Returns all cached responses that match |request| according to options
+  // specified on |query_params|.
+  MatchAll(blink.mojom.FetchAPIRequest request, QueryParams query_params)
+      => (MatchAllResult result);
+
+  // Returns all keys (which are requests) of matching |request| and
+  // |query_params|.
+  Keys(blink.mojom.FetchAPIRequest request, QueryParams query_params)
+      => (CacheKeysResult result);
+
+  // Perform a batch of operations, used for PUT and DELETE operations.
+  Batch(array<BatchOperation> batch_operations) => (CacheStorageError result);
+};
+
+// Handles global CacheStorage methods, directly relates to methods available on
+// spec: https://w3c.github.io/ServiceWorker/#cachestorage-interface
+interface CacheStorage {
+  // Returns kSuccess if |cache_name| exists or kErrorNotFound if not.
+  Has(mojo_base.mojom.String16 cache_name) => (CacheStorageError result);
+
+  // Removes a given cache.
+  Delete(mojo_base.mojom.String16 cache_name) => (CacheStorageError result);
+
+  // Returns all cache names managed on this origin.
+  Keys() => (array<mojo_base.mojom.String16> keys);
+
+  // Returns the first cached response that matches |request| and
+  // |match_params|. It can search on all caches if |cache_name| isn't provided
+  // on |match_params|.
+  Match(blink.mojom.FetchAPIRequest request, QueryParams match_params)
+      => (MatchResult result);
+
+  // Opens and returns a mojo interface to a cache, it creates if doesn't exist.
+  Open(mojo_base.mojom.String16 cache_name) => (OpenResult result);
+
+  // Deletes a blob reference held by CacheStorage implementation, client must
+  // call after handling the blob.
+  BlobDataHandled(string uuid);
 };
