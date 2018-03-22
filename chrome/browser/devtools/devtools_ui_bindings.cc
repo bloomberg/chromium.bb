@@ -54,6 +54,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
+#include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/renderer_preferences.h"
@@ -71,6 +72,9 @@
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_fetcher.h"
 #include "net/url_request/url_fetcher_response_writer.h"
+#include "services/network/public/cpp/features.h"
+#include "services/network/public/cpp/simple_url_loader.h"
+#include "services/network/public/cpp/simple_url_loader_stream_consumer.h"
 #include "third_party/WebKit/public/public_features.h"
 #include "ui/base/page_transition_types.h"
 
@@ -188,6 +192,24 @@ InfoBarService* DefaultBindingsDelegate::GetInfoBarService() {
   return InfoBarService::FromWebContents(web_contents_);
 }
 
+std::unique_ptr<base::DictionaryValue> BuildObjectForResponse(
+    const net::HttpResponseHeaders* rh) {
+  auto response = std::make_unique<base::DictionaryValue>();
+  response->SetInteger("statusCode", rh ? rh->response_code() : 200);
+
+  auto headers = std::make_unique<base::DictionaryValue>();
+  size_t iterator = 0;
+  std::string name;
+  std::string value;
+  // TODO(caseq): this probably needs to handle duplicate header names
+  // correctly by folding them.
+  while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
+    headers->SetString(name, value);
+
+  response->Set("headers", std::move(headers));
+  return response;
+}
+
 // ResponseWriter -------------------------------------------------------------
 
 class ResponseWriter : public net::URLFetcherResponseWriter {
@@ -213,6 +235,7 @@ ResponseWriter::ResponseWriter(base::WeakPtr<DevToolsUIBindings> bindings,
                                int stream_id)
     : bindings_(bindings),
       stream_id_(stream_id) {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
 }
 
 ResponseWriter::~ResponseWriter() {
@@ -379,6 +402,67 @@ GURL SanitizeFrontendURL(const GURL& url,
 }
 
 }  // namespace
+
+class DevToolsUIBindings::NetworkResourceLoader
+    : public network::SimpleURLLoaderStreamConsumer {
+ public:
+  NetworkResourceLoader(int stream_id,
+                        DevToolsUIBindings* bindings,
+                        std::unique_ptr<network::SimpleURLLoader> loader,
+                        network::mojom::URLLoaderFactory* url_loader_factory,
+                        const DispatchCallback& callback)
+      : stream_id_(stream_id),
+        bindings_(bindings),
+        loader_(std::move(loader)),
+        callback_(callback) {
+    loader_->DownloadAsStream(url_loader_factory, this);
+    loader_->SetOnResponseStartedCallback(base::BindRepeating(
+        &NetworkResourceLoader::OnResponseStarted, base::Unretained(this)));
+  }
+
+ private:
+  void OnResponseStarted(const GURL& final_url,
+                         const network::ResourceResponseHead& response_head) {
+    response_headers_ = response_head.headers;
+  }
+
+  void OnDataReceived(base::StringPiece chunk,
+                      base::OnceClosure resume) override {
+    base::Value chunkValue;
+
+    bool encoded = !base::IsStringUTF8(chunk);
+    if (encoded) {
+      std::string encoded_string;
+      base::Base64Encode(chunk, &encoded_string);
+      chunkValue = base::Value(std::move(encoded_string));
+    } else {
+      chunkValue = base::Value(chunk);
+    }
+    base::Value id(stream_id_);
+    base::Value encodedValue(encoded);
+
+    bindings_->CallClientFunction("DevToolsAPI.streamWrite", &id, &chunkValue,
+                                  &encodedValue);
+    std::move(resume).Run();
+  }
+
+  void OnComplete(bool success) override {
+    auto response = BuildObjectForResponse(response_headers_.get());
+    callback_.Run(response.get());
+
+    bindings_->loaders_.erase(bindings_->loaders_.find(this));
+  }
+
+  void OnRetry(base::OnceClosure start_retry) override { NOTREACHED(); }
+
+  const int stream_id_;
+  DevToolsUIBindings* const bindings_;
+  std::unique_ptr<network::SimpleURLLoader> loader_;
+  DispatchCallback callback_;
+  scoped_refptr<net::HttpResponseHeaders> response_headers_;
+
+  DISALLOW_COPY_AND_ASSIGN(NetworkResourceLoader);
+};
 
 // DevToolsUIBindings::FrontendWebContentsObserver ----------------------------
 
@@ -686,16 +770,34 @@ void DevToolsUIBindings::LoadNetworkResource(const DispatchCallback& callback,
           }
         })");
 
-  net::URLFetcher* fetcher = net::URLFetcher::Create(gurl, net::URLFetcher::GET,
-                                                     this, traffic_annotation)
-                                 .release();
-  pending_requests_[fetcher] = callback;
-  fetcher->SetRequestContext(profile_->GetRequestContext());
-  fetcher->SetExtraRequestHeaders(headers);
-  fetcher->SaveResponseWithWriter(
-      std::unique_ptr<net::URLFetcherResponseWriter>(
-          new ResponseWriter(weak_factory_.GetWeakPtr(), stream_id)));
-  fetcher->Start();
+  if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    net::URLFetcher* fetcher =
+        net::URLFetcher::Create(gurl, net::URLFetcher::GET, this,
+                                traffic_annotation)
+            .release();
+    pending_requests_[fetcher] = callback;
+    fetcher->SetRequestContext(profile_->GetRequestContext());
+    fetcher->SetExtraRequestHeaders(headers);
+    fetcher->SaveResponseWithWriter(
+        std::unique_ptr<net::URLFetcherResponseWriter>(
+            new ResponseWriter(weak_factory_.GetWeakPtr(), stream_id)));
+    fetcher->Start();
+    return;
+  }
+
+  auto resource_request = std::make_unique<network::ResourceRequest>();
+  resource_request->url = gurl;
+  resource_request->headers.AddHeadersFromString(headers);
+
+  auto* partition = content::BrowserContext::GetStoragePartitionForSite(
+      web_contents_->GetBrowserContext(), gurl);
+  auto factory = partition->GetURLLoaderFactoryForBrowserProcess();
+
+  auto simple_url_loader = network::SimpleURLLoader::Create(
+      std::move(resource_request), traffic_annotation);
+  auto resource_loader = std::make_unique<NetworkResourceLoader>(
+      stream_id, this, std::move(simple_url_loader), factory.get(), callback);
+  loaders_.insert(std::move(resource_loader));
 }
 
 void DevToolsUIBindings::OpenInNewTab(const std::string& url) {
@@ -1079,23 +1181,14 @@ void DevToolsUIBindings::JsonReceived(const DispatchCallback& callback,
 }
 
 void DevToolsUIBindings::OnURLFetchComplete(const net::URLFetcher* source) {
+  DCHECK(!base::FeatureList::IsEnabled(network::features::kNetworkService));
+
   DCHECK(source);
   PendingRequestsMap::iterator it = pending_requests_.find(source);
   DCHECK(it != pending_requests_.end());
 
-  base::DictionaryValue response;
-  auto headers = std::make_unique<base::DictionaryValue>();
-  net::HttpResponseHeaders* rh = source->GetResponseHeaders();
-  response.SetInteger("statusCode", rh ? rh->response_code() : 200);
-
-  size_t iterator = 0;
-  std::string name;
-  std::string value;
-  while (rh && rh->EnumerateHeaderLines(&iterator, &name, &value))
-    headers->SetString(name, value);
-
-  response.Set("headers", std::move(headers));
-  it->second.Run(&response);
+  auto response = BuildObjectForResponse(source->GetResponseHeaders());
+  it->second.Run(response.get());
   pending_requests_.erase(it);
   delete source;
 }
