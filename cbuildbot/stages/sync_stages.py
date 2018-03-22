@@ -1428,8 +1428,8 @@ class PreCQLauncherStage(SyncStage):
 
     return config_buildbucket_id_map
 
-  def _LaunchTrybotsReal(self, pool, configs, plan=None,
-                         sanity_check_build=False, swarming=False):
+  def _LaunchTrybots(self, pool, configs, plan=None,
+                     sanity_check_build=False, swarming=False):
     """Launch tryjobs on the configs with patches if provided.
 
     Args:
@@ -1482,43 +1482,6 @@ class PreCQLauncherStage(SyncStage):
         logging.info('output: %s' % result.output)
         config_buildbucket_id_map = self.GetConfigBuildbucketIdMap(
             result.output)
-
-    return config_buildbucket_id_map
-
-  def _LaunchTrybots(self, pool, configs, plan=None,
-                     sanity_check_build=False):
-    """Temp hack wrapper for _LaunchTrybotsReal.
-
-    Args:
-      pool: An instance of ValidationPool.validation_pool.
-      configs: A list of pre-cq config names to launch.
-      plan: A list of patches to test in the pre-cq tryjob, default to None.
-      sanity_check_build: Boolean indicating whether to run the tryjobs as
-        sanity-check-build.
-
-    Returns:
-      A dict mapping from build_config (string) to the buildbucket_id (string)
-      of the launched Pre-CQs. An empty dict if any configuration target doesn't
-      exist.
-    """
-    # If 'autotest-pre-cq' is part of the list, launch it differently, against
-    # swarming.
-    _SWARMING_TEST_CONFIG = 'chromeos-infra-puppet-pre-cq'
-
-    configs = configs[:]
-    config_buildbucket_id_map = {}
-
-    if _SWARMING_TEST_CONFIG in configs:
-      configs.remove(_SWARMING_TEST_CONFIG)
-      config_buildbucket_id_map.update(
-          self._LaunchTrybotsReal(
-              pool, [_SWARMING_TEST_CONFIG], plan, sanity_check_build,
-              swarming=True))
-
-    if configs:
-      config_buildbucket_id_map.update(
-          self._LaunchTrybotsReal(
-              pool, configs, plan, sanity_check_build))
 
     return config_buildbucket_id_map
 
