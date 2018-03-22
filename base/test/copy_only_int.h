@@ -44,7 +44,7 @@ class CopyOnlyInt {
   int data() const { return data_; }
 
  private:
-  int data_;
+  volatile int data_;
 
   CopyOnlyInt(CopyOnlyInt&&) = delete;
   CopyOnlyInt& operator=(CopyOnlyInt&) = delete;

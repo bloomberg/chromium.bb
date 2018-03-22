@@ -58,7 +58,7 @@ class MoveOnlyInt {
   int data() const { return data_; }
 
  private:
-  int data_;
+  volatile int data_;
 
   DISALLOW_COPY_AND_ASSIGN(MoveOnlyInt);
 };
