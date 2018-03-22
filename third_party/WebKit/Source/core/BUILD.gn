@@ -1806,6 +1806,7 @@ jumbo_source_set("unit_tests") {
     "fetch/ReadableStreamBytesConsumerTest.cpp",
     "fetch/RequestTest.cpp",
     "fetch/ResponseTest.cpp",
+    "frame/AdTrackerTest.cpp",
     "frame/BrowserControlsTest.cpp",
     "frame/DOMTimerTest.cpp",
     "frame/DeferredLoadingTest.cpp",

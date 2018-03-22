@@ -15,9 +15,12 @@ namespace blink {
 
 ScriptModule::ScriptModule() = default;
 
-ScriptModule::ScriptModule(v8::Isolate* isolate, v8::Local<v8::Module> module)
+ScriptModule::ScriptModule(v8::Isolate* isolate,
+                           v8::Local<v8::Module> module,
+                           const KURL& source_url)
     : module_(SharedPersistent<v8::Module>::Create(module, isolate)),
-      identity_hash_(static_cast<unsigned>(module->GetIdentityHash())) {
+      identity_hash_(static_cast<unsigned>(module->GetIdentityHash())),
+      source_url_(source_url.GetString()) {
   DCHECK(!module_->IsEmpty());
 }
 
@@ -43,7 +46,7 @@ ScriptModule ScriptModule::Compile(v8::Isolate* isolate,
     return ScriptModule();
   }
   DCHECK(!try_catch.HasCaught());
-  return ScriptModule(isolate, module);
+  return ScriptModule(isolate, module, source_url);
 }
 
 ScriptValue ScriptModule::Instantiate(ScriptState* script_state) {
@@ -53,7 +56,7 @@ ScriptValue ScriptModule::Instantiate(ScriptState* script_state) {
 
   DCHECK(!IsNull());
   v8::Local<v8::Context> context = script_state->GetContext();
-  probe::ExecuteScript probe(ExecutionContext::From(script_state));
+  probe::ExecuteScript probe(ExecutionContext::From(script_state), source_url_);
   bool success;
   if (!NewLocal(script_state->GetIsolate())
            ->InstantiateModule(context, &ResolveModuleCallback)
@@ -74,7 +77,8 @@ ScriptValue ScriptModule::Evaluate(ScriptState* script_state) const {
   // returning from here.
   v8::TryCatch try_catch(isolate);
 
-  probe::ExecuteScript probe(ExecutionContext::From(script_state));
+  probe::ExecuteScript probe(ExecutionContext::From(script_state), source_url_);
+
   // TODO(kouhei): We currently don't have a code-path which use return value of
   // EvaluateModule. Stop ignoring result once we have such path.
   v8::Local<v8::Value> result;
@@ -142,7 +146,8 @@ v8::MaybeLocal<v8::Module> ScriptModule::ResolveModuleCallback(
   Modulator* modulator = Modulator::From(ScriptState::From(context));
   DCHECK(modulator);
 
-  ScriptModule referrer_record(isolate, referrer);
+  // TODO(shivanisha): Can a valid source url be passed to the constructor.
+  ScriptModule referrer_record(isolate, referrer, KURL());
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "ScriptModule", "resolveModuleCallback");
   ScriptModule resolved = modulator->GetScriptModuleResolver()->Resolve(

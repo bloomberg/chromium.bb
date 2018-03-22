@@ -68,6 +68,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
  private:
   ModuleScript(Modulator* settings_object,
                ScriptModule record,
+               const KURL& source_url,
                const KURL& base_url,
                const ScriptFetchOptions&,
                const String& source_text,
@@ -76,6 +77,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
   static ModuleScript* CreateInternal(const String& source_text,
                                       Modulator*,
                                       ScriptModule,
+                                      const KURL& source_url,
                                       const KURL& base_url,
                                       const ScriptFetchOptions&,
                                       const TextPosition&);
@@ -138,6 +140,7 @@ class CORE_EXPORT ModuleScript final : public Script, public TraceWrapperBase {
 
   const TextPosition start_position_;
   HashMap<String, KURL> specifier_to_url_cache_;
+  KURL source_url_;
 };
 
 CORE_EXPORT std::ostream& operator<<(std::ostream&, const ModuleScript&);
