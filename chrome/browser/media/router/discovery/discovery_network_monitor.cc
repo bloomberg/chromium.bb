@@ -14,6 +14,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
+#include "base/task_scheduler/task_traits.h"
 #include "base/time/default_tick_clock.h"
 #include "chrome/browser/media/router/discovery/discovery_network_list.h"
 #include "chrome/browser/media/router/discovery/discovery_network_monitor_metric_observer.h"
@@ -94,7 +95,9 @@ DiscoveryNetworkMonitor::DiscoveryNetworkMonitor(NetworkInfoFunction strategy)
     : network_id_(kNetworkIdDisconnected),
       observers_(new base::ObserverListThreadSafe<Observer>(
           base::ObserverListPolicy::EXISTING_ONLY)),
-      task_runner_(base::CreateSequencedTaskRunnerWithTraits(base::MayBlock())),
+      task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+          {base::MayBlock(),
+           base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN})),
       network_info_function_(strategy),
       metric_observer_(std::make_unique<DiscoveryNetworkMonitorMetricObserver>(
           base::DefaultTickClock::GetInstance(),
@@ -139,6 +142,9 @@ std::string DiscoveryNetworkMonitor::UpdateNetworkInfo() {
   auto network_info_list = network_info_function_();
   auto network_id = ComputeNetworkId(network_info_list);
 
+  // Although we are called with CONTINUE_ON_SHUTDOWN, none of these fields will
+  // disappear out from under us since |g_discovery_monitor| is declared with
+  // LeakyLazyInstanceTraits, and is therefore never deleted.
   network_id_.swap(network_id);
 
   if (network_id_ != network_id) {
