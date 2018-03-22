@@ -30,6 +30,21 @@ class ClientConfig(IntegrationTest):
         self.assertHasChromeProxyViaHeader(response)
         self.assertEqual(200, response.status)
 
+  # Ensure Chrome uses a direct connection when no valid client config is given.
+  def testNoClientConfigUseDirect(self):
+    with TestDriver() as t:
+      t.AddChromeArg('--enable-spdy-proxy-auth')
+      # The test server won't respond with a valid client config.
+      t.UseNetLog()
+      t.AddChromeArg('--data-reduction-proxy-config-url='
+        'https://chromeproxy-test.appspot.com')
+      t.SleepUntilHistogramHasEntry(
+        'DataReductionProxy.ConfigService.FetchResponseCode')
+      t.LoadURL('http://check.googlezip.net/test.html')
+      responses = t.GetHTTPResponses()
+      self.assertEqual(2, len(responses))
+      for response in responses:
+        self.assertNotHasChromeProxyViaHeader(response)
 
   # Ensure client config is fetched at the start of the Chrome session, and the
   # variations ID is set in the request.
