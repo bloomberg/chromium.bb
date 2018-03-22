@@ -21,6 +21,9 @@ def AddCommonArgs(arg_parser):
   common_args.add_argument('--package-name', required=True,
                            help='Name of the package to execute, defined in ' +
                                 'package metadata.')
+  common_args.add_argument('--package-manifest',
+                           type=os.path.realpath, required=True,
+                           help='Path to the Fuchsia package manifest file.')
   common_args.add_argument('--output-directory',
                            type=os.path.realpath, required=True,
                            help=('Path to the directory in which build files are'

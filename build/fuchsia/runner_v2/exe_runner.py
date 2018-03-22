@@ -28,7 +28,7 @@ def main():
   with GetDeploymentTargetForArgs(args) as target:
     target.Start()
     RunPackage(args.output_directory, target, args.package,
-               args.package_name, args.child_args)
+               args.package_name, args.child_args, args.package_manifest)
 
 
 if __name__ == '__main__':

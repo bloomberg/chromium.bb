@@ -144,6 +144,8 @@ template("generate_runner_script") {
       rebase_path(_package_path, root_out_dir, root_build_dir),
       "--package-name",
       invoker.package_name,
+      "--package-manifest",
+      rebase_path(_manifest_path),
     ]
   }
 }

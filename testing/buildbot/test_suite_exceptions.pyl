@@ -3349,6 +3349,12 @@
           'hard_timeout': 120,
         },
       },
+      # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+        ],
+      },
     },
   },
   'ui_touch_selection_unittests': {

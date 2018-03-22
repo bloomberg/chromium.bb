@@ -101,7 +101,7 @@ def main():
       test_server, forwarder = SetupTestServer(target, test_concurrency)
 
     RunPackage(args.output_directory, target, args.package, args.package_name,
-               child_args)
+               child_args, args.package_manifest)
 
     if forwarder:
       forwarder.terminate()
