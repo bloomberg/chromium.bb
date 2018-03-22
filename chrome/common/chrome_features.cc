@@ -37,10 +37,6 @@ const base::Feature kShow10_9ObsoleteInfobar{"Show109ObsoleteInfobar",
 const base::Feature kFullscreenToolbarReveal{"FullscreenToolbarReveal",
                                              base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Use toolkit-views for profile chooser menu.
-const base::Feature kViewsProfileChooser{"ViewsProfileChooser",
-                                         base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Use the Toolkit-Views Task Manager window.
 const base::Feature kViewsTaskManager{"ViewsTaskManager",
                                       base::FEATURE_DISABLED_BY_DEFAULT};

@@ -489,8 +489,6 @@ split_static_library("ui") {
       "cocoa/profiles/avatar_icon_controller.mm",
       "cocoa/profiles/profile_chooser_bridge_views.h",
       "cocoa/profiles/profile_chooser_bridge_views.mm",
-      "cocoa/profiles/profile_chooser_controller.h",
-      "cocoa/profiles/profile_chooser_controller.mm",
       "cocoa/profiles/profile_signin_confirmation_dialog_cocoa.h",
       "cocoa/profiles/profile_signin_confirmation_dialog_cocoa.mm",
       "cocoa/profiles/profile_signin_confirmation_view_controller.h",

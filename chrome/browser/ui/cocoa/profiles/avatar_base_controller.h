@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/avatar_button_error_controller_delegate.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
-#include "components/signin/core/browser/signin_header_helper.h"
 
 @class BaseBubbleController;
 class Browser;
@@ -34,9 +33,6 @@ class ProfileUpdateObserver;
   // Observer that listens for updates to the ProfileAttributesStorage as well
   // as AvatarButtonErrorController.
   std::unique_ptr<ProfileUpdateObserver> profileObserver_;
-
-  // The menu controller, if the menu is open.
-  BaseBubbleController* menuController_;
 }
 
 // The avatar button view.
@@ -62,10 +58,6 @@ class ProfileUpdateObserver;
 // Called when the avatar bubble is closing.
 - (void)bubbleWillClose;
 
-@end
-
-@interface AvatarBaseController (ExposedForTesting)
-- (BaseBubbleController*)menuController;
 @end
 
 class ProfileUpdateObserver : public ProfileAttributesStorage::Observer,
