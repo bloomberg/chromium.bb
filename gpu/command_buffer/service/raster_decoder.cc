@@ -28,6 +28,7 @@
 #include "gpu/command_buffer/service/decoder_client.h"
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
+#include "gpu/command_buffer/service/framebuffer_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
@@ -95,6 +96,94 @@ class TextureMetadata {
   const viz::ResourceFormat format_;
   const GLenum target_;
 };
+
+// This class prevents any GL errors that occur when it is in scope from
+// being reported to the client.
+class ScopedGLErrorSuppressor {
+ public:
+  ScopedGLErrorSuppressor(const char* function_name, ErrorState* error_state);
+  ~ScopedGLErrorSuppressor();
+
+ private:
+  const char* function_name_;
+  ErrorState* error_state_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedGLErrorSuppressor);
+};
+
+ScopedGLErrorSuppressor::ScopedGLErrorSuppressor(const char* function_name,
+                                                 ErrorState* error_state)
+    : function_name_(function_name), error_state_(error_state) {
+  ERRORSTATE_COPY_REAL_GL_ERRORS_TO_WRAPPER(error_state_, function_name_);
+}
+
+ScopedGLErrorSuppressor::~ScopedGLErrorSuppressor() {
+  ERRORSTATE_CLEAR_REAL_GL_ERRORS(error_state_, function_name_);
+}
+
+void RestoreCurrentTextureBindings(ContextState* state,
+                                   GLenum target,
+                                   GLuint texture_unit) {
+  DCHECK(!state->texture_units.empty());
+  DCHECK_LT(texture_unit, state->texture_units.size());
+  TextureUnit& info = state->texture_units[texture_unit];
+  GLuint last_id;
+  TextureRef* texture_ref = info.GetInfoForTarget(target);
+  if (texture_ref) {
+    last_id = texture_ref->service_id();
+  } else {
+    last_id = 0;
+  }
+
+  state->api()->glBindTextureFn(target, last_id);
+}
+
+// Temporarily changes a decoder's bound texture and restore it when this
+// object goes out of scope. Also temporarily switches to using active texture
+// unit zero in case the client has changed that to something invalid.
+class ScopedTextureBinder {
+ public:
+  ScopedTextureBinder(ContextState* state,
+                      TextureManager* texture_manager,
+                      TextureRef* texture_ref,
+                      GLenum target);
+  ~ScopedTextureBinder();
+
+ private:
+  ContextState* state_;
+  GLenum target_;
+  TextureUnit old_unit_;
+
+  DISALLOW_COPY_AND_ASSIGN(ScopedTextureBinder);
+};
+
+ScopedTextureBinder::ScopedTextureBinder(ContextState* state,
+                                         TextureManager* texture_manager,
+                                         TextureRef* texture_ref,
+                                         GLenum target)
+    : state_(state), target_(target), old_unit_(state->texture_units[0]) {
+  auto* api = state->api();
+  api->glActiveTextureFn(GL_TEXTURE0);
+
+  Texture* texture = texture_ref->texture();
+  if (texture->target() == 0) {
+    texture_manager->SetTarget(texture_ref, target);
+  }
+  DCHECK_EQ(texture->target(), target)
+      << "Texture bound to more than 1 target.";
+
+  api->glBindTextureFn(target, texture_ref->service_id());
+
+  TextureUnit& unit = state_->texture_units[0];
+  unit.bind_target = target;
+  unit.SetInfoForTarget(target, texture_ref);
+}
+
+ScopedTextureBinder::~ScopedTextureBinder() {
+  state_->texture_units[0] = old_unit_;
+
+  RestoreCurrentTextureBindings(state_, target_, 0);
+  state_->RestoreActiveTexture();
+}
 
 }  // namespace
 
@@ -194,8 +283,22 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
     return feature_info_->feature_flags();
   }
 
+  const GpuDriverBugWorkarounds& workarounds() const {
+    return feature_info_->workarounds();
+  }
+
   const gl::GLVersionInfo& gl_version_info() {
     return feature_info_->gl_version_info();
+  }
+
+  MemoryTracker* memory_tracker() { return group_->memory_tracker(); }
+
+  bool EnsureGPUMemoryAvailable(size_t estimated_size) {
+    MemoryTracker* tracker = memory_tracker();
+    if (tracker) {
+      return tracker->EnsureGPUMemoryAvailable(estimated_size);
+    }
+    return true;
   }
 
   const TextureManager* texture_manager() const {
@@ -275,12 +378,25 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void DoReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
     NOTIMPLEMENTED();
   }
+  void TexStorage2DImage(TextureRef* texture_ref,
+                         const TextureMetadata& texture_metadata,
+                         GLsizei width,
+                         GLsizei height) {
+    NOTIMPLEMENTED();
+  }
+  void TexStorage2D(TextureRef* texture_ref,
+                    const TextureMetadata& texture_metadata,
+                    GLint levels,
+                    GLsizei width,
+                    GLsizei height);
+  void TexImage2D(TextureRef* texture_ref,
+                  const TextureMetadata& texture_metadata,
+                  GLsizei width,
+                  GLsizei height);
   void DoTexStorage2D(GLuint texture_id,
                       GLint levels,
                       GLsizei width,
-                      GLsizei height) {
-    NOTIMPLEMENTED();
-  }
+                      GLsizei height);
   void DoCopySubTexture(GLuint source_id,
                         GLuint dest_id,
                         GLint xoffset,
@@ -411,6 +527,10 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
 
   GLES2Util util_;
 
+  // States related to each manager.
+  DecoderTextureState texture_state_;
+  DecoderFramebufferState framebuffer_state_;
+
   bool gpu_debug_commands_;
 
   // Log extra info.
@@ -490,6 +610,7 @@ RasterDecoderImpl::RasterDecoderImpl(
       validators_(new Validators),
       feature_info_(group_->feature_info()),
       state_(group_->feature_info(), this, &logger_),
+      texture_state_(group_->feature_info()->workarounds()),
       service_logging_(
           group_->gpu_preferences().enable_gpu_service_logging_gpu),
       weak_ptr_factory_(this) {}
@@ -612,7 +733,9 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
       group_->gpu_preferences().texture_target_exception_list;
   caps.texture_format_bgra8888 =
       feature_info_->feature_flags().ext_texture_format_bgra8888;
-
+  caps.texture_storage_image =
+      feature_info_->feature_flags().chromium_texture_storage_image;
+  caps.texture_storage = feature_info_->feature_flags().ext_texture_storage;
   return caps;
 }
 
@@ -1205,11 +1328,17 @@ void RasterDecoderImpl::DeleteQueriesEXTHelper(
   }
 }
 
-void RasterDecoderImpl::DoTexParameteri(GLuint texture_id,
+void RasterDecoderImpl::DoTexParameteri(GLuint client_id,
                                         GLenum pname,
                                         GLint param) {
-  TextureRef* texture = texture_manager()->GetTexture(texture_id);
+  TextureRef* texture = texture_manager()->GetTexture(client_id);
   if (!texture) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexParameteri", "unknown texture");
+    return;
+  }
+
+  TextureMetadata* texture_metadata = GetTextureMetadata(client_id);
+  if (!texture_metadata) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexParameteri", "unknown texture");
     return;
   }
@@ -1240,6 +1369,9 @@ void RasterDecoderImpl::DoTexParameteri(GLuint texture_id,
     LOCAL_SET_GL_ERROR_INVALID_ENUM("glTexParameteri", param, "pname");
     return;
   }
+
+  ScopedTextureBinder binder(&state_, texture_manager(), texture,
+                             texture_metadata->target());
 
   texture_manager()->SetParameteri("glTexParameteri", GetErrorState(), texture,
                                    pname, param);
@@ -1281,6 +1413,217 @@ void RasterDecoderImpl::DoProduceTextureDirect(GLuint client_id,
   }
 
   group_->mailbox_manager()->ProduceTexture(mailbox, produced);
+}
+
+void RasterDecoderImpl::TexStorage2D(TextureRef* texture_ref,
+                                     const TextureMetadata& texture_metadata,
+                                     GLint levels,
+                                     GLsizei width,
+                                     GLsizei height) {
+  TRACE_EVENT2("gpu", "RasterDecoderImpl::TexStorage2D", "width", width,
+               "height", height);
+
+  if (!texture_manager()->ValidForTarget(texture_metadata.target(), 0, width,
+                                         height, 1 /* depth */) ||
+      TextureManager::ComputeMipMapCount(texture_metadata.target(), width,
+                                         height, 1 /* depth */) < levels) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D",
+                       "dimensions out of range");
+    return;
+  }
+
+  ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
+                             texture_metadata.target());
+
+  unsigned int internal_format =
+      viz::GLInternalFormat(texture_metadata.format());
+  GLenum format =
+      TextureManager::ExtractFormatFromStorageFormat(internal_format);
+  GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
+
+  // First lookup compatibility format via texture manager for swizzling legacy
+  // LUMINANCE/ALPHA formats.
+  GLenum compatibility_internal_format =
+      texture_manager()->AdjustTexStorageFormat(feature_info_.get(),
+                                                internal_format);
+
+  Texture* texture = texture_ref->texture();
+  if (workarounds().reset_base_mipmap_level_before_texstorage &&
+      texture->base_level() > 0)
+    api()->glTexParameteriFn(texture_metadata.target(), GL_TEXTURE_BASE_LEVEL,
+                             0);
+
+  // TODO(zmo): We might need to emulate TexStorage using TexImage or
+  // CompressedTexImage on Mac OSX where we expose ES3 APIs when the underlying
+  // driver is lower than 4.2 and ARB_texture_storage extension doesn't exist.
+  api()->glTexStorage2DEXTFn(texture_metadata.target(), levels,
+                             compatibility_internal_format, width, height);
+  if (workarounds().reset_base_mipmap_level_before_texstorage &&
+      texture->base_level() > 0)
+    api()->glTexParameteriFn(texture_metadata.target(), GL_TEXTURE_BASE_LEVEL,
+                             texture->base_level());
+
+  {
+    GLsizei level_width = width;
+    GLsizei level_height = height;
+
+    GLenum adjusted_internal_format =
+        feature_info_->IsWebGL1OrES2Context() ? format : internal_format;
+    for (int ii = 0; ii < levels; ++ii) {
+      texture_manager()->SetLevelInfo(texture_ref, texture_metadata.target(),
+                                      ii, adjusted_internal_format, level_width,
+                                      level_height, 1 /* level_depth */, 0,
+                                      format, type, gfx::Rect());
+      level_width = std::max(1, level_width >> 1);
+      level_height = std::max(1, level_height >> 1);
+    }
+    texture->ApplyFormatWorkarounds(feature_info_.get());
+  }
+}
+
+void RasterDecoderImpl::TexImage2D(TextureRef* texture_ref,
+                                   const TextureMetadata& texture_metadata,
+                                   GLsizei width,
+                                   GLsizei height) {
+  TRACE_EVENT2("gpu", "RasterDecoderImpl::TexImage2D", "width", width, "height",
+               height);
+
+  // Set as failed for now, but if it successed, this will be set to not failed.
+  texture_state_.tex_image_failed = true;
+
+  DCHECK(!state_.bound_pixel_unpack_buffer.get());
+
+  ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
+                             texture_metadata.target());
+
+  TextureManager::DoTexImageArguments args = {
+      texture_metadata.target(),
+      0 /* level */,
+      viz::GLInternalFormat(texture_metadata.format()),
+      width,
+      height,
+      1 /* depth */,
+      0 /* border */,
+      viz::GLDataFormat(texture_metadata.format()),
+      viz::GLDataType(texture_metadata.format()),
+      nullptr /* pixels */,
+      0 /* pixels_size */,
+      0 /* padding */,
+      TextureManager::DoTexImageArguments::kTexImage2D};
+  texture_manager()->ValidateAndDoTexImage(
+      &texture_state_, &state_, &framebuffer_state_, "glTexStorage2D", args);
+
+  // This may be a slow command.  Exit command processing to allow for
+  // context preemption and GPU watchdog checks.
+  ExitCommandProcessingEarly();
+}
+
+void RasterDecoderImpl::DoTexStorage2D(GLuint client_id,
+                                       GLint levels,
+                                       GLsizei width,
+                                       GLsizei height) {
+  TextureRef* texture_ref = GetTexture(client_id);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "unknown texture");
+    return;
+  }
+
+  TextureMetadata* texture_metadata = GetTextureMetadata(client_id);
+  if (!texture_metadata) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "unknown texture");
+    return;
+  }
+
+  Texture* texture = texture_ref->texture();
+  if (texture->IsImmutable()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "glTexStorage2D",
+                       "texture is immutable");
+    return;
+  }
+
+  if (levels == 0) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "levels == 0");
+    return;
+  }
+
+  if (width < 1 || height < 1) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "dimensions < 1");
+    return;
+  }
+
+  // For testing only. Allows us to stress the ability to respond to OOM errors.
+  if (workarounds().simulate_out_of_memory_on_large_textures &&
+      (width * height >= 4096 * 4096)) {
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D",
+                       "synthetic out of memory");
+    return;
+  }
+
+  // Check if we have enough memory.
+  unsigned int internal_format =
+      viz::GLInternalFormat(texture_metadata->format());
+  bool is_compressed_format =
+      viz::IsResourceFormatCompressed(texture_metadata->format());
+  GLenum format =
+      TextureManager::ExtractFormatFromStorageFormat(internal_format);
+  GLenum type = TextureManager::ExtractTypeFromStorageFormat(internal_format);
+  GLsizei level_width = width;
+  GLsizei level_height = height;
+  base::CheckedNumeric<uint32_t> estimated_size(0);
+  PixelStoreParams params;
+  params.alignment = 1;
+  for (int ii = 0; ii < levels; ++ii) {
+    uint32_t size;
+    if (is_compressed_format) {
+      DCHECK_EQ(static_cast<unsigned int>(GL_ETC1_RGB8_OES), internal_format);
+      base::CheckedNumeric<uint32_t> bytes_required(0);
+      const int kS3TCBlockWidth = 4;
+      const int kS3TCBlockHeight = 4;
+      const int kS3TCDXT1BlockSize = 8;
+      bytes_required = (width + kS3TCBlockWidth - 1) / kS3TCBlockWidth;
+      bytes_required *= (height + kS3TCBlockHeight - 1) / kS3TCBlockHeight;
+      bytes_required *= kS3TCDXT1BlockSize;
+      if (!bytes_required.IsValid()) {
+        LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2D", "invalid size");
+        return;
+      }
+      size = bytes_required.ValueOrDefault(0);
+    } else {
+      if (!GLES2Util::ComputeImageDataSizesES3(
+              level_width, level_height, 1 /* level_depth */, format, type,
+              params, &size, nullptr, nullptr, nullptr, nullptr)) {
+        LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D",
+                           "dimensions too large");
+        return;
+      }
+    }
+    estimated_size += size;
+    level_width = std::max(1, level_width >> 1);
+    level_height = std::max(1, level_height >> 1);
+  }
+
+  if (!estimated_size.IsValid() ||
+      !EnsureGPUMemoryAvailable(estimated_size.ValueOrDefault(0))) {
+    LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, "glTexStorage2D", "out of memory");
+    return;
+  }
+
+  if (texture_metadata->use_buffer()) {
+    if (!GetCapabilities().texture_storage_image) {
+      LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glTexStorage2DImage", "use_buffer");
+      return;
+    }
+    DCHECK(levels == 1);
+    TexStorage2DImage(texture_ref, *texture_metadata, width, height);
+  } else if (GetCapabilities().texture_storage) {
+    TexStorage2D(texture_ref, *texture_metadata, levels, width, height);
+  } else {
+    // TODO(backer): Support more than one texture level.
+    DCHECK(levels == 1);
+    TexImage2D(texture_ref, *texture_metadata, width, height);
+  }
+
+  texture->SetImmutable(true);
 }
 
 // Include the auto-generated part of this file. We split this because it means

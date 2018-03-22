@@ -9,7 +9,9 @@
 #include <stdint.h>
 
 #include <array>
+#include <initializer_list>
 #include <memory>
+#include <string>
 
 #include "base/message_loop/message_loop.h"
 #include "gpu/command_buffer/client/client_test_helper.h"
@@ -127,8 +129,12 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
                            const char** str,
                            GLsizei count_in_header,
                            char str_end);
+  void set_memory_tracker(gles2::MemoryTracker* memory_tracker) {
+    memory_tracker_ = memory_tracker;
+  }
 
-  void InitDecoderWithWorkarounds();
+  void InitDecoderWithWorkarounds(
+      std::initializer_list<std::string> extensions);
 
   void ResetDecoder();
 
@@ -165,6 +171,11 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
 
   void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id);
   void DoDeleteTexture(GLuint client_id, GLuint service_id);
+  void SetScopedTextureBinderExpectations(GLenum target);
+  void DoTexStorage2D(GLuint client_id,
+                      GLint levels,
+                      GLsizei width,
+                      GLsizei height);
 
   GLvoid* BufferOffset(unsigned i) { return static_cast<int8_t*>(NULL) + (i); }
 
