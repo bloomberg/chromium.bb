@@ -15,6 +15,10 @@ namespace device {
 DEVICE_BASE_EXPORT extern const base::Feature kNewUsbBackend;
 #endif  // defined(OS_WIN)
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+DEVICE_BASE_EXPORT extern const base::Feature kNewblueDaemon;
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
 }  // namespace device
 
 #endif  // DEVICE_BASE_FEATURES_H_

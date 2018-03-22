@@ -955,6 +955,10 @@ const char kNewUsbBackendName[] = "Enable new USB backend";
 const char kNewUsbBackendDescription[] =
     "Enables the new experimental USB backend for Windows.";
 
+const char kNewblueName[] = "Newblue";
+const char kNewblueDescription[] =
+    "Enables the use of newblue Bluetooth daemon.";
+
 const char kNostatePrefetchName[] = "No-State Prefetch";
 const char kNostatePrefetchDescription[] =
     R"*("No-State Prefetch" pre-downloads resources to improve load )*"

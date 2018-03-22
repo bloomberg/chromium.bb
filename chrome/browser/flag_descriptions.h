@@ -603,6 +603,9 @@ extern const char kUseSurfaceLayerForVideoDescription[];
 extern const char kNewUsbBackendName[];
 extern const char kNewUsbBackendDescription[];
 
+extern const char kNewblueName[];
+extern const char kNewblueDescription[];
+
 extern const char kNostatePrefetchName[];
 extern const char kNostatePrefetchDescription[];
 

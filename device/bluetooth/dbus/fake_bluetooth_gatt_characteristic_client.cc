@@ -91,7 +91,9 @@ FakeBluetoothGattCharacteristicClient::
   action_extra_requests_.clear();
 }
 
-void FakeBluetoothGattCharacteristicClient::Init(dbus::Bus* bus) {}
+void FakeBluetoothGattCharacteristicClient::Init(
+    dbus::Bus* bus,
+    const std::string& bluetooth_service_name) {}
 
 void FakeBluetoothGattCharacteristicClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);

@@ -24,7 +24,8 @@ class BluezDBusClient {
   // This function is called by DBusThreadManager. Only in unit tests, which
   // don't use DBusThreadManager, this function can be called through Stub
   // implementations (they change Init's member visibility to public).
-  virtual void Init(dbus::Bus* bus) = 0;
+  virtual void Init(dbus::Bus* bus,
+                    const std::string& bluetooth_service_name) = 0;
 
  private:
   friend class BluezDBusManager;

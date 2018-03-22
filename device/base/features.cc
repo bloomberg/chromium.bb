@@ -13,4 +13,10 @@ const base::Feature kNewUsbBackend{"NewUsbBackend",
                                    base::FEATURE_DISABLED_BY_DEFAULT};
 #endif  // defined(OS_WIN)
 
+#if defined(OS_LINUX) || defined(OS_CHROMEOS)
+// Enables or disables the use of newblue Bluetooth daemon on Chrome OS.
+const base::Feature kNewblueDaemon{"Newblue",
+                                   base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // defined(OS_LINUX) || defined(OS_CHROMEOS)
+
 }  // namespace device

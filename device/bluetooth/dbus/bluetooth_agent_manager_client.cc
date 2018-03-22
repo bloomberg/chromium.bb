@@ -84,10 +84,11 @@ class BluetoothAgentManagerClientImpl : public BluetoothAgentManagerClient {
   }
 
  protected:
-  void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus,
+            const std::string& bluetooth_service_name) override {
     DCHECK(bus);
     object_proxy_ = bus->GetObjectProxy(
-        bluetooth_agent_manager::kBluetoothAgentManagerServiceName,
+        bluetooth_service_name,
         dbus::ObjectPath(
             bluetooth_agent_manager::kBluetoothAgentManagerServicePath));
   }

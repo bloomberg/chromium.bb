@@ -64,7 +64,9 @@ FakeBluetoothGattDescriptorClient::~FakeBluetoothGattDescriptorClient() {
     delete iter->second;
 }
 
-void FakeBluetoothGattDescriptorClient::Init(dbus::Bus* bus) {}
+void FakeBluetoothGattDescriptorClient::Init(
+    dbus::Bus* bus,
+    const std::string& bluetooth_service_name) {}
 
 void FakeBluetoothGattDescriptorClient::AddObserver(Observer* observer) {
   observers_.AddObserver(observer);

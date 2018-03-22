@@ -181,10 +181,11 @@ class BluetoothProfileManagerClientImpl : public BluetoothProfileManagerClient {
   }
 
  protected:
-  void Init(dbus::Bus* bus) override {
+  void Init(dbus::Bus* bus,
+            const std::string& bluetooth_service_name) override {
     DCHECK(bus);
     object_proxy_ = bus->GetObjectProxy(
-        bluetooth_profile_manager::kBluetoothProfileManagerServiceName,
+        bluetooth_service_name,
         dbus::ObjectPath(
             bluetooth_profile_manager::kBluetoothProfileManagerServicePath));
   }

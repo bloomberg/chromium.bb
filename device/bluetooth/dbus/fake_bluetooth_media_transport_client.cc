@@ -104,7 +104,9 @@ FakeBluetoothMediaTransportClient::~FakeBluetoothMediaTransportClient() =
     default;
 
 // DBusClient override.
-void FakeBluetoothMediaTransportClient::Init(dbus::Bus* bus) {}
+void FakeBluetoothMediaTransportClient::Init(
+    dbus::Bus* bus,
+    const std::string& bluetooth_service_name) {}
 
 void FakeBluetoothMediaTransportClient::AddObserver(
     BluetoothMediaTransportClient::Observer* observer) {
