@@ -114,9 +114,6 @@ class NET_EXPORT_PRIVATE DnsSession
   std::unique_ptr<StreamSocket> CreateTCPSocket(unsigned server_index,
                                                 const NetLogSource& source);
 
-  void ApplyPersistentData(const base::Value& data);
-  std::unique_ptr<const base::Value> GetPersistentData() const;
-
  private:
   friend class base::RefCounted<DnsSession>;
   ~DnsSession() override;

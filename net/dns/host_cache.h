@@ -154,7 +154,6 @@ class NET_EXPORT HostCache {
   };
 
   using EntryMap = std::map<Key, Entry>;
-  using EvictionCallback = base::Callback<void(const Key&, const Entry&)>;
 
   // Constructs a HostCache that stores up to |max_entries|.
   explicit HostCache(size_t max_entries);
@@ -192,10 +191,6 @@ class NET_EXPORT HostCache {
 
   // Marks all entries as stale on account of a network change.
   void OnNetworkChange();
-
-  void set_eviction_callback(const EvictionCallback& callback) {
-    eviction_callback_ = callback;
-  }
 
   void set_persistence_delegate(PersistenceDelegate* delegate);
 
@@ -264,7 +259,6 @@ class NET_EXPORT HostCache {
   EntryMap entries_;
   size_t max_entries_;
   int network_changes_;
-  EvictionCallback eviction_callback_;
   // Number of cache entries that were restored in the last call to
   // RestoreFromListValue(). Used in histograms.
   size_t restore_size_;
