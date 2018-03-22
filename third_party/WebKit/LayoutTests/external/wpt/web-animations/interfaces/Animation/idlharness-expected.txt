@@ -1,5 +1,6 @@
 This is a testharness.js-based test.
-Found 63 tests; 57 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 64 tests; 58 PASS, 6 FAIL, 0 TIMEOUT, 0 NOTRUN.
+PASS Animation interface.
 PASS Animation interface: existence and properties of interface object
 PASS Animation interface object length
 PASS Animation interface object name
