@@ -244,18 +244,6 @@ extern const base::Feature kExperimentalCrostiniUI{
 const base::Feature kExperimentalKeyboardLockUI{
     "ExperimentalKeyboardLockUI", base::FEATURE_DISABLED_BY_DEFAULT};
 
-#if BUILDFLAG(ENABLE_VR) || defined(OS_ANDROID)
-// Controls whether browsing in VR headsets is enabled.
-const base::Feature kVrBrowsing {
-  "VrBrowsing",
-#if defined(OS_ANDROID)
-      base::FEATURE_ENABLED_BY_DEFAULT
-#else
-      base::FEATURE_DISABLED_BY_DEFAULT
-#endif
-};
-#endif  // BUILDFLAG(ENABLE_VR) || defined(OS_ANDROID)
-
 #if BUILDFLAG(ENABLE_VR)
 // Enables the virtual keyboard for Chrome VR.
 const base::Feature kVrBrowserKeyboard{"VrBrowserKeyboard",

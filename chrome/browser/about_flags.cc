@@ -2220,10 +2220,6 @@ const FeatureEntry kFeatureEntries[] = {
      FEATURE_WITH_PARAMS_VALUE_TYPE(features::kWebXrRenderPath,
                                     kWebXrRenderPathVariations,
                                     "WebXrRenderPath")},
-    // TODO(crbug.com/731802): Use #if BUILDFLAG(ENABLE_VR_BROWSING) instead.
-    {"vr-browsing", flag_descriptions::kVrBrowsingName,
-     flag_descriptions::kVrBrowsingDescription, kOsAndroid,
-     FEATURE_VALUE_TYPE(features::kVrBrowsing)},
     {"vr-browser-keyboard", flag_descriptions::kVrBrowserKeyboardName,
      flag_descriptions::kVrBrowserKeyboardDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(features::kVrBrowserKeyboard)},

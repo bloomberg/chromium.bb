@@ -140,8 +140,7 @@ VrShell::VrShell(JNIEnv* env,
                  int display_width_pixels,
                  int display_height_pixels,
                  bool pause_content)
-    : vr_shell_enabled_(base::FeatureList::IsEnabled(features::kVrBrowsing)),
-      web_vr_autopresentation_expected_(
+    : web_vr_autopresentation_expected_(
           ui_initial_state.web_vr_autopresentation_expected),
       delegate_provider_(delegate),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
@@ -317,8 +316,6 @@ void VrShell::PostToGlThread(const base::Location& from_here,
 }
 
 void VrShell::OnContentPaused(bool paused) {
-  if (!vr_shell_enabled_)
-    return;
   device::VRDevice* device = delegate_provider_->GetDevice();
   if (!device)
     return;
