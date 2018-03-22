@@ -19,8 +19,15 @@ namespace {
 
 // Expects |actual_hosts| to equal |expected_hosts|.
 void ExpectMapEntriesEqual(const HostMap& expected_hosts,
+                           bool success,
                            const HostMap& actual_hosts) {
+  EXPECT_TRUE(success);
   EXPECT_EQ(expected_hosts, actual_hosts);
+}
+
+void ExpectFailure(bool success, const HostMap& actual_hosts) {
+  EXPECT_FALSE(success);
+  EXPECT_TRUE(actual_hosts.empty());
 }
 
 }  // namespace
@@ -43,14 +50,18 @@ class NetworkScannerTest : public testing::Test {
         base::BindOnce(&ExpectMapEntriesEqual, expected_hosts));
   }
 
+  void ExpectCallFailure() {
+    scanner_.FindHostsInNetwork(base::BindOnce(&ExpectFailure));
+  }
+
  private:
   NetworkScanner scanner_;
 
   DISALLOW_COPY_AND_ASSIGN(NetworkScannerTest);
 };
 
-TEST_F(NetworkScannerTest, ShouldFindNoHostsWithNoLocator) {
-  ExpectHostMapEqual(HostMap());
+TEST_F(NetworkScannerTest, SuccessIsFalseAndHostsMapIsEmptyWithNoLocator) {
+  ExpectCallFailure();
 }
 
 TEST_F(NetworkScannerTest, ShouldFindNoHostsWithOneLocator) {

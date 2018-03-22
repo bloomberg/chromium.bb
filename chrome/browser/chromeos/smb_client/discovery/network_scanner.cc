@@ -38,7 +38,7 @@ NetworkScanner::~NetworkScanner() = default;
 void NetworkScanner::FindHostsInNetwork(FindHostsCallback callback) {
   if (locators_.empty()) {
     // Fire the callback immediately if there are no registered HostLocators.
-    std::move(callback).Run(HostMap());
+    std::move(callback).Run(false /* success */, HostMap());
     return;
   }
 
@@ -54,10 +54,14 @@ void NetworkScanner::RegisterHostLocator(std::unique_ptr<HostLocator> locator) {
 }
 
 void NetworkScanner::OnHostsFound(uint32_t request_id,
+                                  bool success,
                                   const HostMap& host_map) {
   DCHECK_GT(requests_.count(request_id), 0u);
 
-  AddHostsToResults(request_id, host_map);
+  if (success) {
+    AddHostsToResults(request_id, host_map);
+  }
+
   FireCallbackIfFinished(request_id);
 }
 
@@ -98,7 +102,7 @@ void NetworkScanner::FireCallbackIfFinished(uint32_t request_id) {
     RequestInfo info = std::move(request_iter->second);
     requests_.erase(request_iter);
 
-    std::move(info.callback).Run(info.hosts_found);
+    std::move(info.callback).Run(true /* success */, info.hosts_found);
   }
 }
 
