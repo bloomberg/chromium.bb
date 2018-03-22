@@ -44,6 +44,7 @@ class HeadsUpDisplayLayerImpl;
 class ImageDecodeCache;
 class LayerTreeDebugState;
 class LayerTreeImpl;
+class LayerTreeFrameSink;
 class LayerTreeResourceProvider;
 class LayerTreeSettings;
 class MemoryHistory;
@@ -105,6 +106,7 @@ class CC_EXPORT LayerTreeImpl {
 
   // Methods called by the layer tree that pass-through or access LTHI.
   // ---------------------------------------------------------------------------
+  LayerTreeFrameSink* layer_tree_frame_sink();
   const LayerTreeSettings& settings() const;
   const LayerTreeDebugState& debug_state() const;
   viz::ContextProvider* context_provider() const;

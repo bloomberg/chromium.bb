@@ -1372,6 +1372,10 @@ TaskRunnerProvider* LayerTreeImpl::task_runner_provider() const {
   return host_impl_->task_runner_provider();
 }
 
+LayerTreeFrameSink* LayerTreeImpl::layer_tree_frame_sink() {
+  return host_impl_->layer_tree_frame_sink();
+}
+
 const LayerTreeSettings& LayerTreeImpl::settings() const {
   return host_impl_->settings();
 }

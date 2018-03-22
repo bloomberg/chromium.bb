@@ -1100,13 +1100,17 @@ class IntersectingQuadGLPixelTest
  public:
   void SetUp() override {
     IntersectingQuadPixelTest<TypeParam>::SetUp();
-    bool use_stream_video_draw_quad = false;
+    constexpr bool kUseStreamVideoDrawQuad = false;
+    constexpr bool kUseGpuMemoryBufferResources = false;
+
     video_resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
-        this->child_context_provider_.get(),
-        this->child_resource_provider_.get(), use_stream_video_draw_quad);
+        this->child_context_provider_.get(), nullptr,
+        this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
+        kUseGpuMemoryBufferResources);
     video_resource_updater2_ = std::make_unique<cc::VideoResourceUpdater>(
-        this->child_context_provider_.get(),
-        this->child_resource_provider_.get(), use_stream_video_draw_quad);
+        this->child_context_provider_.get(), nullptr,
+        this->child_resource_provider_.get(), kUseStreamVideoDrawQuad,
+        kUseGpuMemoryBufferResources);
   }
 
  protected:
@@ -1429,40 +1433,20 @@ class VideoGLRendererPixelTest : public cc::GLRendererPixelTest {
 
   void SetUp() override {
     GLRendererPixelTest::SetUp();
-    bool use_stream_video_draw_quad = false;
+    constexpr bool kUseStreamVideoDrawQuad = false;
+    constexpr bool kUseGpuMemoryBufferResources = false;
     video_resource_updater_ = std::make_unique<cc::VideoResourceUpdater>(
-        child_context_provider_.get(), child_resource_provider_.get(),
-        use_stream_video_draw_quad);
+        child_context_provider_.get(), nullptr, child_resource_provider_.get(),
+        kUseStreamVideoDrawQuad, kUseGpuMemoryBufferResources);
   }
 
   std::unique_ptr<cc::VideoResourceUpdater> video_resource_updater_;
 };
 
-enum class HighbitTexture {
-  Y8,
-  R16_EXT,
-};
-
-class VideoGLRendererPixelHiLoTest
-    : public VideoGLRendererPixelTest,
-      public ::testing::WithParamInterface<
-          ::testing::tuple<bool, HighbitTexture>> {
+class VideoGLRendererPixelHiLoTest : public VideoGLRendererPixelTest,
+                                     public testing::WithParamInterface<bool> {
  public:
-  void SetSupportHighbitTexture(HighbitTexture texture) {
-    switch (texture) {
-      case HighbitTexture::Y8:
-        break;
-      case HighbitTexture::R16_EXT:
-        video_resource_updater_->SetUseR16ForTesting(true);
-        break;
-    }
-  }
-
- private:
-  cc::TestInProcessContextProvider* GetTestInProcessContextProvider() {
-    return static_cast<cc::TestInProcessContextProvider*>(
-        output_surface_->context_provider());
-  }
+  bool IsHighbit() const { return GetParam(); }
 };
 
 TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
@@ -1477,13 +1461,9 @@ TEST_P(VideoGLRendererPixelHiLoTest, SimpleYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), rect, pass.get());
 
-  const bool highbit = testing::get<0>(GetParam());
-  const HighbitTexture format = testing::get<1>(GetParam());
-  SetSupportHighbitTexture(format);
-
   CreateTestYUVVideoDrawQuad_Striped(
       shared_state, media::PIXEL_FORMAT_I420, media::COLOR_SPACE_SD_REC601,
-      false, highbit, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
+      false, IsHighbit(), gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
       video_resource_updater_.get(), rect, rect, resource_provider_.get(),
       child_resource_provider_.get());
 
@@ -1509,13 +1489,9 @@ TEST_P(VideoGLRendererPixelHiLoTest, ClippedYUVRect) {
   SharedQuadState* shared_state =
       CreateTestSharedQuadState(gfx::Transform(), viewport, pass.get());
 
-  const bool highbit = testing::get<0>(GetParam());
-  const HighbitTexture format = testing::get<1>(GetParam());
-  SetSupportHighbitTexture(format);
-
   CreateTestYUVVideoDrawQuad_Striped(
       shared_state, media::PIXEL_FORMAT_I420, media::COLOR_SPACE_SD_REC601,
-      false, highbit, gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
+      false, IsHighbit(), gfx::RectF(0.0f, 0.0f, 1.0f, 1.0f), pass.get(),
       video_resource_updater_.get(), draw_rect, viewport,
       resource_provider_.get(), child_resource_provider_.get());
   RenderPassList pass_list;
@@ -1583,12 +1559,7 @@ TEST_F(VideoGLRendererPixelTest, SimpleYUVRectBlack) {
 }
 
 // First argument (test case prefix) is intentionally left empty.
-INSTANTIATE_TEST_CASE_P(
-    ,
-    VideoGLRendererPixelHiLoTest,
-    testing::Combine(testing::Bool(),
-                     testing::Values(HighbitTexture::Y8,
-                                     HighbitTexture::R16_EXT)));
+INSTANTIATE_TEST_CASE_P(, VideoGLRendererPixelHiLoTest, testing::Bool());
 
 TEST_F(VideoGLRendererPixelTest, SimpleYUVJRect) {
   gfx::Rect rect(this->device_viewport_size_);
