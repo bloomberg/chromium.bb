@@ -825,7 +825,7 @@ std::ostream& operator<<(std::ostream& out, const String& string) {
 
 #ifndef NDEBUG
 void String::Show() const {
-  DataLogF("%s\n", AsciiDebug(Impl()).data());
+  DeprecatedDataLogF("%s\n", AsciiDebug(Impl()).data());
 }
 #endif
 

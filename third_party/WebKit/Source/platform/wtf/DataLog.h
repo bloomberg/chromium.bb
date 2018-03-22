@@ -31,10 +31,11 @@
 
 namespace WTF {
 
-WTF_EXPORT PRINTF_FORMAT(1, 2) void DataLogF(const char* format, ...);
+// Do not use this function.  Use base/logging.h instead.
+WTF_EXPORT PRINTF_FORMAT(1, 2) void DeprecatedDataLogF(const char* format, ...);
 
 }  // namespace WTF
 
-using WTF::DataLogF;
+using WTF::DeprecatedDataLogF;
 
 #endif  // DataLog_h

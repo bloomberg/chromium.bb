@@ -68,21 +68,22 @@ void HashTableStats::DumpStats() {
   if (isGlobalSingleton)
     hashTableStatsMutex().lock();
 
-  DataLogF("\nWTF::HashTable statistics\n\n");
-  DataLogF("%d accesses\n", numAccesses);
-  DataLogF("%d total collisions, average %.2f probes per access\n",
-           numCollisions, 1.0 * (numAccesses + numCollisions) / numAccesses);
-  DataLogF("longest collision chain: %d\n", maxCollisions);
+  DeprecatedDataLogF("\nWTF::HashTable statistics\n\n");
+  DeprecatedDataLogF("%d accesses\n", numAccesses);
+  DeprecatedDataLogF("%d total collisions, average %.2f probes per access\n",
+                     numCollisions,
+                     1.0 * (numAccesses + numCollisions) / numAccesses);
+  DeprecatedDataLogF("longest collision chain: %d\n", maxCollisions);
   for (int i = 1; i <= maxCollisions; i++) {
-    DataLogF(
+    DeprecatedDataLogF(
         "  %d lookups with exactly %d collisions (%.2f%% , %.2f%% with this "
         "many or more)\n",
         collisionGraph[i], i,
         100.0 * (collisionGraph[i] - collisionGraph[i + 1]) / numAccesses,
         100.0 * collisionGraph[i] / numAccesses);
   }
-  DataLogF("%d rehashes\n", numRehashes);
-  DataLogF("%d reinserts\n", numReinserts);
+  DeprecatedDataLogF("%d rehashes\n", numRehashes);
+  DeprecatedDataLogF("%d reinserts\n", numReinserts);
 
   if (isGlobalSingleton)
     hashTableStatsMutex().unlock();
