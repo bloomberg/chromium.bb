@@ -12,13 +12,19 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/l10n/l10n_util.h"
 
+#if defined(OS_MACOSX)
+#define MAYBE_Dialog_Basic DISABLED_Dialog_Basic
+#else
+#define MAYBE_Dialog_Basic Dialog_Basic
+#endif
+
 namespace media_router {
 
 namespace {
 const char kTestSinkName[] = "test-sink-1";
 }
 
-IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, Dialog_Basic) {
+IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest, MAYBE_Dialog_Basic) {
   OpenTestPage(FILE_PATH_LITERAL("basic_test.html"));
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
