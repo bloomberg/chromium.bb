@@ -2462,6 +2462,7 @@ registerLoadRequestForURL:(const GURL&)requestURL
   web::FormActivityParams params;
   if (!message->GetString("formName", &params.form_name) ||
       !message->GetString("fieldName", &params.field_name) ||
+      !message->GetString("fieldIdentifier", &params.field_identifier) ||
       !message->GetString("fieldType", &params.field_type) ||
       !message->GetString("type", &params.type) ||
       !message->GetString("value", &params.value)) {

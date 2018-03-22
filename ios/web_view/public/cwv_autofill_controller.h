@@ -30,12 +30,13 @@ CWV_EXPORT
 - (void)clearFormWithName:(NSString*)formName
         completionHandler:(nullable void (^)(void))completionHandler;
 
-// For the field named |fieldName| in the form named |formName|, fetches
-// suggestions that can be used to autofill.
+// For the field named |fieldName|, identified by |fieldIdentifier| in the form
+// named |formName|, fetches suggestions that can be used to autofill.
 // No-op if no such form and field can be found in the current page.
 // |completionHandler| will only be called on success.
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
                               fieldName:(NSString*)fieldName
+                        fieldIdentifier:(NSString*)fieldIdentifier
                       completionHandler:
                           (void (^)(NSArray<CWVAutofillSuggestion*>*))
                               completionHandler;

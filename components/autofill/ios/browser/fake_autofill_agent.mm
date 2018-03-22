@@ -32,8 +32,9 @@
 
 - (void)addSuggestion:(FormSuggestion*)suggestion
           forFormName:(NSString*)formName
-            fieldName:(NSString*)fieldName {
-  NSString* key = [self keyForFormName:formName fieldName:fieldName];
+      fieldIdentifier:(NSString*)fieldIdentifier {
+  NSString* key =
+      [self keyForFormName:formName fieldIdentifier:fieldIdentifier];
   NSMutableArray* suggestions = _suggestionsByFormAndFieldName[key];
   if (!suggestions) {
     suggestions = [NSMutableArray array];
@@ -43,15 +44,17 @@
 }
 
 - (FormSuggestion*)selectedSuggestionForFormName:(NSString*)formName
-                                       fieldName:(NSString*)fieldName {
-  NSString* key = [self keyForFormName:formName fieldName:fieldName];
+                                 fieldIdentifier:(NSString*)fieldIdentifier {
+  NSString* key =
+      [self keyForFormName:formName fieldIdentifier:fieldIdentifier];
   return _selectedSuggestionByFormAndFieldName[key];
 }
 
 #pragma mark - FormSuggestionProvider
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                                     field:(NSString*)fieldName
+                                 fieldName:(NSString*)fieldName
+                           fieldIdentifier:(NSString*)fieldIdentifier
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
@@ -61,13 +64,15 @@
                              (SuggestionsAvailableCompletion)completion {
   web::WebThread::PostTask(
       web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
-        NSString* key = [self keyForFormName:formName fieldName:fieldName];
+        NSString* key =
+            [self keyForFormName:formName fieldIdentifier:fieldIdentifier];
         completion([_suggestionsByFormAndFieldName[key] count] ? YES : NO);
       }));
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
-                             field:(NSString*)fieldName
+                         fieldName:(NSString*)fieldName
+                   fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
@@ -75,18 +80,21 @@
                  completionHandler:(SuggestionsReadyCompletion)completion {
   web::WebThread::PostTask(
       web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
-        NSString* key = [self keyForFormName:formName fieldName:fieldName];
+        NSString* key =
+            [self keyForFormName:formName fieldIdentifier:fieldIdentifier];
         completion(_suggestionsByFormAndFieldName[key], self);
       }));
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
-                   forField:(NSString*)fieldName
+                  fieldName:(NSString*)fieldName
+            fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
           completionHandler:(SuggestionHandledCompletion)completion {
   web::WebThread::PostTask(
       web::WebThread::UI, FROM_HERE, base::BindBlockArc(^{
-        NSString* key = [self keyForFormName:formName fieldName:fieldName];
+        NSString* key =
+            [self keyForFormName:formName fieldIdentifier:fieldIdentifier];
         _selectedSuggestionByFormAndFieldName[key] = suggestion;
         completion();
       }));
@@ -94,9 +102,10 @@
 
 #pragma mark - Private Methods
 
-- (NSString*)keyForFormName:(NSString*)formName fieldName:(NSString*)fieldName {
+- (NSString*)keyForFormName:(NSString*)formName
+            fieldIdentifier:(NSString*)fieldIdentifier {
   // Uniqueness ensured because spaces are not allowed in html name attributes.
-  return [NSString stringWithFormat:@"%@ %@", formName, fieldName];
+  return [NSString stringWithFormat:@"%@ %@", formName, fieldIdentifier];
 }
 
 @end

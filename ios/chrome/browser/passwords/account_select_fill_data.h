@@ -80,13 +80,13 @@ class AccountSelectFillData {
   // Returns whether suggestions are available for field with name
   // |field_name| which is in the form with name |form_name|.
   bool IsSuggestionsAvailable(const base::string16& form_name,
-                              const base::string16& field_name) const;
+                              const base::string16& field_identifier) const;
 
   // Returns suggestions for field with name |field_name| which is in the form
   // with name |form_name|.
   std::vector<UsernameAndRealm> RetrieveSuggestions(
       const base::string16& form_name,
-      const base::string16& field_name,
+      const base::string16& field_identifier,
       const base::string16& typed_value) const;
 
   // Returns data for password form filling based on |username| chosen by the
@@ -109,7 +109,7 @@ class AccountSelectFillData {
 
   // Helper method for receiving FormInfo from |forms_| by key lookup.
   const FormInfo* GetFormInfo(const base::string16& form_name,
-                              const base::string16& field_name) const;
+                              const base::string16& field_identifier) const;
 
   DISALLOW_COPY_AND_ASSIGN(AccountSelectFillData);
 };

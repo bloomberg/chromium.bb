@@ -137,22 +137,22 @@ const ExtractMask kFormExtractMasks[] = {
 NSArray* GetFormFieldAttributeListsToCheck(NSUInteger mask) {
   if (!(mask & EXTRACT_VALUE)) {
     return @[
-      @"name", @"form_control_type", @"autocomplete_attribute", @"max_length",
-      @"should_autocomplete", @"is_checkable"
+      @"identifier", @"name", @"form_control_type", @"autocomplete_attribute",
+      @"max_length", @"should_autocomplete", @"is_checkable"
     ];
   }
 
   if (mask & EXTRACT_OPTIONS) {
     return @[
-      @"name", @"form_control_type", @"autocomplete_attribute", @"max_length",
-      @"should_autocomplete", @"is_checkable", @"value", @"option_values",
-      @"option_contents"
+      @"identifier", @"name", @"form_control_type", @"autocomplete_attribute",
+      @"max_length", @"should_autocomplete", @"is_checkable", @"value",
+      @"option_values", @"option_contents"
     ];
   }
 
   return @[
-    @"name", @"form_control_type", @"autocomplete_attribute", @"max_length",
-    @"should_autocomplete", @"is_checkable", @"value"
+    @"identifier", @"name", @"form_control_type", @"autocomplete_attribute",
+    @"max_length", @"should_autocomplete", @"is_checkable", @"value"
   ];
 }
 
@@ -166,9 +166,10 @@ NSArray* GetFormFieldAttributeListsToCheck(NSUInteger mask) {
 NSArray* GetTestFormInputElementWithLabelFromPrevious() {
   return @[
       @("* First name: "
-          "<INPUT type='text' name='firstname' value='John'/>"),
+          "<INPUT type='text' name='firstname' id='firstname' value='John'/>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* First name:'", @"label",
+          @"'firstname'", @"identifier",
           @"'firstname'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -185,11 +186,12 @@ NSArray* GetTestFormInputElementWithLabelFromPrevious() {
 NSArray* GetTestFormInputElementWithLabelFromEnclosingLabelBefore() {
   return @[
       @("<LABEL>* First name: "
-          "<INPUT type='text' name='firstname' value='John'/>"
+          "<INPUT type='text' name='firstname' id='firstname' value='John'/>"
           "</LABEL>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* First name:'", @"label",
           @"'firstname'", @"name",
+          @"'firstname'", @"identifier",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
           GetDefaultMaxLengthString(), @"max_length",
@@ -205,9 +207,10 @@ NSArray* GetTestFormInputElementWithLabelFromEnclosingLabelBefore() {
 NSArray* GetTestFormInputElementWithLabelFromPreviousSpan() {
   return @[
       @("* Last name<span>:</span> "
-          "<INPUT type='text' name='lastname' value='John'/>"),
+          "<INPUT type='text' name='lastname' id='lastname' value='John'/>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Last name:'", @"label",
+          @"'lastname'", @"identifier",
           @"'lastname'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -224,9 +227,11 @@ NSArray* GetTestFormInputElementWithLabelFromPreviousSpan() {
 NSArray* GetTestFormInputElementWithLabelFromPreviousParagraph() {
   return @[
       @("<p>* Email:</p> "
-          "<INPUT type='email' name='email' value='john@example.com'/>"),
+          "<INPUT type='email' name='email' id='email' "
+          "value='john@example.com'/>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Email:'", @"label",
+          @"'email'", @"identifier",
           @"'email'", @"name",
           @"'email'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -246,6 +251,7 @@ NSArray* GetTestFormInputElementWithLabelFromPreviousLabel() {
           "<INPUT type='tel' id='telephone' value='12345678'/>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Telephone:'", @"label",
+          @"'telephone'", @"identifier",
           @"'telephone'", @"name",
           @"'tel'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -262,10 +268,12 @@ NSArray* GetTestFormInputElementWithLabelFromPreviousLabel() {
 NSArray* GetTestFormInputElementWithLabelFromPreviousLabelOtherIgnored() {
   return @[
       @("Other Text <label>* Blog:</label> "
-          "<INPUT type='url' autocomplete='off' value='www.jogh.blog'/>"),
+          "<INPUT type='url' id='blog' autocomplete='off' "
+          "value='www.jogh.blog'/>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Blog:'", @"label",
-          @"''", @"name",
+          @"'blog'", @"identifier",
+          @"'blog'", @"name",
           @"'url'", @"form_control_type",
           @"'off'", @"autocomplete_attribute",
           GetDefaultMaxLengthString(), @"max_length",
@@ -281,9 +289,11 @@ NSArray* GetTestFormInputElementWithLabelFromPreviousLabelOtherIgnored() {
 NSArray* GetTestFormInputElementWithLabelFromPreviousTextSpanBr() {
   return @[
       @("* Expected visits<span>:</span> <br>"
-          "<INPUT type='number' name='expected number of clicks'/>"),
+          "<INPUT type='number' id='number' "
+          "name='expected number of clicks'/>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Expected visits:'", @"label",
+          @"'number'", @"identifier",
           @"'expected number of clicks'", @"name",
           @"'number'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -300,9 +310,10 @@ NSArray* GetTestFormInputElementWithLabelFromPreviousTextSpanBr() {
 NSArray* GetTestFormInputElementWithLabelFromPreviousTextBrAndSpan() {
   return @[
       @("Other <br> * Password<span>:</span> "
-          "<INPUT type='password' autocomplete='off' name='pwd'/>"),
+          "<INPUT type='password' autocomplete='off' name='pwd' id='pwd'/>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Password:'", @"label",
+          @"'pwd'", @"identifier",
           @"'pwd'", @"name",
           @"'password'", @"form_control_type",
           @"'off'", @"autocomplete_attribute",
@@ -326,6 +337,7 @@ NSArray* GetTestFormInputElementWithLabelFromListItem() {
           "</LI>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Code:'", @"label",
+          @"'first code'", @"identifier",
           @"'first code'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -339,6 +351,7 @@ NSArray* GetTestFormInputElementWithLabelFromListItem() {
           nil],
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Code:'", @"label",
+          @"'middle code'", @"identifier",
           @"'middle code'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -352,6 +365,7 @@ NSArray* GetTestFormInputElementWithLabelFromListItem() {
           nil],
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Code:'", @"label",
+          @"'last code'", @"identifier",
           @"'last code'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -380,6 +394,7 @@ NSArray* GetTestFormInputElementWithLabelFromTableColumnTD() {
           "</TABLE>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* First name:'", @"label",
+          @"'tabletdname'", @"identifier",
           @"'tabletdname'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -393,6 +408,7 @@ NSArray* GetTestFormInputElementWithLabelFromTableColumnTD() {
           nil],
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'Email:'", @"label",
+          @"'tabletdemail'", @"identifier",
           @"'tabletdemail'", @"name",
           @"'email'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -411,7 +427,8 @@ NSArray* GetTestFormInputElementWithLabelFromTableColumnTH() {
       @("<TABLE>"
           "<TR>"
           "  <TH>* First name:</TH>"
-          "  <TD><INPUT type='text' name='nameintableth' value='John'/></TD>"
+          "  <TD><INPUT type='text' name='nameintableth' id='nameintableth'"
+          "             value='John'/></TD>"
           "</TR>"
           "<TR>"
           "  <TD>Email:</TD>"
@@ -421,6 +438,7 @@ NSArray* GetTestFormInputElementWithLabelFromTableColumnTH() {
           "</TABLE>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* First name:'", @"label",
+          @"'nameintableth'", @"identifier",
           @"'nameintableth'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -434,6 +452,7 @@ NSArray* GetTestFormInputElementWithLabelFromTableColumnTH() {
           nil],
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'Email:'", @"label",
+          @"'emailtableth'",  @"identifier",
           @"'emailtableth'",  @"name",
           @"'email'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -457,6 +476,7 @@ NSArray* GetTestFormInputElementWithLabelFromTableNested() {
           "</TABLE>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* First name:'", @"label",
+          @"'nametablenested'", @"identifier",
           @"'nametablenested'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -477,11 +497,13 @@ NSArray* GetTestFormInputElementWithLabelFromTableRow() {
           "  <TD>* <FONT>First </FONT><FONT>name:</FONT></TD>"
           "</TR>"
           "<TR>"
-          "  <TD><INPUT type='text'  name='nametablerow' value='John'/></TD>"
+          "  <TD><INPUT type='text'  name='nametablerow'  id='nametablerow'"
+          "             value='John'/></TD>"
           "</TR>"
           "</TABLE>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* First name:'", @"label",
+          @"'nametablerow'", @"identifier",
           @"'nametablerow'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -499,11 +521,13 @@ NSArray* GetTestFormInputElementWithLabelFromDivTable() {
   return @[
       @("<DIV>* First name:<BR>"
           "<SPAN>"
-          "<INPUT type='text' name='namedivtable' value='John'>"
+          "<INPUT type='text' name='namedivtable' id='namedivtable'"
+          "       value='John'>"
           "</SPAN>"
           "</DIV>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* First name:'", @"label",
+          @"'namedivtable'", @"identifier",
           @"'namedivtable'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -530,12 +554,14 @@ NSArray* GetTestFormInputElementWithLabelFromDefinitionList() {
           "  </DT>"
           "  <DD>"
           "    <FONT>"
-          "      <INPUT type='favorite sport' name='sport' value='Tennis'/>"
+          "      <INPUT type='favorite sport' name='sport' id='sport'"
+          "             value='Tennis'/>"
           "    </FONT>"
           "  </DD>"
           " </DL>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'* Favorite Sport'", @"label",
+          @"'sport'", @"identifier",
           @"'sport'", @"name",
           @"'text'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -551,10 +577,12 @@ NSArray* GetTestFormInputElementWithLabelFromDefinitionList() {
 
 NSArray* GetTestInputRadio() {
   return @[
-      @("<input type='radio' name='boolean' value='true'/> True"
-          "<input type='radio' name='boolean' value='false'/> False"),
+      @("<input type='radio' name='boolean'  id='boolean1' value='true'/> True"
+          "<input type='radio' name='boolean'  id='boolean2' value='false'/> "
+          "False"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'True'", @"label",
+          @"'boolean1'", @"identifier",
           @"'boolean'", @"name",
           @"'radio'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -568,6 +596,7 @@ NSArray* GetTestInputRadio() {
           nil],
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'False'", @"label",
+          @"'boolean2'", @"identifier",
           @"'boolean'", @"name",
           @"'radio'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -583,11 +612,15 @@ NSArray* GetTestInputRadio() {
 
 NSArray* GetTestInputCheckbox() {
   return @[
-      @("<input type='checkbox' name='vehicle' value='Bike'> Bicycle"
-          "<input type='checkbox' name='vehicle' value='Car'> Automobile"
-          "<input type='checkbox' name='vehicle' value='Rocket'> Missile"),
+      @("<input type='checkbox' name='vehicle' id='vehicle1' value='Bike'> "
+          "Bicycle"
+          "<input type='checkbox' name='vehicle' id='vehicle2' value='Car'> "
+          "Automobile"
+          "<input type='checkbox' name='vehicle' id='vehicle3' value='Rocket'> "
+          "Missile"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'Bicycle'", @"label",
+          @"'vehicle1'", @"identifier",
           @"'vehicle'", @"name",
           @"'checkbox'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -601,6 +634,7 @@ NSArray* GetTestInputCheckbox() {
           nil],
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'Automobile'", @"label",
+          @"'vehicle2'", @"identifier",
           @"'vehicle'", @"name",
           @"'checkbox'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -614,6 +648,7 @@ NSArray* GetTestInputCheckbox() {
           nil],
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'Missile'", @"label",
+          @"'vehicle3'", @"identifier",
           @"'vehicle'", @"name",
           @"'checkbox'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -630,13 +665,14 @@ NSArray* GetTestInputCheckbox() {
 NSArray* GetTestFormSelectElement() {
   return @[
       @("  <label>State:"
-          "    <select name='state'>"
+          "    <select name='state' id='state'>"
           "      <option value='CA'>California</option>"
           "      <option value='TX'>Texas</option>"
           "    </select>"
           "   </label>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'State:'", @"label",
+          @"'state'", @"identifier",
           @"'state'", @"name",
           @"'select-one'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -653,7 +689,7 @@ NSArray* GetTestFormSelectElement() {
 NSArray* GetTestFormSelectElementWithOptgroup() {
   return @[
       @("  <label>Course:"
-          "    <select name='course'>"
+          "    <select name='course' id='course'>"
           "     <optgroup label='8.01 Physics I: Classical Mechanics'>"
           "      <option value='8.01.1'>Lecture 01: Powers of Ten"
           "      <option value='8.01.2'>Lecture 02: 1D Kinematics"
@@ -666,6 +702,7 @@ NSArray* GetTestFormSelectElementWithOptgroup() {
           "  </label>"),
       [NSDictionary dictionaryWithObjectsAndKeys:
           @"'Course:'", @"label",
+          @"'course'", @"identifier",
           @"'course'", @"name",
           @"'select-one'", @"form_control_type",
           @"undefined", @"autocomplete_attribute",
@@ -1516,13 +1553,14 @@ TEST_F(AutofillControllerJsTest, ExtractFormsAndFormElements) {
 
 TEST_F(AutofillControllerJsTest,
        ExtractFormsAndFormElementsWithFormAssociatedElementsOutOfForm) {
-  NSString* html = @"<html><body>"
-                    "<form id='testform'></form>"
-                    "1 <input type='text' name='name1' form='testform'></input>"
-                    "2 <input type='text' name='name2' form='testform'></input>"
-                    "3 <input type='text' name='name3' form='testform'></input>"
-                    "4 <input type='text' name='name4' form='testform'></input>"
-                    "</body></html>";
+  NSString* html =
+      @"<html><body>"
+       "<form id='testform'></form>"
+       "1 <input type='text' name='name1' id='name1' form='testform'></input>"
+       "2 <input type='text' name='name2' id='name2' form='testform'></input>"
+       "3 <input type='text' name='name3' id='name3' form='testform'></input>"
+       "4 <input type='text' name='name4' id='name4' form='testform'></input>"
+       "</body></html>";
   LoadHtml(html);
 
   NSString* verifying_javascript = @"forms[0]['fields'][0]['name']==='name1' &&"
@@ -1566,6 +1604,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
     @"fields" : @[
       @{
         @"name" : @"firstname",
+        @"identifier" : @"firstname",
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
@@ -1576,6 +1615,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"vehicle",
+        @"identifier" : @"vehicle1",
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
@@ -1585,6 +1625,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"vehicle",
+        @"identifier" : @"vehicle2",
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
@@ -1594,6 +1635,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"vehicle",
+        @"identifier" : @"vehicle3",
         @"form_control_type" : @"checkbox",
         @"should_autocomplete" : @true,
         @"is_checkable" : @true,
@@ -1603,6 +1645,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"nameintableth",
+        @"identifier" : @"nameintableth",
         @"form_control_type" : @"text",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
@@ -1613,6 +1656,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"emailtableth",
+        @"identifier" : @"emailtableth",
         @"form_control_type" : @"email",
         @"max_length" : GetDefaultMaxLength(),
         @"should_autocomplete" : @true,
@@ -1623,6 +1667,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"pwd",
+        @"identifier" : @"pwd",
         @"form_control_type" : @"password",
         @"autocomplete_attribute" : @"off",
         @"max_length" : GetDefaultMaxLength(),
@@ -1634,6 +1679,7 @@ TEST_F(AutofillControllerJsTest, ExtractForms) {
       },
       @{
         @"name" : @"state",
+        @"identifier" : @"state",
         @"form_control_type" : @"select-one",
         @"is_focusable" : @1,
         @"option_values" : @[ @"CA", @"TX" ],
@@ -1701,7 +1747,9 @@ TEST_F(AutofillControllerJsTest, FillActiveFormField) {
               ExecuteJavaScriptWithFormat(
                   @"var element=document.getElementsByName('lastname')[0];"
                    "element.focus();"
-                   "var data={\"name\":\"lastname\",\"value\":\"%@\"};"
+                   "var "
+                   "data={\"name\":\"lastname\",\"value\":\"%@\","
+                   "\"identifier\":\"lastname\"};"
                    "__gCrWeb.autofill.fillActiveFormField(data);"
                    "element.value",
                   newValue));
@@ -1710,7 +1758,9 @@ TEST_F(AutofillControllerJsTest, FillActiveFormField) {
                         @"var element=document.getElementsByName('gl')[0];"
                          "element.focus();"
                          "var oldValue = element.value;"
-                         "var data={\"name\":\"lastname\",\"value\":\"%@\"};"
+                         "var "
+                         "data={\"name\":\"lastname\",\"value\":\"%@\","
+                         "\"identifier\":\"lastname\"};"
                          "__gCrWeb.autofill.fillActiveFormField(data);"
                          "element.value === oldValue",
                         newValue))

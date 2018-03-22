@@ -65,15 +65,15 @@ bool AccountSelectFillData::Empty() const {
 
 bool AccountSelectFillData::IsSuggestionsAvailable(
     const base::string16& form_name,
-    const base::string16& field_name) const {
-  return GetFormInfo(form_name, field_name) != nullptr;
+    const base::string16& field_identifier) const {
+  return GetFormInfo(form_name, field_identifier) != nullptr;
 }
 
 std::vector<UsernameAndRealm> AccountSelectFillData::RetrieveSuggestions(
     const base::string16& form_name,
-    const base::string16& field_name,
+    const base::string16& field_identifier,
     const base::string16& typed_value) const {
-  last_requested_form_ = GetFormInfo(form_name, field_name);
+  last_requested_form_ = GetFormInfo(form_name, field_identifier);
   DCHECK(last_requested_form_);
   std::vector<UsernameAndRealm> result;
   for (const Credential& credential : credentials_) {
@@ -111,8 +111,8 @@ std::unique_ptr<FillData> AccountSelectFillData::GetFillData(
 
 const FormInfo* AccountSelectFillData::GetFormInfo(
     const base::string16& form_name,
-    const base::string16& field_name) const {
-  std::pair<base::string16, base::string16> key(form_name, field_name);
+    const base::string16& field_identifier) const {
+  std::pair<base::string16, base::string16> key(form_name, field_identifier);
   auto it = forms_.find(key);
   return it == forms_.end() ? nullptr : &it->second;
 }

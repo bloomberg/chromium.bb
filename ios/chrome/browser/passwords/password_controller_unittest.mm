@@ -741,16 +741,18 @@ static NSString* kHtmlWithMultiplePasswordForms =
      "<input id=\"un6'\" type='text' name=\"u6'\">"
      "<input id=\"pw6'\" type='password' name=\"p6'\">"
      "</form>"
-     "<iframe name='pf'></iframe>"
+     "<iframe id='pf' name='pf'></iframe>"
+     "<iframe id='pf2' name='pf2'></iframe>"
      "<script>"
      "  var doc = frames['pf'].document.open();"
      // Add a form inside iframe. It should also be matched and autofilled.
-     "  doc.write('<form><input id=\\'un7\\' type=\\'text\\' name=\\'u4\\'>');"
-     "  doc.write('<input id=\\'pw7\\' type=\\'password\\' name=\\'p4\\'>');"
+     "  doc.write('<form><input id=\\'un4\\' type=\\'text\\' name=\\'u4\\'>');"
+     "  doc.write('<input id=\\'pw4\\' type=\\'password\\' name=\\'p4\\'>');"
      "  doc.write('</form>');"
      // Add a non-password form inside iframe. It should not be matched.
-     "  doc.write('<form><input id=\\'un8\\' type=\\'text\\' name=\\'u4\\'>');"
-     "  doc.write('<input id=\\'pw8\\' type=\\'text\\' name=\\'p4\\'>');"
+     "  var doc = frames['pf2'].document.open();"
+     "  doc.write('<form><input id=\\'un4\\' type=\\'text\\' name=\\'u4\\'>');"
+     "  doc.write('<input id=\\'pw4\\' type=\\'text\\' name=\\'p4\\'>');"
      "  doc.write('</form>');"
      "  doc.close();"
      "</script>"
@@ -779,20 +781,24 @@ static NSString* kClearInputFieldsScript =
 // A script that runs after autofilling forms.  It returns ids and values of all
 // non-empty fields, including those in iframes.
 static NSString* kInputFieldValueVerificationScript =
-    @"function findAllInputs(win) {"
+    @"function findAllInputsInFrame(win, prefix) {"
      "  var result = '';"
      "  var inputs = win.document.getElementsByTagName('input');"
      "  for (var i = 0; i < inputs.length; i++) {"
      "    var input = inputs[i];"
      "    if (input.value) {"
-     "      result += input.id + '=' + input.value + ';';"
+     "      result += prefix + input.id + '=' + input.value + ';';"
      "    }"
      "  }"
      "  var frames = win.frames;"
      "  for (var i = 0; i < frames.length; i++) {"
-     "    result += findAllInputs(frames[i]);"
+     "    result += findAllInputsInFrame("
+     "        frames[i], prefix + frames[i].name +'.');"
      "  }"
      "  return result;"
+     "};"
+     "function findAllInputs(win) {"
+     "  return findAllInputsInFrame(win, '');"
      "};"
      "var result = findAllInputs(window); result";
 
@@ -818,9 +824,9 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       base_url,
-      "u0",
+      "un0",
       "test_user",
-      "p0",
+      "pw0",
       "test_password",
       YES,
       @"un0=test_user;pw0=test_password;"
@@ -830,22 +836,21 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       base_url,
-      "u4",
+      "un4",
       "test_user",
-      "p4",
+      "pw4",
       "test_password",
       YES,
-      @"un4=test_user;pw4=test_password;un5=test_user;pw5=test_password;"
-      "un7=test_user;pw7=test_password;"
+      @"un4=test_user;pw4=test_password;pf.un4=test_user;pf.pw4=test_password;"
     },
     // The form matches despite a different action: the only difference
     // is a query and reference.
     {
       base_url,
       base_url,
-      "u1",
+      "un1",
       "test_user",
-      "p1",
+      "pw1",
       "test_password",
       YES,
       @"un1=test_user;pw1=test_password;"
@@ -854,9 +859,9 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       "http://someotherfakedomain.com",
       base_url,
-      "u0",
+      "un0",
       "test_user",
-      "p0",
+      "pw0",
       "test_password",
       NO,
       @""
@@ -865,9 +870,9 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       "http://someotherfakedomain.com",
-      "u0",
+      "un0",
       "test_user",
-      "p0",
+      "pw0",
       "test_password",
       NO,
       @""
@@ -876,9 +881,9 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       base_url,
-      "u0",
+      "un0",
       "test_user",
-      "p1",
+      "pw1",
       "test_password",
       NO,
       @""
@@ -888,9 +893,9 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       base_url,
-      "u3",
+      "un3",
       "test_user",
-      "p3",
+      "pw3",
       "test_password",
       YES,
       @"un3=test_user;pw3=test_password;"
@@ -899,9 +904,9 @@ TEST_F(PasswordControllerTest, FillPasswordForm) {
     {
       base_url,
       base_url,
-      "u6'",
+      "un6'",
       "test_user",
-      "p6'",
+      "pw6'",
       "test_password",
       YES,
       @"un6'=test_user;pw6'=test_password;"
@@ -1018,8 +1023,8 @@ BOOL PasswordControllerTest::BasicFormFill(NSString* html) {
   LoadHtml(html);
   const std::string base_url = BaseUrl();
   PasswordFormFillData form_data;
-  SetPasswordFormFillData(form_data, base_url, base_url, "u0", "test_user",
-                          "p0", "test_password", nullptr, nullptr, false);
+  SetPasswordFormFillData(form_data, base_url, base_url, "un0", "test_user",
+                          "pw0", "test_password", nullptr, nullptr, false);
   __block BOOL block_was_called = NO;
   __block BOOL return_value = NO;
   [passwordController_ fillPasswordForm:form_data
@@ -1146,7 +1151,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
   // we can test with an initially-empty username field. Testing with a
   // username field that contains input is performed by a specific test below.
   PasswordFormFillData form_data;
-  SetPasswordFormFillData(form_data, base_url, base_url, "u'", "user0", "p'",
+  SetPasswordFormFillData(form_data, base_url, base_url, "un", "user0", "pw",
                           "password0", "abc", "def", true);
   form_data.name = base::ASCIIToUTF16(FormName(0));
 
@@ -1318,7 +1323,8 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     __block BOOL block_was_called = NO;
     [passwordController_
         retrieveSuggestionsForForm:form_name
-                             field:username_element
+                         fieldName:username_element
+                   fieldIdentifier:username_element
                          fieldType:@"text"
                               type:@"focus"
                         typedValue:@"abc"
@@ -1349,7 +1355,8 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
     };
     [passwordController_
         didSelectSuggestion:suggestion
-                   forField:@"u"
+                  fieldName:@"u"
+            fieldIdentifier:@"u"
                        form:base::SysUTF8ToNSString(FormName(0))
           completionHandler:completion];
     EXPECT_TRUE(
@@ -1621,7 +1628,7 @@ TEST_F(PasswordControllerTest, SavingFromSameOriginIframe) {
               LogSavePasswordProgress(testing::Ne(kExpectedMessage)))
       .Times(testing::AnyNumber());
 
-  LoadHtml(@"<iframe id='frame1'></iframe>");
+  LoadHtml(@"<iframe id='frame1' name='frame1'></iframe>");
   ExecuteJavaScript(
       @"document.getElementById('frame1').contentDocument.body.innerHTML = "
        "'<form id=\"form1\">"
@@ -1660,7 +1667,8 @@ TEST_F(PasswordControllerTest, CheckAsyncSuggestions) {
           .WillRepeatedly(WithArg<1>(InvokeEmptyConsumerWithForms()));
     }
     [passwordController_ checkIfSuggestionsAvailableForForm:@"dynamic_form"
-                                                      field:@"username"
+                                                  fieldName:@"username"
+                                            fieldIdentifier:@"username"
                                                   fieldType:@"text"
                                                        type:@"focus"
                                                  typedValue:@""
@@ -1695,7 +1703,8 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNonUsernameField) {
   EXPECT_CALL(*store_, GetLogins(_, _))
       .WillOnce(WithArg<1>(InvokeConsumer(form)));
   [passwordController_ checkIfSuggestionsAvailableForForm:@"dynamic_form"
-                                                    field:@"address"
+                                                fieldName:@"address"
+                                          fieldIdentifier:@"address"
                                                 fieldType:@"text"
                                                      type:@"focus"
                                                typedValue:@""
@@ -1723,7 +1732,8 @@ TEST_F(PasswordControllerTest, CheckNoAsyncSuggestionsOnNoPasswordForms) {
 
   EXPECT_CALL(*store_, GetLogins(_, _)).Times(0);
   [passwordController_ checkIfSuggestionsAvailableForForm:@"form"
-                                                    field:@"address"
+                                                fieldName:@"address"
+                                          fieldIdentifier:@"address"
                                                 fieldType:@"text"
                                                      type:@"focus"
                                                typedValue:@""
