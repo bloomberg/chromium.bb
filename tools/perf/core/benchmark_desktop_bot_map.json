@@ -57,7 +57,6 @@
   },
   "15": {
     "benchmarks": [
-      "dromaeo.domcoreattr",
       "smoothness.gpu_rasterization.top_25_smooth",
       "speedometer",
       "v8.runtime_stats.top_25"
@@ -65,23 +64,18 @@
   },
   "16": {
     "benchmarks": [
-      "dromaeo.domcoremodify",
       "smoothness.gpu_rasterization.tough_filters_cases",
-      "speedometer-future",
-      "v8.runtimestats.browsing_desktop"
+      "speedometer-future"
     ]
   },
   "17": {
     "benchmarks": [
-      "dromaeo.domcorequery",
       "smoothness.gpu_rasterization.tough_path_rendering_cases",
-      "speedometer2",
-      "v8.runtimestats.browsing_mobile"
+      "speedometer2"
     ]
   },
   "18": {
     "benchmarks": [
-      "dromaeo.domcoretraverse",
       "smoothness.gpu_rasterization.tough_pinch_zoom_cases",
       "speedometer2-future",
       "wasm"
