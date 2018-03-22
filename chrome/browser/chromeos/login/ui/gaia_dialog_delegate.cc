@@ -41,7 +41,7 @@ GaiaDialogDelegate::~GaiaDialogDelegate() {
     controller_->OnDialogDestroyed(this);
 }
 
-void GaiaDialogDelegate::Show() {
+void GaiaDialogDelegate::Init() {
   DCHECK(!dialog_view_ && !dialog_widget_);
   // Life cycle of |dialog_view_| is managed by the widget:
   // Widget owns a root view which has |dialog_view_| as its child view.
@@ -68,8 +68,16 @@ void GaiaDialogDelegate::Show() {
 
   extensions::ChromeExtensionWebContentsObserver::CreateForWebContents(
       dialog_view_->web_contents());
+}
 
+void GaiaDialogDelegate::Show(bool closable_by_esc) {
+  closable_by_esc_ = closable_by_esc;
   dialog_widget_->Show();
+}
+
+void GaiaDialogDelegate::Hide() {
+  if (dialog_widget_)
+    dialog_widget_->Hide();
 }
 
 void GaiaDialogDelegate::Close() {
@@ -154,6 +162,20 @@ bool GaiaDialogDelegate::HandleContextMenu(
 std::vector<ui::Accelerator> GaiaDialogDelegate::GetAccelerators() {
   // TODO(crbug.com/809648): Adding necessory accelerators.
   return std::vector<ui::Accelerator>();
+}
+
+bool GaiaDialogDelegate::AcceleratorPressed(
+    const ui::Accelerator& accelerator) {
+  if (ui::VKEY_ESCAPE == accelerator.key_code()) {
+    // The widget should not be closed until the login is done.
+    // Consume the escape key here so WebDialogView won't have a chance to
+    // close the widget.
+    if (closable_by_esc_)
+      dialog_widget_->Hide();
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace chromeos

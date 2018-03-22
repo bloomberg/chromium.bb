@@ -39,6 +39,9 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
     // fail if a hander for lock screen apps focus has not been set.
     virtual bool HandleFocusLockScreenApps(bool reverse) = 0;
     virtual void HandleLoginAsGuest() = 0;
+    virtual void HandleLaunchPublicSession(const AccountId& account_id,
+                                           const std::string& locale,
+                                           const std::string& input_method) = 0;
 
    private:
     DISALLOW_COPY_AND_ASSIGN(Delegate);
@@ -76,6 +79,9 @@ class LoginScreenClient : public ash::mojom::LoginScreenClient {
   void ShowGaiaSignin() override;
   void OnRemoveUserWarningShown() override;
   void RemoveUser(const AccountId& account_id) override;
+  void LaunchPublicSession(const AccountId& account_id,
+                           const std::string& locale,
+                           const std::string& input_method) override;
 
  private:
   // Lock screen mojo service in ash.
