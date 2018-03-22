@@ -84,6 +84,8 @@ mojo::ScopedSharedBufferHandle DuplicateAndCloseMappedBitmap(
     CollectMemoryUsageAndDie(size, format, memory->requested_size());
   }
 
+  memory->Close();
+
   return mojo::WrapSharedMemoryHandle(
       dupe_handle, memory->mapped_size(),
       mojo::UnwrappedSharedMemoryHandleProtection::kReadWrite);
