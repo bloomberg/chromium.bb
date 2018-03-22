@@ -3356,6 +3356,7 @@ crbug.com/819778 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Pass Ti
 
 # Sheriff 2018-03-22
 crbug.com/824775 [ Win Mac ] virtual/new-remote-playback-pipeline/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
+crbug.com/824775 [ Win Mac ] media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
 crbug.com/824830 [ Win ] fast/peerconnection/RTCPeerConnection-many.html [ Timeout Crash Failure Pass ]
 crbug.com/824848 [ Linux Win ] external/wpt/html/semantics/links/following-hyperlinks/activation-behavior.window.html [ Pass Failure ]
 crbug.com/824904 inspector-protocol/heap-profiler/heap-objects-tracking.js [ Pass Failure ]
