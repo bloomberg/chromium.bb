@@ -327,6 +327,9 @@ public class NotificationPlatformBridge {
         Uri intentData = makeIntentData(notificationId, origin, actionIndex);
         Intent intent = new Intent(action, intentData);
         intent.setClass(context, NotificationService.Receiver.class);
+
+        // Make sure to update NotificationJobService.getJobExtrasFromIntent() when changing any
+        // of the extras included with the |intent|.
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_ID, notificationId);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_ORIGIN, origin);
         intent.putExtra(NotificationConstants.EXTRA_NOTIFICATION_INFO_SCOPE, scopeUrl);
