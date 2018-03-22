@@ -1,6 +1,10 @@
 # Please consult components/viz/README.md about allowable dependencies.
 
 specific_include_rules = {
+  "skia_helper.(cc|h)": [
+    "+cc/base",
+    "+third_party/skia",
+  ],
   # DEPS for GLHelper and friends which are in the root common/ directory.
   "(yuv_readback|gl_helper).*\.(cc|h)": [
     "+gpu/GLES2",

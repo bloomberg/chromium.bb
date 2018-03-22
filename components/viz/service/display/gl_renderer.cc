@@ -44,6 +44,7 @@
 #include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_format_utils.h"
 #include "components/viz/common/resources/resource_id.h"
+#include "components/viz/common/skia_helper.h"
 #include "components/viz/service/display/draw_polygon.h"
 #include "components/viz/service/display/dynamic_geometry_binding.h"
 #include "components/viz/service/display/layer_quad.h"
@@ -566,58 +567,6 @@ static sk_sp<SkImage> WrapTexture(uint32_t texture_id,
                                   nullptr);
 }
 
-static sk_sp<SkImage> ApplyImageFilter(
-    std::unique_ptr<GLRenderer::ScopedUseGrContext> use_gr_context,
-    const gfx::RectF& src_rect,
-    const gfx::RectF& dst_rect,
-    const gfx::Vector2dF& scale,
-    sk_sp<SkImageFilter> filter,
-    GLuint texture_id,
-    GLenum target,
-    const gfx::Size& size,
-    SkIPoint* offset,
-    SkIRect* subset,
-    bool flip_texture,
-    const gfx::PointF& origin) {
-  if (!filter || !use_gr_context)
-    return nullptr;
-
-  sk_sp<SkImage> src_image = WrapTexture(
-      texture_id, target, size, use_gr_context->context(), flip_texture);
-
-  if (!src_image) {
-    TRACE_EVENT_INSTANT0("cc",
-                         "ApplyImageFilter wrap background texture failed",
-                         TRACE_EVENT_SCOPE_THREAD);
-    return nullptr;
-  }
-
-  // Big filters can sometimes fallback to CPU. Therefore, we need
-  // to disable subnormal floats for performance and security reasons.
-  cc::ScopedSubnormalFloatDisabler disabler;
-  SkMatrix local_matrix;
-  local_matrix.setTranslate(origin.x(), origin.y());
-  local_matrix.postScale(scale.x(), scale.y());
-  local_matrix.postTranslate(-src_rect.x(), -src_rect.y());
-
-  SkIRect clip_bounds = gfx::RectFToSkRect(dst_rect).roundOut();
-  clip_bounds.offset(-src_rect.x(), -src_rect.y());
-  filter = filter->makeWithLocalMatrix(local_matrix);
-  SkIRect in_subset = SkIRect::MakeWH(src_rect.width(), src_rect.height());
-  sk_sp<SkImage> image = src_image->makeWithFilter(filter.get(), in_subset,
-                                                   clip_bounds, subset, offset);
-
-  if (!image || !image->isTextureBacked()) {
-    return nullptr;
-  }
-
-  // Force a flush of the Skia pipeline before we switch back to the compositor
-  // context.
-  image->getTextureHandle(true);
-  CHECK(image->isTextureBacked());
-  return image;
-}
-
 static gfx::RectF CenteredRect(const gfx::Rect& tile_rect) {
   return gfx::RectF(
       gfx::PointF(-0.5f * tile_rect.width(), -0.5f * tile_rect.height()),
@@ -918,24 +867,6 @@ sk_sp<SkImage> GLRenderer::ApplyBackgroundFilters(
   return image;
 }
 
-// Map device space quad to local space. Device_transform has no 3d
-// component since it was flattened, so we don't need to project.  We should
-// have already checked that the transform was uninvertible before this call.
-gfx::QuadF MapQuadToLocalSpace(const gfx::Transform& device_transform,
-                               const gfx::QuadF& device_quad) {
-  gfx::Transform inverse_device_transform(gfx::Transform::kSkipInitialization);
-  DCHECK(device_transform.IsInvertible());
-  bool did_invert = device_transform.GetInverse(&inverse_device_transform);
-  DCHECK(did_invert);
-  bool clipped = false;
-  gfx::QuadF local_quad =
-      cc::MathUtil::MapQuad(inverse_device_transform, device_quad, &clipped);
-  // We should not DCHECK(!clipped) here, because anti-aliasing inflation may
-  // cause device_quad to become clipped. To our knowledge this scenario does
-  // not need to be handled differently than the unclipped case.
-  return local_quad;
-}
-
 const TileDrawQuad* GLRenderer::CanPassBeDrawnDirectly(const RenderPass* pass) {
 #if defined(OS_MACOSX)
   // On Macs, this path can sometimes lead to all black output.
@@ -1208,8 +1139,12 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
           clip_rect = current_draw_rect_;
         }
         gfx::Transform transform = params->quad_to_target_transform;
+        if (!transform.IsInvertible()) {
+          return false;
+        }
         gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
-        gfx::QuadF local_clip = MapQuadToLocalSpace(transform, clip_quad);
+        gfx::QuadF local_clip =
+            cc::MathUtil::InverseMapQuadToLocalSpace(transform, clip_quad);
         params->dst_rect.Intersect(local_clip.BoundingBox());
         // If we've been fully clipped out (by crop rect or clipping), there's
         // nothing to draw.
@@ -1219,28 +1154,34 @@ bool GLRenderer::UpdateRPDQWithSkiaFilters(
         SkIPoint offset;
         SkIRect subset;
         gfx::RectF src_rect(quad->rect);
+        auto use_gr_context = ScopedUseGrContext::Create(this);
+        if (!use_gr_context)
+          return false;
+
         if (params->contents_texture) {
           params->contents_and_bypass_color_space =
               params->contents_texture->color_space();
-          params->filter_image = ApplyImageFilter(
-              ScopedUseGrContext::Create(this), src_rect, params->dst_rect,
-              quad->filters_scale, std::move(filter),
-              params->contents_texture->id(), GL_TEXTURE_2D,
-              params->contents_texture->size(), &offset, &subset,
-              params->flip_texture, quad->filters_origin);
+          sk_sp<SkImage> src_image =
+              WrapTexture(params->contents_texture->id(), GL_TEXTURE_2D,
+                          params->contents_texture->size(),
+                          use_gr_context->context(), params->flip_texture);
+          params->filter_image = SkiaHelper::ApplyImageFilter(
+              src_image, src_rect, params->dst_rect, quad->filters_scale,
+              std::move(filter), &offset, &subset, quad->filters_origin);
         } else {
           cc::DisplayResourceProvider::ScopedReadLockGL
               prefilter_bypass_quad_texture_lock(
                   resource_provider_, params->bypass_quad_texture.resource_id);
           params->contents_and_bypass_color_space =
               prefilter_bypass_quad_texture_lock.color_space();
-          params->filter_image = ApplyImageFilter(
-              ScopedUseGrContext::Create(this), src_rect, params->dst_rect,
-              quad->filters_scale, std::move(filter),
-              prefilter_bypass_quad_texture_lock.texture_id(),
-              prefilter_bypass_quad_texture_lock.target(),
-              prefilter_bypass_quad_texture_lock.size(), &offset, &subset,
-              params->flip_texture, quad->filters_origin);
+          sk_sp<SkImage> src_image =
+              WrapTexture(prefilter_bypass_quad_texture_lock.texture_id(),
+                          prefilter_bypass_quad_texture_lock.target(),
+                          prefilter_bypass_quad_texture_lock.size(),
+                          use_gr_context->context(), params->flip_texture);
+          params->filter_image = SkiaHelper::ApplyImageFilter(
+              src_image, src_rect, params->dst_rect, quad->filters_scale,
+              std::move(filter), &offset, &subset, quad->filters_origin);
         }
 
         if (!params->filter_image)
@@ -1705,7 +1646,8 @@ void GLRenderer::SetupQuadForClippingAndAntialiasing(
         quad);
   }
 
-  *local_quad = MapQuadToLocalSpace(device_transform, device_quad);
+  *local_quad =
+      cc::MathUtil::InverseMapQuadToLocalSpace(device_transform, device_quad);
 }
 
 // static
@@ -1745,7 +1687,8 @@ void GLRenderer::SetupRenderPassQuadForClippingAndAntialiasing(
     device_quad = device_layer_edges.ToQuadF();
   }
 
-  *local_quad = MapQuadToLocalSpace(device_transform, device_quad);
+  *local_quad =
+      cc::MathUtil::InverseMapQuadToLocalSpace(device_transform, device_quad);
 }
 
 void GLRenderer::DrawSolidColorQuad(const SolidColorDrawQuad* quad,

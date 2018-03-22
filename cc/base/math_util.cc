@@ -270,6 +270,22 @@ gfx::RectF MathUtil::ProjectClippedRect(const gfx::Transform& transform,
   return ComputeEnclosingClippedRect(h1, h2, h3, h4);
 }
 
+gfx::QuadF MathUtil::InverseMapQuadToLocalSpace(
+    const gfx::Transform& device_transform,
+    const gfx::QuadF& device_quad) {
+  gfx::Transform inverse_device_transform(gfx::Transform::kSkipInitialization);
+  DCHECK(device_transform.IsInvertible());
+  bool did_invert = device_transform.GetInverse(&inverse_device_transform);
+  DCHECK(did_invert);
+  bool clipped = false;
+  gfx::QuadF local_quad =
+      MathUtil::MapQuad(inverse_device_transform, device_quad, &clipped);
+  // We should not DCHECK(!clipped) here, because anti-aliasing inflation may
+  // cause device_quad to become clipped. To our knowledge this scenario does
+  // not need to be handled differently than the unclipped case.
+  return local_quad;
+}
+
 gfx::Rect MathUtil::MapEnclosedRectWith2dAxisAlignedTransform(
     const gfx::Transform& transform,
     const gfx::Rect& rect) {

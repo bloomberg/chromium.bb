@@ -9,6 +9,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
+#include "cc/paint/render_surface_filters.h"
 #include "components/viz/common/display/renderer_settings.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/quads/debug_border_draw_quad.h"
@@ -20,6 +21,7 @@
 #include "components/viz/common/resources/platform_color.h"
 #include "components/viz/common/resources/resource_fence.h"
 #include "components/viz/common/resources/resource_format_utils.h"
+#include "components/viz/common/skia_helper.h"
 #include "components/viz/service/display/output_surface.h"
 #include "components/viz/service/display/output_surface_frame.h"
 #include "components/viz/service/display/renderer_utils.h"
@@ -28,15 +30,12 @@
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkColor.h"
 #include "third_party/skia/include/core/SkColorSpaceXformCanvas.h"
-#include "third_party/skia/include/core/SkImageFilter.h"
 #include "third_party/skia/include/core/SkMatrix.h"
 #include "third_party/skia/include/core/SkOverdrawCanvas.h"
 #include "third_party/skia/include/core/SkPath.h"
-#include "third_party/skia/include/core/SkPoint.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -54,6 +53,20 @@
 #endif
 
 namespace viz {
+// Parameters needed to draw a RenderPassDrawQuad.
+struct DrawRenderPassDrawQuadParams {
+  // The "in" parameters that will be used when apply filters.
+  const cc::FilterOperations* filters = nullptr;
+  const cc::FilterOperations* background_filters = nullptr;
+
+  // The "out" parameters that will be returned for future use.
+  // A Skia image that should be sampled from instead of the original
+  // contents.
+  sk_sp<SkImage> filter_image;
+  gfx::Point src_offset;
+  gfx::RectF dst_rect;
+  gfx::RectF tex_coord_rect;
+};
 
 SkiaRenderer::SkiaRenderer(const RendererSettings* settings,
                            OutputSurface* output_surface,
@@ -552,6 +565,73 @@ void SkiaRenderer::DrawTileQuad(const TileDrawQuad* quad) {
                                  &current_paint_);
 }
 
+bool SkiaRenderer::CalculateRPDQParams(sk_sp<SkImage> content,
+                                       const RenderPassDrawQuad* quad,
+                                       DrawRenderPassDrawQuadParams* params) {
+  auto iter = render_pass_backings_.find(quad->render_pass_id);
+  DCHECK(render_pass_backings_.end() != iter);
+  if (params->filters == nullptr) {
+    return true;
+  }
+
+  // This function is called after AllocateRenderPassResourceIfNeeded, so there
+  // should be backing ready.
+  RenderPassBacking& content_texture = iter->second;
+  DCHECK(!params->filters->IsEmpty());
+  gfx::Size size(content_texture.render_pass_surface->width(),
+                 content_texture.render_pass_surface->height());
+  auto paint_filter = cc::RenderSurfaceFilters::BuildImageFilter(
+      *params->filters, gfx::SizeF(size));
+  auto filter = paint_filter ? paint_filter->cached_sk_filter_ : nullptr;
+
+  // Apply filters to the content texture.
+  // TODO(xing.xu):  Support SkColorFilter here. (https://crbug.com/823182)
+
+  if (filter) {
+    gfx::Rect clip_rect = quad->shared_quad_state->clip_rect;
+    if (clip_rect.IsEmpty()) {
+      clip_rect = current_draw_rect_;
+    }
+    gfx::Transform transform =
+        quad->shared_quad_state->quad_to_target_transform;
+    gfx::QuadF clip_quad = gfx::QuadF(gfx::RectF(clip_rect));
+    gfx::QuadF local_clip =
+        cc::MathUtil::InverseMapQuadToLocalSpace(transform, clip_quad);
+
+    SkMatrix local_matrix;
+    local_matrix.setTranslate(quad->filters_origin.x(),
+                              quad->filters_origin.y());
+    local_matrix.postScale(quad->filters_scale.x(), quad->filters_scale.y());
+    gfx::RectF dst_rect(params->filters
+                            ? params->filters->MapRect(quad->rect, local_matrix)
+                            : quad->rect);
+
+    dst_rect.Intersect(local_clip.BoundingBox());
+    // If we've been fully clipped out (by crop rect or clipping), there's
+    // nothing to draw.
+    if (dst_rect.IsEmpty()) {
+      return false;
+    }
+    SkIPoint offset;
+    SkIRect subset;
+    gfx::RectF src_rect(quad->rect);
+    // TODO(xing.xu): Support flip_texture. (https://crbug.com/822859)
+    params->filter_image = SkiaHelper::ApplyImageFilter(
+        content, src_rect, dst_rect, quad->filters_scale, std::move(filter),
+        &offset, &subset, quad->filters_origin);
+    if (!params->filter_image)
+      return false;
+    params->dst_rect =
+        gfx::RectF(src_rect.x() + offset.fX, src_rect.y() + offset.fY,
+                   subset.width(), subset.height());
+    params->src_offset.SetPoint(subset.x(), subset.y());
+    gfx::RectF tex_rect =
+        gfx::RectF(gfx::PointF(params->src_offset), params->dst_rect.size());
+    params->tex_coord_rect = tex_rect;
+  }
+  return true;
+}
+
 void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   auto iter = render_pass_backings_.find(quad->render_pass_id);
   DCHECK(render_pass_backings_.end() != iter);
@@ -562,23 +642,31 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   sk_sp<SkImage> content =
       content_texture.render_pass_surface->makeImageSnapshot();
 
-  SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
-  SkRect dest_visible_rect =
-      gfx::RectFToSkRect(cc::MathUtil::ScaleRectProportional(
-          QuadVertexRect(), gfx::RectF(quad->rect),
-          gfx::RectF(quad->visible_rect)));
-  SkRect content_rect = RectFToSkRect(quad->tex_coord_rect);
+  DrawRenderPassDrawQuadParams params;
+  params.filters = FiltersForPass(quad->render_pass_id);
+  params.background_filters = BackgroundFiltersForPass(quad->render_pass_id);
+  bool can_draw = CalculateRPDQParams(content, quad, &params);
 
+  if (!can_draw)
+    return;
+
+  SkRect content_rect;
+  SkRect dest_visible_rect;
+  if (params.filter_image) {
+    content_rect = RectFToSkRect(params.tex_coord_rect);
+    dest_visible_rect = gfx::RectFToSkRect(cc::MathUtil::ScaleRectProportional(
+        QuadVertexRect(), gfx::RectF(quad->rect), gfx::RectF(params.dst_rect)));
+    content = params.filter_image;
+  } else {
+    content_rect = RectFToSkRect(quad->tex_coord_rect);
+    dest_visible_rect = gfx::RectFToSkRect(cc::MathUtil::ScaleRectProportional(
+        QuadVertexRect(), gfx::RectF(quad->rect),
+        gfx::RectF(quad->visible_rect)));
+  }
   current_canvas_->drawImageRect(content, content_rect, dest_visible_rect,
                                  &current_paint_);
 
-  const cc::FilterOperations* filters = FiltersForPass(quad->render_pass_id);
-
-  // TODO(weiliangc): Implement filters. (crbug.com/644851)
-  if (filters) {
-    NOTIMPLEMENTED();
-  }
-
+  SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
   SkMatrix content_mat;
   content_mat.setRectToRect(content_rect, dest_rect,
                             SkMatrix::kFill_ScaleToFit);
@@ -587,16 +675,17 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   shader = content->makeShader(SkShader::kClamp_TileMode,
                                SkShader::kClamp_TileMode, &content_mat);
 
-  // TODO(weiliangc): Implement mask. (crbug.com/644851)
+  // TODO(weiliangc): Implement mask. (https://crbug.com/644851)
   if (quad->mask_resource_id()) {
     NOTIMPLEMENTED();
   }
 
-  // TODO(weiliangc): If we have a background filter shader, render its results
-  // first. (crbug.com/644851)
-
-  current_paint_.setShader(std::move(shader));
-  current_canvas_->drawRect(dest_visible_rect, current_paint_);
+  // TODO(weiliangc): If we have a background filter shader, render its
+  // results first. (https://crbug.com/644851)
+  if (ShouldApplyBackgroundFilters(quad, params.background_filters)) {
+    current_paint_.setShader(std::move(shader));
+    current_canvas_->drawRect(dest_visible_rect, current_paint_);
+  }
 }
 
 void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
@@ -650,18 +739,6 @@ bool SkiaRenderer::ShouldApplyBackgroundFilters(
   // other render targets.  See crbug.com/314867.
 
   return true;
-}
-
-// If non-null, auto_bounds will be filled with the automatically-computed
-// destination bounds. If null, the output will be the same size as the
-// input bitmap.
-sk_sp<SkImage> SkiaRenderer::ApplyImageFilter(SkImageFilter* filter,
-                                              const RenderPassDrawQuad* quad,
-                                              const SkBitmap& to_filter,
-                                              SkIRect* auto_bounds) const {
-  // TODO(weiliangc): Implement image filter. (crbug.com/644851)
-  NOTIMPLEMENTED();
-  return nullptr;
 }
 
 SkBitmap SkiaRenderer::GetBackdropBitmap(const gfx::Rect& bounding_rect) const {
