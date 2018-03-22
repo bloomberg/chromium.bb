@@ -86,11 +86,12 @@ void GetPluginContentSettingInternal(
       *setting = CONTENT_SETTING_DETECT_IMPORTANT_CONTENT;
 
     // Unless the setting is explicitly ALLOW, return BLOCK for any scheme that
-    // is not HTTP, HTTPS, or FILE.
+    // is not HTTP, HTTPS, FILE, or chrome-extension.
     if (*setting != CONTENT_SETTING_ALLOW &&
         PluginUtils::ShouldPreferHtmlOverPlugins(host_content_settings_map) &&
         !main_frame_url.SchemeIsHTTPOrHTTPS() &&
-        !main_frame_url.SchemeIsFile()) {
+        !main_frame_url.SchemeIsFile() &&
+        !main_frame_url.SchemeIs(extensions::kExtensionScheme)) {
       *setting = CONTENT_SETTING_BLOCK;
     }
   }
