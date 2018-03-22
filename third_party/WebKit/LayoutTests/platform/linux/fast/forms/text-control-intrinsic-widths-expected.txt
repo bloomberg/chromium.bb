@@ -221,17 +221,17 @@ cols=1000 clientWidth=6017
 
 Courier New
 input
-size=1 clientWidth=9
-size=2 clientWidth=17
-size=3 clientWidth=25
-size=4 clientWidth=33
-size=5 clientWidth=41
-size=10 clientWidth=81
-size=20 clientWidth=161
-size=50 clientWidth=401
-size=100 clientWidth=801
-size=500 clientWidth=4001
-size=1000 clientWidth=8001
+size=1 clientWidth=16
+size=2 clientWidth=24
+size=3 clientWidth=32
+size=4 clientWidth=40
+size=5 clientWidth=48
+size=10 clientWidth=88
+size=20 clientWidth=168
+size=50 clientWidth=408
+size=100 clientWidth=808
+size=500 clientWidth=4008
+size=1000 clientWidth=8008
 
 textarea
 cols=1 clientWidth=25

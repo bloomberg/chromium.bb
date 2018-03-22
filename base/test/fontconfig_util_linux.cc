@@ -63,18 +63,6 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS_Bold.ttf</glob>
     </acceptfont>
     <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Courier_New.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
-      <glob>/usr/share/fonts/truetype/msttcorefonts/Courier_New_Italic.ttf</glob>
-    </acceptfont>
-    <acceptfont>
       <glob>/usr/share/fonts/truetype/msttcorefonts/Impact.ttf</glob>
     </acceptfont>
     <acceptfont>
@@ -199,7 +187,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>mono</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Courier New</string>
+      <string>Cousine</string>
     </edit>
   </match>
 
@@ -208,7 +196,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>monospace</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Courier New</string>
+      <string>Cousine</string>
     </edit>
   </match>
 
@@ -217,7 +205,7 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
       <string>Courier</string>
     </test>
     <edit name="family" mode="assign">
-      <string>Courier New</string>
+      <string>Cousine</string>
     </edit>
   </match>
 
@@ -245,6 +233,15 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
     </test>
     <edit name="family" mode="assign">
       <string>Times New Roman</string>
+    </edit>
+  </match>
+
+  <match target="pattern">
+    <test qual="any" name="family">
+      <string>Courier New</string>
+    </test>
+    <edit name="family" mode="assign">
+      <string>Cousine</string>
     </edit>
   </match>
 
