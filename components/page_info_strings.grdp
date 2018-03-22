@@ -368,10 +368,16 @@
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
           You could lose access to your Google Account or experience identity theft. Chrome recommends changing your password now.
         </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE" desc="A short paragraph explaining to the user that they have reused their password on the current website.">
+          You could lose access to your <ph name="ORG_NAME">$1<ex>Google</ex></ph> account or experience identity theft. Chrome recommends changing your password now.
+        </message>
       </if>
       <if expr="not _google_chrome">
         <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS" desc="A short paragraph explaining to the user that they has reuse their google password on current website.">
           You could lose access to your Google Account or experience identity theft. Chromium recommends changing your password now.
+        </message>
+        <message name="IDS_PAGE_INFO_CHANGE_PASSWORD_DETAILS_ENTERPRISE" desc="A short paragraph explaining to the user that they have reused their password on the current website.">
+          You could lose access to your <ph name="ORG_NAME">$1<ex>Google</ex></ph> account or experience identity theft. Chromium recommends changing your password now.
         </message>
       </if>
 

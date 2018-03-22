@@ -279,7 +279,7 @@
   <message name="IDS_PHISHING_V4_HEADING" desc="The large heading at the top of the phishing interstitial.">
     Deceptive site ahead
   </message>
-  <message name="IDS_PHISHING_V4_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the malware interstitial.">
+  <message name="IDS_PHISHING_V4_PRIMARY_PARAGRAPH" desc="The primary explanatory paragraph for the phishing interstitial.">
     Attackers on <ph name="BEGIN_BOLD">&lt;strong&gt;</ph><ph name="SITE">$1<ex>example.com</ex></ph><ph name="END_BOLD">&lt;/strong&gt;</ph> may trick you into doing something dangerous like installing software or revealing your personal information (for example, passwords, phone numbers, or credit cards). <ph name="BEGIN_LEARN_MORE_LINK">&lt;a href="#" id="learn-more-link"&gt;</ph>Learn more<ph name="END_LEARN_MORE_LINK">&lt;/a&gt;</ph>
   </message>
   <message name="IDS_PHISHING_V4_EXPLANATION_PARAGRAPH" desc="The explanation of why Safe Browsing has blocked the page.">
