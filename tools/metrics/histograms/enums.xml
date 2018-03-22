@@ -30311,6 +30311,35 @@ Called by update_net_error_codes.py.-->
   <int value="1" label="Connection tester"/>
 </enum>
 
+<enum name="NetNetworkErrorLoggingHeaderOutcome">
+  <int value="0" label="Discarded: no NetworkErrorLoggingService"/>
+  <int value="1" label="Discarded: invalid SSLInfo"/>
+  <int value="2" label="Discarded: cert status error"/>
+  <int value="3" label="Discarded: insecure origin"/>
+  <int value="4" label="Discarded: JSON too big"/>
+  <int value="5" label="Discarded: JSON invalid"/>
+  <int value="6" label="Discarded: not a dictionary"/>
+  <int value="7" label="Discarded: TTL missing"/>
+  <int value="8" label="Discarded: TTL not an integer"/>
+  <int value="9" label="Discarded: TTL negative"/>
+  <int value="10" label="Discarded: report-to missing"/>
+  <int value="11" label="Discarded: report-to not a string"/>
+  <int value="12" label="Removed (max-age = 0)"/>
+  <int value="13" label="Set (max-age &gt; 0)"/>
+</enum>
+
+<enum name="NetNetworkErrorLoggingRequestOutcome">
+  <int value="0" label="Discarded: no NetworkErrorLoggingService"/>
+  <int value="1" label="Discarded: no ReportingService"/>
+  <int value="2" label="Discarded: insecure origin"/>
+  <int value="3" label="Discarded: no origin policy"/>
+  <int value="4" label="Discarded: unmapped error"/>
+  <int value="5" label="Discarded: Reporting upload"/>
+  <int value="6" label="Discarded: unsampled success"/>
+  <int value="7" label="Discarded: unsampled failure"/>
+  <int value="8" label="Queued"/>
+</enum>
+
 <enum name="NetPreconnectUtilization">
   <int value="0" label="non-speculative, never connected"/>
   <int value="1" label="non-speculative, never used"/>
