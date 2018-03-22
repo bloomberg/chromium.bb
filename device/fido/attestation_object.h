@@ -42,6 +42,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AttestationObject {
   // TODO(https://crbug.com/780078): erase AAGUID when CTAP2 is supported.
   void EraseAttestationStatement();
 
+  // Returns true if the attestation certificate is known to be inappropriately
+  // identifying. Some tokens return unique attestation certificates even when
+  // the bit to request that is not set. (Normal attestation certificates are
+  // not indended to be trackable.)
+  bool IsAttestationCertificateInappropriatelyIdentifying();
+
   // Produces a CBOR-encoded byte-array in the following format:
   // {"authData": authenticator data bytes,
   //  "fmt": attestation format name,

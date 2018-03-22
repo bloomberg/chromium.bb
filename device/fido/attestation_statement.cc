@@ -23,4 +23,9 @@ cbor::CBORValue::MapValue NoneAttestationStatement::GetAsCBORMap() {
   return cbor::CBORValue::MapValue();
 }
 
+bool NoneAttestationStatement::
+    IsAttestationCertificateInappropriatelyIdentifying() {
+  return false;
+}
+
 }  // namespace device
