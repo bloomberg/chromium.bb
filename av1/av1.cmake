@@ -397,6 +397,10 @@ set(AOM_AV1_ENCODER_INTRIN_SSE2
     ${AOM_AV1_ENCODER_INTRIN_SSE2}
     "${AOM_ROOT}/av1/encoder/x86/encodetxb_sse2.c")
 
+set(AOM_AV1_ENCODER_INTRIN_SSE4_1
+    ${AOM_AV1_ENCODER_INTRIN_SSE4_1}
+    "${AOM_ROOT}/av1/encoder/x86/encodetxb_sse4.c")
+
 set(AOM_AV1_COMMON_SOURCES
     ${AOM_AV1_COMMON_SOURCES}
     "${AOM_ROOT}/av1/common/cfl.c"

@@ -68,7 +68,7 @@ void av1_alloc_txb_buf(AV1_COMP *cpi) {
   av1_free_txb_buf(cpi);
   // TODO(jingning): This should be further reduced.
   CHECK_MEM_ERROR(cm, cpi->coeff_buffer_base,
-                  aom_malloc(sizeof(*cpi->coeff_buffer_base) * size));
+                  aom_memalign(32, sizeof(*cpi->coeff_buffer_base) * size));
 }
 
 void av1_free_txb_buf(AV1_COMP *cpi) { aom_free(cpi->coeff_buffer_base); }
@@ -425,9 +425,8 @@ static INLINE void update_coeff(const int coeff_idx, const tran_low_t qc,
       qc, coeff_idx, dqv, txb_info->shift, txb_info->iqmatrix);
 }
 
-static INLINE void av1_txb_init_levels(const tran_low_t *const coeff,
-                                       const int width, const int height,
-                                       uint8_t *const levels) {
+void av1_txb_init_levels_c(const tran_low_t *const coeff, const int width,
+                           const int height, uint8_t *const levels) {
   const int stride = width + TX_PAD_HOR;
   uint8_t *ls = levels;
 

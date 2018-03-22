@@ -177,4 +177,67 @@ TEST_P(EncodeTxbTest, DISABLED_SpeedTestGetNzMapContexts) {
 INSTANTIATE_TEST_CASE_P(SSE2, EncodeTxbTest,
                         ::testing::Values(av1_get_nz_map_contexts_sse2));
 #endif
+
+#if HAVE_SSE4_1
+class EncodeTxbInitLevelTest : public ::testing::TestWithParam<int> {
+ public:
+  virtual ~EncodeTxbInitLevelTest() {}
+  virtual void TearDown() { libaom_test::ClearSystemState(); }
+  void RunTest(int tx_size, int is_speed);
+};
+static double get_time_mark(aom_usec_timer *t) {
+  aom_usec_timer_mark(t);
+  return static_cast<double>(aom_usec_timer_elapsed(t));
+}
+
+void EncodeTxbInitLevelTest::RunTest(int tx_size, int is_speed) {
+  const int width = get_txb_wide((TX_SIZE)tx_size);
+  const int height = get_txb_high((TX_SIZE)tx_size);
+  tran_low_t coeff[MAX_TX_SQUARE];
+
+  uint8_t levels_buf[2][TX_PAD_2D];
+  uint8_t *const levels0 = set_levels(levels_buf[0], width);
+  uint8_t *const levels1 = set_levels(levels_buf[1], width);
+
+  ACMRandom rnd(ACMRandom::DeterministicSeed());
+  for (int i = 0; i < width * height; i++) {
+    coeff[i] = rnd.Rand15Signed() + rnd.Rand15Signed();
+  }
+  for (int i = 0; i < TX_PAD_2D; i++) {
+    levels_buf[0][i] = rnd.Rand8();
+    levels_buf[1][i] = rnd.Rand8();
+  }
+  const int run_times = is_speed ? (width * height) * 10000 : 1;
+  aom_usec_timer timer;
+  aom_usec_timer_start(&timer);
+  for (int i = 0; i < run_times; ++i) {
+    av1_txb_init_levels_c(coeff, width, height, levels0);
+  }
+  const double t1 = get_time_mark(&timer);
+  aom_usec_timer_start(&timer);
+  for (int i = 0; i < run_times; ++i) {
+    av1_txb_init_levels_sse4_1(coeff, width, height, levels1);
+  }
+  const double t2 = get_time_mark(&timer);
+  if (is_speed) {
+    printf("init %3dx%-3d:%7.2f/%7.2fns", width, height, t1, t2);
+    printf("(%3.2f)\n", t1 / t2);
+  }
+  const int stride = width + TX_PAD_HOR;
+  for (int r = 0; r < height + TX_PAD_VER; ++r) {
+    for (int c = 0; c < stride; ++c) {
+      ASSERT_EQ(levels_buf[0][c + r * stride], levels_buf[1][c + r * stride])
+          << "[" << r << "," << c << "] " << run_times << width << "x"
+          << height;
+    }
+  }
+}
+
+TEST_P(EncodeTxbInitLevelTest, match) { RunTest(GetParam(), 0); }
+TEST_P(EncodeTxbInitLevelTest, DISABLED_Speed) { RunTest(GetParam(), 1); }
+
+INSTANTIATE_TEST_CASE_P(SSE4_1, EncodeTxbInitLevelTest,
+                        ::testing::Range(0, static_cast<int>(TX_SIZES_ALL), 1));
+#endif
+
 }  // namespace
