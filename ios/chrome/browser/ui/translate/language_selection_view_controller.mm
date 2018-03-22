@@ -20,7 +20,11 @@ CGFloat kUIPickerFontSize = 26;
 }
 
 @interface LanguageSelectionViewController ()<UIPickerViewDataSource,
-                                              UIPickerViewDelegate>
+                                              UIPickerViewDelegate> {
+  // YES if NSLayoutConstraits were added.
+  BOOL _addedConstraints;
+}
+
 @property(nonatomic, weak) UIPickerView* picker;
 
 // Action methods for navigation bar buttons.
@@ -95,10 +99,12 @@ CGFloat kUIPickerFontSize = 26;
 }
 
 - (void)updateViewConstraints {
+  if (!_addedConstraints) {
+    [[self.view.superview.widthAnchor
+        constraintEqualToAnchor:self.view.widthAnchor] setActive:YES];
+    _addedConstraints = YES;
+  }
   [super updateViewConstraints];
-
-  [[self.view.superview.widthAnchor
-      constraintEqualToAnchor:self.view.widthAnchor] setActive:YES];
 }
 
 #pragma mark - UIPickerViewDataSource

@@ -54,6 +54,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   float _progress;
   DownloadManagerState _state;
   BOOL _installDriveButtonVisible;
+  BOOL _addedConstraints;  // YES if NSLayoutConstraits were added.
 }
 // Shadow view sits on top of background view. Union of shadow and background
 // views fills self.view area. The shadow is dropped to web page, not to white
@@ -125,7 +126,10 @@ NSString* GetSizeString(long long size_in_bytes) {
 }
 
 - (void)updateViewConstraints {
-  [super updateViewConstraints];
+  if (_addedConstraints) {
+    [super updateViewConstraints];
+    return;
+  }
 
   // self.view constraints.
   UIView* view = self.view;
@@ -268,6 +272,9 @@ NSString* GetSizeString(long long size_in_bytes) {
     [horizontalLine.trailingAnchor
         constraintEqualToAnchor:installDriveRow.trailingAnchor],
   ]];
+
+  _addedConstraints = YES;
+  [super updateViewConstraints];
 }
 
 - (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection

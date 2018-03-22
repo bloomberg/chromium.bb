@@ -84,6 +84,8 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 
   // The root node, whose child nodes are shown in the bookmark table view.
   const bookmarks::BookmarkNode* _rootNode;
+  // YES if NSLayoutConstraits were added.
+  BOOL _addedConstraints;
 }
 
 // The bookmark model used.
@@ -796,26 +798,29 @@ std::vector<GURL> GetUrlsToOpen(const std::vector<const BookmarkNode*>& nodes) {
 }
 
 - (void)updateViewConstraints {
-  if (self.contextBar && self.bookmarksTableView) {
-    NSDictionary* views = @{
-      @"tableView" : self.bookmarksTableView,
-      @"contextBar" : self.contextBar,
-    };
-    NSArray* constraints = @[
-      @"V:|[tableView][contextBar]|",
-      @"H:|[tableView]|",
-      @"H:|[contextBar]|",
-    ];
-    ApplyVisualConstraints(constraints, views);
-  } else if (self.bookmarksTableView) {
-    NSDictionary* views = @{
-      @"tableView" : self.bookmarksTableView,
-    };
-    NSArray* constraints = @[
-      @"V:|[tableView]|",
-      @"H:|[tableView]|",
-    ];
-    ApplyVisualConstraints(constraints, views);
+  if (!_addedConstraints) {
+    if (self.contextBar && self.bookmarksTableView) {
+      NSDictionary* views = @{
+        @"tableView" : self.bookmarksTableView,
+        @"contextBar" : self.contextBar,
+      };
+      NSArray* constraints = @[
+        @"V:|[tableView][contextBar]|",
+        @"H:|[tableView]|",
+        @"H:|[contextBar]|",
+      ];
+      ApplyVisualConstraints(constraints, views);
+    } else if (self.bookmarksTableView) {
+      NSDictionary* views = @{
+        @"tableView" : self.bookmarksTableView,
+      };
+      NSArray* constraints = @[
+        @"V:|[tableView]|",
+        @"H:|[tableView]|",
+      ];
+      ApplyVisualConstraints(constraints, views);
+    }
+    _addedConstraints = YES;
   }
   [super updateViewConstraints];
 }
