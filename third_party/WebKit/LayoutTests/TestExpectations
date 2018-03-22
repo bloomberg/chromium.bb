@@ -3353,3 +3353,6 @@ crbug.com/681919 [ Linux Debug ] http/tests/media/media-src-suspend-before-have-
 
 # Sheriff 2018-03-07
 crbug.com/819778 [ Linux ] external/wpt/css/cssom-view/interfaces.html [ Pass Timeout ]
+
+# Sheriff 2018-03-22
+crbug.com/824775 [ Win Mac ] virtual/new-remote-playback-pipeline/media/controls/video-controls-with-cast-rendering.html [ Pass Failure ]
