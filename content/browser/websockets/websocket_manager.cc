@@ -58,7 +58,7 @@ class WebSocketManager::Handle : public base::SupportsUserData::Data,
 void WebSocketManager::CreateWebSocketForFrame(
     int process_id,
     int frame_id,
-    blink::mojom::WebSocketRequest request) {
+    network::mojom::WebSocketRequest request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
   // ForFrame() implies a frame: DCHECK this pre-condition.
@@ -73,7 +73,7 @@ void WebSocketManager::CreateWebSocketForFrame(
 void WebSocketManager::CreateWebSocketWithOrigin(
     int process_id,
     url::Origin origin,
-    blink::mojom::WebSocketRequest request,
+    network::mojom::WebSocketRequest request,
     int frame_id) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI));
 
@@ -138,20 +138,20 @@ WebSocketManager::~WebSocketManager() {
 void WebSocketManager::DoCreateWebSocket(
     int frame_id,
     url::Origin origin,
-    blink::mojom::WebSocketRequest request) {
+    network::mojom::WebSocketRequest request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
   if (num_pending_connections_ >= kMaxPendingWebSocketConnections) {
     // Too many websockets!
     request.ResetWithReason(
-        blink::mojom::WebSocket::kInsufficientResources,
+        network::mojom::WebSocket::kInsufficientResources,
         "Error in connection establishment: net::ERR_INSUFFICIENT_RESOURCES");
     return;
   }
 
   if (context_destroyed_) {
     request.ResetWithReason(
-        blink::mojom::WebSocket::kInsufficientResources,
+        network::mojom::WebSocket::kInsufficientResources,
         "Error in connection establishment: net::ERR_UNEXPECTED");
     return;
   }
@@ -202,7 +202,7 @@ void WebSocketManager::ThrottlingPeriodTimerCallback() {
 
 WebSocketImpl* WebSocketManager::CreateWebSocketImpl(
     WebSocketImpl::Delegate* delegate,
-    blink::mojom::WebSocketRequest request,
+    network::mojom::WebSocketRequest request,
     int child_id,
     int frame_id,
     url::Origin origin,

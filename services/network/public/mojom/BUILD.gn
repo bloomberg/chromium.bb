@@ -51,6 +51,25 @@ mojom("udp_socket_interface") {
   ]
 }
 
+# This target is split from "mojom" target as the lazy serialization may
+# cause problems. See https://crbug.com/822732.
+mojom("websocket_mojom") {
+  sources = [
+    "websocket.mojom",
+  ]
+
+  public_deps = [
+    "//url/mojom:url_mojom_gurl",
+    "//url/mojom:url_mojom_origin",
+  ]
+
+  if (!is_ios) {
+    export_class_attribute_blink = "BLINK_PLATFORM_EXPORT"
+    export_define_blink = "BLINK_PLATFORM_IMPLEMENTATION=1"
+    export_header_blink = "third_party/WebKit/public/platform/WebCommon.h"
+  }
+}
+
 mojom("mojom") {
   # URLLoader & URLLoaderFactory are used in-process in the browser when
   # navigation uses URLLoader (NavigationMojoResponse) and in the renderer
@@ -80,6 +99,7 @@ mojom("mojom") {
     ":data_pipe_interfaces",
     ":mutable_network_traffic_annotation_interface",
     ":udp_socket_interface",
+    ":websocket_mojom",
     "//mojo/public/mojom/base",
     "//net/interfaces",
     "//services/proxy_resolver/public/mojom",

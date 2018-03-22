@@ -126,9 +126,9 @@ void RendererInterfaceBinders::InitializeParameterizedBinderRegistry() {
   parameterized_binder_registry_.AddInterface(
       base::Bind(&ForwardServiceRequest<device::mojom::VibrationManager>,
                  device::mojom::kServiceName));
-  parameterized_binder_registry_.AddInterface(
-      base::Bind([](blink::mojom::WebSocketRequest request,
-                    RenderProcessHost* host, const url::Origin& origin) {
+  parameterized_binder_registry_.AddInterface(base::BindRepeating(
+      [](network::mojom::WebSocketRequest request, RenderProcessHost* host,
+         const url::Origin& origin) {
         WebSocketManager::CreateWebSocketWithOrigin(
             host->GetID(), origin, std::move(request), MSG_ROUTING_NONE);
       }));
