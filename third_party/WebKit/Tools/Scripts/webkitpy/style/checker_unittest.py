@@ -245,34 +245,6 @@ class CheckerDispatcherSkipTest(unittest.TestCase):
     def setUp(self):
         self._dispatcher = CheckerDispatcher()
 
-    def test_should_skip_with_warning(self):
-        """Test should_skip_with_warning()."""
-        # Check skipped files.
-        paths_to_skip = [
-            "Source/WebKit/gtk/tests/testatk.c",
-            "Source/WebKit2/UIProcess/API/gtk/webkit2.h",
-            "Source/WebKit2/UIProcess/API/gtk/WebKitWebView.h",
-            "Source/WebKit2/UIProcess/API/gtk/WebKitLoader.h",
-        ]
-
-        for path in paths_to_skip:
-            self.assertTrue(self._dispatcher.should_skip_with_warning(path),
-                            "Checking: " + path)
-
-        # Verify that some files are not skipped.
-        paths_not_to_skip = [
-            "foo.txt",
-            "Source/WebKit2/UIProcess/API/gtk/HelperClass.cpp",
-            "Source/WebKit2/UIProcess/API/gtk/HelperClass.h",
-            "Source/WebKit2/UIProcess/API/gtk/WebKitWebView.cpp",
-            "Source/WebKit2/UIProcess/API/gtk/WebKitWebViewPrivate.h",
-            "Source/WebKit2/UIProcess/API/gtk/tests/WebViewTest.cpp",
-            "Source/WebKit2/UIProcess/API/gtk/tests/WebViewTest.h",
-        ]
-
-        for path in paths_not_to_skip:
-            self.assertFalse(self._dispatcher.should_skip_with_warning(path))
-
     def _assert_should_skip_without_warning(self, path, is_checker_none,
                                             expected):
         # Check the file type before asserting the return value.
@@ -649,9 +621,6 @@ class StyleProcessor_CodeCoverageTest(LoggingTestCase):
         def __init__(self):
             self.dispatched_checker = None
 
-        def should_skip_with_warning(self, file_path):
-            return file_path.endswith('skip_with_warning.txt')
-
         def should_skip_without_warning(self, file_path):
             return file_path.endswith('skip_without_warning.txt')
 
@@ -742,15 +711,6 @@ class StyleProcessor_CodeCoverageTest(LoggingTestCase):
         file_path = "foo/skip_without_warning.txt"
 
         self.assertFalse(self._processor.should_process(file_path))
-
-    def test_should_process__skip_with_warning(self):
-        """Test should_process() for a skip-with-warning file."""
-        file_path = "foo/skip_with_warning.txt"
-
-        self.assertFalse(self._processor.should_process(file_path))
-
-        self.assertLog(['WARNING: File exempt from style guide. '
-                        'Skipping: "foo/skip_with_warning.txt"\n'])
 
     def test_should_process__true_result(self):
         """Test should_process() for a file that should be processed."""
