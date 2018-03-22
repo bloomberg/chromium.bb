@@ -40,7 +40,7 @@ class NetworkScanner : public base::SupportsWeakPtr<NetworkScanner> {
   // Query the registered HostLocators and return all the hosts found.
   // |callback| is called once all the HostLocators have responded with their
   // results. If there are no locators, the callback is fired immediately with
-  // an empty result.
+  // an empty result and success set to false.
   void FindHostsInNetwork(FindHostsCallback callback);
 
   // Registeres a |locator| to be queried when FindHostsInNetwork() is called.
@@ -48,7 +48,7 @@ class NetworkScanner : public base::SupportsWeakPtr<NetworkScanner> {
 
  private:
   // Callback handler for HostLocator::FindHosts().
-  void OnHostsFound(uint32_t request_id, const HostMap& host_map);
+  void OnHostsFound(uint32_t request_id, bool success, const HostMap& host_map);
 
   // Adds |host_map| hosts to current results. The host will not be added if the
   // hostname already exists in results, and if the IP address does not match,

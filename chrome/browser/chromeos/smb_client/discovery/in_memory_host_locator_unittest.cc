@@ -17,13 +17,17 @@ namespace {
 
 // Expects |actual_hosts| to not equal |hosts|.
 void ExpectMapEntriesNotEqual(const HostMap& hosts,
+                              bool success,
                               const HostMap& actual_hosts) {
+  EXPECT_TRUE(success);
   EXPECT_NE(hosts, actual_hosts);
 }
 
 // Expects |actual_hosts| to equal |expected_hosts|.
-void ExpectMapEntries(const HostMap& expected_hosts,
-                      const HostMap& actual_hosts) {
+void ExpectMapEntriesEqual(const HostMap& expected_hosts,
+                           bool success,
+                           const HostMap& actual_hosts) {
+  EXPECT_TRUE(success);
   EXPECT_EQ(expected_hosts, actual_hosts);
 }
 
@@ -36,7 +40,7 @@ class InMemoryHostLocatorTest : public testing::Test {
 
  protected:
   void ExpectHostMapEqual(const HostMap& hosts) {
-    locator_.FindHosts(base::BindOnce(&ExpectMapEntries, hosts));
+    locator_.FindHosts(base::BindOnce(&ExpectMapEntriesEqual, hosts));
   }
 
   void ExpectHostMapNotEqual(const HostMap& hosts) {

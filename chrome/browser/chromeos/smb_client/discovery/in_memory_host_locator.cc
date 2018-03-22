@@ -29,7 +29,7 @@ void InMemoryHostLocator::RemoveHost(const Hostname& hostname) {
 }
 
 void InMemoryHostLocator::FindHosts(FindHostsCallback callback) {
-  std::move(callback).Run(host_map_);
+  std::move(callback).Run(true /* success */, host_map_);
 }
 
 }  // namespace smb_client

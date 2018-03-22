@@ -16,7 +16,11 @@ namespace smb_client {
 using Hostname = std::string;
 using Address = std::string;
 using HostMap = std::map<Hostname, Address>;
-using FindHostsCallback = base::OnceCallback<void(const HostMap& hosts)>;
+
+// |success| will be false if an error occurred when finding hosts. |success|
+// can be true even if |hosts| is empty.
+using FindHostsCallback =
+    base::OnceCallback<void(bool success, const HostMap& hosts)>;
 
 // Interface that abstracts the multiple methods of finding SMB hosts in a
 // network. (e.g. mDNS, NetBIOS over TCP, LMHosts, DNS)
