@@ -7,7 +7,9 @@
 
 #include <memory>
 #include <set>
+#include <string>
 #include <unordered_map>
+#include <vector>
 
 #include "base/files/file.h"
 #include "base/memory/weak_ptr.h"
@@ -34,7 +36,7 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
       uint16_t service_attribute_handle,
       bool is_primary,
       BluetoothRemoteGattServiceWin* parent_service,
-      scoped_refptr<base::SequencedTaskRunner>& ui_task_runner);
+      scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
   ~BluetoothRemoteGattServiceWin() override;
 
   // Override BluetoothRemoteGattService interfaces.
@@ -68,12 +70,13 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
       PBTH_LE_GATT_CHARACTERISTIC characteristics,
       uint16_t num);
 
-  // Sends GattDiscoveryCompleteForService notification if necessary.
-  void NotifyGattDiscoveryCompleteForServiceIfNecessary();
+  // Sends GattServiceDiscoveryComplete notification if necessary.
+  void NotifyGattServiceDiscoveryCompleteIfNecessary();
 
   // Checks if the characteristic with |uuid| and |attribute_handle| has already
   // been discovered as included characteristic.
-  bool IsCharacteristicDiscovered(BTH_LE_UUID& uuid, uint16_t attribute_handle);
+  bool IsCharacteristicDiscovered(const BTH_LE_UUID& uuid,
+                                  uint16_t attribute_handle);
 
   // Checks if |characteristic| still exists in this service according to newly
   // retreived |num| of included |characteristics|.
@@ -113,11 +116,11 @@ class DEVICE_BLUETOOTH_EXPORT BluetoothRemoteGattServiceWin
 
   // Flag indicates if discovery complete notification has been send out to
   // avoid duplicate notification.
-  bool discovery_complete_notified_;
+  bool discovery_complete_notified_ = false;
 
   // Counts the number of asynchronous operations that are discovering
   // characteristics.
-  int discovery_pending_count_;
+  int discovery_pending_count_ = 0;
 
   base::WeakPtrFactory<BluetoothRemoteGattServiceWin> weak_ptr_factory_;
   DISALLOW_COPY_AND_ASSIGN(BluetoothRemoteGattServiceWin);
