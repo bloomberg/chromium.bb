@@ -16,15 +16,18 @@
 @synthesize formSuggestion = _formSuggestion;
 @synthesize formName = _formName;
 @synthesize fieldName = _fieldName;
+@synthesize fieldIdentifier = _fieldIdentifier;
 
 - (instancetype)initWithFormSuggestion:(FormSuggestion*)formSuggestion
                               formName:(NSString*)formName
-                             fieldName:(NSString*)fieldName {
+                             fieldName:(NSString*)fieldName
+                       fieldIdentifier:(NSString*)fieldIdentifier {
   self = [super init];
   if (self) {
     _formSuggestion = formSuggestion;
     _formName = [formName copy];
     _fieldName = [fieldName copy];
+    _fieldIdentifier = [fieldIdentifier copy];
   }
   return self;
 }

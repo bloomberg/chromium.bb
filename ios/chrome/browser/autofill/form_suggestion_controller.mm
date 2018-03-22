@@ -34,22 +34,29 @@ namespace {
 struct AutofillSuggestionState {
   AutofillSuggestionState(const std::string& form_name,
                           const std::string& field_name,
+                          const std::string& field_identifier,
                           const std::string& typed_value);
   // The name of the form for autofill.
   std::string form_name;
   // The name of the field for autofill.
   std::string field_name;
+  // The identifier of the field for autofill.
+  std::string field_identifier;
   // The user-typed value in the field.
   std::string typed_value;
   // The suggestions for the form field. An array of |FormSuggestion|.
   NSArray* suggestions;
 };
 
-AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
-                                                 const std::string& field_name,
-                                                 const std::string& typed_value)
-    : form_name(form_name), field_name(field_name), typed_value(typed_value) {
-}
+AutofillSuggestionState::AutofillSuggestionState(
+    const std::string& form_name,
+    const std::string& field_name,
+    const std::string& field_identifier,
+    const std::string& typed_value)
+    : form_name(form_name),
+      field_name(field_name),
+      field_identifier(field_identifier),
+      typed_value(typed_value) {}
 
 }  // namespace
 
@@ -184,6 +191,8 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   __weak FormSuggestionController* weakSelf = self;
   NSString* strongFormName = base::SysUTF8ToNSString(params.form_name);
   NSString* strongFieldName = base::SysUTF8ToNSString(params.field_name);
+  NSString* strongFieldIdentifier =
+      base::SysUTF8ToNSString(params.field_identifier);
   NSString* strongFieldType = base::SysUTF8ToNSString(params.field_type);
   NSString* strongType = base::SysUTF8ToNSString(params.type);
   NSString* strongValue =
@@ -207,7 +216,8 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
           id<FormSuggestionProvider> provider =
               strongSelf->_suggestionProviders[i];
           [provider checkIfSuggestionsAvailableForForm:strongFormName
-                                                 field:strongFieldName
+                                             fieldName:strongFieldName
+                                       fieldIdentifier:strongFieldIdentifier
                                              fieldType:strongFieldType
                                                   type:strongType
                                             typedValue:strongValue
@@ -236,7 +246,8 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
     id<FormSuggestionProvider> provider =
         strongSelf->_suggestionProviders[providerIndex];
     [provider retrieveSuggestionsForForm:strongFormName
-                                   field:strongFieldName
+                               fieldName:strongFieldName
+                         fieldIdentifier:strongFieldIdentifier
                                fieldType:strongFieldType
                                     type:strongType
                               typedValue:strongValue
@@ -319,7 +330,9 @@ AutofillSuggestionState::AutofillSuggestionState(const std::string& form_name,
   __weak FormSuggestionController* weakSelf = self;
   [_provider
       didSelectSuggestion:suggestion
-                 forField:base::SysUTF8ToNSString(_suggestionState->field_name)
+                fieldName:base::SysUTF8ToNSString(_suggestionState->field_name)
+          fieldIdentifier:base::SysUTF8ToNSString(
+                              _suggestionState->field_identifier)
                      form:base::SysUTF8ToNSString(_suggestionState->form_name)
         completionHandler:^{
           [[weakSelf accessoryViewDelegate] closeKeyboardWithoutButtonPress];
@@ -354,8 +367,9 @@ checkIfAccessoryViewIsAvailableForForm:(const web::FormActivityParams&)params
                             webState:(web::WebState*)webState
             accessoryViewUpdateBlock:
                 (AccessoryViewReadyCompletion)accessoryViewUpdateBlock {
-  _suggestionState.reset(new AutofillSuggestionState(
-      params.form_name, params.field_name, params.value));
+  _suggestionState.reset(
+      new AutofillSuggestionState(params.form_name, params.field_name,
+                                  params.field_identifier, params.value));
   accessoryViewUpdateBlock([self suggestionViewWithSuggestions:@[]], self);
   accessoryViewUpdateBlock_ = [accessoryViewUpdateBlock copy];
   [self retrieveSuggestionsForForm:params webState:webState];

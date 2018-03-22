@@ -124,6 +124,7 @@
 
 - (void)fetchSuggestionsForFormWithName:(NSString*)formName
                               fieldName:(NSString*)fieldName
+                        fieldIdentifier:(NSString*)fieldIdentifier
                       completionHandler:
                           (void (^)(NSArray<CWVAutofillSuggestion*>*))
                               completionHandler {
@@ -139,15 +140,18 @@
       NSMutableArray* autofillSuggestions = [NSMutableArray array];
       for (FormSuggestion* formSuggestion in suggestions) {
         CWVAutofillSuggestion* autofillSuggestion =
-            [[CWVAutofillSuggestion alloc] initWithFormSuggestion:formSuggestion
-                                                         formName:formName
-                                                        fieldName:fieldName];
+            [[CWVAutofillSuggestion alloc]
+                initWithFormSuggestion:formSuggestion
+                              formName:formName
+                             fieldName:fieldName
+                       fieldIdentifier:fieldIdentifier];
         [autofillSuggestions addObject:autofillSuggestion];
       }
       completionHandler([autofillSuggestions copy]);
     };
     [strongSelf->_autofillAgent retrieveSuggestionsForForm:formName
-                                                     field:fieldName
+                                                 fieldName:fieldName
+                                           fieldIdentifier:fieldIdentifier
                                                  fieldType:@""
                                                       type:nil
                                                 typedValue:@" "
@@ -158,7 +162,9 @@
   // |retrieveSuggestionsForForm| because the former actually queries the db,
   // while the latter merely returns them.
   [_autofillAgent checkIfSuggestionsAvailableForForm:formName
-                                               field:fieldName
+                                           fieldName:fieldName
+                                     fieldIdentifier:fieldIdentifier
+
                                            fieldType:@""
                                                 type:nil
                                           typedValue:@" "
@@ -170,7 +176,8 @@
 - (void)fillSuggestion:(CWVAutofillSuggestion*)suggestion
      completionHandler:(nullable void (^)(void))completionHandler {
   [_autofillAgent didSelectSuggestion:suggestion.formSuggestion
-                             forField:suggestion.fieldName
+                            fieldName:suggestion.fieldName
+                      fieldIdentifier:suggestion.fieldIdentifier
                                  form:suggestion.formName
                     completionHandler:^{
                       if (completionHandler) {
@@ -274,31 +281,36 @@
 
   NSString* nsFormName = base::SysUTF8ToNSString(params.form_name);
   NSString* nsFieldName = base::SysUTF8ToNSString(params.field_name);
+  NSString* nsFieldIdentifier =
+      base::SysUTF8ToNSString(params.field_identifier);
   NSString* nsValue = base::SysUTF8ToNSString(params.value);
   if (params.type == "focus") {
-    if ([_delegate
-            respondsToSelector:@selector
-            (autofillController:didFocusOnFieldWithName:formName:value:)]) {
+    if ([_delegate respondsToSelector:@selector
+                   (autofillController:didFocusOnFieldWithName:fieldIdentifier
+                                         :formName:value:)]) {
       [_delegate autofillController:self
             didFocusOnFieldWithName:nsFieldName
+                    fieldIdentifier:nsFieldIdentifier
                            formName:nsFormName
                               value:nsValue];
     }
   } else if (params.type == "input") {
-    if ([_delegate
-            respondsToSelector:@selector
-            (autofillController:didInputInFieldWithName:formName:value:)]) {
+    if ([_delegate respondsToSelector:@selector
+                   (autofillController:didInputInFieldWithName:fieldIdentifier
+                                         :formName:value:)]) {
       [_delegate autofillController:self
             didInputInFieldWithName:nsFieldName
+                    fieldIdentifier:nsFieldIdentifier
                            formName:nsFormName
                               value:nsValue];
     }
   } else if (params.type == "blur") {
-    if ([_delegate
-            respondsToSelector:@selector
-            (autofillController:didBlurOnFieldWithName:formName:value:)]) {
+    if ([_delegate respondsToSelector:@selector
+                   (autofillController:didBlurOnFieldWithName:fieldIdentifier
+                                         :formName:value:)]) {
       [_delegate autofillController:self
              didBlurOnFieldWithName:nsFieldName
+                    fieldIdentifier:nsFieldIdentifier
                            formName:nsFormName
                               value:nsValue];
     }

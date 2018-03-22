@@ -27,10 +27,12 @@ void SetPasswordFormFillData(PasswordFormFillData& form_data,
   form_data.action = GURL(action);
   autofill::FormFieldData username;
   username.name = base::UTF8ToUTF16(username_field);
+  username.id = base::UTF8ToUTF16(username_field);
   username.value = base::UTF8ToUTF16(username_value);
   form_data.username_field = username;
   autofill::FormFieldData password;
   password.name = base::UTF8ToUTF16(password_field);
+  password.id = base::UTF8ToUTF16(password_field);
   password.value = base::UTF8ToUTF16(password_value);
   form_data.password_field = password;
   if (additional_username) {

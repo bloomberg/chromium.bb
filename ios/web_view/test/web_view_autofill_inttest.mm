@@ -79,6 +79,7 @@ class WebViewAutofillTest : public WebViewIntTest {
     [autofill_controller_
         fetchSuggestionsForFormWithName:kTestFormName
                               fieldName:kTestFieldName
+                        fieldIdentifier:kTestFieldID
                       completionHandler:^(
                           NSArray<CWVAutofillSuggestion*>* suggestions) {
                         fetched_suggestions = suggestions;
@@ -103,6 +104,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
 
   [[delegate expect] autofillController:autofill_controller_
                 didFocusOnFieldWithName:kTestFieldName
+                        fieldIdentifier:kTestFieldID
                                formName:kTestFormName
                                   value:kTestFieldValue];
   NSString* focus_script =
@@ -117,6 +119,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
 
   [[delegate expect] autofillController:autofill_controller_
                  didBlurOnFieldWithName:kTestFieldName
+                        fieldIdentifier:kTestFieldID
                                formName:kTestFormName
                                   value:kTestFieldValue];
   NSString* blur_script =
@@ -131,6 +134,7 @@ TEST_F(WebViewAutofillTest, TestDelegateCallbacks) {
 
   [[delegate expect] autofillController:autofill_controller_
                 didInputInFieldWithName:kTestFieldName
+                        fieldIdentifier:kTestFieldID
                                formName:kTestFormName
                                   value:kTestFieldValue];
   // The 'input' event listener defined in form.js is only called during the

@@ -170,16 +170,16 @@ namespace {
 // of the username of each suggestion. "Show all" item is appended.
 NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                           NSString* formName,
-                          NSString* fieldName,
+                          NSString* fieldIdentifier,
                           NSString* typedValue) {
   base::string16 form_name = base::SysNSStringToUTF16(formName);
-  base::string16 field_name = base::SysNSStringToUTF16(fieldName);
+  base::string16 field_identifier = base::SysNSStringToUTF16(fieldIdentifier);
   base::string16 typed_value = base::SysNSStringToUTF16(typedValue);
 
   NSMutableArray* suggestions = [NSMutableArray array];
-  if (fillData.IsSuggestionsAvailable(form_name, field_name)) {
+  if (fillData.IsSuggestionsAvailable(form_name, field_identifier)) {
     std::vector<password_manager::UsernameAndRealm> username_and_realms_ =
-        fillData.RetrieveSuggestions(form_name, field_name, typed_value);
+        fillData.RetrieveSuggestions(form_name, field_identifier, typed_value);
 
     // Add credentials.
     for (const auto& username_and_realm : username_and_realms_) {
@@ -688,7 +688,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 }
 
 - (void)checkIfSuggestionsAvailableForForm:(NSString*)formName
-                                     field:(NSString*)fieldName
+                                 fieldName:(NSString*)fieldName
+                           fieldIdentifier:(NSString*)fieldIdentifier
                                  fieldType:(NSString*)fieldType
                                       type:(NSString*)type
                                 typedValue:(NSString*)typedValue
@@ -721,33 +722,35 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
           else {
             completion(fill_data->IsSuggestionsAvailable(
                 base::SysNSStringToUTF16(formName),
-                base::SysNSStringToUTF16(fieldName)));
+                base::SysNSStringToUTF16(fieldIdentifier)));
           }
         } copy];
     [self findPasswordFormsAndSendThemToPasswordStore];
     return;
   }
 
-  completion(!fillData_.Empty() && fillData_.IsSuggestionsAvailable(
-                                       base::SysNSStringToUTF16(formName),
-                                       base::SysNSStringToUTF16(fieldName)));
+  completion(!fillData_.Empty() &&
+             fillData_.IsSuggestionsAvailable(
+                 base::SysNSStringToUTF16(formName),
+                 base::SysNSStringToUTF16(fieldIdentifier)));
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
-                             field:(NSString*)fieldName
+                         fieldName:(NSString*)fieldName2
+                   fieldIdentifier:(NSString*)fieldIdentifier
                          fieldType:(NSString*)fieldType
                               type:(NSString*)type
                         typedValue:(NSString*)typedValue
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   DCHECK(GetPageURLAndCheckTrustLevel(webState, nullptr));
-
-  completion(BuildSuggestions(fillData_, formName, fieldName, typedValue),
+  completion(BuildSuggestions(fillData_, formName, fieldIdentifier, typedValue),
              self);
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion
-                   forField:(NSString*)fieldName
+                  fieldName:(NSString*)fieldName2
+            fieldIdentifier:(NSString*)fieldIdentifier
                        form:(NSString*)formName
           completionHandler:(SuggestionHandledCompletion)completion {
   if (suggestion.identifier == 1) {

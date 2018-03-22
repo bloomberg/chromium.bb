@@ -44,6 +44,10 @@ CWV_EXPORT
 // The 'name' attribute of the html field element.
 @property(nonatomic, copy, readonly) NSString* fieldName;
 
+// The identifier of the html field element. If the element has an ID, it will
+// be used as identifier. Otherwise, an identifier will be generated.
+@property(nonatomic, copy, readonly) NSString* fieldIdentifier;
+
 // The string that will replace the field with |fieldName|'s value attribute.
 @property(nonatomic, copy, readonly) NSString* value;
 

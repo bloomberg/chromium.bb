@@ -677,15 +677,15 @@ __gCrWeb.fill.formOrFieldsetsToFormData = function(
   // Protect against custom implementation of Array.toJSON in host pages.
   form['fields'].toJSON = null;
   return true;
-}
+};
 
 /**
- * Fills |form| with the form data object corresponding to the |formElement|.
- * If |field| is non-NULL, also fills |field| with the FormField object
- * corresponding to the |formControlElement|.
+ * Fills |form| with the form data object corresponding to the
+ * |formElement|. If |field| is non-NULL, also fills |field| with the
+ * FormField object corresponding to the |formControlElement|.
  * |extract_mask| controls what data is extracted.
- * Returns true if |form| is filled out. Returns false if there are no fields or
- * too many fields in the |form|.
+ * Returns true if |form| is filled out. Returns false if there are no
+ * fields or too many fields in the |form|.
  *
  * It is based on the logic in
  *     bool WebFormElementToFormData(
@@ -694,7 +694,8 @@ __gCrWeb.fill.formOrFieldsetsToFormData = function(
  *         ExtractMask extract_mask,
  *         FormData* form,
  *         FormFieldData* field)
- * in chromium/src/components/autofill/content/renderer/form_autofill_util.cc
+ * in
+ * chromium/src/components/autofill/content/renderer/form_autofill_util.cc
  *
  * @param {HTMLFrameElement|Window} frame The window or frame where the
  *     formElement is in.
@@ -888,19 +889,19 @@ __gCrWeb.fill.findChildTextInner = function(node, depth, divsToSkip) {
 
   // Recursively compute the children's text.
   // Preserve inter-element whitespace separation.
-  var childText = __gCrWeb.fill.findChildTextInner(
-      node.firstChild, depth - 1, divsToSkip);
+  var childText =
+      __gCrWeb.fill.findChildTextInner(node.firstChild, depth - 1, divsToSkip);
   var addSpace = node.nodeType === Node.TEXT_NODE && !nodeText;
   // Emulate apparently incorrect Chromium behavior tracked in
   // https://crbug.com/239819.
   addSpace = false;
-  nodeText = __gCrWeb.fill.combineAndCollapseWhitespace(
-      nodeText, childText, addSpace);
+  nodeText =
+      __gCrWeb.fill.combineAndCollapseWhitespace(nodeText, childText, addSpace);
 
   // Recursively compute the siblings' text.
   // Again, preserve inter-element whitespace separation.
-  var siblingText = __gCrWeb.fill.findChildTextInner(
-      node.nextSibling, depth - 1, divsToSkip);
+  var siblingText =
+      __gCrWeb.fill.findChildTextInner(node.nextSibling, depth - 1, divsToSkip);
   addSpace = node.nodeType === Node.TEXT_NODE && !nodeText;
   // Emulate apparently incorrect Chromium behavior tracked in
   // https://crbug.com/239819.
@@ -925,13 +926,12 @@ __gCrWeb.fill.findChildTextInner = function(node, depth, divsToSkip) {
  * @return {string} The child text.
  */
 __gCrWeb.fill.findChildTextWithIgnoreList = function(node, divsToSkip) {
-  if (node.nodeType === Node.TEXT_NODE)
-    return __gCrWeb.fill.nodeValue(node);
+  if (node.nodeType === Node.TEXT_NODE) return __gCrWeb.fill.nodeValue(node);
 
   var child = node.firstChild;
   var kChildSearchDepth = 10;
-  var nodeText = __gCrWeb.fill.findChildTextInner(
-      child, kChildSearchDepth, divsToSkip);
+  var nodeText =
+      __gCrWeb.fill.findChildTextInner(child, kChildSearchDepth, divsToSkip);
   nodeText = nodeText.trim();
   return nodeText;
 };
@@ -999,8 +999,7 @@ __gCrWeb.fill.inferLabelFromSibling = function(element, forward) {
     // Coalesce any text contained in multiple consecutive
     //  (a) plain text nodes or
     //  (b) inline HTML elements that are essentially equivalent to text nodes.
-    if (nodeType === Node.TEXT_NODE ||
-        __gCrWeb.fill.hasTagName(sibling, 'b') ||
+    if (nodeType === Node.TEXT_NODE || __gCrWeb.fill.hasTagName(sibling, 'b') ||
         __gCrWeb.fill.hasTagName(sibling, 'strong') ||
         __gCrWeb.fill.hasTagName(sibling, 'span') ||
         __gCrWeb.fill.hasTagName(sibling, 'font')) {
@@ -1455,14 +1454,12 @@ __gCrWeb.fill.inferLabelFromDivTable = function(element) {
       }
 
       lookingForParent = false;
-    } else if (
-        !lookingForParent && __gCrWeb.fill.hasTagName(node, 'label')) {
+    } else if (!lookingForParent && __gCrWeb.fill.hasTagName(node, 'label')) {
       if (!node.control) {
         inferredLabel = __gCrWeb.fill.findChildText(node);
       }
     } else if (
-        lookingForParent &&
-        __gCrWeb.fill.isTraversableContainerElement(node)) {
+        lookingForParent && __gCrWeb.fill.isTraversableContainerElement(node)) {
       // If the element is in a non-div container, its label most likely is too.
       break;
     }
@@ -1808,15 +1805,15 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   // The label is not officially part of a form control element; however, the
   // labels for all form control elements are scraped from the DOM and set in
   // form data.
-  field['name'] = __gCrWeb.form.getFieldIdentifier(element);
+  field['identifier'] = __gCrWeb.form.getFieldIdentifier(element);
+  field['name'] = __gCrWeb.form.getFieldName(element);
   field['form_control_type'] = element.type;
   var autocomplete_attribute = element.getAttribute('autocomplete');
   if (autocomplete_attribute) {
     field['autocomplete_attribute'] = autocomplete_attribute;
   }
   if (field['autocomplete_attribute'] != null &&
-      field['autocomplete_attribute'].length >
-          __gCrWeb.fill.MAX_DATA_LENGTH) {
+      field['autocomplete_attribute'].length > __gCrWeb.fill.MAX_DATA_LENGTH) {
     // Discard overly long attribute values to avoid DOS-ing the browser
     // process. However, send over a default string to indicate that the
     // attribute was present.
@@ -1835,7 +1832,7 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   if (__gCrWeb.fill.isAutofillableInputElement(element) ||
       __gCrWeb.fill.isTextAreaElement(element) ||
       __gCrWeb.fill.isSelectElement(element)) {
-    field['is_autofilled'] = element["isAutofilled"];
+    field['is_autofilled'] = element['isAutofilled'];
     field['should_autocomplete'] = __gCrWeb.fill.autoComplete(element);
     field['is_focusable'] = !element.disabled && !element.readOnly &&
         element.tabIndex >= 0 && isVisibleNode_(element);

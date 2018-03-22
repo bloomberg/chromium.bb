@@ -38,6 +38,7 @@
 
 - (void)autofillController:(CWVAutofillController*)autofillController
     didFocusOnFieldWithName:(NSString*)fieldName
+             withIdentifier:(NSString*)fieldIdentifier
                    formName:(NSString*)formName
                       value:(NSString*)value {
   _autofillController = autofillController;
@@ -75,6 +76,7 @@
   };
   [autofillController fetchSuggestionsForFormWithName:formName
                                             fieldName:fieldName
+                                      fieldIdentifier:fieldIdentifier
                                     completionHandler:completionHandler];
 }
 
