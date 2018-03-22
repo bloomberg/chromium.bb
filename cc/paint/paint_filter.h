@@ -24,6 +24,7 @@
 
 namespace viz {
 class GLRenderer;
+class SkiaRenderer;
 class SoftwareRenderer;
 }  // namespace viz
 
@@ -155,6 +156,7 @@ class CC_PAINT_EXPORT PaintFilter : public SkRefCnt {
   // raster.
   friend class PaintFlags;
   friend class viz::GLRenderer;
+  friend class viz::SkiaRenderer;
   friend class viz::SoftwareRenderer;
 
   const Type type_;

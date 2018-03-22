@@ -159,6 +159,13 @@ class CC_BASE_EXPORT MathUtil {
   static gfx::RectF ProjectClippedRect(const gfx::Transform& transform,
                                        const gfx::RectF& rect);
 
+  // Map device space quad to local space. Device_transform has no 3d
+  // component since it was flattened, so we don't need to project.  We should
+  // have already checked that the transform was invertible before this call.
+  static gfx::QuadF InverseMapQuadToLocalSpace(
+      const gfx::Transform& device_transform,
+      const gfx::QuadF& device_quad);
+
   // This function is only valid when the transform preserves 2d axis
   // alignment and the resulting rect will not be clipped.
   static gfx::Rect MapEnclosedRectWith2dAxisAlignedTransform(
