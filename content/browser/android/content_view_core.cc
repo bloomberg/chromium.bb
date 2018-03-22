@@ -4,80 +4,33 @@
 
 #include "content/browser/android/content_view_core.h"
 
-#include <stddef.h>
-
 #include "base/android/jni_android.h"
-#include "base/android/jni_array.h"
-#include "base/android/jni_string.h"
-#include "base/android/scoped_java_ref.h"
-#include "base/command_line.h"
-#include "base/logging.h"
 #include "base/macros.h"
-#include "base/memory/ptr_util.h"
-#include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
-#include "base/strings/string_util.h"
-#include "base/values.h"
 #include "cc/layers/layer.h"
-#include "cc/layers/solid_color_layer.h"
-#include "components/viz/common/frame_sinks/begin_frame_args.h"
-#include "content/browser/android/interstitial_page_delegate_android.h"
 #include "content/browser/frame_host/interstitial_page_impl.h"
-#include "content/browser/media/media_web_contents_observer.h"
-#include "content/browser/renderer_host/compositor_impl_android.h"
-#include "content/browser/renderer_host/render_view_host_impl.h"
-#include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_android.h"
-#include "content/browser/web_contents/web_contents_android.h"
+#include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view_android.h"
-#include "content/common/frame_messages.h"
-#include "content/common/input_messages.h"
-#include "content/common/view_messages.h"
-#include "content/public/browser/android/compositor.h"
-#include "content/public/browser/browser_context.h"
-#include "content/public/browser/browser_thread.h"
-#include "content/public/browser/favicon_status.h"
 #include "content/public/browser/render_view_host.h"
-#include "content/public/browser/ssl_host_state_delegate.h"
-#include "content/public/browser/web_contents.h"
 #include "content/public/common/content_client.h"
-#include "content/public/common/content_switches.h"
 #include "content/public/common/user_agent.h"
 #include "jni/ContentViewCoreImpl_jni.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
-#include "ui/android/view_android.h"
 #include "ui/android/window_android.h"
-#include "ui/events/android/gesture_event_type.h"
-#include "ui/events/blink/blink_event_util.h"
-#include "ui/events/blink/web_input_event_traits.h"
-#include "ui/events/event_utils.h"
-#include "ui/events/gesture_detection/motion_event.h"
-#include "ui/gfx/android/java_bitmap.h"
-#include "ui/gfx/geometry/point_conversions.h"
-#include "ui/gfx/geometry/size_conversions.h"
 
 using base::android::AttachCurrentThread;
-using base::android::ConvertJavaStringToUTF16;
-using base::android::ConvertJavaStringToUTF8;
-using base::android::ConvertUTF16ToJavaString;
-using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
 using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
-using blink::WebGestureEvent;
-using blink::WebInputEvent;
 
 namespace content {
 
 namespace {
 
-int GetRenderProcessIdFromRenderViewHost(RenderViewHost* host) {
-  DCHECK(host);
-  RenderProcessHost* render_process = host->GetProcess();
-  DCHECK(render_process);
-  if (render_process->HasConnection())
-    return render_process->GetHandle();
-  return 0;
+RenderWidgetHostViewAndroid* GetRenderWidgetHostViewFromHost(
+    RenderViewHost* host) {
+  return static_cast<RenderWidgetHostViewAndroid*>(
+      host->GetWidget()->GetView());
 }
 
 void SetContentViewCore(WebContents* web_contents, ContentViewCore* cvc) {
@@ -168,43 +121,21 @@ void ContentViewCore::InitWebContents() {
 }
 
 void ContentViewCore::RenderViewReady() {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (!obj.is_null())
-    Java_ContentViewCoreImpl_onRenderProcessChange(env, obj);
-
   if (device_orientation_ != 0)
     SendOrientationChangeEventInternal();
 }
 
 void ContentViewCore::RenderViewHostChanged(RenderViewHost* old_host,
                                             RenderViewHost* new_host) {
-  int old_pid = 0;
   if (old_host) {
-    old_pid = GetRenderProcessIdFromRenderViewHost(old_host);
-
-    RenderWidgetHostViewAndroid* view =
-        static_cast<RenderWidgetHostViewAndroid*>(
-            old_host->GetWidget()->GetView());
+    auto* view = GetRenderWidgetHostViewFromHost(old_host);
     if (view)
       view->UpdateNativeViewTree(nullptr);
 
-    view = static_cast<RenderWidgetHostViewAndroid*>(
-        new_host->GetWidget()->GetView());
+    view = GetRenderWidgetHostViewFromHost(new_host);
     if (view)
       view->UpdateNativeViewTree(GetViewAndroid());
   }
-  int new_pid =
-      GetRenderProcessIdFromRenderViewHost(web_contents_->GetRenderViewHost());
-  if (new_pid != old_pid) {
-    // Notify the Java side that the renderer process changed.
-    JNIEnv* env = AttachCurrentThread();
-    ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-    if (!obj.is_null()) {
-      Java_ContentViewCoreImpl_onRenderProcessChange(env, obj);
-    }
-  }
-
   SetFocusInternal(GetViewAndroid()->HasFocus());
 }
 
@@ -332,35 +263,6 @@ void ContentViewCore::OnTouchDown(
   if (obj.is_null())
     return;
   Java_ContentViewCoreImpl_onTouchDown(env, obj, event);
-}
-
-void ContentViewCore::SetTextTrackSettings(
-    JNIEnv* env,
-    const JavaParamRef<jobject>& obj,
-    jboolean textTracksEnabled,
-    const JavaParamRef<jstring>& textTrackBackgroundColor,
-    const JavaParamRef<jstring>& textTrackFontFamily,
-    const JavaParamRef<jstring>& textTrackFontStyle,
-    const JavaParamRef<jstring>& textTrackFontVariant,
-    const JavaParamRef<jstring>& textTrackTextColor,
-    const JavaParamRef<jstring>& textTrackTextShadow,
-    const JavaParamRef<jstring>& textTrackTextSize) {
-  FrameMsg_TextTrackSettings_Params params;
-  params.text_tracks_enabled = textTracksEnabled;
-  params.text_track_background_color =
-      ConvertJavaStringToUTF8(env, textTrackBackgroundColor);
-  params.text_track_font_family =
-      ConvertJavaStringToUTF8(env, textTrackFontFamily);
-  params.text_track_font_style =
-      ConvertJavaStringToUTF8(env, textTrackFontStyle);
-  params.text_track_font_variant =
-      ConvertJavaStringToUTF8(env, textTrackFontVariant);
-  params.text_track_text_color =
-      ConvertJavaStringToUTF8(env, textTrackTextColor);
-  params.text_track_text_shadow =
-      ConvertJavaStringToUTF8(env, textTrackTextShadow);
-  params.text_track_text_size = ConvertJavaStringToUTF8(env, textTrackTextSize);
-  web_contents_->GetMainFrame()->SetTextTrackSettings(params);
 }
 
 void ContentViewCore::SendOrientationChangeEventInternal() {

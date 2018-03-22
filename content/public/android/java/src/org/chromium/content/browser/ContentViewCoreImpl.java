@@ -5,7 +5,6 @@
 package org.chromium.content.browser;
 
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
@@ -24,9 +23,6 @@ import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
-import org.chromium.content.browser.accessibility.captioning.CaptioningBridgeFactory;
-import org.chromium.content.browser.accessibility.captioning.SystemCaptioningBridge;
-import org.chromium.content.browser.accessibility.captioning.TextTrackSettings;
 import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.input.SelectPopup;
 import org.chromium.content.browser.input.TextSuggestionHost;
@@ -54,8 +50,7 @@ import java.lang.ref.WeakReference;
  * Implementation of the interface {@ContentViewCore}.
  */
 @JNINamespace("content")
-public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObserver,
-                                            SystemCaptioningBridge.SystemCaptioningBridgeListener {
+public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObserver {
     private static final String TAG = "cr_ContentViewCore";
 
     /**
@@ -155,10 +150,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     // Cached copy of all positions and scales as reported by the renderer.
     private RenderCoordinates mRenderCoordinates;
 
-    // Notifies the ContentViewCore when platform closed caption settings have changed
-    // if they are supported. Otherwise does nothing.
-    private SystemCaptioningBridge mSystemCaptioningBridge;
-
     /**
      * PID used to indicate an invalid render process.
      */
@@ -251,7 +242,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             ViewAndroidDelegate viewDelegate, InternalAccessDelegate internalDispatcher,
             WindowAndroid windowAndroid) {
         mContext = context;
-        mSystemCaptioningBridge = CaptioningBridgeFactory.getSystemCaptioningBridge(mContext);
 
         mViewAndroidDelegate = viewDelegate;
 
@@ -476,7 +466,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         for (WindowEventObserver observer : mWindowEventObservers) observer.onAttachedToWindow();
         addDisplayAndroidObserverIfNeeded();
         GamepadList.onAttachedToWindow(mContext);
-        mSystemCaptioningBridge.addListener(this);
     }
 
     @SuppressWarnings("javadoc")
@@ -487,8 +476,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         for (WindowEventObserver observer : mWindowEventObservers) observer.onDetachedFromWindow();
         removeDisplayAndroidObserver();
         GamepadList.onDetachedFromWindow();
-
-        mSystemCaptioningBridge.removeListener(this);
     }
 
     @SuppressWarnings("javadoc")
@@ -749,24 +736,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         getSelectionPopupController().destroyPastePopup();
     }
 
-    @SuppressWarnings("unused")
-    @CalledByNative
-    private void onRenderProcessChange() {
-        // Immediately sync closed caption settings to the new render process.
-        mSystemCaptioningBridge.syncToListener(this);
-    }
-
-    @TargetApi(Build.VERSION_CODES.KITKAT)
-    @Override
-    public void onSystemCaptioningChanged(TextTrackSettings settings) {
-        if (mNativeContentViewCore == 0) return;
-        nativeSetTextTrackSettings(mNativeContentViewCore, settings.getTextTracksEnabled(),
-                settings.getTextTrackBackgroundColor(), settings.getTextTrackFontFamily(),
-                settings.getTextTrackFontStyle(), settings.getTextTrackFontVariant(),
-                settings.getTextTrackTextColor(), settings.getTextTrackTextShadow(),
-                settings.getTextTrackTextSize());
-    }
-
     // DisplayAndroidObserver method.
     @Override
     public void onRotationChanged(int rotation) {
@@ -830,8 +799,4 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             long nativeContentViewCore, boolean enabled);
     private native void nativeSetMultiTouchZoomSupportEnabled(
             long nativeContentViewCore, boolean enabled);
-    private native void nativeSetTextTrackSettings(long nativeContentViewCore,
-            boolean textTracksEnabled, String textTrackBackgroundColor, String textTrackFontFamily,
-            String textTrackFontStyle, String textTrackFontVariant, String textTrackTextColor,
-            String textTrackTextShadow, String textTrackTextSize);
 }
