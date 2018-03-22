@@ -157,6 +157,12 @@ class CHROMEOS_EXPORT SmbProviderClient
                              const base::FilePath& entry_path,
                              GetDeleteListCallback callback) = 0;
 
+  // Calls GetShares. This gets the shares from |server_url| and calls
+  // |callback| when shares are found. The DirectoryEntryListProto will contain
+  // no entries if there are no shares found.
+  virtual void GetShares(const base::FilePath& server_url,
+                         ReadDirectoryCallback callback) = 0;
+
  protected:
   // Create() should be used instead.
   SmbProviderClient();
