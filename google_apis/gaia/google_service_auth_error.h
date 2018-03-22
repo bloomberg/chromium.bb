@@ -8,17 +8,6 @@
 // Accounts (e.g expired credentials).  It may contain additional data such as
 // captcha or OTP challenges.
 
-// A GoogleServiceAuthError without additional data is just a State, defined
-// below. A case could be made to have this relation implicit, to allow raising
-// error events concisely by doing OnAuthError(GoogleServiceAuthError::NONE),
-// for example. But the truth is this class is ever so slightly more than a
-// transparent wrapper around 'State' due to additional Captcha data
-// (e.g consider operator=), and this would violate the style guide. Thus,
-// you must explicitly use the constructor when all you have is a State.
-// The good news is the implementation nests the enum inside a class, so you
-// may forward declare and typedef GoogleServiceAuthError to something shorter
-// in the comfort of your own translation unit.
-
 #ifndef GOOGLE_APIS_GAIA_GOOGLE_SERVICE_AUTH_ERROR_H_
 #define GOOGLE_APIS_GAIA_GOOGLE_SERVICE_AUTH_ERROR_H_
 
@@ -32,10 +21,6 @@ namespace identity {
 namespace mojom {
 class GoogleServiceAuthErrorDataView;
 }
-}
-
-namespace base {
-class DictionaryValue;
 }
 
 class GoogleServiceAuthError {
@@ -101,6 +86,23 @@ class GoogleServiceAuthError {
     NUM_STATES = 14,
   };
 
+  // Error reason for invalid credentials. Only used when the error is
+  // INVALID_GAIA_CREDENTIALS.
+  // Used by UMA histograms: do not remove or reorder values, add new values at
+  // the end.
+  enum class InvalidGaiaCredentialsReason {
+    // The error was not specified.
+    UNKNOWN = 0,
+    // Credentials were rejectedby the Gaia server.
+    CREDENTIALS_REJECTED_BY_SERVER,
+    // Credentials were invalidated locally by Chrome.
+    CREDENTIALS_REJECTED_BY_CLIENT,
+    // Credentials are missing (e.g. could not be loaded from disk).
+    CREDENTIALS_MISSING,
+
+    NUM_REASONS
+  };
+
   // Additional data for CAPTCHA_REQUIRED errors.
   struct Captcha {
     Captcha();
@@ -164,6 +166,9 @@ class GoogleServiceAuthError {
   // It will be created with CONNECTION_FAILED set.
   static GoogleServiceAuthError FromConnectionError(int error);
 
+  static GoogleServiceAuthError FromInvalidGaiaCredentialsReason(
+      InvalidGaiaCredentialsReason reason);
+
   // Construct a CAPTCHA_REQUIRED error with CAPTCHA challenge data from the
   // the ClientLogin endpoint.
   // TODO(rogerta): once ClientLogin is no longer used, may be able to get
@@ -198,9 +203,8 @@ class GoogleServiceAuthError {
   const std::string& token() const;
   const std::string& error_message() const;
 
-  // Returns info about this object in a dictionary.  Caller takes
-  // ownership of returned dictionary.
-  base::DictionaryValue* ToValue() const;
+  // Should only be used when the error state is INVALID_GAIA_CREDENTIALS.
+  InvalidGaiaCredentialsReason GetInvalidGaiaCredentialsReason() const;
 
   // Returns a message describing the error.
   std::string ToString() const;
@@ -234,6 +238,7 @@ class GoogleServiceAuthError {
   SecondFactor second_factor_;
   int network_error_;
   std::string error_message_;
+  InvalidGaiaCredentialsReason invalid_gaia_credentials_reason_;
 };
 
 #endif  // GOOGLE_APIS_GAIA_GOOGLE_SERVICE_AUTH_ERROR_H_

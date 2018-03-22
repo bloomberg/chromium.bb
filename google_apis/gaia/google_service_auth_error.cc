@@ -8,11 +8,8 @@
 #include <string>
 #include <utility>
 
-#include "base/json/json_reader.h"
 #include "base/logging.h"
-#include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
-#include "base/values.h"
 #include "net/base/net_errors.h"
 
 GoogleServiceAuthError::Captcha::Captcha() : image_width(0), image_height(0) {
@@ -77,23 +74,17 @@ bool GoogleServiceAuthError::operator!=(
 }
 
 GoogleServiceAuthError::GoogleServiceAuthError()
-    : state_(NONE), network_error_(0) {}
+    : GoogleServiceAuthError(NONE) {}
 
 GoogleServiceAuthError::GoogleServiceAuthError(State s)
-    : state_(s),
-      network_error_(0) {
-  // If the caller has no idea, then we just set it to a generic failure.
-  if (s == CONNECTION_FAILED) {
-    network_error_ = net::ERR_FAILED;
-  }
-}
+    : GoogleServiceAuthError(s, std::string()) {}
 
-GoogleServiceAuthError::GoogleServiceAuthError(
-    State state,
-    const std::string& error_message)
-    : state_(state),
-      network_error_(0),
-      error_message_(error_message) {
+GoogleServiceAuthError::GoogleServiceAuthError(State state,
+                                               const std::string& error_message)
+    : GoogleServiceAuthError(
+          state,
+          (state == CONNECTION_FAILED) ? net::ERR_FAILED : 0) {
+  error_message_ = error_message;
 }
 
 GoogleServiceAuthError::GoogleServiceAuthError(
@@ -103,6 +94,14 @@ GoogleServiceAuthError::GoogleServiceAuthError(
 GoogleServiceAuthError
     GoogleServiceAuthError::FromConnectionError(int error) {
   return GoogleServiceAuthError(CONNECTION_FAILED, error);
+}
+
+// static
+GoogleServiceAuthError GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+    InvalidGaiaCredentialsReason reason) {
+  GoogleServiceAuthError error(INVALID_GAIA_CREDENTIALS);
+  error.invalid_gaia_credentials_reason_ = reason;
+  return error;
 }
 
 // static
@@ -171,53 +170,10 @@ const std::string& GoogleServiceAuthError::error_message() const {
   return error_message_;
 }
 
-base::DictionaryValue* GoogleServiceAuthError::ToValue() const {
-  base::DictionaryValue* value = new base::DictionaryValue();
-  std::string state_str;
-  switch (state_) {
-#define STATE_CASE(x) case x: state_str = #x; break
-    STATE_CASE(NONE);
-    STATE_CASE(INVALID_GAIA_CREDENTIALS);
-    STATE_CASE(USER_NOT_SIGNED_UP);
-    STATE_CASE(CONNECTION_FAILED);
-    STATE_CASE(CAPTCHA_REQUIRED);
-    STATE_CASE(ACCOUNT_DELETED);
-    STATE_CASE(ACCOUNT_DISABLED);
-    STATE_CASE(SERVICE_UNAVAILABLE);
-    STATE_CASE(TWO_FACTOR);
-    STATE_CASE(REQUEST_CANCELED);
-    STATE_CASE(UNEXPECTED_SERVICE_RESPONSE);
-    STATE_CASE(SERVICE_ERROR);
-    STATE_CASE(WEB_LOGIN_REQUIRED);
-#undef STATE_CASE
-    default:
-      NOTREACHED();
-      break;
-  }
-  value->SetString("state", state_str);
-  if (!error_message_.empty()) {
-    value->SetString("errorMessage", error_message_);
-  }
-  if (state_ == CAPTCHA_REQUIRED) {
-    auto captcha_value = std::make_unique<base::DictionaryValue>();
-    captcha_value->SetString("token", captcha_.token);
-    captcha_value->SetString("audioUrl", captcha_.audio_url.spec());
-    captcha_value->SetString("imageUrl", captcha_.image_url.spec());
-    captcha_value->SetString("unlockUrl", captcha_.unlock_url.spec());
-    captcha_value->SetInteger("imageWidth", captcha_.image_width);
-    captcha_value->SetInteger("imageHeight", captcha_.image_height);
-    value->Set("captcha", std::move(captcha_value));
-  } else if (state_ == CONNECTION_FAILED) {
-    value->SetString("networkError", net::ErrorToString(network_error_));
-  } else if (state_ == TWO_FACTOR) {
-    auto two_factor_value = std::make_unique<base::DictionaryValue>();
-    two_factor_value->SetString("token", second_factor_.token);
-    two_factor_value->SetString("promptText", second_factor_.prompt_text);
-    two_factor_value->SetString("alternateText", second_factor_.alternate_text);
-    two_factor_value->SetInteger("fieldLength", second_factor_.field_length);
-    value->Set("two_factor", std::move(two_factor_value));
-  }
-  return value;
+GoogleServiceAuthError::InvalidGaiaCredentialsReason
+GoogleServiceAuthError::GetInvalidGaiaCredentialsReason() const {
+  DCHECK_EQ(INVALID_GAIA_CREDENTIALS, state());
+  return invalid_gaia_credentials_reason_;
 }
 
 std::string GoogleServiceAuthError::ToString() const {
@@ -225,7 +181,9 @@ std::string GoogleServiceAuthError::ToString() const {
     case NONE:
       return std::string();
     case INVALID_GAIA_CREDENTIALS:
-      return "Invalid credentials.";
+      return base::StringPrintf(
+          "Invalid credentials (%d).",
+          static_cast<int>(invalid_gaia_credentials_reason_));
     case USER_NOT_SIGNED_UP:
       return "Not authorized.";
     case CONNECTION_FAILED:
@@ -280,19 +238,22 @@ bool GoogleServiceAuthError::IsTransientError() const {
 
 GoogleServiceAuthError::GoogleServiceAuthError(State s, int error)
     : state_(s),
-      network_error_(error) {
-}
+      network_error_(error),
+      invalid_gaia_credentials_reason_(InvalidGaiaCredentialsReason::UNKNOWN) {}
 
-GoogleServiceAuthError::GoogleServiceAuthError(
-    State s,
-    const std::string& captcha_token,
-    const GURL& captcha_audio_url,
-    const GURL& captcha_image_url,
-    const GURL& captcha_unlock_url,
-    int image_width,
-    int image_height)
+GoogleServiceAuthError::GoogleServiceAuthError(State s,
+                                               const std::string& captcha_token,
+                                               const GURL& captcha_audio_url,
+                                               const GURL& captcha_image_url,
+                                               const GURL& captcha_unlock_url,
+                                               int image_width,
+                                               int image_height)
     : state_(s),
-      captcha_(captcha_token, captcha_audio_url, captcha_image_url,
-               captcha_unlock_url, image_width, image_height),
-      network_error_(0) {
-}
+      captcha_(captcha_token,
+               captcha_audio_url,
+               captcha_image_url,
+               captcha_unlock_url,
+               image_width,
+               image_height),
+      network_error_((state_ == CONNECTION_FAILED) ? net::ERR_FAILED : net::OK),
+      invalid_gaia_credentials_reason_(InvalidGaiaCredentialsReason::UNKNOWN) {}

@@ -23,6 +23,10 @@ class ChildAccountInfoFetcher;
 class OAuth2TokenService;
 class SigninClient;
 
+namespace base {
+class DictionaryValue;
+}
+
 namespace image_fetcher {
 struct RequestMetadata;
 class ImageDecoder;
