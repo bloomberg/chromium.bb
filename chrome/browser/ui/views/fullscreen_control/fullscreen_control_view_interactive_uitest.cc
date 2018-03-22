@@ -4,6 +4,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
+#include "build/build_config.h"
 #include "chrome/browser/ui/exclusive_access/exclusive_access_bubble_type.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/fullscreen_control/fullscreen_control_host.h"
@@ -44,7 +45,13 @@ class FullscreenControlViewTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(FullscreenControlViewTest);
 };
 
-IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MouseExitFullscreen) {
+#if defined(OS_MACOSX)
+// Entering fullscreen is flaky on Mac: http://crbug.com/824517
+#define MAYBE_MouseExitFullscreen DISABLED_MouseExitFullscreen
+#else
+#define MAYBE_MouseExitFullscreen MouseExitFullscreen
+#endif
+IN_PROC_BROWSER_TEST_F(FullscreenControlViewTest, MAYBE_MouseExitFullscreen) {
   GURL blank_url("about:blank");
   ui_test_utils::NavigateToURL(browser(), blank_url);
   BrowserView* browser_view = BrowserView::GetBrowserViewForBrowser(browser());
