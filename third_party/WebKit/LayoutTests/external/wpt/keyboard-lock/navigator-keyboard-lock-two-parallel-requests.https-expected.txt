@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL [Keyboard Lock] keyboard.lock twice in parallel assert_throws: keyboard.lock() should only be executed if another request has finished. function "function() { throw e }" threw "Last lock() call has not finished yet." with type "string", not an object
+Harness: the test ran to completion.
+
