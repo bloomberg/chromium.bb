@@ -114,6 +114,21 @@ cc::ScrollState CreateScrollStateForGesture(const WebGestureEvent& event) {
   return cc::ScrollState(scroll_state_data);
 }
 
+cc::ScrollState CreateScrollStateForInertialEnd() {
+  cc::ScrollStateData scroll_state_data;
+  scroll_state_data.is_ending = true;
+  return cc::ScrollState(scroll_state_data);
+}
+
+cc::ScrollState CreateScrollStateForInertialUpdate(
+    const gfx::Vector2dF& delta) {
+  cc::ScrollStateData scroll_state_data;
+  scroll_state_data.delta_x = delta.x();
+  scroll_state_data.delta_y = delta.y();
+  scroll_state_data.is_in_inertial_phase = true;
+  return cc::ScrollState(scroll_state_data);
+}
+
 cc::InputHandler::ScrollInputType GestureScrollInputType(
     blink::WebGestureDevice device) {
   return device == blink::kWebGestureDeviceTouchpad
@@ -161,7 +176,8 @@ InputHandlerProxy::InputHandlerProxy(
       current_overscroll_params_(nullptr),
       has_ongoing_compositor_scroll_fling_pinch_(false),
       is_first_gesture_scroll_update_(false),
-      tick_clock_(base::DefaultTickClock::GetInstance()) {
+      tick_clock_(base::DefaultTickClock::GetInstance()),
+      snap_fling_controller_(std::make_unique<SnapFlingController>(this)) {
   DCHECK(client);
   input_handler_->BindToClient(this,
                                touchpad_and_wheel_scroll_latching_enabled_);
@@ -374,6 +390,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
       return DID_HANDLE;
     }
   }
+
+  if (snap_fling_controller_->FilterEventForSnap(event))
+    return DROP_EVENT;
 
   switch (event.GetType()) {
     case WebInputEvent::kMouseWheel:
@@ -779,6 +798,15 @@ InputHandlerProxy::HandleGestureScrollUpdate(
         return DID_NOT_HANDLE;
     }
   }
+
+  if (snap_fling_controller_->HandleGestureScrollUpdate(gesture_event)) {
+#ifndef NDEBUG
+    expect_scroll_update_end_ = false;
+#endif
+    gesture_scroll_on_impl_thread_ = false;
+    return DROP_EVENT;
+  }
+
   cc::InputHandlerScrollResult scroll_result =
       input_handler_->ScrollBy(&scroll_state);
 
@@ -1039,6 +1067,8 @@ void InputHandlerProxy::Animate(base::TimeTicks time) {
   if (scroll_elasticity_controller_)
     scroll_elasticity_controller_->Animate(time);
 
+  snap_fling_controller_->Animate(time);
+
   if (!fling_curve_)
     return;
 
@@ -1142,6 +1172,34 @@ void InputHandlerProxy::SynchronouslyZoomBy(float magnify_delta,
   input_handler_->PinchGestureBegin();
   input_handler_->PinchGestureUpdate(magnify_delta, anchor);
   input_handler_->PinchGestureEnd(anchor, false);
+}
+
+bool InputHandlerProxy::GetSnapFlingInfo(
+    const gfx::Vector2dF& natural_displacement,
+    gfx::Vector2dF* initial_offset,
+    gfx::Vector2dF* target_offset) const {
+  return input_handler_->GetSnapFlingInfo(natural_displacement, initial_offset,
+                                          target_offset);
+}
+
+gfx::Vector2dF InputHandlerProxy::ScrollByForSnapFling(
+    const gfx::Vector2dF& delta) {
+  cc::ScrollState scroll_state = CreateScrollStateForInertialUpdate(delta);
+  // TODO(sunyunjia): We should consider moving the scroll to main, handling
+  // overscroll, and handling elastic scroll after ScrollBy().
+  // https://crbug.com/819855
+  cc::InputHandlerScrollResult scroll_result =
+      input_handler_->ScrollBy(&scroll_state);
+  return scroll_result.current_offset;
+}
+
+void InputHandlerProxy::ScrollEndForSnapFling() {
+  cc::ScrollState scroll_state = CreateScrollStateForInertialEnd();
+  input_handler_->ScrollEnd(&scroll_state, false);
+}
+
+void InputHandlerProxy::RequestAnimationForSnapFling() {
+  RequestAnimation();
 }
 
 void InputHandlerProxy::HandleOverscroll(

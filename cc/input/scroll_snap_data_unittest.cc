@@ -26,8 +26,9 @@ TEST_F(ScrollSnapDataTest, FindsClosestSnapPositionIndependently) {
   data.AddSnapAreaData(snap_x_only);
   data.AddSnapAreaData(snap_y_only);
   data.AddSnapAreaData(snap_on_both);
-  gfx::ScrollOffset snap_position =
-      data.FindSnapPosition(current_position, true, true);
+  gfx::ScrollOffset snap_position;
+  EXPECT_TRUE(
+      data.FindSnapPosition(current_position, true, true, &snap_position));
   EXPECT_EQ(80, snap_position.x());
   EXPECT_EQ(70, snap_position.y());
 }
@@ -48,8 +49,9 @@ TEST_F(ScrollSnapDataTest, FindsClosestSnapPositionOnAxisValueBoth) {
   data.AddSnapAreaData(snap_x_only);
   data.AddSnapAreaData(snap_y_only);
   data.AddSnapAreaData(snap_on_both);
-  gfx::ScrollOffset snap_position =
-      data.FindSnapPosition(current_position, true, true);
+  gfx::ScrollOffset snap_position;
+  EXPECT_TRUE(
+      data.FindSnapPosition(current_position, true, true, &snap_position));
   EXPECT_EQ(50, snap_position.x());
   EXPECT_EQ(150, snap_position.y());
 }
@@ -67,8 +69,9 @@ TEST_F(ScrollSnapDataTest, DoesNotSnapOnNonScrolledAxis) {
       gfx::RectF(0, 0, 360, 380), false);
   data.AddSnapAreaData(snap_x_only);
   data.AddSnapAreaData(snap_y_only);
-  gfx::ScrollOffset snap_position =
-      data.FindSnapPosition(current_position, true, false);
+  gfx::ScrollOffset snap_position;
+  EXPECT_TRUE(
+      data.FindSnapPosition(current_position, true, false, &snap_position));
   EXPECT_EQ(80, snap_position.x());
   EXPECT_EQ(100, snap_position.y());
 }
@@ -84,10 +87,9 @@ TEST_F(ScrollSnapDataTest, DoesNotSnapOnNonVisibleAreas) {
                              gfx::RectF(0, 0, 200, 90), false);
   data.AddSnapAreaData(non_visible_x);
   data.AddSnapAreaData(non_visible_y);
-  gfx::ScrollOffset snap_position =
-      data.FindSnapPosition(current_position, true, true);
-  EXPECT_EQ(100, snap_position.x());
-  EXPECT_EQ(100, snap_position.y());
+  gfx::ScrollOffset snap_position;
+  EXPECT_FALSE(
+      data.FindSnapPosition(current_position, true, true, &snap_position));
 }
 
 TEST_F(ScrollSnapDataTest, SnapOnClosestAxisFirstIfVisibilityConflicts) {
@@ -114,8 +116,9 @@ TEST_F(ScrollSnapDataTest, SnapOnClosestAxisFirstIfVisibilityConflicts) {
   data.AddSnapAreaData(snap_x);
   data.AddSnapAreaData(snap_y1);
   data.AddSnapAreaData(snap_y2);
-  gfx::ScrollOffset snap_position =
-      data.FindSnapPosition(current_position, true, true);
+  gfx::ScrollOffset snap_position;
+  EXPECT_TRUE(
+      data.FindSnapPosition(current_position, true, true, &snap_position));
   EXPECT_EQ(80, snap_position.x());
   EXPECT_EQ(60, snap_position.y());
 }
@@ -130,8 +133,9 @@ TEST_F(ScrollSnapDataTest, DoesNotSnapToPositionsOutsideProximityRange) {
   SnapAreaData area(SnapAxis::kBoth, gfx::ScrollOffset(80, 160),
                     gfx::RectF(50, 50, 200, 200), false);
   data.AddSnapAreaData(area);
-  gfx::ScrollOffset snap_position =
-      data.FindSnapPosition(current_position, true, true);
+  gfx::ScrollOffset snap_position;
+  EXPECT_TRUE(
+      data.FindSnapPosition(current_position, true, true, &snap_position));
 
   // The snap position on x, 80, is within the proximity range of [50, 150].
   // However, the snap position on y, 160, is outside the proximity range of

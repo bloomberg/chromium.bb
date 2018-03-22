@@ -3872,6 +3872,9 @@ InputHandlerScrollResult LayerTreeHostImpl::ScrollBy(
     UpdateRootLayerStateForSynchronousInputHandler();
   }
 
+  scroll_result.current_offset = ScrollOffsetToVector2dF(
+      scroll_tree.current_scroll_offset(scroll_node->element_id));
+
   // Run animations which need to respond to updated scroll offset.
   mutator_host_->TickScrollAnimations(
       CurrentBeginFrameArgs().frame_time,
@@ -3909,15 +3912,43 @@ bool LayerTreeHostImpl::SnapAtScrollEnd() {
   gfx::ScrollOffset current_position =
       scroll_tree.current_scroll_offset(scroll_node->element_id);
 
-  gfx::ScrollOffset snap_position =
-      data.FindSnapPosition(current_position, did_scroll_x_for_scroll_gesture_,
-                            did_scroll_y_for_scroll_gesture_);
-  if (snap_position == current_position)
+  gfx::ScrollOffset snap_position;
+  if (!data.FindSnapPosition(current_position, did_scroll_x_for_scroll_gesture_,
+                             did_scroll_y_for_scroll_gesture_,
+                             &snap_position)) {
     return false;
+  }
 
   ScrollAnimationCreate(
       scroll_node, ScrollOffsetToVector2dF(snap_position - current_position),
       base::TimeDelta());
+  return true;
+}
+
+bool LayerTreeHostImpl::GetSnapFlingInfo(
+    const gfx::Vector2dF& natural_displacement,
+    gfx::Vector2dF* initial_offset,
+    gfx::Vector2dF* target_offset) const {
+  const ScrollNode* scroll_node = CurrentlyScrollingNode();
+  if (!scroll_node || !scroll_node->snap_container_data.has_value())
+    return false;
+
+  const SnapContainerData& data = scroll_node->snap_container_data.value();
+  const ScrollTree& scroll_tree = active_tree()->property_trees()->scroll_tree;
+  *initial_offset = ScrollOffsetToVector2dF(
+      scroll_tree.current_scroll_offset(scroll_node->element_id));
+  bool did_scroll_x =
+      did_scroll_x_for_scroll_gesture_ || natural_displacement.x() != 0;
+  bool did_scroll_y =
+      did_scroll_y_for_scroll_gesture_ || natural_displacement.y() != 0;
+  gfx::ScrollOffset snap_offset;
+  if (!data.FindSnapPosition(
+          gfx::ScrollOffset(*initial_offset + natural_displacement),
+          did_scroll_x, did_scroll_y, &snap_offset)) {
+    return false;
+  }
+
+  *target_offset = ScrollOffsetToVector2dF(snap_offset);
   return true;
 }
 
