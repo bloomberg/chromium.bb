@@ -455,6 +455,9 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
   wrapper.setAttribute('aria-selected', 'false');
   var img = document.createElement('img');
   img.tabIndex = -1;
+  img.onload = function() {
+    this.updateElementSize(wrapper);
+  }.bind(this);
   img.src = picture.thumbnailURL;
   wrapper.appendChild(img);
   if (picture.pictureType == camera.models.Gallery.PictureType.MOTION) {
@@ -498,6 +501,14 @@ camera.views.Album.prototype.addPictureToDOM = function(picture) {
   wrapper.addEventListener('dblclick', function() {
     this.openPictureInBrowser_(picture);
   }.bind(this));
+};
+
+/**
+ * @override
+ */
+camera.views.Album.prototype.updateElementSize = function(wrapper) {
+  camera.views.GalleryBase.prototype.updateElementSize.call(
+      this, wrapper, wrapper.clientWidth, wrapper.clientHeight);
 };
 
 /**

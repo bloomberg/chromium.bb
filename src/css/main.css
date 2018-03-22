@@ -732,15 +732,27 @@ body.performance-test * {
   display: inline-block;
   position: relative;
   width: 220px;
+  height: 124px;
 }
 
 #album div.media-wrapper img {
-  width: 100%;
+  position: absolute;
+  margin: auto;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
 }
 
-#album div.media-wrapper.selected {
-  outline: 4px solid rgb(66, 129, 244);
-  outline-offset: -4px;
+#album div.media-wrapper.selected::after {
+  border: 4px solid rgb(66, 129, 244);
+  top: 0;
+  left: 0;
+  bottom: 0;
+  right: 0;
+  content: '';
+  display: block;
+  position: absolute;
 }
 
 #album div.media-wrapper.motion-picture::after {
@@ -780,16 +792,13 @@ body.album #album {
 
 #browser div.media-wrapper {
   box-shadow: 0 0 15px rgba(0, 0, 0, 0.3);
+  align-items: center;
+  justify-content: center;
   display: flex;
-  height: 72%;  /* Keep in sync with the workaround in album.js */
+  flex-shrink: 0;
   margin: 4%;
   pointer-events: auto;
   transition: -webkit-transform 200ms;
-}
-
-#browser div.media-wrapper img,
-#browser div.media-wrapper video {
-  height: 100%;
 }
 
 #browser div.bounds-padder {
@@ -874,14 +883,13 @@ body.album #album {
   }
 
   /* Reset styles to default on the album view. */
-  #album div.media-wrapper,
-  #album div.media-wrapper.selected {
+  #album div.media-wrapper {
     -webkit-transform: scale(1);
-    border: none;
     box-shadow: none;
-    height: auto;
-    max-width: 30%;
-    outline: none;
+  }
+
+  #album div.media-wrapper.selected::after {
+    border: none;
   }
 
   /* Hide the overlay icons to print video thumbnial images. */
