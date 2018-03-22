@@ -115,13 +115,13 @@ scoped_refptr<T> WrapRefCounted(T* t) {
 //   };
 //
 //   void some_function() {
-//     scoped_refptr<MyFoo> foo = new MyFoo();
+//     scoped_refptr<MyFoo> foo = MakeRefCounted<MyFoo>();
 //     foo->Method(param);
 //     // |foo| is released when this function returns
 //   }
 //
 //   void some_other_function() {
-//     scoped_refptr<MyFoo> foo = new MyFoo();
+//     scoped_refptr<MyFoo> foo = MakeRefCounted<MyFoo>();
 //     ...
 //     foo = nullptr;  // explicitly releases |foo|
 //     ...
@@ -134,7 +134,7 @@ scoped_refptr<T> WrapRefCounted(T* t) {
 // references between the two objects, like so:
 //
 //   {
-//     scoped_refptr<MyFoo> a = new MyFoo();
+//     scoped_refptr<MyFoo> a = MakeRefCounted<MyFoo>();
 //     scoped_refptr<MyFoo> b;
 //
 //     b.swap(a);
@@ -145,7 +145,7 @@ scoped_refptr<T> WrapRefCounted(T* t) {
 // object, simply use the assignment operator:
 //
 //   {
-//     scoped_refptr<MyFoo> a = new MyFoo();
+//     scoped_refptr<MyFoo> a = MakeRefCounted<MyFoo>();
 //     scoped_refptr<MyFoo> b;
 //
 //     b = a;
