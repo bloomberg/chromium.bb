@@ -123,7 +123,10 @@ def _LaunchUrl(devices, package_name, argv=None, command_line_flags_file=None,
         flags = []
         if argv:
           flags = shlex.split(argv)
-        changer.ReplaceFlags(flags)
+        try:
+          changer.ReplaceFlags(flags)
+        except device_errors.AdbShellCommandFailedError:
+          logging.exception('Failed to set flags')
 
     if url is None:
       # Simulate app icon click if no url is present.
