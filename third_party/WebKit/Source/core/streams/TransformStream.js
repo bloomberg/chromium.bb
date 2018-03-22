@@ -16,25 +16,22 @@
 
   const _backpressure = v8.createPrivateSymbol('[[backpressure]]');
   const _backpressureChangePromise =
-        v8.createPrivateSymbol('[[backpressureChangePromise]]');
+      v8.createPrivateSymbol('[[backpressureChangePromise]]');
   const _readable = v8.createPrivateSymbol('[[readable]]');
-  const _transformer = v8.createPrivateSymbol('[[transformer]]');
   const _transformStreamController =
-        v8.createPrivateSymbol('[[transformStreamController]]');
+      v8.createPrivateSymbol('[[transformStreamController]]');
   const _writable = v8.createPrivateSymbol('[[writable]]');
   const _controlledTransformStream =
-        v8.createPrivateSymbol('[[controlledTransformStream]]');
-  const _ownerTransformStream =
-        v8.createPrivateSymbol('[[ownerTransformStream]]');
-  const _startPromise = v8.createPrivateSymbol('[[startPromise]]');
+      v8.createPrivateSymbol('[[controlledTransformStream]]');
+  const _flushAlgorithm = v8.createPrivateSymbol('[[flushAlgorithm]]');
+  const _transformAlgorithm = v8.createPrivateSymbol('[[transformAlgorithm]]');
 
   // Javascript functions. It is important to use these copies, as the ones on
   // the global object may have been overwritten. See "V8 Extras Design Doc",
   // section "Security Considerations".
   // https://docs.google.com/document/d/1AT5-T0aHGp7Lt29vPWFr2-qG8r3l9CByyvKwEuA8Ec0/edit#heading=h.9yixony1a18r
   const defineProperty = global.Object.defineProperty;
-
-  const Function_call = v8.uncurryThis(global.Function.prototype.call);
+  const ObjectCreate = global.Object.create;
 
   const TypeError = global.TypeError;
   const RangeError = global.RangeError;
@@ -48,22 +45,20 @@
   const {
     hasOwnPropertyNoThrow,
     resolvePromise,
+    CreateAlgorithmFromUnderlyingMethodPassingController,
     CallOrNoop1,
-    PromiseCallOrNoop1
+    MakeSizeAlgorithmFromSizeFunction,
+    PromiseCall2,
+    ValidateAndNormalizeHighWaterMark
   } = binding.streamOperations;
 
   // User-visible strings.
   const streamErrors = binding.streamErrors;
-  const errWritableStreamAborted = 'The writable stream has been aborted';
   const errStreamTerminated = 'The transform stream has been terminated';
-  const templateErrorIsNotAFunction = f => `${f} is not a function`;
 
   class TransformStream {
-    constructor(
-        transformer = {}, writableStrategy = undefined,
-        {size, highWaterMark = 0} = {}) {
-      this[_transformer] = transformer;
-
+    constructor(transformer = {},
+                writableStrategy = {}, readableStrategy = {}) {
       // readable and writableType are extension points for future byte streams.
       const readableType = transformer.readableType;
       if (readableType !== undefined) {
@@ -75,25 +70,34 @@
         throw new RangeError(streamErrors.invalidType);
       }
 
-      this[_transformStreamController] = undefined;
-      const controller = new TransformStreamDefaultController(this);
-      this[_transformStreamController] = controller;
+      const writableSizeFunction = writableStrategy.size;
+      const writableSizeAlgorithm =
+          MakeSizeAlgorithmFromSizeFunction(writableSizeFunction);
+      let writableHighWaterMark = writableStrategy.highWaterMark;
+      if (writableHighWaterMark === undefined) {
+        writableHighWaterMark = 1;
+      }
+      writableHighWaterMark =
+          ValidateAndNormalizeHighWaterMark(writableHighWaterMark);
+
+      const readableSizeFunction = readableStrategy.size;
+      const readableSizeAlgorithm =
+          MakeSizeAlgorithmFromSizeFunction(readableSizeFunction);
+      let readableHighWaterMark = readableStrategy.highWaterMark;
+      if (readableHighWaterMark === undefined) {
+        readableHighWaterMark = 0;
+      }
+      readableHighWaterMark =
+          ValidateAndNormalizeHighWaterMark(readableHighWaterMark);
 
       const startPromise = v8.createPromise();
-      const source = new TransformStreamDefaultSource(this, startPromise);
-      const readableStrategy = {size, highWaterMark};
-      this[_readable] = new binding.ReadableStream(source, readableStrategy);
-
-      const sink = new TransformStreamDefaultSink(this, startPromise);
-      this[_writable] = new binding.WritableStream(sink, writableStrategy);
-
-      // this[_backpressure] and this[_backpressureChangePromise]] are already
-      // undefined, so save a tiny amount of code by not setting them
-      // explicitly.
-      TransformStreamSetBackpressure(this, true);
-
-      const startResult = CallOrNoop1(transformer, 'start', controller,
-                                      'transformer.start');
+      InitializeTransformStream(
+          this, startPromise, writableHighWaterMark, writableSizeAlgorithm,
+          readableHighWaterMark, readableSizeAlgorithm);
+      SetUpTransformStreamDefaultControllerFromTransformer(this, transformer);
+      const startResult = CallOrNoop1(
+          transformer, 'start', this[_transformStreamController],
+          'transformer.start');
       resolvePromise(startPromise, startResult);
     }
 
@@ -114,12 +118,82 @@
     }
   }
 
+  const TransformStream_prototype = TransformStream.prototype;
+
+  function CreateTransformStream(
+      startAlgorithm, transformAlgorithm, flushAlgorithm, writableHighWaterMark,
+      writableSizeAlgorithm, readableHighWaterMark, readableSizeAlgorithm) {
+    if (writableHighWaterMark === undefined) {
+      writableHighWaterMark = 1;
+    }
+    if (writableSizeAlgorithm === undefined) {
+      writableSizeAlgorithm = () => 1;
+    }
+    if (readableHighWaterMark === undefined) {
+      readableHighWaterMark = 0;
+    }
+    if (readableSizeAlgorithm === undefined) {
+      readableSizeAlgorithm = () => 1;
+    }
+    // assert(
+    //     typeof writableHighWaterMark === 'number' &&
+    //     writableHighWaterMark >= 0,
+    //     '! IsNonNegativeNumber(_writableHighWaterMark_) is *true*');
+    // assert(
+    //     typeof readableHighWaterMark === 'number' &&
+    //     readableHighWaterMark >= 0,
+    //     '! IsNonNegativeNumber(_readableHighWaterMark_) is true');
+    const stream = ObjectCreate(TransformStream_prototype);
+    const startPromise = v8.createPromise();
+    InitializeTransformStream(
+        stream, startPromise, writableHighWaterMark, writableSizeAlgorithm,
+        readableHighWaterMark, readableSizeAlgorithm);
+    const controller = ObjectCreate(TransformStreamDefaultController_prototype);
+    SetUpTransformStreamDefaultController(
+        stream, controller, transformAlgorithm, flushAlgorithm);
+    const startResult = startAlgorithm();
+    resolvePromise(startPromise, startResult);
+    return stream;
+  }
+
+  function InitializeTransformStream(
+      stream, startPromise, writableHighWaterMark, writableSizeAlgorithm,
+      readableHighWaterMark, readableSizeAlgorithm) {
+    const startAlgorithm = () => startPromise;
+    const writeAlgorithm = chunk =>
+        TransformStreamDefaultSinkWriteAlgorithm(stream, chunk);
+    const abortAlgorithm = reason =>
+        TransformStreamDefaultSinkAbortAlgorithm(stream, reason);
+    const closeAlgorithm = () =>
+          TransformStreamDefaultSinkCloseAlgorithm(stream);
+    stream[_writable] = binding.CreateWritableStream(
+        startAlgorithm, writeAlgorithm, closeAlgorithm, abortAlgorithm,
+        writableHighWaterMark, writableSizeAlgorithm);
+    // TODO(ricea): Use CreateReadableStream() once it is implemented.
+    stream[_readable] = new binding.ReadableStream({
+      start: startAlgorithm,
+      pull() {
+        return TransformStreamDefaultSourcePullAlgorithm(stream);
+      },
+      cancel(reason) {
+        TransformStreamErrorWritableAndUnblockWrite(stream, reason);
+        return Promise_resolve();
+      },
+      type: undefined,
+    }, {highWaterMark: readableHighWaterMark, size: readableSizeAlgorithm});
+    stream[_backpressure] = undefined;
+    stream[_backpressureChangePromise] = undefined;
+    TransformStreamSetBackpressure(stream, true);
+    stream[_transformStreamController] = undefined;
+  }
+
   function IsTransformStream(x) {
     return hasOwnPropertyNoThrow(x, _transformStreamController);
   }
 
   function TransformStreamError(stream, e) {
     const readable = stream[_readable];
+    // TODO(ricea): Remove this conditional once ReadableStream is updated.
     if (binding.IsReadableStreamReadable(readable)) {
       binding.ReadableStreamDefaultControllerError(
           binding.getReadableStreamController(readable), e);
@@ -151,16 +225,8 @@
   }
 
   class TransformStreamDefaultController {
-    constructor(stream) {
-      if (!IsTransformStream(stream)) {
-        throw new TypeError(streamErrors.illegalConstructor);
-      }
-
-      if (stream[_transformStreamController] !== undefined) {
-        throw new TypeError(streamErrors.illegalConstructor);
-      }
-
-      this[_controlledTransformStream] = stream;
+    constructor() {
+      throw new TypeError(streamErrors.illegalConstructor);
     }
 
     get desiredSize() {
@@ -199,17 +265,68 @@
     }
   }
 
+  const TransformStreamDefaultController_prototype =
+      TransformStreamDefaultController.prototype;
+
   function IsTransformStreamDefaultController(x) {
     return hasOwnPropertyNoThrow(x, _controlledTransformStream);
+  }
+
+  function SetUpTransformStreamDefaultController(
+      stream, controller, transformAlgorithm, flushAlgorithm) {
+    // assert(
+    //     IsTransformStream(stream) === true,
+    //     '! IsTransformStream(_stream_) is *true*');
+    // assert(
+    //     stream[_transformStreamController] === undefined,
+    //     '_stream_.[[transformStreamController]] is *undefined*');
+    controller[_controlledTransformStream] = stream;
+    stream[_transformStreamController] = controller;
+    controller[_transformAlgorithm] = transformAlgorithm;
+    controller[_flushAlgorithm] = flushAlgorithm;
+  }
+
+  function SetUpTransformStreamDefaultControllerFromTransformer(
+      stream, transformer) {
+    // assert(transformer !== undefined, '_transformer_ is not *undefined*');
+    const controller = ObjectCreate(TransformStreamDefaultController_prototype);
+    let transformAlgorithm;
+    const transformMethod = transformer.transform;
+    if (transformMethod !== undefined) {
+      if (typeof transformMethod !== 'function') {
+        throw new TypeError('transformer.transform is not a function');
+      }
+      transformAlgorithm = chunk => {
+        const transformPromise =
+            PromiseCall2(transformMethod, transformer, chunk, controller);
+        return thenPromise(transformPromise, undefined, e => {
+          TransformStreamError(stream, e);
+          throw e;
+        });
+      };
+    } else {
+      transformAlgorithm = chunk => {
+        try {
+          TransformStreamDefaultControllerEnqueue(controller, chunk);
+          return Promise_resolve();
+        } catch (resultValue) {
+          return Promise_reject(resultValue);
+        }
+      };
+    }
+    const flushAlgorithm = CreateAlgorithmFromUnderlyingMethodPassingController(
+        transformer, 'flush', 0, controller, 'transformer.flush');
+    SetUpTransformStreamDefaultController(
+        stream, controller, transformAlgorithm, flushAlgorithm);
   }
 
   function TransformStreamDefaultControllerEnqueue(controller, chunk) {
     const stream = controller[_controlledTransformStream];
     const readableController =
-          binding.getReadableStreamController(stream[_readable]);
+        binding.getReadableStreamController(stream[_readable]);
 
     if (!binding.ReadableStreamDefaultControllerCanCloseOrEnqueue(
-        readableController)) {
+            readableController)) {
       throw binding.getReadableStreamEnqueueError(stream[_readable]);
     }
 
@@ -235,10 +352,10 @@
   function TransformStreamDefaultControllerTerminate(controller) {
     const stream = controller[_controlledTransformStream];
     const readableController =
-          binding.getReadableStreamController(stream[_readable]);
+        binding.getReadableStreamController(stream[_readable]);
 
     if (binding.ReadableStreamDefaultControllerCanCloseOrEnqueue(
-        readableController)) {
+            readableController)) {
       binding.ReadableStreamDefaultControllerClose(readableController);
     }
 
@@ -246,147 +363,72 @@
     TransformStreamErrorWritableAndUnblockWrite(stream, error);
   }
 
-  class TransformStreamDefaultSink {
-    constructor(stream, startPromise) {
-      this[_ownerTransformStream] = stream;
-      this[_startPromise] = startPromise;
-    }
-
-    start() {
-      const startPromise = this[_startPromise];
-      // Permit GC of the promise.
-      this[_startPromise] = undefined;
-      return startPromise;
-    }
-
-    write(chunk) {
-      const stream = this[_ownerTransformStream];
-      // assert(
-      //     binding.isWritableStreamWritable(stream[_writable]),
-      //     `stream.[[writable]][[state]] is "writable"`);
-
-      if (stream[_backpressure]) {
-        const backpressureChangePromise = stream[_backpressureChangePromise];
-        // assert(
-        //     backpressureChangePromise !== undefined,
-        //     `backpressureChangePromise is not undefined`);
-
-        return thenPromise(backpressureChangePromise, () => {
-          const writable = stream[_writable];
-          if (binding.isWritableStreamErroring(writable)) {
-            throw binding.getWritableStreamStoredError(writable);
-          }
-          // assert(
-          //     binding.isWritableStreamWritable(writable),
-          //     `state is "writable"`);
-
-          return TransformStreamDefaultSinkTransform(this, chunk);
-        });
-      }
-
-      return TransformStreamDefaultSinkTransform(this, chunk);
-    }
-
-    abort() {
-      const e = new TypeError(errWritableStreamAborted);
-      TransformStreamError(this[_ownerTransformStream], e);
-    }
-
-    close() {
-      const stream = this[_ownerTransformStream];
-      const readable = stream[_readable];
-
-      const flushPromise = PromiseCallOrNoop1(
-          stream[_transformer], 'flush', stream[_transformStreamController],
-          'transformer.flush');
-
-      return thenPromise(
-          flushPromise,
-          () => {
-            if (binding.IsReadableStreamErrored(readable)) {
-              throw binding.getReadableStreamStoredError(readable);
-            }
-
-            const readableController =
-                  binding.getReadableStreamController(readable);
-            if (binding.ReadableStreamDefaultControllerCanCloseOrEnqueue(
-                readableController)) {
-              binding.ReadableStreamDefaultControllerClose(readableController);
-            }
-          },
-          r => {
-            TransformStreamError(stream, r);
-            throw binding.getReadableStreamStoredError(readable);
-          });
-    }
-  }
-
-  function TransformStreamDefaultSinkInvokeTransform(stream, chunk) {
-    const controller = stream[_transformStreamController];
-    const transformer = stream[_transformer];
-    const method = transformer.transform;
-
-    if (method === undefined) {
-      TransformStreamDefaultControllerEnqueue(controller, chunk);
-      return undefined;
-    }
-
-    if (typeof method !== 'function') {
-      throw new TypeError(templateErrorIsNotAFunction('transform'));
-    }
-
-    return Function_call(method, transformer, chunk, controller);
-  }
-
-  function TransformStreamDefaultSinkTransform(sink, chunk) {
-    const stream = sink[_ownerTransformStream];
+  function TransformStreamDefaultSinkWriteAlgorithm(stream, chunk) {
     // assert(
-    //     !binding.IsReadableStreamErrored(stream[_readable]),
-    //     'stream.[[readable]].[[state]] is not "errored"');
-    // assert(!stream[_backpressure], 'stream.[[backpressure]] is false');
+    //     binding.isWritableStreamWritable(stream[_writable]),
+    //     `stream.[[writable]][[state]] is "writable"`);
 
-    let transformPromise;
-    try {
-      transformPromise = Promise_resolve(
-          TransformStreamDefaultSinkInvokeTransform(stream, chunk));
-    } catch (e) {
-      transformPromise = Promise_reject(e);
+    const controller = stream[_transformStreamController];
+
+    if (stream[_backpressure]) {
+      const backpressureChangePromise = stream[_backpressureChangePromise];
+      // assert(
+      //     backpressureChangePromise !== undefined,
+      //     `backpressureChangePromise is not undefined`);
+
+      return thenPromise(backpressureChangePromise, () => {
+        const writable = stream[_writable];
+        if (binding.isWritableStreamErroring(writable)) {
+          throw binding.getWritableStreamStoredError(writable);
+        }
+        // assert(binding.isWritableStreamWritable(writable),
+        //        `state is "writable"`);
+
+        return controller[_transformAlgorithm](chunk);
+      });
     }
 
-    return thenPromise(transformPromise, undefined, e => {
-      TransformStreamError(stream, e);
-      throw e;
-    });
+    return controller[_transformAlgorithm](chunk);
   }
 
-  class TransformStreamDefaultSource {
-    constructor(stream, startPromise) {
-      this[_ownerTransformStream] = stream;
-      this[_startPromise] = startPromise;
-    }
+  function TransformStreamDefaultSinkAbortAlgorithm(stream, reason) {
+    TransformStreamError(stream, reason);
+    return Promise_resolve();
+  }
 
-    start() {
-      const startPromise = this[_startPromise];
-      // Permit GC of the promise.
-      this[_startPromise] = undefined;
-      return startPromise;
-    }
+  function TransformStreamDefaultSinkCloseAlgorithm(stream) {
+    const readable = stream[_readable];
 
-    pull() {
-      const stream = this[_ownerTransformStream];
-      // assert(stream[_backpressure], 'stream.[[backpressure]] is true');
-      // assert(
-      //     stream[_backpressureChangePromise] !== undefined,
-      //     'stream.[[backpressureChangePromise]] is not undefined');
+    const flushPromise = stream[_transformStreamController][_flushAlgorithm]();
 
-      TransformStreamSetBackpressure(stream, false);
-      return stream[_backpressureChangePromise];
-    }
+    return thenPromise(
+        flushPromise,
+        () => {
+          if (binding.IsReadableStreamErrored(readable)) {
+            throw binding.getReadableStreamStoredError(readable);
+          }
 
-    cancel(reason) {
-      TransformStreamErrorWritableAndUnblockWrite(
-          this[_ownerTransformStream], reason);
-    }
+          const readableController =
+              binding.getReadableStreamController(readable);
+          if (binding.ReadableStreamDefaultControllerCanCloseOrEnqueue(
+                  readableController)) {
+            binding.ReadableStreamDefaultControllerClose(readableController);
+          }
+        },
+        r => {
+          TransformStreamError(stream, r);
+          throw binding.getReadableStreamStoredError(readable);
+        });
+  }
+
+  function TransformStreamDefaultSourcePullAlgorithm(stream) {
+    // assert(stream[_backpressure], 'stream.[[backpressure]] is true');
+    // assert(
+    //     stream[_backpressureChangePromise] !== undefined,
+    //     'stream.[[backpressureChangePromise]] is not undefined');
+
+    TransformStreamSetBackpressure(stream, false);
+    return stream[_backpressureChangePromise];
   }
 
   //
@@ -399,4 +441,9 @@
     configurable: true,
     writable: true
   });
+
+  //
+  // Exports to Blink
+  //
+  binding.CreateTransformStream = CreateTransformStream;
 });

@@ -193,7 +193,7 @@
   // Internal utility functions. Not exported.
   const callFunction = v8.uncurryThis(global.Function.prototype.call);
   const errTmplMustBeFunctionOrUndefined = name =>
-        `${name} must be a function or undefined`;
+      `${name} must be a function or undefined`;
   const Promise_resolve = Promise.resolve.bind(Promise);
   const Promise_reject = Promise.reject.bind(Promise);
   const Function_bind = v8.uncurryThis(global.Function.prototype.bind);
@@ -213,13 +213,14 @@
     // assert(underlyingObject !== undefined,
     //        'underlyingObject is not undefined.');
     // assert(IsPropertyKey(methodName),
-    //        '! IsPropertyKey(methodName) is true.');
+    // '! IsPropertyKey(methodName) is true.');
     // assert(algoArgCount === 0 || algoArgCount === 1,
-    //        'algoArgCount is 0 or 1.');
-    // assert(typeof methodNameForError === 'string',
-    //        'methodNameForError is a string');
-    const method = resolveMethod(underlyingObject, methodName,
-                                 methodNameForError);
+    // 'algoArgCount is 0 or 1.');
+    // assert(
+    //     typeof methodNameForError === 'string',
+    //     'methodNameForError is a string');
+    const method =
+        resolveMethod(underlyingObject, methodName, methodNameForError);
     // The implementation uses bound functions rather than lambdas where
     // possible to give the compiler the maximum opportunity to optimise.
     if (method === undefined) {
@@ -234,27 +235,27 @@
   }
 
   function CreateAlgorithmFromUnderlyingMethodPassingController(
-      underlyingObject, methodName,  algoArgCount, controller,
+      underlyingObject, methodName, algoArgCount, controller,
       methodNameForError) {
     // assert(underlyingObject !== undefined,
     //        'underlyingObject is not undefined.');
     // assert(IsPropertyKey(methodName),
-    //        '! IsPropertyKey(methodName) is true.');
+    // '! IsPropertyKey(methodName) is true.');
     // assert(algoArgCount === 0 || algoArgCount === 1,
-    //        'algoArgCount is 0 or 1.');
-    // assert(typeof controller === 'object'
-    //       'controller is an object');
-    // assert(typeof methodNameForError === 'string',
-    //        'methodNameForError is a string');
-    const method = resolveMethod(underlyingObject, methodName,
-                                 methodNameForError);
+    // 'algoArgCount is 0 or 1.');
+    // assert(typeof controller === 'object', 'controller is an object');
+    // assert(
+    //     typeof methodNameForError === 'string',
+    //     'methodNameForError is a string');
+    const method =
+        resolveMethod(underlyingObject, methodName, methodNameForError);
     if (method === undefined) {
       return () => Promise_resolve();
     }
 
     if (algoArgCount === 0) {
-      return Function_bind(PromiseCall1, undefined, method, underlyingObject,
-                           controller);
+      return Function_bind(
+          PromiseCall1, undefined, method, underlyingObject, controller);
     }
 
     return arg => PromiseCall2(method, underlyingObject, arg, controller);
@@ -280,10 +281,8 @@
   }
 
   function PromiseCall0(F, V) {
-    // assert(typeof F === 'function',
-    //        'IsCallable(F) is true.');
-    // assert(V !== undefined,
-    //        'V is not undefined.');
+    // assert(typeof F === 'function', 'IsCallable(F) is true.');
+    // assert(V !== undefined, 'V is not undefined.');
     try {
       return Promise_resolve(callFunction(F, V));
     } catch (e) {
@@ -292,10 +291,8 @@
   }
 
   function PromiseCall1(F, V, arg0) {
-    // assert(typeof F === 'function',
-    //        'IsCallable(F) is true.');
-    // assert(V !== undefined,
-    //        'V is not undefined.');
+    // assert(typeof F === 'function', 'IsCallable(F) is true.');
+    // assert(V !== undefined, 'V is not undefined.');
     try {
       return Promise_resolve(callFunction(F, V, arg0));
     } catch (e) {
@@ -304,10 +301,8 @@
   }
 
   function PromiseCall2(F, V, arg0, arg1) {
-    // assert(typeof F === 'function',
-    //        'IsCallable(F) is true.');
-    // assert(V !== undefined,
-    //        'V is not undefined.');
+    // assert(typeof F === 'function', 'IsCallable(F) is true.');
+    // assert(V !== undefined, 'V is not undefined.');
     try {
       return Promise_resolve(callFunction(F, V, arg0, arg1));
     } catch (e) {
@@ -334,5 +329,6 @@
     MakeSizeAlgorithmFromSizeFunction,
     CallOrNoop1,
     PromiseCallOrNoop1,
+    PromiseCall2
   };
 });
