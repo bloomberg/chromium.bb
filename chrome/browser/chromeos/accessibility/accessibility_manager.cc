@@ -238,7 +238,6 @@ AccessibilityManager::AccessibilityManager()
           ash::prefs::kAccessibilityCursorHighlightEnabled),
       focus_highlight_pref_handler_(
           ash::prefs::kAccessibilityFocusHighlightEnabled),
-      tap_dragging_pref_handler_(ash::prefs::kTapDraggingEnabled),
       select_to_speak_pref_handler_(
           ash::prefs::kAccessibilitySelectToSpeakEnabled),
       switch_access_pref_handler_(
@@ -362,8 +361,7 @@ bool AccessibilityManager::ShouldShowAccessibilityMenu() {
         prefs->GetBoolean(ash::prefs::kAccessibilityMonoAudioEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityCaretHighlightEnabled) ||
         prefs->GetBoolean(ash::prefs::kAccessibilityCursorHighlightEnabled) ||
-        prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled) ||
-        prefs->GetBoolean(ash::prefs::kTapDraggingEnabled))
+        prefs->GetBoolean(ash::prefs::kAccessibilityFocusHighlightEnabled))
       return true;
   }
   return false;
@@ -756,27 +754,6 @@ void AccessibilityManager::OnFocusHighlightChanged() {
   NotifyAccessibilityStatusChanged(details);
 }
 
-void AccessibilityManager::EnableTapDragging(bool enabled) {
-  if (!profile_)
-    return;
-
-  PrefService* pref_service = profile_->GetPrefs();
-  pref_service->SetBoolean(ash::prefs::kTapDraggingEnabled, enabled);
-  pref_service->CommitPendingWrite();
-}
-
-bool AccessibilityManager::IsTapDraggingEnabled() const {
-  return profile_ &&
-         profile_->GetPrefs()->GetBoolean(ash::prefs::kTapDraggingEnabled);
-}
-
-void AccessibilityManager::OnTapDraggingChanged() {
-  AccessibilityStatusEventDetails details(ACCESSIBILITY_TOGGLE_TAP_DRAGGING,
-                                          IsTapDraggingEnabled(),
-                                          ash::A11Y_NOTIFICATION_NONE);
-  NotifyAccessibilityStatusChanged(details);
-}
-
 void AccessibilityManager::SetSelectToSpeakEnabled(bool enabled) {
   if (!profile_)
     return;
@@ -1005,10 +982,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
         base::Bind(&AccessibilityManager::OnFocusHighlightChanged,
                    base::Unretained(this)));
     pref_change_registrar_->Add(
-        ash::prefs::kTapDraggingEnabled,
-        base::Bind(&AccessibilityManager::OnTapDraggingChanged,
-                   base::Unretained(this)));
-    pref_change_registrar_->Add(
         ash::prefs::kAccessibilitySelectToSpeakEnabled,
         base::Bind(&AccessibilityManager::OnSelectToSpeakChanged,
                    base::Unretained(this)));
@@ -1045,7 +1018,6 @@ void AccessibilityManager::SetProfile(Profile* profile) {
   caret_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
   cursor_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
   focus_highlight_pref_handler_.HandleProfileChanged(profile_, profile);
-  tap_dragging_pref_handler_.HandleProfileChanged(profile_, profile);
   select_to_speak_pref_handler_.HandleProfileChanged(profile_, profile);
   switch_access_pref_handler_.HandleProfileChanged(profile_, profile);
 

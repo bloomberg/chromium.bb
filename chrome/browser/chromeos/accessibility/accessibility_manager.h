@@ -57,7 +57,6 @@ enum AccessibilityNotificationType {
   ACCESSIBILITY_TOGGLE_CARET_HIGHLIGHT,
   ACCESSIBILITY_TOGGLE_CURSOR_HIGHLIGHT,
   ACCESSIBILITY_TOGGLE_FOCUS_HIGHLIGHT,
-  ACCESSIBILITY_TOGGLE_TAP_DRAGGING,
 };
 
 struct AccessibilityStatusEventDetails {
@@ -409,7 +408,6 @@ class AccessibilityManager
   PrefHandler caret_highlight_pref_handler_;
   PrefHandler cursor_highlight_pref_handler_;
   PrefHandler focus_highlight_pref_handler_;
-  PrefHandler tap_dragging_pref_handler_;
   PrefHandler select_to_speak_pref_handler_;
   PrefHandler switch_access_pref_handler_;
 

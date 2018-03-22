@@ -18403,6 +18403,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_TapDraggingDisabled">
+  <obsolete>Tap dragging removed from status area menu 03/2018.</obsolete>
   <owner>minch@chromium.org</owner>
   <description>
     Ash system menu: Accessibility: Disable tap dragging
@@ -18410,6 +18411,7 @@ should be able to be added at any place in this file.
 </action>
 
 <action name="StatusArea_TapDraggingEnabled">
+  <obsolete>Tap dragging removed from status area menu 03/2018.</obsolete>
   <owner>minch@chromium.org</owner>
   <description>Ash system menu: Accessibility: Enable tap dragging</description>
 </action>

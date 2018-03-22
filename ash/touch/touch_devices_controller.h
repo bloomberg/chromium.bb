@@ -35,10 +35,6 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
 
   static void RegisterProfilePrefs(PrefRegistrySimple* registry, bool for_test);
 
-  // Gets/Sets tap dragging enabled.
-  void SetTapDraggingEnabled(bool enabled);
-  bool GetTapDraggingEnabled() const;
-
   // Toggles the status of touchpad between enabled and disabled.
   void ToggleTouchpad();
 
@@ -51,6 +47,8 @@ class ASH_EXPORT TouchDevicesController : public SessionObserver {
   // that the actual state of the touchscreen device is automatically determined
   // based on the requests of multiple sources.
   void SetTouchscreenEnabled(bool enabled, TouchscreenEnabledSource source);
+
+  bool tap_dragging_enabled_for_test() { return tap_dragging_enabled_; }
 
  private:
   // Overridden from SessionObserver:

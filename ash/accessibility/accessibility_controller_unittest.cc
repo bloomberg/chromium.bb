@@ -298,26 +298,6 @@ TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
   controller->RemoveObserver(&observer);
 }
 
-TEST_F(AccessibilityControllerTest, SetTapDraggingEnabled) {
-  AccessibilityController* controller =
-      Shell::Get()->accessibility_controller();
-  EXPECT_FALSE(controller->IsTapDraggingEnabled());
-
-  TestAccessibilityObserver observer;
-  controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
-
-  controller->SetTapDraggingEnabled(true);
-  EXPECT_TRUE(controller->IsTapDraggingEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
-
-  controller->SetTapDraggingEnabled(false);
-  EXPECT_FALSE(controller->IsTapDraggingEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
-
-  controller->RemoveObserver(&observer);
-}
-
 TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
   AccessibilityController* controller =
       Shell::Get()->accessibility_controller();
