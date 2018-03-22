@@ -4,40 +4,22 @@
 
 #import "chrome/browser/ui/cocoa/profiles/avatar_base_controller.h"
 
-#include "base/mac/foundation_util.h"
 #include "base/macros.h"
-#include "chrome/app/chrome_command_ids.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/profiles/profile_metrics.h"
 #include "chrome/browser/profiles/profile_window.h"
 #include "chrome/browser/profiles/profiles_state.h"
-#include "chrome/browser/signin/chrome_signin_helper.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
-#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
-#include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/cocoa/profiles/profile_chooser_bridge_views.h"
-#import "chrome/browser/ui/cocoa/profiles/profile_chooser_controller.h"
-#include "chrome/common/chrome_features.h"
-#include "components/signin/core/browser/profile_management_switches.h"
-#include "ui/base/cocoa/cocoa_base_utils.h"
-
-// Space between the avatar icon and the avatar menu bubble.
-const CGFloat kMenuYOffsetAdjust = 1.0;
-// Offset needed to align the edge of the avatar bubble with the edge of the
-// avatar button.
-const CGFloat kMenuXOffsetAdjust = 1.0;
 
 @interface AvatarBaseController () {
   std::unique_ptr<ProfileChooserViewBridge> profileChooserViewObserverBridge_;
 }
-
-// Called when the avatar bubble will close.
-- (void)bubbleWillClose:(NSNotification*)notif;
 
 // Updates the profile name displayed by the avatar button. If |layoutParent| is
 // yes, then the BrowserWindowController is notified to relayout the subviews,
@@ -117,10 +99,6 @@ bool ProfileUpdateObserver::HasAvatarError() {
 }
 
 - (void)browserWillBeDestroyed {
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:self
-                name:NSWindowWillCloseNotification
-              object:[menuController_ window]];
   profileChooserViewObserverBridge_.reset();
   browser_ = nullptr;
 }
@@ -142,84 +120,10 @@ bool ProfileUpdateObserver::HasAvatarError() {
                           withMode:(BrowserWindow::AvatarBubbleMode)mode
                    withServiceType:(signin::GAIAServiceType)serviceType
                    fromAccessPoint:(signin_metrics::AccessPoint)accessPoint {
-  if (base::FeatureList::IsEnabled(features::kViewsProfileChooser)) {
-    [self showViewsAvatarBubbleAnchoredAt:anchor
-                                 withMode:mode
-                          withServiceType:serviceType
-                          fromAccessPoint:accessPoint];
-  } else {
-    [self showCocoaAvatarBubbleAnchoredAt:anchor
-                                 withMode:mode
-                          withServiceType:serviceType
-                          fromAccessPoint:accessPoint];
-  }
-}
-
-- (void)showViewsAvatarBubbleAnchoredAt:(NSView*)anchor
-                               withMode:(BrowserWindow::AvatarBubbleMode)mode
-                        withServiceType:(signin::GAIAServiceType)serviceType
-                        fromAccessPoint:
-                            (signin_metrics::AccessPoint)accessPoint {
   profiles::BubbleViewMode bubbleViewMode;
   profiles::BubbleViewModeFromAvatarBubbleMode(mode, &bubbleViewMode);
   profileChooserViewObserverBridge_ = ShowProfileChooserViews(
       self, anchor, accessPoint, browser_, bubbleViewMode);
-}
-
-- (void)showCocoaAvatarBubbleAnchoredAt:(NSView*)anchor
-                               withMode:(BrowserWindow::AvatarBubbleMode)mode
-                        withServiceType:(signin::GAIAServiceType)serviceType
-                        fromAccessPoint:
-                            (signin_metrics::AccessPoint)accessPoint {
-  if (menuController_) {
-    profiles::BubbleViewMode viewMode;
-    profiles::BubbleViewModeFromAvatarBubbleMode(mode, &viewMode);
-    if (viewMode == profiles::BUBBLE_VIEW_MODE_PROFILE_CHOOSER) {
-      ProfileChooserController* profileChooserController =
-          base::mac::ObjCCastStrict<ProfileChooserController>(menuController_);
-      [profileChooserController showMenuWithViewMode:viewMode];
-    }
-    return;
-  }
-
-  DCHECK(chrome::IsCommandEnabled(browser_, IDC_SHOW_AVATAR_MENU));
-
-  BrowserWindowController* bwc = [BrowserWindowController
-      browserWindowControllerForWindow:browser_->window()->GetNativeWindow()];
-
-  if (bwc) {
-    [bwc lockToolbarVisibilityForOwner:self withAnimation:NO];
-  }
-
-  // The new avatar bubble does not have an arrow, and it should be anchored
-  // to the edge of the avatar button.
-  int anchorX = cocoa_l10n_util::ShouldFlipWindowControlsInRTL()
-                    ? NSMinX([anchor bounds]) + kMenuXOffsetAdjust
-                    : NSMaxX([anchor bounds]) - kMenuXOffsetAdjust;
-  NSPoint point = NSMakePoint(anchorX,
-                              NSMaxY([anchor bounds]) + kMenuYOffsetAdjust);
-  point = [anchor convertPoint:point toView:nil];
-  point = ui::ConvertPointFromWindowToScreen([anchor window], point);
-
-  // |menuController_| will automatically release itself on close.
-  profiles::BubbleViewMode viewMode;
-  profiles::BubbleViewModeFromAvatarBubbleMode(mode, &viewMode);
-
-  menuController_ =
-      [[ProfileChooserController alloc] initWithBrowser:browser_
-                                             anchoredAt:point
-                                               viewMode:viewMode
-                                            serviceType:serviceType
-                                            accessPoint:accessPoint];
-
-  [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(bubbleWillClose:)
-             name:NSWindowWillCloseNotification
-           object:[menuController_ window]];
-  [menuController_ showWindow:self];
-
-  ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
 }
 
 // Shows the avatar bubble.
@@ -234,15 +138,9 @@ bool ProfileUpdateObserver::HasAvatarError() {
 - (void)bubbleWillClose {
   BrowserWindowController* bwc = [BrowserWindowController
       browserWindowControllerForWindow:browser_->window()->GetNativeWindow()];
-  if (bwc) {
+  if (bwc)
     [bwc releaseToolbarVisibilityForOwner:self withAnimation:YES];
-  }
   profileChooserViewObserverBridge_.reset();
-  menuController_ = nil;
-}
-
-- (void)bubbleWillClose:(NSNotification*)notif {
-  [self bubbleWillClose];
 }
 
 - (void)updateAvatarButtonAndLayoutParent:(BOOL)layoutParent {
@@ -253,8 +151,7 @@ bool ProfileUpdateObserver::HasAvatarError() {
 }
 
 - (BOOL)isMenuOpened {
-  return profileChooserViewObserverBridge_.get() != nullptr ||
-         [[menuController_ window] isVisible];
+  return profileChooserViewObserverBridge_.get() != nullptr;
 }
 
 @end
