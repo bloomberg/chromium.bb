@@ -186,6 +186,20 @@ void ShellContentRendererClient::DidInitializeWorkerContextOnWorkerThread(
   }
 }
 
+bool ShellContentRendererClient::ShouldFork(blink::WebLocalFrame* frame,
+                                            const GURL& url,
+                                            const std::string& http_method,
+                                            bool is_initial_navigation,
+                                            bool is_server_redirect,
+                                            bool* send_referrer) {
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kContentShellAlwaysFork)) {
+    *send_referrer = true;
+    return true;
+  }
+  return false;
+}
+
 #if BUILDFLAG(ENABLE_MOJO_CDM)
 void ShellContentRendererClient::AddSupportedKeySystems(
     std::vector<std::unique_ptr<media::KeySystemProperties>>* key_systems) {
