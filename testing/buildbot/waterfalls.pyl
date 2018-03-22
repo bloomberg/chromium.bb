@@ -933,11 +933,6 @@
           'gtest_tests': 'chromium_linux_clang_and_gl_gtests',
         },
       },
-      'linux-gcc-rel': {
-        'additional_compile_targets': [
-          'empty_main',
-        ],
-      },
       'linux-annotator-rel': {
         'test_suites': {
           'scripts': 'check_network_annotation_auditor_script',
@@ -1510,6 +1505,11 @@
         'test_suites': {
           'gtest_tests': 'ozone_linux_gtests',
         },
+      },
+      'linux-gcc-rel': {
+        'additional_compile_targets': [
+          'empty_main',
+        ],
       },
     },
   },

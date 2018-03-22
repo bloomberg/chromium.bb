@@ -9082,11 +9082,6 @@
       }
     ]
   },
-  "linux-gcc-rel": {
-    "additional_compile_targets": [
-      "empty_main"
-    ]
-  },
   "mac-views-rel": {
     "gtest_tests": [
       {
