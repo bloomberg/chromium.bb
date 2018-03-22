@@ -96,10 +96,9 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
     origin_host_port.set_port(session->params().testing_fixed_https_port);
   }
 
-  bool disable_resolver_cache =
-      request_load_flags & LOAD_BYPASS_CACHE ||
-      request_load_flags & LOAD_VALIDATE_CACHE ||
-      request_load_flags & LOAD_DISABLE_CACHE;
+  // LOAD_BYPASS_CACHE should bypass the host cache as well as the HTTP cache.
+  // Other cache-related load flags should not have this effect.
+  bool disable_resolver_cache = request_load_flags & LOAD_BYPASS_CACHE;
 
   int load_flags = request_load_flags;
   if (session->params().ignore_certificate_errors)
