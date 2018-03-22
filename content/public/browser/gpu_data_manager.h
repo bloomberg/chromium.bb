@@ -36,9 +36,8 @@ class GpuDataManager {
 
   // This indicator might change because we could collect more GPU info or
   // because the GPU blacklist could be updated.
-  // If this returns false, any further GPU access, including launching GPU
-  // process, establish GPU channel, and GPU info collection, should be
-  // blocked.
+  // If this returns false, any further GPU access, including establishing GPU
+  // channel, and GPU info collection, should be blocked.
   // Can be called on any thread.
   // If |reason| is not nullptr and GPU access is blocked, upon return, |reason|
   // contains a description of the reason why GPU access is blocked.

@@ -84,6 +84,8 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   bool HardwareAccelerationEnabled() const override;
   void GetDisabledExtensions(std::string* disabled_extensions) const override;
 
+  bool GpuProcessStartAllowed() const;
+
   void GetDisabledWebGLExtensions(std::string* disabled_webgl_extensions) const;
 
   bool IsGpuFeatureInfoAvailable() const;
@@ -159,6 +161,7 @@ class CONTENT_EXPORT GpuDataManagerImpl : public GpuDataManager {
   void OnGpuProcessInitFailure();
 
   void BlockSwiftShader();
+  bool SwiftShaderAllowed() const;
 
  private:
   friend class GpuDataManagerImplPrivate;

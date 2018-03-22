@@ -15,6 +15,7 @@
 #include "base/bind.h"
 #include "base/callback_helpers.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -30,6 +31,7 @@
 #include "build/build_config.h"
 #include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/switches.h"
 #include "content/browser/browser_child_process_host_impl.h"
 #include "content/browser/browser_main_loop.h"
@@ -106,12 +108,13 @@
 
 namespace content {
 
-bool GpuProcessHost::gpu_enabled_ = true;
-bool GpuProcessHost::hardware_gpu_enabled_ = true;
 base::subtle::Atomic32 GpuProcessHost::gpu_crash_count_ = 0;
 int GpuProcessHost::gpu_recent_crash_count_ = 0;
 bool GpuProcessHost::crashed_before_ = false;
 int GpuProcessHost::swiftshader_crash_count_ = 0;
+int GpuProcessHost::swiftshader_recent_crash_count_ = 0;
+int GpuProcessHost::display_compositor_crash_count_ = 0;
+int GpuProcessHost::display_compositor_recent_crash_count_ = 0;
 
 namespace {
 
@@ -463,8 +466,8 @@ GpuProcessHost* GpuProcessHost::Get(GpuProcessKind kind, bool force_create) {
   // Don't grant further access to GPU if it is not allowed.
   GpuDataManagerImpl* gpu_data_manager = GpuDataManagerImpl::GetInstance();
   DCHECK(gpu_data_manager);
-  if (!gpu_data_manager->GpuAccessAllowed(nullptr)) {
-    DLOG(ERROR) << "!GpuDataManagerImpl::GpuAccessAllowed()";
+  if (!gpu_data_manager->GpuProcessStartAllowed()) {
+    DLOG(ERROR) << "!GpuDataManagerImpl::GpuProcessStartAllowed()";
     return nullptr;
   }
 
@@ -554,11 +557,29 @@ int GpuProcessHost::GetGpuCrashCount() {
   return static_cast<int>(base::subtle::NoBarrier_Load(&gpu_crash_count_));
 }
 
+// static
+void GpuProcessHost::IncrementCrashCount(int* crash_count) {
+  // Last time the process crashed.
+  static base::Time last_crash_time;
+
+  // Allow about 1 crash per hour to be removed from the crash count, so very
+  // occasional crashes won't eventually add up and prevent the process from
+  // launching.
+  base::Time current_time = base::Time::Now();
+  if (crashed_before_) {
+    int hours_different = (current_time - last_crash_time).InHours();
+    *crash_count = std::max(0, *crash_count - hours_different);
+  }
+  ++(*crash_count);
+
+  crashed_before_ = true;
+  last_crash_time = current_time;
+}
+
 GpuProcessHost::GpuProcessHost(int host_id, GpuProcessKind kind)
     : host_id_(host_id),
       valid_(true),
       in_process_(false),
-      swiftshader_rendering_(false),
       kind_(kind),
       process_launched_(false),
       status_(UNKNOWN),
@@ -1230,20 +1251,12 @@ bool GpuProcessHost::LaunchGpuProcess() {
       cmd_line.get(), process_->GetData().id);
 
   GpuDataManagerImpl::GetInstance()->AppendGpuCommandLine(cmd_line.get());
-  if (cmd_line->HasSwitch(switches::kUseGL)) {
-    swiftshader_rendering_ = (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
-                              gl::kGLImplementationSwiftShaderForWebGLName);
-  }
-
-  bool current_gpu_type_enabled =
-      swiftshader_rendering_ ? gpu_enabled_ : hardware_gpu_enabled_;
-  if (!current_gpu_type_enabled) {
-    SendOutstandingReplies(EstablishChannelStatus::GPU_ACCESS_DENIED);
-    return false;
-  }
+  bool swiftshader_rendering =
+      (cmd_line->GetSwitchValueASCII(switches::kUseGL) ==
+       gl::kGLImplementationSwiftShaderForWebGLName);
 
   UMA_HISTOGRAM_BOOLEAN("GPU.GPUProcessSoftwareRendering",
-                        swiftshader_rendering_);
+                        swiftshader_rendering);
 
   // If specified, prepend a launcher program to the command line.
   if (!gpu_launcher.empty())
@@ -1315,9 +1328,6 @@ void GpuProcessHost::RecordProcessCrash() {
   const int kGpuMaxCrashCount = 6;
 #endif
 
-  // Last time the GPU process crashed.
-  static base::Time last_gpu_crash_time;
-
   bool disable_crash_limit = base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kDisableGpuProcessCrashLimit);
 
@@ -1325,19 +1335,7 @@ void GpuProcessHost::RecordProcessCrash() {
   // was intended for actual rendering (and not just checking caps or other
   // options).
   if (process_launched_ && kind_ == GPU_PROCESS_KIND_SANDBOXED) {
-    if (swiftshader_rendering_) {
-      UMA_HISTOGRAM_EXACT_LINEAR(
-          "GPU.SwiftShaderLifetimeEvents",
-          DIED_FIRST_TIME + swiftshader_crash_count_,
-          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
-
-      if (++swiftshader_crash_count_ >= kGpuMaxCrashCount &&
-          !disable_crash_limit) {
-        // SwiftShader is too unstable to use. Disable it for current session.
-        gpu_enabled_ = false;
-        GpuDataManagerImpl::GetInstance()->BlockSwiftShader();
-      }
-    } else {
+    if (GpuDataManagerImpl::GetInstance()->HardwareAccelerationEnabled()) {
       int count = static_cast<int>(
           base::subtle::NoBarrier_AtomicIncrement(&gpu_crash_count_, 1));
       UMA_HISTOGRAM_EXACT_LINEAR(
@@ -1345,20 +1343,7 @@ void GpuProcessHost::RecordProcessCrash() {
           std::min(DIED_FIRST_TIME + count, GPU_PROCESS_LIFETIME_EVENT_MAX - 1),
           static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
 
-      // Allow about 1 GPU crash per hour to be removed from the crash count,
-      // so very occasional crashes won't eventually add up and prevent the
-      // GPU process from launching.
-      ++gpu_recent_crash_count_;
-      base::Time current_time = base::Time::Now();
-      if (crashed_before_) {
-        int hours_different = (current_time - last_gpu_crash_time).InHours();
-        gpu_recent_crash_count_ =
-            std::max(0, gpu_recent_crash_count_ - hours_different);
-      }
-
-      crashed_before_ = true;
-      last_gpu_crash_time = current_time;
-
+      IncrementCrashCount(&gpu_recent_crash_count_);
       if ((gpu_recent_crash_count_ >= kGpuMaxCrashCount ||
            status_ == FAILURE) &&
           !disable_crash_limit) {
@@ -1374,9 +1359,35 @@ void GpuProcessHost::RecordProcessCrash() {
 #else
         // The GPU process is too unstable to use. Disable it for current
         // session.
-        hardware_gpu_enabled_ = false;
         GpuDataManagerImpl::GetInstance()->DisableHardwareAcceleration();
 #endif
+      }
+    } else if (GpuDataManagerImpl::GetInstance()->SwiftShaderAllowed()) {
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "GPU.SwiftShaderLifetimeEvents",
+          DIED_FIRST_TIME + swiftshader_crash_count_,
+          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
+      ++swiftshader_crash_count_;
+
+      IncrementCrashCount(&swiftshader_recent_crash_count_);
+      if (swiftshader_recent_crash_count_ >= kGpuMaxCrashCount &&
+          !disable_crash_limit) {
+        // SwiftShader is too unstable to use. Disable it for current session.
+        GpuDataManagerImpl::GetInstance()->BlockSwiftShader();
+      }
+    } else {
+      UMA_HISTOGRAM_EXACT_LINEAR(
+          "GPU.DisplayCompositorLifetimeEvents",
+          DIED_FIRST_TIME + display_compositor_crash_count_,
+          static_cast<int>(GPU_PROCESS_LIFETIME_EVENT_MAX));
+      ++display_compositor_crash_count_;
+
+      IncrementCrashCount(&display_compositor_recent_crash_count_);
+      if (display_compositor_recent_crash_count_ >= kGpuMaxCrashCount &&
+          !disable_crash_limit) {
+        // Viz display compositor is too unstable. Crash chrome to reset
+        // everything.
+        LOG(FATAL) << "Unable to start viz process, giving up.";
       }
     }
   }
