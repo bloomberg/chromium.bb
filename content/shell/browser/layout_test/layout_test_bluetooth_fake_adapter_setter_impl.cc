@@ -32,7 +32,8 @@ void LayoutTestBluetoothFakeAdapterSetterImpl::Create(
 void LayoutTestBluetoothFakeAdapterSetterImpl::Set(
     const std::string& adapter_name,
     SetCallback callback) {
-  SetTestBluetoothScanDuration();
+  SetTestBluetoothScanDuration(
+      BluetoothTestScanDurationSetting::kImmediateTimeout);
 
   device::BluetoothAdapterFactoryWrapper::Get().SetBluetoothAdapterForTesting(
       LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(adapter_name));

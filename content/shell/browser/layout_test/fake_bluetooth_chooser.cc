@@ -8,15 +8,20 @@
 #include <utility>
 
 #include "content/public/browser/bluetooth_chooser.h"
+#include "content/public/test/layouttest_support.h"
 #include "content/shell/common/layout_test/fake_bluetooth_chooser.mojom.h"
 
 namespace content {
 
-FakeBluetoothChooser::~FakeBluetoothChooser() = default;
+FakeBluetoothChooser::~FakeBluetoothChooser() {
+  SetTestBluetoothScanDuration(
+      BluetoothTestScanDurationSetting::kImmediateTimeout);
+}
 
 // static
 std::unique_ptr<FakeBluetoothChooser> FakeBluetoothChooser::Create(
     mojom::FakeBluetoothChooserRequest request) {
+  SetTestBluetoothScanDuration(BluetoothTestScanDurationSetting::kNeverTimeout);
   return std::unique_ptr<FakeBluetoothChooser>(
       new FakeBluetoothChooser(std::move(request)));
 }

@@ -28,6 +28,7 @@ namespace content {
 class FakeBluetoothChooser : public mojom::FakeBluetoothChooser,
                              public BluetoothChooser {
  public:
+  // Resets the test scan duration to timeout immediately.
   ~FakeBluetoothChooser() override;
 
   // LayoutTestContentBrowserClient will create an instance of this class when a
