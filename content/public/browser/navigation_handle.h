@@ -160,13 +160,10 @@ class CONTENT_EXPORT NavigationHandle {
   // be net::OK.
   virtual net::Error GetNetErrorCode() = 0;
 
-  // Returns the RenderFrameHost this navigation is taking place in. This can
-  // only be accessed after a response has been delivered for processing.
-  //
-  // If PlzNavigate is active, the RenderFrameHost returned will be the final
-  // host for the navigation. If PlzNavigate is inactive, the navigation may
-  // transfer to a new host up until the point that DidFinishNavigation is
-  // called.
+  // Returns the RenderFrameHost this navigation is taking place in. Will return
+  // null if no RenderFrameHost is currently associated with this navigation. If
+  // a non-null RenderFrameHost is returned, it will be the final host for the
+  // navigation.
   virtual RenderFrameHost* GetRenderFrameHost() = 0;
 
   // Whether the navigation happened without changing document. Examples of

@@ -171,6 +171,7 @@ void WebContentsObserverSanityChecker::DidStartNavigation(
   CHECK(navigation_handle->GetNetErrorCode() == net::OK);
   CHECK(!navigation_handle->HasCommitted());
   CHECK(!navigation_handle->IsErrorPage());
+  CHECK(!navigation_handle->GetRenderFrameHost());
   CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 
   ongoing_navigations_.insert(navigation_handle);
@@ -178,6 +179,9 @@ void WebContentsObserverSanityChecker::DidStartNavigation(
 
 void WebContentsObserverSanityChecker::DidRedirectNavigation(
     NavigationHandle* navigation_handle) {
+  // TODO(clamy): Ensure that NavigationHandle::GetRenderFrameHost returns null
+  // here. This currently fails for some unit tests.
+
   CHECK(NavigationIsOngoing(navigation_handle));
 
   CHECK(navigation_handle->GetNetErrorCode() == net::OK);
@@ -205,8 +209,8 @@ void WebContentsObserverSanityChecker::DidFinishNavigation(
         navigation_handle->GetNetErrorCode() == net::OK);
   CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
 
-  CHECK(!navigation_handle->HasCommitted() ||
-        navigation_handle->GetRenderFrameHost() != nullptr);
+  CHECK(navigation_handle->GetRenderFrameHost() != nullptr ||
+        !navigation_handle->HasCommitted());
 
   ongoing_navigations_.erase(navigation_handle);
 }
