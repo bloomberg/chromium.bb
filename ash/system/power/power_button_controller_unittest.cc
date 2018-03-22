@@ -6,6 +6,8 @@
 
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/test_accessibility_controller_client.h"
+#include "ash/display/screen_orientation_controller.h"
+#include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/media_controller.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
@@ -17,14 +19,17 @@
 #include "ash/test_media_client.h"
 #include "ash/touch/touch_devices_controller.h"
 #include "ash/wm/lock_state_controller_test_api.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/test_session_state_animator.h"
 #include "ash/wm/window_util.h"
 #include "base/command_line.h"
+#include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
 #include "chromeos/dbus/power_manager/suspend.pb.h"
+#include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
 #include "ui/views/widget/widget.h"
@@ -38,6 +43,15 @@ namespace {
 // A non-zero brightness used for test.
 constexpr double kNonZeroBrightness = 10.;
 
+// Width of the display.
+constexpr int kDisplayWidth = 800;
+
+// Height of the display.
+constexpr int kDisplayHeight = 600;
+
+// Power button position offset percentage.
+constexpr double kPowerButtonPercentage = 0.75f;
+
 // Shorthand for some long constants.
 constexpr power_manager::BacklightBrightnessChange_Cause kUserCause =
     power_manager::BacklightBrightnessChange_Cause_USER_REQUEST;
@@ -45,6 +59,8 @@ constexpr power_manager::BacklightBrightnessChange_Cause kOtherCause =
     power_manager::BacklightBrightnessChange_Cause_OTHER;
 
 }  // namespace
+
+using PowerButtonPosition = PowerButtonController::PowerButtonPosition;
 
 class PowerButtonControllerTest : public PowerButtonTestBase {
  public:
@@ -911,5 +927,242 @@ TEST_F(PowerButtonControllerTest, HideCursorAfterShowMenu) {
   GenerateMouseMoveEvent();
   EXPECT_TRUE(cursor_manager->IsCursorVisible());
 }
+
+class PowerButtonControllerWithPositionTest
+    : public PowerButtonControllerTest,
+      public testing::WithParamInterface<PowerButtonPosition> {
+ public:
+  PowerButtonControllerWithPositionTest() : power_button_position_(GetParam()) {
+    base::DictionaryValue position_info;
+    switch (power_button_position_) {
+      case PowerButtonPosition::LEFT:
+        position_info.SetString(PowerButtonController::kPositionField,
+                                PowerButtonController::kLeftPosition);
+        break;
+      case PowerButtonPosition::RIGHT:
+        position_info.SetString(PowerButtonController::kPositionField,
+                                PowerButtonController::kRightPosition);
+        break;
+      case PowerButtonPosition::TOP:
+        position_info.SetString(PowerButtonController::kPositionField,
+                                PowerButtonController::kTopPosition);
+        break;
+      case PowerButtonPosition::BOTTOM:
+        position_info.SetString(PowerButtonController::kPositionField,
+                                PowerButtonController::kBottomPosition);
+        break;
+      default:
+        return;
+    }
+    if (IsLeftOrRightPosition()) {
+      position_info.SetDouble(PowerButtonController::kYField,
+                              kPowerButtonPercentage);
+    } else {
+      position_info.SetDouble(PowerButtonController::kXField,
+                              kPowerButtonPercentage);
+    }
+
+    std::string json_position_info;
+    base::JSONWriter::Write(position_info, &json_position_info);
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kAshPowerButtonPosition, json_position_info);
+  }
+
+  bool IsLeftOrRightPosition() const {
+    return power_button_position_ == PowerButtonPosition::LEFT ||
+           power_button_position_ == PowerButtonPosition::RIGHT;
+  }
+
+  // Returns true if it is in tablet mode.
+  bool IsTabletMode() const {
+    return Shell::Get()
+        ->tablet_mode_controller()
+        ->IsTabletModeWindowManagerEnabled();
+  }
+
+  // Returns true if the menu is at the center of the display.
+  bool IsMenuCentered() const {
+    return power_button_test_api_->GetMenuBoundsInScreen().CenterPoint() ==
+           display::Screen::GetScreen()
+               ->GetPrimaryDisplay()
+               .bounds()
+               .CenterPoint();
+  }
+
+  PowerButtonPosition power_button_position() const {
+    return power_button_position_;
+  }
+
+ private:
+  PowerButtonPosition power_button_position_;
+
+  DISALLOW_COPY_AND_ASSIGN(PowerButtonControllerWithPositionTest);
+};
+
+TEST_P(PowerButtonControllerWithPositionTest,
+       MenuNextToPowerButtonInTabletMode) {
+  std::string display =
+      std::to_string(kDisplayWidth) + "x" + std::to_string(kDisplayHeight);
+  UpdateDisplay(display);
+  display::test::ScopedSetInternalDisplayId set_internal(
+      display_manager(), GetPrimaryDisplay().id());
+
+  ScreenOrientationControllerTestApi test_api(
+      Shell::Get()->screen_orientation_controller());
+  // Set the screen orientation to LANDSCAPE_PRIMARY.
+  test_api.SetDisplayRotation(display::Display::ROTATE_0,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapePrimary);
+
+  // Menu is set at the center of the display if it is not in tablet mode.
+  OpenPowerButtonMenu();
+  ASSERT_FALSE(IsTabletMode());
+  EXPECT_TRUE(IsMenuCentered());
+  TapToDismissPowerButtonMenu();
+
+  int animation_transform = PowerButtonMenuView::kMenuViewTransformDistanceDp;
+  EnableTabletMode(true);
+  EXPECT_TRUE(IsTabletMode());
+  OpenPowerButtonMenu();
+  EXPECT_FALSE(IsMenuCentered());
+  if (power_button_position() == PowerButtonPosition::LEFT) {
+    EXPECT_EQ(animation_transform,
+              power_button_test_api_->GetMenuBoundsInScreen().x());
+  } else if (power_button_position() == PowerButtonPosition::RIGHT) {
+    EXPECT_EQ(animation_transform,
+              kDisplayWidth -
+                  power_button_test_api_->GetMenuBoundsInScreen().right());
+  } else if (power_button_position() == PowerButtonPosition::TOP) {
+    EXPECT_EQ(animation_transform,
+              power_button_test_api_->GetMenuBoundsInScreen().y());
+  } else if (power_button_position() == PowerButtonPosition::BOTTOM) {
+    EXPECT_EQ(animation_transform,
+              kDisplayHeight -
+                  power_button_test_api_->GetMenuBoundsInScreen().bottom());
+  }
+
+  // Rotate the screen by 270 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_270,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitPrimary);
+  EXPECT_FALSE(IsMenuCentered());
+  if (power_button_position() == PowerButtonPosition::LEFT) {
+    EXPECT_EQ(animation_transform,
+              power_button_test_api_->GetMenuBoundsInScreen().y());
+  } else if (power_button_position() == PowerButtonPosition::RIGHT) {
+    EXPECT_EQ(animation_transform,
+              kDisplayWidth -
+                  power_button_test_api_->GetMenuBoundsInScreen().bottom());
+  } else if (power_button_position() == PowerButtonPosition::TOP) {
+    EXPECT_EQ(animation_transform,
+              kDisplayHeight -
+                  power_button_test_api_->GetMenuBoundsInScreen().right());
+  } else if (power_button_position() == PowerButtonPosition::BOTTOM) {
+    EXPECT_EQ(animation_transform,
+              power_button_test_api_->GetMenuBoundsInScreen().x());
+  }
+
+  // Rotate the screen by 180 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_180,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kLandscapeSecondary);
+  EXPECT_FALSE(IsMenuCentered());
+  if (power_button_position() == PowerButtonPosition::LEFT) {
+    EXPECT_EQ(animation_transform,
+              kDisplayWidth -
+                  power_button_test_api_->GetMenuBoundsInScreen().right());
+  } else if (power_button_position() == PowerButtonPosition::RIGHT) {
+    EXPECT_EQ(animation_transform,
+              power_button_test_api_->GetMenuBoundsInScreen().x());
+  } else if (power_button_position() == PowerButtonPosition::TOP) {
+    EXPECT_EQ(animation_transform,
+              kDisplayHeight -
+                  power_button_test_api_->GetMenuBoundsInScreen().bottom());
+  } else if (power_button_position() == PowerButtonPosition::BOTTOM) {
+    EXPECT_EQ(animation_transform,
+              power_button_test_api_->GetMenuBoundsInScreen().y());
+  }
+
+  // Rotate the screen by 90 degree.
+  test_api.SetDisplayRotation(display::Display::ROTATE_90,
+                              display::Display::RotationSource::ACTIVE);
+  EXPECT_EQ(test_api.GetCurrentOrientation(),
+            OrientationLockType::kPortraitSecondary);
+  EXPECT_FALSE(IsMenuCentered());
+  if (power_button_position() == PowerButtonPosition::LEFT) {
+    EXPECT_EQ(animation_transform,
+              kDisplayWidth -
+                  power_button_test_api_->GetMenuBoundsInScreen().bottom());
+  } else if (power_button_position() == PowerButtonPosition::RIGHT) {
+    EXPECT_EQ(animation_transform,
+              power_button_test_api_->GetMenuBoundsInScreen().y());
+  } else if (power_button_position() == PowerButtonPosition::TOP) {
+    EXPECT_EQ(animation_transform,
+              power_button_test_api_->GetMenuBoundsInScreen().x());
+  } else if (power_button_position() == PowerButtonPosition::BOTTOM) {
+    EXPECT_EQ(animation_transform,
+              kDisplayHeight -
+                  power_button_test_api_->GetMenuBoundsInScreen().right());
+  }
+}
+
+// Tests that the menu is always shown at the percentage of position when
+// display has different scale factors.
+TEST_P(PowerButtonControllerWithPositionTest, MenuShownAtPercentageOfPosition) {
+  const int scale_factor = 2;
+  std::string display = "1000x500*" + std::to_string(scale_factor);
+  UpdateDisplay(display);
+  int64_t primary_id = GetPrimaryDisplay().id();
+  display::test::ScopedSetInternalDisplayId set_internal(display_manager(),
+                                                         primary_id);
+  ASSERT_EQ(scale_factor, GetPrimaryDisplay().device_scale_factor());
+
+  EnableTabletMode(true);
+  OpenPowerButtonMenu();
+  EXPECT_FALSE(IsMenuCentered());
+  gfx::Point menu_center_point =
+      power_button_test_api_->GetMenuBoundsInScreen().CenterPoint();
+  gfx::Rect display_bounds = GetPrimaryDisplay().bounds();
+  int original_width = display_bounds.width();
+  int original_height = display_bounds.height();
+  if (IsLeftOrRightPosition()) {
+    EXPECT_EQ(menu_center_point.y(), static_cast<int>(display_bounds.height() *
+                                                      kPowerButtonPercentage));
+  } else {
+    EXPECT_EQ(menu_center_point.x(), static_cast<int>(display_bounds.width() *
+                                                      kPowerButtonPercentage));
+  }
+  TapToDismissPowerButtonMenu();
+
+  ASSERT_TRUE(display::test::DisplayManagerTestApi(display_manager())
+                  .SetDisplayUIScale(primary_id, scale_factor));
+  ASSERT_EQ(1.0f, GetPrimaryDisplay().device_scale_factor());
+  display_bounds = GetPrimaryDisplay().bounds();
+  int scale_up_width = display_bounds.width();
+  int scale_up_height = display_bounds.height();
+  EXPECT_EQ(scale_up_width, original_width * scale_factor);
+  EXPECT_EQ(scale_up_height, original_height * scale_factor);
+  OpenPowerButtonMenu();
+  menu_center_point =
+      power_button_test_api_->GetMenuBoundsInScreen().CenterPoint();
+  // Menu is still at the kPowerButtonPercentage position after scale up screen.
+  if (IsLeftOrRightPosition()) {
+    EXPECT_EQ(menu_center_point.y(), static_cast<int>(display_bounds.height() *
+                                                      kPowerButtonPercentage));
+  } else {
+    EXPECT_EQ(menu_center_point.x(), static_cast<int>(display_bounds.width() *
+                                                      kPowerButtonPercentage));
+  }
+}
+
+INSTANTIATE_TEST_CASE_P(AshPowerButtonPosition,
+                        PowerButtonControllerWithPositionTest,
+                        testing::Values(PowerButtonPosition::LEFT,
+                                        PowerButtonPosition::RIGHT,
+                                        PowerButtonPosition::TOP,
+                                        PowerButtonPosition::BOTTOM));
 
 }  // namespace ash

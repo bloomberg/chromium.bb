@@ -2,10 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_SYSTEM_POWER_BUTTON_MENU_VIEW_H_
-#define ASH_SYSTEM_POWER_BUTTON_MENU_VIEW_H_
+#ifndef ASH_SYSTEM_POWER_POWER_BUTTON_MENU_VIEW_H_
+#define ASH_SYSTEM_POWER_POWER_BUTTON_MENU_VIEW_H_
 
 #include "ash/ash_export.h"
+#include "ash/system/power/power_button_controller.h"
 #include "base/macros.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/views/controls/button/button.h"
@@ -23,16 +24,30 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
   // The duration of the animation to show or hide the power button menu view.
   static constexpr int kAnimationTimeoutMs = 500;
 
-  // Top padding of the menu view.
-  static constexpr int kMenuViewTopPadding = 16;
+  // Distance of the menu animation transform.
+  static constexpr int kMenuViewTransformDistanceDp = 16;
 
-  PowerButtonMenuView();
+  // Direction of the animation transform. X means to translate from
+  // x-coordinate. Y means to translate from y-coordinate.
+  enum class TransformDirection { NONE, X, Y };
+
+  // The translate direction and distance of the animation transform.
+  struct TransformDisplacement {
+    TransformDirection direction;
+    int distance;
+  };
+
+  explicit PowerButtonMenuView(
+      PowerButtonController::PowerButtonPosition power_button_position);
   ~PowerButtonMenuView() override;
 
   bool sign_out_item_for_testing() const { return sign_out_item_; }
 
   // Schedules an animation to show or hide the view.
   void ScheduleShowHideAnimation(bool show);
+
+  // Gets the transform displacement, which contains direction and distance.
+  TransformDisplacement GetTransformDisplacement() const;
 
  private:
   // Creates the items that in the menu.
@@ -53,9 +68,12 @@ class ASH_EXPORT PowerButtonMenuView : public views::View,
   PowerButtonMenuItemView* power_off_item_ = nullptr;
   PowerButtonMenuItemView* sign_out_item_ = nullptr;
 
+  // The physical display side of power button in landscape primary.
+  PowerButtonController::PowerButtonPosition power_button_position_;
+
   DISALLOW_COPY_AND_ASSIGN(PowerButtonMenuView);
 };
 
 }  // namespace ash
 
-#endif  // ASH_SYSTEM_POWER_BUTTON_MENU_VIEW_H_
+#endif  // ASH_SYSTEM_POWER_POWER_BUTTON_MENU_VIEW_H_

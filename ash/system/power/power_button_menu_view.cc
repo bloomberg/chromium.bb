@@ -4,6 +4,7 @@
 
 #include "ash/system/power/power_button_menu_view.h"
 
+#include "ash/display/screen_orientation_controller.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
@@ -11,6 +12,7 @@
 #include "ash/system/power/power_button_menu_item_view.h"
 #include "ash/system/user/login_status.h"
 #include "ash/wm/lock_state_controller.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/gfx/canvas.h"
@@ -28,7 +30,11 @@ constexpr int kMenuViewRoundRectRadiusDp = 16;
 
 }  // namespace
 
-PowerButtonMenuView::PowerButtonMenuView() {
+using PowerButtonPosition = PowerButtonController::PowerButtonPosition;
+
+PowerButtonMenuView::PowerButtonMenuView(
+    PowerButtonPosition power_button_position)
+    : power_button_position_(power_button_position) {
   SetPaintToLayer();
   layer()->SetFillsBoundsOpaquely(false);
 
@@ -57,11 +63,62 @@ void PowerButtonMenuView::ScheduleShowHideAnimation(bool show) {
   // Animation of the menu view bounds change.
   if (show) {
     gfx::Transform transform;
-    transform.Translate(0, kMenuViewTopPadding);
+    TransformDisplacement transform_displacement = GetTransformDisplacement();
+    if (transform_displacement.direction == TransformDirection::X)
+      transform.Translate(transform_displacement.distance, 0);
+    else if (transform_displacement.direction == TransformDirection::Y)
+      transform.Translate(0, transform_displacement.distance);
+
     layer()->SetTransform(transform);
   } else {
     layer()->SetTransform(gfx::Transform());
   }
+}
+
+PowerButtonMenuView::TransformDisplacement
+PowerButtonMenuView::GetTransformDisplacement() const {
+  TransformDisplacement transform_displacement;
+  if (power_button_position_ == PowerButtonPosition::NONE ||
+      !Shell::Get()
+           ->tablet_mode_controller()
+           ->IsTabletModeWindowManagerEnabled()) {
+    transform_displacement.direction = TransformDirection::Y;
+    transform_displacement.distance = kMenuViewTransformDistanceDp;
+    return transform_displacement;
+  }
+
+  OrientationLockType screen_orientation =
+      Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
+  bool is_left_or_right = power_button_position_ == PowerButtonPosition::LEFT ||
+                          power_button_position_ == PowerButtonPosition::RIGHT;
+
+  if (IsLandscapeOrientation(screen_orientation)) {
+    transform_displacement.direction =
+        is_left_or_right ? TransformDirection::X : TransformDirection::Y;
+  } else {
+    transform_displacement.direction =
+        is_left_or_right ? TransformDirection::Y : TransformDirection::X;
+  }
+
+  bool positive_transform = false;
+  if (is_left_or_right) {
+    bool is_primary = IsPrimaryOrientation(screen_orientation);
+    positive_transform = power_button_position_ == PowerButtonPosition::LEFT
+                             ? is_primary
+                             : !is_primary;
+  } else {
+    bool is_landscape_primary_or_portrait_secondary =
+        screen_orientation == OrientationLockType::kLandscapePrimary ||
+        screen_orientation == OrientationLockType::kPortraitSecondary;
+
+    positive_transform = power_button_position_ == PowerButtonPosition::TOP
+                             ? is_landscape_primary_or_portrait_secondary
+                             : !is_landscape_primary_or_portrait_secondary;
+  }
+  transform_displacement.distance = positive_transform
+                                        ? kMenuViewTransformDistanceDp
+                                        : -kMenuViewTransformDistanceDp;
+  return transform_displacement;
 }
 
 void PowerButtonMenuView::CreateItems() {
