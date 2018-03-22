@@ -1044,6 +1044,7 @@ void RenderWidgetHostImpl::StartHangMonitorTimeout(TimeDelta delay) {
   if (!hang_monitor_timeout_)
     return;
   hang_monitor_timeout_->Start(delay);
+  hang_monitor_start_time_ = clock_->NowTicks();
 }
 
 void RenderWidgetHostImpl::RestartHangMonitorTimeoutIfNecessary() {
@@ -1058,6 +1059,16 @@ bool RenderWidgetHostImpl::IsCurrentlyUnresponsive() const {
 void RenderWidgetHostImpl::StopHangMonitorTimeout() {
   if (hang_monitor_timeout_)
     hang_monitor_timeout_->Stop();
+
+  if (!hang_monitor_start_time_.is_null()) {
+    base::TimeDelta elapsed = clock_->NowTicks() - hang_monitor_start_time_;
+    const base::TimeDelta kMinimumHangTimeToReport =
+        base::TimeDelta::FromSeconds(5);
+    if (elapsed >= kMinimumHangTimeToReport)
+      UMA_HISTOGRAM_LONG_TIMES("Renderer.Hung.Duration", elapsed);
+
+    hang_monitor_start_time_ = TimeTicks();
+  }
   RendererIsResponsive();
 }
 

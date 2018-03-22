@@ -15,7 +15,9 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
@@ -3129,6 +3131,31 @@ TEST_F(RenderWidgetHostTest, NavigateInBackgroundShowsBlank) {
   host_->DidNavigate(6);
   host_->WasShown(ui::LatencyInfo());
   EXPECT_TRUE(host_->new_content_rendering_timeout_fired());
+}
+
+TEST_F(RenderWidgetHostTest, RendererHangRecordsMetrics) {
+  base::SimpleTestTickClock clock;
+  host_->set_clock_for_testing(&clock);
+  base::HistogramTester tester;
+
+  // RenderWidgetHost makes private the methods it overrides from
+  // InputRouterClient. Call them through the base class.
+  InputRouterClient* input_router_client = host_.get();
+
+  // Do a 3s hang. This shouldn't affect metrics.
+  input_router_client->IncrementInFlightEventCount();
+  clock.Advance(base::TimeDelta::FromSeconds(3));
+  input_router_client->DecrementInFlightEventCount(
+      InputEventAckSource::UNKNOWN);
+  tester.ExpectTotalCount("Renderer.Hung.Duration", 0u);
+
+  // Do a 17s hang. This should affect metrics.
+  input_router_client->IncrementInFlightEventCount();
+  clock.Advance(base::TimeDelta::FromSeconds(17));
+  input_router_client->DecrementInFlightEventCount(
+      InputEventAckSource::UNKNOWN);
+  tester.ExpectTotalCount("Renderer.Hung.Duration", 1u);
+  tester.ExpectUniqueSample("Renderer.Hung.Duration", 17000, 1);
 }
 
 }  // namespace content
