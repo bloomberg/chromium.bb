@@ -6,8 +6,10 @@
 #define CONTENT_SHELL_BROWSER_SHELL_DEVTOOLS_BINDINGS_H_
 
 #include <memory>
+#include <set>
 
 #include "base/compiler_specific.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
@@ -83,7 +85,13 @@ class ShellDevToolsBindings : public WebContentsObserver,
 #endif
   using PendingRequestsMap = std::map<const net::URLFetcher*, int>;
   PendingRequestsMap pending_requests_;
+
+  class NetworkResourceLoader;
+  std::set<std::unique_ptr<NetworkResourceLoader>, base::UniquePtrComparator>
+      loaders_;
+
   base::DictionaryValue preferences_;
+
   using ExtensionsAPIs = std::map<std::string, std::string>;
   ExtensionsAPIs extensions_api_;
   base::WeakPtrFactory<ShellDevToolsBindings> weak_factory_;

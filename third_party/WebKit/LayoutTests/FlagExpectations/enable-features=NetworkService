@@ -44,7 +44,6 @@ Bug(none) fast/xsl/xslt-multiple-relative-import.xml [ Skip ]
 Bug(none) fast/xsl/xslt-nested-stylesheets.xml [ Skip ]
 Bug(none) fast/xsl/xslt-second-level-import.xml [ Skip ]
 
-crbug.com/721408 http/tests/devtools/network/load-resource-for-frontend.js [ Failure Timeout ]
 crbug.com/721408 http/tests/inspector-protocol/network-data-length.js [ Failure ]
 
 Bug(none) http/tests/media/video-buffered.html [ Timeout ]
