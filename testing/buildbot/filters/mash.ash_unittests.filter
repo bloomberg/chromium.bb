@@ -277,6 +277,7 @@
 
 # TODO: Crashes in bounds_animator.cc. http://crbug.com/730759
 -WindowSelectorTest.MultipleDisplays
+-WindowSelectorTest.OverviewNoWindowsIndicatorMultiDisplay
 -WindowSelectorTest.RemoveDisplay
 -WindowSelectorTest.RemoveDisplayWithAnimation
 
