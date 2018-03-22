@@ -22,6 +22,7 @@
 #include "base/test/test_message_loop.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
+#include "base/unguessable_token.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/audio_source_diverter.h"
 #include "media/audio/test_audio_thread.h"
@@ -194,7 +195,7 @@ class AudioOutputControllerTest : public TestWithParam<bool> {
 
     controller_ = AudioOutputController::Create(
         audio_manager_.get(), &mock_event_handler_, AOCTestParams(),
-        std::string(), &mock_sync_reader_);
+        std::string(), base::UnguessableToken(), &mock_sync_reader_);
     EXPECT_NE(nullptr, controller_.get());
     controller_->SetVolume(kTestVolume);
   }

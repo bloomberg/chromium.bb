@@ -27,7 +27,8 @@ OutputStream::OutputStream(
     media::mojom::AudioLogPtr log,
     media::AudioManager* audio_manager,
     const std::string& output_device_id,
-    const media::AudioParameters& params)
+    const media::AudioParameters& params,
+    const base::UnguessableToken& group_id)
     : foreign_socket_(),
       created_callback_(std::move(created_callback)),
       delete_callback_(std::move(delete_callback)),
@@ -68,7 +69,7 @@ OutputStream::OutputStream(
   }
 
   controller_ = media::AudioOutputController::Create(
-      audio_manager, this, params, output_device_id, reader_.get());
+      audio_manager, this, params, output_device_id, group_id, reader_.get());
 }
 
 OutputStream::~OutputStream() {

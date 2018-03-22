@@ -4,8 +4,7 @@
 //
 // AudioMirroringManager is a singleton object that maintains a set of active
 // audio mirroring destinations and auto-connects/disconnects audio streams
-// to/from those destinations.  It is meant to be used exclusively on the IO
-// thread.
+// to/from those destinations.
 //
 // How it works:
 //
@@ -39,7 +38,8 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
-#include "base/threading/thread_checker.h"
+#include "base/synchronization/lock.h"
+#include "base/unguessable_token.h"
 #include "content/common/content_export.h"
 #include "media/audio/audio_source_diverter.h"
 
@@ -119,6 +119,20 @@ class CONTENT_EXPORT AudioMirroringManager {
   virtual void StartMirroring(MirroringDestination* destination);
   virtual void StopMirroring(MirroringDestination* destination);
 
+  // TODO(crbug/824019): The following are temporary, as a middle-ground step
+  // necessary to resolve a chicken-and-egg problem as we migrate audio
+  // mirroring into the new AudioService. See media::AudioManager::AddDiverter()
+  // comments for further details.
+  using AddDiverterCallback =
+      base::RepeatingCallback<void(const base::UnguessableToken&,
+                                   media::AudioSourceDiverter*)>;
+  AddDiverterCallback GetAddDiverterCallback();
+  using RemoveDiverterCallback =
+      base::RepeatingCallback<void(media::AudioSourceDiverter*)>;
+  RemoveDiverterCallback GetRemoveDiverterCallback();
+  static base::UnguessableToken ToGroupId(int render_process_id,
+                                          int render_frame_id);
+
  private:
   friend class AudioMirroringManagerTest;
 
@@ -190,8 +204,9 @@ class CONTENT_EXPORT AudioMirroringManager {
   // All active mirroring sessions.
   Destinations sessions_;
 
-  // Used to check that all AudioMirroringManager code runs on the same thread.
-  base::ThreadChecker thread_checker_;
+  // Allows calls to Add/RemoveDiverter() and Start/StopMirroring() to be made
+  // from different threads.
+  base::Lock lock_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioMirroringManager);
 };

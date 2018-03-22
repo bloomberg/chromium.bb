@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
-#include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_output_delegate_impl.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
@@ -72,10 +71,9 @@ RendererAudioOutputStreamFactoryContextImpl::CreateDelegate(
   audio_log_ptr->OnCreated(params, unique_device_id);
 
   return AudioOutputDelegateImpl::Create(
-      handler, audio_manager_, std::move(audio_log_ptr),
-      AudioMirroringManager::GetInstance(), media_observer, stream_id,
-      render_frame_id, render_process_id_, params, std::move(stream_observer),
-      unique_device_id);
+      handler, audio_manager_, std::move(audio_log_ptr), media_observer,
+      stream_id, render_frame_id, render_process_id_, params,
+      std::move(stream_observer), unique_device_id);
 }
 
 // static

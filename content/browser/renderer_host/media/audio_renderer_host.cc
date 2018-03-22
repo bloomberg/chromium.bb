@@ -14,7 +14,6 @@
 #include "content/browser/bad_message.h"
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/media/audio_stream_monitor.h"
-#include "content/browser/media/capture/audio_mirroring_manager.h"
 #include "content/browser/media/media_internals.h"
 #include "content/browser/renderer_host/media/audio_input_device_manager.h"
 #include "content/browser/renderer_host/media/audio_output_authorization_handler.h"
@@ -62,12 +61,10 @@ void ValidateRenderFrameId(int render_process_id,
 AudioRendererHost::AudioRendererHost(int render_process_id,
                                      media::AudioManager* audio_manager,
                                      media::AudioSystem* audio_system,
-                                     AudioMirroringManager* mirroring_manager,
                                      MediaStreamManager* media_stream_manager)
     : BrowserMessageFilter(AudioMsgStart),
       render_process_id_(render_process_id),
       audio_manager_(audio_manager),
-      mirroring_manager_(mirroring_manager),
       media_stream_manager_(media_stream_manager),
       authorization_handler_(audio_system,
                              media_stream_manager,
@@ -297,9 +294,9 @@ void AudioRendererHost::OnCreateStream(int stream_id,
                           mojo::MakeRequest(&observer_ptr));
 
   auto delegate = AudioOutputDelegateImpl::Create(
-      this, audio_manager_, std::move(audio_log_ptr), mirroring_manager_,
-      media_observer, stream_id, render_frame_id, render_process_id_, params,
-      std::move(observer_ptr), device_unique_id);
+      this, audio_manager_, std::move(audio_log_ptr), media_observer, stream_id,
+      render_frame_id, render_process_id_, params, std::move(observer_ptr),
+      device_unique_id);
   if (delegate)
     delegates_.push_back(std::move(delegate));
   else

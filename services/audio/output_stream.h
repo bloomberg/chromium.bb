@@ -24,6 +24,10 @@
 #include "mojo/public/cpp/system/handle.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 
+namespace base {
+class UnguessableToken;
+}  // namespace base
+
 namespace media {
 class AudioManager;
 class AudioParameters;
@@ -47,7 +51,8 @@ class OutputStream final : public media::mojom::AudioOutputStream,
                media::mojom::AudioLogPtr log,
                media::AudioManager* audio_manager,
                const std::string& output_device_id,
-               const media::AudioParameters& params);
+               const media::AudioParameters& params,
+               const base::UnguessableToken& group_id);
 
   ~OutputStream() final;
 

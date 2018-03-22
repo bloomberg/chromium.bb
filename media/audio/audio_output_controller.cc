@@ -126,6 +126,7 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
     EventHandler* event_handler,
     const AudioParameters& params,
     const std::string& output_device_id,
+    const base::UnguessableToken& group_id,
     SyncReader* sync_reader) {
   CHECK(audio_manager);
   CHECK_EQ(AudioManager::Get(), audio_manager);
@@ -137,12 +138,14 @@ scoped_refptr<AudioOutputController> AudioOutputController::Create(
 
   if (controller->task_runner_->BelongsToCurrentThread()) {
     controller->DoCreate(false);
+    audio_manager->AddDiverter(group_id, controller.get());
     return controller;
   }
 
   controller->task_runner_->PostTask(
       FROM_HERE,
       base::BindOnce(&AudioOutputController::DoCreate, controller, false));
+  audio_manager->AddDiverter(group_id, controller.get());
   return controller;
 }
 
@@ -179,13 +182,24 @@ void AudioOutputController::Close(base::OnceClosure closed_task) {
   if (task_runner_->BelongsToCurrentThread()) {
     DCHECK(closed_task.is_null());
     DoClose();
+    audio_manager_->RemoveDiverter(this);
     return;
   }
 
   DCHECK(!closed_task.is_null());
   task_runner_->PostTaskAndReply(
       FROM_HERE, base::BindOnce(&AudioOutputController::DoClose, this),
-      std::move(closed_task));
+      base::BindOnce(
+          [](scoped_refptr<AudioOutputController> controller,
+             base::OnceClosure closed_task) {
+            DCHECK_CALLED_ON_VALID_SEQUENCE(controller->owning_sequence_);
+
+            controller->audio_manager_->RemoveDiverter(controller.get());
+            controller = nullptr;
+
+            std::move(closed_task).Run();
+          },
+          base::WrapRefCounted(this), std::move(closed_task)));
 }
 
 void AudioOutputController::SetVolume(double volume) {
