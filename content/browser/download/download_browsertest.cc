@@ -2873,33 +2873,6 @@ IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeDataUrl) {
   ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());
 }
 
-// Test that the target attribute is ignored on anchors with a download
-// attribute.
-IN_PROC_BROWSER_TEST_F(DownloadContentTest,
-                       DownloadAttributeIgnoresTargetAttribute) {
-  net::EmbeddedTestServer server;
-  ASSERT_TRUE(server.InitializeAndListen());
-
-  GURL url = server.GetURL(std::string("/download-attribute-with-target.html"));
-  server.ServeFilesFromDirectory(GetTestFilePath("download", ""));
-  server.StartAcceptingConnections();
-
-  NavigateToURLAndWaitForDownload(shell(), url,
-                                  download::DownloadItem::COMPLETE);
-
-  std::vector<download::DownloadItem*> downloads;
-  DownloadManagerForShell(shell())->GetAllDownloads(&downloads);
-  ASSERT_EQ(1u, downloads.size());
-
-  // The target="_blank" should have been ignored, and so no additional window
-  // was created.
-  ASSERT_EQ(1u, Shell::windows().size());
-
-  EXPECT_EQ(FILE_PATH_LITERAL("suggested-filename"),
-            downloads[0]->GetTargetFilePath().BaseName().value());
-  ASSERT_TRUE(server.ShutdownAndWaitUntilComplete());
-}
-
 // A request for a non-existent resource should result in an aborted navigation,
 // and the old site staying current.
 IN_PROC_BROWSER_TEST_F(DownloadContentTest, DownloadAttributeServerError) {

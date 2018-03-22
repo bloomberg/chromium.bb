@@ -392,9 +392,8 @@ void HTMLAnchorElement::HandleClick(Event* event) {
         static_cast<String>(FastGetAttribute(downloadAttr)));
   }
   request.SetRequestContext(WebURLRequest::kRequestContextHyperlink);
-  FrameLoadRequest frame_request(
-      &GetDocument(), request,
-      hasAttribute(downloadAttr) ? g_null_atom : getAttribute(targetAttr));
+  FrameLoadRequest frame_request(&GetDocument(), request,
+                                 getAttribute(targetAttr));
   frame_request.SetTriggeringEvent(event);
   if (HasRel(kRelationNoReferrer)) {
     frame_request.SetShouldSendReferrer(kNeverSendReferrer);
