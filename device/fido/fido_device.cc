@@ -4,9 +4,15 @@
 
 #include "device/fido/fido_device.h"
 
+#include <utility>
+
 namespace device {
 
 FidoDevice::FidoDevice() = default;
 FidoDevice::~FidoDevice() = default;
+
+void FidoDevice::SetDeviceInfo(AuthenticatorGetInfoResponse device_info) {
+  device_info_ = std::move(device_info);
+}
 
 }  // namespace device

@@ -15,7 +15,8 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/optional.h"
-#include "base/time/time.h"
+#include "device/fido/authenticator_get_info_response.h"
+#include "device/fido/fido_constants.h"
 
 namespace device {
 
@@ -39,8 +40,24 @@ class COMPONENT_EXPORT(DEVICE_FIDO) FidoDevice {
   virtual void TryWink(WinkCallback callback) = 0;
   virtual std::string GetId() const = 0;
 
+  void SetDeviceInfo(AuthenticatorGetInfoResponse device_info);
+  void set_supported_protocol(ProtocolVersion supported_protocol) {
+    supported_protocol_ = supported_protocol;
+  }
+  void set_state(State state) { state_ = state; }
+
+  ProtocolVersion supported_protocol() const { return supported_protocol_; }
+  const base::Optional<AuthenticatorGetInfoResponse>& device_info() const {
+    return device_info_;
+  }
+  State state() const { return state_; }
+
  protected:
   virtual base::WeakPtr<FidoDevice> GetWeakPtr() = 0;
+
+  State state_ = State::kInit;
+  ProtocolVersion supported_protocol_ = ProtocolVersion::kUnknown;
+  base::Optional<AuthenticatorGetInfoResponse> device_info_;
 
   DISALLOW_COPY_AND_ASSIGN(FidoDevice);
 };

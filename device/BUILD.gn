@@ -72,6 +72,7 @@ test("device_unittests") {
     "fido/fido_ble_frames_unittest.cc",
     "fido/fido_discovery_unittest.cc",
     "fido/fido_hid_message_unittest.cc",
+    "fido/make_credential_task_unittest.cc",
     "fido/test_callback_receiver_unittest.cc",
     "fido/u2f_parsing_utils_unittest.cc",
     "fido/u2f_register_unittest.cc",

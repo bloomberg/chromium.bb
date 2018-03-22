@@ -133,7 +133,8 @@ base::Optional<AuthenticatorGetAssertionResponse> ReadCTAPGetAssertionResponse(
 
 base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     base::span<const uint8_t> buffer) {
-  if (buffer.size() <= kResponseCodeLength)
+  if (buffer.size() <= kResponseCodeLength ||
+      GetResponseCode(buffer) != CtapDeviceResponseCode::kSuccess)
     return base::nullopt;
 
   base::Optional<CBOR> decoded_response =

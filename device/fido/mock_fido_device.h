@@ -41,6 +41,12 @@ class MockFidoDevice : public FidoDevice {
                            DeviceCallback& cb);
   static void WrongData(const std::vector<uint8_t>& command,
                         DeviceCallback& cb);
+  static void NoErrorGetInfo(const std::vector<uint8_t>& command,
+                             DeviceCallback& cb);
+  static void CtapDeviceError(const std::vector<uint8_t>& command,
+                              DeviceCallback& cb);
+  static void NoErrorMakeCredential(const std::vector<uint8_t>& command,
+                                    DeviceCallback& cb);
   static void NoErrorSign(const std::vector<uint8_t>& command,
                           DeviceCallback& cb);
   static void NoErrorRegister(const std::vector<uint8_t>& command,
