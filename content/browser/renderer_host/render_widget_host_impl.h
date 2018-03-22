@@ -1004,6 +1004,7 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   std::unique_ptr<InputRouter> input_router_;
 
   std::unique_ptr<TimeoutMonitor> hang_monitor_timeout_;
+  base::TimeTicks hang_monitor_start_time_;
 
   std::unique_ptr<TimeoutMonitor> new_content_rendering_timeout_;
 
