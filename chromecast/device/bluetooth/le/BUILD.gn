@@ -1,0 +1,50 @@
+# Copyright 2018 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//chromecast/chromecast.gni")
+
+cast_source_set("le") {
+  sources = [
+    "gatt_client_manager.cc",
+    "gatt_client_manager.h",
+    "le_scan_manager.cc",
+    "le_scan_manager.h",
+    "remote_characteristic.cc",
+    "remote_characteristic.h",
+    "remote_descriptor.cc",
+    "remote_descriptor.h",
+    "remote_device.cc",
+    "remote_device.h",
+    "remote_service.cc",
+    "remote_service.h",
+  ]
+  deps = [
+    "//base",
+    "//chromecast/base",
+    "//chromecast/device/bluetooth/shlib",
+    "//chromecast/internal/base",
+    "//chromecast/internal/public",
+    "//chromecast/public",
+  ]
+}
+
+cast_source_set("unittests") {
+  testonly = true
+
+  sources = [
+    "gatt_client_manager_test.cc",
+    "le_scan_manager_test.cc",
+  ]
+  deps = [
+    ":le",
+    "//base",
+    "//base/test:test_support",
+    "//chromecast/device/bluetooth/shlib:mock_shlib",
+    "//chromecast/internal/device/bluetooth:bluetooth_util",
+    "//chromecast/internal/device/bluetooth:test_support",
+    "//chromecast/public",
+    "//testing/gmock",
+    "//testing/gtest",
+  ]
+}
