@@ -20,6 +20,17 @@ import gclient_eval
 
 
 _SAMPLE_DEPS_FILE = textwrap.dedent("""\
+vars = {
+    'git_repo': 'https://example.com/repo.git',
+     # Some comment with bad indentation
+     'dep_2_rev': '1ced',
+     # Some more comments
+     # 1 
+     # 2
+     # 3
+    'dep_3_rev': '5p1e5',
+}
+
 deps = {
     'src/dep': Var('git_repo') + '/dep' + '@' + 'deadbeef',
     # Some comment
@@ -45,59 +56,82 @@ deps = {
         'dep_type': 'cipd',
     },
 }
-
-vars = {
-    'git_repo': 'https://example.com/repo.git',
-     # Some comment with bad indentation
-     'dep_2_rev': '1ced',
-     # Some more comments
-     # 1 
-     # 2
-     # 3
-    'dep_3_rev': '5p1e5',
-}""")
+""")
 
 
 class GClientEvalTest(unittest.TestCase):
   def test_str(self):
-    self.assertEqual('foo', gclient_eval._gclient_eval('"foo"'))
+    self.assertEqual(
+        'foo',
+        gclient_eval._gclient_eval('"foo"', vars_dict=None, expand_vars=False,
+                                   filename='<unknown>'))
 
   def test_tuple(self):
-    self.assertEqual(('a', 'b'), gclient_eval._gclient_eval('("a", "b")'))
+    self.assertEqual(
+        ('a', 'b'),
+        gclient_eval._gclient_eval('("a", "b")', vars_dict=None,
+                                   expand_vars=False, filename='<unknown>'))
 
   def test_list(self):
-    self.assertEqual(['a', 'b'], gclient_eval._gclient_eval('["a", "b"]'))
+    self.assertEqual(
+        ['a', 'b'],
+        gclient_eval._gclient_eval('["a", "b"]', vars_dict=None,
+                                   expand_vars=False, filename='<unknown>'))
 
   def test_dict(self):
-    self.assertEqual({'a': 'b'}, gclient_eval._gclient_eval('{"a": "b"}'))
+    self.assertEqual(
+        {'a': 'b'},
+        gclient_eval._gclient_eval('{"a": "b"}', vars_dict=None,
+                                   expand_vars=False, filename='<unknown>'))
 
   def test_name_safe(self):
-    self.assertEqual(True, gclient_eval._gclient_eval('True'))
+    self.assertEqual(
+        True,
+        gclient_eval._gclient_eval('True', vars_dict=None,
+                                   expand_vars=False, filename='<unknown>'))
 
   def test_name_unsafe(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_eval('UnsafeName')
+      gclient_eval._gclient_eval('UnsafeName', vars_dict=None,
+                                 expand_vars=False, filename='<unknown>')
     self.assertIn('invalid name \'UnsafeName\'', str(cm.exception))
+
+  def test_invalid_call(self):
+    with self.assertRaises(ValueError) as cm:
+      gclient_eval._gclient_eval('Foo("bar")', vars_dict=None,
+                                 expand_vars=False, filename='<unknown>')
+    self.assertIn('Var is the only allowed function', str(cm.exception))
 
   def test_call(self):
     self.assertEqual(
         '{bar}',
-        gclient_eval._gclient_eval('Var("bar")'))
+        gclient_eval._gclient_eval('Var("bar")', vars_dict=None,
+                                   expand_vars=False, filename='<unknown>'))
 
   def test_plus(self):
-    self.assertEqual('foo', gclient_eval._gclient_eval('"f" + "o" + "o"'))
+    self.assertEqual(
+        'foo',
+        gclient_eval._gclient_eval('"f" + "o" + "o"', vars_dict=None,
+                                   expand_vars=False, filename='<unknown>'))
 
   def test_format(self):
-    self.assertEqual('foo', gclient_eval._gclient_eval('"%s" % "foo"'))
+    self.assertEqual(
+        'foo',
+        gclient_eval._gclient_eval('"%s" % "foo"', vars_dict=None,
+                                   expand_vars=False, filename='<unknown>'))
 
   def test_not_expression(self):
     with self.assertRaises(SyntaxError) as cm:
-      gclient_eval._gclient_eval('def foo():\n  pass')
+      gclient_eval._gclient_eval(
+          'def foo():\n  pass', vars_dict=None, expand_vars=False,
+          filename='<unknown>')
     self.assertIn('invalid syntax', str(cm.exception))
 
   def test_not_whitelisted(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_eval('[x for x in [1, 2, 3]]')
+      gclient_eval._gclient_eval(
+          '[x for x in [1, 2, 3]]', vars_dict=None, expand_vars=False,
+          filename='<unknown>')
     self.assertIn(
         'unexpected AST node: <_ast.ListComp object', str(cm.exception))
 
@@ -105,7 +139,9 @@ class GClientEvalTest(unittest.TestCase):
     for test_case in itertools.permutations(range(4)):
       input_data = ['{'] + ['"%s": "%s",' % (n, n) for n in test_case] + ['}']
       expected = [(str(n), str(n)) for n in test_case]
-      result = gclient_eval._gclient_eval(''.join(input_data))
+      result = gclient_eval._gclient_eval(
+          ''.join(input_data), vars_dict=None, expand_vars=False,
+          filename='<unknown>')
       self.assertEqual(expected, result.items())
 
 
@@ -124,12 +160,11 @@ class ExecTest(unittest.TestCase):
 
   def test_schema_wrong_type(self):
     with self.assertRaises(schema.SchemaError):
-      gclient_eval.Exec('include_rules = {}', '<string>')
+      gclient_eval.Exec('include_rules = {}')
 
   def test_recursedeps_list(self):
     local_scope = gclient_eval.Exec(
-        'recursedeps = [["src/third_party/angle", "DEPS.chromium"]]',
-        '<string>')
+        'recursedeps = [["src/third_party/angle", "DEPS.chromium"]]')
     self.assertEqual(
         {'recursedeps': [['src/third_party/angle', 'DEPS.chromium']]},
         local_scope)
@@ -142,7 +177,35 @@ class ExecTest(unittest.TestCase):
         'deps = {',
         '  "a_dep": "a" + Var("foo") + "b",',
         '}',
-    ]), '<string>')
+    ]))
+    self.assertEqual({
+        'vars': collections.OrderedDict([('foo', 'bar')]),
+        'deps': collections.OrderedDict([('a_dep', 'abarb')]),
+    }, local_scope)
+
+  def test_braces_var(self):
+    local_scope = gclient_eval.Exec('\n'.join([
+        'vars = {',
+        '  "foo": "bar",',
+        '}',
+        'deps = {',
+        '  "a_dep": "a{foo}b",',
+        '}',
+    ]))
+    self.assertEqual({
+        'vars': collections.OrderedDict([('foo', 'bar')]),
+        'deps': collections.OrderedDict([('a_dep', 'abarb')]),
+    }, local_scope)
+
+  def test_var_unexpanded(self):
+    local_scope = gclient_eval.Exec('\n'.join([
+        'vars = {',
+        '  "foo": "bar",',
+        '}',
+        'deps = {',
+        '  "a_dep": "a" + Var("foo") + "b",',
+        '}',
+    ]), expand_vars=False)
     self.assertEqual({
         'vars': collections.OrderedDict([('foo', 'bar')]),
         'deps': collections.OrderedDict([('a_dep', 'a{foo}b')]),
