@@ -111,7 +111,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
   void RemoveAllAlarms(const std::string& extension_id,
                        const RemoveAllAlarmsCallback& callback);
 
-  // Replaces AlarmManager's owned clock with |clock| and takes ownership of it.
+  // Replaces AlarmManager's clock with |clock|.
   void SetClockForTesting(base::Clock* clock);
 
   // BrowserContextKeyedAPI implementation.
@@ -220,7 +220,7 @@ class AlarmManager : public BrowserContextKeyedAPI,
   static const bool kServiceHasOwnInstanceInIncognito = true;
 
   content::BrowserContext* const browser_context_;
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   std::unique_ptr<Delegate> delegate_;
 
   // Listen to extension load notifications.

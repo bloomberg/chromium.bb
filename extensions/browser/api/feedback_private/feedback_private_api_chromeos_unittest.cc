@@ -284,11 +284,11 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceWithAccessTimeouts) {
   LogSourceAccessManager::SetMaxNumBurstAccessesForTesting(1);
   LogSourceAccessManager::SetRateLimitingTimeoutForTesting(&timeout);
 
-  base::SimpleTestTickClock* test_clock = new base::SimpleTestTickClock;
+  base::SimpleTestTickClock test_clock;
   FeedbackPrivateAPI::GetFactoryInstance()
       ->Get(browser_context())
       ->GetLogSourceAccessManager()
-      ->SetTickClockForTesting(std::unique_ptr<base::TickClock>(test_clock));
+      ->SetTickClockForTesting(&test_clock);
 
   ReadLogSourceParams params;
   params.source = api::feedback_private::LOG_SOURCE_MESSAGES;
@@ -298,7 +298,7 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceWithAccessTimeouts) {
 
   // |test_clock| must start out at something other than 0, which is interpreted
   // as an invalid value.
-  test_clock->Advance(TimeDelta::FromMilliseconds(100));
+  test_clock.Advance(TimeDelta::FromMilliseconds(100));
 
   EXPECT_TRUE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
@@ -310,32 +310,32 @@ TEST_F(FeedbackPrivateApiUnittest, ReadLogSourceWithAccessTimeouts) {
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
 
   // Advance to t=120, but it will not be allowed. (empty result)
-  test_clock->Advance(TimeDelta::FromMilliseconds(20));
+  test_clock.Advance(TimeDelta::FromMilliseconds(20));
   EXPECT_FALSE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
 
   // Advance to t=150, but still not allowed.
-  test_clock->Advance(TimeDelta::FromMilliseconds(30));
+  test_clock.Advance(TimeDelta::FromMilliseconds(30));
   EXPECT_FALSE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
 
   // Advance to t=199, but still not allowed. (empty result)
-  test_clock->Advance(TimeDelta::FromMilliseconds(49));
+  test_clock.Advance(TimeDelta::FromMilliseconds(49));
   EXPECT_FALSE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
 
   // Advance to t=210, annd the access is finally allowed.
-  test_clock->Advance(TimeDelta::FromMilliseconds(11));
+  test_clock.Advance(TimeDelta::FromMilliseconds(11));
   EXPECT_TRUE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
 
   // Advance to t=309, but it will not be allowed. (empty result)
-  test_clock->Advance(TimeDelta::FromMilliseconds(99));
+  test_clock.Advance(TimeDelta::FromMilliseconds(99));
   EXPECT_FALSE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
 
   // Another read is finally allowed at t=310.
-  test_clock->Advance(TimeDelta::FromMilliseconds(1));
+  test_clock.Advance(TimeDelta::FromMilliseconds(1));
   EXPECT_TRUE(
       RunReadLogSourceFunction(params, &result_reader_id, &result_string));
 }

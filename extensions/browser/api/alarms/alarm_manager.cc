@@ -110,7 +110,7 @@ std::unique_ptr<base::ListValue> AlarmsToValue(
 
 AlarmManager::AlarmManager(content::BrowserContext* context)
     : browser_context_(context),
-      clock_(new base::DefaultClock()),
+      clock_(base::DefaultClock::GetInstance()),
       delegate_(new DefaultAlarmDelegate(context)),
       extension_registry_observer_(this) {
   extension_registry_observer_.Add(ExtensionRegistry::Get(browser_context_));
@@ -225,7 +225,7 @@ AlarmManager::AlarmIterator AlarmManager::GetAlarmIterator(
 }
 
 void AlarmManager::SetClockForTesting(base::Clock* clock) {
-  clock_.reset(clock);
+  clock_ = clock;
 }
 
 static base::LazyInstance<

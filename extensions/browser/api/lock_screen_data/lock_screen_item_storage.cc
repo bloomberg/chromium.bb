@@ -141,7 +141,7 @@ LockScreenItemStorage::LockScreenItemStorage(
           ExtensionsBrowserClient::Get()->GetUserIdHashFromContext(context)),
       crypto_key_(crypto_key),
       local_state_(local_state),
-      tick_clock_(std::make_unique<base::DefaultTickClock>()),
+      tick_clock_(base::DefaultTickClock::GetInstance()),
       extension_registry_observer_(this),
       value_store_cache_(CreateValueStoreCache(storage_root.Append(user_id_))),
       weak_ptr_factory_(this) {

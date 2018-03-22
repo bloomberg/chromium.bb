@@ -81,7 +81,7 @@ class ActivityLogPolicy {
   virtual void ProcessAction(scoped_refptr<Action> action) = 0;
 
   // For unit testing only.
-  void SetClockForTesting(std::unique_ptr<base::Clock> clock);
+  void SetClockForTesting(base::Clock* clock);
 
   // A collection of methods that are useful for implementing policies.  These
   // are all static methods; the ActivityLogPolicy::Util class cannot be
@@ -139,7 +139,7 @@ class ActivityLogPolicy {
   // Support for a mock clock for testing purposes.  This is used by ReadData
   // to determine the date for "today" when when interpreting date ranges to
   // fetch.  This has no effect on batching of writes to the database.
-  std::unique_ptr<base::Clock> testing_clock_;
+  base::Clock* testing_clock_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(ActivityLogPolicy);
 };

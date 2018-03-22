@@ -159,7 +159,7 @@ class ExtensionPrefs : public KeyedService {
       ExtensionPrefValueMap* extension_pref_value_map,
       bool extensions_disabled,
       const std::vector<ExtensionPrefsObserver*>& early_observers,
-      std::unique_ptr<base::Clock> clock);
+      base::Clock* clock);
 
   ~ExtensionPrefs() override;
 
@@ -578,7 +578,7 @@ class ExtensionPrefs : public KeyedService {
                  PrefService* prefs,
                  const base::FilePath& root_dir,
                  ExtensionPrefValueMap* extension_pref_value_map,
-                 std::unique_ptr<base::Clock> clock,
+                 base::Clock* clock,
                  bool extensions_disabled,
                  const std::vector<ExtensionPrefsObserver*>& early_observers);
 
@@ -707,7 +707,7 @@ class ExtensionPrefs : public KeyedService {
   // Weak pointer, owned by BrowserContext.
   ExtensionPrefValueMap* extension_pref_value_map_;
 
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
 
   bool extensions_disabled_;
 
