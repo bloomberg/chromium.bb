@@ -1723,7 +1723,8 @@ static uint32_t get_intra_txb_hash(MACROBLOCK *x, int plane, int blk_row,
 void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
                 BLOCK_SIZE plane_bsize, int block, int blk_row, int blk_col,
                 TX_SIZE tx_size, int64_t *out_dist, int64_t *out_sse,
-                OUTPUT_STATUS output_status) {
+                OUTPUT_STATUS output_status,
+                int use_transform_domain_distortion) {
   MACROBLOCKD *const xd = &x->e_mbd;
   const struct macroblock_plane *const p = &x->plane[plane];
 #if CONFIG_DIST_8X8
@@ -1733,17 +1734,8 @@ void dist_block(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
 #endif  // CONFIG_DIST_8X8
   const uint16_t eob = p->eobs[block];
 
-  int use_transform_domain_distortion =
-      // When eob is 0, pixel domain distortion is more efficient.
-      cpi->sf.use_transform_domain_distortion && eob &&
-      // Any 64-pt transforms only preserves half the coefficients.
-      // Therefore transform domain distortion is not valid for these
-      // transform sizes.
-      txsize_sqr_up_map[tx_size] != TX_64X64;
-#if CONFIG_DIST_8X8
-  if (x->using_dist_8x8) use_transform_domain_distortion = 0;
-#endif
-
+  // When eob is 0, pixel domain distortion is more efficient and accurate.
+  if (!eob) use_transform_domain_distortion = 0;
   if (use_transform_domain_distortion) {
     // Transform domain distortion computation is more efficient as it does
     // not involve an inverse transform, but it is less accurate.
@@ -1981,6 +1973,15 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   // Need to have at least one transform type allowed.
   if (allowed_tx_num == 0) allowed_tx_mask[DCT_DCT] = 1;
 
+  int use_transform_domain_distortion =
+      cpi->sf.use_transform_domain_distortion &&
+      // Any 64-pt transforms only preserves half the coefficients.
+      // Therefore transform domain distortion is not valid for these
+      // transform sizes.
+      txsize_sqr_up_map[tx_size] != TX_64X64;
+#if CONFIG_DIST_8X8
+  if (x->using_dist_8x8) use_transform_domain_distortion = 0;
+#endif
   for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
     if (!allowed_tx_mask[tx_type]) continue;
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
@@ -1997,12 +1998,27 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
     } else {
       av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
                       tx_size, AV1_XFORM_QUANT_FP);
+      if (cpi->sf.optimize_b_precheck && best_rd < INT64_MAX &&
+          x->plane[plane].eobs[block] >= 4) {
+        // Calculate distortion quickly in transform domain.
+        dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
+                   &this_rd_stats.dist, &this_rd_stats.sse,
+                   OUTPUT_HAS_PREDICTED_PIXELS, 1);
+        rate_cost =
+            av1_cost_coeffs(cpi, x, plane, blk_row, blk_col, block, tx_size,
+                            scan_order, a, l, use_fast_coef_costing);
+        const int64_t rd_estimate =
+            AOMMIN(RDCOST(x->rdmult, rate_cost, this_rd_stats.dist),
+                   RDCOST(x->rdmult, 0, this_rd_stats.sse));
+        if (rd_estimate - (rd_estimate >> 3) > AOMMIN(best_rd, ref_best_rd))
+          continue;
+      }
       av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
                      tx_size, a, l, 1, &rate_cost);
     }
     dist_block(cpi, x, plane, plane_bsize, block, blk_row, blk_col, tx_size,
                &this_rd_stats.dist, &this_rd_stats.sse,
-               OUTPUT_HAS_PREDICTED_PIXELS);
+               OUTPUT_HAS_PREDICTED_PIXELS, use_transform_domain_distortion);
 
     this_rd_stats.rate = rate_cost;
 

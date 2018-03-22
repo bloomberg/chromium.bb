@@ -157,6 +157,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->tx_type_search.skip_tx_search = 1;
     sf->adaptive_txb_search = 1;
     sf->use_intra_txb_hash = 1;
+    sf->optimize_b_precheck = 1;
   }
 
   if (speed >= 2) {
@@ -452,6 +453,7 @@ void av1_set_speed_features_framesize_independent(AV1_COMP *cpi) {
   sf->use_intra_txb_hash = 0;
   sf->use_inter_txb_hash = 1;
   sf->use_mb_rd_hash = 1;
+  sf->optimize_b_precheck = 0;
 
   for (i = 0; i < TX_SIZES; i++) {
     sf->intra_y_mode_mask[i] = INTRA_ALL;

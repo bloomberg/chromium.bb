@@ -569,6 +569,9 @@ typedef struct SPEED_FEATURES {
   // Use hash table to store macroblock RD search results
   // to avoid repeated search on the same residue signal.
   int use_mb_rd_hash;
+
+  // Calculate RD cost before doing optimize_b, and skip if the cost is large.
+  int optimize_b_precheck;
 } SPEED_FEATURES;
 
 struct AV1_COMP;
