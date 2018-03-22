@@ -1023,7 +1023,8 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             pre, pre_buf->stride, dst, dst_buf->stride, subpel_x, subpel_y, sf,
             b4_w, b4_h, &conv_params, this_mbmi->interp_filters, &warp_types,
             (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y,
-            plane, ref, mi, build_for_obmc, xs, ys, xd, cm->use_ref_frame_mvs);
+            plane, ref, mi, build_for_obmc, xs, ys, xd,
+            cm->allow_warped_motion);
 
         ++col;
       }
@@ -1129,7 +1130,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             &conv_params, mi->mbmi.interp_filters, subpel_params[ref].xs,
             subpel_params[ref].ys, plane, &warp_types,
             (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y,
-            ref, xd, cm->use_ref_frame_mvs);
+            ref, xd, cm->allow_warped_motion);
       else
         av1_make_inter_predictor(
             pre[ref], pre_buf->stride, dst, dst_buf->stride,
@@ -1137,7 +1138,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             &conv_params, mi->mbmi.interp_filters, &warp_types,
             (mi_x >> pd->subsampling_x) + x, (mi_y >> pd->subsampling_y) + y,
             plane, ref, mi, build_for_obmc, subpel_params[ref].xs,
-            subpel_params[ref].ys, xd, cm->use_ref_frame_mvs);
+            subpel_params[ref].ys, xd, cm->allow_warped_motion);
     }
 
 #if !CONFIG_LOWPRECISION_BLEND

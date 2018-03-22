@@ -4712,9 +4712,13 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // frame type has been decided outside of this function call
   cm->cur_frame->intra_only = frame_is_intra_only(cm);
   cm->cur_frame->frame_type = cm->frame_type;
+
+  // S_FRAMEs are always error resilient
+  cm->error_resilient_mode = oxcf->error_resilient_mode || frame_is_sframe(cm);
   cm->use_ref_frame_mvs = !cpi->oxcf.disable_tempmv &&
                           frame_might_use_prev_frame_mvs(cm) &&
                           cm->seq_params.enable_order_hint;
+  cm->allow_warped_motion = !cm->error_resilient_mode;
 
   // Reset the frame packet stamp index.
   if (cm->frame_type == KEY_FRAME) cm->current_video_frame = 0;
@@ -4822,9 +4826,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
     // The alternate reference frame cannot be active for a key frame.
     cpi->rc.source_alt_ref_active = 0;
-    // S_FRAMEs are always error resilient
-    cm->error_resilient_mode =
-        oxcf->error_resilient_mode || frame_is_sframe(cm);
   }
   if (cpi->oxcf.mtu == 0) {
     cm->num_tg = cpi->oxcf.num_tile_groups;

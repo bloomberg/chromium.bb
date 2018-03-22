@@ -387,7 +387,7 @@ static void temporal_filter_iterate_c(AV1_COMP *cpi,
               frames[frame]->v_buffer + mb_uv_offset, frames[frame]->y_stride,
               mb_uv_width, mb_uv_height, mbd->mi[0]->mbmi.mv[0].as_mv.row,
               mbd->mi[0]->mbmi.mv[0].as_mv.col, predictor, scale, mb_col * 16,
-              mb_row * 16, cm->use_ref_frame_mvs);
+              mb_row * 16, cm->allow_warped_motion);
 
           // Apply the filter (YUV)
           if (mbd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {

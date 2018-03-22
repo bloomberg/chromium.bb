@@ -316,6 +316,7 @@ typedef struct AV1Common {
   int allow_filter_intra;
   int allow_interintra_compound;
   int allow_masked_compound;
+  int allow_warped_motion;
 
   // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in
   // MODE_INFO (8-pixel) units.
@@ -389,7 +390,7 @@ typedef struct AV1Common {
   MODE_INFO **prev_mi_grid_base;
   MODE_INFO **prev_mi_grid_visible;
 
-  // Whether to use previous frame's motion vectors for prediction.
+  // Whether to use previous frames' motion vectors for prediction.
   int use_ref_frame_mvs;
 
   uint8_t *last_frame_seg_map;
