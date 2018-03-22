@@ -175,7 +175,6 @@
       'Linux Builder Goma Canary': 'release_bot',
       'Linux x64 Goma Canary (clobber)': 'release_bot',
       'Linux x64 Goma Canary LocalOutputCache': 'release_bot',
-      'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
 
       'mac-views-rel': 'mac_views_browser_release_bot',
       'Chromium Mac 10.11': 'release_bot',
@@ -347,6 +346,7 @@
       'Fuchsia x64 Cast Audio': 'release_bot_fuchsia_cast_audio',
       'Fuchsia x64': 'release_bot_fuchsia',
       'Ozone Linux': 'ozone_linux_release_bot',
+      'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
     },
 
     'chromium.lkgr': {
@@ -653,6 +653,7 @@
       'linux_site_isolation': 'release_trybot',
       'linux_upload_clang': 'release_bot',
       'linux_vr': 'vr_release_trybot',
+      'linux-gcc-rel': 'release_bot_x86_minimal_symbols_no_clang_cxx11',
     },
 
     'tryserver.chromium.mac': {
