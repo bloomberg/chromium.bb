@@ -39,6 +39,7 @@ import org.chromium.base.test.params.ParameterizedRunner;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
+import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
@@ -403,6 +404,7 @@ public class WebVrTransitionTest {
     @Test
     @MediumTest
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
+    @RetryOnFailure
     public void testWindowRafStopsFiringWhilePresenting() throws InterruptedException {
         windowRafStopsFiringWhilePresentingImpl(
                 VrTestFramework.getHtmlTestFile("test_window_raf_stops_firing_while_presenting"),
