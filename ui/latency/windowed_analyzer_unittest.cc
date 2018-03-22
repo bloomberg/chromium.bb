@@ -99,10 +99,11 @@ TEST(FrameMetricsWindowedAnalyzerTest, AllResultsTheSame) {
   // Try adding a single sample vs. multiple samples.
   for (size_t samples : {1u, 100u}) {
     // A power of 2 sweep for both the value and weight dimensions.
-    for (uint64_t value = 1; value < 0x100000000; value *= 2) {
+    for (uint64_t value = 1; value < 0x100000000ULL; value *= 2) {
       // Adding too many samples can result in overflow when multiplied by the
       // weight. Divide by samples to avoid overflow.
-      for (uint64_t weight = 1; weight < 0x100000000 / samples; weight *= 2) {
+      for (uint64_t weight = 1; weight < 0x100000000ULL / samples;
+           weight *= 2) {
         WindowedAnalyzer analyzer(&client, &shared_client);
         AddSamplesHelper(&analyzer, value, weight, samples);
         uint64_t expected_value =
