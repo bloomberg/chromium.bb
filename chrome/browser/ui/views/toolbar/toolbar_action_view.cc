@@ -11,11 +11,14 @@
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/themes/theme_properties.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/browser/ui/toolbar/toolbar_action_view_controller.h"
 #include "chrome/browser/ui/toolbar/toolbar_actions_bar.h"
 #include "chrome/browser/ui/view_ids.h"
+#include "chrome/browser/ui/views/toolbar/toolbar_ink_drop_util.h"
 #include "content/public/browser/notification_source.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/compositor/paint_recorder.h"
@@ -70,6 +73,9 @@ ToolbarActionView::ToolbarActionView(
   if (delegate_->ShownInsideMenu())
     SetFocusBehavior(FocusBehavior::ALWAYS);
 
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    set_ink_drop_visible_opacity(kTouchToolbarInkDropVisibleOpacity);
+
   UpdateState();
 }
 
@@ -117,11 +123,27 @@ bool ToolbarActionView::ShouldUseFloodFillInkDrop() const {
 }
 
 std::unique_ptr<views::InkDrop> ToolbarActionView::CreateInkDrop() {
-  std::unique_ptr<views::InkDropImpl> ink_drop =
-      Button::CreateDefaultInkDropImpl();
+  auto ink_drop = CreateToolbarInkDrop<MenuButton>(this);
   ink_drop->SetShowHighlightOnHover(!delegate_->ShownInsideMenu());
   ink_drop->SetShowHighlightOnFocus(true);
-  return std::move(ink_drop);
+  return ink_drop;
+}
+
+std::unique_ptr<views::InkDropRipple> ToolbarActionView::CreateInkDropRipple()
+    const {
+  return CreateToolbarInkDropRipple<MenuButton>(
+      this, GetInkDropCenterBasedOnLastEvent());
+}
+
+std::unique_ptr<views::InkDropHighlight>
+ToolbarActionView::CreateInkDropHighlight() const {
+  return CreateToolbarInkDropHighlight<MenuButton>(
+      this, GetMirroredRect(GetContentsBounds()).CenterPoint());
+}
+
+std::unique_ptr<views::InkDropMask> ToolbarActionView::CreateInkDropMask()
+    const {
+  return CreateToolbarInkDropMask<MenuButton>(this);
 }
 
 content::WebContents* ToolbarActionView::GetCurrentWebContents() const {
@@ -186,8 +208,7 @@ gfx::ImageSkia ToolbarActionView::GetIconForTest() {
 }
 
 gfx::Size ToolbarActionView::CalculatePreferredSize() const {
-  return gfx::Size(ToolbarActionsBar::IconWidth(false),
-                   ToolbarActionsBar::IconHeight());
+  return ToolbarActionsBar::GetViewSize();
 }
 
 bool ToolbarActionView::OnMousePressed(const ui::MouseEvent& event) {

@@ -82,12 +82,8 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
                     ToolbarActionsBar* main_bar);
   ~ToolbarActionsBar() override;
 
-  // Returns the width of a browser action icon, optionally including the
-  // following padding.
-  static int IconWidth(bool include_padding);
-
-  // Returns the height of a browser action icon.
-  static int IconHeight();
+  // Returns the size of ToolbarActionView.
+  static gfx::Size GetViewSize();
 
   // Registers profile preferences.
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
@@ -101,7 +97,7 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
   int GetMaximumWidth() const;
 
   // Returns the width for the given number of icons.
-  int IconCountToWidth(int icons) const;
+  int IconCountToWidth(size_t icons) const;
 
   // Returns the number of icons that can fit within the given width.
   size_t WidthToIconCount(int width) const;

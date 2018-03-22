@@ -50,8 +50,8 @@ ExtensionToolbarMenuView::ExtensionToolbarMenuView(
   // actions, we won't be able to show them all. Cap the height so that the
   // overflow won't be excessively tall (at 8 icons per row, this allows for
   // 104 total extensions).
-  const int kMaxOverflowRows = 13;
-  max_height_ = ToolbarActionsBar::IconHeight() * kMaxOverflowRows;
+  constexpr int kMaxOverflowRows = 13;
+  max_height_ = ToolbarActionsBar::GetViewSize().height() * kMaxOverflowRows;
   ClipHeightTo(0, max_height_);
 }
 

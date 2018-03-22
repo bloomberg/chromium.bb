@@ -115,6 +115,9 @@ enum LayoutInset {
 
   // The padding inside the border of a toolbar button (around the image).
   TOOLBAR_BUTTON,
+
+  // The padding inside the border of a toolbar action view button.
+  TOOLBAR_ACTION_VIEW,
 };
 
 enum LayoutSize {
