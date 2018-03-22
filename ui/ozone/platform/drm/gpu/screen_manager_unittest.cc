@@ -511,7 +511,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
       drm_, kPrimaryCrtc, kPrimaryConnector, GetPrimaryBounds().origin(),
       kDefaultMode);
 
-  EXPECT_EQ(buffer->GetFramebufferId(), drm_->current_framebuffer());
+  EXPECT_EQ(buffer->GetOpaqueFramebufferId(), drm_->current_framebuffer());
 
   window = screen_manager_->RemoveWindow(1);
   window->Shutdown();

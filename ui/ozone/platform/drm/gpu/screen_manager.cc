@@ -32,9 +32,9 @@ namespace {
 void FillModesetBuffer(const scoped_refptr<DrmDevice>& drm,
                        HardwareDisplayController* controller,
                        ScanoutBuffer* buffer) {
-  DrmConsoleBuffer modeset_buffer(drm, buffer->GetFramebufferId());
+  DrmConsoleBuffer modeset_buffer(drm, buffer->GetOpaqueFramebufferId());
   if (!modeset_buffer.Initialize()) {
-    VLOG(2) << "Failed to grab framebuffer " << buffer->GetFramebufferId();
+    VLOG(2) << "Failed to grab framebuffer " << buffer->GetOpaqueFramebufferId();
     return;
   }
 
