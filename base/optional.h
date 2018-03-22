@@ -153,7 +153,8 @@ struct OptionalStorage : OptionalStorageBase<T> {
       Init(other.value_);
   }
 
-  OptionalStorage(OptionalStorage&& other) {
+  OptionalStorage(OptionalStorage&& other) noexcept(
+      std::is_nothrow_move_constructible<T>::value) {
     if (other.is_populated_)
       Init(std::move(other.value_));
   }
@@ -172,7 +173,8 @@ struct OptionalStorage<T,
   OptionalStorage() = default;
   OptionalStorage(const OptionalStorage& other) = default;
 
-  OptionalStorage(OptionalStorage&& other) {
+  OptionalStorage(OptionalStorage&& other) noexcept(
+      std::is_nothrow_move_constructible<T>::value) {
     if (other.is_populated_)
       Init(std::move(other.value_));
   }

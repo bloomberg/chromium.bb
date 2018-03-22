@@ -2115,27 +2115,58 @@ TEST(OptionalTest, DontCallNewMemberFunction) {
 }
 
 TEST(OptionalTest, Noexcept) {
-  // non-noexcept move-constructible.
+  // Trivial copy ctor, non-trivial move ctor, nothrow move assign.
   struct Test1 {
+    Test1(const Test1&) = default;
     Test1(Test1&&) {}
     Test1& operator=(Test1&&) = default;
   };
-  // non-noexcept move-assignable.
+  // Non-trivial copy ctor, trivial move ctor, throw move assign.
   struct Test2 {
+    Test2(const Test2&) {}
     Test2(Test2&&) = default;
     Test2& operator=(Test2&&) { return *this; }
+  };
+  // Trivial copy ctor, non-trivial nothrow move ctor.
+  struct Test3 {
+    Test3(const Test3&) = default;
+    Test3(Test3&&) noexcept {}
+  };
+  // Non-trivial copy ctor, non-trivial nothrow move ctor.
+  struct Test4 {
+    Test4(const Test4&) {}
+    Test4(Test4&&) noexcept {}
+  };
+  // Non-trivial copy ctor, non-trivial move ctor.
+  struct Test5 {
+    Test5(const Test5&) {}
+    Test5(Test5&&) {}
   };
 
   static_assert(
       noexcept(Optional<int>(std::declval<Optional<int>>())),
-      "move constructor for noexcept move-constructible T must be noexcept");
+      "move constructor for noexcept move-constructible T must be noexcept "
+      "(trivial copy, trivial move)");
   static_assert(
       !noexcept(Optional<Test1>(std::declval<Optional<Test1>>())),
       "move constructor for non-noexcept move-constructible T must not be "
-      "noexcept");
+      "noexcept (trivial copy)");
   static_assert(
       noexcept(Optional<Test2>(std::declval<Optional<Test2>>())),
-      "move constructor for noexcept move-constructible T must be noexcept");
+      "move constructor for noexcept move-constructible T must be noexcept "
+      "(non-trivial copy, trivial move)");
+  static_assert(
+      noexcept(Optional<Test3>(std::declval<Optional<Test3>>())),
+      "move constructor for noexcept move-constructible T must be noexcept "
+      "(trivial copy, non-trivial move)");
+  static_assert(
+      noexcept(Optional<Test4>(std::declval<Optional<Test4>>())),
+      "move constructor for noexcept move-constructible T must be noexcept "
+      "(non-trivial copy, non-trivial move)");
+  static_assert(
+      !noexcept(Optional<Test5>(std::declval<Optional<Test5>>())),
+      "move constructor for non-noexcept move-constructible T must not be "
+      "noexcept (non-trivial copy)");
 
   static_assert(
       noexcept(std::declval<Optional<int>>() = std::declval<Optional<int>>()),
