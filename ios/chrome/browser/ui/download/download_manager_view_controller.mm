@@ -10,7 +10,6 @@
 #include "ios/chrome/browser/ui/download/download_manager_animation_constants.h"
 #import "ios/chrome/browser/ui/download/download_manager_state_view.h"
 #import "ios/chrome/browser/ui/download/radial_progress_view.h"
-#import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
@@ -30,10 +29,6 @@ GuideName* const kActionButtonGuide = @"kDownloadManagerActionButtonGuide";
 // A margin for every control element (status label, action button, close
 // button). Defines the minimal distance between elements.
 const CGFloat kElementMargin = 16;
-
-// Ideal download UI width if user interface has regular width. For compact
-// user interface width download UI will take full width of the superview.
-const CGFloat kPreferredWidthForRegularUIWidth = 500;
 
 // Returns formatted size string.
 NSString* GetSizeString(long long size_in_bytes) {
@@ -86,9 +81,9 @@ NSString* GetSizeString(long long size_in_bytes) {
 // deactivating the old constraint.
 @property(nonatomic) NSLayoutConstraint* bottomConstraint;
 
-// Represents constraint for self.view.widthAnchor, which can either be
-// constrained to superview's width or to kPreferredWidthForRegularUIWidth
-// constant. Stored in a property to allow deactivating the old constraint.
+// Represents constraint for self.view.widthAnchor, which is anchored to
+// superview with different multipliers depending on size class. Stored in a
+// property to allow deactivating the old constraint.
 @property(nonatomic) NSLayoutConstraint* widthConstraint;
 
 @end
@@ -135,7 +130,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   // self.view constraints.
   UIView* view = self.view;
   [self updateBottomConstraints];
-  [self updateWidthConstraints];
+  [self updateWidthConstraintsForTraitCollection:self.traitCollection];
 
   // shadow constraints.
   UIImageView* shadow = self.shadow;
@@ -275,10 +270,14 @@ NSString* GetSizeString(long long size_in_bytes) {
   ]];
 }
 
-- (void)viewWillTransitionToSize:(CGSize)size
-       withTransitionCoordinator:
-           (id<UIViewControllerTransitionCoordinator>)coordinator {
-  [self updateWidthConstraints];
+- (void)willTransitionToTraitCollection:(UITraitCollection*)newCollection
+              withTransitionCoordinator:
+                  (id<UIViewControllerTransitionCoordinator>)coordinator {
+  void (^alongsideBlock)(id<UIViewControllerTransitionCoordinatorContext>) =
+      ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+        [self updateWidthConstraintsForTraitCollection:newCollection];
+      };
+  [coordinator animateAlongsideTransition:alongsideBlock completion:nil];
 }
 
 #pragma mark - Public
@@ -565,29 +564,23 @@ NSString* GetSizeString(long long size_in_bytes) {
   self.bottomConstraint.active = YES;
 }
 
-// Updates and activates self.widthConstraint. self.widthConstraint
-// constraints self.view.widthAnchor to superview's width if user interface has
-// compact width or there is no room to use kPreferredWidthForRegularUIWidth.
-// Otherwise self.widthConstraint constraints self.view.widthAnchor to
-// kPreferredWidthForRegularUIWidth constant.
-- (void)updateWidthConstraints {
+// Updates and activates self.widthConstraint anchored to superview width. Uses
+// smaller multiplier for regular ui size class, because otherwise the bar will
+// be too wide.
+- (void)updateWidthConstraintsForTraitCollection:
+    (UITraitCollection*)traitCollection {
   self.widthConstraint.active = NO;
 
-  NSLayoutDimension* firstAnchor = self.view.widthAnchor;
-  CGFloat superviewWidth = self.view.superview.frame.size.width;
-  if (superviewWidth < kPreferredWidthForRegularUIWidth || IsCompactWidth()) {
-    // Superview is too narrow to accomodate kPreferredWidthForRegularUIWidth or
-    // user interface has compant width. In this case download view should
-    // occupy all superview width.
-    NSLayoutDimension* secondAnchor = self.view.superview.widthAnchor;
-    self.widthConstraint = [firstAnchor constraintEqualToAnchor:secondAnchor];
-  } else {
-    // Superview is wide enough to accomodate kPreferredWidthForRegularUIWidth
-    // or user interface has regular width. In this case download view width
-    // should be constant. Otherwise the UI will jhave too much blank space.
-    self.widthConstraint = [firstAnchor
-        constraintEqualToConstant:kPreferredWidthForRegularUIWidth];
-  }
+  // With regular horizontal size class, UI is too wide to take the full width,
+  // because there will be a lot of blank space.
+  CGFloat multiplier =
+      traitCollection.horizontalSizeClass == UIUserInterfaceSizeClassRegular
+          ? 0.6
+          : 1.0;
+
+  self.widthConstraint = [self.view.widthAnchor
+      constraintEqualToAnchor:self.view.superview.widthAnchor
+                   multiplier:multiplier];
 
   self.widthConstraint.active = YES;
 }
