@@ -31,6 +31,7 @@
 #include "chrome/browser/custom_handlers/protocol_handler_registry_factory.h"
 #include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/download/download_stats.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/language/language_model_factory.h"
 #include "chrome/browser/media/router/media_router_dialog_controller.h"
 #include "chrome/browser/media/router/media_router_feature.h"
@@ -500,25 +501,6 @@ void OnProfileCreated(const GURL& link_url,
     nav_params.window_action = NavigateParams::SHOW_WINDOW;
     Navigate(&nav_params);
   }
-}
-
-// Returns a Bookmark App that has |url| in its scope.
-const extensions::Extension* GetBookmarkAppForURL(
-    BrowserContext* browser_context,
-    const GURL& target_url) {
-  const extensions::ExtensionSet& enabled_extensions =
-      extensions::ExtensionRegistry::Get(browser_context)->enabled_extensions();
-  for (const auto extension : enabled_extensions) {
-    if (!extension->from_bookmark())
-      continue;
-
-    const extensions::UrlHandlerInfo* handler =
-        extensions::UrlHandlers::FindMatchingUrlHandler(extension.get(),
-                                                        target_url);
-    if (handler)
-      return extension.get();
-  }
-  return nullptr;
 }
 
 }  // namespace
@@ -1137,26 +1119,26 @@ void RenderViewContextMenu::AppendOpenWithLinkItems() {
 }
 
 void RenderViewContextMenu::AppendOpenInBookmarkAppLinkItems() {
-  const Extension* bookmark_app =
-      GetBookmarkAppForURL(browser_context_, params_.link_url);
-  if (!bookmark_app)
+  const Extension* pwa = extensions::util::GetInstalledPwaForUrl(
+      browser_context_, params_.link_url);
+  if (!pwa)
     return;
 
   int open_in_app_string_id;
   if (GetBrowser()->app_name() ==
-      web_app::GenerateApplicationNameFromExtensionId(bookmark_app->id())) {
+      web_app::GenerateApplicationNameFromExtensionId(pwa->id())) {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP_SAMEAPP;
   } else {
     open_in_app_string_id = IDS_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP;
   }
 
-  menu_model_.AddItem(IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
-                      l10n_util::GetStringFUTF16(
-                          open_in_app_string_id,
-                          base::ASCIIToUTF16(bookmark_app->short_name())));
+  menu_model_.AddItem(
+      IDC_CONTENT_CONTEXT_OPENLINKBOOKMARKAPP,
+      l10n_util::GetStringFUTF16(open_in_app_string_id,
+                                 base::ASCIIToUTF16(pwa->short_name())));
 
   MenuManager* menu_manager = MenuManager::Get(browser_context_);
-  gfx::Image icon = menu_manager->GetIconForExtension(bookmark_app->id());
+  gfx::Image icon = menu_manager->GetIconForExtension(pwa->id());
   menu_model_.SetIcon(menu_model_.GetItemCount() - 1, icon);
 }
 
@@ -2268,15 +2250,15 @@ bool RenderViewContextMenu::IsOpenLinkOTREnabled() const {
 }
 
 void RenderViewContextMenu::ExecOpenBookmarkApp() {
-  const extensions::Extension* bookmark_app =
-      GetBookmarkAppForURL(browser_context_, params_.link_url);
-  // |bookmark_app| could be null if it has been uninstalled since the user
+  const Extension* pwa = extensions::util::GetInstalledPwaForUrl(
+      browser_context_, params_.link_url);
+  // |pwa| could be null if it has been uninstalled since the user
   // opened the context menu.
-  if (!bookmark_app)
+  if (!pwa)
     return;
 
   AppLaunchParams launch_params(
-      GetProfile(), bookmark_app, extensions::LAUNCH_CONTAINER_WINDOW,
+      GetProfile(), pwa, extensions::LAUNCH_CONTAINER_WINDOW,
       WindowOpenDisposition::CURRENT_TAB, extensions::SOURCE_CONTEXT_MENU);
   launch_params.override_url = params_.link_url;
   OpenApplication(launch_params);

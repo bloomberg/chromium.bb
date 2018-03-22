@@ -6,6 +6,7 @@
 
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/web_applications/web_app.h"
@@ -28,32 +29,8 @@ bool IsWindowedBookmarkApp(const Extension* app,
   if (!app || !app->from_bookmark())
     return false;
 
-  if (GetLaunchContainer(extensions::ExtensionPrefs::Get(context), app) !=
-      LAUNCH_CONTAINER_WINDOW) {
-    return false;
-  }
-
-  return true;
-}
-
-scoped_refptr<const Extension> GetAppForURL(
-    const GURL& url,
-    const content::WebContents* web_contents) {
-  content::BrowserContext* context = web_contents->GetBrowserContext();
-  for (scoped_refptr<const extensions::Extension> app :
-       ExtensionRegistry::Get(context)->enabled_extensions()) {
-    if (!IsWindowedBookmarkApp(app.get(), context))
-      continue;
-
-    const UrlHandlerInfo* url_handler =
-        UrlHandlers::FindMatchingUrlHandler(app.get(), url);
-    if (!url_handler)
-      continue;
-
-    return app;
-  }
-
-  return nullptr;
+  return GetLaunchContainer(extensions::ExtensionPrefs::Get(context), app) ==
+         LAUNCH_CONTAINER_WINDOW;
 }
 
 }  // namespace
@@ -90,14 +67,19 @@ scoped_refptr<const Extension> GetAppForWindow(content::WebContents* source) {
 scoped_refptr<const Extension> GetTargetApp(content::WebContents* source,
                                             const GURL& target_url) {
   SCOPED_UMA_HISTOGRAM_TIMER("Extensions.BookmarkApp.GetTargetAppDuration");
-  return GetAppForURL(target_url, source);
+  return extensions::util::GetInstalledPwaForUrl(
+      source->GetBrowserContext(), target_url,
+      extensions::LAUNCH_CONTAINER_WINDOW);
 }
 
 scoped_refptr<const Extension> GetAppForMainFrameURL(
     content::WebContents* source) {
   SCOPED_UMA_HISTOGRAM_TIMER(
       "Extensions.BookmarkApp.GetAppForCurrentURLDuration");
-  return GetAppForURL(source->GetMainFrame()->GetLastCommittedURL(), source);
+  return extensions::util::GetInstalledPwaForUrl(
+      source->GetBrowserContext(),
+      source->GetMainFrame()->GetLastCommittedURL(),
+      extensions::LAUNCH_CONTAINER_WINDOW);
 }
 
 void OpenNewForegroundTab(content::NavigationHandle* navigation_handle) {

@@ -15,6 +15,7 @@
 #include "chrome/browser/banners/app_banner_manager.h"
 #include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_sync_service.h"
+#include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/permissions_updater.h"
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/api/url_handlers/url_handlers_parser.h"
 #include "chrome/common/extensions/sync_helper.h"
 #include "components/variations/variations_associated_data.h"
 #include "content/public/browser/site_instance.h"
@@ -327,6 +329,25 @@ bool CanHostedAppsOpenInWindows() {
 bool IsExtensionSupervised(const Extension* extension, Profile* profile) {
   return WasInstalledByCustodian(extension->id(), profile) &&
          profile->IsSupervised();
+}
+
+const Extension* GetInstalledPwaForUrl(
+    content::BrowserContext* context,
+    const GURL& url,
+    base::Optional<LaunchContainer> launch_container_filter) {
+  const ExtensionPrefs* prefs = ExtensionPrefs::Get(context);
+  for (scoped_refptr<const Extension> app :
+       ExtensionRegistry::Get(context)->enabled_extensions()) {
+    if (!app->from_bookmark())
+      continue;
+    if (launch_container_filter &&
+        GetLaunchContainer(prefs, app.get()) != *launch_container_filter) {
+      continue;
+    }
+    if (UrlHandlers::FindMatchingUrlHandler(app.get(), url))
+      return app.get();
+  }
+  return nullptr;
 }
 
 }  // namespace util
