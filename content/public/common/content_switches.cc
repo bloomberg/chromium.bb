@@ -574,6 +574,10 @@ const char kLogFile[] = "log-file";
 const char kMainFrameResizesAreOrientationChanges[] =
     "main-frame-resizes-are-orientation-changes";
 
+// Specifies the maximum disk cache size for the ApplicationCache. Default
+// value is 250MB.
+const char kMaxAppCacheDiskCacheSizeMb[] = "max-appcache-disk-cache-size-mb";
+
 // Sets the width and height above which a composited layer will get tiled.
 const char kMaxUntiledLayerHeight[]         = "max-untiled-layer-height";
 const char kMaxUntiledLayerWidth[]          = "max-untiled-layer-width";

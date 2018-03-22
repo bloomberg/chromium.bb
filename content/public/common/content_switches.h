@@ -171,6 +171,7 @@ CONTENT_EXPORT extern const char kLogGpuControlListDecisions[];
 CONTENT_EXPORT extern const char kLoggingLevel[];
 CONTENT_EXPORT extern const char kLogFile[];
 CONTENT_EXPORT extern const char kMainFrameResizesAreOrientationChanges[];
+extern const char kMaxAppCacheDiskCacheSizeMb[];
 extern const char kMaxUntiledLayerHeight[];
 extern const char kMaxUntiledLayerWidth[];
 CONTENT_EXPORT extern const char kMessageLoopTypeUi[];
