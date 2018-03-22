@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import android.view.View;
 
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.ContentPriority;
 
 /** A {@link BottomSheetContent} that displays contextual suggestions. */
 public class ContextualSuggestionsBottomSheetContent implements BottomSheetContent {
@@ -47,5 +48,10 @@ public class ContextualSuggestionsBottomSheetContent implements BottomSheetConte
     @Override
     public boolean applyDefaultTopPadding() {
         return false;
+    }
+
+    @Override
+    public @ContentPriority int getPriority() {
+        return ContentPriority.LOW;
     }
 }

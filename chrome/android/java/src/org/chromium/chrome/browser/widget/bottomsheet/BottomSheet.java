@@ -96,6 +96,14 @@ public class BottomSheet
         int NAVIGATION = 4;
     }
 
+    /** The different priorities that the sheet's content can have. */
+    @IntDef({ContentPriority.HIGH, ContentPriority.LOW})
+    @Retention(RetentionPolicy.SOURCE)
+    public @interface ContentPriority {
+        int HIGH = 0;
+        int LOW = 1;
+    }
+
     /**
      * The base duration of the settling animation of the sheet. 218 ms is a spec for material
      * design (this is the minimum time a user is guaranteed to pay attention to something).
@@ -278,6 +286,12 @@ public class BottomSheet
          * @return Whether the default top padding should be applied to the content view.
          */
         boolean applyDefaultTopPadding();
+
+        /**
+         * @return The priority of this content.
+         */
+        @ContentPriority
+        int getPriority();
     }
 
     /**
