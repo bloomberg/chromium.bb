@@ -214,7 +214,10 @@ bool HardwareDisplayPlaneManager::IsCompatible(HardwareDisplayPlane* plane,
   if (!plane->CanUseForCrtc(crtc_index))
     return false;
 
-  if (!plane->IsSupportedFormat(overlay.buffer->GetFramebufferPixelFormat()))
+  const uint32_t format = overlay.enable_blend ?
+      overlay.buffer->GetFramebufferPixelFormat() :
+      overlay.buffer->GetOpaqueFramebufferPixelFormat();
+  if (!plane->IsSupportedFormat(format))
     return false;
 
   // TODO(kalyank): We should check for z-order and any needed transformation

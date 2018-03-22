@@ -167,7 +167,7 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
   } else {
     plane_list->legacy_page_flips.back().planes.push_back(
         HardwareDisplayPlaneList::PageFlipInfo::Plane(
-            hw_plane->plane_id(), overlay.buffer->GetFramebufferId(),
+            hw_plane->plane_id(), overlay.buffer->GetOpaqueFramebufferId(),
             overlay.display_bounds, src_rect));
   }
   return true;
