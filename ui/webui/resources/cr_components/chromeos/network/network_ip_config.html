@@ -14,6 +14,7 @@
         [[i18n('networkIPConfigAuto')]]
       </div>
       <paper-toggle-button checked="{{automatic_}}" disabled="[[!editable]]"
+          on-change="onAutomaticChange_"
           aria-labelledby="autoIPConfigLabel">
       </paper-toggle-button>
     </div>

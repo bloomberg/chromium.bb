@@ -38,7 +38,6 @@ Polymer({
     automatic_: {
       type: Boolean,
       value: true,
-      observer: 'automaticChanged_',
     },
 
     /**
@@ -110,7 +109,7 @@ Polymer({
   },
 
   /** @private */
-  automaticChanged_: function() {
+  onAutomaticChange_: function() {
     if (!this.automatic_) {
       var defaultIpv4 = {
         Gateway: '192.168.1.1',
