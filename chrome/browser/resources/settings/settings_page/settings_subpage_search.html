@@ -57,7 +57,7 @@
         color: var(--paper-grey-800);
       }
 
-      #clearSearch {
+      #clearSearchContainer {
         -webkit-margin-end: -4px;
         -webkit-margin-start: 4px;
 
@@ -72,8 +72,8 @@
       <input id="searchInput" type="search" on-search="onSearchTermSearch"
           on-input="onSearchTermInput" aria-label$="[[label]]" incremental
           autofocus$="[[autofocus]]" placeholder="[[label]]" slot="input">
-      <paper-icon-button-light class="icon-cancel" hidden$="[[!hasSearchText]]"
-          slot="suffix">
+      <paper-icon-button-light id="clearSearchContainer" class="icon-cancel"
+          hidden$="[[!hasSearchText]]" slot="suffix">
         <button id="clearSearch" on-click="onTapClear_" title="[[clearLabel]]">
         </button>
       </paper-icon-button-light>
