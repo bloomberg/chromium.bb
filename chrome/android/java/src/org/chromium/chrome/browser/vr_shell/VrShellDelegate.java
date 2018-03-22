@@ -35,6 +35,7 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.ActivityState;
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.CollectionUtil;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.PackageUtils;
@@ -66,7 +67,9 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Manages interactions with the VR Shell.
@@ -121,6 +124,13 @@ public class VrShellDelegate
     private static final String GVR_KEYBOARD_PACKAGE_ID = "com.google.android.vr.inputmethod";
     private static final String GVR_KEYBOARD_MARKET_URI =
             "market://details?id=" + GVR_KEYBOARD_PACKAGE_ID;
+
+    private static final String SAMSUNG_GALAXY_PREFIX = "SM-";
+    private static final Set<String> SAMSUNG_GALAXY_8_MODELS =
+            Collections.unmodifiableSet(CollectionUtil.newHashSet("G950", "N950", "G955", "G892"));
+
+    private static final Set<String> SAMSUNG_GALAXY_8_ALT_MODELS = Collections.unmodifiableSet(
+            CollectionUtil.newHashSet("SC-02J", "SCV36", "SC-03J", "SCV35", "SC-01K", "SCV37"));
 
     // This value is intentionally probably overkill. This is the time we need to wait from when
     // Chrome is resumed, to when Chrome actually renders a black frame, so that we can cancel the
@@ -440,7 +450,7 @@ public class VrShellDelegate
                     registerVrAssetsComponentIfDaydreamUser(api.isDaydreamCurrentViewer());
                 }
                 if (ApplicationStatus.getStateForActivity(activity) == ActivityState.RESUMED
-                        && activitySupportsVrBrowsing(activity)) {
+                        && !willChangeDensityInVr(activity)) {
                     registerDaydreamIntent(api, activity);
                 }
                 api.close();
@@ -663,11 +673,15 @@ public class VrShellDelegate
         // Only enable ChromeVR (VrShell) on Daydream devices as it currently needs a Daydream
         // controller.
         if (vrSupportLevel != VrSupportLevel.VR_DAYDREAM) return false;
-        if (deviceChangesDensityInVr()) return false;
         return ChromeFeatureList.isEnabled(ChromeFeatureList.VR_BROWSING);
     }
 
-    private static boolean deviceChangesDensityInVr() {
+    // TODO(mthiesse): Should have package visibility only. We need to unify our vr and vr_shell
+    // packages.
+    public static boolean willChangeDensityInVr(ChromeActivity activity) {
+        // Only N+ support launching in VR at all, other OS versions don't care about this.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.N) return false;
+
         // If the screen density changed while in VR, we have to disable the VR browser as java UI
         // used or created by VR browsing will be broken.
         if (sInstance != null) {
@@ -675,9 +689,18 @@ public class VrShellDelegate
             if (sInstance.mVrSupportLevel != VrSupportLevel.VR_DAYDREAM) return false;
         }
 
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return false;
         Display display = DisplayAndroidManager.getDefaultDisplayForContext(
                 ContextUtils.getApplicationContext());
+        DisplayMetrics metrics = new DisplayMetrics();
+        display.getRealMetrics(metrics);
+
+        if (activity.getLastActiveDensity() != 0
+                && (int) activity.getLastActiveDensity() != metrics.densityDpi) {
+            return true;
+        }
+
+        if (!deviceCanChangeResolutionForVr()) return false;
+
         Display.Mode[] modes = display.getSupportedModes();
         // Devices with only one mode won't switch modes while in VR.
         if (modes.length <= 1) return false;
@@ -690,8 +713,6 @@ public class VrShellDelegate
         // We actually can't use display.getMode() to get the current mode as that just always
         // returns the same mode ignoring the override, so we just check that our current display
         // size is not equal to the vr mode size.
-        DisplayMetrics metrics = new DisplayMetrics();
-        display.getRealMetrics(metrics);
         if (vr_mode.getPhysicalWidth() != metrics.widthPixels
                 && vr_mode.getPhysicalWidth() != metrics.heightPixels) {
             return true;
@@ -701,6 +722,20 @@ public class VrShellDelegate
             return true;
         }
         return false;
+    }
+
+    private static boolean deviceCanChangeResolutionForVr() {
+        // Samsung devices no longer change density when entering VR on O+.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) return false;
+        String model = android.os.Build.MODEL;
+        if (SAMSUNG_GALAXY_8_ALT_MODELS.contains(model)) return true;
+
+        // Only Samsung devices change resolution in VR.
+        if (!model.startsWith(SAMSUNG_GALAXY_PREFIX)) return false;
+        CharSequence modelNumber = model.subSequence(3, 7);
+        // Only S8(+) and Note 8 models change resolution in VR.
+        if (!SAMSUNG_GALAXY_8_MODELS.contains(modelNumber)) return false;
+        return true;
     }
 
     /**
@@ -904,7 +939,7 @@ public class VrShellDelegate
 
     /* package */ boolean isVrBrowsingEnabled() {
         return isVrShellEnabled(mVrSupportLevel) && activitySupportsVrBrowsing(mActivity)
-                && isDaydreamCurrentViewer();
+                && isDaydreamCurrentViewer() && !willChangeDensityInVr(mActivity);
     }
 
     private void enterVr(final boolean tentativeWebVrMode) {
@@ -1072,7 +1107,7 @@ public class VrShellDelegate
                 return;
             }
             instance.onAutopresentIntent();
-        } else if (isVrShellEnabled(instance.mVrSupportLevel)) {
+        } else if (instance.isVrBrowsingEnabled()) {
             if (DEBUG_LOGS) Log.i(TAG, "onNewIntentWithNative: vr");
             instance.onVrIntent();
         } else {
@@ -1216,7 +1251,7 @@ public class VrShellDelegate
         // If vr shell is not enabled and this is not a web vr request, then return false.
         boolean presenting = mRequestedWebVr || mListeningForWebVrActivate
                 || (justCompletedDon && mListeningForWebVrActivateBeforePause) || mAutopresentWebVr;
-        if (!isVrShellEnabled(mVrSupportLevel) && !presenting) return false;
+        if (!isVrBrowsingEnabled() && !presenting) return false;
         return true;
     }
 
@@ -1367,7 +1402,7 @@ public class VrShellDelegate
         }
 
         if (mVrSupportLevel != VrSupportLevel.VR_DAYDREAM) return;
-        if (isVrShellEnabled(mVrSupportLevel) && activitySupportsVrBrowsing(mActivity)) {
+        if (isVrBrowsingEnabled()) {
             // Perform slow initialization asynchronously.
             new Handler().post(new Runnable() {
                 @Override
@@ -1385,14 +1420,11 @@ public class VrShellDelegate
 
         if (mEnterVrOnStartup) {
             // This means that Chrome was started with a VR intent, so we should enter VR.
-            // TODO(crbug.com/776235): VR intents are dispatched to ChromeActivity via a launcher
-            // which should handle the DON flow to simplify the logic in VrShellDelegate.
+            // TODO(crbug.com/776235): The launcher should ensure that the DON flow has been run
+            // prior to starting Chrome.
             assert !mProbablyInDon;
             if (DEBUG_LOGS) Log.i(TAG, "onResume: entering VR mode for VR intent");
-
-            if (enterVrInternal() == ENTER_VR_CANCELLED) {
-                cancelPendingVrEntry();
-            }
+            enterVrAfterDon();
         } else if (mDonSucceeded) {
             handleDonFlowSuccess();
         } else {
