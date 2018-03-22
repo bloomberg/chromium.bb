@@ -38,6 +38,8 @@ const char JSONReader::kUnsupportedEncoding[] =
     "Unsupported encoding. JSON must be UTF-8.";
 const char JSONReader::kUnquotedDictionaryKey[] =
     "Dictionary keys must be quoted.";
+const char JSONReader::kInputTooLarge[] =
+    "Input string is too large (>2GB).";
 
 JSONReader::JSONReader(int options, int max_depth)
     : parser_(new internal::JSONParser(options, max_depth)) {}
@@ -99,10 +101,13 @@ std::string JSONReader::ErrorCodeToString(JsonParseError error_code) {
       return kUnsupportedEncoding;
     case JSON_UNQUOTED_DICTIONARY_KEY:
       return kUnquotedDictionaryKey;
-    default:
-      NOTREACHED();
-      return std::string();
+    case JSON_TOO_LARGE:
+      return kInputTooLarge;
+    case JSON_PARSE_ERROR_COUNT:
+      break;
   }
+  NOTREACHED();
+  return std::string();
 }
 
 std::unique_ptr<Value> JSONReader::ReadToValue(StringPiece json) {

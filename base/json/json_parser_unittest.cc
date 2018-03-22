@@ -23,9 +23,8 @@ class JSONParserTest : public testing::Test {
   JSONParser* NewTestParser(const std::string& input,
                             int options = JSON_PARSE_RFC) {
     JSONParser* parser = new JSONParser(options);
-    parser->start_pos_ = input.data();
-    parser->pos_ = parser->start_pos_;
-    parser->end_pos_ = parser->start_pos_ + input.length();
+    parser->input_ = input;
+    parser->index_ = 0;
     return parser;
   }
 
@@ -41,10 +40,13 @@ class JSONParserTest : public testing::Test {
   }
 
   void TestLastThree(JSONParser* parser) {
-    EXPECT_EQ(',', *parser->NextChar());
-    EXPECT_EQ('|', *parser->NextChar());
-    EXPECT_EQ('\0', *parser->NextChar());
-    EXPECT_EQ(parser->end_pos_, parser->pos_);
+    parser->NextChar();
+    EXPECT_EQ(',', parser->current_char());
+    parser->NextChar();
+    EXPECT_EQ('|', parser->current_char());
+    parser->NextChar();
+    EXPECT_EQ('\0', *parser->pos());
+    EXPECT_EQ(static_cast<size_t>(parser->index_), parser->input_.length());
   }
 };
 
@@ -52,18 +54,21 @@ TEST_F(JSONParserTest, NextChar) {
   std::string input("Hello world");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
 
-  EXPECT_EQ('H', *parser->pos_);
+  EXPECT_EQ('H', *parser->pos());
   for (size_t i = 1; i < input.length(); ++i) {
-    EXPECT_EQ(input[i], *parser->NextChar());
+    parser->NextChar();
+    EXPECT_EQ(input[i], parser->current_char());
   }
-  EXPECT_EQ(parser->end_pos_, parser->NextChar());
+  parser->NextChar();
+  EXPECT_EQ('\0', *parser->pos());
+  EXPECT_EQ(static_cast<size_t>(parser->index_), parser->input_.length());
 }
 
 TEST_F(JSONParserTest, ConsumeString) {
   std::string input("\"test\",|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
   Optional<Value> value(parser->ConsumeString());
-  EXPECT_EQ('"', *parser->pos_);
+  EXPECT_EQ('"', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -77,7 +82,7 @@ TEST_F(JSONParserTest, ConsumeList) {
   std::string input("[true, false],|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
   Optional<Value> value(parser->ConsumeList());
-  EXPECT_EQ(']', *parser->pos_);
+  EXPECT_EQ(']', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -91,7 +96,7 @@ TEST_F(JSONParserTest, ConsumeDictionary) {
   std::string input("{\"abc\":\"def\"},|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
   Optional<Value> value(parser->ConsumeDictionary());
-  EXPECT_EQ('}', *parser->pos_);
+  EXPECT_EQ('}', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -108,7 +113,7 @@ TEST_F(JSONParserTest, ConsumeLiterals) {
   std::string input("true,|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
   Optional<Value> value(parser->ConsumeLiteral());
-  EXPECT_EQ('e', *parser->pos_);
+  EXPECT_EQ('e', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -121,7 +126,7 @@ TEST_F(JSONParserTest, ConsumeLiterals) {
   input = "false,|";
   parser.reset(NewTestParser(input));
   value = parser->ConsumeLiteral();
-  EXPECT_EQ('e', *parser->pos_);
+  EXPECT_EQ('e', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -133,7 +138,7 @@ TEST_F(JSONParserTest, ConsumeLiterals) {
   input = "null,|";
   parser.reset(NewTestParser(input));
   value = parser->ConsumeLiteral();
-  EXPECT_EQ('l', *parser->pos_);
+  EXPECT_EQ('l', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -146,7 +151,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   std::string input("1234,|");
   std::unique_ptr<JSONParser> parser(NewTestParser(input));
   Optional<Value> value(parser->ConsumeNumber());
-  EXPECT_EQ('4', *parser->pos_);
+  EXPECT_EQ('4', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -159,7 +164,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   input = "-1234,|";
   parser.reset(NewTestParser(input));
   value = parser->ConsumeNumber();
-  EXPECT_EQ('4', *parser->pos_);
+  EXPECT_EQ('4', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -171,7 +176,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   input = "12.34,|";
   parser.reset(NewTestParser(input));
   value = parser->ConsumeNumber();
-  EXPECT_EQ('4', *parser->pos_);
+  EXPECT_EQ('4', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -184,7 +189,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   input = "42e3,|";
   parser.reset(NewTestParser(input));
   value = parser->ConsumeNumber();
-  EXPECT_EQ('3', *parser->pos_);
+  EXPECT_EQ('3', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -196,7 +201,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   input = "314159e-5,|";
   parser.reset(NewTestParser(input));
   value = parser->ConsumeNumber();
-  EXPECT_EQ('5', *parser->pos_);
+  EXPECT_EQ('5', *parser->pos());
 
   TestLastThree(parser.get());
 
@@ -208,7 +213,7 @@ TEST_F(JSONParserTest, ConsumeNumbers) {
   input = "0.42e+3,|";
   parser.reset(NewTestParser(input));
   value = parser->ConsumeNumber();
-  EXPECT_EQ('3', *parser->pos_);
+  EXPECT_EQ('3', *parser->pos());
 
   TestLastThree(parser.get());
 
