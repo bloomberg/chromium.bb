@@ -943,6 +943,8 @@ group("generate_mojo_bindings") {
     # variant of the generated files.
     ":core_mojo_bindings__generator",
     ":core_mojo_bindings_blink__generator",
+    ":media_devices_mojo_bindings__generator",
+    ":media_devices_mojo_bindings_blink__generator",
     ":mojo_bindings__generator",
     ":mojo_bindings_blink__generator",
     ":offscreen_canvas_mojo_bindings_blink__generator",
