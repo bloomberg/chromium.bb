@@ -275,25 +275,29 @@ CORB decides whether a response needs protection (i.e. if a response is a JSON,
 HTML or XML resource) based on the following:
 
 * If the response contains `X-Content-Type-Options: nosniff` response header,
-  or if the response is a 206 response, then the response will be CORB-protected
+  then the response will be CORB-protected
   if its `Content-Type` header is one of the following:
   * [HTML MIME type](https://mimesniff.spec.whatwg.org/#html-mime-type)
   * [XML MIME type](https://mimesniff.spec.whatwg.org/#xml-mime-type)
     (except `image/svg+xml` which is CORB-exempt as described above)
-  * JSON MIME type - one of `text/json`, `text/json+*`, `text/x-json`,
-    `text/x-json+*`, `application/json`, `application/json+*` or `*+json`
+  * [JSON MIME type](https://mimesniff.spec.whatwg.org/#json-mime-type)
   * `text/plain`
 
-> [lukasza@chromium.org] Maybe `text/plain` should be allowed if sniffing is not
-> possible - this would avoid the potentially troublesome and not-yet-understood
-> blocking reported in some media contexts.
+* If the response is a 206 response,
+  then the response will be CORB-protected
+  if its `Content-Type` header is one of the following:
+  * [HTML MIME type](https://mimesniff.spec.whatwg.org/#html-mime-type)
+  * [XML MIME type](https://mimesniff.spec.whatwg.org/#xml-mime-type)
+    (except `image/svg+xml` which is CORB-exempt as described above)
+  * [JSON MIME type](https://mimesniff.spec.whatwg.org/#json-mime-type)
 
 * Otherwise, CORB attempts to sniff the response body:
   * [HTML MIME type](https://mimesniff.spec.whatwg.org/#html-mime-type)
     that sniffs as HTML is CORB-protected
   * [XML MIME type](https://mimesniff.spec.whatwg.org/#xml-mime-type)
     (except `image/svg+xml`) that sniffs as XML is CORB-protected
-  * JSON MIME type that sniffs as JSON is CORB-protected
+  * [JSON MIME type](https://mimesniff.spec.whatwg.org/#json-mime-type)
+    that sniffs as JSON is CORB-protected
   * `text/plain` that sniffs as JSON, HTML or XML is CORB-protected
   * Any response (except `text/css`) that begins with
     [a JSON security prefix](https://www.owasp.org/index.php/AJAX_Security_Cheat_Sheet#Protect_against_JSON_Hijacking_for_Older_Browsers)
@@ -398,12 +402,6 @@ HTML's `<canvas>`, etc.
 
 Audio and video resources should see similar impact as images, though 206
 responses are more likely to occur for media.
-
-> [lukasza@chromium.org] Decide what to do with 206s:
-> - html + nosniff = block
-> - html + 206 = block
-> - text/plain + nosniff = block?
-> - text/plain + 206 = allow?
 
 ### Observable CORB impact on scripts
 
@@ -736,8 +734,7 @@ spec.
       * [HTML MIME type](https://mimesniff.spec.whatwg.org/#html-mime-type)
       * [XML MIME type](https://mimesniff.spec.whatwg.org/#xml-mime-type)
         (except `image/svg+xml` which is CORB-exempt, per rules above)
-      * JSON MIME type - one of `text/json`, `text/json+*`, `text/x-json`,
-        `text/x-json+*`, `application/json`, `application/json+*` or `*+json`
+      * [JSON MIME type](https://mimesniff.spec.whatwg.org/#json-mime-type)
       * `text/plain`
 
 * Sniffing to confirm the Content-Type of the response
@@ -755,6 +752,6 @@ spec.
       then CORB SHOULD allow the response
       if it doesn't
       [sniff as XML](https://mimesniff.spec.whatwg.org/#rules-for-identifying-an-unknown-mime-type).
-    * If Content-Type is "JSON MIME type" (see above),
+    * If Content-Type is [JSON MIME type](https://mimesniff.spec.whatwg.org/#json-mime-type),
       then CORB SHOULD allow the response
       if it doesn't sniff as JSON.  TODO: define "sniff as JSON".
