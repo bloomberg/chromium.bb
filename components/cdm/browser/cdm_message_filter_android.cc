@@ -20,7 +20,7 @@
 #include "media/base/audio_codecs.h"
 #include "media/base/media_switches.h"
 #include "media/base/video_codecs.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 using media::MediaDrmBridge;
 using media::SupportedCodecs;

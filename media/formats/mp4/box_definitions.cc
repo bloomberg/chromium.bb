@@ -16,7 +16,7 @@
 #include "media/base/video_util.h"
 #include "media/formats/mp4/es_descriptor.h"
 #include "media/formats/mp4/rcheck.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "third_party/libaom/av1_features.h"
 
 #if BUILDFLAG(USE_PROPRIETARY_CODECS)

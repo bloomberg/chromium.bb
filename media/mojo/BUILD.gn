@@ -6,8 +6,8 @@ import("//build/buildflag_header.gni")
 import("//media/media_options.gni")
 import("//testing/test.gni")
 
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
 
   enable_mojo_renderer = false
   enable_mojo_cdm = false

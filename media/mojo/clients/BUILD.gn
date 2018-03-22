@@ -56,7 +56,7 @@ source_set("clients") {
   public_deps = [
     "//base",
     "//media",
-    "//media/mojo:features",
+    "//media/mojo:buildflags",
     "//media/mojo/interfaces",
     "//mojo/public/cpp/bindings",
     "//mojo/public/cpp/system",

@@ -4,7 +4,7 @@
 
 #include "chrome/browser/media/cdm_storage_id_key.h"
 
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if !BUILDFLAG(ENABLE_CDM_STORAGE_ID)
 #error This should only be compiled if "enable_cdm_storage_id" specified.

@@ -8,7 +8,7 @@
 #include <stdint.h>
 #include <string>
 #include "media/base/media_export.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ui/gfx/color_space.h"
 
 namespace media {

@@ -22,7 +22,7 @@
 #include "content/public/browser/content_browser_client.h"
 #include "content/public/common/resource_type.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ppapi/features/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"

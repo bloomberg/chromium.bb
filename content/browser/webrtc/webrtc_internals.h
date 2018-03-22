@@ -18,7 +18,7 @@
 #include "base/values.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "services/device/public/mojom/wake_lock.mojom.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 

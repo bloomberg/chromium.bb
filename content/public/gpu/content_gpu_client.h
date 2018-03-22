@@ -11,7 +11,7 @@
 #include "base/metrics/field_trial.h"
 #include "base/single_thread_task_runner.h"
 #include "content/public/common/content_client.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
 
 namespace gpu {

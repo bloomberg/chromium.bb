@@ -20,7 +20,7 @@
 #include "base/strings/string_util.h"
 #include "chrome/grit/theme_resources.h"
 #include "content/public/browser/browser_thread.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"

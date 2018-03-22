@@ -12,7 +12,7 @@
 #include "content/child/service_factory.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "media/base/android_overlay_mojo_factory.h"
-#include "media/mojo/features.h"
+#include "media/mojo/buildflags.h"
 
 namespace media {
 class MediaGpuChannelManager;

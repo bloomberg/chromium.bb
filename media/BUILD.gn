@@ -13,8 +13,8 @@ import("//testing/libfuzzer/fuzzer_test.gni")
 import("//testing/test.gni")
 import("//third_party/ffmpeg/ffmpeg_options.gni")
 
-buildflag_header("media_features") {
-  header = "media_features.h"
+buildflag_header("media_buildflags") {
+  header = "media_buildflags.h"
 
   flags = [
     "ALTERNATE_CDM_STORAGE_ID_KEY=$alternate_cdm_storage_id_key",
@@ -103,7 +103,7 @@ component("media") {
   public_configs = [ "//third_party/libwebm:libwebm_config" ]
   public_deps = media_subcomponent_deps
   public_deps += [
-    ":media_features",
+    ":media_buildflags",
     ":shared_memory_support",
     "//ui/gfx:color_space",
   ]

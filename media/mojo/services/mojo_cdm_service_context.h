@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/services/media_mojo_export.h"
 
 namespace media {

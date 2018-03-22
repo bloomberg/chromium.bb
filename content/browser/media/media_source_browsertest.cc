@@ -8,7 +8,7 @@
 #include "content/browser/media/media_browsertest.h"
 #include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "base/android/build_info.h"

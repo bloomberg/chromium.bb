@@ -20,7 +20,7 @@
 #include "content/public/common/bind_interface_helpers.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "ipc/ipc_sender.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "ui/gfx/native_widget_types.h"
 
 #if defined(OS_ANDROID)

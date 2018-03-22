@@ -33,7 +33,7 @@
 #include "extensions/common/switches.h"
 #include "google_apis/gaia/gaia_switches.h"
 #include "media/base/media_switches.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "services/network/public/cpp/network_switches.h"
 #include "services/service_manager/sandbox/switches.h"
 #include "ui/base/l10n/l10n_util.h"

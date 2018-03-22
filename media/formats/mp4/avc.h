@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "media/base/media_export.h"
 #include "media/formats/mp4/bitstream_converter.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 

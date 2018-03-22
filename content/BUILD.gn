@@ -100,7 +100,7 @@ if (is_component_build) {
     set_sources_assignment_filter(sources_assignment_filter)
     deps = [
       "//base",
-      "//media:media_features",
+      "//media:media_buildflags",
       "//sandbox:sandbox_features",
       "//sandbox/linux:sandbox",
       "//services/service_manager/sandbox",

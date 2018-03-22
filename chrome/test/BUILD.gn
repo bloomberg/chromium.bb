@@ -156,7 +156,7 @@ static_library("test_support") {
     "//google_apis:test_support",
     "//gpu/ipc/service",
     "//ipc:test_support",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//net",
     "//net:test_support",
     "//pdf",
@@ -362,7 +362,7 @@ test("browser_tests") {
     "//components/spellcheck:buildflags",
     "//components/sync:test_support_model",
     "//extensions/buildflags",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//net:test_support",
     "//ppapi/features",
     "//printing/features",
@@ -5440,7 +5440,7 @@ if (!is_android && !is_fuchsia) {
     # differently if possible).
     deps = [
       "//base/test:test_support_perf",
-      "//media:media_features",
+      "//media:media_buildflags",
       "//testing/gtest",
       "//testing/perf",
       "//third_party/widevine/cdm:headers",

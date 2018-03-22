@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "build/buildflag.h"
 #include "content/public/common/content_switches.h"
-#include "media/gpu/features.h"
+#include "media/gpu/buildflags.h"
 #include "sandbox/linux/bpf_dsl/policy.h"
 #include "sandbox/linux/syscall_broker/broker_command.h"
 #include "sandbox/linux/syscall_broker/broker_file_permission.h"

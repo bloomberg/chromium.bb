@@ -172,7 +172,7 @@ viz_component("service") {
     # dependency should not be in public_deps.
     "//gpu/ipc/client",
     "//gpu/ipc/service",
-    "//gpu/vulkan:features",
+    "//gpu/vulkan:buildflags",
     "//media",
     "//media/capture:capture_lib",
     "//media/gpu/ipc/service",

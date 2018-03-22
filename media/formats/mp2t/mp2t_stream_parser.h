@@ -21,7 +21,7 @@
 #include "media/base/stream_parser.h"
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp2t/timestamp_unroller.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 

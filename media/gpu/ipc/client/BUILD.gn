@@ -15,7 +15,7 @@ source_set("client") {
     "//gpu/ipc/common",
     "//ipc",
     "//media",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//media/gpu",
     "//media/gpu/ipc/common",
     "//ui/gfx:memory_buffer",

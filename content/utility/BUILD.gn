@@ -36,7 +36,7 @@ jumbo_source_set("utility") {
     "//content/child",
     "//content/public/child:child_sources",
     "//content/public/common:common_sources",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//mojo/common",
     "//mojo/public/cpp/bindings",
     "//net:net_with_v8",
@@ -62,7 +62,7 @@ jumbo_source_set("utility") {
   if (enable_library_cdms) {
     deps += [
       "//media",
-      "//media/mojo:features",
+      "//media/mojo:buildflags",
       "//media/mojo/interfaces:constants",
       "//media/mojo/services",
     ]

@@ -17,7 +17,7 @@
 #include "media/base/media_switches.h"
 #include "media/filters/gpu_memory_buffer_decoder_wrapper.h"
 #include "media/filters/gpu_video_decoder.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/renderers/audio_renderer_impl.h"
 #include "media/renderers/renderer_impl.h"
 #include "media/renderers/video_renderer_impl.h"

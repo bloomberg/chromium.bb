@@ -30,7 +30,7 @@
 #include "content/public/browser/notification_service.h"
 #include "content/public/common/network_connection_tracker.h"
 #include "extensions/buildflags/buildflags.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "printing/features/features.h"
 #include "testing/gtest/include/gtest/gtest.h"

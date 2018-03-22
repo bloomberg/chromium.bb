@@ -22,7 +22,7 @@ include_rules = [
   "+gpu",
   "+jni",
   # Only this one header in media which doesn't depend on anything else.
-  "+media/media_features.h",
+  "+media/media_buildflags.h",
   "+net",
   "+services/network/public/cpp",
   "+services/viz/public/interfaces",

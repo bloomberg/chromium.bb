@@ -59,7 +59,7 @@
 #include "media/base/audio_capturer_source.h"
 #include "media/base/audio_parameters.h"
 #include "media/capture/video_capturer_source.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "net/base/filename_util.h"
 #include "net/base/net_errors.h"
 #include "services/service_manager/public/cpp/binder_registry.h"

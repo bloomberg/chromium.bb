@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "components/viz/common/gpu/vulkan_in_process_context_provider.h"
-#include "gpu/vulkan/features.h"
+#include "gpu/vulkan/buildflags.h"
 
 #if BUILDFLAG(ENABLE_VULKAN)
 #include "gpu/vulkan/vulkan_device_queue.h"

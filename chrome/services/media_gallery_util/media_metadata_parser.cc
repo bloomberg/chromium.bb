@@ -13,7 +13,7 @@
 #include "base/threading/thread.h"
 #include "media/base/data_source.h"
 #include "media/filters/audio_video_metadata_extractor.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "net/base/mime_sniffer.h"
 
 namespace MediaGalleries = extensions::api::media_galleries;

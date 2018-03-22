@@ -866,7 +866,7 @@ static_library("extensions") {
     "//extensions/common/api",
     "//extensions/strings",
     "//google_apis",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//net",
     "//ppapi/features",
     "//printing/features",

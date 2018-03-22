@@ -9,8 +9,8 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "media/base/media_switches.h"
+#include "media/gpu/buildflags.h"
 #include "media/gpu/fake_jpeg_decode_accelerator.h"
-#include "media/gpu/features.h"
 
 #if BUILDFLAG(USE_V4L2_CODEC) && defined(ARCH_CPU_ARM_FAMILY)
 #define USE_V4L2_JDA

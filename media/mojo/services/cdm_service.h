@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/mojo/interfaces/cdm_service.mojom.h"
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/services/media_mojo_export.h"

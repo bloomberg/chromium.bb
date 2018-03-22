@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "third_party/libaom/av1_features.h"
 
 namespace media {

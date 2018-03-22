@@ -6,7 +6,7 @@
 
 #include "base/logging.h"
 #include "media/base/eme_constants.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace cdm {
 

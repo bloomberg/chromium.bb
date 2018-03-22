@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "media/base/test_data_util.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "media/test/pipeline_integration_test_base.h"
 #include "testing/perf/perf_test.h"
 

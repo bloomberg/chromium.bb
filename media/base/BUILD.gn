@@ -279,7 +279,7 @@ source_set("base") {
   defines = []
   public_deps = [
     ":video_facing",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//media:shared_memory_support",
     "//ui/gfx:color_space",
   ]

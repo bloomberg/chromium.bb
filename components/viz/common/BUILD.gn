@@ -168,7 +168,7 @@ viz_component("common") {
     "//gpu/command_buffer/service",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/skia_bindings:skia_bindings",
-    "//gpu/vulkan:features",
+    "//gpu/vulkan:buildflags",
     "//mojo/public/cpp/bindings",
     "//skia",
     "//third_party/libyuv",

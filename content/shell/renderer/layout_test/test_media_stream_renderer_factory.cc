@@ -5,7 +5,7 @@
 #include "content/shell/renderer/layout_test/test_media_stream_renderer_factory.h"
 
 #include "content/shell/renderer/layout_test/test_media_stream_video_renderer.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "third_party/WebKit/public/platform/WebMediaStream.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/web/WebMediaStreamRegistry.h"

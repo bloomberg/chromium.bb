@@ -28,7 +28,7 @@
 #include "media/cdm/library_cdm/clear_key_cdm/cdm_host_proxy_impl.h"
 #include "media/cdm/library_cdm/clear_key_cdm/cdm_proxy_test.h"
 #include "media/cdm/library_cdm/clear_key_cdm/cdm_video_decoder.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
 #include "base/at_exit.h"

@@ -6,7 +6,7 @@
 
 #include "base/macros.h"
 #include "media/cdm/cenc_utils.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace cdm {
 

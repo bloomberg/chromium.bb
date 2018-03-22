@@ -269,7 +269,7 @@ static_library("content_shell_lib") {
     "//gpu",
     "//media",
     "//media/capture",
-    "//media/mojo:features",
+    "//media/mojo:buildflags",
     "//net",
     "//net:net_resources",
     "//net:test_support",

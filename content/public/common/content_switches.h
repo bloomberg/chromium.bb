@@ -9,7 +9,7 @@
 
 #include "build/build_config.h"
 #include "content/common/content_export.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace switches {
 

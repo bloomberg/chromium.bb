@@ -142,7 +142,7 @@ static_library("renderer") {
     "//content/public/renderer",
     "//extensions/buildflags",
     "//media",
-    "//media:media_features",
+    "//media:media_buildflags",
     "//media/capture",
     "//mojo/public/cpp/bindings",
     "//net",
@@ -203,7 +203,7 @@ static_library("renderer") {
     deps += [
       "//components/pdf/renderer",
       "//components/strings",
-      "//media:media_features",
+      "//media:media_buildflags",
       "//ppapi/host",
       "//ppapi/proxy",
       "//ppapi/proxy:ipc",

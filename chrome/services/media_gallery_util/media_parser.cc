@@ -6,7 +6,7 @@
 
 #include "chrome/services/media_gallery_util/ipc_data_source.h"
 #include "chrome/services/media_gallery_util/media_metadata_parser.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 #if BUILDFLAG(ENABLE_FFMPEG)
 #include "media/filters/media_file_checker.h"

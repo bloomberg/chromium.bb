@@ -44,7 +44,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/ffmpeg/ffmpeg_deleters.h"
 #include "media/filters/blocking_url_protocol.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 // FFmpeg forward declarations.
 struct AVFormatContext;

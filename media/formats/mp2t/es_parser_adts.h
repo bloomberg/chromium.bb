@@ -20,7 +20,7 @@
 #include "media/base/media_export.h"
 #include "media/formats/mp2t/es_parser.h"
 #include "media/formats/mpeg/adts_stream_parser.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 class AudioTimestampHelper;

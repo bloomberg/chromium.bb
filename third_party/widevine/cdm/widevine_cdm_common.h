@@ -5,7 +5,7 @@
 #ifndef WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_
 #define WIDEVINE_CDM_WIDEVINE_CDM_COMMON_H_
 
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 // This file defines constants common to all Widevine CDM versions.
 

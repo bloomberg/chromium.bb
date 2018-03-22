@@ -27,7 +27,7 @@
 #include "media/base/media_switches.h"
 #include "media/base/mock_filters.h"
 #include "media/cdm/cdm_module.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"

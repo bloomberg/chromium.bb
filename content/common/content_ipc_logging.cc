@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 
-#include "ipc/ipc_features.h"
+#include "ipc/ipc_buildflags.h"
 
 #if BUILDFLAG(IPC_MESSAGE_LOG_ENABLED)
 #define IPC_MESSAGE_MACROS_LOG_ENABLED

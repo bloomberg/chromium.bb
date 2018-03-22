@@ -19,7 +19,7 @@
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp2t/es_adapter_video.h"
 #include "media/formats/mp2t/es_parser.h"
-#include "media/media_features.h"
+#include "media/media_buildflags.h"
 
 namespace media {
 class EncryptionScheme;
