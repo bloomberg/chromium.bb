@@ -29,8 +29,8 @@ ActivityLogPolicy::ActivityLogPolicy(Profile* profile) {}
 
 ActivityLogPolicy::~ActivityLogPolicy() {}
 
-void ActivityLogPolicy::SetClockForTesting(std::unique_ptr<base::Clock> clock) {
-  testing_clock_ = std::move(clock);
+void ActivityLogPolicy::SetClockForTesting(base::Clock* clock) {
+  testing_clock_ = clock;
 }
 
 base::Time ActivityLogPolicy::Now() const {

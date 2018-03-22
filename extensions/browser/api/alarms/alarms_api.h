@@ -34,10 +34,6 @@ class AlarmsCreateFunction : public AsyncExtensionFunction {
   void Callback();
 
   base::Clock* const clock_;
-  // Whether or not we own |clock_|. This is needed because we own it
-  // when we create it ourselves, but not when it's passed in for
-  // testing.
-  bool owns_clock_;
 };
 
 class AlarmsGetFunction : public AsyncExtensionFunction {

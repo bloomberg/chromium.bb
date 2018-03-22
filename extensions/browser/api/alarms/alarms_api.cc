@@ -80,17 +80,12 @@ bool ValidateAlarmCreateInfo(const std::string& alarm_name,
 }  // namespace
 
 AlarmsCreateFunction::AlarmsCreateFunction()
-    : clock_(new base::DefaultClock()), owns_clock_(true) {
-}
+    : clock_(base::DefaultClock::GetInstance()) {}
 
 AlarmsCreateFunction::AlarmsCreateFunction(base::Clock* clock)
-    : clock_(clock), owns_clock_(false) {
-}
+    : clock_(clock) {}
 
-AlarmsCreateFunction::~AlarmsCreateFunction() {
-  if (owns_clock_)
-    delete clock_;
-}
+AlarmsCreateFunction::~AlarmsCreateFunction() {}
 
 bool AlarmsCreateFunction::RunAsync() {
   std::unique_ptr<alarms::Create::Params> params(
