@@ -1273,10 +1273,10 @@ copy("cronet_package_copy") {
 
 template("copy_java8_jars") {
   _deps = []
-  foreach(dep, invoker.deps) {
-    _dep_name = get_label_info(dep, "name")
+  foreach(_dep, invoker.deps) {
+    _dep_name = get_label_info(_dep, "name")
     _source_jar =
-        get_label_info(dep, "target_gen_dir") + "/" + _dep_name + ".javac.jar"
+        get_label_info(_dep, "target_gen_dir") + "/" + _dep_name + ".javac.jar"
     _output_jar = "$_package_dir/" + _dep_name + ".jar"
 
     # cronet_api.jar is a special case. Its file name is
@@ -1285,7 +1285,10 @@ template("copy_java8_jars") {
       _output_jar = "$_package_dir/" + "cronet_api.jar"
     }
 
-    _copy_target_name = "${target_name}_${dep}"
+    # _deps have targets which match the java target whitelist. Add a
+    # trailing X to avoid the copy() target matching the whitelist.
+    # See _java_target_whitelist in build/config/android/internal_rules.gni.
+    _copy_target_name = "${target_name}_${_dep_name}X"
     copy(_copy_target_name) {
       sources = [
         _source_jar,
@@ -1298,15 +1301,6 @@ template("copy_java8_jars") {
       ]
     }
 
-    # _copy_target_name includes ${dep} which includes "_java", so in turn
-    # _copy_target_name contains "_java" which triggers
-    # build/config/android/internal_rules.gni whitelist of target names that
-    # must have build_configs, so emit one here.
-    write_build_config("${_copy_target_name}__build_config") {
-      build_config = "$target_gen_dir/$_copy_target_name.build_config"
-      type = "group"
-    }
-
     _deps += [ ":" + _copy_target_name ]
   }
 
@@ -1315,7 +1309,7 @@ template("copy_java8_jars") {
   }
 }
 
-copy_java8_jars("copy_cronet_java8_java") {
+copy_java8_jars("copy_cronet_java8_jars") {
   deps = [
     ":cronet_api_java",
     ":cronet_impl_platform_java",
@@ -1446,7 +1440,7 @@ copy("cronet_package_copy_resources") {
 android_java_prebuilt("package_api_java") {
   jar_path = "$_package_dir/cronet_api.jar"
   deps = [
-    ":copy_cronet_java8_java_:cronet_api_java",
+    ":copy_cronet_java8_jars_cronet_api_javaX",
   ]
 }
 
@@ -1544,7 +1538,7 @@ group("cronet_package") {
       (!(target_cpu == "arm" && arm_version == 7) || !arm_use_neon)) {
     deps = [
       ":api_static_checks",
-      ":copy_cronet_java8_java",
+      ":copy_cronet_java8_jars",
       ":cronet_package_copy",
       ":cronet_package_copy_native_lib",
       ":cronet_package_copy_native_lib_unstripped",
