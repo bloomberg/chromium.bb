@@ -19,7 +19,7 @@ namespace media {
 
 // Helps convert CdmPromises to an integer identifier and vice versa. The
 // integer identifier is needed where we cannot pass CdmPromises through, such
-// as PPAPI, IPC and JNI.
+// as IPC and JNI.
 class MEDIA_EXPORT CdmPromiseAdapter {
  public:
   CdmPromiseAdapter();

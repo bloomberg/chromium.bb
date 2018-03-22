@@ -8,7 +8,6 @@ include_rules = [
   "+gpu",
   "+jni",
   "+mojo/public/cpp/bindings/callback_helpers.h",
-  "+ppapi/features",
   "+skia/ext",
   "+third_party/ffmpeg",
   "+third_party/libaom",

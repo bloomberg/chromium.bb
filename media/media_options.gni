@@ -5,9 +5,6 @@
 import("//build/config/chrome_build.gni")
 import("//build/config/chromecast_build.gni")
 import("//build/config/features.gni")
-
-# TODO(xhwang): Remove this once pepper CDM support is removed.
-import("//ppapi/features/features.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
 
 # Do not expand this list without double-checking with OWNERS, this is a list of
@@ -124,8 +121,7 @@ declare_args() {
 # Enables the use of library CDMs that implements the interface defined at
 # media/cdm/api/content_decryption_module.h. If true, the actually library CDM
 # will be hosted in the mojo CDM service running in the CDM (utility) process.
-# TODO(xhwang): Remove |enable_plugins| once pepper CDM support is removed.
-enable_library_cdms = enable_plugins && (is_linux || is_mac || is_win)
+enable_library_cdms = (is_linux && !is_chromecast) || is_mac || is_win
 
 declare_args() {
   # Experiment to enable mojo media services (e.g. "renderer", "cdm", see
