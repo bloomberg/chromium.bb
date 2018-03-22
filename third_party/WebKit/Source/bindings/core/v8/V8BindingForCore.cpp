@@ -43,7 +43,6 @@
 #include "bindings/core/v8/WindowProxy.h"
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "bindings/core/v8/custom/V8CustomXPathNSResolver.h"
-#include "build/build_config.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/QualifiedName.h"
