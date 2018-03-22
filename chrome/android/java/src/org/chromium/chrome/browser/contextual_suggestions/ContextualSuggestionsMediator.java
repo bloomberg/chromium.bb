@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.List;
 
 /**
  * A mediator for the contextual suggestions UI component responsible for interacting with
@@ -120,16 +121,20 @@ class ContextualSuggestionsMediator {
                          suggestions.size() + " suggestions fetched", Toast.LENGTH_SHORT)
                     .show();
 
-            if (suggestions.size() > 0) {
-                mModel.setSuggestions(suggestions);
-                mCoordinator.displaySuggestions();
-            };
+            if (suggestions.size() > 0) displaySuggestions(suggestions);
         });
     }
 
     private void clearSuggestions() {
         mModel.setSuggestions(new ArrayList<SnippetArticle>());
+        mModel.setCloseButtonOnClickListener(null);
         mCoordinator.removeSuggestions();
+    }
+
+    private void displaySuggestions(List<SnippetArticle> suggestions) {
+        mModel.setSuggestions(suggestions);
+        mModel.setCloseButtonOnClickListener(view -> { clearSuggestions(); });
+        mCoordinator.displaySuggestions();
     }
 
     private boolean isContextTheSame(String newUrl) {

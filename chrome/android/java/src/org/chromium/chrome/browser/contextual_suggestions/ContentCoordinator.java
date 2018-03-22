@@ -19,7 +19,7 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
 
 /**
  * Coordinator for the content sub-component. Responsible for communication with the parent
- * {@link ContextualSuggestionsCoordinator} and lifecycle of component objects.
+ * {@link ContextualSuggestionsCoordinator} and lifecycle of sub-component objects.
  */
 class ContentCoordinator {
     private final ContextualSuggestionsModel mModel;
@@ -49,7 +49,7 @@ class ContentCoordinator {
         mRecyclerView.setAdapter(adapter);
 
         mModelChangeProcessor = new RecyclerViewModelChangeProcessor<>(adapter);
-        mModel.addObserver(mModelChangeProcessor);
+        mModel.mSuggestionsList.addObserver(mModelChangeProcessor);
     }
 
     /** @return The content {@link View}. */
@@ -64,12 +64,8 @@ class ContentCoordinator {
 
     /** Destroy the content component. */
     void destroy() {
-        if (mRecyclerView == null) return;
-
-        mRecyclerView.setAdapter(null);
-        mRecyclerView = null;
-
-        mModel.removeObserver(mModelChangeProcessor);
-        mModelChangeProcessor = null;
+        // The model outlives the content sub-component. Remove the observer so that this object
+        // can be garbage collected.
+        mModel.mSuggestionsList.removeObserver(mModelChangeProcessor);
     }
 }
