@@ -100,6 +100,8 @@ promise_test(() => {
     sampleRate: { ideal: 42, min: 31, max: 54 },
     sampleSize: 3,
     echoCancellation: { ideal: false, exact: true },
+    autoGainControl: { ideal: false, exact: true },
+    noiseSuppression: { ideal: false, exact: true },
     latency: 0.22,
     channelCount: 2,
     deviceId: { ideal: ["foo", "fooz"] },
@@ -174,10 +176,20 @@ constraintSyntaxTestWithChange(
 constraintSyntaxTest('Both Ideal and Exact string',
                      { facingMode: { ideal: "user6", exact: "left6" }});
 
-constraintSyntaxTest('Simple boolean', { echoCancellation: true });
-constraintSyntaxTest('Ideal boolean', { echoCancellation: { ideal: true }});
-constraintSyntaxTestWithChange('Exact unwrapped boolean',
+constraintSyntaxTest('echoCancellation with simple boolean value', { echoCancellation: true });
+constraintSyntaxTest('echoCancellation with ideal boolean value', { echoCancellation: { ideal: true }});
+constraintSyntaxTestWithChange('echoCancellation with exact unwrapped boolean value',
     { echoCancellation: { exact: true } }, { echoCancellation: true });
+
+constraintSyntaxTest('autoGainControl with simple boolean value', { autoGainControl: true });
+constraintSyntaxTest('autoGainControl with ideal boolean value', { autoGainControl: { ideal: true }});
+constraintSyntaxTestWithChange('autoGainControl with exact unwrapped boolean value',
+    { autoGainControl: { exact: true } }, { autoGainControl: true });
+
+constraintSyntaxTest('noiseSuppression with simple boolean value', { noiseSuppression: true });
+constraintSyntaxTest('noiseSuppression with ideal boolean value', { noiseSuppression: { ideal: true }});
+constraintSyntaxTestWithChange('noiseSuppression with exact unwrapped boolean value',
+    { noiseSuppression: { exact: true } }, { noiseSuppression: true });
 
 </script>
 </body>
