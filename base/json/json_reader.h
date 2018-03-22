@@ -71,6 +71,7 @@ class BASE_EXPORT JSONReader {
     JSON_UNEXPECTED_DATA_AFTER_ROOT,
     JSON_UNSUPPORTED_ENCODING,
     JSON_UNQUOTED_DICTIONARY_KEY,
+    JSON_TOO_LARGE,
     JSON_PARSE_ERROR_COUNT
   };
 
@@ -83,6 +84,7 @@ class BASE_EXPORT JSONReader {
   static const char kUnexpectedDataAfterRoot[];
   static const char kUnsupportedEncoding[];
   static const char kUnquotedDictionaryKey[];
+  static const char kInputTooLarge[];
 
   // Constructs a reader.
   JSONReader(int options = JSON_PARSE_RFC, int max_depth = kStackMaxDepth);

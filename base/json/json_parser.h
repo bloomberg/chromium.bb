@@ -101,25 +101,15 @@ class BASE_EXPORT JSONParser {
 
     StringBuilder& operator=(StringBuilder&& other);
 
-    // Either increases the |length_| of the string or copies the character if
-    // the StringBuilder has been converted. |c| must be in the basic ASCII
-    // plane; all other characters need to be in UTF-8 units, appended with
-    // AppendString below.
-    void Append(const char& c);
-
-    // Appends a string to the std::string. Must be Convert()ed to use.
-    void AppendString(const char* str, size_t len);
+    // Appends the Unicode code point |point| to the string, either by
+    // increasing the |length_| of the string if the string has not been
+    // converted, or by appending the UTF8 bytes for the code point.
+    void Append(uint32_t point);
 
     // Converts the builder from its default StringPiece to a full std::string,
     // performing a copy. Once a builder is converted, it cannot be made a
     // StringPiece again.
     void Convert();
-
-    // Returns the builder as a StringPiece.
-    StringPiece AsStringPiece();
-
-    // Returns the builder as a std::string.
-    const std::string& AsString();
 
     // Returns the builder as a string, invalidating all state. This allows
     // the internal string buffer representation to be destructively moved
@@ -141,12 +131,17 @@ class BASE_EXPORT JSONParser {
   // Quick check that the stream has capacity to consume |length| more bytes.
   bool CanConsume(int length);
 
-  // The basic way to consume a single character in the stream. Consumes one
-  // byte of the input stream and returns a pointer to the rest of it.
-  const char* NextChar();
+  // Consumes one byte of the input stream by advancing the parser's position.
+  void NextChar();
 
   // Performs the equivalent of NextChar N times.
   void NextNChars(int n);
+
+  // Returns a pointer to the current character position.
+  const char* pos();
+
+  // Returns the character at the current position.
+  char current_char();
 
   // Skips over whitespace and comments to find the next token in the stream.
   // This does not advance the parser for non-whitespace or comment chars.
@@ -185,13 +180,8 @@ class BASE_EXPORT JSONParser {
   // Helper function for ConsumeStringRaw() that consumes the next four or 10
   // bytes (parser is wound to the first character of a HEX sequence, with the
   // potential for consuming another \uXXXX for a surrogate). Returns true on
-  // success and places the UTF8 code units in |dest_string|, and false on
-  // failure.
-  bool DecodeUTF16(std::string* dest_string);
-  // Helper function for ConsumeStringRaw() that takes a single code point,
-  // decodes it into UTF-8 units, and appends it to the given builder. The
-  // point must be valid.
-  void DecodeUTF8(const int32_t& point, StringBuilder* dest);
+  // success and places the code point |out_code_point|, and false on failure.
+  bool DecodeUTF16(uint32_t* out_code_point);
 
   // Assuming that the parser is wound to the start of a valid JSON number,
   // this parses and converts it to either an int or double value.
@@ -204,8 +194,11 @@ class BASE_EXPORT JSONParser {
   // parser is wound to the first character of any of those.
   Optional<Value> ConsumeLiteral();
 
-  // Compares two string buffers of a given length.
-  static bool StringsAreEqual(const char* left, const char* right, size_t len);
+  // Helper function that returns true if the byte squence |match| can be
+  // consumed at the current parser position. Returns false if there are fewer
+  // than |match|-length bytes or if the sequence does not match, and the
+  // parser state is unchanged.
+  bool ConsumeIfMatch(StringPiece match);
 
   // Sets the error information to |code| at the current column, based on
   // |index_| and |index_last_line_|, with an optional positive/negative
@@ -223,15 +216,8 @@ class BASE_EXPORT JSONParser {
   // Maximum depth to parse.
   const int max_depth_;
 
-  // Pointer to the start of the input data.
-  const char* start_pos_;
-
-  // Pointer to the current position in the input data. Equivalent to
-  // |start_pos_ + index_|.
-  const char* pos_;
-
-  // Pointer to the last character of the input data.
-  const char* end_pos_;
+  // The input stream being parsed. Note: Not guaranteed to NUL-terminated.
+  StringPiece input_;
 
   // The index in the input stream to which the parser is wound.
   int index_;
