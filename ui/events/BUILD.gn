@@ -384,6 +384,8 @@ if (!is_ios) {
       "blink/fling_booster_unittest.cc",
       "blink/input_handler_proxy_unittest.cc",
       "blink/input_scroll_elasticity_controller_unittest.cc",
+      "blink/snap_fling_controller_unittest.cc",
+      "blink/snap_fling_curve_unittest.cc",
       "blink/web_input_event_traits_unittest.cc",
       "blink/web_input_event_unittest.cc",
       "cocoa/events_mac_unittest.mm",

@@ -16,6 +16,7 @@
 #include "third_party/WebKit/public/web/WebActiveFlingParameters.h"
 #include "ui/events/blink/blink_features.h"
 #include "ui/events/blink/input_scroll_elasticity_controller.h"
+#include "ui/events/blink/snap_fling_controller.h"
 #include "ui/events/blink/synchronous_input_handler_proxy.h"
 #include "ui/events/blink/web_input_event_traits.h"
 
@@ -51,7 +52,8 @@ struct DidOverscrollParams;
 // events intended for a specific WebWidget.
 class InputHandlerProxy : public cc::InputHandlerClient,
                           public SynchronousInputHandlerProxy,
-                          public blink::WebGestureCurveTarget {
+                          public blink::WebGestureCurveTarget,
+                          public SnapFlingClient {
  public:
   InputHandlerProxy(cc::InputHandler* input_handler,
                     InputHandlerProxyClient* client,
@@ -113,6 +115,14 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   // blink::WebGestureCurveTarget implementation.
   bool ScrollBy(const blink::WebFloatSize& offset,
                 const blink::WebFloatSize& velocity) override;
+
+  // SnapFlingClient implementation.
+  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
+                        gfx::Vector2dF* initial_offset,
+                        gfx::Vector2dF* target_offset) const override;
+  gfx::Vector2dF ScrollByForSnapFling(const gfx::Vector2dF& delta) override;
+  void ScrollEndForSnapFling() override;
+  void RequestAnimationForSnapFling() override;
 
   bool gesture_scroll_on_impl_thread_for_testing() const {
     return gesture_scroll_on_impl_thread_;
@@ -263,6 +273,8 @@ class InputHandlerProxy : public cc::InputHandlerClient,
   base::TickClock* tick_clock_;
 
   std::unique_ptr<FlingBooster> fling_booster_;
+
+  std::unique_ptr<SnapFlingController> snap_fling_controller_;
 
   DISALLOW_COPY_AND_ASSIGN(InputHandlerProxy);
 };

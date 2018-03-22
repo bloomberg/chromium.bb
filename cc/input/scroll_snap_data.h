@@ -167,9 +167,10 @@ class CC_EXPORT SnapContainerData {
     return !(*this == other);
   }
 
-  gfx::ScrollOffset FindSnapPosition(const gfx::ScrollOffset& current_position,
-                                     bool should_snap_on_x,
-                                     bool should_snap_on_y) const;
+  bool FindSnapPosition(const gfx::ScrollOffset& current_position,
+                        bool should_snap_on_x,
+                        bool should_snap_on_y,
+                        gfx::ScrollOffset* snap_position) const;
 
   void AddSnapAreaData(SnapAreaData snap_area_data);
   size_t size() const { return snap_area_list_.size(); }

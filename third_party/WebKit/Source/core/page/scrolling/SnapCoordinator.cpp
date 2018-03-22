@@ -422,10 +422,12 @@ FloatPoint SnapCoordinator::GetSnapPositionForPoint(
   if (!data.size())
     return point;
 
-  gfx::ScrollOffset position = data.FindSnapPosition(
-      gfx::ScrollOffset(point.X(), point.Y()), did_scroll_x, did_scroll_y);
-
-  return FloatPoint(position.x(), position.y());
+  gfx::ScrollOffset snap_position;
+  if (data.FindSnapPosition(gfx::ScrollOffset(point.X(), point.Y()),
+                            did_scroll_x, did_scroll_y, &snap_position)) {
+    return FloatPoint(snap_position.x(), snap_position.y());
+  }
+  return point;
 }
 
 void SnapCoordinator::PerformSnapping(const LayoutBox& snap_container,

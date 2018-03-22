@@ -596,6 +596,10 @@ class CC_EXPORT LayerTreeHostImpl
 
   virtual bool IsUIResourceOpaque(UIResourceId uid) const;
 
+  bool GetSnapFlingInfo(const gfx::Vector2dF& natural_displacement,
+                        gfx::Vector2dF* initial_offset,
+                        gfx::Vector2dF* target_offset) const override;
+
   // Returns the amount of delta that can be applied to scroll_node, taking
   // page scale into account.
   gfx::Vector2dF ComputeScrollDelta(const ScrollNode& scroll_node,
