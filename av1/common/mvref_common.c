@@ -1080,9 +1080,9 @@ static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
       col >= (cm->mi_cols >> 1))
     return 0;
 
-  if (row <= base_blk_row - (MAX_OFFSET_HEIGHT >> 3) ||
+  if (row < base_blk_row - (MAX_OFFSET_HEIGHT >> 3) ||
       row >= base_blk_row + 8 + (MAX_OFFSET_HEIGHT >> 3) ||
-      col <= base_blk_col - (MAX_OFFSET_WIDTH >> 3) ||
+      col < base_blk_col - (MAX_OFFSET_WIDTH >> 3) ||
       col >= base_blk_col + 8 + (MAX_OFFSET_WIDTH >> 3))
     return 0;
 
