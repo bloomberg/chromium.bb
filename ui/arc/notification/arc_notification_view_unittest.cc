@@ -4,6 +4,8 @@
 
 #include <memory>
 
+#include "ash/shell.h"
+#include "ash/test/ash_test_base.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
@@ -163,16 +165,14 @@ class TestTextInputClient : public ui::DummyTextInputClient {
 
 }  // namespace
 
-class ArcNotificationViewTest : public views::ViewsTestBase {
+class ArcNotificationViewTest : public ash::AshTestBase {
  public:
   ArcNotificationViewTest() = default;
   ~ArcNotificationViewTest() override = default;
 
   // views::ViewsTestBase
   void SetUp() override {
-    views::ViewsTestBase::SetUp();
-
-    MessageCenter::Initialize();
+    ash::AshTestBase::SetUp();
 
     const std::string notification_id("notification id");
     item_ = std::make_unique<MockArcNotificationItem>(notification_id);
@@ -193,19 +193,24 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
     UpdateNotificationViews();
 
     views::Widget::InitParams init_params(
-        CreateParams(views::Widget::InitParams::TYPE_POPUP));
+        views::Widget::InitParams::TYPE_WINDOW_FRAMELESS);
+    init_params.context = CurrentContext();
+    init_params.parent = ash::Shell::GetPrimaryRootWindow()->GetChildById(
+        ash::kShellWindowId_DefaultContainer);
+    init_params.ownership =
+        views::Widget::InitParams::WIDGET_OWNS_NATIVE_WIDGET;
     views::Widget* widget = new views::Widget();
     widget->Init(init_params);
     widget->SetContentsView(notification_view_.get());
     widget->SetSize(notification_view_->GetPreferredSize());
     widget->Show();
+    EXPECT_EQ(widget, notification_view_->GetWidget());
   }
 
   void TearDown() override {
     widget()->Close();
     notification_view_.reset();
-    views::ViewsTestBase::TearDown();
-    MessageCenter::Shutdown();
+    ash::AshTestBase::TearDown();
   }
 
   SkColor GetBackgroundColor() const {
@@ -253,10 +258,8 @@ class ArcNotificationViewTest : public views::ViewsTestBase {
   }
 
   void DispatchGesture(const ui::GestureEventDetails& details) {
-    ui::test::EventGenerator generator(
-        notification_view()->GetWidget()->GetNativeWindow());
-    ui::GestureEvent event(0, 0, 0, ui::EventTimeForNow(), details);
-    generator.Dispatch(&event);
+    ui::GestureEvent event2(0, 0, 0, ui::EventTimeForNow(), details);
+    widget()->OnGestureEvent(&event2);
   }
 
   void BeginScroll() {
@@ -320,6 +323,7 @@ TEST_F(ArcNotificationViewTest, SlideOut) {
   std::string notification_id = notification()->id();
 
   BeginScroll();
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-10);
   EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
@@ -328,6 +332,7 @@ TEST_F(ArcNotificationViewTest, SlideOut) {
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-200);
   EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
@@ -343,6 +348,7 @@ TEST_F(ArcNotificationViewTest, SlideOutNested) {
   std::string notification_id = notification()->id();
 
   BeginScroll();
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-10);
   EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(-10.f, GetNotificationSlideAmount());
@@ -351,6 +357,7 @@ TEST_F(ArcNotificationViewTest, SlideOutNested) {
   EXPECT_EQ(0.f, GetNotificationSlideAmount());
 
   BeginScroll();
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-200);
   EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_EQ(-200.f, GetNotificationSlideAmount());
@@ -371,10 +378,12 @@ TEST_F(ArcNotificationViewTest, SlideOutPinned) {
   std::string notification_id = notification()->id();
 
   BeginScroll();
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
   ScrollBy(-200);
   EXPECT_FALSE(IsRemoved(notification_id));
   EXPECT_LT(-200.f, GetNotificationSlideAmount());
   EndScroll();
+  EXPECT_EQ(0.f, GetNotificationSlideAmount());
   EXPECT_FALSE(IsRemoved(notification_id));
 }
 
