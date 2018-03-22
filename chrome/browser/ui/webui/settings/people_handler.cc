@@ -383,7 +383,7 @@ void PeopleHandler::DisplayTimeout() {
 void PeopleHandler::OnDidClosePage(const base::ListValue* args) {
   // Don't mark setup as complete if "didAbort" is true, or if authentication
   // is still needed.
-  if (!args->GetList()[0].GetBool() && !IsProfileAuthNeeded()) {
+  if (!args->GetList()[0].GetBool() && !IsProfileAuthNeededOrHasErrors()) {
     MarkFirstSetupComplete();
   }
 
@@ -623,7 +623,10 @@ void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
     return;
   }
 
-  if (IsProfileAuthNeeded()) {
+  // This if-statement is not using IsProfileAuthNeededOrHasErrors(), because
+  // in some error cases (e.g. "confirmSyncSettings") the UI still needs to
+  // show.
+  if (!SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated()) {
     // For web-based signin, the signin page is not displayed in an overlay
     // on the settings page. So if we get here, it must be due to the user
     // cancelling signin (by reloading the sync settings page during initial
@@ -683,7 +686,7 @@ void PeopleHandler::HandleStartSignin(const base::ListValue* args) {
 
   // Should only be called if the user is not already signed in or has an auth
   // error.
-  DCHECK(IsProfileAuthNeeded());
+  DCHECK(IsProfileAuthNeededOrHasErrors());
 
   DisplayGaiaLogin(signin_metrics::AccessPoint::ACCESS_POINT_SETTINGS);
 }
@@ -884,7 +887,7 @@ PeopleHandler::GetSyncStatusDictionary() {
 void PeopleHandler::PushSyncPrefs() {
 #if !defined(OS_CHROMEOS)
   // Early exit if the user has not signed in yet.
-  if (IsProfileAuthNeeded())
+  if (IsProfileAuthNeededOrHasErrors())
     return;
 #endif
 
@@ -1015,7 +1018,7 @@ void PeopleHandler::MarkFirstSetupComplete() {
   FireWebUIListener("sync-settings-saved");
 }
 
-bool PeopleHandler::IsProfileAuthNeeded() {
+bool PeopleHandler::IsProfileAuthNeededOrHasErrors() {
   return !SigninManagerFactory::GetForProfile(profile_)->IsAuthenticated() ||
          SigninErrorControllerFactory::GetForProfile(profile_)->HasError();
 }

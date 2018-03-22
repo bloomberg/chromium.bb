@@ -213,7 +213,7 @@ class PeopleHandler : public SettingsPageUIHandler,
   void MarkFirstSetupComplete();
 
   // True if profile needs authentication before sync can run.
-  bool IsProfileAuthNeeded();
+  bool IsProfileAuthNeededOrHasErrors();
 
   // If we're directly loading the sync setup page, we acquire a
   // SetupInProgressHandle early in order to prevent a lapse in
