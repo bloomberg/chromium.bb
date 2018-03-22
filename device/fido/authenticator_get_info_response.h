@@ -24,8 +24,7 @@ namespace device {
 // https://fidoalliance.org/specs/fido-v2.0-rd-20170927/fido-client-to-authenticator-protocol-v2.0-rd-20170927.html#authenticatorGetInfo
 class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
  public:
-  AuthenticatorGetInfoResponse(CtapDeviceResponseCode response_code,
-                               std::vector<std::string> versions,
+  AuthenticatorGetInfoResponse(std::vector<std::string> versions,
                                std::vector<uint8_t> aaguid);
   AuthenticatorGetInfoResponse(AuthenticatorGetInfoResponse&& that);
   AuthenticatorGetInfoResponse& operator=(AuthenticatorGetInfoResponse&& other);
@@ -39,7 +38,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   AuthenticatorGetInfoResponse& SetOptions(
       AuthenticatorSupportedOptions options);
 
-  CtapDeviceResponseCode response_code() const { return response_code_; }
   const std::vector<std::string>& versions() { return versions_; }
   const std::vector<uint8_t>& aaguid() const { return aaguid_; }
   const base::Optional<uint8_t>& max_msg_size() const { return max_msg_size_; }
@@ -54,7 +52,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   }
 
  private:
-  CtapDeviceResponseCode response_code_;
   std::vector<std::string> versions_;
   std::vector<uint8_t> aaguid_;
   base::Optional<uint8_t> max_msg_size_;

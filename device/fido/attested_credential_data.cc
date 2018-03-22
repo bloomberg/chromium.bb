@@ -4,13 +4,61 @@
 
 #include "device/fido/attested_credential_data.h"
 
+#include <stddef.h>
+
 #include <utility>
 
 #include "base/numerics/safe_math.h"
+#include "device/fido/opaque_public_key.h"
 #include "device/fido/public_key.h"
 #include "device/fido/u2f_parsing_utils.h"
 
 namespace device {
+
+namespace {
+
+constexpr size_t kAaguidLength = 16;
+
+// Number of bytes used to represent length of credential ID.
+constexpr size_t kCredentialIdLengthLength = 2;
+
+}  // namespace
+
+// static
+base::Optional<AttestedCredentialData>
+AttestedCredentialData::DecodeFromCtapResponse(
+    base::span<const uint8_t> buffer) {
+  if (buffer.size() < kAaguidLength + kCredentialIdLengthLength)
+    return base::nullopt;
+
+  auto aaguid = u2f_parsing_utils::Extract(buffer, 0, kAaguidLength);
+  auto credential_id_length_span = u2f_parsing_utils::ExtractSpan(
+      buffer, kAaguidLength, kCredentialIdLengthLength);
+
+  if (aaguid.empty() || credential_id_length_span.empty())
+    return base::nullopt;
+
+  static_assert(kCredentialIdLengthLength == 2u, "L must be 2 bytes");
+  const size_t credential_id_length =
+      credential_id_length_span[0] << 8 | credential_id_length_span[1];
+
+  auto credential_id = u2f_parsing_utils::Extract(
+      buffer, kAaguidLength + kCredentialIdLengthLength, credential_id_length);
+  if (credential_id.empty())
+    return base::nullopt;
+
+  DCHECK_LE(kAaguidLength + kCredentialIdLengthLength + credential_id_length,
+            buffer.size());
+  auto credential_public_key_data =
+      std::make_unique<OpaquePublicKey>(buffer.subspan(
+          kAaguidLength + kCredentialIdLengthLength + credential_id_length));
+
+  return AttestedCredentialData(
+      std::move(aaguid),
+      std::vector<uint8_t>(credential_id_length_span.begin(),
+                           credential_id_length_span.end()),
+      std::move(credential_id), std::move(credential_public_key_data));
+}
 
 // static
 base::Optional<AttestedCredentialData>
@@ -62,6 +110,10 @@ AttestedCredentialData& AttestedCredentialData::operator=(
     AttestedCredentialData&& other) = default;
 
 AttestedCredentialData::~AttestedCredentialData() = default;
+
+void AttestedCredentialData::DeleteAaguid() {
+  aaguid_ = std::vector<uint8_t>(kAaguidLength, 0);
+}
 
 std::vector<uint8_t> AttestedCredentialData::SerializeAsBytes() const {
   std::vector<uint8_t> attestation_data;

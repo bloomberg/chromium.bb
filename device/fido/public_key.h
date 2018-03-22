@@ -24,6 +24,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKey {
   virtual std::vector<uint8_t> EncodeAsCOSEKey() const = 0;
 
  protected:
+  PublicKey();
   explicit PublicKey(std::string algorithm);
 
   const std::string algorithm_;

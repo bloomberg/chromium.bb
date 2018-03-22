@@ -230,13 +230,14 @@ base::Optional<std::vector<uint8_t>> ProcessAppIdExtension(
 }
 
 webauth::mojom::MakeCredentialAuthenticatorResponsePtr
-CreateMakeCredentialResponse(const std::string& client_data_json,
-                             device::RegisterResponseData response_data) {
+CreateMakeCredentialResponse(
+    const std::string& client_data_json,
+    device::AuthenticatorMakeCredentialResponse response_data) {
   auto response = webauth::mojom::MakeCredentialAuthenticatorResponse::New();
   auto common_info = webauth::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
                                        client_data_json.end());
-  common_info->raw_id = response_data.raw_id();
+  common_info->raw_id = response_data.raw_credential_id();
   common_info->id = response_data.GetId();
   response->info = std::move(common_info);
   response->attestation_object =
@@ -246,19 +247,22 @@ CreateMakeCredentialResponse(const std::string& client_data_json,
 
 webauth::mojom::GetAssertionAuthenticatorResponsePtr CreateGetAssertionResponse(
     const std::string& client_data_json,
-    device::SignResponseData response_data,
+    device::AuthenticatorGetAssertionResponse response_data,
     bool echo_appid_extension) {
   auto response = webauth::mojom::GetAssertionAuthenticatorResponse::New();
   auto common_info = webauth::mojom::CommonCredentialInfo::New();
   common_info->client_data_json.assign(client_data_json.begin(),
                                        client_data_json.end());
-  common_info->raw_id = response_data.raw_id();
+  common_info->raw_id = response_data.raw_credential_id();
   common_info->id = response_data.GetId();
   response->info = std::move(common_info);
-  response->authenticator_data = response_data.GetAuthenticatorDataBytes();
+  response->authenticator_data =
+      response_data.auth_data().SerializeToByteArray();
   response->signature = response_data.signature();
-  response->user_handle.emplace();
   response->echo_appid_extension = echo_appid_extension;
+  response_data.user_entity()
+      ? response->user_handle.emplace(response_data.user_entity()->user_id())
+      : response->user_handle.emplace();
   return response;
 }
 
@@ -530,7 +534,7 @@ void AuthenticatorImpl::GetAssertion(
 // Callback to handle the async registration response from a U2fDevice.
 void AuthenticatorImpl::OnRegisterResponse(
     device::U2fReturnCode status_code,
-    base::Optional<device::RegisterResponseData> response_data) {
+    base::Optional<device::AuthenticatorMakeCredentialResponse> response_data) {
   // If callback is called immediately, this code will call |Cleanup| before
   // |u2f_request_| has been assigned – violating invariants.
   DCHECK(u2f_request_) << "unsupported callback hairpin";
@@ -581,7 +585,7 @@ void AuthenticatorImpl::OnRegisterResponse(
 }
 
 void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
-    device::RegisterResponseData response_data,
+    device::AuthenticatorMakeCredentialResponse response_data,
     bool attestation_permitted) {
   DCHECK(attestation_preference_ !=
          webauth::mojom::AttestationConveyancePreference::NONE);
@@ -625,7 +629,7 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 
 void AuthenticatorImpl::OnSignResponse(
     device::U2fReturnCode status_code,
-    base::Optional<device::SignResponseData> response_data) {
+    base::Optional<device::AuthenticatorGetAssertionResponse> response_data) {
   // If callback is called immediately, this code will call |Cleanup| before
   // |u2f_request_| has been assigned – violating invariants.
   DCHECK(u2f_request_) << "unsupported callback hairpin";

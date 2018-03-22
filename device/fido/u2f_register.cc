@@ -9,7 +9,7 @@
 #include "base/stl_util.h"
 #include "components/apdu/apdu_command.h"
 #include "components/apdu/apdu_response.h"
-#include "device/fido/register_response_data.h"
+#include "device/fido/authenticator_make_credential_response.h"
 #include "services/service_manager/public/cpp/connector.h"
 
 namespace device {
@@ -145,8 +145,9 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
             .Run(U2fReturnCode::CONDITIONS_NOT_SATISFIED, base::nullopt);
         break;
       }
-      auto response = RegisterResponseData::CreateFromU2fRegisterResponse(
-          application_parameter_, apdu_response->data());
+      auto response =
+          AuthenticatorMakeCredentialResponse::CreateFromU2fRegisterResponse(
+              application_parameter_, apdu_response->data());
       if (!response) {
         // The response data was corrupted / didn't parse properly.
         std::move(completion_callback_)

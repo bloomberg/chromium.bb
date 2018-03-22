@@ -21,8 +21,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
  public:
   enum class Flag : uint8_t {
     kTestOfUserPresence = 1u << 0,
-    kAttestation = 1u << 6
+    kTestOfUserVerification = 1u << 2,
+    kAttestation = 1u << 6,
+    kExtensionDataIncluded = 1u << 7,
   };
+
+  static base::Optional<AuthenticatorData> DecodeAuthenticatorData(
+      base::span<const uint8_t> auth_data);
 
   AuthenticatorData(std::vector<uint8_t> application_parameter,
                     uint8_t flags,
@@ -35,12 +40,20 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
 
   ~AuthenticatorData();
 
+  // Replaces device AAGUID in attested credential data section with zeros.
+  // https://w3c.github.io/webauthn/#attested-credential-data
+  void DeleteDeviceAaguid();
+
   // Produces a byte array consisting of:
   // * hash(relying_party_id / appid)
   // * flags
   // * counter
   // * attestation_data.
   std::vector<uint8_t> SerializeToByteArray() const;
+
+  // Retrieve credential ID from attested credential data section of the
+  // authenticator data.
+  std::vector<uint8_t> GetCredentialId() const;
 
  private:
   // The application parameter: a SHA-256 hash of either the RP ID or the AppID

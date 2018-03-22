@@ -117,7 +117,7 @@ FidoAttestationStatement::FidoAttestationStatement(
 
 FidoAttestationStatement::~FidoAttestationStatement() = default;
 
-cbor::CBORValue::MapValue FidoAttestationStatement::GetAsCBORMap() {
+cbor::CBORValue::MapValue FidoAttestationStatement::GetAsCBORMap() const {
   cbor::CBORValue::MapValue attestation_statement_map;
   attestation_statement_map[cbor::CBORValue(kSignatureKey)] =
       cbor::CBORValue(signature_);

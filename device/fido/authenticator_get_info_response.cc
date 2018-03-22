@@ -9,12 +9,9 @@
 namespace device {
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
-    CtapDeviceResponseCode response_code,
     std::vector<std::string> versions,
     std::vector<uint8_t> aaguid)
-    : response_code_(response_code),
-      versions_(std::move(versions)),
-      aaguid_(std::move(aaguid)) {}
+    : versions_(std::move(versions)), aaguid_(std::move(aaguid)) {}
 
 AuthenticatorGetInfoResponse::AuthenticatorGetInfoResponse(
     AuthenticatorGetInfoResponse&& that) = default;

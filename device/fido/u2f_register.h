@@ -14,6 +14,7 @@
 #include "base/containers/flat_set.h"
 #include "base/macros.h"
 #include "base/optional.h"
+#include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/u2f_request.h"
 #include "device/fido/u2f_return_code.h"
 #include "device/fido/u2f_transport_protocol.h"
@@ -24,13 +25,11 @@ class Connector;
 
 namespace device {
 
-class RegisterResponseData;
-
 class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegister : public U2fRequest {
  public:
   using RegisterResponseCallback = base::OnceCallback<void(
       U2fReturnCode status_code,
-      base::Optional<RegisterResponseData> response_data)>;
+      base::Optional<AuthenticatorMakeCredentialResponse> response_data)>;
 
   static std::unique_ptr<U2fRequest> TryRegistration(
       service_manager::Connector* connector,
