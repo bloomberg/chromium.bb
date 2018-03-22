@@ -9,14 +9,14 @@ layer at (0,0) size 800x600
         LayoutBR {BR} at (306,13) size 0x0
         LayoutText {#text} at (0,17) size 174x16
           text run at (0,17) width 174: "There should be no red visible."
-      LayoutTable {TABLE} at (0,48.39) size 785x21
-        LayoutTableSection {TBODY} at (0,0) size 785x21
-          LayoutTableRow {TR} at (0,1) size 785x19
-            LayoutTableCell {TD} at (1,1) size 181x18.78 [r=0 c=0 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 142x17
+      LayoutTable {TABLE} at (0,48.39) size 785x19
+        LayoutTableSection {TBODY} at (0,0) size 785x19
+          LayoutTableRow {TR} at (0,1) size 785x17
+            LayoutTableCell {TD} at (1,1) size 181x17 [r=0 c=0 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 142x16
                 text run at (0,0) width 142: "getClientBoundingRect():"
-            LayoutTableCell {TD} at (183,1) size 601x18.78 [r=0 c=1 rs=1 cs=1]
-              LayoutText {#text} at (0,0) size 95x17
+            LayoutTableCell {TD} at (183,1) size 601x17 [r=0 c=1 rs=1 cs=1]
+              LayoutText {#text} at (0,0) size 95x16
                 text run at (0,0) width 95: "getClientRects():"
 layer at (90,90) size 90x90
   LayoutBlockFlow (positioned) {DIV} at (90,90) size 90x90 [bgcolor=#FF0000]
