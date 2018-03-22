@@ -39,7 +39,7 @@ typedef struct {
   MODE_INFO mic;
   MB_MODE_INFO_EXT mbmi_ext;
   uint8_t *color_index_map[2];
-  uint8_t *blk_skip[MAX_MB_PLANE];
+  uint8_t *blk_skip;
 
   tran_low_t *coeff[MAX_MB_PLANE];
   tran_low_t *qcoeff[MAX_MB_PLANE];
@@ -92,7 +92,7 @@ typedef struct PC_TREE {
 void av1_setup_pc_tree(struct AV1Common *cm, struct ThreadData *td);
 void av1_free_pc_tree(struct ThreadData *td, const int num_planes);
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
-                           PICK_MODE_CONTEXT *src_ctx, int num_planes);
+                           PICK_MODE_CONTEXT *src_ctx);
 
 #ifdef __cplusplus
 }  // extern "C"

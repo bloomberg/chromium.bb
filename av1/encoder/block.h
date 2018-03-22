@@ -101,7 +101,7 @@ typedef struct {
 typedef struct {
   TX_SIZE tx_size;
   TX_SIZE inter_tx_size[INTER_TX_SIZE_BUF_LEN];
-  uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE * 8];
+  uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   TX_TYPE txk_type[TXK_TYPE_BUF_LEN];
   RD_STATS rd_stats;
   uint32_t hash_value;
@@ -219,8 +219,8 @@ struct macroblock {
   // from extending outside the UMV borders
   MvLimits mv_limits;
 
-  uint8_t blk_skip[MAX_MB_PLANE][MAX_MIB_SIZE * MAX_MIB_SIZE];
-  uint8_t blk_skip_drl[MAX_MB_PLANE][MAX_MIB_SIZE * MAX_MIB_SIZE];
+  uint8_t blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
+  uint8_t blk_skip_drl[MAX_MIB_SIZE * MAX_MIB_SIZE];
 
   int skip;
   int skip_chroma_rd;

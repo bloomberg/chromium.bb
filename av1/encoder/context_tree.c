@@ -23,8 +23,8 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
   const int num_blk = num_pix / 16;
   ctx->num_4x4_blk = num_blk;
 
+  CHECK_MEM_ERROR(cm, ctx->blk_skip, aom_calloc(num_blk, sizeof(uint8_t)));
   for (i = 0; i < num_planes; ++i) {
-    CHECK_MEM_ERROR(cm, ctx->blk_skip[i], aom_calloc(num_blk, sizeof(uint8_t)));
     CHECK_MEM_ERROR(cm, ctx->coeff[i],
                     aom_memalign(32, num_pix * sizeof(*ctx->coeff[i])));
     CHECK_MEM_ERROR(cm, ctx->qcoeff[i],
@@ -49,9 +49,9 @@ static void alloc_mode_context(AV1_COMMON *cm, int num_pix,
 
 static void free_mode_context(PICK_MODE_CONTEXT *ctx, const int num_planes) {
   int i;
+  aom_free(ctx->blk_skip);
+  ctx->blk_skip = 0;
   for (i = 0; i < num_planes; ++i) {
-    aom_free(ctx->blk_skip[i]);
-    ctx->blk_skip[i] = 0;
     aom_free(ctx->coeff[i]);
     ctx->coeff[i] = 0;
     aom_free(ctx->qcoeff[i]);
@@ -186,7 +186,7 @@ void av1_free_pc_tree(ThreadData *td, const int num_planes) {
 }
 
 void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
-                           PICK_MODE_CONTEXT *src_ctx, int num_planes) {
+                           PICK_MODE_CONTEXT *src_ctx) {
   dst_ctx->mic = src_ctx->mic;
   dst_ctx->mbmi_ext = src_ctx->mbmi_ext;
 
@@ -195,10 +195,8 @@ void av1_copy_tree_context(PICK_MODE_CONTEXT *dst_ctx,
   dst_ctx->skippable = src_ctx->skippable;
   dst_ctx->best_mode_index = src_ctx->best_mode_index;
 
-  for (int i = 0; i < num_planes; ++i) {
-    memcpy(dst_ctx->blk_skip[i], src_ctx->blk_skip[i],
-           sizeof(uint8_t) * src_ctx->num_4x4_blk);
-  }
+  memcpy(dst_ctx->blk_skip, src_ctx->blk_skip,
+         sizeof(uint8_t) * src_ctx->num_4x4_blk);
 
   dst_ctx->hybrid_pred_diff = src_ctx->hybrid_pred_diff;
   dst_ctx->comp_pred_diff = src_ctx->comp_pred_diff;

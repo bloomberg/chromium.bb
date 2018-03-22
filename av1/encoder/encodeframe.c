@@ -346,7 +346,7 @@ static void reset_tx_size(MACROBLOCK *x, MB_MODE_INFO *mbmi,
     memset(mbmi->inter_tx_size, mbmi->tx_size, sizeof(mbmi->inter_tx_size));
   }
   memset(mbmi->txk_type, DCT_DCT, sizeof(mbmi->txk_type[0]) * TXK_TYPE_BUF_LEN);
-  av1_zero(x->blk_skip[0]);
+  av1_zero(x->blk_skip);
   x->skip = 0;
 }
 
@@ -424,10 +424,7 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
     set_ref_and_pred_mvs(x, mi->mbmi.pred_mv, rf_type);
   }
 
-  for (i = 0; i < 1; ++i) {
-    memcpy(x->blk_skip[i], ctx->blk_skip[i],
-           sizeof(uint8_t) * ctx->num_4x4_blk);
-  }
+  memcpy(x->blk_skip, ctx->blk_skip, sizeof(x->blk_skip[0]) * ctx->num_4x4_blk);
 
   x->skip = ctx->skip;
 
@@ -2387,7 +2384,7 @@ static void rd_pick_sqr_partition(const AV1_COMP *const cpi, ThreadData *td,
   // Nothing should rely on the default value of this array (which is just
   // leftover from encoding the previous block. Setting it to magic number
   // when debugging.
-  memset(x->blk_skip[0], 234, sizeof(x->blk_skip[0]));
+  memset(x->blk_skip, 234, sizeof(x->blk_skip));
 #endif  // NDEBUG
 
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
@@ -2671,7 +2668,7 @@ static void rd_pick_partition(const AV1_COMP *const cpi, ThreadData *td,
   // Nothing should rely on the default value of this array (which is just
   // leftover from encoding the previous block. Setting it to magic number
   // when debugging.
-  memset(x->blk_skip[0], 234, sizeof(x->blk_skip[0]));
+  memset(x->blk_skip, 234, sizeof(x->blk_skip));
 #endif  // NDEBUG
 
   assert(mi_size_wide[bsize] == mi_size_high[bsize]);
@@ -3193,13 +3190,12 @@ BEGIN_PARTITION_SEARCH:
     pc_tree->horizontala[1].rd_mode_is_ready = 0;
     pc_tree->horizontala[2].rd_mode_is_ready = 0;
     if (split_ctx_is_ready[0]) {
-      av1_copy_tree_context(&pc_tree->horizontala[0], &pc_tree->split[0]->none,
-                            num_planes);
+      av1_copy_tree_context(&pc_tree->horizontala[0], &pc_tree->split[0]->none);
       pc_tree->horizontala[0].mic.mbmi.partition = PARTITION_HORZ_A;
       pc_tree->horizontala[0].rd_mode_is_ready = 1;
       if (split_ctx_is_ready[1]) {
         av1_copy_tree_context(&pc_tree->horizontala[1],
-                              &pc_tree->split[1]->none, num_planes);
+                              &pc_tree->split[1]->none);
         pc_tree->horizontala[1].mic.mbmi.partition = PARTITION_HORZ_A;
         pc_tree->horizontala[1].rd_mode_is_ready = 1;
       }
@@ -3218,8 +3214,7 @@ BEGIN_PARTITION_SEARCH:
     pc_tree->horizontalb[1].rd_mode_is_ready = 0;
     pc_tree->horizontalb[2].rd_mode_is_ready = 0;
     if (horz_ctx_is_ready) {
-      av1_copy_tree_context(&pc_tree->horizontalb[0], &pc_tree->horizontal[0],
-                            num_planes);
+      av1_copy_tree_context(&pc_tree->horizontalb[0], &pc_tree->horizontal[0]);
       pc_tree->horizontalb[0].mic.mbmi.partition = PARTITION_HORZ_B;
       pc_tree->horizontalb[0].rd_mode_is_ready = 1;
     }
@@ -3247,8 +3242,7 @@ BEGIN_PARTITION_SEARCH:
     pc_tree->verticala[1].rd_mode_is_ready = 0;
     pc_tree->verticala[2].rd_mode_is_ready = 0;
     if (split_ctx_is_ready[0]) {
-      av1_copy_tree_context(&pc_tree->verticala[0], &pc_tree->split[0]->none,
-                            num_planes);
+      av1_copy_tree_context(&pc_tree->verticala[0], &pc_tree->split[0]->none);
       pc_tree->verticala[0].mic.mbmi.partition = PARTITION_VERT_A;
       pc_tree->verticala[0].rd_mode_is_ready = 1;
     }
@@ -3266,8 +3260,7 @@ BEGIN_PARTITION_SEARCH:
     pc_tree->verticalb[1].rd_mode_is_ready = 0;
     pc_tree->verticalb[2].rd_mode_is_ready = 0;
     if (vert_ctx_is_ready) {
-      av1_copy_tree_context(&pc_tree->verticalb[0], &pc_tree->vertical[0],
-                            num_planes);
+      av1_copy_tree_context(&pc_tree->verticalb[0], &pc_tree->vertical[0]);
       pc_tree->verticalb[0].mic.mbmi.partition = PARTITION_VERT_B;
       pc_tree->verticalb[0].rd_mode_is_ready = 1;
     }
