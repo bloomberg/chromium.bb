@@ -17976,6 +17976,8 @@ Called by update_net_error_codes.py.-->
   <int value="2391" label="XMLHttpRequestResponseXML"/>
   <int value="2392" label="MessagePortTransferClosedPort"/>
   <int value="2393" label="RTCLocalSdpModification"/>
+  <int value="2394" label="KeyboardApiLock"/>
+  <int value="2395" label="KeyboardApiUnlock"/>
 </enum>
 
 <enum name="FeedbackSource">
