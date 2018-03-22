@@ -1,0 +1,6 @@
+specific_include_rules = {
+  # TODO(mash): Remove: http://crbug.com/678705
+  "chrome_internal_log_source.cc" : [
+    "+ash/shell.h"
+  ]
+}
