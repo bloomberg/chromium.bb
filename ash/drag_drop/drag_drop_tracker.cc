@@ -85,10 +85,12 @@ ui::LocatedEvent* DragDropTracker::ConvertEvent(aura::Window* target,
   aura::Window::ConvertPointToTarget(capture_window_->GetRootWindow(),
                                      wm::GetRootWindowAt(location_in_screen),
                                      &target_root_location);
-  return new ui::MouseEvent(
-      event.type(), target_location, target_root_location,
-      ui::EventTimeForNow(), event.flags(),
-      static_cast<const ui::MouseEvent&>(event).changed_button_flags());
+  int changed_button_flags = 0;
+  if (event.IsMouseEvent())
+    changed_button_flags = event.AsMouseEvent()->changed_button_flags();
+  return new ui::MouseEvent(event.type(), target_location, target_root_location,
+                            ui::EventTimeForNow(), event.flags(),
+                            changed_button_flags);
 }
 
 }  // namespace ash

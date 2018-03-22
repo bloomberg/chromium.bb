@@ -198,6 +198,11 @@ bool X11EventHasNonStandardState(const base::NativeEvent& event) {
 }
 #endif
 
+constexpr int kChangedButtonFlagMask =
+    ui::EF_LEFT_MOUSE_BUTTON | ui::EF_MIDDLE_MOUSE_BUTTON |
+    ui::EF_RIGHT_MOUSE_BUTTON | ui::EF_BACK_MOUSE_BUTTON |
+    ui::EF_FORWARD_MOUSE_BUTTON;
+
 }  // namespace
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -624,6 +629,8 @@ MouseEvent::MouseEvent(EventType type,
       changed_button_flags_(changed_button_flags),
       pointer_details_(pointer_details) {
   DCHECK_NE(ET_MOUSEWHEEL, type);
+  DCHECK_EQ(changed_button_flags_,
+            changed_button_flags_ & kChangedButtonFlagMask);
   latency()->set_source_event_type(ui::SourceEventType::MOUSE);
   latency()->AddLatencyNumber(INPUT_EVENT_LATENCY_UI_COMPONENT, 0, 0);
   if (this->type() == ET_MOUSE_MOVED && IsAnyButton())
