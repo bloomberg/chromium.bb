@@ -308,7 +308,7 @@ def _FixPackageIds(resource_value):
   # changes to the correct package id at runtime.
   # resource_value is a string with either, a single value '0x12345678', or an
   # array of values like '{ 0xfedcba98, 0x01234567, 0x56789abc }'
-  return re.sub(r'0x(?!01)\d\d', r'0x7f', resource_value)
+  return re.sub(r'0x(?!01)[0-9a-f]{2}', r'0x7f', resource_value)
 
 
 def _CreateRJavaFile(package, resources_by_type, shared_resources,
@@ -336,6 +336,16 @@ def _CreateRJavaFile(package, resources_by_type, shared_resources,
   else:
     final_resources_by_type = resources_by_type
 
+  def _UnrollArray(entry):
+    res_ids = re.findall(r'0x[0-9a-f]{8}', entry.value)
+    qualified_array_name = '%s.%s' % (entry.resource_type, entry.name)
+    unrolled = []
+    for i, res_id in enumerate(res_ids):
+      if res_id.startswith('0x7f'):
+        unrolled.append("%s[%d] ^= packageIdTransform;" %
+                        (qualified_array_name, i))
+    return unrolled
+
   # Keep these assignments all on one line to make diffing against regular
   # aapt-generated files easier.
   create_id = ('{{ e.resource_type }}.{{ e.name }} ^= packageIdTransform;')
@@ -360,13 +370,6 @@ public final class R {
     }
     {% endfor %}
     {% if shared_resources %}
-    public static void transfromArray(int[] array, int packageIdTransform) {
-        for (int i=0; i < array.length; i++) {
-            if ((array[i] >>> 24) == 0x7f) {
-                array[i] ^= packageIdTransform;
-            }
-        }
-    }
     public static void onResourcesLoaded(int packageId) {
         assert !sResourcesDidLoad;
         sResourcesDidLoad = true;
@@ -375,7 +378,9 @@ public final class R {
         onResourcesLoaded{{ resource_type|title }}(packageIdTransform);
         {% for e in non_final_resources[resource_type] %}
         {% if e.java_type == 'int[]' %}
-        transfromArray({{ e.resource_type }}.{{ e.name }}, packageIdTransform);
+        {% for line in unrollArray(e) %}
+        {{ line }}
+        {% endfor %}
         {% endif %}
         {% endfor %}
         {% endfor %}
@@ -398,7 +403,8 @@ public final class R {
                          resource_types=sorted(resources_by_type),
                          shared_resources=shared_resources,
                          final_resources=final_resources_by_type,
-                         non_final_resources=non_final_resources_by_type)
+                         non_final_resources=non_final_resources_by_type,
+                         unrollArray=_UnrollArray)
 
 
 def _GenerateGlobs(pattern):
