@@ -17,6 +17,7 @@
 #import "ios/chrome/browser/download/google_drive_app_util.h"
 #import "ios/chrome/browser/installation_notifier.h"
 #import "ios/chrome/browser/store_kit/store_kit_coordinator.h"
+#import "ios/chrome/browser/ui/alert_coordinator/alert_coordinator.h"
 #import "ios/chrome/browser/ui/download/download_manager_mediator.h"
 #import "ios/chrome/browser/ui/download/download_manager_view_controller.h"
 #import "ios/chrome/browser/ui/presenters/contained_presenter.h"
@@ -81,6 +82,10 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
   UIDocumentInteractionController* _openInController;
   DownloadManagerMediator _mediator;
   StoreKitCoordinator* _storeKitCoordinator;
+  // Coordinator for displaying the alert informing the user that no application
+  // on the device can open the file. The alert offers the user to install
+  // Google Drive app.
+  AlertCoordinator* _installDriveAlertCoordinator;
   UnopenedDownloadsTracker _unopenedDownloads;
 }
 @end
@@ -124,6 +129,8 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
 
   [_storeKitCoordinator stop];
   _storeKitCoordinator = nil;
+  [_installDriveAlertCoordinator stop];
+  _installDriveAlertCoordinator = nil;
 }
 
 - (UIViewController*)viewController {
@@ -233,19 +240,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
 
 - (void)installDriveForDownloadManagerViewController:
     (DownloadManagerViewController*)controller {
-  if (!_storeKitCoordinator) {
-    _storeKitCoordinator = [[StoreKitCoordinator alloc]
-        initWithBaseViewController:self.baseViewController];
-    _storeKitCoordinator.iTunesItemIdentifier =
-        kGoogleDriveITunesItemIdentifier;
-  }
-  [_storeKitCoordinator start];
-  [controller setInstallDriveButtonVisible:NO animated:YES];
-
-  [[InstallationNotifier sharedInstance]
-      registerForInstallationNotifications:self
-                              withSelector:@selector(didInstallGoogleDriveApp)
-                                 forScheme:kGoogleDriveAppURLScheme];
+  [self presentStoreKitForGoogleDriveApp];
 }
 
 - (void)downloadManagerViewControllerDidStartDownload:
@@ -269,7 +264,12 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
       [_openInController presentOpenInMenuFromRect:layoutGuide.layoutFrame
                                             inView:layoutGuide.owningView
                                           animated:YES];
-  DCHECK(menuShown);
+
+  // No application on this device can open the file. Typically happens on
+  // iOS 10, where Files app does not exist.
+  if (!menuShown) {
+    [self didFailOpenInMenuPresentation];
+  }
 }
 
 #pragma mark - Private
@@ -319,6 +319,54 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
 - (void)didInstallGoogleDriveApp {
   base::RecordAction(
       base::UserMetricsAction(kDownloadManagerGoogleDriveInstalled));
+}
+
+// Called when Open In... menu was not presented. This method shows the alert
+// which offers the user to install Google Drive app.
+- (void)didFailOpenInMenuPresentation {
+  NSString* title =
+      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_UNABLE_TO_OPEN_FILE);
+  NSString* message =
+      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_NO_APP_MESSAGE);
+
+  _installDriveAlertCoordinator = [[AlertCoordinator alloc]
+      initWithBaseViewController:self.baseViewController
+                           title:title
+                         message:message];
+
+  NSString* googleDriveButtonTitle =
+      l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_UPLOAD_TO_GOOGLE_DRIVE);
+  __weak DownloadManagerCoordinator* weakSelf = self;
+  [_installDriveAlertCoordinator
+      addItemWithTitle:googleDriveButtonTitle
+                action:^{
+                  [weakSelf presentStoreKitForGoogleDriveApp];
+                }
+                 style:UIAlertActionStyleDefault];
+
+  [_installDriveAlertCoordinator
+      addItemWithTitle:l10n_util::GetNSString(IDS_CANCEL)
+                action:nil
+                 style:UIAlertActionStyleCancel];
+
+  [_installDriveAlertCoordinator start];
+}
+
+// Presents StoreKit dialog for Google Drive application.
+- (void)presentStoreKitForGoogleDriveApp {
+  if (!_storeKitCoordinator) {
+    _storeKitCoordinator = [[StoreKitCoordinator alloc]
+        initWithBaseViewController:self.baseViewController];
+    _storeKitCoordinator.iTunesItemIdentifier =
+        kGoogleDriveITunesItemIdentifier;
+  }
+  [_storeKitCoordinator start];
+  [_viewController setInstallDriveButtonVisible:NO animated:YES];
+
+  [[InstallationNotifier sharedInstance]
+      registerForInstallationNotifications:self
+                              withSelector:@selector(didInstallGoogleDriveApp)
+                                 forScheme:kGoogleDriveAppURLScheme];
 }
 
 @end
