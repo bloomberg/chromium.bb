@@ -89,6 +89,10 @@ class OneGoogleBarFetcherImplTest : public testing::Test {
                                 api_url_override,
                                 account_consistency_mirror_required) {}
 
+  ~OneGoogleBarFetcherImplTest() override {
+    static_cast<KeyedService&>(google_url_tracker_).Shutdown();
+  }
+
   net::TestURLFetcher* GetRunningURLFetcher() {
     // All created URLFetchers have ID 0 by default.
     net::TestURLFetcher* url_fetcher = url_fetcher_factory_.GetFetcherByID(0);
