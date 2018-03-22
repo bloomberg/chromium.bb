@@ -3198,9 +3198,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
   }
 
-#if CONFIG_TILE_INFO_FIRST
   write_tile_info(cm, saved_wb, wb);
-#endif  // CONFIG_TILE_INFO_FIRST
   encode_quantization(cm, wb);
   encode_segmentation(cm, xd, wb);
   {
@@ -3288,10 +3286,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       cm->film_grain_params.update_parameters = 0;
   }
 #endif
-
-#if !CONFIG_TILE_INFO_FIRST
-  write_tile_info(cm, saved_wb, wb);
-#endif  // !CONFIG_TILE_INFO_FIRST
 }
 
 static int choose_size_bytes(uint32_t size, int spare_msbs) {

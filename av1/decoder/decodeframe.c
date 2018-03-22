@@ -3017,10 +3017,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
   }
 
-#if CONFIG_TILE_INFO_FIRST
   read_tile_info(pbi, rb);
-#endif
-
   setup_quantization(cm, rb);
   xd->bd = (int)cm->bit_depth;
 
@@ -3141,10 +3138,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     read_film_grain(cm, rb);
   }
 #endif
-#endif
-
-#if !CONFIG_TILE_INFO_FIRST
-  read_tile_info(pbi, rb);
 #endif
 
   return 0;
