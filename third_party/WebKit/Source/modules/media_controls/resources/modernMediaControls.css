@@ -206,6 +206,11 @@ video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-p
     url(default_200_percent/modern/ic_fullscreen_exit_white.png) 2x);
 }
 
+video::-webkit-media-controls-mute-button:disabled,
+video::-webkit-media-controls-fullscreen-button:disabled {
+  opacity: 0.3;
+}
+
 audio::-internal-media-controls-cast-button,
 video::-internal-media-controls-cast-button {
   background-image: -webkit-image-set(
@@ -629,7 +634,6 @@ video::-webkit-media-controls.audio-only [pseudo="-internal-media-controls-overf
 .state-no-metadata div[pseudo="-webkit-media-controls-current-time-display" i] {
   display: none;
 }
-
 
 .state-no-source input[pseudo="-webkit-media-controls-overlay-play-button" i],
 .state-no-source div[pseudo="-internal-media-controls-button-panel" i],

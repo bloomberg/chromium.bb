@@ -262,6 +262,8 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void StartActingAsAudioControls();
   void StopActingAsAudioControls();
 
+  bool ShouldShowDisabledControls() const;
+
   // Node
   bool IsMediaControls() const override { return true; }
   bool WillRespondToMouseMoveEvents() override { return true; }
