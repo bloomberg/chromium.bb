@@ -370,12 +370,11 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
 
-  // Start and complete the download.
+  // Start the download.
   base::FilePath path;
   ASSERT_TRUE(base::GetTempDir(&path));
   task->Start(std::make_unique<net::URLFetcherFileWriter>(
       base::ThreadTaskRunnerHandle::Get(), path));
-  task->SetDone(true);
 
   // Stub UIDocumentInteractionController.
   FakeDocumentInteractionController* document_interaction_controller =
@@ -391,7 +390,9 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
   [view addLayoutGuide:guide];
   ASSERT_FALSE(document_interaction_controller.presentedOpenInMenu);
   @autoreleasepool {
-    // This call will retain coordinator, which should outlive thread bundle.
+    // These calls will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
     [viewController.delegate downloadManagerViewController:viewController
                           presentOpenInMenuWithLayoutGuide:guide];
   }
@@ -400,6 +401,9 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
       CGRectZero, document_interaction_controller.presentedOpenInMenu.rect));
   ASSERT_EQ(view, document_interaction_controller.presentedOpenInMenu.view);
   ASSERT_TRUE(document_interaction_controller.presentedOpenInMenu.animated);
+
+  // Complete the download to log Download.IOSDownloadFileResult.
+  task->SetDone(true);
 
   // Download task is destroyed without opening the file.
   task = nullptr;
@@ -417,6 +421,7 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
 TEST_F(DownloadManagerCoordinatorTest, DestroyInProgressDownload) {
   auto task = CreateTestTask();
   coordinator_.downloadTask = task.get();
+  web::DownloadTask* task_ptr = task.get();
   [coordinator_ start];
 
   EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
@@ -425,10 +430,17 @@ TEST_F(DownloadManagerCoordinatorTest, DestroyInProgressDownload) {
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
 
   // Start and the download.
-  base::FilePath path;
-  ASSERT_TRUE(base::GetTempDir(&path));
-  task->Start(std::make_unique<net::URLFetcherFileWriter>(
-      base::ThreadTaskRunnerHandle::Get(), path));
+  @autoreleasepool {
+    // This call will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
+  }
+
+  // Starting download is async for model.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
+  }));
 
   // Download task is destroyed before the download is complete.
   task = nullptr;
@@ -443,6 +455,7 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInDrive) {
   web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
   task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
   coordinator_.downloadTask = &task;
+  web::DownloadTask* task_ptr = &task;
   [coordinator_ start];
 
   EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
@@ -450,18 +463,24 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInDrive) {
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
 
-  // Start and complete the download.
-  base::FilePath path;
-  ASSERT_TRUE(base::GetTempDir(&path));
-  task.Start(std::make_unique<net::URLFetcherFileWriter>(
-      base::ThreadTaskRunnerHandle::Get(), path));
-
   // Stub UIDocumentInteractionController.
   id document_interaction_controller =
       [[FakeDocumentInteractionController alloc] init];
   OCMStub([document_interaction_controller_class_
               interactionControllerWithURL:[OCMArg any]])
       .andReturn(document_interaction_controller);
+
+  // Start the download.
+  @autoreleasepool {
+    // This call will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
+  }
+  // Starting download is async for model.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
+  }));
 
   // Present Open In... menu.
   ASSERT_FALSE([document_interaction_controller presentedOpenInMenu]);
@@ -492,6 +511,7 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInOtherApp) {
   web::FakeDownloadTask task(GURL(kTestUrl), kTestMimeType);
   task.SetSuggestedFilename(base::SysNSStringToUTF16(kTestSuggestedFileName));
   coordinator_.downloadTask = &task;
+  web::DownloadTask* task_ptr = &task;
   [coordinator_ start];
 
   EXPECT_EQ(1U, base_view_controller_.childViewControllers.count);
@@ -499,18 +519,24 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInOtherApp) {
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
 
-  // Start and complete the download.
-  base::FilePath path;
-  ASSERT_TRUE(base::GetTempDir(&path));
-  task.Start(std::make_unique<net::URLFetcherFileWriter>(
-      base::ThreadTaskRunnerHandle::Get(), path));
-
   // Stub UIDocumentInteractionController.
   id document_interaction_controller =
       [[FakeDocumentInteractionController alloc] init];
   OCMStub([document_interaction_controller_class_
               interactionControllerWithURL:[OCMArg any]])
       .andReturn(document_interaction_controller);
+
+  // Start the download.
+  @autoreleasepool {
+    // This call will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
+  }
+  // Starting download is async for model.
+  ASSERT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForDownloadTimeout, ^{
+    base::RunLoop().RunUntilIdle();
+    return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
+  }));
 
   // Present Open In... menu.
   ASSERT_FALSE([document_interaction_controller presentedOpenInMenu]);
@@ -693,12 +719,19 @@ TEST_F(DownloadManagerCoordinatorTest, RetryingDownload) {
   web::DownloadTask* task_ptr = &task;
   coordinator_.downloadTask = &task;
   [coordinator_ start];
-  task.SetErrorCode(net::ERR_INTERNET_DISCONNECTED);
-  task.SetDone(true);
 
+  // First download is a failure.
   DownloadManagerViewController* viewController =
       base_view_controller_.childViewControllers.firstObject;
   ASSERT_EQ([DownloadManagerViewController class], [viewController class]);
+  @autoreleasepool {
+    // This call will retain coordinator, which should outlive thread bundle.
+    [viewController.delegate
+        downloadManagerViewControllerDidStartDownload:viewController];
+  }
+  task.SetErrorCode(net::ERR_INTERNET_DISCONNECTED);
+  task.SetDone(true);
+
   @autoreleasepool {
     // This call will retain coordinator, which should outlive thread bundle.
     [viewController.delegate
