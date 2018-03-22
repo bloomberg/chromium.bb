@@ -160,10 +160,6 @@ class ChromotingSession : public ClientInputInjector {
   // |core_| to allow accessing logs after |core_| becomes invalid.
   std::unique_ptr<ClientTelemetryLogger> logger_;
 
-  // This is bound to UI thread.
-  base::WeakPtr<ChromotingSession> weak_ptr_;
-  base::WeakPtrFactory<ChromotingSession> weak_factory_;
-
   DISALLOW_COPY_AND_ASSIGN(ChromotingSession);
 };
 
