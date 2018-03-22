@@ -66,10 +66,16 @@ class ConstrainedWindowViewTest : public InProcessBrowserTest {
 
 }  // namespace
 
+#if defined(OS_MACOSX)
+// Unexpected multiple focus managers on MacViews: http://crbug.com/824551
+#define MAYBE_FocusTest DISABLED_FocusTest
+#else
+#define MAYBE_FocusTest FocusTest
+#endif
 // Tests the intial focus of tab-modal dialogs, the restoration of focus to the
 // browser when they close, and that queued dialogs don't register themselves as
 // accelerator targets until they are displayed.
-IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, FocusTest) {
+IN_PROC_BROWSER_TEST_F(ConstrainedWindowViewTest, MAYBE_FocusTest) {
   content::WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   EXPECT_TRUE(ui_test_utils::IsViewFocused(browser(), VIEW_ID_OMNIBOX));
