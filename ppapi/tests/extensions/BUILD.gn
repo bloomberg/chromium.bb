@@ -145,6 +145,7 @@ if (is_nacl) {
       "packaged_app/test_packaged_app.cc",
     ]
     deps = [
+      "//ipc:message_support",
       "//ppapi/cpp",
     ]
     destination_dir = "test_data/ppapi/tests/extensions/packaged_app"
