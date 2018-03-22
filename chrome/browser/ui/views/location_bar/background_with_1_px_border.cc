@@ -21,8 +21,7 @@ BackgroundWith1PxBorder::BackgroundWith1PxBorder(SkColor background,
 
 // static
 bool BackgroundWith1PxBorder::IsRounded() {
-  return ui::MaterialDesignController::GetMode() ==
-         ui::MaterialDesignController::MATERIAL_TOUCH_OPTIMIZED;
+  return ui::MaterialDesignController::IsNewerMaterialUi();
 }
 
 void BackgroundWith1PxBorder::PaintFocusRing(gfx::Canvas* canvas,

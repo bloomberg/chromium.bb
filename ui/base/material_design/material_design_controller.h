@@ -25,7 +25,9 @@ class UI_BASE_EXPORT MaterialDesignController {
     // Material design targeted at mouse/touch hybrid devices.
     MATERIAL_HYBRID = 1,
     // Material design that is more optimized for touch devices.
-    MATERIAL_TOUCH_OPTIMIZED = 2
+    MATERIAL_TOUCH_OPTIMIZED = 2,
+    // Material Refresh design targeted at mouse devices.
+    MATERIAL_REFRESH = 3,
   };
 
   // Initializes |mode_|. Must be called before checking |mode_|.
@@ -38,8 +40,11 @@ class UI_BASE_EXPORT MaterialDesignController {
   // should be extended to cover secondary UI.
   static bool IsSecondaryUiMaterial();
 
-  // Returns true if the touch-optimized UI material design mode is enabled;
+  // Returns true if the touch-optimized UI material design mode is enabled.
   static bool IsTouchOptimizedUiEnabled();
+
+  // Returns true if the Material Refresh or touch-optimized UI is enabled.
+  static bool IsNewerMaterialUi();
 
   // Returns the per-platform default material design variant.
   static Mode DefaultMode();

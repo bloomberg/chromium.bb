@@ -197,7 +197,7 @@ SkColor GetLegacyColor(OmniboxPart part,
 SkColor GetOmniboxColor(OmniboxPart part,
                         OmniboxTint tint,
                         OmniboxPartState state) {
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+  if (!ui::MaterialDesignController::IsNewerMaterialUi())
     return GetLegacyColor(part, tint, state);
 
   // Note this will use LIGHT for OmniboxTint::NATIVE.

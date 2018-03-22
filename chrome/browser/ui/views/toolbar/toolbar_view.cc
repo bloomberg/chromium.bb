@@ -93,7 +93,7 @@ int GetToolbarHorizontalPadding() {
   // button starts from the beginning of the view, and the app menu button ends
   // at the end of the view.
   using Md = ui::MaterialDesignController;
-  constexpr int kPaddings[] = {4, 8, 0};
+  constexpr int kPaddings[] = {4, 8, 0, 4};
   return kPaddings[Md::GetMode()];
 }
 
