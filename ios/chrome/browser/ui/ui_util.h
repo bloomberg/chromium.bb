@@ -39,6 +39,9 @@ CGFloat CurrentScreenWidth();
 // Returns true if the device is an iPhone X.
 bool IsIPhoneX();
 
+// Returns whether the UI Refresh Omnibox Popup presentation will be used.
+bool IsRefreshPopupPresentationEnabled();
+
 // Returns whether the first phase of the UI refresh will be displayed.
 bool IsUIRefreshPhase1Enabled();
 
