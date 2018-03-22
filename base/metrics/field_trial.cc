@@ -1443,15 +1443,14 @@ void FieldTrialList::ActivateFieldTrialEntryWhileLocked(
   FieldTrialAllocator* allocator = global_->field_trial_allocator_.get();
 
   // Check if we're in the child process and return early if so.
-  if (allocator && allocator->IsReadonly())
+  if (!allocator || allocator->IsReadonly())
     return;
 
   FieldTrial::FieldTrialRef ref = field_trial->ref_;
   if (ref == FieldTrialAllocator::kReferenceNull) {
     // It's fine to do this even if the allocator hasn't been instantiated
     // yet -- it'll just return early.
-    AddToAllocatorWhileLocked(global_->field_trial_allocator_.get(),
-                              field_trial);
+    AddToAllocatorWhileLocked(allocator, field_trial);
   } else {
     // It's also okay to do this even though the callee doesn't have a lock --
     // the only thing that happens on a stale read here is a slight performance

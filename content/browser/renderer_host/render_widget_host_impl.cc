@@ -1745,7 +1745,7 @@ void RenderWidgetHostImpl::OnStartDragging(
 }
 
 void RenderWidgetHostImpl::OnUpdateDragCursor(WebDragOperation current_op) {
-  if (delegate_ && delegate_->OnUpdateDragCursor())
+  if (delegate_->OnUpdateDragCursor())
     return;
 
   RenderViewHostDelegateView* view = delegate_->GetDelegateView();

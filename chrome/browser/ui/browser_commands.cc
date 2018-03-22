@@ -873,7 +873,8 @@ void ManagePasswordsForPage(Browser* browser) {
 void SavePage(Browser* browser) {
   base::RecordAction(UserMetricsAction("SavePage"));
   WebContents* current_tab = browser->tab_strip_model()->GetActiveWebContents();
-  if (current_tab && current_tab->GetContentsMimeType() == "application/pdf")
+  DCHECK(current_tab);
+  if (current_tab->GetContentsMimeType() == "application/pdf")
     base::RecordAction(UserMetricsAction("PDF.SavePage"));
   current_tab->OnSavePage();
 }
