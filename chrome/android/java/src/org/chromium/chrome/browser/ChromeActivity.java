@@ -2297,4 +2297,15 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         if (VrShellDelegate.isInVr() && !VrIntentUtils.isVrIntent(intent)) return false;
         return super.startActivityIfNeeded(intent, requestCode, options);
     }
+
+    /**
+     * If the density of the device changes while Chrome is in the background (not resumed), we
+     * won't have received an onConfigurationChanged yet for this new density. In this case, the
+     * density this Activity thinks it's in, and the actual display density will differ.
+     * @return The density this Activity thinks it's in (the density it was in last time it was in
+     *         the resumed state).
+     */
+    public float getLastActiveDensity() {
+        return mDensityDpi;
+    }
 }

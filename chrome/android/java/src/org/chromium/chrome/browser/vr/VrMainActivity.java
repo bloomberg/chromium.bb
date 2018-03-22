@@ -4,10 +4,15 @@
 
 package org.chromium.chrome.browser.vr;
 
+import android.app.Activity;
 import android.os.Bundle;
 
+import org.chromium.base.ApplicationStatus;
+import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+
+import java.lang.ref.WeakReference;
 
 /**
  * This is the VR equivalent of {@link ChromeLauncherActivity}. It exists only because the Android
@@ -27,6 +32,20 @@ public class VrMainActivity extends ChromeLauncherActivity {
         // This Launcher may be launched through an alias, which leads to vrmode not being correctly
         // set, so we need to set it here as a fallback. b/65271215
         VrShellDelegate.setVrModeEnabled(this);
+
+        for (WeakReference<Activity> weakActivity : ApplicationStatus.getRunningActivities()) {
+            final Activity activity = weakActivity.get();
+            if (activity == null) continue;
+            if (activity instanceof ChromeActivity) {
+                if (VrShellDelegate.willChangeDensityInVr((ChromeActivity) activity)) {
+                    // In the rare case that entering VR will trigger a density change (and hence
+                    // an Activity recreation), just return to Daydream home and kill the process,
+                    // as there's no good way to recreate without showing 2D UI in-headset.
+                    finish();
+                    System.exit(0);
+                }
+            }
+        }
         super.onCreate(savedInstanceState);
     }
 }
