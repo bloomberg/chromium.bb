@@ -8,8 +8,8 @@ enum KeyboardLockRequestResult {
   SUCCESS = 0,
 };
 
-// The browser side service to process navigator.requestKeyboardLock() and
-// navigator.cancelKeyboardLock() web APIs. See http://crbug.com/680809.
+// The browser side service to process navigator.keyboard.lock() and
+// navigator.keyboard.unlock() web APIs. See http://crbug.com/680809.
 interface KeyboardLockService {
   // Registers a set of string-formatted key codes
   // (https://www.w3.org/TR/uievents/#interface-keyboardevent) to the platform
