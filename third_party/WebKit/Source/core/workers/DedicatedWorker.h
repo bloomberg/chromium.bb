@@ -48,6 +48,7 @@ class CORE_EXPORT DedicatedWorker final
  public:
   static DedicatedWorker* Create(ExecutionContext*,
                                  const String& url,
+                                 const WorkerOptions&,
                                  ExceptionState&);
 
   ~DedicatedWorker() override;

@@ -52,6 +52,7 @@ ConnectToWorkerInterfaceProvider(
 
 DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
                                          const String& url,
+                                         const WorkerOptions& options,
                                          ExceptionState& exception_state) {
   DCHECK(IsMainThread());
   Document* document = ToDocument(context);
@@ -64,12 +65,22 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
 
   KURL script_url = ResolveURL(context, url, exception_state,
                                WebURLRequest::kRequestContextScript);
-  if (!script_url.IsValid())
+  if (!script_url.IsValid()) {
+    // Don't throw an exception here because it's already thrown in
+    // ResolveURL().
     return nullptr;
+  }
 
-  // TODO(nhiroki): WorkerOptions should be passed from the caller of Create().
-  // See also the comment in Worker.idl (https://crbug.com/680046).
-  WorkerOptions options;
+  // TODO(nhiroki): Remove this check once module scripts are supported on
+  // WorkerGlobalScope (https://crbug.com/680046).
+  if (options.type() == "module" &&
+      !RuntimeEnabledFeatures::ModuleDedicatedWorkerEnabled()) {
+    exception_state.ThrowTypeError(
+        "Module scripts are not supported on DedicatedWorker yet. You can try "
+        "the feature with '--enable-experimental-web-platform-features' flag "
+        "(see https://crbug.com/680046)");
+    return nullptr;
+  }
 
   DedicatedWorker* worker = new DedicatedWorker(context, script_url, options);
   worker->Start();

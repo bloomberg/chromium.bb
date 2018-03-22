@@ -29,10 +29,7 @@
 
 [
     ActiveScriptWrappable,
-    // TODO(nhiroki): Support WorkerOptions for module workers.
-    // (https://crbug.com/680046)
-    // Constructor(DOMString scriptURL, optional WorkerOptions options),
-    Constructor(DOMString scriptURL),
+    Constructor(DOMString scriptURL, optional WorkerOptions options),
     ConstructorCallWith=ExecutionContext,
     // TODO(foolip): Exposed=(Window,Worker),
     RaisesException=Constructor,
