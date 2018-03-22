@@ -115,6 +115,8 @@ NS_INLINE void AnimateInViews(NSArray* views,
   // Weak pointer to ReadingListMenuNotifier, used to set the starting values
   // for the reading list badge.
   __weak ReadingListMenuNotifier* _readingListMenuNotifier;
+  // YES if NSLayoutConstraits were added.
+  BOOL _addedConstraints;
 }
 
 // Determines if the reading list should display a new feature badge. Defaults
@@ -402,12 +404,15 @@ NS_INLINE void AnimateInViews(NSArray* views,
 }
 
 - (void)updateViewConstraints {
+  if (!_addedConstraints) {
+    UIView* rootView = [self view];
+    NSDictionary* view = @{@"menu" : _menuView};
+    NSArray* constraints =
+        @[ @"V:|-(0)-[menu]-(0)-|", @"H:|-(0)-[menu]-(0)-|" ];
+    ApplyVisualConstraints(constraints, view, rootView);
+    _addedConstraints = YES;
+  }
   [super updateViewConstraints];
-
-  UIView* rootView = [self view];
-  NSDictionary* view = @{ @"menu" : _menuView };
-  NSArray* constraints = @[ @"V:|-(0)-[menu]-(0)-|", @"H:|-(0)-[menu]-(0)-|" ];
-  ApplyVisualConstraints(constraints, view, rootView);
 }
 
 #pragma mark - Content Animation Stuff

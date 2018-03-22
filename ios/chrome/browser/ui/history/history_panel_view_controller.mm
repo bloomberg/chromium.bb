@@ -55,6 +55,8 @@ CGFloat kShadowOpacity = 0.2f;
   UIBarButtonItem* _leftBarButtonItem;
   // Right bar button item for Dismiss history action.
   UIBarButtonItem* _rightBarButtonItem;
+  // YES if NSLayoutConstraits were added.
+  BOOL _addedConstraints;
 }
 // Closes history.
 - (void)closeHistory;
@@ -172,15 +174,18 @@ CGFloat kShadowOpacity = 0.2f;
 }
 
 - (void)updateViewConstraints {
-  NSDictionary* views = @{
-    @"collectionView" : [_historyCollectionController view],
-    @"clearBrowsingBar" : _clearBrowsingBar,
-  };
-  NSArray* constraints = @[
-    @"V:|[collectionView][clearBrowsingBar]|", @"H:|[collectionView]|",
-    @"H:|[clearBrowsingBar]|"
-  ];
-  ApplyVisualConstraints(constraints, views);
+  if (!_addedConstraints) {
+    NSDictionary* views = @{
+      @"collectionView" : [_historyCollectionController view],
+      @"clearBrowsingBar" : _clearBrowsingBar,
+    };
+    NSArray* constraints = @[
+      @"V:|[collectionView][clearBrowsingBar]|", @"H:|[collectionView]|",
+      @"H:|[clearBrowsingBar]|"
+    ];
+    ApplyVisualConstraints(constraints, views);
+    _addedConstraints = YES;
+  }
   [super updateViewConstraints];
 }
 
