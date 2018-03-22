@@ -110,14 +110,8 @@ class ChromotingSession : public ClientInputInjector {
   void HandleOnThirdPartyTokenFetched(const std::string& token,
                                       const std::string& shared_secret);
 
-  // Provides the user's PIN and resumes the host authentication attempt. Call
-  // on the UI thread once the user has finished entering this PIN into the UI,
-  // but only after the UI has been asked to provide a PIN (via FetchSecret()).
-  // TODO(yuweih): Rename this to RequestPairing(). PIN is provided by a
-  // completely different codepath.
-  void ProvideSecret(const std::string& pin,
-                     bool create_pair,
-                     const std::string& device_name);
+  // Requests pairing between the host and client for PIN-less authentication.
+  void RequestPairing(const std::string& device_name);
 
   // Moves the host's cursor to the specified coordinates, optionally with some
   // mouse button depressed. If |button| is BUTTON_UNDEFINED, no click is made.

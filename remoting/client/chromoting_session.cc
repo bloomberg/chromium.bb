@@ -592,18 +592,8 @@ void ChromotingSession::HandleOnThirdPartyTokenFetched(
                              token, shared_secret);
 }
 
-void ChromotingSession::ProvideSecret(const std::string& pin,
-                                      bool create_pairing,
-                                      const std::string& device_name) {
-  // TODO(nicholss): |pin| here is not used. Maybe there was an api refactor and
-  // this was not cleaned up. The auth pin providing mechanism seems to be call
-  // ProvideSecret, and then call the auth callback. When session moves to
-  // Connected state, this chromoing session calls RequestPairing  based on
-  // create_pairing.
-
-  if (create_pairing) {
-    RunCoreTaskOnNetworkThread(FROM_HERE, &Core::RequestPairing, device_name);
-  }
+void ChromotingSession::RequestPairing(const std::string& device_name) {
+  RunCoreTaskOnNetworkThread(FROM_HERE, &Core::RequestPairing, device_name);
 }
 
 void ChromotingSession::SendMouseEvent(int x,
