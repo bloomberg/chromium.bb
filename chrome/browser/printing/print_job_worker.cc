@@ -322,8 +322,7 @@ void PrintJobWorker::StartPrinting(PrintedDocument* new_document) {
     return;
   }
 
-  // Try to print already cached data. It may already have been generated for
-  // the print preview.
+  // This will start a loop to wait for the page data.
   OnNewPage();
   // Don't touch this anymore since the instance could be destroyed. It happens
   // if all the pages are printed a one sweep and the client doesn't have a

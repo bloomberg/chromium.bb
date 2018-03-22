@@ -263,6 +263,10 @@ void PrintViewManagerBase::StartLocalPrintJob(
     return;
   }
 
+#if defined(OS_WIN)
+  print_job_->ResetPageMapping();
+#endif
+
   const printing::PrintSettings& settings = printer_query->settings();
   gfx::Size page_size = settings.page_setup_device_units().physical_size();
   gfx::Rect content_area =
@@ -578,8 +582,6 @@ bool PrintViewManagerBase::CreateNewPrintJob(PrintJobWorkerOwner* job) {
     return false;
   }
 
-  // Ask the renderer to generate the print preview, create the print preview
-  // view and switch to it, initialize the printer and show the print dialog.
   DCHECK(!print_job_.get());
   DCHECK(job);
   if (!job)
