@@ -31,6 +31,7 @@
 #endif
 
 using chrome_test_util::OmniboxText;
+using chrome_test_util::PurgeCachedWebViewPages;
 
 namespace {
 
@@ -44,19 +45,6 @@ const char kGoPositiveDeltaLink[] = "go-positive-delta";
 const char kPage1Link[] = "page-1";
 const char kPage2Link[] = "page-2";
 const char kPage3Link[] = "page-3";
-
-// Purges cached web view page, so the next time back navigation will not use
-// cached page. Browsers don't have to use fresh version for back forward
-// navigation for HTTP pages and may serve version from the cache even if
-// Cache-Control response header says otherwise.
-bool PurgeCachedWebViewPages() WARN_UNUSED_RESULT;
-bool PurgeCachedWebViewPages() {
-  web::WebState* web_state = chrome_test_util::GetCurrentWebState();
-  web_state->SetWebUsageEnabled(false);
-  web_state->SetWebUsageEnabled(true);
-  web_state->GetNavigationManager()->LoadIfNecessary();
-  return chrome_test_util::WaitForPageToFinishLoading();
-}
 
 // Response provider which can be paused. When it is paused it buffers all
 // requests and does not respond to them until |set_paused(false)| is called.
