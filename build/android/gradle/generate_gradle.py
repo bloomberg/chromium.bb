@@ -270,13 +270,13 @@ class _ProjectEntry(object):
 class _ProjectContextGenerator(object):
   """Helper class to generate gradle build files"""
   def __init__(self, project_dir, build_vars, use_gradle_process_resources,
-      jinja_processor, split_projects, canary):
+      jinja_processor, split_projects, channel):
     self.project_dir = project_dir
     self.build_vars = build_vars
     self.use_gradle_process_resources = use_gradle_process_resources
     self.jinja_processor = jinja_processor
     self.split_projects = split_projects
-    self.canary = canary
+    self.channel = channel
     self.processed_java_dirs = set()
     self.processed_prebuilts = set()
     self.processed_res_dirs = set()
@@ -529,7 +529,7 @@ def _GenerateBaseVars(generator, build_vars, source_properties):
       'android-%s' % build_vars['android_sdk_version'])
   variables['use_gradle_process_resources'] = (
       generator.use_gradle_process_resources)
-  variables['canary'] = generator.canary
+  variables['channel'] = generator.channel
   return variables
 
 
@@ -619,9 +619,9 @@ def _GenerateModuleAll(gradle_output_dir, generator, build_vars,
       os.path.join(gradle_output_dir, _MODULE_ALL, _GRADLE_BUILD_FILE), data)
 
 
-def _GenerateRootGradle(jinja_processor, canary):
+def _GenerateRootGradle(jinja_processor, channel):
   """Returns the data for the root project's build.gradle."""
-  return jinja_processor.Render(_TemplatePath('root'), {'canary': canary})
+  return jinja_processor.Render(_TemplatePath('root'), {'channel': channel})
 
 
 def _GenerateSettingsGradle(project_entries, add_all_module):
@@ -742,10 +742,15 @@ def main():
                       action='store_true',
                       help='Split projects by their gn deps rather than '
                            'combining all the dependencies of each target')
-  parser.add_argument('--canary',
+  version_group = parser.add_mutually_exclusive_group()
+  version_group.add_argument('--beta',
                       action='store_true',
                       help='Generate a project that is compatible with '
-                           'Android Studio 3.1 Canary.')
+                           'Android Studio Beta.')
+  version_group.add_argument('--canary',
+                      action='store_true',
+                      help='Generate a project that is compatible with '
+                           'Android Studio Canary.')
   sdk_group = parser.add_mutually_exclusive_group()
   sdk_group.add_argument('--sdk',
                          choices=['AndroidStudioCurrent',
@@ -782,9 +787,15 @@ def main():
   source_properties = _ReadPropertiesFile(
       _RebasePath(os.path.join(build_vars['android_sdk_build_tools'],
                                'source.properties')))
+  if args.beta:
+    channel = 'beta'
+  elif args.canary:
+    channel = 'canary'
+  else:
+    channel = 'stable'
   generator = _ProjectContextGenerator(_gradle_output_dir, build_vars,
       args.use_gradle_process_resources, jinja_processor, args.split_projects,
-      args.canary)
+      channel)
   logging.warning('Creating project at: %s', generator.project_dir)
 
   # Generate for "all targets" by default when not using --split-projects (too
@@ -858,7 +869,7 @@ def main():
         source_properties, jinja_processor)
 
   _WriteFile(os.path.join(generator.project_dir, _GRADLE_BUILD_FILE),
-             _GenerateRootGradle(jinja_processor, args.canary))
+             _GenerateRootGradle(jinja_processor, channel))
 
   _WriteFile(os.path.join(generator.project_dir, 'settings.gradle'),
              _GenerateSettingsGradle(project_entries, add_all_module))
@@ -882,8 +893,7 @@ def main():
     _ExtractZips(generator.project_dir, zip_tuples)
 
   logging.warning('Project created!')
-  logging.warning('Generated projects work with Android Studio %s',
-                  '3.1' if args.canary else '3.0')
+  logging.warning('Generated projects work with Android Studio %s', channel)
   logging.warning('For more tips: https://chromium.googlesource.com/chromium'
                   '/src.git/+/master/docs/android_studio.md')
 
