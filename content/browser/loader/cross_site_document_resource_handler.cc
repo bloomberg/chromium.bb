@@ -845,11 +845,6 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
   bool has_nosniff_header =
       base::LowerCaseEqualsASCII(nosniff_header, "nosniff");
 
-  // If this is an HTTP range request, sniffing isn't possible.
-  std::string range_header;
-  response->head.headers->GetNormalizedHeader("content-range", &range_header);
-  bool has_range_header = !range_header.empty();
-
   // CORB should look directly at the Content-Type header if one has been
   // received from the network.  Ignoring |response->head.mime_type| helps avoid
   // breaking legitimate websites (which might happen more often when blocking
@@ -868,15 +863,29 @@ bool CrossSiteDocumentResourceHandler::ShouldBlockBasedOnHeaders(
 
   // If this is a partial response, sniffing is not possible, so allow the
   // response if it's not a protected mime type.
-  if (has_range_header && canonical_mime_type_ == MimeType::kOthers) {
-    return false;
+  std::string range_header;
+  response->head.headers->GetNormalizedHeader("content-range", &range_header);
+  if (!range_header.empty()) {
+    needs_sniffing_ = false;
+    switch (canonical_mime_type_) {
+      case MimeType::kOthers:
+      case MimeType::kPlain:  // See also https://crbug.com/801709
+        return false;
+      case MimeType::kHtml:
+      case MimeType::kJson:
+      case MimeType::kXml:
+        return true;
+      case MimeType::kMax:
+        NOTREACHED();
+        return true;
+    }
   }
 
   // We need to sniff unprotected mime types (e.g. for parser breakers), and
   // unless the nosniff header is set, we also need to sniff protected mime
   // types to verify that they're not mislabeled.
-  needs_sniffing_ = (canonical_mime_type_ == MimeType::kOthers) ||
-                    !(has_range_header || has_nosniff_header);
+  needs_sniffing_ =
+      (canonical_mime_type_ == MimeType::kOthers) || !has_nosniff_header;
 
   // Stylesheets shouldn't be sniffed for JSON parser breakers - see
   // https://crbug.com/809259.
