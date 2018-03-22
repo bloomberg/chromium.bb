@@ -37,7 +37,6 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.MinAndroidSdkLevel;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
-import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.customtabs.CustomTabActivity;
 import org.chromium.chrome.browser.vr_shell.mock.MockVrDaydreamApi;
@@ -405,7 +404,6 @@ public class WebVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
-    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.VR_BROWSING})
     public void testAppButtonNoopsWhenBrowsingDisabled()
             throws InterruptedException, ExecutionException {
         appButtonNoopsTestImpl(
@@ -435,10 +433,10 @@ public class WebVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
-    @CommandLineFlags.Remove({"enable-webvr"})
-    @CommandLineFlags.Add({"disable-features=" + ChromeFeatureList.VR_BROWSING,
-            "enable-features=WebXR"})
-    public void testAppButtonNoopsWhenBrowsingDisabled_WebXr()
+    @CommandLineFlags
+            .Remove({"enable-webvr"})
+            @CommandLineFlags.Add({"enable-features=WebXR"})
+            public void testAppButtonNoopsWhenBrowsingDisabled_WebXr()
             throws InterruptedException, ExecutionException {
         appButtonNoopsTestImpl(
                 XrTestFramework.getHtmlTestFile("generic_webxr_page"), mXrTestFramework);
@@ -463,6 +461,7 @@ public class WebVrInputTest {
 
     private void appButtonNoopsTestImpl(String url, TestFramework framework)
             throws InterruptedException, ExecutionException {
+        VrShellDelegateUtils.getDelegateInstance().setVrBrowsingDisabled(true);
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         TransitionUtils.enterPresentationOrFail(framework);
 

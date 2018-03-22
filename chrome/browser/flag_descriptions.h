@@ -1774,9 +1774,6 @@ extern const char kWebVrVsyncAlignDescription[];
 
 #if defined(OS_ANDROID)
 
-extern const char kVrBrowsingName[];
-extern const char kVrBrowsingDescription[];
-
 extern const char kVrBrowserKeyboardName[];
 extern const char kVrBrowserKeyboardDescription[];
 

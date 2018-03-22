@@ -256,8 +256,6 @@ class VrShell : device::GvrGamepadDataProvider,
   void OnAssetsComponentReady();
   void OnAssetsComponentWaitTimeout();
 
-  bool vr_shell_enabled_;
-
   bool webvr_mode_ = false;
   bool web_vr_autopresentation_expected_ = false;
 

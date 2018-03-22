@@ -250,7 +250,6 @@ public abstract class ChromeFeatureList {
     public static final String TRUSTED_WEB_ACTIVITY = "TrustedWebActivity";
     public static final String VIDEO_PERSISTENCE = "VideoPersistence";
     public static final String UNIFIED_CONSENT = "UnifiedConsent";
-    public static final String VR_BROWSING = "VrBrowsing";
     public static final String VR_BROWSING_FEEDBACK = "VrBrowsingFeedback";
     public static final String VR_BROWSING_IN_CUSTOM_TAB = "VrBrowsingInCustomTab";
     public static final String VR_BROWSING_NATIVE_ANDROID_UI = "VrBrowsingNativeAndroidUi";

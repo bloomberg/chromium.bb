@@ -23,6 +23,7 @@ public class TestVrShellDelegate extends VrShellDelegate {
     private static final int DON_CANCEL_DELAY_MS = 200;
     private boolean mOnResumeCalled;
     private static TestVrShellDelegate sInstance;
+    private boolean mDisableVrBrowsing;
 
     protected TestVrShellDelegate(ChromeActivity activity) {
         super(activity, VrShellDelegate.getVrClassesWrapper());
@@ -89,6 +90,16 @@ public class TestVrShellDelegate extends VrShellDelegate {
     @Override
     public void acceptDoffPromptForTesting() {
         super.acceptDoffPromptForTesting();
+    }
+
+    @Override
+    protected boolean isVrBrowsingEnabled() {
+        if (mDisableVrBrowsing) return false;
+        return super.isVrBrowsingEnabled();
+    }
+
+    public void setVrBrowsingDisabled(boolean disabled) {
+        mDisableVrBrowsing = disabled;
     }
 
     /**
