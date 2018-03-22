@@ -49,8 +49,7 @@ content::WebContents* GetWebContentsToUse(content::WebContents* contents) {
           contents->GetBrowserContext());
   if (guest_view_manager) {
     guest_view_manager->ForEachGuest(
-        contents,
-        base::Bind(&StoreFullPagePlugin, &contents));
+        contents, base::BindRepeating(&StoreFullPagePlugin, &contents));
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
   return contents;

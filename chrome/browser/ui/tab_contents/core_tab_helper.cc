@@ -139,8 +139,8 @@ bool CoreTabHelper::GetStatusTextForWebContents(
     if (!guest_manager)
       return false;
     return guest_manager->ForEachGuest(
-        source, base::Bind(&CoreTabHelper::GetStatusTextForWebContents,
-                           status_text));
+        source, base::BindRepeating(&CoreTabHelper::GetStatusTextForWebContents,
+                                    status_text));
 #else  // !BUILDFLAG(ENABLE_EXTENSIONS)
     return false;
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)

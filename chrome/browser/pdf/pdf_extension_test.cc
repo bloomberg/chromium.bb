@@ -264,7 +264,7 @@ class PDFExtensionTest : public ExtensionApiTest,
         web_contents->GetBrowserContext()->GetGuestManager();
     WebContents* guest_contents = nullptr;
     ASSERT_NO_FATAL_FAILURE(guest_manager->ForEachGuest(
-        web_contents, base::Bind(&GetGuestCallback, &guest_contents)));
+        web_contents, base::BindRepeating(&GetGuestCallback, &guest_contents)));
     ASSERT_TRUE(guest_contents);
     ASSERT_TRUE(content::ExecuteScript(
         guest_contents,

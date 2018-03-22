@@ -1402,8 +1402,8 @@ void WaitForAccessibilityTreeToContainNodeWithName(WebContents* web_contents,
         web_contents_impl->GetBrowserContext()->GetGuestManager();
     if (guest_manager) {
       guest_manager->ForEachGuest(web_contents_impl,
-                                  base::Bind(&ListenToGuestWebContents,
-                                             &accessibility_waiter));
+                                  base::BindRepeating(&ListenToGuestWebContents,
+                                                      &accessibility_waiter));
     }
 
     accessibility_waiter.WaitForNotification();

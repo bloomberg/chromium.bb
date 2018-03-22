@@ -26,7 +26,7 @@ class CONTENT_EXPORT BrowserPluginGuestManager {
   // Iterates over all WebContents belonging to a given |embedder_web_contents|,
   // calling |callback| for each. If one of the callbacks returns true, then
   // the iteration exits early.
-  typedef base::Callback<bool(WebContents*)> GuestCallback;
+  using GuestCallback = base::RepeatingCallback<bool(WebContents*)>;
   virtual bool ForEachGuest(WebContents* embedder_web_contents,
                             const GuestCallback& callback);
 

@@ -340,7 +340,7 @@ IN_PROC_BROWSER_TEST_F(InlineLoginUIBrowserTest, MAYBE_DifferentStorageId) {
   std::set<content::WebContents*> set;
   GuestViewManager* manager = GuestViewManager::FromBrowserContext(
       info.contents->GetBrowserContext());
-  manager->ForEachGuest(info.contents, base::Bind(&AddToSet, &set));
+  manager->ForEachGuest(info.contents, base::BindRepeating(&AddToSet, &set));
   ASSERT_EQ(1u, set.size());
   content::WebContents* webview_contents = *set.begin();
   content::RenderProcessHost* process =
