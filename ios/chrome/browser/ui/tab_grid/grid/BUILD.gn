@@ -37,3 +37,20 @@ source_set("grid_ui") {
     "//ui/base",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = [
+    "grid_view_controller_unittest.mm",
+  ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
+
+  deps = [
+    ":grid_ui",
+    "//base/test:test_support",
+    "//testing/gtest",
+    "//third_party/ocmock",
+  ]
+}
