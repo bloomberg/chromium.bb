@@ -2110,6 +2110,12 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     // Weak HashTable. The HashTable may be held alive strongly from somewhere
     // else, e.g., an iterator.
 
+    // Small performance optimization: It is safe to assume that if the enqueued
+    // flag has been set all callbacks have been previously registered and it is
+    // safe to bail out.
+    if (Enqueued())
+      return;
+
     // Marking of the table is delayed because the backing store is potentially
     // held alive strongly by other objects. Delayed marking happens after
     // regular marking.
