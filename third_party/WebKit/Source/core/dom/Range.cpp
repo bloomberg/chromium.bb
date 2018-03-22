@@ -461,22 +461,8 @@ bool Range::intersectsNode(Node* ref_node, ExceptionState& exception_state) {
     return true;
 
   int node_index = ref_node->NodeIndex();
-
-  if (comparePoint(parent_node, node_index, exception_state) <
-          0  // starts before start
-      && comparePoint(parent_node, node_index + 1, exception_state) <
-             0) {  // ends before start
-    return false;
-  }
-
-  if (comparePoint(parent_node, node_index, exception_state) >
-          0  // starts after end
-      && comparePoint(parent_node, node_index + 1, exception_state) >
-             0) {  // ends after end
-    return false;
-  }
-
-  return true;  // all other cases
+  return Position(parent_node, node_index) < end_.ToPosition() &&
+         Position(parent_node, node_index + 1) > start_.ToPosition();
 }
 
 static inline Node* HighestAncestorUnderCommonRoot(Node* node,
