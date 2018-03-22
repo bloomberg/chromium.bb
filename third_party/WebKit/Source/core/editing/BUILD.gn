@@ -346,6 +346,7 @@ jumbo_source_set("unit_tests") {
     "VisiblePositionTest.cpp",
     "VisibleSelectionTest.cpp",
     "VisibleUnitsLineTest.cpp",
+    "VisibleUnitsParagraphTest.cpp",
     "VisibleUnitsSentenceTest.cpp",
     "VisibleUnitsTest.cpp",
     "VisibleUnitsWordTest.cpp",
