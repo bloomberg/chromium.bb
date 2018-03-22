@@ -10,16 +10,24 @@ extern "C" double aom_randn(double sigma);
 
 TEST(NoiseStrengthSolver, GetCentersTwoBins) {
   aom_noise_strength_solver_t solver;
-  aom_noise_strength_solver_init(&solver, 2);
+  aom_noise_strength_solver_init(&solver, 2, 8);
   EXPECT_NEAR(0, aom_noise_strength_solver_get_center(&solver, 0), 1e-5);
   EXPECT_NEAR(255, aom_noise_strength_solver_get_center(&solver, 1), 1e-5);
+  aom_noise_strength_solver_free(&solver);
+}
+
+TEST(NoiseStrengthSolver, GetCentersTwoBins10bit) {
+  aom_noise_strength_solver_t solver;
+  aom_noise_strength_solver_init(&solver, 2, 10);
+  EXPECT_NEAR(0, aom_noise_strength_solver_get_center(&solver, 0), 1e-5);
+  EXPECT_NEAR(1023, aom_noise_strength_solver_get_center(&solver, 1), 1e-5);
   aom_noise_strength_solver_free(&solver);
 }
 
 TEST(NoiseStrengthSolver, GetCenters256Bins) {
   const int num_bins = 256;
   aom_noise_strength_solver_t solver;
-  aom_noise_strength_solver_init(&solver, num_bins);
+  aom_noise_strength_solver_init(&solver, num_bins, 8);
 
   for (int i = 0; i < 256; ++i) {
     EXPECT_NEAR(i, aom_noise_strength_solver_get_center(&solver, i), 1e-5);
@@ -32,7 +40,7 @@ TEST(NoiseStrengthSolver, GetCenters256Bins) {
 TEST(NoiseStrengthSolver, ObserveIdentity) {
   const int num_bins = 256;
   aom_noise_strength_solver_t solver;
-  EXPECT_EQ(1, aom_noise_strength_solver_init(&solver, num_bins));
+  EXPECT_EQ(1, aom_noise_strength_solver_init(&solver, num_bins, 8));
 
   // We have to add a big more strength to constraints at the boundary to
   // overcome any regularization.
@@ -64,7 +72,7 @@ TEST(NoiseStrengthSolver, ObserveIdentity) {
 TEST(NoiseStrengthSolver, SimplifiesCurve) {
   const int num_bins = 256;
   aom_noise_strength_solver_t solver;
-  EXPECT_EQ(1, aom_noise_strength_solver_init(&solver, num_bins));
+  EXPECT_EQ(1, aom_noise_strength_solver_init(&solver, num_bins, 8));
 
   // Create a parabolic input
   for (int i = 0; i < 256; ++i) {
@@ -154,7 +162,7 @@ TEST(NoiseStrengthLut, LutEvalMultiPointInterp) {
 }
 
 TEST(NoiseModel, InitSuccessWithValidSquareShape) {
-  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 2 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 2, 8, 0 };
   aom_noise_model_t model;
 
   EXPECT_TRUE(aom_noise_model_init(&model, params));
@@ -174,7 +182,7 @@ TEST(NoiseModel, InitSuccessWithValidSquareShape) {
 
 TEST(NoiseModel, InitSuccessWithValidDiamondShape) {
   aom_noise_model_t model;
-  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_DIAMOND, 2 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_DIAMOND, 2, 8, 0 };
   EXPECT_TRUE(aom_noise_model_init(&model, params));
   EXPECT_EQ(6, model.n);
   const int kNumCoords = 6;
@@ -191,43 +199,66 @@ TEST(NoiseModel, InitSuccessWithValidDiamondShape) {
 
 TEST(NoiseModel, InitFailsWithTooLargeLag) {
   aom_noise_model_t model;
-  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 10 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 10, 8, 0 };
   EXPECT_FALSE(aom_noise_model_init(&model, params));
   aom_noise_model_free(&model);
 }
 
 TEST(NoiseModel, InitFailsWithTooSmallLag) {
   aom_noise_model_t model;
-  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 0 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 0, 8, 0 };
   EXPECT_FALSE(aom_noise_model_init(&model, params));
   aom_noise_model_free(&model);
 }
 
 TEST(NoiseModel, InitFailsWithInvalidShape) {
   aom_noise_model_t model;
-  aom_noise_model_params_t params = { aom_noise_shape(100), 3 };
+  aom_noise_model_params_t params = { aom_noise_shape(100), 3, 8, 0 };
   EXPECT_FALSE(aom_noise_model_init(&model, params));
   aom_noise_model_free(&model);
 }
 
-TEST(FlatBlockEstimator, ExtractBlock) {
+// A container template class to hold a data type and extra arguments.
+// All of these args are bundled into one struct so that we can use
+// parameterized tests on combinations of supported data types
+// (uint8_t and uint16_t) and bit depths (8, 10, 12).
+template <typename T, int bit_depth, bool use_highbd>
+struct BitDepthParams {
+  typedef T data_type_t;
+  static const int kBitDepth = bit_depth;
+  static const bool kUseHighBD = use_highbd;
+};
+
+template <typename T>
+class FlatBlockEstimatorTest : public ::testing::Test, public T {
+ public:
+  typedef std::vector<typename T::data_type_t> VecType;
+  VecType data_;
+};
+
+TYPED_TEST_CASE_P(FlatBlockEstimatorTest);
+
+TYPED_TEST_P(FlatBlockEstimatorTest, ExtractBlock) {
   const int kBlockSize = 16;
   aom_flat_block_finder_t flat_block_finder;
-  ASSERT_EQ(1, aom_flat_block_finder_init(&flat_block_finder, kBlockSize));
+  ASSERT_EQ(1, aom_flat_block_finder_init(&flat_block_finder, kBlockSize,
+                                          this->kBitDepth, this->kUseHighBD));
+  const double normalization = flat_block_finder.normalization;
 
   // Test with an image of more than one block.
   const int h = 2 * kBlockSize;
   const int w = 2 * kBlockSize;
   const int stride = 2 * kBlockSize;
-  std::vector<uint8_t> data(h * stride, 128);
+  this->data_.resize(h * stride, 128);
 
   // Set up the (0,0) block to be a plane and the (0,1) block to be a
   // checkerboard
+  const int shift = this->kBitDepth - 8;
   for (int y = 0; y < kBlockSize; ++y) {
     for (int x = 0; x < kBlockSize; ++x) {
-      data[y * stride + x] = -y + x + 128;
-      data[y * stride + x + kBlockSize] =
-          (x % 2 + y % 2) % 2 ? 128 - 20 : 128 + 20;
+      this->data_[y * stride + x] = (-y + x + 128) << shift;
+      this->data_[y * stride + x + kBlockSize] =
+          ((x % 2 + y % 2) % 2 ? 128 - 20 : 128 + 20) << shift;
     }
   }
   std::vector<double> block(kBlockSize * kBlockSize, 1);
@@ -235,78 +266,86 @@ TEST(FlatBlockEstimator, ExtractBlock) {
 
   // The block data should be a constant (zero) and the rest of the plane
   // trend is covered in the plane data.
-  aom_flat_block_finder_extract_block(&flat_block_finder, &data[0], w, h,
-                                      stride, 0, 0, &plane[0], &block[0]);
+  aom_flat_block_finder_extract_block(&flat_block_finder,
+                                      (uint8_t *)&this->data_[0], w, h, stride,
+                                      0, 0, &plane[0], &block[0]);
   for (int y = 0; y < kBlockSize; ++y) {
     for (int x = 0; x < kBlockSize; ++x) {
       EXPECT_NEAR(0, block[y * kBlockSize + x], 1e-5);
-      EXPECT_NEAR((double)(data[y * stride + x]) / 255,
+      EXPECT_NEAR((double)(this->data_[y * stride + x]) / normalization,
                   plane[y * kBlockSize + x], 1e-5);
     }
   }
 
   // The plane trend is a constant, and the block is a zero mean checkerboard.
-  aom_flat_block_finder_extract_block(&flat_block_finder, &data[0], w, h,
-                                      stride, kBlockSize, 0, &plane[0],
-                                      &block[0]);
+  aom_flat_block_finder_extract_block(&flat_block_finder,
+                                      (uint8_t *)&this->data_[0], w, h, stride,
+                                      kBlockSize, 0, &plane[0], &block[0]);
+  const int mid = 128 << shift;
   for (int y = 0; y < kBlockSize; ++y) {
     for (int x = 0; x < kBlockSize; ++x) {
-      EXPECT_NEAR(((double)data[y * stride + x + kBlockSize] - 128.0) / 255,
+      EXPECT_NEAR(((double)this->data_[y * stride + x + kBlockSize] - mid) /
+                      normalization,
                   block[y * kBlockSize + x], 1e-5);
-      EXPECT_NEAR(128.0 / 255.0, plane[y * kBlockSize + x], 1e-5);
+      EXPECT_NEAR(mid / normalization, plane[y * kBlockSize + x], 1e-5);
     }
   }
   aom_flat_block_finder_free(&flat_block_finder);
 }
 
-TEST(FlatBlockEstimator, FindFlatBlocks) {
+TYPED_TEST_P(FlatBlockEstimatorTest, FindFlatBlocks) {
   const int kBlockSize = 32;
   aom_flat_block_finder_t flat_block_finder;
-  ASSERT_EQ(1, aom_flat_block_finder_init(&flat_block_finder, kBlockSize));
+  ASSERT_EQ(1, aom_flat_block_finder_init(&flat_block_finder, kBlockSize,
+                                          this->kBitDepth, this->kUseHighBD));
 
   const int num_blocks_w = 8;
   const int h = kBlockSize;
   const int w = kBlockSize * num_blocks_w;
   const int stride = w;
-  std::vector<uint8_t> data(h * stride, 128);
+  this->data_.resize(h * stride, 128);
   std::vector<uint8_t> flat_blocks(num_blocks_w, 0);
 
+  const int shift = this->kBitDepth - 8;
   for (int y = 0; y < kBlockSize; ++y) {
     for (int x = 0; x < kBlockSize; ++x) {
       // Block 0 (not flat): constant doesn't have enough variance to qualify
-      data[y * stride + x + 0 * kBlockSize] = 128;
+      this->data_[y * stride + x + 0 * kBlockSize] = 128 << shift;
 
       // Block 1 (not flat): too high of variance is hard to validate as flat
-      data[y * stride + x + 1 * kBlockSize] = (uint8_t)(128 + aom_randn(5));
+      this->data_[y * stride + x + 1 * kBlockSize] =
+          ((uint8_t)(128 + aom_randn(5))) << shift;
 
       // Block 2 (flat): slight checkerboard added to constant
       const int check = (x % 2 + y % 2) % 2 ? -2 : 2;
-      data[y * stride + x + 2 * kBlockSize] = 128 + check;
+      this->data_[y * stride + x + 2 * kBlockSize] = (128 + check) << shift;
 
       // Block 3 (flat): planar block with checkerboard pattern is also flat
-      data[y * stride + x + 3 * kBlockSize] = y * 2 - x / 2 + 128 + check;
+      this->data_[y * stride + x + 3 * kBlockSize] =
+          (y * 2 - x / 2 + 128 + check) << shift;
 
       // Block 4 (flat): gaussian random with standard deviation 1.
-      data[y * stride + x + 4 * kBlockSize] =
-          (uint8_t)(aom_randn(1) + x + 128.0);
+      this->data_[y * stride + x + 4 * kBlockSize] =
+          ((uint8_t)(aom_randn(1) + x + 128.0)) << shift;
 
       // Block 5 (flat): gaussian random with standard deviation 2.
-      data[y * stride + x + 5 * kBlockSize] =
-          (uint8_t)(aom_randn(2) + y + 128.0);
+      this->data_[y * stride + x + 5 * kBlockSize] =
+          ((uint8_t)(aom_randn(2) + y + 128.0)) << shift;
 
       // Block 6 (not flat): too high of directional gradient.
       const int strong_edge = x > kBlockSize / 2 ? 64 : 0;
-      data[y * stride + x + 6 * kBlockSize] =
-          (uint8_t)(aom_randn(1) + strong_edge + 128.0);
+      this->data_[y * stride + x + 6 * kBlockSize] =
+          ((uint8_t)(aom_randn(1) + strong_edge + 128.0)) << shift;
 
       // Block 7 (not flat): too high gradient.
       const int big_check = ((x >> 2) % 2 + (y >> 2) % 2) % 2 ? -16 : 16;
-      data[y * stride + x + 7 * kBlockSize] =
-          (uint8_t)(aom_randn(1) + big_check + 128.0);
+      this->data_[y * stride + x + 7 * kBlockSize] =
+          ((uint8_t)(aom_randn(1) + big_check + 128.0)) << shift;
     }
   }
 
-  EXPECT_EQ(4, aom_flat_block_finder_run(&flat_block_finder, &data[0], w, h,
+  EXPECT_EQ(4, aom_flat_block_finder_run(&flat_block_finder,
+                                         (uint8_t *)&this->data_[0], w, h,
                                          stride, &flat_blocks[0]));
 
   // First two blocks are not flat
@@ -326,7 +365,19 @@ TEST(FlatBlockEstimator, FindFlatBlocks) {
   aom_flat_block_finder_free(&flat_block_finder);
 }
 
-class NoiseModelUpdateTest : public ::testing::Test {
+REGISTER_TYPED_TEST_CASE_P(FlatBlockEstimatorTest, ExtractBlock,
+                           FindFlatBlocks);
+
+typedef ::testing::Types<BitDepthParams<uint8_t, 8, false>,   // lowbd
+                         BitDepthParams<uint16_t, 8, true>,   // lowbd in 16-bit
+                         BitDepthParams<uint16_t, 10, true>,  // highbd data
+                         BitDepthParams<uint16_t, 12, true> >
+    AllBitDepthParams;
+INSTANTIATE_TYPED_TEST_CASE_P(FlatBlockInstatiation, FlatBlockEstimatorTest,
+                              AllBitDepthParams);
+
+template <typename T>
+class NoiseModelUpdateTest : public ::testing::Test, public T {
  public:
   static const int kWidth = 128;
   static const int kHeight = 128;
@@ -335,7 +386,8 @@ class NoiseModelUpdateTest : public ::testing::Test {
   static const int kNumBlocksY = kHeight / kBlockSize;
 
   void SetUp() {
-    const aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 3 };
+    const aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 3,
+                                              T::kBitDepth, T::kUseHighBD };
     ASSERT_TRUE(aom_noise_model_init(&model_, params));
 
     data_.resize(kWidth * kHeight * 3);
@@ -349,116 +401,137 @@ class NoiseModelUpdateTest : public ::testing::Test {
       noise_ptr_[c] = &noise_[offset];
       denoised_ptr_[c] = &denoised_[offset];
       strides_[c] = kWidth;
+
+      data_ptr_raw_[c] = (uint8_t *)&data_[offset];
+      denoised_ptr_raw_[c] = (uint8_t *)&denoised_[offset];
     }
     chroma_sub_[0] = 0;
     chroma_sub_[1] = 0;
+  }
+
+  int NoiseModelUpdate(int block_size = kBlockSize) {
+    return aom_noise_model_update(&model_, data_ptr_raw_, denoised_ptr_raw_,
+                                  kWidth, kHeight, strides_, chroma_sub_,
+                                  &flat_blocks_[0], block_size);
   }
 
   void TearDown() { aom_noise_model_free(&model_); }
 
  protected:
   aom_noise_model_t model_;
-  std::vector<uint8_t> data_;
-  std::vector<uint8_t> denoised_;
+  std::vector<typename T::data_type_t> data_;
+  std::vector<typename T::data_type_t> denoised_;
 
   std::vector<double> noise_;
   std::vector<double> renoise_;
   std::vector<uint8_t> flat_blocks_;
 
-  uint8_t *data_ptr_[3];
-  uint8_t *denoised_ptr_[3];
+  typename T::data_type_t *data_ptr_[3];
+  typename T::data_type_t *denoised_ptr_[3];
+
   double *noise_ptr_[3];
   int strides_[3];
   int chroma_sub_[2];
+
+ private:
+  uint8_t *data_ptr_raw_[3];
+  uint8_t *denoised_ptr_raw_[3];
 };
 
-TEST_F(NoiseModelUpdateTest, UpdateFailsNoFlatBlocks) {
+TYPED_TEST_CASE_P(NoiseModelUpdateTest);
+
+TYPED_TEST_P(NoiseModelUpdateTest, UpdateFailsNoFlatBlocks) {
   EXPECT_EQ(AOM_NOISE_STATUS_INSUFFICIENT_FLAT_BLOCKS,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
+            this->NoiseModelUpdate());
 }
 
-TEST_F(NoiseModelUpdateTest, UpdateSuccessForZeroNoiseAllFlat) {
-  flat_blocks_.assign(flat_blocks_.size(), 1);
-  denoised_.assign(denoised_.size(), 128);
-  data_.assign(denoised_.size(), 128);
-  EXPECT_EQ(AOM_NOISE_STATUS_INTERNAL_ERROR,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
+TYPED_TEST_P(NoiseModelUpdateTest, UpdateSuccessForZeroNoiseAllFlat) {
+  this->flat_blocks_.assign(this->flat_blocks_.size(), 1);
+  this->denoised_.assign(this->denoised_.size(), 128);
+  this->data_.assign(this->denoised_.size(), 128);
+  EXPECT_EQ(AOM_NOISE_STATUS_INTERNAL_ERROR, this->NoiseModelUpdate());
 }
 
-TEST_F(NoiseModelUpdateTest, UpdateFailsBlockSizeTooSmall) {
-  flat_blocks_.assign(flat_blocks_.size(), 1);
-  denoised_.assign(denoised_.size(), 128);
-  data_.assign(denoised_.size(), 128);
-  EXPECT_EQ(
-      AOM_NOISE_STATUS_INVALID_ARGUMENT,
-      aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth, kHeight,
-                             strides_, chroma_sub_, &flat_blocks_[0],
-                             6 /* block_size=2 is too small*/));
+TYPED_TEST_P(NoiseModelUpdateTest, UpdateFailsBlockSizeTooSmall) {
+  this->flat_blocks_.assign(this->flat_blocks_.size(), 1);
+  this->denoised_.assign(this->denoised_.size(), 128);
+  this->data_.assign(this->denoised_.size(), 128);
+  EXPECT_EQ(AOM_NOISE_STATUS_INVALID_ARGUMENT,
+            this->NoiseModelUpdate(6 /* block_size=6 is too small*/));
 }
 
-TEST_F(NoiseModelUpdateTest, UpdateSuccessForWhiteRandomNoise) {
+TYPED_TEST_P(NoiseModelUpdateTest, UpdateSuccessForWhiteRandomNoise) {
+  aom_noise_model_t &model = this->model_;
+  const int kWidth = this->kWidth;
+  const int kHeight = this->kHeight;
+
+  const int shift = this->kBitDepth - 8;
   for (int y = 0; y < kHeight; ++y) {
     for (int x = 0; x < kWidth; ++x) {
-      data_ptr_[0][y * kWidth + x] = int(64 + y + aom_randn(1));
-      denoised_ptr_[0][y * kWidth + x] = 64 + y;
+      this->data_ptr_[0][y * kWidth + x] = int(64 + y + aom_randn(1)) << shift;
+      this->denoised_ptr_[0][y * kWidth + x] = (64 + y) << shift;
       // Make the chroma planes completely correlated with the Y plane
       for (int c = 1; c < 3; ++c) {
-        data_ptr_[c][y * kWidth + x] = data_ptr_[0][y * kWidth + x];
-        denoised_ptr_[c][y * kWidth + x] = denoised_ptr_[0][y * kWidth + x];
+        this->data_ptr_[c][y * kWidth + x] = this->data_ptr_[0][y * kWidth + x];
+        this->denoised_ptr_[c][y * kWidth + x] =
+            this->denoised_ptr_[0][y * kWidth + x];
       }
     }
   }
-  flat_blocks_.assign(flat_blocks_.size(), 1);
-  EXPECT_EQ(AOM_NOISE_STATUS_OK,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
+  this->flat_blocks_.assign(this->flat_blocks_.size(), 1);
+  EXPECT_EQ(AOM_NOISE_STATUS_OK, this->NoiseModelUpdate());
 
   const double kCoeffEps = 0.075;
-  const int n = model_.n;
+  const int n = model.n;
   for (int c = 0; c < 3; ++c) {
     for (int i = 0; i < n; ++i) {
-      EXPECT_NEAR(0, model_.latest_state[c].eqns.x[i], kCoeffEps);
-      EXPECT_NEAR(0, model_.combined_state[c].eqns.x[i], kCoeffEps);
+      EXPECT_NEAR(0, model.latest_state[c].eqns.x[i], kCoeffEps);
+      EXPECT_NEAR(0, model.combined_state[c].eqns.x[i], kCoeffEps);
     }
     // The second and third channels are highly correlated with the first.
     if (c > 0) {
-      ASSERT_EQ(n + 1, model_.latest_state[c].eqns.n);
-      ASSERT_EQ(n + 1, model_.combined_state[c].eqns.n);
+      ASSERT_EQ(n + 1, model.latest_state[c].eqns.n);
+      ASSERT_EQ(n + 1, model.combined_state[c].eqns.n);
 
-      EXPECT_NEAR(1, model_.latest_state[c].eqns.x[n], kCoeffEps);
-      EXPECT_NEAR(1, model_.combined_state[c].eqns.x[n], kCoeffEps);
+      EXPECT_NEAR(1, model.latest_state[c].eqns.x[n], kCoeffEps);
+      EXPECT_NEAR(1, model.combined_state[c].eqns.x[n], kCoeffEps);
     }
   }
 
   // The fitted noise strength should be close to the standard deviation
   // for all intensity bins.
   const double kStdEps = 0.1;
-  for (int i = 0; i < model_.latest_state[0].strength_solver.eqns.n; ++i) {
-    EXPECT_NEAR(1.0, model_.latest_state[0].strength_solver.eqns.x[i], kStdEps);
-    EXPECT_NEAR(1.0, model_.combined_state[0].strength_solver.eqns.x[i],
+  const double normalize = 1 << shift;
+
+  for (int i = 0; i < model.latest_state[0].strength_solver.eqns.n; ++i) {
+    EXPECT_NEAR(1.0,
+                model.latest_state[0].strength_solver.eqns.x[i] / normalize,
+                kStdEps);
+    EXPECT_NEAR(1.0,
+                model.combined_state[0].strength_solver.eqns.x[i] / normalize,
                 kStdEps);
   }
 
   aom_noise_strength_lut_t lut;
   aom_noise_strength_solver_fit_piecewise(
-      &model_.latest_state[0].strength_solver, -1, &lut);
+      &model.latest_state[0].strength_solver, -1, &lut);
   ASSERT_EQ(2, lut.num_points);
   EXPECT_NEAR(0.0, lut.points[0][0], 1e-5);
-  EXPECT_NEAR(1.0, lut.points[0][1], kStdEps);
-  EXPECT_NEAR(255.0, lut.points[1][0], 1e-5);
-  EXPECT_NEAR(1.0, lut.points[1][1], kStdEps);
+  EXPECT_NEAR(1.0, lut.points[0][1] / normalize, kStdEps);
+  EXPECT_NEAR((1 << this->kBitDepth) - 1, lut.points[1][0], 1e-5);
+  EXPECT_NEAR(1.0, lut.points[1][1] / normalize, kStdEps);
   aom_noise_strength_lut_free(&lut);
 }
 
-TEST_F(NoiseModelUpdateTest, UpdateSuccessForScaledWhiteNoise) {
+TYPED_TEST_P(NoiseModelUpdateTest, UpdateSuccessForScaledWhiteNoise) {
+  aom_noise_model_t &model = this->model_;
+  const int kWidth = this->kWidth;
+  const int kHeight = this->kHeight;
+
   const double kCoeffEps = 0.055;
   const double kLowStd = 1;
   const double kHighStd = 4;
+  const int shift = this->kBitDepth - 8;
   for (int y = 0; y < kHeight; ++y) {
     for (int x = 0; x < kWidth; ++x) {
       for (int c = 0; c < 3; ++c) {
@@ -467,46 +540,49 @@ TEST_F(NoiseModelUpdateTest, UpdateSuccessForScaledWhiteNoise) {
         // Top half has high intensity and high noise strength
         const int avg = (y < kHeight / 2) ? 4 : 245;
         const double std = (y < kHeight / 2) ? kLowStd : kHighStd;
-        data_ptr_[c][y * kWidth + x] =
-            (uint8_t)std::min((int)255, (int)(2 + avg + aom_randn(std)));
-        denoised_ptr_[c][y * kWidth + x] = 2 + avg;
+        this->data_ptr_[c][y * kWidth + x] =
+            ((uint8_t)std::min((int)255, (int)(2 + avg + aom_randn(std))))
+            << shift;
+        this->denoised_ptr_[c][y * kWidth + x] = (2 + avg) << shift;
       }
     }
   }
   // Label all blocks as flat for the update
-  flat_blocks_.assign(flat_blocks_.size(), 1);
-  EXPECT_EQ(AOM_NOISE_STATUS_OK,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
+  this->flat_blocks_.assign(this->flat_blocks_.size(), 1);
+  EXPECT_EQ(AOM_NOISE_STATUS_OK, this->NoiseModelUpdate());
 
-  const int n = model_.n;
+  const int n = model.n;
   // The noise is uncorrelated spatially and with the y channel.
   // All coefficients should be reasonably close to zero.
   for (int c = 0; c < 3; ++c) {
     for (int i = 0; i < n; ++i) {
-      EXPECT_NEAR(0, model_.latest_state[c].eqns.x[i], kCoeffEps);
-      EXPECT_NEAR(0, model_.combined_state[c].eqns.x[i], kCoeffEps);
+      EXPECT_NEAR(0, model.latest_state[c].eqns.x[i], kCoeffEps);
+      EXPECT_NEAR(0, model.combined_state[c].eqns.x[i], kCoeffEps);
     }
     if (c > 0) {
-      ASSERT_EQ(n + 1, model_.latest_state[c].eqns.n);
-      ASSERT_EQ(n + 1, model_.combined_state[c].eqns.n);
+      ASSERT_EQ(n + 1, model.latest_state[c].eqns.n);
+      ASSERT_EQ(n + 1, model.combined_state[c].eqns.n);
 
       // The correlation to the y channel should be low (near zero)
-      EXPECT_NEAR(0, model_.latest_state[c].eqns.x[n], kCoeffEps);
-      EXPECT_NEAR(0, model_.combined_state[c].eqns.x[n], kCoeffEps);
+      EXPECT_NEAR(0, model.latest_state[c].eqns.x[n], kCoeffEps);
+      EXPECT_NEAR(0, model.combined_state[c].eqns.x[n], kCoeffEps);
     }
   }
 
   // Noise strength should vary between kLowStd and kHighStd.
   const double kStdEps = 0.15;
-  ASSERT_EQ(20, model_.latest_state[0].strength_solver.eqns.n);
-  for (int i = 0; i < model_.latest_state[0].strength_solver.eqns.n; ++i) {
+  // We have to normalize fitted standard deviation based on bit depth.
+  const double normalize = (1 << shift);
+
+  ASSERT_EQ(20, model.latest_state[0].strength_solver.eqns.n);
+  for (int i = 0; i < model.latest_state[0].strength_solver.eqns.n; ++i) {
     const double a = i / 19.0;
     const double expected = (kLowStd * (1.0 - a) + kHighStd * a);
-    EXPECT_NEAR(expected, model_.latest_state[0].strength_solver.eqns.x[i],
+    EXPECT_NEAR(expected,
+                model.latest_state[0].strength_solver.eqns.x[i] / normalize,
                 kStdEps);
-    EXPECT_NEAR(expected, model_.combined_state[0].strength_solver.eqns.x[i],
+    EXPECT_NEAR(expected,
+                model.combined_state[0].strength_solver.eqns.x[i] / normalize,
                 kStdEps);
   }
 
@@ -514,21 +590,23 @@ TEST_F(NoiseModelUpdateTest, UpdateSuccessForScaledWhiteNoise) {
   // one near kLowStd at 0, and the other near kHighStd and 255.
   aom_noise_strength_lut_t lut;
   aom_noise_strength_solver_fit_piecewise(
-      &model_.latest_state[0].strength_solver, 2, &lut);
+      &model.latest_state[0].strength_solver, 2, &lut);
   ASSERT_EQ(2, lut.num_points);
   EXPECT_NEAR(0, lut.points[0][0], 1e-4);
-  EXPECT_NEAR(kLowStd, lut.points[0][1], kStdEps);
-  EXPECT_NEAR(255.0, lut.points[1][0], 1e-5);
-  EXPECT_NEAR(kHighStd, lut.points[1][1], kStdEps);
+  EXPECT_NEAR(kLowStd, lut.points[0][1] / normalize, kStdEps);
+  EXPECT_NEAR((1 << this->kBitDepth) - 1, lut.points[1][0], 1e-5);
+  EXPECT_NEAR(kHighStd, lut.points[1][1] / normalize, kStdEps);
   aom_noise_strength_lut_free(&lut);
 }
 
-TEST_F(NoiseModelUpdateTest, UpdateSuccessForCorrelatedNoise) {
+TYPED_TEST_P(NoiseModelUpdateTest, UpdateSuccessForCorrelatedNoise) {
+  aom_noise_model_t &model = this->model_;
+  const int kWidth = this->kWidth;
+  const int kHeight = this->kHeight;
   const int kNumCoeffs = 24;
   const double kStd = 4;
   const double kStdEps = 0.3;
-  const int kBlockSize = 16;
-  const double kCoeffEps = 0.06;
+  const double kCoeffEps = 0.065;
   // Use different coefficients for each channel
   const double kCoeffs[3][24] = {
     { 0.02884, -0.03356, 0.00633,  0.01757,  0.02849,  -0.04620,
@@ -544,132 +622,145 @@ TEST_F(NoiseModelUpdateTest, UpdateSuccessForCorrelatedNoise) {
       0.06083,  -0.01210, -0.03108, 0.08944, -0.35875, 0.49150,
       0.00415,  -0.12905, 0.02870,  0.09740, -0.34610, 0.58824 },
   };
-  ASSERT_EQ(model_.n, kNumCoeffs);
-  chroma_sub_[0] = chroma_sub_[1] = 1;
 
-  flat_blocks_.assign(flat_blocks_.size(), 1);
+  ASSERT_EQ(model.n, kNumCoeffs);
+  this->chroma_sub_[0] = this->chroma_sub_[1] = 1;
+
+  this->flat_blocks_.assign(this->flat_blocks_.size(), 1);
 
   // Add different noise onto each plane
+  const int shift = this->kBitDepth - 8;
   for (int c = 0; c < 3; ++c) {
-    aom_noise_synth(model_.params.lag, model_.n, model_.coords, kCoeffs[c],
-                    noise_ptr_[c], kWidth, kHeight);
-    const int x_shift = c > 0 ? chroma_sub_[0] : 0;
-    const int y_shift = c > 0 ? chroma_sub_[1] : 0;
+    aom_noise_synth(model.params.lag, model.n, model.coords, kCoeffs[c],
+                    this->noise_ptr_[c], kWidth, kHeight);
+    const int x_shift = c > 0 ? this->chroma_sub_[0] : 0;
+    const int y_shift = c > 0 ? this->chroma_sub_[1] : 0;
     for (int y = 0; y < (kHeight >> y_shift); ++y) {
       for (int x = 0; x < (kWidth >> x_shift); ++x) {
         const uint8_t value = 64 + x / 2 + y / 4;
-        data_ptr_[c][y * kWidth + x] =
-            uint8_t(value + noise_ptr_[c][y * strides_[c] + x] * kStd);
-        denoised_ptr_[c][y * strides_[c] + x] = value;
+        this->data_ptr_[c][y * kWidth + x] =
+            (uint8_t(value + this->noise_ptr_[c][y * kWidth + x] * kStd))
+            << shift;
+        this->denoised_ptr_[c][y * kWidth + x] = value << shift;
       }
     }
   }
-  EXPECT_EQ(AOM_NOISE_STATUS_OK,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
+  EXPECT_EQ(AOM_NOISE_STATUS_OK, this->NoiseModelUpdate());
 
   // For the Y plane, the solved coefficients should be close to the original
-  const int n = model_.n;
+  const int n = model.n;
   for (int c = 0; c < 3; ++c) {
     for (int i = 0; i < n; ++i) {
-      EXPECT_NEAR(kCoeffs[c][i], model_.latest_state[c].eqns.x[i], kCoeffEps);
-      EXPECT_NEAR(kCoeffs[c][i], model_.combined_state[c].eqns.x[i], kCoeffEps);
+      EXPECT_NEAR(kCoeffs[c][i], model.latest_state[c].eqns.x[i], kCoeffEps);
+      EXPECT_NEAR(kCoeffs[c][i], model.combined_state[c].eqns.x[i], kCoeffEps);
     }
     // The chroma planes should be uncorrelated with the luma plane
     if (c > 0) {
-      EXPECT_NEAR(0, model_.latest_state[c].eqns.x[n], kCoeffEps);
-      EXPECT_NEAR(0, model_.combined_state[c].eqns.x[n], kCoeffEps);
+      EXPECT_NEAR(0, model.latest_state[c].eqns.x[n], kCoeffEps);
+      EXPECT_NEAR(0, model.combined_state[c].eqns.x[n], kCoeffEps);
     }
     // Correlation between the coefficient vector and the fitted coefficients
     // should be close to 1.
     EXPECT_LT(0.98, aom_normalized_cross_correlation(
-                        model_.latest_state[c].eqns.x, kCoeffs[c], kNumCoeffs));
+                        model.latest_state[c].eqns.x, kCoeffs[c], kNumCoeffs));
 
-    aom_noise_synth(model_.params.lag, model_.n, model_.coords,
-                    model_.latest_state[c].eqns.x, &renoise_[0], kWidth,
+    aom_noise_synth(model.params.lag, model.n, model.coords,
+                    model.latest_state[c].eqns.x, &this->renoise_[0], kWidth,
                     kHeight);
 
-    EXPECT_TRUE(aom_noise_data_validate(&renoise_[0], kWidth, kHeight));
+    EXPECT_TRUE(aom_noise_data_validate(&this->renoise_[0], kWidth, kHeight));
   }
 
   // Check fitted noise strength
+  const double normalize = 1 << shift;
   for (int c = 0; c < 3; ++c) {
-    for (int i = 0; i < model_.latest_state[c].strength_solver.eqns.n; ++i) {
-      EXPECT_NEAR(kStd, model_.latest_state[c].strength_solver.eqns.x[i],
+    for (int i = 0; i < model.latest_state[c].strength_solver.eqns.n; ++i) {
+      EXPECT_NEAR(kStd,
+                  model.latest_state[c].strength_solver.eqns.x[i] / normalize,
                   kStdEps);
     }
   }
 }
 
-TEST_F(NoiseModelUpdateTest, NoiseStrengthChangeSignalsDifferentNoiseType) {
-  // Create a gradient image with std = 1 uncorrelated noise
-  const double kStd = 1;
+TYPED_TEST_P(NoiseModelUpdateTest,
+             NoiseStrengthChangeSignalsDifferentNoiseType) {
+  aom_noise_model_t &model = this->model_;
+  const int kWidth = this->kWidth;
+  const int kHeight = this->kHeight;
+  const int kBlockSize = this->kBlockSize;
+  // Create a gradient image with std = 2 uncorrelated noise
+  const double kStd = 2;
+  const int shift = this->kBitDepth - 8;
+
   for (int i = 0; i < kWidth * kHeight; ++i) {
-    data_ptr_[0][i] = (uint8_t)(aom_randn(kStd) + (i % kWidth) + 64);
-    data_ptr_[1][i] = (uint8_t)(aom_randn(kStd) + (i % kWidth) + 64);
-    data_ptr_[2][i] = (uint8_t)(aom_randn(kStd) + (i % kWidth) + 64);
+    const uint8_t val = (i % kWidth) < kWidth / 2 ? 64 : 192;
+    for (int c = 0; c < 3; ++c) {
+      this->noise_ptr_[c][i] = aom_randn(1);
+      this->data_ptr_[c][i] = ((uint8_t)(this->noise_ptr_[c][i] * kStd + val))
+                              << shift;
+      this->denoised_ptr_[c][i] = val << shift;
+    }
   }
-  flat_blocks_.assign(flat_blocks_.size(), 1);
-  EXPECT_EQ(AOM_NOISE_STATUS_OK,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
+  this->flat_blocks_.assign(this->flat_blocks_.size(), 1);
+  EXPECT_EQ(AOM_NOISE_STATUS_OK, this->NoiseModelUpdate());
+
   const int kNumBlocks = kWidth * kHeight / kBlockSize / kBlockSize;
-  EXPECT_EQ(kNumBlocks, model_.latest_state[0].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.latest_state[1].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.latest_state[2].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.combined_state[0].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.combined_state[1].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.combined_state[2].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.latest_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.latest_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.latest_state[2].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.combined_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.combined_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.combined_state[2].strength_solver.num_equations);
 
   // Bump up noise by an insignificant amount
   for (int i = 0; i < kWidth * kHeight; ++i) {
-    data_ptr_[1][i] = (uint8_t)(data_ptr_[1][i] + aom_randn(0.2));
-    data_ptr_[2][i] = (uint8_t)(data_ptr_[2][i] + aom_randn(0.2));
+    const uint8_t val = (i % kWidth) < kWidth / 2 ? 64 : 192;
+    this->data_ptr_[0][i] =
+        ((uint8_t)(this->noise_ptr_[0][i] * (kStd + 0.1) + val)) << shift;
   }
-  EXPECT_EQ(AOM_NOISE_STATUS_OK,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
-  EXPECT_EQ(kNumBlocks, model_.latest_state[0].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.latest_state[1].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.latest_state[2].strength_solver.num_equations);
+  EXPECT_EQ(AOM_NOISE_STATUS_OK, this->NoiseModelUpdate());
+
+  EXPECT_EQ(kNumBlocks, model.latest_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.latest_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.latest_state[2].strength_solver.num_equations);
   EXPECT_EQ(2 * kNumBlocks,
-            model_.combined_state[0].strength_solver.num_equations);
+            model.combined_state[0].strength_solver.num_equations);
   EXPECT_EQ(2 * kNumBlocks,
-            model_.combined_state[1].strength_solver.num_equations);
+            model.combined_state[1].strength_solver.num_equations);
   EXPECT_EQ(2 * kNumBlocks,
-            model_.combined_state[2].strength_solver.num_equations);
+            model.combined_state[2].strength_solver.num_equations);
 
   // Bump up the noise strength on half the image for one channel by a
   // significant amount.
   for (int i = 0; i < kWidth * kHeight; ++i) {
-    if (i % kWidth < kWidth / 2)
-      data_ptr_[0][i] = (uint8_t)(data_ptr_[0][i] + aom_randn(0.5));
+    const uint8_t val = (i % kWidth) < kWidth / 2 ? 64 : 128;
+    if (i % kWidth < kWidth / 2) {
+      this->data_ptr_[0][i] = ((uint8_t)(aom_randn(kStd + 0.5) + val)) << shift;
+    }
   }
-  EXPECT_EQ(AOM_NOISE_STATUS_DIFFERENT_NOISE_TYPE,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
+  EXPECT_EQ(AOM_NOISE_STATUS_DIFFERENT_NOISE_TYPE, this->NoiseModelUpdate());
+
   // Since we didn't update the combined state, it should still be at 2 *
   // num_blocks
-  EXPECT_EQ(kNumBlocks, model_.latest_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.latest_state[0].strength_solver.num_equations);
   EXPECT_EQ(2 * kNumBlocks,
-            model_.combined_state[0].strength_solver.num_equations);
+            model.combined_state[0].strength_solver.num_equations);
 
   // In normal operation, the "latest" estimate can be saved to the "combined"
   // state for continued updates.
-  aom_noise_model_save_latest(&model_);
-  EXPECT_EQ(kNumBlocks, model_.latest_state[0].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.latest_state[1].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.latest_state[2].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.combined_state[0].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.combined_state[1].strength_solver.num_equations);
-  EXPECT_EQ(kNumBlocks, model_.combined_state[2].strength_solver.num_equations);
+  aom_noise_model_save_latest(&model);
+  EXPECT_EQ(kNumBlocks, model.latest_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.latest_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.latest_state[2].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.combined_state[0].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.combined_state[1].strength_solver.num_equations);
+  EXPECT_EQ(kNumBlocks, model.combined_state[2].strength_solver.num_equations);
 }
 
-TEST_F(NoiseModelUpdateTest, NoiseCoeffsSignalsDifferentNoiseType) {
+TYPED_TEST_P(NoiseModelUpdateTest, NoiseCoeffsSignalsDifferentNoiseType) {
+  aom_noise_model_t &model = this->model_;
+  const int kWidth = this->kWidth;
+  const int kHeight = this->kHeight;
   const double kCoeffs[2][24] = {
     { 0.02884, -0.03356, 0.00633,  0.01757,  0.02849,  -0.04620,
       0.02833, -0.07178, 0.07076,  -0.11603, -0.10413, -0.16571,
@@ -681,33 +772,38 @@ TEST_F(NoiseModelUpdateTest, NoiseCoeffsSignalsDifferentNoiseType) {
       0.00595, -0.11938, 0.02106,  0.095956, -0.350139, 0.59305 }
   };
 
-  aom_noise_synth(model_.params.lag, model_.n, model_.coords, kCoeffs[0],
-                  noise_ptr_[0], kWidth, kHeight);
+  aom_noise_synth(model.params.lag, model.n, model.coords, kCoeffs[0],
+                  this->noise_ptr_[0], kWidth, kHeight);
   for (int i = 0; i < kWidth * kHeight; ++i) {
-    data_ptr_[0][i] = (uint8_t)(128 + noise_ptr_[0][i]);
+    this->data_ptr_[0][i] = (uint8_t)(128 + this->noise_ptr_[0][i]);
   }
-  flat_blocks_.assign(flat_blocks_.size(), 1);
-  EXPECT_EQ(AOM_NOISE_STATUS_OK,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
+  this->flat_blocks_.assign(this->flat_blocks_.size(), 1);
+  EXPECT_EQ(AOM_NOISE_STATUS_OK, this->NoiseModelUpdate());
 
   // Now try with the second set of AR coefficients
-  aom_noise_synth(model_.params.lag, model_.n, model_.coords, kCoeffs[1],
-                  noise_ptr_[0], kWidth, kHeight);
+  aom_noise_synth(model.params.lag, model.n, model.coords, kCoeffs[1],
+                  this->noise_ptr_[0], kWidth, kHeight);
   for (int i = 0; i < kWidth * kHeight; ++i) {
-    data_ptr_[0][i] = (uint8_t)(128 + noise_ptr_[0][i]);
+    this->data_ptr_[0][i] = (uint8_t)(128 + this->noise_ptr_[0][i]);
   }
-  EXPECT_EQ(AOM_NOISE_STATUS_DIFFERENT_NOISE_TYPE,
-            aom_noise_model_update(&model_, data_ptr_, denoised_ptr_, kWidth,
-                                   kHeight, strides_, chroma_sub_,
-                                   &flat_blocks_[0], kBlockSize));
+  EXPECT_EQ(AOM_NOISE_STATUS_DIFFERENT_NOISE_TYPE, this->NoiseModelUpdate());
 }
+REGISTER_TYPED_TEST_CASE_P(NoiseModelUpdateTest, UpdateFailsNoFlatBlocks,
+                           UpdateSuccessForZeroNoiseAllFlat,
+                           UpdateFailsBlockSizeTooSmall,
+                           UpdateSuccessForWhiteRandomNoise,
+                           UpdateSuccessForScaledWhiteNoise,
+                           UpdateSuccessForCorrelatedNoise,
+                           NoiseStrengthChangeSignalsDifferentNoiseType,
+                           NoiseCoeffsSignalsDifferentNoiseType);
+
+INSTANTIATE_TYPED_TEST_CASE_P(NoiseModelUpdateTestInstatiation,
+                              NoiseModelUpdateTest, AllBitDepthParams);
 
 TEST(NoiseModelGetGrainParameters, TestLagSize) {
   aom_film_grain_t film_grain;
   for (int lag = 1; lag <= 3; ++lag) {
-    aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, lag };
+    aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, lag, 8, 0 };
     aom_noise_model_t model;
     EXPECT_TRUE(aom_noise_model_init(&model, params));
     EXPECT_TRUE(aom_noise_model_get_grain_parameters(&model, &film_grain));
@@ -715,7 +811,7 @@ TEST(NoiseModelGetGrainParameters, TestLagSize) {
     aom_noise_model_free(&model);
   }
 
-  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 4 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 4, 8, 0 };
   aom_noise_model_t model;
   EXPECT_TRUE(aom_noise_model_init(&model, params));
   EXPECT_FALSE(aom_noise_model_get_grain_parameters(&model, &film_grain));
@@ -755,7 +851,7 @@ TEST(NoiseModelGetGrainParameters, TestARCoeffShiftBounds) {
     { 4, 6, 127 },
     { -4, 6, -128 },
   };
-  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, lag };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, lag, 8, 0 };
   aom_noise_model_t model;
   EXPECT_TRUE(aom_noise_model_init(&model, params));
 
@@ -785,7 +881,7 @@ TEST(NoiseModelGetGrainParameters, TestNoiseStrengthShiftBounds) {
     { 31.99, 8, 255 }, { 64, 8, 255 },  // clipped
   };
   const int lag = 1;
-  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, lag };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, lag, 8, 0 };
   aom_noise_model_t model;
   EXPECT_TRUE(aom_noise_model_init(&model, params));
 
@@ -834,7 +930,7 @@ TEST(NoiseModelGetGrainParameters, GetGrainParametersReal) {
   };
 
   const int lag = 3;
-  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, lag };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, lag, 8, 0 };
   aom_noise_model_t model;
   EXPECT_TRUE(aom_noise_model_init(&model, params));
 

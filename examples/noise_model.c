@@ -60,6 +60,8 @@ static const arg_def_t input_denoised_arg =
     ARG_DEF("d", "input-denoised", 1, "Input denoised filename (YUV) only");
 static const arg_def_t block_size_arg =
     ARG_DEF("b", "block_size", 1, "Block size");
+static const arg_def_t bit_depth_arg =
+    ARG_DEF(NULL, "bit-depth", 1, "Bit depth of input");
 static const arg_def_t use_i420 =
     ARG_DEF(NULL, "i420", 0, "Input file (and denoised) is I420 (default)");
 static const arg_def_t use_i422 =
@@ -76,6 +78,7 @@ typedef struct {
   const char *output_grain_table;
   int img_fmt;
   int block_size;
+  int bit_depth;
   int run_flat_block_finder;
   int force_flat_psd;
   int skip_frames;
@@ -112,6 +115,8 @@ void parse_args(noise_model_args_t *noise_args, int *argc, char **argv) {
       noise_args->output_grain_table = arg.val;
     } else if (arg_match(&arg, &block_size_arg, argv)) {
       noise_args->block_size = atoi(arg.val);
+    } else if (arg_match(&arg, &bit_depth_arg, argv)) {
+      noise_args->bit_depth = atoi(arg.val);
     } else if (arg_match(&arg, &fps_arg, argv)) {
       noise_args->fps = arg_parse_rational(&arg);
     } else if (arg_match(&arg, &use_i420, argv)) {
@@ -128,11 +133,14 @@ void parse_args(noise_model_args_t *noise_args, int *argc, char **argv) {
       exit(0);
     }
   }
+  if (noise_args->bit_depth > 8) {
+    noise_args->img_fmt |= AOM_IMG_FMT_HIGHBITDEPTH;
+  }
 }
 
 int main(int argc, char *argv[]) {
   noise_model_args_t args = { 0,  0, { 1, 25 }, 0, 0, 0, AOM_IMG_FMT_I420,
-                              32, 0, 0,         1 };
+                              32, 8, 0,         0, 1 };
   aom_image_t raw, denoised;
   FILE *infile = NULL;
   AvxVideoInfo info;
@@ -163,15 +171,20 @@ int main(int argc, char *argv[]) {
   if (!infile) {
     die("Failed to open input file:", args.input);
   }
+  fprintf(stderr, "Bit depth: %d  stride:%d\n", args.bit_depth, raw.stride[0]);
+
+  const int high_bd = args.bit_depth > 8;
   const int block_size = args.block_size;
   aom_flat_block_finder_t block_finder;
-  aom_flat_block_finder_init(&block_finder, block_size);
+  aom_flat_block_finder_init(&block_finder, block_size, args.bit_depth,
+                             high_bd);
 
   const int num_blocks_w = (info.frame_width + block_size - 1) / block_size;
   const int num_blocks_h = (info.frame_height + block_size - 1) / block_size;
   uint8_t *flat_blocks = (uint8_t *)aom_malloc(num_blocks_w * num_blocks_h);
   aom_noise_model_t noise_model;
-  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 3 };
+  aom_noise_model_params_t params = { AOM_NOISE_SHAPE_SQUARE, 3, args.bit_depth,
+                                      high_bd };
   aom_noise_model_init(&noise_model, params);
 
   FILE *denoised_file = 0;
@@ -207,7 +220,8 @@ int main(int argc, char *argv[]) {
                                    raw.planes[2] };
       uint8_t *denoised_planes[3] = { denoised.planes[0], denoised.planes[1],
                                       denoised.planes[2] };
-      int strides[3] = { raw.stride[0], raw.stride[1], raw.stride[2] };
+      int strides[3] = { raw.stride[0] >> high_bd, raw.stride[1] >> high_bd,
+                         raw.stride[2] >> high_bd };
       int chroma_sub[3] = { raw.x_chroma_shift, raw.y_chroma_shift, 0 };
 
       fprintf(stdout, "Updating noise model...\n");
