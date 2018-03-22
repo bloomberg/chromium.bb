@@ -49,25 +49,32 @@ void HashTableStats::copy(const HashTableStats* other) {
 
 void HashTableStats::recordCollisionAtCount(int count) {
   // The global hash table singleton needs to be atomically updated.
-  bool isGlobalSingleton = this == &instance();
-  if (isGlobalSingleton)
-    hashTableStatsMutex().lock();
+  if (this == &instance()) {
+    MutexLocker locker(hashTableStatsMutex());
+    RecordCollisionAtCountWithoutLock(count);
+  } else {
+    RecordCollisionAtCountWithoutLock(count);
+  }
+}
 
+void HashTableStats::RecordCollisionAtCountWithoutLock(int count) {
   if (count > maxCollisions)
     maxCollisions = count;
   numCollisions++;
   collisionGraph[count]++;
-
-  if (isGlobalSingleton)
-    hashTableStatsMutex().unlock();
 }
 
 void HashTableStats::DumpStats() {
   // Lock the global hash table singleton while dumping.
-  bool isGlobalSingleton = this == &instance();
-  if (isGlobalSingleton)
-    hashTableStatsMutex().lock();
+  if (this == &instance()) {
+    MutexLocker locker(hashTableStatsMutex());
+    DumpStatsWithoutLock();
+  } else {
+    DumpStatsWithoutLock();
+  }
+}
 
+void HashTableStats::DumpStatsWithoutLock() {
   DeprecatedDataLogF("\nWTF::HashTable statistics\n\n");
   DeprecatedDataLogF("%d accesses\n", numAccesses);
   DeprecatedDataLogF("%d total collisions, average %.2f probes per access\n",
@@ -84,9 +91,6 @@ void HashTableStats::DumpStats() {
   }
   DeprecatedDataLogF("%d rehashes\n", numRehashes);
   DeprecatedDataLogF("%d reinserts\n", numReinserts);
-
-  if (isGlobalSingleton)
-    hashTableStatsMutex().unlock();
 }
 
 }  // namespace WTF

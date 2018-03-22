@@ -136,6 +136,10 @@ struct WTF_EXPORT HashTableStats {
 
   template <typename VisitorDispatcher>
   void trace(VisitorDispatcher) {}
+
+ private:
+  void RecordCollisionAtCountWithoutLock(int count);
+  void DumpStatsWithoutLock();
 };
 
 #if DUMP_HASHTABLE_STATS_PER_TABLE
