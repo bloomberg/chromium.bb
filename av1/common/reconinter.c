@@ -29,6 +29,9 @@
 #include "av1/common/onyxc_int.h"
 #include "av1/common/obmc.h"
 
+#define USE_PRECOMPUTED_WEDGE_MASK 1
+#define USE_PRECOMPUTED_WEDGE_SIGN 1
+
 #if !CONFIG_LOWPRECISION_BLEND
 static INLINE int get_compound_post_rounding_bits(
     const ConvolveParams *conv_params) {
@@ -110,13 +113,75 @@ static INLINE void av1_make_inter_predictor(
   }
 }
 
+#if USE_PRECOMPUTED_WEDGE_MASK
+static const uint8_t wedge_master_oblique_odd[MASK_MASTER_SIZE] = {
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  6,  18,
+  37, 53, 60, 63, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+  64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+};
+static const uint8_t wedge_master_oblique_even[MASK_MASTER_SIZE] = {
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  4,  11, 27,
+  46, 58, 62, 63, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+  64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+};
+static const uint8_t wedge_master_vertical[MASK_MASTER_SIZE] = {
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
+  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  7,  21,
+  43, 57, 62, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+  64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
+};
+
+static void shift_copy(const uint8_t *src, uint8_t *dst, int shift, int width) {
+  if (shift >= 0) {
+    memcpy(dst + shift, src, width - shift);
+    memset(dst, src[0], shift);
+  } else {
+    shift = -shift;
+    memcpy(dst, src + shift, width - shift);
+    memset(dst + width - shift, src[width - 1], shift);
+  }
+}
+#endif  // USE_PRECOMPUTED_WEDGE_MASK
+
+#if USE_PRECOMPUTED_WEDGE_SIGN
+/* clang-format off */
+DECLARE_ALIGNED(16, static uint8_t,
+                wedge_signflip_lookup[BLOCK_SIZES_ALL][MAX_WEDGE_TYPES]) = {
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, },
+  { 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, },
+  { 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, },
+  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, },
+  { 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, },
+  { 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, },
+  { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 1, 1, 1, 1, 0, 1, 1, 1, 0, 1, 0, 1, 1, 1, 0, 1, },
+  { 1, 1, 1, 1, 0, 1, 1, 1, 1, 1, 0, 1, 0, 1, 0, 1, },
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, },  // not used
+};
+/* clang-format on */
+#else
+DECLARE_ALIGNED(16, static uint8_t,
+                wedge_signflip_lookup[BLOCK_SIZES_ALL][MAX_WEDGE_TYPES]);
+#endif  // USE_PRECOMPUTED_WEDGE_SIGN
+
 // [negative][direction]
 DECLARE_ALIGNED(
     16, static uint8_t,
     wedge_mask_obl[2][WEDGE_DIRECTIONS][MASK_MASTER_SIZE * MASK_MASTER_SIZE]);
-
-DECLARE_ALIGNED(16, static uint8_t,
-                wedge_signflip_lookup[BLOCK_SIZES_ALL][MAX_WEDGE_TYPES]);
 
 // 4 * MAX_WEDGE_SQUARE is an easy to compute and fairly tight upper bound
 // on the sum of all mask sizes up to an including MAX_WEDGE_SQUARE.
@@ -182,10 +247,8 @@ const wedge_params_type wedge_params_lookup[BLOCK_SIZES_ALL] = {
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
   { 0, NULL, NULL, NULL },
-  { 0, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_4X16],
-    wedge_masks[BLOCK_4X16] },
-  { 0, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_16X4],
-    wedge_masks[BLOCK_16X4] },
+  { 0, NULL, NULL, NULL },
+  { 0, NULL, NULL, NULL },
   { 4, wedge_codebook_16_hgtw, wedge_signflip_lookup[BLOCK_8X32],
     wedge_masks[BLOCK_8X32] },
   { 4, wedge_codebook_16_hltw, wedge_signflip_lookup[BLOCK_32X8],
@@ -427,47 +490,13 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
 }
 #endif  // COMPOUND_SEGMENT_TYPE
 
-#if MASK_MASTER_SIZE == 64
-static const uint8_t wedge_master_oblique_odd[MASK_MASTER_SIZE] = {
-  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  2,  6,  18,
-  37, 53, 60, 63, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-  64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-};
-static const uint8_t wedge_master_oblique_even[MASK_MASTER_SIZE] = {
-  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  4,  11, 27,
-  46, 58, 62, 63, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-  64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-};
-static const uint8_t wedge_master_vertical[MASK_MASTER_SIZE] = {
-  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,
-  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  2,  7,  21,
-  43, 57, 62, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-  64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64, 64,
-};
-
-static void shift_copy(const uint8_t *src, uint8_t *dst, int shift, int width) {
-  if (shift >= 0) {
-    memcpy(dst + shift, src, width - shift);
-    memset(dst, src[0], shift);
-  } else {
-    shift = -shift;
-    memcpy(dst, src + shift, width - shift);
-    memset(dst + width - shift, src[width - 1], shift);
-  }
-}
-#else
-static const double smoother_param = 3.0;
-#endif  // MASK_MASTER_SIZE == 64
-
 static void init_wedge_master_masks() {
   int i, j;
   const int w = MASK_MASTER_SIZE;
   const int h = MASK_MASTER_SIZE;
   const int stride = MASK_MASTER_STRIDE;
 // Note: index [0] stores the masters, and [1] its complement.
-#if MASK_MASTER_SIZE == 64
+#if USE_PRECOMPUTED_WEDGE_MASK
   // Generate prototype by shifting the masters
   int shift = h / 4;
   for (i = 0; i < h; i += 2) {
@@ -486,6 +515,7 @@ static void init_wedge_master_masks() {
            MASK_MASTER_SIZE * sizeof(wedge_master_vertical[0]));
   }
 #else
+  static const double smoother_param = 2.85;
   const int a[2] = { 2, 1 };
   const double asqrt = sqrt(a[0] * a[0] + a[1] * a[1]);
   for (i = 0; i < h; i++) {
@@ -499,7 +529,7 @@ static void init_wedge_master_masks() {
       wedge_mask_obl[0][WEDGE_VERTICAL][i * stride + j] = mskx;
     }
   }
-#endif  // MASK_MASTER_SIZE == 64
+#endif  // USE_PRECOMPUTED_WEDGE_MASK
   for (i = 0; i < h; ++i) {
     for (j = 0; j < w; ++j) {
       const int msk = wedge_mask_obl[0][WEDGE_OBLIQUE63][i * stride + j];
@@ -521,6 +551,7 @@ static void init_wedge_master_masks() {
   }
 }
 
+#if !USE_PRECOMPUTED_WEDGE_SIGN
 // If the signs for the wedges for various blocksizes are
 // inconsistent flip the sign flag. Do it only once for every
 // wedge codebook.
@@ -534,27 +565,29 @@ static void init_wedge_signs() {
     const int wbits = wedge_params.bits;
     const int wtypes = 1 << wbits;
     int i, w;
-    if (wbits == 0) continue;
-    for (w = 0; w < wtypes; ++w) {
-      // Get the mask master, i.e. index [0]
-      const uint8_t *mask = get_wedge_mask_inplace(w, 0, sb_type);
-      int avg = 0;
-      for (i = 0; i < bw; ++i) avg += mask[i];
-      for (i = 1; i < bh; ++i) avg += mask[i * MASK_MASTER_STRIDE];
-      avg = (avg + (bw + bh - 1) / 2) / (bw + bh - 1);
-      // Default sign of this wedge is 1 if the average < 32, 0 otherwise.
-      // If default sign is 1:
-      //   If sign requested is 0, we need to flip the sign and return
-      //   the complement i.e. index [1] instead. If sign requested is 1
-      //   we need to flip the sign and return index [0] instead.
-      // If default sign is 0:
-      //   If sign requested is 0, we need to return index [0] the master
-      //   if sign requested is 1, we need to return the complement index [1]
-      //   instead.
-      wedge_params.signflip[w] = (avg < 32);
+    if (wbits) {
+      for (w = 0; w < wtypes; ++w) {
+        // Get the mask master, i.e. index [0]
+        const uint8_t *mask = get_wedge_mask_inplace(w, 0, sb_type);
+        int avg = 0;
+        for (i = 0; i < bw; ++i) avg += mask[i];
+        for (i = 1; i < bh; ++i) avg += mask[i * MASK_MASTER_STRIDE];
+        avg = (avg + (bw + bh - 1) / 2) / (bw + bh - 1);
+        // Default sign of this wedge is 1 if the average < 32, 0 otherwise.
+        // If default sign is 1:
+        //   If sign requested is 0, we need to flip the sign and return
+        //   the complement i.e. index [1] instead. If sign requested is 1
+        //   we need to flip the sign and return index [0] instead.
+        // If default sign is 0:
+        //   If sign requested is 0, we need to return index [0] the master
+        //   if sign requested is 1, we need to return the complement index [1]
+        //   instead.
+        wedge_params.signflip[w] = (avg < 32);
+      }
     }
   }
 }
+#endif  // !USE_PRECOMPUTED_WEDGE_SIGN
 
 static void init_wedge_masks() {
   uint8_t *dst = wedge_mask_buf;
@@ -589,7 +622,9 @@ static void init_wedge_masks() {
 // Equation of line: f(x, y) = a[0]*(x - a[2]*w/8) + a[1]*(y - a[3]*h/8) = 0
 void av1_init_wedge_masks() {
   init_wedge_master_masks();
+#if !USE_PRECOMPUTED_WEDGE_SIGN
   init_wedge_signs();
+#endif  // !USE_PRECOMPUTED_WEDGE_SIGN
   init_wedge_masks();
 }
 
