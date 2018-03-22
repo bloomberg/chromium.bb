@@ -59,6 +59,10 @@ enum ChromeTextStyle {
   // Used to draw attention to a section of body text such as an extension name
   // or hostname.
   STYLE_EMPHASIZED,
+
+  // Emphasized secondary style. Like STYLE_EMPHASIZED but styled to match
+  // surrounding STYLE_SECONDARY text.
+  STYLE_EMPHASIZED_SECONDARY,
 };
 
 // Sets the |size_delta| and |font_weight| for text that should not be affected
