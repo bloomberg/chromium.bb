@@ -80,6 +80,7 @@ void ChildFrameCompositingHelper::SetPrimarySurfaceId(
 
   surface_layer_ = cc::SurfaceLayer::Create();
   surface_layer_->SetMasksToBounds(true);
+  surface_layer_->SetHitTestable(true);
   surface_layer_->SetBackgroundColor(SK_ColorTRANSPARENT);
 
   surface_layer_->SetPrimarySurfaceId(surface_id,

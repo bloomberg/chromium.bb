@@ -78,6 +78,7 @@
 #include "cc/trees/single_thread_proxy.h"
 #include "cc/trees/transform_node.h"
 #include "cc/trees/tree_synchronizer.h"
+#include "components/viz/common/features.h"
 #include "components/viz/common/frame_sinks/copy_output_request.h"
 #include "components/viz/common/frame_sinks/delay_based_time_source.h"
 #include "components/viz/common/gpu/texture_allocation.h"
@@ -2826,6 +2827,8 @@ bool LayerTreeHostImpl::InitializeRenderer(
         ResourcePool::kDefaultExpirationDelay, ResourcePool::Mode::kGpu,
         settings_.disallow_non_exact_resource_reuse);
   }
+  if (features::IsVizHitTestingSurfaceLayerEnabled())
+    layer_tree_frame_sink_->UpdateHitTestData(this);
 
   // Since the new context may be capable of MSAA, update status here. We don't
   // need to check the return value since we are recreating all resources

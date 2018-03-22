@@ -13,6 +13,10 @@
 #include "components/viz/common/quads/compositor_frame.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 
+namespace cc {
+class LayerTreeHostImpl;
+}
+
 namespace viz {
 
 class VIZ_CLIENT_EXPORT HitTestDataProvider {
@@ -24,6 +28,10 @@ class VIZ_CLIENT_EXPORT HitTestDataProvider {
   // hit-testing.
   virtual mojom::HitTestRegionListPtr GetHitTestData(
       const CompositorFrame& compositor_frame) const = 0;
+
+  // Exclusively called by HitTestDataProviderSurfaceLayer.
+  virtual void UpdateLayerTreeHostImpl(const cc::LayerTreeHostImpl* host_impl) {
+  }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HitTestDataProvider);

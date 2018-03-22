@@ -37,6 +37,7 @@ scoped_refptr<cc::SurfaceLayer> CreateSurfaceLayer(
   layer->SetBounds(surface_info.size_in_pixels());
   layer->SetIsDrawable(true);
   layer->SetContentsOpaque(surface_opaque);
+  layer->SetHitTestable(true);
 
   return layer;
 }

@@ -15,6 +15,7 @@ VIZ_COMMON_EXPORT extern const base::Feature kEnableDrawOcclusion;
 VIZ_COMMON_EXPORT extern const base::Feature kEnableSurfaceSynchronization;
 VIZ_COMMON_EXPORT extern const base::Feature kEnableInvariantsViolationLogging;
 VIZ_COMMON_EXPORT extern const base::Feature kEnableVizHitTestDrawQuad;
+VIZ_COMMON_EXPORT extern const base::Feature kEnableVizHitTestSurfaceLayer;
 VIZ_COMMON_EXPORT extern const base::Feature kVizDisplayCompositor;
 
 VIZ_COMMON_EXPORT bool IsDrawOcclusionEnabled();
