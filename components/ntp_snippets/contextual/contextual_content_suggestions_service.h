@@ -15,6 +15,7 @@
 #include "components/image_fetcher/core/image_fetcher.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/ntp_snippets/callbacks.h"
+#include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/contextual/contextual_suggestions_fetcher.h"
 
 namespace ntp_snippets {
@@ -26,6 +27,29 @@ class RemoteSuggestionsDatabase;
 // for contextual suggestion, using caching.
 class ContextualContentSuggestionsService : public KeyedService {
  public:
+  // A structure representing a suggestion cluster.
+  struct Cluster {
+    Cluster();
+    ~Cluster();
+
+    std::string title;
+    std::vector<ContentSuggestion> suggestions;
+
+    DISALLOW_COPY_AND_ASSIGN(Cluster);
+  };
+
+  // Delegate for UI to hook into contextual suggestions service.
+  class Delegate {
+   public:
+    virtual ~Delegate() = default;
+
+    // Sends the new suggestions to the delegate, when they are available.
+    virtual void OnSuggestionsAvailable(std::vector<Cluster> clusters) = 0;
+    // Informs the delegate that user has switched to another tab or clobbered
+    // the current tab, therefore the UI state should be cleared.
+    virtual void OnStateCleared() = 0;
+  };
+
   ContextualContentSuggestionsService(
       std::unique_ptr<ContextualSuggestionsFetcher>
           contextual_suggestions_fetcher,
