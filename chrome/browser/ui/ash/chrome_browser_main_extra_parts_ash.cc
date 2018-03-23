@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/chrome_browser_main_extra_parts_ash.h"
 
+#include <utility>
+
 #include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/mus_property_mirror_ash.h"
@@ -312,6 +314,10 @@ void ChromeBrowserMainExtraPartsAsh::PostMainMessageLoopRun() {
   auto_connect_notifier_.reset();
   cast_config_client_media_router_.reset();
   accessibility_controller_client_.reset();
+
+  // AppListClientImpl indirectly holds WebContents for answer card and
+  // needs to be released before destroying the profile.
+  app_list_client_.reset();
 
   ash_shell_init_.reset();
 
