@@ -1944,7 +1944,6 @@ test("browser_tests") {
         # Tests for non mobile and non CrOS (includes Linux, Win, Mac).
         "../browser/extensions/api/image_writer_private/image_writer_utility_client_browsertest.cc",
         "../browser/metrics/desktop_session_duration/audible_contents_tracker_browsertest.cc",
-        "../browser/metrics/desktop_session_duration/chrome_visibility_observer_browsertest.cc",
         "../browser/profiles/profile_statistics_browsertest.cc",
       ]
     }
@@ -4969,6 +4968,13 @@ if (!is_android) {
         # TODO(peter): Enable the Notification browser tests.
         "../browser/notifications/notification_interactive_uitest.cc",
         "../browser/notifications/platform_notification_service_interactive_uitest.cc",
+      ]
+    }
+
+    if (is_mac || is_win || (is_linux && !is_chromeos)) {
+      sources += [
+        # Tests for non mobile and non CrOS (includes Linux, Win, Mac).
+        "../browser/metrics/desktop_session_duration/chrome_visibility_observer_interactive_uitest.cc",
       ]
     }
   }
