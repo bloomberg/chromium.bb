@@ -412,7 +412,7 @@ void DcheckEmptyFunction1() {
 }
 void DcheckEmptyFunction2() {}
 
-#if DCHECK_IS_ON() && defined(SYZYASAN)
+#if DCHECK_IS_CONFIGURABLE
 class ScopedDcheckSeverity {
  public:
   ScopedDcheckSeverity(LogSeverity new_severity) : old_severity_(LOG_DCHECK) {
@@ -424,7 +424,7 @@ class ScopedDcheckSeverity {
  private:
   LogSeverity old_severity_;
 };
-#endif  // DCHECK_IS_ON() && defined(SYZYASAN)
+#endif  // DCHECK_IS_CONFIGURABLE
 
 // https://crbug.com/709067 tracks test flakiness on iOS.
 #if defined(OS_IOS)
@@ -433,12 +433,12 @@ class ScopedDcheckSeverity {
 #define MAYBE_Dcheck Dcheck
 #endif
 TEST_F(LoggingTest, MAYBE_Dcheck) {
-#if DCHECK_IS_ON() && defined(SYZYASAN)
-  // When DCHECKs are enabled in SyzyASAN builds, LOG_DCHECK is mutable but
-  // defaults to non-fatal. Set it to LOG_FATAL to get the expected behavior
-  // from the rest of this test.
+#if DCHECK_IS_CONFIGURABLE
+  // DCHECKs are enabled, and LOG_DCHECK is mutable, but defaults to non-fatal.
+  // Set it to LOG_FATAL to get the expected behavior from the rest of this
+  // test.
   ScopedDcheckSeverity dcheck_severity(LOG_FATAL);
-#endif  // DCHECK_IS_ON() && defined(SYZYASAN)
+#endif  // DCHECK_IS_CONFIGURABLE
 
 #if defined(NDEBUG) && !defined(DCHECK_ALWAYS_ON)
   // Release build.
@@ -599,9 +599,9 @@ namespace nested_test {
   }
 }  // namespace nested_test
 
-#if DCHECK_IS_ON() && defined(SYZYASAN)
-TEST_F(LoggingTest, AsanConditionalDCheck) {
-  // Verify that DCHECKs default to non-fatal in SyzyASAN builds.
+#if DCHECK_IS_CONFIGURABLE
+TEST_F(LoggingTest, ConfigurableDCheck) {
+  // Verify that DCHECKs default to non-fatal in configurable-DCHECK builds.
   // Note that we require only that DCHECK is non-fatal by default, rather
   // than requiring that it be exactly INFO, ERROR, etc level.
   EXPECT_LT(LOG_DCHECK, LOG_FATAL);
@@ -625,8 +625,7 @@ TEST_F(LoggingTest, AsanConditionalDCheck) {
   }
 }
 
-TEST_F(LoggingTest, AsanConditionalDCheckFeature) {
-  // Enable fatal DCHECKs, so that preconditions in
+TEST_F(LoggingTest, ConfigurableDCheckFeature) {
   // Initialize FeatureList with and without DcheckIsFatal, and verify the
   // value of LOG_DCHECK. Note that we don't require that DCHECK take a
   // specific value when the feature is off, only that it is non-fatal.
@@ -650,7 +649,7 @@ TEST_F(LoggingTest, AsanConditionalDCheckFeature) {
     EXPECT_LT(LOG_DCHECK, LOG_FATAL);
   }
 }
-#endif  // DCHECK_IS_ON() && defined(SYZYASAN)
+#endif  // DCHECK_IS_CONFIGURABLE
 
 #if defined(OS_FUCHSIA)
 TEST_F(LoggingTest, FuchsiaLogging) {
