@@ -42,7 +42,6 @@ using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArrayArgument;
 using ::testing::SetArgPointee;
-using ::testing::SetArgPointee;
 using ::testing::StrEq;
 using ::testing::StrictMock;
 
@@ -845,8 +844,26 @@ TEST_P(GLES2DecoderManualInitTest, InitVertexAttributes) {
 }
 
 TEST_P(GLES2DecoderWithShaderTest, DrawArraysDeletedBufferFails) {
+  const GLuint kNewServiceBufferId = 1897u;
   SetupVertexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, GenBuffersARB(1, _))
+      .WillOnce(SetArgPointee<1>(kNewServiceBufferId))
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, kNewServiceBufferId))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, VertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  EXPECT_CALL(*gl_, DeleteBuffersARB(1, _)).Times(1).RetiresOnSaturation();
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
   DeleteVertexBuffer();
 
   EXPECT_CALL(*gl_, DrawArrays(_, _, _)).Times(0);
@@ -1305,6 +1322,10 @@ TEST_P(GLES2DecoderWithShaderTest, DrawElementsDeletedBufferFails) {
   SetupVertexBuffer();
   SetupIndexBuffer();
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 0);
+
+  EXPECT_CALL(*gl_, BindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
   DeleteIndexBuffer();
 
   EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(0);

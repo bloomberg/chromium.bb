@@ -203,6 +203,8 @@ struct GPU_GLES2_EXPORT ContextState {
 
   void Initialize();
 
+  void MarkContextLost() { context_lost_ = true; }
+
   void SetLineWidthBounds(GLfloat min, GLfloat max);
 
   void SetIgnoreCachedStateForTest(bool ignore) {
@@ -420,6 +422,8 @@ struct GPU_GLES2_EXPORT ContextState {
   gl::GLApi* api_ = nullptr;
   FeatureInfo* feature_info_;
   std::unique_ptr<ErrorState> error_state_;
+
+  bool context_lost_ = false;
 };
 
 }  // namespace gles2

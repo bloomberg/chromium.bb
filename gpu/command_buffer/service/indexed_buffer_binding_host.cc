@@ -175,13 +175,25 @@ void IndexedBufferBindingHost::OnBufferData(Buffer* buffer) {
   }
 }
 
-void IndexedBufferBindingHost::RemoveBoundBuffer(Buffer* buffer) {
+void IndexedBufferBindingHost::RemoveBoundBuffer(
+    GLenum target,
+    Buffer* buffer,
+    Buffer* target_generic_bound_buffer,
+    bool have_context) {
+  DCHECK(buffer);
+  bool need_to_recover_generic_binding = false;
   for (size_t ii = 0; ii < buffer_bindings_.size(); ++ii) {
     if (buffer_bindings_[ii].buffer.get() == buffer) {
       buffer_bindings_[ii].Reset();
       UpdateMaxNonNullBindingIndex(ii);
+      if (have_context) {
+        glBindBufferBase(target, ii, 0);
+        need_to_recover_generic_binding = true;
+      }
     }
   }
+  if (need_to_recover_generic_binding && target_generic_bound_buffer)
+    glBindBuffer(target, target_generic_bound_buffer->service_id());
 }
 
 void IndexedBufferBindingHost::SetIsBound(bool is_bound) {

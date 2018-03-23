@@ -1244,11 +1244,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     return buffer;
   }
 
-  // Removes any buffers in the VertexAtrribInfos and BufferInfos. This is used
-  // on glDeleteBuffers so we can make sure the user does not try to render
-  // with deleted buffers.
-  void RemoveBuffer(GLuint client_id);
-
   // Creates a framebuffer info for the given framebuffer.
   void CreateFramebuffer(GLuint client_id, GLuint service_id) {
     return framebuffer_manager()->CreateFramebuffer(client_id, service_id);
@@ -4424,9 +4419,11 @@ void GLES2DecoderImpl::DeleteBuffersHelper(GLsizei n,
     GLuint client_id = client_ids[ii];
     Buffer* buffer = GetBuffer(client_id);
     if (buffer && !buffer->IsDeleted()) {
+      // TODO(zmo): We need to actually call glUnmapBuffer() to the driver.
+      // This is because glDeleteBuffers() call might be delayed.
       buffer->RemoveMappedRange();
       state_.RemoveBoundBuffer(buffer);
-      RemoveBuffer(client_id);
+      buffer_manager()->RemoveBuffer(client_id);
     }
   }
 }
@@ -5100,6 +5097,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
       group_->texture_manager()->MarkContextLost();
     if (gr_context_)
       gr_context_->abandonContext();
+    state_.MarkContextLost();
   }
   deschedule_until_finished_fences_.clear();
 
@@ -5686,10 +5684,6 @@ error::Error GLES2DecoderImpl::DoCommands(unsigned int num_commands,
     return DoCommandsImpl<false>(
         num_commands, buffer, num_entries, entries_processed);
   }
-}
-
-void GLES2DecoderImpl::RemoveBuffer(GLuint client_id) {
-  buffer_manager()->RemoveBuffer(client_id);
 }
 
 void GLES2DecoderImpl::DoFinish() {
@@ -16507,6 +16501,10 @@ void GLES2DecoderImpl::MarkContextLost(error::ContextLostReason reason) {
   if (transform_feedback_manager_.get()) {
     transform_feedback_manager_->MarkContextLost();
   }
+  if (vertex_array_manager_.get()) {
+    vertex_array_manager_->MarkContextLost();
+  }
+  state_.MarkContextLost();
 }
 
 bool GLES2DecoderImpl::CheckResetStatus() {

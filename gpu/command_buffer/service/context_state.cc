@@ -712,46 +712,69 @@ void ContextState::SetBoundBuffer(GLenum target, Buffer* buffer) {
 void ContextState::RemoveBoundBuffer(Buffer* buffer) {
   DCHECK(buffer);
   bool do_refcounting = feature_info_->IsWebGL2OrES3Context();
-  vertex_attrib_manager->Unbind(buffer);
   if (bound_array_buffer.get() == buffer) {
     bound_array_buffer = nullptr;
-    if (do_refcounting && buffer)
+    if (do_refcounting)
       buffer->OnUnbind(GL_ARRAY_BUFFER);
+    if (!context_lost_)
+      api()->glBindBufferFn(GL_ARRAY_BUFFER, 0);
   }
+  // Needs to be called after bound_array_buffer handled.
+  vertex_attrib_manager->Unbind(buffer, bound_array_buffer.get());
   if (bound_copy_read_buffer.get() == buffer) {
     bound_copy_read_buffer = nullptr;
-    if (do_refcounting && buffer)
+    if (do_refcounting)
       buffer->OnUnbind(GL_COPY_READ_BUFFER);
+    if (!context_lost_)
+      api()->glBindBufferFn(GL_COPY_READ_BUFFER, 0);
   }
   if (bound_copy_write_buffer.get() == buffer) {
     bound_copy_write_buffer = nullptr;
-    if (do_refcounting && buffer)
+    if (do_refcounting)
       buffer->OnUnbind(GL_COPY_WRITE_BUFFER);
+    if (!context_lost_)
+      api()->glBindBufferFn(GL_COPY_WRITE_BUFFER, 0);
   }
   if (bound_pixel_pack_buffer.get() == buffer) {
     bound_pixel_pack_buffer = nullptr;
-    if (do_refcounting && buffer)
+    if (do_refcounting)
       buffer->OnUnbind(GL_PIXEL_PACK_BUFFER);
+    if (!context_lost_)
+      api()->glBindBufferFn(GL_PIXEL_PACK_BUFFER, 0);
     UpdatePackParameters();
   }
   if (bound_pixel_unpack_buffer.get() == buffer) {
     bound_pixel_unpack_buffer = nullptr;
-    if (do_refcounting && buffer)
+    if (do_refcounting)
       buffer->OnUnbind(GL_PIXEL_UNPACK_BUFFER);
+    if (!context_lost_)
+      api()->glBindBufferFn(GL_PIXEL_UNPACK_BUFFER, 0);
     UpdateUnpackParameters();
   }
   if (bound_transform_feedback_buffer.get() == buffer) {
     bound_transform_feedback_buffer = nullptr;
-    if (do_refcounting && buffer)
+    if (do_refcounting)
       buffer->OnUnbind(GL_TRANSFORM_FEEDBACK_BUFFER);
+    if (!context_lost_)
+      api()->glBindBufferFn(GL_TRANSFORM_FEEDBACK_BUFFER, 0);
   }
+  // Needs to be called after bound_transform_feedback_buffer handled.
   if (bound_transform_feedback.get()) {
-    bound_transform_feedback->RemoveBoundBuffer(buffer);
+    bound_transform_feedback->RemoveBoundBuffer(
+        GL_TRANSFORM_FEEDBACK_BUFFER, buffer,
+        bound_transform_feedback_buffer.get(), !context_lost_);
   }
   if (bound_uniform_buffer.get() == buffer) {
     bound_uniform_buffer = nullptr;
-    if (do_refcounting && buffer)
+    if (do_refcounting)
       buffer->OnUnbind(GL_UNIFORM_BUFFER);
+    if (!context_lost_)
+      api()->glBindBufferFn(GL_UNIFORM_BUFFER, 0);
+  }
+  // Needs to be called after bound_uniform_buffer handled.
+  if (indexed_uniform_buffer_bindings) {
+    indexed_uniform_buffer_bindings->RemoveBoundBuffer(
+        GL_UNIFORM_BUFFER, buffer, bound_uniform_buffer.get(), !context_lost_);
   }
 }
 

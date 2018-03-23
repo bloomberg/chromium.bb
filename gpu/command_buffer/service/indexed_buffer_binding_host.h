@@ -42,7 +42,10 @@ class GPU_GLES2_EXPORT IndexedBufferBindingHost
   // size might change.
   void OnBufferData(Buffer* buffer);
 
-  void RemoveBoundBuffer(Buffer* buffer);
+  void RemoveBoundBuffer(GLenum target,
+                         Buffer* buffer,
+                         Buffer* target_generic_bound_buffer,
+                         bool have_context);
 
   void SetIsBound(bool bound);
 
