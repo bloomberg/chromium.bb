@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
@@ -20,6 +21,7 @@
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/common/subresource_filter_utils.h"
 #include "components/subresource_filter/core/browser/subresource_filter_constants.h"
+#include "components/subresource_filter/core/browser/subresource_filter_features.h"
 #include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/render_frame_host.h"
@@ -285,8 +287,14 @@ ContentSubresourceFilterThrottleManager::
         content::NavigationHandle* navigation_handle) {
   // Main frames: create unconditionally.
   if (navigation_handle->IsInMainFrame()) {
-    return ActivationStateComputingNavigationThrottle::CreateForMainFrame(
-        navigation_handle);
+    auto throttle =
+        ActivationStateComputingNavigationThrottle::CreateForMainFrame(
+            navigation_handle);
+    if (base::FeatureList::IsEnabled(kAdTagging)) {
+      throttle->NotifyPageActivationWithRuleset(
+          EnsureRulesetHandle(), ActivationState(ActivationLevel::DRYRUN));
+    }
+    return throttle;
   }
 
   // Subframes: create only for frames with activated parents.
