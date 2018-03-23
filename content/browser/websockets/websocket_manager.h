@@ -24,8 +24,7 @@ class StoragePartition;
 // WebSocketImpl objects for each WebSocketRequest and throttling the number of
 // WebSocketImpl objects in use.
 class CONTENT_EXPORT WebSocketManager
-    : public WebSocketImpl::Delegate,
-      public net::URLRequestContextGetterObserver {
+    : public net::URLRequestContextGetterObserver {
  public:
   // Called on the UI thread: create a websocket for a frame.
   static void CreateWebSocketForFrame(int process_id,
@@ -44,6 +43,7 @@ class CONTENT_EXPORT WebSocketManager
   void OnContextShuttingDown() override;
 
  protected:
+  class Delegate;
   class Handle;
   friend class base::DeleteHelper<WebSocketManager>;
 
@@ -61,24 +61,23 @@ class CONTENT_EXPORT WebSocketManager
 
   // This is virtual to support testing.
   virtual WebSocketImpl* CreateWebSocketImpl(
-      WebSocketImpl::Delegate* delegate,
+      std::unique_ptr<WebSocketImpl::Delegate> delegate,
       network::mojom::WebSocketRequest request,
       int child_id,
       int frame_id,
       url::Origin origin,
       base::TimeDelta delay);
 
-  // WebSocketImpl::Delegate methods:
-  int GetClientProcessId() override;
-  net::URLRequestContext* GetURLRequestContext() override;
-  void OnReceivedResponseFromServer(WebSocketImpl* impl) override;
-  void OnLostConnectionToClient(WebSocketImpl* impl) override;
+  net::URLRequestContext* GetURLRequestContext();
+  void OnReceivedResponseFromServer(WebSocketImpl* impl);
+  virtual void OnLostConnectionToClient(WebSocketImpl* impl);
 
   void ObserveURLRequestContextGetter();
 
   int process_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
+  // TODO(ricea): Make ownership explicit.
   std::set<WebSocketImpl*> impls_;
 
   // Timer and counters for per-renderer WebSocket throttling.

@@ -11,8 +11,14 @@
 #include "base/callback.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/rand_util.h"
+#include "content/browser/bad_message.h"
+#include "content/browser/child_process_security_policy_impl.h"
+#include "content/browser/ssl/ssl_error_handler.h"
+#include "content/browser/ssl/ssl_manager.h"
+#include "content/browser/websockets/websocket_handshake_request_info_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -30,6 +36,109 @@ const char kWebSocketManagerKeyName[] = "web_socket_manager";
 const int kMaxPendingWebSocketConnections = 255;
 
 }  // namespace
+
+class WebSocketManager::Delegate final : public WebSocketImpl::Delegate {
+ public:
+  explicit Delegate(WebSocketManager* manager) : manager_(manager) {}
+  ~Delegate() override {}
+
+  net::URLRequestContext* GetURLRequestContext() override {
+    return manager_->GetURLRequestContext();
+  }
+
+  void OnReceivedResponseFromServer(WebSocketImpl* impl) override {
+    manager_->OnReceivedResponseFromServer(impl);
+  }
+
+  void OnLostConnectionToClient(WebSocketImpl* impl) override {
+    manager_->OnLostConnectionToClient(impl);
+  }
+
+  void OnSSLCertificateError(
+      std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
+          callbacks,
+      const GURL& url,
+      int child_id,
+      int frame_id,
+      const net::SSLInfo& ssl_info,
+      bool fatal) override {
+    ssl_error_handler_delegate_ =
+        std::make_unique<SSLErrorHandlerDelegate>(std::move(callbacks));
+    SSLManager::OnSSLCertificateSubresourceError(
+        ssl_error_handler_delegate_->GetWeakPtr(), url, child_id, frame_id,
+        ssl_info, fatal);
+  }
+
+  void ReportBadMessage(BadMessageReason reason) override {
+    bad_message::BadMessageReason reason_to_pass =
+        bad_message::WSI_INVALID_HEADER_VALUE;
+    switch (reason) {
+      case BadMessageReason::kInvalidHeaderValue:
+        reason_to_pass = bad_message::WSI_INVALID_HEADER_VALUE;
+        break;
+      case BadMessageReason::kUnexpectedAddChannelRequest:
+        reason_to_pass = bad_message::WSI_UNEXPECTED_ADD_CHANNEL_REQUEST;
+        break;
+      case BadMessageReason::kUnexpectedSendFrame:
+        reason_to_pass = bad_message::WSI_UNEXPECTED_SEND_FRAME;
+        break;
+    }
+    bad_message::ReceivedBadMessage(manager_->process_id_, reason_to_pass);
+  }
+
+  bool CanReadRawCookies() override {
+    return ChildProcessSecurityPolicyImpl::GetInstance()->CanReadRawCookies(
+        manager_->process_id_);
+  }
+
+  void OnCreateURLRequest(int child_id,
+                          int frame_id,
+                          net::URLRequest* url_request) override {
+    WebSocketHandshakeRequestInfoImpl::CreateInfoAndAssociateWithRequest(
+        child_id, frame_id, url_request);
+  }
+
+ private:
+  class SSLErrorHandlerDelegate final : public SSLErrorHandler::Delegate {
+   public:
+    explicit SSLErrorHandlerDelegate(
+        std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
+            callbacks)
+        : callbacks_(std::move(callbacks)), weak_ptr_factory_(this) {}
+    ~SSLErrorHandlerDelegate() override {}
+
+    base::WeakPtr<SSLErrorHandler::Delegate> GetWeakPtr() {
+      return weak_ptr_factory_.GetWeakPtr();
+    }
+
+    // SSLErrorHandler::Delegate methods
+    void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override {
+      DVLOG(3) << "SSLErrorHandlerDelegate::CancelSSLRequest"
+               << " error=" << error << " cert_status="
+               << (ssl_info ? ssl_info->cert_status
+                            : static_cast<net::CertStatus>(-1));
+      callbacks_->CancelSSLRequest(error, ssl_info);
+    }
+
+    void ContinueSSLRequest() override {
+      DVLOG(3) << "SSLErrorHandlerDelegate::ContinueSSLRequest";
+      callbacks_->ContinueSSLRequest();
+    }
+
+   private:
+    std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks_;
+
+    base::WeakPtrFactory<SSLErrorHandlerDelegate> weak_ptr_factory_;
+
+    DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerDelegate);
+  };
+
+  std::unique_ptr<SSLErrorHandlerDelegate> ssl_error_handler_delegate_;
+  // |manager_| outlives this object.
+  WebSocketManager* const manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(Delegate);
+};
 
 class WebSocketManager::Handle : public base::SupportsUserData::Data,
                                  public RenderProcessHostObserver {
@@ -159,9 +268,9 @@ void WebSocketManager::DoCreateWebSocket(
   // Keep all WebSocketImpls alive until either the client drops its
   // connection (see OnLostConnectionToClient) or we need to shutdown.
 
-  impls_.insert(CreateWebSocketImpl(this, std::move(request), process_id_,
-                                    frame_id, std::move(origin),
-                                    CalculateDelay()));
+  impls_.insert(CreateWebSocketImpl(std::make_unique<Delegate>(this),
+                                    std::move(request), process_id_, frame_id,
+                                    std::move(origin), CalculateDelay()));
   ++num_pending_connections_;
 
   if (!throttling_period_timer_.IsRunning()) {
@@ -201,18 +310,14 @@ void WebSocketManager::ThrottlingPeriodTimerCallback() {
 }
 
 WebSocketImpl* WebSocketManager::CreateWebSocketImpl(
-    WebSocketImpl::Delegate* delegate,
+    std::unique_ptr<WebSocketImpl::Delegate> delegate,
     network::mojom::WebSocketRequest request,
     int child_id,
     int frame_id,
     url::Origin origin,
     base::TimeDelta delay) {
-  return new WebSocketImpl(delegate, std::move(request), child_id, frame_id,
-                           std::move(origin), delay);
-}
-
-int WebSocketManager::GetClientProcessId() {
-  return process_id_;
+  return new WebSocketImpl(std::move(delegate), std::move(request), child_id,
+                           frame_id, std::move(origin), delay);
 }
 
 net::URLRequestContext* WebSocketManager::GetURLRequestContext() {

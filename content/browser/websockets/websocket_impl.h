@@ -16,6 +16,7 @@
 #include "base/time/time.h"
 #include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
+#include "net/websockets/websocket_event_interface.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "url/origin.h"
 
@@ -24,6 +25,7 @@ class GURL;
 namespace net {
 class URLRequestContext;
 class WebSocketChannel;
+class SSLInfo;
 }  // namespace net
 
 namespace content {
@@ -33,14 +35,32 @@ class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
  public:
   class Delegate {
    public:
+    enum class BadMessageReason {
+      kInvalidHeaderValue,
+      kUnexpectedAddChannelRequest,
+      kUnexpectedSendFrame,
+    };
     virtual ~Delegate() {}
-    virtual int GetClientProcessId() = 0;
+
     virtual net::URLRequestContext* GetURLRequestContext() = 0;
     virtual void OnReceivedResponseFromServer(WebSocketImpl* impl) = 0;
     virtual void OnLostConnectionToClient(WebSocketImpl* impl) = 0;
+    virtual void OnSSLCertificateError(
+        std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
+            callbacks,
+        const GURL& url,
+        int child_id,
+        int frame_id,
+        const net::SSLInfo& ssl_info,
+        bool fatal) = 0;
+    virtual void ReportBadMessage(BadMessageReason reason) = 0;
+    virtual bool CanReadRawCookies() = 0;
+    virtual void OnCreateURLRequest(int child_id,
+                                    int frame_id,
+                                    net::URLRequest* request) = 0;
   };
 
-  WebSocketImpl(Delegate* delegate,
+  WebSocketImpl(std::unique_ptr<Delegate> delegate,
                 network::mojom::WebSocketRequest request,
                 int child_id,
                 int frame_id,
@@ -76,7 +96,7 @@ class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
                   const GURL& site_for_cookies,
                   const std::string& user_agent_override);
 
-  Delegate* delegate_;
+  std::unique_ptr<Delegate> delegate_;
   mojo::Binding<network::mojom::WebSocket> binding_;
 
   network::mojom::WebSocketClientPtr client_;
