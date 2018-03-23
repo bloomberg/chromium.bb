@@ -99,10 +99,11 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
       const std::string& service_id,
       const std::string& peripheral_address,
       SetNextWriteCharacteristicResponseCallback callback) override;
-  void GetLastWrittenValue(const std::string& characteristic_id,
-                           const std::string& service_id,
-                           const std::string& peripheral_address,
-                           GetLastWrittenValueCallback callback) override;
+  void GetLastWrittenCharacteristicValue(
+      const std::string& characteristic_id,
+      const std::string& service_id,
+      const std::string& peripheral_address,
+      GetLastWrittenCharacteristicValueCallback callback) override;
   void SetNextReadDescriptorResponse(
       uint16_t gatt_code,
       const base::Optional<std::vector<uint8_t>>& value,
@@ -111,6 +112,19 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
       const std::string& service_id,
       const std::string& peripheral_address,
       SetNextReadDescriptorResponseCallback callback) override;
+  void SetNextWriteDescriptorResponse(
+      uint16_t gatt_code,
+      const std::string& descriptor_id,
+      const std::string& characteristic_id,
+      const std::string& service_id,
+      const std::string& peripheral_address,
+      SetNextWriteDescriptorResponseCallback callback) override;
+  void GetLastWrittenDescriptorValue(
+      const std::string& descriptor_id,
+      const std::string& characteristic_id,
+      const std::string& service_id,
+      const std::string& peripheral_address,
+      GetLastWrittenDescriptorValueCallback callback) override;
 
   // BluetoothAdapter overrides:
   std::string GetAddress() const override;

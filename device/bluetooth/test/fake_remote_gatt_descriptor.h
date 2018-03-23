@@ -35,6 +35,16 @@ class FakeRemoteGattDescriptor : public device::BluetoothRemoteGattDescriptor {
   void SetNextReadResponse(uint16_t gatt_code,
                            const base::Optional<std::vector<uint8_t>>& value);
 
+  // If |gatt_code| is mojom::kGATTSuccess the next write request will call its
+  // success callback. Otherwise it will call its error callback.
+  void SetNextWriteResponse(uint16_t gatt_code);
+
+  // Returns the last successfully written value to the descriptor. Returns
+  // nullopt if no value has been written yet.
+  const base::Optional<std::vector<uint8_t>>& last_written_value() {
+    return last_written_value_;
+  }
+
   // Returns true if there are no pending responses for this descriptor.
   bool AllResponsesConsumed();
 
@@ -50,21 +60,32 @@ class FakeRemoteGattDescriptor : public device::BluetoothRemoteGattDescriptor {
   void ReadRemoteDescriptor(const ValueCallback& callback,
                             const ErrorCallback& error_callback) override;
   void WriteRemoteDescriptor(const std::vector<uint8_t>& value,
-                             const base::Closure& callback,
+                             const base::RepeatingClosure& callback,
                              const ErrorCallback& error_callback) override;
 
  private:
   void DispatchReadResponse(const ValueCallback& callback,
                             const ErrorCallback& error_callback);
 
+  void DispatchWriteResponse(const base::RepeatingClosure& callback,
+                             const ErrorCallback& error_callback,
+                             const std::vector<uint8_t>& value);
+
   const std::string descriptor_id_;
   const device::BluetoothUUID descriptor_uuid_;
   device::BluetoothRemoteGattCharacteristic* characteristic_;
   std::vector<uint8_t> value_;
 
+  // Last successfully written value to the descriptor.
+  base::Optional<std::vector<uint8_t>> last_written_value_;
+
   // Used to decide which callback should be called when
   // ReadRemoteDescriptor is called.
   base::Optional<FakeReadResponse> next_read_response_;
+
+  // Used to decide which callback should be called when WriteRemoteDescriptor
+  // is called.
+  base::Optional<uint16_t> next_write_response_;
 
   base::WeakPtrFactory<FakeRemoteGattDescriptor> weak_ptr_factory_;
 };
