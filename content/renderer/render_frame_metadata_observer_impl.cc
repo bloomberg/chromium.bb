@@ -27,37 +27,56 @@ void RenderFrameMetadataObserverImpl::BindToCurrentThread(
 
 void RenderFrameMetadataObserverImpl::OnRenderFrameSubmission(
     cc::RenderFrameMetadata metadata) {
-  if (!render_frame_metadata_observer_client_)
-    return;
-
   // By default only report metadata changes for fields which have a low
-  // frequency of change. However if there are changes in high frequency fields
-  // these can be reported while testing is enabled.
+  // frequency of change. However if there are changes in high frequency
+  // fields these can be reported while testing is enabled.
   bool send_metadata = false;
-  if (report_all_frame_submissions_for_testing_enabled_) {
-    render_frame_metadata_observer_client_->OnFrameSubmissionForTesting(
-        frame_token_allocator_->GetOrAllocateFrameToken());
-    send_metadata = last_render_frame_metadata_ != metadata;
-  } else {
-    // Sending |root_scroll_offset| outside of tests would leave the browser
-    // process with out of date information. It is an optional parameter which
-    // we clear here.
-    metadata.root_scroll_offset = base::nullopt;
-    send_metadata = cc::RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
-        last_render_frame_metadata_, metadata);
+  if (render_frame_metadata_observer_client_) {
+    if (report_all_frame_submissions_for_testing_enabled_) {
+      last_frame_token_ = frame_token_allocator_->GetOrAllocateFrameToken();
+      render_frame_metadata_observer_client_->OnFrameSubmissionForTesting(
+          last_frame_token_);
+      send_metadata = last_render_frame_metadata_ != metadata;
+    } else {
+      send_metadata = cc::RenderFrameMetadata::HasAlwaysUpdateMetadataChanged(
+          last_render_frame_metadata_, metadata);
+    }
   }
 
-  if (send_metadata) {
-    render_frame_metadata_observer_client_->OnRenderFrameMetadataChanged(
-        frame_token_allocator_->GetOrAllocateFrameToken(), metadata);
-  }
-
+  // Allways cache the full metadata, so that it can correctly be sent upon
+  // ReportAllFrameSubmissionsForTesting. This must only be done after we've
+  // compared the two for changes.
   last_render_frame_metadata_ = metadata;
+
+  if (send_metadata && render_frame_metadata_observer_client_) {
+    // Sending |root_scroll_offset| outside of tests would leave the browser
+    // process with out of date information. It is an optional parameter
+    // which we clear here.
+    if (!render_frame_metadata_observer_client_)
+      metadata.root_scroll_offset = base::nullopt;
+
+    last_frame_token_ = frame_token_allocator_->GetOrAllocateFrameToken();
+    render_frame_metadata_observer_client_->OnRenderFrameMetadataChanged(
+        last_frame_token_, metadata);
+  }
+
+  // Always cache the initial frame token, so that if a test connects later on
+  // it can be notified of the initial state.
+  if (!last_frame_token_)
+    last_frame_token_ = frame_token_allocator_->GetOrAllocateFrameToken();
 }
 
 void RenderFrameMetadataObserverImpl::ReportAllFrameSubmissionsForTesting(
     bool enabled) {
   report_all_frame_submissions_for_testing_enabled_ = enabled;
+
+  if (!enabled || !last_frame_token_)
+    return;
+
+  // When enabled for testing send the cached metadata.
+  DCHECK(render_frame_metadata_observer_client_);
+  render_frame_metadata_observer_client_->OnRenderFrameMetadataChanged(
+      last_frame_token_, last_render_frame_metadata_);
 }
 
 }  // namespace content

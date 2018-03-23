@@ -286,3 +286,7 @@
 # Segfaults after massive recursion setting ash::kWindowStateTypeKey:
 # crbug.com/824458
 -PresentationReceiverWindowViewBrowserTest.ChromeOSHardwareFullscreenButton
+
+# RenderFrameMetadata observation not supported: https://crbug.com/820974
+-WebViewGuestScrollLatchingTest.ScrollLatchingPreservedInGuests
+-WebViewScrollGuestContent/WebViewScrollGuestContentTest.OverscrollControllerSeesConsumedScrollsInGuest/0
