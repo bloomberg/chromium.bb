@@ -293,6 +293,7 @@ void AppListView::Initialize(const InitParams& params) {
   is_side_shelf_ = params.is_side_shelf;
   InitContents(params.initial_apps_page);
   AddAccelerator(ui::Accelerator(ui::VKEY_ESCAPE, ui::EF_NONE));
+  AddAccelerator(ui::Accelerator(ui::VKEY_BROWSER_BACK, ui::EF_NONE));
   parent_window_ = params.parent;
 
   InitializeFullscreen(params.parent, params.parent_container_id);
@@ -972,12 +973,18 @@ ax::mojom::Role AppListView::GetAccessibleWindowRole() const {
 }
 
 bool AppListView::AcceleratorPressed(const ui::Accelerator& accelerator) {
-  DCHECK_EQ(ui::VKEY_ESCAPE, accelerator.key_code());
-
-  // If the ContentsView does not handle the back action, then this is the
-  // top level, so we close the app list.
-  if (!app_list_main_view_->contents_view()->Back()) {
-    Dismiss();
+  switch (accelerator.key_code()) {
+    case ui::VKEY_ESCAPE:
+    case ui::VKEY_BROWSER_BACK:
+      // If the ContentsView does not handle the back action, then this is the
+      // top level, so we close the app list.
+      if (!app_list_main_view_->contents_view()->Back()) {
+        Dismiss();
+      }
+      break;
+    default:
+      NOTREACHED();
+      return false;
   }
 
   // Don't let DialogClientView handle the accelerator.
