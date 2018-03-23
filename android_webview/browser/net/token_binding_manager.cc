@@ -5,6 +5,7 @@
 #include "android_webview/browser/net/token_binding_manager.h"
 
 #include "android_webview/browser/aw_browser_context.h"
+#include "base/callback_helpers.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/storage_partition.h"
 #include "net/ssl/channel_id_service.h"
@@ -26,12 +27,12 @@ void CompletionCallback(TokenBindingManager::KeyReadyCallback callback,
                         int status) {
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(callback, status, base::Owned(key->release())));
+      base::BindOnce(std::move(callback), status, base::Owned(key->release())));
 }
 
 void DeletionCompleteCallback(
     TokenBindingManager::DeletionCompleteCallback callback) {
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, callback);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(callback));
 }
 
 void GetKeyImpl(const std::string& host,
@@ -44,8 +45,11 @@ void GetKeyImpl(const std::string& host,
       new std::unique_ptr<crypto::ECPrivateKey>();
   // The request will own the callback if the call to service returns
   // PENDING. The request releases the ownership before calling the callback.
-  net::CompletionCallback completion_callback = base::Bind(
-      &CompletionCallback, callback, base::Owned(request), base::Owned(key));
+  // TODO(crbug.com/714018): Update base::Bind here to BindOnce after we update
+  // net::CompletionCallback to support OnceCallback.
+  net::CompletionCallback completion_callback =
+      base::Bind(&CompletionCallback, base::Passed(&callback),
+                 base::Owned(request), base::Owned(key));
   int status =
       service->GetOrCreateChannelID(host, key, completion_callback, request);
   if (status == net::ERR_IO_PENDING) {
@@ -53,7 +57,7 @@ void GetKeyImpl(const std::string& host,
     return;
   }
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::Bind(completion_callback, status));
+                          base::BindOnce(completion_callback, status));
 }
 
 void DeleteKeyImpl(const std::string& host,
@@ -63,12 +67,14 @@ void DeleteKeyImpl(const std::string& host,
   ChannelIDService* service =
       context_getter->GetURLRequestContext()->channel_id_service();
   ChannelIDStore* store = service->GetChannelIDStore();
-  base::Closure completion_callback =
-      base::Bind(&DeletionCompleteCallback, callback);
+  base::OnceClosure completion_callback =
+      base::BindOnce(&DeletionCompleteCallback, std::move(callback));
   if (all) {
-    store->DeleteAll(completion_callback);
+    store->DeleteAll(
+        base::AdaptCallbackForRepeating(std::move(completion_callback)));
   } else {
-    store->DeleteChannelID(host, completion_callback);
+    store->DeleteChannelID(
+        host, base::AdaptCallbackForRepeating(std::move(completion_callback)));
   }
 }
 
@@ -89,7 +95,7 @@ void TokenBindingManager::GetKey(const std::string& host,
           AwBrowserContext::GetDefault())->GetURLRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&GetKeyImpl, host, callback, context_getter));
+      base::BindOnce(&GetKeyImpl, host, std::move(callback), context_getter));
 }
 
 void TokenBindingManager::DeleteKey(const std::string& host,
@@ -99,7 +105,8 @@ void TokenBindingManager::DeleteKey(const std::string& host,
           AwBrowserContext::GetDefault())->GetURLRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DeleteKeyImpl, host, callback, context_getter, false));
+      base::BindOnce(&DeleteKeyImpl, host, std::move(callback), context_getter,
+                     false));
 }
 
 void TokenBindingManager::DeleteAllKeys(DeletionCompleteCallback callback) {
@@ -108,7 +115,8 @@ void TokenBindingManager::DeleteAllKeys(DeletionCompleteCallback callback) {
           AwBrowserContext::GetDefault())->GetURLRequestContext();
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&DeleteKeyImpl, "", callback, context_getter, true));
+      base::BindOnce(&DeleteKeyImpl, "", std::move(callback), context_getter,
+                     true));
 }
 
 }  // namespace android_webview

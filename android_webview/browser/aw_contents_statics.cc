@@ -76,9 +76,9 @@ void JNI_AwContentsStatics_ClearClientCertPreferences(
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   BrowserThread::PostTaskAndReply(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&NotifyClientCertificatesChanged),
-      base::Bind(&ClientCertificatesCleared,
-                 ScopedJavaGlobalRef<jobject>(env, callback)));
+      base::BindOnce(&NotifyClientCertificatesChanged),
+      base::BindOnce(&ClientCertificatesCleared,
+                     ScopedJavaGlobalRef<jobject>(env, callback)));
 }
 
 // static
@@ -124,8 +124,8 @@ void JNI_AwContentsStatics_SetSafeBrowsingWhitelist(
       AwBrowserContext::GetDefault()->GetSafeBrowsingWhitelistManager();
   whitelist_manager->SetWhitelistOnUIThread(
       std::move(rules),
-      base::Bind(&SafeBrowsingWhitelistAssigned,
-                 ScopedJavaGlobalRef<jobject>(env, callback)));
+      base::BindOnce(&SafeBrowsingWhitelistAssigned,
+                     ScopedJavaGlobalRef<jobject>(env, callback)));
 }
 
 // static

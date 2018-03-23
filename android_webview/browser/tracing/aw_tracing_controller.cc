@@ -30,34 +30,35 @@ base::android::ScopedJavaLocalRef<jbyteArray> StringToJavaBytes(
 class AwTraceDataEndpoint
     : public content::TracingController::TraceDataEndpoint {
  public:
-  typedef base::Callback<void(std::unique_ptr<std::string>)>
-      ReceivedChunkCallback;
-  typedef base::Callback<void(std::unique_ptr<const base::DictionaryValue>)>
-      CompletedCallback;
+  using ReceivedChunkCallback =
+      base::RepeatingCallback<void(std::unique_ptr<std::string>)>;
+  using CompletedCallback =
+      base::OnceCallback<void(std::unique_ptr<const base::DictionaryValue>)>;
 
   static scoped_refptr<content::TracingController::TraceDataEndpoint> Create(
       ReceivedChunkCallback received_chunk_callback,
       CompletedCallback completed_callback) {
-    return new AwTraceDataEndpoint(received_chunk_callback, completed_callback);
+    return new AwTraceDataEndpoint(std::move(received_chunk_callback),
+                                   std::move(completed_callback));
   }
 
   void ReceiveTraceFinalContents(
       std::unique_ptr<const base::DictionaryValue> metadata) override {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(completed_callback_, base::Passed(std::move(metadata))));
+        base::BindOnce(std::move(completed_callback_), std::move(metadata)));
   }
 
   void ReceiveTraceChunk(std::unique_ptr<std::string> chunk) override {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(received_chunk_callback_, base::Passed(std::move(chunk))));
+        base::BindOnce(received_chunk_callback_, std::move(chunk)));
   }
 
   explicit AwTraceDataEndpoint(ReceivedChunkCallback received_chunk_callback,
                                CompletedCallback completed_callback)
-      : received_chunk_callback_(received_chunk_callback),
-        completed_callback_(completed_callback) {}
+      : received_chunk_callback_(std::move(received_chunk_callback)),
+        completed_callback_(std::move(completed_callback)) {}
 
  private:
   ~AwTraceDataEndpoint() override {}
@@ -101,10 +102,10 @@ bool AwTracingController::StopAndFlush(JNIEnv* env,
                                        const JavaParamRef<jobject>& obj) {
   return content::TracingController::GetInstance()->StopTracing(
       AwTraceDataEndpoint::Create(
-          base::Bind(&AwTracingController::OnTraceDataReceived,
-                     weak_factory_.GetWeakPtr()),
-          base::Bind(&AwTracingController::OnTraceDataComplete,
-                     weak_factory_.GetWeakPtr())));
+          base::BindRepeating(&AwTracingController::OnTraceDataReceived,
+                              weak_factory_.GetWeakPtr()),
+          base::BindOnce(&AwTracingController::OnTraceDataComplete,
+                         weak_factory_.GetWeakPtr())));
 }
 
 void AwTracingController::OnTraceDataComplete(

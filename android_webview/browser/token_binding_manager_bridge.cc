@@ -80,9 +80,9 @@ static void JNI_AwTokenBindingManager_GetTokenBindingKey(
   j_callback.Reset(env, callback);
 
   TokenBindingManager::KeyReadyCallback key_callback =
-      base::Bind(&OnKeyReady, j_callback);
+      base::BindOnce(&OnKeyReady, j_callback);
   TokenBindingManager::GetInstance()->GetKey(ConvertJavaStringToUTF8(env, host),
-                                             key_callback);
+                                             std::move(key_callback));
 }
 
 static void JNI_AwTokenBindingManager_DeleteTokenBindingKey(
@@ -96,9 +96,9 @@ static void JNI_AwTokenBindingManager_DeleteTokenBindingKey(
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
   TokenBindingManager::DeletionCompleteCallback complete_callback =
-      base::Bind(&OnDeletionComplete, j_callback);
+      base::BindOnce(&OnDeletionComplete, j_callback);
   TokenBindingManager::GetInstance()->DeleteKey(
-      ConvertJavaStringToUTF8(env, host), complete_callback);
+      ConvertJavaStringToUTF8(env, host), std::move(complete_callback));
 }
 
 static void JNI_AwTokenBindingManager_DeleteAllTokenBindingKeys(
@@ -111,8 +111,9 @@ static void JNI_AwTokenBindingManager_DeleteAllTokenBindingKeys(
   ScopedJavaGlobalRef<jobject> j_callback;
   j_callback.Reset(env, callback);
   TokenBindingManager::DeletionCompleteCallback complete_callback =
-      base::Bind(&OnDeletionComplete, j_callback);
-  TokenBindingManager::GetInstance()->DeleteAllKeys(complete_callback);
+      base::BindOnce(&OnDeletionComplete, j_callback);
+  TokenBindingManager::GetInstance()->DeleteAllKeys(
+      std::move(complete_callback));
 }
 
 }  // namespace android_webview

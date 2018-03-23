@@ -357,10 +357,10 @@ void AwResourceDispatcherHostDelegate::RequestComplete(
     }
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&OnReceivedErrorOnUiThread,
-                   request_info->GetWebContentsGetterForRequest(),
-                   AwWebResourceRequest(*request), request->status().error(),
-                   safebrowsing_hit));
+        base::BindOnce(&OnReceivedErrorOnUiThread,
+                       request_info->GetWebContentsGetterForRequest(),
+                       AwWebResourceRequest(*request),
+                       request->status().error(), safebrowsing_hit));
   }
 }
 
@@ -399,9 +399,10 @@ void AwResourceDispatcherHostDelegate::DownloadStarting(
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::Bind(&DownloadStartingOnUIThread,
-                 request_info->GetWebContentsGetterForRequest(), url,
-                 user_agent, content_disposition, mime_type, content_length));
+      base::BindOnce(&DownloadStartingOnUIThread,
+                     request_info->GetWebContentsGetterForRequest(), url,
+                     user_agent, content_disposition, mime_type,
+                     content_length));
 }
 
 void AwResourceDispatcherHostDelegate::OnResponseStarted(
@@ -422,9 +423,10 @@ void AwResourceDispatcherHostDelegate::OnResponseStarted(
     if (ParserHeaderInResponse(request, ALLOW_ANY_REALM, &header_data)) {
       BrowserThread::PostTask(
           BrowserThread::UI, FROM_HERE,
-          base::Bind(&NewLoginRequestOnUIThread,
-                     request_info->GetWebContentsGetterForRequest(),
-                     header_data.realm, header_data.account, header_data.args));
+          base::BindOnce(&NewLoginRequestOnUIThread,
+                         request_info->GetWebContentsGetterForRequest(),
+                         header_data.realm, header_data.account,
+                         header_data.args));
     }
   }
 }
@@ -444,8 +446,9 @@ void AwResourceDispatcherHostDelegate::RemovePendingThrottleOnIoThread(
 void AwResourceDispatcherHostDelegate::OnIoThreadClientReady(
     int new_render_process_id,
     int new_render_frame_id) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
           &AwResourceDispatcherHostDelegate::OnIoThreadClientReadyInternal,
           base::Unretained(
               g_webview_resource_dispatcher_host_delegate.Pointer()),
@@ -457,8 +460,9 @@ void AwResourceDispatcherHostDelegate::AddPendingThrottle(
     int render_process_id,
     int render_frame_id,
     IoThreadClientThrottle* pending_throttle) {
-  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-      base::Bind(
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::BindOnce(
           &AwResourceDispatcherHostDelegate::AddPendingThrottleOnIoThread,
           base::Unretained(
               g_webview_resource_dispatcher_host_delegate.Pointer()),

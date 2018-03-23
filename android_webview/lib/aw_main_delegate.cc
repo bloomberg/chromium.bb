@@ -187,7 +187,7 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // Used only if the argument filter is enabled in tracing config,
   // as is the case by default in aw_tracing_controller.cc
   base::trace_event::TraceLog::GetInstance()->SetArgumentFilterPredicate(
-      base::Bind(&IsTraceEventArgsWhitelisted));
+      base::BindRepeating(&IsTraceEventArgsWhitelisted));
 
   return false;
 }
@@ -294,7 +294,7 @@ gpu::SyncPointManager* GetSyncPointManager() {
 
 content::ContentGpuClient* AwMainDelegate::CreateContentGpuClient() {
   content_gpu_client_.reset(
-      new AwContentGpuClient(base::Bind(&GetSyncPointManager)));
+      new AwContentGpuClient(base::BindRepeating(&GetSyncPointManager)));
   return content_gpu_client_.get();
 }
 

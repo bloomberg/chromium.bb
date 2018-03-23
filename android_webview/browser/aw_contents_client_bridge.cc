@@ -125,12 +125,11 @@ AwContentsClientBridge::~AwContentsClientBridge() {
   }
 }
 
-void AwContentsClientBridge::AllowCertificateError(
-    int cert_error,
-    net::X509Certificate* cert,
-    const GURL& request_url,
-    const base::Callback<void(content::CertificateRequestResultType)>& callback,
-    bool* cancel_request) {
+void AwContentsClientBridge::AllowCertificateError(int cert_error,
+                                                   net::X509Certificate* cert,
+                                                   const GURL& request_url,
+                                                   CertErrorCallback callback,
+                                                   bool* cancel_request) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
 
@@ -148,7 +147,7 @@ void AwContentsClientBridge::AllowCertificateError(
   // We need to add the callback before making the call to java side,
   // as it may do a synchronous callback prior to returning.
   int request_id = pending_cert_error_callbacks_.Add(
-      std::make_unique<CertErrorCallback>(callback));
+      std::make_unique<CertErrorCallback>(std::move(callback)));
   *cancel_request = !Java_AwContentsClientBridge_allowCertificateError(
       env, obj, cert_error, jcert, jurl, request_id);
   // if the request is cancelled, then cancel the stored callback
@@ -167,8 +166,9 @@ void AwContentsClientBridge::ProceedSslError(JNIEnv* env,
     LOG(WARNING) << "Ignoring unexpected ssl error proceed callback";
     return;
   }
-  callback->Run(proceed ? content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE
-                        : content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
+  std::move(*callback).Run(
+      proceed ? content::CERTIFICATE_REQUEST_RESULT_TYPE_CONTINUE
+              : content::CERTIFICATE_REQUEST_RESULT_TYPE_CANCEL);
   pending_cert_error_callbacks_.Remove(id);
 }
 
@@ -453,9 +453,9 @@ void AwContentsClientBridge::OnReceivedError(
 void AwContentsClientBridge::OnSafeBrowsingHit(
     const AwWebResourceRequest& request,
     const safe_browsing::SBThreatType& threat_type,
-    const SafeBrowsingActionCallback& callback) {
+    SafeBrowsingActionCallback callback) {
   int request_id = safe_browsing_callbacks_.Add(
-      std::make_unique<SafeBrowsingActionCallback>(callback));
+      std::make_unique<SafeBrowsingActionCallback>(std::move(callback)));
 
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   JNIEnv* env = AttachCurrentThread();
@@ -551,7 +551,7 @@ void AwContentsClientBridge::TakeSafeBrowsingAction(JNIEnv*,
     LOG(WARNING) << "Unexpected TakeSafeBrowsingAction. " << request_id;
     return;
   }
-  callback->Run(
+  std::move(*callback).Run(
       static_cast<AwUrlCheckerDelegateImpl::SafeBrowsingAction>(action),
       reporting);
   safe_browsing_callbacks_.Remove(request_id);

@@ -80,8 +80,9 @@ bool AwFormDatabaseService::HasFormData() {
   using awds = autofill::AutofillWebDataService;
   base::PostTask(
       FROM_HERE,
-      base::Bind(base::IgnoreResult(&awds::GetCountOfValuesContainedBetween),
-                 autofill_data_, base::Time(), base::Time::Max(), this));
+      base::BindOnce(
+          base::IgnoreResult(&awds::GetCountOfValuesContainedBetween),
+          autofill_data_, base::Time(), base::Time::Max(), this));
   {
     base::ThreadRestrictions::ScopedAllowWait wait;
     has_form_data_completion_.Wait();

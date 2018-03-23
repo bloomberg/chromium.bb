@@ -198,13 +198,14 @@ AwBrowserContext* AwContentBrowserClient::GetAwBrowserContext() {
 }
 
 AwContentBrowserClient::AwContentBrowserClient() : net_log_(new net::NetLog()) {
-  frame_interfaces_.AddInterface(
-      base::Bind(&autofill::ContentAutofillDriverFactory::BindAutofillDriver));
+  frame_interfaces_.AddInterface(base::BindRepeating(
+      &autofill::ContentAutofillDriverFactory::BindAutofillDriver));
   // Although WebView does not support password manager feature, renderer code
   // could still request this interface, so we register a dummy binder which
   // just drops the incoming request, to avoid the 'Failed to locate a binder
   // for interface' error log..
-  frame_interfaces_.AddInterface(base::Bind(&DummyBindPasswordManagerDriver));
+  frame_interfaces_.AddInterface(
+      base::BindRepeating(&DummyBindPasswordManagerDriver));
   sniff_file_urls_ = AwSettings::GetAllowSniffingFileUrls();
 }
 
@@ -569,10 +570,10 @@ void AwContentBrowserClient::ExposeInterfacesToRenderer(
     content::ResourceContext* resource_context =
         render_process_host->GetBrowserContext()->GetResourceContext();
     registry->AddInterface(
-        base::Bind(
+        base::BindRepeating(
             &safe_browsing::MojoSafeBrowsingImpl::MaybeCreate,
             render_process_host->GetID(), resource_context,
-            base::Bind(
+            base::BindRepeating(
                 &AwContentBrowserClient::GetSafeBrowsingUrlCheckerDelegate,
                 base::Unretained(this))),
         BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));

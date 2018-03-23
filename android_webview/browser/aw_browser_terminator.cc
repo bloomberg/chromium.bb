@@ -158,9 +158,9 @@ void AwBrowserTerminator::OnChildExitAsync(
     crashed = true;
   }
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&OnRenderProcessGoneDetail, process_host_id, pid, crashed));
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&OnRenderProcessGoneDetail,
+                                         process_host_id, pid, crashed));
 }
 
 void AwBrowserTerminator::OnChildExit(
@@ -191,9 +191,9 @@ void AwBrowserTerminator::OnChildExit(
       FROM_HERE,
       {base::MayBlock(), base::TaskPriority::USER_VISIBLE,
        base::TaskShutdownBehavior::SKIP_ON_SHUTDOWN},
-      base::Bind(&AwBrowserTerminator::OnChildExitAsync, process_host_id, pid,
-                 process_type, termination_status, app_state, crash_dump_dir_,
-                 base::Passed(std::move(pipe))));
+      base::BindOnce(&AwBrowserTerminator::OnChildExitAsync, process_host_id,
+                     pid, process_type, termination_status, app_state,
+                     crash_dump_dir_, std::move(pipe)));
 }
 
 }  // namespace android_webview

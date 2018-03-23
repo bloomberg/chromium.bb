@@ -372,10 +372,10 @@ std::unique_ptr<AwWebResourceResponse> ReturnNull() {
 
 void AwContentsIoThreadClient::ShouldInterceptRequestAsync(
     const net::URLRequest* request,
-    const ShouldInterceptRequestResultCallback callback) {
+    ShouldInterceptRequestResultCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  base::Callback<std::unique_ptr<AwWebResourceResponse>()> get_response =
-      base::Bind(&ReturnNull);
+  base::OnceCallback<std::unique_ptr<AwWebResourceResponse>()> get_response =
+      base::BindOnce(&ReturnNull);
   JNIEnv* env = AttachCurrentThread();
   if (bg_thread_client_object_.is_null() && !java_object_.is_null()) {
     bg_thread_client_object_.Reset(
@@ -383,12 +383,13 @@ void AwContentsIoThreadClient::ShouldInterceptRequestAsync(
                                                                 java_object_));
   }
   if (!bg_thread_client_object_.is_null()) {
-    get_response = base::Bind(
+    get_response = base::BindOnce(
         &RunShouldInterceptRequest, AwWebResourceRequest(*request),
         JavaObjectWeakGlobalRef(env, bg_thread_client_object_.obj()));
   }
   base::PostTaskAndReplyWithResult(sequenced_task_runner_.get(), FROM_HERE,
-                                   get_response, callback);
+                                   std::move(get_response),
+                                   std::move(callback));
 }
 
 bool AwContentsIoThreadClient::ShouldBlockContentUrls() const {

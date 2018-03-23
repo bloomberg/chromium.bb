@@ -21,7 +21,7 @@ using blink::mojom::PermissionStatus;
 using content::PermissionType;
 
 using RequestPermissionsCallback =
-    base::Callback<void(const std::vector<PermissionStatus>&)>;
+    base::OnceCallback<void(const std::vector<PermissionStatus>&)>;
 
 namespace android_webview {
 
@@ -154,13 +154,13 @@ class AwPermissionManager::PendingRequest {
                  GURL embedding_origin,
                  int render_process_id,
                  int render_frame_id,
-                 const RequestPermissionsCallback callback)
+                 RequestPermissionsCallback callback)
       : permissions(permissions),
         requesting_origin(requesting_origin),
         embedding_origin(embedding_origin),
         render_process_id(render_process_id),
         render_frame_id(render_frame_id),
-        callback(callback),
+        callback(std::move(callback)),
         results(permissions.size(), PermissionStatus::DENIED),
         cancelled_(false) {
     for (size_t i = 0; i < permissions.size(); ++i)
@@ -302,20 +302,20 @@ int AwPermissionManager::RequestPermissions(
       case PermissionType::GEOLOCATION:
         delegate->RequestGeolocationPermission(
             pending_request_raw->requesting_origin,
-            base::Bind(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
-                       request_id, permissions[i]));
+            base::BindOnce(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
+                           request_id, permissions[i]));
         break;
       case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
         delegate->RequestProtectedMediaIdentifierPermission(
             pending_request_raw->requesting_origin,
-            base::Bind(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
-                       request_id, permissions[i]));
+            base::BindOnce(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
+                           request_id, permissions[i]));
         break;
       case PermissionType::MIDI_SYSEX:
         delegate->RequestMIDISysexPermission(
             pending_request_raw->requesting_origin,
-            base::Bind(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
-                       request_id, permissions[i]));
+            base::BindOnce(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
+                           request_id, permissions[i]));
         break;
       case PermissionType::AUDIO_CAPTURE:
       case PermissionType::VIDEO_CAPTURE:
@@ -384,8 +384,8 @@ void AwPermissionManager::OnRequestResponse(
                                     pending_request->embedding_origin, status);
 
   std::vector<int> complete_request_ids;
-  std::vector<std::pair<const RequestPermissionsCallback,
-                        std::vector<PermissionStatus>>>
+  std::vector<
+      std::pair<RequestPermissionsCallback, std::vector<PermissionStatus>>>
       complete_request_pairs;
   for (PendingRequestsMap::Iterator<PendingRequest> it(
            &manager->pending_requests_);
@@ -399,15 +399,16 @@ void AwPermissionManager::OnRequestResponse(
     if (it.GetCurrentValue()->IsCompleted()) {
       complete_request_ids.push_back(it.GetCurrentKey());
       if (!it.GetCurrentValue()->IsCancelled()) {
-        complete_request_pairs.push_back(std::make_pair(
-            it.GetCurrentValue()->callback, it.GetCurrentValue()->results));
+        complete_request_pairs.emplace_back(
+            std::move(it.GetCurrentValue()->callback),
+            std::move(it.GetCurrentValue()->results));
       }
     }
   }
   for (auto id : complete_request_ids)
     manager->pending_requests_.Remove(id);
-  for (auto pair : complete_request_pairs)
-    pair.first.Run(pair.second);
+  for (auto& pair : complete_request_pairs)
+    std::move(pair.first).Run(pair.second);
 }
 
 void AwPermissionManager::ResetPermission(PermissionType permission,

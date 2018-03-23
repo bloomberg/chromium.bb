@@ -108,11 +108,11 @@ class AwContentsIoThreadClient {
                               int child_render_frame_id);
 
   // This method is called on the IO thread only.
-  typedef base::Callback<void(std::unique_ptr<AwWebResourceResponse>)>
-      ShouldInterceptRequestResultCallback;
+  using ShouldInterceptRequestResultCallback =
+      base::OnceCallback<void(std::unique_ptr<AwWebResourceResponse>)>;
   void ShouldInterceptRequestAsync(
       const net::URLRequest* request,
-      const ShouldInterceptRequestResultCallback callback);
+      ShouldInterceptRequestResultCallback callback);
 
   // Retrieve the AllowContentAccess setting value of this AwContents.
   // This method is called on the IO thread only.

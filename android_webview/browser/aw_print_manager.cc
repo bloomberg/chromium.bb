@@ -35,22 +35,20 @@ AwPrintManager* AwPrintManager::CreateForWebContents(
     content::WebContents* contents,
     const printing::PrintSettings& settings,
     const base::FileDescriptor& file_descriptor,
-    const PrintManager::PdfWritingDoneCallback& callback) {
-  AwPrintManager* print_manager =
-      new AwPrintManager(contents, settings, file_descriptor, callback);
+    PrintManager::PdfWritingDoneCallback callback) {
+  AwPrintManager* print_manager = new AwPrintManager(
+      contents, settings, file_descriptor, std::move(callback));
   contents->SetUserData(UserDataKey(), base::WrapUnique(print_manager));
   return print_manager;
 }
 
-AwPrintManager::AwPrintManager(
-    content::WebContents* contents,
-    const printing::PrintSettings& settings,
-    const base::FileDescriptor& file_descriptor,
-    const PdfWritingDoneCallback& callback)
-    : PrintManager(contents),
-      settings_(settings) {
+AwPrintManager::AwPrintManager(content::WebContents* contents,
+                               const printing::PrintSettings& settings,
+                               const base::FileDescriptor& file_descriptor,
+                               PdfWritingDoneCallback callback)
+    : PrintManager(contents), settings_(settings) {
   set_file_descriptor(file_descriptor);
-  pdf_writing_done_callback_ = callback;
+  pdf_writing_done_callback_ = std::move(callback);
   cookie_ = 1;
 }
 

@@ -168,8 +168,8 @@ void AwBrowserContext::PreMainMessageLoopRun(net::NetLog* net_log) {
       new web_restrictions::WebRestrictionsClient());
   pref_change_registrar_.Add(
       prefs::kWebRestrictionsAuthority,
-      base::Bind(&AwBrowserContext::OnWebRestrictionsAuthorityChanged,
-                 base::Unretained(this)));
+      base::BindRepeating(&AwBrowserContext::OnWebRestrictionsAuthorityChanged,
+                          base::Unretained(this)));
   web_restriction_provider_->SetAuthority(
       user_pref_service_->GetString(prefs::kWebRestrictionsAuthority));
 
@@ -237,7 +237,8 @@ void AwBrowserContext::InitUserPrefService() {
           browser_policy_connector_->GetPolicyService(),
           browser_policy_connector_->GetHandlerList(),
           policy::POLICY_LEVEL_MANDATORY));
-  pref_service_factory.set_read_error_callback(base::Bind(&HandleReadError));
+  pref_service_factory.set_read_error_callback(
+      base::BindRepeating(&HandleReadError));
   user_pref_service_ = pref_service_factory.Create(pref_registry);
   pref_change_registrar_.Init(user_pref_service_.get());
 

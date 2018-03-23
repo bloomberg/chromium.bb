@@ -65,8 +65,8 @@ FakeWindow::~FakeWindow() {
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     render_thread_loop_->PostTask(
-        FROM_HERE, base::Bind(&FakeWindow::DestroyOnRT, base::Unretained(this),
-                              &completion));
+        FROM_HERE, base::BindOnce(&FakeWindow::DestroyOnRT,
+                                  base::Unretained(this), &completion));
     completion.Wait();
   }
 
@@ -86,8 +86,8 @@ void FakeWindow::RequestInvokeGL(FakeFunctor* functor,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   render_thread_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&FakeWindow::InvokeFunctorOnRT, base::Unretained(this),
-                 functor, wait_for_completion ? &completion : nullptr));
+      base::BindOnce(&FakeWindow::InvokeFunctorOnRT, base::Unretained(this),
+                     functor, wait_for_completion ? &completion : nullptr));
   if (wait_for_completion)
     completion.Wait();
 }
@@ -103,9 +103,9 @@ void FakeWindow::InvokeFunctorOnRT(FakeFunctor* functor,
 
 void FakeWindow::RequestDrawGL(FakeFunctor* functor) {
   CheckCurrentlyOnUIThread();
-  render_thread_loop_->PostTask(FROM_HERE,
-                                base::Bind(&FakeWindow::ProcessDrawOnRT,
-                                           base::Unretained(this), functor));
+  render_thread_loop_->PostTask(
+      FROM_HERE, base::BindOnce(&FakeWindow::ProcessDrawOnRT,
+                                base::Unretained(this), functor));
 }
 
 void FakeWindow::PostInvalidate() {
@@ -114,8 +114,8 @@ void FakeWindow::PostInvalidate() {
     return;
   on_draw_hardware_pending_ = true;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&FakeWindow::OnDrawHardware, weak_ptr_factory_.GetWeakPtr()));
+      FROM_HERE, base::BindOnce(&FakeWindow::OnDrawHardware,
+                                weak_ptr_factory_.GetWeakPtr()));
 }
 
 void FakeWindow::OnDrawHardware() {
@@ -135,8 +135,9 @@ void FakeWindow::OnDrawHardware() {
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
     render_thread_loop_->PostTask(
-        FROM_HERE, base::Bind(&FakeWindow::DrawFunctorOnRT,
-                              base::Unretained(this), functor, &completion));
+        FROM_HERE,
+        base::BindOnce(&FakeWindow::DrawFunctorOnRT, base::Unretained(this),
+                       functor, &completion));
     completion.Wait();
   }
 }
@@ -179,8 +180,8 @@ void FakeWindow::CreateRenderThreadIfNeeded() {
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
   render_thread_loop_->PostTask(
-      FROM_HERE, base::Bind(&FakeWindow::InitializeOnRT, base::Unretained(this),
-                            &completion));
+      FROM_HERE, base::BindOnce(&FakeWindow::InitializeOnRT,
+                                base::Unretained(this), &completion));
   completion.Wait();
 }
 
@@ -220,8 +221,9 @@ void FakeFunctor::Init(
     std::unique_ptr<RenderThreadManager> render_thread_manager) {
   window_ = window;
   render_thread_manager_ = std::move(render_thread_manager);
-  callback_ = base::Bind(&RenderThreadManager::DrawGL,
-                         base::Unretained(render_thread_manager_.get()));
+  callback_ =
+      base::BindRepeating(&RenderThreadManager::DrawGL,
+                          base::Unretained(render_thread_manager_.get()));
 }
 
 void FakeFunctor::Sync(const gfx::Rect& location,

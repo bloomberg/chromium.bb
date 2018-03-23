@@ -75,9 +75,9 @@ class AndroidStreamReaderURLRequestJob : public net::URLRequestJob {
    public:
     virtual ~DelegateObtainer() {}
 
-    typedef base::Callback<void(std::unique_ptr<Delegate>)> Callback;
+    using Callback = base::OnceCallback<void(std::unique_ptr<Delegate>)>;
     virtual void ObtainDelegate(net::URLRequest* request,
-                                const Callback& callback) = 0;
+                                Callback callback) = 0;
   };
 
   AndroidStreamReaderURLRequestJob(net::URLRequest* request,

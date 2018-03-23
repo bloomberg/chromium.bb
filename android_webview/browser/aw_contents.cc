@@ -478,7 +478,7 @@ void AwContents::DocumentHasImages(JNIEnv* env,
   ScopedJavaGlobalRef<jobject> j_message;
   j_message.Reset(env, message);
   render_view_host_ext_->DocumentHasImages(
-      base::Bind(&DocumentHasImagesCallback, j_message));
+      base::BindOnce(&DocumentHasImagesCallback, j_message));
 }
 
 namespace {
@@ -573,19 +573,20 @@ void ShowGeolocationPromptHelper(const JavaObjectWeakGlobalRef& java_ref,
   if (java_ref.get(env).obj()) {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI, FROM_HERE,
-        base::Bind(&ShowGeolocationPromptHelperTask, java_ref, origin));
+        base::BindOnce(&ShowGeolocationPromptHelperTask, java_ref, origin));
   }
 }
 
 }  // anonymous namespace
 
-void AwContents::ShowGeolocationPrompt(const GURL& requesting_frame,
-                                       base::Callback<void(bool)> callback) {
+void AwContents::ShowGeolocationPrompt(
+    const GURL& requesting_frame,
+    base::OnceCallback<void(bool)> callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   GURL origin = requesting_frame.GetOrigin();
   bool show_prompt = pending_geolocation_prompts_.empty();
-  pending_geolocation_prompts_.push_back(OriginCallback(origin, callback));
+  pending_geolocation_prompts_.emplace_back(origin, std::move(callback));
   if (show_prompt) {
     ShowGeolocationPromptHelper(java_ref_, origin);
   }
@@ -604,7 +605,7 @@ void AwContents::InvokeGeolocationCallback(
   GURL callback_origin(base::android::ConvertJavaStringToUTF16(env, origin));
   if (callback_origin.GetOrigin() ==
       pending_geolocation_prompts_.front().first) {
-    pending_geolocation_prompts_.front().second.Run(value);
+    std::move(pending_geolocation_prompts_.front().second).Run(value);
     pending_geolocation_prompts_.pop_front();
     if (!pending_geolocation_prompts_.empty()) {
       ShowGeolocationPromptHelper(java_ref_,
@@ -680,10 +681,10 @@ void AwContents::PreauthorizePermission(JNIEnv* env,
 
 void AwContents::RequestProtectedMediaIdentifierPermission(
     const GURL& origin,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   permission_request_handler_->SendRequest(
       std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
-          origin, AwPermissionRequest::ProtectedMediaId, callback)));
+          origin, AwPermissionRequest::ProtectedMediaId, std::move(callback))));
 }
 
 void AwContents::CancelProtectedMediaIdentifierPermissionRequests(
@@ -694,19 +695,19 @@ void AwContents::CancelProtectedMediaIdentifierPermissionRequests(
 
 void AwContents::RequestGeolocationPermission(
     const GURL& origin,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
   if (obj.is_null())
     return;
 
   if (Java_AwContents_useLegacyGeolocationPermissionAPI(env, obj)) {
-    ShowGeolocationPrompt(origin, callback);
+    ShowGeolocationPrompt(origin, std::move(callback));
     return;
   }
   permission_request_handler_->SendRequest(
       std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
-          origin, AwPermissionRequest::Geolocation, callback)));
+          origin, AwPermissionRequest::Geolocation, std::move(callback))));
 }
 
 void AwContents::CancelGeolocationPermissionRequests(const GURL& origin) {
@@ -725,10 +726,10 @@ void AwContents::CancelGeolocationPermissionRequests(const GURL& origin) {
 
 void AwContents::RequestMIDISysexPermission(
     const GURL& origin,
-    const base::Callback<void(bool)>& callback) {
+    base::OnceCallback<void(bool)> callback) {
   permission_request_handler_->SendRequest(
       std::unique_ptr<AwPermissionRequestDelegate>(new SimplePermissionRequest(
-          origin, AwPermissionRequest::MIDISysex, callback)));
+          origin, AwPermissionRequest::MIDISysex, std::move(callback))));
 }
 
 void AwContents::CancelMIDISysexPermissionRequests(const GURL& origin) {

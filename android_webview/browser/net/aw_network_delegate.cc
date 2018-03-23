@@ -79,9 +79,9 @@ int AwNetworkDelegate::OnHeadersReceived(
         original_response_headers);
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
-        base::Bind(&OnReceivedHttpErrorOnUiThread,
-                   request_info->GetWebContentsGetterForRequest(),
-                   AwWebResourceRequest(*request), response_headers));
+        base::BindOnce(&OnReceivedHttpErrorOnUiThread,
+                       request_info->GetWebContentsGetterForRequest(),
+                       AwWebResourceRequest(*request), response_headers));
   }
   return net::OK;
 }
