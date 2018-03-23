@@ -128,8 +128,8 @@ void OfflinePageMHTMLArchiver::GenerateMHTML(
 
   web_contents_->GenerateMHTML(
       params,
-      base::BindOnce(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
-                     weak_ptr_factory_.GetWeakPtr(), url, file_path, title));
+      base::Bind(&OfflinePageMHTMLArchiver::OnGenerateMHTMLDone,
+                 weak_ptr_factory_.GetWeakPtr(), url, file_path, title));
 }
 
 void OfflinePageMHTMLArchiver::OnGenerateMHTMLDone(
