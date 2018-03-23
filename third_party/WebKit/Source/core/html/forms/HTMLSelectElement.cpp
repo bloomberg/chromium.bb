@@ -1861,9 +1861,8 @@ String HTMLSelectElement::ItemText(const Element& element) const {
 bool HTMLSelectElement::ItemIsDisplayNone(Element& element) const {
   if (auto* option = ToHTMLOptionElementOrNull(element))
     return option->IsDisplayNone();
-  if (const ComputedStyle* style = ItemComputedStyle(element))
-    return style->Display() == EDisplay::kNone;
-  return false;
+  const ComputedStyle* style = ItemComputedStyle(element);
+  return !style || style->Display() == EDisplay::kNone;
 }
 
 const ComputedStyle* HTMLSelectElement::ItemComputedStyle(
