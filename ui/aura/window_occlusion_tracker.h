@@ -22,6 +22,10 @@ class Transform;
 
 namespace aura {
 
+namespace test {
+class WindowOcclusionTrackerTestApi;
+}
+
 // Notifies tracked Windows when their occlusion state change.
 //
 // To start tracking the occlusion state of a Window, call
@@ -54,6 +58,8 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   static void Track(Window* window);
 
  private:
+  friend class test::WindowOcclusionTrackerTestApi;
+
   struct RootWindowState {
     // Number of Windows whose occlusion state is tracked under this root
     // Window.
@@ -65,6 +71,8 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
 
   WindowOcclusionTracker();
   ~WindowOcclusionTracker() override;
+
+  static WindowOcclusionTracker* GetInstance();
 
   // Recomputes the occlusion state of tracked windows under roots marked as
   // dirty in |root_windows_| if there are no active
@@ -193,6 +201,11 @@ class AURA_EXPORT WindowOcclusionTracker : public ui::LayerAnimationObserver,
   // Number of times that the current call to MaybeComputeOcclusion() has
   // recomputed occlusion states. Always 0 when not in MaybeComputeOcclusion().
   int num_times_occlusion_recomputed_ = 0;
+
+  // Set to true when occlusion is recomputed too many times before it becomes
+  // stable. Reset in
+  // WindowOcclusionTrackerTestApi::WasOcclusionRecomputedTooManyTimes().
+  bool was_occlusion_recomputed_too_many_times_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowOcclusionTracker);
 };
