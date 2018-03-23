@@ -89,11 +89,6 @@ class OmniboxResultView : public views::View,
 
   gfx::Image GetIcon() const;
 
-  // Whether to render only the keyword match.  Returns true if |match_| has an
-  // associated keyword match that has been animated so close to the start that
-  // the keyword match will hide even the icon of the regular match.
-  bool ShowOnlyKeywordMatch() const;
-
   // Returns the height of the the description section of answer suggestions.
   int GetAnswerHeight() const;
 
