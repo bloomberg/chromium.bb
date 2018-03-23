@@ -25,7 +25,7 @@ vars = {
      # Some comment with bad indentation
      'dep_2_rev': '1ced',
  # Some more comments with bad indentation
-   # and trailing whitespaces
+   # and trailing whitespaces  """ + """
    'dep_3_rev': '5p1e5',
 }
 
