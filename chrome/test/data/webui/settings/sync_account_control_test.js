@@ -24,12 +24,8 @@ cr.define('settings_sync_account_control', function() {
     function forcePromoResetWithCount(count, signedIn) {
       browserProxy.setImpressionCount(count);
       // Flipping syncStatus.signedIn will force promo state to be reset.
-      sync_test_util.simulateSyncStatus({
-        signedIn: !signedIn,
-      });
-      sync_test_util.simulateSyncStatus({
-        signedIn: signedIn,
-      });
+      testElement.syncStatus = {signedIn: !signedIn};
+      testElement.syncStatus = {signedIn: signedIn};
     }
 
     suiteSetup(function() {
@@ -45,14 +41,15 @@ cr.define('settings_sync_account_control', function() {
 
       PolymerTest.clearBody();
       testElement = document.createElement('settings-sync-account-control');
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'fakeUsername'
+      };
       document.body.appendChild(testElement);
 
-      Polymer.dom.flush();
-
-      return Promise.all([
-        browserProxy.whenCalled('getSyncStatus'),
-        browserProxy.whenCalled('getStoredAccounts'),
-      ]);
+      return browserProxy.whenCalled('getStoredAccounts').then(() => {
+        Polymer.dom.flush();
+      });
     });
 
     teardown(function() {
@@ -91,8 +88,7 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('not signed in and no stored accounts', function() {
-      sync_test_util.simulateSyncStatus(
-          {signedIn: false, signedInUsername: ''});
+      testElement.syncStatus = {signedIn: false, signedInUsername: ''};
       sync_test_util.simulateStoredAccounts([]);
 
       assertVisible(testElement.$$('#promo-headers'), true);
@@ -105,8 +101,7 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('not signed in but has stored accounts', function() {
-      sync_test_util.simulateSyncStatus(
-          {signedIn: false, signedInUsername: ''});
+      testElement.syncStatus = {signedIn: false, signedInUsername: ''};
       sync_test_util.simulateStoredAccounts([
         {
           fullName: 'fooName',
@@ -189,8 +184,10 @@ cr.define('settings_sync_account_control', function() {
     });
 
     test('signed in', function() {
-      sync_test_util.simulateSyncStatus(
-          {signedIn: true, signedInUsername: 'bar@bar.com'});
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com'
+      };
       sync_test_util.simulateStoredAccounts([
         {
           fullName: 'fooName',
@@ -226,8 +223,11 @@ cr.define('settings_sync_account_control', function() {
 
       assertEquals(settings.getCurrentRoute(), settings.routes.SIGN_OUT);
 
-      sync_test_util.simulateSyncStatus(
-          {signedIn: true, signedInUsername: 'bar@bar.com', hasError: true});
+      testElement.syncStatus = {
+        signedIn: true,
+        signedInUsername: 'bar@bar.com',
+        hasError: true
+      };
       assertTrue(
           testElement.$$('#sync-icon-container').hasAttribute('has-error'));
       assertFalse(userInfo.textContent.includes('barName'));
