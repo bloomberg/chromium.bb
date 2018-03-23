@@ -274,7 +274,6 @@ void Window::SetTransform(const gfx::Transform& transform) {
   WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion_tracking;
   for (WindowObserver& observer : observers_)
     observer.OnWindowTargetTransformChanging(this, transform);
-  gfx::Transform old_transform = layer()->transform();
   layer()->SetTransform(transform);
 }
 
