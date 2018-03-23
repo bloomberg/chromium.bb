@@ -136,7 +136,8 @@ class CORE_EXPORT CSSSelector {
     kShadowDeep,                // /deep/ combinator
     kShadowDeepAsDescendant,    // /deep/ as an alias for descendant
     kShadowPseudo,              // ::shadow pseudo element
-    kShadowSlot                 // ::slotted() pseudo element
+    kShadowSlot,                // ::slotted() pseudo element
+    kShadowPart,                // ::part() pseudo element
   };
 
   enum PseudoType {

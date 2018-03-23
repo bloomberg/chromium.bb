@@ -125,6 +125,8 @@ RelationType CSSParserSelector::GetImplicitShadowCombinatorForMatching() const {
     case PseudoType::kPseudoPlaceholder:
     case PseudoType::kPseudoShadow:
       return RelationType::kShadowPseudo;
+    case PseudoType::kPseudoPart:
+      return RelationType::kShadowPart;
     default:
       return RelationType::kSubSelector;
   }

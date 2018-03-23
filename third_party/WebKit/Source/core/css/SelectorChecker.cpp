@@ -515,6 +515,23 @@ SelectorChecker::MatchStatus SelectorChecker::MatchForRelation(
       return MatchSelector(next_context, result);
     }
 
+    case CSSSelector::kShadowPart:
+      // We ascend through ancestor shadow host elements until we reach the host
+      // in the TreeScope associated with the style rule. We then match against
+      // that host.
+      if (RuntimeEnabledFeatures::CSSPartPseudoElementEnabled()) {
+        while (next_context.element) {
+          next_context.element = next_context.element->OwnerShadowHost();
+          if (!next_context.element)
+            return kSelectorFailsCompletely;
+
+          if (next_context.element->GetTreeScope() ==
+              context.scope->GetTreeScope())
+            return MatchSelector(next_context, result);
+        }
+      }
+      return kSelectorFailsCompletely;
+      break;
     case CSSSelector::kSubSelector:
       break;
   }

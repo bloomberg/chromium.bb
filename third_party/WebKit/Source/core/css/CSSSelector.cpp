@@ -862,6 +862,7 @@ String CSSSelector::SelectorText() const {
       case kSubSelector:
         NOTREACHED();
         break;
+      case kShadowPart:
       case kShadowPseudo:
       case kShadowSlot:
         result = builder.ToString() + result;
