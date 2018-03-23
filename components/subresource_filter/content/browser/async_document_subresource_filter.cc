@@ -165,6 +165,7 @@ void AsyncDocumentSubresourceFilter::UpdateWithMoreAccurateState(
     const ActivationState& updated_page_state) {
   // DISABLED activation level implies that the ruleset is somehow invalid. Make
   // sure that we don't update the state in that case.
+  DCHECK(has_activation_state());
   if (activation_state_->activation_level == ActivationLevel::DISABLED)
     return;
 
@@ -177,6 +178,10 @@ void AsyncDocumentSubresourceFilter::UpdateWithMoreAccurateState(
   activation_state_ = updated_page_state;
   activation_state_->filtering_disabled_for_document = filtering_disabled;
   activation_state_->generic_blocking_rules_disabled = generic_disabled;
+  task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(&AsyncDocumentSubresourceFilter::Core::SetActivationState,
+                     base::Unretained(core_.get()), *activation_state_));
 }
 
 const ActivationState& AsyncDocumentSubresourceFilter::activation_state()
@@ -193,6 +198,12 @@ AsyncDocumentSubresourceFilter::Core::Core() {
 
 AsyncDocumentSubresourceFilter::Core::~Core() {
   DCHECK(sequence_checker_.CalledOnValidSequence());
+}
+
+void AsyncDocumentSubresourceFilter::Core::SetActivationState(
+    const ActivationState& state) {
+  DCHECK(filter_);
+  filter_->set_activation_state(state);
 }
 
 ActivationState AsyncDocumentSubresourceFilter::Core::Initialize(

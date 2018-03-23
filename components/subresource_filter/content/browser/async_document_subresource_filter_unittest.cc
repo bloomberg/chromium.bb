@@ -262,6 +262,40 @@ TEST_F(AsyncDocumentSubresourceFilterTest, FirstDisallowedLoadIsReported) {
   RunUntilIdle();
 }
 
+TEST_F(AsyncDocumentSubresourceFilterTest, UpdateActivationState) {
+  // Properly initilize the ruleset and handle to use for computations.
+  dealer_handle()->TryOpenAndSetRulesetFile(ruleset().path, base::DoNothing());
+  auto ruleset_handle = CreateRulesetHandle();
+
+  // Initialize |filter| with a starting ActivationLevel of DRYRUN. This value
+  // will be updated later on.
+  AsyncDocumentSubresourceFilter::InitializationParams params(
+      GURL("http://example.com"), ActivationLevel::DRYRUN, false);
+  testing::TestActivationStateCallbackReceiver activation_state;
+  auto filter = std::make_unique<AsyncDocumentSubresourceFilter>(
+      ruleset_handle.get(), std::move(params), activation_state.GetCallback());
+
+  // Make sure the ADSF computes its initial activation before updating it.
+  RunUntilIdle();
+  activation_state.ExpectReceivedOnce(ActivationState(ActivationLevel::DRYRUN));
+
+  // Update the ActivationState before calling GetLoadPolicyForSubdocument.
+  filter->UpdateWithMoreAccurateState(
+      ActivationState(ActivationLevel::ENABLED));
+
+  LoadPolicyCallbackReceiver load_policy_1;
+  filter->GetLoadPolicyForSubdocument(GURL("http://example.com/allowed.html"),
+                                      load_policy_1.GetCallback());
+  RunUntilIdle();
+  load_policy_1.ExpectReceivedOnce(LoadPolicy::ALLOW);
+
+  LoadPolicyCallbackReceiver load_policy_2;
+  filter->GetLoadPolicyForSubdocument(
+      GURL("http://example.com/disallowed.html"), load_policy_2.GetCallback());
+  RunUntilIdle();
+  load_policy_2.ExpectReceivedOnce(LoadPolicy::DISALLOW);
+}
+
 // Tests for ComputeActivationState:
 
 class SubresourceFilterComputeActivationStateTest : public ::testing::Test {
