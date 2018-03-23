@@ -559,7 +559,8 @@ bool IsSplitToolbarMode() {
 }
 
 bool IsSplitToolbarMode(id<UITraitEnvironment> environment) {
-  return IsCompactWidth(environment) && !IsCompactHeight(environment);
+  return IsUIRefreshPhase1Enabled() && IsCompactWidth(environment) &&
+         !IsCompactHeight(environment);
 }
 
 // Returns the current first responder.
