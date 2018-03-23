@@ -25,7 +25,10 @@ class ToolbarModelAndroid : public ChromeToolbarModelDelegate {
   ~ToolbarModelAndroid() override;
 
   void Destroy(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
-  base::android::ScopedJavaLocalRef<jstring> GetText(
+  base::android::ScopedJavaLocalRef<jstring> GetFormattedFullURL(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj);
+  base::android::ScopedJavaLocalRef<jstring> GetURLForDisplay(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
 

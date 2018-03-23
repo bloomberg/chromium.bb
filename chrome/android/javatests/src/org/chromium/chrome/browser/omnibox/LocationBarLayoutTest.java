@@ -57,10 +57,15 @@ public class LocationBarLayoutTest {
     private static final String GOOGLE_SRP_URL = "https://www.google.com/search?q=machine+learning";
     private static final String BING_SRP_URL = "https://www.bing.com/search?q=machine+learning";
 
+    private static final String VERBOSE_URL = "https://www.suchwowveryyes.edu";
+    private static final String TRIMMED_URL = "suchwowveryyes.edu";
+
     private TestToolbarModel mTestToolbarModel;
 
     private class TestToolbarModel extends ToolbarModelImpl {
         private String mCurrentUrl;
+        private String mEditingText;
+        private String mDisplayText;
         private Integer mSecurityLevel;
 
         public TestToolbarModel() {
@@ -90,6 +95,16 @@ public class LocationBarLayoutTest {
         }
 
         @Override
+        public String getDisplayText() {
+            return mDisplayText == null ? super.getDisplayText() : mDisplayText;
+        }
+
+        @Override
+        public String getEditingText() {
+            return mEditingText == null ? super.getEditingText() : mEditingText;
+        }
+
+        @Override
         public boolean shouldShowGoogleG(String urlBarText) {
             return false;
         }
@@ -107,6 +122,14 @@ public class LocationBarLayoutTest {
 
     private void setUrlToPageUrl(LocationBarLayout locationBar) {
         ThreadUtils.runOnUiThreadBlocking(() -> { getLocationBar().updateLoadingState(true); });
+    }
+
+    private String getUrlText(UrlBar urlBar) {
+        try {
+            return ThreadUtils.runOnUiThreadBlocking(() -> urlBar.getText().toString());
+        } catch (ExecutionException ex) {
+            throw new RuntimeException(ex);
+        }
     }
 
     // Partially lifted from TemplateUrlServiceTest.
@@ -153,8 +176,8 @@ public class LocationBarLayoutTest {
         ThreadUtils.runOnUiThreadBlocking(new Callable<Void>() {
             @Override
             public Void call() throws InterruptedException {
-                mActivityTestRule.typeInOmnibox(text, false);
                 getLocationBar().onUrlFocusChange(true);
+                mActivityTestRule.typeInOmnibox(text, false);
                 return null;
             }
         });
@@ -312,6 +335,28 @@ public class LocationBarLayoutTest {
         mTestToolbarModel.setSecurityLevel(ConnectionSecurityLevel.SECURE);
         setUrlToPageUrl(locationBar);
 
-        Assert.assertNotEquals(SEARCH_TERMS, urlBar.getText().toString());
+        Assert.assertNotEquals(SEARCH_TERMS, getUrlText(urlBar));
+    }
+
+    @Test
+    @SmallTest
+    public void testEditingTextShownOnFocus() {
+        final UrlBar urlBar = getUrlBar();
+        final LocationBarLayout locationBar = getLocationBar();
+
+        mTestToolbarModel.mDisplayText = TRIMMED_URL;
+        mTestToolbarModel.mEditingText = VERBOSE_URL;
+        setUrlToPageUrl(locationBar);
+
+        Assert.assertEquals(TRIMMED_URL, getUrlText(urlBar));
+
+        ThreadUtils.runOnUiThreadBlocking(() -> { urlBar.requestFocus(); });
+
+        Assert.assertEquals(VERBOSE_URL, getUrlText(urlBar));
+
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(0, urlBar.getSelectionStart());
+            Assert.assertEquals(VERBOSE_URL.length(), urlBar.getSelectionEnd());
+        });
     }
 }

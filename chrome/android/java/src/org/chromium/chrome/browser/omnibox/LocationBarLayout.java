@@ -1014,7 +1014,7 @@ public class LocationBarLayout extends FrameLayout
             if (NativePageFactory.isNativePageUrl(currentUrl, mToolbarDataProvider.isIncognito())) {
                 setUrlBarText("", null);
             } else {
-                setUrlBarText(mToolbarDataProvider.getText(), currentUrl);
+                setUrlBarText(mToolbarDataProvider.getDisplayText(), currentUrl);
                 selectAll();
             }
             hideSuggestions();
@@ -1055,10 +1055,13 @@ public class LocationBarLayout extends FrameLayout
         updateNavigationButton();
         if (hasFocus) {
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");
-            if (mToolbarDataProvider.isShowingUntrustedOfflinePage()) {
-                setUrlBarText("", null);
+            String editingText = mToolbarDataProvider.getEditingText();
+            if (editingText == null
+                    || !setUrlBarText(mToolbarDataProvider.getCurrentUrl(), editingText)) {
+                mUrlBar.deEmphasizeUrl();
+            } else if (editingText != null) {
+                mUrlBar.selectAll();
             }
-            mUrlBar.deEmphasizeUrl();
 
             // Explicitly tell InputMethodManager that the url bar is focused before any callbacks
             // so that it updates the active view accordingly. Otherwise, it may fail to update
@@ -2126,7 +2129,7 @@ public class LocationBarLayout extends FrameLayout
      * @return A pair where the first item is the text without any path content (if the path was
      *         successfully found), and the second item is the path content (or null if no path
      *         was found or parsing the path failed).
-     * @see ToolbarDataProvider#getText()
+     * @see ToolbarDataProvider#getDisplayText()
      */
     // TODO(tedchoc): Move this logic into the original display text calculation.
     @VisibleForTesting
@@ -2204,13 +2207,7 @@ public class LocationBarLayout extends FrameLayout
     private String getDisplayText() {
         if (!mToolbarDataProvider.hasTab()) return "";
 
-        String url = mToolbarDataProvider.getCurrentUrl();
-        if (NativePageFactory.isNativePageUrl(url, getCurrentTab().isIncognito())
-                || NewTabPage.isNTPUrl(url)) {
-            return "";
-        }
-
-        String displayText = mToolbarDataProvider.getText();
+        String displayText = mToolbarDataProvider.getDisplayText();
         // Because Android versions 4.2 and before lack proper RTL support,
         // force the formatted URL to render as LTR using an LRM character.
         // See: https://www.ietf.org/rfc/rfc3987.txt and crbug.com/709417
