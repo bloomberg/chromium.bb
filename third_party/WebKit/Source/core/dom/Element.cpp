@@ -3664,14 +3664,18 @@ bool Element::ShouldStoreNonLayoutObjectComputedStyle(
   if (style.Display() == EDisplay::kContents && !NeedsReattachLayoutTree())
     DCHECK(!GetLayoutObject() || IsPseudoElement());
 #endif
+  if (style.Display() == EDisplay::kNone)
+    return false;
   if (IsSVGElement()) {
     Element* parent_element = LayoutTreeBuilderTraversal::ParentElement(*this);
     if (parent_element && !parent_element->IsSVGElement())
       return false;
+    if (IsSVGStopElement(*this))
+      return true;
   }
-  return style.Display() == EDisplay::kContents ||
-         IsHTMLOptGroupElement(*this) || IsHTMLOptionElement(*this) ||
-         IsSVGStopElement(*this);
+  if (style.Display() == EDisplay::kContents)
+    return true;
+  return IsHTMLOptGroupElement(*this) || IsHTMLOptionElement(*this);
 }
 
 void Element::StoreNonLayoutObjectComputedStyle(

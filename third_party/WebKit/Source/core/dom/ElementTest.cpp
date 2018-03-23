@@ -6,6 +6,7 @@
 
 #include <memory>
 #include "core/dom/Document.h"
+#include "core/dom/NodeComputedStyle.h"
 #include "core/editing/testing/EditingTestBase.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/geometry/DOMRect.h"
@@ -388,6 +389,23 @@ TEST_F(ElementTest, PartAttribute) {
     ASSERT_EQ(1UL, part_names->size());
     ASSERT_EQ("partname", (*part_names)[0].Ascii());
   }
+}
+
+TEST_F(ElementTest, OptionElementDisplayNoneComputedStyle) {
+  Document& document = GetDocument();
+  SetBodyContent(R"HTML(
+    <optgroup id=group style='display:none'></optgroup>
+    <option id=option style='display:none'></option>
+    <div style='display:none'>
+      <optgroup id=inner-group></optgroup>
+      <option id=inner-option></option>
+    </div>
+  )HTML");
+
+  EXPECT_FALSE(document.getElementById("group")->GetComputedStyle());
+  EXPECT_FALSE(document.getElementById("option")->GetComputedStyle());
+  EXPECT_FALSE(document.getElementById("inner-group")->GetComputedStyle());
+  EXPECT_FALSE(document.getElementById("inner-option")->GetComputedStyle());
 }
 
 }  // namespace blink
