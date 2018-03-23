@@ -642,6 +642,13 @@ bool RenderWidgetHostViewAndroid::OnTouchEvent(
     const ui::MotionEventAndroid& event) {
   RecordToolTypeForActionDown(event);
 
+  if (event.GetAction() == ui::MotionEventAndroid::Action::DOWN) {
+    if (ime_adapter_android_)
+      ime_adapter_android_->UpdateOnTouchDown();
+    if (gesture_listener_manager_)
+      gesture_listener_manager_->UpdateOnTouchDown();
+  }
+
   if (event.for_touch_handle())
     return OnTouchHandleEvent(event);
 

@@ -493,18 +493,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         }
     }
 
-    @CalledByNative
-    private void onTouchDown(MotionEvent event) {
-        cancelRequestToScrollFocusedEditableNodeIntoView();
-        getGestureListenerManager().updateOnTouchDown();
-    }
-
-    private void cancelRequestToScrollFocusedEditableNodeIntoView() {
-        // Zero-ing the rect will prevent |updateAfterSizeChanged()| from
-        // issuing the delayed form focus event.
-        getImeAdapter().getFocusPreOSKViewportRect().setEmpty();
-    }
-
     @Override
     public void onPause() {
         onFocusChanged(false, true);
@@ -543,7 +531,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         if (gainFocus) {
             controller.restoreSelectionPopupsIfNecessary();
         } else {
-            cancelRequestToScrollFocusedEditableNodeIntoView();
+            getImeAdapter().cancelRequestToScrollFocusedEditableNodeIntoView();
             if (controller.getPreserveSelectionOnNextLossOfFocus()) {
                 controller.setPreserveSelectionOnNextLossOfFocus(false);
                 hidePopupsAndPreserveSelection();

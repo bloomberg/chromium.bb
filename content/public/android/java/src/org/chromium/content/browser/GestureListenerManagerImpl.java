@@ -97,7 +97,8 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     }
 
     /** Update all the listeners after touch down event occurred. */
-    public void updateOnTouchDown() {
+    @CalledByNative
+    private void updateOnTouchDown() {
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onTouchDown();
     }
 

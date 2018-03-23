@@ -106,6 +106,7 @@ class CONTENT_EXPORT ImeAdapterAndroid : public RenderWidgetHostConnector {
 
   void UpdateState(const TextInputState& state);
   void UpdateAfterViewSizeChanged();
+  void UpdateOnTouchDown();
 
   void AdvanceFocusInForm(JNIEnv*,
                           const base::android::JavaParamRef<jobject>&,

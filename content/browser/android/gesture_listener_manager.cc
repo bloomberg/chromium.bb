@@ -195,6 +195,15 @@ void GestureListenerManager::UpdateScrollInfo(
       viewport.width(), viewport.height(), top_shown_pix, top_changed);
 }
 
+void GestureListenerManager::UpdateOnTouchDown() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
+  if (obj.is_null())
+    return;
+
+  Java_GestureListenerManagerImpl_updateOnTouchDown(env, obj);
+}
+
 void GestureListenerManager::UpdateRenderProcessConnection(
     RenderWidgetHostViewAndroid* old_rwhva,
     RenderWidgetHostViewAndroid* new_rwhva) {

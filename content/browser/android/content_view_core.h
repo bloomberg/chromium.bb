@@ -80,18 +80,9 @@ class ContentViewCore : public WebContentsObserver {
                    const base::android::JavaParamRef<jobject>& obj,
                    jfloat dipScale);
 
-  // --------------------------------------------------------------------------
-  // Methods called from native code
-  // --------------------------------------------------------------------------
-
-  void OnTouchDown(const base::android::ScopedJavaLocalRef<jobject>& event);
-
   ui::ViewAndroid* GetViewAndroid() const;
 
  private:
-  class ContentViewUserData;
-
-  friend class ContentViewUserData;
 
   // WebContentsObserver implementation.
   void RenderViewReady() override;
