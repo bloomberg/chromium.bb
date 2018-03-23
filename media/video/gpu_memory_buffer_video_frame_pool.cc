@@ -124,15 +124,20 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   // Struct to keep track of requested videoframe copies.
   struct VideoFrameCopyRequest {
     VideoFrameCopyRequest(scoped_refptr<VideoFrame> video_frame,
-                          FrameReadyCB frame_ready_cb)
-        : video_frame(video_frame), frame_ready_cb(std::move(frame_ready_cb)) {}
+                          FrameReadyCB frame_ready_cb,
+                          bool passthrough)
+        : video_frame(video_frame),
+          frame_ready_cb(std::move(frame_ready_cb)),
+          passthrough(passthrough) {}
     scoped_refptr<VideoFrame> video_frame;
     FrameReadyCB frame_ready_cb;
+    bool passthrough;
   };
 
   // Start the copy of a video_frame on the worker_task_runner_.
-  // It assumes there are currently no in-flight copies.
-  void StartCopy(const scoped_refptr<VideoFrame>& video_frame);
+  // It assumes there are currently no in-flight copies and works on the request
+  // in the front of |frame_copy_requests_| queue.
+  void StartCopy();
 
   // Copy |video_frame| data into |frame_resources| and calls |frame_ready_cb|
   // when done.
@@ -164,6 +169,13 @@ class GpuMemoryBufferVideoFramePool::PoolImpl
   FrameResources* GetOrCreateFrameResources(
       const gfx::Size& size,
       GpuVideoAcceleratorFactories::OutputFormat format);
+
+  // Calls the FrameReadyCB of the first entry in |frame_copy_requests_|, with
+  // the provided |video_frame|, then deletes the entry from
+  // |frame_copy_requests_| and attempts to start another copy if there are
+  // other |frame_copy_requests_| elements.
+  void CompleteCopyRequestAndMaybeStartNextCopy(
+      const scoped_refptr<VideoFrame>& video_frame);
 
   // Callback called when a VideoFrame generated with GetFrameResources is no
   // longer referenced.
@@ -542,10 +554,9 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
         gpu_factories_->VideoFrameOutputFormat(video_frame->BitDepth());
   }
 
-  if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED) {
-    std::move(frame_ready_cb).Run(video_frame);
-    return;
-  }
+  bool passthrough = false;
+  if (output_format_ == GpuVideoAcceleratorFactories::OutputFormat::UNDEFINED)
+    passthrough = true;
   switch (video_frame->format()) {
     // Supported cases.
     case PIXEL_FORMAT_YV12:
@@ -576,10 +587,8 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
     case PIXEL_FORMAT_YUV444P12:
     case PIXEL_FORMAT_Y16:
     case PIXEL_FORMAT_UNKNOWN:
-      std::move(frame_ready_cb).Run(video_frame);
-      return;
+      passthrough = true;
   }
-
   // TODO(dcastagna): Handle odd positioned video frame input, see
   // https://crbug.com/638906.
   // TODO(emircan): Eliminate odd size video frame input cases as they are not
@@ -588,13 +597,13 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::CreateHardwareFrame(
       (video_frame->visible_rect().y() & 1) ||
       (video_frame->coded_size().width() & 1) ||
       (video_frame->coded_size().height() & 1)) {
-    std::move(frame_ready_cb).Run(video_frame);
-    return;
+    passthrough = true;
   }
 
-  frame_copy_requests_.emplace_back(video_frame, std::move(frame_ready_cb));
+  frame_copy_requests_.emplace_back(video_frame, std::move(frame_ready_cb),
+                                    passthrough);
   if (frame_copy_requests_.size() == 1u)
-    StartCopy(video_frame);
+    StartCopy();
 }
 
 bool GpuMemoryBufferVideoFramePool::PoolImpl::OnMemoryDump(
@@ -670,24 +679,30 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::OnCopiesDone(
                      this, video_frame, frame_resources));
 }
 
-void GpuMemoryBufferVideoFramePool::PoolImpl::StartCopy(
-    const scoped_refptr<VideoFrame>& video_frame) {
+void GpuMemoryBufferVideoFramePool::PoolImpl::StartCopy() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!frame_copy_requests_.empty());
 
-  const gfx::Size coded_size = CodedSize(video_frame, output_format_);
-  // Acquire resources. Incompatible ones will be dropped from the pool.
-  FrameResources* frame_resources =
-      GetOrCreateFrameResources(coded_size, output_format_);
-  if (!frame_resources) {
-    std::move(frame_copy_requests_.front().frame_ready_cb).Run(video_frame);
-    frame_copy_requests_.pop_front();
-    return;
-  }
+  while (!frame_copy_requests_.empty()) {
+    VideoFrameCopyRequest& request = frame_copy_requests_.front();
+    // Acquire resources. Incompatible ones will be dropped from the pool.
+    FrameResources* frame_resources =
+        request.passthrough
+            ? nullptr
+            : GetOrCreateFrameResources(
+                  CodedSize(request.video_frame, output_format_),
+                  output_format_);
+    if (!frame_resources) {
+      std::move(request.frame_ready_cb).Run(request.video_frame);
+      frame_copy_requests_.pop_front();
+      continue;
+    }
 
-  worker_task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&PoolImpl::CopyVideoFrameToGpuMemoryBuffers,
-                                this, video_frame, frame_resources));
+    worker_task_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&PoolImpl::CopyVideoFrameToGpuMemoryBuffers,
+                                  this, request.video_frame, frame_resources));
+    break;
+  }
 }
 
 // Copies |video_frame| into |frame_resources| asynchronously, posting n tasks
@@ -811,8 +826,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   gpu::gles2::GLES2Interface* gles2 = gpu_factories_->ContextGL();
   if (!gles2) {
     frame_resources->MarkUnused(tick_clock_->NowTicks());
-    std::move(frame_copy_requests_.front().frame_ready_cb).Run(video_frame);
-    frame_copy_requests_.pop_front();
+    CompleteCopyRequestAndMaybeStartNextCopy(video_frame);
     return;
   }
 
@@ -863,8 +877,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   if (!frame) {
     frame_resources->MarkUnused(tick_clock_->NowTicks());
     MailboxHoldersReleased(frame_resources, gpu::SyncToken());
-    std::move(frame_copy_requests_.front().frame_ready_cb).Run(video_frame);
-    frame_copy_requests_.pop_front();
+    CompleteCopyRequestAndMaybeStartNextCopy(video_frame);
     return;
   }
   frame->SetReleaseMailboxCB(
@@ -906,14 +919,7 @@ void GpuMemoryBufferVideoFramePool::PoolImpl::
   frame->metadata()->SetBoolean(VideoFrameMetadata::READ_LOCK_FENCES_ENABLED,
                                 true);
 
-  DCHECK(!frame_copy_requests_.empty());
-  std::move(frame_copy_requests_.front().frame_ready_cb).Run(frame);
-  frame_copy_requests_.pop_front();
-
-  if (!frame_copy_requests_.empty()) {
-    VideoFrameCopyRequest& copy_request = frame_copy_requests_.front();
-    StartCopy(copy_request.video_frame);
-  }
+  CompleteCopyRequestAndMaybeStartNextCopy(frame);
 }
 
 // Destroy all the resources posting one task per FrameResources
@@ -1004,6 +1010,17 @@ GpuMemoryBufferVideoFramePool::PoolImpl::GetOrCreateFrameResources(
                                         plane_resource.mailbox.name);
   }
   return frame_resources;
+}
+
+void GpuMemoryBufferVideoFramePool::PoolImpl::
+    CompleteCopyRequestAndMaybeStartNextCopy(
+        const scoped_refptr<VideoFrame>& video_frame) {
+  DCHECK(!frame_copy_requests_.empty());
+
+  std::move(frame_copy_requests_.front().frame_ready_cb).Run(video_frame);
+  frame_copy_requests_.pop_front();
+  if (!frame_copy_requests_.empty())
+    StartCopy();
 }
 
 // static
