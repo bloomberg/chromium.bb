@@ -59,14 +59,6 @@ const char* CrossOriginStateToString(bool is_cross_origin) {
   }
 }
 
-bool StopNonTimersInBackgroundEnabled() {
-  return RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled();
-}
-
-bool StopLoadingInBackgroundEnabled() {
-  return RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled();
-}
-
 }  // namespace
 
 WebFrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
@@ -370,7 +362,8 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::DeferrableTaskQueue() {
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameThrottleable)
             .SetCanBeDeferred(true)
-            .SetCanBeStopped(StopNonTimersInBackgroundEnabled())
+            .SetCanBeStopped(
+                RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled())
             .SetCanBePaused(true));
     deferrable_task_queue_->SetBlameContext(blame_context_);
     deferrable_task_queue_->SetFrameScheduler(this);
@@ -387,7 +380,8 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::PausableTaskQueue() {
     pausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFramePausable)
-            .SetCanBeStopped(StopNonTimersInBackgroundEnabled())
+            .SetCanBeStopped(
+                RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled())
             .SetCanBePaused(true));
     pausable_task_queue_->SetBlameContext(blame_context_);
     pausable_task_queue_->SetFrameScheduler(this);
@@ -566,7 +560,8 @@ void WebFrameSchedulerImpl::UpdateThrottlingState() {
 
 WebFrameScheduler::ThrottlingState
 WebFrameSchedulerImpl::CalculateThrottlingState() const {
-  if (StopLoadingInBackgroundEnabled() && page_frozen_) {
+  if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
+      page_frozen_) {
     DCHECK(page_visibility_ == PageVisibilityState::kHidden);
     return WebFrameScheduler::ThrottlingState::kStopped;
   }
