@@ -665,6 +665,7 @@ void UiSceneCreator::CreateHostedUi() {
   backplane->SetName(kHostedUiBackplane);
   backplane->SetSize(kSceneSize, kSceneSize);
   backplane->SetTranslate(0.0, kContentVerticalOffset, -kContentDistance);
+  backplane->set_contributes_to_parent_bounds(false);
   EventHandlers event_handlers;
   event_handlers.button_up = base::BindRepeating(
       [](Model* model, UiBrowserInterface* browser) {
@@ -716,7 +717,8 @@ void UiSceneCreator::CreateHostedUi() {
           },
           base::Unretained(hosted_ui.get()))));
   backplane->AddChild(std::move(hosted_ui));
-  scene_->AddUiElement(k2dBrowsingRoot, std::move(backplane));
+  scene_->AddUiElement(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
+                       std::move(backplane));
 }
 
 void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
@@ -768,7 +770,6 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   element->set_bounds_contain_children(true);
   VR_BIND_VISIBILITY(element, model->active_modal_prompt_type !=
                                   kModalPromptTypeExitVRForSiteInfo);
-
   scene_->AddUiElement(k2dBrowsingVisibilityControlForPrompt,
                        std::move(element));
 
@@ -784,16 +785,6 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
   scene_->AddUiElement(k2dBrowsingVisibiltyControlForSiteInfoPrompt,
                        std::move(element));
 
-  element = Create<UiElement>(k2dBrowsingOpacityControlForNativeDialogPrompt,
-                              kPhaseNone);
-  element->set_bounds_contain_children(true);
-  element->SetTransitionedProperties({OPACITY});
-  element->AddBinding(VR_BIND(
-      bool, Model, model_, !model->native_ui.hosted_ui_enabled, UiElement,
-      element.get(), view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
-  scene_->AddUiElement(k2dBrowsingOpacityControlForAudioPermissionPrompt,
-                       std::move(element));
-
   element = Create<UiElement>(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
                               kPhaseNone);
   element->set_bounds_contain_children(true);
@@ -803,7 +794,17 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
               model->active_modal_prompt_type != kModalPromptTypeUpdateKeyboard,
               UiElement, element.get(),
               view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
-  scene_->AddUiElement(k2dBrowsingOpacityControlForNativeDialogPrompt,
+  scene_->AddUiElement(k2dBrowsingOpacityControlForAudioPermissionPrompt,
+                       std::move(element));
+
+  element = Create<UiElement>(k2dBrowsingOpacityControlForNativeDialogPrompt,
+                              kPhaseNone);
+  element->set_bounds_contain_children(true);
+  element->SetTransitionedProperties({OPACITY});
+  element->AddBinding(VR_BIND(
+      bool, Model, model_, !model->native_ui.hosted_ui_enabled, UiElement,
+      element.get(), view->SetOpacity(value ? 1.0 : kModalPromptFadeOpacity)));
+  scene_->AddUiElement(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
                        std::move(element));
 
   element = Create<UiElement>(k2dBrowsingForeground, kPhaseNone);
@@ -813,7 +814,7 @@ void UiSceneCreator::Create2dBrowsingSubtreeRoots() {
       kSpeechRecognitionOpacityAnimationDurationMs));
   VR_BIND_VISIBILITY(element, model->default_browsing_enabled() ||
                                   model->fullscreen_enabled());
-  scene_->AddUiElement(k2dBrowsingOpacityControlForUpdateKeyboardPrompt,
+  scene_->AddUiElement(k2dBrowsingOpacityControlForNativeDialogPrompt,
                        std::move(element));
 
   element = Create<UiElement>(k2dBrowsingContentGroup, kPhaseNone);
