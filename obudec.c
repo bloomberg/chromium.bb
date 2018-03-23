@@ -34,7 +34,11 @@ static int obudec_read_leb128(FILE *f, uint8_t *value_buffer,
                               size_t *value_length, uint64_t *value) {
   if (!f || !value_buffer || !value_length || !value) return -1;
   for (int len = 0; len < OBU_MAX_LENGTH_FIELD_SIZE; ++len) {
-    value_buffer[len] = fgetc(f);
+    const size_t num_read = fread(&value_buffer[len], 1, 1, f);
+    if (num_read != 1) {
+      // Ran out of data before completing read of value.
+      return -1;
+    }
     if ((value_buffer[len] >> 7) == 0) {
       *value_length = (size_t)(len + 1);
       break;
@@ -81,7 +85,7 @@ static int obudec_read_obu_header(FILE *f, size_t buffer_capacity,
                                   uint8_t *obu_data, ObuHeader *obu_header,
                                   size_t *bytes_read) {
   if (!f || buffer_capacity < (OBU_HEADER_SIZE + OBU_EXTENSION_SIZE) ||
-      !obu_data || !obu_header) {
+      !obu_data || !obu_header || !bytes_read) {
     return -1;
   }
   *bytes_read = fread(obu_data, 1, 1, f);
@@ -93,7 +97,7 @@ static int obudec_read_obu_header(FILE *f, size_t buffer_capacity,
     return -1;
   }
 
-  const int has_extension = obu_data[0] & 0x1;
+  const int has_extension = (obu_data[0] >> 2) & 0x1;
   if (has_extension) {
     if (fread(&obu_data[1], 1, 1, f) != 1) {
       fprintf(stderr, "obudec: Failure reading OBU extension.");
@@ -103,7 +107,7 @@ static int obudec_read_obu_header(FILE *f, size_t buffer_capacity,
   }
 
   size_t obu_bytes_parsed = 0;
-  aom_codec_err_t parse_result =
+  const aom_codec_err_t parse_result =
       aom_read_obu_header(obu_data, *bytes_read, &obu_bytes_parsed, obu_header);
   if (parse_result != AOM_CODEC_OK || *bytes_read != obu_bytes_parsed) {
     fprintf(stderr, "obudec: Error parsing OBU header.\n");
@@ -156,6 +160,7 @@ static int obudec_read_one_obu(FILE *f, size_t buffer_capacity,
   }
   bytes_read += leb128_length;
 
+  if (UINT64_MAX - bytes_read < obu_payload_length) return -1;
   if (bytes_read + obu_payload_length > buffer_capacity) {
     *obu_length = bytes_read + obu_payload_length;
     return -1;
@@ -237,6 +242,7 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
 #endif
 ) {
   FILE *f = obu_ctx->avx_ctx->file;
+  if (!f) return -1;
 
   *buffer_size = 0;
   *bytes_read = 0;
