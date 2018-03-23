@@ -1848,7 +1848,15 @@ public class Tab
 
             mDownloadDelegate = new ChromeDownloadDelegate(mThemedApplicationContext, this);
 
-            initWebContents(mContentViewCore.getWebContents());
+            WebContents parentWebContents = null;
+            if (getParentId() != INVALID_TAB_ID) {
+                Tab parentTab = getTabModelSelector().getTabById(getParentId());
+                if (parentTab != null && parentTab.isIncognito() == isIncognito()) {
+                    parentWebContents = parentTab.getWebContents();
+                }
+            }
+
+            initWebContents(mContentViewCore.getWebContents(), parentWebContents);
 
             // In the case where restoring a Tab or showing a prerendered one we already have a
             // valid infobar container, no need to recreate one.
@@ -1901,10 +1909,10 @@ public class Tab
         }
     }
 
-    private void initWebContents(WebContents webContents) {
+    private void initWebContents(WebContents webContents, WebContents parentWebContents) {
         assert mNativeTabAndroid != 0;
         nativeInitWebContents(mNativeTabAndroid, mIncognito, mIsDetached, webContents,
-                mWebContentsDelegate,
+                parentWebContents, mWebContentsDelegate,
                 new TabContextMenuPopulator(
                         mDelegateFactory.createContextMenuPopulator(this), this));
 
@@ -3510,7 +3518,7 @@ public class Tab
     private native void nativeInit();
     private native void nativeDestroy(long nativeTabAndroid);
     private native void nativeInitWebContents(long nativeTabAndroid, boolean incognito,
-            boolean isBackgroundTab, WebContents webContents,
+            boolean isBackgroundTab, WebContents webContents, WebContents parentWebContents,
             TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);
     private native void nativeUpdateDelegates(long nativeTabAndroid,
             TabWebContentsDelegateAndroid delegate, ContextMenuPopulator contextMenuPopulator);

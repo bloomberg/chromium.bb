@@ -8,6 +8,7 @@
 #include "chrome/browser/android/tab_android.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/sync/glue/synced_window_delegates_getter_android.h"
+#include "chrome/browser/sync/sessions/sync_sessions_router_tab_helper.h"
 #include "chrome/browser/ui/sync/tab_contents_synced_tab_delegate.h"
 #include "components/sync_sessions/synced_window_delegate.h"
 #include "content/public/browser/navigation_entry.h"
@@ -79,12 +80,18 @@ bool SyncedTabDelegateAndroid::IsPlaceholderTab() const {
 }
 
 void SyncedTabDelegateAndroid::SetWebContents(
-    content::WebContents* web_contents) {
+    content::WebContents* web_contents,
+    content::WebContents* source_web_contents) {
   web_contents_ = web_contents;
   TabContentsSyncedTabDelegate::CreateForWebContents(web_contents_);
   // Store the TabContentsSyncedTabDelegate object that was created.
   tab_contents_delegate_ =
       TabContentsSyncedTabDelegate::FromWebContents(web_contents_);
+  if (source_web_contents) {
+    sync_sessions::SyncSessionsRouterTabHelper::FromWebContents(
+        source_web_contents)
+        ->SetSourceTabIdForChild(web_contents_);
+  }
 }
 
 void SyncedTabDelegateAndroid::ResetWebContents() {
