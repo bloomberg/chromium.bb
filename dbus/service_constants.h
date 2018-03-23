@@ -139,6 +139,8 @@ const char kComponentUpdaterServiceInterface[] =
     "org.chromium.ComponentUpdaterService";
 const char kComponentUpdaterServiceLoadComponentMethod[] = "LoadComponent";
 const char kComponentUpdaterServiceUnloadComponentMethod[] = "UnloadComponent";
+const char kComponentUpdaterServiceComponentInstalledSignal[] =
+    "ComponentInstalled";
 
 const char kKioskAppServiceName[] = "org.chromium.KioskAppService";
 const char kKioskAppServicePath[] = "/org/chromium/KioskAppService";
