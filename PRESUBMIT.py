@@ -731,7 +731,9 @@ def _CheckUmaHistogramChanges(input_api, output_api):
   the reverse: changes in histograms.xml not matched in the code itself."""
   touched_histograms = []
   histograms_xml_modifications = []
-  pattern = input_api.re.compile('UMA_HISTOGRAM.*\("(.*)"')
+  # For now, the check only detects the case of the macro and histogram names
+  # being on a single line.
+  single_line_re = input_api.re.compile(r'\bUMA_HISTOGRAM.*\("(.*?)"')
   for f in input_api.AffectedFiles():
     # If histograms.xml itself is modified, keep the modified lines for later.
     if f.LocalPath().endswith(('histograms.xml')):
@@ -740,7 +742,7 @@ def _CheckUmaHistogramChanges(input_api, output_api):
     if not f.LocalPath().endswith(('cc', 'mm', 'cpp')):
       continue
     for line_num, line in f.ChangedContents():
-      found = pattern.search(line)
+      found = single_line_re.search(line)
       if found:
         touched_histograms.append([found.group(1), f, line_num])
 

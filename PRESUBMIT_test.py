@@ -106,6 +106,30 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
                                                    MockOutputApi())
     self.assertEqual(0, len(warnings))
 
+  def testNameMatch(self):
+    # Check that the detected histogram name is "Dummy" and not, e.g.,
+    # "Dummy\", true);  // The \"correct"
+    diff_cc = ['UMA_HISTOGRAM_BOOL("Dummy", true);  // The "correct" histogram']
+    diff_xml = ['<histogram name="Dummy"> </histogram>']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', diff_cc),
+      MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
+    ]
+    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
+  def testSimilarMacroNames(self):
+    diff_cc = ['PUMA_HISTOGRAM_BOOL("Mountain Lion", 42)']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', diff_cc),
+    ]
+    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(0, len(warnings))
+
 class BadExtensionsTest(unittest.TestCase):
   def testBadRejFile(self):
     mock_input_api = MockInputApi()
