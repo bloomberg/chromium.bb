@@ -51,7 +51,9 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 @property(nonatomic, weak) TabGridNewTabButton* newTabButton;
 @property(nonatomic, weak) TabGridNewTabButton* floatingButton;
 @property(nonatomic, assign) TabGridConfiguration configuration;
-
+// The page that was shown when entering the tab grid from the tab view.
+// This is used to decide whether the Done button is enabled.
+@property(nonatomic, assign) TabGridPage originalPage;
 @end
 
 @implementation TabGridViewController
@@ -76,6 +78,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 @synthesize newTabButton = _newTabButton;
 @synthesize floatingButton = _floatingButton;
 @synthesize configuration = _configuration;
+@synthesize originalPage = _originalPage;
 
 - (instancetype)init {
   if (self = [super init]) {
@@ -103,6 +106,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   // Call the current page setter to sync the scroll view offset to the current
   // page value.
   self.currentPage = _currentPage;
+  self.originalPage = _currentPage;
   [self.topToolbar.pageControl setSelectedPage:self.currentPage animated:YES];
   [self configureViewControllerForCurrentSizeClassesAndPage];
   if (animated && self.transitionCoordinator) {
@@ -165,7 +169,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
     NSUInteger page = lround(fractionalPage);
     if (page != self.currentPage) {
       _currentPage = static_cast<TabGridPage>(page);
-      [self configureButtonsForCurrentPage];
+      [self configureButtonsForOriginalAndCurrentPage];
     }
   }
 }
@@ -552,22 +556,32 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [self.newTabButton addTarget:self
                         action:@selector(newTabButtonTapped:)
               forControlEvents:UIControlEventTouchUpInside];
-  [self configureButtonsForCurrentPage];
+  [self configureButtonsForOriginalAndCurrentPage];
 }
 
-- (void)configureButtonsForCurrentPage {
+- (void)configureButtonsForOriginalAndCurrentPage {
   self.newTabButton.page = self.currentPage;
-  switch (self.currentPage) {
+  switch (self.originalPage) {
     case TabGridPageIncognitoTabs:
       self.doneButton.enabled = !self.incognitoTabsViewController.isGridEmpty;
-      self.closeAllButton.enabled = self.doneButton.enabled;
       break;
     case TabGridPageRegularTabs:
       self.doneButton.enabled = !self.regularTabsViewController.isGridEmpty;
-      self.closeAllButton.enabled = self.doneButton.enabled;
       break;
     case TabGridPageRemoteTabs:
-      self.doneButton.enabled = YES;
+      NOTREACHED() << "It is not possible to have entered tab grid directly "
+                      "into remote tabs.";
+      break;
+  }
+  switch (self.currentPage) {
+    case TabGridPageIncognitoTabs:
+      self.closeAllButton.enabled =
+          !self.incognitoTabsViewController.isGridEmpty;
+      break;
+    case TabGridPageRegularTabs:
+      self.closeAllButton.enabled = !self.regularTabsViewController.isGridEmpty;
+      break;
+    case TabGridPageRemoteTabs:
       self.closeAllButton.enabled = NO;
       break;
   }
@@ -621,7 +635,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   } else if (gridViewController == self.incognitoTabsViewController) {
     [self.incognitoTabsDelegate selectItemAtIndex:index];
   }
-  [self.tabPresentationDelegate showActiveTab];
+  [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
 }
 
 - (void)gridViewController:(GridViewController*)gridViewController
@@ -635,7 +649,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 
 - (void)gridViewController:(GridViewController*)gridViewController
         didChangeItemCount:(NSUInteger)count {
-  [self configureButtonsForCurrentPage];
+  [self configureButtonsForOriginalAndCurrentPage];
   if (gridViewController == self.regularTabsViewController) {
     self.topToolbar.pageControl.regularTabCount = count;
   }
@@ -644,7 +658,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 #pragma mark - Control actions
 
 - (void)doneButtonTapped:(id)sender {
-  [self.tabPresentationDelegate showActiveTab];
+  [self.tabPresentationDelegate showActiveTabInPage:self.originalPage];
 }
 
 - (void)closeAllButtonTapped:(id)sender {
@@ -656,7 +670,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
       [self.regularTabsDelegate closeAllItems];
       break;
     case TabGridPageRemoteTabs:
-      // No-op. It is invalid to call close all tabs on remote tabs.
+      NOTREACHED() << "It is invalid to call close all tabs on remote tabs.";
       break;
   }
 }
@@ -665,16 +679,15 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   switch (self.currentPage) {
     case TabGridPageIncognitoTabs:
       [self.incognitoTabsDelegate addNewItem];
-      [self.tabPresentationDelegate showActiveTab];
       break;
     case TabGridPageRegularTabs:
       [self.regularTabsDelegate addNewItem];
-      [self.tabPresentationDelegate showActiveTab];
       break;
     case TabGridPageRemoteTabs:
-      // No-op. It is invalid to call insert new tab on remote tabs.
+      NOTREACHED() << "It is invalid to call insert new tab on remote tabs.";
       break;
   }
+  [self.tabPresentationDelegate showActiveTabInPage:self.currentPage];
 }
 
 - (void)pageControlChanged:(id)sender {
