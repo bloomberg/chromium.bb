@@ -214,8 +214,8 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
   GrContext* gr_context =
       output_surface_->vulkan_context_provider()->GetGrContext();
   root_surface_ = SkSurface::MakeFromBackendRenderTarget(
-      gr_context, render_target, kTopLeft_GrSurfaceOrigin, nullptr,
-      &surface_props);
+      gr_context, render_target, kTopLeft_GrSurfaceOrigin,
+      kBGRA_8888_SkColorType, nullptr, &surface_props);
 #else
   // TODO(weiliangc): Set up correct can_use_lcd_text for SkSurfaceProps flags.
   // How to setup is in ResourceProvider. (http://crbug.com/644851)
