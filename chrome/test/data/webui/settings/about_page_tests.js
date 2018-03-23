@@ -775,7 +775,8 @@ cr.define('settings_about_page', function() {
 
           arrow = page.$$('#promoteUpdater button');
           assertTrue(!!arrow);
-          assertFalse(arrow.hidden);
+          assertEquals('PAPER-ICON-BUTTON-LIGHT', arrow.parentElement.tagName);
+          assertFalse(arrow.parentElement.hidden);
           assertFalse(arrow.hasAttribute('disabled'));
 
           firePromoteUpdaterStatusChanged(PromoStatusScenarios.IN_BETWEEN);
@@ -787,7 +788,8 @@ cr.define('settings_about_page', function() {
 
           arrow = page.$$('#promoteUpdater button');
           assertTrue(!!arrow);
-          assertFalse(arrow.hidden);
+          assertEquals('PAPER-ICON-BUTTON-LIGHT', arrow.parentElement.tagName);
+          assertFalse(arrow.parentElement.hidden);
           assertTrue(arrow.hasAttribute('disabled'));
 
           firePromoteUpdaterStatusChanged(PromoStatusScenarios.PROMOTED);
@@ -799,7 +801,8 @@ cr.define('settings_about_page', function() {
 
           arrow = page.$$('#promoteUpdater button');
           assertTrue(!!arrow);
-          assertTrue(arrow.hidden);
+          assertEquals('PAPER-ICON-BUTTON-LIGHT', arrow.parentElement.tagName);
+          assertTrue(arrow.parentElement.hidden);
           assertTrue(arrow.hasAttribute('disabled'));
         });
 
