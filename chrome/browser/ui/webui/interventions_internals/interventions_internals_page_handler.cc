@@ -18,6 +18,7 @@
 #include "components/previews/core/previews_experiments.h"
 #include "components/previews/core/previews_switches.h"
 #include "net/nqe/network_quality_estimator_params.h"
+#include "services/network/public/cpp/network_switches.h"
 
 namespace {
 
@@ -235,7 +236,7 @@ void InterventionsInternalsPageHandler::GetPreviewsFlagsDetails(
   ect_status->link = kEctFlagLink;
   std::string ect_value =
       base::CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
-          switches::kForceEffectiveConnectionType);
+          network::switches::kForceEffectiveConnectionType);
   ect_status->value = ect_value.empty() ? GetNonFlagEctValue() : ect_value;
   ect_status->htmlId = kEctFlagHtmlId;
   flags.push_back(std::move(ect_status));

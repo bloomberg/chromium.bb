@@ -435,9 +435,6 @@ void ProfileImplIOData::InitializeInternal(
   IOThread* const io_thread = profile_params->io_thread;
   IOThread::Globals* const io_thread_globals = io_thread->globals();
 
-  builder->set_network_quality_estimator(
-      io_thread_globals->network_quality_estimator.get());
-
   // This check is needed because with the network service the cookies are used
   // in a different process. See the bottom of
   // ProfileNetworkContextService::SetUpProfileIODataMainContext.

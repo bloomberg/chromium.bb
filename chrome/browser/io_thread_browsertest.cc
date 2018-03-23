@@ -108,9 +108,9 @@ void CheckCanDelegate(IOThread* io_thread, bool expected, const GURL& url) {
 
 void CheckEffectiveConnectionType(IOThread* io_thread,
                                   net::EffectiveConnectionType expected) {
-  EXPECT_EQ(expected,
-            io_thread->globals()
-                ->network_quality_estimator->GetEffectiveConnectionType());
+  EXPECT_EQ(expected, io_thread->globals()
+                          ->system_request_context->network_quality_estimator()
+                          ->GetEffectiveConnectionType());
 }
 
 void CheckSCTsAreSentToTreeTracker(IOThread* io_thread) {

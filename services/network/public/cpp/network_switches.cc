@@ -8,6 +8,10 @@ namespace network {
 
 namespace switches {
 
+// Forces Network Quality Estimator (NQE) to return a specific effective
+// connection type.
+const char kForceEffectiveConnectionType[] = "force-effective-connection-type";
+
 // These mappings only apply to the host resolver.
 const char kHostResolverRules[] = "host-resolver-rules";
 
