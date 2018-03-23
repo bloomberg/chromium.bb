@@ -1,0 +1,15 @@
+This is a testharness.js-based test.
+FAIL parse '1s' assert_equals: transition-timing-function expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse '1s 2s' assert_equals: transition-timing-function expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse '1s 2s ease-in' assert_equals: transition-timing-function expected "cubic-bezier(0.42, 0, 1, 1)" but got "ease-in"
+FAIL parse '1s ease-in 2s' assert_equals: transition-timing-function expected "cubic-bezier(0.42, 0, 1, 1)" but got "ease-in"
+FAIL parse 'ease-in 1s 2s' assert_equals: transition-timing-function expected "cubic-bezier(0.42, 0, 1, 1)" but got "ease-in"
+FAIL parse '1s width' assert_equals: transition-timing-function expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse 'width 1s' assert_equals: transition-timing-function expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse '1s width 2s' assert_equals: transition-timing-function expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse '1s 2s width ease-in' assert_equals: transition-timing-function expected "cubic-bezier(0.42, 0, 1, 1)" but got "ease-in"
+FAIL parse '1s ease-in 2s width' assert_equals: transition-timing-function expected "cubic-bezier(0.42, 0, 1, 1)" but got "ease-in"
+FAIL parse 'width ease-in 1s 2s' assert_equals: transition-timing-function expected "cubic-bezier(0.42, 0, 1, 1)" but got "ease-in"
+FAIL parse 'width .1s ease-in .2s' assert_equals: transition-timing-function expected "cubic-bezier(0.42, 0, 1, 1)" but got "ease-in"
+Harness: the test ran to completion.
+
