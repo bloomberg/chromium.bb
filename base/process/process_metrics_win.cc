@@ -244,11 +244,11 @@ bool ProcessMetrics::GetIOCounters(IoCounters* io_counters) const {
 
 ProcessMetrics::ProcessMetrics(ProcessHandle process) : last_system_time_(0) {
   if (process) {
-    HANDLE duplicate_handle;
+    HANDLE duplicate_handle = INVALID_HANDLE_VALUE;
     BOOL result = ::DuplicateHandle(::GetCurrentProcess(), process,
                                     ::GetCurrentProcess(), &duplicate_handle,
                                     PROCESS_QUERY_INFORMATION, FALSE, 0);
-    DCHECK(result);
+    DPCHECK(result);
     process_.Set(duplicate_handle);
   }
 }
