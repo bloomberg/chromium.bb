@@ -22,14 +22,16 @@ static const aom_cdf_prob default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)] =
       { AOM_CDF2(128 * 155) }, { AOM_CDF2(128 * 116) }, { AOM_CDF2(128 * 94) },
       { AOM_CDF2(128 * 32) },  { AOM_CDF2(128 * 96) },  { AOM_CDF2(128 * 30) }
     };
+
 static const aom_cdf_prob default_zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(
     2)] = { { AOM_CDF2(128 * 45) }, { AOM_CDF2(128 * 13) } };
+
 static const aom_cdf_prob default_refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)] =
     {
       { AOM_CDF2(128 * 178) }, { AOM_CDF2(128 * 212) }, { AOM_CDF2(128 * 135) },
-      { AOM_CDF2(128 * 244) }, { AOM_CDF2(128 * 203) }, { AOM_CDF2(128 * 122) },
-      { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }, { AOM_CDF2(128 * 128) }
+      { AOM_CDF2(128 * 244) }, { AOM_CDF2(128 * 203) }, { AOM_CDF2(128 * 122) }
     };
+
 static const aom_cdf_prob default_drl_cdf[DRL_MODE_CONTEXTS][CDF_SIZE(2)] = {
   { AOM_CDF2(128 * 119) },
   { AOM_CDF2(128 * 189) },
