@@ -100,10 +100,20 @@ void DocumentLoadTiming::MarkNavigationStart() {
   DCHECK(!reference_wall_time_);
   EnsureReferenceTimesSet();
   navigation_start_ = reference_monotonic_time_;
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "navigationStart",
-                                   navigation_start_, "frame",
-                                   ToTraceValue(GetFrame()));
+  TRACE_EVENT_MARK_WITH_TIMESTAMP2(
+      "blink.user_timing", "navigationStart", navigation_start_, "frame",
+      ToTraceValue(GetFrame()), "data", GetNavigationStartTracingData());
   NotifyDocumentTimingChanged();
+}
+
+std::unique_ptr<TracedValue> DocumentLoadTiming::GetNavigationStartTracingData()
+    const {
+  std::unique_ptr<TracedValue> data = TracedValue::Create();
+  data->SetString("documentLoaderURL",
+                  document_loader_ ? document_loader_->Url().GetString() : "");
+  data->SetBoolean("isLoadingMainFrame",
+                   GetFrame() ? GetFrame()->IsMainFrame() : false);
+  return data;
 }
 
 void DocumentLoadTiming::SetNavigationStart(TimeTicks navigation_start) {
@@ -112,9 +122,9 @@ void DocumentLoadTiming::SetNavigationStart(TimeTicks navigation_start) {
   // been set yet in order to have a valid reference time in both units.
   EnsureReferenceTimesSet();
   navigation_start_ = navigation_start;
-  TRACE_EVENT_MARK_WITH_TIMESTAMP1("blink.user_timing", "navigationStart",
-                                   navigation_start_, "frame",
-                                   ToTraceValue(GetFrame()));
+  TRACE_EVENT_MARK_WITH_TIMESTAMP2(
+      "blink.user_timing", "navigationStart", navigation_start_, "frame",
+      ToTraceValue(GetFrame()), "data", GetNavigationStartTracingData());
 
   // The reference times are adjusted based on the embedder's navigationStart.
   DCHECK(!reference_monotonic_time_.is_null());
