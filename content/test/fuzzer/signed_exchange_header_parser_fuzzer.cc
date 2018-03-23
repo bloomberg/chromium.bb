@@ -17,7 +17,7 @@ struct IcuEnvironment {
 IcuEnvironment* env = new IcuEnvironment();
 
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  std::string input(reinterpret_cast<const char*>(data), size);
+  base::StringPiece input(reinterpret_cast<const char*>(data), size);
   SignedExchangeHeaderParser::ParseSignature(input);
   return 0;
 }
