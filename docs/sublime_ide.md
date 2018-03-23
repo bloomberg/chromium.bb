@@ -460,7 +460,7 @@ If you're using goma, add the -j parameter (replace out/Debug with your out dire
     "cmd": ["ninja", "-j", "1000", "-C", "out/Debug", "chrome"],
 ```
 
-**Regex explanation:** Aims to capture these these error formats while respecting
+**Regex explanation:** Aims to capture these error formats while respecting
 [Sublime's perl-like group matching](http://docs.sublimetext.info/en/latest/reference/build_systems/configuration.html#build-capture-error-output):
 
 1.  `d:\src\chrome\src\base\threading\sequenced_worker_pool.cc(670): error
