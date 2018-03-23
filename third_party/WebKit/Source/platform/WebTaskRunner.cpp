@@ -116,7 +116,7 @@ TaskHandle::TaskHandle(scoped_refptr<Runner> runner)
 // avoid copying the closure later in the call chain. Copying the bound state
 // can lead to data races with ref counted objects like StringImpl. See
 // crbug.com/679915 for more details.
-void PostCrossThreadTask(base::SingleThreadTaskRunner& task_runner,
+void PostCrossThreadTask(base::SequencedTaskRunner& task_runner,
                          const base::Location& location,
                          CrossThreadClosure task) {
   task_runner.PostDelayedTask(
@@ -124,7 +124,7 @@ void PostCrossThreadTask(base::SingleThreadTaskRunner& task_runner,
       base::TimeDelta());
 }
 
-void PostDelayedCrossThreadTask(base::SingleThreadTaskRunner& task_runner,
+void PostDelayedCrossThreadTask(base::SequencedTaskRunner& task_runner,
                                 const base::Location& location,
                                 CrossThreadClosure task,
                                 TimeDelta delay) {
@@ -132,7 +132,7 @@ void PostDelayedCrossThreadTask(base::SingleThreadTaskRunner& task_runner,
       location, base::BindOnce(&RunCrossThreadClosure, std::move(task)), delay);
 }
 
-TaskHandle PostCancellableTask(base::SingleThreadTaskRunner& task_runner,
+TaskHandle PostCancellableTask(base::SequencedTaskRunner& task_runner,
                                const base::Location& location,
                                base::OnceClosure task) {
   DCHECK(task_runner.RunsTasksInCurrentSequence());
@@ -144,7 +144,7 @@ TaskHandle PostCancellableTask(base::SingleThreadTaskRunner& task_runner,
   return TaskHandle(runner);
 }
 
-TaskHandle PostDelayedCancellableTask(base::SingleThreadTaskRunner& task_runner,
+TaskHandle PostDelayedCancellableTask(base::SequencedTaskRunner& task_runner,
                                       const base::Location& location,
                                       base::OnceClosure task,
                                       TimeDelta delay) {

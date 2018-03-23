@@ -8,7 +8,7 @@
 #include <memory>
 #include "base/callback.h"
 #include "base/location.h"
-#include "base/single_thread_task_runner.h"
+#include "base/sequenced_task_runner.h"
 #include "platform/wtf/Compiler.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/RefCounted.h"
@@ -44,11 +44,11 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
 
  private:
   friend BLINK_PLATFORM_EXPORT WARN_UNUSED_RESULT TaskHandle
-  PostCancellableTask(base::SingleThreadTaskRunner&,
+  PostCancellableTask(base::SequencedTaskRunner&,
                       const base::Location&,
                       base::OnceClosure);
   friend BLINK_PLATFORM_EXPORT WARN_UNUSED_RESULT TaskHandle
-  PostDelayedCancellableTask(base::SingleThreadTaskRunner&,
+  PostDelayedCancellableTask(base::SequencedTaskRunner&,
                              const base::Location&,
                              base::OnceClosure,
                              TimeDelta delay);
@@ -58,11 +58,11 @@ class BLINK_PLATFORM_EXPORT TaskHandle {
 };
 
 // For cross-thread posting. Can be called from any thread.
-BLINK_PLATFORM_EXPORT void PostCrossThreadTask(base::SingleThreadTaskRunner&,
+BLINK_PLATFORM_EXPORT void PostCrossThreadTask(base::SequencedTaskRunner&,
                                                const base::Location&,
                                                CrossThreadClosure);
 BLINK_PLATFORM_EXPORT void PostDelayedCrossThreadTask(
-    base::SingleThreadTaskRunner&,
+    base::SequencedTaskRunner&,
     const base::Location&,
     CrossThreadClosure,
     TimeDelta delay);
@@ -70,11 +70,11 @@ BLINK_PLATFORM_EXPORT void PostDelayedCrossThreadTask(
 // For same-thread cancellable task posting. Returns a TaskHandle object for
 // cancellation.
 BLINK_PLATFORM_EXPORT WARN_UNUSED_RESULT TaskHandle
-PostCancellableTask(base::SingleThreadTaskRunner&,
+PostCancellableTask(base::SequencedTaskRunner&,
                     const base::Location&,
                     base::OnceClosure);
 BLINK_PLATFORM_EXPORT WARN_UNUSED_RESULT TaskHandle
-PostDelayedCancellableTask(base::SingleThreadTaskRunner&,
+PostDelayedCancellableTask(base::SequencedTaskRunner&,
                            const base::Location&,
                            base::OnceClosure,
                            TimeDelta delay);

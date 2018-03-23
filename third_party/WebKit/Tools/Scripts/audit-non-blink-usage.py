@@ -35,6 +35,8 @@ _CONFIG = [
             'base::MakeRefCounted',
             'base::Optional',
             'base::RefCountedData',
+            'base::CreateSequencedTaskRunnerWithTraits',
+            'base::SequencedTaskRunner',
             'base::SingleThreadTaskRunner',
             'base::Time',
             'base::TimeDelta',
