@@ -299,6 +299,8 @@ void SVGElement::NotifyIncomingReferences(
   SVGElementSet& invalidating_dependencies = GetDependencyTraversalVisitedSet();
 
   for (SVGElement* element : *dependencies) {
+    if (!element->GetLayoutObject())
+      continue;
     if (UNLIKELY(!invalidating_dependencies.insert(element).is_new_entry)) {
       // Reference cycle: we are in process of invalidating this dependant.
       continue;
