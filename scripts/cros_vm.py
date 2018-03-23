@@ -110,19 +110,49 @@ class VM(object):
     if recreate:
       osutils.SafeMakedirs(self.vm_dir)
 
-  def _GetCachePath(self, key):
+  @staticmethod
+  def _GetCachePath(cache_name):
+    """Return path to cache.
+
+    Args:
+      cache_name: Name of cache.
+
+    Returns:
+      File path of cache.
+    """
+    return os.path.join(path_util.GetCacheDir(),
+                        cros_chrome_sdk.COMMAND_NAME,
+                        cache_name)
+
+  @cros_build_lib.MemoizedSingleCall
+  def _SDKVersion(self):
+    """Determine SDK version.
+
+    Check the environment if we're in the SDK shell, and failing that, look at
+    the misc cache.
+
+    Returns:
+      SDK version.
+    """
+    sdk_version = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV)
+    if not sdk_version:
+      misc_cache = cache.DiskCache(self._GetCachePath(
+          cros_chrome_sdk.SDKFetcher.MISC_CACHE))
+      with misc_cache.Lookup((self.board, 'latest')) as ref:
+        if ref.Exists(lock=True):
+          sdk_version = osutils.ReadFile(ref.path).strip()
+    return sdk_version
+
+  def _CachePathForKey(self, key):
     """Get cache path for key.
 
     Args:
       key: cache key.
     """
-    tarball_cache = cache.TarballCache(os.path.join(
-        path_util.GetCacheDir(),
-        cros_chrome_sdk.COMMAND_NAME,
+    tarball_cache = cache.TarballCache(self._GetCachePath(
         cros_chrome_sdk.SDKFetcher.TARBALL_CACHE))
-    sdk_version = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV)
-    if sdk_version:
-      cache_key = (self.board, sdk_version, key)
+    if self._SDKVersion():
+      cache_key = (self.board, self._SDKVersion(), key)
       with tarball_cache.Lookup(cache_key) as ref:
         if ref.Exists():
           return ref.path
@@ -130,7 +160,11 @@ class VM(object):
 
   @cros_build_lib.MemoizedSingleCall
   def QemuVersion(self):
-    """Determine QEMU version."""
+    """Determine QEMU version.
+
+    Returns:
+      QEMU version.
+    """
     version_str = self._RunCommand([self.qemu_path, '--version'],
                                    capture_output=True).output
     # version string looks like one of these:
@@ -162,7 +196,7 @@ class VM(object):
 
     # Check SDK cache.
     if not self.qemu_path:
-      qemu_dir = self._GetCachePath(cros_chrome_sdk.SDKFetcher.QEMU_BIN_KEY)
+      qemu_dir = self._CachePathForKey(cros_chrome_sdk.SDKFetcher.QEMU_BIN_KEY)
       if qemu_dir:
         qemu_path = os.path.join(qemu_dir, qemu_exe_path)
         if os.path.isfile(qemu_path):
@@ -193,7 +227,7 @@ class VM(object):
 
   def _GetCacheVMImagePath(self):
     """Get path of a cached VM image."""
-    cache_path = self._GetCachePath(constants.VM_IMAGE_TAR)
+    cache_path = self._CachePathForKey(constants.VM_IMAGE_TAR)
     if cache_path:
       vm_image = os.path.join(cache_path, constants.VM_IMAGE_BIN)
       if os.path.isfile(vm_image):
