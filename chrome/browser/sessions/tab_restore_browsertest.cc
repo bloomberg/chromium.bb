@@ -715,9 +715,18 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreWindow) {
   EXPECT_EQ(url1_, restored_tab->GetURL());
 }
 
+// https://crbug.com/835305: Timeout flakiness on Win7 Tests (dbg)(1) bot and
+// PASS/FAIL flakiness on Linux Chromium OS ASan LSan Tests (1) bot.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    (defined(OS_WIN) && !defined(NDEBUG))
+#define MAYBE_RestoreTabWithSpecialURL DISABLED_RestoreTabWithSpecialURL
+#else
+#define MAYBE_RestoreTabWithSpecialURL RestoreTabWithSpecialURL
+#endif
+
 // Restore tab with special URL chrome://credits/ and make sure the page loads
 // properly after restore. See http://crbug.com/31905.
-IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURL) {
+IN_PROC_BROWSER_TEST_F(TabRestoreTest, MAYBE_RestoreTabWithSpecialURL) {
   // Navigate new tab to a special URL.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL(chrome::kChromeUICreditsURL),
@@ -740,7 +749,9 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabWithSpecialURL) {
 }
 
 // https://crbug.com/667932: Flakiness on linux_chromium_asan_rel_ng bot.
-#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER)
+// https://crbug.com/835305: Timeout flakiness on Win7 Tests (dbg)(1) bot.
+#if defined(ADDRESS_SANITIZER) || defined(MEMORY_SANITIZER) || \
+    (defined(OS_WIN) && !defined(NDEBUG))
 #define MAYBE_RestoreTabWithSpecialURLOnBack DISABLED_RestoreTabWithSpecialURLOnBack
 #else
 #define MAYBE_RestoreTabWithSpecialURLOnBack RestoreTabWithSpecialURLOnBack
