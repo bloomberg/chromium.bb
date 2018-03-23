@@ -19,6 +19,7 @@ import os
 import shutil
 import sys
 import tempfile
+import time
 
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.join(THIS_DIR, '..', '..', '..')
@@ -43,6 +44,19 @@ except ImportError:
 @contextlib.contextmanager
 def CreateChromedriver(args):
   """Create a webdriver object ad close it after."""
+
+  def DeleteWithRetry(path, func):
+    # There seems to be a race condition on the bots that causes the paths
+    # to not delete because they are being used. This allows up to 2 seconds
+    # to delete
+    for _ in xrange(4):
+      try:
+        return func(path)
+      except WindowsError:
+        time.sleep(0.5)
+    raise
+
+  driver = None
   user_data_dir = tempfile.mkdtemp()
   fd, log_file = tempfile.mkstemp()
   os.close(fd)
@@ -62,9 +76,10 @@ def CreateChromedriver(args):
       logging.error(fh.read())
     raise
   finally:
-    driver.quit()
-    os.remove(log_file)
-    shutil.rmtree(user_data_dir)
+    if driver:
+      driver.quit()
+    DeleteWithRetry(log_file, os.remove)
+    DeleteWithRetry(user_data_dir, shutil.rmtree)
 
 
 def main():
