@@ -798,16 +798,12 @@ bool MenuManager::ItemUpdated(const MenuItem::Id& id) {
   MenuItem* menu_item = GetItemById(id);
   DCHECK(menu_item);
 
-  const extensions::MenuItem::OwnedList* list;
-  if (menu_item->parent_id()) {
-    list = &(GetItemById(*menu_item->parent_id())->children());
-  } else {
+  if (!menu_item->parent_id()) {
     auto i = context_items_.find(menu_item->id().extension_key);
     if (i == context_items_.end()) {
       NOTREACHED();
       return false;
     }
-    list = &(i->second);
   }
 
   // If we selected a radio item, unselect all other items in its group.
