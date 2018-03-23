@@ -1248,4 +1248,38 @@ TEST_F(UiTest, BrowsingRootBounds) {
   }
 }
 
+TEST_F(UiTest, DisableResizeWhenEditing) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  UiElement* hit_plane = scene_->GetUiElementByName(kContentFrameHitPlane);
+  EXPECT_TRUE(hit_plane->hit_testable());
+  model_->editing_web_input = true;
+  OnBeginFrame();
+  EXPECT_FALSE(hit_plane->hit_testable());
+  model_->editing_web_input = false;
+  OnBeginFrame();
+  EXPECT_TRUE(hit_plane->hit_testable());
+
+  model_->editing_input = true;
+  OnBeginFrame();
+  EXPECT_FALSE(hit_plane->hit_testable());
+  model_->editing_input = false;
+  OnBeginFrame();
+  EXPECT_TRUE(hit_plane->hit_testable());
+
+  model_->native_ui.hosted_ui_enabled = true;
+  OnBeginFrame();
+  EXPECT_FALSE(hit_plane->hit_testable());
+  model_->native_ui.hosted_ui_enabled = false;
+  OnBeginFrame();
+  EXPECT_TRUE(hit_plane->hit_testable());
+
+  model_->active_modal_prompt_type =
+      kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission;
+  OnBeginFrame();
+  EXPECT_FALSE(hit_plane->hit_testable());
+  model_->active_modal_prompt_type = kModalPromptTypeNone;
+  OnBeginFrame();
+  EXPECT_TRUE(hit_plane->hit_testable());
+}
+
 }  // namespace vr
