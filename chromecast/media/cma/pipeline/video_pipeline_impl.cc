@@ -127,7 +127,7 @@ const EncryptionScheme& VideoPipelineImpl::GetEncryptionScheme(
 }
 
 std::unique_ptr<StreamDecryptor> VideoPipelineImpl::CreateDecryptor() {
-  return std::make_unique<CdmDecryptor>();
+  return std::make_unique<CdmDecryptor>(false /* clear_buffer_needed */);
 }
 
 void VideoPipelineImpl::UpdateStatistics() {

@@ -84,8 +84,9 @@ bool DecryptContextImplClearKey::DoDecrypt(CastDecoderBuffer* buffer,
   return true;
 }
 
-bool DecryptContextImplClearKey::CanDecryptToBuffer() const {
-  return true;
+DecryptContextImpl::OutputType DecryptContextImplClearKey::GetOutputType()
+    const {
+  return OutputType::kClearRequired;
 }
 
 }  // namespace media
