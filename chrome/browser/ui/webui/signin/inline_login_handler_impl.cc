@@ -202,10 +202,8 @@ void InlineSigninHelper::OnClientOAuthSuccessAndBrowserOpened(
     Profile::CreateStatus status) {
   if (is_force_sign_in_with_usermanager_)
     UnlockProfileAndHideLoginUI(profile_->GetPath(), handler_.get());
-  content::WebContents* contents = NULL;
   Browser* browser = NULL;
   if (handler_) {
-    contents = handler_->web_ui()->GetWebContents();
     browser = handler_->GetDesktopBrowser();
   }
 
