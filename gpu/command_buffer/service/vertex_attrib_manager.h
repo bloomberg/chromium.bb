@@ -278,7 +278,7 @@ class GPU_GLES2_EXPORT VertexAttribManager
     return service_id_;
   }
 
-  void Unbind(Buffer* buffer);
+  void Unbind(Buffer* buffer, Buffer* bound_array_buffer);
 
   bool IsDeleted() const {
     return deleted_;

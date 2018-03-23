@@ -40,6 +40,7 @@ class VertexAttribManagerTest : public GpuServiceTest {
 
     manager_ = new VertexAttribManager(false);
     manager_->Initialize(kNumVertexAttribs, true);
+    manager_->SetIsBound(true);
   }
 
   scoped_refptr<VertexAttribManager> manager_;
@@ -204,12 +205,12 @@ TEST_F(VertexAttribManagerTest, Unbind) {
   EXPECT_EQ(buffer1, attrib1->buffer());
   EXPECT_EQ(buffer1, attrib3->buffer());
   // Unbind unattached buffer.
-  manager_->Unbind(buffer2);
+  manager_->Unbind(buffer2, nullptr);
   // Should be no-op.
   EXPECT_EQ(buffer1, attrib1->buffer());
   EXPECT_EQ(buffer1, attrib3->buffer());
   // Unbind buffer.
-  manager_->Unbind(buffer1);
+  manager_->Unbind(buffer1, nullptr);
   // Check they were detached
   EXPECT_TRUE(NULL == attrib1->buffer());
   EXPECT_TRUE(NULL == attrib3->buffer());

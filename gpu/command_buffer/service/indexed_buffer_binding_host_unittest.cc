@@ -39,8 +39,6 @@ class IndexedBufferBindingHostTest : public GpuServiceTest {
   }
 
   void TearDown() override {
-    uniform_host_->RemoveBoundBuffer(buffer_.get());
-    tf_host_->RemoveBoundBuffer(buffer_.get());
     buffer_ = nullptr;
     buffer_manager_->MarkContextLost();
     buffer_manager_->Destroy();
@@ -80,6 +78,8 @@ TEST_F(IndexedBufferBindingHostTest, DoBindBufferRangeUninitializedBuffer) {
       EXPECT_EQ(kOffset, tf_host_->GetBufferStart(index));
     }
   }
+
+  tf_host_->RemoveBoundBuffer(kTarget, buffer_.get(), nullptr, false);
 }
 
 TEST_F(IndexedBufferBindingHostTest, DoBindBufferRangeBufferWithoutEnoughSize) {
@@ -118,6 +118,8 @@ TEST_F(IndexedBufferBindingHostTest, DoBindBufferRangeBufferWithoutEnoughSize) {
 
   SetBufferSize(kTarget, kOffset + kSize);
   tf_host_->OnBufferData(buffer_.get());
+
+  tf_host_->RemoveBoundBuffer(kTarget, buffer_.get(), nullptr, false);
 }
 
 TEST_F(IndexedBufferBindingHostTest, RestoreBindings) {
@@ -138,7 +140,7 @@ TEST_F(IndexedBufferBindingHostTest, RestoreBindings) {
   uniform_host_->DoBindBufferBase(kIndex, buffer_.get());
   // Set up the second host
   scoped_refptr<IndexedBufferBindingHost> other =
-      new IndexedBufferBindingHost(kMaxBindings, GL_UNIFORM_BUFFER, true);
+      new IndexedBufferBindingHost(kMaxBindings, kTarget, true);
   EXPECT_CALL(*gl_, BindBufferRange(kTarget, kOtherIndex, kBufferServiceId,
                                     kOffset, clamped_size))
       .Times(1)
@@ -167,9 +169,12 @@ TEST_F(IndexedBufferBindingHostTest, RestoreBindings) {
         .RetiresOnSaturation();
     other->RestoreBindings(uniform_host_.get());
   }
+
+  EXPECT_CALL(*gl_, BindBufferBase(kTarget, kIndex, 0))
+      .Times(1)
+      .RetiresOnSaturation();
+  uniform_host_->RemoveBoundBuffer(kTarget, buffer_.get(), nullptr, true);
 }
 
 }  // namespace gles2
 }  // namespace gpu
-
-

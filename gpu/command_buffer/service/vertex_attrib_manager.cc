@@ -168,20 +168,46 @@ bool VertexAttribManager::Enable(GLuint index, bool enable) {
   return true;
 }
 
-void VertexAttribManager::Unbind(Buffer* buffer) {
-  if (!buffer)
-    return;
+void VertexAttribManager::Unbind(Buffer* buffer, Buffer* bound_array_buffer) {
+  DCHECK(buffer);
+  DCHECK(is_bound_);
   if (element_array_buffer_.get() == buffer) {
-    if (do_buffer_refcounting_ && is_bound_)
+    if (do_buffer_refcounting_)
       buffer->OnUnbind(GL_ELEMENT_ARRAY_BUFFER);
+    if (manager_ && manager_->have_context_)
+      glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     element_array_buffer_ = nullptr;
   }
+  // When a vertex array object is bound, some drivers (AMD Linux,
+  // Qualcomm, etc.) have a bug where it incorrectly generates an
+  // GL_INVALID_OPERATION on glVertexAttribPointer() if pointer is
+  // NULL, no buffer is bound on GL_ARRAY_BUFFER.  Therefore, in order
+  // to clear the buffer bindings, we create a new array buffer,
+  // redirect all bindings to the new buffer, and then delete the
+  // buffer.
+  GLuint new_buffer = 0;
   for (uint32_t vv = 0; vv < vertex_attribs_.size(); ++vv) {
     if (vertex_attribs_[vv].buffer_ == buffer) {
-      if (do_buffer_refcounting_ && is_bound_)
+      if (do_buffer_refcounting_)
         buffer->OnUnbind(GL_ARRAY_BUFFER);
       vertex_attribs_[vv].buffer_ = nullptr;
+      if (manager_ && manager_->have_context_) {
+        if (!new_buffer) {
+          glGenBuffersARB(1, &new_buffer);
+          DCHECK_NE(0u, new_buffer);
+          glBindBuffer(GL_ARRAY_BUFFER, new_buffer);
+          // TODO(zmo): Do we need to also call glBufferData() here?
+        }
+        glVertexAttribPointer(
+            vv, vertex_attribs_[vv].size_, vertex_attribs_[vv].type_,
+            vertex_attribs_[vv].normalized_, vertex_attribs_[vv].gl_stride_, 0);
+      }
     }
+  }
+  if (new_buffer) {
+    glDeleteBuffersARB(1, &new_buffer);
+    glBindBuffer(GL_ARRAY_BUFFER,
+                 bound_array_buffer ? bound_array_buffer->service_id() : 0u);
   }
 }
 

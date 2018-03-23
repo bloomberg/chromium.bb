@@ -196,6 +196,9 @@ TEST_P(GLES2DecoderTest, IsBuffer) {
   EXPECT_FALSE(DoIsBuffer(client_buffer_id_));
   DoBindBuffer(GL_ARRAY_BUFFER, client_buffer_id_, kServiceBufferId);
   EXPECT_TRUE(DoIsBuffer(client_buffer_id_));
+  EXPECT_CALL(*gl_, BindBuffer(GL_ARRAY_BUFFER, 0))
+      .Times(1)
+      .RetiresOnSaturation();
   DoDeleteBuffer(client_buffer_id_, kServiceBufferId);
   EXPECT_FALSE(DoIsBuffer(client_buffer_id_));
 }
