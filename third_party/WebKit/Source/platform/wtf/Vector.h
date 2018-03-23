@@ -876,14 +876,12 @@ class VectorBuffer : protected VectorBufferBase<T, true, Allocator> {
   using Base::capacity_;
 
   static const size_t kInlineBufferSize = inlineCapacity * sizeof(T);
-  T* InlineBuffer() {
-    return unsafe_reinterpret_cast_ptr<T*>(inline_buffer_.buffer);
-  }
+  T* InlineBuffer() { return unsafe_reinterpret_cast_ptr<T*>(inline_buffer_); }
   const T* InlineBuffer() const {
-    return unsafe_reinterpret_cast_ptr<const T*>(inline_buffer_.buffer);
+    return unsafe_reinterpret_cast_ptr<const T*>(inline_buffer_);
   }
 
-  AlignedBuffer<kInlineBufferSize, WTF_ALIGN_OF(T)> inline_buffer_;
+  alignas(T) char inline_buffer_[kInlineBufferSize];
   template <typename U, size_t inlineBuffer, typename V>
   friend class Deque;
 
