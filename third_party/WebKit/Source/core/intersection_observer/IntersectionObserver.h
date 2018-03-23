@@ -6,7 +6,9 @@
 #define IntersectionObserver_h
 
 #include "base/callback.h"
+#include "bindings/core/v8/ActiveScriptWrappable.h"
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/dom/ContextLifecycleObserver.h"
 #include "core/intersection_observer/IntersectionObservation.h"
 #include "core/intersection_observer/IntersectionObserverEntry.h"
 #include "platform/Length.h"
@@ -26,7 +28,11 @@ class IntersectionObserverInit;
 class ScriptState;
 class V8IntersectionObserverCallback;
 
-class CORE_EXPORT IntersectionObserver final : public ScriptWrappable {
+class CORE_EXPORT IntersectionObserver final
+    : public ScriptWrappable,
+      public ActiveScriptWrappable<IntersectionObserver>,
+      public ContextClient {
+  USING_GARBAGE_COLLECTED_MIXIN(IntersectionObserver);
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -83,6 +89,9 @@ class CORE_EXPORT IntersectionObserver final : public ScriptWrappable {
       const {
     return observations_;
   }
+
+  // ScriptWrappable override:
+  bool HasPendingActivity() const override;
 
   void Trace(blink::Visitor*);
   void TraceWrappers(const ScriptWrappableVisitor*) const;
