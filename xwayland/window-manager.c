@@ -1353,6 +1353,12 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 }
 
 static void
+handle_icon_surface_destroy(void *data)
+{
+	free(data);
+}
+
+static void
 weston_wm_handle_icon(struct weston_wm *wm, struct weston_wm_window *window)
 {
 	xcb_get_property_reply_t *reply;
@@ -1371,16 +1377,20 @@ weston_wm_handle_icon(struct weston_wm *wm, struct weston_wm_window *window)
 	length = xcb_get_property_value_length(reply);
 
 	/* This is in 32-bit words, not in bytes. */
-	if (length < 2)
+	if (length < 2) {
+		free(reply);
 		return;
+	}
 
 	data = xcb_get_property_value(reply);
 	width = *data++;
 	height = *data++;
 
 	/* Some checks against malformed input. */
-	if (width == 0 || height == 0 || length < 2 + width * height)
+	if (width == 0 || height == 0 || length < 2 + width * height) {
+		free(reply);
 		return;
+	}
 
 	new_surface =
 		cairo_image_surface_create_for_data((unsigned char *)data,
@@ -1390,8 +1400,12 @@ weston_wm_handle_icon(struct weston_wm *wm, struct weston_wm_window *window)
 	/* Bail out in case anything wrong happened during surface creation. */
 	if (cairo_surface_status(new_surface) != CAIRO_STATUS_SUCCESS) {
 		cairo_surface_destroy(new_surface);
+		free(reply);
 		return;
 	}
+
+	cairo_surface_set_user_data(new_surface, NULL, reply,
+				    &handle_icon_surface_destroy);
 
 	if (window->frame)
 		frame_set_icon(window->frame, new_surface);
@@ -1501,6 +1515,9 @@ weston_wm_window_destroy(struct weston_wm_window *window)
 		hash_table_remove(wm->window_hash, window->frame_id);
 		window->frame_id = XCB_WINDOW_NONE;
 	}
+
+	if (window->frame)
+		frame_destroy(window->frame);
 
 	if (window->surface_id)
 		wl_list_remove(&window->link);
