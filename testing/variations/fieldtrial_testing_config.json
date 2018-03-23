@@ -2185,6 +2185,21 @@
             ]
         }
     ],
+    "OfflinePagesDescriptivePendingStatus": [
+        {
+            "platforms": [
+                "android"
+            ],
+            "experiments": [
+                {
+                    "name": "Enabled",
+                    "enable_features": [
+                        "OfflinePagesDescriptivePendingStatus"
+                    ]
+                }
+            ]
+        }
+    ],
     "OfflinePagesPrefetchingSuggestions": [
         {
             "platforms": [
