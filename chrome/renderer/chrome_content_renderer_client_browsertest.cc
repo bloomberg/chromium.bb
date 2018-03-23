@@ -99,9 +99,12 @@ TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
       render_frame->GetRenderView()->GetRoutingID()));
 
   GURL result;
+  bool attach_same_site_cookies;
   // Make sure the SearchBox rewrites a thumbnail request from the main frame.
-  EXPECT_TRUE(client.WillSendRequest(GetMainFrame(), ui::PAGE_TRANSITION_LINK,
-                                     blink::WebURL(thumbnail_url), &result));
+  client.WillSendRequest(GetMainFrame(), ui::PAGE_TRANSITION_LINK,
+                         blink::WebURL(thumbnail_url), nullptr, &result,
+                         &attach_same_site_cookies);
+  EXPECT_NE(result, thumbnail_url);
 
   // Make sure the SearchBox rewrites a thumbnail request from the iframe.
   blink::WebFrame* child_frame = GetMainFrame()->FirstChild();
@@ -109,8 +112,10 @@ TEST_F(ChromeContentRendererClientSearchBoxTest, RewriteThumbnailURL) {
   ASSERT_TRUE(child_frame->IsWebLocalFrame());
   blink::WebLocalFrame* local_child =
       static_cast<blink::WebLocalFrame*>(child_frame);
-  EXPECT_TRUE(client.WillSendRequest(local_child, ui::PAGE_TRANSITION_LINK,
-                                     blink::WebURL(thumbnail_url), &result));
+  client.WillSendRequest(local_child, ui::PAGE_TRANSITION_LINK,
+                         blink::WebURL(thumbnail_url), nullptr, &result,
+                         &attach_same_site_cookies);
+  EXPECT_NE(result, thumbnail_url);
 }
 
 // The tests below examine Youtube requests that use the Flash API and ensure
