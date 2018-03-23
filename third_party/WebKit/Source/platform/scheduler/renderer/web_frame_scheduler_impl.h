@@ -16,6 +16,7 @@
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/page_visibility_state.h"
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
+#include "platform/scheduler/renderer/frame_origin_type.h"
 #include "platform/scheduler/util/tracing_helper.h"
 
 namespace base {
@@ -124,7 +125,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
   void ApplyPolicyToThrottleableQueue();
   bool ShouldThrottleTimers() const;
-  void UpdateThrottling(bool was_throttled);
+  void UpdateTaskQueueThrottling();
   WebFrameScheduler::ThrottlingState CalculateThrottlingState() const;
   void UpdateThrottlingState();
   void RemoveThrottlingObserver(Observer* observer);
@@ -143,6 +144,8 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   scoped_refptr<TaskQueue> UnpausableTaskQueue();
 
   base::WeakPtr<WebFrameSchedulerImpl> GetWeakPtr();
+
+  const WebFrameScheduler::FrameType frame_type_;
 
   TraceableVariableController tracing_controller_;
   scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
@@ -168,9 +171,10 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
       page_visibility_;
   TraceableState<bool, kTracingCategoryNameInfo> page_frozen_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_paused_;
-  TraceableState<bool, kTracingCategoryNameInfo> cross_origin_;
+  TraceableState<FrameOriginType, kTracingCategoryNameInfo> frame_origin_type_;
   StateTracer<kTracingCategoryNameInfo> url_tracer_;
-  WebFrameScheduler::FrameType frame_type_;
+  // |task_queue_throttled_| is false if |throttleable_task_queue_| is absent.
+  TraceableState<bool, kTracingCategoryNameDebug> task_queue_throttled_;
   int active_connection_count_;
 
   base::WeakPtrFactory<WebFrameSchedulerImpl> weak_factory_;

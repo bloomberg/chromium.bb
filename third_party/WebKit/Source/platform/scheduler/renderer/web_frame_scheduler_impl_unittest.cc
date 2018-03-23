@@ -49,6 +49,16 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
   }
 
  protected:
+  scoped_refptr<TaskQueue> throttleable_task_queue() {
+    return web_frame_scheduler_->throttleable_task_queue_;
+  }
+
+  void LazyInitThrottleableTaskQueue() {
+    EXPECT_FALSE(throttleable_task_queue());
+    web_frame_scheduler_->ThrottleableTaskQueue();
+    EXPECT_TRUE(throttleable_task_queue());
+  }
+
   scoped_refptr<TaskQueue> ThrottleableTaskQueue() {
     return web_frame_scheduler_->ThrottleableTaskQueue();
   }
@@ -67,6 +77,12 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
 
   scoped_refptr<TaskQueue> UnpausableTaskQueue() {
     return web_frame_scheduler_->UnpausableTaskQueue();
+  }
+
+  bool IsThrottled() {
+    EXPECT_TRUE(throttleable_task_queue());
+    return scheduler_->task_queue_throttler()->IsThrottled(
+        throttleable_task_queue().get());
   }
 
   base::SimpleTestTickClock clock_;
@@ -113,128 +129,128 @@ class MockThrottlingObserver final : public WebFrameScheduler::Observer {
   size_t stopped_count_;
 };
 
-void RunRepeatingTask(scoped_refptr<TaskQueue> task_queue, int* run_count);
-
-base::OnceClosure MakeRepeatingTask(scoped_refptr<TaskQueue> task_queue,
-                                    int* run_count) {
-  return base::BindOnce(&RunRepeatingTask, std::move(task_queue),
-                        base::Unretained(run_count));
-}
-
-void RunRepeatingTask(scoped_refptr<TaskQueue> task_queue, int* run_count) {
-  ++*run_count;
-
-  TaskQueue* task_queue_ptr = task_queue.get();
-  task_queue_ptr->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(std::move(task_queue), run_count),
-      TimeDelta::FromMilliseconds(1));
-}
-
 void IncrementCounter(int* counter) {
   ++*counter;
 }
 
 }  // namespace
 
-TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInForeground) {
-  ScopedTimerThrottlingForHiddenFramesForTest
-      timer_throttling_for_hidden_frames(true);
+// Throttleable task queue is initialized lazily, so there're two scenarios:
+// - Task queue created first and throttling decision made later;
+// - Scheduler receives relevant signals to make a throttling decision but
+//   applies one once task queue gets created.
+// We test both (ExplicitInit/LazyInit) of them.
 
-  int run_count = 0;
-  ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
-      TimeDelta::FromMilliseconds(1));
-
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1000, run_count);
+TEST_F(WebFrameSchedulerImplTest, PageVisible) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
+  EXPECT_FALSE(throttleable_task_queue());
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInBackground) {
-  ScopedTimerThrottlingForHiddenFramesForTest
-      timer_throttling_for_hidden_frames(true);
+TEST_F(WebFrameSchedulerImplTest, PageHidden_ExplicitInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
   page_scheduler_->SetPageVisible(false);
-
-  int run_count = 0;
-  ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
-      TimeDelta::FromMilliseconds(1));
-
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1, run_count);
+  EXPECT_TRUE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_SameOrigin) {
-  ScopedTimerThrottlingForHiddenFramesForTest
-      timer_throttling_for_hidden_frames(true);
-  web_frame_scheduler_->SetFrameVisible(false);
-
-  int run_count = 0;
-  ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
-      TimeDelta::FromMilliseconds(1));
-
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1000, run_count);
-}
-
-TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameVisible_CrossOrigin) {
-  ScopedTimerThrottlingForHiddenFramesForTest
-      timer_throttling_for_hidden_frames(true);
-  web_frame_scheduler_->SetFrameVisible(true);
-  web_frame_scheduler_->SetCrossOrigin(true);
-
-  int run_count = 0;
-  ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
-      TimeDelta::FromMilliseconds(1));
-
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1000, run_count);
-}
-
-TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_CrossOrigin) {
-  ScopedTimerThrottlingForHiddenFramesForTest
-      timer_throttling_for_hidden_frames(true);
-  web_frame_scheduler_->SetFrameVisible(false);
-  web_frame_scheduler_->SetCrossOrigin(true);
-
-  int run_count = 0;
-  ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
-      TimeDelta::FromMilliseconds(1));
-
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1, run_count);
-}
-
-TEST_F(WebFrameSchedulerImplTest, PageInBackground_ThrottlingDisabled) {
-  ScopedTimerThrottlingForHiddenFramesForTest
-      timer_throttling_for_hidden_frames(false);
+TEST_F(WebFrameSchedulerImplTest, PageHidden_LazyInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(false);
   page_scheduler_->SetPageVisible(false);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_TRUE(IsThrottled());
+}
 
-  int run_count = 0;
-  ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
-      TimeDelta::FromMilliseconds(1));
-
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1, run_count);
+TEST_F(WebFrameSchedulerImplTest, PageHiddenThenVisible_ExplicitInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(false);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_TRUE(IsThrottled());
+  page_scheduler_->SetPageVisible(true);
+  EXPECT_FALSE(IsThrottled());
+  page_scheduler_->SetPageVisible(false);
+  EXPECT_TRUE(IsThrottled());
 }
 
 TEST_F(WebFrameSchedulerImplTest,
-       RepeatingTimer_FrameHidden_CrossOrigin_ThrottlingDisabled) {
-  ScopedTimerThrottlingForHiddenFramesForTest
-      timer_throttling_for_hidden_frames(false);
+       FrameHiddenThenVisible_CrossOrigin_ExplicitInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
   web_frame_scheduler_->SetFrameVisible(false);
   web_frame_scheduler_->SetCrossOrigin(true);
+  web_frame_scheduler_->SetCrossOrigin(false);
+  EXPECT_FALSE(IsThrottled());
+  web_frame_scheduler_->SetCrossOrigin(true);
+  EXPECT_TRUE(IsThrottled());
+  web_frame_scheduler_->SetFrameVisible(true);
+  EXPECT_FALSE(IsThrottled());
+  web_frame_scheduler_->SetFrameVisible(false);
+  EXPECT_TRUE(IsThrottled());
+}
 
-  int run_count = 0;
-  ThrottleableTaskQueue()->PostDelayedTask(
-      FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count),
-      TimeDelta::FromMilliseconds(1));
+TEST_F(WebFrameSchedulerImplTest, FrameHidden_CrossOrigin_LazyInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
+  web_frame_scheduler_->SetFrameVisible(false);
+  web_frame_scheduler_->SetCrossOrigin(true);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_TRUE(IsThrottled());
+}
 
-  mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
-  EXPECT_EQ(1000, run_count);
+TEST_F(WebFrameSchedulerImplTest,
+       FrameHidden_CrossOrigin_NoThrottling_ExplicitInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(false);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
+  web_frame_scheduler_->SetFrameVisible(false);
+  web_frame_scheduler_->SetCrossOrigin(true);
+  EXPECT_FALSE(IsThrottled());
+}
+
+TEST_F(WebFrameSchedulerImplTest,
+       FrameHidden_CrossOrigin_NoThrottling_LazyInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(false);
+  web_frame_scheduler_->SetFrameVisible(false);
+  web_frame_scheduler_->SetCrossOrigin(true);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
+}
+
+TEST_F(WebFrameSchedulerImplTest, FrameHidden_SameOrigin_ExplicitInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
+  web_frame_scheduler_->SetFrameVisible(false);
+  EXPECT_FALSE(IsThrottled());
+}
+
+TEST_F(WebFrameSchedulerImplTest, FrameHidden_SameOrigin_LazyInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
+  web_frame_scheduler_->SetFrameVisible(false);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
+}
+
+TEST_F(WebFrameSchedulerImplTest, FrameVisible_CrossOrigin_ExplicitInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
+  EXPECT_TRUE(throttleable_task_queue());
+  web_frame_scheduler_->SetFrameVisible(true);
+  EXPECT_FALSE(IsThrottled());
+  web_frame_scheduler_->SetCrossOrigin(true);
+  EXPECT_FALSE(IsThrottled());
+}
+
+TEST_F(WebFrameSchedulerImplTest, FrameVisible_CrossOrigin_LazyInit) {
+  ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
+  web_frame_scheduler_->SetFrameVisible(true);
+  web_frame_scheduler_->SetCrossOrigin(true);
+  LazyInitThrottleableTaskQueue();
+  EXPECT_FALSE(IsThrottled());
 }
 
 TEST_F(WebFrameSchedulerImplTest, PauseAndResume) {

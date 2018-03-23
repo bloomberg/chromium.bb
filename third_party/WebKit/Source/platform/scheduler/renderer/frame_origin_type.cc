@@ -4,6 +4,7 @@
 
 #include "platform/scheduler/renderer/frame_origin_type.h"
 
+#include "base/macros.h"
 #include "platform/WebFrameScheduler.h"
 
 namespace blink {
@@ -20,6 +21,21 @@ FrameOriginType GetFrameOriginType(WebFrameScheduler* scheduler) {
   } else {
     return FrameOriginType::kSameOriginFrame;
   }
+}
+
+const char* FrameOriginTypeToString(FrameOriginType origin) {
+  switch (origin) {
+    case FrameOriginType::kMainFrame:
+      return "main-frame";
+    case FrameOriginType::kSameOriginFrame:
+      return "same-origin";
+    case FrameOriginType::kCrossOriginFrame:
+      return "cross-origin";
+    case FrameOriginType::kCount:
+      NOTREACHED();
+  }
+  NOTREACHED();
+  return nullptr;
 }
 
 }  // namespace scheduler
