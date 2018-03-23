@@ -30,12 +30,6 @@
 -WebViewTests/WebViewTest.InterstitialPageFocusedWidget/1
 -WebViewTests/WebViewTest.ReloadAfterCrash/1
 
-# WebViewBrowserTest::ScrollWaiter Doesn't Work in Viz crbug.com/796336
--WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/0
--WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/1
--WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/2
--WebViewScrollBubbling/WebViewGuestScrollTouchTest.TestGuestGestureScrollsBubble/3
-
 #### FrameSinkManager Crashes
 # FrameSinkManagerImpl::RegisterFrameSinkHierarchy Crash crbug.com/796344
 # Linux and Windows failures
