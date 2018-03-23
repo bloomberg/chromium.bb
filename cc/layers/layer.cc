@@ -290,7 +290,9 @@ void Layer::SetBounds(const gfx::Size& size) {
   if (!layer_tree_host_)
     return;
 
-  if (masks_to_bounds()) {
+  // Both bounds clipping and mask clipping can result in new areas of subtrees
+  // being exposed on a bounds change. Ensure the damaged areas are updated.
+  if (masks_to_bounds() || inputs_.mask_layer.get()) {
     SetSubtreePropertyChanged();
     SetPropertyTreesNeedRebuild();
   }
