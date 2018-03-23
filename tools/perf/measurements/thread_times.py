@@ -29,6 +29,8 @@ class ThreadTimes(legacy_page_test.LegacyPageTest):
       category_filter = chrome_trace_category_filter.CreateLowOverheadFilter()
       if self.options and self.options.extra_chrome_categories:
         category_filter.AddFilterString(self.options.extra_chrome_categories)
+      if self.options and self.options.enable_systrace:
+        self._timeline_controller.enable_systrace = True
       self._timeline_controller.trace_categories = category_filter.filter_string
     self._timeline_controller.SetUp(page, tab)
 

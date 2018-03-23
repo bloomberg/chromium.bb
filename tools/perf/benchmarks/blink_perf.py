@@ -230,6 +230,7 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
                            'blink_perf.js'), 'r') as f:
       self._blink_perf_js = f.read()
     self._extra_chrome_categories = None
+    self._enable_systrace = None
 
   def WillNavigateToPage(self, page, tab):
     del tab  # unused
@@ -249,6 +250,8 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
       options.AppendExtraBrowserArgs('--expose-internals-for-testing')
     if options.extra_chrome_categories:
       self._extra_chrome_categories = options.extra_chrome_categories
+    if options.enable_systrace:
+      self._enable_systrace = True
 
   def _ContinueTestRunWithTracing(self, tab):
     tracing_categories = tab.EvaluateJavaScript(
@@ -262,6 +265,8 @@ class _BlinkPerfMeasurement(legacy_page_test.LegacyPageTest):
     if self._extra_chrome_categories:
       config.chrome_trace_config.category_filter.AddFilterString(
           self._extra_chrome_categories)
+    if self._enable_systrace:
+      config.chrome_trace_config.SetEnableSystrace()
     tab.browser.platform.tracing_controller.StartTracing(config)
     tab.EvaluateJavaScript('testRunner.scheduleTestRun()')
     tab.WaitForJavaScriptCondition('testRunner.isDone')
