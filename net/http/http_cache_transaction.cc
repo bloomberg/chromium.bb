@@ -2510,8 +2510,9 @@ int HttpCache::Transaction::BeginPartialCacheValidation() {
 int HttpCache::Transaction::ValidateEntryHeadersAndContinue() {
   DCHECK_EQ(mode_, READ_WRITE);
 
-  if (!partial_->UpdateFromStoredHeaders(
-          response_.headers.get(), entry_->disk_entry, truncated_)) {
+  if (!partial_->UpdateFromStoredHeaders(response_.headers.get(),
+                                         entry_->disk_entry, truncated_,
+                                         cache_->IsWritingInProgress(entry_))) {
     return DoRestartPartialRequest();
   }
 

@@ -181,7 +181,8 @@ bool PartialData::IsLastRange() const {
 
 bool PartialData::UpdateFromStoredHeaders(const HttpResponseHeaders* headers,
                                           disk_cache::Entry* entry,
-                                          bool truncated) {
+                                          bool truncated,
+                                          bool writing_in_progress) {
   resource_size_ = 0;
   if (truncated) {
     DCHECK_EQ(headers->response_code(), 200);
@@ -224,25 +225,39 @@ bool PartialData::UpdateFromStoredHeaders(const HttpResponseHeaders* headers,
     return true;
   }
 
-  if (headers->response_code() != 206) {
-    DCHECK(byte_range_.IsValid());
-    sparse_entry_ = false;
+  sparse_entry_ = (headers->response_code() == 206);
+
+  if (writing_in_progress || sparse_entry_) {
+    // |writing_in_progress| means another Transaction is still fetching the
+    // body, so the only way we can see the length is if the server sent it
+    // in Content-Length -- GetDataSize would just return what got written
+    // thus far.
+    //
+    // |sparse_entry_| means a 206, and for those FixContentLength arranges it
+    // so that Content-Length written to the cache has the full length (on wire
+    // it's for a particular range only); while GetDataSize would be unusable
+    // since the data is stored using WriteSparseData, and not in the usual data
+    // stream.
+    resource_size_ = headers->GetContentLength();
+    if (resource_size_ <= 0)
+      return false;
+  } else {
+    // If we can safely use GetDataSize, it's preferrable since it's usable for
+    // things w/o Content-Length, such as chunked content.
     resource_size_ = entry->GetDataSize(kDataStream);
-    DVLOG(2) << "UpdateFromStoredHeaders size: " << resource_size_;
-    return true;
   }
 
-  if (!headers->HasStrongValidators())
-    return false;
+  DVLOG(2) << "UpdateFromStoredHeaders size: " << resource_size_;
 
-  int64_t length_value = headers->GetContentLength();
-  if (length_value <= 0)
-    return false;  // We must have stored the resource length.
-
-  resource_size_ = length_value;
-
-  // Make sure that this is really a sparse entry.
-  return entry->CouldBeSparse();
+  if (sparse_entry_) {
+    // If our previous is a 206, we need strong validators as we may be
+    // stiching the cached data and network data together.
+    if (!headers->HasStrongValidators())
+      return false;
+    // Make sure that this is really a sparse entry.
+    return entry->CouldBeSparse();
+  }
+  return true;
 }
 
 void PartialData::SetRangeToStartDownload() {

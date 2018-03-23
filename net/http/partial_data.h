@@ -73,9 +73,13 @@ class PartialData {
 
   // Extracts info from headers already stored in the cache. Returns false if
   // there is any problem with the headers. |truncated| should be true if we
-  // have an incomplete 200 entry.
+  // have an incomplete 200 entry due to a transfer having been interrupted.
+  // |writing_in_progress| should be set to true if a transfer for this entry's
+  // payload is still in progress.
   bool UpdateFromStoredHeaders(const HttpResponseHeaders* headers,
-                               disk_cache::Entry* entry, bool truncated);
+                               disk_cache::Entry* entry,
+                               bool truncated,
+                               bool writing_in_progress);
 
   // Sets the byte current range to start again at zero (for a truncated entry).
   void SetRangeToStartDownload();
