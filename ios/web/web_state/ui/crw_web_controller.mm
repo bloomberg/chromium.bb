@@ -1912,6 +1912,10 @@ registerLoadRequestForURL:(const GURL&)requestURL
 - (GURL)webURLWithTrustLevel:(web::URLVerificationTrustLevel*)trustLevel {
   DCHECK(trustLevel);
   *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
+  // Placeholder URL is an implementation detail. Don't expose it to users of
+  // web layer.
+  if (IsPlaceholderUrl(_documentURL))
+    return ExtractUrlFromPlaceholderUrl(_documentURL);
   return _documentURL;
 }
 
