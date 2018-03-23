@@ -8,7 +8,6 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.NATIVE_URLS_O
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIMEOUT_S;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
 import android.support.test.InstrumentationRegistry;
@@ -50,7 +49,7 @@ import java.util.concurrent.TimeoutException;
  */
 @RunWith(ChromeJUnit4ClassRunner.class)
 @CommandLineFlags.Add({ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE, "enable-webvr"})
-@Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
+@Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
 public class VrShellNavigationTest {
     // We explicitly instantiate a rule here instead of using parameterization since this class
     // only ever runs in ChromeTabbedActivity.
@@ -240,7 +239,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webTo2dImpl(Page.PAGE_WEBVR, mVrTestFramework);
@@ -253,7 +251,6 @@ public class VrShellNavigationTest {
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
     @CommandLineFlags.Add({"enable-features=WebXR"})
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebXrTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webTo2dImpl(Page.PAGE_WEBXR, mXrTestFramework);
@@ -274,7 +271,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webToWebImpl(Page.PAGE_WEBVR, mVrTestFramework);
@@ -287,7 +283,6 @@ public class VrShellNavigationTest {
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
     @CommandLineFlags.Add({"enable-features=WebXR"})
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebXrToWebXr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webToWebImpl(Page.PAGE_WEBXR, mXrTestFramework);
@@ -308,7 +303,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrPresentingTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webPresentingTo2dImpl(Page.PAGE_WEBVR, mVrTestFramework);
@@ -321,7 +315,6 @@ public class VrShellNavigationTest {
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
     @CommandLineFlags.Add({"enable-features=WebXR"})
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebXrPresentingTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webPresentingTo2dImpl(Page.PAGE_WEBXR, mXrTestFramework);
@@ -343,7 +336,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrPresentingToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webPresentingToWebImpl(Page.PAGE_WEBVR, mVrTestFramework);
@@ -356,7 +348,6 @@ public class VrShellNavigationTest {
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
     @CommandLineFlags.Add({"enable-features=WebXR"})
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebXrPresentingToWebXr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webPresentingToWebImpl(Page.PAGE_WEBXR, mXrTestFramework);
@@ -378,7 +369,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrFullscreenTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webFullscreenTo2dImpl(Page.PAGE_WEBVR, mVrTestFramework);
@@ -391,7 +381,6 @@ public class VrShellNavigationTest {
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
     @CommandLineFlags.Add({"enable-features=WebXR"})
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebXrFullscreenTo2d()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webFullscreenTo2dImpl(Page.PAGE_WEBXR, mXrTestFramework);
@@ -413,7 +402,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebVrFullscreenToWebVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webFullscreenToWebImpl(Page.PAGE_WEBVR, mVrTestFramework);
@@ -426,7 +414,6 @@ public class VrShellNavigationTest {
     @MediumTest
     @CommandLineFlags.Remove({"enable-webvr"})
     @CommandLineFlags.Add({"enable-features=WebXR"})
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testWebXrFullscreenToWebXr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         webFullscreenToWebImpl(Page.PAGE_WEBXR, mXrTestFramework);
@@ -449,7 +436,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testBackDoesntBackgroundChrome()
             throws IllegalArgumentException, InterruptedException {
         Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
@@ -472,7 +458,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testNavigationButtons() throws IllegalArgumentException, InterruptedException {
         Assert.assertFalse("Back button isn't disabled.", VrTransitionUtils.isBackButtonEnabled());
         Assert.assertFalse(
@@ -509,7 +494,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testNativeNavigationAndInteraction()
             throws IllegalArgumentException, InterruptedException {
         for (String url : NATIVE_URLS_OF_INTEREST) {
@@ -526,7 +510,6 @@ public class VrShellNavigationTest {
      */
     @Test
     @MediumTest
-    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testRendererKilledInFullscreenStaysInVr()
             throws IllegalArgumentException, InterruptedException, TimeoutException {
         mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);

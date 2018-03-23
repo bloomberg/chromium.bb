@@ -79,6 +79,7 @@ public class VrFeedbackInfoBarTest {
      */
     @Test
     @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testFeedbackFrequency() throws InterruptedException, TimeoutException {
         mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
         // Set frequency of infobar to every 2nd time.
@@ -104,6 +105,7 @@ public class VrFeedbackInfoBarTest {
      */
     @Test
     @MediumTest
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     public void testFeedbackOptOut() throws InterruptedException, TimeoutException {
         mVrTestFramework.loadUrlAndAwaitInitialization(TEST_PAGE_2D_URL, PAGE_LOAD_TIMEOUT_S);
 
