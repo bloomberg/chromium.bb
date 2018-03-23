@@ -21,15 +21,8 @@
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/stub/stub_window.h"
 
-#if defined(OS_WIN)
-#include "ui/platform_window/win/win_window.h"
-#elif defined(USE_X11)
-#include "ui/platform_window/x11/x11_window.h"
-#elif defined(OS_ANDROID)
-#include "ui/platform_window/android/platform_window_android.h"
-#elif defined(USE_OZONE)
+#if defined(USE_OZONE)
 #include "ui/events/ozone/chromeos/cursor_controller.h"
-#include "ui/ozone/public/ozone_platform.h"
 #endif
 
 namespace ui {
@@ -77,22 +70,11 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
   if (delegate_->GetDisplay().id() == display::kUnifiedDisplayId) {
     platform_window_ = std::make_unique<ui::StubWindow>(this, true, bounds);
   } else {
-#if defined(OS_WIN)
-    platform_window_ = std::make_unique<ui::WinWindow>(this, bounds);
-#elif defined(USE_X11)
-    platform_window_ = std::make_unique<ui::X11Window>(this, bounds);
-#elif defined(OS_ANDROID)
-    platform_window_ = std::make_unique<ui::PlatformWindowAndroid>(this);
-    platform_window_->SetBounds(bounds);
-#elif defined(USE_OZONE)
-    platform_window_ =
-        delegate_->GetOzonePlatform()->CreatePlatformWindow(this, bounds);
-#else
-    NOTREACHED() << "Unsupported platform";
-#endif
+    platform_window_ = CreatePlatformWindow(this, metrics_.bounds_in_pixels);
   }
 
   platform_window_->Show();
+
   if (image_cursors_) {
     image_cursors_->SetDisplay(delegate_->GetDisplay(),
                                metrics_.device_scale_factor);

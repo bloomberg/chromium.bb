@@ -12,9 +12,9 @@
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/shared_quad_state.h"
 #include "components/viz/common/quads/surface_draw_quad.h"
+#include "ui/gfx/geometry/size_f.h"
 
 namespace ui {
-
 namespace ws {
 
 FrameGenerator::FrameGenerator() = default;
@@ -36,8 +36,7 @@ void FrameGenerator::SetHighContrastMode(bool enabled) {
   SetNeedsBeginFrame(true);
 }
 
-void FrameGenerator::OnFirstSurfaceActivation(
-    const viz::SurfaceInfo& surface_info) {
+void FrameGenerator::SetEmbeddedSurface(const viz::SurfaceInfo& surface_info) {
   DCHECK(surface_info.is_valid());
 
   // Only handle embedded surfaces changing here. The display root surface
@@ -195,8 +194,29 @@ void FrameGenerator::DrawWindow(viz::RenderPass* pass) {
       window_manager_surface_info_.size_in_pixels());
 
   gfx::Transform quad_to_target_transform;
-  quad_to_target_transform.Translate(bounds_at_origin.x(),
-                                     bounds_at_origin.y());
+
+  if (scale_and_center_) {
+    // Determine the scaling to fit the source within the target.
+    gfx::SizeF source(window_manager_surface_info_.size_in_pixels());
+    const gfx::SizeF target(pixel_size_);
+    const float scale = std::min(target.width() / source.width(),
+                                 target.height() / source.height());
+
+    // Apply the transform to center the source within the output.
+    source.Scale(scale);
+    DCHECK(source.width() <= target.width() ||
+           source.height() <= target.height());
+    if (source.width() < target.width()) {
+      quad_to_target_transform.Translate(
+          (target.width() - source.width()) / 2.0f, 0);
+    } else if (source.height() < target.height()) {
+      quad_to_target_transform.Translate(
+          0, (target.height() - source.height()) / 2.0f);
+    }
+
+    // Apply the scaling after the transform.
+    quad_to_target_transform.Scale(scale, scale);
+  }
 
   viz::SharedQuadState* sqs = pass->CreateAndAppendSharedQuadState();
 
@@ -228,5 +248,4 @@ void FrameGenerator::SetNeedsBeginFrame(bool needs_begin_frame) {
 }
 
 }  // namespace ws
-
 }  // namespace ui

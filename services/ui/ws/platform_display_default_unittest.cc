@@ -14,6 +14,7 @@
 #include "ui/events/event_sink.h"
 #include "ui/events/system_input_injector.h"
 #include "ui/gfx/geometry/point.h"
+#include "ui/ozone/public/cursor_factory_ozone.h"
 #include "ui/ozone/public/ozone_platform.h"
 #include "ui/platform_window/platform_window.h"
 #include "ui/platform_window/stub/stub_window.h"
@@ -47,22 +48,19 @@ class TestEventSink : public EventSink {
 // A PlatformDisplayDelegate to connect the PlatformDisplay to a TestEventSink.
 class TestPlatformDisplayDelegate : public PlatformDisplayDelegate {
  public:
-  TestPlatformDisplayDelegate(TestEventSink* sink, OzonePlatform* platform)
-      : event_sink_(sink), ozone_platform_(platform) {}
+  explicit TestPlatformDisplayDelegate(TestEventSink* sink) : sink_(sink) {}
   ~TestPlatformDisplayDelegate() override = default;
 
   // PlatformDisplayDelegate:
   const display::Display& GetDisplay() override { return stub_display_; }
   ServerWindow* GetRootWindow() override { return nullptr; }
-  EventSink* GetEventSink() override { return event_sink_; }
+  EventSink* GetEventSink() override { return sink_; }
   void OnAcceleratedWidgetAvailable() override {}
   void OnNativeCaptureLost() override {}
-  OzonePlatform* GetOzonePlatform() override { return ozone_platform_; }
   bool IsHostingViz() const override { return true; }
 
  private:
-  TestEventSink* event_sink_;
-  OzonePlatform* ozone_platform_;
+  TestEventSink* sink_;
   display::Display stub_display_;
 
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplayDelegate);
@@ -109,6 +107,7 @@ class TestOzonePlatform : public OzonePlatform {
 TEST(PlatformDisplayDefaultTest, DISABLED_EventDispatch) {
   // ThreadTaskRunnerHandle needed required by ThreadedImageCursors.
   base::MessageLoop loop;
+
   // Setup ozone so the display can be initialized.
   TestOzonePlatform platform;
 
@@ -128,7 +127,7 @@ TEST(PlatformDisplayDefaultTest, DISABLED_EventDispatch) {
 
   // Initialize the display with a test EventSink so we can sense events.
   TestEventSink event_sink;
-  TestPlatformDisplayDelegate delegate(&event_sink, &platform);
+  TestPlatformDisplayDelegate delegate(&event_sink);
   display.Init(&delegate);
 
   // Event dispatch is handled at the PlatformWindowDelegate level.
