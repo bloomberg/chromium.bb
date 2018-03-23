@@ -281,6 +281,8 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win7', 'nvidia', 'd3d9'], bug=690248)
 
     # Win / Intel
+    self.Flaky('conformance/extensions/oes-texture-float-with-video.html',
+        ['win', 'intel'], bug=825338)
     self.Fail('conformance/rendering/rendering-stencil-large-viewport.html',
         ['win', 'intel', 'd3d11'], bug=782317)
 
