@@ -154,7 +154,7 @@ URLPatternSet ShellExtensionsClient::GetPermittedChromeSchemeHosts(
 
 bool ShellExtensionsClient::IsScriptableURL(const GURL& url,
                                             std::string* error) const {
-  NOTIMPLEMENTED();
+  // No restrictions on URLs.
   return true;
 }
 
