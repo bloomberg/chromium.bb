@@ -557,6 +557,7 @@ _x86_internal_release_boards = frozenset([
     'enguarde',
     'eve',
     'eve-arcnext',
+    'eve-campfire',
     'expresso',
     'falco',
     'falco_li',
@@ -2516,6 +2517,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_paine',
       'betty-arcnext',
+      'eve-campfire', # contact:yueherngl@
       'grunt',
       'nami',
       'octopus',
