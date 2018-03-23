@@ -5360,4 +5360,10 @@ TEST_P(PaintPropertyTreeBuilderTest, IframeDoesNotRequireCompositedScrolling) {
                    ->HasDirectCompositingReasons());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest,
+       NoTransformPropertyForWillChangeWithoutLayer) {
+  SetBodyInnerHTML("<svg id='target' style='will-change: left'></svg>");
+  EXPECT_EQ(nullptr, PaintPropertiesForElement("target")->Transform());
+}
+
 }  // namespace blink

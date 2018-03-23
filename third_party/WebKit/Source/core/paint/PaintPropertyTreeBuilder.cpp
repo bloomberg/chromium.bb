@@ -580,6 +580,9 @@ void FragmentPaintPropertyTreeBuilder::UpdateTransformForNonRootSVG() {
 }
 
 static CompositingReasons CompositingReasonsForTransform(const LayoutBox& box) {
+  if (!box.HasLayer())
+    return CompositingReason::kNone;
+
   const ComputedStyle& style = box.StyleRef();
   CompositingReasons compositing_reasons = CompositingReason::kNone;
   if (CompositingReasonFinder::RequiresCompositingForTransform(box))
