@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Interface test promise_test: Unhandled rejection with value: "SVGElement includes HTMLOrSVGElement, but SVGElement is undefined."
-Harness: the test ran to completion.
-
