@@ -38,6 +38,7 @@ constexpr const char kSetCookieAndNoContent[] = "/set-cookie-and-no-content";
 constexpr const char kHttpNoContent[] = "/nocontent";
 constexpr const char kEchoTitle[] = "/echotitle";
 constexpr const char kManyRedirects[] = "/many-redirects";
+constexpr const char kCacheable[] = "/cachetime";
 constexpr const char kCookieKey[] = "cookie";
 constexpr const char kUrlKey[] = "url";
 constexpr const char kCookieFromNoContent[] = "no-content-cookie";
@@ -500,6 +501,42 @@ TEST_F(DetachedResourceRequestTest, TooManyRedirects) {
   request_waiter.Run();
   histogram_tester.ExpectUniqueSample(
       "CustomTabs.DetachedResourceRequest.RedirectsCount.Failure", 20, 1);
+}
+
+TEST_F(DetachedResourceRequestTest, CachedResponse) {
+  int two_minus_requests_count = 2;
+  base::RunLoop dummy_run_loop;
+  embedded_test_server()->RegisterRequestMonitor(base::BindRepeating(
+      &WatchPathAndReportHeaders, kCacheable, &two_minus_requests_count,
+      nullptr, dummy_run_loop.QuitClosure()));
+
+  base::RunLoop first_request_waiter;
+  base::RunLoop second_request_waiter;
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  GURL url(embedded_test_server()->GetURL(kCacheable));
+  GURL site_for_cookies(embedded_test_server()->base_url());
+
+  DetachedResourceRequest::CreateAndStart(
+      browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy(),
+      base::BindLambdaForTesting([&](bool success) {
+        EXPECT_TRUE(success);
+        first_request_waiter.Quit();
+      }));
+  first_request_waiter.Run();
+
+  DetachedResourceRequest::CreateAndStart(
+      browser_context(), url, site_for_cookies,
+      content::Referrer::GetDefaultReferrerPolicy(),
+      base::BindLambdaForTesting([&](bool success) {
+        EXPECT_TRUE(success);
+        second_request_waiter.Quit();
+      }));
+  second_request_waiter.Run();
+
+  // Only one request, HTTP cache hit for the second one.
+  EXPECT_EQ(1, two_minus_requests_count);
 }
 
 }  // namespace customtabs

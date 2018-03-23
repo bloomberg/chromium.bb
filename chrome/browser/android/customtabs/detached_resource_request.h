@@ -35,6 +35,8 @@ namespace customtabs {
 // It is intended to provide "detached" request capabilities from the browser
 // process, that is like <a ping> or <link rel="prefetch">.
 //
+// DO NOT USE for anything that would end up in the content area.
+//
 // This is a UI thread class.
 class DetachedResourceRequest {
  public:
