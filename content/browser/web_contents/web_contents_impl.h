@@ -846,8 +846,6 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   // Unpause the throbber if it was paused.
   void DidProceedOnInterstitial() override;
 
-  typedef base::Callback<void(WebContents*)> CreatedCallback;
-
   // Forces overscroll to be disabled (used by touch emulation).
   void SetForceDisableOverscrollContent(bool force_disable);
 
@@ -1712,6 +1710,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
 // Dangerous methods which should never be made part of the public API, so we
 // grant their use only to an explicit friend list (c++ attorney/client idiom).
 class CONTENT_EXPORT WebContentsImpl::FriendWrapper {
+ public:
+  using CreatedCallback = base::RepeatingCallback<void(WebContents*)>;
+
  private:
   friend class TestNavigationObserver;
   friend class WebContentsAddedObserver;
