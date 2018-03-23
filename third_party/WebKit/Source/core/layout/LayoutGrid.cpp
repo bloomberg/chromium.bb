@@ -684,14 +684,16 @@ size_t LayoutGrid::ComputeAutoRepeatTracksCount(
   if (free_space <= 0)
     return auto_repeat_track_list_length;
 
-  size_t repetitions =
-      1 + (free_space / (auto_repeat_tracks_size + gap_size)).ToInt();
+  LayoutUnit auto_repeat_size_with_gap = auto_repeat_tracks_size + gap_size;
+
+  size_t repetitions = 1 + (free_space / auto_repeat_size_with_gap).ToInt();
+  free_space -= auto_repeat_size_with_gap * (repetitions - 1);
 
   // Provided the grid container does not have a definite size or max-size in
   // the relevant axis, if the min size is definite then the number of
   // repetitions is the largest possible positive integer that fulfills that
   // minimum requirement.
-  if (needs_to_fulfill_minimum_size)
+  if (needs_to_fulfill_minimum_size && free_space)
     ++repetitions;
 
   return repetitions * auto_repeat_track_list_length;
