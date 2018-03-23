@@ -11,6 +11,7 @@ import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v7.content.res.AppCompatResources;
+import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -19,6 +20,8 @@ import android.widget.TextView;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
+import org.chromium.ui.text.NoUnderlineClickableSpan;
+import org.chromium.ui.text.SpanApplier;
 
 /**
  * This fragment implements sign-in screen with account picker and descriptions of signin-related
@@ -28,6 +31,9 @@ import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
 public abstract class SigninFragmentBase extends Fragment {
     private static final String TAG = "SigninFragmentBase";
 
+    private static final String SETTINGS_LINK_OPEN = "<LINK1>";
+    private static final String SETTINGS_LINK_CLOSE = "</LINK1>";
+
     private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
 
     private @SigninAccessPoint int mSigninAccessPoint;
@@ -35,6 +41,9 @@ public abstract class SigninFragmentBase extends Fragment {
     private SigninView mView;
     private ConsentTextTracker mConsentTextTracker;
     private @StringRes int mCancelButtonTextId = R.string.cancel;
+    // TODO(https://crbug.com/814728): Implement account picker and set these variables.
+    private String mSelectedAccountName;
+    private boolean mIsDefaultAccountSelected;
 
     /**
      * Creates an argument bundle to start AccountSigninView from the account selection page.
@@ -123,9 +132,34 @@ public abstract class SigninFragmentBase extends Fragment {
 
     private void updateConsentText() {
         mConsentTextTracker.setText(mView.getTitleView(), R.string.signin_title);
+        mConsentTextTracker.setText(
+                mView.getSyncDescriptionView(), R.string.signin_sync_description);
+        mConsentTextTracker.setText(mView.getPersonalizationDescriptionView(),
+                R.string.signin_personalization_description);
+        mConsentTextTracker.setText(mView.getGoogleServicesDescriptionView(),
+                R.string.signin_google_services_description);
         mConsentTextTracker.setText(mView.getRefuseButton(), mCancelButtonTextId);
         mConsentTextTracker.setText(mView.getAcceptButton(), R.string.signin_accept_button);
         mConsentTextTracker.setText(mView.getMoreButton(), R.string.more);
+
+        // The clickable "Settings" link.
+        mView.getDetailsDescriptionView().setMovementMethod(LinkMovementMethod.getInstance());
+        NoUnderlineClickableSpan settingsSpan = new NoUnderlineClickableSpan() {
+            @Override
+            public void onClick(View widget) {
+                onSigninAccepted(mSelectedAccountName, mIsDefaultAccountSelected, true);
+                RecordUserAction.record("Signin_Signin_WithAdvancedSyncSettings");
+
+                // Record the fact that the user consented to the consent text by clicking on a link
+                recordConsent((TextView) widget);
+            }
+        };
+        mConsentTextTracker.setText(
+                mView.getDetailsDescriptionView(), R.string.signin_details_description, input -> {
+                    return SpanApplier.applySpans(input.toString(),
+                            new SpanApplier.SpanInfo(
+                                    SETTINGS_LINK_OPEN, SETTINGS_LINK_CLOSE, settingsSpan));
+                });
     }
 
     // TODO(https://crbug.com/814728): Get real profile data and remove SuppressLint.

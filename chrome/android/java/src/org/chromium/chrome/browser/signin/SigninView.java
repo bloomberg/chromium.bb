@@ -23,6 +23,10 @@ public class SigninView extends LinearLayout {
     private ImageView mAccountImage;
     private TextView mAccountName;
     private TextView mAccountEmail;
+    private TextView mSyncDescription;
+    private TextView mPersonalizationDescription;
+    private TextView mGoogleServicesDescription;
+    private TextView mDetailsDescription;
     private ButtonCompat mAcceptButton;
     private Button mRefuseButton;
     private Button mMoreButton;
@@ -41,6 +45,12 @@ public class SigninView extends LinearLayout {
         mAccountImage = (ImageView) findViewById(R.id.account_image);
         mAccountName = (TextView) findViewById(R.id.account_name);
         mAccountEmail = (TextView) findViewById(R.id.account_email);
+        mSyncDescription = (TextView) findViewById(R.id.signin_sync_description);
+        mPersonalizationDescription =
+                (TextView) findViewById(R.id.signin_personalization_description);
+        mGoogleServicesDescription =
+                (TextView) findViewById(R.id.signin_google_services_description);
+        mDetailsDescription = (TextView) findViewById(R.id.signin_details_description);
         mAcceptButton = (ButtonCompat) findViewById(R.id.positive_button);
         mRefuseButton = (Button) findViewById(R.id.negative_button);
         mMoreButton = (Button) findViewById(R.id.more_button);
@@ -65,6 +75,22 @@ public class SigninView extends LinearLayout {
 
     public TextView getAccountEmailView() {
         return mAccountEmail;
+    }
+
+    public TextView getSyncDescriptionView() {
+        return mSyncDescription;
+    }
+
+    public TextView getPersonalizationDescriptionView() {
+        return mPersonalizationDescription;
+    }
+
+    public TextView getGoogleServicesDescriptionView() {
+        return mGoogleServicesDescription;
+    }
+
+    public TextView getDetailsDescriptionView() {
+        return mDetailsDescription;
     }
 
     public ButtonCompat getAcceptButton() {
