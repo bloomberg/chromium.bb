@@ -247,12 +247,13 @@ class SplitViewDragIndicators::SplitViewDragIndicatorsView
                   ? IDS_ASH_SPLIT_VIEW_CANNOT_SNAP
                   : IDS_ASH_SPLIT_VIEW_GUIDANCE));
           SplitviewAnimationType animation_type;
-          if (IsPreviewAreaState(previous_indicator_state_)) {
-            animation_type = SPLITVIEW_ANIMATION_TEXT_FADE_IN;
+          if (!show) {
+            animation_type = SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT;
           } else {
             animation_type =
-                show ? SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT
-                     : SPLITVIEW_ANIMATION_TEXT_FADE_OUT_WITH_HIGHLIGHT;
+                IsPreviewAreaState(previous_indicator_state_)
+                    ? SPLITVIEW_ANIMATION_TEXT_FADE_IN_WITH_HIGHLIGHT
+                    : SPLITVIEW_ANIMATION_TEXT_FADE_IN;
           }
           DoSplitviewOpacityAnimation(view->layer(), animation_type);
         }
