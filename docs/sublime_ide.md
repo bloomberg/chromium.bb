@@ -300,6 +300,8 @@ resource directory instead of that supplied by SublimeClang.
     cd SublimeClang
     # Copy libclang.so to the internals dir
     cp /usr/lib/llvm-3.9/lib/libclang.so.1 internals/libclang.so
+    # Fix src/main.cpp (shared_ptr -> std::shared_ptr)
+    sed -i -- 's/shared_ptr/std::shared_ptr/g' src/main.cpp
     # Make the project - should be really quick, since libclang.so is already built
     cd src && mkdir build && cd build
     cmake ..
