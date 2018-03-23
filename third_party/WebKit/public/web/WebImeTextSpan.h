@@ -89,7 +89,7 @@ struct WebImeTextSpan {
   Type type;
   unsigned start_offset;
   unsigned end_offset;
-  WebColor underline_color = 0xFF000000;
+  WebColor underline_color = 0x00000000;
   ui::mojom::ImeTextSpanThickness thickness;
   WebColor background_color;
   WebColor suggestion_highlight_color;

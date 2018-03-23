@@ -562,8 +562,9 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_SingleUnderline) {
             composition_text2.ime_text_spans[0].start_offset);
   EXPECT_EQ(GetOffsetInUTF16(kSampleText, underline.end_offset),
             composition_text2.ime_text_spans[0].end_offset);
-  // Single underline represents as black thin line.
-  EXPECT_EQ(SK_ColorBLACK, composition_text2.ime_text_spans[0].underline_color);
+  // Single underline represents as thin line with text color.
+  EXPECT_EQ(SK_ColorTRANSPARENT,
+            composition_text2.ime_text_spans[0].underline_color);
   EXPECT_EQ(ui::ImeTextSpan::Thickness::kThin,
             composition_text2.ime_text_spans[0].thickness);
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
@@ -593,8 +594,9 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_DoubleUnderline) {
             composition_text2.ime_text_spans[0].start_offset);
   EXPECT_EQ(GetOffsetInUTF16(kSampleText, underline.end_offset),
             composition_text2.ime_text_spans[0].end_offset);
-  // Double underline represents as black thick line.
-  EXPECT_EQ(SK_ColorBLACK, composition_text2.ime_text_spans[0].underline_color);
+  // Double underline represents as thick line with text color.
+  EXPECT_EQ(SK_ColorTRANSPARENT,
+            composition_text2.ime_text_spans[0].underline_color);
   EXPECT_EQ(ui::ImeTextSpan::Thickness::kThick,
             composition_text2.ime_text_spans[0].thickness);
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
@@ -649,7 +651,8 @@ TEST_F(InputMethodChromeOSTest, ExtractCompositionTextTest_Selection) {
             composition_text2.ime_text_spans[0].start_offset);
   EXPECT_EQ(GetOffsetInUTF16(kSampleText, composition_text.selection.end()),
             composition_text2.ime_text_spans[0].end_offset);
-  EXPECT_EQ(SK_ColorBLACK, composition_text2.ime_text_spans[0].underline_color);
+  EXPECT_EQ(SK_ColorTRANSPARENT,
+            composition_text2.ime_text_spans[0].underline_color);
   EXPECT_EQ(ui::ImeTextSpan::Thickness::kThick,
             composition_text2.ime_text_spans[0].thickness);
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
@@ -681,7 +684,8 @@ TEST_F(InputMethodChromeOSTest,
             composition_text2.ime_text_spans[0].start_offset);
   EXPECT_EQ(GetOffsetInUTF16(kSampleText, composition_text.selection.end()),
             composition_text2.ime_text_spans[0].end_offset);
-  EXPECT_EQ(SK_ColorBLACK, composition_text2.ime_text_spans[0].underline_color);
+  EXPECT_EQ(SK_ColorTRANSPARENT,
+            composition_text2.ime_text_spans[0].underline_color);
   EXPECT_EQ(ui::ImeTextSpan::Thickness::kThick,
             composition_text2.ime_text_spans[0].thickness);
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),
@@ -713,7 +717,8 @@ TEST_F(InputMethodChromeOSTest,
             composition_text2.ime_text_spans[0].start_offset);
   EXPECT_EQ(GetOffsetInUTF16(kSampleText, composition_text.selection.end()),
             composition_text2.ime_text_spans[0].end_offset);
-  EXPECT_EQ(SK_ColorBLACK, composition_text2.ime_text_spans[0].underline_color);
+  EXPECT_EQ(SK_ColorTRANSPARENT,
+            composition_text2.ime_text_spans[0].underline_color);
   EXPECT_EQ(ui::ImeTextSpan::Thickness::kThick,
             composition_text2.ime_text_spans[0].thickness);
   EXPECT_EQ(static_cast<SkColor>(SK_ColorTRANSPARENT),

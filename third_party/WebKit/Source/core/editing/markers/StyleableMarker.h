@@ -25,6 +25,7 @@ class CORE_EXPORT StyleableMarker : public DocumentMarker {
   bool HasThicknessNone() const;
   bool HasThicknessThin() const;
   bool HasThicknessThick() const;
+  bool UseTextColor() const;
   Color BackgroundColor() const;
 
  private:

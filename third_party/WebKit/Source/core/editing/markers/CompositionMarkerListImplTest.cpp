@@ -16,7 +16,7 @@ class CompositionMarkerListImplTest : public EditingTestBase {
       : marker_list_(new CompositionMarkerListImpl()) {}
 
   DocumentMarker* CreateMarker(unsigned start_offset, unsigned end_offset) {
-    return new CompositionMarker(start_offset, end_offset, Color::kBlack,
+    return new CompositionMarker(start_offset, end_offset, Color::kTransparent,
                                  ui::mojom::ImeTextSpanThickness::kThin,
                                  Color::kBlack);
   }
