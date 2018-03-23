@@ -128,9 +128,11 @@ class GPU_EXPORT GpuChannelHost
   // Generate a route ID guaranteed to be unique for this channel.
   int32_t GenerateRouteID();
 
- private:
+ protected:
   friend class base::RefCountedThreadSafe<GpuChannelHost>;
+  ~GpuChannelHost() override;
 
+ private:
   // A filter used internally to route incoming messages from the IO thread
   // to the correct message loop. It also maintains some shared state between
   // all the contexts.
@@ -190,7 +192,6 @@ class GPU_EXPORT GpuChannelHost
     bool lost_ = false;
   };
 
-  ~GpuChannelHost() override;
   void InternalFlush(uint32_t flush_id);
 
   // Threading notes: all fields are constant during the lifetime of |this|
