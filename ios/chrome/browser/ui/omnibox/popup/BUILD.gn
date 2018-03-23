@@ -17,6 +17,7 @@ source_set("popup") {
     "omnibox_popup_view_ios.h",
     "omnibox_popup_view_ios.mm",
     "omnibox_popup_view_suggestions_delegate.h",
+    "table_view_owning.h",
   ]
   deps = [
     ":popup_internal",
