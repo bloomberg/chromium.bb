@@ -20,124 +20,49 @@
 extern "C" {
 #endif
 
-#define IF_EXT_PARTITION(...) __VA_ARGS__,
-
-/* clang-format off */
 // Log 2 conversion lookup tables in units of mode info(4x4).
 static const uint8_t mi_size_wide_log2[BLOCK_SIZES_ALL] = {
-  0, 0,
-  1, 1,
-  1, 2,
-  2, 2,
-  3, 3,
-  3, 4,
-  4, IF_EXT_PARTITION(4, 5, 5) 0,
-  2, 1,
-  3, 2,
-  4
+  0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 4, 4, 4, 5, 5, 0, 2, 1, 3, 2, 4
 };
 static const uint8_t mi_size_high_log2[BLOCK_SIZES_ALL] = {
-  0, 1,
-  0, 1,
-  2, 1,
-  2, 3,
-  2, 3,
-  4, 3,
-  4, IF_EXT_PARTITION(5, 4, 5) 2,
-  0, 3,
-  1, 4,
-  2
+  0, 1, 0, 1, 2, 1, 2, 3, 2, 3, 4, 3, 4, 5, 4, 5, 2, 0, 3, 1, 4, 2
 };
 
 static const uint8_t mi_size_wide[BLOCK_SIZES_ALL] = {
-  1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16,
-  IF_EXT_PARTITION(16, 32, 32)  1, 4, 2, 8, 4, 16
+  1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16, 16, 32, 32, 1, 4, 2, 8, 4, 16
 };
 
 static const uint8_t mi_size_high[BLOCK_SIZES_ALL] = {
-  1, 2, 1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16,
-  IF_EXT_PARTITION(32, 16, 32)  4, 1, 8, 2, 16, 4
+  1, 2, 1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 32, 16, 32, 4, 1, 8, 2, 16, 4
 };
 
 // Width/height lookup tables in units of various block sizes
 static const uint8_t block_size_wide[BLOCK_SIZES_ALL] = {
-  4,  4,
-  8,  8,
-  8,  16,
-  16, 16,
-  32, 32,
-  32, 64,
-  64, IF_EXT_PARTITION(64, 128, 128) 4,
-  16, 8,
-  32, 16,
-  64
+  4,  4,  8,  8,   8,   16, 16, 16, 32, 32, 32,
+  64, 64, 64, 128, 128, 4,  16, 8,  32, 16, 64
 };
 
 static const uint8_t block_size_high[BLOCK_SIZES_ALL] = {
-  4,  8,
-  4,  8,
-  16, 8,
-  16, 32,
-  16, 32,
-  64, 32,
-  64, IF_EXT_PARTITION(128, 64, 128) 16,
-  4,  32,
-  8,  64,
-  16
+  4,  8,  4,   8,  16,  8,  16, 32, 16, 32, 64,
+  32, 64, 128, 64, 128, 16, 4,  32, 8,  64, 16
 };
 
 static const uint8_t num_8x8_blocks_wide_lookup[BLOCK_SIZES_ALL] = {
-  1, 1,
-  1, 1,
-  1, 2,
-  2, 2,
-  4, 4,
-  4, 8,
-  8, IF_EXT_PARTITION(8, 16, 16) 1,
-  2, 1,
-  4, 2,
-  8
+  1, 1, 1, 1, 1, 2, 2, 2, 4, 4, 4, 8, 8, 8, 16, 16, 1, 2, 1, 4, 2, 8
 };
+
 static const uint8_t num_8x8_blocks_high_lookup[BLOCK_SIZES_ALL] = {
-  1, 1,
-  1, 1,
-  2, 1,
-  2, 4,
-  2, 4,
-  8, 4,
-  8, IF_EXT_PARTITION(16, 8, 16) 2,
-  1, 4,
-  1, 8,
-  2
+  1, 1, 1, 1, 2, 1, 2, 4, 2, 4, 8, 4, 8, 16, 8, 16, 2, 1, 4, 1, 8, 2
 };
 
 // AOMMIN(3, AOMMIN(b_width_log2(bsize), b_height_log2(bsize)))
 static const uint8_t size_group_lookup[BLOCK_SIZES_ALL] = {
-  0, 0,
-  0, 1,
-  1, 1,
-  2, 2,
-  2, 3,
-  3, 3,
-  3, IF_EXT_PARTITION(3, 3, 3) 0,
-  0, 1,
-  1, 2,
-  2
+  0, 0, 0, 1, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 0, 0, 1, 1, 2, 2
 };
 
 static const uint8_t num_pels_log2_lookup[BLOCK_SIZES_ALL] = {
-  4,  5,
-  5,  6,
-  7,  7,
-  8,  9,
-  9,  10,
-  11, 11,
-  12, IF_EXT_PARTITION(13, 13, 14) 6,
-  6,  8,
-  8,  10,
-  10
+  4, 5, 5, 6, 7, 7, 8, 9, 9, 10, 11, 11, 12, 13, 13, 14, 6, 6, 8, 8, 10, 10
 };
-/* clang-format on */
 
 /* clang-format off */
 static const BLOCK_SIZE subsize_lookup[EXT_PARTITION_TYPES][BLOCK_SIZES_ALL] =
