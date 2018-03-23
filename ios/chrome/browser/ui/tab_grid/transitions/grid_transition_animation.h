@@ -9,6 +9,14 @@
 
 @class GridTransitionLayout;
 
+// The directions the animation can take.
+typedef NS_ENUM(NSUInteger, GridAnimationDirection) {
+  // Moving from the expanded grid down into the regular grid.
+  GridAnimationDirectionContracting = 0,
+  // Moving from the regular grid out to the expanded grid.
+  GridAnimationDirectionExpanding = 1,
+};
+
 // Delegate for this animation, to be informed about animation events.
 @protocol GridTransitionAnimationDelegate
 // Tell the delegate thet the animation completed. If |finished| is YES, then
@@ -26,8 +34,12 @@
 // Designated initializer. |layout| is a GridTransitionLayout object defining
 // the layout the animation should animate to. |delegate| is an object that will
 // be informed about events in this object's animation.
+// If |startsExpanded| is YES, the animation will start with the grid cells in
+// the expanded position and zoom down to the regular grid position. Otherwise
+// they will start in the grid position and zoom out to the expanded positions.
 - (instancetype)initWithLayout:(GridTransitionLayout*)layout
                       delegate:(id<GridTransitionAnimationDelegate>)delegate
+                     direction:(GridAnimationDirection)direction
     NS_DESIGNATED_INITIALIZER;
 
 - (instancetype)initWithCoder:(NSCoder*)aDecoder NS_UNAVAILABLE;

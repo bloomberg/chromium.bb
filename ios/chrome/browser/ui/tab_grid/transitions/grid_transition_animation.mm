@@ -11,27 +11,40 @@
 #endif
 
 @interface GridTransitionAnimation ()
+// The layout of the grid for this animation.
 @property(nonatomic, strong) GridTransitionLayout* layout;
+// The delegate for this animation.
 @property(nonatomic, weak) id<GridTransitionAnimationDelegate> delegate;
+// The direction this animation is in.
+@property(nonatomic, readonly, assign) GridAnimationDirection direction;
+// The x and y scales of the enlarged grid relative to the selected cell in the
+// regular grid.
 @property(nonatomic, assign) CGFloat xScale;
 @property(nonatomic, assign) CGFloat yScale;
+// Convenience properties for getting the size and center of the selected cell
+// in the grid.
 @property(nonatomic, readonly) CGSize selectedSize;
 @property(nonatomic, readonly) CGPoint selectedCenter;
+// Corner radius that the selected cell will have when it is animated into the
+// regulat grid.
 @property(nonatomic, assign) CGFloat finalSelectedCellCornerRadius;
 @end
 
 @implementation GridTransitionAnimation
-@synthesize delegate = _delegate;
 @synthesize layout = _layout;
+@synthesize delegate = _delegate;
+@synthesize direction = _direction;
 @synthesize xScale = _xScale;
 @synthesize yScale = _yScale;
 @synthesize finalSelectedCellCornerRadius = _finalSelectedCellCornerRadius;
 
 - (instancetype)initWithLayout:(GridTransitionLayout*)layout
-                      delegate:(id<GridTransitionAnimationDelegate>)delegate {
+                      delegate:(id<GridTransitionAnimationDelegate>)delegate
+                     direction:(GridAnimationDirection)direction {
   if (self = [super initWithFrame:CGRectZero]) {
     _layout = layout;
     _delegate = delegate;
+    _direction = direction;
     _finalSelectedCellCornerRadius =
         _layout.selectedItem.cell.contentView.layer.cornerRadius;
   }
@@ -50,8 +63,17 @@
 - (void)didMoveToSuperview {
   // Positioning the animating items depends on converting points to this
   // view's coordinate system, so wait until it's in a view hierarchy.
-  [self positionSelectedItemInExpandedGrid];
-  [self positionUnselectedItemsInExpandedGrid];
+  switch (self.direction) {
+    case GridAnimationDirectionContracting:
+      [self positionSelectedItemInExpandedGrid];
+      [self positionUnselectedItemsInExpandedGrid];
+      break;
+    case GridAnimationDirectionExpanding:
+      [self positionSelectedItemInRegularGrid];
+      self.layout.selectedItem.cell.selected = YES;
+      [self positionUnselectedItemsInRegularGrid];
+      break;
+  }
 }
 
 #pragma mark - Private Properties
@@ -67,6 +89,19 @@
 #pragma mark - Public methods
 
 - (void)animateWithDuration:(NSTimeInterval)duration {
+  switch (self.direction) {
+    case GridAnimationDirectionContracting:
+      [self animateToRegularGridWithDuration:duration];
+      break;
+    case GridAnimationDirectionExpanding:
+      [self animateToExpandedGridWithDuration:duration];
+      break;
+  }
+}
+
+#pragma mark - Private methods
+
+- (void)animateToRegularGridWithDuration:(NSTimeInterval)duration {
   // The transition is structured as two or three separate animations. They are
   // timed based on |staggeredDuration|, which is a configurable fraction
   // of the overall animation duration.
@@ -149,7 +184,88 @@
   }
 }
 
-#pragma mark - Private methods
+- (void)animateToExpandedGridWithDuration:(NSTimeInterval)duration {
+  // The transition is structured as two or three separate animations. They are
+  // timed based on |staggeredDuration|, which is a configurable fraction
+  // of the overall animation duration.
+  CGFloat staggeredDuration = duration * 0.9;
+
+  // If there's only one cell, the animation has two parts:
+  //   (A) Fading out the selected cell highlight indicator.
+  //   (B) Zooming the selected cell out into position.
+  // These parts are timed like this:
+  //
+  //  {0%}----[A]----|#|
+  //  {0%}------------------[B]--------------------{100%}
+  //
+  //  (|#| is 1-<staggeredDuration>%).
+  // Animation B will call the completion handler in this case.
+
+  // If there's more than once cell, the animation has three parts:
+  //   (A) Fading out the selected cell highlight indicator.
+  //   (B) Zooming the selected cell into position.
+  //   (C) Zooming the unselected cells into position.
+  // The timing is as follows:
+  //
+  //  {0%}----[A]----|#|
+  //  {0%}---------- [C]-------------|*|
+  //                 |#|-------------[B]-----------{100%}
+  //  (|*| is <staggeredDuration>%).
+  //  (|#| is 1-<staggeredDuration>%).
+  // Animation C will call the completion handler in this case.
+
+  // TODO(crbug.com/820410): Tune the timing, relative pacing, and curves of
+  // these animations.
+
+  UICollectionViewCell* selectedCell = self.layout.selectedItem.cell;
+
+  // Run animation (A) for |duration - staggeredDuration|.
+  [UIView animateWithDuration:0
+                        delay:duration - staggeredDuration
+                      options:UIViewAnimationOptionCurveEaseOut
+                   animations:^{
+                     selectedCell.selected = NO;
+                   }
+                   completion:nil];
+
+  // Completion block to be run when the transition completes.
+  auto completion = ^(BOOL finished) {
+    // Tell the delegate the animation has completed.
+    [self.delegate gridTransitionAnimationDidFinish:finished];
+  };
+
+  if (self.layout.items.count == 1) {
+    // Single cell case.
+    // Run animation (B) for the whole duration without delay.
+    [UIView animateWithDuration:duration
+                          delay:0
+                        options:UIViewAnimationOptionCurveEaseIn
+                     animations:^{
+                       [self positionSelectedItemInExpandedGrid];
+                     }
+                     completion:completion];
+  } else {
+    // Multiple cell case.
+    // Run animation (C) for |staggeredDuration|.
+    [UIView animateWithDuration:staggeredDuration
+                          delay:0.0
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^{
+                       [self positionUnselectedItemsInExpandedGrid];
+                     }
+                     completion:completion];
+
+    // Run animation (B) for |staggeredDuration| up to the end of the
+    // transition.
+    [UIView animateWithDuration:staggeredDuration
+                          delay:duration - staggeredDuration
+                        options:UIViewAnimationOptionCurveEaseOut
+                     animations:^{
+                       [self positionSelectedItemInExpandedGrid];
+                     }
+                     completion:nil];
+  }
+}
 
 // Perfrom the initial setup for the animation, computing scale based on the
 // superview size and adding the transition cells to the view hierarchy.
