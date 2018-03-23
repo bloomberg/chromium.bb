@@ -1008,6 +1008,12 @@ bool BridgedNativeWidget::ShouldDragWindow(NSEvent* event) {
       HTCAPTION)
     return false;
 
+  // Properly parented modal dialogs should never be draggable by their dialog
+  // title on mac. They are either sheets, or tab-modals. See NativeWidgetMac::
+  // InitModalType().
+  if (parent_ && native_widget_mac_->GetWidget()->IsModal())
+    return false;
+
   // Check that the point is not obscured by non-content NSViews.
   for (NSView* subview : [[bridged_view_ superview] subviews]) {
     if (subview == bridged_view_.get())
