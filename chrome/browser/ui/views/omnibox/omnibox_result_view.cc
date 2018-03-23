@@ -461,28 +461,25 @@ void OmniboxResultView::Layout() {
         gfx::Point(kw_x, (height() - keyword_icon_view_->height()) / 2));
     kw_x += keyword_icon_view_->width() + horizontal_padding;
 
-    keyword_content_view_->SizeToPreferredSize();
-    int first_width = keyword_content_view_->GetContentsBounds().width();
-    keyword_description_view_->SizeToPreferredSize();
-    int second_width =
-        keyword_description_view_
-            ? keyword_description_view_->GetContentsBounds().width()
-            : 0;
+    int content_width = keyword_content_view_->CalculatePreferredSize().width();
+    int description_width =
+        keyword_description_view_->CalculatePreferredSize().width();
     OmniboxPopupModel::ComputeMatchMaxWidths(
-        first_width, separator_view_->width(), second_width, width(),
+        content_width, separator_view_->width(), description_width, width(),
         /*description_on_separate_line=*/false,
-        !AutocompleteMatch::IsSearchType(match_.type), &first_width,
-        &second_width);
-    keyword_content_view_->SetBounds(kw_x, y, first_width, text_height);
-    if (second_width != 0) {
+        !AutocompleteMatch::IsSearchType(match_.type), &content_width,
+        &description_width);
+    keyword_content_view_->SetBounds(kw_x, y, content_width, text_height);
+    if (description_width != 0) {
       kw_x += keyword_content_view_->width();
       separator_view_->SetVisible(true);
       separator_view_->SetBounds(kw_x, y, separator_view_->width(),
                                  text_height);
       kw_x += separator_view_->width();
-      keyword_description_view_->SetBounds(kw_x, y, second_width, text_height);
+      keyword_description_view_->SetBounds(kw_x, y, description_width,
+                                           text_height);
     } else if (IsTwoLineLayout()) {
-      keyword_content_view_->SetSize(gfx::Size(first_width, text_height * 2));
+      keyword_content_view_->SetSize(gfx::Size(content_width, text_height * 2));
     }
   }
 
@@ -498,7 +495,6 @@ void OmniboxResultView::Layout() {
 
   // NOTE: While animating the keyword match, both matches may be visible.
   if (!ShowOnlyKeywordMatch()) {
-    description_view_->SizeToPreferredSize();
     int x = start_x;
     x += icon.Width() + horizontal_padding;
     int y = GetVerticalMargin();
@@ -537,26 +533,22 @@ void OmniboxResultView::Layout() {
         content_view_->SetBounds(x, y, end_x - x, GetTextHeight());
       }
     } else {
-      content_view_->SizeToPreferredSize();
-      int first_width = content_view_->GetContentsBounds().width();
-      int second_width = description_view_
-                             ? description_view_->GetContentsBounds().width()
-                             : 0;
+      int content_width = content_view_->CalculatePreferredSize().width();
+      int description_width =
+          description_view_->CalculatePreferredSize().width();
       OmniboxPopupModel::ComputeMatchMaxWidths(
-          first_width, separator_view_->width(), second_width, end_x - x,
+          content_width, separator_view_->width(), description_width, end_x - x,
           /*description_on_separate_line=*/false,
-          !AutocompleteMatch::IsSearchType(match_.type), &first_width,
-          &second_width);
-      OmniboxTextView* first_view = content_view_;
-      OmniboxTextView* second_view = description_view_;
-      first_view->SetBounds(x, y, first_width, text_height);
-      x += first_width;
-      if (second_width) {
+          !AutocompleteMatch::IsSearchType(match_.type), &content_width,
+          &description_width);
+      content_view_->SetBounds(x, y, content_width, text_height);
+      x += content_width;
+      if (description_width) {
         separator_view_->SetVisible(true);
         separator_view_->SetBounds(x, y, separator_view_->width(), text_height);
         x += separator_view_->width();
       }
-      second_view->SetBounds(x, y, second_width, text_height);
+      description_view_->SetBounds(x, y, description_width, text_height);
     }
   }
 }
