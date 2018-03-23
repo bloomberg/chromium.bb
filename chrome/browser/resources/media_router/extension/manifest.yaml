@@ -17,6 +17,7 @@
     "alarms",
     "declarativeWebRequest",
     "desktopCapture",
+    "dial",
     "http://*/*",
     "mediaRouterPrivate",
     "metricsPrivate",

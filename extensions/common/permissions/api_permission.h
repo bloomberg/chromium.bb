@@ -81,7 +81,7 @@ class APIPermission {
     kCryptotokenPrivate,
     kDataReductionProxy,
     kDiagnostics,
-    kDeleted_Dial,
+    kDial,
     kDebugger,
     kDeclarative,
     kDeclarativeContent,

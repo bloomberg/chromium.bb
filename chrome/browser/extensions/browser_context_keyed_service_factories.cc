@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/api/content_settings/content_settings_service.h"
 #include "chrome/browser/extensions/api/cookies/cookies_api.h"
 #include "chrome/browser/extensions/api/developer_private/developer_private_api.h"
+#include "chrome/browser/extensions/api/dial/dial_api_factory.h"
 #include "chrome/browser/extensions/api/easy_unlock_private/easy_unlock_private_api.h"
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "chrome/browser/extensions/api/font_settings/font_settings_api.h"
@@ -83,6 +84,7 @@ void EnsureBrowserContextKeyedServiceFactoriesBuilt() {
   extensions::ContentSettingsService::GetFactoryInstance();
   extensions::CookiesAPI::GetFactoryInstance();
   extensions::DeveloperPrivateAPI::GetFactoryInstance();
+  extensions::DialAPIFactory::GetInstance();
 #if defined(OS_CHROMEOS)
   extensions::EasyUnlockPrivateAPI::GetFactoryInstance();
 #endif
