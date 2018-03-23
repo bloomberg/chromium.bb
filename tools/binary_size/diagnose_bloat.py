@@ -33,7 +33,6 @@ _SRC_ROOT = os.path.abspath(
     os.path.join(os.path.dirname(__file__), os.pardir, os.pardir))
 _DEFAULT_ARCHIVE_DIR = os.path.join(_SRC_ROOT, 'out', 'binary-size-results')
 _DEFAULT_OUT_DIR = os.path.join(_SRC_ROOT, 'out', 'binary-size-build')
-_DEFAULT_ANDROID_TARGET = 'monochrome_public_apk'
 _BINARY_SIZE_DIR = os.path.join(_SRC_ROOT, 'tools', 'binary_size')
 _RESOURCE_SIZES_PATH = os.path.join(
     _SRC_ROOT, 'build', 'android', 'resource_sizes.py')
@@ -195,7 +194,7 @@ class _BuildHelper(object):
   def __init__(self, args):
     self.cloud = args.cloud
     self.enable_chrome_android_internal = args.enable_chrome_android_internal
-    self.extra_gn_args_str = ''
+    self.extra_gn_args_str = args.gn_args
     self.max_jobs = args.max_jobs
     self.max_load_average = args.max_load_average
     self.output_directory = args.output_directory
@@ -261,14 +260,24 @@ class _BuildHelper(object):
       self.max_jobs = '10000' if self.use_goma else '500'
 
     if os.path.exists(os.path.join(os.path.dirname(_SRC_ROOT), 'src-internal')):
-      self.extra_gn_args_str = ' is_chrome_branded=true'
+      self.extra_gn_args_str = (
+          'is_chrome_branded=true ' + self.extra_gn_args_str)
     else:
       self.extra_gn_args_str = (
-          ' ffmpeg_branding="Chrome" proprietary_codecs=true')
+          'ffmpeg_branding="Chrome" proprietary_codecs=true' +
+          self.extra_gn_args_str)
     if self.IsLinux():
-      self.extra_gn_args_str += (
-          ' is_cfi=false generate_linker_map=true')
-    self.target = self.target if self.IsAndroid() else 'chrome'
+      self.extra_gn_args_str = (
+          'is_cfi=false generate_linker_map=true ' + self.extra_gn_args_str)
+    self.extra_gn_args_str = ' ' + self.extra_gn_args_str.strip()
+
+    if not self.target:
+      if self.IsLinux():
+        self.target = 'chrome'
+      elif self.enable_chrome_android_internal:
+        self.target = 'monochrome_apk'
+      else:
+        self.target = 'monochrome_public_apk'
 
   def _GenGnCmd(self):
     gn_args = 'is_official_build=true'
@@ -823,6 +832,9 @@ def main():
   build_group.add_argument('--clean',
                            action='store_true',
                            help='Do a clean build for each revision.')
+  build_group.add_argument('--gn-args',
+                           default='',
+                           help='Extra GN args to set.')
   build_group.add_argument('--target-os',
                            default='android',
                            choices=['android', 'linux'],
@@ -835,9 +847,10 @@ def main():
                            action='store_true',
                            help='Allow downstream targets to be built.')
   build_group.add_argument('--target',
-                           default=_DEFAULT_ANDROID_TARGET,
-                           help='GN APK target to build. Ignored for Linux. '
-                                'Default %s.' % _DEFAULT_ANDROID_TARGET)
+                           help='GN target to build. Linux default: chrome. '
+                                'Android default: monochrome_public_apk or '
+                                'monochrome_apk (depending on '
+                                '--enable-chrome-android-internal)')
   if len(sys.argv) == 1:
     parser.print_help()
     sys.exit()
