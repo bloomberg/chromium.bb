@@ -4,6 +4,7 @@
 
 #include "chromecast/graphics/cast_system_gesture_event_handler.h"
 
+#include "chromecast/base/chromecast_switches.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
@@ -18,17 +19,22 @@ namespace {
 
 // The number of pixels from the very left or right of the screen to consider as
 // a valid origin for the left or right swipe gesture.
-constexpr int kSideGestureStartWidth = 10;
+constexpr int kDefaultSideGestureStartWidth = 10;
 
 // The number of pixels from the very top or bottom of the screen to consider as
 // a valid origin for the top or bottom swipe gesture.
-constexpr int kSideGestureStartHeight = 10;
+constexpr int kDefaultSideGestureStartHeight = 10;
 
 }  // namespace
 
 CastSystemGestureEventHandler::CastSystemGestureEventHandler(
     aura::Window* root_window)
     : EventHandler(),
+      gesture_start_width_(GetSwitchValueInt(switches::kSystemGestureStartWidth,
+                                             kDefaultSideGestureStartWidth)),
+      gesture_start_height_(
+          GetSwitchValueInt(switches::kSystemGestureStartHeight,
+                            kDefaultSideGestureStartHeight)),
       root_window_(root_window),
       current_swipe_(CastSideSwipeOrigin::NONE) {
   DCHECK(root_window);
@@ -43,18 +49,18 @@ CastSystemGestureEventHandler::~CastSystemGestureEventHandler() {
 CastSideSwipeOrigin CastSystemGestureEventHandler::GetDragPosition(
     const gfx::Point& point,
     const gfx::Rect& screen_bounds) const {
-  if (point.y() < (screen_bounds.y() + kSideGestureStartHeight)) {
+  if (point.y() < (screen_bounds.y() + gesture_start_height_)) {
     return CastSideSwipeOrigin::TOP;
   }
-  if (point.x() < (screen_bounds.x() + kSideGestureStartWidth)) {
+  if (point.x() < (screen_bounds.x() + gesture_start_width_)) {
     return CastSideSwipeOrigin::LEFT;
   }
   if (point.x() >
-      (screen_bounds.x() + screen_bounds.width() - kSideGestureStartWidth)) {
+      (screen_bounds.x() + screen_bounds.width() - gesture_start_width_)) {
     return CastSideSwipeOrigin::RIGHT;
   }
   if (point.y() >
-      (screen_bounds.y() + screen_bounds.height() - kSideGestureStartHeight)) {
+      (screen_bounds.y() + screen_bounds.height() - gesture_start_height_)) {
     return CastSideSwipeOrigin::BOTTOM;
   }
   return CastSideSwipeOrigin::NONE;

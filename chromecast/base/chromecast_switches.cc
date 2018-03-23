@@ -136,6 +136,14 @@ const char kEnableInput[] = "enable-input";
 // Background color used when Chromium hasn't rendered anything yet.
 const char kCastAppBackgroundColor[] = "cast-app-background-color";
 
+// The number of pixels from the very left or right of the screen to consider as
+// a valid origin for the left or right swipe gesture.
+const char kSystemGestureStartWidth[] = "system-gesture-start-width";
+
+// The number of pixels from the very top or bottom of the screen to consider as
+// a valid origin for the top or bottom swipe gesture.
+const char kSystemGestureStartHeight[] = "system-gesture-start-height";
+
 }  // namespace switches
 
 namespace chromecast {

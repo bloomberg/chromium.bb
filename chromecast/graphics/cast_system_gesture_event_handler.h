@@ -43,6 +43,9 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
   void OnGestureEvent(ui::GestureEvent* event) override;
 
  private:
+  const int gesture_start_width_;
+  const int gesture_start_height_;
+
   aura::Window* root_window_;
   CastSideSwipeOrigin current_swipe_;
 
