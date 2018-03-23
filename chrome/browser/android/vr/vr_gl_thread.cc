@@ -359,39 +359,11 @@ void VrGLThread::SetWebVrMode(bool enabled, bool show_toast) {
                                 weak_browser_ui_, enabled, show_toast));
 }
 
-void VrGLThread::SetAudioCaptureEnabled(bool enabled) {
+void VrGLThread::SetCapturingState(CapturingStateModel state) {
   DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetAudioCaptureEnabled,
-                                weak_browser_ui_, enabled));
-}
-
-void VrGLThread::SetLocationAccessEnabled(bool enabled) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetLocationAccessEnabled,
-                                weak_browser_ui_, enabled));
-}
-
-void VrGLThread::SetVideoCaptureEnabled(bool enabled) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetVideoCaptureEnabled,
-                                weak_browser_ui_, enabled));
-}
-
-void VrGLThread::SetScreenCaptureEnabled(bool enabled) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetScreenCaptureEnabled,
-                                weak_browser_ui_, enabled));
-}
-
-void VrGLThread::SetBluetoothConnected(bool enabled) {
-  DCHECK(OnMainThread());
-  task_runner()->PostTask(
-      FROM_HERE, base::BindOnce(&BrowserUiInterface::SetBluetoothConnected,
-                                weak_browser_ui_, enabled));
+  task_runner()->PostTask(FROM_HERE,
+                          base::BindOnce(&BrowserUiInterface::SetCapturingState,
+                                         weak_browser_ui_, state));
 }
 
 void VrGLThread::SetIsExiting() {

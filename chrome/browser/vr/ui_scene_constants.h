@@ -289,6 +289,23 @@ static constexpr float kGridOpacity = 0.5f;
 
 static constexpr float kRepositionContentOpacity = 0.2f;
 
+static constexpr float kWebVrPermissionCornerRadius = 0.006f;
+static constexpr float kWebVrPermissionLeftPadding = 0.024f;
+static constexpr float kWebVrPermissionRightPadding = 0.032f;
+static constexpr float kWebVrPermissionTopPadding = 0.026f;
+static constexpr float kWebVrPermissionBottomPadding = 0.026f;
+static constexpr float kWebVrPermissionMargin = 0.016f;
+static constexpr float kWebVrPermissionIconSize = 0.034f;
+static constexpr float kWebVrPermissionFontHeight = 0.024f;
+static constexpr float kWebVrPermissionTextWidth = 0.380f;
+static constexpr float kWebVrPermissionOuterMargin = 0.008f;
+static constexpr float kWebVrPermissionDepth = 0.015f;
+static constexpr float kWebVrPermissionOffsetStart = 0.3f;
+static constexpr float kWebVrPermissionOffsetOvershoot = -0.01f;
+static constexpr float kWebVrPermissionOffsetFinal = 0.0f;
+static constexpr int kWebVrPermissionOffsetMs = 250;
+static constexpr int kWebVrPermissionAnimationDurationMs = 750;
+
 static constexpr float kPromptWidthDMM = 0.63f;
 static constexpr float kPromptHeightDMM = 0.218f;
 static constexpr float kPromptVerticalOffsetDMM = -0.1f;

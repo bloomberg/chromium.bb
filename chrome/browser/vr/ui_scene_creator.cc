@@ -12,6 +12,10 @@
 #include "base/i18n/case_conversion.h"
 #include "base/numerics/math_constants.h"
 #include "base/strings/utf_string_conversions.h"
+#include "cc/animation/animation_curve.h"
+#include "cc/animation/animation_target.h"
+#include "cc/animation/keyframe_effect.h"
+#include "cc/animation/keyframed_animation_curve.h"
 #include "chrome/browser/vr/databinding/binding.h"
 #include "chrome/browser/vr/databinding/vector_binding.h"
 #include "chrome/browser/vr/elements/button.h"
@@ -24,6 +28,7 @@
 #include "chrome/browser/vr/elements/environment/stars.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
 #include "chrome/browser/vr/elements/full_screen_rect.h"
+#include "chrome/browser/vr/elements/indicator_spec.h"
 #include "chrome/browser/vr/elements/invisible_hit_target.h"
 #include "chrome/browser/vr/elements/keyboard.h"
 #include "chrome/browser/vr/elements/laser.h"
@@ -610,6 +615,68 @@ EventHandlers CreateRepositioningHandlers(Model* model, UiScene* scene) {
       base::Unretained(static_cast<Repositioner*>(
           scene->GetUiElementByName(k2dBrowsingRepositioner))));
   return handlers;
+}
+
+std::unique_ptr<UiElement> CreateWebVrIndicator(Model* model,
+                                                IndicatorSpec spec) {
+  auto container = Create<Rect>(spec.webvr_name, kPhaseOverlayForeground);
+  VR_BIND_COLOR(model, container.get(),
+                &ColorScheme::webvr_permission_background, &Rect::SetColor);
+  container->set_corner_radius(kWebVrPermissionCornerRadius);
+  container->set_bounds_contain_children(true);
+  container->SetVisible(false);
+  container->set_padding(
+      kWebVrPermissionLeftPadding, kWebVrPermissionTopPadding,
+      kWebVrPermissionRightPadding, kWebVrPermissionBottomPadding);
+
+  auto layout = Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kRight);
+  layout->set_margin(kWebVrPermissionMargin);
+
+  auto icon_element = Create<VectorIcon>(kNone, kPhaseOverlayForeground, 128);
+  VR_BIND_COLOR(model, icon_element.get(),
+                &ColorScheme::webvr_permission_foreground,
+                &VectorIcon::SetColor);
+  icon_element->SetIcon(spec.icon);
+  icon_element->set_y_anchoring(TOP);
+  icon_element->SetSize(kWebVrPermissionIconSize, kWebVrPermissionIconSize);
+
+  auto text_element =
+      Create<Text>(kNone, kPhaseOverlayForeground, kWebVrPermissionFontHeight);
+  text_element->SetLayoutMode(kMultiLineFixedWidth);
+  text_element->SetAlignment(UiTexture::kTextAlignmentLeft);
+  text_element->SetColor(SK_ColorWHITE);
+  text_element->SetSize(kWebVrPermissionTextWidth, 0.0f);
+  if (spec.signal) {
+    text_element->AddBinding(std::make_unique<Binding<bool>>(
+        VR_BIND_LAMBDA(
+            [](Model* model, bool CapturingStateModel::*signal) {
+              return model->capturing_state.*signal;
+            },
+            base::Unretained(model), spec.signal),
+        VR_BIND_LAMBDA(
+            [](Text* view, int resource, int potential_resource,
+               const bool& value) {
+              view->SetText(l10n_util::GetStringUTF16(
+                  value ? resource : potential_resource));
+            },
+            base::Unretained(text_element.get()), spec.resource_string,
+            spec.potential_resource_string)));
+  } else {
+    text_element->SetText(l10n_util::GetStringUTF16(spec.resource_string));
+  }
+  VR_BIND_COLOR(model, text_element.get(),
+                &ColorScheme::webvr_permission_foreground, &Text::SetColor);
+
+  layout->AddChild(std::move(icon_element));
+  layout->AddChild(std::move(text_element));
+  container->AddChild(std::move(layout));
+
+  return container;
+}
+
+void SetVisibleInLayout(UiElement* e, bool v) {
+  e->SetVisible(v);
+  e->set_requires_layout(v);
 }
 
 }  // namespace
@@ -2619,42 +2686,98 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
                                      url_toast.get(), SetToolbarState));
   scene_->AddUiElement(kWebVrUrlToastTransientParent, std::move(url_toast));
 
-  // Create "Press app button to exit" toast.
-  parent =
-      CreateTransientParent(kExclusiveScreenToastViewportAwareTransientParent,
-                            kToastTimeoutSeconds, false);
-  // When we first get a web vr frame, we switch states to
-  // kWebVrNoTimeoutPending, when that happens, we want to SetVisible(true) to
-  // kick the visibility of this element.
-  VR_BIND_VISIBILITY(parent, model->web_vr.has_produced_frames() &&
-                                 model->web_vr.show_exit_toast);
-  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(parent));
+  // Create transient WebVR elements.
+  //
+  auto indicators =
+      Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kDown);
+  indicators->SetTranslate(0, 0, kWebVrPermissionDepth);
+  indicators->set_margin(kWebVrPermissionOuterMargin);
+
+  IndicatorSpec app_button_spec = {
+      kNone,
+      kExclusiveScreenToastViewportAware,
+      kRemoveCircleOutlineIcon,
+      IDS_PRESS_APP_TO_EXIT,
+      0,
+      nullptr,
+      nullptr,
+  };
+  auto app_button_to_exit = CreateWebVrIndicator(model_, app_button_spec);
+  VR_BIND_VISIBILITY(app_button_to_exit, model->web_vr.show_exit_toast);
+  indicators->AddChild(std::move(app_button_to_exit));
+
+  // TODO(crbug.com/824472): add an indicator for the transient URL toast.
+
+  auto specs = GetIndicatorSpecs();
+  for (const auto& spec : specs) {
+    indicators->AddChild(CreateWebVrIndicator(model_, spec));
+  }
+
+  parent = CreateTransientParent(kNone, kToastTimeoutSeconds, true);
+  parent->AddBinding(std::make_unique<Binding<bool>>(
+      VR_BIND_LAMBDA(
+          [](Model* model, UiElement* splash_screen) {
+            return model->web_vr.has_produced_frames() &&
+                   model->web_vr.has_received_permissions &&
+                   splash_screen->GetTargetOpacity() == 0.f;
+          },
+          base::Unretained(model_),
+          base::Unretained(
+              scene_->GetUiElementByName(kSplashScreenTransientParent))),
+      VR_BIND_LAMBDA(
+          [](UiElement* e, Model* model, UiScene* scene, const bool& value) {
+            SetVisibleInLayout(e, value);
+            auto specs = GetIndicatorSpecs();
+            for (const auto& spec : specs) {
+              SetVisibleInLayout(
+                  scene->GetUiElementByName(spec.webvr_name),
+                  model->capturing_state.*spec.signal ||
+                      model->capturing_state.*spec.potential_signal);
+            }
+
+            e->RemoveKeyframeModels(TRANSFORM);
+            e->SetTranslate(0, kWebVrPermissionOffsetStart, 0);
+
+            // Build up a keyframe model for the initial transition.
+            std::unique_ptr<cc::KeyframedTransformAnimationCurve> curve(
+                cc::KeyframedTransformAnimationCurve::Create());
+
+            cc::TransformOperations value_1;
+            value_1.AppendTranslate(0, kWebVrPermissionOffsetStart, 0);
+            curve->AddKeyframe(cc::TransformKeyframe::Create(
+                base::TimeDelta(), value_1,
+                cc::CubicBezierTimingFunction::CreatePreset(
+                    cc::CubicBezierTimingFunction::EaseType::EASE)));
+
+            cc::TransformOperations value_2;
+            value_2.AppendTranslate(0, kWebVrPermissionOffsetOvershoot, 0);
+            curve->AddKeyframe(cc::TransformKeyframe::Create(
+                base::TimeDelta::FromMilliseconds(kWebVrPermissionOffsetMs),
+                value_2,
+                cc::CubicBezierTimingFunction::CreatePreset(
+                    cc::CubicBezierTimingFunction::EaseType::EASE)));
+
+            cc::TransformOperations value_3;
+            value_3.AppendTranslate(0, kWebVrPermissionOffsetFinal, 0);
+            curve->AddKeyframe(cc::TransformKeyframe::Create(
+                base::TimeDelta::FromMilliseconds(
+                    kWebVrPermissionAnimationDurationMs),
+                value_3,
+                cc::CubicBezierTimingFunction::CreatePreset(
+                    cc::CubicBezierTimingFunction::EaseType::EASE)));
+
+            e->AddKeyframeModel(cc::KeyframeModel::Create(
+                std::move(curve), Animation::GetNextKeyframeModelId(),
+                Animation::GetNextGroupId(), TRANSFORM));
+          },
+          base::Unretained(parent.get()), base::Unretained(model_),
+          base::Unretained(scene_))));
 
   auto scaler = std::make_unique<ScaledDepthAdjuster>(kWebVrToastDistance);
+  scaler->AddChild(std::move(indicators));
+  parent->AddChild(std::move(scaler));
 
-  auto exit_toast = std::make_unique<Toast>();
-  exit_toast->SetName(kExclusiveScreenToastViewportAware);
-  exit_toast->SetDrawPhase(kPhaseOverlayForeground);
-  exit_toast->SetTranslate(0, sin(kWebVrAngleRadians),
-                           1.0 - cos(kWebVrAngleRadians));
-  exit_toast->SetRotate(1, 0, 0, kWebVrAngleRadians);
-  exit_toast->set_padding(kExclusiveScreenToastXPaddingDMM,
-                          kExclusiveScreenToastYPaddingDMM);
-  exit_toast->set_corner_radius(kExclusiveScreenToastCornerRadiusDMM);
-  exit_toast->AddText(l10n_util::GetStringUTF16(IDS_PRESS_APP_TO_EXIT),
-                      kExclusiveScreenToastTextFontHeightDMM,
-                      TextLayoutMode::kSingleLineFixedHeight);
-
-  VR_BIND_COLOR(model_, exit_toast.get(),
-                &ColorScheme::exclusive_screen_toast_background,
-                &Toast::SetBackgroundColor);
-  VR_BIND_COLOR(model_, exit_toast.get(),
-                &ColorScheme::exclusive_screen_toast_foreground,
-                &Toast::SetForegroundColor);
-
-  scaler->AddChild(std::move(exit_toast));
-  scene_->AddUiElement(kExclusiveScreenToastViewportAwareTransientParent,
-                       std::move(scaler));
+  scene_->AddUiElement(kWebVrViewportAwareRoot, std::move(parent));
 }
 
 void UiSceneCreator::CreateFullscreenToast() {

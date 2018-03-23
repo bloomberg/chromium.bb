@@ -12,6 +12,8 @@ aggregate_vector_icons("vr_vector_icons") {
     "daydream_controller_app_button.icon",
     "file_download_done.icon",
     "more_vert.icon",
+    "my_location.icon",
+    "remove_circle_outline.icon",
     "reposition.icon",
     "sad_tab.icon",
   ]

@@ -158,6 +158,9 @@ void InitializeColorSchemes() {
   normal_scheme.cursor_background_edge = SK_ColorTRANSPARENT;
   normal_scheme.cursor_foreground = SK_ColorWHITE;
 
+  normal_scheme.webvr_permission_background = 0xD9212121;
+  normal_scheme.webvr_permission_foreground = SK_ColorWHITE;
+
   g_fullscreen_scheme.Get() = normal_scheme;
   ColorScheme& fullscreen_scheme = g_fullscreen_scheme.Get();
   fullscreen_scheme.world_background = 0xFF000714;

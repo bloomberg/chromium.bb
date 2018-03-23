@@ -672,6 +672,10 @@ void UiElement::RemoveKeyframeModel(int keyframe_model_id) {
   animation_.RemoveKeyframeModel(keyframe_model_id);
 }
 
+void UiElement::RemoveKeyframeModels(int target_property) {
+  animation_.RemoveKeyframeModels(target_property);
+}
+
 bool UiElement::IsAnimatingProperty(TargetProperty property) const {
   return animation_.IsAnimatingProperty(static_cast<int>(property));
 }

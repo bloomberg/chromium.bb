@@ -82,7 +82,7 @@ namespace vr {
 namespace {
 vr::VrShell* g_vr_shell_instance;
 
-constexpr base::TimeDelta poll_media_access_interval_ =
+constexpr base::TimeDelta poll_capturing_state_interval_ =
     base::TimeDelta::FromSecondsD(0.2);
 
 constexpr base::TimeDelta kExitVrDueToUnsupportedModeDelay =
@@ -279,7 +279,7 @@ VrShell::~VrShell() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   content_surface_texture_ = nullptr;
   overlay_surface_texture_ = nullptr;
-  poll_capturing_media_task_.Cancel();
+  poll_capturing_state_task_.Cancel();
   if (gvr_gamepad_source_active_) {
     device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
         device::GAMEPAD_SOURCE_GVR);
@@ -456,7 +456,7 @@ void VrShell::OnPause(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     metrics_helper->SetVRActive(false);
   SetIsInVR(GetNonNativePageWebContents(), false);
 
-  poll_capturing_media_task_.Cancel();
+  poll_capturing_state_task_.Cancel();
 }
 
 void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -469,7 +469,7 @@ void VrShell::OnResume(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     metrics_helper->SetVRActive(true);
   SetIsInVR(GetNonNativePageWebContents(), true);
 
-  PollMediaAccessFlag();
+  PollCapturingState();
 }
 
 void VrShell::SetSurface(JNIEnv* env,
@@ -888,14 +888,14 @@ bool VrShell::HasAudioPermission() {
   return Java_VrShellImpl_hasAudioPermission(env, j_vr_shell_);
 }
 
-void VrShell::PollMediaAccessFlag() {
-  poll_capturing_media_task_.Cancel();
+void VrShell::PollCapturingState() {
+  poll_capturing_state_task_.Cancel();
 
-  poll_capturing_media_task_.Reset(base::BindRepeating(
-      &VrShell::PollMediaAccessFlag, base::Unretained(this)));
+  poll_capturing_state_task_.Reset(base::BindRepeating(
+      &VrShell::PollCapturingState, base::Unretained(this)));
   main_thread_task_runner_->PostDelayedTask(
-      FROM_HERE, poll_capturing_media_task_.callback(),
-      poll_media_access_interval_);
+      FROM_HERE, poll_capturing_state_task_.callback(),
+      poll_capturing_state_interval_);
 
   int num_tabs_capturing_audio = 0;
   int num_tabs_capturing_video = 0;
@@ -929,36 +929,19 @@ void VrShell::PollMediaAccessFlag() {
       num_tabs_bluetooth_connected++;
   }
 
+  capturing_state_.audio_capture_enabled = num_tabs_capturing_audio > 0;
+  capturing_state_.video_capture_enabled = num_tabs_capturing_video > 0;
+  capturing_state_.screen_capture_enabled = num_tabs_capturing_screen > 0;
+  capturing_state_.bluetooth_connected = num_tabs_bluetooth_connected > 0;
+
   geolocation_config_->IsHighAccuracyLocationBeingCaptured(base::BindRepeating(
-      &VrShell::SetHighAccuracyLocation, base::Unretained(this)));
-
-  bool is_capturing_audio = num_tabs_capturing_audio > 0;
-  bool is_capturing_video = num_tabs_capturing_video > 0;
-  bool is_capturing_screen = num_tabs_capturing_screen > 0;
-  bool is_bluetooth_connected = num_tabs_bluetooth_connected > 0;
-  if (is_capturing_audio != is_capturing_audio_) {
-    ui_->SetAudioCaptureEnabled(is_capturing_audio);
-    is_capturing_audio_ = is_capturing_audio;
-  }
-  if (is_capturing_video != is_capturing_video_) {
-    ui_->SetVideoCaptureEnabled(is_capturing_video);
-    is_capturing_video_ = is_capturing_video;
-  }
-  if (is_capturing_screen != is_capturing_screen_) {
-    ui_->SetScreenCaptureEnabled(is_capturing_screen);
-    is_capturing_screen_ = is_capturing_screen;
-  }
-  if (is_bluetooth_connected != is_bluetooth_connected_) {
-    ui_->SetBluetoothConnected(is_bluetooth_connected);
-    is_bluetooth_connected_ = is_bluetooth_connected;
-  }
-}
-
-void VrShell::SetHighAccuracyLocation(bool high_accuracy_location) {
-  if (high_accuracy_location == high_accuracy_location_)
-    return;
-  ui_->SetLocationAccessEnabled(high_accuracy_location);
-  high_accuracy_location_ = high_accuracy_location;
+      [](VrShell* shell, BrowserUiInterface* ui,
+         CapturingStateModel* capturing_state, bool high_accuracy_location) {
+        capturing_state->location_access_enabled = high_accuracy_location;
+        ui->SetCapturingState(*capturing_state);
+      },
+      base::Unretained(this), base::Unretained(ui_),
+      base::Unretained(&capturing_state_)));
 }
 
 void VrShell::ClearFocusedElement() {
