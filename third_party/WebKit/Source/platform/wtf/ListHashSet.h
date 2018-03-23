@@ -329,7 +329,7 @@ struct ListHashSetAllocator : public PartitionAllocator {
 
   ListHashSetAllocator()
       : free_list_(Pool()), is_done_with_initial_free_list_(false) {
-    memset(pool_.buffer, 0, sizeof(pool_.buffer));
+    memset(pool_, 0, sizeof(pool_));
   }
 
   Node* AllocateNode() {
@@ -383,7 +383,7 @@ struct ListHashSetAllocator : public PartitionAllocator {
                          Node* node) {}
 
  private:
-  Node* Pool() { return reinterpret_cast_ptr<Node*>(pool_.buffer); }
+  Node* Pool() { return reinterpret_cast_ptr<Node*>(pool_); }
   Node* PastPool() { return Pool() + kPoolSize; }
 
   Node* free_list_;
@@ -396,7 +396,7 @@ struct ListHashSetAllocator : public PartitionAllocator {
 #else
   static const size_t kPoolSize = inlineCapacity;
 #endif
-  AlignedBuffer<sizeof(NodeBase) * kPoolSize, WTF_ALIGN_OF(NodeBase)> pool_;
+  alignas(NodeBase) char pool_[sizeof(NodeBase) * kPoolSize];
 };
 
 template <typename ValueArg, typename AllocatorArg>

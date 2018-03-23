@@ -22,7 +22,6 @@
 #define WTF_Alignment_h
 
 #include <stdint.h>
-#include <utility>
 #include "build/build_config.h"
 
 namespace WTF {
@@ -38,50 +37,6 @@ namespace WTF {
 #else
 #error WTF_ALIGN macros need alignment control.
 #endif
-
-#if defined(COMPILER_GCC)
-typedef char __attribute__((__may_alias__)) AlignedBufferChar;  // NOLINT
-#else
-typedef char AlignedBufferChar;
-#endif
-
-template <size_t size, size_t alignment>
-struct AlignedBuffer;
-template <size_t size>
-struct AlignedBuffer<size, 1> {
-  AlignedBufferChar buffer[size];
-};
-template <size_t size>
-struct AlignedBuffer<size, 2> {
-  WTF_ALIGNED(AlignedBufferChar, buffer[size], 2);
-};
-template <size_t size>
-struct AlignedBuffer<size, 4> {
-  WTF_ALIGNED(AlignedBufferChar, buffer[size], 4);
-};
-template <size_t size>
-struct AlignedBuffer<size, 8> {
-  WTF_ALIGNED(AlignedBufferChar, buffer[size], 8);
-};
-template <size_t size>
-struct AlignedBuffer<size, 16> {
-  WTF_ALIGNED(AlignedBufferChar, buffer[size], 16);
-};
-template <size_t size>
-struct AlignedBuffer<size, 32> {
-  WTF_ALIGNED(AlignedBufferChar, buffer[size], 32);
-};
-template <size_t size>
-struct AlignedBuffer<size, 64> {
-  WTF_ALIGNED(AlignedBufferChar, buffer[size], 64);
-};
-
-template <size_t size, size_t alignment>
-void swap(AlignedBuffer<size, alignment>& a,
-          AlignedBuffer<size, alignment>& b) {
-  for (size_t i = 0; i < size; ++i)
-    std::swap(a.buffer[i], b.buffer[i]);
-}
 
 template <uintptr_t mask>
 inline bool IsAlignedTo(const void* pointer) {

@@ -59,7 +59,7 @@ template <typename T, unsigned inlineCapacity>
 struct SameSizeAsVectorWithInlineCapacity {
   SameSizeAsVectorWithInlineCapacity<T, 0> base_capacity;
 #if !defined(ANNOTATE_CONTIGUOUS_CONTAINER)
-  AlignedBuffer<inlineCapacity * sizeof(T), WTF_ALIGN_OF(T)> inline_buffer;
+  T inline_buffer[inlineCapacity];
 #endif
 };
 
