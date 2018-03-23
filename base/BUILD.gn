@@ -562,6 +562,8 @@ jumbo_component("base") {
     "message_loop/timer_slack.h",
     "metrics/bucket_ranges.cc",
     "metrics/bucket_ranges.h",
+    "metrics/dummy_histogram.cc",
+    "metrics/dummy_histogram.h",
     "metrics/field_trial.cc",
     "metrics/field_trial.h",
     "metrics/field_trial_param_associator.cc",

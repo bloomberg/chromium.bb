@@ -42,6 +42,7 @@ class HistogramCache {
         break;
       }
       case SPARSE_HISTOGRAM:
+      case DUMMY_HISTOGRAM:
         break;
     }
     return params_str;
