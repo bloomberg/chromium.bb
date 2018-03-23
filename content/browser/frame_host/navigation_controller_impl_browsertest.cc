@@ -4057,9 +4057,6 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
 // replaced data.
 IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
                        ReplacedNavigationEntryData_ClientSideRedirect) {
-  FrameTreeNode* root = static_cast<WebContentsImpl*>(shell()->web_contents())
-                            ->GetFrameTree()
-                            ->root();
   const NavigationControllerImpl& controller =
       static_cast<const NavigationControllerImpl&>(
           shell()->web_contents()->GetController());
@@ -4069,11 +4066,13 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
       "/navigation_controller/simple_page_1.html"));
 
   {
-    // Load the redirecting page.
-    FrameNavigateParamsCapturer capturer(root);
-    capturer.set_navigations_remaining(2);
-    ASSERT_TRUE(NavigateToURL(shell(), url1));
-    capturer.Wait();
+    TestNavigationManager navigation_manager_1(shell()->web_contents(), url1);
+    TestNavigationManager navigation_manager_2(shell()->web_contents(), url2);
+
+    shell()->LoadURL(url1);
+
+    navigation_manager_1.WaitForNavigationFinished();  // Initial navigation.
+    navigation_manager_2.WaitForNavigationFinished();  // Client-side redirect.
 
     ASSERT_EQ(1, controller.GetEntryCount());
     NavigationEntry* entry1 = controller.GetEntryAtIndex(0);

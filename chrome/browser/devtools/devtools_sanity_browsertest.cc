@@ -2164,7 +2164,20 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, LoadNetworkResourceForFrontend) {
 
 IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest, InspectElement) {
   GURL url(embedded_test_server()->GetURL("a.com", "/devtools/oopif.html"));
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
+  GURL iframe_url(
+      embedded_test_server()->GetURL("b.com", "/devtools/oopif_frame.html"));
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationManager navigation_manager(tab, url);
+  content::TestNavigationManager navigation_manager_iframe(tab, iframe_url);
+
+  tab->GetController().LoadURL(url, content::Referrer(),
+                               ui::PAGE_TRANSITION_LINK, std::string());
+
+  navigation_manager.WaitForNavigationFinished();
+  navigation_manager_iframe.WaitForNavigationFinished();
+  content::WaitForLoadStop(tab);
 
   std::vector<RenderFrameHost*> frames = GetInspectedTab()->GetAllFrames();
   ASSERT_EQ(2u, frames.size());
@@ -2185,7 +2198,21 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessDevToolsSanityTest,
                        DISABLED_InputDispatchEventsToOOPIF) {
   GURL url(
       embedded_test_server()->GetURL("a.com", "/devtools/oopif-input.html"));
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
+  GURL iframe_url(embedded_test_server()->GetURL(
+      "b.com", "/devtools/oopif-input-frame.html"));
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationManager navigation_manager(tab, url);
+  content::TestNavigationManager navigation_manager_iframe(tab, iframe_url);
+
+  tab->GetController().LoadURL(url, content::Referrer(),
+                               ui::PAGE_TRANSITION_LINK, std::string());
+
+  navigation_manager.WaitForNavigationFinished();
+  navigation_manager_iframe.WaitForNavigationFinished();
+  content::WaitForLoadStop(tab);
+
   for (auto* frame : GetInspectedTab()->GetAllFrames())
     content::WaitForChildFrameSurfaceReady(frame);
   DevToolsWindow* window =
