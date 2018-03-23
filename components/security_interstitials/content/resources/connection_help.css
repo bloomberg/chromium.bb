@@ -23,3 +23,7 @@ ul.expandable button {
     text-decoration: underline;
     text-transform: uppercase;
 }
+
+ul.expandable button:hover {
+  box-shadow: none;
+}
