@@ -372,6 +372,60 @@ CommandHandler.RENAME_DISK_FILE_SYSYTEM_SUPPORT_ = [
 ];
 
 /**
+ * Name of a command (for UMA).
+ * @enum {string}
+ * @const
+ */
+CommandHandler.MenuCommandsForUMA = {
+  HELP: 'volume-help',
+  DRIVE_HELP: 'volume-help-drive',
+  DRIVE_BUY_MORE_SPACE: 'drive-buy-more-space',
+  DRIVE_GO_TO_DRIVE: 'drive-go-to-drive',
+  HIDDEN_FILES_SHOW: 'toggle-hidden-files-on',
+  HIDDEN_FILES_HIDE: 'toggle-hidden-files-off',
+  MOBILE_DATA_ON: 'drive-sync-settings-enabled',
+  MOBILE_DATA_OFF: 'drive-sync-settings-disabled',
+  SHOW_GOOGLE_DOCS_FILES_OFF: 'drive-hosted-settings-disabled',
+  SHOW_GOOGLE_DOCS_FILES_ON: 'drive-hosted-settings-enabled',
+};
+
+/**
+ * Keep the order of this in sync with FileManagerMenuCommands in
+ * tools/metrics/histograms/enums.xml.
+ * The array indices will be recorded in UMA as enum values. The index for each
+ * root type should never be renumbered nor reused in this array.
+ *
+ * @type {!Array<CommandHandler.MenuCommandsForUMA>}
+ * @const
+ */
+CommandHandler.ValidMenuCommandsForUMA = [
+  CommandHandler.MenuCommandsForUMA.HELP,
+  CommandHandler.MenuCommandsForUMA.DRIVE_HELP,
+  CommandHandler.MenuCommandsForUMA.DRIVE_BUY_MORE_SPACE,
+  CommandHandler.MenuCommandsForUMA.DRIVE_GO_TO_DRIVE,
+  CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_SHOW,
+  CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_HIDE,
+  CommandHandler.MenuCommandsForUMA.MOBILE_DATA_ON,
+  CommandHandler.MenuCommandsForUMA.MOBILE_DATA_OFF,
+  CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_ON,
+  CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_OFF,
+];
+console.assert(
+    Object.keys(CommandHandler.MenuCommandsForUMA).length ===
+        CommandHandler.ValidMenuCommandsForUMA.length,
+    'Members in ValidMenuCommandsForUMA do not match those in ' +
+        'MenuCommandsForUMA.');
+
+/**
+ * Records the menu item as selected in UMA.
+ * @param {CommandHandler.MenuCommandsForUMA} menuItem The selected menu item.
+ */
+CommandHandler.recordMenuItemSelected_ = function(menuItem) {
+  metrics.recordEnum(
+      'MenuItemSelected', menuItem, CommandHandler.ValidMenuCommandsForUMA);
+};
+
+/**
  * Updates the availability of all commands.
  */
 CommandHandler.prototype.updateAvailability = function() {
@@ -706,6 +760,13 @@ CommandHandler.COMMANDS_['toggle-hidden-files'] = /** @type {Command} */ ({
     var isFilterHiddenOn = !fileManager.fileFilter.isFilterHiddenOn();
     fileManager.fileFilter.setFilterHidden(isFilterHiddenOn);
     event.command.checked = /* is show hidden files */!isFilterHiddenOn;
+    if (isFilterHiddenOn) {
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_SHOW);
+    } else {
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.HIDDEN_FILES_HIDE);
+    }
   },
   /**
    * @param {!Event} event Command event.
@@ -729,6 +790,13 @@ CommandHandler.COMMANDS_['drive-sync-settings'] = /** @type {Command} */ ({
         fileManager.ui.gearMenu.syncButton.hasAttribute('checked');
     var changeInfo = {cellularDisabled: !nowCellularDisabled};
     chrome.fileManagerPrivate.setPreferences(changeInfo);
+    if (nowCellularDisabled) {
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.MOBILE_DATA_OFF);
+    } else {
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.MOBILE_DATA_ON);
+    }
   },
   /**
    * @param {!Event} event Command event.
@@ -756,12 +824,20 @@ CommandHandler.COMMANDS_['drive-hosted-settings'] = /** @type {Command} */ ({
     var nowHostedFilesEnabled =
         fileManager.ui.gearMenu.hostedButton.hasAttribute('checked');
     var nowHostedFilesDisabled = !nowHostedFilesEnabled;
+
     /*
     var changeInfo = {hostedFilesDisabled: !nowHostedFilesDisabled};
     */
     var changeInfo = {};
     changeInfo['hostedFilesDisabled'] = !nowHostedFilesDisabled;
     chrome.fileManagerPrivate.setPreferences(changeInfo);
+    if (nowHostedFilesDisabled) {
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_OFF);
+    } else {
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.SHOW_GOOGLE_DOCS_FILES_ON);
+    }
   },
   /**
    * @param {!Event} event Command event.
@@ -1062,10 +1138,15 @@ CommandHandler.COMMANDS_['volume-help'] = /** @type {Command} */ ({
    * @param {!CommandHandlerDeps} fileManager CommandHandlerDeps to use.
    */
   execute: function(event, fileManager) {
-    if (fileManager.directoryModel.isOnDrive())
+    if (fileManager.directoryModel.isOnDrive()) {
       util.visitURL(str('GOOGLE_DRIVE_HELP_URL'));
-    else
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.DRIVE_HELP);
+    } else {
       util.visitURL(str('FILES_APP_HELP_URL'));
+      CommandHandler.recordMenuItemSelected_(
+          CommandHandler.MenuCommandsForUMA.HELP);
+    }
   },
   /**
    * @param {!Event} event Command event.
@@ -1095,6 +1176,8 @@ CommandHandler.COMMANDS_['drive-buy-more-space'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     util.visitURL(str('GOOGLE_DRIVE_BUY_STORAGE_URL'));
+    CommandHandler.recordMenuItemSelected_(
+        CommandHandler.MenuCommandsForUMA.DRIVE_BUY_MORE_SPACE);
   },
   canExecute: CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly
 });
@@ -1110,6 +1193,8 @@ CommandHandler.COMMANDS_['drive-go-to-drive'] = /** @type {Command} */ ({
    */
   execute: function(event, fileManager) {
     util.visitURL(str('GOOGLE_DRIVE_ROOT_URL'));
+    CommandHandler.recordMenuItemSelected_(
+        CommandHandler.MenuCommandsForUMA.DRIVE_GO_TO_DRIVE);
   },
   canExecute: CommandUtil.canExecuteVisibleOnDriveInNormalAppModeOnly
 });
