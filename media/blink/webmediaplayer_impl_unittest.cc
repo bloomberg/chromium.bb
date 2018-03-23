@@ -328,6 +328,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   ~WebMediaPlayerImplTest() override {
     EXPECT_CALL(client_, SetWebLayer(nullptr));
     EXPECT_CALL(client_, MediaRemotingStopped(_));
+    EXPECT_CALL(client_, PictureInPictureStopped());
     // Destruct WebMediaPlayerImpl and pump the message loop to ensure that
     // objects passed to the message loop for destruction are released.
     //
