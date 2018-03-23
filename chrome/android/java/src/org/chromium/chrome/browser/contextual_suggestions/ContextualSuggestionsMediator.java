@@ -4,11 +4,13 @@
 
 package org.chromium.chrome.browser.contextual_suggestions;
 
+import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 import android.webkit.URLUtil;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
@@ -31,10 +33,10 @@ import java.util.List;
  * component coordinator(s).
  */
 class ContextualSuggestionsMediator {
-    private ContextualSuggestionsCoordinator mCoordinator;
-    private ContextualSuggestionsModel mModel;
-
-    private SnippetsBridge mBridge;
+    private final Context mContext;
+    private final ContextualSuggestionsCoordinator mCoordinator;
+    private final ContextualSuggestionsModel mModel;
+    private final SnippetsBridge mBridge;
 
     private final TabModelSelectorTabModelObserver mTabModelObserver;
     private final TabObserver mTabObserver;
@@ -45,13 +47,16 @@ class ContextualSuggestionsMediator {
 
     /**
      * Construct a new {@link ContextualSuggestionsMediator}.
+     * @param context The {@link Context} used to retrieve resources.
      * @param profile The regular {@link Profile}.
      * @param tabModelSelector The {@link TabModelSelector} for the containing activity.
      * @param coordinator The {@link ContextualSuggestionsCoordinator} for the component.
      * @param model The {@link ContextualSuggestionsModel} for the component.
      */
-    ContextualSuggestionsMediator(Profile profile, TabModelSelector tabModelSelector,
-            ContextualSuggestionsCoordinator coordinator, ContextualSuggestionsModel model) {
+    ContextualSuggestionsMediator(Context context, Profile profile,
+            TabModelSelector tabModelSelector, ContextualSuggestionsCoordinator coordinator,
+            ContextualSuggestionsModel model) {
+        mContext = context;
         mCoordinator = coordinator;
         mModel = model;
 
@@ -128,12 +133,18 @@ class ContextualSuggestionsMediator {
     private void clearSuggestions() {
         mModel.setSuggestions(new ArrayList<SnippetArticle>());
         mModel.setCloseButtonOnClickListener(null);
+        mModel.setTitle(null);
         mCoordinator.removeSuggestions();
     }
 
     private void displaySuggestions(List<SnippetArticle> suggestions) {
         mModel.setSuggestions(suggestions);
         mModel.setCloseButtonOnClickListener(view -> { clearSuggestions(); });
+
+        // TODO(twellington): Replace this with the first cluster title.
+        mModel.setTitle(mContext.getString(
+                R.string.contextual_suggestions_toolbar_title, suggestions.get(0).mTitle));
+
         mCoordinator.displaySuggestions();
     }
 

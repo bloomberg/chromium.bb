@@ -24,8 +24,11 @@ class ToolbarModelChangeProcessor implements PropertyObserver<PropertyKey> {
         private static void bindProperty(
                 ToolbarView view, ContextualSuggestionsModel model, PropertyKey propertyKey) {
             switch (propertyKey.mKey) {
-                case PropertyKey.ON_CLICK_LISTENER_PROPERTY:
+                case PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER:
                     view.setOnClickListener(model.getCloseButtonOnClickListener());
+                    break;
+                case PropertyKey.TITLE:
+                    view.setTitle(model.getTitle());
                     break;
                 default:
                     assert false;
@@ -48,7 +51,8 @@ class ToolbarModelChangeProcessor implements PropertyObserver<PropertyKey> {
         // The ToolbarCoordinator is created dynamically as needed, so the initial model state
         // needs to be bound on creation.
         ViewBinder.bindProperty(
-                mToolbarView, mModel, new PropertyKey(PropertyKey.ON_CLICK_LISTENER_PROPERTY));
+                mToolbarView, mModel, new PropertyKey(PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER));
+        ViewBinder.bindProperty(mToolbarView, mModel, new PropertyKey(PropertyKey.TITLE));
     }
 
     @Override
