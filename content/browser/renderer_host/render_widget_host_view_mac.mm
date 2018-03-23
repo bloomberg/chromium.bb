@@ -391,6 +391,7 @@ void RenderWidgetHostViewMac::InitAsChild(
 void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
+  // This path is used by the time/date picker.
   bool activatable = popup_type_ == blink::kWebPopupTypeNone;
   [cocoa_view() setCloseOnDeactivate:YES];
   [cocoa_view() setCanBeKeyView:activatable ? YES : NO];
@@ -424,6 +425,8 @@ void RenderWidgetHostViewMac::InitAsPopup(
 // will enter fullscreen instead.
 void RenderWidgetHostViewMac::InitAsFullscreen(
     RenderWidgetHostView* reference_host_view) {
+  // TODO(ccameron): Delete this if it isn't used.
+  NOTREACHED();
   RenderWidgetHostViewMac* parent_view =
       static_cast<RenderWidgetHostViewMac*>(reference_host_view);
   NSWindow* parent_window = nil;

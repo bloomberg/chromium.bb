@@ -491,7 +491,8 @@ TEST_F(RenderWidgetHostViewMacTest, NSTextInputClientConformance) {
   EXPECT_EQ(0u, actualRange.length);
 }
 
-TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {
+// Disabled to see if InitAsFullscreen is ever reached.
+TEST_F(RenderWidgetHostViewMacTest, Fullscreen_DISABLED) {
   rwhv_mac_->InitAsFullscreen(nullptr);
   EXPECT_TRUE(rwhv_mac_->pepper_fullscreen_window());
 
@@ -503,7 +504,8 @@ TEST_F(RenderWidgetHostViewMacTest, Fullscreen) {
 
 // Verify that escape key down in fullscreen mode suppressed the keyup event on
 // the parent.
-TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
+// Disabled to see if InitAsFullscreen is ever reached.
+TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape_DISABLED) {
   // Use our own RWH since we need to destroy it.
   MockRenderWidgetHostDelegate delegate;
   int32_t routing_id = process_host_->GetNextRoutingID();
@@ -540,7 +542,8 @@ TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
 
 // Test that command accelerators which destroy the fullscreen window
 // don't crash when forwarded via the window's responder machinery.
-TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy) {
+// Disabled to see if InitAsFullscreen is ever reached.
+TEST_F(RenderWidgetHostViewMacTest, AcceleratorDestroy_DISABLED) {
   // Use our own RWH since we need to destroy it.
   MockRenderWidgetHostDelegate delegate;
   TestBrowserContext browser_context;
