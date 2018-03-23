@@ -258,6 +258,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'teximage3d_pbo_3d*',
         ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
     self.Fail('deqp/functional/gles3/texturespecification/' +
+        'teximage3d_unpack_params.html',
+        ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
+    self.Fail('deqp/functional/gles3/texturespecification/' +
         'texsubimage3d_unpack_params.html',
         ['win', 'amd', 'd3d11'], bug=2424) # ANGLE bug ID
 
