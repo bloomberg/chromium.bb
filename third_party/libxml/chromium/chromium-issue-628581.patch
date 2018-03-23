@@ -1,8 +1,8 @@
-diff --git a/third_party/libxml/src/entities.c b/third_party/libxml/src/entities.c
-index 64808ff64d6a..2851e2d43113 100644
+diff --git a/entities.c b/entities.c
+index 43549bc5..e4a09d62 100644
 --- a/entities.c
 +++ b/entities.c
-@@ -159,6 +159,7 @@ xmlCreateEntity(xmlDictPtr dict, const xmlChar *name, int type,
+@@ -164,6 +164,7 @@ xmlCreateEntity(xmlDictPtr dict, const xmlChar *name, int type,
      memset(ret, 0, sizeof(xmlEntity));
      ret->type = XML_ENTITY_DECL;
      ret->checked = 0;
@@ -10,7 +10,7 @@ index 64808ff64d6a..2851e2d43113 100644
  
      /*
       * fill the structure.
-@@ -931,6 +932,7 @@ xmlCopyEntity(xmlEntityPtr ent) {
+@@ -936,6 +937,7 @@ xmlCopyEntity(void *payload, const xmlChar *name ATTRIBUTE_UNUSED) {
  	cur->orig = xmlStrdup(ent->orig);
      if (ent->URI != NULL)
  	cur->URI = xmlStrdup(ent->URI);
@@ -18,8 +18,8 @@ index 64808ff64d6a..2851e2d43113 100644
      return(cur);
  }
  
-diff --git a/third_party/libxml/src/include/libxml/entities.h b/third_party/libxml/src/include/libxml/entities.h
-index 47b4573eba65..012efab294cb 100644
+diff --git a/include/libxml/entities.h b/include/libxml/entities.h
+index 47b4573e..012efab2 100644
 --- a/include/libxml/entities.h
 +++ b/include/libxml/entities.h
 @@ -35,8 +35,13 @@ typedef enum {
@@ -53,8 +53,8 @@ index 47b4573eba65..012efab294cb 100644
  };
  
  /*
-diff --git a/third_party/libxml/src/parser.c b/third_party/libxml/src/parser.c
-index 53a6b7f0c961..e3136123dca6 100644
+diff --git a/parser.c b/parser.c
+index ca9fde2c..4264445a 100644
 --- a/parser.c
 +++ b/parser.c
 @@ -137,18 +137,24 @@ xmlParserEntityCheck(xmlParserCtxtPtr ctxt, size_t size,
@@ -79,10 +79,10 @@ index 53a6b7f0c961..e3136123dca6 100644
  				  XML_SUBSTITUTE_REF, 0, 0, 0);
          --ctxt->depth;
 +        ent->guard = XML_ENTITY_NOT_BEING_CHECKED;
- 	if (ctxt->errNo == XML_ERR_ENTITY_LOOP) {
+ 	if ((rep == NULL) || (ctxt->errNo == XML_ERR_ENTITY_LOOP)) {
  	    ent->content[0] = 0;
  	}
-@@ -7329,23 +7335,28 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
+@@ -7105,23 +7111,28 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
  	 * if its replacement text matches the production labeled
  	 * content.
  	 */
@@ -128,7 +128,7 @@ index 53a6b7f0c961..e3136123dca6 100644
  
  	/*
  	 * Store the number of entities needing parsing for this entity
-@@ -7448,23 +7459,29 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
+@@ -7229,23 +7240,29 @@ xmlParseReference(xmlParserCtxtPtr ctxt) {
  	    else
  		user_data = ctxt->userData;
  
@@ -175,6 +175,3 @@ index 53a6b7f0c961..e3136123dca6 100644
  	    if (ret == XML_ERR_ENTITY_LOOP) {
  		xmlFatalErr(ctxt, XML_ERR_ENTITY_LOOP, NULL);
  		return;
--- 
-2.12.2.715.g7642488e1d-goog
-

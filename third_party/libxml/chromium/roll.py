@@ -259,7 +259,8 @@ def remove_tracked_files(files_to_remove):
         files_to_remove: The files to remove.
     """
     files_to_remove = [f for f in files_to_remove if os.path.exists(f)]
-    git('rm', '-rf', *files_to_remove)
+    if files_to_remove:
+        git('rm', '-rf', *files_to_remove)
 
 
 def sed_in_place(input_filename, program):
