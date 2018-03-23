@@ -15,6 +15,8 @@
 #include "components/download/public/common/download_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
+class DownloadItemModel;
+
 // This class is responsible for the download shelf context menu. Platform
 // specific subclasses are responsible for creating and running the menu.
 //
@@ -23,6 +25,9 @@
 class DownloadShelfContextMenu : public ui::SimpleMenuModel::Delegate,
                                  public download::DownloadItem::Observer {
  public:
+  // Only show a context menu for a dangerous download if it is malicious.
+  static bool WantsContextMenu(const DownloadItemModel&);
+
   ~DownloadShelfContextMenu() override;
 
   download::DownloadItem* download_item() const { return download_item_; }
