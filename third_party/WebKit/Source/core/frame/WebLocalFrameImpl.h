@@ -109,6 +109,11 @@ class CORE_EXPORT WebLocalFrameImpl final
   void SetIsolatedWorldHumanReadableName(int world_id,
                                          const WebString&) override;
   void AddMessageToConsole(const WebConsoleMessage&) override;
+  void Alert(const WebString& message) override;
+  bool Confirm(const WebString& message) override;
+  WebString Prompt(const WebString& message,
+                   const WebString& default_value) override;
+
   void CollectGarbage() override;
   v8::Local<v8::Value> ExecuteScriptAndReturnValue(
       const WebScriptSource&) override;

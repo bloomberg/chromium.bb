@@ -496,6 +496,12 @@ class WebLocalFrame : public WebFrame {
   // Logs to the console associated with this frame.
   virtual void AddMessageToConsole(const WebConsoleMessage&) = 0;
 
+  // Expose modal dialog methods to avoid having to go through JavaScript.
+  virtual void Alert(const WebString& message) = 0;
+  virtual bool Confirm(const WebString& message) = 0;
+  virtual WebString Prompt(const WebString& message,
+                           const WebString& default_value) = 0;
+
   // Editing -------------------------------------------------------------
 
   virtual void SetMarkedText(const WebString& text,
