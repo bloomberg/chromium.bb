@@ -222,7 +222,9 @@ constexpr NSTimeInterval kTransitionDuration = 0.25;
   CALayer* layer = self.layer;
   layer.shadowPath =
       base::ScopedCFTypeRef<CGPathRef>(CGPathCreateWithRoundedRect(
-          layer.bounds, layer.cornerRadius, layer.cornerRadius, nullptr));
+          layer.bounds,
+          MIN(layer.cornerRadius, CGRectGetWidth(layer.bounds) / 2),
+          MIN(layer.cornerRadius, CGRectGetHeight(layer.bounds) / 2), nullptr));
   [self updateHoverButtonAppearanceAnimated:NO];
   self.title = self.title;  // Match the theme.
   [super layout];

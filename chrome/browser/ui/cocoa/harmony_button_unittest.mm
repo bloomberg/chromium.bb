@@ -24,6 +24,17 @@ class HarmonyButtonTest : public ui::CocoaTest {
 
 TEST_VIEW(HarmonyButtonTest, button_)
 
+// Verify that displaying a button that's smaller than double the corner radius
+// doesn't crash. (CGPathCreateWithRoundedRect throws an exception if you pass
+// it a radius that's too big).
+TEST_F(HarmonyButtonTest, TooSmall) {
+  CGFloat cornerRadius = button_.layer.cornerRadius;
+  EXPECT_LT(0, cornerRadius);
+  [button_ setFrameSize:NSMakeSize(cornerRadius, cornerRadius)];
+  [button_ layoutSubtreeIfNeeded];
+  [button_ displayIfNeeded];
+}
+
 TEST(HarmonyButtonTestMore, NSViewRespondsToClipsToBounds) {
   // HarmonyButton implements an undocumented method to avoid having its shadow
   // clipped, so verify that it hasn't disappeared.
