@@ -4,12 +4,18 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 
+#import "ios/chrome/browser/find_in_page/find_tab_helper.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
 #import "ios/chrome/browser/web_state_list/web_state_list.h"
 #import "ios/chrome/browser/web_state_list/web_state_list_observer_bridge.h"
 #include "ios/chrome/grit/ios_strings.h"
+#include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
+#import "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
+#import "ios/web/public/navigation_item.h"
+#import "ios/web/public/navigation_manager.h"
+#include "ios/web/public/user_agent.h"
 #include "ios/web/public/web_client.h"
 #include "ios/web/public/web_state/web_state.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
@@ -50,6 +56,8 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID, PopupMenuAction action) {
 @property(nonatomic, strong) PopupMenuToolsItem* readLater;
 @property(nonatomic, strong) PopupMenuToolsItem* findInPage;
 @property(nonatomic, strong) PopupMenuToolsItem* siteInformation;
+// Array containing all the nonnull items/
+@property(nonatomic, strong) NSArray<TableViewItem*>* specificItems;
 
 @end
 
@@ -64,6 +72,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID, PopupMenuAction action) {
 @synthesize readLater = _readLater;
 @synthesize findInPage = _findInPage;
 @synthesize siteInformation = _siteInformation;
+@synthesize specificItems = _specificItems;
 
 #pragma mark - Public
 
@@ -208,6 +217,16 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID, PopupMenuAction action) {
       case PopupMenuTypeSearch:
         break;
     }
+    NSMutableArray* specificItems = [NSMutableArray array];
+    if (self.reloadStop)
+      [specificItems addObject:self.reloadStop];
+    if (self.readLater)
+      [specificItems addObject:self.readLater];
+    if (self.findInPage)
+      [specificItems addObject:self.findInPage];
+    if (self.siteInformation)
+      [specificItems addObject:self.siteInformation];
+    self.specificItems = specificItems;
   }
   return _items;
 }
@@ -218,15 +237,49 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID, PopupMenuAction action) {
 // status.
 - (void)updatePopupMenu {
   // TODO(crbug.com/804773): update the items to take into account the state.
-  // TODO(crbug.com/804773): update the popupMenu cells associated with those
-  // items.
+  self.readLater.enabled = [self isWebURL];
+  self.findInPage.enabled = [self isFindInPageEnabled];
+  if ([self isPageLoading]) {
+    self.reloadStop.title = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_STOP);
+    self.reloadStop.actionIdentifier = PopupMenuActionStop;
+  } else {
+    self.reloadStop.title = l10n_util::GetNSString(IDS_IOS_TOOLS_MENU_RELOAD);
+    self.reloadStop.actionIdentifier = PopupMenuActionReload;
+  }
+
+  // Reload the items.
+  [self.popupMenu reconfigureCellsForItems:self.specificItems];
+}
+
+// Whether the actions associated with the share menu can be enabled.
+- (BOOL)isWebURL {
+  if (!self.webState)
+    return NO;
+  const GURL& URL = self.webState->GetLastCommittedURL();
+  return URL.is_valid() && !web::GetWebClient()->IsAppSpecificURL(URL);
+}
+
+// Whether find in page is enabled.
+- (BOOL)isFindInPageEnabled {
+  if (!self.webState)
+    return NO;
+  auto* helper = FindTabHelper::FromWebState(self.webState);
+  return (helper && helper->CurrentPageSupportsFindInPage() &&
+          !helper->IsFindUIActive());
+}
+
+// Whether the page is currently loading.
+- (BOOL)isPageLoading {
+  if (!self.webState)
+    return NO;
+  return self.webState->IsLoading();
 }
 
 #pragma mark - Item creation (Private)
 
 // Creates the menu items for the tools menu.
 - (void)createToolsMenuItem {
-  // Reload page action.
+  // Reload or stop page action, created as reload.
   self.reloadStop =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_RELOAD, PopupMenuActionReload);
 
@@ -253,40 +306,52 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID, PopupMenuAction action) {
 }
 
 - (NSArray<TableViewItem*>*)actionItems {
+  NSMutableArray* actionsArray = [NSMutableArray array];
   // Read Later.
   self.readLater = CreateTableViewItem(IDS_IOS_CONTENT_CONTEXT_ADDTOREADINGLIST,
                                        PopupMenuActionReadLater);
+  [actionsArray addObject:self.readLater];
 
   // Find in Pad.
   self.findInPage = CreateTableViewItem(IDS_IOS_TOOLS_MENU_FIND_IN_PAGE,
                                         PopupMenuActionFindInPage);
+  [actionsArray addObject:self.findInPage];
 
-  // Request Desktop Site.
-  // TODO(crbug.com/804773): display only if the user agent is correct.
-  TableViewItem* requestDesktopSite = CreateTableViewItem(
-      IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE, PopupMenuActionRequestDesktop);
-
-  // Request Mobile Site.
-  // TODO(crbug.com/804773): display only if the user agent is correct.
-  TableViewItem* requestMobileSite = CreateTableViewItem(
-      IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE, PopupMenuActionRequestMobile);
+  if ([self userAgentType] != web::UserAgentType::DESKTOP) {
+    // Request Desktop Site.
+    PopupMenuToolsItem* requestDesktopSite = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_REQUEST_DESKTOP_SITE, PopupMenuActionRequestDesktop);
+    // Disable the action if the user agent is not mobile.
+    requestDesktopSite.enabled =
+        [self userAgentType] == web::UserAgentType::MOBILE;
+    [actionsArray addObject:requestDesktopSite];
+  } else {
+    // Request Mobile Site.
+    TableViewItem* requestMobileSite = CreateTableViewItem(
+        IDS_IOS_TOOLS_MENU_REQUEST_MOBILE_SITE, PopupMenuActionRequestMobile);
+    [actionsArray addObject:requestMobileSite];
+  }
 
   // Site Information.
   self.siteInformation = CreateTableViewItem(
       IDS_IOS_TOOLS_MENU_SITE_INFORMATION, PopupMenuActionSiteInformation);
+  [actionsArray addObject:self.siteInformation];
 
   // Report an Issue.
-  TableViewItem* reportIssue = CreateTableViewItem(
-      IDS_IOS_OPTIONS_REPORT_AN_ISSUE, PopupMenuActionReportIssue);
+  if (ios::GetChromeBrowserProvider()
+          ->GetUserFeedbackProvider()
+          ->IsUserFeedbackEnabled()) {
+    TableViewItem* reportIssue = CreateTableViewItem(
+        IDS_IOS_OPTIONS_REPORT_AN_ISSUE, PopupMenuActionReportIssue);
+    [actionsArray addObject:reportIssue];
+  }
 
   // Help.
   TableViewItem* help =
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_HELP_MOBILE, PopupMenuActionHelp);
+  [actionsArray addObject:help];
 
-  return @[
-    self.readLater, self.findInPage, requestDesktopSite, requestMobileSite,
-    self.siteInformation, reportIssue, help
-  ];
+  return actionsArray;
 }
 
 - (NSArray<TableViewItem*>*)collectionItems {
@@ -311,6 +376,18 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID, PopupMenuAction action) {
       CreateTableViewItem(IDS_IOS_TOOLS_MENU_SETTINGS, PopupMenuActionSettings);
 
   return @[ bookmarks, readingList, recentTabs, history, settings ];
+}
+
+// Returns the UserAgentType currently in use.
+- (web::UserAgentType)userAgentType {
+  if (!self.webState)
+    return web::UserAgentType::NONE;
+  web::NavigationItem* visibleItem =
+      self.webState->GetNavigationManager()->GetVisibleItem();
+  if (!visibleItem)
+    return web::UserAgentType::NONE;
+
+  return visibleItem->GetUserAgentType();
 }
 
 @end

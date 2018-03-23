@@ -15,6 +15,8 @@
 @property(nonatomic, copy) NSString* title;
 // Image to be displayed on the item.
 @property(nonatomic, strong) UIImage* image;
+// Whether the cell associated with this item should be enabled.
+@property(nonatomic, assign) BOOL enabled;
 
 @end
 

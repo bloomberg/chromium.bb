@@ -20,12 +20,15 @@
 
 // Presenter for the popup menu, managing the animations.
 @property(nonatomic, strong) PopupMenuPresenter* presenter;
+// Mediator for the popup menu.
+@property(nonatomic, strong) PopupMenuMediator* mediator;
 
 @end
 
 @implementation PopupMenuCoordinator
 
 @synthesize dispatcher = _dispatcher;
+@synthesize mediator = _mediator;
 @synthesize presenter = _presenter;
 @synthesize webStateList = _webStateList;
 
@@ -38,6 +41,8 @@
 
 - (void)stop {
   [self.dispatcher stopDispatchingToTarget:self];
+  [self.mediator disconnect];
+  self.mediator = nil;
 }
 
 #pragma mark - PopupMenuCommands
@@ -67,10 +72,10 @@
   tableViewController.dispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
 
-  PopupMenuMediator* mediator =
+  self.mediator =
       [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu];
-  mediator.webStateList = self.webStateList;
-  mediator.popupMenu = tableViewController;
+  self.mediator.webStateList = self.webStateList;
+  self.mediator.popupMenu = tableViewController;
 
   [self presentPopupForContent:tableViewController
                 fromNamedGuide:kToolsMenuGuide];
@@ -97,6 +102,8 @@
 - (void)dismissPopupMenu {
   [self.presenter dismissAnimated:YES];
   self.presenter = nil;
+  [self.mediator disconnect];
+  self.mediator = nil;
 }
 
 #pragma mark - Private

@@ -21,11 +21,13 @@ const CGFloat kMargin = 8;
 @synthesize actionIdentifier = _actionIdentifier;
 @synthesize image = _image;
 @synthesize title = _title;
+@synthesize enabled = _enabled;
 
 - (instancetype)initWithType:(NSInteger)type {
   self = [super initWithType:type];
   if (self) {
     self.cellClass = [PopupMenuToolsCell class];
+    _enabled = YES;
   }
   return self;
 }
@@ -35,6 +37,7 @@ const CGFloat kMargin = 8;
   [super configureCell:cell withStyler:styler];
   cell.titleLabel.text = self.title;
   cell.imageView.image = self.image;
+  cell.userInteractionEnabled = self.enabled;
 }
 
 #pragma mark - PopupMenuItem
@@ -116,8 +119,23 @@ const CGFloat kMargin = 8;
   return size;
 }
 
+- (void)prepareForReuse {
+  [super prepareForReuse];
+  self.userInteractionEnabled = YES;
+}
+
+- (void)setUserInteractionEnabled:(BOOL)userInteractionEnabled {
+  [super setUserInteractionEnabled:userInteractionEnabled];
+  if (userInteractionEnabled) {
+    self.titleLabel.textColor = self.tintColor;
+  } else {
+    self.titleLabel.textColor = [[self class] disabledColor];
+  }
+}
+
 #pragma mark - Private
 
+// Returns the font used by this cell's label.
 + (UIFont*)cellFont {
   static UIFont* font;
   if (!font) {
@@ -127,6 +145,18 @@ const CGFloat kMargin = 8;
     font = cell.titleLabel.font;
   }
   return font;
+}
+
+// Returns the color of the disabled button's title.
++ (UIColor*)disabledColor {
+  static UIColor* systemTintColorForDisabled = nil;
+  static dispatch_once_t onceToken;
+  dispatch_once(&onceToken, ^{
+    UIButton* button = [UIButton buttonWithType:UIButtonTypeSystem];
+    systemTintColorForDisabled =
+        [button titleColorForState:UIControlStateDisabled];
+  });
+  return systemTintColorForDisabled;
 }
 
 @end
