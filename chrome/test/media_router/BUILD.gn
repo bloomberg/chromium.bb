@@ -72,6 +72,7 @@ group("media_router_e2e_tests") {
   ]
   data = [
     "$root_out_dir/mr_extension/",
+    "internal/",
   ]
 }
 
