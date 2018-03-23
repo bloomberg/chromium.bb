@@ -30,9 +30,8 @@ GlobalMemoryDump::ProcessDump::~ProcessDump() = default;
 base::Optional<uint64_t> GlobalMemoryDump::ProcessDump::GetMetric(
     const std::string& dump_name,
     const std::string& metric_name) const {
-  auto dump_it =
-      raw_dump_->chrome_dump->entries_for_allocator_dumps.find(dump_name);
-  if (dump_it == raw_dump_->chrome_dump->entries_for_allocator_dumps.cend())
+  auto dump_it = raw_dump_->chrome_allocator_dumps.find(dump_name);
+  if (dump_it == raw_dump_->chrome_allocator_dumps.cend())
     return base::nullopt;
 
   auto metric_it = dump_it->second->numeric_entries.find(metric_name);

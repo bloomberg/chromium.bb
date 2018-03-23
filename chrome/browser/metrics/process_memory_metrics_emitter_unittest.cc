@@ -83,12 +83,12 @@ void SetAllocatorDumpMetric(ProcessMemoryDumpPtr& pmd,
                             const std::string& dump_name,
                             const std::string& metric_name,
                             uint64_t value) {
-  auto it = pmd->chrome_dump->entries_for_allocator_dumps.find(dump_name);
-  if (it == pmd->chrome_dump->entries_for_allocator_dumps.end()) {
+  auto it = pmd->chrome_allocator_dumps.find(dump_name);
+  if (it == pmd->chrome_allocator_dumps.end()) {
     memory_instrumentation::mojom::AllocatorMemDumpPtr amd(
         memory_instrumentation::mojom::AllocatorMemDump::New());
     amd->numeric_entries.insert(std::make_pair(metric_name, value));
-    pmd->chrome_dump->entries_for_allocator_dumps.insert(
+    pmd->chrome_allocator_dumps.insert(
         std::make_pair(dump_name, std::move(amd)));
   } else {
     it->second->numeric_entries.insert(std::make_pair(metric_name, value));
@@ -121,7 +121,6 @@ void PopulateBrowserMetrics(GlobalMemoryDumpPtr& global_dump,
   ProcessMemoryDumpPtr pmd(
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::BROWSER;
-  pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
   SetAllocatorDumpMetric(pmd, "malloc", "effective_size",
                          metrics_mb["Malloc"] * 1024 * 1024);
   OSMemDumpPtr os_dump =
@@ -163,7 +162,6 @@ void PopulateRendererMetrics(
   ProcessMemoryDumpPtr pmd(
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::RENDERER;
-  pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
   SetAllocatorDumpMetric(pmd, "malloc", "effective_size",
                          metrics_mb_or_count["Malloc"] * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "partition_alloc", "effective_size",
@@ -233,7 +231,6 @@ void PopulateGpuMetrics(GlobalMemoryDumpPtr& global_dump,
   ProcessMemoryDumpPtr pmd(
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->process_type = ProcessType::GPU;
-  pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
   SetAllocatorDumpMetric(pmd, "malloc", "effective_size",
                          metrics_mb["Malloc"] * 1024 * 1024);
   SetAllocatorDumpMetric(pmd, "gpu/gl", "effective_size",

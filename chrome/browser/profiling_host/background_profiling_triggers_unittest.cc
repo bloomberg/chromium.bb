@@ -56,7 +56,6 @@ void PopulateMetrics(GlobalMemoryDumpPtr* global_dump,
       memory_instrumentation::mojom::ProcessMemoryDump::New());
   pmd->pid = pid;
   pmd->process_type = process_type;
-  pmd->chrome_dump = memory_instrumentation::mojom::ChromeMemDump::New();
   pmd->os_dump =
       GetFakeOSMemDump(resident_set_kb, private_memory_kb, shared_footprint_kb);
   (*global_dump)->process_dumps.push_back(std::move(pmd));

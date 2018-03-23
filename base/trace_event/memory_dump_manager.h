@@ -240,7 +240,6 @@ class BASE_EXPORT MemoryDumpManager {
   virtual ~MemoryDumpManager();
 
   static void SetInstanceForTesting(MemoryDumpManager* instance);
-  static uint32_t GetDumpsSumKb(const std::string&, const ProcessMemoryDump*);
 
   // Lazily initializes dump_thread_ and returns its TaskRunner.
   scoped_refptr<base::SequencedTaskRunner> GetOrCreateBgTaskRunnerLocked();
