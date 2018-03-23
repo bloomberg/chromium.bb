@@ -2160,6 +2160,8 @@ bool RendererSchedulerImpl::TaskQueuePolicy::IsQueueEnabled(
     return false;
   if (is_blocked && task_queue->CanBeDeferred())
     return false;
+  // TODO(panicker): Remove this, as it is redundant as we stop per-frame
+  // task_queues in WebFrameScheduler
   if (is_stopped && task_queue->CanBeStopped())
     return false;
   return true;

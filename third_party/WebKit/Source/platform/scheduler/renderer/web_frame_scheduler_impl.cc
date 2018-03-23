@@ -63,6 +63,10 @@ bool StopNonTimersInBackgroundEnabled() {
   return RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled();
 }
 
+bool StopLoadingInBackgroundEnabled() {
+  return RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled();
+}
+
 }  // namespace
 
 WebFrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
@@ -301,6 +305,7 @@ WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
 scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_task_queue_) {
+    // TODO(panicker): Avoid adding this queue in RS task_runners_.
     loading_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
         MainThreadTaskQueue::QueueType::kFrameLoading);
     loading_task_queue_->SetBlameContext(blame_context_);
@@ -329,6 +334,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingControlTaskQueue() {
 scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ThrottleableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!throttleable_task_queue_) {
+    // TODO(panicker): Avoid adding this queue in RS task_runners_.
     throttleable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
             MainThreadTaskQueue::QueueType::kFrameThrottleable)
@@ -497,6 +503,8 @@ void WebFrameSchedulerImpl::SetPageVisibility(
   page_visibility_ = page_visibility;
   if (page_visibility_ == PageVisibilityState::kVisible)
     page_frozen_ = false;  // visible page must not be frozen.
+  // TODO(altimin): Avoid having to call all these methods here.
+  UpdateTaskQueues();
   UpdateThrottling(was_throttled);
   UpdateThrottlingState();
 }
@@ -511,16 +519,7 @@ void WebFrameSchedulerImpl::SetPaused(bool frame_paused) {
     return;
 
   frame_paused_ = frame_paused;
-  if (loading_queue_enabled_voter_)
-    loading_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
-  if (loading_control_queue_enabled_voter_)
-    loading_control_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
-  if (throttleable_queue_enabled_voter_)
-    throttleable_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
-  if (deferrable_queue_enabled_voter_)
-    deferrable_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
-  if (pausable_queue_enabled_voter_)
-    pausable_queue_enabled_voter_->SetQueueEnabled(!frame_paused);
+  UpdateTaskQueues();
 }
 
 void WebFrameSchedulerImpl::SetPageFrozen(bool frozen) {
@@ -528,7 +527,31 @@ void WebFrameSchedulerImpl::SetPageFrozen(bool frozen) {
     return;
   DCHECK(page_visibility_ == PageVisibilityState::kHidden);
   page_frozen_ = frozen;
+  UpdateTaskQueues();
   UpdateThrottlingState();
+}
+
+void WebFrameSchedulerImpl::UpdateTaskQueues() {
+  // Per-frame (stoppable) task queues will be stopped after 5mins in
+  // background. They will be resumed when the page is visible.
+  UpdateTaskQueue(throttleable_task_queue_,
+                  throttleable_queue_enabled_voter_.get());
+  UpdateTaskQueue(loading_task_queue_, loading_queue_enabled_voter_.get());
+  UpdateTaskQueue(loading_control_task_queue_,
+                  loading_control_queue_enabled_voter_.get());
+  UpdateTaskQueue(deferrable_task_queue_,
+                  deferrable_queue_enabled_voter_.get());
+  UpdateTaskQueue(pausable_task_queue_, pausable_queue_enabled_voter_.get());
+}
+
+void WebFrameSchedulerImpl::UpdateTaskQueue(
+    const scoped_refptr<MainThreadTaskQueue>& queue,
+    TaskQueue::QueueEnabledVoter* voter) {
+  if (!queue || !voter)
+    return;
+  bool queue_paused = frame_paused_ && queue->CanBePaused();
+  bool queue_frozen = page_frozen_ && queue->CanBeStopped();
+  voter->SetQueueEnabled(!queue_paused && !queue_frozen);
 }
 
 void WebFrameSchedulerImpl::UpdateThrottlingState() {
@@ -543,8 +566,7 @@ void WebFrameSchedulerImpl::UpdateThrottlingState() {
 
 WebFrameScheduler::ThrottlingState
 WebFrameSchedulerImpl::CalculateThrottlingState() const {
-  if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
-      page_frozen_) {
+  if (StopLoadingInBackgroundEnabled() && page_frozen_) {
     DCHECK(page_visibility_ == PageVisibilityState::kHidden);
     return WebFrameScheduler::ThrottlingState::kStopped;
   }

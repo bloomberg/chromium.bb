@@ -128,6 +128,9 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   WebFrameScheduler::ThrottlingState CalculateThrottlingState() const;
   void UpdateThrottlingState();
   void RemoveThrottlingObserver(Observer* observer);
+  void UpdateTaskQueues();
+  void UpdateTaskQueue(const scoped_refptr<MainThreadTaskQueue>& queue,
+                       TaskQueue::QueueEnabledVoter* voter);
 
   void DidOpenActiveConnection();
   void DidCloseActiveConnection();
