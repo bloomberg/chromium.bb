@@ -8,6 +8,7 @@
 
 #include "ash/metrics/user_metrics_action.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -63,6 +64,8 @@ void ScreenCaptureTrayItem::CreateOrUpdateNotification() {
           kNotificationScreenshareIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
+  if (features::IsSystemTrayUnifiedEnabled())
+    notification->set_pinned(true);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }

@@ -9,6 +9,7 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/ime/ime_controller.h"
 #include "ash/metrics/user_metrics_recorder.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/config.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/session/session_controller.h"
@@ -74,16 +75,20 @@ std::unique_ptr<Notification> CreateNotification() {
       IsSearchKeyMappedToCapsLock()
           ? IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_SEARCH
           : IDS_ASH_STATUS_TRAY_CAPS_LOCK_CANCEL_BY_ALT_SEARCH;
-  return Notification::CreateSystemNotification(
-      message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
-      l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED),
-      l10n_util::GetStringUTF16(string_id), gfx::Image(),
-      base::string16() /* display_source */, GURL(),
-      message_center::NotifierId(message_center::NotifierId::SYSTEM_COMPONENT,
-                                 kNotifierCapsLock),
-      message_center::RichNotificationData(), nullptr,
-      kNotificationCapslockIcon,
-      message_center::SystemNotificationWarningLevel::NORMAL);
+  std::unique_ptr<Notification> notification =
+      Notification::CreateSystemNotification(
+          message_center::NOTIFICATION_TYPE_SIMPLE, kCapsLockNotificationId,
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAPS_LOCK_ENABLED),
+          l10n_util::GetStringUTF16(string_id), gfx::Image(),
+          base::string16() /* display_source */, GURL(),
+          message_center::NotifierId(
+              message_center::NotifierId::SYSTEM_COMPONENT, kNotifierCapsLock),
+          message_center::RichNotificationData(), nullptr,
+          kNotificationCapslockIcon,
+          message_center::SystemNotificationWarningLevel::NORMAL);
+  if (features::IsSystemTrayUnifiedEnabled())
+    notification->set_pinned(true);
+  return notification;
 }
 
 }  // namespace

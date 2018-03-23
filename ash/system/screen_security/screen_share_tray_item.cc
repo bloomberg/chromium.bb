@@ -6,6 +6,7 @@
 
 #include <utility>
 
+#include "ash/public/cpp/ash_features.h"
 #include "ash/resources/grit/ash_resources.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
@@ -68,6 +69,8 @@ void ScreenShareTrayItem::CreateOrUpdateNotification() {
           kNotificationScreenshareIcon,
           message_center::SystemNotificationWarningLevel::NORMAL);
   notification->SetSystemPriority();
+  if (features::IsSystemTrayUnifiedEnabled())
+    notification->set_pinned(true);
   message_center::MessageCenter::Get()->AddNotification(
       std::move(notification));
 }
