@@ -1293,6 +1293,7 @@ instrumentation_test_apk("chrome_sync_shell_test_apk") {
     "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncTest.java",
     "sync_shell/javatests/src/org/chromium/chrome/browser/sync/SyncTestRule.java",
     "sync_shell/javatests/src/org/chromium/chrome/browser/sync/TypedUrlsTest.java",
+    "sync_shell/javatests/src/org/chromium/chrome/browser/sync/UkmTest.java",
     "sync_shell/javatests/src/org/chromium/chrome/browser/sync/ui/PassphraseTypeDialogFragmentTest.java",
   ]
 
