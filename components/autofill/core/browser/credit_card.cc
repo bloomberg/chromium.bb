@@ -756,8 +756,11 @@ base::string16 CreditCard::BankNameAndLastFourDigits() const {
 }
 
 base::string16 CreditCard::NetworkOrBankNameAndLastFourDigits() const {
-  return bank_name_.empty() ? NetworkAndLastFourDigits()
-                            : BankNameAndLastFourDigits();
+  if (IsAutofillCreditCardBankNameDisplayExperimentEnabled() &&
+      !bank_name_.empty()) {
+    return BankNameAndLastFourDigits();
+  }
+  return NetworkAndLastFourDigits();
 }
 
 base::string16 CreditCard::AbbreviatedExpirationDateForDisplay() const {
