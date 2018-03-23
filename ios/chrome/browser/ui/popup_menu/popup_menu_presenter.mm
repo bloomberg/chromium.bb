@@ -16,6 +16,7 @@
 
 namespace {
 const CGFloat kMinHeight = 200;
+const CGFloat kMinWidth = 200;
 const CGFloat kMaxWidth = 250;
 const CGFloat kMaxHeight = 400;
 const CGFloat kMinMargin = 16;
@@ -146,10 +147,12 @@ const CGFloat kMinMargin = 16;
                                  constant:-kMinMargin],
     [container.heightAnchor constraintLessThanOrEqualToConstant:kMaxHeight],
     [container.widthAnchor constraintLessThanOrEqualToConstant:kMaxWidth],
+    [container.widthAnchor constraintGreaterThanOrEqualToConstant:kMinWidth],
     [container.bottomAnchor
-        constraintLessThanOrEqualToAnchor:safeArea.bottomAnchor],
-    [container.topAnchor
-        constraintGreaterThanOrEqualToAnchor:safeArea.topAnchor],
+        constraintLessThanOrEqualToAnchor:safeArea.bottomAnchor
+                                 constant:-kMinMargin],
+    [container.topAnchor constraintGreaterThanOrEqualToAnchor:safeArea.topAnchor
+                                                     constant:kMinMargin],
   ]];
   NSLayoutConstraint* leading = [container.leadingAnchor
       constraintEqualToAnchor:namedGuide.leadingAnchor];
