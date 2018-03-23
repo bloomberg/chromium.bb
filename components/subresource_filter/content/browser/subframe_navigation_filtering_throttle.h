@@ -44,11 +44,8 @@ class SubframeNavigationFilteringThrottle : public content::NavigationThrottle {
   const char* GetNameForLogging() override;
 
  private:
-  enum class ThrottlingStage { WillStartRequest, WillRedirectRequest };
-
-  content::NavigationThrottle::ThrottleCheckResult DeferToCalculateLoadPolicy(
-      ThrottlingStage stage);
-  void OnCalculatedLoadPolicy(ThrottlingStage stage, LoadPolicy policy);
+  content::NavigationThrottle::ThrottleCheckResult DeferToCalculateLoadPolicy();
+  void OnCalculatedLoadPolicy(LoadPolicy policy);
 
   void NotifyLoadPolicy() const;
 
