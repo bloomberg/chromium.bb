@@ -516,6 +516,9 @@ typedef struct AV1Common {
   int tpl_mvs_mem_size;
   // TODO(jingning): This can be combined with sign_bias later.
   int8_t ref_frame_side[REF_FRAMES];
+
+  int is_annexb;
+
   int frame_refs_short_signaling;
   int temporal_layer_id;
   int enhancement_layer_id;

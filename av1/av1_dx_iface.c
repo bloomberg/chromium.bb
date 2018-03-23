@@ -59,6 +59,7 @@ struct aom_codec_alg_priv {
   int decode_tile_row;
   int decode_tile_col;
   unsigned int tile_mode;
+  unsigned int is_annexb;
 
   AVxWorker *frame_workers;
   int num_frame_workers;
@@ -181,15 +182,25 @@ static aom_codec_err_t decoder_peek_si_internal(const uint8_t *data,
   intra_only_flag = 1;
   si->is_kf = 1;
 
-  struct aom_read_bit_buffer rb = { data, data + data_sz, 0, NULL, NULL };
+  size_t length_field_size = 0;
+  if (si->is_annexb) {
+    length_field_size = get_obu_length_field_size(data, data_sz - 1);
+  }
+  struct aom_read_bit_buffer rb = { data + length_field_size, data + data_sz, 0,
+                                    NULL, NULL };
+
   const uint8_t obu_header = (uint8_t)aom_rb_read_literal(&rb, 8);
   OBU_TYPE obu_type;
 
   if (get_obu_type(obu_header, &obu_type) != 0)
     return AOM_CODEC_UNSUP_BITSTREAM;
 
-  // One byte has been consumed by the OBU header.
-  rb.bit_buffer += get_obu_length_field_size(data + 1, data_sz - 1) * 8;
+  if (!si->is_annexb) {
+    // One byte has been consumed by the OBU header.
+    // TODO(shan): Assuming 1-byte obu_header (need to account in case extension
+    // exists)
+    rb.bit_buffer += get_obu_length_field_size(data + 1, data_sz - 1) + 2;
+  }
 
   // This check is disabled because existing behavior is depended upon by
   // decoder tests (see decode_test_driver.cc), scalability_decoder (see
@@ -365,6 +376,7 @@ static aom_codec_err_t init_decoder(aom_codec_alg_priv_t *ctx) {
     frame_worker_data->pbi->max_threads = ctx->cfg.threads;
     frame_worker_data->pbi->inv_tile_order = ctx->invert_tile_order;
     frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
+    frame_worker_data->pbi->common.is_annexb = ctx->is_annexb;
     frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
     frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
     worker->hook = (AVxWorkerHook)frame_worker_hook;
@@ -402,6 +414,7 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   // of the heap.
   if (!ctx->si.h) {
     int is_intra_only = 0;
+    ctx->si.is_annexb = ctx->is_annexb;
     const aom_codec_err_t res =
         decoder_peek_si_internal(*data, data_sz, &ctx->si, &is_intra_only);
     if (res != AOM_CODEC_OK) return res;
@@ -424,6 +437,8 @@ static aom_codec_err_t decode_one(aom_codec_alg_priv_t *ctx,
   frame_worker_data->pbi->common.large_scale_tile = ctx->tile_mode;
   frame_worker_data->pbi->dec_tile_row = ctx->decode_tile_row;
   frame_worker_data->pbi->dec_tile_col = ctx->decode_tile_col;
+
+  frame_worker_data->pbi->common.is_annexb = ctx->is_annexb;
 
   worker->had_error = 0;
   winterface->execute(worker);
@@ -461,6 +476,7 @@ static aom_codec_err_t decoder_decode(aom_codec_alg_priv_t *ctx,
     res = init_decoder(ctx);
     if (res != AOM_CODEC_OK) return res;
   }
+
   // Decode in serial mode.
   if (frame_count > 0) {
     int i;
@@ -904,6 +920,12 @@ static aom_codec_err_t ctrl_set_tile_mode(aom_codec_alg_priv_t *ctx,
   return AOM_CODEC_OK;
 }
 
+static aom_codec_err_t ctrl_set_is_annexb(aom_codec_alg_priv_t *ctx,
+                                          va_list args) {
+  ctx->is_annexb = va_arg(args, unsigned int);
+  return AOM_CODEC_OK;
+}
+
 static aom_codec_err_t ctrl_set_inspection_callback(aom_codec_alg_priv_t *ctx,
                                                     va_list args) {
 #if !CONFIG_INSPECTION
@@ -934,6 +956,7 @@ static aom_codec_ctrl_fn_map_t decoder_ctrl_maps[] = {
   { AV1_SET_DECODE_TILE_ROW, ctrl_set_decode_tile_row },
   { AV1_SET_DECODE_TILE_COL, ctrl_set_decode_tile_col },
   { AV1_SET_TILE_MODE, ctrl_set_tile_mode },
+  { AV1D_SET_IS_ANNEXB, ctrl_set_is_annexb },
   { AV1_SET_INSPECTION_CALLBACK, ctrl_set_inspection_callback },
 
   // Getters

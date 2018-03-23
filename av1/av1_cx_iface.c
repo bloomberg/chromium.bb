@@ -655,6 +655,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->aq_mode = extra_cfg->aq_mode;
   oxcf->deltaq_mode = extra_cfg->deltaq_mode;
 
+  oxcf->save_as_annexb = cfg->save_as_annexb;
+
   oxcf->frame_periodic_boost = extra_cfg->frame_periodic_boost;
   oxcf->motion_vector_unit_test = extra_cfg->motion_vector_unit_test;
   return AOM_CODEC_OK;
@@ -1313,6 +1315,15 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
             obu_header_size + obu_payload_size + length_field_size;
       }
 
+      if (ctx->oxcf.save_as_annexb) {
+        size_t curr_frame_size = pkt.data.frame.sz;
+        if (av1_convert_sect5obus_to_annexb(ctx->pending_cx_data,
+                                            &curr_frame_size) != AOM_CODEC_OK) {
+          return AOM_CODEC_ERROR;
+        }
+        pkt.data.frame.sz = curr_frame_size;
+      }
+
       pkt.data.frame.pts = ticks_to_timebase_units(timebase, dst_time_stamp);
       pkt.data.frame.flags = get_frame_pkt_flags(cpi, lib_flags);
       pkt.data.frame.duration = (uint32_t)ticks_to_timebase_units(
@@ -1703,6 +1714,7 @@ static aom_codec_enc_cfg_map_t encoder_usage_cfg_map[] = {
         1,            // sframe_mode
         0,            // large_scale_tile
         0,            // monochrome
+        0,            // save_as_annexb
         0,            // tile_width_count
         0,            // tile_height_count
         { 0 },        // tile_widths

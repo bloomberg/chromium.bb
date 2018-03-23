@@ -35,7 +35,8 @@ typedef struct {
 int get_obu_type(uint8_t obu_header_byte, OBU_TYPE *obu_type);
 
 aom_codec_err_t aom_read_obu_header(uint8_t *buffer, size_t buffer_length,
-                                    size_t *consumed, ObuHeader *header);
+                                    size_t *consumed, ObuHeader *header,
+                                    int is_annexb);
 
 void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
                                 const uint8_t *data_end,

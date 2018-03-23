@@ -146,6 +146,9 @@ enum aom_dec_control_id {
    */
   AV1_SET_TILE_MODE,
 
+  /** control function to indicate whether bitstream is in Annex-B format. */
+  AV1D_SET_IS_ANNEXB,
+
   /** control function to set an aom_inspect_cb callback that is invoked each
    * time a frame is decoded.  When compiled without --enable-inspection, this
    * returns AOM_CODEC_INCAPABLE.
@@ -187,6 +190,8 @@ AOM_CTRL_USE_TYPE(AV1_SET_DECODE_TILE_COL, int)
 #define AOM_CTRL_AV1_SET_DECODE_TILE_COL
 AOM_CTRL_USE_TYPE(AV1_SET_TILE_MODE, unsigned int)
 #define AOM_CTRL_AV1_SET_TILE_MODE
+AOM_CTRL_USE_TYPE(AV1D_SET_IS_ANNEXB, unsigned int)
+#define AOM_CTRL_AV1D_SET_IS_ANNEXB
 AOM_CTRL_USE_TYPE(AV1_SET_INSPECTION_CALLBACK, aom_inspect_init *)
 #define AOM_CTRL_AV1_SET_INSPECTION_CALLBACK
 /*!\endcond */

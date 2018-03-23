@@ -380,6 +380,8 @@ static const arg_def_t sframe_dist =
     ARG_DEF(NULL, "sframe-dist", 1, "S-Frame interval (frames)");
 static const arg_def_t sframe_mode =
     ARG_DEF(NULL, "sframe-mode", 1, "S-Frame insertion mode (1..2)");
+static const arg_def_t save_as_annexb =
+    ARG_DEF(NULL, "annexb", 1, "Save as Annex-B");
 static const arg_def_t noise_sens =
     ARG_DEF(NULL, "noise-sensitivity", 1, "Noise sensitivity (frames to blur)");
 static const arg_def_t sharpness =
@@ -653,6 +655,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &inbitdeptharg,
                                        &sframe_dist,
                                        &sframe_mode,
+                                       &save_as_annexb,
                                        NULL };
 static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AOME_SET_DEVSF,
@@ -1225,6 +1228,8 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.sframe_dist = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &sframe_mode, argi)) {
       config->cfg.sframe_mode = arg_parse_uint(&arg);
+    } else if (arg_match(&arg, &save_as_annexb, argi)) {
+      config->cfg.save_as_annexb = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &tile_width, argi)) {
       config->cfg.tile_width_count =
           arg_parse_list(&arg, config->cfg.tile_widths, MAX_TILE_WIDTHS);
@@ -1537,6 +1542,10 @@ static void initialize_encoder(struct stream_state *stream,
       aom_codec_control(&stream->decoder, AV1_SET_TILE_MODE,
                         stream->config.cfg.large_scale_tile);
       ctx_exit_on_error(&stream->decoder, "Failed to set decode_tile_mode");
+
+      aom_codec_control(&stream->decoder, AV1D_SET_IS_ANNEXB,
+                        stream->config.cfg.save_as_annexb);
+      ctx_exit_on_error(&stream->decoder, "Failed to set is_annexb");
 
       aom_codec_control(&stream->decoder, AV1_SET_DECODE_TILE_ROW, -1);
       ctx_exit_on_error(&stream->decoder, "Failed to set decode_tile_row");

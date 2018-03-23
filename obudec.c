@@ -35,6 +35,10 @@ static int obudec_read_leb128(FILE *f, uint8_t *value_buffer,
   if (!f || !value_buffer || !value_length || !value) return -1;
   for (int len = 0; len < OBU_MAX_LENGTH_FIELD_SIZE; ++len) {
     const size_t num_read = fread(&value_buffer[len], 1, 1, f);
+    if (num_read == 0 && feof(f)) {
+      *value_length = 0;
+      return 0;
+    }
     if (num_read != 1) {
       // Ran out of data before completing read of value.
       return -1;
@@ -82,8 +86,8 @@ static int obudec_read_obu_size(FILE *infile, uint64_t *obu_size,
 // success, and non-zero on failure. When end of file is reached, the return
 // value is 0 and the 'bytes_read' value is set to 0.
 static int obudec_read_obu_header(FILE *f, size_t buffer_capacity,
-                                  uint8_t *obu_data, ObuHeader *obu_header,
-                                  size_t *bytes_read) {
+                                  int is_annexb, uint8_t *obu_data,
+                                  ObuHeader *obu_header, size_t *bytes_read) {
   if (!f || buffer_capacity < (OBU_HEADER_SIZE + OBU_EXTENSION_SIZE) ||
       !obu_data || !obu_header || !bytes_read) {
     return -1;
@@ -107,8 +111,8 @@ static int obudec_read_obu_header(FILE *f, size_t buffer_capacity,
   }
 
   size_t obu_bytes_parsed = 0;
-  const aom_codec_err_t parse_result =
-      aom_read_obu_header(obu_data, *bytes_read, &obu_bytes_parsed, obu_header);
+  const aom_codec_err_t parse_result = aom_read_obu_header(
+      obu_data, *bytes_read, &obu_bytes_parsed, obu_header, is_annexb);
   if (parse_result != AOM_CODEC_OK || *bytes_read != obu_bytes_parsed) {
     fprintf(stderr, "obudec: Error parsing OBU header.\n");
     return -1;
@@ -133,7 +137,7 @@ static int obudec_read_obu_payload(FILE *f, uint64_t payload_length,
   return 0;
 }
 
-static int obudec_read_one_obu(FILE *f, size_t buffer_capacity,
+static int obudec_read_one_obu(FILE *f, size_t buffer_capacity, int is_annexb,
                                uint8_t *obu_data, uint64_t *obu_length,
                                ObuHeader *obu_header) {
   const size_t kMinimumBufferSize = OBU_DETECTION_SIZE;
@@ -142,8 +146,22 @@ static int obudec_read_one_obu(FILE *f, size_t buffer_capacity,
     return -1;
   }
 
+  uint64_t obu_payload_length = 0;
+  size_t leb128_length = 0;
+  uint64_t obu_size = 0;
+  if (is_annexb) {
+    if (obudec_read_leb128(f, &obu_data[0], &leb128_length, &obu_size) != 0) {
+      fprintf(stderr, "obudec: Failure reading OBU size length.\n");
+      return -1;
+    } else if (leb128_length == 0) {
+      *obu_length = 0;
+      return 0;
+    }
+  }
+
   size_t bytes_read = 0;
-  if (obudec_read_obu_header(f, buffer_capacity, obu_data, obu_header,
+  if (obudec_read_obu_header(f, buffer_capacity, is_annexb,
+                             obu_data + leb128_length, obu_header,
                              &bytes_read) != 0) {
     return -1;
   } else if (bytes_read == 0) {
@@ -151,13 +169,18 @@ static int obudec_read_one_obu(FILE *f, size_t buffer_capacity,
     return 0;
   }
 
-  uint64_t obu_payload_length = 0;
-  size_t leb128_length = 0;
-  if (obudec_read_leb128(f, &obu_data[bytes_read], &leb128_length,
-                         &obu_payload_length) != 0) {
-    fprintf(stderr, "obudec: Failure reading OBU payload length.\n");
-    return -1;
+  if (!is_annexb) {
+    if (obudec_read_leb128(f, &obu_data[bytes_read], &leb128_length,
+                           &obu_payload_length) != 0) {
+      fprintf(stderr, "obudec: Failure reading OBU payload length.\n");
+      return -1;
+    }
   }
+
+  if (is_annexb) {
+    obu_payload_length = obu_size - bytes_read;
+  }
+
   bytes_read += leb128_length;
 
   if (UINT64_MAX - bytes_read < obu_payload_length) return -1;
@@ -181,14 +204,14 @@ int file_is_obu(struct ObuDecInputContext *obu_ctx) {
 
   struct AvxInputContext *avx_ctx = obu_ctx->avx_ctx;
   uint8_t detect_buf[OBU_DETECTION_SIZE] = { 0 };
-
+  const int is_annexb = obu_ctx->is_annexb;
   FILE *f = avx_ctx->file;
   uint64_t obu_length = 0;
   ObuHeader obu_header;
   memset(&obu_header, 0, sizeof(obu_header));
 
-  if (obudec_read_one_obu(f, OBU_DETECTION_SIZE, &detect_buf[0], &obu_length,
-                          &obu_header) != 0) {
+  if (obudec_read_one_obu(f, OBU_DETECTION_SIZE, is_annexb, &detect_buf[0],
+                          &obu_length, &obu_header) != 0) {
     fprintf(stderr, "obudec: Failure reading first OBU.\n");
     rewind(f);
     return 0;
@@ -213,10 +236,10 @@ int file_is_obu(struct ObuDecInputContext *obu_ctx) {
       rewind(f);
       return 0;
     }
-  } else {
+  } else if (!is_annexb) {
     fprintf(stderr, "obudec: OBU size fields required, cannot decode input.\n");
     rewind(f);
-    return 0;
+    return (0);
   }
 
   // Appears that input is valid Section 5 AV1 stream.
@@ -246,6 +269,7 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
     return 1;
   }
 
+  const int is_annexb = obu_ctx->is_annexb;
   while (1) {
     ObuHeader obu_header;
     memset(&obu_header, 0, sizeof(obu_header));
@@ -254,7 +278,8 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
     uint8_t *data = obu_ctx->buffer + obu_ctx->bytes_buffered;
     const size_t capacity = obu_ctx->buffer_capacity - obu_ctx->bytes_buffered;
 
-    if (obudec_read_one_obu(f, capacity, data, &obu_size, &obu_header) != 0) {
+    if (obudec_read_one_obu(f, capacity, is_annexb, data, &obu_size,
+                            &obu_header) != 0) {
       fprintf(stderr, "obudec: read_one_obu failed in TU loop\n");
       return -1;
     }

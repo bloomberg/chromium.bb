@@ -5935,6 +5935,63 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
 
 int av1_get_quantizer(AV1_COMP *cpi) { return cpi->common.base_qindex; }
 
+int av1_convert_sect5obus_to_annexb(uint8_t *buffer, size_t *frame_size) {
+  size_t output_size = 0;
+  size_t total_bytes_read = 0;
+  size_t remaining_size = *frame_size;
+  uint8_t *buff_ptr = buffer;
+
+  // go through each OBUs
+  while (total_bytes_read < *frame_size) {
+    uint8_t saved_obu_header[2];
+    uint64_t obu_payload_size;
+    size_t length_of_payload_size;
+    size_t length_of_obu_size;
+    uint32_t obu_header_size = (buff_ptr[0] >> 2) & 0x1 ? 2 : 1;
+    size_t obu_bytes_read = obu_header_size;  // bytes read for current obu
+
+    // save the obu header (1 or 2 bytes)
+    memmove(saved_obu_header, buff_ptr, obu_header_size);
+    // clear the obu_has_size_field
+    saved_obu_header[0] = saved_obu_header[0] & (~0x2);
+
+    // get the payload_size and length of payload_size
+    if (aom_uleb_decode(buff_ptr + obu_header_size, remaining_size,
+                        &obu_payload_size, &length_of_payload_size) != 0) {
+      return AOM_CODEC_ERROR;
+    }
+    obu_bytes_read += length_of_payload_size;
+
+    // calculate the length of size of the obu header plus payload
+    length_of_obu_size =
+        aom_uleb_size_in_bytes((uint64_t)(obu_header_size + obu_payload_size));
+
+    // move the rest of data to new location
+    memmove(buff_ptr + length_of_obu_size + obu_header_size,
+            buff_ptr + obu_bytes_read, remaining_size - obu_bytes_read);
+    obu_bytes_read += obu_payload_size;
+
+    // write the new obu size
+    const uint64_t obu_size = obu_header_size + obu_payload_size;
+    size_t coded_obu_size;
+    if (aom_uleb_encode(obu_size, sizeof(obu_size), buff_ptr,
+                        &coded_obu_size) != 0) {
+      return AOM_CODEC_ERROR;
+    }
+
+    // write the saved (modified) obu_header following obu size
+    memmove(buff_ptr + length_of_obu_size, saved_obu_header, obu_header_size);
+
+    total_bytes_read += obu_bytes_read;
+    remaining_size -= obu_bytes_read;
+    buff_ptr += length_of_obu_size + obu_size;
+    output_size += length_of_obu_size + obu_size;
+  }
+
+  *frame_size = output_size;
+  return AOM_CODEC_OK;
+}
+
 void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags) {
   // TODO(yunqingwang): For what references to use, external encoding flags
   // should be consistent with internal reference frame selection. Need to

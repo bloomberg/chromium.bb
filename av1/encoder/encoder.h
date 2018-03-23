@@ -288,6 +288,7 @@ typedef struct AV1EncoderConfig {
   int enable_warped_motion;
   int allow_warped_motion;
   int enable_superres;
+  unsigned int save_as_annexb;
 } AV1EncoderConfig;
 
 static INLINE int is_lossless_requested(const AV1EncoderConfig *cfg) {
@@ -618,6 +619,8 @@ int av1_set_internal_size(AV1_COMP *cpi, AOM_SCALING horiz_mode,
                           AOM_SCALING vert_mode);
 
 int av1_get_quantizer(struct AV1_COMP *cpi);
+
+int av1_convert_sect5obus_to_annexb(uint8_t *buffer, size_t *input_size);
 
 static INLINE int frame_is_kf_gf_arf(const AV1_COMP *cpi) {
   return frame_is_intra_only(&cpi->common) || cpi->refresh_alt_ref_frame ||
