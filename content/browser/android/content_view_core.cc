@@ -256,15 +256,6 @@ void ContentViewCore::SetMultiTouchZoomSupportEnabled(
     rwhv->SetMultiTouchZoomSupportEnabled(enabled);
 }
 
-void ContentViewCore::OnTouchDown(
-    const base::android::ScopedJavaLocalRef<jobject>& event) {
-  JNIEnv* env = AttachCurrentThread();
-  ScopedJavaLocalRef<jobject> obj = java_ref_.get(env);
-  if (obj.is_null())
-    return;
-  Java_ContentViewCoreImpl_onTouchDown(env, obj, event);
-}
-
 void ContentViewCore::SendOrientationChangeEventInternal() {
   RenderWidgetHostViewAndroid* rwhv = GetRenderWidgetHostViewAndroid();
   if (rwhv)

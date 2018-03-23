@@ -49,6 +49,7 @@ class GestureListenerManager : public RenderWidgetHostConnector {
                         const float content_offset,
                         const float top_shown_pix,
                         bool top_changed);
+  void UpdateOnTouchDown();
 
   // RendetWidgetHostConnector implementation.
   void UpdateRenderProcessConnection(

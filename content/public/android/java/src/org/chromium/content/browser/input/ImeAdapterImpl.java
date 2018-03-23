@@ -535,10 +535,6 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
         }
     }
 
-    public Rect getFocusPreOSKViewportRect() {
-        return mFocusPreOSKViewportRect;
-    }
-
     @CalledByNative
     private void updateAfterViewSizeChanged() {
         // Execute a delayed form focus operation because the OSK was brought up earlier.
@@ -553,9 +549,18 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
                 }
                 // Zero the rect to prevent the above operation from issuing the delayed
                 // form focus event.
-                mFocusPreOSKViewportRect.setEmpty();
+                cancelRequestToScrollFocusedEditableNodeIntoView();
             }
         }
+    }
+
+    @CalledByNative
+    private void updateOnTouchDown() {
+        cancelRequestToScrollFocusedEditableNodeIntoView();
+    }
+
+    public void cancelRequestToScrollFocusedEditableNodeIntoView() {
+        mFocusPreOSKViewportRect.setEmpty();
     }
 
     @Override

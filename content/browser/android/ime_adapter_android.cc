@@ -194,6 +194,14 @@ void ImeAdapterAndroid::UpdateAfterViewSizeChanged() {
   Java_ImeAdapterImpl_updateAfterViewSizeChanged(env, obj);
 }
 
+void ImeAdapterAndroid::UpdateOnTouchDown() {
+  JNIEnv* env = AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> obj = java_ime_adapter_.get(env);
+  if (obj.is_null())
+    return;
+  Java_ImeAdapterImpl_updateOnTouchDown(env, obj);
+}
+
 void ImeAdapterAndroid::UpdateFrameInfo(
     const gfx::SelectionBound& selection_start,
     float dip_scale,

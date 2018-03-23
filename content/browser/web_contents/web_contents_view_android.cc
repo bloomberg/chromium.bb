@@ -507,10 +507,9 @@ bool WebContentsViewAndroid::DoBrowserControlsShrinkBlinkSize() const {
 }
 
 bool WebContentsViewAndroid::OnTouchEvent(const ui::MotionEventAndroid& event) {
-  if (event.GetAction() == ui::MotionEventAndroid::Action::DOWN) {
-    if (ShouldRequestUnbufferedDispatch())
-      view_.RequestUnbufferedDispatch(event);
-    content_view_core_->OnTouchDown(event.GetJavaObject());
+  if (event.GetAction() == ui::MotionEventAndroid::Action::DOWN &&
+      ShouldRequestUnbufferedDispatch()) {
+    view_.RequestUnbufferedDispatch(event);
   }
   return false;  // let the children handle the actual event.
 }
