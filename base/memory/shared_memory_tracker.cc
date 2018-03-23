@@ -39,80 +39,20 @@ const trace_event::MemoryAllocatorDump*
 SharedMemoryTracker::GetOrCreateSharedMemoryDump(
     const SharedMemory* shared_memory,
     trace_event::ProcessMemoryDump* pmd) {
-  return GetOrCreateSharedMemoryDumpInternal(shared_memory->memory(),
-                                             shared_memory->mapped_size(),
-                                             shared_memory->mapped_id(), pmd);
-}
-
-void SharedMemoryTracker::IncrementMemoryUsage(
-    const SharedMemory& shared_memory) {
-  AutoLock hold(usages_lock_);
-  DCHECK(usages_.find(shared_memory.memory()) == usages_.end());
-  usages_.emplace(shared_memory.memory(), UsageInfo(shared_memory.mapped_size(),
-                                                    shared_memory.mapped_id()));
-}
-
-void SharedMemoryTracker::IncrementMemoryUsage(
-    const SharedMemoryMapping& mapping) {
-  AutoLock hold(usages_lock_);
-  DCHECK(usages_.find(mapping.raw_memory_ptr()) == usages_.end());
-  usages_.emplace(mapping.raw_memory_ptr(),
-                  UsageInfo(mapping.size(), mapping.guid()));
-}
-
-void SharedMemoryTracker::DecrementMemoryUsage(
-    const SharedMemory& shared_memory) {
-  AutoLock hold(usages_lock_);
-  DCHECK(usages_.find(shared_memory.memory()) != usages_.end());
-  usages_.erase(shared_memory.memory());
-}
-
-void SharedMemoryTracker::DecrementMemoryUsage(
-    const SharedMemoryMapping& mapping) {
-  AutoLock hold(usages_lock_);
-  DCHECK(usages_.find(mapping.raw_memory_ptr()) != usages_.end());
-  usages_.erase(mapping.raw_memory_ptr());
-}
-
-SharedMemoryTracker::SharedMemoryTracker() {
-  trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "SharedMemoryTracker", nullptr);
-}
-
-SharedMemoryTracker::~SharedMemoryTracker() = default;
-
-bool SharedMemoryTracker::OnMemoryDump(const trace_event::MemoryDumpArgs& args,
-                                       trace_event::ProcessMemoryDump* pmd) {
-  AutoLock hold(usages_lock_);
-  for (const auto& usage : usages_) {
-    const trace_event::MemoryAllocatorDump* dump =
-        GetOrCreateSharedMemoryDumpInternal(
-            usage.first, usage.second.mapped_size, usage.second.mapped_id, pmd);
-    DCHECK(dump);
-  }
-  return true;
-}
-
-// static
-const trace_event::MemoryAllocatorDump*
-SharedMemoryTracker::GetOrCreateSharedMemoryDumpInternal(
-    void* mapped_memory,
-    size_t mapped_size,
-    const UnguessableToken& mapped_id,
-    trace_event::ProcessMemoryDump* pmd) {
-  const std::string dump_name = GetDumpNameForTracing(mapped_id);
+  const std::string dump_name =
+      GetDumpNameForTracing(shared_memory->mapped_id());
   trace_event::MemoryAllocatorDump* local_dump =
       pmd->GetAllocatorDump(dump_name);
   if (local_dump)
     return local_dump;
 
-  size_t virtual_size = mapped_size;
+  size_t virtual_size = shared_memory->mapped_size();
   // If resident size is not available, a virtual size is used as fallback.
   size_t size = virtual_size;
 #if defined(COUNT_RESIDENT_BYTES_SUPPORTED)
   base::Optional<size_t> resident_size =
       trace_event::ProcessMemoryDump::CountResidentBytesInSharedMemory(
-          mapped_memory, mapped_size);
+          *shared_memory);
   if (resident_size.has_value())
     size = resident_size.value();
 #endif
@@ -123,7 +63,7 @@ SharedMemoryTracker::GetOrCreateSharedMemoryDumpInternal(
   local_dump->AddScalar("virtual_size",
                         trace_event::MemoryAllocatorDump::kUnitsBytes,
                         virtual_size);
-  auto global_dump_guid = GetGlobalDumpIdForTracing(mapped_id);
+  auto global_dump_guid = GetGlobalDumpIdForTracing(shared_memory->mapped_id());
   trace_event::MemoryAllocatorDump* global_dump =
       pmd->CreateSharedGlobalAllocatorDump(global_dump_guid);
   global_dump->AddScalar(trace_event::MemoryAllocatorDump::kNameSize,
@@ -134,5 +74,39 @@ SharedMemoryTracker::GetOrCreateSharedMemoryDumpInternal(
                                    0 /* importance */);
   return local_dump;
 }
+
+void SharedMemoryTracker::IncrementMemoryUsage(
+    const SharedMemory& shared_memory) {
+  AutoLock hold(usages_lock_);
+  DCHECK(usages_.find(&shared_memory) == usages_.end());
+  usages_[&shared_memory] = shared_memory.mapped_size();
+}
+
+void SharedMemoryTracker::DecrementMemoryUsage(
+    const SharedMemory& shared_memory) {
+  AutoLock hold(usages_lock_);
+  DCHECK(usages_.find(&shared_memory) != usages_.end());
+  usages_.erase(&shared_memory);
+}
+
+bool SharedMemoryTracker::OnMemoryDump(const trace_event::MemoryDumpArgs& args,
+                                       trace_event::ProcessMemoryDump* pmd) {
+  {
+    AutoLock hold(usages_lock_);
+    for (const auto& usage : usages_) {
+      const trace_event::MemoryAllocatorDump* dump =
+          GetOrCreateSharedMemoryDump(usage.first, pmd);
+      DCHECK(dump);
+    }
+  }
+  return true;
+}
+
+SharedMemoryTracker::SharedMemoryTracker() {
+  trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+      this, "SharedMemoryTracker", nullptr);
+}
+
+SharedMemoryTracker::~SharedMemoryTracker() = default;
 
 }  // namespace

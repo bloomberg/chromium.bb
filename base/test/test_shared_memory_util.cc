@@ -71,12 +71,12 @@ static bool CheckReadOnlySharedMemoryFdPosix(int fd) {
 
 #if defined(OS_FUCHSIA)
 // Fuchsia specific implementation.
-bool CheckReadOnlySharedMemoryFuchsiaHandle(zx_handle_t handle) {
+bool CheckReadOnlySharedMemoryHandleForTesting(SharedMemoryHandle handle) {
   const uint32_t flags = ZX_VM_FLAG_PERM_READ | ZX_VM_FLAG_PERM_WRITE;
   uintptr_t addr;
   const zx_handle_t root = zx_vmar_root_self();
   const zx_status_t status =
-      zx_vmar_map(root, 0, handle, 0U, kDataSize, flags, &addr);
+      zx_vmar_map(root, 0, handle.GetHandle(), 0U, kDataSize, flags, &addr);
   if (status == ZX_OK) {
     LOG(ERROR) << "zx_vmar_map() should have failed!";
     zx_vmar_unmap(root, addr, kDataSize);
@@ -89,13 +89,16 @@ bool CheckReadOnlySharedMemoryFuchsiaHandle(zx_handle_t handle) {
   }
   return true;
 }
-
 #elif defined(OS_MACOSX) && !defined(OS_IOS)
-bool CheckReadOnlySharedMemoryMachPort(mach_port_t memory_object) {
+// For OSX, the code has to deal with both POSIX and MACH handles.
+bool CheckReadOnlySharedMemoryHandleForTesting(SharedMemoryHandle handle) {
+  if (handle.type_ == SharedMemoryHandle::POSIX)
+    return CheckReadOnlySharedMemoryFdPosix(handle.file_descriptor_.fd);
+
   mach_vm_address_t memory;
   const kern_return_t kr = mach_vm_map(
-      mach_task_self(), &memory, kDataSize, 0, VM_FLAGS_ANYWHERE, memory_object,
-      0, FALSE, VM_PROT_READ | VM_PROT_WRITE,
+      mach_task_self(), &memory, kDataSize, 0, VM_FLAGS_ANYWHERE,
+      handle.memory_object_, 0, FALSE, VM_PROT_READ | VM_PROT_WRITE,
       VM_PROT_READ | VM_PROT_WRITE | VM_PROT_IS_MASK, VM_INHERIT_NONE);
   if (kr == KERN_SUCCESS) {
     LOG(ERROR) << "mach_vm_map() should have failed!";
@@ -104,11 +107,10 @@ bool CheckReadOnlySharedMemoryMachPort(mach_port_t memory_object) {
   }
   return true;
 }
-
 #elif defined(OS_WIN)
-bool CheckReadOnlySharedMemoryWindowsHandle(HANDLE handle) {
-  void* memory =
-      MapViewOfFile(handle, FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, kDataSize);
+bool CheckReadOnlySharedMemoryHandleForTesting(SharedMemoryHandle handle) {
+  void* memory = MapViewOfFile(handle.GetHandle(),
+                               FILE_MAP_READ | FILE_MAP_WRITE, 0, 0, kDataSize);
   if (memory != nullptr) {
     LOG(ERROR) << "MapViewOfFile() should have failed!";
     UnmapViewOfFile(memory);
@@ -116,46 +118,11 @@ bool CheckReadOnlySharedMemoryWindowsHandle(HANDLE handle) {
   }
   return true;
 }
-#endif
-
+#else
 bool CheckReadOnlySharedMemoryHandleForTesting(SharedMemoryHandle handle) {
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  // For OSX, the code has to deal with both POSIX and MACH handles.
-  if (handle.type_ == SharedMemoryHandle::POSIX)
-    return CheckReadOnlySharedMemoryFdPosix(handle.file_descriptor_.fd);
-  else
-    return CheckReadOnlySharedMemoryMachPort(handle.memory_object_);
-#elif defined(OS_FUCHSIA)
-  return CheckReadOnlySharedMemoryFuchsiaHandle(handle.GetHandle());
-#elif defined(OS_WIN)
-  return CheckReadOnlySharedMemoryWindowsHandle(handle.GetHandle());
-#else
   return CheckReadOnlySharedMemoryFdPosix(handle.GetHandle());
-#endif
 }
-
-bool CheckReadOnlyPlatformSharedMemoryRegionForTesting(
-    subtle::PlatformSharedMemoryRegion region) {
-  if (region.GetMode() != subtle::PlatformSharedMemoryRegion::Mode::kReadOnly) {
-    LOG(ERROR) << "Expected region mode is "
-               << static_cast<int>(
-                      subtle::PlatformSharedMemoryRegion::Mode::kReadOnly)
-               << " but actual is " << static_cast<int>(region.GetMode());
-    return false;
-  }
-
-#if defined(OS_MACOSX) && !defined(OS_IOS)
-  return CheckReadOnlySharedMemoryMachPort(region.GetPlatformHandle());
-#elif defined(OS_FUCHSIA)
-  return CheckReadOnlySharedMemoryFuchsiaHandle(region.GetPlatformHandle());
-#elif defined(OS_WIN)
-  return CheckReadOnlySharedMemoryWindowsHandle(region.GetPlatformHandle());
-#elif defined(OS_ANDROID)
-  return CheckReadOnlySharedMemoryFdPosix(region.GetPlatformHandle());
-#else
-  return CheckReadOnlySharedMemoryFdPosix(region.GetPlatformHandle().fd);
 #endif
-}
 
 #endif  // !OS_NACL
 
