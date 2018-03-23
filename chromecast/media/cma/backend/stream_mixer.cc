@@ -4,6 +4,8 @@
 
 #include "chromecast/media/cma/backend/stream_mixer.h"
 
+#include <pthread.h>
+
 #include <algorithm>
 #include <cmath>
 #include <limits>
@@ -15,6 +17,7 @@
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chromecast/base/chromecast_switches.h"
 #include "chromecast/media/base/audio_device_ids.h"
 #include "chromecast/media/cma/backend/cast_audio_json.h"
@@ -25,15 +28,16 @@
 #include "chromecast/public/media/audio_post_processor_shlib.h"
 #include "media/audio/audio_device_description.h"
 
-#define RUN_ON_MIXER_THREAD(callback, ...)              \
-  if (!mixer_task_runner_->BelongsToCurrentThread()) {  \
-    POST_TASK_TO_MIXER_THREAD(callback, ##__VA_ARGS__); \
-    return;                                             \
-  }
+#define POST_THROUGH_SHIM_THREAD(method, ...)                                  \
+  shim_task_runner_->PostTask(                                                 \
+      FROM_HERE, base::BindOnce(&PostTaskShim, mixer_task_runner_,             \
+                                base::BindOnce(method, base::Unretained(this), \
+                                               ##__VA_ARGS__)));
 
-#define POST_TASK_TO_MIXER_THREAD(task, ...) \
-  mixer_task_runner_->PostTask(              \
-      FROM_HERE, base::BindOnce(task, base::Unretained(this), ##__VA_ARGS__));
+#define POST_TASK_TO_SHIM_THREAD(method, ...) \
+  shim_task_runner_->PostTask(                \
+      FROM_HERE,                              \
+      base::BindOnce(method, base::Unretained(this), ##__VA_ARGS__));
 
 namespace chromecast {
 namespace media {
@@ -56,6 +60,11 @@ const int kUseDefaultFade = -1;
 const int kMediaDuckFadeMs = 150;
 const int kMediaUnduckFadeMs = 700;
 const int kDefaultFilterFrameAlignment = 64;
+
+void PostTaskShim(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
+                  base::OnceClosure task) {
+  task_runner->PostTask(FROM_HERE, std::move(task));
+}
 
 bool IsOutputDeviceId(const std::string& device) {
   return device == ::media::AudioDeviceDescription::kDefaultDeviceId ||
@@ -108,6 +117,13 @@ base::TimeDelta GetNoInputCloseTimeout() {
   return base::TimeDelta::FromMilliseconds(close_timeout_ms);
 }
 
+void UseHighPriority() {
+#if (!defined(OS_FUCHSIA) && !defined(OS_ANDROID))
+  const struct sched_param kAudioPrio = {10};
+  pthread_setschedparam(pthread_self(), SCHED_RR, &kAudioPrio);
+#endif
+}
+
 base::LazyInstance<StreamMixer>::DestructorAtExit g_mixer_instance =
     LAZY_INSTANCE_INITIALIZER;
 
@@ -124,7 +140,7 @@ StreamMixer* StreamMixer::Get() {
 
 StreamMixer::StreamMixer()
     : StreamMixer(nullptr,
-                  std::make_unique<base::Thread>("CMA mixer thread"),
+                  std::make_unique<base::Thread>("CMA mixer"),
                   nullptr) {}
 
 StreamMixer::StreamMixer(
@@ -155,6 +171,16 @@ StreamMixer::StreamMixer(
     options.priority = base::ThreadPriority::REALTIME_AUDIO;
     mixer_thread_->StartWithOptions(options);
     mixer_task_runner_ = mixer_thread_->task_runner();
+    mixer_task_runner_->PostTask(FROM_HERE, base::BindOnce(&UseHighPriority));
+
+    shim_thread_ = std::make_unique<base::Thread>("CMA mixer PI shim");
+    base::Thread::Options shim_options;
+    shim_options.priority = base::ThreadPriority::REALTIME_AUDIO;
+    shim_thread_->StartWithOptions(shim_options);
+    shim_task_runner_ = shim_thread_->task_runner();
+    shim_task_runner_->PostTask(FROM_HERE, base::BindOnce(&UseHighPriority));
+  } else {
+    shim_task_runner_ = mixer_task_runner_;
   }
 
   if (fixed_sample_rate_ != MixerOutputStream::kInvalidSampleRate) {
@@ -269,7 +295,13 @@ void StreamMixer::CreatePostProcessors(
 
 StreamMixer::~StreamMixer() {
   VLOG(1) << __func__;
-  POST_TASK_TO_MIXER_THREAD(&StreamMixer::FinalizeOnMixerThread);
+  if (shim_thread_) {
+    shim_thread_->Stop();
+  }
+
+  mixer_task_runner_->PostTask(
+      FROM_HERE, base::BindOnce(&StreamMixer::FinalizeOnMixerThread,
+                                base::Unretained(this)));
   if (mixer_thread_) {
     mixer_thread_->Stop();
   }
@@ -341,9 +373,7 @@ void StreamMixer::Stop() {
 
   weak_factory_.InvalidateWeakPtrs();
 
-  for (auto* observer : loopback_observers_) {
-    observer->OnLoopbackInterrupted();
-  }
+  POST_TASK_TO_SHIM_THREAD(&StreamMixer::LoopbackInterrupted);
 
   if (output_) {
     output_->Stop();
@@ -389,7 +419,11 @@ void StreamMixer::SignalError(MixerInput::Source::MixerError error) {
 }
 
 void StreamMixer::AddInput(MixerInput::Source* input_source) {
-  RUN_ON_MIXER_THREAD(&StreamMixer::AddInput, input_source);
+  POST_THROUGH_SHIM_THREAD(&StreamMixer::AddInputOnThread, input_source);
+}
+
+void StreamMixer::AddInputOnThread(MixerInput::Source* input_source) {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   DCHECK(input_source);
 
   LOG(INFO) << "Add input " << input_source;
@@ -449,7 +483,7 @@ void StreamMixer::AddInput(MixerInput::Source* input_source) {
 }
 
 void StreamMixer::RemoveInput(MixerInput::Source* input_source) {
-  POST_TASK_TO_MIXER_THREAD(&StreamMixer::RemoveInputOnThread, input_source);
+  POST_THROUGH_SHIM_THREAD(&StreamMixer::RemoveInputOnThread, input_source);
 }
 
 void StreamMixer::RemoveInputOnThread(MixerInput::Source* input_source) {
@@ -578,12 +612,14 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
     mixed_data[i] = std::min(1.0f, std::max(-1.0f, mixed_data[i]));
   }
 
-  for (CastMediaShlib::LoopbackAudioObserver* observer : loopback_observers_) {
-    observer->OnLoopbackAudio(
-        expected_playback_time, kSampleFormatF32, output_samples_per_second_,
-        loopback_channel_count, reinterpret_cast<uint8_t*>(mixed_data),
-        static_cast<size_t>(frames) * loopback_channel_count * sizeof(float));
-  }
+  auto loopback_data =
+      std::make_unique<float[]>(frames * loopback_channel_count);
+  std::copy(mixed_data, mixed_data + frames * loopback_channel_count,
+            loopback_data.get());
+  POST_TASK_TO_SHIM_THREAD(&StreamMixer::SendLoopbackData,
+                           expected_playback_time, output_samples_per_second_,
+                           frames, loopback_channel_count,
+                           std::move(loopback_data));
 
   // Drop extra channels from linearize filter if necessary.
   float* linearized_data = linearize_filter_->GetOutputBuffer();
@@ -604,28 +640,63 @@ void StreamMixer::WriteMixedPcm(int frames, int64_t expected_playback_time) {
                  &playback_interrupted);
 
   if (playback_interrupted) {
-    for (auto* observer : loopback_observers_) {
-      observer->OnLoopbackInterrupted();
-    }
+    POST_TASK_TO_SHIM_THREAD(&StreamMixer::LoopbackInterrupted);
   }
 }
 
 void StreamMixer::AddLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
-  RUN_ON_MIXER_THREAD(&StreamMixer::AddLoopbackAudioObserver, observer);
+  POST_TASK_TO_SHIM_THREAD(&StreamMixer::AddLoopbackAudioObserverOnShimThread,
+                           observer);
+}
+
+void StreamMixer::AddLoopbackAudioObserverOnShimThread(
+    CastMediaShlib::LoopbackAudioObserver* observer) {
+  DCHECK(shim_task_runner_->BelongsToCurrentThread());
   DCHECK(observer);
   loopback_observers_.insert(observer);
 }
 
 void StreamMixer::RemoveLoopbackAudioObserver(
     CastMediaShlib::LoopbackAudioObserver* observer) {
-  RUN_ON_MIXER_THREAD(&StreamMixer::RemoveLoopbackAudioObserver, observer);
+  POST_TASK_TO_SHIM_THREAD(
+      &StreamMixer::RemoveLoopbackAudioObserverOnShimThread, observer);
+}
+
+void StreamMixer::RemoveLoopbackAudioObserverOnShimThread(
+    CastMediaShlib::LoopbackAudioObserver* observer) {
+  DCHECK(shim_task_runner_->BelongsToCurrentThread());
   loopback_observers_.erase(observer);
   observer->OnRemoved();
 }
 
+void StreamMixer::SendLoopbackData(int64_t expected_playback_time,
+                                   int sample_rate,
+                                   int frames,
+                                   int channels,
+                                   std::unique_ptr<float[]> data) {
+  DCHECK(shim_task_runner_->BelongsToCurrentThread());
+  for (CastMediaShlib::LoopbackAudioObserver* observer : loopback_observers_) {
+    observer->OnLoopbackAudio(
+        expected_playback_time, kSampleFormatF32, sample_rate, channels,
+        reinterpret_cast<uint8_t*>(data.get()),
+        static_cast<size_t>(frames) * channels * sizeof(float));
+  }
+}
+
+void StreamMixer::LoopbackInterrupted() {
+  DCHECK(shim_task_runner_->BelongsToCurrentThread());
+  for (auto* observer : loopback_observers_) {
+    observer->OnLoopbackInterrupted();
+  }
+}
+
 void StreamMixer::SetVolume(AudioContentType type, float level) {
-  RUN_ON_MIXER_THREAD(&StreamMixer::SetVolume, type, level);
+  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetVolumeOnThread, type, level);
+}
+
+void StreamMixer::SetVolumeOnThread(AudioContentType type, float level) {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   volume_info_[type].volume = level;
   float effective_volume = volume_info_[type].GetEffectiveVolume();
   for (const auto& input : inputs_) {
@@ -641,7 +712,11 @@ void StreamMixer::SetVolume(AudioContentType type, float level) {
 }
 
 void StreamMixer::SetMuted(AudioContentType type, bool muted) {
-  RUN_ON_MIXER_THREAD(&StreamMixer::SetMuted, type, muted);
+  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetMutedOnThread, type, muted);
+}
+
+void StreamMixer::SetMutedOnThread(AudioContentType type, bool muted) {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   volume_info_[type].muted = muted;
   for (const auto& input : inputs_) {
     if (input.second->content_type() == type) {
@@ -651,7 +726,11 @@ void StreamMixer::SetMuted(AudioContentType type, bool muted) {
 }
 
 void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
-  RUN_ON_MIXER_THREAD(&StreamMixer::SetOutputLimit, type, limit);
+  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetOutputLimitOnThread, type, limit);
+}
+
+void StreamMixer::SetOutputLimitOnThread(AudioContentType type, float limit) {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   LOG(INFO) << "Set volume limit for " << static_cast<int>(type) << " to "
             << limit;
   volume_info_[type].limit = limit;
@@ -674,7 +753,13 @@ void StreamMixer::SetOutputLimit(AudioContentType type, float limit) {
 
 void StreamMixer::SetVolumeMultiplier(MixerInput::Source* source,
                                       float multiplier) {
-  RUN_ON_MIXER_THREAD(&StreamMixer::SetVolumeMultiplier, source, multiplier);
+  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetVolumeMultiplierOnThread, source,
+                           multiplier);
+}
+
+void StreamMixer::SetVolumeMultiplierOnThread(MixerInput::Source* source,
+                                              float multiplier) {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   auto it = inputs_.find(source);
   if (it != inputs_.end()) {
     it->second->SetVolumeMultiplier(multiplier);
@@ -683,7 +768,13 @@ void StreamMixer::SetVolumeMultiplier(MixerInput::Source* source,
 
 void StreamMixer::SetPostProcessorConfig(const std::string& name,
                                          const std::string& config) {
-  RUN_ON_MIXER_THREAD(&StreamMixer::SetPostProcessorConfig, name, config);
+  POST_THROUGH_SHIM_THREAD(&StreamMixer::SetPostProcessorConfigOnThread, name,
+                           config);
+}
+
+void StreamMixer::SetPostProcessorConfigOnThread(const std::string& name,
+                                                 const std::string& config) {
+  DCHECK(mixer_task_runner_->BelongsToCurrentThread());
   for (auto&& filter_group : filter_groups_) {
     filter_group->SetPostProcessorConfig(name, config);
   }
