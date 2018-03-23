@@ -34,6 +34,8 @@ const base::Feature kAutofillCreditCardAssist{
     "AutofillCreditCardAssist", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillScanCardholderName{
     "AutofillScanCardholderName", base::FEATURE_DISABLED_BY_DEFAULT};
+const base::Feature kAutofillCreditCardBankNameDisplay{
+    "AutofillCreditCardBankNameDisplay", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardAblationExperiment{
     "AutofillCreditCardAblationExperiment", base::FEATURE_DISABLED_BY_DEFAULT};
 const base::Feature kAutofillCreditCardPopupLayout{
@@ -127,6 +129,10 @@ bool IsAutofillAutoDismissableUpstreamBubbleExperimentEnabled() {
 
 bool IsAutofillCreditCardLastUsedDateDisplayExperimentEnabled() {
   return base::FeatureList::IsEnabled(kAutofillCreditCardLastUsedDateDisplay);
+}
+
+bool IsAutofillCreditCardBankNameDisplayExperimentEnabled() {
+  return base::FeatureList::IsEnabled(kAutofillCreditCardBankNameDisplay);
 }
 
 // |GetCreditCardPopupParameterUintValue| returns 0 if experiment parameter is

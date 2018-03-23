@@ -362,6 +362,26 @@
             ]
         }
     ],
+    "AutofillCreditCardBankNameDisplay": [
+        {
+            "platforms": [
+                "android",
+                "chromeos",
+                "ios",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "BankName_Experiment",
+                    "enable_features": [
+                        "AutofillCreditCardBankNameDisplay"
+                    ]
+                }
+            ]
+        }
+    ],
     "AutofillCreditCardSigninPromo": [
         {
             "platforms": [
