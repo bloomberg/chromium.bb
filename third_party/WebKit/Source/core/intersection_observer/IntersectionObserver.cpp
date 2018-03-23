@@ -5,6 +5,7 @@
 #include "core/intersection_observer/IntersectionObserver.h"
 
 #include <algorithm>
+
 #include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8IntersectionObserverDelegate.h"
@@ -179,7 +180,8 @@ IntersectionObserver::IntersectionObserver(
     Element* root,
     const Vector<Length>& root_margin,
     const Vector<float>& thresholds)
-    : delegate_(&delegate),
+    : ContextClient(delegate.GetExecutionContext()),
+      delegate_(&delegate),
       root_(root),
       thresholds_(thresholds),
       top_margin_(kFixed),
@@ -363,6 +365,10 @@ void IntersectionObserver::Deliver() {
   delegate_->Deliver(entries, *this);
 }
 
+bool IntersectionObserver::HasPendingActivity() const {
+  return !observations_.IsEmpty();
+}
+
 void IntersectionObserver::Trace(blink::Visitor* visitor) {
   visitor->template RegisterWeakMembers<
       IntersectionObserver, &IntersectionObserver::ClearWeakMembers>(this);
@@ -370,6 +376,7 @@ void IntersectionObserver::Trace(blink::Visitor* visitor) {
   visitor->Trace(observations_);
   visitor->Trace(entries_);
   ScriptWrappable::Trace(visitor);
+  ContextClient::Trace(visitor);
 }
 
 void IntersectionObserver::TraceWrappers(

@@ -9,6 +9,7 @@ callback IntersectionObserverCallback = void (sequence<IntersectionObserverEntry
 // https://wicg.github.io/IntersectionObserver/#intersection-observer-interface
 
 [
+    ActiveScriptWrappable,
     Constructor(IntersectionObserverCallback callback, optional IntersectionObserverInit options),
     ConstructorCallWith=ScriptState,
     MeasureAs=IntersectionObserver_Constructor,

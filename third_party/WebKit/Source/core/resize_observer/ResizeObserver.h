@@ -58,7 +58,7 @@ class CORE_EXPORT ResizeObserver final
   void ElementSizeChanged();
   bool HasElementSizeChanged() { return element_size_changed_; }
 
-  // ContextClient override:
+  // ScriptWrappable override:
   bool HasPendingActivity() const override;
 
   void Trace(blink::Visitor*);
