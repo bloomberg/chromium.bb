@@ -194,7 +194,7 @@ used when committed.
     on crash dumping a process running in a seccomp sandbox.
 *   [Linux Password Storage](linux_password_storage.md) - Keychain integrations
     between Chromium and Linux.
-*   [Linux Sublime Development](linux_sublime_dev.md) - Using Sublime as an IDE
+*   [Linux Sublime Development](sublime_ide.md) - Using Sublime as an IDE
     for Chromium development on Linux.
 *   [Building and Debugging GTK](linux_building_debug_gtk.md) - Building
     Chromium against GTK using lower optimization levels and/or more debugging
