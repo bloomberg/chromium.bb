@@ -5,7 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
-import "mojo/common/unguessable_token.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 // Provides mojo clients with AndroidOverlay instances.  This will live in the
@@ -58,7 +58,7 @@ struct AndroidOverlayConfig {
   // will be the parent of the overlay.  For legacy reasons, we need this token
   // to be sent via IPC, so using the message pipe, or other mojo construct, as
   // the identifier won't work yet.
-  mojo.common.mojom.UnguessableToken routing_token;
+  mojo_base.mojom.UnguessableToken routing_token;
 
   // Initial rectangle.
   gfx.mojom.Rect rect;

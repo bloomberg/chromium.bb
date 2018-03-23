@@ -6,7 +6,7 @@
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_COPY_OUTPUT_REQUEST_STRUCT_TRAITS_H_
 
 #include "components/viz/common/frame_sinks/copy_output_request.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
+#include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "services/viz/public/cpp/compositing/copy_output_result_struct_traits.h"
 #include "services/viz/public/interfaces/compositing/copy_output_request.mojom.h"
 #include "ui/gfx/geometry/mojo/geometry_struct_traits.h"

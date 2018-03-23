@@ -4,7 +4,7 @@
 
 module ui.mojom;
 
-import "mojo/common/unguessable_token.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/ui/public/interfaces/cursor/cursor.mojom";
 import "services/ui/public/interfaces/event_matcher.mojom";
 import "services/ui/public/interfaces/mus_constants.mojom";
@@ -262,7 +262,7 @@ interface WindowTree {
   // token returned from ScheduleEmbed() to client B (using a separate pipe) so
   // that client B may call EmbedUsingToken().
   ScheduleEmbed(WindowTreeClient client)
-      => (mojo.common.mojom.UnguessableToken token);
+      => (mojo_base.mojom.UnguessableToken token);
 
   // Creates an UnguessableToken for use in a future call, by another client, to
   // EmbedUsingToken().
@@ -277,12 +277,12 @@ interface WindowTree {
   //
   // |window_id| is the id used for the window once EmbedUsingToken() is called.
   ScheduleEmbedForExistingClient(uint32 window_id) => (
-      mojo.common.mojom.UnguessableToken token);
+      mojo_base.mojom.UnguessableToken token);
 
   // Pair with ScheduleEmbed() or ScheduleEmbedForExistingClient() to complete
   // an embedding, see them for details.
   EmbedUsingToken(uint64 window_id,
-                  mojo.common.mojom.UnguessableToken token,
+                  mojo_base.mojom.UnguessableToken token,
                   uint32 embed_flags)
       => (bool success);
 
@@ -393,7 +393,7 @@ interface WindowTreeClient {
 
   // See description in ScheduleEmbedForExistingClient() for details on this.
   // Supplied arguments match that of OnEmbed().
-  OnEmbedFromToken(mojo.common.mojom.UnguessableToken token,
+  OnEmbedFromToken(mojo_base.mojom.UnguessableToken token,
                    WindowData root,
                    int64 display_id,
                    viz.mojom.LocalSurfaceId? local_surface_id);

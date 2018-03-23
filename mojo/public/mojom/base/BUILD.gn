@@ -16,6 +16,7 @@ mojom_component("base") {
     "string16.mojom",
     "text_direction.mojom",
     "time.mojom",
+    "unguessable_token.mojom",
     "values.mojom",
   ]
 

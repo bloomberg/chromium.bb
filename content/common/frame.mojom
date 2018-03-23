@@ -11,8 +11,8 @@ import "content/public/common/resource_type.mojom";
 import "content/public/common/subresource_load_info.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
-import "mojo/common/unguessable_token.mojom";
 import "mojo/public/mojom/base/string16.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/url_loader.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/viz/public/interfaces/compositing/surface_id.mojom";
@@ -90,7 +90,7 @@ interface FrameNavigationControl {
       URLLoaderFactoryBundle? subresource_loader_factories,
       array<TransferrableURLLoader>? subresource_overrides,
       ControllerServiceWorkerInfo? controller_service_worker_info,
-      mojo.common.mojom.UnguessableToken devtools_navigation_token);
+      mojo_base.mojom.UnguessableToken devtools_navigation_token);
 
   // Tells the renderer that a failed navigation is ready to commit.
   //
@@ -222,7 +222,7 @@ struct CreateNewWindowReply {
   // attribute them to the context frame.
   // |devtools_frame_token| is only defined by the browser and is never
   // sent back from the renderer in the control calls.
-  mojo.common.mojom.UnguessableToken devtools_main_frame_token;
+  mojo_base.mojom.UnguessableToken devtools_main_frame_token;
 };
 
 // An opaque handle that keeps alive the associated render process even after

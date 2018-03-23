@@ -8,22 +8,6 @@
 namespace mojo {
 
 // static
-bool StructTraits<
-    common::mojom::UnguessableTokenDataView,
-    base::UnguessableToken>::Read(common::mojom::UnguessableTokenDataView data,
-                                  base::UnguessableToken* out) {
-  uint64_t high = data.high();
-  uint64_t low = data.low();
-
-  // Receiving a zeroed UnguessableToken is a security issue.
-  if (high == 0 && low == 0)
-    return false;
-
-  *out = base::UnguessableToken::Deserialize(high, low);
-  return true;
-}
-
-// static
 common::mojom::ThreadPriority
 EnumTraits<common::mojom::ThreadPriority, base::ThreadPriority>::ToMojom(
     base::ThreadPriority thread_priority) {

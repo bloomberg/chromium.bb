@@ -7,12 +7,12 @@ module media.mojom;
 import "gpu/ipc/common/sync_token.mojom";
 import "media/mojo/interfaces/media_log.mojom";
 import "media/mojo/interfaces/media_types.mojom";
-import "mojo/common/unguessable_token.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // Identifies a CommandBufferStub. MediaGpuChannelManager is responsible
 // for minting |channel_token| values.
 struct CommandBufferId {
-  mojo.common.mojom.UnguessableToken channel_token;
+  mojo_base.mojom.UnguessableToken channel_token;
   int32 route_id;
 };
 
@@ -23,7 +23,7 @@ interface VideoFrameHandleReleaser {
   //
   // TODO(sandersd): Do we need release notification for non-texture
   // VideoFrames? If so, |release_sync_token| should be optional.
-  ReleaseVideoFrame(mojo.common.mojom.UnguessableToken release_token,
+  ReleaseVideoFrame(mojo_base.mojom.UnguessableToken release_token,
                     gpu.mojom.SyncToken release_sync_token);
 };
 
@@ -117,7 +117,7 @@ interface VideoDecoderClient {
   // VideoFrameHandleReleaser::Release() when it is finished using |frame|.
   OnVideoFrameDecoded(VideoFrame frame,
                       bool can_read_without_stalling,
-                      mojo.common.mojom.UnguessableToken? release_token);
+                      mojo_base.mojom.UnguessableToken? release_token);
 
   // Request to be notified when the current OverlayInfo changes. This results
   // in at least one call to OnOverlayInfoChanged() for the initial OverlayInfo.

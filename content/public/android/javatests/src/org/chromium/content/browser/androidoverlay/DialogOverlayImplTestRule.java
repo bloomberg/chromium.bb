@@ -17,8 +17,8 @@ import org.chromium.content.browser.framehost.RenderFrameHostImpl;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.media.mojom.AndroidOverlayClient;
 import org.chromium.media.mojom.AndroidOverlayConfig;
-import org.chromium.mojo.common.mojom.UnguessableToken;
 import org.chromium.mojo.system.MojoException;
+import org.chromium.mojo_base.mojom.UnguessableToken;
 
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.Callable;
