@@ -134,6 +134,64 @@ public class BookmarkModelTest {
     @SmallTest
     @UiThreadTest
     @Feature({"Bookmark"})
+    public void testDeleteBookmarks() throws Throwable {
+        BookmarkId bookmarkA = addBookmark(mDesktopNode, 0, "a", "http://a.com");
+        BookmarkId bookmarkB = addBookmark(mOtherNode, 0, "b", "http://b.com");
+        BookmarkId bookmarkC = addBookmark(mMobileNode, 0, "c", "http://c.com");
+
+        // Dete a single bookmark
+        mBookmarkModel.deleteBookmarks(bookmarkA);
+        Assert.assertNull(mBookmarkModel.getBookmarkById(bookmarkA));
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkB));
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkC));
+
+        mBookmarkModel.undo();
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkA));
+
+        // Delete and undo deletion of multiple bookmarks.
+        mBookmarkModel.deleteBookmarks(bookmarkA, bookmarkB);
+
+        Assert.assertNull(mBookmarkModel.getBookmarkById(bookmarkA));
+        Assert.assertNull(mBookmarkModel.getBookmarkById(bookmarkB));
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkC));
+
+        mBookmarkModel.undo();
+
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkA));
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkB));
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkC));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Bookmark"})
+    public void testDeleteBookmarksRepeatedly() throws Throwable {
+        BookmarkId bookmarkA = addBookmark(mDesktopNode, 0, "a", "http://a.com");
+        BookmarkId bookmarkB = addBookmark(mOtherNode, 0, "b", "http://b.com");
+        BookmarkId bookmarkC = addBookmark(mMobileNode, 0, "c", "http://c.com");
+
+        mBookmarkModel.deleteBookmarks(bookmarkA);
+
+        // This line is problematic, see: https://crbug.com/824559
+        mBookmarkModel.deleteBookmarks(bookmarkA, bookmarkB);
+
+        Assert.assertNull(mBookmarkModel.getBookmarkById(bookmarkA));
+        Assert.assertNull(mBookmarkModel.getBookmarkById(bookmarkB));
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkC));
+
+        // Only bookmark B should be undeleted here.
+        mBookmarkModel.undo();
+
+        Assert.assertNull(mBookmarkModel.getBookmarkById(bookmarkA));
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkB));
+        Assert.assertNotNull(mBookmarkModel.getBookmarkById(bookmarkC));
+    }
+
+    @Test
+    @SmallTest
+    @UiThreadTest
+    @Feature({"Bookmark"})
     public void testGetChildIDs() throws Throwable {
         BookmarkId folderA = mBookmarkModel.addFolder(mMobileNode, 0, "fa");
         HashSet<BookmarkId> expectedChildren = new HashSet<>();
