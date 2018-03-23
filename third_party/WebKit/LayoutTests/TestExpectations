@@ -1702,7 +1702,7 @@ crbug.com/626703 external/wpt/css/css-transitions/transition-property-004.html [
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-006.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-018.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-022.html [ Skip ]
-crbug.com/626703 external/wpt/css/css-transitions/transitions-animatable-properties-01.html [ Timeout ]
+crbug.com/626703 external/wpt/css/css-transitions/transitions-animatable-properties-01.html [ Timeout Failure ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-duration-002.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-024.html [ Skip ]
 crbug.com/626703 external/wpt/css/css-transitions/transition-timing-function-009.html [ Skip ]
