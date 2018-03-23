@@ -624,24 +624,9 @@ TEST_F(CoordinatorImplTest, GlobalMemoryDumpStruct) {
             renderer_dump = std::move(dump);
           }
         }
-        // For malloc we only count the root "malloc" not children "malloc/*".
-        EXPECT_EQ(1u, browser_dump->chrome_dump->malloc_total_kb);
-
-        // For blink_gc we only count the root "blink_gc" not children
-        // "blink_gc/*".
-        EXPECT_EQ(2u, browser_dump->chrome_dump->blink_gc_total_kb);
-
-        // For v8 we count the children ("v8/*") as the root total is not given.
-        EXPECT_EQ(3u, browser_dump->chrome_dump->v8_total_kb);
-
-        // partition_alloc has partition_alloc/allocated_objects/* which is a
-        // subset of partition_alloc/partitions/* so we only count the latter.
-        EXPECT_EQ(4u, browser_dump->chrome_dump->partition_alloc_total_kb);
 
         EXPECT_EQ(browser_dump->os_dump->resident_set_kb, 1u);
         EXPECT_EQ(renderer_dump->os_dump->resident_set_kb, 2u);
-        EXPECT_EQ(browser_dump->chrome_dump->malloc_total_kb, 1u);
-        EXPECT_EQ(renderer_dump->chrome_dump->malloc_total_kb, 2u);
         run_loop.Quit();
       }));
 

@@ -29,11 +29,6 @@ class SERVICES_RESOURCE_COORDINATOR_PUBLIC_CPP_EXPORT GlobalMemoryDump {
     base::ProcessId pid() const { return raw_dump_->pid; }
     mojom::ProcessType process_type() const { return raw_dump_->process_type; }
 
-    // TODO(lalitm): remove this when all consumers have migrated to using
-    // GetMetric.
-    const mojom::ChromeMemDump& chrome_dump() const {
-      return *raw_dump_->chrome_dump;
-    }
     const mojom::OSMemDump& os_dump() const { return *raw_dump_->os_dump; }
 
    private:
