@@ -1317,8 +1317,6 @@ void NotificationViewMD::Activate() {
 }
 
 void NotificationViewMD::AddBackgroundAnimation(const ui::LocatedEvent& event) {
-  header_row_->SetSubpixelRenderingEnabled(false);
-
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
 
   // Convert the point of |event| from the coordinate system of
@@ -1339,12 +1337,11 @@ void NotificationViewMD::AddBackgroundAnimation(const ui::LocatedEvent& event) {
 }
 
 void NotificationViewMD::RemoveBackgroundAnimation() {
-  header_row_->SetSubpixelRenderingEnabled(true);
-
   AnimateInkDrop(views::InkDropState::HIDDEN, nullptr);
 }
 
 void NotificationViewMD::AddInkDropLayer(ui::Layer* ink_drop_layer) {
+  GetInkDrop()->AddObserver(this);
   header_row_->SetPaintToLayer();
   header_row_->layer()->SetFillsBoundsOpaquely(false);
   block_all_button_->SetPaintToLayer();
@@ -1364,6 +1361,7 @@ void NotificationViewMD::RemoveInkDropLayer(ui::Layer* ink_drop_layer) {
   settings_done_button_->DestroyLayer();
   ResetInkDropMask();
   ink_drop_container_->RemoveInkDropLayer(ink_drop_layer);
+  GetInkDrop()->RemoveObserver(this);
 }
 
 std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()
@@ -1375,6 +1373,16 @@ std::unique_ptr<views::InkDropRipple> NotificationViewMD::CreateInkDropRipple()
 
 SkColor NotificationViewMD::GetInkDropBaseColor() const {
   return kSettingsRowBackgroundColor;
+}
+
+void NotificationViewMD::InkDropAnimationStarted() {
+  header_row_->SetSubpixelRenderingEnabled(false);
+}
+
+void NotificationViewMD::InkDropRippleAnimationEnded(
+    views::InkDropState ink_drop_state) {
+  if (ink_drop_state == views::InkDropState::HIDDEN)
+    header_row_->SetSubpixelRenderingEnabled(true);
 }
 
 }  // namespace message_center
