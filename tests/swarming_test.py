@@ -1538,6 +1538,43 @@ class TestMain(NetTestCase):
     finally:
       os.chdir(old_cwd)
 
+  def test_cancel(self):
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/api/swarming/v1/task/10100/cancel',
+            {'data': {}, 'method': 'POST'},
+            {'yo': 'dawg'},
+          ),
+        ])
+    ret = self.main_safe(
+        [
+          'cancel', '--swarming', 'https://localhost:1', '10100',
+        ])
+    self._check_output('', '')
+    self.assertEqual(0, ret)
+
+  def test_collect_timeout_zero(self):
+    j = os.path.join(self.tempdir, 'foo.json')
+    pending = gen_result_response(state='PENDING')
+    self.expected_requests(
+        [
+          (
+            'https://localhost:1/api/swarming/v1/task/10100/result',
+            {'retry_50x': True},
+            pending,
+          ),
+        ])
+    self.main_safe(
+        [
+          'collect', '--swarming', 'https://localhost:1',
+          '--task-summary-json', j, '--timeout', '-1', '10100',
+        ])
+    self._check_output('swarm6: 10100 0\n', '')
+    with open(j, 'r') as f:
+      actual = json.load(f)
+    self.assertEqual({u'shards': [pending]}, actual)
+
 
 class TestCommandBot(NetTestCase):
   # Specialized test fixture for command 'bot'.

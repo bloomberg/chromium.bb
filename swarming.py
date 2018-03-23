@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.10.2'
+__version__ = '0.10.3'
 
 import collections
 import datetime
@@ -503,7 +503,7 @@ def retrieve_results(
     result_url += '?include_performance_stats=true'
   output_url = '%s/api/swarming/v1/task/%s/stdout' % (base_url, task_id)
   started = now()
-  deadline = started + timeout if timeout else None
+  deadline = started + timeout if timeout > 0 else None
   attempt = 0
 
   while not should_stop.is_set():
@@ -533,8 +533,11 @@ def retrieve_results(
     # TODO(maruel): We'd need to know if it's a 404 and not retry at all.
     # TODO(maruel): Sadly, we currently have to poll here. Use hanging HTTP
     # request on GAE v2.
-    result = net.url_read_json(result_url, retry_50x=False)
+    # Retry on 500s only if no timeout is specified.
+    result = net.url_read_json(result_url, retry_50x=bool(timeout == -1))
     if not result:
+      if timeout == -1:
+        return None
       continue
 
     if result.get('error'):
@@ -547,9 +550,13 @@ def retrieve_results(
       elif result['error'].get('message'):
         logging.warning(
             'Error while reading task: %s', result['error']['message'])
+      if timeout == -1:
+        return result
       continue
 
-    if result['state'] in State.STATES_NOT_RUNNING:
+    # When timeout == -1, always return on first attempt. 500s are already
+    # retried in this case.
+    if result['state'] in State.STATES_NOT_RUNNING or timeout == -1:
       if fetch_stdout:
         out = net.url_read_json(output_url)
         result['output'] = out.get('output', '') if out else ''
@@ -1169,9 +1176,9 @@ class TaskOutputStdoutOption(optparse.Option):
 
 def add_collect_options(parser):
   parser.server_group.add_option(
-      '-t', '--timeout', type='float',
-      help='Timeout to wait for result, set to 0 for no timeout; default to no '
-           'wait')
+      '-t', '--timeout', type='float', default=0,
+      help='Timeout to wait for result, set to -1 for no timeout and get '
+           'current state; defaults to waiting until the task completes')
   parser.group_logging.add_option(
       '--decorate', action='store_true', help='Decorate output')
   parser.group_logging.add_option(
@@ -1196,6 +1203,12 @@ def add_collect_options(parser):
       '--perf', action='store_true', default=False,
       help='Includes performance statistics')
   parser.add_option_group(parser.task_output_group)
+
+
+def process_collect_options(parser, options):
+  # Only negative -1 is allowed, disallow other negative values.
+  if options.timeout != -1 and options.timeout < 0:
+    parser.error('Invalid --timeout value')
 
 
 @subcommand.usage('bots...')
@@ -1311,9 +1324,11 @@ def CMDcancel(parser, args):
     parser.error('Please specify the task to cancel')
   for task_id in args:
     url = '%s/api/swarming/v1/task/%s/cancel' % (options.swarming, task_id)
-    if net.url_read_json(url, data={'task_id': task_id}, method='POST') is None:
+    resp = net.url_read_json(url, data={}, method='POST')
+    if resp is None:
       print('Deleting %s failed. Probably already gone' % task_id)
       return 1
+    logging.info('%s', resp)
   return 0
 
 
@@ -1329,6 +1344,7 @@ def CMDcollect(parser, args):
       '-j', '--json',
       help='Load the task ids from .json as saved by trigger --dump-json')
   options, args = parser.parse_args(args)
+  process_collect_options(parser, options)
   if not args and not options.json:
     parser.error('Must specify at least one task id or --json.')
   if args and options.json:
@@ -1347,7 +1363,7 @@ def CMDcollect(parser, args):
       args = [t['task_id'] for t in tasks]
     except (KeyError, TypeError):
       parser.error('Failed to process %s' % options.json)
-    if options.timeout is None:
+    if not options.timeout:
       options.timeout = (
           data['request']['properties']['execution_timeout_secs'] +
           data['request']['expiration_secs'] + 10.)
@@ -1499,6 +1515,7 @@ def CMDrun(parser, args):
   add_collect_options(parser)
   add_sharding_options(parser)
   options, args = parser.parse_args(args)
+  process_collect_options(parser, options)
   task_request = process_trigger_options(parser, options, args)
   try:
     tasks = trigger_task_shards(
@@ -1516,7 +1533,7 @@ def CMDrun(parser, args):
     t['task_id']
     for t in sorted(tasks.itervalues(), key=lambda x: x['shard_index'])
   ]
-  if options.timeout is None:
+  if not options.timeout:
     options.timeout = (
         task_request.properties.execution_timeout_secs +
         task_request.expiration_secs + 10.)
