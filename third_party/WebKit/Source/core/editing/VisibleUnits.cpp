@@ -60,6 +60,7 @@
 #include "core/layout/api/LineLayoutItem.h"
 #include "core/layout/line/InlineIterator.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/svg_element_type_helpers.h"
 #include "platform/heap/Handle.h"
 #include "platform/text/TextBoundaries.h"
 
@@ -880,6 +881,10 @@ static PositionTemplate<Strategy> MostBackwardCaretPosition(
       last_node = current_node;
     }
 
+    // There is no caret position in non-text svg elements.
+    if (current_node->IsSVGElement() && !IsSVGTextElement(current_node))
+      continue;
+
     // If we've moved to a position that is visually distinct, return the last
     // saved position. There is code below that terminates early if we're
     // *about* to move to a visually distinct position.
@@ -1002,6 +1007,10 @@ PositionTemplate<Strategy> MostForwardCaretPosition(
     // return the last visible streamer position
     if (IsHTMLBodyElement(*current_node) && current_pos.AtEndOfNode())
       break;
+
+    // There is no caret position in non-text svg elements.
+    if (current_node->IsSVGElement() && !IsSVGTextElement(current_node))
+      continue;
 
     // Do not move to a visually distinct position.
     if (EndsOfNodeAreVisuallyDistinctPositions(current_node) &&
