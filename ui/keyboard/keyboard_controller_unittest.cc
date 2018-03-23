@@ -773,6 +773,38 @@ TEST_F(KeyboardControllerAnimationTest, ContainerAnimation) {
   EXPECT_EQ(1, invocation_counter.invocation_count_for_status(false));
 }
 
+TEST_F(KeyboardControllerAnimationTest, ChangeContainerModeWithBounds) {
+  ScopedAccessibilityKeyboardEnabler scoped_keyboard_enabler;
+  SetModeCallbackInvocationCounter invocation_counter;
+
+  ui::Layer* layer = keyboard_container()->layer();
+  ShowKeyboard();
+  RunAnimationForLayer(layer);
+  EXPECT_EQ(ContainerType::FULL_WIDTH, controller()->GetActiveContainerType());
+  EXPECT_TRUE(keyboard_container()->IsVisible());
+  EXPECT_TRUE(contents_window()->IsVisible());
+
+  // Changing the mode to another mode invokes hiding + showing.
+  const gfx::Rect target_bounds(0, 0, 1200, 600);
+  controller()->SetContainerType(ContainerType::FLOATING,
+                                 base::make_optional(target_bounds),
+                                 invocation_counter.GetInvocationCallback());
+  // The container window shouldn't be resized until it's hidden even if the
+  // target bounds is passed to |SetContainerType|.
+  EXPECT_EQ(gfx::Rect(), notified_visible_bounds());
+  EXPECT_EQ(0, invocation_counter.invocation_count_for_status(true));
+  EXPECT_EQ(0, invocation_counter.invocation_count_for_status(false));
+  RunAnimationForLayer(layer);
+  // Hiding animation finished. The container window should be resized to the
+  // target bounds.
+  EXPECT_EQ(keyboard_container()->bounds().size(), target_bounds.size());
+  // Then showing animation automatically start.
+  layer = keyboard_container()->layer();
+  RunAnimationForLayer(layer);
+  EXPECT_EQ(1, invocation_counter.invocation_count_for_status(true));
+  EXPECT_EQ(0, invocation_counter.invocation_count_for_status(false));
+}
+
 // Show keyboard during keyboard hide animation should abort the hide animation
 // and the keyboard should animate in.
 // Test for crbug.com/333284.
