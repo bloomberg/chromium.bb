@@ -374,6 +374,10 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, OpenNonSyncCheck) {
 }
 
 // Make sure that UKM is disabled when metrics consent is revoked.
+// Keep in sync with UkmTest.testMetricConsent in
+// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// UkmTest.java.
+
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
   MetricsConsentOverride metrics_consent(true);
 
@@ -405,6 +409,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsConsentCheck) {
 }
 
 // Make sure that providing consent doesn't enable UKM when sync is disabled.
+// Keep in sync with UkmTest.consentAddedButNoSyncCheck in
+// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
   MetricsConsentOverride metrics_consent(false);
 

@@ -32,6 +32,10 @@ using base::UserMetricsAction;
 
 namespace {
 UmaSessionStats* g_uma_session_stats = NULL;
+
+// Used to keep the state of whether we should consider metric consent enabled.
+// This is used/read only within the ChromeMetricsServiceAccessor methods.
+bool g_metrics_consent_for_testing = false;
 }  // namespace
 
 UmaSessionStats::UmaSessionStats()
@@ -119,6 +123,41 @@ static void JNI_UmaSessionStats_ChangeMetricsReportingConsent(
       FROM_HERE, base::Bind(base::IgnoreResult(
                                 GoogleUpdateSettings::SetCollectStatsConsent),
                             consent));
+}
+
+// Initialize the local consent bool variable to false. Used only for testing.
+static void JNI_UmaSessionStats_InitMetricsAndCrashReportingForTesting(
+    JNIEnv*,
+    const JavaParamRef<jclass>&) {
+  DCHECK(g_browser_process);
+
+  g_metrics_consent_for_testing = false;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(
+      &g_metrics_consent_for_testing);
+}
+
+// Clears the boolean consent pointer for ChromeMetricsServiceAccessor to
+// original setting. Used only for testing.
+static void JNI_UmaSessionStats_UnsetMetricsAndCrashReportingForTesting(
+    JNIEnv*,
+    const JavaParamRef<jclass>&) {
+  DCHECK(g_browser_process);
+
+  g_metrics_consent_for_testing = false;
+  ChromeMetricsServiceAccessor::SetMetricsAndCrashReportingForTesting(nullptr);
+}
+
+// Updates the metrics consent bit to |consent|. This is separate from
+// InitMetricsAndCrashReportingForTesting as the Set isn't meant to be used
+// repeatedly. Used only for testing.
+static void JNI_UmaSessionStats_UpdateMetricsAndCrashReportingForTesting(
+    JNIEnv*,
+    const JavaParamRef<jclass>&,
+    jboolean consent) {
+  DCHECK(g_browser_process);
+
+  g_metrics_consent_for_testing = consent;
+  g_browser_process->GetMetricsServicesManager()->UpdateUploadPermissions(true);
 }
 
 // Starts/stops the MetricsService based on existing consent and upload

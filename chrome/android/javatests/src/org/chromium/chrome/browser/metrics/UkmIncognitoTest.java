@@ -41,6 +41,10 @@ public class UkmIncognitoTest {
         mActivityTestRule.startMainActivityOnBlankPage();
     }
 
+    /*
+     * These helper method should stay in sync with the tests within
+     * sync_shell/.../chrome/browser/sync/UkmTest.java.
+     */
     public String getElementContent(Tab normalTab, String elementId) throws Exception {
         mActivityTestRule.loadUrlInTab(
                 DEBUG_PAGE, PageTransition.TYPED | PageTransition.FROM_ADDRESS_BAR, normalTab);

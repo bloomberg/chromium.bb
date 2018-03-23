@@ -173,6 +173,27 @@ public class UmaSessionStats {
     }
 
     /**
+     * Initializes the metrics consent bit to false. Used only for testing.
+     */
+    public static void initMetricsAndCrashReportingForTesting() {
+        nativeInitMetricsAndCrashReportingForTesting();
+    }
+
+    /**
+     * Clears the metrics consent bit used for testing to original setting. Used only for testing.
+     */
+    public static void unSetMetricsAndCrashReportingForTesting() {
+        nativeUnsetMetricsAndCrashReportingForTesting();
+    }
+
+    /**
+     * Updates the metrics consent bit to |consent|. Used only for testing.
+     */
+    public static void updateMetricsAndCrashReportingForTesting(boolean consent) {
+        nativeUpdateMetricsAndCrashReportingForTesting(consent);
+    }
+
+    /**
      * Updates the state of MetricsService to account for the user's preferences.
      */
     public static void updateMetricsServiceState() {
@@ -212,6 +233,9 @@ public class UmaSessionStats {
 
     private static native long nativeInit();
     private static native void nativeChangeMetricsReportingConsent(boolean consent);
+    private static native void nativeInitMetricsAndCrashReportingForTesting();
+    private static native void nativeUnsetMetricsAndCrashReportingForTesting();
+    private static native void nativeUpdateMetricsAndCrashReportingForTesting(boolean consent);
     private static native void nativeUpdateMetricsServiceState(boolean mayUpload);
     private native void nativeUmaResumeSession(long nativeUmaSessionStats);
     private native void nativeUmaEndSession(long nativeUmaSessionStats);
