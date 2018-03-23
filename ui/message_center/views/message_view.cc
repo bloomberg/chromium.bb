@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/strings/utf_string_conversions.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/models/simple_menu_model.h"
@@ -94,7 +95,11 @@ MessageView::~MessageView() {}
 
 void MessageView::UpdateWithNotification(const Notification& notification) {
   pinned_ = notification.pinned();
-  accessible_name_ = CreateAccessibleName(notification);
+  base::string16 new_accessible_name = CreateAccessibleName(notification);
+  if (new_accessible_name != accessible_name_) {
+    accessible_name_ = new_accessible_name;
+    NotifyAccessibilityEvent(ax::mojom::Event::kTextChanged, true);
+  }
   slide_out_controller_.set_enabled(!GetPinned());
 }
 

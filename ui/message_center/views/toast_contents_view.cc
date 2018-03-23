@@ -11,6 +11,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "ui/accessibility/ax_enums.mojom.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_targeter.h"
@@ -84,17 +85,11 @@ ToastContentsView::~ToastContentsView() {
 void ToastContentsView::SetContents(MessageView* view,
                                     bool a11y_feedback_for_updates) {
   message_view_ = view;
-  bool already_has_contents = child_count() > 0;
   RemoveAllChildViews(true);
   AddChildView(view);
   UpdatePreferredSize();
-
-  // If it has the contents already, this invocation means an update of the
-  // popup toast, and the new contents should be read through a11y feature.
-  // The notification type should be ALERT, otherwise the accessibility message
-  // won't be read for this view which returns ROLE_WINDOW.
-  if (already_has_contents && a11y_feedback_for_updates)
-    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, false);
+  if (a11y_feedback_for_updates)
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 void ToastContentsView::UpdateContents(const Notification& notification,
@@ -104,7 +99,7 @@ void ToastContentsView::UpdateContents(const Notification& notification,
   message_view->UpdateWithNotification(notification);
   UpdatePreferredSize();
   if (a11y_feedback_for_updates)
-    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, false);
+    NotifyAccessibilityEvent(ax::mojom::Event::kAlert, true);
 }
 
 void ToastContentsView::RevealWithAnimation(gfx::Point origin) {
@@ -316,7 +311,7 @@ void ToastContentsView::UpdatePreferredSize() {
 void ToastContentsView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   if (child_count() > 0)
     child_at(0)->GetAccessibleNodeData(node_data);
-  node_data->role = ax::mojom::Role::kWindow;
+  node_data->role = ax::mojom::Role::kAlertDialog;
 }
 
 const char* ToastContentsView::GetClassName() const {
