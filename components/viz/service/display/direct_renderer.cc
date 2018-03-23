@@ -280,7 +280,7 @@ void DirectRenderer::DrawFrame(RenderPassList* render_passes_in_draw_order,
     output_surface_plane.format = output_surface_->GetOverlayBufferFormat();
     output_surface_plane.use_output_surface_for_resource = true;
     output_surface_plane.overlay_handled = true;
-    output_surface_plane.is_opaque = false;
+    output_surface_plane.is_opaque = true;
     current_frame()->overlay_list.push_back(output_surface_plane);
   }
 
