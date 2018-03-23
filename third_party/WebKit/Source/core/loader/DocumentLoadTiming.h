@@ -28,6 +28,7 @@
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
+#include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/wtf/Time.h"
 
 namespace blink {
@@ -96,6 +97,7 @@ class CORE_EXPORT DocumentLoadTiming final {
   void NotifyDocumentTimingChanged();
   void EnsureReferenceTimesSet();
   LocalFrame* GetFrame() const;
+  std::unique_ptr<TracedValue> GetNavigationStartTracingData() const;
 
   TimeTicks reference_monotonic_time_;
   double reference_wall_time_;
