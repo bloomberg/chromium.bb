@@ -232,11 +232,13 @@ void MediaControlOverlayPlayButtonElement::DefaultEventHandler(Event* event) {
           MaybeJump(kNumberOfSecondsToJump * -1);
         }
       } else {
-        // Enter or exit fullscreen.
-        if (MediaElement().IsFullscreen())
-          GetMediaControls().ExitFullscreen();
-        else
-          GetMediaControls().EnterFullscreen();
+        if (GetMediaControls().IsFullscreenEnabled()) {
+          // Enter or exit fullscreen.
+          if (MediaElement().IsFullscreen())
+            GetMediaControls().ExitFullscreen();
+          else
+            GetMediaControls().EnterFullscreen();
+        }
       }
 
       event->SetDefaultHandled();
