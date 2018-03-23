@@ -849,7 +849,7 @@ def main():
       action='store_true',
       help='Do not fetch issues referenced by owned changes. Useful in '
            'combination with --changes-by-issue when you only want to list '
-           'issues that are your own in the output.')
+           'issues that have also been modified in the same time period.')
   parser.add_option(
       '--skip-own-issues-without-changes',
       action='store_true',
