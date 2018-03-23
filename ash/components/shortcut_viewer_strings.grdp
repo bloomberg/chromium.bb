@@ -71,6 +71,9 @@
   <message name="IDS_KSV_KEY_FULLSCREEN" desc="Name of the key on a Chromebook keyboard that triggers the fullscreen.">
     Fullscreen key
   </message>
+  <message name="IDS_KSV_KEY_NO_MAPPING" desc="Alternative string to display if no meaning found for the key.">
+    Not supported with current keyboard layout
+  </message>
 
   <!-- Generic shortcut strings -->
   <message name="IDS_KSV_SHORTCUT_ONE_KEY" desc="Human readable version of the keyboard shortcut. This is for all single key shortcuts.">
