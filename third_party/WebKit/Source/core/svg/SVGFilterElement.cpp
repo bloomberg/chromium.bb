@@ -116,15 +116,17 @@ void SVGFilterElement::PrimitiveAttributeChanged(
     ToLayoutSVGResourceFilter(layout_object)
         ->PrimitiveAttributeChanged(primitive, attribute);
   } else if (LocalSVGResource* resource = AssociatedResource()) {
-    resource->NotifyContentChanged();
+    resource->NotifyContentChanged(SVGResourceClient::kPaintInvalidation);
   }
 }
 
 void SVGFilterElement::InvalidateFilterChain() {
-  if (LayoutObject* layout_object = GetLayoutObject())
+  if (LayoutObject* layout_object = GetLayoutObject()) {
     ToLayoutSVGResourceFilter(layout_object)->RemoveAllClientsFromCache();
-  else if (LocalSVGResource* resource = AssociatedResource())
-    resource->NotifyContentChanged();
+  } else if (LocalSVGResource* resource = AssociatedResource()) {
+    resource->NotifyContentChanged(SVGResourceClient::kLayoutInvalidation |
+                                   SVGResourceClient::kBoundariesInvalidation);
+  }
 }
 
 void SVGFilterElement::ChildrenChanged(const ChildrenChange& change) {

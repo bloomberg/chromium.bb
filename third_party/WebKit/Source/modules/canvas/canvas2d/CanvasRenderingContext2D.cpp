@@ -596,7 +596,7 @@ void CanvasRenderingContext2D::UpdateFilterReferences(
   filter_operations_ = filters;
 }
 
-void CanvasRenderingContext2D::ResourceContentChanged() {
+void CanvasRenderingContext2D::ResourceContentChanged(InvalidationModeMask) {
   ResourceElementChanged();
 }
 

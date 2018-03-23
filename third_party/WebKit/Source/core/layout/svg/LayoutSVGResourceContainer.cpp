@@ -115,8 +115,10 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
   completed_invalidations_mask_ |= invalidation_mask;
 
   is_invalidating_ = true;
-  bool needs_layout = invalidation_mask & kLayoutInvalidation;
-  bool mark_for_invalidation = invalidation_mask & ~kParentOnlyInvalidation;
+  bool needs_layout =
+      invalidation_mask & SVGResourceClient::kLayoutInvalidation;
+  bool mark_for_invalidation =
+      invalidation_mask & ~SVGResourceClient::kParentOnlyInvalidation;
 
   // Invalidate clients registered on the this object (via SVGResources).
   for (auto* client : clients_) {
@@ -135,7 +137,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
 
   // Invalidate clients registered via an SVGResource.
   if (resource)
-    resource->NotifyContentChanged();
+    resource->NotifyContentChanged(invalidation_mask);
 
   is_invalidating_ = false;
 }
@@ -143,7 +145,7 @@ void LayoutSVGResourceContainer::MarkAllClientsForInvalidation(
 void LayoutSVGResourceContainer::MarkClientForInvalidation(
     LayoutObject& client,
     InvalidationModeMask invalidation_mask) {
-  if (invalidation_mask & kPaintInvalidation) {
+  if (invalidation_mask & SVGResourceClient::kPaintInvalidation) {
     // Since LayoutSVGInlineTexts don't have SVGResources (they use their
     // parent's), they will not be notified of changes to paint servers. So
     // if the client is one that could have a LayoutSVGInlineText use a
@@ -156,7 +158,7 @@ void LayoutSVGResourceContainer::MarkClientForInvalidation(
     client.SetNeedsPaintPropertyUpdate();
   }
 
-  if (invalidation_mask & kBoundariesInvalidation)
+  if (invalidation_mask & SVGResourceClient::kBoundariesInvalidation)
     client.SetNeedsBoundariesUpdate();
 }
 

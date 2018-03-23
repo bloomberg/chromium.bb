@@ -49,8 +49,9 @@ void LayoutSVGResourceMarker::UpdateLayout() {
 void LayoutSVGResourceMarker::RemoveAllClientsFromCache(
     bool mark_for_invalidation) {
   MarkAllClientsForInvalidation(
-      mark_for_invalidation ? kLayoutInvalidation | kBoundariesInvalidation
-                            : kParentOnlyInvalidation);
+      mark_for_invalidation ? SVGResourceClient::kLayoutInvalidation |
+                                  SVGResourceClient::kBoundariesInvalidation
+                            : SVGResourceClient::kParentOnlyInvalidation);
 }
 
 FloatRect LayoutSVGResourceMarker::MarkerBoundaries(

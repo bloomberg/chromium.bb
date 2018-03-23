@@ -6,6 +6,7 @@
 #define SVGResource_h
 
 #include "base/macros.h"
+#include "core/svg/SVGResourceClient.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/ResourceClient.h"
 #include "platform/weborigin/KURL.h"
@@ -21,7 +22,6 @@ class Element;
 class IdTargetObserver;
 class LayoutSVGResourceContainer;
 class SVGElement;
-class SVGResourceClient;
 class TreeScope;
 
 // A class tracking a reference to an SVG resource (an element that constitutes
@@ -101,7 +101,7 @@ class LocalSVGResource final : public SVGResource {
   bool IsEmpty() const;
 
   void NotifyPendingClients();
-  void NotifyContentChanged();
+  void NotifyContentChanged(InvalidationModeMask);
 
   void Trace(Visitor*) override;
 

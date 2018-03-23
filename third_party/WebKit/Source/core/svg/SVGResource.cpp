@@ -94,12 +94,13 @@ void LocalSVGResource::NotifyPendingClients() {
   }
 }
 
-void LocalSVGResource::NotifyContentChanged() {
+void LocalSVGResource::NotifyContentChanged(
+    InvalidationModeMask invalidation_mask) {
   HeapVector<Member<SVGResourceClient>> clients;
   CopyToVector(clients_, clients);
 
   for (SVGResourceClient* client : clients)
-    client->ResourceContentChanged();
+    client->ResourceContentChanged(invalidation_mask);
 }
 
 void LocalSVGResource::TargetChanged(const AtomicString& id) {

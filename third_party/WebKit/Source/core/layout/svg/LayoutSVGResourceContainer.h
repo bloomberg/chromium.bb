@@ -21,6 +21,7 @@
 #define LayoutSVGResourceContainer_h
 
 #include "core/layout/svg/LayoutSVGHiddenContainer.h"
+#include "core/svg/SVGResourceClient.h"
 
 namespace blink {
 
@@ -35,8 +36,6 @@ enum LayoutSVGResourceType {
   kFilterResourceType,
   kClipperResourceType
 };
-
-typedef unsigned InvalidationModeMask;
 
 class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
  public:
@@ -76,14 +75,6 @@ class LayoutSVGResourceContainer : public LayoutSVGHiddenContainer {
   static void MarkForLayoutAndParentResourceInvalidation(
       LayoutObject&,
       bool needs_layout = true);
-
-  // When adding modes, make sure we don't overflow m_invalidationMask below.
-  enum InvalidationMode {
-    kLayoutInvalidation = 1 << 0,
-    kBoundariesInvalidation = 1 << 1,
-    kPaintInvalidation = 1 << 2,
-    kParentOnlyInvalidation = 1 << 3
-  };
   static void MarkClientForInvalidation(LayoutObject&, InvalidationModeMask);
 
   void ClearInvalidationMask() { completed_invalidations_mask_ = 0; }
