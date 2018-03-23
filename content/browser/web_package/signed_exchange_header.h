@@ -34,18 +34,8 @@ class CONTENT_EXPORT SignedExchangeHeader {
 
   using HeaderMap = std::map<std::string, std::string>;
 
-  // Parse headers from the new serialization format currently being discussed.
-  // 1. The first 3 bytes of the content represents the length of the CBOR
-  // encoded section, encoded in network byte (big-endian) order. 2. Then,
-  // immediately follows a CBOR-encoded array containing 2 elements: (This is
-  // derived from the section 5 of the old spec) - a map of request header field
-  // names to values, encoded as byte strings, with ":method", and ":url" pseudo
-  // header fields - a map from response header field names to values, encoded
-  // as byte strings, with a ":status" pseudo-header field containing the status
-  // code (encoded as 3 ASCII letter byte string) 3. Then, immediately follows
-  // the response body, encoded in MI.
-  // TODO(kouhei): Replace above with spec reference when we actually have spec
-  // text.
+  // Parse headers from the application/signed-exchange;v=b0 format.
+  // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#rfc.section.5.3
   //
   // This also performs the step 3 and 4 of "Cross-origin trust" validation.
   // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.4
