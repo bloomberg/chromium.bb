@@ -1674,6 +1674,11 @@ const char kVideoRotateToFullscreenDescription[] =
     "Enter/exit fullscreen when device is rotated to/from the orientation of "
     "the video. Only on phones.";
 
+const char kViewsBrowserWindowsName[] =
+    "Use Views browser windows instead of Cocoa.";
+const char kViewsBrowserWindowsDescription[] =
+    "Use Views browser windows instead of Cocoa, aka MacViews-Browser.";
+
 const char kWalletServiceUseSandboxName[] =
     "Use Google Payments sandbox servers";
 const char kWalletServiceUseSandboxDescription[] =

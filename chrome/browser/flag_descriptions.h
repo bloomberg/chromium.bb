@@ -1021,6 +1021,9 @@ extern const char kVideoFullscreenOrientationLockDescription[];
 extern const char kVideoRotateToFullscreenName[];
 extern const char kVideoRotateToFullscreenDescription[];
 
+extern const char kViewsBrowserWindowsName[];
+extern const char kViewsBrowserWindowsDescription[];
+
 extern const char kWalletServiceUseSandboxName[];
 extern const char kWalletServiceUseSandboxDescription[];
 

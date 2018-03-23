@@ -2200,6 +2200,9 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAppWindowCyclingDescription, kOsMac,
      ENABLE_DISABLE_VALUE_TYPE(switches::kEnableAppWindowCycling,
                                switches::kDisableAppWindowCycling)},
+    {"views-browser-windows", flag_descriptions::kViewsBrowserWindowsName,
+     flag_descriptions::kViewsBrowserWindowsDescription, kOsMac,
+     FEATURE_VALUE_TYPE(features::kViewsBrowserWindows)},
 #endif  // OS_MACOSX
     {"enable-gamepad-extensions", flag_descriptions::kGamepadExtensionsName,
      flag_descriptions::kGamepadExtensionsDescription, kOsAll,
