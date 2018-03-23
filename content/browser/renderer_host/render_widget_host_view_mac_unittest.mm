@@ -514,19 +514,25 @@ TEST_F(RenderWidgetHostViewMacTest, FullscreenCloseOnEscape) {
   WindowedNotificationObserver observer(
       NOTIFICATION_RENDER_WIDGET_HOST_DESTROYED,
       Source<RenderWidgetHost>(rwh));
-  EXPECT_FALSE([rwhv_mac_->cocoa_view() suppressNextEscapeKeyUp]);
+  EXPECT_TRUE([rwhv_mac_->cocoa_view() suppressNextKeyUpForTesting:53]);
+  [rwhv_mac_->cocoa_view() keyEvent:cocoa_test_event_utils::KeyEventWithKeyCode(
+                                        53, 27, NSKeyDown, 0)];
+  EXPECT_FALSE([rwhv_mac_->cocoa_view() suppressNextKeyUpForTesting:53]);
+  [rwhv_mac_->cocoa_view()
+      keyEvent:cocoa_test_event_utils::KeyEventWithKeyCode(53, 27, NSKeyUp, 0)];
+  EXPECT_TRUE([rwhv_mac_->cocoa_view() suppressNextKeyUpForTesting:53]);
 
-  // Escape key down. Should close window and set |suppressNextEscapeKeyUp| on
-  // the parent.
+  // Escape key down. Should close window, but the key up for the escape
+  // should not affect the parent.
   [view->cocoa_view() keyEvent:
       cocoa_test_event_utils::KeyEventWithKeyCode(53, 27, NSKeyDown, 0)];
   observer.Wait();
-  EXPECT_TRUE([rwhv_mac_->cocoa_view() suppressNextEscapeKeyUp]);
+  EXPECT_TRUE([rwhv_mac_->cocoa_view() suppressNextKeyUpForTesting:53]);
 
-  // Escape key up on the parent should clear |suppressNextEscapeKeyUp|.
-  [rwhv_mac_->cocoa_view() keyEvent:
-      cocoa_test_event_utils::KeyEventWithKeyCode(53, 27, NSKeyUp, 0)];
-  EXPECT_FALSE([rwhv_mac_->cocoa_view() suppressNextEscapeKeyUp]);
+  // Escape key down on the parent should clear the suppression.
+  [rwhv_mac_->cocoa_view() keyEvent:cocoa_test_event_utils::KeyEventWithKeyCode(
+                                        53, 27, NSKeyDown, 0)];
+  EXPECT_FALSE([rwhv_mac_->cocoa_view() suppressNextKeyUpForTesting:53]);
 }
 
 // Test that command accelerators which destroy the fullscreen window
