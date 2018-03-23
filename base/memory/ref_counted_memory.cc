@@ -42,7 +42,7 @@ RefCountedBytes::RefCountedBytes(size_t size) : data_(size, 0) {}
 
 scoped_refptr<RefCountedBytes> RefCountedBytes::TakeVector(
     std::vector<unsigned char>* to_destroy) {
-  scoped_refptr<RefCountedBytes> bytes(new RefCountedBytes);
+  auto bytes = MakeRefCounted<RefCountedBytes>();
   bytes->data_.swap(*to_destroy);
   return bytes;
 }
@@ -66,7 +66,7 @@ RefCountedString::~RefCountedString() = default;
 // static
 scoped_refptr<RefCountedString> RefCountedString::TakeString(
     std::string* to_destroy) {
-  scoped_refptr<RefCountedString> self(new RefCountedString);
+  auto self = MakeRefCounted<RefCountedString>();
   to_destroy->swap(self->data_);
   return self;
 }
