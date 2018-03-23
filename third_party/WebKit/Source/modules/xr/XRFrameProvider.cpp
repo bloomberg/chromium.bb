@@ -13,6 +13,7 @@
 #include "core/imagebitmap/ImageBitmap.h"
 #include "modules/xr/XR.h"
 #include "modules/xr/XRDevice.h"
+#include "modules/xr/XRPresentationContext.h"
 #include "modules/xr/XRSession.h"
 #include "modules/xr/XRViewport.h"
 #include "modules/xr/XRWebGLLayer.h"
@@ -329,8 +330,9 @@ void XRFrameProvider::SubmitWebGLLayer(XRWebGLLayer* layer) {
   frame_transport_->FramePreImage(webgl_context->ContextGL());
 
   std::unique_ptr<viz::SingleReleaseCallback> image_release_callback;
-  scoped_refptr<Image> image_ref =
+  scoped_refptr<StaticBitmapImage> image_ref =
       layer->TransferToStaticBitmapImage(&image_release_callback);
+
   if (!image_ref)
     return;
 

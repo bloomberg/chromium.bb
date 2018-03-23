@@ -56,6 +56,12 @@ void ImageLayerBridge::SetImage(scoped_refptr<StaticBitmapImage> image) {
   has_presented_since_last_set_image_ = false;
 }
 
+void ImageLayerBridge::SetUV(const FloatPoint left_top,
+                             const FloatPoint right_bottom) {
+  layer_->SetUV(WebFloatPoint(left_top.X(), left_top.Y()),
+                WebFloatPoint(right_bottom.X(), right_bottom.Y()));
+}
+
 void ImageLayerBridge::Dispose() {
   if (layer_) {
     GraphicsLayer::UnregisterContentsLayer(layer_->Layer());

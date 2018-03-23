@@ -17,6 +17,7 @@
 #include "modules/xr/XRView.h"
 #include "modules/xr/XRViewport.h"
 #include "platform/geometry/DoubleSize.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/geometry/IntSize.h"
 
 namespace blink {
@@ -121,6 +122,11 @@ XRWebGLLayer::XRWebGLLayer(XRSession* session,
       framebuffer_(framebuffer),
       framebuffer_scale_(framebuffer_scale) {
   DCHECK(drawing_buffer);
+  // If the contents need mirroring, indicate that to the drawing buffer.
+  if (session->exclusive() && session->outputContext() &&
+      session->device()->external()) {
+    drawing_buffer_->SetMirrorClient(this);
+  }
   UpdateViewports();
 }
 
@@ -189,6 +195,43 @@ void XRWebGLLayer::UpdateViewports() {
                        framebuffer_height * viewport_scale_);
 
     session()->device()->frameProvider()->UpdateWebGLLayerViewports(this);
+
+    // When mirroring make sure to also update the mirrored canvas UVs so it
+    // only shows a single eye's data, cropped to display proportionally.
+    if (session()->outputContext()) {
+      float left = 0;
+      float top = 0;
+      float right = static_cast<float>(left_viewport_->width()) /
+                    static_cast<float>(framebuffer_width);
+      float bottom = static_cast<float>(left_viewport_->height()) /
+                     static_cast<float>(framebuffer_height);
+
+      // Adjust the UVs so that the mirrored content always fills the canvas
+      // and is centered while staying proportional.
+      DoubleSize output_size = session()->OutputCanvasSize();
+      double output_aspect = output_size.Width() / output_size.Height();
+      double viewport_aspect = static_cast<float>(left_viewport_->width()) /
+                               static_cast<float>(left_viewport_->height());
+
+      if (output_aspect > viewport_aspect) {
+        float viewport_scale = bottom;
+        output_aspect = viewport_aspect / output_aspect;
+        top = 0.5 - (output_aspect * 0.5);
+        bottom = top + output_aspect;
+        top *= viewport_scale;
+        bottom *= viewport_scale;
+      } else {
+        float viewport_scale = right;
+        output_aspect = output_aspect / viewport_aspect;
+        left = 0.5 - (output_aspect * 0.5);
+        right = left + output_aspect;
+        left *= viewport_scale;
+        right *= viewport_scale;
+      }
+
+      session()->outputContext()->SetUV(FloatPoint(left, top),
+                                        FloatPoint(right, bottom));
+    }
   } else {
     left_viewport_ = new XRViewport(0, 0, framebuffer_width * viewport_scale_,
                                     framebuffer_height * viewport_scale_);
@@ -217,17 +260,41 @@ void XRWebGLLayer::OnFrameEnd() {
 }
 
 void XRWebGLLayer::OnResize() {
-  DoubleSize framebuffers_size = session()->IdealFramebufferSize();
+  if (!session()->exclusive()) {
+    // For non-exclusive sessions a resize indicates we should adjust the
+    // drawing buffer size to match the canvas.
+    DoubleSize framebuffers_size = session()->IdealFramebufferSize();
 
-  IntSize desired_size(framebuffers_size.Width() * framebuffer_scale_,
-                       framebuffers_size.Height() * framebuffer_scale_);
-  drawing_buffer_->Resize(desired_size);
+    IntSize desired_size(framebuffers_size.Width() * framebuffer_scale_,
+                         framebuffers_size.Height() * framebuffer_scale_);
+    drawing_buffer_->Resize(desired_size);
+  }
+
+  // With both exclusive and non-exclusive session the viewports should be
+  // recomputed when the output canvas resizes.
   viewports_dirty_ = true;
 }
 
 scoped_refptr<StaticBitmapImage> XRWebGLLayer::TransferToStaticBitmapImage(
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   return drawing_buffer_->TransferToStaticBitmapImage(out_release_callback);
+}
+
+void XRWebGLLayer::OnMirrorImageAvailable(
+    scoped_refptr<StaticBitmapImage> image,
+    std::unique_ptr<viz::SingleReleaseCallback> release_callback) {
+  ImageBitmap* image_bitmap = ImageBitmap::Create(std::move(image));
+
+  session()->outputContext()->SetImage(image_bitmap);
+
+  if (mirror_release_callback_) {
+    // TODO(bajones): We should probably have the compositor report to us when
+    // it's done with the image, rather than reporting back that it's usable as
+    // soon as we receive a new one.
+    mirror_release_callback_->Run(gpu::SyncToken(), false /* lost_resource */);
+  }
+
+  mirror_release_callback_ = std::move(release_callback);
 }
 
 void XRWebGLLayer::Trace(blink::Visitor* visitor) {

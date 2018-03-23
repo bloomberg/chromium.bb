@@ -31,6 +31,8 @@ class WebExternalTextureLayerImpl : public blink::WebExternalTextureLayer {
   void SetPremultipliedAlpha(bool premultiplied) override;
   void SetBlendBackgroundColor(bool blend) override;
   void SetNearestNeighbor(bool nearest_neighbor) override;
+  void SetUV(const blink::WebFloatPoint left_top,
+             const blink::WebFloatPoint right_bottom) override;
 
  private:
   std::unique_ptr<WebLayerImpl> layer_;

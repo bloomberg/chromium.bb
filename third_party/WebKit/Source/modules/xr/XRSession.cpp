@@ -349,7 +349,7 @@ void XRSession::UpdateCanvasDimensions(Element* element) {
   output_width_ = element->OffsetWidth() * devicePixelRatio;
   output_height_ = element->OffsetHeight() * devicePixelRatio;
 
-  if (!exclusive_ && base_layer_) {
+  if (base_layer_) {
     base_layer_->OnResize();
   }
 }

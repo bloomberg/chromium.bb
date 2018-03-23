@@ -26,7 +26,8 @@ class WebGLRenderingContextBase;
 class XRSession;
 class XRViewport;
 
-class XRWebGLLayer final : public XRLayer {
+class XRWebGLLayer final : public XRLayer,
+                           public XRWebGLDrawingBuffer::MirrorClient {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -70,6 +71,11 @@ class XRWebGLLayer final : public XRLayer {
   scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
+  // XRWebGLDrawingBuffer::MirrorClient impementation
+  void OnMirrorImageAvailable(
+      scoped_refptr<StaticBitmapImage>,
+      std::unique_ptr<viz::SingleReleaseCallback>) override;
+
   virtual void Trace(blink::Visitor*);
   virtual void TraceWrappers(const ScriptWrappableVisitor*) const;
 
@@ -86,6 +92,8 @@ class XRWebGLLayer final : public XRLayer {
   TraceWrapperMember<WebGLRenderingContextBase> webgl_context_;
   scoped_refptr<XRWebGLDrawingBuffer> drawing_buffer_;
   Member<WebGLFramebuffer> framebuffer_;
+
+  std::unique_ptr<viz::SingleReleaseCallback> mirror_release_callback_;
 
   double framebuffer_scale_ = 1.0;
   double viewport_scale_ = 1.0;
