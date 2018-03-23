@@ -210,7 +210,7 @@ void PageCaptureSaveAsMHTMLFunction::TemporaryFileCreatedOnUI(bool success) {
 
   web_contents->GenerateMHTML(
       content::MHTMLGenerationParams(mhtml_path_),
-      base::Bind(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this));
+      base::BindOnce(&PageCaptureSaveAsMHTMLFunction::MHTMLGenerated, this));
 }
 
 void PageCaptureSaveAsMHTMLFunction::MHTMLGenerated(int64_t mhtml_file_size) {

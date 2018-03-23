@@ -418,7 +418,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                             const std::string& headers,
                             const base::string16& suggested_filename) override;
   void GenerateMHTML(const MHTMLGenerationParams& params,
-                     const base::Callback<void(int64_t)>& callback) override;
+                     base::OnceCallback<void(int64_t)> callback) override;
   const std::string& GetContentsMimeType() const override;
   bool WillNotifyDisconnection() const override;
   RendererPreferences* GetMutableRendererPrefs() override;
