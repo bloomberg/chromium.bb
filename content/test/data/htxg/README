@@ -1,8 +1,22 @@
 The certificate message files (*.msg) and the signed exchange files (*.htxg) in
 this directory are generated using the following commands.
 
-gen-certurl and gen-signedexchange are available in webpackage repository.
+gen-certurl and gen-signedexchange are available in webpackage repository [1].
+We're using a fork of this repository [2] that implements the "Implementation
+Checkpoints" of the signed-exchange spec [3].
+
  [1] https://github.com/WICG/webpackage
+ [2] https://github.com/nyaxt/webpackage
+ [3] https://jyasskin.github.io/webpackage/implementation-draft/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
+
+# Download the webpackage repository
+go get -d github.com/WICG/webpackage/go/signedexchange
+
+# Switch to the fork repository
+cd ${GOPATH:-~/go}/src/github.com/WICG/webpackage
+git remote add impl https://github.com/nyaxt/webpackage.git
+git fetch impl master
+git checkout -b impl impl/master
 
 # Install gen-certurl command
 go get github.com/WICG/webpackage/go/signedexchange/cmd/gen-certurl
@@ -42,6 +56,7 @@ gen-signedexchange \
   -certUrl https://cert.example.org/cert.msg \
   -validityUrl https://cert.example.org/resource.validity.msg \
   -privateKey /tmp/wildcard_example.org.private.pem \
+  -date 2018-03-12T05:53:20Z \
   -o test.example.org_test.htxg \
   -miRecordSize 100
 
@@ -54,9 +69,11 @@ gen-signedexchange \
   -certUrl https://cert.example.org/cert.msg \
   -validityUrl https://cert.example.org/resource.validity.msg \
   -privateKey /tmp/wildcard_example.org.private.pem \
+  -date 2018-03-12T05:53:20Z \
   -o test.example.com_invalid_test.htxg \
   -miRecordSize 100
 
+# Generate the signed exchange for a plain text file.
 gen-signedexchange \
   -uri https://test.example.org/hello.txt \
   -status 200 \
@@ -66,4 +83,5 @@ gen-signedexchange \
   -validityUrl https://cert.example.org/resource.validity.msg \
   -privateKey /tmp/wildcard_example.org.private.pem \
   -responseHeader 'Content-Type: text/plain; charset=iso-8859-1' \
+  -date 2018-03-12T05:53:20Z \
   -o test.example.org_hello.txt.htxg

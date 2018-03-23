@@ -39,7 +39,7 @@ namespace content {
 
 namespace {
 
-const uint64_t kSignatureHeaderDate = 1520834000;
+const uint64_t kSignatureHeaderDate = 1520834000;  // 2018-03-12T05:53:20Z
 
 const char* kMockHeaderFileSuffix = ".mock-http-headers";
 

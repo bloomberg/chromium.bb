@@ -72,7 +72,7 @@ TEST(SignedExchangeHeaderTest, ParseGoldenFile) {
   base::FilePath test_htxg_path;
   PathService::Get(content::DIR_TEST_DATA, &test_htxg_path);
   test_htxg_path = test_htxg_path.AppendASCII("htxg").AppendASCII(
-      "signed_exchange_header_test.htxg");
+      "test.example.org_test.htxg");
 
   std::string contents;
   ASSERT_TRUE(base::ReadFileToString(test_htxg_path, &contents));
@@ -93,7 +93,7 @@ TEST(SignedExchangeHeaderTest, ParseGoldenFile) {
   EXPECT_EQ(header->request_url(), GURL("https://test.example.org/test/"));
   EXPECT_EQ(header->request_method(), "GET");
   EXPECT_EQ(header->response_code(), static_cast<net::HttpStatusCode>(200u));
-  EXPECT_EQ(header->response_headers().size(), 5u);
+  EXPECT_EQ(header->response_headers().size(), 4u);
   EXPECT_EQ(header->response_headers().find("content-encoding")->second,
             "mi-sha256");
 }
