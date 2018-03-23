@@ -101,10 +101,12 @@ class MockDownloadManager : public DownloadManager {
   MOCK_METHOD1(Init, bool(BrowserContext* browser_context));
 
   // Gasket for handling scoped_ptr arguments.
-  void StartDownload(std::unique_ptr<download::DownloadCreateInfo> info,
-                     std::unique_ptr<download::InputStream> stream,
-                     const download::DownloadUrlParameters::OnStartedCallback&
-                         callback) override;
+  void StartDownload(
+      std::unique_ptr<download::DownloadCreateInfo> info,
+      std::unique_ptr<download::InputStream> stream,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      const download::DownloadUrlParameters::OnStartedCallback& callback)
+      override;
 
   MOCK_METHOD2(MockStartDownload,
                void(download::DownloadCreateInfo*, download::InputStream*));

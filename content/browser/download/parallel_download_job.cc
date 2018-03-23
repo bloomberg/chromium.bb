@@ -31,13 +31,15 @@ const int kDownloadJobVerboseLevel = 1;
 ParallelDownloadJob::ParallelDownloadJob(
     download::DownloadItem* download_item,
     std::unique_ptr<download::DownloadRequestHandleInterface> request_handle,
-    const download::DownloadCreateInfo& create_info)
+    const download::DownloadCreateInfo& create_info,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory)
     : download::DownloadJobImpl(download_item, std::move(request_handle), true),
       initial_request_offset_(create_info.offset),
       initial_received_slices_(download_item->GetReceivedSlices()),
       content_length_(create_info.total_bytes),
       requests_sent_(false),
-      is_canceled_(false) {}
+      is_canceled_(false),
+      shared_url_loader_factory_(std::move(shared_url_loader_factory)) {}
 
 ParallelDownloadJob::~ParallelDownloadJob() = default;
 
@@ -125,7 +127,7 @@ void ParallelDownloadJob::BuildParallelRequestAfterDelay() {
 }
 
 void ParallelDownloadJob::OnInputStreamReady(
-    DownloadWorker* worker,
+    download::DownloadWorker* worker,
     std::unique_ptr<download::InputStream> input_stream) {
   bool success = DownloadJob::AddInputStream(
       std::move(input_stream), worker->offset(), worker->length());
@@ -245,8 +247,8 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   DCHECK(download_item_);
   DCHECK_EQ(download::DownloadSaveInfo::kLengthFullContent, length);
 
-  std::unique_ptr<DownloadWorker> worker =
-      std::make_unique<DownloadWorker>(this, offset, length);
+  auto worker =
+      std::make_unique<download::DownloadWorker>(this, offset, length);
 
   StoragePartition* storage_partition =
       BrowserContext::GetStoragePartitionForSite(
@@ -297,15 +299,8 @@ void ParallelDownloadJob::CreateRequest(int64_t offset, int64_t length) {
   download_params->set_referrer(download_item_->GetReferrerUrl());
   download_params->set_referrer_policy(net::URLRequest::NEVER_CLEAR_REFERRER);
 
-  download_params->set_blob_storage_context_getter(
-      base::BindOnce(&BlobStorageContextGetter,
-                     DownloadItemUtils::GetBrowserContext(download_item_)
-                         ->GetResourceContext()));
-
   // Send the request.
-  worker->SendRequest(std::move(download_params),
-                      static_cast<StoragePartitionImpl*>(storage_partition)
-                          ->url_loader_factory_getter());
+  worker->SendRequest(std::move(download_params), shared_url_loader_factory_);
   DCHECK(workers_.find(offset) == workers_.end());
   workers_[offset] = std::move(worker);
 }

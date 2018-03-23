@@ -71,10 +71,10 @@ std::unique_ptr<ResourceDownloader> ResourceDownloader::BeginDownload(
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(request), params->render_process_host_id(),
       params->render_frame_host_routing_id(), site_url, tab_url,
-      tab_referrer_url, download_id, task_runner);
+      tab_referrer_url, download_id, task_runner,
+      std::move(shared_url_loader_factory));
 
-  downloader->Start(std::move(shared_url_loader_factory), std::move(params),
-                    is_parallel_request);
+  downloader->Start(std::move(params), is_parallel_request);
   return downloader;
 }
 
@@ -93,11 +93,12 @@ ResourceDownloader::InterceptNavigationResponse(
     const scoped_refptr<network::ResourceResponse>& response,
     net::CertStatus cert_status,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner) {
   auto downloader = std::make_unique<ResourceDownloader>(
       delegate, std::move(resource_request), render_process_id, render_frame_id,
       site_url, tab_url, tab_referrer_url, download::DownloadItem::kInvalidId,
-      task_runner);
+      task_runner, std::move(shared_url_loader_factory));
   downloader->InterceptResponse(std::move(response), std::move(url_chain),
                                 suggested_filename, cert_status,
                                 std::move(url_loader_client_endpoints));
@@ -113,7 +114,8 @@ ResourceDownloader::ResourceDownloader(
     const GURL& tab_url,
     const GURL& tab_referrer_url,
     uint32_t download_id,
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner)
+    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory)
     : delegate_(delegate),
       resource_request_(std::move(resource_request)),
       download_id_(download_id),
@@ -123,12 +125,12 @@ ResourceDownloader::ResourceDownloader(
       tab_url_(tab_url),
       tab_referrer_url_(tab_referrer_url),
       delegate_task_runner_(task_runner),
+      shared_url_loader_factory_(std::move(shared_url_loader_factory)),
       weak_ptr_factory_(this) {}
 
 ResourceDownloader::~ResourceDownloader() = default;
 
 void ResourceDownloader::Start(
-    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
     std::unique_ptr<DownloadUrlParameters> download_url_parameters,
     bool is_parallel_request) {
   callback_ = download_url_parameters->callback();
@@ -153,7 +155,7 @@ void ResourceDownloader::Start(
   // Set up the URLLoader
   network::mojom::URLLoaderRequest url_loader_request =
       mojo::MakeRequest(&url_loader_);
-  shared_url_loader_factory->CreateLoaderAndStart(
+  shared_url_loader_factory_->CreateLoaderAndStart(
       std::move(url_loader_request),
       0,  // routing_id
       0,  // request_id
@@ -217,7 +219,7 @@ void ResourceDownloader::OnResponseStarted(
           &UrlDownloadHandler::Delegate::OnUrlDownloadStarted, delegate_,
           std::move(download_create_info),
           std::make_unique<StreamHandleInputStream>(std::move(stream_handle)),
-          callback_));
+          std::move(shared_url_loader_factory_), callback_));
 }
 
 void ResourceDownloader::OnReceiveRedirect() {

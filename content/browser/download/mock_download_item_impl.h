@@ -52,7 +52,9 @@ class MockDownloadItemImpl : public DownloadItemImpl {
   void Start(
       std::unique_ptr<download::DownloadFile> download_file,
       std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
-      const download::DownloadCreateInfo& create_info) override {
+      const download::DownloadCreateInfo& create_info,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory)
+      override {
     MockStart(download_file.get(), req_handle.get());
   }
 

@@ -53,6 +53,7 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const scoped_refptr<network::ResourceResponse>& response,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   ResourceDownloader(
@@ -64,7 +65,8 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
       const GURL& tab_url,
       const GURL& tab_referrer_url,
       uint32_t download_id,
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
+      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
   ~ResourceDownloader() override;
 
   // download::DownloadResponseHandler::Delegate
@@ -76,7 +78,6 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
  private:
   // Helper method to start the network request.
   void Start(
-      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       std::unique_ptr<download::DownloadUrlParameters> download_url_parameters,
       bool is_parallel_request);
 
@@ -131,6 +132,9 @@ class COMPONENTS_DOWNLOAD_EXPORT ResourceDownloader
 
   // TaskRunner to post callbacks to the |delegate_|
   scoped_refptr<base::SingleThreadTaskRunner> delegate_task_runner_;
+
+  // URLLoaderFactory for issueing network requests.
+  scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory_;
 
   base::WeakPtrFactory<ResourceDownloader> weak_ptr_factory_;
 

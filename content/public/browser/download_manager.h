@@ -51,6 +51,10 @@ namespace download {
 struct DownloadCreateInfo;
 }  // namespace download
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace content {
 
 class BrowserContext;
@@ -116,11 +120,13 @@ class CONTENT_EXPORT DownloadManager : public base::SupportsUserData::Data {
 
   // Called by a download source (Currently DownloadResourceHandler)
   // to initiate the non-source portions of a download.
-  // Returns the id assigned to the download.  If the DownloadCreateInfo
-  // specifies an id, that id will be used.
+  // If the DownloadCreateInfo specifies an id, that id will be used.
+  // If |shared_url_loader_factory| is provided, it can be used to issue
+  // parallel download requests.
   virtual void StartDownload(
       std::unique_ptr<download::DownloadCreateInfo> info,
       std::unique_ptr<download::InputStream> stream,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       const download::DownloadUrlParameters::OnStartedCallback& on_started) = 0;
 
   // Remove downloads whose URLs match the |url_filter| and are within

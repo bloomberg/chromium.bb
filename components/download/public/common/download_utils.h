@@ -11,9 +11,18 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
 
+namespace net {
+class HttpRequestHeaders;
+}
+
+namespace network {
+struct ResourceRequest;
+}
+
 namespace download {
 struct DownloadCreateInfo;
 struct DownloadSaveInfo;
+class DownloadUrlParameters;
 
 // Handle the url request completion status and return the interrupt reasons.
 // |cert_status| is ignored if error_code is not net::ERR_ABORTED.
@@ -35,6 +44,18 @@ HandleSuccessfulServerResponse(const net::HttpResponseHeaders& http_headers,
 COMPONENTS_DOWNLOAD_EXPORT void HandleResponseHeaders(
     const net::HttpResponseHeaders* headers,
     DownloadCreateInfo* create_info);
+
+// Create a ResourceRequest from |params|.
+COMPONENTS_DOWNLOAD_EXPORT std::unique_ptr<network::ResourceRequest>
+CreateResourceRequest(DownloadUrlParameters* params);
+
+// Gets LoadFlags from |params|.
+COMPONENTS_DOWNLOAD_EXPORT int GetLoadFlags(DownloadUrlParameters* params,
+                                            bool has_upload_data);
+
+// Gets addtional request headers from |params|.
+COMPONENTS_DOWNLOAD_EXPORT std::unique_ptr<net::HttpRequestHeaders>
+GetAdditionalRequestHeaders(DownloadUrlParameters* params);
 
 }  // namespace download
 

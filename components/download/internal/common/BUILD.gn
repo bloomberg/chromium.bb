@@ -25,10 +25,12 @@ source_set("internal") {
     "download_task_runner.cc",
     "download_ukm_helper.cc",
     "download_utils.cc",
+    "download_worker.cc",
     "parallel_download_utils.cc",
     "rate_estimator.cc",
     "resource_downloader.cc",
     "stream_handle_input_stream.cc",
+    "url_download_handler_factory.cc",
   ]
 
   public_deps = [

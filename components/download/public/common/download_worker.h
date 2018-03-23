@@ -2,28 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_WORKER_H_
-#define CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_WORKER_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_WORKER_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_WORKER_H_
 
 #include <memory>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_request_handle_interface.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/url_download_handler.h"
-#include "content/browser/download/download_request_core.h"
-#include "content/browser/url_loader_factory_getter.h"
-#include "content/common/content_export.h"
 
-namespace content {
+namespace network {
+class SharedURLLoaderFactory;
+}
+
+namespace download {
 
 // Helper class used to send subsequent range requests to fetch slices of the
 // file after handling response of the original non-range request.
 // TODO(xingliu): we should consider to reuse this class for single connection
 // download.
-class CONTENT_EXPORT DownloadWorker
-    : public download::UrlDownloadHandler::Delegate {
+class COMPONENTS_DOWNLOAD_EXPORT DownloadWorker
+    : public UrlDownloadHandler::Delegate {
  public:
   class Delegate {
    public:
@@ -32,7 +34,7 @@ class CONTENT_EXPORT DownloadWorker
     // destination file.
     virtual void OnInputStreamReady(
         DownloadWorker* worker,
-        std::unique_ptr<download::InputStream> input_stream) = 0;
+        std::unique_ptr<InputStream> input_stream) = 0;
   };
 
   DownloadWorker(DownloadWorker::Delegate* delegate,
@@ -45,8 +47,8 @@ class CONTENT_EXPORT DownloadWorker
 
   // Send network request to ask for a download.
   void SendRequest(
-      std::unique_ptr<download::DownloadUrlParameters> params,
-      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
+      std::unique_ptr<DownloadUrlParameters> params,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
 
   // Download operations.
   void Pause();
@@ -56,14 +58,13 @@ class CONTENT_EXPORT DownloadWorker
  private:
   // UrlDownloader::Delegate implementation.
   void OnUrlDownloadStarted(
-      std::unique_ptr<download::DownloadCreateInfo> create_info,
-      std::unique_ptr<download::InputStream> input_stream,
-      const download::DownloadUrlParameters::OnStartedCallback& callback)
-      override;
-  void OnUrlDownloadStopped(download::UrlDownloadHandler* downloader) override;
+      std::unique_ptr<DownloadCreateInfo> create_info,
+      std::unique_ptr<InputStream> input_stream,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      const DownloadUrlParameters::OnStartedCallback& callback) override;
+  void OnUrlDownloadStopped(UrlDownloadHandler* downloader) override;
   void OnUrlDownloadHandlerCreated(
-      download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader)
-      override;
+      UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) override;
 
   DownloadWorker::Delegate* const delegate_;
 
@@ -79,17 +80,16 @@ class CONTENT_EXPORT DownloadWorker
   bool is_user_cancel_;
 
   // Used to control the network request. Live on UI thread.
-  std::unique_ptr<download::DownloadRequestHandleInterface> request_handle_;
+  std::unique_ptr<DownloadRequestHandleInterface> request_handle_;
 
   // Used to handle the url request. Live and die on IO thread.
-  download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr
-      url_download_handler_;
+  UrlDownloadHandler::UniqueUrlDownloadHandlerPtr url_download_handler_;
 
   base::WeakPtrFactory<DownloadWorker> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadWorker);
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_DOWNLOAD_WORKER_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_DOWNLOAD_WORKER_H_

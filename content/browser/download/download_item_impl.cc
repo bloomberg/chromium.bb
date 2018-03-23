@@ -422,7 +422,8 @@ DownloadItemImpl::DownloadItemImpl(
       is_updating_observers_(false),
       weak_ptr_factory_(this) {
   job_ = DownloadJobFactory::CreateJob(this, std::move(request_handle),
-                                       download::DownloadCreateInfo(), true);
+                                       download::DownloadCreateInfo(), true,
+                                       nullptr);
   delegate_->Attach();
   Init(true /* actively downloading */, TYPE_SAVE_PAGE_AS);
 }
@@ -1416,7 +1417,8 @@ void DownloadItemImpl::Init(
 void DownloadItemImpl::Start(
     std::unique_ptr<download::DownloadFile> file,
     std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
-    const download::DownloadCreateInfo& new_create_info) {
+    const download::DownloadCreateInfo& new_create_info,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!download_file_.get());
   DVLOG(20) << __func__ << "() this=" << DebugString(true);
@@ -1425,7 +1427,8 @@ void DownloadItemImpl::Start(
 
   download_file_ = std::move(file);
   job_ = DownloadJobFactory::CreateJob(this, std::move(req_handle),
-                                       new_create_info, false);
+                                       new_create_info, false,
+                                       std::move(shared_url_loader_factory));
   if (job_->IsParallelizable()) {
     download::RecordParallelizableDownloadCount(download::START_COUNT,
                                                 IsParallelDownloadEnabled());

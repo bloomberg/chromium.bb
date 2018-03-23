@@ -14,6 +14,7 @@
 #include "content/browser/download/parallel_download_utils.h"
 #include "content/browser/download/save_package_download_job.h"
 #include "content/public/common/content_features.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace content {
 
@@ -98,7 +99,8 @@ std::unique_ptr<download::DownloadJob> DownloadJobFactory::CreateJob(
     download::DownloadItem* download_item,
     std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
     const download::DownloadCreateInfo& create_info,
-    bool is_save_package_download) {
+    bool is_save_package_download,
+    scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory) {
   if (is_save_package_download) {
     return std::make_unique<SavePackageDownloadJob>(download_item,
                                                     std::move(req_handle));
@@ -108,7 +110,8 @@ std::unique_ptr<download::DownloadJob> DownloadJobFactory::CreateJob(
   // Build parallel download job.
   if (IsParallelDownloadEnabled() && is_parallelizable) {
     return std::make_unique<ParallelDownloadJob>(
-        download_item, std::move(req_handle), create_info);
+        download_item, std::move(req_handle), create_info,
+        std::move(shared_url_loader_factory));
   }
 
   // An ordinary download job.

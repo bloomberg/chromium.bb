@@ -230,7 +230,7 @@ void UrlDownloader::OnStart(
           &download::UrlDownloadHandler::Delegate::OnUrlDownloadStarted,
           delegate_, std::move(create_info),
           std::make_unique<ByteStreamInputStream>(std::move(stream_reader)),
-          callback));
+          nullptr, callback));
 }
 
 void UrlDownloader::OnReadyToRead() {

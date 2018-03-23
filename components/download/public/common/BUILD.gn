@@ -43,6 +43,7 @@ component("public") {
     "download_url_parameters.cc",
     "download_url_parameters.h",
     "download_utils.h",
+    "download_worker.h",
     "input_stream.cc",
     "input_stream.h",
     "parallel_download_utils.h",
@@ -50,6 +51,7 @@ component("public") {
     "resource_downloader.h",
     "resume_mode.h",
     "stream_handle_input_stream.h",
+    "url_download_handler_factory.h",
   ]
 
   configs += [ ":components_download_implementation" ]

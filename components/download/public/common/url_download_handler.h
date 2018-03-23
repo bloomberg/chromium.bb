@@ -7,6 +7,7 @@
 
 #include "components/download/public/common/download_export.h"
 #include "components/download/public/common/download_url_parameters.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 
 namespace download {
 struct DownloadCreateInfo;
@@ -23,6 +24,8 @@ class COMPONENTS_DOWNLOAD_EXPORT UrlDownloadHandler {
     virtual void OnUrlDownloadStarted(
         std::unique_ptr<DownloadCreateInfo> download_create_info,
         std::unique_ptr<InputStream> input_stream,
+        scoped_refptr<network::SharedURLLoaderFactory>
+            shared_url_loader_factory,
         const DownloadUrlParameters::OnStartedCallback& callback) = 0;
 
     // Called after the connection is cancelled or finished.
