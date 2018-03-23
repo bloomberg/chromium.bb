@@ -85,6 +85,7 @@ class BookmarkEditorView : public BookmarkEditor,
   views::View* CreateExtraView() override;
   ui::ModalType GetModalType() const override;
   bool CanResize() const override;
+  bool ShouldShowCloseButton() const override;
   base::string16 GetWindowTitle() const override;
   bool Accept() override;
 
