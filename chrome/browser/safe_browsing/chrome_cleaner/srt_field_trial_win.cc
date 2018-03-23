@@ -39,7 +39,7 @@ const base::Feature kRebootPromptDialogFeature{
     "RebootPromptDialog", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kUserInitiatedChromeCleanupsFeature{
-    "UserInitiatedChromeCleanups", base::FEATURE_ENABLED_BY_DEFAULT};
+    "UserInitiatedChromeCleanups", base::FEATURE_DISABLED_BY_DEFAULT};
 
 const base::Feature kChromeCleanupDistributionFeature{
     "ChromeCleanupDistribution", base::FEATURE_DISABLED_BY_DEFAULT};
