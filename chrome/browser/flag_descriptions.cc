@@ -1617,6 +1617,14 @@ const char kUseModernMediaControlsName[] = "New Media Controls";
 const char kUseModernMediaControlsDescription[] =
     "Enables the new style native media controls.";
 
+const char kUsePdfCompositorServiceName[] =
+    "Use PDF compositor service for printing";
+const char kUsePdfCompositorServiceDescription[] =
+    "When enabled, use PDF compositor service to composite and generate PDF "
+    "files for printing. When site isolation is enabled, disabling this will "
+    "not stop using PDF compositor service since the service is required for "
+    "printing out-of-process iframes correctly.";
+
 const char kUserActivationV2Name[] = "User Activation v2";
 const char kUserActivationV2Description[] =
     "Enable simple user activation for APIs that are otherwise controlled by "
