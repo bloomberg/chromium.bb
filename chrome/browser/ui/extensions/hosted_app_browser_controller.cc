@@ -109,31 +109,18 @@ HostedAppBrowserController::HostedAppBrowserController(Browser* browser)
     : SiteEngagementObserver(SiteEngagementService::Get(browser->profile())),
       browser_(browser),
       extension_id_(
-          web_app::GetExtensionIdFromApplicationName(browser->app_name())) {
+          web_app::GetExtensionIdFromApplicationName(browser->app_name())),
+      // If a bookmark app has a URL handler, then it is a PWA.
+      // TODO(https://crbug.com/774918): Replace once there is a more explicit
+      // indicator of a Bookmark App for an installable website.
+      created_for_installed_pwa_(
+          base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
+          UrlHandlers::GetUrlHandlers(GetExtension())) {
   browser_->tab_strip_model()->AddObserver(this);
 }
 
 HostedAppBrowserController::~HostedAppBrowserController() {
   browser_->tab_strip_model()->RemoveObserver(this);
-}
-
-bool HostedAppBrowserController::IsForInstalledPwa(
-    content::WebContents* web_contents) const {
-  if (!web_contents ||
-      web_contents != browser_->tab_strip_model()->GetActiveWebContents()) {
-    return false;
-  }
-
-  if (!browser_->is_app())
-    return false;
-
-  // If a bookmark app has a URL handler, then it is a PWA.
-  // TODO(https://crbug.com/774918): Replace once there is a more explicit
-  // indicator of a Bookmark App for an installable website.
-  if (extensions::UrlHandlers::GetUrlHandlers(GetExtension()) == nullptr)
-    return false;
-
-  return true;
 }
 
 bool HostedAppBrowserController::ShouldShowLocationBar() const {
@@ -238,8 +225,14 @@ void HostedAppBrowserController::OnEngagementEvent(
     const GURL& /*url*/,
     double /*score*/,
     SiteEngagementService::EngagementType type) {
-  if (!IsForInstalledPwa(web_contents))
+  if (!created_for_installed_pwa_)
     return;
+
+  // Check the event belongs to the controller's associated browser window.
+  if (!web_contents ||
+      web_contents != browser_->tab_strip_model()->GetActiveWebContents()) {
+    return;
+  }
 
   UMA_HISTOGRAM_ENUMERATION(kPwaWindowEngagementTypeHistogram, type,
                             SiteEngagementService::ENGAGEMENT_LAST);
