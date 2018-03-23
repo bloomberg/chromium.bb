@@ -19,6 +19,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/stl_util.h"
+#include "base/strings/strcat.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
@@ -2060,6 +2061,89 @@ TEST(HttpCache, RangeGET_ParallelValidationCouldntConditionalize) {
     range_transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 ";
     ReadAndVerifyTransaction(c->trans.get(), range_transaction);
   }
+}
+
+// Tests a 200 request and a simultaneous range request where conditionalization
+// is possible.
+TEST(HttpCache, RangeGET_ParallelValidationCouldConditionalize) {
+  MockHttpCache cache;
+
+  MockTransaction mock_transaction(kSimpleGET_Transaction);
+  mock_transaction.url = kRangeGET_TransactionOK.url;
+  mock_transaction.data = kFullRangeData;
+  std::string response_headers_str = base::StrCat(
+      {"ETag: StrongOne\n",
+       "Content-Length:", base::IntToString(strlen(kFullRangeData)), "\n"});
+  mock_transaction.response_headers = response_headers_str.c_str();
+
+  ScopedMockTransaction transaction(mock_transaction);
+
+  std::vector<std::unique_ptr<Context>> context_list;
+  const int kNumTransactions = 2;
+
+  for (int i = 0; i < kNumTransactions; ++i) {
+    context_list.push_back(std::make_unique<Context>());
+  }
+
+  // Let 1st transaction complete headers phase for no range and read some part
+  // of the response and write in the cache.
+  std::string first_read;
+  MockHttpRequest request1(transaction);
+  {
+    request1.url = GURL(kRangeGET_TransactionOK.url);
+    auto& c = context_list[0];
+    c->result = cache.CreateTransaction(&c->trans);
+    ASSERT_THAT(c->result, IsOk());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+
+    c->result =
+        c->trans->Start(&request1, c->callback.callback(), NetLogWithSource());
+    base::RunLoop().RunUntilIdle();
+
+    const int kBufferSize = 5;
+    scoped_refptr<IOBuffer> buffer(new IOBuffer(kBufferSize));
+    ReleaseBufferCompletionCallback cb(buffer.get());
+    c->result = c->trans->Read(buffer.get(), kBufferSize, cb.callback());
+    EXPECT_EQ(kBufferSize, cb.GetResult(c->result));
+
+    std::string data_read(buffer->data(), kBufferSize);
+    first_read = data_read;
+
+    EXPECT_EQ(LOAD_STATE_READING_RESPONSE, c->trans->GetLoadState());
+  }
+
+  // 2nd transaction requests a range.
+  ScopedMockTransaction range_transaction(kRangeGET_TransactionOK);
+  range_transaction.request_headers = "Range: bytes = 0-29\r\n" EXTRA_HEADER;
+  MockHttpRequest request2(range_transaction);
+  {
+    auto& c = context_list[1];
+    c->result = cache.CreateTransaction(&c->trans);
+    ASSERT_THAT(c->result, IsOk());
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+
+    c->result =
+        c->trans->Start(&request2, c->callback.callback(), NetLogWithSource());
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(LOAD_STATE_IDLE, c->trans->GetLoadState());
+  }
+
+  EXPECT_EQ(2, cache.network_layer()->transaction_count());
+  EXPECT_EQ(0, cache.disk_cache()->open_count());
+  EXPECT_EQ(1, cache.disk_cache()->create_count());
+
+  // Finish and verify the first request.
+  auto& c0 = context_list[0];
+  c0->result = c0->callback.WaitForResult();
+  ReadRemainingAndVerifyTransaction(c0->trans.get(), first_read, transaction);
+
+  // And the second.
+  auto& c1 = context_list[1];
+  c1->result = c1->callback.WaitForResult();
+
+  range_transaction.data = "rg: 00-09 rg: 10-19 rg: 20-29 ";
+  ReadAndVerifyTransaction(c1->trans.get(), range_transaction);
 }
 
 // Tests parallel validation on range requests with overlapping ranges.
