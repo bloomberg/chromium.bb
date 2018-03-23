@@ -189,7 +189,7 @@ void BrowserFeatureExtractor::ExtractFeatures(const BrowseInfo* info,
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(request);
   DCHECK(info);
-  DCHECK_EQ(0U, request->url().find("http:"));
+  DCHECK(GURL(request->url()).SchemeIsHTTPOrHTTPS());
   DCHECK(!callback.is_null());
   // Extract features pertaining to this navigation.
   const NavigationController& controller = tab_->GetController();
@@ -378,13 +378,13 @@ void BrowserFeatureExtractor::QueryUrlHistoryDone(
     callback.Run(false, std::move(request));
     return;
   }
-  GURL request_url(request->url());
+  GURL::Replacements rep;
+  rep.SetSchemeStr(url::kHttpScheme);
+  GURL http_url = GURL(request->url()).ReplaceComponents(rep);
   history->GetVisibleVisitCountToHost(
-      request_url,
+      http_url,
       base::Bind(&BrowserFeatureExtractor::QueryHttpHostVisitsDone,
-                 base::Unretained(this),
-                 base::Passed(&request),
-                 callback),
+                 base::Unretained(this), base::Passed(&request), callback),
       &cancelable_task_tracker_);
 }
 
@@ -409,13 +409,13 @@ void BrowserFeatureExtractor::QueryHttpHostVisitsDone(
     callback.Run(false, std::move(request));
     return;
   }
-  std::string https_url = request->url();
+  GURL::Replacements rep;
+  rep.SetSchemeStr(url::kHttpsScheme);
+  GURL https_url = GURL(request->url()).ReplaceComponents(rep);
   history->GetVisibleVisitCountToHost(
-      GURL(https_url.replace(0, 5, "https:")),
+      https_url,
       base::Bind(&BrowserFeatureExtractor::QueryHttpsHostVisitsDone,
-                 base::Unretained(this),
-                 base::Passed(&request),
-                 callback),
+                 base::Unretained(this), base::Passed(&request), callback),
       &cancelable_task_tracker_);
 }
 
