@@ -404,7 +404,6 @@
         'shards': 2,
       },
     },
-    'components_perftests': {},
     'content_browsertests': {
       'android_swarming': {
         'hard_timeout': 1500,
@@ -1649,6 +1648,10 @@
     },
   },
 
+  'components_perftests_isolated_scripts' : {
+    'components_perftests': {},
+  },
+
   'telemetry_perf_unittests_scripts': {
     'telemetry_perf_unittests': {
       'script': 'telemetry_perf_unittests.py',
@@ -1867,6 +1870,7 @@
 
   'chromium_rel_isolated_scripts': [
     'chromedriver_py_tests_isolated_scripts',
+    'components_perftests_isolated_scripts',
     'desktop_chromium_isolated_scripts',
     'telemetry_perf_unittests_isolated_scripts',
   ],
@@ -2301,6 +2305,7 @@
   ],
 
   'marshmallow_isolated_scripts': [
+    'components_perftests_isolated_scripts',
     'monochrome_apk_checker_isolated_script',
     'telemetry_perf_unittests_isolated_scripts',
   ],

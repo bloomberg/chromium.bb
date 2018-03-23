@@ -1074,7 +1074,10 @@ group("chromium_builder_perf") {
           [ "//third_party/breakpad:minidump_stackwalk($host_toolchain)" ]
     }
     if (is_win || is_android) {
-      data_deps += [ "//chrome/test:angle_perftests" ]
+      data_deps += [
+        "//components:components_perftests",
+        "//chrome/test:angle_perftests",
+      ]
     }
   }
 }

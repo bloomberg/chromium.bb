@@ -109,12 +109,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_perftests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "components_unittests"
       },
       {
@@ -406,6 +400,13 @@
         }
       },
       {
+        "isolate_name": "components_perftests",
+        "name": "components_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
@@ -570,12 +571,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "components_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_perftests"
       },
       {
         "swarming": {
@@ -860,6 +855,13 @@
         }
       },
       {
+        "isolate_name": "components_perftests",
+        "name": "components_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
@@ -1012,12 +1014,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "components_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_perftests"
       },
       {
         "swarming": {
@@ -1314,6 +1310,13 @@
         }
       },
       {
+        "isolate_name": "components_perftests",
+        "name": "components_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "isolate_name": "telemetry_gpu_unittests",
         "name": "telemetry_gpu_unittests",
         "swarming": {
@@ -1479,12 +1482,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "components_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_perftests"
       },
       {
         "swarming": {
@@ -1782,6 +1779,13 @@
         }
       },
       {
+        "isolate_name": "components_perftests",
+        "name": "components_perftests",
+        "swarming": {
+          "can_use_on_swarming_builders": true
+        }
+      },
+      {
         "experiment_percentage": 100,
         "isolate_name": "content_shell_crash_test",
         "name": "content_shell_crash_test",
@@ -1934,12 +1938,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "components_browsertests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_perftests"
       },
       {
         "swarming": {
