@@ -3793,6 +3793,8 @@ static void set_frame_size(AV1_COMP *cpi, int width, int height) {
     // There has been a change in the encoded frame size
     set_size_literal(cpi, width, height);
     set_mv_search_params(cpi);
+    // Recalculate 'all_lossless' in case super-resolution was (un)selected.
+    cm->all_lossless = cm->coded_lossless && av1_superres_unscaled(cm);
   }
 
   if (cpi->oxcf.pass == 2) {
@@ -4040,6 +4042,7 @@ static void superres_post_encode(AV1_COMP *cpi) {
 
   assert(cpi->oxcf.enable_superres);
   assert(!is_lossless_requested(&cpi->oxcf));
+  assert(!cm->all_lossless);
 
   av1_superres_upscale(cm, NULL);
 
@@ -4074,21 +4077,16 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &cpi->td.mb.e_mbd;
 
-  assert(IMPLIES(is_lossless_requested(&cpi->oxcf), cm->all_lossless));
+  assert(IMPLIES(is_lossless_requested(&cpi->oxcf),
+                 cm->coded_lossless && cm->all_lossless));
+
+  const int no_loopfilter = cm->coded_lossless || cm->large_scale_tile;
+  const int no_cdef =
+      !cpi->oxcf.using_cdef || cm->coded_lossless || cm->large_scale_tile;
+  const int no_restoration =
+      !cpi->oxcf.using_restoration || cm->all_lossless || cm->large_scale_tile;
 
   struct loopfilter *lf = &cm->lf;
-  int no_loopfilter = 0;
-  int no_restoration = !cpi->oxcf.using_restoration;
-
-  if (cm->all_lossless || cm->large_scale_tile) {
-    no_loopfilter = 1;
-    no_restoration = 1;
-  }
-
-  int no_cdef = 0;
-  if (cm->all_lossless || !cpi->oxcf.using_cdef || cm->large_scale_tile) {
-    no_cdef = 1;
-  }
 
   if (no_loopfilter) {
     lf->filter_level[0] = 0;

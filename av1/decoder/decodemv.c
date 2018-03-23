@@ -38,7 +38,7 @@ static PREDICTION_MODE read_intra_mode(aom_reader *r, aom_cdf_prob *cdf) {
 
 static void read_cdef(AV1_COMMON *cm, aom_reader *r, MB_MODE_INFO *const mbmi,
                       int mi_col, int mi_row) {
-  if (cm->all_lossless) return;
+  if (cm->coded_lossless) return;
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) {
     assert(cm->cdef_bits == 0);
     return;

@@ -446,7 +446,8 @@ typedef struct AV1Common {
 
   struct loopfilter lf;
   struct segmentation seg;
-  int all_lossless;
+  int coded_lossless;  // frame is fully lossless at the coded resolution.
+  int all_lossless;    // frame is fully lossless at the upscaled resolution.
 
   int reduced_tx_set_used;
 
@@ -1318,20 +1319,23 @@ static INLINE void set_sb_size(SequenceHeader *const seq_params,
   seq_params->mib_size_log2 = mi_size_wide_log2[seq_params->sb_size];
 }
 
-static INLINE int all_lossless(const AV1_COMMON *cm, const MACROBLOCKD *xd) {
-  int i;
-  int all_lossless = 1;
+// Returns true if the frame is fully lossless at the coded resolution.
+// Note: If super-resolution is used, such a frame will still NOT be lossless at
+// the upscaled resolution.
+static INLINE int is_coded_lossless(const AV1_COMMON *cm,
+                                    const MACROBLOCKD *xd) {
+  int coded_lossless = 1;
   if (cm->seg.enabled) {
-    for (i = 0; i < MAX_SEGMENTS; ++i) {
+    for (int i = 0; i < MAX_SEGMENTS; ++i) {
       if (!xd->lossless[i]) {
-        all_lossless = 0;
+        coded_lossless = 0;
         break;
       }
     }
   } else {
-    all_lossless = xd->lossless[0];
+    coded_lossless = xd->lossless[0];
   }
-  return all_lossless;
+  return coded_lossless;
 }
 
 #ifdef __cplusplus

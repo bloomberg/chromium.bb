@@ -3640,7 +3640,7 @@ static MV_REFERENCE_FRAME get_frame_type(const AV1_COMP *cpi) {
 }
 
 static TX_MODE select_tx_mode(const AV1_COMP *cpi) {
-  if (cpi->common.all_lossless) return ONLY_4X4;
+  if (cpi->common.coded_lossless) return ONLY_4X4;
   if (cpi->sf.tx_size_search_method == USE_LARGESTALL)
     return TX_MODE_LARGEST;
   else if (cpi->sf.tx_size_search_method == USE_FULL_RD ||
@@ -4161,7 +4161,8 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       cpi->optimize_seg_arr[i] = cpi->optimize_speed_feature;
     }
   }
-  cm->all_lossless = all_lossless(cm, xd);
+  cm->coded_lossless = is_coded_lossless(cm, xd);
+  cm->all_lossless = cm->coded_lossless && av1_superres_unscaled(cm);
 
   cm->tx_mode = select_tx_mode(cpi);
 
@@ -4192,7 +4193,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   else
     cm->last_frame_seg_map = NULL;
   cm->current_frame_seg_map = cm->cur_frame->seg_map;
-  if ((cm->allow_intrabc && NO_FILTER_FOR_IBC) || cm->all_lossless) {
+  if ((cm->allow_intrabc && NO_FILTER_FOR_IBC) || cm->coded_lossless) {
     av1_set_default_ref_deltas(cm->lf.ref_deltas);
     av1_set_default_mode_deltas(cm->lf.mode_deltas);
   } else if (cm->prev_frame) {

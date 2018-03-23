@@ -872,7 +872,7 @@ static void write_cfl_alphas(FRAME_CONTEXT *const ec_ctx, int idx,
 
 static void write_cdef(AV1_COMMON *cm, aom_writer *w, int skip, int mi_col,
                        int mi_row) {
-  if (cm->all_lossless || (cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
+  if (cm->coded_lossless || (cm->allow_intrabc && NO_FILTER_FOR_IBC)) {
     // Initialize to indicate no CDEF for safety.
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
@@ -1989,7 +1989,7 @@ static void loop_restoration_write_sb_coeffs(const AV1_COMMON *const cm,
 }
 
 static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
-  assert(!cm->all_lossless);
+  assert(!cm->coded_lossless);
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
   const int num_planes = av1_num_planes(cm);
   int i;
@@ -2050,6 +2050,7 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 }
 
 static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
+  assert(!cm->coded_lossless);
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
   const int num_planes = av1_num_planes(cm);
   int i;
@@ -2153,7 +2154,7 @@ static void encode_segmentation(AV1_COMMON *cm, MACROBLOCKD *xd,
 
 static void write_tx_mode(AV1_COMMON *cm, TX_MODE *mode,
                           struct aom_write_bit_buffer *wb) {
-  if (cm->all_lossless) {
+  if (cm->coded_lossless) {
     *mode = ONLY_4X4;
     return;
   }
@@ -3242,8 +3243,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (cm->all_lossless) {
     assert(av1_superres_unscaled(cm));
   } else {
-    encode_loopfilter(cm, wb);
-    encode_cdef(cm, wb);
+    if (!cm->coded_lossless) {
+      encode_loopfilter(cm, wb);
+      encode_cdef(cm, wb);
+    }
     encode_restoration_mode(cm, wb);
   }
 

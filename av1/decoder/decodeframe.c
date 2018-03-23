@@ -123,7 +123,7 @@ static int read_is_valid(const uint8_t *start, size_t len, const uint8_t *end) {
 }
 
 static TX_MODE read_tx_mode(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
-  if (cm->all_lossless) return ONLY_4X4;
+  if (cm->coded_lossless) return ONLY_4X4;
   return aom_rb_read_bit(rb) ? TX_MODE_SELECT : TX_MODE_LARGEST;
 }
 
@@ -1117,13 +1117,13 @@ static void loop_restoration_read_sb_coeffs(const AV1_COMMON *const cm,
 static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   const int num_planes = av1_num_planes(cm);
   struct loopfilter *lf = &cm->lf;
-  if ((cm->allow_intrabc && NO_FILTER_FOR_IBC) || cm->all_lossless) {
+  if ((cm->allow_intrabc && NO_FILTER_FOR_IBC) || cm->coded_lossless) {
     // write default deltas to frame buffer
     av1_set_default_ref_deltas(cm->cur_frame->ref_deltas);
     av1_set_default_mode_deltas(cm->cur_frame->mode_deltas);
     return;
   }
-  assert(!cm->all_lossless);
+  assert(!cm->coded_lossless);
   if (cm->prev_frame) {
     // write deltas to frame buffer
     memcpy(lf->ref_deltas, cm->prev_frame->ref_deltas, TOTAL_REFS_PER_FRAME);
@@ -1582,8 +1582,8 @@ static void read_tile_info(AV1Decoder *const pbi,
         cm->rst_info[0].frame_restoration_type == RESTORE_NONE &&
         cm->rst_info[1].frame_restoration_type == RESTORE_NONE &&
         cm->rst_info[2].frame_restoration_type == RESTORE_NONE;
-    assert(
-        IMPLIES(cm->all_lossless, no_loopfilter && no_cdef && no_restoration));
+    assert(IMPLIES(cm->coded_lossless, no_loopfilter && no_cdef));
+    assert(IMPLIES(cm->all_lossless, no_restoration));
     cm->single_tile_decoding = no_loopfilter && no_cdef && no_restoration;
     // Read the tile width/height
     if (cm->seq_params.sb_size == BLOCK_128X128) {
@@ -3097,26 +3097,28 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                       cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
     xd->qindex[i] = qindex;
   }
-  cm->all_lossless = all_lossless(cm, xd);
+  cm->coded_lossless = is_coded_lossless(cm, xd);
+  cm->all_lossless = cm->coded_lossless && av1_superres_unscaled(cm);
   setup_segmentation_dequant(cm);
-  if (cm->all_lossless) {
+  if (cm->coded_lossless) {
     cm->lf.filter_level[0] = 0;
     cm->lf.filter_level[1] = 0;
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
     cm->cdef_uv_strengths[0] = 0;
+  }
+  if (cm->all_lossless) {
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
-    if (!av1_superres_unscaled(cm)) {
-      aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                         "Fully lossless frame cannot use super-resolution");
-    }
+    assert(av1_superres_unscaled(cm));
   }
   setup_loopfilter(cm, rb);
 
-  if (!cm->all_lossless) {
+  if (!cm->coded_lossless) {
     setup_cdef(cm, rb);
+  }
+  if (!cm->all_lossless) {
     decode_restoration_mode(cm, rb);
   }
 
@@ -3214,6 +3216,7 @@ void superres_post_decode(AV1Decoder *pbi) {
   BufferPool *const pool = cm->buffer_pool;
 
   if (av1_superres_unscaled(cm)) return;
+  assert(!cm->all_lossless);
 
   lock_buffer_pool(pool);
   av1_superres_upscale(cm, pool);
@@ -3374,7 +3377,7 @@ void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
       av1_loop_restoration_save_boundary_lines(&pbi->cur_buf->buf, cm, 0);
     }
 
-    if (!cm->skip_loop_filter && !cm->all_lossless &&
+    if (!cm->skip_loop_filter && !cm->coded_lossless &&
         (cm->cdef_bits || cm->cdef_strengths[0] || cm->cdef_uv_strengths[0])) {
       av1_cdef_frame(&pbi->cur_buf->buf, cm, &pbi->mb);
     }
