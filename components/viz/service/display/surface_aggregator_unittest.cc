@@ -19,6 +19,7 @@
 #include "cc/test/render_pass_test_utils.h"
 #include "components/viz/common/frame_sinks/begin_frame_args.h"
 #include "components/viz/common/quads/compositor_frame.h"
+#include "components/viz/common/quads/draw_quad.h"
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/common/quads/render_pass_draw_quad.h"
 #include "components/viz/common/quads/solid_color_draw_quad.h"
@@ -386,6 +387,28 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
     SurfaceAggregatorTest::TearDown();
   }
 
+  // Verifies that if the |SharedQuadState::quad_layer_rect| can be covered by
+  // |DrawQuad::Rect| in the SharedQuadState.
+  void VerifyQuadCoverSQS(CompositorFrame* aggregated_frame) {
+    const SharedQuadState* shared_quad_state = nullptr;
+    gfx::Rect draw_quad_coverage;
+    for (size_t i = 0; i < aggregated_frame->render_pass_list.size(); ++i) {
+      for (auto quad =
+               aggregated_frame->render_pass_list[i]->quad_list.cbegin();
+           quad != aggregated_frame->render_pass_list[i]->quad_list.cend();
+           ++quad) {
+        if (shared_quad_state != quad->shared_quad_state) {
+          if (shared_quad_state)
+            EXPECT_EQ(shared_quad_state->quad_layer_rect, draw_quad_coverage);
+
+          shared_quad_state = quad->shared_quad_state;
+          draw_quad_coverage = quad->rect;
+        }
+        draw_quad_coverage.Union(quad->rect);
+      }
+    }
+  }
+
   void AggregateAndVerify(Pass* expected_passes,
                           size_t expected_pass_count,
                           SurfaceId* surface_ids,
@@ -396,6 +419,7 @@ class SurfaceAggregatorValidSurfaceTest : public SurfaceAggregatorTest {
 
     TestPassesMatchExpectations(expected_passes, expected_pass_count,
                                 &aggregated_frame.render_pass_list);
+    VerifyQuadCoverSQS(&aggregated_frame);
 
     // Ensure no duplicate pass ids output.
     std::set<RenderPassId> used_passes;
