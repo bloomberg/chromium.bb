@@ -18,23 +18,14 @@
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "content/browser/bad_message.h"
-#include "content/browser/child_process_security_policy_impl.h"
-#include "content/browser/ssl/ssl_error_handler.h"
-#include "content/browser/ssl/ssl_manager.h"
-#include "content/browser/websockets/websocket_handshake_request_info_impl.h"
-#include "content/public/browser/storage_partition.h"
-#include "ipc/ipc_message.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_info.h"
-#include "net/url_request/url_request_context_getter.h"
 #include "net/websockets/websocket_channel.h"
 #include "net/websockets/websocket_errors.h"
-#include "net/websockets/websocket_event_interface.h"
 #include "net/websockets/websocket_frame.h"  // for WebSocketFrameHeader::OpCode
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
@@ -115,28 +106,7 @@ class WebSocketImpl::WebSocketEventHandler final
       bool fatal) override;
 
  private:
-  class SSLErrorHandlerDelegate final : public SSLErrorHandler::Delegate {
-   public:
-    SSLErrorHandlerDelegate(
-        std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
-            callbacks);
-    ~SSLErrorHandlerDelegate() override;
-
-    base::WeakPtr<SSLErrorHandler::Delegate> GetWeakPtr();
-
-    // SSLErrorHandler::Delegate methods
-    void CancelSSLRequest(int error, const net::SSLInfo* ssl_info) override;
-    void ContinueSSLRequest() override;
-
-   private:
-    std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks_;
-    base::WeakPtrFactory<SSLErrorHandlerDelegate> weak_ptr_factory_;
-
-    DISALLOW_COPY_AND_ASSIGN(SSLErrorHandlerDelegate);
-  };
-
   WebSocketImpl* const impl_;
-  std::unique_ptr<SSLErrorHandlerDelegate> ssl_error_handler_delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketEventHandler);
 };
@@ -154,8 +124,8 @@ WebSocketImpl::WebSocketEventHandler::~WebSocketEventHandler() {
 
 void WebSocketImpl::WebSocketEventHandler::OnCreateURLRequest(
     net::URLRequest* url_request) {
-  WebSocketHandshakeRequestInfoImpl::CreateInfoAndAssociateWithRequest(
-      impl_->child_id_, impl_->frame_id_, url_request);
+  impl_->delegate_->OnCreateURLRequest(impl_->child_id_, impl_->frame_id_,
+                                       url_request);
 }
 
 ChannelState WebSocketImpl::WebSocketEventHandler::OnAddChannelResponse(
@@ -247,9 +217,7 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnFailChannel(
 
 ChannelState WebSocketImpl::WebSocketEventHandler::OnStartOpeningHandshake(
     std::unique_ptr<net::WebSocketHandshakeRequestInfo> request) {
-  bool should_send =
-      ChildProcessSecurityPolicyImpl::GetInstance()->CanReadRawCookies(
-          impl_->delegate_->GetClientProcessId());
+  bool should_send = impl_->delegate_->CanReadRawCookies();
 
   DVLOG(3) << "WebSocketEventHandler::OnStartOpeningHandshake @"
            << reinterpret_cast<void*>(this) << " should_send=" << should_send;
@@ -279,9 +247,7 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnStartOpeningHandshake(
 
 ChannelState WebSocketImpl::WebSocketEventHandler::OnFinishOpeningHandshake(
     std::unique_ptr<net::WebSocketHandshakeResponseInfo> response) {
-  bool should_send =
-      ChildProcessSecurityPolicyImpl::GetInstance()->CanReadRawCookies(
-          impl_->delegate_->GetClientProcessId());
+  bool should_send = impl_->delegate_->CanReadRawCookies();
 
   DVLOG(3) << "WebSocketEventHandler::OnFinishOpeningHandshake "
            << reinterpret_cast<void*>(this) << " should_send=" << should_send;
@@ -319,55 +285,20 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnSSLCertificateError(
   DVLOG(3) << "WebSocketEventHandler::OnSSLCertificateError"
            << reinterpret_cast<void*>(this) << " url=" << url.spec()
            << " cert_status=" << ssl_info.cert_status << " fatal=" << fatal;
-  ssl_error_handler_delegate_.reset(
-      new SSLErrorHandlerDelegate(std::move(callbacks)));
-  SSLManager::OnSSLCertificateSubresourceError(
-      ssl_error_handler_delegate_->GetWeakPtr(),
-      url,
-      impl_->delegate_->GetClientProcessId(),
-      impl_->frame_id_,
-      ssl_info,
-      fatal);
+  impl_->delegate_->OnSSLCertificateError(std::move(callbacks), url,
+                                          impl_->child_id_, impl_->frame_id_,
+                                          ssl_info, fatal);
   // The above method is always asynchronous.
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-WebSocketImpl::WebSocketEventHandler::SSLErrorHandlerDelegate::
-    SSLErrorHandlerDelegate(
-        std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
-            callbacks)
-    : callbacks_(std::move(callbacks)), weak_ptr_factory_(this) {}
-
-WebSocketImpl::WebSocketEventHandler::SSLErrorHandlerDelegate::
-    ~SSLErrorHandlerDelegate() {}
-
-base::WeakPtr<SSLErrorHandler::Delegate>
-WebSocketImpl::WebSocketEventHandler::SSLErrorHandlerDelegate::GetWeakPtr() {
-  return weak_ptr_factory_.GetWeakPtr();
-}
-
-void WebSocketImpl::WebSocketEventHandler::SSLErrorHandlerDelegate::
-    CancelSSLRequest(int error, const net::SSLInfo* ssl_info) {
-  DVLOG(3) << "SSLErrorHandlerDelegate::CancelSSLRequest"
-           << " error=" << error
-           << " cert_status=" << (ssl_info ? ssl_info->cert_status
-                                           : static_cast<net::CertStatus>(-1));
-  callbacks_->CancelSSLRequest(error, ssl_info);
-}
-
-void WebSocketImpl::WebSocketEventHandler::SSLErrorHandlerDelegate::
-    ContinueSSLRequest() {
-  DVLOG(3) << "SSLErrorHandlerDelegate::ContinueSSLRequest";
-  callbacks_->ContinueSSLRequest();
-}
-
-WebSocketImpl::WebSocketImpl(Delegate* delegate,
+WebSocketImpl::WebSocketImpl(std::unique_ptr<Delegate> delegate,
                              network::mojom::WebSocketRequest request,
                              int child_id,
                              int frame_id,
                              url::Origin origin,
                              base::TimeDelta delay)
-    : delegate_(delegate),
+    : delegate_(std::move(delegate)),
       binding_(this, std::move(request)),
       delay_(delay),
       pending_flow_control_quota_(0),
@@ -401,9 +332,8 @@ void WebSocketImpl::AddChannelRequest(
            << "\" user_agent_override=\"" << user_agent_override << "\"";
 
   if (client_ || !client) {
-    bad_message::ReceivedBadMessage(
-        delegate_->GetClientProcessId(),
-        bad_message::WSI_UNEXPECTED_ADD_CHANNEL_REQUEST);
+    delegate_->ReportBadMessage(
+        Delegate::BadMessageReason::kUnexpectedAddChannelRequest);
     return;
   }
 
@@ -437,9 +367,8 @@ void WebSocketImpl::SendFrame(bool fin,
     if (handshake_succeeded_) {
       DVLOG(1) << "Dropping frame sent to closed websocket";
     } else {
-      bad_message::ReceivedBadMessage(
-          delegate_->GetClientProcessId(),
-          bad_message::WSI_UNEXPECTED_SEND_FRAME);
+      delegate_->ReportBadMessage(
+          Delegate::BadMessageReason::kUnexpectedSendFrame);
     }
     return;
   }
@@ -515,9 +444,8 @@ void WebSocketImpl::AddChannel(
   std::string additional_headers;
   if (!user_agent_override.empty()) {
     if (!net::HttpUtil::IsValidHeaderValue(user_agent_override)) {
-      bad_message::ReceivedBadMessage(
-          delegate_->GetClientProcessId(),
-          bad_message::WSI_INVALID_HEADER_VALUE);
+      delegate_->ReportBadMessage(
+          Delegate::BadMessageReason::kInvalidHeaderValue);
       return;
     }
     additional_headers = base::StringPrintf("%s:%s",

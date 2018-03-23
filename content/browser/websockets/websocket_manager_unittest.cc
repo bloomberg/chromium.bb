@@ -21,13 +21,13 @@ static const int kMagicRenderProcessId = 506116062;
 
 class TestWebSocketImpl : public WebSocketImpl {
  public:
-  TestWebSocketImpl(Delegate* delegate,
+  TestWebSocketImpl(std::unique_ptr<Delegate> delegate,
                     network::mojom::WebSocketRequest request,
                     int process_id,
                     int frame_id,
                     url::Origin origin,
                     base::TimeDelta delay)
-      : WebSocketImpl(delegate,
+      : WebSocketImpl(std::move(delegate),
                       std::move(request),
                       process_id,
                       frame_id,
@@ -67,15 +67,16 @@ class TestWebSocketManager : public WebSocketManager {
   }
 
  private:
-  WebSocketImpl* CreateWebSocketImpl(WebSocketImpl::Delegate* delegate,
-                                     network::mojom::WebSocketRequest request,
-                                     int process_id,
-                                     int frame_id,
-                                     url::Origin origin,
-                                     base::TimeDelta delay) override {
+  WebSocketImpl* CreateWebSocketImpl(
+      std::unique_ptr<WebSocketImpl::Delegate> delegate,
+      network::mojom::WebSocketRequest request,
+      int process_id,
+      int frame_id,
+      url::Origin origin,
+      base::TimeDelta delay) override {
     TestWebSocketImpl* impl =
-        new TestWebSocketImpl(delegate, std::move(request), process_id,
-                              frame_id, std::move(origin), delay);
+        new TestWebSocketImpl(std::move(delegate), std::move(request),
+                              process_id, frame_id, std::move(origin), delay);
     // We keep a vector of sockets here to track their creation order.
     sockets_.push_back(impl);
     return impl;
