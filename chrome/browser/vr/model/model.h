@@ -72,6 +72,7 @@ struct Model {
   bool web_vr_enabled() const;
   bool web_vr_autopresentation_enabled() const;
   bool reposition_window_enabled() const;
+  bool reposition_window_permitted() const;
 
   // Focused text state.
   bool editing_input = false;

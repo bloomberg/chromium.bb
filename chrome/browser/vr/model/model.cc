@@ -120,4 +120,10 @@ bool Model::reposition_window_enabled() const {
   return ui_modes.back() == kModeRepositionWindow;
 }
 
+bool Model::reposition_window_permitted() const {
+  return !editing_input && !editing_web_input &&
+         active_modal_prompt_type == kModalPromptTypeNone &&
+         !native_ui.hosted_ui_enabled;
+}
+
 }  // namespace vr

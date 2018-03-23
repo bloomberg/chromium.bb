@@ -1064,7 +1064,7 @@ void UiSceneCreator::CreateContentQuad() {
           },
           base::Unretained(model_), base::Unretained(frame.get())),
       VR_BIND_LAMBDA(
-          [](Rect* e, const gfx::PointF& value) {
+          [](Model* model, Rect* e, const gfx::PointF& value) {
             gfx::RectF inner(e->stale_size());
             inner.Inset(kRepositionFrameEdgePadding, kRepositionFrameTopPadding,
                         kRepositionFrameEdgePadding,
@@ -1074,11 +1074,12 @@ void UiSceneCreator::CreateContentQuad() {
                 kRepositionFrameEdgePadding,
                 kRepositionFrameTopPadding - kRepositionFrameHitPlaneTopPadding,
                 kRepositionFrameEdgePadding, kRepositionFrameEdgePadding);
-            const bool is_on_frame =
-                outer.Contains(value) && !inner.Contains(value);
+            const bool is_on_frame = outer.Contains(value) &&
+                                     !inner.Contains(value) &&
+                                     model->reposition_window_permitted();
             e->SetLocalOpacity(is_on_frame ? 1.0f : 0.0f);
           },
-          base::Unretained(frame.get()))));
+          base::Unretained(model_), base::Unretained(frame.get()))));
 
   auto plane =
       Create<InvisibleHitTarget>(kContentFrameHitPlane, kPhaseForeground);
@@ -1091,6 +1092,9 @@ void UiSceneCreator::CreateContentQuad() {
   plane->SetSounds(sounds, audio_delegate_);
   plane->set_padding(0, kRepositionFrameHitPlaneTopPadding, 0, 0);
   plane->set_event_handlers(CreateRepositioningHandlers(model_, scene_));
+  plane->AddBinding(VR_BIND_FUNC(bool, Model, model_,
+                                 model->reposition_window_permitted(),
+                                 UiElement, plane.get(), set_hit_testable));
 
   shadow->AddChild(std::move(main_content));
   resizer->AddChild(std::move(shadow));

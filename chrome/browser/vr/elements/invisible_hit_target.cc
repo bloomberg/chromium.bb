@@ -12,8 +12,6 @@ InvisibleHitTarget::InvisibleHitTarget() {
 InvisibleHitTarget::~InvisibleHitTarget() = default;
 
 void InvisibleHitTarget::Render(UiElementRenderer* renderer,
-                                const CameraModel& model) const {
-  DCHECK(hit_testable());
-}
+                                const CameraModel& model) const {}
 
 }  // namespace vr
