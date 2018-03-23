@@ -166,7 +166,7 @@ void SSLConnectJob::GetAdditionalErrorState(ClientSocketHandle* handle) {
   // problem. See DoTunnelConnectComplete.
   if (error_response_info_.headers.get()) {
     handle->set_pending_http_proxy_connection(
-        transport_socket_handle_.release());
+        std::move(transport_socket_handle_));
   }
   handle->set_ssl_error_response_info(error_response_info_);
   if (!connect_timing_.ssl_start.is_null())

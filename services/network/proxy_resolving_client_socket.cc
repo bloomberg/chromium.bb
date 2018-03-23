@@ -312,8 +312,7 @@ int ProxyResolvingClientSocket::DoInitConnectionComplete(int result) {
       // code expects an SSLClientSocket. The tunnel restart code is careful to
       // put it back to the socket pool before returning control to the rest of
       // this class.
-      socket_handle_.reset(
-          socket_handle_->release_pending_http_proxy_connection());
+      socket_handle_ = socket_handle_->release_pending_http_proxy_connection();
     }
     next_state_ = STATE_RESTART_TUNNEL_AUTH;
     return result;
