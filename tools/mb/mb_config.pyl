@@ -480,7 +480,6 @@
 
     'chromium.webrtc': {
       'Linux Builder': 'release_bot_chrome_with_codecs',
-      'Linux Builder (Chromium w/o WebRTC)': 'release_bot_chrome_with_codecs_disable_webrtc',
       'Mac Builder': 'release_bot_chrome_with_codecs',
       'Win Builder': 'release_bot_x86_minimal_symbols_no_com_init_hooks',
     },
@@ -1523,10 +1522,6 @@
       'release_bot', 'chrome_with_codecs',
     ],
 
-    'release_bot_chrome_with_codecs_disable_webrtc': [
-      'release_bot', 'chrome_with_codecs', 'disable_webrtc',
-    ],
-
     'release_bot_enable_blink_heap_verification_dcheck_always_on': [
       'release_bot', 'enable_blink_heap_verification', 'dcheck_always_on',
     ],
@@ -1581,8 +1576,6 @@
     'release_bot_x86_minimal_symbols_disable_nacl_no_clang': [
       'release_bot_x86_minimal_symbols_disable_nacl', 'no_clang'
     ],
-
-
 
     'release_libfuzzer_asan': [
       'release', 'libfuzzer', 'asan', 'chromeos_codecs', 'pdf_xfa', 'disable_nacl', 'optimize_for_fuzzing',
@@ -1913,10 +1906,6 @@
 
     'disable_nacl': {
       'gn_args': 'enable_nacl=false',
-    },
-
-    'disable_webrtc': {
-      'gn_args': 'enable_webrtc=false',
     },
 
     'edge': {
