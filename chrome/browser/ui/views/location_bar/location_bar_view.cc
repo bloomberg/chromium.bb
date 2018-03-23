@@ -41,6 +41,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/views/autofill/save_card_icon_view.h"
 #include "chrome/browser/ui/views/frame/browser_view.h"
+#include "chrome/browser/ui/views/harmony/chrome_typography.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
@@ -184,27 +185,8 @@ void LocationBarView::Init() {
   layer()->SetFillsBoundsOpaquely(false);
   layer()->SetMasksToBounds(true);
 
-  // Determine the main font.
-  gfx::FontList font_list = ui::ResourceBundle::GetSharedInstance().GetFontList(
-      ui::ResourceBundle::BaseFont);
-  const int current_font_size = font_list.GetFontSize();
-  constexpr int kDesiredFontSize = 14;
-  if (current_font_size != kDesiredFontSize) {
-    font_list =
-        font_list.DeriveWithSizeDelta(kDesiredFontSize - current_font_size);
-  }
-  // Shrink large fonts to make them fit.
-  // TODO(pkasting): Stretch the location bar instead in this case.
-  const int vertical_padding = GetTotalVerticalPadding();
-  const int location_height =
-      std::max(GetPreferredSize().height() - (vertical_padding * 2), 0);
-  font_list = font_list.DeriveWithHeightUpperBound(location_height);
-
-  // Determine the font for use inside the bubbles.
-  const int bubble_padding =
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
-      GetLayoutConstant(LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING);
-  const int bubble_height = location_height - (bubble_padding * 2);
+  const gfx::FontList& font_list = views::style::GetFont(
+      CONTEXT_OMNIBOX_PRIMARY, views::style::STYLE_PRIMARY);
 
   const SkColor background_color =
       GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND);
@@ -235,8 +217,8 @@ void LocationBarView::Init() {
   selected_keyword_view_ = new SelectedKeywordView(this, font_list, profile());
   AddChildView(selected_keyword_view_);
 
-  gfx::FontList bubble_font_list =
-      font_list.DeriveWithHeightUpperBound(bubble_height);
+  const gfx::FontList& bubble_font_list = views::style::GetFont(
+      CONTEXT_OMNIBOX_DECORATION, views::style::STYLE_PRIMARY);
   keyword_hint_view_ = new KeywordHintView(
       this, profile(), font_list, bubble_font_list,
       GetColor(OmniboxPart::LOCATION_BAR_TEXT_DIMMED), background_color);
@@ -714,6 +696,35 @@ WebContents* LocationBarView::GetWebContentsForBubbleIconView() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, public static methods:
+
+// static
+bool LocationBarView::IsVirtualKeyboardVisible() {
+#if defined(OS_WIN)
+  return ui::OnScreenKeyboardDisplayManager::GetInstance()->IsKeyboardVisible();
+#elif defined(USE_AURA)
+  return keyboard::IsKeyboardVisible();
+#else
+  return false;
+#endif
+}
+
+// static
+int LocationBarView::GetAvailableTextHeight() {
+  return std::max(0, GetLayoutConstant(LOCATION_BAR_HEIGHT) -
+                         2 * GetTotalVerticalPadding());
+}
+
+// static
+int LocationBarView::GetAvailableDecorationTextHeight() {
+  const int bubble_padding =
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_VERTICAL_PADDING) +
+      GetLayoutConstant(LOCATION_BAR_BUBBLE_FONT_VERTICAL_PADDING);
+  return std::max(
+      0, LocationBarView::GetAvailableTextHeight() - (bubble_padding * 2));
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // LocationBarView, private:
 
 int LocationBarView::IncrementalMinimumWidth(views::View* view) const {
@@ -731,11 +742,6 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
   return is_popup_mode_
              ? 0
              : BackgroundWith1PxBorder::kLocationBarBorderThicknessDip;
-}
-
-int LocationBarView::GetTotalVerticalPadding() const {
-  return BackgroundWith1PxBorder::kLocationBarBorderThicknessDip +
-         GetLayoutConstant(LOCATION_BAR_PADDING);
 }
 
 void LocationBarView::RefreshLocationIcon() {
@@ -810,16 +816,6 @@ void LocationBarView::ButtonPressed(views::Button* sender,
     DCHECK_EQ(clear_all_button_, sender);
     omnibox_view_->SetUserText(base::string16());
   }
-}
-
-bool LocationBarView::IsVirtualKeyboardVisible() {
-#if defined(OS_WIN)
-  return ui::OnScreenKeyboardDisplayManager::GetInstance()->IsKeyboardVisible();
-#elif defined(USE_AURA)
-  return keyboard::IsKeyboardVisible();
-#else
-  return false;
-#endif
 }
 
 bool LocationBarView::RefreshFindBarIcon() {
@@ -1116,4 +1112,13 @@ const ToolbarModel* LocationBarView::GetToolbarModel() const {
 
 void LocationBarView::SetFocusAndSelection(bool select_all) {
   FocusLocation(select_all);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, private static methods:
+
+// static
+int LocationBarView::GetTotalVerticalPadding() {
+  return BackgroundWith1PxBorder::kLocationBarBorderThicknessDip +
+         GetLayoutConstant(LOCATION_BAR_PADDING);
 }

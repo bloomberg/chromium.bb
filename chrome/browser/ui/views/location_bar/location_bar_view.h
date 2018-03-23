@@ -246,6 +246,12 @@ class LocationBarView : public LocationBar,
 
   static bool IsVirtualKeyboardVisible();
 
+  // Returns the height available for user-entered text in the location bar.
+  static int GetAvailableTextHeight();
+
+  // Returns the height available for text within location bar decorations.
+  static int GetAvailableDecorationTextHeight();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
   using ContentSettingViews = std::vector<ContentSettingImageView*>;
@@ -259,10 +265,6 @@ class LocationBarView : public LocationBar,
 
   // Returns the thickness of any visible edge, in pixels.
   int GetHorizontalEdgeThickness() const;
-
-  // Returns the total amount of space reserved above or below the content,
-  // which is the vertical edge thickness plus the padding next to it.
-  int GetTotalVerticalPadding() const;
 
   // Updates |location_icon_view_| based on the current state and theme.
   void RefreshLocationIcon();
@@ -353,6 +355,10 @@ class LocationBarView : public LocationBar,
 
   // DropdownBarHostDelegate:
   void SetFocusAndSelection(bool select_all) override;
+
+  // Returns the total amount of space reserved above or below the content,
+  // which is the vertical edge thickness plus the padding next to it.
+  static int GetTotalVerticalPadding();
 
   // The Browser this LocationBarView is in.  Note that at least
   // chromeos::SimpleWebViewDialog uses a LocationBarView outside any browser

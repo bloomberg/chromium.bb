@@ -31,6 +31,12 @@ enum ChromeTextContext {
   // "Body 2". Usually 12pt.
   CONTEXT_BODY_TEXT_SMALL,
 
+  // Text in the location bar entry, and primary text in the omnibox dropdown.
+  CONTEXT_OMNIBOX_PRIMARY,
+
+  // Text that goes inside location bar decorations such as the keyword hint.
+  CONTEXT_OMNIBOX_DECORATION,
+
   // Text for titles, body text and buttons that appear in dialogs attempting to
   // mimic the native Windows 10 look and feel.
   CONTEXT_WINDOWS10_NATIVE,
