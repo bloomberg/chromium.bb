@@ -9,9 +9,9 @@ namespace mojo_base {
 namespace text_direction_unittest {
 
 TEST(TextDirectionTest, TextDirection) {
-  base::i18n::TextDirection kTestDirections[] = {base::i18n::LEFT_TO_RIGHT,
-                                                 base::i18n::RIGHT_TO_LEFT,
-                                                 base::i18n::UNKNOWN_DIRECTION};
+  static constexpr base::i18n::TextDirection kTestDirections[] = {
+      base::i18n::LEFT_TO_RIGHT, base::i18n::RIGHT_TO_LEFT,
+      base::i18n::UNKNOWN_DIRECTION};
 
   for (auto direction_in : kTestDirections) {
     base::i18n::TextDirection direction_out;

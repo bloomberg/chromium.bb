@@ -612,7 +612,6 @@ mojom("mojo_bindings") {
     "//content/public/common:resource_type_bindings",
     "//ipc:mojom_constants",
     "//media/mojo/interfaces",
-    "//mojo/common:common_custom_types",
     "//mojo/public/mojom/base",
     "//services/network/public/mojom",
     "//services/service_manager/public/mojom",

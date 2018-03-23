@@ -15,6 +15,7 @@ mojom_component("base") {
     "ref_counted_memory.mojom",
     "string16.mojom",
     "text_direction.mojom",
+    "thread_priority.mojom",
     "time.mojom",
     "unguessable_token.mojom",
     "values.mojom",
