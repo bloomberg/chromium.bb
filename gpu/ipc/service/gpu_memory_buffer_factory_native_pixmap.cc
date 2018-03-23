@@ -6,6 +6,7 @@
 
 #include "ui/gfx/buffer_format_util.h"
 #include "ui/gfx/client_native_pixmap.h"
+#include "ui/gfx/linux/native_pixmap_dmabuf.h"
 #include "ui/gfx/native_pixmap.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_image_native_pixmap.h"
@@ -105,9 +106,9 @@ GpuMemoryBufferFactoryNativePixmap::CreateImageForGpuMemoryBuffer(
                  ->CreateNativePixmapFromHandle(surface_handle, size, format,
                                                 handle.native_pixmap_handle);
 #else
-    // TODO(j.isorce): implement this to enable glCreateImageCHROMIUM on Linux.
-    // On going in http://codereview.chromium.org/2705213005, crbug.com/584248.
-    NOTIMPLEMENTED();
+    DCHECK_EQ(surface_handle, gpu::kNullSurfaceHandle);
+    pixmap = base::WrapRefCounted(
+        new gfx::NativePixmapDmaBuf(size, format, handle.native_pixmap_handle));
 #endif
     if (!pixmap.get()) {
       DLOG(ERROR) << "Failed to create pixmap from handle";
