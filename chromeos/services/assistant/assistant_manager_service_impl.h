@@ -52,7 +52,7 @@ class AssistantManagerServiceImpl
   void OnOpenUrl(const std::string& url) override;
 
   // AssistantEventObserver overrides:
-  void onSpeechLevelUpdated(float speech_level) override;
+  void OnSpeechLevelUpdated(float speech_level) override;
 
  private:
   bool running_ = false;

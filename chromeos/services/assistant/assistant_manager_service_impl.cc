@@ -123,7 +123,7 @@ void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
       [&url](auto* ptr) { ptr->OnOpenUrlResponse(GURL(url)); });
 }
 
-void AssistantManagerServiceImpl::onSpeechLevelUpdated(
+void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
     const float speech_level) {}
 
 }  // namespace assistant
