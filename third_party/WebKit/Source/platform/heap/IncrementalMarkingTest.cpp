@@ -23,41 +23,52 @@
 namespace blink {
 namespace incremental_marking_test {
 
-class IncrementalMarkingScope {
+// Base class for initializing worklists.
+class IncrementalMarkingScopeBase {
+ public:
+  IncrementalMarkingScopeBase(ThreadState* thread_state)
+      : thread_state_(thread_state), heap_(thread_state_->Heap()) {
+    heap_.CommitCallbackStacks();
+  }
+
+  ~IncrementalMarkingScopeBase() { heap_.DecommitCallbackStacks(); }
+
+  ThreadHeap& heap() const { return heap_; }
+
+ protected:
+  ThreadState* const thread_state_;
+  ThreadHeap& heap_;
+};
+
+class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
  public:
   explicit IncrementalMarkingScope(ThreadState* thread_state)
-      : gc_forbidden_scope_(thread_state),
-        thread_state_(thread_state),
-        heap_(thread_state_->Heap()),
-        marking_stack_(heap_.MarkingStack()),
+      : IncrementalMarkingScopeBase(thread_state),
+        gc_forbidden_scope_(thread_state),
+        marking_worklist_(heap_.GetMarkingWorklist()),
         not_fully_constructed_marking_stack_(
             heap_.NotFullyConstructedMarkingStack()) {
-    EXPECT_TRUE(marking_stack_->IsEmpty());
+    EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_marking_stack_->IsEmpty());
-    heap_.CommitCallbackStacks();
     heap_.EnableIncrementalMarkingBarrier();
     thread_state->current_gc_data_.visitor =
         MarkingVisitor::Create(thread_state, MarkingVisitor::kGlobalMarking);
   }
 
   ~IncrementalMarkingScope() {
-    EXPECT_TRUE(marking_stack_->IsEmpty());
+    EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     EXPECT_TRUE(not_fully_constructed_marking_stack_->IsEmpty());
     heap_.DisableIncrementalMarkingBarrier();
-    heap_.DecommitCallbackStacks();
   }
 
-  CallbackStack* marking_stack() const { return marking_stack_; }
+  MarkingWorklist* marking_worklist() const { return marking_worklist_; }
   CallbackStack* not_fully_constructed_marking_stack() const {
     return not_fully_constructed_marking_stack_;
   }
-  ThreadHeap& heap() const { return heap_; }
 
  protected:
   ThreadState::GCForbiddenScope gc_forbidden_scope_;
-  ThreadState* const thread_state_;
-  ThreadHeap& heap_;
-  CallbackStack* const marking_stack_;
+  MarkingWorklist* const marking_worklist_;
   CallbackStack* const not_fully_constructed_marking_stack_;
 };
 
@@ -70,7 +81,7 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
   ExpectWriteBarrierFires(ThreadState* thread_state,
                           std::initializer_list<T*> objects)
       : IncrementalMarkingScope(thread_state), objects_(objects) {
-    EXPECT_TRUE(marking_stack_->IsEmpty());
+    EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     for (T* object : objects_) {
       // Ensure that the object is in the normal arena so we can ignore backing
       // objects on the marking stack.
@@ -83,16 +94,16 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
   }
 
   ~ExpectWriteBarrierFires() {
-    EXPECT_FALSE(marking_stack_->IsEmpty());
+    EXPECT_FALSE(marking_worklist_->IsGlobalEmpty());
     // All headers of objects watched should be marked.
     for (HeapObjectHeader* header : headers_) {
       EXPECT_TRUE(header->IsMarked());
       header->Unmark();
     }
+    MarkingItem item;
     // All objects watched should be on the marking stack.
-    while (!marking_stack_->IsEmpty()) {
-      CallbackStack::Item* item = marking_stack_->Pop();
-      T* obj = reinterpret_cast<T*>(item->Object());
+    while (marking_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
+      T* obj = reinterpret_cast<T*>(item.object);
       // Ignore the backing object.
       if (!ThreadHeap::IsNormalArenaIndex(
               PageFromObject(obj)->Arena()->ArenaIndex())) {
@@ -109,6 +120,7 @@ class ExpectWriteBarrierFires : public IncrementalMarkingScope {
         objects_.erase(pos);
     }
     EXPECT_TRUE(objects_.empty());
+    EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
   }
 
  private:
@@ -125,7 +137,7 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
   ExpectNoWriteBarrierFires(ThreadState* thread_state,
                             std::initializer_list<T*> objects)
       : IncrementalMarkingScope(thread_state), objects_(objects) {
-    EXPECT_TRUE(marking_stack_->IsEmpty());
+    EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     for (T* object : objects_) {
       HeapObjectHeader* header = HeapObjectHeader::FromPayload(object);
       headers_.push_back(header);
@@ -134,7 +146,7 @@ class ExpectNoWriteBarrierFires : public IncrementalMarkingScope {
   }
 
   ~ExpectNoWriteBarrierFires() {
-    EXPECT_TRUE(marking_stack_->IsEmpty());
+    EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
     for (size_t i = 0; i < headers_.size(); i++) {
       EXPECT_EQ(was_marked_[i], headers_[i]->IsMarked());
       headers_[i]->Unmark();
@@ -203,12 +215,9 @@ TEST(IncrementalMarkingTest, ManualWriteBarrierTriggersWhenMarkingIsOn) {
 TEST(IncrementalMarkingTest, ManualWriteBarrierBailoutWhenMarkingIsOff) {
   Object* object = Object::Create();
   ThreadHeap& heap = ThreadState::Current()->Heap();
-  CallbackStack* marking_stack = heap.MarkingStack();
-  EXPECT_TRUE(marking_stack->IsEmpty());
   EXPECT_FALSE(object->IsMarked());
   heap.WriteBarrier(object);
   EXPECT_FALSE(object->IsMarked());
-  EXPECT_TRUE(marking_stack->IsEmpty());
 }
 
 // =============================================================================
@@ -1488,10 +1497,11 @@ TEST(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
   IncrementalMarkingScope scope(ThreadState::Current());
   ObjectRegistry registry;
   RegisteringObject* object = new RegisteringObject(&registry);
-  EXPECT_FALSE(scope.marking_stack()->IsEmpty());
-  CallbackStack::Item* item = scope.marking_stack()->Pop();
+  EXPECT_FALSE(scope.marking_worklist()->IsGlobalEmpty());
+  MarkingItem item;
+  EXPECT_TRUE(scope.marking_worklist()->Pop(WorklistTaskId::MainThread, &item));
   RegisteringObject* recorded_object =
-      reinterpret_cast<RegisteringObject*>(item->Object());
+      reinterpret_cast<RegisteringObject*>(item.object);
   // In this case, the Member write barrier will also add the object to the
   // regular marking stack. The not-fully-constructed object marking stack is
   // only needed when going through custom off-heap data structures that require
@@ -1500,8 +1510,8 @@ TEST(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
   // In this example, there are two more objects on the callback stack: the
   // backing store for which a write barrier triggers after rehashing, and
   // a write barrier for the Member assignment (which might not always happen).
-  scope.marking_stack()->Pop();
-  scope.marking_stack()->Pop();
+  scope.marking_worklist()->Pop(WorklistTaskId::MainThread, &item);
+  scope.marking_worklist()->Pop(WorklistTaskId::MainThread, &item);
   // The mixin object should be on the not-fully-constructed object marking
   // stack.
   EXPECT_FALSE(scope.not_fully_constructed_marking_stack()->IsEmpty());

@@ -18,7 +18,7 @@ namespace {
 class SomeObject {};
 }  // namespace
 
-using TestWorklist = Worklist<SomeObject*, 64>;
+using TestWorklist = Worklist<SomeObject*, 64 /* entries */, 8 /* tasks */>;
 
 TEST(WorklistTest, SegmentCreate) {
   TestWorklist::Segment segment;

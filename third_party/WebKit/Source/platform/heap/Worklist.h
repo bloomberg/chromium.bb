@@ -23,8 +23,6 @@
 
 namespace blink {
 
-constexpr int kMaxWorkerlistTasks = 8;
-
 // A concurrent worklist based on segments. Each tasks gets private
 // push and pop segments. Empty pop segments are swapped with their
 // corresponding push segments. Full push segments are published to a global
@@ -32,12 +30,10 @@ constexpr int kMaxWorkerlistTasks = 8;
 //
 // Work stealing is best effort, i.e., there is no way to inform other tasks
 // of the need of items.
-template <typename EntryType,
-          int segment_size,
-          int max_tasks = kMaxWorkerlistTasks>
+template <typename EntryType, int segment_size, int max_tasks = 1>
 class Worklist {
   USING_FAST_MALLOC(Worklist);
-  using WorklistType = Worklist<EntryType, segment_size>;
+  using WorklistType = Worklist<EntryType, segment_size, max_tasks>;
 
  public:
   class View {
@@ -361,7 +357,7 @@ class Worklist {
           reinterpret_cast<base::subtle::AtomicWord>(segment));
     }
 
-    base::Lock lock_;
+    mutable base::Lock lock_;
     Segment* top_;
   };
 

@@ -42,6 +42,7 @@
 #include "platform/heap/StackFrameDepth.h"
 #include "platform/heap/ThreadState.h"
 #include "platform/heap/Visitor.h"
+#include "platform/heap/Worklist.h"
 #include "platform/wtf/AddressSanitizer.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Assertions.h"
@@ -50,9 +51,27 @@
 
 namespace blink {
 
+namespace incremental_marking_test {
+class IncrementalMarkingScopeBase;
+}  // namespace incremental_marking_test
+
 class CallbackStack;
 class PagePool;
 class RegionTree;
+
+struct MarkingItem {
+  void* object;
+  TraceCallback callback;
+
+  // Only used for DCHECKs for Worklist::Contains.
+  bool operator==(const MarkingItem& other) const {
+    return object == other.object;
+  }
+};
+
+// Segment size of 512 entries necessary to avoid throughput regressions. Since
+// the work list is currently a temporary object this is not a problem.
+using MarkingWorklist = Worklist<MarkingItem, 512 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
  public:
@@ -224,7 +243,11 @@ class PLATFORM_EXPORT ThreadHeap {
   StackFrameDepth& GetStackFrameDepth() { return stack_frame_depth_; }
 
   ThreadHeapStats& HeapStats() { return stats_; }
-  CallbackStack* MarkingStack() const { return marking_stack_.get(); }
+
+  MarkingWorklist* GetMarkingWorklist() const {
+    return marking_worklist_.get();
+  }
+
   CallbackStack* NotFullyConstructedMarkingStack() const {
     return not_fully_constructed_marking_stack_.get();
   }
@@ -273,9 +296,6 @@ class PLATFORM_EXPORT ThreadHeap {
         page, const_cast<T*>(object_pointer));
   }
 
-  // Push a trace callback on the marking stack.
-  void PushTraceCallback(void* container_object, TraceCallback);
-
   // Push a trace callback for not-fully-constructed objects.
   void PushNotFullyConstructedTraceCallback(void* container_object);
 
@@ -287,10 +307,6 @@ class PLATFORM_EXPORT ThreadHeap {
   // Push a weak callback. The weak callback is called when the object
   // doesn't get marked in the current GC.
   void PushWeakCallback(void*, WeakCallback);
-
-  // Pop the top of a marking stack and call the callback with the visitor
-  // and the object.  Returns false when there is nothing more to do.
-  bool PopAndInvokeTraceCallback(Visitor*);
 
   // Pop the top of the not-yet-fully-constructed objects marking stack and call
   // the callback with the visitor and the object. Returns false when there is
@@ -503,8 +519,6 @@ class PLATFORM_EXPORT ThreadHeap {
 #endif
 
  private:
-  friend class incremental_marking_test::IncrementalMarkingScope;
-
   // Reset counters that track live and allocated-since-last-GC sizes.
   void ResetHeapCounters();
 
@@ -524,7 +538,7 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<RegionTree> region_tree_;
   std::unique_ptr<HeapDoesNotContainCache> heap_does_not_contain_cache_;
   std::unique_ptr<PagePool> free_page_pool_;
-  std::unique_ptr<CallbackStack> marking_stack_;
+  std::unique_ptr<MarkingWorklist> marking_worklist_;
   std::unique_ptr<CallbackStack> not_fully_constructed_marking_stack_;
   std::unique_ptr<CallbackStack> post_marking_callback_stack_;
   std::unique_ptr<CallbackStack> weak_callback_stack_;
@@ -552,6 +566,7 @@ class PLATFORM_EXPORT ThreadHeap {
 
   static ThreadHeap* main_thread_heap_;
 
+  friend class incremental_marking_test::IncrementalMarkingScopeBase;
   template <typename T>
   friend class Member;
   friend class ThreadState;
