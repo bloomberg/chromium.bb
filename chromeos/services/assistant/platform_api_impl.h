@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "chromeos/services/assistant/platform/audio_input_provider_impl.h"
+#include "chromeos/services/assistant/platform/file_provider_impl.h"
 #include "chromeos/services/assistant/platform/system_provider_impl.h"
 #include "chromeos/services/assistant/public/mojom/assistant.mojom.h"
 // TODO(xiaohuic): replace with "base/macros.h" once we remove
@@ -18,7 +19,6 @@
 #include "libassistant/contrib/core/macros.h"
 #include "libassistant/contrib/platform/audio/output/audio_output_provider_impl.h"
 #include "libassistant/contrib/platform/auth/auth_provider_impl.h"
-#include "libassistant/contrib/platform/file/file_provider_impl.h"
 #include "libassistant/contrib/platform/net/network_provider_impl.h"
 #include "libassistant/contrib/platform/resources/resource_provider.h"
 #include "libassistant/shared/public/platform_api.h"
@@ -29,8 +29,7 @@ namespace assistant {
 // Platform API required by the voice assistant.
 class PlatformApiImpl : public assistant_client::PlatformApi {
  public:
-  explicit PlatformApiImpl(const std::string& config,
-                           mojom::AudioInputPtr audio_input);
+  PlatformApiImpl(const std::string& config, mojom::AudioInputPtr audio_input);
   ~PlatformApiImpl() override;
 
   // assistant_client::PlatformApi overrides
@@ -78,7 +77,7 @@ class PlatformApiImpl : public assistant_client::PlatformApi {
   AudioInputProviderImpl audio_input_provider_;
   assistant_contrib::AudioOutputProviderImpl audio_output_provider_;
   DummyAuthProvider auth_provider_;
-  assistant_contrib::FileProviderImpl file_provider_;
+  FileProviderImpl file_provider_;
   assistant_contrib::NetworkProviderImpl network_provider_;
   assistant_contrib::ResourceProviderImpl resource_provider_;
   SystemProviderImpl system_provider_;
