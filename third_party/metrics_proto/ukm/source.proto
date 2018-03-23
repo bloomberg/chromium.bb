@@ -11,6 +11,17 @@ package ukm;
 // Source contains data related to a top-level navigation.
 // Next tag: 10
 message Source {
+  // The URL scheme, such as HTTP, HTTPS, CHROME_EXTENSION, etc.
+  enum UrlScheme {
+    UNSUPPORTED = 0;
+    HTTP = 1;
+    HTTPS = 2;
+    FTP = 3;
+    ABOUT = 4;
+    CHROME = 5;
+    CHROME_EXTENSION = 6;
+  };
+
   // An identifier for the source. This should be unique within a session.
   optional int64 id = 1;
 
