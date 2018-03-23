@@ -1641,7 +1641,7 @@ void av1_predict_intra_block_facade(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   if (plane != AOM_PLANE_Y && mbmi->uv_mode == UV_CFL_PRED) {
 #if CONFIG_DEBUG
-    assert(is_cfl_allowed(mbmi));
+    assert(is_cfl_allowed(xd));
     const BLOCK_SIZE plane_bsize = get_plane_block_size(mbmi->sb_type, pd);
     (void)plane_bsize;
     assert(plane_bsize < BLOCK_SIZES_ALL);

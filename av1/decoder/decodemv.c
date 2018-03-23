@@ -845,7 +845,7 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   {
     xd->cfl.is_chroma_reference = 1;
     mbmi->uv_mode =
-        read_intra_mode_uv(ec_ctx, r, is_cfl_allowed(mbmi), mbmi->mode);
+        read_intra_mode_uv(ec_ctx, r, is_cfl_allowed(xd), mbmi->mode);
     if (mbmi->uv_mode == UV_CFL_PRED) {
       mbmi->cfl_alpha_idx = read_cfl_alphas(ec_ctx, r, &mbmi->cfl_alpha_signs);
       xd->cfl.store_y = 1;
@@ -1116,7 +1116,7 @@ static void read_intra_block_mode_info(AV1_COMMON *const cm, const int mi_row,
 #endif  // CONFIG_MONO_VIDEO
   {
     mbmi->uv_mode =
-        read_intra_mode_uv(ec_ctx, r, is_cfl_allowed(mbmi), mbmi->mode);
+        read_intra_mode_uv(ec_ctx, r, is_cfl_allowed(xd), mbmi->mode);
     if (mbmi->uv_mode == UV_CFL_PRED) {
       mbmi->cfl_alpha_idx =
           read_cfl_alphas(xd->tile_ctx, r, &mbmi->cfl_alpha_signs);

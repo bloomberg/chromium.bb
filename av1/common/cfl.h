@@ -14,9 +14,19 @@
 
 #include "av1/common/blockd.h"
 
-static INLINE CFL_ALLOWED_TYPE is_cfl_allowed(const MB_MODE_INFO *mbmi) {
+static INLINE CFL_ALLOWED_TYPE is_cfl_allowed(const MACROBLOCKD *xd) {
+  const MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
   assert(bsize < BLOCK_SIZES_ALL);
+  if (xd->lossless[mbmi->segment_id]) {
+    // In lossless, CfL is available when the partition size is equal to the
+    // transform size.
+    const int plane_bsize =
+        get_plane_block_size(bsize, &xd->plane[AOM_PLANE_U]);
+    return (CFL_ALLOWED_TYPE)(block_size_wide[plane_bsize] == 4 &&
+                              block_size_high[plane_bsize] == 4);
+  }
+  // Spec: CfL is available to luma partitions lesser than or equal to 32x32
   return (CFL_ALLOWED_TYPE)(block_size_wide[bsize] <= 32 &&
                             block_size_high[bsize] <= 32);
 }

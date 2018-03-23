@@ -1046,7 +1046,7 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
         is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                             xd->plane[1].subsampling_y)) {
       const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
-      write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(mbmi), w);
+      write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(xd), w);
       if (uv_mode == UV_CFL_PRED)
         write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
       if (use_angle_delta && av1_is_directional_mode(get_uv_mode(uv_mode))) {
@@ -1289,7 +1289,7 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
       is_chroma_reference(mi_row, mi_col, bsize, xd->plane[1].subsampling_x,
                           xd->plane[1].subsampling_y)) {
     const UV_PREDICTION_MODE uv_mode = mbmi->uv_mode;
-    write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(mbmi), w);
+    write_intra_uv_mode(ec_ctx, uv_mode, mode, is_cfl_allowed(xd), w);
     if (uv_mode == UV_CFL_PRED)
       write_cfl_alphas(ec_ctx, mbmi->cfl_alpha_idx, mbmi->cfl_alpha_signs, w);
     if (use_angle_delta && av1_is_directional_mode(get_uv_mode(uv_mode))) {
