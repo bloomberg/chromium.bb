@@ -4085,6 +4085,10 @@ void RenderFrameHostImpl::UpdatePermissionsForNavigation(
 
 void RenderFrameHostImpl::UpdateSubresourceLoaderFactories() {
   DCHECK(base::FeatureList::IsEnabled(network::features::kNetworkService));
+  // We only send loader factory bundle upon navigation, so
+  // bail out if the frame hasn't commited any yet.
+  if (!has_committed_any_navigation_)
+    return;
   DCHECK(network_service_connection_error_handler_holder_.is_bound());
 
   network::mojom::URLLoaderFactoryPtrInfo default_factory_info;
