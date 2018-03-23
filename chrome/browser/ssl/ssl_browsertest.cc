@@ -5582,18 +5582,27 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, SameDocumentHasSSLState) {
   CheckAuthenticatedState(tab, AuthState::NONE);
 }
 
-// Checks that if a redirect occurs while the page is loading, the SSL state
-// reflects the final URL.
+// Checks that if a client redirect occurs while the page is loading, the SSL
+// state reflects the final URL.
 IN_PROC_BROWSER_TEST_P(SSLUITest, ClientRedirectSSLState) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
   GURL https_url = https_server_.GetURL("/ssl/redirect.html?");
   GURL http_url = embedded_test_server()->GetURL("/ssl/google.html");
-
   GURL url(https_url.spec() + http_url.spec());
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
+
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  content::TestNavigationManager navigation_observer_https(tab, url);
+  content::TestNavigationManager navigation_observer_http(tab, http_url);
+
+  tab->GetController().LoadURL(url, content::Referrer(),
+                               ui::PAGE_TRANSITION_LINK, std::string());
+
+  navigation_observer_https.WaitForNavigationFinished();
+  navigation_observer_http.WaitForNavigationFinished();
+  content::WaitForLoadStop(tab);
+
   CheckUnauthenticatedState(tab, AuthState::NONE);
 }
 
@@ -5618,12 +5627,23 @@ IN_PROC_BROWSER_TEST_P(SSLUITest, ClientRedirectToMixedContentSSLState) {
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
 
-  GURL url = GURL(
-      https_server_.GetURL("/ssl/redirect.html").spec() + "?" +
-      https_server_.GetURL("/ssl/page_displays_insecure_content.html").spec());
+  GURL redirect(https_server_.GetURL("/ssl/redirect.html"));
+  GURL final_url(
+      https_server_.GetURL("/ssl/page_displays_insecure_content.html"));
+  GURL url = GURL(redirect.spec() + "?" + final_url.spec());
 
-  ui_test_utils::NavigateToURLBlockUntilNavigationsComplete(browser(), url, 2);
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
+  content::TestNavigationManager navigation_manager_redirect(tab, url);
+  content::TestNavigationManager navigation_manager_final_url(tab, final_url);
+
+  tab->GetController().LoadURL(url, content::Referrer(),
+                               ui::PAGE_TRANSITION_LINK, std::string());
+
+  navigation_manager_redirect.WaitForNavigationFinished();
+  navigation_manager_final_url.WaitForNavigationFinished();
+  content::WaitForLoadStop(tab);
+
   CheckSecurityState(tab, CertError::NONE, security_state::NONE,
                      AuthState::DISPLAYED_INSECURE_CONTENT);
 }
