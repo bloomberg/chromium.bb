@@ -1224,6 +1224,27 @@ TEST_P(PaintLayerTest, ReferenceClipPathWithPageZoom) {
   EXPECT_EQ(body, GetDocument().ElementFromPoint(60, 151));
 }
 
+TEST_P(PaintLayerTest, FragmentedHitTest) {
+  SetHtmlInnerHTML(R"HTML(
+    <style>
+    div {
+      break-inside: avoid-column;
+      width: 50px;
+      height: 50px;
+      position: relative;
+    }
+    </style>
+    <ul style="column-count: 4; position: relative">
+      <div></div>
+      <div id=target style=" position: relative; transform: translateY(0px);">
+      </div>
+    </ul>
+  )HTML");
+
+  auto* target = GetDocument().getElementById("target");
+  EXPECT_EQ(target, GetDocument().ElementFromPoint(280, 30));
+}
+
 TEST_P(PaintLayerTest, SquashingOffsets) {
   if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
     return;

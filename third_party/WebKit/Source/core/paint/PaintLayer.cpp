@@ -2029,9 +2029,11 @@ PaintLayer* PaintLayer::HitTestLayer(
   // fragment.
   PaintLayerFragments layer_fragments;
   if (applied_transform) {
+    DCHECK(root_layer == this);
+    LayoutPoint offset;
     AppendSingleFragmentIgnoringPagination(
         layer_fragments, root_layer, hit_test_rect,
-        kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior);
+        kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior, &offset);
   } else {
     CollectFragments(layer_fragments, root_layer, hit_test_rect,
                      kExcludeOverlayScrollbarSizeForHitTesting, clip_behavior);
