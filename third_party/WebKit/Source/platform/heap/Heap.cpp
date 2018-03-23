@@ -139,8 +139,6 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       not_fully_constructed_marking_stack_(CallbackStack::Create()),
       post_marking_callback_stack_(CallbackStack::Create()),
       weak_callback_stack_(CallbackStack::Create()),
-      ephemeron_stack_(CallbackStack::Create()),
-      ephemeron_iteration_done_stack_(CallbackStack::Create()),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0),
       should_flush_heap_does_not_contain_cache_(false) {
@@ -273,12 +271,6 @@ bool ThreadHeap::PopAndInvokePostMarkingCallback(Visitor* visitor) {
   return false;
 }
 
-void ThreadHeap::InvokeEphemeronIterationDoneCallbacks(Visitor* visitor) {
-  while (CallbackStack::Item* item = ephemeron_iteration_done_stack_->Pop()) {
-    item->Call(visitor);
-  }
-}
-
 void ThreadHeap::PushWeakCallback(void* closure, WeakCallback callback) {
   CallbackStack::Item* slot = weak_callback_stack_->AllocateEntry();
   *slot = CallbackStack::Item(closure, callback);
@@ -293,31 +285,23 @@ bool ThreadHeap::PopAndInvokeWeakCallback(Visitor* visitor) {
 }
 
 void ThreadHeap::RegisterWeakTable(void* table,
-                                   EphemeronCallback iteration_callback,
-                                   EphemeronCallback iteration_done_callback) {
+                                   EphemeronCallback iteration_callback) {
   DCHECK(thread_state_->IsInGC());
-
-  CallbackStack::Item* slot = ephemeron_stack_->AllocateEntry();
-  *slot = CallbackStack::Item(table, iteration_callback);
-
-  slot = ephemeron_iteration_done_stack_->AllocateEntry();
-  *slot = CallbackStack::Item(table, iteration_done_callback);
-}
-
 #if DCHECK_IS_ON()
-bool ThreadHeap::WeakTableRegistered(const void* table) {
-  DCHECK(ephemeron_stack_);
-  return ephemeron_stack_->HasCallbackForObject(table);
+  auto result = ephemeron_callbacks_.insert(table, iteration_callback);
+  DCHECK(result.is_new_entry ||
+         result.stored_value->value == iteration_callback);
+#else
+  ephemeron_callbacks_.insert(table, iteration_callback);
+#endif  // DCHECK_IS_ON()
 }
-#endif
 
 void ThreadHeap::CommitCallbackStacks() {
   marking_stack_->Commit();
   not_fully_constructed_marking_stack_->Commit();
   post_marking_callback_stack_->Commit();
   weak_callback_stack_->Commit();
-  ephemeron_stack_->Commit();
-  ephemeron_iteration_done_stack_->Commit();
+  DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
 HeapCompact* ThreadHeap::Compaction() {
@@ -345,8 +329,7 @@ void ThreadHeap::DecommitCallbackStacks() {
   not_fully_constructed_marking_stack_->Decommit();
   post_marking_callback_stack_->Decommit();
   weak_callback_stack_->Decommit();
-  ephemeron_stack_->Decommit();
-  ephemeron_iteration_done_stack_->Decommit();
+  ephemeron_callbacks_.clear();
 }
 
 void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
@@ -360,6 +343,28 @@ void ThreadHeap::MarkNotFullyConstructedObjects(Visitor* visitor) {
   DCHECK(!thread_state_->IsIncrementalMarking());
   while (PopAndInvokeNotFullyConstructedTraceCallback(visitor)) {
   }
+}
+
+void ThreadHeap::InvokeEphemeronCallbacks(Visitor* visitor) {
+  // Mark any strong pointers that have now become reachable in ephemeron maps.
+  TRACE_EVENT0("blink_gc", "ThreadHeap::InvokeEphemeronCallbacks");
+
+  // Avoid supporting a subtle scheme that allows insertion while iterating
+  // by just creating temporary lists for iteration and sinking.
+  WTF::HashMap<void*, EphemeronCallback> iteration_set;
+  WTF::HashMap<void*, EphemeronCallback> final_set;
+
+  bool found_new = false;
+  do {
+    iteration_set = std::move(ephemeron_callbacks_);
+    ephemeron_callbacks_.clear();
+    for (auto& tuple : iteration_set) {
+      final_set.insert(tuple.key, tuple.value);
+      tuple.value(visitor, tuple.key);
+    }
+    found_new = !ephemeron_callbacks_.IsEmpty();
+  } while (found_new);
+  ephemeron_callbacks_ = std::move(final_set);
 }
 
 bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
@@ -382,12 +387,7 @@ bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
       }
     }
 
-    {
-      // Mark any strong pointers that have now become reachable in
-      // ephemeron maps.
-      TRACE_EVENT0("blink_gc", "ThreadHeap::processEphemeronStack");
-      ephemeron_stack_->InvokeEphemeronCallbacks(visitor);
-    }
+    InvokeEphemeronCallbacks(visitor);
 
     // Rerun loop if ephemeron processing queued more objects for tracing.
   } while (!marking_stack_->IsEmpty());
@@ -401,7 +401,6 @@ void ThreadHeap::PostMarkingProcessing(Visitor* visitor) {
   //    (specifically to clear the queued bits for weak hash tables), and
   // 2. the markNoTracing callbacks on collection backings to mark them
   //    if they are only reachable from their front objects.
-  InvokeEphemeronIterationDoneCallbacks(visitor);
   while (PopAndInvokePostMarkingCallback(visitor)) {
   }
 

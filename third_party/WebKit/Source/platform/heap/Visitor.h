@@ -209,14 +209,9 @@ class PLATFORM_EXPORT Visitor {
 
   // Used to register ephemeron callbacks.
   virtual bool RegisterWeakTable(const void* closure,
-                                 EphemeronCallback iteration_callback,
-                                 EphemeronCallback iteration_done_callback) {
+                                 EphemeronCallback iteration_callback) {
     return false;
   }
-
-#if DCHECK_IS_ON()
-  virtual bool WeakTableRegistered(const void* closure) { return false; }
-#endif
 
   // |WeakCallback| will usually use |ObjectAliveTrait| to figure out liveness
   // of any children of |closure|. Upon return from the callback all references

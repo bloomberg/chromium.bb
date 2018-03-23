@@ -128,11 +128,7 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
                                     MovingObjectCallback,
                                     void* callback_data) final;
   bool RegisterWeakTable(const void* closure,
-                         EphemeronCallback iteration_callback,
-                         EphemeronCallback iteration_done_callback) final;
-#if DCHECK_IS_ON()
-  bool WeakTableRegistered(const void* closure) final;
-#endif
+                         EphemeronCallback iteration_callback) final;
   void RegisterWeakCallback(void* closure, WeakCallback) final;
 
  private:

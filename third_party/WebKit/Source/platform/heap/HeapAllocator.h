@@ -190,19 +190,9 @@ class PLATFORM_EXPORT HeapAllocator {
   template <typename VisitorDispatcher>
   static bool RegisterWeakTable(VisitorDispatcher visitor,
                                 const void* closure,
-                                EphemeronCallback iteration_callback,
-                                EphemeronCallback iteration_done_callback) {
-    return visitor->RegisterWeakTable(closure, iteration_callback,
-                                      iteration_done_callback);
+                                EphemeronCallback iteration_callback) {
+    return visitor->RegisterWeakTable(closure, iteration_callback);
   }
-
-#if DCHECK_IS_ON()
-  template <typename VisitorDispatcher>
-  static bool WeakTableRegistered(VisitorDispatcher visitor,
-                                  const void* closure) {
-    return visitor->WeakTableRegistered(closure);
-  }
-#endif
 
   template <typename T, typename VisitorDispatcher>
   static void RegisterBackingStoreCallback(VisitorDispatcher visitor,
