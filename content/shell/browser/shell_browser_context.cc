@@ -68,6 +68,8 @@ ShellBrowserContext::ShellBrowserContext(bool off_the_record,
 }
 
 ShellBrowserContext::~ShellBrowserContext() {
+  NotifyWillBeDestroyed(this);
+
   BrowserContextDependencyManager::GetInstance()->
       DestroyBrowserContextServices(this);
   // Need to destruct the ResourceContext before posting tasks which may delete

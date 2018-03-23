@@ -62,6 +62,7 @@ CastBrowserContext::CastBrowserContext(
 }
 
 CastBrowserContext::~CastBrowserContext() {
+  BrowserContext::NotifyWillBeDestroyed(this);
   ShutdownStoragePartitions();
   content::BrowserThread::DeleteSoon(
       content::BrowserThread::IO,

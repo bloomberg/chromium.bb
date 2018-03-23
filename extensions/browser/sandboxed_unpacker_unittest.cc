@@ -121,8 +121,7 @@ class SandboxedUnpackerTest : public ExtensionsTest {
       : SandboxedUnpackerTest(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
 
   SandboxedUnpackerTest(content::TestBrowserThreadBundle::Options options)
-      : ExtensionsTest(
-            std::make_unique<content::TestBrowserThreadBundle>(options)) {}
+      : ExtensionsTest(options) {}
 
   void SetUp() override {
     ExtensionsTest::SetUp();

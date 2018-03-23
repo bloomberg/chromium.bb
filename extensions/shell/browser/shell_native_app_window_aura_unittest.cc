@@ -9,7 +9,6 @@
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/web_contents.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/test_app_window_contents.h"
 #include "extensions/browser/extensions_test.h"
@@ -24,10 +23,7 @@ namespace extensions {
 
 class ShellNativeAppWindowAuraTest : public ExtensionsTest {
  public:
-  ShellNativeAppWindowAuraTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {
-    AppWindowClient::Set(&app_window_client_);
-  }
+  ShellNativeAppWindowAuraTest() { AppWindowClient::Set(&app_window_client_); }
 
   ~ShellNativeAppWindowAuraTest() override { AppWindowClient::Set(nullptr); }
 

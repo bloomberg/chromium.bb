@@ -368,6 +368,9 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     RenderViewHostImplTestHarness::SetUp();
     gpu::ImageTransportSurface::SetAllowOSMesaForTesting(true);
 
+    browser_context_ = std::make_unique<TestBrowserContext>();
+    process_host_ =
+        std::make_unique<MockRenderProcessHost>(browser_context_.get());
     process_host_->Init();
     host_ = MockRenderWidgetHostImpl::Create(&delegate_, process_host_.get(),
                                              process_host_->GetNextRoutingID());
@@ -382,6 +385,7 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
     rwhv_cocoa_.reset();
     host_->ShutdownAndDestroyWidget(true);
     process_host_.reset();
+    browser_context_.reset();
     RecycleAndWait();
     RenderViewHostImplTestHarness::TearDown();
   }
@@ -434,9 +438,8 @@ class RenderWidgetHostViewMacTest : public RenderViewHostImplTestHarness {
 
   MockRenderWidgetHostDelegate delegate_;
 
-  TestBrowserContext browser_context_;
-  std::unique_ptr<MockRenderProcessHost> process_host_ =
-      std::make_unique<MockRenderProcessHost>(&browser_context_);
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<MockRenderProcessHost> process_host_;
   MockRenderWidgetHostImpl* host_ = nullptr;
   RenderWidgetHostViewMac* rwhv_mac_ = nullptr;
   base::scoped_nsobject<RenderWidgetHostViewCocoa> rwhv_cocoa_;
@@ -1762,14 +1765,18 @@ class InputMethodMacTest : public RenderWidgetHostViewMacTest {
 
   void SetUp() override {
     RenderWidgetHostViewMacTest::SetUp();
-    process_host_ = new MockRenderProcessHost(&browser_context_);
+
+    browser_context_ = std::make_unique<TestBrowserContext>();
+    process_host_ = new MockRenderProcessHost(browser_context_.get());
     process_host_->Init();
     widget_ = MockRenderWidgetHostImpl::Create(
         &delegate_, process_host_, process_host_->GetNextRoutingID());
     view_ = new RenderWidgetHostViewMac(widget_, false);
 
     // Initializing a child frame's view.
-    child_process_host_ = new MockRenderProcessHost(&child_browser_context_);
+    child_browser_context_ = std::make_unique<TestBrowserContext>();
+    child_process_host_ =
+        new MockRenderProcessHost(child_browser_context_.get());
     child_process_host_->Init();
     child_widget_ = MockRenderWidgetHostImpl::Create(
         &delegate_, child_process_host_,
@@ -1781,6 +1788,9 @@ class InputMethodMacTest : public RenderWidgetHostViewMacTest {
   void TearDown() override {
     widget_->ShutdownAndDestroyWidget(true);
     child_widget_->ShutdownAndDestroyWidget(true);
+
+    child_browser_context_.reset();
+    browser_context_.reset();
 
     RenderWidgetHostViewMacTest::TearDown();
   }
@@ -1812,8 +1822,8 @@ class InputMethodMacTest : public RenderWidgetHostViewMacTest {
   TestRenderWidgetHostView* child_view_;
 
  private:
-  TestBrowserContext browser_context_;
-  TestBrowserContext child_browser_context_;
+  std::unique_ptr<TestBrowserContext> browser_context_;
+  std::unique_ptr<TestBrowserContext> child_browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(InputMethodMacTest);
 };

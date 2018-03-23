@@ -4,6 +4,7 @@
 
 #include "content/browser/browser_url_handler_impl.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
@@ -31,6 +32,7 @@ static bool BarRewriter(GURL* url, BrowserContext* browser_context) {
 }
 
 TEST_F(BrowserURLHandlerImplTest, BasicRewriteAndReverse) {
+  TestBrowserThreadBundle thread_bundle;
   TestBrowserContext browser_context;
   BrowserURLHandlerImpl handler;
 
@@ -60,6 +62,7 @@ TEST_F(BrowserURLHandlerImplTest, BasicRewriteAndReverse) {
 }
 
 TEST_F(BrowserURLHandlerImplTest, NullHandlerReverse) {
+  TestBrowserThreadBundle thread_bundle;
   TestBrowserContext browser_context;
   BrowserURLHandlerImpl handler;
 
@@ -82,6 +85,7 @@ TEST_F(BrowserURLHandlerImplTest, NullHandlerReverse) {
 // Verify that the reverse handler for view-source does not duplicate query
 // parameters.
 TEST_F(BrowserURLHandlerImplTest, ViewSourceReverse) {
+  TestBrowserThreadBundle thread_bundle;
   TestBrowserContext browser_context;
   BrowserURLHandlerImpl handler;
 

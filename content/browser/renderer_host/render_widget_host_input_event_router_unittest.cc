@@ -5,11 +5,11 @@
 #include "content/browser/renderer_host/render_widget_host_input_event_router.h"
 
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_targeter.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
@@ -100,9 +100,7 @@ class MockRootRenderWidgetHostView : public MockRenderWidgetHostView {
 
 class RenderWidgetHostInputEventRouterTest : public testing::Test {
  public:
-  RenderWidgetHostInputEventRouterTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  RenderWidgetHostInputEventRouterTest() {}
 
  protected:
   // testing::Test:
@@ -149,8 +147,7 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
     return rwhier_.touchscreen_gesture_target_.target;
   }
 
-  // Needed by RenderWidgetHostImpl constructor.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
 
   MockRenderWidgetHostDelegate delegate_;
   std::unique_ptr<BrowserContext> browser_context_;
@@ -167,7 +164,6 @@ class RenderWidgetHostInputEventRouterTest : public testing::Test {
   std::map<MockRenderWidgetHostView*, viz::FrameSinkId> frame_sink_id_map_;
 
   RenderWidgetHostInputEventRouter rwhier_;
-  TestBrowserThreadBundle thread_bundle_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostInputEventRouterTest);

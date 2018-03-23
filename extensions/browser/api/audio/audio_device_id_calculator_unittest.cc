@@ -5,6 +5,7 @@
 #include "extensions/browser/api/audio/audio_device_id_calculator.h"
 #include "components/prefs/testing_pref_service.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/audio/audio_api.h"
 #include "extensions/browser/test_extensions_browser_client.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -51,6 +52,7 @@ class AudioDeviceIdCalculatorTest : public testing::Test {
   content::BrowserContext* browser_context() { return &browser_context_; }
 
  private:
+  content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context_;
   TestExtensionsBrowserClientWithPrefService test_browser_client_;
 

@@ -382,6 +382,14 @@ void BrowserContext::DeliverPushMessage(
 
 // static
 void BrowserContext::NotifyWillBeDestroyed(BrowserContext* browser_context) {
+  // Make sure NotifyWillBeDestroyed is idempotent.  This helps facilitate the
+  // pattern where NotifyWillBeDestroyed is called from *both*
+  // ShellBrowserContext and its derived classes (e.g.
+  // LayoutTestBrowserContext).
+  if (browser_context->was_notify_will_be_destroyed_called_)
+    return;
+  browser_context->was_notify_will_be_destroyed_called_ = true;
+
   // Service Workers must shutdown before the browser context is destroyed,
   // since they keep render process hosts alive and the codebase assumes that
   // render process hosts die before their profile (browser context) dies.
@@ -584,6 +592,8 @@ BrowserContext::~BrowserContext() {
 
   DCHECK(!GetUserData(kStoragePartitionMapKeyName))
       << "StoragePartitionMap is not shut down properly";
+
+  DCHECK(was_notify_will_be_destroyed_called_);
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   WebRtcEventLogger* const logger = WebRtcEventLogger::Get();

@@ -15,7 +15,6 @@
 #include "components/feedback/system_logs/system_logs_fetcher.h"
 #include "components/feedback/system_logs/system_logs_source.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
@@ -28,8 +27,7 @@ namespace extensions {
 
 class ShellSystemLogsFetcherTest : public ExtensionsTest {
  public:
-  ShellSystemLogsFetcherTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+  ShellSystemLogsFetcherTest() = default;
   ~ShellSystemLogsFetcherTest() override = default;
 
   scoped_refptr<Extension> BuildExtension(const std::string& name,

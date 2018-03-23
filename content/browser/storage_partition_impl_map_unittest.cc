@@ -8,8 +8,10 @@
 
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
+#include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
+#include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
@@ -65,8 +67,8 @@ TEST(StoragePartitionConfigTest, OperatorLess) {
 }
 
 TEST(StoragePartitionImplMapTest, GarbageCollect) {
+  TestBrowserThreadBundle thread_bundle;
   TestBrowserContext browser_context;
-  base::test::ScopedTaskEnvironment scoped_task_environment;
   StoragePartitionImplMap storage_partition_impl_map(&browser_context);
 
   std::unique_ptr<base::hash_set<base::FilePath>> active_paths(
@@ -87,7 +89,7 @@ TEST(StoragePartitionImplMapTest, GarbageCollect) {
   storage_partition_impl_map.GarbageCollect(std::move(active_paths),
                                             run_loop.QuitClosure());
   run_loop.Run();
-  scoped_task_environment.RunUntilIdle();
+  content::RunAllPendingInMessageLoop(content::BrowserThread::IO);
 
   EXPECT_TRUE(base::PathExists(active_path));
   EXPECT_FALSE(base::PathExists(inactive_path));

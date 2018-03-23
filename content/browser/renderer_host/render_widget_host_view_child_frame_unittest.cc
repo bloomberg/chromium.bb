@@ -33,6 +33,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
@@ -81,9 +82,7 @@ class MockFrameConnectorDelegate : public FrameConnectorDelegate {
 
 class RenderWidgetHostViewChildFrameTest : public testing::Test {
  public:
-  RenderWidgetHostViewChildFrameTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  RenderWidgetHostViewChildFrameTest() {}
 
   void SetUp() override {
     SetUpEnvironment(false /* use_zoom_for_device_scale_factor */);
@@ -150,7 +149,7 @@ class RenderWidgetHostViewChildFrameTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;

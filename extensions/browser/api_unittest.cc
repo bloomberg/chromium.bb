@@ -14,7 +14,6 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
 #include "extensions/browser/api_test_utils.h"
 #include "extensions/browser/extension_function.h"
@@ -29,8 +28,7 @@ namespace utils = extensions::api_test_utils;
 
 namespace extensions {
 
-ApiUnitTest::ApiUnitTest()
-    : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+ApiUnitTest::ApiUnitTest() {}
 
 ApiUnitTest::~ApiUnitTest() {}
 

@@ -85,8 +85,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
   ContentHashFetcherTest()
       // We need a real IO thread to be able to intercept the network request
       // for the missing verified_contents.json file.
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>(
-            content::TestBrowserThreadBundle::REAL_IO_THREAD)) {
+      : ExtensionsTest(content::TestBrowserThreadBundle::REAL_IO_THREAD) {
     request_context_ = new net::TestURLRequestContextGetter(
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO));

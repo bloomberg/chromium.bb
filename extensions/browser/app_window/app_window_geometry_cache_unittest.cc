@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "components/prefs/mock_pref_change_callback.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extensions_test.h"
@@ -41,9 +40,6 @@ scoped_refptr<Extension> CreateExtension(const std::string& id) {
 // Base class for tests.
 class AppWindowGeometryCacheTest : public ExtensionsTest {
  public:
-  AppWindowGeometryCacheTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
-
   // testing::Test overrides:
   void SetUp() override;
   void TearDown() override;

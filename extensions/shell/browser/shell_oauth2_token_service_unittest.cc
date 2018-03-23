@@ -5,15 +5,13 @@
 #include "extensions/shell/browser/shell_oauth2_token_service.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extensions_test.h"
 
 namespace extensions {
 
 class ShellOAuth2TokenServiceTest : public ExtensionsTest {
  public:
-  ShellOAuth2TokenServiceTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+  ShellOAuth2TokenServiceTest() {}
   ~ShellOAuth2TokenServiceTest() override {}
 };
 

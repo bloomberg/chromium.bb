@@ -28,7 +28,6 @@
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_prefs/user_prefs.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/api/lock_screen_data/data_item.h"
 #include "extensions/browser/api/lock_screen_data/lock_screen_value_store_migrator.h"
 #include "extensions/browser/api/lock_screen_data/operation_result.h"
@@ -452,8 +451,7 @@ class TestLockScreenValueStoreMigrator : public LockScreenValueStoreMigrator {
 
 class LockScreenItemStorageTest : public ExtensionsTest {
  public:
-  LockScreenItemStorageTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+  LockScreenItemStorageTest() = default;
   ~LockScreenItemStorageTest() override = default;
 
   void SetUp() override {

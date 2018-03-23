@@ -5,7 +5,6 @@
 #include "extensions/browser/warning_service.h"
 
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extensions_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -34,11 +33,7 @@ class MockObserver : public WarningService::Observer {
   MOCK_METHOD1(ExtensionWarningsChanged, void(const ExtensionIdSet&));
 };
 
-class WarningServiceTest : public ExtensionsTest {
- public:
-  WarningServiceTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
-};
+using WarningServiceTest = ExtensionsTest;
 
 const char ext1_id[] = "extension1";
 const char ext2_id[] = "extension2";

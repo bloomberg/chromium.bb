@@ -168,8 +168,8 @@ class MediaPerceptionAPIManagerTest : public testing::Test {
   TestUpstartClient* upstart_client_;
 
  private:
-  content::TestBrowserContext browser_context_;
   content::TestBrowserThreadBundle thread_bundle_;
+  content::TestBrowserContext browser_context_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaPerceptionAPIManagerTest);
 };

@@ -18,7 +18,7 @@ class URLRequestContextFactory;
 // Chromecast does not currently support multiple profiles.  So there is a
 // single BrowserContext for all chromecast renderers.
 // There is no support for PartitionStorage.
-class CastBrowserContext : public content::BrowserContext {
+class CastBrowserContext final : public content::BrowserContext {
  public:
   explicit CastBrowserContext(
       URLRequestContextFactory* url_request_context_factory);

@@ -11,7 +11,6 @@
 #include "base/optional.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_notification_tracker.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
@@ -84,8 +83,7 @@ class TestExtensionRegistrarDelegate : public ExtensionRegistrar::Delegate {
 
 class ExtensionRegistrarTest : public ExtensionsTest {
  public:
-  ExtensionRegistrarTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+  ExtensionRegistrarTest() = default;
   ~ExtensionRegistrarTest() override = default;
 
   void SetUp() override {

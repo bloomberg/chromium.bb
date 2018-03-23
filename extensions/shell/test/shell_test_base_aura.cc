@@ -4,14 +4,12 @@
 
 #include "extensions/shell/test/shell_test_base_aura.h"
 
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/shell/test/shell_test_extensions_browser_client.h"
 #include "extensions/shell/test/shell_test_helper_aura.h"
 
 namespace extensions {
 
-ShellTestBaseAura::ShellTestBaseAura()
-    : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+ShellTestBaseAura::ShellTestBaseAura() {}
 
 ShellTestBaseAura::~ShellTestBaseAura() {}
 

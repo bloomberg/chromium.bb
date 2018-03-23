@@ -11,6 +11,7 @@
 #include "components/payments/core/payment_request_delegate.h"
 #include "content/public/browser/stored_payment_app.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/modules/payments/payment_request.mojom.h"
@@ -157,6 +158,7 @@ class ServiceWorkerPaymentInstrumentTest : public testing::Test,
 
  private:
   MockPaymentRequestDelegate delegate_;
+  content::TestBrowserThreadBundle thread_bundle_;
   content::TestBrowserContext browser_context_;
 
   std::unique_ptr<PaymentRequestSpec> spec_;

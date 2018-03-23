@@ -42,7 +42,9 @@ LayoutTestBrowserContext::LayoutTestBrowserContext(bool off_the_record,
       std::make_unique<device::ScopedGeolocationOverrider>(0, 0);
 }
 
-LayoutTestBrowserContext::~LayoutTestBrowserContext() {}
+LayoutTestBrowserContext::~LayoutTestBrowserContext() {
+  BrowserContext::NotifyWillBeDestroyed(this);
+}
 
 ShellURLRequestContextGetter*
 LayoutTestBrowserContext::CreateURLRequestContextGetter(

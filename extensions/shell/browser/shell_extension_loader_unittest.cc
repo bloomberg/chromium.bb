@@ -84,8 +84,7 @@ class TestAppWindowClient : public ShellAppWindowClient {
 
 class ShellExtensionLoaderTest : public ExtensionsTest {
  protected:
-  ShellExtensionLoaderTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+  ShellExtensionLoaderTest() = default;
   ~ShellExtensionLoaderTest() override = default;
 
   void SetUp() override {

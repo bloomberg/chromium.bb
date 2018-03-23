@@ -41,6 +41,7 @@ ShellBrowserContext::ShellBrowserContext(
       browser_main_parts_(browser_main_parts) {}
 
 ShellBrowserContext::~ShellBrowserContext() {
+  content::BrowserContext::NotifyWillBeDestroyed(this);
 }
 
 content::BrowserPluginGuestManager* ShellBrowserContext::GetGuestManager() {

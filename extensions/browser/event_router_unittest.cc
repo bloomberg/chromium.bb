@@ -16,7 +16,6 @@
 #include "base/values.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/mock_render_process_host.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/event_listener_map.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/extension_builder.h"
@@ -127,8 +126,7 @@ std::unique_ptr<DictionaryValue> CreateHostSuffixFilter(
 
 class EventRouterTest : public ExtensionsTest {
  public:
-  EventRouterTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+  EventRouterTest() = default;
 
  protected:
   // Tests adding and removing observers from EventRouter.
