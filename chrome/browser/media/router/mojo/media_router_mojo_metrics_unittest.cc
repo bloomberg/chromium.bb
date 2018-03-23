@@ -24,9 +24,9 @@ void TestRouteResultCodeHistograms(
     base::RepeatingCallback<void(MediaRouteProviderId,
                                  RouteRequestResult::ResultCode)> record_cb,
     MediaRouteProviderId provider1,
-    const char (&histogram_provider1)[],
+    const char* const histogram_provider1,
     MediaRouteProviderId provider2,
-    const char (&histogram_provider2)[]) {
+    const char* const histogram_provider2) {
   base::HistogramTester tester;
   tester.ExpectTotalCount(histogram_provider1, 0);
   tester.ExpectTotalCount(histogram_provider2, 0);
