@@ -263,6 +263,96 @@ TEST_F(WebFrameSchedulerImplTest, PauseAndResume) {
   EXPECT_EQ(5, counter);
 }
 
+TEST_F(WebFrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
+  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
+  int counter = 0;
+  LoadingTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  DeferrableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  PausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  UnpausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+  web_frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
+  web_frame_scheduler_->SetPageFrozen(true);
+
+  EXPECT_EQ(0, counter);
+  mock_task_runner_->RunUntilIdle();
+  // unpausable tasks continue to run.
+  EXPECT_EQ(1, counter);
+
+  web_frame_scheduler_->SetPageFrozen(false);
+
+  EXPECT_EQ(1, counter);
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(5, counter);
+}
+
+TEST_F(WebFrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(false);
+  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(false);
+  int counter = 0;
+  LoadingTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  DeferrableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  PausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  UnpausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+  web_frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
+  web_frame_scheduler_->SetPageFrozen(true);
+
+  EXPECT_EQ(0, counter);
+  mock_task_runner_->RunUntilIdle();
+  // throttleable tasks are frozen, other tasks continue to run.
+  EXPECT_EQ(4, counter);
+
+  web_frame_scheduler_->SetPageFrozen(false);
+
+  EXPECT_EQ(4, counter);
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(5, counter);
+}
+
+TEST_F(WebFrameSchedulerImplTest, PageFreezeAndPageVisible) {
+  ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
+  ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
+  int counter = 0;
+  LoadingTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  ThrottleableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  DeferrableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  PausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+  UnpausableTaskQueue()->PostTask(
+      FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
+
+  web_frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
+  web_frame_scheduler_->SetPageFrozen(true);
+
+  EXPECT_EQ(0, counter);
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1, counter);
+
+  // Making the page visible should cause frozen queues to resume.
+  web_frame_scheduler_->SetPageVisibility(PageVisibilityState::kVisible);
+
+  EXPECT_EQ(1, counter);
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(5, counter);
+}
+
 // Tests if throttling observer interfaces work.
 TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
   std::unique_ptr<MockThrottlingObserver> observer =
