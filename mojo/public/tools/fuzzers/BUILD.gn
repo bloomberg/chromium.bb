@@ -7,6 +7,7 @@
 import("//build/config/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//testing/libfuzzer/fuzzer_test.gni")
+import("//third_party/protobuf/proto_library.gni")
 
 # mojo/public BUILD depends on this target. Needed for package discovery
 group("fuzzers") {
@@ -44,4 +45,24 @@ if (!is_win) {
       "//mojo/edk",
     ]
   }
+}
+
+fuzzer_test("mojo_parse_message_proto_fuzzer") {
+  sources = [
+    "fuzz_impl.cc",
+    "mojo_parse_message_proto_fuzzer.cc",
+  ]
+  deps = [
+    ":fuzz_mojom",
+    ":mojo_fuzzer_proto",
+    "//mojo/edk",
+    "//third_party/libprotobuf-mutator",
+  ]
+  seed_corpus = "//mojo/public/tools/fuzzers/mojo_parse_message_proto_corpus"
+}
+
+proto_library("mojo_fuzzer_proto") {
+  sources = [
+    "mojo_fuzzer.proto",
+  ]
 }
