@@ -200,9 +200,6 @@ class BASE_EXPORT StatisticsRecorder {
   // method must be called very early, before any threads have started.
   // Record checker methods can be called on any thread, so they shouldn't
   // mutate any state.
-  //
-  // TODO(iburak): This is not yet hooked up to histogram recording
-  // infrastructure.
   static void SetRecordChecker(
       std::unique_ptr<RecordHistogramChecker> record_checker);
 

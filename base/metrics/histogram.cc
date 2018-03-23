@@ -21,6 +21,7 @@
 #include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/dummy_histogram.h"
 #include "base/metrics/histogram_functions.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/persistent_histogram_allocator.h"
@@ -75,6 +76,11 @@ bool ReadHistogramArguments(PickleIterator* iter,
 
 bool ValidateRangeChecksum(const HistogramBase& histogram,
                            uint32_t range_checksum) {
+  // Normally, |histogram| should have type HISTOGRAM or be inherited from it.
+  // However, if it's expired, it will actually be a DUMMY_HISTOGRAM.
+  // Skip the checks in that case.
+  if (histogram.GetHistogramType() == DUMMY_HISTOGRAM)
+    return true;
   const Histogram& casted_histogram =
       static_cast<const Histogram&>(histogram);
 
@@ -152,6 +158,12 @@ class Histogram::Factory {
 HistogramBase* Histogram::Factory::Build() {
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(name_);
   if (!histogram) {
+    // TODO(gayane): |HashMetricName()| is called again in Histogram
+    // constructor. Refactor code to avoid the additional call.
+    bool should_record =
+        StatisticsRecorder::ShouldRecordHistogram(HashMetricName(name_));
+    if (!should_record)
+      return DummyHistogram::GetInstance();
     // To avoid racy destruction at shutdown, the following will be leaked.
     const BucketRanges* created_ranges = CreateRanges();
     const BucketRanges* registered_ranges =
@@ -807,6 +819,11 @@ class LinearHistogram::Factory : public Histogram::Factory {
 
   void FillHistogram(HistogramBase* base_histogram) override {
     Histogram::Factory::FillHistogram(base_histogram);
+    // Normally, |base_histogram| should have type LINEAR_HISTOGRAM or be
+    // inherited from it. However, if it's expired, it will actually be a
+    // DUMMY_HISTOGRAM. Skip filling in that case.
+    if (base_histogram->GetHistogramType() == DUMMY_HISTOGRAM)
+      return;
     LinearHistogram* histogram = static_cast<LinearHistogram*>(base_histogram);
     // Set range descriptions.
     if (descriptions_) {

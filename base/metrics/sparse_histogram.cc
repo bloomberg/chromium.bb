@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/dummy_histogram.h"
 #include "base/metrics/metrics_hashes.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_sample_map.h"
@@ -26,6 +27,12 @@ HistogramBase* SparseHistogram::FactoryGet(const std::string& name,
                                            int32_t flags) {
   HistogramBase* histogram = StatisticsRecorder::FindHistogram(name);
   if (!histogram) {
+    // TODO(gayane): |HashMetricName| is called again in Histogram constructor.
+    // Refactor code to avoid the additional call.
+    bool should_record =
+        StatisticsRecorder::ShouldRecordHistogram(HashMetricName(name));
+    if (!should_record)
+      return DummyHistogram::GetInstance();
     // Try to create the histogram using a "persistent" allocator. As of
     // 2016-02-25, the availability of such is controlled by a base::Feature
     // that is off by default. If the allocator doesn't exist or if

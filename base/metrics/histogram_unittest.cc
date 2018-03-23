@@ -16,8 +16,10 @@
 #include "base/logging.h"
 #include "base/metrics/bucket_ranges.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/metrics/metrics_hashes.h"
 #include "base/metrics/persistent_histogram_allocator.h"
 #include "base/metrics/persistent_memory_allocator.h"
+#include "base/metrics/record_histogram_checker.h"
 #include "base/metrics/sample_vector.h"
 #include "base/metrics/statistics_recorder.h"
 #include "base/pickle.h"
@@ -27,6 +29,22 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
+namespace {
+
+const char kExpiredHistogramName[] = "ExpiredHistogram";
+
+// Test implementation of RecordHistogramChecker interface.
+class TestRecordHistogramChecker : public RecordHistogramChecker {
+ public:
+  ~TestRecordHistogramChecker() override = default;
+
+  // RecordHistogramChecker:
+  bool ShouldRecord(uint64_t histogram_hash) const override {
+    return histogram_hash != HashMetricName(kExpiredHistogramName);
+  }
+};
+
+}  // namespace
 
 // Test parameter indicates if a persistent memory allocator should be used
 // for histogram allocation. False will allocate histograms from the process
@@ -58,6 +76,8 @@ class HistogramTest : public testing::TestWithParam<bool> {
   void InitializeStatisticsRecorder() {
     DCHECK(!statistics_recorder_);
     statistics_recorder_ = StatisticsRecorder::CreateTemporaryForTesting();
+    auto record_checker = std::make_unique<TestRecordHistogramChecker>();
+    StatisticsRecorder::SetRecordChecker(std::move(record_checker));
   }
 
   void UninitializeStatisticsRecorder() {
@@ -767,6 +787,59 @@ TEST(HistogramDeathTest, BadRangesTest) {
       CustomHistogram::FactoryGet("BadRangesCustom3", custom_ranges,
                                   HistogramBase::kNoFlags),
                "");
+}
+
+TEST_P(HistogramTest, ExpiredHistogramTest) {
+  HistogramBase* expired = Histogram::FactoryGet(kExpiredHistogramName, 1, 1000,
+                                                 10, HistogramBase::kNoFlags);
+  ASSERT_TRUE(expired);
+  expired->Add(5);
+  expired->Add(500);
+  auto samples = expired->SnapshotDelta();
+  EXPECT_EQ(0, samples->TotalCount());
+
+  HistogramBase* linear_expired = LinearHistogram::FactoryGet(
+      kExpiredHistogramName, 1, 1000, 10, HistogramBase::kNoFlags);
+  ASSERT_TRUE(linear_expired);
+  linear_expired->Add(5);
+  linear_expired->Add(500);
+  samples = linear_expired->SnapshotDelta();
+  EXPECT_EQ(0, samples->TotalCount());
+
+  std::vector<int> custom_ranges;
+  custom_ranges.push_back(1);
+  custom_ranges.push_back(5);
+  HistogramBase* custom_expired = CustomHistogram::FactoryGet(
+      kExpiredHistogramName, custom_ranges, HistogramBase::kNoFlags);
+  ASSERT_TRUE(custom_expired);
+  custom_expired->Add(2);
+  custom_expired->Add(4);
+  samples = custom_expired->SnapshotDelta();
+  EXPECT_EQ(0, samples->TotalCount());
+
+  HistogramBase* valid = Histogram::FactoryGet("ValidHistogram", 1, 1000, 10,
+                                               HistogramBase::kNoFlags);
+  ASSERT_TRUE(valid);
+  valid->Add(5);
+  valid->Add(500);
+  samples = valid->SnapshotDelta();
+  EXPECT_EQ(2, samples->TotalCount());
+
+  HistogramBase* linear_valid = LinearHistogram::FactoryGet(
+      "LinearHistogram", 1, 1000, 10, HistogramBase::kNoFlags);
+  ASSERT_TRUE(linear_valid);
+  linear_valid->Add(5);
+  linear_valid->Add(500);
+  samples = linear_valid->SnapshotDelta();
+  EXPECT_EQ(2, samples->TotalCount());
+
+  HistogramBase* custom_valid = CustomHistogram::FactoryGet(
+      "CustomHistogram", custom_ranges, HistogramBase::kNoFlags);
+  ASSERT_TRUE(custom_valid);
+  custom_valid->Add(2);
+  custom_valid->Add(4);
+  samples = custom_valid->SnapshotDelta();
+  EXPECT_EQ(2, samples->TotalCount());
 }
 
 }  // namespace base
