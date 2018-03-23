@@ -69,6 +69,8 @@ class ASH_EXPORT WebNotificationTray
 
   // Overridden from TrayBackgroundView.
   void UpdateAfterShelfAlignmentChange() override;
+  void UpdateAfterRootWindowBoundsChange(const gfx::Rect& old_bounds,
+                                         const gfx::Rect& new_bounds) override;
   void AnchorUpdated() override;
   base::string16 GetAccessibleNameForTray() override;
   void HideBubbleWithView(const views::TrayBubbleView* bubble_view) override;
