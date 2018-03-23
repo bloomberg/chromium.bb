@@ -238,8 +238,7 @@ LayoutUnit LayoutFlowThread::NextLogicalTopForUnbreakableContent(
 
 LayoutRect LayoutFlowThread::FragmentsBoundingBox(
     const LayoutRect& layer_bounding_box) const {
-  DCHECK(!RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
-         !column_sets_invalidated_);
+  DCHECK(!column_sets_invalidated_);
 
   LayoutRect result;
   for (auto* column_set : multi_column_set_list_)
