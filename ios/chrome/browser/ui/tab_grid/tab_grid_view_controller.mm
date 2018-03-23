@@ -135,6 +135,7 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
 - (void)viewWillTransitionToSize:(CGSize)size
        withTransitionCoordinator:
            (id<UIViewControllerTransitionCoordinator>)coordinator {
+  [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
   auto animate = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
     // Call the current page setter to sync the scroll view offset to the
     // current page value.
