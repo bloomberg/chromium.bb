@@ -29,7 +29,7 @@
         };
       }
 
-      #clear {
+      #clearContainer {
         bottom: -4px;
         position: absolute;
         right: -8px;
@@ -45,7 +45,7 @@
           value="[[computeText_(capturing_, shortcut, pendingShortcut_)]]"
           no-label-float>
       </paper-input>
-      <paper-icon-button-light class="icon-clear no-overlap"
+      <paper-icon-button-light class="icon-clear no-overlap" id="clearContainer"
           hidden$="[[computeClearHidden_(capturing_, shortcut)]]">
         <button id="clear" on-click="onClearTap_"></button>
       </paper-icon-button-light>
