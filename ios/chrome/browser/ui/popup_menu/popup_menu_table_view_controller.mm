@@ -32,6 +32,7 @@ using base::UserMetricsAction;
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.sectionFooterHeight = 0;
+  self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
 }
 
 - (void)setPopupMenuItems:
@@ -46,6 +47,23 @@ using base::UserMetricsAction;
     }
   }
   [self.tableView reloadData];
+}
+
+- (CGSize)preferredContentSize {
+  CGFloat width = 0;
+  CGFloat height = 0;
+  for (NSInteger section = 0; section < [self.tableViewModel numberOfSections];
+       section++) {
+    NSInteger sectionIdentifier =
+        [self.tableViewModel sectionIdentifierForSection:section];
+    for (TableViewItem<PopupMenuItem>* item in
+         [self.tableViewModel itemsInSectionWithIdentifier:sectionIdentifier]) {
+      CGSize sizeForCell = [item cellSizeForWidth:self.view.bounds.size.width];
+      width = MAX(width, ceil(sizeForCell.width));
+      height += ceil(sizeForCell.height);
+    }
+  }
+  return CGSizeMake(width, height);
 }
 
 #pragma mark - UITableViewDelegate

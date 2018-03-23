@@ -46,6 +46,41 @@ const CGFloat kMinMargin = 16;
   [self.presentedViewController.view
       setContentCompressionResistancePriority:UILayoutPriorityDefaultHigh + 1
                                       forAxis:UILayoutConstraintAxisHorizontal];
+
+  // Set the frame of the table view to the maximum width to have the label
+  // resizing correctly.
+  CGRect frame = self.presentedViewController.view.frame;
+  frame.size.width = kMaxWidth - 2 * kMinMargin;
+  self.presentedViewController.view.frame = frame;
+  // It is necessary to do a first layout pass so the table view can size
+  // itself.
+  [self.presentedViewController.view setNeedsLayout];
+  [self.presentedViewController.view layoutIfNeeded];
+  CGSize fittingSize = [self.presentedViewController.view
+      sizeThatFits:CGSizeMake(kMaxWidth, kMaxHeight)];
+  // Use preferredSize if it is set.
+  CGSize preferredSize = self.presentedViewController.preferredContentSize;
+  CGFloat width = fittingSize.width;
+  if (!CGSizeEqualToSize(preferredSize, CGSizeZero)) {
+    width = preferredSize.width;
+  }
+
+  // Set the sizing constraints, in case the UIViewController is using a
+  // UIScrollView. The priority needs to be non-required to allow downsizing if
+  // needed, and more than UILayoutPriorityDefaultHigh to take precedence on
+  // compression resistance.
+  NSLayoutConstraint* widthConstraint =
+      [self.presentedViewController.view.widthAnchor
+          constraintEqualToConstant:width];
+  widthConstraint.priority = UILayoutPriorityDefaultHigh + 1;
+  widthConstraint.active = YES;
+
+  NSLayoutConstraint* heightConstraint =
+      [self.presentedViewController.view.heightAnchor
+          constraintEqualToConstant:fittingSize.height];
+  heightConstraint.priority = UILayoutPriorityDefaultHigh + 1;
+  heightConstraint.active = YES;
+
   [self.popupViewController addContent:self.presentedViewController];
 
   [self.baseViewController addChildViewController:self.popupViewController];
@@ -63,8 +98,6 @@ const CGFloat kMinMargin = 16;
 - (void)presentAnimated:(BOOL)animated {
   // TODO(crbug.com/804774): Add animation based on |guideName|.
   self.popupViewController.contentContainer.alpha = 1;
-  self.popupViewController.contentContainer.frame =
-      CGRectMake(170, 300, 230, 400);
 }
 
 - (void)dismissAnimated:(BOOL)animated {

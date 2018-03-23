@@ -24,8 +24,12 @@
 // Image view to display the image.
 @property(nonatomic, strong, readonly) UIImageView* imageView;
 
-// Sets the title of the cell.
-- (void)setTitleText:(NSString*)title;
+// Title label for the cell.
+@property(nonatomic, strong, readonly) UILabel* titleLabel;
+
+// Returns the size this cell would use to display its content when it has a
+// |title| and a maximum |width|.
++ (CGSize)sizeForWidth:(CGFloat)width title:(NSString*)title;
 
 @end
 
