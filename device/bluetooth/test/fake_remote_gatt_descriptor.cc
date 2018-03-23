@@ -29,10 +29,13 @@ void FakeRemoteGattDescriptor::SetNextReadResponse(
   next_read_response_.emplace(gatt_code, value);
 }
 
+void FakeRemoteGattDescriptor::SetNextWriteResponse(uint16_t gatt_code) {
+  DCHECK(!next_write_response_);
+  next_write_response_.emplace(gatt_code);
+}
+
 bool FakeRemoteGattDescriptor::AllResponsesConsumed() {
-  // TODO(crbug.com/569709): Update this when SetNextWriteResponse is
-  // implemented.
-  return !next_read_response_;
+  return !next_read_response_ && !next_write_response_;
 }
 
 std::string FakeRemoteGattDescriptor::GetIdentifier() const {
@@ -70,8 +73,14 @@ void FakeRemoteGattDescriptor::ReadRemoteDescriptor(
 
 void FakeRemoteGattDescriptor::WriteRemoteDescriptor(
     const std::vector<uint8_t>& value,
-    const base::Closure& callback,
-    const ErrorCallback& error_callback) {}
+    const base::RepeatingClosure& callback,
+    const ErrorCallback& error_callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE,
+      base::BindRepeating(&FakeRemoteGattDescriptor::DispatchWriteResponse,
+                          weak_ptr_factory_.GetWeakPtr(), callback,
+                          error_callback, value));
+}
 
 void FakeRemoteGattDescriptor::DispatchReadResponse(
     const ValueCallback& callback,
@@ -90,6 +99,27 @@ void FakeRemoteGattDescriptor::DispatchReadResponse(
     DCHECK(!value);
     error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
     return;
+  }
+}
+
+void FakeRemoteGattDescriptor::DispatchWriteResponse(
+    const base::RepeatingClosure& callback,
+    const ErrorCallback& error_callback,
+    const std::vector<uint8_t>& value) {
+  DCHECK(next_write_response_);
+  uint16_t gatt_code = next_write_response_.value();
+  next_write_response_.reset();
+
+  switch (gatt_code) {
+    case mojom::kGATTSuccess:
+      last_written_value_ = value;
+      callback.Run();
+      break;
+    case mojom::kGATTInvalidHandle:
+      error_callback.Run(device::BluetoothGattService::GATT_ERROR_FAILED);
+      break;
+    default:
+      NOTREACHED();
   }
 }
 
