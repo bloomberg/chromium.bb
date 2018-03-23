@@ -480,6 +480,46 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, Title) {
 
 using HostedAppPWAOnlyTest = HostedAppTest;
 
+IN_PROC_BROWSER_TEST_P(HostedAppTest,
+                       DesktopPWAsFlagDisabledCreatedForInstalledPwa) {
+  const extensions::Extension* app;
+  {
+    base::test::ScopedFeatureList feature_list;
+    feature_list.InitAndEnableFeature(features::kDesktopPWAWindowing);
+
+    WebApplicationInfo web_app_info;
+    web_app_info.app_url = GURL(kExampleURL);
+    web_app_info.scope = GURL(kExampleURL);
+    app = InstallBookmarkApp(web_app_info);
+  }
+
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndDisableFeature(features::kDesktopPWAWindowing);
+
+  Browser* app_browser = LaunchAppBrowser(app);
+  EXPECT_FALSE(
+      app_browser->hosted_app_controller()->created_for_installed_pwa());
+}
+
+IN_PROC_BROWSER_TEST_P(HostedAppTest, CreatedForInstalledPwaForNonPwas) {
+  SetupApp("https_app");
+
+  EXPECT_FALSE(
+      app_browser_->hosted_app_controller()->created_for_installed_pwa());
+}
+
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CreatedForInstalledPwaForPwa) {
+  WebApplicationInfo web_app_info;
+  web_app_info.app_url = GURL(kExampleURL);
+  web_app_info.scope = GURL(kExampleURL);
+
+  const extensions::Extension* app = InstallBookmarkApp(web_app_info);
+  Browser* app_browser = LaunchAppBrowser(app);
+
+  EXPECT_TRUE(
+      app_browser->hosted_app_controller()->created_for_installed_pwa());
+}
+
 // Check the 'Copy URL' menu button for Hosted App windows.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, CopyURL) {
   WebApplicationInfo web_app_info;
