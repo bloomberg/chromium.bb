@@ -167,8 +167,10 @@ class AutomationWebContentsObserver
   void AccessibilityEventReceived(
       const std::vector<content::AXEventNotificationDetails>& details)
       override {
+    std::vector<ExtensionMsg_AccessibilityEventParams> events;
     for (const auto& event : details) {
-      ExtensionMsg_AccessibilityEventParams params;
+      events.emplace_back();
+      ExtensionMsg_AccessibilityEventParams& params = events.back();
       params.tree_id = event.ax_tree_id;
       params.id = event.id;
       params.event_type = event.event_type;
@@ -178,10 +180,9 @@ class AutomationWebContentsObserver
 #if defined(USE_AURA)
       params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
 #endif
-
-      AutomationEventRouter* router = AutomationEventRouter::GetInstance();
-      router->DispatchAccessibilityEvent(params);
     }
+    AutomationEventRouter* router = AutomationEventRouter::GetInstance();
+    router->DispatchAccessibilityEvents(events);
   }
 
   void AccessibilityLocationChangesReceived(

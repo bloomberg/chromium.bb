@@ -50,8 +50,8 @@ class AutomationEventRouter : public content::NotificationObserver {
   void RegisterListenerWithDesktopPermission(const ExtensionId& extension_id,
                                              int listener_process_id);
 
-  void DispatchAccessibilityEvent(
-      const ExtensionMsg_AccessibilityEventParams& params);
+  void DispatchAccessibilityEvents(
+      const std::vector<ExtensionMsg_AccessibilityEventParams>& events);
 
   void DispatchAccessibilityLocationChange(
       const ExtensionMsg_AccessibilityLocationChangeParams& params);

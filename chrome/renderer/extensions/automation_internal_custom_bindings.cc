@@ -896,8 +896,8 @@ void AutomationInternalCustomBindings::Invalidate() {
 void AutomationInternalCustomBindings::OnMessageReceived(
     const IPC::Message& message){
   IPC_BEGIN_MESSAGE_MAP(AutomationInternalCustomBindings, message)
-    IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEvent,
-                        OnAccessibilityEvent)
+    IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityEvents,
+                        OnAccessibilityEvents)
     IPC_MESSAGE_HANDLER(ExtensionMsg_AccessibilityLocationChange,
                         OnAccessibilityLocationChange)
   IPC_END_MESSAGE_MAP()
@@ -1286,15 +1286,15 @@ void AutomationInternalCustomBindings::GetChildIDAtIndex(
 // Handle accessibility events from the browser process.
 //
 
-void AutomationInternalCustomBindings::OnAccessibilityEvent(
-    const ExtensionMsg_AccessibilityEventParams& params,
+void AutomationInternalCustomBindings::OnAccessibilityEvents(
+    const std::vector<ExtensionMsg_AccessibilityEventParams>& events,
     bool is_active_profile) {
   is_active_profile_ = is_active_profile;
-  int tree_id = params.tree_id;
+  int tree_id = events[0].tree_id;
   AutomationAXTreeWrapper* tree_wrapper;
   auto iter = tree_id_to_tree_wrapper_map_.find(tree_id);
   if (iter == tree_id_to_tree_wrapper_map_.end()) {
-    tree_wrapper = new AutomationAXTreeWrapper(params.tree_id, this);
+    tree_wrapper = new AutomationAXTreeWrapper(events[0].tree_id, this);
     tree_id_to_tree_wrapper_map_.insert(
         std::make_pair(tree_id, base::WrapUnique(tree_wrapper)));
     axtree_to_tree_wrapper_map_.insert(
@@ -1303,7 +1303,7 @@ void AutomationInternalCustomBindings::OnAccessibilityEvent(
     tree_wrapper = iter->second.get();
   }
 
-  if (!tree_wrapper->OnAccessibilityEvent(params, is_active_profile)) {
+  if (!tree_wrapper->OnAccessibilityEvents(events, is_active_profile)) {
     LOG(ERROR) << tree_wrapper->tree()->error();
     base::ListValue args;
     args.AppendInteger(tree_id);

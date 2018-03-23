@@ -193,39 +193,45 @@ AutomationAXTreeWrapper::~AutomationAXTreeWrapper() {
   tree_.SetDelegate(nullptr);
 }
 
-bool AutomationAXTreeWrapper::OnAccessibilityEvent(
-    const ExtensionMsg_AccessibilityEventParams& params,
+bool AutomationAXTreeWrapper::OnAccessibilityEvents(
+    const std::vector<ExtensionMsg_AccessibilityEventParams>& events,
     bool is_active_profile) {
-  deleted_node_ids_.clear();
+  for (const auto& params : events) {
+    deleted_node_ids_.clear();
 
-  if (!tree_.Unserialize(params.update))
-    return false;
+    if (!tree_.Unserialize(params.update))
+      return false;
 
-  // Don't send any events if it's not the active profile.
+    if (is_active_profile)
+      owner_->SendNodesRemovedEvent(&tree_, deleted_node_ids_);
+  }
+
+  // Exit early if this isn't the active profile.
   if (!is_active_profile)
     return true;
-
-  owner_->SendNodesRemovedEvent(&tree_, deleted_node_ids_);
-  deleted_node_ids_.clear();
-
-  api::automation::EventType automation_event_type =
-      ToAutomationEvent(params.event_type);
-
-  // Send some events directly from the event message, if they're not
-  // handled by AXEventGenerator yet.
-  if (!IsEventTypeHandledByAXEventGenerator(automation_event_type))
-    owner_->SendAutomationEvent(params, params.id, automation_event_type);
 
   // Send auto-generated AXEventGenerator events.
   for (auto targeted_event : *this) {
     api::automation::EventType event_type =
         ToAutomationEvent(targeted_event.event);
     if (IsEventTypeHandledByAXEventGenerator(event_type)) {
-      owner_->SendAutomationEvent(params, targeted_event.node->id(),
+      ExtensionMsg_AccessibilityEventParams generated_params;
+      generated_params.tree_id = tree_id_;
+      owner_->SendAutomationEvent(generated_params, targeted_event.node->id(),
                                   event_type);
     }
   }
   ClearEvents();
+
+  for (auto params : events) {
+    api::automation::EventType automation_event_type =
+        ToAutomationEvent(params.event_type);
+
+    // Send some events directly from the event message, if they're not
+    // handled by AXEventGenerator yet.
+    if (!IsEventTypeHandledByAXEventGenerator(automation_event_type))
+      owner_->SendAutomationEvent(params, params.id, automation_event_type);
+  }
 
   return true;
 }
@@ -290,6 +296,7 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_ACTIVEDESCENDANTCHANGED:
     case api::automation::EVENT_TYPE_ARIAATTRIBUTECHANGED:
     case api::automation::EVENT_TYPE_CHECKEDSTATECHANGED:
+    case api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED:
     case api::automation::EVENT_TYPE_EXPANDEDCHANGED:
     case api::automation::EVENT_TYPE_INVALIDSTATUSCHANGED:
     case api::automation::EVENT_TYPE_LIVEREGIONCHANGED:
@@ -335,7 +342,6 @@ bool AutomationAXTreeWrapper::IsEventTypeHandledByAXEventGenerator(
     case api::automation::EVENT_TYPE_ALERT:
     case api::automation::EVENT_TYPE_BLUR:
     case api::automation::EVENT_TYPE_CHILDRENCHANGED:
-    case api::automation::EVENT_TYPE_DOCUMENTSELECTIONCHANGED:
     case api::automation::EVENT_TYPE_FOCUS:
     case api::automation::EVENT_TYPE_IMAGEFRAMEUPDATED:
     case api::automation::EVENT_TYPE_LOCATIONCHANGED:

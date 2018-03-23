@@ -80,6 +80,7 @@ editing.TextEditHandler.prototype = {
   onEvent: function(evt) {
     if (evt.type !== EventType.TEXT_CHANGED &&
         evt.type !== EventType.TEXT_SELECTION_CHANGED &&
+        evt.type !== EventType.DOCUMENT_SELECTION_CHANGED &&
         evt.type !== EventType.VALUE_CHANGED && evt.type !== EventType.FOCUS)
       return;
     if (!evt.target.state.focused || !evt.target.state.editable ||

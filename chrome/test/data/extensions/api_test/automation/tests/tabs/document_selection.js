@@ -33,12 +33,10 @@ var allTests = [
   },
 
   function selectInTextField() {
-    var textField = rootNode.find({role: RoleType.TEXT_FIELD});
-    assertTrue(!!textField);
-    textField.focus();
-    listenOnce(textField, EventType.TEXT_SELECTION_CHANGED, function(evt) {
-      listenOnce(rootNode, EventType.DOCUMENT_SELECTION_CHANGED, function(evt) {
-        assertTrue(evt.target === rootNode);
+    listenOnce(rootNode, EventType.DOCUMENT_SELECTION_CHANGED, function(evt1) {
+      listenOnce(textField, EventType.TEXT_SELECTION_CHANGED, function(evt2) {
+        assertTrue(evt1.target === rootNode);
+        assertTrue(evt2.target == textField);
         assertEq(textField, rootNode.anchorObject);
         assertEq(0, rootNode.anchorOffset);
         assertEq(textField, rootNode.focusObject);
@@ -57,6 +55,10 @@ var allTests = [
         });
       });
     });
+
+    var textField = rootNode.find({role: RoleType.TEXT_FIELD});
+    assertTrue(!!textField);
+    textField.focus();
   },
 ];
 
