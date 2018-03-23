@@ -27,6 +27,7 @@
 
 @synthesize dispatcher = _dispatcher;
 @synthesize presenter = _presenter;
+@synthesize webStateList = _webStateList;
 
 #pragma mark - ChromeCoordinator
 
@@ -68,8 +69,8 @@
 
   PopupMenuMediator* mediator =
       [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu];
-  [mediator setUp];
-  [mediator configurePopupMenu:tableViewController];
+  mediator.webStateList = self.webStateList;
+  mediator.popupMenu = tableViewController;
 
   [self presentPopupForContent:tableViewController
                 fromNamedGuide:kToolsMenuGuide];

@@ -30,6 +30,18 @@
   _tableViewModel = [[TableViewModel alloc] init];
 }
 
+- (void)reconfigureCellsForItems:(NSArray*)items {
+  for (TableViewItem* item in items) {
+    NSIndexPath* indexPath = [self.tableViewModel indexPathForItem:item];
+    UITableViewCell* cell = [self.tableView cellForRowAtIndexPath:indexPath];
+
+    // |cell| may be nil if the row is not currently on screen.
+    if (cell) {
+      [item configureCell:cell withStyler:self.styler];
+    }
+  }
+}
+
 #pragma mark - ViewLifeCycle
 
 - (void)viewDidLoad {

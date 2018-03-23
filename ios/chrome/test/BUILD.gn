@@ -210,6 +210,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/overlays:unit_tests",
     "//ios/chrome/browser/ui/payments:unit_tests",
     "//ios/chrome/browser/ui/payments/cells:unit_tests",
+    "//ios/chrome/browser/ui/popup_menu:unit_tests",
     "//ios/chrome/browser/ui/presenters:unit_tests",
     "//ios/chrome/browser/ui/promos:unit_tests",
     "//ios/chrome/browser/ui/reading_list:unit_tests",
