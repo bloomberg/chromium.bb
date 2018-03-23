@@ -11,6 +11,7 @@
 #include "ash/shell_observer.h"
 #include "ash/wm/tablet_mode/tablet_mode_observer.h"
 #include "ash/wm/window_state_observer.h"
+#include "base/containers/flat_map.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/time/time.h"
@@ -90,8 +91,12 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // primary orientation.
   bool IsCurrentScreenOrientationPrimary() const;
 
-  // Snaps window to left/right.
-  void SnapWindow(aura::Window* window, SnapPosition snap_position);
+  // Snaps window to left/right. |window_item_bounds| is the bounds of the
+  // overview window item in overview. It's empty if the snapped window doesn't
+  // come from overview grid.
+  void SnapWindow(aura::Window* window,
+                  SnapPosition snap_position,
+                  const gfx::Rect& window_item_bounds = gfx::Rect());
 
   // Swaps the left and right windows. This will do nothing if one of the
   // windows is not snapped.
@@ -349,6 +354,10 @@ class ASH_EXPORT SplitViewController : public mojom::SplitViewController,
   // the one who stacked above the other, see GetWindowForSmoothResize() for
   // details.
   aura::Window* smooth_resize_window_ = nullptr;
+
+  // The map from a to-be-snapped window to its overview item's bounds if the
+  // window comes from the overview.
+  base::flat_map<aura::Window*, gfx::Rect> overview_window_item_bounds_map_;
 
   base::ObserverList<Observer> observers_;
   mojo::InterfacePtrSet<mojom::SplitViewObserver> mojo_observers_;

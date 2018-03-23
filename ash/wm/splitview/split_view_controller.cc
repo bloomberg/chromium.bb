@@ -17,11 +17,11 @@
 #include "ash/system/toast/toast_data.h"
 #include "ash/system/toast/toast_manager.h"
 #include "ash/wm/mru_window_tracker.h"
-#include "ash/wm/overview/scoped_overview_animation_settings.h"
 #include "ash/wm/overview/window_grid.h"
 #include "ash/wm/overview/window_selector_controller.h"
 #include "ash/wm/overview/window_selector_item.h"
 #include "ash/wm/splitview/split_view_divider.h"
+#include "ash/wm/splitview/split_view_utils.h"
 #include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_transient_descendant_iterator.h"
@@ -204,7 +204,8 @@ bool SplitViewController::IsCurrentScreenOrientationPrimary() const {
 }
 
 void SplitViewController::SnapWindow(aura::Window* window,
-                                     SnapPosition snap_position) {
+                                     SnapPosition snap_position,
+                                     const gfx::Rect& window_item_bounds) {
   DCHECK(window && CanSnap(window));
   DCHECK_NE(snap_position, NONE);
 
@@ -236,6 +237,9 @@ void SplitViewController::SnapWindow(aura::Window* window,
     left_window_ = (window == left_window_) ? nullptr : left_window_;
   }
   StartObserving(window);
+
+  if (!window_item_bounds.IsEmpty())
+    overview_window_item_bounds_map_[window] = window_item_bounds;
 
   // Update the divider position and window bounds before snapping a new window.
   // Since the minimum size of |window| maybe larger than currently bounds in
@@ -474,6 +478,7 @@ void SplitViewController::EndSplitView() {
   black_scrim_layer_.reset();
   default_snap_position_ = NONE;
   divider_position_ = -1;
+  overview_window_item_bounds_map_.clear();
 
   UpdateSplitViewStateAndNotifyObservers();
   base::RecordAction(base::UserMetricsAction("SplitView_EndSplitView"));
@@ -500,6 +505,9 @@ void SplitViewController::OnWindowDestroying(aura::Window* window) {
   DCHECK(window == left_window_ || window == right_window_);
   if (smooth_resize_window_ == window)
     smooth_resize_window_ = nullptr;
+  auto iter = overview_window_item_bounds_map_.find(window);
+  if (iter != overview_window_item_bounds_map_.end())
+    overview_window_item_bounds_map_.erase(iter);
   OnSnappedWindowMinimizedOrDestroyed(window);
 }
 
@@ -555,12 +563,28 @@ void SplitViewController::OnWindowActivated(ActivationReason reason,
     return;
   }
 
+  // If the to-be-snapped window comes from the overview grid, get its overview
+  // window item bounds before trying to snap it.
+  gfx::Rect window_item_bounds;
+  if (Shell::Get()->window_selector_controller()->IsSelecting()) {
+    WindowSelector* window_selector =
+        Shell::Get()->window_selector_controller()->window_selector();
+    WindowGrid* current_grid = window_selector->GetGridWithRootWindow(
+        GetDefaultSnappedWindow()->GetRootWindow());
+    if (current_grid) {
+      WindowSelectorItem* item =
+          current_grid->GetWindowSelectorItemContaining(gained_active);
+      if (item) {
+        window_item_bounds = item->target_bounds();
+        window_selector->RemoveWindowSelectorItem(item);
+      }
+    }
+  }
+
   // Snap the window on the non-default side of the screen if split view mode
   // is active.
-  if (default_snap_position_ == LEFT)
-    SnapWindow(gained_active, SplitViewController::RIGHT);
-  else if (default_snap_position_ == RIGHT)
-    SnapWindow(gained_active, SplitViewController::LEFT);
+  SnapWindow(gained_active, (default_snap_position_ == LEFT) ? RIGHT : LEFT,
+             window_item_bounds);
 }
 
 void SplitViewController::OnOverviewModeStarting() {
@@ -602,11 +626,10 @@ void SplitViewController::OnOverviewModeEnding() {
     for (const auto& window_selector_item : windows) {
       aura::Window* window = window_selector_item->GetWindow();
       if (CanSnap(window) && window != GetDefaultSnappedWindow()) {
+        const gfx::Rect item_bounds = window_selector_item->target_bounds();
         window_selector->RemoveWindowSelectorItem(window_selector_item.get());
-        if (default_snap_position_ == LEFT)
-          SnapWindow(window, SplitViewController::RIGHT);
-        else if (default_snap_position_ == RIGHT)
-          SnapWindow(window, SplitViewController::LEFT);
+        SnapWindow(window, (default_snap_position_ == LEFT) ? RIGHT : LEFT,
+                   item_bounds);
         return;
       }
     }
@@ -1136,14 +1159,30 @@ void SplitViewController::RestoreAndActivateSnappedWindow(
     aura::Window* window) {
   DCHECK(window == left_window_ || window == right_window_);
 
-  // Restore the window's transform first if its transform is not identity. In
-  // this case the window must come from the overview window grid.
+  // If the snapped window comes from the overview window grid, calculate a good
+  // starting transform based on the overview window item's bounds.
+  gfx::Transform starting_transform;
+  auto iter = overview_window_item_bounds_map_.find(window);
+  if (iter != overview_window_item_bounds_map_.end()) {
+    const gfx::Rect item_bounds = iter->second;
+    overview_window_item_bounds_map_.erase(iter);
+
+    // Calculate the starting transform based on the window's expected snapped
+    // bounds and its window item bounds in overview.
+    const gfx::Rect snapped_bounds = GetSnappedWindowBoundsInScreen(
+        window, (window == left_window_) ? LEFT : RIGHT);
+    starting_transform = ScopedTransformOverviewWindow::GetTransformForRect(
+        snapped_bounds, item_bounds);
+  }
+
+  // Restore the window's transform first if it's not identity.
   if (!window->layer()->GetTargetTransform().IsIdentity()) {
     for (auto* window_iter : wm::GetTransientTreeIterator(window)) {
-      ScopedOverviewAnimationSettings animation_settings(
-          ash::OverviewAnimationType::OVERVIEW_ANIMATION_RESTORE_WINDOW,
-          window_iter);
-      window_iter->SetTransform(gfx::Transform());
+      if (!starting_transform.IsIdentity())
+        window_iter->SetTransform(starting_transform);
+      DoSplitviewTransformAnimation(window_iter->layer(),
+                                    SPLITVIEW_ANIMATION_RESTORE_OVERVIEW_WINDOW,
+                                    gfx::Transform(), nullptr);
     }
   }
   wm::ActivateWindow(window);
