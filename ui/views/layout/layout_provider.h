@@ -100,7 +100,10 @@ enum DistanceMetric {
   DISTANCE_UNRELATED_CONTROL_VERTICAL,
 
   // Embedders must start DistanceMetric enum values from here.
-  VIEWS_DISTANCE_END
+  VIEWS_DISTANCE_END,
+
+  // All Distance enum values must be below this value.
+  VIEWS_DISTANCE_MAX = 0x2000
 };
 
 // The type of a dialog content element. TEXT should be used for Labels or other
