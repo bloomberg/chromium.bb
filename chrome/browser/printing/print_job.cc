@@ -86,19 +86,21 @@ void PrintJob::Initialize(PrintJobWorkerOwner* job,
 }
 
 #if defined(OS_WIN)
-void PrintJob::ResetPageMapping() {
-  std::vector<int> pages = PageRange::GetPages(settings_.ranges());
-  if (pages.empty())
-    return;
-
-  pdf_page_mapping_ = std::vector<int>(document_->page_count(), -1);
+// static
+std::vector<int> PrintJob::GetFullPageMapping(const std::vector<int>& pages,
+                                              int total_page_count) {
+  std::vector<int> mapping(total_page_count, -1);
   for (int page_number : pages) {
     // Make sure the page is in range.
-    if (page_number >= 0 &&
-        page_number < static_cast<int>(pdf_page_mapping_.size())) {
-      pdf_page_mapping_[page_number] = page_number;
-    }
+    if (page_number >= 0 && page_number < total_page_count)
+      mapping[page_number] = page_number;
   }
+  return mapping;
+}
+
+void PrintJob::ResetPageMapping() {
+  pdf_page_mapping_ =
+      GetFullPageMapping(pdf_page_mapping_, document_->page_count());
 }
 #endif
 
