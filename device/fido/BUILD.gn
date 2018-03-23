@@ -83,7 +83,6 @@ component("fido") {
     "u2f_register.h",
     "u2f_request.cc",
     "u2f_request.h",
-    "u2f_return_code.h",
     "u2f_sign.cc",
     "u2f_sign.h",
     "u2f_transport_protocol.h",

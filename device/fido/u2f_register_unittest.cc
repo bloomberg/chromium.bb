@@ -289,7 +289,7 @@ std::vector<uint8_t> GetTestAttestationObjectBytes() {
 }
 
 using TestRegisterCallback = ::device::test::StatusAndValueCallbackReceiver<
-    U2fReturnCode,
+    FidoReturnCode,
     base::Optional<AuthenticatorMakeCredentialResponse>>;
 
 }  // namespace
@@ -438,7 +438,7 @@ TEST_F(U2fRegisterTest, TestRegisterSuccess) {
   discovery()->AddDevice(std::move(device));
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_credential_id());
@@ -453,7 +453,7 @@ TEST_F(U2fRegisterTest, TestRegisterSuccessWithFake) {
   discovery()->AddDevice(std::move(device));
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
 
   // We don't verify the response from the fake, but do a quick sanity check.
   ASSERT_TRUE(register_callback_receiver().value());
@@ -478,7 +478,7 @@ TEST_F(U2fRegisterTest, TestDelayedSuccess) {
   discovery()->AddDevice(std::move(device));
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_credential_id());
@@ -509,7 +509,7 @@ TEST_F(U2fRegisterTest, TestMultipleDevices) {
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_credential_id());
@@ -548,8 +548,8 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithExclusionList) {
   discovery()->AddDevice(std::move(device));
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
+  EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_credential_id());
 }
@@ -601,7 +601,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithExclusionList) {
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, register_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, register_callback_receiver().status());
   ASSERT_TRUE(register_callback_receiver().value());
   EXPECT_EQ(GetTestCredentialRawIdBytes(),
             register_callback_receiver().value()->raw_credential_id());
@@ -642,7 +642,7 @@ TEST_F(U2fRegisterTest, TestSingleDeviceRegistrationWithDuplicateHandle) {
   discovery()->AddDevice(std::move(device));
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
+  EXPECT_EQ(FidoReturnCode::kConditionsNotSatisfied,
             register_callback_receiver().status());
   EXPECT_FALSE(register_callback_receiver().value());
 }
@@ -694,7 +694,7 @@ TEST_F(U2fRegisterTest, TestMultipleDeviceRegistrationWithDuplicateHandle) {
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   register_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
+  EXPECT_EQ(FidoReturnCode::kConditionsNotSatisfied,
             register_callback_receiver().status());
   EXPECT_FALSE(register_callback_receiver().value());
 }
@@ -831,7 +831,7 @@ TEST_F(U2fRegisterTest, TestIndividualAttestation) {
     discovery()->AddDevice(std::move(device));
 
     cb.WaitForCallback();
-    EXPECT_EQ(U2fReturnCode::SUCCESS, cb.status());
+    EXPECT_EQ(FidoReturnCode::kSuccess, cb.status());
     ASSERT_TRUE(cb.value());
     EXPECT_EQ(GetTestCredentialRawIdBytes(), cb.value()->raw_credential_id());
   }

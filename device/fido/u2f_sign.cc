@@ -100,7 +100,7 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
       if (it == registered_keys_.cend()) {
         // This was a response to a fake enrollment. Return an empty key handle.
         std::move(completion_callback_)
-            .Run(U2fReturnCode::CONDITIONS_NOT_SATISFIED, base::nullopt);
+            .Run(FidoReturnCode::kConditionsNotSatisfied, base::nullopt);
       } else {
         const std::vector<uint8_t>* const application_parameter_used =
             application_parameter_type == ApplicationParameterType::kPrimary
@@ -111,10 +111,10 @@ void U2fSign::OnTryDevice(std::vector<std::vector<uint8_t>>::const_iterator it,
                 *application_parameter_used, std::move(response_data), *it);
         if (!sign_response) {
           std::move(completion_callback_)
-              .Run(U2fReturnCode::FAILURE, base::nullopt);
+              .Run(FidoReturnCode::kFailure, base::nullopt);
         } else {
           std::move(completion_callback_)
-              .Run(U2fReturnCode::SUCCESS, std::move(sign_response));
+              .Run(FidoReturnCode::kSuccess, std::move(sign_response));
         }
       }
       break;

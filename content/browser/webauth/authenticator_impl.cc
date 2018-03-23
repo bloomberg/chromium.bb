@@ -23,7 +23,6 @@
 #include "crypto/sha2.h"
 #include "device/fido/u2f_register.h"
 #include "device/fido/u2f_request.h"
-#include "device/fido/u2f_return_code.h"
 #include "device/fido/u2f_sign.h"
 #include "device/fido/u2f_transport_protocol.h"
 #include "net/base/registry_controlled_domains/registry_controlled_domain.h"
@@ -533,14 +532,14 @@ void AuthenticatorImpl::GetAssertion(
 
 // Callback to handle the async registration response from a U2fDevice.
 void AuthenticatorImpl::OnRegisterResponse(
-    device::U2fReturnCode status_code,
+    device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorMakeCredentialResponse> response_data) {
   // If callback is called immediately, this code will call |Cleanup| before
   // |u2f_request_| has been assigned – violating invariants.
   DCHECK(u2f_request_) << "unsupported callback hairpin";
 
   switch (status_code) {
-    case device::U2fReturnCode::CONDITIONS_NOT_SATISFIED:
+    case device::FidoReturnCode::kConditionsNotSatisfied:
       // Duplicate registration: the new credential would be created on an
       // authenticator that already contains one of the credentials in
       // |exclude_credentials|.
@@ -548,16 +547,16 @@ void AuthenticatorImpl::OnRegisterResponse(
           std::move(make_credential_response_callback_),
           webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
-    case device::U2fReturnCode::FAILURE:
+    case device::FidoReturnCode::kFailure:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
-    case device::U2fReturnCode::INVALID_PARAMS:
+    case device::FidoReturnCode::kInvalidParams:
       NOTREACHED();
       return;
-    case device::U2fReturnCode::SUCCESS:
+    case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
 
       if (attestation_preference_ !=
@@ -628,29 +627,29 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
 }
 
 void AuthenticatorImpl::OnSignResponse(
-    device::U2fReturnCode status_code,
+    device::FidoReturnCode status_code,
     base::Optional<device::AuthenticatorGetAssertionResponse> response_data) {
   // If callback is called immediately, this code will call |Cleanup| before
   // |u2f_request_| has been assigned – violating invariants.
   DCHECK(u2f_request_) << "unsupported callback hairpin";
 
   switch (status_code) {
-    case device::U2fReturnCode::CONDITIONS_NOT_SATISFIED:
+    case device::FidoReturnCode::kConditionsNotSatisfied:
       // No authenticators contained the credential.
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),
           webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
-    case device::U2fReturnCode::FAILURE:
+    case device::FidoReturnCode::kFailure:
       // The response from the authenticator was corrupted.
       InvokeCallbackAndCleanup(
           std::move(make_credential_response_callback_),
           webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
       return;
-    case device::U2fReturnCode::INVALID_PARAMS:
+    case device::FidoReturnCode::kInvalidParams:
       NOTREACHED();
       return;
-    case device::U2fReturnCode::SUCCESS:
+    case device::FidoReturnCode::kSuccess:
       DCHECK(response_data.has_value());
       InvokeCallbackAndCleanup(
           std::move(get_assertion_response_callback_),

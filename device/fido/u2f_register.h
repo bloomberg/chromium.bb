@@ -15,8 +15,8 @@
 #include "base/macros.h"
 #include "base/optional.h"
 #include "device/fido/authenticator_make_credential_response.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/u2f_request.h"
-#include "device/fido/u2f_return_code.h"
 #include "device/fido/u2f_transport_protocol.h"
 
 namespace service_manager {
@@ -28,7 +28,7 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) U2fRegister : public U2fRequest {
  public:
   using RegisterResponseCallback = base::OnceCallback<void(
-      U2fReturnCode status_code,
+      FidoReturnCode status_code,
       base::Optional<AuthenticatorMakeCredentialResponse> response_data)>;
 
   static std::unique_ptr<U2fRequest> TryRegistration(

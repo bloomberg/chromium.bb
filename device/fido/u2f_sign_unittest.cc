@@ -13,6 +13,7 @@
 #include "device/fido/authenticator_data.h"
 #include "device/fido/authenticator_get_assertion_response.h"
 #include "device/fido/fake_fido_discovery.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_response_test_data.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
@@ -109,7 +110,7 @@ std::vector<uint8_t> GetTestCorruptedSignResponse(size_t length) {
 }
 
 using TestSignCallback = ::device::test::StatusAndValueCallbackReceiver<
-    U2fReturnCode,
+    FidoReturnCode,
     base::Optional<AuthenticatorGetAssertionResponse>>;
 
 }  // namespace
@@ -234,7 +235,7 @@ TEST_F(U2fSignTest, TestSignSuccess) {
   discovery()->AddDevice(std::move(device));
 
   sign_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
   EXPECT_EQ(GetTestAssertionSignature(),
@@ -263,7 +264,7 @@ TEST_F(U2fSignTest, TestSignSuccessWithFake) {
   discovery()->AddDevice(std::move(device));
 
   sign_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   // Just a sanity check, we don't verify the actual signature.
   ASSERT_GE(32u + 1u + 4u + 8u,  // Minimal ECDSA signature is 8 bytes
@@ -301,7 +302,7 @@ TEST_F(U2fSignTest, TestDelayedSuccess) {
   discovery()->AddDevice(std::move(device));
 
   sign_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
   EXPECT_EQ(GetTestAssertionSignature(),
@@ -336,7 +337,7 @@ TEST_F(U2fSignTest, TestMultipleHandles) {
   discovery()->AddDevice(std::move(device));
 
   sign_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
   EXPECT_EQ(GetTestAssertionSignature(),
@@ -375,7 +376,7 @@ TEST_F(U2fSignTest, TestMultipleDevices) {
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
   sign_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   // Correct key was sent so a sign response is expected.
   EXPECT_EQ(GetTestAssertionSignature(),
@@ -418,7 +419,7 @@ TEST_F(U2fSignTest, TestFakeEnroll) {
 
   sign_callback_receiver().WaitForCallback();
   // Device that responded had no correct keys.
-  EXPECT_EQ(U2fReturnCode::CONDITIONS_NOT_SATISFIED,
+  EXPECT_EQ(FidoReturnCode::kConditionsNotSatisfied,
             sign_callback_receiver().status());
   EXPECT_FALSE(sign_callback_receiver().value());
 }
@@ -501,7 +502,7 @@ TEST_F(U2fSignTest, TestSignWithCorruptedResponse) {
   discovery()->AddDevice(std::move(device));
 
   sign_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::FAILURE, sign_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kFailure, sign_callback_receiver().status());
   EXPECT_FALSE(sign_callback_receiver().value());
 }
 
@@ -551,7 +552,7 @@ TEST_F(U2fSignTest, TestAlternativeApplicationParameter) {
   discovery()->AddDevice(std::move(device));
 
   sign_callback_receiver().WaitForCallback();
-  EXPECT_EQ(U2fReturnCode::SUCCESS, sign_callback_receiver().status());
+  EXPECT_EQ(FidoReturnCode::kSuccess, sign_callback_receiver().status());
 
   EXPECT_EQ(GetTestAssertionSignature(),
             sign_callback_receiver().value()->signature());
