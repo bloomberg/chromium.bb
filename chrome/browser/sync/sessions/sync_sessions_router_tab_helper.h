@@ -46,6 +46,10 @@ class SyncSessionsRouterTabHelper
                            bool started_from_context_menu,
                            bool renderer_initiated) override;
 
+  // Sets the source tab id for the given child WebContents to the id of the
+  // WebContents that owns this helper.
+  void SetSourceTabIdForChild(content::WebContents* child_contents);
+
   // Get the tab id of the tab responsible for creating the tab this helper
   // corresponds to. Returns -1 if there is no such tab.
   SessionID::id_type source_tab_id() const { return source_tab_id_; }

@@ -69,11 +69,16 @@ void SyncSessionsRouterTabHelper::DidOpenRequestedURL(
     ui::PageTransition transition,
     bool started_from_context_menu,
     bool renderer_initiated) {
+  SetSourceTabIdForChild(new_contents);
+}
+
+void SyncSessionsRouterTabHelper::SetSourceTabIdForChild(
+    content::WebContents* child_contents) {
   SessionID::id_type source_tab_id = SessionTabHelper::IdForTab(web_contents());
-  if (new_contents &&
-      SyncSessionsRouterTabHelper::FromWebContents(new_contents) &&
-      new_contents != web_contents() && source_tab_id != kInvalidTabID) {
-    SyncSessionsRouterTabHelper::FromWebContents(new_contents)
+  if (child_contents &&
+      SyncSessionsRouterTabHelper::FromWebContents(child_contents) &&
+      child_contents != web_contents() && source_tab_id != kInvalidTabID) {
+    SyncSessionsRouterTabHelper::FromWebContents(child_contents)
         ->set_source_tab_id(source_tab_id);
   }
   NotifyRouter();

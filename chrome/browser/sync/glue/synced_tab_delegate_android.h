@@ -55,8 +55,10 @@ class SyncedTabDelegateAndroid : public sync_sessions::SyncedTabDelegate {
   GetBlockedNavigations() const override;
 
   // Set the web contents for this tab. Also creates
-  // TabContentsSyncedTabDelegate for this tab.
-  virtual void SetWebContents(content::WebContents* web_contents);
+  // TabContentsSyncedTabDelegate for this tab and handles source tab id
+  // initialization.
+  virtual void SetWebContents(content::WebContents* web_contents,
+                              content::WebContents* source_web_contents);
   // Set web contents to null.
   virtual void ResetWebContents();
 

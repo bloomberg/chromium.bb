@@ -386,6 +386,7 @@ void TabAndroid::InitWebContents(
     jboolean incognito,
     jboolean is_background_tab,
     const JavaParamRef<jobject>& jweb_contents,
+    const JavaParamRef<jobject>& jparent_web_contents,
     const JavaParamRef<jobject>& jweb_contents_delegate,
     const JavaParamRef<jobject>& jcontext_menu_populator) {
   web_contents_.reset(content::WebContents::FromJavaWebContents(jweb_contents));
@@ -420,7 +421,9 @@ void TabAndroid::InitWebContents(
   if (favicon_driver)
     favicon_driver->AddObserver(this);
 
-  synced_tab_delegate_->SetWebContents(web_contents());
+  WebContents* parent_web_contents =
+      content::WebContents::FromJavaWebContents(jparent_web_contents);
+  synced_tab_delegate_->SetWebContents(web_contents(), parent_web_contents);
 
   // Verify that the WebContents this tab represents matches the expected
   // off the record state.
