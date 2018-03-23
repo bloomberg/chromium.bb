@@ -22,6 +22,7 @@ import android.support.test.runner.AndroidJUnitRunner;
 
 import dalvik.system.DexFile;
 
+import org.chromium.base.BuildConfig;
 import org.chromium.base.Log;
 import org.chromium.base.multidex.ChromiumMultiDexInstaller;
 
@@ -70,9 +71,25 @@ public class BaseChromiumAndroidJUnitRunner extends AndroidJUnitRunner {
     @Override
     public Application newApplication(ClassLoader cl, String className, Context context)
             throws ClassNotFoundException, IllegalAccessException, InstantiationException {
-        ChromiumMultiDexInstaller.install(new BaseChromiumRunnerCommon.MultiDexContextWrapper(
-                getContext(), getTargetContext()));
-        BaseChromiumRunnerCommon.reorderDexPathElements(cl, getContext(), getTargetContext());
+        // The multidex support library doesn't currently support having the test apk be multidex
+        // as well as the under-test apk being multidex. If MultiDex.install() is called for both,
+        // then re-extraction is triggered every time due to the support library caching only a
+        // single timestamp & crc.
+        //
+        // Attempt to install test apk multidex only if the apk-under-test is not multidex.
+        // It will likely continue to be true that the two are mutually exclusive because:
+        // * ProGuard enabled =>
+        //      Under-test apk is single dex.
+        //      Test apk duplicates under-test classes, so may need multidex.
+        // * ProGuard disabled =>
+        //      Under-test apk might be multidex
+        //      Test apk does not duplicate classes, so does not need multidex.
+        // https://crbug.com/824523
+        if (!BuildConfig.IS_MULTIDEX_ENABLED) {
+            ChromiumMultiDexInstaller.install(new BaseChromiumRunnerCommon.MultiDexContextWrapper(
+                    getContext(), getTargetContext()));
+            BaseChromiumRunnerCommon.reorderDexPathElements(cl, getContext(), getTargetContext());
+        }
         return super.newApplication(cl, className, context);
     }
 
