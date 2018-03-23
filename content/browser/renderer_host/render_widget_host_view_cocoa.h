@@ -156,12 +156,6 @@ struct DidOverscrollParams;
   // gesture ends.
   BOOL gestureBeginPinchSent_;
 
-  // If true then escape key down events are suppressed until the first escape
-  // key up event. (The up event is suppressed as well). This is used by the
-  // flash fullscreen code to avoid sending a key up event without a matching
-  // key down event.
-  BOOL suppressNextEscapeKeyUp_;
-
   // This is used to indicate if a stylus is currently in the proximity of the
   // tablet.
   bool isStylusEnteringProximity_;
@@ -179,7 +173,6 @@ struct DidOverscrollParams;
 
 @property(nonatomic, assign) NSRange selectedRange;
 @property(nonatomic, assign) NSRange markedRange;
-@property(nonatomic, readonly) BOOL suppressNextEscapeKeyUp;
 
 // Common code path for handling begin gesture events. This helper method is
 // called via different codepaths based on OS version and SDK:
@@ -213,6 +206,7 @@ struct DidOverscrollParams;
 - (void)showLookUpDictionaryOverlayAtPoint:(NSPoint)point;
 - (void)showLookUpDictionaryOverlayFromRange:(NSRange)range
                                   targetView:(NSView*)targetView;
+- (BOOL)suppressNextKeyUpForTesting:(int)keyCode;
 
 // Methods previously marked as private.
 - (id)initWithClient:
