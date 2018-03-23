@@ -1687,11 +1687,14 @@ camera.views.Camera.prototype.takePicture_ = function() {
         if (this.is_recording_mode_) {
           // Play a sound before recording started, and don't end recording
           // until another take-picture click.
-          this.recordStartSound_.onended = function() {
-            this.takePictureImmediately_(true);
-          }.bind(this);
           this.recordStartSound_.currentTime = 0;
           this.recordStartSound_.play();
+          setTimeout(function() {
+            // Record-started sound should have been ended by now; pause it just
+            // in case it's still playing to avoid the sound being recorded.
+            this.recordStartSound_.pause();
+            this.takePictureImmediately_(true);
+          }.bind(this), 250);
         } else {
           this.takePictureImmediately_(false);
 
