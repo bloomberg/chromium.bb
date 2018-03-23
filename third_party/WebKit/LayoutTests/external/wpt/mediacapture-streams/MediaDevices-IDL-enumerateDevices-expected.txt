@@ -133,6 +133,6 @@ PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "
 PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "label" with the proper type
 PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "groupId" with the proper type
 PASS MediaDeviceInfo interface: [object InputDeviceInfo] must inherit property "toJSON()" with the proper type
-PASS Test default toJSON operation of MediaDeviceInfo
+PASS Test default toJSON operation of InputDeviceInfo
 Harness: the test ran to completion.
 
