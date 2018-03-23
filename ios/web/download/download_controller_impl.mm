@@ -88,6 +88,9 @@ NSURLSession* DownloadControllerImpl::CreateSession(
     NSOperationQueue* delegate_queue) {
   NSURLSessionConfiguration* configuration = [NSURLSessionConfiguration
       backgroundSessionConfigurationWithIdentifier:identifier];
+  // Background URL Session will not fail and will wait for connectivity up
+  // until this timeout (which defaults to one week).
+  configuration.timeoutIntervalForResource = 60;
 
   std::string user_agent = GetWebClient()->GetUserAgent(UserAgentType::MOBILE);
   configuration.HTTPAdditionalHeaders = @{
