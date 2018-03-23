@@ -368,13 +368,16 @@ PaintResult PaintLayerPainter::PaintLayerContents(
   ShouldRespectOverflowClipType respect_overflow_clip =
       ShouldRespectOverflowClip(paint_flags, paint_layer_.GetLayoutObject());
 
+  PaintLayerPaintingInfo painting_info = painting_info_arg;
+  AdjustForPaintProperties(painting_info, paint_flags);
+
   bool should_create_subsequence = ShouldCreateSubsequence(
       paint_layer_, context, painting_info_arg, paint_flags);
 
   Optional<SubsequenceRecorder> subsequence_recorder;
   bool should_clear_empty_paint_phase_flags = false;
   if (should_create_subsequence) {
-    if (!ShouldRepaintSubsequence(paint_layer_, painting_info_arg,
+    if (!ShouldRepaintSubsequence(paint_layer_, painting_info,
                                   respect_overflow_clip,
                                   should_clear_empty_paint_phase_flags) &&
         SubsequenceRecorder::UseCachedSubsequenceIfPossible(context,
@@ -391,9 +394,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
     paint_layer_.SetPreviousPaintPhaseFloatEmpty(false);
     paint_layer_.SetPreviousPaintPhaseDescendantBlockBackgroundsEmpty(false);
   }
-
-  PaintLayerPaintingInfo painting_info = painting_info_arg;
-  AdjustForPaintProperties(painting_info, paint_flags);
 
   LayoutPoint offset_from_root;
   paint_layer_.ConvertToLayerCoords(painting_info.root_layer, offset_from_root);
