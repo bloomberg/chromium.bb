@@ -83,6 +83,9 @@
     "includes": [11000],
     "structures": [11470],
   },
+  "chrome/browser/resources/chromeos/multidevice_setup/multidevice_setup_resources.grd": {
+    "structures": [11515],
+  },
   "chrome/browser/resources/component_extension_resources.grd": {
     "includes": [11560],
     "structures": [11810],

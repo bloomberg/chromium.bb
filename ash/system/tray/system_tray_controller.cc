@@ -137,6 +137,11 @@ void SystemTrayController::ShowNetworkSettings(const std::string& network_id) {
     system_tray_client_->ShowNetworkSettings(network_id);
 }
 
+void SystemTrayController::ShowMultiDeviceSetup() {
+  if (system_tray_client_)
+    system_tray_client_->ShowMultiDeviceSetup();
+}
+
 void SystemTrayController::RequestRestartForUpdate() {
   if (system_tray_client_)
     system_tray_client_->RequestRestartForUpdate();

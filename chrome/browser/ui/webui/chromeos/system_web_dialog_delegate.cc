@@ -42,6 +42,10 @@ void SystemWebDialogDelegate::GetDialogSize(gfx::Size* size) const {
   size->SetSize(kDialogWidth, kDialogHeight);
 }
 
+std::string SystemWebDialogDelegate::GetDialogArgs() const {
+  return std::string();
+}
+
 void SystemWebDialogDelegate::OnDialogShown(
     content::WebUI* webui,
     content::RenderViewHost* render_view_host) {

@@ -18,6 +18,7 @@
         '<(DEPTH)/chrome/browser/resources/chromeos/braille_ime/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/login/compiled_resources2.gyp:*',
+        '<(DEPTH)/chrome/browser/resources/chromeos/multidevice_setup/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/network_ui/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/select_to_speak/compiled_resources2.gyp:*',
         '<(DEPTH)/chrome/browser/resources/chromeos/switch_access/compiled_resources2.gyp:*',

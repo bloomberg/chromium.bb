@@ -131,6 +131,9 @@ interface SystemTrayClient {
   // be any string.
   ShowNetworkSettings(string network_id);
 
+  // Shows the MultiDevice setup flow dialog.
+  ShowMultiDeviceSetup();
+
   // Attempts to restart the system for update.
   RequestRestartForUpdate();
 };
