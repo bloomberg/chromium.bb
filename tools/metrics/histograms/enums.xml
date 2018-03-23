@@ -17979,6 +17979,7 @@ Called by update_net_error_codes.py.-->
   <int value="2394" label="KeyboardApiLock"/>
   <int value="2395" label="KeyboardApiUnlock"/>
   <int value="2396" label="PPAPIURLRequestStreamToFile"/>
+  <int value="2397" label="PaymentHandler"/>
 </enum>
 
 <enum name="FeedbackSource">
