@@ -200,7 +200,7 @@ public class ContextualSearchTapEventTest {
             @Override
             public void run() {
                 mContextualSearchManager.getGestureStateListener().onTouchDown();
-                mContextualSearchManager.onShowUnhandledTapUIIfNeeded(0, 0);
+                mContextualSearchManager.onShowUnhandledTapUIIfNeeded(0, 0, 12, 100);
             }
         });
     }
@@ -212,7 +212,7 @@ public class ContextualSearchTapEventTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mContextualSearchManager.onShowUnhandledTapUIIfNeeded(0, 0);
+                mContextualSearchManager.onShowUnhandledTapUIIfNeeded(0, 0, 0, 0);
                 mContextualSearchClient.onSelectionEvent(
                         SelectionEventType.SELECTION_HANDLES_CLEARED, 0, 0);
             }

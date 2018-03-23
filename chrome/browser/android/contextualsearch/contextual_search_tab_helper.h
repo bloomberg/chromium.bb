@@ -40,8 +40,12 @@ class ContextualSearchTabHelper {
   // Call when the preferences change.
   void OnContextualSearchPrefChanged();
   // Call when an unhandled tap needs to show the UI for a tap at the given
-  // position.
-  void OnShowUnhandledTapUIIfNeeded(int x_px, int y_px);
+  // position, with the given |font_size_dips|, and |text_run_length| of the
+  // enclosing element.
+  void OnShowUnhandledTapUIIfNeeded(int x_px,
+                                    int y_px,
+                                    int font_size_dips,
+                                    int text_run_length);
 
   JavaObjectWeakGlobalRef weak_java_ref_;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

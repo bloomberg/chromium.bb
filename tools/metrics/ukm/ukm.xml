@@ -429,6 +429,13 @@ be describing additional metrics about the same event.
       not recorded if there was no subsequent scroll.
     </summary>
   </metric>
+  <metric name="FontSize">
+    <summary>
+      Emits a value from 0-10 representing the effective font size on the
+      screen.  A value of 0 means the font size cannot be obtained.  A value of
+      1 represents a very small font and a value of 10 represents a large font.
+    </summary>
+  </metric>
   <metric name="IsEntity">
     <summary>
       Emits a 1 or 0 to indicate whether the word tapped appears to be part of
@@ -512,6 +519,15 @@ be describing additional metrics about the same event.
     <summary>
       Emits a 1 or 0 to indicate whether the user could see a Quick-Answer
       caption within the overlay panel.  This is a tertiary outcome metric.
+    </summary>
+  </metric>
+  <metric name="PortionOfElement">
+    <summary>
+      Emits an integer in the range 0-10 inclusive that expresses the portion of
+      the enclosing element that is the word tapped.  A zero will be emitted if
+      the ratio cannot be calculated. A value of 10 means the word spans the
+      entire element, and a value of 1 means the word is 10% or less than the
+      entire element.
     </summary>
   </metric>
   <metric name="Previous28DayCtrPercent">
