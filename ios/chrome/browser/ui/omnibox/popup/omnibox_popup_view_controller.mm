@@ -43,7 +43,8 @@ UIColor* BackgroundColorIncognito() {
 }
 }  // namespace
 
-@interface OmniboxPopupViewController () {
+@interface OmniboxPopupViewController ()<UITableViewDelegate,
+                                         UITableViewDataSource> {
   // Alignment of omnibox text. Popup text should match this alignment.
   NSTextAlignment _alignment;
 
@@ -68,12 +69,13 @@ UIColor* BackgroundColorIncognito() {
 @synthesize incognito = _incognito;
 @synthesize imageRetriever = _imageRetriever;
 @synthesize highlightedIndexPath = _highlightedIndexPath;
+@synthesize tableView = _tableView;
 
 #pragma mark -
 #pragma mark Initialization
 
 - (instancetype)init {
-  if ((self = [super initWithStyle:UITableViewStylePlain])) {
+  if (self = [super initWithNibName:nil bundle:nil]) {
     if (IsIPadIdiom()) {
       // The iPad keyboard can cover some of the rows of the scroll view. The
       // scroll view's content inset may need to be updated when the keyboard is
@@ -91,6 +93,14 @@ UIColor* BackgroundColorIncognito() {
 
 - (void)dealloc {
   self.tableView.delegate = nil;
+}
+
+- (void)loadView {
+  self.tableView = [[UITableView alloc] initWithFrame:CGRectZero
+                                                style:UITableViewStylePlain];
+  self.tableView.delegate = self;
+  self.tableView.dataSource = self;
+  self.view = self.tableView;
 }
 
 - (UIScrollView*)scrollView {
