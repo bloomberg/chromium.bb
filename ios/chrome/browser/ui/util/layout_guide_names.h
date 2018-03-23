@@ -28,5 +28,8 @@ extern GuideName* const kForwardButtonGuide;
 extern GuideName* const kTabSwitcherGuide;
 // A guide that is constrained to match the frame of the ToolsMenu button.
 extern GuideName* const kToolsMenuGuide;
+// A guide that is constrained to match the frame of the last-tapped voice
+// search button.
+extern GuideName* const kVoiceSearchButtonGuide;
 
 #endif  // IOS_CHROME_BROWSER_UI_UTIL_LAYOUT_GUIDE_NAMES_H_
