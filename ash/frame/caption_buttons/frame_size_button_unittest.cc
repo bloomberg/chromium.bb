@@ -59,7 +59,7 @@ class TestWidgetDelegate : public views::WidgetDelegateView {
       // Set arbitrary images for the button icons and assign the default
       // caption button size.
       caption_button_container_->SetButtonSize(
-          GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON));
+          GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption));
       for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
         caption_button_container_->SetButtonImage(
             static_cast<CaptionButtonIcon>(icon), kWindowControlCloseIcon);

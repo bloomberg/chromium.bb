@@ -443,9 +443,8 @@ int BrowserNonClientFrameViewMus::GetHeaderHeight() const {
 #if defined(OS_CHROMEOS)
   // TODO: move ash_layout_constants to ash/public/cpp.
   const bool restored = !frame()->IsMaximized() && !frame()->IsFullscreen();
-  return GetAshLayoutSize(restored
-                              ? AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON
-                              : AshLayoutSize::BROWSER_MAXIMIZED_CAPTION_BUTTON)
+  return GetAshLayoutSize(restored ? AshLayoutSize::kBrowserCaptionRestored
+                                   : AshLayoutSize::kBrowserCaptionMaximized)
       .height();
 #else
   return views::WindowManagerFrameValues::instance().normal_insets.top();

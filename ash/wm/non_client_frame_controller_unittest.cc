@@ -117,7 +117,7 @@ TEST_F(NonClientFrameControllerTest, ContentRegionNotDrawnForClient) {
   ASSERT_TRUE(widget);
 
   const int caption_height =
-      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height();
+      GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height();
   const gfx::Size tile_size = cc::LayerTreeSettings().default_tile_size;
   const int tile_width = tile_size.width();
   const int tile_height = tile_size.height();

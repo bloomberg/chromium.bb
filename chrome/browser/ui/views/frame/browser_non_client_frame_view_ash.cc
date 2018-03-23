@@ -241,8 +241,7 @@ int BrowserNonClientFrameViewAsh::GetTopInset(bool restored) const {
 
   const int header_height =
       restored
-          ? GetAshLayoutSize(AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON)
-                .height()
+          ? GetAshLayoutSize(AshLayoutSize::kBrowserCaptionRestored).height()
           : frame_header_->GetHeaderHeight();
   return header_height - browser_view()->GetTabStripHeight();
 }
