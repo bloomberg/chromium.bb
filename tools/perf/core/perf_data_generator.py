@@ -508,8 +508,9 @@ def get_waterfall_config():
          ('load_library_perf_tests', 'build29-a9'),
          ('net_perftests', 'build29-a9'),
          ('tracing_perftests', 'build29-a9'),
-         ('media_perftests', 'build30-a9'),
-         ('views_perftests', 'build31-a9')
+         ('media_perftests', 'build30-a9')
+         # crbug.com/811766
+         # ('views_perftests', 'build31-a9')
        ]
       }
     ])
