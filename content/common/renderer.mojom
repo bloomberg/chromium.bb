@@ -8,7 +8,7 @@ import "content/common/native_types.mojom";
 import "content/common/service_worker/embedded_worker.mojom";
 import "ipc/constants.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/common/unguessable_token.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/network/public/mojom/network_types.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "services/service_manager/public/mojom/service.mojom";
@@ -61,7 +61,7 @@ struct CreateViewParams {
   // attribute them to the context frame.
   // |devtools_main_frame_token| is only defined by the browser and is never
   // sent back from the renderer in the control calls.
-  mojo.common.mojom.UnguessableToken devtools_main_frame_token;
+  mojo_base.mojom.UnguessableToken devtools_main_frame_token;
 
   // The ID of the proxy object for the main frame in this view. It is only
   // used if |swapped_out| is true.
@@ -148,7 +148,7 @@ struct CreateFrameParams {
   // attribute them to the context frame.
   // |devtools_frame_token| is only defined by the browser and is never
   // sent back from the renderer in the control calls.
-  mojo.common.mojom.UnguessableToken devtools_frame_token;
+  mojo_base.mojom.UnguessableToken devtools_frame_token;
 
   // When the new frame has a parent, |frame_owner_properties| holds the
   // properties of the HTMLFrameOwnerElement from the parent process.
@@ -210,7 +210,7 @@ interface Renderer {
   CreateFrameProxy(int32 routing_id, int32 render_view_routing_id,
                    int32 opener_routing_id, int32 parent_routing_id,
                    FrameReplicationState replication_state,
-                   mojo.common.mojom.UnguessableToken devtools_frame_token);
+                   mojo_base.mojom.UnguessableToken devtools_frame_token);
 
   // Tells the renderer that the network type has changed so that
   // navigator.onLine and navigator.connection can be updated.

@@ -7,7 +7,7 @@ module media.mojom;
 import "media/mojo/interfaces/demuxer_stream.mojom";
 import "media/mojo/interfaces/media_types.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/common/unguessable_token.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 
@@ -46,7 +46,7 @@ interface Renderer {
   // content::MediaPlayerRenderer.
   // Unexpected calls to this method will close the connection.
   InitiateScopedSurfaceRequest()
-      => (mojo.common.mojom.UnguessableToken request_token);
+      => (mojo_base.mojom.UnguessableToken request_token);
 };
 
 interface RendererClient {

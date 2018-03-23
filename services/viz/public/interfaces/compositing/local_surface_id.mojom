@@ -4,7 +4,7 @@
 
 module viz.mojom;
 
-import "mojo/common/unguessable_token.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 struct LocalSurfaceId {
   // An identifier to uniquely identify a surface.
@@ -16,6 +16,6 @@ struct LocalSurfaceId {
   // its own surface.
   uint32 child_sequence_number;
 
-  mojo.common.mojom.UnguessableToken embed_token;
+  mojo_base.mojom.UnguessableToken embed_token;
 };
 

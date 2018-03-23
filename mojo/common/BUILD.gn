@@ -17,7 +17,6 @@ mojom("common_custom_types") {
     "memory_allocator_dump_cross_process_uid.mojom",
     "process_id.mojom",
     "thread_priority.mojom",
-    "unguessable_token.mojom",
     "values.mojom",
   ]
 

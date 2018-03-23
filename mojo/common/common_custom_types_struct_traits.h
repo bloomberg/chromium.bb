@@ -13,29 +13,9 @@
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/common/process_id.mojom-shared.h"
 #include "mojo/common/thread_priority.mojom-shared.h"
-#include "mojo/common/unguessable_token.mojom-shared.h"
+#include "mojo/public/mojom/base/unguessable_token.mojom-shared.h"
 
 namespace mojo {
-
-// If base::UnguessableToken is no longer 128 bits, the logic below and the
-// mojom::UnguessableToken type should be updated.
-static_assert(sizeof(base::UnguessableToken) == 2 * sizeof(uint64_t),
-              "base::UnguessableToken should be of size 2 * sizeof(uint64_t).");
-
-template <>
-struct StructTraits<common::mojom::UnguessableTokenDataView,
-                    base::UnguessableToken> {
-  static uint64_t high(const base::UnguessableToken& token) {
-    return token.GetHighForSerialization();
-  }
-
-  static uint64_t low(const base::UnguessableToken& token) {
-    return token.GetLowForSerialization();
-  }
-
-  static bool Read(common::mojom::UnguessableTokenDataView data,
-                   base::UnguessableToken* out);
-};
 
 template <>
 struct StructTraits<common::mojom::ProcessIdDataView, base::ProcessId> {

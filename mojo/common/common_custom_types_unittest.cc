@@ -61,21 +61,6 @@ base::Callback<void(typename PassTraits<T>::Type)> ExpectResponse(
   return base::Bind(&DoExpectResponse<T>, expected_value, closure);
 }
 
-class TestUnguessableTokenImpl : public TestUnguessableToken {
- public:
-  explicit TestUnguessableTokenImpl(TestUnguessableTokenRequest request)
-      : binding_(this, std::move(request)) {}
-
-  // TestUnguessableToken implementation:
-  void BounceNonce(const base::UnguessableToken& in,
-                   BounceNonceCallback callback) override {
-    std::move(callback).Run(in);
-  }
-
- private:
-  mojo::Binding<TestUnguessableToken> binding_;
-};
-
 class TestValueImpl : public TestValue {
  public:
   explicit TestValueImpl(TestValueRequest request)
@@ -113,19 +98,6 @@ class CommonCustomTypesTest : public testing::Test {
 };
 
 }  // namespace
-
-TEST_F(CommonCustomTypesTest, UnguessableToken) {
-  base::RunLoop run_loop;
-
-  TestUnguessableTokenPtr ptr;
-  TestUnguessableTokenImpl impl(MakeRequest(&ptr));
-
-  base::UnguessableToken token = base::UnguessableToken::Create();
-
-  ptr->BounceNonce(token, ExpectResponse(&token, run_loop.QuitClosure()));
-
-  run_loop.Run();
-}
 
 TEST_F(CommonCustomTypesTest, ProcessId) {
   base::ProcessId pid = base::GetCurrentProcId();

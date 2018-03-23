@@ -4,7 +4,7 @@ import "media/mojo/interfaces/audio_data_pipe.mojom";
 import "media/mojo/interfaces/audio_logging.mojom";
 import "media/mojo/interfaces/audio_output_stream.mojom";
 import "media/mojo/interfaces/audio_parameters.mojom";
-import "mojo/common/unguessable_token.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 // This interface is exposed by the audio service to allow trusted clients
 // (like the browser process) to create streams. Note that while the factory
@@ -24,6 +24,6 @@ interface StreamFactory {
     associated media.mojom.AudioOutputStreamObserver observer,
     media.mojom.AudioLog log,
     string device_id, media.mojom.AudioParameters params,
-    mojo.common.mojom.UnguessableToken stream_group_id)
+    mojo_base.mojom.UnguessableToken stream_group_id)
     => (media.mojom.AudioDataPipe? data_pipe);
 };

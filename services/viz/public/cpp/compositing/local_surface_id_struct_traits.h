@@ -6,7 +6,7 @@
 #define SERVICES_VIZ_PUBLIC_CPP_COMPOSITING_LOCAL_SURFACE_ID_STRUCT_TRAITS_H_
 
 #include "components/viz/common/surfaces/local_surface_id.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
+#include "mojo/public/cpp/base/unguessable_token_mojom_traits.h"
 #include "services/viz/public/interfaces/compositing/local_surface_id.mojom-shared.h"
 
 namespace mojo {

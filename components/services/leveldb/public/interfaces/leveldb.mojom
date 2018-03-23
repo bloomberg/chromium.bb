@@ -5,8 +5,8 @@
 module leveldb.mojom;
 
 import "components/services/filesystem/public/interfaces/directory.mojom";
-import "mojo/common/unguessable_token.mojom";
 import "mojo/common/memory_allocator_dump_cross_process_uid.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 enum DatabaseError {
   OK,
@@ -136,48 +136,48 @@ interface LevelDBDatabase {
   // Snapshots -------------------------------------------------------------
 
   // Returns a handle to the current database state.
-  GetSnapshot() => (mojo.common.mojom.UnguessableToken snapshot);
+  GetSnapshot() => (mojo_base.mojom.UnguessableToken snapshot);
 
   // Releases a previously acquired snapshot.
-  ReleaseSnapshot(mojo.common.mojom.UnguessableToken snapshot);
+  ReleaseSnapshot(mojo_base.mojom.UnguessableToken snapshot);
 
   // If |key| exists at the time |snapshot_id| was taken, return OK and the
   // value. Otherwise return NOT_FOUND.
-  GetFromSnapshot(mojo.common.mojom.UnguessableToken snapshot,
+  GetFromSnapshot(mojo_base.mojom.UnguessableToken snapshot,
                   array<uint8> key)
       => (DatabaseError status, array<uint8> value);
 
   // Iteartors -------------------------------------------------------------
 
   // Creates an iterator, either from the current view or from a snapshot.
-  NewIterator() => (mojo.common.mojom.UnguessableToken iterator);
-  NewIteratorFromSnapshot(mojo.common.mojom.UnguessableToken snapshot)
-      => (mojo.common.mojom.UnguessableToken? iterator);
+  NewIterator() => (mojo_base.mojom.UnguessableToken iterator);
+  NewIteratorFromSnapshot(mojo_base.mojom.UnguessableToken snapshot)
+      => (mojo_base.mojom.UnguessableToken? iterator);
 
-  ReleaseIterator(mojo.common.mojom.UnguessableToken iterator);
+  ReleaseIterator(mojo_base.mojom.UnguessableToken iterator);
 
   // Positions the iterator at the first key, last key, or the first key after
   // |target|.
   [Sync]
-  IteratorSeekToFirst(mojo.common.mojom.UnguessableToken iterator)
+  IteratorSeekToFirst(mojo_base.mojom.UnguessableToken iterator)
       => (bool valid, DatabaseError status, array<uint8>? key,
           array<uint8>? value);
   [Sync]
-  IteratorSeekToLast(mojo.common.mojom.UnguessableToken iterator)
+  IteratorSeekToLast(mojo_base.mojom.UnguessableToken iterator)
       => (bool valid, DatabaseError status, array<uint8>? key,
           array<uint8>? value);
   [Sync]
-  IteratorSeek(mojo.common.mojom.UnguessableToken iterator, array<uint8> target)
+  IteratorSeek(mojo_base.mojom.UnguessableToken iterator, array<uint8> target)
       => (bool valid, DatabaseError status, array<uint8>? key,
           array<uint8>? value);
 
   // Moves forward or backwards in iterator space.
   [Sync]
-  IteratorNext(mojo.common.mojom.UnguessableToken iterator)
+  IteratorNext(mojo_base.mojom.UnguessableToken iterator)
       => (bool valid, DatabaseError status, array<uint8>? key,
           array<uint8>? value);
   [Sync]
-  IteratorPrev(mojo.common.mojom.UnguessableToken iterator)
+  IteratorPrev(mojo_base.mojom.UnguessableToken iterator)
       => (bool valid, DatabaseError status, array<uint8>? key,
           array<uint8>? value);
 };

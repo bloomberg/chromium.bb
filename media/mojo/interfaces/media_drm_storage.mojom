@@ -4,7 +4,7 @@
 
 module media.mojom;
 
-import "mojo/common/unguessable_token.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 
 struct SessionData {
   array<uint8> key_set_id;
@@ -18,7 +18,7 @@ interface MediaDrmStorage {
   // current origin. The origin ID should be randomly generated if it doesn't
   // exist. |origin_id| must be valid.
   // This should not modify anything in the storage.
-  Initialize() => (mojo.common.mojom.UnguessableToken origin_id);
+  Initialize() => (mojo_base.mojom.UnguessableToken origin_id);
 
   // Saves origin information (e.g. origin ID, provision time) in the storage
   // after MediaDrm is provisioned for current origin.

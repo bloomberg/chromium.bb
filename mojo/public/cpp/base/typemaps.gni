@@ -14,5 +14,6 @@ typemaps = [
   "//mojo/public/cpp/base/logfont_win.typemap",
   "//mojo/public/cpp/base/text_direction.typemap",
   "//mojo/public/cpp/base/time.typemap",
+  "//mojo/public/cpp/base/unguessable_token.typemap",
   "//mojo/public/cpp/base/values.typemap",
 ]

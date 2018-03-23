@@ -320,7 +320,7 @@ enforce that the input data is valid. Common ones to watch out for:
 *   JSON: use `mojo.common.mojom.Value`, not `string`.
 *   Mojo interfaces: use `Interface` or `Interface&`, not `handle` or
     `handle<message_pipe>`.
-*   Nonces: use `mojo.common.mojom.UnguessableToken`, not `string`.
+*   Nonces: use `mojo_base.mojom.UnguessableToken`, not `string`.
 *   Origins: use `url.mojom.Origin`, not `url.mojom.Url` and certainly not
     `string`.
 *   Time types: use `mojo_base.mojom.TimeDelta` /

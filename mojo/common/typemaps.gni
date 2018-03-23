@@ -7,6 +7,5 @@ typemaps = [
   "//mojo/common/process_id.typemap",
   "//mojo/common/read_only_buffer.typemap",
   "//mojo/common/thread_priority.typemap",
-  "//mojo/common/unguessable_token.typemap",
   "//mojo/common/values.typemap",
 ]

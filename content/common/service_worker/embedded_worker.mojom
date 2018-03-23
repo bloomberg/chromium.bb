@@ -10,7 +10,7 @@ import "content/common/service_worker/service_worker_event_dispatcher.mojom";
 import "content/common/service_worker/service_worker_provider.mojom";
 import "mojo/public/mojom/base/string16.mojom";
 import "mojo/public/mojom/base/time.mojom";
-import "mojo/common/unguessable_token.mojom";
+import "mojo/public/mojom/base/unguessable_token.mojom";
 import "services/service_manager/public/mojom/interface_provider.mojom";
 import "third_party/WebKit/public/mojom/service_worker/service_worker.mojom";
 import "third_party/WebKit/public/mojom/service_worker/service_worker_installed_scripts_manager.mojom";
@@ -38,7 +38,7 @@ struct EmbeddedWorkerStartParams {
   // The id to talk with the DevTools agent for the worker.
   int32 worker_devtools_agent_route_id;
   // Unique token identifying this worker for DevTools.
-  mojo.common.mojom.UnguessableToken devtools_worker_token;
+  mojo_base.mojom.UnguessableToken devtools_worker_token;
   // When true, worker script evaluation is blocked until
   // EmbeddedWorkerInstanceClient::ResumeAfterDownload() is called.
   bool pause_after_download;
