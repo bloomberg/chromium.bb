@@ -54,7 +54,8 @@
         background-color: var(--md-toolbar-color);
       }
     </style>
-    <extensions-drop-overlay></extensions-drop-overlay>
+    <extensions-drop-overlay drag-enabled="[[inDevMode]]">
+    </extensions-drop-overlay>
     <extensions-toolbar is-guest="[[isGuest_]]"
         in-dev-mode="[[inDevMode]]"
         can-load-unpacked="[[canLoadUnpacked]]"

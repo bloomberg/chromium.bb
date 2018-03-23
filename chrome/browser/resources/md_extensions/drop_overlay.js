@@ -8,12 +8,23 @@
 Polymer({
   is: 'extensions-drop-overlay',
 
+  properties: {
+    /** @private {boolean} */
+    dragEnabled: {
+      type: Boolean,
+      observer: 'dragEnabledChanged_',
+    }
+  },
+
   /** @override */
   created: function() {
     this.hidden = true;
     const dragTarget = document.documentElement;
     this.dragWrapperHandler_ =
         new extensions.DragAndDropHandler(true, true, dragTarget);
+    // TODO(devlin): All these dragTarget listeners leak (they aren't removed
+    // when the element is). This only matters in tests at the moment, but would
+    // be good to fix.
     dragTarget.addEventListener('extension-drag-started', () => {
       this.hidden = false;
     });
@@ -25,6 +36,14 @@ Polymer({
     });
     this.dragWrapper_ =
         new cr.ui.DragWrapper(dragTarget, this.dragWrapperHandler_);
+  },
+
+  /**
+   * @param {boolean} dragEnabled
+   * @private
+   */
+  dragEnabledChanged_: function(dragEnabled) {
+    this.dragWrapperHandler_.dragEnabled = dragEnabled;
   },
 });
 })();
