@@ -32020,27 +32020,6 @@
         }
       },
       {
-        "args": [],
-        "isolate_name": "views_perftests",
-        "name": "views_perftests",
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "gpu": "10de:1cb3",
-              "id": "build31-a9",
-              "os": "Ubuntu-14.04",
-              "pool": "Chrome-perf"
-            }
-          ],
-          "expiration": 36000,
-          "hard_timeout": 10800,
-          "ignore_task_failure": false,
-          "io_timeout": 1200,
-          "upload_test_results": true
-        }
-      },
-      {
         "args": [
           "wasm",
           "-v",
