@@ -1008,6 +1008,9 @@ jumbo_split_static_library("browser") {
     "plugins/pdf_iframe_navigation_throttle.h",
     "plugins/pdf_plugin_placeholder_observer.cc",
     "plugins/pdf_plugin_placeholder_observer.h",
+    "policy/browser_dm_token_storage.h",
+    "policy/browser_dm_token_storage_win.cc",
+    "policy/browser_dm_token_storage_win.h",
     "policy/chrome_browser_policy_connector.cc",
     "policy/chrome_browser_policy_connector.h",
     "policy/cloud/cloud_policy_invalidator.cc",
@@ -2963,6 +2966,8 @@ jumbo_split_static_library("browser") {
   } else {
     # Non-Windows.
     sources += [
+      "policy/browser_dm_token_storage_stub.cc",
+      "policy/browser_dm_token_storage_stub.h",
       "profile_resetter/triggered_profile_resetter_stub.cc",
       "profiles/profile_shortcut_manager_stub.cc",
     ]
