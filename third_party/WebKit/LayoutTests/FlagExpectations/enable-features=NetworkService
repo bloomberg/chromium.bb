@@ -59,6 +59,9 @@ Bug(none) http/tests/security/cookies/third-party-cookie-blocking.html [ Failure
 Bug(none) http/tests/security/cookies/third-party-cookie-blocking-user-action.html [ Failure ]
 Bug(none) http/tests/security/cookies/third-party-cookie-blocking-worker.html [ Failure ]
 Bug(none) http/tests/security/cookies/third-party-cookie-blocking-xslt.xml [ Failure ]
+Bug(none) http/tests/security/cookies/websocket/third-party-cookie-blocked-on-cross-origin-websocket.html [ Failure ]
+Bug(none) http/tests/security/cookies/websocket/third-party-cookie-blocked-on-same-origin-websocket.html [ Failure ]
+Bug(none) http/tests/security/cookies/websocket/third-party-cookie-blocked.html [ Failure ]
 Bug(none) http/tests/security/cors-rfc1918 [ Crash Timeout ]
 Bug(none) http/tests/security/media-element-audio-source-node-cross-origin.html [ Failure Pass Timeout ]
 Bug(none) http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
@@ -85,19 +88,7 @@ crbug.com/764474 plugins/plugin-document-back-forward.html [ Crash Failure Timeo
 Bug(none) virtual/layout_ng/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
 
 # http://crbug.com/721400 get WebSockets working with network service.
-# http://crbug.com/803958: Tests failing on bot but not in local checkout.
-crbug.com/803958 external/wpt/websockets/cookies/001.html?wss [ Failure ]
-crbug.com/803958 external/wpt/websockets/cookies/002.html?wss [ Failure ]
-crbug.com/803958 external/wpt/websockets/cookies/003.html?wss [ Failure ]
-crbug.com/803958 external/wpt/websockets/cookies/007.html [ Failure ]
-crbug.com/803958 external/wpt/websockets/cookies/007.html?wss [ Failure ]
-crbug.com/721400 external/wpt/websockets/cookies/001.html [ Failure ]
-crbug.com/721400 external/wpt/websockets/cookies/002.html [ Failure ]
-crbug.com/721400 external/wpt/websockets/cookies/003.html [ Failure ]
-crbug.com/721400 external/wpt/websockets/cookies/006.html?wss [ Crash ]
-crbug.com/721400 external/wpt/websockets/opening-handshake/003.html?wss [ Pass Timeout ]
-crbug.com/721400 http/tests/websocket/cookie-document-to-ws.html [ Failure ]
-crbug.com/721400 http/tests/websocket/cookie-http-to-ws.pl [ Failure ]
-crbug.com/721400 http/tests/websocket/httponly-cookie.pl [ Failure ]
+crbug.com/721400 http/tests/websocket/multiple-connections-throttled.html [ Failure ]
+crbug.com/721400 http/tests/devtools/websocket/websocket-handshake.js [ Failure ]
 
 crbug.com/816556 external/wpt/html/semantics/text-level-semantics/the-a-element/a-download-click-404.html [ Failure ]

@@ -3101,11 +3101,8 @@ void RenderFrameHostImpl::RegisterMojoInterfaces() {
       base::Bind(&RenderFrameHostImpl::BindMediaInterfaceFactoryRequest,
                  base::Unretained(this)));
 
-  // This is to support usage of WebSockets in cases in which there is an
-  // associated RenderFrame. This is important for showing the correct security
-  // state of the page and also honoring user override of bad certificates.
-  registry_->AddInterface(base::Bind(&WebSocketManager::CreateWebSocketForFrame,
-                                     process_->GetID(), routing_id_));
+  registry_->AddInterface(base::BindRepeating(
+      &RenderFrameHostImpl::CreateWebSocket, base::Unretained(this)));
 
   registry_->AddInterface(base::Bind(&SharedWorkerConnectorImpl::Create,
                                      process_->GetID(), routing_id_));
@@ -4357,6 +4354,25 @@ void RenderFrameHostImpl::BindMediaInterfaceFactoryRequest(
       this, std::move(request),
       base::Bind(&RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
                  base::Unretained(this))));
+}
+
+void RenderFrameHostImpl::CreateWebSocket(
+    network::mojom::WebSocketRequest request) {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    auto* context = GetSiteInstance()->GetBrowserContext();
+    auto* storage_partition = static_cast<StoragePartitionImpl*>(
+        BrowserContext::GetStoragePartition(context, GetSiteInstance()));
+    storage_partition->GetNetworkContext()->CreateWebSocket(
+        std::move(request), process_->GetID(), routing_id_,
+        last_committed_origin_);
+  } else {
+    // This is to support usage of WebSockets in cases in which there is an
+    // associated RenderFrame. This is important for showing the correct
+    // security state of the page and also honoring user override of bad
+    // certificates.
+    WebSocketManager::CreateWebSocketForFrame(process_->GetID(), routing_id_,
+                                              std::move(request));
+  }
 }
 
 void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {

@@ -69,7 +69,8 @@ class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
         ssl_info, fatal);
   }
 
-  void ReportBadMessage(BadMessageReason reason) override {
+  void ReportBadMessage(BadMessageReason reason,
+                        network::WebSocket* impl) override {
     bad_message::BadMessageReason reason_to_pass =
         bad_message::WSI_INVALID_HEADER_VALUE;
     switch (reason) {
@@ -84,6 +85,7 @@ class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
         break;
     }
     bad_message::ReceivedBadMessage(manager_->process_id_, reason_to_pass);
+    OnLostConnectionToClient(impl);
   }
 
   bool CanReadRawCookies() override {

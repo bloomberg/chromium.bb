@@ -14,7 +14,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
-#include "build/build_config.h"
 #include "components/cookie_config/cookie_store_util.h"
 #include "components/network_session_configurator/browser/network_session_configurator.h"
 #include "components/network_session_configurator/common/network_switches.h"
@@ -54,6 +53,10 @@
 #include "services/network/url_loader.h"
 #include "services/network/url_loader_factory.h"
 #include "services/network/url_request_context_builder_mojo.h"
+
+#if !defined(OS_IOS)
+#include "services/network/websocket_factory.h"
+#endif  // !defined(OS_IOS)
 
 namespace network {
 
@@ -537,6 +540,18 @@ void NetworkContext::CreateTCPConnectedSocket(
       local_addr, remote_addr_list,
       static_cast<net::NetworkTrafficAnnotationTag>(traffic_annotation),
       std::move(request), std::move(observer), std::move(callback));
+}
+
+void NetworkContext::CreateWebSocket(mojom::WebSocketRequest request,
+                                     int32_t process_id,
+                                     int32_t render_frame_id,
+                                     const url::Origin& origin) {
+#if !defined(OS_IOS)
+  if (!websocket_factory_)
+    websocket_factory_ = std::make_unique<WebSocketFactory>(this);
+  websocket_factory_->CreateWebSocket(std::move(request), process_id,
+                                      render_frame_id, origin);
+#endif  // !defined(OS_IOS)
 }
 
 void NetworkContext::AddHSTSForTesting(const std::string& host,

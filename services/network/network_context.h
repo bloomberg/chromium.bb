@@ -15,6 +15,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/time/time.h"
+#include "build/build_config.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/strong_binding_set.h"
 #include "services/network/cookie_manager.h"
@@ -23,6 +24,7 @@
 #include "services/network/public/mojom/tcp_socket.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
+#include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/socket_factory.h"
 #include "services/network/url_request_context_owner.h"
 
@@ -37,6 +39,7 @@ class NetworkService;
 class ResourceScheduler;
 class ResourceSchedulerClient;
 class URLRequestContextBuilderMojo;
+class WebSocketFactory;
 
 // A NetworkContext creates and manages access to a URLRequestContext.
 //
@@ -128,6 +131,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::TCPConnectedSocketRequest request,
       mojom::TCPConnectedSocketObserverPtr observer,
       CreateTCPConnectedSocketCallback callback) override;
+  void CreateWebSocket(mojom::WebSocketRequest request,
+                       int32_t process_id,
+                       int32_t render_frame_id,
+                       const url::Origin& origin) override;
   void AddHSTSForTesting(const std::string& host,
                          base::Time expiry,
                          bool include_subdomains,
@@ -189,6 +196,10 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
   std::unique_ptr<CookieManager> cookie_manager_;
 
   SocketFactory socket_factory_;
+
+#if !defined(OS_IOS)
+  std::unique_ptr<WebSocketFactory> websocket_factory_;
+#endif  // !defined(OS_IOS)
 
   std::vector<std::unique_ptr<HttpCacheDataRemover>> http_cache_data_removers_;
 

@@ -183,6 +183,13 @@
 -ExtensionWebRequestApiTest.WebRequestDiceHeaderProtection
 -ExtensionWebRequestApiTest.WebRequestTypes
 
+# https://crbug.com/721400
+# WebSocket with the network service
+-DeclarativeNetRequestResourceTypeBrowserTest.Test2/1
+-DeclarativeNetRequestResourceTypeBrowserTest.Test2/0
+-ExtensionWebRequestApiTest.WebSocketRequestAuthRequired
+-ExtensionWebRequestApiTest.WebSocketRequest
+
 # http://crbug.com/705114
 # Remove streams concept from code and replace with data pipe passing.
 -MimeHandlerViewTests/MimeHandlerViewTest.Abort/0
