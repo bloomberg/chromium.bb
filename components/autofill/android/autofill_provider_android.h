@@ -65,12 +65,6 @@ class AutofillProviderAndroid : public AutofillProvider {
 
   // Methods called by Java.
   void OnAutofillAvailable(JNIEnv* env, jobject jcaller, jobject form_data);
-  void FireSelectControlDidChangeForTesting(JNIEnv* env,
-                                            jobject jcaller,
-                                            jint index,
-                                            jstring id,
-                                            jobjectArray options,
-                                            jint selected_option);
 
  private:
   void FireSuccessfulSubmission(SubmissionSource source);

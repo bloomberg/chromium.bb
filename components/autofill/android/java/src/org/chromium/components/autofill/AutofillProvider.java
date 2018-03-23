@@ -9,7 +9,6 @@ import android.view.ViewGroup;
 import android.view.ViewStructure;
 import android.view.autofill.AutofillValue;
 
-import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content_public.browser.WebContents;
@@ -150,9 +149,4 @@ public abstract class AutofillProvider {
 
     private native void nativeOnAutofillAvailable(
             long nativeAutofillProviderAndroid, FormData formData);
-
-    @VisibleForTesting
-    protected native void nativeFireSelectControlDidChangeForTesting(
-            long nativeAutofillProviderAndroid, int index, String selectControlId, String[] options,
-            int seletedOption);
 }
