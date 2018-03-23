@@ -57,13 +57,12 @@ static INLINE int allow_warp(const MODE_INFO *const mi,
   if (gm_params->invalid) return 0;
 
   if (warp_types->local_warp_allowed) {
-    if ((build_for_obmc && WARP_WM_NEIGHBORS_WITH_OBMC) || (!build_for_obmc)) {
+    if (!build_for_obmc) {
       memcpy(final_warp_params, &mbmi->wm_params[0],
              sizeof(*final_warp_params));
       return 1;
     }
-  } else if (warp_types->global_warp_allowed &&
-             (WARP_GM_NEIGHBORS_WITH_OBMC || !build_for_obmc)) {
+  } else if (warp_types->global_warp_allowed && !build_for_obmc) {
     memcpy(final_warp_params, gm_params, sizeof(*final_warp_params));
     return 1;
   }

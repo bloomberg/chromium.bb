@@ -2182,8 +2182,7 @@ static void fix_interp_filter(AV1_COMMON *cm, FRAME_COUNTS *counts) {
       // Only one filter is used. So set the filter at frame level
       for (i = 0; i < SWITCHABLE_FILTERS; ++i) {
         if (count[i]) {
-          if (i == EIGHTTAP_REGULAR || WARP_WM_NEIGHBORS_WITH_OBMC)
-            cm->interp_filter = i;
+          if (i == EIGHTTAP_REGULAR) cm->interp_filter = i;
           break;
         }
       }

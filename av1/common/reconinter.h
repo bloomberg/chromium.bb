@@ -18,10 +18,6 @@
 #include "av1/common/warped_motion.h"
 #include "aom/aom_integer.h"
 
-#define WARP_WM_NEIGHBORS_WITH_OBMC 0
-
-#define WARP_GM_NEIGHBORS_WITH_OBMC 0
-
 // Work out how many pixels off the edge of a reference frame we're allowed
 // to go when forming an inter prediction.
 // The outermost row/col of each referernce frame is extended by
