@@ -1018,6 +1018,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   void BindMediaInterfaceFactoryRequest(
       media::mojom::InterfaceFactoryRequest request);
 
+  void CreateWebSocket(network::mojom::WebSocketRequest request);
+
   // Callback for connection error on the media::mojom::InterfaceFactory client.
   void OnMediaInterfaceFactoryConnectionError();
 

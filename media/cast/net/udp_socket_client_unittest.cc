@@ -154,6 +154,10 @@ class MockNetworkContext final : public network::mojom::NetworkContext {
       CreateTCPConnectedSocketCallback callback) override {}
 
   MockUdpSocket* udp_socket() const { return udp_socket_.get(); }
+  void CreateWebSocket(network::mojom::WebSocketRequest request,
+                       int process_id,
+                       int render_frame_id,
+                       const url::Origin& origin) override {}
 
  private:
   mojo::Binding<network::mojom::NetworkContext> binding_;

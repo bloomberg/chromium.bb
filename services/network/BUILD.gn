@@ -82,9 +82,16 @@ component("network_service") {
     "url_request_context_builder_mojo.h",
     "url_request_context_owner.cc",
     "url_request_context_owner.h",
-    "websocket.cc",
-    "websocket.h",
   ]
+
+  if (!is_ios) {
+    sources += [
+      "websocket.cc",
+      "websocket.h",
+      "websocket_factory.cc",
+      "websocket_factory.h",
+    ]
+  }
 
   deps = [
     "//base",

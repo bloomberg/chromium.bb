@@ -45,6 +45,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
 
     virtual net::URLRequestContext* GetURLRequestContext() = 0;
     virtual void OnReceivedResponseFromServer(WebSocket* impl) = 0;
+    // This function may delete |impl|.
     virtual void OnLostConnectionToClient(WebSocket* impl) = 0;
     virtual void OnSSLCertificateError(
         std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
@@ -54,7 +55,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
         int frame_id,
         const net::SSLInfo& ssl_info,
         bool fatal) = 0;
-    virtual void ReportBadMessage(BadMessageReason reason) = 0;
+    // This function may delete |impl|.
+    virtual void ReportBadMessage(BadMessageReason reason, WebSocket* impl) = 0;
     virtual bool CanReadRawCookies() = 0;
     virtual void OnCreateURLRequest(int child_id,
                                     int frame_id,

@@ -328,7 +328,7 @@ void WebSocket::AddChannelRequest(
 
   if (client_ || !client) {
     delegate_->ReportBadMessage(
-        Delegate::BadMessageReason::kUnexpectedAddChannelRequest);
+        Delegate::BadMessageReason::kUnexpectedAddChannelRequest, this);
     return;
   }
 
@@ -362,7 +362,7 @@ void WebSocket::SendFrame(bool fin,
       DVLOG(1) << "Dropping frame sent to closed websocket";
     } else {
       delegate_->ReportBadMessage(
-          Delegate::BadMessageReason::kUnexpectedSendFrame);
+          Delegate::BadMessageReason::kUnexpectedSendFrame, this);
     }
     return;
   }
@@ -437,7 +437,7 @@ void WebSocket::AddChannel(const GURL& socket_url,
   if (!user_agent_override.empty()) {
     if (!net::HttpUtil::IsValidHeaderValue(user_agent_override)) {
       delegate_->ReportBadMessage(
-          Delegate::BadMessageReason::kInvalidHeaderValue);
+          Delegate::BadMessageReason::kInvalidHeaderValue, this);
       return;
     }
     additional_headers =
