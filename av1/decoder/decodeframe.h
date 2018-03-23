@@ -28,7 +28,7 @@ BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb);
 
 #if CONFIG_TRAILING_BITS
 int av1_check_trailing_bits(struct AV1Decoder *pbi,
-                            struct aom_read_bit_buffer *rb, int *consumed_byte);
+                            struct aom_read_bit_buffer *rb);
 #endif
 
 // This function is now obsolete

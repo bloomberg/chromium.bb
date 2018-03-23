@@ -201,8 +201,7 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
 #endif
 
 #if CONFIG_TRAILING_BITS
-  int consumed_byte = 0;
-  av1_check_trailing_bits(pbi, rb, &consumed_byte);
+  av1_check_trailing_bits(pbi, rb);
 #endif
 
   pbi->sequence_header_ready = 1;

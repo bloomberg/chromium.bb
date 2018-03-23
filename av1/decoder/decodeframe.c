@@ -65,12 +65,10 @@
 #if CONFIG_TRAILING_BITS
 // Checks that the remaining bits start with a 1 and ends with 0s.
 // It consumes an additional byte, if already byte aligned before the check.
-int av1_check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb,
-                            int *consumed_byte) {
+int av1_check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb) {
   AV1_COMMON *const cm = &pbi->common;
   // bit_offset is set to 0 (mod 8) when the reader is already byte aligned
   int bits_before_alignment = 8 - rb->bit_offset % 8;
-  *consumed_byte = (bits_before_alignment == 8);
   int trailing = aom_rb_read_literal(rb, bits_before_alignment);
   if (trailing != (1 << (bits_before_alignment - 1))) {
     cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
@@ -3271,8 +3269,7 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
 #endif
 
 #if CONFIG_TRAILING_BITS
-  int consumed_byte = 0;
-  av1_check_trailing_bits(pbi, rb, &consumed_byte);
+  av1_check_trailing_bits(pbi, rb);
 #endif
 
   // If cm->single_tile_decoding = 0, the independent decoding of a single tile
