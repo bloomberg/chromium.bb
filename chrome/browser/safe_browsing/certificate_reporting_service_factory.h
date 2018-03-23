@@ -8,6 +8,10 @@
 #include "base/memory/singleton.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
+namespace base {
+class Clock;
+}
+
 namespace content {
 class BrowserContext;
 }
