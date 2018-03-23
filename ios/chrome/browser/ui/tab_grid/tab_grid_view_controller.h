@@ -17,8 +17,8 @@
 // Delegate protocol for an object that can handle presenting ("opening") tabs
 // from the tab grid.
 @protocol TabPresentationDelegate<NSObject>
-// Show the active tab, presented on top of the tab grid.
-- (void)showActiveTab;
+// Show the active tab in |page|, presented on top of the tab grid.
+- (void)showActiveTabInPage:(TabGridPage)page;
 @end
 
 // View controller representing a tab switcher. The tab switcher has an
