@@ -64,6 +64,11 @@ using MovingObjectCallback = void (*)(void* callback_data,
 
 #define TypedArenaEnumName(Type) k##Type##ArenaIndex,
 
+class PLATFORM_EXPORT WorklistTaskId {
+ public:
+  static constexpr int MainThread = 0;
+};
+
 class PLATFORM_EXPORT BlinkGC final {
   STATIC_ONLY(BlinkGC);
 

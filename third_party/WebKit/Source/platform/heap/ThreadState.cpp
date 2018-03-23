@@ -1333,6 +1333,8 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
 void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
                                     BlinkGC::MarkingType marking_type,
                                     BlinkGC::GCReason reason) {
+  Heap().CommitCallbackStacks();
+
   current_gc_data_.stack_state = stack_state;
   current_gc_data_.marking_type = marking_type;
   current_gc_data_.reason = reason;
@@ -1358,7 +1360,6 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
   if (marking_type == BlinkGC::kTakeSnapshot)
     BlinkGCMemoryDumpProvider::Instance()->ClearProcessDumpForCurrentGC();
 
-  Heap().CommitCallbackStacks();
   if (isolate_ && perform_cleanup_)
     perform_cleanup_(isolate_);
 

@@ -138,6 +138,7 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
 
   void ConservativelyMarkHeader(HeapObjectHeader*);
 
+  MarkingWorklist::View marking_worklist_;
   const MarkingMode marking_mode_;
 };
 
@@ -160,8 +161,8 @@ inline void MarkingVisitor::MarkHeader(HeapObjectHeader* header,
   DCHECK(callback);
 
   if (MarkHeaderNoTracing(header)) {
-    Heap().PushTraceCallback(reinterpret_cast<void*>(header->Payload()),
-                             callback);
+    marking_worklist_.Push(
+        {reinterpret_cast<void*>(header->Payload()), callback});
   }
 }
 

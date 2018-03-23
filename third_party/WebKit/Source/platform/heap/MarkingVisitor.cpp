@@ -15,7 +15,10 @@ std::unique_ptr<MarkingVisitor> MarkingVisitor::Create(ThreadState* state,
 }
 
 MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
-    : Visitor(state), marking_mode_(marking_mode) {
+    : Visitor(state),
+      marking_worklist_(Heap().GetMarkingWorklist(),
+                        WorklistTaskId::MainThread),
+      marking_mode_(marking_mode) {
   // See ThreadState::runScheduledGC() why we need to already be in a
   // GCForbiddenScope before any safe point is entered.
   DCHECK(state->IsGCForbidden());
