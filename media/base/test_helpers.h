@@ -330,12 +330,8 @@ MATCHER_P2(SkippingSpliceTooLittleOverlap,
 }
 
 MATCHER_P(WebMSimpleBlockDurationEstimated, estimated_duration_ms, "") {
-  return CONTAINS_STRING(arg, "Estimating WebM block duration to be " +
-                                  base::IntToString(estimated_duration_ms) +
-                                  "ms for the last (Simple)Block in the "
-                                  "Cluster for this Track. Use BlockGroups "
-                                  "with BlockDurations at the end of each "
-                                  "Track in a Cluster to avoid estimation.");
+  return CONTAINS_STRING(arg, "Estimating WebM block duration=" +
+                                  base::IntToString(estimated_duration_ms));
 }
 
 MATCHER_P(WebMNegativeTimecodeOffset, timecode_string, "") {

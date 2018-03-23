@@ -42075,6 +42075,20 @@ Called by update_net_trust_anchors.py.-->
   <int value="1" label="Leave the current page"/>
 </enum>
 
+<enum name="StreamParserBufferDurationType">
+  <summary>
+    MSE parsing of WebM buffers may require estimating the duration. &quot;Known
+    duration&quot; indicates no estimation was needed. &quot;Constant
+    estimate&quot; indicates the estimate uses the constant duration observed
+    from other buffers in the track. &quot;Rough estimate&quot; indicates the
+    track's durations vary and estimation is performed using a min or max of
+    observed durations.
+  </summary>
+  <int value="0" label="Known duration"/>
+  <int value="1" label="Constant estimate"/>
+  <int value="2" label="Rough estimate"/>
+</enum>
+
 <enum name="StrongPopupBlockerAction">
   <int value="0" label="Navigation commit"/>
   <int value="1" label="Commit warn site"/>

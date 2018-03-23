@@ -82,6 +82,12 @@ void SourceBufferRange::AdjustEstimatedDurationForNewAppend(
     return;
   }
 
+  // Do not adjust estimate for Audio buffers to avoid competing with
+  // SourceBufferStream::TrimSpliceOverlap()
+  if (buffers_.front()->type() == StreamParserBuffer::Type::AUDIO) {
+    return;
+  }
+
   // If the last of the previously appended buffers contains estimated duration,
   // we now refine that estimate by taking the PTS delta from the first new
   // buffer being appended.

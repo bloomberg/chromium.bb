@@ -523,6 +523,20 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
   BufferingApi buffering_api_;
 
  private:
+  DemuxerStream::Type GetStreamType() {
+    switch (STREAM_OP(GetType())) {
+      case SourceBufferStreamType::kAudio:
+        return DemuxerStream::AUDIO;
+      case SourceBufferStreamType::kVideo:
+        return DemuxerStream::VIDEO;
+      case SourceBufferStreamType::kText:
+        return DemuxerStream::TEXT;
+      default:
+        NOTREACHED();
+        return DemuxerStream::UNKNOWN;
+    }
+  }
+
   base::TimeDelta ConvertToFrameDuration(int frames_per_second) {
     return base::TimeDelta::FromMicroseconds(
         base::Time::kMicrosecondsPerSecond / frames_per_second);
@@ -548,10 +562,9 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
     for (int i = 0; i < number_of_buffers; i++) {
       int position = starting_position + i;
       bool is_keyframe = position % keyframe_interval == 0;
-      // Buffer type and track ID are meaningless to these tests.
-      scoped_refptr<StreamParserBuffer> buffer =
-          StreamParserBuffer::CopyFrom(data, size, is_keyframe,
-                                       DemuxerStream::AUDIO, 0);
+      // Track ID is meaningless to these tests.
+      scoped_refptr<StreamParserBuffer> buffer = StreamParserBuffer::CopyFrom(
+          data, size, is_keyframe, GetStreamType(), 0);
       base::TimeDelta timestamp = frame_duration_ * position;
 
       if (i == 0)
@@ -703,12 +716,12 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
         buffer_timestamps.push_back(base::TimeDelta::FromMicroseconds(us));
       }
 
-      // Create buffer. Buffer type and track ID are meaningless to these tests.
-      scoped_refptr<StreamParserBuffer> buffer =
-          StreamParserBuffer::CopyFrom(&kDataA, kDataSize, is_keyframe,
-                                       DemuxerStream::AUDIO, 0);
+      // Create buffer. Track ID is meaningless to these tests
+      scoped_refptr<StreamParserBuffer> buffer = StreamParserBuffer::CopyFrom(
+          &kDataA, kDataSize, is_keyframe, GetStreamType(), 0);
       buffer->set_timestamp(buffer_timestamps[0]);
-      buffer->set_is_duration_estimated(is_duration_estimated);
+      if (is_duration_estimated)
+        buffer->set_duration_type(DurationType::kRoughEstimate);
 
       if (buffer_timestamps[1] != buffer_timestamps[0]) {
         buffer->SetDecodeTimestamp(
@@ -722,8 +735,8 @@ class SourceBufferStreamTest : public testing::TestWithParam<BufferingApi> {
       // it as the preroll.
       if (has_preroll) {
         scoped_refptr<StreamParserBuffer> preroll_buffer =
-            StreamParserBuffer::CopyFrom(
-                &kDataA, kDataSize, is_keyframe, DemuxerStream::AUDIO, 0);
+            StreamParserBuffer::CopyFrom(&kDataA, kDataSize, is_keyframe,
+                                         GetStreamType(), 0);
         preroll_buffer->set_duration(frame_duration_);
         buffer->SetPrerollBuffer(preroll_buffer);
       }
