@@ -10,18 +10,13 @@
 
 @class CommandDispatcher;
 @protocol ToolbarCoordinatee;
-@protocol ToolsMenuConfigurationProvider;
 
 // This object is an interface between multiple toolbars and the objects which
 // want to interact with them without having to know to which one specifically
 // send the call.
-@interface ToolbarCoordinatorAdaptor
-    : NSObject<ToolbarCoordinating, ToolsMenuPresentationStateProvider>
+@interface ToolbarCoordinatorAdaptor : NSObject<ToolbarCoordinating>
 
-- (instancetype)initWithToolsMenuConfigurationProvider:
-                    (id<ToolsMenuConfigurationProvider>)configurationProvider
-                                            dispatcher:
-                                                (CommandDispatcher*)dispatcher;
+- (instancetype)initWithDispatcher:(CommandDispatcher*)dispatcher;
 
 // Adds a |toolbarCoordinator| to the set of coordinators this object is
 // interfacing with.
