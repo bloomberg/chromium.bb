@@ -119,6 +119,10 @@
     Cancel
   </message>
 
+  <!-- MultiDevice setup dialog. -->
+  <message name="IDS_MULTIDEVICE_SETUP_DIALOG_TITLE" desc="Title for the MultiDevice setup dialog, which allows users to enable features which involve communication between multiple devices (e.g., a Chromebook and a phone).">
+    MultiDevice Setup
+  </message>
 
   <!-- File Manager -->
   <message name="IDS_FILE_SYSTEM_PROVIDER_UNRESPONSIVE_WARNING" desc="A warning shown in a notification that an operation is taking longer than expected.">

@@ -2055,6 +2055,8 @@ split_static_library("ui") {
       "webui/chromeos/mobile_setup_dialog.h",
       "webui/chromeos/mobile_setup_ui.cc",
       "webui/chromeos/mobile_setup_ui.h",
+      "webui/chromeos/multidevice_setup/multidevice_setup_dialog.cc",
+      "webui/chromeos/multidevice_setup/multidevice_setup_dialog.h",
       "webui/chromeos/network_element_localized_strings_provider.cc",
       "webui/chromeos/network_element_localized_strings_provider.h",
       "webui/chromeos/network_ui.cc",

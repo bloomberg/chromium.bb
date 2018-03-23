@@ -32,6 +32,7 @@
 #include "chrome/browser/ui/webui/chromeos/bluetooth_pairing_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_config_dialog.h"
 #include "chrome/browser/ui/webui/chromeos/internet_detail_dialog.h"
+#include "chrome/browser/ui/webui/chromeos/multidevice_setup/multidevice_setup_dialog.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/common/url_constants.h"
 #include "chromeos/chromeos_switches.h"
@@ -425,6 +426,10 @@ void SystemTrayClient::ShowNetworkSettingsHelper(const std::string& network_id,
   }
   base::RecordAction(base::UserMetricsAction("OpenInternetOptionsDialog"));
   ShowSettingsSubPageForActiveUser(page);
+}
+
+void SystemTrayClient::ShowMultiDeviceSetup() {
+  chromeos::multidevice_setup::MultiDeviceSetupDialog::Show();
 }
 
 void SystemTrayClient::RequestRestartForUpdate() {
