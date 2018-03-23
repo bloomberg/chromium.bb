@@ -1920,11 +1920,6 @@
           'remoting_unittests',
         ],
       },
-      'Linux Builder (Chromium w/o WebRTC)': {
-        'additional_compile_targets': [
-          'chrome',
-        ],
-      },
       'Mac Builder': {
         'additional_compile_targets': [
           'browser_tests',
