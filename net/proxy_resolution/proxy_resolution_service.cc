@@ -1483,7 +1483,7 @@ void ProxyResolutionService::ForceReloadProxyConfig() {
 // static
 std::unique_ptr<ProxyConfigService>
 ProxyResolutionService::CreateSystemProxyConfigService(
-    const scoped_refptr<base::SequencedTaskRunner>& io_task_runner) {
+    const scoped_refptr<base::SequencedTaskRunner>& main_task_runner) {
 #if defined(OS_WIN)
   return std::make_unique<ProxyConfigServiceWin>(
       kSystemProxyConfigTrafficAnnotation);
@@ -1492,7 +1492,7 @@ ProxyResolutionService::CreateSystemProxyConfigService(
       kSystemProxyConfigTrafficAnnotation);
 #elif defined(OS_MACOSX)
   return std::make_unique<ProxyConfigServiceMac>(
-      io_task_runner, kSystemProxyConfigTrafficAnnotation);
+      main_task_runner, kSystemProxyConfigTrafficAnnotation);
 #elif defined(OS_CHROMEOS)
   LOG(ERROR) << "ProxyConfigService for ChromeOS should be created in "
              << "profile_io_data.cc::CreateProxyConfigService and this should "
@@ -1513,13 +1513,13 @@ ProxyResolutionService::CreateSystemProxyConfigService(
   // either |glib_default_loop| or an internal sequenced task runner) to
   // keep us updated when the proxy config changes.
   linux_config_service->SetupAndFetchInitialConfig(
-      glib_thread_task_runner, io_task_runner,
+      glib_thread_task_runner, main_task_runner,
       kSystemProxyConfigTrafficAnnotation);
 
   return std::move(linux_config_service);
 #elif defined(OS_ANDROID)
   return std::make_unique<ProxyConfigServiceAndroid>(
-      io_task_runner, base::ThreadTaskRunnerHandle::Get());
+      main_task_runner, base::ThreadTaskRunnerHandle::Get());
 #else
   LOG(WARNING) << "Failed to choose a system proxy settings fetcher "
                   "for this platform.";

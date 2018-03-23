@@ -299,9 +299,9 @@ class NET_EXPORT_PRIVATE ProxyConfigServiceLinux : public ProxyConfigService {
 
   void SetupAndFetchInitialConfig(
       const scoped_refptr<base::SingleThreadTaskRunner>& glib_task_runner,
-      const scoped_refptr<base::SequencedTaskRunner>& io_task_runner,
+      const scoped_refptr<base::SequencedTaskRunner>& main_task_runner,
       const NetworkTrafficAnnotationTag& traffic_annotation) {
-    delegate_->SetUpAndFetchInitialConfig(glib_task_runner, io_task_runner,
+    delegate_->SetUpAndFetchInitialConfig(glib_task_runner, main_task_runner,
                                           traffic_annotation);
   }
   void OnCheckProxyConfigSettings() {
