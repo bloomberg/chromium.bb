@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_test.h"
+#include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
 
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/browser_window.h"
@@ -47,7 +47,8 @@ void TestMultiUserWindowManager::ShowWindowForUser(
   // This class is only able to handle one additional window <-> user
   // association beside the creation parameters.
   // If no association has yet been requested remember it now.
-  DCHECK(!created_window_);
+  if (browser_owner_ != account_id)
+    DCHECK(!created_window_);
   created_window_ = window;
   created_window_shown_for_ = account_id;
 

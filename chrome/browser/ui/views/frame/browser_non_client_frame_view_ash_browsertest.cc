@@ -28,7 +28,7 @@
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_window_manager_test.h"
+#include "chrome/browser/ui/ash/multi_user/test_multi_user_window_manager.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_command_controller.h"
@@ -296,10 +296,10 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   EXPECT_FALSE(MultiUserWindowManager::ShouldShowAvatar(window));
   EXPECT_FALSE(frame_view->profile_indicator_icon());
 
-  const AccountId current_account_id =
+  const AccountId account_id1 =
       multi_user_util::GetAccountIdFromProfile(browser()->profile());
   TestMultiUserWindowManager* manager =
-      new TestMultiUserWindowManager(browser(), current_account_id);
+      new TestMultiUserWindowManager(browser(), account_id1);
 
   // Teleport the window to another desktop.
   const AccountId account_id2(AccountId::FromUserEmail("user2"));
@@ -309,6 +309,11 @@ IN_PROC_BROWSER_TEST_P(BrowserNonClientFrameViewAshTest,
   // An icon should show on the top left corner of the teleported browser
   // window.
   EXPECT_TRUE(frame_view->profile_indicator_icon());
+
+  // Teleport the window back to owner desktop.
+  manager->ShowWindowForUser(window, account_id1);
+  EXPECT_FALSE(MultiUserWindowManager::ShouldShowAvatar(window));
+  EXPECT_FALSE(frame_view->profile_indicator_icon());
 }
 
 // Hit Test for Avatar Menu Button on ChromeOS.
