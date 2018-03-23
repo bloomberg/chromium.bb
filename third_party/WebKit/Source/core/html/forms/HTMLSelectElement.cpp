@@ -921,7 +921,7 @@ void HTMLSelectElement::OptionSelectionStateChanged(HTMLOptionElement* option,
   else if (!UsesMenuList() || IsMultiple())
     SelectOption(nullptr, IsMultiple() ? 0 : kDeselectOtherOptions);
   else
-    SelectOption(NextSelectableOption(nullptr), kDeselectOtherOptions);
+    ResetToDefaultSelection();
 }
 
 void HTMLSelectElement::OptionInserted(HTMLOptionElement& option,
