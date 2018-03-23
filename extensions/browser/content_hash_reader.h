@@ -18,6 +18,8 @@
 
 namespace extensions {
 
+class ContentHash;
+
 // This class creates an object that will read expected hashes that may have
 // been fetched/calculated by the ContentHashFetcher, and vends them out for
 // use in ContentVerifyJob's.
@@ -31,11 +33,8 @@ class ContentHashReader {
   // instance whose succees/failure can be determined by calling succeeded()
   // method. On failure, this object should likely be discarded.
   static std::unique_ptr<const ContentHashReader> Create(
-      const ExtensionId& extension_id,
-      const base::Version& extension_version,
-      const base::FilePath& extension_root,
       const base::FilePath& relative_path,
-      const ContentVerifierKey& key);
+      const scoped_refptr<const ContentHash>& content_hash);
 
   bool succeeded() const { return status_ == SUCCESS; }
 

@@ -19,6 +19,7 @@
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/content_hash_fetcher.h"
 #include "extensions/browser/content_verifier/test_utils.h"
+#include "extensions/browser/extension_file_task_runner.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_paths.h"
@@ -35,51 +36,63 @@ namespace extensions {
 struct ContentHashFetcherResult {
   std::string extension_id;
   bool success;
-  bool force;
+  bool was_cancelled;
   std::set<base::FilePath> mismatch_paths;
 };
 
-// Allows waiting for the callback from a ContentHashFetcher, returning the
+// Allows waiting for the callback from a ContentHash, returning the
 // data that was passed to that callback.
-class ContentHashFetcherWaiter {
+class ContentHashWaiter {
  public:
-  ContentHashFetcherWaiter() : weak_factory_(this) {}
+  ContentHashWaiter()
+      : reply_task_runner_(base::SequencedTaskRunnerHandle::Get()) {}
 
-  ContentHashFetcher::FetchCallback GetCallback() {
-    return base::Bind(&ContentHashFetcherWaiter::Callback,
-                      weak_factory_.GetWeakPtr());
-  }
-
-  std::unique_ptr<ContentHashFetcherResult> WaitForCallback() {
-    if (!result_) {
-      base::RunLoop run_loop;
-      run_loop_quit_ = run_loop.QuitClosure();
-      run_loop.Run();
-    }
+  std::unique_ptr<ContentHashFetcherResult> CreateAndWaitForCallback(
+      const ContentHash::ExtensionKey& key,
+      const ContentHash::FetchParams& fetch_params) {
+    GetExtensionFileTaskRunner()->PostTask(
+        FROM_HERE, base::BindOnce(&ContentHashWaiter::CreateContentHash,
+                                  base::Unretained(this), key, fetch_params));
+    run_loop_.Run();
+    DCHECK(result_);
     return std::move(result_);
   }
 
  private:
-  // Matches signature of ContentHashFetcher::FetchCallback.
-  void Callback(const std::string& extension_id,
-                bool success,
-                bool force,
-                const std::set<base::FilePath>& mismatch_paths) {
+  void CreatedCallback(const scoped_refptr<ContentHash>& content_hash,
+                       bool was_cancelled) {
+    if (!reply_task_runner_->RunsTasksInCurrentSequence()) {
+      reply_task_runner_->PostTask(
+          FROM_HERE,
+          base::BindOnce(&ContentHashWaiter::CreatedCallback,
+                         base::Unretained(this), content_hash, was_cancelled));
+      return;
+    }
+
     result_ = std::make_unique<ContentHashFetcherResult>();
-    result_->extension_id = extension_id;
-    result_->success = success;
-    result_->force = force;
-    result_->mismatch_paths = mismatch_paths;
-    if (run_loop_quit_)
-      std::move(run_loop_quit_).Run();
+    result_->extension_id = content_hash->extension_key().extension_id;
+    result_->success = content_hash->succeeded();
+    result_->was_cancelled = was_cancelled;
+    result_->mismatch_paths = content_hash->hash_mismatch_unix_paths();
+
+    run_loop_.QuitWhenIdle();
   }
 
-  base::OnceClosure run_loop_quit_;
+  void CreateContentHash(const ContentHash::ExtensionKey& key,
+                         const ContentHash::FetchParams& fetch_params) {
+    ContentHash::Create(key, fetch_params, ContentHash::IsCancelledCallback(),
+                        base::BindOnce(&ContentHashWaiter::CreatedCallback,
+                                       base::Unretained(this)));
+  }
+
+  scoped_refptr<base::SequencedTaskRunner> reply_task_runner_;
+  base::RunLoop run_loop_;
   std::unique_ptr<ContentHashFetcherResult> result_;
-  base::WeakPtrFactory<ContentHashFetcherWaiter> weak_factory_;
-  DISALLOW_COPY_AND_ASSIGN(ContentHashFetcherWaiter);
+  DISALLOW_COPY_AND_ASSIGN(ContentHashWaiter);
 };
 
+// Installs and tests various functionality of an extension loaded without
+// verified_contents.json file.
 class ContentHashFetcherTest : public ExtensionsTest {
  public:
   ContentHashFetcherTest()
@@ -120,12 +133,18 @@ class ContentHashFetcherTest : public ExtensionsTest {
       return nullptr;
     }
 
-    ContentHashFetcherWaiter waiter;
-    ContentHashFetcher fetcher(request_context(), delegate_.get(),
-                               waiter.GetCallback());
-    fetcher.DoFetch(extension_.get(), true /* force */);
-    return waiter.WaitForCallback();
+    std::unique_ptr<ContentHashFetcherResult> result =
+        ContentHashWaiter().CreateAndWaitForCallback(
+            ContentHash::ExtensionKey(extension_->id(), extension_->path(),
+                                      extension_->version(),
+                                      delegate_->GetPublicKey()),
+            ContentHash::FetchParams(request_context(), fetch_url_));
+
+    delegate_.reset();
+
+    return result;
   }
+
   const GURL& fetch_url() { return fetch_url_; }
 
   const base::FilePath& extension_root() { return extension_->path(); }
@@ -149,8 +168,7 @@ class ContentHashFetcherTest : public ExtensionsTest {
         url.scheme(), url.host(),
         content::BrowserThread::GetTaskRunnerForThread(
             content::BrowserThread::IO),
-        base::CreateTaskRunnerWithTraits(
-            {base::MayBlock(), base::TaskPriority::BACKGROUND}));
+        GetExtensionFileTaskRunner());
     interceptor_->SetResponse(url, response_path);
   }
 
@@ -206,7 +224,7 @@ TEST_F(ContentHashFetcherTest, MissingVerifiedContents) {
   std::unique_ptr<ContentHashFetcherResult> result = DoHashFetch();
   ASSERT_TRUE(result.get());
   EXPECT_TRUE(result->success);
-  EXPECT_TRUE(result->force);
+  EXPECT_FALSE(result->was_cancelled);
   EXPECT_TRUE(result->mismatch_paths.empty());
 
   // Make sure the verified_contents.json file was written into the extension's
@@ -229,7 +247,7 @@ TEST_F(ContentHashFetcherTest, FetchInvalidVerifiedContents) {
   std::unique_ptr<ContentHashFetcherResult> result = DoHashFetch();
   ASSERT_TRUE(result.get());
   EXPECT_FALSE(result->success);
-  EXPECT_TRUE(result->force);
+  EXPECT_FALSE(result->was_cancelled);
   EXPECT_TRUE(result->mismatch_paths.empty());
 
   // TODO(lazyboy): This should be EXPECT_FALSE, we shouldn't be writing
@@ -251,7 +269,7 @@ TEST_F(ContentHashFetcherTest, Fetch404VerifiedContents) {
   std::unique_ptr<ContentHashFetcherResult> result = DoHashFetch();
   ASSERT_TRUE(result.get());
   EXPECT_FALSE(result->success);
-  EXPECT_TRUE(result->force);
+  EXPECT_FALSE(result->was_cancelled);
   EXPECT_TRUE(result->mismatch_paths.empty());
 
   // Make sure the verified_contents.json file was *not* written into the
@@ -276,7 +294,7 @@ TEST_F(ContentHashFetcherTest, MissingVerifiedContentsAndCorrupt) {
   std::unique_ptr<ContentHashFetcherResult> result = DoHashFetch();
   ASSERT_NE(nullptr, result.get());
   EXPECT_TRUE(result->success);
-  EXPECT_TRUE(result->force);
+  EXPECT_FALSE(result->was_cancelled);
   EXPECT_TRUE(
       base::ContainsKey(result->mismatch_paths, script_path.BaseName()));
 

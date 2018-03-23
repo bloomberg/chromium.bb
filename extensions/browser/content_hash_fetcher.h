@@ -14,72 +14,73 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "extensions/browser/content_verifier/content_hash.h"
 #include "extensions/common/extension_id.h"
+#include "net/url_request/url_fetcher_delegate.h"
+
+namespace base {
+class SequencedTaskRunner;
+}
 
 namespace net {
-class URLRequestContextGetter;
+class URLFetcher;
 }
 
 namespace extensions {
-class Extension;
-class ContentHashFetcherJob;
-class ContentVerifierDelegate;
+namespace internals {
 
 // This class is responsible for getting signed expected hashes for use in
-// extension content verification. As extensions are loaded it will fetch and
-// parse/validate/cache this data as needed, including calculating expected
-// hashes for each block of each file within an extension. (These unsigned leaf
-// node block level hashes will always be checked at time of use use to make
-// sure they match the signed treehash root hash).
-class ContentHashFetcher {
+// extension content verification.
+//
+// This class takes care of doing the network I/O work to ensure we
+// have the contents of verified_contents.json files from the webstore.
+//
+// Note: This class manages its own lifetime. It deletes itself when
+// Start() completes at OnURLFetchComplete().
+//
+// Note: This class is an internal implementation detail of ContentHash and is
+// not be used independently.
+// TODO(lazyboy): Consider changing BUILD rules to enforce the above, yet
+// keeping the class unit testable.
+class ContentHashFetcher : public net::URLFetcherDelegate {
  public:
-  // A callback for when a fetch is complete. This reports back:
-  // -extension id
-  // -whether we were successful or not (have verified_contents.json and
-  // -computed_hashes.json files)
-  // -was it a forced check?
-  // -a set of unix style paths whose contents didn't match expected values
-  typedef base::Callback<
-      void(const std::string&, bool, bool, const std::set<base::FilePath>&)>
-      FetchCallback;
+  // A callback for when fetch is complete.
+  // The response contents is passed through std::unique_ptr<std::string>.
+  using HashFetcherCallback =
+      base::OnceCallback<void(const ContentHash::ExtensionKey&,
+                              const ContentHash::FetchParams&,
+                              std::unique_ptr<std::string>)>;
 
-  // The consumer of this class needs to ensure that context and delegate
-  // outlive this object.
-  ContentHashFetcher(net::URLRequestContextGetter* context_getter,
-                     ContentVerifierDelegate* delegate,
-                     const FetchCallback& callback);
-  virtual ~ContentHashFetcher();
+  ContentHashFetcher(const ContentHash::ExtensionKey& extension_key,
+                     const ContentHash::FetchParams& fetch_params);
 
-  // Explicitly ask to fetch hashes for |extension|. If |force| is true,
-  // we will always check the validity of the verified_contents.json and
-  // re-check the contents of the files in the filesystem.
-  void DoFetch(const Extension* extension, bool force);
+  // net::URLFetcherDelegate:
+  void OnURLFetchComplete(const net::URLFetcher* source) override;
 
-  // These should be called when an extension is loaded or unloaded.
-  virtual void ExtensionLoaded(const Extension* extension);
-  virtual void ExtensionUnloaded(const Extension* extension);
+  // Note: |this| is deleted once OnURLFetchComplete() completes.
+  void Start(HashFetcherCallback hash_fetcher_callback);
 
  private:
-  // Callback for when a job getting content hashes has completed.
-  void JobFinished(scoped_refptr<ContentHashFetcherJob> job);
+  friend class base::RefCounted<ContentHashFetcher>;
 
-  net::URLRequestContextGetter* context_getter_;
-  ContentVerifierDelegate* delegate_;
-  FetchCallback fetch_callback_;
+  ~ContentHashFetcher() override;
 
-  // We keep around pointers to in-progress jobs, both so we can avoid
-  // scheduling duplicate work if fetching is already in progress, and so that
-  // we can cancel in-progress work at shutdown time.
-  typedef std::pair<ExtensionId, std::string> IdAndVersion;
-  typedef std::map<IdAndVersion, scoped_refptr<ContentHashFetcherJob> > JobMap;
-  JobMap jobs_;
+  ContentHash::ExtensionKey extension_key_;
+  ContentHash::FetchParams fetch_params_;
 
-  // Used for binding callbacks passed to jobs.
-  base::WeakPtrFactory<ContentHashFetcher> weak_ptr_factory_;
+  HashFetcherCallback hash_fetcher_callback_;
+
+  scoped_refptr<base::SequencedTaskRunner> response_task_runner_;
+
+  // Alive when url fetch is ongoing.
+  std::unique_ptr<net::URLFetcher> url_fetcher_;
+
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(ContentHashFetcher);
 };
 
+}  // namespace internals
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_CONTENT_HASH_FETCHER_H_

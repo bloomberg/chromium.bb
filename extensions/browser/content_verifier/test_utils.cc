@@ -166,6 +166,8 @@ void MockContentVerifierDelegate::Shutdown() {}
 
 // VerifierObserver -----------------------------------------------------------
 VerifierObserver::VerifierObserver() {
+  EXPECT_TRUE(
+      content::BrowserThread::GetCurrentThreadIdentifier(&creation_thread_));
   ContentVerifier::SetObserverForTests(this);
 }
 
@@ -174,6 +176,7 @@ VerifierObserver::~VerifierObserver() {
 }
 
 void VerifierObserver::WaitForFetchComplete(const ExtensionId& extension_id) {
+  EXPECT_TRUE(content::BrowserThread::CurrentlyOn(creation_thread_));
   EXPECT_TRUE(id_to_wait_for_.empty());
   EXPECT_EQ(loop_runner_.get(), nullptr);
   id_to_wait_for_ = extension_id;
@@ -185,6 +188,13 @@ void VerifierObserver::WaitForFetchComplete(const ExtensionId& extension_id) {
 
 void VerifierObserver::OnFetchComplete(const ExtensionId& extension_id,
                                        bool success) {
+  if (!content::BrowserThread::CurrentlyOn(creation_thread_)) {
+    content::BrowserThread::PostTask(
+        creation_thread_, FROM_HERE,
+        base::BindOnce(&VerifierObserver::OnFetchComplete,
+                       base::Unretained(this), extension_id, success));
+    return;
+  }
   completed_fetches_.insert(extension_id);
   if (extension_id == id_to_wait_for_)
     loop_runner_->Quit();

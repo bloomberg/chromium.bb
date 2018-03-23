@@ -15,12 +15,17 @@
 #include "extensions/browser/verified_contents.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_id.h"
+#include "url/gurl.h"
+
+namespace net {
+class URLRequestContextGetter;
+}
 
 namespace extensions {
 
 // Represents content verification hashes for an extension.
 //
-// Instances can be created using Create() factory methods on sequences with
+// Instances can be created using Create() factory method on sequences with
 // blocking IO access. If hash retrieval succeeds then ContentHash::succeeded()
 // will return true and
 // a. ContentHash::verified_contents() will return structured representation of
@@ -28,11 +33,23 @@ namespace extensions {
 // b. ContentHash::computed_hashes() will return structured representation of
 //    computed_hashes.json.
 //
-// Additionally if computed_hashes.json was required to be written to disk and
+// If verified_contents.json was missing on disk (e.g. because of disk
+// corruption or such), this class will fetch the file from network. After
+// fetching the class will parse/validate this data as needed, including
+// calculating expected hashes for each block of each file within an extension.
+// (These unsigned leaf node block level hashes will always be checked at time
+// of use use to make sure they match the signed treehash root hash).
+//
+// computed_hashes.json is computed over the files in an extension's directory.
+// If computed_hashes.json was required to be written to disk and
 // it was successful, ContentHash::hash_mismatch_unix_paths() will return all
 // FilePaths from the extension directory that had content verification
 // mismatch.
-class ContentHash {
+//
+// Clients of this class can cancel the disk write operation of
+// computed_hashes.json while it is ongoing. This is because it can potentially
+// take long time. This cancellation can be performed through |is_cancelled|.
+class ContentHash : public base::RefCountedThreadSafe<ContentHash> {
  public:
   // Key to identify an extension.
   struct ExtensionKey {
@@ -51,30 +68,39 @@ class ContentHash {
     ExtensionKey& operator=(const ExtensionKey& other);
   };
 
-  // Specifiable modes for ContentHash instantiation.
-  enum Mode {
-    // Deletes verified_contents.json if the file on disk is invalid.
-    kDeleteInvalidVerifiedContents = 1 << 0,
+  // Parameters to fetch verified_contents.json.
+  struct FetchParams {
+    net::URLRequestContextGetter* request_context;
+    GURL fetch_url;
 
-    // Always creates computed_hashes.json (as opposed to only when the file is
-    // non-existent).
-    kForceRecreateExistingComputedHashesFile = 1 << 1,
+    FetchParams(net::URLRequestContextGetter* request_context,
+                const GURL& fetch_url);
+
+    FetchParams(const FetchParams& other);
+    FetchParams& operator=(const FetchParams& other);
   };
 
   using IsCancelledCallback = base::RepeatingCallback<bool(void)>;
 
-  // Factories:
-  // These will never return nullptr, but verified_contents or computed_hashes
-  // may be empty if something fails.
-  // Reads existing hashes from disk.
-  static std::unique_ptr<ContentHash> Create(const ExtensionKey& key);
-  // Reads existing hashes from disk, with specifying flags from |Mode|.
-  static std::unique_ptr<ContentHash> Create(
-      const ExtensionKey& key,
-      int mode,
-      const IsCancelledCallback& is_cancelled);
+  // Factory:
+  // Returns ContentHash through |created_callback|, the returned values are:
+  //   - |hash| The content hash. This will never be nullptr, but
+  //     verified_contents or computed_hashes may be empty if something fails.
+  //   - |was_cancelled| Indicates whether or not the request was cancelled
+  //     through |is_cancelled|, while it was being processed.
+  using CreatedCallback =
+      base::OnceCallback<void(const scoped_refptr<ContentHash>& hash,
+                              bool was_cancelled)>;
+  static void Create(const ExtensionKey& key,
+                     const FetchParams& fetch_params,
+                     const IsCancelledCallback& is_cancelled,
+                     CreatedCallback created_callback);
 
-  ~ContentHash();
+  // Forces creation of computed_hashes.json. Must be called with after
+  // |verified_contents| has been successfully set.
+  // TODO(lazyboy): Remove this once https://crbug.com/819832 is fixed.
+  void ForceBuildComputedHashes(const IsCancelledCallback& is_cancelled,
+                                CreatedCallback created_callback);
 
   const VerifiedContents& verified_contents() const;
   const ComputedHashes::Reader& computed_hashes() const;
@@ -86,11 +112,22 @@ class ContentHash {
 
   // If ContentHash creation writes computed_hashes.json, then this returns the
   // FilePaths whose content hash didn't match expected hashes.
-  const std::set<base::FilePath>& hash_mismatch_unix_paths() {
+  const std::set<base::FilePath>& hash_mismatch_unix_paths() const {
     return hash_mismatch_unix_paths_;
+  }
+  const ExtensionKey extension_key() const { return key_; }
+
+  // Returns whether or not computed_hashes.json re-creation might be required
+  // for |this| to succeed.
+  // TODO(lazyboy): Remove this once https://crbug.com/819832 is fixed.
+  bool might_require_computed_hashes_force_creation() const {
+    return !succeeded() && has_verified_contents() &&
+           !did_attempt_creating_computed_hashes_;
   }
 
  private:
+  friend class base::RefCountedThreadSafe<ContentHash>;
+
   enum class Status {
     // Retrieving hashes failed.
     kInvalid,
@@ -105,12 +142,22 @@ class ContentHash {
   ContentHash(const ExtensionKey& key,
               std::unique_ptr<VerifiedContents> verified_contents,
               std::unique_ptr<ComputedHashes::Reader> computed_hashes);
+  ~ContentHash();
 
-  static std::unique_ptr<ContentHash> CreateImpl(
+  static void FetchVerifiedContents(const ExtensionKey& extension_key,
+                                    const FetchParams& fetch_params,
+                                    const IsCancelledCallback& is_cancelled,
+                                    CreatedCallback created_callback);
+  static void DidFetchVerifiedContents(
+      CreatedCallback created_callback,
+      const IsCancelledCallback& is_cancelled,
       const ExtensionKey& key,
-      int mode,
-      bool create_computed_hashes_file,
-      const IsCancelledCallback& is_cancelled);
+      const FetchParams& fetch_params,
+      std::unique_ptr<std::string> fetched_contents);
+
+  static void DispatchFetchFailure(const ExtensionKey& key,
+                                   CreatedCallback created_callback,
+                                   const IsCancelledCallback& is_cancelled);
 
   // Computes hashes for all files in |key_.extension_root|, and uses
   // a ComputedHashes::Writer to write that information into |hashes_file|.
@@ -124,9 +171,17 @@ class ContentHash {
   bool CreateHashes(const base::FilePath& hashes_file,
                     const IsCancelledCallback& is_cancelled);
 
+  // Builds computed_hashes. Possibly after creating computed_hashes.json file
+  // if necessary.
+  void BuildComputedHashes(bool attempted_fetching_verified_contents,
+                           bool force_build,
+                           const IsCancelledCallback& is_cancelled);
+
   ExtensionKey key_;
 
-  Status status_;
+  Status status_ = Status::kInvalid;
+
+  bool did_attempt_creating_computed_hashes_ = false;
 
   // TODO(lazyboy): Avoid dynamic allocations here, |this| already supports
   // move.

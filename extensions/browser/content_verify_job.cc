@@ -10,9 +10,12 @@
 #include "base/stl_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/timer/elapsed_timer.h"
+#include "content/public/browser/browser_thread.h"
 #include "crypto/secure_hash.h"
 #include "crypto/sha2.h"
 #include "extensions/browser/content_hash_reader.h"
+#include "extensions/browser/content_verifier.h"
+#include "extensions/browser/content_verifier/content_hash.h"
 
 namespace extensions {
 
@@ -44,7 +47,6 @@ ContentVerifyJob::ContentVerifyJob(const ExtensionId& extension_id,
                                    const base::Version& extension_version,
                                    const base::FilePath& extension_root,
                                    const base::FilePath& relative_path,
-                                   const ContentVerifierKey& key,
                                    FailureCallback failure_callback)
     : done_reading_(false),
       hashes_ready_(false),
@@ -55,7 +57,6 @@ ContentVerifyJob::ContentVerifyJob(const ExtensionId& extension_id,
       extension_version_(extension_version),
       extension_root_(extension_root),
       relative_path_(relative_path),
-      content_verifier_key_(key),
       failure_callback_(std::move(failure_callback)),
       failed_(false) {}
 
@@ -64,16 +65,26 @@ ContentVerifyJob::~ContentVerifyJob() {
                        time_spent_.InMicroseconds());
 }
 
-void ContentVerifyJob::Start() {
+void ContentVerifyJob::Start(ContentVerifier* verifier) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
+  base::AutoLock auto_lock(lock_);
+  verifier->GetContentHash(
+      extension_id_, extension_root_, extension_version_,
+      true /* force_missing_computed_hashes_creation */,
+      base::BindOnce(&ContentVerifyJob::DidGetContentHashOnIO, this));
+}
+
+void ContentVerifyJob::DidGetContentHashOnIO(
+    const scoped_refptr<const ContentHash>& content_hash) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::AutoLock auto_lock(lock_);
   if (g_content_verify_job_test_observer)
     g_content_verify_job_test_observer->JobStarted(extension_id_,
                                                    relative_path_);
+  // Build |hash_reader_|.
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock(), base::TaskPriority::USER_VISIBLE},
-      base::BindOnce(&ContentHashReader::Create, extension_id_,
-                     extension_version_, extension_root_, relative_path_,
-                     content_verifier_key_),
+      base::BindOnce(&ContentHashReader::Create, relative_path_, content_hash),
       base::BindOnce(&ContentVerifyJob::OnHashesReady, this));
 }
 
