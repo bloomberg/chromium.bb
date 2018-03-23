@@ -7084,7 +7084,8 @@ static int64_t motion_mode_rd(
       av1_build_inter_predictors_sb(cm, xd, mi_row, mi_col, orig_dst, bsize);
     }
 
-    check_block_skip(cpi, bsize, x, xd, 0, num_planes - 1, &skip_txfm_sb);
+    if (!cpi->common.all_lossless)
+      check_block_skip(cpi, bsize, x, xd, 0, num_planes - 1, &skip_txfm_sb);
 
     x->skip = 0;
 
