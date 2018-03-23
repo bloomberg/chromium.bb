@@ -10,6 +10,8 @@
 #include "ash/frame/frame_header_util.h"
 #include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/resources/grit/ash_resources.h"
+#include "ash/shell.h"
+#include "ash/wm/tablet_mode/tablet_mode_controller.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"  // DCHECK
 #include "third_party/skia/include/core/SkPath.h"
@@ -92,7 +94,7 @@ DefaultFrameHeader::DefaultFrameHeader(
   DCHECK(header_view);
   DCHECK(caption_button_container);
   caption_button_container_->SetButtonSize(
-      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON));
+      GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption));
   UpdateAllButtonImages();
 }
 
@@ -150,11 +152,14 @@ void DefaultFrameHeader::PaintHeader(gfx::Canvas* canvas, Mode mode) {
 void DefaultFrameHeader::LayoutHeader() {
   // TODO(sky): this needs to reset images as well.
   if (window_style_ == mojom::WindowStyle::BROWSER) {
+    const bool is_in_tablet_mode = Shell::Get()
+                                       ->tablet_mode_controller()
+                                       ->IsTabletModeWindowManagerEnabled();
     const bool use_maximized_size =
-        frame_->IsMaximized() || frame_->IsFullscreen();
+        frame_->IsMaximized() || frame_->IsFullscreen() || is_in_tablet_mode;
     const gfx::Size button_size(GetAshLayoutSize(
-        use_maximized_size ? AshLayoutSize::BROWSER_MAXIMIZED_CAPTION_BUTTON
-                           : AshLayoutSize::BROWSER_RESTORED_CAPTION_BUTTON));
+        use_maximized_size ? AshLayoutSize::kBrowserCaptionMaximized
+                           : AshLayoutSize::kBrowserCaptionRestored));
     caption_button_container_->SetButtonSize(button_size);
   }
 

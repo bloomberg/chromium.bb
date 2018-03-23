@@ -10,13 +10,13 @@
 
 enum class AshLayoutSize {
   // Size of a caption button in a maximized browser window.
-  BROWSER_MAXIMIZED_CAPTION_BUTTON,
+  kBrowserCaptionMaximized,
 
   // Size of a caption button in a restored browser window.
-  BROWSER_RESTORED_CAPTION_BUTTON,
+  kBrowserCaptionRestored,
 
   // Size of a caption button in a non-browser window.
-  NON_BROWSER_CAPTION_BUTTON,
+  kNonBrowserCaption,
 };
 
 ASH_EXPORT gfx::Size GetAshLayoutSize(AshLayoutSize size);

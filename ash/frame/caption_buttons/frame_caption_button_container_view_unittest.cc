@@ -67,7 +67,7 @@ class FrameCaptionButtonContainerViewTest : public AshTestBase {
   // size to the buttons in |container|.
   void InitContainer(FrameCaptionButtonContainerView* container) {
     container->SetButtonSize(
-        GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON));
+        GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption));
     for (int icon = 0; icon < CAPTION_BUTTON_ICON_COUNT; ++icon) {
       container->SetButtonImage(static_cast<CaptionButtonIcon>(icon),
                                 ash::kWindowControlCloseIcon);

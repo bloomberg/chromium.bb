@@ -146,9 +146,8 @@ TEST_F(CustomFrameViewAshTest, HeaderHeight) {
 
   // The header should have enough room for the window controls. The
   // header/content separator line overlays the window controls.
-  EXPECT_EQ(
-      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(),
-      delegate->custom_frame_view()->GetHeaderView()->height());
+  EXPECT_EQ(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(),
+            delegate->custom_frame_view()->GetHeaderView()->height());
 }
 
 // Verify that CustomFrameViewAsh returns the correct minimum and maximum frame
@@ -269,9 +268,8 @@ TEST_F(CustomFrameViewAshTest, FrameShownInTabletModeForNonMaximizedWindows) {
   std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
-  EXPECT_EQ(
-      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(),
-      delegate->GetCustomFrameViewTopBorderHeight());
+  EXPECT_EQ(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(),
+            delegate->GetCustomFrameViewTopBorderHeight());
 }
 
 // Verify that if originally in fullscreen mode, and enter tablet mode, the
@@ -313,9 +311,8 @@ TEST_F(CustomFrameViewAshTest, OpeningAppsInTabletMode) {
   EXPECT_EQ(0, delegate->GetCustomFrameViewTopBorderHeight());
 
   Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
-  EXPECT_EQ(
-      GetAshLayoutSize(AshLayoutSize::NON_BROWSER_CAPTION_BUTTON).height(),
-      delegate->GetCustomFrameViewTopBorderHeight());
+  EXPECT_EQ(GetAshLayoutSize(AshLayoutSize::kNonBrowserCaption).height(),
+            delegate->GetCustomFrameViewTopBorderHeight());
 }
 
 // Verify windows that are minimized and then entered into tablet mode will have

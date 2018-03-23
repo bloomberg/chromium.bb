@@ -101,6 +101,8 @@ class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,
                            AvatarDisplayOnTeleportedWindow);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
                            HeaderVisibilityInOverviewAndSplitview);
+  FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshTest,
+                           HeaderHeightForSnappedBrowserInSplitView);
   FRIEND_TEST_ALL_PREFIXES(HostedAppNonClientFrameViewAshTest, HostedAppFrame);
   FRIEND_TEST_ALL_PREFIXES(BrowserNonClientFrameViewAshBackButtonTest,
                            V1BackButton);
