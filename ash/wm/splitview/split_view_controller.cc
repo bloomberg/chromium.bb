@@ -192,6 +192,9 @@ bool SplitViewController::IsSplitViewModeActive() const {
 }
 
 OrientationLockType SplitViewController::GetCurrentScreenOrientation() const {
+  // ScreenOrientationController might be nullptr during shutdown.
+  if (!Shell::Get()->screen_orientation_controller())
+    return OrientationLockType::kAny;
   return Shell::Get()->screen_orientation_controller()->GetCurrentOrientation();
 }
 
