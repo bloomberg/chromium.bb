@@ -29,6 +29,7 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
+import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -340,6 +341,7 @@ public class VrShellTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
+    @DisabledTest(message = "crbug.com/825248")
     public void testEnterVrInOverviewMode() throws InterruptedException, TimeoutException {
         final ChromeTabbedActivity activity = mTestRule.getActivity();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
