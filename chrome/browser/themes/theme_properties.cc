@@ -161,16 +161,11 @@ constexpr char kTilingRepeatX[] = "repeat-x";
 constexpr char kTilingRepeatY[] = "repeat-y";
 constexpr char kTilingRepeat[] = "repeat";
 
-// Returns a |nullopt| if the touch-optimized UI is not enabled, or it's enabled
-// but for the given |id|, there's no touch-optimized specific colors, and we
-// should fall back to the default colors.
-// TODO(malaykeshav): Put this behind a flag separate from Touch Optimized Ui.
-// We want to be able to use it for other modes as well.
-// https://crbug/810165
-base::Optional<SkColor> MaybeGetDefaultColorForTouchOptimizedUi(
-    int id,
-    bool incognito) {
-  if (!ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+// Returns a |nullopt| if the newer material UI is not enabled (MD refresh or
+// touch-optimized UI).
+base::Optional<SkColor> MaybeGetDefaultColorForNewerMaterialUi(int id,
+                                                               bool incognito) {
+  if (!ui::MaterialDesignController::IsNewerMaterialUi())
     return base::nullopt;
 
   switch (id) {
@@ -300,7 +295,7 @@ color_utils::HSL ThemeProperties::GetDefaultTint(int id, bool incognito) {
 // static
 SkColor ThemeProperties::GetDefaultColor(int id, bool incognito) {
   const base::Optional<SkColor> color =
-      MaybeGetDefaultColorForTouchOptimizedUi(id, incognito);
+      MaybeGetDefaultColorForNewerMaterialUi(id, incognito);
   if (color)
     return color.value();
 
