@@ -345,7 +345,11 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
   virtual bool IsBeingDestroyed() const;
 
   // Notifies that the render frame started loading a subresource.
-  virtual void SubresourceResponseStarted(
+  virtual void SubresourceResponseStarted(const GURL& url,
+                                          net::CertStatus cert_status) {}
+
+  // Notifies that the render finished loading a subresource.
+  virtual void SubresourceLoadComplete(
       mojom::SubresourceLoadInfoPtr subresource_load_info) {}
 
   // Request to print a frame that is in a different process than its parent.

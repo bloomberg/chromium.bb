@@ -3010,8 +3010,14 @@ void RenderFrameHostImpl::BeginNavigation(
 }
 
 void RenderFrameHostImpl::SubresourceResponseStarted(
+    const GURL& url,
+    net::CertStatus cert_status) {
+  delegate_->SubresourceResponseStarted(url, cert_status);
+}
+
+void RenderFrameHostImpl::SubresourceLoadComplete(
     mojom::SubresourceLoadInfoPtr subresource_load_info) {
-  delegate_->SubresourceResponseStarted(std::move(subresource_load_info));
+  delegate_->SubresourceLoadComplete(std::move(subresource_load_info));
 }
 
 namespace {

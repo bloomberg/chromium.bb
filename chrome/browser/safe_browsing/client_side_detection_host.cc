@@ -445,7 +445,7 @@ void ClientSideDetectionHost::DidFinishNavigation(
   classification_request_->Start();
 }
 
-void ClientSideDetectionHost::SubresourceResponseStarted(
+void ClientSideDetectionHost::SubresourceLoadComplete(
     const content::mojom::SubresourceLoadInfo& subresource_load_info) {
   if (browse_info_.get() && should_extract_malware_features_ &&
       subresource_load_info.url.is_valid() &&

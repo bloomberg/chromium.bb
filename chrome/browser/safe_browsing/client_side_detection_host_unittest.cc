@@ -1242,8 +1242,7 @@ TEST_F(ClientSideDetectionHostTest,
   subresource_load_info->referrer = GURL("http://host2.com");
   subresource_load_info->method = "GET";
   subresource_load_info->resource_type = content::RESOURCE_TYPE_SUB_FRAME;
-  subresource_load_info->cert_status = 0;
-  csd_host_->SubresourceResponseStarted(*subresource_load_info);
+  csd_host_->SubresourceLoadComplete(*subresource_load_info);
 
   EXPECT_EQ(0u, GetBrowseInfo()->ips.size());
 }

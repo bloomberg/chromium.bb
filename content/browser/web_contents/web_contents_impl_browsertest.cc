@@ -524,6 +524,96 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(new_web_contents_observer.RenderViewCreatedCalled());
 }
 
+// Observer class to track subresource loads.
+class SubresourceLoadObserver : public WebContentsObserver {
+ public:
+  explicit SubresourceLoadObserver(Shell* shell)
+      : WebContentsObserver(shell->web_contents()) {}
+
+  mojom::SubresourceLoadInfo* last_subresource_load_info() const {
+    return last_subresource_load_info_.get();
+  }
+
+  GURL last_memory_cached_loaded_url() const {
+    return last_memory_cached_loaded_url_;
+  }
+
+  void Reset() {
+    last_subresource_load_info_.reset();
+    last_memory_cached_loaded_url_ = GURL();
+  }
+
+ private:
+  // WebContentsObserver implementation:
+  void SubresourceLoadComplete(
+      const mojom::SubresourceLoadInfo& subresource_load_info) override {
+    last_subresource_load_info_ = subresource_load_info.Clone();
+  }
+
+  void DidLoadResourceFromMemoryCache(const GURL& url,
+                                      const std::string& mime_type,
+                                      ResourceType resource_type) override {
+    last_memory_cached_loaded_url_ = url;
+  }
+
+  GURL last_memory_cached_loaded_url_;
+  mojom::SubresourceLoadInfoPtr last_subresource_load_info_;
+
+  DISALLOW_COPY_AND_ASSIGN(SubresourceLoadObserver);
+};
+
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SubresourceLoadComplete) {
+  SubresourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL page_url(embedded_test_server()->GetURL("/page_with_image.html"));
+  NavigateToURL(shell(), page_url);
+  mojom::SubresourceLoadInfo* subresource_load_info =
+      observer.last_subresource_load_info();
+  ASSERT_TRUE(subresource_load_info);
+  EXPECT_EQ(embedded_test_server()->GetURL("/blank.jpg"),
+            subresource_load_info->url);
+  EXPECT_EQ(page_url, subresource_load_info->referrer);
+  EXPECT_EQ("GET", subresource_load_info->method);
+  EXPECT_EQ(content::RESOURCE_TYPE_IMAGE, subresource_load_info->resource_type);
+  ASSERT_TRUE(subresource_load_info->ip);
+  EXPECT_EQ("127.0.0.1", subresource_load_info->ip->ToString());
+}
+
+// Same as WebContentsImplBrowserTest.SubresourceLoadComplete but for a resource
+// retrieved from the network cache.
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
+                       SubresourceLoadCompleteFromNetworkCache) {
+  SubresourceLoadObserver observer(shell());
+  ASSERT_TRUE(embedded_test_server()->Start());
+  GURL url(
+      embedded_test_server()->GetURL("/page_with_cached_subresource.html"));
+  NavigateToURL(shell(), url);
+
+  mojom::SubresourceLoadInfo* subresource_load_info =
+      observer.last_subresource_load_info();
+  GURL subresource_url = embedded_test_server()->GetURL("/cachetime");
+  ASSERT_TRUE(subresource_load_info);
+  EXPECT_EQ(subresource_url, subresource_load_info->url);
+  observer.Reset();
+
+  // Loading again should serve the request out of the in-memory cache.
+  NavigateToURL(shell(), url);
+  ASSERT_FALSE(observer.last_subresource_load_info());
+  EXPECT_EQ(subresource_url, observer.last_memory_cached_loaded_url());
+  observer.Reset();
+
+  // Kill the renderer process so when the navigate again, it will be a fresh
+  // renderer with an empty in-memory cache.
+  NavigateToURL(shell(), GURL("chrome:crash"));
+
+  // Reload that URL, the subresource should be served from the network cache.
+  NavigateToURL(shell(), url);
+  subresource_load_info = observer.last_subresource_load_info();
+  ASSERT_TRUE(subresource_load_info);
+  EXPECT_EQ(subresource_url, subresource_load_info->url);
+  EXPECT_FALSE(observer.last_memory_cached_loaded_url().is_valid());
+}
+
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,
                                          public WebContentsObserver {
   explicit LoadProgressDelegateAndObserver(Shell* shell)

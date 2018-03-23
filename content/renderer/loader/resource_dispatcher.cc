@@ -37,6 +37,7 @@
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/request_priority.h"
+#include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -73,6 +74,29 @@ void CheckSchemeForReferrerPolicy(const network::ResourceRequest& request) {
 void NotifySubresourceStarted(
     scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
     int render_frame_id,
+    const GURL& url,
+    net::CertStatus cert_status) {
+  if (!thread_task_runner)
+    return;
+
+  if (!thread_task_runner->BelongsToCurrentThread()) {
+    thread_task_runner->PostTask(
+        FROM_HERE, base::BindOnce(NotifySubresourceStarted, thread_task_runner,
+                                  render_frame_id, url, cert_status));
+    return;
+  }
+
+  RenderFrameImpl* render_frame =
+      RenderFrameImpl::FromRoutingID(render_frame_id);
+  if (!render_frame)
+    return;
+
+  render_frame->GetFrameHost()->SubresourceResponseStarted(url, cert_status);
+}
+
+void NotifySubresourceLoadComplete(
+    scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
+    int render_frame_id,
     mojom::SubresourceLoadInfoPtr subresource_load_info) {
   if (!thread_task_runner)
     return;
@@ -80,7 +104,7 @@ void NotifySubresourceStarted(
   if (!thread_task_runner->BelongsToCurrentThread()) {
     thread_task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(NotifySubresourceStarted, thread_task_runner,
+        base::BindOnce(NotifySubresourceLoadComplete, thread_task_runner,
                        render_frame_id, std::move(subresource_load_info)));
     return;
   }
@@ -90,7 +114,7 @@ void NotifySubresourceStarted(
   if (!render_frame)
     return;
 
-  render_frame->GetFrameHost()->SubresourceResponseStarted(
+  render_frame->GetFrameHost()->SubresourceLoadComplete(
       std::move(subresource_load_info));
 }
 
@@ -148,22 +172,16 @@ void ResourceDispatcher::OnReceivedResponse(
     request_info->peer = std::move(new_peer);
   }
 
+  if (!response_head.socket_address.host().empty()) {
+    ignore_result(request_info->parsed_ip.AssignFromIPLiteral(
+        response_head.socket_address.host()));
+  }
+
   if (!IsResourceTypeFrame(request_info->resource_type)) {
-    auto subresource_load_info = mojom::SubresourceLoadInfo::New();
-    subresource_load_info->url = request_info->response_url;
-    subresource_load_info->referrer = request_info->response_referrer;
-    subresource_load_info->method = request_info->response_method;
-    subresource_load_info->resource_type = request_info->resource_type;
-    if (!response_head.socket_address.host().empty()) {
-      net::IPAddress parsed_ip;
-      if (parsed_ip.AssignFromIPLiteral(response_head.socket_address.host())) {
-        subresource_load_info->ip = parsed_ip;
-      }
-    }
-    subresource_load_info->cert_status = response_head.cert_status;
     NotifySubresourceStarted(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,
-                             std::move(subresource_load_info));
+                             request_info->response_url,
+                             response_head.cert_status);
   }
 
   network::ResourceResponseInfo renderer_response_info;
@@ -246,6 +264,19 @@ void ResourceDispatcher::OnRequestComplete(
   request_info->completion_time = base::TimeTicks::Now();
   request_info->buffer.reset();
   request_info->buffer_size = 0;
+
+  if (!IsResourceTypeFrame(request_info->resource_type)) {
+    auto subresource_load_info = mojom::SubresourceLoadInfo::New();
+    subresource_load_info->url = request_info->response_url;
+    subresource_load_info->referrer = request_info->response_referrer;
+    subresource_load_info->method = request_info->response_method;
+    subresource_load_info->resource_type = request_info->resource_type;
+    if (request_info->parsed_ip.IsValid())
+      subresource_load_info->ip = request_info->parsed_ip;
+    NotifySubresourceLoadComplete(
+        RenderThreadImpl::DeprecatedGetMainTaskRunner(),
+        request_info->render_frame_id, std::move(subresource_load_info));
+  }
 
   RequestPeer* peer = request_info->peer.get();
 

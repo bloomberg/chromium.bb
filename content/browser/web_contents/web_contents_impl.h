@@ -573,7 +573,9 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   base::android::ScopedJavaLocalRef<jobject> GetJavaRenderFrameHostDelegate()
       override;
 #endif
-  void SubresourceResponseStarted(
+  void SubresourceResponseStarted(const GURL& url,
+                                  net::CertStatus cert_status) override;
+  void SubresourceLoadComplete(
       mojom::SubresourceLoadInfoPtr subresource_load_information) override;
   void UpdatePictureInPictureSurfaceId(viz::SurfaceId surface_id) override;
 

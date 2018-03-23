@@ -25,8 +25,4 @@ struct SubresourceLoadInfo {
 
   // The host IP.
   net.interfaces.IPAddress? ip;
-
-  // Bitmask of status info of the SSL certificate.
-  // See net/cert/cert_status_flags.h
-  uint32 cert_status;
 };
