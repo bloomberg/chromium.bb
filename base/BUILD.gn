@@ -3021,3 +3021,12 @@ fuzzer_test("string_tokenizer_fuzzer") {
     "//base",
   ]
 }
+
+fuzzer_test("utf_string_conversions_fuzzer") {
+  sources = [
+    "strings/utf_string_conversions_fuzzer.cc",
+  ]
+  deps = [
+    "//base",
+  ]
+}
