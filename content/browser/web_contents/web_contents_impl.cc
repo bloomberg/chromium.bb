@@ -3457,9 +3457,8 @@ void WebContentsImpl::SaveFrameWithHeaders(
 
 void WebContentsImpl::GenerateMHTML(
     const MHTMLGenerationParams& params,
-    base::OnceCallback<void(int64_t)> callback) {
-  MHTMLGenerationManager::GetInstance()->SaveMHTML(this, params,
-                                                   std::move(callback));
+    const base::Callback<void(int64_t)>& callback) {
+  MHTMLGenerationManager::GetInstance()->SaveMHTML(this, params, callback);
 }
 
 const std::string& WebContentsImpl::GetContentsMimeType() const {

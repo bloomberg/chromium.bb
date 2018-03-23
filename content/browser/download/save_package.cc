@@ -314,7 +314,7 @@ void SavePackage::InitWithDownloadItem(
     MHTMLGenerationParams mhtml_generation_params(saved_main_file_path_);
     web_contents()->GenerateMHTML(
         mhtml_generation_params,
-        base::BindOnce(&SavePackage::OnMHTMLGenerated, this));
+        base::Bind(&SavePackage::OnMHTMLGenerated, this));
   } else {
     DCHECK_EQ(SAVE_PAGE_TYPE_AS_ONLY_HTML, save_type_);
     wait_state_ = NET_FILES;

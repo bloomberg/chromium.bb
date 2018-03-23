@@ -41,13 +41,13 @@ class MHTMLGenerationManager {
   // GenerateMHTMLCallback is called to report completion and status of MHTML
   // generation.  On success |file_size| indicates the size of the
   // generated file.  On failure |file_size| is -1.
-  using GenerateMHTMLCallback = base::OnceCallback<void(int64_t file_size)>;
+  typedef base::Callback<void(int64_t file_size)> GenerateMHTMLCallback;
 
   // Instructs the RenderFrames in |web_contents| to generate a MHTML
   // representation of the current page.
   void SaveMHTML(WebContents* web_contents,
                  const MHTMLGenerationParams& params,
-                 GenerateMHTMLCallback callback);
+                 const GenerateMHTMLCallback& callback);
 
   // Handler for FrameHostMsg_SerializeAsMHTMLResponse (a notification from the
   // renderer that the MHTML generation finished for a single frame).
@@ -83,7 +83,7 @@ class MHTMLGenerationManager {
   // Creates and registers a new job.
   Job* NewJob(WebContents* web_contents,
               const MHTMLGenerationParams& params,
-              GenerateMHTMLCallback callback);
+              const GenerateMHTMLCallback& callback);
 
   // Finds job by id.  Returns nullptr if no job with a given id was found.
   Job* FindJob(int job_id);
