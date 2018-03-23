@@ -39,7 +39,7 @@ Button::Button(base::RepeatingCallback<void()> click_handler)
   hit_plane->set_bubble_events(true);
   hit_plane->set_contributes_to_parent_bounds(false);
   hit_plane_ = hit_plane.get();
-  AddChild(std::move(hit_plane));
+  background_->AddChild(std::move(hit_plane));
 
   EventHandlers event_handlers;
   event_handlers.hover_enter =
@@ -137,9 +137,11 @@ void Button::OnSetCornerRadii(const CornerRadii& radii) {
 void Button::NotifyClientSizeAnimated(const gfx::SizeF& size,
                                       int target_property_id,
                                       cc::KeyframeModel* animation) {
+  // We could have OnSetSize called in UiElement's Notify handler instead, but
+  // this may have expensive implications (such as regenerating textures on
+  // every frame of an animation).  For now, keep this elements-specific.
   if (target_property_id == BOUNDS) {
-    background_->SetSize(size.width(), size.height());
-    hit_plane_->SetSize(size.width(), size.height());
+    OnSetSize(size);
   }
   UiElement::NotifyClientSizeAnimated(size, target_property_id, animation);
 }

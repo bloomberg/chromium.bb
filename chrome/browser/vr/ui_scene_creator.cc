@@ -65,6 +65,7 @@
 #include "chrome/browser/vr/vector_icons/vector_icons.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/toolbar/vector_icons.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/transform_util.h"
@@ -1829,10 +1830,13 @@ void UiSceneCreator::CreateUrlBar() {
   scaler->set_contributes_to_parent_bounds(false);
   scene_->AddUiElement(kUrlBarPositioner, std::move(scaler));
 
-  auto url_bar = Create<UiElement>(kUrlBar, kPhaseNone);
+  auto url_bar = Create<Rect>(kUrlBar, kPhaseForeground);
   url_bar->SetRotate(1, 0, 0, kUrlBarRotationRad);
   url_bar->set_bounds_contain_children(true);
+  url_bar->set_corner_radius(kUrlBarHeightDMM / 2);
   VR_BIND_VISIBILITY(url_bar, !model->fullscreen_enabled());
+  VR_BIND_COLOR(model_, url_bar.get(), &ColorScheme::element_background,
+                &Rect::SetColor);
   scene_->AddUiElement(kUrlBarDmmRoot, std::move(url_bar));
 
   auto indicator_bg = std::make_unique<Rect>();
@@ -1871,39 +1875,29 @@ void UiSceneCreator::CreateUrlBar() {
           base::Unretained(indicator_fg.get()))));
 
   scene_->AddUiElement(kLoadingIndicator, std::move(indicator_fg));
+
   auto layout =
       Create<LinearLayout>(kUrlBarLayout, kPhaseNone, LinearLayout::kRight);
   layout->set_bounds_contain_children(true);
   scene_->AddUiElement(kUrlBar, std::move(layout));
 
-  auto back_button =
-      Create<Button>(kUrlBarBackButton, kPhaseForeground,
-                     base::BindRepeating(&UiBrowserInterface::NavigateBack,
-                                         base::Unretained(browser_)));
+  auto back_button = Create<VectorIconButton>(
+      kUrlBarBackButton, kPhaseForeground,
+      base::BindRepeating(&UiBrowserInterface::NavigateBack,
+                          base::Unretained(browser_)),
+      vector_icons::kBackArrowIcon, audio_delegate_);
   back_button->SetSize(kUrlBarEndButtonWidthDMM, kUrlBarHeightDMM);
   back_button->SetCornerRadii(
       {kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2, 0});
-  back_button->set_hover_offset(0.0f);
-  back_button->SetSounds(CreateButtonSounds(), audio_delegate_);
+  back_button->set_hover_offset(0);
+  back_button->SetIconScaleFactor(kUrlBarButtonIconSizeDMM / kUrlBarHeightDMM);
+  back_button->SetIconTranslation(kUrlBarEndButtonIconOffsetDMM, 0);
   back_button->AddBinding(VR_BIND_FUNC(bool, Model, model_,
                                        model->can_navigate_back, Button,
                                        back_button.get(), SetEnabled));
-  VR_BIND_BUTTON_COLORS(model_, back_button.get(), &ColorScheme::back_button,
+  VR_BIND_BUTTON_COLORS(model_, back_button.get(), &ColorScheme::url_bar_button,
                         &Button::SetButtonColors);
   scene_->AddUiElement(kUrlBarLayout, std::move(back_button));
-
-  auto back_icon =
-      Create<VectorIcon>(kUrlBarBackButtonIcon, kPhaseForeground, 128);
-  back_icon->SetIcon(vector_icons::kBackArrowIcon);
-  back_icon->SetSize(kUrlBarButtonIconSizeDMM, kUrlBarButtonIconSizeDMM);
-  back_icon->SetTranslate(kUrlBarEndButtonIconOffsetDMM, 0, 0);
-  back_icon->AddBinding(VR_BIND_FUNC(
-      SkColor, Model, model_,
-      model->can_navigate_back
-          ? model->color_scheme().button_colors.foreground
-          : model->color_scheme().button_colors.foreground_disabled,
-      VectorIcon, back_icon.get(), SetColor));
-  scene_->AddUiElement(kUrlBarBackButton, std::move(back_icon));
 
   auto separator = Create<Rect>(kUrlBarSeparator, kPhaseForeground);
   separator->set_hit_testable(true);
@@ -1911,13 +1905,6 @@ void UiSceneCreator::CreateUrlBar() {
   VR_BIND_COLOR(model_, separator.get(), &ColorScheme::url_bar_separator,
                 &Rect::SetColor);
   scene_->AddUiElement(kUrlBarLayout, std::move(separator));
-
-  auto origin_region = Create<Rect>(kUrlBarOriginRegion, kPhaseForeground);
-  origin_region->set_hit_testable(true);
-  origin_region->SetSize(kUrlBarOriginRegionWidthDMM, kUrlBarHeightDMM);
-  VR_BIND_COLOR(model_, origin_region.get(), &ColorScheme::element_background,
-                &Rect::SetColor);
-  scene_->AddUiElement(kUrlBarLayout, std::move(origin_region));
 
   base::RepeatingCallback<void()> url_click_callback;
   if (base::FeatureList::IsEnabled(features::kVrBrowserKeyboard)) {
@@ -1934,42 +1921,103 @@ void UiSceneCreator::CreateUrlBar() {
     url_click_callback = base::BindRepeating([] {});
   }
 
-  auto origin_content = Create<UrlBar>(
-      kUrlBarOriginContent, kPhaseForeground, 512, url_click_callback,
+  auto origin_region =
+      Create<Button>(kUrlBarOriginRegion, kPhaseForeground, url_click_callback);
+  origin_region->set_hit_testable(true);
+  origin_region->set_bounds_contain_children(true);
+  origin_region->set_hover_offset(0);
+  VR_BIND_BUTTON_COLORS(model_, origin_region.get(),
+                        &ColorScheme::url_bar_button, &Button::SetButtonColors);
+  scene_->AddUiElement(kUrlBarLayout, std::move(origin_region));
+
+  auto origin_layout = Create<LinearLayout>(kUrlBarOriginLayout, kPhaseNone,
+                                            LinearLayout::kRight);
+  scene_->AddUiElement(kUrlBarOriginRegion, std::move(origin_layout));
+
+  auto security_button_region =
+      Create<Rect>(kUrlBarSecurityButtonRegion, kPhaseNone);
+  security_button_region->SetType(kTypeSpacer);
+  security_button_region->SetSize(kUrlBarEndButtonWidthDMM, kUrlBarHeightDMM);
+  scene_->AddUiElement(kUrlBarOriginLayout, std::move(security_button_region));
+
+  auto security_button = Create<VectorIconButton>(
+      kUrlBarSecurityButton, kPhaseForeground,
       base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
-                          base::Unretained(browser_)));
-  origin_content->set_hit_testable(true);
-  origin_content->SetSize(kUrlBarOriginContentWidthDMM, kUrlBarHeightDMM);
-  origin_content->SetTranslate(kUrlBarOriginContentOffsetDMM, 0, 0);
-  origin_content->set_x_anchoring(LEFT);
-  origin_content->set_x_centering(LEFT);
-  VR_BIND_VISIBILITY(origin_content, model->toolbar_state.should_display_url);
-  origin_content->AddBinding(
-      VR_BIND_FUNC(ToolbarState, Model, model_, model->toolbar_state, UrlBar,
-                   origin_content.get(), SetToolbarState));
-  origin_content->AddBinding(VR_BIND_FUNC(UrlBarColors, Model, model_,
-                                          model->color_scheme().url_bar, UrlBar,
-                                          origin_content.get(), SetColors));
-  VR_BIND_COLOR(model_, origin_content.get(), &ColorScheme::element_background,
+                          base::Unretained(browser_),
+                          UiUnsupportedMode::kUnhandledPageInfo),
+      toolbar::kHttpsInvalidIcon, audio_delegate_);
+  security_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
+  security_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
+  security_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
+  security_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
+  security_button->SetSounds(CreateButtonSounds(), audio_delegate_);
+  VR_BIND_VISIBILITY(security_button, model->toolbar_state.should_display_url);
+  VR_BIND_BUTTON_COLORS(model_, security_button.get(),
+                        &ColorScheme::url_bar_button, &Button::SetButtonColors);
+  security_button->AddBinding(std::make_unique<Binding<const gfx::VectorIcon*>>(
+      VR_BIND_LAMBDA([](Model* m) { return m->toolbar_state.vector_icon; },
+                     base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](VectorIconButton* e, const gfx::VectorIcon* const& icon) {
+            if (icon != nullptr) {
+              e->SetIcon(*icon);
+            }
+          },
+          security_button.get())));
+  security_button->AddBinding(std::make_unique<Binding<ButtonColors>>(
+      VR_BIND_LAMBDA(
+          [](Model* m) {
+            ButtonColors colors = m->color_scheme().url_bar_button;
+            if (m->toolbar_state.security_level ==
+                security_state::SecurityLevel::DANGEROUS) {
+              colors.foreground = m->color_scheme().url_bar_dangerous_icon;
+            } else {
+              colors.foreground = m->color_scheme().url_bar_default_icon;
+            }
+            return colors;
+          },
+          base::Unretained(model_)),
+      VR_BIND_LAMBDA(
+          [](VectorIconButton* e, const ButtonColors& colors) {
+            e->SetButtonColors(colors);
+          },
+          base::Unretained(security_button.get()))));
+  scene_->AddUiElement(kUrlBarSecurityButtonRegion, std::move(security_button));
+
+  auto url_text =
+      Create<UrlBar>(kUrlBarUrlText, kPhaseForeground, 512,
+                     base::BindRepeating(&UiBrowserInterface::OnUnsupportedMode,
+                                         base::Unretained(browser_)));
+  url_text->SetSize(kUrlBarUrlWidthDMM, kUrlBarHeightDMM);
+  VR_BIND_VISIBILITY(url_text, model->toolbar_state.should_display_url);
+  url_text->AddBinding(VR_BIND_FUNC(ToolbarState, Model, model_,
+                                    model->toolbar_state, UrlBar,
+                                    url_text.get(), SetToolbarState));
+  url_text->AddBinding(VR_BIND_FUNC(UrlBarColors, Model, model_,
+                                    model->color_scheme().url_bar, UrlBar,
+                                    url_text.get(), SetColors));
+  VR_BIND_COLOR(model_, url_text.get(), &ColorScheme::element_background,
                 &TexturedElement::SetBackgroundColor);
-  scene_->AddUiElement(kUrlBarOriginRegion, std::move(origin_content));
+  scene_->AddUiElement(kUrlBarOriginLayout, std::move(url_text));
+
+  auto right_margin = Create<Rect>(kNone, kPhaseNone);
+  right_margin->SetType(kTypeSpacer);
+  right_margin->SetSize(kUrlBarOriginRightMarginDMM, 0);
+  scene_->AddUiElement(kUrlBarOriginLayout, std::move(right_margin));
 
   auto hint_text =
       Create<Text>(kUrlBarHintText, kPhaseForeground, kUrlBarFontHeightDMM);
-  hint_text->set_hit_testable(true);
+  hint_text->set_contributes_to_parent_bounds(false);
   hint_text->set_x_anchoring(LEFT);
   hint_text->set_x_centering(LEFT);
-  hint_text->SetSize(kUrlBarOriginContentWidthDMM, kUrlBarHeightDMM);
+  hint_text->SetSize(kUrlBarUrlWidthDMM, kUrlBarHeightDMM);
   hint_text->SetTranslate(kUrlBarOriginContentOffsetDMM, 0, 0);
   hint_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedWidth);
   hint_text->SetAlignment(UiTexture::kTextAlignmentLeft);
   hint_text->SetText(l10n_util::GetStringUTF16(IDS_SEARCH_OR_TYPE_WEB_ADDRESS));
   VR_BIND_VISIBILITY(hint_text, !model->toolbar_state.should_display_url);
-  VR_BIND_COLOR(model_, hint_text.get(), &ColorScheme::url_bar_hint,
+  VR_BIND_COLOR(model_, hint_text.get(), &ColorScheme::url_bar_hint_text,
                 &Text::SetColor);
-  EventHandlers event_handlers;
-  event_handlers.button_up = url_click_callback;
-  hint_text->set_event_handlers(event_handlers);
   scene_->AddUiElement(kUrlBarOriginRegion, std::move(hint_text));
 
   separator = Create<Rect>(kUrlBarSeparator, kPhaseForeground);
@@ -1979,29 +2027,22 @@ void UiSceneCreator::CreateUrlBar() {
                 &Rect::SetColor);
   scene_->AddUiElement(kUrlBarLayout, std::move(separator));
 
-  auto overflow_button = Create<Button>(
+  auto overflow_button = Create<VectorIconButton>(
       kUrlBarOverflowButton, kPhaseForeground,
       base::BindRepeating(
           [](Model* model) { model->overflow_menu_enabled = true; },
-          base::Unretained(model_)));
+          base::Unretained(model_)),
+      kMoreVertIcon, audio_delegate_);
   overflow_button->SetSize(kUrlBarEndButtonWidthDMM, kUrlBarHeightDMM);
   overflow_button->SetCornerRadii(
       {0, kUrlBarHeightDMM / 2, 0, kUrlBarHeightDMM / 2});
-  overflow_button->set_hover_offset(0.0f);
-  overflow_button->SetSounds(CreateButtonSounds(), audio_delegate_);
+  overflow_button->set_hover_offset(0);
+  overflow_button->SetIconScaleFactor(kUrlBarButtonIconSizeDMM /
+                                      kUrlBarHeightDMM);
+  overflow_button->SetIconTranslation(-kUrlBarEndButtonIconOffsetDMM, 0);
   VR_BIND_BUTTON_COLORS(model_, overflow_button.get(),
-                        &ColorScheme::back_button, &Button::SetButtonColors);
+                        &ColorScheme::url_bar_button, &Button::SetButtonColors);
   scene_->AddUiElement(kUrlBarLayout, std::move(overflow_button));
-
-  auto overflow_icon =
-      Create<VectorIcon>(kUrlBarOverflowButtonIcon, kPhaseForeground, 128);
-  overflow_icon->SetIcon(kMoreVertIcon);
-  overflow_icon->SetSize(kUrlBarButtonIconSizeDMM, kUrlBarButtonIconSizeDMM);
-  overflow_icon->SetTranslate(-kUrlBarEndButtonIconOffsetDMM, 0, 0);
-  overflow_icon->AddBinding(VR_BIND_FUNC(
-      SkColor, Model, model_, model->color_scheme().element_foreground,
-      VectorIcon, overflow_icon.get(), SetColor));
-  scene_->AddUiElement(kUrlBarOverflowButton, std::move(overflow_icon));
 }
 
 void UiSceneCreator::CreateOverflowMenu() {
@@ -2047,7 +2088,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     button->SetType(kTypeOverflowMenuButton);
     button->SetDrawPhase(kPhaseForeground);
     button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
-    button->set_icon_scale_factor(kUrlBarButtonIconScaleFactor);
+    button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
     button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
     button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
     button->set_requires_layout(false);
@@ -2059,7 +2100,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     button->SetTranslate(
         kOverflowButtonXOffset * (std::get<1>(item) == RIGHT ? -1 : 1),
         kOverflowMenuYPadding, 0);
-    VR_BIND_BUTTON_COLORS(model_, button.get(), &ColorScheme::back_button,
+    VR_BIND_BUTTON_COLORS(model_, button.get(), &ColorScheme::url_bar_button,
                           &Button::SetButtonColors);
 
     switch (std::get<0>(item)) {
@@ -2395,7 +2436,7 @@ void UiSceneCreator::CreateOmnibox() {
           [](UiBrowserInterface* b, Ui* ui) { b->SetVoiceSearchActive(true); },
           base::Unretained(browser_), base::Unretained(ui_)),
       vector_icons::kMicIcon, audio_delegate_);
-  mic_button->set_icon_scale_factor(kVoiceSearchIconScaleFactor);
+  mic_button->SetIconScaleFactor(kVoiceSearchIconScaleFactor);
   mic_button->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
                       kOmniboxTextFieldIconButtonSizeDMM);
   mic_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);

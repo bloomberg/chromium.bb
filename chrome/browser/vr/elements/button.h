@@ -21,9 +21,11 @@ namespace vr {
 
 class Rect;
 
-// Button has a circle as the background and a vector icon as the foreground.
-// When hovered, background and foreground both move forward on Z axis.
-// This matches the Daydream disk-style button.
+// Button has a rounded rectangle as the background and a hit plane as the
+// foreground.  When hovered, background and foreground both move forward on Z
+// axis.  This matches the Daydream disk-style button. Subclasses may add
+// arbitrary non-hit-testable elements as children of the background, if
+// desired.
 class Button : public UiElement {
  public:
   explicit Button(base::RepeatingCallback<void()> click_handler);

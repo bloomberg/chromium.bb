@@ -459,7 +459,10 @@ void VrTestContext::SetVoiceSearchActive(bool active) {
 }
 
 void VrTestContext::ExitPresent() {}
-void VrTestContext::ExitFullscreen() {}
+void VrTestContext::ExitFullscreen() {
+  fullscreen_ = false;
+  ui_->SetFullscreen(fullscreen_);
+}
 
 void VrTestContext::Navigate(GURL gurl, NavigationMethod method) {
   ToolbarState state(gurl, security_state::SecurityLevel::HTTP_SHOW_WARNING,
