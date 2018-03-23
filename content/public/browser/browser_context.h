@@ -319,6 +319,7 @@ class CONTENT_EXPORT BrowserContext : public base::SupportsUserData {
 
  private:
   const std::string media_device_id_salt_;
+  bool was_notify_will_be_destroyed_called_ = false;
 };
 
 }  // namespace content

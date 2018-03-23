@@ -21,7 +21,6 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/scoped_feature_list.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "cc/input/touch_action.h"
@@ -38,6 +37,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/events/base_event_utils.h"
 #include "ui/events/blink/blink_features.h"
@@ -134,9 +134,7 @@ class LegacyInputRouterImplTest : public testing::Test {
   LegacyInputRouterImplTest(
       WheelScrollingMode wheel_scrolling_mode = kWheelScrollLatching)
       : wheel_scroll_latching_enabled_(wheel_scrolling_mode !=
-                                       kWheelScrollingModeNone),
-        scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {
+                                       kWheelScrollingModeNone) {
     if (wheel_scrolling_mode == kAsyncWheelEvents) {
       feature_list_.InitWithFeatures({features::kTouchpadAndWheelScrollLatching,
                                       features::kAsyncWheelEvents},
@@ -398,7 +396,7 @@ class LegacyInputRouterImplTest : public testing::Test {
   bool wheel_scroll_latching_enabled_;
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
   SyntheticWebTouchEvent touch_event_;
 
   base::test::ScopedFeatureList vsync_feature_list_;

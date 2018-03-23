@@ -26,7 +26,7 @@ class LayoutTestPushMessagingService;
 class PermissionManager;
 class PushMessagingService;
 
-class LayoutTestBrowserContext : public ShellBrowserContext {
+class LayoutTestBrowserContext final : public ShellBrowserContext {
  public:
   LayoutTestBrowserContext(bool off_the_record, net::NetLog* net_log);
   ~LayoutTestBrowserContext() override;

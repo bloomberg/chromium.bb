@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/strings/string_util.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_browser_client.h"
 #include "extensions/browser/extensions_test.h"
@@ -35,10 +34,7 @@ namespace extensions {
 
 class ImageLoaderTest : public ExtensionsTest {
  public:
-  ImageLoaderTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()),
-        image_loaded_count_(0),
-        quit_in_image_loaded_(false) {}
+  ImageLoaderTest() : image_loaded_count_(0), quit_in_image_loaded_(false) {}
 
   void OnImageLoaded(const gfx::Image& image) {
     image_loaded_count_++;

@@ -10,7 +10,6 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/viz/service/frame_sinks/frame_sink_manager_impl.h"
@@ -26,6 +25,7 @@
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/fake_renderer_compositor_frame_sink.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
@@ -40,9 +40,7 @@ namespace {
 
 class RenderWidgetHostViewGuestTest : public testing::Test {
  public:
-  RenderWidgetHostViewGuestTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  RenderWidgetHostViewGuestTest() {}
 
   void SetUp() override {
 #if !defined(OS_ANDROID)
@@ -79,8 +77,7 @@ class RenderWidgetHostViewGuestTest : public testing::Test {
   }
 
  protected:
-  // Needed by base::PostTaskWithTraits in RenderWidgetHostImpl constructor.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<BrowserContext> browser_context_;
   MockRenderWidgetHostDelegate delegate_;

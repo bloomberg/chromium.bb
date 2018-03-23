@@ -16,7 +16,7 @@ class ShellBrowserMainParts;
 
 // The BrowserContext used by the content, apps and extensions systems in
 // app_shell.
-class ShellBrowserContext : public content::ShellBrowserContext {
+class ShellBrowserContext final : public content::ShellBrowserContext {
  public:
   explicit ShellBrowserContext(ShellBrowserMainParts* browser_main_parts);
   ~ShellBrowserContext() override;

@@ -91,6 +91,7 @@ HeadlessBrowserContextImpl::HeadlessBrowserContextImpl(
 
 HeadlessBrowserContextImpl::~HeadlessBrowserContextImpl() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  NotifyWillBeDestroyed(this);
 
   // Inform observers that we're going away.
   {

@@ -12,7 +12,6 @@
 #include "base/strings/string_number_conversions.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
@@ -39,9 +38,6 @@ const ValueStore::WriteOptions DEFAULTS = ValueStore::DEFAULTS;
 // history, the test names are unchanged.
 class ExtensionSettingsFrontendTest : public ExtensionsTest {
  public:
-  ExtensionSettingsFrontendTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
-
   void SetUp() override {
     ExtensionsTest::SetUp();
     ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());

@@ -36,10 +36,8 @@ class TestExtensionsBrowserClient;
 class ExtensionsTest : public testing::Test {
  public:
   ExtensionsTest();
-  // If the test uses a TestBrowserThreadBundle, then it must be given to the
-  // constructor here so that this class can use its MessageLoop.
   explicit ExtensionsTest(
-      std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle);
+      content::TestBrowserThreadBundle::Options thread_options);
   ~ExtensionsTest() override;
 
   // Allows setting a custom TestExtensionsBrowserClient. Must only be called
@@ -79,8 +77,6 @@ class ExtensionsTest : public testing::Test {
 
   MockExtensionSystemFactory<MockExtensionSystem> extension_system_factory_;
 
-  // Optional thread bundle for some subclasses. Needs to exist before
-  // the RenderViewHostTestEnabler if it is going to exist.
   std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
 
   // The existence of this object enables tests via

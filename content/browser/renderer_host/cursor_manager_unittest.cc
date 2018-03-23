@@ -4,7 +4,6 @@
 
 #include "content/browser/renderer_host/cursor_manager.h"
 
-#include "base/test/scoped_task_environment.h"
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
@@ -13,6 +12,7 @@
 #include "content/public/common/cursor_info.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_render_widget_host_delegate.h"
 #include "content/test/mock_widget_impl.h"
 #include "content/test/test_render_view_host.h"
@@ -79,9 +79,7 @@ class MockRenderWidgetHost : public RenderWidgetHostImpl {
 
 class CursorManagerTest : public testing::Test {
  public:
-  CursorManagerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI) {}
+  CursorManagerTest() {}
 
   void SetUp() override {
     browser_context_.reset(new TestBrowserContext);
@@ -106,7 +104,7 @@ class CursorManagerTest : public testing::Test {
   }
 
  protected:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
 
   std::unique_ptr<BrowserContext> browser_context_;
   std::unique_ptr<MockRenderProcessHost> process_host_;

@@ -10,7 +10,6 @@
 #include "base/bind.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/threading/thread.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_delegate.h"
@@ -19,6 +18,7 @@
 #include "content/common/text_input_client_messages.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/test/mock_widget_impl.h"
 #include "ipc/ipc_test_sink.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -50,9 +50,7 @@ class MockRenderWidgetHostDelegate : public RenderWidgetHostDelegate {
 class TextInputClientMacTest : public testing::Test {
  public:
   TextInputClientMacTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::UI),
-        browser_context_(),
+      : browser_context_(),
         process_factory_(),
         delegate_(),
         thread_("TextInputClientMacTestThread") {
@@ -103,7 +101,7 @@ class TextInputClientMacTest : public testing::Test {
   friend class ScopedTestingThread;
 
   // TaskScheduler is used by RenderWidgetHostImpl constructor.
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  TestBrowserThreadBundle thread_bundle_;
 
   TestBrowserContext browser_context_;
 

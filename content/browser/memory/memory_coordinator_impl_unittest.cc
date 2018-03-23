@@ -18,6 +18,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -220,7 +221,8 @@ class MemoryCoordinatorImplTest : public base::MultiProcessTest {
     scoped_feature_list_.InitAndEnableFeature(features::kMemoryCoordinator);
 
     task_runner_ = new base::TestMockTimeTaskRunner();
-    coordinator_.reset(new TestMemoryCoordinatorImpl(task_runner_));
+    thread_bundle_ = std::make_unique<TestBrowserThreadBundle>();
+    coordinator_ = std::make_unique<TestMemoryCoordinatorImpl>(task_runner_);
   }
 
   MockMemoryMonitor* GetMockMemoryMonitor() {
@@ -228,10 +230,10 @@ class MemoryCoordinatorImplTest : public base::MultiProcessTest {
   }
 
  protected:
-  std::unique_ptr<TestMemoryCoordinatorImpl> coordinator_;
-  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
-  base::MessageLoop message_loop_;
   base::test::ScopedFeatureList scoped_feature_list_;
+  scoped_refptr<base::TestMockTimeTaskRunner> task_runner_;
+  std::unique_ptr<content::TestBrowserThreadBundle> thread_bundle_;
+  std::unique_ptr<TestMemoryCoordinatorImpl> coordinator_;
 };
 
 TEST_F(MemoryCoordinatorImplTest, ChildRemovedOnConnectionError) {

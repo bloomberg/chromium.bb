@@ -8,7 +8,6 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/process_manager.h"
@@ -18,8 +17,7 @@ namespace extensions {
 
 class KeepAliveTest : public ExtensionsTest {
  public:
-  KeepAliveTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+  KeepAliveTest() {}
   ~KeepAliveTest() override {}
 
   void SetUp() override {

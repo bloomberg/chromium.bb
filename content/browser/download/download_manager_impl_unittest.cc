@@ -316,7 +316,7 @@ class MockBrowserContext : public BrowserContext {
   MockBrowserContext() {
     content::BrowserContext::Initialize(this, base::FilePath());
   }
-  ~MockBrowserContext() {}
+  ~MockBrowserContext() { BrowserContext::NotifyWillBeDestroyed(this); }
 
   MOCK_CONST_METHOD0(GetPath, base::FilePath());
 #if !defined(OS_ANDROID)

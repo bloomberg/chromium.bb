@@ -12,7 +12,6 @@
 #include "base/files/file_util.h"
 #include "base/run_loop.h"
 #include "content/public/browser/browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "extensions/browser/api/extensions_api_client.h"
 #include "extensions/browser/extensions_test.h"
@@ -51,8 +50,7 @@ storage::FileSystemURL CreateNativeLocalFileSystemURL(
 
 class FileHandlersMimeUtilTest : public ExtensionsTest {
  protected:
-  FileHandlersMimeUtilTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()) {}
+  FileHandlersMimeUtilTest() {}
   ~FileHandlersMimeUtilTest() override {}
 
   void SetUp() override {

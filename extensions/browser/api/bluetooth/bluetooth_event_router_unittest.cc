@@ -12,7 +12,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "device/bluetooth/bluetooth_common.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 #include "device/bluetooth/test/mock_bluetooth_adapter.h"
@@ -42,8 +41,7 @@ namespace bluetooth = api::bluetooth;
 class BluetoothEventRouterTest : public ExtensionsTest {
  public:
   BluetoothEventRouterTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()),
-        mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()) {
+      : mock_adapter_(new testing::StrictMock<device::MockBluetoothAdapter>()) {
   }
 
   void SetUp() override {

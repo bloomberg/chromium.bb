@@ -12,7 +12,6 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
-#include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/browser/deferred_start_render_host.h"
 #include "extensions/browser/extensions_test.h"
 #include "extensions/browser/serial_extension_host_queue.h"
@@ -50,8 +49,7 @@ const size_t g_invalid_size_t = std::numeric_limits<size_t>::max();
 class LoadMonitoringExtensionHostQueueTest : public ExtensionsTest {
  public:
   LoadMonitoringExtensionHostQueueTest()
-      : ExtensionsTest(std::make_unique<content::TestBrowserThreadBundle>()),
-        finished_(false),
+      : finished_(false),
         // Arbitrary choice of an invalid size_t.
         num_queued_(g_invalid_size_t),
         num_loaded_(g_invalid_size_t),

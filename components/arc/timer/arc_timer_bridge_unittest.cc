@@ -14,7 +14,6 @@
 #include "base/optional.h"
 #include "base/posix/unix_domain_socket.h"
 #include "base/run_loop.h"
-#include "base/test/scoped_task_environment.h"
 #include "base/time/time.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service_manager.h"
@@ -27,6 +26,7 @@
 #include "components/arc/timer/arc_timer_traits.h"
 #include "components/arc/timer/create_timer_request.h"
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
@@ -36,8 +36,7 @@ namespace {
 class ArcTimerTest : public testing::Test {
  public:
   ArcTimerTest()
-      : scoped_task_environment_(
-            base::test::ScopedTaskEnvironment::MainThreadType::IO),
+      : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP),
         timer_bridge_(
             ArcTimerBridge::GetForBrowserContextForTesting(&context_)) {
     // This results in ArcTimerBridge::OnInstanceReady being called.
@@ -59,7 +58,7 @@ class ArcTimerTest : public testing::Test {
   FakeTimerInstance* GetFakeTimerInstance() { return &timer_instance_; }
 
  private:
-  base::test::ScopedTaskEnvironment scoped_task_environment_;
+  content::TestBrowserThreadBundle thread_bundle_;
   ArcServiceManager arc_service_manager_;
   TestBrowserContext context_;
   FakeTimerInstance timer_instance_;
