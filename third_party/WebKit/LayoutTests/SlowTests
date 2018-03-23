@@ -504,3 +504,13 @@ crbug.com/808153 fast/webgl/texImage-imageBitmap-from-blob-resize.html [ Slow ]
 # This test is very CPU intensive, as it parses a lot of IDL in JS. It's slow
 # even on a normal bot, and takes over a minute with MSAN.
 crbug.com/810963 external/wpt/dom/interfaces.html [ Slow ]
+
+# css-transitions test imported from wpt which sometimes time out according to
+# the flakiness dashboard. They are slow because of many tests and/or long
+# transition durations.
+crbug.com/825170 external/wpt/css/css-transitions/properties-value-001.html [ Slow ]
+crbug.com/825170 external/wpt/css/css-transitions/properties-value-003.html [ Slow ]
+crbug.com/825170 external/wpt/css/css-transitions/properties-value-implicit-001.html [ Slow ]
+crbug.com/825170 external/wpt/css/css-transitions/properties-value-inherit-001.html [ Slow ]
+crbug.com/825170 external/wpt/css/css-transitions/properties-value-inherit-002.html [ Slow ]
+crbug.com/825170 external/wpt/css/css-transitions/transitioncancel-001.html [ Slow ]
