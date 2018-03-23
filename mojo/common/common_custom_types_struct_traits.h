@@ -8,12 +8,9 @@
 #include "base/process/process_handle.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/trace_event/memory_allocator_dump_guid.h"
-#include "base/unguessable_token.h"
 #include "mojo/common/memory_allocator_dump_cross_process_uid.mojom-shared.h"
 #include "mojo/common/mojo_common_export.h"
 #include "mojo/common/process_id.mojom-shared.h"
-#include "mojo/common/thread_priority.mojom-shared.h"
-#include "mojo/public/mojom/base/unguessable_token.mojom-shared.h"
 
 namespace mojo {
 
@@ -28,14 +25,6 @@ struct StructTraits<common::mojom::ProcessIdDataView, base::ProcessId> {
     *process_id = static_cast<base::ProcessId>(data.pid());
     return true;
   }
-};
-
-template <>
-struct EnumTraits<common::mojom::ThreadPriority, base::ThreadPriority> {
-  static common::mojom::ThreadPriority ToMojom(
-      base::ThreadPriority thread_priority);
-  static bool FromMojom(common::mojom::ThreadPriority input,
-                        base::ThreadPriority* out);
 };
 
 template <>

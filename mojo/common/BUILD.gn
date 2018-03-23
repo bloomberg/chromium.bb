@@ -16,7 +16,6 @@ mojom("common_custom_types") {
   sources = [
     "memory_allocator_dump_cross_process_uid.mojom",
     "process_id.mojom",
-    "thread_priority.mojom",
     "values.mojom",
   ]
 

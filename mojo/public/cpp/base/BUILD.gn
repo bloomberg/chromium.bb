@@ -54,6 +54,7 @@ source_set("tests") {
     "ref_counted_memory_unittest.cc",
     "string16_unittest.cc",
     "text_direction_unittest.cc",
+    "thread_priority_unittest.cc",
     "time_unittest.cc",
     "unguessable_token_unittest.cc",
     "values_unittest.cc",
