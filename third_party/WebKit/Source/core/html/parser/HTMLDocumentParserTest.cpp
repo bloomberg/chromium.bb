@@ -10,6 +10,7 @@
 #include "core/loader/PrerendererClient.h"
 #include "core/loader/TextResourceDecoderBuilder.h"
 #include "core/testing/PageTestBase.h"
+#include "public/platform/WebPrerenderingSupport.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -28,6 +29,21 @@ class TestPrerendererClient : public PrerendererClient {
   bool is_prefetch_only_;
 };
 
+class TestPrerenderingSupport : public WebPrerenderingSupport {
+ public:
+  TestPrerenderingSupport() { Initialize(this); }
+
+  virtual void Add(const WebPrerender&) {}
+  virtual void Cancel(const WebPrerender&) {}
+  virtual void Abandon(const WebPrerender&) {}
+  virtual void PrefetchFinished() { prefetch_finished_ = true; }
+
+  bool IsPrefetchFinished() const { return prefetch_finished_; }
+
+ private:
+  bool prefetch_finished_ = false;
+};
+
 class HTMLDocumentParserTest : public PageTestBase {
  protected:
   void SetUp() override {
@@ -43,6 +59,13 @@ class HTMLDocumentParserTest : public PageTestBase {
     parser->SetDecoder(std::move(decoder));
     return parser;
   }
+
+  bool PrefetchFinishedCleanly() {
+    return prerendering_support_.IsPrefetchFinished();
+  }
+
+ private:
+  TestPrerenderingSupport prerendering_support_;
 };
 
 }  // namespace
@@ -62,6 +85,11 @@ TEST_F(HTMLDocumentParserTest, AppendPrefetch) {
       parser->AsHTMLParserScriptRunnerHostForTesting();
   EXPECT_TRUE(script_runner_host->HasPreloadScanner());
   EXPECT_EQ(HTMLTokenizer::kDataState, parser->Tokenizer()->GetState());
+  // Finishing should not cause parsing to start (verified via an internal
+  // DCHECK).
+  static_cast<DocumentParser*>(parser)->Finish();
+  EXPECT_EQ(HTMLTokenizer::kDataState, parser->Tokenizer()->GetState());
+  EXPECT_TRUE(PrefetchFinishedCleanly());
 }
 
 TEST_F(HTMLDocumentParserTest, AppendNoPrefetch) {
