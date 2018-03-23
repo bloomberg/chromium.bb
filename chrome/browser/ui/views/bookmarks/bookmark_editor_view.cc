@@ -114,6 +114,10 @@ bool BookmarkEditorView::CanResize() const {
   return true;
 }
 
+bool BookmarkEditorView::ShouldShowCloseButton() const {
+  return false;
+}
+
 base::string16 BookmarkEditorView::GetWindowTitle() const {
   return l10n_util::GetStringUTF16(details_.GetWindowTitleId());
 }
