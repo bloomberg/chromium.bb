@@ -129,7 +129,7 @@ TEST(SignedExchangeHeaderTest, StatefulRequestHeader) {
       {
           {kUrlKey, "https://test.example.org/test/"},
           {kMethodKey, "GET"},
-          {"Authorization", "Basic Zm9vOmJhcg=="},
+          {"authorization", "Basic Zm9vOmJhcg=="},
       },
       {
           {kStatusKey, "200"}, {kSignature, kSignatureString},
@@ -145,8 +145,30 @@ TEST(SignedExchangeHeaderTest, StatefulResponseHeader) {
       {
           {kStatusKey, "200"},
           {kSignature, kSignatureString},
-          {"Set-Cookie", "foo=bar"},
+          {"set-cookie", "foo=bar"},
       });
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeHeaderTest, UppercaseRequestMap) {
+  auto header = GenerateHeaderAndParse(
+      {{kUrlKey, "https://test.example.org/test/"},
+       {kMethodKey, "GET"},
+       {"Accept-Language", "en-us"}},
+      {
+          {kStatusKey, "200"}, {kSignature, kSignatureString},
+      });
+  ASSERT_FALSE(header.has_value());
+}
+
+TEST(SignedExchangeHeaderTest, UppercaseResponseMap) {
+  auto header = GenerateHeaderAndParse(
+      {
+          {kUrlKey, "https://test.example.org/test/"}, {kMethodKey, "GET"},
+      },
+      {{kStatusKey, "200"},
+       {kSignature, kSignatureString},
+       {"Content-Length", "123"}});
   ASSERT_FALSE(header.has_value());
 }
 

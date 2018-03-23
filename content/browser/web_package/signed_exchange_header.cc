@@ -20,21 +20,25 @@ namespace {
 // IsStateful{Request,Response}Header return true if |name| is a stateful
 // header field. Stateful header fields will cause validation failure of
 // signed exchanges.
+// Note that |name| must be lower-cased.
 // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.4.1
 bool IsStatefulRequestHeader(base::StringPiece name) {
+  DCHECK_EQ(name, base::ToLowerASCII(name));
+
   const char* const kStatefulRequestHeaders[] = {
       "authorization", "cookie", "cookie2", "proxy-authorization",
       "sec-webSocket-key"};
 
-  std::string lower_name(base::ToLowerASCII(name));
   for (const char* field : kStatefulRequestHeaders) {
-    if (lower_name == field)
+    if (name == field)
       return true;
   }
   return false;
 }
 
 bool IsStatefulResponseHeader(base::StringPiece name) {
+  DCHECK_EQ(name, base::ToLowerASCII(name));
+
   const char* const kStatefulResponseHeaders[] = {
       "authentication-control",
       "authentication-info",
@@ -48,9 +52,8 @@ bool IsStatefulResponseHeader(base::StringPiece name) {
       "www-authenticate",
   };
 
-  std::string lower_name(base::ToLowerASCII(name));
   for (const char* field : kStatefulResponseHeaders) {
-    if (lower_name == field)
+    if (name == field)
       return true;
   }
   return false;
@@ -108,8 +111,18 @@ bool ParseRequestMap(const cbor::CBORValue& value, SignedExchangeHeader* out) {
       return false;
     }
     base::StringPiece name_str = it.first.GetBytestringAsString();
-    if (name_str == kStatusKey)
+    if (name_str == kUrlKey || name_str == kMethodKey)
       continue;
+
+    // TODO(kouhei): Add spec ref here once
+    // https://github.com/WICG/webpackage/issues/161 is resolved.
+    if (name_str != base::ToLowerASCII(name_str)) {
+      TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseRequestMap",
+                       "error", "Request header name should be lower-cased.",
+                       "header_name", name_str.as_string());
+      return false;
+    }
+
     // 4. If exchange’s headers contain a stateful header field, as defined in
     // Section 4.1, return “invalid”. [spec text]
     if (IsStatefulRequestHeader(name_str)) {
@@ -167,6 +180,16 @@ bool ParseResponseMap(const cbor::CBORValue& value, SignedExchangeHeader* out) {
                        name_str.as_string());
       return false;
     }
+
+    // TODO(kouhei): Add spec ref here once
+    // https://github.com/WICG/webpackage/issues/161 is resolved.
+    if (name_str != base::ToLowerASCII(name_str)) {
+      TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseResponseMap",
+                       "error", "Response header name should be lower-cased.",
+                       "header_name", name_str.as_string());
+      return false;
+    }
+
     // 4. If exchange’s headers contain a stateful header field, as defined in
     // Section 4.1, return “invalid”. [spec text]
     if (IsStatefulResponseHeader(name_str)) {
@@ -182,7 +205,12 @@ bool ParseResponseMap(const cbor::CBORValue& value, SignedExchangeHeader* out) {
                        "error", "Invalid header value.");
       return false;
     }
-    out->AddResponseHeader(name_str, value_str);
+    if (!out->AddResponseHeader(name_str, value_str)) {
+      TRACE_EVENT_END2(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseResponseMap",
+                       "error", "Duplicate header value.", "header_name",
+                       name_str.as_string());
+      return false;
+    }
   }
 
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"), "ParseResponseMap");
@@ -281,13 +309,16 @@ SignedExchangeHeader::~SignedExchangeHeader() = default;
 SignedExchangeHeader& SignedExchangeHeader::operator=(SignedExchangeHeader&&) =
     default;
 
-void SignedExchangeHeader::AddResponseHeader(base::StringPiece name,
+bool SignedExchangeHeader::AddResponseHeader(base::StringPiece name,
                                              base::StringPiece value) {
-  std::string name_string;
-  std::string value_string;
-  name.CopyToString(&name_string);
-  value.CopyToString(&value_string);
-  response_headers_[name_string] = value_string;
+  std::string name_str = name.as_string();
+  DCHECK_EQ(name_str, base::ToLowerASCII(name))
+      << "Response header names should be always lower-cased.";
+  if (response_headers_.find(name_str) != response_headers_.end())
+    return false;
+
+  response_headers_.emplace(std::move(name_str), value.as_string());
+  return true;
 }
 
 scoped_refptr<net::HttpResponseHeaders>
