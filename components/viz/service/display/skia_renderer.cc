@@ -228,14 +228,14 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
     // surface.
     GrGLFramebufferInfo framebuffer_info;
     framebuffer_info.fFBOID = 0;
+    framebuffer_info.fFormat = GL_RGBA8_OES;
     GrBackendRenderTarget render_target(
         current_frame()->device_viewport_size.width(),
-        current_frame()->device_viewport_size.height(), 0, 8,
-        kRGBA_8888_GrPixelConfig, framebuffer_info);
+        current_frame()->device_viewport_size.height(), 0, 8, framebuffer_info);
 
     root_surface_ = SkSurface::MakeFromBackendRenderTarget(
-        gr_context, render_target, kBottomLeft_GrSurfaceOrigin, nullptr,
-        &surface_props);
+        gr_context, render_target, kBottomLeft_GrSurfaceOrigin,
+        kRGBA_8888_SkColorType, nullptr, &surface_props);
   }
 #endif
 
