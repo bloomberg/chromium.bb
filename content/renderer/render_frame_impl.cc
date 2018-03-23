@@ -4057,7 +4057,7 @@ void RenderFrameImpl::DidCreateDocumentLoader(
 
   // Set the navigation start time in blink.
   document_loader->SetNavigationStartTime(
-      ConvertToBlinkTime(navigation_state->common_params().navigation_start));
+      navigation_state->common_params().navigation_start);
 
   // If an actual navigation took place, inform the document loader of what
   // happened in the browser.
@@ -4065,12 +4065,12 @@ void RenderFrameImpl::DidCreateDocumentLoader(
            .navigation_timing.fetch_start.is_null()) {
     // Set timing of several events that happened during navigation.
     // They will be used in blink for the Navigation Timing API.
-    double redirect_start = ConvertToBlinkTime(
-        navigation_state->request_params().navigation_timing.redirect_start);
-    double redirect_end = ConvertToBlinkTime(
-        navigation_state->request_params().navigation_timing.redirect_end);
-    double fetch_start = ConvertToBlinkTime(
-        navigation_state->request_params().navigation_timing.fetch_start);
+    base::TimeTicks redirect_start =
+        navigation_state->request_params().navigation_timing.redirect_start;
+    base::TimeTicks redirect_end =
+        navigation_state->request_params().navigation_timing.redirect_end;
+    base::TimeTicks fetch_start =
+        navigation_state->request_params().navigation_timing.fetch_start;
 
     document_loader->UpdateNavigation(
         redirect_start, redirect_end, fetch_start,

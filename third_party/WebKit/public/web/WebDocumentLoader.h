@@ -35,6 +35,7 @@
 
 #include "WebNavigationType.h"
 #include "WebTextDirection.h"
+#include "base/time/time.h"
 #include "public/platform/WebCommon.h"
 #include "public/platform/WebSourceLocation.h"
 
@@ -111,14 +112,14 @@ class BLINK_EXPORT WebDocumentLoader {
   // should be called before WebFrameClient::didCommitProvisionalLoad.
   // Calling it later may confuse users, because JavaScript may have run and
   // the user may have already recorded the original value.
-  virtual void SetNavigationStartTime(double) = 0;
+  virtual void SetNavigationStartTime(base::TimeTicks) = 0;
 
   // Sets timing and attributes of the navigation.
   // Ordinarily, they are determined in WebCore, but when the navigation is
   // handled by the client, they can be passed here.
-  virtual void UpdateNavigation(double redirect_start_time,
-                                double redirect_end_time,
-                                double fetch_start_time,
+  virtual void UpdateNavigation(base::TimeTicks redirect_start_time,
+                                base::TimeTicks redirect_end_time,
+                                base::TimeTicks fetch_start_time,
                                 bool has_redirect) = 0;
 
   // Allows the embedder to inject a filter that will be consulted for each

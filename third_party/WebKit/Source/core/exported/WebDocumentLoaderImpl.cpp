@@ -81,17 +81,18 @@ void WebDocumentLoaderImpl::AppendRedirect(const WebURL& url) {
   DocumentLoader::AppendRedirect(url);
 }
 
-void WebDocumentLoaderImpl::UpdateNavigation(double redirect_start_time,
-                                             double redirect_end_time,
-                                             double fetch_start_time,
-                                             bool has_redirect) {
+void WebDocumentLoaderImpl::UpdateNavigation(
+    base::TimeTicks redirect_start_time,
+    base::TimeTicks redirect_end_time,
+    base::TimeTicks fetch_start_time,
+    bool has_redirect) {
   // Updates the redirection timing if there is at least one redirection
   // (between two URLs).
   if (has_redirect) {
-    GetTiming().SetRedirectStart(TimeTicksFromSeconds(redirect_start_time));
-    GetTiming().SetRedirectEnd(TimeTicksFromSeconds(redirect_end_time));
+    GetTiming().SetRedirectStart(redirect_start_time);
+    GetTiming().SetRedirectEnd(redirect_end_time);
   }
-  GetTiming().SetFetchStart(TimeTicksFromSeconds(fetch_start_time));
+  GetTiming().SetFetchStart(fetch_start_time);
 }
 
 void WebDocumentLoaderImpl::RedirectChain(WebVector<WebURL>& result) const {
@@ -120,8 +121,9 @@ void WebDocumentLoaderImpl::SetExtraData(ExtraData* extra_data) {
   extra_data_ = base::WrapUnique(extra_data);
 }
 
-void WebDocumentLoaderImpl::SetNavigationStartTime(double navigation_start) {
-  GetTiming().SetNavigationStart(TimeTicksFromSeconds(navigation_start));
+void WebDocumentLoaderImpl::SetNavigationStartTime(
+    base::TimeTicks navigation_start) {
+  GetTiming().SetNavigationStart(navigation_start);
 }
 
 WebNavigationType WebDocumentLoaderImpl::ToWebNavigationType(
