@@ -237,7 +237,7 @@ crbug.com/753080 external/wpt/css/css-transforms/ttwf-css-3d-polygon-cycle.html 
 
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.
-crbug.com/7482 [ Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
+crbug.com/7482 [ Linux Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
 
 # On Linux bold emoji are already supported.
 crbug.com/551843 [ Linux ] fast/text/fallback-traits-fixup.html [ WontFix ]
