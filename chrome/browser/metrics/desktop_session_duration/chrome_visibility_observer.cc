@@ -41,12 +41,16 @@ void ChromeVisibilityObserver::OnBrowserSetLastActive(Browser* browser) {
 }
 
 void ChromeVisibilityObserver::OnBrowserNoLongerActive(Browser* browser) {
-  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
-      FROM_HERE,
-      base::BindOnce(&ChromeVisibilityObserver::SendVisibilityChangeEvent,
-                     weak_factory_.GetWeakPtr(), false,
-                     visibility_gap_timeout_),
-      visibility_gap_timeout_);
+  if (visibility_gap_timeout_.InMicroseconds() == 0) {
+    SendVisibilityChangeEvent(false, base::TimeDelta());
+  } else {
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE,
+        base::BindOnce(&ChromeVisibilityObserver::SendVisibilityChangeEvent,
+                       weak_factory_.GetWeakPtr(), false,
+                       visibility_gap_timeout_),
+        visibility_gap_timeout_);
+  }
 }
 
 void ChromeVisibilityObserver::OnBrowserRemoved(Browser* browser) {
@@ -68,6 +72,11 @@ void ChromeVisibilityObserver::InitVisibilityGapTimeout() {
     base::StringToInt(param_value, &timeout_seconds);
 
   visibility_gap_timeout_ = base::TimeDelta::FromSeconds(timeout_seconds);
+}
+
+void ChromeVisibilityObserver::SetVisibilityGapTimeoutForTesting(
+    base::TimeDelta timeout) {
+  visibility_gap_timeout_ = timeout;
 }
 
 }  // namespace metrics

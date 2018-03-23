@@ -16,12 +16,13 @@ class ChromeVisibilityObserver : public BrowserListObserver {
   ChromeVisibilityObserver();
   ~ChromeVisibilityObserver() override;
 
- protected:
+ private:
+  friend class ChromeVisibilityObserverInteractiveTest;
+
   // Notifies |DesktopSessionDurationTracker| of visibility changes. Overridden
   // by tests.
   virtual void SendVisibilityChangeEvent(bool active, base::TimeDelta time_ago);
 
- private:
   // Cancels visibility change in case when the browser becomes visible after a
   // short gap.
   void CancelVisibilityChange();
@@ -33,6 +34,8 @@ class ChromeVisibilityObserver : public BrowserListObserver {
 
   // Sets |visibility_gap_timeout_| based on variation params.
   void InitVisibilityGapTimeout();
+
+  void SetVisibilityGapTimeoutForTesting(base::TimeDelta timeout);
 
   // Timeout interval for waiting after loss of visibility. This allows merging
   // two visibility session if they happened very shortly after each other, for
