@@ -114,3 +114,16 @@ bool ChromeLayoutProvider::ShouldShowWindowIcon() const {
 bool ChromeLayoutProvider::IsHarmonyMode() const {
   return false;
 }
+
+int ChromeLayoutProvider::GetCornerRadiusMetric(
+    ChromeEmphasisMetric emphasis_metric,
+    const gfx::Rect& bounds) const {
+  // Outside of MD (refresh) mode, just stick to the current fixed value.
+  return emphasis_metric == EMPHASIS_HIGH ? 0 : 4;
+}
+
+int ChromeLayoutProvider::GetShadowElevationMetric(
+    ChromeEmphasisMetric emphasis_metric) const {
+  // Just return a value for now.
+  return 2;
+}

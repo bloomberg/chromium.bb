@@ -43,6 +43,7 @@ int LayoutProvider::GetControlHeightForFont(int context,
 }
 
 gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
+  DCHECK_GE(metric, VIEWS_INSETS_START);
   DCHECK_LT(metric, VIEWS_INSETS_MAX);
   switch (metric) {
     case InsetsMetric::INSETS_DIALOG:
@@ -72,7 +73,8 @@ gfx::Insets LayoutProvider::GetInsetsMetric(int metric) const {
 }
 
 int LayoutProvider::GetDistanceMetric(int metric) const {
-  DCHECK_GE(metric, VIEWS_INSETS_MAX);
+  DCHECK_GE(metric, VIEWS_DISTANCE_START);
+  DCHECK_LT(metric, VIEWS_DISTANCE_MAX);
   switch (metric) {
     case DistanceMetric::DISTANCE_BUTTON_HORIZONTAL_PADDING:
       return 16;
