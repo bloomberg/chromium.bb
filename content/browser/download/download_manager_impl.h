@@ -41,6 +41,7 @@ namespace content {
 class DownloadItemFactory;
 class DownloadItemImpl;
 class ResourceContext;
+class URLLoaderFactoryGetter;
 
 class CONTENT_EXPORT DownloadManagerImpl
     : public DownloadManager,
@@ -74,10 +75,12 @@ class CONTENT_EXPORT DownloadManagerImpl
   DownloadManagerDelegate* GetDelegate() const override;
   void Shutdown() override;
   void GetAllDownloads(DownloadVector* result) override;
-  void StartDownload(std::unique_ptr<download::DownloadCreateInfo> info,
-                     std::unique_ptr<download::InputStream> stream,
-                     const download::DownloadUrlParameters::OnStartedCallback&
-                         on_started) override;
+  void StartDownload(
+      std::unique_ptr<download::DownloadCreateInfo> info,
+      std::unique_ptr<download::InputStream> stream,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
+      const download::DownloadUrlParameters::OnStartedCallback& on_started)
+      override;
 
   int RemoveDownloadsByURLAndTime(
       const base::Callback<bool(const GURL&)>& url_filter,
@@ -130,6 +133,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   void OnUrlDownloadStarted(
       std::unique_ptr<download::DownloadCreateInfo> download_create_info,
       std::unique_ptr<download::InputStream> stream,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       const download::DownloadUrlParameters::OnStartedCallback& callback)
       override;
   void OnUrlDownloadStopped(download::UrlDownloadHandler* downloader) override;
@@ -177,6 +181,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   void StartDownloadWithId(
       std::unique_ptr<download::DownloadCreateInfo> info,
       std::unique_ptr<download::InputStream> stream,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory,
       const download::DownloadUrlParameters::OnStartedCallback& on_started,
       bool new_download,
       uint32_t id);
@@ -263,6 +268,7 @@ class CONTENT_EXPORT DownloadManagerImpl
       scoped_refptr<network::ResourceResponse> response,
       net::CertStatus cert_status,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
+      scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter,
       const scoped_refptr<base::SingleThreadTaskRunner>& task_runner);
 
   // Factory for creation of downloads items.

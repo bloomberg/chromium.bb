@@ -16,6 +16,10 @@ class DownloadJob;
 class DownloadRequestHandleInterface;
 }
 
+namespace network {
+class SharedURLLoaderFactory;
+}  // namespace network
+
 namespace content {
 
 // Factory class to create different kinds of DownloadJob.
@@ -25,7 +29,8 @@ class DownloadJobFactory {
       download::DownloadItem* download_item,
       std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
       const download::DownloadCreateInfo& create_info,
-      bool is_save_package_download);
+      bool is_save_package_download,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadJobFactory);

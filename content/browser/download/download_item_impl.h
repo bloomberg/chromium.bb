@@ -25,6 +25,7 @@
 #include "components/download/public/common/download_url_parameters.h"
 #include "components/download/public/common/resume_mode.h"
 #include "content/common/content_export.h"
+#include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 
 namespace download {
@@ -300,7 +301,8 @@ class CONTENT_EXPORT DownloadItemImpl
   virtual void Start(
       std::unique_ptr<download::DownloadFile> download_file,
       std::unique_ptr<download::DownloadRequestHandleInterface> req_handle,
-      const download::DownloadCreateInfo& new_create_info);
+      const download::DownloadCreateInfo& new_create_info,
+      scoped_refptr<network::SharedURLLoaderFactory> shared_url_loader_factory);
 
   // Needed because of intertwining with DownloadManagerImpl -------------------
 

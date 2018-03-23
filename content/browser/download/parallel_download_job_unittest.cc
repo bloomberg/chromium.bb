@@ -70,14 +70,15 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
       int min_remaining_time)
       : ParallelDownloadJob(download_item,
                             std::move(request_handle),
-                            create_info),
+                            create_info,
+                            nullptr),
         request_count_(request_count),
         min_slice_size_(min_slice_size),
         min_remaining_time_(min_remaining_time) {}
 
   void CreateRequest(int64_t offset, int64_t length) override {
-    std::unique_ptr<DownloadWorker> worker =
-        std::make_unique<DownloadWorker>(this, offset, length);
+    auto worker =
+        std::make_unique<download::DownloadWorker>(this, offset, length);
 
     DCHECK(workers_.find(offset) == workers_.end());
     workers_[offset] = std::move(worker);
@@ -98,7 +99,7 @@ class ParallelDownloadJobForTest : public ParallelDownloadJob {
   }
 
   void OnInputStreamReady(
-      DownloadWorker* worker,
+      download::DownloadWorker* worker,
       std::unique_ptr<download::InputStream> input_stream) override {
     CountOnInputStreamReady();
   }
@@ -165,7 +166,7 @@ class ParallelDownloadJobTest : public testing::Test {
   bool IsJobCanceled() const { return job_->is_canceled_; };
 
   void MakeWorkerReady(
-      DownloadWorker* worker,
+      download::DownloadWorker* worker,
       std::unique_ptr<MockDownloadRequestHandle> request_handle) {
     download::UrlDownloadHandler::Delegate* delegate =
         static_cast<download::UrlDownloadHandler::Delegate*>(worker);
@@ -174,7 +175,7 @@ class ParallelDownloadJobTest : public testing::Test {
     create_info->request_handle = std::move(request_handle);
     delegate->OnUrlDownloadStarted(
         std::move(create_info), std::make_unique<download::MockInputStream>(),
-        download::DownloadUrlParameters::OnStartedCallback());
+        nullptr, download::DownloadUrlParameters::OnStartedCallback());
   }
 
   void VerifyWorker(int64_t offset, int64_t length) const {

@@ -19,10 +19,6 @@ namespace net {
 class URLRequest;
 }  // namespace net
 
-namespace network {
-struct ResourceRequest;
-}
-
 namespace storage {
 class BlobStorageContext;
 }
@@ -31,10 +27,6 @@ namespace content {
 
 class BrowserContext;
 class ResourceContext;
-
-// Create a ResourceRequest from |params|.
-std::unique_ptr<network::ResourceRequest> CONTENT_EXPORT
-CreateResourceRequest(download::DownloadUrlParameters* params);
 
 // Create a URLRequest from |params|.
 std::unique_ptr<net::URLRequest> CONTENT_EXPORT

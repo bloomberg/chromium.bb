@@ -93,7 +93,8 @@ static void StartOnUIThread(
 
   download_manager->StartDownload(
       std::move(info),
-      std::make_unique<ByteStreamInputStream>(std::move(stream)), started_cb);
+      std::make_unique<ByteStreamInputStream>(std::move(stream)), nullptr,
+      started_cb);
 }
 
 void InitializeDownloadTabInfoOnUIThread(

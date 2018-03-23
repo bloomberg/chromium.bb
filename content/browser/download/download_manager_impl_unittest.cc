@@ -469,7 +469,7 @@ class DownloadManagerTest : public testing::Test {
     // in the factory.
     std::unique_ptr<download::DownloadRequestHandleInterface> req_handle;
     item.Start(std::unique_ptr<download::DownloadFile>(), std::move(req_handle),
-               info);
+               info, nullptr);
     DCHECK(id < download_urls_.size());
     EXPECT_CALL(item, GetURL()).WillRepeatedly(ReturnRef(download_urls_[id]));
 
@@ -579,7 +579,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
       .WillOnce(Return(mock_file));
 
   download_manager_->StartDownload(
-      std::move(info), std::move(input_stream),
+      std::move(info), std::move(input_stream), nullptr,
       download::DownloadUrlParameters::OnStartedCallback());
   EXPECT_TRUE(download_manager_->GetDownload(local_id));
 

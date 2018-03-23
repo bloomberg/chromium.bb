@@ -323,7 +323,7 @@ class DownloadItemTest : public testing::Test {
     std::unique_ptr<MockRequestHandle> request_handle =
         std::make_unique<NiceMock<MockRequestHandle>>();
     item->Start(std::move(download_file), std::move(request_handle),
-                *create_info_);
+                *create_info_, nullptr);
     task_environment_.RunUntilIdle();
 
     // So that we don't have a function writing to a stack variable
@@ -618,7 +618,7 @@ TEST_F(DownloadItemTest, NotificationAfterTogglePause) {
   EXPECT_CALL(*mock_download_file, Initialize(_, _, _, _));
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(_, _));
   item->Start(std::move(download_file), std::move(request_handle),
-              *create_info());
+              *create_info(), nullptr);
 
   item->Pause();
   ASSERT_TRUE(observer.CheckAndResetDownloadUpdated());
@@ -870,7 +870,7 @@ TEST_F(DownloadItemTest, AutomaticResumption_AttemptLimit) {
     // Copied key parts of DoIntermediateRename & CallDownloadItemStart
     // to allow for holding onto the request handle.
     item->Start(std::move(mock_download_file), std::move(mock_request_handle),
-                *create_info());
+                *create_info(), nullptr);
     task_environment_.RunUntilIdle();
 
     base::FilePath target_path(kDummyTargetPath);
@@ -1169,7 +1169,7 @@ TEST_F(DownloadItemTest, Start) {
       new NiceMock<MockRequestHandle>);
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _));
   item->Start(std::move(download_file), std::move(request_handle),
-              *create_info());
+              *create_info(), nullptr);
   task_environment_.RunUntilIdle();
 
   CleanupItem(item, mock_download_file, download::DownloadItem::IN_PROGRESS);
@@ -1194,7 +1194,8 @@ TEST_F(DownloadItemTest, InitDownloadFileFails) {
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _))
       .WillOnce(SaveArg<1>(&download_target_callback));
 
-  item->Start(std::move(file), std::move(request_handle), *create_info());
+  item->Start(std::move(file), std::move(request_handle), *create_info(),
+              nullptr);
   task_environment_.RunUntilIdle();
 
   download_target_callback.Run(
@@ -1232,7 +1233,7 @@ TEST_F(DownloadItemTest, StartFailedDownload) {
   EXPECT_CALL(*mock_delegate(), DetermineDownloadTarget(item, _))
       .WillOnce(SaveArg<1>(&download_target_callback));
   item->Start(std::move(null_download_file), std::move(null_request_handle),
-              *create_info());
+              *create_info(), nullptr);
   EXPECT_EQ(download::DownloadItem::IN_PROGRESS, item->GetState());
   task_environment_.RunUntilIdle();
 
@@ -2299,7 +2300,8 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, DownloadCancelledByUser) {
   download::DownloadFile::InitializeCallback initialize_callback;
   EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(SaveArg<0>(&initialize_callback));
-  item_->Start(std::move(file_), std::move(request_handle_), *create_info());
+  item_->Start(std::move(file_), std::move(request_handle_), *create_info(),
+               nullptr);
   task_environment_.RunUntilIdle();
 
   base::WeakPtr<download::DownloadDestinationObserver> destination_observer =
@@ -2346,7 +2348,8 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameFails) {
   EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(SaveArg<0>(&initialize_callback));
 
-  item_->Start(std::move(file_), std::move(request_handle_), *create_info());
+  item_->Start(std::move(file_), std::move(request_handle_), *create_info(),
+               nullptr);
   task_environment_.RunUntilIdle();
 
   base::WeakPtr<download::DownloadDestinationObserver> destination_observer =
@@ -2410,7 +2413,8 @@ TEST_P(DownloadItemDestinationUpdateRaceTest, IntermediateRenameSucceeds) {
   EXPECT_CALL(*file_, Initialize(_, _, _, _))
       .WillOnce(SaveArg<0>(&initialize_callback));
 
-  item_->Start(std::move(file_), std::move(request_handle_), *create_info());
+  item_->Start(std::move(file_), std::move(request_handle_), *create_info(),
+               nullptr);
   task_environment_.RunUntilIdle();
 
   base::WeakPtr<download::DownloadDestinationObserver> destination_observer =
