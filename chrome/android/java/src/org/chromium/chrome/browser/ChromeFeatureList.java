@@ -230,6 +230,8 @@ public abstract class ChromeFeatureList {
     public static final String NTP_SNIPPETS_INCREASED_VISIBILITY = "NTPSnippetsIncreasedVisibility";
     public static final String OFFLINE_PAGES_DESCRIPTIVE_PENDING_STATUS =
             "OfflinePagesDescriptivePendingStatus";
+    public static final String OMNIBOX_HIDE_SCHEME_DOMAIN_IN_STEADY_STATE =
+            "OmniboxUIExperimentHideSteadyStateUrlSchemeAndSubdomains";
     public static final String OMNIBOX_SPARE_RENDERER = "OmniboxSpareRenderer";
     public static final String OMNIBOX_VOICE_SEARCH_ALWAYS_VISIBLE =
             "OmniboxVoiceSearchAlwaysVisible";

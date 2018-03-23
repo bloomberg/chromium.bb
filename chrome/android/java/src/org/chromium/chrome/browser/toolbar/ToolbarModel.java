@@ -42,13 +42,20 @@ public class ToolbarModel {
         mNativeToolbarModelAndroid = 0;
     }
 
-    /** @return The formatted text (URL or search terms) for display. */
-    public String getText() {
+    /** @return The formatted URL suitable for editing. */
+    public String getFormattedFullUrl() {
         if (mNativeToolbarModelAndroid == 0) return null;
-        return nativeGetText(mNativeToolbarModelAndroid);
+        return nativeGetFormattedFullURL(mNativeToolbarModelAndroid);
+    }
+
+    /** @return The formatted URL suitable for display only. */
+    public String getUrlForDisplay() {
+        if (mNativeToolbarModelAndroid == 0) return null;
+        return nativeGetURLForDisplay(mNativeToolbarModelAndroid);
     }
 
     private native long nativeInit(ToolbarModelDelegate delegate);
     private native void nativeDestroy(long nativeToolbarModelAndroid);
-    private native String nativeGetText(long nativeToolbarModelAndroid);
+    private native String nativeGetFormattedFullURL(long nativeToolbarModelAndroid);
+    private native String nativeGetURLForDisplay(long nativeToolbarModelAndroid);
 }

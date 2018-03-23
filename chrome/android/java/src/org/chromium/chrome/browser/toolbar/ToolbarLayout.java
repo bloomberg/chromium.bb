@@ -174,7 +174,12 @@ public abstract class ToolbarLayout extends FrameLayout implements Toolbar {
             }
 
             @Override
-            public String getText() {
+            public String getDisplayText() {
+                return null;
+            }
+
+            @Override
+            public String getEditingText() {
                 return null;
             }
 

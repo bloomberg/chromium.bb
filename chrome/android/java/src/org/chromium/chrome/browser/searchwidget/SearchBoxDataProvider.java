@@ -41,7 +41,12 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
-    public String getText() {
+    public String getDisplayText() {
+        return null;
+    }
+
+    @Override
+    public String getEditingText() {
         return null;
     }
 

@@ -16,6 +16,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
+import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -115,37 +116,88 @@ public class ToolbarModelImpl
         return null;
     }
 
-    @Override
-    public String getText() {
-        String displayText = super.getText();
+    /**
+     * @return Whether a truncated URL should be shown in the display (non-editing) state of the
+     *         omnibox.
+     */
+    private boolean useTruncatedUrlForDisplay() {
+        if (!hasTab() || mTab.isFrozen()) return false;
 
-        if (!hasTab() || mTab.isFrozen()) return displayText;
+        if (!ChromeFeatureList.isEnabled(
+                    ChromeFeatureList.OMNIBOX_HIDE_SCHEME_DOMAIN_IN_STEADY_STATE)) {
+            return false;
+        }
 
         String url = getCurrentUrl();
-        if (DomDistillerUrlUtils.isDistilledPage(url)) {
+        if (DomDistillerUrlUtils.isDistilledPage(url)) return false;
+        if (isOfflinePage()) return false;
+        if (isDisplayingQueryTerms()) return false;
+        if (NativePageFactory.isNativePageUrl(url, isIncognito()) || NewTabPage.isNTPUrl(url)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    @Override
+    public String getDisplayText() {
+        if (useTruncatedUrlForDisplay()) {
+            return getUrlForDisplay();
+        } else {
+            return getTextSuitableForEditing(false);
+        }
+    }
+
+    @Override
+    public String getEditingText() {
+        return getTextSuitableForEditing(true);
+    }
+
+    /**
+     * Generate the text that would be suitable to be shown while the user is editing the omnibox.
+     * This should be a closer approximation to the actual URL than that shown as the display URL.
+     *
+     * @param isEditing Whether the user is currently editing the omnibox.  A null return value
+     *                  while in editing, will ensure the original display text will be untouched.
+     * @return The more verbose text that is suitable for editing.
+     */
+    private String getTextSuitableForEditing(boolean isEditing) {
+        if (!hasTab()) return isEditing ? null : "";
+
+        String url = getCurrentUrl();
+        if (NativePageFactory.isNativePageUrl(url, isIncognito()) || NewTabPage.isNTPUrl(url)) {
+            return isEditing ? null : "";
+        }
+
+        String editingText = getFormattedFullUrl();
+        if (mTab.isFrozen()) return editingText;
+
+        if (isEditing && isShowingUntrustedOfflinePage()) {
+            editingText = "";
+        } else if (DomDistillerUrlUtils.isDistilledPage(url)) {
             if (isStoredArticle(url)) {
                 DomDistillerService domDistillerService =
                         DomDistillerServiceFactory.getForProfile(getProfile());
                 String originalUrl = domDistillerService.getUrlForEntry(
                         DomDistillerUrlUtils.getValueForKeyInUrl(url, "entry_id"));
-                displayText =
+                editingText =
                         DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
             } else if (DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url) != null) {
                 String originalUrl = DomDistillerUrlUtils.getOriginalUrlFromDistillerUrl(url);
-                displayText =
+                editingText =
                         DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl);
             }
         } else if (isOfflinePage()) {
             String originalUrl = mTab.getOriginalUrl();
-            displayText = OfflinePageUtils.stripSchemeFromOnlineUrl(
-                  DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
+            editingText = OfflinePageUtils.stripSchemeFromOnlineUrl(
+                    DomDistillerTabUtils.getFormattedUrlFromOriginalDistillerUrl(originalUrl));
         } else {
             String searchTerms = extractSearchTermsFromUrl(url);
             // Show the search terms in the omnibox instead of the URL if this is a DSE search URL.
-            if (searchTerms != null) displayText = searchTerms;
+            if (searchTerms != null) editingText = searchTerms;
         }
 
-        return displayText;
+        return editingText;
     }
 
     private boolean isStoredArticle(String url) {

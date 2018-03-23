@@ -380,7 +380,7 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
             mUrlBar.setUrl("", null);
             return;
         }
-        String displayText = getToolbarDataProvider().getText();
+        String displayText = getToolbarDataProvider().getDisplayText();
         Pair<String, String> urlText = LocationBarLayout.splitPathFromUrlDisplayText(displayText);
         displayText = urlText.first;
 

@@ -52,7 +52,13 @@ public interface ToolbarDataProvider {
     /**
      * @return The formatted text (URL or search terms) for display.
      */
-    String getText();
+    String getDisplayText();
+
+    /**
+     * @return The formatted text for editing.  Returning null will leave the display text untouched
+     *         when entering the edit state.
+     */
+    String getEditingText();
 
     /**
      * @return The title of the current tab, or the empty string if there is currently no tab.

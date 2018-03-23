@@ -27,11 +27,18 @@ void ToolbarModelAndroid::Destroy(JNIEnv* env,
   delete this;
 }
 
-ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetText(
+ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetFormattedFullURL(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
   return base::android::ConvertUTF16ToJavaString(
       env, toolbar_model_->GetFormattedFullURL());
+}
+
+ScopedJavaLocalRef<jstring> ToolbarModelAndroid::GetURLForDisplay(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj) {
+  return base::android::ConvertUTF16ToJavaString(
+      env, toolbar_model_->GetURLForDisplay());
 }
 
 content::WebContents* ToolbarModelAndroid::GetActiveWebContents() const {
