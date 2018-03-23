@@ -8,6 +8,7 @@
 #include "base/strings/sys_string_conversions.h"
 #include "chrome/app/vector_icons/vector_icons.h"
 #include "chrome/browser/download/download_item_model.h"
+#import "chrome/browser/download/download_shelf_context_menu.h"
 #include "chrome/browser/download/download_stats.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
@@ -36,6 +37,7 @@ namespace {
 
 // Size of a download item in a non-dangerous state.
 constexpr CGSize kNormalSize = {245, 44};
+constexpr CGFloat kTrailingPadding = 12;
 
 constexpr CGFloat kDangerousDownloadIconX = 16;
 constexpr CGFloat kDangerousDownloadIconSize = 16;
@@ -59,7 +61,6 @@ constexpr CGFloat kFilenameWithStatusY = 22;
 constexpr CGFloat kStatusTextY = 8;
 constexpr CGFloat kMenuButtonSpacing = 8;
 
-constexpr CGFloat kMenuButtonTrailingMargin = 12;
 constexpr CGFloat kMenuButtonSize = 24;
 constexpr const gfx::VectorIcon* kMenuButtonIcon = &kHorizontalMenuIcon;
 
@@ -142,14 +143,16 @@ NSTextField* MakeLabel(
 @end
 
 @interface MDDownloadItemDangerView : NSView
-@property(nonatomic, assign) NSButton* button;
+@property(nonatomic, assign) NSButton* discardButton;
+@property(nonatomic, assign) NSButton* saveButton;
 @end
 
 @implementation MDDownloadItemDangerView {
   NSImageView* iconView_;
   NSTextField* label_;
 }
-@synthesize button = button_;
+@synthesize discardButton = discardButton_;
+@synthesize saveButton = saveButton_;
 
 - (instancetype)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect])) {
@@ -174,18 +177,23 @@ NSTextField* MakeLabel(
         [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
     [self addSubview:label_];
 
-    base::scoped_nsobject<HarmonyButton> button(
+    base::scoped_nsobject<HarmonyButton> discardButton(
         [[HarmonyButton alloc] initWithFrame:NSZeroRect]);
-    button_ = button;
-    button_.title = l10n_util::GetNSString(IDS_DISCARD_DOWNLOAD);
-    [button_ sizeToFit];
-    NSRect buttonRect = button_.frame;
-    buttonRect.origin.x = NSWidth(self.bounds) - NSWidth(buttonRect);
-    buttonRect.origin.y = NSMidY(self.bounds) - NSMidY(button_.bounds);
-    button_.frame = [self cr_localizedRect:buttonRect];
-    button_.autoresizingMask =
+    discardButton_ = discardButton;
+    discardButton_.title = l10n_util::GetNSString(IDS_DISCARD_DOWNLOAD);
+    [discardButton_ sizeToFit];
+    discardButton_.autoresizingMask =
         [NSView cr_localizedAutoresizingMask:NSViewMinXMargin];
-    [self addSubview:button_];
+    [self addSubview:discardButton_];
+
+    base::scoped_nsobject<HarmonyButton> saveButton(
+        [[HarmonyButton alloc] initWithFrame:NSZeroRect]);
+    saveButton_ = saveButton;
+    [saveButton_ sizeToFit];
+    saveButton_.autoresizingMask =
+        [NSView cr_localizedAutoresizingMask:NSViewMinXMargin];
+    saveButton_.hidden = YES;
+    [self addSubview:saveButton_];
   }
   return self;
 }
@@ -193,7 +201,10 @@ NSTextField* MakeLabel(
 - (CGFloat)preferredWidth {
   CGFloat preferredWidth = kDangerousDownloadLabelX + NSWidth(label_.frame) +
                            kDangerousDownloadLabelButtonSpacing +
-                           NSWidth(button_.frame);
+                           NSWidth(discardButton_.frame);
+  if (!saveButton_.hidden)
+    preferredWidth +=
+        kDangerousDownloadLabelButtonSpacing + NSWidth(saveButton_.frame);
   return NSWidth([self backingAlignedRect:NSMakeRect(0, 0, preferredWidth, 0)
                                   options:NSAlignAllEdgesOutward]);
 }
@@ -208,6 +219,28 @@ NSTextField* MakeLabel(
   labelRect.origin.x = kDangerousDownloadLabelX;
   labelRect.origin.y = NSMidY(self.bounds) - NSMidY(label_.bounds);
   label_.frame = [self cr_localizedRect:labelRect];
+
+  CGFloat maxX = NSMaxX(self.bounds);
+
+  if (downloadModel->MightBeMalicious()) {
+    saveButton_.hidden = YES;
+  } else {
+    saveButton_.hidden = NO;
+    saveButton_.title =
+        base::SysUTF16ToNSString(downloadModel->GetWarningConfirmButtonText());
+    [saveButton_ sizeToFit];
+    NSRect saveButtonRect = saveButton_.frame;
+    saveButtonRect.origin.x = maxX - NSWidth(saveButtonRect);
+    saveButtonRect.origin.y = NSMidY(self.bounds) - NSMidY(saveButton_.bounds);
+    saveButton_.frame = [self cr_localizedRect:saveButtonRect];
+    maxX = NSMinX(saveButtonRect) - kDangerousDownloadLabelButtonSpacing;
+  }
+
+  NSRect discardButtonRect = discardButton_.frame;
+  discardButtonRect.origin.x = maxX - NSWidth(discardButtonRect);
+  discardButtonRect.origin.y =
+      NSMidY(self.bounds) - NSMidY(discardButton_.bounds);
+  discardButton_.frame = [self cr_localizedRect:discardButtonRect];
 }
 
 // NSView overrides
@@ -281,7 +314,7 @@ NSTextField* MakeLabel(
     [self addSubview:progressIndicator_];
 
     NSRect menuButtonRect = NSMakeRect(
-        NSMaxX(bounds) - kMenuButtonSize - kMenuButtonTrailingMargin,
+        NSMaxX(bounds) - kMenuButtonSize - kTrailingPadding,
         NSMidY(bounds) - kMenuButtonSize / 2, kMenuButtonSize, kMenuButtonSize);
     base::scoped_nsobject<MDDownloadItemMenuButton> menuButton(
         [[MDDownloadItemMenuButton alloc]
@@ -356,8 +389,9 @@ NSTextField* MakeLabel(
 
 - (CGFloat)preferredWidth {
   if (dangerView_) {
-    return NSWidth(dangerView_.frame) + kMenuButtonSpacing + kMenuButtonSize +
-           kMenuButtonTrailingMargin;
+    return NSWidth(dangerView_.frame) +
+           (menuButton_.hidden ? 0 : kMenuButtonSpacing + kMenuButtonSize) +
+           kTrailingPadding;
   } else {
     return kNormalSize.width;
   }
@@ -465,6 +499,10 @@ NSTextField* MakeLabel(
 - (void)setStateFromDownload:(DownloadItemModel*)downloadModel {
   const download::DownloadItem& download = *downloadModel->download();
   const download::DownloadItem::DownloadState state = download.GetState();
+
+  menuButton_.hidden =
+      !DownloadShelfContextMenu::WantsContextMenu(*downloadModel);
+
   if (download.IsDangerous()) {
     if (!dangerView_) {
       for (NSView* view in [self normalViews]) {
@@ -476,8 +514,10 @@ NSTextField* MakeLabel(
       dangerView_ = dangerView;
       dangerView_.autoresizingMask =
           [NSView cr_localizedAutoresizingMask:NSViewMaxXMargin];
-      dangerView_.button.target = controller_;
-      dangerView_.button.action = @selector(discardDownload:);
+      dangerView_.discardButton.target = controller_;
+      dangerView_.discardButton.action = @selector(discardDownload:);
+      dangerView_.saveButton.target = controller_;
+      dangerView_.saveButton.action = @selector(saveDownload:);
       [self addSubview:dangerView_];
     }
     [dangerView_ setStateFromDownload:downloadModel];
