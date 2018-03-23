@@ -50,8 +50,8 @@ void DecryptContextImpl::DecryptAsync(CastDecoderBuffer* buffer,
   std::move(decrypt_cb).Run(false);
 }
 
-bool DecryptContextImpl::CanDecryptToBuffer() const {
-  return false;
+DecryptContextImpl::OutputType DecryptContextImpl::GetOutputType() const {
+  return OutputType::kSecure;
 }
 
 }  // namespace media

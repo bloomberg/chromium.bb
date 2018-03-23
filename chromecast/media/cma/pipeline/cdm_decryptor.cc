@@ -12,7 +12,8 @@
 namespace chromecast {
 namespace media {
 
-CdmDecryptor::CdmDecryptor() : weak_factory_(this) {
+CdmDecryptor::CdmDecryptor(bool clear_buffer_needed)
+    : clear_buffer_needed_(clear_buffer_needed), weak_factory_(this) {
   weak_this_ = weak_factory_.GetWeakPtr();
 }
 
@@ -33,7 +34,10 @@ void CdmDecryptor::Decrypt(scoped_refptr<DecoderBufferBase> buffer) {
       static_cast<DecryptContextImpl*>(buffer->decrypt_context());
   DCHECK(decrypt_context);
 
-  if (decrypt_context->CanDecryptToBuffer()) {
+  DecryptContextImpl::OutputType output_type = decrypt_context->GetOutputType();
+  if (output_type == DecryptContextImpl::OutputType::kClearRequired ||
+      (clear_buffer_needed_ &&
+       output_type == DecryptContextImpl::OutputType::kClearAllowed)) {
     DecryptDecoderBuffer(std::move(buffer), decrypt_context,
                          base::BindOnce(&CdmDecryptor::OnResult, weak_this_));
     return;

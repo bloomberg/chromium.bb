@@ -25,6 +25,14 @@ class DecryptContextImpl : public DecryptContext {
  public:
   using DecryptCB = base::OnceCallback<void(bool)>;
 
+  // Type for the output buffer:
+  // |kSecure| means the decrypted data will be put in a secured buffer, where
+  // normal CPU can't access.
+  // |kClearAllowed| means the license allows the decrypted data to be accessed
+  // by normal CPU. Caller can decide where is the decrypted data.
+  // |kClearRequired| means the CDM or platform doesn't support secure buffer.
+  enum class OutputType { kSecure, kClearAllowed, kClearRequired };
+
   explicit DecryptContextImpl(CastKeySystem key_system);
   ~DecryptContextImpl() override;
 
@@ -41,12 +49,8 @@ class DecryptContextImpl : public DecryptContext {
                             size_t data_offset,
                             DecryptCB decrypt_cb);
 
-  // Returns whether the data can be decrypted into user memory.
-  // If the key system doesn't support secure output or the app explicitly
-  // requires non secure output, it should return true;
-  // If the key system doesn't allow clear content to be decrypted into user
-  // memory, it should return false.
-  virtual bool CanDecryptToBuffer() const;
+  // Returns the type of output buffer.
+  virtual OutputType GetOutputType() const;
 
  private:
   CastKeySystem key_system_;

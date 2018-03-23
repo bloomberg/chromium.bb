@@ -80,14 +80,14 @@ const EncryptionScheme& AudioPipelineImpl::GetEncryptionScheme(
 }
 
 std::unique_ptr<StreamDecryptor> AudioPipelineImpl::CreateDecryptor() {
+  bool clear_buffer_needed = audio_decoder_->RequiresDecryption();
   if (audio_config_.encryption_scheme.is_encrypted() &&
-      MediaPipelineBackend::CreateAudioDecryptor &&
-      audio_decoder_->RequiresDecryption()) {
+      MediaPipelineBackend::CreateAudioDecryptor && clear_buffer_needed) {
     CMALOG(kLogControl) << __func__ << " Create backend decryptor for audio.";
     return std::make_unique<BackendDecryptor>(audio_config_.encryption_scheme);
   }
 
-  return std::make_unique<CdmDecryptor>();
+  return std::make_unique<CdmDecryptor>(clear_buffer_needed);
 }
 
 void AudioPipelineImpl::UpdateStatistics() {

@@ -14,7 +14,7 @@ namespace media {
 // StreamDecryptor implemented with CDM decrypt APIs.
 class CdmDecryptor : public StreamDecryptor {
  public:
-  CdmDecryptor();
+  explicit CdmDecryptor(bool clear_buffer_needed);
   ~CdmDecryptor() override;
 
   // StreamDecryptor implementation:
@@ -25,6 +25,8 @@ class CdmDecryptor : public StreamDecryptor {
   void OnResult(scoped_refptr<DecoderBufferBase> buffer, bool success);
 
   DecryptCB decrypt_cb_;
+
+  const bool clear_buffer_needed_;
 
   base::WeakPtr<CdmDecryptor> weak_this_;
   base::WeakPtrFactory<CdmDecryptor> weak_factory_;

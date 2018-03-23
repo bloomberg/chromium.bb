@@ -31,7 +31,7 @@ class DecryptContextImplClearKey : public DecryptContextImpl {
                     size_t data_offset,
                     DecryptCB decrypt_cb) override;
 
-  bool CanDecryptToBuffer() const override;
+  OutputType GetOutputType() const override;
 
  private:
   bool DoDecrypt(CastDecoderBuffer* buffer,
