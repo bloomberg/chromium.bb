@@ -17,12 +17,10 @@
 
 using base::UserMetricsAction;
 
-@interface PopupMenuTableViewController ()
-@end
-
 @implementation PopupMenuTableViewController
 
 @dynamic tableViewModel;
+@synthesize baseViewController = _baseViewController;
 @synthesize dispatcher = _dispatcher;
 
 #pragma mark - UIViewController
@@ -107,6 +105,7 @@ using base::UserMetricsAction;
     case PopupMenuActionReadLater:
       base::RecordAction(UserMetricsAction("MobileMenuReadLater"));
       // TODO(crbug.com/822703): Add action.
+      [self showNotImplementedAlert];
       break;
     case PopupMenuActionFindInPage:
       base::RecordAction(UserMetricsAction("MobileMenuFindInPage"));
@@ -123,10 +122,12 @@ using base::UserMetricsAction;
     case PopupMenuActionSiteInformation:
       base::RecordAction(UserMetricsAction("MobileMenuSiteInformation"));
       // TODO(crbug.com/822703): Add action.
+      [self showNotImplementedAlert];
       break;
     case PopupMenuActionReportIssue:
       base::RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
-      // TODO(crbug.com/822703): Add action.
+      [self.dispatcher
+          showReportAnIssueFromViewController:self.baseViewController];
       break;
     case PopupMenuActionHelp:
       base::RecordAction(UserMetricsAction("MobileMenuHelp"));
@@ -150,12 +151,31 @@ using base::UserMetricsAction;
       break;
     case PopupMenuActionSettings:
       base::RecordAction(UserMetricsAction("MobileMenuSettings"));
-      // TODO(crbug.com/822703): Add action.
+      [self.dispatcher showSettingsFromViewController:self.baseViewController];
       break;
   }
 
   // Close the tools menu.
   [self.dispatcher dismissPopupMenu];
+}
+
+#pragma mark - Private
+
+// TODO(crbug.com/822703): Remove this.
+- (void)showNotImplementedAlert {
+  UIAlertController* alertController =
+      [UIAlertController alertControllerWithTitle:@"Not implemented yet."
+                                          message:nil
+                                   preferredStyle:UIAlertControllerStyleAlert];
+  UIAlertAction* alertAction =
+      [UIAlertAction actionWithTitle:@"OK"
+                               style:UIAlertActionStyleCancel
+                             handler:nil];
+
+  [alertController addAction:alertAction];
+  [self.baseViewController presentViewController:alertController
+                                        animated:YES
+                                      completion:nil];
 }
 
 @end
