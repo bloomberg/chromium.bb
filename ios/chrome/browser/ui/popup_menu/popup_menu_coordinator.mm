@@ -37,6 +37,11 @@
 - (void)start {
   [self.dispatcher startDispatchingToTarget:self
                                 forProtocol:@protocol(PopupMenuCommands)];
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter addObserver:self
+                    selector:@selector(applicationDidEnterBackground:)
+                        name:UIApplicationDidEnterBackgroundNotification
+                      object:nil];
 }
 
 - (void)stop {
@@ -111,6 +116,12 @@
   self.presenter = nil;
   [self.mediator disconnect];
   self.mediator = nil;
+}
+
+#pragma mark - Notification callback
+
+- (void)applicationDidEnterBackground:(NSNotification*)note {
+  [self dismissPopupMenu];
 }
 
 #pragma mark - Private
