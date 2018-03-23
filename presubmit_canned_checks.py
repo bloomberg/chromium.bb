@@ -727,13 +727,11 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
 
   input_api.logging.info('Running pylint on %d files', len(files))
   input_api.logging.debug('Running pylint on: %s', files)
-  # Copy the system path to the environment so pylint can find the right
-  # imports.
   env = input_api.environ.copy()
-  import sys
   env['PYTHONPATH'] = input_api.os_path.pathsep.join(
-      extra_paths_list + sys.path).encode('utf8')
+    extra_paths_list).encode('utf8')
   env.pop('VPYTHON_CLEAR_PYTHONPATH', None)
+  input_api.logging.debug('  with extra PYTHONPATH: %r', extra_paths_list)
 
   def GetPylintCmd(flist, extra, parallel):
     # Windows needs help running python files so we explicitly specify
