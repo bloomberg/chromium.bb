@@ -11,7 +11,6 @@
 #include "base/metrics/histogram_macros_local.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_channel.h"
 #include "mojo/edk/system/node_controller.h"
@@ -273,15 +272,15 @@ UserMessageImpl::~UserMessageImpl() {
     if (result == MOJO_RESULT_OK) {
       for (auto handle : handles) {
         if (handle != MOJO_HANDLE_INVALID)
-          internal::g_core->Close(handle);
+          Core::Get()->Close(handle);
       }
     }
 
     if (!pending_handle_attachments_.empty()) {
-      internal::g_core->ReleaseDispatchersForTransit(
-          pending_handle_attachments_, false);
+      Core::Get()->ReleaseDispatchersForTransit(pending_handle_attachments_,
+                                                false);
       for (const auto& dispatcher : pending_handle_attachments_)
-        internal::g_core->Close(dispatcher.local_handle);
+        Core::Get()->Close(dispatcher.local_handle);
     }
   }
 }
@@ -405,7 +404,7 @@ MojoResult UserMessageImpl::AppendData(uint32_t additional_payload_size,
 
   std::vector<Dispatcher::DispatcherInTransit> dispatchers;
   if (num_handles > 0) {
-    MojoResult acquire_result = internal::g_core->AcquireDispatchersForTransit(
+    MojoResult acquire_result = Core::Get()->AcquireDispatchersForTransit(
         handles, num_handles, &dispatchers);
     if (acquire_result != MOJO_RESULT_OK)
       return acquire_result;
@@ -420,8 +419,8 @@ MojoResult UserMessageImpl::AppendData(uint32_t additional_payload_size,
         dispatchers.data(), num_handles, &channel_message, &header_,
         &header_size_, &user_payload_);
     if (num_handles > 0) {
-      internal::g_core->ReleaseDispatchersForTransit(dispatchers,
-                                                     rv == MOJO_RESULT_OK);
+      Core::Get()->ReleaseDispatchersForTransit(dispatchers,
+                                                rv == MOJO_RESULT_OK);
     }
     if (rv != MOJO_RESULT_OK)
       return MOJO_RESULT_ABORTED;
@@ -471,8 +470,8 @@ MojoResult UserMessageImpl::CommitSize() {
         message_event_, user_payload_size_, user_payload_size_,
         pending_handle_attachments_.data(), pending_handle_attachments_.size(),
         &channel_message_, &header_, &header_size_, &user_payload_);
-    internal::g_core->ReleaseDispatchersForTransit(pending_handle_attachments_,
-                                                   true);
+    Core::Get()->ReleaseDispatchersForTransit(pending_handle_attachments_,
+                                              true);
     pending_handle_attachments_.clear();
   }
 
@@ -580,7 +579,7 @@ MojoResult UserMessageImpl::ExtractSerializedHandles(
     platform_handle_index = next_platform_handle_index.ValueOrDie();
   }
 
-  if (!internal::g_core->AddDispatchersFromTransit(dispatchers, handles))
+  if (!Core::Get()->AddDispatchersFromTransit(dispatchers, handles))
     return MOJO_RESULT_ABORTED;
 
   return MOJO_RESULT_OK;

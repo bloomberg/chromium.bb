@@ -13,11 +13,11 @@
 #include "base/rand_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/task_runner.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/entrypoints.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_controller.h"
+#include "mojo/public/c/system/thunks.h"
 
 #if !defined(OS_NACL)
 #include "crypto/random.h"
@@ -26,24 +26,10 @@
 namespace mojo {
 namespace edk {
 
-class Core;
-class PlatformSupport;
-
-namespace internal {
-
-Core* g_core;
-
-Core* GetCore() { return g_core; }
-
-}  // namespace internal
-
 void Init(const Configuration& configuration) {
-  MojoSystemThunks thunks = MakeSystemThunks();
-  size_t expected_size = MojoEmbedderSetSystemThunks(&thunks);
-  DCHECK_EQ(expected_size, sizeof(thunks));
-
   internal::g_configuration = configuration;
-  internal::g_core = new Core;
+  InitializeCore();
+  MojoEmbedderSetSystemThunks(&GetSystemThunks());
 }
 
 void Init() {
@@ -51,7 +37,7 @@ void Init() {
 }
 
 void SetDefaultProcessErrorCallback(const ProcessErrorCallback& callback) {
-  internal::g_core->SetDefaultProcessErrorCallback(callback);
+  Core::Get()->SetDefaultProcessErrorCallback(callback);
 }
 
 std::string GenerateRandomToken() {
@@ -68,14 +54,14 @@ std::string GenerateRandomToken() {
 MojoResult CreatePlatformHandleWrapper(
     ScopedPlatformHandle platform_handle,
     MojoHandle* platform_handle_wrapper_handle) {
-  return internal::g_core->CreatePlatformHandleWrapper(
+  return Core::Get()->CreatePlatformHandleWrapper(
       std::move(platform_handle), platform_handle_wrapper_handle);
 }
 
 MojoResult PassWrappedPlatformHandle(MojoHandle platform_handle_wrapper_handle,
                                      ScopedPlatformHandle* platform_handle) {
-  return internal::g_core->PassWrappedPlatformHandle(
-      platform_handle_wrapper_handle, platform_handle);
+  return Core::Get()->PassWrappedPlatformHandle(platform_handle_wrapper_handle,
+                                                platform_handle);
 }
 
 MojoResult CreateSharedBufferWrapper(
@@ -83,8 +69,8 @@ MojoResult CreateSharedBufferWrapper(
     size_t num_bytes,
     bool read_only,
     MojoHandle* mojo_wrapper_handle) {
-  return internal::g_core->CreateSharedBufferWrapper(
-      shared_memory_handle, num_bytes, read_only, mojo_wrapper_handle);
+  return Core::Get()->CreateSharedBufferWrapper(shared_memory_handle, num_bytes,
+                                                read_only, mojo_wrapper_handle);
 }
 
 MojoResult PassSharedMemoryHandle(
@@ -92,23 +78,22 @@ MojoResult PassSharedMemoryHandle(
     base::SharedMemoryHandle* shared_memory_handle,
     size_t* num_bytes,
     bool* read_only) {
-  return internal::g_core->PassSharedMemoryHandle(
-      mojo_handle, shared_memory_handle, num_bytes, read_only);
+  return Core::Get()->PassSharedMemoryHandle(mojo_handle, shared_memory_handle,
+                                             num_bytes, read_only);
 }
 
 MojoResult SetProperty(MojoPropertyType type, const void* value) {
-  CHECK(internal::g_core);
-  return internal::g_core->SetProperty(type, value);
+  return Core::Get()->SetProperty(type, value);
 }
 
 scoped_refptr<base::TaskRunner> GetIOTaskRunner() {
-  return internal::g_core->GetNodeController()->io_task_runner();
+  return Core::Get()->GetNodeController()->io_task_runner();
 }
 
 #if defined(OS_MACOSX) && !defined(OS_IOS)
 void SetMachPortProvider(base::PortProvider* port_provider) {
   DCHECK(port_provider);
-  internal::g_core->SetMachPortProvider(port_provider);
+  Core::Get()->SetMachPortProvider(port_provider);
 }
 #endif
 

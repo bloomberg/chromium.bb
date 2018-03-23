@@ -5,7 +5,6 @@
 #include "mojo/edk/embedder/outgoing_broker_client_invitation.h"
 
 #include "base/logging.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/ports/port_ref.h"
@@ -14,14 +13,12 @@
 namespace mojo {
 namespace edk {
 
-OutgoingBrokerClientInvitation::OutgoingBrokerClientInvitation() {
-  DCHECK(internal::g_core);
-}
+OutgoingBrokerClientInvitation::OutgoingBrokerClientInvitation() = default;
 
 OutgoingBrokerClientInvitation::~OutgoingBrokerClientInvitation() {
   RequestContext request_context;
   for (auto& entry : attached_ports_)
-    internal::g_core->GetNodeController()->ClosePort(entry.second);
+    Core::Get()->GetNodeController()->ClosePort(entry.second);
 }
 
 ScopedMessagePipeHandle OutgoingBrokerClientInvitation::AttachMessagePipe(
@@ -29,7 +26,7 @@ ScopedMessagePipeHandle OutgoingBrokerClientInvitation::AttachMessagePipe(
   DCHECK(!sent_);
   ports::PortRef port;
   ScopedMessagePipeHandle pipe = ScopedMessagePipeHandle(
-      MessagePipeHandle(internal::g_core->CreatePartialMessagePipe(&port)));
+      MessagePipeHandle(Core::Get()->CreatePartialMessagePipe(&port)));
   attached_ports_.emplace_back(name, port);
   return pipe;
 }
@@ -42,8 +39,8 @@ OutgoingBrokerClientInvitation::ExtractInProcessMessagePipe(
   // a single entry.
   for (auto it = attached_ports_.begin(); it != attached_ports_.end(); ++it) {
     if (it->first == name) {
-      ScopedMessagePipeHandle pipe = ScopedMessagePipeHandle(MessagePipeHandle(
-          internal::g_core->CreatePartialMessagePipe(it->second)));
+      ScopedMessagePipeHandle pipe = ScopedMessagePipeHandle(
+          MessagePipeHandle(Core::Get()->CreatePartialMessagePipe(it->second)));
       attached_ports_.erase(it);
       return pipe;
     }
@@ -59,8 +56,8 @@ void OutgoingBrokerClientInvitation::Send(
     const ProcessErrorCallback& error_callback) {
   DCHECK(!sent_);
   sent_ = true;
-  internal::g_core->SendBrokerClientInvitation(
-      target_process, std::move(params), attached_ports_, error_callback);
+  Core::Get()->SendBrokerClientInvitation(target_process, std::move(params),
+                                          attached_ports_, error_callback);
   attached_ports_.clear();
 }
 

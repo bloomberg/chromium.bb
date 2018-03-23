@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/dispatcher.h"
@@ -121,7 +120,7 @@ MojoHandle CoreTestBase::CreateMockHandle(CoreTestBase::MockHandleInfo* info) {
 }
 
 Core* CoreTestBase::core() {
-  return mojo::edk::internal::g_core;
+  return Core::Get();
 }
 
 // CoreTestBase_MockHandleInfo -------------------------------------------------

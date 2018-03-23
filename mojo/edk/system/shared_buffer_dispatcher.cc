@@ -12,7 +12,6 @@
 #include <utility>
 
 #include "base/logging.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/options_validation.h"
