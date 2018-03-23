@@ -177,28 +177,14 @@ void BrowserNonClientFrameView::UpdateProfileIcons() {
     return;
   }
 
-  Browser* browser = browser_view()->browser();
-  Profile* profile = browser->profile();
-  const bool is_incognito =
-      profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
-
-  // In the touch-optimized UI, we don't show the incognito icon in the browser
-  // frame. It's instead shown in the new tab button. However, we still show an
-  // avatar icon for the teleported browser windows between multi-user sessions
-  // (Chrome OS only). Note that you can't teleport an incognito window.
-  if (is_incognito && ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
-    return;
-
-#if defined(OS_CHROMEOS)
-  // Ash and MUS specific.
-  if (!browser->is_type_tabbed() && !browser->is_app())
-    return;
-
-  if (!is_incognito && !MultiUserWindowManager::ShouldShowAvatar(
-                           browser_view()->GetNativeWindow())) {
+  if (!ShouldShowProfileIndicatorIcon()) {
+    if (profile_indicator_icon_) {
+      delete profile_indicator_icon_;
+      profile_indicator_icon_ = nullptr;
+      frame_->GetRootView()->Layout();
+    }
     return;
   }
-#endif  // defined(OS_CHROMEOS)
 
   if (!profile_indicator_icon_) {
     profile_indicator_icon_ = new ProfileIndicatorIcon();
@@ -210,6 +196,9 @@ void BrowserNonClientFrameView::UpdateProfileIcons() {
   }
 
   gfx::Image icon;
+  Profile* profile = browser_view()->browser()->profile();
+  const bool is_incognito =
+      profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
   if (is_incognito) {
     icon = gfx::Image(GetIncognitoAvatarIcon());
     profile_indicator_icon_->set_stroke_color(SK_ColorTRANSPARENT);
@@ -423,4 +412,29 @@ void BrowserNonClientFrameView::UpdateTaskbarDecoration() {
 
   chrome::DrawTaskbarDecoration(frame_->GetNativeWindow(), &decoration);
 #endif
+}
+
+bool BrowserNonClientFrameView::ShouldShowProfileIndicatorIcon() const {
+  Browser* browser = browser_view()->browser();
+  Profile* profile = browser->profile();
+  const bool is_incognito =
+      profile->GetProfileType() == Profile::INCOGNITO_PROFILE;
+
+  // In the touch-optimized UI, we don't show the incognito icon in the browser
+  // frame. It's instead shown in the new tab button. However, we still show an
+  // avatar icon for the teleported browser windows between multi-user sessions
+  // (Chrome OS only). Note that you can't teleport an incognito window.
+  if (is_incognito && ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    return false;
+
+#if defined(OS_CHROMEOS)
+  if (!browser->is_type_tabbed() && !browser->is_app())
+    return false;
+
+  if (!is_incognito && !MultiUserWindowManager::ShouldShowAvatar(
+                           browser_view()->GetNativeWindow())) {
+    return false;
+  }
+#endif  // defined(OS_CHROMEOS)
+  return true;
 }

@@ -142,6 +142,9 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
   // Draws a taskbar icon if avatars are enabled, erases it otherwise.
   void UpdateTaskbarDecoration();
 
+  // Returns true if |profile_indicator_icon_| should be shown.
+  bool ShouldShowProfileIndicatorIcon() const;
+
   // The frame that hosts this view.
   BrowserFrame* frame_;
 
