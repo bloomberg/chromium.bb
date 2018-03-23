@@ -431,11 +431,4 @@ public class AwAutofillProvider extends AutofillProvider {
         return new Rect(
                 (int) bounds.left, (int) bounds.top, (int) bounds.right, (int) bounds.bottom);
     }
-
-    @VisibleForTesting
-    public void fireSelectControlDidChangeForTesting(
-            int selectControlIndex, String selectControlId, String[] options, int selectedOption) {
-        nativeFireSelectControlDidChangeForTesting(mNativeAutofillProvider, selectControlIndex,
-                selectControlId, options, selectedOption);
-    }
 }

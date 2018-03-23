@@ -1107,8 +1107,10 @@ public class AwAutofillTest {
                     new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
                             AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
             clearChangedValues();
-            mAwContents.getAwAutofillProviderForTesting().fireSelectControlDidChangeForTesting(
-                    1, "color", new String[] {"red", "blue"}, 1);
+            executeJavaScriptAndWaitForResult("document.getElementById('color').focus();");
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_DPAD_CENTER);
+            // Use key B to select 'blue'.
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_B);
             cnt += waitForCallbackAndVerifyTypes(cnt,
                     new Integer[] {
                             AUTOFILL_VIEW_EXITED, AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
@@ -1141,8 +1143,9 @@ public class AwAutofillTest {
             final String url = webServer.setResponse(FILE, data, null);
             loadUrlSync(url);
             // Change select control first shall start autofill session.
-            mAwContents.getAwAutofillProviderForTesting().fireSelectControlDidChangeForTesting(
-                    1, "color", new String[] {"red", "blue"}, 1);
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_DPAD_CENTER);
+            // Use key B to select 'blue'.
+            dispatchDownAndUpKeyEvents(KeyEvent.KEYCODE_B);
             cnt += waitForCallbackAndVerifyTypes(cnt,
                     new Integer[] {AUTOFILL_CANCEL, AUTOFILL_VIEW_ENTERED, AUTOFILL_VIEW_EXITED,
                             AUTOFILL_VIEW_ENTERED, AUTOFILL_VALUE_CHANGED});
