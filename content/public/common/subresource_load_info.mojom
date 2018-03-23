@@ -25,4 +25,7 @@ struct SubresourceLoadInfo {
 
   // The host IP.
   net.interfaces.IPAddress? ip;
+
+  // True if the response was fetched from the network cache.
+  bool was_cached;
 };
