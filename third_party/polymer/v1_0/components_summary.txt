@@ -30,9 +30,9 @@ Tree link: https://github.com/PolymerElements/iron-autogrow-textarea/tree/v2.1.1
 
 Name: iron-behaviors
 Repository: https://github.com/PolymerElements/iron-behaviors.git
-Tree: v1.0.17
-Revision: ef8e89b5f0aa4e8a6b51ca6491ea453bf395f94f
-Tree link: https://github.com/PolymerElements/iron-behaviors/tree/v1.0.17
+Tree: v2.1.1
+Revision: a27b45bebb2af58506af77c377dab301bf7406ce
+Tree link: https://github.com/PolymerElements/iron-behaviors/tree/v2.1.1
 
 Name: iron-checked-element-behavior
 Repository: https://github.com/PolymerElements/iron-checked-element-behavior.git

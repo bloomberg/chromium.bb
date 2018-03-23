@@ -75,10 +75,13 @@
     },
 
     observers: [
-      '_detectKeyboardFocus(focused)',
+      '_focusChanged(focused)',
       '_activeChanged(active, ariaActiveAttribute)'
     ],
 
+    /**
+     * @type {!Object}
+     */
     keyBindings: {
       'enter:keydown': '_asyncClick',
       'space:keydown': '_spaceKeyDownHandler',
@@ -93,6 +96,14 @@
         this._userActivate(!this.active);
       } else {
         this.active = false;
+      }
+    },
+
+    _focusChanged: function(focused) {
+      this._detectKeyboardFocus(focused);
+
+      if (!focused) {
+        this._setPressed(false);
       }
     },
 
