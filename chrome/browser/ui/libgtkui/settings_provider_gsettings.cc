@@ -40,11 +40,10 @@ SettingsProviderGSettings::SettingsProviderGSettings(GtkUi* delegate)
   // gtk3 API). The default in 14.04 is Unity, but Cinnamon has enough
   // usage to justify also checking its value.
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  const gchar* settings_schema =
-      base::nix::GetDesktopEnvironment(env.get()) ==
-              base::nix::DESKTOP_ENVIRONMENT_CINNAMON
-          ? settings_schema = kCinnamonPreferencesSchema
-          : settings_schema = kGnomePreferencesSchema;
+  const gchar* settings_schema = base::nix::GetDesktopEnvironment(env.get()) ==
+                                         base::nix::DESKTOP_ENVIRONMENT_CINNAMON
+                                     ? kCinnamonPreferencesSchema
+                                     : kGnomePreferencesSchema;
 
   if (!g_settings_schema_source_lookup(g_settings_schema_source_get_default(),
                                        settings_schema, FALSE) ||
