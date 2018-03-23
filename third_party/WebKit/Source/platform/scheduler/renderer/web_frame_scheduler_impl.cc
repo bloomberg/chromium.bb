@@ -51,14 +51,6 @@ const char* FrozenStateToString(bool is_frozen) {
   }
 }
 
-const char* CrossOriginStateToString(bool is_cross_origin) {
-  if (is_cross_origin) {
-    return "cross-origin";
-  } else {
-    return "same-origin";
-  }
-}
-
 }  // namespace
 
 WebFrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
@@ -89,7 +81,8 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
     PageSchedulerImpl* parent_page_scheduler,
     base::trace_event::BlameContext* blame_context,
     WebFrameScheduler::FrameType frame_type)
-    : renderer_scheduler_(renderer_scheduler),
+    : frame_type_(frame_type),
+      renderer_scheduler_(renderer_scheduler),
       parent_page_scheduler_(parent_page_scheduler),
       blame_context_(blame_context),
       throttling_state_(WebFrameScheduler::ThrottlingState::kNotThrottled),
@@ -113,13 +106,19 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
                     this,
                     &tracing_controller_,
                     PausedStateToString),
-      cross_origin_(false,
-                    "WebFrameScheduler.Origin",
-                    this,
-                    &tracing_controller_,
-                    CrossOriginStateToString),
+      frame_origin_type_(frame_type == FrameType::kMainFrame
+                             ? FrameOriginType::kMainFrame
+                             : FrameOriginType::kSameOriginFrame,
+                         "WebFrameScheduler.Origin",
+                         this,
+                         &tracing_controller_,
+                         FrameOriginTypeToString),
       url_tracer_("WebFrameScheduler.URL", this),
-      frame_type_(frame_type),
+      task_queue_throttled_(false,
+                            "WebFrameScheduler.TaskQueueThrottled",
+                            this,
+                            &tracing_controller_,
+                            YesNoStateToString),
       active_connection_count_(0),
       weak_factory_(this) {
   DCHECK_EQ(throttling_state_, CalculateThrottlingState());
@@ -203,9 +202,8 @@ void WebFrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
   if (frame_visible_ == frame_visible)
     return;
   UMA_HISTOGRAM_BOOLEAN("RendererScheduler.IPC.FrameVisibility", frame_visible);
-  bool was_throttled = ShouldThrottleTimers();
   frame_visible_ = frame_visible;
-  UpdateThrottling(was_throttled);
+  UpdateTaskQueueThrottling();
 }
 
 bool WebFrameSchedulerImpl::IsFrameVisible() const {
@@ -214,15 +212,20 @@ bool WebFrameSchedulerImpl::IsFrameVisible() const {
 
 void WebFrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
   DCHECK(parent_page_scheduler_);
-  if (cross_origin_ == cross_origin)
+  if (frame_origin_type_ == FrameOriginType::kMainFrame) {
+    DCHECK(!cross_origin);
     return;
-  bool was_throttled = ShouldThrottleTimers();
-  cross_origin_ = cross_origin;
-  UpdateThrottling(was_throttled);
+  }
+  if (cross_origin) {
+    frame_origin_type_ = FrameOriginType::kCrossOriginFrame;
+  } else {
+    frame_origin_type_ = FrameOriginType::kSameOriginFrame;
+  }
+  UpdateTaskQueueThrottling();
 }
 
 bool WebFrameSchedulerImpl::IsCrossOrigin() const {
-  return cross_origin_;
+  return frame_origin_type_ == FrameOriginType::kCrossOriginFrame;
 }
 
 void WebFrameSchedulerImpl::TraceUrlChange(const String& url) {
@@ -346,11 +349,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ThrottleableTaskQueue() {
       time_budget_pool->AddQueue(renderer_scheduler_->tick_clock()->NowTicks(),
                                  throttleable_task_queue_.get());
     }
-
-    if (ShouldThrottleTimers()) {
-      renderer_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
-          throttleable_task_queue_.get());
-    }
+    UpdateTaskQueueThrottling();
   }
   return throttleable_task_queue_;
 }
@@ -449,7 +448,7 @@ void WebFrameSchedulerImpl::AsValueInto(
   state->SetBoolean("frame_visible", frame_visible_);
   state->SetBoolean("page_visible",
                     page_visibility_ == PageVisibilityState::kVisible);
-  state->SetBoolean("cross_origin", cross_origin_);
+  state->SetBoolean("cross_origin", IsCrossOrigin());
   state->SetString("frame_type",
                    frame_type_ == WebFrameScheduler::FrameType::kMainFrame
                        ? "MainFrame"
@@ -493,13 +492,12 @@ void WebFrameSchedulerImpl::SetPageVisibility(
   DCHECK(parent_page_scheduler_);
   if (page_visibility_ == page_visibility)
     return;
-  bool was_throttled = ShouldThrottleTimers();
   page_visibility_ = page_visibility;
   if (page_visibility_ == PageVisibilityState::kVisible)
     page_frozen_ = false;  // visible page must not be frozen.
   // TODO(altimin): Avoid having to call all these methods here.
   UpdateTaskQueues();
-  UpdateThrottling(was_throttled);
+  UpdateTaskQueueThrottling();
   UpdateThrottlingState();
 }
 
@@ -584,13 +582,21 @@ bool WebFrameSchedulerImpl::ShouldThrottleTimers() const {
   if (page_visibility_ == PageVisibilityState::kHidden)
     return true;
   return RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled() &&
-         !frame_visible_ && cross_origin_;
+         !frame_visible_ && IsCrossOrigin();
 }
 
-void WebFrameSchedulerImpl::UpdateThrottling(bool was_throttled) {
-  bool should_throttle = ShouldThrottleTimers();
-  if (was_throttled == should_throttle || !throttleable_task_queue_)
+void WebFrameSchedulerImpl::UpdateTaskQueueThrottling() {
+  // Before we initialize a trottleable task queue, |task_queue_throttled_|
+  // stays false and this function ensures it indicates whether are we holding
+  // a queue reference for throttler or not.
+  // Don't modify that value neither amend the reference counter anywhere else.
+  if (!throttleable_task_queue_)
     return;
+  bool should_throttle = ShouldThrottleTimers();
+  if (task_queue_throttled_ == should_throttle)
+    return;
+  task_queue_throttled_ = should_throttle;
+
   if (should_throttle) {
     renderer_scheduler_->task_queue_throttler()->IncreaseThrottleRefCount(
         throttleable_task_queue_.get());

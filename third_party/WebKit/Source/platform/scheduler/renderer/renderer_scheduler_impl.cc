@@ -97,14 +97,6 @@ const char* AudioPlayingStateToString(bool is_audio_playing) {
   }
 }
 
-const char* YesNoStateToString(bool is_yes) {
-  if (is_yes) {
-    return "yes";
-  } else {
-    return "no";
-  }
-}
-
 const char* RendererProcessTypeToString(RendererProcessType process_type) {
   switch (process_type) {
     case RendererProcessType::kRenderer:

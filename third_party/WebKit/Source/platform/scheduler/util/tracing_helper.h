@@ -40,6 +40,8 @@ PLATFORM_EXPORT std::string PointerToString(const void* pointer);
 
 PLATFORM_EXPORT double TimeDeltaToMilliseconds(const base::TimeDelta& value);
 
+PLATFORM_EXPORT const char* YesNoStateToString(bool is_yes);
+
 class TraceableVariable;
 
 // Unfortunately, using |base::trace_event::TraceLog::EnabledStateObserver|

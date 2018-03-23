@@ -22,6 +22,8 @@ enum class FrameOriginType {
 
 FrameOriginType GetFrameOriginType(WebFrameScheduler* frame_scheduler);
 
+const char* FrameOriginTypeToString(FrameOriginType origin);
+
 }  // namespace scheduler
 }  // namespace blink
 
