@@ -904,6 +904,9 @@ CSSSelectorParser::SplitCompoundAtImplicitShadowCrossingCombinator(
   // Likewise, ::slotted() pseudo element has an implicit ShadowSlot combinator
   // to its left for finding matching slot element in other TreeScope.
   //
+  // ::part has a implicit ShadowPart combinator to it's left finding the host
+  // element in the scope of the style rule.
+  //
   // Example:
   //
   // slot[name=foo]::slotted(div) -> [ ::slotted(div), slot, [name=foo] ]

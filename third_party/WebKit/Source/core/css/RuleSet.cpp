@@ -123,6 +123,7 @@ static void ExtractSelectorValues(const CSSSelector* selector,
         case CSSSelector::kPseudoAnyLink:
         case CSSSelector::kPseudoFocus:
         case CSSSelector::kPseudoPlaceholder:
+        case CSSSelector::kPseudoPart:
         case CSSSelector::kPseudoHost:
         case CSSSelector::kPseudoHostContext:
           pseudo_type = selector->GetPseudoType();
