@@ -120,12 +120,18 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
         gpu_preferences.log_gpu_control_list_decisions, command_line,
         &needs_more_info);
   }
-  if (gpu::SwitchableGPUsSupported(gpu_info_, *command_line)) {
-    gpu::InitializeSwitchableGPUs(
-        gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
-  }
 #endif  // !OS_ANDROID && !IS_CHROMECAST
   gpu_info_.in_process_gpu = false;
+
+  // GL bindings may have already been initialized, specifically on MacOSX.
+  bool gl_initialized = gl::GetGLImplementation() != gl::kGLImplementationNone;
+  if (!gl_initialized) {
+    // If GL has already been initialized, then it's too late to select GPU.
+    if (gpu::SwitchableGPUsSupported(gpu_info_, *command_line)) {
+      gpu::InitializeSwitchableGPUs(
+          gpu_feature_info_.enabled_gpu_driver_bug_workarounds);
+    }
+  }
 
   bool enable_watchdog = !gpu_preferences.disable_gpu_watchdog &&
                          !command_line->HasSwitch(switches::kHeadless);
@@ -189,10 +195,6 @@ bool GpuInit::InitializeAndStartSandbox(base::CommandLine* command_line,
 #endif
 
   bool use_swiftshader = ShouldEnableSwiftShader(command_line, needs_more_info);
-  // Load and initialize the GL implementation and locate the GL entry points if
-  // needed. This initialization may have already happened if running in the
-  // browser process, for example.
-  bool gl_initialized = gl::GetGLImplementation() != gl::kGLImplementationNone;
   if (gl_initialized && use_swiftshader) {
     gl::init::ShutdownGL(true);
     gl_initialized = false;
