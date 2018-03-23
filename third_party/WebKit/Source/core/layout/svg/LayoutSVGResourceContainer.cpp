@@ -209,11 +209,9 @@ static inline void RemoveFromCacheAndInvalidateDependencies(
 
   ToSVGElement(object.GetNode())
       ->NotifyIncomingReferences([needs_layout](SVGElement& element) {
-        LayoutObject* layout_object = element.GetLayoutObject();
-        if (!layout_object)
-          return;
+        DCHECK(element.GetLayoutObject());
         LayoutSVGResourceContainer::MarkForLayoutAndParentResourceInvalidation(
-            *layout_object, needs_layout);
+            *element.GetLayoutObject(), needs_layout);
       });
 }
 
