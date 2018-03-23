@@ -443,7 +443,7 @@ static void generate_chroma_grain_blocks(
   if (params->num_y_points > 0) ++num_pos_chroma;
   int rounding_offset = (1 << (params->ar_coeff_shift - 1));
 
-  if (params->num_cb_points) {
+  if (params->num_cb_points || params->chroma_scaling_from_luma) {
     init_random_generator(7 << 5, params->random_seed);
 
     for (int i = 0; i < chroma_block_size_y; i++)
@@ -453,7 +453,7 @@ static void generate_chroma_grain_blocks(
              ((1 << gauss_sec_shift) >> 1)) >>
             gauss_sec_shift;
   }
-  if (params->num_cr_points) {
+  if (params->num_cr_points || params->chroma_scaling_from_luma) {
     init_random_generator(11 << 5, params->random_seed);
 
     for (int i = 0; i < chroma_block_size_y; i++)
@@ -502,12 +502,12 @@ static void generate_chroma_grain_blocks(
           exit(1);
         }
       }
-      if (params->num_cb_points)
+      if (params->num_cb_points || params->chroma_scaling_from_luma)
         cb_grain_block[i * chroma_grain_stride + j] =
             clamp(cb_grain_block[i * chroma_grain_stride + j] +
                       ((wsum_cb + rounding_offset) >> params->ar_coeff_shift),
                   grain_min, grain_max);
-      if (params->num_cr_points)
+      if (params->num_cr_points || params->chroma_scaling_from_luma)
         cr_grain_block[i * chroma_grain_stride + j] =
             clamp(cr_grain_block[i * chroma_grain_stride + j] +
                       ((wsum_cr + rounding_offset) >> params->ar_coeff_shift),
@@ -571,8 +571,10 @@ static void add_noise_to_block(aom_film_grain_t *params, uint8_t *luma,
   int rounding_offset = (1 << (params->scaling_shift - 1));
 
   int apply_y = params->num_y_points > 0 ? 1 : 0;
-  int apply_cb = params->num_cb_points > 0 ? 1 : 0;
-  int apply_cr = params->num_cr_points > 0 ? 1 : 0;
+  int apply_cb =
+      (params->num_cb_points > 0 || params->chroma_scaling_from_luma) ? 1 : 0;
+  int apply_cr =
+      (params->num_cr_points > 0 || params->chroma_scaling_from_luma) ? 1 : 0;
 
   if (params->chroma_scaling_from_luma) {
     cb_mult = 0;        // fixed scale
@@ -679,8 +681,12 @@ static void add_noise_to_block_hbd(
   int rounding_offset = (1 << (params->scaling_shift - 1));
 
   int apply_y = params->num_y_points > 0 ? 1 : 0;
-  int apply_cb = params->num_cb_points > 0 ? 1 : 0;
-  int apply_cr = params->num_cr_points > 0 ? 1 : 0;
+  int apply_cb =
+      (params->num_cb_points > 0 || params->chroma_scaling_from_luma) > 0 ? 1
+                                                                          : 0;
+  int apply_cr =
+      (params->num_cr_points > 0 || params->chroma_scaling_from_luma) > 0 ? 1
+                                                                          : 0;
 
   if (params->chroma_scaling_from_luma) {
     cb_mult = 0;        // fixed scale
