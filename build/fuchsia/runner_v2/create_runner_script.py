@@ -55,6 +55,7 @@ def main(args):
   group = parser.add_argument_group('Test runner path arguments.')
   group.add_argument('--output-directory')
   group.add_argument('--package')
+  group.add_argument('--package-manifest')
   args, runner_args = parser.parse_known_args(args)
 
   def RelativizePathToScript(path):
@@ -70,6 +71,8 @@ def main(args):
       ('--output-directory', RelativizePathToScript(args.output_directory)))
   runner_path_args.append(
       ('--package', RelativizePathToScript(args.package)))
+  runner_path_args.append(
+      ('--package-manifest', RelativizePathToScript(args.package_manifest)))
 
   with open(args.script_output_path, 'w') as script:
     script.write(SCRIPT_TEMPLATE.format(
