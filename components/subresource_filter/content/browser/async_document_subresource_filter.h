@@ -118,7 +118,12 @@ class AsyncDocumentSubresourceFilter {
 
   // Should only be called for main frames. Updates |activation_state_| with the
   // more accurate |updated_page_state|, but retains ruleset specific properties
-  // like document whitelisting.
+  // like document whitelisting. Must be called after initial activation state
+  // is computed.
+  //
+  // Posts a task to update the state in |core_|, so any calls to
+  // GetLoadPolicyForSubdocument that are called before this will get the old
+  // state.
   void UpdateWithMoreAccurateState(const ActivationState& updated_page_state);
 
   // Must be called after activation state computation is finished.
@@ -167,6 +172,9 @@ class AsyncDocumentSubresourceFilter::Core {
 
  private:
   friend class AsyncDocumentSubresourceFilter;
+
+  // Updates the ActivationState in |filter_|.
+  void SetActivationState(const ActivationState& state);
 
   // Computes ActivationState from |params| and initializes a DSF using it.
   // Returns the computed activation state.
