@@ -337,7 +337,8 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       allow_cross_origin_auth_prompt_(false),
       create_download_handler_intercept_(download_handler_intercept),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()),
-      io_thread_task_runner_(io_thread_runner) {
+      io_thread_task_runner_(io_thread_runner),
+      weak_ptr_factory_(this) {
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   DCHECK(!g_resource_dispatcher_host);
   g_resource_dispatcher_host = this;
@@ -350,7 +351,7 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
       FROM_HERE, base::BindOnce(&ResourceDispatcherHostImpl::OnInit,
                                 base::Unretained(this)));
 
-  update_load_states_timer_ = std::make_unique<base::RepeatingTimer>();
+  update_load_info_timer_ = std::make_unique<base::OneShotTimer>();
 
   // Monitor per-tab outstanding requests only if OOPIF is not enabled, because
   // the routing id doesn't represent tabs in OOPIF modes.
@@ -601,12 +602,7 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
 
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
   // Make sure we have the load state monitors running.
-  if (!update_load_states_timer_->IsRunning() &&
-      scheduler_->DeprecatedHasLoadingClients()) {
-    update_load_states_timer_->Start(
-        FROM_HERE, TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
-        this, &ResourceDispatcherHostImpl::UpdateLoadInfo);
-  }
+  MaybeStartUpdateLoadInfoTimer();
   if (record_outstanding_requests_stats_timer_ &&
       !record_outstanding_requests_stats_timer_->IsRunning()) {
     record_outstanding_requests_stats_timer_->Start(
@@ -721,7 +717,7 @@ void ResourceDispatcherHostImpl::OnShutdown() {
   // Make sure we shutdown the timers now, otherwise by the time our destructor
   // runs if the timer is still running the Task is deleted twice (once by
   // the MessageLoop and the second time by RepeatingTimer).
-  update_load_states_timer_.reset();
+  update_load_info_timer_.reset();
   record_outstanding_requests_stats_timer_.reset();
 
   // Clear blocked requests if any left.
@@ -2398,31 +2394,41 @@ ResourceDispatcherHostImpl::GetInterestingPerFrameLoadInfos() {
     }
   }
 
-  for (auto it : frame_infos)
+  for (auto it : frame_infos) {
     infos->push_back(std::move(it.second));
+  }
   return infos;
 }
 
 void ResourceDispatcherHostImpl::UpdateLoadInfo() {
   std::unique_ptr<LoadInfoList> infos(GetInterestingPerFrameLoadInfos());
 
-  // Stop the timer if there are no more pending requests. Future new requests
-  // will restart it as necessary.
-  // Also stop the timer if there are no loading clients, to avoid waking up
-  // unnecessarily when there is a long running (hanging get) request.
-  if (infos->empty() || !scheduler_->DeprecatedHasLoadingClients()) {
-    update_load_states_timer_->Stop();
-    return;
-  }
-
   // We need to be able to compare all requests to find the most important one
   // per tab. Since some requests may be navigation requests and we don't have
   // their render frame routing IDs yet (which is what we have for subresource
   // requests), we must go to the UI thread and compare the requests using their
   // WebContents.
-  main_thread_task_runner_->PostTask(
+  waiting_on_load_state_ack_ = true;
+  main_thread_task_runner_->PostTaskAndReply(
       FROM_HERE,
-      base::BindOnce(UpdateLoadStateOnUI, loader_delegate_, std::move(infos)));
+      base::BindOnce(UpdateLoadStateOnUI, loader_delegate_, std::move(infos)),
+      base::BindOnce(&ResourceDispatcherHostImpl::AckUpdateLoadInfo,
+                     weak_ptr_factory_.GetWeakPtr()));
+}
+
+void ResourceDispatcherHostImpl::AckUpdateLoadInfo() {
+  DCHECK(waiting_on_load_state_ack_);
+  waiting_on_load_state_ack_ = false;
+  MaybeStartUpdateLoadInfoTimer();
+}
+
+void ResourceDispatcherHostImpl::MaybeStartUpdateLoadInfoTimer() {
+  if (!waiting_on_load_state_ack_ && !update_load_info_timer_->IsRunning() &&
+      scheduler_->DeprecatedHasLoadingClients() && !pending_loaders_.empty()) {
+    update_load_info_timer_->Start(
+        FROM_HERE, TimeDelta::FromMilliseconds(kUpdateLoadStatesIntervalMsec),
+        this, &ResourceDispatcherHostImpl::UpdateLoadInfo);
+  }
 }
 
 void ResourceDispatcherHostImpl::RecordOutstandingRequestsStats() {

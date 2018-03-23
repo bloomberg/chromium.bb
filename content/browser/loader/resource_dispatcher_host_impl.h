@@ -23,6 +23,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/single_thread_task_runner.h"
@@ -47,6 +48,7 @@
 
 namespace base {
 class FilePath;
+class OneShotTimer;
 class RepeatingTimer;
 }
 
@@ -534,6 +536,14 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
   // Checks all pending requests and updates the load info if necessary.
   void UpdateLoadInfo();
 
+  // Invoked on the IO thread once load state has been updated on the UI thread,
+  // starts timer call UpdateLoadInfo() again, if needed.
+  void AckUpdateLoadInfo();
+
+  // Starts the timer to call UpdateLoadInfo(), if timer isn't already running,
+  // |waiting_on_load_state_ack_| is false, and there are live ResourceLoaders.
+  void MaybeStartUpdateLoadInfoTimer();
+
   // Records statistics about outstanding requests since the last call, and
   // reset the stats.
   void RecordOutstandingRequestsStats();
@@ -718,9 +728,13 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
       RegisteredTempFiles;  // key is child process id
   RegisteredTempFiles registered_temp_files_;
 
-  // A timer that periodically calls UpdateLoadInfo while pending_loaders_ is
-  // not empty and at least one RenderViewHost is loading.
-  std::unique_ptr<base::RepeatingTimer> update_load_states_timer_;
+  // A timer that periodically calls UpdateLoadInfo while |pending_loaders_| is
+  // not empty, at least one RenderViewHost is loading, and not waiting on an
+  // ACK from the UI thread for the last sent LoadInfoList.
+  std::unique_ptr<base::OneShotTimer> update_load_info_timer_;
+  // True if a LoadInfoList has been sent to the UI thread, but has yet to be
+  // acknowledged.
+  bool waiting_on_load_state_ack_ = false;
 
   // A timer that periodically calls RecordOutstandingRequestsStats.
   std::unique_ptr<base::RepeatingTimer>
@@ -824,6 +838,8 @@ class CONTENT_EXPORT ResourceDispatcherHostImpl
 
   // Task runner for the IO thead.
   scoped_refptr<base::SingleThreadTaskRunner> io_thread_task_runner_;
+
+  base::WeakPtrFactory<ResourceDispatcherHostImpl> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceDispatcherHostImpl);
 };
