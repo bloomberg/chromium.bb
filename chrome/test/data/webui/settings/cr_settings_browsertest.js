@@ -955,7 +955,15 @@ CrSettingsSiteDetailsTest.prototype = {
   ]),
 };
 
-TEST_F('CrSettingsSiteDetailsTest', 'All', function() {
+// Disabling on Windows debug due to flaky timeout on Win7 Tests (dbg)(1) bot.
+// https://crbug.com/825304
+GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('#define MAYBE_All DISABLED_All');
+GEN('#else');
+GEN('#define MAYBE_All All');
+GEN('#endif');
+
+TEST_F('CrSettingsSiteDetailsTest', 'MAYBE_All', function() {
   mocha.run();
 });
 
