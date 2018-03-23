@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string_util.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/values.h"
 #include "crypto/sha2.h"
@@ -24,16 +25,13 @@ ContentHashReader::~ContentHashReader() {}
 
 // static.
 std::unique_ptr<const ContentHashReader> ContentHashReader::Create(
-    const ExtensionId& extension_id,
-    const base::Version& extension_version,
-    const base::FilePath& extension_root,
     const base::FilePath& relative_path,
-    const ContentVerifierKey& key) {
+    const scoped_refptr<const ContentHash>& content_hash) {
+  base::AssertBlockingAllowed();
   base::ElapsedTimer timer;
 
-  std::unique_ptr<ContentHash> content_hash =
-      ContentHash::Create(ContentHash::ExtensionKey(
-          extension_id, extension_root, extension_version, key));
+  const ContentHash::ExtensionKey& extension_key =
+      content_hash->extension_key();
   auto hash_reader = base::WrapUnique(new ContentHashReader);
 
   if (!content_hash->succeeded())
@@ -47,7 +45,8 @@ std::unique_ptr<const ContentHashReader> ContentHashReader::Create(
   // verified_contents.json. This can happen when an extension sends an XHR to a
   // resource.
   if (!verified_contents.HasTreeHashRoot(relative_path)) {
-    base::FilePath full_path = extension_root.Append(relative_path);
+    base::FilePath full_path =
+        extension_key.extension_root.Append(relative_path);
     // Making a request to a non-existent file or to a directory should not
     // result in content verification failure.
     // TODO(proberge): This logic could be simplified if |content_verify_job|

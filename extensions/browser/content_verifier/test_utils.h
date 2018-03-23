@@ -145,7 +145,12 @@ class VerifierObserver : public ContentVerifier::TestObserver {
  private:
   std::set<ExtensionId> completed_fetches_;
   ExtensionId id_to_wait_for_;
+
+  // Created and accessed on |creation_thread_|.
   scoped_refptr<content::MessageLoopRunner> loop_runner_;
+  content::BrowserThread::ID creation_thread_;
+
+  DISALLOW_COPY_AND_ASSIGN(VerifierObserver);
 };
 
 namespace content_verifier_test_utils {

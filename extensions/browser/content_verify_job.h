@@ -29,7 +29,9 @@ class SecureHash;
 
 namespace extensions {
 
+class ContentHash;
 class ContentHashReader;
+class ContentVerifier;
 
 // Objects of this class are responsible for verifying that the actual content
 // read from an extension file matches an expected set of hashes. This class
@@ -59,12 +61,11 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
                    const base::Version& extension_version,
                    const base::FilePath& extension_root,
                    const base::FilePath& relative_path,
-                   const ContentVerifierKey& content_verifier_key,
                    FailureCallback failure_callback);
 
   // This begins the process of getting expected hashes, so it should be called
   // as early as possible.
-  void Start();
+  void Start(ContentVerifier* verifier);
 
   // Call this to add more bytes to verify. If at any point the read bytes
   // don't match the expected hashes, this will dispatch the failure
@@ -99,6 +100,8 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
  private:
   virtual ~ContentVerifyJob();
   friend class base::RefCountedThreadSafe<ContentVerifyJob>;
+
+  void DidGetContentHashOnIO(const scoped_refptr<const ContentHash>& hash);
 
   // Same as BytesRead, but is run without acquiring lock.
   void BytesReadImpl(int count, const char* data);
@@ -145,8 +148,6 @@ class ContentVerifyJob : public base::RefCountedThreadSafe<ContentVerifyJob> {
   const base::Version extension_version_;
   const base::FilePath extension_root_;
   const base::FilePath relative_path_;
-
-  const ContentVerifierKey content_verifier_key_;
 
   base::TimeDelta time_spent_;
 

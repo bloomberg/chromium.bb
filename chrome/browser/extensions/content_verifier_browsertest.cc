@@ -264,7 +264,7 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   job_observer.ExpectJobResult(id, base::FilePath(FILE_PATH_LITERAL("cs2.js")),
                                Result::SUCCESS);
 
-  VerifierObserver verifier_observer;
+  auto verifier_observer = std::make_unique<VerifierObserver>();
 
   // Install a test extension we copied from the webstore that has actual
   // signatures, and contains paths with a leading "./" in various places.
@@ -277,8 +277,14 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
   // The content scripts might fail verification the first time since the
   // one-time processing might not be finished yet - if that's the case then
   // we want to wait until that work is done.
-  if (!base::ContainsKey(verifier_observer.completed_fetches(), id))
-    verifier_observer.WaitForFetchComplete(id);
+  if (!base::ContainsKey(verifier_observer->completed_fetches(), id))
+    verifier_observer->WaitForFetchComplete(id);
+
+  // It is important to destroy |verifier_observer| here so that it doesn't see
+  // any fetch from EnableExtension call below (the observer pointer in
+  // content_verifier.cc isn't thread safe, so it might asynchronously call
+  // OnFetchComplete after this test's body executes).
+  verifier_observer.reset();
 
   // Now disable/re-enable the extension to cause the content scripts to be
   // read again.

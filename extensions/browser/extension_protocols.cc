@@ -650,7 +650,7 @@ ExtensionProtocolHandler::MaybeCreateJob(
     verify_job =
         verifier->CreateJobFor(extension_id, directory_path, relative_path);
     if (verify_job)
-      verify_job->Start();
+      verify_job->Start(verifier);
   }
 
   return new URLRequestExtensionJob(request,
@@ -964,7 +964,7 @@ class ExtensionURLLoaderFactory : public network::mojom::URLLoaderFactory {
                                                   resource.extension_root(),
                                                   resource.relative_path());
       if (verify_job)
-        verify_job->Start();
+        verify_job->Start(content_verifier.get());
     }
 
     content::CreateFileURLLoader(

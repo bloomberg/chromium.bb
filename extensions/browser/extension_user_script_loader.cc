@@ -52,7 +52,7 @@ void VerifyContent(const scoped_refptr<ContentVerifier>& verifier,
   scoped_refptr<ContentVerifyJob> job(
       verifier->CreateJobFor(extension_id, extension_root, relative_path));
   if (job.get()) {
-    job->Start();
+    job->Start(verifier.get());
     job->BytesRead(content.size(), content.data());
     job->DoneReading();
   }
