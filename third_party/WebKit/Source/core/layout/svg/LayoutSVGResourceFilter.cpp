@@ -70,8 +70,9 @@ void LayoutSVGResourceFilter::RemoveAllClientsFromCache(
   // display item invalidation is needed here.
   DisposeFilterMap();
   MarkAllClientsForInvalidation(
-      mark_for_invalidation ? kLayoutInvalidation | kBoundariesInvalidation
-                            : kParentOnlyInvalidation);
+      mark_for_invalidation ? SVGResourceClient::kLayoutInvalidation |
+                                  SVGResourceClient::kBoundariesInvalidation
+                            : SVGResourceClient::kParentOnlyInvalidation);
 }
 
 bool LayoutSVGResourceFilter::RemoveClientFromCache(LayoutObject& client) {
@@ -128,11 +129,12 @@ void LayoutSVGResourceFilter::PrimitiveAttributeChanged(
     node_map->InvalidateDependentEffects(effect);
 
     // Issue paint invalidations for the image on the screen.
-    MarkClientForInvalidation(*filter.key, kPaintInvalidation);
+    MarkClientForInvalidation(*filter.key,
+                              SVGResourceClient::kPaintInvalidation);
   }
   if (LocalSVGResource* resource =
           ToSVGFilterElement(GetElement())->AssociatedResource())
-    resource->NotifyContentChanged();
+    resource->NotifyContentChanged(SVGResourceClient::kPaintInvalidation);
 }
 
 }  // namespace blink

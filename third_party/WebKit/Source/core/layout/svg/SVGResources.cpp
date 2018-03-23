@@ -302,12 +302,11 @@ InvalidationModeMask SVGResources::RemoveClientFromCacheAffectingObjectBounds(
     clipper->RemoveClientFromCache(client);
   if (LayoutSVGResourceFilter* filter = clipper_filter_masker_data_->filter) {
     if (filter->RemoveClientFromCache(client))
-      invalidation_flags |= LayoutSVGResourceContainer::kPaintInvalidation;
+      invalidation_flags |= SVGResourceClient::kPaintInvalidation;
   }
   if (LayoutSVGResourceMasker* masker = clipper_filter_masker_data_->masker)
     masker->RemoveClientFromCache(client);
-  return invalidation_flags |
-         LayoutSVGResourceContainer::kBoundariesInvalidation;
+  return invalidation_flags | SVGResourceClient::kBoundariesInvalidation;
 }
 
 InvalidationModeMask SVGResources::RemoveClientFromCache(
@@ -322,7 +321,7 @@ InvalidationModeMask SVGResources::RemoveClientFromCache(
     linked_resource_->RemoveClientFromCache(client);
     // The only linked resources are gradients and patterns, i.e
     // always a paint server.
-    return LayoutSVGResourceContainer::kPaintInvalidation;
+    return SVGResourceClient::kPaintInvalidation;
   }
 
   InvalidationModeMask invalidation_flags =
@@ -335,7 +334,7 @@ InvalidationModeMask SVGResources::RemoveClientFromCache(
       marker->RemoveClientFromCache(client);
     if (LayoutSVGResourceMarker* marker = marker_data_->marker_end)
       marker->RemoveClientFromCache(client);
-    invalidation_flags |= LayoutSVGResourceContainer::kBoundariesInvalidation;
+    invalidation_flags |= SVGResourceClient::kBoundariesInvalidation;
   }
 
   if (fill_stroke_data_) {
@@ -343,7 +342,7 @@ InvalidationModeMask SVGResources::RemoveClientFromCache(
       fill->RemoveClientFromCache(client);
     if (LayoutSVGResourcePaintServer* stroke = fill_stroke_data_->stroke)
       stroke->RemoveClientFromCache(client);
-    invalidation_flags |= LayoutSVGResourceContainer::kPaintInvalidation;
+    invalidation_flags |= SVGResourceClient::kPaintInvalidation;
   }
 
   return invalidation_flags;

@@ -41,7 +41,7 @@ PaintLayerResourceInfo::~PaintLayerResourceInfo() {
   DCHECK(!layer_);
 }
 
-void PaintLayerResourceInfo::ResourceContentChanged() {
+void PaintLayerResourceInfo::ResourceContentChanged(InvalidationModeMask) {
   DCHECK(layer_);
   LayoutObject& layout_object = layer_->GetLayoutObject();
   layout_object.SetShouldDoFullPaintInvalidation();

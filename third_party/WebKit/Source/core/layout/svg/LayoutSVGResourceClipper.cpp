@@ -114,8 +114,9 @@ void LayoutSVGResourceClipper::RemoveAllClientsFromCache(
   cached_paint_record_.reset();
   local_clip_bounds_ = FloatRect();
   MarkAllClientsForInvalidation(
-      mark_for_invalidation ? kLayoutInvalidation | kBoundariesInvalidation
-                            : kParentOnlyInvalidation);
+      mark_for_invalidation ? SVGResourceClient::kLayoutInvalidation |
+                                  SVGResourceClient::kBoundariesInvalidation
+                            : SVGResourceClient::kParentOnlyInvalidation);
 }
 
 Optional<Path> LayoutSVGResourceClipper::AsPath() {
@@ -268,7 +269,8 @@ FloatRect LayoutSVGResourceClipper::ResourceBoundingBox(
 }
 
 void LayoutSVGResourceClipper::WillBeDestroyed() {
-  MarkAllClientsForInvalidation(kBoundariesInvalidation | kPaintInvalidation);
+  MarkAllClientsForInvalidation(SVGResourceClient::kBoundariesInvalidation |
+                                SVGResourceClient::kPaintInvalidation);
   LayoutSVGResourceContainer::WillBeDestroyed();
 }
 
