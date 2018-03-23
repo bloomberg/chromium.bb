@@ -73,7 +73,7 @@ struct UI_BASE_IME_EXPORT ImeTextSpan {
   Type type;
   uint32_t start_offset;
   uint32_t end_offset;
-  SkColor underline_color = SK_ColorBLACK;
+  SkColor underline_color = SK_ColorTRANSPARENT;
   Thickness thickness;
   SkColor background_color;
   SkColor suggestion_highlight_color;

@@ -732,7 +732,7 @@ void InputMethodChromeOS::ExtractCompositionText(
     }
   }
 
-  // Use a black thin underline by default.
+  // Use a thin underline with text color by default.
   if (out_composition->ime_text_spans.empty()) {
     out_composition->ime_text_spans.push_back(
         ImeTextSpan(ui::ImeTextSpan::Type::kComposition, 0, length,

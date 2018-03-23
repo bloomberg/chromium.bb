@@ -34,6 +34,11 @@ bool StyleableMarker::HasThicknessThick() const {
   return thickness_ == ImeTextSpanThickness::kThick;
 }
 
+bool StyleableMarker::UseTextColor() const {
+  return thickness_ != ImeTextSpanThickness::kNone &&
+         underline_color_ == Color::kTransparent;
+}
+
 Color StyleableMarker::BackgroundColor() const {
   return background_color_;
 }

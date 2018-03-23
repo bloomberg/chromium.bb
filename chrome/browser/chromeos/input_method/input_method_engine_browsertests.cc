@@ -568,13 +568,13 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ASSERT_EQ(2U, ime_text_spans.size());
     // single underline
-    EXPECT_EQ(SK_ColorBLACK, ime_text_spans[0].underline_color);
+    EXPECT_EQ(SK_ColorTRANSPARENT, ime_text_spans[0].underline_color);
     EXPECT_EQ(ui::ImeTextSpan::Thickness::kThin, ime_text_spans[0].thickness);
     EXPECT_EQ(0U, ime_text_spans[0].start_offset);
     EXPECT_EQ(5U, ime_text_spans[0].end_offset);
 
     // double underline
-    EXPECT_EQ(SK_ColorBLACK, ime_text_spans[1].underline_color);
+    EXPECT_EQ(SK_ColorTRANSPARENT, ime_text_spans[1].underline_color);
     EXPECT_EQ(ui::ImeTextSpan::Thickness::kThick, ime_text_spans[1].thickness);
     EXPECT_EQ(6U, ime_text_spans[1].start_offset);
     EXPECT_EQ(10U, ime_text_spans[1].end_offset);
@@ -1032,7 +1032,7 @@ IN_PROC_BROWSER_TEST_P(InputMethodEngineBrowserTest,
 
     ASSERT_EQ(1U, ime_text_spans.size());
     // single underline
-    EXPECT_EQ(SK_ColorBLACK, ime_text_spans[0].underline_color);
+    EXPECT_EQ(SK_ColorTRANSPARENT, ime_text_spans[0].underline_color);
     EXPECT_EQ(ui::ImeTextSpan::Thickness::kThin, ime_text_spans[0].thickness);
     EXPECT_EQ(0U, ime_text_spans[0].start_offset);
     EXPECT_EQ(1U, ime_text_spans[0].end_offset);
