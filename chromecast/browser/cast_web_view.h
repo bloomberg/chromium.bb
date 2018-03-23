@@ -19,6 +19,8 @@ namespace chromecast {
 
 class CastWindowManager;
 
+using shell::VisibilityPriority;
+
 // A simplified interface for loading and displaying WebContents in cast_shell.
 class CastWebView {
  public:
@@ -102,7 +104,8 @@ class CastWebView {
   // Adds the page to the window manager and makes it visible to the user if
   // |is_visible| is true.
   virtual void CreateWindow(CastWindowManager* window_manager,
-                            bool is_visible) = 0;
+                            bool is_visible,
+                            VisibilityPriority initial_priority) = 0;
 
   // Observer interface:
   void AddObserver(Observer* observer);

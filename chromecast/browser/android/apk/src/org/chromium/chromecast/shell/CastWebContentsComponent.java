@@ -210,8 +210,9 @@ public class CastWebContentsComponent {
         } else if (CastWebContentsIntentUtils.isIntentOfVisibilityChange(intent)) {
             int visibilityType = CastWebContentsIntentUtils.getVisibilityType(intent);
             if (DEBUG) {
-                Log.d(TAG, "onReceive ACTION_ON_VISIBILITY_CHANGE instance=" + mInstanceId
-                        + "; visibility=" + visibilityType);
+                Log.d(TAG,
+                        "onReceive ACTION_ON_VISIBILITY_CHANGE instance=" + mInstanceId
+                                + "; visibilityType=" + visibilityType);
             }
             if (mSurfaceEventHandler != null) {
                 mSurfaceEventHandler.onVisibilityChange(visibilityType);
@@ -219,8 +220,9 @@ public class CastWebContentsComponent {
         } else if (CastWebContentsIntentUtils.isIntentOfGesturing(intent)) {
             int gestureType = CastWebContentsIntentUtils.getGestureType(intent);
             if (DEBUG) {
-                Log.d(TAG, "onReceive ACTION_ON_VISIBILITY_CHANGE instance=" + mInstanceId
-                        + "; gesture=" + gestureType);
+                Log.d(TAG,
+                        "onReceive ACTION_ON_GESTURE_CHANGE instance=" + mInstanceId
+                                + "; gesture=" + gestureType);
             }
             if (mSurfaceEventHandler != null) {
                 if (mSurfaceEventHandler.consumeGesture(gestureType)) {

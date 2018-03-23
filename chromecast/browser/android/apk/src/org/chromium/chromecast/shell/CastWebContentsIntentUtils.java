@@ -126,6 +126,12 @@ public class CastWebContentsIntentUtils {
     private static final String INTENT_EXTRA_GESTURE_CONSUMED =
             "com.google.android.apps.castshell.intent.extra.GESTURE_CONSUMED";
 
+    // Matches to chromecast::shell::VisibilityPriority
+    static final int VISIBITY_TYPE_UNKNOWN = 0;
+    static final int VISIBITY_TYPE_FULL_SCREEN = 1;
+    static final int VISIBITY_TYPE_PARTIAL_OUT = 2;
+    static final int VISIBITY_TYPE_HIDDEN = 3;
+
     // CastWebContentsSurfaceHelper -> CastWebContentsComponent.Receiver
     // -> CastContentWindowAndroid
     public static Intent onActivityStopped(String instanceId) {

@@ -6,6 +6,7 @@ package org.chromium.chromecast.shell;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -80,6 +81,10 @@ public class CastWebContentsFragment extends Fragment {
     public void onStart() {
         Log.d(TAG, "onStart");
         super.onStart();
+
+        sendIntentSync(CastWebContentsIntentUtils.onVisibilityChange(mSurfaceHelper.getInstanceId(),
+                CastWebContentsIntentUtils.VISIBITY_TYPE_FULL_SCREEN));
+
         if (mSurfaceHelper != null) {
             return;
         }
@@ -129,6 +134,8 @@ public class CastWebContentsFragment extends Fragment {
     @Override
     public void onStop() {
         Log.d(TAG, "onStop");
+        sendIntentSync(CastWebContentsIntentUtils.onVisibilityChange(
+                mSurfaceHelper.getInstanceId(), CastWebContentsIntentUtils.VISIBITY_TYPE_HIDDEN));
         super.onStop();
     }
 
@@ -139,5 +146,9 @@ public class CastWebContentsFragment extends Fragment {
             mSurfaceHelper.onDestroy();
         }
         super.onDestroy();
+    }
+
+    private void sendIntentSync(Intent in) {
+        CastWebContentsIntentUtils.getLocalBroadcastManager().sendBroadcastSync(in);
     }
 }
