@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/memory/shared_memory.h"
+#include "base/memory/shared_memory_mapping.h"
 #include "base/synchronization/lock.h"
 #include "base/trace_event/memory_dump_provider.h"
 
@@ -38,11 +39,15 @@ class BASE_EXPORT SharedMemoryTracker : public trace_event::MemoryDumpProvider {
       const SharedMemory* shared_memory,
       trace_event::ProcessMemoryDump* pmd);
 
-  // Records shared memory usage on mapping.
+  // Records shared memory usage on valid mapping.
   void IncrementMemoryUsage(const SharedMemory& shared_memory);
+  // We're in the middle of a refactor https://crbug.com/795291. Eventually, the
+  // first call will go away.
+  void IncrementMemoryUsage(const SharedMemoryMapping& mapping);
 
   // Records shared memory usage on unmapping.
   void DecrementMemoryUsage(const SharedMemory& shared_memory);
+  void DecrementMemoryUsage(const SharedMemoryMapping& mapping);
 
   // Root dump name for all shared memory dumps.
   static const char kDumpRootName[];
@@ -55,9 +60,24 @@ class BASE_EXPORT SharedMemoryTracker : public trace_event::MemoryDumpProvider {
   bool OnMemoryDump(const trace_event::MemoryDumpArgs& args,
                     trace_event::ProcessMemoryDump* pmd) override;
 
+  static const trace_event::MemoryAllocatorDump*
+  GetOrCreateSharedMemoryDumpInternal(void* mapped_memory,
+                                      size_t mapped_size,
+                                      const UnguessableToken& mapped_id,
+                                      trace_event::ProcessMemoryDump* pmd);
+
+  // Information associated with each mapped address.
+  struct UsageInfo {
+    UsageInfo(size_t size, const UnguessableToken& id)
+        : mapped_size(size), mapped_id(id) {}
+
+    size_t mapped_size;
+    UnguessableToken mapped_id;
+  };
+
   // Used to lock when |usages_| is modified or read.
   Lock usages_lock_;
-  std::map<const SharedMemory*, size_t> usages_;
+  std::map<void*, UsageInfo> usages_;
 
   DISALLOW_COPY_AND_ASSIGN(SharedMemoryTracker);
 };

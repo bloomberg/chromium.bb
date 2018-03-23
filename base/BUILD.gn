@@ -513,6 +513,8 @@ jumbo_component("base") {
     "memory/memory_pressure_monitor_mac.h",
     "memory/memory_pressure_monitor_win.cc",
     "memory/memory_pressure_monitor_win.h",
+    "memory/platform_shared_memory_region.cc",
+    "memory/platform_shared_memory_region.h",
     "memory/protected_memory.cc",
     "memory/protected_memory.h",
     "memory/protected_memory_cfi.h",
@@ -520,6 +522,8 @@ jumbo_component("base") {
     "memory/protected_memory_win.cc",
     "memory/ptr_util.h",
     "memory/raw_scoped_refptr_mismatch_checker.h",
+    "memory/read_only_shared_memory_region.cc",
+    "memory/read_only_shared_memory_region.h",
     "memory/ref_counted.cc",
     "memory/ref_counted.h",
     "memory/ref_counted_delete_on_sequence.h",
@@ -532,11 +536,17 @@ jumbo_component("base") {
     "memory/shared_memory_handle.h",
     "memory/shared_memory_helper.cc",
     "memory/shared_memory_helper.h",
+    "memory/shared_memory_mapping.cc",
+    "memory/shared_memory_mapping.h",
     "memory/shared_memory_tracker.cc",
     "memory/shared_memory_tracker.h",
     "memory/singleton.h",
+    "memory/unsafe_shared_memory_region.cc",
+    "memory/unsafe_shared_memory_region.h",
     "memory/weak_ptr.cc",
     "memory/weak_ptr.h",
+    "memory/writable_shared_memory_region.cc",
+    "memory/writable_shared_memory_region.h",
     "message_loop/incoming_task_queue.cc",
     "message_loop/incoming_task_queue.h",
     "message_loop/message_loop.cc",
@@ -1231,6 +1241,7 @@ jumbo_component("base") {
   if (is_android) {
     sources -= [ "debug/stack_trace_posix.cc" ]
     sources += [
+      "memory/platform_shared_memory_region_android.cc",
       "memory/shared_memory_android.cc",
       "memory/shared_memory_handle_android.cc",
       "time/time_android.cc",
@@ -1298,6 +1309,7 @@ jumbo_component("base") {
       "fuchsia/fuchsia_logging.cc",
       "fuchsia/fuchsia_logging.h",
       "fuchsia/scoped_zx_handle.h",
+      "memory/platform_shared_memory_region_fuchsia.cc",
       "memory/shared_memory_fuchsia.cc",
       "memory/shared_memory_handle_fuchsia.cc",
       "message_loop/message_pump_fuchsia.cc",
@@ -1432,6 +1444,7 @@ jumbo_component("base") {
   # Windows.
   if (is_win) {
     sources += [
+      "memory/platform_shared_memory_region_win.cc",
       "memory/shared_memory_handle_win.cc",
       "memory/shared_memory_win.cc",
       "power_monitor/power_monitor_device_source_win.cc",
@@ -1552,6 +1565,7 @@ jumbo_component("base") {
     sources -= [ "profiler/native_stack_sampler_posix.cc" ]
     sources += [
       "mac/scoped_typeref.h",
+      "memory/platform_shared_memory_region_mac.cc",
       "memory/shared_memory_handle_mac.cc",
       "memory/shared_memory_mac.cc",
       "power_monitor/power_monitor_device_source_mac.mm",
@@ -1704,7 +1718,10 @@ jumbo_component("base") {
   # Android, Fuchsia, and MacOS have their own custom shared memory handle
   # implementations. e.g. due to supporting both POSIX and native handles.
   if (is_posix && !is_android && !is_fuchsia && !is_mac) {
-    sources += [ "memory/shared_memory_handle_posix.cc" ]
+    sources += [
+      "memory/platform_shared_memory_region_posix.cc",
+      "memory/shared_memory_handle_posix.cc",
+    ]
   }
 
   if (is_posix && !is_fuchsia && !is_mac && !is_nacl) {
@@ -2190,11 +2207,13 @@ test("base_unittests") {
     "memory/memory_pressure_monitor_mac_unittest.cc",
     "memory/memory_pressure_monitor_unittest.cc",
     "memory/memory_pressure_monitor_win_unittest.cc",
+    "memory/platform_shared_memory_region_unittest.cc",
     "memory/protected_memory_unittest.cc",
     "memory/ptr_util_unittest.cc",
     "memory/ref_counted_memory_unittest.cc",
     "memory/ref_counted_unittest.cc",
     "memory/shared_memory_mac_unittest.cc",
+    "memory/shared_memory_region_unittest.cc",
     "memory/shared_memory_unittest.cc",
     "memory/shared_memory_win_unittest.cc",
     "memory/singleton_unittest.cc",
