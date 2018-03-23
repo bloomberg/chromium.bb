@@ -18,9 +18,10 @@
 #include "av1/common/txb_common.h"
 
 static const aom_cdf_prob default_newmv_cdf[NEWMV_MODE_CONTEXTS][CDF_SIZE(2)] =
-    { { AOM_CDF2(128 * 155) }, { AOM_CDF2(128 * 116) }, { AOM_CDF2(128 * 94) },
-      { AOM_CDF2(128 * 32) },  { AOM_CDF2(128 * 96) },  { AOM_CDF2(128 * 56) },
-      { AOM_CDF2(128 * 30) } };
+    {
+      { AOM_CDF2(128 * 155) }, { AOM_CDF2(128 * 116) }, { AOM_CDF2(128 * 94) },
+      { AOM_CDF2(128 * 32) },  { AOM_CDF2(128 * 96) },  { AOM_CDF2(128 * 30) }
+    };
 static const aom_cdf_prob default_zeromv_cdf[GLOBALMV_MODE_CONTEXTS][CDF_SIZE(
     2)] = { { AOM_CDF2(128 * 45) }, { AOM_CDF2(128 * 13) } };
 static const aom_cdf_prob default_refmv_cdf[REFMV_MODE_CONTEXTS][CDF_SIZE(2)] =

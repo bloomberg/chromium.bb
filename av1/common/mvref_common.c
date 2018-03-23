@@ -714,7 +714,7 @@ static void setup_ref_mv_list(
       if (newmv_count[ref_frame] >= 1)
         mode_context[ref_frame] |= 4;
       else
-        mode_context[ref_frame] |= 6;
+        mode_context[ref_frame] |= 5;
 
       mode_context[ref_frame] |= (5 << REFMV_OFFSET);
       break;
