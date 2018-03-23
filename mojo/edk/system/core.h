@@ -43,6 +43,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
   Core();
   virtual ~Core();
 
+  static Core* Get();
+
   // Called exactly once, shortly after construction, and before any other
   // methods are called on this object.
   void SetIOTaskRunner(scoped_refptr<base::TaskRunner> io_task_runner);

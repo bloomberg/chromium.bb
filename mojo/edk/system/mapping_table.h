@@ -21,12 +21,6 @@ namespace edk {
 class Core;
 class PlatformSharedBufferMapping;
 
-// Test-only function (defined/used in embedder/test_embedder.cc). Declared here
-// so it can be friended.
-namespace internal {
-bool ShutdownCheckNoLeaks(Core*);
-}
-
 // This class provides the (global) table of memory mappings (owned by |Core|),
 // which maps mapping base addresses to |PlatformSharedBufferMapping|s.
 //
@@ -44,8 +38,6 @@ class MOJO_SYSTEM_IMPL_EXPORT MappingTable {
       std::unique_ptr<PlatformSharedBufferMapping>* mapping);
 
  private:
-  friend bool internal::ShutdownCheckNoLeaks(Core*);
-
   using AddressToMappingMap =
       base::hash_map<void*, PlatformSharedBufferMapping*>;
   AddressToMappingMap address_to_mapping_map_;

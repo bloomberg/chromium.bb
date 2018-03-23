@@ -10,7 +10,6 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_controller.h"
 #include "mojo/edk/system/ports/event.h"
@@ -274,7 +273,7 @@ scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
 
   const SerializedState* state = static_cast<const SerializedState*>(data);
 
-  ports::Node* node = internal::g_core->GetNodeController()->node();
+  ports::Node* node = Core::Get()->GetNodeController()->node();
   ports::PortRef port;
   if (node->GetPort(ports[0], &port) != ports::OK)
     return nullptr;
@@ -283,7 +282,7 @@ scoped_refptr<Dispatcher> MessagePipeDispatcher::Deserialize(
   if (node->GetStatus(port, &status) != ports::OK)
     return nullptr;
 
-  return new MessagePipeDispatcher(internal::g_core->GetNodeController(), port,
+  return new MessagePipeDispatcher(Core::Get()->GetNodeController(), port,
                                    state->pipe_id, state->endpoint);
 }
 

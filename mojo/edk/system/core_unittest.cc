@@ -9,7 +9,6 @@
 #include <limits>
 
 #include "base/bind.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/core_test_base.h"
 #include "mojo/edk/system/test_utils.h"
 #include "mojo/public/cpp/system/wait.h"

@@ -13,7 +13,6 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_shared_buffer.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"
@@ -337,7 +336,7 @@ DataPipeProducerDispatcher::Deserialize(const void* data,
     return nullptr;
   }
 
-  NodeController* node_controller = internal::g_core->GetNodeController();
+  NodeController* node_controller = Core::Get()->GetNodeController();
   ports::PortRef port;
   if (node_controller->node()->GetPort(ports[0], &port) != ports::OK)
     return nullptr;

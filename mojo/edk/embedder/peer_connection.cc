@@ -4,7 +4,6 @@
 
 #include "mojo/edk/embedder/peer_connection.h"
 
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/system/core.h"
 
 namespace mojo {
@@ -14,7 +13,7 @@ PeerConnection::PeerConnection() = default;
 
 PeerConnection::~PeerConnection() {
   if (is_connected_)
-    internal::g_core->ClosePeerConnection(connection_id_);
+    Core::Get()->ClosePeerConnection(connection_id_);
 }
 
 ScopedMessagePipeHandle PeerConnection::Connect(ConnectionParams params) {
@@ -22,10 +21,9 @@ ScopedMessagePipeHandle PeerConnection::Connect(ConnectionParams params) {
   is_connected_ = true;
 
   ports::PortRef peer_port;
-  auto pipe = ScopedMessagePipeHandle(MessagePipeHandle(
-      internal::g_core->CreatePartialMessagePipe(&peer_port)));
-  connection_id_ =
-      internal::g_core->ConnectToPeer(std::move(params), peer_port);
+  auto pipe = ScopedMessagePipeHandle(
+      MessagePipeHandle(Core::Get()->CreatePartialMessagePipe(&peer_port)));
+  connection_id_ = Core::Get()->ConnectToPeer(std::move(params), peer_port);
   return pipe;
 }
 

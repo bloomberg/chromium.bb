@@ -16,7 +16,6 @@
 #include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
 #include "build/build_config.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_handle.h"
 #include "mojo/edk/system/configuration.h"
 #include "mojo/edk/system/core.h"

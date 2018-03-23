@@ -7,7 +7,6 @@
 #include "base/command_line.h"
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
-#include "mojo/edk/embedder/embedder_internal.h"
 #include "mojo/edk/embedder/platform_channel_pair.h"
 #include "mojo/edk/embedder/scoped_platform_handle.h"
 #include "mojo/edk/system/core.h"
@@ -38,14 +37,13 @@ IncomingBrokerClientInvitation::AcceptFromCommandLine(
 
 ScopedMessagePipeHandle IncomingBrokerClientInvitation::ExtractMessagePipe(
     const std::string& name) {
-  return ScopedMessagePipeHandle(MessagePipeHandle(
-      internal::g_core->ExtractMessagePipeFromInvitation(name)));
+  return ScopedMessagePipeHandle(
+      MessagePipeHandle(Core::Get()->ExtractMessagePipeFromInvitation(name)));
 }
 
 IncomingBrokerClientInvitation::IncomingBrokerClientInvitation(
     ConnectionParams params) {
-  DCHECK(internal::g_core);
-  internal::g_core->AcceptBrokerClientInvitation(std::move(params));
+  Core::Get()->AcceptBrokerClientInvitation(std::move(params));
 }
 
 }  // namespace edk

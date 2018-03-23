@@ -11,10 +11,13 @@
 namespace mojo {
 namespace edk {
 
-// Creates a MojoSystemThunks struct populated with the EDK's implementation of
+// Initializes the global Core object.
+MOJO_SYSTEM_IMPL_EXPORT void InitializeCore();
+
+// Returns a MojoSystemThunks struct populated with the EDK's implementation of
 // each function. This may be used by embedders to populate thunks for
 // application loading.
-MOJO_SYSTEM_IMPL_EXPORT MojoSystemThunks MakeSystemThunks();
+MOJO_SYSTEM_IMPL_EXPORT const MojoSystemThunks& GetSystemThunks();
 
 }  // namespace edk
 }  // namespace mojo

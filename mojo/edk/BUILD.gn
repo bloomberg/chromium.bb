@@ -45,7 +45,6 @@ source_set("core") {
   public = [
     "embedder/configuration.h",
     "embedder/connection_params.h",
-    "embedder/embedder_internal.h",
     "embedder/entrypoints.h",
     "embedder/named_platform_channel_pair.h",
     "embedder/named_platform_handle.h",
@@ -57,6 +56,22 @@ source_set("core") {
     "embedder/scoped_ipc_support.h",
     "embedder/scoped_platform_handle.h",
     "embedder/transport_protocol.h",
+    "system/channel.h",
+    "system/configuration.h",
+    "system/core.h",
+    "system/data_pipe_consumer_dispatcher.h",
+    "system/data_pipe_control_message.h",
+    "system/data_pipe_producer_dispatcher.h",
+    "system/dispatcher.h",
+    "system/handle_signals_state.h",
+    "system/handle_table.h",
+    "system/message_pipe_dispatcher.h",
+    "system/node_controller.h",
+    "system/options_validation.h",
+    "system/platform_handle_dispatcher.h",
+    "system/request_context.h",
+    "system/shared_buffer_dispatcher.h",
+    "system/user_message_impl.h",
   ]
 
   sources = [
@@ -70,6 +85,36 @@ source_set("core") {
     "embedder/platform_handle_utils_win.cc",
     "embedder/platform_shared_buffer.cc",
     "embedder/scoped_ipc_support.cc",
+    "system/atomic_flag.h",
+    "system/broker.h",
+    "system/broker_host.cc",
+    "system/broker_host.h",
+    "system/broker_win.cc",
+    "system/channel.cc",
+    "system/channel_win.cc",
+    "system/configuration.cc",
+    "system/core.cc",
+    "system/data_pipe_consumer_dispatcher.cc",
+    "system/data_pipe_control_message.cc",
+    "system/data_pipe_producer_dispatcher.cc",
+    "system/dispatcher.cc",
+    "system/handle_table.cc",
+    "system/mapping_table.cc",
+    "system/mapping_table.h",
+    "system/message_pipe_dispatcher.cc",
+    "system/node_channel.cc",
+    "system/node_channel.h",
+    "system/node_controller.cc",
+    "system/platform_handle_dispatcher.cc",
+    "system/request_context.cc",
+    "system/shared_buffer_dispatcher.cc",
+    "system/user_message_impl.cc",
+    "system/watch.cc",
+    "system/watch.h",
+    "system/watcher_dispatcher.cc",
+    "system/watcher_dispatcher.h",
+    "system/watcher_set.cc",
+    "system/watcher_set.h",
   ]
 
   if (is_fuchsia) {
@@ -77,6 +122,7 @@ source_set("core") {
       "embedder/named_platform_handle_utils_fuchsia.cc",
       "embedder/platform_channel_pair_fuchsia.cc",
       "embedder/platform_handle_utils_fuchsia.cc",
+      "system/channel_fuchsia.cc",
     ]
   } else if (is_posix) {
     public += [ "embedder/platform_channel_utils_posix.h" ]
@@ -87,20 +133,37 @@ source_set("core") {
       "embedder/platform_handle_utils_posix.cc",
     ]
 
+    if (!is_nacl || is_nacl_nonsfi) {
+      sources += [
+        "system/broker_posix.cc",
+        "system/channel_posix.cc",
+      ]
+    }
+
     if (!is_nacl) {
       sources += [ "embedder/named_platform_handle_utils_posix.cc" ]
     }
   }
 
+  if (is_mac && !is_ios) {
+    sources += [
+      "system/mach_port_relay.cc",
+      "system/mach_port_relay.h",
+    ]
+  }
+
   if (is_nacl && !is_nacl_nonsfi) {
-    sources -= [ "embedder/platform_channel_utils_posix.cc" ]
+    sources -= [
+      "embedder/platform_channel_utils_posix.cc",
+      "system/broker_host.cc",
+    ]
   }
 
   defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
 
   public_deps = [
     "//base",
-    "//mojo/edk/system",
+    "//mojo/edk/system/ports",
     "//mojo/public/c/system:headers",
   ]
 
@@ -108,6 +171,18 @@ source_set("core") {
   if (is_android) {
     deps += [ "//third_party/ashmem" ]
   }
+  if (!is_nacl) {
+    deps += [ "//crypto" ]
+  }
 
-  allow_circular_includes_from = [ "//mojo/edk/system" ]
+  if (is_win) {
+    cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()),
+                            # which is uninteresting.
+  }
+
+  # Use target_os == "chromeos" instead of is_chromeos because we need to
+  # build NaCl targets (i.e. IRT) for ChromeOS the same as the rest of ChromeOS.
+  if (is_android || target_os == "chromeos") {
+    defines += [ "MOJO_EDK_LEGACY_PROTOCOL" ]
+  }
 }
