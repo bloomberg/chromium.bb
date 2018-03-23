@@ -9,11 +9,6 @@
 #include "ui/gfx/geometry/rect_conversions.h"
 
 namespace viz {
-namespace {
-
-const gfx::BufferFormat kOverlayFormatsWithAlpha[] = {
-    gfx::BufferFormat::RGBA_8888, gfx::BufferFormat::BGRA_8888};
-}
 
 OverlayStrategySingleOnTop::OverlayStrategySingleOnTop(
     OverlayCandidateValidator* capability_checker)
@@ -38,17 +33,6 @@ bool OverlayStrategySingleOnTop::Attempt(
     if (cc::OverlayCandidate::FromDrawQuad(
             resource_provider, output_color_matrix, *it, &candidate) &&
         !cc::OverlayCandidate::IsOccluded(candidate, quad_list->cbegin(), it)) {
-      // We currently reject quads with alpha that do not request alpha blending
-      // since the alpha channel might not be set to 1 and we're not disabling
-      // blending when scanning out.
-      // TODO(dcastagna): We should support alpha formats without blending using
-      // the opaque FB at scanout.
-      if (std::find(std::begin(kOverlayFormatsWithAlpha),
-                    std::end(kOverlayFormatsWithAlpha),
-                    candidate.format) != std::end(kOverlayFormatsWithAlpha) &&
-          it->shared_quad_state->blend_mode == SkBlendMode::kSrc)
-        continue;
-
       if (candidate.display_rect.size().GetArea() >
           best_candidate.display_rect.size().GetArea()) {
         best_candidate = candidate;
