@@ -317,10 +317,11 @@ public class ContextualSearchTabHelper
      * coordinates.
      */
     @CalledByNative
-    void onShowUnhandledTapUIIfNeeded(int x, int y) {
+    void onShowUnhandledTapUIIfNeeded(int x, int y, int fontSizeDips, int textRunLength) {
         // Only notify the manager if we currently have a valid listener.
         if (mGestureStateListener != null && getContextualSearchManager(mTab) != null) {
-            getContextualSearchManager(mTab).onShowUnhandledTapUIIfNeeded(x, y);
+            getContextualSearchManager(mTab).onShowUnhandledTapUIIfNeeded(
+                    x, y, fontSizeDips, textRunLength);
         }
     }
 

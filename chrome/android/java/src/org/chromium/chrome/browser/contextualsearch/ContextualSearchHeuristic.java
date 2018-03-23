@@ -85,4 +85,13 @@ abstract class ContextualSearchHeuristic {
     protected boolean shouldOverrideMlTapSuppression() {
         return false;
     }
+
+    /**
+     * Clamps an input value into a range of 1-10 inclusive.
+     * @param value The value to limit.
+     * @return A value that's at least 1 and at most 10.
+     */
+    protected int clamp(int value) {
+        return Math.max(1, Math.min(10, value));
+    }
 }

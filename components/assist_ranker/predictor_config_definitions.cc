@@ -36,6 +36,7 @@ const base::flat_set<std::string>* GetContextualSearchFeatureWhitelist() {
   static auto* kContextualSearchFeatureWhitelist =
       new base::flat_set<std::string>({"DidOptIn",
                                        "DurationAfterScrollMs",
+                                       "FontSize",
                                        "IsEntity",
                                        "IsEntityEligible",
                                        "IsHttp",
@@ -50,6 +51,7 @@ const base::flat_set<std::string>* GetContextualSearchFeatureWhitelist() {
                                        "OutcomeWasPanelOpened",
                                        "OutcomeWasQuickActionClicked",
                                        "OutcomeWasQuickAnswerSeen",
+                                       "PortionOfElement",
                                        "Previous28DayCtrPercent",
                                        "Previous28DayImpressionsCount",
                                        "PreviousWeekCtrPercent",

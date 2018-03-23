@@ -40,10 +40,12 @@ public interface ContextualSearchRankerLogger {
         IS_ENTITY,
         TAP_DURATION_MS,
         // UKM CS v3 features (see go/ukm-cs-3).
+        FONT_SIZE,
         IS_SECOND_TAP_OVERRIDE,
         IS_HTTP,
         IS_ENTITY_ELIGIBLE,
-        IS_LANGUAGE_MISMATCH
+        IS_LANGUAGE_MISMATCH,
+        PORTION_OF_ELEMENT
     }
 
     /**

@@ -52,6 +52,9 @@ public class ContextualSearchFieldTrial {
     private static final String SHORT_WORD_SUPPRESSION_ENABLED = "enable_short_word_suppression";
     private static final String NOT_LONG_WORD_SUPPRESSION_ENABLED =
             "enable_not_long_word_suppression";
+    private static final String SHORT_TEXT_RUN_SUPPRESSION_ENABLED =
+            "enable_short_text_run_suppression";
+    private static final String SMALL_TEXT_SUPPRESSION_ENABLED = "enable_small_text_suppression";
     @VisibleForTesting
     static final String NOT_AN_ENTITY_SUPPRESSION_ENABLED = "enable_not_an_entity_suppression";
     // The threshold for tap suppression based on duration.
@@ -96,6 +99,8 @@ public class ContextualSearchFieldTrial {
     private static Boolean sIsShortWordSuppressionEnabled;
     private static Boolean sIsNotLongWordSuppressionEnabled;
     private static Boolean sIsNotAnEntitySuppressionEnabled;
+    private static Boolean sIsShortTextRunSuppressionEnabled;
+    private static Boolean sIsSmallTextSuppressionEnabled;
     private static Integer sMinimumSelectionLength;
     private static Boolean sIsOnlineDetectionDisabled;
     private static Boolean sIsAmpAsSeparateTabDisabled;
@@ -273,6 +278,26 @@ public class ContextualSearchFieldTrial {
             sIsNotAnEntitySuppressionEnabled = getBooleanParam(NOT_AN_ENTITY_SUPPRESSION_ENABLED);
         }
         return sIsNotAnEntitySuppressionEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether triggering is suppressed for a tap that has a short element run-length.
+     */
+    static boolean isShortTextRunSuppressionEnabled() {
+        if (sIsShortTextRunSuppressionEnabled == null) {
+            sIsShortTextRunSuppressionEnabled = getBooleanParam(SHORT_TEXT_RUN_SUPPRESSION_ENABLED);
+        }
+        return sIsShortTextRunSuppressionEnabled.booleanValue();
+    }
+
+    /**
+     * @return Whether triggering is suppressed for a tap on small-looking text.
+     */
+    static boolean isSmallTextSuppressionEnabled() {
+        if (sIsSmallTextSuppressionEnabled == null) {
+            sIsSmallTextSuppressionEnabled = getBooleanParam(SMALL_TEXT_SUPPRESSION_ENABLED);
+        }
+        return sIsSmallTextSuppressionEnabled.booleanValue();
     }
 
     /**

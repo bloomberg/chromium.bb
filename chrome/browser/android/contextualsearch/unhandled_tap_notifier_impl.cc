@@ -29,9 +29,14 @@ void UnhandledTapNotifierImpl::ShowUnhandledTapUIIfNeeded(
     x_px /= device_scale_factor_;
     y_px /= device_scale_factor_;
   }
+
+  // Pixel from Blink are DIPs.
+  int font_size_dips = unhandled_tap_info->font_size_in_pixels;
+
   // Call back through the callback if possible.  (The callback uses a weakptr
   // that might make this a NOP).
-  unhandled_tap_callback_.Run(x_px, y_px);
+  unhandled_tap_callback_.Run(x_px, y_px, font_size_dips,
+                              unhandled_tap_info->element_text_run_length);
 }
 
 // static
