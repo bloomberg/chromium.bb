@@ -1049,8 +1049,6 @@ crbug.com/492664 external/wpt/css/css-writing-modes/clip-rect-vrl-006.xht [ Fail
 crbug.com/492664 external/wpt/css/css-writing-modes/clip-rect-vrl-008.xht [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/line-box-direction-vrl-009.xht [ Failure ]
 
-crbug.com/813545 [ Debug ] media/video-transformed.html [ Skip ]
-
 # These tests pass but images do not match because tests are stricter than the spec.
 crbug.com/492664 external/wpt/css/css-writing-modes/text-combine-upright-value-all-001.html [ Failure ]
 crbug.com/492664 external/wpt/css/css-writing-modes/text-combine-upright-value-all-002.html [ Failure ]
