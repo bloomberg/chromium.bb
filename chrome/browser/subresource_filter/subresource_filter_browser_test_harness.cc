@@ -77,7 +77,6 @@ void SubresourceFilterBrowserTest::SetUpOnMainThread() {
   embedded_test_server()->ServeFilesFromDirectory(test_data_dir);
 
   ASSERT_TRUE(embedded_test_server()->Start());
-  ResetConfigurationToEnableOnPhishingSites();
 
   auto* factory = SubresourceFilterProfileContextFactory::GetForProfile(
       browser()->profile());

@@ -943,6 +943,8 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ExpectHistogramsNotRecordedWhenFilteringNotActivated) {
+  ResetConfigurationToEnableOnPhishingSites(
+      true /* measure_performance */, false /* whitelist_site_on_reload */);
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
   const GURL url = GetTestUrl(kTestFrameSetPath);
