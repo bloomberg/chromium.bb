@@ -218,10 +218,8 @@ void AppListItemList::DeleteItemAt(size_t index) {
 }
 
 void AppListItemList::DeleteAllItems() {
-  if (app_list_items_.empty())
-    return;
-  for (size_t index = app_list_items_.size() - 1; index >= 0; --index)
-    DeleteItemAt(index);
+  while (!app_list_items_.empty())
+    DeleteItemAt(app_list_items_.size() - 1);
 }
 
 void AppListItemList::EnsureValidItemPosition(AppListItem* item) {
