@@ -99,6 +99,8 @@ void WebLeakDetectorImpl::OnLeakDetectionComplete() {
       InstanceCounters::kWorkerGlobalScopeCounter);
   result.number_of_live_ua_css_resources =
       InstanceCounters::CounterValue(InstanceCounters::kUACSSResourceCounter);
+  result.number_of_live_resource_fetchers =
+      InstanceCounters::CounterValue(InstanceCounters::kResourceFetcherCounter);
 
   client_->OnLeakDetectionComplete(result);
   // Reset the client for BlinkLeakDetector

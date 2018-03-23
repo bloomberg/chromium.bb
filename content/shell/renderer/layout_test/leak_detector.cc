@@ -32,6 +32,7 @@ const int kInitialNumberOfLiveResources = 0;
 const int kInitialNumberOfScriptPromises = 0;
 const int kInitialNumberOfLiveFrames = 1;
 const int kInitialNumberOfWorkerGlobalScopes = 0;
+const int kInitialNumberOfLiveResourceFetchers = 1;
 
 // In the initial state, there are two PausableObjects (FontFaceSet created
 // by HTMLDocument and PausableTimer created by DocumentLoader).
@@ -60,6 +61,8 @@ LeakDetector::LeakDetector(BlinkTestRunner* test_runner)
       kInitialNumberOfV8PerContextData;
   previous_result_.number_of_worker_global_scopes =
       kInitialNumberOfWorkerGlobalScopes;
+  previous_result_.number_of_live_resource_fetchers =
+      kInitialNumberOfLiveResourceFetchers;
 }
 
 LeakDetector::~LeakDetector() {
@@ -148,6 +151,13 @@ void LeakDetector::OnLeakDetectionComplete(
     list->AppendInteger(previous_result_.number_of_worker_global_scopes);
     list->AppendInteger(result.number_of_worker_global_scopes);
     detail.Set("numberOfWorkerGlobalScopes", std::move(list));
+  }
+  if (previous_result_.number_of_live_resource_fetchers <
+      result.number_of_live_resource_fetchers) {
+    auto list = std::make_unique<base::ListValue>();
+    list->AppendInteger(previous_result_.number_of_live_resource_fetchers);
+    list->AppendInteger(result.number_of_live_resource_fetchers);
+    detail.Set("numberOfLiveResourceFetchers", std::move(list));
   }
 
   if (!detail.empty()) {

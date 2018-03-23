@@ -79,6 +79,7 @@ const char* const kAllocatorDumpNameWhitelist[] = {
     "blink_objects/V8PerContextData",
     "blink_objects/WorkerGlobalScope",
     "blink_objects/UACSSResource",
+    "blink_objects/ResourceFetcher",
     "components/download/controller_0x?",
     "discardable",
     "discardable/child_0x?",

@@ -17,6 +17,7 @@ Received metrics:
 	WorkerGlobalScopes
 	UACSSResources
 	RTCPeerConnections
+	ResourceFetchers
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
@@ -45,6 +46,7 @@ Received metrics:
 	WorkerGlobalScopes
 	UACSSResources
 	RTCPeerConnections
+	ResourceFetchers
 	LayoutCount
 	RecalcStyleCount
 	LayoutDuration
