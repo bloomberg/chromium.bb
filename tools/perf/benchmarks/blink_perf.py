@@ -355,7 +355,7 @@ class BlinkPerfBindings(_BlinkPerfBenchmark):
   tag = 'bindings'
   subdir = 'Bindings'
 
-@benchmark.Owner(emails=['rune@opera.com'])
+@benchmark.Owner(emails=['futhark@chromium.org'])
 class BlinkPerfCSS(_BlinkPerfBenchmark):
   tag = 'css'
   subdir = 'CSS'
