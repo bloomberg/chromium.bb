@@ -76,6 +76,8 @@ PlatformApiImpl::PlatformApiImpl(const std::string& config,
                                  mojom::AudioInputPtr audio_input)
     : audio_input_provider_(std::move(audio_input)),
       audio_output_provider_(config, this),
+      auth_provider_(),
+      file_provider_(config),
       network_provider_(config),
       resource_provider_(config),
       system_provider_() {}
