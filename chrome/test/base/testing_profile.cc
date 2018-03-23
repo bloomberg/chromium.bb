@@ -8,6 +8,7 @@
 
 #include "base/base_paths.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_util.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -93,10 +94,12 @@
 #include "content/public/test/test_utils.h"
 #include "extensions/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 #include "net/cookies/cookie_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_test_util.h"
+#include "services/network/public/cpp/features.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -985,6 +988,11 @@ Profile::ExitType TestingProfile::GetLastSessionExitType() {
 }
 
 network::mojom::NetworkContextPtr TestingProfile::CreateMainNetworkContext() {
+  if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
+    network::mojom::NetworkContextPtr network_context;
+    mojo::MakeRequest(&network_context);
+    return network_context;
+  }
   return nullptr;
 }
 
