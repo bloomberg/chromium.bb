@@ -19,6 +19,7 @@
 #include "components/autofill/content/renderer/autofill_agent.h"
 #include "components/autofill/content/renderer/form_autofill_util.h"
 #include "components/autofill/content/renderer/test_password_generation_agent.h"
+#include "components/autofill/core/common/autofill_switches.h"
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/password_generation_util.h"
 #include "components/password_manager/core/common/password_manager_features.h"
@@ -150,6 +151,21 @@ class PasswordGenerationAgentTest : public ChromeRenderViewTest {
   DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTest);
 };
 
+class PasswordGenerationAgentTestForHtmlAnnotation
+    : public PasswordGenerationAgentTest {
+ public:
+  PasswordGenerationAgentTestForHtmlAnnotation() {}
+
+  void SetUp() override {
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kShowAutofillSignatures);
+    PasswordGenerationAgentTest::SetUp();
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PasswordGenerationAgentTestForHtmlAnnotation);
+};
+
 const char kSigninFormHTML[] =
     "<FORM name = 'blah' action = 'http://www.random.com/'> "
     "  <INPUT type = 'text' id = 'username'/> "
@@ -159,7 +175,7 @@ const char kSigninFormHTML[] =
     "</FORM>";
 
 const char kAccountCreationFormHTML[] =
-    "<FORM name = 'blah' action = 'http://www.random.com/pa/th?q=1&p=3#first'> "
+    "<FORM id = 'blah' action = 'http://www.random.com/pa/th?q=1&p=3#first'> "
     "  <INPUT type = 'text' id = 'username'/> "
     "  <INPUT type = 'password' id = 'first_password' size = 5/>"
     "  <INPUT type = 'password' id = 'second_password' size = 5/> "
@@ -888,6 +904,47 @@ TEST_F(PasswordGenerationAgentTest, AutofillToGenerationField) {
   // |OnFieldAutofilled| wouldn't trigger any actions.
   password_generation_->OnFieldAutofilled(input_element);
   EXPECT_FALSE(fake_driver_.called_password_no_longer_generated());
+}
+
+TEST_F(PasswordGenerationAgentTestForHtmlAnnotation, AnnotateForm) {
+  LoadHTMLWithUserGesture(kAccountCreationFormHTML);
+  SetNotBlacklistedMessage(password_generation_, kAccountCreationFormHTML);
+  SetAccountCreationFormsDetectedMessage(password_generation_,
+                                         GetMainFrame()->GetDocument(), 0, 1);
+  ExpectGenerationAvailable("first_password", true);
+  WebDocument document = GetMainFrame()->GetDocument();
+
+  // Check the form signature is set.
+  blink::WebElement form_element =
+      document.GetElementById(blink::WebString::FromUTF8("blah"));
+  ASSERT_FALSE(form_element.IsNull());
+  blink::WebString form_signature =
+      form_element.GetAttribute(blink::WebString::FromUTF8("form_signature"));
+  ASSERT_FALSE(form_signature.IsNull());
+  EXPECT_EQ("3524919054660658462", form_signature.Ascii());
+
+  // Check field signatures are set.
+  blink::WebElement username_element =
+      document.GetElementById(blink::WebString::FromUTF8("username"));
+  ASSERT_FALSE(username_element.IsNull());
+  blink::WebString username_signature = username_element.GetAttribute(
+      blink::WebString::FromUTF8("field_signature"));
+  ASSERT_FALSE(username_signature.IsNull());
+  EXPECT_EQ("239111655", username_signature.Ascii());
+
+  blink::WebElement password_element =
+      document.GetElementById(blink::WebString::FromUTF8("first_password"));
+  ASSERT_FALSE(password_element.IsNull());
+  blink::WebString password_signature = password_element.GetAttribute(
+      blink::WebString::FromUTF8("field_signature"));
+  ASSERT_FALSE(password_signature.IsNull());
+  EXPECT_EQ("3933215845", password_signature.Ascii());
+
+  // Check the generation element is marked.
+  blink::WebString generation_mark = password_element.GetAttribute(
+      blink::WebString::FromUTF8("password_creation_field"));
+  ASSERT_FALSE(generation_mark.IsNull());
+  EXPECT_EQ("1", generation_mark.Utf8());
 }
 
 }  // namespace autofill
