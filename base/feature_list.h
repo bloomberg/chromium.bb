@@ -43,12 +43,12 @@ struct BASE_EXPORT Feature {
   const FeatureState default_state;
 };
 
-#if DCHECK_IS_ON() && defined(SYZYASAN)
-// SyzyASAN builds have DCHECKs built-in, but configurable at run-time to been
-// fatal, or not, via a DcheckIsFatal feature. We define the Feature here since
-// it is checked in FeatureList::SetInstance(). See crbug.com/596231.
-extern const Feature kSyzyAsanDCheckIsFatalFeature;
-#endif  // defined(SYZYASAN)
+#if DCHECK_IS_CONFIGURABLE
+// DCHECKs have been built-in, and are configurable at run-time to be fatal, or
+// not, via a DcheckIsFatal feature. We define the Feature here since it is
+// checked in FeatureList::SetInstance(). See https://crbug.com/596231.
+extern const Feature kDCheckIsFatalFeature;
+#endif  // DCHECK_IS_CONFIGURABLE
 
 // The FeatureList class is used to determine whether a given feature is on or
 // off. It provides an authoritative answer, taking into account command-line

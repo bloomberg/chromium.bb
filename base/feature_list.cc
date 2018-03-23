@@ -76,10 +76,10 @@ bool IsValidFeatureOrFieldTrialName(const std::string& name) {
 
 }  // namespace
 
-#if DCHECK_IS_ON() && defined(SYZYASAN)
-const Feature kSyzyAsanDCheckIsFatalFeature{"DcheckIsFatal",
-                                            base::FEATURE_DISABLED_BY_DEFAULT};
-#endif  // defined(SYZYASAN)
+#if DCHECK_IS_CONFIGURABLE
+const Feature kDCheckIsFatalFeature{"DcheckIsFatal",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+#endif  // DCHECK_IS_CONFIGURABLE
 
 FeatureList::FeatureList() = default;
 
@@ -263,19 +263,19 @@ void FeatureList::SetInstance(std::unique_ptr<FeatureList> instance) {
   // Note: Intentional leak of global singleton.
   g_feature_list_instance = instance.release();
 
-#if DCHECK_IS_ON() && defined(SYZYASAN)
+#if DCHECK_IS_CONFIGURABLE
   // Update the behaviour of LOG_DCHECK to match the Feature configuration.
   // DCHECK is also forced to be FATAL if we are running a death-test.
   // TODO(asvitkine): If we find other use-cases that need integrating here
   // then define a proper API/hook for the purpose.
-  if (base::FeatureList::IsEnabled(kSyzyAsanDCheckIsFatalFeature) ||
+  if (base::FeatureList::IsEnabled(kDCheckIsFatalFeature) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           "gtest_internal_run_death_test")) {
     logging::LOG_DCHECK = logging::LOG_FATAL;
   } else {
     logging::LOG_DCHECK = logging::LOG_INFO;
   }
-#endif  // DCHECK_IS_ON() && defined(SYZYASAN)
+#endif  // DCHECK_IS_CONFIGURABLE
 }
 
 // static

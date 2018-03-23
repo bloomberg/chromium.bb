@@ -61,6 +61,9 @@ config("feature_flags") {
   defines = [ "V8_DEPRECATION_WARNINGS" ]
   if (dcheck_always_on) {
     defines += [ "DCHECK_ALWAYS_ON=1" ]
+    if (dcheck_is_configurable) {
+      defines += [ "DCHECK_IS_CONFIGURABLE=1" ]
+    }
   }
   if (use_udev) {
     # TODO(brettw) should probably be "=1".

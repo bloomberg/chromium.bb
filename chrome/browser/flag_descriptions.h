@@ -1475,10 +1475,10 @@ extern const char kUseWinrtMidiApiDescription[];
 extern const char kWindows10CustomTitlebarName[];
 extern const char kWindows10CustomTitlebarDescription[];
 
-#if DCHECK_IS_ON() && defined(SYZYASAN)
-extern const char kSyzyAsanDcheckIsFatalName[];
-extern const char kSyzyAsanDcheckIsFatalDescription[];
-#endif  // DCHECK_IS_ON() && defined(SYZYASAN)
+#if DCHECK_IS_CONFIGURABLE
+extern const char kDcheckIsFatalName[];
+extern const char kDcheckIsFatalDescription[];
+#endif  // DCHECK_IS_CONFIGURABLE
 
 #endif  // defined(OS_WIN)
 
