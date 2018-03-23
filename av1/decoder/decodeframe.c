@@ -62,6 +62,24 @@
 #define MAX_AV1_HEADER_SIZE 80
 #define ACCT_STR __func__
 
+#if CONFIG_TRAILING_BITS
+// Checks that the remaining bits start with a 1 and ends with 0s.
+// It consumes an additional byte, if already byte aligned before the check.
+int av1_check_trailing_bits(AV1Decoder *pbi, struct aom_read_bit_buffer *rb,
+                            int *consumed_byte) {
+  AV1_COMMON *const cm = &pbi->common;
+  // bit_offset is set to 0 (mod 8) when the reader is already byte aligned
+  int bits_before_alignment = 8 - rb->bit_offset % 8;
+  *consumed_byte = (bits_before_alignment == 8);
+  int trailing = aom_rb_read_literal(rb, bits_before_alignment);
+  if (trailing != (1 << (bits_before_alignment - 1))) {
+    cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+    return 1;
+  }
+  return 0;
+}
+#endif
+
 // Use only_chroma = 1 to only set the chroma planes
 static void set_planes_to_neutral_grey(AV1_COMMON *const cm,
                                        MACROBLOCKD *const xd, int only_chroma) {
@@ -3251,6 +3269,11 @@ int av1_decode_frame_headers_and_setup(AV1Decoder *pbi,
                            rb);
 #else
                            av1_init_read_bit_buffer(pbi, &rb, data, data_end));
+#endif
+
+#if CONFIG_TRAILING_BITS
+  int consumed_byte = 0;
+  av1_check_trailing_bits(pbi, rb, &consumed_byte);
 #endif
 
   // If cm->single_tile_decoding = 0, the independent decoding of a single tile

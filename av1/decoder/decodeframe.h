@@ -26,6 +26,11 @@ void av1_read_frame_size(struct aom_read_bit_buffer *rb, int num_bits_width,
                          int num_bits_height, int *width, int *height);
 BITSTREAM_PROFILE av1_read_profile(struct aom_read_bit_buffer *rb);
 
+#if CONFIG_TRAILING_BITS
+int av1_check_trailing_bits(struct AV1Decoder *pbi,
+                            struct aom_read_bit_buffer *rb, int *consumed_byte);
+#endif
+
 // This function is now obsolete
 void av1_decode_frame(struct AV1Decoder *pbi, const uint8_t *data,
                       const uint8_t *data_end, const uint8_t **p_data_end);
