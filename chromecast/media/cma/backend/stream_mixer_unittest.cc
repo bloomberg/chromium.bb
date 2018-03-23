@@ -455,6 +455,15 @@ class StreamMixerTest : public testing::Test {
              static_cast<size_t>(kNumPostProcessors));
   }
 
+  void WaitForMixer() {
+    base::RunLoop run_loop1;
+    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop1.QuitClosure());
+    run_loop1.Run();
+    base::RunLoop run_loop2;
+    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop2.QuitClosure());
+    run_loop2.Run();
+  }
+
   void PlaybackOnce() {
     // Run one playback iteration.
     EXPECT_CALL(*mock_output_, Write(_,
@@ -465,13 +474,7 @@ class StreamMixerTest : public testing::Test {
     base::RunLoop run_loop;
     message_loop_->task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
     run_loop.Run();
-  }
-
-  void WaitForRemoval() {
-    // Need to wait for the removal task (it is always posted).
-    base::RunLoop run_loop;
-    message_loop_->task_runner()->PostTask(FROM_HERE, run_loop.QuitClosure());
-    run_loop.Run();
+    testing::Mock::VerifyAndClearExpectations(mock_output_);
   }
 
  protected:
@@ -490,6 +493,7 @@ TEST_F(StreamMixerTest, AddSingleInput) {
   EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
   EXPECT_CALL(*mock_output_, Stop()).Times(0);
   mixer_->AddInput(&input);
+  WaitForMixer();
 
   mixer_.reset();
 }
@@ -504,6 +508,7 @@ TEST_F(StreamMixerTest, AddMultipleInputs) {
   EXPECT_CALL(*mock_output_, Stop()).Times(0);
   mixer_->AddInput(&input1);
   mixer_->AddInput(&input2);
+  WaitForMixer();
 
   mixer_.reset();
 }
@@ -524,12 +529,14 @@ TEST_F(StreamMixerTest, RemoveInput) {
     mixer_->AddInput(inputs[i].get());
   }
 
+  WaitForMixer();
+
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_CALL(*inputs[i], FinalizeAudioPlayback()).Times(1);
     mixer_->RemoveInput(inputs[i].get());
   }
 
-  WaitForRemoval();
+  WaitForMixer();
 }
 
 TEST_F(StreamMixerTest, WriteFrames) {
@@ -547,6 +554,8 @@ TEST_F(StreamMixerTest, WriteFrames) {
     mixer_->AddInput(inputs[i].get());
   }
 
+  WaitForMixer();
+
   for (size_t i = 0; i < inputs.size(); ++i) {
     EXPECT_CALL(*inputs[i], FillAudioPlaybackFrames(_, _, _)).Times(1);
   }
@@ -563,6 +572,7 @@ TEST_F(StreamMixerTest, OneStreamMixesProperly) {
   EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
   EXPECT_CALL(*mock_output_, Stop()).Times(0);
   mixer_->AddInput(&input);
+  WaitForMixer();
   mock_output_->ClearData();
 
   // Populate the stream with data.
@@ -589,17 +599,17 @@ TEST_F(StreamMixerTest, OneStreamIsScaledDownProperly) {
   EXPECT_CALL(input, InitializeAudioPlayback(_, _)).Times(1);
   EXPECT_CALL(*mock_output_, Start(kTestSamplesPerSecond, _)).Times(1);
   EXPECT_CALL(*mock_output_, Stop()).Times(0);
+  input.set_multiplier(0.75f);
   mixer_->AddInput(&input);
-  mock_output_->ClearData();
+  mixer_->SetVolumeMultiplier(&input, input.multiplier());
+  WaitForMixer();
 
   // Populate the stream with data.
   const int kNumFrames = 32;
   ASSERT_EQ(sizeof(kTestData[0]), kNumChannels * kNumFrames * kBytesPerSample);
   input.SetData(GetTestData(0));
 
-  // Set the volume multiplier.
-  input.set_multiplier(0.75f);
-  mixer_->SetVolumeMultiplier(&input, input.multiplier());
+  mock_output_->ClearData();
 
   EXPECT_CALL(input, FillAudioPlaybackFrames(_, _, _)).Times(1);
   PlaybackOnce();
@@ -630,6 +640,7 @@ TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperly) {
     EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
     mixer_->AddInput(inputs[i].get());
   }
+  WaitForMixer();
   mock_output_->ClearData();
 
   // Populate the streams with data.
@@ -669,6 +680,7 @@ TEST_F(StreamMixerTest, TwoUnscaledStreamsWithDifferentIdsMixProperly) {
     EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
     mixer_->AddInput(inputs[i].get());
   }
+  WaitForMixer();
   mock_output_->ClearData();
 
   // Populate the streams with data.
@@ -706,6 +718,7 @@ TEST_F(StreamMixerTest, TwoUnscaledStreamsMixProperlyWithEdgeCases) {
     EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
     mixer_->AddInput(inputs[i].get());
   }
+  WaitForMixer();
   mock_output_->ClearData();
 
   // Create edge case data for the inputs. By mixing these two short streams,
@@ -792,6 +805,7 @@ TEST_F(StreamMixerTest, PostProcessorDelayListedDeviceId) {
     EXPECT_CALL(*inputs[i], InitializeAudioPlayback(_, _)).Times(1);
     mixer_->AddInput(inputs[i].get());
   }
+  WaitForMixer();
 
   auto* post_processors = &pp_factory_->instances;
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "default", 1, _,
@@ -832,6 +846,7 @@ TEST_F(StreamMixerTest, PostProcessorDelayUnlistedDevice) {
   EXPECT_POSTPROCESSOR_CALL_PROCESSFRAMES(post_processors, "assistant-tts", 1,
                                           _, _);
   mixer_->AddInput(&input);
+  WaitForMixer();
 
   // Delay should be based on default processor.
   int64_t delay = FramesToDelayUs(
@@ -880,6 +895,7 @@ TEST_F(StreamMixerTest, PostProcessorRingingWithoutInput) {
   MockPostProcessorFactory* factory_ptr = factory.get();
   mixer_->ResetPostProcessorsForTest(std::move(factory), test_pipeline_json);
   mixer_->AddInput(&input);
+  WaitForMixer();
 
   // "mix" + "linearize" should be automatic
   CHECK_EQ(factory_ptr->instances.size(), 4u);
@@ -976,11 +992,13 @@ TEST_F(StreamMixerTest, PicksPlayoutChannel) {
   // Requests: all = 0 ch0 = 0 ch1 = 1.
   EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr, UpdatePlayoutChannel(1));
   mixer_->AddInput(&input3);
+  WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 0 ch0 = 0 ch1 = 2.
   EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr, UpdatePlayoutChannel(1));
   mixer_->AddInput(&input4);
+  WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 1 ch0 = 0 ch1 = 2.
@@ -988,42 +1006,45 @@ TEST_F(StreamMixerTest, PicksPlayoutChannel) {
   EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr,
                                  UpdatePlayoutChannel(kChannelAll));
   mixer_->AddInput(&input1);
+  WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 1 ch0 = 0 ch1 = 1.
   EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr,
                                  UpdatePlayoutChannel(kChannelAll));
   mixer_->RemoveInput(&input3);
-  WaitForRemoval();
+  WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 0 ch0 = 0 ch1 = 1.
   EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr, UpdatePlayoutChannel(1));
   mixer_->RemoveInput(&input1);
-  WaitForRemoval();
+  WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 0 ch0 = 0 ch1 = 0.
   EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr,
                                  UpdatePlayoutChannel(kChannelAll));
   mixer_->RemoveInput(&input4);
-  WaitForRemoval();
+  WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 0 ch0 = 1 ch1 = 0
   EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr, UpdatePlayoutChannel(0));
   mixer_->AddInput(&input2);
+  WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);
 
   // Requests: all = 1 ch0 = 1 ch1 = 0
   EXPECT_CALL_ALL_POSTPROCESSORS(factory_ptr,
                                  UpdatePlayoutChannel(kChannelAll));
   mixer_->AddInput(&input1);
+  WaitForMixer();
   VerifyAndClearPostProcessors(factory_ptr);
 
   mixer_->RemoveInput(&input1);
   mixer_->RemoveInput(&input2);
-  WaitForRemoval();
+  WaitForMixer();
 }
 
 TEST_F(StreamMixerTest, SetPostProcessorConfig) {
@@ -1035,6 +1056,7 @@ TEST_F(StreamMixerTest, SetPostProcessorConfig) {
   }
 
   mixer_->SetPostProcessorConfig(name, config);
+  WaitForMixer();
 }
 
 TEST_F(StreamMixerTest, ObserverGets2ChannelsByDefault) {
@@ -1042,15 +1064,18 @@ TEST_F(StreamMixerTest, ObserverGets2ChannelsByDefault) {
   testing::StrictMock<MockLoopbackAudioObserver> observer;
   mixer_->AddInput(&input);
   mixer_->AddLoopbackAudioObserver(&observer);
+  WaitForMixer();
 
   EXPECT_CALL(observer,
               OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond,
-                              kNumChannels, _, _));
+                              kNumChannels, _, _))
+      .Times(testing::AtLeast(1));
 
   PlaybackOnce();
 
   EXPECT_CALL(observer, OnRemoved());
   mixer_->RemoveLoopbackAudioObserver(&observer);
+  WaitForMixer();
 
   mixer_.reset();
 }
@@ -1063,15 +1088,18 @@ TEST_F(StreamMixerTest, ObserverGets1ChannelIfNumOutputChannelsIs1) {
   testing::StrictMock<MockLoopbackAudioObserver> observer;
   mixer_->AddInput(&input);
   mixer_->AddLoopbackAudioObserver(&observer);
+  WaitForMixer();
 
   EXPECT_CALL(observer,
               OnLoopbackAudio(_, kSampleFormatF32, kTestSamplesPerSecond,
-                              kNumOutputChannels, _, _));
+                              kNumOutputChannels, _, _))
+      .Times(testing::AtLeast(1));
 
   PlaybackOnce();
 
   EXPECT_CALL(observer, OnRemoved());
   mixer_->RemoveLoopbackAudioObserver(&observer);
+  WaitForMixer();
 
   mixer_.reset();
 }

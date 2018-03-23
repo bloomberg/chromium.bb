@@ -77,7 +77,7 @@ constexpr int64_t kNoTimestamp = std::numeric_limits<int64_t>::min();
 constexpr char kOutputDeviceDefaultName[] = "default";
 
 constexpr bool kPcmRecoverIsSilent = false;
-constexpr int kDefaultOutputBufferSizeFrames = 512;
+constexpr int kDefaultOutputBufferSizeFrames = 1024;
 
 // A list of supported sample rates.
 // TODO(jyw): move this up into chromecast/public for 1) documentation and

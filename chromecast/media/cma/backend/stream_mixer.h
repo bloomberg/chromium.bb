@@ -53,6 +53,20 @@ class PostProcessingPipelineFactory;
 //    input sources, then the output sample rate is updated to match the input
 //    sample rate of the new source.
 //  * Otherwise, the output sample rate remains unchanged.
+//
+// We use a "shim thread" to avoid priority inversion due to PostTask to
+// low-priority threads. Suppose we want to PostTask to some low-priority
+// thread, and the internal PostTask mutex is locked by that thread (and the
+// low-priority thread isn't running right now). If the mixer thread does the
+// PostTask, then it will block until the low-priority thread gets to run again
+// and unlocks the mutex. Instead, we can PostTask to the shim thread (which is
+// high-priority, and won't be holding the mutex for significant periods) and so
+// avoid blocking waiting for the low-priority thread. The shim thread will
+// maybe block when it does the PostTask to the low-priority thread, but we
+// don't really care about that.
+// All loopback audio handling is done on the shim thread, and any tasks posted
+// from/to potentially low-priority threads should be done through the shim
+// thread.
 class StreamMixer {
  public:
   // Returns the mixer instance for this process. Caller must not delete the
@@ -105,6 +119,10 @@ class StreamMixer {
   void ValidatePostProcessorsForTest();
   int num_output_channels() const { return num_output_channels_; }
 
+  scoped_refptr<base::SingleThreadTaskRunner> shim_task_runner() const {
+    return shim_task_runner_;
+  }
+
  private:
   enum State {
     kStateStopped,
@@ -127,6 +145,7 @@ class StreamMixer {
   void Stop();
   void CheckChangeOutputRate(int input_samples_per_second);
   void SignalError(MixerInput::Source::MixerError error);
+  void AddInputOnThread(MixerInput::Source* input_source);
   void RemoveInputOnThread(MixerInput::Source* input_source);
   void SetCloseTimeout();
   void UpdatePlayoutChannel();
@@ -137,11 +156,34 @@ class StreamMixer {
   void WriteOneBuffer();
   void WriteMixedPcm(int frames, int64_t expected_playback_time);
 
+  void SetVolumeOnThread(AudioContentType type, float level);
+  void SetMutedOnThread(AudioContentType type, bool muted);
+  void SetOutputLimitOnThread(AudioContentType type, float limit);
+  void SetVolumeMultiplierOnThread(MixerInput::Source* source,
+                                   float multiplier);
+  void SetPostProcessorConfigOnThread(const std::string& name,
+                                      const std::string& config);
+
+  void AddLoopbackAudioObserverOnShimThread(
+      CastMediaShlib::LoopbackAudioObserver* observer);
+  void RemoveLoopbackAudioObserverOnShimThread(
+      CastMediaShlib::LoopbackAudioObserver* observer);
+  void SendLoopbackData(int64_t expected_playback_time,
+                        int sample_rate,
+                        int frames,
+                        int channels,
+                        std::unique_ptr<float[]> data);
+  void LoopbackInterrupted();
+
   std::unique_ptr<MixerOutputStream> output_;
   std::unique_ptr<PostProcessingPipelineFactory>
       post_processing_pipeline_factory_;
   std::unique_ptr<base::Thread> mixer_thread_;
   scoped_refptr<base::SingleThreadTaskRunner> mixer_task_runner_;
+
+  // Special thread to avoid underruns due to priority inversion.
+  std::unique_ptr<base::Thread> shim_thread_;
+  scoped_refptr<base::SingleThreadTaskRunner> shim_task_runner_;
 
   int num_output_channels_;
   const int low_sample_rate_cutoff_;

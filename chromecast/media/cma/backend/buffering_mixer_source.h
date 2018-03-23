@@ -120,6 +120,7 @@ class BufferingMixerSource : public MixerInput::Source,
       int current_buffer_offset_;
       AudioFader fader_;
       bool zero_fader_frames_;
+      bool started_;
 
      private:
       DISALLOW_COPY_AND_ASSIGN(Members);
@@ -200,7 +201,10 @@ class BufferingMixerSource : public MixerInput::Source,
   const int playout_channel_;
   StreamMixer* const mixer_;
   const scoped_refptr<base::SingleThreadTaskRunner> caller_task_runner_;
+  const scoped_refptr<base::SingleThreadTaskRunner> shim_task_runner_;
   const int max_queued_frames_;
+  // Minimum number of frames buffered before starting to fill data.
+  const int start_threshold_frames_;
 
   LockedMembers locked_members_;
 
