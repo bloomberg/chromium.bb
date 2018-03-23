@@ -742,6 +742,28 @@ void WebLocalFrameImpl::AddMessageToConsole(const WebConsoleMessage& message) {
   GetFrame()->GetDocument()->AddConsoleMessage(console_message);
 }
 
+void WebLocalFrameImpl::Alert(const WebString& message) {
+  DCHECK(GetFrame());
+  ScriptState* script_state = ToScriptStateForMainWorld(GetFrame());
+  DCHECK(script_state);
+  GetFrame()->DomWindow()->alert(script_state, message);
+}
+
+bool WebLocalFrameImpl::Confirm(const WebString& message) {
+  DCHECK(GetFrame());
+  ScriptState* script_state = ToScriptStateForMainWorld(GetFrame());
+  DCHECK(script_state);
+  return GetFrame()->DomWindow()->confirm(script_state, message);
+}
+
+WebString WebLocalFrameImpl::Prompt(const WebString& message,
+                                    const WebString& default_value) {
+  DCHECK(GetFrame());
+  ScriptState* script_state = ToScriptStateForMainWorld(GetFrame());
+  DCHECK(script_state);
+  return GetFrame()->DomWindow()->prompt(script_state, message, default_value);
+}
+
 void WebLocalFrameImpl::CollectGarbage() {
   if (!GetFrame())
     return;
