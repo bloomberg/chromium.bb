@@ -10,6 +10,7 @@
 #include <set>
 
 #include "base/macros.h"
+#include "components/viz/common/surfaces/surface_info.h"
 #include "services/ui/display/screen_manager_delegate.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/ws/ids.h"
@@ -24,6 +25,7 @@ namespace ws {
 
 class CursorLocationManager;
 class Display;
+class PlatformDisplayMirror;
 class ServerWindow;
 class UserDisplayManager;
 class WindowManagerDisplayRoot;
@@ -114,6 +116,10 @@ class DisplayManager : public display::ScreenManagerDelegate {
   // Called when the AcceleratedWidget is available for |display|.
   void OnDisplayAcceleratedWidgetAvailable(Display* display);
 
+  // Called when a new surface for a WindowManager root has been created.
+  void OnWindowManagerSurfaceActivation(Display* display,
+                                        const viz::SurfaceInfo& surface_info);
+
   // Switch the high contrast mode of all Displays to |enabled|.
   void SetHighContrastMode(bool enabled);
 
@@ -143,6 +149,9 @@ class DisplayManager : public display::ScreenManagerDelegate {
   // initialized it is moved to |displays_|. WindowServer owns the Displays.
   std::set<Display*> pending_displays_;
   std::set<Display*> displays_;
+
+  // Displays that mirror the contents of another display in |displays_|.
+  std::vector<std::unique_ptr<PlatformDisplayMirror>> mirrors_;
 
   std::unique_ptr<UserDisplayManager> user_display_manager_;
 

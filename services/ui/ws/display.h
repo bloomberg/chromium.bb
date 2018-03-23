@@ -174,7 +174,6 @@ class Display : public PlatformDisplayDelegate,
   EventSink* GetEventSink() override;
   void OnAcceleratedWidgetAvailable() override;
   void OnNativeCaptureLost() override;
-  OzonePlatform* GetOzonePlatform() override;
   bool IsHostingViz() const override;
 
   // FocusControllerObserver:

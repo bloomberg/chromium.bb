@@ -145,7 +145,7 @@ class FrameGeneratorTest : public testing::Test {
   // |frame_generator_|. After InitWithSurfaceInfo finishes, |frame_generator_|
   // has a valid SurfaceInfo and does not request BeginFrames.
   void InitWithSurfaceInfo() {
-    frame_generator_->OnFirstSurfaceActivation(kArbitrarySurfaceInfo);
+    frame_generator_->SetEmbeddedSurface(kArbitrarySurfaceInfo);
 
     // Issue a BeginFrame so that frame_generator_ stops requesting BeginFrames
     // after submitting a CompositorFrame.

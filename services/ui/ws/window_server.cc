@@ -702,8 +702,7 @@ void WindowServer::OnFirstSurfaceActivation(
     // special case because ServerWindows created by the WindowServer are not
     // part of a WindowTree. Send the SurfaceId directly to FrameGenerator and
     // claim the temporary reference for the display root.
-    display->platform_display()->GetFrameGenerator()->OnFirstSurfaceActivation(
-        surface_info);
+    display_manager_->OnWindowManagerSurfaceActivation(display, surface_info);
     host_frame_sink_manager_->AssignTemporaryReference(
         surface_info.id(), display->root_window()->frame_sink_id());
     return;

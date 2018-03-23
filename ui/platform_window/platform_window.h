@@ -11,6 +11,7 @@
 #include "ui/base/cursor/cursor.h"
 
 namespace gfx {
+class Point;
 class Rect;
 }
 

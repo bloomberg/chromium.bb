@@ -20,6 +20,8 @@
 namespace ui {
 
 enum class CursorSize;
+class PlatformWindow;
+class PlatformWindowDelegate;
 struct TextInputState;
 
 namespace ws {
@@ -81,6 +83,12 @@ class PlatformDisplay : public ui::EventSource {
   static void set_factory_for_testing(PlatformDisplayFactory* factory) {
     PlatformDisplay::factory_ = factory;
   }
+
+ protected:
+  // Create a platform window with the given delegate and bounds.
+  static std::unique_ptr<PlatformWindow> CreatePlatformWindow(
+      PlatformWindowDelegate* delegate,
+      const gfx::Rect& bounds);
 
  private:
   // Static factory instance (always NULL for non-test).
