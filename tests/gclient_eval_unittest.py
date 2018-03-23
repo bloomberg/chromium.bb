@@ -25,7 +25,7 @@ vars = {
      # Some comment with bad indentation
      'dep_2_rev': '1ced',
  # Some more comments with bad indentation
-   # and trailing whitespaces  
+   # and trailing whitespaces
    'dep_3_rev': '5p1e5',
 }
 
@@ -61,94 +61,82 @@ class GClientEvalTest(unittest.TestCase):
   def test_str(self):
     self.assertEqual(
         'foo',
-        gclient_eval._gclient_eval('"foo"', vars_dict=None, expand_vars=False,
-                                   filename='<unknown>'))
+        gclient_eval._gclient_eval('"foo"', None, False, '<unknown>'))
 
   def test_tuple(self):
     self.assertEqual(
         ('a', 'b'),
-        gclient_eval._gclient_eval('("a", "b")', vars_dict=None,
-                                   expand_vars=False, filename='<unknown>'))
+        gclient_eval._gclient_eval('("a", "b")', None, False, '<unknown>'))
 
   def test_list(self):
     self.assertEqual(
         ['a', 'b'],
-        gclient_eval._gclient_eval('["a", "b"]', vars_dict=None,
-                                   expand_vars=False, filename='<unknown>'))
+        gclient_eval._gclient_eval('["a", "b"]', None, False, '<unknown>'))
 
   def test_dict(self):
     self.assertEqual(
         {'a': 'b'},
-        gclient_eval._gclient_eval('{"a": "b"}', vars_dict=None,
-                                   expand_vars=False, filename='<unknown>'))
+        gclient_eval._gclient_eval('{"a": "b"}', None, False, '<unknown>'))
 
   def test_name_safe(self):
     self.assertEqual(
         True,
-        gclient_eval._gclient_eval('True', vars_dict=None,
-                                   expand_vars=False, filename='<unknown>'))
+        gclient_eval._gclient_eval('True', None, False, '<unknown>'))
 
   def test_name_unsafe(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_eval('UnsafeName', vars_dict=None,
-                                 expand_vars=False, filename='<unknown>')
+      gclient_eval._gclient_eval('UnsafeName', None, False, '<unknown>')
     self.assertIn('invalid name \'UnsafeName\'', str(cm.exception))
 
   def test_invalid_call(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_eval('Foo("bar")', vars_dict=None,
-                                 expand_vars=False, filename='<unknown>')
+      gclient_eval._gclient_eval('Foo("bar")', None, False, '<unknown>')
     self.assertIn('Var is the only allowed function', str(cm.exception))
 
   def test_call(self):
     self.assertEqual(
         '{bar}',
-        gclient_eval._gclient_eval('Var("bar")', vars_dict=None,
-                                   expand_vars=False, filename='<unknown>'))
+        gclient_eval._gclient_eval('Var("bar")', None, False, '<unknown>'))
 
   def test_expands_vars(self):
     self.assertEqual(
         'foo',
-        gclient_eval._gclient_eval('Var("bar")', vars_dict={'bar': 'foo'},
-                                   expand_vars=True, filename='<unknown>'))
+        gclient_eval._gclient_eval('Var("bar")', {'bar': 'foo'}, True,
+                                   '<unknown>'))
 
   def test_expands_vars_with_braces(self):
     self.assertEqual(
         'foo',
-        gclient_eval._gclient_eval('"{bar}"', vars_dict={'bar': 'foo'},
-                                   expand_vars=True, filename='<unknown>'))
+        gclient_eval._gclient_eval('"{bar}"', {'bar': 'foo'}, True,
+                                   '<unknown>'))
 
   def test_invalid_var(self):
     with self.assertRaises(ValueError) as cm:
-      gclient_eval._gclient_eval('"{bar}"', vars_dict={}, expand_vars=True,
-                                 filename='<unknwon>')
+      gclient_eval._gclient_eval('"{bar}"', {}, True, '<unknwon>')
     self.assertIn('bar was used as a variable, but was not declared',
                   str(cm.exception))
 
   def test_plus(self):
     self.assertEqual(
         'foo',
-        gclient_eval._gclient_eval('"f" + "o" + "o"', vars_dict=None,
-                                   expand_vars=False, filename='<unknown>'))
+        gclient_eval._gclient_eval('"f" + "o" + "o"', None, False,
+                                   '<unknown>'))
 
   def test_format(self):
     self.assertEqual(
         'foo',
-        gclient_eval._gclient_eval('"%s" % "foo"', vars_dict=None,
-                                   expand_vars=False, filename='<unknown>'))
+        gclient_eval._gclient_eval('"%s" % "foo"', None, False, '<unknown>'))
 
   def test_not_expression(self):
     with self.assertRaises(SyntaxError) as cm:
       gclient_eval._gclient_eval(
-          'def foo():\n  pass', vars_dict=None, expand_vars=False,
-          filename='<unknown>')
+          'def foo():\n  pass', None, False, '<unknown>')
     self.assertIn('invalid syntax', str(cm.exception))
 
   def test_not_whitelisted(self):
     with self.assertRaises(ValueError) as cm:
       gclient_eval._gclient_eval(
-          '[x for x in [1, 2, 3]]', vars_dict=None, expand_vars=False,
-          filename='<unknown>')
+          '[x for x in [1, 2, 3]]', None, False, '<unknown>')
     self.assertIn(
         'unexpected AST node: <_ast.ListComp object', str(cm.exception))
 
@@ -157,8 +145,7 @@ class GClientEvalTest(unittest.TestCase):
       input_data = ['{'] + ['"%s": "%s",' % (n, n) for n in test_case] + ['}']
       expected = [(str(n), str(n)) for n in test_case]
       result = gclient_eval._gclient_eval(
-          ''.join(input_data), vars_dict=None, expand_vars=False,
-          filename='<unknown>')
+          ''.join(input_data), None, False, '<unknown>')
       self.assertEqual(expected, result.items())
 
 
