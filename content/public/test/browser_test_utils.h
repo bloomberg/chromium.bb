@@ -709,6 +709,10 @@ class RenderFrameSubmissionObserver
   // Blocks the browser ui thread until the next OnRenderFrameMetadataChanged.
   void WaitForMetadataChange();
 
+  // Blocks the browser ui thread until RenderFrameMetadata arrives where its
+  // scroll offset matches |expected_offset|.
+  void WaitForScrollOffset(const gfx::Vector2dF& expected_offset);
+
   const cc::RenderFrameMetadata& LastRenderFrameMetadata() const;
 
   // Returns the number of frames submitted since the observer's creation.

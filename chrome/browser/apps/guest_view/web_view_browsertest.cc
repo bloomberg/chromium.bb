@@ -3937,25 +3937,6 @@ class WebViewGuestScrollTouchTest : public WebViewGuestScrollTest {
   }
 };
 
-namespace {
-
-class ScrollWaiter {
- public:
-  explicit ScrollWaiter(content::RenderWidgetHostView* host_view)
-      : host_view_(host_view) {}
-  ~ScrollWaiter() {}
-
-  void WaitForScrollChange(gfx::Vector2dF target_offset) {
-    while (target_offset != host_view_->GetLastScrollOffset())
-      base::RunLoop().RunUntilIdle();
-  }
-
- private:
-  content::RenderWidgetHostView* host_view_;
-};
-
-}  // namespace
-
 // Tests that scrolls bubble from guest to embedder.
 // Create two test instances, one where the guest body is scrollable and the
 // other where the body is not scrollable: fast-path scrolling will generate
@@ -3973,6 +3954,8 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
     SendMessageToGuestAndWait("set_overflow_hidden", "overflow_is_hidden");
 
   content::WebContents* embedder_contents = GetEmbedderWebContents();
+  content::RenderFrameSubmissionObserver embedder_frame_observer(
+      embedder_contents);
 
   std::vector<content::WebContents*> guest_web_contents_list;
   GetGuestViewManager()->WaitForNumGuestsCreated(1u);
@@ -3980,6 +3963,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
   ASSERT_EQ(1u, guest_web_contents_list.size());
 
   content::WebContents* guest_contents = guest_web_contents_list[0];
+  content::RenderFrameSubmissionObserver guest_frame_observer(guest_contents);
 
   gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
   gfx::Rect guest_rect = guest_contents->GetContainerBounds();
@@ -3989,11 +3973,10 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
   embedder_rect.set_x(0);
   embedder_rect.set_y(0);
 
-  // Send scroll gesture to embedder & verify.
-  content::RenderWidgetHostView* embedder_host_view =
-      embedder_contents->GetRenderWidgetHostView();
-  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+  gfx::Vector2dF default_offset;
+  embedder_frame_observer.WaitForScrollOffset(default_offset);
 
+  // Send scroll gesture to embedder & verify.
   // Make sure wheel events don't get filtered.
   float scroll_magnitude = 15.f;
 
@@ -4006,8 +3989,6 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
 
     gfx::Vector2dF expected_offset(0.f, scroll_magnitude);
 
-    ScrollWaiter waiter(embedder_host_view);
-
     content::SimulateMouseEvent(embedder_contents,
                                 blink::WebInputEvent::kMouseMove,
                                 embedder_scroll_location);
@@ -4015,12 +3996,11 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
                                      embedder_scroll_location,
                                      gfx::Vector2d(0, -scroll_magnitude),
                                      blink::WebMouseWheelEvent::kPhaseBegan);
-    waiter.WaitForScrollChange(expected_offset);
+
+    embedder_frame_observer.WaitForScrollOffset(expected_offset);
   }
 
-  content::RenderWidgetHostView* guest_host_view =
-      guest_contents->GetRenderWidgetHostView();
-  EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
+  guest_frame_observer.WaitForScrollOffset(default_offset);
 
   // Send scroll gesture to guest and verify embedder scrolls.
   // Perform a scroll gesture of the same magnitude, but in the opposite
@@ -4032,7 +4012,6 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
   {
     gfx::Point guest_scroll_location(guest_rect.x() + guest_rect.width() / 2,
                                      guest_rect.y());
-    ScrollWaiter waiter(embedder_host_view);
 
     content::SimulateMouseEvent(embedder_contents,
                                 blink::WebInputEvent::kMouseMove,
@@ -4040,8 +4019,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTest,
     content::SimulateMouseWheelEvent(embedder_contents, guest_scroll_location,
                                      gfx::Vector2d(0, scroll_magnitude),
                                      blink::WebMouseWheelEvent::kPhaseChanged);
-
-    waiter.WaitForScrollChange(gfx::Vector2dF());
+    embedder_frame_observer.WaitForScrollOffset(default_offset);
   }
 }
 
@@ -4075,6 +4053,8 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
 
   content::WebContents* embedder_contents = GetEmbedderWebContents();
+  content::RenderFrameSubmissionObserver embedder_frame_observer(
+      embedder_contents);
 
   std::vector<content::WebContents*> guest_web_contents_list;
   GetGuestViewManager()->WaitForNumGuestsCreated(1u);
@@ -4082,13 +4062,13 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
   ASSERT_EQ(1u, guest_web_contents_list.size());
 
   content::WebContents* guest_contents = guest_web_contents_list[0];
+  content::RenderFrameSubmissionObserver guest_frame_observer(guest_contents);
   content::RenderWidgetHostView* guest_host_view =
       guest_contents->GetRenderWidgetHostView();
 
-  content::RenderWidgetHostView* embedder_host_view =
-      embedder_contents->GetRenderWidgetHostView();
-  ASSERT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
-  ASSERT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+  gfx::Vector2dF default_offset;
+  guest_frame_observer.WaitForScrollOffset(default_offset);
+  embedder_frame_observer.WaitForScrollOffset(default_offset);
 
   gfx::PointF guest_scroll_location(1, 1);
   gfx::PointF guest_scroll_location_in_root =
@@ -4134,7 +4114,12 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
   update_waiter.Wait();
   update_waiter.Reset();
 
-  ASSERT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
+  // TODO(jonross): This test is only waiting on InputEventAckWaiter, but has an
+  // implicit wait on frame submission. InputEventAckWaiter needs to be updated
+  // to support VizDisplayCompositor, when it is, it should be tied to frame
+  // tokens which will allow for synchronizing with frame submission for further
+  // verifying metadata (crbug.com/812012)
+  guest_frame_observer.WaitForScrollOffset(default_offset);
 
   // Now we switch directions and scroll down. The guest can scroll in this
   // direction, but since we're bubbling, the guest should not consume this.
@@ -4143,7 +4128,7 @@ IN_PROC_BROWSER_TEST_F(WebViewGuestScrollLatchingTest,
                                 ui::LatencyInfo(ui::SourceEventType::WHEEL));
   update_waiter.Wait();
 
-  EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
+  guest_frame_observer.WaitForScrollOffset(default_offset);
 }
 
 INSTANTIATE_TEST_CASE_P(WebViewScrollBubbling,
@@ -4257,6 +4242,8 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
     SendMessageToGuestAndWait("set_overflow_hidden", "overflow_is_hidden");
 
   content::WebContents* embedder_contents = GetEmbedderWebContents();
+  content::RenderFrameSubmissionObserver embedder_frame_observer(
+      embedder_contents);
 
   std::vector<content::WebContents*> guest_web_contents_list;
   GetGuestViewManager()->WaitForNumGuestsCreated(1u);
@@ -4264,6 +4251,7 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
   ASSERT_EQ(1u, guest_web_contents_list.size());
 
   content::WebContents* guest_contents = guest_web_contents_list[0];
+  content::RenderFrameSubmissionObserver guest_frame_observer(guest_contents);
 
   gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
   gfx::Rect guest_rect = guest_contents->GetContainerBounds();
@@ -4273,11 +4261,10 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
   embedder_rect.set_x(0);
   embedder_rect.set_y(0);
 
-  // Send scroll gesture to embedder & verify.
-  content::RenderWidgetHostView* embedder_host_view =
-      embedder_contents->GetRenderWidgetHostView();
-  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+  gfx::Vector2dF default_offset;
+  embedder_frame_observer.WaitForScrollOffset(default_offset);
 
+  // Send scroll gesture to embedder & verify.
   float gesture_distance = 15.f;
   {
     // Scroll the embedder from a position in the embedder that is not over
@@ -4292,14 +4279,11 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
         embedder_contents, embedder_scroll_location,
         gfx::Vector2dF(0, -gesture_distance));
 
-    ScrollWaiter waiter(embedder_host_view);
-
-    waiter.WaitForScrollChange(expected_offset);
+    embedder_frame_observer.WaitForScrollOffset(expected_offset);
   }
 
-  content::RenderWidgetHostView* guest_host_view =
-      guest_contents->GetRenderWidgetHostView();
-  EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
+  // Check that the guest has not scrolled.
+  guest_frame_observer.WaitForScrollOffset(default_offset);
 
   // Send scroll gesture to guest and verify embedder scrolls.
   // Perform a scroll gesture of the same magnitude, but in the opposite
@@ -4309,13 +4293,11 @@ IN_PROC_BROWSER_TEST_P(WebViewGuestScrollTouchTest,
     gfx::Point guest_scroll_location(guest_rect.width() / 2,
                                      guest_rect.height() / 2);
 
-    ScrollWaiter waiter(embedder_host_view);
-
     content::SimulateGestureScrollSequence(guest_contents,
                                            guest_scroll_location,
                                            gfx::Vector2dF(0, gesture_distance));
 
-    waiter.WaitForScrollChange(gfx::Vector2dF());
+    embedder_frame_observer.WaitForScrollOffset(default_offset);
   }
 }
 
@@ -4346,6 +4328,8 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest,
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
 
   content::WebContents* embedder_contents = GetEmbedderWebContents();
+  content::RenderFrameSubmissionObserver embedder_frame_observer(
+      embedder_contents);
 
   std::vector<content::WebContents*> guest_web_contents_list;
   GetGuestViewManager()->WaitForNumGuestsCreated(1u);
@@ -4353,18 +4337,16 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest,
   ASSERT_EQ(1u, guest_web_contents_list.size());
 
   content::WebContents* guest_contents = guest_web_contents_list[0];
-  content::RenderWidgetHostView* guest_host_view =
-      guest_contents->GetRenderWidgetHostView();
+  content::RenderFrameSubmissionObserver guest_frame_observer(guest_contents);
 
   gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
   gfx::Rect guest_rect = guest_contents->GetContainerBounds();
   guest_rect.set_x(guest_rect.x() - embedder_rect.x());
   guest_rect.set_y(guest_rect.y() - embedder_rect.y());
 
-  content::RenderWidgetHostView* embedder_host_view =
-      embedder_contents->GetRenderWidgetHostView();
-  EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
-  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+  gfx::Vector2dF default_offset;
+  guest_frame_observer.WaitForScrollOffset(default_offset);
+  embedder_frame_observer.WaitForScrollOffset(default_offset);
 
   gfx::Point guest_scroll_location(guest_rect.width() / 2, 0);
 
@@ -4372,30 +4354,27 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest,
   {
     gfx::Vector2dF expected_offset(0.f, gesture_distance);
 
-    ScrollWaiter waiter(guest_host_view);
-
     content::SimulateGestureScrollSequence(
         guest_contents, guest_scroll_location,
         gfx::Vector2dF(0, -gesture_distance));
 
-    waiter.WaitForScrollChange(expected_offset);
+    guest_frame_observer.WaitForScrollOffset(expected_offset);
   }
-  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+
+  embedder_frame_observer.WaitForScrollOffset(default_offset);
 
   // Use fling gesture to scroll back, velocity should be big enough to scroll
   // content back.
   float fling_velocity = 300.f;
   {
-    ScrollWaiter waiter(guest_host_view);
-
     content::SimulateGestureFlingSequence(
         guest_contents, guest_scroll_location,
         gfx::Vector2dF(0, fling_velocity));
 
-    waiter.WaitForScrollChange(gfx::Vector2dF());
+    guest_frame_observer.WaitForScrollOffset(default_offset);
   }
 
-  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+  embedder_frame_observer.WaitForScrollOffset(default_offset);
 }
 
 #if defined(USE_AURA)
@@ -4410,6 +4389,8 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest,
   LoadAppWithGuest("web_view/scrollable_embedder_and_guest");
 
   content::WebContents* embedder_contents = GetEmbedderWebContents();
+  content::RenderFrameSubmissionObserver embedder_frame_observer(
+      embedder_contents);
 
   std::vector<content::WebContents*> guest_web_contents_list;
   GetGuestViewManager()->WaitForNumGuestsCreated(1u);
@@ -4417,8 +4398,7 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest,
   ASSERT_EQ(1u, guest_web_contents_list.size());
 
   content::WebContents* guest_contents = guest_web_contents_list[0];
-  content::RenderWidgetHostView* guest_host_view =
-      guest_contents->GetRenderWidgetHostView();
+  content::RenderFrameSubmissionObserver guest_frame_observer(guest_contents);
 
   gfx::Rect embedder_rect = embedder_contents->GetContainerBounds();
   gfx::Rect guest_rect = guest_contents->GetContainerBounds();
@@ -4427,8 +4407,9 @@ IN_PROC_BROWSER_TEST_P(WebViewScrollGuestContentTest,
 
   content::RenderWidgetHostView* embedder_host_view =
       embedder_contents->GetRenderWidgetHostView();
-  EXPECT_EQ(gfx::Vector2dF(), guest_host_view->GetLastScrollOffset());
-  EXPECT_EQ(gfx::Vector2dF(), embedder_host_view->GetLastScrollOffset());
+  gfx::Vector2dF default_offset;
+  guest_frame_observer.WaitForScrollOffset(default_offset);
+  embedder_frame_observer.WaitForScrollOffset(default_offset);
 
   // If we scroll the guest, the OverscrollController for the
   // RenderWidgetHostViewAura should see that the scroll was consumed.
