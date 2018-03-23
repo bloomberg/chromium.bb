@@ -24,8 +24,6 @@
 
 #include "base/strings/string_util.h"
 #include "platform/wtf/ASCIICType.h"
-#include "platform/wtf/DataLog.h"
-#include "platform/wtf/HexNumber.h"
 #include "platform/wtf/MathExtras.h"
 #include "platform/wtf/StringExtras.h"
 #include "platform/wtf/Vector.h"
@@ -41,31 +39,6 @@
 namespace WTF {
 
 using namespace Unicode;
-
-namespace {
-
-Vector<char> AsciiDebug(StringImpl* impl) {
-  if (!impl)
-    return AsciiDebug(String("[null]").Impl());
-
-  Vector<char> buffer;
-  for (unsigned i = 0; i < impl->length(); ++i) {
-    UChar ch = (*impl)[i];
-    if (IsASCIIPrintable(ch)) {
-      if (ch == '\\')
-        buffer.push_back('\\');
-      buffer.push_back(static_cast<char>(ch));
-    } else {
-      buffer.push_back('\\');
-      buffer.push_back('u');
-      HexNumber::AppendUnsignedAsHexFixedSize(ch, buffer, 4);
-    }
-  }
-  buffer.push_back('\0');
-  return buffer;
-}
-
-}  // namespace
 
 // Construct a string with UTF-16 data.
 String::String(const UChar* characters, unsigned length)
@@ -825,7 +798,7 @@ std::ostream& operator<<(std::ostream& out, const String& string) {
 
 #ifndef NDEBUG
 void String::Show() const {
-  DeprecatedDataLogF("%s\n", AsciiDebug(Impl()).data());
+  DLOG(INFO) << *this;
 }
 #endif
 
