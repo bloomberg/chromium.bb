@@ -21,7 +21,7 @@
 
 #if DUMP_HASHTABLE_STATS || DUMP_HASHTABLE_STATS_PER_TABLE
 
-#include "platform/wtf/DataLog.h"
+#include <iomanip>
 #include "platform/wtf/ThreadingPrimitives.h"
 
 namespace WTF {
@@ -75,22 +75,26 @@ void HashTableStats::DumpStats() {
 }
 
 void HashTableStats::DumpStatsWithoutLock() {
-  DeprecatedDataLogF("\nWTF::HashTable statistics\n\n");
-  DeprecatedDataLogF("%d accesses\n", numAccesses);
-  DeprecatedDataLogF("%d total collisions, average %.2f probes per access\n",
-                     numCollisions,
-                     1.0 * (numAccesses + numCollisions) / numAccesses);
-  DeprecatedDataLogF("longest collision chain: %d\n", maxCollisions);
+  std::stringstream collision_str;
+  collision_str << std::fixed << std::setprecision(2);
   for (int i = 1; i <= maxCollisions; i++) {
-    DeprecatedDataLogF(
-        "  %d lookups with exactly %d collisions (%.2f%% , %.2f%% with this "
-        "many or more)\n",
-        collisionGraph[i], i,
-        100.0 * (collisionGraph[i] - collisionGraph[i + 1]) / numAccesses,
-        100.0 * collisionGraph[i] / numAccesses);
+    collision_str << "      " << collisionGraph[i] << " lookups with exactly "
+                  << i << " collisions ("
+                  << (100.0 * (collisionGraph[i] - collisionGraph[i + 1]) /
+                      numAccesses)
+                  << "% , " << (100.0 * collisionGraph[i] / numAccesses)
+                  << "% with this many or more)\n";
   }
-  DeprecatedDataLogF("%d rehashes\n", numRehashes);
-  DeprecatedDataLogF("%d reinserts\n", numReinserts);
+
+  DLOG(INFO) << std::fixed << std::setprecision(2)
+             << "WTF::HashTable statistics:\n"
+             << "    " << numAccesses << " accesses\n"
+             << "    " << numCollisions << " total collisions, average "
+             << (1.0 * (numAccesses + numCollisions) / numAccesses)
+             << " probes per access\n"
+             << "    longest collision chain: " << maxCollisions << "\n"
+             << collision_str.str() << "    " << numRehashes << " rehashes\n"
+             << "    " << numReinserts << " reinserts";
 }
 
 }  // namespace WTF
