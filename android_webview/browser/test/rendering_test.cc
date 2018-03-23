@@ -96,8 +96,8 @@ void RenderingTest::InitializeCompositor() {
 void RenderingTest::RunTest() {
   SetUpTestHarness();
 
-  ui_task_runner_->PostTask(
-      FROM_HERE, base::Bind(&RenderingTest::StartTest, base::Unretained(this)));
+  ui_task_runner_->PostTask(FROM_HERE, base::BindOnce(&RenderingTest::StartTest,
+                                                      base::Unretained(this)));
   run_loop_.Run();
 }
 

@@ -193,7 +193,7 @@ void AwCookieStoreWrapper::FlushStore(base::OnceClosure callback) {
 void AwCookieStoreWrapper::SetForceKeepSessionState() {
   DCHECK(client_task_runner_->RunsTasksInCurrentSequence());
   PostTaskToCookieStoreTaskRunner(
-      base::Bind(&SetForceKeepSessionStateOnCookieThread));
+      base::BindOnce(&SetForceKeepSessionStateOnCookieThread));
 }
 
 net::CookieChangeDispatcher& AwCookieStoreWrapper::GetChangeDispatcher() {

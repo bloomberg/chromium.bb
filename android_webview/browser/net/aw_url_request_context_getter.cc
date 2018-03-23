@@ -214,13 +214,13 @@ AwURLRequestContextGetter::AwURLRequestContextGetter(
 
   auth_server_whitelist_.Init(
       prefs::kAuthServerWhitelist, user_pref_service,
-      base::Bind(&AwURLRequestContextGetter::UpdateServerWhitelist,
-                 base::Unretained(this)));
+      base::BindRepeating(&AwURLRequestContextGetter::UpdateServerWhitelist,
+                          base::Unretained(this)));
   auth_server_whitelist_.MoveToThread(io_thread_proxy);
 
   auth_android_negotiate_account_type_.Init(
       prefs::kAuthAndroidNegotiateAccountType, user_pref_service,
-      base::Bind(
+      base::BindRepeating(
           &AwURLRequestContextGetter::UpdateAndroidAuthNegotiateAccountType,
           base::Unretained(this)));
   auth_android_negotiate_account_type_.MoveToThread(io_thread_proxy);

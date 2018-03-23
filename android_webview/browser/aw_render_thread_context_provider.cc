@@ -68,7 +68,7 @@ AwRenderThreadContextProvider::AwRenderThreadContextProvider(
                        gpu::kNullSurfaceHandle, nullptr /* share_context */,
                        attributes, limits, nullptr, nullptr, nullptr, nullptr);
 
-  context_->GetImplementation()->SetLostContextCallback(base::Bind(
+  context_->GetImplementation()->SetLostContextCallback(base::BindOnce(
       &AwRenderThreadContextProvider::OnLostContext, base::Unretained(this)));
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

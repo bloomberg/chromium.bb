@@ -98,7 +98,7 @@ class FakeWindow {
 
 class FakeFunctor : public RenderThreadManagerClient {
  public:
-  using DrawGLCallback = base::Callback<void(AwDrawGLInfo*)>;
+  using DrawGLCallback = base::RepeatingCallback<void(AwDrawGLInfo*)>;
 
   FakeFunctor();
   ~FakeFunctor() override;

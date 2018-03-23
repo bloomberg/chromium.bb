@@ -40,8 +40,8 @@ void VerifyWhitelistCallback(bool expected, bool success) {
 void AwSafeBrowsingWhitelistManagerTest::SetWhitelist(
     std::vector<std::string>&& whitelist,
     bool expected) {
-  wm_->SetWhitelistOnUIThread(std::move(whitelist),
-                              base::Bind(&VerifyWhitelistCallback, expected));
+  wm_->SetWhitelistOnUIThread(
+      std::move(whitelist), base::BindOnce(&VerifyWhitelistCallback, expected));
 }
 
 TEST_F(AwSafeBrowsingWhitelistManagerTest, WsSchemeCanBeWhitelisted) {

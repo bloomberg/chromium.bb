@@ -43,6 +43,12 @@ namespace android_webview {
 // any references.
 class AwContentsClientBridge {
  public:
+  using CertErrorCallback =
+      base::OnceCallback<void(content::CertificateRequestResultType)>;
+  using SafeBrowsingActionCallback =
+      base::OnceCallback<void(AwUrlCheckerDelegateImpl::SafeBrowsingAction,
+                              bool)>;
+
   // Adds the handler to the UserData registry.
   static void Associate(content::WebContents* web_contents,
                         AwContentsClientBridge* handler);
@@ -58,13 +64,11 @@ class AwContentsClientBridge {
   ~AwContentsClientBridge();
 
   // AwContentsClientBridge implementation
-  void AllowCertificateError(
-      int cert_error,
-      net::X509Certificate* cert,
-      const GURL& request_url,
-      const base::Callback<void(content::CertificateRequestResultType)>&
-          callback,
-      bool* cancel_request);
+  void AllowCertificateError(int cert_error,
+                             net::X509Certificate* cert,
+                             const GURL& request_url,
+                             CertErrorCallback callback,
+                             bool* cancel_request);
   void SelectClientCertificate(
       net::SSLCertRequestInfo* cert_request_info,
       std::unique_ptr<content::ClientCertificateDelegate> delegate);
@@ -100,11 +104,9 @@ class AwContentsClientBridge {
                        int error_code,
                        bool safebrowsing_hit);
 
-  void OnSafeBrowsingHit(
-      const AwWebResourceRequest& request,
-      const safe_browsing::SBThreatType& threat_type,
-      const base::Callback<void(AwUrlCheckerDelegateImpl::SafeBrowsingAction,
-                                bool)>& callback);
+  void OnSafeBrowsingHit(const AwWebResourceRequest& request,
+                         const safe_browsing::SBThreatType& threat_type,
+                         SafeBrowsingActionCallback callback);
 
   // Called when a response from the server is received with status code >= 400.
   void OnReceivedHttpError(
@@ -137,11 +139,6 @@ class AwContentsClientBridge {
  private:
   JavaObjectWeakGlobalRef java_ref_;
 
-  typedef const base::Callback<void(content::CertificateRequestResultType)>
-      CertErrorCallback;
-  typedef const base::Callback<
-      void(AwUrlCheckerDelegateImpl::SafeBrowsingAction, bool)>
-      SafeBrowsingActionCallback;
   base::IDMap<std::unique_ptr<CertErrorCallback>> pending_cert_error_callbacks_;
   base::IDMap<std::unique_ptr<SafeBrowsingActionCallback>>
       safe_browsing_callbacks_;

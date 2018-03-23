@@ -186,9 +186,9 @@ class TestAnimateInAndOutOfScreen : public RenderingTest {
   bool WillDrawOnRT(AwDrawGLInfo* draw_info) override {
     if (draw_gl_count_on_rt_ == 1) {
       draw_gl_count_on_rt_++;
-      ui_task_runner_->PostTask(
-          FROM_HERE,
-          base::Bind(&RenderingTest::PostInvalidate, base::Unretained(this)));
+      ui_task_runner_->PostTask(FROM_HERE,
+                                base::BindOnce(&RenderingTest::PostInvalidate,
+                                               base::Unretained(this)));
       return false;
     }
 
@@ -359,9 +359,9 @@ class ResourceRenderingTest : public RenderingTest {
   void DidOnDraw(bool success) override {
     EXPECT_EQ(next_frame_ != nullptr, success);
     if (!AdvanceFrame()) {
-      ui_task_runner_->PostTask(FROM_HERE,
-                                base::Bind(&ResourceRenderingTest::CheckResults,
-                                           base::Unretained(this)));
+      ui_task_runner_->PostTask(
+          FROM_HERE, base::BindOnce(&ResourceRenderingTest::CheckResults,
+                                    base::Unretained(this)));
     }
   }
 

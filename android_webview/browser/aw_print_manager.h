@@ -22,7 +22,7 @@ class AwPrintManager : public printing::PrintManager,
       content::WebContents* contents,
       const printing::PrintSettings& settings,
       const base::FileDescriptor& file_descriptor,
-      const PdfWritingDoneCallback& callback);
+      PdfWritingDoneCallback callback);
 
   ~AwPrintManager() override;
 
@@ -34,7 +34,7 @@ class AwPrintManager : public printing::PrintManager,
   AwPrintManager(content::WebContents* contents,
                  const printing::PrintSettings& settings,
                  const base::FileDescriptor& file_descriptor,
-                 const PdfWritingDoneCallback& callback);
+                 PdfWritingDoneCallback callback);
 
   // printing::PrintManager:
   bool OnMessageReceived(const IPC::Message& message,

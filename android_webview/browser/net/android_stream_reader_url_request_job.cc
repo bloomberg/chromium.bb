@@ -110,10 +110,9 @@ AndroidStreamReaderURLRequestJob::~AndroidStreamReaderURLRequestJob() {
 
 namespace {
 
-typedef base::Callback<void(
+using OnInputStreamOpenedCallback = base::OnceCallback<void(
     std::unique_ptr<AndroidStreamReaderURLRequestJob::Delegate>,
-    std::unique_ptr<InputStream>)>
-    OnInputStreamOpenedCallback;
+    std::unique_ptr<InputStream>)>;
 
 // static
 void OpenInputStreamOnWorkerThread(
@@ -127,8 +126,8 @@ void OpenInputStreamOnWorkerThread(
   std::unique_ptr<InputStream> input_stream =
       delegate->OpenInputStream(env, url);
   job_thread_task_runner->PostTask(
-      FROM_HERE, base::Bind(callback, base::Passed(std::move(delegate)),
-                            base::Passed(std::move(input_stream))));
+      FROM_HERE, base::BindOnce(std::move(callback), std::move(delegate),
+                                std::move(input_stream)));
 }
 
 } // namespace
@@ -139,13 +138,13 @@ void AndroidStreamReaderURLRequestJob::Start() {
     DCHECK(delegate_obtainer_);
     delegate_obtainer_->ObtainDelegate(
         request(),
-        base::Bind(&AndroidStreamReaderURLRequestJob::DelegateObtained,
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(&AndroidStreamReaderURLRequestJob::DelegateObtained,
+                       weak_factory_.GetWeakPtr()));
   } else {
     // Run DoStart asynchronously to avoid re-entering the delegate.
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&AndroidStreamReaderURLRequestJob::DoStart,
-                              weak_factory_.GetWeakPtr()));
+        FROM_HERE, base::BindOnce(&AndroidStreamReaderURLRequestJob::DoStart,
+                                  weak_factory_.GetWeakPtr()));
   }
 }
 
@@ -188,10 +187,10 @@ void AndroidStreamReaderURLRequestJob::OnInputStreamOpened(
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::Bind(&InputStreamReaderWrapper::Seek, input_stream_reader_wrapper_,
-                 byte_range_),
-      base::Bind(&AndroidStreamReaderURLRequestJob::OnReaderSeekCompleted,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&InputStreamReaderWrapper::Seek,
+                     input_stream_reader_wrapper_, byte_range_),
+      base::BindOnce(&AndroidStreamReaderURLRequestJob::OnReaderSeekCompleted,
+                     weak_factory_.GetWeakPtr()));
 }
 
 void AndroidStreamReaderURLRequestJob::OnReaderSeekCompleted(int result) {
@@ -223,11 +222,11 @@ int AndroidStreamReaderURLRequestJob::ReadRawData(net::IOBuffer* dest,
 
   base::PostTaskWithTraitsAndReplyWithResult(
       FROM_HERE, {base::MayBlock()},
-      base::Bind(&InputStreamReaderWrapper::ReadRawData,
-                 input_stream_reader_wrapper_, base::RetainedRef(dest),
-                 dest_size),
-      base::Bind(&AndroidStreamReaderURLRequestJob::OnReaderReadCompleted,
-                 weak_factory_.GetWeakPtr()));
+      base::BindOnce(&InputStreamReaderWrapper::ReadRawData,
+                     input_stream_reader_wrapper_, base::RetainedRef(dest),
+                     dest_size),
+      base::BindOnce(&AndroidStreamReaderURLRequestJob::OnReaderReadCompleted,
+                     weak_factory_.GetWeakPtr()));
 
   return net::ERR_IO_PENDING;
 }
@@ -285,15 +284,15 @@ void AndroidStreamReaderURLRequestJob::DoStart() {
   // complex synchronization in the delegate.
   base::PostTaskWithTraits(
       FROM_HERE, {base::MayBlock()},
-      base::Bind(
+      base::BindOnce(
           &OpenInputStreamOnWorkerThread, base::ThreadTaskRunnerHandle::Get(),
           // This is intentional - the job could be deleted while the callback
           // is executing on the background thread.
           // The delegate will be "returned" to the job once the InputStream
           // open attempt is completed.
-          base::Passed(&delegate_), request()->url(),
-          base::Bind(&AndroidStreamReaderURLRequestJob::OnInputStreamOpened,
-                     weak_factory_.GetWeakPtr())));
+          std::move(delegate_), request()->url(),
+          base::BindOnce(&AndroidStreamReaderURLRequestJob::OnInputStreamOpened,
+                         weak_factory_.GetWeakPtr())));
 }
 
 void AndroidStreamReaderURLRequestJob::HeadersComplete(

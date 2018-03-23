@@ -64,8 +64,8 @@ namespace android_webview {
 
 namespace {
 
-typedef base::Callback<void(bool)> BoolCallback;
-typedef base::Callback<void(int)> IntCallback;
+using BoolCallback = base::RepeatingCallback<void(bool)>;
+using IntCallback = base::RepeatingCallback<void(int)>;
 
 // Holds a Java BooleanCookieCallback, knows how to invoke it and turn it
 // into a base callback.
@@ -84,8 +84,8 @@ class BoolCookieCallbackHolder {
 
   static BoolCallback ConvertToCallback(
       std::unique_ptr<BoolCookieCallbackHolder> me) {
-    return base::Bind(&BoolCookieCallbackHolder::Invoke,
-                      base::Owned(me.release()));
+    return base::BindRepeating(&BoolCookieCallbackHolder::Invoke,
+                               base::Owned(me.release()));
   }
 
  private:
@@ -95,24 +95,25 @@ class BoolCookieCallbackHolder {
 
 // Construct a closure which signals a waitable event if and when the closure
 // is called the waitable event must still exist.
-static base::Closure SignalEventClosure(WaitableEvent* completion) {
-  return base::Bind(&WaitableEvent::Signal, base::Unretained(completion));
+static base::RepeatingClosure SignalEventClosure(WaitableEvent* completion) {
+  return base::BindRepeating(&WaitableEvent::Signal,
+                             base::Unretained(completion));
 }
 
-static void DiscardBool(const base::Closure& f, bool b) {
+static void DiscardBool(base::RepeatingClosure f, bool b) {
   f.Run();
 }
 
-static BoolCallback BoolCallbackAdapter(const base::Closure& f) {
-  return base::Bind(&DiscardBool, f);
+static BoolCallback BoolCallbackAdapter(base::RepeatingClosure f) {
+  return base::BindRepeating(&DiscardBool, std::move(f));
 }
 
-static void DiscardInt(const base::Closure& f, int i) {
+static void DiscardInt(base::RepeatingClosure f, int i) {
   f.Run();
 }
 
-static IntCallback IntCallbackAdapter(const base::Closure& f) {
-  return base::Bind(&DiscardInt, f);
+static IntCallback IntCallbackAdapter(base::RepeatingClosure f) {
+  return base::BindRepeating(&DiscardInt, std::move(f));
 }
 
 // Are cookies allowed for file:// URLs by default?
@@ -338,15 +339,16 @@ void CookieManager::SetCookie(
     std::unique_ptr<BoolCookieCallbackHolder> callback_holder) {
   BoolCallback callback =
       BoolCookieCallbackHolder::ConvertToCallback(std::move(callback_holder));
-  ExecCookieTask(base::Bind(&CookieManager::SetCookieHelper,
-                            base::Unretained(this), host, cookie_value,
-                            callback));
+  ExecCookieTask(base::BindOnce(&CookieManager::SetCookieHelper,
+                                base::Unretained(this), host, cookie_value,
+                                callback));
 }
 
 void CookieManager::SetCookieSync(const GURL& host,
                                   const std::string& cookie_value) {
-  ExecCookieTaskSync(base::Bind(&CookieManager::SetCookieHelper,
-                                base::Unretained(this), host, cookie_value));
+  ExecCookieTaskSync(base::BindOnce(&CookieManager::SetCookieHelper,
+                                    base::Unretained(this), host,
+                                    cookie_value));
 }
 
 void CookieManager::SetCookieHelper(const GURL& host,
@@ -407,19 +409,19 @@ void CookieManager::RemoveSessionCookies(
     std::unique_ptr<BoolCookieCallbackHolder> callback_holder) {
   BoolCallback callback =
       BoolCookieCallbackHolder::ConvertToCallback(std::move(callback_holder));
-  ExecCookieTask(base::Bind(&CookieManager::RemoveSessionCookiesHelper,
-                            base::Unretained(this), callback));
+  ExecCookieTask(base::BindOnce(&CookieManager::RemoveSessionCookiesHelper,
+                                base::Unretained(this), callback));
 }
 
 void CookieManager::RemoveSessionCookiesSync() {
-  ExecCookieTaskSync(base::Bind(&CookieManager::RemoveSessionCookiesHelper,
-                                base::Unretained(this)));
+  ExecCookieTaskSync(base::BindOnce(&CookieManager::RemoveSessionCookiesHelper,
+                                    base::Unretained(this)));
 }
 
 void CookieManager::RemoveSessionCookiesHelper(BoolCallback callback) {
   GetCookieStore()->DeleteSessionCookiesAsync(
-      base::Bind(&CookieManager::RemoveCookiesCompleted, base::Unretained(this),
-                 callback));
+      base::BindOnce(&CookieManager::RemoveCookiesCompleted,
+                     base::Unretained(this), callback));
 }
 
 void CookieManager::RemoveCookiesCompleted(BoolCallback callback,
@@ -442,8 +444,8 @@ void CookieManager::RemoveAllCookiesSync() {
 
 void CookieManager::RemoveAllCookiesHelper(const BoolCallback callback) {
   GetCookieStore()->DeleteAllAsync(
-      base::Bind(&CookieManager::RemoveCookiesCompleted, base::Unretained(this),
-                 callback));
+      base::BindOnce(&CookieManager::RemoveCookiesCompleted,
+                     base::Unretained(this), callback));
 }
 
 void CookieManager::RemoveExpiredCookies() {

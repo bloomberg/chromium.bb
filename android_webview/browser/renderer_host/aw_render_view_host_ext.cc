@@ -37,7 +37,7 @@ AwRenderViewHostExt::~AwRenderViewHostExt() {
 void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   if (!web_contents()->GetRenderViewHost()) {
-    result.Run(false);
+    std::move(result).Run(false);
     return;
   }
   static uint32_t next_id = 1;
@@ -46,11 +46,11 @@ void AwRenderViewHostExt::DocumentHasImages(DocumentHasImagesResult result) {
   // because it only makes sense on the main frame.
   if (web_contents()->GetMainFrame()->Send(new AwViewMsg_DocumentHasImages(
           web_contents()->GetMainFrame()->GetRoutingID(), this_id))) {
-    image_requests_callback_map_[this_id] = result;
+    image_requests_callback_map_[this_id] = std::move(result);
   } else {
     // Still have to respond to the API call WebView#docuemntHasImages.
     // Otherwise the listener of the response may be starved.
-    result.Run(false);
+    std::move(result).Run(false);
   }
 }
 
@@ -136,8 +136,8 @@ void AwRenderViewHostExt::RenderViewHostChanged(
 }
 
 void AwRenderViewHostExt::ClearImageRequests() {
-  for (const auto& pair : image_requests_callback_map_) {
-    pair.second.Run(false);
+  for (auto& pair : image_requests_callback_map_) {
+    std::move(pair.second).Run(false);
   }
 
   image_requests_callback_map_.clear();
@@ -145,9 +145,9 @@ void AwRenderViewHostExt::ClearImageRequests() {
 
 void AwRenderViewHostExt::RenderFrameCreated(
     content::RenderFrameHost* frame_host) {
-  registry_.AddInterface(
-      base::Bind(&web_restrictions::WebRestrictionsMojoImplementation::Create,
-                 AwBrowserContext::GetDefault()->GetWebRestrictionProvider()));
+  registry_.AddInterface(base::BindRepeating(
+      &web_restrictions::WebRestrictionsMojoImplementation::Create,
+      AwBrowserContext::GetDefault()->GetWebRestrictionProvider()));
   if (!frame_host->GetParent()) {
     frame_host->Send(new AwViewMsg_SetBackgroundColor(
         frame_host->GetRoutingID(), background_color_));
@@ -212,7 +212,7 @@ void AwRenderViewHostExt::OnDocumentHasImagesResponse(
   if (pending_req == image_requests_callback_map_.end()) {
     DLOG(WARNING) << "unexpected DocumentHasImages Response: " << msg_id;
   } else {
-    pending_req->second.Run(has_images);
+    std::move(pending_req->second).Run(has_images);
     image_requests_callback_map_.erase(pending_req);
   }
 }

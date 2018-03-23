@@ -122,7 +122,7 @@ void RenderThreadManager::ClientRequestInvokeGL(bool for_idle) {
   } else {
     if (!g_request_invoke_gl_tracker.Get().ShouldRequestOnNonUiThread(this))
       return;
-    base::Closure callback;
+    base::OnceClosure callback;
     {
       base::AutoLock lock(lock_);
       callback = request_draw_gl_closure_;
@@ -131,7 +131,7 @@ void RenderThreadManager::ClientRequestInvokeGL(bool for_idle) {
     // after the next frame so that the idle work is taken care off by
     // the next frame instead.
     ui_loop_->PostDelayedTask(
-        FROM_HERE, callback,
+        FROM_HERE, std::move(callback),
         for_idle ? base::TimeDelta::FromMilliseconds(17) : base::TimeDelta());
   }
 }
@@ -143,7 +143,7 @@ void RenderThreadManager::DidInvokeGLProcess() {
 void RenderThreadManager::ResetRequestInvokeGLCallback() {
   DCHECK(ui_loop_->BelongsToCurrentThread());
   base::AutoLock lock(lock_);
-  request_draw_gl_cancelable_closure_.Reset(base::Bind(
+  request_draw_gl_cancelable_closure_.Reset(base::BindRepeating(
       &RenderThreadManager::ClientRequestInvokeGLOnUI, base::Unretained(this)));
   request_draw_gl_closure_ = request_draw_gl_cancelable_closure_.callback();
 }
@@ -222,8 +222,8 @@ void RenderThreadManager::PostExternalDrawConstraintsToChildCompositorOnRT(
   // No need to hold the lock_ during the post task.
   ui_loop_->PostTask(
       FROM_HERE,
-      base::Bind(&RenderThreadManager::UpdateParentDrawConstraintsOnUI,
-                 ui_thread_weak_ptr_));
+      base::BindOnce(&RenderThreadManager::UpdateParentDrawConstraintsOnUI,
+                     ui_thread_weak_ptr_));
 }
 
 ParentCompositorDrawConstraints

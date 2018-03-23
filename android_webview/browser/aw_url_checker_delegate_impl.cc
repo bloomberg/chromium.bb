@@ -47,8 +47,8 @@ void AwUrlCheckerDelegateImpl::StartDisplayingBlockingPageHelper(
 
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
-      base::Bind(&AwUrlCheckerDelegateImpl::StartApplicationResponse,
-                 ui_manager_, resource, std::move(request)));
+      base::BindOnce(&AwUrlCheckerDelegateImpl::StartApplicationResponse,
+                     ui_manager_, resource, std::move(request)));
 }
 
 bool AwUrlCheckerDelegateImpl::IsUrlWhitelisted(const GURL& url) {
@@ -101,10 +101,12 @@ void AwUrlCheckerDelegateImpl::StartApplicationResponse(
       AwContentsClientBridge::FromWebContents(web_contents);
 
   if (client) {
-    base::Callback<void(SafeBrowsingAction, bool)> callback = base::Bind(
-        &AwUrlCheckerDelegateImpl::DoApplicationResponse, ui_manager, resource);
+    base::OnceCallback<void(SafeBrowsingAction, bool)> callback =
+        base::BindOnce(&AwUrlCheckerDelegateImpl::DoApplicationResponse,
+                       ui_manager, resource);
 
-    client->OnSafeBrowsingHit(request, resource.threat_type, callback);
+    client->OnSafeBrowsingHit(request, resource.threat_type,
+                              std::move(callback));
   }
 }
 
@@ -123,7 +125,7 @@ void AwUrlCheckerDelegateImpl::DoApplicationResponse(
     case SafeBrowsingAction::SHOW_INTERSTITIAL:
       content::BrowserThread::PostTask(
           content::BrowserThread::UI, FROM_HERE,
-          base::Bind(
+          base::BindOnce(
               &AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage,
               ui_manager, resource));
       return;
@@ -169,7 +171,7 @@ void AwUrlCheckerDelegateImpl::StartDisplayingDefaultBlockingPage(
 
   // Reporting back that it is not okay to proceed with loading the URL.
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
-                                   base::Bind(resource.callback, false));
+                                   base::BindOnce(resource.callback, false));
 }
 
 }  // namespace android_webview

@@ -19,7 +19,7 @@ class SimplePermissionRequest : public AwPermissionRequestDelegate {
  public:
   SimplePermissionRequest(const GURL& origin,
                           int64_t resources,
-                          const base::Callback<void(bool)>& callback);
+                          base::OnceCallback<void(bool)> callback);
   ~SimplePermissionRequest() override;
 
   // AwPermissionRequestDelegate implementation.
@@ -30,7 +30,7 @@ class SimplePermissionRequest : public AwPermissionRequestDelegate {
  private:
   const GURL origin_;
   int64_t resources_;
-  const base::Callback<void(bool)> callback_;
+  base::OnceCallback<void(bool)> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(SimplePermissionRequest);
 };

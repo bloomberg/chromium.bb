@@ -19,8 +19,10 @@ class TestAwPermissionRequestDelegate : public AwPermissionRequestDelegate {
  public:
   TestAwPermissionRequestDelegate(const GURL& origin,
                                   int64_t resources,
-                                  base::Callback<void(bool)> callback)
-      : origin_(origin), resources_(resources), callback_(callback) {}
+                                  base::RepeatingCallback<void(bool)> callback)
+      : origin_(origin),
+        resources_(resources),
+        callback_(std::move(callback)) {}
 
   // Get the origin which initiated the permission request.
   const GURL& GetOrigin() override { return origin_; }
@@ -34,7 +36,7 @@ class TestAwPermissionRequestDelegate : public AwPermissionRequestDelegate {
  private:
   GURL origin_;
   int64_t resources_;
-  base::Callback<void(bool)> callback_;
+  base::RepeatingCallback<void(bool)> callback_;
 };
 
 class TestPermissionRequestHandlerClient
@@ -121,8 +123,8 @@ class PermissionRequestHandlerTest : public testing::Test {
         AwPermissionRequest::VideoCapture | AwPermissionRequest::AudioCapture;
     delegate_.reset(new TestAwPermissionRequestDelegate(
         origin_, resources_,
-        base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
-                   base::Unretained(this))));
+        base::BindRepeating(&PermissionRequestHandlerTest::NotifyRequestResult,
+                            base::Unretained(this))));
   }
 
   const GURL& origin() { return origin_; }
@@ -195,8 +197,8 @@ TEST_F(PermissionRequestHandlerTest, TestMultiplePermissionRequest) {
   std::unique_ptr<AwPermissionRequestDelegate> delegate1;
   delegate1.reset(new TestAwPermissionRequestDelegate(
       origin1, resources1,
-      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
-                 base::Unretained(this))));
+      base::BindRepeating(&PermissionRequestHandlerTest::NotifyRequestResult,
+                          base::Unretained(this))));
 
   // Send 1st request
   handler()->SendRequest(delegate());
@@ -223,8 +225,8 @@ TEST_F(PermissionRequestHandlerTest, TestMultiplePermissionRequest) {
   // Send 3rd request which has same origin and resources as first one.
   delegate1.reset(new TestAwPermissionRequestDelegate(
       origin(), resources(),
-      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
-                 base::Unretained(this))));
+      base::BindRepeating(&PermissionRequestHandlerTest::NotifyRequestResult,
+                          base::Unretained(this))));
   handler()->SendRequest(std::move(delegate1));
   // Verify Handler store the request correctly.
   ASSERT_EQ(3u, handler()->requests().size());
@@ -263,8 +265,8 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizePermission) {
   std::unique_ptr<AwPermissionRequestDelegate> delegate;
   delegate.reset(new TestAwPermissionRequestDelegate(
       origin(), AwPermissionRequest::AudioCapture,
-      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
-                 base::Unretained(this))));
+      base::BindRepeating(&PermissionRequestHandlerTest::NotifyRequestResult,
+                          base::Unretained(this))));
   client()->Reset();
   handler()->SendRequest(std::move(delegate));
   EXPECT_TRUE(allowed());
@@ -280,8 +282,8 @@ TEST_F(PermissionRequestHandlerTest, TestOriginNotPreauthorized) {
   int64_t requested_resources = AwPermissionRequest::AudioCapture;
   delegate.reset(new TestAwPermissionRequestDelegate(
       origin, requested_resources,
-      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
-                 base::Unretained(this))));
+      base::BindRepeating(&PermissionRequestHandlerTest::NotifyRequestResult,
+                          base::Unretained(this))));
   handler()->SendRequest(std::move(delegate));
   EXPECT_EQ(origin, handler()->requests()[0]->GetOrigin());
   EXPECT_EQ(requested_resources, handler()->requests()[0]->GetResources());
@@ -298,8 +300,8 @@ TEST_F(PermissionRequestHandlerTest, TestResourcesNotPreauthorized) {
       AwPermissionRequest::AudioCapture | AwPermissionRequest::Geolocation;
   delegate.reset(new TestAwPermissionRequestDelegate(
       origin(), requested_resources,
-      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
-                 base::Unretained(this))));
+      base::BindRepeating(&PermissionRequestHandlerTest::NotifyRequestResult,
+                          base::Unretained(this))));
 
   handler()->SendRequest(std::move(delegate));
   EXPECT_EQ(origin(), handler()->requests()[0]->GetOrigin());
@@ -317,8 +319,8 @@ TEST_F(PermissionRequestHandlerTest, TestPreauthorizeMultiplePermission) {
   std::unique_ptr<AwPermissionRequestDelegate> delegate;
   delegate.reset(new TestAwPermissionRequestDelegate(
       origin_hostname, AwPermissionRequest::Geolocation,
-      base::Bind(&PermissionRequestHandlerTest::NotifyRequestResult,
-                 base::Unretained(this))));
+      base::BindRepeating(&PermissionRequestHandlerTest::NotifyRequestResult,
+                          base::Unretained(this))));
   handler()->SendRequest(std::move(delegate));
   EXPECT_TRUE(allowed());
   EXPECT_EQ(NULL, client()->request());

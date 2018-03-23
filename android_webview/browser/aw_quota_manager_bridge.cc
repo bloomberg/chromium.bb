@@ -37,7 +37,7 @@ namespace {
 // are destroyed at the end of DoneOnUIThread.
 class GetOriginsTask : public base::RefCountedThreadSafe<GetOriginsTask> {
  public:
-  GetOriginsTask(const AwQuotaManagerBridge::GetOriginsCallback& callback,
+  GetOriginsTask(AwQuotaManagerBridge::GetOriginsCallback callback,
                  QuotaManager* quota_manager);
 
   void Run();
@@ -71,9 +71,9 @@ class GetOriginsTask : public base::RefCountedThreadSafe<GetOriginsTask> {
 };
 
 GetOriginsTask::GetOriginsTask(
-    const AwQuotaManagerBridge::GetOriginsCallback& callback,
+    AwQuotaManagerBridge::GetOriginsCallback callback,
     QuotaManager* quota_manager)
-    : ui_callback_(callback), quota_manager_(quota_manager) {
+    : ui_callback_(std::move(callback)), quota_manager_(quota_manager) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
@@ -83,10 +83,10 @@ void GetOriginsTask::Run() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&QuotaManager::GetOriginsModifiedSince, quota_manager_,
-                 blink::mojom::StorageType::kTemporary,
-                 base::Time() /* Since beginning of time. */,
-                 base::Bind(&GetOriginsTask::OnOriginsObtained, this)));
+      base::BindOnce(&QuotaManager::GetOriginsModifiedSince, quota_manager_,
+                     blink::mojom::StorageType::kTemporary,
+                     base::Time() /* Since beginning of time. */,
+                     base::BindOnce(&GetOriginsTask::OnOriginsObtained, this)));
 }
 
 void GetOriginsTask::OnOriginsObtained(const std::set<GURL>& origins,
@@ -99,7 +99,8 @@ void GetOriginsTask::OnOriginsObtained(const std::set<GURL>& origins,
        origin != origins.end(); ++origin) {
     quota_manager_->GetUsageAndQuota(
         *origin, type,
-        base::Bind(&GetOriginsTask::OnUsageAndQuotaObtained, this, *origin));
+        base::BindOnce(&GetOriginsTask::OnUsageAndQuotaObtained, this,
+                       *origin));
   }
 
   CheckDone();
@@ -124,8 +125,9 @@ void GetOriginsTask::OnUsageAndQuotaObtained(
 void GetOriginsTask::CheckDone() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if (num_callbacks_received_ == num_callbacks_to_wait_) {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                            base::Bind(&GetOriginsTask::DoneOnUIThread, this));
+    BrowserThread::PostTask(
+        BrowserThread::UI, FROM_HERE,
+        base::BindOnce(&GetOriginsTask::DoneOnUIThread, this));
   } else if (num_callbacks_received_ > num_callbacks_to_wait_) {
     NOTREACHED();
   }
@@ -134,14 +136,14 @@ void GetOriginsTask::CheckDone() {
 // This method is to avoid copying the 3 vector arguments into a bound callback.
 void GetOriginsTask::DoneOnUIThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ui_callback_.Run(origin_, usage_, quota_);
+  std::move(ui_callback_).Run(origin_, usage_, quota_);
 }
 
-void RunOnUIThread(const base::Closure& task) {
+void RunOnUIThread(base::OnceClosure task) {
   if (BrowserThread::CurrentlyOn(BrowserThread::UI)) {
-    task.Run();
+    std::move(task).Run();
   } else {
-    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, task);
+    BrowserThread::PostTask(BrowserThread::UI, FROM_HERE, std::move(task));
   }
 }
 
@@ -197,7 +199,7 @@ QuotaManager* AwQuotaManagerBridge::GetQuotaManager() const {
 void AwQuotaManagerBridge::DeleteAllData(JNIEnv* env,
                                          const JavaParamRef<jobject>& object) {
   RunOnUIThread(
-      base::Bind(&AwQuotaManagerBridge::DeleteAllDataOnUiThread, this));
+      base::BindOnce(&AwQuotaManagerBridge::DeleteAllDataOnUiThread, this));
 }
 
 void AwQuotaManagerBridge::DeleteAllDataOnUiThread() {
@@ -219,8 +221,8 @@ void AwQuotaManagerBridge::DeleteOrigin(JNIEnv* env,
                                         const JavaParamRef<jstring>& origin) {
   base::string16 origin_string(
       base::android::ConvertJavaStringToUTF16(env, origin));
-  RunOnUIThread(base::Bind(&AwQuotaManagerBridge::DeleteOriginOnUiThread, this,
-                           origin_string));
+  RunOnUIThread(base::BindOnce(&AwQuotaManagerBridge::DeleteOriginOnUiThread,
+                               this, origin_string));
 }
 
 void AwQuotaManagerBridge::DeleteOriginOnUiThread(
@@ -239,18 +241,18 @@ void AwQuotaManagerBridge::DeleteOriginOnUiThread(
 void AwQuotaManagerBridge::GetOrigins(JNIEnv* env,
                                       const JavaParamRef<jobject>& object,
                                       jint callback_id) {
-  RunOnUIThread(base::Bind(&AwQuotaManagerBridge::GetOriginsOnUiThread, this,
-                           callback_id));
+  RunOnUIThread(base::BindOnce(&AwQuotaManagerBridge::GetOriginsOnUiThread,
+                               this, callback_id));
 }
 
 void AwQuotaManagerBridge::GetOriginsOnUiThread(jint callback_id) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  const GetOriginsCallback ui_callback =
-      base::Bind(&AwQuotaManagerBridge::GetOriginsCallbackImpl,
-                 weak_factory_.GetWeakPtr(), callback_id);
+  GetOriginsCallback ui_callback =
+      base::BindOnce(&AwQuotaManagerBridge::GetOriginsCallbackImpl,
+                     weak_factory_.GetWeakPtr(), callback_id);
 
-  (new GetOriginsTask(ui_callback, GetQuotaManager()))->Run();
+  (new GetOriginsTask(std::move(ui_callback), GetQuotaManager()))->Run();
 }
 
 void AwQuotaManagerBridge::GetOriginsCallbackImpl(
@@ -273,7 +275,7 @@ void AwQuotaManagerBridge::GetOriginsCallbackImpl(
 namespace {
 
 void OnUsageAndQuotaObtained(
-    const AwQuotaManagerBridge::QuotaUsageCallback& ui_callback,
+    AwQuotaManagerBridge::QuotaUsageCallback ui_callback,
     blink::mojom::QuotaStatusCode status_code,
     int64_t usage,
     int64_t quota) {
@@ -283,7 +285,7 @@ void OnUsageAndQuotaObtained(
     quota = 0;
   }
   BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(ui_callback, usage, quota));
+                          base::BindOnce(std::move(ui_callback), usage, quota));
 }
 
 }  // namespace
@@ -297,8 +299,8 @@ void AwQuotaManagerBridge::GetUsageAndQuotaForOrigin(
   base::string16 origin_string(
       base::android::ConvertJavaStringToUTF16(env, origin));
   RunOnUIThread(
-      base::Bind(&AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread,
-                 this, origin_string, callback_id, is_quota));
+      base::BindOnce(&AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread,
+                     this, origin_string, callback_id, is_quota));
 }
 
 void AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread(
@@ -306,15 +308,16 @@ void AwQuotaManagerBridge::GetUsageAndQuotaForOriginOnUiThread(
     jint callback_id,
     bool is_quota) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  const QuotaUsageCallback ui_callback =
-      base::Bind(&AwQuotaManagerBridge::QuotaUsageCallbackImpl,
-                 weak_factory_.GetWeakPtr(), callback_id, is_quota);
+  QuotaUsageCallback ui_callback =
+      base::BindOnce(&AwQuotaManagerBridge::QuotaUsageCallbackImpl,
+                     weak_factory_.GetWeakPtr(), callback_id, is_quota);
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::Bind(&QuotaManager::GetUsageAndQuota, GetQuotaManager(),
-                 GURL(origin), blink::mojom::StorageType::kTemporary,
-                 base::Bind(&OnUsageAndQuotaObtained, ui_callback)));
+      base::BindOnce(
+          &QuotaManager::GetUsageAndQuota, GetQuotaManager(), GURL(origin),
+          blink::mojom::StorageType::kTemporary,
+          base::BindOnce(&OnUsageAndQuotaObtained, std::move(ui_callback))));
 }
 
 void AwQuotaManagerBridge::QuotaUsageCallbackImpl(int jcallback_id,

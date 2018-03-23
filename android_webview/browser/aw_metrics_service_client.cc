@@ -142,9 +142,9 @@ void AwMetricsServiceClient::Initialize(
   } else {
     base::PostTaskWithTraitsAndReply(
         FROM_HERE, {base::MayBlock()},
-        base::Bind(&AwMetricsServiceClient::LoadOrCreateClientId),
-        base::Bind(&AwMetricsServiceClient::InitializeWithClientId,
-                   base::Unretained(this)));
+        base::BindOnce(&AwMetricsServiceClient::LoadOrCreateClientId),
+        base::BindOnce(&AwMetricsServiceClient::InitializeWithClientId,
+                       base::Unretained(this)));
   }
 }
 
@@ -157,8 +157,9 @@ void AwMetricsServiceClient::InitializeWithClientId() {
   in_sample_ = IsInSample(g_client_id.Get());
 
   metrics_state_manager_ = metrics::MetricsStateManager::Create(
-      pref_service_, this, base::string16(), base::Bind(&StoreClientInfo),
-      base::Bind(&LoadClientInfo));
+      pref_service_, this, base::string16(),
+      base::BindRepeating(&StoreClientInfo),
+      base::BindRepeating(&LoadClientInfo));
 
   metrics_service_.reset(new ::metrics::MetricsService(
       metrics_state_manager_.get(), this, pref_service_));

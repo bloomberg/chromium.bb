@@ -37,8 +37,9 @@ class TokenBindingManager {
   // parameter is one of a network error code (see the underlying protocol
   // implementation for more), and the second parameter is the key. The
   // key is owned by the callback and be destroyed at the end of the call.
-  using KeyReadyCallback = base::Callback<void(int, crypto::ECPrivateKey* key)>;
-  using DeletionCompleteCallback = base::Callback<void(void)>;
+  using KeyReadyCallback =
+      base::OnceCallback<void(int, crypto::ECPrivateKey* key)>;
+  using DeletionCompleteCallback = base::OnceCallback<void(void)>;
 
   // Retrieve (or create if not exist) the key for the given host. The callback
   // is called asynchonously to indicate the status for the key creation and

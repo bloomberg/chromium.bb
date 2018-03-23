@@ -86,26 +86,26 @@ class ShouldInterceptRequestAdaptor
       : io_thread_client_(std::move(io_thread_client)), weak_factory_(this) {}
   ~ShouldInterceptRequestAdaptor() override {}
 
-  void ObtainDelegate(net::URLRequest* request,
-                      const Callback& callback) override {
-    callback_ = callback;
+  void ObtainDelegate(net::URLRequest* request, Callback callback) override {
+    callback_ = std::move(callback);
     io_thread_client_->ShouldInterceptRequestAsync(
         // The request is only used while preparing the call, not retained.
         request,
-        base::Bind(&ShouldInterceptRequestAdaptor::WebResourceResponseObtained,
-                   // The lifetime of the DelegateObtainer is managed by
-                   // AndroidStreamReaderURLRequestJob, it might get deleted.
-                   weak_factory_.GetWeakPtr()));
+        base::BindOnce(
+            &ShouldInterceptRequestAdaptor::WebResourceResponseObtained,
+            // The lifetime of the DelegateObtainer is managed by
+            // AndroidStreamReaderURLRequestJob, it might get deleted.
+            weak_factory_.GetWeakPtr()));
   }
 
  private:
   void WebResourceResponseObtained(
       std::unique_ptr<AwWebResourceResponse> response) {
     if (response) {
-      callback_.Run(
+      std::move(callback_).Run(
           std::make_unique<StreamReaderJobDelegateImpl>(std::move(response)));
     } else {
-      callback_.Run(nullptr);
+      std::move(callback_).Run(nullptr);
     }
   }
 
