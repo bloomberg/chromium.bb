@@ -1,9 +1,3 @@
-frame (anonymous) - didStartProvisionalLoadForFrame
-frame (anonymous) - didCommitLoadForFrame
-main frame - didReceiveTitle: Font Loading API IDL tests
-main frame - didFinishDocumentLoadForFrame
-main frame - didHandleOnloadEventsForFrame
-main frame - didFinishLoadForFrame
 This is a testharness.js-based test.
 PASS Test IDL implementation of CSS Font Loading
 PASS Document interface: attribute fonts
