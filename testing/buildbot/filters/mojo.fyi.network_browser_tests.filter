@@ -140,9 +140,6 @@
 # crbug.com/778860 SecurityStyleExplanations::info_explanations is empty.
 -BrowserTestNonsecureURLRequest.DidChangeVisibleSecurityStateObserverObsoleteTLSSettings
 
-# crbug.com/779217 The NetworkContext is not created when the network service is enabled.
--SpellingMenuObserverTest.SuggestionsForceTopSeparator
-
 # http://crbug.com/783990
 # Add support for http auth.
 -DownloadExtensionTest.DownloadExtensionTest_Download_AuthBasic_Fail
