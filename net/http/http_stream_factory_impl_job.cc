@@ -1084,7 +1084,7 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
     // complete the auth (or read the response body).  The tunnel restart code
     // is careful to remove it before returning control to the rest of this
     // class.
-    connection_.reset(connection_->release_pending_http_proxy_connection());
+    connection_ = connection_->release_pending_http_proxy_connection();
     return result;
   }
 
