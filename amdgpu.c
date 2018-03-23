@@ -41,6 +41,11 @@ enum {
 };
 // clang-format on
 
+struct amdgpu_priv {
+	void *addrlib;
+	int drm_version;
+};
+
 const static uint32_t render_target_formats[] = { DRM_FORMAT_ABGR8888, DRM_FORMAT_ARGB8888,
 						  DRM_FORMAT_RGB565, DRM_FORMAT_XBGR8888,
 						  DRM_FORMAT_XRGB8888 };
@@ -273,15 +278,31 @@ static void *amdgpu_addrlib_init(int fd)
 
 static int amdgpu_init(struct driver *drv)
 {
-	void *addrlib;
+	struct amdgpu_priv *priv;
+	drmVersionPtr drm_version;
 	struct format_metadata metadata;
 	uint64_t use_flags = BO_USE_RENDER_MASK;
 
-	addrlib = amdgpu_addrlib_init(drv_get_fd(drv));
-	if (!addrlib)
+	priv = calloc(1, sizeof(struct amdgpu_priv));
+	if (!priv)
 		return -1;
 
-	drv->priv = addrlib;
+	drm_version = drmGetVersion(drv_get_fd(drv));
+	if (!drm_version) {
+		free(priv);
+		return -1;
+	}
+
+	priv->drm_version = drm_version->version_minor;
+	drmFreeVersion(drm_version);
+
+	priv->addrlib = amdgpu_addrlib_init(drv_get_fd(drv));
+	if (!priv->addrlib) {
+		free(priv);
+		return -1;
+	}
+
+	drv->priv = priv;
 
 	drv_add_combinations(drv, texture_source_formats, ARRAY_SIZE(texture_source_formats),
 			     &LINEAR_METADATA, BO_USE_TEXTURE_MASK);
@@ -342,14 +363,17 @@ static int amdgpu_init(struct driver *drv)
 
 static void amdgpu_close(struct driver *drv)
 {
-	AddrDestroy(drv->priv);
+	struct amdgpu_priv *priv = (struct amdgpu_priv *)drv->priv;
+	AddrDestroy(priv->addrlib);
+	free(priv);
 	drv->priv = NULL;
 }
 
 static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint32_t format,
 			    uint64_t use_flags)
 {
-	void *addrlib = bo->drv->priv;
+	struct amdgpu_priv *priv = (struct amdgpu_priv *)bo->drv->priv;
+	void *addrlib = priv->addrlib;
 	union drm_amdgpu_gem_create gem_create;
 	struct amdgpu_bo_metadata metadata = { 0 };
 	ADDR_COMPUTE_SURFACE_INFO_OUTPUT addr_out = { 0 };
@@ -390,6 +414,12 @@ static int amdgpu_bo_create(struct bo *bo, uint32_t width, uint32_t height, uint
 		gem_create.in.domains = AMDGPU_GEM_DOMAIN_GTT;
 		if (!(use_flags & BO_USE_SW_READ_OFTEN))
 			gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_CPU_GTT_USWC;
+	}
+
+	/* If drm_version >= 21 everything exposes explicit synchronization primitives
+	   and chromeos/arc++ will use them. Disable implicit synchronization. */
+	if (priv->drm_version >= 21) {
+		gem_create.in.domain_flags |= AMDGPU_GEM_CREATE_EXPLICIT_SYNC;
 	}
 
 	/* Allocate the buffer with the preferred heap. */
