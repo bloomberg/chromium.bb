@@ -114,6 +114,10 @@ class MODULES_EXPORT MediaControlsImpl final : public HTMLDivElement,
   void EnterFullscreen();
   void ExitFullscreen();
 
+  // Called by the MediaControlOverlayPlayButtonElement to check if toggling
+  // fullscreen is allowed.
+  bool IsFullscreenEnabled() const;
+
   // Text track related methods exposed to components handling closed captions.
   void ToggleTextTrackList();
   void ShowTextTrackAtIndex(unsigned);

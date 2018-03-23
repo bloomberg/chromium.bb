@@ -1059,6 +1059,11 @@ void MediaControlsImpl::ExitFullscreen() {
   Fullscreen::ExitFullscreen(GetDocument());
 }
 
+bool MediaControlsImpl::IsFullscreenEnabled() const {
+  return fullscreen_button_->IsWanted() &&
+         !fullscreen_button_->hasAttribute(HTMLNames::disabledAttr);
+}
+
 void MediaControlsImpl::RemotePlaybackStateChanged() {
   cast_button_->UpdateDisplayType();
   overlay_cast_button_->UpdateDisplayType();
