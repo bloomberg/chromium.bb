@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/websockets/websocket_impl.h"
+#include "services/network/websocket.h"
 
 #include <inttypes.h>
 
@@ -30,7 +30,7 @@
 #include "net/websockets/websocket_handshake_request_info.h"
 #include "net/websockets/websocket_handshake_response_info.h"
 
-namespace content {
+namespace network {
 namespace {
 
 typedef net::WebSocketEventInterface::ChannelState ChannelState;
@@ -73,10 +73,10 @@ network::mojom::WebSocketMessageType OpCodeToMessageType(
 
 // Implementation of net::WebSocketEventInterface. Receives events from our
 // WebSocketChannel object.
-class WebSocketImpl::WebSocketEventHandler final
+class WebSocket::WebSocketEventHandler final
     : public net::WebSocketEventInterface {
  public:
-  explicit WebSocketEventHandler(WebSocketImpl* impl);
+  explicit WebSocketEventHandler(WebSocket* impl);
   ~WebSocketEventHandler() override;
 
   // net::WebSocketEventInterface implementation
@@ -106,34 +106,34 @@ class WebSocketImpl::WebSocketEventHandler final
       bool fatal) override;
 
  private:
-  WebSocketImpl* const impl_;
+  WebSocket* const impl_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketEventHandler);
 };
 
-WebSocketImpl::WebSocketEventHandler::WebSocketEventHandler(WebSocketImpl* impl)
+WebSocket::WebSocketEventHandler::WebSocketEventHandler(WebSocket* impl)
     : impl_(impl) {
   DVLOG(1) << "WebSocketEventHandler created @"
            << reinterpret_cast<void*>(this);
 }
 
-WebSocketImpl::WebSocketEventHandler::~WebSocketEventHandler() {
+WebSocket::WebSocketEventHandler::~WebSocketEventHandler() {
   DVLOG(1) << "WebSocketEventHandler destroyed @"
            << reinterpret_cast<void*>(this);
 }
 
-void WebSocketImpl::WebSocketEventHandler::OnCreateURLRequest(
+void WebSocket::WebSocketEventHandler::OnCreateURLRequest(
     net::URLRequest* url_request) {
   impl_->delegate_->OnCreateURLRequest(impl_->child_id_, impl_->frame_id_,
                                        url_request);
 }
 
-ChannelState WebSocketImpl::WebSocketEventHandler::OnAddChannelResponse(
+ChannelState WebSocket::WebSocketEventHandler::OnAddChannelResponse(
     const std::string& selected_protocol,
     const std::string& extensions) {
   DVLOG(3) << "WebSocketEventHandler::OnAddChannelResponse @"
-           << reinterpret_cast<void*>(this)
-           << " selected_protocol=\"" << selected_protocol << "\""
+           << reinterpret_cast<void*>(this) << " selected_protocol=\""
+           << selected_protocol << "\""
            << " extensions=\"" << extensions << "\"";
 
   impl_->delegate_->OnReceivedResponseFromServer(impl_);
@@ -143,14 +143,13 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnAddChannelResponse(
   return net::WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocketImpl::WebSocketEventHandler::OnDataFrame(
+ChannelState WebSocket::WebSocketEventHandler::OnDataFrame(
     bool fin,
     net::WebSocketFrameHeader::OpCode type,
     scoped_refptr<net::IOBuffer> buffer,
     size_t buffer_size) {
   DVLOG(3) << "WebSocketEventHandler::OnDataFrame @"
-           << reinterpret_cast<void*>(this)
-           << " fin=" << fin
+           << reinterpret_cast<void*>(this) << " fin=" << fin
            << " type=" << type << " data is " << buffer_size << " bytes";
 
   // TODO(darin): Avoid this copy.
@@ -165,7 +164,7 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnDataFrame(
   return net::WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocketImpl::WebSocketEventHandler::OnClosingHandshake() {
+ChannelState WebSocket::WebSocketEventHandler::OnClosingHandshake() {
   DVLOG(3) << "WebSocketEventHandler::OnClosingHandshake @"
            << reinterpret_cast<void*>(this);
 
@@ -174,25 +173,22 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnClosingHandshake() {
   return net::WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocketImpl::WebSocketEventHandler::OnFlowControl(
-    int64_t quota) {
+ChannelState WebSocket::WebSocketEventHandler::OnFlowControl(int64_t quota) {
   DVLOG(3) << "WebSocketEventHandler::OnFlowControl @"
-           << reinterpret_cast<void*>(this)
-           << " quota=" << quota;
+           << reinterpret_cast<void*>(this) << " quota=" << quota;
 
   impl_->client_->OnFlowControl(quota);
 
   return net::WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocketImpl::WebSocketEventHandler::OnDropChannel(
+ChannelState WebSocket::WebSocketEventHandler::OnDropChannel(
     bool was_clean,
     uint16_t code,
     const std::string& reason) {
   DVLOG(3) << "WebSocketEventHandler::OnDropChannel @"
-           << reinterpret_cast<void*>(this)
-           << " was_clean=" << was_clean << " code=" << code
-           << " reason=\"" << reason << "\"";
+           << reinterpret_cast<void*>(this) << " was_clean=" << was_clean
+           << " code=" << code << " reason=\"" << reason << "\"";
 
   impl_->client_->OnDropChannel(was_clean, code, reason);
 
@@ -202,7 +198,7 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnDropChannel(
   return net::WebSocketEventInterface::CHANNEL_DELETED;
 }
 
-ChannelState WebSocketImpl::WebSocketEventHandler::OnFailChannel(
+ChannelState WebSocket::WebSocketEventHandler::OnFailChannel(
     const std::string& message) {
   DVLOG(3) << "WebSocketEventHandler::OnFailChannel @"
            << reinterpret_cast<void*>(this) << " message=\"" << message << "\"";
@@ -215,7 +211,7 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnFailChannel(
   return net::WebSocketEventInterface::CHANNEL_DELETED;
 }
 
-ChannelState WebSocketImpl::WebSocketEventHandler::OnStartOpeningHandshake(
+ChannelState WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
     std::unique_ptr<net::WebSocketHandshakeRequestInfo> request) {
   bool should_send = impl_->delegate_->CanReadRawCookies();
 
@@ -245,7 +241,7 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnStartOpeningHandshake(
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocketImpl::WebSocketEventHandler::OnFinishOpeningHandshake(
+ChannelState WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
     std::unique_ptr<net::WebSocketHandshakeResponseInfo> response) {
   bool should_send = impl_->delegate_->CanReadRawCookies();
 
@@ -277,7 +273,7 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnFinishOpeningHandshake(
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-ChannelState WebSocketImpl::WebSocketEventHandler::OnSSLCertificateError(
+ChannelState WebSocket::WebSocketEventHandler::OnSSLCertificateError(
     std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks,
     const GURL& url,
     const net::SSLInfo& ssl_info,
@@ -292,12 +288,12 @@ ChannelState WebSocketImpl::WebSocketEventHandler::OnSSLCertificateError(
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-WebSocketImpl::WebSocketImpl(std::unique_ptr<Delegate> delegate,
-                             network::mojom::WebSocketRequest request,
-                             int child_id,
-                             int frame_id,
-                             url::Origin origin,
-                             base::TimeDelta delay)
+WebSocket::WebSocket(std::unique_ptr<Delegate> delegate,
+                     network::mojom::WebSocketRequest request,
+                     int child_id,
+                     int frame_id,
+                     url::Origin origin,
+                     base::TimeDelta delay)
     : delegate_(std::move(delegate)),
       binding_(this, std::move(request)),
       delay_(delay),
@@ -307,26 +303,25 @@ WebSocketImpl::WebSocketImpl(std::unique_ptr<Delegate> delegate,
       origin_(std::move(origin)),
       handshake_succeeded_(false),
       weak_ptr_factory_(this) {
-  binding_.set_connection_error_handler(base::BindOnce(
-      &WebSocketImpl::OnConnectionError, base::Unretained(this)));
+  binding_.set_connection_error_handler(
+      base::BindOnce(&WebSocket::OnConnectionError, base::Unretained(this)));
 }
 
-WebSocketImpl::~WebSocketImpl() {}
+WebSocket::~WebSocket() {}
 
-void WebSocketImpl::GoAway() {
+void WebSocket::GoAway() {
   StartClosingHandshake(static_cast<uint16_t>(net::kWebSocketErrorGoingAway),
                         "");
 }
 
-void WebSocketImpl::AddChannelRequest(
+void WebSocket::AddChannelRequest(
     const GURL& socket_url,
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
     const std::string& user_agent_override,
     network::mojom::WebSocketClientPtr client) {
-  DVLOG(3) << "WebSocketImpl::AddChannelRequest @"
-           << reinterpret_cast<void*>(this) << " socket_url=\"" << socket_url
-           << "\" requested_protocols=\""
+  DVLOG(3) << "WebSocket::AddChannelRequest @" << reinterpret_cast<void*>(this)
+           << " socket_url=\"" << socket_url << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
            << origin_ << "\" site_for_cookies=\"" << site_for_cookies
            << "\" user_agent_override=\"" << user_agent_override << "\"";
@@ -343,9 +338,8 @@ void WebSocketImpl::AddChannelRequest(
   if (delay_ > base::TimeDelta()) {
     base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
         FROM_HERE,
-        base::BindOnce(&WebSocketImpl::AddChannel,
-                       weak_ptr_factory_.GetWeakPtr(), socket_url,
-                       requested_protocols, site_for_cookies,
+        base::BindOnce(&WebSocket::AddChannel, weak_ptr_factory_.GetWeakPtr(),
+                       socket_url, requested_protocols, site_for_cookies,
                        user_agent_override),
         delay_);
   } else {
@@ -354,12 +348,12 @@ void WebSocketImpl::AddChannelRequest(
   }
 }
 
-void WebSocketImpl::SendFrame(bool fin,
-                              network::mojom::WebSocketMessageType type,
-                              const std::vector<uint8_t>& data) {
-  DVLOG(3) << "WebSocketImpl::SendFrame @"
-           << reinterpret_cast<void*>(this) << " fin=" << fin
-           << " type=" << type << " data is " << data.size() << " bytes";
+void WebSocket::SendFrame(bool fin,
+                          network::mojom::WebSocketMessageType type,
+                          const std::vector<uint8_t>& data) {
+  DVLOG(3) << "WebSocket::SendFrame @" << reinterpret_cast<void*>(this)
+           << " fin=" << fin << " type=" << type << " data is " << data.size()
+           << " bytes";
 
   if (!channel_) {
     // The client should not be sending us frames until after we've informed
@@ -381,9 +375,9 @@ void WebSocketImpl::SendFrame(bool fin,
                       data.size());
 }
 
-void WebSocketImpl::SendFlowControl(int64_t quota) {
-  DVLOG(3) << "WebSocketImpl::OnFlowControl @"
-           << reinterpret_cast<void*>(this) << " quota=" << quota;
+void WebSocket::SendFlowControl(int64_t quota) {
+  DVLOG(3) << "WebSocket::OnFlowControl @" << reinterpret_cast<void*>(this)
+           << " quota=" << quota;
 
   if (!channel_) {
     // WebSocketChannel is not yet created due to the delay introduced by
@@ -396,11 +390,11 @@ void WebSocketImpl::SendFlowControl(int64_t quota) {
   ignore_result(channel_->SendFlowControl(quota));
 }
 
-void WebSocketImpl::StartClosingHandshake(uint16_t code,
-                                          const std::string& reason) {
-  DVLOG(3) << "WebSocketImpl::StartClosingHandshake @"
-           << reinterpret_cast<void*>(this)
-           << " code=" << code << " reason=\"" << reason << "\"";
+void WebSocket::StartClosingHandshake(uint16_t code,
+                                      const std::string& reason) {
+  DVLOG(3) << "WebSocket::StartClosingHandshake @"
+           << reinterpret_cast<void*>(this) << " code=" << code << " reason=\""
+           << reason << "\"";
 
   if (!channel_) {
     // WebSocketChannel is not yet created due to the delay introduced by
@@ -413,19 +407,17 @@ void WebSocketImpl::StartClosingHandshake(uint16_t code,
   ignore_result(channel_->StartClosingHandshake(code, reason));
 }
 
-void WebSocketImpl::OnConnectionError() {
-  DVLOG(3) << "WebSocketImpl::OnConnectionError @"
-           << reinterpret_cast<void*>(this);
+void WebSocket::OnConnectionError() {
+  DVLOG(3) << "WebSocket::OnConnectionError @" << reinterpret_cast<void*>(this);
 
   delegate_->OnLostConnectionToClient(this);
 }
 
-void WebSocketImpl::AddChannel(
-    const GURL& socket_url,
-    const std::vector<std::string>& requested_protocols,
-    const GURL& site_for_cookies,
-    const std::string& user_agent_override) {
-  DVLOG(3) << "WebSocketImpl::AddChannel @" << reinterpret_cast<void*>(this)
+void WebSocket::AddChannel(const GURL& socket_url,
+                           const std::vector<std::string>& requested_protocols,
+                           const GURL& site_for_cookies,
+                           const std::string& user_agent_override) {
+  DVLOG(3) << "WebSocket::AddChannel @" << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
            << origin_ << "\" site_for_cookies=\"" << site_for_cookies
@@ -448,9 +440,9 @@ void WebSocketImpl::AddChannel(
           Delegate::BadMessageReason::kInvalidHeaderValue);
       return;
     }
-    additional_headers = base::StringPrintf("%s:%s",
-                                            net::HttpRequestHeaders::kUserAgent,
-                                            user_agent_override.c_str());
+    additional_headers =
+        base::StringPrintf("%s:%s", net::HttpRequestHeaders::kUserAgent,
+                           user_agent_override.c_str());
   }
   channel_->SendAddChannelRequest(socket_url, requested_protocols, origin_,
                                   site_for_cookies, additional_headers);
@@ -458,4 +450,4 @@ void WebSocketImpl::AddChannel(
     SendFlowControl(quota);
 }
 
-}  // namespace content
+}  // namespace network

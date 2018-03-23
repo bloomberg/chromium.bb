@@ -37,7 +37,7 @@ const int kMaxPendingWebSocketConnections = 255;
 
 }  // namespace
 
-class WebSocketManager::Delegate final : public WebSocketImpl::Delegate {
+class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
  public:
   explicit Delegate(WebSocketManager* manager) : manager_(manager) {}
   ~Delegate() override {}
@@ -46,11 +46,11 @@ class WebSocketManager::Delegate final : public WebSocketImpl::Delegate {
     return manager_->GetURLRequestContext();
   }
 
-  void OnReceivedResponseFromServer(WebSocketImpl* impl) override {
+  void OnReceivedResponseFromServer(network::WebSocket* impl) override {
     manager_->OnReceivedResponseFromServer(impl);
   }
 
-  void OnLostConnectionToClient(WebSocketImpl* impl) override {
+  void OnLostConnectionToClient(network::WebSocket* impl) override {
     manager_->OnLostConnectionToClient(impl);
   }
 
@@ -265,12 +265,12 @@ void WebSocketManager::DoCreateWebSocket(
     return;
   }
 
-  // Keep all WebSocketImpls alive until either the client drops its
+  // Keep all network::WebSockets alive until either the client drops its
   // connection (see OnLostConnectionToClient) or we need to shutdown.
 
-  impls_.insert(CreateWebSocketImpl(std::make_unique<Delegate>(this),
-                                    std::move(request), process_id_, frame_id,
-                                    std::move(origin), CalculateDelay()));
+  impls_.insert(CreateWebSocket(std::make_unique<Delegate>(this),
+                                std::move(request), process_id_, frame_id,
+                                std::move(origin), CalculateDelay()));
   ++num_pending_connections_;
 
   if (!throttling_period_timer_.IsRunning()) {
@@ -309,22 +309,22 @@ void WebSocketManager::ThrottlingPeriodTimerCallback() {
   }
 }
 
-WebSocketImpl* WebSocketManager::CreateWebSocketImpl(
-    std::unique_ptr<WebSocketImpl::Delegate> delegate,
+network::WebSocket* WebSocketManager::CreateWebSocket(
+    std::unique_ptr<network::WebSocket::Delegate> delegate,
     network::mojom::WebSocketRequest request,
     int child_id,
     int frame_id,
     url::Origin origin,
     base::TimeDelta delay) {
-  return new WebSocketImpl(std::move(delegate), std::move(request), child_id,
-                           frame_id, std::move(origin), delay);
+  return new network::WebSocket(std::move(delegate), std::move(request),
+                                child_id, frame_id, std::move(origin), delay);
 }
 
 net::URLRequestContext* WebSocketManager::GetURLRequestContext() {
   return url_request_context_getter_->GetURLRequestContext();
 }
 
-void WebSocketManager::OnReceivedResponseFromServer(WebSocketImpl* impl) {
+void WebSocketManager::OnReceivedResponseFromServer(network::WebSocket* impl) {
   // The server accepted this WebSocket connection.
   impl->OnHandshakeSucceeded();
   --num_pending_connections_;
@@ -332,7 +332,7 @@ void WebSocketManager::OnReceivedResponseFromServer(WebSocketImpl* impl) {
   ++num_current_succeeded_connections_;
 }
 
-void WebSocketManager::OnLostConnectionToClient(WebSocketImpl* impl) {
+void WebSocketManager::OnLostConnectionToClient(network::WebSocket* impl) {
   // The client is no longer interested in this WebSocket.
   if (!impl->handshake_succeeded()) {
     // Update throttling counters (failure).

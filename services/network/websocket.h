@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_WEBSOCKETS_WEBSOCKET_IMPL_H_
-#define CONTENT_BROWSER_WEBSOCKETS_WEBSOCKET_IMPL_H_
+#ifndef SERVICES_NETWORK_WEBSOCKET_H_
+#define SERVICES_NETWORK_WEBSOCKET_H_
 
 #include <stdint.h>
 
@@ -11,10 +11,10 @@
 #include <string>
 #include <vector>
 
+#include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/time/time.h"
-#include "content/common/content_export.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "services/network/public/mojom/websocket.mojom.h"
@@ -28,10 +28,11 @@ class WebSocketChannel;
 class SSLInfo;
 }  // namespace net
 
-namespace content {
+namespace network {
 
 // Host of net::WebSocketChannel.
-class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
+class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
+    : public network::mojom::WebSocket {
  public:
   class Delegate {
    public:
@@ -43,8 +44,8 @@ class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
     virtual ~Delegate() {}
 
     virtual net::URLRequestContext* GetURLRequestContext() = 0;
-    virtual void OnReceivedResponseFromServer(WebSocketImpl* impl) = 0;
-    virtual void OnLostConnectionToClient(WebSocketImpl* impl) = 0;
+    virtual void OnReceivedResponseFromServer(WebSocket* impl) = 0;
+    virtual void OnLostConnectionToClient(WebSocket* impl) = 0;
     virtual void OnSSLCertificateError(
         std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks>
             callbacks,
@@ -60,13 +61,13 @@ class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
                                     net::URLRequest* request) = 0;
   };
 
-  WebSocketImpl(std::unique_ptr<Delegate> delegate,
-                network::mojom::WebSocketRequest request,
-                int child_id,
-                int frame_id,
-                url::Origin origin,
-                base::TimeDelta delay);
-  ~WebSocketImpl() override;
+  WebSocket(std::unique_ptr<Delegate> delegate,
+            network::mojom::WebSocketRequest request,
+            int child_id,
+            int frame_id,
+            url::Origin origin,
+            base::TimeDelta delay);
+  ~WebSocket() override;
 
   // The renderer process is going away.
   // This function is virtual for testing.
@@ -122,11 +123,11 @@ class CONTENT_EXPORT WebSocketImpl : public network::mojom::WebSocket {
   // counters for per-renderer WebSocket throttling.
   bool handshake_succeeded_;
 
-  base::WeakPtrFactory<WebSocketImpl> weak_ptr_factory_;
+  base::WeakPtrFactory<WebSocket> weak_ptr_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebSocketImpl);
+  DISALLOW_COPY_AND_ASSIGN(WebSocket);
 };
 
-}  // namespace content
+}  // namespace network
 
-#endif  // CONTENT_BROWSER_WEBSOCKETS_WEBSOCKET_IMPL_H_
+#endif  // SERVICES_NETWORK_WEBSOCKET_H_
