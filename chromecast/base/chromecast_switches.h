@@ -73,6 +73,8 @@ extern const char kDesktopWindow1080p[];
 
 // UI switches
 extern const char kEnableInput[];
+extern const char kSystemGestureStartWidth[];
+extern const char kSystemGestureStartHeight[];
 
 // Background color used when Chromium hasn't rendered anything yet.
 extern const char kCastAppBackgroundColor[];
