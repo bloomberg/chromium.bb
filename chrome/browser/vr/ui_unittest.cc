@@ -55,14 +55,13 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kContentQuad,
     kContentQuadShadow,
     kBackplane,
-    kUrlBarBackplane,
+    kUrlBar,
     kUrlBarBackButton,
-    kUrlBarBackButtonIcon,
     kUrlBarSeparator,
     kUrlBarOriginRegion,
-    kUrlBarOriginContent,
+    kUrlBarSecurityButton,
+    kUrlBarUrlText,
     kUrlBarOverflowButton,
-    kUrlBarOverflowButtonIcon,
     kController,
     kReticle,
     kLaser,
@@ -565,10 +564,11 @@ TEST_F(UiTest, ClickingOmniboxTriggersUnsupportedMode) {
   VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
 
   // Clicking the omnibox should show the update prompt.
-  auto* omnibox = scene_->GetUiElementByName(kUrlBarOriginContent);
+  auto* omnibox = scene_->GetUiElementByName(kUrlBarOriginRegion);
   EXPECT_CALL(*browser_,
               OnUnsupportedMode(UiUnsupportedMode::kNeedsKeyboardUpdate));
-  omnibox->OnButtonUp({0, 10});
+  omnibox->OnHoverEnter({0.5, 0.5});
+  omnibox->OnButtonUp({0.5, 0.5});
   ui_->ShowExitVrPrompt(UiUnsupportedMode::kNeedsKeyboardUpdate);
   OnBeginFrame();
   EXPECT_EQ(model_->active_modal_prompt_type,

@@ -64,7 +64,7 @@ class TestUrlBarTexture : public UrlBarTexture {
                              security_state::SecurityLevel security_level,
                              vr::RenderTextWrapper* render_text,
                              const UrlBarColors& colors) {
-    ApplyUrlStyling(formatted_url, parsed, security_level, render_text, colors);
+    ApplyUrlStyling(formatted_url, parsed, render_text, colors);
   }
 
   void SetForceFontFallbackFailure(bool force) {
@@ -88,11 +88,6 @@ class TestUrlBarTexture : public UrlBarTexture {
   // Reports the last unsupported mode that was encountered. Returns kCount if
   // no unsupported mode was encountered.
   UiUnsupportedMode unsupported_mode() const { return unsupported_mode_; }
-
-  const base::string16& url_text() { return rendered_url_text_; }
-  const base::string16& security_text() { return rendered_security_text_; }
-  const gfx::Rect url_rect() { return rendered_url_text_rect_; }
-  const gfx::Rect security_rect() { return rendered_security_text_rect_; }
 
  private:
   void OnUnsupportedFeature(UiUnsupportedMode mode) {
@@ -202,44 +197,6 @@ TEST(UrlBarTexture, EmptyURL) {
   TestUrlBarTexture texture;
   texture.DrawURL(GURL());
   EXPECT_EQ(UiUnsupportedMode::kCount, texture.unsupported_mode());
-}
-
-TEST(UrlBarTexture, OfflinePage) {
-  TestUrlBarTexture texture;
-  ToolbarState state(GURL("https://host.com/page"), SecurityLevel::NONE,
-                     &toolbar::kHttpsInvalidIcon, base::UTF8ToUTF16("Offline"),
-                     true, false);
-
-  // Render online page.
-  state.offline_page = false;
-  texture.DrawURLState(state);
-  EXPECT_EQ(texture.security_rect().width(), 0);
-  EXPECT_EQ(texture.security_rect().height(), 0);
-  EXPECT_GT(texture.url_rect().width(), 0);
-  EXPECT_GT(texture.url_rect().height(), 0);
-  EXPECT_TRUE(texture.security_text().empty());
-  EXPECT_EQ(texture.url_text(), base::UTF8ToUTF16("host.com/page"));
-  gfx::Rect online_url_rect = texture.url_rect();
-
-  // Go offline. Security text should be visible and displace the URL.
-  state.offline_page = true;
-  texture.DrawURLState(state);
-  EXPECT_GT(texture.security_rect().width(), 0);
-  EXPECT_GT(texture.security_rect().height(), 0);
-  EXPECT_GT(texture.url_rect().width(), 0);
-  EXPECT_GT(texture.url_rect().height(), 0);
-  EXPECT_GT(texture.url_rect().x(), online_url_rect.x());
-  EXPECT_EQ(texture.security_text(), base::UTF8ToUTF16("Offline"));
-  EXPECT_EQ(texture.url_text(), base::UTF8ToUTF16("host.com/page"));
-
-  // Go back online.
-  state.offline_page = false;
-  texture.DrawURLState(state);
-  EXPECT_EQ(texture.security_rect().width(), 0);
-  EXPECT_EQ(texture.security_rect().height(), 0);
-  EXPECT_EQ(texture.url_rect(), online_url_rect);
-  EXPECT_TRUE(texture.security_text().empty());
-  EXPECT_EQ(texture.url_text(), base::UTF8ToUTF16("host.com/page"));
 }
 
 }  // namespace vr

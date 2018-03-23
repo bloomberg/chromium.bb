@@ -73,22 +73,19 @@ void InitializeColorSchemes() {
   normal_scheme.modal_prompt_primary_button_colors.background_hover =
       0xFF3E7DE6;
   normal_scheme.modal_prompt_primary_button_colors.background_down = 0xFF3E7DE6;
-  normal_scheme.back_button.background = normal_scheme.element_background;
-  normal_scheme.back_button.background_down =
+  normal_scheme.url_bar_button.background = SK_ColorTRANSPARENT;
+  normal_scheme.url_bar_button.background_down =
       normal_scheme.element_background_down;
-  normal_scheme.back_button.background_hover =
+  normal_scheme.url_bar_button.background_hover =
       normal_scheme.element_background_hover;
-  normal_scheme.back_button.foreground = normal_scheme.element_foreground;
-  normal_scheme.back_button.foreground_disabled = 0x33333333;
+  normal_scheme.url_bar_button.foreground = normal_scheme.element_foreground;
+  normal_scheme.url_bar_button.foreground_disabled = 0x33333333;
   normal_scheme.url_bar_separator = 0xFF9E9E9E;
-  normal_scheme.url_bar_hint = 0xFF5A5A5A;
+  normal_scheme.url_bar_hint_text = 0xFF5A5A5A;
+  normal_scheme.url_bar_default_icon = 0xFF535353;
+  normal_scheme.url_bar_dangerous_icon = gfx::kGoogleRed700;
   normal_scheme.url_bar.deemphasized = 0xFF5A5A5A;
   normal_scheme.url_bar.emphasized = SK_ColorBLACK;
-  normal_scheme.url_bar.default_icon = 0xFF535353;
-  normal_scheme.url_bar.dangerous_icon = gfx::kGoogleRed700;
-  normal_scheme.url_bar.offline_page_warning =
-      normal_scheme.url_bar.default_icon;
-  normal_scheme.url_bar.separator = normal_scheme.url_bar_separator;
   normal_scheme.prompt_foreground = 0xCC000000;
   normal_scheme.prompt_primary_button_colors.foreground = 0xA6000000;
   normal_scheme.prompt_primary_button_colors.foreground_disabled = 0xA6000000;
@@ -217,21 +214,22 @@ void InitializeColorSchemes() {
       incognito_scheme.element_foreground;
   incognito_scheme.system_indicator_background =
       incognito_scheme.element_background;
-  incognito_scheme.back_button.background = incognito_scheme.element_background;
-  incognito_scheme.back_button.background_down =
+  incognito_scheme.url_bar_button.background =
+      incognito_scheme.element_background;
+  incognito_scheme.url_bar_button.background_down =
       incognito_scheme.element_background_down;
-  incognito_scheme.back_button.background_hover =
+  incognito_scheme.url_bar_button.background_hover =
       incognito_scheme.element_background_hover;
-  incognito_scheme.back_button.foreground = incognito_scheme.element_foreground;
-  incognito_scheme.back_button.foreground_disabled = 0x33E6E6E6;
+  incognito_scheme.url_bar_button.foreground =
+      incognito_scheme.element_foreground;
+  incognito_scheme.url_bar_button.foreground_disabled = 0x33E6E6E6;
   incognito_scheme.url_bar_separator = 0x1FFFFFFF;
-  incognito_scheme.url_bar_hint = 0xCCFFFFFF;
+  incognito_scheme.url_bar_hint_text = 0xCCFFFFFF;
+  incognito_scheme.url_bar_default_icon = SK_ColorWHITE;
+  incognito_scheme.url_bar_dangerous_icon = SK_ColorWHITE;
+  incognito_scheme.url_bar_separator = incognito_scheme.url_bar_separator;
   incognito_scheme.url_bar.deemphasized = 0xCCFFFFFF;
   incognito_scheme.url_bar.emphasized = SK_ColorWHITE;
-  incognito_scheme.url_bar.default_icon = SK_ColorWHITE;
-  incognito_scheme.url_bar.dangerous_icon = SK_ColorWHITE;
-  incognito_scheme.url_bar.offline_page_warning = SK_ColorWHITE;
-  incognito_scheme.url_bar.separator = incognito_scheme.url_bar_separator;
   incognito_scheme.prompt_foreground = 0xCCFFFFFF;
   incognito_scheme.prompt_primary_button_colors.foreground = 0xD9000000;
   incognito_scheme.prompt_primary_button_colors.foreground_disabled =
@@ -271,7 +269,7 @@ void InitializeColorSchemes() {
 }
 
 static constexpr size_t kButtonColorsSize = 20;
-static constexpr size_t kUrlBarColorsSize = 24;
+static constexpr size_t kUrlBarColorsSize = 8;
 
 }  // namespace
 
@@ -313,11 +311,7 @@ static_assert(kUrlBarColorsSize == sizeof(UrlBarColors),
               "bump this size and update operator== below");
 
 bool UrlBarColors::operator==(const UrlBarColors& other) const {
-  return deemphasized == other.deemphasized && emphasized == other.emphasized &&
-         default_icon == other.default_icon &&
-         dangerous_icon == other.dangerous_icon &&
-         offline_page_warning == other.offline_page_warning &&
-         separator == other.separator;
+  return deemphasized == other.deemphasized && emphasized == other.emphasized;
 }
 
 bool UrlBarColors::operator!=(const UrlBarColors& other) const {
@@ -351,18 +345,15 @@ void ColorScheme::UpdateForComponent(const base::Version& component_version) {
     normal_scheme.button_colors.background = 0xCCEEEEEE;
     normal_scheme.button_colors.foreground_disabled = 0x33000000;
     normal_scheme.url_bar_separator = 0xFFD0D0D0;
-    normal_scheme.url_bar_hint = 0x61333333;
+    normal_scheme.url_bar_hint_text = 0x61333333;
+    normal_scheme.url_bar_button.background_down =
+        normal_scheme.element_background_down;
+    normal_scheme.url_bar_button.background_hover =
+        normal_scheme.element_background_hover;
+    normal_scheme.url_bar_button.foreground = normal_scheme.element_foreground;
+    normal_scheme.url_bar_button.foreground_disabled = 0x33333333;
     normal_scheme.url_bar.deemphasized = 0x61333333;
     normal_scheme.url_bar.emphasized = 0xFF333333;
-
-    normal_scheme.back_button.background = normal_scheme.element_background;
-    normal_scheme.back_button.background_down =
-        normal_scheme.element_background_down;
-    normal_scheme.back_button.background_hover =
-        normal_scheme.element_background_hover;
-    normal_scheme.back_button.foreground = normal_scheme.element_foreground;
-    normal_scheme.back_button.foreground_disabled = 0x33333333;
-
     normal_scheme.button_colors.background = normal_scheme.element_background;
     normal_scheme.button_colors.background_hover =
         normal_scheme.element_background_hover;
@@ -384,13 +375,12 @@ void ColorScheme::UpdateForComponent(const base::Version& component_version) {
     incognito_scheme.element_background_hover = 0xCC404A50;
     incognito_scheme.element_background_down = 0xCC212B31;
     incognito_scheme.url_bar_separator = 0xFF445056;
-    incognito_scheme.url_bar_hint = 0x80FFFFFF;
+    incognito_scheme.url_bar_hint_text = 0x80FFFFFF;
+    incognito_scheme.url_bar_default_icon = 0xA7FFFFFF;
+    incognito_scheme.url_bar_dangerous_icon = 0xA7FFFFFF;
     incognito_scheme.url_bar.deemphasized = 0x80FFFFFF;
     incognito_scheme.url_bar.emphasized = 0xCCFFFFFF;
-    incognito_scheme.url_bar.separator = 0xFF445056;
-    incognito_scheme.url_bar.default_icon = 0xA7FFFFFF;
-    incognito_scheme.url_bar.dangerous_icon = 0xA7FFFFFF;
-    incognito_scheme.url_bar.offline_page_warning = 0xA7FFFFFF;
+
     incognito_scheme.omnibox_background = incognito_scheme.element_background;
     incognito_scheme.omnibox_icon = 0xA7FFFFFF;
 
@@ -405,12 +395,10 @@ void ColorScheme::UpdateForComponent(const base::Version& component_version) {
         incognito_scheme.element_foreground;
     incognito_scheme.system_indicator_background =
         incognito_scheme.element_background;
-    incognito_scheme.back_button.background =
-        incognito_scheme.element_background;
-    incognito_scheme.back_button.background_down =
+    incognito_scheme.url_bar_button.background_down =
         incognito_scheme.element_background_down;
-    incognito_scheme.back_button.background_hover = 0xFF445056;
-    incognito_scheme.back_button.foreground =
+    incognito_scheme.url_bar_button.background_hover = 0xFF445056;
+    incognito_scheme.url_bar_button.foreground =
         incognito_scheme.element_foreground;
     incognito_scheme.suggestion_button_colors.foreground =
         incognito_scheme.suggestion_text;

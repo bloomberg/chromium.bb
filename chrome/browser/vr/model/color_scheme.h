@@ -29,10 +29,6 @@ struct UrlBarColors {
   bool operator!=(const UrlBarColors& other) const;
   SkColor deemphasized = SK_ColorBLACK;
   SkColor emphasized = SK_ColorBLACK;
-  SkColor default_icon = SK_ColorBLACK;
-  SkColor dangerous_icon = SK_ColorBLACK;
-  SkColor offline_page_warning = SK_ColorBLACK;
-  SkColor separator = SK_ColorBLACK;
 };
 
 struct TextSelectionColors {
@@ -96,11 +92,11 @@ struct ColorScheme {
   ButtonColors prompt_secondary_button_colors;
   ButtonColors prompt_primary_button_colors;
 
-  ButtonColors back_button;
+  ButtonColors url_bar_button;
   SkColor url_bar_separator;
-  SkColor url_bar_hint;
-
-  // These colors feed the URL origin texture.
+  SkColor url_bar_hint_text;
+  SkColor url_bar_default_icon;
+  SkColor url_bar_dangerous_icon;
   UrlBarColors url_bar;
 
   SkColor dimmer_outer;

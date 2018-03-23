@@ -38,8 +38,6 @@ TEST(DiscButton, HoverTest) {
   cc::TransformOperation hit_plane_op_hover =
       button.hit_plane()->GetTargetTransform().at(UiElement::kScaleIndex);
 
-  EXPECT_TRUE(foreground_op_hover.translate.z - foreground_op.translate.z >
-              0.f);
   EXPECT_TRUE(background_op_hover.translate.z - background_op.translate.z >
               0.f);
   EXPECT_TRUE(hit_plane_op_hover.scale.x - hit_plane_op.scale.x > 0.f);

@@ -25,12 +25,8 @@ class UrlBar : public TexturedElement {
  public:
   UrlBar(
       int preferred_width,
-      const base::RepeatingCallback<void()>& url_click_callback,
       const base::RepeatingCallback<void(UiUnsupportedMode)>& failure_callback);
   ~UrlBar() override;
-
-  void OnButtonDown(const gfx::PointF& position) override;
-  void OnButtonUp(const gfx::PointF& position) override;
 
   void SetToolbarState(const ToolbarState& state);
   void SetColors(const UrlBarColors& colors);
@@ -39,11 +35,7 @@ class UrlBar : public TexturedElement {
   UiTexture* GetTexture() const override;
 
   std::unique_ptr<UrlBarTexture> texture_;
-  base::RepeatingCallback<void()> url_click_callback_;
   base::RepeatingCallback<void(UiUnsupportedMode)> failure_callback_;
-
-  bool security_region_down_ = false;
-  bool url_down_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(UrlBar);
 };

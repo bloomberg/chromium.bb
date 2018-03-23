@@ -28,16 +28,17 @@ class VectorIconButton : public Button {
 
   VectorIcon* foreground() const { return foreground_; }
 
-  void set_icon_scale_factor(float factor) { icon_scale_factor_ = factor; }
   float icon_scale_factor() const { return icon_scale_factor_; }
+
+  void SetIcon(const gfx::VectorIcon& icon);
+  void SetIconScaleFactor(float factor);
+  void SetIconTranslation(float x, float y);
 
  private:
   void OnStateUpdated() override;
   void OnSetDrawPhase() override;
   void OnSetName() override;
-  void NotifyClientSizeAnimated(const gfx::SizeF& size,
-                                int target_property_id,
-                                cc::KeyframeModel* keyframe_model) override;
+  void OnSetSize(const gfx::SizeF& size) override;
 
   // This button will automatically scale down the given icon to fit the button.
   // This value is used to determine the amount of scaling and can be set
