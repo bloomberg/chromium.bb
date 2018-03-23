@@ -1886,6 +1886,7 @@ enum WebFeature {
   kKeyboardApiLock = 2394,
   kKeyboardApiUnlock = 2395,
   kPPAPIURLRequestStreamToFile = 2396,
+  kPaymentHandler = 2397,
 
   // Add new features immediately above this line. Don't change assigned
   // numbers of any item, and don't reuse removed slots.

@@ -15,6 +15,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/Frame.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "modules/payments/BasicCardHelper.h"
 #include "modules/payments/PaymentInstrument.h"
@@ -24,6 +25,7 @@
 #include "public/platform/TaskType.h"
 #include "public/platform/WebIconSizesParser.h"
 #include "public/platform/modules/manifest/manifest.mojom-blink.h"
+#include "public/platform/web_feature.mojom-blink.h"
 
 namespace blink {
 namespace {
@@ -277,6 +279,9 @@ void PaymentInstruments::OnRequestPermission(
   } else {
     instrument->stringified_capabilities = WTF::g_empty_string;
   }
+
+  UseCounter::Count(resolver->GetExecutionContext(),
+                    WebFeature::kPaymentHandler);
 
   manager_->SetPaymentInstrument(
       instrument_key, std::move(instrument),
