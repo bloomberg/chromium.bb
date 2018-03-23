@@ -14,7 +14,6 @@ var chrome = requireNative('chrome').GetChrome();
 var inIncognitoContext = requireNative('process').InIncognitoContext();
 var sendRequestIsDisabled = requireNative('process').IsSendRequestDisabled();
 var contextType = requireNative('process').GetContextType();
-var manifestVersion = requireNative('process').GetManifestVersion();
 
 // This should match chrome.windows.WINDOW_ID_NONE.
 //
@@ -26,10 +25,6 @@ var TAB_ID_NONE = -1;
 
 binding.registerCustomHook(function(bindingsAPI, extensionId) {
   var extension = bindingsAPI.compiledApi;
-  if (manifestVersion < 2) {
-    chrome.self = extension;
-    extension.inIncognitoTab = inIncognitoContext;
-  }
   extension.inIncognitoContext = inIncognitoContext;
 
   var apiFunctions = bindingsAPI.apiFunctions;
