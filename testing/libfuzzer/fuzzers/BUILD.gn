@@ -62,18 +62,6 @@ fuzzer_test("template_url_parser_fuzzer") {
   libfuzzer_options = [ "max_len=4096" ]
 }
 
-fuzzer_test("url_parse_fuzzer") {
-  sources = [
-    "url_parse_fuzzer.cc",
-  ]
-  deps = [
-    "//base",
-    "//base:i18n",
-    "//url:url",
-  ]
-  dict = "dicts/generated/url_parse_fuzzer.dict"
-}
-
 fuzzer_test("url_parse_proto_fuzzer") {
   sources = [
     "url_parse_proto_fuzzer.cc",
