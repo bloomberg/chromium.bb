@@ -9,6 +9,7 @@
 
 @protocol ApplicationCommands;
 @protocol BrowserCommands;
+@class NamedGuide;
 @class OmniboxTextFieldIOS;
 
 // Delegate protocol for the KeyboardAccessoryView.
@@ -38,6 +39,7 @@
 
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 @property(nonatomic, weak) OmniboxTextFieldIOS* omniboxTextField;
+@property(nonatomic, weak) NamedGuide* voiceSearchButtonGuide;
 
 @end
 

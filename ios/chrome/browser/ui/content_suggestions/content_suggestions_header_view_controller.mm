@@ -26,6 +26,7 @@
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #include "ios/chrome/grit/ios_strings.h"
 #include "ios/public/provider/chrome/browser/ui/logo_vendor.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -362,9 +363,11 @@ const UIEdgeInsets kSearchBoxStretchInsets = {3, 3, 3, 3};
 
   DCHECK(self.voiceSearchIsEnabled);
   base::RecordAction(UserMetricsAction("MobileNTPMostVisitedVoiceSearch"));
-  UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
+  UIView* voiceSearchButton = base::mac::ObjCCastStrict<UIView>(sender);
+  [NamedGuide guideWithName:kVoiceSearchButtonGuide view:voiceSearchButton]
+      .constrainedView = voiceSearchButton;
   StartVoiceSearchCommand* command =
-      [[StartVoiceSearchCommand alloc] initWithOriginView:view];
+      [[StartVoiceSearchCommand alloc] initWithOriginView:voiceSearchButton];
   [self.dispatcher startVoiceSearch:command];
 }
 

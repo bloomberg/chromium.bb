@@ -12,6 +12,7 @@
 #import "ios/chrome/browser/ui/commands/start_voice_search_command.h"
 #import "ios/chrome/browser/ui/location_bar/location_bar_constants.h"
 #import "ios/chrome/browser/ui/omnibox/omnibox_text_field_ios.h"
+#import "ios/chrome/browser/ui/util/named_guide.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/voice/voice_search_provider.h"
 
@@ -23,6 +24,7 @@
 
 @synthesize dispatcher = _dispatcher;
 @synthesize omniboxTextField = _omniboxTextField;
+@synthesize voiceSearchButtonGuide = _voiceSearchButtonGuide;
 
 #pragma mark - Public
 
@@ -39,6 +41,21 @@
           ->GetVoiceSearchProvider()
           ->IsVoiceSearchEnabled()) {
     base::RecordAction(base::UserMetricsAction("MobileCustomRowVoiceSearch"));
+    // Since the keyboard accessory view is in a different window than the main
+    // UIViewController upon which Voice Search will be presented, the guide
+    // must be constrained to a frame instead of the view itself.  The keyboard
+    // and its accessory view will be dismissed at the bottom of the screen
+    // before the presentation animation, so bottom-align the view's frame.
+    if (self.voiceSearchButtonGuide) {
+      self.voiceSearchButtonGuide.autoresizingMask =
+          (UIViewAutoresizingFlexibleTopMargin |
+           UIViewAutoresizingFlexibleRightMargin);
+      CGRect frame = view.frame;
+      frame.origin.y =
+          CGRectGetMaxY(self.voiceSearchButtonGuide.owningView.bounds) -
+          CGRectGetHeight(frame);
+      self.voiceSearchButtonGuide.constrainedFrame = frame;
+    }
     StartVoiceSearchCommand* command =
         [[StartVoiceSearchCommand alloc] initWithOriginView:view];
     [self.dispatcher startVoiceSearch:command];

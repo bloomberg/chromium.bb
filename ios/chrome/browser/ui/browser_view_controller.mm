@@ -2339,6 +2339,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       kToolsMenuGuide,
       kTabSwitcherGuide,
       kSecondaryToolbar,
+      kVoiceSearchButtonGuide,
     ];
     AddNamedGuidesToView(guideNames, self.view);
   }

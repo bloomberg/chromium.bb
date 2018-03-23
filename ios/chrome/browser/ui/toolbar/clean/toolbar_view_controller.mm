@@ -656,6 +656,8 @@ const CGFloat kScrollFadeDistance = 30;
 // Target of the voice search button.
 - (void)startVoiceSearch:(id)sender {
   UIView* view = base::mac::ObjCCastStrict<UIView>(sender);
+  [NamedGuide guideWithName:kVoiceSearchButtonGuide view:view].constrainedView =
+      view;
   StartVoiceSearchCommand* command =
       [[StartVoiceSearchCommand alloc] initWithOriginView:view];
   [self.dispatcher startVoiceSearch:command];
