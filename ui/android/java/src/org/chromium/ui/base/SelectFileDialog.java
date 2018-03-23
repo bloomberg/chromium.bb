@@ -385,8 +385,12 @@ public class SelectFileDialog implements WindowAndroid.IntentCallback,
         @Override
         protected void onPostExecute(Uri result) {
             mCameraOutputUri = result;
-            if (mCameraOutputUri == null && captureCamera()) {
-                onFileNotSelected();
+            if (mCameraOutputUri == null) {
+                if (captureCamera() || mDirectToCamera) {
+                    onFileNotSelected();
+                } else {
+                    launchSelectFileWithCameraIntent(true, null);
+                }
                 return;
             }
 
