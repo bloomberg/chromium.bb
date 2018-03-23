@@ -10,9 +10,11 @@ namespace keyboard {
 QueuedContainerType::QueuedContainerType(
     KeyboardController* controller,
     ContainerType container_type,
+    base::Optional<gfx::Rect> bounds,
     base::OnceCallback<void(bool success)> callback)
     : controller_(controller),
       container_type_(container_type),
+      bounds_(bounds),
       callback_(std::move(callback)){};
 
 QueuedContainerType::~QueuedContainerType() {

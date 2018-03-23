@@ -396,6 +396,12 @@ void KeyboardController::HideKeyboard(HideReason reason) {
 void KeyboardController::HideAnimationFinished() {
   if (state_ == KeyboardControllerState::HIDDEN && queued_container_type_) {
     SetContainerBehaviorInternal(queued_container_type_->container_type());
+    // The position of the container window will be adjusted shortly in
+    // |PopulateKeyboardContent| before showing animation, so we can set the
+    // passed bounds directly.
+    if (queued_container_type_->target_bounds())
+      SetContainerBounds(queued_container_type_->target_bounds().value(),
+                         false /* contents_loaded */);
     ShowKeyboard(false /* lock */);
   }
 }
@@ -786,8 +792,6 @@ void KeyboardController::SetContainerType(
     const ContainerType type,
     base::Optional<gfx::Rect> target_bounds,
     base::OnceCallback<void(bool)> callback) {
-  // TODO(yhanada): Use target_bounds parameter to change the size of the
-  // container window.
   if (container_behavior_->GetType() == type) {
     std::move(callback).Run(false);
     return;
@@ -796,13 +800,15 @@ void KeyboardController::SetContainerType(
   if (state_ == KeyboardControllerState::SHOWN) {
     // Keyboard is already shown. Hiding the keyboard at first then switching
     // container type.
-    queued_container_type_ =
-        std::make_unique<QueuedContainerType>(this, type, std::move(callback));
+    queued_container_type_ = std::make_unique<QueuedContainerType>(
+        this, type, target_bounds, std::move(callback));
     HideKeyboard(HIDE_REASON_AUTOMATIC);
   } else {
     // Keyboard is hidden. Switching the container type immediately and invoking
     // the passed callback now.
     SetContainerBehaviorInternal(type);
+    if (target_bounds)
+      SetContainerBounds(target_bounds.value(), false /* contents_loaded */);
     DCHECK(GetActiveContainerType() == type);
     std::move(callback).Run(true /* change_successful */);
   }
