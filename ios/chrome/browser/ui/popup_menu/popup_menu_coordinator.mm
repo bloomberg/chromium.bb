@@ -71,6 +71,7 @@
       [[PopupMenuTableViewController alloc] init];
   tableViewController.dispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
+  tableViewController.baseViewController = self.baseViewController;
 
   self.mediator =
       [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu];

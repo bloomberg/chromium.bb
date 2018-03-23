@@ -21,6 +21,10 @@
 // Dispatcher.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
 
+// Presenting ViewController for the ViewController needing to be presented as
+// result of an interaction with the popup.
+@property(nonatomic, weak) UIViewController* baseViewController;
+
 // Sets the |items| to be displayed by this Table View. Removes all the
 // currently presented items.
 - (void)setPopupMenuItems:
