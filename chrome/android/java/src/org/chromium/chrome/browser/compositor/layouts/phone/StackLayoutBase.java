@@ -324,7 +324,7 @@ public abstract class StackLayoutBase
      */
     protected void setTabLists(List<TabList> lists) {
         if (mStacks.size() > lists.size()) {
-            mStacks.subList(lists.size(), lists.size()).clear();
+            mStacks.subList(lists.size(), mStacks.size()).clear();
         }
         while (mStacks.size() < lists.size()) {
             Stack stack = new Stack(getContext(), this);
