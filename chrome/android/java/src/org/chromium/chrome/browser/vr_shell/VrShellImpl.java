@@ -111,6 +111,7 @@ public class VrShellImpl
     private AndroidUiGestureTarget mAndroidDialogGestureTarget;
 
     private OnDispatchTouchEventCallback mOnDispatchTouchEventForTesting;
+    private Runnable mOnVSyncPausedForTesting;
 
     private Surface mContentSurface;
     private VrViewContainer mNonVrViews;
@@ -795,6 +796,9 @@ public class VrShellImpl
             if (mPendingVSyncPause) {
                 mContentVrWindowAndroid.setVSyncPaused(true);
                 mPendingVSyncPause = false;
+                if (mOnVSyncPausedForTesting != null) {
+                    mOnVSyncPausedForTesting.run();
+                }
             }
         });
     }
@@ -995,6 +999,16 @@ public class VrShellImpl
     @VisibleForTesting
     public void setOnDispatchTouchEventForTesting(OnDispatchTouchEventCallback callback) {
         mOnDispatchTouchEventForTesting = callback;
+    }
+
+    /**
+     * Sets that callback that will be run when VrShellImpl has issued the request to pause the
+     * Android Window's VSyncs.
+     * @param callback The Runnable to be run.
+     */
+    @VisibleForTesting
+    public void setOnVSyncPausedForTesting(Runnable callback) {
+        mOnVSyncPausedForTesting = callback;
     }
 
     @VisibleForTesting

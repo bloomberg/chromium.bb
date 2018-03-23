@@ -1900,7 +1900,7 @@ public class VrShellDelegate
                 GVR_KEYBOARD_UPDATE_RESULT);
     }
 
-    private boolean createVrShell() {
+    protected boolean createVrShell() {
         assert mVrShell == null;
         if (mVrClassesWrapper == null) return false;
         if (mActivity.getCompositorViewHolder() == null) return false;
