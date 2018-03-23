@@ -176,6 +176,9 @@ void VrTestContext::HandleInput(ui::Event* event) {
         incognito_ = !incognito_;
         ui_->SetIncognito(incognito_);
         break;
+      case ui::DomCode::US_C:
+        CycleIndicators();
+        break;
       case ui::DomCode::US_D:
         ui_->Dump(false);
         break;
@@ -571,6 +574,24 @@ void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
 
 void VrTestContext::StopAutocomplete() {
   ui_->SetOmniboxSuggestions(std::make_unique<OmniboxSuggestions>());
+}
+
+typedef bool CapturingStateModel::*CapturingStateModelMemberPtr;
+
+void VrTestContext::CycleIndicators() {
+  static size_t state = 0;
+
+  const std::vector<CapturingStateModelMemberPtr> signals = {
+      &CapturingStateModel::location_access_enabled,
+      &CapturingStateModel::audio_capture_enabled,
+      &CapturingStateModel::video_capture_enabled,
+      &CapturingStateModel::bluetooth_connected,
+      &CapturingStateModel::screen_capture_enabled};
+
+  state = (state + 1) % (1 << signals.size());
+  for (size_t i = 0; i < signals.size(); ++i) {
+    model_->capturing_state.*signals[i] = state & (1 << i);
+  }
 }
 
 void VrTestContext::CycleOrigin() {

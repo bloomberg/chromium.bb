@@ -35,6 +35,7 @@
 #include "chrome/browser/vr/elements/linear_layout.h"
 #include "chrome/browser/vr/elements/omnibox_formatting.h"
 #include "chrome/browser/vr/elements/omnibox_text_field.h"
+#include "chrome/browser/vr/elements/oval.h"
 #include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
@@ -944,75 +945,111 @@ void UiSceneCreator::CreateExitWarning() {
 }
 
 void UiSceneCreator::CreateSystemIndicators() {
-  struct Indicator {
-    UiElementName name;
-    const gfx::VectorIcon& icon;
-    int resource_string;
-    bool CapturingStateModel::*signal;
-  };
-  const std::vector<Indicator> indicators = {
-      {kAudioCaptureIndicator, vector_icons::kMicIcon,
-       IDS_AUDIO_CALL_NOTIFICATION_TEXT_2,
-       &CapturingStateModel::audio_capture_enabled},
-      {kVideoCaptureIndicator, vector_icons::kVideocamIcon,
-       IDS_VIDEO_CALL_NOTIFICATION_TEXT_2,
-       &CapturingStateModel::video_capture_enabled},
-      {kScreenCaptureIndicator, vector_icons::kScreenShareIcon,
-       IDS_SCREEN_CAPTURE_NOTIFICATION_TEXT_2,
-       &CapturingStateModel::screen_capture_enabled},
-      {kBluetoothConnectedIndicator, vector_icons::kBluetoothConnectedIcon, 0,
-       &CapturingStateModel::bluetooth_connected},
-      {kLocationAccessIndicator, vector_icons::kLocationOnIcon, 0,
-       &CapturingStateModel::location_access_enabled},
-  };
+  auto backplane =
+      Create<InvisibleHitTarget>(kIndicatorBackplane, kPhaseForeground);
+  backplane->set_bounds_contain_children(true);
+  backplane->set_contributes_to_parent_bounds(false);
+  backplane->set_y_anchoring(TOP);
+  backplane->set_corner_radius(kIndicatorCornerRadiusDMM);
+  backplane->SetTranslate(0, kIndicatorVerticalOffset,
+                          kIndicatorDistanceOffset);
+  backplane->SetScale(kIndicatorDepth, kIndicatorDepth, 1.0f);
+  VR_BIND_VISIBILITY(backplane, !model->fullscreen_enabled());
 
-  std::unique_ptr<LinearLayout> indicator_layout =
-      std::make_unique<LinearLayout>(LinearLayout::kRight);
-  indicator_layout->SetName(kIndicatorLayout);
-  indicator_layout->set_y_anchoring(TOP);
-  indicator_layout->SetTranslate(0, kIndicatorVerticalOffset,
-                                 kIndicatorDistanceOffset);
-  indicator_layout->set_margin(kIndicatorGap);
-  indicator_layout->set_contributes_to_parent_bounds(false);
-  VR_BIND_VISIBILITY(indicator_layout, !model->fullscreen_enabled());
+  auto indicator_layout =
+      Create<LinearLayout>(kIndicatorLayout, kPhaseNone, LinearLayout::kRight);
+  indicator_layout->set_margin(kIndicatorMarginDMM);
 
-  for (const auto& indicator : indicators) {
-    auto element = std::make_unique<Toast>();
-    element->SetName(indicator.name);
+  auto specs = GetIndicatorSpecs();
+  for (const auto& spec : specs) {
+    auto element = std::make_unique<VectorIconButton>(
+        base::RepeatingCallback<void()>(), spec.icon, audio_delegate_);
+    element->SetName(spec.name);
     element->SetDrawPhase(kPhaseForeground);
-    element->set_padding(kIndicatorXPadding, kIndicatorYPadding);
-    element->set_corner_radius(kIndicatorCornerRadius);
-    element->set_hit_testable(true);
-    element->SetMargin(kIndicatorMargin);
-    element->AddIcon(indicator.icon, 64, kIndicatorIconSize);
-    if (indicator.resource_string != 0) {
-      element->AddText(l10n_util::GetStringUTF16(indicator.resource_string),
-                       kIndicatorFontHeightDmm,
-                       TextLayoutMode::kSingleLineFixedHeight);
-    }
-
-    VR_BIND_COLOR(model_, element.get(),
-                  &ColorScheme::system_indicator_background,
-                  &Toast::SetBackgroundColor);
-    VR_BIND_COLOR(model_, element.get(),
-                  &ColorScheme::system_indicator_foreground,
-                  &Toast::SetForegroundColor);
+    element->SetSize(kIndicatorHeightDMM, kIndicatorHeightDMM);
+    element->SetIconScaleFactor(kIndicatorIconScaleFactor);
+    element->set_hover_offset(0.0f);
     element->AddBinding(std::make_unique<Binding<bool>>(
         VR_BIND_LAMBDA(
-            [](Model* m, bool CapturingStateModel::*permission) {
-              return m->capturing_state.*permission;
+            [](Model* model, bool CapturingStateModel::*signal) {
+              return model->capturing_state.*signal;
             },
-            base::Unretained(model_), indicator.signal),
+            base::Unretained(model_), spec.signal),
         VR_BIND_LAMBDA(
-            [](UiElement* e, const bool& v) {
-              e->SetVisible(v);
-              e->set_requires_layout(v);
+            [](UiElement* view, const bool& value) {
+              view->SetVisible(value);
+              view->set_requires_layout(value);
             },
             base::Unretained(element.get()))));
+    element->AddBinding(std::make_unique<Binding<std::pair<bool, bool>>>(
+        VR_BIND_LAMBDA(
+            [](UiElement* parent, UiElement* child) {
+              return std::make_pair(parent->FirstLaidOutChild() == child,
+                                    parent->LastLaidOutChild() == child);
+            },
+            base::Unretained(indicator_layout.get()),
+            base::Unretained(element.get())),
+        VR_BIND_LAMBDA(
+            [](UiElement* view, const std::pair<bool, bool>& value) {
+              CornerRadii radii;
+              radii.upper_left = value.first ? kIndicatorCornerRadiusDMM : 0.0f;
+              radii.lower_left = radii.upper_left;
+              radii.upper_right =
+                  value.second ? kIndicatorCornerRadiusDMM : 0.0f;
+              radii.lower_right = radii.upper_right;
+              view->SetCornerRadii(radii);
+            },
+            base::Unretained(element.get()))));
+    VR_BIND_BUTTON_COLORS(model_, element.get(), &ColorScheme::indicator,
+                          &Button::SetButtonColors);
 
+    auto tooltip = Create<Oval>(kNone, kPhaseForeground);
+    VR_BIND_COLOR(model_, tooltip.get(),
+                  &ColorScheme::webvr_permission_background, &Rect::SetColor);
+    tooltip->set_bounds_contain_children(true);
+    tooltip->set_padding(kIndicatorXPaddingDMM, kIndicatorYPaddingDMM,
+                         kIndicatorXPaddingDMM, kIndicatorYPaddingDMM);
+    tooltip->set_y_anchoring(BOTTOM);
+    tooltip->set_y_centering(TOP);
+    tooltip->SetVisible(false);
+    tooltip->SetTranslate(0, kIndicatorOffsetDMM, 0);
+    tooltip->set_owner_name_for_test(element->name());
+    tooltip->SetTransitionedProperties({OPACITY});
+    tooltip->SetType(kTypeTooltip);
+    tooltip->AddBinding(VR_BIND_FUNC(bool, Button, element.get(),
+                                     model->hovered(), UiElement, tooltip.get(),
+                                     SetVisible));
+
+    auto text_element =
+        Create<Text>(kNone, kPhaseForeground, kWebVrPermissionFontHeight);
+    text_element->SetLayoutMode(kSingleLineFixedHeight);
+    text_element->SetColor(SK_ColorWHITE);
+    text_element->set_owner_name_for_test(element->name());
+    text_element->SetSize(0.0f, kWebVrPermissionFontHeight);
+    text_element->SetType(kTypeLabel);
+    text_element->AddBinding(std::make_unique<Binding<bool>>(
+        VR_BIND_LAMBDA(
+            [](Model* model, bool CapturingStateModel::*signal) {
+              return model->capturing_state.*signal;
+            },
+            base::Unretained(model_), spec.signal),
+        VR_BIND_LAMBDA(
+            [](Text* view, int resource, int potential_resource,
+               const bool& value) {
+              view->SetText(l10n_util::GetStringUTF16(
+                  value ? resource : potential_resource));
+            },
+            base::Unretained(text_element.get()), spec.resource_string,
+            spec.potential_resource_string)));
+    VR_BIND_COLOR(model_, text_element.get(),
+                  &ColorScheme::webvr_permission_foreground, &Text::SetColor);
+
+    tooltip->AddChild(std::move(text_element));
+    element->AddChild(std::move(tooltip));
     indicator_layout->AddChild(std::move(element));
   }
-  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(indicator_layout));
+  backplane->AddChild(std::move(indicator_layout));
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(backplane));
 }
 
 void UiSceneCreator::CreateContentQuad() {
@@ -2728,21 +2765,18 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
   scene_->AddUiElement(kWebVrUrlToastTransientParent, std::move(url_toast));
 
   // Create transient WebVR elements.
-  //
   auto indicators =
       Create<LinearLayout>(kNone, kPhaseNone, LinearLayout::kDown);
   indicators->SetTranslate(0, 0, kWebVrPermissionDepth);
   indicators->set_margin(kWebVrPermissionOuterMargin);
 
-  IndicatorSpec app_button_spec = {
-      kNone,
-      kExclusiveScreenToastViewportAware,
-      kRemoveCircleOutlineIcon,
-      IDS_PRESS_APP_TO_EXIT,
-      0,
-      nullptr,
-      nullptr,
-  };
+  IndicatorSpec app_button_spec = {kNone,
+                                   kExclusiveScreenToastViewportAware,
+                                   kRemoveCircleOutlineIcon,
+                                   IDS_PRESS_APP_TO_EXIT,
+                                   0,
+                                   nullptr,
+                                   nullptr};
   auto app_button_to_exit = CreateWebVrIndicator(model_, app_button_spec);
   VR_BIND_VISIBILITY(app_button_to_exit, model->web_vr.show_exit_toast);
   indicators->AddChild(std::move(app_button_to_exit));

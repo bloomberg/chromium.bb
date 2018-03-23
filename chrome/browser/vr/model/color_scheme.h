@@ -99,6 +99,8 @@ struct ColorScheme {
   SkColor url_bar_dangerous_icon;
   UrlBarColors url_bar;
 
+  ButtonColors indicator;
+
   SkColor dimmer_outer;
   SkColor dimmer_inner;
 

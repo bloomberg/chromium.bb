@@ -359,7 +359,7 @@ void VrGLThread::SetWebVrMode(bool enabled, bool show_toast) {
                                 weak_browser_ui_, enabled, show_toast));
 }
 
-void VrGLThread::SetCapturingState(CapturingStateModel state) {
+void VrGLThread::SetCapturingState(const CapturingStateModel& state) {
   DCHECK(OnMainThread());
   task_runner()->PostTask(FROM_HERE,
                           base::BindOnce(&BrowserUiInterface::SetCapturingState,

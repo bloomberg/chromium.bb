@@ -768,6 +768,20 @@ void UiElement::LayOutChildren() {
   }
 }
 
+UiElement* UiElement::FirstLaidOutChild() const {
+  auto i = std::find_if(
+      children_.begin(), children_.end(),
+      [](const std::unique_ptr<UiElement>& e) { return e->requires_layout(); });
+  return i == children_.end() ? nullptr : i->get();
+}
+
+UiElement* UiElement::LastLaidOutChild() const {
+  auto i = std::find_if(
+      children_.rbegin(), children_.rend(),
+      [](const std::unique_ptr<UiElement>& e) { return e->requires_layout(); });
+  return i == children_.rend() ? nullptr : i->get();
+}
+
 void UiElement::UpdateComputedOpacity() {
   bool was_visible = computed_opacity_ > 0.0f;
   set_computed_opacity(opacity_);

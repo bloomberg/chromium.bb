@@ -86,16 +86,16 @@ static constexpr float kAudioPermissionPromptWidth = 0.63f * kUrlBarDistance;
 static constexpr float kAudioPermissionPromptHeight = 0.218f * kUrlBarDistance;
 static constexpr float kAudionPermisionPromptDepth = 0.11f;
 
-static constexpr float kIndicatorHeight = 0.08f;
-static constexpr float kIndicatorXPadding = kIndicatorHeight * 0.1f;
-static constexpr float kIndicatorYPadding = kIndicatorHeight * 0.15f;
-static constexpr float kIndicatorIconSize = kIndicatorHeight * 0.7f;
-static constexpr float kIndicatorCornerRadius = kIndicatorHeight * 0.1f;
-static constexpr float kIndicatorMargin = kIndicatorHeight * 0.2f;
-static constexpr float kIndicatorFontHeightDmm = 0.032f;
-static constexpr float kIndicatorGap = 0.05f;
+static constexpr float kIndicatorHeightDMM = 0.064f;
+static constexpr float kIndicatorIconScaleFactor = 0.55f;
+static constexpr float kIndicatorXPaddingDMM = 0.024f;
+static constexpr float kIndicatorYPaddingDMM = 0.018f;
+static constexpr float kIndicatorCornerRadiusDMM = 0.006f;
+static constexpr float kIndicatorOffsetDMM = -0.008f;
+static constexpr float kIndicatorMarginDMM = 0.001f;
 static constexpr float kIndicatorVerticalOffset = 0.1f;
 static constexpr float kIndicatorDistanceOffset = 0.1f;
+static constexpr float kIndicatorDepth = 2.4f;
 
 static constexpr float kWebVrUrlToastWidthDMM = 0.472f;
 static constexpr float kWebVrUrlToastHeightDMM = 0.064f;

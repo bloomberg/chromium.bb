@@ -28,11 +28,10 @@ class VectorIconButton : public Button {
 
   VectorIcon* foreground() const { return foreground_; }
 
-  float icon_scale_factor() const { return icon_scale_factor_; }
-
   void SetIcon(const gfx::VectorIcon& icon);
-  void SetIconScaleFactor(float factor);
   void SetIconTranslation(float x, float y);
+  void SetIconScaleFactor(float factor);
+  float icon_scale_factor() const { return icon_scale_factor_; }
 
  private:
   void OnStateUpdated() override;

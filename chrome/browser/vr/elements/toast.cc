@@ -67,7 +67,7 @@ void Toast::AddText(const base::string16& text,
 }
 
 void Toast::SetMargin(float margin) {
-  container_->set_margin(kIndicatorMargin);
+  container_->set_margin(margin);
 }
 
 void Toast::OnSetDrawPhase() {
