@@ -20,6 +20,7 @@
 #include "ui/events/keycodes/keyboard_code_conversion.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine.h"
 #include "ui/events/ozone/layout/keyboard_layout_engine_manager.h"
+#include "ui/gfx/vector_icon_types.h"
 
 namespace keyboard_shortcut_viewer {
 
@@ -129,6 +130,8 @@ base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code) {
   ui::KeyboardCode keycode_ignored;
   if (ui::KeyboardLayoutEngineManager::GetKeyboardLayoutEngine()->Lookup(
           dom_code, 0 /* flags */, &dom_key, &keycode_ignored)) {
+    if (dom_key.IsValid() && dom_key.IsDeadKey())
+      return base::string16();
     return base::UTF8ToUTF16(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
   }
 
@@ -136,6 +139,8 @@ base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code) {
   const bool has_mapping = ui::DomCodeToUsLayoutDomKey(
       dom_code, 0 /* flags */, &dom_key, &keycode_ignored);
   DCHECK(has_mapping);
+  if (dom_key.IsValid() && dom_key.IsDeadKey())
+    return base::string16();
   return base::UTF8ToUTF16(ui::KeycodeConverter::DomKeyToKeyString(dom_key));
 }
 

@@ -12,7 +12,10 @@
 #include "base/optional.h"
 #include "base/strings/string16.h"
 #include "ui/events/keycodes/keyboard_codes.h"
-#include "ui/gfx/vector_icon_types.h"
+
+namespace gfx {
+struct VectorIcon;
+}  // namespace gfx
 
 namespace keyboard_shortcut_viewer {
 
@@ -28,7 +31,8 @@ base::string16 GetStringForCategory(ShortcutCategory category);
 // Returns the string of a DomeKey for a given VKEY. VKEY needs to be mapped to
 // a physical key |dom_code| and then the |dom_code| needs to be mapped to a
 // meaning or character of |dom_key| based on the corresponding keyboard layout.
-// TODO(https://crbug.com/803502): Get strings for non US keyboard layout.
+// Returns empty string if the |dom_key| IsDeadKey or has no mapped meaning or
+// character.
 base::string16 GetStringForKeyboardCode(ui::KeyboardCode key_code);
 
 // Returns the VectorIcon if |key_code| need to be represented as an icon.
