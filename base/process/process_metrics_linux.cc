@@ -216,14 +216,6 @@ size_t ProcessMetrics::GetResidentSetSize() const {
       getpagesize();
 }
 
-bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
-#if defined(OS_CHROMEOS)
-  if (GetWorkingSetKBytesTotmaps(ws_usage))
-    return true;
-#endif
-  return GetWorkingSetKBytesStatm(ws_usage);
-}
-
 double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   TimeTicks time = TimeTicks::Now();
 
@@ -376,8 +368,7 @@ ProcessMetrics::ProcessMetrics(ProcessHandle process)
 #if defined(OS_CHROMEOS)
 // Private, Shared and Proportional working set sizes are obtained from
 // /proc/<pid>/totmaps
-bool ProcessMetrics::GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage)
-  const {
+ProcessMetrics::TotalsSummary ProcessMetrics::GetTotalsSummary() const {
   // The format of /proc/<pid>/totmaps is:
   //
   // Rss:                6120 kB
@@ -391,7 +382,8 @@ bool ProcessMetrics::GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage)
   // AnonHugePages:       XXX kB
   // Swap:                XXX kB
   // Locked:              XXX kB
-  const size_t kPssIndex = (1 * 3) + 1;
+  ProcessMetrics::TotalsSummary summary = {};
+
   const size_t kPrivate_CleanIndex = (4 * 3) + 1;
   const size_t kPrivate_DirtyIndex = (5 * 3) + 1;
   const size_t kSwapIndex = (9 * 3) + 1;
@@ -402,85 +394,36 @@ bool ProcessMetrics::GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage)
     ThreadRestrictions::ScopedAllowIO allow_io;
     bool ret = ReadFileToString(totmaps_file, &totmaps_data);
     if (!ret || totmaps_data.length() == 0)
-      return false;
+      return summary;
   }
 
   std::vector<std::string> totmaps_fields = SplitString(
       totmaps_data, kWhitespaceASCII, KEEP_WHITESPACE, SPLIT_WANT_NONEMPTY);
 
-  DCHECK_EQ("Pss:", totmaps_fields[kPssIndex-1]);
   DCHECK_EQ("Private_Clean:", totmaps_fields[kPrivate_CleanIndex - 1]);
   DCHECK_EQ("Private_Dirty:", totmaps_fields[kPrivate_DirtyIndex - 1]);
   DCHECK_EQ("Swap:", totmaps_fields[kSwapIndex-1]);
 
-  int pss = 0;
-  int private_clean = 0;
-  int private_dirty = 0;
-  int swap = 0;
-  bool ret = true;
-  ret &= StringToInt(totmaps_fields[kPssIndex], &pss);
-  ret &= StringToInt(totmaps_fields[kPrivate_CleanIndex], &private_clean);
-  ret &= StringToInt(totmaps_fields[kPrivate_DirtyIndex], &private_dirty);
-  ret &= StringToInt(totmaps_fields[kSwapIndex], &swap);
+  int private_clean_kb = 0;
+  int private_dirty_kb = 0;
+  int swap_kb = 0;
+  bool success = true;
+  success &=
+      StringToInt(totmaps_fields[kPrivate_CleanIndex], &private_clean_kb);
+  success &=
+      StringToInt(totmaps_fields[kPrivate_DirtyIndex], &private_dirty_kb);
+  success &= StringToInt(totmaps_fields[kSwapIndex], &swap_kb);
 
-  // On ChromeOS, swap goes to zram. Count this as private / shared, as
-  // increased swap decreases available RAM to user processes, which would
-  // otherwise create surprising results.
-  ws_usage->priv = private_clean + private_dirty + swap;
-  ws_usage->shared = pss + swap;
-  ws_usage->shareable = 0;
-  ws_usage->swapped = swap;
-  return ret;
+  if (!success)
+    return summary;
+
+  summary.private_clean_kb = private_clean_kb;
+  summary.private_dirty_kb = private_dirty_kb;
+  summary.swap_kb = swap_kb;
+
+  return summary;
 }
 #endif
-
-// Private and Shared working set sizes are obtained from /proc/<pid>/statm.
-bool ProcessMetrics::GetWorkingSetKBytesStatm(WorkingSetKBytes* ws_usage)
-    const {
-  // Use statm instead of smaps because smaps is:
-  // a) Large and slow to parse.
-  // b) Unavailable in the SUID sandbox.
-
-  // First get the page size, since everything is measured in pages.
-  // For details, see: man 5 proc.
-  const int page_size_kb = getpagesize() / 1024;
-  if (page_size_kb <= 0)
-    return false;
-
-  std::string statm;
-  {
-    FilePath statm_file = internal::GetProcPidDir(process_).Append("statm");
-    // Synchronously reading files in /proc does not hit the disk.
-    ThreadRestrictions::ScopedAllowIO allow_io;
-    bool ret = ReadFileToString(statm_file, &statm);
-    if (!ret || statm.length() == 0)
-      return false;
-  }
-
-  std::vector<StringPiece> statm_vec =
-      SplitStringPiece(statm, " ", TRIM_WHITESPACE, SPLIT_WANT_ALL);
-  if (statm_vec.size() != 7)
-    return false;  // Not the expected format.
-
-  int statm_rss;
-  int statm_shared;
-  bool ret = true;
-  ret &= StringToInt(statm_vec[1], &statm_rss);
-  ret &= StringToInt(statm_vec[2], &statm_shared);
-
-  ws_usage->priv = (statm_rss - statm_shared) * page_size_kb;
-  ws_usage->shared = statm_shared * page_size_kb;
-
-  // Sharable is not calculated, as it does not provide interesting data.
-  ws_usage->shareable = 0;
-
-#if defined(OS_CHROMEOS)
-  // Can't get swapped memory from statm.
-  ws_usage->swapped = 0;
-#endif
-
-  return ret;
-}
 
 size_t GetSystemCommitCharge() {
   SystemMemoryInfoKB meminfo;

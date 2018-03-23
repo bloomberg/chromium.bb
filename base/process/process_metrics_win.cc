@@ -46,42 +46,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-void ProcessMetrics::GetCommittedKBytes(CommittedKBytes* usage) const {
-  MEMORY_BASIC_INFORMATION mbi = {0};
-  size_t committed_private = 0;
-  size_t committed_mapped = 0;
-  size_t committed_image = 0;
-  void* base_address = NULL;
-  while (VirtualQueryEx(process_.Get(), base_address, &mbi, sizeof(mbi)) ==
-         sizeof(mbi)) {
-    if (mbi.State == MEM_COMMIT) {
-      if (mbi.Type == MEM_PRIVATE) {
-        committed_private += mbi.RegionSize;
-      } else if (mbi.Type == MEM_MAPPED) {
-        committed_mapped += mbi.RegionSize;
-      } else if (mbi.Type == MEM_IMAGE) {
-        committed_image += mbi.RegionSize;
-      } else {
-        NOTREACHED();
-      }
-    }
-    void* new_base = (static_cast<BYTE*>(mbi.BaseAddress)) + mbi.RegionSize;
-    // Avoid infinite loop by weird MEMORY_BASIC_INFORMATION.
-    // If we query 64bit processes in a 32bit process, VirtualQueryEx()
-    // returns such data.
-    if (new_base <= base_address) {
-      usage->image = 0;
-      usage->mapped = 0;
-      usage->priv = 0;
-      return;
-    }
-    base_address = new_base;
-  }
-  usage->image = committed_image / 1024;
-  usage->mapped = committed_mapped / 1024;
-  usage->priv = committed_private / 1024;
-}
-
 namespace {
 
 class WorkingSetInformationBuffer {
@@ -163,36 +127,6 @@ class WorkingSetInformationBuffer {
 };
 
 }  // namespace
-
-bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
-  size_t ws_private = 0;
-  size_t ws_shareable = 0;
-  size_t ws_shared = 0;
-
-  DCHECK(ws_usage);
-  memset(ws_usage, 0, sizeof(*ws_usage));
-
-  WorkingSetInformationBuffer buffer;
-  if (!buffer.QueryPageEntries(process_.Get()))
-    return false;
-
-  size_t num_page_entries = buffer.GetPageEntryCount();
-  for (size_t i = 0; i < num_page_entries; i++) {
-    if (buffer->WorkingSetInfo[i].Shared) {
-      ws_shareable++;
-      if (buffer->WorkingSetInfo[i].ShareCount > 1)
-        ws_shared++;
-    } else {
-      ws_private++;
-    }
-  }
-
-  ws_usage->priv = ws_private * PAGESIZE_KB;
-  ws_usage->shareable = ws_shareable * PAGESIZE_KB;
-  ws_usage->shared = ws_shared * PAGESIZE_KB;
-
-  return true;
-}
 
 static uint64_t FileTimeToUTC(const FILETIME& ftime) {
   LARGE_INTEGER li;

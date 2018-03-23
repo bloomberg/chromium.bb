@@ -130,10 +130,9 @@ int64_t TaskGroupSampler::RefreshSwappedMem() {
   DCHECK(worker_pool_sequenced_checker_.CalledOnValidSequence());
 
 #if defined(OS_CHROMEOS)
-  base::WorkingSetKBytes ws_usage;
-  if (process_metrics_->GetWorkingSetKBytes(&ws_usage)) {
-    return ws_usage.swapped * 1024;
-  }
+  base::ProcessMetrics::TotalsSummary summary =
+      process_metrics_->GetTotalsSummary();
+  return summary.swap_kb * 1024;
 #endif  // defined(OS_CHROMEOS)
 
   return 0;
