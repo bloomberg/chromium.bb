@@ -99,7 +99,16 @@ function urlRequestEvents(id) {
 /**
  * Tests the filters, both in terms of filtering correctly and UI.
  */
-TEST_F('NetInternalsTest', 'netInternalsEventsViewFilter', function() {
+// Disabling on debug Windows due to flaky timeout on some build bots.
+// http://crbug.com/825282
+GEN('#if defined(OS_WIN) && !defined(NDEBUG)');
+GEN('#define MAYBE_netInternalsEventsViewFilter \\');
+GEN('    DISABLED_netInternalsEventsViewFilter');
+GEN('#else');
+GEN('#define MAYBE_netInternalsEventsViewFilter netInternalsEventsViewFilter');
+GEN('#endif');
+
+TEST_F('NetInternalsTest', 'MAYBE_netInternalsEventsViewFilter', function() {
   // Sets the filter and checks the results.
   // @param {string} filter Filter to use.
   // @param {Array<boolean>} matches Ordered list of whether or not each source
