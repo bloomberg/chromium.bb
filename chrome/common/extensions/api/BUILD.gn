@@ -36,6 +36,7 @@ schema_sources = [
   "debugger.json",
   "desktop_capture.json",
   "developer_private.idl",
+  "dial.idl",
   "downloads.idl",
   "downloads_internal.idl",
   "font_settings.json",
