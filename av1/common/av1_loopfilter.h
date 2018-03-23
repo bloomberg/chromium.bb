@@ -195,7 +195,7 @@ void av1_loop_filter_frame_init(struct AV1Common *cm, int default_filt_lvl,
 
 void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, struct AV1Common *cm,
                            struct macroblockd *mbd, int filter_level,
-                           int filter_level_r, int y_only, int partial_frame);
+                           int filter_level_r, int plane, int partial_frame);
 
 // Apply the loop filter to [start, stop) macro block rows in frame_buffer.
 void av1_loop_filter_rows(YV12_BUFFER_CONFIG *frame_buffer,
