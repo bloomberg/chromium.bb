@@ -148,6 +148,8 @@ views::Widget* IntentPickerBubbleView::ShowBubble(
   }
   views::Widget* widget =
       views::BubbleDialogDelegateView::CreateBubble(intent_picker_bubble_);
+  intent_picker_bubble_->SetArrowPaintType(
+      views::BubbleBorder::PAINT_TRANSPARENT);
   intent_picker_bubble_->GetDialogClientView()->Layout();
   intent_picker_bubble_->SetFocusBehavior(View::FocusBehavior::ALWAYS);
   intent_picker_bubble_->GetIntentPickerLabelButtonAt(0)->MarkAsSelected(
