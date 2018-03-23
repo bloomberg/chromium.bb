@@ -1306,6 +1306,15 @@ class Dependency(gclient_utils.WorkItem, DependencySettings):
       i = i.parent
     return out
 
+  def hierarchy_data(self):
+    """Returns a machine-readable hierarchical reference to a Dependency."""
+    d = self
+    out = []
+    while d and d.name:
+      out.insert(0, (d.name, d.url))
+      d = d.parent
+    return tuple(out)
+
   def get_vars(self):
     """Returns a dictionary of effective variable values
     (DEPS file contents with applied custom_vars overrides)."""
@@ -2181,7 +2190,7 @@ class Flattener(object):
         if not os.path.exists(deps_path):
           return
       assert dep.parsed_url
-      self._deps_files.add((dep.parsed_url, deps_file))
+      self._deps_files.add((dep.parsed_url, deps_file, dep.hierarchy_data()))
     for dep in self._deps.itervalues():
       add_deps_file(dep)
     for os_deps in self._deps_os.itervalues():
@@ -2200,7 +2209,7 @@ class Flattener(object):
         _HooksOsToLines(self._hooks_os) +
         _VarsToLines(self._vars) +
         ['# %s, %s' % (url, deps_file)
-         for url, deps_file in sorted(self._deps_files)] +
+         for url, deps_file, _ in sorted(self._deps_files)] +
         [''])  # Ensure newline at end of file.
 
   def _add_dep(self, dep):
@@ -2338,7 +2347,7 @@ def CMDflatten(parser, args):
   else:
     print(flattener.deps_string)
 
-  deps_files = [{'url': d[0], 'deps_file': d[1]}
+  deps_files = [{'url': d[0], 'deps_file': d[1], 'hierarchy': d[2]}
                 for d in sorted(flattener.deps_files)]
   if options.output_deps_files:
     with open(options.output_deps_files, 'w') as f:

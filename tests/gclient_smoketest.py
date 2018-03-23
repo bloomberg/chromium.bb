@@ -1255,9 +1255,16 @@ class GClientSmokeGIT(GClientSmokeBase):
       deps_files_contents = json.load(f)
 
     self.assertEqual([
-      {'url': 'git://127.0.0.1:20000/git/repo_11', 'deps_file': 'DEPS'},
-      {'url': 'git://127.0.0.1:20000/git/repo_8', 'deps_file': 'DEPS'},
-      {'url': 'git://127.0.0.1:20000/git/repo_9', 'deps_file': 'DEPS'},
+      {'url': 'git://127.0.0.1:20000/git/repo_11', 'deps_file': 'DEPS',
+       'hierarchy': [['src', 'git://127.0.0.1:20000/git/repo_10'],
+                     ['src/repo11', '/repo_11']]},
+      {'url': 'git://127.0.0.1:20000/git/repo_8', 'deps_file': 'DEPS',
+       'hierarchy': [['src', 'git://127.0.0.1:20000/git/repo_10'],
+                     ['src/repo9', '/repo_9'],
+                     ['src/repo8', '/repo_8']]},
+      {'url': 'git://127.0.0.1:20000/git/repo_9', 'deps_file': 'DEPS',
+       'hierarchy': [['src', 'git://127.0.0.1:20000/git/repo_10'],
+                     ['src/repo9', '/repo_9']]},
     ], deps_files_contents)
 
   def testFlattenCipd(self):
