@@ -947,7 +947,16 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionTest, OpenFromFTP) {
   EXPECT_EQ(base::ASCIIToUTF16("test.pdf"), GetActiveWebContents()->GetTitle());
 }
 
-IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MultipleDomains) {
+// For both PDFExtensionTest and PDFIsolatedExtensionTest, MultipleDomains case
+// flakily times out on Win7 Tests (dbg)(1) and win_chromium_dbg_ng bots.
+// https://crbug.com/825038
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_MultipleDomains DISABLED_MultipleDomains
+#else
+#define MAYBE_MultipleDomains MultipleDomains
+#endif
+
+IN_PROC_BROWSER_TEST_F(PDFExtensionTest, MAYBE_MultipleDomains) {
   for (const auto& url :
        {embedded_test_server()->GetURL("a.com", "/pdf/test.pdf"),
         embedded_test_server()->GetURL("b.com", "/pdf/test.pdf"),
@@ -972,7 +981,8 @@ class PDFIsolatedExtensionTest : public PDFExtensionTest {
   base::test::ScopedFeatureList features_;
 };
 
-IN_PROC_BROWSER_TEST_F(PDFIsolatedExtensionTest, MultipleDomains) {
+// See MAYBE_MultipleDomains definition, above. https://crbug.com/825038
+IN_PROC_BROWSER_TEST_F(PDFIsolatedExtensionTest, MAYBE_MultipleDomains) {
   for (const auto& url :
        {embedded_test_server()->GetURL("a.com", "/pdf/test.pdf"),
         embedded_test_server()->GetURL("b.com", "/pdf/test.pdf"),
