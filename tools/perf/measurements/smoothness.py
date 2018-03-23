@@ -53,6 +53,8 @@ class Smoothness(legacy_page_test.LegacyPageTest):
     if self.options and self.options.extra_chrome_categories:
       config.chrome_trace_config.category_filter.AddFilterString(
           self.options.extra_chrome_categories)
+    if self.options and self.options.enable_systrace:
+      config.chrome_trace_config.SetEnableSystrace()
 
     tab.browser.platform.tracing_controller.StartTracing(config)
 
