@@ -70,6 +70,8 @@ class ScopedStyleResolver final
   void CollectMatchingTreeBoundaryCrossingRules(
       ElementRuleCollector&,
       CascadeOrder = kIgnoreCascadeOrder);
+  void CollectMatchingPartPseudoRules(ElementRuleCollector&,
+                                      CascadeOrder = kIgnoreCascadeOrder);
   void MatchPageRules(PageRuleCollector&);
   void CollectFeaturesTo(RuleFeatureSet&,
                          HeapHashSet<Member<const StyleSheetContents>>&

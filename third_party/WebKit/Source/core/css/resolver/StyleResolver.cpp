@@ -242,6 +242,32 @@ static void MatchElementScopeRules(const Element& element,
   collector.FinishAddingAuthorRulesForTreeScope();
 }
 
+void StyleResolver::MatchPseudoPartRules(const Element& element,
+                                         ElementRuleCollector& collector) {
+  if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+    return;
+
+  if (!element.HasPartName())
+    return;
+
+  TreeScope& tree_scope = element.GetTreeScope();
+  if (tree_scope == GetDocument().GetTreeScope())
+    return;
+
+  TreeScope* parent_tree_scope = &tree_scope;
+  // TODO(b/805271): We can terminate early if we pass through a host with no
+  // exported parts. Requires implementing partmap.
+  while ((parent_tree_scope = parent_tree_scope->ParentTreeScope())) {
+    if (ScopedStyleResolver* resolver =
+            parent_tree_scope->GetScopedStyleResolver()) {
+      collector.ClearMatchedRules();
+      resolver->CollectMatchingPartPseudoRules(collector);
+      collector.SortAndTransferMatchedRules();
+      collector.FinishAddingAuthorRulesForTreeScope();
+    }
+  }
+}
+
 static bool ShouldCheckScope(const Element& element,
                              const Node& scoping_node,
                              bool is_inner_tree_scope) {
@@ -286,6 +312,7 @@ void StyleResolver::MatchScopedRules(const Element& element,
   if (!GetDocument().MayContainV0Shadow()) {
     MatchSlottedRules(element, collector);
     MatchElementScopeRules(element, element_scope_resolver, collector);
+    MatchPseudoPartRules(element, collector);
     return;
   }
 

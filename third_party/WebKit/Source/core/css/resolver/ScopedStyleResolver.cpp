@@ -266,6 +266,21 @@ void ScopedStyleResolver::CollectMatchingTreeBoundaryCrossingRules(
   }
 }
 
+void ScopedStyleResolver::CollectMatchingPartPseudoRules(
+    ElementRuleCollector& collector,
+    CascadeOrder cascade_order) {
+  if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+    return;
+  size_t sheet_index = 0;
+  for (auto sheet : author_style_sheets_) {
+    if (!RuntimeEnabledFeatures::ConstructableStylesheetsEnabled())
+      DCHECK(sheet->ownerNode());
+    MatchRequest match_request(&sheet->Contents()->GetRuleSet(),
+                               &scope_->RootNode(), sheet, sheet_index++);
+    collector.CollectMatchingPartPseudoRules(match_request, cascade_order);
+  }
+}
+
 void ScopedStyleResolver::MatchPageRules(PageRuleCollector& collector) {
   // Only consider the global author RuleSet for @page rules, as per the HTML5
   // spec.
