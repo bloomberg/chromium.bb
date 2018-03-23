@@ -10,8 +10,8 @@
 
 namespace vr {
 
-Rect::Rect() {}
-Rect::~Rect() {}
+Rect::Rect() = default;
+Rect::~Rect() = default;
 
 void Rect::SetColor(SkColor color) {
   SetCenterColor(color);

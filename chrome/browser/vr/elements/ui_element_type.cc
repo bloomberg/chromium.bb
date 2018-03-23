@@ -40,6 +40,8 @@ static const char* g_ui_element_type_strings[] = {
     "kTypeCursorForeground",
     "kTypeOverflowMenuButton",
     "kTypeOverflowMenuItem",
+    "kTypeTooltip",
+    "kTypeLabel",
 };
 
 static_assert(

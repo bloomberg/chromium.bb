@@ -82,7 +82,7 @@ namespace vr {
 namespace {
 vr::VrShell* g_vr_shell_instance;
 
-constexpr base::TimeDelta poll_capturing_state_interval_ =
+constexpr base::TimeDelta kPollCapturingStateInterval =
     base::TimeDelta::FromSecondsD(0.2);
 
 constexpr base::TimeDelta kExitVrDueToUnsupportedModeDelay =
@@ -279,7 +279,6 @@ VrShell::~VrShell() {
   DVLOG(1) << __FUNCTION__ << "=" << this;
   content_surface_texture_ = nullptr;
   overlay_surface_texture_ = nullptr;
-  poll_capturing_state_task_.Cancel();
   if (gvr_gamepad_source_active_) {
     device::GamepadDataFetcherManager::GetInstance()->RemoveSourceFactory(
         device::GAMEPAD_SOURCE_GVR);
@@ -889,13 +888,11 @@ bool VrShell::HasAudioPermission() {
 }
 
 void VrShell::PollCapturingState() {
-  poll_capturing_state_task_.Cancel();
-
   poll_capturing_state_task_.Reset(base::BindRepeating(
       &VrShell::PollCapturingState, base::Unretained(this)));
   main_thread_task_runner_->PostDelayedTask(
       FROM_HERE, poll_capturing_state_task_.callback(),
-      poll_capturing_state_interval_);
+      kPollCapturingStateInterval);
 
   int num_tabs_capturing_audio = 0;
   int num_tabs_capturing_video = 0;

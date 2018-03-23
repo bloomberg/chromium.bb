@@ -68,6 +68,7 @@ const std::set<UiElementName> kElementsVisibleInBrowsing = {
     kControllerTouchpadButton,
     kControllerAppButton,
     kControllerHomeButton,
+    kIndicatorBackplane,
 };
 const std::set<UiElementName> kElementsVisibleWithExitPrompt = {
     kBackgroundFront,

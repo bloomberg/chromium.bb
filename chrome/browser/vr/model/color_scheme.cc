@@ -50,9 +50,8 @@ void InitializeColorSchemes() {
   normal_scheme.web_vr_transient_toast_background = SK_ColorBLACK;
   normal_scheme.exclusive_screen_toast_foreground = 0xCCFFFFFF;
   normal_scheme.exclusive_screen_toast_background = 0xCC2F2F2F;
-
-  normal_scheme.system_indicator_foreground = normal_scheme.element_foreground;
-  normal_scheme.system_indicator_background = normal_scheme.element_background;
+  normal_scheme.system_indicator_foreground = SK_ColorWHITE;
+  normal_scheme.system_indicator_background = 0x99212121;
   normal_scheme.modal_prompt_icon_foreground = 0xFF4285F4;
   normal_scheme.modal_prompt_background = 0xFFF5F5F5;
   normal_scheme.modal_prompt_foreground = 0xFF333333;
@@ -157,6 +156,12 @@ void InitializeColorSchemes() {
 
   normal_scheme.webvr_permission_background = 0xD9212121;
   normal_scheme.webvr_permission_foreground = SK_ColorWHITE;
+
+  normal_scheme.indicator.background = 0x73212121;
+  normal_scheme.indicator.background_hover = 0xDE212121;
+  normal_scheme.indicator.background_down = 0xDE212121;
+  normal_scheme.indicator.foreground = SK_ColorWHITE;
+  normal_scheme.indicator.foreground_disabled = SK_ColorWHITE;
 
   g_fullscreen_scheme.Get() = normal_scheme;
   ColorScheme& fullscreen_scheme = g_fullscreen_scheme.Get();

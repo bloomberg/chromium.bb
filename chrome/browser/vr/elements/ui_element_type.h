@@ -40,6 +40,8 @@ enum UiElementType {
   kTypeCursorForeground,
   kTypeOverflowMenuButton,
   kTypeOverflowMenuItem,
+  kTypeTooltip,
+  kTypeLabel,
 
   // This must be last.
   kNumUiElementTypes,

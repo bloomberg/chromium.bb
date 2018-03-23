@@ -405,6 +405,9 @@ class UiElement : public cc::AnimationTarget {
   // applies anchoring.
   virtual void LayOutChildren();
 
+  UiElement* FirstLaidOutChild() const;
+  UiElement* LastLaidOutChild() const;
+
   virtual gfx::Transform LocalTransform() const;
   virtual gfx::Transform GetTargetLocalTransform() const;
 
