@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/ui/webui/metrics_handler.h"
 #include "chrome/browser/ui/webui/settings/about_handler.h"
 #include "chrome/browser/ui/webui/settings/appearance_handler.h"
@@ -301,6 +302,9 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui)
   html_source->AddBoolean("diceEnabled",
                           signin::IsDiceEnabledForProfile(profile->GetPrefs()));
 #endif  // defined(OS_CHROMEOS)
+
+  html_source->AddBoolean("unifiedConsentEnabled",
+                          IsUnifiedConsentEnabled(profile));
 
   html_source->AddBoolean("showExportPasswords",
                           base::FeatureList::IsEnabled(

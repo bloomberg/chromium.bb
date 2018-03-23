@@ -3168,6 +3168,9 @@
   <message name="IDS_SETTINGS_SYNC" desc="Name of the sync service.">
     Sync
   </message>
+  <message name="IDS_SETTINGS_SYNC_SYNC_AND_PERSONALIZATION" desc="The label of button that takes the user to manage their sync and personalization settings.">
+    Sync and personalization
+  </message>
   <message name="IDS_SETTINGS_SYNC_PAGE_TITLE" desc="Name of the settings page which manages syncing data between multiple browser instances with the same Google profile.">
     Advanced sync settings
   </message>

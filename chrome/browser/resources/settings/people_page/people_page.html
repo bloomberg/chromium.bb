@@ -210,8 +210,8 @@
         </template>
 </if>
 
-        <template is="dom-if"
-            if="[[isAdvancedSyncSettingsVisible_(syncStatus)]]">
+        <template is="dom-if" if="[[isAdvancedSyncSettingsVisible_(
+            syncStatus, unifiedConsentEnabled_)]]">
           <div class="settings-box two-line" on-click="onSyncTap_"
               id="sync-status" actionable$="[[isSyncStatusActionable_(
               syncStatus)]]">
@@ -229,6 +229,16 @@
             <paper-icon-button-light class="subpage-arrow">
               <button aria-label="$i18n{sync}"
                   aria-describedby="syncSecondary"></button>
+            </paper-icon-button-light>
+          </div>
+        </template>
+
+        <template is="dom-if" if="[[unifiedConsentEnabled_]]">
+          <div class="settings-box" id="sync-setup" on-click="onSyncTap_"
+              actionable>
+            <div class="start">$i18n{syncAndPersonalization}</div>
+            <paper-icon-button-light class="subpage-arrow">
+              <button aria-label="$i18n{sync}"></button>
             </paper-icon-button-light>
           </div>
         </template>
@@ -283,11 +293,13 @@
 
       </neon-animatable>
       <template is="dom-if" route-path="/syncSetup"
-          no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus)]]">
+          no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus,
+              unifiedConsentEnabled_)]]">
         <settings-subpage
             associated-control="[[$$('#sync-status')]]"
             page-title="$i18n{syncPageTitle}"
-            no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus)]]">
+            no-search$="[[!isAdvancedSyncSettingsVisible_(syncStatus,
+                unifiedConsentEnabled_)]]">
           <settings-sync-page
 <if expr="not chromeos">
               setup-in-progress="[[syncStatus.setupInProgress]]"
