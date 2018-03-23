@@ -14,6 +14,7 @@ typedef NS_ENUM(NSInteger, PopupMenuAction) {
   PopupMenuActionOpenNewTab,
   PopupMenuActionOpenNewIncognitoTab,
   PopupMenuActionReadLater,
+  PopupMenuActionFindInPage,
   PopupMenuActionRequestDesktop,
   PopupMenuActionRequestMobile,
   PopupMenuActionSiteInformation,

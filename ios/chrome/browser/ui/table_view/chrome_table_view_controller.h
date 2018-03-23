@@ -34,6 +34,10 @@
 // override this method in order to get a clean tableViewModel.
 - (void)loadModel NS_REQUIRES_SUPER;
 
+// Reconfigures the cells corresponding to the given |items| by calling
+// |configureCell:| on each cell.
+- (void)reconfigureCellsForItems:(NSArray*)items;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TABLE_VIEW_CHROME_TABLE_VIEW_CONTROLLER_H_

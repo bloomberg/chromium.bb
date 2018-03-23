@@ -8,6 +8,7 @@
 #import <UIKit/UIKit.h>
 
 @class PopupMenuTableViewController;
+class WebStateList;
 
 // Type of popup menus.
 typedef NS_ENUM(NSInteger, PopupMenuType) {
@@ -25,11 +26,14 @@ typedef NS_ENUM(NSInteger, PopupMenuType) {
 - (instancetype)initWithType:(PopupMenuType)type NS_DESIGNATED_INITIALIZER;
 - (instancetype)init NS_UNAVAILABLE;
 
-// Sets this mediator up.
-- (void)setUp;
+// The WebStateList that this mediator listens for any changes on the current
+// WebState.
+@property(nonatomic, assign) WebStateList* webStateList;
+// The TableView to be configured with this mediator.
+@property(nonatomic, strong) PopupMenuTableViewController* popupMenu;
 
-// Configures the items of |popupMenu|.
-- (void)configurePopupMenu:(PopupMenuTableViewController*)popupMenu;
+// Disconnect the mediator.
+- (void)disconnect;
 
 @end
 

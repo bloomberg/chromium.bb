@@ -108,6 +108,10 @@ using base::UserMetricsAction;
       base::RecordAction(UserMetricsAction("MobileMenuReadLater"));
       // TODO(crbug.com/822703): Add action.
       break;
+    case PopupMenuActionFindInPage:
+      base::RecordAction(UserMetricsAction("MobileMenuFindInPage"));
+      [self.dispatcher showFindInPage];
+      break;
     case PopupMenuActionRequestDesktop:
       base::RecordAction(UserMetricsAction("MobileMenuRequestDesktopSite"));
       [self.dispatcher requestDesktopSite];
