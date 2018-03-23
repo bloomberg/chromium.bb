@@ -124,7 +124,7 @@ class NET_EXPORT UploadDataStream {
   virtual int ReadInternal(IOBuffer* buf, int buf_len) = 0;
 
   // Resets state and cancels any pending callbacks. Guaranteed to be called
-  // before all but the first call to InitInternal.
+  // at least once before every call to InitInternal.
   virtual void ResetInternal() = 0;
 
   uint64_t total_size_;
