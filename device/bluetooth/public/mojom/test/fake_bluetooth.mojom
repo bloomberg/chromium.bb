@@ -235,6 +235,15 @@ interface FakeCentral {
                     string service_id,
                     string peripheral_address) => (string? descriptor_id);
 
+  // Removes a fake GATT Descriptor with |descriptor_id| from the fake
+  // characteristic with |characteristic_id| in |service_id| fake service in
+  // |peripheral_address| peripheral.
+  RemoveFakeDescriptor(
+        string descriptor_id,
+        string characteristic_id,
+        string service_id,
+        string peripheral_address) => (bool success);
+
   // Sets the next read response for characteristic with |characteristics_id|
   // in |service_id| and in |peripheral_address| to |code| and |value|.
   // |code| could be a GATT Error Response from

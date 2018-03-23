@@ -41,6 +41,9 @@ class FakeRemoteGattCharacteristic
   // Returns the descriptor's Id.
   std::string AddFakeDescriptor(const device::BluetoothUUID& descriptor_uuid);
 
+  // Removes a fake descriptor with |identifier| from this characteristic.
+  bool RemoveFakeDescriptor(const std::string& identifier);
+
   // If |gatt_code| is mojom::kGATTSuccess the next read request will call
   // its success callback with |value|. Otherwise it will call its error
   // callback.
