@@ -67,7 +67,7 @@ template("implement_content_app") {
     ]
   }
 
-  if (is_linux && enable_plugins) {
+  if (!is_multi_dll_chrome && enable_plugins) {
     content_app_deps += [ "//content/ppapi_plugin:ppapi_plugin_sources" ]
   }
 
