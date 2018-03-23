@@ -239,8 +239,8 @@ void MockMediaStreamVideoRenderer::Start() {
   started_ = true;
   paused_ = false;
   task_runner_->PostTask(
-      FROM_HERE, base::BindOnce(&MockMediaStreamVideoRenderer::InjectFrame,
-                                base::Unretained(this)));
+      FROM_HERE,
+      base::BindOnce(&MockMediaStreamVideoRenderer::InjectFrame, this));
 }
 
 void MockMediaStreamVideoRenderer::Stop() {
@@ -348,8 +348,7 @@ void MockMediaStreamVideoRenderer::InjectFrame() {
 
   task_runner_->PostDelayedTask(
       FROM_HERE,
-      base::BindOnce(&MockMediaStreamVideoRenderer::InjectFrame,
-                     base::Unretained(this)),
+      base::BindOnce(&MockMediaStreamVideoRenderer::InjectFrame, this),
       delay_till_next_generated_frame_);
 
   // This will pause the |message_loop_|, and the purpose is to allow the main
@@ -1094,7 +1093,7 @@ TEST_F(WebMediaPlayerMSTest, CreateHardwareFrames) {
 
 // Hidden and closed trigger different events on Android and this test doesn't
 // cover that, see HiddenPlayerTests for specifics.
-#if !defined(OS_ANDROID) && !defined(OS_FUCHSIA)
+#if !defined(OS_ANDROID)
 // Tests that GpuMemoryBufferVideoFramePool is not called when page is hidden.
 TEST_F(WebMediaPlayerMSTest, StopsCreatingHardwareFramesWhenHiddenOrClosed) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
