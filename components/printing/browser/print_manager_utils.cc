@@ -5,6 +5,7 @@
 #include "components/printing/browser/print_manager_utils.h"
 
 #include "base/command_line.h"
+#include "components/printing/browser/features.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/common/content_features.h"
@@ -36,11 +37,13 @@ void CreateCompositeClientIfNeeded(content::WebContents* web_contents) {
           switches::kSitePerProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIsolateOrigins) ||
-      ((base::FeatureList::IsEnabled(features::kSitePerProcess) ||
-        base::FeatureList::IsEnabled(features::kIsolateOrigins)) &&
+      ((base::FeatureList::IsEnabled(::features::kSitePerProcess) ||
+        base::FeatureList::IsEnabled(::features::kIsolateOrigins)) &&
        !base::CommandLine::ForCurrentProcess()->HasSwitch(
            switches::kDisableSiteIsolationTrials)) ||
-      base::FeatureList::IsEnabled(features::kTopDocumentIsolation)) {
+      base::FeatureList::IsEnabled(::features::kTopDocumentIsolation) ||
+      base::FeatureList::IsEnabled(
+          printing::features::kUsePdfCompositorServiceForPrint)) {
     PrintCompositeClient::CreateForWebContents(web_contents);
     SetOopifEnabled();
   }

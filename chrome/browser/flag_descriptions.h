@@ -989,6 +989,9 @@ extern const char kUseDdljsonApiDescription[];
 extern const char kUseModernMediaControlsName[];
 extern const char kUseModernMediaControlsDescription[];
 
+extern const char kUsePdfCompositorServiceName[];
+extern const char kUsePdfCompositorServiceDescription[];
+
 extern const char kUserActivationV2Name[];
 extern const char kUserActivationV2Description[];
 
