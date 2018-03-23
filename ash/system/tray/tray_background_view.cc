@@ -396,6 +396,12 @@ void TrayBackgroundView::UpdateAfterShelfAlignmentChange() {
   tray_container_->UpdateAfterShelfAlignmentChange();
 }
 
+void TrayBackgroundView::UpdateAfterRootWindowBoundsChange(
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
+  // Do nothing by default. Child class may do something.
+}
+
 void TrayBackgroundView::AnchorUpdated() {
   if (GetBubbleView())
     UpdateClippingWindowBounds();

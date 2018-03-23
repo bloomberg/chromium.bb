@@ -452,6 +452,16 @@ void WebNotificationTray::UpdateAfterShelfAlignmentChange() {
   message_center_ui_controller_->ShowPopupBubble();
 }
 
+void WebNotificationTray::UpdateAfterRootWindowBoundsChange(
+    const gfx::Rect& old_bounds,
+    const gfx::Rect& new_bounds) {
+  TrayBackgroundView::UpdateAfterRootWindowBoundsChange(old_bounds, new_bounds);
+  // Hide the message center bubble, since the bounds may not have enough to
+  // show the current size of the message center. This handler is invoked when
+  // the screen is rotated or the screen size is changed.
+  message_center_ui_controller_->HideMessageCenterBubble();
+}
+
 void WebNotificationTray::AnchorUpdated() {
   if (message_center_bubble()) {
     UpdateClippingWindowBounds();

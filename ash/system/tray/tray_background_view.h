@@ -75,6 +75,10 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Called whenever the shelf alignment changes.
   virtual void UpdateAfterShelfAlignmentChange();
 
+  // Called whenever the bounds of the root window changes.
+  virtual void UpdateAfterRootWindowBoundsChange(const gfx::Rect& old_bounds,
+                                                 const gfx::Rect& new_bounds);
+
   // Called when the anchor (tray or bubble) may have moved or changed.
   virtual void AnchorUpdated();
 
