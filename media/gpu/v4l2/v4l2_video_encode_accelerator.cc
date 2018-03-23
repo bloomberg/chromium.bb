@@ -748,24 +748,39 @@ void V4L2VideoEncodeAccelerator::Dequeue() {
     DCHECK(output_record.at_device);
     DCHECK(output_record.buffer_ref);
 
-    int32_t bitstream_buffer_id = output_record.buffer_ref->id;
-    size_t output_data_size = CopyIntoOutputBuffer(
-        static_cast<uint8_t*>(output_record.address),
-        base::checked_cast<size_t>(dqbuf.m.planes[0].bytesused),
-        std::move(output_record.buffer_ref));
+    bool flush_done =
+        (encoder_state_ == kFlushing) && (dqbuf.flags & V4L2_BUF_FLAG_LAST);
+    if (flush_done && (dqbuf.m.planes[0].bytesused == 0)) {
+      // Empty buffer for indicating Flush has finished. Recycle the buffer
+      // directly instead of sending to the client.
+      VLOGF(4) << "Recycle the empty buffer directly.";
+      encoder_thread_.task_runner()->PostTask(
+          FROM_HERE,
+          base::Bind(&V4L2VideoEncodeAccelerator::UseOutputBitstreamBufferTask,
+                     base::Unretained(this),
+                     base::Passed(&output_record.buffer_ref)));
+    } else {
+      int32_t bitstream_buffer_id = output_record.buffer_ref->id;
+      size_t output_data_size = CopyIntoOutputBuffer(
+          static_cast<uint8_t*>(output_record.address),
+          base::checked_cast<size_t>(dqbuf.m.planes[0].bytesused),
+          std::move(output_record.buffer_ref));
 
-    DVLOGF(4) << "returning "
-              << "bitstream_buffer_id=" << bitstream_buffer_id
-              << ", size=" << output_data_size << ", key_frame=" << key_frame;
+      DVLOGF(4) << "returning "
+                << "bitstream_buffer_id=" << bitstream_buffer_id
+                << ", size=" << output_data_size << ", key_frame=" << key_frame;
 
-    child_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&Client::BitstreamBufferReady, client_,
-                              bitstream_buffer_id, output_data_size, key_frame,
-                              base::TimeDelta::FromMicroseconds(
-                                  dqbuf.timestamp.tv_usec +
-                                  dqbuf.timestamp.tv_sec *
-                                      base::Time::kMicrosecondsPerSecond)));
-    if ((encoder_state_ == kFlushing) && (dqbuf.flags & V4L2_BUF_FLAG_LAST)) {
+      child_task_runner_->PostTask(
+          FROM_HERE,
+          base::Bind(&Client::BitstreamBufferReady, client_,
+                     bitstream_buffer_id, output_data_size, key_frame,
+                     base::TimeDelta::FromMicroseconds(
+                         dqbuf.timestamp.tv_usec +
+                         dqbuf.timestamp.tv_sec *
+                             base::Time::kMicrosecondsPerSecond)));
+    }
+
+    if (flush_done) {
       // Notify client that flush has finished successfully. The flush callback
       // should be called after notifying the last buffer is ready.
       DVLOGF(3) << "Flush completed. Start the encoder again.";
