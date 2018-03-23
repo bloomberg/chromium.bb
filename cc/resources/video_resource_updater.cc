@@ -49,7 +49,7 @@ namespace cc {
 namespace {
 
 // Generates process-unique IDs to use for tracing video resources.
-base::AtomicSequenceNumber g_next_tracing_id;
+base::AtomicSequenceNumber g_next_video_resource_updater_id;
 
 VideoFrameExternalResources::ResourceType ExternalResourceTypeForHardwarePlanes(
     media::VideoPixelFormat format,
@@ -349,7 +349,7 @@ VideoResourceUpdater::VideoResourceUpdater(
       resource_provider_(resource_provider),
       use_stream_video_draw_quad_(use_stream_video_draw_quad),
       use_gpu_memory_buffer_resources_(use_gpu_memory_buffer_resources),
-      tracing_id_(g_next_tracing_id.GetNext()),
+      tracing_id_(g_next_video_resource_updater_id.GetNext()),
       weak_ptr_factory_(this) {
   DCHECK(context_provider_ || layer_tree_frame_sink_);
 
