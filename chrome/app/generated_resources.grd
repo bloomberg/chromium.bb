@@ -10868,6 +10868,37 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
       <message name="IDS_PRESS_APP_TO_EXIT" desc="Text displayed in a transient bubble to tell users how to return from cinema mode (where the page displayed in a cinema like environment) or presentation mode (where the WebVR page occupies the entire screen) to normal mode.">
         Press App button to exit
       </message>
+      <message name="IDS_VR_SHELL_SITE_IS_TRACKING_LOCATION" desc="Text displayed in a transient bubble to inform the user that the page is tracking location">
+        Site is tracking your location
+      </message>
+      <message name="IDS_VR_SHELL_SITE_IS_USING_MICROPHONE" desc="Text displayed in a transient bubble to inform the user that the page is using the microphone">
+        Site is using your microphone
+      </message>
+      <message name="IDS_VR_SHELL_SITE_IS_USING_BLUETOOTH" desc="Text displayed in a transient bubble to inform the user that the page is using bluetooth">
+        Site is using bluetooth
+      </message>
+      <message name="IDS_VR_SHELL_SITE_IS_USING_CAMERA" desc="Text displayed in a transient bubble to inform the user that the page is using the camera">
+        Site is using your camera
+      </message>
+      <message name="IDS_VR_SHELL_SITE_IS_SHARING_SCREEN" desc="Text displayed in a transient bubble to inform the user that the page is sharing the screen">
+        Site is sharing your screen
+      </message>
+
+      <message name="IDS_VR_SHELL_SITE_CAN_TRACK_LOCATION" desc="Text displayed in a transient bubble to inform the user that the page may track location, but isn't doing so yet.">
+        Site can track your location
+      </message>
+      <message name="IDS_VR_SHELL_SITE_CAN_USE_MICROPHONE" desc="Text displayed in a transient bubble to inform the user that the page may use the microphone, but isn't doing so yet.">
+        Site can use your microphone
+      </message>
+      <message name="IDS_VR_SHELL_SITE_CAN_USE_BLUETOOTH" desc="Text displayed in a transient bubble to inform the user that the page may use bluetooth, but isn't doing so yet.">
+        Site can use bluetooth
+      </message>
+      <message name="IDS_VR_SHELL_SITE_CAN_USE_CAMERA" desc="Text displayed in a transient bubble to inform the user that the page may use the camera, but isn't doing so yet.">
+        Site can use your camera
+      </message>
+      <message name="IDS_VR_SHELL_SITE_CAN_SHARE_SCREEN" desc="Text displayed in a transient bubble to inform the user that the page may share your screen, but isn't doing so yet.">
+        Site can share your screen
+      </message>
 
       <!-- VR browser -->
       <!-- TODO(https://crbug.com/731802): Only build these when the VR browser is supported. -->

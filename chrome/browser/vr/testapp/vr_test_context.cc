@@ -113,10 +113,12 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
   ui_->SetHistoryButtonsEnabled(true, true);
   ui_->SetLoading(true);
   ui_->SetLoadProgress(0.4);
-  ui_->SetVideoCaptureEnabled(true);
-  ui_->SetScreenCaptureEnabled(true);
-  ui_->SetBluetoothConnected(true);
-  ui_->SetLocationAccessEnabled(true);
+  CapturingStateModel capturing_state;
+  capturing_state.video_capture_enabled = true;
+  capturing_state.screen_capture_enabled = true;
+  capturing_state.bluetooth_connected = true;
+  capturing_state.location_access_enabled = true;
+  ui_->SetCapturingState(capturing_state);
   ui_->input_manager()->set_hit_test_strategy(
       UiInputManager::PROJECT_TO_LASER_ORIGIN_FOR_TEST);
 }

@@ -19,6 +19,7 @@
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/exit_vr_prompt_choice.h"
+#include "chrome/browser/vr/model/capturing_state_model.h"
 #include "chrome/browser/vr/speech_recognizer.h"
 #include "chrome/browser/vr/ui.h"
 #include "chrome/browser/vr/ui_browser_interface.h"
@@ -179,8 +180,6 @@ class VrShell : device::GvrGamepadDataProvider,
                            jint overlay_width,
                            jint overlay_height);
 
-  void SetHighAccuracyLocation(bool high_accuracy_location);
-
   void ForceExitVr();
   void ExitPresent();
   void ExitFullscreen();
@@ -244,7 +243,7 @@ class VrShell : device::GvrGamepadDataProvider,
   void PostToGlThread(const base::Location& from_here, base::OnceClosure task);
   void SetUiState();
 
-  void PollMediaAccessFlag();
+  void PollCapturingState();
 
   bool HasDaydreamSupport(JNIEnv* env);
 
@@ -286,12 +285,8 @@ class VrShell : device::GvrGamepadDataProvider,
 
   device::mojom::GeolocationConfigPtr geolocation_config_;
 
-  base::CancelableClosure poll_capturing_media_task_;
-  bool is_capturing_audio_ = false;
-  bool is_capturing_video_ = false;
-  bool is_capturing_screen_ = false;
-  bool is_bluetooth_connected_ = false;
-  bool high_accuracy_location_ = false;
+  base::CancelableClosure poll_capturing_state_task_;
+  CapturingStateModel capturing_state_;
 
   // Are we currently providing a gamepad factory to the gamepad manager?
   bool gvr_gamepad_source_active_ = false;

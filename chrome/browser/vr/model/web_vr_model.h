@@ -35,6 +35,7 @@ struct WebVrModel {
   // TODO(ymalik): We should be able to remove this by keeping a history of UI
   // modes.
   bool show_exit_toast = false;
+  bool has_received_permissions = false;
   bool has_produced_frames() const { return state == kWebVrPresenting; }
   bool awaiting_min_splash_screen_duration() const {
     return state == kWebVrAwaitingMinSplashScreenDuration;

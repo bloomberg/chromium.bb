@@ -77,6 +77,7 @@ base::WeakPtr<BrowserUiInterface> Ui::GetBrowserUiWeakPtr() {
 void Ui::SetWebVrMode(bool enabled, bool show_toast) {
   model_->web_vr.show_exit_toast = show_toast;
   if (enabled) {
+    model_->web_vr.has_received_permissions = false;
     if (!model_->web_vr_autopresentation_enabled()) {
       // When auto-presenting, we transition into this state when the minimum
       // splash-screen duration has passed.
@@ -127,24 +128,9 @@ void Ui::SetHistoryButtonsEnabled(bool can_go_back, bool can_go_forward) {
   model_->can_navigate_forward = can_go_forward;
 }
 
-void Ui::SetVideoCaptureEnabled(bool enabled) {
-  model_->capturing_state.video_capture_enabled = enabled;
-}
-
-void Ui::SetScreenCaptureEnabled(bool enabled) {
-  model_->capturing_state.screen_capture_enabled = enabled;
-}
-
-void Ui::SetAudioCaptureEnabled(bool enabled) {
-  model_->capturing_state.audio_capture_enabled = enabled;
-}
-
-void Ui::SetBluetoothConnected(bool enabled) {
-  model_->capturing_state.bluetooth_connected = enabled;
-}
-
-void Ui::SetLocationAccessEnabled(bool enabled) {
-  model_->capturing_state.location_access_enabled = enabled;
+void Ui::SetCapturingState(CapturingStateModel state) {
+  model_->capturing_state = state;
+  model_->web_vr.has_received_permissions = true;
 }
 
 void Ui::ShowExitVrPrompt(UiUnsupportedMode reason) {
@@ -452,6 +438,7 @@ void Ui::InitializeModel(const UiInitialState& ui_initial_state) {
   model_->push_mode(kModeBrowsing);
   if (ui_initial_state.in_web_vr) {
     auto mode = kModeWebVr;
+    model_->web_vr.has_received_permissions = false;
     if (ui_initial_state.web_vr_autopresentation_expected) {
       mode = kModeWebVrAutopresented;
       model_->web_vr.state = kWebVrAwaitingMinSplashScreenDuration;

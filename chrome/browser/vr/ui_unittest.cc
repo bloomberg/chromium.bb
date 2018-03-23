@@ -13,6 +13,7 @@
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/disc_button.h"
 #include "chrome/browser/vr/elements/exit_prompt.h"
+#include "chrome/browser/vr/elements/indicator_spec.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -134,6 +135,7 @@ TEST_F(UiTest, ToastStateTransitions) {
 
   ui_->SetWebVrMode(true, true);
   ui_->OnWebVrFrameAvailable();
+  ui_->SetCapturingState(CapturingStateModel());
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
   EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
 
@@ -168,6 +170,7 @@ TEST_F(UiTest, ToastTransience) {
 
   ui_->SetWebVrMode(true, true);
   ui_->OnWebVrFrameAvailable();
+  ui_->SetCapturingState(CapturingStateModel());
   EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
   EXPECT_TRUE(RunFor(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds +
                                                    kSmallDelaySeconds)));
@@ -175,6 +178,33 @@ TEST_F(UiTest, ToastTransience) {
 
   ui_->SetWebVrMode(false, false);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+}
+
+TEST_F(UiTest, CaptureToasts) {
+  CreateScene(kNotInCct, kNotInWebVr);
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
+
+  for (auto& spec : GetIndicatorSpecs()) {
+    for (int i = 0; i < 2; ++i) {
+      ui_->SetWebVrMode(true, true);
+      ui_->OnWebVrFrameAvailable();
+
+      CapturingStateModel state;
+      state.*spec.signal = i == 0;
+      state.*spec.potential_signal = true;
+
+      ui_->SetCapturingState(state);
+      EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
+      EXPECT_TRUE(IsVisible(spec.webvr_name));
+      EXPECT_TRUE(RunFor(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds +
+                                                       kSmallDelaySeconds)));
+      EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+
+      ui_->SetWebVrMode(false, false);
+      EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+      EXPECT_FALSE(IsVisible(spec.webvr_name));
+    }
+  }
 }
 
 TEST_F(UiTest, CloseButtonVisibleInCctFullscreen) {
