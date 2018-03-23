@@ -2764,7 +2764,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
       cm->allow_intrabc = aom_rb_read_bit(rb);
     cm->use_ref_frame_mvs = 0;
-    cm->allow_warped_motion = 0;
     cm->prev_frame = NULL;
   } else {
 #if CONFIG_EXPLICIT_ORDER_HINT
@@ -3131,7 +3130,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->skip_mode_flag = cm->is_skip_mode_allowed ? aom_rb_read_bit(rb) : 0;
 
   read_compound_tools(cm, rb);
-  if (!cm->error_resilient_mode)
+  if (!(frame_is_intra_only(cm) || cm->error_resilient_mode))
     cm->allow_warped_motion = aom_rb_read_bit(rb);
   else
     cm->allow_warped_motion = 0;

@@ -3259,7 +3259,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (cm->is_skip_mode_allowed) aom_wb_write_bit(wb, cm->skip_mode_flag);
 
   write_compound_tools(cm, wb);
-  if (!cm->error_resilient_mode)
+  if (!(frame_is_intra_only(cm) || cm->error_resilient_mode))
     aom_wb_write_bit(wb, cm->allow_warped_motion);
   else
     assert(!cm->allow_warped_motion);
