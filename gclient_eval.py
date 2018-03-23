@@ -37,7 +37,7 @@ class _NodeDict(collections.MutableMapping):
   def GetNode(self, key):
     return self.data[key][1]
 
-  def _SetNode(self, key, value, node):
+  def SetNode(self, key, value, node):
     self.data[key] = (value, node)
 
 
@@ -183,7 +183,7 @@ _GCLIENT_SCHEMA = schema.Schema(_NodeDictSchema({
 }))
 
 
-def _gclient_eval(node_or_string, filename='<unknown>'):
+def _gclient_eval(node_or_string, vars_dict, expand_vars, filename):
   """Safely evaluates a single expression. Returns the result."""
   _allowed_names = {'None': None, 'True': True, 'False': False}
   if isinstance(node_or_string, basestring):
@@ -192,7 +192,15 @@ def _gclient_eval(node_or_string, filename='<unknown>'):
     node_or_string = node_or_string.body
   def _convert(node):
     if isinstance(node, ast.Str):
-      return node.s
+      if not expand_vars:
+        return node.s
+      try:
+        return node.s.format(**vars_dict)
+      except KeyError as e:
+        raise ValueError(
+            '%s was used as a variable, but was not declared in the vars dict '
+            '(file %r, line %s)' % (
+                e.message, filename, getattr(node, 'lineno', '<unknown>')))
     elif isinstance(node, ast.Num):
       return node.n
     elif isinstance(node, ast.Tuple):
@@ -222,7 +230,18 @@ def _gclient_eval(node_or_string, filename='<unknown>'):
         raise ValueError(
             'Var\'s argument must be a variable name (file %r, line %s)' % (
                 filename, getattr(node, 'lineno', '<unknown>')))
-      return '{%s}' % arg
+      if not expand_vars:
+        return '{%s}' % arg
+      if vars_dict is None:
+        raise ValueError(
+            'vars must be declared before Var can be used (file %r, line %s)'
+            % (filename, getattr(node, 'lineno', '<unknown>')))
+      if arg not in vars_dict:
+        raise ValueError(
+            '%s was used as a variable, but was not declared in the vars dict '
+            '(file %r, line %s)' % (
+                arg, filename, getattr(node, 'lineno', '<unknown>')))
+      return vars_dict[arg]
     elif isinstance(node, ast.BinOp) and isinstance(node.op, ast.Add):
       return _convert(node.left) + _convert(node.right)
     elif isinstance(node, ast.BinOp) and isinstance(node.op, ast.Mod):
@@ -235,13 +254,19 @@ def _gclient_eval(node_or_string, filename='<unknown>'):
   return _convert(node_or_string)
 
 
-def Exec(content, filename='<unknown>'):
-  """Safely execs a set of assignments. Mutates |local_scope|."""
+def Exec(content, expand_vars, filename='<unknown>', vars_override=None):
+  """Safely execs a set of assignments."""
   node_or_string = ast.parse(content, filename=filename, mode='exec')
   if isinstance(node_or_string, ast.Expression):
     node_or_string = node_or_string.body
 
-  defined_variables = set()
+  tokens = {
+      token[2]: list(token)
+      for token in tokenize.generate_tokens(
+          cStringIO.StringIO(content).readline)
+  }
+  local_scope = _NodeDict({}, tokens)
+  vars_dict = {}
   def _visit_in_module(node):
     if isinstance(node, ast.Assign):
       if len(node.targets) != 1:
@@ -253,15 +278,22 @@ def Exec(content, filename='<unknown>'):
         raise ValueError(
             'invalid assignment: target should be a name (file %r, line %s)' % (
                 filename, getattr(node, 'lineno', '<unknown>')))
-      value = _gclient_eval(node.value, filename=filename)
+      value = _gclient_eval(node.value, vars_dict, expand_vars, filename)
 
-      if target.id in defined_variables:
+      if target.id in local_scope:
         raise ValueError(
             'invalid assignment: overrides var %r (file %r, line %s)' % (
                 target.id, filename, getattr(node, 'lineno', '<unknown>')))
 
-      defined_variables.add(target.id)
-      return target.id, (value, node.value)
+      if target.id == 'vars':
+        vars_dict.update(value)
+        if vars_override:
+          vars_dict.update({
+            k: v
+            for k, v in vars_override.iteritems()
+            if k in vars_dict})
+
+      local_scope.SetNode(target.id, value, node.value)
     else:
       raise ValueError(
           'unexpected AST node: %s %s (file %r, line %s)' % (
@@ -269,15 +301,8 @@ def Exec(content, filename='<unknown>'):
               getattr(node, 'lineno', '<unknown>')))
 
   if isinstance(node_or_string, ast.Module):
-    data = []
     for stmt in node_or_string.body:
-      data.append(_visit_in_module(stmt))
-    tokens = {
-        token[2]: list(token)
-        for token in tokenize.generate_tokens(
-            cStringIO.StringIO(content).readline)
-    }
-    local_scope = _NodeDict(data, tokens)
+      _visit_in_module(stmt)
   else:
     raise ValueError(
         'unexpected AST node: %s %s (file %r, line %s)' % (
@@ -287,6 +312,70 @@ def Exec(content, filename='<unknown>'):
             getattr(node_or_string, 'lineno', '<unknown>')))
 
   return _GCLIENT_SCHEMA.validate(local_scope)
+
+
+def Parse(content, expand_vars, validate_syntax, filename, vars_override=None):
+  """Parses DEPS strings.
+
+  Executes the Python-like string stored in content, resulting in a Python
+  dictionary specifyied by the schema above. Supports syntax validation and
+  variable expansion.
+
+  Args:
+    content: str. DEPS file stored as a string.
+    expand_vars: bool. Whether variables should be expanded to their values.
+    validate_syntax: bool. Whether syntax should be validated using the schema
+      defined above.
+    filename: str. The name of the DEPS file, or a string describing the source
+      of the content, e.g. '<string>', '<unknown>'.
+    vars_override: dict, optional. A dictionary with overrides for the variables
+      defined by the DEPS file.
+
+  Returns:
+    A Python dict with the parsed contents of the DEPS file, as specified by the
+    schema above.
+  """
+  # TODO(ehmaldonado): Make validate_syntax = True the only case
+  if validate_syntax:
+    return Exec(content, expand_vars, filename, vars_override)
+
+  local_scope = {}
+  global_scope = {'Var': lambda var_name: '{%s}' % var_name}
+
+  # If we use 'exec' directly, it complains that 'Parse' contains a nested
+  # function with free variables.
+  # This is because on versions of Python < 2.7.9, "exec(a, b, c)" not the same
+  # as "exec a in b, c" (See https://bugs.python.org/issue21591).
+  eval(compile(content, filename, 'exec'), global_scope, local_scope)
+
+  if 'vars' not in local_scope or not expand_vars:
+    return local_scope
+
+  vars_dict = {}
+  vars_dict.update(local_scope['vars'])
+  if vars_override:
+    vars_dict.update({
+        k: v
+        for k, v in vars_override.iteritems()
+        if k in vars_dict
+    })
+
+  def _DeepFormat(node):
+    if isinstance(node, basestring):
+      return node.format(**vars_dict)
+    elif isinstance(node, dict):
+      return {
+          k.format(**vars_dict): _DeepFormat(v)
+          for k, v in node.iteritems()
+      }
+    elif isinstance(node, list):
+      return [_DeepFormat(elem) for elem in node]
+    elif isinstance(node, tuple):
+      return tuple(_DeepFormat(elem) for elem in node)
+    else:
+      return node
+
+  return _DeepFormat(local_scope)
 
 
 def EvaluateCondition(condition, variables, referenced_variables=None):
@@ -416,7 +505,7 @@ def SetVar(gclient_dict, var_name, value):
         "The vars entry for %s has no formatting information." % var_name)
 
   _UpdateAstString(tokens, node, value)
-  gclient_dict['vars']._SetNode(var_name, value, node)
+  gclient_dict['vars'].SetNode(var_name, value, node)
 
 
 def SetCIPD(gclient_dict, dep_name, package_name, new_version):
@@ -450,7 +539,7 @@ def SetCIPD(gclient_dict, dep_name, package_name, new_version):
 
   new_version = 'version:' + new_version
   _UpdateAstString(tokens, node, new_version)
-  packages[0]._SetNode('version', new_version, node)
+  packages[0].SetNode('version', new_version, node)
 
 
 def SetRevision(gclient_dict, dep_name, new_revision):
@@ -477,8 +566,9 @@ def SetRevision(gclient_dict, dep_name, new_revision):
       SetVar(gclient_dict, node.args[0].s, new_revision)
     else:
       _UpdateAstString(tokens, node, new_revision)
-      value = _gclient_eval(dep_node)
-      dep_dict._SetNode(dep_key, value, dep_node)
+      value = _gclient_eval(dep_node, gclient_dict.get('vars', None),
+                            expand_vars=True, filename='<unknown>')
+      dep_dict.SetNode(dep_key, value, dep_node)
 
   if isinstance(gclient_dict['deps'][dep_name], _NodeDict):
     _UpdateRevision(gclient_dict['deps'][dep_name], 'url')
