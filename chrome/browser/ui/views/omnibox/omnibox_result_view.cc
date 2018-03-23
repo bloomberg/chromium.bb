@@ -67,8 +67,7 @@ static const int kAnswerIconToTextPadding = 2;
 
 // Whether to use the two-line layout.
 bool IsTwoLineLayout() {
-  return base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout) ||
-         ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  return base::FeatureList::IsEnabled(omnibox::kUIExperimentVerticalLayout);
 }
 
 // Creates a views::Background for the current result style.
@@ -405,8 +404,15 @@ int OmniboxResultView::GetVerticalMargin() const {
       omnibox::kUIExperimentVerticalMargin,
       OmniboxFieldTrial::kUIVerticalMarginParam,
       Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4);
-  const int min_height =
+  int min_height =
       GetLayoutConstant(LOCATION_BAR_ICON_SIZE) + (kIconVerticalPad * 2);
+
+  if (Md::IsTouchOptimizedUiEnabled()) {
+    // The touchable spec specifies a height of 44 DIP. Ensure that's satisfied.
+    // Answer rows can still exceed this size.
+    constexpr int kTouchOptimizedResultHeight = 44;
+    min_height = std::max(min_height, kTouchOptimizedResultHeight);
+  }
 
   return std::max(kVerticalMargin, (min_height - GetTextHeight()) / 2);
 }
