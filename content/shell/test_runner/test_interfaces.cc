@@ -96,7 +96,8 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
     spec = spec.substr(path_start);
   bool is_devtools_test = spec.find("/devtools/") != std::string::npos;
   test_runner_->setShouldGeneratePixelResults(generate_pixels);
-  if (spec.find("loading/") != std::string::npos)
+  // For http/tests/loading/, which is served via httpd and becomes /loading/.
+  if (spec.find("/loading/") != std::string::npos)
     test_runner_->setShouldDumpFrameLoadCallbacks(true);
   if (spec.find("/dumpAsText/") != std::string::npos) {
     test_runner_->setShouldDumpAsText(true);
