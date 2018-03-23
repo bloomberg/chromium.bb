@@ -124,7 +124,7 @@ public class CastContentWindowAndroid implements CastWebContentsComponent.OnComp
 
     @Override
     public boolean consumeGesture(int gestureType) {
-        if (DEBUG) Log.d(TAG, "onVisibilityChange type=" + gestureType);
+        if (DEBUG) Log.d(TAG, "consumeGesture type=" + gestureType);
         if (mNativeCastContentWindowAndroid != 0) {
             return nativeConsumeGesture(mNativeCastContentWindowAndroid, gestureType);
         }

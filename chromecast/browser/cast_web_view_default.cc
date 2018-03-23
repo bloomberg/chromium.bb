@@ -128,15 +128,15 @@ void CastWebViewDefault::CloseContents(content::WebContents* source) {
 }
 
 void CastWebViewDefault::CreateWindow(CastWindowManager* window_manager,
-                                      bool is_visible) {
+                                      bool is_visible,
+                                      VisibilityPriority initial_priority) {
   if (media::CastMediaShlib::ClearVideoPlaneImage) {
     media::CastMediaShlib::ClearVideoPlaneImage();
   }
 
   DCHECK(window_manager);
-  window_->CreateWindowForWebContents(
-      web_contents_.get(), window_manager, is_visible,
-      chromecast::shell::VisibilityPriority::STICKY_ACTIVITY);
+  window_->CreateWindowForWebContents(web_contents_.get(), window_manager,
+                                      is_visible, initial_priority);
   web_contents_->Focus();
 }
 
