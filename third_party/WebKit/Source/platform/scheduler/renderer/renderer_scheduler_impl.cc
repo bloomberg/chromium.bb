@@ -116,10 +116,6 @@ const char* RendererProcessTypeToString(RendererProcessType process_type) {
   return "";  // MSVC needs that.
 }
 
-bool StopLoadingInBackgroundEnabled() {
-  return RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled();
-}
-
 const char* TaskTypeToString(TaskType task_type) {
   switch (task_type) {
     case TaskType::kDeprecatedNone:
@@ -721,7 +717,8 @@ scoped_refptr<MainThreadTaskQueue> RendererSchedulerImpl::NewLoadingTaskQueue(
   return NewTaskQueue(
       MainThreadTaskQueue::QueueCreationParams(queue_type)
           .SetCanBePaused(true)
-          .SetCanBeStopped(StopLoadingInBackgroundEnabled())
+          .SetCanBeStopped(
+              RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled())
           .SetCanBeDeferred(true)
           .SetUsedForImportantTasks(
               queue_type ==
@@ -1543,7 +1540,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
   if (main_thread_only().stopped_when_backgrounded) {
     new_policy.timer_queue_policy().is_stopped = true;
-    if (StopLoadingInBackgroundEnabled())
+    if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled())
       new_policy.loading_queue_policy().is_stopped = true;
   }
   if (main_thread_only().renderer_pause_count != 0) {
