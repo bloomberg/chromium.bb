@@ -423,8 +423,15 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_LargePage) {
                                  kFwd, kIgnoreCase, NULL));
 }
 
+// https://crbug.com/825341: Flaky timeout on Win7 Tests (dbg)(1)
+#if defined(OS_WIN) && !defined(NDEBUG)
+#define MAYBE_FindLongString DISABLED_FindLongString
+#else
+#define MAYBE_FindLongString FindLongString
+#endif
+
 // Find a very long string in a large page.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindLongString) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, MAYBE_FindLongString) {
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ui_test_utils::NavigateToURL(browser(), GetURL("largepage.html"));
