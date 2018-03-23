@@ -112,11 +112,11 @@ size_t AlignToPageSize(size_t size) {
 // base address at which |memory| is mapped, and that |offset| and |length|
 // are page-aligned by the caller.
 
+#if defined(OS_ANDROID)
 // Returns SUCCESS on platforms which do not support discardable pages.
 DiscardableSharedMemory::LockResult LockPages(const SharedMemory& memory,
                                               size_t offset,
                                               size_t length) {
-#if defined(OS_ANDROID)
   SharedMemoryHandle handle = memory.handle();
   if (handle.IsValid()) {
     int pin_result = ashmem_pin_region(handle.GetHandle(), offset, length);
@@ -125,9 +125,9 @@ DiscardableSharedMemory::LockResult LockPages(const SharedMemory& memory,
     if (pin_result < 0)
       return DiscardableSharedMemory::FAILED;
   }
-#endif
   return DiscardableSharedMemory::SUCCESS;
 }
+#endif
 
 // UnlockPages() is a no-op on platforms not supporting discardable pages.
 void UnlockPages(const SharedMemory& memory, size_t offset, size_t length) {
@@ -265,9 +265,32 @@ DiscardableSharedMemory::LockResult DiscardableSharedMemory::Lock(
   if (!length)
       return PURGED;
 
+#if defined(OS_ANDROID)
   // Ensure that the platform won't discard the required pages.
   return LockPages(shared_memory_,
                    AlignToPageSize(sizeof(SharedState)) + offset, length);
+#elif defined(OS_MACOSX)
+  // On macOS, there is no mechanism to lock pages. However, we do need to call
+  // madvise(MADV_FREE_REUSE) in order to correctly update accounting for memory
+  // footprint via task_info().
+  //
+  // Note that calling madvise(MADV_FREE_REUSE) on regions that haven't had
+  // madvise(MADV_FREE_REUSABLE) called on them has no effect.
+  //
+  // Note that the corresponding call to MADV_FREE_REUSABLE is in Purge(), since
+  // that's where the memory is actually released, rather than Unlock(), which
+  // is a no-op on macOS.
+  //
+  // For more information, see
+  // https://bugs.chromium.org/p/chromium/issues/detail?id=823915.
+  if (madvise(reinterpret_cast<char*>(shared_memory_.memory()) +
+                  AlignToPageSize(sizeof(SharedState)),
+              AlignToPageSize(mapped_size_), MADV_FREE_REUSE))
+    ;
+  return DiscardableSharedMemory::SUCCESS;
+#else
+  return DiscardableSharedMemory::SUCCESS;
+#endif
 }
 
 void DiscardableSharedMemory::Unlock(size_t offset, size_t length) {
