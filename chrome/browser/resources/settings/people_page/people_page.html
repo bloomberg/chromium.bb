@@ -119,6 +119,7 @@
         <template is="dom-if" if="[[shouldShowSyncAccountControl_(diceEnabled_,
             syncStatus.syncSystemEnabled, syncStatus.signinAllowed)]]">
           <settings-sync-account-control
+              sync-status="[[syncStatus]]"
               promo-label="$i18n{peopleSignInPrompt}"
               promo-secondary-label="$i18n{peopleSignInPromptSecondary}">
           </settings-sync-account-control>
