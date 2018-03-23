@@ -1536,6 +1536,7 @@ void AddPeopleStrings(content::WebUIDataSource* html_source, Profile* profile) {
     {"syncDisconnectExplanation", IDS_SETTINGS_SYNC_DISCONNECT_EXPLANATION},
     {"syncDisconnectConfirm", IDS_SETTINGS_SYNC_DISCONNECT_CONFIRM},
     {"sync", IDS_SETTINGS_SYNC},
+    {"syncAndPersonalization", IDS_SETTINGS_SYNC_SYNC_AND_PERSONALIZATION},
     {"syncPageTitle", IDS_SETTINGS_SYNC_PAGE_TITLE},
     {"syncLoading", IDS_SETTINGS_SYNC_LOADING},
     {"syncTimeout", IDS_SETTINGS_SYNC_TIMEOUT},

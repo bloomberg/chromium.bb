@@ -25,6 +25,7 @@
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/signin/signin_promo.h"
 #include "chrome/browser/signin/signin_ui_util.h"
+#include "chrome/browser/signin/unified_consent_helper.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -616,6 +617,14 @@ void PeopleHandler::HandleSetEncryption(const base::ListValue* args) {
 
 void PeopleHandler::HandleShowSetupUI(const base::ListValue* args) {
   AllowJavascript();
+
+  // Just let the page open for now, even when the user's not signed in.
+  // TODO(scottchen): finish the UI for signed-out users
+  //    (https://crbug.com/800972).
+  if (IsUnifiedConsentEnabled(profile_) && IsProfileAuthNeededOrHasErrors()) {
+    FireWebUIListener("sync-prefs-changed", base::DictionaryValue());
+    return;
+  }
 
   ProfileSyncService* service = GetSyncService();
   if (!service) {

@@ -25,33 +25,47 @@ cr.define('settings_people_page', function() {
       PolymerTest.clearBody();
       peoplePage = document.createElement('settings-people-page');
       document.body.appendChild(peoplePage);
+
+      return Promise
+          .all([
+            browserProxy.whenCalled('getProfileInfo'),
+            syncBrowserProxy.whenCalled('getSyncStatus')
+          ])
+          .then(function() {
+            Polymer.dom.flush();
+          });
     });
 
     teardown(function() { peoplePage.remove(); });
 
     test('GetProfileInfo', function() {
-      return Promise.all([browserProxy.whenCalled('getProfileInfo'),
-                          syncBrowserProxy.whenCalled('getSyncStatus')])
-          .then(function() {
-        Polymer.dom.flush();
-        assertEquals(browserProxy.fakeProfileInfo.name,
-                     peoplePage.$$('#profile-name').textContent.trim());
-        const bg = peoplePage.$$('#profile-icon').style.backgroundImage;
-        assertTrue(bg.includes(browserProxy.fakeProfileInfo.iconUrl));
+      assertEquals(
+          browserProxy.fakeProfileInfo.name,
+          peoplePage.$$('#profile-name').textContent.trim());
+      const bg = peoplePage.$$('#profile-icon').style.backgroundImage;
+      assertTrue(bg.includes(browserProxy.fakeProfileInfo.iconUrl));
 
-        const iconDataUrl =
-            'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
-            'LAAAAAABAAEAAAICTAEAOw==';
-        cr.webUIListenerCallback(
-          'profile-info-changed',
-          {name: 'pushedName', iconUrl: iconDataUrl});
+      const iconDataUrl = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEA' +
+          'LAAAAAABAAEAAAICTAEAOw==';
+      cr.webUIListenerCallback(
+          'profile-info-changed', {name: 'pushedName', iconUrl: iconDataUrl});
 
-        Polymer.dom.flush();
-        assertEquals('pushedName',
-                     peoplePage.$$('#profile-name').textContent.trim());
-        const newBg = peoplePage.$$('#profile-icon').style.backgroundImage;
-        assertTrue(newBg.includes(iconDataUrl));
+      Polymer.dom.flush();
+      assertEquals(
+          'pushedName', peoplePage.$$('#profile-name').textContent.trim());
+      const newBg = peoplePage.$$('#profile-icon').style.backgroundImage;
+      assertTrue(newBg.includes(iconDataUrl));
+    });
+
+    // This test ensures when unifiedConsentEnabled and diceEnabled is false,
+    // the #sync-status row is shown instead of the #sync-setup row.
+    test('ShowCorrectSyncRow', function() {
+      sync_test_util.simulateSyncStatus({
+        signedIn: true,
+        syncSystemEnabled: true,
       });
+      assertFalse(!!peoplePage.$$('#sync-setup'));
+      assertTrue(!!peoplePage.$$('#sync-status'));
     });
   });
 
@@ -393,6 +407,66 @@ cr.define('settings_people_page', function() {
               window.getComputedStyle(accountControl)['display'], 'none');
         });
       });
+
+      // This test ensures when diceEnabled is true, but unifiedConsentEnabled
+      // is false, the #sync-status row is shown instead of the #sync-setup row.
+      test('ShowCorrectSyncRowWithDice', function() {
+        sync_test_util.simulateSyncStatus({
+          signedIn: true,
+          syncSystemEnabled: true,
+        });
+        assertFalse(!!peoplePage.$$('#sync-setup'));
+        assertTrue(!!peoplePage.$$('#sync-status'));
+      });
     });
   }
+
+  suite('UnifiedConsentUITest', function() {
+    let peoplePage = null;
+    let browserProxy = null;
+    let profileInfoBrowserProxy = null;
+
+    suiteSetup(function() {
+      // Force UIs to think DICE is enabled for this profile.
+      loadTimeData.overrideValues({
+        diceEnabled: true,
+        unifiedConsentEnabled: true,
+      });
+    });
+
+    setup(function() {
+      browserProxy = new TestSyncBrowserProxy();
+      settings.SyncBrowserProxyImpl.instance_ = browserProxy;
+
+      profileInfoBrowserProxy = new TestProfileInfoBrowserProxy();
+      settings.ProfileInfoBrowserProxyImpl.instance_ = profileInfoBrowserProxy;
+
+      PolymerTest.clearBody();
+      peoplePage = document.createElement('settings-people-page');
+      document.body.appendChild(peoplePage);
+
+      Polymer.dom.flush();
+      return browserProxy.whenCalled('getSyncStatus');
+    });
+
+    teardown(function() {
+      peoplePage.remove();
+    });
+
+    test('ShowCorrectSyncRowWithUnifiedConsent', function() {
+      assertTrue(!!peoplePage.$$('#sync-setup'));
+      assertFalse(!!peoplePage.$$('#sync-status'));
+
+      // Make sures the subpage opens even when logged out or has errors.
+      sync_test_util.simulateSyncStatus({
+        signedIn: false,
+        statusAction: settings.StatusAction.REAUTHENTICATE,
+      });
+
+      MockInteractions.tap(peoplePage.$$('#sync-setup'));
+      Polymer.dom.flush();
+
+      assertEquals(settings.getCurrentRoute(), settings.routes.SYNC);
+    });
+  });
 });

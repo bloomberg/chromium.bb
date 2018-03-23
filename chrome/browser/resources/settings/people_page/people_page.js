@@ -42,6 +42,20 @@ Polymer({
     // </if>
 
     /**
+     * This flag is used to conditionally show a set of sync UIs to the
+     * profiles that have been migrated to have a unified consent flow.
+     * TODO(scottchen): In the future when all profiles are completely migrated,
+     * this should be removed, and UIs hidden behind it should become default.
+     * @private
+     */
+    unifiedConsentEnabled_: {
+      type: Boolean,
+      value: function() {
+        return loadTimeData.getBoolean('unifiedConsentEnabled');
+      },
+    },
+
+    /**
      * The current sync status, supplied by SyncBrowserProxy.
      * @type {?settings.SyncStatus}
      */
@@ -318,6 +332,15 @@ Polymer({
 
   /** @private */
   onSyncTap_: function() {
+    // When unified-consent is enabled, users can go to sync subpage regardless
+    // of sync status.
+    // TODO(scottchen): figure out how to deal with sync error states in the
+    //    subpage (https://crbug.com/824546).
+    if (this.unifiedConsentEnabled_) {
+      settings.navigateTo(settings.routes.SYNC);
+      return;
+    }
+
     assert(this.syncStatus.signedIn);
     assert(this.syncStatus.syncSystemEnabled);
 
@@ -433,7 +456,7 @@ Polymer({
    */
   isAdvancedSyncSettingsVisible_: function(syncStatus) {
     return !!syncStatus && !!syncStatus.signedIn &&
-        !!syncStatus.syncSystemEnabled;
+        !!syncStatus.syncSystemEnabled && !this.unifiedConsentEnabled_;
   },
 
   /**
