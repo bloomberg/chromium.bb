@@ -1938,8 +1938,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   _dismissingStackView = YES;
   // Prevent wayward touches from wreaking havoc while the stack view is being
-  // dismissed.
-  [[_tabSwitcher viewController].view setUserInteractionEnabled:NO];
+  // dismissed. Don't do this when the tab grid is used.
+  if (!IsUIRefreshPhase1Enabled()) {
+    [[_tabSwitcher viewController].view setUserInteractionEnabled:NO];
+  }
+
   BrowserViewController* targetBVC =
       (tabModel == self.mainTabModel) ? self.mainBVC : self.otrBVC;
   self.currentBVC = targetBVC;

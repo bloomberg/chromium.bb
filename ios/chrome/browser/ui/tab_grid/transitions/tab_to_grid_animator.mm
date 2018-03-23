@@ -4,8 +4,6 @@
 
 #import "ios/chrome/browser/ui/tab_grid/transitions/tab_to_grid_animator.h"
 
-#import "base/logging.h"
-#import "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_animation.h"
 #import "ios/chrome/browser/ui/tab_grid/transitions/grid_transition_state_providing.h"
 
@@ -67,8 +65,10 @@
       [self.stateProvider layoutForTransitionContext:transitionContext];
 
   // Create the animation view and insert it.
-  self.animation =
-      [[GridTransitionAnimation alloc] initWithLayout:layout delegate:self];
+  self.animation = [[GridTransitionAnimation alloc]
+      initWithLayout:layout
+            delegate:self
+           direction:GridAnimationDirectionContracting];
 
   // Ask the state provider for the views to use when inserting the animation.
   UIView* proxyContainer =

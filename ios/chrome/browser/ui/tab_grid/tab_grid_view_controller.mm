@@ -115,6 +115,13 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   [super viewWillAppear:animated];
 }
 
+- (void)viewWillDisappear:(BOOL)animated {
+  if (animated && self.transitionCoordinator) {
+    [self animateToolbarsForDisappearance];
+  }
+  [super viewWillDisappear:animated];
+}
+
 - (void)viewWillLayoutSubviews {
   [super viewWillLayoutSubviews];
   // The content inset of the tab grids must be modified so that the toolbars
@@ -619,6 +626,45 @@ typedef NS_ENUM(NSUInteger, TabGridConfiguration) {
   self.scrollView.hidden = YES;
   auto cleanup = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
     self.scrollView.hidden = NO;
+  };
+
+  // Animate the toolbars into place alongside the current transition.
+  [self.transitionCoordinator animateAlongsideTransition:animation
+                                              completion:cleanup];
+}
+
+// Translates the toolbar views offscreen using the transition coordinator.
+- (void)animateToolbarsForDisappearance {
+  DCHECK(self.transitionCoordinator);
+  // TODO(crbug.com/820410): Tune the timing of these animations.
+
+  // Capture the current toolbar transforms.
+  CGAffineTransform topToolbarBaseTransform = self.topToolbar.transform;
+  CGAffineTransform bottomToolbarBaseTransform = self.bottomToolbar.transform;
+  // Translate the top toolbar up offscreen by shifting it up by its height.
+  CGAffineTransform topToolbarOffsetTransform = CGAffineTransformTranslate(
+      self.topToolbar.transform, /*tx=*/0,
+      /*ty=*/-(self.topToolbar.bounds.size.height * 0.5));
+  // Translate the bottom toolbar down offscreen by shifting it down by its
+  // height.
+  CGAffineTransform bottomToolbarOffsetTransform = CGAffineTransformTranslate(
+      self.bottomToolbar.transform, /*tx=*/0,
+      /*ty=*/(self.topToolbar.bounds.size.height * 0.5));
+
+  // Block that animates the toolbar transforms, suitable for using with the
+  // transition coordinator.
+  auto animation = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+    self.topToolbar.transform = topToolbarOffsetTransform;
+    self.bottomToolbar.transform = bottomToolbarOffsetTransform;
+  };
+
+  // Hide the scroll view (and thus the tab grids) until the transition
+  // completes.
+  self.scrollView.hidden = YES;
+  auto cleanup = ^(id<UIViewControllerTransitionCoordinatorContext> context) {
+    self.scrollView.hidden = NO;
+    self.topToolbar.transform = topToolbarBaseTransform;
+    self.bottomToolbar.transform = bottomToolbarBaseTransform;
   };
 
   // Animate the toolbars into place alongside the current transition.

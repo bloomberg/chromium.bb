@@ -26,7 +26,8 @@ animationControllerForPresentedController:(UIViewController*)presented
   id<UIViewControllerAnimatedTransitioning> animator;
   if (self.provider.selectedCellVisible) {
     // This will be a GridToVisibleTabAnimator eventually.
-    animator = [[GridToHiddenTabAnimator alloc] init];
+    animator =
+        [[GridToVisibleTabAnimator alloc] initWithStateProvider:self.provider];
   } else {
     animator = [[GridToHiddenTabAnimator alloc] init];
   }
