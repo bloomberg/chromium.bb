@@ -256,9 +256,9 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       const std::string& mime_type,
       ResourceType resource_type) {}
 
-  // This method is invoked when a response has been received for a subresource
-  // request.
-  virtual void SubresourceResponseStarted(
+  // This method is invoked when a subresource has been loaded, successfully or
+  // not.
+  virtual void SubresourceLoadComplete(
       const mojom::SubresourceLoadInfo& subresource_load_info) {}
 
   // This method is invoked when a new non-pending navigation entry is created.

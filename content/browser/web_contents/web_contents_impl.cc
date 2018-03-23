@@ -4101,15 +4101,17 @@ void WebContentsImpl::ViewSource(RenderFrameHostImpl* frame) {
   // AddNewContents method call.
 }
 
-void WebContentsImpl::SubresourceResponseStarted(
+void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
+                                                 net::CertStatus cert_status) {
+  controller_.ssl_manager()->DidStartResourceResponse(url, cert_status);
+  SetNotWaitingForResponse();
+}
+
+void WebContentsImpl::SubresourceLoadComplete(
     mojom::SubresourceLoadInfoPtr subresource_load_info) {
   for (auto& observer : observers_) {
-    observer.SubresourceResponseStarted(*subresource_load_info);
+    observer.SubresourceLoadComplete(*subresource_load_info);
   }
-
-  controller_.ssl_manager()->DidStartResourceResponse(
-      subresource_load_info->url, subresource_load_info->cert_status);
-  SetNotWaitingForResponse();
 }
 
 void WebContentsImpl::PrintCrossProcessSubframe(

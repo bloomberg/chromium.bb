@@ -174,6 +174,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     base::TimeTicks completion_time;
     linked_ptr<base::SharedMemory> buffer;
     int buffer_size;
+    net::IPAddress parsed_ip;
 
     // For mojo loading.
     std::unique_ptr<ThrottlingURLLoader> url_loader;

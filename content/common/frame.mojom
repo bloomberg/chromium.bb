@@ -272,8 +272,12 @@ interface FrameHost {
       BeginNavigationParams begin_params);
 
   // Sent when a subresource response has started.
-  SubresourceResponseStarted(
-      SubresourceLoadInfo url_load_info);
+  // |cert_status| is the bitmask of status info of the SSL certificate. (see
+  // net/cert/cert_status_flags.h).
+  SubresourceResponseStarted(url.mojom.Url url, uint32 cert_status);
+
+  // Sent when a subresource load finished, successfully or not.
+  SubresourceLoadComplete(SubresourceLoadInfo url_load_info);
 
   // Sent when the frame changes its window.name.
   DidChangeName(string name, string unique_name);
