@@ -1288,6 +1288,33 @@ TEST_P(PaintPropertyTreeBuilderTest, ForeignObjectWithTransformAndOffset) {
   EXPECT_EQ(LayoutPoint(10, 10), div.FirstFragment().PaintOffset());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, ForeignObjectWithMask) {
+  // SPV1 has no effect tree.
+  if (!RuntimeEnabledFeatures::SlimmingPaintV175Enabled())
+    return;
+
+  SetBodyInnerHTML(R"HTML(
+    <style> body { margin: 0px; } </style>
+    <svg id='svg' style='position; relative'>
+      <foreignObject id="foreignObject"
+          x="10" y="10" width="50" height="40"
+          style="-webkit-mask:linear-gradient(red,red)">
+        <div id='div'></div>
+      </foreignObject>
+    </svg>
+  )HTML");
+
+  LayoutObject& svg = *GetLayoutObjectByElementId("svg");
+  LayoutObject& foreign_object = *GetLayoutObjectByElementId("foreignObject");
+  const ObjectPaintProperties* foreign_object_properties =
+      foreign_object.FirstFragment().PaintProperties();
+  EXPECT_TRUE(foreign_object_properties->Mask());
+  EXPECT_EQ(foreign_object_properties->MaskClip(),
+            foreign_object_properties->Mask()->OutputClip());
+  EXPECT_EQ(svg.FirstFragment().LocalBorderBoxProperties().Transform(),
+            foreign_object_properties->Mask()->LocalTransformSpace());
+}
+
 TEST_P(PaintPropertyTreeBuilderTest, PaintOffsetTranslationSVGHTMLBoundary) {
   SetBodyInnerHTML(R"HTML(
     <svg id='svg'

@@ -26,7 +26,7 @@ Optional<IntRect> CSSMaskPainter::MaskBoundingBox(
       return EnclosingIntRect(masker->ResourceBoundingBox(&object));
   }
 
-  if (object.IsSVGChild())
+  if (object.IsSVGChild() && !object.IsSVGForeignObject())
     return WTF::nullopt;
 
   const ComputedStyle& style = object.StyleRef();
