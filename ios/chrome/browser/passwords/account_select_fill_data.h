@@ -86,8 +86,7 @@ class AccountSelectFillData {
   // with name |form_name|.
   std::vector<UsernameAndRealm> RetrieveSuggestions(
       const base::string16& form_name,
-      const base::string16& field_identifier,
-      const base::string16& typed_value) const;
+      const base::string16& field_identifier) const;
 
   // Returns data for password form filling based on |username| chosen by the
   // user.

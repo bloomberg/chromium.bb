@@ -97,8 +97,7 @@ TEST_F(AccountSelectFillDataTest, RetrieveSuggestionsOneForm) {
 
   std::vector<UsernameAndRealm> suggestions =
       account_select_fill_data.RetrieveSuggestions(
-          form_data_[0].name, form_data_[0].username_field.id,
-          base::string16());
+          form_data_[0].name, form_data_[0].username_field.id);
   EXPECT_EQ(2u, suggestions.size());
   EXPECT_EQ(base::ASCIIToUTF16(kUsernames[0]), suggestions[0].username);
   EXPECT_EQ(std::string(), suggestions[0].realm);
@@ -118,48 +117,14 @@ TEST_F(AccountSelectFillDataTest, RetrieveSuggestionsTwoForm) {
 
   std::vector<UsernameAndRealm> suggestions =
       account_select_fill_data.RetrieveSuggestions(
-          form_data_[0].name, form_data_[0].username_field.id,
-          base::string16());
+          form_data_[0].name, form_data_[0].username_field.id);
   EXPECT_EQ(1u, suggestions.size());
   EXPECT_EQ(base::ASCIIToUTF16(kUsernames[1]), suggestions[0].username);
 
   suggestions = account_select_fill_data.RetrieveSuggestions(
-      form_data_[1].name, form_data_[1].username_field.id, base::string16());
+      form_data_[1].name, form_data_[1].username_field.id);
   EXPECT_EQ(1u, suggestions.size());
   EXPECT_EQ(base::ASCIIToUTF16(kUsernames[1]), suggestions[0].username);
-}
-
-TEST_F(AccountSelectFillDataTest, RetrieveSuggestionsPrefix) {
-  // Test that after adding two PasswordFormFillData, suggestions for both forms
-  // are shown, with credentials from the second PasswordFormFillData. That
-  // emulates the case when credentials in the Password Store were changed
-  // between load the first and the second forms.
-  AccountSelectFillData account_select_fill_data;
-  account_select_fill_data.Add(form_data_[0]);
-
-  std::vector<UsernameAndRealm> suggestions =
-      account_select_fill_data.RetrieveSuggestions(
-          form_data_[0].name, form_data_[0].username_field.id,
-          base::ASCIIToUTF16("u"));
-  // u prefix of username and additional username.
-  EXPECT_EQ(2u, suggestions.size());
-  EXPECT_EQ(base::ASCIIToUTF16(kUsernames[0]), suggestions[0].username);
-  EXPECT_EQ(base::ASCIIToUTF16(kAdditionalUsernames[0]),
-            suggestions[1].username);
-
-  suggestions = account_select_fill_data.RetrieveSuggestions(
-      form_data_[0].name, form_data_[0].username_field.id,
-      base::ASCIIToUTF16("u$"));
-  // u$ is prefix of additional username.
-  EXPECT_EQ(1u, suggestions.size());
-  EXPECT_EQ(base::ASCIIToUTF16(kAdditionalUsernames[0]),
-            suggestions[0].username);
-
-  suggestions = account_select_fill_data.RetrieveSuggestions(
-      form_data_[0].name, form_data_[0].username_field.id,
-      base::ASCIIToUTF16("1"));
-  // 1 is prefix of neither usernames.
-  EXPECT_TRUE(suggestions.empty());
 }
 
 TEST_F(AccountSelectFillDataTest, RetrievePSLMatchedSuggestions) {
@@ -174,8 +139,7 @@ TEST_F(AccountSelectFillDataTest, RetrievePSLMatchedSuggestions) {
   account_select_fill_data.Add(form_data_[0]);
   std::vector<UsernameAndRealm> suggestions =
       account_select_fill_data.RetrieveSuggestions(
-          form_data_[0].name, form_data_[0].username_field.id,
-          base::string16());
+          form_data_[0].name, form_data_[0].username_field.id);
   EXPECT_EQ(2u, suggestions.size());
   EXPECT_EQ(base::ASCIIToUTF16(kUsernames[0]), suggestions[0].username);
   EXPECT_EQ(kRealm, suggestions[0].realm);
@@ -193,9 +157,8 @@ TEST_F(AccountSelectFillDataTest, GetFillData) {
     const auto& form_data = form_data_[form_i];
     // GetFillData() doesn't have form identifier in arguments, it should be
     // provided in RetrieveSuggestions().
-    account_select_fill_data.RetrieveSuggestions(
-        form_data.name, form_data.username_field.id, base::string16());
-
+    account_select_fill_data.RetrieveSuggestions(form_data.name,
+                                                 form_data.username_field.id);
     std::unique_ptr<FillData> fill_data =
         account_select_fill_data.GetFillData(base::ASCIIToUTF16(kUsernames[1]));
 
@@ -218,8 +181,8 @@ TEST_F(AccountSelectFillDataTest, GetFillDataOldCredentials) {
 
   // GetFillData() doesn't have form identifier in arguments, it should be
   // provided in RetrieveSuggestions().
-  account_select_fill_data.RetrieveSuggestions(
-      form_data_[0].name, form_data_[0].username_field.id, base::string16());
+  account_select_fill_data.RetrieveSuggestions(form_data_[0].name,
+                                               form_data_[0].username_field.id);
 
   // AccountSelectFillData should keep only last credentials. Check that in
   // request of old credentials nothing is returned.
