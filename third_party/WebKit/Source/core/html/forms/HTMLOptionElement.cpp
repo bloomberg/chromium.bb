@@ -398,11 +398,9 @@ bool HTMLOptionElement::SpatialNavigationFocused() const {
 }
 
 bool HTMLOptionElement::IsDisplayNone() const {
-  // If the style is not set, then the node is still unattached.
-  // We have to wait till it gets attached to read the display property.
-  const ComputedStyle* style = NonLayoutObjectComputedStyle();
+  const ComputedStyle* style = GetComputedStyle();
   if (!style)
-    return false;
+    return true;
 
   if (style->Display() != EDisplay::kNone) {
     // We need to check the parent's display property.  Parent's
