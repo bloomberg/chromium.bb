@@ -197,6 +197,11 @@ void AvSyncVideo::UpkeepAvSync() {
 }
 
 void AvSyncVideo::GatherPlaybackStatistics() {
+  DCHECK(backend_);
+  if (!backend_->video_decoder()) {
+    return;
+  }
+
   int64_t frame_rate_difference =
       (backend_->video_decoder()->GetCurrentContentRefreshRate() -
        backend_->video_decoder()->GetOutputRefreshRate()) /
