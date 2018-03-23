@@ -142,7 +142,7 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
       state_ = State::COMPLETE;
       if (is_duplicate_registration) {
         std::move(completion_callback_)
-            .Run(U2fReturnCode::CONDITIONS_NOT_SATISFIED, base::nullopt);
+            .Run(FidoReturnCode::kConditionsNotSatisfied, base::nullopt);
         break;
       }
       auto response =
@@ -151,11 +151,11 @@ void U2fRegister::OnTryDevice(bool is_duplicate_registration,
       if (!response) {
         // The response data was corrupted / didn't parse properly.
         std::move(completion_callback_)
-            .Run(U2fReturnCode::FAILURE, base::nullopt);
+            .Run(FidoReturnCode::kFailure, base::nullopt);
         break;
       }
       std::move(completion_callback_)
-          .Run(U2fReturnCode::SUCCESS, std::move(response));
+          .Run(FidoReturnCode::kSuccess, std::move(response));
       break;
     }
     case apdu::ApduResponse::Status::SW_CONDITIONS_NOT_SATISFIED:

@@ -15,6 +15,13 @@
 
 namespace device {
 
+enum class FidoReturnCode : uint8_t {
+  kSuccess,
+  kFailure,
+  kInvalidParams,
+  kConditionsNotSatisfied,
+};
+
 enum class ProtocolVersion {
   kCtap,
   kU2f,
