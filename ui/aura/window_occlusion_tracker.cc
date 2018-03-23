@@ -132,6 +132,11 @@ WindowOcclusionTracker::WindowOcclusionTracker() = default;
 
 WindowOcclusionTracker::~WindowOcclusionTracker() = default;
 
+WindowOcclusionTracker* WindowOcclusionTracker::GetInstance() {
+  DCHECK(g_tracker);
+  return g_tracker;
+}
+
 void WindowOcclusionTracker::MaybeComputeOcclusion() {
   if (g_num_pause_occlusion_tracking || num_times_occlusion_recomputed_ != 0)
     return;
@@ -352,8 +357,10 @@ void WindowOcclusionTracker::MarkRootWindowAsDirty(
   // TODO(fdoray): Remove this once we are confident that occlusion states are
   // stable after |kMaxRecomputeOcclusion| iterations in production.
   // https://crbug.com/813076
-  if (num_times_occlusion_recomputed_ == kMaxRecomputeOcclusion)
+  if (num_times_occlusion_recomputed_ == kMaxRecomputeOcclusion) {
+    was_occlusion_recomputed_too_many_times_ = true;
     base::debug::DumpWithoutCrashing();
+  }
 }
 
 bool WindowOcclusionTracker::WindowOrParentIsAnimated(Window* window) const {
@@ -490,8 +497,13 @@ void WindowOcclusionTracker::OnWillRemoveWindow(Window* window) {
 
 void WindowOcclusionTracker::OnWindowVisibilityChanged(Window* window,
                                                        bool visible) {
-  MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(
-      window, [=]() { return !WindowOrParentIsAnimated(window); });
+  MarkRootWindowAsDirtyAndMaybeComputeOcclusionIf(window, [=]() {
+    // A child isn't visible when its parent isn't IsVisible(). Therefore, there
+    // is no need to compute occlusion when Show() or Hide() is called on a
+    // window with a hidden parent.
+    return (!window->parent() || window->parent()->IsVisible()) &&
+           !WindowOrParentIsAnimated(window);
+  });
 }
 
 void WindowOcclusionTracker::OnWindowBoundsChanged(

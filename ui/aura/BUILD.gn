@@ -266,6 +266,8 @@ jumbo_static_library("test_support") {
     "test/ui_controls_factory_aura.h",
     "test/window_event_dispatcher_test_api.cc",
     "test/window_event_dispatcher_test_api.h",
+    "test/window_occlusion_tracker_test_api.cc",
+    "test/window_occlusion_tracker_test_api.h",
     "test/window_test_api.cc",
     "test/window_test_api.h",
   ]

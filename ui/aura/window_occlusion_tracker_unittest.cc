@@ -12,6 +12,7 @@
 #include "ui/aura/test/env_test_helper.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
+#include "ui/aura/test/window_occlusion_tracker_test_api.h"
 #include "ui/aura/window_observer.h"
 #include "ui/compositor/layer_animation_observer.h"
 #include "ui/compositor/layer_animation_sequence.h"
@@ -1443,12 +1444,15 @@ class WindowDelegateChangingWindowVisibility : public MockWindowDelegate {
 
   DISALLOW_COPY_AND_ASSIGN(WindowDelegateChangingWindowVisibility);
 };
+
 }  // namespace
 
 // Verify that if a window changes its visibility every time it is notified that
 // its occlusion state changed, the occlusion state of all IsVisible() windows
-// is set to NOT_OCCLUDED and no infinite loop is entered.
+// is set to VISIBLE and no infinite loop is entered.
 TEST_F(WindowOcclusionTrackerTest, OcclusionStatesDontBecomeStable) {
+  test::WindowOcclusionTrackerTestApi test_api;
+
   // Create 2 superposed tracked windows.
   MockWindowDelegate* delegate_a = new MockWindowDelegate();
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
@@ -1484,15 +1488,17 @@ TEST_F(WindowOcclusionTrackerTest, OcclusionStatesDontBecomeStable) {
   // Hide |window_d|. This will cause occlusion to be recomputed multiple times.
   // Once the maximum number of times that occlusion can be recomputed is
   // reached, the occlusion state of all IsVisible() windows should be set to
-  // NOT_OCCLUDED.
+  // VISIBLE.
   delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
   delegate_d->set_expectation(Window::OcclusionState::HIDDEN);
+  EXPECT_FALSE(test_api.WasOcclusionRecomputedTooManyTimes());
   window_d->Hide();
+  EXPECT_TRUE(test_api.WasOcclusionRecomputedTooManyTimes());
   EXPECT_FALSE(delegate_a->is_expecting_call());
   EXPECT_FALSE(delegate_d->is_expecting_call());
 }
 
-// Verify that the occlusion states are correctly update when a branch of the
+// Verify that the occlusion states are correctly updated when a branch of the
 // tree is hidden.
 TEST_F(WindowOcclusionTrackerTest, HideTreeBranch) {
   // Create a branch of 3 tracked windows. Expect them to be visible.
@@ -1519,6 +1525,94 @@ TEST_F(WindowOcclusionTrackerTest, HideTreeBranch) {
   window_b->Hide();
   EXPECT_FALSE(delegate_b->is_expecting_call());
   EXPECT_FALSE(delegate_c->is_expecting_call());
+}
+
+namespace {
+
+class WindowDelegateHidingWindow : public MockWindowDelegate {
+ public:
+  WindowDelegateHidingWindow() = default;
+
+  void set_window_to_update(Window* window) { window_to_update_ = window; }
+
+  // MockWindowDelegate:
+  void OnWindowOcclusionChanged(
+      Window::OcclusionState occlusion_state) override {
+    MockWindowDelegate::OnWindowOcclusionChanged(occlusion_state);
+    if (!window_to_update_)
+      return;
+
+    window_to_update_->Hide();
+  }
+
+ private:
+  Window* window_to_update_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowDelegateHidingWindow);
+};
+
+class WindowDelegateAddingAndHidingChild : public MockWindowDelegate {
+ public:
+  WindowDelegateAddingAndHidingChild(WindowOcclusionTrackerTest* test)
+      : test_(test) {}
+
+  void set_window_to_update(Window* window) { window_to_update_ = window; }
+
+  // MockWindowDelegate:
+  void OnWindowOcclusionChanged(
+      Window::OcclusionState occlusion_state) override {
+    MockWindowDelegate::OnWindowOcclusionChanged(occlusion_state);
+
+    if (!window_to_update_)
+      return;
+
+    // Create a child window and hide it. Since this code runs when occlusion
+    // has already been recomputed twice, if one of the operations below causes
+    // occlusion to be recomputed, the test will fail with a DCHECK.
+    Window* window =
+        test_->CreateUntrackedWindow(gfx::Rect(0, 0, 5, 5), window_to_update_);
+    window->Hide();
+  }
+
+ private:
+  WindowOcclusionTrackerTest* test_;
+  Window* window_to_update_ = nullptr;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowDelegateAddingAndHidingChild);
+};
+
+}  // namespace
+
+// Verify that hiding a window that has a hidden parent doesn't cause occlusion
+// to be recomputed.
+TEST_F(WindowOcclusionTrackerTest,
+       HideWindowWithHiddenParentOnOcclusionChange) {
+  test::WindowOcclusionTrackerTestApi test_api;
+
+  auto* delegate_a = new WindowDelegateAddingAndHidingChild(this);
+  delegate_a->set_expectation(Window::OcclusionState::VISIBLE);
+  Window* window_a = CreateTrackedWindow(delegate_a, gfx::Rect(0, 0, 10, 10));
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+
+  auto* delegate_b = new WindowDelegateHidingWindow();
+  delegate_b->set_expectation(Window::OcclusionState::VISIBLE);
+  Window* window_b = CreateTrackedWindow(delegate_b, gfx::Rect(0, 10, 10, 10));
+  EXPECT_FALSE(delegate_b->is_expecting_call());
+
+  // When |window_b| is hidden, it will hide |window_a|. |window_a| will in turn
+  // add a child to itself and hide it.
+  delegate_a->set_window_to_update(window_a);
+  delegate_b->set_window_to_update(window_a);
+
+  delegate_a->set_expectation(Window::OcclusionState::HIDDEN);
+  delegate_b->set_expectation(Window::OcclusionState::HIDDEN);
+  EXPECT_FALSE(test_api.WasOcclusionRecomputedTooManyTimes());
+  window_b->Hide();
+  // Hiding a child to |window_a| and hiding it shouldn't cause occlusion to be
+  // recomputed too many times.
+  EXPECT_FALSE(test_api.WasOcclusionRecomputedTooManyTimes());
+  EXPECT_FALSE(delegate_a->is_expecting_call());
+  EXPECT_FALSE(delegate_b->is_expecting_call());
 }
 
 }  // namespace aura
