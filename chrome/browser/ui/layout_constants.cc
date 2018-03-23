@@ -47,13 +47,13 @@ int GetLayoutConstant(LayoutConstant constant) {
     case LOCATION_BAR_PADDING:
       return hybrid ? 3 : 1;
     case LOCATION_BAR_HEIGHT: {
-      constexpr int kHeights[] = {28, 32, 36, 36};
+      constexpr int kHeights[] = {28, 32, 36, 28};
       return kHeights[mode];
     }
     case LOCATION_BAR_ICON_SIZE:
       return 16;
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
-      return newer_material ? 8 : 4;
+      return touch_optimized_material ? 8 : 4;
     case TABSTRIP_NEW_TAB_BUTTON_SPACING: {
       // In non-touch optimized UI, we make the new tab button overlap with the
       // last tab in the tabstrip (i.e negative spacing). However, in
@@ -107,7 +107,7 @@ gfx::Insets GetLayoutInsets(LayoutInset inset) {
     case TOOLBAR_ACTION_VIEW: {
       // TODO(afakhry): Unify all toolbar button sizes on all platforms.
       // https://crbug.com/822967.
-      constexpr int kToolbarActionsInsets[] = {2, 4, 10};
+      constexpr int kToolbarActionsInsets[] = {2, 4, 10, 2};
       return gfx::Insets(kToolbarActionsInsets[mode]);
     }
   }
