@@ -12,6 +12,7 @@
 
 #include "base/bind.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
 #include "media/base/demuxer_memory_limit.h"
 #include "media/base/media_switches.h"
@@ -146,7 +147,7 @@ std::string BufferQueueBuffersToLogString(
   for (const auto& buf : buffers) {
     result << "\tdts=" << buf->GetDecodeTimestamp().InMicroseconds() << " "
            << buf->AsHumanReadableString()
-           << ", is_duration_estimated=" << buf->is_duration_estimated()
+           << ", duration_type=" << static_cast<int>(buf->duration_type())
            << "\n";
   }
 
@@ -1288,6 +1289,14 @@ void SourceBufferStream<RangeClass>::TrimSpliceOverlap(
     DVLOG(1) << __func__ << log_string.str();
     return;
   }
+
+  // At this point, trimming will go ahead. Log UMAs about the type of duration
+  // in the original overlapped buffer. The hope is that splicing on
+  // rough-estimated durations is rare enough that we can disable it outright.
+  // This would allow more liberal estimates of audio durations.
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.MSE.AudioSpliceDurationType", overlapped_buffer->duration_type(),
+      static_cast<int>(DurationType::kDurationTypeMax) + 1);
 
   // Trim overlap from the existing buffer.
   DecoderBuffer::DiscardPadding discard_padding =

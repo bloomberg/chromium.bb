@@ -64,7 +64,7 @@ StreamParserBuffer::StreamParserBuffer(const uint8_t* data,
       config_id_(kInvalidConfigId),
       type_(type),
       track_id_(track_id),
-      is_duration_estimated_(false) {
+      duration_type_(DurationType::kKnownDuration) {
   // TODO(scherkus): Should DataBuffer constructor accept a timestamp and
   // duration to force clients to set them? Today they end up being zero which
   // is both a common and valid value and could lead to bugs.

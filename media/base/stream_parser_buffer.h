@@ -100,6 +100,14 @@ MEDIA_EXPORT extern inline DecodeTimestamp kNoDecodeTimestamp() {
   return DecodeTimestamp::FromPresentationTime(kNoTimestamp);
 }
 
+// Sync with StreamParserBufferDurationType in enums.xml.
+enum class DurationType {
+  kKnownDuration = 0,
+  kConstantEstimate = 1,
+  kRoughEstimate = 2,
+  kDurationTypeMax = kRoughEstimate  // Must point to last.
+};
+
 class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
  public:
   // Value used to signal an invalid decoder config ID.
@@ -158,10 +166,14 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
 
   void set_timestamp(base::TimeDelta timestamp) override;
 
-  bool is_duration_estimated() const { return is_duration_estimated_; }
+  DurationType duration_type() const { return duration_type_; }
 
-  void set_is_duration_estimated(bool is_estimated) {
-    is_duration_estimated_ = is_estimated;
+  void set_duration_type(DurationType duration_type) {
+    duration_type_ = duration_type;
+  }
+
+  bool is_duration_estimated() const {
+    return duration_type_ != DurationType::kKnownDuration;
   }
 
  private:
@@ -179,7 +191,7 @@ class MEDIA_EXPORT StreamParserBuffer : public DecoderBuffer {
   Type type_;
   TrackId track_id_;
   scoped_refptr<StreamParserBuffer> preroll_buffer_;
-  bool is_duration_estimated_;
+  DurationType duration_type_;
 
   DISALLOW_COPY_AND_ASSIGN(StreamParserBuffer);
 };
