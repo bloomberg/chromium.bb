@@ -119,14 +119,6 @@ void ShowBadFeatureFlagsInfoBar(content::WebContents* web_contents,
 }  // namespace
 
 void ShowBadFlagsPrompt(content::WebContents* web_contents) {
-  // Do not show a warning of "stability and security will suffer" when the
-  // browser is being controlled by automated tests, so that it doesn't
-  // interfere with tests that assume no info bars.
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableAutomation)) {
-    return;
-  }
-
   // Flags only available in specific builds, for which to display a warning
   // "the flag is not implemented in this build", if necessary.
   struct {
