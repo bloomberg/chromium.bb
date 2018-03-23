@@ -15,23 +15,8 @@ goog.provide('__crWeb.contextMenu');
  * Finds the url of the image or link under the selected point. Sends the
  * found element (or an empty object if no links or images are found) back to
  * the application by posting a 'FindElementResultHandler' message.
- * The object returned in the message is an object of the form {
- *     requestID,  // identifier as passed to this function
- *     href,  // URL of the link under the point
- *     innerText,  // innerText of the link, if the selected element is a link
- *     src,  // src of the image, if the selected element is an image
- *     title,  // title of the image, if the selected
- *     referrerPolicy
- *   }
- *   where:
- *     <ul>
- *     <li>requestID is the value of the identifier passed to this function.
- *     <li>href, innerText are set if the selected element is a link.
- *     <li>src, title are set if the selected element is an image.
- *     <li>href is also set if the selected element is an image with a link.
- *     <li>referrerPolicy is the referrer policy to use for navigations away
- *         from the current page.
- *     </ul>
+ * The object returned in the message is of the same form as
+ * {@code getElementFromPointInPageCoordinates} result.
  * @param {string} identifier An identifier which be returned in the result
  *                 dictionary of this request.
  * @param {number} x Horizontal center of the selected point in web view
@@ -58,21 +43,8 @@ __gCrWeb['findElementAtPoint'] =
  *                 coordinates.
  * @param {number} webViewWidth the width of web view.
  * @param {number} webViewHeight the height of web view.
- * @return {!Object} An object of the form {
- *     href,  // URL of the link under the point
- *     innerText,  // innerText of the link, if the selected element is a link
- *     src,  // src of the image, if the selected element is an image
- *     title,  // title of the image, if the selected
- *     referrerPolicy
- *   }
- *   where:
- *     <ul>
- *     <li>href, innerText are set if the selected element is a link.
- *     <li>src, title are set if the selected element is an image.
- *     <li>href is also set if the selected element is an image with a link.
- *     <li>referrerPolicy is the referrer policy to use for navigations away
- *         from the current page.
- *     </ul>
+ * @return {!Object} An object in the same form as
+ *                   {@code getElementFromPointInPageCoordinates} result.
  */
 __gCrWeb['getElementFromPoint'] = function(x, y, webViewWidth, webViewHeight) {
   var scale = getPageWidth() / webViewWidth;
@@ -93,21 +65,34 @@ __gCrWeb['suppressNextClick'] = function() {
 };
 
 /**
- * Returns the url of the image or link under the selected point in page
- * coordinates. Returns an empty object if no links or images are found.
+ * Returns an object representing the details of the given element.
  * @param {number} x Horizontal center of the selected point in page
  *                 coordinates.
  * @param {number} y Vertical center of the selected point in page
  *                 coordinates.
- * @return {!Object} An object in the same form as
- *                   {@code getElementFromPoint} result.
+ * @return {Object} null if no element was found or an object of the form {
+ *     href,  // URL of the link under the point
+ *     innerText,  // innerText of the link, if the selected element is a link
+ *     src,  // src of the image, if the selected element is an image
+ *     title,  // title of the image, if the selected
+ *     referrerPolicy
+ *   }
+ *   where:
+ *     <ul>
+ *     <li>href, innerText are set if the selected element is a link.
+ *     <li>src, title are set if the selected element is an image.
+ *     <li>href is also set if the selected element is an image with a link.
+ *     <li>referrerPolicy is the referrer policy to use for navigations away
+ *         from the current page.
+ *     </ul>
  */
 var getElementFromPointInPageCoordinates = function(x, y) {
   var hitCoordinates = spiralCoordinates_(x, y);
   for (var index = 0; index < hitCoordinates.length; index++) {
     var coordinates = hitCoordinates[index];
 
-    var element = elementFromPoint_(coordinates.x, coordinates.y);
+    var coordinateDetails = newCoordinate(coordinates.x, coordinates.y);
+    var element = elementsFromCoordinates(coordinateDetails);
     if (!element || !element.tagName) {
       // Nothing under the hit point. Try the next hit point.
       continue;
@@ -188,90 +173,99 @@ var getPageWidth = function() {
 };
 
 /**
- * Implementation of document.elementFromPoint that is working for iOS4 and
- * iOS5 and that also goes into frames and iframes.
- * @private
- * @param {number} x
- * @param {number} y
- * @return {HTMLElement | boolean}
+ * Returns whether or not view port coordinates should be used for the given
+ * window.
+ * @return {boolean} True if the window has been scrolled down or to the right,
+ *                   false otherwise.
  */
-var elementFromPoint_ = function(x, y) {
-  var elementFromPointIsUsingViewPortCoordinates = function(win) {
-    if (win.pageYOffset > 0) {  // Page scrolled down.
-      return (
-          win.document.elementFromPoint(
-              0, win.pageYOffset + win.innerHeight - 1) === null);
-    }
-    if (win.pageXOffset > 0) {  // Page scrolled to the right.
-      return (
-          win.document.elementFromPoint(
-              win.pageXOffset + win.innerWidth - 1, 0) === null);
-    }
-    return false;  // No scrolling, don't care.
+var elementFromPointIsUsingViewPortCoordinates = function(win) {
+  if (win.pageYOffset > 0) {  // Page scrolled down.
+    return (
+        win.document.elementFromPoint(
+            0, win.pageYOffset + win.innerHeight - 1) === null);
+  }
+  if (win.pageXOffset > 0) {  // Page scrolled to the right.
+    return (
+        win.document.elementFromPoint(
+            win.pageXOffset + win.innerWidth - 1, 0) === null);
+  }
+  return false;  // No scrolling, don't care.
+};
+
+/**
+ * Returns the coordinates of the upper left corner of |obj| in the
+ * coordinates of the window that |obj| is in.
+ * @param {HTMLElement} el The element whose coordinates will be returned.
+ * @return {!Object} coordinates of the given object.
+ */
+var getPositionInWindow = function(el) {
+  var coord = {x: 0, y: 0};
+  while (el.offsetParent) {
+    coord.x += el.offsetLeft;
+    coord.y += el.offsetTop;
+    el = el.offsetParent;
+  }
+  return coord;
+};
+
+/**
+ * Returns details about a given coordinate in {@code window}.
+ * @param {number} x The x component of the coordinate in {@code window}.
+ * @param {number} y The y component of the coordinate in {@code window}.
+ * @return {!Object} Details about the given coordinate and the current window.
+ */
+var newCoordinate = function(x, y) {
+  var coordinates = {
+    x: x,
+    y: y,
+    viewPortX: x - window.pageXOffset,
+    viewPortY: y - window.pageYOffset,
+    useViewPortCoordinates: false,
+    window: window
   };
+  return coordinates;
+};
 
-  var newCoordinate = function(x, y) {
-    var coordinates = {
-      x: x,
-      y: y,
-      viewPortX: x - window.pageXOffset,
-      viewPortY: y - window.pageYOffset,
-      useViewPortCoordinates: false,
-      window: window
-    };
-    return coordinates;
-  };
+/**
+ * Returns the element at the given coordinates.
+ * @param {Object} coordinates Page coordinates in the same format as the result
+ *                             from {@code newCoordinate}.
+ */
+var elementsFromCoordinates = function(coordinates) {
+  coordinates.useViewPortCoordinates = coordinates.useViewPortCoordinates ||
+      elementFromPointIsUsingViewPortCoordinates(coordinates.window);
 
-  // Returns the coordinates of the upper left corner of |obj| in the
-  // coordinates of the window that |obj| is in.
-  var getPositionInWindow = function(obj) {
-    var coord = {x: 0, y: 0};
-    while (obj.offsetParent) {
-      coord.x += obj.offsetLeft;
-      coord.y += obj.offsetTop;
-      obj = obj.offsetParent;
+  var currentElement = null;
+  if (coordinates.useViewPortCoordinates) {
+    currentElement = coordinates.window.document.elementFromPoint(
+        coordinates.viewPortX, coordinates.viewPortY);
+  } else {
+    currentElement = coordinates.window.document.elementFromPoint(
+        coordinates.x, coordinates.y);
+  }
+  // We have to check for tagName, because if a selection is made by the
+  // UIWebView, the element we will get won't have one.
+  if (!currentElement || !currentElement.tagName) {
+    return null;
+  }
+  if (currentElement.tagName.toLowerCase() === 'iframe' ||
+      currentElement.tagName.toLowerCase() === 'frame') {
+    // Check if the frame is in a different domain using only information
+    // visible to the current frame (i.e. currentElement.src) to avoid
+    // triggering a SecurityError in the console.
+    if (!__gCrWeb.common.isSameOrigin(
+        window.location.href, currentElement.src)) {
+      return currentElement;
     }
-    return coord;
-  };
-
-  var elementsFromCoordinates = function(coordinates) {
-    coordinates.useViewPortCoordinates = coordinates.useViewPortCoordinates ||
-        elementFromPointIsUsingViewPortCoordinates(coordinates.window);
-
-    var currentElement = null;
-    if (coordinates.useViewPortCoordinates) {
-      currentElement = coordinates.window.document.elementFromPoint(
-          coordinates.viewPortX, coordinates.viewPortY);
-    } else {
-      currentElement = coordinates.window.document.elementFromPoint(
-          coordinates.x, coordinates.y);
-    }
-    // We have to check for tagName, because if a selection is made by the
-    // UIWebView, the element we will get won't have one.
-    if (!currentElement || !currentElement.tagName) {
-      return null;
-    }
-    if (currentElement.tagName.toLowerCase() === 'iframe' ||
-        currentElement.tagName.toLowerCase() === 'frame') {
-      // Check if the frame is in a different domain using only information
-      // visible to the current frame (i.e. currentElement.src) to avoid
-      // triggering a SecurityError in the console.
-      if (!__gCrWeb.common.isSameOrigin(
-              window.location.href, currentElement.src)) {
-        return currentElement;
-      }
-      var framePosition = getPositionInWindow(currentElement);
-      coordinates.viewPortX -= framePosition.x - coordinates.window.pageXOffset;
-      coordinates.viewPortY -= framePosition.y - coordinates.window.pageYOffset;
-      coordinates.window = currentElement.contentWindow;
-      coordinates.x -= framePosition.x + coordinates.window.pageXOffset;
-      coordinates.y -= framePosition.y + coordinates.window.pageYOffset;
-      return elementsFromCoordinates(coordinates);
-    }
-    return currentElement;
-  };
-
-  return elementsFromCoordinates(newCoordinate(x, y));
+    var framePosition = getPositionInWindow(currentElement);
+    coordinates.viewPortX -= framePosition.x - coordinates.window.pageXOffset;
+    coordinates.viewPortY -= framePosition.y - coordinates.window.pageYOffset;
+    coordinates.window = currentElement.contentWindow;
+    coordinates.x -= framePosition.x + coordinates.window.pageXOffset;
+    coordinates.y -= framePosition.y + coordinates.window.pageYOffset;
+    return elementsFromCoordinates(coordinates);
+  }
+  return currentElement;
 };
 
 /** @private
