@@ -411,8 +411,7 @@ AbortCallback SmbFileSystem::AddWatcher(
     const storage::WatcherManager::NotificationCallback&
         notification_callback) {
   // Watchers are not supported.
-  // This method should not be getting called since watchable is set to false.
-  // crbug.com/796334.
+  NOTIMPLEMENTED();
   callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
   return CreateAbortCallback();
 }
@@ -423,8 +422,7 @@ void SmbFileSystem::RemoveWatcher(
     bool recursive,
     const storage::AsyncFileUtil::StatusCallback& callback) {
   // Watchers are not supported.
-  // This method should not be getting called since watchable is set to false.
-  // http://www.crbug.com/796334.
+  NOTIMPLEMENTED();
   callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
@@ -440,9 +438,8 @@ file_system_provider::RequestManager* SmbFileSystem::GetRequestManager() {
 
 file_system_provider::Watchers* SmbFileSystem::GetWatchers() {
   // Watchers are not supported.
-  // This method should not be getting called since watchable is set to false.
-  // http://www.crbug.com/796334.
-  return &watchers_;
+  NOTIMPLEMENTED();
+  return nullptr;
 }
 
 const file_system_provider::OpenedFiles& SmbFileSystem::GetOpenedFiles() const {

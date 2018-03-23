@@ -246,10 +246,9 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   // the OperationId for the newly created Operation.
   OperationId EnqueueTaskAndGetOperationId(SmbTask task);
 
-  file_system_provider::ProvidedFileSystemInfo file_system_info_;
-  file_system_provider::OpenedFiles opened_files_;
-  storage::AsyncFileUtil::EntryList entry_list_;
-  file_system_provider::Watchers watchers_;
+  const file_system_provider::ProvidedFileSystemInfo file_system_info_;
+  // opened_files_ is marked const since is currently unsupported.
+  const file_system_provider::OpenedFiles opened_files_;
 
   UnmountCallback unmount_callback_;
   TempFileManager temp_file_manager_;
