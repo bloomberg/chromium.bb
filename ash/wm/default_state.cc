@@ -107,6 +107,16 @@ void DefaultState::AttachState(WindowState* window_state,
                                WindowState::State* state_in_previous_mode) {
   DCHECK_EQ(stored_window_state_, window_state);
 
+  // If previous state is unminimized but window state is minimized, sync window
+  // state to unminimized.
+  if (window_state->IsMinimized() &&
+      !IsMinimizedWindowStateType(state_in_previous_mode->GetType())) {
+    aura::Window* window = window_state->window();
+    window->SetProperty(
+        aura::client::kShowStateKey,
+        window->GetProperty(aura::client::kPreMinimizedShowStateKey));
+  }
+
   ReenterToCurrentState(window_state, state_in_previous_mode);
 
   // If the display has changed while in the another mode,
