@@ -1159,11 +1159,11 @@ static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
         int mi_r, mi_c;
         const int ref_frame_offset = ref_offset[mv_ref->ref_frame[dir & 0x01]];
 
-        int pos_valid = abs(ref_frame_offset) < MAX_FRAME_DISTANCE &&
+        int pos_valid = abs(ref_frame_offset) <= MAX_FRAME_DISTANCE &&
 #if CONFIG_EXPLICIT_ORDER_HINT
                         ref_frame_offset > 0 &&
 #endif
-                        abs(ref_to_cur) < MAX_FRAME_DISTANCE;
+                        abs(ref_to_cur) <= MAX_FRAME_DISTANCE;
 
         if (pos_valid) {
           get_mv_projection(&this_mv.as_mv, fwd_mv, ref_to_cur,
