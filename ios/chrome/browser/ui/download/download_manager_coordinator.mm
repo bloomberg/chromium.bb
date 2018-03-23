@@ -119,12 +119,13 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
 
 - (void)stop {
   if (_viewController) {
-    [self.presenter dismissAnimated:YES];
+    [self.presenter dismissAnimated:self.animatesPresentation];
     // Prevent delegate callbacks for stopped coordinator.
     _viewController.delegate = nil;
     _viewController = nil;
   }
-  [_confirmationDialog dismissViewControllerAnimated:YES completion:nil];
+  [_confirmationDialog dismissViewControllerAnimated:self.animatesPresentation
+                                          completion:nil];
   _confirmationDialog = nil;
   _downloadTask = nullptr;
 
@@ -183,7 +184,9 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
   }
 
   DCHECK_EQ(_downloadTask, download);
+  self.animatesPresentation = NO;
   [self stop];
+  self.animatesPresentation = YES;
 }
 
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
@@ -192,6 +195,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
   _downloadTask = download;
   self.animatesPresentation = NO;
   [self start];
+  self.animatesPresentation = YES;
 }
 
 #pragma mark - UIDocumentInteractionControllerDelegate
