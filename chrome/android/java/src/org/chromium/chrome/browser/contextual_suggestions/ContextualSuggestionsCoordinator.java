@@ -48,7 +48,8 @@ public class ContextualSuggestionsCoordinator {
         mProfile = Profile.getLastUsedProfile().getOriginalProfile();
 
         mModel = new ContextualSuggestionsModel();
-        mMediator = new ContextualSuggestionsMediator(mProfile, tabModelSelector, this, mModel);
+        mMediator = new ContextualSuggestionsMediator(
+                mActivity, mProfile, tabModelSelector, this, mModel);
 
         SuggestionsSource suggestionsSource = mMediator.getSuggestionsSource();
         SuggestionsNavigationDelegate navigationDelegate = new SuggestionsNavigationDelegateImpl(

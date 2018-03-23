@@ -46,6 +46,7 @@ class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
 
     SuggestionsList mSuggestionsList = new SuggestionsList();
     private OnClickListener mCloseButtonOnClickListener;
+    private String mTitle;
 
     /**
      * @param suggestions The list of current suggestions. May be an empty list if no
@@ -63,11 +64,22 @@ class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
     /** @param listener The {@link OnClickListener} for the close button. */
     void setCloseButtonOnClickListener(OnClickListener listener) {
         mCloseButtonOnClickListener = listener;
-        notifyPropertyChanged(new PropertyKey(PropertyKey.ON_CLICK_LISTENER_PROPERTY));
+        notifyPropertyChanged(new PropertyKey(PropertyKey.CLOSE_BUTTON_ON_CLICK_LISTENER));
     }
 
     /** @return The {@link OnClickListener} for the close button. */
     OnClickListener getCloseButtonOnClickListener() {
         return mCloseButtonOnClickListener;
+    }
+
+    /** @param title The title to display in the toolbar. */
+    void setTitle(String title) {
+        mTitle = title;
+        notifyPropertyChanged(new PropertyKey(PropertyKey.TITLE));
+    }
+
+    /** @return title The title to display in the toolbar. */
+    String getTitle() {
+        return mTitle;
     }
 }

@@ -14,11 +14,11 @@ import java.lang.annotation.RetentionPolicy;
  */
 class PropertyKey {
     /** The unique identifiers for properties held in the model. */
-    @IntDef({ON_CLICK_LISTENER_PROPERTY})
+    @IntDef({CLOSE_BUTTON_ON_CLICK_LISTENER, TITLE})
     @Retention(RetentionPolicy.SOURCE)
     @interface Key {}
-    static final int ON_CLICK_LISTENER_PROPERTY = 0;
-    // TODO(twellington): Add a property for the toolbar title.
+    static final int CLOSE_BUTTON_ON_CLICK_LISTENER = 0;
+    static final int TITLE = 1;
 
     @Key
     Integer mKey;

@@ -2447,8 +2447,8 @@ Google may use your browsing activity, content on some sites you visit, and othe
       <message name="IDS_NTP_ALL_DISMISSED_REFRESH" desc="Text label for button to refresh the New Tab Page when all suggested content has been dismissed. [CHAR-LIMIT=20]">
         Refresh
       </message>
-      <message name="IDS_CONTEXTUAL_SUGGESTIONS_TITLE" desc="The title for a section containing a list of article suggestions based on the user's current webpage. The title tells users that the list contains articles viewed by people who also viewed the current webpage.">
-        People also viewed
+      <message name="IDS_CONTEXTUAL_SUGGESTIONS_TOOLBAR_TITLE" desc="The title displayed above a list of content suggestions based on the user's current webpage. The title tells the user that the list contains more suggestions related to the topic they are currently viewing.">
+        More about <ph name="TOPIC">%1$s<ex>Game of Thrones</ex></ph>
       </message>
 
       <!-- Toolbar button strings -->

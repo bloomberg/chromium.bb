@@ -8,7 +8,6 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
-import org.chromium.chrome.R;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
@@ -72,8 +71,7 @@ class ContextualSuggestionsAdapter
         mUiConfig = uiConfig;
         mUiDelegate = uiDelegate;
 
-        mCategoryInfo = new SuggestionsCategoryInfo(KnownCategories.CONTEXTUAL,
-                context.getString(R.string.contextual_suggestions_title),
+        mCategoryInfo = new SuggestionsCategoryInfo(KnownCategories.CONTEXTUAL, "",
                 ContentSuggestionsCardLayout.FULL_CARD, ContentSuggestionsAdditionalAction.NONE,
                 false, "");
     }
