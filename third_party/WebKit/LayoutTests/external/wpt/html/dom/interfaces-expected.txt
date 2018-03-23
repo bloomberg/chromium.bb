@@ -1,5 +1,5 @@
 This is a testharness.js-based test.
-Found 6702 tests; 6596 PASS, 106 FAIL, 0 TIMEOUT, 0 NOTRUN.
+Found 6700 tests; 6601 PASS, 99 FAIL, 0 TIMEOUT, 0 NOTRUN.
 PASS Test driver
 PASS Document interface: attribute domain
 PASS Unscopable handled correctly for domain property on Document
@@ -582,6 +582,16 @@ PASS Document interface: document.implementation.createDocument(null, "", null) 
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "oncopy" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "oncut" with the proper type
 PASS Document interface: document.implementation.createDocument(null, "", null) must inherit property "onpaste" with the proper type
+PASS SVGElement interface: attribute dataset
+PASS Unscopable handled correctly for dataset property on SVGElement
+PASS SVGElement interface: attribute nonce
+PASS Unscopable handled correctly for nonce property on SVGElement
+PASS SVGElement interface: attribute tabIndex
+PASS Unscopable handled correctly for tabIndex property on SVGElement
+PASS SVGElement interface: operation focus(FocusOptions)
+PASS Unscopable handled correctly for focus(FocusOptions) on SVGElement
+PASS SVGElement interface: operation blur()
+PASS Unscopable handled correctly for blur() on SVGElement
 PASS HTMLAllCollection interface: existence and properties of interface object
 PASS HTMLAllCollection interface object length
 PASS HTMLAllCollection interface object name
@@ -669,18 +679,10 @@ PASS HTMLElement interface: attribute translate
 PASS Unscopable handled correctly for translate property on HTMLElement
 PASS HTMLElement interface: attribute dir
 PASS Unscopable handled correctly for dir property on HTMLElement
-PASS HTMLElement interface: attribute dataset
-PASS Unscopable handled correctly for dataset property on HTMLElement
 PASS HTMLElement interface: attribute hidden
 PASS Unscopable handled correctly for hidden property on HTMLElement
 PASS HTMLElement interface: operation click()
 PASS Unscopable handled correctly for click() on HTMLElement
-PASS HTMLElement interface: attribute tabIndex
-PASS Unscopable handled correctly for tabIndex property on HTMLElement
-PASS HTMLElement interface: operation focus(FocusOptions)
-PASS Unscopable handled correctly for focus(FocusOptions) on HTMLElement
-PASS HTMLElement interface: operation blur()
-PASS Unscopable handled correctly for blur() on HTMLElement
 PASS HTMLElement interface: attribute accessKey
 PASS Unscopable handled correctly for accessKey property on HTMLElement
 FAIL HTMLElement interface: attribute accessKeyLabel assert_true: The prototype object must have a property "accessKeyLabel" expected true got false
@@ -827,19 +829,24 @@ PASS HTMLElement interface: attribute isContentEditable
 PASS Unscopable handled correctly for isContentEditable property on HTMLElement
 PASS HTMLElement interface: attribute inputMode
 PASS Unscopable handled correctly for inputMode property on HTMLElement
+PASS HTMLElement interface: attribute dataset
+PASS Unscopable handled correctly for dataset property on HTMLElement
+PASS HTMLElement interface: attribute nonce
+PASS Unscopable handled correctly for nonce property on HTMLElement
+PASS HTMLElement interface: attribute tabIndex
+PASS Unscopable handled correctly for tabIndex property on HTMLElement
+PASS HTMLElement interface: operation focus(FocusOptions)
+PASS Unscopable handled correctly for focus(FocusOptions) on HTMLElement
+PASS HTMLElement interface: operation blur()
+PASS Unscopable handled correctly for blur() on HTMLElement
 PASS HTMLElement must be primary interface of document.createElement("noscript")
 PASS Stringification of document.createElement("noscript")
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "title" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "lang" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "translate" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "dir" with the proper type
-PASS HTMLElement interface: document.createElement("noscript") must inherit property "dataset" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "hidden" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "click()" with the proper type
-PASS HTMLElement interface: document.createElement("noscript") must inherit property "tabIndex" with the proper type
-PASS HTMLElement interface: document.createElement("noscript") must inherit property "focus(FocusOptions)" with the proper type
-PASS HTMLElement interface: calling focus(FocusOptions) on document.createElement("noscript") with too few arguments must throw TypeError
-PASS HTMLElement interface: document.createElement("noscript") must inherit property "blur()" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "accessKey" with the proper type
 FAIL HTMLElement interface: document.createElement("noscript") must inherit property "accessKeyLabel" with the proper type assert_inherits: property "accessKeyLabel" not found in prototype chain
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "draggable" with the proper type
@@ -913,6 +920,12 @@ PASS HTMLElement interface: document.createElement("noscript") must inherit prop
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "contentEditable" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "isContentEditable" with the proper type
 PASS HTMLElement interface: document.createElement("noscript") must inherit property "inputMode" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "dataset" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "nonce" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "tabIndex" with the proper type
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "focus(FocusOptions)" with the proper type
+PASS HTMLElement interface: calling focus(FocusOptions) on document.createElement("noscript") with too few arguments must throw TypeError
+PASS HTMLElement interface: document.createElement("noscript") must inherit property "blur()" with the proper type
 PASS HTMLUnknownElement interface: existence and properties of interface object
 PASS HTMLUnknownElement interface object length
 PASS HTMLUnknownElement interface object name
@@ -991,8 +1004,6 @@ PASS HTMLLinkElement interface: attribute relList
 PASS Unscopable handled correctly for relList property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute media
 PASS Unscopable handled correctly for media property on HTMLLinkElement
-FAIL HTMLLinkElement interface: attribute nonce assert_own_property: expected property "nonce" missing
-PASS Unscopable handled correctly for nonce property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute integrity
 PASS Unscopable handled correctly for integrity property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute hreflang
@@ -1003,10 +1014,6 @@ PASS HTMLLinkElement interface: attribute sizes
 PASS Unscopable handled correctly for sizes property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute referrerPolicy
 PASS Unscopable handled correctly for referrerPolicy property on HTMLLinkElement
-FAIL HTMLLinkElement interface: attribute workerType assert_true: The prototype object must have a property "workerType" expected true got false
-PASS Unscopable handled correctly for workerType property on HTMLLinkElement
-FAIL HTMLLinkElement interface: attribute updateViaCache assert_true: The prototype object must have a property "updateViaCache" expected true got false
-PASS Unscopable handled correctly for updateViaCache property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute charset
 PASS Unscopable handled correctly for charset property on HTMLLinkElement
 PASS HTMLLinkElement interface: attribute rev
@@ -1021,14 +1028,11 @@ PASS HTMLLinkElement interface: document.createElement("link") must inherit prop
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "as" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "relList" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "media" with the proper type
-PASS HTMLLinkElement interface: document.createElement("link") must inherit property "nonce" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "integrity" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "hreflang" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "type" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "sizes" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "referrerPolicy" with the proper type
-FAIL HTMLLinkElement interface: document.createElement("link") must inherit property "workerType" with the proper type assert_inherits: property "workerType" not found in prototype chain
-FAIL HTMLLinkElement interface: document.createElement("link") must inherit property "updateViaCache" with the proper type assert_inherits: property "updateViaCache" not found in prototype chain
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "charset" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "rev" with the proper type
 PASS HTMLLinkElement interface: document.createElement("link") must inherit property "target" with the proper type
@@ -1060,14 +1064,11 @@ PASS HTMLStyleElement interface: existence and properties of interface prototype
 PASS HTMLStyleElement interface: existence and properties of interface prototype object's @@unscopables property
 PASS HTMLStyleElement interface: attribute media
 PASS Unscopable handled correctly for media property on HTMLStyleElement
-FAIL HTMLStyleElement interface: attribute nonce assert_own_property: expected property "nonce" missing
-PASS Unscopable handled correctly for nonce property on HTMLStyleElement
 PASS HTMLStyleElement interface: attribute type
 PASS Unscopable handled correctly for type property on HTMLStyleElement
 PASS HTMLStyleElement must be primary interface of document.createElement("style")
 PASS Stringification of document.createElement("style")
 PASS HTMLStyleElement interface: document.createElement("style") must inherit property "media" with the proper type
-PASS HTMLStyleElement interface: document.createElement("style") must inherit property "nonce" with the proper type
 PASS HTMLStyleElement interface: document.createElement("style") must inherit property "type" with the proper type
 PASS HTMLBodyElement interface: existence and properties of interface object
 PASS HTMLBodyElement interface object length
@@ -4839,8 +4840,6 @@ PASS HTMLScriptElement interface: attribute crossOrigin
 PASS Unscopable handled correctly for crossOrigin property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute text
 PASS Unscopable handled correctly for text property on HTMLScriptElement
-FAIL HTMLScriptElement interface: attribute nonce assert_own_property: expected property "nonce" missing
-PASS Unscopable handled correctly for nonce property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute integrity
 PASS Unscopable handled correctly for integrity property on HTMLScriptElement
 PASS HTMLScriptElement interface: attribute charset
@@ -4858,7 +4857,6 @@ PASS HTMLScriptElement interface: document.createElement("script") must inherit 
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "defer" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "crossOrigin" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "text" with the proper type
-PASS HTMLScriptElement interface: document.createElement("script") must inherit property "nonce" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "integrity" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "charset" with the proper type
 PASS HTMLScriptElement interface: document.createElement("script") must inherit property "event" with the proper type
