@@ -3362,3 +3362,4 @@ crbug.com/824848 [ Linux Win ] external/wpt/html/semantics/links/following-hyper
 crbug.com/824904 inspector-protocol/heap-profiler/heap-objects-tracking.js [ Pass Failure ]
 crbug.com/824930 svg/animations/getCurrentTime-pause-unpause.html [ Pass Failure ]
 crbug.com/824955 external/wpt/css/css-font-loading/idlharness.https.html [ Pass Failure ]
+crbug.com/825046 virtual/mouseevent_fractional/fast/events/mouse-event-buttons-attribute.html [ Pass Failure ]
