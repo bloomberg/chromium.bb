@@ -9,6 +9,7 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "gpu/command_buffer/client/gles2_interface_stub.h"
 #include "media/base/video_frame.h"
 #include "media/video/gpu_memory_buffer_video_frame_pool.h"
@@ -143,6 +144,14 @@ void MaybeCreateHardwareFrameCallback(
     scoped_refptr<VideoFrame>* video_frame_output,
     const scoped_refptr<VideoFrame>& video_frame) {
   *video_frame_output = video_frame;
+}
+
+void MaybeCreateHardwareFrameCallbackAndTrackTime(
+    scoped_refptr<VideoFrame>* video_frame_output,
+    base::TimeTicks* output_time,
+    const scoped_refptr<VideoFrame>& video_frame) {
+  *video_frame_output = video_frame;
+  *output_time = base::TimeTicks::Now();
 }
 
 TEST_F(GpuMemoryBufferVideoFramePoolTest, VideoFrameOutputFormatUnknown) {
@@ -454,6 +463,55 @@ TEST_F(GpuMemoryBufferVideoFramePoolTest, AtMostOneCopyInFlight) {
   media_task_runner_->RunUntilIdle();
   EXPECT_EQ(1u, copy_task_runner_->NumPendingTasks());
   RunUntilIdle();
+}
+
+// Tests that adding a frame that the pool doesn't handle does not break the
+// FIFO order in tasks.
+TEST_F(GpuMemoryBufferVideoFramePoolTest, PreservesOrder) {
+  std::vector<scoped_refptr<VideoFrame>> frame_outputs;
+
+  scoped_refptr<VideoFrame> software_frame_1 = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame_1 = nullptr;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame_1,
+      base::BindOnce(MaybeCreateHardwareFrameCallback, &frame_1));
+
+  scoped_refptr<VideoFrame> software_frame_2 = CreateTestYUVVideoFrame(10);
+  scoped_refptr<VideoFrame> frame_2 = nullptr;
+  base::TimeTicks time_2;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame_2,
+      base::BindOnce(MaybeCreateHardwareFrameCallbackAndTrackTime, &frame_2,
+                     &time_2));
+
+  scoped_refptr<VideoFrame> software_frame_3 = VideoFrame::CreateEOSFrame();
+  scoped_refptr<VideoFrame> frame_3 = nullptr;
+  base::TimeTicks time_3;
+  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
+      software_frame_3,
+      base::BindOnce(MaybeCreateHardwareFrameCallbackAndTrackTime, &frame_3,
+                     &time_3));
+
+  // Queue all the tasks |media_task_runner_|. Make sure that none is early
+  // returned.
+  media_task_runner_->RunUntilIdle();
+  EXPECT_FALSE(frame_1.get());
+  EXPECT_FALSE(frame_2.get());
+  EXPECT_FALSE(frame_3.get());
+  EXPECT_EQ(1u, copy_task_runner_->NumPendingTasks());
+
+  RunUntilIdle();
+  EXPECT_TRUE(frame_1.get());
+  EXPECT_NE(software_frame_1.get(), frame_1.get());
+  EXPECT_FALSE(frame_2.get());
+  EXPECT_FALSE(frame_3.get());
+
+  RunUntilIdle();
+  EXPECT_TRUE(frame_2.get());
+  EXPECT_TRUE(frame_3.get());
+  EXPECT_NE(software_frame_2.get(), frame_2.get());
+  EXPECT_EQ(software_frame_3.get(), frame_3.get());
+  EXPECT_LE(time_2, time_3);
 }
 
 // Test that Abort() stops any pending copies.
