@@ -206,6 +206,7 @@
       <part file="physical_web_ui_strings.grdp" />
       <part file="policy_strings.grdp" />
       <part file="printing_strings.grdp" />
+      <part file="reset_password_strings.grdp" />
       <part file="safe_browsing_strings.grdp" />
       <part file="security_interstitials_strings.grdp" />
       <part file="security_state_strings.grdp" />
