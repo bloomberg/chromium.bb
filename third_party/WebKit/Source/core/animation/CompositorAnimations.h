@@ -165,6 +165,10 @@ class CORE_EXPORT CompositorAnimations {
       AnimationCompositorAnimationsTest,
       cannotStartElementOnCompositorEffectWithRuntimeFeature);
   FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
+                           canStartOpacityWithWillChangeWithRuntimeFeature);
+  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
+                           canStartOpacityWith3DTransformWithRuntimeFeature);
+  FRIEND_TEST_ALL_PREFIXES(AnimationCompositorAnimationsTest,
                            cancelIncompatibleCompositorAnimations);
 };
 

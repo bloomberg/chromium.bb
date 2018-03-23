@@ -152,23 +152,6 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     const Animation* animation_to_add,
     const EffectModel& effect,
     double animation_playback_rate) {
-  // Check whether this animation is main thread compositable or not.
-  // If this runtime feature is on + we have either opacity or 2d transform
-  // animation, then this animation is main thread compositable.
-  if (RuntimeEnabledFeatures::
-          TurnOff2DAndOpacityCompositorAnimationsEnabled()) {
-    LayoutObject* layout_object = target_element.GetLayoutObject();
-    if (layout_object) {
-      const ComputedStyle* style = layout_object->Style();
-      if (style && (style->HasCurrentOpacityAnimation() ||
-                    (style->HasCurrentTransformAnimation() &&
-                     !style->Has3DTransform()))) {
-        return FailureCode::AcceleratableAnimNotAccelerated(
-            "Acceleratable animation not accelerated due to an experiment");
-      }
-    }
-  }
-
   const KeyframeEffectModelBase& keyframe_effect =
       ToKeyframeEffectModelBase(effect);
 
@@ -270,6 +253,24 @@ CompositorAnimations::CheckCanStartEffectOnCompositor(
     return FailureCode::NonActionable(
         "The specified timing parameters are not supported by accelerated "
         "animations");
+  }
+
+  if (RuntimeEnabledFeatures::
+          TurnOff2DAndOpacityCompositorAnimationsEnabled()) {
+    LayoutObject* layout_object = target_element.GetLayoutObject();
+    if (layout_object && layout_object->PaintingLayer()) {
+      CompositingReasons compositing_reasons =
+          layout_object->PaintingLayer()->GetCompositingReasons();
+      bool has_other_compositing_reasons =
+          compositing_reasons != CompositingReason::kNone;
+      // If we are already compositing the element for other reasons, then not
+      // starting the animation on the compositor will not save memory and will
+      // have worse performance.
+      if (!has_other_compositing_reasons) {
+        return FailureCode::AcceleratableAnimNotAccelerated(
+            "Acceleratable animation not accelerated due to an experiment");
+      }
+    }
   }
 
   return FailureCode::None();
