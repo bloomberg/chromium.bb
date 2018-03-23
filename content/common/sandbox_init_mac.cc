@@ -13,6 +13,7 @@
 #include "gpu/config/gpu_info.h"
 #include "gpu/config/gpu_info_collector.h"
 #include "gpu/config/gpu_switches.h"
+#include "gpu/config/gpu_switching.h"
 #include "gpu/config/gpu_util.h"
 #include "gpu/ipc/common/gpu_preferences_util.h"
 #include "media/gpu/vt_video_decode_accelerator_mac.h"
@@ -56,6 +57,10 @@ base::OnceClosure MaybeWrapWithGPUSandboxHook(
             gpu_preferences.log_gpu_control_list_decisions, command_line,
             nullptr);
         gpu::CacheGpuFeatureInfo(gpu_feature_info);
+        if (gpu::SwitchableGPUsSupported(gpu_info, *command_line)) {
+          gpu::InitializeSwitchableGPUs(
+              gpu_feature_info.enabled_gpu_driver_bug_workarounds);
+        }
         // Preload either the desktop GL or the osmesa so, depending on the
         // --use-gl flag.
         gl::init::InitializeGLOneOff();
