@@ -18,9 +18,12 @@
 #include "gpu/ipc/service/gpu_channel.h"
 #include "media/base/bind_to_current_loop.h"
 #include "media/base/video_frame.h"
-#include "media/gpu//android/codec_image.h"
-#include "media/gpu//android/codec_image_group.h"
+#include "media/gpu/android/codec_image.h"
+#include "media/gpu/android/codec_image_group.h"
 #include "media/gpu/android/codec_wrapper.h"
+#include "media/gpu/android/command_buffer_stub_wrapper_impl.h"
+#include "media/gpu/android/texture_pool.h"
+#include "media/gpu/android/texture_wrapper.h"
 #include "mojo/public/cpp/bindings/callback_helpers.h"
 #include "ui/gl/android/surface_texture.h"
 #include "ui/gl/gl_bindings.h"
@@ -121,7 +124,6 @@ GpuVideoFrameFactory::~GpuVideoFrameFactory() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   if (stub_)
     stub_->RemoveDestructionObserver(this);
-  ClearTextureRefs();
 }
 
 scoped_refptr<SurfaceTextureGLOwner> GpuVideoFrameFactory::Initialize(
@@ -133,6 +135,10 @@ scoped_refptr<SurfaceTextureGLOwner> GpuVideoFrameFactory::Initialize(
   if (!MakeContextCurrent(stub_))
     return nullptr;
   stub_->AddDestructionObserver(this);
+
+  texture_pool_ =
+      new TexturePool(std::make_unique<CommandBufferStubWrapperImpl>(stub_));
+
   decoder_helper_ = GLES2DecoderHelper::Create(stub_->decoder_context());
   return SurfaceTextureGLOwnerImpl::Create();
 }
@@ -157,16 +163,15 @@ void GpuVideoFrameFactory::CreateVideoFrame(
   // Try to render this frame if possible.
   internal::MaybeRenderEarly(&images_);
 
-  // TODO(sandersd, watk): The VideoFrame release callback will not be called
-  // after MojoVideoDecoderService is destructed, so we have to release all
-  // our TextureRefs when |this| is destructed. This can unback outstanding
-  // VideoFrames (e.g., the current frame when the player is suspended). The
-  // release callback lifetime should be separate from MCVD or
-  // MojoVideoDecoderService (http://crbug.com/737220).
-  texture_refs_[texture_ref.get()] = texture_ref;
-  auto drop_texture_ref = base::BindOnce(&GpuVideoFrameFactory::DropTextureRef,
-                                         weak_factory_.GetWeakPtr(),
-                                         base::Unretained(texture_ref.get()));
+  std::unique_ptr<TextureWrapper> texture_wrapper =
+      std::make_unique<TextureWrapperImpl>(std::move(texture_ref));
+  auto drop_texture_ref = base::BindOnce(
+      [](scoped_refptr<TexturePool> texture_pool,
+         TextureWrapper* texture_wrapper, const gpu::SyncToken& sync_token) {
+        texture_pool->ReleaseTexture(texture_wrapper);
+      },
+      texture_pool_, base::Unretained(texture_wrapper.get()));
+  texture_pool_->AddTexture(std::move(texture_wrapper));
 
   // Guarantee that the TextureRef is released even if the VideoFrame is
   // dropped. Otherwise we could keep TextureRefs we don't need alive.
@@ -271,34 +276,8 @@ void GpuVideoFrameFactory::CreateVideoFrameInternal(
 void GpuVideoFrameFactory::OnWillDestroyStub() {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   DCHECK(stub_);
-  ClearTextureRefs();
   stub_ = nullptr;
   decoder_helper_ = nullptr;
-}
-
-void GpuVideoFrameFactory::ClearTextureRefs() {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  DCHECK(stub_ || texture_refs_.empty());
-  // If we fail to make the context current, we have to notify the TextureRefs
-  // so they don't try to delete textures without a context.
-  if (!MakeContextCurrent(stub_)) {
-    for (const auto& kv : texture_refs_)
-      kv.first->ForceContextLost();
-  }
-  texture_refs_.clear();
-}
-
-void GpuVideoFrameFactory::DropTextureRef(gpu::gles2::TextureRef* ref,
-                                          const gpu::SyncToken& token) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  auto it = texture_refs_.find(ref);
-  if (it == texture_refs_.end())
-    return;
-  // If we fail to make the context current, we have to notify the TextureRef
-  // so it doesn't try to delete a texture without a context.
-  if (!MakeContextCurrent(stub_))
-    ref->ForceContextLost();
-  texture_refs_.erase(it);
 }
 
 void GpuVideoFrameFactory::OnImageDestructed(CodecImage* image) {
