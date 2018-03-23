@@ -577,7 +577,7 @@ def _GclientSyncCmd(rev, subrepo):
   return retcode
 
 
-def _SyncAndBuild(archive, build, subrepo):
+def _SyncAndBuild(archive, build, subrepo, no_gclient):
   """Sync, build and return non 0 if any commands failed."""
   # Simply do a checkout if subrepo is used.
   retcode = 0
@@ -586,7 +586,7 @@ def _SyncAndBuild(archive, build, subrepo):
       logging.info('Skipping git checkout since already at desired rev')
     else:
       logging.info('Skipping gclient sync since already at desired rev')
-  elif subrepo != _SRC_ROOT:
+  elif subrepo != _SRC_ROOT or no_gclient:
     _GitCmd(['checkout',  archive.rev], subrepo)
   else:
     # Move to a detached state since gclient sync doesn't work with local
@@ -769,17 +769,20 @@ def _CurrentGitHash(subrepo):
 
 def _SetRestoreFunc(subrepo):
   branch = _GitCmd(['rev-parse', '--abbrev-ref', 'HEAD'], subrepo)
-  atexit.register(lambda: _GitCmd(['checkout', branch], subrepo))
+  def _RestoreFunc():
+    logging.warning('Restoring original git checkout')
+    _GitCmd(['checkout', branch], subrepo)
+  atexit.register(_RestoreFunc)
 
 
 def main():
   parser = argparse.ArgumentParser(
       description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
+  parser.add_argument('rev',
+                      help='Find binary size bloat for this commit.')
   parser.add_argument('--archive-directory',
                       default=_DEFAULT_ARCHIVE_DIR,
                       help='Where results are stored.')
-  parser.add_argument('rev',
-                      help='Find binary size bloat for this commit.')
   parser.add_argument('--reference-rev',
                       help='Older rev to diff against. If not supplied, '
                            'the previous commit to rev will be used.')
@@ -806,10 +809,13 @@ def main():
                       help='Custom path to depot tools. Needed for --cloud if '
                            'depot tools isn\'t in your PATH.')
   parser.add_argument('--subrepo',
-                      help='Specify a subrepo directory to use. Gclient sync '
-                           'will be skipped if this option is used and all git '
-                           'commands will be executed from the subrepo '
-                           'directory. This option doesn\'t work with --cloud.')
+                      help='Specify a subrepo directory to use. Implies '
+                           '--no-gclient. All git commands will be executed '
+                           'from the subrepo directory. Does not work with '
+                           '--cloud.')
+  parser.add_argument('--no-gclient',
+                      action='store_true',
+                      help='Do not perform gclient sync steps.')
   parser.add_argument('-v',
                       '--verbose',
                       action='store_true',
@@ -899,7 +905,8 @@ def main():
           _DownloadBuildArtifacts(
               archive, build, supersize_path, args.depot_tools_path)
         else:
-          build_failure = _SyncAndBuild(archive, build, subrepo)
+          build_failure = _SyncAndBuild(archive, build, subrepo,
+                                        args.no_gclient)
           if build_failure:
             logging.info(
                 'Build failed for %s, diffs using this rev will be skipped.',
