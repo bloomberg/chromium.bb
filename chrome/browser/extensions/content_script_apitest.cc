@@ -29,6 +29,7 @@
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
 #include "content/public/test/browser_test_utils.h"
+#include "extensions/browser/browsertest_util.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/common/extension.h"
 #include "extensions/common/extension_features.h"
@@ -673,6 +674,90 @@ IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, CannotScriptTheNewTabPage) {
   ui_test_utils::NavigateToURL(browser(), unprotected_url);
   EXPECT_TRUE(
       did_script_inject(browser()->tab_strip_model()->GetActiveWebContents()));
+}
+
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ContentScriptSameSiteCookies) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("content_scripts/request_cookies"));
+  ASSERT_TRUE(extension);
+  GURL url = embedded_test_server()->GetURL("a.com", "/extensions/body1.html");
+  ResultCatcher catcher;
+  constexpr char kScript[] =
+      R"(chrome.tabs.create({url: '%s'}, () => {
+           let message = 'success';
+           if (chrome.runtime.lastError)
+             message = chrome.runtime.lastError.message;
+           domAutomationController.send(message);
+         });)";
+  std::string result = browsertest_util::ExecuteScriptInBackgroundPage(
+      profile(), extension->id(),
+      base::StringPrintf(kScript, url.spec().c_str()));
+
+  EXPECT_EQ("success", result);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptFileSameSiteCookies) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("content_scripts/request_cookies"));
+  ASSERT_TRUE(extension);
+  GURL url = embedded_test_server()->GetURL("b.com", "/extensions/body1.html");
+  ResultCatcher catcher;
+  constexpr char kScript[] =
+      R"(chrome.tabs.create({url: '%s'}, (tab) => {
+           if (chrome.runtime.lastError) {
+             domAutomationController.send(chrome.runtime.lastError.message);
+             return;
+           }
+           chrome.tabs.executeScript(tab.id, {file: 'cookies.js'}, () => {
+             let message = 'success';
+             if (chrome.runtime.lastError)
+               message = chrome.runtime.lastError.message;
+             domAutomationController.send(message);
+           });
+         });)";
+  std::string result = browsertest_util::ExecuteScriptInBackgroundPage(
+      profile(), extension->id(),
+      base::StringPrintf(kScript, url.spec().c_str()));
+
+  EXPECT_EQ("success", result);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+IN_PROC_BROWSER_TEST_F(ContentScriptApiTest, ExecuteScriptCodeSameSiteCookies) {
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  const Extension* extension = LoadExtension(
+      test_data_dir_.AppendASCII("content_scripts/request_cookies"));
+  ASSERT_TRUE(extension);
+  GURL url = embedded_test_server()->GetURL("b.com", "/extensions/body1.html");
+  ResultCatcher catcher;
+  constexpr char kScript[] =
+      R"(chrome.tabs.create({url: '%s'}, (tab) => {
+           if (chrome.runtime.lastError) {
+             domAutomationController.send(chrome.runtime.lastError.message);
+             return;
+           }
+           fetch(chrome.runtime.getURL('cookies.js')).then((response) => {
+             return response.text();
+           }).then((text) => {
+             chrome.tabs.executeScript(tab.id, {code: text}, () => {
+               let message = 'success';
+               if (chrome.runtime.lastError)
+                 message = chrome.runtime.lastError.message;
+               domAutomationController.send(message);
+             });
+           }).catch((e) => {
+             domAutomationController.send(e);
+           });
+         });)";
+  std::string result = browsertest_util::ExecuteScriptInBackgroundPage(
+      profile(), extension->id(),
+      base::StringPrintf(kScript, url.spec().c_str()));
+
+  EXPECT_EQ("success", result);
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }
 
 }  // namespace extensions

@@ -232,7 +232,7 @@ std::unique_ptr<HttpResponse> HandleExpectAndSetCookie(
   if (request.headers.find("Cookie") != request.headers.end()) {
     received_cookies =
         base::SplitString(request.headers.at("Cookie"), ";",
-                          base::KEEP_WHITESPACE, base::SPLIT_WANT_ALL);
+                          base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   }
 
   bool got_all_expected = true;

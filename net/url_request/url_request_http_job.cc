@@ -663,6 +663,12 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     //   Note that this will generally be the case only for cross-site requests
     //   which target a top-level browsing context.
     //
+    // * Include both "strict" and "lax" same-site cookies if the request is
+    //   tagged with a flag allowing it.
+    //   Note that this can be the case for requests initiated by extensions,
+    //   which need to behave as though they are made by the document itself,
+    //   but appear like cross-site ones.
+    //
     // * Otherwise, do not include same-site cookies.
     if (registry_controlled_domains::SameDomainOrHost(
             request_->url(), request_->site_for_cookies(),
@@ -670,7 +676,8 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
       if (!request_->initiator() ||
           registry_controlled_domains::SameDomainOrHost(
               request_->url(), request_->initiator().value().GetURL(),
-              registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
+              registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES) ||
+          request_->attach_same_site_cookies()) {
         options.set_same_site_cookie_mode(
             CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
       } else if (HttpUtil::IsMethodSafe(request_->method())) {

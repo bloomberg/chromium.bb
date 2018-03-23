@@ -42,6 +42,11 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   // done if there really is no way to determine the correct value.
   GURL site_for_cookies;
 
+  // Boolean indicating whether SameSite cookies are allowed to be attached
+  // to the request. It should be used as additional input to network side
+  // checks.
+  bool attach_same_site_cookies = false;
+
   // First-party URL redirect policy: During server redirects, the first-party
   // URL for cookies normally doesn't change. However, if this is true, the
   // the first-party URL should be updated to the URL on every redirect.
