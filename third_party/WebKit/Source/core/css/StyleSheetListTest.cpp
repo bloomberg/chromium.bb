@@ -58,4 +58,9 @@ TEST_F(StyleSheetListTest, StyleSheetListConstructionWithNonEmptyList) {
   EXPECT_EQ(sheet_list->item(1), blue_style_sheet);
 }
 
+TEST_F(StyleSheetListTest, GetNamedItemNoTreeScope) {
+  StyleSheetList* list = StyleSheetList::Create();
+  EXPECT_FALSE(list->GetNamedItem("id"));
+}
+
 }  // namespace blink

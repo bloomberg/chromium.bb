@@ -77,6 +77,9 @@ StyleSheet* StyleSheetList::item(unsigned index) {
 }
 
 HTMLStyleElement* StyleSheetList::GetNamedItem(const AtomicString& name) const {
+  if (!tree_scope_)
+    return nullptr;
+
   // IE also supports retrieving a stylesheet by name, using the name/id of the
   // <style> tag (this is consistent with all the other collections) ### Bad
   // implementation because returns a single element (are IDs always unique?)
