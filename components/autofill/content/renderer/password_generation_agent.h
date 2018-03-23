@@ -199,6 +199,10 @@ class PasswordGenerationAgent : public content::RenderFrameObserver,
   // If the form classifier should run.
   bool form_classifier_enabled_;
 
+  // True iff the generation element should be marked with special HTML
+  // attribute (only for experimental purposes).
+  bool mark_generation_element_;
+
   // Unowned pointer. Used to notify PassowrdAutofillAgent when values
   // in password fields are updated.
   PasswordAutofillAgent* password_agent_;

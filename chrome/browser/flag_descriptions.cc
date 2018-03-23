@@ -1339,7 +1339,8 @@ const char kShowAllDialogsWithViewsToolkitDescription[] =
 
 const char kShowAutofillSignaturesName[] = "Show autofill signatures.";
 const char kShowAutofillSignaturesDescription[] =
-    "Annotates web forms with Autofill signatures as HTML attributes.";
+    "Annotates web forms with Autofill signatures as HTML attributes. Also "
+    "marks password fields suitable for password generation.";
 
 const char kShowAutofillTypePredictionsName[] = "Show Autofill predictions";
 const char kShowAutofillTypePredictionsDescription[] =
