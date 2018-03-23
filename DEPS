@@ -1272,6 +1272,18 @@ hooks = [
   },
 
   {
+    # We're going to soon be using the gclient root directory as a CIPD root.
+    # This hook is here to ensure that the conversion to that configuration
+    # can be safely reverted and relanded if necessary, as removing the CIPD
+    # root will force CIPD to actually reinstall all packages.
+    'name': 'Clobber Upcoming GClient CIPD Root',
+    'pattern': '.',
+    'action': ['python',
+               'src/build/cipd/clobber_cipd_root.py',
+               '--root', '.',
+    ],
+  },
+  {
     'name': 'Android CIPD Ensure',
     'pattern': '.',
     'condition': 'checkout_android',
