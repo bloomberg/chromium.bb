@@ -1400,6 +1400,7 @@ public class LocationBarLayout extends FrameLayout
     }
 
     private void emphasizeUrl() {
+        if (mToolbarDataProvider.isDisplayingQueryTerms()) return;
         mUrlBar.emphasizeUrl();
     }
 
