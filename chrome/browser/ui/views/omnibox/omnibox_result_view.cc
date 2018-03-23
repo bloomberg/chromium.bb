@@ -372,11 +372,6 @@ gfx::Image OmniboxResultView::GetIcon() const {
   return model_->GetMatchIcon(match_, GetColor(OmniboxPart::RESULTS_ICON));
 }
 
-bool OmniboxResultView::ShowOnlyKeywordMatch() const {
-  return match_.associated_keyword &&
-         (keyword_icon_view_->x() <= (icon_view_->x() + icon_view_->width()));
-}
-
 int OmniboxResultView::GetAnswerHeight() const {
   const int horizontal_padding =
       GetLayoutConstant(LOCATION_BAR_PADDING) +
@@ -438,18 +433,12 @@ void OmniboxResultView::Layout() {
       GetLayoutConstant(LOCATION_BAR_PADDING) +
       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
   const int start_x = GetIconAlignmentOffset() + horizontal_padding;
-  int end_x = width() - start_x;
+  int end_x = width();
 
   int text_height = GetTextHeight();
   int row_height = text_height;
   if (IsTwoLineLayout())
     row_height += match_.answer ? GetAnswerHeight() : GetTextHeight();
-
-  const gfx::Image icon = GetIcon();
-  const int icon_y = GetVerticalMargin() + (row_height - icon.Height()) / 2;
-  icon_view_->SetBounds(start_x, icon_y, icon.Width(), icon.Height());
-
-  icon_view_->SetVisible(!ShowOnlyKeywordMatch());
   separator_view_->SetVisible(false);
 
   // TODO(dschuyler): Refactor these if/else's into separate pieces of code to
@@ -458,11 +447,12 @@ void OmniboxResultView::Layout() {
   AutocompleteMatch* keyword_match = match_.associated_keyword.get();
   if (keyword_match) {
     // NOTE: While animating the keyword match, both matches may be visible.
-    const int max_kw_x = end_x - keyword_icon_view_->width();
-    int kw_x = animation_->CurrentValueBetween(max_kw_x, start_x);
+    const int icon_width = keyword_icon_view_->width() +
+                           GetIconAlignmentOffset() + horizontal_padding * 2;
+    const int max_kw_x = width() - icon_width;
+    int kw_x = animation_->CurrentValueBetween(max_kw_x, 0);
     end_x = kw_x;
-    int y = GetVerticalMargin();
-    kw_x += BackgroundWith1PxBorder::kLocationBarBorderThicknessDip;
+    kw_x += start_x + BackgroundWith1PxBorder::kLocationBarBorderThicknessDip;
     keyword_icon_view_->SetPosition(
         gfx::Point(kw_x, (height() - keyword_icon_view_->height()) / 2));
     kw_x += keyword_icon_view_->width() + horizontal_padding;
@@ -475,6 +465,7 @@ void OmniboxResultView::Layout() {
         /*description_on_separate_line=*/false,
         !AutocompleteMatch::IsSearchType(match_.type), &content_width,
         &description_width);
+    int y = GetVerticalMargin();
     keyword_content_view_->SetBounds(kw_x, y, content_width, text_height);
     if (description_width != 0) {
       kw_x += keyword_content_view_->width();
@@ -489,73 +480,74 @@ void OmniboxResultView::Layout() {
     }
   }
 
+  const gfx::Image icon = GetIcon();
+  const int icon_y = GetVerticalMargin() + (row_height - icon.Height()) / 2;
+  icon_view_->SetBounds(start_x, icon_y, std::min(end_x, icon.Width()),
+                        icon.Height());
+
   if (tab_switch_button_ && match_.type == AutocompleteMatchType::TAB_SEARCH) {
     const int ts_button_width = tab_switch_button_->GetPreferredSize().width();
     const int ts_button_height = height();
     tab_switch_button_->SetSize(gfx::Size(ts_button_width, ts_button_height));
 
-    const int ts_x = end_x - ts_button_width + horizontal_padding;
-    end_x = ts_x - start_x - horizontal_padding;
-    tab_switch_button_->SetPosition(gfx::Point(ts_x, 0));
+    end_x -= ts_button_width;
+    tab_switch_button_->SetPosition(gfx::Point(end_x, 0));
   }
 
   // NOTE: While animating the keyword match, both matches may be visible.
-  if (!ShowOnlyKeywordMatch()) {
-    int x = start_x;
-    x += icon.Width() + horizontal_padding;
-    int y = GetVerticalMargin();
-    if (match_.answer) {
-      content_view_->SetBounds(x, y, end_x - x, text_height);
-      y += text_height;
-      if (image_view_->visible()) {
-        // The description may be multi-line. Using the view height results in
-        // an image that's too large, so we use the line height here instead.
-        int image_edge_length = description_view_->GetLineHeight();
-        image_view_->SetBounds(
-            start_x + icon_view_->width() + horizontal_padding,
-            y + (kVerticalPadding / 2), image_edge_length, image_edge_length);
-        image_view_->SetImageSize(
-            gfx::Size(image_edge_length, image_edge_length));
-        x += image_view_->width() + kAnswerIconToTextPadding;
-      }
+  int x = start_x;
+  x += icon.Width() + horizontal_padding;
+  int y = GetVerticalMargin();
+  if (match_.answer) {
+    content_view_->SetBounds(x, y, end_x - x, text_height);
+    y += text_height;
+    if (image_view_->visible()) {
+      // The description may be multi-line. Using the view height results in
+      // an image that's too large, so we use the line height here instead.
+      int image_edge_length = description_view_->GetLineHeight();
+      image_view_->SetBounds(start_x + icon_view_->width() + horizontal_padding,
+                             y + (kVerticalPadding / 2), image_edge_length,
+                             image_edge_length);
+      image_view_->SetImageSize(
+          gfx::Size(image_edge_length, image_edge_length));
+      x += image_view_->width() + kAnswerIconToTextPadding;
+    }
+    int description_width = end_x - x;
+    description_view_->SetBounds(
+        x, y, description_width,
+        description_view_->GetHeightForWidth(description_width) +
+            kVerticalPadding);
+  } else if (IsTwoLineLayout()) {
+    if (!!description_view_->GetContentsBounds().width()) {
+      // A description is present.
+      content_view_->SetBounds(x, y, end_x - x, GetTextHeight());
+      y += GetTextHeight();
       int description_width = end_x - x;
       description_view_->SetBounds(
           x, y, description_width,
           description_view_->GetHeightForWidth(description_width) +
               kVerticalPadding);
-    } else if (IsTwoLineLayout()) {
-      if (!!description_view_->GetContentsBounds().width()) {
-        // A description is present.
-        content_view_->SetBounds(x, y, end_x - x, GetTextHeight());
-        y += GetTextHeight();
-        int description_width = end_x - x;
-        description_view_->SetBounds(
-            x, y, description_width,
-            description_view_->GetHeightForWidth(description_width) +
-                kVerticalPadding);
-      } else {
-        // For no description, shift down halfway to draw contents in middle.
-        y += GetTextHeight() / 2;
-        content_view_->SetBounds(x, y, end_x - x, GetTextHeight());
-      }
     } else {
-      int content_width = content_view_->CalculatePreferredSize().width();
-      int description_width =
-          description_view_->CalculatePreferredSize().width();
-      OmniboxPopupModel::ComputeMatchMaxWidths(
-          content_width, separator_view_->width(), description_width, end_x - x,
-          /*description_on_separate_line=*/false,
-          !AutocompleteMatch::IsSearchType(match_.type), &content_width,
-          &description_width);
-      content_view_->SetBounds(x, y, content_width, text_height);
-      x += content_width;
-      if (description_width) {
-        separator_view_->SetVisible(true);
-        separator_view_->SetBounds(x, y, separator_view_->width(), text_height);
-        x += separator_view_->width();
-      }
-      description_view_->SetBounds(x, y, description_width, text_height);
+      // For no description, shift down halfway to draw contents in middle.
+      y += GetTextHeight() / 2;
+      content_view_->SetBounds(x, y, end_x - x, GetTextHeight());
     }
+  } else {
+    int content_width = content_view_->CalculatePreferredSize().width();
+    int description_width = description_view_->CalculatePreferredSize().width();
+    OmniboxPopupModel::ComputeMatchMaxWidths(
+        content_width, separator_view_->width(), description_width, end_x - x,
+        /*description_on_separate_line=*/false,
+        !AutocompleteMatch::IsSearchType(match_.type), &content_width,
+        &description_width);
+    content_view_->SetBounds(x, y, content_width, text_height);
+    x += content_width;
+    if (description_width) {
+      separator_view_->SetVisible(true);
+      separator_view_->SetBounds(x, y, separator_view_->width(), text_height);
+      x += separator_view_->width();
+    }
+    description_view_->SetBounds(x, y, description_width, text_height);
   }
 }
 
