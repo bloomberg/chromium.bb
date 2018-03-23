@@ -17,6 +17,8 @@ dictionary MediaTrackSupportedConstraints {
     boolean sampleRate = true;
     boolean sampleSize = true;
     boolean echoCancellation = true;
+    boolean autoGainControl = true;
+    boolean noiseSuppression = true;
     boolean latency = true;
     boolean channelCount = true;
     boolean deviceId = true;
