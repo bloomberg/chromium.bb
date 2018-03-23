@@ -1533,9 +1533,6 @@
     'usb': {
       'filepath': '/usb/',
     },
-    'v4l2': {
-      'filepath': 'media/gpu/v4l2',
-    },
     'vaapi': {
       'filepath': 'media/gpu/vaapi',
     },
@@ -2313,13 +2310,13 @@
     'ui_strings': ['srahim+watch@chromium.org'],
     'usb': ['cco3+watch@chromium.org',
             'mattreynolds+watch@chromium.org'],
-    'v4l2': ['acourbot+watch@chromium.org'],
     'vaapi': ['vaapi-reviews@chromium.org'],
     'valgrind': ['bruening+watch@chromium.org',
                  'glider+watch@chromium.org'],
     'version_assembly': ['caitkp+watch@chromium.org',
                          'gab+watch@chromium.org'],
-    'video': ['posciak+watch@chromium.org'],
+    'video': ['posciak+watch@chromium.org',
+              'acourbot+watch@chromium.org'],
     'video_capture': ['chfremer+watch@chromium.org'],
     'views': ['tfarina@chromium.org'],
     'virtual_keyboard': ['blakeo+virtualkb@chromium.org',
