@@ -33,6 +33,7 @@
 
 #include "base/time/time.h"
 #include "platform/Histogram.h"
+#include "platform/InstanceCounters.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
@@ -294,9 +295,13 @@ ResourceFetcher::ResourceFetcher(FetchContext* new_context)
       auto_load_images_(true),
       images_enabled_(true),
       allow_stale_resources_(false),
-      image_fetched_(false) {}
+      image_fetched_(false) {
+  InstanceCounters::IncrementCounter(InstanceCounters::kResourceFetcherCounter);
+}
 
-ResourceFetcher::~ResourceFetcher() = default;
+ResourceFetcher::~ResourceFetcher() {
+  InstanceCounters::DecrementCounter(InstanceCounters::kResourceFetcherCounter);
+}
 
 Resource* ResourceFetcher::CachedResource(const KURL& resource_url) const {
   KURL url = MemoryCache::RemoveFragmentIdentifierIfNeeded(resource_url);
