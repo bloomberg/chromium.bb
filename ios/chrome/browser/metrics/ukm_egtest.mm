@@ -427,14 +427,6 @@ void SignOut() {
 - (void)testSecondaryPassphrase {
   uint64_t original_client_id = metrics::UkmEGTestHelper::client_id();
 
-  // This test hangs for a while when typing, and eventually causes the suite to
-  // timeout on iOS 11 iPad. crbug.com/811376
-  if (IsIPadIdiom()) {
-    if (@available(iOS 11, *)) {
-      EARL_GREY_TEST_DISABLED(@"Disabled on iOS 11 iPad");
-    }
-  }
-
   [ChromeEarlGreyUI openSettingsMenu];
   // Open accounts settings, then sync settings.
   [[EarlGrey selectElementWithMatcher:SettingsAccountButton()]
@@ -454,13 +446,10 @@ void SignOut() {
       performAction:grey_tap()];
   // Type and confirm passphrase, then submit.
   [[EarlGrey selectElementWithMatcher:grey_accessibilityValue(@"Passphrase")]
-      performAction:grey_typeText(@"mypassphrase")];
+      performAction:grey_replaceText(@"mypassphrase")];
   [[EarlGrey
       selectElementWithMatcher:grey_accessibilityValue(@"Confirm passphrase")]
-      performAction:grey_typeText(@"mypassphrase")];
-  [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabelId(
-                                          IDS_IOS_SYNC_DECRYPT_BUTTON)]
-      performAction:grey_tap()];
+      performAction:grey_replaceText(@"mypassphrase")];
 
   AssertUKMEnabled(false);
   // Client ID should have been reset.
