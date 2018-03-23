@@ -1282,4 +1282,27 @@ TEST_F(UiTest, DisableResizeWhenEditing) {
   EXPECT_TRUE(hit_plane->hit_testable());
 }
 
+TEST_F(UiTest, RepositionHostedUi) {
+  CreateScene(kNotInCct, kNotInWebVr);
+
+  Repositioner* repositioner = static_cast<Repositioner*>(
+      scene_->GetUiElementByName(k2dBrowsingRepositioner));
+  UiElement* hosted_ui = scene_->GetUiElementByName(kHostedUi);
+
+  OnBeginFrame();
+  gfx::Transform original = hosted_ui->world_space_transform();
+
+  repositioner->set_laser_direction(kForwardVector);
+  repositioner->SetEnabled(true);
+  repositioner->set_laser_direction({0, 1, 0});
+  OnBeginFrame();
+
+  EXPECT_NE(original, hosted_ui->world_space_transform());
+  repositioner->SetEnabled(false);
+  model_->controller.recentered = true;
+
+  OnBeginFrame();
+  EXPECT_EQ(original, hosted_ui->world_space_transform());
+}
+
 }  // namespace vr
