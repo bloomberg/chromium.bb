@@ -11,9 +11,9 @@ var allTests = [
 
       // We can't assert the left and top positions because they're
       // returned in global screen coordinates. Just check the width and
-      // height.
-      assertEq(300, okButton.location.width);
-      assertEq(350, okButton.location.height);
+      // height which may be clipped.
+      assertTrue(okButton.location.width <= 30);
+      assertTrue(okButton.location.height <= 30);
       chrome.test.succeed();
     };
 

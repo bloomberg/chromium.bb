@@ -193,7 +193,9 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   }
   processing_events_ = true;
 
-  ExtensionMsg_AccessibilityEventParams params;
+  std::vector<ExtensionMsg_AccessibilityEventParams> events;
+  events.emplace_back(ExtensionMsg_AccessibilityEventParams());
+  ExtensionMsg_AccessibilityEventParams& params = events.back();
   if (!current_tree_serializer_->SerializeChanges(aura_obj, &params.update)) {
     LOG(ERROR) << "Unable to serialize one accessibility event.";
     return;
@@ -209,8 +211,9 @@ void AutomationManagerAura::SendEvent(BrowserContext* context,
   params.id = aura_obj->GetUniqueId().Get();
   params.event_type = event_type;
   params.mouse_location = aura::Env::GetInstance()->last_mouse_location();
+
   AutomationEventRouter* router = AutomationEventRouter::GetInstance();
-  router->DispatchAccessibilityEvent(params);
+  router->DispatchAccessibilityEvents(events);
 
   processing_events_ = false;
   auto pending_events_copy = pending_events_;

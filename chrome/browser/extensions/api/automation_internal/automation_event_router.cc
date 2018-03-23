@@ -65,8 +65,11 @@ void AutomationEventRouter::RegisterListenerWithDesktopPermission(
            true);
 }
 
-void AutomationEventRouter::DispatchAccessibilityEvent(
-    const ExtensionMsg_AccessibilityEventParams& params) {
+void AutomationEventRouter::DispatchAccessibilityEvents(
+    const std::vector<ExtensionMsg_AccessibilityEventParams>& events) {
+  if (events.empty())
+    return;
+
   if (active_profile_ != ProfileManager::GetActiveUserProfile()) {
     active_profile_ = ProfileManager::GetActiveUserProfile();
     UpdateActiveProfile();
@@ -75,14 +78,14 @@ void AutomationEventRouter::DispatchAccessibilityEvent(
   for (const auto& listener : listeners_) {
     // Skip listeners that don't want to listen to this tree.
     if (!listener.desktop &&
-        listener.tree_ids.find(params.tree_id) == listener.tree_ids.end()) {
+        listener.tree_ids.find(events[0].tree_id) == listener.tree_ids.end()) {
       continue;
     }
 
     content::RenderProcessHost* rph =
         content::RenderProcessHost::FromID(listener.process_id);
-    rph->Send(new ExtensionMsg_AccessibilityEvent(params,
-                                                  listener.is_active_profile));
+    rph->Send(new ExtensionMsg_AccessibilityEvents(events,
+                                                   listener.is_active_profile));
   }
 }
 

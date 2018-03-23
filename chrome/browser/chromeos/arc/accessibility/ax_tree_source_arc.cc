@@ -385,7 +385,9 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
     cached_computed_bounds_[node] = ComputeEnclosingBounds(node);
   }
 
-  ExtensionMsg_AccessibilityEventParams params;
+  std::vector<ExtensionMsg_AccessibilityEventParams> events;
+  events.emplace_back();
+  ExtensionMsg_AccessibilityEventParams& params = events.back();
   params.event_type = ToAXEvent(event_data->event_type);
 
   params.tree_id = tree_id();
@@ -404,7 +406,7 @@ void AXTreeSourceArc::NotifyAccessibilityEvent(
 
   extensions::AutomationEventRouter* router =
       extensions::AutomationEventRouter::GetInstance();
-  router->DispatchAccessibilityEvent(params);
+  router->DispatchAccessibilityEvents(events);
 }
 
 void AXTreeSourceArc::NotifyActionResult(const ui::AXActionData& data,

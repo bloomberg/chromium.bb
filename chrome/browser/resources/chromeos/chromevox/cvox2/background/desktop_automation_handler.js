@@ -61,6 +61,8 @@ DesktopAutomationHandler = function(node) {
   this.addListener_(
       EventType.CHECKED_STATE_CHANGED, this.onCheckedStateChanged);
   this.addListener_(EventType.CHILDREN_CHANGED, this.onChildrenChanged);
+  this.addListener_(
+      EventType.DOCUMENT_SELECTION_CHANGED, this.onDocumentSelectionChanged);
   this.addListener_(EventType.EXPANDED_CHANGED, this.onEventIfInRange);
   this.addListener_(EventType.FOCUS, this.onFocus);
   this.addListener_(EventType.HOVER, this.onHover);
@@ -297,6 +299,26 @@ DesktopAutomationHandler.prototype = {
   },
 
   /**
+   * @param {!AutomationEvent} evt
+   */
+  onDocumentSelectionChanged: function(evt) {
+    var anchor = evt.target.anchorObject;
+
+    // No selection.
+    if (!anchor)
+      return;
+
+    // Editable selection.
+    if (anchor.state[StateType.EDITABLE]) {
+      anchor = AutomationUtil.getEditableRoot(anchor) || anchor;
+      this.onEditableChanged_(
+          new CustomAutomationEvent(evt.type, anchor, evt.eventFrom));
+    }
+
+    // Non-editable selections are handled in |Background|.
+  },
+
+  /**
    * Provides all feedback once a focus event fires.
    * @param {!AutomationEvent} evt
    */
@@ -390,6 +412,12 @@ DesktopAutomationHandler.prototype = {
    * @private
    */
   onEditableChanged_: function(evt) {
+    // Document selections only apply to rich editables, text selections to
+    // non-rich editables.
+    if (evt.type != EventType.DOCUMENT_SELECTION_CHANGED &&
+        evt.target.state[StateType.RICHLY_EDITABLE])
+      return;
+
     if (!this.createTextEditHandlerIfNeeded_(evt.target))
       return;
 
