@@ -10,12 +10,6 @@
 <dom-module id="extensions-item-list">
   <template>
     <style include="cr-shared-style">
-      :host {
-        /* Address corner-case where #container's padding is larger than max
-           available width. */
-        overflow: auto;
-      }
-
       .items-container,
       extensions-item {
         --extensions-card-width: 400px;
@@ -25,6 +19,9 @@
         box-sizing: border-box;
         height: 100%;
         overflow: overlay;
+      }
+
+      #content-wrapper {
         padding: 24px 60px 64px;
       }
 
@@ -61,46 +58,50 @@
       }
     </style>
     <div id="container">
-      <div class="empty-list-message" hidden="[[!isGuest]]">
-        $i18n{guestModeMessage}
-      </div>
-      <div id="no-items" class="empty-list-message"
-          hidden$="[[!shouldShowEmptyItemsMessage_(
-              apps.length, extensions.length)]]">
-        <span on-click="onNoExtensionsTap_">$i18nRaw{noExtensionsOrApps}</span>
-      </div>
-      <div id="no-search-results" class="empty-list-message"
-          hidden$="[[!shouldShowEmptySearchMessage_(
-              shownAppsCount_, shownExtensionsCount_, apps, extensions)]]">
-        <span>$i18n{noSearchResults}</span>
-      </div>
-      <div class="items-container" hidden="[[!shownExtensionsCount_]]">
-        <!-- Render only a few items first, to improve initial render time, then
-          render the remaining items on a different frame. Value of 3 was chosen
-          by experimentation, and it is a good trade-off between initial render
-          time and total render time. -->
-        <template is="dom-repeat" items="[[extensions]]" initial-count="3"
-            filter="[[computedFilter_]]"
-            rendered-item-count="{{shownExtensionsCount_::dom-change}}"
-            notify-dom-change>
-          <extensions-item id="[[item.id]]" data="[[item]]"
-              delegate="[[delegate]]" in-dev-mode="[[inDevMode]]">
-          </extensions-item>
-        </template>
-      </div>
-      <div hidden="[[!shownAppsCount_]]">
-        <!-- app-title needs to left-align with the grid content below, and
-             the easiest way to achieve this is to make it a grid as well. -->
-        <h2 id="app-title" class="items-container">$i18n{appsTitle}</h2>
-        <div class="items-container">
-          <template is="dom-repeat" items="[[apps]]" initial-count="3"
+      <div id="content-wrapper">
+        <div class="empty-list-message" hidden="[[!isGuest]]">
+          $i18n{guestModeMessage}
+        </div>
+        <div id="no-items" class="empty-list-message"
+            hidden$="[[!shouldShowEmptyItemsMessage_(
+                apps.length, extensions.length)]]">
+          <span on-click="onNoExtensionsTap_">
+            $i18nRaw{noExtensionsOrApps}
+          </span>
+        </div>
+        <div id="no-search-results" class="empty-list-message"
+            hidden$="[[!shouldShowEmptySearchMessage_(
+                shownAppsCount_, shownExtensionsCount_, apps, extensions)]]">
+          <span>$i18n{noSearchResults}</span>
+        </div>
+        <div class="items-container" hidden="[[!shownExtensionsCount_]]">
+          <!-- Render only a few items first, to improve initial render time,
+            then render the remaining items on a different frame. Value of 3
+            was chosen by experimentation, and it is a good trade-off between
+            initial render time and total render time. -->
+          <template is="dom-repeat" items="[[extensions]]" initial-count="3"
               filter="[[computedFilter_]]"
-              rendered-item-count="{{shownAppsCount_::dom-change}}"
+              rendered-item-count="{{shownExtensionsCount_::dom-change}}"
               notify-dom-change>
             <extensions-item id="[[item.id]]" data="[[item]]"
                 delegate="[[delegate]]" in-dev-mode="[[inDevMode]]">
             </extensions-item>
           </template>
+        </div>
+        <div hidden="[[!shownAppsCount_]]">
+          <!-- app-title needs to left-align with the grid content below, and
+               the easiest way to achieve this is to make it a grid as well. -->
+          <h2 id="app-title" class="items-container">$i18n{appsTitle}</h2>
+          <div class="items-container">
+            <template is="dom-repeat" items="[[apps]]" initial-count="3"
+                filter="[[computedFilter_]]"
+                rendered-item-count="{{shownAppsCount_::dom-change}}"
+                notify-dom-change>
+              <extensions-item id="[[item.id]]" data="[[item]]"
+                  delegate="[[delegate]]" in-dev-mode="[[inDevMode]]">
+              </extensions-item>
+            </template>
+          </div>
         </div>
       </div>
     </div>
