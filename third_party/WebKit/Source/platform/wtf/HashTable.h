@@ -2001,8 +2001,6 @@ struct WeakProcessingHashTableHelper<kNoWeakHandling,
   static void Process(typename Allocator::Visitor* visitor, void* closure) {}
   static void EphemeronIteration(typename Allocator::Visitor* visitor,
                                  void* closure) {}
-  static void EphemeronIterationDone(typename Allocator::Visitor* visitor,
-                                     void* closure) {}
 };
 
 template <typename Key,
@@ -2077,18 +2075,6 @@ struct WeakProcessingHashTableHelper<kWeakHandling,
       }
     }
   }
-
-  // Called when the ephemeron iteration is done and before running the per
-  // thread weak processing. It is guaranteed to be called before any thread
-  // is resumed.
-  static void EphemeronIterationDone(typename Allocator::Visitor* visitor,
-                                     void* closure) {
-    HashTableType* table = reinterpret_cast<HashTableType*>(closure);
-#if DCHECK_IS_ON()
-    DCHECK(Allocator::WeakTableRegistered(visitor, table));
-#endif
-    table->ClearEnqueued();
-  }
 };
 
 template <typename Key,
@@ -2114,12 +2100,6 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
     // Weak HashTable. The HashTable may be held alive strongly from somewhere
     // else, e.g., an iterator.
 
-    // Small performance optimization: It is safe to assume that if the enqueued
-    // flag has been set all callbacks have been previously registered and it is
-    // safe to bail out.
-    if (Enqueued())
-      return;
-
     // Marking of the table is delayed because the backing store is potentially
     // held alive strongly by other objects. Delayed marking happens after
     // regular marking.
@@ -2134,29 +2114,17 @@ HashTable<Key, Value, Extractor, HashFunctions, Traits, KeyTraits, Allocator>::
                                       KeyTraits, Allocator>::Process);
 
     if (IsTraceableInCollectionTrait<Traits>::value) {
-#if DCHECK_IS_ON()
-      DCHECK(!Allocator::WeakTableRegistered(visitor, this) || Enqueued());
-#endif
-
       // Mix of strong and weak fields. We use an approach similar to ephemeron
       // marking to find a fixed point, c.f.:
       // - http://dl.acm.org/citation.cfm?doid=263698.263733
       // - http://www.jucs.org/jucs_14_21/eliminating_cycles_in_weak
       // Adding the table for ephemeron marking delays marking any elements in
       // the backing until regular marking is finished.
-      if (!Enqueued() &&
-          Allocator::RegisterWeakTable(
-              visitor, this,
-              WeakProcessingHashTableHelper<Traits::kWeakHandlingFlag, Key,
-                                            Value, Extractor, HashFunctions,
-                                            Traits, KeyTraits,
-                                            Allocator>::EphemeronIteration,
-              WeakProcessingHashTableHelper<
-                  Traits::kWeakHandlingFlag, Key, Value, Extractor,
-                  HashFunctions, Traits, KeyTraits,
-                  Allocator>::EphemeronIterationDone)) {
-        SetEnqueued();
-      }
+      Allocator::RegisterWeakTable(
+          visitor, this,
+          WeakProcessingHashTableHelper<
+              Traits::kWeakHandlingFlag, Key, Value, Extractor, HashFunctions,
+              Traits, KeyTraits, Allocator>::EphemeronIteration);
     }
   }
 }

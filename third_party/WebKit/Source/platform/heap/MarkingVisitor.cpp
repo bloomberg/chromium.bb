@@ -126,19 +126,10 @@ void MarkingVisitor::RegisterBackingStoreCallback(void* backing_store,
       callback_data);
 }
 
-bool MarkingVisitor::RegisterWeakTable(
-    const void* closure,
-    EphemeronCallback iteration_callback,
-    EphemeronCallback iteration_done_callback) {
-  Heap().RegisterWeakTable(const_cast<void*>(closure), iteration_callback,
-                           iteration_done_callback);
+bool MarkingVisitor::RegisterWeakTable(const void* closure,
+                                       EphemeronCallback iteration_callback) {
+  Heap().RegisterWeakTable(const_cast<void*>(closure), iteration_callback);
   return true;
 }
-
-#if DCHECK_IS_ON()
-bool MarkingVisitor::WeakTableRegistered(const void* closure) {
-  return Heap().WeakTableRegistered(closure);
-}
-#endif
 
 }  // namespace blink
