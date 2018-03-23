@@ -943,10 +943,14 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
                        ExpectHistogramsNotRecordedWhenFilteringNotActivated) {
-  ResetConfigurationToEnableOnPhishingSites(
-      true /* measure_performance */, false /* whitelist_site_on_reload */);
+  // This test only makes sense when AdTagging is disabled.
+  base::test::ScopedFeatureList scoped_tagging;
+  scoped_tagging.InitAndDisableFeature(kAdTagging);
   ASSERT_NO_FATAL_FAILURE(SetRulesetToDisallowURLsWithPathSuffix(
       "suffix-that-does-not-match-anything"));
+  ResetConfigurationToEnableOnPhishingSites(
+      true /* measure_performance */, false /* whitelist_site_on_reload */);
+
   const GURL url = GetTestUrl(kTestFrameSetPath);
   // Note: The |url| is not configured to be fishing.
 
