@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/memory/ptr_util.h"
+#include "base/memory/shared_memory.h"
 #include "base/memory/shared_memory_tracker.h"
 #include "base/process/process_metrics.h"
 #include "base/strings/stringprintf.h"
@@ -163,14 +164,13 @@ size_t ProcessMemoryDump::CountResidentBytes(void* start_address,
 
 // static
 base::Optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
-    void* start_address,
-    size_t mapped_size) {
+    const SharedMemory& shared_memory) {
 #if defined(OS_MACOSX) && !defined(OS_IOS)
   // On macOS, use mach_vm_region instead of mincore for performance
   // (crbug.com/742042).
   mach_vm_size_t dummy_size = 0;
   mach_vm_address_t address =
-      reinterpret_cast<mach_vm_address_t>(start_address);
+      reinterpret_cast<mach_vm_address_t>(shared_memory.memory());
   vm_region_top_info_data_t info;
   MachVMRegionResult result =
       GetTopInfo(mach_task_self(), &dummy_size, &address, &info);
@@ -212,9 +212,10 @@ base::Optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
   // Sanity check in case the mapped size is less than the total size of the
   // region.
   size_t pages_to_fault =
-      std::min(resident_pages, (mapped_size + PAGE_SIZE - 1) / PAGE_SIZE);
+      std::min(resident_pages,
+               (shared_memory.mapped_size() + PAGE_SIZE - 1) / PAGE_SIZE);
 
-  volatile char* base_address = static_cast<char*>(start_address);
+  volatile char* base_address = static_cast<char*>(shared_memory.memory());
   for (size_t i = 0; i < pages_to_fault; ++i) {
     // Reading from a volatile is a visible side-effect for the purposes of
     // optimization. This guarantees that the optimizer will not kill this line.
@@ -223,7 +224,8 @@ base::Optional<size_t> ProcessMemoryDump::CountResidentBytesInSharedMemory(
 
   return resident_pages * PAGE_SIZE;
 #else
-  return CountResidentBytes(start_address, mapped_size);
+  return CountResidentBytes(shared_memory.memory(),
+                            shared_memory.mapped_size());
 #endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 }
 
