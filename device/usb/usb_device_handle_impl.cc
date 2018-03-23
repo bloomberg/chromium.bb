@@ -29,8 +29,6 @@
 
 namespace device {
 
-typedef libusb_device* PlatformUsbDevice;
-
 void HandleTransferCompletion(PlatformUsbTransferHandle transfer);
 
 namespace {

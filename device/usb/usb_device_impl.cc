@@ -29,7 +29,7 @@
 namespace device {
 
 UsbDeviceImpl::UsbDeviceImpl(scoped_refptr<UsbContext> context,
-                             PlatformUsbDevice platform_device,
+                             ScopedLibusbDeviceRef platform_device,
                              const libusb_device_descriptor& descriptor)
     : UsbDevice(descriptor.bcdUSB,
                 descriptor.bDeviceClass,
@@ -41,17 +41,15 @@ UsbDeviceImpl::UsbDeviceImpl(scoped_refptr<UsbContext> context,
                 base::string16(),
                 base::string16(),
                 base::string16()),
-      platform_device_(platform_device),
-      context_(context) {
-  CHECK(platform_device) << "platform_device cannot be NULL";
-  libusb_ref_device(platform_device);
+      platform_device_(std::move(platform_device)),
+      context_(std::move(context)) {
+  CHECK(platform_device_.is_valid()) << "platform_device must be valid";
   ReadAllConfigurations();
   RefreshActiveConfiguration();
 }
 
 UsbDeviceImpl::~UsbDeviceImpl() {
   // The destructor must be safe to call from any thread.
-  libusb_unref_device(platform_device_);
 }
 
 void UsbDeviceImpl::Open(OpenCallback callback) {
@@ -68,11 +66,11 @@ void UsbDeviceImpl::Open(OpenCallback callback) {
 
 void UsbDeviceImpl::ReadAllConfigurations() {
   libusb_device_descriptor device_descriptor;
-  int rv = libusb_get_device_descriptor(platform_device_, &device_descriptor);
+  int rv = libusb_get_device_descriptor(platform_device(), &device_descriptor);
   if (rv == LIBUSB_SUCCESS) {
     for (uint8_t i = 0; i < device_descriptor.bNumConfigurations; ++i) {
       unsigned char* buffer;
-      rv = libusb_get_raw_config_descriptor(platform_device_, i, &buffer);
+      rv = libusb_get_raw_config_descriptor(platform_device(), i, &buffer);
       if (rv < 0) {
         USB_LOG(EVENT) << "Failed to get config descriptor: "
                        << ConvertPlatformUsbErrorToString(rv);
@@ -91,7 +89,7 @@ void UsbDeviceImpl::ReadAllConfigurations() {
 
 void UsbDeviceImpl::RefreshActiveConfiguration() {
   uint8_t config_value;
-  int rv = libusb_get_active_config_value(platform_device_, &config_value);
+  int rv = libusb_get_active_config_value(platform_device(), &config_value);
   if (rv != LIBUSB_SUCCESS) {
     USB_LOG(EVENT) << "Failed to get active configuration: "
                    << ConvertPlatformUsbErrorToString(rv);
@@ -107,7 +105,7 @@ void UsbDeviceImpl::OpenOnBlockingThread(
     scoped_refptr<base::SequencedTaskRunner> blocking_task_runner) {
   base::AssertBlockingAllowed();
   PlatformUsbDeviceHandle handle;
-  const int rv = libusb_open(platform_device_, &handle);
+  const int rv = libusb_open(platform_device(), &handle);
   if (LIBUSB_SUCCESS == rv) {
     task_runner->PostTask(
         FROM_HERE, base::BindOnce(&UsbDeviceImpl::Opened, this, handle,

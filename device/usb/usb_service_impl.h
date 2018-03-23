@@ -11,11 +11,14 @@
 
 #include <map>
 #include <set>
+#include <vector>
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/optional.h"
 #include "build/build_config.h"
+#include "device/usb/scoped_libusb_device_ref.h"
 #include "device/usb/usb_context.h"
 #include "device/usb/usb_device_impl.h"
 #include "third_party/libusb/src/libusb/libusb.h"
@@ -25,12 +28,10 @@
 #include "device/base/device_monitor_win.h"
 #endif  // OS_WIN
 
-struct libusb_device;
 struct libusb_context;
 
 namespace device {
 
-typedef struct libusb_device* PlatformUsbDevice;
 typedef struct libusb_context* PlatformUsbContext;
 
 class UsbDeviceImpl;
@@ -60,11 +61,12 @@ class UsbServiceImpl :
 
   // Enumerate USB devices from OS and update devices_ map.
   void RefreshDevices();
-  void OnDeviceList(libusb_device** platform_devices, size_t device_count);
+  void OnDeviceList(
+      base::Optional<std::vector<ScopedLibusbDeviceRef>> platform_devices);
   void RefreshDevicesComplete();
 
   // Creates a new UsbDevice based on the given libusb device.
-  void EnumerateDevice(PlatformUsbDevice platform_device,
+  void EnumerateDevice(ScopedLibusbDeviceRef platform_device,
                        const base::Closure& refresh_complete);
 
   void AddDevice(const base::Closure& refresh_complete,
@@ -73,16 +75,16 @@ class UsbServiceImpl :
 
   // Handle hotplug events from libusb.
   static int LIBUSB_CALL HotplugCallback(libusb_context* context,
-                                         PlatformUsbDevice device,
+                                         libusb_device* device,
                                          libusb_hotplug_event event,
                                          void* user_data);
   // These functions release a reference to the provided platform device.
-  void OnPlatformDeviceAdded(PlatformUsbDevice platform_device);
-  void OnPlatformDeviceRemoved(PlatformUsbDevice platform_device);
+  void OnPlatformDeviceAdded(ScopedLibusbDeviceRef platform_device);
+  void OnPlatformDeviceRemoved(ScopedLibusbDeviceRef platform_device);
 
   // Add |platform_device| to the |ignored_devices_| and
   // run |refresh_complete|.
-  void EnumerationFailed(PlatformUsbDevice platform_device,
+  void EnumerationFailed(ScopedLibusbDeviceRef platform_device,
                          const base::Closure& refresh_complete);
 
   scoped_refptr<UsbContext> context_;
@@ -100,18 +102,20 @@ class UsbServiceImpl :
   base::queue<std::string> pending_path_enumerations_;
   std::vector<GetDevicesCallback> pending_enumeration_callbacks_;
 
-  // The map from PlatformUsbDevices to UsbDevices.
-  typedef std::map<PlatformUsbDevice, scoped_refptr<UsbDeviceImpl>>
+  // The map from libusb_device to UsbDeviceImpl. The key is a weak pointer to
+  // the libusb_device object owned by the UsbDeviceImpl.
+  typedef std::map<libusb_device*, scoped_refptr<UsbDeviceImpl>>
       PlatformDeviceMap;
   PlatformDeviceMap platform_devices_;
 
   // The set of devices that only need to be enumerated once and then can be
   // ignored (for example, hub devices, devices that failed enumeration, etc.).
-  std::set<PlatformUsbDevice> ignored_devices_;
+  std::vector<ScopedLibusbDeviceRef> ignored_devices_;
 
-  // Tracks PlatformUsbDevices that might be removed while they are being
-  // enumerated.
-  std::set<PlatformUsbDevice> devices_being_enumerated_;
+  // Tracks libusb_devices that might be removed while they are being
+  // enumerated. This is a weak pointer to a libusb_device object owned by a
+  // UsbDeviceImpl.
+  std::set<libusb_device*> devices_being_enumerated_;
 
 #if defined(OS_WIN)
   ScopedObserver<DeviceMonitorWin, DeviceMonitorWin::Observer> device_observer_;

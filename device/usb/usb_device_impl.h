@@ -17,13 +17,13 @@
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "build/build_config.h"
+#include "device/usb/scoped_libusb_device_ref.h"
 #include "device/usb/usb_descriptors.h"
 #include "device/usb/usb_device.h"
 
 struct libusb_device;
 struct libusb_device_descriptor;
 struct libusb_device_handle;
-struct libusb_config_descriptor;
 
 namespace base {
 class SequencedTaskRunner;
@@ -34,12 +34,14 @@ namespace device {
 class UsbDeviceHandleImpl;
 class UsbContext;
 
-typedef struct libusb_device* PlatformUsbDevice;
-typedef struct libusb_config_descriptor* PlatformUsbConfigDescriptor;
 typedef struct libusb_device_handle* PlatformUsbDeviceHandle;
 
 class UsbDeviceImpl : public UsbDevice {
  public:
+  UsbDeviceImpl(scoped_refptr<UsbContext> context,
+                ScopedLibusbDeviceRef platform_device,
+                const libusb_device_descriptor& descriptor);
+
   // UsbDevice implementation:
   void Open(OpenCallback callback) override;
 
@@ -56,16 +58,11 @@ class UsbDeviceImpl : public UsbDevice {
   }
   void set_webusb_landing_page(const GURL& url) { webusb_landing_page_ = url; }
 
-  PlatformUsbDevice platform_device() const { return platform_device_; }
+  libusb_device* platform_device() const { return platform_device_.get(); }
 
  protected:
   friend class UsbServiceImpl;
   friend class UsbDeviceHandleImpl;
-
-  // Called by UsbServiceImpl only;
-  UsbDeviceImpl(scoped_refptr<UsbContext> context,
-                PlatformUsbDevice platform_device,
-                const libusb_device_descriptor& descriptor);
 
   ~UsbDeviceImpl() override;
 
@@ -87,11 +84,11 @@ class UsbDeviceImpl : public UsbDevice {
               scoped_refptr<base::SequencedTaskRunner> blocking_task_runner);
 
   base::ThreadChecker thread_checker_;
-  PlatformUsbDevice platform_device_;
+  const ScopedLibusbDeviceRef platform_device_;
   bool visited_ = false;
 
   // Retain the context so that it will not be released before UsbDevice.
-  scoped_refptr<UsbContext> context_;
+  const scoped_refptr<UsbContext> context_;
 
   DISALLOW_COPY_AND_ASSIGN(UsbDeviceImpl);
 };
