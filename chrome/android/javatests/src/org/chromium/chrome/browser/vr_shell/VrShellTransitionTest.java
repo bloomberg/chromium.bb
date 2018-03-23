@@ -9,7 +9,6 @@ import static org.chromium.chrome.browser.vr_shell.VrTestFramework.PAGE_LOAD_TIM
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_CHECK_INTERVAL_SHORT_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_LONG_MS;
 import static org.chromium.chrome.browser.vr_shell.VrTestFramework.POLL_TIMEOUT_SHORT_MS;
-import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_DEVICE_NON_DAYDREAM;
 import static org.chromium.chrome.test.util.ChromeRestriction.RESTRICTION_TYPE_VIEWER_DAYDREAM;
 
@@ -111,7 +110,7 @@ public class VrShellTransitionTest {
      * browser when the Daydream View NFC tag is scanned on a Daydream-ready device.
      */
     @Test
-    @Restriction({RESTRICTION_TYPE_DEVICE_DAYDREAM, RESTRICTION_TYPE_VIEWER_DAYDREAM})
+    @Restriction({RESTRICTION_TYPE_VIEWER_DAYDREAM})
     @RetryOnFailure(message = "crbug.com/736527")
     @LargeTest
     public void test2dtoVrShellNfcSupported() {
@@ -136,7 +135,7 @@ public class VrShellTransitionTest {
      * device.
      */
     @Test
-    @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
     public void test2dtoVrShellto2dSupported() {
         enterExitVrShell(true /* supported */);
@@ -147,7 +146,7 @@ public class VrShellTransitionTest {
      * browser when Chrome gets a VR intent.
      */
     @Test
-    @Restriction(RESTRICTION_TYPE_DEVICE_DAYDREAM)
+    @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
     public void testVrIntentStartsVrShell() {
         // Send a VR intent, which will open the link in a CTA.
