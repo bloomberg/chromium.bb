@@ -33,8 +33,14 @@ and Linux (although Linux symbol diffs have issues, as noted below).
 ### Example Usage
 
 ``` bash
-# Build and diff HEAD^ and HEAD.
+# Build and diff monochrome_public_apk HEAD^ and HEAD.
 tools/binary_size/diagnose_bloat.py HEAD -v
+
+# Build and diff monochrome_apk HEAD^ and HEAD.
+tools/binary_size/diagnose_bloat.py HEAD --enable-chrome-android-internal -v
+
+# Build and diff monochrome_public_apk HEAD^ and HEAD without is_official_build.
+tools/binary_size/diagnose_bloat.py HEAD --gn-args="is_official_build=false" -v
 
 # Diff BEFORE_REV and AFTER_REV using build artifacts downloaded from perf bots.
 tools/binary_size/diagnose_bloat.py AFTER_REV --reference-rev BEFORE_REV --cloud -v
