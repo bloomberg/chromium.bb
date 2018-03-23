@@ -6,8 +6,10 @@ config("compiler_defaults") {
   if (current_os == "linux") {
     cflags = [
       "-fPIC",
-      "-pthread",
       "-fvisibility=hidden",
+    ]
+    ldflags = [
+      "-pthread",
     ]
   }
 }

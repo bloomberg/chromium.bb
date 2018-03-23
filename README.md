@@ -26,6 +26,15 @@ dependencies that you will need to provide yourself.
 
 ## Building an example with GN and Ninja
 
+After checking out the Open Screen library, make sure to initialize the
+submodules for the dependencies.  The following commands will checkout all the
+necessary submodules:
+
+``` bash
+  git submodule init
+  git submodule update
+```
+
 The following commands will build the current example executable and run it.
 
 ``` bash
