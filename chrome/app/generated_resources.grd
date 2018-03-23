@@ -10835,14 +10835,14 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
     </message>
 
     <!-- Security Key permission -->
-    <message name="IDS_SECURITY_KEY_ATTESTATION_PERMISSION_FRAGMENT" desc="A permission prompt shown to a user when a website wants to see information that uniquely identifies the user's Security Key, such as make and model number. The text '[website URL] wants to:' precedes this string. The word 'identifying' modifies 'information'.">
-      See identifying information about your Security Key
+    <message name="IDS_SECURITY_KEY_ATTESTATION_PERMISSION_FRAGMENT" desc="A permission prompt shown to a user when a website wants to see information that identifies the user's Security Key, such as make and model number. The text '[website URL] wants to:' precedes this string. The 'make' of a device is the brand name of the manufacturer, e.g. Yubikey is a make of Security Key. The 'model' of a device is the specific product, e.g. Yubikey Neo is a model of Security Key.">
+      See the make and model of your Security Key
     </message>
     <if expr="is_android">
-      <message name="IDS_SECURITY_KEY_ATTESTATION_INFOBAR_QUESTION" desc="An infobar prompt shown to a user when a website wants to see information that uniquely identifies the user's Security Key, such as make and model number. The word 'identifying' modifies 'information'.">
+      <message name="IDS_SECURITY_KEY_ATTESTATION_INFOBAR_QUESTION" desc="An infobar prompt shown to a user when a website wants to see information that identifies the user's Security Key, such as make and model number. The 'make' of a device is the brand name of the manufacturer, e.g. Yubikey is a make of Security Key. The 'model' of a device is the specific product, e.g. Yubikey Neo is a model of Security Key.">
         <ph name="URL">
           $1<ex>maps.google.com</ex>
-        </ph> wants to see identifying information about your Security Key
+        </ph> wants to see the make and model of your Security Key
       </message>
     </if>
 
