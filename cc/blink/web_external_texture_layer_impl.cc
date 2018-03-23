@@ -54,4 +54,12 @@ void WebExternalTextureLayerImpl::SetNearestNeighbor(bool nearest_neighbor) {
       ->SetNearestNeighbor(nearest_neighbor);
 }
 
+void WebExternalTextureLayerImpl::SetUV(
+    const blink::WebFloatPoint left_top,
+    const blink::WebFloatPoint right_bottom) {
+  static_cast<TextureLayer*>(layer_->layer())
+      ->SetUV(gfx::PointF(left_top.x, left_top.y),
+              gfx::PointF(right_bottom.x, right_bottom.y));
+}
+
 }  // namespace cc_blink

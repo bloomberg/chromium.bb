@@ -159,6 +159,17 @@ gpu::gles2::GLES2Interface* XRWebGLDrawingBuffer::ContextGL() {
   return drawing_buffer_->ContextGL();
 }
 
+void XRWebGLDrawingBuffer::SetMirrorClient(MirrorClient* client) {
+  mirror_client_ = client;
+  if (mirror_client_) {
+    // Immediately send a black 1x1 image to the mirror client to ensure that
+    // it has content to show.
+    sk_sp<SkSurface> surface = SkSurface::MakeRasterN32Premul(1, 1);
+    mirror_client_->OnMirrorImageAvailable(
+        StaticBitmapImage::Create(surface->makeImageSnapshot()), nullptr);
+  }
+}
+
 bool XRWebGLDrawingBuffer::ContextLost() {
   return drawing_buffer_->destroyed();
 }
@@ -419,8 +430,10 @@ XRWebGLDrawingBuffer::TransferToStaticBitmapImage(
 
   // This holds a ref on the XRWebGLDrawingBuffer that will keep it alive
   // until the mailbox is released (and while the callback is running).
-  auto func = WTF::Bind(&XRWebGLDrawingBuffer::MailboxReleased,
-                        scoped_refptr<XRWebGLDrawingBuffer>(this), buffer);
+  auto func =
+      WTF::Bind(mirror_client_ ? &XRWebGLDrawingBuffer::MailboxReleasedToMirror
+                               : &XRWebGLDrawingBuffer::MailboxReleased,
+                scoped_refptr<XRWebGLDrawingBuffer>(this), buffer);
 
   std::unique_ptr<viz::SingleReleaseCallback> release_callback =
       viz::SingleReleaseCallback::Create(std::move(func));
@@ -466,6 +479,37 @@ void XRWebGLDrawingBuffer::MailboxReleased(
     recycled_color_buffer_queue_.TakeLast();
 
   recycled_color_buffer_queue_.push_front(color_buffer);
+}
+
+void XRWebGLDrawingBuffer::MailboxReleasedToMirror(
+    scoped_refptr<ColorBuffer> color_buffer,
+    const gpu::SyncToken& sync_token,
+    bool lost_resource) {
+  if (!mirror_client_ || lost_resource) {
+    MailboxReleased(std::move(color_buffer), sync_token, lost_resource);
+    return;
+  }
+
+  gpu::gles2::GLES2Interface* gl = drawing_buffer_->ContextGL();
+  color_buffer->receive_sync_token = sync_token;
+
+  auto func =
+      WTF::Bind(&XRWebGLDrawingBuffer::MailboxReleased,
+                scoped_refptr<XRWebGLDrawingBuffer>(this), color_buffer);
+
+  std::unique_ptr<viz::SingleReleaseCallback> release_callback =
+      viz::SingleReleaseCallback::Create(std::move(func));
+
+  GLuint texture_id =
+      gl->CreateAndConsumeTextureCHROMIUM(color_buffer->mailbox.name);
+
+  scoped_refptr<StaticBitmapImage> image =
+      AcceleratedStaticBitmapImage::CreateFromWebGLContextImage(
+          color_buffer->mailbox, color_buffer->produce_sync_token, texture_id,
+          drawing_buffer_->ContextProviderWeakPtr(), color_buffer->size);
+
+  mirror_client_->OnMirrorImageAvailable(std::move(image),
+                                         std::move(release_callback));
 }
 
 }  // namespace blink

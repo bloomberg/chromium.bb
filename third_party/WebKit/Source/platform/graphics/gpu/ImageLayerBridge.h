@@ -7,6 +7,7 @@
 
 #include "cc/layers/texture_layer_client.h"
 #include "platform/PlatformExport.h"
+#include "platform/geometry/FloatPoint.h"
 #include "platform/graphics/GraphicsTypes.h"
 #include "platform/graphics/StaticBitmapImage.h"
 #include "platform/heap/Heap.h"
@@ -53,6 +54,7 @@ class PLATFORM_EXPORT ImageLayerBridge
   void SetFilterQuality(SkFilterQuality filter_quality) {
     filter_quality_ = filter_quality;
   }
+  void SetUV(const FloatPoint left_top, const FloatPoint right_bottom);
 
   bool IsAccelerated() { return image_->IsTextureBacked(); }
 

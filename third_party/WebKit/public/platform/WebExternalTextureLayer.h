@@ -27,6 +27,7 @@
 #define WebExternalTextureLayer_h
 
 #include "WebCommon.h"
+#include "WebFloatPoint.h"
 #include "WebFloatRect.h"
 #include "WebLayer.h"
 
@@ -65,6 +66,10 @@ class WebExternalTextureLayer {
   // Sets whether this texture should use nearest neighbor interpolation as
   // opposed to bilinear. Defaults to false.
   virtual void SetNearestNeighbor(bool) = 0;
+
+  // Sets a UV transform to be used at draw time. Defaults to (0, 0) and (1, 1).
+  virtual void SetUV(const WebFloatPoint left_top,
+                     const WebFloatPoint right_bottom) = 0;
 };
 
 }  // namespace blink

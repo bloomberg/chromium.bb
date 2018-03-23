@@ -48,6 +48,15 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   scoped_refptr<StaticBitmapImage> TransferToStaticBitmapImage(
       std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback);
 
+  class MirrorClient {
+   public:
+    virtual void OnMirrorImageAvailable(
+        scoped_refptr<StaticBitmapImage>,
+        std::unique_ptr<viz::SingleReleaseCallback>) = 0;
+  };
+
+  void SetMirrorClient(MirrorClient*);
+
  private:
   struct ColorBuffer : public RefCounted<ColorBuffer> {
     ColorBuffer(XRWebGLDrawingBuffer*, const IntSize&, GLuint texture_id);
@@ -95,6 +104,9 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   void MailboxReleased(scoped_refptr<ColorBuffer>,
                        const gpu::SyncToken&,
                        bool lost_resource);
+  void MailboxReleasedToMirror(scoped_refptr<ColorBuffer>,
+                               const gpu::SyncToken&,
+                               bool lost_resource);
 
   // Reference to the DrawingBuffer that owns the GL context for this object.
   scoped_refptr<DrawingBuffer> drawing_buffer_;
@@ -129,6 +141,8 @@ class PLATFORM_EXPORT XRWebGLDrawingBuffer
   int max_texture_size_ = 0;
   int sample_count_ = 0;
   bool framebuffer_incomplete_ = false;
+
+  MirrorClient* mirror_client_ = nullptr;
 };
 
 }  // namespace blink
