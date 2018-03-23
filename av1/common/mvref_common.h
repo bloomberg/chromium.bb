@@ -221,6 +221,12 @@ static INLINE void av1_set_ref_frame(MV_REFERENCE_FRAME *rf,
   }
 }
 
+static uint16_t compound_mode_ctx_map[3][COMP_NEWMV_CTXS] = {
+  { 0, 1, 1, 1, 1 },
+  { 1, 2, 3, 4, 4 },
+  { 4, 4, 5, 6, 7 },
+};
+
 static INLINE int16_t av1_mode_context_analyzer(
     const int16_t *const mode_context, const MV_REFERENCE_FRAME *const rf) {
   const int8_t ref_frame = av1_ref_frame_type(rf);
@@ -230,8 +236,9 @@ static INLINE int16_t av1_mode_context_analyzer(
   const int16_t newmv_ctx = mode_context[ref_frame] & NEWMV_CTX_MASK;
   const int16_t refmv_ctx =
       (mode_context[ref_frame] >> REFMV_OFFSET) & REFMV_CTX_MASK;
-  const int16_t comp_ctx = (refmv_ctx >> 1) * COMP_NEWMV_CTXS +
-                           AOMMIN(newmv_ctx, COMP_NEWMV_CTXS - 1);
+
+  const int16_t comp_ctx = compound_mode_ctx_map[refmv_ctx >> 1][AOMMIN(
+      newmv_ctx, COMP_NEWMV_CTXS - 1)];
   return comp_ctx;
 }
 
