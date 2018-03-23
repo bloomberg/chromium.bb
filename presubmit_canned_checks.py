@@ -607,6 +607,7 @@ def GetPythonUnitTests(input_api, output_api, unit_tests):
       if env.get('PYTHONPATH'):
         backpath.append(env.get('PYTHONPATH'))
       env['PYTHONPATH'] = input_api.os_path.pathsep.join((backpath))
+      env.pop('VPYTHON_CLEAR_PYTHONPATH', None)
     cmd = [input_api.python_executable, '-m', '%s' % unit_test]
     results.append(input_api.Command(
         name=unit_test_name,
@@ -732,6 +733,7 @@ def GetPylint(input_api, output_api, white_list=None, black_list=None,
   import sys
   env['PYTHONPATH'] = input_api.os_path.pathsep.join(
       extra_paths_list + sys.path).encode('utf8')
+  env.pop('VPYTHON_CLEAR_PYTHONPATH', None)
 
   def GetPylintCmd(flist, extra, parallel):
     # Windows needs help running python files so we explicitly specify
