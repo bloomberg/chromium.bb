@@ -8,8 +8,10 @@
 
 #include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 #include "ash/components/shortcut_viewer/views/keyboard_shortcut_item_view.h"
+#include "ash/components/shortcut_viewer/views/ksv_search_box_view.h"
 #include "ash/test/ash_test_base.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/views/controls/textfield/textfield.h"
 #include "ui/views/widget/widget.h"
 
 namespace keyboard_shortcut_viewer {
@@ -29,6 +31,25 @@ class KeyboardShortcutViewTest : public ash::AshTestBase {
   GetShortcutViews() {
     DCHECK(GetView());
     return GetView()->GetShortcutViewsForTesting();
+  }
+
+  KSVSearchBoxView* GetSearchBoxView() {
+    DCHECK(GetView());
+    return GetView()->GetSearchBoxViewForTesting();
+  }
+
+  void KeyPress(ui::KeyboardCode key_code, bool should_insert) {
+    ui::KeyEvent event(ui::ET_KEY_PRESSED, key_code, ui::EF_NONE);
+    GetSearchBoxView()->OnKeyEvent(&event);
+    if (!should_insert)
+      return;
+
+    // Emulates the input method.
+    if (::isalnum(static_cast<int>(key_code))) {
+      base::char16 character = ::tolower(static_cast<int>(key_code));
+      GetSearchBoxView()->search_box()->InsertText(
+          base::string16(1, character));
+    }
   }
 
  private:
@@ -90,6 +111,43 @@ TEST_F(KeyboardShortcutViewTest, TopLineCenterAlignedInItemView) {
     EXPECT_EQ(description_top_line_view->GetBoundsInScreen().CenterPoint().y(),
               shortcut_top_line_view->GetBoundsInScreen().CenterPoint().y());
   }
+
+  // Cleaning up.
+  widget->CloseNow();
+}
+
+// Test that the focus is on search box when window inits and exits search mode.
+TEST_F(KeyboardShortcutViewTest, FocusOnSearchBox) {
+  // Showing the widget.
+  views::Widget* widget = KeyboardShortcutView::Show(CurrentContext());
+
+  // Case 1: when window creates. The focus should be on search box.
+  EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
+
+  // Press a key should enter search mode.
+  KeyPress(ui::VKEY_A, /*should_insert=*/true);
+  EXPECT_TRUE(GetSearchBoxView()->back_button()->visible());
+  EXPECT_FALSE(GetSearchBoxView()->search_box()->text().empty());
+
+  // Case 2: Exit search mode by clicking |back_button|. The focus should be on
+  // search box.
+  GetSearchBoxView()->ButtonPressed(
+      GetSearchBoxView()->back_button(),
+      ui::MouseEvent(ui::ET_MOUSE_PRESSED, gfx::Point(), gfx::Point(),
+                     base::TimeTicks(), ui::EF_LEFT_MOUSE_BUTTON,
+                     ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_TRUE(GetSearchBoxView()->search_box()->text().empty());
+  EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
+
+  // Enter search mode again.
+  KeyPress(ui::VKEY_A, /*should_insert=*/true);
+  EXPECT_FALSE(GetSearchBoxView()->search_box()->text().empty());
+
+  // Case 3: Exit search mode by pressing |VKEY_ESCAPE|. The focus should be on
+  // search box.
+  KeyPress(ui::VKEY_ESCAPE, /*should_insert=*/false);
+  EXPECT_TRUE(GetSearchBoxView()->search_box()->text().empty());
+  EXPECT_TRUE(GetSearchBoxView()->search_box()->HasFocus());
 
   // Cleaning up.
   widget->CloseNow();

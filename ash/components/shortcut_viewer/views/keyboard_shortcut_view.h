@@ -53,10 +53,6 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   // |shortcut_views_|, called on construction and when exiting search mode.
   void InitCategoriesTabbedPane();
 
-  // Put focus on the active tab. Used when the first time to show the widget or
-  // after exiting search mode.
-  void RequestFocusForActiveTab();
-
   // Update views' layout based on search box status.
   void UpdateViewsLayout(bool is_search_box_active);
 
@@ -73,6 +69,7 @@ class KeyboardShortcutView : public views::WidgetDelegateView,
   int GetTabCountForTesting() const;
   const std::vector<std::unique_ptr<KeyboardShortcutItemView>>&
   GetShortcutViewsForTesting() const;
+  KSVSearchBoxView* GetSearchBoxViewForTesting();
 
   // Owned by views hierarchy.
   // The container for category tabs and lists of KeyboardShortcutItemViews.
