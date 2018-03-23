@@ -48,6 +48,7 @@
 #include "av1/encoder/encodetxb.h"
 #include "av1/encoder/hybrid_fwd_txfm.h"
 #include "av1/encoder/mcomp.h"
+#include "av1/encoder/ml.h"
 #include "av1/encoder/palette.h"
 #include "av1/encoder/ratectrl.h"
 #include "av1/encoder/rd.h"
@@ -1188,56 +1189,108 @@ static void score_2D_transform_pow8(float *scores_2D, float shift) {
   for (i = 0; i < 16; i++) scores_2D[i] /= sum;
 }
 
-// Similarly to compute_1D_scores() performs a forward pass through a
-// neural network with two fully-connected layers. The only difference
-// is that it assumes 1 output neuron, as required by the classifier used
-// for TX size pruning.
-static float compute_tx_split_prune_score(float *features, int num_features,
-                                          const float *fc1, const float *b1,
-                                          const float *fc2, float b2,
-                                          int num_hidden_units) {
-  assert(num_hidden_units <= 64);
-  float hidden_layer[64];
-  for (int i = 0; i < num_hidden_units; i++) {
-    const float *cur_coef = fc1 + i * num_features;
-    hidden_layer[i] = 0.0f;
-    for (int j = 0; j < num_features; j++)
-      hidden_layer[i] += cur_coef[j] * features[j];
-    hidden_layer[i] = AOMMAX(hidden_layer[i] + b1[i], 0.0f);
-  }
-  float dst_score = 0.0f;
-  for (int j = 0; j < num_hidden_units; j++)
-    dst_score += fc2[j] * hidden_layer[j];
-  dst_score += b2;
-  return dst_score;
-}
+static const float prune_tx_split_thresholds[] = {
+  100.0f,  // BLOCK_4X4,
+  1.00f,   // BLOCK_4X8,
+  1.22f,   // BLOCK_8X4,
+  1.26f,   // BLOCK_8X8,
+  0.28f,   // BLOCK_8X16,
+  0.52f,   // BLOCK_16X8,
+  0.65f,   // BLOCK_16X16,
+  100.0f,  // BLOCK_16X32,
+  100.0f,  // BLOCK_32X16,
+  100.0f,  // BLOCK_32X32,
+  100.0f,  // BLOCK_32X64,
+  100.0f,  // BLOCK_64X32,
+  100.0f,  // BLOCK_64X64,
+  100.0f,  // BLOCK_64X128,
+  100.0f,  // BLOCK_128X64,
+  100.0f,  // BLOCK_128X128,
+  100.0f,  // BLOCK_4X16,
+  100.0f,  // BLOCK_16X4,
+  100.0f,  // BLOCK_8X32,
+  100.0f,  // BLOCK_32X8,
+  100.0f,  // BLOCK_16X64,
+  100.0f,  // BLOCK_64X16,
+};
 
 static void prune_tx_split(BLOCK_SIZE bsize, MACROBLOCK *x) {
-  if (bsize <= BLOCK_4X4 || bsize > BLOCK_16X16) return;
+  const NN_CONFIG *nn_config = av1_tx_split_nnconfig_map[bsize];
+  if (!nn_config) return;
   aom_clear_system_state();
   const struct macroblock_plane *const p = &x->plane[0];
   const int bw = block_size_wide[bsize], bh = block_size_high[bsize];
   float features[17];
   const int feature_num = (bw / 4) * (bh / 4) + 1;
   assert(feature_num <= 17);
-
   float hcorr, vcorr;
   get_horver_correlation_full(p->src_diff, bw, bw, bh, &hcorr, &vcorr);
   get_2D_energy_distribution(p->src_diff, bw, bw, bh, features);
   features[feature_num - 2] = hcorr;
   features[feature_num - 1] = vcorr;
-
-  const int bidx = bsize - BLOCK_4X4 - 1;
-  const float *fc1 = av1_prune_tx_split_learned_weights[bidx];
-  const float *b1 =
-      fc1 + av1_prune_tx_split_num_hidden_units[bidx] * feature_num;
-  const float *fc2 = b1 + av1_prune_tx_split_num_hidden_units[bidx];
-  const float b2 = *(fc2 + av1_prune_tx_split_num_hidden_units[bidx]);
-  const float score =
-      compute_tx_split_prune_score(features, feature_num, fc1, b1, fc2, b2,
-                                   av1_prune_tx_split_num_hidden_units[bidx]);
-  x->tx_split_prune_flag = score > av1_prune_tx_split_thresholds[bidx];
+  float score;
+  av1_nn_predict(features, nn_config, &score);
+  x->tx_split_prune_flag = score > prune_tx_split_thresholds[bsize];
 }
+
+// These thresholds were calibrated to provide a certain number of TX types
+// pruned by the model on average, i.e. selecting a threshold with index i
+// will lead to pruning i+1 TX types on average
+static const float *prune_2D_adaptive_thresholds[] = {
+  // TX_4X4
+  (float[]){ 0.02014f, 0.02722f, 0.03430f, 0.04114f, 0.04724f, 0.05212f,
+             0.05627f, 0.06018f, 0.06409f, 0.06824f, 0.07312f, 0.07849f,
+             0.08606f, 0.09827f },
+  // TX_8X8
+  (float[]){ 0.00745f, 0.01355f, 0.02039f, 0.02795f, 0.03625f, 0.04407f,
+             0.05042f, 0.05579f, 0.06067f, 0.06604f, 0.07239f, 0.08093f,
+             0.09363f, 0.11682f },
+  // TX_16X16
+  (float[]){ 0.01404f, 0.02820f, 0.04211f, 0.05164f, 0.05798f, 0.06335f,
+             0.06897f, 0.07629f, 0.08875f, 0.11169f },
+  // TX_32X32
+  NULL,
+  // TX_64X64
+  NULL,
+  // TX_4X8
+  (float[]){ 0.01282f, 0.02087f, 0.02844f, 0.03601f, 0.04285f, 0.04871f,
+             0.05359f, 0.05823f, 0.06287f, 0.06799f, 0.07361f, 0.08093f,
+             0.09119f, 0.10828f },
+  // TX_8X4
+  (float[]){ 0.01184f, 0.01941f, 0.02722f, 0.03503f, 0.04187f, 0.04822f,
+             0.05359f, 0.05823f, 0.06287f, 0.06799f, 0.07361f, 0.08093f,
+             0.09167f, 0.10974f },
+  // TX_8X16
+  (float[]){ 0.00525f, 0.01135f, 0.01819f, 0.02576f, 0.03357f, 0.04114f,
+             0.04773f, 0.05383f, 0.05920f, 0.06506f, 0.07190f, 0.08118f,
+             0.09509f, 0.12097f },
+  // TX_16X8
+  (float[]){ 0.00525f, 0.01160f, 0.01819f, 0.02527f, 0.03308f, 0.04065f,
+             0.04773f, 0.05383f, 0.05969f, 0.06531f, 0.07214f, 0.08118f,
+             0.09485f, 0.12048f },
+  // TX_16X32
+  (float[]){ 0.01257f, 0.02576f, 0.03723f, 0.04578f, 0.05212f, 0.05798f,
+             0.06506f, 0.07385f, 0.08606f, 0.10925f },
+  // TX_32X16
+  (float[]){ 0.01233f, 0.02527f, 0.03699f, 0.04602f, 0.05286f, 0.05896f,
+             0.06531f, 0.07336f, 0.08582f, 0.11072f },
+  // TX_32X64
+  NULL,
+  // TX_64X32
+  NULL,
+  // TX_4X16
+  NULL,
+  // TX_16X4
+  NULL,
+  // TX_8X32
+  NULL,
+  // TX_32X8
+  NULL,
+  // TX_16X64
+  NULL,
+  // TX_64X16
+  NULL,
+};
 
 static int prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
                        int blk_row, int blk_col, TxSetType tx_set_type,
@@ -1248,14 +1301,12 @@ static int prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
     FLIPADST_DCT, FLIPADST_ADST, FLIPADST_FLIPADST, V_FLIPADST,
     H_DCT,        H_ADST,        H_FLIPADST,        IDTX
   };
-  static const int model_idx_map[TX_SIZES_ALL] = {
-    0, 3, 6, -1, -1, 1, 2, 4, 5, 7, 8, -1, -1, -1, -1, -1, -1, -1, -1,
-  };
   if (tx_set_type != EXT_TX_SET_ALL16 &&
       tx_set_type != EXT_TX_SET_DTT9_IDTX_1DDCT)
     return 0;
-  const int model_idx = model_idx_map[tx_size];
-  if (model_idx < 0) return 0;  // Model not established yet.
+  const NN_CONFIG *nn_config_hor = av1_tx_type_nnconfig_map_hor[tx_size];
+  const NN_CONFIG *nn_config_ver = av1_tx_type_nnconfig_map_ver[tx_size];
+  if (!nn_config_hor || !nn_config_ver) return 0;  // Model not established yet.
 
   aom_clear_system_state();
   float hfeatures[16], vfeatures[16];
@@ -1276,23 +1327,8 @@ static int prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
   get_horver_correlation_full(diff, diff_stride, bw, bh,
                               &hfeatures[hfeatures_num - 1],
                               &vfeatures[vfeatures_num - 1]);
-  const float *fc1_hor = av1_prune_2D_learned_weights_hor[model_idx];
-  const float *b1_hor =
-      fc1_hor + av1_prune_2D_num_hidden_units_hor[model_idx] * hfeatures_num;
-  const float *fc2_hor = b1_hor + av1_prune_2D_num_hidden_units_hor[model_idx];
-  const float *b2_hor =
-      fc2_hor + av1_prune_2D_num_hidden_units_hor[model_idx] * 4;
-  compute_1D_scores(hfeatures, hfeatures_num, fc1_hor, b1_hor, fc2_hor, b2_hor,
-                    av1_prune_2D_num_hidden_units_hor[model_idx], hscores);
-
-  const float *fc1_ver = av1_prune_2D_learned_weights_ver[model_idx];
-  const float *b1_ver =
-      fc1_ver + av1_prune_2D_num_hidden_units_ver[model_idx] * vfeatures_num;
-  const float *fc2_ver = b1_ver + av1_prune_2D_num_hidden_units_ver[model_idx];
-  const float *b2_ver =
-      fc2_ver + av1_prune_2D_num_hidden_units_ver[model_idx] * 4;
-  compute_1D_scores(vfeatures, vfeatures_num, fc1_ver, b1_ver, fc2_ver, b2_ver,
-                    av1_prune_2D_num_hidden_units_ver[model_idx], vscores);
+  av1_nn_predict(hfeatures, nn_config_hor, hscores);
+  av1_nn_predict(vfeatures, nn_config_ver, vscores);
 
   float score_2D_average = 0.0f;
   for (int i = 0; i < 4; i++) {
@@ -1332,7 +1368,7 @@ static int prune_tx_2D(MACROBLOCK *x, BLOCK_SIZE bsize, TX_SIZE tx_size,
       pruning_aggressiveness = 7;
   }
   const float score_thresh =
-      av1_prune_2D_adaptive_thresholds[model_idx][pruning_aggressiveness - 1];
+      prune_2D_adaptive_thresholds[tx_size][pruning_aggressiveness - 1];
 
   int prune_bitmask = 0;
   for (int i = 0; i < 16; i++) {

@@ -134,6 +134,8 @@ set(AOM_AV1_ENCODER_SOURCES
     "${AOM_ROOT}/av1/encoder/mbgraph.h"
     "${AOM_ROOT}/av1/encoder/mcomp.c"
     "${AOM_ROOT}/av1/encoder/mcomp.h"
+    "${AOM_ROOT}/av1/encoder/ml.c"
+    "${AOM_ROOT}/av1/encoder/ml.h"
     "${AOM_ROOT}/av1/encoder/palette.c"
     "${AOM_ROOT}/av1/encoder/palette.h"
     "${AOM_ROOT}/av1/encoder/picklpf.c"
