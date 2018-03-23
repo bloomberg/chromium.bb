@@ -596,9 +596,9 @@ js_compile_bundle("main_frame_web_bundle") {
 
   sources = [
     "web_state/js/resources/console.js",
-    "web_state/js/resources/context_menu.js",
     "web_state/js/resources/error.js",
     "web_state/js/resources/legacy.js",
+    "web_state/js/resources/main_frame_context_menu.js",
     "web_state/js/resources/main_frame_web_bundle.js",
     "web_state/js/resources/navigation.js",
     "web_state/js/resources/scroll_workaround.js",
@@ -610,6 +610,7 @@ js_compile_bundle("all_frames_web_bundle") {
   closure_entry_point = "__crWeb.allFramesWebBundle"
 
   sources = [
+    "web_state/js/resources/all_frames_context_menu.js",
     "web_state/js/resources/all_frames_web_bundle.js",
     "web_state/js/resources/base.js",
     "web_state/js/resources/common.js",
