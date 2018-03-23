@@ -90,6 +90,7 @@
 }
 
 - (void)setOtrTabModel:(TabModel*)otrModel {
+  DCHECK(self.incognitoMediator);
   self.incognitoMediator.tabModel = otrModel;
 }
 

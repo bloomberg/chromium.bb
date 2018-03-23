@@ -103,6 +103,7 @@
   self.incognitoTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:mainViewController.incognitoTabsConsumer];
   self.incognitoTabsMediator.tabModel = self.incognitoTabModel;
+  self.adaptor.incognitoMediator = self.incognitoTabsMediator;
   mainViewController.regularTabsDelegate = self.regularTabsMediator;
   mainViewController.incognitoTabsDelegate = self.incognitoTabsMediator;
   mainViewController.regularTabsImageDataSource = self.regularTabsMediator;
