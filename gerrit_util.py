@@ -256,7 +256,8 @@ class GceAuthenticator(Authenticator):
     # Based on https://cloud.google.com/compute/docs/metadata#runninggce
     try:
       resp, _ = cls._get(cls._INFO_URL)
-    except (socket.error, httplib2.ServerNotFoundError):
+    except (socket.error, httplib2.ServerNotFoundError,
+            httplib2.socks.HTTPError):
       # Could not resolve URL.
       return False
     return resp.get('metadata-flavor') == 'Google'
