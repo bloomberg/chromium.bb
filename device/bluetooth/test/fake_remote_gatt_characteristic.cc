@@ -62,6 +62,17 @@ std::string FakeRemoteGattCharacteristic::AddFakeDescriptor(
   return it->second->GetIdentifier();
 }
 
+bool FakeRemoteGattCharacteristic::RemoveFakeDescriptor(
+    const std::string& identifier) {
+  auto it = fake_descriptors_.find(identifier);
+  if (it == fake_descriptors_.end()) {
+    return false;
+  }
+
+  fake_descriptors_.erase(it);
+  return true;
+}
+
 void FakeRemoteGattCharacteristic::SetNextReadResponse(
     uint16_t gatt_code,
     const base::Optional<std::vector<uint8_t>>& value) {

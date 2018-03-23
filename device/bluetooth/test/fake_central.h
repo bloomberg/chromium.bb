@@ -75,6 +75,11 @@ class FakeCentral : public mojom::FakeCentral, public device::BluetoothAdapter {
                          const std::string& service_id,
                          const std::string& peripheral_address,
                          AddFakeDescriptorCallback callback) override;
+  void RemoveFakeDescriptor(const std::string& descriptor_id,
+                            const std::string& characteristic_id,
+                            const std::string& service_id,
+                            const std::string& peripheral_address,
+                            RemoveFakeDescriptorCallback callback) override;
   void SetNextReadCharacteristicResponse(
       uint16_t gatt_code,
       const base::Optional<std::vector<uint8_t>>& value,
