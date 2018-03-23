@@ -255,6 +255,13 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
   std::unique_ptr<LayerImpl> dummy_layer1_impl =
       LayerImpl::Create(host_impl_.active_tree(), dummy_layer1->id());
 
+  // Resizing without a mask layer or masks_to_bounds, should only require a
+  // regular commit. Note that a layer and its mask should match sizes, but
+  // the mask isn't in the tree yet, so won't need its own commit.
+  gfx::Size arbitrary_size = gfx::Size(1, 2);
+  EXPECT_SET_NEEDS_COMMIT(1, root->SetBounds(arbitrary_size));
+  EXPECT_SET_NEEDS_COMMIT(0, dummy_layer1->SetBounds(arbitrary_size));
+
   EXPECT_CALL(*layer_tree_host_, SetNeedsFullTreeSync()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMaskLayer(dummy_layer1.get()));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGES_RESET(
@@ -263,6 +270,12 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
       child2->PushPropertiesTo(child2_impl.get());
       grand_child->PushPropertiesTo(grand_child_impl.get());
       dummy_layer1->PushPropertiesTo(dummy_layer1_impl.get()));
+
+  // Once there is a mask layer, resizes require subtree properties to update.
+  arbitrary_size = gfx::Size(11, 22);
+  EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
+  EXECUTE_AND_VERIFY_SUBTREE_CHANGED(dummy_layer1->SetBounds(arbitrary_size));
 
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(1);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetMasksToBounds(true));
@@ -322,7 +335,7 @@ TEST_F(LayerTest, LayerPropertyChangedForSubtree) {
 
   // Should be a different size than previous call, to ensure it marks tree
   // changed.
-  gfx::Size arbitrary_size = gfx::Size(111, 222);
+  arbitrary_size = gfx::Size(111, 222);
   EXPECT_CALL(*layer_tree_host_, SetNeedsCommit()).Times(2);
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(root->SetBounds(arbitrary_size));
   EXECUTE_AND_VERIFY_SUBTREE_CHANGED(dummy_layer1->SetBounds(arbitrary_size));
