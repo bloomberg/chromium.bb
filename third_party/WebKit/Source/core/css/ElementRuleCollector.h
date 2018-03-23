@@ -132,6 +132,8 @@ class ElementRuleCollector {
                             bool matching_tree_boundary_rules = false);
   void CollectMatchingShadowHostRules(const MatchRequest&,
                                       CascadeOrder = kIgnoreCascadeOrder);
+  void CollectMatchingPartPseudoRules(const MatchRequest&,
+                                      CascadeOrder = kIgnoreCascadeOrder);
   void SortAndTransferMatchedRules();
   void ClearMatchedRules();
   void AddElementStyleProperties(const CSSPropertyValueSet*,

@@ -247,6 +247,15 @@ void ElementRuleCollector::CollectMatchingShadowHostRules(
                               cascade_order, match_request);
 }
 
+void ElementRuleCollector::CollectMatchingPartPseudoRules(
+    const MatchRequest& match_request,
+    CascadeOrder cascade_order) {
+  if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+    return;
+  CollectMatchingRulesForList(match_request.rule_set->PartPseudoRules(),
+                              cascade_order, match_request);
+}
+
 template <class CSSRuleCollection>
 CSSRule* ElementRuleCollector::FindStyleRule(CSSRuleCollection* css_rules,
                                              StyleRule* style_rule) {
