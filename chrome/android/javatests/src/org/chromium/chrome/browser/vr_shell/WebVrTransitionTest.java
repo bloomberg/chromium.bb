@@ -58,6 +58,8 @@ import org.chromium.content_public.browser.WebContents;
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -433,7 +435,12 @@ public class WebVrTransitionTest {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         TestFramework.executeStepAndWait(
                 "stepVerifyBeforePresent()", framework.getFirstTabWebContents());
+        // Pausing of window.rAF is done asynchronously, so wait until that's done.
+        final CountDownLatch vsyncPausedLatch = new CountDownLatch(1);
+        TestVrShellDelegate.getInstance().setVrShellOnVSyncPausedCallback(
+                () -> { vsyncPausedLatch.countDown(); });
         TransitionUtils.enterPresentationOrFail(framework);
+        vsyncPausedLatch.await(POLL_TIMEOUT_SHORT_MS, TimeUnit.MILLISECONDS);
         TestFramework.executeStepAndWait(
                 "stepVerifyDuringPresent()", framework.getFirstTabWebContents());
         TransitionUtils.forceExitVr();
