@@ -532,8 +532,7 @@ static const aom_cdf_prob
       { AOM_CDF2(226 * 128) }, { AOM_CDF2(187 * 128) }, { AOM_CDF2(145 * 128) },
       { AOM_CDF2(236 * 128) }, { AOM_CDF2(204 * 128) }, { AOM_CDF2(150 * 128) },
       { AOM_CDF2(183 * 128) }, { AOM_CDF2(149 * 128) }, { AOM_CDF2(125 * 128) },
-      { AOM_CDF2(181 * 128) }, { AOM_CDF2(146 * 128) }, { AOM_CDF2(113 * 128) },
-      { AOM_CDF2(128 * 128) }
+      { AOM_CDF2(181 * 128) }, { AOM_CDF2(146 * 128) }, { AOM_CDF2(113 * 128) }
     };
 
 static const aom_cdf_prob default_skip_mode_cdfs[SKIP_MODE_CONTEXTS][CDF_SIZE(

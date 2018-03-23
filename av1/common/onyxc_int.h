@@ -1215,7 +1215,7 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
   const uint8_t txh = tx_size_high[tx_size];
   const int above = *above_ctx < txw;
   const int left = *left_ctx < txh;
-  int category = TXFM_PARTITION_CONTEXTS - 1;
+  int category = TXFM_PARTITION_CONTEXTS;
 
   // dummy return, not used by others.
   if (tx_size <= TX_4X4) return 0;
@@ -1228,7 +1228,7 @@ static INLINE int txfm_partition_context(TXFM_CONTEXT *above_ctx,
         (txsize_sqr_up_map[tx_size] != max_tx_size && max_tx_size > TX_8X8) +
         (TX_SIZES - 1 - max_tx_size) * 2;
   }
-  if (category == TXFM_PARTITION_CONTEXTS - 1) return category;
+  if (category == TXFM_PARTITION_CONTEXTS) return category;
   return category * 3 + above + left;
 }
 
