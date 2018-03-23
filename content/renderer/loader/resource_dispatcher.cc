@@ -273,6 +273,7 @@ void ResourceDispatcher::OnRequestComplete(
     subresource_load_info->resource_type = request_info->resource_type;
     if (request_info->parsed_ip.IsValid())
       subresource_load_info->ip = request_info->parsed_ip;
+    subresource_load_info->was_cached = status.exists_in_cache;
     NotifySubresourceLoadComplete(
         RenderThreadImpl::DeprecatedGetMainTaskRunner(),
         request_info->render_frame_id, std::move(subresource_load_info));

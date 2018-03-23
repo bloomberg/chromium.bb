@@ -594,6 +594,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   GURL subresource_url = embedded_test_server()->GetURL("/cachetime");
   ASSERT_TRUE(subresource_load_info);
   EXPECT_EQ(subresource_url, subresource_load_info->url);
+  EXPECT_FALSE(subresource_load_info->was_cached);
   observer.Reset();
 
   // Loading again should serve the request out of the in-memory cache.
@@ -611,6 +612,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   subresource_load_info = observer.last_subresource_load_info();
   ASSERT_TRUE(subresource_load_info);
   EXPECT_EQ(subresource_url, subresource_load_info->url);
+  EXPECT_TRUE(subresource_load_info->was_cached);
   EXPECT_FALSE(observer.last_memory_cached_loaded_url().is_valid());
 }
 
