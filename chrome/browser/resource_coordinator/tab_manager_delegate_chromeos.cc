@@ -335,9 +335,9 @@ int TabManagerDelegate::MemoryStat::EstimatedMemoryFreedKB(
     base::ProcessHandle pid) {
   std::unique_ptr<base::ProcessMetrics> process_metrics(
       base::ProcessMetrics::CreateProcessMetrics(pid));
-  base::WorkingSetKBytes mem_usage;
-  process_metrics->GetWorkingSetKBytes(&mem_usage);
-  return mem_usage.priv;
+  base::ProcessMetrics::TotalsSummary summary =
+      process_metrics->GetTotalsSummary();
+  return summary.private_clean_kb + summary.private_dirty_kb + summary.swap_kb;
 }
 
 TabManagerDelegate::TabManagerDelegate(

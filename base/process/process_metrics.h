@@ -41,58 +41,6 @@ namespace base {
 // Full declaration is in process_metrics_iocounters.h.
 struct IoCounters;
 
-// Working Set (resident) memory usage broken down by
-//
-// On Windows:
-// priv (private): These pages (kbytes) cannot be shared with any other process.
-// shareable:      These pages (kbytes) can be shared with other processes under
-//                 the right circumstances.
-// shared :        These pages (kbytes) are currently shared with at least one
-//                 other process.
-//
-// On Linux:
-// priv:           Pages mapped only by this process.
-// shared:         PSS or 0 if the kernel doesn't support this.
-// shareable:      0
-
-// On ChromeOS:
-// priv:           Pages mapped only by this process.
-// shared:         PSS or 0 if the kernel doesn't support this.
-// shareable:      0
-// swapped         Pages swapped out to zram.
-//
-// On macOS:
-// priv:           Resident size (RSS) including shared memory. Warning: This
-//                 does not include compressed size and does not always
-//                 accurately account for shared memory due to things like
-//                 copy-on-write. TODO(erikchen): Revamp this with something
-//                 more accurate.
-// shared:         0
-// shareable:      0
-//
-struct WorkingSetKBytes {
-  WorkingSetKBytes() : priv(0), shareable(0), shared(0) {}
-  size_t priv;
-  size_t shareable;
-  size_t shared;
-#if defined(OS_CHROMEOS)
-  size_t swapped;
-#endif
-};
-
-// Committed (resident + paged) memory usage broken down by
-// private: These pages cannot be shared with any other process.
-// mapped:  These pages are mapped into the view of a section (backed by
-//          pagefile.sys)
-// image:   These pages are mapped into the view of an image section (backed by
-//          file system)
-struct CommittedKBytes {
-  CommittedKBytes() : priv(0), mapped(0), image(0) {}
-  size_t priv;
-  size_t mapped;
-  size_t image;
-};
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
 // Minor and major page fault counts since the process creation.
 // Both counts are process-wide, and exclude child processes.
@@ -108,11 +56,20 @@ struct PageFaultCounts {
 // Convert a POSIX timeval to microseconds.
 BASE_EXPORT int64_t TimeValToMicroseconds(const struct timeval& tv);
 
-// Provides performance metrics for a specified process (CPU usage, memory and
-// IO counters). Use CreateCurrentProcessMetrics() to get an instance for the
+// Provides performance metrics for a specified process (CPU usage and IO
+// counters). Use CreateCurrentProcessMetrics() to get an instance for the
 // current process, or CreateProcessMetrics() to get an instance for an
 // arbitrary process. Then, access the information with the different get
 // methods.
+//
+// This class exposes a few platform-specific APIs for parsing memory usage, but
+// these are not intended to generalize to other platforms, since the memory
+// models differ substantially.
+//
+// To obtain consistent memory metrics, use the memory_instrumentation service.
+//
+// For further documentation on memory, see
+// https://chromium.googlesource.com/chromium/src/+/HEAD/docs/README.md
 class BASE_EXPORT ProcessMetrics {
  public:
   ~ProcessMetrics();
@@ -135,27 +92,27 @@ class BASE_EXPORT ProcessMetrics {
   // convenience wrapper for CreateProcessMetrics().
   static std::unique_ptr<ProcessMetrics> CreateCurrentProcessMetrics();
 
-  // Fills a CommittedKBytes with both resident and paged
-  // memory usage as per definition of CommittedBytes.
-  void GetCommittedKBytes(CommittedKBytes* usage) const;
-  // Fills a WorkingSetKBytes containing resident private and shared memory
-  // usage in bytes, as per definition of WorkingSetBytes. Note that this
-  // function is somewhat expensive on Windows (a few ms per process).
-  bool GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const;
-
 #if defined(OS_LINUX) || defined(OS_ANDROID)
   // Resident Set Size is a Linux/Android specific memory concept. Do not
   // attempt to extend this to other platforms.
   BASE_EXPORT size_t GetResidentSetSize() const;
 #endif
 
-#if defined(OS_MACOSX)
-  // Fills both CommitedKBytes and WorkingSetKBytes in a single operation. This
-  // is more efficient on Mac OS X, as the two can be retrieved with a single
-  // system call.
-  bool GetCommittedAndWorkingSetKBytes(CommittedKBytes* usage,
-                                       WorkingSetKBytes* ws_usage) const;
+#if defined(OS_CHROMEOS)
+  // /proc/<pid>/totmaps is a syscall that returns memory summary statistics for
+  // the process.
+  // totmaps is a Linux specific concept, currently only being used on ChromeOS.
+  // Do not attempt to extend this to other platforms.
+  //
+  struct TotalsSummary {
+    size_t private_clean_kb;
+    size_t private_dirty_kb;
+    size_t swap_kb;
+  };
+  BASE_EXPORT TotalsSummary GetTotalsSummary() const;
+#endif
 
+#if defined(OS_MACOSX)
   struct TaskVMInfo {
     // Only available on macOS 10.12+.
     // Anonymous, non-discardable memory, including non-volatile IOKit.
@@ -242,14 +199,6 @@ class BASE_EXPORT ProcessMetrics {
 #else
   ProcessMetrics(ProcessHandle process, PortProvider* port_provider);
 #endif  // !defined(OS_MACOSX) || defined(OS_IOS)
-
-#if defined(OS_LINUX) || defined(OS_ANDROID) | defined(OS_AIX)
-  bool GetWorkingSetKBytesStatm(WorkingSetKBytes* ws_usage) const;
-#endif
-
-#if defined(OS_CHROMEOS)
-  bool GetWorkingSetKBytesTotmaps(WorkingSetKBytes *ws_usage) const;
-#endif
 
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
   int CalculateIdleWakeupsPerSecond(uint64_t absolute_idle_wakeups);

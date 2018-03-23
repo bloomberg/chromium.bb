@@ -30,11 +30,6 @@ double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   return 0.0;
 }
 
-bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
-  NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
-  return false;
-}
-
 bool GetSystemMemoryInfo(SystemMemoryInfoKB* meminfo) {
   NOTIMPLEMENTED();  // TODO(fuchsia): https://crbug.com/706592.
   return false;

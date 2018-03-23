@@ -26,31 +26,6 @@ std::unique_ptr<ProcessMetrics> ProcessMetrics::CreateProcessMetrics(
   return WrapUnique(new ProcessMetrics(process));
 }
 
-namespace {
-size_t GetWorkingSetSize() {
-  struct kinfo_proc info;
-  int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, process_ };
-  size_t length = sizeof(info);
-
-  if (sysctl(mib, arraysize(mib), &info, &length, NULL, 0) < 0)
-    return 0;
-
-  return info.ki_rssize * getpagesize();
-}
-}  // namespace
-
-bool ProcessMetrics::GetWorkingSetKBytes(WorkingSetKBytes* ws_usage) const {
-// TODO(bapt) be sure we can't be precise
-  size_t priv = GetWorkingSetSize();
-  if (!priv)
-    return false;
-  ws_usage->priv = priv / 1024;
-  ws_usage->shareable = 0;
-  ws_usage->shared = 0;
-
-  return true;
-}
-
 double ProcessMetrics::GetPlatformIndependentCPUUsage() {
   struct kinfo_proc info;
   int mib[] = { CTL_KERN, KERN_PROC, KERN_PROC_PID, process_ };
