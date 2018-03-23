@@ -73,6 +73,30 @@
   return self.adaptor;
 }
 
+- (TabModel*)regularTabModel {
+  // Ensure tab model actually used by the mediator is returned, as it may have
+  // been updated.
+  return self.regularTabsMediator ? self.regularTabsMediator.tabModel
+                                  : _regularTabModel;
+}
+
+- (void)setRegularTabModel:(TabModel*)regularTabModel {
+  self.regularTabsMediator.tabModel = regularTabModel;
+  _regularTabModel = regularTabModel;
+}
+
+- (TabModel*)incognitoTabModel {
+  // Ensure tab model actually used by the mediator is returned, as it may have
+  // been updated.
+  return self.incognitoTabsMediator ? self.incognitoTabsMediator.tabModel
+                                    : _incognitoTabModel;
+}
+
+- (void)setIncognitoTabModel:(TabModel*)incognitoTabModel {
+  self.incognitoTabsMediator.tabModel = incognitoTabModel;
+  _incognitoTabModel = incognitoTabModel;
+}
+
 #pragma mark - MainCoordinator properties
 
 - (id<ViewControllerSwapping>)viewControllerSwapper {
@@ -100,10 +124,10 @@
 
   self.regularTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:mainViewController.regularTabsConsumer];
-  self.regularTabsMediator.tabModel = self.regularTabModel;
+  self.regularTabsMediator.tabModel = _regularTabModel;
   self.incognitoTabsMediator = [[TabGridMediator alloc]
       initWithConsumer:mainViewController.incognitoTabsConsumer];
-  self.incognitoTabsMediator.tabModel = self.incognitoTabModel;
+  self.incognitoTabsMediator.tabModel = _incognitoTabModel;
   self.adaptor.incognitoMediator = self.incognitoTabsMediator;
   mainViewController.regularTabsDelegate = self.regularTabsMediator;
   mainViewController.incognitoTabsDelegate = self.incognitoTabsMediator;
@@ -216,6 +240,7 @@
 #pragma mark - BrowserCommands
 
 - (void)openNewTab:(OpenNewTabCommand*)command {
+  DCHECK(self.regularTabModel && self.incognitoTabModel);
   TabModel* activeTabModel =
       command.incognito ? self.incognitoTabModel : self.regularTabModel;
   // TODO(crbug.com/804587) : It is better to use the mediator to insert a
