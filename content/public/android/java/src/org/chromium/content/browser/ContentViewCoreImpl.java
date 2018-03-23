@@ -9,7 +9,6 @@ import android.content.Context;
 import android.content.res.Configuration;
 import android.os.Build;
 import android.os.SystemClock;
-import android.view.HapticFeedbackConstants;
 import android.view.InputDevice;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -33,7 +32,6 @@ import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFact
 import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
-import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.device.gamepad.GamepadList;
@@ -88,49 +86,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
             if (contentViewCore == null) return;
             contentViewCore.hidePopupsAndClearSelection();
             contentViewCore.getGestureListenerManager().resetScrollInProgress();
-        }
-    }
-
-    /**
-     * A {@link GestureStateListener} updating input/selection UI upon various
-     * gesture events notification.
-     */
-    private class ContentGestureStateListener implements GestureStateListener {
-        @Override
-        public void onFlingStartGesture(int scrollOffsetY, int scrollExtentY) {
-            getGestureListenerManager().setTouchScrollInProgress(false);
-        }
-
-        @Override
-        public void onFlingEndGesture(int scrollOffsetY, int scrollExtentY) {
-            // Note that mTouchScrollInProgress should normally be false at this
-            // point, but we reset it anyway as another failsafe.
-            getGestureListenerManager().setTouchScrollInProgress(false);
-        }
-
-        @Override
-        public void onScrollStarted(int scrollOffsetY, int scrollExtentY) {
-            getGestureListenerManager().setTouchScrollInProgress(false);
-        }
-
-        @Override
-        public void onScrollUpdateGestureConsumed() {
-            destroyPastePopup();
-        }
-
-        @Override
-        public void onScrollEnded(int scrollOffsetY, int scrollExtentY) {
-            getGestureListenerManager().setTouchScrollInProgress(false);
-        }
-
-        @Override
-        public void onSingleTap(boolean consumed) {
-            destroyPastePopup();
-        }
-
-        @Override
-        public void onLongPress() {
-            mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         }
     }
 
@@ -273,8 +228,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
 
         SelectPopup.create(mContext, mWebContents, containerView);
         mWebContentsObserver = new ContentViewWebContentsObserver(this);
-
-        getGestureListenerManager().addListener(new ContentGestureStateListener());
 
         mWindowEventObservers.addObserver(controller);
         mWindowEventObservers.addObserver(getGestureListenerManager());

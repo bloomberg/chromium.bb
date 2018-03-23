@@ -4,6 +4,7 @@
 
 package org.chromium.content.browser;
 
+import android.view.HapticFeedbackConstants;
 import android.view.View;
 
 import org.chromium.base.ObserverList;
@@ -129,6 +130,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     /** Update all the listeners after scrolling end event occurred. */
     public void updateOnScrollEnd() {
+        setTouchScrollInProgress(false);
         for (mIterator.rewind(); mIterator.hasNext();) {
             mIterator.next().onScrollEnded(verticalScrollOffset(), verticalScrollExtent());
         }
@@ -156,6 +158,9 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     @CalledByNative
     private void onFlingEnd() {
         if (mPotentiallyActiveFlingCount > 0) mPotentiallyActiveFlingCount--;
+        // Note that mTouchScrollInProgress should normally be false at this
+        // point, but we reset it anyway as another failsafe.
+        setTouchScrollInProgress(false);
         for (mIterator.rewind(); mIterator.hasNext();) {
             mIterator.next().onFlingEndGesture(verticalScrollOffset(), verticalScrollExtent());
         }
@@ -164,6 +169,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     @CalledByNative
     private void onFlingStartEventConsumed() {
         mPotentiallyActiveFlingCount++;
+        setTouchScrollInProgress(false);
         for (mIterator.rewind(); mIterator.hasNext();) {
             mIterator.next().onFlingStartGesture(verticalScrollOffset(), verticalScrollExtent());
         }
@@ -171,6 +177,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     @CalledByNative
     private void onScrollBeginEventAck() {
+        setTouchScrollInProgress(false);
         for (mIterator.rewind(); mIterator.hasNext();) {
             mIterator.next().onScrollStarted(verticalScrollOffset(), verticalScrollExtent());
         }
@@ -183,6 +190,8 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     @CalledByNative
     private void onScrollUpdateGestureConsumed() {
+        SelectionPopupControllerImpl controller = getSelectionPopupController();
+        if (controller != null) controller.destroyPastePopup();
         for (mIterator.rewind(); mIterator.hasNext();) {
             mIterator.next().onScrollUpdateGestureConsumed();
         }
@@ -200,11 +209,14 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     @CalledByNative
     private void onSingleTapEventAck(boolean consumed) {
+        SelectionPopupControllerImpl controller = getSelectionPopupController();
+        if (controller != null) controller.destroyPastePopup();
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onSingleTap(consumed);
     }
 
     @CalledByNative
     private void onLongPressAck() {
+        mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onLongPress();
     }
 
