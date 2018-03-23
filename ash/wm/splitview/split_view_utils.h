@@ -55,6 +55,8 @@ enum SplitviewAnimationType {
   // Used to slide in the text labels.
   SPLITVIEW_ANIMATION_TEXT_SLIDE_IN,
   SPLITVIEW_ANIMATION_TEXT_SLIDE_OUT,
+  // Used to apply window transform on the selector item after it gets snapped.
+  SPLITVIEW_ANIMATION_RESTORE_OVERVIEW_WINDOW,
 };
 
 // Animates |layer|'s opacity based on |type|.

@@ -303,8 +303,9 @@ void OverviewWindowDragController::SnapWindow(
 
   // |item_| will be deleted after RemoveWindowSelectorItem().
   aura::Window* window = item_->GetWindow();
+  const gfx::Rect item_bounds = item_->target_bounds();
   window_selector_->RemoveWindowSelectorItem(item_);
-  split_view_controller_->SnapWindow(window, snap_position);
+  split_view_controller_->SnapWindow(window, snap_position, item_bounds);
   item_ = nullptr;
 }
 
