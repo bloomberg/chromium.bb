@@ -71,16 +71,12 @@ bool AccountSelectFillData::IsSuggestionsAvailable(
 
 std::vector<UsernameAndRealm> AccountSelectFillData::RetrieveSuggestions(
     const base::string16& form_name,
-    const base::string16& field_identifier,
-    const base::string16& typed_value) const {
+    const base::string16& field_identifier) const {
   last_requested_form_ = GetFormInfo(form_name, field_identifier);
   DCHECK(last_requested_form_);
   std::vector<UsernameAndRealm> result;
   for (const Credential& credential : credentials_) {
-    if (base::StartsWith(credential.username, typed_value,
-                         base::CompareCase::SENSITIVE)) {
-      result.push_back({credential.username, credential.realm});
-    }
+    result.push_back({credential.username, credential.realm});
   }
   return result;
 }

@@ -1179,7 +1179,7 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
           "evt.initEvent('focus', true, true, window, 1);"
           "username_.dispatchEvent(evt);"),
         @""],
-      @[@"user0", @"abc", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••", showAll],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
@@ -1192,47 +1192,14 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       @"[]=, onkeyup=false, onchange=false"
     },
     {
-      "Should filter suggestions when focusing username field with input",
+      "Should not filter suggestions when focusing username field with input",
       @[(@"username_.value='ab';"
           "var evt = document.createEvent('Events');"
           "evt.initEvent('focus', true, true, window, 1);"
           "username_.dispatchEvent(evt);"),
         @""],
-      @[@"abc", showAll],
+      @[@"user0 ••••••••", @"abc ••••••••", showAll],
       @"ab[]=, onkeyup=false, onchange=false"
-    },
-    {
-      "Should filter suggestions while typing",
-      @[(@"var evt = document.createEvent('Events');"
-          "evt.initEvent('focus', true, true, window, 1);"
-          "username_.dispatchEvent(evt);"),
-        (@"username_.value='ab';"
-          "evt = document.createEvent('Events');"
-          "evt.initEvent('keyup', true, true, window, 1);"
-          "evt.keyCode = 98;"
-          "username_.dispatchEvent(evt);"),
-        @""],
-      @[@"abc", showAll],
-      @"ab[]=, onkeyup=true, onchange=false"
-    },
-    {
-      "Should unfilter suggestions after backspacing",
-      @[(@"var evt = document.createEvent('Events');"
-          "evt.initEvent('focus', true, true, window, 1);"
-          "username_.dispatchEvent(evt);"),
-        (@"username_.value='ab';"
-          "evt = document.createEvent('Events');"
-          "evt.initEvent('keyup', true, true, window, 1);"
-          "evt.keyCode = 98;"
-          "username_.dispatchEvent(evt);"),
-        (@"username_.value='';"
-          "evt = document.createEvent('Events');"
-          "evt.initEvent('keyup', true, true, window, 1);"
-          "evt.keyCode = 8;"
-          "username_.dispatchEvent(evt);"),
-        @""],
-      @[@"user0", @"abc", showAll],
-      @"[]=, onkeyup=true, onchange=false"
     },
   };
   // clang-format on
@@ -1327,14 +1294,17 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
                    fieldIdentifier:username_element
                          fieldType:@"text"
                               type:@"focus"
-                        typedValue:@"abc"
+                        typedValue:@""
                           webState:web_state()
                  completionHandler:^(NSArray* suggestions,
                                      id<FormSuggestionProvider> provider) {
                    NSMutableArray* suggestion_values = [NSMutableArray array];
                    for (FormSuggestion* suggestion in suggestions)
                      [suggestion_values addObject:suggestion.value];
-                   EXPECT_NSEQ((@[ @"abc", @"Show All\u2026" ]),
+                   EXPECT_NSEQ((@[
+                                 @"user0 ••••••••", @"abc ••••••••",
+                                 @"Show All\u2026"
+                               ]),
                                suggestion_values);
                    block_was_called = YES;
                  }];
@@ -1342,10 +1312,11 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
 
     // Tell PasswordController that a suggestion was selected. It should fill
     // out the password form with the corresponding credentials.
-    FormSuggestion* suggestion = [FormSuggestion suggestionWithValue:@"abc"
-                                                  displayDescription:nil
-                                                                icon:nil
-                                                          identifier:0];
+    FormSuggestion* suggestion =
+        [FormSuggestion suggestionWithValue:@"abc ••••••••"
+                         displayDescription:nil
+                                       icon:nil
+                                 identifier:0];
 
     block_was_called = NO;
     SuggestionHandledCompletion completion = ^{
