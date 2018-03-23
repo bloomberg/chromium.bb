@@ -30,6 +30,7 @@
 
 namespace net {
 class CertVerifier;
+class NetworkQualityEstimator;
 class StaticHttpUserAgentSettings;
 class URLRequestContext;
 }  // namespace net
@@ -158,6 +159,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkContext
       mojom::NetworkContextParams* network_context_params,
       bool quic_disabled,
       net::NetLog* net_log,
+      net::NetworkQualityEstimator* network_quality_estimator,
       net::StaticHttpUserAgentSettings** out_http_user_agent_settings);
 
  private:

@@ -39,6 +39,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/nqe/effective_connection_type.h"
 #include "net/nqe/network_quality_estimator_params.h"
+#include "services/network/public/cpp/network_switches.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -451,8 +452,8 @@ TEST_F(InterventionsInternalsPageHandlerTest, GetFlagsForceEctValue) {
   base::test::ScopedCommandLine scoped_command_line;
   base::CommandLine* command_line = scoped_command_line.GetProcessCommandLine();
   for (auto expected_ect : expected_ects) {
-    command_line->AppendSwitchASCII(switches::kForceEffectiveConnectionType,
-                                    expected_ect);
+    command_line->AppendSwitchASCII(
+        network::switches::kForceEffectiveConnectionType, expected_ect);
     page_handler_->GetPreviewsFlagsDetails(
         base::BindOnce(&MockGetPreviewsFlagsCallback));
     auto ect_flag = passed_in_flags.find(kEctFlagHtmlId);

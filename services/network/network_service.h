@@ -21,8 +21,9 @@
 #include "services/service_manager/public/cpp/service.h"
 
 namespace net {
-class NetLog;
 class LoggingNetworkChangeObserver;
+class NetLog;
+class NetworkQualityEstimator;
 class URLRequestContext;
 }  // namespace net
 
@@ -96,6 +97,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   bool HasRawHeadersAccess(uint32_t process_id) const;
 
   mojom::NetworkServiceClient* client() { return client_.get(); }
+  net::NetworkQualityEstimator* network_quality_estimator() {
+    return network_quality_estimator_.get();
+  }
   net::NetLog* net_log() const;
   KeepaliveStatisticsRecorder* keepalive_statistics_recorder() {
     return &keepalive_statistics_recorder_;
@@ -128,6 +132,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) NetworkService
   std::unique_ptr<service_manager::BinderRegistry> registry_;
 
   mojo::Binding<mojom::NetworkService> binding_;
+
+  std::unique_ptr<net::NetworkQualityEstimator> network_quality_estimator_;
 
   // NetworkContexts register themselves with the NetworkService so that they
   // can be cleaned up when the NetworkService goes away. This is needed as

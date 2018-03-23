@@ -10,6 +10,7 @@
 #include "chrome/browser/io_thread.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/nqe/network_quality_estimator.h"
+#include "net/url_request/url_request_context.h"
 
 namespace nqe_test_util {
 
@@ -19,20 +20,16 @@ namespace {
 // EffectiveConnectionTypeObservers.
 void OverrideEffectiveConnectionTypeOnIO(net::EffectiveConnectionType type,
                                          IOThread* io_thread) {
-  if (!io_thread->globals()->network_quality_estimator)
-    return;
   net::NetworkQualityEstimator* network_quality_estimator =
-      io_thread->globals()->network_quality_estimator.get();
+      io_thread->globals()->system_request_context->network_quality_estimator();
   if (!network_quality_estimator)
     return;
   network_quality_estimator->ReportEffectiveConnectionTypeForTesting(type);
 }
 
 void OverrideRTTsAndWaitOnIO(base::TimeDelta rtt, IOThread* io_thread) {
-  if (!io_thread->globals()->network_quality_estimator)
-    return;
   net::NetworkQualityEstimator* network_quality_estimator =
-      io_thread->globals()->network_quality_estimator.get();
+      io_thread->globals()->system_request_context->network_quality_estimator();
   if (!network_quality_estimator)
     return;
   network_quality_estimator->ReportRTTsAndThroughputForTesting(rtt, rtt, -1);

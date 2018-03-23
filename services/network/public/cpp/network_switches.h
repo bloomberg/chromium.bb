@@ -11,6 +11,7 @@ namespace network {
 
 namespace switches {
 
+COMPONENT_EXPORT(NETWORK_CPP) extern const char kForceEffectiveConnectionType[];
 COMPONENT_EXPORT(NETWORK_CPP)
 extern const char kHostResolverRules[];
 COMPONENT_EXPORT(NETWORK_CPP)

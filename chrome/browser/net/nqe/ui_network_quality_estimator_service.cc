@@ -24,6 +24,7 @@
 #include "net/nqe/network_qualities_prefs_manager.h"
 #include "net/nqe/network_quality.h"
 #include "net/nqe/rtt_throughput_estimates_observer.h"
+#include "net/url_request/url_request_context.h"
 
 namespace {
 
@@ -68,12 +69,17 @@ void SetNQEOnIOThread(net::NetworkQualitiesPrefsManager* prefs_manager,
                       IOThread* io_thread) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
 
-  // Avoid null pointer referencing during browser shutdown.
-  if (!io_thread->globals()->network_quality_estimator)
+  // Avoid null pointer referencing during browser shutdown, or when the network
+  // service is running out of process.
+  if (!io_thread->globals()->system_request_context ||
+      !io_thread->globals()
+           ->system_request_context->network_quality_estimator()) {
     return;
+  }
 
   prefs_manager->InitializeOnNetworkThread(
-      io_thread->globals()->network_quality_estimator.get());
+      io_thread->globals()
+          ->system_request_context->network_quality_estimator());
 }
 
 }  // namespace
@@ -102,10 +108,15 @@ class UINetworkQualityEstimatorService::IONetworkQualityObserver
 
   void InitializeOnIOThread(IOThread* io_thread) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    if (!io_thread->globals()->network_quality_estimator)
+
+    if (!io_thread->globals()->system_request_context ||
+        !io_thread->globals()
+             ->system_request_context->network_quality_estimator()) {
       return;
+    }
     network_quality_estimator_ =
-        io_thread->globals()->network_quality_estimator.get();
+        io_thread->globals()
+            ->system_request_context->network_quality_estimator();
     if (!network_quality_estimator_)
       return;
     network_quality_estimator_->AddEffectiveConnectionTypeObserver(this);

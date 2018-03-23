@@ -392,10 +392,6 @@ const char kForceAppMode[]                  = "force-app-mode";
 // is triggered.
 const char kForceDesktopIOSPromotion[] = "force-desktop-ios-promotion";
 
-// Forces Network Quality Estimator (NQE) to return a specific effective
-// connection type.
-const char kForceEffectiveConnectionType[] = "force-effective-connection-type";
-
 // Forces metrics reporting to be enabled.
 const char kForceEnableMetricsReporting[] = "force-enable-metrics-reporting";
 

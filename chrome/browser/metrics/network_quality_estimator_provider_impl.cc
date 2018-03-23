@@ -7,6 +7,7 @@
 #include "base/sequenced_task_runner.h"
 #include "chrome/browser/io_thread.h"
 #include "content/public/browser/browser_thread.h"
+#include "net/url_request/url_request_context.h"
 
 namespace net {
 class NetworkQualityEstimator;
@@ -21,8 +22,16 @@ void GetNetworkQualityEstimatorOnIOThread(
     IOThread* io_thread) {
   DCHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
 
-  // It is safe to run |io_callback| here since it is guaranteed to be non-null.
-  io_callback.Run(io_thread->globals()->network_quality_estimator.get());
+  net::NetworkQualityEstimator* network_quality_estimator =
+      io_thread->globals()->system_request_context->network_quality_estimator();
+  // |network_quality_estimator| may be nullptr when running the network service
+  // out of process.
+  // TODO(mmenke):  Hook this up through a Mojo API.
+  if (network_quality_estimator) {
+    // It is safe to run |io_callback| here since it is guaranteed to be
+    // non-null.
+    io_callback.Run(network_quality_estimator);
+  }
 }
 
 }  // namespace

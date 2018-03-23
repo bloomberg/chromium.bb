@@ -1205,7 +1205,8 @@ void ProfileIOData::Init(
   if (base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     main_request_context_owner_ = std::move(builder)->Create(
         std::move(profile_params_->main_network_context_params).get(),
-        io_thread_globals->quic_disabled, io_thread->net_log());
+        io_thread_globals->quic_disabled, io_thread->net_log(),
+        io_thread_globals->deprecated_network_quality_estimator.get());
     main_request_context_ =
         main_request_context_owner_.url_request_context_getter
             ->GetURLRequestContext();

@@ -124,7 +124,8 @@ NetworkContext::NetworkContext(
       socket_factory_(network_service_->net_log()) {
   url_request_context_owner_ = ApplyContextParamsToBuilder(
       builder.get(), params_.get(), network_service->quic_disabled(),
-      network_service->net_log(), &user_agent_settings_);
+      network_service->net_log(), network_service->network_quality_estimator(),
+      &user_agent_settings_);
   url_request_context_getter_ =
       url_request_context_owner_.url_request_context_getter;
   network_service_->RegisterNetworkContext(this);
@@ -324,6 +325,8 @@ URLRequestContextOwner NetworkContext::MakeURLRequestContext(
       &builder, network_context_params,
       network_service_ ? network_service_->quic_disabled() : false,
       network_service_ ? network_service_->net_log() : nullptr,
+      network_service_ ? network_service_->network_quality_estimator()
+                       : nullptr,
       &user_agent_settings_);
 }
 
@@ -332,9 +335,13 @@ URLRequestContextOwner NetworkContext::ApplyContextParamsToBuilder(
     mojom::NetworkContextParams* network_context_params,
     bool quic_disabled,
     net::NetLog* net_log,
+    net::NetworkQualityEstimator* network_quality_estimator,
     net::StaticHttpUserAgentSettings** out_http_user_agent_settings) {
   if (net_log)
     builder->set_net_log(net_log);
+
+  if (network_quality_estimator)
+    builder->set_network_quality_estimator(network_quality_estimator);
 
   std::string accept_language = network_context_params->accept_language
                                     ? *network_context_params->accept_language
