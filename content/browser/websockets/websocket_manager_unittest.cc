@@ -19,7 +19,7 @@ namespace {
 // This number is unlikely to occur by chance.
 static const int kMagicRenderProcessId = 506116062;
 
-class TestWebSocketImpl : public WebSocketImpl {
+class TestWebSocketImpl : public network::WebSocket {
  public:
   TestWebSocketImpl(std::unique_ptr<Delegate> delegate,
                     network::mojom::WebSocketRequest request,
@@ -27,12 +27,12 @@ class TestWebSocketImpl : public WebSocketImpl {
                     int frame_id,
                     url::Origin origin,
                     base::TimeDelta delay)
-      : WebSocketImpl(std::move(delegate),
-                      std::move(request),
-                      process_id,
-                      frame_id,
-                      std::move(origin),
-                      delay) {}
+      : network::WebSocket(std::move(delegate),
+                           std::move(request),
+                           process_id,
+                           frame_id,
+                           std::move(origin),
+                           delay) {}
 
   base::TimeDelta delay() const { return delay_; }
 
@@ -67,8 +67,8 @@ class TestWebSocketManager : public WebSocketManager {
   }
 
  private:
-  WebSocketImpl* CreateWebSocketImpl(
-      std::unique_ptr<WebSocketImpl::Delegate> delegate,
+  network::WebSocket* CreateWebSocket(
+      std::unique_ptr<network::WebSocket::Delegate> delegate,
       network::mojom::WebSocketRequest request,
       int process_id,
       int frame_id,
@@ -82,7 +82,7 @@ class TestWebSocketManager : public WebSocketManager {
     return impl;
   }
 
-  void OnLostConnectionToClient(WebSocketImpl* impl) override {
+  void OnLostConnectionToClient(network::WebSocket* impl) override {
     auto it = std::find(sockets_.begin(), sockets_.end(),
                         static_cast<TestWebSocketImpl*>(impl));
     ASSERT_TRUE(it != sockets_.end());

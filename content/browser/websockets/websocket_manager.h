@@ -11,18 +11,18 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
-#include "content/browser/websockets/websocket_impl.h"
 #include "content/common/content_export.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_getter_observer.h"
+#include "services/network/websocket.h"
 
 namespace content {
 class StoragePartition;
 
 // The WebSocketManager is a per child process instance that manages the
-// lifecycle of WebSocketImpl objects. It is responsible for creating
-// WebSocketImpl objects for each WebSocketRequest and throttling the number of
-// WebSocketImpl objects in use.
+// lifecycle of network::WebSocket objects. It is responsible for creating
+// network::WebSocket objects for each WebSocketRequest and throttling the
+// number of network::WebSocket objects in use.
 class CONTENT_EXPORT WebSocketManager
     : public net::URLRequestContextGetterObserver {
  public:
@@ -60,8 +60,8 @@ class CONTENT_EXPORT WebSocketManager
   void ThrottlingPeriodTimerCallback();
 
   // This is virtual to support testing.
-  virtual WebSocketImpl* CreateWebSocketImpl(
-      std::unique_ptr<WebSocketImpl::Delegate> delegate,
+  virtual network::WebSocket* CreateWebSocket(
+      std::unique_ptr<network::WebSocket::Delegate> delegate,
       network::mojom::WebSocketRequest request,
       int child_id,
       int frame_id,
@@ -69,8 +69,8 @@ class CONTENT_EXPORT WebSocketManager
       base::TimeDelta delay);
 
   net::URLRequestContext* GetURLRequestContext();
-  void OnReceivedResponseFromServer(WebSocketImpl* impl);
-  virtual void OnLostConnectionToClient(WebSocketImpl* impl);
+  void OnReceivedResponseFromServer(network::WebSocket* impl);
+  virtual void OnLostConnectionToClient(network::WebSocket* impl);
 
   void ObserveURLRequestContextGetter();
 
@@ -78,7 +78,7 @@ class CONTENT_EXPORT WebSocketManager
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
   // TODO(ricea): Make ownership explicit.
-  std::set<WebSocketImpl*> impls_;
+  std::set<network::WebSocket*> impls_;
 
   // Timer and counters for per-renderer WebSocket throttling.
   base::RepeatingTimer throttling_period_timer_;
