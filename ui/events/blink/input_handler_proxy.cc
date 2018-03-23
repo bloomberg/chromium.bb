@@ -380,8 +380,8 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleInputEvent(
         DCHECK(fling_booster_->fling_cancellation_is_deferred());
         TRACE_EVENT_INSTANT0("input", "InputHandlerProxy::FlingBoostStart",
                              TRACE_EVENT_SCOPE_THREAD);
-      } else if (WebInputEvent::kGestureScrollBegin ||
-                 WebInputEvent::kGestureScrollUpdate) {
+      } else if (event.GetType() == WebInputEvent::kGestureScrollBegin ||
+                 event.GetType() == WebInputEvent::kGestureScrollUpdate) {
         TRACE_EVENT_INSTANT0("input",
                              "InputHandlerProxy::ExtendBoostedFlingTimeout",
                              TRACE_EVENT_SCOPE_THREAD);
