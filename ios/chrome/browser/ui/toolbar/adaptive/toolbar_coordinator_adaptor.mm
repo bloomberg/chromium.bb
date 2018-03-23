@@ -8,7 +8,6 @@
 #import "ios/chrome/browser/ui/commands/toolbar_commands.h"
 #import "ios/chrome/browser/ui/history_popup/requirements/tab_history_ui_updater.h"
 #import "ios/chrome/browser/ui/toolbar/adaptive/toolbar_coordinatee.h"
-#import "ios/chrome/browser/ui/tools_menu/tools_menu_coordinator.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -18,27 +17,17 @@
 @property(nonatomic, strong)
     NSMutableArray<id<NewTabPageControllerDelegate, ToolbarCommands>>*
         coordinators;
-// Coordinator for the toolsMenu.
-@property(nonatomic, strong) ToolsMenuCoordinator* toolsMenuCoordinator;
 @end
 
 @implementation ToolbarCoordinatorAdaptor
 
 @synthesize coordinators = _coordinators;
-@synthesize toolsMenuCoordinator = _toolsMenuCoordinator;
 
 #pragma mark - Public
 
-- (instancetype)initWithToolsMenuConfigurationProvider:
-                    (id<ToolsMenuConfigurationProvider>)configurationProvider
-                                            dispatcher:
-                                                (CommandDispatcher*)dispatcher {
+- (instancetype)initWithDispatcher:(CommandDispatcher*)dispatcher {
   self = [super init];
   if (self) {
-    _toolsMenuCoordinator = [[ToolsMenuCoordinator alloc] init];
-    _toolsMenuCoordinator.dispatcher = dispatcher;
-    _toolsMenuCoordinator.configurationProvider = configurationProvider;
-    [_toolsMenuCoordinator start];
     [dispatcher startDispatchingToTarget:self
                              forProtocol:@protocol(ToolbarCommands)];
     _coordinators = [NSMutableArray array];
@@ -73,12 +62,6 @@
   }
 }
 
-#pragma mark - ToolsMenuPresentationStateProvider
-
-- (BOOL)isShowingToolsMenu {
-  return [self.toolsMenuCoordinator isShowingToolsMenu];
-}
-
 #pragma mark - SideSwipeToolbarInteracting
 
 - (BOOL)isInsideToolbar:(CGPoint)point {
@@ -95,10 +78,6 @@
 }
 
 #pragma mark - ToolbarCoordinating
-
-- (void)updateToolsMenu {
-  [self.toolsMenuCoordinator updateConfiguration];
-}
 
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater {
   return self;

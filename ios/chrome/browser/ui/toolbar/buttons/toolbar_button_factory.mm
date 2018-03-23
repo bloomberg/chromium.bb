@@ -237,7 +237,7 @@ const int styleCount = 2;
   } else {
     [self configureButton:toolsMenuButton width:kToolsMenuButtonWidth];
   }
-  if (base::FeatureList::IsEnabled(kNewToolsMenu)) {
+  if (IsUIRefreshPhase1Enabled()) {
     [toolsMenuButton addTarget:self.dispatcher
                         action:@selector(showToolsMenuPopup)
               forControlEvents:UIControlEventTouchUpInside];

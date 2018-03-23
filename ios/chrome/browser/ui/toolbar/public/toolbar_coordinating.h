@@ -16,9 +16,6 @@
 @protocol ToolbarCoordinating<NewTabPageControllerDelegate,
                               SideSwipeToolbarInteracting>
 
-// Updates the tools menu, changing its content to reflect the current page.
-- (void)updateToolsMenu;
-
 - (id<TabHistoryUIUpdater>)tabHistoryUIUpdater;
 
 @end

@@ -50,6 +50,9 @@ initWithToolsMenuConfigurationProvider:
 // Stop this coordinator.
 - (void)stop;
 
+// Updates the tools menu, changing its content to reflect the current page.
+- (void)updateToolsMenu;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_TOOLBAR_CLEAN_TOOLBAR_COORDINATOR_H_

@@ -710,9 +710,7 @@ NSString* const kBrowserViewControllerSnackbarCategory =
 @property(nonatomic, strong)
     AdaptiveToolbarCoordinator* secondaryToolbarCoordinator;
 // Interface object with the toolbars.
-@property(nonatomic, strong)
-    id<ToolbarCoordinating, ToolsMenuPresentationStateProvider>
-        toolbarInterface;
+@property(nonatomic, strong) id<ToolbarCoordinating> toolbarInterface;
 
 // Vertical offset for the primary toolbar, used for fullscreen.
 @property(nonatomic, strong) NSLayoutConstraint* primaryToolbarOffsetConstraint;
@@ -1508,10 +1506,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   [_paymentRequestManager cancelRequest];
   [_printController dismissAnimated:YES];
   _printController = nil;
-  if (base::FeatureList::IsEnabled(kNewToolsMenu)) {
+  if (IsUIRefreshPhase1Enabled()) {
     [self.dispatcher dismissPopupMenu];
   } else {
     [self.dispatcher dismissToolsMenu];
+  }
+  if (!base::FeatureList::IsEnabled(kNewToolsMenu)) {
     [_tabHistoryCoordinator dismissHistoryPopup];
   }
   [_contextMenuCoordinator stop];
@@ -2051,9 +2051,8 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
     bottomToolbarCoordinator.dispatcher = self.dispatcher;
     [bottomToolbarCoordinator start];
 
-    ToolbarCoordinatorAdaptor* adaptor = [[ToolbarCoordinatorAdaptor alloc]
-        initWithToolsMenuConfigurationProvider:self
-                                    dispatcher:self.dispatcher];
+    ToolbarCoordinatorAdaptor* adaptor =
+        [[ToolbarCoordinatorAdaptor alloc] initWithDispatcher:self.dispatcher];
     self.toolbarInterface = adaptor;
     [adaptor addToolbarCoordinator:topToolbarCoordinator];
     [adaptor addToolbarCoordinator:bottomToolbarCoordinator];
@@ -2243,14 +2242,15 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
       [self.primaryToolbarCoordinator QRScannerResultLoader];
   _qrScannerCoordinator.presentationProvider = self;
 
-  if (base::FeatureList::IsEnabled(kNewToolsMenu)) {
+  if (IsUIRefreshPhase1Enabled()) {
     self.popupMenuCoordinator = [[PopupMenuCoordinator alloc]
         initWithBaseViewController:self
                       browserState:self.browserState];
     self.popupMenuCoordinator.dispatcher = _dispatcher;
     self.popupMenuCoordinator.webStateList = [_model webStateList];
     [self.popupMenuCoordinator start];
-  } else {
+  }
+  if (!base::FeatureList::IsEnabled(kNewToolsMenu)) {
     _tabHistoryCoordinator = [[LegacyTabHistoryCoordinator alloc]
         initWithBaseViewController:self
                       browserState:_browserState];
@@ -2434,7 +2434,7 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
   Tab* tab = [_model currentTab];
   if (![tab navigationManager])
     return;
-  [self.toolbarInterface updateToolsMenu];
+  [_toolbarCoordinator updateToolsMenu];
 
   if (_insertedTabWasPrerenderedTab &&
       ![self.helper isToolbarLoading:self.currentWebState])
@@ -2473,10 +2473,12 @@ applicationCommandEndpoint:(id<ApplicationCommands>)applicationCommandEndpoint {
 
 - (void)dismissPopups {
   [self.dispatcher hidePageInfo];
-  if (base::FeatureList::IsEnabled(kNewToolsMenu)) {
+  if (IsUIRefreshPhase1Enabled()) {
     [self.dispatcher dismissPopupMenu];
   } else {
     [self.dispatcher dismissToolsMenu];
+  }
+  if (!base::FeatureList::IsEnabled(kNewToolsMenu)) {
     [_tabHistoryCoordinator dismissHistoryPopup];
   }
   [self.tabTipBubblePresenter dismissAnimated:NO];
@@ -5249,7 +5251,13 @@ bubblePresenterForFeature:(const base::Feature&)feature
 }
 
 - (BOOL)preventSideSwipe {
-  if ([self.toolbarInterface isShowingToolsMenu])
+  BOOL isShowingToolsMenu = NO;
+  if (IsUIRefreshPhase1Enabled()) {
+    isShowingToolsMenu = [self.popupMenuCoordinator isShowingPopupMenu];
+  } else {
+    isShowingToolsMenu = [_toolbarCoordinator isShowingToolsMenu];
+  }
+  if (isShowingToolsMenu)
     return YES;
 
   if (_voiceSearchController && _voiceSearchController->IsVisible())

@@ -45,6 +45,12 @@
   self.mediator = nil;
 }
 
+#pragma mark - Public
+
+- (BOOL)isShowingPopupMenu {
+  return self.presenter != nil;
+}
+
 #pragma mark - PopupMenuCommands
 
 - (void)showNavigationHistoryBackPopupMenu {

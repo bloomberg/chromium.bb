@@ -20,6 +20,9 @@ class WebStateList;
 // The WebStateList this coordinator is handling.
 @property(nonatomic, assign) WebStateList* webStateList;
 
+// Returns whether this coordinator is showing a popup menu.
+- (BOOL)isShowingPopupMenu;
+
 @end
 
 #endif  // IOS_CHROME_BROWSER_UI_POPUP_MENU_POPUP_MENU_COORDINATOR_H_
