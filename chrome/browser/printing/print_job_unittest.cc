@@ -6,11 +6,13 @@
 
 #include <memory>
 #include <utility>
+#include <vector>
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string16.h"
+#include "build/build_config.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/printing/print_job_worker.h"
 #include "content/public/browser/notification_registrar.h"
@@ -142,5 +144,35 @@ TEST(PrintJobTest, SimplePrintLateInit) {
   job->ControlledWorkerShutdown();
   */
 }
+
+#if defined(OS_WIN)
+TEST(PrintJobTest, PageRangeMapping) {
+  int page_count = 4;
+  std::vector<int> input_full = {0, 1, 2, 3};
+  std::vector<int> expected_output_full = {0, 1, 2, 3};
+  EXPECT_EQ(expected_output_full,
+            PrintJob::GetFullPageMapping(input_full, page_count));
+
+  std::vector<int> input_12 = {1, 2};
+  std::vector<int> expected_output_12 = {-1, 1, 2, -1};
+  EXPECT_EQ(expected_output_12,
+            PrintJob::GetFullPageMapping(input_12, page_count));
+
+  std::vector<int> input_03 = {0, 3};
+  std::vector<int> expected_output_03 = {0, -1, -1, 3};
+  EXPECT_EQ(expected_output_03,
+            PrintJob::GetFullPageMapping(input_03, page_count));
+
+  std::vector<int> input_0 = {0};
+  std::vector<int> expected_output_0 = {0, -1, -1, -1};
+  EXPECT_EQ(expected_output_0,
+            PrintJob::GetFullPageMapping(input_0, page_count));
+
+  std::vector<int> input_invalid = {4, 100};
+  std::vector<int> expected_output_invalid = {-1, -1, -1, -1};
+  EXPECT_EQ(expected_output_invalid,
+            PrintJob::GetFullPageMapping(input_invalid, page_count));
+}
+#endif  // defined(OS_WIN)
 
 }  // namespace printing

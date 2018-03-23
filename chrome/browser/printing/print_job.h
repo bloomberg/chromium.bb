@@ -8,6 +8,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
@@ -125,6 +126,10 @@ class PrintJob : public PrintJobWorkerOwner,
   ~PrintJob() override;
 
  private:
+#if defined(OS_WIN)
+  FRIEND_TEST_ALL_PREFIXES(PrintJobTest, PageRangeMapping);
+#endif
+
   // Updates |document_| to a new instance.
   void UpdatePrintedDocument(PrintedDocument* new_document);
 
@@ -149,6 +154,10 @@ class PrintJob : public PrintJobWorkerOwner,
   void OnPdfPageConverted(int page_number,
                           float scale_factor,
                           std::unique_ptr<MetafilePlayer> metafile);
+
+  // Helper method to do the work for ResetPageMapping(). Split for unit tests.
+  static std::vector<int> GetFullPageMapping(const std::vector<int>& pages,
+                                             int total_page_count);
 #endif  // defined(OS_WIN)
 
   content::NotificationRegistrar registrar_;
