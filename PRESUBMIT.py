@@ -1771,7 +1771,12 @@ def _GetOwnersFilesToCheckForIpcOwners(input_api):
       mostly_json_lines = '\n'.join(f.NewContents())
       # Comments aren't allowed in strict JSON, so filter them out.
       json_lines = json_comment_eater.Nom(mostly_json_lines)
-      json_content = input_api.json.loads(json_lines)
+      try:
+        json_content = input_api.json.loads(json_lines)
+      except:
+        # There's another PRESUBMIT check that already verifies that JSON files
+        # are not invalid, so no need to emit another warning here.
+        continue
       if 'interface_provider_specs' in json_content:
         AddPatternToCheck(f, input_api.os_path.basename(f.LocalPath()))
     for pattern in file_patterns:
