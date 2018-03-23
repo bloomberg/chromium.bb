@@ -87,11 +87,18 @@ void FrameSinkManagerImpl::RegisterFrameSinkId(
   surface_manager_.RegisterFrameSinkId(frame_sink_id);
   if (video_detector_)
     video_detector_->OnFrameSinkIdRegistered(frame_sink_id);
+
+  for (auto& observer : observer_list_)
+    observer.OnRegisteredFrameSinkId(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::InvalidateFrameSinkId(
     const FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  for (auto& observer : observer_list_)
+    observer.OnInvalidatedFrameSinkId(frame_sink_id);
+
   surface_manager_.InvalidateFrameSinkId(frame_sink_id);
   if (video_detector_)
     video_detector_->OnFrameSinkIdInvalidated(frame_sink_id);
@@ -159,6 +166,9 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
               std::move(params->compositor_frame_sink_client)),
           std::move(params->display_private),
           mojom::DisplayClientPtr(std::move(params->display_client)));
+
+  for (auto& observer : observer_list_)
+    observer.OnCreatedRootCompositorFrameSink(params->frame_sink_id);
 }
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
@@ -170,11 +180,17 @@ void FrameSinkManagerImpl::CreateCompositorFrameSink(
 
   sink_map_[frame_sink_id] = std::make_unique<CompositorFrameSinkImpl>(
       this, frame_sink_id, std::move(request), std::move(client));
+
+  for (auto& observer : observer_list_)
+    observer.OnCreatedCompositorFrameSink(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::DestroyCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     DestroyCompositorFrameSinkCallback callback) {
+  for (auto& observer : observer_list_)
+    observer.OnDestroyedCompositorFrameSink(frame_sink_id);
+
   sink_map_.erase(frame_sink_id);
   std::move(callback).Run();
 }
@@ -199,6 +215,11 @@ void FrameSinkManagerImpl::RegisterFrameSinkHierarchy(
 
   DCHECK_EQ(registered_sources_.count(parent_source), 1u);
   RecursivelyAttachBeginFrameSource(child_frame_sink_id, parent_source);
+
+  for (auto& observer : observer_list_) {
+    observer.OnRegisteredFrameSinkHierarchy(parent_frame_sink_id,
+                                            child_frame_sink_id);
+  }
 }
 
 void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
@@ -209,6 +230,12 @@ void FrameSinkManagerImpl::UnregisterFrameSinkHierarchy(
   // in time. This makes it possible to invalidate parent and child FrameSinkIds
   // independently of each other and not have an ordering dependency of
   // unregistering the hierarchy first before either of them.
+
+  for (auto& observer : observer_list_) {
+    observer.OnUnregisteredFrameSinkHierarchy(parent_frame_sink_id,
+                                              child_frame_sink_id);
+  }
+
   auto iter = frame_sink_source_map_.find(parent_frame_sink_id);
   DCHECK(iter != frame_sink_source_map_.end());
 
@@ -371,11 +398,17 @@ void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
   auto it = frame_sink_source_map_.find(frame_sink_id);
   if (it != frame_sink_source_map_.end() && it->second.source)
     support->SetBeginFrameSource(it->second.source);
+
+  for (auto& observer : observer_list_)
+    observer.OnRegisteredCompositorFrameSinkSupport(frame_sink_id, support);
 }
 
 void FrameSinkManagerImpl::UnregisterCompositorFrameSinkSupport(
     const FrameSinkId& frame_sink_id) {
   DCHECK(base::ContainsKey(support_map_, frame_sink_id));
+
+  for (auto& observer : observer_list_)
+    observer.OnUnregisteredCompositorFrameSinkSupport(frame_sink_id);
 
   for (auto& capturer : video_capturers_) {
     if (capturer->requested_target() == frame_sink_id)
@@ -526,6 +559,14 @@ VideoDetector* FrameSinkManagerImpl::CreateVideoDetectorForTesting(
   video_detector_ = std::make_unique<VideoDetector>(
       surface_manager(), std::move(tick_clock), task_runner);
   return video_detector_.get();
+}
+
+void FrameSinkManagerImpl::AddObserver(FrameSinkObserver* obs) {
+  observer_list_.AddObserver(obs);
+}
+
+void FrameSinkManagerImpl::RemoveObserver(FrameSinkObserver* obs) {
+  observer_list_.RemoveObserver(obs);
 }
 
 }  // namespace viz

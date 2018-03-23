@@ -19,6 +19,7 @@
 #include "base/threading/thread_checker.h"
 #include "components/viz/common/constants.h"
 #include "components/viz/common/surfaces/frame_sink_id.h"
+#include "components/viz/service/frame_sinks/frame_sink_observer.h"
 #include "components/viz/service/frame_sinks/primary_begin_frame_source.h"
 #include "components/viz/service/frame_sinks/video_capture/frame_sink_video_capturer_manager.h"
 #include "components/viz/service/frame_sinks/video_detector.h"
@@ -165,6 +166,9 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
   void OnFrameTokenChanged(const FrameSinkId& frame_sink_id,
                            uint32_t frame_token);
 
+  void AddObserver(FrameSinkObserver* obs);
+  void RemoveObserver(FrameSinkObserver* obs);
+
  private:
   friend class FrameSinkManagerTest;
 
@@ -247,6 +251,8 @@ class VIZ_SERVICE_EXPORT FrameSinkManagerImpl
 
   mojom::FrameSinkManagerClientPtr client_ptr_;
   mojo::Binding<mojom::FrameSinkManager> binding_;
+
+  base::ObserverList<FrameSinkObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(FrameSinkManagerImpl);
 };

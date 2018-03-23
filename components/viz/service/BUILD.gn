@@ -113,6 +113,7 @@ viz_component("service") {
     "frame_sinks/direct_layer_tree_frame_sink.h",
     "frame_sinks/frame_sink_manager_impl.cc",
     "frame_sinks/frame_sink_manager_impl.h",
+    "frame_sinks/frame_sink_observer.h",
     "frame_sinks/primary_begin_frame_source.cc",
     "frame_sinks/primary_begin_frame_source.h",
     "frame_sinks/referenced_surface_tracker.cc",
