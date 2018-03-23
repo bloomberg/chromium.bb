@@ -319,14 +319,9 @@ Blob* File::slice(long long start,
   long long length = end - start;
   std::unique_ptr<BlobData> blob_data = BlobData::Create();
   blob_data->SetContentType(NormalizeType(content_type));
-  if (!file_system_url_.IsEmpty()) {
-    blob_data->AppendFileSystemURL(file_system_url_, start, length,
-                                   modification_time_ms / kMsPerSecond);
-  } else {
-    DCHECK(!path_.IsEmpty());
-    blob_data->AppendFile(path_, start, length,
-                          modification_time_ms / kMsPerSecond);
-  }
+  DCHECK(!path_.IsEmpty());
+  blob_data->AppendFile(path_, start, length,
+                        modification_time_ms / kMsPerSecond);
   return Blob::Create(BlobDataHandle::Create(std::move(blob_data), length));
 }
 
@@ -364,11 +359,6 @@ void File::AppendTo(BlobData& blob_data) const {
   long long size;
   double modification_time_ms;
   CaptureSnapshot(size, modification_time_ms);
-  if (!file_system_url_.IsEmpty()) {
-    blob_data.AppendFileSystemURL(file_system_url_, 0, size,
-                                  modification_time_ms / kMsPerSecond);
-    return;
-  }
   DCHECK(!path_.IsEmpty());
   blob_data.AppendFile(path_, 0, size, modification_time_ms / kMsPerSecond);
 }
