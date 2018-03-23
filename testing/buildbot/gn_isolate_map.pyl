@@ -387,7 +387,12 @@
   },
   "components_perftests": {
     "label": "//components:components_perftests",
-    "type": "windowed_test_launcher",
+    "type": "script",
+    "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "--xvfb",
+      "components_perftests",
+    ],
   },
   "components_variations_junit_tests": {
     "label": "//components/variations/android:components_variations_junit_tests",

@@ -133,18 +133,6 @@
             }
           ]
         },
-        "test": "components_perftests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true,
-          "dimension_sets": [
-            {
-              "device_os": "MMB29Q",
-              "device_type": "bullhead"
-            }
-          ]
-        },
         "test": "components_unittests"
       },
       {
@@ -720,16 +708,6 @@
           "--test-launcher-print-test-stdio=always"
         ],
         "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_perftests"
-      },
-      {
-        "args": [
-          "--test-launcher-batch-limit=1",
-          "--test-launcher-print-test-stdio=always"
-        ],
-        "swarming": {
           "can_use_on_swarming_builders": true,
           "shards": 5
         },
@@ -1217,12 +1195,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_perftests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "components_unittests"
       },
       {
@@ -1626,12 +1598,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_perftests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "components_unittests"
       },
       {
@@ -1992,12 +1958,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_perftests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "components_unittests"
       },
       {
@@ -2305,12 +2265,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromedriver_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_perftests"
       },
       {
         "swarming": {
@@ -2638,12 +2592,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "components_perftests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "components_unittests"
       },
       {
@@ -2935,12 +2883,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "chromedriver_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "components_perftests"
       },
       {
         "swarming": {
