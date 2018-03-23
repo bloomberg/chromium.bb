@@ -86,7 +86,8 @@ chrome.test.getConfig(function(config) {
       var testUrl = "http://localhost:PORT/extensions/test_file.html"
           .replace(/PORT/, config.testServer.port);
 
-      // Test that chrome.extension.inIncognitoTab is true for incognito tabs.
+      // Test that chrome.extension.inIncognitoContext is true for incognito
+      // tabs.
       chrome.tabs.create({windowId: incognitoWindow.id, url: testUrl},
         pass(function(tab) {
           chrome.tabs.executeScript(tab.id,
