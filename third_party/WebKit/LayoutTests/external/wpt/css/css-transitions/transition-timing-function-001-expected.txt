@@ -1,0 +1,23 @@
+This is a testharness.js-based test.
+FAIL parse 'ease' assert_equals: Expected computed value expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse 'linear' assert_equals: Expected computed value expected "cubic-bezier(0, 0, 1, 1)" but got "linear"
+FAIL parse 'ease-in' assert_equals: Expected computed value expected "cubic-bezier(0.42, 0, 1, 1)" but got "ease-in"
+FAIL parse 'ease-out' assert_equals: Expected computed value expected "cubic-bezier(0, 0, 0.58, 1)" but got "ease-out"
+FAIL parse 'ease-in-out' assert_equals: Expected computed value expected "cubic-bezier(0.42, 0, 0.58, 1)" but got "ease-in-out"
+FAIL parse 'step-start' assert_equals: Expected computed value expected "steps(1, start)" but got "step-start"
+FAIL parse 'step-end' assert_equals: Expected computed value expected "steps(1)" but got "step-end"
+PASS parse 'cubic-bezier(0.1, 0.2, 0.3, 0.4)'
+PASS parse 'cubic-bezier(0.1, -0.2, 0.3, -0.4)'
+PASS parse 'cubic-bezier(0.1, 1.2, 0.3, 1.4)'
+PASS parse 'steps(3, start)'
+FAIL parse 'steps(3, end)' assert_equals: Expected computed value expected "steps(3)" but got "steps(3, end)"
+FAIL parse 'steps(3)' assert_equals: Expected computed value expected "steps(3)" but got "steps(3, end)"
+FAIL parse 'cubic-bezier(foobar)' assert_equals: Expected computed value expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse 'steps(foobar)' assert_equals: Expected computed value expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse 'steps(3.3, end)' assert_equals: Expected computed value expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse 'steps(3, top)' assert_equals: Expected computed value expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse 'steps(-3, top)' assert_equals: Expected computed value expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse 'cubic-bezier(-0.1, -0.2, -0.3, -0.4)' assert_equals: Expected computed value expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+FAIL parse 'cubic-bezier(1.1, 1.2, 1.3, 1.4)' assert_equals: Expected computed value expected "cubic-bezier(0.25, 0.1, 0.25, 1)" but got "ease"
+Harness: the test ran to completion.
+
