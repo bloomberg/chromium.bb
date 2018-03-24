@@ -110,6 +110,10 @@ void ColumnBalancer::TraverseChildren(const LayoutObject& object) {
     LayoutUnit offset_for_this_child =
         child_box.IsTableRow() ? LayoutUnit() : logical_top;
 
+    // Include this child's offset in the flow thread offset. Note that rather
+    // than subtracting the offset again when done, we set it back to the old
+    // value. This matters in saturated arithmetic situations.
+    auto old_flow_thread_offset = flow_thread_offset_;
     flow_thread_offset_ += offset_for_this_child;
 
     ExamineBoxAfterEntering(child_box, logical_height,
@@ -122,14 +126,15 @@ void ColumnBalancer::TraverseChildren(const LayoutObject& object) {
       // We need to get to the border edge before processing content inside
       // this child. If the child is floated, we're currently at the margin
       // edge.
+      auto old_flow_thread_offset = flow_thread_offset_;
       flow_thread_offset_ += border_edge_offset;
       TraverseSubtree(child_box);
-      flow_thread_offset_ -= border_edge_offset;
+      flow_thread_offset_ = old_flow_thread_offset;
     }
     previous_break_after_value = child_box.BreakAfter();
     ExamineBoxBeforeLeaving(child_box, logical_height);
 
-    flow_thread_offset_ -= offset_for_this_child;
+    flow_thread_offset_ = old_flow_thread_offset;
   }
 }
 
