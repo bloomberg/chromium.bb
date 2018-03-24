@@ -21,8 +21,9 @@
 #include "third_party/khronos/EGL/eglext.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_bindings.h"
+#include "ui/gl/gl_gl_api_implementation.h"
 #include "ui/gl/gl_surface_egl.h"
-
+#include "ui/gl/yuv_to_rgb_converter.h"
 
 #ifndef EGL_CHROMIUM_create_context_bind_generates_resource
 #define EGL_CHROMIUM_create_context_bind_generates_resource 1
@@ -62,8 +63,8 @@ namespace gl {
 
 GLContextEGL::GLContextEGL(GLShareGroup* share_group)
     : GLContextReal(share_group),
-      context_(nullptr),
-      display_(nullptr),
+      context_(EGL_NO_CONTEXT),
+      display_(EGL_NO_DISPLAY),
       config_(nullptr),
       unbind_fbo_on_makecurrent_(false) {}
 
@@ -204,6 +205,7 @@ bool GLContextEGL::Initialize(GLSurface* compatible_surface,
 }
 
 void GLContextEGL::Destroy() {
+  ReleaseYUVToRGBConverters();
   if (context_) {
     if (!eglDestroyContext(display_, context_)) {
       LOG(ERROR) << "eglDestroyContext failed with error "
@@ -211,6 +213,58 @@ void GLContextEGL::Destroy() {
     }
 
     context_ = nullptr;
+  }
+}
+
+YUVToRGBConverter* GLContextEGL::GetYUVToRGBConverter(
+    const gfx::ColorSpace& color_space) {
+  std::unique_ptr<YUVToRGBConverter>& yuv_to_rgb_converter =
+      yuv_to_rgb_converters_[color_space];
+  if (!yuv_to_rgb_converter) {
+    yuv_to_rgb_converter =
+        std::make_unique<YUVToRGBConverter>(*GetVersionInfo(), color_space);
+  }
+  return yuv_to_rgb_converter.get();
+}
+
+void GLContextEGL::ReleaseYUVToRGBConverters() {
+  if (!yuv_to_rgb_converters_.empty()) {
+    // If this context is not current, bind this context's API so that the YUV
+    // converter can safely destruct
+    GLContext* current_context = GetRealCurrent();
+    if (current_context != this) {
+      SetCurrentGL(GetCurrentGL());
+    }
+
+    EGLContext current_egl_context = eglGetCurrentContext();
+    EGLSurface current_draw_surface = EGL_NO_SURFACE;
+    EGLSurface current_read_surface = EGL_NO_SURFACE;
+    if (context_ != current_egl_context) {
+      current_draw_surface = eglGetCurrentSurface(EGL_DRAW);
+      current_read_surface = eglGetCurrentSurface(EGL_READ);
+      // This call relies on the fact that yuv_to_rgb_converters_ are only ever
+      // allocated in GLImageIOSurfaceEGL::CopyTexImage, which is only on
+      // MacOS, where surfaceless EGL contexts are always supported.
+      if (!eglMakeCurrent(display_, EGL_NO_SURFACE, EGL_NO_SURFACE, context_)) {
+        DVLOG(1) << "eglMakeCurrent failed with error "
+                 << GetLastEGLErrorString();
+      }
+    }
+
+    yuv_to_rgb_converters_.clear();
+
+    // Rebind the current context's API if needed.
+    if (current_context && current_context != this) {
+      SetCurrentGL(current_context->GetCurrentGL());
+    }
+
+    if (context_ != current_egl_context) {
+      if (!eglMakeCurrent(display_, current_draw_surface, current_read_surface,
+                          current_egl_context)) {
+        DVLOG(1) << "eglMakeCurrent failed with error "
+                 << GetLastEGLErrorString();
+      }
+    }
   }
 }
 

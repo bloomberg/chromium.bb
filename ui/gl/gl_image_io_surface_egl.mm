@@ -4,7 +4,12 @@
 
 #include "ui/gl/gl_image_io_surface_egl.h"
 
+#include "base/callback_helpers.h"
+#include "base/mac/bind_objc_block.h"
+#include "ui/gl/gl_context.h"
 #include "ui/gl/gl_surface_egl.h"
+#include "ui/gl/scoped_binders.h"
+#include "ui/gl/yuv_to_rgb_converter.h"
 
 // Enums for the EGL_ANGLE_iosurface_client_buffer extension
 #define EGL_IOSURFACE_ANGLE 0x3454
@@ -128,7 +133,7 @@ bool GLImageIOSurfaceEGL::BindTexImageImpl(unsigned internalformat) {
       EGL_TEXTURE_TYPE_ANGLE,            formatType.type,
       EGL_NONE,                          EGL_NONE,
     };
-    // clang-format off
+    // clang-format on
 
     pbuffer_ = eglCreatePbufferFromClientBuffer(display_, EGL_IOSURFACE_ANGLE,
         io_surface_.get(), dummy_config_, attribs);
@@ -149,6 +154,140 @@ bool GLImageIOSurfaceEGL::BindTexImageImpl(unsigned internalformat) {
   }
 
   texture_bound_ = true;
+  return true;
+}
+
+bool GLImageIOSurfaceEGL::CopyTexImage(unsigned target) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  if (format_ != gfx::BufferFormat::YUV_420_BIPLANAR)
+    return false;
+
+  GLContext* gl_context = GLContext::GetCurrent();
+  DCHECK(gl_context);
+
+  YUVToRGBConverter* yuv_to_rgb_converter =
+      gl_context->GetYUVToRGBConverter(color_space_for_yuv_to_rgb_);
+  DCHECK(yuv_to_rgb_converter);
+
+  // Note that state restoration is done explicitly instead of scoped binders to
+  // avoid https://crbug.com/601729.
+  GLint rgb_texture = 0;
+  GLenum target_getter = 0;
+  switch (target) {
+    case GL_TEXTURE_2D:
+      target_getter = GL_TEXTURE_BINDING_2D;
+      break;
+    case GL_TEXTURE_CUBE_MAP:
+      target_getter = GL_TEXTURE_BINDING_CUBE_MAP;
+      break;
+    case GL_TEXTURE_EXTERNAL_OES:
+      target_getter = GL_TEXTURE_BINDING_EXTERNAL_OES;
+      break;
+    case GL_TEXTURE_RECTANGLE_ARB:
+      target_getter = GL_TEXTURE_BINDING_RECTANGLE_ARB;
+      break;
+    default:
+      NOTIMPLEMENTED() << " Target not supported.";
+      return false;
+  }
+
+  EGLSurface y_surface = EGL_NO_SURFACE;
+  EGLSurface uv_surface = EGL_NO_SURFACE;
+
+  glGetIntegerv(target_getter, &rgb_texture);
+  base::ScopedClosureRunner destroy_resources_runner(base::BindBlock(^{
+    if (y_surface != EGL_NO_SURFACE) {
+      EGLBoolean result =
+          eglReleaseTexImage(display_, y_surface, EGL_BACK_BUFFER);
+      DCHECK(result == EGL_TRUE);
+      result = eglDestroySurface(display_, y_surface);
+      DCHECK(result == EGL_TRUE);
+    }
+    if (uv_surface != EGL_NO_SURFACE) {
+      EGLBoolean result =
+          eglReleaseTexImage(display_, uv_surface, EGL_BACK_BUFFER);
+      DCHECK(result == EGL_TRUE);
+      result = eglDestroySurface(display_, uv_surface);
+      DCHECK(result == EGL_TRUE);
+    }
+    glBindTexture(target, rgb_texture);
+  }));
+
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, yuv_to_rgb_converter->y_texture());
+  if (glGetError() != GL_NO_ERROR) {
+    LOG(ERROR) << "Can't bind Y texture";
+    return false;
+  }
+
+  // clang-format off
+  const EGLint yAttribs[] = {
+    EGL_WIDTH,                         size_.width(),
+    EGL_HEIGHT,                        size_.height(),
+    EGL_IOSURFACE_PLANE_ANGLE,         0,
+    EGL_TEXTURE_TARGET,                EGL_TEXTURE_RECTANGLE_ANGLE,
+    EGL_TEXTURE_INTERNAL_FORMAT_ANGLE, GL_RED,
+    EGL_TEXTURE_FORMAT,                EGL_TEXTURE_RGBA,
+    EGL_TEXTURE_TYPE_ANGLE,            GL_UNSIGNED_BYTE,
+    EGL_NONE,                          EGL_NONE,
+  };
+  // clang-format on
+
+  y_surface = eglCreatePbufferFromClientBuffer(display_, EGL_IOSURFACE_ANGLE,
+                                               io_surface_.get(), dummy_config_,
+                                               yAttribs);
+  if (y_surface == EGL_NO_SURFACE) {
+    LOG(ERROR) << "eglCreatePbufferFromClientBuffer failed, EGL error is "
+               << eglGetError();
+    return false;
+  }
+
+  EGLBoolean result = eglBindTexImage(display_, y_surface, EGL_BACK_BUFFER);
+  if (result != EGL_TRUE) {
+    LOG(ERROR) << "eglBindTexImage failed, EGL error is " << eglGetError();
+    return false;
+  }
+
+  glBindTexture(GL_TEXTURE_RECTANGLE_ARB, yuv_to_rgb_converter->uv_texture());
+  if (glGetError() != GL_NO_ERROR) {
+    LOG(ERROR) << "Can't bind UV texture";
+    return false;
+  }
+
+  // clang-format off
+  const EGLint uvAttribs[] = {
+    EGL_WIDTH,                         size_.width() / 2,
+    EGL_HEIGHT,                        size_.height() / 2,
+    EGL_IOSURFACE_PLANE_ANGLE,         1,
+    EGL_TEXTURE_TARGET,                EGL_TEXTURE_RECTANGLE_ANGLE,
+    EGL_TEXTURE_INTERNAL_FORMAT_ANGLE, GL_RG,
+    EGL_TEXTURE_FORMAT,                EGL_TEXTURE_RGBA,
+    EGL_TEXTURE_TYPE_ANGLE,            GL_UNSIGNED_BYTE,
+    EGL_NONE,                          EGL_NONE,
+  };
+  // clang-format on
+
+  uv_surface = eglCreatePbufferFromClientBuffer(display_, EGL_IOSURFACE_ANGLE,
+                                                io_surface_.get(),
+                                                dummy_config_, uvAttribs);
+  if (uv_surface == EGL_NO_SURFACE) {
+    LOG(ERROR) << "eglCreatePbufferFromClientBuffer failed, EGL error is "
+               << eglGetError();
+    return false;
+  }
+
+  result = eglBindTexImage(display_, uv_surface, EGL_BACK_BUFFER);
+  if (result != EGL_TRUE) {
+    LOG(ERROR) << "eglBindTexImage failed, EGL error is " << eglGetError();
+    return false;
+  }
+
+  yuv_to_rgb_converter->CopyYUV420ToRGB(target, size_, rgb_texture);
+  if (glGetError() != GL_NO_ERROR) {
+    LOG(ERROR) << "Failed converting from YUV to RGB";
+    return false;
+  }
+
   return true;
 }
 

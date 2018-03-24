@@ -22,6 +22,7 @@ class GL_EXPORT GLImageIOSurfaceEGL : public GLImageIOSurface {
  protected:
   ~GLImageIOSurfaceEGL() override;
   bool BindTexImageImpl(unsigned internalformat) override;
+  bool CopyTexImage(unsigned target) override;
 
  private:
   EGLDisplay display_;

@@ -5,6 +5,7 @@
 #ifndef UI_GL_GL_CONTEXT_EGL_H_
 #define UI_GL_GL_CONTEXT_EGL_H_
 
+#include <map>
 #include <string>
 
 #include "base/compiler_specific.h"
@@ -35,17 +36,22 @@ class GL_EXPORT GLContextEGL : public GLContextReal {
   void OnSetSwapInterval(int interval) override;
   bool WasAllocatedUsingRobustnessExtension() override;
   void SetUnbindFboOnMakeCurrent() override;
+  YUVToRGBConverter* GetYUVToRGBConverter(
+      const gfx::ColorSpace& color_space) override;
 
  protected:
   ~GLContextEGL() override;
 
  private:
   void Destroy();
+  void ReleaseYUVToRGBConverters();
 
   EGLContext context_;
   EGLDisplay display_;
   EGLConfig config_;
   bool unbind_fbo_on_makecurrent_;
+  std::map<gfx::ColorSpace, std::unique_ptr<YUVToRGBConverter>>
+      yuv_to_rgb_converters_;
 
   DISALLOW_COPY_AND_ASSIGN(GLContextEGL);
 };
