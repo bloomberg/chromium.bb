@@ -24,6 +24,10 @@
 #include "ui/base/device_form_factor.h"
 #endif
 
+#if defined(OS_CHROMEOS)
+#include "chromeos/system/fake_statistics_provider.h"
+#endif
+
 using testing::AssertionResult;
 using testing::AssertionSuccess;
 using testing::AssertionFailure;
@@ -255,6 +259,11 @@ class RlzLibTest : public testing::Test {
   TestRLZTrackerDelegate* delegate_;
   std::unique_ptr<TestRLZTracker> tracker_;
   RlzLibTestNoMachineStateHelper m_rlz_test_helper_;
+
+#if defined(OS_CHROMEOS)
+  std::unique_ptr<chromeos::system::FakeStatisticsProvider>
+      statistics_provider_;
+#endif
 };
 
 void RlzLibTest::SetUp() {
@@ -269,6 +278,13 @@ void RlzLibTest::SetUp() {
   // is pretty much a no-op.
   SetMainBrand("TEST");
   SetReactivationBrand("");
+
+#if defined(OS_CHROMEOS)
+  statistics_provider_ =
+      std::make_unique<chromeos::system::FakeStatisticsProvider>();
+  chromeos::system::StatisticsProvider::SetTestProvider(
+      statistics_provider_.get());
+#endif  // defined(OS_CHROMEOS)
 }
 
 void RlzLibTest::TearDown() {
@@ -276,6 +292,10 @@ void RlzLibTest::TearDown() {
   tracker_.reset();
   testing::Test::TearDown();
   m_rlz_test_helper_.TearDown();
+
+#if defined(OS_CHROMEOS)
+  chromeos::system::StatisticsProvider::SetTestProvider(nullptr);
+#endif  // defined(OS_CHROMEOS)
 }
 
 void RlzLibTest::SetMainBrand(const char* brand) {

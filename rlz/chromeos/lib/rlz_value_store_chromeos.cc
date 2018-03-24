@@ -16,6 +16,8 @@
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/values.h"
+#include "chromeos/system/statistics_provider.h"
+#include "rlz/lib/financial_ping.h"
 #include "rlz/lib/lib_values.h"
 #include "rlz/lib/recursive_cross_process_lock_posix.h"
 #include "rlz/lib/rlz_lib.h"
@@ -46,9 +48,6 @@ base::LazyInstance<base::FilePath>::Leaky g_testing_rlz_store_path =
     LAZY_INSTANCE_INITIALIZER;
 
 base::FilePath GetRlzStorePathCommon() {
-  // TODO(wzang): Replace base::DIR_HOME with something that is shared by all
-  // profiles on the device.  This location must be somewhere that is wiped
-  // when the device is factory reset or powerwashed.
   base::FilePath homedir;
   PathService::Get(base::DIR_HOME, &homedir);
   return g_testing_rlz_store_path.Get().empty()
@@ -82,7 +81,42 @@ std::string GetKeyName(const std::string& key, Product product) {
   return key + "." + GetProductName(product) + "." + brand;
 }
 
+// Returns true if the |rlz_embargo_end_date| present in VPD has passed
+// compared to the current time.
+bool HasRlzEmbargoEndDatePassed() {
+  chromeos::system::StatisticsProvider* stats =
+      chromeos::system::StatisticsProvider::GetInstance();
+
+  std::string rlz_embargo_end_date;
+  if (!stats->GetMachineStatistic(chromeos::system::kRlzEmbargoEndDateKey,
+                                  &rlz_embargo_end_date)) {
+    // |rlz_embargo_end_date| only exists on new devices that have not yet
+    // launched. When the field doesn't exist, returns true so it's a no-op.
+    return true;
+  }
+  base::Time parsed_time;
+  if (!base::Time::FromUTCString(rlz_embargo_end_date.c_str(), &parsed_time)) {
+    LOG(ERROR) << "|rlz_embargo_end_date| exists but cannot be parsed.";
+    return true;
+  }
+
+  if (parsed_time - base::Time::Now() >=
+      base::TimeDelta::FromDays(
+          RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays)) {
+    // If |rlz_embargo_end_date| is more than this many days in the future,
+    // ignore it. Because it indicates that the device is not connected to an
+    // ntp server in the factory, and its internal clock could be off when the
+    // date is written.
+    return true;
+  }
+
+  return base::Time::Now() > parsed_time;
+}
+
 }  // namespace
+
+const int RlzValueStoreChromeOS::kRlzEmbargoEndDateGarbageDateThresholdDays =
+    14;
 
 RlzValueStoreChromeOS::RlzValueStoreChromeOS(const base::FilePath& store_path)
     : rlz_store_(new base::DictionaryValue),
@@ -111,12 +145,12 @@ bool RlzValueStoreChromeOS::WritePingTime(Product product, int64_t time) {
 bool RlzValueStoreChromeOS::ReadPingTime(Product product, int64_t* time) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-#if defined(OS_CHROMEOS)
   // TODO(wzang): make sure time is correct (check that npupdate has updated
   // successfully).
-  // TODO(wzang): if the current time is within 7 days of the
-  // factory_production_date value in the RW_VPD, then return the current time.
-#endif
+  if (!HasRlzEmbargoEndDatePassed()) {
+    *time = FinancialPing::GetSystemTimeAsInt64();
+    return true;
+  }
 
   std::string ping_time;
   return rlz_store_->GetString(GetKeyName(kPingTimeKey, product), &ping_time) &&
@@ -131,7 +165,6 @@ bool RlzValueStoreChromeOS::ClearPingTime(Product product) {
 
 bool RlzValueStoreChromeOS::WriteAccessPointRlz(AccessPoint access_point,
                                                 const char* new_rlz) {
-#if defined(OS_CHROMEOS)
   // If an access point already exists, don't overwrite it.  This is to prevent
   // writing cohort data for first search which is not needed in Chrome OS.
   //
@@ -147,7 +180,6 @@ bool RlzValueStoreChromeOS::WriteAccessPointRlz(AccessPoint access_point,
       dummy[0] != 0) {
     return true;
   }
-#endif
 
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   rlz_store_->SetString(
@@ -217,12 +249,9 @@ bool RlzValueStoreChromeOS::AddStatefulEvent(Product product,
                                              const char* event_rlz) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-#if defined(OS_CHROMEOS)
   if (strcmp(event_rlz, "CAF") == 0) {
     // TODO(wzang): Set rlz_first_use_ping_not_sent to 0 in RW_VPD.
   }
-#endif
-
   return AddValueToList(GetKeyName(kStatefulEventKey, product),
                         std::make_unique<base::Value>(event_rlz));
 }
@@ -231,24 +260,36 @@ bool RlzValueStoreChromeOS::IsStatefulEvent(Product product,
                                             const char* event_rlz) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-#if defined(OS_CHROMEOS)
-  if (strcmp(event_rlz, "CAF") == 0) {
-    // TODO(wzang): If rlz_first_use_ping_not_sent exists in RW_VPD with
-    // value 0, then return true.
-    // TODO(wzang): if the current time is within 7 days of the
-    // factory_production_date value in the RW_VPD, then return true.
-    // TODO(wzang): if rlz_first_use_ping_not_sent exists in RW_VPD with
-    // value 1 but below the code finds |event_value| in the list, try to
-    // set rlz_first_use_ping_not_sent to zero in the RW_VPD.  This is to try
-    // and fix the RW_VPD if there was an error writing to it earlier.
-  }
-#endif
-
   base::Value event_value(event_rlz);
   base::ListValue* events_list = NULL;
-  return rlz_store_->GetList(GetKeyName(kStatefulEventKey, product),
-                             &events_list) &&
+  const bool event_exists =
+      rlz_store_->GetList(GetKeyName(kStatefulEventKey, product),
+                          &events_list) &&
       events_list->Find(event_value) != events_list->end();
+
+  if (strcmp(event_rlz, "CAF") == 0) {
+    chromeos::system::StatisticsProvider* stats =
+        chromeos::system::StatisticsProvider::GetInstance();
+    std::string should_send_rlz_ping_value;
+    if (stats->GetMachineStatistic(chromeos::system::kShouldSendRlzPingKey,
+                                   &should_send_rlz_ping_value)) {
+      if (should_send_rlz_ping_value ==
+          chromeos::system::kShouldSendRlzPingValueFalse) {
+        return true;
+      }
+      if (!HasRlzEmbargoEndDatePassed())
+        return true;
+      DCHECK_EQ(should_send_rlz_ping_value,
+                chromeos::system::kShouldSendRlzPingValueTrue);
+      if (event_exists) {
+        // TODO(wzang): If we reach here, it means there was an error writing to
+        // RW_VPD earlier. We should log the error and try writing to RW_VPD
+        // again. Also, capture UMA stat on persistent failure to write VPD.
+      }
+    }
+  }
+
+  return event_exists;
 }
 
 bool RlzValueStoreChromeOS::ClearAllStatefulEvents(Product product) {

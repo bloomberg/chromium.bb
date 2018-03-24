@@ -37,4 +37,8 @@ source_set("unit_tests") {
     "//rlz:test_support",
     "//ui/base",
   ]
+
+  if (is_chromeos) {
+    deps += [ "//chromeos" ]
+  }
 }
