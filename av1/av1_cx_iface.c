@@ -86,6 +86,7 @@ struct av1_extracfg {
   int render_height;
   aom_superblock_size_t superblock_size;
   unsigned int single_tile_decoding;
+  int error_resilient_mode;
 
 #if CONFIG_FILM_GRAIN
   int film_grain_test_vector;
@@ -155,6 +156,7 @@ static struct av1_extracfg default_extra_cfg = {
   0,                            // render height
   AOM_SUPERBLOCK_SIZE_DYNAMIC,  // superblock_size
   0,                            // Single tile decoding is off by default.
+  0,                            // error_resilient_mode off by default.
 
 #if CONFIG_FILM_GRAIN
   0,  // film_grain_test_vector
@@ -670,7 +672,8 @@ static aom_codec_err_t set_encoder_config(
   for (int i = 0; i < oxcf->tile_height_count; i++) {
     oxcf->tile_heights[i] = AOMMAX(cfg->tile_heights[i], 1);
   }
-  oxcf->error_resilient_mode = cfg->g_error_resilient;
+  oxcf->error_resilient_mode =
+      cfg->g_error_resilient | extra_cfg->error_resilient_mode;
   oxcf->frame_parallel_decoding_mode = extra_cfg->frame_parallel_decoding_mode;
 
   oxcf->aq_mode = extra_cfg->aq_mode;
@@ -976,6 +979,13 @@ static aom_codec_err_t ctrl_set_enable_superres(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_superres = CAST(AV1E_SET_ENABLE_SUPERRES, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_error_resilient_mode(aom_codec_alg_priv_t *ctx,
+                                                     va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.error_resilient_mode = CAST(AV1E_SET_ERROR_RESILIENT_MODE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1625,6 +1635,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_TIMING_INFO, ctrl_set_timing_info },
   { AV1E_SET_DISABLE_TEMPMV, ctrl_set_disable_tempmv },
   { AV1E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
+  { AV1E_SET_ERROR_RESILIENT_MODE, ctrl_set_error_resilient_mode },
   { AV1E_SET_ENABLE_DF, ctrl_set_enable_df },
   { AV1E_SET_ENABLE_ORDER_HINT, ctrl_set_enable_order_hint },
   { AV1E_SET_ENABLE_JNT_COMP, ctrl_set_enable_jnt_comp },

@@ -261,8 +261,9 @@ static const arg_def_t stereo_mode = ARG_DEF_ENUM(
 #endif
 static const arg_def_t timebase = ARG_DEF(
     NULL, "timebase", 1, "Output timestamp precision (fractional seconds)");
-static const arg_def_t error_resilient =
-    ARG_DEF(NULL, "error-resilient", 1, "Enable error resiliency features");
+static const arg_def_t global_error_resilient =
+    ARG_DEF(NULL, "global-error-resilient", 1,
+            "Enable global error resiliency features");
 static const arg_def_t lag_in_frames =
     ARG_DEF(NULL, "lag-in-frames", 1, "Max number of frames to lag");
 static const arg_def_t large_scale_tile =
@@ -290,7 +291,7 @@ static const arg_def_t *global_args[] = { &use_yv12,
 #endif
                                           &timebase,
                                           &framerate,
-                                          &error_resilient,
+                                          &global_error_resilient,
                                           &bitdeptharg,
                                           &lag_in_frames,
                                           &large_scale_tile,
@@ -479,6 +480,10 @@ static const arg_def_t frame_parallel_decoding =
     ARG_DEF(NULL, "frame-parallel", 1,
             "Enable frame parallel decodability features "
             "(0: false (default), 1: true)");
+static const arg_def_t error_resilient_mode =
+    ARG_DEF(NULL, "error-resilient", 1,
+            "Enable error resilient features "
+            "(0: false (default), 1: true)");
 #if !CONFIG_EXT_DELTA_Q
 static const arg_def_t aq_mode = ARG_DEF(
     NULL, "aq-mode", 1,
@@ -640,6 +645,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &enable_dist_8x8,
 #endif
                                        &frame_parallel_decoding,
+                                       &error_resilient_mode,
                                        &aq_mode,
 #if CONFIG_EXT_DELTA_Q
                                        &deltaq_mode,
@@ -695,6 +701,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_ENABLE_DIST_8X8,
 #endif
                                         AV1E_SET_FRAME_PARALLEL_DECODING,
+                                        AV1E_SET_ERROR_RESILIENT_MODE,
                                         AV1E_SET_AQ_MODE,
 #if CONFIG_EXT_DELTA_Q
                                         AV1E_SET_DELTAQ_MODE,
@@ -1178,7 +1185,7 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
     } else if (arg_match(&arg, &timebase, argi)) {
       config->cfg.g_timebase = arg_parse_rational(&arg);
       validate_positive_rational(arg.name, &config->cfg.g_timebase);
-    } else if (arg_match(&arg, &error_resilient, argi)) {
+    } else if (arg_match(&arg, &global_error_resilient, argi)) {
       config->cfg.g_error_resilient = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &lag_in_frames, argi)) {
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
