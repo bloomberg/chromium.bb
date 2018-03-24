@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chromeos/printing/printer_configuration.h"
 
 namespace chromeos {
@@ -47,6 +48,9 @@ class CupsPrintJob {
   // Returns a unique id for the print job.
   std::string GetUniqueId() const;
 
+  // Returns weak pointer to |this| CupsPrintJob
+  base::WeakPtr<CupsPrintJob> GetWeakPtr();
+
   // Getters.
   const Printer& printer() const { return printer_; }
   int job_id() const { return job_id_; }
@@ -79,6 +83,8 @@ class CupsPrintJob {
 
   State state_ = State::STATE_NONE;
   ErrorCode error_code_ = ErrorCode::NO_ERROR;
+
+  base::WeakPtrFactory<CupsPrintJob> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CupsPrintJob);
 };

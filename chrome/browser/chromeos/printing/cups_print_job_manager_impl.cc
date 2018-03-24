@@ -273,7 +273,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
   void CancelPrintJob(CupsPrintJob* job) override {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
     job->set_state(CupsPrintJob::State::STATE_CANCELLED);
-    NotifyJobCanceled(job);
+    NotifyJobCanceled(job->GetWeakPtr());
     // Ideally we should wait for IPP response.
     FinishPrintJob(job);
   }
@@ -338,11 +338,11 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
     jobs_[key] = std::move(cpj);
 
     CupsPrintJob* job = jobs_[key].get();
-    NotifyJobCreated(job);
+    NotifyJobCreated(job->GetWeakPtr());
 
     // Always start jobs in the waiting state.
     job->set_state(CupsPrintJob::State::STATE_WAITING);
-    NotifyJobUpdated(job);
+    NotifyJobUpdated(job->GetWeakPtr());
 
     // Run a query now.
     content::BrowserThread::GetTaskRunnerForThread(content::BrowserThread::UI)
@@ -439,7 +439,7 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
 
         if (UpdatePrintJob(queue.printer_status, job, print_job)) {
           // The state of the job changed, notify observers.
-          NotifyJobStateUpdate(print_job);
+          NotifyJobStateUpdate(print_job->GetWeakPtr());
         }
 
         if (print_job->PipelineDead()) {
@@ -477,15 +477,18 @@ class CupsPrintJobManagerImpl : public CupsPrintJobManager,
       RecordJobResult(LOST);
       CupsPrintJob* job = entry.second.get();
       job->set_state(CupsPrintJob::State::STATE_ERROR);
-      NotifyJobStateUpdate(job);
+      NotifyJobStateUpdate(job->GetWeakPtr());
     }
 
     jobs_.clear();
   }
 
   // Notify observers that a state update has occured for |job|.
-  void NotifyJobStateUpdate(CupsPrintJob* job) {
+  void NotifyJobStateUpdate(base::WeakPtr<CupsPrintJob> job) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+    if (!job)
+      return;
 
     switch (job->state()) {
       case State::STATE_NONE:

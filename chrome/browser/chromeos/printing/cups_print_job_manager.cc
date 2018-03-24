@@ -30,42 +30,42 @@ void CupsPrintJobManager::RemoveObserver(Observer* observer) {
   observers_.RemoveObserver(observer);
 }
 
-void CupsPrintJobManager::NotifyJobCreated(CupsPrintJob* job) {
+void CupsPrintJobManager::NotifyJobCreated(base::WeakPtr<CupsPrintJob> job) {
   for (Observer& observer : observers_)
     observer.OnPrintJobCreated(job);
 }
 
-void CupsPrintJobManager::NotifyJobStarted(CupsPrintJob* job) {
+void CupsPrintJobManager::NotifyJobStarted(base::WeakPtr<CupsPrintJob> job) {
   for (Observer& observer : observers_)
     observer.OnPrintJobStarted(job);
 }
 
-void CupsPrintJobManager::NotifyJobUpdated(CupsPrintJob* job) {
+void CupsPrintJobManager::NotifyJobUpdated(base::WeakPtr<CupsPrintJob> job) {
   for (Observer& observer : observers_)
     observer.OnPrintJobUpdated(job);
 }
 
-void CupsPrintJobManager::NotifyJobResumed(CupsPrintJob* job) {
+void CupsPrintJobManager::NotifyJobResumed(base::WeakPtr<CupsPrintJob> job) {
   for (Observer& observer : observers_)
     observer.OnPrintJobResumed(job);
 }
 
-void CupsPrintJobManager::NotifyJobSuspended(CupsPrintJob* job) {
+void CupsPrintJobManager::NotifyJobSuspended(base::WeakPtr<CupsPrintJob> job) {
   for (Observer& observer : observers_)
     observer.OnPrintJobSuspended(job);
 }
 
-void CupsPrintJobManager::NotifyJobCanceled(CupsPrintJob* job) {
+void CupsPrintJobManager::NotifyJobCanceled(base::WeakPtr<CupsPrintJob> job) {
   for (Observer& observer : observers_)
     observer.OnPrintJobCancelled(job);
 }
 
-void CupsPrintJobManager::NotifyJobError(CupsPrintJob* job) {
+void CupsPrintJobManager::NotifyJobError(base::WeakPtr<CupsPrintJob> job) {
   for (Observer& observer : observers_)
     observer.OnPrintJobError(job);
 }
 
-void CupsPrintJobManager::NotifyJobDone(CupsPrintJob* job) {
+void CupsPrintJobManager::NotifyJobDone(base::WeakPtr<CupsPrintJob> job) {
   for (Observer& observer : observers_)
     observer.OnPrintJobDone(job);
 }

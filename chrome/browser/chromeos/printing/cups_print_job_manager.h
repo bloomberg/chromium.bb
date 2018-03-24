@@ -22,23 +22,23 @@ class CupsPrintJobManager : public KeyedService {
  public:
   class Observer {
    public:
-    virtual void OnPrintJobCreated(CupsPrintJob* job) {}
-    virtual void OnPrintJobStarted(CupsPrintJob* job) {}
-    virtual void OnPrintJobUpdated(CupsPrintJob* job) {}
-    virtual void OnPrintJobSuspended(CupsPrintJob* job) {}
-    virtual void OnPrintJobResumed(CupsPrintJob* job) {}
+    virtual void OnPrintJobCreated(base::WeakPtr<CupsPrintJob> job) {}
+    virtual void OnPrintJobStarted(base::WeakPtr<CupsPrintJob> job) {}
+    virtual void OnPrintJobUpdated(base::WeakPtr<CupsPrintJob> job) {}
+    virtual void OnPrintJobSuspended(base::WeakPtr<CupsPrintJob> job) {}
+    virtual void OnPrintJobResumed(base::WeakPtr<CupsPrintJob> job) {}
 
     // Handle print job completion.  Note, |job| will be deleted after
     // notification is complete.
-    virtual void OnPrintJobDone(CupsPrintJob* job) {}
+    virtual void OnPrintJobDone(base::WeakPtr<CupsPrintJob> job) {}
 
     // Handle print job error.  Note, |job| will be deleted after
     // notification is complete.
-    virtual void OnPrintJobError(CupsPrintJob* job) {}
+    virtual void OnPrintJobError(base::WeakPtr<CupsPrintJob> job) {}
 
     // Handle print job cancellation.  Note, |job| will be deleted after
     // notification is complete.
-    virtual void OnPrintJobCancelled(CupsPrintJob* job) {}
+    virtual void OnPrintJobCancelled(base::WeakPtr<CupsPrintJob> job) {}
 
    protected:
     virtual ~Observer() {}
@@ -62,14 +62,14 @@ class CupsPrintJobManager : public KeyedService {
   void RemoveObserver(Observer* observer);
 
  protected:
-  void NotifyJobCreated(CupsPrintJob* job);
-  void NotifyJobStarted(CupsPrintJob* job);
-  void NotifyJobUpdated(CupsPrintJob* job);
-  void NotifyJobResumed(CupsPrintJob* job);
-  void NotifyJobSuspended(CupsPrintJob* job);
-  void NotifyJobCanceled(CupsPrintJob* job);
-  void NotifyJobError(CupsPrintJob* job);
-  void NotifyJobDone(CupsPrintJob* job);
+  void NotifyJobCreated(base::WeakPtr<CupsPrintJob> job);
+  void NotifyJobStarted(base::WeakPtr<CupsPrintJob> job);
+  void NotifyJobUpdated(base::WeakPtr<CupsPrintJob> job);
+  void NotifyJobResumed(base::WeakPtr<CupsPrintJob> job);
+  void NotifyJobSuspended(base::WeakPtr<CupsPrintJob> job);
+  void NotifyJobCanceled(base::WeakPtr<CupsPrintJob> job);
+  void NotifyJobError(base::WeakPtr<CupsPrintJob> job);
+  void NotifyJobDone(base::WeakPtr<CupsPrintJob> job);
 
   Profile* profile_;
   std::unique_ptr<CupsPrintJobNotificationManager> notification_manager_;

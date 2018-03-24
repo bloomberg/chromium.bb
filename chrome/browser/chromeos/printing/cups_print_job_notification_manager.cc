@@ -22,45 +22,55 @@ CupsPrintJobNotificationManager::~CupsPrintJobNotificationManager() {
   print_job_manager_->RemoveObserver(this);
 }
 
-void CupsPrintJobNotificationManager::OnPrintJobCreated(CupsPrintJob* job) {
-  if (base::ContainsKey(notification_map_, job))
+void CupsPrintJobNotificationManager::OnPrintJobCreated(
+    base::WeakPtr<CupsPrintJob> job) {
+  if (!job)
     return;
-  notification_map_[job] =
+  if (base::ContainsKey(notification_map_, job.get()))
+    return;
+  notification_map_[job.get()] =
       std::make_unique<CupsPrintJobNotification>(this, job, profile_);
 }
 
-void CupsPrintJobNotificationManager::OnPrintJobStarted(CupsPrintJob* job) {
+void CupsPrintJobNotificationManager::OnPrintJobStarted(
+    base::WeakPtr<CupsPrintJob> job) {
   UpdateNotification(job);
 }
 
-void CupsPrintJobNotificationManager::OnPrintJobUpdated(CupsPrintJob* job) {
+void CupsPrintJobNotificationManager::OnPrintJobUpdated(
+    base::WeakPtr<CupsPrintJob> job) {
   UpdateNotification(job);
 }
 
-void CupsPrintJobNotificationManager::OnPrintJobSuspended(CupsPrintJob* job) {
+void CupsPrintJobNotificationManager::OnPrintJobSuspended(
+    base::WeakPtr<CupsPrintJob> job) {
   UpdateNotification(job);
 }
 
-void CupsPrintJobNotificationManager::OnPrintJobResumed(CupsPrintJob* job) {
+void CupsPrintJobNotificationManager::OnPrintJobResumed(
+    base::WeakPtr<CupsPrintJob> job) {
   UpdateNotification(job);
 }
 
-void CupsPrintJobNotificationManager::OnPrintJobDone(CupsPrintJob* job) {
+void CupsPrintJobNotificationManager::OnPrintJobDone(
+    base::WeakPtr<CupsPrintJob> job) {
   UpdateNotification(job);
 }
 
-void CupsPrintJobNotificationManager::OnPrintJobError(CupsPrintJob* job) {
+void CupsPrintJobNotificationManager::OnPrintJobError(
+    base::WeakPtr<CupsPrintJob> job) {
   UpdateNotification(job);
 }
 
-void CupsPrintJobNotificationManager::OnPrintJobCancelled(CupsPrintJob* job) {
+void CupsPrintJobNotificationManager::OnPrintJobCancelled(
+    base::WeakPtr<CupsPrintJob> job) {
   UpdateNotification(job);
 }
 
 void CupsPrintJobNotificationManager::OnPrintJobNotificationRemoved(
     CupsPrintJobNotification* notification) {
-  // |job| might be a nullptr at this moment, so we iterate through
-  // |notification_map_| to find |notification|.
+  // |notification|.print_job_ might be a nullptr at this moment, so we iterate
+  // through |notification_map_| to find |notification|.
   auto it = notification_map_.begin();
   for (; it != notification_map_.end(); it++) {
     if (it->second.get() == notification)
@@ -71,9 +81,12 @@ void CupsPrintJobNotificationManager::OnPrintJobNotificationRemoved(
     notification_map_.erase(it);
 }
 
-void CupsPrintJobNotificationManager::UpdateNotification(CupsPrintJob* job) {
-  DCHECK(base::ContainsKey(notification_map_, job));
-  notification_map_[job]->OnPrintJobStatusUpdated();
+void CupsPrintJobNotificationManager::UpdateNotification(
+    base::WeakPtr<CupsPrintJob> job) {
+  if (!job)
+    return;
+  DCHECK(base::ContainsKey(notification_map_, job.get()));
+  notification_map_[job.get()]->OnPrintJobStatusUpdated();
 }
 
 }  // namespace chromeos

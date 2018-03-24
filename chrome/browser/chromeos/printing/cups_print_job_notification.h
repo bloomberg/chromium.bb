@@ -36,7 +36,7 @@ class CupsPrintJobNotification : public message_center::NotificationObserver {
   };
 
   CupsPrintJobNotification(CupsPrintJobNotificationManager* manager,
-                           CupsPrintJob* print_job,
+                           base::WeakPtr<CupsPrintJob> print_job,
                            Profile* profile);
   virtual ~CupsPrintJobNotification();
 
@@ -63,7 +63,7 @@ class CupsPrintJobNotification : public message_center::NotificationObserver {
   CupsPrintJobNotificationManager* notification_manager_;
   std::unique_ptr<message_center::Notification> notification_;
   std::string notification_id_;
-  CupsPrintJob* print_job_;
+  base::WeakPtr<CupsPrintJob> print_job_;
   Profile* profile_;
 
   // If the notification has been closed in the middle of printing or not. If it
