@@ -17,7 +17,7 @@
 
 namespace blink {
 
-class AnimationEffectReadOnlyOrAnimationEffectReadOnlySequence;
+class AnimationEffectOrAnimationEffectSequence;
 
 // The main-thread controller for a single AnimationWorklet animator instance.
 //
@@ -39,7 +39,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
  public:
   static WorkletAnimation* Create(
       String animator_name,
-      const AnimationEffectReadOnlyOrAnimationEffectReadOnlySequence&,
+      const AnimationEffectOrAnimationEffectSequence&,
       DocumentTimelineOrScrollTimeline,
       scoped_refptr<SerializedScriptValue>,
       ExceptionState&);

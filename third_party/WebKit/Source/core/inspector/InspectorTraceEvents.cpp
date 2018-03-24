@@ -1300,7 +1300,7 @@ std::unique_ptr<TracedValue> InspectorAnimationEvent::Data(
   std::unique_ptr<TracedValue> value = TracedValue::Create();
   value->SetString("id", String::Number(animation.SequenceNumber()));
   value->SetString("state", animation.playState());
-  if (const AnimationEffectReadOnly* effect = animation.effect()) {
+  if (const AnimationEffect* effect = animation.effect()) {
     value->SetString("name", animation.id());
     if (effect->IsKeyframeEffect()) {
       if (Element* target = ToKeyframeEffect(effect)->target())

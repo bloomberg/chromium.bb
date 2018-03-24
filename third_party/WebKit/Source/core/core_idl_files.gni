@@ -37,7 +37,7 @@ core_global_constructors_generated_idl_files =
 core_idl_files =
     get_path_info([
                     "animation/Animation.idl",
-                    "animation/AnimationEffectReadOnly.idl",
+                    "animation/AnimationEffect.idl",
                     "animation/AnimationEffectTiming.idl",
                     "animation/AnimationEffectTimingReadOnly.idl",
                     "animation/AnimationTimeline.idl",

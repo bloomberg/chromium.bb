@@ -194,16 +194,15 @@ class CSSAnimations final {
       PropertyPass,
       const Element* animating_element);
 
-  class AnimationEventDelegate final
-      : public AnimationEffectReadOnly::EventDelegate {
+  class AnimationEventDelegate final : public AnimationEffect::EventDelegate {
    public:
     AnimationEventDelegate(Element* animation_target, const AtomicString& name)
         : animation_target_(animation_target),
           name_(name),
-          previous_phase_(AnimationEffectReadOnly::kPhaseNone),
+          previous_phase_(AnimationEffect::kPhaseNone),
           previous_iteration_(NullValue()) {}
-    bool RequiresIterationEvents(const AnimationEffectReadOnly&) override;
-    void OnEventCondition(const AnimationEffectReadOnly&) override;
+    bool RequiresIterationEvents(const AnimationEffect&) override;
+    void OnEventCondition(const AnimationEffect&) override;
     void Trace(blink::Visitor*) override;
 
    private:
@@ -216,22 +215,21 @@ class CSSAnimations final {
                        double elapsed_time);
     Member<Element> animation_target_;
     const AtomicString name_;
-    AnimationEffectReadOnly::Phase previous_phase_;
+    AnimationEffect::Phase previous_phase_;
     double previous_iteration_;
   };
 
-  class TransitionEventDelegate final
-      : public AnimationEffectReadOnly::EventDelegate {
+  class TransitionEventDelegate final : public AnimationEffect::EventDelegate {
    public:
     TransitionEventDelegate(Element* transition_target,
                             const PropertyHandle& property)
         : transition_target_(transition_target),
           property_(property),
-          previous_phase_(AnimationEffectReadOnly::kPhaseNone) {}
-    bool RequiresIterationEvents(const AnimationEffectReadOnly&) override {
+          previous_phase_(AnimationEffect::kPhaseNone) {}
+    bool RequiresIterationEvents(const AnimationEffect&) override {
       return false;
     }
-    void OnEventCondition(const AnimationEffectReadOnly&) override;
+    void OnEventCondition(const AnimationEffect&) override;
     void Trace(blink::Visitor*) override;
 
    private:
@@ -242,7 +240,7 @@ class CSSAnimations final {
 
     Member<Element> transition_target_;
     PropertyHandle property_;
-    AnimationEffectReadOnly::Phase previous_phase_;
+    AnimationEffect::Phase previous_phase_;
   };
 
   DISALLOW_COPY_AND_ASSIGN(CSSAnimations);

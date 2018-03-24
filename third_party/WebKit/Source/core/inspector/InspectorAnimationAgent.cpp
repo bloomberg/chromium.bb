@@ -7,7 +7,7 @@
 #include <memory>
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "core/animation/Animation.h"
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/ComputedTimingProperties.h"
 #include "core/animation/EffectModel.h"

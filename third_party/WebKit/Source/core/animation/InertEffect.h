@@ -33,7 +33,7 @@
 
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
 
 namespace blink {
@@ -41,7 +41,7 @@ namespace blink {
 // Lightweight subset of KeyframeEffect.
 // Used to transport data for deferred KeyframeEffect construction and one off
 // Interpolation sampling.
-class CORE_EXPORT InertEffect final : public AnimationEffectReadOnly {
+class CORE_EXPORT InertEffect final : public AnimationEffect {
  public:
   static InertEffect* Create(KeyframeEffectModelBase*,
                              const Timing&,
@@ -73,7 +73,7 @@ class CORE_EXPORT InertEffect final : public AnimationEffectReadOnly {
 };
 
 DEFINE_TYPE_CASTS(InertEffect,
-                  AnimationEffectReadOnly,
+                  AnimationEffect,
                   animationEffect,
                   animationEffect->IsInertEffect(),
                   animationEffect.IsInertEffect());

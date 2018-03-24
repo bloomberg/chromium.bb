@@ -34,7 +34,7 @@
 #include <memory>
 #include "base/memory/scoped_refptr.h"
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/EffectModel.h"
 #include "core/dom/Document.h"
@@ -49,7 +49,7 @@
 namespace blink {
 
 class Animation;
-class AnimationEffectReadOnly;
+class AnimationEffect;
 class Document;
 class DocumentTimelineOptions;
 
@@ -83,7 +83,7 @@ class CORE_EXPORT DocumentTimeline : public AnimationTimeline {
   void ServiceAnimations(TimingUpdateReason);
   void ScheduleNextService();
 
-  Animation* Play(AnimationEffectReadOnly*);
+  Animation* Play(AnimationEffect*);
   HeapVector<Member<Animation>> getAnimations();
 
   void AnimationAttached(Animation&);

@@ -6,7 +6,7 @@
 #define AnimationEffectTimingReadOnly_h
 
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 #include "platform/bindings/ScriptWrappable.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -18,7 +18,7 @@ class CORE_EXPORT AnimationEffectTimingReadOnly : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationEffectTimingReadOnly* Create(AnimationEffectReadOnly* parent);
+  static AnimationEffectTimingReadOnly* Create(AnimationEffect* parent);
   double delay();
   double endDelay();
   String fill();
@@ -34,8 +34,8 @@ class CORE_EXPORT AnimationEffectTimingReadOnly : public ScriptWrappable {
   virtual void Trace(blink::Visitor*);
 
  protected:
-  Member<AnimationEffectReadOnly> parent_;
-  explicit AnimationEffectTimingReadOnly(AnimationEffectReadOnly*);
+  Member<AnimationEffect> parent_;
+  explicit AnimationEffectTimingReadOnly(AnimationEffect*);
 };
 
 }  // namespace blink

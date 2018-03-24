@@ -33,6 +33,7 @@
 #include <algorithm>
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationClock.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/DocumentTimelineOptions.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/dom/Document.h"
@@ -102,7 +103,7 @@ void DocumentTimeline::AnimationAttached(Animation& animation) {
   animations_.insert(&animation);
 }
 
-Animation* DocumentTimeline::Play(AnimationEffectReadOnly* child) {
+Animation* DocumentTimeline::Play(AnimationEffect* child) {
   if (!document_)
     return nullptr;
 

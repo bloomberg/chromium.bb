@@ -28,8 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef AnimationEffectReadOnly_h
-#define AnimationEffectReadOnly_h
+#ifndef AnimationEffect_h
+#define AnimationEffect_h
 
 #include "core/CoreExport.h"
 #include "core/animation/Timing.h"
@@ -41,7 +41,6 @@ namespace blink {
 
 class Animation;
 class AnimationEffectOwner;
-class AnimationEffectReadOnly;
 class AnimationEffectTimingReadOnly;
 class ComputedTimingProperties;
 
@@ -59,8 +58,8 @@ static inline double NullValue() {
 }
 
 // Represents the content of an Animation and its fractional timing state.
-// http://drafts.csswg.org/web-animations/#animation-effect
-class CORE_EXPORT AnimationEffectReadOnly : public ScriptWrappable {
+// https://drafts.csswg.org/web-animations/#the-animationeffect-interface
+class CORE_EXPORT AnimationEffect : public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
   // Calls Attach/Detach, GetAnimation, UpdateInheritedTime.
   friend class Animation;
@@ -82,12 +81,12 @@ class CORE_EXPORT AnimationEffectReadOnly : public ScriptWrappable {
   class EventDelegate : public GarbageCollectedFinalized<EventDelegate> {
    public:
     virtual ~EventDelegate() = default;
-    virtual bool RequiresIterationEvents(const AnimationEffectReadOnly&) = 0;
-    virtual void OnEventCondition(const AnimationEffectReadOnly&) = 0;
+    virtual bool RequiresIterationEvents(const AnimationEffect&) = 0;
+    virtual void OnEventCondition(const AnimationEffect&) = 0;
     virtual void Trace(blink::Visitor* visitor) {}
   };
 
-  virtual ~AnimationEffectReadOnly() = default;
+  virtual ~AnimationEffect() = default;
 
   virtual bool IsKeyframeEffect() const { return false; }
   virtual bool IsInertEffect() const { return false; }
@@ -127,11 +126,11 @@ class CORE_EXPORT AnimationEffectReadOnly : public ScriptWrappable {
   virtual void Trace(blink::Visitor*);
 
  protected:
-  explicit AnimationEffectReadOnly(const Timing&, EventDelegate* = nullptr);
+  explicit AnimationEffect(const Timing&, EventDelegate* = nullptr);
 
-  // When AnimationEffectReadOnly receives a new inherited time via
-  // updateInheritedTime it will (if necessary) recalculate timings and (if
-  // necessary) call updateChildrenAndEffects.
+  // When AnimationEffect receives a new inherited time via updateInheritedTime
+  // it will (if necessary) recalculate timings and (if necessary) call
+  // updateChildrenAndEffects.
   void UpdateInheritedTime(double inherited_time, TimingUpdateReason) const;
   void Invalidate() const { needs_update_ = true; }
   bool RequiresIterationEvents() const {
@@ -183,4 +182,4 @@ class CORE_EXPORT AnimationEffectReadOnly : public ScriptWrappable {
 
 }  // namespace blink
 
-#endif  // AnimationEffectReadOnly_h
+#endif  // AnimationEffect_h

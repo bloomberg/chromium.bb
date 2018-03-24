@@ -33,7 +33,7 @@
 
 #include "bindings/core/v8/ScriptValue.h"
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationEffectTiming.h"
 #include "core/animation/CompositorAnimations.h"
 
@@ -47,7 +47,7 @@ class UnrestrictedDoubleOrKeyframeEffectOptions;
 
 // Represents the effect of an Animation on an Element's properties.
 // https://drafts.csswg.org/web-animations/#keyframe-effect
-class CORE_EXPORT KeyframeEffect final : public AnimationEffectReadOnly {
+class CORE_EXPORT KeyframeEffect final : public AnimationEffect {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -156,7 +156,7 @@ class CORE_EXPORT KeyframeEffect final : public AnimationEffectReadOnly {
 };
 
 DEFINE_TYPE_CASTS(KeyframeEffect,
-                  AnimationEffectReadOnly,
+                  AnimationEffect,
                   animationNode,
                   animationNode->IsKeyframeEffect(),
                   animationNode.IsKeyframeEffect());

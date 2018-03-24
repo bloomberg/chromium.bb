@@ -7,7 +7,7 @@
 // TODO(smcgruer): Update constructor to match latest spec.
 [
     Constructor(DOMString animatorName,
-                (AnimationEffectReadOnly or sequence<AnimationEffectReadOnly>) effects,
+                (AnimationEffect or sequence<AnimationEffect>) effects,
                 (DocumentTimeline or ScrollTimeline) timeline,
                 SerializedScriptValue options),
     RaisesException=Constructor,

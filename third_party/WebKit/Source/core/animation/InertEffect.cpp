@@ -45,7 +45,7 @@ InertEffect::InertEffect(KeyframeEffectModelBase* model,
                          const Timing& timing,
                          bool paused,
                          double inherited_time)
-    : AnimationEffectReadOnly(timing),
+    : AnimationEffect(timing),
       model_(model),
       paused_(paused),
       inherited_time_(inherited_time) {}
@@ -69,7 +69,7 @@ double InertEffect::CalculateTimeToEffectChange(bool, double, double) const {
 
 void InertEffect::Trace(blink::Visitor* visitor) {
   visitor->Trace(model_);
-  AnimationEffectReadOnly::Trace(visitor);
+  AnimationEffect::Trace(visitor);
 }
 
 }  // namespace blink

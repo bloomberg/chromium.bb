@@ -549,8 +549,8 @@ TEST_F(AnimationAnimationTest, SetPlaybackRateMax) {
 TEST_F(AnimationAnimationTest, SetEffect) {
   animation = timeline->Play(nullptr);
   animation->setStartTime(0, false);
-  AnimationEffectReadOnly* effect1 = MakeAnimation();
-  AnimationEffectReadOnly* effect2 = MakeAnimation();
+  AnimationEffect* effect1 = MakeAnimation();
+  AnimationEffect* effect2 = MakeAnimation();
   animation->setEffect(effect1);
   EXPECT_EQ(effect1, animation->effect());
   EXPECT_EQ(0, animation->CurrentTimeInternal());
@@ -592,7 +592,7 @@ TEST_F(AnimationAnimationTest, EmptyAnimationsDontUpdateEffects) {
 }
 
 TEST_F(AnimationAnimationTest, AnimationsDisassociateFromEffect) {
-  AnimationEffectReadOnly* animation_node = animation->effect();
+  AnimationEffect* animation_node = animation->effect();
   Animation* animation2 = timeline->Play(animation_node);
   EXPECT_EQ(nullptr, animation->effect());
   animation->setEffect(animation_node);
