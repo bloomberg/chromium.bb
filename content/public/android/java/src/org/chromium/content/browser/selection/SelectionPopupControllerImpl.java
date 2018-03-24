@@ -173,6 +173,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
      */
     private SelectionInsertionHandleObserver mHandleObserver;
 
+    private AdditionalMenuItemProvider mAdditionalMenuItemProvider;
+
     /**
      * An interface for getting {@link View} for readback.
      */
@@ -274,6 +276,7 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         mResultCallback = new SmartSelectionCallback();
         mLastSelectedText = "";
         initHandleObserver();
+        mAdditionalMenuItemProvider = ContentClassFactory.get().createAddtionalMenuItemProvider();
         if (initializeNative) mNativeSelectionPopupController = nativeInit(mWebContents);
         getPopupController().registerPopup(this);
         mInitialized = true;
@@ -663,9 +666,14 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     @Override
     public boolean onPrepareActionMode(ActionMode mode, Menu menu) {
+        if (mAdditionalMenuItemProvider != null) {
+            mAdditionalMenuItemProvider.clearMenuItemListeners();
+        }
+        // Only remove action mode items we added. See more http://crbug.com/709878.
         menu.removeGroup(R.id.select_action_menu_default_items);
         menu.removeGroup(R.id.select_action_menu_assist_items);
         menu.removeGroup(R.id.select_action_menu_text_processing_menus);
+        menu.removeGroup(android.R.id.textAssist);
         createActionMenu(mode, menu);
         return true;
     }
@@ -702,6 +710,11 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         mActionMenuDescriptor.apply(menu);
 
         setPasteAsPlainTextMenuItemTitle(menu);
+
+        if (mClassificationResult != null && mAdditionalMenuItemProvider != null) {
+            mAdditionalMenuItemProvider.addMenuItems(
+                    mContext, menu, mClassificationResult.textClassification);
+        }
 
         if (!hasSelection() || isSelectionPassword()) return;
 
@@ -857,10 +870,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
         if (hasSelection() && mSelectionMetricsLogger != null) {
             mSelectionMetricsLogger.logSelectionAction(mLastSelectedText, mLastSelectionOffset,
-                    getActionType(id), mClassificationResult);
+                    getActionType(id, groupId), mClassificationResult);
         }
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && id == android.R.id.textAssist) {
+        if (groupId == R.id.select_action_menu_assist_items && id == android.R.id.textAssist) {
             doAssistAction();
             mode.finish();
         } else if (id == R.id.select_action_menu_select_all) {
@@ -888,6 +901,11 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
             processText(item.getIntent());
             // The ActionMode is not dismissed to match the behavior with
             // TextView in Android M.
+        } else if (groupId == android.R.id.textAssist) {
+            if (mAdditionalMenuItemProvider != null) {
+                mAdditionalMenuItemProvider.performAction(item, mView);
+                mode.finish();
+            }
         } else {
             return false;
         }
@@ -937,7 +955,10 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return mWebContents.getRenderCoordinates().getDeviceScaleFactor();
     }
 
-    private int getActionType(int menuItemId) {
+    private int getActionType(int menuItemId, int menuItemGroupId) {
+        if (menuItemGroupId == android.R.id.textAssist) {
+            return SmartSelectionMetricsLogger.ActionType.SMART_SHARE;
+        }
         if (menuItemId == R.id.select_action_menu_select_all) {
             return SmartSelectionMetricsLogger.ActionType.SELECT_ALL;
         }
