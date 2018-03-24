@@ -222,12 +222,21 @@ void ChromePasswordProtectionService::FillReferrerChain(
       navigation_observer_manager_->IdentifyReferrerChainByEventURL(
           event_url, event_tab_id, kPasswordEventAttributionUserGestureLimit,
           frame->mutable_referrer_chain());
+  size_t referrer_chain_length = frame->referrer_chain().size();
   UMA_HISTOGRAM_COUNTS_100(
       "SafeBrowsing.ReferrerURLChainSize.PasswordEventAttribution",
-      frame->referrer_chain().size());
+      referrer_chain_length);
   UMA_HISTOGRAM_ENUMERATION(
       "SafeBrowsing.ReferrerAttributionResult.PasswordEventAttribution", result,
       SafeBrowsingNavigationObserverManager::ATTRIBUTION_FAILURE_TYPE_MAX);
+
+  // Determines how many recent navigation events to append to referrer chain.
+  size_t recent_navigations_to_collect =
+      profile_ ? SafeBrowsingNavigationObserverManager::
+                     CountOfRecentNavigationsToAppend(*profile_, result)
+               : 0u;
+  navigation_observer_manager_->AppendRecentNavigations(
+      recent_navigations_to_collect, frame->mutable_referrer_chain());
 }
 
 void ChromePasswordProtectionService::ShowModalWarning(
