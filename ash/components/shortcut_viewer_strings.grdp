@@ -15,6 +15,12 @@
   <message name="IDS_KSV_CLEAR_SEARCHBOX_ACCESSIBILITY_NAME" desc="Accessibility name for the button that clears all text from the search box.">
     Clear searchbox text
   </message>
+  <message name="IDS_KSV_SEARCH_BOX_ACCESSIBILITY_VALUE_WITH_RESULTS" desc="Accessibility value for the search box with searched results.">
+    Displaying <ph name="n">$1<ex>1</ex></ph> search results for <ph name="query">$2<ex>a</ex></ph>
+  </message>
+  <message name="IDS_KSV_SEARCH_BOX_ACCESSIBILITY_VALUE_WITHOUT_RESULTS" desc="Accessibility value for the search box without searched results.">
+    No search result for <ph name="query">$1<ex>a</ex></ph>
+  </message>
 
   <!-- Search illustration -->
   <message name="IDS_KSV_SEARCH_NO_RESULT" desc="No search results.">

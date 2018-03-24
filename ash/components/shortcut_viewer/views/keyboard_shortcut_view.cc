@@ -19,6 +19,7 @@
 #include "base/i18n/string_search.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
+#include "base/strings/string_number_conversions.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/base/default_style.h"
@@ -339,6 +340,7 @@ void KeyboardShortcutView::ShowSearchResults(
       search_query);
   ShortcutCategory current_category = ShortcutCategory::kUnknown;
   bool has_category_item = false;
+  int number_search_results = 0;
   for (const auto& item_view : shortcut_views_) {
     base::string16 description_text =
         item_view->description_label_view()->text();
@@ -378,10 +380,15 @@ void KeyboardShortcutView::ShowSearchResults(
       }
 
       found_items_list_view->AddChildView(item_view.get());
+      ++number_search_results;
     }
   }
 
+  std::vector<base::string16> replacement_strings;
   if (found_items_list_view->has_children()) {
+    replacement_strings.emplace_back(
+        base::NumberToString16(number_search_results));
+
     // To offset the padding between the bottom of the |search_box_view_| and
     // the top of the |search_results_container_|.
     constexpr int kTopPadding = -16;
@@ -392,7 +399,12 @@ void KeyboardShortcutView::ShowSearchResults(
     scroller->SetContents(found_items_list_view.release());
     search_container_content_view = scroller;
   }
-
+  replacement_strings.emplace_back(search_query);
+  search_box_view_->SetAccessibleValue(l10n_util::GetStringFUTF16(
+      number_search_results == 0
+          ? IDS_KSV_SEARCH_BOX_ACCESSIBILITY_VALUE_WITHOUT_RESULTS
+          : IDS_KSV_SEARCH_BOX_ACCESSIBILITY_VALUE_WITH_RESULTS,
+      replacement_strings, nullptr));
   search_results_container_->AddChildView(search_container_content_view);
   Layout();
   SchedulePaint();

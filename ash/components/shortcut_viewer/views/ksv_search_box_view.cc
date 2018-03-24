@@ -6,6 +6,7 @@
 
 #include "ash/components/shortcut_viewer/vector_icons/vector_icons.h"
 #include "ash/components/strings/grit/ash_components_strings.h"
+#include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/chromeos/search_box/search_box_view_delegate.h"
 #include "ui/gfx/canvas.h"
@@ -52,6 +53,11 @@ gfx::Size KSVSearchBoxView::CalculatePreferredSize() const {
   return gfx::Size(740, 32);
 }
 
+void KSVSearchBoxView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
+  node_data->role = ax::mojom::Role::kSearchBox;
+  node_data->SetValue(accessible_value_);
+}
+
 void KSVSearchBoxView::OnKeyEvent(ui::KeyEvent* event) {
   const ui::KeyboardCode key = event->key_code();
   const bool is_escape_key = (key == ui::VKEY_ESCAPE);
@@ -72,6 +78,11 @@ void KSVSearchBoxView::ButtonPressed(views::Button* sender,
   if (close_button() && sender == close_button())
     search_box()->RequestFocus();
   SearchBoxViewBase::ButtonPressed(sender, event);
+}
+
+void KSVSearchBoxView::SetAccessibleValue(const base::string16& value) {
+  accessible_value_ = value;
+  NotifyAccessibilityEvent(ax::mojom::Event::kValueChanged, true);
 }
 
 void KSVSearchBoxView::UpdateBackgroundColor(SkColor color) {
