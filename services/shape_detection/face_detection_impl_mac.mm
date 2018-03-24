@@ -12,7 +12,9 @@ namespace shape_detection {
 FaceDetectionImplMac::FaceDetectionImplMac(
     shape_detection::mojom::FaceDetectorOptionsPtr options) {
   NSString* const accuracy =
-      options->fast_mode ? CIDetectorAccuracyHigh : CIDetectorAccuracyLow;
+      options->fast_mode ? CIDetectorAccuracyLow : CIDetectorAccuracyHigh;
+  // The CIDetectorMaxFeatureCount option introduced in Mac OS SDK 10.12 can
+  // only be used with Rectangle Detectors.
   NSDictionary* const detector_options = @{CIDetectorAccuracy : accuracy};
   detector_.reset([[CIDetector detectorOfType:CIDetectorTypeFace
                                       context:nil
