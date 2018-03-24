@@ -159,7 +159,7 @@ std::unique_ptr<views::InkDropHighlight> MdTextButton::CreateInkDropHighlight()
   return std::make_unique<InkDropHighlight>(
       gfx::RectF(GetLocalBounds()).CenterPoint(),
       base::WrapUnique(new BorderShadowLayerDelegate(
-          shadows, GetLocalBounds(), fill_color, kInkDropSmallCornerRadius)));
+          shadows, GetLocalBounds(), fill_color, corner_radius_)));
 }
 
 void MdTextButton::SetEnabledTextColors(SkColor color) {
@@ -179,7 +179,8 @@ void MdTextButton::UpdateStyleToIndicateDefaultStatus() {
 
 MdTextButton::MdTextButton(ButtonListener* listener, int button_context)
     : LabelButton(listener, base::string16(), button_context),
-      is_prominent_(false) {
+      is_prominent_(false),
+      corner_radius_(kInkDropSmallCornerRadius) {
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);
   SetHorizontalAlignment(gfx::ALIGN_CENTER);
@@ -330,7 +331,7 @@ void MdTextButton::UpdateColors() {
   DCHECK_EQ(SK_AlphaOPAQUE, static_cast<int>(SkColorGetA(bg_color)));
   SetBackground(
       CreateBackgroundFromPainter(Painter::CreateRoundRectWith1PxBorderPainter(
-          bg_color, stroke_color, kInkDropSmallCornerRadius)));
+          bg_color, stroke_color, corner_radius_)));
   SchedulePaint();
 }
 

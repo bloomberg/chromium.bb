@@ -13,21 +13,23 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 
-OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxResultView* result_view)
+OmniboxTabSwitchButton::OmniboxTabSwitchButton(OmniboxResultView* result_view,
+                                               int text_height)
     : MdTextButton(this, views::style::CONTEXT_BUTTON_MD),
+      text_height_(text_height),
       result_view_(result_view) {
   // TODO: SetTooltipText(text);
   //       SetImageAlignment(ALIGN_CENTER, ALIGN_MIDDLE);
-  SetBackground(std::make_unique<BackgroundWith1PxBorder>(GetBackgroundColor(),
-                                                          SK_ColorBLACK));
   SetBgColorOverride(GetBackgroundColor());
   SetImage(STATE_NORMAL,
            gfx::CreateVectorIcon(omnibox::kSwitchIcon, 16, SK_ColorBLACK));
   SetText(base::ASCIIToUTF16("Switch to open tab"));
+  set_corner_radius(CalculatePreferredSize().height() / 2.f);
 }
 
 gfx::Size OmniboxTabSwitchButton::CalculatePreferredSize() const {
   gfx::Size size = MdTextButton::CalculatePreferredSize();
+  size.set_height(text_height_ + kVerticalPadding);
   const int horizontal_padding =
       GetLayoutConstant(LOCATION_BAR_PADDING) +
       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
