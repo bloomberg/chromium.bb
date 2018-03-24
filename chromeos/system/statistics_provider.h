@@ -19,6 +19,15 @@ CHROMEOS_EXPORT extern const char kActivateDateKey[];
 // The key that will be present in VPD if the device ever was enrolled.
 CHROMEOS_EXPORT extern const char kCheckEnrollmentKey[];
 
+// The key and values present in VPD to indicate if RLZ ping should be sent.
+CHROMEOS_EXPORT extern const char kShouldSendRlzPingKey[];
+CHROMEOS_EXPORT extern const char kShouldSendRlzPingValueFalse[];
+CHROMEOS_EXPORT extern const char kShouldSendRlzPingValueTrue[];
+
+// The key present in VPD that indicates the date after which the RLZ ping is
+// allowed to be sent. It is in the format of "yyyy-mm-dd".
+CHROMEOS_EXPORT extern const char kRlzEmbargoEndDateKey[];
+
 // Customization ID key.
 CHROMEOS_EXPORT extern const char kCustomizationIdKey[];
 

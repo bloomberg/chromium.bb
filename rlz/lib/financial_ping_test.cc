@@ -38,28 +38,33 @@
 #include "base/time/time.h"
 #endif
 
-namespace {
-
-// Must match the implementation in file_time.cc.
-int64_t GetSystemTimeAsInt64() {
-#if defined(OS_WIN)
-  FILETIME now_as_file_time;
-  GetSystemTimeAsFileTime(&now_as_file_time);
-  LARGE_INTEGER integer;
-  integer.HighPart = now_as_file_time.dwHighDateTime;
-  integer.LowPart = now_as_file_time.dwLowDateTime;
-  return integer.QuadPart;
-#else
-  double now_seconds = base::Time::Now().ToDoubleT();
-  return static_cast<int64_t>(now_seconds * 1000 * 1000 * 10);
+#if defined(OS_CHROMEOS)
+#include "rlz/chromeos/lib/rlz_value_store_chromeos.h"
 #endif
-}
+
+namespace {
 
 #if defined(OS_CHROMEOS)
 void RemoveMachineIdFromUrl(std::string* url) {
   size_t id_offset = url->find("&id=");
   EXPECT_NE(std::string::npos, id_offset);
   url->resize(id_offset);
+}
+
+// Utility function to convert a |base::Time::Exploded| to "yyyy-mm-dd" format.
+std::string ConvertExplodedToRlzEmbargoDate(
+    const base::Time::Exploded& exploded) {
+  std::string rlz_embargo_date = std::to_string(exploded.year);
+  rlz_embargo_date += '-';
+  if (exploded.month < 10)
+    rlz_embargo_date += '0';
+  rlz_embargo_date += std::to_string(exploded.month);
+  rlz_embargo_date += '-';
+  if (exploded.day_of_month < 10)
+    rlz_embargo_date += '0';
+  rlz_embargo_date += std::to_string(exploded.day_of_month);
+
+  return rlz_embargo_date;
 }
 #endif
 
@@ -218,7 +223,7 @@ static void SetLastPingTime(int64_t time, rlz_lib::Product product) {
 }
 
 TEST_F(FinancialPingTest, IsPingTime) {
-  int64_t now = GetSystemTimeAsInt64();
+  int64_t now = rlz_lib::FinancialPing::GetSystemTimeAsInt64();
   int64_t last_ping = now - rlz_lib::kEventsPingInterval - k1MinuteInterval;
   SetLastPingTime(last_ping, rlz_lib::TOOLBAR_NOTIFIER);
 
@@ -270,7 +275,7 @@ TEST_F(FinancialPingTest, BrandingIsPingTime) {
   if (!rlz_lib::SupplementaryBranding::GetBrand().empty())
     return;
 
-  int64_t now = GetSystemTimeAsInt64();
+  int64_t now = rlz_lib::FinancialPing::GetSystemTimeAsInt64();
   int64_t last_ping = now - rlz_lib::kEventsPingInterval - k1MinuteInterval;
   SetLastPingTime(last_ping, rlz_lib::TOOLBAR_NOTIFIER);
 
@@ -305,7 +310,7 @@ TEST_F(FinancialPingTest, BrandingIsPingTime) {
 }
 
 TEST_F(FinancialPingTest, ClearLastPingTime) {
-  int64_t now = GetSystemTimeAsInt64();
+  int64_t now = rlz_lib::FinancialPing::GetSystemTimeAsInt64();
   int64_t last_ping = now - rlz_lib::kEventsPingInterval + k1MinuteInterval;
   SetLastPingTime(last_ping, rlz_lib::TOOLBAR_NOTIFIER);
 
@@ -321,3 +326,58 @@ TEST_F(FinancialPingTest, ClearLastPingTime) {
   EXPECT_TRUE(rlz_lib::FinancialPing::IsPingTime(rlz_lib::TOOLBAR_NOTIFIER,
                                                  false));
 }
+
+#if defined(OS_CHROMEOS)
+TEST_F(FinancialPingTest, RlzEmbargoEndDate) {
+  // Do not set last ping time, verify that |IsPingTime| returns true.
+  EXPECT_TRUE(
+      rlz_lib::FinancialPing::IsPingTime(rlz_lib::TOOLBAR_NOTIFIER, false));
+
+  // Simulate writing a past embargo date to VPD, verify that |IsPingTime|
+  // returns true when the embargo date has already passed.
+  base::Time::Exploded exploded;
+  base::Time past_rlz_embargo_date =
+      base::Time::NowFromSystemTime() - base::TimeDelta::FromDays(1);
+  past_rlz_embargo_date.LocalExplode(&exploded);
+  std::string past_rlz_embargo_date_value =
+      ConvertExplodedToRlzEmbargoDate(exploded);
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kRlzEmbargoEndDateKey, past_rlz_embargo_date_value);
+
+  EXPECT_TRUE(
+      rlz_lib::FinancialPing::IsPingTime(rlz_lib::TOOLBAR_NOTIFIER, false));
+
+  // Simulate writing a future embargo date (less than
+  // |kRlzEmbargoEndDateGarbageDateThresholdDays|) to VPD, verify that
+  // |IsPingTime| is false.
+  base::Time future_rlz_embargo_date =
+      base::Time::NowFromSystemTime() +
+      base::TimeDelta::FromDays(rlz_lib::RlzValueStoreChromeOS::
+                                    kRlzEmbargoEndDateGarbageDateThresholdDays -
+                                1);
+  future_rlz_embargo_date.LocalExplode(&exploded);
+  std::string future_rlz_embargo_date_value =
+      ConvertExplodedToRlzEmbargoDate(exploded);
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kRlzEmbargoEndDateKey, future_rlz_embargo_date_value);
+
+  EXPECT_FALSE(
+      rlz_lib::FinancialPing::IsPingTime(rlz_lib::TOOLBAR_NOTIFIER, false));
+
+  // Simulate writing a future embargo date (more than
+  // |kRlzEmbargoEndDateGarbageDateThresholdDays|) to VPD, verify that
+  // |IsPingTime| is true.
+  future_rlz_embargo_date =
+      base::Time::NowFromSystemTime() +
+      base::TimeDelta::FromDays(rlz_lib::RlzValueStoreChromeOS::
+                                    kRlzEmbargoEndDateGarbageDateThresholdDays +
+                                1);
+  future_rlz_embargo_date.LocalExplode(&exploded);
+  future_rlz_embargo_date_value = ConvertExplodedToRlzEmbargoDate(exploded);
+  statistics_provider_->SetMachineStatistic(
+      chromeos::system::kRlzEmbargoEndDateKey, future_rlz_embargo_date_value);
+
+  EXPECT_TRUE(
+      rlz_lib::FinancialPing::IsPingTime(rlz_lib::TOOLBAR_NOTIFIER, false));
+}
+#endif

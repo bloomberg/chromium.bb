@@ -162,6 +162,10 @@ void RlzLibTestNoMachineState::TearDown() {
   m_rlz_test_helper_.TearDown();
 }
 
+RlzLibTestBase::RlzLibTestBase() = default;
+
+RlzLibTestBase::~RlzLibTestBase() = default;
+
 void RlzLibTestBase::SetUp() {
   RlzLibTestNoMachineState::SetUp();
 #if defined(OS_WIN)
@@ -173,5 +177,18 @@ void RlzLibTestBase::SetUp() {
   // out not set, since on Chrome OS RLZ string can only be set once.
   EXPECT_TRUE(rlz_lib::SetAccessPointRlz(rlz_lib::IETB_SEARCH_BOX, ""));
   EXPECT_TRUE(rlz_lib::SetAccessPointRlz(rlz_lib::IE_HOME_PAGE, ""));
+#endif  // defined(OS_POSIX)
+
+#if defined(OS_CHROMEOS)
+  statistics_provider_ =
+      std::make_unique<chromeos::system::FakeStatisticsProvider>();
+  chromeos::system::StatisticsProvider::SetTestProvider(
+      statistics_provider_.get());
+#endif  // defined(OS_CHROMEOS)
+}
+
+void RlzLibTestBase::TearDown() {
+#if defined(OS_CHROMEOS)
+  chromeos::system::StatisticsProvider::SetTestProvider(nullptr);
 #endif  // defined(OS_CHROMEOS)
 }

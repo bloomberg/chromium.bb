@@ -70,31 +70,6 @@ class InternetHandle {
 
 #endif
 
-namespace {
-
-// Returns the time relative to a fixed point in the past in multiples of
-// 100 ns stepts. The point in the past is arbitrary but can't change, as the
-// result of this value is stored on disk.
-int64_t GetSystemTimeAsInt64() {
-#if defined(OS_WIN)
-  FILETIME now_as_file_time;
-  // Relative to Jan 1, 1601 (UTC).
-  GetSystemTimeAsFileTime(&now_as_file_time);
-
-  LARGE_INTEGER integer;
-  integer.HighPart = now_as_file_time.dwHighDateTime;
-  integer.LowPart = now_as_file_time.dwLowDateTime;
-  return integer.QuadPart;
-#else
-  // Seconds since epoch (Jan 1, 1970).
-  double now_seconds = base::Time::Now().ToDoubleT();
-  return static_cast<int64_t>(now_seconds * 1000 * 1000 * 10);
-#endif
-}
-
-}  // namespace
-
-
 namespace rlz_lib {
 
 using base::subtle::AtomicWord;
@@ -501,6 +476,23 @@ bool FinancialPing::ClearLastPingTime(Product product) {
   if (!store || !store->HasAccess(RlzValueStore::kWriteAccess))
     return false;
   return store->ClearPingTime(product);
+}
+
+int64_t FinancialPing::GetSystemTimeAsInt64() {
+#if defined(OS_WIN)
+  FILETIME now_as_file_time;
+  // Relative to Jan 1, 1601 (UTC).
+  GetSystemTimeAsFileTime(&now_as_file_time);
+
+  LARGE_INTEGER integer;
+  integer.HighPart = now_as_file_time.dwHighDateTime;
+  integer.LowPart = now_as_file_time.dwLowDateTime;
+  return integer.QuadPart;
+#else
+  // Seconds since epoch (Jan 1, 1970).
+  double now_seconds = base::Time::Now().ToDoubleT();
+  return static_cast<int64_t>(now_seconds * 1000 * 1000 * 10);
+#endif
 }
 
 #if defined(RLZ_NETWORK_IMPLEMENTATION_CHROME_NET)

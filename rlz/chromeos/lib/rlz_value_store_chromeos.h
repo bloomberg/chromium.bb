@@ -25,6 +25,10 @@ namespace rlz_lib {
 // An implementation of RlzValueStore for ChromeOS.
 class RlzValueStoreChromeOS : public RlzValueStore {
  public:
+  // Ignore |kRlzEmbargoEndDateKey| if it's more than this many days in the
+  // future.
+  static const int kRlzEmbargoEndDateGarbageDateThresholdDays;
+
   // Creates new instance and synchronously reads data from file.
   explicit RlzValueStoreChromeOS(const base::FilePath& store_path);
   ~RlzValueStoreChromeOS() override;
