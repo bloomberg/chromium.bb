@@ -136,6 +136,21 @@ const MojoDeadline MOJO_DEADLINE_INDEFINITE = static_cast<MojoDeadline>(-1);
 #define MOJO_DEADLINE_INDEFINITE ((MojoDeadline)-1)
 #endif
 
+// Flags passed to |MojoInitialize()| via |MojoInitializeOptions|.
+typedef uint32_t MojoInitializeFlags;
+
+// No flags.
+#define MOJO_INITIALIZE_FLAG_NONE ((MojoInitializeFlags)0)
+
+// Options passed to |MojoInitialize()|.
+struct MOJO_ALIGNAS(8) MojoInitializeOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoInitializeFlags|.
+  MojoInitializeFlags flags;
+};
+
 // |MojoHandleSignals|: Used to specify signals that can be watched for on a
 // handle (and which can be triggered), e.g., the ability to read or write to
 // the handle.
