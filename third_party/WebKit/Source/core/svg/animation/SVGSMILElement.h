@@ -66,11 +66,11 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   enum Restart { kRestartAlways, kRestartWhenNotActive, kRestartNever };
 
-  Restart GetRestart() const { return static_cast<Restart>(restart_); }
+  Restart GetRestart() const;
 
   enum FillMode { kFillRemove, kFillFreeze };
 
-  FillMode Fill() const { return static_cast<FillMode>(fill_); }
+  FillMode Fill() const;
 
   SMILTime Dur() const;
   SMILTime RepeatDur() const;
@@ -241,9 +241,6 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   enum ActiveState { kInactive, kActive, kFrozen };
 
-  ActiveState CurrentActiveState() const {
-    return static_cast<ActiveState>(active_state_);
-  }
   ActiveState DetermineActiveState(SMILTime elapsed) const;
   float CalculateAnimationPercentAndRepeat(double elapsed,
                                            unsigned& repeat) const;
@@ -271,9 +268,7 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
 
   SMILTime previous_interval_begin_;
 
-  unsigned active_state_ : 2;
-  unsigned restart_ : 2;
-  unsigned fill_ : 1;
+  ActiveState active_state_;
   float last_percent_;
   unsigned last_repeat_;
 
