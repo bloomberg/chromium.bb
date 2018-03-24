@@ -14,6 +14,12 @@
 namespace gl {
 namespace {
 
+const char kVertexHeaderES3[] =
+    "#version 300 es\n"
+    "precision mediump float;\n"
+    "#define ATTRIBUTE in\n"
+    "#define VARYING out\n";
+
 const char kVertexHeaderCompatiblityProfile[] =
     "#version 110\n"
     "#define ATTRIBUTE attribute\n"
@@ -23,6 +29,14 @@ const char kVertexHeaderCoreProfile[] =
     "#version 150\n"
     "#define ATTRIBUTE in\n"
     "#define VARYING out\n";
+
+const char kFragmentHeaderES3[] =
+    "#version 300 es\n"
+    "precision mediump float;\n"
+    "#define VARYING in\n"
+    "#define TEX texture\n"
+    "#define FRAGCOLOR frag_color\n"
+    "out vec4 FRAGCOLOR;\n";
 
 const char kFragmentHeaderCompatiblityProfile[] =
     "#version 110\n"
@@ -45,7 +59,7 @@ STRINGIZE(
   uniform vec2 a_texScale;
   VARYING vec2 v_texCoord;
   void main() {
-    gl_Position = vec4(a_position.x, a_position.y, 0.0, 1.0);
+    gl_Position = vec4(a_position, 0.0, 1.0);
     v_texCoord = (a_position + vec2(1.0, 1.0)) * 0.5 * a_texScale;
   }
 );
@@ -75,22 +89,27 @@ YUVToRGBConverter::YUVToRGBConverter(const GLVersionInfo& gl_version_info,
   DCHECK(color_transform->CanGetShaderSource());
   std::string do_color_conversion = color_transform->GetShaderSource();
 
+  bool use_es3 = gl_version_info.is_es3;
   bool use_core_profile = gl_version_info.is_desktop_core_profile;
   glGenFramebuffersEXT(1, &framebuffer_);
   vertex_buffer_ = GLHelper::SetupQuadVertexBuffer();
   vertex_shader_ = GLHelper::LoadShader(
       GL_VERTEX_SHADER,
-      base::StringPrintf("%s\n%s",
-                         use_core_profile ? kVertexHeaderCoreProfile
-                                          : kVertexHeaderCompatiblityProfile,
-                         kVertexShader)
+      base::StringPrintf(
+          "%s\n%s",
+          use_es3 ? kVertexHeaderES3
+                  : (use_core_profile ? kVertexHeaderCoreProfile
+                                      : kVertexHeaderCompatiblityProfile),
+          kVertexShader)
           .c_str());
   fragment_shader_ = GLHelper::LoadShader(
       GL_FRAGMENT_SHADER,
-      base::StringPrintf("%s\n%s\n%s",
-                         use_core_profile ? kFragmentHeaderCoreProfile
-                                          : kFragmentHeaderCompatiblityProfile,
-                         do_color_conversion.c_str(), kFragmentShader)
+      base::StringPrintf(
+          "%s\n%s\n%s",
+          use_es3 ? kFragmentHeaderES3
+                  : (use_core_profile ? kFragmentHeaderCoreProfile
+                                      : kFragmentHeaderCompatiblityProfile),
+          do_color_conversion.c_str(), kFragmentShader)
           .c_str());
   program_ = GLHelper::SetupProgram(vertex_shader_, fragment_shader_);
 
