@@ -2093,7 +2093,9 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
   if (!cm->seq_params.monochrome)
     pars->chroma_scaling_from_luma = aom_rb_read_bit(rb);
 
-  if (cm->seq_params.monochrome || pars->chroma_scaling_from_luma) {
+  if (cm->seq_params.monochrome || pars->chroma_scaling_from_luma ||
+      ((cm->subsampling_x == 1) && (cm->subsampling_y == 1) &&
+       (pars->num_y_points == 0))) {
     pars->num_cb_points = 0;
     pars->num_cr_points = 0;
   } else {
@@ -2126,6 +2128,13 @@ void av1_read_film_grain_params(AV1_COMMON *cm,
                            "shall be increasing.");
       pars->scaling_points_cr[i][1] = aom_rb_read_literal(rb, 8);
     }
+
+    if ((cm->subsampling_x == 1) && (cm->subsampling_y == 1) &&
+        (((pars->num_cb_points == 0) && (pars->num_cr_points != 0)) ||
+         ((pars->num_cb_points != 0) && (pars->num_cr_points == 0))))
+      aom_internal_error(&cm->error, AOM_CODEC_UNSUP_BITSTREAM,
+                         "In YCbCr 4:2:0, film grain shall be applied "
+                         "to both chroma components or neither.");
   }
 
   pars->scaling_shift = aom_rb_read_literal(rb, 2) + 8;  // 8 + value
