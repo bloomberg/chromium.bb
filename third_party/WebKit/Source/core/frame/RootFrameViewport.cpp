@@ -245,13 +245,17 @@ ScrollBehavior RootFrameViewport::ScrollBehaviorStyle() const {
 }
 
 LayoutRect RootFrameViewport::ScrollIntoView(
-    const LayoutRect& rect_in_content,
+    const LayoutRect& rect_in_absolute,
     const WebScrollIntoViewParams& params) {
   LayoutRect scroll_snapport_rect(VisibleScrollSnapportRect());
 
+  LayoutRect rect_in_document = rect_in_absolute;
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    rect_in_document.Move(LayoutSize(LayoutViewport().GetScrollOffset()));
+
   ScrollOffset new_scroll_offset =
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
-          scroll_snapport_rect, rect_in_content, params.GetScrollAlignmentX(),
+          scroll_snapport_rect, rect_in_document, params.GetScrollAlignmentX(),
           params.GetScrollAlignmentY(), GetScrollOffset()));
 
   if (new_scroll_offset != GetScrollOffset()) {
@@ -267,11 +271,12 @@ LayoutRect RootFrameViewport::ScrollIntoView(
     }
   }
 
-  // RootFrameViewport only changes the viewport relative to the document so we
-  // can't change the input rect's location relative to the document origin.
+  // Return the newly moved rect to absolute coordinates.
   // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
   // value to the visible content rect, but this does not.
-  return rect_in_content;
+  if (RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+    rect_in_document.Move(-LayoutSize(LayoutViewport().GetScrollOffset()));
+  return rect_in_document;
 }
 
 void RootFrameViewport::UpdateScrollOffset(const ScrollOffset& offset,

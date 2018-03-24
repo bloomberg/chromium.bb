@@ -59,8 +59,8 @@ class CORE_EXPORT RootFrameViewport final
   void SetScrollOffset(const ScrollOffset&,
                        ScrollType,
                        ScrollBehavior = kScrollBehaviorInstant) override;
-  LayoutRect ScrollIntoView(const LayoutRect& rect_in_content,
-                            const WebScrollIntoViewParams& params) override;
+  LayoutRect ScrollIntoView(const LayoutRect&,
+                            const WebScrollIntoViewParams&) override;
   IntRect VisibleContentRect(
       IncludeScrollbarsInRect = kExcludeScrollbars) const override;
   LayoutRect VisibleScrollSnapportRect() const override;

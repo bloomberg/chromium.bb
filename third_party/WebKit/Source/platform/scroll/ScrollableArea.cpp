@@ -290,7 +290,7 @@ void ScrollableArea::UserScrollHelper(const ScrollOffset& offset,
 }
 
 LayoutRect ScrollableArea::ScrollIntoView(
-    const LayoutRect& rect_in_content,
+    const LayoutRect& rect_in_absolute,
     const WebScrollIntoViewParams& params) {
   // TODO(bokan): This should really be implemented here but ScrollAlignment is
   // in Core which is a dependency violation.

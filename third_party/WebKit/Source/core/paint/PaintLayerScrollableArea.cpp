@@ -2012,9 +2012,10 @@ void PaintLayerScrollableArea::Resize(const IntPoint& pos,
 }
 
 LayoutRect PaintLayerScrollableArea::ScrollIntoView(
-    const LayoutRect& rect,
+    const LayoutRect& absolute_rect,
     const WebScrollIntoViewParams& params) {
-  LayoutRect local_expose_rect = AbsoluteToLocal(*GetLayoutBox(), rect);
+  LayoutRect local_expose_rect =
+      AbsoluteToLocal(*GetLayoutBox(), absolute_rect);
   LayoutSize border_origin_to_scroll_origin =
       LayoutSize(-GetLayoutBox()->BorderLeft(), -GetLayoutBox()->BorderTop()) +
       LayoutSize(GetScrollOffset());

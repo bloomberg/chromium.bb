@@ -503,7 +503,7 @@ class CORE_EXPORT LocalFrameView final
                                       unsigned = 0) const final;
   scoped_refptr<base::SingleThreadTaskRunner> GetTimerTaskRunner() const final;
 
-  LayoutRect ScrollIntoView(const LayoutRect& rect_in_content,
+  LayoutRect ScrollIntoView(const LayoutRect& rect_in_absolute,
                             const WebScrollIntoViewParams& params) override;
 
   // The window that hosts the LocalFrameView. The LocalFrameView will
@@ -704,6 +704,7 @@ class CORE_EXPORT LocalFrameView final
   IntPoint RootFrameToDocument(const IntPoint&);
   FloatPoint RootFrameToDocument(const FloatPoint&);
   LayoutPoint RootFrameToAbsolute(const LayoutPoint&) const;
+  IntPoint RootFrameToAbsolute(const IntPoint&) const;
   IntRect RootFrameToAbsolute(const IntRect&) const;
   DoublePoint DocumentToAbsolute(const DoublePoint&) const;
   FloatPoint DocumentToAbsolute(const FloatPoint&) const;

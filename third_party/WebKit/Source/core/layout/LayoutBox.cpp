@@ -685,22 +685,13 @@ void LayoutBox::ScrollRectToVisibleRecursive(
     if (LocalFrameView* frame_view = GetFrameView()) {
       HTMLFrameOwnerElement* owner_element = GetDocument().LocalOwner();
       if (!IsDisallowedAutoscroll(owner_element, frame_view)) {
-        if (params.make_visible_in_visual_viewport) {
-          // RootFrameViewport::ScrollIntoView expects a rect in layout
-          // viewport content coordinates.
-          if (IsLayoutView() && GetFrame()->IsMainFrame() &&
-              RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-            absolute_rect_to_scroll.Move(
-                LayoutSize(GetScrollableArea()->GetScrollOffset()));
-          }
-          absolute_rect_to_scroll =
-              frame_view->GetScrollableArea()->ScrollIntoView(
-                  absolute_rect_to_scroll, params);
-        } else {
-          absolute_rect_to_scroll =
-              frame_view->LayoutViewportScrollableArea()->ScrollIntoView(
-                  absolute_rect_to_scroll, params);
-        }
+        ScrollableArea* area_to_scroll =
+            params.make_visible_in_visual_viewport
+                ? frame_view->GetScrollableArea()
+                : frame_view->LayoutViewportScrollableArea();
+        absolute_rect_to_scroll =
+            area_to_scroll->ScrollIntoView(absolute_rect_to_scroll, params);
+
         if (params.is_for_scroll_sequence)
           absolute_rect_to_scroll.Move(PendingOffsetToScroll());
         if (owner_element && owner_element->GetLayoutObject()) {
@@ -1066,10 +1057,10 @@ void LayoutBox::Autoscroll(const IntPoint& position_in_root_frame) {
   if (!frame_view)
     return;
 
-  IntPoint position_in_content =
-      frame_view->RootFrameToContents(position_in_root_frame);
+  IntPoint absolute_position =
+      frame_view->RootFrameToAbsolute(position_in_root_frame);
   ScrollRectToVisibleRecursive(
-      LayoutRect(position_in_content, LayoutSize(1, 1)),
+      LayoutRect(absolute_position, LayoutSize(1, 1)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kUserScroll));
