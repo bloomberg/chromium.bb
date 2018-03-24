@@ -37,6 +37,9 @@ enum TestMode { kRealTime, kOnePassGood, kTwoPassGood };
 
 #define TWO_PASS_TEST_MODES ::testing::Values(::libaom_test::kTwoPassGood)
 
+#define NONREALTIME_TEST_MODES \
+  ::testing::Values(::libaom_test::kOnePassGood, ::libaom_test::kTwoPassGood)
+
 // Provides an object to handle the libaom get_cx_data() iteration pattern
 class CxDataIterator {
  public:

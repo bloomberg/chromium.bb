@@ -19,6 +19,7 @@ namespace {
 
 const int kMaxErrorFrames = 12;
 const int kMaxDroppableFrames = 12;
+const int kCpuUsed = 1;
 
 class ErrorResilienceTestLarge
     : public ::libaom_test::CodecTestWithParam<libaom_test::TestMode>,
@@ -46,6 +47,7 @@ class ErrorResilienceTestLarge
   virtual void BeginPassHook(unsigned int /*pass*/) {
     psnr_ = 0.0;
     nframes_ = 0;
+    decoded_nframes_ = 0;
     mismatch_psnr_ = 0.0;
     mismatch_nframes_ = 0;
   }
@@ -55,15 +57,17 @@ class ErrorResilienceTestLarge
     nframes_++;
   }
 
-  virtual void PreEncodeFrameHook(libaom_test::VideoSource *video) {
+  virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
+                                  libaom_test::Encoder *encoder) {
+    if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
     frame_flags_ &=
         ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF);
     if (droppable_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
       for (unsigned int i = 0; i < droppable_nframes_; ++i) {
         if (droppable_frames_[i] == video->frame()) {
-          std::cout << "Encoding droppable frame: " << droppable_frames_[i]
-                    << "\n";
+          std::cout << "             Encoding droppable frame: "
+                    << droppable_frames_[i] << "\n";
           frame_flags_ |= (AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
                            AOM_EFLAG_NO_UPD_ARF);
           return;
@@ -104,6 +108,13 @@ class ErrorResilienceTestLarge
     ::libaom_test::EncoderTest::MismatchHook(img1, img2);
   }
 
+  virtual void DecompressedFrameHook(const aom_image_t &img,
+                                     aom_codec_pts_t pts) {
+    (void)img;
+    (void)pts;
+    ++decoded_nframes_;
+  }
+
   void SetErrorFrames(int num, unsigned int *list) {
     if (num > kMaxErrorFrames)
       num = kMaxErrorFrames;
@@ -125,12 +136,15 @@ class ErrorResilienceTestLarge
   }
 
   unsigned int GetMismatchFrames() { return mismatch_nframes_; }
+  unsigned int GetEncodedFrames() { return nframes_; }
+  unsigned int GetDecodedFrames() { return decoded_nframes_; }
 
   void SetPatternSwitch(int frame_switch) { pattern_switch_ = frame_switch; }
 
  private:
   double psnr_;
   unsigned int nframes_;
+  unsigned int decoded_nframes_;
   unsigned int error_nframes_;
   unsigned int droppable_nframes_;
   unsigned int pattern_switch_;
@@ -175,7 +189,6 @@ TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
 // Check for successful decoding and no encoder/decoder mismatch
 // if we lose (i.e., drop before decoding) a set of droppable
 // frames (i.e., frames that don't update any reference buffers).
-// Check both isolated and consecutive loss.
 TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
   const aom_rational timebase = { 33333333, 1000000000 };
   cfg_.g_timebase = timebase;
@@ -189,46 +202,21 @@ TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 20);
 
-  // Error resilient mode ON.
-  cfg_.g_error_resilient = 1;
   cfg_.kf_mode = AOM_KF_DISABLED;
 
   // Set an arbitrary set of error frames same as droppable frames.
-  // In addition to isolated loss/drop, add a long consecutive series
-  // (of size 9) of dropped frames.
-  unsigned int num_droppable_frames = 5;
-  unsigned int droppable_frame_list[] = { 5, 10, 13, 16, 19 };
+  unsigned int num_droppable_frames = 3;
+  unsigned int droppable_frame_list[] = { 5, 10, 13 };
   SetDroppableFrames(num_droppable_frames, droppable_frame_list);
   SetErrorFrames(num_droppable_frames, droppable_frame_list);
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
   // Test that no mismatches have been found
+  std::cout << "             Encoded frames: " << GetEncodedFrames() << "\n";
+  std::cout << "             Decoded frames: " << GetDecodedFrames() << "\n";
   std::cout << "             Mismatch frames: " << GetMismatchFrames() << "\n";
+  EXPECT_EQ(GetEncodedFrames() - GetDecodedFrames(), num_droppable_frames);
   EXPECT_EQ(GetMismatchFrames(), (unsigned int)0);
-
-  // Reset previously set of error/droppable frames.
-  Reset();
-
-#if 0
-  // TODO(jkoleszar): This test is disabled for the time being as too
-  // sensitive. It's not clear how to set a reasonable threshold for
-  // this behavior.
-
-  // Now set an arbitrary set of error frames that are non-droppable
-  unsigned int num_error_frames = 3;
-  unsigned int error_frame_list[] = {3, 10, 20};
-  SetErrorFrames(num_error_frames, error_frame_list);
-  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
-
-  // Test that dropping an arbitrary set of inter frames does not hurt too much
-  // Note the Average Mismatch PSNR is the average of the PSNR between
-  // decoded frame and encoder's version of the same frame for all frames
-  // with mismatch.
-  const double psnr_resilience_mismatch = GetAverageMismatchPsnr();
-  std::cout << "             Mismatch PSNR: "
-            << psnr_resilience_mismatch << "\n";
-  EXPECT_GT(psnr_resilience_mismatch, 20.0);
-#endif
 }
 
-AV1_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, ONE_PASS_TEST_MODES);
+AV1_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, NONREALTIME_TEST_MODES);
 }  // namespace
