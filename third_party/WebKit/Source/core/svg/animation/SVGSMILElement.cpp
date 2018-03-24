@@ -217,6 +217,8 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       interval_(SMILInterval(SMILTime::Unresolved(), SMILTime::Unresolved())),
       previous_interval_begin_(SMILTime::Unresolved()),
       active_state_(kInactive),
+      restart_(kRestartAlways),
+      fill_(kFillRemove),
       last_percent_(0),
       last_repeat_(0),
       next_progress_time_(0),
@@ -542,6 +544,15 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     SetAttributeEventListener(
         EventTypeNames::repeatEvent,
         CreateAttributeEventListener(this, name, value, EventParameterName()));
+  } else if (name == SVGNames::restartAttr) {
+    if (value == "never")
+      restart_ = kRestartNever;
+    else if (value == "whenNotActive")
+      restart_ = kRestartWhenNotActive;
+    else
+      restart_ = kRestartAlways;
+  } else if (name == SVGNames::fillAttr) {
+    fill_ = value == "freeze" ? kFillFreeze : kFillRemove;
   } else {
     SVGElement::ParseAttribute(params);
   }
@@ -634,23 +645,6 @@ SMILTime SVGSMILElement::Elapsed() const {
 
 bool SVGSMILElement::IsFrozen() const {
   return active_state_ == kFrozen;
-}
-
-SVGSMILElement::Restart SVGSMILElement::GetRestart() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, never, ("never"));
-  DEFINE_STATIC_LOCAL(const AtomicString, when_not_active, ("whenNotActive"));
-  const AtomicString& value = FastGetAttribute(SVGNames::restartAttr);
-  if (value == never)
-    return kRestartNever;
-  if (value == when_not_active)
-    return kRestartWhenNotActive;
-  return kRestartAlways;
-}
-
-SVGSMILElement::FillMode SVGSMILElement::Fill() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, freeze, ("freeze"));
-  const AtomicString& value = FastGetAttribute(SVGNames::fillAttr);
-  return value == freeze ? kFillFreeze : kFillRemove;
 }
 
 SMILTime SVGSMILElement::Dur() const {
@@ -898,7 +892,7 @@ SMILTime SVGSMILElement::NextProgressTime() const {
 void SVGSMILElement::BeginListChanged(SMILTime event_time) {
   if (is_waiting_for_first_interval_) {
     ResolveFirstInterval();
-  } else if (this->GetRestart() != kRestartNever) {
+  } else if (GetRestart() != kRestartNever) {
     SMILTime new_begin = FindInstanceTime(kBegin, event_time, true);
     if (new_begin.IsFinite() &&
         (interval_.end <= event_time || new_begin < interval_.begin)) {
@@ -948,7 +942,7 @@ SVGSMILElement::RestartedInterval SVGSMILElement::MaybeRestartInterval(
   DCHECK(!is_waiting_for_first_interval_);
   DCHECK(elapsed >= interval_.begin);
 
-  Restart restart = this->GetRestart();
+  Restart restart = GetRestart();
   if (restart == kRestartNever)
     return kDidNotRestartInterval;
 
@@ -1132,7 +1126,7 @@ bool SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
   float percent = CalculateAnimationPercentAndRepeat(elapsed, repeat);
   RestartedInterval restarted_interval = MaybeRestartInterval(elapsed);
 
-  ActiveState old_active_state = active_state_;
+  ActiveState old_active_state = CurrentActiveState();
   active_state_ = DetermineActiveState(elapsed);
   bool animation_is_contributing = IsContributing(elapsed);
 
