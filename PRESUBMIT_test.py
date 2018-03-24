@@ -41,10 +41,13 @@ class VersionControlConflictsTest(unittest.TestCase):
 class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
   def testTypicalCorrectlyMatchedChange(self):
     diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
+    diff_java = [
+      'RecordHistogram.recordBooleanHistogram("Bla.Foo.Dummy", true)']
     diff_xml = ['<histogram name="Bla.Foo.Dummy"> </histogram>']
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockFile('some/path/foo.cc', diff_cc),
+      MockFile('some/path/foo.java', diff_java),
       MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
     ]
     warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
@@ -53,15 +56,24 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
 
   def testTypicalNotMatchedChange(self):
     diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
+    diff_java = [
+      'RecordHistogram.recordBooleanHistogram("Bla.Foo.Dummy", true)']
     mock_input_api = MockInputApi()
-    mock_input_api.files = [MockFile('some/path/foo.cc', diff_cc)]
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', diff_cc),
+      MockFile('some/path/foo.java', diff_java),
+    ]
     warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
                                                    MockOutputApi())
     self.assertEqual(1, len(warnings))
     self.assertEqual('warning', warnings[0].type)
+    self.assertTrue('foo.cc' in warnings[0].items[0])
+    self.assertTrue('foo.java' in warnings[0].items[1])
 
   def testTypicalNotMatchedChangeViaSuffixes(self):
     diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
+    diff_java = [
+      'RecordHistogram.recordBooleanHistogram("Bla.Foo.Dummy", true)']
     diff_xml = ['<histogram_suffixes name="SuperHistogram">',
                 '  <suffix name="Dummy"/>',
                 '  <affected-histogram name="Snafu.Dummy"/>',
@@ -69,15 +81,20 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockFile('some/path/foo.cc', diff_cc),
+      MockFile('some/path/foo.java', diff_java),
       MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
     ]
     warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
                                                    MockOutputApi())
     self.assertEqual(1, len(warnings))
     self.assertEqual('warning', warnings[0].type)
+    self.assertTrue('foo.cc' in warnings[0].items[0])
+    self.assertTrue('foo.java' in warnings[0].items[1])
 
   def testTypicalCorrectlyMatchedChangeViaSuffixes(self):
     diff_cc = ['UMA_HISTOGRAM_BOOL("Bla.Foo.Dummy", true)']
+    diff_java = [
+      'RecordHistogram.recordBooleanHistogram("Bla.Foo.Dummy", true)']
     diff_xml = ['<histogram_suffixes name="SuperHistogram">',
                 '  <suffix name="Dummy"/>',
                 '  <affected-histogram name="Bla.Foo"/>',
@@ -85,6 +102,7 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockFile('some/path/foo.cc', diff_cc),
+      MockFile('some/path/foo.java', diff_java),
       MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
     ]
     warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
@@ -93,6 +111,7 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
 
   def testTypicalCorrectlyMatchedChangeViaSuffixesWithSeparator(self):
     diff_cc = ['UMA_HISTOGRAM_BOOL("Snafu_Dummy", true)']
+    diff_java = ['RecordHistogram.recordBooleanHistogram("Snafu_Dummy", true)']
     diff_xml = ['<histogram_suffixes name="SuperHistogram" separator="_">',
                 '  <suffix name="Dummy"/>',
                 '  <affected-histogram name="Snafu"/>',
@@ -100,6 +119,7 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockFile('some/path/foo.cc', diff_cc),
+      MockFile('some/path/foo.java', diff_java),
       MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
     ]
     warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
@@ -110,10 +130,14 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
     # Check that the detected histogram name is "Dummy" and not, e.g.,
     # "Dummy\", true);  // The \"correct"
     diff_cc = ['UMA_HISTOGRAM_BOOL("Dummy", true);  // The "correct" histogram']
+    diff_java = [
+      'RecordHistogram.recordBooleanHistogram("Dummy", true);'
+      + '  // The "correct" histogram']
     diff_xml = ['<histogram name="Dummy"> </histogram>']
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockFile('some/path/foo.cc', diff_cc),
+      MockFile('some/path/foo.java', diff_java),
       MockFile('tools/metrics/histograms/histograms.xml', diff_xml),
     ]
     warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
@@ -121,10 +145,13 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
     self.assertEqual(0, len(warnings))
 
   def testSimilarMacroNames(self):
-    diff_cc = ['PUMA_HISTOGRAM_BOOL("Mountain Lion", 42)']
+    diff_cc = ['PUMA_HISTOGRAM_COOL("Mountain Lion", 42)']
+    diff_java = [
+      'FakeRecordHistogram.recordFakeHistogram("Mountain Lion", 42)']
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockFile('some/path/foo.cc', diff_cc),
+      MockFile('some/path/foo.java', diff_java),
     ]
     warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
                                                    MockOutputApi())
@@ -133,10 +160,15 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
   def testMultiLine(self):
     diff_cc = ['UMA_HISTOGRAM_BOOLEAN(', '    "Multi.Line", true)']
     diff_cc2 = ['UMA_HISTOGRAM_BOOLEAN(', '    "Multi.Line"', '    , true)']
+    diff_java = [
+      'RecordHistogram.recordBooleanHistogram(',
+      '    "Multi.Line", true);',
+    ]
     mock_input_api = MockInputApi()
     mock_input_api.files = [
       MockFile('some/path/foo.cc', diff_cc),
       MockFile('some/path/foo2.cc', diff_cc2),
+      MockFile('some/path/foo.java', diff_java),
     ]
     warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
                                                    MockOutputApi())
