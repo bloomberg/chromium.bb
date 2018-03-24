@@ -107,11 +107,26 @@ class MEDIA_EXPORT DecoderStream {
 
   base::TimeDelta AverageDuration() const;
 
-  // Tells decoders that we won't need frames before |start_timestamp| so they
-  // can be dropped post-decode. Causes outgoing DecoderBuffer packets to be
-  // marked for discard so that decoders may apply further optimizations such as
-  // reduced resolution decoding or filter skipping.
-  void DropFramesBefore(base::TimeDelta start_timestamp);
+  // Indicates that outputs need preparation (e.g., copying into GPU buffers)
+  // before being marked as ready. When an output is given by the decoder it
+  // will be added to |unprepared_outputs_| if a PrepareCB has been specified.
+  // If the size of |ready_outputs_| is less than
+  // Decoder::GetMaxDecodeRequests(), the provided PrepareCB will be called for
+  // the output. Once an output has been prepared by the PrepareCB it must call
+  // the given OutputReadyCB with the prepared output.
+  //
+  // This process is structured such that only a fixed number of outputs are
+  // prepared at any one time; this alleviates resource usage issues incurred by
+  // the preparation process when a decoder has a burst of outputs after on
+  // Decode(). For more context on why, see https://crbug.com/820167.
+  using OutputReadyCB = base::OnceCallback<void(const scoped_refptr<Output>&)>;
+  using PrepareCB = base::RepeatingCallback<void(const scoped_refptr<Output>&,
+                                                 OutputReadyCB)>;
+  void SetPrepareCB(PrepareCB prepare_cb);
+
+  // Indicates that we won't need to prepare outputs before |start_timestamp|,
+  // so that the preparation step (which is generally expensive) can be skipped.
+  void SkipPrepareUntil(base::TimeDelta start_timestamp);
 
   // Allows callers to register for notification of config changes; this is
   // called immediately after receiving the 'kConfigChanged' status from the
@@ -194,6 +209,10 @@ class MEDIA_EXPORT DecoderStream {
   void ResetDecoder();
   void OnDecoderReset();
 
+  void ClearOutputs();
+  void MaybePrepareAnotherOutput();
+  void OnPreparedOutputReady(const scoped_refptr<Output>& frame);
+
   DecoderStreamTraits<StreamType> traits_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
@@ -213,8 +232,6 @@ class MEDIA_EXPORT DecoderStream {
 
   CdmContext* cdm_context_;
 
-  std::unique_ptr<DecoderSelector<StreamType>> decoder_selector_;
-
   std::unique_ptr<Decoder> decoder_;
 
   // Whether |decoder_| has produced a frame yet. Reset on fallback.
@@ -232,6 +249,9 @@ class MEDIA_EXPORT DecoderStream {
 
   std::unique_ptr<DecryptingDemuxerStream> decrypting_demuxer_stream_;
 
+  // Destruct before |decrypting_demuxer_stream_| or |decoder_|.
+  std::unique_ptr<DecoderSelector<StreamType>> decoder_selector_;
+
   ConfigChangeObserverCB config_change_observer_cb_;
   DecoderChangeObserverCB decoder_change_observer_cb_;
 
@@ -240,9 +260,15 @@ class MEDIA_EXPORT DecoderStream {
   // TODO(sandersd): Turn this into a State. http://crbug.com/408316
   bool decoding_eos_;
 
-  // Decoded buffers that haven't been read yet. Used when the decoder supports
-  // parallel decoding.
-  std::list<scoped_refptr<Output>> ready_outputs_;
+  PrepareCB prepare_cb_;
+  bool preparing_output_;
+
+  // Decoded buffers that haven't been read yet. If |prepare_cb_| has been set
+  // |unprepared_outputs_| will contain buffers which haven't been prepared yet.
+  // Once prepared or if preparation is not required, outputs will be put into
+  // |ready_outputs_|.
+  base::circular_deque<scoped_refptr<Output>> unprepared_outputs_;
+  base::circular_deque<scoped_refptr<Output>> ready_outputs_;
 
   // Number of outstanding decode requests sent to the |decoder_|.
   int pending_decode_requests_;
@@ -267,14 +293,19 @@ class MEDIA_EXPORT DecoderStream {
   // overwritten in many cases.
   bool pending_demuxer_read_;
 
-  base::TimeDelta start_timestamp_;
+  // Timestamp after which all outputs need to be prepared.
+  base::TimeDelta skip_prepare_until_timestamp_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
   base::WeakPtrFactory<DecoderStream<StreamType>> weak_factory_;
 
-  // Used to invalidate pending decode requests and output callbacks when
-  // falling back to a new decoder (on first decode error).
+  // Used to invalidate pending decode requests and output callbacks.
   base::WeakPtrFactory<DecoderStream<StreamType>> fallback_weak_factory_;
+
+  // Used to invalidate outputs awaiting preparation. This can't use either of
+  // the above factories since they are used to bind one time callbacks given
+  // to decoders that may not be reinitialized after Reset().
+  base::WeakPtrFactory<DecoderStream<StreamType>> prepare_weak_factory_;
 };
 
 template <>

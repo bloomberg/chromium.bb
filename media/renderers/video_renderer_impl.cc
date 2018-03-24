@@ -211,6 +211,7 @@ void VideoRendererImpl::StartPlayingFrom(base::TimeDelta timestamp) {
   painted_first_frame_ = false;
   has_playback_met_watch_time_duration_requirement_ = false;
   last_render_time_ = last_frame_ready_time_ = base::TimeTicks();
+  video_frame_stream_->SkipPrepareUntil(start_timestamp_);
   AttemptRead_Locked();
 }
 
@@ -234,6 +235,12 @@ void VideoRendererImpl::Initialize(
       task_runner_, create_video_decoders_cb_, media_log_));
   video_frame_stream_->set_config_change_observer(base::Bind(
       &VideoRendererImpl::OnConfigChange, weak_factory_.GetWeakPtr()));
+  if (gpu_memory_buffer_pool_) {
+    video_frame_stream_->SetPrepareCB(base::BindRepeating(
+        &GpuMemoryBufferVideoFramePool::MaybeCreateHardwareFrame,
+        // Safe since VideoFrameStream won't issue calls after destruction.
+        base::Unretained(gpu_memory_buffer_pool_.get())));
+  }
 
   low_delay_ = ShouldUseLowDelayMode(stream);
 
@@ -450,22 +457,6 @@ void VideoRendererImpl::OnTimeStopped() {
   }
 }
 
-void VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers(
-    base::TimeTicks read_time,
-    VideoFrameStream::Status status,
-    const scoped_refptr<VideoFrame>& frame) {
-  if (status != VideoFrameStream::OK || IsBeforeStartTime(frame->timestamp())) {
-    VideoRendererImpl::FrameReady(read_time, status, frame);
-    return;
-  }
-
-  DCHECK(frame);
-  gpu_memory_buffer_pool_->MaybeCreateHardwareFrame(
-      frame, base::BindOnce(&VideoRendererImpl::FrameReady,
-                            frame_callback_weak_factory_.GetWeakPtr(),
-                            read_time, status));
-}
-
 void VideoRendererImpl::FrameReady(base::TimeTicks read_time,
                                    VideoFrameStream::Status status,
                                    const scoped_refptr<VideoFrame>& frame) {
@@ -668,19 +659,9 @@ void VideoRendererImpl::AttemptRead_Locked() {
   switch (state_) {
     case kPlaying:
       pending_read_ = true;
-      if (gpu_memory_buffer_pool_) {
-        // TODO(dalecurtis): Move this functionality into DecoderStream via the
-        // concept of "prepared" buffers.
-        video_frame_stream_->Read(base::BindRepeating(
-            &VideoRendererImpl::FrameReadyForCopyingToGpuMemoryBuffers,
-            frame_callback_weak_factory_.GetWeakPtr(),
-            tick_clock_->NowTicks()));
-      } else {
-        video_frame_stream_->Read(
-            base::BindRepeating(&VideoRendererImpl::FrameReady,
-                                frame_callback_weak_factory_.GetWeakPtr(),
-                                tick_clock_->NowTicks()));
-      }
+      video_frame_stream_->Read(base::BindRepeating(
+          &VideoRendererImpl::FrameReady,
+          frame_callback_weak_factory_.GetWeakPtr(), tick_clock_->NowTicks()));
       return;
     case kUninitialized:
     case kInitializing:

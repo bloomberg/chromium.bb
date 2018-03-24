@@ -107,15 +107,6 @@ class MEDIA_EXPORT VideoRendererImpl
   void OnConfigChange(const VideoDecoderConfig& config);
 
   // Callback for |video_frame_stream_| to deliver decoded video frames and
-  // report video decoding status. If a frame is available the planes will be
-  // copied asynchronously and FrameReady will be called once finished copying.
-  // |read_time| is the time at which this read was started.
-  void FrameReadyForCopyingToGpuMemoryBuffers(
-      base::TimeTicks read_time,
-      VideoFrameStream::Status status,
-      const scoped_refptr<VideoFrame>& frame);
-
-  // Callback for |video_frame_stream_| to deliver decoded video frames and
   // report video decoding status. |read_time| is the time at which this read
   // was started.
   void FrameReady(base::TimeTicks read_time,
@@ -220,13 +211,14 @@ class MEDIA_EXPORT VideoRendererImpl
 
   RendererClient* client_;
 
-  // Provides video frames to VideoRendererImpl.
-  std::unique_ptr<VideoFrameStream> video_frame_stream_;
-
   // Pool of GpuMemoryBuffers and resources used to create hardware frames.
   // Ensure this is destructed after |algorithm_| for optimal memory release
-  // when a frames are still held by the compositor.
+  // when a frames are still held by the compositor. Must be destructed after
+  // |video_frame_stream_| since it holds a callback to the pool.
   std::unique_ptr<GpuMemoryBufferVideoFramePool> gpu_memory_buffer_pool_;
+
+  // Provides video frames to VideoRendererImpl.
+  std::unique_ptr<VideoFrameStream> video_frame_stream_;
 
   MediaLog* media_log_;
 
