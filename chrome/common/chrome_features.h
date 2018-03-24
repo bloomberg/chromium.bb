@@ -284,6 +284,8 @@ extern const base::Feature kSimplifiedFullscreenUI;
 extern const base::Feature kSiteNotificationChannels;
 #endif
 
+extern const base::Feature kSitePerProcess;
+
 #if defined(OS_CHROMEOS)
 extern const base::Feature kNativeSmb;
 #endif

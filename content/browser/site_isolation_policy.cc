@@ -36,10 +36,11 @@ bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
     return false;
   }
 
-  // The feature needs to be checked last, because checking the feature
-  // activates the field trial and assigns the client either to a control or an
-  // experiment group.
-  return base::FeatureList::IsEnabled(features::kSitePerProcess);
+  // The switches above needs to be checked first, because if the
+  // ContentBrowserClient consults a base::Feature, then it will activate the
+  // field trial and assigns the client either to a control or an experiment
+  // group - such assignment should be final.
+  return GetContentClient()->browser()->ShouldEnableStrictSiteIsolation();
 }
 
 // static
@@ -71,7 +72,7 @@ bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
 
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an
-  // experiment group.
+  // experiment group - such assignment should be final.
   return base::FeatureList::IsEnabled(::features::kTopDocumentIsolation);
 }
 
@@ -89,7 +90,7 @@ bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
 
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an
-  // experiment group.
+  // experiment group - such assignment should be final.
   return base::FeatureList::IsEnabled(features::kIsolateOrigins);
 }
 
@@ -114,7 +115,7 @@ SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
 
   // The feature needs to be checked last, because checking the feature
   // activates the field trial and assigns the client either to a control or an
-  // experiment group.
+  // experiment group - such assignment should be final.
   if (base::FeatureList::IsEnabled(features::kIsolateOrigins)) {
     std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
         features::kIsolateOrigins,

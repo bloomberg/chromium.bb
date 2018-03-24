@@ -356,9 +356,24 @@ class CONTENT_EXPORT ContentBrowserClient {
   // current SiteInstance, if it does not yet have a site.
   virtual bool ShouldAssignSiteForURL(const GURL& url);
 
-  // Allows the embedder to provide a list of origins that require a dedicated
-  // process.
+  // Allows the embedder to programmatically provide some origins that should be
+  // opted into --isolate-origins mode of Site Isolation.
   virtual std::vector<url::Origin> GetOriginsRequiringDedicatedProcess();
+
+  // Allows the embedder to programmatically opt into --site-per-process mode of
+  // Site Isolation.
+  //
+  // Note that for correctness, the same value should be consistently returned.
+  // See also https://crbug.com/825369
+  virtual bool ShouldEnableStrictSiteIsolation();
+
+  // Allows //content embedders to check if --site-per-process has been enabled
+  // (via cmdline flag or via a field trial).
+  //
+  // TODO(lukasza, weili): https://crbug.com/824867: Remove this method after
+  // shipping OOPIF printing (the only caller is in
+  // components/printing/browser/print_manager_utils.cc).
+  static bool IsStrictSiteIsolationEnabled();
 
   // Indicates whether a file path should be accessible via file URL given a
   // request from a browser context which lives within |profile_path|.

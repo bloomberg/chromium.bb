@@ -519,6 +519,13 @@ const base::Feature kSiteNotificationChannels{"SiteNotificationChannels",
                                               base::FEATURE_ENABLED_BY_DEFAULT};
 #endif  // defined(OS_ANDROID)
 
+// Alternative to switches::kSitePerProcess, for turning on full site isolation.
+// Launch bug: https://crbug.com/739418.  This is a //chrome-layer feature to
+// avoid turning on site-per-process by default for *all* //content embedders
+// (e.g. this approach lets ChromeCast avoid site-per-process mode).
+const base::Feature kSitePerProcess{"site-per-process",
+                                    base::FEATURE_DISABLED_BY_DEFAULT};
+
 // A new user experience for transitioning into fullscreen and mouse pointer
 // lock states.
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",

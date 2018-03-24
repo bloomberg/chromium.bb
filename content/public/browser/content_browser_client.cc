@@ -11,6 +11,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "build/build_config.h"
+#include "content/browser/site_isolation_policy.h"
 #include "content/public/browser/client_certificate_delegate.h"
 #include "content/public/browser/login_delegate.h"
 #include "content/public/browser/memory_coordinator_delegate.h"
@@ -176,6 +177,18 @@ bool ContentBrowserClient::ShouldAssignSiteForURL(const GURL& url) {
 std::vector<url::Origin>
 ContentBrowserClient::GetOriginsRequiringDedicatedProcess() {
   return std::vector<url::Origin>();
+}
+
+bool ContentBrowserClient::ShouldEnableStrictSiteIsolation() {
+  // By default --site-per-process is turned off for //content embedders.
+  // This ensures that embedders like ChromeCast and/or Opera are not forced
+  // into --site-per-process.
+  return false;
+}
+
+// static
+bool ContentBrowserClient::IsStrictSiteIsolationEnabled() {
+  return SiteIsolationPolicy::UseDedicatedProcessesForAllSites();
 }
 
 bool ContentBrowserClient::IsFileAccessAllowed(
