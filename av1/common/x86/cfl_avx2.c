@@ -111,6 +111,42 @@ static void cfl_luma_subsampling_422_lbd_avx2(const uint8_t *input,
 
 CFL_GET_SUBSAMPLE_FUNCTION_AVX2(422, lbd)
 
+/**
+ * Multiplies the pixels by 8 (scaling in Q3). The AVX2 subsampling is only
+ * performed on block of width 32.
+ *
+ * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the
+ * active area is specified using width and height.
+ *
+ * Note: We don't need to worry about going over the active area, as long as we
+ * stay inside the CfL prediction buffer.
+ */
+static void cfl_luma_subsampling_444_lbd_avx2(const uint8_t *input,
+                                              int input_stride,
+                                              int16_t *pred_buf_q3, int width,
+                                              int height) {
+  (void)width;  // Forever 32
+  __m256i *row = (__m256i *)pred_buf_q3;
+  const __m256i *row_end = row + height * CFL_BUF_LINE_I256;
+  const __m256i zeros = _mm256_setzero_si256();
+  do {
+    __m256i top = _mm256_loadu_si256((__m256i *)input);
+    top = _mm256_permute4x64_epi64(top, _MM_SHUFFLE(3, 1, 2, 0));
+
+    __m256i row_lo = _mm256_unpacklo_epi8(top, zeros);
+    row_lo = _mm256_slli_epi16(row_lo, 3);
+    __m256i row_hi = _mm256_unpackhi_epi8(top, zeros);
+    row_hi = _mm256_slli_epi16(row_hi, 3);
+
+    _mm256_storeu_si256(row, row_lo);
+    _mm256_storeu_si256(row + 1, row_hi);
+
+    input += input_stride;
+  } while ((row += CFL_BUF_LINE_I256) < row_end);
+}
+
+CFL_GET_SUBSAMPLE_FUNCTION_AVX2(444, lbd)
+
 static INLINE __m256i predict_unclipped(const __m256i *input, __m256i alpha_q12,
                                         __m256i alpha_sign, __m256i dc_q0) {
   __m256i ac_q3 = _mm256_loadu_si256(input);
@@ -240,8 +276,8 @@ cfl_predict_hbd_fn get_predict_hbd_fn_avx2(TX_SIZE tx_size) {
     cfl_predict_hbd_null,   /* 16x64 (invalid CFL size) */
     cfl_predict_hbd_null,   /* 64x16 (invalid CFL size) */
   };
-  /* Modulo TX_SIZES_ALL to ensure that an attacker won't be able to
-    */ /* index the function pointer array out of bounds. */
+  // Modulo TX_SIZES_ALL to ensure that an attacker won't be able to index the
+  // function pointer array out of bounds.
   return pred[tx_size % TX_SIZES_ALL];
 }
 
