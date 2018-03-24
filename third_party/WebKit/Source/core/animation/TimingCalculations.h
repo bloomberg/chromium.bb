@@ -31,7 +31,7 @@
 #ifndef TimingCalculations_h
 #define TimingCalculations_h
 
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/Timing.h"
 #include "platform/animation/AnimationUtilities.h"
 #include "platform/wtf/MathExtras.h"
@@ -44,32 +44,30 @@ static inline double MultiplyZeroAlwaysGivesZero(double x, double y) {
   return x && y ? x * y : 0;
 }
 
-static inline AnimationEffectReadOnly::Phase CalculatePhase(
-    double active_duration,
-    double local_time,
-    const Timing& specified) {
+static inline AnimationEffect::Phase CalculatePhase(double active_duration,
+                                                    double local_time,
+                                                    const Timing& specified) {
   DCHECK_GE(active_duration, 0);
   if (IsNull(local_time))
-    return AnimationEffectReadOnly::kPhaseNone;
+    return AnimationEffect::kPhaseNone;
   double end_time =
       specified.start_delay + active_duration + specified.end_delay;
   if (local_time < std::min(specified.start_delay, end_time))
-    return AnimationEffectReadOnly::kPhaseBefore;
+    return AnimationEffect::kPhaseBefore;
   if (local_time >= std::min(specified.start_delay + active_duration, end_time))
-    return AnimationEffectReadOnly::kPhaseAfter;
-  return AnimationEffectReadOnly::kPhaseActive;
+    return AnimationEffect::kPhaseAfter;
+  return AnimationEffect::kPhaseActive;
 }
 
-static inline bool IsActiveInParentPhase(
-    AnimationEffectReadOnly::Phase parent_phase,
-    Timing::FillMode fill_mode) {
+static inline bool IsActiveInParentPhase(AnimationEffect::Phase parent_phase,
+                                         Timing::FillMode fill_mode) {
   switch (parent_phase) {
-    case AnimationEffectReadOnly::kPhaseBefore:
+    case AnimationEffect::kPhaseBefore:
       return fill_mode == Timing::FillMode::BACKWARDS ||
              fill_mode == Timing::FillMode::BOTH;
-    case AnimationEffectReadOnly::kPhaseActive:
+    case AnimationEffect::kPhaseActive:
       return true;
-    case AnimationEffectReadOnly::kPhaseAfter:
+    case AnimationEffect::kPhaseAfter:
       return fill_mode == Timing::FillMode::FORWARDS ||
              fill_mode == Timing::FillMode::BOTH;
     default:
@@ -78,33 +76,32 @@ static inline bool IsActiveInParentPhase(
   }
 }
 
-static inline double CalculateActiveTime(
-    double active_duration,
-    Timing::FillMode fill_mode,
-    double local_time,
-    AnimationEffectReadOnly::Phase parent_phase,
-    AnimationEffectReadOnly::Phase phase,
-    const Timing& specified) {
+static inline double CalculateActiveTime(double active_duration,
+                                         Timing::FillMode fill_mode,
+                                         double local_time,
+                                         AnimationEffect::Phase parent_phase,
+                                         AnimationEffect::Phase phase,
+                                         const Timing& specified) {
   DCHECK_GE(active_duration, 0);
   DCHECK_EQ(phase, CalculatePhase(active_duration, local_time, specified));
 
   switch (phase) {
-    case AnimationEffectReadOnly::kPhaseBefore:
+    case AnimationEffect::kPhaseBefore:
       if (fill_mode == Timing::FillMode::BACKWARDS ||
           fill_mode == Timing::FillMode::BOTH)
         return 0;
       return NullValue();
-    case AnimationEffectReadOnly::kPhaseActive:
+    case AnimationEffect::kPhaseActive:
       if (IsActiveInParentPhase(parent_phase, fill_mode))
         return local_time - specified.start_delay;
       return NullValue();
-    case AnimationEffectReadOnly::kPhaseAfter:
+    case AnimationEffect::kPhaseAfter:
       if (fill_mode == Timing::FillMode::FORWARDS ||
           fill_mode == Timing::FillMode::BOTH)
         return std::max(0.0, std::min(active_duration,
                                       active_duration + specified.end_delay));
       return NullValue();
-    case AnimationEffectReadOnly::kPhaseNone:
+    case AnimationEffect::kPhaseNone:
       DCHECK(IsNull(local_time));
       return NullValue();
     default:
@@ -146,13 +143,12 @@ static inline bool EndsOnIterationBoundary(double iteration_count,
 
 // TODO(crbug.com/630915): Align this function with current Web Animations spec
 // text.
-static inline double CalculateIterationTime(
-    double iteration_duration,
-    double repeated_duration,
-    double scaled_active_time,
-    double start_offset,
-    AnimationEffectReadOnly::Phase phase,
-    const Timing& specified) {
+static inline double CalculateIterationTime(double iteration_duration,
+                                            double repeated_duration,
+                                            double scaled_active_time,
+                                            double start_offset,
+                                            AnimationEffect::Phase phase,
+                                            const Timing& specified) {
   DCHECK_GT(iteration_duration, 0);
   DCHECK_EQ(repeated_duration,
             MultiplyZeroAlwaysGivesZero(iteration_duration,
@@ -176,7 +172,7 @@ static inline double CalculateIterationTime(
 
   // This implements step 3 of
   // https://drafts.csswg.org/web-animations/#calculating-the-simple-iteration-progress
-  if (iteration_time == 0 && phase == AnimationEffectReadOnly::kPhaseAfter &&
+  if (iteration_time == 0 && phase == AnimationEffect::kPhaseAfter &&
       repeated_duration != 0 && scaled_active_time != 0)
     return iteration_duration;
 

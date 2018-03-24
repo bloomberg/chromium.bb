@@ -224,7 +224,7 @@ bool CSSAnimations::IsTransitionAnimationForInspector(
 namespace {
 
 const KeyframeEffectModelBase* GetKeyframeEffectModelBase(
-    const AnimationEffectReadOnly* effect) {
+    const AnimationEffect* effect) {
   if (!effect)
     return nullptr;
   const EffectModel* model = nullptr;
@@ -420,7 +420,7 @@ void CSSAnimations::SnapshotCompositorKeyframes(
     const ComputedStyle& style,
     const ComputedStyle* parent_style) {
   const auto& snapshot = [&element, &style,
-                          parent_style](const AnimationEffectReadOnly* effect) {
+                          parent_style](const AnimationEffect* effect) {
     const KeyframeEffectModelBase* keyframe_effect =
         GetKeyframeEffectModelBase(effect);
     if (keyframe_effect && keyframe_effect->NeedsCompositorKeyframesSnapshot())
@@ -1115,28 +1115,27 @@ void CSSAnimations::AnimationEventDelegate::MaybeDispatch(
 }
 
 bool CSSAnimations::AnimationEventDelegate::RequiresIterationEvents(
-    const AnimationEffectReadOnly& animation_node) {
+    const AnimationEffect& animation_node) {
   return GetDocument().HasListenerType(Document::kAnimationIterationListener);
 }
 
 void CSSAnimations::AnimationEventDelegate::OnEventCondition(
-    const AnimationEffectReadOnly& animation_node) {
-  const AnimationEffectReadOnly::Phase current_phase =
-      animation_node.GetPhase();
+    const AnimationEffect& animation_node) {
+  const AnimationEffect::Phase current_phase = animation_node.GetPhase();
   const double current_iteration = animation_node.CurrentIteration();
 
   if (previous_phase_ != current_phase &&
-      (current_phase == AnimationEffectReadOnly::kPhaseActive ||
-       current_phase == AnimationEffectReadOnly::kPhaseAfter) &&
-      (previous_phase_ == AnimationEffectReadOnly::kPhaseNone ||
-       previous_phase_ == AnimationEffectReadOnly::kPhaseBefore)) {
+      (current_phase == AnimationEffect::kPhaseActive ||
+       current_phase == AnimationEffect::kPhaseAfter) &&
+      (previous_phase_ == AnimationEffect::kPhaseNone ||
+       previous_phase_ == AnimationEffect::kPhaseBefore)) {
     const double start_delay = animation_node.SpecifiedTiming().start_delay;
     const double elapsed_time = start_delay < 0 ? -start_delay : 0;
     MaybeDispatch(Document::kAnimationStartListener,
                   EventTypeNames::animationstart, elapsed_time);
   }
 
-  if (current_phase == AnimationEffectReadOnly::kPhaseActive &&
+  if (current_phase == AnimationEffect::kPhaseActive &&
       previous_phase_ == current_phase &&
       previous_iteration_ != current_iteration) {
     // We fire only a single event for all iterations thast terminate
@@ -1151,8 +1150,8 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
                   EventTypeNames::animationiteration, elapsed_time);
   }
 
-  if (current_phase == AnimationEffectReadOnly::kPhaseAfter &&
-      previous_phase_ != AnimationEffectReadOnly::kPhaseAfter)
+  if (current_phase == AnimationEffect::kPhaseAfter &&
+      previous_phase_ != AnimationEffect::kPhaseAfter)
     MaybeDispatch(Document::kAnimationEndListener, EventTypeNames::animationend,
                   animation_node.ActiveDurationInternal());
 
@@ -1162,7 +1161,7 @@ void CSSAnimations::AnimationEventDelegate::OnEventCondition(
 
 void CSSAnimations::AnimationEventDelegate::Trace(blink::Visitor* visitor) {
   visitor->Trace(animation_target_);
-  AnimationEffectReadOnly::EventDelegate::Trace(visitor);
+  AnimationEffect::EventDelegate::Trace(visitor);
 }
 
 EventTarget* CSSAnimations::TransitionEventDelegate::GetEventTarget() const {
@@ -1170,10 +1169,9 @@ EventTarget* CSSAnimations::TransitionEventDelegate::GetEventTarget() const {
 }
 
 void CSSAnimations::TransitionEventDelegate::OnEventCondition(
-    const AnimationEffectReadOnly& animation_node) {
-  const AnimationEffectReadOnly::Phase current_phase =
-      animation_node.GetPhase();
-  if (current_phase == AnimationEffectReadOnly::kPhaseAfter &&
+    const AnimationEffect& animation_node) {
+  const AnimationEffect::Phase current_phase = animation_node.GetPhase();
+  if (current_phase == AnimationEffect::kPhaseAfter &&
       current_phase != previous_phase_ &&
       GetDocument().HasListenerType(Document::kTransitionEndListener)) {
     String property_name =
@@ -1196,7 +1194,7 @@ void CSSAnimations::TransitionEventDelegate::OnEventCondition(
 
 void CSSAnimations::TransitionEventDelegate::Trace(blink::Visitor* visitor) {
   visitor->Trace(transition_target_);
-  AnimationEffectReadOnly::EventDelegate::Trace(visitor);
+  AnimationEffect::EventDelegate::Trace(visitor);
 }
 
 const StylePropertyShorthand& CSSAnimations::PropertiesForTransitionAll() {

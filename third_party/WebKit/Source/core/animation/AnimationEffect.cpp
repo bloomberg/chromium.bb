@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 
 #include "core/animation/Animation.h"
 #include "core/animation/AnimationEffectTimingReadOnly.h"
@@ -50,8 +50,8 @@ Timing::FillMode ResolvedFillMode(Timing::FillMode fill_mode,
 
 }  // namespace
 
-AnimationEffectReadOnly::AnimationEffectReadOnly(const Timing& timing,
-                                                 EventDelegate* event_delegate)
+AnimationEffect::AnimationEffect(const Timing& timing,
+                                 EventDelegate* event_delegate)
     : owner_(nullptr),
       timing_(timing),
       event_delegate_(event_delegate),
@@ -61,7 +61,7 @@ AnimationEffectReadOnly::AnimationEffectReadOnly(const Timing& timing,
   timing_.AssertValid();
 }
 
-double AnimationEffectReadOnly::IterationDuration() const {
+double AnimationEffect::IterationDuration() const {
   double result = std::isnan(timing_.iteration_duration)
                       ? IntrinsicIterationDuration()
                       : timing_.iteration_duration;
@@ -69,14 +69,14 @@ double AnimationEffectReadOnly::IterationDuration() const {
   return result;
 }
 
-double AnimationEffectReadOnly::RepeatedDuration() const {
+double AnimationEffect::RepeatedDuration() const {
   const double result =
       MultiplyZeroAlwaysGivesZero(IterationDuration(), timing_.iteration_count);
   DCHECK_GE(result, 0);
   return result;
 }
 
-double AnimationEffectReadOnly::ActiveDurationInternal() const {
+double AnimationEffect::ActiveDurationInternal() const {
   const double result =
       timing_.playback_rate
           ? RepeatedDuration() / std::abs(timing_.playback_rate)
@@ -85,7 +85,7 @@ double AnimationEffectReadOnly::ActiveDurationInternal() const {
   return result;
 }
 
-void AnimationEffectReadOnly::UpdateSpecifiedTiming(const Timing& timing) {
+void AnimationEffect::UpdateSpecifiedTiming(const Timing& timing) {
   // FIXME: Test whether the timing is actually different?
   timing_ = timing;
   Invalidate();
@@ -93,7 +93,7 @@ void AnimationEffectReadOnly::UpdateSpecifiedTiming(const Timing& timing) {
     owner_->SpecifiedTimingChanged();
 }
 
-void AnimationEffectReadOnly::getComputedTiming(
+void AnimationEffect::getComputedTiming(
     ComputedTimingProperties& computed_timing) {
   // ComputedTimingProperties members.
   computed_timing.setEndTime(EndTimeInternal() * 1000);
@@ -126,15 +126,14 @@ void AnimationEffectReadOnly::getComputedTiming(
   computed_timing.setEasing(SpecifiedTiming().timing_function->ToString());
 }
 
-ComputedTimingProperties AnimationEffectReadOnly::getComputedTiming() {
+ComputedTimingProperties AnimationEffect::getComputedTiming() {
   ComputedTimingProperties result;
   getComputedTiming(result);
   return result;
 }
 
-void AnimationEffectReadOnly::UpdateInheritedTime(
-    double inherited_time,
-    TimingUpdateReason reason) const {
+void AnimationEffect::UpdateInheritedTime(double inherited_time,
+                                          TimingUpdateReason reason) const {
   bool needs_update =
       needs_update_ ||
       (last_update_time_ != inherited_time &&
@@ -151,8 +150,7 @@ void AnimationEffectReadOnly::UpdateInheritedTime(
     const Phase current_phase =
         CalculatePhase(active_duration, local_time, timing_);
     // FIXME: parentPhase depends on groups being implemented.
-    const AnimationEffectReadOnly::Phase kParentPhase =
-        AnimationEffectReadOnly::kPhaseActive;
+    const AnimationEffect::Phase kParentPhase = AnimationEffect::kPhaseActive;
     const double active_time = CalculateActiveTime(
         active_duration,
         ResolvedFillMode(timing_.fill_mode, IsKeyframeEffect()), local_time,
@@ -204,7 +202,7 @@ void AnimationEffectReadOnly::UpdateInheritedTime(
           local_time < timing_.start_delay
               ? local_time
               : local_active_duration + timing_.start_delay;
-      const AnimationEffectReadOnly::Phase local_current_phase =
+      const AnimationEffect::Phase local_current_phase =
           CalculatePhase(local_active_duration, local_local_time, timing_);
       const double local_active_time = CalculateActiveTime(
           local_active_duration,
@@ -255,8 +253,8 @@ void AnimationEffectReadOnly::UpdateInheritedTime(
   }
 }
 
-const AnimationEffectReadOnly::CalculatedTiming&
-AnimationEffectReadOnly::EnsureCalculated() const {
+const AnimationEffect::CalculatedTiming& AnimationEffect::EnsureCalculated()
+    const {
   if (!owner_)
     return calculated_;
 
@@ -264,18 +262,18 @@ AnimationEffectReadOnly::EnsureCalculated() const {
   return calculated_;
 }
 
-AnimationEffectTimingReadOnly* AnimationEffectReadOnly::timing() {
+AnimationEffectTimingReadOnly* AnimationEffect::timing() {
   return AnimationEffectTimingReadOnly::Create(this);
 }
 
-Animation* AnimationEffectReadOnly::GetAnimation() {
+Animation* AnimationEffect::GetAnimation() {
   return owner_ ? owner_->GetAnimation() : nullptr;
 }
-const Animation* AnimationEffectReadOnly::GetAnimation() const {
+const Animation* AnimationEffect::GetAnimation() const {
   return owner_ ? owner_->GetAnimation() : nullptr;
 }
 
-void AnimationEffectReadOnly::Trace(blink::Visitor* visitor) {
+void AnimationEffect::Trace(blink::Visitor* visitor) {
   visitor->Trace(owner_);
   visitor->Trace(event_delegate_);
   ScriptWrappable::Trace(visitor);

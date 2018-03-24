@@ -4,7 +4,7 @@
 
 #include "modules/animationworklet/WorkletAnimation.h"
 
-#include "bindings/modules/v8/animation_effect_read_only_or_animation_effect_read_only_sequence.h"
+#include "bindings/modules/v8/animation_effect_or_animation_effect_sequence.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
@@ -40,9 +40,9 @@ KeyframeEffect* CreateKeyframeEffect(Element* element) {
 }
 
 WorkletAnimation* CreateWorkletAnimation(Element* element) {
-  AnimationEffectReadOnlyOrAnimationEffectReadOnlySequence effects;
-  AnimationEffectReadOnly* effect = CreateKeyframeEffect(element);
-  effects.SetAnimationEffectReadOnly(effect);
+  AnimationEffectOrAnimationEffectSequence effects;
+  AnimationEffect* effect = CreateKeyframeEffect(element);
+  effects.SetAnimationEffect(effect);
   DocumentTimelineOrScrollTimeline timeline;
   scoped_refptr<SerializedScriptValue> options;
   DummyExceptionStateForTesting exception_state;

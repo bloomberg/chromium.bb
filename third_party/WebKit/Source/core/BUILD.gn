@@ -1651,7 +1651,7 @@ jumbo_source_set("unit_tests") {
   testonly = true
   sources = [
     "animation/AnimationClockTest.cpp",
-    "animation/AnimationEffectReadOnlyTest.cpp",
+    "animation/AnimationEffectTest.cpp",
     "animation/AnimationInputHelpersTest.cpp",
     "animation/AnimationSimTest.cpp",
     "animation/AnimationTest.cpp",

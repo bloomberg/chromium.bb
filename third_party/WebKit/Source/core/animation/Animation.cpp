@@ -68,7 +68,7 @@ static unsigned NextSequenceNumber() {
 }
 }
 
-Animation* Animation::Create(AnimationEffectReadOnly* effect,
+Animation* Animation::Create(AnimationEffect* effect,
                              AnimationTimeline* timeline) {
   if (!timeline || !timeline->IsDocumentTimeline()) {
     // FIXME: Support creating animations without a timeline.
@@ -90,7 +90,7 @@ Animation* Animation::Create(AnimationEffectReadOnly* effect,
 }
 
 Animation* Animation::Create(ExecutionContext* execution_context,
-                             AnimationEffectReadOnly* effect,
+                             AnimationEffect* effect,
                              ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
 
@@ -99,7 +99,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
 }
 
 Animation* Animation::Create(ExecutionContext* execution_context,
-                             AnimationEffectReadOnly* effect,
+                             AnimationEffect* effect,
                              AnimationTimeline* timeline,
                              ExceptionState& exception_state) {
   DCHECK(RuntimeEnabledFeatures::WebAnimationsAPIEnabled());
@@ -113,7 +113,7 @@ Animation* Animation::Create(ExecutionContext* execution_context,
 
 Animation::Animation(ExecutionContext* execution_context,
                      DocumentTimeline& timeline,
-                     AnimationEffectReadOnly* content)
+                     AnimationEffect* content)
     : ContextLifecycleObserver(execution_context),
       play_state_(kIdle),
       playback_rate_(1),
@@ -528,7 +528,7 @@ void Animation::SetStartTimeInternal(WTF::Optional<double> new_start_time) {
   }
 }
 
-void Animation::setEffect(AnimationEffectReadOnly* new_effect) {
+void Animation::setEffect(AnimationEffect* new_effect) {
   if (content_ == new_effect)
     return;
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand,
@@ -1062,7 +1062,7 @@ double Animation::TimeToEffectChange() {
                       : content_->TimeToReverseEffectChange() / -playback_rate_;
 
   return !HasActiveAnimationsOnCompositor() &&
-                 content_->GetPhase() == AnimationEffectReadOnly::kPhaseActive
+                 content_->GetPhase() == AnimationEffect::kPhaseActive
              ? 0
              : result;
 }

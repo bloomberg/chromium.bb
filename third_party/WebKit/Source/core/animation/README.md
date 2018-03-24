@@ -194,7 +194,7 @@ animation.startTime = 6000;  // 6 seconds
             `transfrom: rotate(40deg)`.
 
 [Animation]: https://cs.chromium.org/search/?q=class:blink::Animation$
-[AnimationEffect]: https://cs.chromium.org/search/?q=class:blink::AnimationEffectReadOnly$
+[AnimationEffect]: https://cs.chromium.org/search/?q=class:blink::AnimationEffect$
 [DocumentTimeline]: https://cs.chromium.org/search/?q=class:blink::DocumentTimeline$
 [EffectStack]: https://cs.chromium.org/search/?q=class:blink::EffectStack
 
@@ -286,10 +286,10 @@ other specs (for example Javascript callback based effects).
 [Element]: https://cs.chromium.org/search/?q=class:blink::Element$
 [KeyframeGroupMap]: https://cs.chromium.org/search/?q=class:blink::KeyframeEffectModelBase+KeyframeGroupMap
 [PropertySpecificKeyframe]: https://cs.chromium.org/search/?q=class:blink::Keyframe::PropertySpecificKeyframe
-[KeyframeEffect]: https://cs.chromium.org/search/?q=class:blink::KeyframeEffectReadOnly$
+[KeyframeEffect]: https://cs.chromium.org/search/?q=class:blink::KeyframeEffect$
 [KeyframeEffectModel]: https://cs.chromium.org/search/?q=class:blink::KeyframeEffectModelBase$
 [Timing]: https://cs.chromium.org/search/?q=class:blink::Timing$
-[UpdateInheritedTime()]: https://cs.chromium.org/search/?q=function:%5CbAnimationEffectReadOnly::UpdateInheritedTime
+[UpdateInheritedTime()]: https://cs.chromium.org/search/?q=function:%5CbAnimationEffect::UpdateInheritedTime
 
 #### Lifecycle of an [Interpolation][]
 

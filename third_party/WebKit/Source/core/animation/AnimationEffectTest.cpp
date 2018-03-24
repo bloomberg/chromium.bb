@@ -28,22 +28,19 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 
 #include "core/animation/ComputedTimingProperties.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
 
-class TestAnimationEffectEventDelegate
-    : public AnimationEffectReadOnly::EventDelegate {
+class TestAnimationEffectEventDelegate : public AnimationEffect::EventDelegate {
  public:
-  void OnEventCondition(
-      const AnimationEffectReadOnly& animation_node) override {
+  void OnEventCondition(const AnimationEffect& animation_node) override {
     event_triggered_ = true;
   }
-  bool RequiresIterationEvents(
-      const AnimationEffectReadOnly& animation_node) override {
+  bool RequiresIterationEvents(const AnimationEffect& animation_node) override {
     return true;
   }
   void Reset() { event_triggered_ = false; }
@@ -53,11 +50,11 @@ class TestAnimationEffectEventDelegate
   bool event_triggered_;
 };
 
-class TestAnimationEffectReadOnly : public AnimationEffectReadOnly {
+class TestAnimationEffect : public AnimationEffect {
  public:
-  static TestAnimationEffectReadOnly* Create(const Timing& specified) {
-    return new TestAnimationEffectReadOnly(
-        specified, new TestAnimationEffectEventDelegate());
+  static TestAnimationEffect* Create(const Timing& specified) {
+    return new TestAnimationEffect(specified,
+                                   new TestAnimationEffectEventDelegate());
   }
 
   void UpdateInheritedTime(double time) {
@@ -66,7 +63,7 @@ class TestAnimationEffectReadOnly : public AnimationEffectReadOnly {
 
   void UpdateInheritedTime(double time, TimingUpdateReason reason) {
     event_delegate_->Reset();
-    AnimationEffectReadOnly::UpdateInheritedTime(time, reason);
+    AnimationEffect::UpdateInheritedTime(time, reason);
   }
 
   void UpdateChildrenAndEffects() const override {}
@@ -96,13 +93,13 @@ class TestAnimationEffectReadOnly : public AnimationEffectReadOnly {
 
   void Trace(blink::Visitor* visitor) override {
     visitor->Trace(event_delegate_);
-    AnimationEffectReadOnly::Trace(visitor);
+    AnimationEffect::Trace(visitor);
   }
 
  private:
-  TestAnimationEffectReadOnly(const Timing& specified,
-                              TestAnimationEffectEventDelegate* event_delegate)
-      : AnimationEffectReadOnly(specified, event_delegate),
+  TestAnimationEffect(const Timing& specified,
+                      TestAnimationEffectEventDelegate* event_delegate)
+      : AnimationEffect(specified, event_delegate),
         event_delegate_(event_delegate) {}
 
   Member<TestAnimationEffectEventDelegate> event_delegate_;
@@ -110,15 +107,14 @@ class TestAnimationEffectReadOnly : public AnimationEffectReadOnly {
   mutable double time_to_next_iteration_;
 };
 
-TEST(AnimationAnimationEffectReadOnlyTest, Sanity) {
+TEST(AnimationAnimationEffectTest, Sanity) {
   Timing timing;
   timing.iteration_duration = 2;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
 
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -128,7 +124,7 @@ TEST(AnimationAnimationEffectReadOnlyTest, Sanity) {
 
   animation_node->UpdateInheritedTime(1);
 
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -138,7 +134,7 @@ TEST(AnimationAnimationEffectReadOnlyTest, Sanity) {
 
   animation_node->UpdateInheritedTime(2);
 
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -148,7 +144,7 @@ TEST(AnimationAnimationEffectReadOnlyTest, Sanity) {
 
   animation_node->UpdateInheritedTime(3);
 
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -157,11 +153,10 @@ TEST(AnimationAnimationEffectReadOnlyTest, Sanity) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, FillAuto) {
+TEST(AnimationAnimationEffectTest, FillAuto) {
   Timing timing;
   timing.iteration_duration = 1;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(0, animation_node->Progress());
@@ -170,12 +165,11 @@ TEST(AnimationAnimationEffectReadOnlyTest, FillAuto) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, FillForwards) {
+TEST(AnimationAnimationEffectTest, FillForwards) {
   Timing timing;
   timing.iteration_duration = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_FALSE(animation_node->Progress());
@@ -184,12 +178,11 @@ TEST(AnimationAnimationEffectReadOnlyTest, FillForwards) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, FillBackwards) {
+TEST(AnimationAnimationEffectTest, FillBackwards) {
   Timing timing;
   timing.iteration_duration = 1;
   timing.fill_mode = Timing::FillMode::BACKWARDS;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(0, animation_node->Progress());
@@ -198,12 +191,11 @@ TEST(AnimationAnimationEffectReadOnlyTest, FillBackwards) {
   EXPECT_FALSE(animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, FillBoth) {
+TEST(AnimationAnimationEffectTest, FillBoth) {
   Timing timing;
   timing.iteration_duration = 1;
   timing.fill_mode = Timing::FillMode::BOTH;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(0, animation_node->Progress());
@@ -212,13 +204,12 @@ TEST(AnimationAnimationEffectReadOnlyTest, FillBoth) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, StartDelay) {
+TEST(AnimationAnimationEffectTest, StartDelay) {
   Timing timing;
   timing.iteration_duration = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.start_delay = 0.5;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
   EXPECT_FALSE(animation_node->Progress());
@@ -230,13 +221,12 @@ TEST(AnimationAnimationEffectReadOnlyTest, StartDelay) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroIteration) {
+TEST(AnimationAnimationEffectTest, ZeroIteration) {
   Timing timing;
   timing.iteration_duration = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.iteration_count = 0;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(0, animation_node->ActiveDurationInternal());
@@ -249,13 +239,12 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroIteration) {
   EXPECT_EQ(0, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, InfiniteIteration) {
+TEST(AnimationAnimationEffectTest, InfiniteIteration) {
   Timing timing;
   timing.iteration_duration = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.iteration_count = std::numeric_limits<double>::infinity();
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
@@ -269,12 +258,11 @@ TEST(AnimationAnimationEffectReadOnlyTest, InfiniteIteration) {
   EXPECT_EQ(0, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, Iteration) {
+TEST(AnimationAnimationEffectTest, Iteration) {
   Timing timing;
   timing.iteration_count = 2;
   timing.iteration_duration = 2;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
   EXPECT_EQ(0, animation_node->CurrentIteration());
@@ -297,14 +285,13 @@ TEST(AnimationAnimationEffectReadOnlyTest, Iteration) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, IterationStart) {
+TEST(AnimationAnimationEffectTest, IterationStart) {
   Timing timing;
   timing.iteration_start = 1.2;
   timing.iteration_count = 2.2;
   timing.iteration_duration = 1;
   timing.fill_mode = Timing::FillMode::BOTH;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(1, animation_node->CurrentIteration());
@@ -319,13 +306,12 @@ TEST(AnimationAnimationEffectReadOnlyTest, IterationStart) {
   EXPECT_NEAR(0.4, animation_node->Progress().value(), 0.000000000000001);
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, IterationAlternate) {
+TEST(AnimationAnimationEffectTest, IterationAlternate) {
   Timing timing;
   timing.iteration_count = 10;
   timing.iteration_duration = 1;
   timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0.75);
   EXPECT_EQ(0, animation_node->CurrentIteration());
@@ -340,13 +326,12 @@ TEST(AnimationAnimationEffectReadOnlyTest, IterationAlternate) {
   EXPECT_EQ(0.75, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, IterationAlternateReverse) {
+TEST(AnimationAnimationEffectTest, IterationAlternateReverse) {
   Timing timing;
   timing.iteration_count = 10;
   timing.iteration_duration = 1;
   timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0.75);
   EXPECT_EQ(0, animation_node->CurrentIteration());
@@ -361,14 +346,13 @@ TEST(AnimationAnimationEffectReadOnlyTest, IterationAlternateReverse) {
   EXPECT_EQ(0.25, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationSanity) {
+TEST(AnimationAnimationEffectTest, ZeroDurationSanity) {
   Timing timing;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
 
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -378,7 +362,7 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationSanity) {
 
   animation_node->UpdateInheritedTime(1);
 
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -387,11 +371,10 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationSanity) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationFillForwards) {
+TEST(AnimationAnimationEffectTest, ZeroDurationFillForwards) {
   Timing timing;
   timing.fill_mode = Timing::FillMode::FORWARDS;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_FALSE(animation_node->Progress());
@@ -403,11 +386,10 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationFillForwards) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationFillBackwards) {
+TEST(AnimationAnimationEffectTest, ZeroDurationFillBackwards) {
   Timing timing;
   timing.fill_mode = Timing::FillMode::BACKWARDS;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(0, animation_node->Progress());
@@ -419,11 +401,10 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationFillBackwards) {
   EXPECT_FALSE(animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationFillBoth) {
+TEST(AnimationAnimationEffectTest, ZeroDurationFillBoth) {
   Timing timing;
   timing.fill_mode = Timing::FillMode::BOTH;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(0, animation_node->Progress());
@@ -435,12 +416,11 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationFillBoth) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationStartDelay) {
+TEST(AnimationAnimationEffectTest, ZeroDurationStartDelay) {
   Timing timing;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.start_delay = 0.5;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
   EXPECT_FALSE(animation_node->Progress());
@@ -452,14 +432,13 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationStartDelay) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationIterationStartAndCount) {
+TEST(AnimationAnimationEffectTest, ZeroDurationIterationStartAndCount) {
   Timing timing;
   timing.iteration_start = 0.1;
   timing.iteration_count = 0.2;
   timing.fill_mode = Timing::FillMode::BOTH;
   timing.start_delay = 0.3;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
   EXPECT_EQ(0.1, animation_node->Progress());
@@ -472,12 +451,11 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationIterationStartAndCount) {
 }
 
 // FIXME: Needs specification work.
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationInfiniteIteration) {
+TEST(AnimationAnimationEffectTest, ZeroDurationInfiniteIteration) {
   Timing timing;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.iteration_count = std::numeric_limits<double>::infinity();
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(0, animation_node->ActiveDurationInternal());
@@ -491,12 +469,11 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationInfiniteIteration) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationIteration) {
+TEST(AnimationAnimationEffectTest, ZeroDurationIteration) {
   Timing timing;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.iteration_count = 2;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
@@ -511,13 +488,12 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationIteration) {
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationIterationStart) {
+TEST(AnimationAnimationEffectTest, ZeroDurationIterationStart) {
   Timing timing;
   timing.iteration_start = 1.2;
   timing.iteration_count = 2.2;
   timing.fill_mode = Timing::FillMode::BOTH;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_EQ(1, animation_node->CurrentIteration());
@@ -532,13 +508,12 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationIterationStart) {
   EXPECT_NEAR(0.4, animation_node->Progress().value(), 0.000000000000001);
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationIterationAlternate) {
+TEST(AnimationAnimationEffectTest, ZeroDurationIterationAlternate) {
   Timing timing;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.iteration_count = 2;
   timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
@@ -553,14 +528,12 @@ TEST(AnimationAnimationEffectReadOnlyTest, ZeroDurationIterationAlternate) {
   EXPECT_EQ(0, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest,
-     ZeroDurationIterationAlternateReverse) {
+TEST(AnimationAnimationEffectTest, ZeroDurationIterationAlternateReverse) {
   Timing timing;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.iteration_count = 2;
   timing.direction = Timing::PlaybackDirection::ALTERNATE_REVERSE;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(-1);
   EXPECT_TRUE(IsNull(animation_node->CurrentIteration()));
@@ -575,18 +548,17 @@ TEST(AnimationAnimationEffectReadOnlyTest,
   EXPECT_EQ(1, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationSanity) {
+TEST(AnimationAnimationEffectTest, InfiniteDurationSanity) {
   Timing timing;
   timing.iteration_duration = std::numeric_limits<double>::infinity();
   timing.iteration_count = 1;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation_node->ActiveDurationInternal());
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -597,7 +569,7 @@ TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationSanity) {
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation_node->ActiveDurationInternal());
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -606,17 +578,16 @@ TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationSanity) {
 }
 
 // FIXME: Needs specification work.
-TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationZeroIterations) {
+TEST(AnimationAnimationEffectTest, InfiniteDurationZeroIterations) {
   Timing timing;
   timing.iteration_duration = std::numeric_limits<double>::infinity();
   timing.iteration_count = 0;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
 
   EXPECT_EQ(0, animation_node->ActiveDurationInternal());
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -625,8 +596,8 @@ TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationZeroIterations) {
 
   animation_node->UpdateInheritedTime(1);
 
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseAfter, animation_node->GetPhase());
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -634,18 +605,17 @@ TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationZeroIterations) {
   EXPECT_EQ(0, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationInfiniteIterations) {
+TEST(AnimationAnimationEffectTest, InfiniteDurationInfiniteIterations) {
   Timing timing;
   timing.iteration_duration = std::numeric_limits<double>::infinity();
   timing.iteration_count = std::numeric_limits<double>::infinity();
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation_node->ActiveDurationInternal());
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -656,7 +626,7 @@ TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationInfiniteIterations) {
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation_node->ActiveDurationInternal());
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -664,18 +634,17 @@ TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationInfiniteIterations) {
   EXPECT_EQ(0, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationZeroPlaybackRate) {
+TEST(AnimationAnimationEffectTest, InfiniteDurationZeroPlaybackRate) {
   Timing timing;
   timing.iteration_duration = std::numeric_limits<double>::infinity();
   timing.playback_rate = 0;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation_node->ActiveDurationInternal());
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
   EXPECT_TRUE(animation_node->IsInPlay());
   EXPECT_TRUE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -686,7 +655,7 @@ TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationZeroPlaybackRate) {
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
             animation_node->ActiveDurationInternal());
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
   EXPECT_FALSE(animation_node->IsInPlay());
   EXPECT_FALSE(animation_node->IsCurrent());
   EXPECT_TRUE(animation_node->IsInEffect());
@@ -694,25 +663,23 @@ TEST(AnimationAnimationEffectReadOnlyTest, InfiniteDurationZeroPlaybackRate) {
   EXPECT_EQ(0, animation_node->Progress());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, EndTime) {
+TEST(AnimationAnimationEffectTest, EndTime) {
   Timing timing;
   timing.start_delay = 1;
   timing.end_delay = 2;
   timing.iteration_duration = 4;
   timing.iteration_count = 2;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
   EXPECT_EQ(11, animation_node->EndTimeInternal());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, Events) {
+TEST(AnimationAnimationEffectTest, Events) {
   Timing timing;
   timing.iteration_duration = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;
   timing.iteration_count = 2;
   timing.start_delay = 1;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0.0, kTimingUpdateOnDemand);
   EXPECT_FALSE(animation_node->EventDelegate()->EventTriggered());
@@ -727,7 +694,7 @@ TEST(AnimationAnimationEffectReadOnlyTest, Events) {
   EXPECT_TRUE(animation_node->EventDelegate()->EventTriggered());
 }
 
-TEST(AnimationAnimationEffectReadOnlyTest, TimeToEffectChange) {
+TEST(AnimationAnimationEffectTest, TimeToEffectChange) {
   Timing timing;
   timing.iteration_duration = 1;
   timing.fill_mode = Timing::FillMode::FORWARDS;
@@ -735,8 +702,7 @@ TEST(AnimationAnimationEffectReadOnlyTest, TimeToEffectChange) {
   timing.iteration_count = 2.5;
   timing.start_delay = 1;
   timing.direction = Timing::PlaybackDirection::ALTERNATE_NORMAL;
-  TestAnimationEffectReadOnly* animation_node =
-      TestAnimationEffectReadOnly::Create(timing);
+  TestAnimationEffect* animation_node = TestAnimationEffect::Create(timing);
 
   animation_node->UpdateInheritedTime(0);
   EXPECT_EQ(0, animation_node->TakeLocalTime());
@@ -756,13 +722,13 @@ TEST(AnimationAnimationEffectReadOnlyTest, TimeToEffectChange) {
 
   // Item ends before iteration finishes.
   animation_node->UpdateInheritedTime(3.4);
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseActive, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseActive, animation_node->GetPhase());
   EXPECT_EQ(3.4, animation_node->TakeLocalTime());
   EXPECT_TRUE(std::isinf(animation_node->TakeTimeToNextIteration()));
 
   // Item has finished.
   animation_node->UpdateInheritedTime(3.5);
-  EXPECT_EQ(AnimationEffectReadOnly::kPhaseAfter, animation_node->GetPhase());
+  EXPECT_EQ(AnimationEffect::kPhaseAfter, animation_node->GetPhase());
   EXPECT_EQ(3.5, animation_node->TakeLocalTime());
   EXPECT_TRUE(std::isinf(animation_node->TakeTimeToNextIteration()));
 }

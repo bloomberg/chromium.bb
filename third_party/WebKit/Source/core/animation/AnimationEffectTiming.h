@@ -6,7 +6,7 @@
 #define AnimationEffectTiming_h
 
 #include "core/CoreExport.h"
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/AnimationEffectTimingReadOnly.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -19,7 +19,7 @@ class CORE_EXPORT AnimationEffectTiming : public AnimationEffectTimingReadOnly {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static AnimationEffectTiming* Create(AnimationEffectReadOnly* parent);
+  static AnimationEffectTiming* Create(AnimationEffect* parent);
 
   void setDelay(double);
   void setEndDelay(double);
@@ -36,7 +36,7 @@ class CORE_EXPORT AnimationEffectTiming : public AnimationEffectTimingReadOnly {
   void Trace(blink::Visitor*) override;
 
  private:
-  explicit AnimationEffectTiming(AnimationEffectReadOnly*);
+  explicit AnimationEffectTiming(AnimationEffect*);
 };
 
 DEFINE_TYPE_CASTS(AnimationEffectTiming,

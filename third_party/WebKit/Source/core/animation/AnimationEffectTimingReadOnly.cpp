@@ -5,19 +5,19 @@
 #include "core/animation/AnimationEffectTimingReadOnly.h"
 
 #include "bindings/core/v8/unrestricted_double_or_string.h"
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/KeyframeEffect.h"
 #include "platform/animation/TimingFunction.h"
 
 namespace blink {
 
 AnimationEffectTimingReadOnly* AnimationEffectTimingReadOnly::Create(
-    AnimationEffectReadOnly* parent) {
+    AnimationEffect* parent) {
   return new AnimationEffectTimingReadOnly(parent);
 }
 
 AnimationEffectTimingReadOnly::AnimationEffectTimingReadOnly(
-    AnimationEffectReadOnly* parent)
+    AnimationEffect* parent)
     : parent_(parent) {}
 
 double AnimationEffectTimingReadOnly::delay() {

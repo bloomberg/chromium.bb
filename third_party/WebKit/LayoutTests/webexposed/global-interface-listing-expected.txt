@@ -190,7 +190,7 @@ interface Animation : EventTarget
     setter onfinish
     setter playbackRate
     setter startTime
-interface AnimationEffectReadOnly
+interface AnimationEffect
     attribute @@toStringTag
     getter timing
     method constructor
@@ -4034,7 +4034,7 @@ interface KeyboardEvent : UIEvent
     method constructor
     method getModifierState
     method initKeyboardEvent
-interface KeyframeEffect : AnimationEffectReadOnly
+interface KeyframeEffect : AnimationEffect
     attribute @@toStringTag
     getter composite
     getter target

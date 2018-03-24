@@ -28,11 +28,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://drafts.csswg.org/web-animations/#the-animationeffectreadonly-interface
+// https://drafts.csswg.org/web-animations/#the-animationeffect-interface
 
 [
     RuntimeEnabled=WebAnimationsAPI
-] interface AnimationEffectReadOnly {
+] interface AnimationEffect {
     readonly attribute AnimationEffectTimingReadOnly timing;
     ComputedTimingProperties getComputedTiming();
 };

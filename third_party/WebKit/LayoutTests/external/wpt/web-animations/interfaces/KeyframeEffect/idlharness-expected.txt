@@ -1,9 +1,9 @@
 This is a testharness.js-based test.
 PASS KeyframeEffect interface.
-FAIL KeyframeEffect interface: existence and properties of interface object assert_own_property: should inherit from AnimationEffect, but self has no such property expected property "AnimationEffect" missing
+PASS KeyframeEffect interface: existence and properties of interface object
 PASS KeyframeEffect interface object length
 PASS KeyframeEffect interface object name
-FAIL KeyframeEffect interface: existence and properties of interface prototype object assert_own_property: should inherit from AnimationEffect, but self has no such property expected property "AnimationEffect" missing
+PASS KeyframeEffect interface: existence and properties of interface prototype object
 PASS KeyframeEffect interface: existence and properties of interface prototype object's "constructor" property
 PASS KeyframeEffect interface: existence and properties of interface prototype object's @@unscopables property
 FAIL KeyframeEffect interface: attribute target assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"

@@ -119,7 +119,7 @@ KeyframeEffect::KeyframeEffect(Element* target,
                                const Timing& timing,
                                Priority priority,
                                EventDelegate* event_delegate)
-    : AnimationEffectReadOnly(timing, event_delegate),
+    : AnimationEffect(timing, event_delegate),
       target_(target),
       model_(model),
       sampled_effect_(nullptr),
@@ -314,7 +314,7 @@ void KeyframeEffect::Trace(blink::Visitor* visitor) {
   visitor->Trace(target_);
   visitor->Trace(model_);
   visitor->Trace(sampled_effect_);
-  AnimationEffectReadOnly::Trace(visitor);
+  AnimationEffect::Trace(visitor);
 }
 
 EffectModel::CompositeOperation KeyframeEffect::CompositeInternal() const {
@@ -394,7 +394,7 @@ void KeyframeEffect::Attach(AnimationEffectOwner* owner) {
         target_->IsSVGElement())
       ToSVGElement(target_)->SetWebAnimationsPending();
   }
-  AnimationEffectReadOnly::Attach(owner);
+  AnimationEffect::Attach(owner);
 }
 
 void KeyframeEffect::Detach() {
@@ -402,7 +402,7 @@ void KeyframeEffect::Detach() {
     target_->GetElementAnimations()->Animations().erase(GetAnimation());
   if (sampled_effect_)
     ClearEffects();
-  AnimationEffectReadOnly::Detach();
+  AnimationEffect::Detach();
 }
 
 double KeyframeEffect::CalculateTimeToEffectChange(

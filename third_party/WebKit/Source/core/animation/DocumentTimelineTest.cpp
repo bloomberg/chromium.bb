@@ -32,7 +32,7 @@
 
 #include <memory>
 #include "core/animation/AnimationClock.h"
-#include "core/animation/AnimationEffectReadOnly.h"
+#include "core/animation/AnimationEffect.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
 #include "core/animation/PendingAnimations.h"
