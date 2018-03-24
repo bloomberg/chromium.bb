@@ -141,5 +141,6 @@ source_set("tests") {
   data = [
     "//services/test/data/mona_lisa.jpg",
     "//services/test/data/text_detection.png",
+    "//services/test/data/the_beatles.jpg",
   ]
 }
