@@ -50,15 +50,18 @@ static std::string GetDecoderName(int i) {
 struct VideoFrameStreamTestParams {
   VideoFrameStreamTestParams(bool is_encrypted,
                              bool has_decryptor,
+                             bool has_prepare,
                              int decoding_delay,
                              int parallel_decoding)
       : is_encrypted(is_encrypted),
         has_decryptor(has_decryptor),
+        has_prepare(has_prepare),
         decoding_delay(decoding_delay),
         parallel_decoding(parallel_decoding) {}
 
   bool is_encrypted;
   bool has_decryptor;
+  bool has_prepare;
   int decoding_delay;
   int parallel_decoding;
 };
@@ -86,6 +89,10 @@ class VideoFrameStreamTest
         &media_log_));
     video_frame_stream_->set_decoder_change_observer_for_testing(base::Bind(
         &VideoFrameStreamTest::OnDecoderChanged, base::Unretained(this)));
+    if (GetParam().has_prepare) {
+      video_frame_stream_->SetPrepareCB(base::BindRepeating(
+          &VideoFrameStreamTest::PrepareFrame, base::Unretained(this)));
+    }
 
     if (GetParam().is_encrypted && GetParam().has_decryptor) {
       decryptor_.reset(new NiceMock<MockDecryptor>());
@@ -124,6 +131,13 @@ class VideoFrameStreamTest
     DCHECK(!pending_read_);
     DCHECK(!pending_reset_);
     DCHECK(!pending_stop_);
+  }
+
+  void PrepareFrame(const scoped_refptr<VideoFrame>& frame,
+                    VideoFrameStream::OutputReadyCB output_ready_cb) {
+    // Simulate some delay in return of the output.
+    message_loop_.task_runner()->PostTask(
+        FROM_HERE, base::BindOnce(std::move(output_ready_cb), frame));
   }
 
   void OnBytesDecoded(int count) {
@@ -473,25 +487,31 @@ class VideoFrameStreamTest
 INSTANTIATE_TEST_CASE_P(
     Clear,
     VideoFrameStreamTest,
-    ::testing::Values(VideoFrameStreamTestParams(false, false, 0, 1),
-                      VideoFrameStreamTestParams(false, false, 3, 1),
-                      VideoFrameStreamTestParams(false, false, 7, 1)));
+    ::testing::Values(VideoFrameStreamTestParams(false, false, false, 0, 1),
+                      VideoFrameStreamTestParams(false, false, false, 3, 1),
+                      VideoFrameStreamTestParams(false, false, false, 7, 1),
+                      VideoFrameStreamTestParams(false, false, true, 0, 1),
+                      VideoFrameStreamTestParams(false, false, true, 3, 1)));
 
 INSTANTIATE_TEST_CASE_P(
     EncryptedWithDecryptor,
     VideoFrameStreamTest,
-    ::testing::Values(VideoFrameStreamTestParams(true, true, 7, 1)));
+    ::testing::Values(VideoFrameStreamTestParams(true, true, false, 7, 1),
+                      VideoFrameStreamTestParams(true, true, true, 7, 1)));
 
 INSTANTIATE_TEST_CASE_P(
     EncryptedWithoutDecryptor,
     VideoFrameStreamTest,
-    ::testing::Values(VideoFrameStreamTestParams(true, false, 7, 1)));
+    ::testing::Values(VideoFrameStreamTestParams(true, false, false, 7, 1),
+                      VideoFrameStreamTestParams(true, false, true, 7, 1)));
 
 INSTANTIATE_TEST_CASE_P(
     Clear_Parallel,
     VideoFrameStreamTest,
-    ::testing::Values(VideoFrameStreamTestParams(false, false, 0, 3),
-                      VideoFrameStreamTestParams(false, false, 2, 3)));
+    ::testing::Values(VideoFrameStreamTestParams(false, false, false, 0, 3),
+                      VideoFrameStreamTestParams(false, false, false, 2, 3),
+                      VideoFrameStreamTestParams(false, false, true, 0, 3),
+                      VideoFrameStreamTestParams(false, false, true, 2, 3)));
 
 TEST_P(VideoFrameStreamTest, CanReadWithoutStallingAtAnyTime) {
   ASSERT_FALSE(video_frame_stream_->CanReadWithoutStalling());

@@ -50,17 +50,19 @@ DecoderStream<StreamType>::DecoderStream(
       create_decoders_cb_(std::move(create_decoders_cb)),
       media_log_(media_log),
       state_(STATE_UNINITIALIZED),
-      stream_(NULL),
+      stream_(nullptr),
       cdm_context_(nullptr),
       decoder_produced_a_frame_(false),
       has_fallen_back_once_on_decode_error_(false),
       decoding_eos_(false),
+      preparing_output_(false),
       pending_decode_requests_(0),
       duration_tracker_(8),
       received_config_change_during_reinit_(false),
       pending_demuxer_read_(false),
       weak_factory_(this),
-      fallback_weak_factory_(this) {
+      fallback_weak_factory_(this),
+      prepare_weak_factory_(this) {
   FUNCTION_DVLOG(1);
 }
 
@@ -68,8 +70,6 @@ template <DemuxerStream::Type StreamType>
 DecoderStream<StreamType>::~DecoderStream() {
   FUNCTION_DVLOG(1);
   DCHECK(task_runner_->BelongsToCurrentThread());
-
-  decoder_selector_.reset();
 
   if (init_cb_) {
     task_runner_->PostTask(
@@ -83,9 +83,8 @@ DecoderStream<StreamType>::~DecoderStream() {
   if (reset_cb_)
     task_runner_->PostTask(FROM_HERE, base::ResetAndReturn(&reset_cb_));
 
-  stream_ = NULL;
-  decoder_.reset();
-  decrypting_demuxer_stream_.reset();
+  // Don't manually reset anything here; rely on the order of member variables
+  // within the header, which enforces WeakPtrFactory invalidation first.
 }
 
 template <DemuxerStream::Type StreamType>
@@ -135,7 +134,8 @@ void DecoderStream<StreamType>::Read(const ReadCB& read_cb) {
     return;
   }
 
-  if (state_ == STATE_END_OF_STREAM && ready_outputs_.empty()) {
+  if (state_ == STATE_END_OF_STREAM && ready_outputs_.empty() &&
+      unprepared_outputs_.empty()) {
     task_runner_->PostTask(
         FROM_HERE,
         base::BindOnce(read_cb, OK, StreamTraits::CreateEOSOutput()));
@@ -146,6 +146,7 @@ void DecoderStream<StreamType>::Read(const ReadCB& read_cb) {
     task_runner_->PostTask(FROM_HERE,
                            base::BindOnce(read_cb, OK, ready_outputs_.front()));
     ready_outputs_.pop_front();
+    MaybePrepareAnotherOutput();
   } else {
     read_cb_ = read_cb;
   }
@@ -169,7 +170,7 @@ void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
                                   scoped_refptr<Output>()));
   }
 
-  ready_outputs_.clear();
+  ClearOutputs();
   traits_.OnStreamReset(stream_);
 
   // It's possible to have received a DECODE_ERROR and entered STATE_ERROR right
@@ -208,7 +209,7 @@ void DecoderStream<StreamType>::Reset(const base::Closure& closure) {
 template <DemuxerStream::Type StreamType>
 bool DecoderStream<StreamType>::CanReadWithoutStalling() const {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  return !ready_outputs_.empty() ||
+  return !ready_outputs_.empty() || !unprepared_outputs_.empty() ||
          (decoder_ && decoder_->CanReadWithoutStalling());
 }
 
@@ -234,11 +235,10 @@ bool DecoderStream<StreamType>::CanDecodeMore() const {
 
   bool buffers_left = !(fallback_buffers_.empty() && decoding_eos_);
 
-  // Limit total number of outputs stored in |ready_outputs_| and being decoded.
-  // It only makes sense to saturate decoder completely when output queue is
-  // empty.
-  int num_decodes =
-      static_cast<int>(ready_outputs_.size()) + pending_decode_requests_;
+  // Limit total number of outputs stored and being decoded. It only makes sense
+  // to saturate decoder completely when our output queues are empty.
+  int num_decodes = ready_outputs_.size() + unprepared_outputs_.size() +
+                    pending_decode_requests_;
   return buffers_left && num_decodes < GetMaxDecodeRequests();
 }
 
@@ -250,10 +250,16 @@ base::TimeDelta DecoderStream<StreamType>::AverageDuration() const {
 }
 
 template <DemuxerStream::Type StreamType>
-void DecoderStream<StreamType>::DropFramesBefore(
+void DecoderStream<StreamType>::SetPrepareCB(PrepareCB prepare_cb) {
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  prepare_cb_ = std::move(prepare_cb);
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderStream<StreamType>::SkipPrepareUntil(
     base::TimeDelta start_timestamp) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  start_timestamp_ = start_timestamp;
+  skip_prepare_until_timestamp_ = start_timestamp;
 }
 
 template <DemuxerStream::Type StreamType>
@@ -474,9 +480,9 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
       FUNCTION_DVLOG(1) << ": Decode error!";
       state_ = STATE_ERROR;
       MEDIA_LOG(ERROR, media_log_) << GetStreamTypeString() << " decode error";
-      ready_outputs_.clear();
+      ClearOutputs();
       if (read_cb_)
-        SatisfyRead(DECODE_ERROR, NULL);
+        SatisfyRead(DECODE_ERROR, nullptr);
       return;
 
     case DecodeStatus::ABORTED:
@@ -492,7 +498,7 @@ void DecoderStream<StreamType>::OnDecodeDone(int buffer_size,
       if (state_ == STATE_NORMAL) {
         if (end_of_stream) {
           state_ = STATE_END_OF_STREAM;
-          if (ready_outputs_.empty() && read_cb_)
+          if (ready_outputs_.empty() && unprepared_outputs_.empty() && read_cb_)
             SatisfyRead(OK, StreamTraits::CreateEOSOutput());
           return;
         }
@@ -538,6 +544,13 @@ void DecoderStream<StreamType>::OnDecodeOutputReady(
   if (traits_.OnDecodeDone(output) == PostDecodeAction::DROP)
     return;
 
+  if (prepare_cb_ && output->timestamp() + AverageDuration() >=
+                         skip_prepare_until_timestamp_) {
+    unprepared_outputs_.push_back(output);
+    MaybePrepareAnotherOutput();
+    return;
+  }
+
   if (read_cb_) {
     // If |ready_outputs_| was non-empty, the read would have already been
     // satisifed by Read().
@@ -580,7 +593,7 @@ void DecoderStream<StreamType>::OnBufferReady(
     DemuxerStream::Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
   FUNCTION_DVLOG(3) << ": " << status << ", "
-                    << (buffer ? buffer->AsHumanReadableString() : "NULL");
+                    << (buffer ? buffer->AsHumanReadableString() : "nullptr");
 
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(pending_demuxer_read_);
@@ -589,16 +602,8 @@ void DecoderStream<StreamType>::OnBufferReady(
            state_ == STATE_NORMAL)
         << state_;
   }
-  DCHECK_EQ(buffer != NULL, status == DemuxerStream::kOk) << status;
+  DCHECK_EQ(buffer != nullptr, status == DemuxerStream::kOk) << status;
   pending_demuxer_read_ = false;
-
-  if (buffer && !buffer->end_of_stream() &&
-      buffer->timestamp() + buffer->duration() < start_timestamp_) {
-    // Tell decoders that we expect to discard the frame. Some decoders will use
-    // this information to skip expensive decoding operations.
-    buffer->set_discard_padding(
-        std::make_pair(kInfiniteDuration, base::TimeDelta()));
-  }
 
   // If parallel decode requests are supported, multiple read requests might
   // have been sent to the demuxer. The buffers might arrive while the decoder
@@ -634,7 +639,7 @@ void DecoderStream<StreamType>::OnBufferReady(
     MEDIA_LOG(ERROR, media_log_)
         << GetStreamTypeString() << " demuxer stream read error!";
     pending_buffers_.clear();
-    ready_outputs_.clear();
+    ClearOutputs();
     if (read_cb_)
       SatisfyRead(DECODE_ERROR, nullptr);
   }
@@ -655,8 +660,7 @@ void DecoderStream<StreamType>::OnBufferReady(
   state_ = STATE_NORMAL;
 
   if (status == DemuxerStream::kConfigChanged) {
-    FUNCTION_DVLOG(2) << ": "
-                      << "ConfigChanged";
+    FUNCTION_DVLOG(2) << ": ConfigChanged";
     DCHECK(stream_->SupportsConfigChanges());
 
     // Pending buffers might not match the reinitialized decoder's new config.
@@ -713,7 +717,7 @@ void DecoderStream<StreamType>::OnBufferReady(
 
   if (status == DemuxerStream::kAborted) {
     if (read_cb_)
-      SatisfyRead(DEMUXER_READ_ABORTED, NULL);
+      SatisfyRead(DEMUXER_READ_ABORTED, nullptr);
     return;
   }
 
@@ -785,7 +789,7 @@ void DecoderStream<StreamType>::CompleteDecoderReinitialization(bool success) {
   if (state_ == STATE_ERROR) {
     MEDIA_LOG(ERROR, media_log_)
         << GetStreamTypeString() << " decoder reinitialization failed";
-    SatisfyRead(DECODE_ERROR, NULL);
+    SatisfyRead(DECODE_ERROR, nullptr);
     return;
   }
 
@@ -797,7 +801,11 @@ void DecoderStream<StreamType>::CompleteDecoderReinitialization(bool success) {
   // flushing the decoder during a seek operation.
   decoder_produced_a_frame_ = false;
 
-  ReadFromDemuxerStream();
+  // We may still have too many |ready_outputs_| or |unprepared_outputs_| to
+  // initiate another read to the demuxer stream. If so, the read will be
+  // initiated later once we vended enough outputs to read again.
+  if (CanDecodeMore())
+    ReadFromDemuxerStream();
 }
 
 template <DemuxerStream::Type StreamType>
@@ -839,6 +847,69 @@ void DecoderStream<StreamType>::OnDecoderReset() {
 
   // The resetting process will be continued in OnDecoderReinitialized().
   ReinitializeDecoder();
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderStream<StreamType>::ClearOutputs() {
+  preparing_output_ = false;
+  ready_outputs_.clear();
+  unprepared_outputs_.clear();
+  prepare_weak_factory_.InvalidateWeakPtrs();
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderStream<StreamType>::MaybePrepareAnotherOutput() {
+  FUNCTION_DVLOG(2);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+  DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
+         state_ == STATE_END_OF_STREAM ||
+         state_ == STATE_REINITIALIZING_DECODER)
+      << state_;
+
+  // If there's nothing to prepare or a prepare is underway, we're done.
+  if (!prepare_cb_ || unprepared_outputs_.empty() || preparing_output_)
+    return;
+
+  // If there's too many ready outputs, we're done.
+  if (ready_outputs_.size() >= static_cast<size_t>(GetMaxDecodeRequests()))
+    return;
+
+  preparing_output_ = true;
+  prepare_cb_.Run(
+      unprepared_outputs_.front(),
+      base::BindOnce(&DecoderStream<StreamType>::OnPreparedOutputReady,
+                     prepare_weak_factory_.GetWeakPtr()));
+}
+
+template <DemuxerStream::Type StreamType>
+void DecoderStream<StreamType>::OnPreparedOutputReady(
+    const scoped_refptr<Output>& output) {
+  FUNCTION_DVLOG(2);
+  DCHECK(task_runner_->BelongsToCurrentThread());
+
+  // Errors and reset invalidate the WeakPtr factory for this function, so it
+  // should only be called in normal and flush states.
+  DCHECK(state_ == STATE_NORMAL || state_ == STATE_FLUSHING_DECODER ||
+         state_ == STATE_END_OF_STREAM ||
+         state_ == STATE_REINITIALIZING_DECODER)
+      << state_;
+  DCHECK(!reset_cb_);
+  DCHECK(!unprepared_outputs_.empty());
+  DCHECK(preparing_output_);
+
+  preparing_output_ = false;
+  unprepared_outputs_.pop_front();
+  if (!read_cb_)
+    ready_outputs_.emplace_back(output);
+  else
+    SatisfyRead(OK, output);
+
+  MaybePrepareAnotherOutput();
+
+  // Since decoding may have been stalled by unprepared outputs, we should try
+  // to queue another decode here if one has been returned.
+  if (state_ == STATE_NORMAL && CanDecodeMore())
+    ReadFromDemuxerStream();
 }
 
 template class DecoderStream<DemuxerStream::VIDEO>;
