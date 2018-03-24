@@ -98,11 +98,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   const Actions& actions() const { return actions_; }
   void SetActions(const Actions& sets);
 
-  // Whether the result can be automatically selected by a voice query.
-  // (Non-voice results can still appear in the results list to be manually
-  // selected.)
-  bool voice_result() const { return voice_result_; }
-
   bool is_installing() const { return is_installing_; }
   void SetIsInstalling(bool is_installing);
 
@@ -145,7 +140,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   void set_comparable_id(const std::string& comparable_id) {
     comparable_id_ = comparable_id;
   }
-  void set_voice_result(bool voice_result) { voice_result_ = voice_result; }
 
  private:
   friend class SearchController;
@@ -189,7 +183,6 @@ class APP_LIST_MODEL_EXPORT SearchResult {
   int distance_from_origin_ = -1;
 
   Actions actions_;
-  bool voice_result_ = false;
 
   bool is_installing_ = false;
   int percent_downloaded_ = 0;

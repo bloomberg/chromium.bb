@@ -7,7 +7,6 @@
 #include <stddef.h>
 
 #include <memory>
-#include <set>
 #include <string>
 #include <vector>
 
@@ -42,8 +41,6 @@ class TestSearchResult : public SearchResult {
     set_relevance(relevance);
   }
   ~TestSearchResult() override {}
-
-  using SearchResult::set_voice_result;
 
   // SearchResult overrides:
   void Open(int event_flags) override {}
@@ -90,8 +87,6 @@ class TestSearchProvider : public SearchProvider {
         relevance = 10.0 - i * 10;
       TestSearchResult* result = new TestSearchResult(id, relevance);
       result->set_display_type(display_type_);
-      if (voice_result_indices.find(i) != voice_result_indices.end())
-        result->set_voice_result(true);
       Add(std::unique_ptr<SearchResult>(result));
     }
   }
@@ -101,7 +96,6 @@ class TestSearchProvider : public SearchProvider {
     display_type_ = display_type;
   }
   void set_count(size_t count) { count_ = count; }
-  void set_as_voice_result(size_t index) { voice_result_indices.insert(index); }
   void set_bad_relevance_range() { bad_relevance_range_ = true; }
 
  private:
@@ -109,8 +103,6 @@ class TestSearchProvider : public SearchProvider {
   size_t count_;
   bool bad_relevance_range_;
   SearchResult::DisplayType display_type_;
-  // Indices of results that will have the |voice_result| flag set.
-  std::set<size_t> voice_result_indices;
 
   DISALLOW_COPY_AND_ASSIGN(TestSearchProvider);
 };

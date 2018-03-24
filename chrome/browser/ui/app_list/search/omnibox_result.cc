@@ -144,18 +144,6 @@ OmniboxResult::OmniboxResult(Profile* profile,
 
   UpdateIcon();
   UpdateTitleAndDetails();
-
-  // The raw "what you typed" search results should be promoted and
-  // automatically selected by voice queries. If a "history" result exactly
-  // matches what you typed, then the omnibox will not produce a "what you
-  // typed" result; therefore, we must also flag "history" results as voice
-  // results if they exactly match the query.
-  if (match_.type == AutocompleteMatchType::SEARCH_WHAT_YOU_TYPED ||
-      (match_.type == AutocompleteMatchType::SEARCH_HISTORY &&
-       match_.search_terms_args &&
-       match_.contents == match_.search_terms_args->original_query)) {
-    set_voice_result(true);
-  }
 }
 
 OmniboxResult::~OmniboxResult() = default;
