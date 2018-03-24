@@ -73,8 +73,10 @@ public class VSyncPausedTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mActivity.getActiveShell().getContentViewCore().getWindowAndroid().setVSyncPaused(
-                        true);
+                mActivity.getActiveShell()
+                        .getWebContents()
+                        .getTopLevelNativeWindow()
+                        .setVSyncPaused(true);
             }
         });
         callCount = mOnTitleUpdatedHelper.getCallCount();
@@ -104,8 +106,10 @@ public class VSyncPausedTest {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mActivity.getActiveShell().getContentViewCore().getWindowAndroid().setVSyncPaused(
-                        false);
+                mActivity.getActiveShell()
+                        .getWebContents()
+                        .getTopLevelNativeWindow()
+                        .setVSyncPaused(false);
             }
         });
         mOnTitleUpdatedHelper.waitForCallback(callCount);

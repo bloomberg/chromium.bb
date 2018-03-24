@@ -70,7 +70,7 @@ public class ScreenOrientationListenerTest {
             @Override
             public void run() {
                 mDisplayAndroid =
-                        mActivityTestRule.getContentViewCore().getWindowAndroid().getDisplay();
+                        mActivityTestRule.getWebContents().getTopLevelNativeWindow().getDisplay();
                 mDisplayAndroid.addObserver(mCallbackHelper);
                 DisplayAndroid.startAccurateListening();
             }
@@ -246,7 +246,7 @@ public class ScreenOrientationListenerTest {
             @Override
             public void run() {
                 ScreenOrientationProvider.lockOrientation(
-                        mActivityTestRule.getContentViewCore().getWindowAndroid(),
+                        mActivityTestRule.getWebContents().getTopLevelNativeWindow(),
                         (byte) orientationValue);
             }
         });

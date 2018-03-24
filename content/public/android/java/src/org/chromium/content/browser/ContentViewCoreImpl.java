@@ -96,6 +96,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private InternalAccessDelegate mContainerViewInternals;
     private WebContentsImpl mWebContents;
     private WebContentsObserver mWebContentsObserver;
+    private WindowAndroid mWindowAndroid;
 
     // Native pointer to C++ ContentViewCore object which will be set by nativeInit().
     private long mNativeContentViewCore;
@@ -160,10 +161,8 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         return mWebContents;
     }
 
-    @Override
-    public WindowAndroid getWindowAndroid() {
-        if (mNativeContentViewCore == 0) return null;
-        return nativeGetJavaWindowAndroid(mNativeContentViewCore);
+    private WindowAndroid getWindowAndroid() {
+        return mWindowAndroid;
     }
 
     /**
@@ -199,7 +198,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         mContext = context;
 
         mViewAndroidDelegate = viewDelegate;
-
+        mWindowAndroid = windowAndroid;
         final float dipScale = windowAndroid.getDisplay().getDipScale();
 
         mNativeContentViewCore =
@@ -244,6 +243,7 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     @Override
     public void updateWindowAndroid(WindowAndroid windowAndroid) {
         removeDisplayAndroidObserver();
+        mWindowAndroid = windowAndroid;
         nativeUpdateWindowAndroid(mNativeContentViewCore, windowAndroid);
 
         // TODO(yusufo): Rename this call to be general for tab reparenting.
@@ -727,7 +727,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
     private native long nativeInit(WebContents webContents, ViewAndroidDelegate viewAndroidDelegate,
             WindowAndroid window, float dipScale);
     private native void nativeUpdateWindowAndroid(long nativeContentViewCore, WindowAndroid window);
-    private native WindowAndroid nativeGetJavaWindowAndroid(long nativeContentViewCore);
     private native void nativeOnJavaContentViewCoreDestroyed(long nativeContentViewCore);
     private native void nativeSetFocus(long nativeContentViewCore, boolean focused);
     private native void nativeSetDIPScale(long nativeContentViewCore, float dipScale);

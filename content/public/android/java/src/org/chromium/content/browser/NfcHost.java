@@ -69,14 +69,10 @@ class NfcHost extends WebContentsObserver implements WindowAndroidChangedObserve
         // a request to track activity changes while there is already such a request.
         assert mCallback == null : "Unexpected request to track activity changes";
         mCallback = callback;
-        Activity activity = null;
 
         mContentViewCore.addWindowAndroidChangedObserver(this);
-        if (mContentViewCore.getWindowAndroid() != null) {
-            activity = mContentViewCore.getWindowAndroid().getActivity().get();
-        }
-
-        mCallback.onResult(activity);
+        WindowAndroid window = mWebContents.getTopLevelNativeWindow();
+        mCallback.onResult(window != null ? window.getActivity().get() : null);
     }
 
     /**

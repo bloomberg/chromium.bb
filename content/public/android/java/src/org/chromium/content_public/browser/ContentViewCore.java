@@ -98,11 +98,6 @@ public interface ContentViewCore {
     WebContents getWebContents();
 
     /**
-     * @return The WindowAndroid associated with this ContentViewCore.
-     */
-    WindowAndroid getWindowAndroid();
-
-    /**
      * Updates the native {@link ContentViewCore} with a new window. This moves the NativeView and
      * attached it to the new NativeWindow linked with the given {@link WindowAndroid}.
      * @param windowAndroid The new {@link WindowAndroid} for this {@link ContentViewCore}.
