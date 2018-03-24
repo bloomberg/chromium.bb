@@ -20,6 +20,7 @@
 #pragma pack(push, 8)
 struct MojoSystemThunks {
   size_t size;  // Should be set to sizeof(MojoSystemThunks).
+  MojoResult (*Initialize)(const struct MojoInitializeOptions* options);
   MojoTimeTicks (*GetTimeTicksNow)();
   MojoResult (*Close)(MojoHandle handle);
   MojoResult (*QueryHandleSignalsState)(
@@ -149,19 +150,9 @@ struct MojoSystemThunks {
 };
 #pragma pack(pop)
 
-// Use this type for the function found by dynamically discovering it in
-// a DSO linked with mojo_system. For example:
-// MojoSetSystemThunksFn mojo_set_system_thunks_fn =
-//     reinterpret_cast<MojoSetSystemThunksFn>(app_library.GetFunctionPointer(
-//         "MojoSetSystemThunks"));
-// The expected size of |system_thunks| is returned.
-// The contents of |system_thunks| are copied.
-typedef size_t (*MojoSetSystemThunksFn)(
-    const struct MojoSystemThunks* system_thunks);
-
 // A function for setting up the embedder's own system thunks. This should only
 // be called by Mojo embedder code.
-MOJO_SYSTEM_EXPORT size_t
-MojoEmbedderSetSystemThunks(const struct MojoSystemThunks* system_thunks);
+MOJO_SYSTEM_EXPORT void MojoEmbedderSetSystemThunks(
+    const struct MojoSystemThunks* system_thunks);
 
 #endif  // MOJO_PUBLIC_C_SYSTEM_THUNKS_H_

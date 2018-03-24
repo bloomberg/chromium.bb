@@ -26,6 +26,22 @@ extern "C" {
 // operation's success/failure. E.g., a separate |flags| parameter may control
 // whether a given "in/out" parameter is used for input, output, or both.)
 
+// Initializes Mojo in the calling application.
+//
+// With the exception of EDK embedders, applications using Mojo APIs must call
+// this function before any others.
+//
+// |options| may be null.
+//
+// Returns:
+//   |MOJO_RESULT_OK| if Mojo intiailization was successful.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |options| was null or invalid.
+//   |MOJO_RESULT_FAILED_PRECONDITION| if |MojoInitialize()| was already called
+//       once or if the application already explicitly initialized a Mojo EDK
+//       environment.
+MOJO_SYSTEM_EXPORT MojoResult
+MojoInitialize(const struct MojoInitializeOptions* options);
+
 // Returns the time, in microseconds, since some undefined point in the past.
 // The values are only meaningful relative to other values that were obtained
 // from the same device without an intervening system restart. Such values are

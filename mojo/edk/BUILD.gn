@@ -3,6 +3,8 @@
 # found in the LICENSE file.
 
 import("//build/config/nacl/config.gni")
+import("//mojo/edk/mojo_core_library.gni")
+import("//testing/test.gni")
 
 # Targets should depend on this if directly referencing the |mojo::edk|
 # namespace.
@@ -31,7 +33,7 @@ component("edk") {
   }
 
   public_deps = [
-    ":core",
+    ":impl_for_edk",
     "//mojo/public/cpp/system",
   ]
 }
@@ -39,150 +41,203 @@ component("edk") {
 # Bits of the EDK library which do not depend on public API linkage. It is
 # not allowed for this target or any of its transitive dependencies to depend
 # on anything under //mojo/public beyond strict C type definitions.
-source_set("core") {
-  visibility = [ ":edk" ]
+#
+# This is templated because it's consumed by both the ":edk" component library
+# as well as the ":mojo_core" shared library. In the former case we want to
+# export symbols, but in the latter case we don't. The template stamps out two
+# nearly identical targets which differ only in what symbols they export.
+template("core_impl_source_set") {
+  source_set(target_name) {
+    if (invoker.for_mojo_core) {
+      visibility = [ ":mojo_core" ]
+    } else {
+      visibility = [ ":edk" ]
+    }
 
-  public = [
-    "embedder/configuration.h",
-    "embedder/connection_params.h",
-    "embedder/entrypoints.h",
-    "embedder/named_platform_channel_pair.h",
-    "embedder/named_platform_handle.h",
-    "embedder/named_platform_handle_utils.h",
-    "embedder/platform_channel_pair.h",
-    "embedder/platform_handle.h",
-    "embedder/platform_handle_utils.h",
-    "embedder/process_error_callback.h",
-    "embedder/scoped_ipc_support.h",
-    "embedder/scoped_platform_handle.h",
-    "embedder/transport_protocol.h",
-    "system/channel.h",
-    "system/configuration.h",
-    "system/core.h",
-    "system/data_pipe_consumer_dispatcher.h",
-    "system/data_pipe_control_message.h",
-    "system/data_pipe_producer_dispatcher.h",
-    "system/dispatcher.h",
-    "system/handle_signals_state.h",
-    "system/handle_table.h",
-    "system/message_pipe_dispatcher.h",
-    "system/node_controller.h",
-    "system/options_validation.h",
-    "system/platform_handle_dispatcher.h",
-    "system/request_context.h",
-    "system/shared_buffer_dispatcher.h",
-    "system/user_message_impl.h",
-  ]
-
-  sources = [
-    "embedder/connection_params.cc",
-    "embedder/entrypoints.cc",
-    "embedder/named_platform_channel_pair_win.cc",
-    "embedder/named_platform_handle_utils_win.cc",
-    "embedder/platform_channel_pair.cc",
-    "embedder/platform_channel_pair_win.cc",
-    "embedder/platform_handle.cc",
-    "embedder/platform_handle_utils_win.cc",
-    "embedder/platform_shared_buffer.cc",
-    "embedder/scoped_ipc_support.cc",
-    "system/atomic_flag.h",
-    "system/broker.h",
-    "system/broker_host.cc",
-    "system/broker_host.h",
-    "system/broker_win.cc",
-    "system/channel.cc",
-    "system/channel_win.cc",
-    "system/configuration.cc",
-    "system/core.cc",
-    "system/data_pipe_consumer_dispatcher.cc",
-    "system/data_pipe_control_message.cc",
-    "system/data_pipe_producer_dispatcher.cc",
-    "system/dispatcher.cc",
-    "system/handle_table.cc",
-    "system/mapping_table.cc",
-    "system/mapping_table.h",
-    "system/message_pipe_dispatcher.cc",
-    "system/node_channel.cc",
-    "system/node_channel.h",
-    "system/node_controller.cc",
-    "system/platform_handle_dispatcher.cc",
-    "system/request_context.cc",
-    "system/shared_buffer_dispatcher.cc",
-    "system/user_message_impl.cc",
-    "system/watch.cc",
-    "system/watch.h",
-    "system/watcher_dispatcher.cc",
-    "system/watcher_dispatcher.h",
-    "system/watcher_set.cc",
-    "system/watcher_set.h",
-  ]
-
-  if (is_fuchsia) {
-    sources += [
-      "embedder/named_platform_handle_utils_fuchsia.cc",
-      "embedder/platform_channel_pair_fuchsia.cc",
-      "embedder/platform_handle_utils_fuchsia.cc",
-      "system/channel_fuchsia.cc",
-    ]
-  } else if (is_posix) {
-    public += [ "embedder/platform_channel_utils_posix.h" ]
-
-    sources += [
-      "embedder/platform_channel_pair_posix.cc",
-      "embedder/platform_channel_utils_posix.cc",
-      "embedder/platform_handle_utils_posix.cc",
+    public = [
+      "embedder/configuration.h",
+      "embedder/connection_params.h",
+      "embedder/entrypoints.h",
+      "embedder/named_platform_channel_pair.h",
+      "embedder/named_platform_handle.h",
+      "embedder/named_platform_handle_utils.h",
+      "embedder/platform_channel_pair.h",
+      "embedder/platform_handle.h",
+      "embedder/platform_handle_utils.h",
+      "embedder/process_error_callback.h",
+      "embedder/scoped_ipc_support.h",
+      "embedder/scoped_platform_handle.h",
+      "embedder/transport_protocol.h",
+      "system/channel.h",
+      "system/configuration.h",
+      "system/core.h",
+      "system/data_pipe_consumer_dispatcher.h",
+      "system/data_pipe_control_message.h",
+      "system/data_pipe_producer_dispatcher.h",
+      "system/dispatcher.h",
+      "system/handle_signals_state.h",
+      "system/handle_table.h",
+      "system/message_pipe_dispatcher.h",
+      "system/node_controller.h",
+      "system/options_validation.h",
+      "system/platform_handle_dispatcher.h",
+      "system/request_context.h",
+      "system/shared_buffer_dispatcher.h",
+      "system/user_message_impl.h",
     ]
 
-    if (!is_nacl || is_nacl_nonsfi) {
+    sources = [
+      "embedder/connection_params.cc",
+      "embedder/entrypoints.cc",
+      "embedder/named_platform_channel_pair_win.cc",
+      "embedder/named_platform_handle_utils_win.cc",
+      "embedder/platform_channel_pair.cc",
+      "embedder/platform_channel_pair_win.cc",
+      "embedder/platform_handle.cc",
+      "embedder/platform_handle_utils_win.cc",
+      "embedder/platform_shared_buffer.cc",
+      "embedder/scoped_ipc_support.cc",
+      "system/atomic_flag.h",
+      "system/broker.h",
+      "system/broker_host.cc",
+      "system/broker_host.h",
+      "system/broker_win.cc",
+      "system/channel.cc",
+      "system/channel_win.cc",
+      "system/configuration.cc",
+      "system/core.cc",
+      "system/data_pipe_consumer_dispatcher.cc",
+      "system/data_pipe_control_message.cc",
+      "system/data_pipe_producer_dispatcher.cc",
+      "system/dispatcher.cc",
+      "system/handle_table.cc",
+      "system/mapping_table.cc",
+      "system/mapping_table.h",
+      "system/message_pipe_dispatcher.cc",
+      "system/node_channel.cc",
+      "system/node_channel.h",
+      "system/node_controller.cc",
+      "system/platform_handle_dispatcher.cc",
+      "system/request_context.cc",
+      "system/shared_buffer_dispatcher.cc",
+      "system/user_message_impl.cc",
+      "system/watch.cc",
+      "system/watch.h",
+      "system/watcher_dispatcher.cc",
+      "system/watcher_dispatcher.h",
+      "system/watcher_set.cc",
+      "system/watcher_set.h",
+    ]
+
+    if (is_fuchsia) {
       sources += [
-        "system/broker_posix.cc",
-        "system/channel_posix.cc",
+        "embedder/named_platform_handle_utils_fuchsia.cc",
+        "embedder/platform_channel_pair_fuchsia.cc",
+        "embedder/platform_handle_utils_fuchsia.cc",
+        "system/channel_fuchsia.cc",
+      ]
+    } else if (is_posix) {
+      public += [ "embedder/platform_channel_utils_posix.h" ]
+
+      sources += [
+        "embedder/platform_channel_pair_posix.cc",
+        "embedder/platform_channel_utils_posix.cc",
+        "embedder/platform_handle_utils_posix.cc",
+      ]
+
+      if (!is_nacl || is_nacl_nonsfi) {
+        sources += [
+          "system/broker_posix.cc",
+          "system/channel_posix.cc",
+        ]
+      }
+
+      if (!is_nacl) {
+        sources += [ "embedder/named_platform_handle_utils_posix.cc" ]
+      }
+    }
+
+    if (is_mac && !is_ios) {
+      sources += [
+        "system/mach_port_relay.cc",
+        "system/mach_port_relay.h",
       ]
     }
 
+    if (is_nacl && !is_nacl_nonsfi) {
+      sources -= [
+        "embedder/platform_channel_utils_posix.cc",
+        "system/broker_host.cc",
+      ]
+    }
+
+    defines = []
+    if (!invoker.for_mojo_core) {
+      defines += [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
+    }
+
+    public_deps = [
+      "//base",
+      "//mojo/edk/system/ports",
+      "//mojo/public/c/system:headers",
+    ]
+
+    deps = []
+    if (is_android) {
+      deps += [ "//third_party/ashmem" ]
+    }
     if (!is_nacl) {
-      sources += [ "embedder/named_platform_handle_utils_posix.cc" ]
+      deps += [ "//crypto" ]
+    }
+
+    if (is_win) {
+      cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()),
+                              # which is uninteresting.
+    }
+
+    # Use target_os == "chromeos" instead of is_chromeos because we need to
+    # build NaCl targets (i.e. IRT) for ChromeOS the same as the rest of ChromeOS.
+    if (is_android || target_os == "chromeos") {
+      defines += [ "MOJO_EDK_LEGACY_PROTOCOL" ]
+    }
+  }
+}
+
+core_impl_source_set("impl_for_edk") {
+  for_mojo_core = false
+}
+
+if (enable_mojo_core_library) {
+  core_impl_source_set("impl_for_mojo_core") {
+    for_mojo_core = true
+  }
+
+  shared_library("mojo_core") {
+    sources = [
+      "mojo_core.cc",
+    ]
+    deps = [
+      ":impl_for_mojo_core",
+      "//build/config:exe_and_shlib_deps",
+      "//mojo/public/c/system:headers",
+    ]
+    if (!is_component_build) {
+      public_configs = [ "//build/config/gcc:rpath_for_built_shared_libraries" ]
     }
   }
 
-  if (is_mac && !is_ios) {
-    sources += [
-      "system/mach_port_relay.cc",
-      "system/mach_port_relay.h",
+  test("mojo_core_unittests") {
+    sources = [
+      "mojo_core_unittest.cc",
+      "run_all_core_unittests.cc",
     ]
-  }
 
-  if (is_nacl && !is_nacl_nonsfi) {
-    sources -= [
-      "embedder/platform_channel_utils_posix.cc",
-      "system/broker_host.cc",
+    deps = [
+      ":mojo_core",
+      "//base",
+      "//base/test:test_support",
+      "//mojo/public/c/system",
+      "//testing/gtest",
     ]
-  }
-
-  defines = [ "MOJO_SYSTEM_IMPL_IMPLEMENTATION" ]
-
-  public_deps = [
-    "//base",
-    "//mojo/edk/system/ports",
-    "//mojo/public/c/system:headers",
-  ]
-
-  deps = []
-  if (is_android) {
-    deps += [ "//third_party/ashmem" ]
-  }
-  if (!is_nacl) {
-    deps += [ "//crypto" ]
-  }
-
-  if (is_win) {
-    cflags = [ "/wd4324" ]  # Structure was padded due to __declspec(align()),
-                            # which is uninteresting.
-  }
-
-  # Use target_os == "chromeos" instead of is_chromeos because we need to
-  # build NaCl targets (i.e. IRT) for ChromeOS the same as the rest of ChromeOS.
-  if (is_android || target_os == "chromeos") {
-    defines += [ "MOJO_EDK_LEGACY_PROTOCOL" ]
   }
 }

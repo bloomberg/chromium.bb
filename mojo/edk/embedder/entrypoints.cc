@@ -19,6 +19,11 @@ mojo::edk::Core* g_core;
 
 extern "C" {
 
+MojoResult MojoInitializeImpl(const struct MojoInitializeOptions* options) {
+  NOTREACHED() << "Do not call MojoInitialize() as an EDK embedder!";
+  return MOJO_RESULT_OK;
+}
+
 MojoTimeTicks MojoGetTimeTicksNowImpl() {
   return g_core->GetTimeTicksNow();
 }
@@ -268,6 +273,7 @@ MojoResult MojoGetPropertyImpl(MojoPropertyType type, void* value) {
 }  // extern "C"
 
 MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
+                             MojoInitializeImpl,
                              MojoGetTimeTicksNowImpl,
                              MojoCloseImpl,
                              MojoQueryHandleSignalsStateImpl,
