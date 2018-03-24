@@ -16,6 +16,14 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   void SetUp() override {
     NGBaseLayoutAlgorithmTest::SetUp();
     style_ = ComputedStyle::Create();
+    was_block_fragmentation_enabled_ =
+        RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled();
+    RuntimeEnabledFeatures::SetLayoutNGBlockFragmentationEnabled(true);
+  }
+
+  void TearDown() override {
+    RuntimeEnabledFeatures::SetLayoutNGBlockFragmentationEnabled(
+        was_block_fragmentation_enabled_);
   }
 
   scoped_refptr<NGPhysicalBoxFragment> RunBlockLayoutAlgorithm(
@@ -52,6 +60,7 @@ class NGColumnLayoutAlgorithmTest : public NGBaseLayoutAlgorithmTest {
   }
 
   scoped_refptr<ComputedStyle> style_;
+  bool was_block_fragmentation_enabled_ = false;
 };
 
 TEST_F(NGColumnLayoutAlgorithmTest, EmptyMulticol) {

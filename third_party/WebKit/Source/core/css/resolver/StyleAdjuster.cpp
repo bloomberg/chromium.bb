@@ -667,21 +667,33 @@ void StyleAdjuster::AdjustComputedStyle(StyleResolverState& state,
     }
   }
 
-  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout()) {
-    // Form controls are not supported yet.
-    if (element && element->ShouldForceLegacyLayout()) {
+  if (RuntimeEnabledFeatures::LayoutNGEnabled() && !style.ForceLegacyLayout() &&
+      element) {
+    const Document& document = element->GetDocument();
+    if (element->ShouldForceLegacyLayout()) {
+      // Form controls are not supported yet.
       style.SetForceLegacyLayout(true);
-    }
-
-    // TODO(layout-dev): Once LayoutNG handles inline content editable, we
-    // should get rid of following code fragment.
-    else if (style.UserModify() != EUserModify::kReadOnly ||
-             (element && element->GetDocument().InDesignMode())) {
+    } else if (style.UserModify() != EUserModify::kReadOnly ||
+               document.InDesignMode()) {
+      // TODO(layout-dev): Once LayoutNG handles inline content editable, we
+      // should get rid of following code fragment.
       style.SetForceLegacyLayout(true);
 
       if (style.Display() == EDisplay::kInline &&
           parent_style.UserModify() == EUserModify::kReadOnly) {
         style.SetDisplay(EDisplay::kInlineBlock);
+      }
+    } else if (!RuntimeEnabledFeatures::LayoutNGBlockFragmentationEnabled()) {
+      // Disable NG for the entire subtree if we're establishing a block
+      // fragmentation context.
+      if (style.SpecifiesColumns() ||
+          (style.IsOverflowPaged() &&
+           element != document.ViewportDefiningElement())) {
+        style.SetForceLegacyLayout(true);
+      } else if (document.Paginated()) {
+        // This needs to be discovered on the root element.
+        DCHECK_EQ(element, document.documentElement());
+        style.SetForceLegacyLayout(true);
       }
     }
   }
