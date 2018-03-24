@@ -216,7 +216,8 @@
     },
     'blink_audio': {
       'filepath': 'third_party/WebKit/Source/platform/audio' \
-                  '|third_party/WebKit/Source/modules/webaudio',
+                  '|third_party/WebKit/Source/modules/webaudio' \
+                  '|third_party/WebKit/LayoutTests/external/wpt/webaudio',
     },
     'blink_battery_status': {
       'filepath': 'third_party/WebKit/Source/modules/battery/' \
