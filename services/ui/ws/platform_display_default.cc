@@ -66,9 +66,12 @@ void PlatformDisplayDefault::Init(PlatformDisplayDelegate* delegate) {
   const gfx::Rect& bounds = metrics_.bounds_in_pixels;
   DCHECK(!bounds.size().IsEmpty());
 
-  // Use StubWindow for virtual unified displays, like AshWindowTreeHostUnified.
   if (delegate_->GetDisplay().id() == display::kUnifiedDisplayId) {
+    // Virtual unified displays use a StubWindow; see AshWindowTreeHostUnified.
     platform_window_ = std::make_unique<ui::StubWindow>(this, true, bounds);
+  } else if (delegate_->GetDisplay().id() == display::kInvalidDisplayId) {
+    // Unit tests may use kInvalidDisplayId to request a StubWindow for testing.
+    platform_window_ = std::make_unique<ui::StubWindow>(this, false);
   } else {
     platform_window_ = CreatePlatformWindow(this, metrics_.bounds_in_pixels);
   }
