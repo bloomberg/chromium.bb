@@ -28,7 +28,8 @@ class Rect;
 // desired.
 class Button : public UiElement {
  public:
-  explicit Button(base::RepeatingCallback<void()> click_handler);
+  explicit Button(base::RepeatingCallback<void()> click_handler,
+                  AudioDelegate* audio_delegate);
   ~Button() override;
 
   void Render(UiElementRenderer* renderer,
@@ -47,6 +48,8 @@ class Button : public UiElement {
   // will never have to change the button hover offset from the default and this
   // method and the associated field can be removed.
   void set_hover_offset(float hover_offset) { hover_offset_ = hover_offset; }
+
+  void set_disabled_sounds(const Sounds& sounds) { disabled_sounds_ = sounds; }
 
   bool hovered() const { return hovered_; }
   bool down() const { return down_; }
@@ -73,6 +76,8 @@ class Button : public UiElement {
   void HandleButtonDown();
   void HandleButtonUp();
 
+  const Sounds& GetSounds() const override;
+
   bool down_ = false;
   bool hovered_ = false;
   bool pressed_ = false;
@@ -80,9 +85,9 @@ class Button : public UiElement {
   base::RepeatingCallback<void()> click_handler_;
   ButtonColors colors_;
   float hover_offset_;
-
   Rect* background_;
   UiElement* hit_plane_;
+  Sounds disabled_sounds_;
 
   DISALLOW_COPY_AND_ASSIGN(Button);
 };

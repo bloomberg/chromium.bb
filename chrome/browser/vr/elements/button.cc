@@ -23,7 +23,8 @@ constexpr float kDefaultHoverOffsetDMM = 0.048f;
 
 }  // namespace
 
-Button::Button(base::RepeatingCallback<void()> click_handler)
+Button::Button(base::RepeatingCallback<void()> click_handler,
+               AudioDelegate* audio_delegate)
     : click_handler_(click_handler), hover_offset_(kDefaultHoverOffsetDMM) {
   auto background = std::make_unique<Rect>();
   background->SetType(kTypeButtonBackground);
@@ -53,6 +54,14 @@ Button::Button(base::RepeatingCallback<void()> click_handler)
   event_handlers.button_up =
       base::BindRepeating(&Button::HandleButtonUp, base::Unretained(this));
   set_event_handlers(event_handlers);
+
+  Sounds sounds;
+  sounds.hover_enter = kSoundButtonHover;
+  sounds.button_down = kSoundButtonClick;
+  SetSounds(sounds, audio_delegate);
+
+  disabled_sounds_.hover_enter = kSoundNone;
+  disabled_sounds_.button_down = kSoundInactiveButtonClick;
 }
 
 Button::~Button() = default;
@@ -144,6 +153,13 @@ void Button::NotifyClientSizeAnimated(const gfx::SizeF& size,
     OnSetSize(size);
   }
   UiElement::NotifyClientSizeAnimated(size, target_property_id, animation);
+}
+
+const Sounds& Button::GetSounds() const {
+  if (!enabled()) {
+    return disabled_sounds_;
+  }
+  return UiElement::GetSounds();
 }
 
 }  // namespace vr

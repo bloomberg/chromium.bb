@@ -17,7 +17,13 @@ namespace vr {
 DiscButton::DiscButton(base::RepeatingCallback<void()> click_handler,
                        const gfx::VectorIcon& icon,
                        AudioDelegate* audio_delegate)
-    : VectorIconButton(click_handler, icon, audio_delegate) {}
+    : VectorIconButton(click_handler, icon, audio_delegate) {
+  // By default, DiscButton is a mode exit button, and gets the 'back' sound.
+  Sounds sounds;
+  sounds.hover_enter = kSoundButtonHover;
+  sounds.button_down = kSoundBackButtonClick;
+  SetSounds(sounds, audio_delegate);
+}
 
 DiscButton::~DiscButton() = default;
 

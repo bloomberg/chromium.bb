@@ -140,9 +140,10 @@ void UiElement::Render(UiElementRenderer* renderer,
 void UiElement::Initialize(SkiaSurfaceProvider* provider) {}
 
 void UiElement::OnHoverEnter(const gfx::PointF& position) {
-  if (sounds_.hover_enter != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(sounds_.hover_enter);
+  if (GetSounds().hover_enter != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(GetSounds().hover_enter);
   }
+
   if (event_handlers_.hover_enter) {
     event_handlers_.hover_enter.Run();
   } else if (parent() && bubble_events()) {
@@ -151,8 +152,8 @@ void UiElement::OnHoverEnter(const gfx::PointF& position) {
 }
 
 void UiElement::OnHoverLeave() {
-  if (sounds_.hover_leave != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(sounds_.hover_leave);
+  if (GetSounds().hover_leave != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(GetSounds().hover_leave);
   }
   if (event_handlers_.hover_leave) {
     event_handlers_.hover_leave.Run();
@@ -162,8 +163,8 @@ void UiElement::OnHoverLeave() {
 }
 
 void UiElement::OnMove(const gfx::PointF& position) {
-  if (sounds_.move != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(sounds_.move);
+  if (GetSounds().move != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(GetSounds().move);
   }
   if (event_handlers_.hover_move) {
     event_handlers_.hover_move.Run(position);
@@ -173,8 +174,8 @@ void UiElement::OnMove(const gfx::PointF& position) {
 }
 
 void UiElement::OnButtonDown(const gfx::PointF& position) {
-  if (sounds_.button_down != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(sounds_.button_down);
+  if (GetSounds().button_down != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(GetSounds().button_down);
   }
   if (event_handlers_.button_down) {
     event_handlers_.button_down.Run();
@@ -184,8 +185,8 @@ void UiElement::OnButtonDown(const gfx::PointF& position) {
 }
 
 void UiElement::OnButtonUp(const gfx::PointF& position) {
-  if (sounds_.button_up != kSoundNone && audio_delegate_) {
-    audio_delegate_->PlaySound(sounds_.button_up);
+  if (GetSounds().button_up != kSoundNone && audio_delegate_) {
+    audio_delegate_->PlaySound(GetSounds().button_up);
   }
   if (event_handlers_.button_up) {
     event_handlers_.button_up.Run();
@@ -825,6 +826,10 @@ gfx::Transform UiElement::LocalTransform() const {
 
 gfx::Transform UiElement::GetTargetLocalTransform() const {
   return layout_offset_.Apply() * GetTargetTransform().Apply();
+}
+
+const Sounds& UiElement::GetSounds() const {
+  return sounds_;
 }
 
 }  // namespace vr
