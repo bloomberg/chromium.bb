@@ -781,6 +781,10 @@ void WebMediaPlayerImpl::EnterPictureInPicture() {
 
   pip_surface_info_cb_.Run(pip_surface_id_);
 
+  // Updates the MediaWebContentsObserver with |delegate_id_| to track which
+  // media player is in Picture-in-Picture mode.
+  delegate_->DidPictureInPictureSourceChange(delegate_id_);
+
   if (client_)
     client_->PictureInPictureStarted();
 }

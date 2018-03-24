@@ -105,6 +105,11 @@ MediaWebContentsObserver::GetFullscreenVideoMediaPlayerId() const {
   return fullscreen_player_;
 }
 
+const base::Optional<WebContentsObserver::MediaPlayerId>&
+MediaWebContentsObserver::GetPictureInPictureVideoMediaPlayerId() const {
+  return pip_player_;
+}
+
 bool MediaWebContentsObserver::OnMessageReceived(
     const IPC::Message& msg,
     RenderFrameHost* render_frame_host) {
@@ -123,6 +128,9 @@ bool MediaWebContentsObserver::OnMessageReceived(
         OnMediaEffectivelyFullscreenChanged)
     IPC_MESSAGE_HANDLER(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                         OnMediaSizeChanged)
+    IPC_MESSAGE_HANDLER(
+        MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged,
+        OnPictureInPictureSourceChanged)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -165,6 +173,11 @@ void MediaWebContentsObserver::OnMediaDestroyed(
     RenderFrameHost* render_frame_host,
     int delegate_id) {
   OnMediaPaused(render_frame_host, delegate_id, true);
+
+  if (pip_player_ &&
+      pip_player_ == MediaPlayerId(render_frame_host, delegate_id)) {
+    pip_player_.reset();
+  }
 }
 
 void MediaWebContentsObserver::OnMediaPaused(RenderFrameHost* render_frame_host,
@@ -266,6 +279,12 @@ void MediaWebContentsObserver::OnMediaSizeChanged(
     const gfx::Size& size) {
   const MediaPlayerId id(render_frame_host, delegate_id);
   web_contents_impl()->MediaResized(size, id);
+}
+
+void MediaWebContentsObserver::OnPictureInPictureSourceChanged(
+    RenderFrameHost* render_frame_host,
+    int delegate_id) {
+  pip_player_ = MediaPlayerId(render_frame_host, delegate_id);
 }
 
 void MediaWebContentsObserver::ClearWakeLocks(

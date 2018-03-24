@@ -178,6 +178,8 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
     DCHECK_EQ(player_id_, delegate_id);
   }
 
+  MOCK_METHOD1(DidPictureInPictureSourceChange, void(int));
+
   void ClearStaleFlag(int player_id) override {
     DCHECK_EQ(player_id_, player_id);
     is_stale_ = false;
@@ -222,6 +224,8 @@ class MockWebMediaPlayerDelegate : public WebMediaPlayerDelegate {
   void SetFrameHiddenForTesting(bool is_hidden) { is_hidden_ = is_hidden; }
 
   void SetFrameClosedForTesting(bool is_closed) { is_closed_ = is_closed; }
+
+  int player_id() { return player_id_; }
 
  private:
   Observer* observer_ = nullptr;
@@ -402,7 +406,7 @@ class WebMediaPlayerImplTest : public testing::Test {
   void OnMetadata(PipelineMetadata metadata) {
     if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
       EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
-          .WillOnce(ReturnRef(id_));
+          .WillOnce(ReturnRef(frame_sink_id_));
       EXPECT_CALL(*compositor_, EnableSubmission(_, _));
     }
     wmpi_->OnMetadata(metadata);
@@ -529,7 +533,12 @@ class WebMediaPlayerImplTest : public testing::Test {
   // The client interface used by |wmpi_|.
   NiceMock<MockWebMediaPlayerClient> client_;
 
-  viz::FrameSinkId id_ = viz::FrameSinkId(1, 1);
+  viz::FrameSinkId frame_sink_id_ = viz::FrameSinkId(1, 1);
+
+  viz::LocalSurfaceId local_surface_id_ =
+      viz::LocalSurfaceId(11, base::UnguessableToken::Deserialize(0x111111, 0));
+  viz::SurfaceId surface_id_ =
+      viz::SurfaceId(frame_sink_id_, local_surface_id_);
 
   NiceMock<MockWebMediaPlayerDelegate> delegate_;
 
@@ -1082,20 +1091,15 @@ TEST_F(WebMediaPlayerImplTest, PlaybackRateChangeMediaLogs) {
 TEST_F(WebMediaPlayerImplTest, PictureInPictureTriggerCallback) {
   InitializeWebMediaPlayerImpl();
 
-  // Set up valid viz::SurfaceId. Values are arbitrary for test purposes.
-  viz::FrameSinkId frame_sink_id = viz::FrameSinkId(1, 1);
-  viz::LocalSurfaceId local_surface_id =
-      viz::LocalSurfaceId(11, base::UnguessableToken::Deserialize(0x111111, 0));
-  const viz::SurfaceId& surface_id =
-      viz::SurfaceId(frame_sink_id, local_surface_id);
-
   // This call should do nothing because there is no SurfaceId set.
   wmpi_->EnterPictureInPicture();
   EXPECT_CALL(client_, IsInPictureInPictureMode());
-  wmpi_->OnSurfaceIdUpdated(surface_id);
+  wmpi_->OnSurfaceIdUpdated(surface_id_);
   testing::Mock::VerifyAndClearExpectations(&client_);
 
-  EXPECT_CALL(pip_surface_info_cb_, Run(surface_id));
+  EXPECT_CALL(delegate_,
+              DidPictureInPictureSourceChange(delegate_.player_id()));
+  EXPECT_CALL(pip_surface_info_cb_, Run(surface_id_));
   // This call should trigger the callback since the SurfaceId is set.
   wmpi_->EnterPictureInPicture();
 }

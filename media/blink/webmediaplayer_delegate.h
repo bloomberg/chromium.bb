@@ -100,6 +100,9 @@ class WebMediaPlayerDelegate {
   // Notify that the muted status of the media player has changed.
   virtual void DidPlayerMutedStatusChange(int delegate_id, bool muted) = 0;
 
+  // Notify that the source media player of Picture-in-Picture has changed.
+  virtual void DidPictureInPictureSourceChange(int delegate_id) = 0;
+
   // Notify that playback is stopped. This will drop wake locks and remove any
   // external controls.
   //

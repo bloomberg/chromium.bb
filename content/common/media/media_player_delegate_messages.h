@@ -83,4 +83,7 @@ IPC_MESSAGE_ROUTED2(MediaPlayerDelegateHostMsg_OnMediaSizeChanged,
                     int /* delegate_id, distinguishes instances */,
                     gfx::Size /* new size of video */)
 
+IPC_MESSAGE_ROUTED1(MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged,
+                    int /* delegate id */)
+
 #endif  // CONTENT_COMMON_MEDIA_MEDIA_PLAYER_DELEGATE_MESSAGES_H_
