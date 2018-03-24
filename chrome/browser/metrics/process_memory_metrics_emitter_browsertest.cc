@@ -221,160 +221,134 @@ class ProcessMemoryMetricsEmitterTest : public ExtensionBrowserTest {
  protected:
   std::unique_ptr<ukm::TestAutoSetUkmRecorder> test_ukm_recorder_;
 
-  void CheckMetricWithName(ukm::SourceId source_id,
+  void CheckMetricWithName(const ukm::mojom::UkmEntry* entry,
                            const char* name,
-                           std::function<bool(int64_t)> check,
-                           size_t metric_count) {
-    std::vector<int64_t> metrics = test_ukm_recorder_->GetMetricValues(
-        source_id, UkmEntry::kEntryName, name);
-    EXPECT_EQ(metric_count, metrics.size()) << name;
-    if (metrics.size() > 0) {
-      // The check should be performed on the last entry.
-      int64_t metric = metrics.back();
-      EXPECT_TRUE(check(metric)) << name;
-    }
+                           std::function<bool(int64_t)> check) {
+    const int64_t* value = test_ukm_recorder_->GetEntryMetric(entry, name);
+    EXPECT_TRUE(value && check(*value)) << name;
   }
 
-  void CheckExactMetricWithName(ukm::SourceId source_id,
+  void CheckExactMetricWithName(const ukm::mojom::UkmEntry* entry,
                                 const char* name,
-                                int64_t expected_value,
-                                size_t metric_count) {
-    CheckMetricWithName(source_id, name,
-                        [expected_value](int64_t value) -> bool {
-                          return value == expected_value;
-                        },
-                        metric_count);
+                                int64_t expected_value) {
+    CheckMetricWithName(entry, name, [expected_value](int64_t value) -> bool {
+      return value == expected_value;
+    });
   }
 
-  void CheckMemoryMetricWithName(ukm::SourceId source_id,
+  void CheckMemoryMetricWithName(const ukm::mojom::UkmEntry* entry,
                                  const char* name,
-                                 bool can_be_zero,
-                                 size_t metric_count = 1u) {
-    CheckMetricWithName(source_id, name,
-                        [can_be_zero](int64_t value) -> bool {
-                          return value >= (can_be_zero ? 0 : 1) &&
-                                 value <= 4000;
-                        },
-                        metric_count);
+                                 bool can_be_zero) {
+    CheckMetricWithName(entry, name, [can_be_zero](int64_t value) -> bool {
+      return value >= (can_be_zero ? 0 : 1) && value <= 4000;
+    });
   }
 
-  void CheckTimeMetricWithName(ukm::SourceId source_id,
-                               const char* name,
-                               size_t metric_count = 1u) {
-    CheckMetricWithName(
-        source_id, name,
-        [](int64_t value) -> bool { return value >= 0 && value <= 10; },
-        metric_count);
+  void CheckTimeMetricWithName(const ukm::mojom::UkmEntry* entry,
+                               const char* name) {
+    CheckMetricWithName(entry, name, [](int64_t value) -> bool {
+      return value >= 0 && value <= 10;
+    });
   }
 
-  void CheckAllUkmSources(size_t metric_count = 1u) {
-    std::set<ukm::SourceId> source_ids = test_ukm_recorder_->GetSourceIds();
-    bool has_browser_source = false;
-    bool has_renderer_source = false;
-    bool has_total_source = false;
-    for (auto source_id : source_ids) {
-      // Ignore sources with no entries.
-      const ukm::UkmSource* source =
-          test_ukm_recorder_->GetSourceForSourceId(source_id);
-      if (source &&
-          !test_ukm_recorder_->HasEntry(*source, UkmEntry::kEntryName))
-        continue;
-      if (ProcessHasTypeForSource(source_id, ProcessType::BROWSER)) {
-        has_browser_source = true;
-        CheckUkmBrowserSource(source_id, 1);
-      } else if (ProcessHasTypeForSource(source_id, ProcessType::RENDERER)) {
-        // Renderer metrics associate with navigation's source, instead of
-        // creating a new one.
-        has_renderer_source = true;
-        CheckUkmRendererSource(source_id, metric_count);
-      } else if (ProcessHasTypeForSource(source_id, ProcessType::GPU)) {
-        CheckUkmGPUSource(source_id, 1);
+  void CheckAllUkmEntries(size_t entry_count = 1u) {
+    const auto& entries =
+        test_ukm_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+    size_t browser_entry_count = 0;
+    size_t renderer_entry_count = 0;
+    size_t total_entry_count = 0;
+
+    for (const auto* entry : entries) {
+      if (ProcessHasTypeForEntry(entry, ProcessType::BROWSER)) {
+        browser_entry_count++;
+        CheckUkmBrowserEntry(entry);
+      } else if (ProcessHasTypeForEntry(entry, ProcessType::RENDERER)) {
+        renderer_entry_count++;
+        CheckUkmRendererEntry(entry);
+      } else if (ProcessHasTypeForEntry(entry, ProcessType::GPU)) {
+        CheckUkmGPUEntry(entry);
       } else {
         // This must be Total2.
-        has_total_source = true;
+        total_entry_count++;
         CheckMemoryMetricWithName(
-            source_id, UkmEntry::kTotal2_PrivateMemoryFootprintName, false, 1);
+            entry, UkmEntry::kTotal2_PrivateMemoryFootprintName, false);
       }
     }
-    EXPECT_TRUE(has_browser_source);
-    EXPECT_TRUE(has_renderer_source);
-    EXPECT_TRUE(has_total_source);
+    EXPECT_EQ(entry_count, browser_entry_count);
+    EXPECT_EQ(entry_count, total_entry_count);
+
+    EXPECT_GE(renderer_entry_count, entry_count);
   }
 
-  void CheckUkmRendererSource(ukm::SourceId source_id, size_t metric_count) {
+  void CheckUkmRendererEntry(const ukm::mojom::UkmEntry* entry) {
 #if !defined(OS_WIN)
-    CheckMemoryMetricWithName(source_id, UkmEntry::kMallocName, false,
-                              metric_count);
+    CheckMemoryMetricWithName(entry, UkmEntry::kMallocName, false);
 #endif
 #if !defined(OS_MACOSX)
-    CheckMemoryMetricWithName(source_id, UkmEntry::kResidentName, false,
-                              metric_count);
+    CheckMemoryMetricWithName(entry, UkmEntry::kResidentName, false);
 #endif
-    CheckMemoryMetricWithName(source_id, UkmEntry::kPrivateMemoryFootprintName,
-                              false, metric_count);
-    CheckMemoryMetricWithName(source_id, UkmEntry::kBlinkGCName, true,
-                              metric_count);
-    CheckMemoryMetricWithName(source_id, UkmEntry::kPartitionAllocName, true,
-                              metric_count);
-    CheckMemoryMetricWithName(source_id, UkmEntry::kV8Name, true, metric_count);
-    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfExtensionsName,
-                              true, metric_count);
-    CheckTimeMetricWithName(source_id, UkmEntry::kUptimeName, metric_count);
+    CheckMemoryMetricWithName(entry, UkmEntry::kPrivateMemoryFootprintName,
+                              false);
+    CheckMemoryMetricWithName(entry, UkmEntry::kBlinkGCName, true);
+    CheckMemoryMetricWithName(entry, UkmEntry::kPartitionAllocName, true);
+    CheckMemoryMetricWithName(entry, UkmEntry::kV8Name, true);
+    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfExtensionsName, true);
+    CheckTimeMetricWithName(entry, UkmEntry::kUptimeName);
 
-    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfDocumentsName, true,
-                              metric_count);
-    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfFramesName, true,
-                              metric_count);
-    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfLayoutObjectsName,
-                              true, metric_count);
-    CheckMemoryMetricWithName(source_id, UkmEntry::kNumberOfNodesName, true,
-                              metric_count);
+    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfDocumentsName, true);
+    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfFramesName, true);
+    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfLayoutObjectsName,
+                              true);
+    CheckMemoryMetricWithName(entry, UkmEntry::kNumberOfNodesName, true);
   }
 
-  void CheckUkmBrowserSource(ukm::SourceId source_id,
-                             size_t metric_count = 1u) {
+  void CheckUkmBrowserEntry(const ukm::mojom::UkmEntry* entry) {
 #if !defined(OS_WIN)
-    CheckMemoryMetricWithName(source_id, UkmEntry::kMallocName, false,
-                              metric_count);
+    CheckMemoryMetricWithName(entry, UkmEntry::kMallocName, false);
 #endif
 #if !defined(OS_MACOSX)
-    CheckMemoryMetricWithName(source_id, UkmEntry::kResidentName, false,
-                              metric_count);
+    CheckMemoryMetricWithName(entry, UkmEntry::kResidentName, false);
 #endif
-    CheckMemoryMetricWithName(source_id, UkmEntry::kPrivateMemoryFootprintName,
-                              false, metric_count);
+    CheckMemoryMetricWithName(entry, UkmEntry::kPrivateMemoryFootprintName,
+                              false);
 
-    CheckTimeMetricWithName(source_id, UkmEntry::kUptimeName, metric_count);
+    CheckTimeMetricWithName(entry, UkmEntry::kUptimeName);
   }
 
-  void CheckUkmGPUSource(ukm::SourceId source_id, size_t metric_count = 1u) {
-    CheckTimeMetricWithName(source_id, UkmEntry::kUptimeName, metric_count);
+  void CheckUkmGPUEntry(const ukm::mojom::UkmEntry* entry) {
+    CheckTimeMetricWithName(entry, UkmEntry::kUptimeName);
   }
 
-  bool ProcessHasTypeForSource(ukm::SourceId source_id,
-                               ProcessType process_type) {
-    std::vector<int64_t> metrics = test_ukm_recorder_->GetMetricValues(
-        source_id, UkmEntry::kEntryName, UkmEntry::kProcessTypeName);
-
-    return std::find(metrics.begin(), metrics.end(),
-                     static_cast<int64_t>(process_type)) != metrics.end();
+  bool ProcessHasTypeForEntry(const ukm::mojom::UkmEntry* entry,
+                              ProcessType process_type) {
+    const int64_t* value =
+        test_ukm_recorder_->GetEntryMetric(entry, UkmEntry::kProcessTypeName);
+    return value && *value == static_cast<int64_t>(process_type);
   }
 
   void CheckPageInfoUkmMetrics(GURL url,
                                bool is_visible,
-                               size_t metric_count = 1u) {
-    const ukm::UkmSource* source = test_ukm_recorder_->GetSourceForUrl(url);
-    EXPECT_TRUE(source) << "Ukm Source for Renderer URL not found";
-    // Only renderer processes has an associated URL.
-    EXPECT_TRUE(ProcessHasTypeForSource(source->id(), ProcessType::RENDERER));
-
-    CheckExactMetricWithName(source->id(), UkmEntry::kIsVisibleName, is_visible,
-                             metric_count);
-    CheckTimeMetricWithName(
-        source->id(), UkmEntry::kTimeSinceLastNavigationName, metric_count);
-    CheckTimeMetricWithName(source->id(),
-                            UkmEntry::kTimeSinceLastVisibilityChangeName,
-                            metric_count);
+                               size_t entry_count = 1u) {
+    const auto& entries =
+        test_ukm_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+    size_t found_count = false;
+    const ukm::mojom::UkmEntry* last_entry = nullptr;
+    for (const auto* entry : entries) {
+      const ukm::UkmSource* source =
+          test_ukm_recorder_->GetSourceForSourceId(entry->source_id);
+      if (!source || source->url() != url)
+        continue;
+      if (!test_ukm_recorder_->EntryHasMetric(entry, UkmEntry::kIsVisibleName))
+        continue;
+      found_count++;
+      last_entry = entry;
+      EXPECT_TRUE(ProcessHasTypeForEntry(entry, ProcessType::RENDERER));
+      CheckTimeMetricWithName(entry, UkmEntry::kTimeSinceLastNavigationName);
+      CheckTimeMetricWithName(entry,
+                              UkmEntry::kTimeSinceLastVisibilityChangeName);
+    }
+    CheckExactMetricWithName(last_entry, UkmEntry::kIsVisibleName, is_visible);
+    EXPECT_EQ(entry_count, found_count);
   }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
@@ -456,7 +430,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   run_loop.Run();
 
   CheckAllMemoryMetrics(histogram_tester, 1);
-  CheckAllUkmSources();
+  CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
 }
 
@@ -504,7 +478,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   CheckAllMemoryMetrics(histogram_tester, 1, 1, 2);
   // Extension processes do not have page_info.
-  CheckAllUkmSources();
+  CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
 }
 
@@ -549,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
 
   // No extensions should be observed
   CheckAllMemoryMetrics(histogram_tester, 1, 1, 0);
-  CheckAllUkmSources();
+  CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
 }
 
@@ -596,11 +570,15 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   run_loop.Run();
 
   CheckAllMemoryMetrics(histogram_tester, 1, 1, 1);
-  CheckAllUkmSources();
+  CheckAllUkmEntries();
   // When hosts share a process, no unique URL is identified, therefore no page
   // info.
-  EXPECT_FALSE(test_ukm_recorder_->HasEntry(
-      *test_ukm_recorder_->GetSourceForUrl(url), UkmEntry::kEntryName));
+  const auto& entries =
+      test_ukm_recorder_->GetEntriesByName(UkmEntry::kEntryName);
+  for (const auto* entry : entries) {
+    EXPECT_EQ(nullptr,
+              test_ukm_recorder_->GetSourceForSourceId(entry->source_id));
+  }
 }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
 
@@ -660,7 +638,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
                   MemoryDumpType::EXPLICITLY_TRIGGERED))));
 
   CheckAllMemoryMetrics(histogram_tester, 1);
-  CheckAllUkmSources();
+  CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url, true);
 }
 
@@ -692,7 +670,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest, MAYBE_FetchThreeTimes) {
   run_loop.Run();
 
   CheckAllMemoryMetrics(histogram_tester, count);
-  CheckAllUkmSources(count);
+  CheckAllUkmEntries(count);
   CheckPageInfoUkmMetrics(url, true, count);
 }
 
@@ -733,9 +711,10 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
   }
 
   CheckAllMemoryMetrics(histogram_tester, 1, 2);
-  CheckAllUkmSources();
+  CheckAllUkmEntries();
   CheckPageInfoUkmMetrics(url1, true /* is_visible */);
   CheckPageInfoUkmMetrics(url2, false /* is_visible */);
+
   tab1->WasHidden();
   tab2->WasShown();
   {
@@ -747,7 +726,7 @@ IN_PROC_BROWSER_TEST_F(ProcessMemoryMetricsEmitterTest,
     run_loop.Run();
   }
   CheckAllMemoryMetrics(histogram_tester, 2, 2);
-  CheckAllUkmSources(2);
+  CheckAllUkmEntries(2);
   CheckPageInfoUkmMetrics(url1, false /* is_visible */, 2);
   CheckPageInfoUkmMetrics(url2, true /* is_visible */, 2);
 }

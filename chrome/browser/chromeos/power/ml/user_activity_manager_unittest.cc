@@ -28,6 +28,7 @@
 #include "chromeos/dbus/power_manager/power_supply_properties.pb.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "components/session_manager/session_manager_types.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "components/ukm/test_ukm_recorder.h"
 #include "components/ukm/ukm_source.h"
 #include "content/public/browser/web_contents.h"
@@ -181,10 +182,10 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
   // If |mime_type| is an empty string, the content has a default text type.
   // TODO(jiameng): there doesn't seem to be a way to set form entry (via
   // page importance signal). Check if there's some other way to set it.
-  void CreateTestWebContents(TabStripModel* const tab_strip_model,
-                             const GURL& url,
-                             bool is_active,
-                             const std::string& mime_type = "") {
+  ukm::SourceId CreateTestWebContents(TabStripModel* const tab_strip_model,
+                                      const GURL& url,
+                                      bool is_active,
+                                      const std::string& mime_type = "") {
     DCHECK(tab_strip_model);
     DCHECK(!url.is_empty());
     content::WebContents* contents =
@@ -196,12 +197,7 @@ class UserActivityManagerTest : public ChromeRenderViewHostTestHarness {
       WebContentsTester::For(contents)->SetMainFrameMimeType(mime_type);
 
     WebContentsTester::For(contents)->TestSetIsLoading(false);
-  }
-
-  ukm::SourceId GetSourceIdForUrl(const GURL& url) {
-    const ukm::UkmSource* source = ukm_recorder_.GetSourceForUrl(url);
-    DCHECK(source);
-    return source->id();
+    return ukm::GetSourceIdForWebContentsDocument(contents);
   }
 
   void CheckTabsProperties(
@@ -656,13 +652,12 @@ TEST_F(UserActivityManagerTest, BasicTabs) {
       CreateTestBrowser(true /* is_visible */, true /* is_focused */);
   BrowserList::GetInstance()->SetLastActive(browser.get());
   TabStripModel* tab_strip_model = browser->tab_strip_model();
-  CreateTestWebContents(tab_strip_model, url1_, true /* is_active */,
-                        "application/pdf");
+  const ukm::SourceId source_id1 = CreateTestWebContents(
+      tab_strip_model, url1_, true /* is_active */, "application/pdf");
   SiteEngagementService::Get(profile())->ResetBaseScoreForURL(url1_, 95);
-  const ukm::SourceId source_id1 = GetSourceIdForUrl(url1_);
 
-  CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
-  const ukm::SourceId source_id2 = GetSourceIdForUrl(url2_);
+  const ukm::SourceId source_id2 =
+      CreateTestWebContents(tab_strip_model, url2_, false /* is_active */);
 
   UpdateOpenTabsURLs();
 
@@ -709,18 +704,18 @@ TEST_F(UserActivityManagerTest, MultiBrowsersAndTabs) {
   BrowserList::GetInstance()->SetLastActive(browser1.get());
 
   TabStripModel* tab_strip_model1 = browser1->tab_strip_model();
-  CreateTestWebContents(tab_strip_model1, url1_, false /* is_active */);
-  CreateTestWebContents(tab_strip_model1, url2_, true /* is_active */);
-  const ukm::SourceId source_id1 = GetSourceIdForUrl(url1_);
-  const ukm::SourceId source_id2 = GetSourceIdForUrl(url2_);
+  const ukm::SourceId source_id1 =
+      CreateTestWebContents(tab_strip_model1, url1_, false /* is_active */);
+  const ukm::SourceId source_id2 =
+      CreateTestWebContents(tab_strip_model1, url2_, true /* is_active */);
 
   TabStripModel* tab_strip_model2 = browser2->tab_strip_model();
-  CreateTestWebContents(tab_strip_model2, url3_, true /* is_active */);
-  const ukm::SourceId source_id3 = GetSourceIdForUrl(url3_);
+  const ukm::SourceId source_id3 =
+      CreateTestWebContents(tab_strip_model2, url3_, true /* is_active */);
 
   TabStripModel* tab_strip_model3 = browser3->tab_strip_model();
-  CreateTestWebContents(tab_strip_model3, url4_, true /* is_active */);
-  const ukm::SourceId source_id4 = GetSourceIdForUrl(url4_);
+  const ukm::SourceId source_id4 =
+      CreateTestWebContents(tab_strip_model3, url4_, true /* is_active */);
 
   UpdateOpenTabsURLs();
 
