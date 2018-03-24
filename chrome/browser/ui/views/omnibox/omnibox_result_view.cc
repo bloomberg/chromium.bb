@@ -133,7 +133,8 @@ OmniboxResultView::OmniboxResultView(OmniboxPopupContentsView* model,
   keyword_icon_view_->SizeToPreferredSize();
 
   if (OmniboxFieldTrial::InTabSwitchSuggestionWithButtonTrial()) {
-    tab_switch_button_.reset(new OmniboxTabSwitchButton(this));
+    tab_switch_button_ =
+        std::make_unique<OmniboxTabSwitchButton>(this, GetTextHeight());
     tab_switch_button_->set_owned_by_client();
   }
 }
@@ -486,12 +487,13 @@ void OmniboxResultView::Layout() {
                         icon.Height());
 
   if (tab_switch_button_ && match_.type == AutocompleteMatchType::TAB_SEARCH) {
-    const int ts_button_width = tab_switch_button_->GetPreferredSize().width();
-    const int ts_button_height = height();
-    tab_switch_button_->SetSize(gfx::Size(ts_button_width, ts_button_height));
+    const gfx::Size ts_button_size = tab_switch_button_->GetPreferredSize();
+    tab_switch_button_->SetSize(ts_button_size);
 
-    end_x -= ts_button_width;
-    tab_switch_button_->SetPosition(gfx::Point(end_x, 0));
+    // It looks nice to have the same margin on top, bottom and right side.
+    const int margin = (height() - ts_button_size.height()) / 2;
+    end_x -= ts_button_size.width() + margin;
+    tab_switch_button_->SetPosition(gfx::Point(end_x, margin));
   }
 
   // NOTE: While animating the keyword match, both matches may be visible.

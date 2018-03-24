@@ -34,6 +34,10 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
   // See |bg_color_override_|.
   void SetBgColorOverride(const base::Optional<SkColor>& color);
 
+  // Override the default corner radius of the round rect used for the
+  // background and ink drop effects.
+  void set_corner_radius(float radius) { corner_radius_ = radius; }
+
   // View:
   void OnPaintBackground(gfx::Canvas* canvas) override;
 
@@ -63,6 +67,8 @@ class VIEWS_EXPORT MdTextButton : public LabelButton {
 
   // When set, this provides the background color.
   base::Optional<SkColor> bg_color_override_;
+
+  float corner_radius_;
 
   DISALLOW_COPY_AND_ASSIGN(MdTextButton);
 };

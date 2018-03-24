@@ -12,7 +12,7 @@ class OmniboxResultView;
 class OmniboxTabSwitchButton : public views::MdTextButton,
                                public views::ButtonListener {
  public:
-  explicit OmniboxTabSwitchButton(OmniboxResultView* result_view);
+  OmniboxTabSwitchButton(OmniboxResultView* result_view, int text_height);
 
   // views::View
   gfx::Size CalculatePreferredSize() const override;
@@ -24,11 +24,17 @@ class OmniboxTabSwitchButton : public views::MdTextButton,
   void StateChanged(ButtonState old_state) override;
 
  private:
+  // Encapsulates the color look-up, which uses the button state (hovered,
+  // etc.) and consults the parent result view.
   SkColor GetBackgroundColor() const;
 
-  OmniboxResultView* result_view_;
-
+  // Encapsulates changing the color of the button to display being
+  // pressed.
   void SetPressed();
+
+  static constexpr int kVerticalPadding = 2;
+  const int text_height_;
+  OmniboxResultView* result_view_;
 
   DISALLOW_COPY_AND_ASSIGN(OmniboxTabSwitchButton);
 };
