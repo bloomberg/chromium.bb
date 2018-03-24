@@ -1607,7 +1607,7 @@ test("browser_tests") {
         "../browser/chromeos/login/users/avatar/user_image_manager_browsertest.cc",
         "../browser/chromeos/login/users/avatar/user_image_manager_test_util.cc",
         "../browser/chromeos/login/users/avatar/user_image_manager_test_util.h",
-        "../browser/chromeos/login/users/wallpaper/wallpaper_manager_policy_browsertest.cc",
+        "../browser/chromeos/login/users/wallpaper_policy_browsertest.cc",
         "../browser/chromeos/login/webview_login_browsertest.cc",
         "../browser/chromeos/login/wizard_controller_browsertest.cc",
         "../browser/chromeos/net/network_portal_detector_impl_browsertest.cc",
