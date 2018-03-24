@@ -4,10 +4,13 @@
 
 #include "components/arc/video_accelerator/protected_buffer_manager.h"
 
+#include <utility>
+
 #include "base/bits.h"
 #include "base/logging.h"
 #include "base/memory/shared_memory.h"
 #include "base/sys_info.h"
+#include "components/arc/video_accelerator/protected_buffer_allocator.h"
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "ui/gfx/geometry/size.h"
@@ -21,48 +24,12 @@ namespace arc {
 namespace {
 // Size of the pixmap to be used as the dummy handle for protected buffers.
 constexpr gfx::Size kDummyBufferSize(32, 32);
+
+// Maximum number of concurrent ProtectedBufferAllocatorImpl instances.
+// Currently we have no way to know the resources of ProtectedBufferAllocator.
+// Arbitrarily chosen a reasonable constant as the limit.
+constexpr size_t kMaxConcurrentProtectedBufferAllocators = 32;
 }  // namespace
-
-ProtectedBufferHandle::ProtectedBufferHandle(
-    base::OnceClosure destruction_cb,
-    const base::SharedMemoryHandle& shm_handle)
-    : shm_handle_(shm_handle), destruction_cb_(std::move(destruction_cb)) {
-  DCHECK(shm_handle_.IsValid());
-  DCHECK(shm_handle.OwnershipPassesToIPC());
-}
-
-ProtectedBufferHandle::ProtectedBufferHandle(
-    base::OnceClosure destruction_cb,
-    const gfx::NativePixmapHandle& native_pixmap_handle)
-    : native_pixmap_handle_(native_pixmap_handle),
-      destruction_cb_(std::move(destruction_cb)) {
-  DCHECK(!native_pixmap_handle_.fds.empty());
-  for (const auto& fd : native_pixmap_handle_.fds)
-    DCHECK(fd.auto_close);
-}
-
-ProtectedBufferHandle::~ProtectedBufferHandle() {
-  if (shm_handle_.OwnershipPassesToIPC())
-    shm_handle_.Close();
-
-  for (const auto& fd : native_pixmap_handle_.fds) {
-    // Close the fd by wrapping it in a ScopedFD and letting
-    // it fall out of scope.
-    base::ScopedFD scoped_fd(fd.fd);
-  }
-
-  std::move(destruction_cb_).Run();
-}
-
-base::SharedMemoryHandle ProtectedBufferHandle::shm_handle() const {
-  base::SharedMemoryHandle handle = shm_handle_;
-  handle.SetOwnershipPassesToIPC(false);
-  return handle;
-}
-
-gfx::NativePixmapHandle ProtectedBufferHandle::native_pixmap_handle() const {
-  return native_pixmap_handle_;
-}
 
 class ProtectedBufferManager::ProtectedBuffer {
  public:
@@ -205,31 +172,129 @@ ProtectedBufferManager::ProtectedNativePixmap::Create(
   return protected_pixmap;
 }
 
-ProtectedBufferManager::ProtectedBufferManager() : weak_factory_(this) {
+// The ProtectedBufferAllocator implementation using ProtectedBufferManager.
+// The functions just delegate the corresponding functions of
+// ProtectedBufferManager.
+// This destructor executes the callback to release the references of all non
+// released protected buffers.
+class ProtectedBufferManager::ProtectedBufferAllocatorImpl
+    : public ProtectedBufferAllocator {
+ public:
+  ProtectedBufferAllocatorImpl(
+      uint64_t allocator_id,
+      scoped_refptr<ProtectedBufferManager> protected_buffer_manager,
+      base::OnceClosure release_all_protected_buffers_cb);
+  ~ProtectedBufferAllocatorImpl() override;
+  bool AllocateProtectedSharedMemory(base::ScopedFD dummy_fd,
+                                     size_t size) override;
+  bool AllocateProtectedNativePixmap(base::ScopedFD dummy_fd,
+                                     gfx::BufferFormat format,
+                                     const gfx::Size& size) override;
+  void ReleaseProtectedBuffer(base::ScopedFD dummy_fd) override;
+
+ private:
+  const uint64_t allocator_id_;
+  const scoped_refptr<ProtectedBufferManager> protected_buffer_manager_;
+  base::OnceClosure release_all_protected_buffers_cb_;
+
+  THREAD_CHECKER(thread_checker_);
+  DISALLOW_COPY_AND_ASSIGN(ProtectedBufferAllocatorImpl);
+};
+
+ProtectedBufferManager::ProtectedBufferAllocatorImpl::
+    ProtectedBufferAllocatorImpl(
+        uint64_t allocator_id,
+        scoped_refptr<ProtectedBufferManager> protected_buffer_manager,
+        base::OnceClosure release_all_protected_buffers_cb)
+    : allocator_id_(allocator_id),
+      protected_buffer_manager_(std::move(protected_buffer_manager)),
+      release_all_protected_buffers_cb_(
+          std::move(release_all_protected_buffers_cb)) {}
+
+ProtectedBufferManager::ProtectedBufferAllocatorImpl::
+    ~ProtectedBufferAllocatorImpl() {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(release_all_protected_buffers_cb_);
+  std::move(release_all_protected_buffers_cb_).Run();
+}
+
+bool ProtectedBufferManager::ProtectedBufferAllocatorImpl::
+    AllocateProtectedSharedMemory(base::ScopedFD dummy_fd, size_t size) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return protected_buffer_manager_->AllocateProtectedSharedMemory(
+      allocator_id_, std::move(dummy_fd), size);
+}
+
+bool ProtectedBufferManager::ProtectedBufferAllocatorImpl::
+    AllocateProtectedNativePixmap(base::ScopedFD dummy_fd,
+                                  gfx::BufferFormat format,
+                                  const gfx::Size& size) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  return protected_buffer_manager_->AllocateProtectedNativePixmap(
+      allocator_id_, std::move(dummy_fd), format, size);
+}
+
+void ProtectedBufferManager::ProtectedBufferAllocatorImpl::
+    ReleaseProtectedBuffer(base::ScopedFD dummy_fd) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  protected_buffer_manager_->ReleaseProtectedBuffer(allocator_id_,
+                                                    std::move(dummy_fd));
+}
+
+ProtectedBufferManager::ProtectedBufferManager() {
   VLOGF(2);
-  weak_this_ = weak_factory_.GetWeakPtr();
 }
 
 ProtectedBufferManager::~ProtectedBufferManager() {
   VLOGF(2);
 }
 
-std::unique_ptr<ProtectedBufferHandle>
-ProtectedBufferManager::AllocateProtectedSharedMemory(base::ScopedFD dummy_fd,
-                                                      size_t size) {
-  VLOGF(2) << "dummy_fd: " << dummy_fd.get() << ", size: " << size;
+bool ProtectedBufferManager::GetAllocatorId(uint64_t* const allocator_id) {
+  base::AutoLock lock(buffer_map_lock_);
+  if (allocator_to_buffers_map_.size() ==
+      kMaxConcurrentProtectedBufferAllocators) {
+    VLOGF(1) << "Failed Creating PBA due to many ProtectedBufferAllocators: "
+             << kMaxConcurrentProtectedBufferAllocators;
+    return false;
+  }
+  *allocator_id = next_protected_buffer_allocator_id_;
+  allocator_to_buffers_map_.insert({*allocator_id, {}});
+  next_protected_buffer_allocator_id_++;
+  return true;
+}
+
+// static
+std::unique_ptr<ProtectedBufferAllocator>
+ProtectedBufferManager::CreateProtectedBufferAllocator(
+    scoped_refptr<ProtectedBufferManager> protected_buffer_manager) {
+  uint64_t allocator_id = 0;
+  if (!protected_buffer_manager->GetAllocatorId(&allocator_id))
+    return nullptr;
+
+  return std::make_unique<ProtectedBufferAllocatorImpl>(
+      allocator_id, protected_buffer_manager,
+      base::BindOnce(&ProtectedBufferManager::ReleaseAllProtectedBuffers,
+                     protected_buffer_manager, allocator_id));
+}
+
+bool ProtectedBufferManager::AllocateProtectedSharedMemory(
+    uint64_t allocator_id,
+    base::ScopedFD dummy_fd,
+    size_t size) {
+  VLOGF(2) << "allocator_id:" << allocator_id
+           << ", dummy_fd: " << dummy_fd.get() << ", size: " << size;
 
   // Import the |dummy_fd| to produce a unique id for it.
   uint32_t id;
   auto pixmap = ImportDummyFd(std::move(dummy_fd), &id);
   if (!pixmap)
-    return nullptr;
+    return false;
 
   base::AutoLock lock(buffer_map_lock_);
 
   if (buffer_map_.find(id) != buffer_map_.end()) {
     VLOGF(1) << "A protected buffer for this handle already exists";
-    return nullptr;
+    return false;
   }
 
   // Allocate a protected buffer and associate it with the dummy pixmap.
@@ -238,47 +303,44 @@ ProtectedBufferManager::AllocateProtectedSharedMemory(base::ScopedFD dummy_fd,
   auto protected_shmem = ProtectedSharedMemory::Create(pixmap, size);
   if (!protected_shmem) {
     VLOGF(1) << "Failed allocating a protected shared memory buffer";
-    return nullptr;
+    return false;
   }
 
-  auto shm_handle = protected_shmem->DuplicateSharedMemoryHandle();
-  if (!shm_handle.IsValid()) {
-    VLOGF(1) << "Failed duplicating SharedMemoryHandle";
-    return nullptr;
-  }
-
-  // Store the buffer in the buffer_map_, and return a handle to it to the
-  // client. The buffer will be permanently removed from the map when the
-  // handle is destroyed.
   VLOGF(2) << "New protected shared memory buffer, handle id: " << id;
-  auto protected_buffer_handle = std::make_unique<ProtectedBufferHandle>(
-      base::BindOnce(&ProtectedBufferManager::RemoveEntry, weak_this_, id),
-      shm_handle);
 
   // This will always succeed as we find() first above.
   buffer_map_.emplace(id, std::move(protected_shmem));
 
-  return protected_buffer_handle;
+  DCHECK_EQ(allocator_to_buffers_map_.count(allocator_id), 1u);
+  if (!allocator_to_buffers_map_[allocator_id].insert(id).second) {
+    VLOGF(1) << "Failed inserting id: " << id
+             << " to allocator_to_buffers_map_, allocator_id: " << allocator_id;
+    return false;
+  }
+  return true;
 }
 
-std::unique_ptr<ProtectedBufferHandle>
-ProtectedBufferManager::AllocateProtectedNativePixmap(base::ScopedFD dummy_fd,
-                                                      gfx::BufferFormat format,
-                                                      const gfx::Size& size) {
-  VLOGF(2) << "dummy_fd: " << dummy_fd.get() << ", format: " << (int)format
+bool ProtectedBufferManager::AllocateProtectedNativePixmap(
+    uint64_t allocator_id,
+    base::ScopedFD dummy_fd,
+    gfx::BufferFormat format,
+    const gfx::Size& size) {
+  VLOGF(2) << "allocator_id: " << allocator_id
+           << ", dummy_fd: " << dummy_fd.get()
+           << ", format: " << static_cast<int>(format)
            << ", size: " << size.ToString();
 
   // Import the |dummy_fd| to produce a unique id for it.
   uint32_t id = 0;
   auto pixmap = ImportDummyFd(std::move(dummy_fd), &id);
   if (!pixmap)
-    return nullptr;
+    return false;
 
   base::AutoLock lock(buffer_map_lock_);
 
   if (buffer_map_.find(id) != buffer_map_.end()) {
     VLOGF(1) << "A protected buffer for this handle already exists";
-    return nullptr;
+    return false;
   }
 
   // Allocate a protected buffer and associate it with the dummy pixmap.
@@ -287,27 +349,57 @@ ProtectedBufferManager::AllocateProtectedNativePixmap(base::ScopedFD dummy_fd,
   auto protected_pixmap = ProtectedNativePixmap::Create(pixmap, format, size);
   if (!protected_pixmap) {
     VLOGF(1) << "Failed allocating a protected native pixmap";
-    return nullptr;
+    return false;
   }
 
-  auto native_pixmap_handle = protected_pixmap->DuplicateNativePixmapHandle();
-  if (native_pixmap_handle.planes.empty()) {
-    VLOGF(1) << "Failed duplicating NativePixmapHandle";
-    return nullptr;
-  }
-
-  // Store the buffer in the buffer_map_, and return a handle to it to the
-  // client. The buffer will be permanently removed from the map when the
-  // handle is destroyed.
   VLOGF(2) << "New protected native pixmap, handle id: " << id;
-  auto protected_buffer_handle = std::make_unique<ProtectedBufferHandle>(
-      base::BindOnce(&ProtectedBufferManager::RemoveEntry, weak_this_, id),
-      native_pixmap_handle);
-
   // This will always succeed as we find() first above.
   buffer_map_.emplace(id, std::move(protected_pixmap));
 
-  return protected_buffer_handle;
+  DCHECK_EQ(allocator_to_buffers_map_.count(allocator_id), 1u);
+  if (!allocator_to_buffers_map_[allocator_id].insert(id).second) {
+    VLOGF(1) << "Failed inserting id: " << id
+             << " to allocator_to_buffers_map_, allocator_id: " << allocator_id;
+    return false;
+  }
+  return true;
+}
+
+void ProtectedBufferManager::ReleaseProtectedBuffer(uint64_t allocator_id,
+                                                    base::ScopedFD dummy_fd) {
+  VLOGF(2) << "allocator_id: " << allocator_id
+           << ", dummy_fd: " << dummy_fd.get();
+
+  // Import the |dummy_fd| to produce a unique id for it.
+  uint32_t id = 0;
+  auto pixmap = ImportDummyFd(std::move(dummy_fd), &id);
+  if (!pixmap)
+    return;
+
+  base::AutoLock lock(buffer_map_lock_);
+  RemoveEntry(id);
+
+  auto it = allocator_to_buffers_map_.find(allocator_id);
+  if (it == allocator_to_buffers_map_.end()) {
+    VLOGF(1) << "No allocated buffer by allocator id " << allocator_id;
+    return;
+  }
+  if (it->second.erase(id) != 1) {
+    VLOGF(1) << "No buffer id " << id << " to destroy";
+    return;
+  }
+}
+
+void ProtectedBufferManager::ReleaseAllProtectedBuffers(uint64_t allocator_id) {
+  base::AutoLock lock(buffer_map_lock_);
+  auto it = allocator_to_buffers_map_.find(allocator_id);
+  if (it == allocator_to_buffers_map_.end())
+    return;
+
+  for (const uint32_t id : it->second) {
+    RemoveEntry(id);
+  }
+  allocator_to_buffers_map_.erase(allocator_id);
 }
 
 base::SharedMemoryHandle
@@ -397,12 +489,10 @@ scoped_refptr<gfx::NativePixmap> ProtectedBufferManager::ImportDummyFd(
 }
 
 void ProtectedBufferManager::RemoveEntry(uint32_t id) {
+  buffer_map_lock_.AssertAcquired();
   VLOGF(2) << "id: " << id;
-
-  base::AutoLock lock(buffer_map_lock_);
   auto num_erased = buffer_map_.erase(id);
   if (num_erased != 1)
     VLOGF(1) << "No buffer id " << id << " to destroy";
 }
-
 }  // namespace arc
