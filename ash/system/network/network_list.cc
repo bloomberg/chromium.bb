@@ -140,16 +140,6 @@ class NetworkListView::SectionHeaderRowView : public views::View,
 
   void SetSubtitle(int subtitle_id) {
     network_row_title_view_->SetSubtitle(subtitle_id);
-
-    // The left padding of the toggle is different depending on whether the
-    // subtitle is displayed.
-    const int toggle_left_padding = subtitle_id == 0
-                                        ? kToggleLeftPaddingWithoutSubtitle
-                                        : kToggleLeftPaddingWithSubtitle;
-    const gfx::Insets previous_insets = toggle_->border()->GetInsets();
-    toggle_->SetBorder(views::CreateEmptyBorder(
-        gfx::Insets(previous_insets.top(), toggle_left_padding,
-                    previous_insets.bottom(), previous_insets.right())));
   }
 
   virtual void SetToggleState(bool toggle_enabled, bool is_on) {
@@ -188,9 +178,6 @@ class NetworkListView::SectionHeaderRowView : public views::View,
   }
 
  private:
-  static const int kToggleLeftPaddingWithoutSubtitle = 18;
-  static const int kToggleLeftPaddingWithSubtitle = 8;
-
   void InitializeLayout() {
     TrayPopupUtils::ConfigureAsStickyHeader(this);
     SetLayoutManager(std::make_unique<views::FillLayout>());
@@ -233,7 +220,7 @@ namespace {
 class MobileHeaderRowView : public NetworkListView::SectionHeaderRowView,
                             public chromeos::NetworkStateHandlerObserver {
  public:
-  MobileHeaderRowView(NetworkStateHandler* network_state_handler)
+  explicit MobileHeaderRowView(NetworkStateHandler* network_state_handler)
       : SectionHeaderRowView(IDS_ASH_STATUS_TRAY_NETWORK_MOBILE),
         network_state_handler_(network_state_handler),
         weak_ptr_factory_(this) {
