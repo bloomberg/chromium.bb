@@ -194,8 +194,12 @@ void HeaderView::SetShouldPaintHeader(bool paint) {
 void HeaderView::OnImmersiveRevealStarted() {
   fullscreen_visible_fraction_ = 0;
   SetPaintToLayer();
-  // The immersive layer should always be top.
-  layer()->parent()->StackAtTop(layer());
+  // AppWindow may call this before being added to the widget.
+  // https://crbug.com/825260.
+  if (layer()->parent()) {
+    // The immersive layer should always be top.
+    layer()->parent()->StackAtTop(layer());
+  }
   parent()->Layout();
 }
 
