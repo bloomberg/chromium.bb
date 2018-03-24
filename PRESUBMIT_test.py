@@ -130,6 +130,21 @@ class UmaHistogramChangeMatchedOrNotTest(unittest.TestCase):
                                                    MockOutputApi())
     self.assertEqual(0, len(warnings))
 
+  def testMultiLine(self):
+    diff_cc = ['UMA_HISTOGRAM_BOOLEAN(', '    "Multi.Line", true)']
+    diff_cc2 = ['UMA_HISTOGRAM_BOOLEAN(', '    "Multi.Line"', '    , true)']
+    mock_input_api = MockInputApi()
+    mock_input_api.files = [
+      MockFile('some/path/foo.cc', diff_cc),
+      MockFile('some/path/foo2.cc', diff_cc2),
+    ]
+    warnings = PRESUBMIT._CheckUmaHistogramChanges(mock_input_api,
+                                                   MockOutputApi())
+    self.assertEqual(1, len(warnings))
+    self.assertEqual('warning', warnings[0].type)
+    self.assertTrue('foo.cc' in warnings[0].items[0])
+    self.assertTrue('foo2.cc' in warnings[0].items[1])
+
 class BadExtensionsTest(unittest.TestCase):
   def testBadRejFile(self):
     mock_input_api = MockInputApi()
