@@ -2,24 +2,20 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// TODO(crbug.com/776464): Move this file elsewhere and delete this directory.
-// Also remove the ash dependencies.
-
 #include <stdint.h>
 
 #include <memory>
 #include <string>
 #include <vector>
 
-#include "ash/shell.h"
-#include "ash/wallpaper/wallpaper_controller.h"
-#include "ash/wallpaper/wallpaper_controller_observer.h"
+#include "ash/public/interfaces/wallpaper.mojom.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
 #include "base/json/json_writer.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/path_service.h"
 #include "base/run_loop.h"
@@ -35,6 +31,7 @@
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/stub_install_attributes.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/ash/wallpaper_controller_client.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
 #include "chrome/common/chrome_paths.h"
 #include "chromeos/chromeos_paths.h"
@@ -55,6 +52,7 @@
 #include "components/user_manager/user_names.h"
 #include "content/public/test/browser_test_utils.h"
 #include "crypto/rsa_private_key.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -120,21 +118,6 @@ SkColor ComputeAverageColor(const SkBitmap& bitmap) {
                         (b + pixel_number / 2) / pixel_number);
 }
 
-// Obtain wallpaper image and return its average ARGB color.
-SkColor GetAverageWallpaperColor() {
-  const gfx::ImageSkia image =
-      ash::Shell::Get()->wallpaper_controller()->GetWallpaper();
-
-  const gfx::ImageSkiaRep& representation = image.GetRepresentation(1.);
-  if (representation.is_null()) {
-    ADD_FAILURE() << "No image representation.";
-    return SkColorSetARGB(0, 0, 0, 0);
-  }
-
-  const SkBitmap& bitmap = representation.sk_bitmap();
-  return ComputeAverageColor(bitmap);
-}
-
 // Initialize system salt to calculate wallpaper file names.
 void SetSystemSalt() {
   chromeos::SystemSaltGetter::Get()->SetRawSaltForTesting(
@@ -143,14 +126,16 @@ void SetSystemSalt() {
 
 }  // namespace
 
-class WallpaperManagerPolicyTest : public LoginManagerTest,
-                                   public ash::WallpaperControllerObserver {
+class WallpaperPolicyTest : public LoginManagerTest,
+                            public ash::mojom::WallpaperObserver {
  protected:
-  WallpaperManagerPolicyTest()
+  WallpaperPolicyTest()
       : LoginManagerTest(true),
         wallpaper_change_count_(0),
         owner_key_util_(new ownership::MockOwnerKeyUtil()),
-        fake_session_manager_client_(new FakeSessionManagerClient) {
+        fake_session_manager_client_(new FakeSessionManagerClient),
+        observer_binding_(this),
+        weak_ptr_factory_(this) {
     testUsers_.push_back(AccountId::FromUserEmailGaiaId(
         LoginManagerTest::kEnterpriseUser1,
         LoginManagerTest::kEnterpriseUser1GaiaId));
@@ -220,7 +205,9 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
 
   void SetUpOnMainThread() override {
     LoginManagerTest::SetUpOnMainThread();
-    ash::Shell::Get()->wallpaper_controller()->AddObserver(this);
+    ash::mojom::WallpaperObserverAssociatedPtrInfo ptr_info;
+    observer_binding_.Bind(mojo::MakeRequest(&ptr_info));
+    WallpaperControllerClient::Get()->AddObserver(std::move(ptr_info));
 
     // Set up policy signing.
     user_policy_builders_[0] = GetUserPolicyBuilder(testUsers_[0]);
@@ -228,29 +215,46 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
   }
 
   void TearDownOnMainThread() override {
-    ash::Shell::Get()->wallpaper_controller()->RemoveObserver(this);
     LoginManagerTest::TearDownOnMainThread();
   }
 
-  // ash::WallpaperControllerObserver:
-  void OnWallpaperDataChanged() override {
+  // Obtain wallpaper image and return its average ARGB color.
+  SkColor GetAverageWallpaperColor() {
+    average_color_.reset();
+    WallpaperControllerClient::Get()->GetWallpaperImage(
+        base::BindOnce(&WallpaperPolicyTest::OnGetWallpaperImageCallback,
+                       weak_ptr_factory_.GetWeakPtr()));
+    while (!average_color_.has_value()) {
+      run_loop_.reset(new base::RunLoop);
+      run_loop_->Run();
+    }
+    return average_color_.value();
+  }
+
+  void OnGetWallpaperImageCallback(const gfx::ImageSkia& image) {
+    const gfx::ImageSkiaRep& representation = image.GetRepresentation(1.0f);
+    if (representation.is_null()) {
+      ADD_FAILURE() << "No image representation.";
+      average_color_ = SkColorSetARGB(0, 0, 0, 0);
+    }
+    average_color_ = ComputeAverageColor(representation.sk_bitmap());
+    if (run_loop_)
+      run_loop_->Quit();
+  }
+
+  // ash::mojom::WallpaperObserver:
+  void OnWallpaperChanged(uint32_t image_id) override {
     ++wallpaper_change_count_;
     if (run_loop_)
       run_loop_->Quit();
   }
 
-  // Runs the loop until wallpaper has changed at least |count| times in total.
-  void RunUntilWallpaperChangeCount(int count) {
-    while (wallpaper_change_count_ < count) {
-      run_loop_.reset(new base::RunLoop);
-      run_loop_->Run();
-    }
-  }
+  void OnWallpaperColorsChanged(
+      const std::vector<SkColor>& prominent_colors) override {}
 
-  // Runs the loop until wallpaper has changed to the specified type.
-  void RunUntilWallpaperChangeType(ash::WallpaperType type) {
-    while (ash::Shell::Get()->wallpaper_controller()->GetWallpaperType() !=
-           type) {
+  // Runs the loop until wallpaper has changed to the expected color.
+  void RunUntilWallpaperChangeToColor(const SkColor& expected_color) {
+    while (expected_color != GetAverageWallpaperColor()) {
       run_loop_.reset(new base::RunLoop);
       run_loop_->Run();
     }
@@ -314,12 +318,6 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
     fake_session_manager_client_->OnPropertyChangeComplete(true /* success */);
   }
 
-  bool ShouldSetDeviceWallpaper() {
-    return ash::Shell::Get()
-        ->wallpaper_controller()
-        ->ShouldSetDevicePolicyWallpaper();
-  }
-
   base::FilePath test_data_dir_;
   std::unique_ptr<base::RunLoop> run_loop_;
   int wallpaper_change_count_;
@@ -330,10 +328,18 @@ class WallpaperManagerPolicyTest : public LoginManagerTest,
   std::vector<AccountId> testUsers_;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(WallpaperManagerPolicyTest);
+  // The binding this instance uses to implement ash::mojom::WallpaperObserver.
+  mojo::AssociatedBinding<ash::mojom::WallpaperObserver> observer_binding_;
+
+  // The average ARGB color of the current wallpaper.
+  base::Optional<SkColor> average_color_;
+
+  base::WeakPtrFactory<WallpaperPolicyTest> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(WallpaperPolicyTest);
 };
 
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_SetResetClear) {
   RegisterUser(testUsers_[0]);
   RegisterUser(testUsers_[1]);
   StartupUtils::MarkOobeCompleted();
@@ -343,7 +349,7 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_SetResetClear) {
 // setting policy for a user that is not logged in doesn't affect the current
 // user.  Also verifies that after the policy has been cleared, the wallpaper
 // reverts to default.
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, SetResetClear) {
   SetSystemSalt();
   LoginUser(testUsers_[0]);
 
@@ -357,57 +363,46 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, SetResetClear) {
 
   // First user: Set wallpaper policy to red image and verify average color.
   InjectPolicy(0, kRedImageFileName);
-  RunUntilWallpaperChangeCount(1);
-  EXPECT_EQ(ash::Shell::Get()->wallpaper_controller()->GetWallpaperType(),
-            ash::POLICY);
-  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
+  RunUntilWallpaperChangeToColor(kRedImageColor);
 
   // First user: Set wallpaper policy to green image and verify average color.
   InjectPolicy(0, kGreenImageFileName);
-  RunUntilWallpaperChangeCount(2);
-  EXPECT_EQ(ash::Shell::Get()->wallpaper_controller()->GetWallpaperType(),
-            ash::POLICY);
-  ASSERT_EQ(kGreenImageColor, GetAverageWallpaperColor());
+  RunUntilWallpaperChangeToColor(kGreenImageColor);
 
   // First user: Clear wallpaper policy and verify that the default wallpaper is
   // set again.
   InjectPolicy(0, "");
-  RunUntilWallpaperChangeCount(3);
-  EXPECT_EQ(ash::Shell::Get()->wallpaper_controller()->GetWallpaperType(),
-            ash::DEFAULT);
-  ASSERT_EQ(original_wallpaper_color, GetAverageWallpaperColor());
+  RunUntilWallpaperChangeToColor(original_wallpaper_color);
 
   // Check wallpaper change count to ensure that setting the second user's
   // wallpaper didn't have any effect.
   ASSERT_EQ(3, wallpaper_change_count_);
 }
 
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PRE_PersistOverLogout) {
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_PRE_PersistOverLogout) {
   SetSystemSalt();
   RegisterUser(testUsers_[0]);
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_PersistOverLogout) {
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_PersistOverLogout) {
   SetSystemSalt();
   LoginUser(testUsers_[0]);
 
   // Set wallpaper policy to red image.
   InjectPolicy(0, kRedImageFileName);
 
-  // Run until wallpaper has changed.
-  RunUntilWallpaperChangeCount(1);
-  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
+  // Run until wallpaper has changed to expected color.
+  RunUntilWallpaperChangeToColor(kRedImageColor);
   StartupUtils::MarkOobeCompleted();
 }
 
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PersistOverLogout) {
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PersistOverLogout) {
   LoginUser(testUsers_[0]);
-
-  ASSERT_EQ(kRedImageColor, GetAverageWallpaperColor());
+  RunUntilWallpaperChangeToColor(kRedImageColor);
 }
 
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_DevicePolicyTest) {
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, PRE_DevicePolicyTest) {
   SetSystemSalt();
   RegisterUser(testUsers_[0]);
   StartupUtils::MarkOobeCompleted();
@@ -416,32 +411,24 @@ IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, PRE_DevicePolicyTest) {
 // Test that if device policy wallpaper and user policy wallpaper are both
 // specified, the device policy wallpaper is used in the login screen and the
 // user policy wallpaper is used inside of a user session.
-IN_PROC_BROWSER_TEST_F(WallpaperManagerPolicyTest, DevicePolicyTest) {
+IN_PROC_BROWSER_TEST_F(WallpaperPolicyTest, DevicePolicyTest) {
   SetSystemSalt();
+  const SkColor original_wallpaper_color = GetAverageWallpaperColor();
 
   // Set the device wallpaper policy. Test that the device policy controlled
   // wallpaper shows up in the login screen.
   InjectDevicePolicy(kRedImageFileName);
-  RunUntilWallpaperChangeType(ash::DEVICE);
-  EXPECT_TRUE(ShouldSetDeviceWallpaper());
-  EXPECT_EQ(kRedImageColor, GetAverageWallpaperColor());
+  RunUntilWallpaperChangeToColor(kRedImageColor);
 
   // Log in a test user. The default wallpaper should be shown to replace the
   // device policy wallpaper.
   LoginUser(testUsers_[0]);
-  RunUntilWallpaperChangeType(ash::DEFAULT);
+  RunUntilWallpaperChangeToColor(original_wallpaper_color);
 
   // Now set the user wallpaper policy. The user policy controlled wallpaper
   // should show up in the user session.
   InjectPolicy(0, kGreenImageFileName);
-  RunUntilWallpaperChangeType(ash::POLICY);
-  EXPECT_EQ(kGreenImageColor, GetAverageWallpaperColor());
-
-  // Set the device wallpaper policy inside the user session. That that the
-  // user wallpaper doesn't change.
-  InjectDevicePolicy(kBlueImageFileName);
-  EXPECT_FALSE(ShouldSetDeviceWallpaper());
-  EXPECT_EQ(kGreenImageColor, GetAverageWallpaperColor());
+  RunUntilWallpaperChangeToColor(kGreenImageColor);
 }
 
 }  // namespace chromeos
