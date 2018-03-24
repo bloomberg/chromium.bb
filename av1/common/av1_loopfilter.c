@@ -1059,12 +1059,37 @@ void av1_setup_bitmask(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
   setup_block_mask(cm, mi_row, mi_col, cm->seq_params.sb_size, plane,
                    subsampling_x, subsampling_y, lfm);
 
-  {
-    // place hoder: for potential special case handling.
-  }
-
   // check if the mask is valid
   check_loop_filter_masks(lfm);
+
+  {
+    // place hoder: for potential special case handling.
+
+    // Let 16x16 hold 32x32 (Y/U/V) and 64x64(Y only).
+    // Even tx size is greater, we only apply max length filter, which is 16.
+    for (int i = 0; i < LOOP_FILTER_MASK_NUM; ++i) {
+      if (plane == 0) {
+        for (int j = 0; j < 4; ++j) {
+          lfm->lfm_info[i].left_y[TX_16X16].bits[j] |=
+              lfm->lfm_info[i].left_y[TX_32X32].bits[j];
+          lfm->lfm_info[i].left_y[TX_16X16].bits[j] |=
+              lfm->lfm_info[i].left_y[TX_64X64].bits[j];
+          lfm->lfm_info[i].above_y[TX_16X16].bits[j] |=
+              lfm->lfm_info[i].above_y[TX_32X32].bits[j];
+          lfm->lfm_info[i].above_y[TX_16X16].bits[j] |=
+              lfm->lfm_info[i].above_y[TX_64X64].bits[j];
+        }
+      } else if (plane == 1) {
+        lfm->lfm_info[i].left_u[TX_16X16] |= lfm->lfm_info[i].left_u[TX_32X32];
+        lfm->lfm_info[i].above_u[TX_16X16] |=
+            lfm->lfm_info[i].above_u[TX_32X32];
+      } else {
+        lfm->lfm_info[i].left_v[TX_16X16] |= lfm->lfm_info[i].left_v[TX_32X32];
+        lfm->lfm_info[i].above_v[TX_16X16] |=
+            lfm->lfm_info[i].above_v[TX_32X32];
+      }
+    }
+  }
 }
 #endif  // LOOP_FILTER_BITMASK
 
