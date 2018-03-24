@@ -5,6 +5,7 @@
 package org.chromium.content.browser;
 
 import org.chromium.base.ThreadUtils;
+import org.chromium.content.browser.selection.AdditionalMenuItemProvider;
 import org.chromium.content.browser.selection.SelectionInsertionHandleObserver;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 
@@ -43,6 +44,14 @@ public class ContentClassFactory {
      */
     public SelectionInsertionHandleObserver createHandleObserver(
             SelectionPopupControllerImpl.ReadbackViewCallback callback) {
+        // Implemented by a subclass.
+        return null;
+    }
+
+    /**
+     * Creates AddtionalMenuItems object.
+     */
+    public AdditionalMenuItemProvider createAddtionalMenuItemProvider() {
         // Implemented by a subclass.
         return null;
     }
