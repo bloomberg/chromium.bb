@@ -11,7 +11,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 
 namespace base {
-class RefCountedBytes;
+class RefCountedMemory;
 class SharedMemory;
 }  // namespace base
 
@@ -20,7 +20,7 @@ namespace printing {
 std::unique_ptr<base::SharedMemory> GetShmFromMojoHandle(
     mojo::ScopedSharedBufferHandle handle);
 
-scoped_refptr<base::RefCountedBytes> GetDataFromMojoHandle(
+scoped_refptr<base::RefCountedMemory> GetDataFromMojoHandle(
     mojo::ScopedSharedBufferHandle handle);
 
 }  // namespace printing

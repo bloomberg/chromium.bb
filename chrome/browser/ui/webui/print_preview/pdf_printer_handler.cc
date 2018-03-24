@@ -111,7 +111,7 @@ std::unique_ptr<base::DictionaryValue> GetPdfCapabilities(
 }
 
 // Callback that stores a PDF file on disk.
-void PrintToPdfCallback(const scoped_refptr<base::RefCountedBytes>& data,
+void PrintToPdfCallback(const scoped_refptr<base::RefCountedMemory>& data,
                         const base::FilePath& path,
                         const base::Closure& pdf_file_saved_closure) {
   base::File file(path,
@@ -184,7 +184,7 @@ void PdfPrinterHandler::StartPrint(
     const base::string16& job_title,
     const std::string& ticket_json,
     const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const scoped_refptr<base::RefCountedMemory>& print_data,
     PrintCallback callback) {
   print_data_ = print_data;
   if (!print_to_pdf_path_.empty()) {

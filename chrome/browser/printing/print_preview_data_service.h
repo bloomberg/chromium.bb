@@ -19,7 +19,7 @@ class PrintPreviewDataStore;
 namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
-class RefCountedBytes;
+class RefCountedMemory;
 }
 
 // PrintPreviewDataService manages data stores for chrome://print requests.
@@ -34,7 +34,7 @@ class PrintPreviewDataService {
   // to NULL if the requested page is not yet available.
   void GetDataEntry(int32_t preview_ui_id,
                     int index,
-                    scoped_refptr<base::RefCountedBytes>* data) const;
+                    scoped_refptr<base::RefCountedMemory>* data) const;
 
   // Set/Update the data entry in PrintPreviewDataStore. |index| is zero-based
   // or |printing::COMPLETE_PREVIEW_DOCUMENT_INDEX| to represent complete
@@ -43,7 +43,7 @@ class PrintPreviewDataService {
   // calling this function. It will be refcounted in PrintPreviewDataStore.
   void SetDataEntry(int32_t preview_ui_id,
                     int index,
-                    scoped_refptr<base::RefCountedBytes> data);
+                    scoped_refptr<base::RefCountedMemory> data);
 
   // Remove the corresponding PrintPreviewUI entry from the map.
   void RemoveEntry(int32_t preview_ui_id);

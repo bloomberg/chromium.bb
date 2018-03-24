@@ -27,7 +27,7 @@ class PrintPreviewUI;
 
 namespace base {
 class DictionaryValue;
-class RefCountedBytes;
+class RefCountedMemory;
 }
 
 namespace content {
@@ -246,7 +246,7 @@ class PrintPreviewHandler
 
   // Send the PDF data to the cloud to print.
   void SendCloudPrintJob(const std::string& callback_id,
-                         const base::RefCountedBytes* data);
+                         const base::RefCountedMemory* data);
 
   // Closes the preview dialog.
   void ClosePreviewDialog();

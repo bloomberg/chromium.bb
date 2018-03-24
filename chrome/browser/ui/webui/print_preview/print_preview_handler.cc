@@ -720,7 +720,7 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     ReportUserActionHistogram(PRINT_WITH_CLOUD_PRINT);
   }
 
-  scoped_refptr<base::RefCountedBytes> data;
+  scoped_refptr<base::RefCountedMemory> data;
   print_preview_ui()->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX, &data);
   if (!data) {
@@ -1044,11 +1044,11 @@ void PrintPreviewHandler::SendCloudPrintEnabled() {
   }
 }
 
-void PrintPreviewHandler::SendCloudPrintJob(const std::string& callback_id,
-                                            const base::RefCountedBytes* data) {
+void PrintPreviewHandler::SendCloudPrintJob(
+    const std::string& callback_id,
+    const base::RefCountedMemory* data) {
   // BASE64 encode the job data.
-  const base::StringPiece raw_data(reinterpret_cast<const char*>(data->front()),
-                                   data->size());
+  const base::StringPiece raw_data(data->front_as<char>(), data->size());
   std::string base64_data;
   base::Base64Encode(raw_data, &base64_data);
 

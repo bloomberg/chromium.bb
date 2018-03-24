@@ -78,11 +78,11 @@ class PrintPreviewMessageHandler
   void NotifyUIPreviewPageReady(
       int page_number,
       int request_id,
-      scoped_refptr<base::RefCountedBytes> data_bytes);
+      scoped_refptr<base::RefCountedMemory> data_bytes);
   void NotifyUIPreviewDocumentReady(
       int page_count,
       int request_id,
-      scoped_refptr<base::RefCountedBytes> data_bytes);
+      scoped_refptr<base::RefCountedMemory> data_bytes);
 
   // Callbacks for pdf compositor client.
   void OnCompositePdfPageDone(int page_number,

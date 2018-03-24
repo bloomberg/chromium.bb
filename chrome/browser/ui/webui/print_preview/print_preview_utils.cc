@@ -181,7 +181,7 @@ void ConvertPrinterListForCallback(
 }
 
 void StartLocalPrint(const std::string& ticket_json,
-                     const scoped_refptr<base::RefCountedBytes>& print_data,
+                     const scoped_refptr<base::RefCountedMemory>& print_data,
                      content::WebContents* preview_web_contents,
                      PrinterHandler::PrintCallback callback) {
   std::unique_ptr<base::DictionaryValue> job_settings =

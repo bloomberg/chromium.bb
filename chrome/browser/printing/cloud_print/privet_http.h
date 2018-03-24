@@ -13,7 +13,7 @@
 #include "net/base/host_port_pair.h"
 
 namespace base {
-class RefCountedBytes;
+class RefCountedMemory;
 }
 
 namespace gfx {
@@ -156,10 +156,10 @@ class PrivetLocalPrintOperation {
 
   virtual void Start() = 0;
 
-  // Required print data. MUST be called before calling |Start()|.
-  virtual void SetData(const scoped_refptr<base::RefCountedBytes>& data) = 0;
+  // Required print data. MUST be called before calling Start().
+  virtual void SetData(const scoped_refptr<base::RefCountedMemory>& data) = 0;
 
-  // Optional attributes for /submitdoc. Call before calling |Start()|
+  // Optional attributes for /submitdoc. Call before calling Start().
   // |ticket| should be in CJT format.
   virtual void SetTicket(const std::string& ticket) = 0;
 

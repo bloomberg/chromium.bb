@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -85,7 +86,7 @@ void PrivetPrinterHandler::StartPrint(
     const base::string16& job_title,
     const std::string& ticket_json,
     const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const scoped_refptr<base::RefCountedMemory>& print_data,
     PrintCallback callback) {
   DCHECK(!print_callback_);
   print_callback_ = std::move(callback);
@@ -205,7 +206,7 @@ void PrivetPrinterHandler::OnGotCapabilities(
 
 void PrivetPrinterHandler::PrintUpdateClient(
     const base::string16& job_title,
-    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const scoped_refptr<base::RefCountedMemory>& print_data,
     const std::string& print_ticket,
     const std::string& capabilities,
     const gfx::Size& page_size,
@@ -237,7 +238,7 @@ bool PrivetPrinterHandler::UpdateClient(
 
 void PrivetPrinterHandler::StartPrint(
     const base::string16& job_title,
-    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const scoped_refptr<base::RefCountedMemory>& print_data,
     const std::string& print_ticket,
     const std::string& capabilities,
     const gfx::Size& page_size) {

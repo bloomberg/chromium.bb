@@ -5,7 +5,7 @@
 #include "chrome/browser/ui/webui/print_preview/print_preview_ui.h"
 
 #include <map>
-#include <memory>
+#include <string>
 #include <utility>
 #include <vector>
 
@@ -150,7 +150,7 @@ bool HandleRequestCallback(
     return false;
 
   // Print Preview data.
-  scoped_refptr<base::RefCountedBytes> data;
+  scoped_refptr<base::RefCountedMemory> data;
   std::vector<std::string> url_substr = base::SplitString(
       path, "/", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   int preview_ui_id = -1;
@@ -599,13 +599,13 @@ PrintPreviewUI::~PrintPreviewUI() {
 
 void PrintPreviewUI::GetPrintPreviewDataForIndex(
     int index,
-    scoped_refptr<base::RefCountedBytes>* data) const {
+    scoped_refptr<base::RefCountedMemory>* data) const {
   PrintPreviewDataService::GetInstance()->GetDataEntry(id_, index, data);
 }
 
 void PrintPreviewUI::SetPrintPreviewDataForIndex(
     int index,
-    scoped_refptr<base::RefCountedBytes> data) {
+    scoped_refptr<base::RefCountedMemory> data) {
   PrintPreviewDataService::GetInstance()->SetDataEntry(id_, index,
                                                        std::move(data));
 }
