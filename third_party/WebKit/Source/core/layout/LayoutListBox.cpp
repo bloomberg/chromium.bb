@@ -130,15 +130,15 @@ void LayoutListBox::ComputeIntrinsicLogicalWidths(
     min_logical_width = LayoutUnit();
 }
 
-void LayoutListBox::ScrollToRect(const LayoutRect& rect) {
+void LayoutListBox::ScrollToRect(const LayoutRect& absolute_rect) {
   if (HasOverflowClip()) {
     DCHECK(Layer());
     DCHECK(Layer()->GetScrollableArea());
     Layer()->GetScrollableArea()->ScrollIntoView(
-        rect, WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
-                                      ScrollAlignment::kAlignToEdgeIfNeeded,
-                                      kProgrammaticScroll, false,
-                                      kScrollBehaviorInstant));
+        absolute_rect, WebScrollIntoViewParams(
+                           ScrollAlignment::kAlignToEdgeIfNeeded,
+                           ScrollAlignment::kAlignToEdgeIfNeeded,
+                           kProgrammaticScroll, false, kScrollBehaviorInstant));
   }
 }
 

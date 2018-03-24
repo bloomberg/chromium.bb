@@ -148,6 +148,15 @@ class RootFrameViewStub : public ScrollableAreaStub {
     return ScrollOffset(ContentsSize() - ViewportSize());
   }
 
+  LayoutRect DocumentToAbsolute(const LayoutRect& rect) const {
+    if (!RuntimeEnabledFeatures::RootLayerScrollingEnabled())
+      return rect;
+
+    LayoutRect ret = rect;
+    ret.Move(LayoutSize(-GetScrollOffset()));
+    return ret;
+  }
+
  private:
   RootFrameViewStub(const IntSize& viewport_size, const IntSize& contents_size)
       : ScrollableAreaStub(viewport_size, contents_size) {}
@@ -321,7 +330,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   // scaled.
   visual_viewport->SetViewportSize(IntSize(100, 100));
   root_frame_viewport->ScrollIntoView(
-      LayoutRect(100, 250, 50, 50),
+      layout_viewport->DocumentToAbsolute(LayoutRect(100, 250, 50, 50)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kProgrammaticScroll, true,
@@ -330,7 +339,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   EXPECT_EQ(ScrollOffset(0, 50), visual_viewport->GetScrollOffset());
 
   root_frame_viewport->ScrollIntoView(
-      LayoutRect(25, 75, 50, 50),
+      layout_viewport->DocumentToAbsolute(LayoutRect(25, 75, 50, 50)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kProgrammaticScroll, true,
@@ -344,7 +353,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   root_frame_viewport->SetScrollOffset(ScrollOffset(), kProgrammaticScroll);
 
   root_frame_viewport->ScrollIntoView(
-      LayoutRect(50, 75, 50, 75),
+      layout_viewport->DocumentToAbsolute(LayoutRect(50, 75, 50, 75)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kProgrammaticScroll, true,
@@ -353,7 +362,7 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   EXPECT_EQ(ScrollOffset(50, 75), visual_viewport->GetScrollOffset());
 
   root_frame_viewport->ScrollIntoView(
-      LayoutRect(190, 290, 10, 10),
+      layout_viewport->DocumentToAbsolute(LayoutRect(190, 290, 10, 10)),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kProgrammaticScroll, true,
@@ -370,7 +379,8 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
                                        kProgrammaticScroll);
 
   root_frame_viewport->ScrollIntoView(
-      LayoutRect(root_frame_viewport->VisibleContentRect(kExcludeScrollbars)),
+      layout_viewport->DocumentToAbsolute(LayoutRect(
+          root_frame_viewport->VisibleContentRect(kExcludeScrollbars))),
       WebScrollIntoViewParams(ScrollAlignment::kAlignToEdgeIfNeeded,
                               ScrollAlignment::kAlignToEdgeIfNeeded,
                               kProgrammaticScroll, true,
@@ -379,7 +389,8 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   EXPECT_EQ(ScrollOffset(0, 10), visual_viewport->GetScrollOffset());
 
   root_frame_viewport->ScrollIntoView(
-      LayoutRect(root_frame_viewport->VisibleContentRect(kExcludeScrollbars)),
+      layout_viewport->DocumentToAbsolute(LayoutRect(
+          root_frame_viewport->VisibleContentRect(kExcludeScrollbars))),
       WebScrollIntoViewParams(ScrollAlignment::kAlignCenterAlways,
                               ScrollAlignment::kAlignCenterAlways,
                               kProgrammaticScroll, true,
@@ -388,7 +399,8 @@ TEST_F(RootFrameViewportTest, ScrollIntoView) {
   EXPECT_EQ(ScrollOffset(0, 10), visual_viewport->GetScrollOffset());
 
   root_frame_viewport->ScrollIntoView(
-      LayoutRect(root_frame_viewport->VisibleContentRect(kExcludeScrollbars)),
+      layout_viewport->DocumentToAbsolute(LayoutRect(
+          root_frame_viewport->VisibleContentRect(kExcludeScrollbars))),
       WebScrollIntoViewParams(
           ScrollAlignment::kAlignTopAlways, ScrollAlignment::kAlignTopAlways,
           kProgrammaticScroll, true, kScrollBehaviorInstant));

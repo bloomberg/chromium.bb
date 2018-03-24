@@ -94,14 +94,11 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
                                  ScrollType,
                                  ScrollBehavior = kScrollBehaviorInstant);
 
-  // Scrolls the area so that the given rect, given in the document's content
-  // coordinates, such that it's visible in the area. Returns the new location
-  // of the input rect relative once again to the document.
-  // Note, in the case of a Document container, such as FrameView, the output
-  // will always be the input rect since scrolling it can't change the location
-  // of content relative to the document, unlike an overflowing element.
-  virtual LayoutRect ScrollIntoView(const LayoutRect& rect_in_content,
-                                    const WebScrollIntoViewParams& params);
+  // Scrolls the area so that the given rect, given in absolute coordinates,
+  // such that it's visible in the area. Returns the new location of the input
+  // rect in absolute coordinates.
+  virtual LayoutRect ScrollIntoView(const LayoutRect&,
+                                    const WebScrollIntoViewParams&);
 
   static bool ScrollBehaviorFromString(const String&, ScrollBehavior&);
 

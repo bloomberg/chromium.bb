@@ -3812,6 +3812,13 @@ LayoutPoint LocalFrameView::RootFrameToAbsolute(
   return local_frame + LayoutSize(GetScrollOffset());
 }
 
+IntPoint LocalFrameView::RootFrameToAbsolute(
+    const IntPoint& point_in_root_frame) const {
+  IntPoint local_frame = ConvertFromRootFrame(point_in_root_frame);
+  // With RLS turned on, this will be a no-op.
+  return local_frame + FlooredIntSize(GetScrollOffset());
+}
+
 IntRect LocalFrameView::RootFrameToAbsolute(
     const IntRect& rect_in_root_frame) const {
   IntRect absolute_rect = ConvertFromRootFrame(rect_in_root_frame);
@@ -5021,7 +5028,7 @@ bool LocalFrameView::ShouldPlaceVerticalScrollbarOnLeft() const {
 }
 
 LayoutRect LocalFrameView::ScrollIntoView(
-    const LayoutRect& rect_in_content,
+    const LayoutRect& rect_in_absolute,
     const WebScrollIntoViewParams& params) {
   GetLayoutBox()->SetPendingOffsetToScroll(LayoutSize());
 
@@ -5029,7 +5036,7 @@ LayoutRect LocalFrameView::ScrollIntoView(
 
   ScrollOffset new_scroll_offset =
       ClampScrollOffset(ScrollAlignment::GetScrollOffsetToExpose(
-          scroll_snapport_rect, rect_in_content, params.GetScrollAlignmentX(),
+          scroll_snapport_rect, rect_in_absolute, params.GetScrollAlignmentX(),
           params.GetScrollAlignmentY(), GetScrollOffset()));
   ScrollOffset old_scroll_offset = GetScrollOffset();
 
@@ -5057,7 +5064,7 @@ LayoutRect LocalFrameView::ScrollIntoView(
   // relative to the document.
   // TODO(szager): PaintLayerScrollableArea::ScrollIntoView clips the return
   // value to the visible content rect, but this does not.
-  return rect_in_content;
+  return rect_in_absolute;
 }
 
 IntRect LocalFrameView::ScrollCornerRect() const {
