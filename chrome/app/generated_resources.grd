@@ -10865,8 +10865,11 @@ For more information, visit our <ph name="BEGIN_LINK">&lt;a target="_blank" href
     <!-- Strings that are only used when VR devices are supported -->
     <!-- TODO(ddorwin): Use consistent naming schemes for VR strings. -->
     <if expr="enable_vr">
-      <message name="IDS_PRESS_APP_TO_EXIT" desc="Text displayed in a transient bubble to tell users how to return from cinema mode (where the page displayed in a cinema like environment) or presentation mode (where the WebVR page occupies the entire screen) to normal mode.">
+      <message name="IDS_PRESS_APP_TO_EXIT" desc="Text displayed in a transient bubble to tell users how to return from presentation mode (where the WebVR page occupies the entire screen) to normal mode.">
         Press App button to exit
+      </message>
+      <message name="IDS_PRESS_APP_TO_EXIT_FULLSCREEN" desc="Text displayed in a transient bubble to tell users how to return from cinema mode (where the page displayed in a cinema like environment).">
+        Press App button to exit fullscreen
       </message>
       <message name="IDS_VR_SHELL_SITE_IS_TRACKING_LOCATION" desc="Text displayed in a transient bubble to inform the user that the page is tracking location.">
         Site is tracking your location

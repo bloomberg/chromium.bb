@@ -2853,19 +2853,18 @@ void UiSceneCreator::CreateFullscreenToast() {
                                       kToastTimeoutSeconds, false);
   parent->set_contributes_to_parent_bounds(false);
   parent->set_y_anchoring(TOP);
+  parent->SetScale(kContentDistance, kContentDistance, 1.0f);
+  parent->SetTranslate(0, kIndicatorVerticalOffset, kIndicatorDistanceOffset);
   VR_BIND_VISIBILITY(parent, model->fullscreen_enabled());
-  scene_->AddUiElement(k2dBrowsingForeground, std::move(parent));
-
-  auto scaler = std::make_unique<ScaledDepthAdjuster>(kFullscreenDistance);
+  scene_->AddUiElement(k2dBrowsingContentGroup, std::move(parent));
 
   auto element = std::make_unique<Toast>();
   element->SetName(kExclusiveScreenToast);
   element->SetDrawPhase(kPhaseForeground);
-  element->SetTranslate(0, kFullScreenToastOffsetDMM, 0);
   element->set_padding(kExclusiveScreenToastXPaddingDMM,
                        kExclusiveScreenToastYPaddingDMM);
   element->set_corner_radius(kExclusiveScreenToastCornerRadiusDMM);
-  element->AddText(l10n_util::GetStringUTF16(IDS_PRESS_APP_TO_EXIT),
+  element->AddText(l10n_util::GetStringUTF16(IDS_PRESS_APP_TO_EXIT_FULLSCREEN),
                    kExclusiveScreenToastTextFontHeightDMM,
                    TextLayoutMode::kSingleLineFixedHeight);
 
@@ -2876,8 +2875,8 @@ void UiSceneCreator::CreateFullscreenToast() {
                 &ColorScheme::exclusive_screen_toast_foreground,
                 &Toast::SetForegroundColor);
 
-  scaler->AddChild(std::move(element));
-  scene_->AddUiElement(kExclusiveScreenToastTransientParent, std::move(scaler));
+  scene_->AddUiElement(kExclusiveScreenToastTransientParent,
+                       std::move(element));
 }
 
 }  // namespace vr
