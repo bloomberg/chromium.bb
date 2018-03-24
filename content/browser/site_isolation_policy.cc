@@ -26,19 +26,29 @@ namespace content {
 
 // static
 bool SiteIsolationPolicy::UseDedicatedProcessesForAllSites() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kSitePerProcess) ||
-         (base::FeatureList::IsEnabled(features::kSitePerProcess) &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableSiteIsolationTrials));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return true;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSiteIsolationTrials)) {
+    return false;
+  }
+
+  // The feature needs to be checked last, because checking the feature
+  // activates the field trial and assigns the client either to a control or an
+  // experiment group.
+  return base::FeatureList::IsEnabled(features::kSitePerProcess);
 }
 
 // static
 SiteIsolationPolicy::CrossSiteDocumentBlockingEnabledState
 SiteIsolationPolicy::IsCrossSiteDocumentBlockingEnabled() {
   if (base::FeatureList::IsEnabled(
-          ::features::kCrossSiteDocumentBlockingAlways))
+          ::features::kCrossSiteDocumentBlockingAlways)) {
     return XSDB_ENABLED_UNCONDITIONALLY;
+  }
 
   if (base::FeatureList::IsEnabled(
           ::features::kCrossSiteDocumentBlockingIfIsolating)) {
@@ -54,16 +64,33 @@ bool SiteIsolationPolicy::IsTopDocumentIsolationEnabled() {
   if (UseDedicatedProcessesForAllSites())
     return false;
 
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSiteIsolationTrials)) {
+    return false;
+  }
+
+  // The feature needs to be checked last, because checking the feature
+  // activates the field trial and assigns the client either to a control or an
+  // experiment group.
   return base::FeatureList::IsEnabled(::features::kTopDocumentIsolation);
 }
 
 // static
 bool SiteIsolationPolicy::AreIsolatedOriginsEnabled() {
-  return base::CommandLine::ForCurrentProcess()->HasSwitch(
-             switches::kIsolateOrigins) ||
-         (base::FeatureList::IsEnabled(features::kIsolateOrigins) &&
-          !base::CommandLine::ForCurrentProcess()->HasSwitch(
-              switches::kDisableSiteIsolationTrials));
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kIsolateOrigins)) {
+    return true;
+  }
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableSiteIsolationTrials)) {
+    return false;
+  }
+
+  // The feature needs to be checked last, because checking the feature
+  // activates the field trial and assigns the client either to a control or an
+  // experiment group.
+  return base::FeatureList::IsEnabled(features::kIsolateOrigins);
 }
 
 // static
@@ -80,15 +107,20 @@ SiteIsolationPolicy::GetIsolatedOriginsFromEnvironment() {
     return cmdline_origins;
   }
 
-  if (base::FeatureList::IsEnabled(features::kIsolateOrigins) &&
-      !base::CommandLine::ForCurrentProcess()->HasSwitch(
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kDisableSiteIsolationTrials)) {
+    return std::vector<url::Origin>();
+  }
+
+  // The feature needs to be checked last, because checking the feature
+  // activates the field trial and assigns the client either to a control or an
+  // experiment group.
+  if (base::FeatureList::IsEnabled(features::kIsolateOrigins)) {
     std::string field_trial_arg = base::GetFieldTrialParamValueByFeature(
         features::kIsolateOrigins,
         features::kIsolateOriginsFieldTrialParamName);
     return ParseIsolatedOrigins(field_trial_arg);
   }
-
   return std::vector<url::Origin>();
 }
 
