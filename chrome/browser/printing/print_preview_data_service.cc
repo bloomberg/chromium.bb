@@ -4,6 +4,8 @@
 
 #include "chrome/browser/printing/print_preview_data_service.h"
 
+#include <utility>
+
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted_memory.h"
@@ -34,7 +36,7 @@ class PrintPreviewDataStore {
   // Get the preview page for the specified |index|.
   void GetPreviewDataForIndex(
       int index,
-      scoped_refptr<base::RefCountedBytes>* data) const {
+      scoped_refptr<base::RefCountedMemory>* data) const {
     if (IsInvalidIndex(index))
       return;
 
@@ -45,7 +47,7 @@ class PrintPreviewDataStore {
 
   // Set/Update the preview data entry for the specified |index|.
   void SetPreviewDataForIndex(int index,
-                              scoped_refptr<base::RefCountedBytes> data) {
+                              scoped_refptr<base::RefCountedMemory> data) {
     if (IsInvalidIndex(index))
       return;
 
@@ -68,7 +70,7 @@ class PrintPreviewDataStore {
   // document.
   // Value: Preview data.
   using PreviewPageDataMap =
-      std::map<int, scoped_refptr<base::RefCountedBytes>>;
+      std::map<int, scoped_refptr<base::RefCountedMemory>>;
 
   static bool IsInvalidIndex(int index) {
     return (index != printing::COMPLETE_PREVIEW_DOCUMENT_INDEX &&
@@ -94,7 +96,7 @@ PrintPreviewDataService::~PrintPreviewDataService() {
 void PrintPreviewDataService::GetDataEntry(
     int32_t preview_ui_id,
     int index,
-    scoped_refptr<base::RefCountedBytes>* data_bytes) const {
+    scoped_refptr<base::RefCountedMemory>* data_bytes) const {
   *data_bytes = nullptr;
   PreviewDataStoreMap::const_iterator it = data_store_map_.find(preview_ui_id);
   if (it != data_store_map_.end())
@@ -104,7 +106,7 @@ void PrintPreviewDataService::GetDataEntry(
 void PrintPreviewDataService::SetDataEntry(
     int32_t preview_ui_id,
     int index,
-    scoped_refptr<base::RefCountedBytes> data_bytes) {
+    scoped_refptr<base::RefCountedMemory> data_bytes) {
   if (!base::ContainsKey(data_store_map_, preview_ui_id))
     data_store_map_[preview_ui_id] = std::make_unique<PrintPreviewDataStore>();
   data_store_map_[preview_ui_id]->SetPreviewDataForIndex(index,

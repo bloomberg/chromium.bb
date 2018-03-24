@@ -16,7 +16,7 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
-class RefCountedBytes;
+class RefCountedMemory;
 class Value;
 }
 
@@ -127,7 +127,7 @@ class PrinterHandler {
       const base::string16& job_title,
       const std::string& ticket_json,
       const gfx::Size& page_size,
-      const scoped_refptr<base::RefCountedBytes>& print_data,
+      const scoped_refptr<base::RefCountedMemory>& print_data,
       PrintCallback callback) = 0;
 };
 

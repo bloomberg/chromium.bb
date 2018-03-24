@@ -4,6 +4,8 @@
 
 #include "components/printing/service/public/cpp/pdf_service_mojo_utils.h"
 
+#include <utility>
+
 #include "base/memory/ref_counted_memory.h"
 #include "base/memory/shared_memory.h"
 #include "mojo/public/cpp/system/platform_handle.h"
@@ -20,8 +22,8 @@ std::unique_ptr<base::SharedMemory> GetShmFromMojoHandle(
       std::move(handle), &memory_handle, &memory_size, &protection);
   if (result != MOJO_RESULT_OK)
     return nullptr;
-  DCHECK_GT(memory_size, 0u);
 
+  DCHECK_GT(memory_size, 0u);
   const bool read_only =
       protection == mojo::UnwrappedSharedMemoryHandleProtection::kReadOnly;
   std::unique_ptr<base::SharedMemory> shm =
@@ -33,7 +35,7 @@ std::unique_ptr<base::SharedMemory> GetShmFromMojoHandle(
   return shm;
 }
 
-scoped_refptr<base::RefCountedBytes> GetDataFromMojoHandle(
+scoped_refptr<base::RefCountedMemory> GetDataFromMojoHandle(
     mojo::ScopedSharedBufferHandle handle) {
   std::unique_ptr<base::SharedMemory> shm =
       GetShmFromMojoHandle(std::move(handle));

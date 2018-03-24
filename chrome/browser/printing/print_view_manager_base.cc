@@ -11,6 +11,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/memory/shared_memory.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -143,7 +144,7 @@ bool PrintViewManagerBase::PrintNow(content::RenderFrameHost* rfh) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintViewManagerBase::PrintForPrintPreview(
     std::unique_ptr<base::DictionaryValue> job_settings,
-    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const scoped_refptr<base::RefCountedMemory>& print_data,
     content::RenderFrameHost* rfh,
     PrinterHandler::PrintCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -164,7 +165,7 @@ void PrintViewManagerBase::PrintForPrintPreview(
 
 void PrintViewManagerBase::PrintDocument(
     PrintedDocument* document,
-    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const scoped_refptr<base::RefCountedMemory>& print_data,
     const gfx::Size& page_size,
     const gfx::Rect& content_area,
     const gfx::Point& offsets) {
@@ -210,7 +211,7 @@ void PrintViewManagerBase::PrintDocument(
 
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
 void PrintViewManagerBase::OnPrintSettingsDone(
-    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const scoped_refptr<base::RefCountedMemory>& print_data,
     int page_count,
     PrinterHandler::PrintCallback callback,
     scoped_refptr<printing::PrinterQuery> printer_query) {
@@ -249,7 +250,7 @@ void PrintViewManagerBase::OnPrintSettingsDone(
 }
 
 void PrintViewManagerBase::StartLocalPrintJob(
-    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const scoped_refptr<base::RefCountedMemory>& print_data,
     int page_count,
     scoped_refptr<printing::PrinterQuery> printer_query,
     PrinterHandler::PrintCallback callback) {
@@ -587,7 +588,7 @@ bool PrintViewManagerBase::CreateNewPrintJob(PrintJobWorkerOwner* job) {
   if (!job)
     return false;
 
-  print_job_ = new PrintJob();
+  print_job_ = base::MakeRefCounted<PrintJob>();
   print_job_->Initialize(job, RenderSourceName(), number_pages_);
   registrar_.Add(this, chrome::NOTIFICATION_PRINT_JOB_EVENT,
                  content::Source<PrintJob>(print_job_.get()));

@@ -8,7 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 #include "build/build_config.h"
@@ -24,7 +24,7 @@
 struct PrintHostMsg_DidPrintDocument_Params;
 
 namespace base {
-class RefCountedBytes;
+class RefCountedMemory;
 }
 
 namespace content {
@@ -60,7 +60,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // frame host for the preview initiator contents respectively.
   void PrintForPrintPreview(
       std::unique_ptr<base::DictionaryValue> job_settings,
-      const scoped_refptr<base::RefCountedBytes>& print_data,
+      const scoped_refptr<base::RefCountedMemory>& print_data,
       content::RenderFrameHost* rfh,
       PrinterHandler::PrintCallback callback);
 #endif
@@ -117,13 +117,13 @@ class PrintViewManagerBase : public content::NotificationObserver,
 // Helpers for PrintForPrintPreview();
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
   void OnPrintSettingsDone(
-      const scoped_refptr<base::RefCountedBytes>& print_data,
+      const scoped_refptr<base::RefCountedMemory>& print_data,
       int page_count,
       PrinterHandler::PrintCallback callback,
       scoped_refptr<printing::PrinterQuery> printer_query);
 
   void StartLocalPrintJob(
-      const scoped_refptr<base::RefCountedBytes>& print_data,
+      const scoped_refptr<base::RefCountedMemory>& print_data,
       int page_count,
       scoped_refptr<printing::PrinterQuery> printer_query,
       PrinterHandler::PrintCallback callback);
@@ -144,7 +144,7 @@ class PrintViewManagerBase : public content::NotificationObserver,
   // Starts printing |document| with the given |print_data|. This method assumes
   // |print_data| contains valid data.
   void PrintDocument(PrintedDocument* document,
-                     const scoped_refptr<base::RefCountedBytes>& print_data,
+                     const scoped_refptr<base::RefCountedMemory>& print_data,
                      const gfx::Size& page_size,
                      const gfx::Rect& content_area,
                      const gfx::Point& offsets);

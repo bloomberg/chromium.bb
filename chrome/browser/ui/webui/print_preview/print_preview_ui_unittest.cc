@@ -85,13 +85,13 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
-  ASSERT_TRUE(preview_ui != NULL);
+  ASSERT_TRUE(preview_ui);
 
-  scoped_refptr<base::RefCountedBytes> data;
+  scoped_refptr<base::RefCountedMemory> data;
   preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
       &data);
-  EXPECT_EQ(NULL, data.get());
+  EXPECT_FALSE(data);
 
   scoped_refptr<base::RefCountedBytes> dummy_data = CreateTestData();
 
@@ -115,7 +115,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewData) {
   preview_ui->GetPrintPreviewDataForIndex(
       printing::COMPLETE_PREVIEW_DOCUMENT_INDEX,
       &data);
-  EXPECT_EQ(NULL, data.get());
+  EXPECT_FALSE(data);
 }
 
 // Set and get the individual draft pages.
@@ -138,11 +138,11 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
-  ASSERT_TRUE(preview_ui != NULL);
+  ASSERT_TRUE(preview_ui);
 
-  scoped_refptr<base::RefCountedBytes> data;
+  scoped_refptr<base::RefCountedMemory> data;
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX, &data);
-  EXPECT_EQ(NULL, data.get());
+  EXPECT_FALSE(data);
 
   scoped_refptr<base::RefCountedBytes> dummy_data = CreateTestData();
 
@@ -163,7 +163,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
   // Get the second page data.
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX + 1,
                                           &data);
-  EXPECT_EQ(NULL, data.get());
+  EXPECT_FALSE(data);
 
   preview_ui->SetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX + 1,
                                           dummy_data.get());
@@ -175,7 +175,7 @@ TEST_F(PrintPreviewUIUnitTest, PrintPreviewDraftPages) {
   // Clear the preview data.
   preview_ui->ClearAllPreviewData();
   preview_ui->GetPrintPreviewDataForIndex(printing::FIRST_PAGE_INDEX, &data);
-  EXPECT_EQ(NULL, data.get());
+  EXPECT_FALSE(data);
 }
 
 // Test the browser-side print preview cancellation functionality.
@@ -198,7 +198,7 @@ TEST_F(PrintPreviewUIUnitTest, GetCurrentPrintPreviewStatus) {
 
   PrintPreviewUI* preview_ui = static_cast<PrintPreviewUI*>(
       preview_dialog->GetWebUI()->GetController());
-  ASSERT_TRUE(preview_ui != NULL);
+  ASSERT_TRUE(preview_ui);
 
   // Test with invalid |preview_ui_addr|.
   bool cancel = false;

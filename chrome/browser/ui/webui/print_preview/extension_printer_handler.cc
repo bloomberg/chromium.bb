@@ -185,7 +185,7 @@ void ExtensionPrinterHandler::StartPrint(
     const base::string16& job_title,
     const std::string& ticket_json,
     const gfx::Size& page_size,
-    const scoped_refptr<base::RefCountedBytes>& print_data,
+    const scoped_refptr<base::RefCountedMemory>& print_data,
     PrintCallback callback) {
   auto print_job = std::make_unique<extensions::PrinterProviderPrintJob>();
   print_job->printer_id = destination_id;

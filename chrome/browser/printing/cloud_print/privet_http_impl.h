@@ -154,7 +154,7 @@ class PrivetLocalPrintOperationImpl
 
   // PrivetLocalPrintOperation:
   void Start() override;
-  void SetData(const scoped_refptr<base::RefCountedBytes>& data) override;
+  void SetData(const scoped_refptr<base::RefCountedMemory>& data) override;
   void SetTicket(const std::string& ticket) override;
   void SetCapabilities(const std::string& capabilities) override;
   void SetUsername(const std::string& user) override;
@@ -199,7 +199,7 @@ class PrivetLocalPrintOperationImpl
   cloud_devices::CloudDeviceDescription ticket_;
   cloud_devices::CloudDeviceDescription capabilities_;
 
-  scoped_refptr<base::RefCountedBytes> data_;
+  scoped_refptr<base::RefCountedMemory> data_;
   base::FilePath pwg_file_path_;
 
   bool use_pdf_ = false;

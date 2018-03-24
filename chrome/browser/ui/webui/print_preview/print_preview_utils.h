@@ -43,7 +43,7 @@ std::unique_ptr<base::DictionaryValue> ValidateCddForPrintPreview(
 // Starts a local print of |print_data| with print settings dictionary
 // |ticket_json|. Runs |callback| on failure or success.
 void StartLocalPrint(const std::string& ticket_json,
-                     const scoped_refptr<base::RefCountedBytes>& print_data,
+                     const scoped_refptr<base::RefCountedMemory>& print_data,
                      content::WebContents* preview_web_contents,
                      PrinterHandler::PrintCallback callback);
 

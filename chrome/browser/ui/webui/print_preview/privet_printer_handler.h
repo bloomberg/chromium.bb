@@ -19,7 +19,7 @@
 namespace base {
 class DictionaryValue;
 class OneShotTimer;
-class RefCountedBytes;
+class RefCountedMemory;
 }  // namespace base
 
 namespace gfx {
@@ -48,7 +48,7 @@ class PrivetPrinterHandler
                   const base::string16& job_title,
                   const std::string& ticket_json,
                   const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedBytes>& print_data,
+                  const scoped_refptr<base::RefCountedMemory>& print_data,
                   PrintCallback callback) override;
 
   // PrivetLocalPrinterLister::Delegate implementation.
@@ -76,14 +76,14 @@ class PrivetPrinterHandler
   void OnGotCapabilities(const base::DictionaryValue* capabilities);
   void PrintUpdateClient(
       const base::string16& job_title,
-      const scoped_refptr<base::RefCountedBytes>& print_data,
+      const scoped_refptr<base::RefCountedMemory>& print_data,
       const std::string& print_ticket,
       const std::string& capabilities,
       const gfx::Size& page_size,
       std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   bool UpdateClient(std::unique_ptr<cloud_print::PrivetHTTPClient> http_client);
   void StartPrint(const base::string16& job_title,
-                  const scoped_refptr<base::RefCountedBytes>& print_data,
+                  const scoped_refptr<base::RefCountedMemory>& print_data,
                   const std::string& print_ticket,
                   const std::string& capabilities,
                   const gfx::Size& page_size);

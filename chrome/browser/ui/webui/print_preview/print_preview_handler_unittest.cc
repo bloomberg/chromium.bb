@@ -4,6 +4,10 @@
 
 #include "chrome/browser/ui/webui/print_preview/print_preview_handler.h"
 
+#include <map>
+#include <utility>
+#include <vector>
+
 #include "base/base64.h"
 #include "base/containers/flat_set.h"
 #include "base/json/json_writer.h"
@@ -203,7 +207,7 @@ class TestPrinterHandler : public PrinterHandler {
                   const base::string16& job_title,
                   const std::string& ticket_json,
                   const gfx::Size& page_size,
-                  const scoped_refptr<base::RefCountedBytes>& print_data,
+                  const scoped_refptr<base::RefCountedMemory>& print_data,
                   PrintCallback callback) override {
     std::move(callback).Run(base::Value());
   }
@@ -239,8 +243,8 @@ class FakePrintPreviewUI : public PrintPreviewUI {
 
   void GetPrintPreviewDataForIndex(
       int index,
-      scoped_refptr<base::RefCountedBytes>* data) const override {
-    *data = base::MakeRefCounted<base::RefCountedBytes>(
+      scoped_refptr<base::RefCountedMemory>* data) const override {
+    *data = base::MakeRefCounted<base::RefCountedStaticMemory>(
         reinterpret_cast<const unsigned char*>(kTestData),
         sizeof(kTestData) - 1);
   }
