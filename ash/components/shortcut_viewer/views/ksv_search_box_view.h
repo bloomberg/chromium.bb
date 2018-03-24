@@ -6,6 +6,7 @@
 #define ASH_COMPONENTS_SHORTCUT_VIEWER_VIEWS_KSV_SEARCH_BOX_VIEW_H_
 
 #include "base/macros.h"
+#include "base/strings/string16.h"
 #include "ui/chromeos/search_box/search_box_view_base.h"
 
 namespace search_box {
@@ -22,10 +23,13 @@ class KSVSearchBoxView : public search_box::SearchBoxViewBase {
 
   // views::View:
   gfx::Size CalculatePreferredSize() const override;
+  void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
   void OnKeyEvent(ui::KeyEvent* event) override;
 
   // Overridden from views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
+
+  void SetAccessibleValue(const base::string16& value);
 
  private:
   // search_box::SearchBoxViewBase:
@@ -37,6 +41,9 @@ class KSVSearchBoxView : public search_box::SearchBoxViewBase {
   void UpdateSearchBoxBorder() override;
   void SetupCloseButton() override;
   void SetupBackButton() override;
+
+  // Accessibility data value. Used to pronounce the number of search results.
+  base::string16 accessible_value_;
 
   DISALLOW_COPY_AND_ASSIGN(KSVSearchBoxView);
 };
