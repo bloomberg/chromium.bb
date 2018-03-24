@@ -35,7 +35,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/ssl/ssl_info.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/test_data_directory.h"

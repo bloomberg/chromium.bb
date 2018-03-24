@@ -24,7 +24,7 @@
 #include "content/public/common/content_features.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "services/network/network_service.h"
 #include "services/network/public/cpp/features.h"
 

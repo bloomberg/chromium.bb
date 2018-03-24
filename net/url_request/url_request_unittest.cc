@@ -88,7 +88,7 @@
 #include "net/log/test_net_log.h"
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/chromium/mock_crypto_client_stream_factory.h"
 #include "net/quic/chromium/quic_server_info.h"

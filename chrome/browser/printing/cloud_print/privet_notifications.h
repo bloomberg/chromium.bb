@@ -13,7 +13,7 @@
 #include "chrome/browser/printing/cloud_print/privet_http.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/prefs/pref_member.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "ui/message_center/public/cpp/notification_delegate.h"
 
 class Profile;

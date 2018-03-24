@@ -28,7 +28,7 @@
 #include "content/public/browser/storage_partition.h"
 #include "content/public/common/service_names.mojom.h"
 #include "mojo/public/cpp/bindings/associated_interface_ptr.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "services/network/public/cpp/features.h"
 
 ProfileNetworkContextService::ProfileNetworkContextService(Profile* profile)

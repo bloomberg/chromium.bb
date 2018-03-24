@@ -7,7 +7,7 @@
 #include <memory>
 
 #include "build/build_config.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 
 #if defined(OS_WIN)
 #include "base/bind.h"

@@ -52,7 +52,7 @@
 #include "media/base/video_codecs.h"
 #include "media/media_buildflags.h"
 #include "net/http/http_util.h"
-#include "pdf/features.h"
+#include "pdf/buildflags.h"
 #include "ppapi/features/features.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"

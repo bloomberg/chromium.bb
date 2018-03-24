@@ -7,7 +7,7 @@
 #include "crypto/scoped_capi_types.h"
 #include "crypto/sha2.h"
 #include "net/cert/x509_certificate.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "third_party/boringssl/src/include/openssl/pool.h"
 
 namespace net {

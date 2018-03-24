@@ -50,7 +50,7 @@
 #include "net/log/file_net_log_observer.h"
 #include "net/log/net_log_capture_mode.h"
 #include "net/log/net_log_util.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/socket/next_proto.h"
 #include "net/ssl/channel_id_service.h"

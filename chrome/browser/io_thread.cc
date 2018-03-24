@@ -84,7 +84,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/nqe/network_quality_estimator.h"
 #include "net/nqe/network_quality_estimator_params.h"
 #include "net/proxy_resolution/pac_file_fetcher_impl.h"

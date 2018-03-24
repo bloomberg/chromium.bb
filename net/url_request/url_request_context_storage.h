@@ -11,7 +11,7 @@
 #include "base/memory/ref_counted.h"
 #include "build/buildflag.h"
 #include "net/base/net_export.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 
 namespace net {
 

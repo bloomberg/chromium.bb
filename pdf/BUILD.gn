@@ -10,8 +10,8 @@ import("//testing/test.gni")
 import("//third_party/pdfium/pdfium.gni")
 
 # Generate a buildflag header for compile-time checking of PDF support.
-buildflag_header("features") {
-  header = "features.h"
+buildflag_header("buildflags") {
+  header = "buildflags.h"
   flags = [ "ENABLE_PDF=$enable_pdf" ]
 }
 

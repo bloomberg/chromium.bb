@@ -57,7 +57,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/service_names.mojom.h"
 #include "extensions/common/constants.h"
-#include "pdf/features.h"
+#include "pdf/buildflags.h"
 #include "ppapi/features/features.h"
 #include "printing/features/features.h"
 #include "services/service_manager/embedder/switches.h"
