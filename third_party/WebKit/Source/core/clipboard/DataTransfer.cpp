@@ -133,13 +133,17 @@ class DraggedNodeImageBuilder {
     dragged_layout_object->GetDocument().Lifecycle().AdvanceTo(
         DocumentLifecycle::kPaintClean);
 
+    FloatPoint paint_offset = dragged_layout_object->LocalToAncestorPoint(
+        FloatPoint(), &layer->GetLayoutObject(), kUseTransforms);
     PropertyTreeState border_box_properties = PropertyTreeState::Root();
     if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {
       border_box_properties =
           layer->GetLayoutObject().FirstFragment().LocalBorderBoxProperties();
+      // In SPv175+ we paint in the containing transform node's space. Add the
+      // offset from the layer to this transform space.
+      paint_offset +=
+          FloatPoint(layer->GetLayoutObject().FirstFragment().PaintOffset());
     }
-    FloatPoint paint_offset = dragged_layout_object->LocalToAncestorPoint(
-        FloatPoint(), &layer->GetLayoutObject(), kUseTransforms);
     return DataTransfer::CreateDragImageForFrame(
         *local_frame_, 1.0f,
         LayoutObject::ShouldRespectImageOrientation(dragged_layout_object),
