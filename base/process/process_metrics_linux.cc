@@ -358,7 +358,6 @@ int ProcessMetrics::GetOpenFdSoftLimit() const {
 
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
-      last_system_time_(0),
 #if defined(OS_LINUX) || defined(OS_AIX)
       last_absolute_idle_wakeups_(0),
 #endif

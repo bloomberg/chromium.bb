@@ -17,7 +17,6 @@ namespace base {
 
 ProcessMetrics::ProcessMetrics(ProcessHandle process)
     : process_(process),
-      last_system_time_(0),
       last_cpu_(0) {}
 
 // static
