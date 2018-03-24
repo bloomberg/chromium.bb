@@ -24,7 +24,8 @@ VectorIconButton::VectorIconButton(
     base::RepeatingCallback<void()> click_handler,
     const gfx::VectorIcon& icon,
     AudioDelegate* audio_delegate)
-    : Button(click_handler), icon_scale_factor_(kDefaultIconScaleFactor) {
+    : Button(click_handler, audio_delegate),
+      icon_scale_factor_(kDefaultIconScaleFactor) {
   auto vector_icon = std::make_unique<VectorIcon>(512);
   vector_icon->SetType(kTypeButtonForeground);
   vector_icon->SetIcon(icon);
@@ -32,11 +33,6 @@ VectorIconButton::VectorIconButton(
   foreground_ = vector_icon.get();
 
   background()->AddChild(std::move(vector_icon));
-
-  Sounds sounds;
-  sounds.hover_enter = kSoundButtonHover;
-  sounds.button_down = kSoundBackButtonClick;
-  SetSounds(sounds, audio_delegate);
 }
 
 VectorIconButton::~VectorIconButton() = default;

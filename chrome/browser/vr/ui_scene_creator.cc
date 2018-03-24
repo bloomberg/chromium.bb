@@ -133,13 +133,6 @@ std::unique_ptr<T> Create(UiElementName name, DrawPhase phase, Args&&... args) {
   return element;
 }
 
-Sounds CreateButtonSounds() {
-  Sounds sounds;
-  sounds.hover_enter = kSoundButtonHover;
-  sounds.button_down = kSoundButtonClick;
-  return sounds;
-}
-
 typedef VectorBinding<OmniboxSuggestion, Button> SuggestionSetBinding;
 typedef typename SuggestionSetBinding::ElementBinding SuggestionBinding;
 
@@ -207,14 +200,14 @@ void OnSuggestionModelAdded(UiScene* scene,
             ui->OnUiRequestedNavigation();
           },
           base::Unretained(browser), base::Unretained(ui),
-          base::Unretained(model), base::Unretained(element_binding)));
+          base::Unretained(model), base::Unretained(element_binding)),
+      audio_delegate);
 
   background->SetType(kTypeOmniboxSuggestionBackground);
   background->set_hit_testable(true);
   background->set_bubble_events(true);
   background->set_bounds_contain_children(true);
   background->set_hover_offset(0.0);
-  background->SetSounds(CreateButtonSounds(), audio_delegate);
   VR_BIND_BUTTON_COLORS(model, background.get(),
                         &ColorScheme::suggestion_button_colors,
                         &Button::SetButtonColors);
@@ -340,7 +333,8 @@ std::unique_ptr<UiElement> CreateSnackbar(
     const gfx::VectorIcon& vector_icon,
     const base::string16& label,
     const base::string16& button_label,
-    base::RepeatingCallback<void()> callback) {
+    base::RepeatingCallback<void()> callback,
+    AudioDelegate* audio_delegate) {
   auto scaler = std::make_unique<ScaledDepthAdjuster>(kSnackbarDistance);
 
   auto snackbar_layout =
@@ -378,7 +372,8 @@ std::unique_ptr<UiElement> CreateSnackbar(
   VR_BIND_COLOR(model, text.get(), &ColorScheme::snackbar_foreground,
                 &Text::SetColor);
 
-  auto button = Create<Button>(kNone, kPhaseForeground, callback);
+  auto button =
+      Create<Button>(kNone, kPhaseForeground, callback, audio_delegate);
   button->SetType(kTypeSnackbarButton);
   VR_BIND_BUTTON_COLORS(model, button.get(),
                         &ColorScheme::snackbar_button_colors,
@@ -1958,8 +1953,8 @@ void UiSceneCreator::CreateUrlBar() {
     url_click_callback = base::BindRepeating([] {});
   }
 
-  auto origin_region =
-      Create<Button>(kUrlBarOriginRegion, kPhaseForeground, url_click_callback);
+  auto origin_region = Create<Button>(kUrlBarOriginRegion, kPhaseForeground,
+                                      url_click_callback, audio_delegate_);
   origin_region->set_hit_testable(true);
   origin_region->set_bounds_contain_children(true);
   origin_region->set_hover_offset(0);
@@ -1987,7 +1982,6 @@ void UiSceneCreator::CreateUrlBar() {
   security_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
   security_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
   security_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
-  security_button->SetSounds(CreateButtonSounds(), audio_delegate_);
   VR_BIND_VISIBILITY(security_button, model->toolbar_state.should_display_url);
   VR_BIND_BUTTON_COLORS(model_, security_button.get(),
                         &ColorScheme::url_bar_button, &Button::SetButtonColors);
@@ -2203,8 +2197,8 @@ void UiSceneCreator::CreateOverflowMenu() {
     spacer->set_resizable_by_layout(true);
     layout->AddChild(std::move(spacer));
 
-    auto background =
-        Create<Button>(std::get<0>(item), kPhaseForeground, base::DoNothing());
+    auto background = Create<Button>(std::get<0>(item), kPhaseForeground,
+                                     base::DoNothing(), audio_delegate_);
     background->set_hit_testable(true);
     background->set_bounds_contain_children(true);
     background->set_hover_offset(0);
@@ -2253,7 +2247,7 @@ void UiSceneCreator::CreateSnackbars() {
       kDownloadedSnackbar, model_, kFileDownloadDoneIcon,
       l10n_util::GetStringUTF16(IDS_VR_COMPONENT_UPDATE_READY),
       base::i18n::ToUpper(l10n_util::GetStringUTF16(IDS_VR_COMPONENT_APPLY)),
-      base::DoNothing());
+      base::DoNothing(), audio_delegate_);
   snackbar->SetVisible(false);
   snackbar->SetRotate(1, 0, 0, kSnackbarMoveInAngle);
   snackbar->SetTransitionedProperties({OPACITY, TRANSFORM});
@@ -2478,7 +2472,6 @@ void UiSceneCreator::CreateOmnibox() {
                       kOmniboxTextFieldIconButtonSizeDMM);
   mic_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
   mic_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
-  mic_button->SetSounds(CreateButtonSounds(), audio_delegate_);
 
   VR_BIND_VISIBILITY(mic_button,
                      model->speech.has_or_can_request_audio_permission &&

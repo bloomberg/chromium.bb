@@ -489,6 +489,8 @@ class UiElement : public cc::AnimationTarget {
 
   base::TimeTicks last_frame_time() const { return last_frame_time_; }
 
+  virtual const Sounds& GetSounds() const;
+
   EventHandlers event_handlers_;
 
  private:
