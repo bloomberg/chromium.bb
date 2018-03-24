@@ -1,4 +1,0 @@
-# These tests currently fail when run with enablefeatures=NetworkService
-# See https://crbug.com/819249
-
--LocalNTPUITest.FakeboxRedirectsToOmnibox

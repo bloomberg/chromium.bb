@@ -332,10 +332,6 @@ std::unique_ptr<network::mojom::URLLoaderFactory> CreateWebUIURLLoader(
     RenderFrameHost* render_frame_host,
     const std::string& scheme,
     base::flat_set<std::string> allowed_hosts) {
-  // At present we have no use-case for a need to allow all hosts if
-  // constructing via this method. If this changes remove the DCHECK below and
-  // WebUIURLLoaderFactory will not filter.
-  DCHECK(!allowed_hosts.empty());
   return std::make_unique<WebUIURLLoaderFactory>(render_frame_host, scheme,
                                                  std::move(allowed_hosts));
 }
