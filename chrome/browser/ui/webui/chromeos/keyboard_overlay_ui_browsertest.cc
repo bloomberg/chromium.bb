@@ -23,8 +23,9 @@ class TestWebUIMessageHandler : public content::WebUIMessageHandler {
   // content::WebUIMessageHandler:
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
-        "didPaint", base::Bind(&TestWebUIMessageHandler::HandleDidPaint,
-                               base::Unretained(this)));
+        "didPaint",
+        base::BindRepeating(&TestWebUIMessageHandler::HandleDidPaint,
+                            base::Unretained(this)));
   }
 
  private:

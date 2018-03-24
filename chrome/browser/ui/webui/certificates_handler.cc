@@ -345,68 +345,72 @@ CertificatesHandler::~CertificatesHandler() {}
 
 void CertificatesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "viewCertificate", base::Bind(&CertificatesHandler::HandleViewCertificate,
-                                    base::Unretained(this)));
+      "viewCertificate",
+      base::BindRepeating(&CertificatesHandler::HandleViewCertificate,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "getCaCertificateTrust",
-      base::Bind(&CertificatesHandler::HandleGetCATrust,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleGetCATrust,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "editCaCertificateTrust",
-      base::Bind(&CertificatesHandler::HandleEditCATrust,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleEditCATrust,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "cancelImportExportCertificate",
-      base::Bind(&CertificatesHandler::HandleCancelImportExportProcess,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleCancelImportExportProcess,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "exportPersonalCertificate",
-      base::Bind(&CertificatesHandler::HandleExportPersonal,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleExportPersonal,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "exportPersonalCertificatePasswordSelected",
-      base::Bind(&CertificatesHandler::HandleExportPersonalPasswordSelected,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &CertificatesHandler::HandleExportPersonalPasswordSelected,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "importPersonalCertificate",
-      base::Bind(&CertificatesHandler::HandleImportPersonal,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleImportPersonal,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "importPersonalCertificatePasswordSelected",
-      base::Bind(&CertificatesHandler::HandleImportPersonalPasswordSelected,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &CertificatesHandler::HandleImportPersonalPasswordSelected,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "importCaCertificate",
-      base::Bind(&CertificatesHandler::HandleImportCA, base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleImportCA,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "importCaCertificateTrustSelected",
-      base::Bind(&CertificatesHandler::HandleImportCATrustSelected,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleImportCATrustSelected,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "importServerCertificate",
-      base::Bind(&CertificatesHandler::HandleImportServer,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleImportServer,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "exportCertificate",
-      base::Bind(&CertificatesHandler::HandleExportCertificate,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleExportCertificate,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "deleteCertificate",
-      base::Bind(&CertificatesHandler::HandleDeleteCertificate,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleDeleteCertificate,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "refreshCertificates",
-      base::Bind(&CertificatesHandler::HandleRefreshCertificates,
-                 base::Unretained(this)));
+      base::BindRepeating(&CertificatesHandler::HandleRefreshCertificates,
+                          base::Unretained(this)));
 }
 
 void CertificatesHandler::CertificatesRefreshed() {

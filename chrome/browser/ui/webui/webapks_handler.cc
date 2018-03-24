@@ -31,8 +31,8 @@ WebApksHandler::~WebApksHandler() {}
 void WebApksHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestWebApksInfo",
-      base::Bind(&WebApksHandler::HandleRequestWebApksInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(&WebApksHandler::HandleRequestWebApksInfo,
+                          base::Unretained(this)));
 }
 
 void WebApksHandler::HandleRequestWebApksInfo(const base::ListValue* args) {

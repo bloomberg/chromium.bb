@@ -28,8 +28,9 @@ void SystemHandler::AddLoadTimeData(content::WebUIDataSource* data_source) {
 
 void SystemHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "showProxySettings", base::Bind(&SystemHandler::HandleShowProxySettings,
-                                      base::Unretained(this)));
+      "showProxySettings",
+      base::BindRepeating(&SystemHandler::HandleShowProxySettings,
+                          base::Unretained(this)));
 }
 
 void SystemHandler::HandleShowProxySettings(const base::ListValue* /*args*/) {

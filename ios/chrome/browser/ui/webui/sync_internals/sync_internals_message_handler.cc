@@ -53,33 +53,37 @@ void SyncInternalsMessageHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kRegisterForEvents,
-      base::Bind(&SyncInternalsMessageHandler::HandleRegisterForEvents,
-                 base::Unretained(this)));
+      base::BindRepeating(&SyncInternalsMessageHandler::HandleRegisterForEvents,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kRegisterForPerTypeCounters,
-      base::Bind(&SyncInternalsMessageHandler::HandleRegisterForPerTypeCounters,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SyncInternalsMessageHandler::HandleRegisterForPerTypeCounters,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kRequestUpdatedAboutInfo,
-      base::Bind(&SyncInternalsMessageHandler::HandleRequestUpdatedAboutInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SyncInternalsMessageHandler::HandleRequestUpdatedAboutInfo,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kRequestListOfTypes,
-      base::Bind(&SyncInternalsMessageHandler::HandleRequestListOfTypes,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SyncInternalsMessageHandler::HandleRequestListOfTypes,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kGetAllNodes,
-      base::Bind(&SyncInternalsMessageHandler::HandleGetAllNodes,
-                 base::Unretained(this)));
+      base::BindRepeating(&SyncInternalsMessageHandler::HandleGetAllNodes,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       syncer::sync_ui_util::kSetIncludeSpecifics,
-      base::Bind(&SyncInternalsMessageHandler::HandleSetIncludeSpecifics,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SyncInternalsMessageHandler::HandleSetIncludeSpecifics,
+          base::Unretained(this)));
 }
 
 void SyncInternalsMessageHandler::HandleRegisterForEvents(

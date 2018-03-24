@@ -265,52 +265,58 @@ CupsPrintersHandler::~CupsPrintersHandler() {}
 void CupsPrintersHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getCupsPrintersList",
-      base::Bind(&CupsPrintersHandler::HandleGetCupsPrintersList,
-                 base::Unretained(this)));
+      base::BindRepeating(&CupsPrintersHandler::HandleGetCupsPrintersList,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "updateCupsPrinter",
-      base::Bind(&CupsPrintersHandler::HandleUpdateCupsPrinter,
-                 base::Unretained(this)));
+      base::BindRepeating(&CupsPrintersHandler::HandleUpdateCupsPrinter,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "removeCupsPrinter",
-      base::Bind(&CupsPrintersHandler::HandleRemoveCupsPrinter,
-                 base::Unretained(this)));
+      base::BindRepeating(&CupsPrintersHandler::HandleRemoveCupsPrinter,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "addCupsPrinter", base::Bind(&CupsPrintersHandler::HandleAddCupsPrinter,
-                                   base::Unretained(this)));
+      "addCupsPrinter",
+      base::BindRepeating(&CupsPrintersHandler::HandleAddCupsPrinter,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getPrinterInfo", base::Bind(&CupsPrintersHandler::HandleGetPrinterInfo,
-                                   base::Unretained(this)));
+      "getPrinterInfo",
+      base::BindRepeating(&CupsPrintersHandler::HandleGetPrinterInfo,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getCupsPrinterManufacturersList",
-      base::Bind(&CupsPrintersHandler::HandleGetCupsPrinterManufacturers,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &CupsPrintersHandler::HandleGetCupsPrinterManufacturers,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getCupsPrinterModelsList",
-      base::Bind(&CupsPrintersHandler::HandleGetCupsPrinterModels,
-                 base::Unretained(this)));
+      base::BindRepeating(&CupsPrintersHandler::HandleGetCupsPrinterModels,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "selectPPDFile", base::Bind(&CupsPrintersHandler::HandleSelectPPDFile,
-                                  base::Unretained(this)));
+      "selectPPDFile",
+      base::BindRepeating(&CupsPrintersHandler::HandleSelectPPDFile,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "startDiscoveringPrinters",
-      base::Bind(&CupsPrintersHandler::HandleStartDiscovery,
-                 base::Unretained(this)));
+      base::BindRepeating(&CupsPrintersHandler::HandleStartDiscovery,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "stopDiscoveringPrinters",
-      base::Bind(&CupsPrintersHandler::HandleStopDiscovery,
-                 base::Unretained(this)));
+      base::BindRepeating(&CupsPrintersHandler::HandleStopDiscovery,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getPrinterPpdManufacturerAndModel",
-      base::Bind(&CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &CupsPrintersHandler::HandleGetPrinterPpdManufacturerAndModel,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "addDiscoveredPrinter",
-      base::Bind(&CupsPrintersHandler::HandleAddDiscoveredPrinter,
-                 base::Unretained(this)));
+      base::BindRepeating(&CupsPrintersHandler::HandleAddDiscoveredPrinter,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "cancelPrinterSetUp", base::Bind(&CupsPrintersHandler::HandleSetUpCancel,
-                                       base::Unretained(this)));
+      "cancelPrinterSetUp",
+      base::BindRepeating(&CupsPrintersHandler::HandleSetUpCancel,
+                          base::Unretained(this)));
 }
 
 void CupsPrintersHandler::OnJavascriptAllowed() {

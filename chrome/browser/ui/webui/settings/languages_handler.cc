@@ -31,12 +31,12 @@ LanguagesHandler::~LanguagesHandler() {
 void LanguagesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getProspectiveUILanguage",
-      base::Bind(&LanguagesHandler::HandleGetProspectiveUILanguage,
-                 base::Unretained(this)));
+      base::BindRepeating(&LanguagesHandler::HandleGetProspectiveUILanguage,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setProspectiveUILanguage",
-      base::Bind(&LanguagesHandler::HandleSetProspectiveUILanguage,
-                 base::Unretained(this)));
+      base::BindRepeating(&LanguagesHandler::HandleSetProspectiveUILanguage,
+                          base::Unretained(this)));
 }
 
 void LanguagesHandler::HandleGetProspectiveUILanguage(

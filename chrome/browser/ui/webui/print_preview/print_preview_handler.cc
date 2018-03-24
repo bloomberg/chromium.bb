@@ -410,58 +410,70 @@ PrintPreviewHandler::~PrintPreviewHandler() {
 }
 
 void PrintPreviewHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getPrinters",
-      base::Bind(&PrintPreviewHandler::HandleGetPrinters,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getPreview",
-      base::Bind(&PrintPreviewHandler::HandleGetPreview,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("print",
-      base::Bind(&PrintPreviewHandler::HandlePrint,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getPrinters",
+      base::BindRepeating(&PrintPreviewHandler::HandleGetPrinters,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getPreview", base::BindRepeating(&PrintPreviewHandler::HandleGetPreview,
+                                        base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "print", base::BindRepeating(&PrintPreviewHandler::HandlePrint,
+                                   base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getPrinterCapabilities",
-      base::Bind(&PrintPreviewHandler::HandleGetPrinterCapabilities,
-                 base::Unretained(this)));
+      base::BindRepeating(&PrintPreviewHandler::HandleGetPrinterCapabilities,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setupPrinter", base::Bind(&PrintPreviewHandler::HandlePrinterSetup,
-                                 base::Unretained(this)));
+      "setupPrinter",
+      base::BindRepeating(&PrintPreviewHandler::HandlePrinterSetup,
+                          base::Unretained(this)));
 #if BUILDFLAG(ENABLE_BASIC_PRINT_DIALOG)
-  web_ui()->RegisterMessageCallback("showSystemDialog",
-      base::Bind(&PrintPreviewHandler::HandleShowSystemDialog,
-                 base::Unretained(this)));
-#endif
-  web_ui()->RegisterMessageCallback("signIn",
-      base::Bind(&PrintPreviewHandler::HandleSignin,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getAccessToken",
-      base::Bind(&PrintPreviewHandler::HandleGetAccessToken,
-                 base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "managePrinters", base::Bind(&PrintPreviewHandler::HandleManagePrinters,
-                                   base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("closePrintPreviewDialog",
-      base::Bind(&PrintPreviewHandler::HandleClosePreviewDialog,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("hidePreview",
-      base::Bind(&PrintPreviewHandler::HandleHidePreview,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("cancelPendingPrintRequest",
-      base::Bind(&PrintPreviewHandler::HandleCancelPendingPrintRequest,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("saveAppState",
-      base::Bind(&PrintPreviewHandler::HandleSaveAppState,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getInitialSettings",
-      base::Bind(&PrintPreviewHandler::HandleGetInitialSettings,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("forceOpenNewTab",
-      base::Bind(&PrintPreviewHandler::HandleForceOpenNewTab,
-                 base::Unretained(this)));
+      "showSystemDialog",
+      base::BindRepeating(&PrintPreviewHandler::HandleShowSystemDialog,
+                          base::Unretained(this)));
+#endif
+  web_ui()->RegisterMessageCallback(
+      "signIn", base::BindRepeating(&PrintPreviewHandler::HandleSignin,
+                                    base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getAccessToken",
+      base::BindRepeating(&PrintPreviewHandler::HandleGetAccessToken,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "managePrinters",
+      base::BindRepeating(&PrintPreviewHandler::HandleManagePrinters,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "closePrintPreviewDialog",
+      base::BindRepeating(&PrintPreviewHandler::HandleClosePreviewDialog,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "hidePreview",
+      base::BindRepeating(&PrintPreviewHandler::HandleHidePreview,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "cancelPendingPrintRequest",
+      base::BindRepeating(&PrintPreviewHandler::HandleCancelPendingPrintRequest,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "saveAppState",
+      base::BindRepeating(&PrintPreviewHandler::HandleSaveAppState,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getInitialSettings",
+      base::BindRepeating(&PrintPreviewHandler::HandleGetInitialSettings,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "forceOpenNewTab",
+      base::BindRepeating(&PrintPreviewHandler::HandleForceOpenNewTab,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "grantExtensionPrinterAccess",
-      base::Bind(&PrintPreviewHandler::HandleGrantExtensionPrinterAccess,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &PrintPreviewHandler::HandleGrantExtensionPrinterAccess,
+          base::Unretained(this)));
 }
 
 void PrintPreviewHandler::OnJavascriptAllowed() {

@@ -18,12 +18,13 @@ MdBookmarksBrowserTest::~MdBookmarksBrowserTest() {}
 void MdBookmarksBrowserTest::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "testSetIncognito",
-      base::Bind(&MdBookmarksBrowserTest::HandleSetIncognitoAvailability,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MdBookmarksBrowserTest::HandleSetIncognitoAvailability,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "testSetCanEdit",
-      base::Bind(&MdBookmarksBrowserTest::HandleSetCanEditBookmarks,
-                 base::Unretained(this)));
+      base::BindRepeating(&MdBookmarksBrowserTest::HandleSetCanEditBookmarks,
+                          base::Unretained(this)));
 }
 
 void MdBookmarksBrowserTest::SetIncognitoAvailability(int availability) {

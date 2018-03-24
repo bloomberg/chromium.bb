@@ -52,11 +52,12 @@ class SetTimeMessageHandler : public content::WebUIMessageHandler,
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "setTimeInSeconds",
-        base::Bind(&SetTimeMessageHandler::OnSetTime, base::Unretained(this)));
+        base::BindRepeating(&SetTimeMessageHandler::OnSetTime,
+                            base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         "setTimezone",
-        base::Bind(&SetTimeMessageHandler::OnSetTimezone,
-                   base::Unretained(this)));
+        base::BindRepeating(&SetTimeMessageHandler::OnSetTimezone,
+                            base::Unretained(this)));
   }
 
  private:

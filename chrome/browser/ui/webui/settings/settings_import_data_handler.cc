@@ -60,14 +60,15 @@ void ImportDataHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       "initializeImportDialog",
-      base::Bind(&ImportDataHandler::InitializeDialog, base::Unretained(this)));
+      base::BindRepeating(&ImportDataHandler::InitializeDialog,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "importData",
-      base::Bind(&ImportDataHandler::ImportData, base::Unretained(this)));
+      "importData", base::BindRepeating(&ImportDataHandler::ImportData,
+                                        base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "importFromBookmarksFile",
-      base::Bind(&ImportDataHandler::HandleChooseBookmarksFile,
-                 base::Unretained(this)));
+      base::BindRepeating(&ImportDataHandler::HandleChooseBookmarksFile,
+                          base::Unretained(this)));
 }
 
 void ImportDataHandler::OnJavascriptDisallowed() {

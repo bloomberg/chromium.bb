@@ -84,15 +84,18 @@ class NetworkConfigMessageHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         kGetNetworkProperties,
-        base::Bind(&NetworkConfigMessageHandler::GetShillNetworkProperties,
-                   base::Unretained(this)));
+        base::BindRepeating(
+            &NetworkConfigMessageHandler::GetShillNetworkProperties,
+            base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
         kGetDeviceProperties,
-        base::Bind(&NetworkConfigMessageHandler::GetShillDeviceProperties,
-                   base::Unretained(this)));
+        base::BindRepeating(
+            &NetworkConfigMessageHandler::GetShillDeviceProperties,
+            base::Unretained(this)));
     web_ui()->RegisterMessageCallback(
-        "addNetwork", base::Bind(&NetworkConfigMessageHandler::AddNetwork,
-                                 base::Unretained(this)));
+        "addNetwork",
+        base::BindRepeating(&NetworkConfigMessageHandler::AddNetwork,
+                            base::Unretained(this)));
   }
 
  private:

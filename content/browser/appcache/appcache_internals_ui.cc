@@ -332,19 +332,20 @@ AppCacheInternalsUI::AppCacheInternalsUI(WebUI* web_ui)
     : WebUIController(web_ui), weak_ptr_factory_(this) {
   web_ui->RegisterMessageCallback(
       kRequestGetAllAppCacheInfo,
-      base::Bind(&AppCacheInternalsUI::GetAllAppCache, AsWeakPtr()));
+      base::BindRepeating(&AppCacheInternalsUI::GetAllAppCache, AsWeakPtr()));
 
   web_ui->RegisterMessageCallback(
       kRequestDeleteAppCache,
-      base::Bind(&AppCacheInternalsUI::DeleteAppCache, AsWeakPtr()));
+      base::BindRepeating(&AppCacheInternalsUI::DeleteAppCache, AsWeakPtr()));
 
   web_ui->RegisterMessageCallback(
       kRequestGetAppCacheDetails,
-      base::Bind(&AppCacheInternalsUI::GetAppCacheDetails, AsWeakPtr()));
+      base::BindRepeating(&AppCacheInternalsUI::GetAppCacheDetails,
+                          AsWeakPtr()));
 
   web_ui->RegisterMessageCallback(
       kRequestGetFileDetails,
-      base::Bind(&AppCacheInternalsUI::GetFileDetails, AsWeakPtr()));
+      base::BindRepeating(&AppCacheInternalsUI::GetFileDetails, AsWeakPtr()));
 
   WebUIDataSource* source =
       WebUIDataSource::Create(kChromeUIAppCacheInternalsHost);

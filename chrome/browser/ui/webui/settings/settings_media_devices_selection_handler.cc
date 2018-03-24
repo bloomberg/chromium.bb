@@ -46,12 +46,16 @@ void MediaDevicesSelectionHandler::OnJavascriptDisallowed() {
 }
 
 void MediaDevicesSelectionHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getDefaultCaptureDevices",
-      base::Bind(&MediaDevicesSelectionHandler::GetDefaultCaptureDevices,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setDefaultCaptureDevice",
-      base::Bind(&MediaDevicesSelectionHandler::SetDefaultCaptureDevice,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getDefaultCaptureDevices",
+      base::BindRepeating(
+          &MediaDevicesSelectionHandler::GetDefaultCaptureDevices,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setDefaultCaptureDevice",
+      base::BindRepeating(
+          &MediaDevicesSelectionHandler::SetDefaultCaptureDevice,
+          base::Unretained(this)));
 }
 
 void MediaDevicesSelectionHandler::OnUpdateAudioDevices(

@@ -125,70 +125,75 @@ SiteSettingsHandler::~SiteSettingsHandler() {
 void SiteSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "fetchUsageTotal",
-      base::Bind(&SiteSettingsHandler::HandleFetchUsageTotal,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleFetchUsageTotal,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "clearUsage",
-      base::Bind(&SiteSettingsHandler::HandleClearUsage,
-                 base::Unretained(this)));
+      "clearUsage", base::BindRepeating(&SiteSettingsHandler::HandleClearUsage,
+                                        base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "fetchUsbDevices",
-      base::Bind(&SiteSettingsHandler::HandleFetchUsbDevices,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleFetchUsbDevices,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "removeUsbDevice",
-      base::Bind(&SiteSettingsHandler::HandleRemoveUsbDevice,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleRemoveUsbDevice,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setDefaultValueForContentType",
-      base::Bind(&SiteSettingsHandler::HandleSetDefaultValueForContentType,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleSetDefaultValueForContentType,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getDefaultValueForContentType",
-      base::Bind(&SiteSettingsHandler::HandleGetDefaultValueForContentType,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleGetDefaultValueForContentType,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getExceptionList",
-      base::Bind(&SiteSettingsHandler::HandleGetExceptionList,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleGetExceptionList,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getOriginPermissions",
-      base::Bind(&SiteSettingsHandler::HandleGetOriginPermissions,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleGetOriginPermissions,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setOriginPermissions",
-      base::Bind(&SiteSettingsHandler::HandleSetOriginPermissions,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleSetOriginPermissions,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "clearFlashPref", base::Bind(&SiteSettingsHandler::HandleClearFlashPref,
-                                   base::Unretained(this)));
+      "clearFlashPref",
+      base::BindRepeating(&SiteSettingsHandler::HandleClearFlashPref,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "resetCategoryPermissionForPattern",
-      base::Bind(&SiteSettingsHandler::HandleResetCategoryPermissionForPattern,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleResetCategoryPermissionForPattern,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setCategoryPermissionForPattern",
-      base::Bind(&SiteSettingsHandler::HandleSetCategoryPermissionForPattern,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SiteSettingsHandler::HandleSetCategoryPermissionForPattern,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "isOriginValid", base::Bind(&SiteSettingsHandler::HandleIsOriginValid,
-                                  base::Unretained(this)));
+      "isOriginValid",
+      base::BindRepeating(&SiteSettingsHandler::HandleIsOriginValid,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "isPatternValid",
-      base::Bind(&SiteSettingsHandler::HandleIsPatternValid,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleIsPatternValid,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "updateIncognitoStatus",
-      base::Bind(&SiteSettingsHandler::HandleUpdateIncognitoStatus,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleUpdateIncognitoStatus,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "fetchZoomLevels",
-      base::Bind(&SiteSettingsHandler::HandleFetchZoomLevels,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleFetchZoomLevels,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "removeZoomLevel",
-      base::Bind(&SiteSettingsHandler::HandleRemoveZoomLevel,
-                 base::Unretained(this)));
+      base::BindRepeating(&SiteSettingsHandler::HandleRemoveZoomLevel,
+                          base::Unretained(this)));
 }
 
 void SiteSettingsHandler::OnJavascriptAllowed() {

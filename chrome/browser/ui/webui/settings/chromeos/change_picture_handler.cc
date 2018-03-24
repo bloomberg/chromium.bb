@@ -100,25 +100,27 @@ ChangePictureHandler::~ChangePictureHandler() {
 
 void ChangePictureHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "chooseFile", base::Bind(&ChangePictureHandler::HandleChooseFile,
-                               base::Unretained(this)));
+      "chooseFile", base::BindRepeating(&ChangePictureHandler::HandleChooseFile,
+                                        base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "photoTaken", base::Bind(&ChangePictureHandler::HandlePhotoTaken,
-                               base::Unretained(this)));
+      "photoTaken", base::BindRepeating(&ChangePictureHandler::HandlePhotoTaken,
+                                        base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "discardPhoto", base::Bind(&ChangePictureHandler::HandleDiscardPhoto,
-                                 base::Unretained(this)));
+      "discardPhoto",
+      base::BindRepeating(&ChangePictureHandler::HandleDiscardPhoto,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "onChangePicturePageInitialized",
-      base::Bind(&ChangePictureHandler::HandlePageInitialized,
-                 base::Unretained(this)));
+      base::BindRepeating(&ChangePictureHandler::HandlePageInitialized,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "selectImage", base::Bind(&ChangePictureHandler::HandleSelectImage,
-                                base::Unretained(this)));
+      "selectImage",
+      base::BindRepeating(&ChangePictureHandler::HandleSelectImage,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestSelectedImage",
-      base::Bind(&ChangePictureHandler::HandleRequestSelectedImage,
-                 base::Unretained(this)));
+      base::BindRepeating(&ChangePictureHandler::HandleRequestSelectedImage,
+                          base::Unretained(this)));
 }
 
 void ChangePictureHandler::OnJavascriptAllowed() {

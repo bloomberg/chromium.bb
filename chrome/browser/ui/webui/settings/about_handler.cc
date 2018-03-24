@@ -346,42 +346,44 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
 
 void AboutHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "aboutPageReady",
-      base::Bind(&AboutHandler::HandlePageReady, base::Unretained(this)));
+      "aboutPageReady", base::BindRepeating(&AboutHandler::HandlePageReady,
+                                            base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "refreshUpdateStatus",
-      base::Bind(&AboutHandler::HandleRefreshUpdateStatus,
-                 base::Unretained(this)));
+      base::BindRepeating(&AboutHandler::HandleRefreshUpdateStatus,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "openFeedbackDialog", base::Bind(&AboutHandler::HandleOpenFeedbackDialog,
-                                       base::Unretained(this)));
+      "openFeedbackDialog",
+      base::BindRepeating(&AboutHandler::HandleOpenFeedbackDialog,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "openHelpPage",
-      base::Bind(&AboutHandler::HandleOpenHelpPage, base::Unretained(this)));
+      "openHelpPage", base::BindRepeating(&AboutHandler::HandleOpenHelpPage,
+                                          base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
-      "setChannel",
-      base::Bind(&AboutHandler::HandleSetChannel, base::Unretained(this)));
+      "setChannel", base::BindRepeating(&AboutHandler::HandleSetChannel,
+                                        base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "requestUpdate",
-      base::Bind(&AboutHandler::HandleRequestUpdate, base::Unretained(this)));
+      "requestUpdate", base::BindRepeating(&AboutHandler::HandleRequestUpdate,
+                                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestUpdateOverCellular",
-      base::Bind(&AboutHandler::HandleRequestUpdateOverCellular,
-                 base::Unretained(this)));
+      base::BindRepeating(&AboutHandler::HandleRequestUpdateOverCellular,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getVersionInfo",
-      base::Bind(&AboutHandler::HandleGetVersionInfo, base::Unretained(this)));
+      "getVersionInfo", base::BindRepeating(&AboutHandler::HandleGetVersionInfo,
+                                            base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getRegulatoryInfo", base::Bind(&AboutHandler::HandleGetRegulatoryInfo,
-                                      base::Unretained(this)));
+      "getRegulatoryInfo",
+      base::BindRepeating(&AboutHandler::HandleGetRegulatoryInfo,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getChannelInfo", base::Bind(&AboutHandler::HandleGetChannelInfo,
-                                   base::Unretained(this)));
+      "getChannelInfo", base::BindRepeating(&AboutHandler::HandleGetChannelInfo,
+                                            base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "refreshTPMFirmwareUpdateStatus",
-      base::Bind(&AboutHandler::HandleRefreshTPMFirmwareUpdateStatus,
-                 base::Unretained(this)));
+      base::BindRepeating(&AboutHandler::HandleRefreshTPMFirmwareUpdateStatus,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getHasEndOfLife",
       base::BindRepeating(&AboutHandler::HandleGetHasEndOfLife,
@@ -389,8 +391,8 @@ void AboutHandler::RegisterMessages() {
 #endif
 #if defined(OS_MACOSX)
   web_ui()->RegisterMessageCallback(
-      "promoteUpdater",
-      base::Bind(&AboutHandler::PromoteUpdater, base::Unretained(this)));
+      "promoteUpdater", base::BindRepeating(&AboutHandler::PromoteUpdater,
+                                            base::Unretained(this)));
 #endif
 
 #if defined(OS_CHROMEOS)

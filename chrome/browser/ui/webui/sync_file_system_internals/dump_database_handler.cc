@@ -21,8 +21,8 @@ DumpDatabaseHandler::~DumpDatabaseHandler() {}
 void DumpDatabaseHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getDatabaseDump",
-      base::Bind(&DumpDatabaseHandler::GetDatabaseDump,
-                 base::Unretained(this)));
+      base::BindRepeating(&DumpDatabaseHandler::GetDatabaseDump,
+                          base::Unretained(this)));
 }
 
 void DumpDatabaseHandler::GetDatabaseDump(const base::ListValue*) {

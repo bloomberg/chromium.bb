@@ -94,18 +94,22 @@ void AppLauncherLoginHandler::RegisterMessages() {
       base::Bind(&AppLauncherLoginHandler::UpdateLogin,
                  base::Unretained(this))));
 
-  web_ui()->RegisterMessageCallback("initializeSyncLogin",
-      base::Bind(&AppLauncherLoginHandler::HandleInitializeSyncLogin,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showSyncLoginUI",
-      base::Bind(&AppLauncherLoginHandler::HandleShowSyncLoginUI,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("loginMessageSeen",
-      base::Bind(&AppLauncherLoginHandler::HandleLoginMessageSeen,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showAdvancedLoginUI",
-      base::Bind(&AppLauncherLoginHandler::HandleShowAdvancedLoginUI,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "initializeSyncLogin",
+      base::BindRepeating(&AppLauncherLoginHandler::HandleInitializeSyncLogin,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showSyncLoginUI",
+      base::BindRepeating(&AppLauncherLoginHandler::HandleShowSyncLoginUI,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "loginMessageSeen",
+      base::BindRepeating(&AppLauncherLoginHandler::HandleLoginMessageSeen,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showAdvancedLoginUI",
+      base::BindRepeating(&AppLauncherLoginHandler::HandleShowAdvancedLoginUI,
+                          base::Unretained(this)));
 }
 
 void AppLauncherLoginHandler::HandleInitializeSyncLogin(

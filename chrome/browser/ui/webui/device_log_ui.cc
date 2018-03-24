@@ -33,7 +33,8 @@ class DeviceLogMessageHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "DeviceLog.getLog",
-        base::Bind(&DeviceLogMessageHandler::GetLog, base::Unretained(this)));
+        base::BindRepeating(&DeviceLogMessageHandler::GetLog,
+                            base::Unretained(this)));
   }
 
  private:

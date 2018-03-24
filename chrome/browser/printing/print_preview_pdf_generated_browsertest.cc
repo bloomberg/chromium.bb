@@ -253,13 +253,13 @@ class PrintPreviewObserver : public WebContentsObserver {
     void RegisterMessages() override {
       web_ui()->RegisterMessageCallback(
           "UILoadedForTest",
-          base::Bind(&UIDoneLoadingMessageHandler::HandleDone,
-                     base::Unretained(this)));
+          base::BindRepeating(&UIDoneLoadingMessageHandler::HandleDone,
+                              base::Unretained(this)));
 
       web_ui()->RegisterMessageCallback(
           "UIFailedLoadingForTest",
-          base::Bind(&UIDoneLoadingMessageHandler::HandleFailure,
-                     base::Unretained(this)));
+          base::BindRepeating(&UIDoneLoadingMessageHandler::HandleFailure,
+                              base::Unretained(this)));
     }
 
    private:

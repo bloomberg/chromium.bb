@@ -58,8 +58,8 @@ class TaskSchedulerDataHandler : public content::WebUIMessageHandler {
   void RegisterMessages() override {
     web_ui()->RegisterMessageCallback(
         "getTaskSchedulerData",
-        base::Bind(&TaskSchedulerDataHandler::GetTaskSchedulerData,
-                   base::Unretained(this)));
+        base::BindRepeating(&TaskSchedulerDataHandler::GetTaskSchedulerData,
+                            base::Unretained(this)));
   }
 
  private:

@@ -89,22 +89,24 @@ PowerHandler::~PowerHandler() {}
 
 void PowerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "updatePowerStatus", base::Bind(&PowerHandler::HandleUpdatePowerStatus,
-                                      base::Unretained(this)));
+      "updatePowerStatus",
+      base::BindRepeating(&PowerHandler::HandleUpdatePowerStatus,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setPowerSource",
-      base::Bind(&PowerHandler::HandleSetPowerSource, base::Unretained(this)));
+      "setPowerSource", base::BindRepeating(&PowerHandler::HandleSetPowerSource,
+                                            base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestPowerManagementSettings",
-      base::Bind(&PowerHandler::HandleRequestPowerManagementSettings,
-                 base::Unretained(this)));
+      base::BindRepeating(&PowerHandler::HandleRequestPowerManagementSettings,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setLidClosedBehavior",
-      base::Bind(&PowerHandler::HandleSetLidClosedBehavior,
-                 base::Unretained(this)));
+      base::BindRepeating(&PowerHandler::HandleSetLidClosedBehavior,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setIdleBehavior",
-      base::Bind(&PowerHandler::HandleSetIdleBehavior, base::Unretained(this)));
+      base::BindRepeating(&PowerHandler::HandleSetIdleBehavior,
+                          base::Unretained(this)));
 }
 
 void PowerHandler::OnJavascriptAllowed() {

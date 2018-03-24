@@ -384,19 +384,20 @@ void SafeBrowsingUIHandler::NotifyThreatDetailsJsListener(
 
 void SafeBrowsingUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getExperiments", base::Bind(&SafeBrowsingUIHandler::GetExperiments,
-                                   base::Unretained(this)));
+      "getExperiments",
+      base::BindRepeating(&SafeBrowsingUIHandler::GetExperiments,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getPrefs",
-      base::Bind(&SafeBrowsingUIHandler::GetPrefs, base::Unretained(this)));
+      "getPrefs", base::BindRepeating(&SafeBrowsingUIHandler::GetPrefs,
+                                      base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getDatabaseManagerInfo",
-      base::Bind(&SafeBrowsingUIHandler::GetDatabaseManagerInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(&SafeBrowsingUIHandler::GetDatabaseManagerInfo,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getSentThreatDetails",
-      base::Bind(&SafeBrowsingUIHandler::GetSentThreatDetails,
-                 base::Unretained(this)));
+      base::BindRepeating(&SafeBrowsingUIHandler::GetSentThreatDetails,
+                          base::Unretained(this)));
 }
 
 }  // namespace safe_browsing

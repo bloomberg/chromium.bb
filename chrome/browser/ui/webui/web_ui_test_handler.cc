@@ -60,8 +60,9 @@ bool WebUITestHandler::RunJavaScriptTestWithResult(
 }
 
 void WebUITestHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("testResult",
-      base::Bind(&WebUITestHandler::HandleTestResult, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "testResult", base::BindRepeating(&WebUITestHandler::HandleTestResult,
+                                        base::Unretained(this)));
 }
 
 void WebUITestHandler::HandleTestResult(const base::ListValue* test_result) {

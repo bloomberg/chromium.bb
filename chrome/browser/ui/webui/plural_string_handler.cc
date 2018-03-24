@@ -16,8 +16,9 @@ PluralStringHandler::~PluralStringHandler() {}
 
 void PluralStringHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getPluralString", base::Bind(&PluralStringHandler::HandleGetPluralString,
-                                    base::Unretained(this)));
+      "getPluralString",
+      base::BindRepeating(&PluralStringHandler::HandleGetPluralString,
+                          base::Unretained(this)));
 }
 
 void PluralStringHandler::AddLocalizedString(const std::string& name, int id) {

@@ -185,15 +185,17 @@ class BaseWebUIHandler : public content::WebUIMessageHandler,
   void AddRawCallback(const std::string& name,
                       void (T::*method)(const base::ListValue* args)) {
     web_ui()->RegisterMessageCallback(
-        name, base::Bind(method, base::Unretained(static_cast<T*>(this))));
+        name,
+        base::BindRepeating(method, base::Unretained(static_cast<T*>(this))));
   }
 
   template <typename T, typename... Args>
   void AddCallback(const std::string& name, void (T::*method)(Args...)) {
-    base::Callback<void(Args...)> callback =
+    base::RepeatingCallback<void(Args...)> callback =
         base::Bind(method, base::Unretained(static_cast<T*>(this)));
     web_ui()->RegisterMessageCallback(
-        name, base::Bind(&::login::CallbackWrapper<Args...>, callback));
+        name,
+        base::BindRepeating(&::login::CallbackWrapper<Args...>, callback));
   }
 
   template <typename Method>

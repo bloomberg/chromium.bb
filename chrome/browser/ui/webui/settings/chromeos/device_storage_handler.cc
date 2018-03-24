@@ -84,20 +84,19 @@ void StorageHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       "updateStorageInfo",
-      base::Bind(&StorageHandler::HandleUpdateStorageInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(&StorageHandler::HandleUpdateStorageInfo,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "openDownloads",
-      base::Bind(&StorageHandler::HandleOpenDownloads,
-                 base::Unretained(this)));
+      "openDownloads", base::BindRepeating(&StorageHandler::HandleOpenDownloads,
+                                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "openArcStorage",
-      base::Bind(&StorageHandler::HandleOpenArcStorage,
-                 base::Unretained(this)));
+      base::BindRepeating(&StorageHandler::HandleOpenArcStorage,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "clearDriveCache",
-      base::Bind(&StorageHandler::HandleClearDriveCache,
-                 base::Unretained(this)));
+      base::BindRepeating(&StorageHandler::HandleClearDriveCache,
+                          base::Unretained(this)));
 }
 
 void StorageHandler::HandleUpdateStorageInfo(const base::ListValue* args) {

@@ -345,12 +345,15 @@ CertificateViewerDialogHandler::~CertificateViewerDialogHandler() {
 }
 
 void CertificateViewerDialogHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("exportCertificate",
-      base::Bind(&CertificateViewerDialogHandler::ExportCertificate,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("requestCertificateFields",
-      base::Bind(&CertificateViewerDialogHandler::RequestCertificateFields,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "exportCertificate",
+      base::BindRepeating(&CertificateViewerDialogHandler::ExportCertificate,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestCertificateFields",
+      base::BindRepeating(
+          &CertificateViewerDialogHandler::RequestCertificateFields,
+          base::Unretained(this)));
 }
 
 void CertificateViewerDialogHandler::ExportCertificate(

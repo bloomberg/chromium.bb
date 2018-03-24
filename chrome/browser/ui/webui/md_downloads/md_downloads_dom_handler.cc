@@ -89,48 +89,50 @@ MdDownloadsDOMHandler::~MdDownloadsDOMHandler() {
 // MdDownloadsDOMHandler, public: ---------------------------------------------
 
 void MdDownloadsDOMHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getDownloads",
-      base::Bind(&MdDownloadsDOMHandler::HandleGetDownloads,
-                 weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "getDownloads",
+      base::BindRepeating(&MdDownloadsDOMHandler::HandleGetDownloads,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "openFileRequiringGesture",
-      base::Bind(&MdDownloadsDOMHandler::HandleOpenFile,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("drag",
-      base::Bind(&MdDownloadsDOMHandler::HandleDrag,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&MdDownloadsDOMHandler::HandleOpenFile,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "drag", base::BindRepeating(&MdDownloadsDOMHandler::HandleDrag,
+                                  weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "saveDangerousRequiringGesture",
-      base::Bind(&MdDownloadsDOMHandler::HandleSaveDangerous,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("discardDangerous",
-      base::Bind(&MdDownloadsDOMHandler::HandleDiscardDangerous,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("show",
-      base::Bind(&MdDownloadsDOMHandler::HandleShow,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("pause",
-      base::Bind(&MdDownloadsDOMHandler::HandlePause,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("resume",
-      base::Bind(&MdDownloadsDOMHandler::HandleResume,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("remove",
-      base::Bind(&MdDownloadsDOMHandler::HandleRemove,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("undo",
-      base::Bind(&MdDownloadsDOMHandler::HandleUndo,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("cancel",
-      base::Bind(&MdDownloadsDOMHandler::HandleCancel,
-                 weak_ptr_factory_.GetWeakPtr()));
-  web_ui()->RegisterMessageCallback("clearAll",
-      base::Bind(&MdDownloadsDOMHandler::HandleClearAll,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&MdDownloadsDOMHandler::HandleSaveDangerous,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "discardDangerous",
+      base::BindRepeating(&MdDownloadsDOMHandler::HandleDiscardDangerous,
+                          weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "show", base::BindRepeating(&MdDownloadsDOMHandler::HandleShow,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "pause", base::BindRepeating(&MdDownloadsDOMHandler::HandlePause,
+                                   weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "resume", base::BindRepeating(&MdDownloadsDOMHandler::HandleResume,
+                                    weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "remove", base::BindRepeating(&MdDownloadsDOMHandler::HandleRemove,
+                                    weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "undo", base::BindRepeating(&MdDownloadsDOMHandler::HandleUndo,
+                                  weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "cancel", base::BindRepeating(&MdDownloadsDOMHandler::HandleCancel,
+                                    weak_ptr_factory_.GetWeakPtr()));
+  web_ui()->RegisterMessageCallback(
+      "clearAll", base::BindRepeating(&MdDownloadsDOMHandler::HandleClearAll,
+                                      weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "openDownloadsFolderRequiringGesture",
-      base::Bind(&MdDownloadsDOMHandler::HandleOpenDownloadsFolder,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&MdDownloadsDOMHandler::HandleOpenDownloadsFolder,
+                          weak_ptr_factory_.GetWeakPtr()));
 
   Observe(GetWebUIWebContents());
 }

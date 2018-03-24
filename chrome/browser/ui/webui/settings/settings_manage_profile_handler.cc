@@ -58,31 +58,35 @@ ManageProfileHandler::~ManageProfileHandler() {}
 void ManageProfileHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getAvailableIcons",
-      base::Bind(&ManageProfileHandler::HandleGetAvailableIcons,
-                 base::Unretained(this)));
+      base::BindRepeating(&ManageProfileHandler::HandleGetAvailableIcons,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setProfileIconToGaiaAvatar",
-      base::Bind(&ManageProfileHandler::HandleSetProfileIconToGaiaAvatar,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &ManageProfileHandler::HandleSetProfileIconToGaiaAvatar,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setProfileIconToDefaultAvatar",
-      base::Bind(&ManageProfileHandler::HandleSetProfileIconToDefaultAvatar,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &ManageProfileHandler::HandleSetProfileIconToDefaultAvatar,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setProfileName", base::Bind(&ManageProfileHandler::HandleSetProfileName,
-                                   base::Unretained(this)));
+      "setProfileName",
+      base::BindRepeating(&ManageProfileHandler::HandleSetProfileName,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestProfileShortcutStatus",
-      base::Bind(&ManageProfileHandler::HandleRequestProfileShortcutStatus,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &ManageProfileHandler::HandleRequestProfileShortcutStatus,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "addProfileShortcut",
-      base::Bind(&ManageProfileHandler::HandleAddProfileShortcut,
-                 base::Unretained(this)));
+      base::BindRepeating(&ManageProfileHandler::HandleAddProfileShortcut,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "removeProfileShortcut",
-      base::Bind(&ManageProfileHandler::HandleRemoveProfileShortcut,
-                 base::Unretained(this)));
+      base::BindRepeating(&ManageProfileHandler::HandleRemoveProfileShortcut,
+                          base::Unretained(this)));
 }
 
 void ManageProfileHandler::OnJavascriptAllowed() {

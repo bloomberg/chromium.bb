@@ -25,19 +25,21 @@ BrowserLifetimeHandler::BrowserLifetimeHandler() {}
 BrowserLifetimeHandler::~BrowserLifetimeHandler() {}
 
 void BrowserLifetimeHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("restart",
-      base::Bind(&BrowserLifetimeHandler::HandleRestart,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("relaunch",
-      base::Bind(&BrowserLifetimeHandler::HandleRelaunch,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "restart", base::BindRepeating(&BrowserLifetimeHandler::HandleRestart,
+                                     base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "relaunch", base::BindRepeating(&BrowserLifetimeHandler::HandleRelaunch,
+                                      base::Unretained(this)));
 #if defined(OS_CHROMEOS)
-  web_ui()->RegisterMessageCallback("signOutAndRestart",
-      base::Bind(&BrowserLifetimeHandler::HandleSignOutAndRestart,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("factoryReset",
-      base::Bind(&BrowserLifetimeHandler::HandleFactoryReset,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "signOutAndRestart",
+      base::BindRepeating(&BrowserLifetimeHandler::HandleSignOutAndRestart,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "factoryReset",
+      base::BindRepeating(&BrowserLifetimeHandler::HandleFactoryReset,
+                          base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
 }
 

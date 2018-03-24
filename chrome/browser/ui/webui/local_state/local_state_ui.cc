@@ -57,8 +57,9 @@ LocalStateUIHandler::~LocalStateUIHandler() {
 
 void LocalStateUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "requestJson", base::Bind(&LocalStateUIHandler::HandleRequestJson,
-                                base::Unretained(this)));
+      "requestJson",
+      base::BindRepeating(&LocalStateUIHandler::HandleRequestJson,
+                          base::Unretained(this)));
 }
 
 void LocalStateUIHandler::HandleRequestJson(const base::ListValue* args) {

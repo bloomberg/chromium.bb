@@ -22,8 +22,8 @@ ConflictsHandler::~ConflictsHandler() = default;
 void ConflictsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestModuleList",
-      base::Bind(&ConflictsHandler::HandleRequestModuleList,
-                 base::Unretained(this)));
+      base::BindRepeating(&ConflictsHandler::HandleRequestModuleList,
+                          base::Unretained(this)));
 }
 
 void ConflictsHandler::OnScanCompleted() {

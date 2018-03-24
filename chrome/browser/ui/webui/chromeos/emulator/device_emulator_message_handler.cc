@@ -476,72 +476,77 @@ void DeviceEmulatorMessageHandler::UpdatePowerSourceId(
 
 void DeviceEmulatorMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      kInitialize,
-      base::Bind(&DeviceEmulatorMessageHandler::Init, base::Unretained(this)));
+      kInitialize, base::BindRepeating(&DeviceEmulatorMessageHandler::Init,
+                                       base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kRequestPowerInfo,
-      base::Bind(&DeviceEmulatorMessageHandler::RequestPowerInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::RequestPowerInfo,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kUpdateBatteryPercent,
-      base::Bind(&DeviceEmulatorMessageHandler::UpdateBatteryPercent,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::UpdateBatteryPercent,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kUpdateBatteryState,
-      base::Bind(&DeviceEmulatorMessageHandler::UpdateBatteryState,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::UpdateBatteryState,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kUpdateTimeToEmpty,
-      base::Bind(&DeviceEmulatorMessageHandler::UpdateTimeToEmpty,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::UpdateTimeToEmpty,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kUpdateTimeToFull,
-      base::Bind(&DeviceEmulatorMessageHandler::UpdateTimeToFull,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::UpdateTimeToFull,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kUpdatePowerSources,
-      base::Bind(&DeviceEmulatorMessageHandler::UpdatePowerSources,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::UpdatePowerSources,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kUpdatePowerSourceId,
-      base::Bind(&DeviceEmulatorMessageHandler::UpdatePowerSourceId,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::UpdatePowerSourceId,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kRequestAudioNodes,
-      base::Bind(&DeviceEmulatorMessageHandler::HandleRequestAudioNodes,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &DeviceEmulatorMessageHandler::HandleRequestAudioNodes,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kInsertAudioNode,
-      base::Bind(&DeviceEmulatorMessageHandler::HandleInsertAudioNode,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::HandleInsertAudioNode,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kRemoveAudioNode,
-      base::Bind(&DeviceEmulatorMessageHandler::HandleRemoveAudioNode,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::HandleRemoveAudioNode,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kBluetoothDiscoverFunction,
-      base::Bind(&DeviceEmulatorMessageHandler::HandleRequestBluetoothDiscover,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &DeviceEmulatorMessageHandler::HandleRequestBluetoothDiscover,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kBluetoothPairFunction,
-      base::Bind(&DeviceEmulatorMessageHandler::HandleRequestBluetoothPair,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &DeviceEmulatorMessageHandler::HandleRequestBluetoothPair,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kRequestBluetoothInfo,
-      base::Bind(&DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &DeviceEmulatorMessageHandler::HandleRequestBluetoothInfo,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kRemoveBluetoothDevice,
-      base::Bind(&DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &DeviceEmulatorMessageHandler::HandleRemoveBluetoothDevice,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kSetHasTouchpad,
-      base::Bind(&DeviceEmulatorMessageHandler::HandleSetHasTouchpad,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::HandleSetHasTouchpad,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kSetHasMouse,
-      base::Bind(&DeviceEmulatorMessageHandler::HandleSetHasMouse,
-                 base::Unretained(this)));
+      base::BindRepeating(&DeviceEmulatorMessageHandler::HandleSetHasMouse,
+                          base::Unretained(this)));
 }
 
 void DeviceEmulatorMessageHandler::OnJavascriptAllowed() {

@@ -39,12 +39,12 @@ DefaultBrowserHandler::~DefaultBrowserHandler() {}
 void DefaultBrowserHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SettingsDefaultBrowser.requestDefaultBrowserState",
-      base::Bind(&DefaultBrowserHandler::RequestDefaultBrowserState,
-                 base::Unretained(this)));
+      base::BindRepeating(&DefaultBrowserHandler::RequestDefaultBrowserState,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SettingsDefaultBrowser.setAsDefaultBrowser",
-      base::Bind(&DefaultBrowserHandler::SetAsDefaultBrowser,
-                 base::Unretained(this)));
+      base::BindRepeating(&DefaultBrowserHandler::SetAsDefaultBrowser,
+                          base::Unretained(this)));
 }
 
 void DefaultBrowserHandler::OnJavascriptAllowed() {

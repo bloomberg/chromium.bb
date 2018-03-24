@@ -119,39 +119,45 @@ bool LocalDiscoveryUIHandler::GetHasVisible() {
 }
 
 void LocalDiscoveryUIHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("start", base::Bind(
-      &LocalDiscoveryUIHandler::HandleStart,
-      base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("isVisible", base::Bind(
-      &LocalDiscoveryUIHandler::HandleIsVisible,
-      base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("registerDevice", base::Bind(
-      &LocalDiscoveryUIHandler::HandleRegisterDevice,
-      base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("cancelRegistration", base::Bind(
-      &LocalDiscoveryUIHandler::HandleCancelRegistration,
-      base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "start", base::BindRepeating(&LocalDiscoveryUIHandler::HandleStart,
+                                   base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "isVisible",
+      base::BindRepeating(&LocalDiscoveryUIHandler::HandleIsVisible,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "registerDevice",
+      base::BindRepeating(&LocalDiscoveryUIHandler::HandleRegisterDevice,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "cancelRegistration",
+      base::BindRepeating(&LocalDiscoveryUIHandler::HandleCancelRegistration,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestDeviceList",
-      base::Bind(&LocalDiscoveryUIHandler::HandleRequestDeviceList,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("openCloudPrintURL", base::Bind(
-      &LocalDiscoveryUIHandler::HandleOpenCloudPrintURL,
-      base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showSyncUI", base::Bind(
-      &LocalDiscoveryUIHandler::HandleShowSyncUI,
-      base::Unretained(this)));
+      base::BindRepeating(&LocalDiscoveryUIHandler::HandleRequestDeviceList,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "openCloudPrintURL",
+      base::BindRepeating(&LocalDiscoveryUIHandler::HandleOpenCloudPrintURL,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showSyncUI",
+      base::BindRepeating(&LocalDiscoveryUIHandler::HandleShowSyncUI,
+                          base::Unretained(this)));
 
   // Cloud print connector related messages
 #if defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
   web_ui()->RegisterMessageCallback(
       "showCloudPrintSetupDialog",
-      base::Bind(&LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog,
-                 base::Unretained(this)));
+      base::BindRepeating(&LocalDiscoveryUIHandler::ShowCloudPrintSetupDialog,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "disableCloudPrintConnector",
-      base::Bind(&LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &LocalDiscoveryUIHandler::HandleDisableCloudPrintConnector,
+          base::Unretained(this)));
 #endif  // defined(CLOUD_PRINT_CONNECTOR_UI_AVAILABLE)
 }
 

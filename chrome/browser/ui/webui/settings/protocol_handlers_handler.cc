@@ -40,22 +40,28 @@ void ProtocolHandlersHandler::OnJavascriptDisallowed() {
 }
 
 void ProtocolHandlersHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("observeProtocolHandlers",
-      base::Bind(&ProtocolHandlersHandler::HandleObserveProtocolHandlers,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("observeProtocolHandlersEnabledState",
-      base::Bind(
+  web_ui()->RegisterMessageCallback(
+      "observeProtocolHandlers",
+      base::BindRepeating(
+          &ProtocolHandlersHandler::HandleObserveProtocolHandlers,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "observeProtocolHandlersEnabledState",
+      base::BindRepeating(
           &ProtocolHandlersHandler::HandleObserveProtocolHandlersEnabledState,
           base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeHandler",
-      base::Bind(&ProtocolHandlersHandler::HandleRemoveHandler,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setHandlersEnabled",
-      base::Bind(&ProtocolHandlersHandler::HandleSetHandlersEnabled,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setDefault",
-      base::Bind(&ProtocolHandlersHandler::HandleSetDefault,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeHandler",
+      base::BindRepeating(&ProtocolHandlersHandler::HandleRemoveHandler,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setHandlersEnabled",
+      base::BindRepeating(&ProtocolHandlersHandler::HandleSetHandlersEnabled,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setDefault",
+      base::BindRepeating(&ProtocolHandlersHandler::HandleSetDefault,
+                          base::Unretained(this)));
 }
 
 ProtocolHandlerRegistry* ProtocolHandlersHandler::GetProtocolHandlerRegistry() {

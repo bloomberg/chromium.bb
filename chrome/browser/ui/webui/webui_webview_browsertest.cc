@@ -39,8 +39,8 @@ class WebUIMessageListener : public base::SupportsWeakPtr<WebUIMessageListener>{
   WebUIMessageListener(content::WebUI* web_ui, const std::string& message)
       : message_loop_(new content::MessageLoopRunner) {
     web_ui->RegisterMessageCallback(
-        message, base::Bind(&WebUIMessageListener::HandleMessage,
-                            AsWeakPtr()));
+        message,
+        base::BindRepeating(&WebUIMessageListener::HandleMessage, AsWeakPtr()));
   }
   bool Wait() {
     message_loop_->Run();

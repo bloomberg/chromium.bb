@@ -144,12 +144,12 @@ void GcmInternalsUIMessageHandler::RequestGCMStatisticsFinished(
 void GcmInternalsUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       gcm_driver::kGetGcmInternalsInfo,
-      base::Bind(&GcmInternalsUIMessageHandler::RequestAllInfo,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&GcmInternalsUIMessageHandler::RequestAllInfo,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       gcm_driver::kSetGcmInternalsRecording,
-      base::Bind(&GcmInternalsUIMessageHandler::SetRecording,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&GcmInternalsUIMessageHandler::SetRecording,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 }  // namespace

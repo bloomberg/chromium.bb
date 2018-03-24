@@ -126,9 +126,10 @@ void WebRtcLogsDOMHandler::RegisterMessages() {
   upload_list_->Load(base::BindOnce(
       &WebRtcLogsDOMHandler::OnUploadListAvailable, base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("requestWebRtcLogsList",
-      base::Bind(&WebRtcLogsDOMHandler::HandleRequestWebRtcLogs,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestWebRtcLogsList",
+      base::BindRepeating(&WebRtcLogsDOMHandler::HandleRequestWebRtcLogs,
+                          base::Unretained(this)));
 }
 
 void WebRtcLogsDOMHandler::HandleRequestWebRtcLogs(

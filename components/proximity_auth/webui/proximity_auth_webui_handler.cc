@@ -125,47 +125,53 @@ ProximityAuthWebUIHandler::~ProximityAuthWebUIHandler() {
 void ProximityAuthWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "onWebContentsInitialized",
-      base::Bind(&ProximityAuthWebUIHandler::OnWebContentsInitialized,
-                 base::Unretained(this)));
+      base::BindRepeating(&ProximityAuthWebUIHandler::OnWebContentsInitialized,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "clearLogBuffer", base::Bind(&ProximityAuthWebUIHandler::ClearLogBuffer,
-                                   base::Unretained(this)));
+      "clearLogBuffer",
+      base::BindRepeating(&ProximityAuthWebUIHandler::ClearLogBuffer,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "getLogMessages", base::Bind(&ProximityAuthWebUIHandler::GetLogMessages,
-                                   base::Unretained(this)));
+      "getLogMessages",
+      base::BindRepeating(&ProximityAuthWebUIHandler::GetLogMessages,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "toggleUnlockKey", base::Bind(&ProximityAuthWebUIHandler::ToggleUnlockKey,
-                                    base::Unretained(this)));
+      "toggleUnlockKey",
+      base::BindRepeating(&ProximityAuthWebUIHandler::ToggleUnlockKey,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "findEligibleUnlockDevices",
-      base::Bind(&ProximityAuthWebUIHandler::FindEligibleUnlockDevices,
-                 base::Unretained(this)));
+      base::BindRepeating(&ProximityAuthWebUIHandler::FindEligibleUnlockDevices,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "findReachableDevices",
-      base::Bind(&ProximityAuthWebUIHandler::FindReachableDevices,
-                 base::Unretained(this)));
+      base::BindRepeating(&ProximityAuthWebUIHandler::FindReachableDevices,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "getLocalState", base::Bind(&ProximityAuthWebUIHandler::GetLocalState,
-                                  base::Unretained(this)));
+      "getLocalState",
+      base::BindRepeating(&ProximityAuthWebUIHandler::GetLocalState,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "forceEnrollment", base::Bind(&ProximityAuthWebUIHandler::ForceEnrollment,
-                                    base::Unretained(this)));
+      "forceEnrollment",
+      base::BindRepeating(&ProximityAuthWebUIHandler::ForceEnrollment,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "forceDeviceSync", base::Bind(&ProximityAuthWebUIHandler::ForceDeviceSync,
-                                    base::Unretained(this)));
+      "forceDeviceSync",
+      base::BindRepeating(&ProximityAuthWebUIHandler::ForceDeviceSync,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "toggleConnection",
-      base::Bind(&ProximityAuthWebUIHandler::ToggleConnection,
-                 base::Unretained(this)));
+      base::BindRepeating(&ProximityAuthWebUIHandler::ToggleConnection,
+                          base::Unretained(this)));
 }
 
 void ProximityAuthWebUIHandler::OnLogMessageAdded(

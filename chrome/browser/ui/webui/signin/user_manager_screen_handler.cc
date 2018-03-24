@@ -588,30 +588,39 @@ void UserManagerScreenHandler::OnNetworkError(int response_code) {
 }
 
 void UserManagerScreenHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerInitialize,
-      base::Bind(&UserManagerScreenHandler::HandleInitialize,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerAuthLaunchUser,
-      base::Bind(&UserManagerScreenHandler::HandleAuthenticatedLaunchUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerLaunchGuest,
-      base::Bind(&UserManagerScreenHandler::HandleLaunchGuest,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerLaunchUser,
-      base::Bind(&UserManagerScreenHandler::HandleLaunchUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerRemoveUser,
-      base::Bind(&UserManagerScreenHandler::HandleRemoveUser,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerLogRemoveUserWarningShown,
-      base::Bind(&HandleLogRemoveUserWarningShown));
-  web_ui()->RegisterMessageCallback(kJsApiUserManagerRemoveUserWarningLoadStats,
-      base::Bind(&UserManagerScreenHandler::HandleRemoveUserWarningLoadStats,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiUserManagerInitialize,
+      base::BindRepeating(&UserManagerScreenHandler::HandleInitialize,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiUserManagerAuthLaunchUser,
+      base::BindRepeating(
+          &UserManagerScreenHandler::HandleAuthenticatedLaunchUser,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiUserManagerLaunchGuest,
+      base::BindRepeating(&UserManagerScreenHandler::HandleLaunchGuest,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiUserManagerLaunchUser,
+      base::BindRepeating(&UserManagerScreenHandler::HandleLaunchUser,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiUserManagerRemoveUser,
+      base::BindRepeating(&UserManagerScreenHandler::HandleRemoveUser,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiUserManagerLogRemoveUserWarningShown,
+      base::BindRepeating(&HandleLogRemoveUserWarningShown));
+  web_ui()->RegisterMessageCallback(
+      kJsApiUserManagerRemoveUserWarningLoadStats,
+      base::BindRepeating(
+          &UserManagerScreenHandler::HandleRemoveUserWarningLoadStats,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kJsApiUserManagerAreAllProfilesLocked,
-      base::Bind(&UserManagerScreenHandler::HandleAreAllProfilesLocked,
-                 base::Unretained(this)));
+      base::BindRepeating(&UserManagerScreenHandler::HandleAreAllProfilesLocked,
+                          base::Unretained(this)));
 
   // Unused callbacks from screen_account_picker.js
   web_ui()->RegisterMessageCallback("accountPickerReady", base::DoNothing());

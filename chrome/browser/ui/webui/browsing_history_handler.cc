@@ -247,22 +247,27 @@ void BrowsingHistoryHandler::RegisterMessages() {
   // Create our favicon data source.
   content::URLDataSource::Add(profile, new FaviconSource(profile));
 
-  web_ui()->RegisterMessageCallback("queryHistory",
-      base::Bind(&BrowsingHistoryHandler::HandleQueryHistory,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "queryHistory",
+      base::BindRepeating(&BrowsingHistoryHandler::HandleQueryHistory,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "queryHistoryContinuation",
-      base::Bind(&BrowsingHistoryHandler::HandleQueryHistoryContinuation,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeVisits",
-      base::Bind(&BrowsingHistoryHandler::HandleRemoveVisits,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("clearBrowsingData",
-      base::Bind(&BrowsingHistoryHandler::HandleClearBrowsingData,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeBookmark",
-      base::Bind(&BrowsingHistoryHandler::HandleRemoveBookmark,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &BrowsingHistoryHandler::HandleQueryHistoryContinuation,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeVisits",
+      base::BindRepeating(&BrowsingHistoryHandler::HandleRemoveVisits,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "clearBrowsingData",
+      base::BindRepeating(&BrowsingHistoryHandler::HandleClearBrowsingData,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeBookmark",
+      base::BindRepeating(&BrowsingHistoryHandler::HandleRemoveBookmark,
+                          base::Unretained(this)));
 }
 
 void BrowsingHistoryHandler::HandleQueryHistory(const base::ListValue* args) {

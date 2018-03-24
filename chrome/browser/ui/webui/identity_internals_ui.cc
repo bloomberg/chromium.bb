@@ -249,12 +249,15 @@ void IdentityInternalsUIMessageHandler::GetInfoForAllTokens(
 }
 
 void IdentityInternalsUIMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("identityInternalsGetTokens",
-      base::Bind(&IdentityInternalsUIMessageHandler::GetInfoForAllTokens,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("identityInternalsRevokeToken",
-      base::Bind(&IdentityInternalsUIMessageHandler::RevokeToken,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "identityInternalsGetTokens",
+      base::BindRepeating(
+          &IdentityInternalsUIMessageHandler::GetInfoForAllTokens,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "identityInternalsRevokeToken",
+      base::BindRepeating(&IdentityInternalsUIMessageHandler::RevokeToken,
+                          base::Unretained(this)));
 }
 
 void IdentityInternalsUIMessageHandler::RevokeToken(

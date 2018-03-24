@@ -28,9 +28,9 @@ void WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::HandleCallJS(
 
 void WebUIBrowserAsyncGenTest::AsyncWebUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "callJS", base::Bind(&AsyncWebUIMessageHandler::HandleCallJS,
-                           base::Unretained(this)));
+      "callJS", base::BindRepeating(&AsyncWebUIMessageHandler::HandleCallJS,
+                                    base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "tearDown", base::Bind(&AsyncWebUIMessageHandler::HandleTearDown,
-                             base::Unretained(this)));
+      "tearDown", base::BindRepeating(&AsyncWebUIMessageHandler::HandleTearDown,
+                                      base::Unretained(this)));
 }

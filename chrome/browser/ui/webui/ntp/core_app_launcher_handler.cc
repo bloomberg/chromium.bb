@@ -64,7 +64,8 @@ void CoreAppLauncherHandler::RecordAppLaunchByUrl(
 }
 
 void CoreAppLauncherHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("recordAppLaunchByURL",
-      base::Bind(&CoreAppLauncherHandler::HandleRecordAppLaunchByUrl,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "recordAppLaunchByURL",
+      base::BindRepeating(&CoreAppLauncherHandler::HandleRecordAppLaunchByUrl,
+                          base::Unretained(this)));
 }

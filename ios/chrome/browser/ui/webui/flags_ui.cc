@@ -96,20 +96,21 @@ class FlagsDOMHandler : public web::WebUIIOSMessageHandler {
 void FlagsDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       flags_ui::kRequestExperimentalFeatures,
-      base::Bind(&FlagsDOMHandler::HandleRequestExperimentalFeatures,
-                 base::Unretained(this)));
+      base::BindRepeating(&FlagsDOMHandler::HandleRequestExperimentalFeatures,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       flags_ui::kEnableExperimentalFeature,
-      base::Bind(&FlagsDOMHandler::HandleEnableExperimentalFeatureMessage,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &FlagsDOMHandler::HandleEnableExperimentalFeatureMessage,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       flags_ui::kRestartBrowser,
-      base::Bind(&FlagsDOMHandler::HandleRestartBrowser,
-                 base::Unretained(this)));
+      base::BindRepeating(&FlagsDOMHandler::HandleRestartBrowser,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       flags_ui::kResetAllFlags,
-      base::Bind(&FlagsDOMHandler::HandleResetAllFlags,
-                 base::Unretained(this)));
+      base::BindRepeating(&FlagsDOMHandler::HandleResetAllFlags,
+                          base::Unretained(this)));
 }
 
 void FlagsDOMHandler::Init(

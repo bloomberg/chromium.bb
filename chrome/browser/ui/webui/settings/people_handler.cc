@@ -217,39 +217,46 @@ void PeopleHandler::RegisterMessages() {
   InitializeSyncBlocker();
   web_ui()->RegisterMessageCallback(
       "SyncSetupDidClosePage",
-      base::Bind(&PeopleHandler::OnDidClosePage, base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::OnDidClosePage,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupSetDatatypes",
-      base::Bind(&PeopleHandler::HandleSetDatatypes, base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::HandleSetDatatypes,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupSetSyncEverything",
-      base::Bind(&PeopleHandler::HandleSetSyncEverything,
-                 base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::HandleSetSyncEverything,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupSetEncryption",
-      base::Bind(&PeopleHandler::HandleSetEncryption, base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::HandleSetEncryption,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupShowSetupUI",
-      base::Bind(&PeopleHandler::HandleShowSetupUI, base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::HandleShowSetupUI,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupGetSyncStatus",
-      base::Bind(&PeopleHandler::HandleGetSyncStatus, base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::HandleGetSyncStatus,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupManageOtherPeople",
-      base::Bind(&PeopleHandler::HandleManageOtherPeople,
-                 base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::HandleManageOtherPeople,
+                          base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "AttemptUserExit",
-      base::Bind(&PeopleHandler::HandleAttemptUserExit,
-                 base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::HandleAttemptUserExit,
+                          base::Unretained(this)));
 #else
   web_ui()->RegisterMessageCallback(
       "SyncSetupStopSyncing",
-      base::Bind(&PeopleHandler::HandleStopSyncing, base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::HandleStopSyncing,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "SyncSetupStartSignIn",
-      base::Bind(&PeopleHandler::HandleStartSignin, base::Unretained(this)));
+      base::BindRepeating(&PeopleHandler::HandleStartSignin,
+                          base::Unretained(this)));
 #endif
 #if BUILDFLAG(ENABLE_DICE_SUPPORT)
   web_ui()->RegisterMessageCallback(

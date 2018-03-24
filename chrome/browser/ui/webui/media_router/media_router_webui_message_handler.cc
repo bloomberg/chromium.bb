@@ -374,127 +374,151 @@ void MediaRouterWebUIMessageHandler::UserSelectedLocalMediaFile(
 void MediaRouterWebUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kRequestInitialData,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnRequestInitialData,
-                 base::Unretained(this)));
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnRequestInitialData,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      kCreateRoute, base::Bind(&MediaRouterWebUIMessageHandler::OnCreateRoute,
-                               base::Unretained(this)));
+      kCreateRoute,
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnCreateRoute,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kAcknowledgeFirstRunFlow,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnAcknowledgeFirstRunFlow,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      kActOnIssue, base::Bind(&MediaRouterWebUIMessageHandler::OnActOnIssue,
-                              base::Unretained(this)));
+      kActOnIssue,
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnActOnIssue,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      kCloseRoute, base::Bind(&MediaRouterWebUIMessageHandler::OnCloseRoute,
-                              base::Unretained(this)));
+      kCloseRoute,
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnCloseRoute,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      kJoinRoute, base::Bind(&MediaRouterWebUIMessageHandler::OnJoinRoute,
-                             base::Unretained(this)));
+      kJoinRoute,
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnJoinRoute,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      kCloseDialog, base::Bind(&MediaRouterWebUIMessageHandler::OnCloseDialog,
-                               base::Unretained(this)));
+      kCloseDialog,
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnCloseDialog,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      kReportBlur, base::Bind(&MediaRouterWebUIMessageHandler::OnReportBlur,
-                              base::Unretained(this)));
+      kReportBlur,
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnReportBlur,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportClickedSinkIndex,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnReportClickedSinkIndex,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      kReportFilter, base::Bind(&MediaRouterWebUIMessageHandler::OnReportFilter,
-                                base::Unretained(this)));
+      kReportFilter,
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnReportFilter,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportInitialState,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnReportInitialState,
-                 base::Unretained(this)));
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnReportInitialState,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportInitialAction,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnReportInitialAction,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnReportInitialAction,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportRouteCreation,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnReportRouteCreation,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnReportRouteCreation,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportRouteCreationOutcome,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnReportRouteCreationOutcome,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnReportRouteCreationOutcome,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportSelectedCastMode,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnReportSelectedCastMode,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnReportSelectedCastMode,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportNavigateToView,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnReportNavigateToView,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnReportNavigateToView,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportSinkCount,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnReportSinkCount,
-                 base::Unretained(this)));
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnReportSinkCount,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportTimeToClickSink,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnReportTimeToClickSink,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnReportTimeToClickSink,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportTimeToInitialActionClose,
-      base::Bind(
+      base::BindRepeating(
           &MediaRouterWebUIMessageHandler::OnReportTimeToInitialActionClose,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kReportWebUIRouteControllerLoaded,
-      base::Bind(
+      base::BindRepeating(
           &MediaRouterWebUIMessageHandler::OnReportWebUIRouteControllerLoaded,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kSearchSinksAndCreateRoute,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnSearchSinksAndCreateRoute,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnSearchSinksAndCreateRoute,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kOnInitialDataReceived,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnInitialDataReceived,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnInitialDataReceived,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kOnMediaControllerAvailable,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnMediaControllerAvailable,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnMediaControllerAvailable,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kOnMediaControllerClosed,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnMediaControllerClosed,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnMediaControllerClosed,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kPauseCurrentMedia,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnPauseCurrentMedia,
-                 base::Unretained(this)));
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnPauseCurrentMedia,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kPlayCurrentMedia,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnPlayCurrentMedia,
-                 base::Unretained(this)));
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnPlayCurrentMedia,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kSeekCurrentMedia,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnSeekCurrentMedia,
-                 base::Unretained(this)));
+      base::BindRepeating(&MediaRouterWebUIMessageHandler::OnSeekCurrentMedia,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kSelectLocalMediaFile,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnSelectLocalMediaFile,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnSelectLocalMediaFile,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kSetCurrentMediaMute,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnSetCurrentMediaMute,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnSetCurrentMediaMute,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kSetCurrentMediaVolume,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnSetCurrentMediaVolume,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnSetCurrentMediaVolume,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kSetMediaRemotingEnabled,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnSetMediaRemotingEnabled,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnSetMediaRemotingEnabled,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kHangoutsSetLocalPresent,
-      base::Bind(&MediaRouterWebUIMessageHandler::OnSetHangoutsLocalPresent,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &MediaRouterWebUIMessageHandler::OnSetHangoutsLocalPresent,
+          base::Unretained(this)));
 }
 
 void MediaRouterWebUIMessageHandler::OnRequestInitialData(

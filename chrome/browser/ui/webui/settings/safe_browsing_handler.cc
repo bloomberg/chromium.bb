@@ -19,11 +19,12 @@ SafeBrowsingHandler::~SafeBrowsingHandler() {}
 void SafeBrowsingHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getSafeBrowsingExtendedReporting",
-      base::Bind(&SafeBrowsingHandler::HandleGetSafeBrowsingExtendedReporting,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SafeBrowsingHandler::HandleGetSafeBrowsingExtendedReporting,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setSafeBrowsingExtendedReportingEnabled",
-      base::Bind(
+      base::BindRepeating(
           &SafeBrowsingHandler::HandleSetSafeBrowsingExtendedReportingEnabled,
           base::Unretained(this)));
 }

@@ -50,24 +50,25 @@ EasyUnlockSettingsHandler* EasyUnlockSettingsHandler::Create(
 void EasyUnlockSettingsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "easyUnlockGetEnabledStatus",
-      base::Bind(&EasyUnlockSettingsHandler::HandleGetEnabledStatus,
-                 base::Unretained(this)));
+      base::BindRepeating(&EasyUnlockSettingsHandler::HandleGetEnabledStatus,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "easyUnlockStartTurnOnFlow",
-      base::Bind(&EasyUnlockSettingsHandler::HandleStartTurnOnFlow,
-                 base::Unretained(this)));
+      base::BindRepeating(&EasyUnlockSettingsHandler::HandleStartTurnOnFlow,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "easyUnlockGetTurnOffFlowStatus",
-      base::Bind(&EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &EasyUnlockSettingsHandler::HandleGetTurnOffFlowStatus,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "easyUnlockStartTurnOffFlow",
-      base::Bind(&EasyUnlockSettingsHandler::HandleStartTurnOffFlow,
-                 base::Unretained(this)));
+      base::BindRepeating(&EasyUnlockSettingsHandler::HandleStartTurnOffFlow,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "easyUnlockCancelTurnOffFlow",
-      base::Bind(&EasyUnlockSettingsHandler::HandleCancelTurnOffFlow,
-                 base::Unretained(this)));
+      base::BindRepeating(&EasyUnlockSettingsHandler::HandleCancelTurnOffFlow,
+                          base::Unretained(this)));
 }
 
 void EasyUnlockSettingsHandler::OnJavascriptAllowed() {

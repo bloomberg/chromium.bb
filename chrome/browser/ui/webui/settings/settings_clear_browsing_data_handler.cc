@@ -93,18 +93,18 @@ ClearBrowsingDataHandler::~ClearBrowsingDataHandler() {
 void ClearBrowsingDataHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "clearBrowsingData",
-      base::Bind(&ClearBrowsingDataHandler::HandleClearBrowsingData,
-                 base::Unretained(this)));
+      base::BindRepeating(&ClearBrowsingDataHandler::HandleClearBrowsingData,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "getImportantSites",
-      base::Bind(&ClearBrowsingDataHandler::HandleGetImportantSites,
-                 base::Unretained(this)));
+      base::BindRepeating(&ClearBrowsingDataHandler::HandleGetImportantSites,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "initializeClearBrowsingData",
-      base::Bind(&ClearBrowsingDataHandler::HandleInitialize,
-                 base::Unretained(this)));
+      base::BindRepeating(&ClearBrowsingDataHandler::HandleInitialize,
+                          base::Unretained(this)));
 }
 
 void ClearBrowsingDataHandler::OnJavascriptAllowed() {

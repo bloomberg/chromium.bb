@@ -343,31 +343,27 @@ ServiceWorkerInternalsUI::ServiceWorkerInternalsUI(WebUI* web_ui)
   WebUIDataSource::Add(browser_context, source);
 
   web_ui->RegisterMessageCallback(
-      "GetOptions",
-      base::Bind(&ServiceWorkerInternalsUI::GetOptions,
-                 base::Unretained(this)));
+      "GetOptions", base::BindRepeating(&ServiceWorkerInternalsUI::GetOptions,
+                                        base::Unretained(this)));
   web_ui->RegisterMessageCallback(
-      "SetOption",
-      base::Bind(&ServiceWorkerInternalsUI::SetOption, base::Unretained(this)));
+      "SetOption", base::BindRepeating(&ServiceWorkerInternalsUI::SetOption,
+                                       base::Unretained(this)));
   web_ui->RegisterMessageCallback(
       "getAllRegistrations",
-      base::Bind(&ServiceWorkerInternalsUI::GetAllRegistrations,
-                 base::Unretained(this)));
+      base::BindRepeating(&ServiceWorkerInternalsUI::GetAllRegistrations,
+                          base::Unretained(this)));
   web_ui->RegisterMessageCallback(
-      "stop", base::Bind(&ServiceWorkerInternalsUI::StopWorker,
-                         base::Unretained(this)));
+      "stop", base::BindRepeating(&ServiceWorkerInternalsUI::StopWorker,
+                                  base::Unretained(this)));
   web_ui->RegisterMessageCallback(
-      "inspect",
-      base::Bind(&ServiceWorkerInternalsUI::InspectWorker,
-                 base::Unretained(this)));
+      "inspect", base::BindRepeating(&ServiceWorkerInternalsUI::InspectWorker,
+                                     base::Unretained(this)));
   web_ui->RegisterMessageCallback(
-      "unregister",
-      base::Bind(&ServiceWorkerInternalsUI::Unregister,
-                 base::Unretained(this)));
+      "unregister", base::BindRepeating(&ServiceWorkerInternalsUI::Unregister,
+                                        base::Unretained(this)));
   web_ui->RegisterMessageCallback(
-      "start",
-      base::Bind(&ServiceWorkerInternalsUI::StartWorker,
-                 base::Unretained(this)));
+      "start", base::BindRepeating(&ServiceWorkerInternalsUI::StartWorker,
+                                   base::Unretained(this)));
 }
 
 ServiceWorkerInternalsUI::~ServiceWorkerInternalsUI() {

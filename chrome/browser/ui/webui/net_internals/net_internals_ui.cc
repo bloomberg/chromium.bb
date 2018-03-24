@@ -424,101 +424,102 @@ void NetInternalsMessageHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       "notifyReady",
-      base::Bind(&NetInternalsMessageHandler::OnRendererReady,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetInternalsMessageHandler::OnRendererReady,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getNetInfo",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnGetNetInfo, proxy_));
+      "getNetInfo", base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                                        &IOThreadImpl::OnGetNetInfo, proxy_));
   web_ui()->RegisterMessageCallback(
       "reloadProxySettings",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnReloadProxySettings, proxy_));
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnReloadProxySettings, proxy_));
   web_ui()->RegisterMessageCallback(
       "clearBadProxies",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnClearBadProxies, proxy_));
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnClearBadProxies, proxy_));
   web_ui()->RegisterMessageCallback(
       "clearHostResolverCache",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnClearHostResolverCache, proxy_));
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnClearHostResolverCache, proxy_));
   web_ui()->RegisterMessageCallback(
       "domainSecurityPolicyDelete",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnDomainSecurityPolicyDelete, proxy_));
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnDomainSecurityPolicyDelete, proxy_));
   web_ui()->RegisterMessageCallback(
-      "hstsQuery",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnHSTSQuery, proxy_));
+      "hstsQuery", base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                                       &IOThreadImpl::OnHSTSQuery, proxy_));
   web_ui()->RegisterMessageCallback(
-      "hstsAdd",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnHSTSAdd, proxy_));
+      "hstsAdd", base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                                     &IOThreadImpl::OnHSTSAdd, proxy_));
   web_ui()->RegisterMessageCallback(
-      "expectCTQuery", base::Bind(&IOThreadImpl::CallbackHelper,
-                                  &IOThreadImpl::OnExpectCTQuery, proxy_));
+      "expectCTQuery",
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnExpectCTQuery, proxy_));
   web_ui()->RegisterMessageCallback(
-      "expectCTAdd", base::Bind(&IOThreadImpl::CallbackHelper,
-                                &IOThreadImpl::OnExpectCTAdd, proxy_));
+      "expectCTAdd", base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                                         &IOThreadImpl::OnExpectCTAdd, proxy_));
   web_ui()->RegisterMessageCallback(
       "expectCTTestReport",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnExpectCTTestReport, proxy_));
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnExpectCTTestReport, proxy_));
   web_ui()->RegisterMessageCallback(
       "closeIdleSockets",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnCloseIdleSockets, proxy_));
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnCloseIdleSockets, proxy_));
   web_ui()->RegisterMessageCallback(
       "flushSocketPools",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnFlushSocketPools, proxy_));
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnFlushSocketPools, proxy_));
 #if defined(OS_WIN)
   web_ui()->RegisterMessageCallback(
       "getServiceProviders",
-      base::Bind(&IOThreadImpl::CallbackHelper,
-                 &IOThreadImpl::OnGetServiceProviders, proxy_));
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnGetServiceProviders, proxy_));
 #endif
 
   web_ui()->RegisterMessageCallback(
-      "setCaptureMode", base::Bind(&IOThreadImpl::CallbackHelper,
-                                   &IOThreadImpl::OnSetCaptureMode, proxy_));
+      "setCaptureMode",
+      base::BindRepeating(&IOThreadImpl::CallbackHelper,
+                          &IOThreadImpl::OnSetCaptureMode, proxy_));
   web_ui()->RegisterMessageCallback(
       "clearBrowserCache",
-      base::Bind(&NetInternalsMessageHandler::OnClearBrowserCache,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetInternalsMessageHandler::OnClearBrowserCache,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getPrerenderInfo",
-      base::Bind(&NetInternalsMessageHandler::OnGetPrerenderInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetInternalsMessageHandler::OnGetPrerenderInfo,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getHistoricNetworkStats",
-      base::Bind(&NetInternalsMessageHandler::OnGetHistoricNetworkStats,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &NetInternalsMessageHandler::OnGetHistoricNetworkStats,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getSessionNetworkStats",
-      base::Bind(&NetInternalsMessageHandler::OnGetSessionNetworkStats,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetInternalsMessageHandler::OnGetSessionNetworkStats,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getExtensionInfo",
-      base::Bind(&NetInternalsMessageHandler::OnGetExtensionInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetInternalsMessageHandler::OnGetExtensionInfo,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getDataReductionProxyInfo",
-      base::Bind(&NetInternalsMessageHandler::OnGetDataReductionProxyInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &NetInternalsMessageHandler::OnGetDataReductionProxyInfo,
+          base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "importONCFile",
-      base::Bind(&NetInternalsMessageHandler::OnImportONCFile,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetInternalsMessageHandler::OnImportONCFile,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "storeDebugLogs",
-      base::Bind(&NetInternalsMessageHandler::OnStoreDebugLogs,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetInternalsMessageHandler::OnStoreDebugLogs,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setNetworkDebugMode",
-      base::Bind(&NetInternalsMessageHandler::OnSetNetworkDebugMode,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetInternalsMessageHandler::OnSetNetworkDebugMode,
+                          base::Unretained(this)));
 #endif
 }
 

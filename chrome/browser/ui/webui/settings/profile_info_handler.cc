@@ -52,13 +52,14 @@ ProfileInfoHandler::~ProfileInfoHandler() {}
 
 void ProfileInfoHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getProfileInfo", base::Bind(&ProfileInfoHandler::HandleGetProfileInfo,
-                                   base::Unretained(this)));
+      "getProfileInfo",
+      base::BindRepeating(&ProfileInfoHandler::HandleGetProfileInfo,
+                          base::Unretained(this)));
 #if !defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "getProfileStatsCount",
-      base::Bind(&ProfileInfoHandler::HandleGetProfileStats,
-                 base::Unretained(this)));
+      base::BindRepeating(&ProfileInfoHandler::HandleGetProfileStats,
+                          base::Unretained(this)));
 #endif
 }
 

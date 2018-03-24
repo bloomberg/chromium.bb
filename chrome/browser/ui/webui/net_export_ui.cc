@@ -185,23 +185,24 @@ void NetExportMessageHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       net_log::kEnableNotifyUIWithStateHandler,
-      base::Bind(&NetExportMessageHandler::OnEnableNotifyUIWithState,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetExportMessageHandler::OnEnableNotifyUIWithState,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       net_log::kStartNetLogHandler,
-      base::Bind(&NetExportMessageHandler::OnStartNetLog,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetExportMessageHandler::OnStartNetLog,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       net_log::kStopNetLogHandler,
-      base::Bind(&NetExportMessageHandler::OnStopNetLog,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetExportMessageHandler::OnStopNetLog,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       net_log::kSendNetLogHandler,
-      base::Bind(&NetExportMessageHandler::OnSendNetLog,
-                 base::Unretained(this)));
+      base::BindRepeating(&NetExportMessageHandler::OnSendNetLog,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       net_log::kShowFile,
-      base::Bind(&NetExportMessageHandler::OnShowFile, base::Unretained(this)));
+      base::BindRepeating(&NetExportMessageHandler::OnShowFile,
+                          base::Unretained(this)));
 }
 
 // The net-export UI is not notified of state changes until this function runs.

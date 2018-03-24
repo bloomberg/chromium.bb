@@ -28,13 +28,15 @@ void HistoryLoginHandler::RegisterMessages() {
       base::Bind(&HistoryLoginHandler::ProfileInfoChanged,
                  base::Unretained(this))));
 
-  web_ui()->RegisterMessageCallback("otherDevicesInitialized",
-      base::Bind(&HistoryLoginHandler::HandleOtherDevicesInitialized,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "otherDevicesInitialized",
+      base::BindRepeating(&HistoryLoginHandler::HandleOtherDevicesInitialized,
+                          base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("startSignInFlow",
-      base::Bind(&HistoryLoginHandler::HandleStartSignInFlow,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "startSignInFlow",
+      base::BindRepeating(&HistoryLoginHandler::HandleStartSignInFlow,
+                          base::Unretained(this)));
 }
 
 void HistoryLoginHandler::HandleOtherDevicesInitialized(

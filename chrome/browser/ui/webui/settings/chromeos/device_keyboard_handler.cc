@@ -46,12 +46,12 @@ KeyboardHandler::~KeyboardHandler() = default;
 void KeyboardHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "initializeKeyboardSettings",
-      base::Bind(&KeyboardHandler::HandleInitialize,
-                 base::Unretained(this)));
+      base::BindRepeating(&KeyboardHandler::HandleInitialize,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "showKeyboardShortcutsOverlay",
-      base::Bind(&KeyboardHandler::HandleShowKeyboardShortcutsOverlay,
-                 base::Unretained(this)));
+      base::BindRepeating(&KeyboardHandler::HandleShowKeyboardShortcutsOverlay,
+                          base::Unretained(this)));
 }
 
 void KeyboardHandler::OnJavascriptAllowed() {

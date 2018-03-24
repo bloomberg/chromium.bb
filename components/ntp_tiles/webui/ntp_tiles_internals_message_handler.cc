@@ -69,22 +69,26 @@ void NTPTilesInternalsMessageHandler::RegisterMessages(
 
   client_->RegisterMessageCallback(
       "registerForEvents",
-      base::Bind(&NTPTilesInternalsMessageHandler::HandleRegisterForEvents,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &NTPTilesInternalsMessageHandler::HandleRegisterForEvents,
+          base::Unretained(this)));
 
   client_->RegisterMessageCallback(
-      "update", base::Bind(&NTPTilesInternalsMessageHandler::HandleUpdate,
-                           base::Unretained(this)));
+      "update",
+      base::BindRepeating(&NTPTilesInternalsMessageHandler::HandleUpdate,
+                          base::Unretained(this)));
 
   client_->RegisterMessageCallback(
       "fetchSuggestions",
-      base::Bind(&NTPTilesInternalsMessageHandler::HandleFetchSuggestions,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &NTPTilesInternalsMessageHandler::HandleFetchSuggestions,
+          base::Unretained(this)));
 
   client_->RegisterMessageCallback(
       "viewPopularSitesJson",
-      base::Bind(&NTPTilesInternalsMessageHandler::HandleViewPopularSitesJson,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &NTPTilesInternalsMessageHandler::HandleViewPopularSitesJson,
+          base::Unretained(this)));
 }
 
 void NTPTilesInternalsMessageHandler::HandleRegisterForEvents(

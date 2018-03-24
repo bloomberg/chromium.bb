@@ -498,12 +498,13 @@ GpuMessageHandler::~GpuMessageHandler() {
 void GpuMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  web_ui()->RegisterMessageCallback("browserBridgeInitialized",
-      base::Bind(&GpuMessageHandler::OnBrowserBridgeInitialized,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("callAsync",
-      base::Bind(&GpuMessageHandler::OnCallAsync,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "browserBridgeInitialized",
+      base::BindRepeating(&GpuMessageHandler::OnBrowserBridgeInitialized,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "callAsync", base::BindRepeating(&GpuMessageHandler::OnCallAsync,
+                                       base::Unretained(this)));
 }
 
 void GpuMessageHandler::OnCallAsync(const base::ListValue* args) {

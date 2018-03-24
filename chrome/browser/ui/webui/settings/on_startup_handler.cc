@@ -41,12 +41,13 @@ void OnStartupHandler::OnJavascriptDisallowed() {
 
 void OnStartupHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getNtpExtension", base::Bind(&OnStartupHandler::HandleGetNtpExtension,
-                                    base::Unretained(this)));
+      "getNtpExtension",
+      base::BindRepeating(&OnStartupHandler::HandleGetNtpExtension,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "validateStartupPage",
-      base::Bind(&OnStartupHandler::HandleValidateStartupPage,
-                 base::Unretained(this)));
+      base::BindRepeating(&OnStartupHandler::HandleValidateStartupPage,
+                          base::Unretained(this)));
 }
 
 void OnStartupHandler::OnExtensionUnloaded(

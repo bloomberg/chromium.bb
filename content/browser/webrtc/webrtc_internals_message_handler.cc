@@ -30,35 +30,39 @@ WebRTCInternalsMessageHandler::~WebRTCInternalsMessageHandler() {
 }
 
 void WebRTCInternalsMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getAllStats",
-      base::Bind(&WebRTCInternalsMessageHandler::OnGetAllStats,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getAllStats",
+      base::BindRepeating(&WebRTCInternalsMessageHandler::OnGetAllStats,
+                          base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("enableAudioDebugRecordings",
-      base::Bind(
+  web_ui()->RegisterMessageCallback(
+      "enableAudioDebugRecordings",
+      base::BindRepeating(
           &WebRTCInternalsMessageHandler::OnSetAudioDebugRecordingsEnabled,
-          base::Unretained(this),
-          true));
+          base::Unretained(this), true));
 
-  web_ui()->RegisterMessageCallback("disableAudioDebugRecordings",
-      base::Bind(
+  web_ui()->RegisterMessageCallback(
+      "disableAudioDebugRecordings",
+      base::BindRepeating(
           &WebRTCInternalsMessageHandler::OnSetAudioDebugRecordingsEnabled,
-          base::Unretained(this),
-          false));
+          base::Unretained(this), false));
 
   web_ui()->RegisterMessageCallback(
       "enableEventLogRecordings",
-      base::Bind(&WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled,
-                 base::Unretained(this), true));
+      base::BindRepeating(
+          &WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled,
+          base::Unretained(this), true));
 
   web_ui()->RegisterMessageCallback(
       "disableEventLogRecordings",
-      base::Bind(&WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled,
-                 base::Unretained(this), false));
+      base::BindRepeating(
+          &WebRTCInternalsMessageHandler::OnSetEventLogRecordingsEnabled,
+          base::Unretained(this), false));
 
-  web_ui()->RegisterMessageCallback("finishedDOMLoad",
-      base::Bind(&WebRTCInternalsMessageHandler::OnDOMLoadDone,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "finishedDOMLoad",
+      base::BindRepeating(&WebRTCInternalsMessageHandler::OnDOMLoadDone,
+                          base::Unretained(this)));
 }
 
 RenderFrameHost* WebRTCInternalsMessageHandler::GetWebRTCInternalsHost() const {

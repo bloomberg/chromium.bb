@@ -44,20 +44,21 @@ void InstallExtensionHandler::GetLocalizedValues(
 void InstallExtensionHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "startDrag",
-      base::Bind(&InstallExtensionHandler::HandleStartDragMessage,
-                 base::Unretained(this)));
+      base::BindRepeating(&InstallExtensionHandler::HandleStartDragMessage,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "stopDrag",
-      base::Bind(&InstallExtensionHandler::HandleStopDragMessage,
-                 base::Unretained(this)));
+      base::BindRepeating(&InstallExtensionHandler::HandleStopDragMessage,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "installDroppedFile",
-      base::Bind(&InstallExtensionHandler::HandleInstallMessage,
-                 base::Unretained(this)));
+      base::BindRepeating(&InstallExtensionHandler::HandleInstallMessage,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "installDroppedDirectory",
-      base::Bind(&InstallExtensionHandler::HandleInstallDirectoryMessage,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &InstallExtensionHandler::HandleInstallDirectoryMessage,
+          base::Unretained(this)));
 }
 
 void InstallExtensionHandler::HandleStartDragMessage(

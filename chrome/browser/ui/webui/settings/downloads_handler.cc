@@ -34,15 +34,16 @@ DownloadsHandler::~DownloadsHandler() {
 void DownloadsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "initializeDownloads",
-      base::Bind(&DownloadsHandler::HandleInitialize, base::Unretained(this)));
+      base::BindRepeating(&DownloadsHandler::HandleInitialize,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "resetAutoOpenFileTypes",
-      base::Bind(&DownloadsHandler::HandleResetAutoOpenFileTypes,
-                 base::Unretained(this)));
+      base::BindRepeating(&DownloadsHandler::HandleResetAutoOpenFileTypes,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "selectDownloadLocation",
-      base::Bind(&DownloadsHandler::HandleSelectDownloadLocation,
-                 base::Unretained(this)));
+      base::BindRepeating(&DownloadsHandler::HandleSelectDownloadLocation,
+                          base::Unretained(this)));
 }
 
 void DownloadsHandler::OnJavascriptAllowed() {

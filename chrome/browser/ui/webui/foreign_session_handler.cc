@@ -240,18 +240,23 @@ void ForeignSessionHandler::RegisterMessages() {
   if (service)
     scoped_observer_.Add(service);
 
-  web_ui()->RegisterMessageCallback("deleteForeignSession",
-      base::Bind(&ForeignSessionHandler::HandleDeleteForeignSession,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getForeignSessions",
-      base::Bind(&ForeignSessionHandler::HandleGetForeignSessions,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("openForeignSession",
-      base::Bind(&ForeignSessionHandler::HandleOpenForeignSession,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setForeignSessionCollapsed",
-      base::Bind(&ForeignSessionHandler::HandleSetForeignSessionCollapsed,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "deleteForeignSession",
+      base::BindRepeating(&ForeignSessionHandler::HandleDeleteForeignSession,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getForeignSessions",
+      base::BindRepeating(&ForeignSessionHandler::HandleGetForeignSessions,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "openForeignSession",
+      base::BindRepeating(&ForeignSessionHandler::HandleOpenForeignSession,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setForeignSessionCollapsed",
+      base::BindRepeating(
+          &ForeignSessionHandler::HandleSetForeignSessionCollapsed,
+          base::Unretained(this)));
 }
 
 void ForeignSessionHandler::OnSyncConfigurationCompleted(

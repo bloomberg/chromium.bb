@@ -223,39 +223,46 @@ void AppLauncherHandler::RegisterMessages() {
   registrar_.Add(this, chrome::NOTIFICATION_APP_INSTALLED_TO_NTP,
       content::Source<WebContents>(web_ui()->GetWebContents()));
 
-  web_ui()->RegisterMessageCallback("getApps",
-      base::Bind(&AppLauncherHandler::HandleGetApps,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("launchApp",
-      base::Bind(&AppLauncherHandler::HandleLaunchApp,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setLaunchType",
-      base::Bind(&AppLauncherHandler::HandleSetLaunchType,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("uninstallApp",
-      base::Bind(&AppLauncherHandler::HandleUninstallApp,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("createAppShortcut",
-      base::Bind(&AppLauncherHandler::HandleCreateAppShortcut,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("showAppInfo",
-      base::Bind(&AppLauncherHandler::HandleShowAppInfo,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("reorderApps",
-      base::Bind(&AppLauncherHandler::HandleReorderApps,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setPageIndex",
-      base::Bind(&AppLauncherHandler::HandleSetPageIndex,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("saveAppPageName",
-      base::Bind(&AppLauncherHandler::HandleSaveAppPageName,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("generateAppForLink",
-      base::Bind(&AppLauncherHandler::HandleGenerateAppForLink,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("pageSelected",
-      base::Bind(&AppLauncherHandler::HandlePageSelected,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getApps", base::BindRepeating(&AppLauncherHandler::HandleGetApps,
+                                     base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "launchApp", base::BindRepeating(&AppLauncherHandler::HandleLaunchApp,
+                                       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setLaunchType",
+      base::BindRepeating(&AppLauncherHandler::HandleSetLaunchType,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "uninstallApp",
+      base::BindRepeating(&AppLauncherHandler::HandleUninstallApp,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "createAppShortcut",
+      base::BindRepeating(&AppLauncherHandler::HandleCreateAppShortcut,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "showAppInfo", base::BindRepeating(&AppLauncherHandler::HandleShowAppInfo,
+                                         base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "reorderApps", base::BindRepeating(&AppLauncherHandler::HandleReorderApps,
+                                         base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setPageIndex",
+      base::BindRepeating(&AppLauncherHandler::HandleSetPageIndex,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "saveAppPageName",
+      base::BindRepeating(&AppLauncherHandler::HandleSaveAppPageName,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "generateAppForLink",
+      base::BindRepeating(&AppLauncherHandler::HandleGenerateAppForLink,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "pageSelected",
+      base::BindRepeating(&AppLauncherHandler::HandlePageSelected,
+                          base::Unretained(this)));
 }
 
 void AppLauncherHandler::Observe(int type,
