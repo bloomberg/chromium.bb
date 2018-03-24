@@ -66,50 +66,9 @@ class TestPlatformDisplayDelegate : public PlatformDisplayDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestPlatformDisplayDelegate);
 };
 
-// An OzonePlatform that creates StubWindows.
-class TestOzonePlatform : public OzonePlatform {
- public:
-  TestOzonePlatform() = default;
-  ~TestOzonePlatform() override = default;
-
-  // OzonePlatform:
-  ui::SurfaceFactoryOzone* GetSurfaceFactoryOzone() override { return nullptr; }
-  ui::OverlayManagerOzone* GetOverlayManager() override { return nullptr; }
-  ui::CursorFactoryOzone* GetCursorFactoryOzone() override { return nullptr; }
-  ui::InputController* GetInputController() override { return nullptr; }
-  ui::GpuPlatformSupportHost* GetGpuPlatformSupportHost() override {
-    return nullptr;
-  }
-  std::unique_ptr<SystemInputInjector> CreateSystemInputInjector() override {
-    return nullptr;
-  }
-  std::unique_ptr<PlatformWindow> CreatePlatformWindow(
-      PlatformWindowDelegate* delegate,
-      const gfx::Rect& bounds) override {
-    return std::make_unique<StubWindow>(
-        delegate, false /* use_default_accelerated_widget */);
-  }
-  std::unique_ptr<display::NativeDisplayDelegate> CreateNativeDisplayDelegate()
-      override {
-    return nullptr;
-  }
-  void InitializeUI(const InitParams& params) override {}
-  void InitializeGPU(const InitParams& params) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(TestOzonePlatform);
-};
-
-// Test fails in part because services_unittests appears to have its own ozone
-// platform that it initializes. For some reason, this only started failing
-// locally and on the trybots on 06/13/2017, while passing when run on the CQ
-// and the builders. crbug.com/732987
-TEST(PlatformDisplayDefaultTest, DISABLED_EventDispatch) {
+TEST(PlatformDisplayDefaultTest, EventDispatch) {
   // ThreadTaskRunnerHandle needed required by ThreadedImageCursors.
   base::MessageLoop loop;
-
-  // Setup ozone so the display can be initialized.
-  TestOzonePlatform platform;
 
   // Create the display.
   display::ViewportMetrics metrics;
@@ -119,6 +78,7 @@ TEST(PlatformDisplayDefaultTest, DISABLED_EventDispatch) {
   scoped_refptr<base::SingleThreadTaskRunner> task_runner =
       base::ThreadTaskRunnerHandle::Get();
   ImageCursorsSet image_cursors_set;
+  CursorFactoryOzone cursor_factory_ozone;
   std::unique_ptr<ThreadedImageCursors> threaded_image_cursors =
       std::make_unique<ThreadedImageCursors>(task_runner,
                                              image_cursors_set.GetWeakPtr());
@@ -128,6 +88,8 @@ TEST(PlatformDisplayDefaultTest, DISABLED_EventDispatch) {
   // Initialize the display with a test EventSink so we can sense events.
   TestEventSink event_sink;
   TestPlatformDisplayDelegate delegate(&event_sink);
+  // kInvalidDisplayId causes the display to be initialized with a StubWindow.
+  EXPECT_EQ(display::kInvalidDisplayId, delegate.GetDisplay().id());
   display.Init(&delegate);
 
   // Event dispatch is handled at the PlatformWindowDelegate level.
