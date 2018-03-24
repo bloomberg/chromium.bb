@@ -1196,8 +1196,7 @@
     },
     'network_service_interactive_ui_tests': {
       'args': [
-        '--enable-features=NetworkService',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_interactive_ui_tests.filter',
+        '--enable-features=NetworkService'
       ],
       'test': 'interactive_ui_tests',
     },

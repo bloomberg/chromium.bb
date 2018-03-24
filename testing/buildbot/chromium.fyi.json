@@ -4825,8 +4825,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_interactive_ui_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_interactive_ui_tests",
         "swarming": {
@@ -5983,8 +5982,7 @@
       },
       {
         "args": [
-          "--enable-features=NetworkService",
-          "--test-launcher-filter-file=../../testing/buildbot/filters/mojo.fyi.network_interactive_ui_tests.filter"
+          "--enable-features=NetworkService"
         ],
         "name": "network_service_interactive_ui_tests",
         "swarming": {

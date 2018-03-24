@@ -59,7 +59,6 @@ source_set("interactive_ui_tests_filters") {
   testonly = true
 
   data = [
-    "//testing/buildbot/filters/mojo.fyi.network_interactive_ui_tests.filter",
     "//testing/buildbot/filters/site-per-process.interactive_ui_tests.filter",
   ]
 }

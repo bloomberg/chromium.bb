@@ -3907,9 +3907,23 @@ void ChromeContentBrowserClient::
   // This logic should match
   // ChromeExtensionWebContentsObserver::RenderFrameCreated.
   WebContents* web_contents = WebContents::FromRenderFrameHost(frame_host);
-  if (!web_contents) {
+  if (!web_contents)
     return;
+
+  Profile* profile =
+      Profile::FromBrowserContext(web_contents->GetBrowserContext());
+  InstantService* instant_service =
+      InstantServiceFactory::GetForProfile(profile);
+  // The test below matches what's done by ShouldServiceRequestIOThread in
+  // local_ntp_source.cc.
+  if (instant_service->IsInstantProcess(frame_host->GetProcess()->GetID())) {
+    factories->emplace(
+        chrome::kChromeSearchScheme,
+        content::CreateWebUIURLLoader(
+            frame_host, chrome::kChromeSearchScheme,
+            /*allowed_webui_hosts=*/base::flat_set<std::string>()));
   }
+
   extensions::ChromeExtensionWebContentsObserver* web_observer =
       extensions::ChromeExtensionWebContentsObserver::FromWebContents(
           web_contents);
