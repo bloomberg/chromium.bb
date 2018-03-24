@@ -21,8 +21,9 @@ GenericHandler::~GenericHandler() {
 }
 
 void GenericHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("navigateToUrl",
-      base::Bind(&GenericHandler::HandleNavigateToUrl, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "navigateToUrl", base::BindRepeating(&GenericHandler::HandleNavigateToUrl,
+                                           base::Unretained(this)));
 }
 
 void GenericHandler::HandleNavigateToUrl(const base::ListValue* args) {

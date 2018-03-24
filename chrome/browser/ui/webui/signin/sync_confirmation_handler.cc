@@ -59,17 +59,20 @@ void SyncConfirmationHandler::OnBrowserRemoved(Browser* browser) {
 }
 
 void SyncConfirmationHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("confirm",
-      base::Bind(&SyncConfirmationHandler::HandleConfirm,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("undo",
-      base::Bind(&SyncConfirmationHandler::HandleUndo, base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "goToSettings", base::Bind(&SyncConfirmationHandler::HandleGoToSettings,
-                                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("initializedWithSize",
-      base::Bind(&SyncConfirmationHandler::HandleInitializedWithSize,
-                 base::Unretained(this)));
+      "confirm", base::BindRepeating(&SyncConfirmationHandler::HandleConfirm,
+                                     base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "undo", base::BindRepeating(&SyncConfirmationHandler::HandleUndo,
+                                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "goToSettings",
+      base::BindRepeating(&SyncConfirmationHandler::HandleGoToSettings,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "initializedWithSize",
+      base::BindRepeating(&SyncConfirmationHandler::HandleInitializedWithSize,
+                          base::Unretained(this)));
 }
 
 void SyncConfirmationHandler::HandleConfirm(const base::ListValue* args) {

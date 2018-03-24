@@ -70,20 +70,24 @@ void SigninSupervisedUserImportHandler::GetLocalizedValues(
 }
 
 void SigninSupervisedUserImportHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getExistingSupervisedUsers",
-      base::Bind(&SigninSupervisedUserImportHandler::GetExistingSupervisedUsers,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("openUrlInLastActiveProfileBrowser",
-      base::Bind(
+  web_ui()->RegisterMessageCallback(
+      "getExistingSupervisedUsers",
+      base::BindRepeating(
+          &SigninSupervisedUserImportHandler::GetExistingSupervisedUsers,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "openUrlInLastActiveProfileBrowser",
+      base::BindRepeating(
           &SigninSupervisedUserImportHandler::OpenUrlInLastActiveProfileBrowser,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "authenticateCustodian",
-      base::Bind(&SigninSupervisedUserImportHandler::AuthenticateCustodian,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SigninSupervisedUserImportHandler::AuthenticateCustodian,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "cancelLoadingSupervisedUsers",
-      base::Bind(
+      base::BindRepeating(
           &SigninSupervisedUserImportHandler::HandleCancelLoadSupervisedUsers,
           base::Unretained(this)));
 }

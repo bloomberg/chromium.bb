@@ -168,10 +168,10 @@ TracingUI::TracingUI(WebUI* web_ui)
       weak_factory_(this) {
   web_ui->RegisterMessageCallback(
       "doUpload",
-      base::Bind(&TracingUI::DoUpload, base::Unretained(this)));
+      base::BindRepeating(&TracingUI::DoUpload, base::Unretained(this)));
   web_ui->RegisterMessageCallback(
-      "doUploadBase64",
-      base::Bind(&TracingUI::DoUploadBase64Encoded, base::Unretained(this)));
+      "doUploadBase64", base::BindRepeating(&TracingUI::DoUploadBase64Encoded,
+                                            base::Unretained(this)));
 
   // Set up the chrome://tracing/ source.
   BrowserContext* browser_context =

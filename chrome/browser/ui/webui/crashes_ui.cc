@@ -114,20 +114,20 @@ void CrashesDOMHandler::RegisterMessages() {
                                     base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       crash::kCrashesUIRequestCrashList,
-      base::Bind(&CrashesDOMHandler::HandleRequestCrashes,
-                 base::Unretained(this)));
+      base::BindRepeating(&CrashesDOMHandler::HandleRequestCrashes,
+                          base::Unretained(this)));
 
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       crash::kCrashesUIRequestCrashUpload,
-      base::Bind(&CrashesDOMHandler::HandleRequestUploads,
-                 base::Unretained(this)));
+      base::BindRepeating(&CrashesDOMHandler::HandleRequestUploads,
+                          base::Unretained(this)));
 #endif
 
   web_ui()->RegisterMessageCallback(
       crash::kCrashesUIRequestSingleCrashUpload,
-      base::Bind(&CrashesDOMHandler::HandleRequestSingleCrashUpload,
-                 base::Unretained(this)));
+      base::BindRepeating(&CrashesDOMHandler::HandleRequestSingleCrashUpload,
+                          base::Unretained(this)));
 }
 
 void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {

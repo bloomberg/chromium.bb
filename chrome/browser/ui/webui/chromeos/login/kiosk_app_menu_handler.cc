@@ -77,15 +77,18 @@ void KioskAppMenuHandler::GetLocalizedStrings(
 }
 
 void KioskAppMenuHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("initializeKioskApps",
-      base::Bind(&KioskAppMenuHandler::HandleInitializeKioskApps,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("kioskAppsLoaded",
-      base::Bind(&KioskAppMenuHandler::HandleKioskAppsLoaded,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("checkKioskAppLaunchError",
-      base::Bind(&KioskAppMenuHandler::HandleCheckKioskAppLaunchError,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "initializeKioskApps",
+      base::BindRepeating(&KioskAppMenuHandler::HandleInitializeKioskApps,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "kioskAppsLoaded",
+      base::BindRepeating(&KioskAppMenuHandler::HandleKioskAppsLoaded,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "checkKioskAppLaunchError",
+      base::BindRepeating(&KioskAppMenuHandler::HandleCheckKioskAppLaunchError,
+                          base::Unretained(this)));
 }
 
 // static

@@ -140,8 +140,9 @@ SetAsDefaultBrowserHandler::SetAsDefaultBrowserHandler(
 void SetAsDefaultBrowserHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "SetAsDefaultBrowser:LaunchSetDefaultBrowserFlow",
-      base::Bind(&SetAsDefaultBrowserHandler::HandleLaunchSetDefaultBrowserFlow,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SetAsDefaultBrowserHandler::HandleLaunchSetDefaultBrowserFlow,
+          base::Unretained(this)));
 }
 
 void SetAsDefaultBrowserHandler::HandleLaunchSetDefaultBrowserFlow(

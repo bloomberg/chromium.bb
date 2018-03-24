@@ -48,7 +48,7 @@ class WebUIIOS {
 
   // Used by WebUIIOSMessageHandlers. If the given message is already
   // registered, the call has no effect.
-  typedef base::Callback<void(const base::ListValue*)> MessageCallback;
+  using MessageCallback = base::RepeatingCallback<void(const base::ListValue*)>;
   virtual void RegisterMessageCallback(const std::string& message,
                                        const MessageCallback& callback) = 0;
 

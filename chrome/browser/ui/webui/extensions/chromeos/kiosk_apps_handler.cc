@@ -129,27 +129,33 @@ void KioskAppsHandler::OnJavascriptDisallowed() {
 }
 
 void KioskAppsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("initializeKioskAppSettings",
-      base::Bind(&KioskAppsHandler::HandleInitializeKioskAppSettings,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getKioskAppSettings",
-      base::Bind(&KioskAppsHandler::HandleGetKioskAppSettings,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("addKioskApp",
-      base::Bind(&KioskAppsHandler::HandleAddKioskApp,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeKioskApp",
-      base::Bind(&KioskAppsHandler::HandleRemoveKioskApp,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("enableKioskAutoLaunch",
-      base::Bind(&KioskAppsHandler::HandleEnableKioskAutoLaunch,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("disableKioskAutoLaunch",
-      base::Bind(&KioskAppsHandler::HandleDisableKioskAutoLaunch,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setDisableBailoutShortcut",
-      base::Bind(&KioskAppsHandler::HandleSetDisableBailoutShortcut,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "initializeKioskAppSettings",
+      base::BindRepeating(&KioskAppsHandler::HandleInitializeKioskAppSettings,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getKioskAppSettings",
+      base::BindRepeating(&KioskAppsHandler::HandleGetKioskAppSettings,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "addKioskApp", base::BindRepeating(&KioskAppsHandler::HandleAddKioskApp,
+                                         base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeKioskApp",
+      base::BindRepeating(&KioskAppsHandler::HandleRemoveKioskApp,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "enableKioskAutoLaunch",
+      base::BindRepeating(&KioskAppsHandler::HandleEnableKioskAutoLaunch,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "disableKioskAutoLaunch",
+      base::BindRepeating(&KioskAppsHandler::HandleDisableKioskAutoLaunch,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setDisableBailoutShortcut",
+      base::BindRepeating(&KioskAppsHandler::HandleSetDisableBailoutShortcut,
+                          base::Unretained(this)));
 }
 
 void KioskAppsHandler::GetLocalizedValues(content::WebUIDataSource* source) {

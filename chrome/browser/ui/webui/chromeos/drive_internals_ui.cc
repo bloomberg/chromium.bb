@@ -375,28 +375,28 @@ void DriveInternalsWebUIHandler::OnGetAppList(
 void DriveInternalsWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "pageLoaded",
-      base::Bind(&DriveInternalsWebUIHandler::OnPageLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&DriveInternalsWebUIHandler::OnPageLoaded,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "periodicUpdate",
-      base::Bind(&DriveInternalsWebUIHandler::OnPeriodicUpdate,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&DriveInternalsWebUIHandler::OnPeriodicUpdate,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "clearAccessToken",
-      base::Bind(&DriveInternalsWebUIHandler::ClearAccessToken,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&DriveInternalsWebUIHandler::ClearAccessToken,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "clearRefreshToken",
-      base::Bind(&DriveInternalsWebUIHandler::ClearRefreshToken,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&DriveInternalsWebUIHandler::ClearRefreshToken,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "resetDriveFileSystem",
-      base::Bind(&DriveInternalsWebUIHandler::ResetDriveFileSystem,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&DriveInternalsWebUIHandler::ResetDriveFileSystem,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "listFileEntries",
-      base::Bind(&DriveInternalsWebUIHandler::ListFileEntries,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&DriveInternalsWebUIHandler::ListFileEntries,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 drive::DriveIntegrationService*

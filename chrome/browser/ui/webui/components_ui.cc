@@ -99,13 +99,13 @@ ComponentsDOMHandler::ComponentsDOMHandler() {
 void ComponentsDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestComponentsData",
-      base::Bind(&ComponentsDOMHandler::HandleRequestComponentsData,
-                 base::Unretained(this)));
+      base::BindRepeating(&ComponentsDOMHandler::HandleRequestComponentsData,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "checkUpdate",
-      base::Bind(&ComponentsDOMHandler::HandleCheckUpdate,
-                 base::Unretained(this)));
+      base::BindRepeating(&ComponentsDOMHandler::HandleCheckUpdate,
+                          base::Unretained(this)));
 }
 
 void ComponentsDOMHandler::HandleRequestComponentsData(

@@ -126,18 +126,22 @@ SupervisedUserInternalsMessageHandler::
 void SupervisedUserInternalsMessageHandler::RegisterMessages() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  web_ui()->RegisterMessageCallback("registerForEvents",
-      base::Bind(&SupervisedUserInternalsMessageHandler::
-                     HandleRegisterForEvents,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "registerForEvents",
+      base::BindRepeating(
+          &SupervisedUserInternalsMessageHandler::HandleRegisterForEvents,
+          base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("getBasicInfo",
-      base::Bind(&SupervisedUserInternalsMessageHandler::HandleGetBasicInfo,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getBasicInfo",
+      base::BindRepeating(
+          &SupervisedUserInternalsMessageHandler::HandleGetBasicInfo,
+          base::Unretained(this)));
 
-  web_ui()->RegisterMessageCallback("tryURL",
-      base::Bind(&SupervisedUserInternalsMessageHandler::HandleTryURL,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "tryURL",
+      base::BindRepeating(&SupervisedUserInternalsMessageHandler::HandleTryURL,
+                          base::Unretained(this)));
 }
 
 void SupervisedUserInternalsMessageHandler::OnURLFilterChanged() {

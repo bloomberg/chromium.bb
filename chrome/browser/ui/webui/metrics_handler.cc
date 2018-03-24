@@ -26,21 +26,24 @@ MetricsHandler::~MetricsHandler() {}
 void MetricsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "metricsHandler:recordAction",
-      base::Bind(&MetricsHandler::HandleRecordAction, base::Unretained(this)));
+      base::BindRepeating(&MetricsHandler::HandleRecordAction,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "metricsHandler:recordInHistogram",
-      base::Bind(&MetricsHandler::HandleRecordInHistogram,
-                 base::Unretained(this)));
+      base::BindRepeating(&MetricsHandler::HandleRecordInHistogram,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "metricsHandler:recordBooleanHistogram",
-      base::Bind(&MetricsHandler::HandleRecordBooleanHistogram,
-                 base::Unretained(this)));
+      base::BindRepeating(&MetricsHandler::HandleRecordBooleanHistogram,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "metricsHandler:recordTime",
-      base::Bind(&MetricsHandler::HandleRecordTime, base::Unretained(this)));
+      base::BindRepeating(&MetricsHandler::HandleRecordTime,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "metricsHandler:logEventTime",
-      base::Bind(&MetricsHandler::HandleLogEventTime, base::Unretained(this)));
+      base::BindRepeating(&MetricsHandler::HandleLogEventTime,
+                          base::Unretained(this)));
 }
 
 void MetricsHandler::HandleRecordAction(const base::ListValue* args) {

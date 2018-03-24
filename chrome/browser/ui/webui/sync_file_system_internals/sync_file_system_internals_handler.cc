@@ -54,24 +54,24 @@ SyncFileSystemInternalsHandler::~SyncFileSystemInternalsHandler() {
 void SyncFileSystemInternalsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getServiceStatus",
-      base::Bind(&SyncFileSystemInternalsHandler::GetServiceStatus,
-                 base::Unretained(this)));
+      base::BindRepeating(&SyncFileSystemInternalsHandler::GetServiceStatus,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "getLog",
-      base::Bind(&SyncFileSystemInternalsHandler::GetLog,
-                 base::Unretained(this)));
+      "getLog", base::BindRepeating(&SyncFileSystemInternalsHandler::GetLog,
+                                    base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "clearLogs",
-      base::Bind(&SyncFileSystemInternalsHandler::ClearLogs,
-                 base::Unretained(this)));
+      base::BindRepeating(&SyncFileSystemInternalsHandler::ClearLogs,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getNotificationSource",
-      base::Bind(&SyncFileSystemInternalsHandler::GetNotificationSource,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SyncFileSystemInternalsHandler::GetNotificationSource,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "observeTaskLog",
-      base::Bind(&SyncFileSystemInternalsHandler::ObserveTaskLog,
-                 base::Unretained(this)));
+      base::BindRepeating(&SyncFileSystemInternalsHandler::ObserveTaskLog,
+                          base::Unretained(this)));
 }
 
 void SyncFileSystemInternalsHandler::OnSyncStateUpdated(

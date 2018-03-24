@@ -37,22 +37,25 @@ InlineLoginHandler::InlineLoginHandler() : weak_ptr_factory_(this) {}
 InlineLoginHandler::~InlineLoginHandler() {}
 
 void InlineLoginHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("initialize",
-      base::Bind(&InlineLoginHandler::HandleInitializeMessage,
-                  base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("completeLogin",
-      base::Bind(&InlineLoginHandler::HandleCompleteLoginMessage,
-                  base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "initialize",
+      base::BindRepeating(&InlineLoginHandler::HandleInitializeMessage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "completeLogin",
+      base::BindRepeating(&InlineLoginHandler::HandleCompleteLoginMessage,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "switchToFullTab",
-      base::Bind(&InlineLoginHandler::HandleSwitchToFullTabMessage,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("navigationButtonClicked",
-      base::Bind(&InlineLoginHandler::HandleNavigationButtonClicked,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("dialogClose",
-      base::Bind(&InlineLoginHandler::HandleDialogClose,
-                 base::Unretained(this)));
+      base::BindRepeating(&InlineLoginHandler::HandleSwitchToFullTabMessage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "navigationButtonClicked",
+      base::BindRepeating(&InlineLoginHandler::HandleNavigationButtonClicked,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "dialogClose", base::BindRepeating(&InlineLoginHandler::HandleDialogClose,
+                                         base::Unretained(this)));
 }
 
 void InlineLoginHandler::HandleInitializeMessage(const base::ListValue* args) {

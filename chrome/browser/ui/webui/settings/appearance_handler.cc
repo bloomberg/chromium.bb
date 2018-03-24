@@ -29,29 +29,29 @@ void AppearanceHandler::OnJavascriptDisallowed() {}
 void AppearanceHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "useDefaultTheme",
-      base::Bind(&AppearanceHandler::HandleUseDefaultTheme,
-                 base::Unretained(this)));
+      base::BindRepeating(&AppearanceHandler::HandleUseDefaultTheme,
+                          base::Unretained(this)));
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "useSystemTheme",
-      base::Bind(&AppearanceHandler::HandleUseSystemTheme,
-                 base::Unretained(this)));
+      base::BindRepeating(&AppearanceHandler::HandleUseSystemTheme,
+                          base::Unretained(this)));
 #endif
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
       "openWallpaperManager",
-      base::Bind(&AppearanceHandler::HandleOpenWallpaperManager,
-                 base::Unretained(this)));
+      base::BindRepeating(&AppearanceHandler::HandleOpenWallpaperManager,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "isWallpaperSettingVisible",
-      base::Bind(&AppearanceHandler::IsWallpaperSettingVisible,
-                 base::Unretained(this)));
+      base::BindRepeating(&AppearanceHandler::IsWallpaperSettingVisible,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "isWallpaperPolicyControlled",
-      base::Bind(&AppearanceHandler::IsWallpaperPolicyControlled,
-                 base::Unretained(this)));
+      base::BindRepeating(&AppearanceHandler::IsWallpaperPolicyControlled,
+                          base::Unretained(this)));
 #endif
 }
 

@@ -61,32 +61,35 @@ SearchEnginesHandler::~SearchEnginesHandler() {
 void SearchEnginesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getSearchEnginesList",
-      base::Bind(&SearchEnginesHandler::HandleGetSearchEnginesList,
-                 base::Unretained(this)));
+      base::BindRepeating(&SearchEnginesHandler::HandleGetSearchEnginesList,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setDefaultSearchEngine",
-      base::Bind(&SearchEnginesHandler::HandleSetDefaultSearchEngine,
-                 base::Unretained(this)));
+      base::BindRepeating(&SearchEnginesHandler::HandleSetDefaultSearchEngine,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "removeSearchEngine",
-      base::Bind(&SearchEnginesHandler::HandleRemoveSearchEngine,
-                 base::Unretained(this)));
+      base::BindRepeating(&SearchEnginesHandler::HandleRemoveSearchEngine,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "validateSearchEngineInput",
-      base::Bind(&SearchEnginesHandler::HandleValidateSearchEngineInput,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SearchEnginesHandler::HandleValidateSearchEngineInput,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "searchEngineEditStarted",
-      base::Bind(&SearchEnginesHandler::HandleSearchEngineEditStarted,
-                 base::Unretained(this)));
+      base::BindRepeating(&SearchEnginesHandler::HandleSearchEngineEditStarted,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "searchEngineEditCancelled",
-      base::Bind(&SearchEnginesHandler::HandleSearchEngineEditCancelled,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SearchEnginesHandler::HandleSearchEngineEditCancelled,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "searchEngineEditCompleted",
-      base::Bind(&SearchEnginesHandler::HandleSearchEngineEditCompleted,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SearchEnginesHandler::HandleSearchEngineEditCompleted,
+          base::Unretained(this)));
 }
 
 void SearchEnginesHandler::OnJavascriptAllowed() {

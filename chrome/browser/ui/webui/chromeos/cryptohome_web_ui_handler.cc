@@ -22,9 +22,8 @@ CryptohomeWebUIHandler::~CryptohomeWebUIHandler() {}
 
 void CryptohomeWebUIHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "pageLoaded",
-      base::Bind(&CryptohomeWebUIHandler::OnPageLoaded,
-                 weak_ptr_factory_.GetWeakPtr()));
+      "pageLoaded", base::BindRepeating(&CryptohomeWebUIHandler::OnPageLoaded,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void CryptohomeWebUIHandler::OnPageLoaded(const base::ListValue* args) {

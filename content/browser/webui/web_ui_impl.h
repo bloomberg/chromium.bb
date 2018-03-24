@@ -51,7 +51,6 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   int GetBindings() const override;
   void SetBindings(int bindings) override;
   void AddMessageHandler(std::unique_ptr<WebUIMessageHandler> handler) override;
-  typedef base::Callback<void(const base::ListValue*)> MessageCallback;
   void RegisterMessageCallback(const std::string& message,
                                const MessageCallback& callback) override;
   void ProcessWebUIMessage(const GURL& source_url,
@@ -97,8 +96,7 @@ class CONTENT_EXPORT WebUIImpl : public WebUI,
   void DisallowJavascriptOnAllHandlers();
 
   // A map of message name -> message handling callback.
-  typedef std::map<std::string, MessageCallback> MessageCallbackMap;
-  MessageCallbackMap message_callbacks_;
+  std::map<std::string, MessageCallback> message_callbacks_;
 
   // Options that may be overridden by individual Web UI implementations. The
   // bool options default to false. See the public getters for more information.

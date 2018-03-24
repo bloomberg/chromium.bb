@@ -251,11 +251,10 @@ void WebUIImpl::ProcessWebUIMessage(const GURL& source_url,
     return;
 
   // Look up the callback for this message.
-  MessageCallbackMap::const_iterator callback =
-      message_callbacks_.find(message);
-  if (callback != message_callbacks_.end()) {
+  auto callback_pair = message_callbacks_.find(message);
+  if (callback_pair != message_callbacks_.end()) {
     // Forward this message and content on.
-    callback->second.Run(&args);
+    callback_pair->second.Run(&args);
   } else {
     NOTREACHED() << "Unhandled chrome.send(\"" << message << "\");";
   }

@@ -393,15 +393,17 @@ KeyboardOverlayHandler::~KeyboardOverlayHandler() {
 }
 
 void KeyboardOverlayHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getInputMethodId",
-      base::Bind(&KeyboardOverlayHandler::GetInputMethodId,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getLabelMap",
-      base::Bind(&KeyboardOverlayHandler::GetLabelMap,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("openLearnMorePage",
-      base::Bind(&KeyboardOverlayHandler::OpenLearnMorePage,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getInputMethodId",
+      base::BindRepeating(&KeyboardOverlayHandler::GetInputMethodId,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getLabelMap", base::BindRepeating(&KeyboardOverlayHandler::GetLabelMap,
+                                         base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "openLearnMorePage",
+      base::BindRepeating(&KeyboardOverlayHandler::OpenLearnMorePage,
+                          base::Unretained(this)));
 }
 
 void KeyboardOverlayHandler::GetInputMethodId(const base::ListValue* args) {

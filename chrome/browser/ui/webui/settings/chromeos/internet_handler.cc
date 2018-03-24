@@ -96,18 +96,19 @@ void InternetHandler::RegisterMessages() {
   // TODO(stevenjb): Eliminate once network configuration UI is integrated
   // into settings.
   web_ui()->RegisterMessageCallback(
-      kAddNetworkMessage,
-      base::Bind(&InternetHandler::AddNetwork, base::Unretained(this)));
+      kAddNetworkMessage, base::BindRepeating(&InternetHandler::AddNetwork,
+                                              base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kConfigureNetworkMessage,
-      base::Bind(&InternetHandler::ConfigureNetwork, base::Unretained(this)));
+      base::BindRepeating(&InternetHandler::ConfigureNetwork,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kRequestArcVpnProviders,
-      base::Bind(&InternetHandler::RequestArcVpnProviders,
-                 base::Unretained(this)));
+      base::BindRepeating(&InternetHandler::RequestArcVpnProviders,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kRequestGmsCoreNotificationsDisabledDeviceNames,
-      base::Bind(
+      base::BindRepeating(
           &InternetHandler::RequestGmsCoreNotificationsDisabledDeviceNames,
           base::Unretained(this)));
 }

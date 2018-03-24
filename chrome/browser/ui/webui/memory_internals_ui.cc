@@ -171,8 +171,8 @@ void MemoryInternalsDOMHandler::RegisterMessages() {
   // the WebUI.
   web_ui()->RegisterMessageCallback(
       "requestProcessList",
-      base::Bind(&MemoryInternalsDOMHandler::HandleRequestProcessList,
-                 base::Unretained(this)));
+      base::BindRepeating(&MemoryInternalsDOMHandler::HandleRequestProcessList,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "saveDump",
       base::BindRepeating(&MemoryInternalsDOMHandler::HandleSaveDump,

@@ -27,21 +27,23 @@ void GoogleAssistantHandler::OnJavascriptDisallowed() {}
 void GoogleAssistantHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "setGoogleAssistantEnabled",
-      base::Bind(&GoogleAssistantHandler::HandleSetGoogleAssistantEnabled,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &GoogleAssistantHandler::HandleSetGoogleAssistantEnabled,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "setGoogleAssistantContextEnabled",
-      base::Bind(
+      base::BindRepeating(
           &GoogleAssistantHandler::HandleSetGoogleAssistantContextEnabled,
           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "showGoogleAssistantSettings",
-      base::Bind(&GoogleAssistantHandler::HandleShowGoogleAssistantSettings,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &GoogleAssistantHandler::HandleShowGoogleAssistantSettings,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "turnOnGoogleAssistant",
-      base::Bind(&GoogleAssistantHandler::HandleTurnOnGoogleAssistant,
-                 base::Unretained(this)));
+      base::BindRepeating(&GoogleAssistantHandler::HandleTurnOnGoogleAssistant,
+                          base::Unretained(this)));
 }
 
 void GoogleAssistantHandler::HandleSetGoogleAssistantEnabled(

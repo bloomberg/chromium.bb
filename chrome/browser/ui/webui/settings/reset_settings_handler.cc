@@ -105,30 +105,36 @@ void ResetSettingsHandler::OnJavascriptDisallowed() {
 }
 
 void ResetSettingsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("performResetProfileSettings",
-      base::Bind(&ResetSettingsHandler::HandleResetProfileSettings,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("onShowResetProfileDialog",
-      base::Bind(&ResetSettingsHandler::OnShowResetProfileDialog,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("getReportedSettings",
-      base::Bind(&ResetSettingsHandler::HandleGetReportedSettings,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("onHideResetProfileDialog",
-      base::Bind(&ResetSettingsHandler::OnHideResetProfileDialog,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("onHideResetProfileBanner",
-      base::Bind(&ResetSettingsHandler::OnHideResetProfileBanner,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "performResetProfileSettings",
+      base::BindRepeating(&ResetSettingsHandler::HandleResetProfileSettings,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "onShowResetProfileDialog",
+      base::BindRepeating(&ResetSettingsHandler::OnShowResetProfileDialog,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getReportedSettings",
+      base::BindRepeating(&ResetSettingsHandler::HandleGetReportedSettings,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "onHideResetProfileDialog",
+      base::BindRepeating(&ResetSettingsHandler::OnHideResetProfileDialog,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "onHideResetProfileBanner",
+      base::BindRepeating(&ResetSettingsHandler::OnHideResetProfileBanner,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getTriggeredResetToolName",
-      base::Bind(&ResetSettingsHandler::HandleGetTriggeredResetToolName,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &ResetSettingsHandler::HandleGetTriggeredResetToolName,
+          base::Unretained(this)));
 #if defined(OS_CHROMEOS)
   web_ui()->RegisterMessageCallback(
-       "onPowerwashDialogShow",
-       base::Bind(&ResetSettingsHandler::OnShowPowerwashDialog,
-                  base::Unretained(this)));
+      "onPowerwashDialogShow",
+      base::BindRepeating(&ResetSettingsHandler::OnShowPowerwashDialog,
+                          base::Unretained(this)));
 #endif  // defined(OS_CHROMEOS)
 }
 

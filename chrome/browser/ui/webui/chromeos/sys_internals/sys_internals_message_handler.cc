@@ -205,8 +205,9 @@ SysInternalsMessageHandler::~SysInternalsMessageHandler() {}
 
 void SysInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getSysInfo", base::Bind(&SysInternalsMessageHandler::HandleGetSysInfo,
-                               base::Unretained(this)));
+      "getSysInfo",
+      base::BindRepeating(&SysInternalsMessageHandler::HandleGetSysInfo,
+                          base::Unretained(this)));
 }
 
 void SysInternalsMessageHandler::HandleGetSysInfo(const base::ListValue* args) {

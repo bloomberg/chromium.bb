@@ -44,19 +44,18 @@ DomDistillerHandler::~DomDistillerHandler() {}
 void DomDistillerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestEntries",
-      base::Bind(&DomDistillerHandler::HandleRequestEntries,
-                 base::Unretained(this)));
+      base::BindRepeating(&DomDistillerHandler::HandleRequestEntries,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "addArticle",
-      base::Bind(&DomDistillerHandler::HandleAddArticle,
-                 base::Unretained(this)));
+      "addArticle", base::BindRepeating(&DomDistillerHandler::HandleAddArticle,
+                                        base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "selectArticle",
-      base::Bind(&DomDistillerHandler::HandleSelectArticle,
-                 base::Unretained(this)));
+      base::BindRepeating(&DomDistillerHandler::HandleSelectArticle,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "viewUrl",
-      base::Bind(&DomDistillerHandler::HandleViewUrl, base::Unretained(this)));
+      "viewUrl", base::BindRepeating(&DomDistillerHandler::HandleViewUrl,
+                                     base::Unretained(this)));
 }
 
 void DomDistillerHandler::HandleAddArticle(const base::ListValue* args) {

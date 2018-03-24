@@ -159,27 +159,30 @@ void SigninCreateProfileHandler::RegisterMessages() {
   // Cancellation is only supported for supervised users.
   web_ui()->RegisterMessageCallback(
       "cancelCreateProfile",
-      base::Bind(&SigninCreateProfileHandler::HandleCancelProfileCreation,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SigninCreateProfileHandler::HandleCancelProfileCreation,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "switchToProfile",
-      base::Bind(&SigninCreateProfileHandler::SwitchToProfile,
-                 base::Unretained(this)));
+      base::BindRepeating(&SigninCreateProfileHandler::SwitchToProfile,
+                          base::Unretained(this)));
 #endif
   web_ui()->RegisterMessageCallback(
-      "createProfile", base::Bind(&SigninCreateProfileHandler::CreateProfile,
-                                  base::Unretained(this)));
+      "createProfile",
+      base::BindRepeating(&SigninCreateProfileHandler::CreateProfile,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "requestDefaultProfileIcons",
-      base::Bind(&SigninCreateProfileHandler::RequestDefaultProfileIcons,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SigninCreateProfileHandler::RequestDefaultProfileIcons,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "requestSignedInProfiles",
-      base::Bind(&SigninCreateProfileHandler::RequestSignedInProfiles,
-                 base::Unretained(this)));
+      base::BindRepeating(&SigninCreateProfileHandler::RequestSignedInProfiles,
+                          base::Unretained(this)));
 }
 
 void SigninCreateProfileHandler::RequestDefaultProfileIcons(

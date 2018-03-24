@@ -48,7 +48,8 @@ class PaintMessageHandler : public WebUIMessageHandler,
 
 void PaintMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "didPaint", base::Bind(&PaintMessageHandler::DidPaint, AsWeakPtr()));
+      "didPaint",
+      base::BindRepeating(&PaintMessageHandler::DidPaint, AsWeakPtr()));
 }
 
 void PaintMessageHandler::DidPaint(const base::ListValue* args) {

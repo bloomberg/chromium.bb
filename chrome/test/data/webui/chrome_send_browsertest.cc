@@ -25,8 +25,8 @@ ChromeSendWebUITest::ChromeSendWebUIMessageHandler::
 void ChromeSendWebUITest::ChromeSendWebUIMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "checkSend",
-      base::Bind(&ChromeSendWebUIMessageHandler::HandleCheckSend,
-                 base::Unretained(this)));
+      base::BindRepeating(&ChromeSendWebUIMessageHandler::HandleCheckSend,
+                          base::Unretained(this)));
 }
 
 WebUIMessageHandler* ChromeSendWebUITest::GetMockMessageHandler() {

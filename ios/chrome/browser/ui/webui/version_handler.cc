@@ -19,8 +19,8 @@ VersionHandler::~VersionHandler() {}
 void VersionHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       version_ui::kRequestVersionInfo,
-      base::Bind(&VersionHandler::HandleRequestVersionInfo,
-                 base::Unretained(this)));
+      base::BindRepeating(&VersionHandler::HandleRequestVersionInfo,
+                          base::Unretained(this)));
 }
 
 void VersionHandler::HandleRequestVersionInfo(const base::ListValue* args) {

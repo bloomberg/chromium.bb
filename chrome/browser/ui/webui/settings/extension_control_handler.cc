@@ -19,9 +19,10 @@ ExtensionControlHandler::ExtensionControlHandler() {}
 ExtensionControlHandler::~ExtensionControlHandler() {}
 
 void ExtensionControlHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("disableExtension",
-      base::Bind(&ExtensionControlHandler::HandleDisableExtension,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "disableExtension",
+      base::BindRepeating(&ExtensionControlHandler::HandleDisableExtension,
+                          base::Unretained(this)));
 }
 
 void ExtensionControlHandler::HandleDisableExtension(

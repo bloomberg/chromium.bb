@@ -33,13 +33,13 @@ InvalidationsMessageHandler::~InvalidationsMessageHandler() {
 
 void InvalidationsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "doneLoading",
-      base::Bind(&InvalidationsMessageHandler::UIReady,
-                 base::Unretained(this)));
+      "doneLoading", base::BindRepeating(&InvalidationsMessageHandler::UIReady,
+                                         base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestDetailedStatus",
-      base::Bind(&InvalidationsMessageHandler::HandleRequestDetailedStatus,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &InvalidationsMessageHandler::HandleRequestDetailedStatus,
+          base::Unretained(this)));
 }
 
 void InvalidationsMessageHandler::UIReady(const base::ListValue* args) {

@@ -195,62 +195,67 @@ SnippetsInternalsMessageHandler::~SnippetsInternalsMessageHandler() {}
 void SnippetsInternalsMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "clearCachedSuggestions",
-      base::Bind(&SnippetsInternalsMessageHandler::HandleClearCachedSuggestions,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SnippetsInternalsMessageHandler::HandleClearCachedSuggestions,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "clearClassification",
-      base::Bind(&SnippetsInternalsMessageHandler::HandleClearClassification,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SnippetsInternalsMessageHandler::HandleClearClassification,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "clearDismissedSuggestions",
-      base::Bind(
+      base::BindRepeating(
           &SnippetsInternalsMessageHandler::HandleClearDismissedSuggestions,
           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
-      "download", base::Bind(&SnippetsInternalsMessageHandler::HandleDownload,
-                             base::Unretained(this)));
+      "download",
+      base::BindRepeating(&SnippetsInternalsMessageHandler::HandleDownload,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "fetchRemoteSuggestionsInTheBackgroundIn2Seconds",
-      base::Bind(&SnippetsInternalsMessageHandler::
-                     HandleFetchRemoteSuggestionsInTheBackgroundIn2Seconds,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SnippetsInternalsMessageHandler::
+              HandleFetchRemoteSuggestionsInTheBackgroundIn2Seconds,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "fetchContextualSuggestions",
-      base::Bind(
+      base::BindRepeating(
           &SnippetsInternalsMessageHandler::HandleFetchContextualSuggestions,
           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "resetNotificationsState",
-      base::Bind(
+      base::BindRepeating(
           &SnippetsInternalsMessageHandler::HandleResetNotificationsState,
           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "pushDummySuggestionIn10Seconds",
-      base::Bind(&SnippetsInternalsMessageHandler::
-                     HandlePushDummySuggestionIn10Seconds,
-                 base::Unretained(this)));
+      base::BindRepeating(&SnippetsInternalsMessageHandler::
+                              HandlePushDummySuggestionIn10Seconds,
+                          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "refreshContent",
-      base::Bind(&SnippetsInternalsMessageHandler::HandleRefreshContent,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &SnippetsInternalsMessageHandler::HandleRefreshContent,
+          base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "toggleDismissedSuggestions",
-      base::Bind(
+      base::BindRepeating(
           &SnippetsInternalsMessageHandler::HandleToggleDismissedSuggestions,
           base::Unretained(this)));
 
   web_ui()->RegisterMessageCallback(
       "initializationCompleted",
-      base::Bind(
+      base::BindRepeating(
           &SnippetsInternalsMessageHandler::HandleInitializationCompleted,
           base::Unretained(this)));
 

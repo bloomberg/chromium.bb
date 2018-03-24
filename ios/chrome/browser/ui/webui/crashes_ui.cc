@@ -97,8 +97,8 @@ void CrashesDOMHandler::RegisterMessages() {
                                     base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       crash::kCrashesUIRequestCrashList,
-      base::Bind(&CrashesDOMHandler::HandleRequestCrashes,
-                 base::Unretained(this)));
+      base::BindRepeating(&CrashesDOMHandler::HandleRequestCrashes,
+                          base::Unretained(this)));
 }
 
 void CrashesDOMHandler::HandleRequestCrashes(const base::ListValue* args) {

@@ -160,28 +160,32 @@ void CookiesViewHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       "localData.getDisplayList",
-      base::Bind(&CookiesViewHandler::HandleGetDisplayList,
-                 base::Unretained(this)));
+      base::BindRepeating(&CookiesViewHandler::HandleGetDisplayList,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "localData.removeAll",
-      base::Bind(&CookiesViewHandler::HandleRemoveAll, base::Unretained(this)));
+      base::BindRepeating(&CookiesViewHandler::HandleRemoveAll,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "localData.removeShownItems",
-      base::Bind(&CookiesViewHandler::HandleRemoveShownItems,
-                 base::Unretained(this)));
+      base::BindRepeating(&CookiesViewHandler::HandleRemoveShownItems,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "localData.removeItem", base::Bind(&CookiesViewHandler::HandleRemoveItem,
-                                         base::Unretained(this)));
+      "localData.removeItem",
+      base::BindRepeating(&CookiesViewHandler::HandleRemoveItem,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "localData.getCookieDetails",
-      base::Bind(&CookiesViewHandler::HandleGetCookieDetails,
-                 base::Unretained(this)));
+      base::BindRepeating(&CookiesViewHandler::HandleGetCookieDetails,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "localData.removeCookie",
-      base::Bind(&CookiesViewHandler::HandleRemove, base::Unretained(this)));
+      base::BindRepeating(&CookiesViewHandler::HandleRemove,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "localData.reload", base::Bind(&CookiesViewHandler::HandleReloadCookies,
-                                     base::Unretained(this)));
+      "localData.reload",
+      base::BindRepeating(&CookiesViewHandler::HandleReloadCookies,
+                          base::Unretained(this)));
 }
 
 void CookiesViewHandler::TreeNodesAdded(ui::TreeModel* model,

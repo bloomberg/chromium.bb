@@ -22,7 +22,7 @@ class PhysicalWebDataSource;
 namespace physical_web_ui {
 
 // This is the equivalent of content::WebUI::MessageCallback.
-typedef base::Callback<void(const base::ListValue*)> MessageCallback;
+using MessageCallback = base::RepeatingCallback<void(const base::ListValue*)>;
 
 // The base handler for Javascript messages for the chrome://physical-web page.
 // This does not implement WebUIMessageHandler or register its methods.

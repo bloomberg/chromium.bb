@@ -110,56 +110,72 @@ class InspectMessageHandler : public WebUIMessageHandler {
 };
 
 void InspectMessageHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(kInitUICommand,
-      base::Bind(&InspectMessageHandler::HandleInitUICommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kInspectCommand,
-      base::Bind(&InspectMessageHandler::HandleInspectCommand,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kInitUICommand,
+      base::BindRepeating(&InspectMessageHandler::HandleInitUICommand,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kInspectCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleInspectCommand,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kInspectFallbackCommand,
       base::BindRepeating(&InspectMessageHandler::HandleInspectFallbackCommand,
                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kInspectAdditionalCommand,
-      base::Bind(&InspectMessageHandler::HandleInspectAdditionalCommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kActivateCommand,
-      base::Bind(&InspectMessageHandler::HandleActivateCommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kCloseCommand,
-      base::Bind(&InspectMessageHandler::HandleCloseCommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kDiscoverUsbDevicesEnabledCommand,
-      base::Bind(&InspectMessageHandler::HandleBooleanPrefChanged,
-                  base::Unretained(this),
-                  &prefs::kDevToolsDiscoverUsbDevicesEnabled[0]));
-  web_ui()->RegisterMessageCallback(kPortForwardingEnabledCommand,
-      base::Bind(&InspectMessageHandler::HandleBooleanPrefChanged,
-                 base::Unretained(this),
-                 &prefs::kDevToolsPortForwardingEnabled[0]));
-  web_ui()->RegisterMessageCallback(kPortForwardingConfigCommand,
-      base::Bind(&InspectMessageHandler::HandlePortForwardingConfigCommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kDiscoverTCPTargetsEnabledCommand,
-      base::Bind(&InspectMessageHandler::HandleBooleanPrefChanged,
-                 base::Unretained(this),
-                 &prefs::kDevToolsDiscoverTCPTargetsEnabled[0]));
-  web_ui()->RegisterMessageCallback(kTCPDiscoveryConfigCommand,
-      base::Bind(&InspectMessageHandler::HandleTCPDiscoveryConfigCommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kOpenNodeFrontendCommand,
-      base::Bind(&InspectMessageHandler::HandleOpenNodeFrontendCommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kReloadCommand,
-      base::Bind(&InspectMessageHandler::HandleReloadCommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kOpenCommand,
-      base::Bind(&InspectMessageHandler::HandleOpenCommand,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kInspectBrowser,
-      base::Bind(&InspectMessageHandler::HandleInspectBrowserCommand,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &InspectMessageHandler::HandleInspectAdditionalCommand,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kActivateCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleActivateCommand,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kCloseCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleCloseCommand,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kDiscoverUsbDevicesEnabledCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleBooleanPrefChanged,
+                          base::Unretained(this),
+                          &prefs::kDevToolsDiscoverUsbDevicesEnabled[0]));
+  web_ui()->RegisterMessageCallback(
+      kPortForwardingEnabledCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleBooleanPrefChanged,
+                          base::Unretained(this),
+                          &prefs::kDevToolsPortForwardingEnabled[0]));
+  web_ui()->RegisterMessageCallback(
+      kPortForwardingConfigCommand,
+      base::BindRepeating(
+          &InspectMessageHandler::HandlePortForwardingConfigCommand,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kDiscoverTCPTargetsEnabledCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleBooleanPrefChanged,
+                          base::Unretained(this),
+                          &prefs::kDevToolsDiscoverTCPTargetsEnabled[0]));
+  web_ui()->RegisterMessageCallback(
+      kTCPDiscoveryConfigCommand,
+      base::BindRepeating(
+          &InspectMessageHandler::HandleTCPDiscoveryConfigCommand,
+          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kOpenNodeFrontendCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleOpenNodeFrontendCommand,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kReloadCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleReloadCommand,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kOpenCommand,
+      base::BindRepeating(&InspectMessageHandler::HandleOpenCommand,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kInspectBrowser,
+      base::BindRepeating(&InspectMessageHandler::HandleInspectBrowserCommand,
+                          base::Unretained(this)));
 }
 
 void InspectMessageHandler::HandleInitUICommand(const base::ListValue*) {

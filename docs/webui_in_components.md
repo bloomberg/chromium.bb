@@ -241,8 +241,8 @@ You probably want your new WebUI page to be able to do something or get informat
 +
 +   // Register callback handler.
 +   RegisterMessageCallback("addNumbers",
-+       base::Bind(&HelloWorldUI::AddNumbers,
-+                  base::Unretained(this)));
++       base::BindRepeating(&HelloWorldUI::AddNumbers,
++                           base::Unretained(this)));
 
     // Localized strings.
 ...

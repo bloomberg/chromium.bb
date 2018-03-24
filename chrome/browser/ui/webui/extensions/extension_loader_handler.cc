@@ -93,16 +93,16 @@ void ExtensionLoaderHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       "extensionLoaderRetry",
-      base::Bind(&ExtensionLoaderHandler::HandleRetry,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&ExtensionLoaderHandler::HandleRetry,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "extensionLoaderIgnoreFailure",
-      base::Bind(&ExtensionLoaderHandler::HandleIgnoreFailure,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&ExtensionLoaderHandler::HandleIgnoreFailure,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "extensionLoaderDisplayFailures",
-      base::Bind(&ExtensionLoaderHandler::HandleDisplayFailures,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&ExtensionLoaderHandler::HandleDisplayFailures,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 // static

@@ -208,8 +208,9 @@ MdHistoryUI::MdHistoryUI(content::WebUI* web_ui) : WebUIController(web_ui) {
   web_ui->AddMessageHandler(std::make_unique<HistoryLoginHandler>(
       base::Bind(&MdHistoryUI::UpdateDataSource, base::Unretained(this))));
 
-  web_ui->RegisterMessageCallback("menuPromoShown",
-      base::Bind(&MdHistoryUI::HandleMenuPromoShown, base::Unretained(this)));
+  web_ui->RegisterMessageCallback(
+      "menuPromoShown", base::BindRepeating(&MdHistoryUI::HandleMenuPromoShown,
+                                            base::Unretained(this)));
 }
 
 MdHistoryUI::~MdHistoryUI() {}

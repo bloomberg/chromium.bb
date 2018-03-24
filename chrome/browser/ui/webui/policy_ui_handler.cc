@@ -633,16 +633,16 @@ void PolicyUIHandler::RegisterMessages() {
   registry->AddObserver(this);
 
   web_ui()->RegisterMessageCallback(
-      "initialized",
-      base::Bind(&PolicyUIHandler::HandleInitialized, base::Unretained(this)));
+      "initialized", base::BindRepeating(&PolicyUIHandler::HandleInitialized,
+                                         base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "reloadPolicies",
-      base::Bind(&PolicyUIHandler::HandleReloadPolicies,
-                 base::Unretained(this)));
+      base::BindRepeating(&PolicyUIHandler::HandleReloadPolicies,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "exportPoliciesJSON",
-      base::Bind(&PolicyUIHandler::HandleExportPoliciesJSON,
-                 base::Unretained(this)));
+      base::BindRepeating(&PolicyUIHandler::HandleExportPoliciesJSON,
+                          base::Unretained(this)));
 }
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)

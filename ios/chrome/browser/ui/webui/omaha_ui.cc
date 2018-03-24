@@ -63,8 +63,8 @@ OmahaDOMHandler::~OmahaDOMHandler() {}
 void OmahaDOMHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "requestOmahaDebugInformation",
-      base::Bind(&OmahaDOMHandler::HandleRequestDebugInformation,
-                 base::Unretained(this)));
+      base::BindRepeating(&OmahaDOMHandler::HandleRequestDebugInformation,
+                          base::Unretained(this)));
 }
 
 void OmahaDOMHandler::HandleRequestDebugInformation(

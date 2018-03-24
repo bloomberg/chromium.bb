@@ -60,15 +60,17 @@ TranslateInternalsHandler::~TranslateInternalsHandler() {
 
 void TranslateInternalsHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "removePrefItem", base::Bind(&TranslateInternalsHandler::OnRemovePrefItem,
-                                   base::Unretained(this)));
+      "removePrefItem",
+      base::BindRepeating(&TranslateInternalsHandler::OnRemovePrefItem,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "requestInfo", base::Bind(&TranslateInternalsHandler::OnRequestInfo,
-                                base::Unretained(this)));
+      "requestInfo",
+      base::BindRepeating(&TranslateInternalsHandler::OnRequestInfo,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "overrideCountry",
-      base::Bind(&TranslateInternalsHandler::OnOverrideCountry,
-                 base::Unretained(this)));
+      base::BindRepeating(&TranslateInternalsHandler::OnOverrideCountry,
+                          base::Unretained(this)));
 }
 
 void TranslateInternalsHandler::Observe(

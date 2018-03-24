@@ -70,8 +70,8 @@ ExtensionStatusesHandler::~ExtensionStatusesHandler() {}
 void ExtensionStatusesHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "getExtensionStatuses",
-      base::Bind(&ExtensionStatusesHandler::GetExtensionStatuses,
-                 base::Unretained(this)));
+      base::BindRepeating(&ExtensionStatusesHandler::GetExtensionStatuses,
+                          base::Unretained(this)));
 }
 
 // static

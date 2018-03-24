@@ -29,21 +29,27 @@ void StartupPagesHandler::RegisterMessages() {
   if (Profile::FromWebUI(web_ui())->IsOffTheRecord())
     return;
 
-  web_ui()->RegisterMessageCallback("addStartupPage",
-      base::Bind(&StartupPagesHandler::HandleAddStartupPage,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("editStartupPage",
-      base::Bind(&StartupPagesHandler::HandleEditStartupPage,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("onStartupPrefsPageLoad",
-      base::Bind(&StartupPagesHandler::HandleOnStartupPrefsPageLoad,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("removeStartupPage",
-      base::Bind(&StartupPagesHandler::HandleRemoveStartupPage,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setStartupPagesToCurrentPages",
-      base::Bind(&StartupPagesHandler::HandleSetStartupPagesToCurrentPages,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "addStartupPage",
+      base::BindRepeating(&StartupPagesHandler::HandleAddStartupPage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "editStartupPage",
+      base::BindRepeating(&StartupPagesHandler::HandleEditStartupPage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "onStartupPrefsPageLoad",
+      base::BindRepeating(&StartupPagesHandler::HandleOnStartupPrefsPageLoad,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "removeStartupPage",
+      base::BindRepeating(&StartupPagesHandler::HandleRemoveStartupPage,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setStartupPagesToCurrentPages",
+      base::BindRepeating(
+          &StartupPagesHandler::HandleSetStartupPagesToCurrentPages,
+          base::Unretained(this)));
 }
 
 void StartupPagesHandler::OnJavascriptAllowed() {

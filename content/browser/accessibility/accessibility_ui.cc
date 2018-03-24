@@ -229,19 +229,21 @@ void AccessibilityUIMessageHandler::RegisterMessages() {
 
   web_ui()->RegisterMessageCallback(
       "toggleAccessibility",
-      base::Bind(&AccessibilityUIMessageHandler::ToggleAccessibility,
-                 base::Unretained(this)));
+      base::BindRepeating(&AccessibilityUIMessageHandler::ToggleAccessibility,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "setGlobalFlag", base::Bind(&AccessibilityUIMessageHandler::SetGlobalFlag,
-                                  base::Unretained(this)));
+      "setGlobalFlag",
+      base::BindRepeating(&AccessibilityUIMessageHandler::SetGlobalFlag,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestWebContentsTree",
-      base::Bind(&AccessibilityUIMessageHandler::RequestWebContentsTree,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &AccessibilityUIMessageHandler::RequestWebContentsTree,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "requestNativeUITree",
-      base::Bind(&AccessibilityUIMessageHandler::RequestNativeUITree,
-                 base::Unretained(this)));
+      base::BindRepeating(&AccessibilityUIMessageHandler::RequestNativeUITree,
+                          base::Unretained(this)));
 }
 
 void AccessibilityUIMessageHandler::ToggleAccessibility(

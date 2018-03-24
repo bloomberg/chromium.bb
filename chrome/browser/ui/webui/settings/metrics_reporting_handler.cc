@@ -23,12 +23,15 @@ MetricsReportingHandler::MetricsReportingHandler() {}
 MetricsReportingHandler::~MetricsReportingHandler() {}
 
 void MetricsReportingHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("getMetricsReporting",
-      base::Bind(&MetricsReportingHandler::HandleGetMetricsReporting,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("setMetricsReportingEnabled",
-      base::Bind(&MetricsReportingHandler::HandleSetMetricsReportingEnabled,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "getMetricsReporting",
+      base::BindRepeating(&MetricsReportingHandler::HandleGetMetricsReporting,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "setMetricsReportingEnabled",
+      base::BindRepeating(
+          &MetricsReportingHandler::HandleSetMetricsReportingEnabled,
+          base::Unretained(this)));
 }
 
 void MetricsReportingHandler::OnJavascriptAllowed() {

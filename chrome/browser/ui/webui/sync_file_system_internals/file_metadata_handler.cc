@@ -32,13 +32,12 @@ FileMetadataHandler::~FileMetadataHandler() {}
 
 void FileMetadataHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "getExtensions",
-      base::Bind(&FileMetadataHandler::GetExtensions,
-                 base::Unretained(this)));
+      "getExtensions", base::BindRepeating(&FileMetadataHandler::GetExtensions,
+                                           base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getFileMetadata",
-      base::Bind(&FileMetadataHandler::GetFileMetadata,
-                 base::Unretained(this)));
+      base::BindRepeating(&FileMetadataHandler::GetFileMetadata,
+                          base::Unretained(this)));
 }
 
 void FileMetadataHandler::GetFileMetadata(

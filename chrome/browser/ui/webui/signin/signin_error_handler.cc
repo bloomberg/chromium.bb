@@ -34,21 +34,21 @@ void SigninErrorHandler::OnBrowserRemoved(Browser* browser) {
 
 void SigninErrorHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "confirm",
-      base::Bind(&SigninErrorHandler::HandleConfirm, base::Unretained(this)));
+      "confirm", base::BindRepeating(&SigninErrorHandler::HandleConfirm,
+                                     base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "switchToExistingProfile",
-      base::Bind(&SigninErrorHandler::HandleSwitchToExistingProfile,
-                 base::Unretained(this)));
+      base::BindRepeating(&SigninErrorHandler::HandleSwitchToExistingProfile,
+                          base::Unretained(this)));
   if (!is_system_profile_) {
     web_ui()->RegisterMessageCallback(
-        "learnMore", base::Bind(&SigninErrorHandler::HandleLearnMore,
-                                base::Unretained(this)));
+        "learnMore", base::BindRepeating(&SigninErrorHandler::HandleLearnMore,
+                                         base::Unretained(this)));
   }
   web_ui()->RegisterMessageCallback(
       "initializedWithSize",
-      base::Bind(&SigninErrorHandler::HandleInitializedWithSize,
-                 base::Unretained(this)));
+      base::BindRepeating(&SigninErrorHandler::HandleInitializedWithSize,
+                          base::Unretained(this)));
 }
 
 void SigninErrorHandler::HandleSwitchToExistingProfile(

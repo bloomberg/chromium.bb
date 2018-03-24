@@ -27,9 +27,9 @@ QuotaInternalsHandler::~QuotaInternalsHandler() {
 }
 
 void QuotaInternalsHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("requestInfo",
-      base::Bind(&QuotaInternalsHandler::OnRequestInfo,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestInfo", base::BindRepeating(&QuotaInternalsHandler::OnRequestInfo,
+                                         base::Unretained(this)));
 }
 
 void QuotaInternalsHandler::ReportAvailableSpace(int64_t available_space) {

@@ -18,7 +18,8 @@ PointerHandler::~PointerHandler() {}
 void PointerHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "initializePointerSettings",
-      base::Bind(&PointerHandler::HandleInitialize, base::Unretained(this)));
+      base::BindRepeating(&PointerHandler::HandleInitialize,
+                          base::Unretained(this)));
 }
 
 void PointerHandler::OnJavascriptAllowed() {

@@ -112,18 +112,22 @@ class WebUIBrowserAsyncTest : public WebUIBrowserTest {
 
    private:
     void RegisterMessages() override {
-      web_ui()->RegisterMessageCallback("startAsyncTest",
-          base::Bind(&AsyncWebUIMessageHandler::HandleStartAsyncTest,
-                     base::Unretained(this)));
-      web_ui()->RegisterMessageCallback("testContinues",
-          base::Bind(&AsyncWebUIMessageHandler::HandleTestContinues,
-                     base::Unretained(this)));
-      web_ui()->RegisterMessageCallback("testFails",
-          base::Bind(&AsyncWebUIMessageHandler::HandleTestFails,
-                     base::Unretained(this)));
-      web_ui()->RegisterMessageCallback("testPasses",
-          base::Bind(&AsyncWebUIMessageHandler::HandleTestPasses,
-                     base::Unretained(this)));
+      web_ui()->RegisterMessageCallback(
+          "startAsyncTest",
+          base::BindRepeating(&AsyncWebUIMessageHandler::HandleStartAsyncTest,
+                              base::Unretained(this)));
+      web_ui()->RegisterMessageCallback(
+          "testContinues",
+          base::BindRepeating(&AsyncWebUIMessageHandler::HandleTestContinues,
+                              base::Unretained(this)));
+      web_ui()->RegisterMessageCallback(
+          "testFails",
+          base::BindRepeating(&AsyncWebUIMessageHandler::HandleTestFails,
+                              base::Unretained(this)));
+      web_ui()->RegisterMessageCallback(
+          "testPasses",
+          base::BindRepeating(&AsyncWebUIMessageHandler::HandleTestPasses,
+                              base::Unretained(this)));
     }
 
     // Starts the test in |list_value|[0] with the runAsync wrapper.

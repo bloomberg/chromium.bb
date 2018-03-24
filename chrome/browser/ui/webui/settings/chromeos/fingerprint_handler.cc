@@ -72,40 +72,39 @@ void FingerprintHandler::RegisterMessages() {
   // Note: getFingerprintsList must be called before observers will be added.
   web_ui()->RegisterMessageCallback(
       "getFingerprintsList",
-      base::Bind(&FingerprintHandler::HandleGetFingerprintsList,
-                 base::Unretained(this)));
+      base::BindRepeating(&FingerprintHandler::HandleGetFingerprintsList,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getNumFingerprints",
-      base::Bind(&FingerprintHandler::HandleGetNumFingerprints,
-                 base::Unretained(this)));
+      base::BindRepeating(&FingerprintHandler::HandleGetNumFingerprints,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
-      "startEnroll",
-      base::Bind(&FingerprintHandler::HandleStartEnroll,
-                 base::Unretained(this)));
+      "startEnroll", base::BindRepeating(&FingerprintHandler::HandleStartEnroll,
+                                         base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "cancelCurrentEnroll",
-      base::Bind(&FingerprintHandler::HandleCancelCurrentEnroll,
-                 base::Unretained(this)));
+      base::BindRepeating(&FingerprintHandler::HandleCancelCurrentEnroll,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "getEnrollmentLabel",
-      base::Bind(&FingerprintHandler::HandleGetEnrollmentLabel,
-                 base::Unretained(this)));
+      base::BindRepeating(&FingerprintHandler::HandleGetEnrollmentLabel,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "removeEnrollment",
-      base::Bind(&FingerprintHandler::HandleRemoveEnrollment,
-                 base::Unretained(this)));
+      base::BindRepeating(&FingerprintHandler::HandleRemoveEnrollment,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "changeEnrollmentLabel",
-      base::Bind(&FingerprintHandler::HandleChangeEnrollmentLabel,
-                 base::Unretained(this)));
+      base::BindRepeating(&FingerprintHandler::HandleChangeEnrollmentLabel,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "startAuthentication",
-      base::Bind(&FingerprintHandler::HandleStartAuthentication,
-                 base::Unretained(this)));
+      base::BindRepeating(&FingerprintHandler::HandleStartAuthentication,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "endCurrentAuthentication",
-      base::Bind(&FingerprintHandler::HandleEndCurrentAuthentication,
-                 base::Unretained(this)));
+      base::BindRepeating(&FingerprintHandler::HandleEndCurrentAuthentication,
+                          base::Unretained(this)));
 }
 
 void FingerprintHandler::OnJavascriptAllowed() {

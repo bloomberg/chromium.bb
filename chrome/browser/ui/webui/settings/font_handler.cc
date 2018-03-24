@@ -51,16 +51,17 @@ FontHandler::~FontHandler() {}
 
 void FontHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
-      "fetchFontsData", base::Bind(&FontHandler::HandleFetchFontsData,
-                                   base::Unretained(this)));
+      "fetchFontsData", base::BindRepeating(&FontHandler::HandleFetchFontsData,
+                                            base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "observeAdvancedFontExtensionAvailable",
-      base::Bind(&FontHandler::HandleObserveAdvancedFontExtensionAvailable,
-                 base::Unretained(this)));
+      base::BindRepeating(
+          &FontHandler::HandleObserveAdvancedFontExtensionAvailable,
+          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       "openAdvancedFontSettings",
-      base::Bind(&FontHandler::HandleOpenAdvancedFontSettings,
-                 base::Unretained(this)));
+      base::BindRepeating(&FontHandler::HandleOpenAdvancedFontSettings,
+                          base::Unretained(this)));
 }
 
 void FontHandler::OnJavascriptAllowed() {

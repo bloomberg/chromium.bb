@@ -88,23 +88,26 @@ bool FirstRunHandler::IsFinalizing() {
 }
 
 void FirstRunHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("initialized",
-      base::Bind(&FirstRunHandler::HandleInitialized, base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("nextButtonClicked",
-      base::Bind(&FirstRunHandler::HandleNextButtonClicked,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("helpButtonClicked",
-      base::Bind(&FirstRunHandler::HandleHelpButtonClicked,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("stepShown",
-      base::Bind(&FirstRunHandler::HandleStepShown,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("stepHidden",
-      base::Bind(&FirstRunHandler::HandleStepHidden,
-                 base::Unretained(this)));
-  web_ui()->RegisterMessageCallback("finalized",
-      base::Bind(&FirstRunHandler::HandleFinalized,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "initialized", base::BindRepeating(&FirstRunHandler::HandleInitialized,
+                                         base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "nextButtonClicked",
+      base::BindRepeating(&FirstRunHandler::HandleNextButtonClicked,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "helpButtonClicked",
+      base::BindRepeating(&FirstRunHandler::HandleHelpButtonClicked,
+                          base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "stepShown", base::BindRepeating(&FirstRunHandler::HandleStepShown,
+                                       base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "stepHidden", base::BindRepeating(&FirstRunHandler::HandleStepHidden,
+                                        base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "finalized", base::BindRepeating(&FirstRunHandler::HandleFinalized,
+                                       base::Unretained(this)));
 }
 
 void FirstRunHandler::HandleInitialized(const base::ListValue* args) {

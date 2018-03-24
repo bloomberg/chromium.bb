@@ -87,12 +87,15 @@ SlowHandler::~SlowHandler() {
 }
 
 void SlowHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback(kJsApiDisableTracing,
-      base::Bind(&SlowHandler::HandleDisable, base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiEnableTracing,
-      base::Bind(&SlowHandler::HandleEnable, base::Unretained(this)));
-  web_ui()->RegisterMessageCallback(kJsApiLoadComplete,
-      base::Bind(&SlowHandler::LoadComplete, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiDisableTracing,
+      base::BindRepeating(&SlowHandler::HandleDisable, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiEnableTracing,
+      base::BindRepeating(&SlowHandler::HandleEnable, base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      kJsApiLoadComplete,
+      base::BindRepeating(&SlowHandler::LoadComplete, base::Unretained(this)));
 
   user_pref_registrar_.reset(new PrefChangeRegistrar);
   user_pref_registrar_->Init(profile_->GetPrefs());

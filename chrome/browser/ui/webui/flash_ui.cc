@@ -176,9 +176,10 @@ FlashDOMHandler::~FlashDOMHandler() {
 }
 
 void FlashDOMHandler::RegisterMessages() {
-  web_ui()->RegisterMessageCallback("requestFlashInfo",
-      base::Bind(&FlashDOMHandler::HandleRequestFlashInfo,
-                 base::Unretained(this)));
+  web_ui()->RegisterMessageCallback(
+      "requestFlashInfo",
+      base::BindRepeating(&FlashDOMHandler::HandleRequestFlashInfo,
+                          base::Unretained(this)));
 }
 
 void FlashDOMHandler::OnUploadListAvailable() {

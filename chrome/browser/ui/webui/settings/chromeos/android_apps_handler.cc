@@ -28,16 +28,16 @@ void AndroidAppsHandler::RegisterMessages() {
   // Note: requestAndroidAppsInfo must be called before observers will be added.
   web_ui()->RegisterMessageCallback(
       "requestAndroidAppsInfo",
-      base::Bind(&AndroidAppsHandler::HandleRequestAndroidAppsInfo,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&AndroidAppsHandler::HandleRequestAndroidAppsInfo,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "showAndroidAppsSettings",
-      base::Bind(&AndroidAppsHandler::ShowAndroidAppsSettings,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&AndroidAppsHandler::ShowAndroidAppsSettings,
+                          weak_ptr_factory_.GetWeakPtr()));
   web_ui()->RegisterMessageCallback(
       "showAndroidManageAppLinks",
-      base::Bind(&AndroidAppsHandler::ShowAndroidManageAppLinks,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindRepeating(&AndroidAppsHandler::ShowAndroidManageAppLinks,
+                          weak_ptr_factory_.GetWeakPtr()));
 }
 
 void AndroidAppsHandler::OnJavascriptAllowed() {

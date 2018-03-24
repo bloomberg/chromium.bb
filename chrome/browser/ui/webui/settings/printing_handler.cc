@@ -18,8 +18,8 @@ PrintingHandler::~PrintingHandler() {}
 void PrintingHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       "openSystemPrintDialog",
-      base::Bind(&PrintingHandler::HandleOpenSystemPrintDialog,
-                 base::Unretained(this)));
+      base::BindRepeating(&PrintingHandler::HandleOpenSystemPrintDialog,
+                          base::Unretained(this)));
 }
 
 void PrintingHandler::OnJavascriptAllowed() {}

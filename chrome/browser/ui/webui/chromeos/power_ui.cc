@@ -71,16 +71,16 @@ PowerMessageHandler::~PowerMessageHandler() {
 void PowerMessageHandler::RegisterMessages() {
   web_ui()->RegisterMessageCallback(
       kRequestBatteryChargeDataCallback,
-      base::Bind(&PowerMessageHandler::OnGetBatteryChargeData,
-                 base::Unretained(this)));
+      base::BindRepeating(&PowerMessageHandler::OnGetBatteryChargeData,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kRequestCpuIdleDataCallback,
-      base::Bind(&PowerMessageHandler::OnGetCpuIdleData,
-                 base::Unretained(this)));
+      base::BindRepeating(&PowerMessageHandler::OnGetCpuIdleData,
+                          base::Unretained(this)));
   web_ui()->RegisterMessageCallback(
       kRequestCpuFreqDataCallback,
-      base::Bind(&PowerMessageHandler::OnGetCpuFreqData,
-                 base::Unretained(this)));
+      base::BindRepeating(&PowerMessageHandler::OnGetCpuFreqData,
+                          base::Unretained(this)));
 }
 
 void PowerMessageHandler::OnGetBatteryChargeData(const base::ListValue* value) {
