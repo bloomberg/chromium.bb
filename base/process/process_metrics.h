@@ -219,7 +219,9 @@ class BASE_EXPORT ProcessMetrics {
   // Used to store the previous times and CPU usage counts so we can
   // compute the CPU usage between calls.
   TimeTicks last_cpu_time_;
+#if defined(OS_WIN) || defined(OS_MACOSX)
   int64_t last_system_time_;
+#endif
 
 #if defined(OS_MACOSX) || defined(OS_LINUX) || defined(OS_AIX)
   // Same thing for idle wakeups.
