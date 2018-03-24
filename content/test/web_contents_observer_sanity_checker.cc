@@ -194,6 +194,10 @@ void WebContentsObserverSanityChecker::ReadyToCommitNavigation(
   CHECK(navigation_handle->GetRenderFrameHost());
   CHECK_EQ(navigation_handle->GetWebContents(), web_contents());
   CHECK(navigation_handle->GetRenderFrameHost() != nullptr);
+
+  ready_to_commit_hosts_.insert(
+      std::make_pair(navigation_handle->GetNavigationId(),
+                     navigation_handle->GetRenderFrameHost()));
 }
 
 void WebContentsObserverSanityChecker::DidFinishNavigation(
@@ -207,6 +211,16 @@ void WebContentsObserverSanityChecker::DidFinishNavigation(
 
   CHECK(!navigation_handle->HasCommitted() ||
         navigation_handle->GetRenderFrameHost() != nullptr);
+
+  // If ReadyToCommitNavigation was dispatched, verify that the
+  // |navigation_handle| has the same RenderFrameHost at this time as the one
+  // returned at ReadyToCommitNavigation.
+  if (base::ContainsKey(ready_to_commit_hosts_,
+                        navigation_handle->GetNavigationId())) {
+    CHECK_EQ(ready_to_commit_hosts_[navigation_handle->GetNavigationId()],
+             navigation_handle->GetRenderFrameHost());
+    ready_to_commit_hosts_.erase(navigation_handle->GetNavigationId());
+  }
 
   ongoing_navigations_.erase(navigation_handle);
 }
@@ -313,6 +327,7 @@ WebContentsObserverSanityChecker::WebContentsObserverSanityChecker(
 
 WebContentsObserverSanityChecker::~WebContentsObserverSanityChecker() {
   CHECK(web_contents_destroyed_);
+  CHECK(ready_to_commit_hosts_.empty());
 }
 
 void WebContentsObserverSanityChecker::AssertRenderFrameExists(

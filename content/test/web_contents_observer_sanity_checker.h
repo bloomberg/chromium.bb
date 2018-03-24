@@ -89,6 +89,7 @@ class WebContentsObserverSanityChecker : public WebContentsObserver,
   void EnsureStableParentValue(RenderFrameHost* render_frame_host);
   bool HasAnyChildren(RenderFrameHost* render_frame_host);
 
+  std::map<int64_t, RenderFrameHost*> ready_to_commit_hosts_;
   std::set<GlobalRoutingID> current_hosts_;
   std::set<GlobalRoutingID> live_routes_;
   std::set<GlobalRoutingID> deleted_routes_;
