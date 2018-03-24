@@ -72,6 +72,9 @@ struct MojoSystemThunks {
                           void** buffer,
                           MojoMapBufferFlags flags);
   MojoResult (*UnmapBuffer)(void* buffer);
+  MojoResult (*GetBufferInfo)(MojoHandle buffer_handle,
+                              const struct MojoSharedBufferOptions* options,
+                              struct MojoSharedBufferInfo* info);
   MojoResult (*CreateTrap)(MojoTrapEventHandler handler,
                            const struct MojoCreateTrapOptions* options,
                            MojoHandle* trap_handle);

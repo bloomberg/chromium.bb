@@ -264,23 +264,30 @@ TEST(CoreAPITest, BasicDataPipe) {
 }
 
 TEST(CoreAPITest, BasicSharedBuffer) {
-  MojoHandle h0, h1;
-  void* pointer;
+  MojoSharedBufferInfo buffer_info;
+  buffer_info.struct_size = sizeof(buffer_info);
+  MojoHandle h0 = MOJO_HANDLE_INVALID;
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoGetBufferInfo(h0, nullptr, &buffer_info));
 
   // Create a shared buffer (|h0|).
-  h0 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK, MojoCreateSharedBuffer(nullptr, 100, &h0));
   EXPECT_NE(h0, MOJO_HANDLE_INVALID);
 
+  EXPECT_EQ(MOJO_RESULT_INVALID_ARGUMENT,
+            MojoGetBufferInfo(h0, nullptr, nullptr));
+  ASSERT_EQ(MOJO_RESULT_OK, MojoGetBufferInfo(h0, nullptr, &buffer_info));
+  EXPECT_EQ(100U, buffer_info.size);
+
   // Map everything.
-  pointer = nullptr;
+  void* pointer = nullptr;
   EXPECT_EQ(MOJO_RESULT_OK,
             MojoMapBuffer(h0, 0, 100, &pointer, MOJO_MAP_BUFFER_FLAG_NONE));
   ASSERT_TRUE(pointer);
   static_cast<char*>(pointer)[50] = 'x';
 
   // Duplicate |h0| to |h1|.
-  h1 = MOJO_HANDLE_INVALID;
+  MojoHandle h1 = MOJO_HANDLE_INVALID;
   EXPECT_EQ(MOJO_RESULT_OK, MojoDuplicateBufferHandle(h0, nullptr, &h1));
   EXPECT_NE(h1, MOJO_HANDLE_INVALID);
 
@@ -305,6 +312,10 @@ TEST(CoreAPITest, BasicSharedBuffer) {
 
   // Unmap it.
   EXPECT_EQ(MOJO_RESULT_OK, MojoUnmapBuffer(pointer));
+
+  buffer_info.size = 0;
+  ASSERT_EQ(MOJO_RESULT_OK, MojoGetBufferInfo(h1, nullptr, &buffer_info));
+  EXPECT_EQ(100U, buffer_info.size);
 
   EXPECT_EQ(MOJO_RESULT_OK, MojoClose(h1));
 }

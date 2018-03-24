@@ -69,6 +69,9 @@ class MOJO_CPP_SYSTEM_EXPORT SharedBufferHandle : public Handle {
   // Maps |size| bytes of this shared buffer, starting |offset| bytes into the
   // buffer. On failure, this will return a null mapping.
   ScopedSharedBufferMapping MapAtOffset(uint64_t size, uint64_t offset) const;
+
+  // Get the size of this shared buffer.
+  uint64_t GetSize() const;
 };
 
 static_assert(sizeof(SharedBufferHandle) == sizeof(Handle),

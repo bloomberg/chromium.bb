@@ -386,6 +386,7 @@ TEST(CoreCppTest, ScopedHandleMoveCtor) {
 TEST(CoreCppTest, BasicSharedBuffer) {
   ScopedSharedBufferHandle h0 = SharedBufferHandle::Create(100);
   ASSERT_TRUE(h0.is_valid());
+  EXPECT_EQ(100U, h0->GetSize());
 
   // Map everything.
   ScopedSharedBufferMapping mapping = h0->Map(100);

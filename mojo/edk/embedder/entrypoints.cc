@@ -193,7 +193,7 @@ MojoResult MojoEndReadDataImpl(MojoHandle data_pipe_consumer_handle,
 }
 
 MojoResult MojoCreateSharedBufferImpl(
-    const struct MojoCreateSharedBufferOptions* options,
+    const MojoCreateSharedBufferOptions* options,
     uint64_t num_bytes,
     MojoHandle* shared_buffer_handle) {
   return g_core->CreateSharedBuffer(options, num_bytes, shared_buffer_handle);
@@ -201,7 +201,7 @@ MojoResult MojoCreateSharedBufferImpl(
 
 MojoResult MojoDuplicateBufferHandleImpl(
     MojoHandle buffer_handle,
-    const struct MojoDuplicateBufferHandleOptions* options,
+    const MojoDuplicateBufferHandleOptions* options,
     MojoHandle* new_buffer_handle) {
   return g_core->DuplicateBufferHandle(buffer_handle, options,
                                        new_buffer_handle);
@@ -217,6 +217,12 @@ MojoResult MojoMapBufferImpl(MojoHandle buffer_handle,
 
 MojoResult MojoUnmapBufferImpl(void* buffer) {
   return g_core->UnmapBuffer(buffer);
+}
+
+MojoResult MojoGetBufferInfoImpl(MojoHandle buffer_handle,
+                                 const MojoSharedBufferOptions* options,
+                                 MojoSharedBufferInfo* info) {
+  return g_core->GetBufferInfo(buffer_handle, options, info);
 }
 
 MojoResult MojoWrapPlatformHandleImpl(const MojoPlatformHandle* platform_handle,
@@ -279,6 +285,7 @@ MojoSystemThunks g_thunks = {sizeof(MojoSystemThunks),
                              MojoDuplicateBufferHandleImpl,
                              MojoMapBufferImpl,
                              MojoUnmapBufferImpl,
+                             MojoGetBufferInfoImpl,
                              MojoCreateTrapImpl,
                              MojoAddTriggerImpl,
                              MojoRemoveTriggerImpl,

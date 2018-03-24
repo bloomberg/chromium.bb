@@ -1008,6 +1008,21 @@ MojoResult Core::UnmapBuffer(void* buffer) {
   return result;
 }
 
+MojoResult Core::GetBufferInfo(MojoHandle buffer_handle,
+                               const MojoSharedBufferOptions* options,
+                               MojoSharedBufferInfo* info) {
+  if (options && options->struct_size != sizeof(MojoSharedBufferOptions))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+  if (!info || info->struct_size != sizeof(MojoSharedBufferInfo))
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  scoped_refptr<Dispatcher> dispatcher(GetDispatcher(buffer_handle));
+  if (!dispatcher)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  return dispatcher->GetBufferInfo(info);
+}
+
 MojoResult Core::WrapPlatformHandle(const MojoPlatformHandle* platform_handle,
                                     MojoHandle* mojo_handle) {
   ScopedPlatformHandle handle;

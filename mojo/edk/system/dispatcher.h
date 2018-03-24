@@ -106,6 +106,8 @@ class MOJO_SYSTEM_IMPL_EXPORT Dispatcher
       MojoMapBufferFlags flags,
       std::unique_ptr<PlatformSharedBufferMapping>* mapping);
 
+  virtual MojoResult GetBufferInfo(MojoSharedBufferInfo* info);
+
   ///////////// Data pipe consumer API /////////////
 
   virtual MojoResult ReadData(void* elements,
