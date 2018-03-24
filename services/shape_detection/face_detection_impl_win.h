@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/detection_utils_win.h"
 #include "services/shape_detection/public/mojom/facedetection.mojom.h"
@@ -49,8 +50,7 @@ class FaceDetectionImplWin : public mojom::FaceDetection {
               mojom::FaceDetection::DetectCallback callback) override;
 
  private:
-  std::unique_ptr<AsyncOperation<IVector<DetectedFace*>>> BeginDetect(
-      const SkBitmap& bitmap);
+  HRESULT BeginDetect(const SkBitmap& bitmap);
   std::vector<mojom::FaceDetectionResultPtr> BuildFaceDetectionResult(
       AsyncOperation<IVector<DetectedFace*>>::IAsyncOperationPtr async_op);
   void OnFaceDetected(
@@ -62,10 +62,10 @@ class FaceDetectionImplWin : public mojom::FaceDetection {
   Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory_;
   BitmapPixelFormat pixel_format_;
 
-  std::unique_ptr<AsyncOperation<IVector<DetectedFace*>>>
-      async_detect_face_ops_;
   DetectCallback detected_face_callback_;
   mojo::StrongBindingPtr<mojom::FaceDetection> binding_;
+
+  base::WeakPtrFactory<FaceDetectionImplWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FaceDetectionImplWin);
 };

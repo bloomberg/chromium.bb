@@ -41,13 +41,6 @@ BitmapPixelFormat GetPreferredPixelFormat(IFaceDetectorStatics* factory) {
 void FaceDetectionProviderWin::CreateFaceDetection(
     shape_detection::mojom::FaceDetectionRequest request,
     shape_detection::mojom::FaceDetectorOptionsPtr options) {
-  if (async_create_detector_ops_) {
-    mojo::ReportBadMessage(
-        "FaceDetectionProvider client may only create one FaceDetection at a "
-        "time.");
-    return;
-  }
-
   // FaceDetector class is only available in Win 10 onwards (v10.0.10240.0).
   if (base::win::GetVersion() < base::win::VERSION_WIN10) {
     DVLOG(1) << "FaceDetector not supported before Windows 10";
@@ -93,24 +86,28 @@ void FaceDetectionProviderWin::CreateFaceDetection(
     return;
   }
 
-  // The once callback will not be called if this object is deleted, so it's
-  // fine to use Unretained to bind the callback.
-  auto async_operation = AsyncOperation<FaceDetector>::Create(
+  // Use WeakPtr to bind the callback so that the once callback will not be run
+  // if this object has been already destroyed.
+  hr = AsyncOperation<FaceDetector>::BeginAsyncOperation(
       base::BindOnce(&FaceDetectionProviderWin::OnFaceDetectorCreated,
-                     base::Unretained(this), std::move(request), pixel_format),
+                     weak_factory_.GetWeakPtr(), std::move(request),
+                     pixel_format),
       std::move(async_op));
-  if (!async_operation)
+  if (FAILED(hr)) {
+    DLOG(ERROR) << "Begin async operation failed: "
+                << logging::SystemErrorCodeToString(hr);
     return;
+  }
 
-  async_create_detector_ops_ = std::move(async_operation);
-  // When |provider| goes out of scope it will immediately closes its end of
-  // the message pipe, then |async_create_detector_ops_| will be deleted and the
-  // callback OnFaceDetectorCreated will be not called. This prevents this
-  // object from being destroyed before the AsyncOperation completes.
+  // When |provider| goes out of scope it will immediately close its end of
+  // the message pipe, then the callback OnFaceDetectorCreated will be not
+  // called. This prevents this object from being destroyed before the
+  // AsyncOperation completes.
   binding_->PauseIncomingMethodCallProcessing();
 }
 
-FaceDetectionProviderWin::FaceDetectionProviderWin() = default;
+FaceDetectionProviderWin::FaceDetectionProviderWin() : weak_factory_(this) {}
+
 FaceDetectionProviderWin::~FaceDetectionProviderWin() = default;
 
 void FaceDetectionProviderWin::OnFaceDetectorCreated(
@@ -118,7 +115,6 @@ void FaceDetectionProviderWin::OnFaceDetectorCreated(
     BitmapPixelFormat pixel_format,
     AsyncOperation<FaceDetector>::IAsyncOperationPtr async_op) {
   binding_->ResumeIncomingMethodCallProcessing();
-  async_create_detector_ops_.reset();
 
   Microsoft::WRL::ComPtr<IFaceDetector> face_detector;
   HRESULT hr =
