@@ -731,16 +731,27 @@ def _CheckUmaHistogramChanges(input_api, output_api):
   the reverse: changes in histograms.xml not matched in the code itself."""
   touched_histograms = []
   histograms_xml_modifications = []
-  single_line_re = input_api.re.compile(r'\bUMA_HISTOGRAM.*\("(.*?)"')
-  split_line_prefix_re = input_api.re.compile(r'\bUMA_HISTOGRAM.*\(')
-  split_line_suffix_re = input_api.re.compile(r'^\s*"([^"]*)"')
+  call_pattern_c = r'\bUMA_HISTOGRAM.*\('
+  call_pattern_java = r'\bRecordHistogram\.record[a-zA-Z]+Histogram\('
+  name_pattern = r'"(.*?)"'
+  single_line_c_re = input_api.re.compile(call_pattern_c + name_pattern)
+  single_line_java_re = input_api.re.compile(call_pattern_java + name_pattern)
+  split_line_c_prefix_re = input_api.re.compile(call_pattern_c)
+  split_line_java_prefix_re = input_api.re.compile(call_pattern_java)
+  split_line_suffix_re = input_api.re.compile(r'^\s*' + name_pattern)
   last_line_matched_prefix = False
   for f in input_api.AffectedFiles():
     # If histograms.xml itself is modified, keep the modified lines for later.
     if f.LocalPath().endswith(('histograms.xml')):
       histograms_xml_modifications = f.ChangedContents()
       continue
-    if not f.LocalPath().endswith(('cc', 'mm', 'cpp')):
+    if f.LocalPath().endswith(('cc', 'mm', 'cpp')):
+      single_line_re = single_line_c_re
+      split_line_prefix_re = split_line_c_prefix_re
+    elif f.LocalPath().endswith(('java')):
+      single_line_re = single_line_java_re
+      split_line_prefix_re = split_line_java_prefix_re
+    else:
       continue
     for line_num, line in f.ChangedContents():
       if last_line_matched_prefix:
