@@ -3463,6 +3463,32 @@ TEST_F(WebContentsImplTest, ThemeColorChangeDependingOnFirstVisiblePaint) {
   EXPECT_EQ(SK_ColorGREEN, observer.last_theme_color());
 }
 
+TEST_F(WebContentsImplTest, PictureInPictureMediaPlayerIdWasChanged) {
+  const int kPlayerVideoOnlyId = 30; /* arbitrary and used for tests */
+
+  MediaWebContentsObserver* observer =
+      contents()->media_web_contents_observer();
+  TestRenderFrameHost* rfh = main_test_rfh();
+  rfh->InitializeRenderFrameIfNeeded();
+
+  // If Picture-in-Picture was never triggered, the media player id would not be
+  // set.
+  EXPECT_FALSE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
+
+  rfh->OnMessageReceived(
+      MediaPlayerDelegateHostMsg_OnPictureInPictureSourceChanged(
+          rfh->GetRoutingID(), kPlayerVideoOnlyId));
+  EXPECT_TRUE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
+  EXPECT_EQ(kPlayerVideoOnlyId,
+            observer->GetPictureInPictureVideoMediaPlayerId()->second);
+
+  // Picture-in-Picture media player id should be reset when the media is
+  // destroyed.
+  rfh->OnMessageReceived(MediaPlayerDelegateHostMsg_OnMediaDestroyed(
+      rfh->GetRoutingID(), kPlayerVideoOnlyId));
+  EXPECT_FALSE(observer->GetPictureInPictureVideoMediaPlayerId().has_value());
+}
+
 TEST_F(WebContentsImplTest, ParseDownloadHeaders) {
   download::DownloadUrlParameters::RequestHeadersType request_headers =
       WebContentsImpl::ParseDownloadHeaders("A: 1\r\nB: 2\r\nC: 3\r\n\r\n");

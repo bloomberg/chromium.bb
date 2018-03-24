@@ -62,6 +62,10 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   // Gets the MediaPlayerId of the fullscreen video if it exists.
   const base::Optional<MediaPlayerId>& GetFullscreenVideoMediaPlayerId() const;
 
+  // Gets the MediaPlayerId of the picture in picture video if it exists.
+  const base::Optional<MediaPlayerId>& GetPictureInPictureVideoMediaPlayerId()
+      const;
+
   // WebContentsObserver implementation.
   void WebContentsDestroyed() override;
   void RenderFrameDeleted(RenderFrameHost* render_frame_host) override;
@@ -109,6 +113,8 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   void OnMediaMutedStatusChanged(RenderFrameHost* render_frame_host,
                                  int delegate_id,
                                  bool muted);
+  void OnPictureInPictureSourceChanged(RenderFrameHost* render_frame_host,
+                                       int delegate_id);
 
   // Clear |render_frame_host|'s tracking entry for its WakeLocks.
   void ClearWakeLocks(RenderFrameHost* render_frame_host);
@@ -146,6 +152,7 @@ class CONTENT_EXPORT MediaWebContentsObserver : public WebContentsObserver {
   device::mojom::WakeLockPtr audio_wake_lock_;
   device::mojom::WakeLockPtr video_wake_lock_;
   base::Optional<MediaPlayerId> fullscreen_player_;
+  base::Optional<MediaPlayerId> pip_player_;
   base::Optional<bool> picture_in_picture_allowed_in_fullscreen_;
   bool has_audio_wake_lock_for_testing_ = false;
   bool has_video_wake_lock_for_testing_ = false;
