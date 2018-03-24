@@ -7,6 +7,7 @@
 
 #include "base/callback.h"
 #include "base/compiler_specific.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/task/cancelable_task_tracker.h"
@@ -249,7 +250,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   std::unique_ptr<mojo::BindingSet<mojom::GpuService>> bindings_;
 
 #if defined(OS_CHROMEOS)
-  std::unique_ptr<arc::ProtectedBufferManager> protected_buffer_manager_;
+  scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager_;
 #endif  // defined(OS_CHROMEOS)
 
   base::WeakPtr<GpuServiceImpl> weak_ptr_;

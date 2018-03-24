@@ -127,7 +127,7 @@ GpuServiceImpl::GpuServiceImpl(
       weak_ptr_factory_(this) {
   DCHECK(!io_runner_->BelongsToCurrentThread());
 #if defined(OS_CHROMEOS)
-  protected_buffer_manager_ = std::make_unique<arc::ProtectedBufferManager>();
+  protected_buffer_manager_ = new arc::ProtectedBufferManager();
 #endif  // defined(OS_CHROMEOS)
   weak_ptr_ = weak_ptr_factory_.GetWeakPtr();
 }
@@ -339,10 +339,9 @@ void GpuServiceImpl::CreateArcProtectedBufferManager(
 void GpuServiceImpl::CreateArcVideoDecodeAcceleratorOnMainThread(
     arc::mojom::VideoDecodeAcceleratorRequest vda_request) {
   DCHECK(main_runner_->BelongsToCurrentThread());
-  mojo::MakeStrongBinding(
-      std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
-          gpu_preferences_, protected_buffer_manager_.get()),
-      std::move(vda_request));
+  mojo::MakeStrongBinding(std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
+                              gpu_preferences_, protected_buffer_manager_),
+                          std::move(vda_request));
 }
 
 void GpuServiceImpl::CreateArcVideoEncodeAcceleratorOnMainThread(
@@ -358,7 +357,7 @@ void GpuServiceImpl::CreateArcProtectedBufferManagerOnMainThread(
   DCHECK(main_runner_->BelongsToCurrentThread());
   mojo::MakeStrongBinding(
       std::make_unique<arc::GpuArcProtectedBufferManagerProxy>(
-          protected_buffer_manager_.get()),
+          protected_buffer_manager_),
       std::move(pbm_request));
 }
 #endif  // defined(OS_CHROMEOS)

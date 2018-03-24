@@ -38,7 +38,7 @@ ChromeContentGpuClient::ChromeContentGpuClient()
     : main_thread_profiler_(ThreadProfiler::CreateAndStartOnMainThread(
           metrics::CallStackProfileParams::GPU_MAIN_THREAD)) {
 #if defined(OS_CHROMEOS)
-  protected_buffer_manager_ = std::make_unique<arc::ProtectedBufferManager>();
+  protected_buffer_manager_ = new arc::ProtectedBufferManager();
 #endif
 }
 
@@ -112,10 +112,9 @@ std::unique_ptr<media::CdmProxy> ChromeContentGpuClient::CreateCdmProxy(
 #if defined(OS_CHROMEOS)
 void ChromeContentGpuClient::CreateArcVideoDecodeAccelerator(
     ::arc::mojom::VideoDecodeAcceleratorRequest request) {
-  mojo::MakeStrongBinding(
-      std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
-          gpu_preferences_, protected_buffer_manager_.get()),
-      std::move(request));
+  mojo::MakeStrongBinding(std::make_unique<arc::GpuArcVideoDecodeAccelerator>(
+                              gpu_preferences_, protected_buffer_manager_),
+                          std::move(request));
 }
 
 void ChromeContentGpuClient::CreateArcVideoEncodeAccelerator(
@@ -129,7 +128,7 @@ void ChromeContentGpuClient::CreateProtectedBufferManager(
     ::arc::mojom::ProtectedBufferManagerRequest request) {
   mojo::MakeStrongBinding(
       std::make_unique<arc::GpuArcProtectedBufferManagerProxy>(
-          protected_buffer_manager_.get()),
+          protected_buffer_manager_),
       std::move(request));
 }
 #endif

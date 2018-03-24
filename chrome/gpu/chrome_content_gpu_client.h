@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
 #include "chrome/common/thread_profiler.h"
 #include "content/public/gpu/content_gpu_client.h"
@@ -60,7 +61,7 @@ class ChromeContentGpuClient : public content::ContentGpuClient {
 
 #if defined(OS_CHROMEOS)
   gpu::GpuPreferences gpu_preferences_;
-  std::unique_ptr<arc::ProtectedBufferManager> protected_buffer_manager_;
+  scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(ChromeContentGpuClient);

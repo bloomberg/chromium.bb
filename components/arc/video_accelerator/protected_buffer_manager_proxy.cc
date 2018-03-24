@@ -12,10 +12,12 @@
 namespace arc {
 
 GpuArcProtectedBufferManagerProxy::GpuArcProtectedBufferManagerProxy(
-    arc::ProtectedBufferManager* protected_buffer_manager)
-    : protected_buffer_manager_(protected_buffer_manager) {
+    scoped_refptr<arc::ProtectedBufferManager> protected_buffer_manager)
+    : protected_buffer_manager_(std::move(protected_buffer_manager)) {
   DCHECK(protected_buffer_manager_);
 }
+
+GpuArcProtectedBufferManagerProxy::~GpuArcProtectedBufferManagerProxy() {}
 
 base::ScopedFD GpuArcProtectedBufferManagerProxy::UnwrapFdFromMojoHandle(
     mojo::ScopedHandle handle) {
