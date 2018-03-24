@@ -8,7 +8,7 @@
 #include "bindings/core/v8/serialization/SerializedScriptValue.h"
 #include "bindings/modules/v8/document_timeline_or_scroll_timeline.h"
 #include "core/animation/Animation.h"
-#include "core/animation/KeyframeEffectReadOnly.h"
+#include "core/animation/KeyframeEffect.h"
 #include "core/animation/WorkletAnimationBase.h"
 #include "modules/ModulesExport.h"
 #include "platform/animation/CompositorAnimation.h"
@@ -71,14 +71,14 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
   const DocumentTimelineOrScrollTimeline& Timeline() { return timeline_; }
 
   const scoped_refptr<SerializedScriptValue> Options() { return options_; }
-  KeyframeEffectReadOnly* GetEffect() const override { return effects_.at(0); }
+  KeyframeEffect* GetEffect() const override { return effects_.at(0); }
 
   void Trace(blink::Visitor*) override;
 
  private:
   WorkletAnimation(const String& animator_name,
                    Document&,
-                   const HeapVector<Member<KeyframeEffectReadOnly>>&,
+                   const HeapVector<Member<KeyframeEffect>>&,
                    DocumentTimelineOrScrollTimeline,
                    scoped_refptr<SerializedScriptValue>);
 
@@ -87,7 +87,7 @@ class MODULES_EXPORT WorkletAnimation : public WorkletAnimationBase,
 
   Member<Document> document_;
 
-  HeapVector<Member<KeyframeEffectReadOnly>> effects_;
+  HeapVector<Member<KeyframeEffect>> effects_;
   DocumentTimelineOrScrollTimeline timeline_;
   scoped_refptr<SerializedScriptValue> options_;
 

@@ -4,25 +4,17 @@
 
 (async function() {
   TestRunner.addResult(
-      `Tests that animations can be created with KeyframeEffect and KeyframeEffectReadOnly without crashing.\n`);
+      `Tests that animations can be created with KeyframeEffect without crashing.\n`);
   await TestRunner.loadModule('elements_test_runner');
   await TestRunner.showPanel('elements');
   await TestRunner.loadHTML(`
       <div id="node" style="background-color: red; height: 100px"></div>
-      <div id="nodeRO" style="background-color: red; height: 100px"></div>
     `);
   await TestRunner.evaluateInPagePromise(`
       function startAnimationWithKeyframeEffect()
       {
           var effect = new KeyframeEffect(node, { opacity : [ 0, 0.9 ] }, 1000);
           var anim = node.animate(null);
-          anim.effect = effect;
-      }
-
-      function startAnimationWithKeyframeEffectReadOnly()
-      {
-          var effect = new KeyframeEffectReadOnly(nodeRO, { opacity : [ 0, 0.9 ] }, 1000);
-          var anim = nodeRO.animate(null);
           anim.effect = effect;
       }
   `);
@@ -33,11 +25,6 @@
   ElementsTestRunner.waitForAnimationAdded(step2);
 
   function step2(group) {
-    ElementsTestRunner.waitForAnimationAdded(step3);
-    TestRunner.evaluateInPage('startAnimationWithKeyframeEffectReadOnly()');
-  }
-
-  function step3(group) {
     TestRunner.completeTest();
   }
 })();

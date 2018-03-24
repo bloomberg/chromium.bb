@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "core/animation/Animation.h"
 #include "core/animation/Interpolation.h"
-#include "core/animation/KeyframeEffectReadOnly.h"
+#include "core/animation/KeyframeEffect.h"
 #include "platform/wtf/Allocator.h"
 #include "platform/wtf/Vector.h"
 
@@ -18,7 +18,7 @@ namespace blink {
 // effect ordering and managing composited animations.
 class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
  public:
-  static SampledEffect* Create(KeyframeEffectReadOnly* effect,
+  static SampledEffect* Create(KeyframeEffect* effect,
                                unsigned sequence_number) {
     return new SampledEffect(effect, sequence_number);
   }
@@ -32,9 +32,9 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
     return interpolations_;
   }
 
-  KeyframeEffectReadOnly* Effect() const { return effect_; }
+  KeyframeEffect* Effect() const { return effect_; }
   unsigned SequenceNumber() const { return sequence_number_; }
-  KeyframeEffectReadOnly::Priority GetPriority() const { return priority_; }
+  KeyframeEffect::Priority GetPriority() const { return priority_; }
   bool WillNeverChange() const;
   void RemoveReplacedInterpolations(const HashSet<PropertyHandle>&);
   void UpdateReplacedProperties(HashSet<PropertyHandle>&);
@@ -42,12 +42,12 @@ class SampledEffect : public GarbageCollectedFinalized<SampledEffect> {
   void Trace(blink::Visitor*);
 
  private:
-  SampledEffect(KeyframeEffectReadOnly*, unsigned sequence_number);
+  SampledEffect(KeyframeEffect*, unsigned sequence_number);
 
-  WeakMember<KeyframeEffectReadOnly> effect_;
+  WeakMember<KeyframeEffect> effect_;
   Vector<scoped_refptr<Interpolation>> interpolations_;
   const unsigned sequence_number_;
-  KeyframeEffectReadOnly::Priority priority_;
+  KeyframeEffect::Priority priority_;
   DISALLOW_COPY_AND_ASSIGN(SampledEffect);
 };
 

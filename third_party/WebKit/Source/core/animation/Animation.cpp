@@ -35,7 +35,7 @@
 
 #include "core/animation/AnimationTimeline.h"
 #include "core/animation/DocumentTimeline.h"
-#include "core/animation/KeyframeEffectReadOnly.h"
+#include "core/animation/KeyframeEffect.h"
 #include "core/animation/PendingAnimations.h"
 #include "core/animation/css/CSSAnimations.h"
 #include "core/css/StyleChangeReason.h"
@@ -460,11 +460,10 @@ void Animation::NotifyStartTime(double timeline_time) {
 
 bool Animation::Affects(const Element& element,
                         const CSSProperty& property) const {
-  if (!content_ || !content_->IsKeyframeEffectReadOnly())
+  if (!content_ || !content_->IsKeyframeEffect())
     return false;
 
-  const KeyframeEffectReadOnly* effect =
-      ToKeyframeEffectReadOnly(content_.Get());
+  const KeyframeEffect* effect = ToKeyframeEffect(content_.Get());
   return (effect->target() == &element) &&
          effect->Affects(PropertyHandle(property));
 }
@@ -818,7 +817,7 @@ CompositorAnimations::FailureCode Animation::CheckCanStartAnimationOnCompositor(
   if (!code.Ok()) {
     return code;
   }
-  return ToKeyframeEffectReadOnly(content_.Get())
+  return ToKeyframeEffect(content_.Get())
       ->CheckCanStartAnimationOnCompositor(playback_rate_);
 }
 
@@ -860,7 +859,7 @@ Animation::CheckCanStartAnimationOnCompositorInternal(
     return CompositorAnimations::FailureCode::Actionable(
         "Animation has no animation effect");
   }
-  if (!content_->IsKeyframeEffectReadOnly()) {
+  if (!content_->IsKeyframeEffect()) {
     return CompositorAnimations::FailureCode::NonActionable(
         "Animation effect is not keyframe-based");
   }
@@ -869,8 +868,7 @@ Animation::CheckCanStartAnimationOnCompositorInternal(
   // which case we trust the compositing logic will create a layer if needed.
   if (composited_element_ids) {
     DCHECK(RuntimeEnabledFeatures::SlimmingPaintV2Enabled());
-    Element* target_element =
-        ToKeyframeEffectReadOnly(content_.Get())->target();
+    Element* target_element = ToKeyframeEffect(content_.Get())->target();
     if (!target_element) {
       return CompositorAnimations::FailureCode::Actionable(
           "Animation is not attached to an element");
@@ -922,7 +920,7 @@ void Animation::StartAnimationOnCompositor(
   }
 
   DCHECK_NE(compositor_group_, 0);
-  ToKeyframeEffectReadOnly(content_.Get())
+  ToKeyframeEffect(content_.Get())
       ->StartAnimationOnCompositor(compositor_group_, start_time, time_offset,
                                    playback_rate_);
 }
@@ -956,7 +954,7 @@ void Animation::SetCompositorPending(bool effect_changed) {
 
 void Animation::CancelAnimationOnCompositor() {
   if (HasActiveAnimationsOnCompositor())
-    ToKeyframeEffectReadOnly(content_.Get())->CancelAnimationOnCompositor();
+    ToKeyframeEffect(content_.Get())->CancelAnimationOnCompositor();
 
   DestroyCompositorAnimation();
 }
@@ -965,22 +963,21 @@ void Animation::RestartAnimationOnCompositor() {
   if (!HasActiveAnimationsOnCompositor())
     return;
 
-  if (ToKeyframeEffectReadOnly(content_.Get())->CancelAnimationOnCompositor())
+  if (ToKeyframeEffect(content_.Get())->CancelAnimationOnCompositor())
     SetCompositorPending(true);
 }
 
 void Animation::CancelIncompatibleAnimationsOnCompositor() {
-  if (content_ && content_->IsKeyframeEffectReadOnly())
-    ToKeyframeEffectReadOnly(content_.Get())
+  if (content_ && content_->IsKeyframeEffect())
+    ToKeyframeEffect(content_.Get())
         ->CancelIncompatibleAnimationsOnCompositor();
 }
 
 bool Animation::HasActiveAnimationsOnCompositor() {
-  if (!content_ || !content_->IsKeyframeEffectReadOnly())
+  if (!content_ || !content_->IsKeyframeEffect())
     return false;
 
-  return ToKeyframeEffectReadOnly(content_.Get())
-      ->HasActiveAnimationsOnCompositor();
+  return ToKeyframeEffect(content_.Get())->HasActiveAnimationsOnCompositor();
 }
 
 bool Animation::Update(TimingUpdateReason reason) {
@@ -1140,9 +1137,9 @@ void Animation::AttachCompositedLayers() {
     return;
 
   DCHECK(content_);
-  DCHECK(content_->IsKeyframeEffectReadOnly());
+  DCHECK(content_->IsKeyframeEffect());
 
-  ToKeyframeEffectReadOnly(content_.Get())->AttachCompositedLayers();
+  ToKeyframeEffect(content_.Get())->AttachCompositedLayers();
 }
 
 void Animation::DetachCompositedLayers() {
@@ -1274,7 +1271,7 @@ void Animation::AddedEventListener(
 void Animation::PauseForTesting(double pause_time) {
   SetCurrentTimeInternal(pause_time, kTimingUpdateOnDemand);
   if (HasActiveAnimationsOnCompositor())
-    ToKeyframeEffectReadOnly(content_.Get())
+    ToKeyframeEffect(content_.Get())
         ->PauseAnimationForTestingOnCompositor(CurrentTimeInternal());
   is_paused_for_testing_ = true;
   pause();
@@ -1292,10 +1289,10 @@ void Animation::DisableCompositedAnimationForTesting() {
 }
 
 void Animation::InvalidateKeyframeEffect(const TreeScope& tree_scope) {
-  if (!content_ || !content_->IsKeyframeEffectReadOnly())
+  if (!content_ || !content_->IsKeyframeEffect())
     return;
 
-  Element* target = ToKeyframeEffectReadOnly(content_.Get())->target();
+  Element* target = ToKeyframeEffect(content_.Get())->target();
 
   // TODO(alancutter): Remove dependency of this function on CSSAnimations.
   // This function makes the incorrect assumption that the animation uses

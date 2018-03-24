@@ -6,13 +6,13 @@ PASS KeyframeEffect interface object name
 FAIL KeyframeEffect interface: existence and properties of interface prototype object assert_own_property: should inherit from AnimationEffect, but self has no such property expected property "AnimationEffect" missing
 PASS KeyframeEffect interface: existence and properties of interface prototype object's "constructor" property
 PASS KeyframeEffect interface: existence and properties of interface prototype object's @@unscopables property
-FAIL KeyframeEffect interface: attribute target assert_own_property: expected property "target" missing
+FAIL KeyframeEffect interface: attribute target assert_equals: setter must be function for PutForwards, Replaceable, or non-readonly attributes expected "function" but got "undefined"
 PASS Unscopable handled correctly for target property on KeyframeEffect
 FAIL KeyframeEffect interface: attribute iterationComposite assert_true: The prototype object must have a property "iterationComposite" expected true got false
 PASS Unscopable handled correctly for iterationComposite property on KeyframeEffect
 PASS KeyframeEffect interface: attribute composite
 PASS Unscopable handled correctly for composite property on KeyframeEffect
-FAIL KeyframeEffect interface: operation getKeyframes() assert_own_property: interface prototype object missing non-static operation expected property "getKeyframes" missing
+PASS KeyframeEffect interface: operation getKeyframes()
 PASS Unscopable handled correctly for getKeyframes() on KeyframeEffect
 PASS KeyframeEffect interface: operation setKeyframes(object)
 PASS Unscopable handled correctly for setKeyframes(object) on KeyframeEffect

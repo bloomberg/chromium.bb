@@ -11,7 +11,6 @@
 #include "core/animation/EffectModel.h"
 #include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/Timing.h"
 #include "core/animation/TimingInput.h"
 #include "core/dom/Document.h"
@@ -71,7 +70,7 @@ HeapVector<Member<Animation>> ElementAnimation::getAnimations(
   for (const auto& animation :
        element.GetDocument().Timeline().getAnimations()) {
     DCHECK(animation->effect());
-    if (ToKeyframeEffectReadOnly(animation->effect())->target() == element &&
+    if (ToKeyframeEffect(animation->effect())->target() == element &&
         (animation->effect()->IsCurrent() || animation->effect()->IsInEffect()))
       animations.push_back(animation);
   }

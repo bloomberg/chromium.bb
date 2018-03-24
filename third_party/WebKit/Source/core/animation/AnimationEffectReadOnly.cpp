@@ -112,8 +112,8 @@ void AnimationEffectReadOnly::getComputedTiming(
   // KeyframeEffectOptions members.
   computed_timing.setDelay(SpecifiedTiming().start_delay * 1000);
   computed_timing.setEndDelay(SpecifiedTiming().end_delay * 1000);
-  computed_timing.setFill(Timing::FillModeString(ResolvedFillMode(
-      SpecifiedTiming().fill_mode, IsKeyframeEffectReadOnly())));
+  computed_timing.setFill(Timing::FillModeString(
+      ResolvedFillMode(SpecifiedTiming().fill_mode, IsKeyframeEffect())));
   computed_timing.setIterationStart(SpecifiedTiming().iteration_start);
   computed_timing.setIterations(SpecifiedTiming().iteration_count);
 
@@ -155,8 +155,8 @@ void AnimationEffectReadOnly::UpdateInheritedTime(
         AnimationEffectReadOnly::kPhaseActive;
     const double active_time = CalculateActiveTime(
         active_duration,
-        ResolvedFillMode(timing_.fill_mode, IsKeyframeEffectReadOnly()),
-        local_time, kParentPhase, current_phase, timing_);
+        ResolvedFillMode(timing_.fill_mode, IsKeyframeEffect()), local_time,
+        kParentPhase, current_phase, timing_);
 
     double current_iteration;
     WTF::Optional<double> progress;
@@ -208,7 +208,7 @@ void AnimationEffectReadOnly::UpdateInheritedTime(
           CalculatePhase(local_active_duration, local_local_time, timing_);
       const double local_active_time = CalculateActiveTime(
           local_active_duration,
-          ResolvedFillMode(timing_.fill_mode, IsKeyframeEffectReadOnly()),
+          ResolvedFillMode(timing_.fill_mode, IsKeyframeEffect()),
           local_local_time, kParentPhase, local_current_phase, timing_);
       const double start_offset =
           timing_.iteration_start * kLocalIterationDuration;

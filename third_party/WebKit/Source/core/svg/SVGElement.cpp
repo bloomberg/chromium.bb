@@ -29,6 +29,7 @@
 #include "core/animation/EffectStack.h"
 #include "core/animation/ElementAnimations.h"
 #include "core/animation/InvalidatableInterpolation.h"
+#include "core/animation/KeyframeEffect.h"
 #include "core/animation/SVGInterpolationEnvironment.h"
 #include "core/animation/SVGInterpolationTypesMap.h"
 #include "core/css/resolver/StyleResolver.h"
@@ -202,7 +203,7 @@ void SVGElement::ApplyActiveWebAnimations() {
   ActiveInterpolationsMap active_interpolations_map =
       EffectStack::ActiveInterpolations(
           &GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
-          KeyframeEffectReadOnly::kDefaultPriority, IsSVGAttributeHandle);
+          KeyframeEffect::kDefaultPriority, IsSVGAttributeHandle);
   for (auto& entry : active_interpolations_map) {
     const QualifiedName& attribute = entry.key.SvgAttribute();
     SVGInterpolationTypesMap map;
