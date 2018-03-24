@@ -69,7 +69,7 @@ TEST_F('SettingsPasswordSectionBrowserTest', 'uiTests', function() {
           node.$$('#originUrl').href);
       assertEquals(
           passwordInfo.loginPair.username,
-          node.$$('#username').textContent.trim());
+          node.$$('#username').value);
       assertEquals(passwordInfo.numCharactersInPassword,
           node.$$('#password').value.length);
     }
