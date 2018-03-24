@@ -282,6 +282,9 @@ class MOJO_SYSTEM_IMPL_EXPORT Core {
                        void** buffer,
                        MojoMapBufferFlags flags);
   MojoResult UnmapBuffer(void* buffer);
+  MojoResult GetBufferInfo(MojoHandle buffer_handle,
+                           const MojoSharedBufferOptions* options,
+                           MojoSharedBufferInfo* info);
 
   // These methods correspond to the API functions defined in
   // "mojo/public/c/system/platform_handle.h".

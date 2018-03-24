@@ -43,6 +43,35 @@ struct MOJO_ALIGNAS(8) MojoCreateSharedBufferOptions {
 MOJO_STATIC_ASSERT(sizeof(MojoCreateSharedBufferOptions) == 8,
                    "MojoCreateSharedBufferOptions has wrong size");
 
+// Flags passed to |MojoGetBufferInfo()| via |MojoSharedBufferOptions|.
+typedef uint32_t MojoSharedBufferOptionsFlags;
+
+#ifdef __cplusplus
+const MojoSharedBufferOptionsFlags MOJO_SHARED_BUFFER_OPTIONS_FLAG_NONE = 0;
+#else
+#define MOJO_SHARED_BUFFER_OPTIONS_FLAG_NONE ((MojoSharedBufferOptionsFlags)0)
+#endif
+
+struct MOJO_ALIGNAS(8) MojoSharedBufferOptions {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // See |MojoSharedBufferOptionsFlags|.
+  MojoSharedBufferOptionsFlags flags;
+};
+MOJO_STATIC_ASSERT(sizeof(MojoSharedBufferOptions) == 8,
+                   "MojoSharedBufferOptions has wrong size");
+
+struct MOJO_ALIGNAS(8) MojoSharedBufferInfo {
+  // The size of this structure, used for versioning.
+  uint32_t struct_size;
+
+  // The size of the shared buffer.
+  uint64_t size;
+};
+MOJO_STATIC_ASSERT(sizeof(MojoSharedBufferInfo) == 16,
+                   "MojoSharedBufferInfo has wrong size");
+
 // |MojoDuplicateBufferHandleOptions|: Used to specify parameters in duplicating
 // access to a shared buffer to |MojoDuplicateBufferHandle()|.
 //
@@ -180,6 +209,21 @@ MOJO_SYSTEM_EXPORT MojoResult MojoMapBuffer(MojoHandle buffer_handle,
 //   |MOJO_RESULT_INVALID_ARGUMENT| if |buffer| is invalid (e.g., is not the
 //       result of |MojoMapBuffer()| or has already been unmapped).
 MOJO_SYSTEM_EXPORT MojoResult MojoUnmapBuffer(void* buffer);  // In.
+
+// Retrieve information about |buffer_handle| into |info|. |options| is optional
+// and reserved for future use.
+//
+// Returns:
+//   |MOJO_RESULT_OK| on success.
+//   |MOJO_RESULT_INVALID_ARGUMENT| if |buffer_handle| is invalid or if |info|
+//       is NULL.
+//
+// On success, |info->size| will be set to the size of the buffer. On failure it
+// is not modified.
+MOJO_SYSTEM_EXPORT MojoResult
+MojoGetBufferInfo(MojoHandle buffer_handle,
+                  const struct MojoSharedBufferOptions* options,  // Optional.
+                  struct MojoSharedBufferInfo* info);             // Out.
 
 #ifdef __cplusplus
 }  // extern "C"

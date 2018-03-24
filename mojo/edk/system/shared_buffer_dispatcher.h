@@ -76,6 +76,7 @@ class MOJO_SYSTEM_IMPL_EXPORT SharedBufferDispatcher final : public Dispatcher {
       uint64_t num_bytes,
       MojoMapBufferFlags flags,
       std::unique_ptr<PlatformSharedBufferMapping>* mapping) override;
+  MojoResult GetBufferInfo(MojoSharedBufferInfo* info) override;
   void StartSerialize(uint32_t* num_bytes,
                       uint32_t* num_ports,
                       uint32_t* num_platform_handles) override;

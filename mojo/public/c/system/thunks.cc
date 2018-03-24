@@ -138,6 +138,13 @@ MojoResult MojoUnmapBuffer(void* buffer) {
   return g_thunks.UnmapBuffer(buffer);
 }
 
+MojoResult MojoGetBufferInfo(MojoHandle buffer_handle,
+                             const struct MojoSharedBufferOptions* options,
+                             struct MojoSharedBufferInfo* info) {
+  assert(g_thunks.GetBufferInfo);
+  return g_thunks.GetBufferInfo(buffer_handle, options, info);
+}
+
 MojoResult MojoCreateTrap(MojoTrapEventHandler handler,
                           const MojoCreateTrapOptions* options,
                           MojoHandle* trap_handle) {

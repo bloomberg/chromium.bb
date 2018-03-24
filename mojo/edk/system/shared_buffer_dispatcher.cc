@@ -239,6 +239,15 @@ MojoResult SharedBufferDispatcher::MapBuffer(
   return MOJO_RESULT_OK;
 }
 
+MojoResult SharedBufferDispatcher::GetBufferInfo(MojoSharedBufferInfo* info) {
+  if (!info)
+    return MOJO_RESULT_INVALID_ARGUMENT;
+
+  base::AutoLock lock(lock_);
+  info->size = shared_buffer_->GetNumBytes();
+  return MOJO_RESULT_OK;
+}
+
 void SharedBufferDispatcher::StartSerialize(uint32_t* num_bytes,
                                             uint32_t* num_ports,
                                             uint32_t* num_platform_handles) {

@@ -66,6 +66,10 @@ MojoResult Dispatcher::MapBuffer(
   return MOJO_RESULT_INVALID_ARGUMENT;
 }
 
+MojoResult Dispatcher::GetBufferInfo(MojoSharedBufferInfo* info) {
+  return MOJO_RESULT_INVALID_ARGUMENT;
+}
+
 MojoResult Dispatcher::ReadData(void* elements,
                                 uint32_t* num_bytes,
                                 MojoReadDataFlags flags) {

@@ -43,4 +43,12 @@ ScopedSharedBufferMapping SharedBufferHandle::MapAtOffset(
   return ScopedSharedBufferMapping(buffer);
 }
 
+uint64_t SharedBufferHandle::GetSize() const {
+  MojoSharedBufferInfo buffer_info;
+  buffer_info.struct_size = sizeof(buffer_info);
+  return MojoGetBufferInfo(value(), nullptr, &buffer_info) == MOJO_RESULT_OK
+             ? buffer_info.size
+             : 0;
+}
+
 }  // namespace mojo
