@@ -13,6 +13,7 @@
 #include <vector>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/detection_utils_win.h"
 #include "services/shape_detection/public/mojom/textdetection.mojom.h"
@@ -44,16 +45,16 @@ class TextDetectionImplWin : public mojom::TextDetection {
  private:
   Microsoft::WRL::ComPtr<IOcrEngine> ocr_engine_;
   Microsoft::WRL::ComPtr<ISoftwareBitmapStatics> bitmap_factory_;
-  std::unique_ptr<AsyncOperation<OcrResult>> async_recognize_ops_;
   DetectCallback recognize_text_callback_;
   mojo::StrongBindingPtr<mojom::TextDetection> binding_;
 
-  std::unique_ptr<AsyncOperation<OcrResult>> BeginDetect(
-      const SkBitmap& bitmap);
+  HRESULT BeginDetect(const SkBitmap& bitmap);
   std::vector<mojom::TextDetectionResultPtr> BuildTextDetectionResult(
       AsyncOperation<OcrResult>::IAsyncOperationPtr async_op);
   void OnTextDetected(Microsoft::WRL::ComPtr<ISoftwareBitmap> win_bitmap,
                       AsyncOperation<OcrResult>::IAsyncOperationPtr async_op);
+
+  base::WeakPtrFactory<TextDetectionImplWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(TextDetectionImplWin);
 };

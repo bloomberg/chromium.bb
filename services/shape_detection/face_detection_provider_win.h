@@ -11,6 +11,7 @@
 #include <utility>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/shape_detection/detection_utils_win.h"
 #include "services/shape_detection/face_detection_impl_win.h"
@@ -48,7 +49,7 @@ class FaceDetectionProviderWin
 
   FRIEND_TEST_ALL_PREFIXES(FaceDetectionImplWinTest, ScanOneFace);
   mojo::StrongBindingPtr<mojom::FaceDetectionProvider> binding_;
-  std::unique_ptr<AsyncOperation<FaceDetector>> async_create_detector_ops_;
+  base::WeakPtrFactory<FaceDetectionProviderWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(FaceDetectionProviderWin);
 };

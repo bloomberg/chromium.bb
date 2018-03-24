@@ -23,7 +23,8 @@ FaceDetectionImplWin::FaceDetectionImplWin(
     BitmapPixelFormat pixel_format)
     : face_detector_(std::move(face_detector)),
       bitmap_factory_(std::move(bitmap_factory)),
-      pixel_format_(pixel_format) {
+      pixel_format_(pixel_format),
+      weak_factory_(this) {
   DCHECK(face_detector_);
   DCHECK(bitmap_factory_);
 }
@@ -31,25 +32,24 @@ FaceDetectionImplWin::~FaceDetectionImplWin() = default;
 
 void FaceDetectionImplWin::Detect(const SkBitmap& bitmap,
                                   DetectCallback callback) {
-  if ((async_detect_face_ops_ = BeginDetect(bitmap))) {
-    // Hold on the callback until AsyncOperation completes.
-    detected_face_callback_ = std::move(callback);
-    // This prevents the Detect function from being called before the
-    // AsyncOperation completes.
-    binding_->PauseIncomingMethodCallProcessing();
-  } else {
+  if (FAILED(BeginDetect(bitmap))) {
     // No detection taking place; run |callback| with an empty array of results.
     std::move(callback).Run(std::vector<mojom::FaceDetectionResultPtr>());
+    return;
   }
+  // Hold on the callback until AsyncOperation completes.
+  detected_face_callback_ = std::move(callback);
+  // This prevents the Detect function from being called before the
+  // AsyncOperation completes.
+  binding_->PauseIncomingMethodCallProcessing();
 }
 
-std::unique_ptr<AsyncOperation<IVector<DetectedFace*>>>
-FaceDetectionImplWin::BeginDetect(const SkBitmap& bitmap) {
+HRESULT FaceDetectionImplWin::BeginDetect(const SkBitmap& bitmap) {
   Microsoft::WRL::ComPtr<ISoftwareBitmap> win_bitmap =
       CreateWinBitmapWithPixelFormat(bitmap, bitmap_factory_.Get(),
                                      pixel_format_);
   if (!win_bitmap)
-    return nullptr;
+    return E_FAIL;
 
   // Detect faces asynchronously.
   AsyncOperation<IVector<DetectedFace*>>::IAsyncOperationPtr async_op;
@@ -58,15 +58,15 @@ FaceDetectionImplWin::BeginDetect(const SkBitmap& bitmap) {
   if (FAILED(hr)) {
     DLOG(ERROR) << "Detect faces asynchronously failed: "
                 << logging::SystemErrorCodeToString(hr);
-    return nullptr;
+    return hr;
   }
 
-  // The once callback will not be called if this object is deleted, so it's
-  // fine to use Unretained to bind the callback. |win_bitmap| needs to be kept
+  // Use WeakPtr to bind the callback so that the once callback will not be run
+  // if this object has been already destroyed. |win_bitmap| needs to be kept
   // alive until OnFaceDetected().
-  return AsyncOperation<IVector<DetectedFace*>>::Create(
+  return AsyncOperation<IVector<DetectedFace*>>::BeginAsyncOperation(
       base::BindOnce(&FaceDetectionImplWin::OnFaceDetected,
-                     base::Unretained(this), std::move(win_bitmap)),
+                     weak_factory_.GetWeakPtr(), std::move(win_bitmap)),
       std::move(async_op));
 }
 
@@ -117,7 +117,6 @@ void FaceDetectionImplWin::OnFaceDetected(
     AsyncOperation<IVector<DetectedFace*>>::IAsyncOperationPtr async_op) {
   std::move(detected_face_callback_)
       .Run(BuildFaceDetectionResult(std::move(async_op)));
-  async_detect_face_ops_.reset();
   binding_->ResumeIncomingMethodCallProcessing();
 }
 
