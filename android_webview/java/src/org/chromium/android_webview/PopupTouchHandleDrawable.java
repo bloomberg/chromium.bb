@@ -120,8 +120,9 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
         mDrawableObserverList.addObserver(this);
 
         mContentViewCore = contentViewCore;
+        mWebContents = mContentViewCore.getWebContents();
 
-        WindowAndroid windowAndroid = mContentViewCore.getWindowAndroid();
+        WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
         mDeviceScale = windowAndroid.getDisplay().getDipScale();
 
         mContainer = new PopupWindow(
@@ -176,7 +177,6 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
                 destroy();
             }
         };
-        mWebContents = mContentViewCore.getWebContents();
         GestureListenerManager.fromWebContents(mWebContents).addListener(mGestureStateListener);
         mNativeDrawable = nativeInit(HandleViewResources.getHandleHorizontalPaddingRatio());
     }
@@ -518,7 +518,7 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
         mAttachedToWindow = true;
         onVisibilityInputChanged();
 
-        WindowAndroid windowAndroid = mContentViewCore.getWindowAndroid();
+        WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
         if (windowAndroid != null) {
             windowAndroid.getDisplay().addObserver(this);
             mDeviceScale = windowAndroid.getDisplay().getDipScale();
@@ -530,7 +530,7 @@ public class PopupTouchHandleDrawable extends View implements DisplayAndroidObse
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
 
-        WindowAndroid windowAndroid = mContentViewCore.getWindowAndroid();
+        WindowAndroid windowAndroid = mWebContents.getTopLevelNativeWindow();
         if (windowAndroid != null) windowAndroid.getDisplay().removeObserver(this);
 
         mAttachedToWindow = false;

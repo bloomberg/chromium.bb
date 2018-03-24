@@ -489,15 +489,15 @@ public class DOMUtils {
      * @return the click target of the node in the form of a [ x, y ] array.
      */
     private static int[] getClickTargetForBounds(ContentViewCore viewCore, Rect bounds) {
-        RenderCoordinates coord =
-                ((WebContentsImpl) viewCore.getWebContents()).getRenderCoordinates();
+        WebContentsImpl webContents = (WebContentsImpl) viewCore.getWebContents();
+        RenderCoordinates coord = webContents.getRenderCoordinates();
         int clickX = (int) coord.fromLocalCssToPix(bounds.exactCenterX());
         int clickY = (int) coord.fromLocalCssToPix(bounds.exactCenterY())
                 + getMaybeTopControlsHeight(viewCore);
 
         // This scale will almost always be 1. See the comments on
         // DisplayAndroid#getAndroidUIScaling().
-        float scale = viewCore.getWindowAndroid().getDisplay().getAndroidUIScaling();
+        float scale = webContents.getTopLevelNativeWindow().getDisplay().getAndroidUIScaling();
 
         return new int[] {(int) (clickX * scale), (int) (clickY * scale)};
     }

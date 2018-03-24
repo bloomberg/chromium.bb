@@ -93,14 +93,6 @@ void ContentViewCore::UpdateWindowAndroid(
     window->AddChild(view);
 }
 
-base::android::ScopedJavaLocalRef<jobject>
-ContentViewCore::GetJavaWindowAndroid(JNIEnv* env,
-                                      const JavaParamRef<jobject>& obj) {
-  if (!GetWindowAndroid())
-    return ScopedJavaLocalRef<jobject>();
-  return GetWindowAndroid()->GetJavaObject();
-}
-
 void ContentViewCore::OnJavaContentViewCoreDestroyed(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {

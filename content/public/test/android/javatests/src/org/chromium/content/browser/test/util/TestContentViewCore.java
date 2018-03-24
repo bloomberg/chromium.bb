@@ -33,11 +33,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public WindowAndroid getWindowAndroid() {
-        return null;
-    }
-
-    @Override
     public void updateWindowAndroid(WindowAndroid windowAndroid) {}
 
     @Override

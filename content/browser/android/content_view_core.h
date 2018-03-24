@@ -38,10 +38,6 @@ class ContentViewCore : public WebContentsObserver {
   // Methods called from Java via JNI
   // --------------------------------------------------------------------------
 
-  base::android::ScopedJavaLocalRef<jobject> GetJavaWindowAndroid(
-      JNIEnv* env,
-      const base::android::JavaParamRef<jobject>& obj);
-
   void UpdateWindowAndroid(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
