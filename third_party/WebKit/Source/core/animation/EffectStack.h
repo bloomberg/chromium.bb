@@ -66,7 +66,7 @@ class CORE_EXPORT EffectStack {
       EffectStack*,
       const HeapVector<Member<const InertEffect>>* new_animations,
       const HeapHashSet<Member<const Animation>>* suppressed_animations,
-      KeyframeEffectReadOnly::Priority,
+      KeyframeEffect::Priority,
       PropertyHandleFilter = nullptr);
 
   void Trace(blink::Visitor*);

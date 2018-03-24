@@ -6,8 +6,7 @@
 
 namespace blink {
 
-SampledEffect::SampledEffect(KeyframeEffectReadOnly* effect,
-                             unsigned sequence_number)
+SampledEffect::SampledEffect(KeyframeEffect* effect, unsigned sequence_number)
     : effect_(effect),
       sequence_number_(sequence_number),
       priority_(effect->GetPriority()) {}

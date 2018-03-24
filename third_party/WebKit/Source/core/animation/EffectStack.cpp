@@ -111,7 +111,7 @@ ActiveInterpolationsMap EffectStack::ActiveInterpolations(
     EffectStack* effect_stack,
     const HeapVector<Member<const InertEffect>>* new_animations,
     const HeapHashSet<Member<const Animation>>* suppressed_animations,
-    KeyframeEffectReadOnly::Priority priority,
+    KeyframeEffect::Priority priority,
     PropertyHandleFilter property_handle_filter) {
   ActiveInterpolationsMap result;
 
@@ -124,7 +124,7 @@ ActiveInterpolationsMap EffectStack::ActiveInterpolations(
     for (const auto& sampled_effect : sampled_effects) {
       if (sampled_effect->GetPriority() != priority ||
           // TODO(majidvp): Instead of accessing the effect's animation move the
-          // check inside KeyframeEffectReadOnly. http://crbug.com/812410
+          // check inside KeyframeEffect. http://crbug.com/812410
           (suppressed_animations && sampled_effect->Effect() &&
            suppressed_animations->Contains(
                sampled_effect->Effect()->GetAnimation())))

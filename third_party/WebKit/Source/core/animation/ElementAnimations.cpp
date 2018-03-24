@@ -36,7 +36,7 @@ namespace blink {
 
 namespace {
 
-void UpdateAnimationFlagsForEffect(const KeyframeEffectReadOnly& effect,
+void UpdateAnimationFlagsForEffect(const KeyframeEffect& effect,
                                    ComputedStyle& style) {
   if (effect.Affects(PropertyHandle(GetCSSPropertyOpacity())))
     style.SetHasCurrentOpacityAnimation(true);
@@ -62,16 +62,15 @@ void ElementAnimations::UpdateAnimationFlags(ComputedStyle& style) {
     const Animation& animation = *entry.key;
     DCHECK(animation.effect());
     // FIXME: Needs to consider AnimationGroup once added.
-    DCHECK(animation.effect()->IsKeyframeEffectReadOnly());
-    const KeyframeEffectReadOnly& effect =
-        *ToKeyframeEffectReadOnly(animation.effect());
+    DCHECK(animation.effect()->IsKeyframeEffect());
+    const KeyframeEffect& effect = *ToKeyframeEffect(animation.effect());
     if (!effect.IsCurrent())
       continue;
     UpdateAnimationFlagsForEffect(effect, style);
   }
 
   for (const auto& entry : worklet_animations_) {
-    const KeyframeEffectReadOnly& effect = *entry->GetEffect();
+    const KeyframeEffect& effect = *entry->GetEffect();
     // TODO(majidvp): we should check the effect's phase before updating the
     // style once the timing of effect is ready to use.
     // https://crbug.com/814851.

@@ -4034,18 +4034,14 @@ interface KeyboardEvent : UIEvent
     method constructor
     method getModifierState
     method initKeyboardEvent
-interface KeyframeEffect : KeyframeEffectReadOnly
-    attribute @@toStringTag
-    getter composite
-    method constructor
-    method setKeyframes
-    setter composite
-interface KeyframeEffectReadOnly : AnimationEffectReadOnly
+interface KeyframeEffect : AnimationEffectReadOnly
     attribute @@toStringTag
     getter composite
     getter target
     method constructor
     method getKeyframes
+    method setKeyframes
+    setter composite
 interface LinearAccelerationSensor : Accelerometer
     attribute @@toStringTag
     method constructor

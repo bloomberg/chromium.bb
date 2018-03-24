@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset=utf-8>
-<title>Animating with KeyframeEffectReadOnly objects</title>
+<title>Animating with KeyframeEffect objects</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
 <script src="../../external/wpt/web-animations/testcommon.js"></script>
@@ -10,24 +10,24 @@
 
 test(function(t) {
   var target = createDiv(t);
-  var effect = new KeyframeEffectReadOnly(target, null);
+  var effect = new KeyframeEffect(target, null);
   var anim = target.animate(null);
   anim.effect = effect;
-  assert_class_string(anim.effect, "KeyframeEffectReadOnly");
-  assert_class_string(anim.effect.timing, "AnimationEffectTimingReadOnly");
-}, "An animation can be created with a KeyframeEffectReadOnly, and the effect"
+  assert_class_string(anim.effect, "KeyframeEffect");
+  assert_class_string(anim.effect.timing, "AnimationEffectTiming");
+}, "An animation can be created with a KeyframeEffect, and the effect"
    + " is of the expected type");
 
 test(function(t) {
   var target = createDiv(t);
-  var effect = new KeyframeEffectReadOnly(target, { opacity: [0, 0.9] }, 1000);
+  var effect = new KeyframeEffect(target, { opacity: [0, 0.9] }, 1000);
   var anim = target.animate(null);
   anim.pause();
   anim.effect = effect;
   anim.currentTime = 500;
   assert_equals(getComputedStyle(target).opacity, '0.45',
       'opacity at mid-point');
-}, "An animation based on a KeyframeEffectReadOnly applies an effect");
+}, "An animation based on a KeyframeEffect applies an effect");
 
 </script>
 </body>

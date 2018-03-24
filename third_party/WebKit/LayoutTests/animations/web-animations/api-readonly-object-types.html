@@ -16,13 +16,5 @@ test(function(t) {
   assert_class_string(effect.timing, "AnimationEffectTiming");
 }, "KeyframeEffect constructor creates and exposes an AnimationEffectTiming"
    + " object");
-
-test(function(t) {
-  var target = createDiv(t);
-  var effect = new KeyframeEffectReadOnly(target, null);
-  assert_class_string(effect, "KeyframeEffectReadOnly");
-  assert_class_string(effect.timing, "AnimationEffectTimingReadOnly");
-}, "KeyframeEffectReadOnly constructor creates and exposes an"
-   + " AnimationEffectTimingReadOnly object");
 </script>
 </body>

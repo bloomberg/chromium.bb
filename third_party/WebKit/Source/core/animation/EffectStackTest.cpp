@@ -114,7 +114,7 @@ TEST_F(AnimationEffectStackTest, ElementAnimationsSorted) {
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyFontSize, "3px")), 5);
   ActiveInterpolationsMap result = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::kDefaultPriority);
+      KeyframeEffect::kDefaultPriority);
   EXPECT_EQ(1u, result.size());
   EXPECT_EQ(GetFontSizeValue(result), 3);
 }
@@ -131,7 +131,7 @@ TEST_F(AnimationEffectStackTest, NewAnimations) {
   new_animations.push_back(inert2);
   ActiveInterpolationsMap result = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), &new_animations,
-      nullptr, KeyframeEffectReadOnly::kDefaultPriority);
+      nullptr, KeyframeEffect::kDefaultPriority);
   EXPECT_EQ(2u, result.size());
   EXPECT_EQ(GetFontSizeValue(result), 3);
   EXPECT_EQ(GetZIndexValue(result), 4);
@@ -145,7 +145,7 @@ TEST_F(AnimationEffectStackTest, CancelledAnimations) {
   Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyZIndex, "2")), 0);
   ActiveInterpolationsMap result = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr,
-      &cancelled_animations, KeyframeEffectReadOnly::kDefaultPriority);
+      &cancelled_animations, KeyframeEffect::kDefaultPriority);
   EXPECT_EQ(1u, result.size());
   EXPECT_EQ(GetZIndexValue(result), 2);
 }
@@ -155,14 +155,14 @@ TEST_F(AnimationEffectStackTest, ClearedEffectsRemoved) {
       Play(MakeKeyframeEffect(MakeEffectModel(CSSPropertyFontSize, "1px")), 10);
   ActiveInterpolationsMap result = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::kDefaultPriority);
+      KeyframeEffect::kDefaultPriority);
   EXPECT_EQ(1u, result.size());
   EXPECT_EQ(GetFontSizeValue(result), 1);
 
   animation->setEffect(nullptr);
   result = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::kDefaultPriority);
+      KeyframeEffect::kDefaultPriority);
   EXPECT_EQ(0u, result.size());
 }
 
@@ -178,7 +178,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   ThreadState::Current()->CollectAllGarbage();
   interpolations = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::kDefaultPriority);
+      KeyframeEffect::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
   EXPECT_EQ(GetFontSizeValue(interpolations), 3);
   EXPECT_EQ(3u, SampledEffectCount());
@@ -187,7 +187,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   ThreadState::Current()->CollectAllGarbage();
   interpolations = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::kDefaultPriority);
+      KeyframeEffect::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
   EXPECT_EQ(GetFontSizeValue(interpolations), 3);
   EXPECT_EQ(3u, SampledEffectCount());
@@ -196,7 +196,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   ThreadState::Current()->CollectAllGarbage();
   interpolations = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::kDefaultPriority);
+      KeyframeEffect::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
   EXPECT_EQ(GetFontSizeValue(interpolations), 3);
   EXPECT_EQ(2u, SampledEffectCount());
@@ -205,7 +205,7 @@ TEST_F(AnimationEffectStackTest, ForwardsFillDiscarding) {
   ThreadState::Current()->CollectAllGarbage();
   interpolations = EffectStack::ActiveInterpolations(
       &element->GetElementAnimations()->GetEffectStack(), nullptr, nullptr,
-      KeyframeEffectReadOnly::kDefaultPriority);
+      KeyframeEffect::kDefaultPriority);
   EXPECT_EQ(1u, interpolations.size());
   EXPECT_EQ(GetFontSizeValue(interpolations), 3);
   EXPECT_EQ(1u, SampledEffectCount());

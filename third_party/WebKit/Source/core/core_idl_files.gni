@@ -43,7 +43,6 @@ core_idl_files =
                     "animation/AnimationTimeline.idl",
                     "animation/DocumentTimeline.idl",
                     "animation/KeyframeEffect.idl",
-                    "animation/KeyframeEffectReadOnly.idl",
                     "animation/ScrollTimeline.idl",
                     "clipboard/DataTransfer.idl",
                     "clipboard/DataTransferItemList.idl",

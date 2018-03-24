@@ -1,3 +1,0 @@
-Tests that animations can be created with KeyframeEffect and KeyframeEffectReadOnly without crashing.
-
-

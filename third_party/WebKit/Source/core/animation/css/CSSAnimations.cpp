@@ -41,8 +41,8 @@
 #include "core/animation/Interpolation.h"
 #include "core/animation/InterpolationEnvironment.h"
 #include "core/animation/InterpolationType.h"
+#include "core/animation/KeyframeEffect.h"
 #include "core/animation/KeyframeEffectModel.h"
-#include "core/animation/KeyframeEffectReadOnly.h"
 #include "core/animation/TransitionInterpolation.h"
 #include "core/animation/css/CSSAnimatableValueFactory.h"
 #include "core/css/CSSKeyframeRule.h"
@@ -228,8 +228,8 @@ const KeyframeEffectModelBase* GetKeyframeEffectModelBase(
   if (!effect)
     return nullptr;
   const EffectModel* model = nullptr;
-  if (effect->IsKeyframeEffectReadOnly())
-    model = ToKeyframeEffectReadOnly(effect)->Model();
+  if (effect->IsKeyframeEffect())
+    model = ToKeyframeEffect(effect)->Model();
   else if (effect->IsInertEffect())
     model = ToInertEffect(effect)->Model();
   if (!model || !model->IsKeyframeEffectModel())
@@ -476,8 +476,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     animation->SetCompositorPending(true);
 
   for (const auto& entry : pending_update_.AnimationsWithUpdates()) {
-    KeyframeEffectReadOnly* effect =
-        ToKeyframeEffectReadOnly(entry.animation->effect());
+    KeyframeEffect* effect = ToKeyframeEffect(entry.animation->effect());
 
     effect->SetModel(entry.effect->Model());
     effect->UpdateSpecifiedTiming(entry.effect->SpecifiedTiming());
@@ -503,7 +502,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
         new AnimationEventDelegate(element, entry.name);
     KeyframeEffect* effect = KeyframeEffect::Create(
         element, inert_animation->Model(), inert_animation->SpecifiedTiming(),
-        KeyframeEffectReadOnly::kDefaultPriority, event_delegate);
+        KeyframeEffect::kDefaultPriority, event_delegate);
     Animation* animation = element->GetDocument().Timeline().Play(effect);
     animation->setId(entry.name);
     if (inert_animation->Paused())
@@ -518,30 +517,29 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
   // be when transitions are retargeted. Instead of triggering complete style
   // recalculation, we find these cases by searching for new transitions that
   // have matching cancelled animation property IDs on the compositor.
-  HeapHashMap<PropertyHandle, std::pair<Member<KeyframeEffectReadOnly>, double>>
+  HeapHashMap<PropertyHandle, std::pair<Member<KeyframeEffect>, double>>
       retargeted_compositor_transitions;
   for (const PropertyHandle& property :
        pending_update_.CancelledTransitions()) {
     DCHECK(transitions_.Contains(property));
 
     Animation* animation = transitions_.Take(property).animation;
-    KeyframeEffectReadOnly* effect =
-        ToKeyframeEffectReadOnly(animation->effect());
+    KeyframeEffect* effect = ToKeyframeEffect(animation->effect());
     if (effect->HasActiveAnimationsOnCompositor(property) &&
         pending_update_.NewTransitions().find(property) !=
             pending_update_.NewTransitions().end() &&
         !animation->Limited()) {
       retargeted_compositor_transitions.insert(
           property,
-          std::pair<KeyframeEffectReadOnly*, double>(
+          std::pair<KeyframeEffect*, double>(
               effect, animation->StartTimeInternal().value_or(NullValue())));
     }
     animation->cancel();
     // after cancelation, transitions must be downgraded or they'll fail
     // to be considered when retriggering themselves. This can happen if
     // the transition is captured through getAnimations then played.
-    if (animation->effect() && animation->effect()->IsKeyframeEffectReadOnly())
-      ToKeyframeEffectReadOnly(animation->effect())->DowngradeToNormal();
+    if (animation->effect() && animation->effect()->IsKeyframeEffect())
+      ToKeyframeEffect(animation->effect())->DowngradeToNormal();
     animation->Update(kTimingUpdateOnDemand);
   }
 
@@ -550,9 +548,8 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     if (transitions_.Contains(property)) {
       Animation* animation = transitions_.Take(property).animation;
       // Transition must be downgraded
-      if (animation->effect() &&
-          animation->effect()->IsKeyframeEffectReadOnly())
-        ToKeyframeEffectReadOnly(animation->effect())->DowngradeToNormal();
+      if (animation->effect() && animation->effect()->IsKeyframeEffect())
+        ToKeyframeEffect(animation->effect())->DowngradeToNormal();
     }
   }
 
@@ -575,9 +572,9 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
     KeyframeEffectModelBase* model = inert_animation->Model();
 
     if (retargeted_compositor_transitions.Contains(property)) {
-      const std::pair<Member<KeyframeEffectReadOnly>, double>& old_transition =
+      const std::pair<Member<KeyframeEffect>, double>& old_transition =
           retargeted_compositor_transitions.at(property);
-      KeyframeEffectReadOnly* old_animation = old_transition.first;
+      KeyframeEffect* old_animation = old_transition.first;
       double old_start_time = old_transition.second;
       double inherited_time =
           IsNull(old_start_time)
@@ -614,7 +611,7 @@ void CSSAnimations::MaybeApplyPendingUpdate(Element* element) {
 
     KeyframeEffect* transition = KeyframeEffect::Create(
         element, model, inert_animation->SpecifiedTiming(),
-        KeyframeEffectReadOnly::kTransitionPriority, event_delegate);
+        KeyframeEffect::kTransitionPriority, event_delegate);
     Animation* animation = element->GetDocument().Timeline().Play(transition);
     if (property.IsCSSCustomProperty()) {
       animation->setId(property.CustomPropertyName());
@@ -990,13 +987,13 @@ void AdoptActiveAnimationInterpolations(
   ActiveInterpolationsMap custom_interpolations(
       EffectStack::ActiveInterpolations(
           effect_stack, new_animations, suppressed_animations,
-          KeyframeEffectReadOnly::kDefaultPriority, IsCustomPropertyHandle));
+          KeyframeEffect::kDefaultPriority, IsCustomPropertyHandle));
   update.AdoptActiveInterpolationsForCustomAnimations(custom_interpolations);
 
   ActiveInterpolationsMap standard_interpolations(
       EffectStack::ActiveInterpolations(
           effect_stack, new_animations, suppressed_animations,
-          KeyframeEffectReadOnly::kDefaultPriority, IsStandardPropertyHandle));
+          KeyframeEffect::kDefaultPriority, IsStandardPropertyHandle));
   update.AdoptActiveInterpolationsForStandardAnimations(
       standard_interpolations);
 }
@@ -1055,8 +1052,7 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
   if (update.NewTransitions().IsEmpty() &&
       update.CancelledTransitions().IsEmpty()) {
     active_interpolations_for_transitions = EffectStack::ActiveInterpolations(
-        effect_stack, nullptr, nullptr,
-        KeyframeEffectReadOnly::kTransitionPriority,
+        effect_stack, nullptr, nullptr, KeyframeEffect::kTransitionPriority,
         PropertyFilter(property_pass));
   } else {
     HeapVector<Member<const InertEffect>> new_transitions;
@@ -1077,8 +1073,7 @@ void CSSAnimations::CalculateTransitionActiveInterpolations(
 
     active_interpolations_for_transitions = EffectStack::ActiveInterpolations(
         effect_stack, &new_transitions, &cancelled_animations,
-        KeyframeEffectReadOnly::kTransitionPriority,
-        PropertyFilter(property_pass));
+        KeyframeEffect::kTransitionPriority, PropertyFilter(property_pass));
   }
 
   const ActiveInterpolationsMap& animations =

@@ -89,7 +89,6 @@ class CORE_EXPORT AnimationEffectReadOnly : public ScriptWrappable {
 
   virtual ~AnimationEffectReadOnly() = default;
 
-  virtual bool IsKeyframeEffectReadOnly() const { return false; }
   virtual bool IsKeyframeEffect() const { return false; }
   virtual bool IsInertEffect() const { return false; }
 

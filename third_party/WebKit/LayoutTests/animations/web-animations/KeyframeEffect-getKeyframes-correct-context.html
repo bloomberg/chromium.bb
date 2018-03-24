@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <meta charset=utf-8>
-<title>KeyframeEffectReadOnly::getKeyframes should use correct context</title>
+<title>KeyframeEffect::getKeyframes should use correct context</title>
 
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
@@ -15,18 +15,18 @@
 // This test checks a particularly nasty corner-case of getKeyframes(). Because
 // getKeyframes() manually constructs a JavaScript object to pass back, care
 // must be taken to ensure that the resultant object is in the same context as
-// the KeyframeEffectReadOnly object it is being applied to.
+// the KeyframeEffect object it is being applied to.
 test(function(t) {
-  const effect = new KeyframeEffectReadOnly(elem, [
+  const effect = new KeyframeEffect(elem, [
       { left: "0px" },
       { left: "20px" }
   ], 1000);
   const iframe = document.getElementById("iframe");
-  const keyframes = iframe.contentWindow.KeyframeEffectReadOnly.prototype
+  const keyframes = iframe.contentWindow.KeyframeEffect.prototype
       .getKeyframes.apply(effect);
 
   assert_equals(Object.getPrototypeOf(keyframes[0]), Object.prototype);
-}, "Applying getKeyframes to a KeyframeEffectReadOnly object from another "
+}, "Applying getKeyframes to a KeyframeEffect object from another "
    + " frame should produce keyframes in the same frame as the object.");
 
 </script>

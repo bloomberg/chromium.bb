@@ -30,13 +30,17 @@
 
 // https://drafts.csswg.org/web-animations/#the-keyframeeffect-interfaces
 
+enum CompositeOperation { "replace", "add", "accumulate" };
+
 [
     Constructor(Element? target, object? keyframes, optional (unrestricted double or KeyframeEffectOptions) options),
-    Constructor(KeyframeEffectReadOnly source),
+    Constructor(KeyframeEffect source),
     ConstructorCallWith=ScriptState,
     RaisesException=Constructor,
     RuntimeEnabled=WebAnimationsAPI
-] interface KeyframeEffect : KeyframeEffectReadOnly {
-  inherit attribute CompositeOperation composite;
+] interface KeyframeEffect : AnimationEffectReadOnly {
+  readonly attribute Element? target;
+  attribute CompositeOperation composite;
+  [CallWith=ScriptState] sequence<object> getKeyframes();
   [CallWith=ScriptState, RaisesException] void setKeyframes(object? keyframes);
 };
