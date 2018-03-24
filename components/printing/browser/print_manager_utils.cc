@@ -33,15 +33,27 @@ void CreateCompositeClientIfNeeded(content::WebContents* web_contents) {
   // where OOPIF is used such as isolate-extensions, but should be good for
   // feature testing purpose. Eventually, we will remove this check and use pdf
   // compositor service by default for printing.
+
+  bool is_site_isolation_enabled;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kSitePerProcess) ||
       base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kIsolateOrigins) ||
-      ((base::FeatureList::IsEnabled(::features::kSitePerProcess) ||
-        base::FeatureList::IsEnabled(::features::kIsolateOrigins)) &&
-       !base::CommandLine::ForCurrentProcess()->HasSwitch(
-           switches::kDisableSiteIsolationTrials)) ||
-      base::FeatureList::IsEnabled(::features::kTopDocumentIsolation) ||
+          switches::kIsolateOrigins)) {
+    is_site_isolation_enabled = true;
+  } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+                 switches::kDisableSiteIsolationTrials)) {
+    is_site_isolation_enabled = false;
+  } else {
+    // The features need to be checked last, because checking a feature
+    // activates the field trial and assigns the client either to a control or
+    // an experiment group.
+    is_site_isolation_enabled =
+        base::FeatureList::IsEnabled(::features::kSitePerProcess) ||
+        base::FeatureList::IsEnabled(::features::kIsolateOrigins) ||
+        base::FeatureList::IsEnabled(::features::kTopDocumentIsolation);
+  }
+
+  if (is_site_isolation_enabled ||
       base::FeatureList::IsEnabled(
           printing::features::kUsePdfCompositorServiceForPrint)) {
     PrintCompositeClient::CreateForWebContents(web_contents);
