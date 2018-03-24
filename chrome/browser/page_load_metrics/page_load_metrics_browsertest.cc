@@ -1302,10 +1302,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
-    const auto* metric =
-        test_ukm_recorder_->FindMetric(entry, internal::kUkmUseCounterFeature);
+    const auto* metric = test_ukm_recorder_->GetEntryMetric(
+        entry, internal::kUkmUseCounterFeature);
     EXPECT_TRUE(metric);
-    ukm_features.push_back(metric->value);
+    ukm_features.push_back(*metric);
   }
   EXPECT_THAT(
       ukm_features,
@@ -1340,10 +1340,10 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   std::vector<int64_t> ukm_features;
   for (const auto* entry : entries) {
     test_ukm_recorder_->ExpectEntrySourceHasUrl(entry, url);
-    const auto* metric =
-        test_ukm_recorder_->FindMetric(entry, internal::kUkmUseCounterFeature);
+    const auto* metric = test_ukm_recorder_->GetEntryMetric(
+        entry, internal::kUkmUseCounterFeature);
     EXPECT_TRUE(metric);
-    ukm_features.push_back(metric->value);
+    ukm_features.push_back(*metric);
   }
   EXPECT_THAT(ukm_features,
               UnorderedElementsAre(
