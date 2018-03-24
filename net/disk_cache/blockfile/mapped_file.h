@@ -13,7 +13,7 @@
 #include "net/base/net_export.h"
 #include "net/disk_cache/blockfile/file.h"
 #include "net/disk_cache/blockfile/file_block.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 
 namespace base {
 class FilePath;

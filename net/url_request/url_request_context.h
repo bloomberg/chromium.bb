@@ -22,7 +22,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/ssl/ssl_config_service.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/url_request.h"

@@ -87,7 +87,7 @@
 #include "media/mojo/services/video_decode_perf_history.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_transaction_factory.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/url_util.h"

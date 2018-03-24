@@ -21,7 +21,7 @@
 #include "net/base/net_export.h"
 #include "net/cookies/cookie_store.h"
 #include "net/http/http_request_info.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/socket/connection_attempts.h"
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_throttler_entry_interface.h"

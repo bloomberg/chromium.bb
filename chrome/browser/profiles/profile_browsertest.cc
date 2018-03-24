@@ -50,7 +50,7 @@
 #include "extensions/common/value_builder.h"
 #include "net/base/net_errors.h"
 #include "net/dns/mock_host_resolver.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 #include "net/test/embedded_test_server/http_request.h"
 #include "net/test/embedded_test_server/http_response.h"

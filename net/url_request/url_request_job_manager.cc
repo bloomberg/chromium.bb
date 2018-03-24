@@ -7,12 +7,12 @@
 #include <algorithm>
 
 #include "base/memory/singleton.h"
-#include "build/build_config.h"
 #include "base/strings/string_util.h"
+#include "build/build_config.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/network_delegate.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_error_job.h"
 #include "net/url_request/url_request_http_job.h"

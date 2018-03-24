@@ -35,7 +35,7 @@
 #include "net/base/proxy_delegate.h"
 #include "net/dns/host_resolver.h"
 #include "net/http/http_network_session.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/proxy_resolution/proxy_config_service.h"
 #include "net/proxy_resolution/proxy_resolution_service.h"
 #include "net/quic/core/quic_packets.h"

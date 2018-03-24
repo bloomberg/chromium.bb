@@ -18,7 +18,7 @@
 #include "base/threading/thread_local.h"
 #include "base/trace_event/trace_event.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
-#include "mojo/public/cpp/bindings/mojo_features.h"
+#include "mojo/public/cpp/bindings/mojo_buildflags.h"
 #include "mojo/public/cpp/bindings/sync_handle_watcher.h"
 #include "mojo/public/cpp/system/wait.h"
 

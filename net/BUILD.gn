@@ -47,8 +47,8 @@ use_remote_test_server = is_android || is_fuchsia
 # Python works only on Linux, MacOS and Windows.
 enable_python_utils = !is_android && !is_fuchsia && !is_ios
 
-buildflag_header("features") {
-  header = "net_features.h"
+buildflag_header("buildflags") {
+  header = "net_buildflags.h"
   flags = [
     "POSIX_AVOID_MMAP=$posix_avoid_mmap",
     "DISABLE_FILE_SUPPORT=$disable_file_support",
@@ -2069,7 +2069,7 @@ component("net") {
   configs += net_configs
 
   public_deps += [
-    ":features",
+    ":buildflags",
     "//url",
   ]
 

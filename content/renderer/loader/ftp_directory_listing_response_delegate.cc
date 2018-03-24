@@ -21,7 +21,7 @@
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
 #include "net/ftp/ftp_directory_listing_parser.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 #include "third_party/WebKit/public/platform/WebURLLoaderClient.h"
 

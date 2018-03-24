@@ -34,7 +34,7 @@
 #include "net/http/http_cache.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_server_properties_impl.h"
-#include "net/net_features.h"
+#include "net/net_buildflags.h"
 #include "net/ssl/channel_id_service.h"
 #include "net/ssl/default_channel_id_store.h"
 #include "net/url_request/url_request_context.h"

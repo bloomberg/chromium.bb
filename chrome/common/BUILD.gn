@@ -264,7 +264,7 @@ static_library("common") {
     "//media",
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
-    "//pdf:features",
+    "//pdf:buildflags",
     "//ppapi/features",
     "//printing/features",
     "//services/service_manager/sandbox",

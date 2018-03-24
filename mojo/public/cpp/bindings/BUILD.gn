@@ -7,8 +7,8 @@ declare_args() {
   enable_mojo_tracing = false
 }
 
-buildflag_header("mojo_features") {
-  header = "mojo_features.h"
+buildflag_header("mojo_buildflags") {
+  header = "mojo_buildflags.h"
 
   flags = [ "MOJO_TRACE_ENABLED=$enable_mojo_tracing" ]
 }
@@ -86,7 +86,7 @@ component("bindings_base") {
   defines = [ "IS_MOJO_CPP_BINDINGS_BASE_IMPL" ]
 
   public_deps = [
-    ":mojo_features",
+    ":mojo_buildflags",
     "//base",
     "//mojo/public/cpp/system",
   ]
