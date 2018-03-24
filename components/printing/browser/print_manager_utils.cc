@@ -8,6 +8,7 @@
 #include "components/printing/browser/features.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/common/print_messages.h"
+#include "content/public/browser/content_browser_client.h"
 #include "content/public/common/content_features.h"
 #include "content/public/common/content_switches.h"
 #include "printing/print_settings.h"
@@ -34,26 +35,24 @@ void CreateCompositeClientIfNeeded(content::WebContents* web_contents) {
   // feature testing purpose. Eventually, we will remove this check and use pdf
   // compositor service by default for printing.
 
-  bool is_site_isolation_enabled;
+  bool is_auxiliary_site_isolation_enabled;
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess) ||
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kIsolateOrigins)) {
-    is_site_isolation_enabled = true;
+    is_auxiliary_site_isolation_enabled = true;
   } else if (base::CommandLine::ForCurrentProcess()->HasSwitch(
                  switches::kDisableSiteIsolationTrials)) {
-    is_site_isolation_enabled = false;
+    is_auxiliary_site_isolation_enabled = false;
   } else {
     // The features need to be checked last, because checking a feature
     // activates the field trial and assigns the client either to a control or
     // an experiment group.
-    is_site_isolation_enabled =
-        base::FeatureList::IsEnabled(::features::kSitePerProcess) ||
+    is_auxiliary_site_isolation_enabled =
         base::FeatureList::IsEnabled(::features::kIsolateOrigins) ||
         base::FeatureList::IsEnabled(::features::kTopDocumentIsolation);
   }
 
-  if (is_site_isolation_enabled ||
+  if (is_auxiliary_site_isolation_enabled ||
+      content::ContentBrowserClient::IsStrictSiteIsolationEnabled() ||
       base::FeatureList::IsEnabled(
           printing::features::kUsePdfCompositorServiceForPrint)) {
     PrintCompositeClient::CreateForWebContents(web_contents);

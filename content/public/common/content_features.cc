@@ -347,11 +347,6 @@ const base::Feature kSignedHTTPExchange{"SignedHTTPExchange",
 const base::Feature kSignInProcessIsolation{"sign-in-process-isolation",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Alternative to switches::kSitePerProcess, for turning on full site isolation.
-// Launch bug: https://crbug.com/739418.
-const base::Feature kSitePerProcess{"site-per-process",
-                                    base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Slimming Paint V1.75. See http://crbug.com/771643.
 const base::Feature kSlimmingPaintV175{"SlimmingPaintV175",
                                        base::FEATURE_ENABLED_BY_DEFAULT};
