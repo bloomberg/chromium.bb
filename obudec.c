@@ -227,8 +227,8 @@ int file_is_obu(struct ObuDecInputContext *obu_ctx) {
     return 0;
   }
   obu_ctx->buffer_capacity = OBU_BUFFER_SIZE;
-  memcpy(obu_ctx->buffer, &detect_buf[0], obu_length);
-  obu_ctx->bytes_buffered = obu_length;
+  memcpy(obu_ctx->buffer, &detect_buf[0], (size_t)obu_length);
+  obu_ctx->bytes_buffered = (size_t)obu_length;
 
   return 1;
 }
@@ -270,7 +270,7 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
             obu_header.enhancement_layer_id > last_layer_id)
 #endif
     ) {
-      const uint64_t tu_size = obu_ctx->bytes_buffered;
+      const size_t tu_size = obu_ctx->bytes_buffered;
 
 #if defined AOM_MAX_ALLOCABLE_MEMORY
       if (tu_size > AOM_MAX_ALLOCABLE_MEMORY) {
@@ -289,11 +289,11 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
       *buffer_size = tu_size;
       memcpy(*buffer, obu_ctx->buffer, tu_size);
 
-      memmove(obu_ctx->buffer, data, obu_size);
-      obu_ctx->bytes_buffered = obu_size;
+      memmove(obu_ctx->buffer, data, (size_t)obu_size);
+      obu_ctx->bytes_buffered = (size_t)obu_size;
       break;
     } else {
-      obu_ctx->bytes_buffered += obu_size;
+      obu_ctx->bytes_buffered += (size_t)obu_size;
     }
   }
 
