@@ -658,6 +658,9 @@ TEST_P(GLES3DecoderTest, DeleteBuffersDestroysDataStore) {
 
   {  // DeleteBuffers unmaps the data store.
     EXPECT_CALL(*gl_, BindBuffer(kTarget, 0)).Times(1).RetiresOnSaturation();
+    EXPECT_CALL(*gl_, UnmapBuffer(kTarget))
+        .WillOnce(Return(GL_TRUE))
+        .RetiresOnSaturation();
     DoDeleteBuffer(client_buffer_id_, kServiceBufferId);
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
   }
