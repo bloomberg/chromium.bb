@@ -733,9 +733,27 @@ enum aome_enc_control_id {
    * enabling/disabling at frame level.
    *
    * This will enable or disable temporal mv predicton. The default value is 1.
+   * If AV1E_SET_ENABLE_REF_FRAME_MVS is 0, then this flag is forced to 0.
    *
    */
   AV1E_SET_ALLOW_REF_FRAME_MVS,
+
+  /*!\brief Codec control function to turn on / off warped motion usage
+   * at sequence level.
+   *
+   * This will enable or disable usage of warped motion. The default value is 1.
+   *
+   */
+  AV1E_SET_ENABLE_WARPED_MOTION,
+
+  /*!\brief Codec control function to turn on / off warped motion usage
+   * at frame level.
+   *
+   * This will enable or disable usage of warped motion. The default value is 1.
+   * If AV1E_SET_ENABLE_WARPED_MOTION is 0, then this flag is forced to 0.
+   *
+   */
+  AV1E_SET_ALLOW_WARPED_MOTION,
 
   /*!\brief Codec control function to turn on / off frame superresolution.
    *
@@ -1030,6 +1048,12 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_REF_FRAME_MVS, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ALLOW_REF_FRAME_MVS, unsigned int)
 #define AOM_CTRL_AV1E_SET_ALLOW_REF_FRAME_MVS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_WARPED_MOTION, unsigned int)
+#define AOM_CTRL_AV1E_SET_ENABLE_WARPED_MOTION
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ALLOW_WARPED_MOTION, unsigned int)
+#define AOM_CTRL_AV1E_SET_ALLOW_WARPED_MOTION
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SUPERRES, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_SUPERRES
