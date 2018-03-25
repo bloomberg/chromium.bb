@@ -2462,6 +2462,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'eve',
       'falco',
       'fizz',
+      'gale',
       'glados',
       'guado_moblab',
       'hana',
@@ -2533,7 +2534,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'cobblepot', # contact:jkoleszar@
       'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-accelerator', # contact:perley@
-      'gale', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'gonzo', # contact:icoolidge@
       'guado', # contact:egemih@
       'guado-accelerator', # contact:perley@ (crbug.com/748635)
