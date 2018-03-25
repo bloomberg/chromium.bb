@@ -235,6 +235,8 @@ typedef struct SequenceHeader {
                              // 1 - enable it
   int enable_ref_frame_mvs;  // 0 - disable ref frame mvs
                              // 1 - enable it
+  int enable_warped_motion;  // 0 - disable warped motion for sequence
+                             // 1 - enable it for the sequence
   int enable_superres;     // 0 - Disable superres for the sequence, and disable
                            //     transmitting per-frame superres enabled flag.
                            // 1 - Enable superres for the sequence, and also
@@ -242,6 +244,7 @@ typedef struct SequenceHeader {
                            //     enabled for that frame.
   int enable_cdef;         // To turn on/off CDEF
   int enable_restoration;  // To turn on/off loop restoration
+
 #if CONFIG_OPERATING_POINTS
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
   int level[MAX_NUM_OPERATING_POINTS];
@@ -670,6 +673,11 @@ static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {
 static INLINE int frame_might_use_prev_frame_mvs(const AV1_COMMON *cm) {
   return !cm->error_resilient_mode && !cm->large_scale_tile &&
          !frame_is_intra_only(cm);
+}
+
+// Returns 1 if this frame might use warped_motion
+static INLINE int frame_might_use_warped_motion(const AV1_COMMON *cm) {
+  return !cm->error_resilient_mode && !frame_is_intra_only(cm);
 }
 
 static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {

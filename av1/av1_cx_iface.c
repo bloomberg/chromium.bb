@@ -99,6 +99,8 @@ struct av1_extracfg {
   int enable_jnt_comp;
   int enable_ref_frame_mvs;  // sequence level
   int allow_ref_frame_mvs;   // frame level
+  int enable_warped_motion;  // sequence level
+  int allow_warped_motion;   // frame level
   int enable_superres;
 };
 
@@ -168,8 +170,10 @@ static struct av1_extracfg default_extra_cfg = {
 #endif  // CONFIG_CDF_UPDATE_MODE
   1,    // frame order hint
   1,    // jnt_comp
-  1,    // ref_frame_mvs
-  1,    // allow ref_frame_mvs
+  1,    // enable_ref_frame_mvs sequence level
+  1,    // allow ref_frame_mvs frame level
+  1,    // enable_warped_motion sequence level
+  1,    // allow_warped_motion frame level
   1,    // superres
 };
 

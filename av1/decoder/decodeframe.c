@@ -3151,7 +3151,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   cm->skip_mode_flag = cm->is_skip_mode_allowed ? aom_rb_read_bit(rb) : 0;
 
   read_compound_tools(cm, rb);
-  if (!(frame_is_intra_only(cm) || cm->error_resilient_mode))
+  if (frame_might_use_warped_motion(cm) && cm->seq_params.enable_warped_motion)
     cm->allow_warped_motion = aom_rb_read_bit(rb);
   else
     cm->allow_warped_motion = 0;
