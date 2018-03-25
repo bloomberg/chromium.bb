@@ -52,6 +52,8 @@ class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
 
   Buffer(BufferManager* manager, GLuint service_id);
 
+  GLenum initial_target() const { return initial_target_; }
+
   GLuint service_id() const {
     return service_id_;
   }
@@ -165,10 +167,6 @@ class GPU_GLES2_EXPORT Buffer : public base::RefCounted<Buffer> {
   };
 
   ~Buffer();
-
-  GLenum initial_target() const {
-    return initial_target_;
-  }
 
   void set_initial_target(GLenum target) {
     DCHECK_EQ(0u, initial_target_);

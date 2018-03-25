@@ -787,6 +787,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
                                       const volatile GLuint* client_ids);
   void DeleteSyncHelper(GLuint sync);
 
+  bool UnmapBufferHelper(Buffer* buffer);
+
   // Workarounds
   void OnFboChanged() const;
   void OnUseFramebuffer() const;
@@ -4419,9 +4421,7 @@ void GLES2DecoderImpl::DeleteBuffersHelper(GLsizei n,
     GLuint client_id = client_ids[ii];
     Buffer* buffer = GetBuffer(client_id);
     if (buffer && !buffer->IsDeleted()) {
-      // TODO(zmo): We need to actually call glUnmapBuffer() to the driver.
-      // This is because glDeleteBuffers() call might be delayed.
-      buffer->RemoveMappedRange();
+      UnmapBufferHelper(buffer);
       state_.RemoveBoundBuffer(buffer);
       buffer_manager()->RemoveBuffer(client_id);
     }
@@ -18993,6 +18993,43 @@ error::Error GLES2DecoderImpl::HandleMapBufferRange(
   return error::kNoError;
 }
 
+bool GLES2DecoderImpl::UnmapBufferHelper(Buffer* buffer) {
+  DCHECK(buffer);
+  const Buffer::MappedRange* mapped_range = buffer->GetMappedRange();
+  if (!mapped_range)
+    return true;
+  if (!AllBitsSet(mapped_range->access, GL_MAP_WRITE_BIT) ||
+      AllBitsSet(mapped_range->access, GL_MAP_FLUSH_EXPLICIT_BIT)) {
+    // If we don't need to write back, or explict flush is required, no copying
+    // back is needed.
+  } else if (!WasContextLost()) {
+    void* mem = mapped_range->GetShmPointer();
+    DCHECK(mem);
+    DCHECK(mapped_range->pointer);
+    memcpy(mapped_range->pointer, mem, mapped_range->size);
+    if (buffer->shadowed()) {
+      buffer->SetRange(mapped_range->offset, mapped_range->size, mem);
+    }
+  }
+  buffer->RemoveMappedRange();
+  if (WasContextLost())
+    return true;
+  GLboolean rt = api()->glUnmapBufferFn(buffer->initial_target());
+  if (rt == GL_FALSE) {
+    // At this point, we have already done the necessary validation, so
+    // GL_FALSE indicates data corruption.
+    // TODO(zmo): We could redo the map / copy data / unmap to recover, but
+    // the second unmap could still return GL_FALSE. For now, we simply lose
+    // the contexts in the share group.
+    LOG(ERROR) << "glUnmapBuffer unexpectedly returned GL_FALSE";
+    // Need to lose current context before broadcasting!
+    MarkContextLost(error::kGuilty);
+    group_->LoseContexts(error::kInnocent);
+    return false;
+  }
+  return true;
+}
+
 error::Error GLES2DecoderImpl::HandleUnmapBuffer(
     uint32_t immediate_data_size, const volatile void* cmd_data) {
   if (!feature_info_->IsWebGL2OrES3Context()) {
@@ -19019,33 +19056,8 @@ error::Error GLES2DecoderImpl::HandleUnmapBuffer(
     LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, func_name, "buffer is unmapped");
     return error::kNoError;
   }
-  if (!AllBitsSet(mapped_range->access, GL_MAP_WRITE_BIT) ||
-      AllBitsSet(mapped_range->access, GL_MAP_FLUSH_EXPLICIT_BIT)) {
-    // If we don't need to write back, or explict flush is required, no copying
-    // back is needed.
-  } else {
-    void* mem = mapped_range->GetShmPointer();
-    DCHECK(mem);
-    DCHECK(mapped_range->pointer);
-    memcpy(mapped_range->pointer, mem, mapped_range->size);
-    if (buffer->shadowed()) {
-      buffer->SetRange(mapped_range->offset, mapped_range->size, mem);
-    }
-  }
-  buffer->RemoveMappedRange();
-  GLboolean rt = api()->glUnmapBufferFn(target);
-  if (rt == GL_FALSE) {
-    // At this point, we have already done the necessary validation, so
-    // GL_FALSE indicates data corruption.
-    // TODO(zmo): We could redo the map / copy data / unmap to recover, but
-    // the second unmap could still return GL_FALSE. For now, we simply lose
-    // the contexts in the share group.
-    LOG(ERROR) << func_name << " unexpectedly returned GL_FALSE";
-    // Need to lose current context before broadcasting!
-    MarkContextLost(error::kGuilty);
-    group_->LoseContexts(error::kInnocent);
+  if (!UnmapBufferHelper(buffer))
     return error::kLostContext;
-  }
   return error::kNoError;
 }
 
