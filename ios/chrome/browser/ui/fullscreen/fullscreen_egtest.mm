@@ -4,6 +4,7 @@
 
 #import <EarlGrey/EarlGrey.h>
 #import <UIKit/UIKit.h>
+#import <WebKit/WebKit.h>
 #import <XCTest/XCTest.h>
 
 #include "base/ios/ios_util.h"
@@ -247,11 +248,6 @@ void AssertURLIs(const GURL& expectedURL) {
 // Test to make sure the header is shown when a Tab opened by the current Tab is
 // closed even if the toolbar was not present previously.
 - (void)testShowHeaderWhenChildTabCloses {
-// TODO(crbug.com/812664): Re-enable this test on devices.
-#if !TARGET_IPHONE_SIMULATOR
-  EARL_GREY_TEST_DISABLED(@"Test disabled on device.");
-#endif
-
   std::map<GURL, std::string> responses;
   const GURL URL = web::test::HttpServer::MakeUrl("http://origin");
   const GURL destinationURL =
@@ -297,22 +293,18 @@ void AssertURLIs(const GURL& expectedURL) {
   HideToolbarUsingUI();
   [ChromeEarlGreyUI waitForToolbarVisible:NO];
 
-  // Close the tab.
+  // Close the tab by tapping link2.
   NSError* error = nil;
-  bool success = chrome_test_util::TapWebViewElementWithId("link2", &error);
-
-  if (!web::GetWebClient()->IsSlimNavigationManagerEnabled()) {
-    // The effect of clicking the link, closes the tab and invalidates the web
-    // view. This results in |TapWebViewElementWithId| returning false. This
-    // error is represented by code 3. WKBasedNavigationManager does not trigger
-    // any error.
-    GREYAssertFalse(success, @"Failed to tap \"link2\"");
-    GREYAssert(error.code == 3,
+  if (!chrome_test_util::TapWebViewElementWithId("link2", &error)) {
+    // Sometimes, the tap will be unsuccessful due to the window.close()
+    // operation invalidating the WKWebView.  If this occurs, verify the error.
+    // This results in |TapWebViewElementWithId| returning false.
+    // TODO(crbug.com/824879): Remove conditional once flake is eliminated from
+    // TapWebViewElementWithId() for window.close() links.
+    GREYAssert(error.code == WKErrorWebViewInvalidated,
                @"Failed to receive WKErrorWebViewInvalidated error");
-    GREYAssert([error.domain isEqualToString:@"WKErrorDomain"],
+    GREYAssert([error.domain isEqualToString:WKErrorDomain],
                @"Failed to receive WKErrorDomain error");
-  } else {
-    GREYAssert(success, @"Failed to tap \"link2\"");
   }
 
   [ChromeEarlGrey waitForWebViewContainingText:"link1"];
