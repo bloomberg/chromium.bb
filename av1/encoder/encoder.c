@@ -2364,13 +2364,13 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
 
   highbd_set_var_fns(cpi);
 
+  cm->enable_intra_edge_filter = 1;
+  cm->allow_filter_intra = 1;
+
   cm->seq_params.force_screen_content_tools = 2;
 #if CONFIG_AMVR
   cm->seq_params.force_integer_mv = 2;
 #endif
-  cm->enable_intra_edge_filter = 1;
-  cm->allow_filter_intra = 1;
-
 #if CONFIG_EXPLICIT_ORDER_HINT
   cm->seq_params.order_hint_bits_minus1 = DEFAULT_EXPLICIT_ORDER_HINT_BITS - 1;
 #endif  // CONFIG_EXPLICIT_ORDER_HINT
@@ -2378,6 +2378,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->seq_params.enable_order_hint = oxcf->enable_order_hint;
   cm->seq_params.enable_jnt_comp = oxcf->enable_jnt_comp;
   cm->seq_params.enable_jnt_comp &= cm->seq_params.enable_order_hint;
+  cm->seq_params.enable_ref_frame_mvs = oxcf->enable_ref_frame_mvs;
+  cm->seq_params.enable_ref_frame_mvs &= cm->seq_params.enable_order_hint;
   cm->seq_params.enable_superres = oxcf->enable_superres;
   cm->seq_params.enable_cdef = oxcf->enable_cdef;
   cm->seq_params.enable_restoration = oxcf->enable_restoration;
@@ -4729,9 +4731,9 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   // S_FRAMEs are always error resilient
   cm->error_resilient_mode = oxcf->error_resilient_mode || frame_is_sframe(cm);
-  cm->use_ref_frame_mvs = !cpi->oxcf.disable_tempmv &&
-                          frame_might_use_prev_frame_mvs(cm) &&
-                          cm->seq_params.enable_order_hint;
+  cm->use_ref_frame_mvs =
+      !cpi->oxcf.disable_tempmv && frame_might_use_prev_frame_mvs(cm) &&
+      cm->seq_params.enable_ref_frame_mvs && cm->seq_params.enable_order_hint;
   cm->allow_warped_motion =
       !(frame_is_intra_only(cm) || cm->error_resilient_mode);
 

@@ -2315,6 +2315,8 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 
   seq_params->enable_jnt_comp =
       seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
+  seq_params->enable_ref_frame_mvs =
+      seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
 
   if (aom_rb_read_bit(rb)) {
     seq_params->force_screen_content_tools = 2;
@@ -2812,7 +2814,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
 #endif  // CONFIG_EXPLICIT_ORDER_HINT
 
-    if (cm->intra_only || cm->error_resilient_mode) cm->use_ref_frame_mvs = 0;
+    cm->use_ref_frame_mvs = 0;
 
     if (cm->intra_only) {
 #if CONFIG_FILM_GRAIN
@@ -2944,6 +2946,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
     if (!cm->intra_only && pbi->need_resync != 1) {
       if (frame_might_use_prev_frame_mvs(cm) &&
+          cm->seq_params.enable_ref_frame_mvs &&
           cm->seq_params.enable_order_hint)
         cm->use_ref_frame_mvs = aom_rb_read_bit(rb);
       else

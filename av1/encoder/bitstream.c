@@ -2760,8 +2760,10 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 
   aom_wb_write_bit(wb, seq_params->enable_order_hint);
 
-  if (seq_params->enable_order_hint)
+  if (seq_params->enable_order_hint) {
     aom_wb_write_bit(wb, seq_params->enable_jnt_comp);
+    aom_wb_write_bit(wb, seq_params->enable_ref_frame_mvs);
+  }
 
   if (seq_params->force_screen_content_tools == 2) {
     aom_wb_write_bit(wb, 1);

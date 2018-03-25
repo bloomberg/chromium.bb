@@ -296,6 +296,7 @@ typedef struct AV1EncoderConfig {
   unsigned int motion_vector_unit_test;
   const cfg_options_t *cfg;
   int enable_jnt_comp;
+  int enable_ref_frame_mvs;
   int enable_order_hint;
   int enable_superres;
 } AV1EncoderConfig;

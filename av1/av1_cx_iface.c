@@ -98,6 +98,7 @@ struct av1_extracfg {
 #endif  // CONFIG_CDF_UPDATE_MODE
   int enable_order_hint;
   int use_jnt_comp;
+  int enable_ref_frame_mvs;
   int enable_superres;
 };
 
@@ -168,6 +169,7 @@ static struct av1_extracfg default_extra_cfg = {
 #endif  // CONFIG_CDF_UPDATE_MODE
   1,    // frame order hint
   1,    // jnt_comp
+  1,    // ref_frame_mvs
   1,    // superres
 };
 
@@ -658,6 +660,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
   oxcf->enable_jnt_comp =
       extra_cfg->use_jnt_comp & extra_cfg->enable_order_hint;
+  oxcf->enable_ref_frame_mvs =
+      extra_cfg->enable_ref_frame_mvs & extra_cfg->enable_order_hint;
   oxcf->enable_superres =
       (oxcf->superres_mode != SUPERRES_NONE) && extra_cfg->enable_superres;
   if (!oxcf->enable_superres) {
