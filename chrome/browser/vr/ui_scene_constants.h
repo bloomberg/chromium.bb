@@ -9,14 +9,6 @@
 
 namespace vr {
 
-static constexpr int kWarningTimeoutSeconds = 30;
-static constexpr float kWarningDistance = 1.0f;
-static constexpr float kWarningAngleRadians = gfx::DegToRad(16.3f);
-static constexpr float kPermanentWarningHeightDMM = 0.049f;
-static constexpr float kPermanentWarningWidthDMM = 0.1568f;
-static constexpr float kTransientWarningHeightDMM = 0.160f;
-static constexpr float kTransientWarningWidthDMM = 0.512f;
-
 static constexpr float kExitWarningDistance = 0.6f;
 static constexpr float kExitWarningTextWidthDMM = 0.44288f;
 static constexpr float kExitWarningFontHeightDMM = 0.024576f;
@@ -54,7 +46,6 @@ static constexpr float kExitPromptHeight = 0.2f * kContentDistance;
 static constexpr float kExitPromptVerticalOffset = -0.09f * kContentDistance;
 
 static constexpr float kUrlBarDistance = 2.4f;
-static constexpr float kUrlBarWidthDMM = 0.672f;
 static constexpr float kUrlBarHeightDMM = 0.088f;
 // This is the non-DMM relative offset of the URL bar. It is used to position
 // the DMM root of the URL bar.
@@ -80,12 +71,6 @@ static constexpr float kUrlBarUrlWidthDMM = kUrlBarOriginRegionWidthDMM -
 static constexpr float kUrlBarButtonIconScaleFactor =
     kUrlBarButtonIconSizeDMM / kUrlBarButtonSizeDMM;
 
-static constexpr float kOverlayPlaneDistance = 2.3f;
-
-static constexpr float kAudioPermissionPromptWidth = 0.63f * kUrlBarDistance;
-static constexpr float kAudioPermissionPromptHeight = 0.218f * kUrlBarDistance;
-static constexpr float kAudionPermisionPromptDepth = 0.11f;
-
 static constexpr float kIndicatorHeightDMM = 0.064f;
 static constexpr float kIndicatorIconScaleFactor = 0.55f;
 static constexpr float kIndicatorXPaddingDMM = 0.024f;
@@ -109,9 +94,6 @@ static constexpr float kWebVrUrlToastOpacity = 0.8f;
 static constexpr float kWebVrUrlToastRotationRad = gfx::DegToRad(14.0f);
 
 static constexpr float kWebVrToastDistance = 1.0f;
-static constexpr float kToastWidthDMM = 0.512f;
-static constexpr float kToastHeightDMM = 0.064f;
-static constexpr float kToastOffsetDMM = 0.004f;
 static constexpr float kFullScreenToastOffsetDMM = 0.1f;
 static constexpr float kExclusiveScreenToastXPaddingDMM = 0.017f;
 static constexpr float kExclusiveScreenToastYPaddingDMM = 0.02f;
@@ -149,8 +131,6 @@ static constexpr float kLoadingIndicatorVerticalOffsetDMM =
     (-kUrlBarVerticalOffsetDMM + kContentVerticalOffsetDMM -
      kContentHeightDMM / 2 - kUrlBarHeightDMM / 2) /
     2;
-static constexpr float kLoadingIndicatorDepthOffset =
-    (kUrlBarDistance - kContentDistance) / 2;
 
 static constexpr float kSceneSize = 25.0f;
 static constexpr float kSceneHeight = 4.0f;
@@ -184,9 +164,6 @@ static constexpr float kTimeoutMessageTextFontHeightDMM = 0.022f;
 static constexpr float kTimeoutMessageTextHeightDMM = 0.056f;
 static constexpr float kTimeoutMessageTextWidthDMM = 0.4f;
 
-static constexpr float kTimeoutButtonVerticalOffset =
-    kUrlBarVerticalOffsetDMM * kUrlBarDistance;
-static constexpr float kTimeoutButtonDistance = kUrlBarDistance;
 static constexpr float kTimeoutButtonDepthOffset = -0.1f;
 static constexpr float kTimeoutButtonRotationRad = kUrlBarRotationRad;
 static constexpr float kWebVrTimeoutMessageButtonDiameterDMM = 0.096f;
@@ -221,7 +198,6 @@ static constexpr float kOmniboxShadowOffset = 0.07f;
 static constexpr float kOmniboxShadowIntensity = 0.4f;
 static constexpr int kOmniboxTransitionMs = 300;
 
-static constexpr float kOmniboxTextFieldIconSizeDMM = 0.05f;
 static constexpr float kOmniboxTextFieldIconButtonSizeDMM = 0.064f;
 static constexpr float kOmniboxTextFieldIconButtonHoverOffsetDMM = 0.012f;
 static constexpr float kOmniboxTextFieldRightMargin =
@@ -250,7 +226,6 @@ static constexpr float kModalPromptFadeOpacity = 0.5f;
 
 static constexpr float kKeyboardDistance = 2.2f;
 static constexpr float kKeyboardVerticalOffsetDMM = -0.45f;
-static constexpr float kKeyboardRotationRadians = -0.14f;
 
 static constexpr float kSnackbarDistance = 1.5f;
 static constexpr float kSnackbarAngle = -gfx::DegToRad(34.0f);
@@ -316,10 +291,8 @@ static constexpr float kRepositionCursorSize = 1.5f;
 static constexpr float kMinResizerScale = 0.5f;
 static constexpr float kMaxResizerScale = 1.5f;
 
-static constexpr float kRepositionFrameTolerance = 0.3f;
 static constexpr float kRepositionFrameTopPadding = 0.25f;
 static constexpr float kRepositionFrameEdgePadding = 0.04f;
-static constexpr float kRepositionFrameMaxOpacity = 0.6f;
 static constexpr float kRepositionFrameHitPlaneTopPadding = 0.5f;
 static constexpr float kRepositionFrameTransitionDurationMs = 300;
 
