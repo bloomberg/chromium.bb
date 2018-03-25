@@ -134,7 +134,7 @@ TEST_F(HyphenationTest, LeadingSpaces) {
   // Line breaker is not supposed to pass with trailing spaces.
   String trailing_space("principle ");
   EXPECT_THAT(hyphenation->HyphenLocations(trailing_space),
-              testing::AnyOf(ElementsAre(), ElementsAre(6, 4)));
+              ::testing::AnyOf(ElementsAre(), ElementsAre(6, 4)));
   EXPECT_EQ(0u, hyphenation->LastHyphenLocation(trailing_space, 10));
 }
 
@@ -148,8 +148,8 @@ TEST_F(HyphenationTest, English) {
   ASSERT_TRUE(hyphenation) << "Cannot find the hyphenation for en-us";
 
   Vector<size_t, 8> locations = hyphenation->HyphenLocations("hyphenation");
-  EXPECT_THAT(locations, testing::AnyOf(ElementsAreArray({6, 2}),
-                                        ElementsAreArray({7, 6, 2})));
+  EXPECT_THAT(locations, ::testing::AnyOf(ElementsAreArray({6, 2}),
+                                          ElementsAreArray({7, 6, 2})));
 }
 
 TEST_F(HyphenationTest, German) {
