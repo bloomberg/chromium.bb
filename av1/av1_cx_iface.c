@@ -96,7 +96,7 @@ struct av1_extracfg {
   unsigned int cdf_update_mode;
 #endif  // CONFIG_CDF_UPDATE_MODE
   int enable_order_hint;
-  int use_jnt_comp;
+  int enable_jnt_comp;
   int enable_ref_frame_mvs;  // sequence level
   int allow_ref_frame_mvs;   // frame level
   int enable_superres;
@@ -662,7 +662,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_dual_filter = extra_cfg->use_dual_filter;
   oxcf->enable_order_hint = extra_cfg->enable_order_hint;
   oxcf->enable_jnt_comp =
-      extra_cfg->use_jnt_comp & extra_cfg->enable_order_hint;
+      extra_cfg->enable_jnt_comp & extra_cfg->enable_order_hint;
   oxcf->enable_ref_frame_mvs =
       extra_cfg->enable_ref_frame_mvs & extra_cfg->enable_order_hint;
   oxcf->enable_superres =
@@ -971,7 +971,7 @@ static aom_codec_err_t ctrl_set_enable_order_hint(aom_codec_alg_priv_t *ctx,
 static aom_codec_err_t ctrl_set_enable_jnt_comp(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.use_jnt_comp = CAST(AV1E_SET_ENABLE_JNT_COMP, args);
+  extra_cfg.enable_jnt_comp = CAST(AV1E_SET_ENABLE_JNT_COMP, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
