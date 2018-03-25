@@ -124,6 +124,7 @@ class Deobfuscator(object):
     # self._proc is None when Popen() fails.
     if not self._closed_called and self._proc:
       logging.error('deobfuscator: Forgot to Close()')
+      self.Close()
 
 
 class DeobfuscatorPool(object):
