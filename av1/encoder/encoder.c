@@ -2379,6 +2379,8 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->seq_params.enable_jnt_comp = oxcf->enable_jnt_comp;
   cm->seq_params.enable_jnt_comp &= cm->seq_params.enable_order_hint;
   cm->seq_params.enable_superres = oxcf->enable_superres;
+  cm->seq_params.enable_cdef = oxcf->enable_cdef;
+  cm->seq_params.enable_restoration = oxcf->enable_restoration;
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
@@ -4082,9 +4084,9 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
 
   const int no_loopfilter = cm->coded_lossless || cm->large_scale_tile;
   const int no_cdef =
-      !cpi->oxcf.using_cdef || cm->coded_lossless || cm->large_scale_tile;
-  const int no_restoration =
-      !cpi->oxcf.using_restoration || cm->all_lossless || cm->large_scale_tile;
+      !cm->seq_params.enable_cdef || cm->coded_lossless || cm->large_scale_tile;
+  const int no_restoration = !cm->seq_params.enable_restoration ||
+                             cm->all_lossless || cm->large_scale_tile;
 
   struct loopfilter *lf = &cm->lf;
 

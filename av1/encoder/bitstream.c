@@ -1784,6 +1784,7 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
 static void encode_restoration_mode(AV1_COMMON *cm,
                                     struct aom_write_bit_buffer *wb) {
   assert(!cm->all_lossless);
+  if (!cm->seq_params.enable_restoration) return;
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
   const int num_planes = av1_num_planes(cm);
   int all_none = 1, chroma_none = 1;
@@ -2051,6 +2052,7 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
 
 static void encode_cdef(const AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
   assert(!cm->coded_lossless);
+  if (!cm->seq_params.enable_cdef) return;
   if (cm->allow_intrabc && NO_FILTER_FOR_IBC) return;
   const int num_planes = av1_num_planes(cm);
   int i;
@@ -2786,6 +2788,8 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
     aom_wb_write_literal(wb, seq_params->order_hint_bits_minus1, 3);
 #endif
   aom_wb_write_bit(wb, seq_params->enable_superres);
+  aom_wb_write_bit(wb, seq_params->enable_cdef);
+  aom_wb_write_bit(wb, seq_params->enable_restoration);
 }
 
 static void write_compound_tools(const AV1_COMMON *cm,

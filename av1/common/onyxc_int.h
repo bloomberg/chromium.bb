@@ -237,6 +237,9 @@ typedef struct SequenceHeader {
                            // 1 - Enable superres for the sequence, and also
                            //     enable per-frame flag to denote if superres is
                            //     enabled for that frame.
+  int enable_cdef;         // To turn on/off CDEF
+  int enable_restoration;  // To turn on/off loop restoration
+
 #if CONFIG_OPERATING_POINTS
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
   int level[MAX_NUM_OPERATING_POINTS];

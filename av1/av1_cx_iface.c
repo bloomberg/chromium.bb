@@ -515,8 +515,8 @@ static aom_codec_err_t set_encoder_config(
   oxcf->cq_level = av1_quantizer_to_qindex(extra_cfg->cq_level);
   oxcf->fixed_q = -1;
 
-  oxcf->using_cdef = extra_cfg->enable_cdef;
-  oxcf->using_restoration = extra_cfg->enable_restoration;
+  oxcf->enable_cdef = extra_cfg->enable_cdef;
+  oxcf->enable_restoration = extra_cfg->enable_restoration;
   oxcf->using_qm = extra_cfg->enable_qm;
 #if CONFIG_AOM_QM_EXT
   oxcf->qm_y = extra_cfg->qm_y;

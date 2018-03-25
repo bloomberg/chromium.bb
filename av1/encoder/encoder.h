@@ -188,8 +188,8 @@ typedef struct AV1EncoderConfig {
 #if CONFIG_EXT_DELTA_Q
   DELTAQ_MODE deltaq_mode;
 #endif
-  int using_cdef;
-  int using_restoration;
+  int enable_cdef;
+  int enable_restoration;
   int using_qm;
 #if CONFIG_AOM_QM_EXT
   int qm_y;

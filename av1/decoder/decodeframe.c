@@ -2339,6 +2339,8 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
       seq_params->enable_order_hint ? aom_rb_read_literal(rb, 3) : -1;
 #endif
   seq_params->enable_superres = aom_rb_read_bit(rb);
+  seq_params->enable_cdef = aom_rb_read_bit(rb);
+  seq_params->enable_restoration = aom_rb_read_bit(rb);
 }
 
 static void read_compound_tools(AV1_COMMON *cm,
@@ -3117,22 +3119,24 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   if (cm->coded_lossless) {
     cm->lf.filter_level[0] = 0;
     cm->lf.filter_level[1] = 0;
+  }
+  if (cm->coded_lossless || !cm->seq_params.enable_cdef) {
     cm->cdef_bits = 0;
     cm->cdef_strengths[0] = 0;
     cm->cdef_uv_strengths[0] = 0;
   }
-  if (cm->all_lossless) {
+  if (cm->all_lossless || !cm->seq_params.enable_restoration) {
     cm->rst_info[0].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[1].frame_restoration_type = RESTORE_NONE;
     cm->rst_info[2].frame_restoration_type = RESTORE_NONE;
-    assert(av1_superres_unscaled(cm));
   }
+  assert(IMPLIES(cm->all_lossless, av1_superres_unscaled(cm)));
   setup_loopfilter(cm, rb);
 
-  if (!cm->coded_lossless) {
+  if (!cm->coded_lossless && cm->seq_params.enable_cdef) {
     setup_cdef(cm, rb);
   }
-  if (!cm->all_lossless) {
+  if (!cm->all_lossless && cm->seq_params.enable_restoration) {
     decode_restoration_mode(cm, rb);
   }
 
