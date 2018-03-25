@@ -3757,7 +3757,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       assert(tile_size_bytes >= 1 && tile_size_bytes <= 4);
       aom_wb_overwrite_literal(saved_wb, tile_size_bytes - 1, 2);
     }
-    return (uint32_t)total_size;
+    return total_size;
   }
 
   uint32_t obu_header_size = 0;
@@ -3907,8 +3907,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
           data += fh_info->total_length;
 
-          curr_tg_data_size += fh_info->total_length;
-          total_size += fh_info->total_length;
+          curr_tg_data_size += (int)(fh_info->total_length);
+          total_size += (uint32_t)(fh_info->total_length);
         }
         first_tg = 0;
       }
@@ -3949,11 +3949,11 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         const size_t src_offset = obu_header_size + length_field_size;
         const size_t dst_offset = obu_header_size + new_length_field_size;
         memmove(dst + dst_offset, dst + src_offset, payload_size);
-        total_size -= length_field_size - new_length_field_size;
+        total_size -= (int)(length_field_size - new_length_field_size);
       }
     }
   }
-  return (uint32_t)total_size;
+  return total_size;
 }
 
 int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
