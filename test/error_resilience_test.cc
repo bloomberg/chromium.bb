@@ -19,6 +19,7 @@ namespace {
 
 const int kMaxErrorFrames = 12;
 const int kMaxDroppableFrames = 12;
+const int kMaxErrorResilientFrames = 12;
 const int kCpuUsed = 1;
 
 class ErrorResilienceTestLarge
@@ -36,6 +37,7 @@ class ErrorResilienceTestLarge
   void Reset() {
     error_nframes_ = 0;
     droppable_nframes_ = 0;
+    error_resilient_nframes_ = 0;
     pattern_switch_ = 0;
   }
 
@@ -60,8 +62,6 @@ class ErrorResilienceTestLarge
   virtual void PreEncodeFrameHook(libaom_test::VideoSource *video,
                                   libaom_test::Encoder *encoder) {
     if (video->frame() == 0) encoder->Control(AOME_SET_CPUUSED, kCpuUsed);
-    frame_flags_ &=
-        ~(AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF | AOM_EFLAG_NO_UPD_ARF);
     if (droppable_nframes_ > 0 &&
         (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
       for (unsigned int i = 0; i < droppable_nframes_; ++i) {
@@ -70,7 +70,19 @@ class ErrorResilienceTestLarge
                     << droppable_frames_[i] << "\n";
           frame_flags_ |= (AOM_EFLAG_NO_UPD_LAST | AOM_EFLAG_NO_UPD_GF |
                            AOM_EFLAG_NO_UPD_ARF);
-          return;
+          break;
+        }
+      }
+    }
+    encoder->Control(AV1E_SET_ERROR_RESILIENT_MODE, 0);
+    if (error_resilient_nframes_ > 0 &&
+        (cfg_.g_pass == AOM_RC_LAST_PASS || cfg_.g_pass == AOM_RC_ONE_PASS)) {
+      for (unsigned int i = 0; i < error_resilient_nframes_; ++i) {
+        if (error_resilient_frames_[i] == video->frame()) {
+          std::cout << "             Encoding error_resilient frame: "
+                    << error_resilient_frames_[i] << "\n";
+          encoder->Control(AV1E_SET_ERROR_RESILIENT_MODE, 1);
+          break;
         }
       }
     }
@@ -135,6 +147,16 @@ class ErrorResilienceTestLarge
       droppable_frames_[i] = list[i];
   }
 
+  void SetErrorResilientFrames(int num, unsigned int *list) {
+    if (num > kMaxErrorResilientFrames)
+      num = kMaxErrorResilientFrames;
+    else if (num < 0)
+      num = 0;
+    error_resilient_nframes_ = num;
+    for (unsigned int i = 0; i < error_resilient_nframes_; ++i)
+      error_resilient_frames_[i] = list[i];
+  }
+
   unsigned int GetMismatchFrames() { return mismatch_nframes_; }
   unsigned int GetEncodedFrames() { return nframes_; }
   unsigned int GetDecodedFrames() { return decoded_nframes_; }
@@ -147,11 +169,13 @@ class ErrorResilienceTestLarge
   unsigned int decoded_nframes_;
   unsigned int error_nframes_;
   unsigned int droppable_nframes_;
+  unsigned int error_resilient_nframes_;
   unsigned int pattern_switch_;
   double mismatch_psnr_;
   unsigned int mismatch_nframes_;
   unsigned int error_frames_[kMaxErrorFrames];
   unsigned int droppable_frames_[kMaxDroppableFrames];
+  unsigned int error_resilient_frames_[kMaxErrorResilientFrames];
   libaom_test::TestMode encoding_mode_;
 };
 
@@ -166,14 +190,18 @@ TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
   libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
                                      timebase.den, timebase.num, 0, 12);
 
-  // Error resilient mode OFF.
+  // Global error resilient mode OFF.
   cfg_.g_error_resilient = 0;
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
   const double psnr_resilience_off = GetAveragePsnr();
   EXPECT_GT(psnr_resilience_off, 25.0);
 
-  // Error resilient mode ON.
-  cfg_.g_error_resilient = 1;
+  Reset();
+  // Error resilient mode ON for certain frames
+  unsigned int num_error_resilient_frames = 5;
+  unsigned int error_resilient_frame_list[] = { 3, 5, 6, 9, 11 };
+  SetErrorResilientFrames(num_error_resilient_frames,
+                          error_resilient_frame_list);
   ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
   const double psnr_resilience_on = GetAveragePsnr();
   EXPECT_GT(psnr_resilience_on, 25.0);
