@@ -691,15 +691,6 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ANS_WINDOW_SIZE_LOG2,
 
-  /*!\brief Codec control function to set temporal mv prediction
-   * enabling/disabling.
-   *
-   * This will enable or disable temporal mv predicton. The default value is 0.
-   *
-   * Experiment: TEMPMV_SIGNALING
-   */
-  AV1E_SET_DISABLE_TEMPMV,
-
   /*!\brief Codec control function to turn on / off dual filter
    * enabling/disabling.
    *
@@ -720,7 +711,8 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_ORDER_HINT,
 
-  /*!\brief Codec control function to turn on / off joint compound mode.
+  /*!\brief Codec control function to turn on / off joint compound mode
+   * at sequence level.
    *
    * This will enable or disable joint compound mode. The default value is 1.
    * If AV1E_SET_ENABLE_ORDER_HINT is 0, then this flag is forced to 0.
@@ -728,13 +720,22 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ENABLE_JNT_COMP,
 
-  /*!\brief Codec control function to turn on / off ref frame mvs (mfmv) usage.
+  /*!\brief Codec control function to turn on / off ref frame mvs (mfmv) usage
+   * at sequence level.
    *
    * This will enable or disable usage of MFMV. The default value is 1.
    * If AV1E_SET_ENABLE_ORDER_HINT is 0, then this flag is forced to 0.
    *
    */
   AV1E_SET_ENABLE_REF_FRAME_MVS,
+
+  /*!\brief Codec control function to set temporal mv prediction
+   * enabling/disabling at frame level.
+   *
+   * This will enable or disable temporal mv predicton. The default value is 1.
+   *
+   */
+  AV1E_SET_ALLOW_REF_FRAME_MVS,
 
   /*!\brief Codec control function to turn on / off frame superresolution.
    *
@@ -1015,9 +1016,6 @@ AOM_CTRL_USE_TYPE(AV1E_SET_MTU, unsigned int)
 AOM_CTRL_USE_TYPE(AV1E_SET_TIMING_INFO, aom_timing_info_t)
 #define AOM_CTRL_AV1E_SET_TIMING_INFO
 
-AOM_CTRL_USE_TYPE(AV1E_SET_DISABLE_TEMPMV, unsigned int)
-#define AOM_CTRL_AV1E_SET_DISABLE_TEMPMV
-
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_DF, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_DF
 
@@ -1029,6 +1027,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_JNT_COMP, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_REF_FRAME_MVS, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_REF_FRAME_MVS
+
+AOM_CTRL_USE_TYPE(AV1E_SET_ALLOW_REF_FRAME_MVS, unsigned int)
+#define AOM_CTRL_AV1E_SET_ALLOW_REF_FRAME_MVS
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ENABLE_SUPERRES, unsigned int)
 #define AOM_CTRL_AV1E_SET_ENABLE_SUPERRES

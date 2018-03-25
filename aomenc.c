@@ -474,8 +474,9 @@ static const arg_def_t film_grain_table =
     ARG_DEF(NULL, "film-grain-table", 1,
             "Path to file containing film grain parameters");
 #endif
-static const arg_def_t disable_tempmv = ARG_DEF(
-    NULL, "disable-tempmv", 1, "Disable temporal mv prediction (default is 0)");
+static const arg_def_t enable_ref_frame_mvs =
+    ARG_DEF(NULL, "enable-ref-frame-mvs", 1,
+            "Enable temporal mv prediction (default is 1)");
 static const arg_def_t frame_parallel_decoding =
     ARG_DEF(NULL, "frame-parallel", 1,
             "Enable frame parallel decodability features "
@@ -670,7 +671,7 @@ static const arg_def_t *av1_args[] = { &cpu_used_av1,
                                        &film_grain_test,
                                        &film_grain_table,
 #endif
-                                       &disable_tempmv,
+                                       &enable_ref_frame_mvs,
                                        &bitdeptharg,
                                        &inbitdeptharg,
                                        &sframe_dist,
@@ -726,7 +727,7 @@ static const int av1_arg_ctrl_map[] = { AOME_SET_CPUUSED,
                                         AV1E_SET_FILM_GRAIN_TEST_VECTOR,
                                         AV1E_SET_FILM_GRAIN_TABLE,
 #endif
-                                        AV1E_SET_DISABLE_TEMPMV,
+                                        AV1E_SET_ENABLE_REF_FRAME_MVS,
                                         AV1E_SET_ENABLE_DF,
                                         AV1E_SET_ENABLE_ORDER_HINT,
                                         AV1E_SET_ENABLE_JNT_COMP,

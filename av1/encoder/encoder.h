@@ -204,7 +204,6 @@ typedef struct AV1EncoderConfig {
   unsigned int num_tile_groups;
   unsigned int mtu;
 
-  unsigned int disable_tempmv;
   // Internal frame size scaling.
   RESIZE_MODE resize_mode;
   uint8_t resize_scale_denominator;
@@ -295,9 +294,10 @@ typedef struct AV1EncoderConfig {
   int enable_dual_filter;
   unsigned int motion_vector_unit_test;
   const cfg_options_t *cfg;
+  int enable_order_hint;
   int enable_jnt_comp;
   int enable_ref_frame_mvs;
-  int enable_order_hint;
+  unsigned int allow_ref_frame_mvs;
   int enable_superres;
 } AV1EncoderConfig;
 
@@ -722,8 +722,6 @@ static INLINE unsigned int allocated_tokens(TileInfo tile, int sb_size_log2,
 
   return get_token_alloc(tile_mb_rows, tile_mb_cols, sb_size_log2, num_planes);
 }
-
-void av1_set_temporal_mv_prediction(AV1_COMP *cpi, int allow_tempmv_prediction);
 
 void av1_apply_encoding_flags(AV1_COMP *cpi, aom_enc_frame_flags_t flags);
 

@@ -4739,7 +4739,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // S_FRAMEs are always error resilient
   cm->error_resilient_mode = oxcf->error_resilient_mode || frame_is_sframe(cm);
   cm->use_ref_frame_mvs =
-      !cpi->oxcf.disable_tempmv && frame_might_use_prev_frame_mvs(cm) &&
+      cpi->oxcf.allow_ref_frame_mvs && frame_might_use_prev_frame_mvs(cm) &&
       cm->seq_params.enable_ref_frame_mvs && cm->seq_params.enable_order_hint;
   cm->allow_warped_motion =
       !(frame_is_intra_only(cm) || cm->error_resilient_mode);

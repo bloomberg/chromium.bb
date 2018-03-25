@@ -67,7 +67,6 @@ struct av1_extracfg {
   unsigned int num_tg;
   unsigned int mtu_size;
   aom_timing_info_t timing_info;
-  unsigned int disable_tempmv;
   unsigned int frame_parallel_decoding_mode;
   int use_dual_filter;
   AQ_MODE aq_mode;
@@ -98,7 +97,8 @@ struct av1_extracfg {
 #endif  // CONFIG_CDF_UPDATE_MODE
   int enable_order_hint;
   int use_jnt_comp;
-  int enable_ref_frame_mvs;
+  int enable_ref_frame_mvs;  // sequence level
+  int allow_ref_frame_mvs;   // frame level
   int enable_superres;
 };
 
@@ -138,7 +138,6 @@ static struct av1_extracfg default_extra_cfg = {
   1,                       // max number of tile groups
   0,                       // mtu_size
   AOM_TIMING_UNSPECIFIED,  // No picture timing signaling in bitstream
-  0,                       // disable temporal mv prediction
   1,                       // frame_parallel_decoding_mode
   1,                       // enable dual filter
   NO_AQ,                   // aq_mode
@@ -170,6 +169,7 @@ static struct av1_extracfg default_extra_cfg = {
   1,    // frame order hint
   1,    // jnt_comp
   1,    // ref_frame_mvs
+  1,    // allow ref_frame_mvs
   1,    // superres
 };
 
@@ -540,7 +540,10 @@ static aom_codec_err_t set_encoder_config(
   if (cfg->large_scale_tile) oxcf->num_tile_groups = 1;
   oxcf->mtu = extra_cfg->mtu_size;
 
-  oxcf->disable_tempmv = extra_cfg->disable_tempmv;
+  // FIXME(debargha): Should this be:
+  // oxcf->allow_ref_frame_mvs = extra_cfg->allow_ref_frame_mvs &
+  //                             extra_cfg->enable_order_hint ?
+  oxcf->allow_ref_frame_mvs = extra_cfg->allow_ref_frame_mvs;
   oxcf->under_shoot_pct = cfg->rc_undershoot_pct;
   oxcf->over_shoot_pct = cfg->rc_overshoot_pct;
 
@@ -951,13 +954,6 @@ static aom_codec_err_t ctrl_set_timing_info(aom_codec_alg_priv_t *ctx,
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
-static aom_codec_err_t ctrl_set_disable_tempmv(aom_codec_alg_priv_t *ctx,
-                                               va_list args) {
-  struct av1_extracfg extra_cfg = ctx->extra_cfg;
-  extra_cfg.disable_tempmv = CAST(AV1E_SET_DISABLE_TEMPMV, args);
-  return update_extra_cfg(ctx, &extra_cfg);
-}
-
 static aom_codec_err_t ctrl_set_enable_df(aom_codec_alg_priv_t *ctx,
                                           va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -983,6 +979,13 @@ static aom_codec_err_t ctrl_set_enable_ref_frame_mvs(aom_codec_alg_priv_t *ctx,
                                                      va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.enable_ref_frame_mvs = CAST(AV1E_SET_ENABLE_REF_FRAME_MVS, args);
+  return update_extra_cfg(ctx, &extra_cfg);
+}
+
+static aom_codec_err_t ctrl_set_allow_ref_frame_mvs(aom_codec_alg_priv_t *ctx,
+                                                    va_list args) {
+  struct av1_extracfg extra_cfg = ctx->extra_cfg;
+  extra_cfg.allow_ref_frame_mvs = CAST(AV1E_SET_ALLOW_REF_FRAME_MVS, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
 
@@ -1644,13 +1647,13 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_NUM_TG, ctrl_set_num_tg },
   { AV1E_SET_MTU, ctrl_set_mtu },
   { AV1E_SET_TIMING_INFO, ctrl_set_timing_info },
-  { AV1E_SET_DISABLE_TEMPMV, ctrl_set_disable_tempmv },
   { AV1E_SET_FRAME_PARALLEL_DECODING, ctrl_set_frame_parallel_decoding_mode },
   { AV1E_SET_ERROR_RESILIENT_MODE, ctrl_set_error_resilient_mode },
   { AV1E_SET_ENABLE_DF, ctrl_set_enable_df },
   { AV1E_SET_ENABLE_ORDER_HINT, ctrl_set_enable_order_hint },
   { AV1E_SET_ENABLE_JNT_COMP, ctrl_set_enable_jnt_comp },
   { AV1E_SET_ENABLE_REF_FRAME_MVS, ctrl_set_enable_ref_frame_mvs },
+  { AV1E_SET_ALLOW_REF_FRAME_MVS, ctrl_set_allow_ref_frame_mvs },
   { AV1E_SET_ENABLE_SUPERRES, ctrl_set_enable_superres },
   { AV1E_SET_AQ_MODE, ctrl_set_aq_mode },
 #if CONFIG_EXT_DELTA_Q
