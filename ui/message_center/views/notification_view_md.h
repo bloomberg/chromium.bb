@@ -225,7 +225,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
 
   void Activate();
 
-  void AddBackgroundAnimation(const ui::LocatedEvent& event);
+  void AddBackgroundAnimation(const ui::Event& event);
   void RemoveBackgroundAnimation();
 
   // Overridden from views::View:
@@ -256,7 +256,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   bool IsManuallyExpandedOrCollapsed() const override;
   void SetManuallyExpandedOrCollapsed(bool value) override;
 
-  void OnSettingsButtonPressed(const ui::LocatedEvent& event) override;
+  void OnSettingsButtonPressed(const ui::Event& event) override;
 
   // views::InkDropObserver:
   void InkDropAnimationStarted() override;
@@ -302,7 +302,7 @@ class MESSAGE_CENTER_EXPORT NotificationViewMD
   bool IsExpandable();
   void ToggleExpanded();
   void UpdateViewForExpandedState(bool expanded);
-  void ToggleInlineSettings(const ui::LocatedEvent& event);
+  void ToggleInlineSettings(const ui::Event& event);
 
   views::InkDropContainerView* const ink_drop_container_;
 
