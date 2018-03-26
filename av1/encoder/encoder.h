@@ -562,6 +562,11 @@ typedef struct AV1_COMP {
   int resize_buffer_underflow;
   int resize_count;
 
+  // Sequence parameters have been transmitted already and locked
+  // or not. Once locked av1_change_config cannot change the seq
+  // parameters.
+  int seq_params_locked;
+
   // VARIANCE_AQ segment map refresh
   int vaq_refresh;
 

@@ -2384,9 +2384,10 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cm->allow_filter_intra = 1;
 
   // Init sequence level coding tools
-  // TODO(debargha): This should not be called after the first key frame.
-  // Need to add a check for that.
-  init_seq_coding_tools(&cm->seq_params, oxcf);
+  // This should not be called after the first key frame.
+  if (!cpi->seq_params_locked) {
+    init_seq_coding_tools(&cm->seq_params, oxcf);
+  }
 }
 
 AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
@@ -2428,6 +2429,7 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   av1_rc_init(&cpi->oxcf, oxcf->pass, &cpi->rc);
 
   cm->current_video_frame = 0;
+  cpi->seq_params_locked = 0;
   cpi->partition_search_skippable_frame = 0;
   cpi->tile_data = NULL;
   cpi->last_show_frame_buf_idx = INVALID_IDX;
@@ -4156,7 +4158,7 @@ static void loopfilter_frame(AV1_COMP *cpi, AV1_COMMON *cm) {
   }
 }
 
-static void encode_without_recode_loop(AV1_COMP *cpi) {
+static int encode_without_recode_loop(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   int q = 0, bottom_index = 0, top_index = 0;  // Dummy variables.
 
@@ -4217,6 +4219,7 @@ static void encode_without_recode_loop(AV1_COMP *cpi) {
   // seen in the last encoder iteration.
   // update_base_skip_probs(cpi);
   aom_clear_system_state();
+  return AOM_CODEC_OK;
 }
 
 static int encode_with_recode_loop(AV1_COMP *cpi, size_t *size, uint8_t *dest) {
@@ -4778,6 +4781,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
     if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
       return AOM_CODEC_ERROR;
 
+    cpi->seq_params_locked = 1;
+
     // Set up frame to show to get ready for stats collection.
     cm->frame_to_show = get_frame_new_buffer(cm);
 
@@ -4858,8 +4863,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->single_tile_decoding = cpi->oxcf.single_tile_decoding;
   if (cm->large_scale_tile) cm->seq_params.frame_id_numbers_present_flag = 0;
 
-  cm->seq_params.monochrome = oxcf->monochrome;
-
   // For 1 pass CBR, check if we are dropping this frame.
   // Never drop on key frame.
   if (oxcf->pass == 0 && oxcf->rc_mode == AOM_CBR &&
@@ -4927,7 +4930,7 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 #endif  // CONFIG_CDF_UPDATE_MODE
 
   if (cpi->sf.recode_loop == DISALLOW_RECODE) {
-    encode_without_recode_loop(cpi);
+    if (encode_without_recode_loop(cpi) != AOM_CODEC_OK) return AOM_CODEC_ERROR;
   } else {
     if (encode_with_recode_loop(cpi, size, dest) != AOM_CODEC_OK)
       return AOM_CODEC_ERROR;
@@ -4998,6 +5001,8 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   // Build the bitstream
   if (av1_pack_bitstream(cpi, dest, size) != AOM_CODEC_OK)
     return AOM_CODEC_ERROR;
+
+  cpi->seq_params_locked = 1;
 
   if (skip_adapt) return AOM_CODEC_OK;
 
