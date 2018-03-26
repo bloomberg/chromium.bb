@@ -87,8 +87,6 @@ crbug.com/764474 plugins/plugin-document-back-forward.html [ Crash Failure Timeo
 # Started failing @ r529490
 Bug(none) virtual/layout_ng/fast/inline/positioned-object-between-replaced-elements.html [ Failure ]
 
-# http://crbug.com/721400 get WebSockets working with network service.
-crbug.com/721400 http/tests/websocket/multiple-connections-throttled.html [ Failure ]
-crbug.com/721400 http/tests/devtools/websocket/websocket-handshake.js [ Failure ]
+crbug.com/825687 http/tests/devtools/websocket/websocket-handshake.js [ Failure ]
 
 crbug.com/816556 external/wpt/html/semantics/text-level-semantics/the-a-element/a-download-click-404.html [ Failure ]

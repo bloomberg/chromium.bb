@@ -136,7 +136,8 @@ ChannelState WebSocket::WebSocketEventHandler::OnAddChannelResponse(
            << selected_protocol << "\""
            << " extensions=\"" << extensions << "\"";
 
-  impl_->delegate_->OnReceivedResponseFromServer(impl_);
+  impl_->handshake_succeeded_ = true;
+  impl_->pending_connection_tracker_.OnCompleteHandshake();
 
   impl_->client_->OnAddChannelResponse(selected_protocol, extensions);
 
@@ -288,14 +289,17 @@ ChannelState WebSocket::WebSocketEventHandler::OnSSLCertificateError(
   return WebSocketEventInterface::CHANNEL_ALIVE;
 }
 
-WebSocket::WebSocket(std::unique_ptr<Delegate> delegate,
-                     network::mojom::WebSocketRequest request,
-                     int child_id,
-                     int frame_id,
-                     url::Origin origin,
-                     base::TimeDelta delay)
+WebSocket::WebSocket(
+    std::unique_ptr<Delegate> delegate,
+    network::mojom::WebSocketRequest request,
+    WebSocketThrottler::PendingConnection pending_connection_tracker,
+    int child_id,
+    int frame_id,
+    url::Origin origin,
+    base::TimeDelta delay)
     : delegate_(std::move(delegate)),
       binding_(this, std::move(request)),
+      pending_connection_tracker_(std::move(pending_connection_tracker)),
       delay_(delay),
       pending_flow_control_quota_(0),
       child_id_(child_id),

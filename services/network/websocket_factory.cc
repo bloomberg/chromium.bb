@@ -26,8 +26,6 @@ class WebSocketFactory::Delegate final
     return factory_->context_->GetURLRequestContext();
   }
 
-  void OnReceivedResponseFromServer(WebSocket* impl) override {}
-
   void OnLostConnectionToClient(WebSocket* impl) override {
     factory_->OnLostConnectionToClient(impl);
   }
@@ -100,10 +98,17 @@ void WebSocketFactory::CreateWebSocket(mojom::WebSocketRequest request,
                                        int32_t process_id,
                                        int32_t render_frame_id,
                                        const url::Origin& origin) {
-  base::TimeDelta delay;
+  if (throttler_.HasTooManyPendingConnections(process_id)) {
+    // Too many websockets!
+    request.ResetWithReason(
+        mojom::WebSocket::kInsufficientResources,
+        "Error in connection establishment: net::ERR_INSUFFICIENT_RESOURCES");
+    return;
+  }
   connections_.insert(std::make_unique<WebSocket>(
       std::make_unique<Delegate>(this, process_id), std::move(request),
-      process_id, render_frame_id, origin, delay));
+      throttler_.IssuePendingConnectionTracker(process_id), process_id,
+      render_frame_id, origin, throttler_.CalculateDelay(process_id)));
 }
 
 void WebSocketFactory::OnLostConnectionToClient(WebSocket* impl) {

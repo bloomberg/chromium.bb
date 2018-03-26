@@ -18,6 +18,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "net/websockets/websocket_event_interface.h"
 #include "services/network/public/mojom/websocket.mojom.h"
+#include "services/network/websocket_throttler.h"
 #include "url/origin.h"
 
 class GURL;
@@ -44,7 +45,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
     virtual ~Delegate() {}
 
     virtual net::URLRequestContext* GetURLRequestContext() = 0;
-    virtual void OnReceivedResponseFromServer(WebSocket* impl) = 0;
     // This function may delete |impl|.
     virtual void OnLostConnectionToClient(WebSocket* impl) = 0;
     virtual void OnSSLCertificateError(
@@ -65,6 +65,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
 
   WebSocket(std::unique_ptr<Delegate> delegate,
             network::mojom::WebSocketRequest request,
+            WebSocketThrottler::PendingConnection pending_connection_tracker,
             int child_id,
             int frame_id,
             url::Origin origin,
@@ -88,7 +89,6 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
 
   bool handshake_succeeded() const { return handshake_succeeded_; }
-  void OnHandshakeSucceeded() { handshake_succeeded_ = true; }
 
  protected:
   class WebSocketEventHandler;
@@ -103,6 +103,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
   mojo::Binding<network::mojom::WebSocket> binding_;
 
   network::mojom::WebSocketClientPtr client_;
+
+  WebSocketThrottler::PendingConnection pending_connection_tracker_;
 
   // The channel we use to send events to the network.
   std::unique_ptr<net::WebSocketChannel> channel_;
