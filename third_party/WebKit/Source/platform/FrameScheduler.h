@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WebFrameScheduler_h
-#define WebFrameScheduler_h
+#ifndef FrameScheduler_h
+#define FrameScheduler_h
+
+#include <memory>
 
 #include "base/memory/scoped_refptr.h"
 #include "base/single_thread_task_runner.h"
@@ -11,15 +13,13 @@
 #include "public/platform/TaskType.h"
 #include "public/platform/WebScopedVirtualTimePauser.h"
 
-#include <memory>
-
 namespace blink {
 
 class PageScheduler;
 
-class WebFrameScheduler {
+class FrameScheduler {
  public:
-  virtual ~WebFrameScheduler() = default;
+  virtual ~FrameScheduler() = default;
 
   // Observer type that regulates conditions to invoke callbacks.
   enum class ObserverType { kLoader, kWorkerScheduler };
@@ -177,4 +177,4 @@ class WebFrameScheduler {
 
 }  // namespace blink
 
-#endif  // WebFrameScheduler_h
+#endif  // FrameScheduler_h

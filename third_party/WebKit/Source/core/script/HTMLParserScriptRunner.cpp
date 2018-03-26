@@ -36,7 +36,6 @@
 #include "core/script/IgnoreDestructiveWriteCountIncrementer.h"
 #include "core/script/ScriptLoader.h"
 #include "platform/Histogram.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/bindings/Microtask.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"

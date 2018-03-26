@@ -31,8 +31,8 @@
 #ifndef FetchContext_h
 #define FetchContext_h
 
+#include "platform/FrameScheduler.h"
 #include "platform/PlatformExport.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/heap/Handle.h"
 #include "platform/loader/fetch/FetchInitiatorInfo.h"
 #include "platform/loader/fetch/FetchParameters.h"
@@ -244,12 +244,12 @@ class PLATFORM_EXPORT FetchContext
 
   virtual bool IsDetached() const { return false; }
 
-  // Obtains WebFrameScheduler instance that is used in the attached frame.
+  // Obtains FrameScheduler instance that is used in the attached frame.
   // May return nullptr if a frame is not attached or detached.
-  virtual WebFrameScheduler* GetFrameScheduler() const { return nullptr; }
+  virtual FrameScheduler* GetFrameScheduler() const { return nullptr; }
 
   // Returns a task runner intended for loading tasks. Should work even in a
-  // worker context, where WebFrameScheduler doesn't exist, but the returned
+  // worker context, where FrameScheduler doesn't exist, but the returned
   // base::SingleThreadTaskRunner will not work after the context detaches
   // (after Detach() is called, this will return a generic timer suitable for
   // post-detach actions like keepalive requests.

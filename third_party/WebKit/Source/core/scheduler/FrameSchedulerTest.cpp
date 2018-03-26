@@ -5,16 +5,16 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::testing::ElementsAre;
 
 namespace blink {
 
-class WebFrameSchedulerFrameTypeTest : public SimTest {};
+class FrameSchedulerFrameTypeTest : public SimTest {};
 
-TEST_F(WebFrameSchedulerFrameTypeTest, GetFrameType) {
+TEST_F(FrameSchedulerFrameTypeTest, GetFrameType) {
   SimRequest main_resource("https://example.com/", "text/html");
   LoadURL("https://example.com/");
   main_resource.Complete(R"HTML(
@@ -24,13 +24,13 @@ TEST_F(WebFrameSchedulerFrameTypeTest, GetFrameType) {
     </body>
   )HTML");
 
-  EXPECT_EQ(WebFrameScheduler::FrameType::kMainFrame,
-            MainFrame().GetFrame()->FrameScheduler()->GetFrameType());
+  EXPECT_EQ(FrameScheduler::FrameType::kMainFrame,
+            MainFrame().GetFrame()->GetFrameScheduler()->GetFrameType());
 
   Frame* child = MainFrame().GetFrame()->Tree().FirstChild();
   ASSERT_TRUE(child->IsLocalFrame());
-  EXPECT_EQ(WebFrameScheduler::FrameType::kSubframe,
-            ToLocalFrame(child)->FrameScheduler()->GetFrameType());
+  EXPECT_EQ(FrameScheduler::FrameType::kSubframe,
+            ToLocalFrame(child)->GetFrameScheduler()->GetFrameType());
 }
 
 }  // namespace blink

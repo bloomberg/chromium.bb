@@ -5,15 +5,15 @@
 #include "platform/scheduler/renderer/frame_origin_type.h"
 
 #include "base/macros.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 
 namespace blink {
 namespace scheduler {
 
-FrameOriginType GetFrameOriginType(WebFrameScheduler* scheduler) {
+FrameOriginType GetFrameOriginType(FrameScheduler* scheduler) {
   DCHECK(scheduler);
 
-  if (scheduler->GetFrameType() == WebFrameScheduler::FrameType::kMainFrame)
+  if (scheduler->GetFrameType() == FrameScheduler::FrameType::kMainFrame)
     return FrameOriginType::kMainFrame;
 
   if (scheduler->IsCrossOrigin()) {

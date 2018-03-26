@@ -68,7 +68,7 @@
 #include "core/probe/CoreProbes.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/WindowPerformance.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/feature_policy/FeaturePolicy.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/FetchUtils.h"
@@ -332,7 +332,7 @@ void DocumentLoader::UpdateForSameDocumentNavigation(
     history_item_->SetScrollRestorationType(scroll_restoration_type);
   }
   HistoryCommitType commit_type = LoadTypeToCommitType(type);
-  frame_->FrameScheduler()->DidCommitProvisionalLoad(
+  frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
       commit_type == kHistoryInertCommit, type == kFrameLoadTypeReload,
       frame_->IsLocalRoot());
   GetLocalFrameClient().DispatchDidNavigateWithinPage(
@@ -958,7 +958,7 @@ void DocumentLoader::DidCommitNavigation(
   }
 
   HistoryCommitType commit_type = LoadTypeToCommitType(load_type_);
-  frame_->FrameScheduler()->DidCommitProvisionalLoad(
+  frame_->GetFrameScheduler()->DidCommitProvisionalLoad(
       commit_type == kHistoryInertCommit, load_type_ == kFrameLoadTypeReload,
       frame_->IsLocalRoot());
   GetLocalFrameClient().DispatchDidCommitLoad(history_item_.Get(), commit_type,

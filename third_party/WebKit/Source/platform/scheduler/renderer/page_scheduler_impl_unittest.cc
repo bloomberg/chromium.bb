@@ -15,8 +15,8 @@
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
 #include "platform/scheduler/child/task_runner_impl.h"
+#include "platform/scheduler/renderer/frame_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 #include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -44,12 +44,12 @@ class PageSchedulerImplTest : public ::testing::Test {
         base::nullopt));
     page_scheduler_.reset(new PageSchedulerImpl(
         nullptr, scheduler_.get(), DisableBackgroundTimerThrottling()));
-    web_frame_scheduler_ = page_scheduler_->CreateWebFrameSchedulerImpl(
-        nullptr, WebFrameScheduler::FrameType::kSubframe);
+    frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
+        nullptr, FrameScheduler::FrameType::kSubframe);
   }
 
   void TearDown() override {
-    web_frame_scheduler_.reset();
+    frame_scheduler_.reset();
     page_scheduler_.reset();
     scheduler_->Shutdown();
     scheduler_.reset();
@@ -59,7 +59,7 @@ class PageSchedulerImplTest : public ::testing::Test {
 
  protected:
   static scoped_refptr<TaskQueue> ThrottleableTaskQueueForScheduler(
-      WebFrameSchedulerImpl* scheduler) {
+      FrameSchedulerImpl* scheduler) {
     return scheduler->ThrottleableTaskQueue();
   }
 
@@ -73,36 +73,36 @@ class PageSchedulerImplTest : public ::testing::Test {
   }
 
   scoped_refptr<TaskQueue> ThrottleableTaskQueue() {
-    return web_frame_scheduler_->ThrottleableTaskQueue();
+    return frame_scheduler_->ThrottleableTaskQueue();
   }
 
   scoped_refptr<TaskQueue> LoadingTaskQueue() {
-    return web_frame_scheduler_->LoadingTaskQueue();
+    return frame_scheduler_->LoadingTaskQueue();
   }
 
   base::SimpleTestTickClock clock_;
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler_;
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
 };
 
 TEST_F(PageSchedulerImplTest, TestDestructionOfFrameSchedulersBefore) {
-  std::unique_ptr<blink::WebFrameScheduler> frame1(
+  std::unique_ptr<blink::FrameScheduler> frame1(
       page_scheduler_->CreateFrameScheduler(
-          nullptr, WebFrameScheduler::FrameType::kSubframe));
-  std::unique_ptr<blink::WebFrameScheduler> frame2(
+          nullptr, FrameScheduler::FrameType::kSubframe));
+  std::unique_ptr<blink::FrameScheduler> frame2(
       page_scheduler_->CreateFrameScheduler(
-          nullptr, WebFrameScheduler::FrameType::kSubframe));
+          nullptr, FrameScheduler::FrameType::kSubframe));
 }
 
 TEST_F(PageSchedulerImplTest, TestDestructionOfFrameSchedulersAfter) {
-  std::unique_ptr<blink::WebFrameScheduler> frame1(
+  std::unique_ptr<blink::FrameScheduler> frame1(
       page_scheduler_->CreateFrameScheduler(
-          nullptr, WebFrameScheduler::FrameType::kSubframe));
-  std::unique_ptr<blink::WebFrameScheduler> frame2(
+          nullptr, FrameScheduler::FrameType::kSubframe));
+  std::unique_ptr<blink::FrameScheduler> frame2(
       page_scheduler_->CreateFrameScheduler(
-          nullptr, WebFrameScheduler::FrameType::kSubframe));
+          nullptr, FrameScheduler::FrameType::kSubframe));
   page_scheduler_.reset();
 }
 
@@ -175,9 +175,9 @@ TEST_F(PageSchedulerImplTest, RepeatingLoadingTask_PageInBackground) {
 TEST_F(PageSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   std::unique_ptr<PageSchedulerImpl> page_scheduler2(
       new PageSchedulerImpl(nullptr, scheduler_.get(), false));
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
-      page_scheduler2->CreateWebFrameSchedulerImpl(
-          nullptr, WebFrameScheduler::FrameType::kSubframe);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler2 =
+      page_scheduler2->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
 
   page_scheduler_->SetPageVisible(true);
   page_scheduler2->SetPageVisible(false);
@@ -187,10 +187,10 @@ TEST_F(PageSchedulerImplTest, RepeatingTimers_OneBackgroundOneForeground) {
   ThrottleableTaskQueue()->PostDelayedTask(
       FROM_HERE, MakeRepeatingTask(ThrottleableTaskQueue(), &run_count1),
       base::TimeDelta::FromMilliseconds(1));
-  ThrottleableTaskQueueForScheduler(web_frame_scheduler2.get())
+  ThrottleableTaskQueueForScheduler(frame_scheduler2.get())
       ->PostDelayedTask(FROM_HERE,
                         MakeRepeatingTask(ThrottleableTaskQueueForScheduler(
-                                              web_frame_scheduler2.get()),
+                                              frame_scheduler2.get()),
                                           &run_count2),
                         base::TimeDelta::FromMilliseconds(1));
 
@@ -416,17 +416,17 @@ TEST_F(PageSchedulerImplTestWithDisabledBackgroundTimerThrottling,
   EXPECT_EQ(1000, run_count);
 }
 
-TEST_F(PageSchedulerImplTest, VirtualTimeSettings_NewWebFrameScheduler) {
+TEST_F(PageSchedulerImplTest, VirtualTimeSettings_NewFrameScheduler) {
   std::vector<int> run_order;
 
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kPause);
   page_scheduler_->EnableVirtualTime();
 
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      page_scheduler_->CreateWebFrameSchedulerImpl(
-          nullptr, WebFrameScheduler::FrameType::kSubframe);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
+      page_scheduler_->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
 
-  ThrottleableTaskQueueForScheduler(web_frame_scheduler.get())
+  ThrottleableTaskQueueForScheduler(frame_scheduler.get())
       ->PostDelayedTask(
           FROM_HERE,
           base::BindOnce(&RunOrderTask, 1, base::Unretained(&run_order)),
@@ -450,15 +450,15 @@ base::OnceClosure MakeDeletionTask(T* obj) {
 
 }  // namespace
 
-TEST_F(PageSchedulerImplTest, DeleteWebFrameSchedulers_InTask) {
+TEST_F(PageSchedulerImplTest, DeleteFrameSchedulers_InTask) {
   for (int i = 0; i < 10; i++) {
-    WebFrameSchedulerImpl* web_frame_scheduler =
+    FrameSchedulerImpl* frame_scheduler =
         page_scheduler_
-            ->CreateWebFrameSchedulerImpl(
-                nullptr, WebFrameScheduler::FrameType::kSubframe)
+            ->CreateFrameSchedulerImpl(nullptr,
+                                       FrameScheduler::FrameType::kSubframe)
             .release();
-    ThrottleableTaskQueueForScheduler(web_frame_scheduler)
-        ->PostDelayedTask(FROM_HERE, MakeDeletionTask(web_frame_scheduler),
+    ThrottleableTaskQueueForScheduler(frame_scheduler)
+        ->PostDelayedTask(FROM_HERE, MakeDeletionTask(frame_scheduler),
                           base::TimeDelta::FromMilliseconds(1));
   }
   mock_task_runner_->RunUntilIdle();
@@ -473,13 +473,13 @@ TEST_F(PageSchedulerImplTest, DeletePageScheduler_InTask) {
 TEST_F(PageSchedulerImplTest, DeleteThrottledQueue_InTask) {
   page_scheduler_->SetPageVisible(false);
 
-  WebFrameSchedulerImpl* web_frame_scheduler =
+  FrameSchedulerImpl* frame_scheduler =
       page_scheduler_
-          ->CreateWebFrameSchedulerImpl(nullptr,
-                                        WebFrameScheduler::FrameType::kSubframe)
+          ->CreateFrameSchedulerImpl(nullptr,
+                                     FrameScheduler::FrameType::kSubframe)
           .release();
   scoped_refptr<TaskQueue> timer_task_queue =
-      ThrottleableTaskQueueForScheduler(web_frame_scheduler);
+      ThrottleableTaskQueueForScheduler(frame_scheduler);
 
   int run_count = 0;
   timer_task_queue->PostDelayedTask(
@@ -489,7 +489,7 @@ TEST_F(PageSchedulerImplTest, DeleteThrottledQueue_InTask) {
   // Note this will run at time t = 10s since we start at time t = 5000us.
   // However, we still should run all tasks after frame scheduler deletion.
   timer_task_queue->PostDelayedTask(FROM_HERE,
-                                    MakeDeletionTask(web_frame_scheduler),
+                                    MakeDeletionTask(frame_scheduler),
                                     base::TimeDelta::FromMilliseconds(9990));
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(100));
@@ -525,13 +525,13 @@ TEST_F(PageSchedulerImplTest,
   page_scheduler_->SetVirtualTimePolicy(
       VirtualTimePolicy::kDeterministicLoading);
 
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      page_scheduler_->CreateWebFrameSchedulerImpl(
-          nullptr, WebFrameScheduler::FrameType::kSubframe);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
+      page_scheduler_->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
 
   {
     WebScopedVirtualTimePauser virtual_time_pauser =
-        web_frame_scheduler->CreateWebScopedVirtualTimePauser(
+        frame_scheduler->CreateWebScopedVirtualTimePauser(
             WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
     EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 
@@ -553,15 +553,15 @@ TEST_F(PageSchedulerImplTest,
   page_scheduler_->SetVirtualTimePolicy(
       VirtualTimePolicy::kDeterministicLoading);
 
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      page_scheduler_->CreateWebFrameSchedulerImpl(
-          nullptr, WebFrameScheduler::FrameType::kSubframe);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
+      page_scheduler_->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
 
   WebScopedVirtualTimePauser virtual_time_pauser1 =
-      web_frame_scheduler->CreateWebScopedVirtualTimePauser(
+      frame_scheduler->CreateWebScopedVirtualTimePauser(
           WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
   WebScopedVirtualTimePauser virtual_time_pauser2 =
-      web_frame_scheduler->CreateWebScopedVirtualTimePauser(
+      frame_scheduler->CreateWebScopedVirtualTimePauser(
           WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
 
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
@@ -592,13 +592,13 @@ TEST_F(PageSchedulerImplTest, NestedMessageLoop_DETERMINISTIC_LOADING) {
 TEST_F(PageSchedulerImplTest, PauseTimersWhileVirtualTimeIsPaused) {
   std::vector<int> run_order;
 
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      page_scheduler_->CreateWebFrameSchedulerImpl(
-          nullptr, WebFrameScheduler::FrameType::kSubframe);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
+      page_scheduler_->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
   page_scheduler_->SetVirtualTimePolicy(VirtualTimePolicy::kPause);
   page_scheduler_->EnableVirtualTime();
 
-  ThrottleableTaskQueueForScheduler(web_frame_scheduler.get())
+  ThrottleableTaskQueueForScheduler(frame_scheduler.get())
       ->PostTask(FROM_HERE, base::BindOnce(&RunOrderTask, 1,
                                            base::Unretained(&run_order)));
 
@@ -871,8 +871,8 @@ TEST_F(PageSchedulerImplTest, BackgroundTimerThrottling) {
       new PageSchedulerImpl(nullptr, scheduler_.get(), false));
 
   std::vector<base::TimeTicks> run_times;
-  web_frame_scheduler_ = page_scheduler_->CreateWebFrameSchedulerImpl(
-      nullptr, WebFrameScheduler::FrameType::kSubframe);
+  frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
+      nullptr, FrameScheduler::FrameType::kSubframe);
   page_scheduler_->SetPageVisible(true);
 
   mock_task_runner_->RunUntilTime(base::TimeTicks() +
@@ -928,12 +928,12 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
 
   std::vector<base::TimeTicks> run_times;
 
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler1 =
-      page_scheduler->CreateWebFrameSchedulerImpl(
-          nullptr, WebFrameScheduler::FrameType::kSubframe);
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler2 =
-      page_scheduler->CreateWebFrameSchedulerImpl(
-          nullptr, WebFrameScheduler::FrameType::kSubframe);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler1 =
+      page_scheduler->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler2 =
+      page_scheduler->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
 
   page_scheduler->SetPageVisible(false);
 
@@ -942,7 +942,7 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
                                   base::TimeDelta::FromMilliseconds(20500));
 
   for (size_t i = 0; i < 3; ++i) {
-    ThrottleableTaskQueueForScheduler(web_frame_scheduler1.get())
+    ThrottleableTaskQueueForScheduler(frame_scheduler1.get())
         ->PostDelayedTask(
             FROM_HERE, base::BindOnce(&ExpensiveTestTask, &clock_, &run_times),
             base::TimeDelta::FromMilliseconds(1));
@@ -959,11 +959,11 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
                   base::TimeTicks() + base::TimeDelta::FromSeconds(51)));
   run_times.clear();
 
-  std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
-      websocket_connection = web_frame_scheduler1->OnActiveConnectionCreated();
+  std::unique_ptr<FrameScheduler::ActiveConnectionHandle> websocket_connection =
+      frame_scheduler1->OnActiveConnectionCreated();
 
   for (size_t i = 0; i < 3; ++i) {
-    ThrottleableTaskQueueForScheduler(web_frame_scheduler1.get())
+    ThrottleableTaskQueueForScheduler(frame_scheduler1.get())
         ->PostDelayedTask(
             FROM_HERE, base::BindOnce(&ExpensiveTestTask, &clock_, &run_times),
             base::TimeDelta::FromMilliseconds(1));
@@ -983,7 +983,7 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
   run_times.clear();
 
   for (size_t i = 0; i < 3; ++i) {
-    ThrottleableTaskQueueForScheduler(web_frame_scheduler2.get())
+    ThrottleableTaskQueueForScheduler(frame_scheduler2.get())
         ->PostDelayedTask(
             FROM_HERE, base::BindOnce(&ExpensiveTestTask, &clock_, &run_times),
             base::TimeDelta::FromMilliseconds(1));
@@ -1008,7 +1008,7 @@ TEST_F(PageSchedulerImplTest, OpenWebSocketExemptsFromBudgetThrottling) {
                                   base::TimeDelta::FromMilliseconds(70500));
 
   for (size_t i = 0; i < 3; ++i) {
-    ThrottleableTaskQueueForScheduler(web_frame_scheduler1.get())
+    ThrottleableTaskQueueForScheduler(frame_scheduler1.get())
         ->PostDelayedTask(
             FROM_HERE, base::BindOnce(&ExpensiveTestTask, &clock_, &run_times),
             base::TimeDelta::FromMilliseconds(1));

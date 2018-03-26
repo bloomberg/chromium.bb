@@ -28,7 +28,7 @@
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
 #include "core/script/ScriptElementBase.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/wtf/Time.h"
 
 namespace blink {
@@ -40,7 +40,7 @@ WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
     return WebScopedVirtualTimePauser();
   return element->GetDocument()
       .GetFrame()
-      ->FrameScheduler()
+      ->GetFrameScheduler()
       ->CreateWebScopedVirtualTimePauser(
           WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant);
 }

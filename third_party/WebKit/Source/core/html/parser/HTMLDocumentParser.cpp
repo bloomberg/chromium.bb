@@ -50,7 +50,6 @@
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/SharedBuffer.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/bindings/V8PerIsolateData.h"
 #include "platform/heap/Handle.h"

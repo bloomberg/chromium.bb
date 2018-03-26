@@ -32,7 +32,7 @@ namespace scheduler {
 
 class RendererSchedulerImpl;
 class CPUTimeBudgetPool;
-class WebFrameSchedulerImpl;
+class FrameSchedulerImpl;
 
 class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
  public:
@@ -45,9 +45,9 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // PageScheduler implementation:
   void SetPageVisible(bool page_visible) override;
   void SetPageFrozen(bool) override;
-  std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
+  std::unique_ptr<FrameScheduler> CreateFrameScheduler(
       BlameContext*,
-      WebFrameScheduler::FrameType) override;
+      FrameScheduler::FrameType) override;
   base::TimeTicks EnableVirtualTime() override;
   void DisableVirtualTimeForTesting() override;
   bool VirtualTimeAllowedToAdvance() const override;
@@ -69,11 +69,11 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   // Virtual for testing.
   virtual void ReportIntervention(const std::string& message);
 
-  std::unique_ptr<WebFrameSchedulerImpl> CreateWebFrameSchedulerImpl(
+  std::unique_ptr<FrameSchedulerImpl> CreateFrameSchedulerImpl(
       base::trace_event::BlameContext*,
-      WebFrameScheduler::FrameType);
+      FrameScheduler::FrameType);
 
-  void Unregister(WebFrameSchedulerImpl*);
+  void Unregister(FrameSchedulerImpl*);
   void OnNavigation();
 
   void OnConnectionUpdated();
@@ -90,7 +90,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   }
 
  private:
-  friend class WebFrameSchedulerImpl;
+  friend class FrameSchedulerImpl;
 
   CPUTimeBudgetPool* BackgroundCPUTimeBudgetPool();
   void MaybeInitializeBackgroundCPUTimeBudgetPool();
@@ -107,7 +107,7 @@ class PLATFORM_EXPORT PageSchedulerImpl : public PageScheduler {
   void UpdateBackgroundBudgetPoolThrottlingState();
 
   TraceableVariableController tracing_controller_;
-  std::set<WebFrameSchedulerImpl*> frame_schedulers_;
+  std::set<FrameSchedulerImpl*> frame_schedulers_;
   RendererSchedulerImpl* renderer_scheduler_;
 
   PageVisibilityState page_visibility_;

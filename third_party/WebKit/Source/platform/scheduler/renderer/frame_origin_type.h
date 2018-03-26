@@ -6,7 +6,7 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_ORIGIN_TYPE_H_
 
 namespace blink {
-class WebFrameScheduler;
+class FrameScheduler;
 
 namespace scheduler {
 
@@ -20,7 +20,7 @@ enum class FrameOriginType {
   kCount = 3
 };
 
-FrameOriginType GetFrameOriginType(WebFrameScheduler* frame_scheduler);
+FrameOriginType GetFrameOriginType(FrameScheduler* frame_scheduler);
 
 const char* FrameOriginTypeToString(FrameOriginType origin);
 

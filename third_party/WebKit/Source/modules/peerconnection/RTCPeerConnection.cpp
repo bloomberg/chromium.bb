@@ -611,7 +611,7 @@ RTCPeerConnection::RTCPeerConnection(ExecutionContext* context,
   }
 
   connection_handle_for_scheduler_ =
-      document->GetFrame()->FrameScheduler()->OnActiveConnectionCreated();
+      document->GetFrame()->GetFrameScheduler()->OnActiveConnectionCreated();
 }
 
 RTCPeerConnection::~RTCPeerConnection() {

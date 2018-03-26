@@ -9,8 +9,8 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
+#include "platform/FrameScheduler.h"
 #include "platform/PlatformExport.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/child/page_visibility_state.h"
 #include "platform/scheduler/renderer/frame_origin_type.h"
 #include "platform/wtf/WTF.h"
@@ -26,20 +26,19 @@ class WorkerSchedulerImpl;
 // on the main thread. It's passed to WorkerScheduler during its construction.
 // Given that DedicatedWorkerThread object outlives worker thread, this class
 // outlives worker thread too.
-class PLATFORM_EXPORT WorkerSchedulerProxy
-    : public WebFrameScheduler::Observer {
+class PLATFORM_EXPORT WorkerSchedulerProxy : public FrameScheduler::Observer {
  public:
-  explicit WorkerSchedulerProxy(WebFrameScheduler* scheduler);
+  explicit WorkerSchedulerProxy(FrameScheduler* scheduler);
   ~WorkerSchedulerProxy() override;
 
   void OnWorkerSchedulerCreated(
       base::WeakPtr<WorkerSchedulerImpl> worker_scheduler);
 
   void OnThrottlingStateChanged(
-      WebFrameScheduler::ThrottlingState throttling_state) override;
+      FrameScheduler::ThrottlingState throttling_state) override;
 
   // Should be accessed only from the main thread or during init.
-  WebFrameScheduler::ThrottlingState throttling_state() const {
+  FrameScheduler::ThrottlingState throttling_state() const {
     DCHECK(IsMainThread() || !initialized_);
     return throttling_state_;
   }
@@ -56,10 +55,10 @@ class PLATFORM_EXPORT WorkerSchedulerProxy
   // Const after init on the worker thread.
   scoped_refptr<base::SingleThreadTaskRunner> worker_thread_task_runner_;
 
-  WebFrameScheduler::ThrottlingState throttling_state_ =
-      WebFrameScheduler::ThrottlingState::kNotThrottled;
+  FrameScheduler::ThrottlingState throttling_state_ =
+      FrameScheduler::ThrottlingState::kNotThrottled;
 
-  std::unique_ptr<WebFrameScheduler::ThrottlingObserverHandle>
+  std::unique_ptr<FrameScheduler::ThrottlingObserverHandle>
       throttling_observer_handle_;
 
   bool initialized_ = false;

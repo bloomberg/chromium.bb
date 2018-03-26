@@ -46,14 +46,13 @@ namespace blink {
 
 namespace {
 
-WebFrameScheduler* GetFrameScheduler(
-    ThreadableLoadingContext* loading_context) {
+FrameScheduler* GetFrameScheduler(ThreadableLoadingContext* loading_context) {
   // |loading_context| can be null in unittests.
   if (!loading_context)
     return nullptr;
   return ToDocument(loading_context->GetExecutionContext())
       ->GetFrame()
-      ->FrameScheduler();
+      ->GetFrameScheduler();
 }
 
 }  // namespace

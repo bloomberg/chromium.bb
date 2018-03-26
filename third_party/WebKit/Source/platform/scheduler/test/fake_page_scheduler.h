@@ -51,9 +51,9 @@ class FakePageScheduler final : public PageScheduler {
   void SetPageVisible(bool is_page_visible) override {}
   void SetPageFrozen(bool is_page_frozen) override {}
 
-  std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
+  std::unique_ptr<FrameScheduler> CreateFrameScheduler(
       BlameContext* blame_context,
-      WebFrameScheduler::FrameType frame_type) override {
+      FrameScheduler::FrameType frame_type) override {
     return nullptr;
   }
   base::TimeTicks EnableVirtualTime() override { return base::TimeTicks(); }

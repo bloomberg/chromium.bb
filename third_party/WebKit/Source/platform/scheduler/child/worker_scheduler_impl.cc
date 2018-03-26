@@ -62,9 +62,8 @@ WorkerSchedulerImpl::WorkerSchedulerImpl(
       load_tracker_(helper_->NowTicks(),
                     base::BindRepeating(&ReportWorkerTaskLoad),
                     kUnspecifiedWorkerThreadLoadTrackerReportingInterval),
-      throttling_state_(
-          proxy ? proxy->throttling_state()
-                : WebFrameScheduler::ThrottlingState::kNotThrottled),
+      throttling_state_(proxy ? proxy->throttling_state()
+                              : FrameScheduler::ThrottlingState::kNotThrottled),
       worker_metrics_helper_(thread_type),
       weak_factory_(this) {
   thread_start_time_ = helper_->NowTicks();
@@ -185,7 +184,7 @@ void WorkerSchedulerImpl::DidProcessTask(double start_time, double end_time) {
 }
 
 void WorkerSchedulerImpl::OnThrottlingStateChanged(
-    WebFrameScheduler::ThrottlingState throttling_state) {
+    FrameScheduler::ThrottlingState throttling_state) {
   throttling_state_ = throttling_state;
 }
 

@@ -67,6 +67,7 @@ class FetchParameters;
 class FloatSize;
 class FrameConsole;
 class FrameResourceCoordinator;
+class FrameScheduler;
 class FrameSelection;
 class InputMethodController;
 class InspectorTraceEvents;
@@ -88,7 +89,6 @@ class ScriptController;
 class SpellChecker;
 class TextSuggestionController;
 class WebComputedAXTree;
-class WebFrameScheduler;
 class WebPluginContainerImpl;
 class WebURLLoaderFactory;
 
@@ -227,7 +227,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
   bool ShouldThrottleRendering() const;
 
   // Returns the frame scheduler, creating one if needed.
-  WebFrameScheduler* FrameScheduler();
+  FrameScheduler* GetFrameScheduler();
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType);
   void ScheduleVisualUpdateUnlessThrottled();
 
@@ -357,7 +357,7 @@ class CORE_EXPORT LocalFrame final : public Frame,
                    const FloatSize& original_page_size,
                    float maximum_shrink_ratio);
 
-  std::unique_ptr<WebFrameScheduler> frame_scheduler_;
+  std::unique_ptr<FrameScheduler> frame_scheduler_;
 
   mutable FrameLoader loader_;
   Member<NavigationScheduler> navigation_scheduler_;

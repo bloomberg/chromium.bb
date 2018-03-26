@@ -78,9 +78,9 @@
 #include "core/probe/CoreProbes.h"
 #include "core/svg/graphics/SVGImage.h"
 #include "core/xml/parser/XMLDocumentParser.h"
+#include "platform/FrameScheduler.h"
 #include "platform/Histogram.h"
 #include "platform/InstanceCounters.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
@@ -1612,7 +1612,7 @@ void FrameLoader::StartLoad(FrameLoadRequest& frame_load_request,
   }
 
   DCHECK(!frame_load_request.GetResourceRequest().IsSameDocumentNavigation());
-  frame_->FrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
+  frame_->GetFrameScheduler()->DidStartProvisionalLoad(frame_->IsMainFrame());
 
   // TODO(ananta):
   // We should get rid of the dependency on the DocumentLoader in consumers of

@@ -9,10 +9,10 @@
 #include "base/test/histogram_tester.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "components/viz/test/ordered_simple_task_runner.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
+#include "platform/scheduler/test/fake_frame_scheduler.h"
 #include "platform/scheduler/test/fake_page_scheduler.h"
-#include "platform/scheduler/test/fake_web_frame_scheduler.h"
 #include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,7 +77,7 @@ class RendererMetricsHelperTest : public ::testing::Test {
                                        start + duration, base::nullopt);
   }
 
-  void RunTask(WebFrameScheduler* scheduler,
+  void RunTask(FrameScheduler* scheduler,
                base::TimeTicks start,
                base::TimeDelta duration) {
     DCHECK_LE(clock_.NowTicks(), start);
@@ -113,104 +113,104 @@ class RendererMetricsHelperTest : public ::testing::Test {
 
   void ForceUpdatePolicy() { scheduler_->ForceUpdatePolicy(); }
 
-  std::unique_ptr<FakeWebFrameScheduler> CreateFakeWebFrameSchedulerWithType(
+  std::unique_ptr<FakeFrameScheduler> CreateFakeFrameSchedulerWithType(
       FrameStatus frame_status) {
-    FakeWebFrameScheduler::Builder builder;
+    FakeFrameScheduler::Builder builder;
     switch (frame_status) {
       case FrameStatus::kNone:
       case FrameStatus::kDetached:
         return nullptr;
       case FrameStatus::kMainFrameVisible:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
+        builder.SetFrameType(FrameScheduler::FrameType::kMainFrame)
             .SetIsPageVisible(true)
             .SetIsFrameVisible(true);
         break;
       case FrameStatus::kMainFrameVisibleService:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
+        builder.SetFrameType(FrameScheduler::FrameType::kMainFrame)
             .SetPageScheduler(playing_view_.get())
             .SetIsFrameVisible(true);
         break;
       case FrameStatus::kMainFrameHidden:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
+        builder.SetFrameType(FrameScheduler::FrameType::kMainFrame)
             .SetIsPageVisible(true);
         break;
       case FrameStatus::kMainFrameHiddenService:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
+        builder.SetFrameType(FrameScheduler::FrameType::kMainFrame)
             .SetPageScheduler(playing_view_.get());
         break;
       case FrameStatus::kMainFrameBackground:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame);
+        builder.SetFrameType(FrameScheduler::FrameType::kMainFrame);
         break;
       case FrameStatus::kMainFrameBackgroundExemptSelf:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
+        builder.SetFrameType(FrameScheduler::FrameType::kMainFrame)
             .SetIsExemptFromThrottling(true);
         break;
       case FrameStatus::kMainFrameBackgroundExemptOther:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kMainFrame)
+        builder.SetFrameType(FrameScheduler::FrameType::kMainFrame)
             .SetPageScheduler(throtting_exempt_view_.get());
         break;
       case FrameStatus::kSameOriginVisible:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsPageVisible(true)
             .SetIsFrameVisible(true);
         break;
       case FrameStatus::kSameOriginVisibleService:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetPageScheduler(playing_view_.get())
             .SetIsFrameVisible(true);
         break;
       case FrameStatus::kSameOriginHidden:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsPageVisible(true);
         break;
       case FrameStatus::kSameOriginHiddenService:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetPageScheduler(playing_view_.get());
         break;
       case FrameStatus::kSameOriginBackground:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe);
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe);
         break;
       case FrameStatus::kSameOriginBackgroundExemptSelf:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsExemptFromThrottling(true);
         break;
       case FrameStatus::kSameOriginBackgroundExemptOther:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetPageScheduler(throtting_exempt_view_.get());
         break;
       case FrameStatus::kCrossOriginVisible:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true)
             .SetIsPageVisible(true)
             .SetIsFrameVisible(true);
         break;
       case FrameStatus::kCrossOriginVisibleService:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true)
             .SetPageScheduler(playing_view_.get())
             .SetIsFrameVisible(true);
         break;
       case FrameStatus::kCrossOriginHidden:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true)
             .SetIsPageVisible(true);
         break;
       case FrameStatus::kCrossOriginHiddenService:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true)
             .SetPageScheduler(playing_view_.get());
         break;
       case FrameStatus::kCrossOriginBackground:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true);
         break;
       case FrameStatus::kCrossOriginBackgroundExemptSelf:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true)
             .SetIsExemptFromThrottling(true);
         break;
       case FrameStatus::kCrossOriginBackgroundExemptOther:
-        builder.SetFrameType(WebFrameScheduler::FrameType::kSubframe)
+        builder.SetFrameType(FrameScheduler::FrameType::kSubframe)
             .SetIsCrossOrigin(true)
             .SetPageScheduler(throtting_exempt_view_.get());
         break;
@@ -385,8 +385,8 @@ TEST_F(RendererMetricsHelperTest, GetFrameStatusTest) {
       FrameStatus::kCrossOriginHiddenService,
       FrameStatus::kMainFrameBackgroundExemptOther};
   for (FrameStatus frame_status : frame_statuses_tested) {
-    std::unique_ptr<FakeWebFrameScheduler> frame =
-        CreateFakeWebFrameSchedulerWithType(frame_status);
+    std::unique_ptr<FakeFrameScheduler> frame =
+        CreateFakeFrameSchedulerWithType(frame_status);
     EXPECT_EQ(GetFrameStatus(frame.get()), frame_status);
   }
 }
@@ -485,8 +485,8 @@ TEST_F(RendererMetricsHelperTest, TaskCountPerFrameStatus) {
       {FrameStatus::kSameOriginVisibleService, 6}};
 
   for (const auto& data : test_data) {
-    std::unique_ptr<FakeWebFrameScheduler> frame =
-        CreateFakeWebFrameSchedulerWithType(data.frame_status);
+    std::unique_ptr<FakeFrameScheduler> frame =
+        CreateFakeFrameSchedulerWithType(data.frame_status);
     for (int i = 0; i < data.count; ++i) {
       RunTask(frame.get(), Milliseconds(++task_count),
               base::TimeDelta::FromMicroseconds(100));
@@ -528,8 +528,8 @@ TEST_F(RendererMetricsHelperTest, TaskCountPerFrameTypeLongerThan) {
   };
 
   for (const auto& data : test_data) {
-    std::unique_ptr<FakeWebFrameScheduler> frame =
-        CreateFakeWebFrameSchedulerWithType(data.frame_status);
+    std::unique_ptr<FakeFrameScheduler> frame =
+        CreateFakeFrameSchedulerWithType(data.frame_status);
     for (size_t i = 0; i < data.durations.size(); ++i) {
       RunTask(frame.get(), Milliseconds(++total_duration),
               base::TimeDelta::FromMilliseconds(data.durations[i]));

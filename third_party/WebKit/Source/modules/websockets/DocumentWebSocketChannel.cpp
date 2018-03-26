@@ -54,7 +54,7 @@
 #include "modules/websockets/WebSocketChannelClient.h"
 #include "modules/websockets/WebSocketHandleImpl.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/loader/fetch/UniqueIdentifier.h"
 #include "platform/network/NetworkLog.h"
 #include "platform/network/WebSocketHandshakeRequest.h"
@@ -226,7 +226,7 @@ bool DocumentWebSocketChannel::Connect(
     if (GetDocument()->GetFrame()) {
       connection_handle_for_scheduler_ = GetDocument()
                                              ->GetFrame()
-                                             ->FrameScheduler()
+                                             ->GetFrameScheduler()
                                              ->OnActiveConnectionCreated();
     }
   }

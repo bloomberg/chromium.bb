@@ -8,7 +8,7 @@
 #include "platform/PlatformExport.h"
 
 namespace blink {
-class WebFrameScheduler;
+class FrameScheduler;
 
 namespace scheduler {
 
@@ -77,7 +77,7 @@ enum class FrameStatus {
   kCount = 23
 };
 
-PLATFORM_EXPORT FrameStatus GetFrameStatus(WebFrameScheduler* frame_scheduler);
+PLATFORM_EXPORT FrameStatus GetFrameStatus(FrameScheduler* frame_scheduler);
 
 }  // namespace scheduler
 }  // namespace blink

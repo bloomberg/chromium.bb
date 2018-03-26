@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
+#include "platform/scheduler/renderer/frame_scheduler_impl.h"
 
 #include <memory>
 
@@ -21,12 +21,12 @@
 namespace blink {
 namespace scheduler {
 // To avoid symbol collisions in jumbo builds.
-namespace web_frame_scheduler_impl_unittest {
+namespace frame_scheduler_impl_unittest {
 
-class WebFrameSchedulerImplTest : public ::testing::Test {
+class FrameSchedulerImplTest : public ::testing::Test {
  public:
-  WebFrameSchedulerImplTest() = default;
-  ~WebFrameSchedulerImplTest() override = default;
+  FrameSchedulerImplTest() = default;
+  ~FrameSchedulerImplTest() override = default;
 
   void SetUp() override {
     clock_.Advance(base::TimeDelta::FromMicroseconds(5000));
@@ -37,12 +37,12 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
         base::nullopt));
     page_scheduler_.reset(
         new PageSchedulerImpl(nullptr, scheduler_.get(), false));
-    web_frame_scheduler_ = page_scheduler_->CreateWebFrameSchedulerImpl(
-        nullptr, WebFrameScheduler::FrameType::kSubframe);
+    frame_scheduler_ = page_scheduler_->CreateFrameSchedulerImpl(
+        nullptr, FrameScheduler::FrameType::kSubframe);
   }
 
   void TearDown() override {
-    web_frame_scheduler_.reset();
+    frame_scheduler_.reset();
     page_scheduler_.reset();
     scheduler_->Shutdown();
     scheduler_.reset();
@@ -50,33 +50,33 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
 
  protected:
   scoped_refptr<TaskQueue> throttleable_task_queue() {
-    return web_frame_scheduler_->throttleable_task_queue_;
+    return frame_scheduler_->throttleable_task_queue_;
   }
 
   void LazyInitThrottleableTaskQueue() {
     EXPECT_FALSE(throttleable_task_queue());
-    web_frame_scheduler_->ThrottleableTaskQueue();
+    frame_scheduler_->ThrottleableTaskQueue();
     EXPECT_TRUE(throttleable_task_queue());
   }
 
   scoped_refptr<TaskQueue> ThrottleableTaskQueue() {
-    return web_frame_scheduler_->ThrottleableTaskQueue();
+    return frame_scheduler_->ThrottleableTaskQueue();
   }
 
   scoped_refptr<TaskQueue> LoadingTaskQueue() {
-    return web_frame_scheduler_->LoadingTaskQueue();
+    return frame_scheduler_->LoadingTaskQueue();
   }
 
   scoped_refptr<TaskQueue> DeferrableTaskQueue() {
-    return web_frame_scheduler_->DeferrableTaskQueue();
+    return frame_scheduler_->DeferrableTaskQueue();
   }
 
   scoped_refptr<TaskQueue> PausableTaskQueue() {
-    return web_frame_scheduler_->PausableTaskQueue();
+    return frame_scheduler_->PausableTaskQueue();
   }
 
   scoped_refptr<TaskQueue> UnpausableTaskQueue() {
-    return web_frame_scheduler_->UnpausableTaskQueue();
+    return frame_scheduler_->UnpausableTaskQueue();
   }
 
   bool IsThrottled() {
@@ -89,12 +89,12 @@ class WebFrameSchedulerImplTest : public ::testing::Test {
   scoped_refptr<cc::OrderedSimpleTaskRunner> mock_task_runner_;
   std::unique_ptr<RendererSchedulerImpl> scheduler_;
   std::unique_ptr<PageSchedulerImpl> page_scheduler_;
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler_;
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler_;
 };
 
 namespace {
 
-class MockThrottlingObserver final : public WebFrameScheduler::Observer {
+class MockThrottlingObserver final : public FrameScheduler::Observer {
  public:
   MockThrottlingObserver()
       : throttled_count_(0u), not_throttled_count_(0u), stopped_count_(0u) {}
@@ -108,15 +108,15 @@ class MockThrottlingObserver final : public WebFrameScheduler::Observer {
   }
 
   void OnThrottlingStateChanged(
-      WebFrameScheduler::ThrottlingState state) override {
+      FrameScheduler::ThrottlingState state) override {
     switch (state) {
-      case WebFrameScheduler::ThrottlingState::kThrottled:
+      case FrameScheduler::ThrottlingState::kThrottled:
         throttled_count_++;
         break;
-      case WebFrameScheduler::ThrottlingState::kNotThrottled:
+      case FrameScheduler::ThrottlingState::kNotThrottled:
         not_throttled_count_++;
         break;
-      case WebFrameScheduler::ThrottlingState::kStopped:
+      case FrameScheduler::ThrottlingState::kStopped:
         stopped_count_++;
         break;
         // We should not have another state, and compiler checks it.
@@ -141,14 +141,14 @@ void IncrementCounter(int* counter) {
 //   applies one once task queue gets created.
 // We test both (ExplicitInit/LazyInit) of them.
 
-TEST_F(WebFrameSchedulerImplTest, PageVisible) {
+TEST_F(FrameSchedulerImplTest, PageVisible) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
   EXPECT_FALSE(throttleable_task_queue());
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, PageHidden_ExplicitInit) {
+TEST_F(FrameSchedulerImplTest, PageHidden_ExplicitInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
@@ -156,14 +156,14 @@ TEST_F(WebFrameSchedulerImplTest, PageHidden_ExplicitInit) {
   EXPECT_TRUE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, PageHidden_LazyInit) {
+TEST_F(FrameSchedulerImplTest, PageHidden_LazyInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(false);
   page_scheduler_->SetPageVisible(false);
   LazyInitThrottleableTaskQueue();
   EXPECT_TRUE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, PageHiddenThenVisible_ExplicitInit) {
+TEST_F(FrameSchedulerImplTest, PageHiddenThenVisible_ExplicitInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(false);
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
@@ -175,85 +175,84 @@ TEST_F(WebFrameSchedulerImplTest, PageHiddenThenVisible_ExplicitInit) {
   EXPECT_TRUE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest,
+TEST_F(FrameSchedulerImplTest,
        FrameHiddenThenVisible_CrossOrigin_ExplicitInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
-  web_frame_scheduler_->SetFrameVisible(false);
-  web_frame_scheduler_->SetCrossOrigin(true);
-  web_frame_scheduler_->SetCrossOrigin(false);
+  frame_scheduler_->SetFrameVisible(false);
+  frame_scheduler_->SetCrossOrigin(true);
+  frame_scheduler_->SetCrossOrigin(false);
   EXPECT_FALSE(IsThrottled());
-  web_frame_scheduler_->SetCrossOrigin(true);
+  frame_scheduler_->SetCrossOrigin(true);
   EXPECT_TRUE(IsThrottled());
-  web_frame_scheduler_->SetFrameVisible(true);
+  frame_scheduler_->SetFrameVisible(true);
   EXPECT_FALSE(IsThrottled());
-  web_frame_scheduler_->SetFrameVisible(false);
+  frame_scheduler_->SetFrameVisible(false);
   EXPECT_TRUE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, FrameHidden_CrossOrigin_LazyInit) {
+TEST_F(FrameSchedulerImplTest, FrameHidden_CrossOrigin_LazyInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
-  web_frame_scheduler_->SetFrameVisible(false);
-  web_frame_scheduler_->SetCrossOrigin(true);
+  frame_scheduler_->SetFrameVisible(false);
+  frame_scheduler_->SetCrossOrigin(true);
   LazyInitThrottleableTaskQueue();
   EXPECT_TRUE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest,
+TEST_F(FrameSchedulerImplTest,
        FrameHidden_CrossOrigin_NoThrottling_ExplicitInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(false);
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
-  web_frame_scheduler_->SetFrameVisible(false);
-  web_frame_scheduler_->SetCrossOrigin(true);
+  frame_scheduler_->SetFrameVisible(false);
+  frame_scheduler_->SetCrossOrigin(true);
   EXPECT_FALSE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest,
-       FrameHidden_CrossOrigin_NoThrottling_LazyInit) {
+TEST_F(FrameSchedulerImplTest, FrameHidden_CrossOrigin_NoThrottling_LazyInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(false);
-  web_frame_scheduler_->SetFrameVisible(false);
-  web_frame_scheduler_->SetCrossOrigin(true);
+  frame_scheduler_->SetFrameVisible(false);
+  frame_scheduler_->SetCrossOrigin(true);
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, FrameHidden_SameOrigin_ExplicitInit) {
+TEST_F(FrameSchedulerImplTest, FrameHidden_SameOrigin_ExplicitInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
-  web_frame_scheduler_->SetFrameVisible(false);
+  frame_scheduler_->SetFrameVisible(false);
   EXPECT_FALSE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, FrameHidden_SameOrigin_LazyInit) {
+TEST_F(FrameSchedulerImplTest, FrameHidden_SameOrigin_LazyInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
-  web_frame_scheduler_->SetFrameVisible(false);
+  frame_scheduler_->SetFrameVisible(false);
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, FrameVisible_CrossOrigin_ExplicitInit) {
+TEST_F(FrameSchedulerImplTest, FrameVisible_CrossOrigin_ExplicitInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
   EXPECT_TRUE(throttleable_task_queue());
-  web_frame_scheduler_->SetFrameVisible(true);
+  frame_scheduler_->SetFrameVisible(true);
   EXPECT_FALSE(IsThrottled());
-  web_frame_scheduler_->SetCrossOrigin(true);
+  frame_scheduler_->SetCrossOrigin(true);
   EXPECT_FALSE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, FrameVisible_CrossOrigin_LazyInit) {
+TEST_F(FrameSchedulerImplTest, FrameVisible_CrossOrigin_LazyInit) {
   ScopedTimerThrottlingForHiddenFramesForTest throttle_hidden_frames(true);
-  web_frame_scheduler_->SetFrameVisible(true);
-  web_frame_scheduler_->SetCrossOrigin(true);
+  frame_scheduler_->SetFrameVisible(true);
+  frame_scheduler_->SetCrossOrigin(true);
   LazyInitThrottleableTaskQueue();
   EXPECT_FALSE(IsThrottled());
 }
 
-TEST_F(WebFrameSchedulerImplTest, PauseAndResume) {
+TEST_F(FrameSchedulerImplTest, PauseAndResume) {
   int counter = 0;
   LoadingTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
@@ -266,20 +265,20 @@ TEST_F(WebFrameSchedulerImplTest, PauseAndResume) {
   UnpausableTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
-  web_frame_scheduler_->SetPaused(true);
+  frame_scheduler_->SetPaused(true);
 
   EXPECT_EQ(0, counter);
   mock_task_runner_->RunUntilIdle();
   EXPECT_EQ(1, counter);
 
-  web_frame_scheduler_->SetPaused(false);
+  frame_scheduler_->SetPaused(false);
 
   EXPECT_EQ(1, counter);
   mock_task_runner_->RunUntilIdle();
   EXPECT_EQ(5, counter);
 }
 
-TEST_F(WebFrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
+TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
   ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
   ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
   int counter = 0;
@@ -294,22 +293,22 @@ TEST_F(WebFrameSchedulerImplTest, PageFreezeAndUnfreezeFlagEnabled) {
   UnpausableTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
-  web_frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
-  web_frame_scheduler_->SetPageFrozen(true);
+  frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
+  frame_scheduler_->SetPageFrozen(true);
 
   EXPECT_EQ(0, counter);
   mock_task_runner_->RunUntilIdle();
   // unpausable tasks continue to run.
   EXPECT_EQ(1, counter);
 
-  web_frame_scheduler_->SetPageFrozen(false);
+  frame_scheduler_->SetPageFrozen(false);
 
   EXPECT_EQ(1, counter);
   mock_task_runner_->RunUntilIdle();
   EXPECT_EQ(5, counter);
 }
 
-TEST_F(WebFrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
+TEST_F(FrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
   ScopedStopLoadingInBackgroundForTest stop_loading_enabler(false);
   ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(false);
   int counter = 0;
@@ -324,22 +323,22 @@ TEST_F(WebFrameSchedulerImplTest, PageFreezeAndUnfreezeFlagDisabled) {
   UnpausableTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
-  web_frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
-  web_frame_scheduler_->SetPageFrozen(true);
+  frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
+  frame_scheduler_->SetPageFrozen(true);
 
   EXPECT_EQ(0, counter);
   mock_task_runner_->RunUntilIdle();
   // throttleable tasks are frozen, other tasks continue to run.
   EXPECT_EQ(4, counter);
 
-  web_frame_scheduler_->SetPageFrozen(false);
+  frame_scheduler_->SetPageFrozen(false);
 
   EXPECT_EQ(4, counter);
   mock_task_runner_->RunUntilIdle();
   EXPECT_EQ(5, counter);
 }
 
-TEST_F(WebFrameSchedulerImplTest, PageFreezeAndPageVisible) {
+TEST_F(FrameSchedulerImplTest, PageFreezeAndPageVisible) {
   ScopedStopLoadingInBackgroundForTest stop_loading_enabler(true);
   ScopedStopNonTimersInBackgroundForTest stop_non_timers_enabler(true);
   int counter = 0;
@@ -354,15 +353,15 @@ TEST_F(WebFrameSchedulerImplTest, PageFreezeAndPageVisible) {
   UnpausableTaskQueue()->PostTask(
       FROM_HERE, base::BindOnce(&IncrementCounter, base::Unretained(&counter)));
 
-  web_frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
-  web_frame_scheduler_->SetPageFrozen(true);
+  frame_scheduler_->SetPageVisibility(PageVisibilityState::kHidden);
+  frame_scheduler_->SetPageFrozen(true);
 
   EXPECT_EQ(0, counter);
   mock_task_runner_->RunUntilIdle();
   EXPECT_EQ(1, counter);
 
   // Making the page visible should cause frozen queues to resume.
-  web_frame_scheduler_->SetPageVisibility(PageVisibilityState::kVisible);
+  frame_scheduler_->SetPageVisibility(PageVisibilityState::kVisible);
 
   EXPECT_EQ(1, counter);
   mock_task_runner_->RunUntilIdle();
@@ -370,7 +369,7 @@ TEST_F(WebFrameSchedulerImplTest, PageFreezeAndPageVisible) {
 }
 
 // Tests if throttling observer interfaces work.
-TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
+TEST_F(FrameSchedulerImplTest, ThrottlingObserver) {
   std::unique_ptr<MockThrottlingObserver> observer =
       std::make_unique<MockThrottlingObserver>();
 
@@ -381,8 +380,8 @@ TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
   observer->CheckObserverState(throttled_count, not_throttled_count,
                                stopped_count);
 
-  auto observer_handle = web_frame_scheduler_->AddThrottlingObserver(
-      WebFrameScheduler::ObserverType::kLoader, observer.get());
+  auto observer_handle = frame_scheduler_->AddThrottlingObserver(
+      FrameScheduler::ObserverType::kLoader, observer.get());
 
   // Initial state should be synchronously notified here.
   // We assume kNotThrottled is notified as an initial state, but it could
@@ -431,6 +430,6 @@ TEST_F(WebFrameSchedulerImplTest, ThrottlingObserver) {
                                stopped_count);
 }
 
-}  // namespace web_frame_scheduler_impl_unittest
+}  // namespace frame_scheduler_impl_unittest
 }  // namespace scheduler
 }  // namespace blink

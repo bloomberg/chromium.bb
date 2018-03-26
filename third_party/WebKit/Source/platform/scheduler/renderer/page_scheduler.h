@@ -6,8 +6,8 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_PAGE_SCHEDULER_H_
 
 #include <memory>
+#include "platform/FrameScheduler.h"
 #include "platform/PlatformExport.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/BlameContext.h"
@@ -32,12 +32,12 @@ class PLATFORM_EXPORT PageScheduler {
   // The scheduler transitions app to and from STOPPED state in background.
   virtual void SetPageFrozen(bool) = 0;
 
-  // Creates a new WebFrameScheduler. The caller is responsible for deleting
+  // Creates a new FrameScheduler. The caller is responsible for deleting
   // it. All tasks executed by the frame scheduler will be attributed to
   // |blame_context|.
-  virtual std::unique_ptr<WebFrameScheduler> CreateFrameScheduler(
+  virtual std::unique_ptr<FrameScheduler> CreateFrameScheduler(
       BlameContext*,
-      WebFrameScheduler::FrameType) = 0;
+      FrameScheduler::FrameType) = 0;
 
   // Instructs this PageScheduler to use virtual time. When virtual time is
   // enabled the system doesn't actually sleep for the delays between tasks
@@ -68,13 +68,13 @@ class PLATFORM_EXPORT PageScheduler {
     kAdvance,
 
     // In this policy virtual time is not allowed to advance. Delayed tasks
-    // posted to task runners owned by any child WebFrameSchedulers will be
+    // posted to task runners owned by any child FrameSchedulers will be
     // paused, unless their scheduled run time is less than or equal to the
     // current virtual time.  Note non-delayed tasks will run as normal.
     kPause,
 
     // In this policy virtual time is allowed to advance unless there are
-    // pending network fetches associated any child WebFrameScheduler, or a
+    // pending network fetches associated any child FrameScheduler, or a
     // document is being parsed on a background thread. Initially virtual time
     // is not allowed to advance until we have seen at least one load. The aim
     // being to try and make loading (more) deterministic.
@@ -84,7 +84,7 @@ class PLATFORM_EXPORT PageScheduler {
   virtual void SetInitialVirtualTimeOffset(base::TimeDelta offset) = 0;
 
   // Sets the virtual time policy, which is applied imemdiatly to all child
-  // WebFrameSchedulers.
+  // FrameSchedulers.
   virtual void SetVirtualTimePolicy(VirtualTimePolicy) = 0;
 
   class PLATFORM_EXPORT VirtualTimeObserver {
