@@ -1090,6 +1090,34 @@ class Port(object):
     def path_to_never_fix_tests_file(self):
         return self._filesystem.join(self.layout_tests_dir(), 'NeverFixTests')
 
+    def _expectations_from_skipped_files(self, skipped_file_paths):
+        # TODO(qyearsley): Remove this if there are no more "Skipped" files.
+        tests_to_skip = []
+        for search_path in skipped_file_paths:
+            filename = self._filesystem.join(self._absolute_baseline_path(search_path), 'Skipped')
+            if not self._filesystem.exists(filename):
+                _log.debug('Skipped does not exist: %s', filename)
+                continue
+            _log.debug('Using Skipped file: %s', filename)
+            tests_to_skip.extend(self._tests_from_file(filename))
+        return tests_to_skip
+
+    @memoized
+    def skipped_perf_tests(self):
+        tests = self._expectations_from_skipped_files([self._perf_tests_dir()])
+        # Best to normalize directory names to not include the trailing slash.
+        # TODO(qyearsley): Explain why removing trailing slashes is needed here.
+        return sorted(test.rstrip('/') for test in tests)
+
+    def skips_perf_test(self, test_name):
+        for test_or_category in self.skipped_perf_tests():
+            if test_or_category == test_name:
+                return True
+            category = self._filesystem.join(self._perf_tests_dir(), test_or_category)
+            if self._filesystem.isdir(category) and test_name.startswith(test_or_category):
+                return True
+        return False
+
     def name(self):
         """Returns a name that uniquely identifies this particular type of port.
 
