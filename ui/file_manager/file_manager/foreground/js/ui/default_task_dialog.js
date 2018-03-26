@@ -35,6 +35,7 @@ cr.define('cr.filebrowser', function() {
     this.list_.activateItemAtIndex = this.activateItemAtIndex_.bind(this);
     // Use 'click' instead of 'change' for keyboard users.
     this.list_.addEventListener('click', this.onSelected_.bind(this));
+    this.list_.addEventListener('change', this.onListChange_.bind(this));
 
     this.initialFocusElement_ = this.list_;
 
@@ -71,6 +72,8 @@ cr.define('cr.filebrowser', function() {
       div.classList.add(item.class);
 
     result.appendChild(div);
+    // A11y - make it focusable and readable.
+    result.setAttribute('tabindex', '-1');
 
     cr.defineProperty(result, 'lead', cr.PropertyKind.BOOL_ATTR);
     cr.defineProperty(result, 'selected', cr.PropertyKind.BOOL_ATTR);
@@ -131,6 +134,20 @@ cr.define('cr.filebrowser', function() {
   DefaultTaskDialog.prototype.onSelected_ = function() {
     if (this.selectionModel_.selectedIndex !== -1)
       this.activateItemAtIndex_(this.selectionModel_.selectedIndex);
+  };
+
+  /**
+   * Called when cr.ui.List triggers a change event, which means user
+   * focused a new item on the list. Used here to isue .focus() on
+   * currently active item so ChromeVox can read it out.
+   * @param {!Event} event triggered by cr.ui.List.
+   */
+  DefaultTaskDialog.prototype.onListChange_ = function(event) {
+    var list = event.target;
+    var activeItem =
+        list.getListItemByIndex(list.selectionModel_.selectedIndex);
+    if (activeItem)
+      activeItem.focus();
   };
 
   /**
