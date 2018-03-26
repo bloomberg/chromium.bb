@@ -278,3 +278,28 @@ message StartContainerResponse {
   // The failure_reason if the requested container could not be started.
   string failure_reason = 2;
 }
+
+// Request to launch on application in the specified VM/container. Used with the
+// LaunchContainerApplication D-Bus message into vm_concierge.
+message LaunchContainerApplicationRequest {
+  // Name of the VM to target.
+  string vm_name = 1;
+
+  // Name of the container within the VM to target, if empty the default
+  // container name will be used.
+  string container_name = 2;
+
+  // ID of the application to launch, should map to the desktop_file_id that
+  // is in the application list sent back from the container.
+  string desktop_file_id = 3;
+}
+
+// Response sent back by vm_concierge when it receives a
+// LaunchContainerApplication D-Bus message.
+message LaunchContainerApplicationResponse {
+  // If true, the requested application launched successfully.
+  bool success = 1;
+
+  // The failure_reason if the requested application could not be started.
+  string failure_reason = 2;
+}
