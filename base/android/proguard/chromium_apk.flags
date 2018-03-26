@@ -48,8 +48,9 @@
 #          5          | 1:56 |  5770504  |         486432
 -optimizationpasses 3
 
-# Horizontal class merging marginally increases dex size (as of Mar 2018).
--optimizations !class/merging/horizontal
+# Class merging messes up stacktraces beyond the point of them being
+# deobfuscatable. If turned on, it would give us a 2% reduction in .dex size.
+-optimizations !class/merging/*
 
 # Allowing Proguard to change modifiers. This change shrinks the .dex size by
 # ~1%, and reduces the method count by ~4%.
