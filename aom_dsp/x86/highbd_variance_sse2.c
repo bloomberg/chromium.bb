@@ -678,9 +678,11 @@ void aom_highbd_comp_avg_upsampled_pred_sse2(uint16_t *comp_pred,
   }
 }
 
-static void highbd_compute_jnt_comp_avg(__m128i *p0, __m128i *p1,
-                                        const __m128i *w0, const __m128i *w1,
-                                        const __m128i *r, void *const result) {
+static INLINE void highbd_compute_jnt_comp_avg(__m128i *p0, __m128i *p1,
+                                               const __m128i *w0,
+                                               const __m128i *w1,
+                                               const __m128i *r,
+                                               void *const result) {
   __m128i mult0 = _mm_mullo_epi16(*p0, *w0);
   __m128i mult1 = _mm_mullo_epi16(*p1, *w1);
   __m128i sum = _mm_add_epi16(mult0, mult1);
