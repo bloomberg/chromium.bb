@@ -601,7 +601,8 @@ bool MimeUtil::IsCodecSupportedOnAndroid(
 #if defined(OS_ANDROID)
       // HEVC/H.265 is supported in Lollipop+ (API Level 21), according to
       // http://developer.android.com/reference/android/media/MediaFormat.html
-      return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
+      return base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_LOLLIPOP;
 #else
       return true;
 #endif  // defined(OS_ANDROID)

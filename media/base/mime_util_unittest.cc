@@ -126,7 +126,8 @@ static MimeUtil::PlatformInfo VaryAllFields() {
 static bool HasHevcSupport() {
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
 #if defined(OS_ANDROID)
-  return base::android::BuildInfo::GetInstance()->sdk_int() >= 21;
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         base::android::SDK_VERSION_LOLLIPOP;
 #else
   return true;
 #endif  // defined(OS_ANDROID)

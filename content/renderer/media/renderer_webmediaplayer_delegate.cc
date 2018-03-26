@@ -47,7 +47,8 @@ RendererWebMediaPlayerDelegate::RendererWebMediaPlayerDelegate(
 #if defined(OS_ANDROID)
   // On Android, due to the instability of the OS level media components, we
   // consider all pre-KitKat devices to be potentially buggy.
-  is_jelly_bean_ |= base::android::BuildInfo::GetInstance()->sdk_int() <= 18;
+  is_jelly_bean_ |= base::android::BuildInfo::GetInstance()->sdk_int() <=
+                    base::android::SDK_VERSION_JELLY_BEAN_MR2;
 #endif
 
   idle_cleanup_timer_.SetTaskRunner(

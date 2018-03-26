@@ -157,7 +157,8 @@ class AudioDecoderTest
         return false;
       }
       if (params_.codec == kCodecOpus &&
-          base::android::BuildInfo::GetInstance()->sdk_int() < 21) {
+          base::android::BuildInfo::GetInstance()->sdk_int() <
+              base::android::SDK_VERSION_LOLLIPOP) {
         VLOG(0) << "Could not run test - Opus is not supported";
         return false;
       }
@@ -332,7 +333,8 @@ class AudioDecoderTest
   // for AAC before Android L. Skip the timestamp check in this situation.
   bool SkipBufferTimestampCheck() const {
 #if defined(OS_ANDROID)
-    return (base::android::BuildInfo::GetInstance()->sdk_int() < 21) &&
+    return (base::android::BuildInfo::GetInstance()->sdk_int() <
+            base::android::SDK_VERSION_LOLLIPOP) &&
            decoder_type_ == MEDIA_CODEC && params_.codec == kCodecAAC;
 #else
     return false;

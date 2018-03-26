@@ -4,6 +4,7 @@
 
 #include "media/base/android/media_codec_loop.h"
 
+#include "base/android/build_info.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/test/test_mock_time_task_runner.h"
@@ -24,13 +25,6 @@ using ::testing::SetArgPointee;
 using ::testing::StrictMock;
 
 namespace media {
-
-// These will come from mockable BuildInfo, once it exists.
-enum TemporaryAndroidVersions {
-  kJellyBeanMR1 = 17,
-  kJellyBeanMR2 = 18,
-  kLollipop = 21,
-};
 
 // The client is a strict mock, since we don't want random calls into it.  We
 // want to be sure about the call sequence.
@@ -89,7 +83,7 @@ class MediaCodecLoopTest : public testing::Test {
     mock_task_runner_->FastForwardBy(base::TimeDelta::FromSeconds(30));
   }
 
-  void ConstructCodecLoop(int sdk_int = kLollipop) {
+  void ConstructCodecLoop(int sdk_int = base::android::SDK_VERSION_LOLLIPOP) {
     std::unique_ptr<MediaCodecBridge> codec(new MockMediaCodecBridge());
     // Since we're providing a codec, we do not expect an error.
     EXPECT_CALL(*client_, OnCodecLoopError()).Times(0);
@@ -199,7 +193,7 @@ class MediaCodecLoopTest : public testing::Test {
 TEST_F(MediaCodecLoopTest, TestConstructionWithNullCodec) {
   std::unique_ptr<MediaCodecBridge> codec;
   EXPECT_CALL(*client_, OnCodecLoopError()).Times(1);
-  const int sdk_int = kLollipop;
+  const int sdk_int = base::android::SDK_VERSION_LOLLIPOP;
   codec_loop_.reset(
       new MediaCodecLoop(sdk_int, client_.get(), std::move(codec),
                          scoped_refptr<base::SingleThreadTaskRunner>()));
@@ -416,7 +410,7 @@ TEST_F(MediaCodecLoopTest, TestSeveralPendingIOBuffers) {
 
 TEST_F(MediaCodecLoopTest, TestTryFlushOnJellyBeanMR2) {
   // On JB MR2+ MCL should be willing to use MediaCodecBridge::Flush.
-  ConstructCodecLoop(kJellyBeanMR2);
+  ConstructCodecLoop(base::android::SDK_VERSION_JELLY_BEAN_MR2);
   EXPECT_CALL(Codec(), Flush()).Times(1).WillOnce(Return(MEDIA_CODEC_OK));
   ASSERT_TRUE(codec_loop_->TryFlush());
 }
@@ -424,7 +418,7 @@ TEST_F(MediaCodecLoopTest, TestTryFlushOnJellyBeanMR2) {
 TEST_F(MediaCodecLoopTest, TestTryFlushAfterJellyBeanMR2Fails) {
   // On JB MR2+, MCL should be willing to use MediaCodecBridge::Flush.  Try
   // that, but make Flush fail.
-  ConstructCodecLoop(kJellyBeanMR2);
+  ConstructCodecLoop(base::android::SDK_VERSION_JELLY_BEAN_MR2);
   EXPECT_CALL(Codec(), Flush()).Times(1).WillOnce(Return(MEDIA_CODEC_ERROR));
   EXPECT_CALL(*client_, OnCodecLoopError()).Times(1);
   ASSERT_FALSE(codec_loop_->TryFlush());
@@ -432,7 +426,7 @@ TEST_F(MediaCodecLoopTest, TestTryFlushAfterJellyBeanMR2Fails) {
 
 TEST_F(MediaCodecLoopTest, TestTryFlushOnJellyBeanMR1) {
   // In JB MR1, MCL should not be willing to use MediaCodecBridge::Flush.
-  ConstructCodecLoop(kJellyBeanMR1);
+  ConstructCodecLoop(base::android::SDK_VERSION_JELLY_BEAN_MR1);
   ASSERT_FALSE(codec_loop_->TryFlush());
 }
 

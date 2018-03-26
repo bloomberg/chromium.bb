@@ -31,10 +31,12 @@ scoped_refptr<UsbDeviceAndroid> UsbDeviceAndroid::Create(
   ScopedJavaLocalRef<jobject> wrapper =
       Java_ChromeUsbDevice_create(env, usb_device);
   uint16_t device_version = 0;
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 23)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_MARSHMALLOW)
     device_version = Java_ChromeUsbDevice_getDeviceVersion(env, wrapper);
   base::string16 manufacturer_string, product_string, serial_number;
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 21) {
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_LOLLIPOP) {
     ScopedJavaLocalRef<jstring> manufacturer_jstring =
         Java_ChromeUsbDevice_getManufacturerName(env, wrapper);
     if (!manufacturer_jstring.is_null())
@@ -115,7 +117,8 @@ UsbDeviceAndroid::UsbDeviceAndroid(
       device_id_(Java_ChromeUsbDevice_getDeviceId(env, wrapper)),
       service_(service),
       j_object_(wrapper) {
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 21) {
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_LOLLIPOP) {
     ScopedJavaLocalRef<jobjectArray> configurations =
         Java_ChromeUsbDevice_getConfigurations(env, j_object_);
     jsize count = env->GetArrayLength(configurations.obj());
