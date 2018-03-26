@@ -45,10 +45,6 @@ public class BuildInfo {
     public final String androidBuildFingerprint;
     /** A string that is different each time the apk changes. */
     public final String extractedFileSuffix;
-    /** Whether or not the device has apps installed for using custom themes. */
-    public final String customThemes;
-    /** Product version as stored in Android resources. */
-    public final String resourcesVersion;
 
     private static class Holder { private static BuildInfo sInstance = new BuildInfo(); }
 
@@ -63,7 +59,7 @@ public class BuildInfo {
                 buildInfo.packageName, String.valueOf(buildInfo.versionCode), buildInfo.versionName,
                 buildInfo.androidBuildFingerprint, buildInfo.gmsVersionCode,
                 buildInfo.installerPackageName, buildInfo.abiString, BuildConfig.FIREBASE_APP_ID,
-                buildInfo.customThemes, buildInfo.resourcesVersion, buildInfo.extractedFileSuffix,
+                buildInfo.extractedFileSuffix,
         };
     }
 
@@ -113,31 +109,6 @@ public class BuildInfo {
             }
             gmsVersionCode = gmsPackageInfo != null ? String.valueOf(gmsPackageInfo.versionCode)
                                                     : "gms versionCode not available.";
-
-            String hasCustomThemes = "true";
-            try {
-                // Substratum is a theme engine that enables users to use custom themes provided
-                // by theme apps. Sometimes these can cause crashs if not installed correctly.
-                // These crashes can be difficult to debug, so knowing if the theme manager is
-                // present on the device is useful (http://crbug.com/820591).
-                pm.getPackageInfo("projekt.substratum", 0);
-            } catch (NameNotFoundException e) {
-                hasCustomThemes = "false";
-            }
-            customThemes = hasCustomThemes;
-
-            String currentResourcesVersion;
-            try {
-                // This value can be compared with the actual product version to determine if
-                // corrupted resources were the cause of a crash. This can happen if the app
-                // loads resources from the outdated package  during an update
-                // (http://crbug.com/820591).
-                currentResourcesVersion =
-                        ContextUtils.getApplicationContext().getString(R.string.product_version);
-            } catch (Exception e) {
-                currentResourcesVersion = "Not found";
-            }
-            resourcesVersion = currentResourcesVersion;
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 abiString = TextUtils.join(", ", Build.SUPPORTED_ABIS);
