@@ -911,6 +911,76 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
   scroll_end_observer.Wait();
 }
 
+// When a scroll event is bubbled, ensure that the bubbled event's coordinates
+// are correctly updated to the ancestor's coordinate space. In particular,
+// ensure that the transformation considers CSS scaling of the child where
+// simply applying the ancestor's offset does not produce the correct
+// coordinates in the ancestor's coordinate space.
+// See https://crbug.com/817392
+IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
+                       BubbledScrollEventsTransformedCorrectly) {
+  GURL main_url(embedded_test_server()->GetURL(
+      "/frame_tree/page_with_positioned_scaled_frame.html"));
+  ASSERT_TRUE(NavigateToURL(shell(), main_url));
+
+  // It is safe to obtain the root frame tree node here, as it doesn't change.
+  FrameTreeNode* root = web_contents()->GetFrameTree()->root();
+  ASSERT_EQ(1U, root->child_count());
+
+  FrameTreeNode* iframe_node = root->child_at(0);
+  GURL site_url(embedded_test_server()->GetURL("baz.com", "/title1.html"));
+  EXPECT_EQ(site_url, iframe_node->current_url());
+
+  RenderWidgetHostViewBase* root_rwhv = static_cast<RenderWidgetHostViewBase*>(
+      root->current_frame_host()->GetRenderWidgetHost()->GetView());
+
+  RenderWidgetHostInputEventRouter* router =
+      static_cast<WebContentsImpl*>(shell()->web_contents())
+          ->GetInputEventRouter();
+
+  WaitForChildFrameSurfaceReady(iframe_node->current_frame_host());
+
+  const float scale_factor = GetPageScaleFactor(shell());
+  // Due to the CSS scaling of the iframe, the position in the child view's
+  // coordinates is (96, 96) and not (48, 48) (or approximately these values
+  // if there's rounding due to the scale factor).
+  const gfx::Point position_in_root(gfx::ToCeiledInt(150 * scale_factor),
+                                    gfx::ToCeiledInt(150 * scale_factor));
+
+  auto expect_gsb_with_position = base::BindRepeating(
+      [](const gfx::Point& expected_position, content::InputEventAckSource,
+         content::InputEventAckState, const blink::WebInputEvent& event) {
+        if (event.GetType() != blink::WebInputEvent::kGestureScrollBegin)
+          return false;
+
+        const blink::WebGestureEvent& gesture_event =
+            static_cast<const blink::WebGestureEvent&>(event);
+        EXPECT_NEAR(expected_position.x(), gesture_event.PositionInWidget().x,
+                    1);
+        EXPECT_NEAR(expected_position.y(), gesture_event.PositionInWidget().y,
+                    1);
+        return true;
+      });
+
+  InputEventAckWaiter root_scroll_begin_observer(
+      root_rwhv->GetRenderWidgetHost(),
+      base::BindRepeating(expect_gsb_with_position, position_in_root));
+
+  // Scroll the iframe upward, scroll events get bubbled up to the root.
+  blink::WebMouseWheelEvent scroll_event(
+      blink::WebInputEvent::kMouseWheel, blink::WebInputEvent::kNoModifiers,
+      blink::WebInputEvent::GetStaticTimeStampForTests());
+  SetWebEventPositions(&scroll_event, position_in_root, root_rwhv);
+  scroll_event.delta_x = 0.0f;
+  scroll_event.delta_y = 5.0f;
+  scroll_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
+  scroll_event.has_precise_scrolling_deltas = true;
+
+  router->RouteMouseWheelEvent(root_rwhv, &scroll_event, ui::LatencyInfo());
+
+  root_scroll_begin_observer.Wait();
+}
+
 #if defined(USE_AURA) || defined(OS_ANDROID)
 
 // When unconsumed scrolls in a child bubble to the root and start an

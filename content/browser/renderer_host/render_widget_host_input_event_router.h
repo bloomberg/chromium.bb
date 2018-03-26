@@ -79,6 +79,7 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                        blink::WebTouchEvent *event,
                        const ui::LatencyInfo& latency);
 
+  // |event| is in root coordinates.
   void BubbleScrollEvent(RenderWidgetHostViewBase* target_view,
                          const blink::WebGestureEvent& event,
                          const RenderWidgetHostViewBase* resending_view);
