@@ -743,6 +743,22 @@ void RenderWidgetHostInputEventRouter::ReportBubblingScrollToSameView(
   base::debug::DumpWithoutCrashing();
 }
 
+namespace {
+
+// Given |event| in root coordinates, return an event in |target_view|'s
+// coordinates.
+blink::WebGestureEvent GestureEventInTarget(
+    const blink::WebGestureEvent& event,
+    RenderWidgetHostViewBase* target_view) {
+  const gfx::PointF point_in_target =
+      target_view->TransformRootPointToViewCoordSpace(event.PositionInWidget());
+  blink::WebGestureEvent event_for_target(event);
+  event_for_target.SetPositionInWidget(point_in_target);
+  return event_for_target;
+}
+
+}  // namespace
+
 void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     RenderWidgetHostViewBase* target_view,
     const blink::WebGestureEvent& event,
@@ -773,10 +789,14 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
       // event ack which didn't consume any scroll delta, and so another level
       // of bubbling is needed. This requires a GestureScrollEnd be sent to the
       // last view, which will no longer be the scroll target.
-      if (bubbling_gesture_scroll_target_.target)
-        SendGestureScrollEnd(bubbling_gesture_scroll_target_.target, event);
-      else
+      if (bubbling_gesture_scroll_target_.target) {
+        SendGestureScrollEnd(
+            bubbling_gesture_scroll_target_.target,
+            GestureEventInTarget(event,
+                                 bubbling_gesture_scroll_target_.target));
+      } else {
         first_bubbling_scroll_target_.target = target_view;
+      }
 
       bubbling_gesture_scroll_target_.target = target_view;
     } else {  // !(event.GetType() == blink::WebInputEvent::kGestureScrollBegin)
@@ -808,8 +828,9 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
       return;
     }
 
-    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(event,
-                                                                latency_info);
+    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
+        GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
+        latency_info);
     if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
         event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
       first_bubbling_scroll_target_.target = nullptr;
@@ -829,8 +850,9 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   // If target_view is already set up for bubbled scrolls, we forward
   // the event to the current scroll target without further consideration.
   if (target_view == first_bubbling_scroll_target_.target) {
-    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(event,
-                                                                latency_info);
+    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
+        GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
+        latency_info);
     if (event.GetType() == blink::WebInputEvent::kGestureScrollEnd ||
         event.GetType() == blink::WebInputEvent::kGestureFlingStart) {
       first_bubbling_scroll_target_.target = nullptr;
@@ -849,8 +871,9 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   // have been sent to a renderer before the first one was ACKed, and the ACK
   // caused a bubble retarget. In this case they all get forwarded.
   if (target_view == bubbling_gesture_scroll_target_.target) {
-    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(event,
-                                                                latency_info);
+    bubbling_gesture_scroll_target_.target->ProcessGestureEvent(
+        GestureEventInTarget(event, bubbling_gesture_scroll_target_.target),
+        latency_info);
     return;
   }
 
@@ -867,15 +890,19 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
   // unused scroll delta, and so another level of bubbling is needed. This
   // requires a GestureScrollEnd be sent to the last view, which will no
   // longer be the scroll target.
-  if (bubbling_gesture_scroll_target_.target)
-    SendGestureScrollEnd(bubbling_gesture_scroll_target_.target, event);
-  else
+  if (bubbling_gesture_scroll_target_.target) {
+    SendGestureScrollEnd(
+        bubbling_gesture_scroll_target_.target,
+        GestureEventInTarget(event, bubbling_gesture_scroll_target_.target));
+  } else {
     first_bubbling_scroll_target_.target = target_view;
+  }
 
   bubbling_gesture_scroll_target_.target = target_view;
 
-  SendGestureScrollBegin(target_view, event);
-  target_view->ProcessGestureEvent(event, latency_info);
+  SendGestureScrollBegin(target_view, GestureEventInTarget(event, target_view));
+  target_view->ProcessGestureEvent(GestureEventInTarget(event, target_view),
+                                   latency_info);
 }
 
 void RenderWidgetHostInputEventRouter::SendGestureScrollBegin(
