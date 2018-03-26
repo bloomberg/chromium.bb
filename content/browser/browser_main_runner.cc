@@ -16,7 +16,6 @@
 #include "base/run_loop.h"
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/synchronization/atomic_flag.h"
 #include "base/time/time.h"
 #include "base/trace_event/heap_profiler_allocation_context_tracker.h"
 #include "base/trace_event/trace_event.h"

@@ -271,9 +271,6 @@ class BASE_EXPORT Thread : PlatformThread::Delegate {
   static bool GetThreadWasQuitProperly();
 
   // Bind this Thread to an existing MessageLoop instead of starting a new one.
-  // TODO(gab): Remove this after ios/ has undergone the same surgery as
-  // BrowserThreadImpl (ref.
-  // https://chromium-review.googlesource.com/c/chromium/src/+/969104).
   void SetMessageLoop(MessageLoop* message_loop);
 
   bool using_external_message_loop() const {
