@@ -220,8 +220,8 @@ class WebRtcLoggingHandlerHost : public content::BrowserMessageFilter {
   // The render process ID this object belongs to.
   const int render_process_id_;
 
-  // The browser context associated with our renderer process.
-  content::BrowserContext* const browser_context_;
+  // The browser context directory path associated with our renderer process.
+  const base::FilePath browser_context_directory_path_;
 
   // Only accessed on the IO thread.
   bool upload_log_on_render_close_;
