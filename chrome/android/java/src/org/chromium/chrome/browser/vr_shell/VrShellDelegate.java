@@ -431,9 +431,9 @@ public class VrShellDelegate
         new AsyncTask<Void, Void, Pair<VrDaydreamApi, Integer>>() {
             @Override
             protected Pair<VrDaydreamApi, Integer> doInBackground(Void... params) {
-                updateDayreamIconComponentState(activity);
                 VrClassesWrapper wrapper = getVrClassesWrapper();
                 if (wrapper == null) return Pair.create(null, VrSupportLevel.VR_NOT_AVAILABLE);
+                updateDayreamIconComponentState(activity);
                 VrDaydreamApi api = wrapper.createVrDaydreamApi(activity);
                 if (api == null) return Pair.create(null, VrSupportLevel.VR_NOT_AVAILABLE);
                 int vrSupportLevel =
