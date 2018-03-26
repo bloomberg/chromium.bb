@@ -4,8 +4,6 @@
 
 #include "chrome/browser/conflicts/problematic_programs_updater_win.h"
 
-#include <algorithm>
-#include <iterator>
 #include <string>
 #include <utility>
 
@@ -26,7 +24,7 @@
 
 namespace {
 
-// Helper function to serialize a vector of ProblematicPrograms to JSON.
+// Serializes a vector of ProblematicPrograms to JSON.
 base::Value ConvertToDictionary(
     const std::vector<ProblematicProgramsUpdater::ProblematicProgram>&
         programs) {
@@ -59,84 +57,114 @@ base::Value ConvertToDictionary(
   return result;
 }
 
-// Helper function to deserialize a vector of ProblematicPrograms.
-std::vector<ProblematicProgramsUpdater::ProblematicProgram>
-ConvertToProblematicProgramsVector(const base::Value& programs) {
-  std::vector<ProblematicProgramsUpdater::ProblematicProgram> result;
+// Deserializes a ProblematicProgram named |name| from |value|. Returns null if
+// |value| is not a dict containing all required fields.
+std::unique_ptr<ProblematicProgramsUpdater::ProblematicProgram>
+ConvertToProblematicProgram(const std::string& name, const base::Value& value) {
+  if (!value.is_dict())
+    return nullptr;
 
-  for (const auto& element : programs.DictItems()) {
-    const std::string& name = element.first;
-    const base::Value& value = element.second;
+  const base::Value* registry_is_hkcu_value =
+      value.FindKeyOfType("registry_is_hkcu", base::Value::Type::BOOLEAN);
+  const base::Value* registry_key_path_value =
+      value.FindKeyOfType("registry_key_path", base::Value::Type::STRING);
+  const base::Value* registry_wow64_access_value =
+      value.FindKeyOfType("registry_wow64_access", base::Value::Type::INTEGER);
+  const base::Value* allow_load_value =
+      value.FindKeyOfType("allow_load", base::Value::Type::BOOLEAN);
+  const base::Value* type_value =
+      value.FindKeyOfType("type", base::Value::Type::INTEGER);
+  const base::Value* message_url_value =
+      value.FindKeyOfType("message_url", base::Value::Type::STRING);
 
-    if (!value.is_dict())
-      continue;
+  // All of the above are required for a valid program.
+  if (!registry_is_hkcu_value || !registry_key_path_value ||
+      !registry_wow64_access_value || !allow_load_value || !type_value ||
+      !message_url_value) {
+    return nullptr;
+  }
 
-    const base::Value* registry_is_hkcu_value =
-        value.FindKeyOfType("registry_is_hkcu", base::Value::Type::BOOLEAN);
-    const base::Value* registry_key_path_value =
-        value.FindKeyOfType("registry_key_path", base::Value::Type::STRING);
-    const base::Value* registry_wow64_access_value = value.FindKeyOfType(
-        "registry_wow64_access", base::Value::Type::INTEGER);
-    const base::Value* allow_load_value =
-        value.FindKeyOfType("allow_load", base::Value::Type::BOOLEAN);
-    const base::Value* type_value =
-        value.FindKeyOfType("type", base::Value::Type::INTEGER);
-    const base::Value* message_url_value =
-        value.FindKeyOfType("message_url", base::Value::Type::STRING);
+  InstalledPrograms::ProgramInfo program_info = {
+      base::UTF8ToUTF16(name),
+      registry_is_hkcu_value->GetBool() ? HKEY_CURRENT_USER
+                                        : HKEY_LOCAL_MACHINE,
+      base::UTF8ToUTF16(registry_key_path_value->GetString()),
+      static_cast<REGSAM>(registry_wow64_access_value->GetInt())};
 
-    // All of the above are required. If any is missing, the element is skipped.
-    if (!registry_is_hkcu_value || !registry_key_path_value ||
-        !registry_wow64_access_value || !allow_load_value || !type_value ||
-        !message_url_value) {
+  auto blacklist_action =
+      std::make_unique<chrome::conflicts::BlacklistAction>();
+  blacklist_action->set_allow_load(allow_load_value->GetBool());
+  blacklist_action->set_message_type(
+      static_cast<chrome::conflicts::BlacklistMessageType>(
+          type_value->GetInt()));
+  blacklist_action->set_message_url(message_url_value->GetString());
+
+  return std::make_unique<ProblematicProgramsUpdater::ProblematicProgram>(
+      std::move(program_info), std::move(blacklist_action));
+}
+
+// Returns true if |program| references an existing program in the registry.
+//
+// Used to filter out stale programs from the cache. This can happen if a
+// program was uninstalled between the time it was found and Chrome was
+// relaunched.
+bool IsValidProgram(
+    const ProblematicProgramsUpdater::ProblematicProgram& program) {
+  return base::win::RegKey(program.info.registry_root,
+                           program.info.registry_key_path.c_str(),
+                           KEY_QUERY_VALUE | program.info.registry_wow64_access)
+      .Valid();
+}
+
+// Clears the cache of all the programs whose name is in |state_program_names|.
+void RemoveStalePrograms(const std::vector<std::string>& stale_program_names) {
+  // Early exit because DictionaryPrefUpdate will write to the pref even if it
+  // doesn't contain a value.
+  if (stale_program_names.empty())
+    return;
+
+  DictionaryPrefUpdate update(g_browser_process->local_state(),
+                              prefs::kProblematicPrograms);
+  base::Value* existing_programs = update.Get();
+
+  for (const auto& program_name : stale_program_names) {
+    bool removed = existing_programs->RemoveKey(program_name);
+    DCHECK(removed);
+  }
+}
+
+// Applies the given |function| object to each valid ProblematicProgram found
+// in the kProblematicPrograms preference.
+//
+// The signature of the function must be equivalent to the following:
+//   bool Function(std::unique_ptr<ProblematicProgram> program));
+//
+// The return value of |function| indicates if the enumeration should continue
+// (true) or be stopped (false).
+//
+// This function takes care of removing invalid entries that are found during
+// the enumeration.
+template <class UnaryFunction>
+void EnumerateAndTrimProblematicPrograms(UnaryFunction function) {
+  std::vector<std::string> stale_program_names;
+  for (const auto& item : g_browser_process->local_state()
+                              ->FindPreference(prefs::kProblematicPrograms)
+                              ->GetValue()
+                              ->DictItems()) {
+    auto program = ConvertToProblematicProgram(item.first, item.second);
+
+    if (!program || !IsValidProgram(*program)) {
+      // Mark every invalid program as stale so they are removed from the cache.
+      stale_program_names.push_back(item.first);
       continue;
     }
 
-    InstalledPrograms::ProgramInfo program_info = {
-        base::UTF8ToUTF16(name),
-        registry_is_hkcu_value->GetBool() ? HKEY_CURRENT_USER
-                                          : HKEY_LOCAL_MACHINE,
-        base::UTF8ToUTF16(registry_key_path_value->GetString()),
-        static_cast<REGSAM>(registry_wow64_access_value->GetInt())};
-
-    auto blacklist_action =
-        std::make_unique<chrome::conflicts::BlacklistAction>();
-    blacklist_action->set_allow_load(allow_load_value->GetBool());
-    blacklist_action->set_message_type(
-        static_cast<chrome::conflicts::BlacklistMessageType>(
-            type_value->GetInt()));
-    blacklist_action->set_message_url(message_url_value->GetString());
-
-    result.emplace_back(std::move(program_info), std::move(blacklist_action));
+    // Notify the caller and stop the enumeration if requested by the function.
+    if (!function(std::move(program)))
+      break;
   }
 
-  return result;
-}
-
-// Removes stale programs from the cache. This can happen if a program was
-// uninstalled between the time it was found and Chrome was relaunched.
-// Returns true if any problematic programs are installed after trimming
-// completes (i.e., HasCachedPrograms() would return true).
-void RemoveStaleEntriesAndUpdateCache(
-    std::vector<ProblematicProgramsUpdater::ProblematicProgram>* programs) {
-  // Remove entries that can no longer be found in the registry.
-  programs->erase(std::remove_if(programs->begin(), programs->end(),
-                                 [](const auto& program) {
-                                   base::win::RegKey registry_key(
-                                       program.info.registry_root,
-                                       program.info.registry_key_path.c_str(),
-                                       KEY_QUERY_VALUE |
-                                           program.info.registry_wow64_access);
-                                   return !registry_key.Valid();
-                                 }),
-                  programs->end());
-
-  // Write it back.
-  if (programs->empty()) {
-    g_browser_process->local_state()->ClearPref(prefs::kProblematicPrograms);
-  } else {
-    g_browser_process->local_state()->Set(prefs::kProblematicPrograms,
-                                          ConvertToDictionary(*programs));
-  }
+  RemoveStalePrograms(stale_program_names);
 }
 
 }  // namespace
@@ -187,7 +215,17 @@ bool ProblematicProgramsUpdater::IsIncompatibleApplicationsWarningEnabled() {
 bool ProblematicProgramsUpdater::HasCachedPrograms() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  return !GetCachedPrograms().empty();
+  bool found_valid_program = false;
+
+  EnumerateAndTrimProblematicPrograms(
+      [&found_valid_program](std::unique_ptr<ProblematicProgram> program) {
+        found_valid_program = true;
+
+        // Break the enumeration.
+        return false;
+      });
+
+  return found_valid_program;
 }
 
 // static
@@ -195,14 +233,17 @@ std::vector<ProblematicProgramsUpdater::ProblematicProgram>
 ProblematicProgramsUpdater::GetCachedPrograms() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
-  std::vector<ProblematicProgram> programs = ConvertToProblematicProgramsVector(
-      *g_browser_process->local_state()
-           ->FindPreference(prefs::kProblematicPrograms)
-           ->GetValue());
+  std::vector<ProblematicProgram> valid_programs;
 
-  RemoveStaleEntriesAndUpdateCache(&programs);
+  EnumerateAndTrimProblematicPrograms(
+      [&valid_programs](std::unique_ptr<ProblematicProgram> program) {
+        valid_programs.push_back(std::move(*program));
 
-  return programs;
+        // Continue the enumeration.
+        return true;
+      });
+
+  return valid_programs;
 }
 
 void ProblematicProgramsUpdater::OnNewModuleFound(
