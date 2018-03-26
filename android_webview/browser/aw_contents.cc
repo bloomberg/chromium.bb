@@ -1254,9 +1254,8 @@ void AwContents::InsertVisualStateCallback(
 jint AwContents::GetEffectivePriority(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
-  switch (web_contents_->GetMainFrame()
-              ->GetProcess()
-              ->ComputeEffectiveImportance()) {
+  switch (
+      web_contents_->GetMainFrame()->GetProcess()->GetEffectiveImportance()) {
     case content::ChildProcessImportance::NORMAL:
       return static_cast<jint>(RendererPriority::WAIVED);
     case content::ChildProcessImportance::MODERATE:

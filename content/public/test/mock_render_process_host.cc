@@ -271,7 +271,7 @@ void MockRenderProcessHost::RemoveWidget(RenderWidgetHost* widget) {
 }
 
 #if defined(OS_ANDROID)
-ChildProcessImportance MockRenderProcessHost::ComputeEffectiveImportance() {
+ChildProcessImportance MockRenderProcessHost::GetEffectiveImportance() {
   NOTIMPLEMENTED();
   return ChildProcessImportance::NORMAL;
 }
