@@ -40,21 +40,22 @@ buildflag_header("sandbox_features") {
 
 # This target must be here and not in win/ otherwise it would require a full
 # parse of win/BUILD.gn which fails on non-Windows platforms.
-if (is_win) {
-  fuzzer_test("sandbox_ipc_fuzzer") {
-    set_sources_assignment_filter([])
-    sources = [
-      "ipc.dict",
-      "win/fuzzer/fuzzer_defines.h",
-      "win/fuzzer/sandbox_ipc_fuzzer.cc",
-      "win/src/crosscall_server.cc",
-      "win/src/ipc_args.cc",
-    ]
-    defines = [ "SANDBOX_FUZZ_TARGET" ]
-    deps = [
-      "//base",
-    ]
-    dict = "ipc.dict"
-    libfuzzer_options = [ "max_len=1024" ]
-  }
+#
+# Although the code is Windows-based, the fuzzer is designed to work on Linux,
+# so do not disable this fuzzer on non-Windows platforms.
+fuzzer_test("sandbox_ipc_fuzzer") {
+  set_sources_assignment_filter([])
+  sources = [
+    "ipc.dict",
+    "win/fuzzer/fuzzer_defines.h",
+    "win/fuzzer/sandbox_ipc_fuzzer.cc",
+    "win/src/crosscall_server.cc",
+    "win/src/ipc_args.cc",
+  ]
+  defines = [ "SANDBOX_FUZZ_TARGET" ]
+  deps = [
+    "//base",
+  ]
+  dict = "ipc.dict"
+  libfuzzer_options = [ "max_len=1024" ]
 }
