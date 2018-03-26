@@ -17,7 +17,11 @@ gfx::Size AssistantContainerView::CalculatePreferredSize() const {
     return gfx::Size();
   }
   return gfx::Size(contents_view_->GetDisplayWidth(),
-                   kHorizontalPagePreferredHeight);
+                   contents_view_->GetDisplayHeight());
+}
+
+bool AssistantContainerView::ShouldShowSearchBox() const {
+  return false;
 }
 
 }  // namespace app_list

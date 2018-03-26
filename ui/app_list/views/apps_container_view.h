@@ -77,6 +77,11 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   // HorizontalPage overrides:
   void OnWillBeHidden() override;
   views::View* GetFirstFocusableView() override;
+  gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
+
+  // Returns the expected search box bounds in the screen when the given state
+  // is active.
+  gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const;
 
   AppsGridView* apps_grid_view() { return apps_grid_view_; }
   FolderBackgroundView* folder_background_view() {
@@ -93,6 +98,15 @@ class APP_LIST_EXPORT AppsContainerView : public HorizontalPage {
   };
 
   void SetShowState(ShowState show_state, bool show_apps_with_animation);
+
+  // Gets the final top padding of search box.
+  int GetSearchBoxFinalTopPadding() const;
+
+  // Gets the top padding of search box during dragging.
+  int GetSearchBoxTopPaddingDuringDragging() const;
+
+  // Returns the bounds of the page in the parent view during dragging.
+  gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const;
 
   ContentsView* contents_view_;  // Not owned.
 

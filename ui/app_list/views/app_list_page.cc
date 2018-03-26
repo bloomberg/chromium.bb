@@ -34,11 +34,6 @@ gfx::Rect AppListPage::GetSearchBoxBoundsForState(
   return GetSearchBoxBounds();
 }
 
-gfx::Rect AppListPage::GetPageBoundsDuringDragging(
-    ash::AppListState state) const {
-  return GetPageBoundsForState(state);
-}
-
 views::View* AppListPage::GetSelectedView() const {
   return nullptr;
 }
@@ -49,6 +44,10 @@ views::View* AppListPage::GetFirstFocusableView() {
 
 views::View* AppListPage::GetLastFocusableView() {
   return nullptr;
+}
+
+bool AppListPage::ShouldShowSearchBox() const {
+  return true;
 }
 
 gfx::Rect AppListPage::GetAboveContentsOffscreenBounds(

@@ -252,6 +252,8 @@ void ContentsView::UpdatePageBounds() {
 
   // Update app list pages.
   for (AppListPage* page : app_list_pages_) {
+    page->OnAnimationUpdated(progress, current_state, target_state);
+
     gfx::Rect to_rect = page->GetPageBoundsForState(target_state);
     gfx::Rect from_rect = page->GetPageBoundsForState(current_state);
     if (from_rect == to_rect)
@@ -262,7 +264,6 @@ void ContentsView::UpdatePageBounds() {
         gfx::Tween::RectValueBetween(progress, from_rect, to_rect));
 
     page->SetBoundsRect(bounds);
-    page->OnAnimationUpdated(progress, current_state, target_state);
   }
 
   // Update the search box.
@@ -345,10 +346,7 @@ gfx::Rect ContentsView::GetSearchBoxBoundsForState(
 }
 
 gfx::Rect ContentsView::GetDefaultContentsBounds() const {
-  const gfx::Size contents_size(GetDefaultContentsSize());
-  gfx::Point origin(0, GetDefaultSearchBoxBounds().bottom());
-  origin.Offset((bounds().width() - contents_size.width()) / 2, 0);
-  return gfx::Rect(origin, contents_size);
+  return GetContentsBounds();
 }
 
 gfx::Size ContentsView::GetMaximumContentsSize() const {
@@ -394,13 +392,7 @@ gfx::Size ContentsView::GetDefaultContentsSize() const {
 }
 
 gfx::Size ContentsView::CalculatePreferredSize() const {
-  gfx::Rect search_box_bounds = GetDefaultSearchBoxBounds();
-  gfx::Rect default_contents_bounds = GetDefaultContentsBounds();
-  gfx::Vector2d bottom_right =
-      search_box_bounds.bottom_right().OffsetFromOrigin();
-  bottom_right.SetToMax(
-      default_contents_bounds.bottom_right().OffsetFromOrigin());
-  return gfx::Size(bottom_right.x(), GetDisplayHeight());
+  return gfx::Size(GetDisplayWidth(), GetDisplayHeight());
 }
 
 void ContentsView::Layout() {
@@ -411,10 +403,11 @@ void ContentsView::Layout() {
     return;
 
   for (AppListPage* page : app_list_pages_) {
-    if (app_list_view_ && app_list_view_->is_in_drag())
-      page->SetBoundsRect(page->GetPageBoundsDuringDragging(GetActiveState()));
-    else
-      page->SetBoundsRect(page->GetPageBoundsForState(GetActiveState()));
+    // Ensures re-layout happens even when the page bounds does not change. So
+    // that |horizontal_page_container_| can layout its children in response to
+    // user dragging.
+    page->InvalidateLayout();
+    page->SetBoundsRect(page->GetPageBoundsForState(GetActiveState()));
   }
 
   // The search box is contained in a widget so set the bounds of the widget

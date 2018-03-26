@@ -33,12 +33,15 @@ class APP_LIST_EXPORT HorizontalPageContainer : public AppListPage,
 
   // AppListPage overrides:
   void OnWillBeHidden() override;
+  void OnAnimationUpdated(double progress,
+                          ash::AppListState from_state,
+                          ash::AppListState to_state) override;
   gfx::Rect GetSearchBoxBounds() const override;
   gfx::Rect GetSearchBoxBoundsForState(ash::AppListState state) const override;
   gfx::Rect GetPageBoundsForState(ash::AppListState state) const override;
-  gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const override;
   views::View* GetFirstFocusableView() override;
   views::View* GetLastFocusableView() override;
+  bool ShouldShowSearchBox() const override;
 
   AppsContainerView* apps_container_view() { return apps_container_view_; }
 
@@ -59,15 +62,10 @@ class APP_LIST_EXPORT HorizontalPageContainer : public AppListPage,
 
   // Gets the currently selected horizontal page.
   HorizontalPage* GetSelectedPage();
+  const HorizontalPage* GetSelectedPage() const;
 
   // Gets the offset for the horizontal page with specified index.
   gfx::Vector2d GetOffsetForPageIndex(int index) const;
-
-  // Gets the final top padding of search box.
-  int GetSearchBoxFinalTopPadding() const;
-
-  // Gets the top padding of search box during dragging.
-  int GetSearchBoxTopPaddingDuringDragging() const;
 
   // Manages the pagination for the horizontal pages.
   PaginationModel pagination_model_;

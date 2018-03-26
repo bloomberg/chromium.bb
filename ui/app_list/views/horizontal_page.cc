@@ -20,6 +20,14 @@ views::View* HorizontalPage::GetLastFocusableView() {
       this, GetWidget(), true /* reverse */, false /* dont_loop */);
 }
 
+gfx::Rect HorizontalPage::GetPageBoundsForState(ash::AppListState state) const {
+  return gfx::Rect(GetPreferredSize());
+}
+
+bool HorizontalPage::ShouldShowSearchBox() const {
+  return true;
+}
+
 HorizontalPage::HorizontalPage() = default;
 
 HorizontalPage::~HorizontalPage() = default;

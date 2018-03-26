@@ -16,6 +16,9 @@ class ContentsView;
 
 class APP_LIST_EXPORT AppListPage : public views::View {
  public:
+  AppListPage();
+  ~AppListPage() override;
+
   // Triggered when the page is about to be shown.
   virtual void OnWillBeShown();
 
@@ -43,9 +46,6 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // Returns where this page should move to when the given state is active.
   virtual gfx::Rect GetPageBoundsForState(ash::AppListState state) const = 0;
 
-  // Returns the bounds of the page during dragging.
-  virtual gfx::Rect GetPageBoundsDuringDragging(ash::AppListState state) const;
-
   const ContentsView* contents_view() const { return contents_view_; }
   void set_contents_view(ContentsView* contents_view) {
     contents_view_ = contents_view;
@@ -60,9 +60,8 @@ class APP_LIST_EXPORT AppListPage : public views::View {
   // Returns the last focusable view in this page.
   virtual views::View* GetLastFocusableView();
 
- protected:
-  AppListPage();
-  ~AppListPage() override;
+  // Returns true if the search box should be shown in this page.
+  virtual bool ShouldShowSearchBox() const;
 
   // Returns the area above the contents view, given the desired size of this
   // page, in the contents view's coordinate space.
