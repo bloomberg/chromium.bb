@@ -407,6 +407,7 @@ TEST_F(DownloadManagerCoordinatorTest, OpenIn) {
 
   // Download task is destroyed without opening the file.
   task = nullptr;
+  histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileNetError", 0);
   histogram_tester_.ExpectUniqueSample(
       "Download.IOSDownloadFileResult",
       static_cast<base::HistogramBase::Sample>(DownloadFileResult::Completed),
@@ -444,6 +445,7 @@ TEST_F(DownloadManagerCoordinatorTest, DestroyInProgressDownload) {
 
   // Download task is destroyed before the download is complete.
   task = nullptr;
+  histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileNetError", 0);
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileAction", 0);
   histogram_tester_.ExpectUniqueSample(
       "Download.IOSDownloadFileResult",
@@ -499,6 +501,7 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInDrive) {
         willBeginSendingToApplication:kGoogleDriveAppBundleID];
   }
 
+  histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileNetError", 0);
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileResult", 0);
   histogram_tester_.ExpectUniqueSample("Download.IOSDownloadedFileAction",
                                        static_cast<base::HistogramBase::Sample>(
@@ -555,6 +558,7 @@ TEST_F(DownloadManagerCoordinatorTest, OpenInOtherApp) {
         willBeginSendingToApplication:@"foo-app-id"];
   }
 
+  histogram_tester_.ExpectTotalCount("Download.IOSDownloadedFileNetError", 0);
   histogram_tester_.ExpectTotalCount("Download.IOSDownloadFileResult", 0);
   histogram_tester_.ExpectUniqueSample(
       "Download.IOSDownloadedFileAction",
@@ -744,6 +748,8 @@ TEST_F(DownloadManagerCoordinatorTest, RetryingDownload) {
     return task_ptr->GetState() == web::DownloadTask::State::kInProgress;
   }));
 
+  histogram_tester_.ExpectUniqueSample("Download.IOSDownloadedFileNetError",
+                                       -net::ERR_INTERNET_DISCONNECTED, 1);
   histogram_tester_.ExpectUniqueSample(
       "Download.IOSDownloadFileResult",
       static_cast<base::HistogramBase::Sample>(DownloadFileResult::Failure), 1);
