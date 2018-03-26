@@ -3412,3 +3412,4 @@ crbug.com/825262 [ Win7 ] external/wpt/css/css-transitions/properties-value-impl
 
 # Sheriff 2018-03-26
 crbug.com/825733 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
+crbug.com/754986 media/video-transformed.html [ Pass Failure ]
