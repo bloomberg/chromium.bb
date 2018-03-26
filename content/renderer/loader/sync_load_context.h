@@ -6,6 +6,9 @@
 #define CONTENT_RENDERER_LOADER_SYNC_LOAD_CONTEXT_H_
 
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/synchronization/waitable_event_watcher.h"
+#include "base/timer/timer.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/renderer/loader/resource_dispatcher.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
@@ -28,8 +31,10 @@ struct SyncLoadResponse;
 class SyncLoadContext : public RequestPeer {
  public:
   // Begins a new asynchronous request on whatever sequence this method is
-  // called on. |event| will be signalled when the request is complete and
-  // |response| will be populated with the response data.
+  // called on. |completed_event| will be signalled when the request is complete
+  // and |response| will be populated with the response data. |abort_event|
+  // will be signalled from the main thread to abort the sync request on a
+  // worker thread when the worker thread is being terminated.
   static void StartAsyncWithWaitableEvent(
       std::unique_ptr<network::ResourceRequest> request,
       int routing_id,
@@ -39,17 +44,21 @@ class SyncLoadContext : public RequestPeer {
           url_loader_factory_info,
       std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
       SyncLoadResponse* response,
-      base::WaitableEvent* event);
+      base::WaitableEvent* completed_event,
+      base::WaitableEvent* abort_event,
+      double timeout);
 
+  ~SyncLoadContext() override;
+
+ private:
   SyncLoadContext(
       network::ResourceRequest* request,
       std::unique_ptr<network::SharedURLLoaderFactoryInfo> url_loader_factory,
       SyncLoadResponse* response,
-      base::WaitableEvent* event,
+      base::WaitableEvent* completed_event,
+      base::WaitableEvent* abort_event,
+      double timeout,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
-  ~SyncLoadContext() override;
-
- private:
   // RequestPeer implementation:
   void OnUploadProgress(uint64_t position, uint64_t size) override;
   bool OnReceivedRedirect(const net::RedirectInfo& redirect_info,
@@ -61,12 +70,20 @@ class SyncLoadContext : public RequestPeer {
   void OnCompletedRequest(
       const network::URLLoaderCompletionStatus& status) override;
 
+  void OnAbort(base::WaitableEvent* event);
+  void OnTimeout();
+
+  void CompleteRequest(bool remove_pending_request);
+  bool Completed() const;
+
   // This raw pointer will remain valid for the lifetime of this object because
   // it remains on the stack until |event_| is signaled.
+  // Set to null after CompleteRequest() is called.
   SyncLoadResponse* response_;
 
   // This event is signaled when the request is complete.
-  base::WaitableEvent* event_;
+  // Set to null after CompleteRequest() is called.
+  base::WaitableEvent* completed_event_;
 
   // State necessary to run a request on an independent thread.
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
@@ -75,6 +92,11 @@ class SyncLoadContext : public RequestPeer {
   int request_id_;
 
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+
+  base::Optional<int64_t> downloaded_file_length_;
+
+  base::WaitableEventWatcher abort_watcher_;
+  base::OneShotTimer timeout_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncLoadContext);
 };

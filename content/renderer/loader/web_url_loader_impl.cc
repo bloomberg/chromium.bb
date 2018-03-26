@@ -604,7 +604,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
       // This is a sync load. Do the work now.
       sync_load_response->url = url_;
       sync_load_response->error_code =
-          GetInfoFromDataURL(sync_load_response->url, sync_load_response,
+          GetInfoFromDataURL(sync_load_response->url, &sync_load_response->info,
                              &sync_load_response->data);
     } else {
       task_runner_->PostTask(FROM_HERE,
@@ -740,7 +740,8 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
     resource_dispatcher_->StartSync(
         std::move(resource_request), request.RequestorID(),
         GetTrafficAnnotationTag(request), sync_load_response,
-        url_loader_factory_, extra_data->TakeURLLoaderThrottles());
+        url_loader_factory_, extra_data->TakeURLLoaderThrottles(),
+        request.TimeoutInterval());
     return;
   }
 
@@ -1297,12 +1298,14 @@ void WebURLLoaderImpl::PopulateURLResponse(
   }
 }
 
-void WebURLLoaderImpl::LoadSynchronously(const WebURLRequest& request,
-                                         WebURLResponse& response,
-                                         base::Optional<WebURLError>& error,
-                                         WebData& data,
-                                         int64_t& encoded_data_length,
-                                         int64_t& encoded_body_length) {
+void WebURLLoaderImpl::LoadSynchronously(
+    const WebURLRequest& request,
+    WebURLResponse& response,
+    base::Optional<WebURLError>& error,
+    WebData& data,
+    int64_t& encoded_data_length,
+    int64_t& encoded_body_length,
+    base::Optional<int64_t>& downloaded_file_length) {
   TRACE_EVENT0("loading", "WebURLLoaderImpl::loadSynchronously");
   SyncLoadResponse sync_load_response;
   context_->Start(request, &sync_load_response);
@@ -1332,10 +1335,11 @@ void WebURLLoaderImpl::LoadSynchronously(const WebURLRequest& request,
     return;
   }
 
-  PopulateURLResponse(final_url, sync_load_response, &response,
+  PopulateURLResponse(final_url, sync_load_response.info, &response,
                       request.ReportRawHeaders());
-  encoded_data_length = sync_load_response.encoded_data_length;
-  encoded_body_length = sync_load_response.encoded_body_length;
+  encoded_data_length = sync_load_response.info.encoded_data_length;
+  encoded_body_length = sync_load_response.info.encoded_body_length;
+  downloaded_file_length = sync_load_response.downloaded_file_length;
 
   data.Assign(sync_load_response.data.data(), sync_load_response.data.size());
 }

@@ -331,6 +331,11 @@ void URLLoaderClientImpl::OnComplete(
   body_consumer_->OnComplete(status);
 }
 
+network::mojom::DownloadedTempFilePtr
+URLLoaderClientImpl::TakeDownloadedTempFile() {
+  return std::move(downloaded_file_);
+}
+
 bool URLLoaderClientImpl::NeedsStoringMessage() const {
   return is_deferred_ || deferred_messages_.size() > 0;
 }

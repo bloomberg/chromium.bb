@@ -5,6 +5,7 @@
 #ifndef CONTENT_RENDERER_SERVICE_WORKER_WORKER_FETCH_CONTEXT_IMPL_H_
 #define CONTENT_RENDERER_SERVICE_WORKER_WORKER_FETCH_CONTEXT_IMPL_H_
 
+#include "base/synchronization/waitable_event.h"
 #include "content/common/service_worker/service_worker_provider.mojom.h"
 #include "content/common/service_worker/service_worker_types.h"
 #include "ipc/ipc_message.h"
@@ -53,6 +54,7 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   ~WorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
+  base::WaitableEvent* GetTerminateSyncLoadEvent() override;
   void InitializeOnWorkerThread() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
@@ -150,6 +152,8 @@ class WorkerFetchContextImpl : public blink::WebWorkerFetchContext,
   bool is_secure_context_ = false;
   GURL origin_url_;
   int appcache_host_id_ = blink::WebApplicationCacheHost::kAppCacheNoHostId;
+
+  base::WaitableEvent terminate_sync_load_event_;
 
   // A weak ptr to blink::WebURLLoaderFactory which was created and passed to
   // Blink by CreateURLLoaderFactory().

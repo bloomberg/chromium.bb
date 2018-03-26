@@ -154,14 +154,13 @@ static const int kMaxCORSRedirects = 20;
 
 // static
 void DocumentThreadableLoader::LoadResourceSynchronously(
-    Document& document,
+    ThreadableLoadingContext& loading_context,
     const ResourceRequest& request,
     ThreadableLoaderClient& client,
     const ThreadableLoaderOptions& options,
     const ResourceLoaderOptions& resource_loader_options) {
-  (new DocumentThreadableLoader(*ThreadableLoadingContext::Create(document),
-                                &client, kLoadSynchronously, options,
-                                resource_loader_options))
+  (new DocumentThreadableLoader(loading_context, &client, kLoadSynchronously,
+                                options, resource_loader_options))
       ->Start(request);
 }
 
@@ -1264,9 +1263,14 @@ void DocumentThreadableLoader::LoadRequestSync(
     ResourceLoaderOptions resource_loader_options) {
   FetchParameters fetch_params(request, resource_loader_options);
   if (request.GetFetchRequestMode() ==
-      network::mojom::FetchRequestMode::kNoCORS)
+      network::mojom::FetchRequestMode::kNoCORS) {
     fetch_params.SetOriginRestriction(FetchParameters::kNoOriginRestriction);
-  Resource* resource = RawResource::FetchSynchronously(
+  }
+  if (options_.timeout_milliseconds > 0) {
+    fetch_params.MutableResourceRequest().SetTimeoutInterval(
+        options_.timeout_milliseconds / 1000.0);
+  }
+  RawResource* resource = RawResource::FetchSynchronously(
       fetch_params, loading_context_->GetResourceFetcher());
   ResourceResponse response = resource->GetResponse();
   unsigned long identifier = resource->Identifier();
@@ -1320,6 +1324,12 @@ void DocumentThreadableLoader::LoadRequestSync(
   // skip the rest.
   if (!client_)
     return;
+
+  WTF::Optional<int64_t> downloaded_file_length =
+      resource->DownloadedFileLength();
+  if (downloaded_file_length) {
+    client_->DidDownloadData(*downloaded_file_length);
+  }
 
   HandleSuccessfulFinish(identifier, 0.0);
 }

@@ -76,8 +76,9 @@ class TestResourceDispatcher : public ResourceDispatcher {
       const net::NetworkTrafficAnnotationTag& traffic_annotation,
       SyncLoadResponse* response,
       scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) override {
-    *response = sync_load_response_;
+      std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+      double timeout) override {
+    *response = std::move(sync_load_response_);
   }
 
   int StartAsync(
@@ -92,7 +93,7 @@ class TestResourceDispatcher : public ResourceDispatcher {
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
       base::OnceClosure* continue_navigation_function) override {
     EXPECT_FALSE(peer_);
-    if (sync_load_response_.encoded_body_length != -1)
+    if (sync_load_response_.info.encoded_body_length != -1)
       EXPECT_TRUE(is_sync);
     peer_ = std::move(peer);
     url_ = request->url;
@@ -119,8 +120,8 @@ class TestResourceDispatcher : public ResourceDispatcher {
   }
   bool defers_loading() const { return defers_loading_; }
 
-  void set_sync_load_response(const SyncLoadResponse& sync_load_response) {
-    sync_load_response_ = sync_load_response;
+  void set_sync_load_response(SyncLoadResponse&& sync_load_response) {
+    sync_load_response_ = std::move(sync_load_response);
   }
 
  private:
@@ -770,20 +771,23 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   sync_load_response.url = url;
   sync_load_response.data = kBodyData;
   ASSERT_EQ(17u, sync_load_response.data.size());
-  sync_load_response.encoded_body_length = kEncodedBodyLength;
-  sync_load_response.encoded_data_length = kEncodedDataLength;
-  dispatcher()->set_sync_load_response(sync_load_response);
+  sync_load_response.info.encoded_body_length = kEncodedBodyLength;
+  sync_load_response.info.encoded_data_length = kEncodedDataLength;
+  dispatcher()->set_sync_load_response(std::move(sync_load_response));
 
   blink::WebURLResponse response;
   base::Optional<blink::WebURLError> error;
   blink::WebData data;
   int64_t encoded_data_length = 0;
   int64_t encoded_body_length = 0;
+  base::Optional<int64_t> downloaded_file_length;
   client()->loader()->LoadSynchronously(
-      request, response, error, data, encoded_data_length, encoded_body_length);
+      request, response, error, data, encoded_data_length, encoded_body_length,
+      downloaded_file_length);
 
   EXPECT_EQ(kEncodedBodyLength, encoded_body_length);
   EXPECT_EQ(kEncodedDataLength, encoded_data_length);
+  EXPECT_FALSE(downloaded_file_length);
 }
 
 }  // namespace

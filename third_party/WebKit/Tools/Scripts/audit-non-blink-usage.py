@@ -60,6 +60,9 @@ _CONFIG = [
             # //base/memory/ptr_util.h.
             'base::WrapUnique',
 
+            # //base/synchronization/waitable_event.h.
+            'base::WaitableEvent',
+
             # Debugging helpers from //base/debug are allowed everywhere.
             'base::debug::.+',
 

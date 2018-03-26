@@ -77,6 +77,9 @@ class CONTENT_EXPORT URLLoaderClientImpl final
       mojo::ScopedDataPipeConsumerHandle body) override;
   void OnComplete(const network::URLLoaderCompletionStatus& status) override;
 
+  // Takes |downloaded_file_|.
+  network::mojom::DownloadedTempFilePtr TakeDownloadedTempFile();
+
  private:
   class DeferredMessage;
   class DeferredOnReceiveResponse;

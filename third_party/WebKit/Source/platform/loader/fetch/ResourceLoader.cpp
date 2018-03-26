@@ -690,8 +690,6 @@ void ResourceLoader::HandleError(const ResourceError& error) {
 }
 
 void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
-  // downloadToFile is not supported for synchronous requests.
-  DCHECK(!request.DownloadToFile());
   DCHECK(loader_);
   DCHECK_EQ(request.Priority(), ResourceLoadPriority::kHighest);
 
@@ -701,8 +699,10 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
   WebData data_out;
   int64_t encoded_data_length = WebURLLoaderClient::kUnknownEncodedDataLength;
   int64_t encoded_body_length = 0;
+  base::Optional<int64_t> downloaded_file_length;
   loader_->LoadSynchronously(request_in, response_out, error_out, data_out,
-                             encoded_data_length, encoded_body_length);
+                             encoded_data_length, encoded_body_length,
+                             downloaded_file_length);
 
   // A message dispatched while synchronously fetching the resource
   // can bring about the cancellation of this load.
@@ -731,6 +731,11 @@ void ResourceLoader::RequestSynchronously(const ResourceRequest& request) {
       return true;
     });
     resource_->SetResourceBuffer(data_out);
+  }
+
+  if (downloaded_file_length) {
+    DCHECK(request.DownloadToFile());
+    DidDownloadData(*downloaded_file_length, encoded_body_length);
   }
   DidFinishLoading(CurrentTimeTicksInSeconds(), encoded_data_length,
                    encoded_body_length, decoded_body_length, false);

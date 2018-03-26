@@ -233,6 +233,8 @@ void RawResource::DidSendData(unsigned long long bytes_sent,
 }
 
 void RawResource::DidDownloadData(int data_length) {
+  downloaded_file_length_ =
+      (downloaded_file_length_ ? *downloaded_file_length_ : 0) + data_length;
   ResourceClientWalker<RawResourceClient> w(Clients());
   while (RawResourceClient* c = w.Next())
     c->DataDownloaded(this, data_length);

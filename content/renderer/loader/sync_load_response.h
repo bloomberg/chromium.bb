@@ -11,18 +11,24 @@
 #include "content/common/content_export.h"
 #include "services/network/public/cpp/resource_response_info.h"
 #include "services/network/public/mojom/cors.mojom.h"
+#include "services/network/public/mojom/url_loader.mojom.h"
 #include "url/gurl.h"
 
 namespace content {
 
 // See the SyncLoad method. (The name of this struct is not
 // suffixed with "Info" because it also contains the response data.)
-struct CONTENT_EXPORT SyncLoadResponse : network::ResourceResponseInfo {
+struct CONTENT_EXPORT SyncLoadResponse {
   SyncLoadResponse();
+  SyncLoadResponse(SyncLoadResponse&& other);
   ~SyncLoadResponse();
 
+  SyncLoadResponse& operator=(SyncLoadResponse&& other);
+
+  network::ResourceResponseInfo info;
+
   // The response error code.
-  int error_code = 0;
+  int error_code;
 
   // The response extended error code.
   int extended_error_code = 0;
@@ -36,6 +42,10 @@ struct CONTENT_EXPORT SyncLoadResponse : network::ResourceResponseInfo {
 
   // The response data.
   std::string data;
+
+  // Used for blob response type XMLHttpRequest.
+  base::Optional<int64_t> downloaded_file_length;
+  network::mojom::DownloadedTempFilePtr downloaded_tmp_file;
 };
 
 }  // namespace content

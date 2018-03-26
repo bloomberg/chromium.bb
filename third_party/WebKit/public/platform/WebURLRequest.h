@@ -175,6 +175,8 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT mojom::FetchCacheMode GetCacheMode() const;
   BLINK_PLATFORM_EXPORT void SetCacheMode(mojom::FetchCacheMode);
 
+  BLINK_PLATFORM_EXPORT double TimeoutInterval() const;
+
   BLINK_PLATFORM_EXPORT WebString HttpMethod() const;
   BLINK_PLATFORM_EXPORT void SetHTTPMethod(const WebString&);
 

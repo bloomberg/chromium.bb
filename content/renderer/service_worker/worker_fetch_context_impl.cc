@@ -111,6 +111,9 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
       direct_network_loader_factory_info_(
           std::move(direct_network_factory_info)),
       thread_safe_sender_(ChildThreadImpl::current()->thread_safe_sender()),
+      terminate_sync_load_event_(
+          base::WaitableEvent::ResetPolicy::MANUAL,
+          base::WaitableEvent::InitialState::NOT_SIGNALED),
       throttle_provider_(std::move(throttle_provider)) {
   if (ServiceWorkerUtils::IsServicificationEnabled()) {
     ChildThreadImpl::current()->GetConnector()->BindInterface(
@@ -121,10 +124,16 @@ WorkerFetchContextImpl::WorkerFetchContextImpl(
 
 WorkerFetchContextImpl::~WorkerFetchContextImpl() {}
 
+base::WaitableEvent* WorkerFetchContextImpl::GetTerminateSyncLoadEvent() {
+  return &terminate_sync_load_event_;
+}
+
 void WorkerFetchContextImpl::InitializeOnWorkerThread() {
   DCHECK(!resource_dispatcher_);
   DCHECK(!binding_.is_bound());
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
+  resource_dispatcher_->set_terminate_sync_load_event(
+      &terminate_sync_load_event_);
 
   shared_url_loader_factory_ = network::SharedURLLoaderFactory::Create(
       std::move(url_loader_factory_info_));

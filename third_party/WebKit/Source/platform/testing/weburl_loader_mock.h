@@ -45,12 +45,14 @@ class WebURLLoaderMock : public WebURLLoader {
                        const WebURLResponse& redirect_response);
 
   // WebURLLoader methods:
-  void LoadSynchronously(const WebURLRequest& request,
-                         WebURLResponse& response,
-                         Optional<WebURLError>& error,
-                         WebData& data,
-                         int64_t& encoded_data_length,
-                         int64_t& encoded_body_length) override;
+  void LoadSynchronously(
+      const WebURLRequest&,
+      WebURLResponse&,
+      Optional<WebURLError>&,
+      WebData&,
+      int64_t& encoded_data_length,
+      int64_t& encoded_body_length,
+      base::Optional<int64_t>& downloaded_file_length) override;
   void LoadAsynchronously(const WebURLRequest& request,
                           WebURLLoaderClient* client) override;
   void Cancel() override;

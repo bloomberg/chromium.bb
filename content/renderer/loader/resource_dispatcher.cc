@@ -301,6 +301,17 @@ void ResourceDispatcher::OnRequestComplete(
   peer->OnCompletedRequest(renderer_status);
 }
 
+network::mojom::DownloadedTempFilePtr
+ResourceDispatcher::TakeDownloadedTempFile(int request_id) {
+  PendingRequestMap::iterator it = pending_requests_.find(request_id);
+  if (it == pending_requests_.end())
+    return nullptr;
+  PendingRequestInfo* request_info = it->second.get();
+  if (!request_info->url_loader_client)
+    return nullptr;
+  return request_info->url_loader_client->TakeDownloadedTempFile();
+}
+
 bool ResourceDispatcher::RemovePendingRequest(
     int request_id,
     scoped_refptr<base::SingleThreadTaskRunner> task_runner) {
@@ -401,13 +412,15 @@ void ResourceDispatcher::StartSync(
     const net::NetworkTrafficAnnotationTag& traffic_annotation,
     SyncLoadResponse* response,
     scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory,
-    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles) {
+    std::vector<std::unique_ptr<URLLoaderThrottle>> throttles,
+    double timeout) {
   CheckSchemeForReferrerPolicy(*request);
 
   std::unique_ptr<network::SharedURLLoaderFactoryInfo> factory_info =
       url_loader_factory->Clone();
-  base::WaitableEvent event(base::WaitableEvent::ResetPolicy::MANUAL,
-                            base::WaitableEvent::InitialState::NOT_SIGNALED);
+  base::WaitableEvent completed_event(
+      base::WaitableEvent::ResetPolicy::MANUAL,
+      base::WaitableEvent::InitialState::NOT_SIGNALED);
 
   // Prepare the configured throttles for use on a separate thread.
   for (const auto& throttle : throttles)
@@ -425,9 +438,9 @@ void ResourceDispatcher::StartSync(
                      std::move(request), routing_id, task_runner,
                      traffic_annotation, std::move(factory_info),
                      std::move(throttles), base::Unretained(response),
-                     base::Unretained(&event)));
-
-  event.Wait();
+                     base::Unretained(&completed_event),
+                     base::Unretained(terminate_sync_load_event_), timeout));
+  completed_event.Wait();
 }
 
 int ResourceDispatcher::StartAsync(
