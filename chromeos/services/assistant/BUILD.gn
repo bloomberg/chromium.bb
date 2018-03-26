@@ -41,6 +41,8 @@ source_set("lib") {
       "platform/audio_input_provider_impl.h",
       "platform/file_provider_impl.cc",
       "platform/file_provider_impl.h",
+      "platform/network_provider_impl.cc",
+      "platform/network_provider_impl.h",
       "platform/system_provider_impl.cc",
       "platform/system_provider_impl.h",
       "platform_api_impl.cc",
