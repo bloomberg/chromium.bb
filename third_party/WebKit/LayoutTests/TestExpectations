@@ -3198,16 +3198,6 @@ crbug.com/791941 [ Mac ] virtual/gpu-rasterization/images/color-profile-clip.htm
 crbug.com/791941 [ Mac ] virtual/gpu-rasterization/images/color-profile-munsell-adobe-to-srgb.html [ Pass Failure ]
 crbug.com/791941 [ Mac ] virtual/gpu-rasterization/images/color-profile-munsell-srgb-to-srgb.html [ Pass Failure ]
 
-# These tests fail often on Linux and Mac and Windows. https://crbug.com/790549
-crbug.com/788390 [ Linux Win ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-delegation.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux Win ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux Mac Win ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-gesture.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux Win ] http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-feature-policy-same-origin.html [ Failure Pass Timeout ]
-crbug.com/788390 [ Linux ] http/tests/media/autoplay/document-user-activation-iframe-delegation.html [ Failure Pass Timeout ]
-
 # Double tap on modern media controls is a bit more complicated on Mac but
 # since we are not targeting Mac yet we can come back and fix this later.
 crbug.com/783154 [ Mac ] virtual/modern-media-controls/media/controls/modern/doubletap-to-jump-backwards.html [ Skip ]
