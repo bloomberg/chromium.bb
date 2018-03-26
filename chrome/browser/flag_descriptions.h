@@ -1231,9 +1231,6 @@ extern const char kEnableNtpSnippetsVisibilityDescription[];
 extern const char kEnableNtpSuggestionsNotificationsName[];
 extern const char kEnableNtpSuggestionsNotificationsDescription[];
 
-extern const char kEnablePhysicalWebName[];
-extern const char kEnablePhysicalWebDescription[];
-
 extern const char kEnableOfflinePreviewsName[];
 extern const char kEnableOfflinePreviewsDescription[];
 
