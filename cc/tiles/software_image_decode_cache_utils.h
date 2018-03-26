@@ -122,7 +122,8 @@ class SoftwareImageDecodeCacheUtils {
     sk_sp<SkImage> image() const {
       if (!memory)
         return nullptr;
-      DCHECK(is_locked);
+      // TODO(khushalsagar): Temp CHECK to diagnose crbug.com/802976.
+      CHECK(is_locked);
       return image_;
     }
     const SkSize& src_rect_offset() const { return src_rect_offset_; }
