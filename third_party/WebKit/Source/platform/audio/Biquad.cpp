@@ -43,7 +43,7 @@
 namespace blink {
 
 #if defined(OS_MACOSX)
-const int kBufferSize = 1024;
+const int kBiquadBufferSize = 1024;
 #endif
 
 // Compute 10^x = exp(x*log(10))
@@ -54,8 +54,8 @@ static double pow10(double x) {
 Biquad::Biquad() : has_sample_accurate_values_(false) {
 #if defined(OS_MACOSX)
   // Allocate two samples more for filter history
-  input_buffer_.Allocate(kBufferSize + 2);
-  output_buffer_.Allocate(kBufferSize + 2);
+  input_buffer_.Allocate(kBiquadBufferSize + 2);
+  output_buffer_.Allocate(kBiquadBufferSize + 2);
 #endif
 
   // Allocate enough space for the a-rate filter coefficients to handle a
@@ -209,12 +209,12 @@ void Biquad::ProcessFast(const float* source_p,
   double* input2p = input_p + 2;
   double* output2p = output_p + 2;
 
-  // Break up processing into smaller slices (kBufferSize) if necessary.
+  // Break up processing into smaller slices (kBiquadBufferSize) if necessary.
 
   int n = frames_to_process;
 
   while (n > 0) {
-    int frames_this_time = n < kBufferSize ? n : kBufferSize;
+    int frames_this_time = n < kBiquadBufferSize ? n : kBiquadBufferSize;
 
     // Copy input to input buffer
     for (int i = 0; i < frames_this_time; ++i)
