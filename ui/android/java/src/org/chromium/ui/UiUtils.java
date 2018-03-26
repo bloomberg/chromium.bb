@@ -483,4 +483,22 @@ public class UiUtils {
 
         return maxWidth;
     }
+
+    /**
+     * Get the index of a child {@link View} in a {@link ViewGroup}.
+     * @param child The child to find the index of.
+     * @return The index of the child in its parent. -1 if the child has no parent.
+     */
+    public static int getChildIndexInParent(View child) {
+        if (child.getParent() == null) return -1;
+        ViewGroup parent = (ViewGroup) child.getParent();
+        int indexInParent = -1;
+        for (int i = 0; i < parent.getChildCount(); i++) {
+            if (parent.getChildAt(i) == child) {
+                indexInParent = i;
+                break;
+            }
+        }
+        return indexInParent;
+    }
 }

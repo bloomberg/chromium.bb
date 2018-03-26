@@ -4,6 +4,8 @@
 
 package org.chromium.chrome.browser.widget.bottomsheet;
 
+import android.view.ViewGroup;
+
 import org.chromium.chrome.browser.compositor.layouts.Layout;
 import org.chromium.chrome.browser.compositor.layouts.LayoutManager;
 import org.chromium.chrome.browser.compositor.layouts.SceneChangeObserver;
@@ -11,7 +13,9 @@ import org.chromium.chrome.browser.compositor.layouts.StaticLayout;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabObserver;
+import org.chromium.chrome.browser.widget.FadingBackgroundView;
 import org.chromium.chrome.browser.widget.bottomsheet.BottomSheet.BottomSheetContent;
+import org.chromium.ui.UiUtils;
 
 import java.util.PriorityQueue;
 
@@ -44,10 +48,12 @@ public class BottomSheetController {
      * Build a new controller of the bottom sheet.
      * @param tabModelSelector A tab model selector to track events on tabs open in the browser.
      * @param layoutManager A layout manager for detecting changes in the active layout.
+     * @param fadingBackgroundView The scrim that shows when the bottom sheet is opened.
      * @param bottomSheet The bottom sheet that this class will be controlling.
      */
     public BottomSheetController(final TabModelSelector tabModelSelector,
-            final LayoutManager layoutManager, BottomSheet bottomSheet) {
+            final LayoutManager layoutManager, final FadingBackgroundView fadingBackgroundView,
+            BottomSheet bottomSheet) {
         mBottomSheet = bottomSheet;
         mLayoutManager = layoutManager;
 
@@ -81,6 +87,35 @@ public class BottomSheetController {
                 } else {
                     mBottomSheet.setSheetState(BottomSheet.SHEET_STATE_HIDDEN, false);
                 }
+            }
+        });
+
+        mBottomSheet.addObserver(new EmptyBottomSheetObserver() {
+            /**
+             * The index of the scrim in the view hierarchy prior to being moved for the bottom
+             * sheet.
+             */
+            private int mOriginalScrimIndexInParent;
+
+            @Override
+            public void onTransitionPeekToHalf(float transitionFraction) {
+                fadingBackgroundView.setViewAlpha(transitionFraction);
+            }
+
+            @Override
+            public void onSheetOpened(@BottomSheet.StateChangeReason int reason) {
+                mOriginalScrimIndexInParent = UiUtils.getChildIndexInParent(fadingBackgroundView);
+                ViewGroup parent = (ViewGroup) fadingBackgroundView.getParent();
+                UiUtils.removeViewFromParent(fadingBackgroundView);
+                UiUtils.insertBefore(parent, fadingBackgroundView, mBottomSheet);
+            }
+
+            @Override
+            public void onSheetClosed(@BottomSheet.StateChangeReason int reason) {
+                assert mOriginalScrimIndexInParent >= 0;
+                ViewGroup parent = (ViewGroup) fadingBackgroundView.getParent();
+                UiUtils.removeViewFromParent(fadingBackgroundView);
+                parent.addView(fadingBackgroundView, mOriginalScrimIndexInParent);
             }
         });
 
