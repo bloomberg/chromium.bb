@@ -86,8 +86,8 @@ component("fido") {
     "u2f_sign.cc",
     "u2f_sign.h",
     "u2f_transport_protocol.h",
-    "virtual_u2f_device.cc",
-    "virtual_u2f_device.h",
+    "virtual_fido_device.cc",
+    "virtual_fido_device.h",
   ]
 
   defines = [ "IS_DEVICE_FIDO_IMPL" ]
@@ -185,8 +185,8 @@ source_set("test_support") {
   sources = [
     "fake_fido_discovery.cc",
     "fake_fido_discovery.h",
-    "scoped_virtual_u2f_device.cc",
-    "scoped_virtual_u2f_device.h",
+    "scoped_virtual_fido_device.cc",
+    "scoped_virtual_fido_device.h",
     "test_callback_receiver.h",
   ]
   deps = [

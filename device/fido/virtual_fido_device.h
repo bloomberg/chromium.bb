@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef DEVICE_FIDO_VIRTUAL_U2F_DEVICE_H_
-#define DEVICE_FIDO_VIRTUAL_U2F_DEVICE_H_
+#ifndef DEVICE_FIDO_VIRTUAL_FIDO_DEVICE_H_
+#define DEVICE_FIDO_VIRTUAL_FIDO_DEVICE_H_
 
 #include <stdint.h>
 
@@ -25,7 +25,7 @@ class ECPrivateKey;
 
 namespace device {
 
-class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
+class COMPONENT_EXPORT(DEVICE_FIDO) VirtualFidoDevice : public FidoDevice {
  public:
   // Stores the state of the device. Since |U2fDevice| objects only persist for
   // the lifetime of a single request, keeping state in an external object is
@@ -42,7 +42,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
     std::string individual_attestation_cert_common_name;
 
    private:
-    friend class ::device::VirtualU2fDevice;
+    friend class ::device::VirtualFidoDevice;
     friend class base::RefCounted<State>;
     ~State();
 
@@ -53,12 +53,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
   // Constructs an object with ephemeral state. In order to have the state of
   // the device persist between operations, use the constructor that takes a
   // scoped_refptr<State>.
-  VirtualU2fDevice();
+  VirtualFidoDevice();
 
   // Constructs an object that will read from, and write to, |state|.
-  explicit VirtualU2fDevice(scoped_refptr<State> state);
+  explicit VirtualFidoDevice(scoped_refptr<State> state);
 
-  ~VirtualU2fDevice() override;
+  ~VirtualFidoDevice() override;
 
   void AddRegistration(std::vector<uint8_t> key_handle,
                        std::unique_ptr<crypto::ECPrivateKey> private_key,
@@ -87,9 +87,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) VirtualU2fDevice : public FidoDevice {
   scoped_refptr<State> state_;
   base::WeakPtrFactory<FidoDevice> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(VirtualU2fDevice);
+  DISALLOW_COPY_AND_ASSIGN(VirtualFidoDevice);
 };
 
 }  // namespace device
 
-#endif  // DEVICE_FIDO_VIRTUAL_U2F_DEVICE_H_
+#endif  // DEVICE_FIDO_VIRTUAL_FIDO_DEVICE_H_

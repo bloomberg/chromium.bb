@@ -17,7 +17,7 @@
 #include "device/fido/fido_response_test_data.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
-#include "device/fido/virtual_u2f_device.h"
+#include "device/fido/virtual_fido_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -258,7 +258,7 @@ TEST_F(U2fSignTest, TestSignSuccessWithFake) {
   request->Start();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  auto device = std::make_unique<VirtualU2fDevice>();
+  auto device = std::make_unique<VirtualFidoDevice>();
   device->AddRegistration(key_handle, std::move(private_key),
                           GetTestRelyingPartyIdSHA256(), 42);
   discovery()->AddDevice(std::move(device));
