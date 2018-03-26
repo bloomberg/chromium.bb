@@ -117,8 +117,8 @@ TEST_F(AppCacheStorageTest, DelegateReferences) {
 }
 
 TEST_F(AppCacheStorageTest, UsageMap) {
-  const GURL kOrigin("http://origin/");
-  const GURL kOrigin2("http://origin2/");
+  const url::Origin kOrigin(url::Origin::Create(GURL("http://origin/")));
+  const url::Origin kOrigin2(url::Origin::Create(GURL("http://origin2/")));
 
   MockAppCacheService service;
   scoped_refptr<MockQuotaManagerProxy> mock_proxy(
@@ -131,19 +131,19 @@ TEST_F(AppCacheStorageTest, UsageMap) {
   service.storage()->UpdateUsageMapAndNotify(kOrigin, 10);
   EXPECT_EQ(1, mock_proxy->notify_storage_modified_count());
   EXPECT_EQ(10, mock_proxy->last_notified_delta());
-  EXPECT_EQ(kOrigin, mock_proxy->last_notified_origin().GetURL());
+  EXPECT_EQ(kOrigin, mock_proxy->last_notified_origin());
   EXPECT_EQ(kTemp, mock_proxy->last_notified_type());
 
   service.storage()->UpdateUsageMapAndNotify(kOrigin, 100);
   EXPECT_EQ(2, mock_proxy->notify_storage_modified_count());
   EXPECT_EQ(90, mock_proxy->last_notified_delta());
-  EXPECT_EQ(kOrigin, mock_proxy->last_notified_origin().GetURL());
+  EXPECT_EQ(kOrigin, mock_proxy->last_notified_origin());
   EXPECT_EQ(kTemp, mock_proxy->last_notified_type());
 
   service.storage()->UpdateUsageMapAndNotify(kOrigin, 0);
   EXPECT_EQ(3, mock_proxy->notify_storage_modified_count());
   EXPECT_EQ(-100, mock_proxy->last_notified_delta());
-  EXPECT_EQ(kOrigin, mock_proxy->last_notified_origin().GetURL());
+  EXPECT_EQ(kOrigin, mock_proxy->last_notified_origin());
   EXPECT_EQ(kTemp, mock_proxy->last_notified_type());
 
   service.storage()->NotifyStorageAccessed(kOrigin2);
@@ -152,7 +152,7 @@ TEST_F(AppCacheStorageTest, UsageMap) {
   service.storage()->usage_map_[kOrigin2] = 1;
   service.storage()->NotifyStorageAccessed(kOrigin2);
   EXPECT_EQ(1, mock_proxy->notify_storage_accessed_count());
-  EXPECT_EQ(kOrigin2, mock_proxy->last_notified_origin().GetURL());
+  EXPECT_EQ(kOrigin2, mock_proxy->last_notified_origin());
   EXPECT_EQ(kTemp, mock_proxy->last_notified_type());
 
   service.storage()->usage_map_.clear();
@@ -160,7 +160,7 @@ TEST_F(AppCacheStorageTest, UsageMap) {
   service.storage()->ClearUsageMapAndNotify();
   EXPECT_EQ(4, mock_proxy->notify_storage_modified_count());
   EXPECT_EQ(-5000, mock_proxy->last_notified_delta());
-  EXPECT_EQ(kOrigin, mock_proxy->last_notified_origin().GetURL());
+  EXPECT_EQ(kOrigin, mock_proxy->last_notified_origin());
   EXPECT_EQ(kTemp, mock_proxy->last_notified_type());
   EXPECT_TRUE(service.storage()->usage_map_.empty());
 }

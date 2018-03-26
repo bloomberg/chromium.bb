@@ -382,8 +382,8 @@ std::unique_ptr<AppCacheJob> AppCacheRequestHandler::MaybeLoadMainResource(
   }
 
   if (storage()->IsInitialized() &&
-      service_->storage()->usage_map()->find(request_->GetURL().GetOrigin()) ==
-          service_->storage()->usage_map()->end()) {
+      !base::ContainsKey(*service_->storage()->usage_map(),
+                         url::Origin::Create(request_->GetURL()))) {
     return nullptr;
   }
 

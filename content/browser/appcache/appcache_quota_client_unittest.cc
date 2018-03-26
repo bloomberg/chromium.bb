@@ -110,7 +110,7 @@ class AppCacheQuotaClientTest : public testing::Test {
   }
 
   void SetUsageMapEntry(const url::Origin& origin, int64_t usage) {
-    mock_service_.storage()->usage_map_[origin.GetURL()] = usage;
+    mock_service_.storage()->usage_map_[origin] = usage;
   }
 
   AppCacheQuotaClient* CreateClient() {

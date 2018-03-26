@@ -206,8 +206,8 @@ void AppCacheURLLoaderJob::OnResponseInfoLoaded(
     // See http://code.google.com/p/chromium/issues/detail?id=50657
     storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
                                                entry_.response_id());
-    AppCacheHistograms::CountResponseRetrieval(false, is_main_resource_load_,
-                                               manifest_url_.GetOrigin());
+    AppCacheHistograms::CountResponseRetrieval(
+        false, is_main_resource_load_, url::Origin::Create(manifest_url_));
   }
   cache_entry_not_found_ = true;
 
@@ -342,7 +342,8 @@ void AppCacheURLLoaderJob::NotifyCompleted(int error_code) {
 
   if (delivery_type_ == APPCACHED_DELIVERY) {
     AppCacheHistograms::CountResponseRetrieval(
-        error_code == 0, is_main_resource_load_, manifest_url_.GetOrigin());
+        error_code == 0, is_main_resource_load_,
+        url::Origin::Create(manifest_url_));
   }
 }
 

@@ -204,7 +204,7 @@ void AppCacheURLRequestJob::OnResponseInfoLoaded(
       storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
                                                  entry_.response_id());
       AppCacheHistograms::CountResponseRetrieval(
-          false, is_main_resource_, manifest_url_.GetOrigin());
+          false, is_main_resource_, url::Origin::Create(manifest_url_));
     }
     cache_entry_not_found_ = true;
 
@@ -229,14 +229,14 @@ void AppCacheURLRequestJob::OnReadComplete(int result) {
   DCHECK(IsDeliveringAppCacheResponse());
   if (result == 0) {
     AppCacheHistograms::CountResponseRetrieval(
-        true, is_main_resource_, manifest_url_.GetOrigin());
+        true, is_main_resource_, url::Origin::Create(manifest_url_));
   } else if (result < 0) {
     if (storage_->service()->storage() == storage_) {
       storage_->service()->CheckAppCacheResponse(manifest_url_, cache_id_,
                                                  entry_.response_id());
     }
     AppCacheHistograms::CountResponseRetrieval(
-        false, is_main_resource_, manifest_url_.GetOrigin());
+        false, is_main_resource_, url::Origin::Create(manifest_url_));
   }
   ReadRawDataComplete(result);
 }

@@ -22,6 +22,7 @@
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace net {
 class URLRequest;
@@ -346,7 +347,7 @@ class CONTENT_EXPORT AppCacheHost
   base::ObserverList<Observer> observers_;
 
   // Used to inform the QuotaManager of what origins are currently in use.
-  GURL origin_in_use_;
+  url::Origin origin_in_use_;
 
   // First party url to be used in policy checks.
   GURL first_party_url_;

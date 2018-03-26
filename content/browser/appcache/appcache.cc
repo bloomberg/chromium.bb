@@ -14,6 +14,7 @@
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_storage.h"
 #include "content/common/appcache_interfaces.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -184,7 +185,7 @@ void AppCache::ToDatabaseRecords(
     cache_record->cache_size += record.response_size;
   }
 
-  GURL origin = group->manifest_url().GetOrigin();
+  const url::Origin origin = url::Origin::Create(group->manifest_url());
 
   for (size_t i = 0; i < intercept_namespaces_.size(); ++i) {
     intercepts->push_back(AppCacheDatabase::NamespaceRecord());

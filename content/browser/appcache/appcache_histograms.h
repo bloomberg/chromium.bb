@@ -12,6 +12,10 @@ namespace base {
 class TimeDelta;
 }
 
+namespace url {
+class Origin;
+}
+
 namespace content {
 
 class AppCacheHistograms {
@@ -24,20 +28,20 @@ class AppCacheHistograms {
   static void CountReinitAttempt(bool repeated_attempt);
   static void CountCorruptionDetected();
   static void CountUpdateJobResult(AppCacheUpdateJob::ResultType result,
-                                   const GURL& origin_url);
+                                   const url::Origin& origin_url);
   enum CheckResponseResultType {
     RESPONSE_OK, MANIFEST_OUT_OF_DATE, RESPONSE_OUT_OF_DATE, ENTRY_NOT_FOUND,
     READ_HEADERS_ERROR, READ_DATA_ERROR, UNEXPECTED_DATA_SIZE, CHECK_CANCELED,
     NUM_CHECK_RESPONSE_RESULT_TYPES
   };
   static void CountCheckResponseResult(CheckResponseResultType result);
-  static void CountResponseRetrieval(
-      bool success, bool is_main_resource, const GURL& origin_url);
-  static void LogUpdateFailureStats(
-      const GURL& origin_url,
-      int percent_complete,
-      bool was_making_progress,
-      bool off_origin_resource_failure);
+  static void CountResponseRetrieval(bool success,
+                                     bool is_main_resource,
+                                     const url::Origin& origin_url);
+  static void LogUpdateFailureStats(const url::Origin& origin_url,
+                                    int percent_complete,
+                                    bool was_making_progress,
+                                    bool off_origin_resource_failure);
   static void AddTaskQueueTimeSample(const base::TimeDelta& duration);
   static void AddTaskRunTimeSample(const base::TimeDelta& duration);
   static void AddCompletionQueueTimeSample(const base::TimeDelta& duration);

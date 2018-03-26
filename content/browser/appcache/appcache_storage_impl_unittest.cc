@@ -524,7 +524,7 @@ class AppCacheStorageImplTest : public testing::Test {
 
     // Since the origin has groups, storage class will have to
     // consult the database and completion will be async.
-    storage()->usage_map_[kOrigin.GetURL()] = kDefaultEntrySize;
+    storage()->usage_map_[kOrigin] = kDefaultEntrySize;
 
     storage()->LoadOrCreateGroup(kManifestUrl, delegate());
     EXPECT_FALSE(delegate()->loaded_group_.get());
@@ -641,7 +641,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_TRUE(database()->FindCache(cache_->cache_id(), &cache_record));
 
     // Verify quota bookkeeping
-    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin.GetURL()]);
+    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
     EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
     EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
     EXPECT_EQ(kDefaultEntrySize, mock_quota_manager_proxy_->last_delta_);
@@ -660,7 +660,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
-    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin.GetURL()]);
+    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
 
     // And a newest unstored complete cache.
     cache2_ = new AppCache(storage(), 2);
@@ -689,7 +689,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_FALSE(database()->FindCache(1, &cache_record));
 
     // Verify quota bookkeeping
-    EXPECT_EQ(kDefaultEntrySize + 100, storage()->usage_map_[kOrigin.GetURL()]);
+    EXPECT_EQ(kDefaultEntrySize + 100, storage()->usage_map_[kOrigin]);
     EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
     EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
     EXPECT_EQ(100, mock_quota_manager_proxy_->last_delta_);
@@ -707,7 +707,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and old complete cache
     // that appear to be "stored"
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
-    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin.GetURL()]);
+    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
 
     // Change the cache.
     base::Time now = base::Time::Now();
@@ -749,7 +749,7 @@ class AppCacheStorageImplTest : public testing::Test {
     EXPECT_EQ(100, entry_records[0].response_size);
 
     // Verify quota bookkeeping
-    EXPECT_EQ(100 + kDefaultEntrySize, storage()->usage_map_[kOrigin.GetURL()]);
+    EXPECT_EQ(100 + kDefaultEntrySize, storage()->usage_map_[kOrigin]);
     EXPECT_EQ(1, mock_quota_manager_proxy_->notify_storage_modified_count_);
     EXPECT_EQ(kOrigin, mock_quota_manager_proxy_->last_origin_);
     EXPECT_EQ(100, mock_quota_manager_proxy_->last_delta_);
@@ -807,7 +807,7 @@ class AppCacheStorageImplTest : public testing::Test {
     // Setup some preconditions. Create a group and newest cache that
     // appears to be "stored" and "currently in use".
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
-    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin.GetURL()]);
+    EXPECT_EQ(kDefaultEntrySize, storage()->usage_map_[kOrigin]);
 
     // Also insert some related records.
     AppCacheDatabase::EntryRecord entry_record;
@@ -821,7 +821,7 @@ class AppCacheStorageImplTest : public testing::Test {
     fallback_namespace_record.cache_id = 1;
     fallback_namespace_record.namespace_.target_url = kEntryUrl;
     fallback_namespace_record.namespace_.namespace_url = kFallbackNamespace;
-    fallback_namespace_record.origin = kManifestUrl.GetOrigin();
+    fallback_namespace_record.origin = url::Origin::Create(kManifestUrl);
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
 
     AppCacheDatabase::OnlineWhiteListRecord online_whitelist_record;
@@ -1392,7 +1392,7 @@ class AppCacheStorageImplTest : public testing::Test {
     fallback_namespace_record.cache_id = id;
     fallback_namespace_record.namespace_.target_url = entry_record.url;
     fallback_namespace_record.namespace_.namespace_url = kFallbackNamespace;
-    fallback_namespace_record.origin = manifest_url.GetOrigin();
+    fallback_namespace_record.origin = url::Origin::Create(manifest_url);
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
     cache_->fallback_namespaces_.push_back(
         AppCacheNamespace(APPCACHE_FALLBACK_NAMESPACE,
@@ -1535,7 +1535,7 @@ class AppCacheStorageImplTest : public testing::Test {
     fallback_namespace_record.cache_id = 1;
     fallback_namespace_record.namespace_.target_url = kEntryUrl2;
     fallback_namespace_record.namespace_.namespace_url = kFallbackNamespace;
-    fallback_namespace_record.origin = kManifestUrl.GetOrigin();
+    fallback_namespace_record.origin = url::Origin::Create(kManifestUrl);
     EXPECT_TRUE(database()->InsertNamespace(&fallback_namespace_record));
     whitelist_record.cache_id = 1;
     whitelist_record.namespace_url = kOnlineNamespaceWithinFallback;
@@ -1689,7 +1689,7 @@ class AppCacheStorageImplTest : public testing::Test {
       AppCacheDatabase::GroupRecord group_record;
       group_record.group_id = 1;
       group_record.manifest_url = manifest_url;
-      group_record.origin = manifest_url.GetOrigin();
+      group_record.origin = url::Origin::Create(manifest_url);
       EXPECT_TRUE(db.InsertGroup(&group_record));
       AppCacheDatabase::CacheRecord cache_record;
       cache_record.cache_id = 1;
@@ -1839,11 +1839,12 @@ class AppCacheStorageImplTest : public testing::Test {
     cache_->AddEntry(kDefaultEntryUrl, default_entry);
     cache_->set_complete(true);
     group_->AddCache(cache_.get());
+    url::Origin manifest_origin(url::Origin::Create(manifest_url));
     if (add_to_database) {
       AppCacheDatabase::GroupRecord group_record;
       group_record.group_id = group_id;
       group_record.manifest_url = manifest_url;
-      group_record.origin = manifest_url.GetOrigin();
+      group_record.origin = manifest_origin;
       EXPECT_TRUE(database()->InsertGroup(&group_record));
       AppCacheDatabase::CacheRecord cache_record;
       cache_record.cache_id = cache_id;
@@ -1860,8 +1861,7 @@ class AppCacheStorageImplTest : public testing::Test {
       entry_record.response_size = default_entry.response_size();
       EXPECT_TRUE(database()->InsertEntry(&entry_record));
 
-      storage()->usage_map_[manifest_url.GetOrigin()] =
-          default_entry.response_size();
+      storage()->usage_map_[manifest_origin] = default_entry.response_size();
     }
   }
 

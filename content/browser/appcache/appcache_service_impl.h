@@ -110,7 +110,8 @@ class CONTENT_EXPORT AppCacheServiceImpl
   // completion. This method always completes asynchronously.
   // (virtual for unit testing)
   virtual void DeleteAppCachesForOrigin(
-      const GURL& origin, const net::CompletionCallback& callback);
+      const url::Origin& origin,
+      const net::CompletionCallback& callback);
 
   // Checks the integrity of 'response_id' by reading the headers and data.
   // If it cannot be read, the cache group for 'manifest_url' is deleted.

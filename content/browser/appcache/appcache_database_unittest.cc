@@ -49,7 +49,7 @@ TEST(AppCacheDatabaseTest, LazyOpen) {
   EXPECT_EQ(0, response_id);
   EXPECT_EQ(0, deleteable_response_rowid);
 
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   EXPECT_TRUE(db.FindOriginsWithGroups(&origins));
   EXPECT_TRUE(origins.empty());
 }
@@ -140,7 +140,7 @@ TEST(AppCacheDatabaseTest, WasCorrutionDetected) {
   {
     sql::test::ScopedErrorExpecter expecter;
     expecter.ExpectError(SQLITE_CORRUPT);
-    std::map<GURL, int64_t> usage_map;
+    std::map<url::Origin, int64_t> usage_map;
     EXPECT_FALSE(db.GetAllOriginUsage(&usage_map));
     EXPECT_TRUE(db.was_corruption_detected());
     EXPECT_TRUE(base::PathExists(kDbFile));
@@ -320,7 +320,7 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   expecter.ExpectError(SQLITE_CONSTRAINT);
 
   const GURL kManifestUrl("http://blah/manifest");
-  const GURL kOrigin(kManifestUrl.GetOrigin());
+  const url::Origin kOrigin(url::Origin::Create(kManifestUrl));
   const base::Time kLastAccessTime = base::Time::Now();
   const base::Time kCreationTime =
       kLastAccessTime - base::TimeDelta::FromDays(7);
@@ -369,16 +369,16 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
             record.last_access_time.ToInternalValue());
 
   record.group_id = 2;
-  record.manifest_url = kOrigin;
+  record.manifest_url = kOrigin.GetURL();
   record.origin = kOrigin;
   record.last_access_time = kLastAccessTime;
   record.creation_time = kCreationTime;
   EXPECT_TRUE(db.InsertGroup(&record));
 
   record = kZeroRecord;
-  EXPECT_TRUE(db.FindGroupForManifestUrl(kOrigin, &record));
+  EXPECT_TRUE(db.FindGroupForManifestUrl(kOrigin.GetURL(), &record));
   EXPECT_EQ(2, record.group_id);
-  EXPECT_EQ(kOrigin, record.manifest_url);
+  EXPECT_EQ(kOrigin.GetURL(), record.manifest_url);
   EXPECT_EQ(kOrigin, record.origin);
   EXPECT_EQ(kCreationTime.ToInternalValue(),
             record.creation_time.ToInternalValue());
@@ -391,7 +391,7 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   EXPECT_EQ(kManifestUrl, records[0].manifest_url);
   EXPECT_EQ(kOrigin, records[0].origin);
   EXPECT_EQ(2, records[1].group_id);
-  EXPECT_EQ(kOrigin, records[1].manifest_url);
+  EXPECT_EQ(kOrigin.GetURL(), records[1].manifest_url);
   EXPECT_EQ(kOrigin, records[1].origin);
 
   EXPECT_TRUE(db.DeleteGroup(1));
@@ -400,20 +400,20 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   EXPECT_TRUE(db.FindGroupsForOrigin(kOrigin, &records));
   EXPECT_EQ(1U, records.size());
   EXPECT_EQ(2, records[0].group_id);
-  EXPECT_EQ(kOrigin, records[0].manifest_url);
+  EXPECT_EQ(kOrigin.GetURL(), records[0].manifest_url);
   EXPECT_EQ(kOrigin, records[0].origin);
   EXPECT_EQ(kCreationTime.ToInternalValue(),
             record.creation_time.ToInternalValue());
   EXPECT_EQ(kLastAccessTime.ToInternalValue(),
             record.last_access_time.ToInternalValue());
 
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   EXPECT_TRUE(db.FindOriginsWithGroups(&origins));
   EXPECT_EQ(1U, origins.size());
   EXPECT_EQ(kOrigin, *(origins.begin()));
 
   const GURL kManifest2("http://blah2/manifest");
-  const GURL kOrigin2(kManifest2.GetOrigin());
+  const url::Origin kOrigin2(url::Origin::Create(kManifest2));
   record.group_id = 1;
   record.manifest_url = kManifest2;
   record.origin = kOrigin2;
@@ -447,7 +447,7 @@ TEST(AppCacheDatabaseTest, GroupAccessAndEvictionTimes) {
   EXPECT_TRUE(db.LazyOpen(true));
 
   const GURL kManifestUrl("http://blah/manifest");
-  const GURL kOrigin(kManifestUrl.GetOrigin());
+  const url::Origin kOrigin(url::Origin::Create(kManifestUrl));
   const base::Time kDayOne =
       base::Time() + base::TimeDelta::FromDays(1);
   const base::Time kDayTwo = kDayOne + base::TimeDelta::FromDays(1);
@@ -526,11 +526,11 @@ TEST(AppCacheDatabaseTest, NamespaceRecords) {
   const GURL kFooNameSpace1("http://foo/namespace1");
   const GURL kFooNameSpace2("http://foo/namespace2");
   const GURL kFooFallbackEntry("http://foo/entry");
-  const GURL kFooOrigin(kFooNameSpace1.GetOrigin());
+  const url::Origin kFooOrigin(url::Origin::Create(kFooNameSpace1));
   const GURL kBarNameSpace1("http://bar/namespace1");
   const GURL kBarNameSpace2("http://bar/namespace2");
   const GURL kBarFallbackEntry("http://bar/entry");
-  const GURL kBarOrigin(kBarNameSpace1.GetOrigin());
+  const url::Origin kBarOrigin(url::Origin::Create(kBarNameSpace1));
 
   const AppCacheDatabase::NamespaceRecord kZeroRecord;
   AppCacheDatabase::NamespaceRecord record;
@@ -759,9 +759,9 @@ TEST(AppCacheDatabaseTest, DeletableResponseIds) {
 TEST(AppCacheDatabaseTest, OriginUsage) {
   const GURL kManifestUrl("http://blah/manifest");
   const GURL kManifestUrl2("http://blah/manifest2");
-  const GURL kOrigin(kManifestUrl.GetOrigin());
+  const url::Origin kOrigin = url::Origin::Create(kManifestUrl);
   const GURL kOtherOriginManifestUrl("http://other/manifest");
-  const GURL kOtherOrigin(kOtherOriginManifestUrl.GetOrigin());
+  const url::Origin kOtherOrigin = url::Origin::Create(kOtherOriginManifestUrl);
 
   const base::FilePath kEmptyPath;
   AppCacheDatabase db(kEmptyPath);
@@ -819,7 +819,7 @@ TEST(AppCacheDatabaseTest, OriginUsage) {
   EXPECT_TRUE(db.FindCachesForOrigin(kOtherOrigin, &cache_records));
   EXPECT_EQ(1U, cache_records.size());
 
-  std::map<GURL, int64_t> usage_map;
+  std::map<url::Origin, int64_t> usage_map;
   EXPECT_TRUE(db.GetAllOriginUsage(&usage_map));
   EXPECT_EQ(2U, usage_map.size());
   EXPECT_EQ(1100, usage_map[kOrigin]);
@@ -1043,8 +1043,8 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to7) {
 
   std::vector<AppCacheDatabase::NamespaceRecord> intercepts;
   std::vector<AppCacheDatabase::NamespaceRecord> fallbacks;
-  EXPECT_TRUE(db.FindNamespacesForOrigin(kMockOrigin, &intercepts,
-                                         &fallbacks));
+  EXPECT_TRUE(db.FindNamespacesForOrigin(url::Origin::Create(kMockOrigin),
+                                         &intercepts, &fallbacks));
   EXPECT_TRUE(intercepts.empty());
   EXPECT_EQ(kNumNamespaces, static_cast<int>(fallbacks.size()));
 
@@ -1062,7 +1062,7 @@ TEST(AppCacheDatabaseTest, UpgradeSchema4to7) {
 
     EXPECT_EQ(i, fallbacks[i].cache_id);
     EXPECT_EQ(APPCACHE_FALLBACK_NAMESPACE, fallbacks[i].namespace_.type);
-    EXPECT_EQ(kMockOrigin, fallbacks[i].origin);
+    EXPECT_EQ(url::Origin::Create(kMockOrigin), fallbacks[i].origin);
     EXPECT_EQ(expected_namespace_url, fallbacks[i].namespace_.namespace_url);
     EXPECT_EQ(expected_target_url, fallbacks[i].namespace_.target_url);
     EXPECT_FALSE(fallbacks[i].namespace_.is_pattern);

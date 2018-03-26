@@ -19,6 +19,7 @@
 #include "content/browser/appcache/appcache_working_set.h"
 #include "content/common/content_export.h"
 #include "net/base/completion_callback.h"
+#include "url/origin.h"
 
 class GURL;
 
@@ -44,7 +45,7 @@ struct HttpResponseInfoIOBuffer;
 
 class CONTENT_EXPORT AppCacheStorage {
  public:
-  using UsageMap = std::map<GURL, int64_t>;
+  using UsageMap = std::map<url::Origin, int64_t>;
 
   class CONTENT_EXPORT Delegate {
    public:
@@ -312,9 +313,9 @@ class CONTENT_EXPORT AppCacheStorage {
   int64_t NewResponseId() { return ++last_response_id_; }
 
   // Helpers to query and notify the QuotaManager.
-  void UpdateUsageMapAndNotify(const GURL& origin, int64_t new_usage);
+  void UpdateUsageMapAndNotify(const url::Origin& origin, int64_t new_usage);
   void ClearUsageMapAndNotify();
-  void NotifyStorageAccessed(const GURL& origin);
+  void NotifyStorageAccessed(const url::Origin& origin);
 
   // The last storage id used for different object types.
   int64_t last_cache_id_;

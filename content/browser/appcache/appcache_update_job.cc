@@ -1366,7 +1366,8 @@ void AppCacheUpdateJob::DiscardDuplicateResponses() {
 
 void AppCacheUpdateJob::LogHistogramStats(
       ResultType result, const GURL& failed_resource_url) {
-  AppCacheHistograms::CountUpdateJobResult(result, manifest_url_.GetOrigin());
+  AppCacheHistograms::CountUpdateJobResult(result,
+                                           url::Origin::Create(manifest_url_));
   if (result == UPDATE_OK)
     return;
 
@@ -1389,9 +1390,7 @@ void AppCacheUpdateJob::LogHistogramStats(
           (failed_resource_url.GetOrigin() != manifest_url_.GetOrigin());
 
   AppCacheHistograms::LogUpdateFailureStats(
-      manifest_url_.GetOrigin(),
-      percent_complete,
-      was_making_progress,
+      url::Origin::Create(manifest_url_), percent_complete, was_making_progress,
       off_origin_resource_failure);
 }
 

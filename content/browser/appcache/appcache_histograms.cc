@@ -5,13 +5,13 @@
 #include "content/browser/appcache/appcache_histograms.h"
 
 #include "base/metrics/histogram_macros.h"
-#include "base/metrics/histogram_macros.h"
 #include "content/public/common/origin_util.h"
+#include "url/origin.h"
 
 namespace content {
 
-static std::string OriginToCustomHistogramSuffix(const GURL& origin_url) {
-  if (origin_url.host_piece() == "docs.google.com")
+static std::string OriginToCustomHistogramSuffix(const url::Origin& origin) {
+  if (origin.host() == "docs.google.com")
     return ".Docs";
   return std::string();
 }
@@ -32,12 +32,12 @@ void AppCacheHistograms::CountCorruptionDetected() {
 
 void AppCacheHistograms::CountUpdateJobResult(
     AppCacheUpdateJob::ResultType result,
-    const GURL& origin_url) {
+    const url::Origin& origin) {
   UMA_HISTOGRAM_ENUMERATION(
        "appcache.UpdateJobResult",
        result, AppCacheUpdateJob::NUM_UPDATE_JOB_RESULT_TYPES);
 
-  const std::string suffix = OriginToCustomHistogramSuffix(origin_url);
+  const std::string suffix = OriginToCustomHistogramSuffix(origin);
   if (!suffix.empty()) {
     base::LinearHistogram::FactoryGet(
         "appcache.UpdateJobResult" + suffix,
@@ -55,20 +55,22 @@ void AppCacheHistograms::CountCheckResponseResult(
        result, NUM_CHECK_RESPONSE_RESULT_TYPES);
 }
 
-void AppCacheHistograms::CountResponseRetrieval(
-    bool success, bool is_main_resource, const GURL& origin_url) {
+void AppCacheHistograms::CountResponseRetrieval(bool success,
+                                                bool is_main_resource,
+                                                const url::Origin& origin) {
   std::string label;
   if (is_main_resource) {
     label = "appcache.MainResourceResponseRetrieval";
     UMA_HISTOGRAM_BOOLEAN(label, success);
 
     // Also count HTTP vs HTTPS appcache usage.
-    UMA_HISTOGRAM_BOOLEAN("appcache.MainPageLoad", IsOriginSecure(origin_url));
+    UMA_HISTOGRAM_BOOLEAN("appcache.MainPageLoad",
+                          IsOriginSecure(origin.GetURL()));
   } else {
     label = "appcache.SubResourceResponseRetrieval";
     UMA_HISTOGRAM_BOOLEAN(label, success);
   }
-  const std::string suffix = OriginToCustomHistogramSuffix(origin_url);
+  const std::string suffix = OriginToCustomHistogramSuffix(origin);
   if (!suffix.empty()) {
     base::BooleanHistogram::FactoryGet(
         label + suffix,
@@ -77,11 +79,11 @@ void AppCacheHistograms::CountResponseRetrieval(
 }
 
 void AppCacheHistograms::LogUpdateFailureStats(
-      const GURL& origin_url,
-      int percent_complete,
-      bool was_stalled,
-      bool was_off_origin_resource_failure) {
-  const std::string suffix = OriginToCustomHistogramSuffix(origin_url);
+    const url::Origin& origin,
+    int percent_complete,
+    bool was_stalled,
+    bool was_off_origin_resource_failure) {
+  const std::string suffix = OriginToCustomHistogramSuffix(origin);
 
   std::string label = "appcache.UpdateProgressAtPointOfFaliure";
   UMA_HISTOGRAM_PERCENTAGE(label, percent_complete);
