@@ -64,7 +64,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
   };
 
   WebSocket(std::unique_ptr<Delegate> delegate,
-            network::mojom::WebSocketRequest request,
+            mojom::WebSocketRequest request,
             WebSocketThrottler::PendingConnection pending_connection_tracker,
             int child_id,
             int frame_id,
@@ -76,14 +76,14 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
   // This function is virtual for testing.
   virtual void GoAway();
 
-  // network::mojom::WebSocket methods:
+  // mojom::WebSocket methods:
   void AddChannelRequest(const GURL& url,
                          const std::vector<std::string>& requested_protocols,
                          const GURL& site_for_cookies,
                          const std::string& user_agent_override,
-                         network::mojom::WebSocketClientPtr client) override;
+                         mojom::WebSocketClientPtr client) override;
   void SendFrame(bool fin,
-                 network::mojom::WebSocketMessageType type,
+                 mojom::WebSocketMessageType type,
                  const std::vector<uint8_t>& data) override;
   void SendFlowControl(int64_t quota) override;
   void StartClosingHandshake(uint16_t code, const std::string& reason) override;
@@ -100,9 +100,9 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocket
                   const std::string& user_agent_override);
 
   std::unique_ptr<Delegate> delegate_;
-  mojo::Binding<network::mojom::WebSocket> binding_;
+  mojo::Binding<mojom::WebSocket> binding_;
 
-  network::mojom::WebSocketClientPtr client_;
+  mojom::WebSocketClientPtr client_;
 
   WebSocketThrottler::PendingConnection pending_connection_tracker_;
 
