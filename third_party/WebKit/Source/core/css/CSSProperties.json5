@@ -507,6 +507,8 @@
       name_for_methods: "SizeAdjust",
       converter: "ConvertFontSizeAdjust",
       priority: "High",
+      keywords: ["none"],
+      typedom_types: ["Keyword", "Number"]
     },
     {
       name: "font-stretch",
@@ -517,6 +519,11 @@
       name_for_methods: "Stretch",
       converter: "ConvertFontStretch",
       priority: "High",
+      keywords: [
+        "normal", "ultra-condensed", "extra-condensed", "condensed",
+        "semi-condensed", "semi-expanded", "expanded", "extra-expanded", "ultra-expanded"
+      ],
+      typedom_types: ["Keyword", "Percentage"]
     },
     {
       name: "font-style",
@@ -599,6 +606,8 @@
       name_for_methods: "VariationSettings",
       converter: "ConvertFontVariationSettings",
       priority: "High",
+      keywords: ["normal"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "-webkit-font-smoothing",
