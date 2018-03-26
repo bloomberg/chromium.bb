@@ -159,8 +159,6 @@ void ShellBrowserMainParts::SetupFieldTrials() {
   DCHECK(!field_trial_list_);
   field_trial_list_.reset(new base::FieldTrialList(nullptr));
 
-  std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-
   const base::CommandLine* command_line =
       base::CommandLine::ForCurrentProcess();
 
@@ -174,10 +172,6 @@ void ShellBrowserMainParts::SetupFieldTrials() {
     CHECK(result) << "Invalid --" << ::switches::kForceFieldTrials
                   << " list specified.";
   }
-
-  feature_list->InitializeFromCommandLine(
-      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
 }
 
 int ShellBrowserMainParts::PreCreateThreads() {
