@@ -2169,14 +2169,6 @@ if (enable_java_templates) {
       _srcjar_deps += [ ":${_template_name}__build_config_java" ]
     }
 
-    _version_resources_target = "${_template_name}__version_resources"
-    jinja_template_resources(_version_resources_target) {
-      res_dir = "//build/android/res_templates"
-      resources = [ "//build/android/res_templates/values/version_strings.xml" ]
-      variables = [ "product_version=$_version_name" ]
-    }
-    _deps += [ ":$_version_resources_target" ]
-
     _java_target = "${_template_name}__java"
     java_library_impl(_java_target) {
       forward_variables_from(invoker,
