@@ -35,6 +35,7 @@
 
 #include "base/macros.h"
 #include "platform/PlatformExport.h"
+#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/heap/BlinkGC.h"
 #include "platform/heap/ThreadingTraits.h"
 #include "platform/wtf/AddressSanitizer.h"
@@ -349,6 +350,21 @@ class PLATFORM_EXPORT ThreadState {
     DCHECK(object_resurrection_forbidden_);
     object_resurrection_forbidden_ = false;
   }
+  bool in_atomic_pause() const { return in_atomic_pause_; }
+  void EnterAtomicPause() {
+    DCHECK(!in_atomic_pause_);
+    in_atomic_pause_ = true;
+  }
+  void LeaveAtomicPause() {
+    DCHECK(in_atomic_pause_);
+    in_atomic_pause_ = false;
+  }
+  bool InAtomicMarkingPause() const {
+    return in_atomic_pause() && IsMarkingInProgress();
+  }
+  bool InAtomicSweepingPause() const {
+    return in_atomic_pause() && IsSweepingInProgress();
+  }
 
   bool WrapperTracingInProgress() const { return wrapper_tracing_in_progress_; }
   void SetWrapperTracingInProgress(bool value) {
@@ -384,6 +400,20 @@ class PLATFORM_EXPORT ThreadState {
 
    private:
     ThreadState* const thread_state_;
+  };
+
+  // Used to mark when we are in an atomic pause for GC.
+  class AtomicPauseScope final {
+   public:
+    explicit AtomicPauseScope(ThreadState* thread_state)
+        : thread_state_(thread_state) {
+      thread_state_->EnterAtomicPause();
+    }
+    ~AtomicPauseScope() { thread_state_->LeaveAtomicPause(); }
+
+   private:
+    ThreadState* const thread_state_;
+    ScriptForbiddenScope script_forbidden_scope;
   };
 
   void FlushHeapDoesNotContainCacheIfNeeded();
@@ -654,6 +684,7 @@ class PLATFORM_EXPORT ThreadState {
   size_t mixins_being_constructed_count_;
   double accumulated_sweeping_time_;
   bool object_resurrection_forbidden_;
+  bool in_atomic_pause_;
 
   GarbageCollectedMixinConstructorMarkerBase* gc_mixin_marker_;
 

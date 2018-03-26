@@ -42,7 +42,6 @@
 #include "build/build_config.h"
 #include "platform/Histogram.h"
 #include "platform/bindings/RuntimeCallStats.h"
-#include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
 #include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
@@ -154,6 +153,7 @@ ThreadState::ThreadState()
       mixins_being_constructed_count_(0),
       accumulated_sweeping_time_(0),
       object_resurrection_forbidden_(false),
+      in_atomic_pause_(false),
       gc_mixin_marker_(nullptr),
       gc_state_(kNoGCScheduled),
       gc_phase_(GCPhase::kNone),
@@ -650,8 +650,8 @@ void ThreadState::PerformIdleLazySweep(double deadline_seconds) {
                "ThreadState::performIdleLazySweep", "idleDeltaInSeconds",
                deadline_seconds - CurrentTimeTicksInSeconds());
 
+  AtomicPauseScope atomic_pause_scope(this);
   SweepForbiddenScope scope(this);
-  ScriptForbiddenScope script_forbidden_scope;
 
   double start_time = WTF::CurrentTimeTicksInMilliseconds();
   bool sweep_completed = Heap().AdvanceLazySweep(deadline_seconds);
@@ -916,7 +916,6 @@ void ThreadState::PreSweep(BlinkGC::MarkingType marking_type,
   // schedule compaction until those have run. Similarly for eager sweeping.
   {
     SweepForbiddenScope scope(this);
-    ScriptForbiddenScope script_forbidden_scope;
     NoAllocationScope no_allocation_scope(this);
     Heap().Compact();
   }
@@ -924,15 +923,6 @@ void ThreadState::PreSweep(BlinkGC::MarkingType marking_type,
 #if defined(ADDRESS_SANITIZER)
   Heap().PoisonAllHeaps();
 #endif
-
-  if (sweeping_type == BlinkGC::kEagerSweeping) {
-    // Eager sweeping should happen only in testing.
-    CompleteSweep();
-  } else {
-    DCHECK(sweeping_type == BlinkGC::kLazySweeping);
-    // The default behavior is lazy sweeping.
-    ScheduleIdleLazySweep();
-  }
 }
 
 void ThreadState::EagerSweep() {
@@ -946,7 +936,6 @@ void ThreadState::EagerSweep() {
   DCHECK(IsSweepingInProgress());
 
   SweepForbiddenScope scope(this);
-  ScriptForbiddenScope script_forbidden_scope;
 
   double start_time = WTF::CurrentTimeTicksInMilliseconds();
   Heap().Arena(BlinkGC::kEagerSweepArenaIndex)->CompleteSweep();
@@ -965,8 +954,8 @@ void ThreadState::CompleteSweep() {
   if (SweepForbidden())
     return;
 
+  AtomicPauseScope atomic_pause_scope(this);
   SweepForbiddenScope scope(this);
-  ScriptForbiddenScope script_forbidden_scope;
 
   TRACE_EVENT0("blink_gc,devtools.timeline", "ThreadState::completeSweep");
   double start_time = WTF::CurrentTimeTicksInMilliseconds();
@@ -1238,7 +1227,6 @@ void ThreadState::InvokePreFinalizers() {
   TRACE_EVENT0("blink_gc", "ThreadState::invokePreFinalizers");
 
   SweepForbiddenScope sweep_forbidden(this);
-  ScriptForbiddenScope script_forbidden;
   // Pre finalizers may access unmarked objects but are forbidden from
   // ressurecting them.
   ObjectResurrectionForbiddenScope object_resurrection_forbidden(this);
@@ -1275,6 +1263,7 @@ void ThreadState::InvokePreFinalizers() {
 void ThreadState::IncrementalMarkingStart() {
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Start";
+  AtomicPauseScope atomic_pause_scope(this);
   Heap().EnableIncrementalMarkingBarrier();
   ScheduleIncrementalMarkingStep();
 }
@@ -1282,12 +1271,14 @@ void ThreadState::IncrementalMarkingStart() {
 void ThreadState::IncrementalMarkingStep() {
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Step";
+  AtomicPauseScope atomic_pause_scope(this);
   ScheduleIncrementalMarkingFinalize();
 }
 
 void ThreadState::IncrementalMarkingFinalize() {
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Finalize";
+  AtomicPauseScope atomic_pause_scope(this);
   Heap().DisableIncrementalMarkingBarrier();
   SetGCState(kNoGCScheduled);
 }
@@ -1314,26 +1305,38 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   GCForbiddenScope gc_forbidden_scope(this);
 
   {
-    // Access to the CrossThreadPersistentRegion has to be prevented
-    // while in the marking phase because otherwise other threads may
-    // allocate or free PersistentNodes and we can't handle
-    // that. Grabbing this lock also prevents non-attached threads
-    // from accessing any GCed heap while a GC runs.
-    RecursiveMutexLocker persistent_lock(
-        ProcessHeap::CrossThreadPersistentMutex());
-
+    AtomicPauseScope atomic_pause_scope(this);
     {
-      TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking",
-                   "lazySweeping", sweeping_type == BlinkGC::kLazySweeping,
-                   "gcReason", GcReasonString(reason));
-      MarkPhasePrologue(stack_state, marking_type, reason);
-      MarkPhaseVisitRoots();
-      CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
-      MarkPhaseEpilogue(marking_type);
+      // Access to the CrossThreadPersistentRegion has to be prevented
+      // while in the marking phase because otherwise other threads may
+      // allocate or free PersistentNodes and we can't handle
+      // that. Grabbing this lock also prevents non-attached threads
+      // from accessing any GCed heap while a GC runs.
+      RecursiveMutexLocker persistent_lock(
+          ProcessHeap::CrossThreadPersistentMutex());
+
+      {
+        TRACE_EVENT2("blink_gc,devtools.timeline", "BlinkGCMarking",
+                     "lazySweeping", sweeping_type == BlinkGC::kLazySweeping,
+                     "gcReason", GcReasonString(reason));
+        MarkPhasePrologue(stack_state, marking_type, reason);
+        MarkPhaseVisitRoots();
+        CHECK(MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity()));
+        MarkPhaseEpilogue(marking_type);
+      }
     }
+
+    PreSweep(marking_type, sweeping_type);
   }
 
-  PreSweep(marking_type, sweeping_type);
+  if (sweeping_type == BlinkGC::kEagerSweeping) {
+    // Eager sweeping should happen only in testing.
+    CompleteSweep();
+  } else {
+    DCHECK(sweeping_type == BlinkGC::kLazySweeping);
+    // The default behavior is lazy sweeping.
+    ScheduleIdleLazySweep();
+  }
 
   double total_collect_garbage_time =
       WTF::CurrentTimeTicksInMilliseconds() - start_total_collect_garbage_time;
@@ -1400,7 +1403,6 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
 void ThreadState::MarkPhaseVisitRoots() {
   double start_time = WTF::CurrentTimeTicksInMilliseconds();
 
-  ScriptForbiddenScope script_forbidden;
   // Disallow allocation during garbage collection (but not during the
   // finalization that happens when the visitorScope is torn down).
   NoAllocationScope no_allocation_scope(this);
@@ -1426,7 +1428,6 @@ void ThreadState::MarkPhaseVisitRoots() {
 bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
   double start_time = WTF::CurrentTimeTicksInMilliseconds();
 
-  ScriptForbiddenScope script_forbidden;
   // Disallow allocation during garbage collection (but not during the
   // finalization that happens when the visitorScope is torn down).
   NoAllocationScope no_allocation_scope(this);

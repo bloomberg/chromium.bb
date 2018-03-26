@@ -507,8 +507,8 @@ void ThreadHeap::ReportMemoryUsageForTracing() {
 
 size_t ThreadHeap::ObjectPayloadSizeForTesting() {
   size_t object_payload_size = 0;
-  thread_state_->SetGCState(ThreadState::kGCRunning);
   thread_state_->SetGCPhase(ThreadState::GCPhase::kMarking);
+  thread_state_->SetGCState(ThreadState::kGCRunning);
   thread_state_->Heap().MakeConsistentForGC();
   thread_state_->Heap().PrepareForSweep();
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
