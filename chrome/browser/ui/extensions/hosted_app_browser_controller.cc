@@ -25,6 +25,7 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/renderer_preferences.h"
+#include "content/public/common/web_preferences.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension.h"
 #include "ui/gfx/favicon_size.h"
@@ -87,11 +88,22 @@ bool HostedAppBrowserController::IsForExperimentalHostedAppBrowser(
 
 // static
 void HostedAppBrowserController::SetAppPrefsForWebContents(
+    HostedAppBrowserController* controller,
     content::WebContents* web_contents) {
   auto* rvh = web_contents->GetRenderViewHost();
 
   web_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;
   rvh->SyncRendererPrefs();
+
+  // This function could be called for non Hosted Apps.
+  if (!controller)
+    return;
+
+  if (controller->created_for_installed_pwa()) {
+    content::WebPreferences prefs = rvh->GetWebkitPreferences();
+    prefs.strict_mixed_content_checking = true;
+    rvh->UpdateWebkitPreferences(prefs);
+  }
 }
 
 base::string16 HostedAppBrowserController::FormatUrlOrigin(const GURL& url) {
@@ -242,7 +254,7 @@ void HostedAppBrowserController::TabInsertedAt(TabStripModel* tab_strip_model,
                                                content::WebContents* contents,
                                                int index,
                                                bool foreground) {
-  HostedAppBrowserController::SetAppPrefsForWebContents(contents);
+  HostedAppBrowserController::SetAppPrefsForWebContents(this, contents);
 }
 
 void HostedAppBrowserController::TabDetachedAt(content::WebContents* contents,
@@ -251,6 +263,12 @@ void HostedAppBrowserController::TabDetachedAt(content::WebContents* contents,
 
   contents->GetMutableRendererPrefs()->can_accept_load_drops = true;
   rvh->SyncRendererPrefs();
+
+  if (created_for_installed_pwa_) {
+    content::WebPreferences prefs = rvh->GetWebkitPreferences();
+    prefs.strict_mixed_content_checking = false;
+    rvh->UpdateWebkitPreferences(prefs);
+  }
 }
 
 }  // namespace extensions
