@@ -17,6 +17,13 @@ std::vector<uint8_t> Materialize(base::span<const uint8_t> span) {
   return std::vector<uint8_t>(span.begin(), span.end());
 }
 
+base::Optional<std::vector<uint8_t>> MaterializeOrNull(
+    base::Optional<base::span<const uint8_t>> span) {
+  if (span)
+    return Materialize(*span);
+  return base::nullopt;
+}
+
 void Append(std::vector<uint8_t>* target, base::span<const uint8_t> in_values) {
   target->insert(target->end(), in_values.begin(), in_values.end());
 }

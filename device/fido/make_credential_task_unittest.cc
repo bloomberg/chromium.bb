@@ -13,6 +13,7 @@
 #include "device/fido/authenticator_make_credential_response.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
+#include "device/fido/fido_response_test_data.h"
 #include "device/fido/make_credential_task.h"
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
@@ -76,22 +77,12 @@ MATCHER_P(IndicatesDeviceTransactWithCommand, expected, "") {
 TEST_F(FidoMakeCredentialTaskTest, TestMakeCredentialSuccess) {
   auto device = std::make_unique<MockFidoDevice>();
 
-  EXPECT_CALL(*device, TryWinkRef(_))
-      .WillRepeatedly(testing::Invoke(MockFidoDevice::WinkDoNothing));
-
-  EXPECT_CALL(*device,
-              DeviceTransactPtr(
-                  IndicatesDeviceTransactWithCommand(base::strict_cast<uint8_t>(
-                      CtapRequestCommand::kAuthenticatorGetInfo)),
-                  _))
-      .WillOnce(testing::Invoke(MockFidoDevice::NoErrorGetInfo));
-
-  EXPECT_CALL(*device,
-              DeviceTransactPtr(
-                  IndicatesDeviceTransactWithCommand(base::strict_cast<uint8_t>(
-                      CtapRequestCommand::kAuthenticatorMakeCredential)),
-                  _))
-      .WillOnce(testing::Invoke(MockFidoDevice::NoErrorMakeCredential));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo,
+      test_data::kTestAuthenticatorGetInfoResponse);
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorMakeCredential,
+      test_data::kTestMakeCredentialResponse);
 
   const auto task = CreateMakeCredentialTask(device.get());
   make_credential_callback_receiver().WaitForCallback();
@@ -106,14 +97,8 @@ TEST_F(FidoMakeCredentialTaskTest, TestMakeCredentialSuccess) {
 TEST_F(FidoMakeCredentialTaskTest, TestIncorrectAuthenticatorGetInfoResponse) {
   auto device = std::make_unique<MockFidoDevice>();
 
-  EXPECT_CALL(*device, TryWinkRef(_))
-      .WillRepeatedly(testing::Invoke(MockFidoDevice::WinkDoNothing));
-  EXPECT_CALL(*device,
-              DeviceTransactPtr(
-                  IndicatesDeviceTransactWithCommand(base::strict_cast<uint8_t>(
-                      CtapRequestCommand::kAuthenticatorGetInfo)),
-                  _))
-      .WillOnce(testing::Invoke(MockFidoDevice::CtapDeviceError));
+  device->ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand::kAuthenticatorGetInfo, base::nullopt);
 
   const auto task = CreateMakeCredentialTask(device.get());
   make_credential_callback_receiver().WaitForCallback();
