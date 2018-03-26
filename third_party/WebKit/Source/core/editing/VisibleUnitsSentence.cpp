@@ -145,14 +145,16 @@ VisiblePosition NextSentencePosition(const VisiblePosition& c) {
   VisiblePosition next =
       CreateVisiblePosition(NextBoundary(c, NextSentencePositionBoundary),
                             TextAffinity::kUpstreamIfPossible);
-  return HonorEditingBoundaryAtOrAfter(next, c.DeepEquivalent());
+  return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+      next, c.DeepEquivalent());
 }
 
 VisiblePosition PreviousSentencePosition(const VisiblePosition& c) {
   DCHECK(c.IsValid()) << c;
   VisiblePosition prev = CreateVisiblePosition(
       PreviousBoundary(c, PreviousSentencePositionBoundary));
-  return HonorEditingBoundaryAtOrBefore(prev, c.DeepEquivalent());
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+      prev, c.DeepEquivalent());
 }
 
 VisiblePosition StartOfSentence(const VisiblePosition& c) {
