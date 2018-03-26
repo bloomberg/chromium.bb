@@ -5,20 +5,22 @@
 #ifndef CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_DELEGATE_H_
 #define CONTENT_PUBLIC_BROWSER_BROWSER_THREAD_DELEGATE_H_
 
-#include "content/common/content_export.h"
-
 namespace content {
 
-// A Delegate for content embedders to perform extra initialization/cleanup on
-// BrowserThread::IO.
+// BrowserThread::SetDelegate was deprecated, this is now only used by
+// BrowserThread::SetIOThreadDelegate.
+//
+// When registered as such, it will schedule to run Init() before the message
+// loop begins and receive a CleanUp call right after the message loop ends (and
+// before the BrowserThread has done its own clean-up).
 class BrowserThreadDelegate {
  public:
   virtual ~BrowserThreadDelegate() = default;
 
-  // Called prior to completing initialization of BrowserThread::IO.
+  // Called prior to starting the message loop
   virtual void Init() = 0;
 
-  // Called during teardown of BrowserThread::IO.
+  // Called just after the message loop ends.
   virtual void CleanUp() = 0;
 };
 

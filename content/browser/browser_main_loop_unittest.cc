@@ -9,7 +9,6 @@
 #include "base/sys_info.h"
 #include "base/task_scheduler/task_scheduler.h"
 #include "base/test/scoped_command_line.h"
-#include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
