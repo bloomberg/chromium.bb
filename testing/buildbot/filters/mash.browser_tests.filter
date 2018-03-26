@@ -232,7 +232,6 @@
 -TaskManagerUtilityProcessBrowserTest.*
 
 # ash::Shell access in test.
--TrayAccessibilityLoginScreenTest.*
 -TrayAccessibilityTestInstance/TrayAccessibilityTest.*
 
 # chromeos::UserAddingScreenImpl::Cancel() uses ash::Shell to enable system tray.
