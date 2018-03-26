@@ -64,9 +64,9 @@ int ArcContentFileSystemFileStreamReader::Read(
   }
   file_system_operation_runner_util::OpenFileToReadOnIOThread(
       arc_url_,
-      base::Bind(&ArcContentFileSystemFileStreamReader::OnOpenFile,
-                 weak_ptr_factory_.GetWeakPtr(), base::WrapRefCounted(buffer),
-                 buffer_length, callback));
+      base::BindOnce(&ArcContentFileSystemFileStreamReader::OnOpenFile,
+                     weak_ptr_factory_.GetWeakPtr(),
+                     base::WrapRefCounted(buffer), buffer_length, callback));
   return net::ERR_IO_PENDING;
 }
 
@@ -74,8 +74,9 @@ int64_t ArcContentFileSystemFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   file_system_operation_runner_util::GetFileSizeOnIOThread(
-      arc_url_, base::Bind(&ArcContentFileSystemFileStreamReader::OnGetFileSize,
-                           weak_ptr_factory_.GetWeakPtr(), callback));
+      arc_url_,
+      base::BindOnce(&ArcContentFileSystemFileStreamReader::OnGetFileSize,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
   return net::ERR_IO_PENDING;
 }
 

@@ -707,7 +707,7 @@ void ArcBluetoothBridge::OnGattAttributeReadRequest(
   bluetooth_instance->RequestGattRead(
       mojom::BluetoothAddress::From(device->GetAddress()),
       gatt_handle_[attribute->GetIdentifier()], offset, false /* is_long */,
-      base::Bind(&OnGattServerRead, success_callback, error_callback));
+      base::BindOnce(&OnGattServerRead, success_callback, error_callback));
 }
 
 template <class LocalGattAttribute>
@@ -731,7 +731,7 @@ void ArcBluetoothBridge::OnGattAttributeWriteRequest(
   bluetooth_instance->RequestGattWrite(
       mojom::BluetoothAddress::From(device->GetAddress()),
       gatt_handle_[attribute->GetIdentifier()], offset, value,
-      base::Bind(&OnGattServerWrite, success_callback, error_callback));
+      base::BindOnce(&OnGattServerWrite, success_callback, error_callback));
 }
 
 void ArcBluetoothBridge::OnCharacteristicReadRequest(

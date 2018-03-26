@@ -155,7 +155,7 @@ TEST_F(ArcFileSystemBridgeTest, GetFileSize) {
   base::RunLoop run_loop;
   arc_file_system_bridge_->GetFileSize(
       EncodeToChromeContentProviderUrl(GURL(kTestUrl)).spec(),
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop, int64_t result) {
             EXPECT_EQ(kTestFileSize, result);
             run_loop->Quit();
@@ -168,7 +168,7 @@ TEST_F(ArcFileSystemBridgeTest, GetFileType) {
   base::RunLoop run_loop;
   arc_file_system_bridge_->GetFileType(
       EncodeToChromeContentProviderUrl(GURL(kTestUrl)).spec(),
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop,
              const base::Optional<std::string>& result) {
             ASSERT_TRUE(result.has_value());
@@ -198,7 +198,7 @@ TEST_F(ArcFileSystemBridgeTest, OpenFileToRead) {
   base::RunLoop run_loop;
   arc_file_system_bridge_->OpenFileToRead(
       EncodeToChromeContentProviderUrl(GURL(kTestUrl)).spec(),
-      base::Bind(
+      base::BindOnce(
           [](base::RunLoop* run_loop, mojo::ScopedHandle result) {
             EXPECT_TRUE(result.is_valid());
             run_loop->Quit();

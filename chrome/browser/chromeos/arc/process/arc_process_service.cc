@@ -284,8 +284,8 @@ bool ArcProcessService::RequestAppProcessList(
     return false;
 
   process_instance->RequestProcessList(
-      base::Bind(&ArcProcessService::OnReceiveProcessList,
-                 weak_ptr_factory_.GetWeakPtr(), callback));
+      base::BindOnce(&ArcProcessService::OnReceiveProcessList,
+                     weak_ptr_factory_.GetWeakPtr(), callback));
   return true;
 }
 

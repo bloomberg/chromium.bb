@@ -120,15 +120,15 @@ void ArcOemCryptoBridge::Connect(mojom::OemCryptoServiceRequest request) {
       mojo::InterfacePtrInfo<arc_oemcrypto::mojom::OemCryptoHostDaemon>(
           std::move(server_pipe), 0u));
   DVLOG(1) << "Bound remote OemCryptoHostDaemon interface to pipe";
-  oemcrypto_host_daemon_ptr_.set_connection_error_handler(base::Bind(
+  oemcrypto_host_daemon_ptr_.set_connection_error_handler(base::BindOnce(
       &mojo::InterfacePtr<arc_oemcrypto::mojom::OemCryptoHostDaemon>::reset,
       base::Unretained(&oemcrypto_host_daemon_ptr_)));
   chromeos::DBusThreadManager::Get()
       ->GetArcOemCryptoClient()
       ->BootstrapMojoConnection(
           std::move(fd),
-          base::Bind(&ArcOemCryptoBridge::OnBootstrapMojoConnection,
-                     weak_factory_.GetWeakPtr(), base::Passed(&request)));
+          base::BindOnce(&ArcOemCryptoBridge::OnBootstrapMojoConnection,
+                         weak_factory_.GetWeakPtr(), std::move(request)));
 }
 
 void ArcOemCryptoBridge::ConnectToDaemon(

@@ -170,9 +170,9 @@ void ArcAccessibilityHelperBridge::SetNativeChromeVoxArcSupport(bool enabled) {
       ARC_GET_INSTANCE_FOR_METHOD(arc_bridge_service_->accessibility_helper(),
                                   SetNativeChromeVoxArcSupportForFocusedWindow);
   instance->SetNativeChromeVoxArcSupportForFocusedWindow(
-      enabled, base::Bind(&ArcAccessibilityHelperBridge::
-                              OnSetNativeChromeVoxArcSupportProcessed,
-                          base::Unretained(this), enabled));
+      enabled, base::BindOnce(&ArcAccessibilityHelperBridge::
+                                  OnSetNativeChromeVoxArcSupportProcessed,
+                              base::Unretained(this), enabled));
 }
 
 void ArcAccessibilityHelperBridge::OnSetNativeChromeVoxArcSupportProcessed(
@@ -475,8 +475,8 @@ void ArcAccessibilityHelperBridge::OnAction(
       arc_bridge_service_->accessibility_helper(), PerformAction);
   instance->PerformAction(
       std::move(action_data),
-      base::Bind(&ArcAccessibilityHelperBridge::OnActionResult,
-                 base::Unretained(this), data));
+      base::BindOnce(&ArcAccessibilityHelperBridge::OnActionResult,
+                     base::Unretained(this), data));
 }
 
 void ArcAccessibilityHelperBridge::OnActionResult(const ui::AXActionData& data,

@@ -228,8 +228,8 @@ void ArcAuthService::RequestAccountInfo(bool initial_signin) {
         std::make_unique<ArcActiveDirectoryEnrollmentTokenFetcher>(
             ArcSessionManager::Get()->support_host());
     enrollment_token_fetcher->Fetch(
-        base::Bind(&ArcAuthService::OnEnrollmentTokenFetched,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ArcAuthService::OnEnrollmentTokenFetched,
+                       weak_ptr_factory_.GetWeakPtr()));
     fetcher_ = std::move(enrollment_token_fetcher);
     return;
   }

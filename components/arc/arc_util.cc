@@ -197,7 +197,7 @@ void SetArcCpuRestriction(bool do_restrict) {
       do_restrict ? login_manager::CONTAINER_CPU_RESTRICTION_BACKGROUND
                   : login_manager::CONTAINER_CPU_RESTRICTION_FOREGROUND;
   session_manager_client->SetArcCpuRestriction(
-      state, base::Bind(SetArcCpuRestrictionCallback, state));
+      state, base::BindOnce(SetArcCpuRestrictionCallback, state));
 }
 
 }  // namespace arc

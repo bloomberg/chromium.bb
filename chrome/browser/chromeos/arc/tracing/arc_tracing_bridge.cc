@@ -155,7 +155,7 @@ void ArcTracingBridge::StartTracing(
   content::BrowserThread::PostTask(
       content::BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ArcTracingReader::StartTracing, reader_.GetWeakPtr(),
-                     base::Passed(&read_fd)));
+                     std::move(read_fd)));
 }
 
 void ArcTracingBridge::StopAndFlush(tracing::mojom::RecorderPtr recorder) {

@@ -98,8 +98,8 @@ bool LinkHandlerModel::Init(content::BrowserContext* context, const GURL& url) {
   // even on the slowest Chromebook we support.
   url_ = RewriteUrlFromQueryIfAvailable(url);
   instance->RequestUrlHandlerList(
-      url_.spec(), base::Bind(&LinkHandlerModel::OnUrlHandlerList,
-                              weak_ptr_factory_.GetWeakPtr()));
+      url_.spec(), base::BindOnce(&LinkHandlerModel::OnUrlHandlerList,
+                                  weak_ptr_factory_.GetWeakPtr()));
   return true;
 }
 

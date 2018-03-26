@@ -168,8 +168,7 @@ void ArcFileSystemOperationRunner::OpenFileToRead(
       arc_bridge_service_->file_system(), OpenFileToRead);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  base::Passed(mojo::ScopedHandle())));
+        FROM_HERE, base::BindOnce(std::move(callback), mojo::ScopedHandle()));
     return;
   }
   file_system_instance->OpenFileToRead(url.spec(), std::move(callback));
@@ -190,8 +189,7 @@ void ArcFileSystemOperationRunner::GetDocument(const std::string& authority,
       arc_bridge_service_->file_system(), GetDocument);
   if (!file_system_instance) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(std::move(callback),
-                                  base::Passed(mojom::DocumentPtr())));
+        FROM_HERE, base::BindOnce(std::move(callback), mojom::DocumentPtr()));
     return;
   }
   file_system_instance->GetDocument(authority, document_id,
