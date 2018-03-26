@@ -1108,6 +1108,7 @@ WIFICELL_PRE_CQ = 'wificell-pre-cq'
 BLUESTREAK_PRE_CQ = 'bluestreak-pre-cq'
 MST_ANDROID_PFQ_MASTER = 'master-mst-android-pfq'
 NYC_ANDROID_PFQ_MASTER = 'master-nyc-android-pfq'
+PI_ANDROID_PFQ_MASTER = 'master-pi-android-pfq'
 TOOLCHAIN_MASTTER = 'master-toolchain'
 
 

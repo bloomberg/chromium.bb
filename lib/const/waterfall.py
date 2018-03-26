@@ -68,6 +68,8 @@ SOM_BUILDS = {
          SOM_SEVERITY_PFQ_FAILURE),
         (WATERFALL_INTERNAL, 'master-nyc-android-pfq',
          SOM_SEVERITY_PFQ_FAILURE),
+        (WATERFALL_INTERNAL, 'master-pi-android-pfq',
+         SOM_SEVERITY_PFQ_FAILURE),
         (WATERFALL_INTERNAL, 'master-release', SOM_SEVERITY_CANARY_FAILURE),
     ],
 

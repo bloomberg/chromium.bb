@@ -51,6 +51,7 @@ DISPLAY_LABEL_CHROME_PFQ = 'chrome_pfq'
 DISPLAY_LABEL_MST_ANDROID_PFQ = 'mst_android_pfq'
 DISPLAY_LABEL_MNC_ANDROID_PFQ = 'mnc_android_pfq'
 DISPLAY_LABEL_NYC_ANDROID_PFQ = 'nyc_android_pfq'
+DISPLAY_LABEL_PI_ANDROID_PFQ = 'pi_android_pfq'
 DISPLAY_LABEL_FIRMWARE = 'firmware'
 DISPLAY_LABEL_FACTORY = 'factory'
 DISPLAY_LABEL_TOOLCHAIN = 'toolchain'
@@ -68,6 +69,7 @@ ALL_DISPLAY_LABEL = TRYJOB_DISPLAY_LABEL | {
     DISPLAY_LABEL_MST_ANDROID_PFQ,
     DISPLAY_LABEL_MNC_ANDROID_PFQ,
     DISPLAY_LABEL_NYC_ANDROID_PFQ,
+    DISPLAY_LABEL_PI_ANDROID_PFQ,
     DISPLAY_LABEL_FIRMWARE,
     DISPLAY_LABEL_FACTORY,
     DISPLAY_LABEL_TOOLCHAIN,
@@ -157,6 +159,7 @@ def UseBuildbucketScheduler(config):
                           constants.PFQ_MASTER,
                           constants.MST_ANDROID_PFQ_MASTER,
                           constants.NYC_ANDROID_PFQ_MASTER,
+                          constants.PI_ANDROID_PFQ_MASTER,
                           constants.TOOLCHAIN_MASTTER,
                           constants.PRE_CQ_LAUNCHER_NAME))
 
