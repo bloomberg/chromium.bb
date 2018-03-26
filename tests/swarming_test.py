@@ -1543,7 +1543,7 @@ class TestMain(NetTestCase):
         [
           (
             'https://localhost:1/api/swarming/v1/task/10100/cancel',
-            {'data': {}, 'method': 'POST'},
+            {'data': {'kill_running': False}, 'method': 'POST'},
             {'yo': 'dawg'},
           ),
         ])

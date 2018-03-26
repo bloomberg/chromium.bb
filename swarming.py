@@ -5,7 +5,7 @@
 
 """Client tool to trigger tasks or retrieve results from a Swarming server."""
 
-__version__ = '0.10.3'
+__version__ = '0.11'
 
 import collections
 import datetime
@@ -297,14 +297,15 @@ class State(object):
   BOT_DIED = 0x50
   CANCELED = 0x60
   COMPLETED = 0x70
+  KILLED = 0x80
 
   STATES = (
       'RUNNING', 'PENDING', 'EXPIRED', 'TIMED_OUT', 'BOT_DIED', 'CANCELED',
-      'COMPLETED')
+      'COMPLETED', 'KILLED')
   STATES_RUNNING = ('RUNNING', 'PENDING')
   STATES_NOT_RUNNING = (
-      'EXPIRED', 'TIMED_OUT', 'BOT_DIED', 'CANCELED', 'COMPLETED')
-  STATES_DONE = ('TIMED_OUT', 'COMPLETED')
+      'EXPIRED', 'TIMED_OUT', 'BOT_DIED', 'CANCELED', 'COMPLETED', 'KILLED')
+  STATES_DONE = ('TIMED_OUT', 'COMPLETED', 'KILLED')
   STATES_ABANDONED = ('EXPIRED', 'BOT_DIED', 'CANCELED')
 
   _NAMES = {
@@ -315,6 +316,7 @@ class State(object):
     BOT_DIED: 'Bot died',
     CANCELED: 'User canceled',
     COMPLETED: 'Completed',
+    KILLED: 'User killed',
   }
 
   _ENUMS = {
@@ -325,6 +327,7 @@ class State(object):
     'BOT_DIED': BOT_DIED,
     'CANCELED': CANCELED,
     'COMPLETED': COMPLETED,
+    'KILLED': KILLED,
   }
 
   @classmethod
@@ -725,7 +728,7 @@ def decorate_shard_output(swarming, shard_index, metadata, include_stdout):
     tag_footer2 = ' Pending: %s  CANCELED' % pending
   elif metadata.get('state') == 'EXPIRED':
     tag_footer2 = ' Pending: %s  EXPIRED (lack of capacity)' % pending
-  elif metadata.get('state') in ('BOT_DIED', 'TIMED_OUT'):
+  elif metadata.get('state') in ('BOT_DIED', 'TIMED_OUT', 'KILLED'):
     tag_footer2 = ' Pending: %s  Duration: %s  Bot: %s  Exit: %s  %s' % (
         pending, duration, bot_id, exit_code, metadata['state'])
   else:
@@ -1319,12 +1322,16 @@ def CMDbots(parser, args):
 @subcommand.usage('task_id')
 def CMDcancel(parser, args):
   """Cancels a task."""
+  parser.add_option(
+      '-k', '--kill-running', action='store_true', default=False,
+      help='Kill the task even if it was running')
   options, args = parser.parse_args(args)
   if not args:
     parser.error('Please specify the task to cancel')
+  data = {'kill_running': options.kill_running}
   for task_id in args:
     url = '%s/api/swarming/v1/task/%s/cancel' % (options.swarming, task_id)
-    resp = net.url_read_json(url, data={}, method='POST')
+    resp = net.url_read_json(url, data=data, method='POST')
     if resp is None:
       print('Deleting %s failed. Probably already gone' % task_id)
       return 1
