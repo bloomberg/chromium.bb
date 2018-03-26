@@ -4,6 +4,7 @@
 
 #include "ui/views/widget/widget_delegate.h"
 
+#include "base/logging.h"
 #include "base/strings/utf_string_conversions.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/gfx/image/image_skia.h"
@@ -17,9 +18,9 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetDelegate:
 
-WidgetDelegate::WidgetDelegate()
-    : default_contents_view_(NULL),
-      can_activate_(true) {
+WidgetDelegate::WidgetDelegate() = default;
+WidgetDelegate::~WidgetDelegate() {
+  CHECK(can_delete_this_) << "A WidgetDelegate must outlive its Widget";
 }
 
 void WidgetDelegate::OnWidgetMove() {

@@ -184,12 +184,16 @@ class VIEWS_EXPORT WidgetDelegate {
   virtual void GetAccessiblePanes(std::vector<View*>* panes) {}
 
  protected:
-  virtual ~WidgetDelegate() {}
+  virtual ~WidgetDelegate();
 
  private:
-  View* default_contents_view_;
+  friend class Widget;
 
-  bool can_activate_;
+  View* default_contents_view_ = nullptr;
+  bool can_activate_ = true;
+
+  // Managed by Widget. Ensures |this| outlives its Widget.
+  bool can_delete_this_ = true;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetDelegate);
 };
