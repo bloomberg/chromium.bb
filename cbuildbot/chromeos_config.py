@@ -2225,11 +2225,7 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
 
   _mst_hwtest_boards = frozenset([])
   _mst_no_hwtest_boards = frozenset([])
-  _mst_no_hwtest_experimental_boards = frozenset([
-      'betty-arcnext',
-      'eve-arcnext',
-      'kevin-arcnext',
-  ])
+  _mst_no_hwtest_experimental_boards = frozenset([])
   _mst_no_hwtest_experimental_boards = frozenset([])
   _mst_vmtest_boards = frozenset([])
 
@@ -2241,7 +2237,12 @@ def AndroidPfqBuilders(site_config, boards_dict, ge_build_config):
   )
 
   _pi_hwtest_boards = frozenset([])
-  _pi_no_hwtest_boards = frozenset([])
+  _pi_no_hwtest_boards = frozenset([
+      'betty-arcnext',
+      'caroline-arcnext',
+      'eve-arcnext',
+      'kevin-arcnext',
+  ])
   _pi_no_hwtest_experimental_boards = frozenset([])
   _pi_no_hwtest_experimental_boards = frozenset([])
   _pi_vmtest_boards = frozenset([])
