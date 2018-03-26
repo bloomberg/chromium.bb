@@ -3307,8 +3307,8 @@ crbug.com/727252 external/wpt/media-source/mediasource-endofstream.html [ Failur
 crbug.com/807110 external/wpt/media-source/mediasource-is-type-supported.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-sequencemode-append-buffer.html [ Failure Pass ]
 crbug.com/807110 external/wpt/media-source/mediasource-sourcebuffer-mode-timestamps.html [ Failure Pass ]
-crbug.com/825444 [ Mac ] media/video-rotation.html [ Crash ]
-crbug.com/794338 [ Linux Win Android ] media/video-rotation.html [ Failure Pass ]
+
+crbug.com/794338 media/video-rotation.html [ Skip ]
 crbug.com/811605 media/video-poster-after-loadedmetadata.html [ Failure Pass ]
 
 # TODO(lukasza): Remove these once CORB is enabled by default.
