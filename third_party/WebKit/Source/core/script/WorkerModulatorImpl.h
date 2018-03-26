@@ -26,10 +26,7 @@ class WorkerModulatorImpl final : public ModulatorImplBase {
   explicit WorkerModulatorImpl(scoped_refptr<ScriptState>);
 
   // Implements ModulatorImplBase.
-  void ResolveDynamically(const String& specifier,
-                          const KURL&,
-                          const ReferrerScriptInfo&,
-                          ScriptPromiseResolver*) override;
+  bool IsDynamicImportForbidden(String* reason) override;
 };
 
 }  // namespace blink

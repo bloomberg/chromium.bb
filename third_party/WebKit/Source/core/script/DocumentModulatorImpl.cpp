@@ -30,4 +30,8 @@ DocumentModulatorImpl::DocumentModulatorImpl(
   DCHECK(fetcher_);
 }
 
+bool DocumentModulatorImpl::IsDynamicImportForbidden(String* reason) {
+  return false;
+}
+
 }  // namespace blink

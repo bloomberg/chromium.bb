@@ -30,6 +30,9 @@ class DocumentModulatorImpl final : public ModulatorImplBase {
   void Trace(blink::Visitor*);
 
  private:
+  // Implements ModulatorImplBase.
+  bool IsDynamicImportForbidden(String* reason);
+
   DocumentModulatorImpl(scoped_refptr<ScriptState>, ResourceFetcher*);
   Member<ResourceFetcher> fetcher_;
 };

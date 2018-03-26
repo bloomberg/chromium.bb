@@ -78,6 +78,13 @@ class ModulatorImplBase : public Modulator {
   Vector<ModuleRequest> ModuleRequestsFromScriptModule(ScriptModule) override;
   ScriptValue ExecuteModule(const ModuleScript*, CaptureEvalErrorFlag) override;
 
+  // Populates |reason| and returns true if the dynamic import is disallowed on
+  // the associated execution context. In that case, a caller of this function
+  // is expected to reject the dynamic import with |reason|. If the dynamic
+  // import is allowed on the execution context, returns false without
+  // modification of |reason|.
+  virtual bool IsDynamicImportForbidden(String* reason) = 0;
+
   scoped_refptr<ScriptState> script_state_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   TraceWrapperMember<ModuleMap> map_;
