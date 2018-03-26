@@ -35,38 +35,36 @@ namespace {
 
 typedef net::WebSocketEventInterface::ChannelState ChannelState;
 
-// Convert a network::mojom::WebSocketMessageType to a
+// Convert a mojom::WebSocketMessageType to a
 // net::WebSocketFrameHeader::OpCode
 net::WebSocketFrameHeader::OpCode MessageTypeToOpCode(
-    network::mojom::WebSocketMessageType type) {
-  DCHECK(type == network::mojom::WebSocketMessageType::CONTINUATION ||
-         type == network::mojom::WebSocketMessageType::TEXT ||
-         type == network::mojom::WebSocketMessageType::BINARY);
+    mojom::WebSocketMessageType type) {
+  DCHECK(type == mojom::WebSocketMessageType::CONTINUATION ||
+         type == mojom::WebSocketMessageType::TEXT ||
+         type == mojom::WebSocketMessageType::BINARY);
   typedef net::WebSocketFrameHeader::OpCode OpCode;
   // These compile asserts verify that the same underlying values are used for
   // both types, so we can simply cast between them.
   static_assert(
-      static_cast<OpCode>(network::mojom::WebSocketMessageType::CONTINUATION) ==
+      static_cast<OpCode>(mojom::WebSocketMessageType::CONTINUATION) ==
           net::WebSocketFrameHeader::kOpCodeContinuation,
       "enum values must match for opcode continuation");
-  static_assert(
-      static_cast<OpCode>(network::mojom::WebSocketMessageType::TEXT) ==
-          net::WebSocketFrameHeader::kOpCodeText,
-      "enum values must match for opcode text");
-  static_assert(
-      static_cast<OpCode>(network::mojom::WebSocketMessageType::BINARY) ==
-          net::WebSocketFrameHeader::kOpCodeBinary,
-      "enum values must match for opcode binary");
+  static_assert(static_cast<OpCode>(mojom::WebSocketMessageType::TEXT) ==
+                    net::WebSocketFrameHeader::kOpCodeText,
+                "enum values must match for opcode text");
+  static_assert(static_cast<OpCode>(mojom::WebSocketMessageType::BINARY) ==
+                    net::WebSocketFrameHeader::kOpCodeBinary,
+                "enum values must match for opcode binary");
   return static_cast<OpCode>(type);
 }
 
-network::mojom::WebSocketMessageType OpCodeToMessageType(
+mojom::WebSocketMessageType OpCodeToMessageType(
     net::WebSocketFrameHeader::OpCode opCode) {
   DCHECK(opCode == net::WebSocketFrameHeader::kOpCodeContinuation ||
          opCode == net::WebSocketFrameHeader::kOpCodeText ||
          opCode == net::WebSocketFrameHeader::kOpCodeBinary);
   // This cast is guaranteed valid by the static_assert() statements above.
-  return static_cast<network::mojom::WebSocketMessageType>(opCode);
+  return static_cast<mojom::WebSocketMessageType>(opCode);
 }
 
 }  // namespace
@@ -222,12 +220,12 @@ ChannelState WebSocket::WebSocketEventHandler::OnStartOpeningHandshake(
   if (!should_send)
     return WebSocketEventInterface::CHANNEL_ALIVE;
 
-  network::mojom::WebSocketHandshakeRequestPtr request_to_pass(
-      network::mojom::WebSocketHandshakeRequest::New());
+  mojom::WebSocketHandshakeRequestPtr request_to_pass(
+      mojom::WebSocketHandshakeRequest::New());
   request_to_pass->url.Swap(&request->url);
   net::HttpRequestHeaders::Iterator it(request->headers);
   while (it.GetNext()) {
-    network::mojom::HttpHeaderPtr header(network::mojom::HttpHeader::New());
+    mojom::HttpHeaderPtr header(mojom::HttpHeader::New());
     header->name = it.name();
     header->value = it.value();
     request_to_pass->headers.push_back(std::move(header));
@@ -252,15 +250,15 @@ ChannelState WebSocket::WebSocketEventHandler::OnFinishOpeningHandshake(
   if (!should_send)
     return WebSocketEventInterface::CHANNEL_ALIVE;
 
-  network::mojom::WebSocketHandshakeResponsePtr response_to_pass(
-      network::mojom::WebSocketHandshakeResponse::New());
+  mojom::WebSocketHandshakeResponsePtr response_to_pass(
+      mojom::WebSocketHandshakeResponse::New());
   response_to_pass->url.Swap(&response->url);
   response_to_pass->status_code = response->status_code;
   response_to_pass->status_text = response->status_text;
   size_t iter = 0;
   std::string name, value;
   while (response->headers->EnumerateHeaderLines(&iter, &name, &value)) {
-    network::mojom::HttpHeaderPtr header(network::mojom::HttpHeader::New());
+    mojom::HttpHeaderPtr header(mojom::HttpHeader::New());
     header->name = name;
     header->value = value;
     response_to_pass->headers.push_back(std::move(header));
@@ -291,7 +289,7 @@ ChannelState WebSocket::WebSocketEventHandler::OnSSLCertificateError(
 
 WebSocket::WebSocket(
     std::unique_ptr<Delegate> delegate,
-    network::mojom::WebSocketRequest request,
+    mojom::WebSocketRequest request,
     WebSocketThrottler::PendingConnection pending_connection_tracker,
     int child_id,
     int frame_id,
@@ -323,7 +321,7 @@ void WebSocket::AddChannelRequest(
     const std::vector<std::string>& requested_protocols,
     const GURL& site_for_cookies,
     const std::string& user_agent_override,
-    network::mojom::WebSocketClientPtr client) {
+    mojom::WebSocketClientPtr client) {
   DVLOG(3) << "WebSocket::AddChannelRequest @" << reinterpret_cast<void*>(this)
            << " socket_url=\"" << socket_url << "\" requested_protocols=\""
            << base::JoinString(requested_protocols, ", ") << "\" origin=\""
@@ -353,7 +351,7 @@ void WebSocket::AddChannelRequest(
 }
 
 void WebSocket::SendFrame(bool fin,
-                          network::mojom::WebSocketMessageType type,
+                          mojom::WebSocketMessageType type,
                           const std::vector<uint8_t>& data) {
   DVLOG(3) << "WebSocket::SendFrame @" << reinterpret_cast<void*>(this)
            << " fin=" << fin << " type=" << type << " data is " << data.size()
