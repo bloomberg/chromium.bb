@@ -55,6 +55,10 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
   // authenticator data.
   std::vector<uint8_t> GetCredentialId() const;
 
+  const base::Optional<AttestedCredentialData>& attested_data() const {
+    return attested_data_;
+  }
+
  private:
   // The application parameter: a SHA-256 hash of either the RP ID or the AppID
   // associated with the credential.
