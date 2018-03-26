@@ -65,10 +65,6 @@ class Conditions(object):
     return val == value
 
   @classmethod
-  def _GnAnySetTo(cls, flags_values, gn_args, _staging_flags):
-    return any(gn_args.get(flag) == value for flag, value in flags_values)
-
-  @classmethod
   def _StagingFlagSet(cls, flag, _gn_args, staging_flags):
     return flag in staging_flags
 
@@ -80,10 +76,6 @@ class Conditions(object):
   def GnSetTo(cls, flag, value):
     """Returns condition that tests a gn flag is set to a value."""
     return functools.partial(cls._GnSetTo, flag, value)
-
-  @classmethod
-  def GnAnySetTo(cls, flags_values):
-    return functools.partial(cls._GnAnySetTo, flags_values)
 
   @classmethod
   def StagingFlagSet(cls, flag):
@@ -302,7 +294,6 @@ class Path(object):
     return True
 
 _ENABLE_NACL = 'enable_nacl'
-_ENABLE_WIDEVINE = 'enable_widevine'
 _IS_CHROME_BRANDED = 'is_chrome_branded'
 _IS_COMPONENT_BUILD = 'is_component_build'
 
@@ -361,8 +352,9 @@ _COPY_PATHS_CHROME = (
     Path('libwidevinecdm.so',
          exe=True,
          strip=False,
-         cond=C.GnAnySetTo(((_IS_CHROME_BRANDED, True),
-                            (_ENABLE_WIDEVINE, True)))),
+         cond=C.GnSetTo(_IS_CHROME_BRANDED, True)),
+    # In component build, copy so files (e.g. libbase.so) except for the
+    # blacklist.
     Path('*.so',
          blacklist=(r'libwidevinecdm.so',),
          exe=True,
