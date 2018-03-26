@@ -60,6 +60,12 @@ chrome.test.runTests([
         function(details) {},
         goodFilter, goodExtraInfo);
 
+    function isArgumentParseError(error) {
+      // Native and JS bindings have slightly different errors surfaced.
+      return error.search('Invalid value') >= 0 ||
+             error.search('Error at parameter') >= 0;
+    }
+
     // Try a bad RequestFilter.
     try {
       chrome.webRequest.onBeforeRequest.addListener(
@@ -67,7 +73,7 @@ chrome.test.runTests([
           {badFilter: 42, urls: ["<all_urls>"]}, goodExtraInfo);
       chrome.test.fail();
     } catch (e) {
-      chrome.test.assertTrue(e.message.search("Invalid value") >= 0);
+      chrome.test.assertTrue(isArgumentParseError(e.message), e.message);
     }
 
     // Try a bad ExtraInfoSpec.
@@ -77,7 +83,7 @@ chrome.test.runTests([
           goodFilter, ["badExtraInfo"]);
       chrome.test.fail();
     } catch (e) {
-      chrome.test.assertTrue(e.message.search("Invalid value") >= 0);
+      chrome.test.assertTrue(isArgumentParseError(e.message), e.message);
     }
 
     // This extraInfoSpec should only work for onBeforeSendHeaders.
@@ -91,7 +97,7 @@ chrome.test.runTests([
           goodFilter, headersExtraInfo);
       chrome.test.fail();
     } catch (e) {
-      chrome.test.assertTrue(e.message.search("Invalid value") >= 0);
+      chrome.test.assertTrue(isArgumentParseError(e.message), e.message);
     }
 
     // ExtraInfoSpec with "responseHeaders" should work for onCompleted.
@@ -105,7 +111,7 @@ chrome.test.runTests([
           goodFilter, headersExtraInfo);
       chrome.test.fail();
     } catch (e) {
-      chrome.test.assertTrue(e.message.search("Invalid value") >= 0);
+      chrome.test.assertTrue(isArgumentParseError(e.message), e.message);
     }
 
     // Try a bad URL pattern. The error happens asynchronously. We're just

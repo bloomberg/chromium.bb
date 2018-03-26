@@ -16,7 +16,16 @@ var registerArgumentMassager = bindingUtil ?
 var certificateProviderSchema =
     requireNative('schema_registry').GetSchema('certificateProvider')
 var utils = require('utils');
-var validate = require('schemaUtils').validate;
+var validate = bindingUtil ? undefined : require('schemaUtils').validate;
+
+// Validates that the result passed by the extension to the event callback
+// matches the callback schema. Throws an exception in case of an error.
+function validateListenerResponse(eventName, expectedSchema, listenerResponse) {
+  if (bindingUtil)
+    bindingUtil.validateCustomSignature(eventName, listenerResponse);
+  else
+    validate(listenerResponse, expectedSchema);
+}
 
 // Custom bindings for chrome.certificateProvider API.
 // The bindings are used to implement callbacks for the API events. Internally
@@ -41,10 +50,14 @@ var validate = require('schemaUtils').validate;
 function handleEvent(eventName, internalReportFunc) {
   var eventSchema =
       utils.lookup(certificateProviderSchema.events, 'name', eventName);
-  var callbackSchema = utils.lookup(eventSchema.parameters, 'type', 'function');
+  var callbackSchema =
+      utils.lookup(eventSchema.parameters, 'type', 'function').parameters;
+  var fullEventName = 'certificateProvider.' + eventName;
 
-  registerArgumentMassager('certificateProvider.' + eventName,
-                           function(args, dispatch) {
+  if (bindingUtil)
+    bindingUtil.addCustomSignature(fullEventName, callbackSchema);
+
+  registerArgumentMassager(fullEventName, function(args, dispatch) {
     var responded = false;
 
     // Function provided to the extension as the event callback argument.
@@ -63,7 +76,7 @@ function handleEvent(eventName, internalReportFunc) {
         // Validates that the results reported by the extension matche the
         // callback schema of the event. Throws an exception in case of an
         // error.
-        validate(reportArgs, callbackSchema.parameters);
+        validateListenerResponse(fullEventName, callbackSchema, reportArgs);
         finalArgs = reportArgs;
       } finally {
         responded = true;

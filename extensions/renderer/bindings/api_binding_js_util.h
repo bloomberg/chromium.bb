@@ -107,6 +107,21 @@ class APIBindingJSUtil final : public gin::Wrappable<APIBindingJSUtil> {
                     const std::string& type_name,
                     v8::Local<v8::Value> value);
 
+  // Allows custom bindings to add a signature with the given
+  // |custom_signature_name| to use later in argument validation. The signature
+  // is expected to be an array of expected types, that can be passed to
+  // construct an APISignature.
+  void AddCustomSignature(gin::Arguments* arguments,
+                          const std::string& custom_signature_name,
+                          v8::Local<v8::Value> signature);
+
+  // Looks up the signature with the given |custom_signature_name| and validates
+  // |arguments_to_validate| against it, throwing an error if the arguments
+  // don't match.
+  void ValidateCustomSignature(gin::Arguments* arguments,
+                               const std::string& custom_signature_name,
+                               v8::Local<v8::Value> arguments_to_validate);
+
   // Type references. Guaranteed to outlive this object.
   APITypeReferenceMap* const type_refs_;
 

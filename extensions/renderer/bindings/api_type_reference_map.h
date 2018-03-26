@@ -57,6 +57,13 @@ class APITypeReferenceMap {
   // an API.
   bool HasTypeMethodSignature(const std::string& name) const;
 
+  // Adds a custom signature for bindings to use.
+  void AddCustomSignature(const std::string& name,
+                          std::unique_ptr<APISignature> signature);
+
+  // Looks up a custom signature that was previously added.
+  const APISignature* GetCustomSignature(const std::string& name) const;
+
   bool empty() const { return type_refs_.empty(); }
   size_t size() const { return type_refs_.size(); }
 
@@ -66,6 +73,7 @@ class APITypeReferenceMap {
   std::map<std::string, std::unique_ptr<ArgumentSpec>> type_refs_;
   std::map<std::string, std::unique_ptr<APISignature>> api_methods_;
   std::map<std::string, std::unique_ptr<APISignature>> type_methods_;
+  std::map<std::string, std::unique_ptr<APISignature>> custom_signatures_;
 
   DISALLOW_COPY_AND_ASSIGN(APITypeReferenceMap);
 };

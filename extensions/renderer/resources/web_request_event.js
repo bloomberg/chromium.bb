@@ -6,10 +6,18 @@ var CHECK = requireNative('logging').CHECK;
 var eventBindings = bindingUtil ? undefined : require('event_bindings');
 var idGeneratorNatives = requireNative('id_generator');
 var utils = require('utils');
-var validate = require('schemaUtils').validate;
+var validate = bindingUtil ? undefined : require('schemaUtils').validate;
 var webRequestInternal = getInternalApi ?
     getInternalApi('webRequestInternal') :
     require('binding').Binding.create('webRequestInternal').generate();
+
+function validateListenerArguments(
+    eventName, extraArgSchemas, listenerArguments) {
+  if (bindingUtil)
+    bindingUtil.validateCustomSignature(eventName, listenerArguments);
+  else
+    validate(listenerArguments, extraArgSchemas);
+}
 
 function getUniqueSubEventName(eventName) {
   return eventName + '/' + idGeneratorNatives.GetNextId();
@@ -40,6 +48,9 @@ function WebRequestEventImpl(eventName, opt_argSchemas, opt_extraArgSchemas,
                              opt_eventOptions, opt_webViewInstanceId) {
   if (typeof eventName != 'string')
     throw new Error('chrome.WebRequestEvent requires an event name.');
+
+  if (bindingUtil)
+    bindingUtil.addCustomSignature(eventName, opt_extraArgSchemas);
 
   this.eventName = eventName;
   this.argSchemas = opt_argSchemas;
@@ -77,7 +88,8 @@ WebRequestEventImpl.prototype.addListener =
   var subEventName = getUniqueSubEventName(this.eventName);
   // Note: this could fail to validate, in which case we would not add the
   // subEvent listener.
-  validate($Array.slice(arguments, 1), this.extraArgSchemas);
+  validateListenerArguments(this.eventName, this.extraArgSchemas,
+                            $Array.slice(arguments, 1));
   webRequestInternal.addEventListener(
       cb, opt_filter, opt_extraInfo, this.eventName, subEventName,
       this.webViewInstanceId);
