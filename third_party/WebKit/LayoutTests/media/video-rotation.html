@@ -3,13 +3,24 @@
         <title>Tests video rotation.</title>
 
         <script src=media-file.js></script>
+        <script>
+            if (window.testRunner)
+                testRunner.waitUntilDone();
+
+            function start()
+            {
+                video = document.getElementsByTagName('video')[0];
+                video.src = 'content/bear_rotate_90.mp4';
+                video = document.getElementsByTagName('video')[1];
+                video.src = 'content/bear_rotate_0.mp4';
+           }
+
+        </script>
 
     </head>
 
-     <body>
-        <video width=320 height=240
-          src='content/bear_rotate_90.mp4'></video>
-        <video width=320 height=240
-          src='content/bear_rotate_0.mp4'></video>
+    <body onload="start()">
+        <video width=320 height=240 ></video>
+        <video width=320 height=240 ></video>
     </body>
 </html>
