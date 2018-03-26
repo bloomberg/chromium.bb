@@ -46,10 +46,10 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
       : IncrementalMarkingScopeBase(thread_state),
         gc_forbidden_scope_(thread_state),
         marking_worklist_(heap_.GetMarkingWorklist()),
-        not_fully_constructed_marking_stack_(
-            heap_.NotFullyConstructedMarkingStack()) {
+        not_fully_constructed_worklist_(
+            heap_.GetNotFullyConstructedWorklist()) {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
-    EXPECT_TRUE(not_fully_constructed_marking_stack_->IsEmpty());
+    EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
     heap_.EnableIncrementalMarkingBarrier();
     thread_state->current_gc_data_.visitor =
         MarkingVisitor::Create(thread_state, MarkingVisitor::kGlobalMarking);
@@ -57,19 +57,23 @@ class IncrementalMarkingScope : public IncrementalMarkingScopeBase {
 
   ~IncrementalMarkingScope() {
     EXPECT_TRUE(marking_worklist_->IsGlobalEmpty());
-    EXPECT_TRUE(not_fully_constructed_marking_stack_->IsEmpty());
+    EXPECT_TRUE(not_fully_constructed_worklist_->IsGlobalEmpty());
     heap_.DisableIncrementalMarkingBarrier();
+    // Need to clear out unused worklists that might have been polluted during
+    // test.
+    heap_.GetPostMarkingWorklist()->Clear();
+    heap_.GetWeakCallbackWorklist()->Clear();
   }
 
   MarkingWorklist* marking_worklist() const { return marking_worklist_; }
-  CallbackStack* not_fully_constructed_marking_stack() const {
-    return not_fully_constructed_marking_stack_;
+  NotFullyConstructedWorklist* not_fully_constructed_worklist() const {
+    return not_fully_constructed_worklist_;
   }
 
  protected:
   ThreadState::GCForbiddenScope gc_forbidden_scope_;
   MarkingWorklist* const marking_worklist_;
-  CallbackStack* const not_fully_constructed_marking_stack_;
+  NotFullyConstructedWorklist* const not_fully_constructed_worklist_;
 };
 
 // Expects that the write barrier fires for the objects passed to the
@@ -1514,11 +1518,12 @@ TEST(IncrementalMarkingTest, WriteBarrierDuringMixinConstruction) {
   scope.marking_worklist()->Pop(WorklistTaskId::MainThread, &item);
   // The mixin object should be on the not-fully-constructed object marking
   // stack.
-  EXPECT_FALSE(scope.not_fully_constructed_marking_stack()->IsEmpty());
-  CallbackStack::Item* item2 =
-      scope.not_fully_constructed_marking_stack()->Pop();
+  EXPECT_FALSE(scope.not_fully_constructed_worklist()->IsGlobalEmpty());
+  NotFullyConstructedItem item2;
+  EXPECT_TRUE(scope.not_fully_constructed_worklist()->Pop(
+      WorklistTaskId::MainThread, &item2));
   RegisteringObject* recorded_object2 =
-      reinterpret_cast<RegisteringObject*>(item2->Object());
+      reinterpret_cast<RegisteringObject*>(item2);
   EXPECT_EQ(object, recorded_object2);
 }
 

@@ -136,9 +136,9 @@ ThreadHeap::ThreadHeap(ThreadState* thread_state)
       heap_does_not_contain_cache_(std::make_unique<HeapDoesNotContainCache>()),
       free_page_pool_(std::make_unique<PagePool>()),
       marking_worklist_(nullptr),
-      not_fully_constructed_marking_stack_(CallbackStack::Create()),
-      post_marking_callback_stack_(CallbackStack::Create()),
-      weak_callback_stack_(CallbackStack::Create()),
+      not_fully_constructed_worklist_(nullptr),
+      post_marking_worklist_(nullptr),
+      weak_callback_worklist_(nullptr),
       vector_backing_arena_index_(BlinkGC::kVector1ArenaIndex),
       current_arena_ages_(0),
       should_flush_heap_does_not_contain_cache_(false) {
@@ -212,62 +212,6 @@ Address ThreadHeap::CheckAndMarkPointer(
 }
 #endif  // DCHECK_IS_ON()
 
-void ThreadHeap::PushNotFullyConstructedTraceCallback(void* object) {
-  DCHECK(thread_state_->IsInGC() || thread_state_->IsIncrementalMarking());
-  CallbackStack::Item* slot =
-      not_fully_constructed_marking_stack_->AllocateEntry();
-  *slot = CallbackStack::Item(object, nullptr);
-}
-
-bool ThreadHeap::PopAndInvokeNotFullyConstructedTraceCallback(Visitor* v) {
-  DCHECK(!thread_state_->IsIncrementalMarking());
-  MarkingVisitor* visitor = reinterpret_cast<MarkingVisitor*>(v);
-  CallbackStack::Item* item = not_fully_constructed_marking_stack_->Pop();
-  if (!item)
-    return false;
-
-  // This is called in the atomic marking phase. We mark all
-  // not-fully-constructed objects that have found before this point
-  // conservatively. See comments on GarbageCollectedMixin for more details.
-  // - Objects that are fully constructed are safe to process.
-  // - Objects may still have uninitialized parts. This will not crash as fields
-  //   are zero initialized and it is still correct as values are held alive
-  //   from other references as it would otherwise be impossible to use them for
-  //   assignment.
-  BasePage* const page = PageFromObject(item->Object());
-  visitor->ConservativelyMarkAddress(page,
-                                     reinterpret_cast<Address>(item->Object()));
-  return true;
-}
-
-void ThreadHeap::PushPostMarkingCallback(void* object, TraceCallback callback) {
-  DCHECK(thread_state_->IsInGC());
-
-  CallbackStack::Item* slot = post_marking_callback_stack_->AllocateEntry();
-  *slot = CallbackStack::Item(object, callback);
-}
-
-bool ThreadHeap::PopAndInvokePostMarkingCallback(Visitor* visitor) {
-  if (CallbackStack::Item* item = post_marking_callback_stack_->Pop()) {
-    item->Call(visitor);
-    return true;
-  }
-  return false;
-}
-
-void ThreadHeap::PushWeakCallback(void* closure, WeakCallback callback) {
-  CallbackStack::Item* slot = weak_callback_stack_->AllocateEntry();
-  *slot = CallbackStack::Item(closure, callback);
-}
-
-bool ThreadHeap::PopAndInvokeWeakCallback(Visitor* visitor) {
-  if (CallbackStack::Item* item = weak_callback_stack_->Pop()) {
-    item->Call(visitor);
-    return true;
-  }
-  return false;
-}
-
 void ThreadHeap::RegisterWeakTable(void* table,
                                    EphemeronCallback iteration_callback) {
   DCHECK(thread_state_->IsInGC());
@@ -282,17 +226,17 @@ void ThreadHeap::RegisterWeakTable(void* table,
 
 void ThreadHeap::CommitCallbackStacks() {
   marking_worklist_.reset(new MarkingWorklist());
-  not_fully_constructed_marking_stack_->Commit();
-  post_marking_callback_stack_->Commit();
-  weak_callback_stack_->Commit();
+  not_fully_constructed_worklist_.reset(new NotFullyConstructedWorklist());
+  post_marking_worklist_.reset(new PostMarkingWorklist());
+  weak_callback_worklist_.reset(new WeakCallbackWorklist());
   DCHECK(ephemeron_callbacks_.IsEmpty());
 }
 
 void ThreadHeap::DecommitCallbackStacks() {
   marking_worklist_.reset(nullptr);
-  not_fully_constructed_marking_stack_->Decommit();
-  post_marking_callback_stack_->Decommit();
-  weak_callback_stack_->Decommit();
+  not_fully_constructed_worklist_.reset(nullptr);
+  post_marking_worklist_.reset(nullptr);
+  weak_callback_worklist_.reset(nullptr);
   ephemeron_callbacks_.clear();
 }
 
@@ -325,7 +269,13 @@ void ThreadHeap::ProcessMarkingStack(Visitor* visitor) {
 void ThreadHeap::MarkNotFullyConstructedObjects(Visitor* visitor) {
   TRACE_EVENT0("blink_gc", "ThreadHeap::MarkNotFullyConstructedObjects");
   DCHECK(!thread_state_->IsIncrementalMarking());
-  while (PopAndInvokeNotFullyConstructedTraceCallback(visitor)) {
+
+  NotFullyConstructedItem item;
+  while (
+      not_fully_constructed_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
+    BasePage* const page = PageFromObject(item);
+    reinterpret_cast<MarkingVisitor*>(visitor)->ConservativelyMarkAddress(
+        page, reinterpret_cast<Address>(item));
   }
 }
 
@@ -381,23 +331,19 @@ bool ThreadHeap::AdvanceMarkingStackProcessing(Visitor* visitor,
 }
 
 void ThreadHeap::PostMarkingProcessing(Visitor* visitor) {
-  TRACE_EVENT0("blink_gc", "ThreadHeap::postMarkingProcessing");
-  // Call post-marking callbacks including:
-  // 1. the ephemeronIterationDone callbacks on weak tables to do cleanup
-  //    (specifically to clear the queued bits for weak hash tables), and
-  // 2. the markNoTracing callbacks on collection backings to mark them
-  //    if they are only reachable from their front objects.
-  while (PopAndInvokePostMarkingCallback(visitor)) {
+  TRACE_EVENT0("blink_gc", "ThreadHeap::PostMarkingProcessing");
+  // Call post marking callbacks on collection backings to mark them if they are
+  // only reachable from their front objects.
+  CustomCallbackItem item;
+  while (post_marking_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
+    item.callback(visitor, item.object);
   }
-
-  // Post-marking callbacks should not trace any objects and
-  // therefore the marking stack should be empty after the
-  // post-marking callbacks.
+  // Post marking callbacks should not add any new objects for marking.
   DCHECK(marking_worklist_->IsGlobalEmpty());
 }
 
 void ThreadHeap::WeakProcessing(Visitor* visitor) {
-  TRACE_EVENT0("blink_gc", "ThreadHeap::weakProcessing");
+  TRACE_EVENT0("blink_gc", "ThreadHeap::WeakProcessing");
   double start_time = WTF::CurrentTimeTicksInMilliseconds();
 
   // Weak processing may access unmarked objects but are forbidden from
@@ -406,11 +352,11 @@ void ThreadHeap::WeakProcessing(Visitor* visitor) {
       ThreadState::Current());
 
   // Call weak callbacks on objects that may now be pointing to dead objects.
-  while (PopAndInvokeWeakCallback(visitor)) {
+  CustomCallbackItem item;
+  while (weak_callback_worklist_->Pop(WorklistTaskId::MainThread, &item)) {
+    item.callback(visitor, item.object);
   }
-
-  // It is not permitted to trace pointers of live objects in the weak
-  // callback phase, so the marking stack should still be empty here.
+  // Weak callbacks should not add any new objects for marking.
   DCHECK(marking_worklist_->IsGlobalEmpty());
 
   double time_for_weak_processing =

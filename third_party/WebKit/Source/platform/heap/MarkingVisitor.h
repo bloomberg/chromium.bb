@@ -61,7 +61,7 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
     if (desc.base_object_payload == BlinkGC::kNotFullyConstructedObject) {
       // This means that the objects are not-yet-fully-constructed. See comments
       // on GarbageCollectedMixin for how those objects are handled.
-      Heap().PushNotFullyConstructedTraceCallback(object);
+      not_fully_constructed_worklist_.Push(object);
       return;
     }
     // Default mark method of the trait just calls the two-argument mark
@@ -121,7 +121,7 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
                                void** object_slot,
                                TraceDescriptor desc) final {
     RegisterBackingStoreReference(object_slot);
-    Heap().PushPostMarkingCallback(object, &MarkNoTracingCallback);
+    post_marking_worklist_.Push({object, &MarkNoTracingCallback});
   }
 
   void RegisterBackingStoreCallback(void* backing_store,
@@ -139,6 +139,9 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
   void ConservativelyMarkHeader(HeapObjectHeader*);
 
   MarkingWorklist::View marking_worklist_;
+  NotFullyConstructedWorklist::View not_fully_constructed_worklist_;
+  PostMarkingWorklist::View post_marking_worklist_;
+  WeakCallbackWorklist::View weak_callback_worklist_;
   const MarkingMode marking_mode_;
 };
 

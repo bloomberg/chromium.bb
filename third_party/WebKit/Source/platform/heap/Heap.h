@@ -55,23 +55,26 @@ namespace incremental_marking_test {
 class IncrementalMarkingScopeBase;
 }  // namespace incremental_marking_test
 
-class CallbackStack;
 class PagePool;
 class RegionTree;
 
 struct MarkingItem {
   void* object;
   TraceCallback callback;
-
-  // Only used for DCHECKs for Worklist::Contains.
-  bool operator==(const MarkingItem& other) const {
-    return object == other.object;
-  }
 };
+
+using CustomCallbackItem = MarkingItem;
+using NotFullyConstructedItem = void*;
 
 // Segment size of 512 entries necessary to avoid throughput regressions. Since
 // the work list is currently a temporary object this is not a problem.
 using MarkingWorklist = Worklist<MarkingItem, 512 /* local entries */>;
+using NotFullyConstructedWorklist =
+    Worklist<NotFullyConstructedItem, 16 /* local entries */>;
+using PostMarkingWorklist =
+    Worklist<CustomCallbackItem, 128 /* local entries */>;
+using WeakCallbackWorklist =
+    Worklist<CustomCallbackItem, 256 /* local entries */>;
 
 class PLATFORM_EXPORT HeapAllocHooks {
  public:
@@ -248,14 +251,16 @@ class PLATFORM_EXPORT ThreadHeap {
     return marking_worklist_.get();
   }
 
-  CallbackStack* NotFullyConstructedMarkingStack() const {
-    return not_fully_constructed_marking_stack_.get();
+  NotFullyConstructedWorklist* GetNotFullyConstructedWorklist() const {
+    return not_fully_constructed_worklist_.get();
   }
-  CallbackStack* PostMarkingCallbackStack() const {
-    return post_marking_callback_stack_.get();
+
+  PostMarkingWorklist* GetPostMarkingWorklist() const {
+    return post_marking_worklist_.get();
   }
-  CallbackStack* WeakCallbackStack() const {
-    return weak_callback_stack_.get();
+
+  WeakCallbackWorklist* GetWeakCallbackWorklist() const {
+    return weak_callback_worklist_.get();
   }
 
   void VisitPersistentRoots(Visitor*);
@@ -295,33 +300,6 @@ class PLATFORM_EXPORT ThreadHeap {
     return page->Arena()->WillObjectBeLazilySwept(
         page, const_cast<T*>(object_pointer));
   }
-
-  // Push a trace callback for not-fully-constructed objects.
-  void PushNotFullyConstructedTraceCallback(void* container_object);
-
-  // Push a trace callback on the post-marking callback stack.  These
-  // callbacks are called after normal marking (including ephemeron
-  // iteration).
-  void PushPostMarkingCallback(void*, TraceCallback);
-
-  // Push a weak callback. The weak callback is called when the object
-  // doesn't get marked in the current GC.
-  void PushWeakCallback(void*, WeakCallback);
-
-  // Pop the top of the not-yet-fully-constructed objects marking stack and call
-  // the callback with the visitor and the object. Returns false when there is
-  // nothing more to do. Can only be called during the atomic pause.
-  bool PopAndInvokeNotFullyConstructedTraceCallback(Visitor*);
-
-  // Remove an item from the post-marking callback stack and call
-  // the callback with the visitor and the object pointer.  Returns
-  // false when there is nothing more to do.
-  bool PopAndInvokePostMarkingCallback(Visitor*);
-
-  // Remove an item from the weak callback work list and call the callback
-  // with the visitor and the closure pointer.  Returns false when there is
-  // nothing more to do.
-  bool PopAndInvokeWeakCallback(Visitor*);
 
   // Register an ephemeron table for fixed-point iteration.
   void RegisterWeakTable(void* container_object,
@@ -539,9 +517,9 @@ class PLATFORM_EXPORT ThreadHeap {
   std::unique_ptr<HeapDoesNotContainCache> heap_does_not_contain_cache_;
   std::unique_ptr<PagePool> free_page_pool_;
   std::unique_ptr<MarkingWorklist> marking_worklist_;
-  std::unique_ptr<CallbackStack> not_fully_constructed_marking_stack_;
-  std::unique_ptr<CallbackStack> post_marking_callback_stack_;
-  std::unique_ptr<CallbackStack> weak_callback_stack_;
+  std::unique_ptr<NotFullyConstructedWorklist> not_fully_constructed_worklist_;
+  std::unique_ptr<PostMarkingWorklist> post_marking_worklist_;
+  std::unique_ptr<WeakCallbackWorklist> weak_callback_worklist_;
   // No duplicates allowed for ephemeron callbacks. Hence, we use a hashmap
   // with the key being the HashTable.
   WTF::HashMap<void*, EphemeronCallback> ephemeron_callbacks_;

@@ -18,6 +18,12 @@ MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
     : Visitor(state),
       marking_worklist_(Heap().GetMarkingWorklist(),
                         WorklistTaskId::MainThread),
+      not_fully_constructed_worklist_(Heap().GetNotFullyConstructedWorklist(),
+                                      WorklistTaskId::MainThread),
+      post_marking_worklist_(Heap().GetPostMarkingWorklist(),
+                             WorklistTaskId::MainThread),
+      weak_callback_worklist_(Heap().GetWeakCallbackWorklist(),
+                              WorklistTaskId::MainThread),
       marking_mode_(marking_mode) {
   // See ThreadState::runScheduledGC() why we need to already be in a
   // GCForbiddenScope before any safe point is entered.
@@ -104,12 +110,11 @@ void MarkingVisitor::MarkNoTracingCallback(Visitor* visitor, void* object) {
       HeapObjectHeader::FromPayload(object));
 }
 
-void MarkingVisitor::RegisterWeakCallback(void* closure,
-                                          WeakCallback callback) {
+void MarkingVisitor::RegisterWeakCallback(void* object, WeakCallback callback) {
   // We don't want to run weak processings when taking a snapshot.
   if (marking_mode_ == kSnapshotMarking)
     return;
-  Heap().PushWeakCallback(closure, callback);
+  weak_callback_worklist_.Push({object, callback});
 }
 
 void MarkingVisitor::RegisterBackingStoreReference(void* slot) {
