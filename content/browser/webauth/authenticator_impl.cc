@@ -590,9 +590,9 @@ void AuthenticatorImpl::OnRegisterResponseAttestationDecided(
          webauth::mojom::AttestationConveyancePreference::NONE);
 
   if (!attestation_permitted) {
-    // To protect users from being identified without consent, we let the
-    // timeout run out.
-    // See https://w3c.github.io/webauthn/#sec-assertion-privacy.
+    InvokeCallbackAndCleanup(
+        std::move(make_credential_response_callback_),
+        webauth::mojom::AuthenticatorStatus::NOT_ALLOWED_ERROR, nullptr);
     return;
   }
 
