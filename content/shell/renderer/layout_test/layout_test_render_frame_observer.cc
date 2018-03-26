@@ -42,6 +42,11 @@ void LayoutTestRenderFrameObserver::OnDestruct() {
   delete this;
 }
 
+void LayoutTestRenderFrameObserver::CaptureDump(CaptureDumpCallback callback) {
+  BlinkTestRunner::Get(render_frame()->GetRenderView())
+      ->CaptureDump(std::move(callback));
+}
+
 void LayoutTestRenderFrameObserver::DumpFrameLayout(
     DumpFrameLayoutCallback callback) {
   std::string dump =

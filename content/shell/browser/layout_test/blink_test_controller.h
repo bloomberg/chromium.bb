@@ -93,12 +93,14 @@ class BlinkTestResultPrinter {
   void AddErrorMessage(const std::string& message);
 
   void CloseStderr();
+  void StartStateDump();
 
  private:
   void PrintEncodedBinaryData(const std::vector<unsigned char>& data);
 
   enum State {
     DURING_TEST,
+    DURING_STATE_DUMP,
     IN_TEXT_BLOCK,
     IN_AUDIO_BLOCK,
     IN_IMAGE_BLOCK,
@@ -138,6 +140,7 @@ class BlinkTestController : public WebContentsObserver,
       int sender_process_host_id,
       const base::DictionaryValue& changed_layout_test_runtime_flags);
   void OnTestFinishedInSecondaryRenderer();
+  void OnInitiateCaptureDump(bool capture_navigation_history);
   void OnInspectSecondaryWindow();
 
   // Makes sure that the potentially new renderer associated with |frame| is 1)
@@ -202,7 +205,7 @@ class BlinkTestController : public WebContentsObserver,
   // Message handlers.
   void OnAudioDump(const std::vector<unsigned char>& audio_dump);
   void OnImageDump(const std::string& actual_pixel_hash, const SkBitmap& image);
-  void OnTextDump(const std::string& dump, bool should_dump_history);
+  void OnTextDump(const std::string& dump);
   void OnInitiateLayoutDump();
   void OnDumpFrameLayoutResponse(int frame_tree_node_id,
                                  const std::string& dump);
@@ -228,6 +231,7 @@ class BlinkTestController : public WebContentsObserver,
 
   void OnAllServiceWorkersCleared();
   void OnAllSharedWorkersDestroyed();
+  void OnCaptureDumpCompleted(mojom::LayoutTestDumpPtr dump);
 
   std::unique_ptr<BlinkTestResultPrinter> printer_;
 
@@ -294,6 +298,8 @@ class BlinkTestController : public WebContentsObserver,
   // since PrepareForLayoutTest (i.e. changes that need to be send to a fresh
   // renderer created while test is in progress).
   base::DictionaryValue accumulated_layout_test_runtime_flags_changes_;
+
+  std::string navigation_history_dump_;
 
   // Map from one frame to one mojo pipe.
   std::map<RenderFrameHost*, mojom::LayoutTestControlAssociatedPtr>

@@ -172,6 +172,7 @@ class BlinkTestRunner : public RenderViewObserver,
   void OnSetTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnReplicateTestConfiguration(mojom::ShellTestConfigurationPtr params);
   void OnSetupSecondaryRenderer();
+  void CaptureDump(mojom::LayoutTestControl::CaptureDumpCallback callback);
 
  private:
   // Message handlers.
@@ -195,11 +196,12 @@ class BlinkTestRunner : public RenderViewObserver,
 
   // After finishing the test, retrieves the audio, text, and pixel dumps from
   // the TestRunner library and sends them to the browser process.
-  void CaptureDump();
   void OnLayoutDumpCompleted(std::string completed_layout_dump);
-  void CaptureDumpContinued();
   void OnPixelsDumpCompleted(const SkBitmap& snapshot);
   void CaptureDumpComplete();
+  void CaptureLocalAudioDump();
+  void CaptureLocalLayoutDump();
+  void CaptureLocalPixelsDump();
 
   mojom::LayoutTestBluetoothFakeAdapterSetter&
   GetBluetoothFakeAdapterSetter();
@@ -219,6 +221,11 @@ class BlinkTestRunner : public RenderViewObserver,
   std::unique_ptr<test_runner::AppBannerService> app_banner_service_;
 
   std::unique_ptr<LeakDetector> leak_detector_;
+
+  mojom::LayoutTestControl::CaptureDumpCallback dump_callback_;
+  mojom::LayoutTestDumpPtr dump_result_;
+  bool waiting_for_layout_dump_results_ = false;
+  bool waiting_for_pixels_dump_result_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(BlinkTestRunner);
 };
