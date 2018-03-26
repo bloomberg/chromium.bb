@@ -3932,7 +3932,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       if (new_length_field_size < length_field_size) {
         const size_t src_offset = obu_header_size + length_field_size;
         const size_t dst_offset = obu_header_size + new_length_field_size;
-        memmove(dst + dst_offset, dst + src_offset, payload_size);
+        memmove(dst + dst_offset, dst + src_offset, (size_t)payload_size);
         total_size -= (int)(length_field_size - new_length_field_size);
       }
     }
