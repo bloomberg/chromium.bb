@@ -349,26 +349,43 @@ struct HashTraits<blink::KeyWithCopyingMoveConstructor>
 
 namespace blink {
 
-class TestGCScope {
+class TestGCCollectGarbageScope {
  public:
-  explicit TestGCScope(BlinkGC::StackState state)
-      : state_(ThreadState::Current()),
-        safe_point_scope_(state),
-        persistent_lock_(ProcessHeap::CrossThreadPersistentMutex()) {
-    DCHECK(state_->CheckThread());
-    state_->MarkPhasePrologue(state, BlinkGC::kAtomicMarking,
-                              BlinkGC::kPreciseGC);
+  explicit TestGCCollectGarbageScope(BlinkGC::StackState state) {
+    DCHECK(ThreadState::Current()->CheckThread());
   }
 
-  ~TestGCScope() {
-    state_->MarkPhaseEpilogue(BlinkGC::kAtomicMarking);
-    state_->PreSweep(BlinkGC::kAtomicMarking, BlinkGC::kEagerSweeping);
+  ~TestGCCollectGarbageScope() { ThreadState::Current()->CompleteSweep(); }
+};
+
+class TestGCMarkingScope : public TestGCCollectGarbageScope {
+ public:
+  explicit TestGCMarkingScope(BlinkGC::StackState state)
+      : TestGCCollectGarbageScope(state),
+        atomic_pause_scope_(ThreadState::Current()),
+        persistent_lock_(ProcessHeap::CrossThreadPersistentMutex()) {
+    ThreadState::Current()->MarkPhasePrologue(state, BlinkGC::kAtomicMarking,
+                                              BlinkGC::kPreciseGC);
+  }
+  ~TestGCMarkingScope() {
+    ThreadState::Current()->MarkPhaseEpilogue(BlinkGC::kAtomicMarking);
+    ThreadState::Current()->PreSweep(BlinkGC::kAtomicMarking,
+                                     BlinkGC::kEagerSweeping);
   }
 
  private:
-  ThreadState* state_;
-  SafePointScope safe_point_scope_;
+  ThreadState::AtomicPauseScope atomic_pause_scope_;
   RecursiveMutexLocker persistent_lock_;
+};
+
+class TestGCScope : public TestGCMarkingScope {
+ public:
+  explicit TestGCScope(BlinkGC::StackState state)
+      : TestGCMarkingScope(state), safe_point_scope_(state) {}
+  ~TestGCScope() {}
+
+ private:
+  SafePointScope safe_point_scope_;
 };
 
 class SimpleObject : public GarbageCollected<SimpleObject> {
