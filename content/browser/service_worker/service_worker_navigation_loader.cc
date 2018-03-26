@@ -71,7 +71,7 @@ class ServiceWorkerNavigationLoader::StreamWaiter
 };
 
 ServiceWorkerNavigationLoader::ServiceWorkerNavigationLoader(
-    URLLoaderRequestHandler::LoaderCallback callback,
+    NavigationLoaderInterceptor::LoaderCallback callback,
     Delegate* delegate,
     const network::ResourceRequest& resource_request,
     scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter)

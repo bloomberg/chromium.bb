@@ -9,10 +9,10 @@
 #include "base/command_line.h"
 #include "base/memory/ptr_util.h"
 #include "content/browser/frame_host/navigation_request_info.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader_factory.h"
 #include "content/browser/loader/navigation_url_loader_impl.h"
 #include "content/browser/loader/navigation_url_loader_network_service.h"
-#include "content/browser/loader/url_loader_request_handler.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "services/network/public/cpp/features.h"
@@ -39,7 +39,7 @@ std::unique_ptr<NavigationURLLoader> NavigationURLLoader::Create(
     return std::make_unique<NavigationURLLoaderNetworkService>(
         resource_context, storage_partition, std::move(request_info),
         std::move(navigation_ui_data), service_worker_handle, appcache_handle,
-        delegate, std::vector<std::unique_ptr<URLLoaderRequestHandler>>());
+        delegate, std::vector<std::unique_ptr<NavigationLoaderInterceptor>>());
   } else {
     return std::make_unique<NavigationURLLoaderImpl>(
         resource_context, storage_partition, std::move(request_info),

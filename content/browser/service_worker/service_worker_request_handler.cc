@@ -9,7 +9,7 @@
 
 #include "base/command_line.h"
 #include "base/macros.h"
-#include "content/browser/loader/url_loader_request_handler.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
@@ -131,7 +131,7 @@ void ServiceWorkerRequestHandler::InitializeForNavigation(
 
 // S13nServiceWorker:
 // static
-std::unique_ptr<URLLoaderRequestHandler>
+std::unique_ptr<NavigationLoaderInterceptor>
 ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
     const network::ResourceRequest& resource_request,
     ResourceContext* resource_context,
@@ -181,7 +181,7 @@ ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
   // ServiceWorkerNavigationHandleCore.
   navigation_handle_core->DidPreCreateProviderHost(std::move(provider_host));
 
-  return base::WrapUnique<URLLoaderRequestHandler>(handler.release());
+  return base::WrapUnique<NavigationLoaderInterceptor>(handler.release());
 }
 
 // static

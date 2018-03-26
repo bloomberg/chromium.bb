@@ -76,7 +76,7 @@ class CONTENT_EXPORT ServiceWorkerControlleeRequestHandler
   // This could get called multiple times during the lifetime in redirect
   // cases. (In fallback-to-network cases we basically forward the request
   // to the request to the next request handler)
-  // URLLoaderRequestHandler overrides:
+  // NavigationLoaderInterceptor overrides:
   void MaybeCreateLoader(const network::ResourceRequest& request,
                          ResourceContext* resource_context,
                          LoaderCallback callback) override;

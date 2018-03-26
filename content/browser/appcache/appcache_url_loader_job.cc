@@ -138,7 +138,7 @@ void AppCacheURLLoaderJob::Start(network::mojom::URLLoaderRequest request,
 AppCacheURLLoaderJob::AppCacheURLLoaderJob(
     AppCacheURLLoaderRequest* appcache_request,
     AppCacheStorage* storage,
-    URLLoaderRequestHandler::LoaderCallback loader_callback)
+    NavigationLoaderInterceptor::LoaderCallback loader_callback)
     : storage_(storage->GetWeakPtr()),
       start_time_tick_(base::TimeTicks::Now()),
       cache_id_(kAppCacheNoCacheId),

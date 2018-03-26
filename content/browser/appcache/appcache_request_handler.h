@@ -17,7 +17,7 @@
 #include "content/browser/appcache/appcache_host.h"
 #include "content/browser/appcache/appcache_request_handler.h"
 #include "content/browser/appcache/appcache_service_impl.h"
-#include "content/browser/loader/url_loader_request_handler.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/url_loader_factory_getter.h"
 #include "content/common/content_export.h"
 #include "content/public/common/resource_type.h"
@@ -50,7 +50,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
       public AppCacheHost::Observer,
       public AppCacheServiceImpl::Observer,
       public AppCacheStorage::Delegate,
-      public URLLoaderRequestHandler {
+      public NavigationLoaderInterceptor {
  public:
   ~AppCacheRequestHandler() override;
 
@@ -80,7 +80,7 @@ class CONTENT_EXPORT AppCacheRequestHandler
 
   // NetworkService loading
 
-  // URLLoaderRequestHandler overrides - main resource loading.
+  // NavigationLoaderInterceptor overrides - main resource loading.
   // These methods are used by the NavigationURLLoaderNetworkService.
   // Internally they use same methods used by the network library based impl,
   // MaybeLoadResource and MaybeLoadFallbackForResponse.

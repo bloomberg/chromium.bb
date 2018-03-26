@@ -12,7 +12,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
 #include "base/time/time.h"
-#include "content/browser/loader/url_loader_request_handler.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/common/content_export.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -49,7 +49,7 @@ class WebContents;
 // Created one per URLRequest and attached to each request.
 class CONTENT_EXPORT ServiceWorkerRequestHandler
     : public base::SupportsUserData::Data,
-      public URLLoaderRequestHandler {
+      public NavigationLoaderInterceptor {
  public:
   // PlzNavigate
   // Attaches a newly created handler if the given |request| needs to be handled
@@ -68,8 +68,8 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
 
   // S13nServiceWorker:
   // Same as InitializeForNavigation() but instead of attaching to a URLRequest,
-  // just creates a URLLoaderRequestHandler and returns it.
-  static std::unique_ptr<URLLoaderRequestHandler>
+  // just creates a NavigationLoaderInterceptor and returns it.
+  static std::unique_ptr<NavigationLoaderInterceptor>
   InitializeForNavigationNetworkService(
       const network::ResourceRequest& resource_request,
       ResourceContext* resource_context,
@@ -134,7 +134,7 @@ class CONTENT_EXPORT ServiceWorkerRequestHandler
       net::NetworkDelegate* network_delegate,
       ResourceContext* context) = 0;
 
-  // URLLoaderRequestHandler overrides.
+  // NavigationLoaderInterceptor overrides.
   void MaybeCreateLoader(const network::ResourceRequest& request,
                          ResourceContext* resource_context,
                          LoaderCallback callback) override;
