@@ -20,7 +20,6 @@
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
 #include "chrome/browser/chromeos/login/helper.h"
 #include "chrome/browser/chromeos/login/startup_utils.h"
-#include "chrome/browser/chromeos/login/test/oobe_base_test.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/ui/ash/session_controller_client.h"
@@ -329,53 +328,11 @@ class TrayAccessibilityTest
     return tray()->detailed_menu_->sticky_keys_enabled_;
   }
 
-  // In material design we show the help button but theme it as disabled if
-  // it is not possible to load the help page.
-  static bool IsHelpAvailableOnDetailMenu() {
-    return tray()->detailed_menu_->help_view_->state() ==
-           views::Button::STATE_NORMAL;
-  }
-
-  // In material design we show the settings button but theme it as disabled if
-  // it is not possible to load the settings page.
-  static bool IsSettingsAvailableOnDetailMenu() {
-    return tray()->detailed_menu_->settings_view_->state() ==
-           views::Button::STATE_NORMAL;
-  }
-
   // Disable animations so that tray icons hide immediately.
   ui::ScopedAnimationDurationScaleMode disable_animations_;
 
   policy::MockConfigurationPolicyProvider provider_;
 };
-
-using TrayAccessibilityLoginScreenTest = OobeBaseTest;
-
-// Verify the login screen state in a separate test to avoid having to simulate
-// login repeatedly.
-IN_PROC_BROWSER_TEST_F(TrayAccessibilityLoginScreenTest, LoginStatus) {
-  ui::ScopedAnimationDurationScaleMode disable_animations(
-      ui::ScopedAnimationDurationScaleMode::ZERO_DURATION);
-  WaitForSigninScreen();
-
-  // By default the icon is not visible at the login screen.
-  views::View* tray_icon = TrayAccessibilityTest::tray()->tray_view();
-  EXPECT_FALSE(tray_icon->visible());
-
-  // Enabling an accessibility feature shows the icon.
-  EnableLargeCursor(true);
-  EXPECT_TRUE(tray_icon->visible());
-
-  // Disabling the accessibility feature hides the icon.
-  EnableLargeCursor(false);
-  EXPECT_FALSE(tray_icon->visible());
-
-  // Settings and help are not available on the login screen because they use
-  // webui.
-  TrayAccessibilityTest::tray()->ShowDetailedView(0);
-  EXPECT_FALSE(TrayAccessibilityTest::IsHelpAvailableOnDetailMenu());
-  EXPECT_FALSE(TrayAccessibilityTest::IsSettingsAvailableOnDetailMenu());
-}
 
 IN_PROC_BROWSER_TEST_P(TrayAccessibilityTest, ShowTrayIcon) {
   // Confirms that the icon is invisible just after login.

@@ -9,9 +9,10 @@
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/system/tray/system_tray.h"
-#include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/system_tray_test_api.h"
 #include "ash/test/ash_test_base.h"
+#include "base/macros.h"
+#include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "components/prefs/pref_service.h"
 #include "ui/message_center/message_center.h"
@@ -37,7 +38,7 @@ void SetLargeCursorEnabledFromSettings(bool enabled) {
 }  // namespace
 
 class TrayAccessibilityTest : public AshTestBase {
- public:
+ protected:
   TrayAccessibilityTest() = default;
   ~TrayAccessibilityTest() override = default;
 
@@ -122,42 +123,38 @@ class TrayAccessibilityTest : public AshTestBase {
            views::Button::STATE_NORMAL;
   }
 
+  TrayAccessibility* tray_item_;  // Not owned.
+
  private:
-  TrayAccessibility* tray_item_;
+  DISALLOW_COPY_AND_ASSIGN(TrayAccessibilityTest);
 };
 
 // Tests that the icon becomes visible when the tray menu toggles a feature.
 TEST_F(TrayAccessibilityTest, VisibilityFromMenu) {
-  SystemTray* tray = GetPrimarySystemTray();
-  TrayAccessibility* tray_item = SystemTrayTestApi(tray).tray_accessibility();
-
   // By default the icon isn't visible.
-  EXPECT_FALSE(tray_item->tray_view()->visible());
+  EXPECT_FALSE(tray_item_->tray_view()->visible());
 
   // Turning on an accessibility feature shows the icon.
   SetLargeCursorEnabledFromMenu(true);
-  EXPECT_TRUE(tray_item->tray_view()->visible());
+  EXPECT_TRUE(tray_item_->tray_view()->visible());
 
   // Turning off all accessibility features hides the icon.
   SetLargeCursorEnabledFromMenu(false);
-  EXPECT_FALSE(tray_item->tray_view()->visible());
+  EXPECT_FALSE(tray_item_->tray_view()->visible());
 }
 
 // Tests that the icon becomes visible when webui settings toggles a feature.
 TEST_F(TrayAccessibilityTest, VisibilityFromSettings) {
-  SystemTray* tray = GetPrimarySystemTray();
-  TrayAccessibility* tray_item = SystemTrayTestApi(tray).tray_accessibility();
-
   // By default the icon isn't visible.
-  EXPECT_FALSE(tray_item->tray_view()->visible());
+  EXPECT_FALSE(tray_item_->tray_view()->visible());
 
   // Turning on an accessibility pref shows the icon.
   SetLargeCursorEnabledFromSettings(true);
-  EXPECT_TRUE(tray_item->tray_view()->visible());
+  EXPECT_TRUE(tray_item_->tray_view()->visible());
 
   // Turning off all accessibility prefs hides the icon.
   SetLargeCursorEnabledFromSettings(false);
-  EXPECT_FALSE(tray_item->tray_view()->visible());
+  EXPECT_FALSE(tray_item_->tray_view()->visible());
 }
 
 TEST_F(TrayAccessibilityTest, ShowNotificationOnSpokenFeedback) {
@@ -283,6 +280,58 @@ TEST_F(TrayAccessibilityTest, CheckMenuVisibilityOnDetailMenu) {
   EXPECT_TRUE(IsStickyKeysMenuShownOnDetailMenu());
   CloseDetailMenu();
   UnblockUserSession();
+}
+
+class TrayAccessibilityLoginScreenTest : public NoSessionAshTestBase {
+ protected:
+  TrayAccessibilityLoginScreenTest() = default;
+  ~TrayAccessibilityLoginScreenTest() override = default;
+
+  // NoSessionAshTestBase:
+  void SetUp() override {
+    NoSessionAshTestBase::SetUp();
+    tray_item_ = SystemTrayTestApi(Shell::Get()->GetPrimarySystemTray())
+                     .tray_accessibility();
+  }
+
+  // In material design we show the help button but theme it as disabled if
+  // it is not possible to load the help page.
+  bool IsHelpAvailableOnDetailMenu() {
+    return tray_item_->detailed_menu_->help_view_->state() ==
+           views::Button::STATE_NORMAL;
+  }
+
+  // In material design we show the settings button but theme it as disabled if
+  // it is not possible to load the settings page.
+  bool IsSettingsAvailableOnDetailMenu() {
+    return tray_item_->detailed_menu_->settings_view_->state() ==
+           views::Button::STATE_NORMAL;
+  }
+
+  TrayAccessibility* tray_item_;  // Not owned.
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TrayAccessibilityLoginScreenTest);
+};
+
+TEST_F(TrayAccessibilityLoginScreenTest, LoginStatus) {
+  // By default the icon is not visible at the login screen.
+  views::View* tray_icon = tray_item_->tray_view();
+  EXPECT_FALSE(tray_icon->visible());
+
+  // Enabling an accessibility feature shows the icon.
+  SetLargeCursorEnabledFromMenu(true);
+  EXPECT_TRUE(tray_icon->visible());
+
+  // Disabling the accessibility feature hides the icon.
+  SetLargeCursorEnabledFromMenu(false);
+  EXPECT_FALSE(tray_icon->visible());
+
+  // Settings and help are not available on the login screen because they use
+  // webui.
+  tray_item_->ShowDetailedView(0);
+  EXPECT_FALSE(IsHelpAvailableOnDetailMenu());
+  EXPECT_FALSE(IsSettingsAvailableOnDetailMenu());
 }
 
 }  // namespace ash

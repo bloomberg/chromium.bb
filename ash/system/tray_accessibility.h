@@ -29,6 +29,7 @@ class View;
 namespace ash {
 class HoverHighlightView;
 class SystemTrayItem;
+class TrayAccessibilityLoginScreenTest;
 class TrayAccessibilityTest;
 
 namespace tray {
@@ -42,6 +43,7 @@ class AccessibilityDetailedView : public TrayDetailsView {
   void OnAccessibilityStatusChanged();
 
  private:
+  friend class ::ash::TrayAccessibilityLoginScreenTest;
   friend class ::ash::TrayAccessibilityTest;
   friend class chromeos::TrayAccessibilityTest;
 
@@ -104,6 +106,7 @@ class TrayAccessibility : public TrayImageItem, public AccessibilityObserver {
   ~TrayAccessibility() override;
 
  private:
+  friend class TrayAccessibilityLoginScreenTest;
   friend class TrayAccessibilityTest;
   friend class chromeos::TrayAccessibilityTest;
 
