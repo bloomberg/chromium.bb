@@ -77,13 +77,15 @@ class GPU_EXPORT SyncPointOrderData
   struct OrderFence {
     uint32_t order_num;
     uint64_t fence_release;
-    base::Closure release_callback;
     scoped_refptr<SyncPointClientState> client_state;
+
+    // ID that is unique to the particular SyncPointOrderData.
+    uint64_t callback_id;
 
     OrderFence(uint32_t order,
                uint64_t release,
-               const base::Closure& release_callback,
-               scoped_refptr<SyncPointClientState> state);
+               scoped_refptr<SyncPointClientState> state,
+               uint64_t callback_id);
     OrderFence(const OrderFence& other);
     ~OrderFence();
 
@@ -102,15 +104,17 @@ class GPU_EXPORT SyncPointOrderData
 
   ~SyncPointOrderData();
 
-  bool ValidateReleaseOrderNumber(
+  // Returns callback_id for created OrderFence on success, 0 on failure.
+  uint64_t ValidateReleaseOrderNumber(
       scoped_refptr<SyncPointClientState> client_state,
       uint32_t wait_order_num,
-      uint64_t fence_release,
-      const base::Closure& release_callback);
+      uint64_t fence_release);
 
   SyncPointManager* const sync_point_manager_;
 
   const SequenceId sequence_id_;
+
+  uint64_t current_callback_id_ = 0;
 
   // Non thread-safe functions need to be called from a single thread.
   base::ThreadChecker processing_thread_checker_;
@@ -164,14 +168,14 @@ class GPU_EXPORT SyncPointClientState
   // This behaves similarly to SyncPointManager::Wait but uses the order data
   // to guarantee no deadlocks with other clients. Must be called on order
   // number processing thread.
-  bool Wait(const SyncToken& sync_token, const base::Closure& callback);
+  bool Wait(const SyncToken& sync_token, base::OnceClosure callback);
 
   // Like Wait but runs the callback on the given task runner's thread. Must be
   // called on order number processing thread.
   bool WaitNonThreadSafe(
       const SyncToken& sync_token,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::Closure& callback);
+      base::OnceClosure callback);
 
   // Release fence sync and run queued callbacks. Must be called on order number
   // processing thread.
@@ -184,11 +188,16 @@ class GPU_EXPORT SyncPointClientState
 
   struct ReleaseCallback {
     uint64_t release_count;
-    base::Closure callback_closure;
+    base::OnceClosure callback_closure;
+    uint64_t callback_id;
 
-    ReleaseCallback(uint64_t release, const base::Closure& callback);
-    ReleaseCallback(const ReleaseCallback& other);
+    ReleaseCallback(uint64_t release,
+                    base::OnceClosure callback,
+                    uint64_t callback_id);
+    ReleaseCallback(ReleaseCallback&& other);
     ~ReleaseCallback();
+
+    ReleaseCallback& operator=(ReleaseCallback&& other) = default;
 
     bool operator>(const ReleaseCallback& rhs) const {
       return release_count > rhs.release_count;
@@ -214,11 +223,11 @@ class GPU_EXPORT SyncPointClientState
   // be called.
   bool WaitForRelease(uint64_t release,
                       uint32_t wait_order_num,
-                      const base::Closure& callback);
+                      base::OnceClosure callback);
 
   // Does not release the fence sync, but releases callbacks waiting on that
   // fence sync.
-  void EnsureWaitReleased(uint64_t release, const base::Closure& callback);
+  void EnsureWaitReleased(uint64_t release, uint64_t callback_id);
 
   void ReleaseFenceSyncHelper(uint64_t release);
 
@@ -280,7 +289,7 @@ class GPU_EXPORT SyncPointManager {
   bool Wait(const SyncToken& sync_token,
             SequenceId sequence_id,
             uint32_t wait_order_num,
-            const base::Closure& callback);
+            base::OnceClosure callback);
 
   // Like Wait but runs the callback on the given task runner's thread.
   bool WaitNonThreadSafe(
@@ -288,12 +297,12 @@ class GPU_EXPORT SyncPointManager {
       SequenceId sequence_id,
       uint32_t wait_order_num,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
-      const base::Closure& callback);
+      base::OnceClosure callback);
 
   // WaitOutOfOrder allows waiting for a sync token indefinitely, so it
   // should be used with trusted sync tokens only.
   bool WaitOutOfOrder(const SyncToken& trusted_sync_token,
-                      const base::Closure& callback);
+                      base::OnceClosure callback);
 
   // Used by SyncPointOrderData.
   uint32_t GenerateOrderNumber();
