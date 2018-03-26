@@ -55,6 +55,8 @@ void CreateNativeAudioMediaStreamTrack(
     blink::WebMediaStreamSource::Capabilities capabilities;
     capabilities.device_id = source.Id();
     capabilities.echo_cancellation = std::vector<bool>({false});
+    capabilities.auto_gain_control = std::vector<bool>({false});
+    capabilities.noise_suppression = std::vector<bool>({false});
     source.SetCapabilities(capabilities);
   }
 

@@ -1007,6 +1007,8 @@ void RendererBlinkPlatformImpl::CreateHTMLAudioElementCapturer(
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = track_id;
   capabilities.echo_cancellation = std::vector<bool>({false});
+  capabilities.auto_gain_control = std::vector<bool>({false});
+  capabilities.noise_suppression = std::vector<bool>({false});
   web_media_stream_source.SetCapabilities(capabilities);
 
   media_stream_source->ConnectToTrack(web_media_stream_track);

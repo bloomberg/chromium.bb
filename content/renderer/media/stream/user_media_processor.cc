@@ -824,6 +824,8 @@ blink::WebMediaStreamSource UserMediaProcessor::InitializeAudioSourceObject(
 
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.echo_cancellation = {true, false};
+  capabilities.auto_gain_control = {true, false};
+  capabilities.noise_suppression = {true, false};
   capabilities.device_id = blink::WebString::FromUTF8(device.id);
 
   source.SetExtraData(audio_source);  // Takes ownership.
