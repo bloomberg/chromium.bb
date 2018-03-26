@@ -173,7 +173,7 @@ def WipeOldOutput(buildroot):
 
 def MakeChroot(buildroot, replace, use_sdk, chrome_root=None, extra_env=None):
   """Wrapper around make_chroot."""
-  cmd = ['cros_sdk', '--buildbot-log-version']
+  cmd = ['cros_sdk', '--buildbot-log-version', '--nouse-image']
   cmd.append('--create' if use_sdk else '--bootstrap')
 
   if replace:
@@ -193,7 +193,7 @@ def RunChrootUpgradeHooks(buildroot, chrome_root=None, extra_env=None):
     chrome_root: The directory where chrome is stored.
     extra_env: A dictionary of environment variables to set.
   """
-  chroot_args = []
+  chroot_args = ['--nouse-image']
   if chrome_root:
     chroot_args.append('--chrome_root=%s' % chrome_root)
 
