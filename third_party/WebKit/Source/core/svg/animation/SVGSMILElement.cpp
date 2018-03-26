@@ -217,6 +217,8 @@ SVGSMILElement::SVGSMILElement(const QualifiedName& tag_name, Document& doc)
       interval_(SMILInterval(SMILTime::Unresolved(), SMILTime::Unresolved())),
       previous_interval_begin_(SMILTime::Unresolved()),
       active_state_(kInactive),
+      restart_(kRestartAlways),
+      fill_(kFillRemove),
       last_percent_(0),
       last_repeat_(0),
       next_progress_time_(0),
@@ -542,6 +544,15 @@ void SVGSMILElement::ParseAttribute(const AttributeModificationParams& params) {
     SetAttributeEventListener(
         EventTypeNames::repeatEvent,
         CreateAttributeEventListener(this, name, value, EventParameterName()));
+  } else if (name == SVGNames::restartAttr) {
+    if (value == "never")
+      restart_ = kRestartNever;
+    else if (value == "whenNotActive")
+      restart_ = kRestartWhenNotActive;
+    else
+      restart_ = kRestartAlways;
+  } else if (name == SVGNames::fillAttr) {
+    fill_ = value == "freeze" ? kFillFreeze : kFillRemove;
   } else {
     SVGElement::ParseAttribute(params);
   }
@@ -616,7 +627,7 @@ void SVGSMILElement::SetTargetElement(SVGElement* target) {
 
   // If the animation state is not Inactive, always reset to a clear state
   // before leaving the old target element.
-  if (active_state_ != kInactive)
+  if (GetActiveState() != kInactive)
     EndedActiveInterval();
 
   target_element_ = target;
@@ -624,7 +635,7 @@ void SVGSMILElement::SetTargetElement(SVGElement* target) {
 
   // If the animation is scheduled and there's an active interval, then
   // revalidate the animation value.
-  if (active_state_ != kInactive && is_scheduled_)
+  if (GetActiveState() != kInactive && is_scheduled_)
     StartedActiveInterval();
 }
 
@@ -633,24 +644,7 @@ SMILTime SVGSMILElement::Elapsed() const {
 }
 
 bool SVGSMILElement::IsFrozen() const {
-  return active_state_ == kFrozen;
-}
-
-SVGSMILElement::Restart SVGSMILElement::GetRestart() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, never, ("never"));
-  DEFINE_STATIC_LOCAL(const AtomicString, when_not_active, ("whenNotActive"));
-  const AtomicString& value = FastGetAttribute(SVGNames::restartAttr);
-  if (value == never)
-    return kRestartNever;
-  if (value == when_not_active)
-    return kRestartWhenNotActive;
-  return kRestartAlways;
-}
-
-SVGSMILElement::FillMode SVGSMILElement::Fill() const {
-  DEFINE_STATIC_LOCAL(const AtomicString, freeze, ("freeze"));
-  const AtomicString& value = FastGetAttribute(SVGNames::fillAttr);
-  return value == freeze ? kFillFreeze : kFillRemove;
+  return GetActiveState() == kFrozen;
 }
 
 SMILTime SVGSMILElement::Dur() const {
@@ -898,7 +892,7 @@ SMILTime SVGSMILElement::NextProgressTime() const {
 void SVGSMILElement::BeginListChanged(SMILTime event_time) {
   if (is_waiting_for_first_interval_) {
     ResolveFirstInterval();
-  } else if (this->GetRestart() != kRestartNever) {
+  } else if (GetRestart() != kRestartNever) {
     SMILTime new_begin = FindInstanceTime(kBegin, event_time, true);
     if (new_begin.IsFinite() &&
         (interval_.end <= event_time || new_begin < interval_.begin)) {
@@ -908,9 +902,9 @@ void SVGSMILElement::BeginListChanged(SMILTime event_time) {
       interval_ = ResolveInterval(kNextInterval);
       DCHECK(!interval_.begin.IsUnresolved());
       if (interval_.begin != old_begin) {
-        if (active_state_ == kActive && interval_.begin > event_time) {
+        if (GetActiveState() == kActive && interval_.begin > event_time) {
           active_state_ = DetermineActiveState(event_time);
-          if (active_state_ != kActive)
+          if (GetActiveState() != kActive)
             EndedActiveInterval();
         }
         NotifyDependentsIntervalChanged();
@@ -948,7 +942,7 @@ SVGSMILElement::RestartedInterval SVGSMILElement::MaybeRestartInterval(
   DCHECK(!is_waiting_for_first_interval_);
   DCHECK(elapsed >= interval_.begin);
 
-  Restart restart = this->GetRestart();
+  Restart restart = GetRestart();
   if (restart == kRestartNever)
     return kDidNotRestartInterval;
 
@@ -1053,7 +1047,7 @@ float SVGSMILElement::CalculateAnimationPercentAndRepeat(
 }
 
 SMILTime SVGSMILElement::CalculateNextProgressTime(double elapsed) const {
-  if (active_state_ == kActive) {
+  if (GetActiveState() == kActive) {
     // If duration is indefinite the value does not actually change over time.
     // Same is true for <set>.
     SMILTime simple_duration = this->SimpleDuration();
@@ -1084,10 +1078,10 @@ SVGSMILElement::ActiveState SVGSMILElement::DetermineActiveState(
 bool SVGSMILElement::IsContributing(double elapsed) const {
   // Animation does not contribute during the active time if it is past its
   // repeating duration and has fill=remove.
-  return (active_state_ == kActive &&
+  return (GetActiveState() == kActive &&
           (Fill() == kFillFreeze ||
            elapsed <= interval_.begin + RepeatingDuration())) ||
-         active_state_ == kFrozen;
+         GetActiveState() == kFrozen;
 }
 
 bool SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
@@ -1098,16 +1092,16 @@ bool SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
     ConnectSyncBaseConditions();
 
   if (!interval_.begin.IsFinite()) {
-    DCHECK_EQ(active_state_, kInactive);
+    DCHECK_EQ(GetActiveState(), kInactive);
     next_progress_time_ = SMILTime::Unresolved();
     return false;
   }
 
   if (elapsed < interval_.begin) {
-    DCHECK_NE(active_state_, kActive);
+    DCHECK_NE(GetActiveState(), kActive);
     next_progress_time_ = interval_.begin;
     // If the animation is frozen, it's still contributing.
-    return active_state_ == kFrozen;
+    return GetActiveState() == kFrozen;
   }
 
   previous_interval_begin_ = interval_.begin;
@@ -1132,7 +1126,7 @@ bool SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
   float percent = CalculateAnimationPercentAndRepeat(elapsed, repeat);
   RestartedInterval restarted_interval = MaybeRestartInterval(elapsed);
 
-  ActiveState old_active_state = active_state_;
+  ActiveState old_active_state = GetActiveState();
   active_state_ = DetermineActiveState(elapsed);
   bool animation_is_contributing = IsContributing(elapsed);
 
@@ -1150,7 +1144,7 @@ bool SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
     last_repeat_ = repeat;
   }
 
-  if ((old_active_state == kActive && active_state_ != kActive) ||
+  if ((old_active_state == kActive && GetActiveState() != kActive) ||
       restarted_interval == kDidRestartInterval) {
     ScheduleEvent(EventTypeNames::endEvent);
     EndedActiveInterval();
@@ -1158,18 +1152,18 @@ bool SVGSMILElement::Progress(double elapsed, bool seek_to_time) {
 
   // Triggering all the pending events if the animation timeline is changed.
   if (seek_to_time) {
-    if (active_state_ == kInactive)
+    if (GetActiveState() == kInactive)
       ScheduleEvent(EventTypeNames::beginEvent);
 
     if (repeat) {
       for (unsigned repeat_event_count = 1; repeat_event_count < repeat;
            repeat_event_count++)
         ScheduleRepeatEvents(repeat_event_count);
-      if (active_state_ == kInactive)
+      if (GetActiveState() == kInactive)
         ScheduleRepeatEvents(repeat);
     }
 
-    if (active_state_ == kInactive || active_state_ == kFrozen)
+    if (GetActiveState() == kInactive || GetActiveState() == kFrozen)
       ScheduleEvent(EventTypeNames::endEvent);
   }
 
