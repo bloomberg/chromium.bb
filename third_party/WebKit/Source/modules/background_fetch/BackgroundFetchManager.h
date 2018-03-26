@@ -73,7 +73,7 @@ class MODULES_EXPORT BackgroundFetchManager final
 
   void DidLoadIcons(const String&,
                     Vector<WebServiceWorkerRequest>,
-                    const BackgroundFetchOptions&,
+                    mojom::blink::BackgroundFetchOptionsPtr,
                     ScriptPromiseResolver*,
                     const SkBitmap&);
   void DidFetch(ScriptPromiseResolver*,

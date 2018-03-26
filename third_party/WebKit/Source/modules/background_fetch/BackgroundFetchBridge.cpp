@@ -41,15 +41,15 @@ BackgroundFetchBridge::BackgroundFetchBridge(
 
 BackgroundFetchBridge::~BackgroundFetchBridge() = default;
 
-void BackgroundFetchBridge::Fetch(const String& developer_id,
-                                  Vector<WebServiceWorkerRequest> requests,
-                                  const BackgroundFetchOptions& options,
-                                  const SkBitmap& icon,
-                                  RegistrationCallback callback) {
+void BackgroundFetchBridge::Fetch(
+    const String& developer_id,
+    Vector<WebServiceWorkerRequest> requests,
+    mojom::blink::BackgroundFetchOptionsPtr options,
+    const SkBitmap& icon,
+    RegistrationCallback callback) {
   GetService()->Fetch(
       GetSupplementable()->WebRegistration()->RegistrationId(), developer_id,
-      std::move(requests), mojom::blink::BackgroundFetchOptions::From(options),
-      icon,
+      std::move(requests), std::move(options), icon,
       WTF::Bind(&BackgroundFetchBridge::DidGetRegistration,
                 WrapPersistent(this), WTF::Passed(std::move(callback))));
 }

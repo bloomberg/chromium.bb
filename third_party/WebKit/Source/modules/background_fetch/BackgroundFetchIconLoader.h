@@ -10,6 +10,7 @@
 #include "core/loader/ThreadableLoader.h"
 #include "core/loader/ThreadableLoaderClient.h"
 #include "modules/ModulesExport.h"
+#include "modules/background_fetch/BackgroundFetchTypeConverters.h"
 #include "platform/SharedBuffer.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
@@ -34,9 +35,7 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
 
   // Asynchronously download an icon from the given url, decodes the loaded
   // data, and passes the bitmap to the given callback.
-  void Start(ExecutionContext*,
-             const HeapVector<IconDefinition>&,
-             IconCallback);
+  void Start(ExecutionContext*, HeapVector<IconDefinition>, IconCallback);
 
   // Cancels the pending load, if there is one. The |icon_callback_| will not
   // be run.
@@ -49,7 +48,10 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   void DidFail(const ResourceError&) override;
   void DidFailRedirectCheck() override;
 
-  void Trace(blink::Visitor* visitor) { visitor->Trace(threadable_loader_); }
+  void Trace(blink::Visitor* visitor) {
+    visitor->Trace(threadable_loader_);
+    visitor->Trace(icons_);
+  }
 
  private:
   void RunCallbackWithEmptyBitmap();
@@ -57,6 +59,7 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   bool stopped_ = false;
   scoped_refptr<SharedBuffer> data_;
   IconCallback icon_callback_;
+  HeapVector<IconDefinition> icons_;
   Member<ThreadableLoader> threadable_loader_;
 };
 
