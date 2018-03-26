@@ -636,12 +636,14 @@ NSTextField* MakeLabel(
 
 - (void)beginDragFromHoverButton:(HoverButton*)button event:(NSEvent*)event {
   NSAttributedString* filename = filenameView_.attributedStringValue;
-  NSSize filenameSize = filename.size;
-  NSRect imageRect = NSMakeRect(0, 0, 32, 32);
-  NSRect labelRect = [self
-      backingAlignedRect:NSMakeRect(35, 32 / 2 - filenameSize.height / 2,
-                                    filenameSize.width, filenameSize.height)
-                 options:NSAlignAllEdgesOutward];
+  NSRect imageRect = imageView_.frame;
+  NSRect labelRect = filenameView_.frame;
+
+  // Hug the label content in an RTL-friendly way.
+  labelRect = [self cr_localizedRect:labelRect];
+  labelRect.size = filename.size;
+  labelRect = [self cr_localizedRect:labelRect];
+
   NSDraggingItem* draggingItem = [[[NSDraggingItem alloc]
       initWithPasteboardWriter:[NSURL
                                    fileURLWithPath:base::SysUTF8ToNSString(
@@ -667,13 +669,6 @@ NSTextField* MakeLabel(
     labelComponent.frame = labelRect;
     return @[ imageComponent, labelComponent ];
   };
-  NSPoint dragOrigin =
-      [self convertPoint:[self.window mouseLocationOutsideOfEventStream]
-                fromView:nil];
-  draggingItem.draggingFrame =
-      [self backingAlignedRect:NSOffsetRect(imageRect, dragOrigin.x - 16,
-                                            dragOrigin.y - 16)
-                       options:NSAlignAllEdgesOutward];
   [self beginDraggingSessionWithItems:@[ draggingItem ]
                                 event:event
                                source:self];
