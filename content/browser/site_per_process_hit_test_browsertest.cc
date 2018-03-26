@@ -1901,6 +1901,7 @@ class SitePerProcessMouseWheelHitTestBrowserTest
     if (base::FeatureList::IsEnabled(features::kAsyncWheelEvents) &&
         base::FeatureList::IsEnabled(
             features::kTouchpadAndWheelScrollLatching)) {
+      DCHECK(rwhv_root->wheel_scroll_latching_enabled());
       EXPECT_TRUE(msg_queue.WaitForMessage(&reply));
       EXPECT_EQ("\"scroll: 2\"", reply);
     }
@@ -1915,18 +1916,30 @@ class SitePerProcessMouseWheelHitTestBrowserTest
     EXPECT_EQ("\"scroll: 3\"", reply);
   }
 
- protected:
-  base::test::ScopedFeatureList feature_list_;
-
  private:
   RenderWidgetHostViewAura* rwhv_root_;
 };
 
-// Disabled because of data races, see https://crbug.com/823713.
-IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
-                       DISABLED_SubframeWheelEventsOnMainThread) {
-  feature_list_.InitWithFeatures({}, {features::kTouchpadAndWheelScrollLatching,
-                                      features::kAsyncWheelEvents});
+// Subclass to disable wheel scroll latching in failing tests.
+// https://crbug.com/800822
+class SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled
+    : public SitePerProcessMouseWheelHitTestBrowserTest {
+ public:
+  SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled() {}
+  void SetUp() override {
+    feature_list_.InitWithFeatures({},
+                                   {features::kTouchpadAndWheelScrollLatching,
+                                    features::kAsyncWheelEvents});
+    SitePerProcessMouseWheelHitTestBrowserTest::SetUp();
+  }
+
+ private:
+  base::test::ScopedFeatureList feature_list_;
+};
+
+IN_PROC_BROWSER_TEST_P(
+    SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled,
+    SubframeWheelEventsOnMainThread) {
   GURL main_url(embedded_test_server()->GetURL(
       "/frame_tree/page_with_positioned_nested_frames.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -1957,11 +1970,9 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
 
 // Verifies that test in SubframeWheelEventsOnMainThread also makes sense for
 // the same page loaded in the mainframe.
-// Disabled because of data races, see https://crbug.com/823713.
-IN_PROC_BROWSER_TEST_P(SitePerProcessMouseWheelHitTestBrowserTest,
-                       DISABLED_MainframeWheelEventsOnMainThread) {
-  feature_list_.InitWithFeatures({}, {features::kTouchpadAndWheelScrollLatching,
-                                      features::kAsyncWheelEvents});
+IN_PROC_BROWSER_TEST_P(
+    SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled,
+    MainframeWheelEventsOnMainThread) {
   GURL main_url(
       embedded_test_server()->GetURL("/page_with_scrollable_div.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3527,6 +3538,11 @@ INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessMouseWheelHitTestBrowserTest,
                         testing::Combine(testing::ValuesIn(kHitTestOption),
                                          testing::ValuesIn(kOneScale)));
+INSTANTIATE_TEST_CASE_P(
+    /* no prefix */,
+    SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled,
+    testing::Combine(testing::ValuesIn(kHitTestOption),
+                     testing::ValuesIn(kOneScale)));
 INSTANTIATE_TEST_CASE_P(/* no prefix */,
                         SitePerProcessGestureHitTestBrowserTest,
                         testing::Combine(testing::ValuesIn(kHitTestOption),

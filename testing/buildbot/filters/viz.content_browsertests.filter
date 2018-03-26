@@ -56,6 +56,7 @@
 -SitePerProcessHitTestBrowserTest.SurfaceHitTestTest*
 -SitePerProcessMacBrowserTest.InputEventRouterTouchpadGestureTargetTest
 -SitePerProcessNonIntegerScaleFactorHitTestBrowserTest.NestedSurfaceHitTestTest*
+-SitePerProcessMouseWheelHitTestBrowserTestWheelScrollLatchingDisabled*
 
 #### Compositor Frame Submission
 # Waiting for CompositorFrames times out http://crbug.com/787941
