@@ -62,6 +62,16 @@ double GetZoomFactor(content::BrowserContext* context, const GURL& url) {
 #endif
 }
 
+double GetDeviceScaleFactor() {
+  double device_scale_factor = 1.0;
+  if (display::Screen::GetScreen()) {
+    device_scale_factor =
+        display::Screen::GetScreen()->GetPrimaryDisplay().device_scale_factor();
+  }
+  DCHECK_LT(0.0, device_scale_factor);
+  return device_scale_factor;
+}
+
 }  // namespace
 
 namespace client_hints {
@@ -124,13 +134,7 @@ GetAdditionalNavigationRequestClientHintsHeaders(
   }
 
   if (web_client_hints.IsEnabled(blink::mojom::WebClientHintsType::kDpr)) {
-    double device_scale_factor = 1.0;
-    if (display::Screen::GetScreen()) {
-      device_scale_factor = display::Screen::GetScreen()
-                                ->GetPrimaryDisplay()
-                                .device_scale_factor();
-    }
-    DCHECK_LT(0.0, device_scale_factor);
+    double device_scale_factor = GetDeviceScaleFactor();
 
     double zoom_factor = GetZoomFactor(context, url);
     additional_headers->SetHeader(
@@ -144,12 +148,14 @@ GetAdditionalNavigationRequestClientHintsHeaders(
     // The default value on Android. See
     // https://cs.chromium.org/chromium/src/third_party/WebKit/Source/core/css/viewportAndroid.css.
     double viewport_width = 980;
+
 #if !defined(OS_ANDROID)
+    double device_scale_factor = GetDeviceScaleFactor();
     viewport_width = (display::Screen::GetScreen()
                           ->GetPrimaryDisplay()
                           .GetSizeInPixel()
                           .width()) /
-                     GetZoomFactor(context, url);
+                     GetZoomFactor(context, url) / device_scale_factor;
 #endif  // !OS_ANDROID
     DCHECK_LT(0, viewport_width);
     if (viewport_width > 0) {
