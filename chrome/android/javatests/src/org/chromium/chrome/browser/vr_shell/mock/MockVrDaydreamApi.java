@@ -5,68 +5,57 @@
 package org.chromium.chrome.browser.vr_shell.mock;
 
 import android.app.PendingIntent;
-import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 
-import com.google.vr.ndk.base.DaydreamApi;
+import org.chromium.chrome.browser.vr_shell.VrDaydreamApiImpl;
 
-import org.chromium.chrome.browser.vr_shell.VrDaydreamApi;
-
+// TODO(bsheedy): Make Mockito work in instrumentation tests and replace uses of this class with
+// Mockito spies.
 /**
- * Mock implementation of VR Shell's VrDaydreamApi
+ * "Mock" implementation of VR Shell's VrDaydreamApi that mostly does the same thing as the normal
+ * VrDaydreamApiImpl, but allows checking whether methods were called and modifying return values.
  */
-public class MockVrDaydreamApi implements VrDaydreamApi {
+public class MockVrDaydreamApi extends VrDaydreamApiImpl {
     private boolean mLaunchInVrCalled;
     private boolean mExitFromVrCalled;
     private boolean mLaunchVrHomescreenCalled;
-    private boolean mForwardSetupIntent;
+    private boolean mDoNotForwardLaunchRequests;
+    private Boolean mExitFromVrReturnValue;
 
-    @Override
-    public boolean isDaydreamReadyDevice() {
-        return false;
-    }
-
-    @Override
-    public boolean registerDaydreamIntent(final PendingIntent pendingIntent) {
-        return false;
-    }
-
-    @Override
-    public boolean unregisterDaydreamIntent() {
-        return false;
-    }
-
-    @Override
-    public Intent createVrIntent(final ComponentName componentName) {
-        return new Intent();
+    public MockVrDaydreamApi(Context context) {
+        super(context);
     }
 
     @Override
     public boolean launchInVr(final PendingIntent pendingIntent) {
         mLaunchInVrCalled = true;
-        return true;
+        if (mDoNotForwardLaunchRequests) return true;
+        return super.launchInVr(pendingIntent);
     }
 
     @Override
     public boolean launchInVr(final Intent intent) {
-        return true;
+        mLaunchInVrCalled = true;
+        if (mDoNotForwardLaunchRequests) return true;
+        return super.launchInVr(intent);
     }
 
     @Override
     public boolean exitFromVr(int requestCode, final Intent intent) {
         mExitFromVrCalled = true;
-        return false;
+        if (mExitFromVrReturnValue == null) return super.exitFromVr(requestCode, intent);
+        return mExitFromVrReturnValue.booleanValue();
     }
 
-    @Override
-    public Boolean isDaydreamCurrentViewer() {
-        return false;
+    public void setExitFromVrReturnValue(Boolean value) {
+        mExitFromVrReturnValue = value;
     }
 
     @Override
     public boolean launchVrHomescreen() {
         mLaunchVrHomescreenCalled = true;
-        return true;
+        return super.launchVrHomescreen();
     }
 
     public boolean getLaunchInVrCalled() {
@@ -80,32 +69,4 @@ public class MockVrDaydreamApi implements VrDaydreamApi {
     public boolean getLaunchVrHomescreenCalled() {
         return mLaunchVrHomescreenCalled;
     }
-
-    @Override
-    public boolean bootsToVr() {
-        return false;
-    }
-
-    @Override
-    public Intent setupVrIntent(Intent intent) {
-        if (mForwardSetupIntent) {
-            return DaydreamApi.setupVrIntent(intent);
-        }
-        return null;
-    }
-
-    public void setForwardSetupIntent(boolean forward) {
-        mForwardSetupIntent = forward;
-    }
-
-    @Override
-    public void launchGvrSettings() {}
-
-    @Override
-    public boolean isInVrSession() {
-        return true;
-    }
-
-    @Override
-    public void close() {}
 }

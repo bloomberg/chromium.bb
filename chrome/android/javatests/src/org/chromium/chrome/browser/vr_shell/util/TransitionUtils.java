@@ -200,7 +200,7 @@ public class TransitionUtils {
      * @param autopresent If this intent is expected to auto-present WebVR
      */
     public static void sendVrLaunchIntent(
-            String url, final Activity activity, boolean autopresent) {
+            String url, final Activity activity, boolean autopresent, boolean avoidRelaunch) {
         // Create an intent that will launch Chrome at the specified URL.
         final Intent intent =
                 new Intent(ContextUtils.getApplicationContext(), VrMainActivity.class);
@@ -213,6 +213,7 @@ public class TransitionUtils {
             intent.removeCategory(VrIntentUtils.DAYDREAM_CATEGORY);
             intent.putExtra(VrIntentUtils.AUTOPRESENT_WEVBVR_EXTRA, true);
         }
+        if (avoidRelaunch) intent.putExtra(VrIntentUtils.AVOID_RELAUNCH_EXTRA, true);
 
         final VrClassesWrapperImpl wrapper = new VrClassesWrapperImpl();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {

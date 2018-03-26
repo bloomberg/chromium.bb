@@ -433,10 +433,9 @@ public class WebVrInputTest {
     @MediumTest
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @VrActivityRestriction({VrActivityRestriction.SupportedActivity.ALL})
-    @CommandLineFlags
-            .Remove({"enable-webvr"})
-            @CommandLineFlags.Add({"enable-features=WebXR"})
-            public void testAppButtonNoopsWhenBrowsingDisabled_WebXr()
+    @CommandLineFlags.Remove({"enable-webvr"})
+    @CommandLineFlags.Add({"enable-features=WebXR"})
+    public void testAppButtonNoopsWhenBrowsingDisabled_WebXr()
             throws InterruptedException, ExecutionException {
         appButtonNoopsTestImpl(
                 XrTestFramework.getHtmlTestFile("generic_webxr_page"), mXrTestFramework);
@@ -465,7 +464,7 @@ public class WebVrInputTest {
         framework.loadUrlAndAwaitInitialization(url, PAGE_LOAD_TIMEOUT_S);
         TransitionUtils.enterPresentationOrFail(framework);
 
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(mTestRule.getActivity());
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
 
         EmulatedVrController controller = new EmulatedVrController(mTestRule.getActivity());
@@ -495,8 +494,8 @@ public class WebVrInputTest {
 
         // Send an autopresent intent, which will open the link in a CCT
         VrTransitionUtils.sendVrLaunchIntent(
-                VrTestFramework.getHtmlTestFile("test_webvr_autopresent"),
-                mTestRule.getActivity(), true /* autopresent */);
+                VrTestFramework.getHtmlTestFile("test_webvr_autopresent"), mTestRule.getActivity(),
+                true /* autopresent */, true /* avoidRelaunch */);
 
         // Wait until a CCT is opened due to the intent
         final AtomicReference<CustomTabActivity> cct = new AtomicReference<CustomTabActivity>();
@@ -533,7 +532,7 @@ public class WebVrInputTest {
                         "vrDisplay.isPresenting", POLL_TIMEOUT_LONG_MS, wc));
 
         // Verify that pressing the app button does nothing
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(cct.get());
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
 
         EmulatedVrController controller = new EmulatedVrController(cct.get());

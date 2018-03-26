@@ -29,7 +29,6 @@ import org.junit.runner.RunWith;
 import org.chromium.base.ApplicationStatus;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Restriction;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
@@ -90,7 +89,7 @@ public class VrShellTransitionTest {
     }
 
     private void enterExitVrShell(boolean supported) {
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(mTestRule.getActivity());
         if (!supported) {
             VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
         }
@@ -152,7 +151,8 @@ public class VrShellTransitionTest {
     public void testVrIntentStartsVrShell() {
         // Send a VR intent, which will open the link in a CTA.
         String url = VrTestFramework.getHtmlTestFile("test_navigation_2d_page");
-        VrTransitionUtils.sendVrLaunchIntent(url, mTestRule.getActivity(), false /* autopresent */);
+        VrTransitionUtils.sendVrLaunchIntent(
+                url, mTestRule.getActivity(), false /* autopresent */, true /* avoidRelaunch */);
 
         // Wait until a CTA is opened due to the intent
         final AtomicReference<ChromeTabbedActivity> cta =
@@ -341,7 +341,6 @@ public class VrShellTransitionTest {
     @Test
     @Restriction(RESTRICTION_TYPE_VIEWER_DAYDREAM)
     @MediumTest
-    @DisabledTest(message = "crbug.com/825248")
     public void testEnterVrInOverviewMode() throws InterruptedException, TimeoutException {
         final ChromeTabbedActivity activity = mTestRule.getActivity();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
@@ -354,8 +353,7 @@ public class VrShellTransitionTest {
 
         Assert.assertTrue(activity.isInOverviewMode());
 
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi();
-        mockApi.setForwardSetupIntent(true);
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(mTestRule.getActivity());
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
         Assert.assertTrue(VrTransitionUtils.forceEnterVr());
         VrTransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
@@ -393,12 +391,8 @@ public class VrShellTransitionTest {
         TransitionUtils.waitForVrEntry(POLL_TIMEOUT_LONG_MS);
         Assert.assertTrue(VrShellDelegateUtils.getDelegateInstance().isVrEntryComplete());
 
-        MockVrDaydreamApi mockApi = new MockVrDaydreamApi() {
-            @Override
-            public Boolean isDaydreamCurrentViewer() {
-                return true;
-            }
-        };
+        MockVrDaydreamApi mockApi = new MockVrDaydreamApi(mTestRule.getActivity());
+        mockApi.setExitFromVrReturnValue(false);
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApi);
         ThreadUtils.runOnUiThreadBlocking(() -> {
             Intent preferencesIntent = PreferencesLauncher.createIntentForSettingsPage(
@@ -409,17 +403,10 @@ public class VrShellTransitionTest {
 
         CriteriaHelper.pollUiThread(() -> { return mockApi.getExitFromVrCalled(); });
         Assert.assertFalse(mockApi.getLaunchVrHomescreenCalled());
-        MockVrDaydreamApi mockApiWithDoff = new MockVrDaydreamApi() {
-            @Override
-            public boolean exitFromVr(int requestCode, final Intent intent) {
-                return true;
-            }
+        mockApi.close();
 
-            @Override
-            public Boolean isDaydreamCurrentViewer() {
-                return true;
-            }
-        };
+        MockVrDaydreamApi mockApiWithDoff = new MockVrDaydreamApi(mTestRule.getActivity());
+        mockApiWithDoff.setExitFromVrReturnValue(true);
 
         VrShellDelegateUtils.getDelegateInstance().overrideDaydreamApiForTesting(mockApiWithDoff);
 
