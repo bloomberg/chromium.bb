@@ -5,9 +5,11 @@
 #ifndef CONTENT_BROWSER_WEBSOCKETS_WEBSOCKET_MANAGER_H_
 #define CONTENT_BROWSER_WEBSOCKETS_WEBSOCKET_MANAGER_H_
 
+#include <memory>
 #include <set>
 
 #include "base/compiler_specific.h"
+#include "base/containers/unique_ptr_adapters.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
@@ -60,7 +62,7 @@ class CONTENT_EXPORT WebSocketManager
   void ThrottlingPeriodTimerCallback();
 
   // This is virtual to support testing.
-  virtual network::WebSocket* CreateWebSocket(
+  virtual std::unique_ptr<network::WebSocket> CreateWebSocket(
       std::unique_ptr<network::WebSocket::Delegate> delegate,
       network::mojom::WebSocketRequest request,
       int child_id,
@@ -77,8 +79,8 @@ class CONTENT_EXPORT WebSocketManager
   int process_id_;
   scoped_refptr<net::URLRequestContextGetter> url_request_context_getter_;
 
-  // TODO(ricea): Make ownership explicit.
-  std::set<network::WebSocket*> impls_;
+  std::set<std::unique_ptr<network::WebSocket>, base::UniquePtrComparator>
+      impls_;
 
   // Timer and counters for per-renderer WebSocket throttling.
   base::RepeatingTimer throttling_period_timer_;
