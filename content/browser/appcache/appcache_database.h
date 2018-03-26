@@ -19,6 +19,7 @@
 #include "content/common/appcache_interfaces.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace sql {
 class Connection;
@@ -55,7 +56,7 @@ class CONTENT_EXPORT AppCacheDatabase {
     ~GroupRecord();
 
     int64_t group_id;
-    GURL origin;
+    url::Origin origin;
     GURL manifest_url;
     base::Time creation_time;
     base::Time last_access_time;
@@ -89,7 +90,7 @@ class CONTENT_EXPORT AppCacheDatabase {
     ~NamespaceRecord();
 
     int64_t cache_id;
-    GURL origin;
+    url::Origin origin;
     AppCacheNamespace namespace_;
   };
 
@@ -110,10 +111,10 @@ class CONTENT_EXPORT AppCacheDatabase {
   bool is_disabled() const { return is_disabled_; }
   bool was_corruption_detected() const { return was_corruption_detected_; }
 
-  int64_t GetOriginUsage(const GURL& origin);
-  bool GetAllOriginUsage(std::map<GURL, int64_t>* usage_map);
+  int64_t GetOriginUsage(const url::Origin& origin);
+  bool GetAllOriginUsage(std::map<url::Origin, int64_t>* usage_map);
 
-  bool FindOriginsWithGroups(std::set<GURL>* origins);
+  bool FindOriginsWithGroups(std::set<url::Origin>* origins);
   bool FindLastStorageIds(int64_t* last_group_id,
                           int64_t* last_cache_id,
                           int64_t* last_response_id,
@@ -121,8 +122,8 @@ class CONTENT_EXPORT AppCacheDatabase {
 
   bool FindGroup(int64_t group_id, GroupRecord* record);
   bool FindGroupForManifestUrl(const GURL& manifest_url, GroupRecord* record);
-  bool FindGroupsForOrigin(
-      const GURL& origin, std::vector<GroupRecord>* records);
+  bool FindGroupsForOrigin(const url::Origin& origin,
+                           std::vector<GroupRecord>* records);
   bool FindGroupForCache(int64_t cache_id, GroupRecord* record);
   bool InsertGroup(const GroupRecord* record);
   bool DeleteGroup(int64_t group_id);
@@ -139,8 +140,8 @@ class CONTENT_EXPORT AppCacheDatabase {
 
   bool FindCache(int64_t cache_id, CacheRecord* record);
   bool FindCacheForGroup(int64_t group_id, CacheRecord* record);
-  bool FindCachesForOrigin(
-      const GURL& origin, std::vector<CacheRecord>* records);
+  bool FindCachesForOrigin(const url::Origin& origin,
+                           std::vector<CacheRecord>* records);
   bool InsertCache(const CacheRecord* record);
   bool DeleteCache(int64_t cache_id);
 
@@ -164,10 +165,9 @@ class CONTENT_EXPORT AppCacheDatabase {
     return FindResponseIdsForCacheHelper(cache_id, NULL, response_ids);
   }
 
-  bool FindNamespacesForOrigin(
-      const GURL& origin,
-      NamespaceRecordVector* intercepts,
-      NamespaceRecordVector* fallbacks);
+  bool FindNamespacesForOrigin(const url::Origin& origin,
+                               NamespaceRecordVector* intercepts,
+                               NamespaceRecordVector* fallbacks);
   bool FindNamespacesForCache(int64_t cache_id,
                               NamespaceRecordVector* intercepts,
                               std::vector<NamespaceRecord>* fallbacks);

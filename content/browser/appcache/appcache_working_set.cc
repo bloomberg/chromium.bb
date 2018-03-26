@@ -48,19 +48,20 @@ void AppCacheWorkingSet::AddGroup(AppCacheGroup* group) {
   const GURL& url = group->manifest_url();
   DCHECK(groups_.find(url) == groups_.end());
   groups_.insert(GroupMap::value_type(url, group));
-  groups_by_origin_[url.GetOrigin()].insert(GroupMap::value_type(url, group));
+  groups_by_origin_[url::Origin::Create(url)].insert(
+      GroupMap::value_type(url, group));
 }
 
 void AppCacheWorkingSet::RemoveGroup(AppCacheGroup* group) {
   const GURL& url = group->manifest_url();
   groups_.erase(url);
 
-  GURL origin_url = url.GetOrigin();
-  GroupMap* groups_in_origin = GetMutableGroupsInOrigin(origin_url);
+  const url::Origin origin(url::Origin::Create(url));
+  GroupMap* groups_in_origin = GetMutableGroupsInOrigin(origin);
   if (groups_in_origin) {
     groups_in_origin->erase(url);
     if (groups_in_origin->empty())
-      groups_by_origin_.erase(origin_url);
+      groups_by_origin_.erase(origin);
   }
 }
 

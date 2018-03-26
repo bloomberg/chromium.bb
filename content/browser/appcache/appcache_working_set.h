@@ -12,6 +12,7 @@
 #include "base/containers/hash_tables.h"
 #include "content/common/content_export.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -45,8 +46,8 @@ class CONTENT_EXPORT AppCacheWorkingSet {
     return (it != groups_.end()) ? it->second : NULL;
   }
 
-  const GroupMap* GetGroupsInOrigin(const GURL& origin_url) {
-    return GetMutableGroupsInOrigin(origin_url);
+  const GroupMap* GetGroupsInOrigin(const url::Origin& origin) {
+    return GetMutableGroupsInOrigin(origin);
   }
 
   void AddResponseInfo(AppCacheResponseInfo* response_info);
@@ -58,11 +59,11 @@ class CONTENT_EXPORT AppCacheWorkingSet {
 
  private:
   using CacheMap = base::hash_map<int64_t, AppCache*>;
-  using GroupsByOriginMap = std::map<GURL, GroupMap>;
+  using GroupsByOriginMap = std::map<url::Origin, GroupMap>;
   using ResponseInfoMap = base::hash_map<int64_t, AppCacheResponseInfo*>;
 
-  GroupMap* GetMutableGroupsInOrigin(const GURL& origin_url) {
-    GroupsByOriginMap::iterator it = groups_by_origin_.find(origin_url);
+  GroupMap* GetMutableGroupsInOrigin(const url::Origin& origin) {
+    GroupsByOriginMap::iterator it = groups_by_origin_.find(origin);
     return (it != groups_by_origin_.end()) ? &it->second : NULL;
   }
 

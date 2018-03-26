@@ -102,7 +102,7 @@ void AppCacheStorageImpl::ClearSessionOnlyOrigins(
   if (!has_session_only_appcaches)
     return;
 
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   database->FindOriginsWithGroups(&origins);
   if (origins.empty())
     return;  // nothing to delete
@@ -113,10 +113,10 @@ void AppCacheStorageImpl::ClearSessionOnlyOrigins(
     return;
   }
 
-  for (const GURL& origin : origins) {
-    if (!special_storage_policy->IsStorageSessionOnly(origin))
+  for (const url::Origin& origin : origins) {
+    if (!special_storage_policy->IsStorageSessionOnly(origin.GetURL()))
       continue;
-    if (special_storage_policy->IsStorageProtected(origin))
+    if (special_storage_policy->IsStorageProtected(origin.GetURL()))
       continue;
 
     std::vector<AppCacheDatabase::GroupRecord> groups;
@@ -287,7 +287,7 @@ class AppCacheStorageImpl::InitTask : public DatabaseTask {
   int64_t last_cache_id_;
   int64_t last_response_id_;
   int64_t last_deletable_response_rowid_;
-  std::map<GURL, int64_t> usage_map_;
+  std::map<url::Origin, int64_t> usage_map_;
 };
 
 void AppCacheStorageImpl::InitTask::Run() {
@@ -364,10 +364,11 @@ class AppCacheStorageImpl::GetAllInfoTask : public DatabaseTask {
 };
 
 void AppCacheStorageImpl::GetAllInfoTask::Run() {
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   database_->FindOriginsWithGroups(&origins);
-  for (const GURL& origin : origins) {
-    AppCacheInfoVector& infos = info_collection_->infos_by_origin[origin];
+  for (const url::Origin& origin : origins) {
+    AppCacheInfoVector& infos =
+        info_collection_->infos_by_origin[origin.GetURL()];
     std::vector<AppCacheDatabase::GroupRecord> groups;
     database_->FindGroupsForOrigin(origin, &groups);
     for (const auto& group : groups) {
@@ -627,7 +628,7 @@ AppCacheStorageImpl::StoreGroupAndCacheTask::StoreGroupAndCacheTask(
       space_available_(-1), new_origin_usage_(-1) {
   group_record_.group_id = group->group_id();
   group_record_.manifest_url = group->manifest_url();
-  group_record_.origin = group_record_.manifest_url.GetOrigin();
+  group_record_.origin = url::Origin::Create(group_record_.manifest_url);
   group_record_.last_full_update_check_time =
       group->last_full_update_check_time();
   group_record_.first_evictable_error_time =
@@ -650,7 +651,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
   if (!quota_manager) {
     if (storage_->service()->special_storage_policy() &&
         storage_->service()->special_storage_policy()->IsStorageUnlimited(
-            group_record_.origin))
+            group_record_.origin.GetURL()))
       space_available_ = std::numeric_limits<int64_t>::max();
     Schedule();
     return;
@@ -664,7 +665,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::GetQuotaThenSchedule() {
   // We have to ask the quota manager for the value.
   storage_->pending_quota_queries_.insert(this);
   quota_manager->GetUsageAndQuota(
-      group_record_.origin, blink::mojom::StorageType::kTemporary,
+      group_record_.origin.GetURL(), blink::mojom::StorageType::kTemporary,
       base::Bind(&StoreGroupAndCacheTask::OnQuotaCallback, this));
 }
 
@@ -785,7 +786,7 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
 void AppCacheStorageImpl::StoreGroupAndCacheTask::RunCompleted() {
   if (success_) {
     storage_->UpdateUsageMapAndNotify(
-        group_->manifest_url().GetOrigin(), new_origin_usage_);
+        url::Origin::Create(group_->manifest_url()), new_origin_usage_);
     if (cache_.get() != group_->newest_complete_cache()) {
       cache_->set_complete(true);
       group_->AddCache(cache_.get());
@@ -1002,9 +1003,9 @@ bool AppCacheStorageImpl::FindMainResponseTask::FindNamespaceMatch(
     int64_t preferred_cache_id) {
   AppCacheDatabase::NamespaceRecordVector all_intercepts;
   AppCacheDatabase::NamespaceRecordVector all_fallbacks;
-  if (!database_->FindNamespacesForOrigin(
-          url_.GetOrigin(), &all_intercepts, &all_fallbacks)
-      || (all_intercepts.empty() && all_fallbacks.empty())) {
+  if (!database_->FindNamespacesForOrigin(url::Origin::Create(url_),
+                                          &all_intercepts, &all_fallbacks) ||
+      (all_intercepts.empty() && all_fallbacks.empty())) {
     return false;
   }
 
@@ -1146,7 +1147,7 @@ class AppCacheStorageImpl::MakeGroupObsoleteTask : public DatabaseTask {
  private:
   scoped_refptr<AppCacheGroup> group_;
   int64_t group_id_;
-  GURL origin_;
+  url::Origin origin_;
   bool success_;
   int response_code_;
   int64_t new_origin_usage_;
@@ -1160,7 +1161,7 @@ AppCacheStorageImpl::MakeGroupObsoleteTask::MakeGroupObsoleteTask(
     : DatabaseTask(storage),
       group_(group),
       group_id_(group->group_id()),
-      origin_(group->manifest_url().GetOrigin()),
+      origin_(url::Origin::Create(group->manifest_url())),
       success_(false),
       response_code_(response_code),
       new_origin_usage_(-1) {}
@@ -1299,7 +1300,7 @@ class AppCacheStorageImpl::LazyUpdateLastAccessTimeTask
       AppCacheStorageImpl* storage, AppCacheGroup* group, base::Time time)
       : DatabaseTask(storage), group_id_(group->group_id()),
         last_access_time_(time) {
-    storage->NotifyStorageAccessed(group->manifest_url().GetOrigin());
+    storage->NotifyStorageAccessed(url::Origin::Create(group->manifest_url()));
   }
 
   // DatabaseTask:
@@ -1490,7 +1491,7 @@ void AppCacheStorageImpl::LoadOrCreateGroup(
     return;
   }
 
-  if (usage_map_.find(manifest_url.GetOrigin()) == usage_map_.end()) {
+  if (usage_map_.find(url::Origin::Create(manifest_url)) == usage_map_.end()) {
     // No need to query the database, return a new group immediately.
     scoped_refptr<AppCacheGroup> new_group(
         new AppCacheGroup(this, manifest_url, NewGroupId()));
@@ -1538,7 +1539,7 @@ void AppCacheStorageImpl::FindResponseForMainRequest(
     url_ptr = &url_no_ref;
   }
 
-  const GURL origin = url.GetOrigin();
+  const url::Origin origin(url::Origin::Create(url));
 
   // First look in our working set for a direct hit without having to query
   // the database.

@@ -180,6 +180,12 @@ std::string GetActiveExperimentFlags() {
   return std::string();
 }
 
+// GetURL().spec() is used instead of Serialize() to ensure
+// backwards compatibility with older data.
+std::string SerializeOrigin(const url::Origin& origin) {
+  return origin.GetURL().spec();
+}
+
 }  // anon namespace
 
 // AppCacheDatabase ----------------------------------------------------------
@@ -218,7 +224,7 @@ void AppCacheDatabase::Disable() {
   ResetConnectionAndTables();
 }
 
-int64_t AppCacheDatabase::GetOriginUsage(const GURL& origin) {
+int64_t AppCacheDatabase::GetOriginUsage(const url::Origin& origin) {
   std::vector<CacheRecord> records;
   if (!FindCachesForOrigin(origin, &records))
     return 0;
@@ -229,8 +235,9 @@ int64_t AppCacheDatabase::GetOriginUsage(const GURL& origin) {
   return origin_usage;
 }
 
-bool AppCacheDatabase::GetAllOriginUsage(std::map<GURL, int64_t>* usage_map) {
-  std::set<GURL> origins;
+bool AppCacheDatabase::GetAllOriginUsage(
+    std::map<url::Origin, int64_t>* usage_map) {
+  std::set<url::Origin> origins;
   if (!FindOriginsWithGroups(&origins))
     return false;
   for (const auto& origin : origins)
@@ -238,7 +245,7 @@ bool AppCacheDatabase::GetAllOriginUsage(std::map<GURL, int64_t>* usage_map) {
   return true;
 }
 
-bool AppCacheDatabase::FindOriginsWithGroups(std::set<GURL>* origins) {
+bool AppCacheDatabase::FindOriginsWithGroups(std::set<url::Origin>* origins) {
   DCHECK(origins && origins->empty());
   if (!LazyOpen(kDontCreate))
     return false;
@@ -249,7 +256,7 @@ bool AppCacheDatabase::FindOriginsWithGroups(std::set<GURL>* origins) {
   sql::Statement statement(db_->GetUniqueStatement(kSql));
 
   while (statement.Step())
-    origins->insert(GURL(statement.ColumnString(0)));
+    origins->insert(url::Origin::Create(GURL(statement.ColumnString(0))));
 
   return statement.Succeeded();
 }
@@ -349,8 +356,8 @@ bool AppCacheDatabase::FindGroupForManifestUrl(
   return true;
 }
 
-bool AppCacheDatabase::FindGroupsForOrigin(
-    const GURL& origin, std::vector<GroupRecord>* records) {
+bool AppCacheDatabase::FindGroupsForOrigin(const url::Origin& origin,
+                                           std::vector<GroupRecord>* records) {
   DCHECK(records && records->empty());
   if (!LazyOpen(kDontCreate))
     return false;
@@ -363,7 +370,7 @@ bool AppCacheDatabase::FindGroupsForOrigin(
       "   FROM Groups WHERE origin = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindString(0, origin.spec());
+  statement.BindString(0, SerializeOrigin(origin));
 
   while (statement.Step()) {
     records->push_back(GroupRecord());
@@ -409,7 +416,7 @@ bool AppCacheDatabase::InsertGroup(const GroupRecord* record) {
       "  VALUES(?, ?, ?, ?, ?, ?, ?)";
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->group_id);
-  statement.BindString(1, record->origin.spec());
+  statement.BindString(1, SerializeOrigin(record->origin));
   statement.BindString(2, record->manifest_url.spec());
   statement.BindInt64(3, record->creation_time.ToInternalValue());
   statement.BindInt64(4, record->last_access_time.ToInternalValue());
@@ -521,8 +528,8 @@ bool AppCacheDatabase::FindCacheForGroup(int64_t group_id,
   return true;
 }
 
-bool AppCacheDatabase::FindCachesForOrigin(
-    const GURL& origin, std::vector<CacheRecord>* records) {
+bool AppCacheDatabase::FindCachesForOrigin(const url::Origin& origin,
+                                           std::vector<CacheRecord>* records) {
   DCHECK(records);
   std::vector<GroupRecord> group_records;
   if (!FindGroupsForOrigin(origin, &group_records))
@@ -699,7 +706,7 @@ bool AppCacheDatabase::AddEntryFlags(const GURL& entry_url,
 }
 
 bool AppCacheDatabase::FindNamespacesForOrigin(
-    const GURL& origin,
+    const url::Origin& origin,
     std::vector<NamespaceRecord>* intercepts,
     std::vector<NamespaceRecord>* fallbacks) {
   DCHECK(intercepts && intercepts->empty());
@@ -712,7 +719,7 @@ bool AppCacheDatabase::FindNamespacesForOrigin(
       "  FROM Namespaces WHERE origin = ?";
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
-  statement.BindString(0, origin.spec());
+  statement.BindString(0, SerializeOrigin(origin));
 
   ReadNamespaceRecords(&statement, intercepts, fallbacks);
 
@@ -752,7 +759,7 @@ bool AppCacheDatabase::InsertNamespace(
 
   sql::Statement statement(db_->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, record->cache_id);
-  statement.BindString(1, record->origin.spec());
+  statement.BindString(1, SerializeOrigin(record->origin));
   statement.BindInt(2, record->namespace_.type);
   statement.BindString(3, record->namespace_.namespace_url.spec());
   statement.BindString(4, record->namespace_.target_url.spec());
@@ -952,7 +959,7 @@ bool AppCacheDatabase::FindResponseIdsForCacheHelper(
 void AppCacheDatabase::ReadGroupRecord(
     const sql::Statement& statement, GroupRecord* record) {
   record->group_id = statement.ColumnInt64(0);
-  record->origin = GURL(statement.ColumnString(1));
+  record->origin = url::Origin::Create(GURL(statement.ColumnString(1)));
   record->manifest_url = GURL(statement.ColumnString(2));
   record->creation_time =
       base::Time::FromInternalValue(statement.ColumnInt64(3));
@@ -1007,7 +1014,7 @@ void AppCacheDatabase::ReadNamespaceRecords(
 void AppCacheDatabase::ReadNamespaceRecord(
     const sql::Statement* statement, NamespaceRecord* record) {
   record->cache_id = statement->ColumnInt64(0);
-  record->origin = GURL(statement->ColumnString(1));
+  record->origin = url::Origin::Create(GURL(statement->ColumnString(1)));
   record->namespace_.type =
       static_cast<AppCacheNamespaceType>(statement->ColumnInt(2));
   record->namespace_.namespace_url = GURL(statement->ColumnString(3));

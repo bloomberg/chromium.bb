@@ -26,7 +26,8 @@ class AppCacheTestHelper : public AppCacheStorage::Delegate {
                         const GURL& manifest_url);
 
   void GetOriginsWithCaches(AppCacheServiceImpl* appcache_service,
-                            std::set<GURL>* origins);
+                            std::set<url::Origin>* origins);
+
  private:
   void OnGroupAndNewestCacheStored(AppCacheGroup* group,
                                    AppCache* newest_cache,
@@ -38,7 +39,7 @@ class AppCacheTestHelper : public AppCacheStorage::Delegate {
   int appcache_id_;
   int response_id_;
   scoped_refptr<AppCacheInfoCollection> appcache_info_;
-  std::set<GURL>* origins_;  // not owned
+  std::set<url::Origin>* origins_;  // not owned
 
   DISALLOW_COPY_AND_ASSIGN(AppCacheTestHelper);
 };

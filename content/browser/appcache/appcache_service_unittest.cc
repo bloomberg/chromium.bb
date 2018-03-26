@@ -96,8 +96,9 @@ class MockResponseReader : public AppCacheResponseReader {
 class AppCacheServiceImplTest : public testing::Test {
  public:
   AppCacheServiceImplTest()
-      : kOrigin("http://hello/"),
-        kManifestUrl(kOrigin.Resolve("manifest")),
+      : kOriginURL("http://hello/"),
+        kOrigin(url::Origin::Create(kOriginURL)),
+        kManifestUrl(kOriginURL.Resolve("manifest")),
         service_(new AppCacheServiceImpl(nullptr)),
         delete_result_(net::OK),
         delete_completion_count_(0),
@@ -182,7 +183,8 @@ class AppCacheServiceImplTest : public testing::Test {
     return pickle->size();
   }
 
-  const GURL kOrigin;
+  const GURL kOriginURL;
+  const url::Origin kOrigin;
   const GURL kManifestUrl;
 
   base::test::ScopedTaskEnvironment scoped_task_environment_;
@@ -216,14 +218,14 @@ TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {
   AppCacheInfo mock_manifest_1;
   AppCacheInfo mock_manifest_2;
   AppCacheInfo mock_manifest_3;
-  mock_manifest_1.manifest_url = kOrigin.Resolve("manifest1");
-  mock_manifest_2.manifest_url = kOrigin.Resolve("manifest2");
-  mock_manifest_3.manifest_url = kOrigin.Resolve("manifest3");
+  mock_manifest_1.manifest_url = kOriginURL.Resolve("manifest1");
+  mock_manifest_2.manifest_url = kOriginURL.Resolve("manifest2");
+  mock_manifest_3.manifest_url = kOriginURL.Resolve("manifest3");
   AppCacheInfoVector info_vector;
   info_vector.push_back(mock_manifest_1);
   info_vector.push_back(mock_manifest_2);
   info_vector.push_back(mock_manifest_3);
-  info->infos_by_origin[kOrigin] = info_vector;
+  info->infos_by_origin[kOrigin.GetURL()] = info_vector;
   mock_storage()->SimulateGetAllInfo(info.get());
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);
   EXPECT_EQ(0, delete_completion_count_);
@@ -233,7 +235,7 @@ TEST_F(AppCacheServiceImplTest, DeleteAppCachesForOrigin) {
   delete_completion_count_ = 0;
 
   // Should fail if storage fails to delete.
-  info->infos_by_origin[kOrigin] = info_vector;
+  info->infos_by_origin[kOrigin.GetURL()] = info_vector;
   mock_storage()->SimulateGetAllInfo(info.get());
   mock_storage()->SimulateMakeGroupObsoleteFailure();
   service_->DeleteAppCachesForOrigin(kOrigin, deletion_callback_);

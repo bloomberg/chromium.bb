@@ -130,12 +130,14 @@ void ChromeAppCacheServiceTest::InsertDataIntoAppCache(
   appcache_helper.AddGroupAndCache(appcache_service, kSessionOnlyManifestURL);
 
   // Verify that adding the data succeeded
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   appcache_helper.GetOriginsWithCaches(appcache_service, &origins);
   ASSERT_EQ(3UL, origins.size());
-  ASSERT_TRUE(origins.find(kProtectedManifestURL.GetOrigin()) != origins.end());
-  ASSERT_TRUE(origins.find(kNormalManifestURL.GetOrigin()) != origins.end());
-  ASSERT_TRUE(origins.find(kSessionOnlyManifestURL.GetOrigin()) !=
+  ASSERT_TRUE(origins.find(url::Origin::Create(kProtectedManifestURL)) !=
+              origins.end());
+  ASSERT_TRUE(origins.find(url::Origin::Create(kNormalManifestURL)) !=
+              origins.end());
+  ASSERT_TRUE(origins.find(url::Origin::Create(kSessionOnlyManifestURL)) !=
               origins.end());
 }
 
@@ -163,12 +165,14 @@ TEST_F(ChromeAppCacheServiceTest, KeepOnDestruction) {
 
   // The appcache data is also there, except the session-only origin.
   AppCacheTestHelper appcache_helper;
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   appcache_helper.GetOriginsWithCaches(appcache_service.get(), &origins);
   EXPECT_EQ(2UL, origins.size());
-  EXPECT_TRUE(origins.find(kProtectedManifestURL.GetOrigin()) != origins.end());
-  EXPECT_TRUE(origins.find(kNormalManifestURL.GetOrigin()) != origins.end());
-  EXPECT_TRUE(origins.find(kSessionOnlyManifestURL.GetOrigin()) ==
+  EXPECT_TRUE(origins.find(url::Origin::Create(kProtectedManifestURL)) !=
+              origins.end());
+  EXPECT_TRUE(origins.find(url::Origin::Create(kNormalManifestURL)) !=
+              origins.end());
+  EXPECT_TRUE(origins.find(url::Origin::Create(kSessionOnlyManifestURL)) ==
               origins.end());
 
   // Delete and let cleanup tasks run prior to returning.
@@ -203,12 +207,14 @@ TEST_F(ChromeAppCacheServiceTest, SaveSessionState) {
 
   // No appcache data was deleted.
   AppCacheTestHelper appcache_helper;
-  std::set<GURL> origins;
+  std::set<url::Origin> origins;
   appcache_helper.GetOriginsWithCaches(appcache_service.get(), &origins);
   EXPECT_EQ(3UL, origins.size());
-  EXPECT_TRUE(origins.find(kProtectedManifestURL.GetOrigin()) != origins.end());
-  EXPECT_TRUE(origins.find(kNormalManifestURL.GetOrigin()) != origins.end());
-  EXPECT_TRUE(origins.find(kSessionOnlyManifestURL.GetOrigin()) !=
+  EXPECT_TRUE(origins.find(url::Origin::Create(kProtectedManifestURL)) !=
+              origins.end());
+  EXPECT_TRUE(origins.find(url::Origin::Create(kNormalManifestURL)) !=
+              origins.end());
+  EXPECT_TRUE(origins.find(url::Origin::Create(kSessionOnlyManifestURL)) !=
               origins.end());
 
   // Delete and let cleanup tasks run prior to returning.

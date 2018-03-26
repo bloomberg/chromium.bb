@@ -19,7 +19,6 @@
 #include "services/network/public/cpp/features.h"
 #include "services/network/public/mojom/url_loader_factory.mojom.h"
 #include "storage/browser/quota/quota_manager_proxy.h"
-#include "url/origin.h"
 
 namespace content {
 
@@ -80,9 +79,8 @@ AppCacheHost::~AppCacheHost() {
   if (group_being_updated_.get())
     group_being_updated_->RemoveUpdateObserver(this);
   storage()->CancelDelegateCallbacks(this);
-  if (service()->quota_manager_proxy() && !origin_in_use_.is_empty())
-    service()->quota_manager_proxy()->NotifyOriginNoLongerInUse(
-        url::Origin::Create(origin_in_use_));
+  if (service()->quota_manager_proxy() && !origin_in_use_.unique())
+    service()->quota_manager_proxy()->NotifyOriginNoLongerInUse(origin_in_use_);
 }
 
 void AppCacheHost::AddObserver(Observer* observer) {
@@ -110,10 +108,9 @@ bool AppCacheHost::SelectCache(const GURL& document_url,
     return true;
   }
 
-  origin_in_use_ = document_url.GetOrigin();
-  if (service()->quota_manager_proxy() && !origin_in_use_.is_empty())
-    service()->quota_manager_proxy()->NotifyOriginInUse(
-        url::Origin::Create(origin_in_use_));
+  origin_in_use_ = url::Origin::Create(document_url);
+  if (service()->quota_manager_proxy() && !origin_in_use_.unique())
+    service()->quota_manager_proxy()->NotifyOriginInUse(origin_in_use_);
 
   if (main_resource_blocked_)
     frontend_->OnContentBlocked(host_id_,
