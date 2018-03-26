@@ -45,8 +45,8 @@ class FileStreamForwarderTest : public testing::Test {
     context_->OpenFileSystem(
         GURL(kURLOrigin), storage::kFileSystemTypeTemporary,
         storage::OPEN_FILE_SYSTEM_CREATE_IF_NONEXISTENT,
-        base::Bind([](const GURL& root_url, const std::string& name,
-                      base::File::Error result) {
+        base::BindOnce([](const GURL& root_url, const std::string& name,
+                          base::File::Error result) {
           EXPECT_EQ(base::File::FILE_OK, result);
         }));
     base::RunLoop().RunUntilIdle();

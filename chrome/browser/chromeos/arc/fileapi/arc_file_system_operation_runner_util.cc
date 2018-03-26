@@ -31,7 +31,7 @@ void PostToIOThread(base::OnceCallback<void(T)> callback, T result) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(std::move(callback), base::Passed(std::move(result))));
+      base::BindOnce(std::move(callback), std::move(result)));
 }
 
 void GetFileSizeOnUIThread(const GURL& url, GetFileSizeCallback callback) {

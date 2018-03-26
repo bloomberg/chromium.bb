@@ -331,9 +331,9 @@ void ArcScreenCaptureSession::CopyDesktopTextureToGpuBuffer(
           query_id,
           base::BindOnce(&ArcScreenCaptureSession::QueryCompleted,
                          weak_ptr_factory_.GetWeakPtr(),
-                         base::Passed(&pending_buffer->gpu_buffer_), query_id,
+                         std::move(pending_buffer->gpu_buffer_), query_id,
                          pending_buffer->texture_, pending_buffer->image_id_,
-                         base::Passed(&pending_buffer->callback_)));
+                         std::move(pending_buffer->callback_)));
 }
 
 void ArcScreenCaptureSession::OnAnimationStep(base::TimeTicks timestamp) {

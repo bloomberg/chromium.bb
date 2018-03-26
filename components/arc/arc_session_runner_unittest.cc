@@ -162,7 +162,7 @@ TEST_F(ArcSessionRunnerTest, Basic) {
 
   Observer observer;
   arc_session_runner()->AddObserver(&observer);
-  base::ScopedClosureRunner teardown(base::Bind(
+  base::ScopedClosureRunner teardown(base::BindOnce(
       [](ArcSessionRunner* arc_session_runner, Observer* observer) {
         arc_session_runner->RemoveObserver(observer);
       },

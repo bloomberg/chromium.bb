@@ -187,8 +187,9 @@ ArcNavigationThrottle::HandleRequest() {
   // find a valid app candidate.
   ui_displayed_ = true;
   instance->RequestUrlHandlerList(
-      url.spec(), base::Bind(&ArcNavigationThrottle::OnAppCandidatesReceived,
-                             weak_ptr_factory_.GetWeakPtr()));
+      url.spec(),
+      base::BindOnce(&ArcNavigationThrottle::OnAppCandidatesReceived,
+                     weak_ptr_factory_.GetWeakPtr()));
   // We don't want to block the navigation, the only exception is here since we
   // need to know if we really need to launch the UI or not, navigation is
   // resumed right after we receive an answer from ARC's side (no user
@@ -458,8 +459,8 @@ void ArcNavigationThrottle::AsyncShowIntentPickerBubble(const Browser* browser,
 
   instance->RequestUrlHandlerList(
       url.spec(),
-      base::Bind(&ArcNavigationThrottle::AsyncOnAppCandidatesReceived, browser,
-                 url));
+      base::BindOnce(&ArcNavigationThrottle::AsyncOnAppCandidatesReceived,
+                     browser, url));
 }
 
 // static

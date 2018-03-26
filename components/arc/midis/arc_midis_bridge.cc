@@ -94,8 +94,8 @@ void ArcMidisBridge::Connect(mojom::MidisServerRequest request,
       mojo::InterfacePtrInfo<mojom::MidisHost>(std::move(server_pipe), 0u));
   DVLOG(1) << "Bound remote MidisHost interface to pipe.";
   midis_host_ptr_.set_connection_error_handler(
-      base::Bind(&mojo::InterfacePtr<mojom::MidisHost>::reset,
-                 base::Unretained(&midis_host_ptr_)));
+      base::BindOnce(&mojo::InterfacePtr<mojom::MidisHost>::reset,
+                     base::Unretained(&midis_host_ptr_)));
   chromeos::DBusThreadManager::Get()
       ->GetArcMidisClient()
       ->BootstrapMojoConnection(

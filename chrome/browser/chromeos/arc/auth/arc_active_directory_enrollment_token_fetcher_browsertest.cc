@@ -353,7 +353,7 @@ class ArcActiveDirectoryEnrollmentTokenFetcherBrowserTest
                             Status* out_fetch_status,
                             std::string* out_enrollment_token,
                             std::string* out_user_id) {
-    token_fetcher_->Fetch(base::Bind(
+    token_fetcher_->Fetch(base::BindOnce(
         [](base::RunLoop* run_loop, Status* out_fetch_status,
            std::string* out_enrollment_token, std::string* out_user_id,
            Status fetch_status, const std::string& enrollment_token,

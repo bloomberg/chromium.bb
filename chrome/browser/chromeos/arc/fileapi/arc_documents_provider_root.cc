@@ -172,9 +172,9 @@ void ArcDocumentsProviderRoot::RemoveWatcher(const base::FilePath& path,
     callback.Run(base::File::FILE_OK);
     return;
   }
-  runner_->RemoveWatcher(watcher_id,
-                         base::Bind(&ArcDocumentsProviderRoot::OnWatcherRemoved,
-                                    weak_ptr_factory_.GetWeakPtr(), callback));
+  runner_->RemoveWatcher(
+      watcher_id, base::BindOnce(&ArcDocumentsProviderRoot::OnWatcherRemoved,
+                                 weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void ArcDocumentsProviderRoot::ResolveToContentUrl(
@@ -299,8 +299,8 @@ void ArcDocumentsProviderRoot::AddWatcherWithDocumentId(
 
   runner_->AddWatcher(
       authority_, document_id, watcher_callback,
-      base::Bind(&ArcDocumentsProviderRoot::OnWatcherAdded,
-                 weak_ptr_factory_.GetWeakPtr(), path, watcher_request_id));
+      base::BindOnce(&ArcDocumentsProviderRoot::OnWatcherAdded,
+                     weak_ptr_factory_.GetWeakPtr(), path, watcher_request_id));
 }
 
 void ArcDocumentsProviderRoot::OnWatcherAdded(const base::FilePath& path,
@@ -311,8 +311,8 @@ void ArcDocumentsProviderRoot::OnWatcherAdded(const base::FilePath& path,
   if (IsWatcherInflightRequestCanceled(path, watcher_request_id)) {
     runner_->RemoveWatcher(
         watcher_id,
-        base::Bind(&ArcDocumentsProviderRoot::OnWatcherAddedButRemoved,
-                   weak_ptr_factory_.GetWeakPtr()));
+        base::BindOnce(&ArcDocumentsProviderRoot::OnWatcherAddedButRemoved,
+                       weak_ptr_factory_.GetWeakPtr()));
     return;
   }
 
@@ -429,7 +429,7 @@ void ArcDocumentsProviderRoot::ReadDirectoryInternal(
 
   runner_->GetChildDocuments(
       authority_, document_id,
-      base::Bind(
+      base::BindOnce(
           &ArcDocumentsProviderRoot::ReadDirectoryInternalWithChildDocuments,
           weak_ptr_factory_.GetWeakPtr(), document_id));
 }

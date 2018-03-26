@@ -163,7 +163,7 @@ void ArcBootPhaseMonitorBridge::OnBootCompleted() {
   chromeos::SessionManagerClient* session_manager_client =
       chromeos::DBusThreadManager::Get()->GetSessionManagerClient();
   session_manager_client->EmitArcBooted(cryptohome::Identification(account_id_),
-                                        base::Bind(&OnEmitArcBooted));
+                                        base::BindOnce(&OnEmitArcBooted));
 
   ArcSessionManager* arc_session_manager = ArcSessionManager::Get();
   DCHECK(arc_session_manager);

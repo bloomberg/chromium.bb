@@ -506,8 +506,8 @@ bool RunArcExternalProtocolDialog(const GURL& url,
   // Show ARC version of the dialog, which is IntentPickerBubbleView. To show
   // the bubble view, we need to ask ARC for a handler list first.
   instance->RequestUrlHandlerList(
-      url.spec(), base::Bind(OnUrlHandlerList, render_process_host_id,
-                             routing_id, url, always_ask_user));
+      url.spec(), base::BindOnce(OnUrlHandlerList, render_process_host_id,
+                                 routing_id, url, always_ask_user));
   return true;
 }
 

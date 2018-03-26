@@ -112,7 +112,7 @@ void ArcMetricsService::RequestProcessList() {
   if (!process_instance)
     return;
   VLOG(2) << "RequestProcessList";
-  process_instance->RequestProcessList(base::Bind(
+  process_instance->RequestProcessList(base::BindOnce(
       &ArcMetricsService::ParseProcessList, weak_ptr_factory_.GetWeakPtr()));
 }
 

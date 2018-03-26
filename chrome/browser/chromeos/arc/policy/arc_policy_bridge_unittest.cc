@@ -119,15 +119,15 @@ void ExpectStringWithClosure(base::Closure quit_closure,
 arc::ArcPolicyBridge::GetPoliciesCallback PolicyStringCallback(
     const std::string& expected) {
   auto was_run = std::make_unique<CheckedBoolean>();
-  return base::Bind(&ExpectString, base::Passed(&was_run), expected);
+  return base::BindOnce(&ExpectString, std::move(was_run), expected);
 }
 
 arc::ArcPolicyBridge::ReportComplianceCallback PolicyComplianceCallback(
     base::Closure quit_closure,
     const std::string& expected) {
   auto was_run = std::make_unique<CheckedBoolean>();
-  return base::Bind(&ExpectStringWithClosure, quit_closure,
-                    base::Passed(&was_run), expected);
+  return base::BindOnce(&ExpectStringWithClosure, quit_closure,
+                        std::move(was_run), expected);
 }
 
 }  // namespace
