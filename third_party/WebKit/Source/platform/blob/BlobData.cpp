@@ -82,11 +82,6 @@ bool IsValidBlobType(const String& type) {
   return true;
 }
 
-void BindBytesProvider(std::unique_ptr<BlobBytesProvider> provider,
-                       BytesProviderRequest request) {
-  mojo::MakeStrongBinding(std::move(provider), std::move(request));
-}
-
 mojom::blink::BlobRegistry* g_blob_registry_for_testing = nullptr;
 
 mojom::blink::BlobRegistry* GetThreadSpecificRegistry() {
@@ -291,21 +286,9 @@ void BlobData::AppendDataInternal(base::span<const char> data,
     }
   } else {
     BytesProviderPtrInfo bytes_provider_info;
-    auto provider = std::make_unique<BlobBytesProvider>();
-    last_bytes_provider_ = provider.get();
+    last_bytes_provider_ =
+        BlobBytesProvider::CreateAndBind(MakeRequest(&bytes_provider_info));
 
-    scoped_refptr<base::SingleThreadTaskRunner> file_runner =
-        Platform::Current()->FileTaskRunner();
-    if (file_runner) {
-      // TODO(mek): Considering binding BytesProvider on the IO thread
-      // instead, only using the File thread for actual file operations.
-      PostCrossThreadTask(
-          *file_runner, FROM_HERE,
-          CrossThreadBind(&BindBytesProvider, WTF::Passed(std::move(provider)),
-                          WTF::Passed(MakeRequest(&bytes_provider_info))));
-    } else {
-      BindBytesProvider(std::move(provider), MakeRequest(&bytes_provider_info));
-    }
     auto bytes_element = DataElementBytes::New(data.length(), WTF::nullopt,
                                                std::move(bytes_provider_info));
     if (should_embed_bytes) {

@@ -41,6 +41,15 @@ class BlobBytesProviderTest : public ::testing::Test {
     combined_bytes_.AppendVector(test_bytes3_);
   }
 
+  std::unique_ptr<BlobBytesProvider> CreateProvider(
+      scoped_refptr<RawData> data = nullptr) {
+    auto result = BlobBytesProvider::CreateForTesting(
+        blink::scheduler::GetSequencedTaskRunnerForTesting());
+    if (data)
+      result->AppendData(std::move(data));
+    return result;
+  }
+
  protected:
   base::test::ScopedTaskEnvironment scoped_task_environment_;
 
@@ -54,29 +63,29 @@ class BlobBytesProviderTest : public ::testing::Test {
 };
 
 TEST_F(BlobBytesProviderTest, Consolidation) {
-  BlobBytesProvider data;
-  data.AppendData(base::make_span("abc", 3));
-  data.AppendData(base::make_span("def", 3));
-  data.AppendData(base::make_span("ps1", 3));
-  data.AppendData(base::make_span("ps2", 3));
+  auto data = CreateProvider();
+  data->AppendData(base::make_span("abc", 3));
+  data->AppendData(base::make_span("def", 3));
+  data->AppendData(base::make_span("ps1", 3));
+  data->AppendData(base::make_span("ps2", 3));
 
-  EXPECT_EQ(1u, data.data_.size());
-  EXPECT_EQ(12u, data.data_[0]->length());
-  EXPECT_EQ(0, memcmp(data.data_[0]->data(), "abcdefps1ps2", 12));
+  EXPECT_EQ(1u, data->data_.size());
+  EXPECT_EQ(12u, data->data_[0]->length());
+  EXPECT_EQ(0, memcmp(data->data_[0]->data(), "abcdefps1ps2", 12));
 
   auto large_data = std::make_unique<char[]>(
       BlobBytesProvider::kMaxConsolidatedItemSizeInBytes);
-  data.AppendData(base::make_span(
+  data->AppendData(base::make_span(
       large_data.get(), BlobBytesProvider::kMaxConsolidatedItemSizeInBytes));
 
-  EXPECT_EQ(2u, data.data_.size());
-  EXPECT_EQ(12u, data.data_[0]->length());
+  EXPECT_EQ(2u, data->data_.size());
+  EXPECT_EQ(12u, data->data_[0]->length());
   EXPECT_EQ(BlobBytesProvider::kMaxConsolidatedItemSizeInBytes,
-            data.data_[1]->length());
+            data->data_[1]->length());
 }
 
 TEST_F(BlobBytesProviderTest, RequestAsReply) {
-  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
+  auto provider = CreateProvider(test_data1_);
   Vector<uint8_t> received_bytes;
   provider->RequestAsReply(
       base::BindOnce([](Vector<uint8_t>* bytes_out,
@@ -85,7 +94,8 @@ TEST_F(BlobBytesProviderTest, RequestAsReply) {
   EXPECT_EQ(test_bytes1_, received_bytes);
 
   received_bytes.clear();
-  provider = std::make_unique<BlobBytesProvider>(test_data1_);
+  provider = CreateProvider();
+  provider->AppendData(test_data1_);
   provider->AppendData(test_data2_);
   provider->AppendData(test_data3_);
   provider->RequestAsReply(
@@ -111,7 +121,8 @@ class RequestAsFile : public BlobBytesProviderTest,
  public:
   void SetUp() override {
     BlobBytesProviderTest::SetUp();
-    test_provider_ = std::make_unique<BlobBytesProvider>(test_data1_);
+    test_provider_ = CreateProvider();
+    test_provider_->AppendData(test_data1_);
     test_provider_->AppendData(test_data2_);
     test_provider_->AppendData(test_data3_);
 
@@ -241,7 +252,8 @@ INSTANTIATE_TEST_CASE_P(BlobBytesProviderTest,
                         ::testing::ValuesIn(file_tests));
 
 TEST_F(BlobBytesProviderTest, RequestAsFile_MultipleChunks) {
-  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
+  auto provider = CreateProvider();
+  provider->AppendData(test_data1_);
   provider->AppendData(test_data2_);
   provider->AppendData(test_data3_);
 
@@ -273,7 +285,7 @@ TEST_F(BlobBytesProviderTest, RequestAsFile_MultipleChunks) {
 }
 
 TEST_F(BlobBytesProviderTest, RequestAsFile_InvaldFile) {
-  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
+  auto provider = CreateProvider(test_data1_);
 
   provider->RequestAsFile(
       0, 16, base::File(), 0,
@@ -283,7 +295,7 @@ TEST_F(BlobBytesProviderTest, RequestAsFile_InvaldFile) {
 }
 
 TEST_F(BlobBytesProviderTest, RequestAsFile_UnwritableFile) {
-  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
+  auto provider = CreateProvider(test_data1_);
 
   base::FilePath path;
   base::CreateTemporaryFile(&path);
@@ -301,7 +313,8 @@ TEST_F(BlobBytesProviderTest, RequestAsFile_UnwritableFile) {
 }
 
 TEST_F(BlobBytesProviderTest, RequestAsStream) {
-  auto provider = std::make_unique<BlobBytesProvider>(test_data1_);
+  auto provider = CreateProvider();
+  provider->AppendData(test_data1_);
   provider->AppendData(test_data2_);
   provider->AppendData(test_data3_);
 

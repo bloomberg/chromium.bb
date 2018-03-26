@@ -23,8 +23,13 @@ class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
   // data appended to the same item.
   static constexpr size_t kMaxConsolidatedItemSizeInBytes = 15 * 1024;
 
-  BlobBytesProvider();
-  explicit BlobBytesProvider(scoped_refptr<RawData>);
+  // Creates a new instance, and binds it on a new SequencedTaskRunner. The
+  // returned instance should only be considered valid as long as the request
+  // passed in to this method is still known to be valid.
+  static BlobBytesProvider* CreateAndBind(mojom::blink::BytesProviderRequest);
+  static std::unique_ptr<BlobBytesProvider> CreateForTesting(
+      scoped_refptr<base::SequencedTaskRunner>);
+
   ~BlobBytesProvider() override;
 
   void AppendData(scoped_refptr<RawData>);
@@ -41,6 +46,12 @@ class PLATFORM_EXPORT BlobBytesProvider : public mojom::blink::BytesProvider {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(BlobBytesProviderTest, Consolidation);
+
+  BlobBytesProvider(scoped_refptr<base::SequencedTaskRunner>);
+
+  // The task runner this class is bound on, as well as what is used by the
+  // RequestAsStream method to monitor the data pipe.
+  scoped_refptr<base::SequencedTaskRunner> task_runner_;
 
   Vector<scoped_refptr<RawData>> data_;
   // |offsets_| always contains exactly one fewer item than |data_| (except when
