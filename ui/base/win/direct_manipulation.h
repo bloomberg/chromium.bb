@@ -46,6 +46,8 @@ class DirectManipulationHandler
   // hierarchy changed.
   void SetWindowEventTarget(WindowEventTarget* event_target);
 
+  void SetDeviceScaleFactor(float device_scale_factor);
+
  private:
   friend DirectManipulationUnitTest;
 
@@ -74,6 +76,7 @@ class DirectManipulationHandler
   int last_x_offset_ = 0;
   int last_y_offset_ = 0;
   bool first_ready_ = false;
+  float device_scale_factor_ = 1.0f;
 
   // Current recognized gesture from Direct Manipulation.
   Gesture gesture_state_ = Gesture::kNone;
@@ -132,6 +135,8 @@ class UI_BASE_EXPORT DirectManipulationHelper {
   // This function instantiates Direct Manipulation and creates a viewport for
   // the passed in |window|. Return false if initialize failed.
   bool Initialize();
+
+  void SetDeviceScaleFactorForTesting(float factor);
 
   Microsoft::WRL::ComPtr<IDirectManipulationManager> manager_;
   Microsoft::WRL::ComPtr<IDirectManipulationUpdateManager> update_manager_;

@@ -11,6 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/win/windows_version.h"
 #include "ui/base/ui_base_features.h"
+#include "ui/display/win/screen_win.h"
 
 namespace ui {
 namespace win {
@@ -150,6 +151,10 @@ void DirectManipulationHelper::Deactivate() {
 bool DirectManipulationHelper::OnPointerHitTest(
     WPARAM w_param,
     WindowEventTarget* event_target) {
+  // Update the device scale factor.
+  event_handler_->SetDeviceScaleFactor(
+      display::win::ScreenWin::GetScaleFactorForHWND(window_));
+
   // Only DM_POINTERHITTEST can be the first message of input sequence of
   // touchpad input.
   // TODO(chaopeng) Check if Windows API changes:
@@ -191,6 +196,10 @@ bool DirectManipulationHelper::PollForNextEvent() {
   // Simulate 1 frame in update_manager_.
   update_manager_->Update(nullptr);
   return need_poll_events_;
+}
+
+void DirectManipulationHelper::SetDeviceScaleFactorForTesting(float factor) {
+  event_handler_->SetDeviceScaleFactor(factor);
 }
 
 // DirectManipulationHandler
@@ -294,8 +303,8 @@ HRESULT DirectManipulationHandler::OnContentUpdated(
     return hr;
 
   float scale = xform[0];
-  int x_offset = xform[4];
-  int y_offset = xform[5];
+  int x_offset = xform[4] / device_scale_factor_;
+  int y_offset = xform[5] / device_scale_factor_;
 
   // Ignore if Windows pass scale=0 to us.
   if (scale == 0.0f) {
@@ -350,6 +359,11 @@ void DirectManipulationHandler::SetWindowEventTarget(
     WindowEventTarget* event_target) {
   DCHECK(event_target);
   event_target_ = event_target;
+}
+
+void DirectManipulationHandler::SetDeviceScaleFactor(
+    float device_scale_factor) {
+  device_scale_factor_ = device_scale_factor;
 }
 
 }  // namespace win
