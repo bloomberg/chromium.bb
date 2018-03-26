@@ -1151,7 +1151,16 @@ bool SelectorChecker::CheckPseudoElement(const SelectorCheckingContext& context,
       return false;
     }
     case CSSSelector::kPseudoPart:
-      // TODO(crbug/805271): Implement this.
+      if (!RuntimeEnabledFeatures::CSSPartPseudoElementEnabled())
+        return false;
+      if (const SpaceSplitString* part_names = element.PartNames()) {
+        if (part_names->Contains(selector.Argument())) {
+          // TODO(crbug/805271): Until partmap is implemented, only consider
+          // styling parts from scope directly containing the shadow host.
+          Element* host = element.OwnerShadowHost();
+          return host && host->GetTreeScope() == context.scope->GetTreeScope();
+        }
+      }
       return false;
     case CSSSelector::kPseudoPlaceholder:
       if (ShadowRoot* root = element.ContainingShadowRoot()) {
