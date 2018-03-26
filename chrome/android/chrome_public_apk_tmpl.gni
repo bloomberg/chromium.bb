@@ -48,6 +48,14 @@ template("chrome_public_apk_tmpl") {
 
     if (is_java_debug || multidex_in_release) {
       enable_multidex = true
+      if (!defined(negative_main_dex_globs)) {
+        negative_main_dex_globs = [
+          "*ApplicationStatus*",  # Doesn't work in non-browser process.
+          "*ChromeActivity*",  # Pulls in the world, so ensure it doesn't slip in.
+          "*GoogleApiAvailability*",  # Play Services only in browser process.
+          "*R\$*",  # Should not use resources from non-browser process.
+        ]
+      }
     }
     if (!is_java_debug) {
       proguard_enabled = true
@@ -142,6 +150,17 @@ template("monochrome_public_apk_tmpl") {
       "//chrome/android:monochrome_pak_assets",
       "//chrome/android/monochrome:monochrome_license_provider_java",
     ]
+
+    if ((is_java_debug || multidex_in_release) &&
+        !defined(invoker.negative_main_dex_globs)) {
+      # WebView pulls play services into the main dex.
+      negative_main_dex_globs = [
+        # TODO(agrieve): Add ApplicationStatus to this list. It's currently
+        #     included because of ActivityWindowAndroid, but is never used at
+        #     runtime by webview.
+        "*ChromeActivity*",  # Pulls in the world, so ensure it doesn't slip in.
+      ]
+    }
 
     if (!is_java_debug) {
       if (!defined(proguard_configs)) {

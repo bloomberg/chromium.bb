@@ -1012,16 +1012,22 @@ class Foo {
          public class Test implements Testable<java.io.Serializable> {
       """,
       '@MainDex public class Test implements Testable<java.io.Serializable> {',
-      '@MainDex public class Test extends Testable<java.io.Serializable> {',
+      '@a.B @MainDex @C public class Test extends Testable<Serializable> {',
+      """public class Test extends Testable<java.io.Serializable> {
+         @MainDex void func() {}
+      """,
     ]
     for entry in mainDexEntries:
-      self.assertEquals(True, IsMainDexJavaClass(entry))
+      self.assertEquals(True, IsMainDexJavaClass(entry), entry)
 
   def testNoMainDexAnnotation(self):
     noMainDexEntries = [
       'public class Test {',
       '@NotMainDex public class Test {',
+      '// @MainDex public class Test {',
+      '/* @MainDex */ public class Test {',
       'public class Test implements java.io.Serializable {',
+      '@MainDexNot public class Test {',
       'public class Test extends BaseTest {'
     ]
     for entry in noMainDexEntries:

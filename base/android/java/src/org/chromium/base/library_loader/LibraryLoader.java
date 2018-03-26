@@ -47,7 +47,6 @@ import javax.annotation.Nullable;
  * the native counterpart to this class.
  */
 @JNINamespace("base::android")
-@MainDex
 public class LibraryLoader {
     private static final String TAG = "LibraryLoader";
 
@@ -586,6 +585,7 @@ public class LibraryLoader {
      *         for possible values.
      */
     @CalledByNative
+    @MainDex
     public static int getLibraryProcessType() {
         if (sInstance == null) return LibraryProcessType.PROCESS_UNINITIALIZED;
         return sInstance.mLibraryProcessType;

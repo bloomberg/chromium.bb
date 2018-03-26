@@ -11,13 +11,11 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.MainDex;
 
 /**
  * Class for listening to Android MediaServer crashes to throttle media decoding
  * when needed.
  */
-@MainDex
 @JNINamespace("media")
 public class MediaServerCrashListener implements MediaPlayer.OnErrorListener {
     private static final String TAG = "crMediaCrashListener";

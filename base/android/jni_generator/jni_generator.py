@@ -35,12 +35,15 @@ _COMMENT_REMOVER_REGEX = re.compile(
 
 _EXTRACT_NATIVES_REGEX = re.compile(
     r'(@NativeClassQualifiedName'
-     '\(\"(?P<native_class_name>.*?)\"\)\s+)?'
-     '(@NativeCall(\(\"(?P<java_class_name>.*?)\"\))\s+)?'
-     '(?P<qualifiers>\w+\s\w+|\w+|\s+)\s*native '
-     '(?P<return_type>\S*) '
-     '(?P<name>native\w+)\((?P<params>.*?)\);')
+    r'\(\"(?P<native_class_name>.*?)\"\)\s+)?'
+    r'(@NativeCall(\(\"(?P<java_class_name>.*?)\"\))\s+)?'
+    r'(?P<qualifiers>\w+\s\w+|\w+|\s+)\s*native '
+    r'(?P<return_type>\S*) '
+    r'(?P<name>native\w+)\((?P<params>.*?)\);')
 
+_MAIN_DEX_REGEX = re.compile(
+    r'^\s*(?:@(?:\w+\.)*\w+\s+)*@MainDex\b',
+    re.MULTILINE)
 
 class ParseError(Exception):
   """Exception thrown when we can't parse the input file."""
@@ -470,15 +473,14 @@ def ExtractNatives(contents, ptr_type):
 
 
 def IsMainDexJavaClass(contents):
-  """Returns True if the class is annotated with "@MainDex", False if not.
+  """Returns True if the class or any of its methods are annotated as @MainDex.
 
   JNI registration doesn't always need to be completed for non-browser processes
   since most Java code is only used by the browser process. Classes that are
   needed by non-browser processes must explicitly be annotated with @MainDex
   to force JNI registration.
   """
-  re_maindex = re.compile(r'@MainDex[\s\S]*class({|[\s\S]*{)')
-  return bool(re.search(re_maindex, contents))
+  return bool(_MAIN_DEX_REGEX.search(contents))
 
 
 def GetBinaryClassName(fully_qualified_class):

@@ -21,7 +21,6 @@ import org.chromium.base.annotations.MainDex;
  * This class provides Android application context related utility methods.
  */
 @JNINamespace("base::android")
-@MainDex
 public class ContextUtils {
     private static final String TAG = "ContextUtils";
     private static Context sApplicationContext;
@@ -60,6 +59,7 @@ public class ContextUtils {
      *
      * @param appContext The application context.
      */
+    @MainDex // TODO(agrieve): Could add to whole class if not for ApplicationStatus.initialize().
     public static void initApplicationContext(Context appContext) {
         // Conceding that occasionally in tests, native is loaded before the browser process is
         // started, in which case the browser process re-sets the application context.

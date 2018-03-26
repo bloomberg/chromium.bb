@@ -8,6 +8,7 @@ import android.os.SystemClock;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.base.annotations.MainDex;
 import org.chromium.base.metrics.RecordHistogram;
 
 import java.util.concurrent.TimeUnit;
@@ -32,6 +33,7 @@ public class UmaUtils {
      * Record the time in the application lifecycle at which Chrome code first runs
      * (Application.attachBaseContext()).
      */
+    @MainDex
     public static void recordMainEntryPointTime() {
         // We can't simply pass this down through a JNI call, since the JNI for chrome
         // isn't initialized until we start the native content browser component, and we
