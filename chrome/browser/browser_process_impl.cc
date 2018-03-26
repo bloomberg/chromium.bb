@@ -309,6 +309,11 @@ void BrowserProcessImpl::Init() {
       std::max(std::min(max_per_proxy, 99),
                net::ClientSocketPoolManager::max_sockets_per_group(
                    net::HttpNetworkSession::NORMAL_SOCKET_POOL)));
+
+#if BUILDFLAG(ENABLE_WEBRTC)
+  DCHECK(!webrtc_event_log_manager_);
+  webrtc_event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+#endif
 }
 
 BrowserProcessImpl::~BrowserProcessImpl() {
@@ -1165,11 +1170,6 @@ void BrowserProcessImpl::PreMainMessageLoopRun() {
         base::WrapUnique(new base::DefaultTickClock()), local_state(),
         system_request_context());
   }
-
-#if BUILDFLAG(ENABLE_WEBRTC)
-  DCHECK(!webrtc_event_log_manager_);
-  webrtc_event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
-#endif
 }
 
 void BrowserProcessImpl::CreateIconManager() {
