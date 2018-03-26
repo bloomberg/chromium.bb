@@ -213,8 +213,8 @@ void APIENTRY GLDebugMessageCallback(GLenum source,
                                      GLenum severity,
                                      GLsizei length,
                                      const GLchar* message,
-                                     GLvoid* user_param) {
-  Logger* error_logger = static_cast<Logger*>(user_param);
+                                     const GLvoid* user_param) {
+  Logger* error_logger = static_cast<Logger*>(const_cast<void*>(user_param));
   LogGLDebugMessage(source, type, id, severity, length, message, error_logger);
 }
 

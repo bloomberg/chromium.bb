@@ -86,8 +86,7 @@ GL_APICALL void GL_APIENTRY glBlendBarrierKHR (void);
 
 #ifndef GL_KHR_debug
 #define GL_KHR_debug 1
-/* Chromium-specific drop const from last argument of GLDEBUGPROCKHR. */
-typedef void (GL_APIENTRY  *GLDEBUGPROCKHR)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,void *userParam);
+typedef void (GL_APIENTRY  *GLDEBUGPROCKHR)(GLenum source,GLenum type,GLuint id,GLenum severity,GLsizei length,const GLchar *message,const void *userParam);
 /* Chromium-specific commented out GL_SAMPLER. */
 //#define GL_SAMPLER                        0x82E6
 #define GL_DEBUG_OUTPUT_SYNCHRONOUS_KHR   0x8242
@@ -132,8 +131,7 @@ typedef void (GL_APIENTRY  *GLDEBUGPROCKHR)(GLenum source,GLenum type,GLuint id,
 #define GL_STACK_UNDERFLOW_KHR            0x0504
 typedef void (GL_APIENTRYP PFNGLDEBUGMESSAGECONTROLKHRPROC) (GLenum source, GLenum type, GLenum severity, GLsizei count, const GLuint *ids, GLboolean enabled);
 typedef void (GL_APIENTRYP PFNGLDEBUGMESSAGEINSERTKHRPROC) (GLenum source, GLenum type, GLuint id, GLenum severity, GLsizei length, const GLchar *buf);
-/* Chromium-specific drop const from last argument of GLDEBUGPROCKHR. */
-typedef void (GL_APIENTRYP PFNGLDEBUGMESSAGECALLBACKKHRPROC) (GLDEBUGPROCKHR callback, void *userParam);
+typedef void (GL_APIENTRYP PFNGLDEBUGMESSAGECALLBACKKHRPROC) (GLDEBUGPROCKHR callback, const void *userParam);
 typedef GLuint (GL_APIENTRYP PFNGLGETDEBUGMESSAGELOGKHRPROC) (GLuint count, GLsizei bufSize, GLenum *sources, GLenum *types, GLuint *ids, GLenum *severities, GLsizei *lengths, GLchar *messageLog);
 typedef void (GL_APIENTRYP PFNGLPUSHDEBUGGROUPKHRPROC) (GLenum source, GLuint id, GLsizei length, const GLchar *message);
 typedef void (GL_APIENTRYP PFNGLPOPDEBUGGROUPKHRPROC) (void);

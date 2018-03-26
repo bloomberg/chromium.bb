@@ -70,5 +70,5 @@ Modifications made:
 - Merge http://cgit.freedesktop.org/mesa/mesa/commit/?id=5a6ec26
   Regenerated glsl_lexer.cc using Linux 3.13.0-63 (Ubuntu 14.04), Flex 2.5.39.
 
-- update GLDEBUGPROCARB typedef to latest spec version to avoid type mismatch
-  between headers (making userParam a const GLvoid*).
+- update GLDEBUGPROCARB and GLDEBUGPROC typedef to latest spec version to avoid
+  type mismatch between headers (making userParam a const GLvoid*).
