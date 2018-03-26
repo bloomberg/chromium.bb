@@ -69,12 +69,11 @@ bool X11WindowOzone::DispatchXEvent(XEvent* xev) {
   return true;
 }
 
-bool X11WindowOzone::CanDispatchEvent(const PlatformEvent& platform_event) {
+bool X11WindowOzone::CanDispatchEvent(const PlatformEvent& event) {
   return handle_next_event_;
 }
 
-uint32_t X11WindowOzone::DispatchEvent(const PlatformEvent& platform_event) {
-  auto* event = static_cast<Event*>(platform_event);
+uint32_t X11WindowOzone::DispatchEvent(const PlatformEvent& event) {
   if (!window_manager_->event_grabber() ||
       window_manager_->event_grabber() == this) {
     // This is unfortunately needed otherwise events that depend on global state

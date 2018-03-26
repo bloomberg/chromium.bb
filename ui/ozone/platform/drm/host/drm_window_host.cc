@@ -129,9 +129,8 @@ PlatformImeController* DrmWindowHost::GetPlatformImeController() {
   return nullptr;
 }
 
-bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
-  DCHECK(ne);
-  Event* event = static_cast<Event*>(ne);
+bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& event) {
+  DCHECK(event);
 
   // If there is a grab, capture events here.
   gfx::AcceleratedWidget grabber = window_manager_->event_grabber();
@@ -170,10 +169,9 @@ bool DrmWindowHost::CanDispatchEvent(const PlatformEvent& ne) {
   return true;
 }
 
-uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
-  DCHECK(native_event);
+uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& event) {
+  DCHECK(event);
 
-  Event* event = static_cast<Event*>(native_event);
   if (event->IsLocatedEvent()) {
     // Make the event location relative to this window's origin.
     LocatedEvent* located_event = event->AsLocatedEvent();
@@ -183,8 +181,8 @@ uint32_t DrmWindowHost::DispatchEvent(const PlatformEvent& native_event) {
     located_event->set_root_location_f(location);
   }
   DispatchEventFromNativeUiEvent(
-      native_event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
-                                   base::Unretained(delegate_)));
+      event, base::BindOnce(&PlatformWindowDelegate::DispatchEvent,
+                            base::Unretained(delegate_)));
   return POST_DISPATCH_STOP_PROPAGATION;
 }
 

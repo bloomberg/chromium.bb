@@ -110,8 +110,7 @@ class TestEventFactoryEvdev : public EventFactoryEvdev {
   ~TestEventFactoryEvdev() override {}
 
  private:
-  uint32_t DispatchEvent(PlatformEvent platform_event) override {
-    Event* event = static_cast<Event*>(platform_event);
+  uint32_t DispatchEvent(PlatformEvent event) override {
     callback_.Run(event);
     return POST_DISPATCH_NONE;
   }
