@@ -155,6 +155,18 @@ class PLATFORM_EXPORT ThreadState {
     kSweepingAndPreciseGCScheduled,
   };
 
+  // The phase that the GC is in. The GCPhase will not return kNone for mutators
+  // running during incremental marking and lazy sweeping. See SetGCPhase() for
+  // possible state transitions.
+  enum class GCPhase {
+    // GC is doing nothing.
+    kNone,
+    // GC is in marking phase.
+    kMarking,
+    // GC is in sweeping phase.
+    kSweeping,
+  };
+
   // The NoAllocationScope class is used in debug mode to catch unwanted
   // allocations. E.g. allocations during GC.
   class NoAllocationScope final {
@@ -253,7 +265,9 @@ class PLATFORM_EXPORT ThreadState {
   void WillStartV8GC(BlinkGC::V8GCType);
   void SetGCState(GCState);
   GCState GcState() const { return gc_state_; }
+  void SetGCPhase(GCPhase);
   bool IsInGC() const { return GcState() == kGCRunning; }
+  bool IsMarkingInProgress() const { return gc_phase_ == GCPhase::kMarking; }
   bool IsSweepingInProgress() const {
     return GcState() == kSweeping ||
            GcState() == kSweepingAndPreciseGCScheduled ||
@@ -644,6 +658,7 @@ class PLATFORM_EXPORT ThreadState {
   GarbageCollectedMixinConstructorMarkerBase* gc_mixin_marker_;
 
   GCState gc_state_;
+  GCPhase gc_phase_;
 
   using PreFinalizerCallback = bool (*)(void*);
   using PreFinalizer = std::pair<void*, PreFinalizerCallback>;
