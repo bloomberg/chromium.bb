@@ -25,6 +25,8 @@
 #define MAP_ANONYMOUS MAP_ANON
 #endif
 
+namespace base {
+
 // |mmap| uses a nearby address if the hint address is blocked.
 const bool kHintIsAdvisory = true;
 std::atomic<int32_t> s_allocPageErrorCode{0};
@@ -172,5 +174,7 @@ void DiscardSystemPagesInternal(void* address, size_t length) {
   }
   CHECK(!ret);
 }
+
+}  // namespace base
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_INTERNALS_POSIX_H_

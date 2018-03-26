@@ -7,6 +7,7 @@
 #include <limits.h>
 
 #include "base/allocator/partition_allocator/address_space_randomization.h"
+#include "base/allocator/partition_allocator/page_allocator_internal.h"
 #include "base/allocator/partition_allocator/spin_lock.h"
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
@@ -21,10 +22,6 @@
 #include <windows.h>
 #endif
 
-namespace base {
-
-namespace {
-
 #if defined(OS_POSIX)
 #include "base/allocator/partition_allocator/page_allocator_internals_posix.h"
 #elif defined(OS_WIN)
@@ -33,25 +30,16 @@ namespace {
 #error Platform not supported.
 #endif
 
+namespace base {
+
+namespace {
+
 // We may reserve/release address space on different threads.
 LazyInstance<subtle::SpinLock>::Leaky s_reserveLock = LAZY_INSTANCE_INITIALIZER;
 
 // We only support a single block of reserved address space.
 void* s_reservation_address = nullptr;
 size_t s_reservation_size = 0;
-
-void* SystemAllocPages(void* hint,
-                       size_t length,
-                       PageAccessibilityConfiguration accessibility,
-                       PageTag page_tag,
-                       bool commit) {
-  DCHECK(!(length & kPageAllocationGranularityOffsetMask));
-  DCHECK(!(reinterpret_cast<uintptr_t>(hint) &
-           kPageAllocationGranularityOffsetMask));
-  DCHECK(commit || accessibility == PageInaccessible);
-  return SystemAllocPagesInternal(hint, length, accessibility, page_tag,
-                                  commit);
-}
 
 void* AllocPagesIncludingReserved(void* address,
                                   size_t length,
@@ -94,6 +82,19 @@ void* TrimMapping(void* base,
 }
 
 }  // namespace
+
+void* SystemAllocPages(void* hint,
+                       size_t length,
+                       PageAccessibilityConfiguration accessibility,
+                       PageTag page_tag,
+                       bool commit) {
+  DCHECK(!(length & kPageAllocationGranularityOffsetMask));
+  DCHECK(!(reinterpret_cast<uintptr_t>(hint) &
+           kPageAllocationGranularityOffsetMask));
+  DCHECK(commit || accessibility == PageInaccessible);
+  return SystemAllocPagesInternal(hint, length, accessibility, page_tag,
+                                  commit);
+}
 
 void* AllocPages(void* address,
                  size_t length,
