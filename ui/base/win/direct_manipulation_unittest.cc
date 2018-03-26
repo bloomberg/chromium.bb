@@ -376,6 +376,10 @@ class DirectManipulationUnitTest : public testing::Test {
     return direct_manipulation_helper_->need_poll_events_;
   }
 
+  void SetDeviceScaleFactor(float factor) {
+    direct_manipulation_helper_->SetDeviceScaleFactorForTesting(factor);
+  }
+
  private:
   std::unique_ptr<DirectManipulationHelper> direct_manipulation_helper_;
   Microsoft::WRL::ComPtr<MockDirectManipulationViewport> viewport_;
@@ -548,6 +552,18 @@ TEST_F(DirectManipulationUnitTest,
   // Receive second ready from ZoomToRect.
   ViewportStatusChanged(DIRECTMANIPULATION_READY, DIRECTMANIPULATION_RUNNING);
   EXPECT_FALSE(NeedAnimation());
+}
+
+TEST_F(DirectManipulationUnitTest, HiDPIScroll) {
+  if (!GetDirectManipulationHelper())
+    return;
+
+  SetDeviceScaleFactor(10.0);
+  ContentUpdated(1.0f, 50, 0);
+  std::vector<Event> events = GetEvents();
+  EXPECT_EQ(1u, events.size());
+  EXPECT_EQ(Gesture::kScroll, events[0].gesture_);
+  EXPECT_EQ(5, events[0].scroll_x_);
 }
 
 }  //  namespace win
