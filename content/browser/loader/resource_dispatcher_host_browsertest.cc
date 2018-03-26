@@ -610,11 +610,9 @@ class PageTransitionResourceDispatcherHostDelegate
 // when encountering a meta refresh tag.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        PageTransitionClientRedirect) {
-// TODO(crbug.com/818445): Fix the flakiness on Network Service.
-#if defined(OS_LINUX)
+  // TODO(crbug.com/818445): Fix the flakiness on Network Service.
   if (base::FeatureList::IsEnabled(network::features::kNetworkService))
     return;
-#endif
 
   ASSERT_TRUE(embedded_test_server()->Start());
 
