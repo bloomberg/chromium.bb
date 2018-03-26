@@ -155,7 +155,7 @@ void NotificationControlButtonsView::ButtonPressed(views::Button* sender,
   if (close_button_ && sender == close_button_.get()) {
     message_view_->OnCloseButtonPressed();
   } else if (settings_button_ && sender == settings_button_.get()) {
-    message_view_->OnSettingsButtonPressed(*event.AsLocatedEvent());
+    message_view_->OnSettingsButtonPressed(event);
   }
 }
 

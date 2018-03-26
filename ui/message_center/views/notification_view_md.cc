@@ -700,7 +700,7 @@ void NotificationViewMD::OnMouseReleased(const ui::MouseEvent& event) {
       ui::GetGestureProviderConfig(
           ui::GestureProviderConfigType::CURRENT_PLATFORM)
           .gesture_detector_config.longpress_timeout.InSecondsF()) {
-    ToggleInlineSettings(*event.AsLocatedEvent());
+    ToggleInlineSettings(event);
     return;
   }
 
@@ -736,7 +736,7 @@ void NotificationViewMD::OnMouseEvent(ui::MouseEvent* event) {
 
 void NotificationViewMD::OnGestureEvent(ui::GestureEvent* event) {
   if (event->type() == ui::ET_GESTURE_LONG_TAP) {
-    ToggleInlineSettings(*event->AsLocatedEvent());
+    ToggleInlineSettings(*event);
     return;
   }
   MessageView::OnGestureEvent(event);
@@ -803,7 +803,7 @@ void NotificationViewMD::ButtonPressed(views::Button* sender,
   if (sender == settings_done_button_) {
     if (block_all_button_->checked())
       MessageCenter::Get()->DisableNotification(id);
-    ToggleInlineSettings(*event.AsLocatedEvent());
+    ToggleInlineSettings(event);
     return;
   }
 }
@@ -1239,7 +1239,7 @@ void NotificationViewMD::UpdateViewForExpandedState(bool expanded) {
   }
 }
 
-void NotificationViewMD::ToggleInlineSettings(const ui::LocatedEvent& event) {
+void NotificationViewMD::ToggleInlineSettings(const ui::Event& event) {
   DCHECK(settings_row_);
 
   bool inline_settings_visible = !settings_row_->visible();
@@ -1303,8 +1303,7 @@ void NotificationViewMD::SetManuallyExpandedOrCollapsed(bool value) {
   manually_expanded_or_collapsed_ = value;
 }
 
-void NotificationViewMD::OnSettingsButtonPressed(
-    const ui::LocatedEvent& event) {
+void NotificationViewMD::OnSettingsButtonPressed(const ui::Event& event) {
   if (settings_row_)
     ToggleInlineSettings(event);
   else
@@ -1316,21 +1315,26 @@ void NotificationViewMD::Activate() {
   GetWidget()->Activate();
 }
 
-void NotificationViewMD::AddBackgroundAnimation(const ui::LocatedEvent& event) {
+void NotificationViewMD::AddBackgroundAnimation(const ui::Event& event) {
   SetInkDropMode(InkDropMode::ON_NO_GESTURE_HANDLER);
+  // In case the animation is triggered from keyboard operation.
+  if (!event.IsLocatedEvent()) {
+    AnimateInkDrop(views::InkDropState::ACTION_PENDING, nullptr);
+    return;
+  }
 
   // Convert the point of |event| from the coordinate system of
   // |control_buttons_view_| to that of NotificationViewMD, create a new
   // LocatedEvent which has the new point.
   views::View* target = static_cast<views::View*>(event.target());
-  const gfx::Point& location = event.location();
+  const gfx::Point& location = event.AsLocatedEvent()->location();
   gfx::Point converted_location(location);
   View::ConvertPointToTarget(target, this, &converted_location);
   std::unique_ptr<ui::Event> cloned_event = ui::Event::Clone(event);
   ui::LocatedEvent* cloned_located_event = cloned_event->AsLocatedEvent();
   cloned_located_event->set_location(converted_location);
 
-  if (View::HitTestPoint(event.location())) {
+  if (View::HitTestPoint(event.AsLocatedEvent()->location())) {
     AnimateInkDrop(views::InkDropState::ACTION_PENDING,
                    ui::LocatedEvent::FromIfValid(cloned_located_event));
   }
