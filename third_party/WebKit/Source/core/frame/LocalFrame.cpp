@@ -80,8 +80,8 @@
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "core/probe/CoreProbes.h"
 #include "core/svg/SVGDocumentExtensions.h"
+#include "platform/FrameScheduler.h"
 #include "platform/Histogram.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/graphics/paint/ClipRecorder.h"
 #include "platform/graphics/paint/PaintCanvas.h"
@@ -142,7 +142,7 @@ bool ShouldUseClientLoFiForRequest(
   return true;
 }
 
-class EmptyFrameScheduler final : public WebFrameScheduler {
+class EmptyFrameScheduler final : public FrameScheduler {
  public:
   EmptyFrameScheduler() { DCHECK(IsMainThread()); }
 
@@ -163,8 +163,8 @@ class EmptyFrameScheduler final : public WebFrameScheduler {
   void SetCrossOrigin(bool) override {}
   bool IsCrossOrigin() const override { return false; }
   void TraceUrlChange(const String& override) {}
-  WebFrameScheduler::FrameType GetFrameType() const override {
-    return WebFrameScheduler::FrameType::kSubframe;
+  FrameScheduler::FrameType GetFrameType() const override {
+    return FrameScheduler::FrameType::kSubframe;
   }
   PageScheduler* GetPageScheduler() const override { return nullptr; }
   WebScopedVirtualTimePauser CreateWebScopedVirtualTimePauser(
@@ -847,8 +847,8 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
                            ? page.GetPageScheduler()->CreateFrameScheduler(
                                  client->GetFrameBlameContext(),
                                  IsMainFrame()
-                                     ? WebFrameScheduler::FrameType::kMainFrame
-                                     : WebFrameScheduler::FrameType::kSubframe)
+                                     ? FrameScheduler::FrameType::kMainFrame
+                                     : FrameScheduler::FrameType::kSubframe)
                            : std::make_unique<EmptyFrameScheduler>()),
       loader_(this),
       navigation_scheduler_(NavigationScheduler::Create(this)),
@@ -888,7 +888,7 @@ inline LocalFrame::LocalFrame(LocalFrameClient* client,
   inspector_task_runner_->InitIsolate(V8PerIsolateData::MainThreadIsolate());
 }
 
-WebFrameScheduler* LocalFrame::FrameScheduler() {
+FrameScheduler* LocalFrame::GetFrameScheduler() {
   return frame_scheduler_.get();
 }
 

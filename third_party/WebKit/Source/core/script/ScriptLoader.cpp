@@ -50,7 +50,6 @@
 #include "core/script/ScriptElementBase.h"
 #include "core/script/ScriptRunner.h"
 #include "core/svg_names.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/loader/SubresourceIntegrity.h"
 #include "platform/loader/fetch/AccessControlStatus.h"
 #include "platform/loader/fetch/FetchParameters.h"

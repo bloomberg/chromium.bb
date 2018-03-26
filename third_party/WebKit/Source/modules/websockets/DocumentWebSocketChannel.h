@@ -43,7 +43,7 @@
 #include "modules/websockets/WebSocketChannel.h"
 #include "modules/websockets/WebSocketHandle.h"
 #include "modules/websockets/WebSocketHandleClient.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/heap/Handle.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Deque.h"
@@ -211,7 +211,7 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   uint64_t sending_quota_;
   uint64_t received_data_size_for_flow_control_;
   size_t sent_size_of_top_message_;
-  std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
+  std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
       connection_handle_for_scheduler_;
 
   std::unique_ptr<SourceLocation> location_at_construction_;

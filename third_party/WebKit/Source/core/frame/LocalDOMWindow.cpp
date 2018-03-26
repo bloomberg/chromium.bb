@@ -91,7 +91,6 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/WindowPerformance.h"
 #include "platform/EventDispatchForbiddenScope.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/scroll/ScrollTypes.h"
 #include "platform/scroll/ScrollbarTheme.h"

@@ -232,7 +232,6 @@
 #include "platform/InstanceCounters.h"
 #include "platform/Language.h"
 #include "platform/LengthFunctions.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/bindings/DOMDataStore.h"
 #include "platform/bindings/Microtask.h"
 #include "platform/bindings/ScriptForbiddenScope.h"

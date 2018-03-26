@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
+#include "platform/scheduler/renderer/frame_scheduler_impl.h"
 
 #include <memory>
 #include "base/metrics/histogram_macros.h"
@@ -53,69 +53,68 @@ const char* FrozenStateToString(bool is_frozen) {
 
 }  // namespace
 
-WebFrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
-    WebFrameSchedulerImpl* frame_scheduler)
+FrameSchedulerImpl::ActiveConnectionHandleImpl::ActiveConnectionHandleImpl(
+    FrameSchedulerImpl* frame_scheduler)
     : frame_scheduler_(frame_scheduler->GetWeakPtr()) {
   frame_scheduler->DidOpenActiveConnection();
 }
 
-WebFrameSchedulerImpl::ActiveConnectionHandleImpl::
-    ~ActiveConnectionHandleImpl() {
+FrameSchedulerImpl::ActiveConnectionHandleImpl::~ActiveConnectionHandleImpl() {
   if (frame_scheduler_)
     frame_scheduler_->DidCloseActiveConnection();
 }
 
-WebFrameSchedulerImpl::ThrottlingObserverHandleImpl::
-    ThrottlingObserverHandleImpl(WebFrameSchedulerImpl* frame_scheduler,
-                                 Observer* observer)
+FrameSchedulerImpl::ThrottlingObserverHandleImpl::ThrottlingObserverHandleImpl(
+    FrameSchedulerImpl* frame_scheduler,
+    Observer* observer)
     : frame_scheduler_(frame_scheduler->GetWeakPtr()), observer_(observer) {}
 
-WebFrameSchedulerImpl::ThrottlingObserverHandleImpl::
+FrameSchedulerImpl::ThrottlingObserverHandleImpl::
     ~ThrottlingObserverHandleImpl() {
   if (frame_scheduler_)
     frame_scheduler_->RemoveThrottlingObserver(observer_);
 }
 
-WebFrameSchedulerImpl::WebFrameSchedulerImpl(
+FrameSchedulerImpl::FrameSchedulerImpl(
     RendererSchedulerImpl* renderer_scheduler,
     PageSchedulerImpl* parent_page_scheduler,
     base::trace_event::BlameContext* blame_context,
-    WebFrameScheduler::FrameType frame_type)
+    FrameScheduler::FrameType frame_type)
     : frame_type_(frame_type),
       renderer_scheduler_(renderer_scheduler),
       parent_page_scheduler_(parent_page_scheduler),
       blame_context_(blame_context),
-      throttling_state_(WebFrameScheduler::ThrottlingState::kNotThrottled),
+      throttling_state_(FrameScheduler::ThrottlingState::kNotThrottled),
       frame_visible_(true,
-                     "WebFrameScheduler.FrameVisible",
+                     "FrameScheduler.FrameVisible",
                      this,
                      &tracing_controller_,
                      VisibilityStateToString),
       page_visibility_(kDefaultPageVisibility,
-                       "WebFrameScheduler.PageVisibility",
+                       "FrameScheduler.PageVisibility",
                        this,
                        &tracing_controller_,
                        PageVisibilityStateToString),
       page_frozen_(false,
-                   "WebFrameScheduler.PageFrozen",
+                   "FrameScheduler.PageFrozen",
                    this,
                    &tracing_controller_,
                    FrozenStateToString),
       frame_paused_(false,
-                    "WebFrameScheduler.FramePaused",
+                    "FrameScheduler.FramePaused",
                     this,
                     &tracing_controller_,
                     PausedStateToString),
       frame_origin_type_(frame_type == FrameType::kMainFrame
                              ? FrameOriginType::kMainFrame
                              : FrameOriginType::kSameOriginFrame,
-                         "WebFrameScheduler.Origin",
+                         "FrameScheduler.Origin",
                          this,
                          &tracing_controller_,
                          FrameOriginTypeToString),
-      url_tracer_("WebFrameScheduler.URL", this),
+      url_tracer_("FrameScheduler.URL", this),
       task_queue_throttled_(false,
-                            "WebFrameScheduler.TaskQueueThrottled",
+                            "FrameScheduler.TaskQueueThrottled",
                             this,
                             &tracing_controller_,
                             YesNoStateToString),
@@ -137,7 +136,7 @@ void CleanUpQueue(MainThreadTaskQueue* queue) {
 
 }  // namespace
 
-WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
+FrameSchedulerImpl::~FrameSchedulerImpl() {
   weak_factory_.InvalidateWeakPtrs();
 
   RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
@@ -157,13 +156,13 @@ WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
   }
 }
 
-void WebFrameSchedulerImpl::DetachFromPageScheduler() {
+void FrameSchedulerImpl::DetachFromPageScheduler() {
   RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool();
 
   parent_page_scheduler_ = nullptr;
 }
 
-void WebFrameSchedulerImpl::
+void FrameSchedulerImpl::
     RemoveThrottleableQueueFromBackgroundCPUTimeBudgetPool() {
   if (!throttleable_task_queue_)
     return;
@@ -181,23 +180,23 @@ void WebFrameSchedulerImpl::
                                 throttleable_task_queue_.get());
 }
 
-std::unique_ptr<WebFrameScheduler::ThrottlingObserverHandle>
-WebFrameSchedulerImpl::AddThrottlingObserver(ObserverType type,
-                                             Observer* observer) {
+std::unique_ptr<FrameScheduler::ThrottlingObserverHandle>
+FrameSchedulerImpl::AddThrottlingObserver(ObserverType type,
+                                          Observer* observer) {
   DCHECK(observer);
   observer->OnThrottlingStateChanged(CalculateThrottlingState());
   loader_observers_.insert(observer);
   return std::make_unique<ThrottlingObserverHandleImpl>(this, observer);
 }
 
-void WebFrameSchedulerImpl::RemoveThrottlingObserver(Observer* observer) {
+void FrameSchedulerImpl::RemoveThrottlingObserver(Observer* observer) {
   DCHECK(observer);
   const auto found = loader_observers_.find(observer);
   DCHECK(loader_observers_.end() != found);
   loader_observers_.erase(found);
 }
 
-void WebFrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
+void FrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
   DCHECK(parent_page_scheduler_);
   if (frame_visible_ == frame_visible)
     return;
@@ -206,11 +205,11 @@ void WebFrameSchedulerImpl::SetFrameVisible(bool frame_visible) {
   UpdateTaskQueueThrottling();
 }
 
-bool WebFrameSchedulerImpl::IsFrameVisible() const {
+bool FrameSchedulerImpl::IsFrameVisible() const {
   return frame_visible_;
 }
 
-void WebFrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
+void FrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
   DCHECK(parent_page_scheduler_);
   if (frame_origin_type_ == FrameOriginType::kMainFrame) {
     DCHECK(!cross_origin);
@@ -224,20 +223,20 @@ void WebFrameSchedulerImpl::SetCrossOrigin(bool cross_origin) {
   UpdateTaskQueueThrottling();
 }
 
-bool WebFrameSchedulerImpl::IsCrossOrigin() const {
+bool FrameSchedulerImpl::IsCrossOrigin() const {
   return frame_origin_type_ == FrameOriginType::kCrossOriginFrame;
 }
 
-void WebFrameSchedulerImpl::TraceUrlChange(const String& url) {
+void FrameSchedulerImpl::TraceUrlChange(const String& url) {
   url_tracer_.TraceString(url);
 }
 
-WebFrameScheduler::FrameType WebFrameSchedulerImpl::GetFrameType() const {
+FrameScheduler::FrameType FrameSchedulerImpl::GetFrameType() const {
   return frame_type_;
 }
 
-scoped_refptr<base::SingleThreadTaskRunner>
-WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
+scoped_refptr<base::SingleThreadTaskRunner> FrameSchedulerImpl::GetTaskRunner(
+    TaskType type) {
   // TODO(haraken): Optimize the mapping from TaskTypes to task runners.
   switch (type) {
     case TaskType::kJavascriptTimer:
@@ -297,7 +296,7 @@ WebFrameSchedulerImpl::GetTaskRunner(TaskType type) {
   return nullptr;
 }
 
-scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingTaskQueue() {
+scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_task_queue_) {
     // TODO(panicker): Avoid adding this queue in RS task_runners_.
@@ -312,7 +311,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingTaskQueue() {
   return loading_task_queue_;
 }
 
-scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingControlTaskQueue() {
+scoped_refptr<TaskQueue> FrameSchedulerImpl::LoadingControlTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!loading_control_task_queue_) {
     loading_control_task_queue_ = renderer_scheduler_->NewLoadingTaskQueue(
@@ -326,7 +325,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::LoadingControlTaskQueue() {
   return loading_control_task_queue_;
 }
 
-scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ThrottleableTaskQueue() {
+scoped_refptr<TaskQueue> FrameSchedulerImpl::ThrottleableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!throttleable_task_queue_) {
     // TODO(panicker): Avoid adding this queue in RS task_runners_.
@@ -354,7 +353,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ThrottleableTaskQueue() {
   return throttleable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> WebFrameSchedulerImpl::DeferrableTaskQueue() {
+scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!deferrable_task_queue_) {
     deferrable_task_queue_ = renderer_scheduler_->NewTaskQueue(
@@ -373,7 +372,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::DeferrableTaskQueue() {
   return deferrable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> WebFrameSchedulerImpl::PausableTaskQueue() {
+scoped_refptr<TaskQueue> FrameSchedulerImpl::PausableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!pausable_task_queue_) {
     pausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
@@ -391,7 +390,7 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::PausableTaskQueue() {
   return pausable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> WebFrameSchedulerImpl::UnpausableTaskQueue() {
+scoped_refptr<TaskQueue> FrameSchedulerImpl::UnpausableTaskQueue() {
   DCHECK(parent_page_scheduler_);
   if (!unpausable_task_queue_) {
     unpausable_task_queue_ = renderer_scheduler_->NewTaskQueue(
@@ -403,20 +402,20 @@ scoped_refptr<TaskQueue> WebFrameSchedulerImpl::UnpausableTaskQueue() {
   return unpausable_task_queue_;
 }
 
-scoped_refptr<TaskQueue> WebFrameSchedulerImpl::ControlTaskQueue() {
+scoped_refptr<TaskQueue> FrameSchedulerImpl::ControlTaskQueue() {
   DCHECK(parent_page_scheduler_);
   return renderer_scheduler_->ControlTaskQueue();
 }
 
-blink::PageScheduler* WebFrameSchedulerImpl::GetPageScheduler() const {
+blink::PageScheduler* FrameSchedulerImpl::GetPageScheduler() const {
   return parent_page_scheduler_;
 }
 
-void WebFrameSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
+void FrameSchedulerImpl::DidStartProvisionalLoad(bool is_main_frame) {
   renderer_scheduler_->DidStartProvisionalLoad(is_main_frame);
 }
 
-void WebFrameSchedulerImpl::DidCommitProvisionalLoad(
+void FrameSchedulerImpl::DidCommitProvisionalLoad(
     bool is_web_history_inert_commit,
     bool is_reload,
     bool is_main_frame) {
@@ -424,33 +423,32 @@ void WebFrameSchedulerImpl::DidCommitProvisionalLoad(
                                                 is_reload, is_main_frame);
 }
 
-WebScopedVirtualTimePauser
-WebFrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
+WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
     WebScopedVirtualTimePauser::VirtualTaskDuration duration) {
   return WebScopedVirtualTimePauser(renderer_scheduler_, duration);
 }
 
-void WebFrameSchedulerImpl::DidOpenActiveConnection() {
+void FrameSchedulerImpl::DidOpenActiveConnection() {
   ++active_connection_count_;
   if (parent_page_scheduler_)
     parent_page_scheduler_->OnConnectionUpdated();
 }
 
-void WebFrameSchedulerImpl::DidCloseActiveConnection() {
+void FrameSchedulerImpl::DidCloseActiveConnection() {
   DCHECK_GT(active_connection_count_, 0);
   --active_connection_count_;
   if (parent_page_scheduler_)
     parent_page_scheduler_->OnConnectionUpdated();
 }
 
-void WebFrameSchedulerImpl::AsValueInto(
+void FrameSchedulerImpl::AsValueInto(
     base::trace_event::TracedValue* state) const {
   state->SetBoolean("frame_visible", frame_visible_);
   state->SetBoolean("page_visible",
                     page_visibility_ == PageVisibilityState::kVisible);
   state->SetBoolean("cross_origin", IsCrossOrigin());
   state->SetString("frame_type",
-                   frame_type_ == WebFrameScheduler::FrameType::kMainFrame
+                   frame_type_ == FrameScheduler::FrameType::kMainFrame
                        ? "MainFrame"
                        : "Subframe");
   if (loading_task_queue_) {
@@ -487,7 +485,7 @@ void WebFrameSchedulerImpl::AsValueInto(
   }
 }
 
-void WebFrameSchedulerImpl::SetPageVisibility(
+void FrameSchedulerImpl::SetPageVisibility(
     PageVisibilityState page_visibility) {
   DCHECK(parent_page_scheduler_);
   if (page_visibility_ == page_visibility)
@@ -501,11 +499,11 @@ void WebFrameSchedulerImpl::SetPageVisibility(
   UpdateThrottlingState();
 }
 
-bool WebFrameSchedulerImpl::IsPageVisible() const {
+bool FrameSchedulerImpl::IsPageVisible() const {
   return page_visibility_ == PageVisibilityState::kVisible;
 }
 
-void WebFrameSchedulerImpl::SetPaused(bool frame_paused) {
+void FrameSchedulerImpl::SetPaused(bool frame_paused) {
   DCHECK(parent_page_scheduler_);
   if (frame_paused_ == frame_paused)
     return;
@@ -514,7 +512,7 @@ void WebFrameSchedulerImpl::SetPaused(bool frame_paused) {
   UpdateTaskQueues();
 }
 
-void WebFrameSchedulerImpl::SetPageFrozen(bool frozen) {
+void FrameSchedulerImpl::SetPageFrozen(bool frozen) {
   if (frozen == page_frozen_)
     return;
   DCHECK(page_visibility_ == PageVisibilityState::kHidden);
@@ -523,7 +521,7 @@ void WebFrameSchedulerImpl::SetPageFrozen(bool frozen) {
   UpdateThrottlingState();
 }
 
-void WebFrameSchedulerImpl::UpdateTaskQueues() {
+void FrameSchedulerImpl::UpdateTaskQueues() {
   // Per-frame (stoppable) task queues will be stopped after 5mins in
   // background. They will be resumed when the page is visible.
   UpdateTaskQueue(throttleable_task_queue_,
@@ -536,7 +534,7 @@ void WebFrameSchedulerImpl::UpdateTaskQueues() {
   UpdateTaskQueue(pausable_task_queue_, pausable_queue_enabled_voter_.get());
 }
 
-void WebFrameSchedulerImpl::UpdateTaskQueue(
+void FrameSchedulerImpl::UpdateTaskQueue(
     const scoped_refptr<MainThreadTaskQueue>& queue,
     TaskQueue::QueueEnabledVoter* voter) {
   if (!queue || !voter)
@@ -546,9 +544,8 @@ void WebFrameSchedulerImpl::UpdateTaskQueue(
   voter->SetQueueEnabled(!queue_paused && !queue_frozen);
 }
 
-void WebFrameSchedulerImpl::UpdateThrottlingState() {
-  WebFrameScheduler::ThrottlingState throttling_state =
-      CalculateThrottlingState();
+void FrameSchedulerImpl::UpdateThrottlingState() {
+  FrameScheduler::ThrottlingState throttling_state = CalculateThrottlingState();
   if (throttling_state == throttling_state_)
     return;
   throttling_state_ = throttling_state;
@@ -556,36 +553,35 @@ void WebFrameSchedulerImpl::UpdateThrottlingState() {
     observer->OnThrottlingStateChanged(throttling_state_);
 }
 
-WebFrameScheduler::ThrottlingState
-WebFrameSchedulerImpl::CalculateThrottlingState() const {
+FrameScheduler::ThrottlingState FrameSchedulerImpl::CalculateThrottlingState()
+    const {
   if (RuntimeEnabledFeatures::StopLoadingInBackgroundEnabled() &&
       page_frozen_) {
     DCHECK(page_visibility_ == PageVisibilityState::kHidden);
-    return WebFrameScheduler::ThrottlingState::kStopped;
+    return FrameScheduler::ThrottlingState::kStopped;
   }
   if (page_visibility_ == PageVisibilityState::kHidden)
-    return WebFrameScheduler::ThrottlingState::kThrottled;
-  return WebFrameScheduler::ThrottlingState::kNotThrottled;
+    return FrameScheduler::ThrottlingState::kThrottled;
+  return FrameScheduler::ThrottlingState::kNotThrottled;
 }
 
-void WebFrameSchedulerImpl::OnFirstMeaningfulPaint() {
+void FrameSchedulerImpl::OnFirstMeaningfulPaint() {
   renderer_scheduler_->OnFirstMeaningfulPaint();
 }
 
-std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
-WebFrameSchedulerImpl::OnActiveConnectionCreated() {
-  return std::make_unique<WebFrameSchedulerImpl::ActiveConnectionHandleImpl>(
-      this);
+std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
+FrameSchedulerImpl::OnActiveConnectionCreated() {
+  return std::make_unique<FrameSchedulerImpl::ActiveConnectionHandleImpl>(this);
 }
 
-bool WebFrameSchedulerImpl::ShouldThrottleTimers() const {
+bool FrameSchedulerImpl::ShouldThrottleTimers() const {
   if (page_visibility_ == PageVisibilityState::kHidden)
     return true;
   return RuntimeEnabledFeatures::TimerThrottlingForHiddenFramesEnabled() &&
          !frame_visible_ && IsCrossOrigin();
 }
 
-void WebFrameSchedulerImpl::UpdateTaskQueueThrottling() {
+void FrameSchedulerImpl::UpdateTaskQueueThrottling() {
   // Before we initialize a trottleable task queue, |task_queue_throttled_|
   // stays false and this function ensures it indicates whether are we holding
   // a queue reference for throttler or not.
@@ -606,11 +602,11 @@ void WebFrameSchedulerImpl::UpdateTaskQueueThrottling() {
   }
 }
 
-base::WeakPtr<WebFrameSchedulerImpl> WebFrameSchedulerImpl::GetWeakPtr() {
+base::WeakPtr<FrameSchedulerImpl> FrameSchedulerImpl::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-bool WebFrameSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
+bool FrameSchedulerImpl::IsExemptFromBudgetBasedThrottling() const {
   return has_active_connection();
 }
 

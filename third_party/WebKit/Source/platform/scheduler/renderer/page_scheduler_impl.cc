@@ -8,14 +8,14 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/default_params.h"
 #include "platform/scheduler/common/throttling/budget_pool.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
+#include "platform/scheduler/renderer/frame_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
-#include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
 
 namespace blink {
 namespace scheduler {
@@ -112,7 +112,7 @@ PageSchedulerImpl::PageSchedulerImpl(PageScheduler::Delegate* delegate,
 PageSchedulerImpl::~PageSchedulerImpl() {
   // TODO(alexclarke): Find out why we can't rely on the web view outliving the
   // frame.
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->DetachFromPageScheduler();
   }
   renderer_scheduler_->RemovePageScheduler(this);
@@ -136,33 +136,30 @@ void PageSchedulerImpl::SetPageVisible(bool page_visible) {
 }
 
 void PageSchedulerImpl::SetPageFrozen(bool frozen) {
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
     frame_scheduler->SetPageFrozen(frozen);
   if (delegate_)
     delegate_->SetPageFrozen(frozen);
 }
 
-std::unique_ptr<WebFrameSchedulerImpl>
-PageSchedulerImpl::CreateWebFrameSchedulerImpl(
+std::unique_ptr<FrameSchedulerImpl> PageSchedulerImpl::CreateFrameSchedulerImpl(
     base::trace_event::BlameContext* blame_context,
-    WebFrameScheduler::FrameType frame_type) {
+    FrameScheduler::FrameType frame_type) {
   MaybeInitializeBackgroundCPUTimeBudgetPool();
-  std::unique_ptr<WebFrameSchedulerImpl> frame_scheduler(
-      new WebFrameSchedulerImpl(renderer_scheduler_, this, blame_context,
-                                frame_type));
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler(new FrameSchedulerImpl(
+      renderer_scheduler_, this, blame_context, frame_type));
   frame_scheduler->SetPageVisibility(page_visibility_);
   frame_schedulers_.insert(frame_scheduler.get());
   return frame_scheduler;
 }
 
-std::unique_ptr<blink::WebFrameScheduler>
-PageSchedulerImpl::CreateFrameScheduler(
+std::unique_ptr<blink::FrameScheduler> PageSchedulerImpl::CreateFrameScheduler(
     blink::BlameContext* blame_context,
-    WebFrameScheduler::FrameType frame_type) {
-  return CreateWebFrameSchedulerImpl(blame_context, frame_type);
+    FrameScheduler::FrameType frame_type) {
+  return CreateFrameSchedulerImpl(blame_context, frame_type);
 }
 
-void PageSchedulerImpl::Unregister(WebFrameSchedulerImpl* frame_scheduler) {
+void PageSchedulerImpl::Unregister(FrameSchedulerImpl* frame_scheduler) {
   DCHECK(frame_schedulers_.find(frame_scheduler) != frame_schedulers_.end());
   frame_schedulers_.erase(frame_scheduler);
 }
@@ -239,7 +236,7 @@ bool PageSchedulerImpl::IsPlayingAudio() const {
 
 void PageSchedulerImpl::OnConnectionUpdated() {
   bool has_active_connection = false;
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     has_active_connection |= frame_scheduler->has_active_connection();
   }
 
@@ -251,7 +248,7 @@ void PageSchedulerImpl::OnConnectionUpdated() {
 
 void PageSchedulerImpl::OnTraceLogEnabled() {
   tracing_controller_.OnTraceLogEnabled();
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     frame_scheduler->OnTraceLogEnabled();
   }
 }
@@ -267,7 +264,7 @@ void PageSchedulerImpl::AsValueInto(
                     reported_background_throttling_since_navigation_);
 
   state->BeginDictionary("frame_schedulers");
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_) {
     state->BeginDictionaryWithCopiedName(PointerToString(frame_scheduler));
     frame_scheduler->AsValueInto(state);
     state->EndDictionary();
@@ -331,7 +328,7 @@ void PageSchedulerImpl::OnThrottlingReported(
 }
 
 void PageSchedulerImpl::UpdateBackgroundThrottlingState() {
-  for (WebFrameSchedulerImpl* frame_scheduler : frame_schedulers_)
+  for (FrameSchedulerImpl* frame_scheduler : frame_schedulers_)
     frame_scheduler->SetPageVisibility(page_visibility_);
   UpdateBackgroundBudgetPoolThrottlingState();
 }

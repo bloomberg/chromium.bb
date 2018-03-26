@@ -30,6 +30,7 @@
 
 namespace blink {
 
+class FrameScheduler;
 class InterfaceRegistry;
 class WebAssociatedURLLoader;
 class WebAutofillClient;
@@ -41,7 +42,6 @@ class WebDoubleSize;
 class WebDOMEvent;
 class WebFrameClient;
 class WebFrameWidget;
-class WebFrameScheduler;
 class WebInputMethodController;
 class WebPerformance;
 class WebRange;
@@ -759,7 +759,7 @@ class WebLocalFrame : public WebFrame {
 
   // Scheduling ---------------------------------------------------------------
 
-  virtual WebFrameScheduler* Scheduler() const = 0;
+  virtual FrameScheduler* Scheduler() const = 0;
 
   // Task queues --------------------------------------------------------------
 

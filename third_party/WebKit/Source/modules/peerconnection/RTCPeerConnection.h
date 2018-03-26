@@ -41,7 +41,7 @@
 #include "modules/mediastream/MediaStream.h"
 #include "modules/peerconnection/RTCIceCandidate.h"
 #include "platform/AsyncMethodRunner.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/heap/HeapAllocator.h"
 #include "public/platform/WebMediaConstraints.h"
 #include "public/platform/WebRTCPeerConnectionHandler.h"
@@ -329,7 +329,7 @@ class MODULES_EXPORT RTCPeerConnection final
 
   // This handle notifies scheduler about an active connection associated
   // with a frame. Handle should be destroyed when connection is closed.
-  std::unique_ptr<WebFrameScheduler::ActiveConnectionHandle>
+  std::unique_ptr<FrameScheduler::ActiveConnectionHandle>
       connection_handle_for_scheduler_;
 
   bool negotiation_needed_;

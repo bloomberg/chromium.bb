@@ -10,7 +10,7 @@
 
 namespace blink {
 
-class WebFrameScheduler;
+class FrameScheduler;
 
 namespace scheduler {
 
@@ -126,7 +126,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
 
     QueueType queue_type;
     TaskQueue::Spec spec;
-    WebFrameScheduler* frame_;
+    FrameScheduler* frame_;
     bool can_be_blocked;
     bool can_be_throttled;
     bool can_be_paused;
@@ -162,8 +162,8 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   // Override base method to notify RendererScheduler about shutdown queue.
   void ShutdownTaskQueue() override;
 
-  WebFrameScheduler* GetFrameScheduler() const;
-  void SetFrameScheduler(WebFrameScheduler* frame);
+  FrameScheduler* GetFrameScheduler() const;
+  void SetFrameScheduler(FrameScheduler* frame);
 
  protected:
   MainThreadTaskQueue(std::unique_ptr<internal::TaskQueueImpl> impl,
@@ -190,7 +190,7 @@ class PLATFORM_EXPORT MainThreadTaskQueue : public TaskQueue {
   // Needed to notify renderer scheduler about completed tasks.
   RendererSchedulerImpl* renderer_scheduler_;  // NOT OWNED
 
-  WebFrameScheduler* web_frame_scheduler_;  // NOT OWNED
+  FrameScheduler* frame_scheduler_;  // NOT OWNED
 
   DISALLOW_COPY_AND_ASSIGN(MainThreadTaskQueue);
 };

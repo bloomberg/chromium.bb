@@ -69,7 +69,6 @@
 #include "core/page/ValidationMessageClient.h"
 #include "core/paint/compositing/PaintLayerCompositor.h"
 #include "platform/KeyboardCodes.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/animation/CompositorAnimationHost.h"
 #include "platform/graphics/Color.h"
 #include "platform/graphics/CompositorMutatorClient.h"

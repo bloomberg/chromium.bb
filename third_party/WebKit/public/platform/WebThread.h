@@ -39,8 +39,8 @@ namespace scheduler {
 class TaskTimeObserver;
 }
 
+class FrameScheduler;
 class WebScheduler;
-class WebFrameScheduler;
 
 // Always an integer value.
 typedef uintptr_t PlatformThreadId;
@@ -52,11 +52,11 @@ struct BLINK_PLATFORM_EXPORT WebThreadCreationParams {
 
   // Sets a scheduler for the frame which was responsible for the creation
   // of this thread.
-  WebThreadCreationParams& SetFrameScheduler(WebFrameScheduler*);
+  WebThreadCreationParams& SetFrameScheduler(FrameScheduler*);
 
   WebThreadType thread_type;
   const char* name;
-  WebFrameScheduler* frame_scheduler;  // NOT OWNED
+  FrameScheduler* frame_scheduler;  // NOT OWNED
   base::Thread::Options thread_options;
 };
 

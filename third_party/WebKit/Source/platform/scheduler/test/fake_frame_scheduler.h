@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_FRAME_SCHEDULER_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_FRAME_SCHEDULER_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_FRAME_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_FRAME_SCHEDULER_H_
 
 #include <deque>
 
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
 #include "platform/scheduler/renderer/main_thread_task_queue.h"
 
@@ -25,22 +25,22 @@ class MainThreadTaskQueueForTest : public MainThreadTaskQueue {
   ~MainThreadTaskQueueForTest() = default;
 };
 
-// A dummy WebFrameScheduler for tests.
-class FakeWebFrameScheduler : public WebFrameScheduler {
+// A dummy FrameScheduler for tests.
+class FakeFrameScheduler : public FrameScheduler {
  public:
-  FakeWebFrameScheduler()
+  FakeFrameScheduler()
       : page_scheduler_(nullptr),
         is_page_visible_(false),
         is_frame_visible_(false),
-        frame_type_(WebFrameScheduler::FrameType::kSubframe),
+        frame_type_(FrameScheduler::FrameType::kSubframe),
         is_cross_origin_(false),
         is_exempt_from_throttling_(false) {}
-  FakeWebFrameScheduler(PageScheduler* page_scheduler,
-                        bool is_page_visible,
-                        bool is_frame_visible,
-                        WebFrameScheduler::FrameType frame_type,
-                        bool is_cross_origin,
-                        bool is_exempt_from_throttling)
+  FakeFrameScheduler(PageScheduler* page_scheduler,
+                     bool is_page_visible,
+                     bool is_frame_visible,
+                     FrameScheduler::FrameType frame_type,
+                     bool is_cross_origin,
+                     bool is_exempt_from_throttling)
       : page_scheduler_(page_scheduler),
         is_page_visible_(is_page_visible),
         is_frame_visible_(is_frame_visible),
@@ -49,14 +49,14 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
         is_exempt_from_throttling_(is_exempt_from_throttling) {
     DCHECK(frame_type_ != FrameType::kMainFrame || !is_cross_origin);
   }
-  ~FakeWebFrameScheduler() override = default;
+  ~FakeFrameScheduler() override = default;
 
   class Builder {
    public:
     Builder() = default;
 
-    std::unique_ptr<FakeWebFrameScheduler> Build() {
-      return std::make_unique<FakeWebFrameScheduler>(
+    std::unique_ptr<FakeFrameScheduler> Build() {
+      return std::make_unique<FakeFrameScheduler>(
           page_scheduler_, is_page_visible_, is_frame_visible_, frame_type_,
           is_cross_origin_, is_exempt_from_throttling_);
     }
@@ -76,7 +76,7 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
       return *this;
     }
 
-    Builder& SetFrameType(WebFrameScheduler::FrameType frame_type) {
+    Builder& SetFrameType(FrameScheduler::FrameType frame_type) {
       frame_type_ = frame_type;
       return *this;
     }
@@ -95,13 +95,13 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
     PageScheduler* page_scheduler_ = nullptr;
     bool is_page_visible_ = false;
     bool is_frame_visible_ = false;
-    WebFrameScheduler::FrameType frame_type_ =
-        WebFrameScheduler::FrameType::kMainFrame;
+    FrameScheduler::FrameType frame_type_ =
+        FrameScheduler::FrameType::kMainFrame;
     bool is_cross_origin_ = false;
     bool is_exempt_from_throttling_ = false;
   };
 
-  // WebFrameScheduler implementation:
+  // FrameScheduler implementation:
   std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
       ObserverType,
       Observer*) override {
@@ -114,7 +114,7 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
   void SetCrossOrigin(bool) override {}
   bool IsCrossOrigin() const override { return is_cross_origin_; }
   void TraceUrlChange(const String&) override {}
-  WebFrameScheduler::FrameType GetFrameType() const override {
+  FrameScheduler::FrameType GetFrameType() const override {
     return frame_type_;
   }
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override {
@@ -145,13 +145,13 @@ class FakeWebFrameScheduler : public WebFrameScheduler {
 
   bool is_page_visible_;
   bool is_frame_visible_;
-  WebFrameScheduler::FrameType frame_type_;
+  FrameScheduler::FrameType frame_type_;
   bool is_cross_origin_;
   bool is_exempt_from_throttling_;
-  DISALLOW_COPY_AND_ASSIGN(FakeWebFrameScheduler);
+  DISALLOW_COPY_AND_ASSIGN(FakeFrameScheduler);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_WEB_FRAME_SCHEDULER_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_TEST_FAKE_FRAME_SCHEDULER_H_

@@ -9,7 +9,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/message_loop/message_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/scheduler/base/task_time_observer.h"
 #include "platform/scheduler/child/idle_canceled_delayed_task_sweeper.h"
 #include "platform/scheduler/child/idle_helper.h"
@@ -63,7 +63,7 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
 
   // Virtual for test.
   virtual void OnThrottlingStateChanged(
-      WebFrameScheduler::ThrottlingState throttling_state);
+      FrameScheduler::ThrottlingState throttling_state);
 
   // Returns the control task queue.  Tasks posted to this queue are executed
   // with the highest priority. Care must be taken to avoid starvation of other
@@ -80,7 +80,7 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   void OnIdlePeriodEnded() override {}
   void OnPendingTasksChanged(bool new_state) override {}
 
-  WebFrameScheduler::ThrottlingState throttling_state() const {
+  FrameScheduler::ThrottlingState throttling_state() const {
     return throttling_state_;
   }
 
@@ -95,7 +95,7 @@ class PLATFORM_EXPORT WorkerSchedulerImpl : public WorkerScheduler,
   bool initialized_;
   base::TimeTicks thread_start_time_;
   scoped_refptr<WorkerTaskQueue> control_task_queue_;
-  WebFrameScheduler::ThrottlingState throttling_state_;
+  FrameScheduler::ThrottlingState throttling_state_;
 
   WorkerMetricsHelper worker_metrics_helper_;
 

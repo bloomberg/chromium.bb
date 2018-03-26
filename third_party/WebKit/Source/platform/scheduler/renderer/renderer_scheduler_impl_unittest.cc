@@ -22,7 +22,7 @@
 #include "platform/scheduler/child/features.h"
 #include "platform/scheduler/common/throttling/budget_pool.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
-#include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
+#include "platform/scheduler/renderer/frame_scheduler_impl.h"
 #include "platform/scheduler/test/task_queue_manager_for_test.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -728,7 +728,7 @@ class RendererSchedulerImplTest : public ::testing::Test {
   }
 
   static scoped_refptr<TaskQueue> ThrottableTaskQueue(
-      WebFrameSchedulerImpl* scheduler) {
+      FrameSchedulerImpl* scheduler) {
     return scheduler->ThrottleableTaskQueue();
   }
 
@@ -3806,14 +3806,14 @@ TEST_F(RendererSchedulerImplTest, EnableVirtualTimeAfterThrottling) {
                             false /* disable_background_timer_throttling */));
   scheduler_->AddPageScheduler(page_scheduler.get());
 
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      page_scheduler->CreateWebFrameSchedulerImpl(
-          nullptr, WebFrameScheduler::FrameType::kSubframe);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
+      page_scheduler->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
 
-  TaskQueue* timer_tq = ThrottableTaskQueue(web_frame_scheduler.get()).get();
+  TaskQueue* timer_tq = ThrottableTaskQueue(frame_scheduler.get()).get();
 
-  web_frame_scheduler->SetCrossOrigin(true);
-  web_frame_scheduler->SetFrameVisible(false);
+  frame_scheduler->SetCrossOrigin(true);
+  frame_scheduler->SetFrameVisible(false);
   EXPECT_TRUE(scheduler_->task_queue_throttler()->IsThrottled(timer_tq));
 
   scheduler_->EnableVirtualTime(
@@ -3895,9 +3895,9 @@ TEST_F(RendererSchedulerImplTest, Tracing) {
       base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get(), false));
   scheduler_->AddPageScheduler(page_scheduler1.get());
 
-  std::unique_ptr<WebFrameSchedulerImpl> web_frame_scheduler =
-      page_scheduler1->CreateWebFrameSchedulerImpl(
-          nullptr, WebFrameScheduler::FrameType::kSubframe);
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
+      page_scheduler1->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
 
   std::unique_ptr<PageSchedulerImpl> page_scheduler2 =
       base::WrapUnique(new PageSchedulerImpl(nullptr, scheduler_.get(), false));

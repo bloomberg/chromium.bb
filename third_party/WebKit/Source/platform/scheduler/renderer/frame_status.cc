@@ -4,7 +4,7 @@
 
 #include "platform/scheduler/renderer/frame_status.h"
 
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/scheduler/renderer/page_scheduler.h"
 
 namespace blink {
@@ -33,7 +33,7 @@ enum class FrameOriginState {
 };
 
 FrameThrottlingState GetFrameThrottlingState(
-    const WebFrameScheduler& frame_scheduler) {
+    const FrameScheduler& frame_scheduler) {
   if (frame_scheduler.IsPageVisible()) {
     if (frame_scheduler.IsFrameVisible())
       return FrameThrottlingState::kVisible;
@@ -56,9 +56,8 @@ FrameThrottlingState GetFrameThrottlingState(
   return FrameThrottlingState::kBackground;
 }
 
-FrameOriginState GetFrameOriginState(const WebFrameScheduler& frame_scheduler) {
-  if (frame_scheduler.GetFrameType() ==
-      WebFrameScheduler::FrameType::kMainFrame) {
+FrameOriginState GetFrameOriginState(const FrameScheduler& frame_scheduler) {
+  if (frame_scheduler.GetFrameType() == FrameScheduler::FrameType::kMainFrame) {
     return FrameOriginState::kMainFrame;
   }
   if (frame_scheduler.IsCrossOrigin())
@@ -68,7 +67,7 @@ FrameOriginState GetFrameOriginState(const WebFrameScheduler& frame_scheduler) {
 
 }  // namespace
 
-FrameStatus GetFrameStatus(WebFrameScheduler* frame_scheduler) {
+FrameStatus GetFrameStatus(FrameScheduler* frame_scheduler) {
   if (!frame_scheduler)
     return FrameStatus::kNone;
   FrameThrottlingState throttling_state =

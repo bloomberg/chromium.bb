@@ -5,7 +5,7 @@
 #include "platform/scheduler/renderer/queueing_time_estimator.h"
 
 #include "base/memory/ptr_util.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 
 #include <algorithm>
 #include <map>
@@ -185,7 +185,7 @@ void QueueingTimeEstimator::Calculator::UpdateStatusFromTaskQueue(
     MainThreadTaskQueue* queue) {
   current_queue_type_ =
       queue ? queue->queue_type() : MainThreadTaskQueue::QueueType::kOther;
-  WebFrameScheduler* scheduler = queue ? queue->GetFrameScheduler() : nullptr;
+  FrameScheduler* scheduler = queue ? queue->GetFrameScheduler() : nullptr;
   current_frame_status_ =
       scheduler ? GetFrameStatus(scheduler) : FrameStatus::kNone;
 }

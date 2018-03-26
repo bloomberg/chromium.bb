@@ -28,7 +28,7 @@ WebThreadCreationParams& WebThreadCreationParams::SetThreadNameForTest(
 }
 
 WebThreadCreationParams& WebThreadCreationParams::SetFrameScheduler(
-    WebFrameScheduler* scheduler) {
+    FrameScheduler* scheduler) {
   frame_scheduler = scheduler;
   return *this;
 }

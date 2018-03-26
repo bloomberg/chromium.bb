@@ -317,10 +317,10 @@ FrameFetchContext::GetLoadingTaskRunner() {
   return GetFrame()->GetTaskRunner(TaskType::kNetworking);
 }
 
-WebFrameScheduler* FrameFetchContext::GetFrameScheduler() const {
+FrameScheduler* FrameFetchContext::GetFrameScheduler() const {
   if (IsDetached())
     return nullptr;
-  return GetFrame()->FrameScheduler();
+  return GetFrame()->GetFrameScheduler();
 }
 
 KURL FrameFetchContext::GetSiteForCookies() const {

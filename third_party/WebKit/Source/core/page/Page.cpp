@@ -61,7 +61,7 @@
 #include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "core/probe/CoreProbes.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/loader/fetch/ResourceFetcher.h"
 #include "platform/plugins/PluginData.h"
@@ -360,7 +360,7 @@ void Page::SetPaused(bool paused) {
       continue;
     LocalFrame* local_frame = ToLocalFrame(frame);
     local_frame->Loader().SetDefersLoading(paused);
-    local_frame->FrameScheduler()->SetPaused(paused);
+    local_frame->GetFrameScheduler()->SetPaused(paused);
   }
 }
 

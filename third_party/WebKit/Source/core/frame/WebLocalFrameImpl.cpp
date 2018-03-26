@@ -182,7 +182,7 @@
 #include "core/paint/TransformRecorder.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/WindowPerformance.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/bindings/DOMWrapperWorld.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/bindings/V8PerIsolateData.h"
@@ -1785,7 +1785,7 @@ void WebLocalFrameImpl::SetCoreFrame(LocalFrame* frame) {
   frame_ = frame;
 
   local_frame_client_->SetVirtualTimePauser(
-      frame_ ? frame_->FrameScheduler()->CreateWebScopedVirtualTimePauser(
+      frame_ ? frame_->GetFrameScheduler()->CreateWebScopedVirtualTimePauser(
                    WebScopedVirtualTimePauser::VirtualTaskDuration::kInstant)
              : WebScopedVirtualTimePauser());
 }
@@ -2438,8 +2438,8 @@ void WebLocalFrameImpl::UsageCountChromeLoadTimes(const WebString& metric) {
   Deprecation::CountDeprecation(GetFrame(), feature);
 }
 
-WebFrameScheduler* WebLocalFrameImpl::Scheduler() const {
-  return GetFrame()->FrameScheduler();
+FrameScheduler* WebLocalFrameImpl::Scheduler() const {
+  return GetFrame()->GetFrameScheduler();
 }
 
 scoped_refptr<base::SingleThreadTaskRunner> WebLocalFrameImpl::GetTaskRunner(

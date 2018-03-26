@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_FRAME_SCHEDULER_IMPL_H_
-#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_FRAME_SCHEDULER_IMPL_H_
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_SCHEDULER_IMPL_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_SCHEDULER_IMPL_H_
 
 #include <memory>
 
@@ -11,8 +11,8 @@
 #include "base/memory/scoped_refptr.h"
 #include "base/memory/weak_ptr.h"
 #include "base/trace_event/trace_event.h"
+#include "platform/FrameScheduler.h"
 #include "platform/PlatformExport.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/scheduler/base/task_queue.h"
 #include "platform/scheduler/child/page_visibility_state.h"
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
@@ -38,24 +38,24 @@ namespace renderer_scheduler_impl_unittest {
 class RendererSchedulerImplTest;
 }
 
-namespace web_frame_scheduler_impl_unittest {
-class WebFrameSchedulerImplTest;
+namespace frame_scheduler_impl_unittest {
+class FrameSchedulerImplTest;
 }
 
 namespace page_scheduler_impl_unittest {
 class PageSchedulerImplTest;
 }
 
-class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
+class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
  public:
-  WebFrameSchedulerImpl(RendererSchedulerImpl* renderer_scheduler,
-                        PageSchedulerImpl* parent_page_scheduler,
-                        base::trace_event::BlameContext* blame_context,
-                        WebFrameScheduler::FrameType frame_type);
+  FrameSchedulerImpl(RendererSchedulerImpl* renderer_scheduler,
+                     PageSchedulerImpl* parent_page_scheduler,
+                     base::trace_event::BlameContext* blame_context,
+                     FrameScheduler::FrameType frame_type);
 
-  ~WebFrameSchedulerImpl() override;
+  ~FrameSchedulerImpl() override;
 
-  // WebFrameScheduler implementation:
+  // FrameScheduler implementation:
   std::unique_ptr<ThrottlingObserverHandle> AddThrottlingObserver(
       ObserverType,
       Observer*) override;
@@ -68,7 +68,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void SetCrossOrigin(bool cross_origin) override;
   bool IsCrossOrigin() const override;
   void TraceUrlChange(const String& url) override;
-  WebFrameScheduler::FrameType GetFrameType() const override;
+  FrameScheduler::FrameType GetFrameType() const override;
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(TaskType) override;
   PageScheduler* GetPageScheduler() const override;
   void DidStartProvisionalLoad(bool is_main_frame) override;
@@ -87,35 +87,33 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
 
   bool has_active_connection() const { return active_connection_count_; }
 
-  void OnTraceLogEnabled() {
-    tracing_controller_.OnTraceLogEnabled();
-  }
+  void OnTraceLogEnabled() { tracing_controller_.OnTraceLogEnabled(); }
 
  private:
   friend class PageSchedulerImpl;
   friend class renderer_scheduler_impl_unittest::RendererSchedulerImplTest;
-  friend class web_frame_scheduler_impl_unittest::WebFrameSchedulerImplTest;
+  friend class frame_scheduler_impl_unittest::FrameSchedulerImplTest;
   friend class page_scheduler_impl_unittest::PageSchedulerImplTest;
 
   class ActiveConnectionHandleImpl : public ActiveConnectionHandle {
    public:
-    ActiveConnectionHandleImpl(WebFrameSchedulerImpl* frame_scheduler);
+    ActiveConnectionHandleImpl(FrameSchedulerImpl* frame_scheduler);
     ~ActiveConnectionHandleImpl() override;
 
    private:
-    base::WeakPtr<WebFrameSchedulerImpl> frame_scheduler_;
+    base::WeakPtr<FrameSchedulerImpl> frame_scheduler_;
 
     DISALLOW_COPY_AND_ASSIGN(ActiveConnectionHandleImpl);
   };
 
   class ThrottlingObserverHandleImpl : public ThrottlingObserverHandle {
    public:
-    ThrottlingObserverHandleImpl(WebFrameSchedulerImpl* frame_scheduler,
+    ThrottlingObserverHandleImpl(FrameSchedulerImpl* frame_scheduler,
                                  Observer* observer);
     ~ThrottlingObserverHandleImpl() override;
 
    private:
-    base::WeakPtr<WebFrameSchedulerImpl> frame_scheduler_;
+    base::WeakPtr<FrameSchedulerImpl> frame_scheduler_;
     Observer* observer_;
 
     DISALLOW_COPY_AND_ASSIGN(ThrottlingObserverHandleImpl);
@@ -126,7 +124,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void ApplyPolicyToThrottleableQueue();
   bool ShouldThrottleTimers() const;
   void UpdateTaskQueueThrottling();
-  WebFrameScheduler::ThrottlingState CalculateThrottlingState() const;
+  FrameScheduler::ThrottlingState CalculateThrottlingState() const;
   void UpdateThrottlingState();
   void RemoveThrottlingObserver(Observer* observer);
   void UpdateTaskQueues();
@@ -143,9 +141,9 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   scoped_refptr<TaskQueue> PausableTaskQueue();
   scoped_refptr<TaskQueue> UnpausableTaskQueue();
 
-  base::WeakPtr<WebFrameSchedulerImpl> GetWeakPtr();
+  base::WeakPtr<FrameSchedulerImpl> GetWeakPtr();
 
-  const WebFrameScheduler::FrameType frame_type_;
+  const FrameScheduler::FrameType frame_type_;
 
   TraceableVariableController tracing_controller_;
   scoped_refptr<MainThreadTaskQueue> loading_task_queue_;
@@ -165,7 +163,7 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   PageSchedulerImpl* parent_page_scheduler_;        // NOT OWNED
   base::trace_event::BlameContext* blame_context_;  // NOT OWNED
   std::set<Observer*> loader_observers_;            // NOT OWNED
-  WebFrameScheduler::ThrottlingState throttling_state_;
+  FrameScheduler::ThrottlingState throttling_state_;
   TraceableState<bool, kTracingCategoryNameInfo> frame_visible_;
   TraceableState<PageVisibilityState, kTracingCategoryNameInfo>
       page_visibility_;
@@ -177,12 +175,12 @@ class PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   TraceableState<bool, kTracingCategoryNameDebug> task_queue_throttled_;
   int active_connection_count_;
 
-  base::WeakPtrFactory<WebFrameSchedulerImpl> weak_factory_;
+  base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
 
-  DISALLOW_COPY_AND_ASSIGN(WebFrameSchedulerImpl);
+  DISALLOW_COPY_AND_ASSIGN(FrameSchedulerImpl);
 };
 
 }  // namespace scheduler
 }  // namespace blink
 
-#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_WEB_FRAME_SCHEDULER_IMPL_H_
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_FRAME_SCHEDULER_IMPL_H_

@@ -542,7 +542,7 @@ void NavigationScheduler::StartTimer() {
   // wrapWeakPersistent(this) is safe because a posted task is canceled when the
   // task handle is destroyed on the dtor of this NavigationScheduler.
   navigate_task_handle_ = PostDelayedCancellableTask(
-      *frame_->FrameScheduler()->GetTaskRunner(TaskType::kUnspecedLoading),
+      *frame_->GetFrameScheduler()->GetTaskRunner(TaskType::kUnspecedLoading),
       FROM_HERE,
       WTF::Bind(&NavigationScheduler::NavigateTask, WrapWeakPersistent(this)),
       TimeDelta::FromSecondsD(redirect_->Delay()));

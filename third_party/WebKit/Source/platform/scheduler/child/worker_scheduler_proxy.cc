@@ -5,14 +5,14 @@
 #include "platform/scheduler/child/worker_scheduler_proxy.h"
 
 #include "platform/scheduler/child/worker_scheduler_impl.h"
-#include "platform/scheduler/renderer/web_frame_scheduler_impl.h"
+#include "platform/scheduler/renderer/frame_scheduler_impl.h"
 
 namespace blink {
 namespace scheduler {
 
-WorkerSchedulerProxy::WorkerSchedulerProxy(WebFrameScheduler* frame_scheduler) {
+WorkerSchedulerProxy::WorkerSchedulerProxy(FrameScheduler* frame_scheduler) {
   throttling_observer_handle_ = frame_scheduler->AddThrottlingObserver(
-      WebFrameScheduler::ObserverType::kWorkerScheduler, this);
+      FrameScheduler::ObserverType::kWorkerScheduler, this);
   parent_frame_type_ = GetFrameOriginType(frame_scheduler);
 }
 
@@ -32,7 +32,7 @@ void WorkerSchedulerProxy::OnWorkerSchedulerCreated(
 }
 
 void WorkerSchedulerProxy::OnThrottlingStateChanged(
-    WebFrameScheduler::ThrottlingState throttling_state) {
+    FrameScheduler::ThrottlingState throttling_state) {
   DCHECK(IsMainThread());
   if (throttling_state_ == throttling_state)
     return;

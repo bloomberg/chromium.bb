@@ -100,10 +100,10 @@
 #include "core/resize_observer/ResizeObserverController.h"
 #include "core/style/ComputedStyle.h"
 #include "core/svg/SVGSVGElement.h"
+#include "platform/FrameScheduler.h"
 #include "platform/Histogram.h"
 #include "platform/Language.h"
 #include "platform/PlatformChromeClient.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/fonts/FontCache.h"
 #include "platform/geometry/DoubleRect.h"
@@ -5490,11 +5490,10 @@ void LocalFrameView::UpdateRenderThrottlingStatus(
         &GetFrame().LocalFrameRoot());
   }
 
-  if (frame_->FrameScheduler()) {
-    frame_->FrameScheduler()->SetFrameVisible(!hidden_for_throttling_);
-    frame_->FrameScheduler()->SetCrossOrigin(frame_->IsCrossOriginSubframe());
-    frame_->FrameScheduler()->TraceUrlChange(
-        frame_->GetDocument()->Url().GetString());
+  if (FrameScheduler* frame_scheduler = frame_->GetFrameScheduler()) {
+    frame_scheduler->SetFrameVisible(!hidden_for_throttling_);
+    frame_scheduler->SetCrossOrigin(frame_->IsCrossOriginSubframe());
+    frame_scheduler->TraceUrlChange(frame_->GetDocument()->Url().GetString());
   }
 
 #if DCHECK_IS_ON()

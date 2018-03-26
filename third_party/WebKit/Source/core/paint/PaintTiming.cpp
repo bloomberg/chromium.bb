@@ -20,8 +20,8 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/WindowPerformance.h"
 #include "platform/CrossThreadFunctional.h"
+#include "platform/FrameScheduler.h"
 #include "platform/Histogram.h"
-#include "platform/WebFrameScheduler.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
 #include "public/platform/WebLayerTreeView.h"
 
@@ -92,7 +92,7 @@ void PaintTiming::SetFirstMeaningfulPaintCandidate(TimeTicks timestamp) {
     return;
   first_meaningful_paint_candidate_ = timestamp;
   if (GetFrame() && GetFrame()->View() && !GetFrame()->View()->IsAttached()) {
-    GetFrame()->FrameScheduler()->OnFirstMeaningfulPaint();
+    GetFrame()->GetFrameScheduler()->OnFirstMeaningfulPaint();
   }
 }
 

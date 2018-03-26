@@ -5,13 +5,13 @@
 #ifndef MockFetchContext_h
 #define MockFetchContext_h
 
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/exported/WrappedResourceRequest.h"
 #include "platform/loader/fetch/FetchContext.h"
 #include "platform/loader/fetch/FetchParameters.h"
 #include "platform/loader/fetch/ResourceTimingInfo.h"
+#include "platform/scheduler/test/fake_frame_scheduler.h"
 #include "platform/scheduler/test/fake_task_runner.h"
-#include "platform/scheduler/test/fake_web_frame_scheduler.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderFactory.h"
 
@@ -102,7 +102,7 @@ class MockFetchContext : public FetchContext {
     return ResourceLoadScheduler::ThrottlingPolicy::kTight;
   }
 
-  WebFrameScheduler* GetFrameScheduler() const override {
+  FrameScheduler* GetFrameScheduler() const override {
     return frame_scheduler_.get();
   }
 
@@ -111,9 +111,10 @@ class MockFetchContext : public FetchContext {
   }
 
  private:
-  class MockFrameScheduler final : public scheduler::FakeWebFrameScheduler {
+  class MockFrameScheduler final : public scheduler::FakeFrameScheduler {
    public:
-    MockFrameScheduler(scoped_refptr<base::SingleThreadTaskRunner> runner)
+    explicit MockFrameScheduler(
+        scoped_refptr<base::SingleThreadTaskRunner> runner)
         : runner_(std::move(runner)) {}
     scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner(
         TaskType) override {
@@ -139,7 +140,7 @@ class MockFetchContext : public FetchContext {
   enum LoadPolicy load_policy_;
   scoped_refptr<base::SingleThreadTaskRunner> runner_;
   scoped_refptr<const SecurityOrigin> security_origin_;
-  std::unique_ptr<WebFrameScheduler> frame_scheduler_;
+  std::unique_ptr<FrameScheduler> frame_scheduler_;
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
   bool complete_;
   long long transfer_size_;

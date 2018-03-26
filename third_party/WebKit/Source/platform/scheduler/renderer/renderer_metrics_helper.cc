@@ -6,7 +6,7 @@
 
 #include "base/bind.h"
 #include "base/metrics/histogram_macros.h"
-#include "platform/WebFrameScheduler.h"
+#include "platform/FrameScheduler.h"
 #include "platform/instrumentation/resource_coordinator/RendererResourceCoordinator.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 #include "public/platform/scheduler/renderer_process_type.h"

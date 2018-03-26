@@ -102,7 +102,7 @@ MainThreadTaskQueue::MainThreadTaskQueue(
       can_be_stopped_(params.can_be_stopped),
       used_for_important_tasks_(params.used_for_important_tasks),
       renderer_scheduler_(renderer_scheduler),
-      web_frame_scheduler_(nullptr) {
+      frame_scheduler_(nullptr) {
   if (GetTaskQueueImpl()) {
     // TaskQueueImpl may be null for tests.
     // TODO(scheduler-dev): Consider mapping directly to
@@ -159,15 +159,15 @@ void MainThreadTaskQueue::ClearReferencesToSchedulers() {
   if (renderer_scheduler_)
     renderer_scheduler_->OnShutdownTaskQueue(this);
   renderer_scheduler_ = nullptr;
-  web_frame_scheduler_ = nullptr;
+  frame_scheduler_ = nullptr;
 }
 
-WebFrameScheduler* MainThreadTaskQueue::GetFrameScheduler() const {
-  return web_frame_scheduler_;
+FrameScheduler* MainThreadTaskQueue::GetFrameScheduler() const {
+  return frame_scheduler_;
 }
 
-void MainThreadTaskQueue::SetFrameScheduler(WebFrameScheduler* frame) {
-  web_frame_scheduler_ = frame;
+void MainThreadTaskQueue::SetFrameScheduler(FrameScheduler* frame) {
+  frame_scheduler_ = frame;
 }
 
 }  // namespace scheduler

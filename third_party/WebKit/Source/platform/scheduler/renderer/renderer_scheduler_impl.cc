@@ -2354,7 +2354,7 @@ void RendererSchedulerImpl::SetTopLevelBlameContext(
   // may still enter a more specific blame context if necessary.
   //
   // Per-frame task runners (loading, timers, etc.) are configured with a more
-  // specific blame context by WebFrameSchedulerImpl.
+  // specific blame context by FrameSchedulerImpl.
   //
   // TODO(altimin): automatically enter top-level for all task queues associated
   // with renderer scheduler which do not have a corresponding frame.
