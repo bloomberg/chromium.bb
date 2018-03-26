@@ -50,6 +50,10 @@ source_set("tests") {
     "test/in_process_service_test.cc",
     "test/mock_log.cc",
     "test/mock_log.h",
+    "test/service_lifetime_connector_test.cc",
+    "test/service_lifetime_test_template.h",
+    "test/service_observer_mock.cc",
+    "test/service_observer_mock.h",
   ]
 
   deps = [

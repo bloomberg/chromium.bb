@@ -18,6 +18,10 @@ namespace media {
 class AudioManager;
 }
 
+namespace service_manager {
+class ServiceContextRef;
+}
+
 namespace audio {
 
 class SystemInfo : public mojom::SystemInfo {
@@ -25,7 +29,8 @@ class SystemInfo : public mojom::SystemInfo {
   explicit SystemInfo(media::AudioManager* audio_manager);
   ~SystemInfo() override;
 
-  void Bind(mojom::SystemInfoRequest request);
+  void Bind(mojom::SystemInfoRequest request,
+            std::unique_ptr<service_manager::ServiceContextRef> context_ref);
 
  private:
   // audio::mojom::SystemInfo implementation.
@@ -48,7 +53,12 @@ class SystemInfo : public mojom::SystemInfo {
                           GetInputDeviceInfoCallback callback) override;
 
   media::AudioSystemHelper helper_;
-  mojo::BindingSet<mojom::SystemInfo> bindings_;
+
+  // Each binding increases ref count of the service context, so that the
+  // service knows when it is in use.
+  mojo::BindingSet<mojom::SystemInfo,
+                   std::unique_ptr<service_manager::ServiceContextRef>>
+      bindings_;
 
   // Validates thread-safe access to |bindings_| only. |helper_| takes care of
   // its thread safety/affinity itself.
