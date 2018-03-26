@@ -64,15 +64,15 @@ class Blacklist : public KeyedService,
     DISALLOW_COPY_AND_ASSIGN(ScopedDatabaseManagerForTest);
   };
 
-  typedef std::map<std::string, BlacklistState> BlacklistStateMap;
+  using BlacklistStateMap = std::map<std::string, BlacklistState>;
 
-  typedef base::Callback<void(const BlacklistStateMap&)>
-      GetBlacklistedIDsCallback;
+  using GetBlacklistedIDsCallback =
+      base::Callback<void(const BlacklistStateMap&)>;
 
-  typedef base::Callback<void(const std::set<std::string>&)>
-      GetMalwareIDsCallback;
+  using GetMalwareIDsCallback =
+      base::Callback<void(const std::set<std::string>&)>;
 
-  typedef base::Callback<void(BlacklistState)> IsBlacklistedCallback;
+  using IsBlacklistedCallback = base::Callback<void(BlacklistState)>;
 
   explicit Blacklist(ExtensionPrefs* prefs);
 
@@ -131,7 +131,7 @@ class Blacklist : public KeyedService,
                                const std::set<std::string>& blacklisted_ids);
 
   void RequestExtensionsBlacklistState(const std::set<std::string>& ids,
-                                       const base::Callback<void()>& callback);
+                                       base::OnceClosure callback);
 
   void OnBlacklistStateReceived(const std::string& id, BlacklistState state);
 
@@ -147,15 +147,15 @@ class Blacklist : public KeyedService,
 
   std::unique_ptr<BlacklistStateFetcher> state_fetcher_;
 
-  typedef std::list<std::pair<std::vector<std::string>,
-                              base::Callback<void()> > >
-      StateRequestsList;
-
   // The list of ongoing requests for blacklist states that couldn't be
   // served directly from the cache. A new request is created in
   // GetBlacklistedIDs and deleted when the callback is called from
   // OnBlacklistStateReceived.
-  StateRequestsList state_requests_;
+  //
+  // This is a list of requests. Each item in the list is a request. A request
+  // is a pair of [vector of string ids to check, response closure].
+  std::list<std::pair<std::vector<std::string>, base::OnceClosure>>
+      state_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(Blacklist);
 };

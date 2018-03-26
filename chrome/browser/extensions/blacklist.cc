@@ -70,7 +70,7 @@ class SafeBrowsingClientImpl
     : public SafeBrowsingDatabaseManager::Client,
       public base::RefCountedThreadSafe<SafeBrowsingClientImpl> {
  public:
-  typedef base::Callback<void(const std::set<std::string>&)> OnResultCallback;
+  using OnResultCallback = base::Callback<void(const std::set<std::string>&)>;
 
   // Constructs a client to query the database manager for |extension_ids| and
   // run |callback| with the IDs of those which have been blacklisted.
@@ -127,13 +127,14 @@ void GetMalwareFromBlacklistStateMap(
     const Blacklist::GetMalwareIDsCallback& callback,
     const Blacklist::BlacklistStateMap& state_map) {
   std::set<std::string> malware;
-  for (Blacklist::BlacklistStateMap::const_iterator it = state_map.begin();
-       it != state_map.end(); ++it) {
+  for (const auto& state_pair : state_map) {
     // TODO(oleg): UNKNOWN is treated as MALWARE for backwards compatibility.
     // In future GetMalwareIDs will be removed and the caller will have to
     // deal with BLACKLISTED_UNKNOWN state returned from GetBlacklistedIDs.
-    if (it->second == BLACKLISTED_MALWARE || it->second == BLACKLISTED_UNKNOWN)
-      malware.insert(it->first);
+    if (state_pair.second == BLACKLISTED_MALWARE ||
+        state_pair.second == BLACKLISTED_UNKNOWN) {
+      malware.insert(state_pair.first);
+    }
   }
   callback.Run(malware);
 }
@@ -160,22 +161,11 @@ Blacklist::ScopedDatabaseManagerForTest::~ScopedDatabaseManagerForTest() {
 
 Blacklist::Blacklist(ExtensionPrefs* prefs) {
   scoped_refptr<SafeBrowsingDatabaseManager> database_manager =
-      g_database_manager.Get().get();
+      GetDatabaseManager();
   if (database_manager.get()) {
     registrar_.Add(
         this, safe_browsing::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
         content::Source<SafeBrowsingDatabaseManager>(database_manager.get()));
-  }
-
-  // Clear out the old prefs-backed blacklist, stored as empty extension entries
-  // with just a "blacklisted" property.
-  //
-  // TODO(kalman): Delete this block of code, see http://crbug.com/295882.
-  std::set<std::string> blacklisted = prefs->GetBlacklistedExtensions();
-  for (std::set<std::string>::iterator it = blacklisted.begin();
-       it != blacklisted.end(); ++it) {
-    if (!prefs->GetInstalledExtensionInfo(*it))
-      prefs->DeleteExtensionPrefs(*it);
   }
 }
 
@@ -191,7 +181,7 @@ void Blacklist::GetBlacklistedIDs(const std::set<std::string>& ids,
                                   const GetBlacklistedIDsCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
-  if (ids.empty() || !g_database_manager.Get().get().get()) {
+  if (ids.empty() || !GetDatabaseManager().get()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE, base::BindOnce(callback, BlacklistStateMap()));
     return;
@@ -227,16 +217,16 @@ void Blacklist::GetBlacklistStateForIDs(
 
   std::set<std::string> ids_unknown_state;
   BlacklistStateMap extensions_state;
-  for (std::set<std::string>::const_iterator it = blacklisted_ids.begin();
-       it != blacklisted_ids.end(); ++it) {
-    BlacklistStateMap::const_iterator cache_it =
-        blacklist_state_cache_.find(*it);
+  for (const auto& blacklisted_id : blacklisted_ids) {
+    auto cache_it = blacklist_state_cache_.find(blacklisted_id);
     if (cache_it == blacklist_state_cache_.end() ||
-        cache_it->second == BLACKLISTED_UNKNOWN)  // Do not return UNKNOWN
-                                                  // from cache, retry request.
-      ids_unknown_state.insert(*it);
-    else
-      extensions_state[*it] = cache_it->second;
+        cache_it->second ==
+            BLACKLISTED_UNKNOWN) {  // Do not return UNKNOWN
+                                    // from cache, retry request.
+      ids_unknown_state.insert(blacklisted_id);
+    } else {
+      extensions_state[blacklisted_id] = cache_it->second;
+    }
   }
 
   if (ids_unknown_state.empty()) {
@@ -248,8 +238,8 @@ void Blacklist::GetBlacklistStateForIDs(
     // these extensions.
     RequestExtensionsBlacklistState(
         ids_unknown_state,
-        base::Bind(&Blacklist::ReturnBlacklistStateMap, AsWeakPtr(),
-                   callback, blacklisted_ids));
+        base::BindOnce(&Blacklist::ReturnBlacklistStateMap, AsWeakPtr(),
+                       callback, blacklisted_ids));
   }
 }
 
@@ -257,12 +247,10 @@ void Blacklist::ReturnBlacklistStateMap(
     const GetBlacklistedIDsCallback& callback,
     const std::set<std::string>& blacklisted_ids) {
   BlacklistStateMap extensions_state;
-  for (std::set<std::string>::const_iterator it = blacklisted_ids.begin();
-       it != blacklisted_ids.end(); ++it) {
-    BlacklistStateMap::const_iterator cache_it =
-        blacklist_state_cache_.find(*it);
+  for (const auto& blacklisted_id : blacklisted_ids) {
+    auto cache_it = blacklist_state_cache_.find(blacklisted_id);
     if (cache_it != blacklist_state_cache_.end())
-      extensions_state[*it] = cache_it->second;
+      extensions_state[blacklisted_id] = cache_it->second;
     // If for some reason we still haven't cached the state of this extension,
     // we silently skip it.
   }
@@ -271,19 +259,17 @@ void Blacklist::ReturnBlacklistStateMap(
 }
 
 void Blacklist::RequestExtensionsBlacklistState(
-    const std::set<std::string>& ids, const base::Callback<void()>& callback) {
+    const std::set<std::string>& ids,
+    base::OnceClosure callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!state_fetcher_)
     state_fetcher_.reset(new BlacklistStateFetcher());
 
-  state_requests_.push_back(
-      make_pair(std::vector<std::string>(ids.begin(), ids.end()), callback));
-  for (std::set<std::string>::const_iterator it = ids.begin();
-       it != ids.end();
-       ++it) {
+  state_requests_.emplace_back(std::vector<std::string>(ids.begin(), ids.end()),
+                               std::move(callback));
+  for (const auto& id : ids) {
     state_fetcher_->Request(
-        *it,
-        base::Bind(&Blacklist::OnBlacklistStateReceived, AsWeakPtr(), *it));
+        id, base::Bind(&Blacklist::OnBlacklistStateReceived, AsWeakPtr(), id));
   }
 }
 
@@ -294,22 +280,20 @@ void Blacklist::OnBlacklistStateReceived(const std::string& id,
 
   // Go through the opened requests and call the callbacks for those requests
   // for which we already got all the required blacklist states.
-  StateRequestsList::iterator requests_it = state_requests_.begin();
+  auto requests_it = state_requests_.begin();
   while (requests_it != state_requests_.end()) {
     const std::vector<std::string>& ids = requests_it->first;
 
     bool have_all_in_cache = true;
-    for (std::vector<std::string>::const_iterator ids_it = ids.begin();
-         ids_it != ids.end();
-         ++ids_it) {
-      if (!base::ContainsKey(blacklist_state_cache_, *ids_it)) {
+    for (const auto& id : ids) {
+      if (!base::ContainsKey(blacklist_state_cache_, id)) {
         have_all_in_cache = false;
         break;
       }
     }
 
     if (have_all_in_cache) {
-      requests_it->second.Run();
+      std::move(requests_it->second).Run();
       requests_it = state_requests_.erase(requests_it); // returns next element
     } else {
       ++requests_it;
