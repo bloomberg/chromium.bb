@@ -325,7 +325,7 @@ TEST_F(ServiceWorkerContextClientTest,
   bool is_idle = false;
   auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
       CreateCallbackWithCalledFlag(&is_idle),
-      task_runner()->DeprecatedGetMockTickClock());
+      task_runner()->GetMockTickClock());
   context_client->SetTimeoutTimerForTesting(std::move(timer));
 
   // The dispatched fetch event should be recorded by |mock_proxy|.
@@ -364,7 +364,7 @@ TEST_F(ServiceWorkerContextClientTest,
   bool is_idle = false;
   auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
       CreateCallbackWithCalledFlag(&is_idle),
-      task_runner()->DeprecatedGetMockTickClock());
+      task_runner()->GetMockTickClock());
   context_client->SetTimeoutTimerForTesting(std::move(timer));
 
   // Ensure the idle state.
@@ -412,7 +412,7 @@ TEST_F(ServiceWorkerContextClientTest,
   bool is_idle = false;
   auto timer = std::make_unique<ServiceWorkerTimeoutTimer>(
       CreateCallbackWithCalledFlag(&is_idle),
-      task_runner()->DeprecatedGetMockTickClock());
+      task_runner()->GetMockTickClock());
   context_client->SetTimeoutTimerForTesting(std::move(timer));
 
   // Ensure the idle state.

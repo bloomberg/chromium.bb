@@ -47,7 +47,7 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   explicit ServiceWorkerTimeoutTimer(base::RepeatingClosure idle_callback);
   // For testing.
   ServiceWorkerTimeoutTimer(base::RepeatingClosure idle_callback,
-                            std::unique_ptr<base::TickClock> tick_clock);
+                            base::TickClock* tick_clock);
   ~ServiceWorkerTimeoutTimer();
 
   // StartEvent() should be called at the beginning of an event. It returns an
@@ -142,7 +142,8 @@ class CONTENT_EXPORT ServiceWorkerTimeoutTimer {
   // |timer_| invokes UpdateEventStatus() periodically.
   base::RepeatingTimer timer_;
 
-  std::unique_ptr<base::TickClock> tick_clock_;
+  // |tick_clock_| outlives |this|.
+  base::TickClock* const tick_clock_;
 };
 
 }  // namespace content
