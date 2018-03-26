@@ -1784,9 +1784,6 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateTargetURL) {
             target_url_waiter.WaitForUpdatedTargetURL());
 }
 
-// TODO(mmenke):  Beef up testing of LoadState a little. In particular, check
-// LoadState itself, not just the host name, check upload progress, check the
-// param, and make sure RDH pushes the data to the browser process.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, UpdateLoadState) {
   // Controlled responses for image requests made in the test. They will
   // alternate being the "most interesting" for the purposes of notifying the
