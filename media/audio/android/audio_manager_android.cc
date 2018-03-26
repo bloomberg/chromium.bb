@@ -337,7 +337,8 @@ AudioParameters AudioManagerAndroid::GetPreferredOutputStreamParameters(
     // AudioManager APIs for GetOptimalOutputFrameSize() don't support channel
     // layouts greater than stereo unless low latency audio is supported.
     if (input_params.channels() <= 2 ||
-        (base::android::BuildInfo::GetInstance()->sdk_int() >= 21 &&
+        (base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_LOLLIPOP &&
          IsAudioLowLatencySupported())) {
       channel_layout = input_params.channel_layout();
     }

@@ -194,12 +194,12 @@ scoped_refptr<SSLPrivateKey> WrapJavaPrivateKey(
 
   android::AndroidRSA* sys_rsa = nullptr;
   if (type == EVP_PKEY_RSA) {
-    const int kAndroid42ApiLevel = 17;
     if (base::android::BuildInfo::GetInstance()->sdk_int() <
-        kAndroid42ApiLevel) {
-      // Route around platform limitations: if Android < 4.2, then
-      // base::android::RawSignDigestWithPrivateKey() cannot work, so try to get
-      // the system OpenSSL's EVP_PKEY backing this PrivateKey object.
+        base::android::SDK_VERSION_JELLY_BEAN_MR1) {
+      // Route around platform limitations: if Android < 4.2 (Jelly
+      // Bean MR1), then base::android::RawSignDigestWithPrivateKey()
+      // cannot work, so try to get the system OpenSSL's EVP_PKEY
+      // backing this PrivateKey object.
       android::AndroidEVP_PKEY* sys_pkey =
           android::GetOpenSSLSystemHandleForPrivateKey(key);
       if (!sys_pkey)

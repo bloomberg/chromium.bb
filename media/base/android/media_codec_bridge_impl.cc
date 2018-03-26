@@ -555,7 +555,8 @@ MediaCodecStatus MediaCodecBridgeImpl::GetOutputBufferAddress(
 }
 
 std::string MediaCodecBridgeImpl::GetName() {
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 18)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_JELLY_BEAN_MR2)
     return "";
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jstring> j_name =
@@ -564,7 +565,8 @@ std::string MediaCodecBridgeImpl::GetName() {
 }
 
 bool MediaCodecBridgeImpl::SetSurface(const JavaRef<jobject>& surface) {
-  DCHECK_GE(base::android::BuildInfo::GetInstance()->sdk_int(), 23);
+  DCHECK_GE(base::android::BuildInfo::GetInstance()->sdk_int(),
+            base::android::SDK_VERSION_MARSHMALLOW);
   JNIEnv* env = AttachCurrentThread();
   return Java_MediaCodecBridge_setSurface(env, j_bridge_, surface);
 }

@@ -30,6 +30,7 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::SDK_VERSION_JELLY_BEAN_MR2;
 using base::android::SDK_VERSION_KITKAT;
+using base::android::SDK_VERSION_LOLLIPOP;
 using base::android::SDK_VERSION_LOLLIPOP_MR1;
 
 namespace media {
@@ -198,8 +199,9 @@ bool MediaCodecUtil::IsMediaCodecAvailableFor(int sdk, const char* model) {
 
 // static
 bool MediaCodecUtil::SupportsSetParameters() {
-  // MediaCodec.setParameters() is only available starting with K.
-  return base::android::BuildInfo::GetInstance()->sdk_int() >= 19;
+  // MediaCodec.setParameters() is only available starting with KitKat.
+  return base::android::BuildInfo::GetInstance()->sdk_int() >=
+         SDK_VERSION_KITKAT;
 }
 
 // static
@@ -292,7 +294,8 @@ bool MediaCodecUtil::IsKnownUnaccelerated(VideoCodec codec,
       return true;
 
     if (codec == kCodecVP9)
-      return base::android::BuildInfo::GetInstance()->sdk_int() < 21;
+      return base::android::BuildInfo::GetInstance()->sdk_int() <
+             SDK_VERSION_LOLLIPOP;
 
     return false;
   }

@@ -20,7 +20,8 @@ UsbInterfaceDescriptor UsbInterfaceAndroid::Convert(
       Java_ChromeUsbInterface_create(env, usb_interface);
 
   uint8_t alternate_setting = 0;
-  if (base::android::BuildInfo::GetInstance()->sdk_int() >= 21) {
+  if (base::android::BuildInfo::GetInstance()->sdk_int() >=
+      base::android::SDK_VERSION_LOLLIPOP) {
     alternate_setting =
         Java_ChromeUsbInterface_getAlternateSetting(env, wrapper);
   }

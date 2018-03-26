@@ -250,7 +250,8 @@ std::string GetSecurityLevelString(
 }
 
 bool AreMediaDrmApisAvailable() {
-  if (base::android::BuildInfo::GetInstance()->sdk_int() < 19)
+  if (base::android::BuildInfo::GetInstance()->sdk_int() <
+      base::android::SDK_VERSION_KITKAT)
     return false;
 
   int32_t os_major_version = 0;
@@ -268,7 +269,8 @@ bool IsPersistentLicenseTypeSupportedByMediaDrm() {
   return MediaDrmBridge::IsAvailable() &&
          // In development. See http://crbug.com/493521
          base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
-         base::android::BuildInfo::GetInstance()->sdk_int() >= 23;
+         base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_MARSHMALLOW;
 }
 
 // Callback for MediaDrmStorageBridge::Initialize.
@@ -891,8 +893,9 @@ MediaDrmBridge::MediaDrmBridge(
       // TODO(yucliu): Remove the check once persistent storage is fully
       // supported and check if origin is valid.
       base::FeatureList::IsEnabled(kMediaDrmPersistentLicense) &&
-      // MediaDrm implements origin isolated storage on M.
-      base::android::BuildInfo::GetInstance()->sdk_int() >= 23 &&
+      // MediaDrm implements origin isolated storage on Marshmallow.
+      base::android::BuildInfo::GetInstance()->sdk_int() >=
+          base::android::SDK_VERSION_MARSHMALLOW &&
       // origin id can be empty when MediaDrmBridge is created by
       // CreateWithoutSessionSupport, which is used to reset credentials.
       !origin_id.empty();

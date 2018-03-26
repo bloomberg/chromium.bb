@@ -236,10 +236,12 @@ class CertVerifyProcInternalTest
 
   bool SupportsReturningVerifiedChain() const {
 #if defined(OS_ANDROID)
-    // Before API level 17, Android does not expose the APIs necessary to get at
-    // the verified certificate chain.
+    // Before API level 17 (SDK_VERSION_JELLY_BEAN_MR1), Android does
+    // not expose the APIs necessary to get at the verified
+    // certificate chain.
     if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID &&
-        base::android::BuildInfo::GetInstance()->sdk_int() < 17)
+        base::android::BuildInfo::GetInstance()->sdk_int() <
+            base::android::SDK_VERSION_JELLY_BEAN_MR1)
       return false;
 #endif
     return true;
@@ -247,10 +249,12 @@ class CertVerifyProcInternalTest
 
   bool SupportsDetectingKnownRoots() const {
 #if defined(OS_ANDROID)
-    // Before API level 17, Android does not expose the APIs necessary to get at
-    // the verified certificate chain and detect known roots.
+    // Before API level 17 (SDK_VERSION_JELLY_BEAN_MR1), Android does not expose
+    // the APIs necessary to get at the verified certificate chain and detect
+    // known roots.
     if (verify_proc_type() == CERT_VERIFY_PROC_ANDROID)
-      return base::android::BuildInfo::GetInstance()->sdk_int() >= 17;
+      return base::android::BuildInfo::GetInstance()->sdk_int() >=
+             base::android::SDK_VERSION_JELLY_BEAN_MR1;
 #endif
 
     // iOS does not expose the APIs necessary to get the known system roots.

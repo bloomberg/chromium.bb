@@ -626,7 +626,8 @@ bool FinalizeCrashDoneAndroid(bool is_browser_process) {
   AndroidLogWriteHorizontalRule();
 
   if (!is_browser_process &&
-      android_build_info->sdk_int() >= 18 &&
+      android_build_info->sdk_int() >=
+          base::android::SDK_VERSION_JELLY_BEAN_MR2 &&
       my_strcmp(android_build_info->build_type(), "eng") != 0 &&
       my_strcmp(android_build_info->build_type(), "userdebug") != 0) {
     // On JB MR2 and later, the system crash handler displays a dialog. For

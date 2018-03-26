@@ -10,6 +10,7 @@
 #include "base/logging.h"
 
 #if BUILDFLAG(USE_SECCOMP_BPF)
+#include "base/android/build_info.h"
 #include "sandbox/linux/seccomp-bpf/sandbox_bpf.h"
 #endif
 
@@ -42,7 +43,7 @@ bool SeccompStarterAndroid::StartSandbox() {
     // apps. It has its own SIGSYS handler that must be un-hooked so that
     // the Chromium one can be used instead. If pre-O devices have a SIGSYS
     // handler, then warn about that.
-    DLOG_IF(WARNING, sdk_int_ < 26)
+    DLOG_IF(WARNING, sdk_int_ < base::android::SDK_VERSION_OREO)
         << "Un-hooking existing SIGSYS handler before starting "
         << "Seccomp sandbox";
   }
@@ -58,11 +59,11 @@ bool SeccompStarterAndroid::StartSandbox() {
 
 bool SeccompStarterAndroid::IsSupportedBySDK() const {
 #if BUILDFLAG(USE_SECCOMP_BPF)
-  if (sdk_int_ < 22) {
+  if (sdk_int_ < base::android::SDK_VERSION_LOLLIPOP_MR1) {
     // Seccomp was never available pre-Lollipop.
     return false;
   }
-  if (sdk_int_ > 22) {
+  if (sdk_int_ > base::android::SDK_VERSION_LOLLIPOP_MR1) {
     // On Marshmallow and higher, Seccomp is required by CTS.
     return true;
   }

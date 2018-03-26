@@ -315,7 +315,9 @@ class MEDIA_EXPORT MediaCodecLoop {
   // ownership of it.
   base::TickClock* test_tick_clock_ = nullptr;
 
-  // BuildInfo::sdk_int(), eventually.
+  // Has the value of BuildInfo::sdk_int(), except in tests where it
+  // might be set to other values. Will not be needed when there is a
+  // mockable BuildInfo.
   const int sdk_int_;
 
   // NOTE: Weak pointers must be invalidated before all other member variables.
