@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">כתובת, שורה 1</translation>
 <translation id="1545749641540134597">‏סרוק קוד QR</translation>
 <translation id="1580783302095112590">הדואר נשלח.</translation>
+<translation id="1582732959743469162">הפעולה תפסיק את התקדמות ההורדה הנוכחית.</translation>
 <translation id="1612730193129642006">הצג רשת כרטיסיות</translation>
 <translation id="1644574205037202324">היסטוריה</translation>
 <translation id="1646446875146297738">המשמעות של הפעלת 'ללא מעקב' היא שהבקשה תיכלל בתנועת הגלישה שלך. התוצאה בפועל תלויה בתגובה של האתר לבקשה ובפרשנות שהוא מייחס לה, אם בכלל. 
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">משהו לגמרי השתבש. נעבוד על זה.</translation>
 <translation id="6342069812937806050">זה עתה</translation>
 <translation id="6344783595350022745">טקסט נקי</translation>
+<translation id="6346549652287021269">להתחיל הורדה חדשה?</translation>
 <translation id="6362362396625799311">אין כרטיסיות של גלישה בסתר</translation>
 <translation id="6374469231428023295">נסה שוב</translation>
 <translation id="6380866119319257197">אם תשכח את ביטוי הסיסמה או תרצה לשנות את ההגדרה הזו, <ph name="BEGIN_LINK" />אפס את הסינכרון<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">סינכרון עם</translation>
 <translation id="7053983685419859001">חסום</translation>
 <translation id="7062545763355031412">קבל והחלף חשבונות</translation>
+<translation id="7102005569666697658">מוריד… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">הסתר</translation>
 <translation id="7133798577887235672">שם מלא</translation>
 <translation id="7136892417564438900">המצלמה לא זמינה</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">קבל וצא מהחשבון</translation>
 <translation id="7772032839648071052">אשר משפט-סיסמה</translation>
 <translation id="780301667611848630">לא תודה</translation>
+<translation id="7856733331829174190">ההורדה נכשלה</translation>
 <translation id="7859704718976024901">היסטוריית הגלישה</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">ייצוא סיסמאות...</translation>
@@ -370,7 +374,6 @@
 <translation id="8019783059653722575">אישור זה מאפשר לך לשמור ולהעלות תמונות.</translation>
 <translation id="802154636333426148">ההורדה נכשלה</translation>
 <translation id="8023878949384262191">מרחיב את הקטע.</translation>
-<translation id="8053390638574070785">טען דף זה מחדש</translation>
 <translation id="8059533439631660104">מכווץ את הקטע.</translation>
 <translation id="806745655614357130">שמור בנפרד את הנתונים שלי</translation>
 <translation id="8076014560081431679">הגדרות אתרים שנשמרו לא יימחקו ועשויות לשקף את הרגלי הגלישה שלך. <ph name="BEGIN_LINK" />למידע נוסף<ph name="END_LINK" /></translation>
@@ -423,6 +426,7 @@
 <translation id="9083392325882095631">פריט אחד</translation>
 <translation id="9100610230175265781">יש להזין ביטוי סיסמה</translation>
 <translation id="9148126808321036104">היכנס שוב</translation>
+<translation id="915371508759614899">לבטל את ההורדה?</translation>
 <translation id="9157836665414082580">הסתר תיבות דו-שיח</translation>
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
 <translation id="9203116392574189331">Handoff</translation>

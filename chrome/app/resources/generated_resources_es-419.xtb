@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Usar tu micrófono y tu cámara</translation>
 <translation id="1007408791287232274">No se pueden cargar los dispositivos.</translation>
 <translation id="1008186147501209563">Exportar favoritos</translation>
-<translation id="1009147628737158130"><ph name="URL" /> quiere ver la información de identificación sobre tu llave de seguridad</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{La página no responde.}other{Las páginas no responden.}}</translation>
 <translation id="1012794136286421601">Se están sincronizando tus archivos de Documentos de Google, Google Spreadsheets, Diapositivas de Google y Dibujos de Google. Abre la aplicación de Google Drive para acceder a ellos en línea o sin conexión.</translation>
 <translation id="1013707859758800957">Se permitió que un complemento no incluido en la zona de pruebas se ejecutara en la página.</translation>
@@ -1273,7 +1272,6 @@ No creo que este sitio deba estar bloqueado.</translation>
 <translation id="2932483646085333864">Salir y volver a acceder para iniciar la sincronización</translation>
 <translation id="2932883381142163287">Informar sobre abusos</translation>
 <translation id="2938225289965773019">Abrir vínculos de <ph name="PROTOCOL" /></translation>
-<translation id="2938335670027321024">Mueve el controlador para cambiar la posición. Haz clic para finalizar.</translation>
 <translation id="2939938020978911855">Mostrar dispositivos Bluetooth disponibles</translation>
 <translation id="2941112035454246133">Baja</translation>
 <translation id="2942560570858569904">Esperando…</translation>
@@ -1842,7 +1840,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="379422718204375917">Usar Smart Lock para acceder a tu cuenta</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
 <translation id="3797900183766075808">&amp;Buscar "<ph name="SEARCH_TERMS" />" en <ph name="SEARCH_ENGINE" /></translation>
-<translation id="3798325802885154040">Permite habilitar o inhabilitar la función de presionar para hacer clic</translation>
 <translation id="3798449238516105146">Versión</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Abrir todo}=1{&amp;Abrir favorito}other{&amp;Abrir todo (#)}}</translation>
 <translation id="3800806661949714323">Mostrar todo (recomendado)</translation>
@@ -2924,7 +2921,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="5556206011531515970">Haz clic en Siguiente para seleccionar el navegador predeterminado.</translation>
 <translation id="5556459405103347317">Cargar de nuevo</translation>
 <translation id="555746285996217175">Bloqueo/encendido</translation>
-<translation id="5557579359142031072">Ver la información de identificación de tu llave de seguridad</translation>
 <translation id="5557991081552967863">Mantener el Wi-Fi encendido durante la suspensión</translation>
 <translation id="5558129378926964177">Acercar</translation>
 <translation id="55601339223879446">Ajustar los límites de tu escritorio en la pantalla</translation>
@@ -4000,7 +3996,6 @@ Para obtener más información, visita nuestro <ph name="BEGIN_LINK" />Centro de
 <translation id="7289225569524511578">Abrir la app de fondos de pantalla</translation>
 <translation id="7290242001003353852">Este servicio de acceso, alojado por <ph name="SAML_DOMAIN" />, está accediendo a tu cámara.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
-<translation id="7292324470889366655">Finalizar el cambio de posición</translation>
 <translation id="729459249680637905">Intentos restantes: $1</translation>
 <translation id="7295662345261934369">Compartir con otros</translation>
 <translation id="729583233778673644">Permite la encriptación AES y RC4. Esta opción es riesgosa, ya que los cifrados RC4 son inseguros.</translation>

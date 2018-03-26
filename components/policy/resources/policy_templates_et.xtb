@@ -1093,6 +1093,13 @@
       Kui jätate selle reegli määramata, siis saab kasutaja valida, kas ta soovib nuppu Kodu näha.</translation>
 <translation id="4485425108474077672">Uue vahelehe URL-i seadistamine</translation>
 <translation id="4492287494009043413">Keela ekraanipiltide tegemine</translation>
+<translation id="4497968613298501984">Seadistage ettevõtte sisselogimis-URL-ide loend (ainult HTTP- ja HTTPS-skeemid). Parooli sõrmejälg jäädvustatakse nendel URL-idel ja seda kasutatakse parooli uuesti kasutamise tuvastamiseks.
+      Seda seadet peaksid kasutama ainult GSuite'i kasutajad, kes kasutavad SSO-/SMAL-süsteemi.
+      Selleks et teenus <ph name="PRODUCT_NAME" /> saaks parooli sõrmejälgi õigesti jäädvustada, veenduge, et teie sisselogimislehed järgiksid saidil https://www.chromium.org/developers/design-documents/create-amazing-password-forms olevaid juhiseid.
+
+      Kui see seade on lubatud, jäädvustab paroolikaitseteenus parooli sõrmejälje nendele URL-idele, et tuvastada parooli uuesti kasutamine.
+      Kui seade on keelatud või määramata, jäädvustab paroolikaitseteenus parooli sõrmejälje ainult saidil https://accounts.google.com.
+      See reegel ei ole saadaval Windowsi eksemplarides, mis pole domeeniga <ph name="MS_AD_NAME" /> liitunud.</translation>
 <translation id="450537894712826981">Seadistab vahemälu mahu, mida <ph name="PRODUCT_NAME" /> kasutab vahemällu salvestatud meediafailide kettale salvestamiseks.
 
      Kui kasutate seda reeglit, kasutab <ph name="PRODUCT_NAME" /> olemasolevat vahemälu mahtu sellest olenemata, kas kasutaja on määranud märgendi „--meedia-vahemälu-maht” või mitte. Selle reegliga määratud väärtus pole kindel limiit, vaid pigem soovitus vahemälusüsteemile. Mõnest megabaidist väiksem väärtus on liiga väike ja see ümardatakse mõistliku miinimumini.
@@ -1211,6 +1218,13 @@
 
       Kui jätate eeskirjad määramata või tühjaks, siis saavad kõik kasutajad teenusesse <ph name="PRODUCT_NAME" /> sisse logida.</translation>
 <translation id="4858735034935305895">Täisekraanrežiimi lubamine</translation>
+<translation id="4868249328547841081">Seadistage parooli muutmise URL (ainult HTTP- ja HTTPS-skeemid). Kui kasutaja on langenud andmepüügi ohvriks, saadab paroolikaitseteenus ta sellele URL-ile, et ta saaks oma parooli muuta.
+      Seda seadet peaksid kasutama ainult GSuite'i kasutajad, kes kasutavad SSO-/SMAL-süsteemi.
+      Selleks et teenus <ph name="PRODUCT_NAME" /> jäädvustaks uue parooli sõrmejälje sellel parooli muutmise lehel õigesti, veenduge, et parooli muutmise leht järgiks saidil https://www.chromium.org/developers/design-documents/create-amazing-password-forms olevaid juhiseid.
+
+      Kui see seade on lubatud, saadab paroolikaitseteenus kasutajad sellele URL-ile, et nad saaksid oma parooli muuta, kui nad on langenud andmepüügi ohvriks.
+      Kui see seade on keelatud või määramata, siis saadab paroolikaitseteenus kasutajad parooli muutmiseks saidile https://myaccounts.google.com.
+      See reegel ei ole saadaval Windowsi eksemplarides, mis pole domeeniga <ph name="MS_AD_NAME" /> liitunud.</translation>
 <translation id="4869787217450099946">Määrab, kas ekraani aktiveerimise lukustamine on lubatud. Ekraani aktiveerimise lukustamist saab taotleda laiendustega energiahalduse laienduse API kaudu.
 
           Kui see reegli väärtuseks on seatud Tõene või on väärtus seadmata, kasutatakse energiahalduseks ekraani aktiveerimise lukustamist.

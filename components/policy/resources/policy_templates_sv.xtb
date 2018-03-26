@@ -649,6 +649,17 @@
           Policyns värde anges i millisekunder. Värdena måste vara mindre än eller lika med skärmavstängningstiden (om den har ställts in) och inaktivitetstiden.</translation>
 <translation id="2987155890997901449">Aktivera ARC</translation>
 <translation id="2987227569419001736">Kontrollera användningen av Web Bluetooth API</translation>
+<translation id="2998886474614739865">
+      OBS! Det här är en experimentell princip som kan göra att något slutar fungera.
+      Den här principen tillämpas på inloggningsskärmen. Se även principen <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> som tillämpas på användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om dessa värden inte överensstämmer kan en fördröjning uppstå när en användarsession startas medan värdet för användarprincipen tillämpas.
+      Om principen aktiveras körs varje namngivet ursprung i en
+      kommaavgränsad lista som en egen process. Även underdomäner isoleras.
+      Om du exempelvis anger https://example.com/ isoleras även
+      https://foo.example.com/ som en del av webbplatsen
+      https://example.com/.
+      Om principen inaktiveras gäller den logik för processhantering som används för webbplatsisolering per webbplats.
+      Om principen inte konfigureras används standardinställningarna för webbplatsisolering för inloggningsskärmen.
+      </translation>
 <translation id="3016255526521614822">Ange anteckningsappar som är tillåtna på låsskärmen i <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Antalet återställningspunkter som tillåts</translation>
 <translation id="3030000825273123558">Aktivera statistikrapportering</translation>
@@ -758,6 +769,17 @@
 
           Om principen är inställd på något annat än en tom sträng används den strängen som namn på målet för <ph name="PRODUCT_NAME" />. I annat fall används enhetens namn som målnamn. Om principen lämnas utan inställning används enhetens namn som målnamn och enhetens ägare (eller en användare på den domän som hanterar enheten) kan ändra det. Namnet får vara högst 24 tecken långt.</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
+<translation id="3386001018488754001">
+      OBS! Det här är en experimentell princip som kan göra att något slutar fungera.
+      Den här principen tillämpas på inloggningsskärmen. Se även principen <ph name="SITE_PER_PROCESS_POLICY_NAME" /> som tillämpas på användarsessionen. Vi rekommenderar att samma värde anges för båda principerna. Om dessa värden inte överensstämmer kan en fördröjning uppstå när en användarsession startas medan värdet för användarprincipen tillämpas.
+      Vi rekommenderar även principen IsolateOrigins. Du kan få det bästa
+      av två världar, isolering och begränsad inverkan på användarna,
+      genom att ange en lista med webbplatser som ska isoleras med IsolateOrigins.
+      Med den här inställningen, SitePerProcess, isoleras alla webbplatser.
+      Om principen aktiveras körs varje webbplats som en egen process.
+      Om principen inaktiveras gäller den logik för processhantering som används för webbplatsisolering per webbplats.
+      Om principen inte konfigureras kan användaren ändra inställningen.
+      </translation>
 <translation id="3395348522300156660">Anger vilka skrivare som får användas.
 
       Den här principen används bara när <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> är inställd på <ph name="PRINTERS_WHITELIST" />.
@@ -796,6 +818,10 @@
           Om Falskt har angetts för den här policyn, eller om ingenting har angetts, påbörjas fördröjningar i energisparfunktionen och begränsningar i sessionslängden så fort sessionen har påbörjats.</translation>
 <translation id="3478024346823118645">Ta bort användardata vid utloggning</translation>
 <translation id="348495353354674884">Aktivera virtuellt tangentbord</translation>
+<translation id="3487623755010328395">
+        Om principen används försöker <ph name="PRODUCT_NAME" /> registrera sig själv och tillämpa tillhörande molnprinciper på alla profiler.
+
+        Värdet för principen är en registreringstoken som kan hämtas från Google Administratörskonsol.</translation>
 <translation id="3496296378755072552">Lösenordshanteraren</translation>
 <translation id="350443680860256679">Konfigurera ARC</translation>
 <translation id="3504791027627803580">Anger webbadressen till sökmotorn som används vid bildsökning. Sökförfrågningar skickas via GET-metoden. Om policyn DefaultSearchProviderImageURLPostParams har angetts kommer POST-metoden att användas vid bildsökningar i stället.
@@ -1105,6 +1131,13 @@
       Om du inte anger policyn kan användaren välja om knappen Startsida ska visas.</translation>
 <translation id="4485425108474077672">Konfigurera webbadressen för sidan Ny flik</translation>
 <translation id="4492287494009043413">Inaktivera tagning av skärmdumpar</translation>
+<translation id="4497968613298501984">Konfigurera listan med webbadresser för företagsinloggning (endast via HTTP och HTTPS). På dessa webbadresser registreras lösenordssignaturer, som används för att upptäcka när ett lösenord återanvänds.
+      Inställningen bör endast användas av den som använder G Suite med SSO/SAML.
+      Se till att inloggningssidorna följer riktlinjerna på https://www.chromium.org/developers/design-documents/create-amazing-password-forms så att <ph name="PRODUCT_NAME" /> kan registrera lösenordssignaturer korrekt.
+
+      Om inställningen är aktiverad registreras lösenordssignaturer på webbadresserna i syfte att upptäcka när ett lösenord återanvänds.
+      Om inställningen är inaktiverad eller har lämnats utan inställning registreras lösenordsignaturer endast på https://accounts.google.com.
+      Principen är inte tillgänglig på Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="450537894712826981">Konfigurerar storleken på cacheminnet där <ph name="PRODUCT_NAME" /> sparar cachade mediafiler på skivan.
 
       När den här principen har getts ett värde använder <ph name="PRODUCT_NAME" /> ett cacheminne med den angivna storleken oavsett om användaren har angett en storlek med flaggan --media-cache-size eller inte. Det värde som anges i principen är inte en fast gräns utan snarare ett förslag till cachesystemet. Om värdet är mindre än några MB är det för litet och avrundas uppåt till en vettig minimigräns.
@@ -1223,6 +1256,13 @@
 
       Om denna princip inte anges eller lämnas tom kan alla användare logga in på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillåt helskärmsläge</translation>
+<translation id="4868249328547841081">Konfigurera webbadressen för att byta lösenord (endast via HTTP och HTTPS). Lösenordsskyddet skickar användarna till den här webbadressen där de kan byta lösenord om de har drabbats av nätfiske.
+      Inställningen bör endast användas av den som använder G Suite med SSO/SAML.
+      Se till att sidan för att byta lösenord följer riktlinjerna på https://www.chromium.org/developers/design-documents/create-amazing-password-form så att <ph name="PRODUCT_NAME" /> kan registrera lösenordssignaturer korrekt.
+
+      Om inställningen är aktiverad skickas användarna till den här webbadressen där de kan byta lösenord om de har drabbats av nätfiske.
+      Om inställningen är inaktiverad eller har lämnats utan inställning skickas användarna till https://myaccounts.google.com där de kan byta lösenord.
+      Principen är inte tillgänglig på Windows-instanser som inte har fogats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="4869787217450099946">Anger om skärmaktiveringslåset är tillåtet. Skärmaktiveringslåset kan krävas av vissa tillägg via API:et för näthanteringstillägget.
 
           Om denna policy har inställningen sant, eller inte har ställts in, kommer skärmaktiveringslåsen att användas för näthantering.
@@ -1378,6 +1418,17 @@
 
       Om principen inte anges eller om den har ställts in på den tomma strängen eller ett ogiltigt portintervall får vilken tillgänglig lokal UDP-port som helst användas för WebRTC.</translation>
 <translation id="5290940294294002042">Ange en lista med plugin-program som användaren kan aktivera och inaktivera</translation>
+<translation id="5301787427319106606">
+      OBS! Det här är en experimentell princip som kan göra att något slutar fungera.
+      Vi rekommenderar även principen IsolateOrigins. Du kan få det bästa
+      av två världar, isolering och begränsad inverkan på användarna,
+      genom att ange en lista med webbplatser som ska isoleras med IsolateOrigins.
+      Med den här inställningen, SitePerProcess, isoleras alla webbplatser.
+      Om principen aktiveras körs varje webbplats som en egen process.
+      Om principen inaktiveras gäller den logik för processhantering som används för webbplatsisolering per webbplats.
+      Om principen inte konfigureras kan användaren ändra inställningen.
+      I <ph name="PRODUCT_OS_NAME" /> rekommenderar vi även att ange samma värde för enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Om värdet som angetts för båda principerna inte överensstämmer kan en fördröjning uppstå när en användarsession startas medan värdet för användarprincipen tillämpas.
+      </translation>
 <translation id="5302612588919538756">Den här principen har fasats ut. Använd SyncDisabled i stället.
 
       Tillåter att användaren loggar in i <ph name="PRODUCT_NAME" />.
@@ -1976,6 +2027,14 @@
 <translation id="706669471845501145">Tillåt att webbplatser visar aviseringar på skrivbordet</translation>
 <translation id="7072208053150563108">Ändringsfrekvens för datorns lösenord</translation>
 <translation id="7072406291414141328">Aktiverar begränsning av bandbredden i nätverket</translation>
+<translation id="7074513465313721551">Konfigurera listan över domäner som Säker webbsökning litar på. Detta innebär:
+      Säker webbsökning söker inte efter skadliga resurser (t.ex. nätfiske, skadlig eller oönskad programvara) om webbadressen matchar dessa domäner.
+      Tjänsten för nedladdningsskydd i Säker webbsökning kontrollerar inte nedladdningar som värdlagras på dessa domäner.
+      Lösenordsskyddet i Säker webbsökning söker inte efter återanvända lösenord om sidans webbadress matchar dessa domäner.
+
+      Om inställningen aktiveras litar Säker webbsökning på dessa domäner.
+      Om inställningen inaktiveras, eller om inget värde anges, tillämpas standardskyddet från Säker webbsökning på alla resurser.
+      Principen är inte tillgänglig på Windows-instanser som inte har kopplats till en <ph name="MS_AD_NAME" />-domän.</translation>
 <translation id="7079519252486108041">Blockera popup-fönster på dessa webbplatser</translation>
 <translation id="7106631983877564505">Policyn aktiverar lås när <ph name="PRODUCT_OS_NAME" />-enheter blir inaktiva eller stängs av.
 

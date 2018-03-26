@@ -1113,6 +1113,13 @@ Dans les deux cas, les utilisateurs ne peuvent pas le modifier, ni le remplacer 
 Si cette règle n'est pas configurée, l'utilisateur peut décider d'afficher ou non le bouton Accueil.</translation>
 <translation id="4485425108474077672">Configurer l'URL de la page "Nouvel onglet"</translation>
 <translation id="4492287494009043413">Désactiver les captures d'écran</translation>
+<translation id="4497968613298501984">Permet de configurer la liste des URL de connexion d'entreprise (protocoles HTTP et HTTPS uniquement). L'empreinte numérique du mot de passe est capturée au niveau de ces URL et sert à détecter les mots de passe réutilisés.
+      Seuls les utilisateurs de GSuite disposant d'un système SSO/SMAL peuvent tirer parti de ce paramètre.
+      Afin que <ph name="PRODUCT_NAME" /> capture correctement les empreintes numériques du mot de passe, veuillez vous assurer que vos pages de connexion respectent les instructions fournies à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Si ce paramètre est activé, le service de protection par mot de passe capture l'empreinte numérique du mot de passe au niveau de ces URL afin de détecter les mots de passe réutilisés.
+      Si ce paramètre est désactivé, le service de protection par mot de passe ne capture que l'empreinte numérique du mot de passe sur https://accounts.google.com.
+      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Cette règle permet de définir la taille du cache utilisé par <ph name="PRODUCT_NAME" /> pour stocker les fichiers multimédias en cache sur le disque.
 
       Si vous définissez cette règle, <ph name="PRODUCT_NAME" /> utilise le cache en fonction de la taille indiquée, que l'utilisateur ait spécifié l'indicateur "--media-cache-size" ou non. La valeur définie dans cette règle ne constitue pas une limite absolue, il s'agit plutôt d'une suggestion pour le système de mise en cache. En effet, toute valeur inférieure à quelques mégaoctets est trop faible et est arrondie pour atteindre un minimum acceptable.
@@ -1231,6 +1238,12 @@ Si cette règle n'est pas configurée, la valeur par défaut globale est utilis�
 
       Si cette règle est laissée vide ou n'est pas définie, n'importe quel utilisateur peut alors se connecter à <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Autoriser le mode plein écran</translation>
+<translation id="4868249328547841081">Permet de configurer l'URL de modification de mot de passe (protocoles HTTP et HTTPS uniquement). Le service de protection par mot de passe redirige les utilisateurs vers cette URL afin qu'ils modifient leur mot de passe s'ils ont été victimes d'une attaque de hameçonnage.
+      Seuls les utilisateurs de GSuite disposant d'un système SSO/SMAL peuvent tirer parti de ce paramètre.
+      Afin que <ph name="PRODUCT_NAME" /> capture correctement les nouvelles empreintes numériques du mot de passe sur cette page de modification de ce dernier, veuillez vous assurer que cette page respecte les instructions fournies à l'adresse https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      Si ce paramètre est activé, le service de protection par mot de passe redirigera les utilisateurs vers cette URL afin qu'ils modifient leur mot de passe s'ils ont été victimes d'une attaque de hameçonnage.
+      Si ce paramètre est désactivé, le service de protection par mot de passe redirigera les utilisateurs vers https://accounts.google.com afin qu'ils modifient leur mot de passe.
+      Cette règle n'est pas disponible sur les instances Windows non associées à un domaine <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Indique si les WakeLock forçant l'activation de l'écran sont autorisés. Ces WakeLock peuvent être demandés par des extensions par le biais de l'API d'extension de gestion de l'alimentation.
 
           Si cette règle est définie sur "true" ou si elle n'est pas définie, les WakeLock forçant l'activation de l'écran sont pris en compte pour la gestion de l'alimentation.

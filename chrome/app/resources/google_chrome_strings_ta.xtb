@@ -38,10 +38,12 @@
 <translation id="1873233029667955273">Google Chrome உங்கள் இயல்புநிலை உலாவி அல்ல</translation>
 <translation id="1874309113135274312">Google Chrome பீட்டா (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome காலாவதியானது</translation>
+<translation id="2007150628464581396">{0,plural, =1{1 நிமிடத்தில் Chrome மீண்டும் தொடங்கும்}other{# நிமிடங்களில் Chrome மீண்டும் தொடங்கும்}}</translation>
 <translation id="2063848847527508675">புதுப்பிப்பைப் பயன்படுத்த, Chrome OSஐ மீண்டும் தொடங்க வேண்டும்.</translation>
 <translation id="2077129598763517140">கிடைக்கும்போது வன்பொருளின் முடுக்கத்தைப் பயன்படுத்தவும்</translation>
 <translation id="2084710999043359739">Chrome இல் சேர்</translation>
 <translation id="2094919256425865063">Chrome இலிருந்து வெளியேறவா?</translation>
+<translation id="210890598424854131">{0,plural, =0{இப்போது Chrome மீண்டும் தொடங்கும்}=1{1 வினாடியில் Chrome மீண்டும் தொடங்கும்}other{# வினாடிகளில் Chrome மீண்டும் தொடங்கும்}}</translation>
 <translation id="2120620239521071941">வெளியேறினால், இந்தச் சாதனத்திலிருந்து <ph name="ITEMS_COUNT" /> உருப்படிகள் நீக்கப்படும். பின்னர் தரவை மீட்டமைக்க, Chrome இல் <ph name="USER_EMAIL" /> எனும் முகவரியின் மூலம் உள்நுழையவும்.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />தற்போதைய அமைப்புகளைப்<ph name="END_LINK" />பற்றிய அறிக்கையை அனுப்பி, Chromeஐ இன்னும் சிறந்ததாக்க உதவவும்</translation>
 <translation id="216054706567564023">உங்கள் மொபைலில் Chromeஐ நிறுவவும். கணக்கின் மீட்பு மொபைல் எண்ணுக்கு SMS ஒன்றை அனுப்புவோம்.</translation>
@@ -59,8 +61,10 @@
 <translation id="2397416548179033562">Chrome மெனுவைக் காட்டு</translation>
 <translation id="2429317896000329049">உங்கள் களத்திற்கு ஒத்திசைவு இல்லாததால், Google Chrome ஆல் உங்கள் தரவை ஒத்திசைக்க முடியவில்லை.</translation>
 <translation id="2446511512801740068">சிறிது காலமாக மறுதொடக்கம் செய்யப்படாததால், Chrome காலாவதியாகிவிட்டது. புதுப்பிப்பு உள்ளது. நீங்கள் மறுதொடக்கம் செய்தவுடன் பயன்படுத்தப்படும்.</translation>
+<translation id="2467438592969358367">Google Chrome உங்கள் கடவுச்சொற்களை ஏற்ற விரும்புகிறது. இதை அனுமதிக்க, உங்கள் Windows கடவுச்சொல்லை உள்ளிடவும்.</translation>
 <translation id="2485422356828889247">நிறுவல் நீக்கு</translation>
 <translation id="2534507159460261402">Google Pay (Chromeக்கு நகலெடுக்கப்பட்டது)</translation>
+<translation id="2535429035253759792">இந்தப் புதுப்பிப்பைப் பயன்படுத்த, Chromeஐ மீண்டும் தொடங்கும்படி உங்கள் நிர்வாகி பரிந்துரைக்கிறார்</translation>
 <translation id="2580411288591421699">நடப்பில் இயங்கிக்கொண்டிருக்கும் அதே Google Chrome பதிப்பை நிறுவ முடியாது. Google Chrome ஐ மூடிவிட்டு மீண்டும் முயற்சி செய்க.</translation>
 <translation id="2586406160782125153">வெளியேறினால், இந்தச் சாதனத்திலிருந்து உங்கள் உலாவல் தரவு நீக்கப்படும். பின்னர் தரவை மீட்டமைக்க, Chrome இல் <ph name="USER_EMAIL" /> எனும் முகவரியின் மூலம் உள்நுழையவும்.</translation>
 <translation id="2588322182880276190">Chrome லோகோ</translation>
@@ -97,6 +101,7 @@
 <translation id="345171907106878721">உங்களை Chrome இல் சேர்க்கவும்</translation>
 <translation id="3479552764303398839">இப்பொழுது இல்லை</translation>
 <translation id="3503306920980160878">இந்தத் தளத்துடன் இருப்பிடத்தைப் பகிர, Chromeக்கு உங்கள் இருப்பிடத்திற்கான அணுகல் தேவை</translation>
+<translation id="3582972582564653026">உங்கள் எல்லாச் சாதனங்களிலும் Chromeஐ ஒத்திசைக்கலாம், தனிப்பயனாக்கலாம்</translation>
 <translation id="3612333635265770873">இதே பெயரைக் கொண்ட தொகுதிக்கூறு, Google Chrome உடன் முரண்பட்டிருப்பதாக அறியப்பட்டுள்ளது.</translation>
 <translation id="3622797965165704966">இப்போது உங்கள் Google கணக்குடனும், பகிரப்பட்ட கணினிகளிலும் Chrome ஐப் பயன்படுத்துவது எளிதானது.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />சேவை விதிமுறைகள்<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -119,6 +124,7 @@
 <translation id="4149882025268051530">காப்பகத்தை விரிவுபடுத்துவதில் இன்ஸ்டாலர் தோல்வியுற்றது. Google Chrome ஐ மீண்டும் பதிவிறக்குக.</translation>
 <translation id="4251615635259297716">உங்கள் Chrome தரவை இந்தக் கணக்குடன் இணைக்கவா?</translation>
 <translation id="4251625577313994583">iPhone இல் Chromeஐப் பெறுக</translation>
+<translation id="4293420128516039005">உங்கள் எல்லாச் சாதனங்களிலும் Chromeஐ ஒத்திசைக்க மற்றும் தனிப்பயனாக்க, உள்நுழையவும்</translation>
 <translation id="4309555186815777032">(Chrome ஐ <ph name="BEGIN_BUTTON" />மறுதொடக்கம்<ph name="END_BUTTON" /> செய்வது அவசியம்)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -129,6 +135,7 @@
 <translation id="4480040274068703980">உள்நுழைவதில் ஏற்பட்ட பிழைக் காரணமாக Chrome OS ஆல் உங்கள் தரவை ஒத்திசைக்க முடியவில்லை.</translation>
 <translation id="4561051373932531560">வலையில் ஒரு தொலைபேசி எண்ணைக் கிளிக் செய்து, அதனை Skype மூலமாக அழைப்பதற்கு உங்களை Google Chrome அனுமதிக்கிறது!</translation>
 <translation id="4567424176335768812">நீங்கள் <ph name="USER_EMAIL_ADDRESS" /> ஆக உள்நுழைந்துள்ளீர்கள். தற்போது உங்கள் புக்மார்க்குகள், வரலாறு மற்றும் பிற அமைப்புகளை நீங்கள் உள்நுழைந்துள்ள எல்லா சாதனங்களிலும் அணுகலாம்.</translation>
+<translation id="4571503333518166079">Chrome அறிவிப்பு அமைப்புகளுக்குச் செல்</translation>
 <translation id="4600710005438004015">Chrome சமீபத்திய பதிப்பிற்குப் புதுப்பிக்கப்படவில்லை என்பதால், புதிய அம்சங்களையும் பாதுகாப்புத் திருத்தங்களையும் தவறவிடுகிறீர்கள்.</translation>
 <translation id="4631713731678262610">Chrome மெனுவில் மறை</translation>
 <translation id="4633000520311261472">Chrome ஐப் பாதுகாப்பானதாக்க <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> இல் பட்டியலிடப்படாத சில நீட்டிப்புகளை நாங்கள் முடக்கிவிட்டோம் மேலும் அவை உங்களுக்குத் தெரியாமல் சேர்க்கப்பட்டிருக்கலாம்.</translation>
@@ -164,6 +171,7 @@
 <translation id="556024056938947818">Google Chrome ஆனது கடவுச்சொற்களைக் காட்ட முயற்சிக்கிறது.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ஆபத்தானதாக இருக்கலாம் என்பதால் Chrome அதைத் தடுத்துள்ளது.</translation>
+<translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome 1 வினாடியில் மீண்டும் தொடங்கும்}other{Google Chrome # வினாடிகளில் மீண்டும் தொடங்கும்}}</translation>
 <translation id="573759479754913123">Chrome OS அறிமுகம்</translation>
 <translation id="5774845247549698882">Chrome OS இந்த மொழியில் காட்டப்படுகிறது</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
@@ -192,6 +200,7 @@
 <translation id="6600954340915313787">Chromeக்கு நகலெடுக்கப்பட்டது</translation>
 <translation id="6634887557811630702">Google Chrome புதுப்பித்த நிலையில் உள்ளது.</translation>
 <translation id="6676384891291319759">இணையத்தை அணுகுதல்</translation>
+<translation id="6679975945624592337">பின்னணியில் Google Chromeஐ இயங்க அனுமதி</translation>
 <translation id="677276454032249905">Chrome இலிருந்து வெளியேறவா?</translation>
 <translation id="683440813066116847">mDNS ட்ராஃபிக்கை அனுமதிப்பதற்கான, Google Chrome Canary க்கான உள்வரும் விதி.</translation>
 <translation id="686561893457936865">Chromeஐ எல்லா இடங்களுக்கும் எடுத்துச் செல்லலாம்</translation>
@@ -245,6 +254,7 @@
 <translation id="8286862437124483331">Google Chrome கடவுச்சொற்களைக் காண்பிக்க முயற்சிக்கிறது. இதை அனுமதிக்க உங்கள் Windows கடவுச்சொல்லைத் தட்டச்சு செய்யவும்.</translation>
 <translation id="8290100596633877290">அச்சச்சோ! Google Chrome செயலிழந்தது. இப்போது மீண்டும் தொடங்கவா?</translation>
 <translation id="8342675569599923794">இந்தக் கோப்பு ஆபத்தானது என்பதால், அதை Chrome தடுத்துள்ளது.</translation>
+<translation id="840084489713044809">Google Chrome உங்கள் கடவுச்சொற்களை ஏற்ற விரும்புகிறது.</translation>
 <translation id="8406086379114794905">Chrome ஐ மேலும் சிறப்பாக்க உதவவும்</translation>
 <translation id="8439301513305169426">Chrome இந்தக் கடவுச்சொல்லை <ph name="SAVED_PASSWORD_LINK" /> இல் சேமிக்கும். அதை நினைவில் வைத்திருக்க வேண்டிய அவசியமில்லை.</translation>
 <translation id="8455999171311319804">விருப்பத்தேர்வுக்குரியது: பிழை அறிக்கையையும் உபயோகத் தரவையும் Googleக்குத் தானாக அனுப்புவதன் மூலம், Chrome OSஐ இன்னும் சிறப்பாக்க உதவவும்.</translation>
@@ -254,6 +264,7 @@
 <translation id="8547799825197623713">Chrome பயன்பாட்டுத் துவக்கி Canary</translation>
 <translation id="8556340503434111824">Google Chrome இன் புதிய பதிப்பு கிடைக்கிறது, அது முன்னெப்போதையும் விட விரைவானது.</translation>
 <translation id="8568392309447938879">பயன்பாடுகளைப் பயன்படுத்துவதற்கு நீங்கள் Chrome இல் உள்நுழைந்திருக்க வேண்டும். இது எல்லா சாதனங்களிலும் உங்கள் பயன்பாடுகள், புத்தகக்குறிகள், வரலாறு, கடவுச்சொற்கள் மற்றும் பிற அமைப்புகள் ஆகியவற்றை ஒத்திசைக்க Chrome ஐ அனுமதிக்கிறது.</translation>
+<translation id="859960207076826247">{0,plural, =0{Chrome புதுப்பிப்பு கிடைக்கிறது}=1{Chrome புதுப்பிப்பு கிடைக்கிறது}other{# நாட்களுக்கு Chrome புதுப்பிப்பு கிடைக்கிறது}}</translation>
 <translation id="8606668294522778825">உங்கள் உலாவல் அனுபவத்தை மேம்படுத்த இணைய சேவைகளை Google Chrome பயன்படுத்தலாம். விருப்பத்திற்கேற்ப இந்தச் சேவைகளை நீங்கள் முடக்கலாம். <ph name="BEGIN_LINK" />மேலும் அறிக<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome பதிலளிக்கவில்லை. இப்போது மீண்டும் தொடங்கவா?</translation>
 <translation id="8667808506758191620">உங்கள் <ph name="DEVICE_TYPE" /> புதுப்பித்த நிலையில் உள்ளது.</translation>
@@ -261,6 +272,7 @@
 <translation id="8679801911857917785">Chrome ஐத் தொடங்கும்போது காண்பிக்கப்படும் பக்கத்தையும் இது கட்டுப்படுத்துகிறது.</translation>
 <translation id="870251953148363156">&amp;Google Chrome ஐப் புதுப்பி</translation>
 <translation id="873133009373065397">இயல்புநிலை உலாவியைக் கண்டறியவோ அமைக்கவோ Google Chrome ஆல் முடியவில்லை</translation>
+<translation id="8736674169840206667">புதுப்பிப்பைப் பயன்படுத்த, Chromeஐ மீண்டும் தொடங்கும்படி உங்கள் நிர்வாகி சொல்கிறார்</translation>
 <translation id="8796108026289707191">இப்போது Google Chromeஐ மீண்டும் தொடங்க வேண்டும்.</translation>
 <translation id="8823341990149967727">Chrome காலாவதியானது</translation>
 <translation id="884296878221830158">Chrome ஐத் தொடங்கும்போது அல்லது முகப்புப் பொத்தானைக் கிளிக் செய்யும்போது காண்பிக்கப்படும் பக்கத்தையும் இது கட்டுப்படுத்துகிறது.</translation>

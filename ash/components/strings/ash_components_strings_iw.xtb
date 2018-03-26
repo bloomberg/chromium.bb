@@ -3,6 +3,7 @@
 <translationbundle lang="iw">
 <translation id="104962181688258143">פתיחת האפליקציה 'קבצים'</translation>
 <translation id="1126871238933253947">מעבר לשפת המקלדת הקודמת שבה השתמשת.</translation>
+<translation id="1134347825771908369">השתקת עוצמת הקול</translation>
 <translation id="1195667586424773550">גרירת הקישור אל סרגל הכתובות של הכרטיסייה</translation>
 <translation id="1204450209689312104">פתיחת חלון חדש במצב גלישה בסתר</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">שמירת כל הדפים הפתוחים בחלון הנוכחי כסימניות בתיקייה חדשה</translation>
 <translation id="355103131818127604">פתיחת הקישור בכרטיסייה חדשה ברקע</translation>
 <translation id="3649256019230929621">מזער את החלון</translation>
+<translation id="3655154169297074232">כרטיסיות וחלונות</translation>
 <translation id="3668361878347172356">ביצוע מחדש של הפעולה האחרונה</translation>
 <translation id="3720939646656082033">פתיחת הקישור בכרטיסייה חדשה ומעבר לכרטיסייה החדשה</translation>
 <translation id="3725795051337497754">סגירת הכרטיסייה הנוכחית</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">שמירת הקישור כסימניה</translation>
 <translation id="4141203561740478845">הדגשת השורה של סרגל הכתובות</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> או <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">מצב סקירה כללית</translation>
+<translation id="4472417192667361414">הגדרות תצוגה ומערכת</translation>
 <translation id="4556221320735744018">הצגת עזרה למקשי קיצור</translation>
 <translation id="4628718545549558538">פתיחת אזור הסטטוס (האזור שבו מופיעה תמונת החשבון)</translation>
 <translation id="4642092649622328492">יצירת צילום מסך חלקי</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">מעבר אל תחילת המסמך</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> או <ph name="E" /></translation>
 <translation id="8234414138295101081">סיבוב המסך ב-90 מעלות</translation>
+<translation id="826184564253127735">מציג מקשי הקיצור</translation>
 <translation id="836869401750819675">פתיחת הדף 'הורדות'</translation>
 <translation id="8388247778047144397">גרירת הקישור לאזור ריק בשורת הכרטיסיות</translation>
 <translation id="8389638407792712197">פתיחת חלון חדש</translation>
@@ -144,7 +149,17 @@
 <translation id="8644639153978066712">הצגת קבצים מוסתרים באפליקציה 'קבצים'</translation>
 <translation id="8717459106217102612">בחירת המילה או האות הקודמת</translation>
 <translation id="8727232706774971183">הצגת ההודעות שלך</translation>
+<translation id="8855885154700222542">מקש מסך מלא</translation>
 <translation id="88986195241502842">Page down</translation>
 <translation id="8903921497873541725">התקרב</translation>
+<translation id="8924883688469390268">מעבר למשתמש הקודם</translation>
+<translation id="8977648847395357314">בחירת התוכן בסרגל הכתובות</translation>
+<translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 עד 8</translation>
+<translation id="9041599225465145264">הדבקת התוכן מהלוח</translation>
+<translation id="9052808072970550123">מעבר למשתמש הבא</translation>
+<translation id="9106898733795143799">דפים ודפדפן אינטרנט</translation>
 <translation id="9179672198516322668">מקשי קיצור בשימוש נפוץ</translation>
+<translation id="93603345341560814">הקשה על <ph name="SHIFT" /> ולחיצה על קישור</translation>
+<translation id="945383118875625837">גרירת הקישור לסרגל הסימניות</translation>
+<translation id="98120814841227350">מעבר אל סוף המסמך</translation>
 </translationbundle>

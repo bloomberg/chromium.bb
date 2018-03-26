@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Utilizar o seu microfone e a câmara</translation>
 <translation id="1007408791287232274">Não foi possível carregar dispositivos.</translation>
 <translation id="1008186147501209563">Exportar marcadores</translation>
-<translation id="1009147628737158130"><ph name="URL" /> pretende ver informações de identificação acerca da sua Chave de segurança.</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Página sem resposta}other{Páginas sem resposta}}</translation>
 <translation id="1012794136286421601">Os seus ficheiros de Documentos, Folhas, Apresentações e Desenhos estão a ser sincronizados. Abra a aplicação Google Drive para aceder aos ficheiros online ou offline.</translation>
 <translation id="1013707859758800957">A execução de um plug-in sem isolamento de processos foi permitida nesta página.</translation>
@@ -1277,7 +1276,6 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2932483646085333864">Termine e inicie sessão novamente para iniciar a sincronização</translation>
 <translation id="2932883381142163287">Denunciar abuso</translation>
 <translation id="2938225289965773019">Abrir links de <ph name="PROTOCOL" /></translation>
-<translation id="2938335670027321024">Mova o controlador para reposicionar a janela. Clique para terminar.</translation>
 <translation id="2939938020978911855">Mostrar dispositivos Bluetooth disponíveis</translation>
 <translation id="2941112035454246133">Baixa</translation>
 <translation id="2942560570858569904">A aguardar...</translation>
@@ -1847,7 +1845,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="379422718204375917">Utilizar o Smart Lock para iniciar sessão na sua conta</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
 <translation id="3797900183766075808">Pe&amp;squisar no <ph name="SEARCH_ENGINE" /> por "<ph name="SEARCH_TERMS" />"</translation>
-<translation id="3798325802885154040">Permite-lhe ativar/desativar a funcionalidade tocar para clicar</translation>
 <translation id="3798449238516105146">Versão</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Abrir todos}=1{&amp;Abrir marcador}other{&amp;Abrir todos (#)}}</translation>
 <translation id="3800806661949714323">Mostrar tudo (recomendado)</translation>
@@ -2929,7 +2926,6 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="5556206011531515970">Clique em seguinte para escolher o seu navegador predefinido.</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="555746285996217175">Bloquear/ligar e desligar</translation>
-<translation id="5557579359142031072">Ver informações de identificação acerca da sua Chave de segurança</translation>
 <translation id="5557991081552967863">Manter Wi-Fi durante a suspensão</translation>
 <translation id="5558129378926964177">Amp&amp;liar</translation>
 <translation id="55601339223879446">Ajustar os limites do seu ambiente de trabalho no ecrã</translation>
@@ -4006,7 +4002,6 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7289225569524511578">Abrir a aplicação da imagem de fundo</translation>
 <translation id="7290242001003353852">Este serviço de início de sessão, alojado por <ph name="SAML_DOMAIN" />, está a aceder à sua câmara.</translation>
 <translation id="7290594223351252791">Confirmar registo</translation>
-<translation id="7292324470889366655">Terminar reposicionamento</translation>
 <translation id="729459249680637905">Tentativas restantes: $1</translation>
 <translation id="7295662345261934369">Partilhar com outros</translation>
 <translation id="729583233778673644">Permitir a encriptação AES e RC4. A utilização desta opção aumenta o seu risco, uma vez que as cifras RC4 são inseguras.</translation>

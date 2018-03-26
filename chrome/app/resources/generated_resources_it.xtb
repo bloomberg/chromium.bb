@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Utilizzo del microfono e della fotocamera</translation>
 <translation id="1007408791287232274">Impossibile caricare i dispositivi.</translation>
 <translation id="1008186147501209563">Esporta preferiti</translation>
-<translation id="1009147628737158130"><ph name="URL" /> vorrebbe accedere alle informazioni di identificazione del tuo token di sicurezza</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{La pagina non risponde}other{Le pagine non rispondono}}</translation>
 <translation id="1012794136286421601">I tuoi file di Documenti, Fogli di lavoro, Presentazioni e Disegni sono in fase di sincronizzazione. Apri l'app Google Drive per accedervi online oppure offline.</translation>
 <translation id="1013707859758800957">È stata consentita l'esecuzione di un plug-in senza sandbox in questa pagina.</translation>
@@ -1275,7 +1274,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2932483646085333864">Esci e accedi di nuovo per avviare la sincronizzazione</translation>
 <translation id="2932883381142163287">Segnala abuso</translation>
 <translation id="2938225289965773019">Aprire i link <ph name="PROTOCOL" /></translation>
-<translation id="2938335670027321024">Sposta il controller per cambiare posizione. Fai clic per terminare l'operazione.</translation>
 <translation id="2939938020978911855">Mostra dispositivi Bluetooth disponibili</translation>
 <translation id="2941112035454246133">Bassa</translation>
 <translation id="2942560570858569904">In attesa…</translation>
@@ -1842,7 +1840,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="379422718204375917">Usa Smart Lock per accedere al tuo account</translation>
 <translation id="3796648294839530037">Reti preferite:</translation>
 <translation id="3797900183766075808">&amp;Cerca "<ph name="SEARCH_TERMS" />" su <ph name="SEARCH_ENGINE" /></translation>
-<translation id="3798325802885154040">Consente di attivare/disattivare il tocco per fare clic</translation>
 <translation id="3798449238516105146">Versione</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Apri tutti}=1{&amp;Apri preferito}other{&amp;Apri tutti (#)}}</translation>
 <translation id="3800806661949714323">Mostra tutto (opzione consigliata)</translation>
@@ -2923,7 +2920,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5556206011531515970">Fai clic su Avanti per scegliere il browser predefinito.</translation>
 <translation id="5556459405103347317">Ricarica</translation>
 <translation id="555746285996217175">Blocca/accendi</translation>
-<translation id="5557579359142031072">Accedere alle informazioni di identificazione del tuo token di sicurezza</translation>
 <translation id="5557991081552967863">Lascia attivo il Wi-Fi durante la sospensione</translation>
 <translation id="5558129378926964177">&amp;Ingrandisci</translation>
 <translation id="55601339223879446">Regola i bordi del desktop all'interno del display</translation>
@@ -3999,7 +3995,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="7289225569524511578">Apri l'app wallpaper</translation>
 <translation id="7290242001003353852">Questo servizio di accesso, ospitato da <ph name="SAML_DOMAIN" />, sta accedendo alla videocamera.</translation>
 <translation id="7290594223351252791">Conferma registrazione</translation>
-<translation id="7292324470889366655">Termina riposizionamento</translation>
 <translation id="729459249680637905">Tentativi rimanenti: $1</translation>
 <translation id="7295662345261934369">Condividi con altri</translation>
 <translation id="729583233778673644">Consenti la crittografia AES e RC4. Se scegli di utilizzare quest'opzione vai incontro a un rischio maggiore, in quanto le crittografie RC4 non sono sicure.</translation>

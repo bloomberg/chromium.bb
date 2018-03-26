@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Utilizar el micrófono y la cámara</translation>
 <translation id="1007408791287232274">No se han podido cargar dispositivos.</translation>
 <translation id="1008186147501209563">Exportar marcadores</translation>
-<translation id="1009147628737158130"><ph name="URL" /> quiere ver información de identificación sobre tu llave de seguridad</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{La página no responde}other{Las páginas no responden}}</translation>
 <translation id="1012794136286421601">Se están sincronizando tus archivos de Documentos, Hojas de cálculo, Presentaciones y Dibujos de Google. Abre la aplicación Google Drive para acceder a ellos con y sin conexión.</translation>
 <translation id="1013707859758800957">Se ha permitido la ejecución de un complemento no incluido en la zona de pruebas en esta página.</translation>
@@ -1278,7 +1277,6 @@ sistema operativo desde una unidad USB
 <translation id="2932483646085333864">Cierra sesión y vuelve a iniciarla para empezar la sincronización</translation>
 <translation id="2932883381142163287">Notificar uso inadecuado</translation>
 <translation id="2938225289965773019">Abrir enlaces de <ph name="PROTOCOL" /></translation>
-<translation id="2938335670027321024">Mueve el controlador para volver a colocarla. Haz clic para terminar.</translation>
 <translation id="2939938020978911855">Mostrar dispositivos Bluetooth disponibles</translation>
 <translation id="2941112035454246133">Baja</translation>
 <translation id="2942560570858569904">Esperando...</translation>
@@ -1845,7 +1843,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="379422718204375917">Utilizar Smart Lock para iniciar sesión en tu cuenta</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
 <translation id="3797900183766075808">&amp;Buscar <ph name="SEARCH_TERMS" /> en <ph name="SEARCH_ENGINE" /></translation>
-<translation id="3798325802885154040">Te permite habilitar e inhabilitar la función Tocar para hacer clic</translation>
 <translation id="3798449238516105146">Versión</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Abrir todas}=1{&amp;Abrir marcador}other{&amp;Abrir (#)}}</translation>
 <translation id="3800806661949714323">Mostrar todo (recomendado)</translation>
@@ -2925,7 +2922,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5556206011531515970">Haz clic en Siguiente para seleccionar el navegador predeterminado.</translation>
 <translation id="5556459405103347317">Volver a cargar</translation>
 <translation id="555746285996217175">Bloqueo/encendido</translation>
-<translation id="5557579359142031072">Ver información de identificación sobre tu llave de seguridad</translation>
 <translation id="5557991081552967863">Usar Wi-Fi en suspensión</translation>
 <translation id="5558129378926964177">Ampliar &amp;zoom</translation>
 <translation id="55601339223879446">Ajusta los extremos de tu escritorio en la pantalla</translation>
@@ -4000,7 +3996,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7289225569524511578">Abrir aplicación de fondos de pantalla</translation>
 <translation id="7290242001003353852">Este servicio de inicio de sesión (que se aloja en <ph name="SAML_DOMAIN" />) está accediendo a la cámara.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
-<translation id="7292324470889366655">Terminar de colocar</translation>
 <translation id="729459249680637905">Intentos restantes: $1</translation>
 <translation id="7295662345261934369">Compartir con otros usuarios</translation>
 <translation id="729583233778673644">Permite los cifrados AES y RC4. Esta opción aumenta el riesgo, ya que los algoritmos de cifrado de RC4 no son seguros.</translation>

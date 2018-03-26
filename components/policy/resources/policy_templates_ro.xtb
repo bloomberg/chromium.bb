@@ -58,6 +58,16 @@
 
       Dacă această politică este folosită, utilizatorii vor putea folosi toate imprimantele, cu excepția celor ale căror ID-uri sunt specificate în politică.
       </translation>
+<translation id="1181881366217399113">
+      NOTĂ: această politică este experimentală și poate întrerupe funcționarea!
+      
+Dacă politica este activată, fiecare dintre originile indicate într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola originile denumite după subdomenii; de exemplu, specificarea https://example.com/ va
+      cauza și izolarea https://foo.example.com/ ca parte a site-ului
+      https://example.com/ site.
+      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
+      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
+      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii privind dispozitivele <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului și se aplică valoarea specificată în politica privind utilizatorii.
+      </translation>
 <translation id="1198465924256827162">Frecvența de trimitere a informațiilor privind starea dispozitivului, în milisecunde.
 
       Dacă această politică nu este configurată, frecvența prestabilită este de 3
@@ -249,7 +259,15 @@
       Formatul valorii respectă denumirile fusurilor orare din „Baza de date de fusuri orare IANA” (accesează „https://en.wikipedia.org/wiki/Tz_database”). Mai exact, majoritatea fusurilor orare sunt denumite după formatul „continent/oraș_mare” sau „ocean/oraș_mare”.
 
       Dacă setezi această politică, stabilirea automată a fusului orar în funcție de locația dispozitivului va fi dezactivată complet. De asemenea, se modifică politica SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Indicativul pentru înregistrarea politicii privind serviciile cloud pe desktop</translation>
 <translation id="1897365952389968758">Permite tuturor site-urilor să ruleze JavaScript</translation>
+<translation id="1906888171268104594">Această politică stabilește dacă valorile de utilizare și datele de diagnosticare, inclusiv rapoartele de blocare, sunt raportate la Google.
+
+      Dacă politica este activată, <ph name="PRODUCT_OS_NAME" /> va raporta valorile de utilizare și datele de diagnosticare.
+
+      Dacă politica este dezactivată, raportarea valorilor și a datelor de diagnosticare va fi dezactivată.
+
+      Dacă politica nu este configurată, raportarea valorilor și a datelor de diagnosticare va fi dezactivată pe dispozitivele negestionate și activată pe dispozitivele gestionate.</translation>
 <translation id="193259052151668190">Listă albă de dispozitive USB detașabile</translation>
 <translation id="1933378685401357864">Imagine de fundal</translation>
 <translation id="1956493342242507974">Configurează gestionarea consumului de energie pe ecranul de conectare din <ph name="PRODUCT_OS_NAME" />.
@@ -406,6 +424,12 @@
 <translation id="2386362615870139244">Permiteți blocarea activării ecranului</translation>
 <translation id="2411817661175306360">Avertismentul privind protecția prin parolă este dezactivat</translation>
 <translation id="2411919772666155530">Blocați notificările pe aceste site-uri</translation>
+<translation id="2415979855753196119">Îți permite să controlezi declanșarea semnalării unui cont protejat prin parolă care prezintă un risc. Prin declanșarea semnalării unui cont protejat prin parolă care prezintă un risc, Google află că acest cont riscă să fie spart.
+
+      Dacă această politică este setată la „PasswordProtectionRiskOff”, nu se va declanșa semnalarea contului protejat prin parolă care prezintă un risc.
+      Dacă această politică este setată la „PasswordProtectionRiskOnPasswordReuse”, semnalarea contului protejat prin parolă care prezintă un risc se va declanșa când utilizatorii refolosesc parolele Google pe site-uri care nu sunt trecute în lista albă.
+      Dacă această politică este setată la „PasswordProtectionRiskOnPhishingReuse”, semnalarea contului protejat prin parolă care prezintă un risc se va declanșa când utilizatorii refolosesc parolele Google pe site-uri de phishing.
+      Dacă această politică nu este configurată, semnalarea contului protejat prin parolă care prezintă un risc se va declanșa când utilizatorii refolosesc parolele Google pe site-uri de phishing, dar utilizatorul poate modifica această setare.</translation>
 <translation id="2418507228189425036">Dezactivează salvarea istoricului de navigare în <ph name="PRODUCT_NAME" /> și împiedică utilizatorii să schimbe această setare.
 
       Dacă această setare este activată, istoricul de navigare nu va fi salvat. Această setare dezactivează și sincronizarea filelor.
@@ -591,6 +615,12 @@
 
       Dacă activezi această setare, funcția Previzualizare înainte de printare va folosi imprimanta prestabilită pentru sistemul de operare ca opțiune de destinație prestabilită.</translation>
 <translation id="2867699958489427143">Revino și rămâi la versiunea țintă dacă versiunea SO este mai nouă decât ținta. Efectuează un Powerwash complet în timpul procesului.</translation>
+<translation id="286802604195763750">Îți permite să controlezi declanșarea avertismentului privind protecția prin parolă. Protecția prin parolă îi avertizează pe utilizatori când refolosesc parola protejată pe site-uri potențial suspecte.
+
+      Dacă această politică este setată la „PasswordProtectionWarningOff”, nu se va afișa niciun avertisment privind protecția prin parolă.
+      Dacă această politică este setată la „PasswordProtectionWarningOnPasswordReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorii refolosesc parolele Google pe site-uri care nu sunt trecute în lista albă.
+      Dacă această politică este setată la „PasswordProtectionWarningOnPhishingReuse”, avertismentul privind protecția prin parolă se va afișa când utilizatorii refolosesc parolele Google pe site-uri de phishing.
+      Dacă această politică nu este configurată, avertismentul privind protecția prin parolă se va declanșa când utilizatorii refolosesc parolele Google pe site-uri de phishing, dar utilizatorul poate modifica această setare.</translation>
 <translation id="2872961005593481000">Închide</translation>
 <translation id="2874209944580848064">Notă pentru dispozitivele <ph name="PRODUCT_OS_NAME" /> care acceptă aplicațiile Android:</translation>
 <translation id="2877225735001246144">Dezactivează căutarea CNAME la negocierea autentificării pentru Kerberos</translation>
@@ -625,6 +655,15 @@
           Valoarea politicii trebuie specificată în milisecunde. Valorile trebuie să fie mai mici sau egale cu intervalul pentru oprirea ecranului (dacă este setat) și cu intervalul de inactivitate.</translation>
 <translation id="2987155890997901449">Activează ARC</translation>
 <translation id="2987227569419001736">Controlează folosirea API-ului Web Bluetooth</translation>
+<translation id="2998886474614739865">
+      NOTĂ: această politică este experimentală și poate întrerupe funcționarea!
+      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului și se aplică valoarea specificată în politica privind utilizatorii.
+      
+Dacă politica este activată, fiecare dintre originile indicate într-o listă de valori separate prin virgulă va rula propriul proces. Aceasta va izola, de asemenea, originile denumite după subdomenii; de exemplu, specificarea https://example.com/ va cauza și izolarea
+ https://foo.example.com/ ca parte a site-ului https://example.com/.
+      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
+      Dacă politica nu este configurată, pentru ecranul de conectare vor fi folosite setările de izolare a site-ului prestabilite pentru platforma respectivă.
+      </translation>
 <translation id="3016255526521614822">Trece în lista albă aplicațiile pentru creat note permise pe ecranul de blocare din <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Numărul de repere pentru care este permisă revenirea la versiunea anterioară</translation>
 <translation id="3030000825273123558">Activați raportarea statisticilor</translation>
@@ -728,6 +767,17 @@
 
           Dacă această politică este setată la un șir completat, acel șir va fi folosit ca nume al destinației pentru <ph name="PRODUCT_NAME" />. În caz contrar, numele destinației va fi numele dispozitivului. Dacă această politică nu este setată, numele destinației va fi numele dispozitivului, iar proprietarului dispozitivului (sau unui utilizator de pe domeniul care gestionează dispozitivul) i se va permite să îl modifice. Numele este limitat la 24 de caractere.</translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
+<translation id="3386001018488754001">
+      NOTĂ: această politică este experimentală și poate întrerupe funcționarea!
+      Această politică se aplică pentru ecranul de conectare. Consultă și politica <ph name="SITE_PER_PROCESS_POLICY_NAME" />, care se aplică pentru sesiunea utilizatorului. Se recomandă setarea ambelor politici la aceeași valoare. Dacă valorile nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului și se aplică valoarea specificată în politica privind utilizatorii.
+      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a
+      beneficia la maximum de fiecare, de izolare și de impact limitat asupra utilizatorilor, folosind
+      IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Această setare,
+      SitePerProcess, izolează toate site-urile.
+      Dacă politica este activată, fiecare site va rula propriul proces.
+      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
+      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
+      </translation>
 <translation id="3395348522300156660">Specifică imprimantele pe care le poate folosi un utilizator.
 
       Această politică este folosită numai dacă opțiunea <ph name="PRINTERS_WHITELIST" /> este aleasă pentru <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -766,6 +816,10 @@
           Dacă politica este dezactivată sau este lăsată nesetată, întârzierile din managementul alimentării cu energie și limita de durată a sesiunii încep să ruleze imediat după începutul sesiunii.</translation>
 <translation id="3478024346823118645">Ștergeți datele utilizatorului la deconectare</translation>
 <translation id="348495353354674884">Activați tastatura virtuală</translation>
+<translation id="3487623755010328395">
+        Dacă această politică este configurată, <ph name="PRODUCT_NAME" /> va încerca să se înregistreze și să aplice politica privind serviciile cloud asociată pentru toate profilurile.
+
+        Valoarea acestei politici este un Indicativ pentru înregistrare care se găsește în consola de administrare Google.</translation>
 <translation id="3496296378755072552">Manager de parole</translation>
 <translation id="350443680860256679">Configurează ARC</translation>
 <translation id="3504791027627803580">Specifică adresa URL a motorului de căutare utilizat pentru a oferi căutarea de imagini. Solicitările de căutare vor fi trimise prin metoda GET. Dacă este setată politica „DefaultSearchProviderImageURLPostParams”, solicitările pentru căutarea de imagini vor utiliza metoda POST.
@@ -1334,6 +1388,17 @@
 
       Dacă politica nu este configurată sau dacă este setată la un șir gol ori la un interval de porturi nevalid, WebRTC poate să folosească orice port UDP local disponibil.</translation>
 <translation id="5290940294294002042">Specifică o listă de pluginuri pe care utilizatorul le poate activa sau dezactiva</translation>
+<translation id="5301787427319106606">
+      NOTĂ: această politică este experimentală și poate întrerupe funcționarea!
+      Îți recomandăm să verifici setarea pentru politica IsolateOrigins pentru a
+      beneficia la maximum de fiecare, de izolare și de impact limitat asupra utilizatorilor, folosind
+      IsolateOrigins cu o listă a site-urilor pe care vrei să le izolezi. Această setare,
+      SitePerProcess, izolează toate site-urile.
+      Dacă politica este activată, fiecare site va rula propriul proces.
+      Dacă politica este dezactivată, va fi aplicată logica de gestionare a proceselor prealabilă Izolării site-ului.
+      Dacă politica nu este configurată, utilizatorul va putea modifica această setare.
+      În <ph name="PRODUCT_OS_NAME" />, se recomandă setarea politicii pentru dispozitive <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> la aceeași valoare. Dacă valorile specificate în cele două politici nu corespund, poate apărea o întârziere la intrarea în sesiunea utilizatorului și se aplică valoarea specificată în politica privind utilizatorii.
+      </translation>
 <translation id="5302612588919538756">Această politică este învechită. Îți recomandăm să folosești SyncDisabled.
 
       Permite utilizatorului să se conecteze la <ph name="PRODUCT_NAME" />.
@@ -1890,6 +1955,14 @@
 <translation id="706669471845501145">Permite site-urilor să afișeze notificări pe desktop</translation>
 <translation id="7072208053150563108">Frecvența de schimbare a parolelor de computer</translation>
 <translation id="7072406291414141328">Activează limitarea lățimii de bandă a rețelei</translation>
+<translation id="7074513465313721551">Configurează lista de domenii în care Navigarea sigură va avea încredere. Aceasta înseamnă că:
+      navigarea sigură nu va verifica dacă există resurse periculoase (de exemplu, software de phishing, programe malware sau software nedorit) dacă adresele URL respective corespund acestor domenii;
+      serviciul de protecție a descărcării pentru Navigarea sigură nu va verifica descărcările găzduite pe aceste domenii;
+      serviciul de protecție prin parolă pentru Navigarea sigură nu va verifica refolosirea parolei dacă adresa URL a paginii corespunde acestor domenii.
+
+      Dacă setarea este activată, Navigarea sigură va avea încredere în aceste domenii.
+      Dacă setarea este dezactivată sau neconfigurată, protecția prestabilită prin Navigarea sigură se aplică tuturor resurselor.
+      Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blochează ferestrele pop-up de pe aceste site-uri</translation>
 <translation id="7106631983877564505">Activează blocarea când dispozitivele <ph name="PRODUCT_OS_NAME" /> ajung să fie inactive sau suspendate.
 

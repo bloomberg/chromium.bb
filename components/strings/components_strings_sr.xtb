@@ -430,6 +430,7 @@
 <translation id="4103249731201008433">Серијски број уређаја је неважећи</translation>
 <translation id="410351446219883937">Аутоплеј</translation>
 <translation id="4103763322291513355">Посетите &lt;strong&gt;chrome://policy&lt;/strong&gt; да бисте видели листу URL-ова стављених на црну листу и друге смернице које је наметнуо администратор система.</translation>
+<translation id="4110652170750985508">Прегледајте уплату</translation>
 <translation id="4116663294526079822">Увек дозволи на овом сајту</translation>
 <translation id="4117700440116928470">Опсег смерница није подржан.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{још 1}one{још #}few{још #}other{још #}}</translation>
@@ -802,6 +803,7 @@
 <translation id="7275334191706090484">Обележивачи којим се управља</translation>
 <translation id="7298195798382681320">Препоручено</translation>
 <translation id="7309308571273880165">Извештај о отказивању је снимљен <ph name="CRASH_TIME" /> (корисник треба да га отпреми, још увек није отпремљен)</translation>
+<translation id="7320336641823683070">Помоћ при повезивању</translation>
 <translation id="7334320624316649418">&amp;Понови промену редоследа</translation>
 <translation id="733923710415886693">Сертификат сервера није откривен помоћу Транспарентности сертификата.</translation>
 <translation id="7353601530677266744">Командна линија</translation>
@@ -886,6 +888,7 @@
 <translation id="782886543891417279">Wi-Fi мрежа коју користите (<ph name="WIFI_NAME" />) ће можда захтевати да посетите страницу за пријављивање.</translation>
 <translation id="785549533363645510">Али, нисте невидљиви. Преласком у режим без архивирања нећете сакрити прегледање од послодавца, интернет провајдера или веб-сајтова које посећујете.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="7862185352068345852">Желите ли да напустите сајт?</translation>
 <translation id="7878176543348854470">Прихватају се дебитне и припејд картице.</translation>
 <translation id="7878562273885520351">Лозинка је можда компромитована</translation>
 <translation id="7887683347370398519">Проверите CVC и покушајте поново</translation>
@@ -908,6 +911,7 @@
 <translation id="8041940743680923270">Користи глобалну подразумевану вредност (Питај)</translation>
 <translation id="8042918947222776840">Одаберите начин преузимања</translation>
 <translation id="8057711352706143257">Софтвер „<ph name="SOFTWARE_NAME" />“ није правилно конфигурисан. Деинсталирање софтвера „<ph name="SOFTWARE_NAME" />“ обично решава проблем. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8079031581361219619">Желите ли поново да учитате сајт?</translation>
 <translation id="8088680233425245692">Прегледање чланка није успело.</translation>
 <translation id="8091372947890762290">Активација је на чекању на серверу</translation>
 <translation id="8094917007353911263">Мрежа коју користите ће можда захтевати да посетите <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -923,6 +927,7 @@
 <translation id="8201077131113104583">Неважећи URL за ажурирање за додатак са ИД-ом „<ph name="EXTENSION_ID" />“.</translation>
 <translation id="8202097416529803614">Резиме поруџбине</translation>
 <translation id="8205463626947051446">Сајт приказује огласе који ометају</translation>
+<translation id="8211406090763984747">Веза је безбедна</translation>
 <translation id="8218327578424803826">Додељена локација:</translation>
 <translation id="8225771182978767009">Особа која је подесила овај рачунар је одлучила да блокира овај сајт.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>

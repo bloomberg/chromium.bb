@@ -23,6 +23,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Lansator</translation>
 <translation id="1525508553941733066">ÎNCHIDE</translation>
+<translation id="1537254971476575106">Lupă de ecran complet</translation>
 <translation id="15373452373711364">Cursor de mouse mare</translation>
 <translation id="1550523713251050646">Dă clic pentru mai multe opțiuni</translation>
 <translation id="1567387640189251553">A fost conectată o altă tastatură după ce ai introdus parola ultima dată. Aceasta ar putea încerca să înregistreze ce taste apeși.</translation>
@@ -51,8 +52,10 @@
 <translation id="2049639323467105390">Acest dispozitiv este gestionat de <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Portret</translation>
 <translation id="2067602449040652523">Luminozitatea tastaturii</translation>
+<translation id="2081529251031312395">$1 se poate conecta și mai târziu.</translation>
 <translation id="2122028596993374965">Nu mai proiecta <ph name="TAB_NAME" /> pe dispozitivul <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Încărcător de putere joasă</translation>
+<translation id="2135456203358955318">Lupă andocată</translation>
 <translation id="2144487987174258011">Repornește ca să actualizezi Adobe Flash Player</translation>
 <translation id="2191905770366256395">Tastatura detașabilă are nevoie de o actualizare esențială</translation>
 <translation id="2208323208084708176">Modul Desktop unificat</translation>

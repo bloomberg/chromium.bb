@@ -3,6 +3,7 @@
 <translationbundle lang="mr">
 <translation id="1065672644894730302">आपली प्राधान्ये वाचता आली नाहीत.
 काही वैशिष्‍ट्ये अनुपलब्ध असू शकतात आणि प्राधान्यांमधील बदल सेव्ह केले जाणार नाहीत.</translation>
+<translation id="1104942323762546749">Chromium ला तुमचे पासवर्ड निर्यात करायचे आहेत. हे करू देण्यासाठी तुमचा Windows पासवर्ड टाइप करा.</translation>
 <translation id="1115445892567829615">Chromium आपला डेटा संकालित करू शकले नाही. कृपया आपला संकालन वाक्यांश अपडेट करा.</translation>
 <translation id="113122355610423240">Chromium आपला डीफॉल्ट ब्राउझर आहे</translation>
 <translation id="1170115874949214249">आपल्या फोनवर Chromium इंस्टॉल करा. आम्ही आपल्या खाते पुनर्प्राप्ती फोन नंबरवर एक SMS पाठवू.</translation>
@@ -62,6 +63,7 @@
 <translation id="3155163173539279776">Chromium पुन्हा लाँच करा</translation>
 <translation id="3179665906251668410">लिंक Chromium गु&amp;प्त विंडो मध्ये उघडा</translation>
 <translation id="3190315855212034486">ओहो! Chromium क्रॅश झाले आहे. आता पुन्हा लाँच करायचे?</translation>
+<translation id="3229526316128325841">Chromium ला तुमचे पासवर्ड निर्यात करायचे आहेत.</translation>
 <translation id="3256316712990552818">Chromium वर कॉपी केले</translation>
 <translation id="3258596308407688501">Chromium त्याची डेटा निर्देशिका वाचू किंवा लिहू शकत नाही:
 
@@ -96,7 +98,8 @@
 <translation id="4271805377592243930">Chromium सह मदत मिळवा</translation>
 <translation id="4285930937574705105">अनिर्दिष्ट त्रुटीमुळे स्थापना अयशस्वी झाली. सध्‍या Chromium चालत असल्‍यास, कृपया त्‍यास बंद करा आणि पुन्‍हा प्रयत्‍न करा.</translation>
 <translation id="4330585738697551178">हे मॉड्यूल Chromium बरोबर विरोधाकरिता ओळखले जाते.</translation>
-<translation id="4407044323746248786">Chromium मधून कसेही बाहेर पडायचे?</translation>
+<translation id="4407044323746248786">तरीही Chromium बंद करायचे?</translation>
+<translation id="4415566066719264597">Chromium बॅकग्राउंडमध्ये चालू द्या</translation>
 <translation id="4421155425831608516">या डीव्हाइसच्या प्रशासकाने Chromium मध्ये साइन इन बंद केले आहे.</translation>
 <translation id="4423735387467980091">Chromium सानुकूल करा आणि नियंत्रित करा</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium एका तासात रीलाँच होईल}one{Chromium # तासामध्ये पुन्हा रीलाँच होईल}other{Chromium # तासांमध्ये पुन्हा रीलाँच होईल}}</translation>
@@ -110,7 +113,7 @@
 <translation id="469338717132742108">Chromium OS सह मदत मिळवा</translation>
 <translation id="4708774505295300557">कोणीतरी यापूर्वी या संगणकावरील Chromium मध्ये <ph name="ACCOUNT_EMAIL_LAST" /> म्हणून साइन इन केले. कृपया आपली माहिती स्वतंत्र ठेवण्यासाठी एक नवीन Chromium वापरकर्ता तयार करा.</translation>
 <translation id="4714956846925717402">Chromium वर अधिक जलद या</translation>
-<translation id="4746050847053251315">Chromium कसेही बंद करायचे?</translation>
+<translation id="4746050847053251315">तरीही Chromium बंद करायचे?</translation>
 <translation id="4888717733111232871">mDNS रहदारीस अनुमती देण्यासाठी Chromium साठी अंतर्गामी नियम.</translation>
 <translation id="4943838377383847465">Chromium पार्श्वभूमी मोड मध्ये आहे.</translation>
 <translation id="4987820182225656817">अतिथी कोणतीही गोष्ट मागे न सोडता Chromium वापरू शकतात.</translation>
@@ -159,6 +162,7 @@
 <translation id="6394232988457703198">आपण आता Chromium रीस्टार्ट करावे.</translation>
 <translation id="6400072781405947421">Mac OS X 10.9 वर Chromium ला सपोर्ट नसल्यामुळे ते कदाचित नीट चालणार नाही.</translation>
 <translation id="6403826409255603130">Chromium हे एक वेबब्राउझर असून ते वेबपृष्ठे आणि अॅप्लिकेशन अतिशय वेगात चालवते. हे वापरण्यास जलद, स्थिर आणि सोपे आहे. Chromium मध्ये तयार करण्यासाठी मालवेयर आणि फिशिंग संरक्षणासह वेब अधिक सुरक्षितपणे ब्राउझ करा.</translation>
+<translation id="6457450909262716557">{SECONDS,plural, =1{Chromium १ सेकंदात रीस्टार्ट होईल}one{Chromium # सेकंदात रीस्टार्ट होईल}other{Chromium # सेकंदांत रीस्टार्ट होईल}}</translation>
 <translation id="6475912303565314141">आपण Chromium सुरू करता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="6485906693002546646">आपण आपली Chromium सामग्री संकालित करण्यासाठी <ph name="PROFILE_EMAIL" /> वापरत आहात. आपले संकालन प्राधान्य अपडेट करण्यासाठी किंवा Google खाते न सोडता Chromium वापरण्यासाठी, <ph name="SETTINGS_LINK" /> ला भेट द्या.</translation>
 <translation id="6510925080656968729">Chromium विस्‍थापित करा</translation>

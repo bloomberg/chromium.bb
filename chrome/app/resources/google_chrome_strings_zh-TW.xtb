@@ -59,6 +59,7 @@
 <translation id="2397416548179033562">顯示 Chrome 選單</translation>
 <translation id="2429317896000329049">你的網域無法使用「同步功能」，因此 Google Chrome 無法同步處理你的資料。</translation>
 <translation id="2446511512801740068">Chrome 已有一段時間未重新啟動，現用版本因此過舊。重新啟動後，即會套用可用的更新。</translation>
+<translation id="2467438592969358367">Google Chrome 要求匯出你的密碼。如果允許，請輸入你的 Windows 密碼。</translation>
 <translation id="2485422356828889247">解除安裝</translation>
 <translation id="2534507159460261402">Google Pay (已複製到 Chrome)</translation>
 <translation id="2580411288591421699">你無法安裝這個版本的 Google Chrome，因為相同的版本目前正在執行中。請關閉 Google Chrome 然後再試一次。</translation>
@@ -129,6 +130,7 @@
 <translation id="4480040274068703980">登入時發生錯誤，因此 Chrome 作業系統無法同步處理你的資料。</translation>
 <translation id="4561051373932531560">Google Chrome 可讓你按一下網頁上的電話號碼，隨即透過 Skype 撥打電話！</translation>
 <translation id="4567424176335768812">你已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身分登入，可以在所有登入的裝置上使用你的書籤、紀錄和其他設定。</translation>
+<translation id="4571503333518166079">前往 Chrome 通知設定</translation>
 <translation id="4600710005438004015">Chrome 無法更新至最新版本，因此你並未取得最新功能和安全性問題修正。</translation>
 <translation id="4631713731678262610">在 Chrome 選單中隱藏</translation>
 <translation id="4633000520311261472">為了讓 Chrome 的安全性更有保障，我們已將部分未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> 中的擴充功能停用，它們可能在你不知情的情況下加入瀏覽器。</translation>
@@ -166,6 +168,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="556024056938947818">Google Chrome 即將顯示密碼。</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> 可能不安全，因此遭到 Chrome 封鎖。</translation>
+<translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome 將於 1 秒後重新啟動}other{Google Chrome 將於 # 秒後重新啟動}}</translation>
 <translation id="573759479754913123">關於 Chrome 作業系統</translation>
 <translation id="5774845247549698882">Chrome 作業系統的介面文字已設為這種語言</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary 版</translation>
@@ -194,7 +197,8 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="6600954340915313787">已複製到 Chrome</translation>
 <translation id="6634887557811630702">Google Chrome 目前是最新版本。</translation>
 <translation id="6676384891291319759">連線到網際網路</translation>
-<translation id="677276454032249905">仍要結束 Chrome 嗎？</translation>
+<translation id="6679975945624592337">讓 Google Chrome 在背景執行</translation>
+<translation id="677276454032249905">確定要結束 Chrome 嗎？</translation>
 <translation id="683440813066116847">允許 mDNS 流量的 Google Chrome Canary 輸入規則。</translation>
 <translation id="686561893457936865">隨時隨地都能使用 Chrome</translation>
 <translation id="6885412569789873916">Chrome 測試版應用程式</translation>
@@ -247,6 +251,7 @@ Google Chrome 無法復原你的設定。</translation>
 <translation id="8286862437124483331">Google Chrome 現在會嘗試顯示密碼。如果你同意的話，請輸入你的 Windows 密碼。</translation>
 <translation id="8290100596633877290">真糟糕！Google Chrome 當掉了，要立即重新啟動嗎？</translation>
 <translation id="8342675569599923794">這個檔案並不安全，因此遭到 Chrome 封鎖。</translation>
+<translation id="840084489713044809">Google Chrome 要求匯出你的密碼。</translation>
 <translation id="8406086379114794905">協助改善 Chrome 的服務品質</translation>
 <translation id="8439301513305169426">Chrome 會將這組密碼儲存至 <ph name="SAVED_PASSWORD_LINK" />，你不須記住密碼。</translation>
 <translation id="8455999171311319804">選擇性：自動將診斷資料和使用情況資料傳送給 Google，協助我們讓 Chrome 作業系統更臻完善。</translation>

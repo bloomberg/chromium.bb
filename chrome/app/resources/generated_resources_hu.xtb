@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Mikrofon és kamera használata</translation>
 <translation id="1007408791287232274">Nem sikerült betölteni az eszközöket.</translation>
 <translation id="1008186147501209563">Könyvjelzők exportálása</translation>
-<translation id="1009147628737158130">A(z) <ph name="URL" /> webhely szeretné megtekinteni a biztonsági hardverkulcs azonosító adatait</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Az oldal nem válaszol}other{Több oldal nem válaszol}}</translation>
 <translation id="1012794136286421601">A Dokumentumok, Táblázatok, Diák és Rajzok fájljainak szinkronizálása következik. A fájlok online vagy offline eléréséhez nyissa meg a Google Drive alkalmazást.</translation>
 <translation id="1013707859758800957">A rendszer engedélyezte egy nem sandbox-technológiát alkalmazó beépülő modul futását az oldalon.</translation>
@@ -1277,7 +1276,6 @@
 <translation id="2932483646085333864">A szinkronizálás megkezdéséhez jelentkezzen ki, majd jelentkezzen be újra</translation>
 <translation id="2932883381142163287">Visszaélés bejelentése</translation>
 <translation id="2938225289965773019"><ph name="PROTOCOL" /> linkek megnyitása</translation>
-<translation id="2938335670027321024">Az áthelyezéshez mozgassa a vezérlőt. Ha végzett, kattintson.</translation>
 <translation id="2939938020978911855">Rendelkezésre álló Bluetooth-eszközök megjelenítése</translation>
 <translation id="2941112035454246133">Alacsony</translation>
 <translation id="2942560570858569904">Várakozás…</translation>
@@ -1846,7 +1844,6 @@ Ha további információt szeretne, látogasson el a <ph name="BEGIN_LINK" />Sú
 <translation id="379422718204375917">Jelentkezzen be fiókjába a Smart Lock használatával</translation>
 <translation id="3796648294839530037">Kedvenc hálózatok:</translation>
 <translation id="3797900183766075808">&amp;Keresés a(z) <ph name="SEARCH_ENGINE" /> keresőmotorral a következőre: <ph name="SEARCH_TERMS" /></translation>
-<translation id="3798325802885154040">Lehetővé teszi a koppintással történő kattintás engedélyezését/letiltását</translation>
 <translation id="3798449238516105146">Verzió</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{Összes &amp;megnyitása}=1{Könyvjelző &amp;megnyitása}other{Összes (#) &amp;megnyitása}}</translation>
 <translation id="3800806661949714323">Összes megjelenítése (ajánlott)</translation>
@@ -2928,7 +2925,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="5556206011531515970">Kattintson a Tovább gombra az alapértelmezett böngésző kiválasztásához.</translation>
 <translation id="5556459405103347317">Újratöltés</translation>
 <translation id="555746285996217175">Zárolás/feloldás</translation>
-<translation id="5557579359142031072">A biztonsági hardverkulcs azonosító adatainak megtekintése</translation>
 <translation id="5557991081552967863">Maradjon bekapcsolva a Wi-Fi alvó üzemmódban is</translation>
 <translation id="5558129378926964177">&amp;Nagyítás</translation>
 <translation id="55601339223879446">Beállíthatja az asztal határait a kijelzőn</translation>
@@ -4005,7 +4001,6 @@ Győződjön meg arról, hogy nem ad ki bizalmas adatokat.</translation>
 <translation id="7289225569524511578">Nyissa meg a háttérkép alkalmazást</translation>
 <translation id="7290242001003353852">Ez a bejelentkezési szolgáltatás, amelyet a(z) <ph name="SAML_DOMAIN" /> üzemeltet, hozzáfér a kamerához.</translation>
 <translation id="7290594223351252791">Regisztráció megerősítése</translation>
-<translation id="7292324470889366655">Áthelyezés befejezése</translation>
 <translation id="729459249680637905">$1 kísérlet maradt</translation>
 <translation id="7295662345261934369">Megosztás másokkal</translation>
 <translation id="729583233778673644">Az AES és RC4 titkosítás engedélyezése. A beállítás használata növeli a kockázatot, mivel az RC4-kódok nem biztonságosak.</translation>

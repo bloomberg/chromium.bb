@@ -57,6 +57,13 @@
 
       Ak toto pravidlo použijete, používateľ má k dispozícii všetky tlačiarne okrem tých, ktorých identifikátory sú uvedené v tomto pravidle.
       </translation>
+<translation id="1181881366217399113">
+      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť!
+      Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
+      Ak toto pravidlo zakážete, uplatní sa logika správy procesov izolácie webov.
+      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť toto nastavenie zmeniť.
+      V systéme <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť na rovnakú hodnotu tiež pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ak sa hodnoty nastavené v týchto dvoch pravidlách nezhodujú, môže pri začatí relácie používateľa nastať oneskorenie spôsobené použitím hodnoty zadanej v pravidle pre používateľa.
+      </translation>
 <translation id="1198465924256827162">Ako často sa odosielajú informácie o stave zaradenia (v milisekundách).
 
       Ak toto pravidlo nie je nastavené, použije sa predvolená frekvencia 3 hodiny. Minimálna
@@ -247,7 +254,15 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Formát hodnoty zodpovedá názvom časových pásiem v databáze časových pásiem IANA (nájdete ju na adrese https://en.wikipedia.org/wiki/Tz_database). Konkrétne je väčšina časových pásiem vyjadrená vo formáte „kontinent/veľkomesto“ alebo „oceán/veľkomesto“.
 
       Nastavenie tohto pravidla zakáže automatické rozlíšenie časového pásma na základe polohy zariadenia. Prepíše tiež pravidlo SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Token pre registráciu pravidiel používania cloudu v počítači</translation>
 <translation id="1897365952389968758">Povoliť všetkým webom spúšťať JavaScript</translation>
+<translation id="1906888171268104594">Určuje, či sa budú Googlu spätne nahlasovať metriky používania a diagnostické údaje vrátane správ o zlyhaní.
+
+      Ak je pravidlo nastavené na hodnotu True, systém <ph name="PRODUCT_OS_NAME" /> bude nahlasovať metriky používania a diagnostické údaje.
+
+      Ak je pravidlo nastavené na hodnotu False, nahlasovanie metrík a diagnostických údajov bude zakázané.
+
+      Ak pravidlo nie je nakonfigurované, nahlasovanie metrík a diagnostických údajov bude zakázané v nespravovaných zariadeniach a povolené v spravovaných zariadeniach.</translation>
 <translation id="193259052151668190">Zoznam povolených odpojiteľných zariadení USB</translation>
 <translation id="1933378685401357864">Obrázok tapety</translation>
 <translation id="1956493342242507974">Konfigurácia správy napájania na prihlasovacej obrazovke systému <ph name="PRODUCT_OS_NAME" />.
@@ -407,6 +422,12 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2386362615870139244">Povoliť uzamknutie obrazovky v aktívnom režime</translation>
 <translation id="2411817661175306360">Upozornenie ochrany heslom je vypnuté</translation>
 <translation id="2411919772666155530">Blokovať upozornenia na týchto webových stránkach</translation>
+<translation id="2415979855753196119">Umožňuje ovládať spustenie nahlásenia ohrozeného účtu v rámci ochrany heslom. Nahlásenie ohrozeného účtu v rámci ochrany heslom znamená, že Google bude informovaný, že tomuto účtu hrozí napadnutie.
+
+      Ak toto pravidlo nastavíte na možnosť PasswordProtectionRiskOff, nespustí sa žiadne nahlásenie ohrozeného účtu v rámci ochrany heslom.
+      Ak ho nastavíte na možnosť PasswordProtectionRiskOnPasswordReuse, nahlásenie ohrozeného účtu v rámci ochrany heslom sa spustí, keď používateľ opätovne použije heslo Googlu na webe, ktorý nebol pridaný na bielu listinu.
+      Ak ho nastavíte na možnosť PasswordProtectionRiskOnPhishingReuse, nahlásenie ohrozeného účtu v rámci ochrany heslom sa spustí, keď používateľ opätovne použije heslo Googlu na phishingovom webe.
+      Ak toto pravidlo nenastavíte, nahlásenie ohrozeného účtu v rámci ochrany heslom sa spustí, keď používateľ opätovne použije heslo Googlu na phishingovom webe. Nastavenie však bude môcť zmeniť.</translation>
 <translation id="2418507228189425036">Zakáže v prehliadači <ph name="PRODUCT_NAME" /> ukladanie histórie prehliadania a zabráni používateľom toto nastavenie meniť.
 
       Ak toto nastavenie povolíte, história prehliadania sa nebude ukladať. Toto nastavenie tiež zakáže synchronizáciu kariet.
@@ -606,6 +627,12 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
       Ak povolíte toto zariadenie, Ukážka tlače bude používať predvolenú tlačiareň operačného systému OS ako predvolenú cieľovú možnosť.</translation>
 <translation id="2867699958489427143">Vrátiť sa späť na cieľovú verziu a používať ju, ak je verzia operačného systému novšia ako cieľová. V priebehu procesu sa vykoná kompletné obnovenie Powerwash.</translation>
+<translation id="286802604195763750">Umožňuje ovládať spustenie upozornenia v rámci ochrany heslom. Ochrana heslom upozorňuje používateľov, keď svoje chránené heslo opätovne použijú na potenciálne podozrivých weboch.
+
+      Ak toto pravidlo nastavíte na možnosť PasswordProtectionWarningOff, nezobrazí sa žiadne upozornenie v rámci ochrany heslom.
+      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPasswordReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije heslo Googlu na webe, ktorý nebol pridaný na bielu listinu.
+      Ak ho nastavíte na možnosť PasswordProtectionWarningOnPhishingReuse, upozornenie v rámci ochrany heslom sa zobrazí, keď používateľ opätovne použije heslo Googlu na phishingovom webe.
+      Ak toto pravidlo nenastavíte, upozornenie v rámci ochrany heslom sa spustí, keď používateľ opätovne použije heslo Googlu na phishingovom webe. Nastavenie však bude môcť zmeniť.</translation>
 <translation id="2872961005593481000">Vypnúť</translation>
 <translation id="2874209944580848064">Poznámka pre zariadenia so systémom <ph name="PRODUCT_OS_NAME" />, ktoré podporujú aplikácie pre Android:</translation>
 <translation id="2877225735001246144">Zakázať hľadanie záznamov CNAME pri absolvovaní overenia Kerberos</translation>
@@ -640,6 +667,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Hodnota pravidla by mala byť uvedená v milisekundách. Hodnoty musia byť nižšie alebo rovnaké ako oneskorenie vypnutia obrazovky (pokiaľ je nastavené) a oneskorenie režimu nečinnosti.</translation>
 <translation id="2987155890997901449">Povoliť funkciu ARC</translation>
 <translation id="2987227569419001736">Ovládať používanie rozhrania Web Bluetooth API</translation>
+<translation id="2998886474614739865">
+      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť!
+      Platí pre prihlasovaciu obrazovku. Pozrite si tiež pravidlo <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
+      Ak toto pravidlo povolíte, jednotlivé uvedené zdroje v zozname oddelené čiarkami sa spustia vo vlastných procesoch. Zároveň sa tým izolujú zdroje označené subdoménami, napr. ak uvediete adresu https://example.com/, izolovaná bude aj adresa https://foo.example.com/ ako súčasť webu https://example.com/.
+      Ak toto pravidlo zakážete, bude platiť logika správy procesov izolácie webov.
+      Ak ho nenakonfigurujete, použijú sa pre prihlasovaciu obrazovku nastavenia izolácie webov predvolené v rámci platformy.
+      </translation>
 <translation id="3016255526521614822">Pridať na bielu listinu aplikácie na písanie poznámok, ktoré sú povolené na uzamknutej obrazovke systému <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Počet míľnikov pre vrátenie systému</translation>
 <translation id="3030000825273123558">Povoliť hlásenia o metrikách</translation>
@@ -748,6 +782,14 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 
           Ak v tomto pravidle nastavíte reťazec, ktorý nie je prázdny, daný reťazec sa použije ako názov cieľového priečinka funkcie <ph name="PRODUCT_NAME" />. Inak sa ako názov cieľového priečinka použije názov zariadenia. Ak toto pravidlo nenastavíte, názov cieľového priečinka bude názov zariadenia, ktorý bude môcť zmeniť jeho vlastník (alebo používateľ z domény, ktorá ho spravuje). Názov môže mať maximálne 24 znakov.</translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
+<translation id="3386001018488754001">
+      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť!
+      Platí pre prihlasovaciu obrazovku. Pozrite si tiež pravidlo <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ktoré platí pre reláciu používateľa. Obe pravidlá odporúčame nastaviť na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
+      Ak chcete vyťažiť z oboch možností to najlepšie, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Nastavenie SitePerProcess izoluje všetky weby.
+      Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
+      Ak toto pravidlo zakážete, uplatní sa logika správy procesov izolácie webov.
+      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť toto nastavenie zmeniť.
+      </translation>
 <translation id="3395348522300156660">Umožňuje určiť tlačiarne, ktoré má používateľ k dispozícii.
 
       Toto pravidlo sa používa iba vtedy, keď je pre <ph name="PRINTERS_WHITELIST" /> vybraná možnosť <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -786,6 +828,10 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
           Ak je toto pravidlo nastavené na hodnotu False alebo nastavené nie je, oneskorenia správy napájania a limit dĺžky relácie sa spustia hneď na začiatku relácie.</translation>
 <translation id="3478024346823118645">Vymazať údaje používateľa po odhlásení</translation>
 <translation id="348495353354674884">Povoliť virtuálnu klávesnicu</translation>
+<translation id="3487623755010328395">
+        Ak je toto pravidlo nastavené, <ph name="PRODUCT_NAME" /> sa pokúsi zaregistrovať a použiť pre všetky profily prepojené pravidlá použitia cloudu.
+
+        Hodnotou tohto pravidla je registračný token, ktorý je možné získať v správcovskej konzole Googlu.</translation>
 <translation id="3496296378755072552">Správca hesiel</translation>
 <translation id="350443680860256679">Konfigurovať ARC</translation>
 <translation id="3504791027627803580">Určuje webovú adresu vyhľadávača použitého na poskytovanie vyhľadávania obrázkov. Žiadosti o vyhľadávanie sa budú odosielať pomocou metódy GET. Ak je nastavené pravidlo DefaultSearchProviderImageURLPostParams, budú žiadosti o vyhľadávanie obrázkov používať namiesto toho metódu POST.
@@ -1089,6 +1135,13 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
       Ak toto nastavenie ponecháte nenastavené, umožní to používateľovi zvoliť, či chce tlačidlo Domovská stránka zobraziť.</translation>
 <translation id="4485425108474077672">Konfigurovať webovú adresu stránky na novej karte</translation>
 <translation id="4492287494009043413">Zákaz zaznamenávania snímok obrazovky</translation>
+<translation id="4497968613298501984">Nastavuje zoznam podnikových prihlasovacích webových adries (iba schémy HTTP a HTTPS). Na týchto webových adresách sa bude zaznamenávať digitálny odtlačok hesla, ktorý sa použije na rozpoznanie opätovného použitia hesla.
+      Toto nastavenie by mali aktivovať iba používatelia služby GSuite používajúci systém SSO/SMAL.
+      Na to, aby služba <ph name="PRODUCT_NAME" /> správne zaznamenávala digitálne odtlačky hesiel, musia prihlasovacie stránky dodržiavať pokyny uvedené na adrese https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Ak toto nastavenie aktivujete, služba ochrany hesla zaznamená digitálny odtlačok hesla na týchto webových adresách na účely rozpoznania opätovného použitia hesla.
+      Ak je toto nastavenie zakázané alebo nie je nastavené, služba ochrany hesla bude zaznamenávať iba digitálne odtlačky hesiel na adrese https://accounts.google.com.
+      Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú v doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Umožňuje nakonfigurovať veľkosť vyrovnávacej pamäte, ktorú služba <ph name="PRODUCT_NAME" /> použije na ukladanie mediálnych súborov vo vyrovnávacej pamäti na disk.
 
       Ak nastavíte toto pravidlo, služba <ph name="PRODUCT_NAME" /> použije uvedenú veľkosť vyrovnávacej pamäte bez ohľadu na to, či používateľ určil príznak --media-cache-size. Hodnota určená v tomto pravidle nie je pevnou hraničnou hodnotou, ale skôr návrhom pre systém ukladania do vyrovnávacej pamäte. Každá hodnota menšia ako niekoľko megabajtov je príliš malá a zaokrúhli sa smerom nahor na rozumné minimum.
@@ -1209,6 +1262,13 @@ Ak sa používateľ pokúsi prihlásiť pomocou používateľského mena, ktoré
 
 Ak toto pravidlo nie je nastavené alebo je prázdne, akýkoľvek používateľ sa môže prihlásiť do prehliadača <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Povoliť režim celej obrazovky</translation>
+<translation id="4868249328547841081">Nastavuje webovú adresu zmeny hesla (iba schémy HTTP a HTTPS). Služba ochrany hesla odkáže používateľov na túto webovú adresu, aby si tam zmenili heslo v prípade jeho neoprávneného získania inou osobou.
+      Toto nastavenie by mali aktivovať iba používatelia služby GSuite používajúci systém SSO/SMAL.
+      Na to, aby služba <ph name="PRODUCT_NAME" /> správne zaznamenávala digitálne odtlačky hesiel, musia stránky na zmenu hesla dodržiavať pokyny uvedené na adrese https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Ak toto nastavenie aktivujete, služba ochrany hesla odkáže používateľov na túto webovú adresu, aby si tam zmenili heslo v prípade jeho neoprávneného získania inou osobou.
+      Ak je toto nastavenie zakázané alebo nie je nastavené, služba ochrany hesla odkáže používateľov na adresu https://myaccounts.google.com, aby si tam zmenili heslo.
+      Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú v doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Určuje, či sú povolené uzamknutia obrazovky v aktívnom režime. Rozšírenia môžu o uzamknutie obrazovky v aktívnom režime požiadať prostredníctvom rozhrania API na správu napájania pre rozšírenia.
 
           Ak je toto pravidlo nastavené na hodnotu True alebo nie je nastavené vôbec, uzamknutia obrazovky v aktívnom režime budú pre správu napájania povolené.
@@ -1358,6 +1418,14 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 
       Ak toto pravidlo nenastavíte, použijete prázdny reťazec alebo neplatný rozsah portov, rozhranie WebRTC bude môcť použiť ľubovoľný dostupný miestny port UDP.</translation>
 <translation id="5290940294294002042">Určiť zoznam doplnkov, ktoré môže používateľ povoliť alebo zakázať</translation>
+<translation id="5301787427319106606">
+      POZNÁMKA: Toto pravidlo je experimentálne a môže poškodiť funkčnosť!
+      Ak chcete vyťažiť z oboch možností to najlepšie, t. j. izolovať s obmedzeným vplyvom na používateľov, pozrite si nastavenie pravidla IsolateOrigins. Pravidlo IsolateOrigins použite so zoznamom webov, ktoré chcete izolovať. Nastavenie SitePerProcess izoluje všetky weby.
+      Ak toto pravidlo povolíte, všetky weby sa budú spúšťať vo vlastných procesoch.
+      Ak toto pravidlo zakážete, uplatní sa logika správy procesov izolácie webov.
+      Ak toto pravidlo nenakonfigurujete, používateľ bude môcť toto nastavenie zmeniť.
+      V systéme <ph name="PRODUCT_OS_NAME" /> odporúčame nastaviť aj pravidlo zariadenia <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na rovnakú hodnotu. V prípade nezhody týchto hodnôt môže pri spúšťaní relácie používateľa nastať oneskorenie spôsobené používaním hodnoty zadanej v pravidle pre používateľa.
+      </translation>
 <translation id="5302612588919538756">Podpora tohto pravidla je ukončená. Skúste namiesto toho použiť pravidlo SyncDisabled.
 
       Umožňuje prihlásenie používateľa do prehliadača <ph name="PRODUCT_NAME" />.
@@ -1956,6 +2024,14 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="706669471845501145">Povoliť webovým stránkam zobrazovať upozornenia na pracovnej ploche</translation>
 <translation id="7072208053150563108">Frekvencia zmeny hesla zariadenia</translation>
 <translation id="7072406291414141328">Aktivuje obmedzenie rýchlosti pripojenia</translation>
+<translation id="7074513465313721551">Konfiguruje zoznam domén, ktorým bude Bezpečné prehliadanie dôverovať. Znamená to:
+      Bezpečné prehliadanie nebude v týchto doménach kontrolovať výskyt nebezpečných zdrojov (napr. phishing, malvér alebo nežiadúci softvér).
+      Služba Bezpečného prehliadania na ochranu pred sťahovanými súbormi nebude kontrolovať sťahované súbory hostené v týchto doménach.
+      Služba Bezpečného prehliadania na ochranu hesiel na stránkach, ktorých webové adresy sa zhodujú s týmito doménami, nebude kontrolovať opätovné použitie hesiel.
+
+      Ak toto nastavenie zapnete, Bezpečné prehliadanie bude dôverovať týmto doménam.
+      Ak toto nastavenie vypnete alebo nenastavíte, bude sa pre všetky zdroje používať predvolená ochrana Bezpečného prehliadania.
+      Toto pravidlo nie je k dispozícii v inštanciách systému Windows, ktoré nie sú pripojené k doméne <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blokovať kontextové okná na týchto webových stránkach</translation>
 <translation id="7106631983877564505">Povolí uzamknutie v prípade, ak sú zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> nečinné alebo pozastavené.
 

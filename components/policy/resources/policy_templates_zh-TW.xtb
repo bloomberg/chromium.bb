@@ -1053,6 +1053,13 @@
 <translation id="4482640907922304445">顯示「<ph name="PRODUCT_NAME" />」工具列上的 [首頁] 按鈕。如果你啟用這項設定，系統會顯示 [首頁] 按鈕。如果你停用這項設定，系統就不會顯示 [首頁] 按鈕。不論你啟用或停用這項設定，使用者都無法變更或覆寫「<ph name="PRODUCT_NAME" />」中的這項設定。如果你不設定這項政策，使用者就能選擇是否要顯示 [首頁] 按鈕。</translation>
 <translation id="4485425108474077672">設定新分頁網址</translation>
 <translation id="4492287494009043413">停用螢幕畫面擷取功能</translation>
+<translation id="4497968613298501984">設定企業登入網址 (僅限 HTTP 和 HTTPS 配置) 清單。系統會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
+      只有使用 SSO/SAML 系統的 G Suite 使用者可使用這項設定。
+      為了讓「<ph name="PRODUCT_NAME" />」能正確擷取密碼指紋，請確認登入頁面符合相關規範，網址是：https://www.chromium.org/developers/design-documents/create-amazing-password-forms。
+
+      如果啟用這項設定，密碼保護服務會針對這些網址擷取密碼指紋，並使用這些指紋偵測密碼重複使用情形。
+      如果停用這項設定或不予設定，密碼保護服務就只會針對 https://accounts.google.com 擷取密碼指紋。
+      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="450537894712826981">設定快取大小，供 <ph name="PRODUCT_NAME" /> 在磁碟中儲存快取媒體檔案時套用。
 
       如果設定這項政策，則不論使用者是否指定「--media-cache-size」參數，<ph name="PRODUCT_NAME" /> 都會使用政策提供的快取大小。在這項政策中指定的值是對快取系統的建議值，而非不可變動的界限。如果是不到幾 MB 的值，由於太小的緣故，系統會進位到合適的最小值。
@@ -1169,6 +1176,13 @@
 
       如果你未設定這項政策或將其留空，則任何使用者皆可登入 <ph name="PRODUCT_NAME" />。</translation>
 <translation id="4858735034935305895">允許全螢幕模式</translation>
+<translation id="4868249328547841081">設定變更密碼網址 (僅限 HTTP 和 HTTPS 配置)。密碼保護服務會將遭到網路詐騙的使用者傳送至這個網址，讓使用者變更密碼。
+      只有使用 SSO/SAML 系統的 G Suite 使用者可使用這項設定。
+      為了讓「<ph name="PRODUCT_NAME" />」能在這個變更密碼頁面中正確擷取新的密碼指紋，請確認變更密碼頁面符合相關規範，網址是：https://www.chromium.org/developers/design-documents/create-amazing-password-forms。
+
+      如果啟用這項設定，密碼保護服務會將遭到網路詐騙的使用者傳送至這個網址，讓使用者變更密碼。
+      如果停用這項設定或不予設定，則密碼保護服務會將使用者傳送至 https://myaccounts.google.com，讓使用者變更密碼。
+      這項政策不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="4869787217450099946">指定是否允許螢幕喚醒鎖定。擴充功能可透過 Power Management Extension API 要求螢幕喚醒鎖。
 
           如果這項政策設為「True」或未設定，系統將啟用螢幕喚醒鎖，以強化電源管理效能。

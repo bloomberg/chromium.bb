@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">آدرس ۱</translation>
 <translation id="1545749641540134597">‏اسکن کد QR</translation>
 <translation id="1580783302095112590">نامه ارسال شد.</translation>
+<translation id="1582732959743469162">با این کار کل پیشرفت بارگیری کنونی‌تان متوقف خواهد شد.</translation>
 <translation id="1612730193129642006">نمایش شبکه برگه</translation>
 <translation id="1644574205037202324">سابقه</translation>
 <translation id="1646446875146297738">فعال کردن «ردیابی نشود» بدین معناست که درخواستی در ترافیک مرور شما لحاظ خواهد شد. هر گونه تأثیر به این بستگی دارد که وب‌سایت به درخواست پاسخ می‌دهد یا نه و درخواست چگونه تفسیر می‌شود.
@@ -285,6 +286,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="633809752005859102">یک مشکل جدی روی داد. برای رفع آن تلاش خواهیم کرد.</translation>
 <translation id="6342069812937806050">فقط اکنون</translation>
 <translation id="6344783595350022745">پاک‌کردن نوشتار</translation>
+<translation id="6346549652287021269">بارگیری جدید شروع شود؟</translation>
 <translation id="6362362396625799311">برگه ناشناسی موجود نیست</translation>
 <translation id="6374469231428023295">دوباره امتحان کنید</translation>
 <translation id="6380866119319257197">اگر عبارت عبورتان را فراموش کردید یا می‌خواهید این تنظیم را تغییر دهید، <ph name="BEGIN_LINK" />همگام‌سازی را بازنشانی کنید<ph name="END_LINK" /></translation>
@@ -326,6 +328,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7031882061095297553">همگام‌سازی در</translation>
 <translation id="7053983685419859001">مسدود کردن</translation>
 <translation id="7062545763355031412">پذیرش و تغییر حساب‌ها</translation>
+<translation id="7102005569666697658">درحال بارگیری… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">عدم نمایش</translation>
 <translation id="7133798577887235672">نام کامل</translation>
 <translation id="7136892417564438900">دوربین غیرقابل‌ دسترسی است</translation>
@@ -361,6 +364,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="7769602470925380267">پذیرش و خروج از سیستم</translation>
 <translation id="7772032839648071052">تأیید عبارت عبور</translation>
 <translation id="780301667611848630">نه متشکرم</translation>
+<translation id="7856733331829174190">بارگیری نشد</translation>
 <translation id="7859704718976024901">سابقه مرور</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">صادر کردن گذرواژه‌ها…</translation>
@@ -371,7 +375,6 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="8019783059653722575">این کار به شما اجازه می‌دهد عکس‌ها را ذخیره و بارگذاری کنید.</translation>
 <translation id="802154636333426148">بارگیری نشد</translation>
 <translation id="8023878949384262191">بخش را بزرگ می‌کند.</translation>
-<translation id="8053390638574070785">تازه سازی این صفحه</translation>
 <translation id="8059533439631660104">بخش را کوچک می‌کند.</translation>
 <translation id="806745655614357130">داده‌های من مجزا باشد</translation>
 <translation id="8076014560081431679">تنظیمات ذخیره‌شده سایت حذف نمی‌شوند و احتمالاً عادات مرور شما را نشان می‌دهند. <ph name="BEGIN_LINK" />بیشتر بدانید<ph name="END_LINK" /></translation>
@@ -424,6 +427,7 @@ Handoff باید در بخش عمومی تنظیمات نیز فعال شود و
 <translation id="9083392325882095631">۱ مورد</translation>
 <translation id="9100610230175265781">عبارت عبور لازم است</translation>
 <translation id="9148126808321036104">ورود مجدد به سیستم</translation>
+<translation id="915371508759614899">بارگیری لغو شود؟</translation>
 <translation id="9157836665414082580">توقف نمایش کادرهای گفتگو</translation>
 <translation id="9188680907066685419">خروج از حساب مدیریت‌شده</translation>
 <translation id="9203116392574189331">Handoff</translation>

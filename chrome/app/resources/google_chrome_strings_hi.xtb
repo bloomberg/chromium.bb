@@ -38,10 +38,12 @@
 <translation id="1873233029667955273">Google Chrome आपका डिफ़ॉल्ट ब्राउज़र नहीं है</translation>
 <translation id="1874309113135274312">Google Chrome बीटा (mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome पुराना हो गया है</translation>
+<translation id="2007150628464581396">{0,plural, =1{Chrome 1 मिनट में फिर से लॉन्च होगा}one{Chrome # मिनट में फिर से लॉन्च होगा}other{Chrome # मिनट में फिर से लॉन्च होगा}}</translation>
 <translation id="2063848847527508675">अपडेट लागू करने के लिए Chrome OS को फिर से चालू करने की आवश्यकता होती है.</translation>
 <translation id="2077129598763517140">उपलब्ध होने पर हार्डवेयर त्वरण का उपयोग करें</translation>
 <translation id="2084710999043359739">Chrome में जोड़ें</translation>
 <translation id="2094919256425865063">फिर भी Chrome छोड़ें?</translation>
+<translation id="210890598424854131">{0,plural, =0{अब Chrome फिर से लॉन्च होगा}=1{Chrome 1 सेकंड में फिर से लॉन्च होगा}one{Chrome # सेकंड में फिर से लॉन्च होगा}other{Chrome # सेकंड में फिर से लॉन्च होगा}}</translation>
 <translation id="2120620239521071941">ऐसा करने से इस डिवाइस से <ph name="ITEMS_COUNT" /> आइटम हट जाएंगे. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />अभी वाली सेटिंग<ph name="END_LINK" /> की रिपोर्ट करके Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="216054706567564023">अपने फ़ोन पर Chrome इंस्टॉल करें. हम आपके खाता पुनर्प्राप्ति फ़ोन नंबर पर एक SMS भेजेंगे.</translation>
@@ -59,8 +61,10 @@
 <translation id="2397416548179033562">Chrome मेनू दिखाएं</translation>
 <translation id="2429317896000329049">Google Chrome आपका डेटा समन्‍वयित नहीं कर सका क्‍योंकि समन्‍वयन आपके डोमेन के लिए उपलब्‍ध नहीं है.</translation>
 <translation id="2446511512801740068">Chrome पुराना हो गया है क्योंकि उसे कुछ समय से फिर से लॉन्च नहीं किया गया है. एक अपडेट उपलब्ध है और जैसे ही आप फिर से लॉन्च करेंगे, अपडेट लागू कर दिया जाएगा.</translation>
+<translation id="2467438592969358367">Google Chrome आपके पासवर्ड निर्यात करना चाहता है. इसकी मंज़ूरी देने के लिए अपना Windows पासवर्ड लिखें.</translation>
 <translation id="2485422356828889247">विस्थापित करें</translation>
 <translation id="2534507159460261402">Google Pay (Chrome पर कॉपी किया गया)</translation>
+<translation id="2535429035253759792">आपका एडमिन चाहता है कि यह अपडेट लागू करने के लिए आप Chrome को फिर से लॉन्च करें</translation>
 <translation id="2580411288591421699">Google Chrome के उस वर्शन के समान वर्शन को इंस्‍टॉल नहीं कर सकता, जो वर्तमान में चल रहा है. कृपया Google Chrome बंद करें और फिर से प्रयास करें.</translation>
 <translation id="2586406160782125153">ऐसा करने से इस डिवाइस से आपका ब्राउज़िंग डेटा हट जाएगा. बाद में अपना डेटा पाने के लिए, Chrome में <ph name="USER_EMAIL" /> के रूप में प्रवेश करें.</translation>
 <translation id="2588322182880276190">Chrome लोगो</translation>
@@ -97,6 +101,7 @@
 <translation id="345171907106878721">स्वयं को Chrome में जोड़ें</translation>
 <translation id="3479552764303398839">अभी नहीं</translation>
 <translation id="3503306920980160878">Chrome को इस साइट के साथ आपके स्थान की जानकारी शेयर करने के लिए आपके स्थान का एक्सेस चाहिए</translation>
+<translation id="3582972582564653026">Chrome को अपने सभी डिवाइस पर सिंक करें और मनमुताबिक बनाएं</translation>
 <translation id="3612333635265770873">इसी नाम के एक मॉड्यूल को Google Chrome का विरोध करने के लिए जाना जाता है.</translation>
 <translation id="3622797965165704966">अब अपने Google खाते के साथ और साझा किए गए कंप्यूटर पर Chrome का उपयोग करना आसान हो गया है.</translation>
 <translation id="3637702109597584617">Google Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />सेवा की शर्तें<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -119,6 +124,7 @@
 <translation id="4149882025268051530">इंस्टॉलर, संग्रह को विस्तारित करने में विफल हुआ. कृपया Google Chrome फिर से डाउनलोड करें.</translation>
 <translation id="4251615635259297716">आपके Chrome डेटा को इस खाते से लिंक करें?</translation>
 <translation id="4251625577313994583">अपने iPhone पर Chrome पाएं</translation>
+<translation id="4293420128516039005">Chrome को अपने सभी डिवाइस पर सिंक करने और मनमुताबिक बनाने के लिए साइन इन करें</translation>
 <translation id="4309555186815777032">(Chrome <ph name="BEGIN_BUTTON" />पुन: प्रारंभ<ph name="END_BUTTON" /> करना आवश्यक है)</translation>
 <translation id="4328355335528187361">Google Chrome डेवलपर (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -129,6 +135,7 @@
 <translation id="4480040274068703980">प्रवेश करने संबंधी गड़बड़ी के कारण Chrome OS आपका डेटा सिंक नहीं कर सका.</translation>
 <translation id="4561051373932531560">Google Chrome आपको वेब पर फ़ोन नंबर क्लिक करने और उसे Skype से कॉल करने की सुविधा देता है!</translation>
 <translation id="4567424176335768812">आपने <ph name="USER_EMAIL_ADDRESS" /> के रूप में प्रवेश किया हुआ है. अब आप अपने सभी प्रवेश किए हुए डिवाइस पर अपने बुकमार्क, इतिहास, और अन्य सेटिंग की एक्सेस कर सकेंगे.</translation>
+<translation id="4571503333518166079">Chrome की सूचना सेटिंग पर जाएं</translation>
 <translation id="4600710005438004015">Chrome सबसे नए वर्शन में अपडेट नहीं कर सका, इसलिए आपको नई सुविधाएं और सुरक्षा सुधार नहीं मिल रहे हैं.</translation>
 <translation id="4631713731678262610">Chrome मेनू में छिपाएं</translation>
 <translation id="4633000520311261472">Chrome को अधिक सुरक्षित बनाने के लिए, हमने ऐसे कुछ एक्सटेंशन अक्षम कर दिए हैं जो <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> में सूचीबद्ध नहीं हैं और आपकी जानकारी के बिना जोड़े गए हो सकते हैं.</translation>
@@ -166,6 +173,7 @@
 <translation id="556024056938947818">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> खरतरनाक हो सकता है, इसलिए Chrome ने उसे अवरोधित कर दिया है.</translation>
+<translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome 1 सेकंड में रीस्टार्ट होगा}one{Google Chrome # सेकंड में रीस्टार्ट होगा}other{Google Chrome # सेकंड में रीस्टार्ट होगा}}</translation>
 <translation id="573759479754913123">Chrome OS के बारे में</translation>
 <translation id="5774845247549698882">Chrome OS इस भाषा में प्रदर्शित किया जा रहा है</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome कैनरी</translation>
@@ -194,6 +202,7 @@
 <translation id="6600954340915313787">Chrome पर कॉपी किया गया</translation>
 <translation id="6634887557811630702">Google Chrome अद्यतित है</translation>
 <translation id="6676384891291319759">इंटरनेट तक पहुंच स्थापित करें</translation>
+<translation id="6679975945624592337">Google Chrome को बैकग्राउंड में चलने दें</translation>
 <translation id="677276454032249905">फिर भी Chrome से बाहर निकलें?</translation>
 <translation id="683440813066116847">mDNS ट्रैफ़िक की अनुमति देने के लिए Google Chrome Canary के लिए इनबाउंड नियम.</translation>
 <translation id="686561893457936865">Chrome को हर कहीं ले जाएं</translation>
@@ -247,6 +256,7 @@
 <translation id="8286862437124483331">Google Chrome पासवर्ड दिखाने का प्रयास कर रहा है. इसकी अनुमति देने के लिए अपना Windows पासवर्ड लिखें.</translation>
 <translation id="8290100596633877290">रुकिए! Google Chrome क्रैश हो गया है. अभी पुन: लॉन्च करें?</translation>
 <translation id="8342675569599923794">यह फ़ाइल खतरनाक है, इसलिए Chrome ने इसे अवरुद्ध कर दिया है.</translation>
+<translation id="840084489713044809">Google Chrome आपके पासवर्ड निर्यात करना चाहता है.</translation>
 <translation id="8406086379114794905">Chrome को बेहतर बनाने में सहायता करें</translation>
 <translation id="8439301513305169426">Chrome इस पासवर्ड को <ph name="SAVED_PASSWORD_LINK" /> से सहेज लेगा. आपके इसे याद रखने की ज़रूरत नहीं है.</translation>
 <translation id="8455999171311319804">वैकल्पिक: Google को गड़बड़ी और उपयोग का डेटा अपने आप भेजकर Chrome OS को बेहतर बनाने में सहायता करें.</translation>
@@ -256,6 +266,7 @@
 <translation id="8547799825197623713">Chrome में ऐप चलाने का साधन Canary</translation>
 <translation id="8556340503434111824">Google Chrome का एक नया वर्शन उपलब्‍ध है, और यह अब तक का सबसे तेज़ है.</translation>
 <translation id="8568392309447938879">ऐप्स का उपयोग करने के लिए आपको Chrome में प्रवेश किए हुए रहना होगा. इससे Chrome को सभी डिवाइस में मौजूद आपके ऐप्स, बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग समन्वयित करने की अनुमति मिल जाती है.</translation>
+<translation id="859960207076826247">{0,plural, =0{Chrome का एक अपडेट उपलब्ध है}=1{Chrome का एक अपडेट उपलब्ध है}one{Chrome का एक अपडेट # दिनों से उपलब्ध है}other{Chrome का एक अपडेट # दिनों से उपलब्ध है}}</translation>
 <translation id="8606668294522778825">आपके ब्राउज़िंग अनुभव को बेहतर बनाने के लिए Google Chrome वेब सेवाओं का उपयोग कर सकता है. आप इन सेवाओं को वैकल्‍पिक रूप से अक्षम कर सकते हैं. <ph name="BEGIN_LINK" />और जानें<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome निष्‍क्रिय है. अभी पुन: लॉन्च करें?</translation>
 <translation id="8667808506758191620">आपका <ph name="DEVICE_TYPE" /> अद्यतित है.</translation>
@@ -263,6 +274,7 @@
 <translation id="8679801911857917785">इससे यह भी नियंत्रित होता है कि जब आप Chrome प्रारंभ करते हैं तब कौन सा पेज दिखाया जाए.</translation>
 <translation id="870251953148363156">&amp;Google Chrome को अपडेट करें</translation>
 <translation id="873133009373065397">Google Chrome डिफ़ॉल्ट ब्राउज़र निर्धारित या सेट नहीं कर सकता</translation>
+<translation id="8736674169840206667">आपके एडमिन को इस बात की ज़रूरत है कि आप अपडेट लागू करने के लिए Chrome को फिर से लॉन्च करें</translation>
 <translation id="8796108026289707191">आपको Google Chrome को अभी पुन: प्रारंभ करना चाहिए.</translation>
 <translation id="8823341990149967727">Chrome पुराना हो गया है</translation>
 <translation id="884296878221830158">इससे यह भी नियंत्रित होता है कि जब आप Chrome प्रारंभ करते हैं या होम बटन क्लिक करते हैं तब कौन सा पृष्‍ठ दिखाया जाए.</translation>

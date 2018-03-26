@@ -3,6 +3,7 @@
 <translationbundle lang="ta">
 <translation id="104962181688258143">கோப்புகள் பயன்பாட்டைத் திறக்கும்</translation>
 <translation id="1126871238933253947">நீங்கள் பயன்படுத்திய, முந்தைய விசைப்பலகை மொழிக்கு மாற்றும்.</translation>
+<translation id="1134347825771908369">ஒலியடக்கும்</translation>
 <translation id="1195667586424773550">தாவலின் முகவரிப் பட்டிக்கு இணைப்பை இழுக்கவும்</translation>
 <translation id="1204450209689312104">புதிய சாளரத்தை மறைநிலையில் திறக்கும்</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">உங்கள் தற்போதைய சாளரத்தில் உள்ள எல்லா திறந்த பக்கங்களையும் புக்மார்க்குகளாக புதிய கோப்புறையில் சேமிக்கும்</translation>
 <translation id="355103131818127604">இணைப்பை புதிய தாவலாகப் பின்புலத்தில் திறக்கும்</translation>
 <translation id="3649256019230929621">சாளரத்தை சிறிதாக்கு</translation>
+<translation id="3655154169297074232">தாவல்களும் சாளரங்களும்</translation>
 <translation id="3668361878347172356">உங்கள் கடைசிச் செயலை மீண்டும்செய்யும்</translation>
 <translation id="3720939646656082033">இணைப்பை புதிய தாவலாகத் திறந்து, அந்தத் தாவலுக்கும் மாற்றும்</translation>
 <translation id="3725795051337497754">தற்போதைய தாவலை மூடும்</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">இணைப்பை புக்மார்க்காகச் சேமிக்கும்</translation>
 <translation id="4141203561740478845">முகவரிப் பட்டியைக் கொண்ட வரிசையைத் தனிப்படுத்தும்</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> அல்லது <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">மேலோட்டப் பயன்முறை</translation>
+<translation id="4472417192667361414">கணினி &amp; காட்சி அமைப்புகள்</translation>
 <translation id="4556221320735744018">கீபோர்ட் ஷார்ட்கட் உதவியைக் காட்டும்</translation>
 <translation id="4628718545549558538">உங்கள் கணக்கின் படம் தோன்றக்கூடிய நிலைப் பகுதியைத் திறக்கும்</translation>
 <translation id="4642092649622328492">பகுதியளவு ஸ்கிரீன்ஷாட்டை எடுக்கும்</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">ஆவணத்தின் தொடக்கத்திற்குச் செல்லும்</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> அல்லது <ph name="E" /></translation>
 <translation id="8234414138295101081">திரையை 90 டிகிரிக்குச் சுழற்றும்</translation>
+<translation id="826184564253127735">கீபோர்ட் ஷார்ட்கட் வியூவர்</translation>
 <translation id="836869401750819675">பதிவிறக்கங்கள் பக்கத்தைத் திறக்கும்</translation>
 <translation id="8388247778047144397">தாவல் பட்டையில் உள்ள வெற்றுப் பகுதியில் இணைப்பை இழுக்கவும்</translation>
 <translation id="8389638407792712197">புதிய சாளரத்தைத் திறக்கும்</translation>
@@ -144,7 +149,17 @@
 <translation id="8644639153978066712">கோப்புகள் பயன்பாட்டில் உள்ள மறைக்கப்பட்ட கோப்புகளைக் காண்பிக்கும்</translation>
 <translation id="8717459106217102612">முந்தைய சொல்லை அல்லது எழுத்தைத் தேர்ந்தெடுக்கும்</translation>
 <translation id="8727232706774971183">உங்கள் அறிவிப்புகளைக் காட்டும்</translation>
+<translation id="8855885154700222542">முழுத்திரை விசை</translation>
 <translation id="88986195241502842">பக்கத்தின் கீழே</translation>
 <translation id="8903921497873541725">பெரிதாக்கு</translation>
+<translation id="8924883688469390268">முந்தைய பயனருக்குச் செல்லும்</translation>
+<translation id="8977648847395357314">முகவரிப் பட்டியில் உள்ள உள்ளடக்கத்தைத் தேர்ந்தெடுக்கும்</translation>
+<translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 முதல் 8 வரை</translation>
+<translation id="9041599225465145264">கிளிப்போர்டிலிருந்து உள்ளடக்கத்தை ஒட்டும்</translation>
+<translation id="9052808072970550123">அடுத்த பயனருக்குச் செல்லும்</translation>
+<translation id="9106898733795143799">பக்கம் &amp; இணைய உலாவி</translation>
 <translation id="9179672198516322668">பிரபல ஷார்ட்கட்கள்</translation>
+<translation id="93603345341560814"><ph name="SHIFT" />ஐ அழுத்தி, இணைப்பைக் கிளிக் செய்யவும்</translation>
+<translation id="945383118875625837">புக்மார்க் பட்டிக்கு இணைப்பை இழுக்கவும்</translation>
+<translation id="98120814841227350">ஆவணத்தின் இறுதிக்குச் செல்</translation>
 </translationbundle>

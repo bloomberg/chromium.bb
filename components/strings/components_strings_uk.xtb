@@ -430,6 +430,7 @@
 <translation id="4103249731201008433">Недійсний серійний номер пристрою</translation>
 <translation id="410351446219883937">Автовідтворення</translation>
 <translation id="4103763322291513355">Перейдіть на сторінку &lt;strong&gt;chrome://policy&lt;/strong&gt;, щоб переглянути список URL-адрес із "чорного" списку й інші правила, що примусово застосовується системним адміністратором.</translation>
+<translation id="4110652170750985508">Переглянути платіж</translation>
 <translation id="4116663294526079822">Завжди дозволяти на цьому сайті</translation>
 <translation id="4117700440116928470">Правило не підтримується.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{і ще 1 елемент даних}one{і ще # елемент даних}few{і ще # елементи даних}many{і ще # елементів даних}other{і ще # елемента даних}}</translation>
@@ -803,6 +804,7 @@
 <translation id="7275334191706090484">Закладки, якими керує адміністратор</translation>
 <translation id="7298195798382681320">Рекомендоване</translation>
 <translation id="7309308571273880165">Звіт про аварійне завершення роботи створено <ph name="CRASH_TIME" /> (ще не завантажено)</translation>
+<translation id="7320336641823683070">Довідка щодо з’єднання</translation>
 <translation id="7334320624316649418">&amp;Повторити перевпорядкування</translation>
 <translation id="733923710415886693">Сертифікат сервера не надав інформацію про перевірку.</translation>
 <translation id="7353601530677266744">Командний рядок</translation>
@@ -887,6 +889,7 @@
 <translation id="782886543891417279">Можливо, щоб під’єднатися до цієї мережі Wi-Fi (<ph name="WIFI_NAME" />), потрібно відвідати її сторінку входу.</translation>
 <translation id="785549533363645510">Навіть у режимі анонімного перегляду ваш роботодавець, постачальник послуг Інтернету чи веб-сайти, які ви відвідуєте, можуть бачити, що ви переглядаєте.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" />: <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="7862185352068345852">Залишити сайт?</translation>
 <translation id="7878176543348854470">Дебетові та передплачені картки, які приймаються.</translation>
 <translation id="7878562273885520351">Ваш пароль можуть зламати</translation>
 <translation id="7887683347370398519">Перевірте код CVC й повторіть спробу</translation>
@@ -909,6 +912,7 @@
 <translation id="8041940743680923270">Використовувати глобальне налаштування за умовчанням (Запитувати)</translation>
 <translation id="8042918947222776840">Вибрати спосіб отримання</translation>
 <translation id="8057711352706143257"><ph name="SOFTWARE_NAME" /> налаштовано неправильно. Якщо видалити програмне забезпечення <ph name="SOFTWARE_NAME" />, проблема зазвичай зникає. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8079031581361219619">Оновити сайт?</translation>
 <translation id="8088680233425245692">Не вдалося переглянути статтю.</translation>
 <translation id="8091372947890762290">Активація очікує на сервері</translation>
 <translation id="8094917007353911263">Можливо, щоб під’єднатися до цієї мережі, потрібно відвідати сторінку <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" />.</translation>
@@ -924,6 +928,7 @@
 <translation id="8201077131113104583">Недійсна URL-адреса для оновлення розширення з ідентифікатором "<ph name="EXTENSION_ID" />".</translation>
 <translation id="8202097416529803614">Підсумок замовлення</translation>
 <translation id="8205463626947051446">Сайт часто показує нав’язливі оголошення</translation>
+<translation id="8211406090763984747">З’єднання безпечне</translation>
 <translation id="8218327578424803826">Указане місцезнаходження:</translation>
 <translation id="8225771182978767009">Користувач, який налаштував комп’ютер, заблокував цей сайт.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>

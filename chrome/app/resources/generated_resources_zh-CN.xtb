@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">使用您的麦克风和摄像头</translation>
 <translation id="1007408791287232274">无法加载设备。</translation>
 <translation id="1008186147501209563">导出书签</translation>
-<translation id="1009147628737158130"><ph name="URL" /> 想要查看与您的安全密钥相关的识别信息</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{1 个页面无响应}other{多个页面无响应}}</translation>
 <translation id="1012794136286421601">正在同步您的文档、表格、幻灯片和绘图文件。打开Google云端硬盘应用可在线或离线访问这些文件。</translation>
 <translation id="1013707859758800957">某个未经过沙盒屏蔽的插件已获准在此页上运行。</translation>
@@ -1272,7 +1271,6 @@
 <translation id="2932483646085333864">退出并重新登录以开始同步</translation>
 <translation id="2932883381142163287">举报滥用行为</translation>
 <translation id="2938225289965773019">打开<ph name="PROTOCOL" />链接</translation>
-<translation id="2938335670027321024">移动控制器即可调整位置。点击即可完成。</translation>
 <translation id="2939938020978911855">显示可用的蓝牙设备</translation>
 <translation id="2941112035454246133">低</translation>
 <translation id="2942560570858569904">正在等待…</translation>
@@ -1839,7 +1837,6 @@
 <translation id="379422718204375917">使用 Smart Lock 登录您的帐号</translation>
 <translation id="3796648294839530037">收藏的网络：</translation>
 <translation id="3797900183766075808">使用<ph name="SEARCH_ENGINE" />搜索“<ph name="SEARCH_TERMS" />”(&amp;S)</translation>
-<translation id="3798325802885154040">可让您启用/停用点按即点击功能</translation>
 <translation id="3798449238516105146">版本</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{全部打开(&amp;O)}=1{打开 1 个网址(&amp;O)}other{打开全部（# 个）网址(&amp;O)}}</translation>
 <translation id="3800806661949714323">显示全部（推荐）</translation>
@@ -2914,7 +2911,6 @@
 <translation id="5556206011531515970">点击“下一步”选择您的默认浏览器。</translation>
 <translation id="5556459405103347317">重新加载</translation>
 <translation id="555746285996217175">锁定/电源</translation>
-<translation id="5557579359142031072">查看与您的安全密钥相关的识别信息</translation>
 <translation id="5557991081552967863">休眠期间保持 Wi-Fi 连接</translation>
 <translation id="5558129378926964177">放大(&amp;I)</translation>
 <translation id="55601339223879446">调整您的桌面在显示屏内的边界</translation>
@@ -3989,7 +3985,6 @@
 <translation id="7289225569524511578">打开壁纸应用</translation>
 <translation id="7290242001003353852">这项由 <ph name="SAML_DOMAIN" /> 托管的登录服务正在使用您的摄像头。</translation>
 <translation id="7290594223351252791">确认注册</translation>
-<translation id="7292324470889366655">完成位置调整</translation>
 <translation id="729459249680637905">剩余尝试次数：$1 次</translation>
 <translation id="7295662345261934369">与他人共享</translation>
 <translation id="729583233778673644">允许使用 AES 和 RC4 加密。选中此选项会令您面临更大的风险，因为 RC4 加密不安全。</translation>

@@ -648,6 +648,17 @@
           Politikos vertė turėtų būti nurodyta milisekundėmis. Vertės sumažinamos, kad neviršytų ekrano išjungimo delsos laiko (jei jis nustatytas) ar neveikos delsos laiko arba būtų jam lygios.</translation>
 <translation id="2987155890997901449">ARC įgalinimas</translation>
 <translation id="2987227569419001736">Valdyti „Web Bluetooth“ API naudojimą</translation>
+<translation id="2998886474614739865">
+      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti sistemos funkcijas!
+      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="ISOLATE_ORIGINS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama nustatyti tas pačias abiejų tipų politikos vertes. Jei vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
+      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
+      kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
+      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/ taip pat
+      bus atskiriamas ir padomenis https://foo.example.com/ kaip svetainės
+      https://example.com/ dalis.
+      Išjungus politiką įsigalios kiekvienos svetainės atskyrimo proceso tvarkymo logika.
+      Jei politika nesukonfigūruota, prisijungimo ekranui bus naudojami platformos numatytieji svetainės atskyrimo nustatymai.
+      </translation>
 <translation id="3016255526521614822">Įtraukti į baltąjį sąrašą užrašų programas, kurios leidžiamos „<ph name="PRODUCT_OS_NAME" />“ užrakinimo ekrane</translation>
 <translation id="3021562480854470924">Ankstesnių versijų, kurias leidžiama grąžinti, skaičius</translation>
 <translation id="3030000825273123558">Įgalinti metrikos ataskaitų teikimą</translation>
@@ -757,6 +768,17 @@
 
           Jei ši politika nustatyta kaip ne tuščia eilutė, ta eilutė bus naudojama kaip „<ph name="PRODUCT_NAME" />“ paskirties vietos pavadinimas. Kitu atveju paskirties vietos pavadinimas bus įrenginio pavadinimas. Jei ši politika nenustatyta, paskirties vietos pavadinimas bus įrenginio pavadinimas, o įrenginio savininkas (arba naudotojas iš domeno, kuriame tvarkomas įrenginys) galės jį pakeisti. Pavadinimas ribojamas iki 24 simbolių.</translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
+<translation id="3386001018488754001">
+      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti sistemos funkcijas!
+      Ši politika taikoma prisijungimo ekranui. Taip pat žr. politiką „<ph name="SITE_PER_PROCESS_POLICY_NAME" />“, kuri taikoma naudotojo sesijai. Rekomenduojama nustatyti tas pačias abiejų tipų politikos vertes. Jei vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
+      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad
+      efektyviai naudotumėte atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami
+      „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu
+      „SitePerProcess“ atskiriamos visos svetainės.
+      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
+      Išjungus politiką įsigalios kiekvienos svetainės atskyrimo proceso tvarkymo logika.
+      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
+      </translation>
 <translation id="3395348522300156660">Nurodomi spausdintuvai, kuriuos gali naudoti naudotojas.
 
       Ši politika naudojama, tik jei pasirinktas politikos „<ph name="DEVICE_PRINTERS_ACCESS_MODE" />“ nustatymas „<ph name="PRINTERS_WHITELIST" />“.
@@ -795,6 +817,10 @@
           Jei ši politika nustatyta į „False“, energijos valdymo delsa ir seanso ilgio apribojimas suaktyvinami iškart pradėjus seansą.</translation>
 <translation id="3478024346823118645">Ištrinti naudotojo duomenis atsijungiant</translation>
 <translation id="348495353354674884">Įgalinti virtualiąją klaviatūrą</translation>
+<translation id="3487623755010328395">
+        Nustačius šią politiką, „<ph name="PRODUCT_NAME" />“ bandys užsiregistruoti ir taikyti susijusią debesies politiką visiems profiliams.
+
+        Šios politikos vertė yra registracijos prieigos raktas, kurį galima gauti iš „Google“ administratoriaus pulto.</translation>
 <translation id="3496296378755072552">Slaptažodžių tvarkytuvė</translation>
 <translation id="350443680860256679">ARC konfigūravimas</translation>
 <translation id="3504791027627803580">Nurodomas paieškos variklio URL, naudojamas vaizdų paieškai teikti. Paieškos užklausos bus siunčiamos naudojant GET metodą. Jei nustatyta politika „DefaultSearchProviderImageURLPostParams“, vaizdų paieškos užklausoms naudojamas POST metodas.
@@ -1104,6 +1130,13 @@
       Nenustačius šios politikos, naudotojas (-a) galės pasirinkti, ar rodyti pagrindinio puslapio mygtuką.</translation>
 <translation id="4485425108474077672">Naujo skirtuko puslapio URL konfigūravimas</translation>
 <translation id="4492287494009043413">Neleisti kurti ekrano kopijų</translation>
+<translation id="4497968613298501984">Konfigūruojamas įmonių prisijungimo URL (tik HTTP ir HTTPS schemų) sąrašas. Šiais URL bus užfiksuotas slaptažodžio kontrolinis kodas, kuris bus naudojamas aptinkant, kada slaptažodis naudojamas pakartotinai.
+      Šį nustatymą turėtų naudoti tik „GSuite“ naudotojai, naudojantys sistemą SSO / SMAL.
+      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų slaptažodžių kontrolinius kodus, įsitikinkite, kad prisijungimo puslapiuose laikomasi šių gairių: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Įgalinus šį nustatymą, taikant slaptažodžio apsaugos paslaugą bus fiksuojamas slaptažodžio kontrolinis kodas šiais URL adresais, siekiant aptikti, kada slaptažodis naudojamas pakartotinai.
+      Jei šis nustatymas išjungtas arba nenustatytas, taikant slaptažodžio apsaugos paslaugą slaptažodžio kontrolinis kodas bus užfiksuotas tik adresu https://accounts.google.com.
+      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="450537894712826981">Konfigūruojamas talpyklos, kurią „<ph name="PRODUCT_NAME" />“ naudos talpyklos medijos failams diske saugoti, dydį.
 
       Jei nustatysite šią politiką, „<ph name="PRODUCT_NAME" />“ naudos nurodyto dydžio talpyklą nepaisydama to, ar naudotojas nurodė, ar nenurodė parametro „--media-cache-size“. Šioje politikoje nurodyta vertė nėra griežta riba, bet tiesiog pasiūlymas talpyklos sistemai. Mažesnė nei kelių megabaitų vertė yra per maža ir bus suapvalinta iki įprastos minimalios vertės.
@@ -1221,6 +1254,13 @@
 
       Jei ši politika nenustatyta arba jos laukas tuščias, tada bet kuris naudotojas gali prisijungti prie „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="4858735034935305895">Leisti viso ekrano režimą</translation>
+<translation id="4868249328547841081">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami šiuo URL, kad pakeistų slaptažodžius, jei buvo sukčiaujama.
+      Šį nustatymą turėtų naudoti tik „GSuite“ naudotojai, naudojantys sistemą SSO / SMAL.
+      Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio kontrolinį kodą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi šių gairių: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Įgalinus šį nustatymą, taikant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami šiuo URL, kad pakeistų slaptažodžius, jei buvo sukčiaujama.
+      Jei šis nustatymas išjungtas arba nenustatytas, taikant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami adresu https://myaccounts.google.com, kad pakeistų slaptažodį.
+      Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="4869787217450099946">Nurodoma, ar ekrano pažadinimo užraktai leidžiami. Ekrano pažadinimo užraktų užklausą gali pateikti plėtiniai, naudodami energijos tvarkymo plėtinio API.
 
           Jei ši politika nustatyta kaip „Tiesa“ arba nenustatyta, ekrano pažadinimo užraktams leidžiama tvarkyti energiją.
@@ -1376,6 +1416,17 @@
 
       Jei politika nenustatyta arba nustatyta į tuščią eilutę arba negaliojantį prievado diapazoną, „WebRTC“ leidžiama naudoti bet kokį pasiekiamą vietinį UDP prievadą.</translation>
 <translation id="5290940294294002042">Nurodyti papildinių, kuriuos naudotojas gali įgalinti arba kurių gali neleisti, sąrašą</translation>
+<translation id="5301787427319106606">
+      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti sistemos funkcijas!
+      Gali būti naudinga peržiūrėti politikos nustatymą „IsolateOrigins“, kad
+      efektyviai naudotumėte atskyrimą darydami ribotą įtaką naudotojams, pasitelkdami
+      „IsolateOrigins“ su svetainių, kurias norite atskirti, sąrašu. Nustatymu
+      „SitePerProcess“ atskiriamos visos svetainės.
+      Įgalinus politiką kiekviena svetainė vykdys atskirą procesą.
+      Išjungus politiką įsigalios kiekvienos svetainės atskyrimo proceso tvarkymo logika.
+      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
+      Naudojant „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
+      </translation>
 <translation id="5302612588919538756">Ši politika nebenaudojama. Vietoje jos turėtumėte naudoti „SyncDisabled“.
 
       Naudotojui leidžiama prisijungti prie „<ph name="PRODUCT_NAME" />“.
@@ -1973,6 +2024,14 @@
 <translation id="706669471845501145">Leisti svetainėse rodyti darbalaukio pranešimus</translation>
 <translation id="7072208053150563108">Įrenginio slaptažodžio keitimo dažnis</translation>
 <translation id="7072406291414141328">Įgalinamas tinklo siuntimo spartos reguliavimas</translation>
+<translation id="7074513465313721551">Konfigūruojamas domenų, kuriais Saugaus naršymo funkcija galėtų pasitikėti, sąrašas. Tai reiškia, kad:
+      Saugaus naršymo funkcija netikrins pavojingų šaltinių (pvz., sukčiavimo, kenkėjiškų programų ar nepageidaujamos programinės įrangos), jei jų URL atitiks šiuos domenus;
+      naudojant Saugaus naršymo atsisiuntimo apsaugos paslaugą nebus tikrinami šiuose domenuose priglobiami atsisiuntimai;
+      naudojant Saugaus naršymo slaptažodžių apsaugos paslaugą nebus tikrinama, ar slaptažodis naudojamas pakartotinai, jei puslapio URL atitiks šiuos domenus.
+
+      Jei šis nustatymas įgalintas, Saugaus naršymo funkcija pasitikės šiais domenais.
+      Jei šis nustatymas išjungtas arba nenustatytas, visiems šaltiniams taikoma numatytoji Saugaus naršymo apsauga.
+       Ši politika nepasiekiama „Windows“ objektuose, kurie nesusieti su „<ph name="MS_AD_NAME" />“ domenu.</translation>
 <translation id="7079519252486108041">Blokuoti iššokančiuosius langus šiose svetainėse</translation>
 <translation id="7106631983877564505">Kai „<ph name="PRODUCT_OS_NAME" />“ įrenginiai tampa neaktyvūs ar sustabdomi, įjungiamas užraktas.
 

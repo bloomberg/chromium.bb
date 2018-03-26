@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">ใช้ไมโครโฟนและกล้องถ่ายรูปของคุณ</translation>
 <translation id="1007408791287232274">ไม่สามารถโหลดอุปกรณ์</translation>
 <translation id="1008186147501209563">ส่งออกบุ๊กมาร์ก</translation>
-<translation id="1009147628737158130"><ph name="URL" /> ต้องการดูข้อมูลที่ระบุตัวตนได้เกี่ยวกับคีย์ความปลอดภัยของคุณ</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{หน้าไม่ตอบสนอง}other{หน้าไม่ตอบสนอง}}</translation>
 <translation id="1012794136286421601">ไฟล์เอกสาร แผ่นงาน สไลด์ และภาพวาดกำลังซิงค์ เปิดแอป Google ไดรฟ์เพื่อเข้าถึงไฟล์แบบออนไลน์หรือออฟไลน์</translation>
 <translation id="1013707859758800957">ปลั๊กอินที่ไม่ได้อยู่ในแซนด์บ็อกซ์ได้รับอนุญาตให้ทำงานในหน้าเว็บนี้</translation>
@@ -1276,7 +1275,6 @@
 <translation id="2932483646085333864">ออกจากระบบแล้วลงชื่อเข้าใช้อีกครั้งเพื่อเริ่มการซิงค์</translation>
 <translation id="2932883381142163287">รายงานการละเมิด</translation>
 <translation id="2938225289965773019">เปิดลิงก์ <ph name="PROTOCOL" /></translation>
-<translation id="2938335670027321024">ย้ายตัวควบคุมเพื่อจัดตำแหน่ง แล้วคลิกเพื่อเสร็จสิ้น</translation>
 <translation id="2939938020978911855">แสดงอุปกรณ์บลูทูธที่ใช้ได้</translation>
 <translation id="2941112035454246133">ต่ำ</translation>
 <translation id="2942560570858569904">กำลังรอ...</translation>
@@ -1845,7 +1843,6 @@
 <translation id="379422718204375917">ใช้ Smart Lock เพื่อลงชื่อเข้าใช้บัญชี</translation>
 <translation id="3796648294839530037">เครือข่ายที่ชื่นชอบ:</translation>
 <translation id="3797900183766075808">&amp;ค้นหา “<ph name="SEARCH_TERMS" />” ด้วย <ph name="SEARCH_ENGINE" /></translation>
-<translation id="3798325802885154040">ให้คุณเปิด/ปิดใช้การแตะเพื่อคลิก</translation>
 <translation id="3798449238516105146">รุ่น</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;เปิดทั้งหมด}=1{&amp;เปิดบุ๊กมาร์ก}other{&amp;เปิดทั้งหมด (#)}}</translation>
 <translation id="3800806661949714323">แสดงทั้งหมด (แนะนำ)</translation>
@@ -2927,7 +2924,6 @@
 <translation id="5556206011531515970">คลิก "ถัดไป" เพื่อเลือกเบราว์เซอร์เริ่มต้นของคุณ</translation>
 <translation id="5556459405103347317">โหลดใหม่</translation>
 <translation id="555746285996217175">ล็อก/เปิดและปิด</translation>
-<translation id="5557579359142031072">ดูข้อมูลที่ระบุตัวตนได้เกี่ยวกับคีย์ความปลอดภัยของคุณ</translation>
 <translation id="5557991081552967863">ให้ Wi-Fi เปิดอยู่ตลอดระหว่างนอนหลับ</translation>
 <translation id="5558129378926964177">ขยาย&amp;</translation>
 <translation id="55601339223879446">ปรับขอบของเดสก์ท็อปให้อยู่ในหน้าจอแสดงผล</translation>
@@ -3309,7 +3305,7 @@
 <translation id="6163363155248589649">&amp;ปกติ</translation>
 <translation id="6163522313638838258">ขยายทั้งหมด...</translation>
 <translation id="6164005077879661055">ไฟล์และข้อมูลในตัวเครื่องทั้งหมดที่เกี่ยวข้องกับผู้ใช้ภายใต้การดูแลจะถูกลบออกอย่างถาวรเมื่อผู้ใช้ภายใต้การดูแลนี้ถูกลบ เว็บไซต์ที่เข้าชมและการตั้งค่าสำหรับผู้ใช้ภายใต้การดูแลนี้อาจจะยังคงมองเห็นได้โดยผู้จัดการที่ <ph name="MANAGEMENT_URL" /></translation>
-<translation id="6165508094623778733">เรียนรู้เพิ่มเติม</translation>
+<translation id="6165508094623778733">ดูข้อมูลเพิ่มเติม</translation>
 <translation id="6166185671393271715">นำเข้ารหัสผ่านไปยัง Chrome</translation>
 <translation id="6169040057125497443">โปรดตรวจสอบไมโครโฟน</translation>
 <translation id="6169666352732958425">ไม่สามารถแคสต์เดสก์ท็อป</translation>
@@ -4003,7 +3999,6 @@
 <translation id="7289225569524511578">เปิดแอปวอลล์เปเปอร์</translation>
 <translation id="7290242001003353852">บริการลงชื่อเข้าใช้ที่โฮสต์โดย <ph name="SAML_DOMAIN" /> กำลังเข้าถึงกล้องถ่ายรูปของคุณ</translation>
 <translation id="7290594223351252791">ยืนยันการลงทะเบียน</translation>
-<translation id="7292324470889366655">เสร็จสิ้นการจัดตำแหน่ง</translation>
 <translation id="729459249680637905">ลองได้อีก: $1 ครั้ง</translation>
 <translation id="7295662345261934369">แชร์กับคนอื่นๆ</translation>
 <translation id="729583233778673644">อนุญาตการเข้ารหัส AES และ RC4 การใช้ตัวเลือกนี้เป็นการเพิ่มความเสี่ยงเนื่องจากการเข้ารหัส RC4 นั้นไม่ปลอดภัย</translation>

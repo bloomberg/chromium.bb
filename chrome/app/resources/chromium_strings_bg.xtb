@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bg">
 <translation id="1065672644894730302">Предпочитанията ви не могат да бъдат прочетени. Възможно е да няма достъп до някои функции и промените в предпочитанията няма да бъдат запазени.</translation>
+<translation id="1104942323762546749">Chromium иска да експортира паролите ви. За да разрешите това, въведете паролата си за Windows.</translation>
 <translation id="1115445892567829615">Chromium не можа да синхронизира данните ви. Моля, актуализирайте пропуска си за синхронизиране.</translation>
 <translation id="113122355610423240">Chromium е браузърът ви по подразбиране</translation>
 <translation id="1170115874949214249">Инсталирайте Chromium на телефона си. Ще изпратим SMS на телефонния номер за възстановяване на профила ви.</translation>
@@ -61,6 +62,7 @@
 <translation id="3155163173539279776">Рестартиране на Chromium</translation>
 <translation id="3179665906251668410">Отваряне на връзката в прозорец в режим „инко&amp;гнито“ на Chromium</translation>
 <translation id="3190315855212034486">О, не! Chromium претърпя срив. Да се стартира ли отново сега?</translation>
+<translation id="3229526316128325841">Chromium иска да експортира паролите ви.</translation>
 <translation id="3256316712990552818">Копирано в Chromium</translation>
 <translation id="3258596308407688501">Chromium не може да чете и записва в директорията си за данни: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Ключовете на приложния програмен интерфейс (API) на Google липсват. Някои функции на Chromium ще бъдат деактивирани.</translation>
@@ -93,7 +95,8 @@
 <translation id="4271805377592243930">Получаване на помощ за Chromium</translation>
 <translation id="4285930937574705105">Инсталирането не бе успешно поради неизвестна грешка. Ако Chromium понастоящем се изпълнява, моля, затворете го и опитайте отново.</translation>
 <translation id="4330585738697551178">За този модул е известно, че влиза в конфликт с Chromium.</translation>
-<translation id="4407044323746248786">Изход от Chromium въпреки това?</translation>
+<translation id="4407044323746248786">Искате ли да излезете от Chromium въпреки това?</translation>
+<translation id="4415566066719264597">Разрешаване на Chromium да се изпълнява на заден план</translation>
 <translation id="4421155425831608516">Функцията за влизане в Chromium е деактивирана от администратора на това устройство.</translation>
 <translation id="4423735387467980091">Персонализиране и контролиране на Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium ще стартира отново след един час}other{Chromium ще стартира отново след # часа}}</translation>
@@ -107,7 +110,7 @@
 <translation id="469338717132742108">Получаване на помощ за Chromium OS</translation>
 <translation id="4708774505295300557">По-рано някой влезе в Chromium на този компютър като <ph name="ACCOUNT_EMAIL_LAST" />. Моля, създайте нов потребител в браузъра, така че информацията ви да се съхранява отделно.</translation>
 <translation id="4714956846925717402">Стартирайте Chromium по-бързо</translation>
-<translation id="4746050847053251315">Изход от Chromium въпреки това?</translation>
+<translation id="4746050847053251315">Искате ли да затворите Chromium въпреки това?</translation>
 <translation id="4888717733111232871">Правило за Chromium за допускане на входящия трафик за mDNS.</translation>
 <translation id="4943838377383847465">Chromium работи на заден план.</translation>
 <translation id="4987820182225656817">Гостите могат да използват Chromium, без да оставят следи.</translation>
@@ -156,6 +159,7 @@
 <translation id="6394232988457703198">Трябва да рестартирате Chromium сега.</translation>
 <translation id="6400072781405947421">Chromium може да не функционира правилно, защото вече не се поддържа под Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium е уеб браузър, който зарежда уеб страници и изпълнява приложения със светкавична скорост. Той е бърз, стабилен и лесен за употреба. Сърфирайте в мрежата по-безопасно с вградената защита на Chromium срещу злонамерен софтуер и фишинг.</translation>
+<translation id="6457450909262716557">{SECONDS,plural, =1{Chromium ще се рестартира след 1 секунда}other{Chromium ще се рестартира след # секунди}}</translation>
 <translation id="6475912303565314141">То също контролира коя страница се показва при стартиране на Chromium.</translation>
 <translation id="6485906693002546646">Използвате <ph name="PROFILE_EMAIL" /> за синхронизиране на нещата си в Chromium. За да актуализирате съответното предпочитание или да ползвате браузъра без профил в Google, посетете <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Деинсталиране на Chromium</translation>

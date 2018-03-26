@@ -23,6 +23,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Spouštěč</translation>
 <translation id="1525508553941733066">ZAVŘÍT</translation>
+<translation id="1537254971476575106">Lupa celé obrazovky</translation>
 <translation id="15373452373711364">Velký kurzor myši</translation>
 <translation id="1550523713251050646">Kliknutím zobrazíte další možnosti</translation>
 <translation id="1567387640189251553">Od minulého zadání hesla byla připojena jiná klávesnice. Je možné, že se pokouší odcizit vaše stisknutí kláves.</translation>
@@ -51,8 +52,10 @@
 <translation id="2049639323467105390">Zařízení je spravováno doménou <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Na výšku</translation>
 <translation id="2067602449040652523">Jas klávesnice</translation>
+<translation id="2081529251031312395">$1 se bude moci později přihlásit.</translation>
 <translation id="2122028596993374965">Ukončit odesílání karty <ph name="TAB_NAME" /> do přijímače <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Nabíječka má příliš nízký výkon</translation>
+<translation id="2135456203358955318">Zadokovaná lupa</translation>
 <translation id="2144487987174258011">Aktualizace přehrávače Adobe Flash Player vyžaduje restart</translation>
 <translation id="2191905770366256395">Odpojitelná klávesnice vyžaduje kritickou aktualizaci</translation>
 <translation id="2208323208084708176">Jednotný režim klasické plochy</translation>

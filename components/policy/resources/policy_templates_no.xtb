@@ -1076,6 +1076,13 @@
       Hvis denne retningslinjen ikke angis, kan brukeren velge om denne knappen skal vises.</translation>
 <translation id="4485425108474077672">Konfigurer nettadressen for Ny fane-siden</translation>
 <translation id="4492287494009043413">Deaktiver mulighet til å ta skjermdumper</translation>
+<translation id="4497968613298501984">Konfigurer listen over nettadresser for bedriftspålogging (bare HTTP- og HTTPS-protokoller). Fingeravtrykk for passord registreres på disse nettadressene og brukes til å gjenkjenne gjenbruk av passord.
+      Denne innstillingen bør bare brukes av GSuite-brukere som bruker et SSO/SAML-system.
+      For at <ph name="PRODUCT_NAME" /> skal registrere fingeravtrykk for passord riktig, må du påse at påloggingssidene følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Hvis denne innstillingen er aktivert, registrerer tjenesten for passordbeskyttelse fingeravtrykk for passord på disse nettadressene, for å gjenkjenne gjenbruk av passord.
+      Hvis denne innstillingen er deaktivert eller ikke er angitt, registrerer tjenesten for passordbeskyttelse bare fingeravtrykk for passord på https://accounts.google.com.
+      Denne regelen er ikke tilgjengelig i Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="450537894712826981">Konfigurerer bufferstørrelsen som <ph name="PRODUCT_NAME" /> bruker for lagring av bufrede mediafiler på disken.
 
       Hvis du angir denne innstillingen, bruker <ph name="PRODUCT_NAME" /> den tildelte bufferstørrelsen uansett om brukeren har spesifisert «--media-cache-size»-flagget eller ikke. Verdien som er angitt i denne innstillingen er ikke en hard grense, men et forslag til buffersystemet. Alle verdier under et par megabyte er for små og blir avrundet oppover til et logisk minimum.
@@ -1192,6 +1199,13 @@
 
       Hvis denne retningslinjen ikke angis eller står tom, kan alle brukere logge seg på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Tillat fullskjermmodus</translation>
+<translation id="4868249328547841081">Konfigurer nettadressen for endring av passord (bare HTTP- og HTTPS-protokoller). Tjenesten for passordbeskyttelse sender brukerne til denne nettadressen for å bytte passord hvis de har blitt utsatt for nettfisking.
+      Denne innstillingen bør bare brukes av GSuite-brukere som bruker et SSO/SAML-system.
+      For at <ph name="PRODUCT_NAME" /> skal registrere fingeravtrykket for det nye passordet på denne siden for passordbytte, må du påse at siden for passordbytte følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Hvis denne innstillingen er aktivert, sender tjenesten for passordbeskyttelse brukerne til denne nettadressen hvis de har blitt utsatt for nettfisking.
+      Hvis denne innstillingen er deaktivert eller ikke er angitt, sender tjenesten for passordbeskyttelse brukerne til https://myaccounts.google.com for å bytte passord.
+      Denne regelen er ikke tilgjengelig i Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="4869787217450099946">Angir om det er tillatt med låser for skjermaktivering. Låser for skjermaktivering kan forespørres via utvidelses API-en for strømsparing.
 
           Hvis denne regelen har verdien «true» eller ikke angitt, er det tillatt med låser for skjermaktivering for strømsparing.

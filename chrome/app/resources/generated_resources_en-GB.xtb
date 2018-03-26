@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Use your microphone and camera</translation>
 <translation id="1007408791287232274">Could not load devices.</translation>
 <translation id="1008186147501209563">Export bookmarks</translation>
-<translation id="1009147628737158130"><ph name="URL" /> wants to see identifying information about your Security Key</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Page Unresponsive}other{Pages Unresponsive}}</translation>
 <translation id="1012794136286421601">Your Docs, Sheets, Slides and Drawings files are being synced. Open the Google Drive app to access them online or offline.</translation>
 <translation id="1013707859758800957">An unsandboxed plug-in was allowed to run on this page.</translation>
@@ -1278,7 +1277,6 @@ I don't think this site should be blocked!</translation>
 <translation id="2932483646085333864">Sign out then sign in again to start sync</translation>
 <translation id="2932883381142163287">Report abuse</translation>
 <translation id="2938225289965773019">Open <ph name="PROTOCOL" /> links</translation>
-<translation id="2938335670027321024">Move the controller to reposition. Click to finish.</translation>
 <translation id="2939938020978911855">Show available Bluetooth devices</translation>
 <translation id="2941112035454246133">Low</translation>
 <translation id="2942560570858569904">Waiting...</translation>
@@ -1848,7 +1846,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="379422718204375917">Use Smart Lock to sign in to your account</translation>
 <translation id="3796648294839530037">Favourite Networks:</translation>
 <translation id="3797900183766075808">&amp;Search <ph name="SEARCH_ENGINE" /> for “<ph name="SEARCH_TERMS" />”</translation>
-<translation id="3798325802885154040">Allows you to enable/disable tap-to-click</translation>
 <translation id="3798449238516105146">Version</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Open All}=1{&amp;Open Bookmark}other{&amp;Open All (#)}}</translation>
 <translation id="3800806661949714323">Show all (recommended)</translation>
@@ -2932,7 +2929,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="5556206011531515970">Click next to choose your default browser.</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="555746285996217175">Lock / power</translation>
-<translation id="5557579359142031072">See identifying information about your Security Key</translation>
 <translation id="5557991081552967863">Keep Wi-Fi on during sleep</translation>
 <translation id="5558129378926964177">Zoom &amp;In</translation>
 <translation id="55601339223879446">Adjust the boundaries of your desktop within the display</translation>
@@ -4010,7 +4006,6 @@ For more information, visit our <ph name="BEGIN_LINK" />Help Centre<ph name="END
 <translation id="7289225569524511578">Open the wallpaper app</translation>
 <translation id="7290242001003353852">This sign-in service, hosted by <ph name="SAML_DOMAIN" />, is accessing your camera.</translation>
 <translation id="7290594223351252791">Confirm registration</translation>
-<translation id="7292324470889366655">Finish repositioning</translation>
 <translation id="729459249680637905">Attempts left: $1</translation>
 <translation id="7295662345261934369">Share with others</translation>
 <translation id="729583233778673644">Allow AES and RC4 encryption. Using this option increases your risk, as the RC4 ciphers are insecure.</translation>

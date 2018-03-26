@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">العنوان 1</translation>
 <translation id="1545749641540134597">فحص رمز الاستجابة السريعة</translation>
 <translation id="1580783302095112590">تم إرسال البريد.</translation>
+<translation id="1582732959743469162">سيؤدي ذلك إلى إيقاف جميع عمليات التقدم للتنزيل الحالي.</translation>
 <translation id="1612730193129642006">عرض شبكة علامة التبويب</translation>
 <translation id="1644574205037202324">السجل</translation>
 <translation id="1646446875146297738">إن تمكين "عدم التتبع" يعني تضمين طلب في حركة بيانات التصفح. ويعتمد أي تأثير يحدث على ما إذا كان موقع الويب سيستجيب للطلب، وكيفية تفسيره للطلب.
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">حدث خطأ ما، وسنحاول حل المشكلة.</translation>
 <translation id="6342069812937806050">الآن</translation>
 <translation id="6344783595350022745">محو النص</translation>
+<translation id="6346549652287021269">هل تريد بدء تنزيل جديد؟</translation>
 <translation id="6362362396625799311">لا توجد علامات تبويب للتصفح المتخفي</translation>
 <translation id="6374469231428023295">إعادة المحاولة</translation>
 <translation id="6380866119319257197">إذا كنت قد نسيت عبارة المرور أو ترغب في تغيير هذا الإعداد، يمكنك <ph name="BEGIN_LINK" />إعادة تعيين المزامنة<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">مزامنة لـ</translation>
 <translation id="7053983685419859001">منع</translation>
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
+<translation id="7102005569666697658">جارِ تنزيل… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">إخفاء</translation>
 <translation id="7133798577887235672">الاسم بالكامل</translation>
 <translation id="7136892417564438900">الكاميرا غير متاحة</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>
 <translation id="7772032839648071052">تأكيد عبارة المرور</translation>
 <translation id="780301667611848630">لا، شكرًا</translation>
+<translation id="7856733331829174190">فشلت عملية التنزيل.</translation>
 <translation id="7859704718976024901">سجل التصفح</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">جارٍ تصدير كلمات المرور...</translation>
@@ -370,7 +374,6 @@
 <translation id="8019783059653722575">هذا يتيح لك حفظ الصور وتحميلها.</translation>
 <translation id="802154636333426148">تعذّر التنزيل</translation>
 <translation id="8023878949384262191">توسيع القسم.</translation>
-<translation id="8053390638574070785">إعادة تحميل هذه الصفحة</translation>
 <translation id="8059533439631660104">طي القسم.</translation>
 <translation id="806745655614357130">الحفاظ على البيانات التابعة لي منفصلة</translation>
 <translation id="8076014560081431679">لن يتم حذف إعدادات موقع الويب المحفوظة وقد تعكس عادات التصفح. <ph name="BEGIN_LINK" />مزيد من المعلومات<ph name="END_LINK" /></translation>
@@ -423,6 +426,7 @@
 <translation id="9083392325882095631">عنصر واحد</translation>
 <translation id="9100610230175265781">عبارة المرور مطلوبة</translation>
 <translation id="9148126808321036104">تسجيل الدخول مرة أخرى</translation>
+<translation id="915371508759614899">هل تريد إلغاء التنزيل؟</translation>
 <translation id="9157836665414082580">إيقاف مربعات الحوار</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
 <translation id="9203116392574189331">Handoff</translation>

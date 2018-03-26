@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="bn">
 <translation id="1065672644894730302">আপনার অভিরুচিগুলি পড়া যাবে না৷ কিছু বৈশিষ্ট্য অনুপলব্ধ থাকতে পারে ও অভিরুচিগুলিতে করা পরিবর্তনগুলি সংরক্ষিত হবে না৷</translation>
+<translation id="1104942323762546749">Chromium আপনার পাসওয়ার্ড এক্সপোর্ট করতে চাইছে। অনুমতি দিতে Windows এর পাসওয়ার্ড টাইপ করুন।</translation>
 <translation id="1115445892567829615">Chromium আপনার ডেটা সিঙ্ক করতে পারেনি৷ দয়া করে আপনার সিঙ্ক পাসফ্রেজ আপডেট করুন৷</translation>
 <translation id="113122355610423240">Chromium আপনার ডিফল্ট ব্রাউজার</translation>
 <translation id="1170115874949214249">আপনার ফোনে Chromium ইনস্টল করুন। আমরা আপনার অ্যাকাউন্ট পুনরুদ্ধারের ফোন নম্বরে একটি এসএমএস পাঠাব।</translation>
@@ -61,6 +62,7 @@
 <translation id="3155163173539279776">Chromium আবার লঞ্চ করুন</translation>
 <translation id="3179665906251668410">Chromium ছদ্ম&amp;বেশী উইন্ডোতে লিঙ্কটি খুলুন</translation>
 <translation id="3190315855212034486">ওহো! Chromium ক্র্যাশ করেছে৷ এখন আবার শুরু করবেন?</translation>
+<translation id="3229526316128325841">Chromium আপনার পাসওয়ার্ড এক্সপোর্ট করতে চাইছে।</translation>
 <translation id="3256316712990552818">Chromium-এ প্রতিলিপি করা হয়েছে</translation>
 <translation id="3258596308407688501">Chromium তার ডেটা ডিরেক্টরিতে পড়তে এবং লিখতে পারে না:
 
@@ -96,6 +98,7 @@
 <translation id="4285930937574705105">অনির্দিষ্ট ত্রুটির কারণে ইনস্টলেশন ব্যর্থ৷ বর্তমানে Chromium চালু থাকলেও, দয়া করে এটি বন্ধ করুন এবং আবার চেষ্টা করুন৷</translation>
 <translation id="4330585738697551178">এই মডিউল Chromium-এর সঙ্গে বিরোধের জন্য জ্ঞাত হয়৷</translation>
 <translation id="4407044323746248786">তা স্বত্তেও Chromium ছেড়ে যাবেন?</translation>
+<translation id="4415566066719264597">Chromium-কে ব্যাকগ্রাউন্ডে চলতে দিন</translation>
 <translation id="4421155425831608516">এই ডিভাইসের প্রশাসক Chromium এর মাধ্যমে সাইন-ইন করা অক্ষম করেছেন।</translation>
 <translation id="4423735387467980091">Chromium কাস্টমাইজ ও নিয়ন্ত্রণ করুন</translation>
 <translation id="4449801103833300785">{0,plural, =1{এক ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}one{# ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}other{# ঘণ্টার মধ্যে Chromium রিলঞ্চ করা হবে}}</translation>
@@ -158,6 +161,7 @@
 <translation id="6394232988457703198">আপনার এখনই Chromium আবার চালু করা উচিত হবে।</translation>
 <translation id="6400072781405947421">Chromium সঠিকভাবে কাজ নাও করতে পারে কারণ এটি এখন আর Mac OS X 10.9 এ সমর্থিত নয়।</translation>
 <translation id="6403826409255603130">Chromium হল একটি ওয়েব ব্রাউজার যা ওয়েব পৃষ্ঠার গতি এবং অ্যাপ্লিকেশনগুলিকে আলোকের গতিতে সঞ্চালিত করে৷ এটা দ্রুত, স্থিতিশীল, এবং সহজে ব্যবহারের যোগ্য৷ Chromium নির্মিত ম্যালওয়ার এবং ফিশিং সুরক্ষার সাহায্যে আরও সুরক্ষিত ভাবে ওয়েব ব্রাউজ করুন৷</translation>
+<translation id="6457450909262716557">{SECONDS,plural, =1{Chromium ১ সেকেন্ডের মধ্যে রিস্টার্ট হবে}one{Chromium # সেকেন্ডের মধ্যে রিস্টার্ট হবে}other{Chromium # সেকেন্ডের মধ্যে রিস্টার্ট হবে}}</translation>
 <translation id="6475912303565314141">আপনি Chromium শুরু করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="6485906693002546646">আপনার Chromium জিনিসপত্র সমন্বয় করার জন্য আপনি <ph name="PROFILE_EMAIL" /> ব্যবহার করছেন৷ আপনার সিঙ্ক পছন্দগুলি আপডেট করতে বা Google অ্যাকাউন্ট ছাড়া Chromium ব্যবহার করতে <ph name="SETTINGS_LINK" /> এ যান৷</translation>
 <translation id="6510925080656968729">Chromium আনইনস্টল করুন</translation>

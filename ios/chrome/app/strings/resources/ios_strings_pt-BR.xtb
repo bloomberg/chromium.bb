@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Endereço 1</translation>
 <translation id="1545749641540134597">Ler código QR</translation>
 <translation id="1580783302095112590">Mensagem enviada.</translation>
+<translation id="1582732959743469162">Isso interromperá todo o progresso do download atual.</translation>
 <translation id="1612730193129642006">Mostrar grade das guias</translation>
 <translation id="1644574205037202324">Histórico</translation>
 <translation id="1646446875146297738">A ativação da opção "Não rastrear" significa que uma solicitação será incluída com seu tráfego de navegação. Qualquer efeito depende de o website responder ou não à solicitação e da forma que a solicitação é interpretada.
@@ -285,6 +286,7 @@ A "Transição" também deve ser ativada na seção "Geral" das configurações.
 <translation id="633809752005859102">Algo deu errado. Estamos trabalhando para resolver isso.</translation>
 <translation id="6342069812937806050">Neste instante</translation>
 <translation id="6344783595350022745">Limpar texto</translation>
+<translation id="6346549652287021269">Iniciar novo download?</translation>
 <translation id="6362362396625799311">Não há guias anônimas</translation>
 <translation id="6374469231428023295">Repetir</translation>
 <translation id="6380866119319257197">Se você esquecer a senha longa ou quiser alterar essa configuração, <ph name="BEGIN_LINK" />redefina a sincronização<ph name="END_LINK" /></translation>
@@ -326,6 +328,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7031882061095297553">Sincronizar com</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7062545763355031412">Aceitar e alternar entre contas</translation>
+<translation id="7102005569666697658">Fazendo o download… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7133798577887235672">Nome completo</translation>
 <translation id="7136892417564438900">A câmera não está disponível</translation>
@@ -361,6 +364,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="7769602470925380267">Aceitar e sair</translation>
 <translation id="7772032839648071052">Confirmar senha</translation>
 <translation id="780301667611848630">Não</translation>
+<translation id="7856733331829174190">Falha no download</translation>
 <translation id="7859704718976024901">Histórico de navegação</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportar senhas…</translation>
@@ -371,7 +375,6 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="8019783059653722575">Isso permite que você salve fotos e faça upload delas.</translation>
 <translation id="802154636333426148">Falha no download</translation>
 <translation id="8023878949384262191">Expande a seção.</translation>
-<translation id="8053390638574070785">Recarregar esta página</translation>
 <translation id="8059533439631660104">Recolhe a seção.</translation>
 <translation id="806745655614357130">Manter meus dados separados</translation>
 <translation id="8076014560081431679">As configurações salvas em sites não são excluídas e podem refletir seus hábitos de navegação. <ph name="BEGIN_LINK" />Saiba mais<ph name="END_LINK" /></translation>
@@ -424,6 +427,7 @@ Seus dados foram criptografados com sua senha longa de sincronização no dia <p
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Senha necessária</translation>
 <translation id="9148126808321036104">Faça login novamente</translation>
+<translation id="915371508759614899">Cancelar download?</translation>
 <translation id="9157836665414082580">Bloquear caixas de diálogo</translation>
 <translation id="9188680907066685419">Sair da conta gerenciada</translation>
 <translation id="9203116392574189331">Transição</translation>

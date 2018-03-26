@@ -1095,6 +1095,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Không thiết lập chính sách này sẽ cho phép người dùng chọn có hiển thị nút trang chủ hay không.</translation>
 <translation id="4485425108474077672">Định cấu hình URL trang Tab mới</translation>
 <translation id="4492287494009043413">Tắt tính năng chụp ảnh chụp màn hình</translation>
+<translation id="4497968613298501984">Định cấu hình danh sách URL đăng nhập của doanh nghiệp (chỉ dành cho các lược đồ HTTP và HTTPS). Dấu vân tay của mật khẩu sẽ quét trên những URL này và dùng để phát hiện trường hợp sử dụng lại mật khẩu.
+      Người dùng G Suite chỉ nên sử dụng cài đặt này bằng hệ thống SSO/SAML.
+      Để <ph name="PRODUCT_NAME" /> có thể quét chính xác dấu vân tay của mật khẩu, hãy đảm bảo các trang đăng nhập của bạn tuân theo những nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Nếu bạn bật cài đặt này thì dịch vụ bảo vệ mật khẩu sẽ quét dấu vân tay của mật khẩu trên các URL này cho mục đích phát hiện trường hợp sử dụng lại mật khẩu.
+      Nếu bạn tắt hoặc chưa đặt cài đặt này thì dịch vụ bảo vệ mật khẩu sẽ chỉ quét dấu vân tay của mật khẩu trên https://accounts.google.com.
+      Chính sách này không sử dụng được trên các phiên bản Windows chưa tham gia vào miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Định cấu hình kích thước bộ nhớ đệm mà <ph name="PRODUCT_NAME" /> sẽ sử dụng để lưu trữ các tệp phương tiện đã lưu vào bộ nhớ đệm trên đĩa.
 
       Nếu bạn đặt chính sách này, <ph name="PRODUCT_NAME" /> sẽ sử dụng kích thước bộ nhớ đệm được cung cấp cho dù người dùng đã chỉ định cờ '--media-cache-size' hay chưa. Giá trị được chỉ định trong chính sách này không phải là ranh giới cứng nhắc mà là một đề xuất cho hệ thống lưu vào bộ nhớ đệm, mọi giá trị dưới vài megabyte là quá nhỏ và sẽ được làm tròn lên đến mức tối thiểu hợp lý.
@@ -1212,6 +1219,13 @@ Khi chính sách này được đặt thành false hoặc không được địn
 
       Nếu chính sách này không được thiết lập hoặc để trống, thì bất kỳ người dùng nào cũng có thể đăng nhập vào <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Cho phép chế độ toàn màn hình</translation>
+<translation id="4868249328547841081">Định cấu hình URL thay đổi mật khẩu (chỉ dành cho các lược đồ HTTP và HTTPS). Dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến URL này để thay đổi mật khẩu nếu họ bị lừa đảo.
+      Người dùng G Suite chỉ nên sử dụng cài đặt này bằng hệ thống SSO/SAML.
+      Để <ph name="PRODUCT_NAME" /> có thể quét chính xác dấu vân tay của mật khẩu mới trên trang thay đổi mật khẩu này, hãy đảm bảo trang thay đổi mật khẩu của bạn tuân theo những nguyên tắc trên https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Nếu bạn bật cài đặt này thì dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến URL này để thay đổi mật khẩu trong trường hợp họ bị lừa đảo.
+      Nếu bạn tắt hoặc chưa đặt cài đặt này thì dịch vụ bảo vệ mật khẩu sẽ chuyển người dùng đến https://myaccounts.google.com để thay đổi mật khẩu của họ.
+      Chính sách này không sử dụng được trên các phiên bản Windows chưa tham gia vào miền <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Xác định xem khóa chế độ thức màn hình có được phép hay không. Khóa chế độ thức màn hình có thể được tiện ích yêu cầu qua API tiện ích quản lý công suất.
 
           Nếu chính sách này được đặt thành true hoặc không được đặt, khóa chế độ thức màn hình sẽ được đặt để quản lý công suất.

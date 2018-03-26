@@ -87,6 +87,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1709438864123551175">Economizor de date</translation>
 <translation id="1718835860248848330">Ultima oră</translation>
 <translation id="1729516292547892356">Pentru a vedea conținut de realitate virtuală, actualizează serviciile Google VR</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – actualizat <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Sincronizează marcajele</translation>
 <translation id="17513872634828108">File deschise</translation>
 <translation id="1756600373018374892">Atinge acest buton pentru a accesa rapid filele.</translation>
@@ -109,7 +110,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="1946005195648379376">Controlează cum poate folosi Google istoricul de navigare pentru a personaliza Căutarea și alte servicii Google.</translation>
 <translation id="1952172573699511566">Site-urile vor afișa textul în limba ta preferată, dacă este posibil.</translation>
 <translation id="1966710179511230534">Actualizați detaliile de conectare.</translation>
-<translation id="196723829409668860">Alții au văzut și</translation>
 <translation id="1974060860693918893">Avansate</translation>
 <translation id="1984937141057606926">Permise, cu excepția celor terță parte</translation>
 <translation id="1989112275319619282">Răsfoiește</translation>
@@ -171,7 +171,7 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="2498359688066513246">Ajutor și feedback</translation>
 <translation id="2501278716633472235">Înapoi</translation>
 <translation id="2503472621226270518">Extinde panoul de navigare</translation>
-<translation id="2512222046227390255">Completare automată de formulare</translation>
+<translation id="2512222046227390255">Completează automat formularele</translation>
 <translation id="2526148617758225454">Economizorul de date este activat. Gestionează-l din setări.</translation>
 <translation id="2532336938189706096">Vizualizare pe web</translation>
 <translation id="2536728043171574184">Se afișează o versiune offline a acestei pagini</translation>
@@ -229,7 +229,6 @@ Pentru a folosi Webul material, trebuie să activezi Bluetooth și Locația.</tr
 <translation id="3089395242580810162">Deschideți într-o filă incognito</translation>
 <translation id="311456632243022227">Linkuri multiple deschise în Chrome</translation>
 <translation id="3115898365077584848">Afișează informațiile</translation>
-<translation id="3135915540460564231">Unde se află descărcările, marcajele și istoricul?</translation>
 <translation id="3137521801621304719">Ieși din modul incognito</translation>
 <translation id="3148434565183091099">Pentru a accesa marcajele pe toate dispozitivele, conectează-te la Chrome.</translation>
 <translation id="3157842584138209013">Vezi ce volum de date ai economisit folosind butonul Mai multe opțiuni</translation>
@@ -786,6 +785,7 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="8200772114523450471">Reia</translation>
 <translation id="8209050860603202033">Deschideți imaginea</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB pentru descărcări</translation>
+<translation id="8249310407154411074">Mută la început</translation>
 <translation id="8250920743982581267">Documente</translation>
 <translation id="8260126382462817229">Încearcă să te conectezi din nou</translation>
 <translation id="8261506727792406068">Șterge</translation>

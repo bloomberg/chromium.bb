@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Използване на микрофона и камерата ви</translation>
 <translation id="1007408791287232274">Устройствата не можаха да бъдат заредени.</translation>
 <translation id="1008186147501209563">Експортиране на отметки</translation>
-<translation id="1009147628737158130"><ph name="URL" /> иска да прегледа идентифициращата информация за ключа ви за сигурност</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Блокирала страница}other{Блокирали страници}}</translation>
 <translation id="1012794136286421601">Файловете ви в Документи, Таблици, Презентации и Чертежи се синхронизират. Отворете приложението Google Диск, за да осъществите достъп до тях онлайн или офлайн.</translation>
 <translation id="1013707859758800957">На тази страница бе разрешено изпълняването на приставка извън тестова среда.</translation>
@@ -1273,7 +1272,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="2932483646085333864">Излезте от профила си и отново влезте в него, за да стартира синхронизирането</translation>
 <translation id="2932883381142163287">Подаване на сигнал за злоупотреба</translation>
 <translation id="2938225289965773019">Да отваря връзки от типа „<ph name="PROTOCOL" />“.</translation>
-<translation id="2938335670027321024">Преместете контролера, за да промените позицията. Кликнете, за да завършите действието.</translation>
 <translation id="2939938020978911855">Показване на наличните устройства с Bluetooth</translation>
 <translation id="2941112035454246133">Нисък</translation>
 <translation id="2942560570858569904">Изчаква се...</translation>
@@ -1842,7 +1840,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="379422718204375917">Използване на Smart Lock за влизане в профила ви</translation>
 <translation id="3796648294839530037">Любими мрежи:</translation>
 <translation id="3797900183766075808">&amp;Търсене на „<ph name="SEARCH_TERMS" />“ със: <ph name="SEARCH_ENGINE" /></translation>
-<translation id="3798325802885154040">Позволява ви да активирате/деактивирате кликването с докосване</translation>
 <translation id="3798449238516105146">Версия</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Отваряне на всички}=1{&amp;Отваряне на отметката}other{&amp;Отваряне на всички (#)}}</translation>
 <translation id="3800806661949714323">Показване на всички (препоръчително)</translation>
@@ -2924,7 +2921,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5556206011531515970">Кликнете върху „Напред“, за да изберете браузъра си по подразбиране.</translation>
 <translation id="5556459405103347317">Повторно зареждане</translation>
 <translation id="555746285996217175">Заключване/захранване</translation>
-<translation id="5557579359142031072">Прегледа идентифициращата информация за ключа ви за сигурност</translation>
 <translation id="5557991081552967863">Поддържане на включена Wi-Fi в спящ режим</translation>
 <translation id="5558129378926964177">&amp;Увеличаване</translation>
 <translation id="55601339223879446">Коригиране на границите на работния плот в рамките на екрана</translation>
@@ -4001,7 +3997,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="7289225569524511578">Отваряне на приложението за тапети</translation>
 <translation id="7290242001003353852">Тази услуга за вход, хоствана от <ph name="SAML_DOMAIN" />, осъществява достъп до камерата ви.</translation>
 <translation id="7290594223351252791">Потвърждаване на регистрацията</translation>
-<translation id="7292324470889366655">Край на преместването</translation>
 <translation id="729459249680637905">Оставащи опити: $1</translation>
 <translation id="7295662345261934369">Споделяне с други хора</translation>
 <translation id="729583233778673644">Разрешаване на AES и RC4 шифроване. Използването на тази опция увеличава риска, тъй като шифрите RC4 са несигурни.</translation>

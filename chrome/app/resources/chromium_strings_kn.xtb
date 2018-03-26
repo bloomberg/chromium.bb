@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="kn">
 <translation id="1065672644894730302">ನಿಮ್ಮ ಪ್ರಾಶಸ್ತ್ಯಗಳನ್ನು ರೀಡ್‌ ಮಾಡಲು ಸಾಧ್ಯವಾಗುವುದಿಲ್ಲ. ಅಲ್ಲದೇ, ಕೆಲವು ವೈಶಿಷ್ಟ್ಯಗಳು ಲಭ್ಯವಿಲ್ಲದಿರಬಹುದು ಮತ್ತು ಪ್ರಾಶಸ್ತ್ಯಗಳಲ್ಲಿ ಮಾಡಿದ ಬದಲಾವಣೆಗಳನ್ನು ಉಳಿಸಲಾಗುವುದಿಲ್ಲ.</translation>
+<translation id="1104942323762546749">Chromium ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು ಬಯಸುತ್ತದೆ. ಇದನ್ನು ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="1115445892567829615">Chromium ಗೆ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ. ದಯವಿಟ್ಟು ನಿಮ್ಮ ಸಿಂಕ್ ಪಾಸ್‌ಫ್ರೇಸ್ ಅನ್ನು ನವೀಕರಿಸಿ.</translation>
 <translation id="113122355610423240">Chromium ನಿಮ್ಮ ಡಿಫಾಲ್ಟ್ ಬ್ರೌಸರ್ ಆಗಿದೆ.</translation>
 <translation id="1170115874949214249">ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Chromium ಅನ್ನು ಸ್ಥಾಪಿಸಿ. ನಿಮ್ಮ ಖಾತೆ ಮರುಪ್ರಾಪ್ತಿ ಫೋನ್ ಸಂಖ್ಯೆ‌ಗೆ ನಾವು ಎಸ್ಎಂಎಸ್ ಕಳುಹಿಸುತ್ತೇವೆ.</translation>
@@ -61,6 +62,7 @@
 <translation id="3155163173539279776">Chromium ಮರುಪ್ರಾರಂಭಿಸಿ</translation>
 <translation id="3179665906251668410">Chromium ಅ&amp;ದೃಶ್ಯ ವಿಂಡೋದಲ್ಲಿ ಲಿಂಕ್ ತೆರೆಯಿರಿ</translation>
 <translation id="3190315855212034486">ಓಹ್! Chromium ಕ್ರ್ಯಾಶ್ ಆಗಿದೆ. ಮತ್ತೊಮ್ಮೆ ಪ್ರಾರಂಭಿಸುವುದೇ?</translation>
+<translation id="3229526316128325841">Chromium ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="3256316712990552818">Chromium ಗೆ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="3258596308407688501">Chromium ಗೆ ಇದರ ಡೇಟಾ ಡೈರೆಕ್ಟರಿಯನ್ನು ಓದಲಾಗುವುದಿಲ್ಲ ಮತ್ತು ಬರೆಯಲಾಗುವುದಿಲ್ಲ: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Google API ಕೀಗಳು ಕಾಣೆಯಾಗಿವೆ. Chromium ನ ಕೆಲವು ಕಾರ್ಯವಿಧಾನಗಳನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗುತ್ತದೆ.</translation>
@@ -93,7 +95,8 @@
 <translation id="4271805377592243930">Chromium ಜೊತೆಗೆ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="4285930937574705105">ಅನಿರ್ದಿಷ್ಟ ದೋಷದಿಂದಾಗಿ ಸ್ಥಾಪನೆಯು ವಿಫಲಗೊಂಡಿದೆ. Chromium ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿದ್ದರೆ, ದಯವಿಟ್ಟು ಅದನ್ನು ಮುಚ್ಚಿರಿ ಮತ್ತು ಪುನಃ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="4330585738697551178">Chromium ನೊಂದಿಗಿನ ಈ ಮಾಡ್ಯೂಲ್‌‌ನ ಘರ್ಷಣೆ ಎಲ್ಲರಿಗೂ ತಿಳಿದಿರುವಂಥದ್ದು.</translation>
-<translation id="4407044323746248786">ಏನಾಗಲಿ Chromium ನಿಂದ ನಿರ್ಗಮಿಸುವುದೇ?</translation>
+<translation id="4407044323746248786">ಹೇಗಿದ್ದರೂ Chromium ನಿಂದ ನಿರ್ಗಮಿಸುವುದೇ?</translation>
+<translation id="4415566066719264597">Chromium ಹಿನ್ನೆಲೆಯಲ್ಲಿ ರನ್ ಆಗಲು ಅನುಮತಿಸಿ</translation>
 <translation id="4421155425831608516">ಈ ಸಾಧನದ ನಿರ್ವಾಹಕರಿಂದ Chromium ಗೆ ಸೈನ್‌ ಇನ್‌ ಆಗುವುದನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಲಾಗಿದೆ.</translation>
 <translation id="4423735387467980091">Chromium ಅನ್ನು ಕಸ್ಟಮೈಸ್ ಮಾಡಿ ಮತ್ತು ನಿಯಂತ್ರಿಸಿ</translation>
 <translation id="4449801103833300785">{0,plural, =1{ಗಂಟೆಯಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}one{# ಗಂಟೆಯಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}other{# ಗಂಟೆಯಲ್ಲಿ Chromium ಮರುಪ್ರಾರಂಭಗೊಳ್ಳುತ್ತದೆ}}</translation>
@@ -107,7 +110,7 @@
 <translation id="469338717132742108">Chromium OS ಕುರಿತಾಗಿ ಸಹಾಯ ಪಡೆಯಿರಿ</translation>
 <translation id="4708774505295300557">ಈ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ <ph name="ACCOUNT_EMAIL_LAST" /> ನಂತೆ Chromium ಗೆ ಯಾರೋ ಈ ಹಿಂದೆಯೇ ಸೈನ್ ಇನ್ ಮಾಡಿದ್ದಾರೆ. ನಿಮ್ಮ ಮಾಹಿತಿಯನ್ನು ಪ್ರತ್ಯೇಕವಾಗಿ ಇರಿಸಿಕೊಳ್ಳಲು ಹೊಸ Chromium ಬಳಕೆದಾರರನ್ನು ರಚಿಸಿ.</translation>
 <translation id="4714956846925717402">ವೇಗವಾಗಿ Chromium ಗೆ ತೆರಳಿ</translation>
-<translation id="4746050847053251315">ಏನಾಗಲೀ Chromium ಅನ್ನು ತ್ಯಜಿಸುವುದೇ?</translation>
+<translation id="4746050847053251315">ಹೇಗಿದ್ದರೂ Chromium ಅನ್ನು ಮುಚ್ಚುವುದೇ?</translation>
 <translation id="4888717733111232871">mDNS ಟ್ರಾಫಿಕ್‌ಗೆ ಅನುಮತಿಸುವ ನಿಟ್ಟಿನಲ್ಲಿ Chromium ಗೆ ಒಳಬರುವ ನಿಯಮ.</translation>
 <translation id="4943838377383847465">Chromium ಹಿನ್ನೆಲೆ ಮೋಡ್‌ನಲ್ಲಿದೆ.</translation>
 <translation id="4987820182225656817">ಅತಿಥಿಗಳು ಏನನ್ನೂ ಉಳಿಸದೆಯೇ Chromium ಬಳಸಬಹುದು.</translation>
@@ -156,6 +159,7 @@
 <translation id="6394232988457703198">ಇದೀಗ ನೀವು Chromium ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕು.</translation>
 <translation id="6400072781405947421">Mac OS X 10.9 ನಲ್ಲಿ Chromium ಇನ್ನು ಮುಂದೆ ಬೆಂಬಲಿಸದೇ ಇರುವುದರಿಂದ ಅದು ಸರಿಯಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸದೇ ಇರಬಹುದು.</translation>
 <translation id="6403826409255603130">Chromium ಒಂದು ವೆಬ್ ಬ್ರೌಸರ್ ಆಗಿದ್ದು ವೆಬ್‌ಪುಟಗಳನ್ನು ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ವೇಗದೊಂದಿಗೆ ಕಾರ್ಯನಿರ್ವಹಿಸುತ್ತದೆ. ಇದು ವೇಗವಾದ, ಸ್ಥಿರವಾದ, ಮತ್ತು ಬಳಸಲು ಸುಲಭವಾಗಿದೆ. ಮಾಲ್‌ವೇರ್‌ನೊಂದಿಗೆ ಹೆಚ್ಚು ಸುರಕ್ಷಿತವಾಗಿ ಹಾಗೂ Chromium ನಲ್ಲಿ ವಿನ್ಯಾಸಗೊಳಿಸಲಾದ ಫಿಶಿಂಗ್ ಸುರಕ್ಷೆಯೊಂದಿಗೆ ವೆಬ್ ಅನ್ನು ಬ್ರೌಸ್ ಮಾಡಿ.</translation>
+<translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 1 ಸೆಕೆಂಡ್‌ನಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}one{Chromium # ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}other{Chromium # ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}}</translation>
 <translation id="6475912303565314141">ನೀವು Chromium ಪ್ರಾರಂಭಿಸಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="6485906693002546646">ನಿಮ್ಮ Chromium ವಿಷಯವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ನೀವು <ph name="PROFILE_EMAIL" /> ಅನ್ನು ಬಳಸುತ್ತಿರುವಿರಿ. Google ಖಾತೆ ಇಲ್ಲದೆ ನಿಮ್ಮ ಸಿಂಕ್ ಪ್ರಾಶಸ್ತ್ಯಗಳನ್ನು ನವೀಕರಿಸಲು ಅಥವಾ Chromium ಬಳಸಲು, <ph name="SETTINGS_LINK" /> ಭೇಟಿ ನೀಡಿ.</translation>
 <translation id="6510925080656968729">Chromium ಅನ್‌ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>

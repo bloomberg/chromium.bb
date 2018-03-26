@@ -1094,6 +1094,13 @@ politikayı geçersiz kılamaz.
       Bu politika ayarlanmadan bırakılırsa, kullanıcı ana sayfa düğmesinin gösterilip gösterilmeyeceğini seçebilir.</translation>
 <translation id="4485425108474077672">Yeni Sekme sayfasının URL'sini yapılandır</translation>
 <translation id="4492287494009043413">Ekran görüntüleri almayı devre dışı bırak</translation>
+<translation id="4497968613298501984">Kurumsal giriş URL'lerinin listesini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Bu URL'lerde şifrelerin dijital parmak izleri yakalanır ve şifrenin tekrar kullanımını algılamak için bu dijital parmak izlerinden yararlanılır.
+      Bu ayar yalnızca SSO/SMAL sistemini kullanan GSuite kullanıcıları tarafından kullanılmalıdır.
+      <ph name="PRODUCT_NAME" /> uygulamasının şifrelerin dijital parmak izlerini doğru bir şekilde yakalaması için giriş sayfalarınızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresinde bulunan kurallara uyduğundan emin olun.
+
+      Bu ayar etkinleştirilirse şifre koruma hizmeti, şifre yeniden kullanımı algılaması için bu URL'lerdeki şifrelerin dijital parmak izlerini yakalar.
+      Bu ayar devre dışı bırakılırsa veya ayarlanmazsa, şifre koruma hizmeti yalnızca https://accounts.google.com adresindeki şifrelerin dijital parmak izlerini yakalar.
+      Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmamış Windows örneklerinde kullanılamaz.</translation>
 <translation id="450537894712826981">Önbelleğe alınan medya dosyalarının diskte depolanması için <ph name="PRODUCT_NAME" /> tarafından kullanılacak önbellek boyutunu yapılandırır.
 
       Bu politikayı ayarlarsanız kullanıcı "--media-cache-size" bayrağını belirtmiş olsun veya olmasın, <ph name="PRODUCT_NAME" /> sağlanan önbelllek boyutunu kullanır. Bu politikada belirtilen değer kesin bir sınır değil, daha çok önbellek sistemi için bir öneridir. Birkaç mega baytın altındaki her değer çok küçük sayılır ve mantıklı bir minimum sayı olacak şekilde ayarlanır.
@@ -1212,6 +1219,13 @@ politikayı geçersiz kılamaz.
 
       Bu politika ayarlanmamış olarak veya boş bırakılırsa, <ph name="PRODUCT_NAME" /> uygulamasında herkes oturum açabilir.</translation>
 <translation id="4858735034935305895">Tam ekran moduna izin ver</translation>
+<translation id="4868249328547841081">Şifre değiştirme URL'sini yapılandırın (yalnızca HTTP ve HTTPS şemaları). Kullanıcılar kimlik avına maruz kalmışsa şifre koruma hizmeti, şifrelerini değiştirmeleri için kullanıcıları bu URL'ye gönderir.
+      Bu ayar, yalnızca SSO/SAML sistemi kullanan GSuite kullanıcıları tarafından kullanılmalıdır.
+      <ph name="PRODUCT_NAME" /> uygulamasının bu şifre değişikliği sayfasında yeni şifrenin dijital parmak izini doğru bir şekilde yakalayabilmesi için lütfen şifre değiştirme sayfanızın https://www.chromium.org/developers/design-documents/create-amazing-password-forms adresindeki kurallara uyduğundan emin olun.
+
+      Bu ayar etkinleştirilirse şifre koruma hizmeti, kimlik avına maruz kalmış kullanıcıları şifrelerini değiştirmeleri için bu URL'ye gönderir.
+      Bu ayar devre dışı bırakılmış veya ayarlanmamışsa şifre koruma hizmeti, kullanıcıları https://myaccounts.google.com to change their password adresine gönderir.
+      Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmış Windows örneklerinde kullanılamaz.</translation>
 <translation id="4869787217450099946">Ekran uyandırma kilitlerine izin verilip verilmeyeceğini belirtir. Ekran uyandırma kilitleri, güç yönetimi uzantı API'sı yoluyla uzantılar tarafından istenebilir.
 
           Bu politika doğru seçeneğine ayarlanırsa veya ayarlanmadan bırakılırsa, güç yönetimi için ekran uyandırma kilitleri kullanılır.

@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Mikrofonunuzu ve kameranızı kullanma</translation>
 <translation id="1007408791287232274">Cihazlar yüklenemedi.</translation>
 <translation id="1008186147501209563">Yer işaretlerini dışa aktar</translation>
-<translation id="1009147628737158130"><ph name="URL" />, Güvenlik Anahtarınızla ilgili tanımlama bilgilerini görmek istiyor</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Sayfa Yanıt Vermiyor}other{Sayfalar Yanıt Vermiyor}}</translation>
 <translation id="1012794136286421601">Google Dokümanlar, E-Tablolar, Slaytlar ve Çizimler dosyalarınız senkronize ediliyor. Bunlara çevrimiçi veya çevrimdışı olarak erişmek için Google Drive uygulamasını açın.</translation>
 <translation id="1013707859758800957">Korumalı alanda olmayan bir eklentinin bu sayfada çalışmasına izin verildi.</translation>
@@ -1276,7 +1275,6 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="2932483646085333864">Senkronizasyonu başlatmak için oturumu kapatıp tekrar açın</translation>
 <translation id="2932883381142163287">Kötüye kullanım bildir</translation>
 <translation id="2938225289965773019"><ph name="PROTOCOL" /> bağlantılarını açma</translation>
-<translation id="2938335670027321024">Yeniden konumlandırmak için denetleyiciyi taşıyın. Bitirmek için tıklayın.</translation>
 <translation id="2939938020978911855">Kullanılabilir Bluetooth cihazlarını göster</translation>
 <translation id="2941112035454246133">Düşük</translation>
 <translation id="2942560570858569904">Bekliyor...</translation>
@@ -1845,7 +1843,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="379422718204375917">Hesabınızda oturum açmak için Smart Lock'u kullanın</translation>
 <translation id="3796648294839530037">Sık Kullanılan Ağlar:</translation>
 <translation id="3797900183766075808">"<ph name="SEARCH_TERMS" />" İçin <ph name="SEARCH_ENGINE" /> &amp;Üzerinde Arama Yap</translation>
-<translation id="3798325802885154040">Dokunarak tıklama işlevini etkinleştirmenize/devre dışı bırakmanıza olanak tanır</translation>
 <translation id="3798449238516105146">Sürüm</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{Tümünü &amp;Aç}=1{Yer İşaretini &amp;Aç}other{Tümünü &amp;Aç (#)}}</translation>
 <translation id="3800806661949714323">Tümünü göster (önerilen)</translation>
@@ -2927,7 +2924,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="5556206011531515970">Varsayılan tarayıcınızı seçmek için İleri'yi tıklayın.</translation>
 <translation id="5556459405103347317">Yeniden Yükle</translation>
 <translation id="555746285996217175">Kilitle / güç</translation>
-<translation id="5557579359142031072">Güvenlik Anahtarınızla ilgili tanımlama bilgilerini görme</translation>
 <translation id="5557991081552967863">Uyku sırasında Kablosuz özelliğini açık tut</translation>
 <translation id="5558129378926964177">Yakınlaş&amp;tır</translation>
 <translation id="55601339223879446">Ekranda masaüstünüzün sınırlarını ayarlayın</translation>
@@ -4004,7 +4000,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7289225569524511578">Duvar kağıdı uygulamasını aç</translation>
 <translation id="7290242001003353852"><ph name="SAML_DOMAIN" /> tarafından barındırılan bu oturum açma hizmeti kameranıza erişiyor.</translation>
 <translation id="7290594223351252791">Kaydı onaylayın</translation>
-<translation id="7292324470889366655">Yeniden konumlandırmayı bitir</translation>
 <translation id="729459249680637905">Kalan deneme sayısı: $1</translation>
 <translation id="7295662345261934369">Başkalarıyla paylaş</translation>
 <translation id="729583233778673644">AES ve RC4 şifrelemesine izin ver. RC4 şifreleri güvenli olmadığından bu seçeneğin kullanılması, riskinizi artırır.</translation>
