@@ -219,7 +219,7 @@ WebContents* OpenApplicationWindow(const AppLaunchParams& params,
 
   WebContents* web_contents = nav_params.target_contents;
   extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
-      web_contents);
+      browser->hosted_app_controller(), web_contents);
 
   browser->window()->Show();
 

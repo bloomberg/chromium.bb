@@ -37,7 +37,8 @@ class HostedAppBrowserController : public SiteEngagementObserver,
   static bool IsForExperimentalHostedAppBrowser(const Browser* browser);
 
   // Functions to set preferences that are unique to app windows.
-  static void SetAppPrefsForWebContents(content::WebContents* web_contents);
+  static void SetAppPrefsForWebContents(HostedAppBrowserController* controller,
+                                        content::WebContents* web_contents);
 
   // Renders |url|'s origin as Unicode.
   static base::string16 FormatUrlOrigin(const GURL& url);
