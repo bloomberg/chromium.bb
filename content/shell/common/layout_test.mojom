@@ -5,6 +5,7 @@
 module content.mojom;
 
 import "mojo/public/mojom/base/file_path.mojom";
+import "skia/public/interfaces/bitmap.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 import "url/mojom/url.mojom";
 
@@ -34,7 +35,22 @@ struct ShellTestConfiguration {
   gfx.mojom.Size initial_size;
 };
 
+// Results of a CaptureDump call.
+struct LayoutTestDump {
+  // Audio dump.
+  array<uint8>? audio;
+
+  // Layout dump.
+  string? layout;
+
+  // Image dump.
+  skia.mojom.Bitmap? pixels;
+  string actual_pixel_hash;
+};
+
 interface LayoutTestControl {
+  CaptureDump() => (LayoutTestDump result);
+
   // Dumps the frame's contents into a string.
   DumpFrameLayout() => (string frame_layout_dump);
 

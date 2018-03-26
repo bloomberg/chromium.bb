@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included file, no traditional include guard.
+// no-include-guard-because-multiply-included
 #include <string>
 #include <vector>
 
@@ -36,27 +36,11 @@ IPC_MESSAGE_ROUTED0(ShellViewMsg_TryLeakDetection)
 IPC_MESSAGE_ROUTED1(ShellViewMsg_LayoutDumpCompleted,
                     std::string /* completed/stitched layout dump */)
 
-// Send a text dump of the WebContents to the render host.
-IPC_MESSAGE_ROUTED2(ShellViewHostMsg_TextDump,
-                    std::string /* dump */,
-                    bool /* should_dump_history */)
-
 // Asks the browser process to perform a layout dump spanning all the
 // (potentially cross-process) frames.  This goes through multiple
 // LayoutTestControl.DumpFrameLayout calls and ends with sending of
 // ShellViewMsg_LayoutDumpCompleted.
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_InitiateLayoutDump)
-
-// Send an image dump of the WebContents to the render host.
-IPC_MESSAGE_ROUTED2(ShellViewHostMsg_ImageDump,
-                    std::string /* actual pixel hash */,
-                    SkBitmap /* image */)
-
-// Send an audio dump to the render host.
-IPC_MESSAGE_ROUTED1(ShellViewHostMsg_AudioDump,
-                    std::vector<unsigned char> /* audio data */)
-
-IPC_MESSAGE_ROUTED0(ShellViewHostMsg_TestFinished)
 
 IPC_MESSAGE_ROUTED0(ShellViewHostMsg_ResetDone)
 

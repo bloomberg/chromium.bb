@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Multiply-included file, no traditional include guard.
+// no-include-guard-because-multiply-included
 #include <string>
 #include <vector>
 
@@ -44,6 +44,8 @@ IPC_MESSAGE_ROUTED4(LayoutTestHostMsg_SetPermission,
                     GURL /* embedding_origin */)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_ResetPermissions)
 IPC_MESSAGE_ROUTED0(LayoutTestHostMsg_InspectSecondaryWindow)
+IPC_MESSAGE_ROUTED1(LayoutTestHostMsg_InitiateCaptureDump,
+                    bool /* should dump navigation history */)
 
 // Notifies the browser that one of renderers has changed layout test runtime
 // flags (i.e. has set dump_as_text).

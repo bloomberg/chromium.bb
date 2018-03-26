@@ -65,6 +65,7 @@ base::TaskRunner* LayoutTestMessageFilter::OverrideTaskRunnerForMessage(
     case LayoutTestHostMsg_ResetPermissions::ID:
     case LayoutTestHostMsg_LayoutTestRuntimeFlagsChanged::ID:
     case LayoutTestHostMsg_TestFinishedInSecondaryRenderer::ID:
+    case LayoutTestHostMsg_InitiateCaptureDump::ID:
     case LayoutTestHostMsg_InspectSecondaryWindow::ID:
     case LayoutTestHostMsg_DeleteAllCookiesForNetworkService::ID:
       return BrowserThread::GetTaskRunnerForThread(BrowserThread::UI).get();
@@ -96,6 +97,8 @@ bool LayoutTestMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnLayoutTestRuntimeFlagsChanged)
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_TestFinishedInSecondaryRenderer,
                         OnTestFinishedInSecondaryRenderer)
+    IPC_MESSAGE_HANDLER(LayoutTestHostMsg_InitiateCaptureDump,
+                        OnInitiateCaptureDump);
     IPC_MESSAGE_HANDLER(LayoutTestHostMsg_InspectSecondaryWindow,
                         OnInspectSecondaryWindow)
     IPC_MESSAGE_UNHANDLED(handled = false)
@@ -246,6 +249,15 @@ void LayoutTestMessageFilter::OnTestFinishedInSecondaryRenderer() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (BlinkTestController::Get())
     BlinkTestController::Get()->OnTestFinishedInSecondaryRenderer();
+}
+
+void LayoutTestMessageFilter::OnInitiateCaptureDump(
+    bool capture_navigation_history) {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  if (BlinkTestController::Get()) {
+    BlinkTestController::Get()->OnInitiateCaptureDump(
+        capture_navigation_history);
+  }
 }
 
 void LayoutTestMessageFilter::OnInspectSecondaryWindow() {
