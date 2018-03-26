@@ -733,8 +733,8 @@ class CONTENT_EXPORT RenderWidget
   // the browser about an already-completed auto-resize.
   bool need_resize_ack_for_auto_resize_;
 
-  // The sequence number used for ViewHostMsg_UpdateRect.
-  uint64_t resize_or_repaint_ack_num_ = 0;
+  // The sequence number used for the auto-resize request.
+  uint64_t auto_resize_sequence_number_ = 0;
 
   // A pending ResizeOrRepaintAck callback in response to an auto-resize
   // initiated by Blink. If auto-resize mode is canceled with an in-flight
@@ -865,6 +865,8 @@ class CONTENT_EXPORT RenderWidget
 
   bool has_added_input_handler_;
 
+  viz::LocalSurfaceId local_surface_id_;
+
  private:
   // TODO(ekaramad): This method should not be confused with its RenderView
   // variant, GetWebFrameWidget(). Currently Cast and AndroidWebview's
@@ -971,8 +973,6 @@ class CONTENT_EXPORT RenderWidget
   // TODO(kenrb, fsamuel): This should be removed when SurfaceIDs can be used
   // to replace it. See https://crbug.com/695579.
   uint32_t current_content_source_id_;
-
-  viz::LocalSurfaceId local_surface_id_;
 
   scoped_refptr<MainThreadEventQueue> input_event_queue_;
 
