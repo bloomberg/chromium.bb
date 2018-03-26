@@ -165,4 +165,8 @@ void FrameEvictionManager::PurgeMemory(int percentage) {
   CullUnlockedFrames(std::max(1, (saved_frame_limit * percentage) / 100));
 }
 
+void FrameEvictionManager::PurgeAllUnlockedFrames() {
+  CullUnlockedFrames(0);
+}
+
 }  // namespace viz

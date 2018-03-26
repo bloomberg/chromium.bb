@@ -33,10 +33,6 @@
 #include "ui/gl/gl_surface.h"
 #include "url/gurl.h"
 
-#if defined(OS_ANDROID)
-#include "base/android/application_status_listener.h"
-#endif
-
 namespace gl {
 class GLShareGroup;
 }
@@ -126,10 +122,7 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
 
 #if defined(OS_ANDROID)
   void DidAccessGpu();
-
-  void OnApplicationStateChange(base::android::ApplicationState state);
-
-  void OnApplicationBackgroundedForTesting();
+  void OnApplicationBackgrounded();
 #endif
 
   bool is_exiting_for_lost_context() { return exiting_for_lost_context_; }
@@ -147,8 +140,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
 #if defined(OS_ANDROID)
   void ScheduleWakeUpGpu();
   void DoWakeUpGpu();
-
-  void OnApplicationBackgrounded();
 #endif
 
   void HandleMemoryPressure(
@@ -189,10 +180,6 @@ class GPU_IPC_SERVICE_EXPORT GpuChannelManager {
   // transport surfaces.
   base::TimeTicks last_gpu_access_time_;
   base::TimeTicks begin_wake_up_time_;
-
-  base::Optional<base::android::ApplicationStatusListener>
-      application_status_listener_;
-  bool is_backgrounded_for_testing_;
 #endif
 
   // Set during intentional GPU process shutdown.

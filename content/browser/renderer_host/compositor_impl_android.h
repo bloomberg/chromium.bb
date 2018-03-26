@@ -77,6 +77,10 @@ class CONTENT_EXPORT CompositorImpl
   void DeleteUIResource(cc::UIResourceId resource_id) override;
   bool SupportsETC1NonPowerOfTwo() const override;
 
+  // Test functions:
+  bool IsLockedForTesting() const { return lock_manager_.IsLocked(); }
+  void SetVisibleForTesting(bool visible) { SetVisible(visible); }
+
  private:
   // Compositor implementation.
   void SetRootWindow(gfx::NativeWindow root_window) override;
@@ -160,6 +164,11 @@ class CONTENT_EXPORT CompositorImpl
 
   void DetachRootWindow();
 
+  // Helper functions to perform delayed cleanup after the compositor is no
+  // longer visible on low-end devices.
+  void EnqueueLowEndBackgroundCleanup();
+  void DoLowEndBackgroundCleanup();
+
   viz::FrameSinkId frame_sink_id_;
 
   // root_layer_ is the persistent internal root layer, while subroot_layer_
@@ -206,6 +215,11 @@ class CONTENT_EXPORT CompositorImpl
       pending_child_frame_sink_ids_;
   ui::CompositorLockManager lock_manager_;
   bool has_submitted_frame_since_became_visible_ = false;
+
+  // A task which runs cleanup tasks on low-end Android after a delay. Enqueued
+  // when we hide, canceled when we're shown.
+  base::CancelableOnceClosure low_end_background_cleanup_task_;
+
   base::WeakPtrFactory<CompositorImpl> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(CompositorImpl);

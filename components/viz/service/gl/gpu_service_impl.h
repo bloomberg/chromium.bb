@@ -187,6 +187,7 @@ class VIZ_SERVICE_EXPORT GpuServiceImpl : public gpu::GpuChannelManagerDelegate,
   void WakeUpGpu() override;
   void GpuSwitched() override;
   void DestroyAllChannels() override;
+  void OnBackgrounded() override;
   void Crash() override;
   void Hang() override;
   void ThrowJavaException() override;
