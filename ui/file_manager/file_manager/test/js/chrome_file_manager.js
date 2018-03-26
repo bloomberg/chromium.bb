@@ -138,6 +138,7 @@ chrome.fileManagerPrivate = {
   onPreferencesChanged: {
     addListener: () => {},
   },
+  openInspector: (type) => {},
   removeFileWatch: (entry, callback) => {
     setTimeout(callback, 0, true);
   },

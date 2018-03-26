@@ -4,8 +4,11 @@
 
 'use strict';
 
+// All testing functions in namespace 'test'.
+var test = test || {};
+
 // Stores Blobs loaded from src/chrome/test/data/chromeos/file_manager.
-var DATA = {
+test.DATA = {
   'archive.zip': null,
   'image.png': null,
   'image2.png': null,
@@ -17,13 +20,13 @@ var DATA = {
 };
 
 // Load DATA from local filesystem.
-function loadData() {
-  return Promise.all(Object.keys(DATA).map(filename => {
+test.loadData = function() {
+  return Promise.all(Object.keys(test.DATA).map(filename => {
     return new Promise(resolve => {
       var req = new XMLHttpRequest();
       req.responseType = 'blob';
       req.onload = () => {
-        DATA[filename] = req.response;
+        test.DATA[filename] = req.response;
         resolve();
       };
       req.open(
@@ -31,13 +34,13 @@ function loadData() {
       req.send();
     });
   }));
-}
+};
 
 /**
  * @enum {string}
  * @const
  */
-var EntryType = Object.freeze({
+test.EntryType = Object.freeze({
   FILE: 'file',
   DIRECTORY: 'directory'
 });
@@ -46,7 +49,7 @@ var EntryType = Object.freeze({
  * @enum {string}
  * @const
  */
-var SharedOption = Object.freeze({
+test.SharedOption = Object.freeze({
   NONE: 'none',
   SHARED: 'shared'
 });
@@ -66,7 +69,7 @@ var SharedOption = Object.freeze({
  * @param {string} typeText Type name to be shown in the type column.
  * @constructor
  */
-function TestEntryInfo(type,
+test.TestEntryInfo = function(type,
                        sourceFileName,
                        targetPath,
                        mimeType,
@@ -85,20 +88,20 @@ function TestEntryInfo(type,
   this.sizeText = sizeText;
   this.typeText = typeText;
   Object.freeze(this);
-}
+};
 
-TestEntryInfo.getExpectedRows = function(entries) {
+test.TestEntryInfo.getExpectedRows = function(entries) {
   return entries.map(function(entry) { return entry.getExpectedRow(); });
 };
 
 /**
  * Returns 4-typle name, size, type, date as shown in file list.
  */
-TestEntryInfo.prototype.getExpectedRow = function() {
+test.TestEntryInfo.prototype.getExpectedRow = function() {
   return [this.nameText, this.sizeText, this.typeText, this.lastModifiedTime];
 };
 
-TestEntryInfo.getMockFileSystemPopulateRows = function(entries, prefix) {
+test.TestEntryInfo.getMockFileSystemPopulateRows = function(entries, prefix) {
   return entries.map(function(entry) {
     return entry.getMockFileSystemPopulateRow(prefix);
   });
@@ -108,9 +111,9 @@ TestEntryInfo.getMockFileSystemPopulateRows = function(entries, prefix) {
  * Returns object {fullPath: ..., metadata: {...}, content: ...} as used in
  * MockFileSystem.populate.
  */
-TestEntryInfo.prototype.getMockFileSystemPopulateRow = function(prefix) {
-  var suffix = this.type == EntryType.DIRECTORY ? '/' : '';
-  var content = DATA[this.sourceFileName];
+test.TestEntryInfo.prototype.getMockFileSystemPopulateRow = function(prefix) {
+  var suffix = this.type == test.EntryType.DIRECTORY ? '/' : '';
+  var content = test.DATA[this.sourceFileName];
   var size = content && content.size || 0;
   return {
     fullPath: prefix + this.nameText + suffix,
@@ -118,6 +121,7 @@ TestEntryInfo.prototype.getMockFileSystemPopulateRow = function(prefix) {
       size: size,
       modificationTime: new Date(Date.parse(this.lastModifiedTime)),
       contentMimeType: this.mimeType,
+      hosted: this.mimeType == 'application/vnd.google-apps.document',
     },
     content: content
   };
@@ -128,106 +132,106 @@ TestEntryInfo.prototype.getMockFileSystemPopulateRow = function(prefix) {
  * @type {Object<TestEntryInfo>}
  * @const
  */
-var ENTRIES = {
-  hello: new TestEntryInfo(
-      EntryType.FILE, 'text.txt', 'hello.txt',
-      'text/plain', SharedOption.NONE, 'Sep 4, 1998, 12:34 PM',
+test.ENTRIES = {
+  hello: new test.TestEntryInfo(
+      test.EntryType.FILE, 'text.txt', 'hello.txt',
+      'text/plain', test.SharedOption.NONE, 'Sep 4, 1998, 12:34 PM',
       'hello.txt', '51 bytes', 'Plain text'),
 
-  world: new TestEntryInfo(
-      EntryType.FILE, 'video.ogv', 'world.ogv',
-      'video/ogg', SharedOption.NONE, 'Jul 4, 2012, 10:35 AM',
+  world: new test.TestEntryInfo(
+      test.EntryType.FILE, 'video.ogv', 'world.ogv',
+      'video/ogg', test.SharedOption.NONE, 'Jul 4, 2012, 10:35 AM',
       'world.ogv', '59 KB', 'OGG video'),
 
-  unsupported: new TestEntryInfo(
-      EntryType.FILE, 'random.bin', 'unsupported.foo',
-      'application/x-foo', SharedOption.NONE, 'Jul 4, 2012, 10:36 AM',
+  unsupported: new test.TestEntryInfo(
+      test.EntryType.FILE, 'random.bin', 'unsupported.foo',
+      'application/x-foo', test.SharedOption.NONE, 'Jul 4, 2012, 10:36 AM',
       'unsupported.foo', '8 KB', 'FOO file'),
 
-  desktop: new TestEntryInfo(
-      EntryType.FILE, 'image.png', 'My Desktop Background.png',
-      'image/png', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
+  desktop: new test.TestEntryInfo(
+      test.EntryType.FILE, 'image.png', 'My Desktop Background.png',
+      'image/png', test.SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
       'My Desktop Background.png', '272 bytes', 'PNG image'),
 
   // An image file without an extension, to confirm that file type detection
   // using mime types works fine.
-  image2: new TestEntryInfo(
-      EntryType.FILE, 'image2.png', 'image2',
-      'image/png', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
+  image2: new test.TestEntryInfo(
+      test.EntryType.FILE, 'image2.png', 'image2',
+      'image/png', test.SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
       'image2', '4 KB', 'PNG image'),
 
-  image3: new TestEntryInfo(
-      EntryType.FILE, 'image3.jpg', 'image3.jpg',
-      'image/jpeg', SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
+  image3: new test.TestEntryInfo(
+      test.EntryType.FILE, 'image3.jpg', 'image3.jpg',
+      'image/jpeg', test.SharedOption.NONE, 'Jan 18, 2038, 1:02 AM',
       'image3.jpg', '3 KB', 'JPEG image'),
 
   // An ogg file without a mime type, to confirm that file type detection using
   // file extensions works fine.
-  beautiful: new TestEntryInfo(
-      EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg',
-      null, SharedOption.NONE, 'Nov 12, 2086, 12:00 PM',
+  beautiful: new test.TestEntryInfo(
+      test.EntryType.FILE, 'music.ogg', 'Beautiful Song.ogg',
+      null, test.SharedOption.NONE, 'Nov 12, 2086, 12:00 PM',
       'Beautiful Song.ogg', '14 KB', 'OGG audio'),
 
-  photos: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'photos',
-      null, SharedOption.NONE, 'Jan 1, 1980, 11:59 PM',
+  photos: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, null, 'photos',
+      null, test.SharedOption.NONE, 'Jan 1, 1980, 11:59 PM',
       'photos', '--', 'Folder'),
 
-  testDocument: new TestEntryInfo(
-      EntryType.FILE, null, 'Test Document',
+  testDocument: new test.TestEntryInfo(
+      test.EntryType.FILE, null, 'Test Document',
       'application/vnd.google-apps.document',
-      SharedOption.NONE, 'Apr 10, 2013, 4:20 PM',
+      test.SharedOption.NONE, 'Apr 10, 2013, 4:20 PM',
       'Test Document.gdoc', '--', 'Google document'),
 
-  testSharedDocument: new TestEntryInfo(
-      EntryType.FILE, null, 'Test Shared Document',
+  testSharedDocument: new test.TestEntryInfo(
+      test.EntryType.FILE, null, 'Test Shared Document',
       'application/vnd.google-apps.document',
-      SharedOption.SHARED, 'Mar 20, 2013, 10:40 PM',
+      test.SharedOption.SHARED, 'Mar 20, 2013, 10:40 PM',
       'Test Shared Document.gdoc', '--', 'Google document'),
 
-  newlyAdded: new TestEntryInfo(
-      EntryType.FILE, 'music.ogg', 'newly added file.ogg',
-      'audio/ogg', SharedOption.NONE, 'Sep 4, 1998, 12:00 AM',
+  newlyAdded: new test.TestEntryInfo(
+      test.EntryType.FILE, 'music.ogg', 'newly added file.ogg',
+      'audio/ogg', test.SharedOption.NONE, 'Sep 4, 1998, 12:00 AM',
       'newly added file.ogg', '14 KB', 'OGG audio'),
 
-  directoryA: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'A',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+  directoryA: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, null, 'A',
+      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'A', '--', 'Folder'),
 
-  directoryB: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'A/B',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+  directoryB: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, null, 'A/B',
+      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'B', '--', 'Folder'),
 
-  directoryC: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'A/B/C',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+  directoryC: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, null, 'A/B/C',
+      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'C', '--', 'Folder'),
 
-  directoryD: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'D',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+  directoryD: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, null, 'D',
+      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'D', '--', 'Folder'),
 
-  directoryE: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'D/E',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+  directoryE: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, null, 'D/E',
+      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'E', '--', 'Folder'),
 
-  directoryF: new TestEntryInfo(
-      EntryType.DIRECTORY, null, 'D/E/F',
-      null, SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
+  directoryF: new test.TestEntryInfo(
+      test.EntryType.DIRECTORY, null, 'D/E/F',
+      null, test.SharedOption.NONE, 'Jan 1, 2000, 1:00 AM',
       'F', '--', 'Folder'),
 
-  zipArchive: new TestEntryInfo(
-      EntryType.FILE, 'archive.zip', 'archive.zip',
-      'application/x-zip', SharedOption.NONE, 'Jan 1, 2014, 1:00 AM',
+  zipArchive: new test.TestEntryInfo(
+      test.EntryType.FILE, 'archive.zip', 'archive.zip',
+      'application/x-zip', test.SharedOption.NONE, 'Jan 1, 2014, 1:00 AM',
       'archive.zip', '533 bytes', 'Zip archive'),
 
-  hiddenFile: new TestEntryInfo(
-    EntryType.FILE, 'text.txt', '.hiddenfile.txt',
-    'text/plain', SharedOption.NONE, 'Sep 30, 2014, 3:30 PM',
+  hiddenFile: new test.TestEntryInfo(
+    test.EntryType.FILE, 'text.txt', '.hiddenfile.txt',
+    'text/plain', test.SharedOption.NONE, 'Sep 30, 2014, 3:30 PM',
     '.hiddenfile.txt', '51 bytes', 'Plain text')
 };
 
@@ -236,12 +240,12 @@ var ENTRIES = {
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var BASIC_LOCAL_ENTRY_SET = [
-  ENTRIES.hello,
-  ENTRIES.world,
-  ENTRIES.desktop,
-  ENTRIES.beautiful,
-  ENTRIES.photos
+test.BASIC_LOCAL_ENTRY_SET = [
+  test.ENTRIES.hello,
+  test.ENTRIES.world,
+  test.ENTRIES.desktop,
+  test.ENTRIES.beautiful,
+  test.ENTRIES.photos
 ];
 
 /**
@@ -253,49 +257,112 @@ var BASIC_LOCAL_ENTRY_SET = [
  * @type {Array<TestEntryInfo>}
  * @const
  */
-var BASIC_DRIVE_ENTRY_SET = [
-  ENTRIES.hello,
-  ENTRIES.world,
-  ENTRIES.desktop,
-  ENTRIES.beautiful,
-  ENTRIES.photos,
-  ENTRIES.unsupported,
-  ENTRIES.testDocument,
-  ENTRIES.testSharedDocument
+test.BASIC_DRIVE_ENTRY_SET = [
+  test.ENTRIES.hello,
+  test.ENTRIES.world,
+  test.ENTRIES.desktop,
+  test.ENTRIES.beautiful,
+  test.ENTRIES.photos,
+  test.ENTRIES.unsupported,
+  test.ENTRIES.testDocument,
+  test.ENTRIES.testSharedDocument
 ];
 
-var INTERVAL_FOR_WAIT_UNTIL = 100;  // ms
-var INTERVAL_FOR_WAIT_LOGGING = 10000; // 10s
+/**
+ * Interval milliseconds between checks of repeatUntil.
+ * @type {number}
+ * @const
+ */
+test.REPEAT_UNTIL_INTERVAL = 200;
 
 /**
- * Waits until testFunction becomes true.
- * @param {function(): Object} testFunction A function which is tested.
- * @return {!Promise} A promise which is fullfilled when the testFunction
- *     becomes true.
+ * Interval milliseconds between log output of repeatUntil.
+ * @type {number}
+ * @const
  */
-function waitUntil(testFunction) {
-  return new Promise(function(resolve) {
-    var tryTestFunction = function() {
-      var result = testFunction();
-      if (result) {
-        resolve(result);
+test.LOG_INTERVAL = 3000;
+
+/**
+ * Returns a pending marker. See also the repeatUntil function.
+ * @param {string} message Pending reason including %s, %d, or %j markers. %j
+ *     format an object as JSON.
+ * @param {Array<*>} var_args Values to be assigined to %x markers.
+ * @return {Object} Object which returns true for the expression: obj instanceof
+ *     pending.
+ */
+test.pending = function(message, var_args) {
+  var index = 1;
+  var args = arguments;
+  var formattedMessage = message.replace(/%[sdj]/g, function(pattern) {
+    var arg = args[index++];
+    switch(pattern) {
+      case '%s': return String(arg);
+      case '%d': return Number(arg);
+      case '%j': return JSON.stringify(arg);
+      default: return pattern;
+    }
+  });
+  var pendingMarker = Object.create(test.pending.prototype);
+  pendingMarker.message = formattedMessage;
+  return pendingMarker;
+};
+
+/**
+ * Waits until the checkFunction returns a value but a pending marker.
+ * @param {function():*} checkFunction Function to check a condition. It can
+ *     return a pending marker created by a pending function.
+ * @return {Promise} Promise to be fulfilled with the return value of
+ *     checkFunction when the checkFunction reutrns a value but a pending
+ *     marker.
+ */
+test.repeatUntil = function(checkFunction) {
+  var logTime = Date.now() + test.LOG_INTERVAL;
+  var step = function() {
+    return Promise.resolve(checkFunction()).then(function(result) {
+      if (result instanceof test.pending) {
+        if (Date.now() > logTime) {
+          console.warn(result.message);
+          logTime += test.LOG_INTERVAL;
+        }
+        return new Promise(resolve => {
+                 setTimeout(resolve, test.REPEAT_UNTIL_INTERVAL);
+               })
+            .then(step);
       } else {
-        setTimeout(tryTestFunction, INTERVAL_FOR_WAIT_UNTIL);
+        return result;
       }
-    };
-
-    tryTestFunction();
-  });
-}
+    });
+  };
+  return step();
+};
 
 /**
- * Waits until specified element exists.
+ * Waits for the specified element appearing in the DOM.
+ * @param {string} query Query string for the element.
+ * @return {Promise} Promise to be fulfilled when the element appears.
  */
-function waitForElement(selectors) {
-  return waitUntil(() => {
-    return document.querySelector(selectors);
+test.waitForElement = function(query) {
+  return test.repeatUntil(() => {
+    var element = document.querySelector(query);
+    if (element)
+      return element;
+    return test.pending('Element %s is not found.', query);
   });
-}
+};
+
+/**
+ * Waits for the specified element leaving from the DOM.
+ * @param {string} query Query string for the element.
+ * @return {Promise} Promise to be fulfilled when the element is lost.
+ */
+test.waitForElementLost = function(query) {
+  return test.repeatUntil(() => {
+    var element = document.querySelector(query);
+    if (element)
+      return test.pending('Elements %s still exists.', query);
+    return true;
+  });
+};
 
 /**
  * Adds specified TestEntryInfos to downloads and drive.
@@ -303,20 +370,20 @@ function waitForElement(selectors) {
  * @param {!Array<TestEntryInfo} downloads Entries for downloads.
  * @param {!Array<TestEntryInfo} drive Entries for drive.
  */
-function addEntries(downloads, drive) {
+test.addEntries = function(downloads, drive) {
   var fsDownloads =
       mockVolumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DOWNLOADS)
           .fileSystem;
   fsDownloads.populate(
-      TestEntryInfo.getMockFileSystemPopulateRows(downloads, '/'), true);
+      test.TestEntryInfo.getMockFileSystemPopulateRows(downloads, '/'), true);
 
   var fsDrive =
       mockVolumeManager
           .getCurrentProfileVolumeInfo(VolumeManagerCommon.VolumeType.DRIVE)
           .fileSystem;
   fsDrive.populate(
-      TestEntryInfo.getMockFileSystemPopulateRows(drive, '/root/'), true);
+      test.TestEntryInfo.getMockFileSystemPopulateRows(drive, '/root/'), true);
 
   // Send onDirectoryChanged events.
   chrome.fileManagerPrivate.dispatchEvent_(
@@ -324,7 +391,7 @@ function addEntries(downloads, drive) {
   chrome.fileManagerPrivate.dispatchEvent_(
       'onDirectoryChanged',
       {eventType: 'changed', entry: fsDrive.entries['/root']});
-}
+};
 
 /**
  * Waits for the file list turns to the given contents.
@@ -337,32 +404,40 @@ function addEntries(downloads, drive) {
  * @return {Promise} Promise to be fulfilled when the file list turns to the
  *     given contents.
  */
-function waitForFiles(expected, opt_options) {
+test.waitForFiles = function(expected, opt_options) {
   var options = opt_options || {};
-  var nextLog = Date.now() + INTERVAL_FOR_WAIT_LOGGING;
-  return waitUntil(function() {
-    var files = test.util.sync.getFileList(window);
+  var nextLog = Date.now() + test.INTERVAL_FOR_WAIT_LOGGING;
+  return test.repeatUntil(function() {
+    var files = test.getFileList();
     if (Date.now() > nextLog) {
       console.debug('waitForFiles', expected, files);
-      nextLog = Date.now() + INTERVAL_FOR_WAIT_LOGGING;
+      nextLog = Date.now() + test.INTERVAL_FOR_WAIT_LOGGING;
     }
     if (!options.orderCheck) {
       files.sort();
       expected.sort();
     }
-    if (files.length != expected.length)
-      return false;
-    for (var i = 0; i < files.length; i++) {
-      // Each row is [name, size, type, date].
-      if ((!options.ignoreName && files[i][0] != expected[i][0]) ||
-          (!options.ignoreSize && files[i][1] != expected[i][1]) ||
-          (!options.ignoreType && files[i][2] != expected[i][2]) ||
-          (!options.ignoreDate && files[i][3] != expected[i][3]))
-        return false;
+
+    if (((a, b) => {
+          if (a.length != b.length)
+            return false;
+          for (var i = 0; i < files.length; i++) {
+            // Each row is [name, size, type, date].
+            if ((!options.ignoreName && a[i][0] != b[i][0]) ||
+                (!options.ignoreSize && a[i][1] != b[i][1]) ||
+                (!options.ignoreType && a[i][2] != b[i][2]) ||
+                (!options.ignoreDate && a[i][3] != b[i][3]))
+              return false;
+          }
+          return true;
+        })(expected, files)) {
+      return true;
+    } else {
+      return test.pending(
+          'waitForFiles: expected: %j actual %j.', expected, files);
     }
-    return true;
   });
-}
+};
 
 /**
  * Opens a Files app's main window and waits until it is initialized. Fills
@@ -371,24 +446,60 @@ function waitForFiles(expected, opt_options) {
  * @return {Promise} Promise to be fulfilled with the result object, which
  *     contains the file list.
  */
-function setupAndWaitUntilReady() {
-  return loadData()
-      .then(result => {
-        addEntries(BASIC_LOCAL_ENTRY_SET, BASIC_DRIVE_ENTRY_SET);
-        return waitForElement('#directory-tree [volume-type-icon="downloads"]');
+test.setupAndWaitUntilReady = function(resolve) {
+  // Copy some functions from test.util.sync and bind to main window.
+  test.fakeMouseClick = test.util.sync.fakeMouseClick.bind(null, window);
+  test.fakeMouseDoubleClick =
+      test.util.sync.fakeMouseDoubleClick.bind(null, window);
+  test.fakeMouseRightClick =
+      test.util.sync.fakeMouseRightClick.bind(null, window);
+  test.fakeKeyDown = test.util.sync.fakeKeyDown.bind(null, window);
+  test.getFileList = test.util.sync.getFileList.bind(null, window);
+  test.inputText = test.util.sync.inputText.bind(null, window);
+  test.selectFile = test.util.sync.selectFile.bind(null, window);
+
+  return test.loadData()
+      .then(() => {
+        test.addEntries(test.BASIC_LOCAL_ENTRY_SET, test.BASIC_DRIVE_ENTRY_SET);
+        return test.waitForElement(
+            '#directory-tree [volume-type-icon="downloads"]');
       })
       .then(() => {
-        return test.util.sync.fakeMouseClick(
-            window, '#directory-tree [volume-type-icon="downloads"]');
-      })
-      .then(result => {
-        assertTrue(result);
-        return waitForFiles(
-            TestEntryInfo.getExpectedRows(BASIC_LOCAL_ENTRY_SET));
+        assertTrue(test.fakeMouseClick(
+            '#directory-tree [volume-type-icon="downloads"]'));
+        return test.waitForFiles(
+            test.TestEntryInfo.getExpectedRows(test.BASIC_LOCAL_ENTRY_SET));
       });
-}
+};
 
-// Shortcut for endTests with success.
-function doneTests(opt_failed) {
+/**
+ * Shortcut for endTests with success.
+ * @param {boolean=} opt_failed True indicates failure.
+ */
+test.done = function(opt_failed) {
   endTests(!opt_failed);
-}
+};
+
+/**
+ * @return {number} Maximum listitem-? id from #file-list.
+ */
+test.maxListItemId = function() {
+  var listItems = document.querySelectorAll('#file-list .table-row');
+  if (!listItems)
+    return 0;
+  return Math.max(...Array.from(listItems).map(e => {
+    return e.id.replace('listitem-', '');
+  }));
+};
+
+/**
+ * @return {number} Minium listitem-? id from #file-list.
+ */
+test.minListItemId = function() {
+  var listItems = document.querySelectorAll('#file-list .table-row');
+  if (!listItems)
+    return 0;
+  return Math.min(...Array.from(listItems).map(e => {
+    return e.id.replace('listitem-', '');
+  }));
+};

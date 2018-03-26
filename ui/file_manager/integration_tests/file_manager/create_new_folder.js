@@ -1,4 +1,4 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,8 +9,8 @@
  * When we are not in guest mode, we fill Google Drive with the basic entry set
  * which causes an extra tree-item to be added.
  */
-var TREEITEM_DRIVE = '#directory-tree > div:nth-child(1) '
-var TREEITEM_DOWNLOADS = '#directory-tree > div:nth-child(2) '
+var TREEITEM_DRIVE = '#directory-tree > div:nth-child(1) ';
+var TREEITEM_DOWNLOADS = '#directory-tree > div:nth-child(2) ';
 var EXPAND_ICON = '> .tree-row > .expand-icon';
 var EXPANDED_SUBTREE = '> .tree-children[expanded]';
 var NEWFOLDER = '#tree-item-autogen-id-9';
@@ -139,7 +139,7 @@ function createNewFolder(windowId, path, initialEntrySet) {
       });
     });
   });
-};
+}
 
 /**
  * This is used to expand the tree item for Downloads or Drive.
@@ -170,7 +170,7 @@ testcase.createNewFolderAfterSelectFile = function() {
   }).then(function() {
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
   }).then(function() {
-    return remoteCall.waitForElement(windowId, '#detail-table')
+    return remoteCall.waitForElement(windowId, '#detail-table');
   }).then(function() {
     return createNewFolder(windowId, PATH, BASIC_LOCAL_ENTRY_SET);
   });
@@ -187,7 +187,7 @@ testcase.createNewFolderDownloads = function() {
     windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DOWNLOADS);
   }).then(function() {
-    return remoteCall.waitForElement(windowId, '#detail-table')
+    return remoteCall.waitForElement(windowId, '#detail-table');
   }).then(function() {
     return createNewFolder(windowId, PATH, BASIC_LOCAL_ENTRY_SET);
   });
@@ -201,10 +201,10 @@ testcase.createNewFolderDrive = function() {
   var promise = new Promise(function(callback) {
     setupAndWaitUntilReady(null, PATH, callback);
   }).then(function(results) {
-    windowId = results.windowId
+    windowId = results.windowId;
     return expandRoot(windowId, TREEITEM_DRIVE);
   }).then(function() {
-    return remoteCall.waitForElement(windowId, '#detail-table')
+    return remoteCall.waitForElement(windowId, '#detail-table');
   }).then(function() {
     return createNewFolder(windowId, PATH, BASIC_DRIVE_ENTRY_SET);
   });
