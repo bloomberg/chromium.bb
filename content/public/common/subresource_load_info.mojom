@@ -23,6 +23,9 @@ struct SubresourceLoadInfo {
   // The resource type.
   ResourceType resource_type;
 
+  // The mime type.
+  string mime_type;
+
   // The host IP.
   net.interfaces.IPAddress? ip;
 

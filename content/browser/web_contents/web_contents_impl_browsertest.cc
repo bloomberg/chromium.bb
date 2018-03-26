@@ -575,6 +575,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SubresourceLoadComplete) {
   EXPECT_EQ(page_url, subresource_load_info->referrer);
   EXPECT_EQ("GET", subresource_load_info->method);
   EXPECT_EQ(content::RESOURCE_TYPE_IMAGE, subresource_load_info->resource_type);
+  EXPECT_EQ("image/jpeg", subresource_load_info->mime_type);
   ASSERT_TRUE(subresource_load_info->ip);
   EXPECT_EQ("127.0.0.1", subresource_load_info->ip->ToString());
 }
