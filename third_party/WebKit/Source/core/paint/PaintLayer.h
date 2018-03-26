@@ -752,7 +752,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   const AncestorDependentCompositingInputs&
   GetAncestorDependentCompositingInputs() const {
     DCHECK(!needs_ancestor_dependent_compositing_inputs_update_);
-    return ancestor_dependent_compositing_inputs_;
+    return EnsureAncestorDependentCompositingInputs();
   }
   const IntRect& ClippedAbsoluteBoundingBox() const {
     return GetAncestorDependentCompositingInputs()
@@ -1157,6 +1157,15 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   LayoutPoint LocationInternal() const;
 
+  AncestorDependentCompositingInputs& EnsureAncestorDependentCompositingInputs()
+      const {
+    if (!ancestor_dependent_compositing_inputs_) {
+      ancestor_dependent_compositing_inputs_ =
+          std::make_unique<AncestorDependentCompositingInputs>();
+    }
+    return *ancestor_dependent_compositing_inputs_;
+  }
+
   // Self-painting layer is an optimization where we avoid the heavy Layer
   // painting machinery for a Layer allocated only to handle the overflow clip
   // case.
@@ -1260,7 +1269,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   // The first ancestor having a non visible overflow.
   const PaintLayer* ancestor_overflow_layer_;
 
-  AncestorDependentCompositingInputs ancestor_dependent_compositing_inputs_;
+  mutable std::unique_ptr<AncestorDependentCompositingInputs>
+      ancestor_dependent_compositing_inputs_;
 
   Persistent<PaintLayerScrollableArea> scrollable_area_;
 
