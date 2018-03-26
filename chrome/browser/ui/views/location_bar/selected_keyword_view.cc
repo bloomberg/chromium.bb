@@ -11,9 +11,11 @@
 #include "chrome/browser/ui/omnibox/omnibox_theme.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/omnibox/browser/vector_icons.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/vector_icons/vector_icons.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
@@ -36,9 +38,11 @@ SelectedKeywordView::~SelectedKeywordView() {
 }
 
 void SelectedKeywordView::ResetImage() {
-  SetImage(gfx::CreateVectorIcon(vector_icons::kSearchIcon,
-                                 GetLayoutConstant(LOCATION_BAR_ICON_SIZE),
-                                 GetTextColor()));
+  SetImage(gfx::CreateVectorIcon(
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()
+          ? omnibox::kTouchableSearchIcon
+          : vector_icons::kSearchIcon,
+      GetLayoutConstant(LOCATION_BAR_ICON_SIZE), GetTextColor()));
 }
 
 SkColor SelectedKeywordView::GetTextColor() const {

@@ -192,6 +192,24 @@ SkColor GetLegacyColor(OmniboxPart part,
                                      : native_theme->GetSystemColor(color_id);
 }
 
+SkColor GetSecurityChipColor(OmniboxTint tint, OmniboxPartState state) {
+  if (tint == OmniboxTint::DARK)
+    return gfx::kGoogleGrey100;
+
+  switch (state) {
+    case OmniboxPartState::CHIP_DEFAULT:
+      return gfx::kGoogleGrey800;
+    case OmniboxPartState::CHIP_SECURE:
+      return gfx::kGoogleGreen600;
+    case OmniboxPartState::CHIP_DANGEROUS:
+      return gfx::kGoogleRed600;
+    default:
+      NOTREACHED();
+  }
+
+  return gfx::kPlaceholderColor;
+}
+
 }  // namespace
 
 SkColor GetOmniboxColor(OmniboxPart part,
@@ -205,34 +223,46 @@ SkColor GetOmniboxColor(OmniboxPart part,
   const bool dark = tint == OmniboxTint::DARK;
 
   switch (part) {
+    case OmniboxPart::LOCATION_BAR_BACKGROUND:
+      return dark ? SkColorSetRGB(0x28, 0x2C, 0x2F)
+                  : SkColorSetRGB(0xED, 0xEF, 0xF2);
+    case OmniboxPart::LOCATION_BAR_SECURITY_CHIP:
+      return GetSecurityChipColor(tint, state);
+    case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
+      return dark ? gfx::kGoogleGrey100 : gfx::kGoogleBlue600;
     case OmniboxPart::RESULTS_BACKGROUND:
       // The spec calls for transparent black (or white) overlays for hover (6%)
       // and select (8%), which can overlap (for 14%). Pre-blend these with the
       // background for the best text AA result.
       return color_utils::BlendTowardOppositeLuma(
           dark ? gfx::kGoogleGrey800 : SK_ColorWHITE,
-          NormalHoveredSelectedOrBoth<SkAlpha>(state, 0x00, 0x0f, 0x14, 0x24));
+          NormalHoveredSelectedOrBoth<SkAlpha>(state, 0x00, 0x0F, 0x14, 0x24));
     case OmniboxPart::RESULTS_SEPARATOR:
-      // The dark base color doesn't appear in the MD2 spec, just Chrome's.
-      return dark ? SkColorSetARGB(0x6e, 0x16, 0x17, 0x1a)   // 43% alpha.
+      // The dark base color doesn't appear in the Material spec, just Chrome's.
+      return dark ? SkColorSetARGB(0x6E, 0x16, 0x17, 0x1A)   // 43% alpha.
                   : SkColorSetA(gfx::kGoogleGrey900, 0x24);  // 14% alpha.
 
+    case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
+    case OmniboxPart::RESULTS_TEXT_DEFAULT:
+      return dark ? gfx::kGoogleGrey100 : gfx::kGoogleGrey800;
+
+    case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
+    case OmniboxPart::RESULTS_ICON:
+    case OmniboxPart::RESULTS_TEXT_DIMMED:
+      // This is a pre-lightened (or darkened) variant of the base text color.
+      return dark ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
+
+    case OmniboxPart::RESULTS_TEXT_URL:
+      // The darker blue doesn't appear in the Material spec.
+      return dark ? SkColorSetRGB(0x25, 0x81, 0xDF) : gfx::kGoogleBlue600;
+
     // TODO(tapted): Add these.
-    case OmniboxPart::LOCATION_BAR_BACKGROUND:
     case OmniboxPart::LOCATION_BAR_CLEAR_ALL:
     case OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_BACKGROUND:
     case OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_TEXT:
-    case OmniboxPart::LOCATION_BAR_SECURITY_CHIP:
-    case OmniboxPart::LOCATION_BAR_SELECTED_KEYWORD:
-    case OmniboxPart::LOCATION_BAR_TEXT_DEFAULT:
-    case OmniboxPart::LOCATION_BAR_TEXT_DIMMED:
-    case OmniboxPart::RESULTS_ICON:
-    case OmniboxPart::RESULTS_TEXT_DEFAULT:
-    case OmniboxPart::RESULTS_TEXT_DIMMED:
     case OmniboxPart::RESULTS_TEXT_INVISIBLE:
     case OmniboxPart::RESULTS_TEXT_NEGATIVE:
     case OmniboxPart::RESULTS_TEXT_POSITIVE:
-    case OmniboxPart::RESULTS_TEXT_URL:
       return GetLegacyColor(part, tint, state);
   }
   return gfx::kPlaceholderColor;
