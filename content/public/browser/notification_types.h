@@ -91,6 +91,7 @@ enum NotificationType {
   // A RenderViewHost was created for a WebContents. The source is the
   // associated WebContents, and the details is the RenderViewHost
   // pointer.
+  // DEPRECATED: Use WebContentsObserver::RenderViewCreated()
   NOTIFICATION_WEB_CONTENTS_RENDER_VIEW_HOST_CREATED,
 
   // Indicates that a RenderProcessHost was created and its handle is now

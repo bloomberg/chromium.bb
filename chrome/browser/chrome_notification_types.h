@@ -41,15 +41,18 @@ enum NotificationType {
   // This message is sent after a window has been opened.  The source is a
   // Source<Browser> containing the affected Browser.  No details are
   // expected.
+  // DEPRECATED: Use BrowserListObserver::OnBrowserAdded()
   NOTIFICATION_BROWSER_OPENED = NOTIFICATION_CHROME_START,
 
   // This message is sent soon after BROWSER_OPENED, and indicates that
   // the Browser's |window_| is now non-NULL. The source is a Source<Browser>
   // containing the affected Browser.  No details are expected.
+  // DEPRECATED: Use BrowserListObserver::OnBrowserAdded()
   NOTIFICATION_BROWSER_WINDOW_READY,
 
   // This message is sent after a window has been closed.  The source is a
-  // Source<Browser> containing the affected Browser.  No details are exptected.
+  // Source<Browser> containing the affected Browser.  No details are expected.
+  // DEPRECATED: Use BrowserListObserver::OnBrowserRemoved()
   NOTIFICATION_BROWSER_CLOSED,
 
   // This message is sent when closing a browser has been cancelled, either by
@@ -110,12 +113,14 @@ enum NotificationType {
   // InfoBarService.  The source is a Source<InfoBarService> with a pointer to
   // the InfoBarService the InfoBar was added to.  The details is a
   // Details<InfoBar::AddedDetails>.
+  // DEPRECATED: Use InfoBarManager::Observer::OnInfoBarAdded()
   NOTIFICATION_TAB_CONTENTS_INFOBAR_ADDED,
 
   // This message is sent when an InfoBar is about to be removed from an
   // InfoBarService.  The source is a Source<InfoBarService> with a pointer to
   // the InfoBarService the InfoBar was removed from.  The details is a
   // Details<InfoBar::RemovedDetails>.
+  // DEPRECATED: Use InfoBarManager::Observer::OnInfoBarRemoved()
   NOTIFICATION_TAB_CONTENTS_INFOBAR_REMOVED,
 
   // Tabs --------------------------------------------------------------------
