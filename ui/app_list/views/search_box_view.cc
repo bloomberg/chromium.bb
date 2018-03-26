@@ -200,6 +200,10 @@ void SearchBoxView::UpdateOpacity() {
   // changes from |kOpacityStartFraction| to |kOpaticyEndFraction|, the opacity
   // of searchbox changes from 0.f to 1.0f.
   ContentsView* contents = static_cast<ContentsView*>(contents_view());
+  if (!contents->GetPageView(contents->GetActivePageIndex())
+           ->ShouldShowSearchBox()) {
+    return;
+  }
   int app_list_y_position_in_screen =
       contents->app_list_view()->app_list_y_position_in_screen();
   float fraction =

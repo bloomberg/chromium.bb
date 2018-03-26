@@ -20,6 +20,9 @@ class APP_LIST_EXPORT AssistantContainerView : public HorizontalPage {
   // Overridden from views::View.
   gfx::Size CalculatePreferredSize() const override;
 
+  // Overridden from HorizontalPage.
+  bool ShouldShowSearchBox() const override;
+
  private:
   ContentsView* const contents_view_;  // Not owned.
 
