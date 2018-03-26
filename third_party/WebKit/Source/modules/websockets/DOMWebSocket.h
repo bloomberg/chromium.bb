@@ -222,7 +222,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   // not.
   void CloseInternal(int, const String&, ExceptionState&);
 
-  // Updates m_bufferedAmountAfterClose given the amount of data passed to
+  // Updates |buffered_amount_after_close_| given the amount of data passed to
   // send() method after the state changed to CLOSING or CLOSED.
   void UpdateBufferedAmountAfterClose(uint64_t);
   void ReflectBufferedAmountConsumption(TimerBase*);
@@ -241,7 +241,7 @@ class MODULES_EXPORT DOMWebSocket : public EventTargetWithInlineData,
   String origin_string_;
 
   uint64_t buffered_amount_;
-  // The consumed buffered amount that will be reflected to m_bufferedAmount
+  // The consumed buffered amount that will be reflected to |buffered_amount_|
   // later. It will be cleared once reflected.
   uint64_t consumed_buffered_amount_;
   uint64_t buffered_amount_after_close_;
