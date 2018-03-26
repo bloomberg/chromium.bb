@@ -40,12 +40,9 @@ class CastSystemGestureEventHandler : public ui::EventHandler {
   CastSideSwipeOrigin GetDragPosition(const gfx::Point& point,
                                       const gfx::Rect& screen_bounds) const;
 
-  void OnGestureEvent(ui::GestureEvent* event) override;
+  void OnEvent(ui::Event* event) override;
 
  private:
-  const int gesture_start_width_;
-  const int gesture_start_height_;
-
   aura::Window* root_window_;
   CastSideSwipeOrigin current_swipe_;
 
