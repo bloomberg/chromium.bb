@@ -95,6 +95,7 @@ class APP_LIST_EXPORT SearchBoxView : public search_box::SearchBoxViewBase,
   void HintTextChanged() override;
   void SelectionModelChanged() override;
   void Update() override;
+  void SearchEngineChanged() override;
 
   // Overridden from AppListViewDelegateObserver:
   void OnWallpaperColorsChanged() override;

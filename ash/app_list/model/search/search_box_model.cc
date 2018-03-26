@@ -12,7 +12,7 @@
 
 namespace app_list {
 
-SearchBoxModel::SearchBoxModel() : is_tablet_mode_(false) {}
+SearchBoxModel::SearchBoxModel() = default;
 
 SearchBoxModel::~SearchBoxModel() = default;
 
@@ -50,11 +50,19 @@ void SearchBoxModel::SetSelectionModel(const gfx::SelectionModel& sel) {
     observer.SelectionModelChanged();
 }
 
-void SearchBoxModel::SetTabletMode(bool started) {
-  if (started == is_tablet_mode_)
+void SearchBoxModel::SetTabletMode(bool is_tablet_mode) {
+  if (is_tablet_mode == is_tablet_mode_)
     return;
-  is_tablet_mode_ = started;
+  is_tablet_mode_ = is_tablet_mode;
   UpdateAccessibleName();
+}
+
+void SearchBoxModel::SetSearchEngineIsGoogle(bool is_google) {
+  if (is_google == search_engine_is_google_)
+    return;
+  search_engine_is_google_ = is_google;
+  for (auto& observer : observers_)
+    observer.SearchEngineChanged();
 }
 
 void SearchBoxModel::Update(const base::string16& text,
