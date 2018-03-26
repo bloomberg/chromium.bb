@@ -11,6 +11,7 @@
 
 #include "base/component_export.h"
 #include "base/containers/span.h"
+#include "base/optional.h"
 
 namespace device {
 namespace u2f_parsing_utils {
@@ -23,9 +24,13 @@ COMPONENT_EXPORT(DEVICE_FIDO)
 extern const uint32_t kU2fResponseKeyHandleStartPos;
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kEs256[];
 
-// Returns copy of |span|, that is, a vector with the same elements.
+// Returns a materialized copy of |span|, that is, a vector with the same
+// elements.
 COMPONENT_EXPORT(DEVICE_FIDO)
 std::vector<uint8_t> Materialize(base::span<const uint8_t> span);
+COMPONENT_EXPORT(DEVICE_FIDO)
+base::Optional<std::vector<uint8_t>> MaterializeOrNull(
+    base::Optional<base::span<const uint8_t>> span);
 
 // Appends |in_values| to the end of |target|. The underlying container for
 // |in_values| should *not* be |target|.

@@ -27,6 +27,14 @@ TEST(U2fParsingUtils, Materialize) {
               ::testing::ElementsAreArray(kOneTwoThree));
 }
 
+TEST(U2fParsingUtils, MaterializeOrNull) {
+  auto result = MaterializeOrNull(kOneTwoThree);
+  ASSERT_TRUE(result.has_value());
+  EXPECT_THAT(*result, ::testing::ElementsAreArray(kOneTwoThree));
+
+  EXPECT_EQ(MaterializeOrNull(base::nullopt), base::nullopt);
+}
+
 TEST(U2fParsingUtils, Append) {
   std::vector<uint8_t> target;
 

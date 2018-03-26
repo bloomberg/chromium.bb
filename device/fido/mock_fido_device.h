@@ -11,7 +11,11 @@
 #include <vector>
 
 #include "base/component_export.h"
+#include "base/containers/span.h"
 #include "base/macros.h"
+#include "base/optional.h"
+#include "base/time/time.h"
+#include "device/fido/fido_constants.h"
 #include "device/fido/fido_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -22,7 +26,6 @@ class MockFidoDevice : public FidoDevice {
   MockFidoDevice();
   ~MockFidoDevice() override;
 
-  // GMock cannot mock a method taking a move-only type.
   // TODO(crbug.com/729950): Remove these workarounds once support for move-only
   // types is added to GMock.
   MOCK_METHOD1(TryWinkRef, void(WinkCallback& cb));
@@ -36,7 +39,8 @@ class MockFidoDevice : public FidoDevice {
                void(const std::vector<uint8_t>& command, DeviceCallback& cb));
   void DeviceTransact(std::vector<uint8_t> command, DeviceCallback cb) override;
 
-  base::WeakPtr<FidoDevice> GetWeakPtr() override;
+  // Old interface ------------------------------------------------------------
+
   static void NotSatisfied(const std::vector<uint8_t>& command,
                            DeviceCallback& cb);
   static void WrongData(const std::vector<uint8_t>& command,
@@ -56,6 +60,16 @@ class MockFidoDevice : public FidoDevice {
   static void SignWithCorruptedResponse(const std::vector<uint8_t>& command,
                                         DeviceCallback& cb);
   static void WinkDoNothing(WinkCallback& cb);
+
+  // New interface ------------------------------------------------------------
+
+  void ExpectWinkedAtLeastOnce();
+  void ExpectCtap2CommandAndRespondWith(
+      CtapRequestCommand command,
+      base::Optional<base::span<const uint8_t>> response,
+      base::TimeDelta delay = base::TimeDelta());
+
+  base::WeakPtr<FidoDevice> GetWeakPtr() override;
 
  private:
   base::WeakPtrFactory<FidoDevice> weak_factory_;
