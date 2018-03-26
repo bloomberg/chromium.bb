@@ -26,6 +26,7 @@ import android.preference.PreferenceCategory;
 import android.preference.PreferenceFragment;
 import android.preference.PreferenceScreen;
 import android.support.annotation.Nullable;
+import android.support.v4.app.FragmentActivity;
 import android.widget.ListView;
 
 import org.chromium.base.ApiCompatibilityUtils;
@@ -236,9 +237,14 @@ public class AccountManagementFragment extends PreferenceFragment
                     String managementDomain = SigninManager.get().getManagementDomain();
                     if (managementDomain != null) {
                         // Show the 'You are signing out of a managed account' dialog.
+
+                        // TODO(https://crbug.com/710657): Migrate to AccountManagementFragment to
+                        // extend android.support.v7.preference.Preference and remove this cast.
+                        FragmentActivity fragmentActivity = (FragmentActivity) getActivity();
                         ConfirmManagedSyncDataDialog.showSignOutFromManagedAccountDialog(
-                                AccountManagementFragment.this, getFragmentManager(),
-                                getResources(), managementDomain);
+                                AccountManagementFragment.this,
+                                fragmentActivity.getSupportFragmentManager(), getResources(),
+                                managementDomain);
                     } else {
                         // Show the 'You are signing out' dialog.
                         SignOutDialogFragment signOutFragment = new SignOutDialogFragment();

@@ -22,6 +22,7 @@ import android.preference.PreferenceFragment;
 import android.preference.SwitchPreference;
 import android.provider.Settings;
 import android.support.annotation.IntDef;
+import android.support.v4.app.FragmentActivity;
 import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
@@ -210,8 +211,12 @@ public class SyncCustomizationFragment extends PreferenceFragment
 
         mSyncedAccountPreference =
                 (SyncedAccountPreference) findPreference(PREFERENCE_SYNC_ACCOUNT_LIST);
+
+        // TODO(https://crbug.com/710657): Migrate to SyncCustomizationFragment to
+        // extend android.support.v7.preference.Preference and remove this cast.
+        FragmentActivity fragmentActivity = (FragmentActivity) getActivity();
         mSyncedAccountPreference.setOnPreferenceChangeListener(
-                new SyncAccountSwitcher(getActivity(), mSyncedAccountPreference));
+                new SyncAccountSwitcher(fragmentActivity, mSyncedAccountPreference));
 
         return view;
     }

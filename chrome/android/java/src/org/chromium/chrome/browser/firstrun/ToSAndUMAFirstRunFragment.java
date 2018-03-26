@@ -4,8 +4,8 @@
 
 package org.chromium.chrome.browser.firstrun;
 
-import android.app.Fragment;
 import android.os.Bundle;
+import android.support.v4.app.Fragment;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;

@@ -5,12 +5,12 @@
 package org.chromium.chrome.browser.signin;
 
 import android.app.Activity;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.SystemClock;
 import android.support.annotation.IntDef;
 import android.support.annotation.StringRes;
+import android.support.v4.app.FragmentManager;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
@@ -94,11 +94,11 @@ public class AccountSigninView extends FrameLayout {
 
         /**
          * Provides a FragmentManager for the View to create dialogs. This is done through a
-         * different mechanism than getActivity().getFragmentManager() as a potential fix to
-         * https://crbug.com/646978 on the theory that getActivity() and getFragmentManager()
+         * different mechanism than getActivity().getSupportFragmentManager() as a potential fix to
+         * https://crbug.com/646978 on the theory that getActivity() and getSupportFragmentManager()
          * return null at different times.
          */
-        FragmentManager getFragmentManager();
+        FragmentManager getSupportFragmentManager();
     }
 
     private static final String TAG = "AccountSigninView";
@@ -421,7 +421,7 @@ public class AccountSigninView extends FrameLayout {
         if (!ViewCompat.isAttachedToWindow(AccountSigninView.this)) {
             // This callback is invoked after AccountSigninView is detached from window
             // (e.g., Chrome is minimized). Updating view now is redundant and dangerous
-            // (getFragmentManager() can return null, etc.). See https://crbug.com/733117.
+            // (getSupportFragmentManager() can return null, etc.). See https://crbug.com/733117.
             return;
         }
 
@@ -669,7 +669,7 @@ public class AccountSigninView extends FrameLayout {
 
     private void runStateMachineAndShowConfirmationPage() {
         mConfirmSyncDataStateMachine = new ConfirmSyncDataStateMachine(getContext(),
-                mDelegate.getFragmentManager(), ImportSyncType.PREVIOUS_DATA_FOUND,
+                mDelegate.getSupportFragmentManager(), ImportSyncType.PREVIOUS_DATA_FOUND,
                 PrefServiceBridge.getInstance().getSyncLastAccountName(), mSelectedAccountName,
                 new ConfirmImportSyncDataDialog.Listener() {
                     @Override
