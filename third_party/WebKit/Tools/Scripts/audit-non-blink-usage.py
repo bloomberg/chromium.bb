@@ -268,7 +268,11 @@ def check(path, contents):
     results = []
     basename, ext = os.path.splitext(path)
     # Only check code. Ignore tests.
-    if ext not in ('.cc', '.cpp', '.h', '.mm') or basename.endswith('Test'):
+    # TODO(tkent): Remove 'Test' after the great mv.
+    if (ext not in ('.cc', '.cpp', '.h', '.mm')
+            or basename.endswith('Test')
+            or basename.endswith('_test')
+            or basename.endswith('_unittest')):
         return results
     entries = _find_matching_entries(path)
     if not entries:
