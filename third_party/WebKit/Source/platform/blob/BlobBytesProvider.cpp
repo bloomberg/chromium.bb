@@ -5,6 +5,8 @@
 #include "platform/blob/BlobBytesProvider.h"
 
 #include "base/numerics/safe_conversions.h"
+#include "base/task_scheduler/post_task.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
 #include "platform/CrossThreadFunctional.h"
 #include "platform/Histogram.h"
 #include "platform/WebTaskRunner.h"
@@ -21,12 +23,13 @@ namespace {
 class BlobBytesStreamer {
  public:
   BlobBytesStreamer(Vector<scoped_refptr<RawData>> data,
-                    mojo::ScopedDataPipeProducerHandle pipe)
+                    mojo::ScopedDataPipeProducerHandle pipe,
+                    scoped_refptr<base::SequencedTaskRunner> task_runner)
       : data_(std::move(data)),
         pipe_(std::move(pipe)),
         watcher_(FROM_HERE,
                  mojo::SimpleWatcher::ArmingPolicy::AUTOMATIC,
-                 base::SequencedTaskRunnerHandle::Get()) {
+                 std::move(task_runner)) {
     watcher_.Watch(pipe_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                    WTF::BindRepeating(&BlobBytesStreamer::OnWritable,
                                       WTF::Unretained(this)));
@@ -110,13 +113,30 @@ void DecreaseChildProcessRefCount() {
 
 constexpr size_t BlobBytesProvider::kMaxConsolidatedItemSizeInBytes;
 
-BlobBytesProvider::BlobBytesProvider() {
-  IncreaseChildProcessRefCount();
+// static
+BlobBytesProvider* BlobBytesProvider::CreateAndBind(
+    mojom::blink::BytesProviderRequest request) {
+  auto task_runner = base::CreateSequencedTaskRunnerWithTraits(
+      {base::MayBlock(), base::TaskPriority::USER_VISIBLE});
+  auto provider = base::WrapUnique(new BlobBytesProvider(task_runner));
+  auto* result = provider.get();
+  // TODO(mek): Consider binding BytesProvider on the IPC thread instead, only
+  // using the MayBlock taskrunner for actual file operations.
+  PostCrossThreadTask(
+      *task_runner, FROM_HERE,
+      CrossThreadBind(
+          [](std::unique_ptr<BlobBytesProvider> provider,
+             mojom::blink::BytesProviderRequest request) {
+            mojo::MakeStrongBinding(std::move(provider), std::move(request));
+          },
+          WTF::Passed(std::move(provider)), WTF::Passed(std::move(request))));
+  return result;
 }
 
-BlobBytesProvider::BlobBytesProvider(scoped_refptr<RawData> data)
-    : BlobBytesProvider() {
-  AppendData(std::move(data));
+// static
+std::unique_ptr<BlobBytesProvider> BlobBytesProvider::CreateForTesting(
+    scoped_refptr<base::SequencedTaskRunner> task_runner) {
+  return base::WrapUnique(new BlobBytesProvider(std::move(task_runner)));
 }
 
 BlobBytesProvider::~BlobBytesProvider() {
@@ -140,6 +160,7 @@ void BlobBytesProvider::AppendData(base::span<const char> data) {
 }
 
 void BlobBytesProvider::RequestAsReply(RequestAsReplyCallback callback) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   // TODO(mek): Once better metrics are created we could experiment with ways
   // to reduce the number of copies of data that are made here.
   Vector<uint8_t> result;
@@ -150,8 +171,9 @@ void BlobBytesProvider::RequestAsReply(RequestAsReplyCallback callback) {
 
 void BlobBytesProvider::RequestAsStream(
     mojo::ScopedDataPipeProducerHandle pipe) {
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   // BlobBytesStreamer will self delete when done.
-  new BlobBytesStreamer(std::move(data_), std::move(pipe));
+  new BlobBytesStreamer(std::move(data_), std::move(pipe), task_runner_);
 }
 
 void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
@@ -159,8 +181,7 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
                                       base::File file,
                                       uint64_t file_offset,
                                       RequestAsFileCallback callback) {
-  DCHECK(!Platform::Current()->FileTaskRunner() ||
-         Platform::Current()->FileTaskRunner()->RunsTasksInCurrentSequence());
+  DCHECK(task_runner_->RunsTasksInCurrentSequence());
   DEFINE_THREAD_SAFE_STATIC_LOCAL(BooleanHistogram, seek_histogram,
                                   ("Storage.Blob.RendererFileSeekFailed"));
   DEFINE_THREAD_SAFE_STATIC_LOCAL(BooleanHistogram, write_histogram,
@@ -229,6 +250,12 @@ void BlobBytesProvider::RequestAsFile(uint64_t source_offset,
     return;
   }
   std::move(callback).Run(info.last_modified);
+}
+
+BlobBytesProvider::BlobBytesProvider(
+    scoped_refptr<base::SequencedTaskRunner> task_runner)
+    : task_runner_(std::move(task_runner)) {
+  IncreaseChildProcessRefCount();
 }
 
 }  // namespace blink
