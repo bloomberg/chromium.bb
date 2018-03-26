@@ -46,7 +46,8 @@
                 "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
-          }
+          },
+          {"type": "function", "name": "callback", "parameters": [], "optional": true}
         ]
       },
       {
@@ -143,7 +144,8 @@
                 "description": "The html file to show in a popup.  If set to the empty string (''), no popup is shown."
               }
             }
-          }
+          },
+          {"type": "function", "name": "callback", "parameters": [], "optional": true}
         ]
       },
       {
@@ -193,7 +195,8 @@
                 "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
-          }
+          },
+          {"type": "function", "name": "callback", "parameters": [], "optional": true}
         ]
       },
       {
@@ -246,7 +249,8 @@
                 "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
               }
             }
-          }
+          },
+          {"type": "function", "name": "callback", "parameters": [], "optional": true}
         ]
       },
       {
@@ -288,7 +292,8 @@
             "name": "tabId",
             "minimum": 0,
             "description": "The id of the tab for which you want to modify the browser action."
-          }
+          },
+          {"type": "function", "name": "callback", "parameters": [], "optional": true}
         ]
       },
       {
@@ -302,7 +307,8 @@
             "name": "tabId",
             "minimum": 0,
             "description": "The id of the tab for which you want to modify the browser action."
-          }
+          },
+          {"type": "function", "name": "callback", "parameters": [], "optional": true}
         ]
       },
       {
