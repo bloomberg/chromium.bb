@@ -29,7 +29,44 @@ chrome.browserAction.onClicked.addListener(function(tab) {
     tabId: tab.id
   });
 
-  chrome.test.notifyPass();
+  // Test that callbacks work as expected.
+  chrome.browserAction.setIcon({
+    imageData: new ImageData(1, 1),
+    tabId: 133713371,
+  }, function() {
+    chrome.test.assertLastError("No tab with id: 133713371.");
+
+    chrome.browserAction.setTitle({
+      title: "Ignore because of invalid tabId",
+      tabId: 133713372,
+    }, function() {
+      chrome.test.assertLastError("No tab with id: 133713372.");
+
+      chrome.browserAction.setBadgeText({
+        text: "Ignore because of invalid tabId",
+        tabId: 133713373,
+      }, function() {
+        chrome.test.assertLastError("No tab with id: 133713373.");
+
+        chrome.browserAction.setBadgeBackgroundColor({
+          color: [12, 34, 56, 78],
+          tabId: 133713374,
+        }, function() {
+          chrome.test.assertLastError("No tab with id: 133713374.");
+
+          chrome.browserAction.enable(133713375, function() {
+            chrome.test.assertLastError("No tab with id: 133713375.");
+
+            chrome.browserAction.disable(133713376, function() {
+              chrome.test.assertLastError("No tab with id: 133713376.");
+
+              chrome.test.notifyPass();
+            });
+          });
+        });
+      });
+    });
+  });
 });
 
 chrome.test.notifyPass();

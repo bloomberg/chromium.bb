@@ -11,6 +11,22 @@ chrome.pageAction.onClicked.addListener(function(tab) {
 
 chrome.tabs.getSelected(null, function(tab) {
   tabId = tab.id;
+  // Callbacks should be not be required:
+  chrome.pageAction.hide(tabId);
   chrome.pageAction.show(tabId);
-  chrome.test.sendMessage('ready');
+
+  // Callbacks should be permitted:
+  chrome.pageAction.show(tabId, function() {
+    chrome.test.assertNoLastError();
+
+    chrome.pageAction.show(123456789, function() {
+      chrome.test.assertLastError('No tab with id: 123456789.');
+
+      chrome.pageAction.hide(987654321, function() {
+        chrome.test.assertLastError('No tab with id: 987654321.');
+
+        chrome.test.sendMessage('ready');
+      });
+    });
+  });
 });
