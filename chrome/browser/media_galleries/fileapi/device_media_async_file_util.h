@@ -48,67 +48,67 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       int file_flags,
-      const CreateOrOpenCallback& callback) override;
+      CreateOrOpenCallback callback) override;
   void EnsureFileExists(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const EnsureFileExistsCallback& callback) override;
+      EnsureFileExistsCallback callback) override;
   void CreateDirectory(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       bool exclusive,
       bool recursive,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void GetFileInfo(std::unique_ptr<storage::FileSystemOperationContext> context,
                    const storage::FileSystemURL& url,
                    int /* flags */,
-                   const GetFileInfoCallback& callback) override;
+                   GetFileInfoCallback callback) override;
   void ReadDirectory(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const ReadDirectoryCallback& callback) override;
+      ReadDirectoryCallback callback) override;
   void Touch(std::unique_ptr<storage::FileSystemOperationContext> context,
              const storage::FileSystemURL& url,
              const base::Time& last_access_time,
              const base::Time& last_modified_time,
-             const StatusCallback& callback) override;
+             StatusCallback callback) override;
   void Truncate(std::unique_ptr<storage::FileSystemOperationContext> context,
                 const storage::FileSystemURL& url,
                 int64_t length,
-                const StatusCallback& callback) override;
+                StatusCallback callback) override;
   void CopyFileLocal(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& src_url,
       const storage::FileSystemURL& dest_url,
       CopyOrMoveOption option,
-      const CopyFileProgressCallback& progress_callback,
-      const StatusCallback& callback) override;
+      CopyFileProgressCallback progress_callback,
+      StatusCallback callback) override;
   void MoveFileLocal(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& src_url,
       const storage::FileSystemURL& dest_url,
       CopyOrMoveOption option,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void CopyInForeignFile(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const storage::FileSystemURL& dest_url,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void DeleteFile(std::unique_ptr<storage::FileSystemOperationContext> context,
                   const storage::FileSystemURL& url,
-                  const StatusCallback& callback) override;
+                  StatusCallback callback) override;
   void DeleteDirectory(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void DeleteRecursively(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void CreateSnapshotFile(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const CreateSnapshotFileCallback& callback) override;
+      CreateSnapshotFileCallback callback) override;
 
   // This method is called when existing Blobs are read.
   // |expected_modification_time| indicates the expected snapshot state of the
@@ -142,16 +142,15 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
 
   // Called when CreateDirectory method call succeeds. |callback| is invoked to
   // complete the CreateDirectory request.
-  void OnDidCreateDirectory(const StatusCallback& callback);
+  void OnDidCreateDirectory(StatusCallback callback);
 
   // Called when GetFileInfo method call succeeds. |file_info| contains the
   // file details of the requested url. |callback| is invoked to complete the
   // GetFileInfo request.
-  void OnDidGetFileInfo(
-      base::SequencedTaskRunner* task_runner,
-      const base::FilePath& path,
-      const GetFileInfoCallback& callback,
-      const base::File::Info& file_info);
+  void OnDidGetFileInfo(base::SequencedTaskRunner* task_runner,
+                        const base::FilePath& path,
+                        GetFileInfoCallback callback,
+                        const base::File::Info& file_info);
 
   // Called when ReadDirectory method call succeeds. |callback| is invoked to
   // complete the ReadDirectory request.
@@ -165,29 +164,29 @@ class DeviceMediaAsyncFileUtil : public storage::AsyncFileUtil {
   // in any two calls are disjoint), and |has_more| will be true, except for
   // the last chunk.
   void OnDidReadDirectory(base::SequencedTaskRunner* task_runner,
-                          const ReadDirectoryCallback& callback,
+                          ReadDirectoryCallback callback,
                           EntryList file_list,
                           bool has_more);
 
   // Called when MoveFileLocal method call succeeds. |callback| is invoked to
   // complete the MoveFileLocal request.
-  void OnDidMoveFileLocal(const StatusCallback& callback);
+  void OnDidMoveFileLocal(StatusCallback callback);
 
   // Called when CopyFileLocal method call succeeds. |callback| is invoked to
   // complete the CopyFileLocal request.
-  void OnDidCopyFileLocal(const StatusCallback& callback);
+  void OnDidCopyFileLocal(StatusCallback callback);
 
   // Called when CopyInForeignFile method call succeeds. |callback| is invoked
   // to complete the CopyInForeignFile request.
-  void OnDidCopyInForeignFile(const StatusCallback& callback);
+  void OnDidCopyInForeignFile(StatusCallback callback);
 
   // Called when DeleteFile method call succeeeds. |callback| is invoked to
   // complete the DeleteFile request.
-  void OnDidDeleteFile(const StatusCallback& callback);
+  void OnDidDeleteFile(StatusCallback callback);
 
   // Called when DeleteDirectory method call succeeds. |callback| is invoked to
   // complete the DeleteDirectory request.
-  void OnDidDeleteDirectory(const StatusCallback& callback);
+  void OnDidDeleteDirectory(StatusCallback callback);
 
   bool validate_media_files() const;
 

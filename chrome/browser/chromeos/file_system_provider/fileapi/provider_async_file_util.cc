@@ -28,11 +28,11 @@ void GetFileInfoOnUIThread(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int fields,
-    const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
+    ProvidedFileSystemInterface::GetMetadataCallback callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
-    callback.Run(base::WrapUnique<EntryMetadata>(NULL),
-                 base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::WrapUnique<EntryMetadata>(NULL),
+                            base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
@@ -44,19 +44,20 @@ void GetFileInfoOnUIThread(
   if (fields & storage::FileSystemOperation::GET_METADATA_FIELD_LAST_MODIFIED)
     fsp_fields |= ProvidedFileSystemInterface::METADATA_FIELD_MODIFICATION_TIME;
 
-  parser.file_system()->GetMetadata(parser.file_path(), fsp_fields, callback);
+  parser.file_system()->GetMetadata(parser.file_path(), fsp_fields,
+                                    std::move(callback));
 }
 
 // Routes the response of GetFileInfo back to the IO thread with a type
 // conversion.
 void OnGetFileInfo(int fields,
-                   const storage::AsyncFileUtil::GetFileInfoCallback& callback,
+                   storage::AsyncFileUtil::GetFileInfoCallback callback,
                    std::unique_ptr<EntryMetadata> metadata,
                    base::File::Error result) {
   if (result != base::File::FILE_OK) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
-        base::BindOnce(callback, result, base::File::Info()));
+        base::BindOnce(std::move(callback), result, base::File::Info()));
     return;
   }
 
@@ -80,14 +81,14 @@ void OnGetFileInfo(int fields,
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(callback, base::File::FILE_OK, file_info));
+      base::BindOnce(std::move(callback), base::File::FILE_OK, file_info));
 }
 
 // Executes ReadDirectory on the UI thread.
 void ReadDirectoryOnUIThread(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
+    storage::AsyncFileUtil::ReadDirectoryCallback callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
     callback.Run(base::File::FILE_ERROR_INVALID_OPERATION,
@@ -100,11 +101,10 @@ void ReadDirectoryOnUIThread(
 }
 
 // Routes the response of ReadDirectory back to the IO thread.
-void OnReadDirectory(
-    const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
-    base::File::Error result,
-    storage::AsyncFileUtil::EntryList entry_list,
-    bool has_more) {
+void OnReadDirectory(storage::AsyncFileUtil::ReadDirectoryCallback callback,
+                     base::File::Error result,
+                     storage::AsyncFileUtil::EntryList entry_list,
+                     bool has_more) {
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(callback, result, std::move(entry_list), has_more));
@@ -116,20 +116,20 @@ void CreateDirectoryOnUIThread(
     const storage::FileSystemURL& url,
     bool exclusive,
     bool recursive,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
-  parser.file_system()->CreateDirectory(
-      parser.file_path(), recursive, callback);
+  parser.file_system()->CreateDirectory(parser.file_path(), recursive,
+                                        std::move(callback));
 }
 
 // Routes the response of CreateDirectory back to the IO thread.
 void OnCreateDirectory(bool exclusive,
-                       const storage::AsyncFileUtil::StatusCallback& callback,
+                       storage::AsyncFileUtil::StatusCallback callback,
                        base::File::Error result) {
   // If the directory already existed and the operation wasn't exclusive, then
   // return success anyway, since it is not an error.
@@ -139,7 +139,7 @@ void OnCreateDirectory(bool exclusive,
           : result;
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, error));
+                          base::BindOnce(std::move(callback), error));
 }
 
 // Executes DeleteEntry on the UI thread.
@@ -147,41 +147,42 @@ void DeleteEntryOnUIThread(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     bool recursive,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
-  parser.file_system()->DeleteEntry(parser.file_path(), recursive, callback);
+  parser.file_system()->DeleteEntry(parser.file_path(), recursive,
+                                    std::move(callback));
 }
 
 // Routes the response of DeleteEntry back to the IO thread.
-void OnDeleteEntry(const storage::AsyncFileUtil::StatusCallback& callback,
+void OnDeleteEntry(storage::AsyncFileUtil::StatusCallback callback,
                    base::File::Error result) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, result));
+                          base::BindOnce(std::move(callback), result));
 }
 
 // Executes CreateFile on the UI thread.
 void CreateFileOnUIThread(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
-  parser.file_system()->CreateFile(parser.file_path(), callback);
+  parser.file_system()->CreateFile(parser.file_path(), std::move(callback));
 }
 
 // Routes the response of CreateFile to a callback of EnsureFileExists() on the
 // IO thread.
 void OnCreateFileForEnsureFileExists(
-    const storage::AsyncFileUtil::EnsureFileExistsCallback& callback,
+    storage::AsyncFileUtil::EnsureFileExistsCallback callback,
     base::File::Error result) {
   const bool created = result == base::File::FILE_OK;
 
@@ -191,7 +192,7 @@ void OnCreateFileForEnsureFileExists(
       result == base::File::FILE_ERROR_EXISTS ? base::File::FILE_OK : result;
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, error, created));
+                          base::BindOnce(std::move(callback), error, created));
 }
 
 // Executes CopyEntry on the UI thread.
@@ -199,26 +200,27 @@ void CopyEntryOnUIThread(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& source_url,
     const storage::FileSystemURL& target_url,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   util::FileSystemURLParser source_parser(source_url);
   util::FileSystemURLParser target_parser(target_url);
 
   if (!source_parser.Parse() || !target_parser.Parse() ||
       source_parser.file_system() != target_parser.file_system()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
-  target_parser.file_system()->CopyEntry(
-      source_parser.file_path(), target_parser.file_path(), callback);
+  target_parser.file_system()->CopyEntry(source_parser.file_path(),
+                                         target_parser.file_path(),
+                                         std::move(callback));
 }
 
 // Routes the response of CopyEntry to a callback of CopyLocalFile() on the
 // IO thread.
-void OnCopyEntry(const storage::AsyncFileUtil::StatusCallback& callback,
+void OnCopyEntry(storage::AsyncFileUtil::StatusCallback callback,
                  base::File::Error result) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, result));
+                          base::BindOnce(std::move(callback), result));
 }
 
 // Executes MoveEntry on the UI thread.
@@ -226,26 +228,27 @@ void MoveEntryOnUIThread(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& source_url,
     const storage::FileSystemURL& target_url,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   util::FileSystemURLParser source_parser(source_url);
   util::FileSystemURLParser target_parser(target_url);
 
   if (!source_parser.Parse() || !target_parser.Parse() ||
       source_parser.file_system() != target_parser.file_system()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
-  target_parser.file_system()->MoveEntry(
-      source_parser.file_path(), target_parser.file_path(), callback);
+  target_parser.file_system()->MoveEntry(source_parser.file_path(),
+                                         target_parser.file_path(),
+                                         std::move(callback));
 }
 
 // Routes the response of CopyEntry to a callback of MoveLocalFile() on the
 // IO thread.
-void OnMoveEntry(const storage::AsyncFileUtil::StatusCallback& callback,
+void OnMoveEntry(storage::AsyncFileUtil::StatusCallback callback,
                  base::File::Error result) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, result));
+                          base::BindOnce(std::move(callback), result));
 }
 
 // Executes Truncate on the UI thread.
@@ -253,21 +256,22 @@ void TruncateOnUIThread(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int64_t length,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   util::FileSystemURLParser parser(url);
   if (!parser.Parse()) {
-    callback.Run(base::File::FILE_ERROR_INVALID_OPERATION);
+    std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
     return;
   }
 
-  parser.file_system()->Truncate(parser.file_path(), length, callback);
+  parser.file_system()->Truncate(parser.file_path(), length,
+                                 std::move(callback));
 }
 
 // Routes the response of Truncate back to the IO thread.
-void OnTruncate(const storage::AsyncFileUtil::StatusCallback& callback,
+void OnTruncate(storage::AsyncFileUtil::StatusCallback callback,
                 base::File::Error result) {
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
-                          base::BindOnce(callback, result));
+                          base::BindOnce(std::move(callback), result));
 }
 
 }  // namespace
@@ -280,31 +284,32 @@ void ProviderAsyncFileUtil::CreateOrOpen(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int file_flags,
-    const CreateOrOpenCallback& callback) {
+    CreateOrOpenCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   if ((file_flags & base::File::FLAG_CREATE) ||
       (file_flags & base::File::FLAG_OPEN_ALWAYS) ||
       (file_flags & base::File::FLAG_CREATE_ALWAYS) ||
       (file_flags & base::File::FLAG_OPEN_TRUNCATED)) {
-    callback.Run(base::File(base::File::FILE_ERROR_ACCESS_DENIED),
-                 base::Closure());
+    std::move(callback).Run(base::File(base::File::FILE_ERROR_ACCESS_DENIED),
+                            base::Closure());
     return;
   }
 
   NOTIMPLEMENTED();
-  callback.Run(base::File(base::File::FILE_ERROR_INVALID_OPERATION),
-               base::Closure());
+  std::move(callback).Run(base::File(base::File::FILE_ERROR_INVALID_OPERATION),
+                          base::Closure());
 }
 
 void ProviderAsyncFileUtil::EnsureFileExists(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const EnsureFileExistsCallback& callback) {
+    EnsureFileExistsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&CreateFileOnUIThread, base::Passed(&context), url,
-                     base::Bind(&OnCreateFileForEnsureFileExists, callback)));
+      base::BindOnce(
+          &CreateFileOnUIThread, base::Passed(&context), url,
+          base::Bind(&OnCreateFileForEnsureFileExists, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::CreateDirectory(
@@ -312,31 +317,33 @@ void ProviderAsyncFileUtil::CreateDirectory(
     const storage::FileSystemURL& url,
     bool exclusive,
     bool recursive,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&CreateDirectoryOnUIThread, base::Passed(&context), url,
-                     exclusive, recursive,
-                     base::Bind(&OnCreateDirectory, exclusive, callback)));
+      base::BindOnce(
+          &CreateDirectoryOnUIThread, base::Passed(&context), url, exclusive,
+          recursive,
+          base::Bind(&OnCreateDirectory, exclusive, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::GetFileInfo(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int fields,
-    const GetFileInfoCallback& callback) {
+    GetFileInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&GetFileInfoOnUIThread, base::Passed(&context), url,
-                     fields, base::Bind(&OnGetFileInfo, fields, callback)));
+                     fields,
+                     base::Bind(&OnGetFileInfo, fields, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::ReadDirectory(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const ReadDirectoryCallback& callback) {
+    ReadDirectoryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
@@ -349,21 +356,21 @@ void ProviderAsyncFileUtil::Touch(
     const storage::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ProviderAsyncFileUtil::Truncate(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int64_t length,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&TruncateOnUIThread, base::Passed(&context), url, length,
-                     base::Bind(&OnTruncate, callback)));
+                     base::Bind(&OnTruncate, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::CopyFileLocal(
@@ -371,15 +378,15 @@ void ProviderAsyncFileUtil::CopyFileLocal(
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
-    const CopyFileProgressCallback& progress_callback,
-    const StatusCallback& callback) {
+    CopyFileProgressCallback progress_callback,
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mtomasz): Consier adding support for options (preserving last modified
   // time) as well as the progress callback.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&CopyEntryOnUIThread, base::Passed(&context), src_url,
-                     dest_url, base::Bind(&OnCopyEntry, callback)));
+                     dest_url, base::Bind(&OnCopyEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::MoveFileLocal(
@@ -387,71 +394,70 @@ void ProviderAsyncFileUtil::MoveFileLocal(
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(mtomasz): Consier adding support for options (preserving last modified
   // time) as well as the progress callback.
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&MoveEntryOnUIThread, base::Passed(&context), src_url,
-                     dest_url, base::Bind(&OnMoveEntry, callback)));
+                     dest_url, base::Bind(&OnMoveEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::CopyInForeignFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
     const storage::FileSystemURL& dest_url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ProviderAsyncFileUtil::DeleteFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&DeleteEntryOnUIThread, base::Passed(&context), url,
                      false,  // recursive
-                     base::Bind(&OnDeleteEntry, callback)));
+                     base::Bind(&OnDeleteEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::DeleteDirectory(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&DeleteEntryOnUIThread, base::Passed(&context), url,
                      false,  // recursive
-                     base::Bind(&OnDeleteEntry, callback)));
+                     base::Bind(&OnDeleteEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::DeleteRecursively(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&DeleteEntryOnUIThread, base::Passed(&context), url,
                      true,  // recursive
-                     base::Bind(&OnDeleteEntry, callback)));
+                     base::Bind(&OnDeleteEntry, std::move(callback))));
 }
 
 void ProviderAsyncFileUtil::CreateSnapshotFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const CreateSnapshotFileCallback& callback) {
+    CreateSnapshotFileCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTIMPLEMENTED();
-  callback.Run(base::File::FILE_ERROR_INVALID_OPERATION,
-               base::File::Info(),
-               base::FilePath(),
-               scoped_refptr<storage::ShareableFileReference>());
+  std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION,
+                          base::File::Info(), base::FilePath(),
+                          scoped_refptr<storage::ShareableFileReference>());
 }
 
 }  // namespace internal

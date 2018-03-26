@@ -59,93 +59,91 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
 
   // ProvidedFileSystemInterface overrides.
   file_system_provider::AbortCallback RequestUnmount(
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback GetMetadata(
       const base::FilePath& entry_path,
       ProvidedFileSystemInterface::MetadataFieldMask fields,
-      const ProvidedFileSystemInterface::GetMetadataCallback& callback)
-      override;
+      ProvidedFileSystemInterface::GetMetadataCallback callback) override;
 
   file_system_provider::AbortCallback GetActions(
       const std::vector<base::FilePath>& entry_paths,
-      const GetActionsCallback& callback) override;
+      GetActionsCallback callback) override;
 
   file_system_provider::AbortCallback ExecuteAction(
       const std::vector<base::FilePath>& entry_paths,
       const std::string& action_id,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback ReadDirectory(
       const base::FilePath& directory_path,
-      const storage::AsyncFileUtil::ReadDirectoryCallback& callback) override;
+      storage::AsyncFileUtil::ReadDirectoryCallback callback) override;
 
   file_system_provider::AbortCallback OpenFile(
       const base::FilePath& file_path,
       file_system_provider::OpenFileMode mode,
-      const OpenFileCallback& callback) override;
+      OpenFileCallback callback) override;
 
   file_system_provider::AbortCallback CloseFile(
       int file_handle,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback ReadFile(
       int file_handle,
       net::IOBuffer* buffer,
       int64_t offset,
       int length,
-      const ReadChunkReceivedCallback& callback) override;
+      ReadChunkReceivedCallback callback) override;
 
   file_system_provider::AbortCallback CreateDirectory(
       const base::FilePath& directory_path,
       bool recursive,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback CreateFile(
       const base::FilePath& file_path,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback DeleteEntry(
       const base::FilePath& entry_path,
       bool recursive,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback CopyEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback MoveEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback Truncate(
       const base::FilePath& file_path,
       int64_t length,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback WriteFile(
       int file_handle,
       net::IOBuffer* buffer,
       int64_t offset,
       int length,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
   file_system_provider::AbortCallback AddWatcher(
       const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
       bool persistent,
-      const storage::AsyncFileUtil::StatusCallback& callback,
+      storage::AsyncFileUtil::StatusCallback callback,
       const storage::WatcherManager::NotificationCallback&
           notification_callback) override;
 
-  void RemoveWatcher(
-      const GURL& origin,
-      const base::FilePath& entry_path,
-      bool recursive,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+  void RemoveWatcher(const GURL& origin,
+                     const base::FilePath& entry_path,
+                     bool recursive,
+                     storage::AsyncFileUtil::StatusCallback callback) override;
 
   const file_system_provider::ProvidedFileSystemInfo& GetFileSystemInfo()
       const override;
@@ -169,10 +167,9 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
       std::unique_ptr<file_system_provider::ProvidedFileSystemObserver::Changes>
           changes,
       const std::string& tag,
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+      storage::AsyncFileUtil::StatusCallback callback) override;
 
-  void Configure(
-      const storage::AsyncFileUtil::StatusCallback& callback) override;
+  void Configure(storage::AsyncFileUtil::StatusCallback callback) override;
 
   base::WeakPtr<ProvidedFileSystemInterface> GetWeakPtr() override;
 
@@ -185,27 +182,26 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
   file_system_provider::AbortCallback CreateAbortCallback();
 
   void HandleRequestUnmountCallback(
-      const storage::AsyncFileUtil::StatusCallback& callback,
+      storage::AsyncFileUtil::StatusCallback callback,
       smbprovider::ErrorType error);
 
   void HandleRequestReadDirectoryCallback(
-      const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
+      storage::AsyncFileUtil::ReadDirectoryCallback callback,
       smbprovider::ErrorType error,
       const smbprovider::DirectoryEntryListProto& entries) const;
 
   void HandleRequestGetMetadataEntryCallback(
       ProvidedFileSystemInterface::MetadataFieldMask fields,
-      const ProvidedFileSystemInterface::GetMetadataCallback& callback,
+      ProvidedFileSystemInterface::GetMetadataCallback callback,
       smbprovider::ErrorType error,
       const smbprovider::DirectoryEntryProto& entry) const;
 
-  void HandleRequestOpenFileCallback(const OpenFileCallback& callback,
+  void HandleRequestOpenFileCallback(OpenFileCallback callback,
                                      smbprovider::ErrorType error,
                                      int32_t file_id) const;
 
-  void HandleStatusCallback(
-      const storage::AsyncFileUtil::StatusCallback& callback,
-      smbprovider::ErrorType error) const;
+  void HandleStatusCallback(storage::AsyncFileUtil::StatusCallback callback,
+                            smbprovider::ErrorType error) const;
 
   base::File::Error RunUnmountCallback(
       const ProviderId& provider_id,
@@ -214,7 +210,7 @@ class SmbFileSystem : public file_system_provider::ProvidedFileSystemInterface,
 
   void HandleRequestReadFileCallback(int32_t length,
                                      scoped_refptr<net::IOBuffer> buffer,
-                                     const ReadChunkReceivedCallback& callback,
+                                     ReadChunkReceivedCallback callback,
                                      smbprovider::ErrorType error,
                                      const base::ScopedFD& fd) const;
 

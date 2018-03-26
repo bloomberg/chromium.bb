@@ -40,7 +40,7 @@ class NativeMediaFileUtil : public storage::AsyncFileUtil {
   static void CreatedSnapshotFileForCreateOrOpen(
       base::SequencedTaskRunner* media_task_runner,
       int file_flags,
-      const storage::AsyncFileUtil::CreateOrOpenCallback& callback,
+      storage::AsyncFileUtil::CreateOrOpenCallback callback,
       base::File::Error result,
       const base::File::Info& file_info,
       const base::FilePath& platform_path,
@@ -51,67 +51,67 @@ class NativeMediaFileUtil : public storage::AsyncFileUtil {
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       int file_flags,
-      const CreateOrOpenCallback& callback) override;
+      CreateOrOpenCallback callback) override;
   void EnsureFileExists(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const EnsureFileExistsCallback& callback) override;
+      EnsureFileExistsCallback callback) override;
   void CreateDirectory(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
       bool exclusive,
       bool recursive,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void GetFileInfo(std::unique_ptr<storage::FileSystemOperationContext> context,
                    const storage::FileSystemURL& url,
                    int /* fields */,
-                   const GetFileInfoCallback& callback) override;
+                   GetFileInfoCallback callback) override;
   void ReadDirectory(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const ReadDirectoryCallback& callback) override;
+      ReadDirectoryCallback callback) override;
   void Touch(std::unique_ptr<storage::FileSystemOperationContext> context,
              const storage::FileSystemURL& url,
              const base::Time& last_access_time,
              const base::Time& last_modified_time,
-             const StatusCallback& callback) override;
+             StatusCallback callback) override;
   void Truncate(std::unique_ptr<storage::FileSystemOperationContext> context,
                 const storage::FileSystemURL& url,
                 int64_t length,
-                const StatusCallback& callback) override;
+                StatusCallback callback) override;
   void CopyFileLocal(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& src_url,
       const storage::FileSystemURL& dest_url,
       CopyOrMoveOption option,
-      const CopyFileProgressCallback& progress_callback,
-      const StatusCallback& callback) override;
+      CopyFileProgressCallback progress_callback,
+      StatusCallback callback) override;
   void MoveFileLocal(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& src_url,
       const storage::FileSystemURL& dest_url,
       CopyOrMoveOption option,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void CopyInForeignFile(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const storage::FileSystemURL& dest_url,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void DeleteFile(std::unique_ptr<storage::FileSystemOperationContext> context,
                   const storage::FileSystemURL& url,
-                  const StatusCallback& callback) override;
+                  StatusCallback callback) override;
   void DeleteDirectory(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void DeleteRecursively(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const StatusCallback& callback) override;
+      StatusCallback callback) override;
   void CreateSnapshotFile(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const CreateSnapshotFileCallback& callback) override;
+      CreateSnapshotFileCallback callback) override;
 
  protected:
   virtual void CreateDirectoryOnTaskRunnerThread(
@@ -119,39 +119,39 @@ class NativeMediaFileUtil : public storage::AsyncFileUtil {
       const storage::FileSystemURL& url,
       bool exclusive,
       bool recursive,
-      const StatusCallback& callback);
+      StatusCallback callback);
   virtual void GetFileInfoOnTaskRunnerThread(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const GetFileInfoCallback& callback);
+      GetFileInfoCallback callback);
   virtual void ReadDirectoryOnTaskRunnerThread(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const ReadDirectoryCallback& callback);
+      ReadDirectoryCallback callback);
   virtual void CopyOrMoveFileLocalOnTaskRunnerThread(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& src_url,
       const storage::FileSystemURL& dest_url,
       CopyOrMoveOption option,
       bool copy,
-      const StatusCallback& callback);
+      StatusCallback callback);
   virtual void CopyInForeignFileOnTaskRunnerThread(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const base::FilePath& src_file_path,
       const storage::FileSystemURL& dest_url,
-      const StatusCallback& callback);
+      StatusCallback callback);
   virtual void DeleteFileOnTaskRunnerThread(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const StatusCallback& callback);
+      StatusCallback callback);
   virtual void DeleteDirectoryOnTaskRunnerThread(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const StatusCallback& callback);
+      StatusCallback callback);
   virtual void CreateSnapshotFileOnTaskRunnerThread(
       std::unique_ptr<storage::FileSystemOperationContext> context,
       const storage::FileSystemURL& url,
-      const CreateSnapshotFileCallback& callback);
+      CreateSnapshotFileCallback callback);
 
   // The following methods should only be called on the task runner thread.
 

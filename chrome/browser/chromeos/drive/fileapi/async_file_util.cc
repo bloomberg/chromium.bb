@@ -49,7 +49,7 @@ void PostFileSystemCallback(
 
 // Runs CreateOrOpenFile callback based on the given |error| and |file|.
 void RunCreateOrOpenFileCallback(
-    const AsyncFileUtil::CreateOrOpenCallback& callback,
+    AsyncFileUtil::CreateOrOpenCallback callback,
     base::File file,
     const base::Closure& close_callback_on_ui_thread) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -57,7 +57,7 @@ void RunCreateOrOpenFileCallback(
   // It is necessary to make a closure, which runs on file closing here.
   // It will be provided as a FileSystem::OpenFileCallback's argument later.
   // (crbug.com/259184).
-  callback.Run(
+  std::move(callback).Run(
       std::move(file),
       base::Bind(&google_apis::RunTaskWithTaskRunner,
                  BrowserThread::GetTaskRunnerForThread(BrowserThread::UI),
@@ -66,14 +66,14 @@ void RunCreateOrOpenFileCallback(
 
 // Runs CreateOrOpenFile when the error happens.
 void RunCreateOrOpenFileCallbackOnError(
-    const AsyncFileUtil::CreateOrOpenCallback& callback,
+    AsyncFileUtil::CreateOrOpenCallback callback,
     base::File::Error error) {
-  callback.Run(base::File(error), base::Closure());
+  std::move(callback).Run(base::File(error), base::Closure());
 }
 
 // Runs EnsureFileExistsCallback based on the given |error|.
 void RunEnsureFileExistsCallback(
-    const AsyncFileUtil::EnsureFileExistsCallback& callback,
+    AsyncFileUtil::EnsureFileExistsCallback callback,
     base::File::Error error) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
@@ -84,12 +84,12 @@ void RunEnsureFileExistsCallback(
   if (error == base::File::FILE_ERROR_EXISTS)
     error = base::File::FILE_OK;
 
-  callback.Run(error, created);
+  std::move(callback).Run(error, created);
 }
 
 // Runs |callback| with the arguments based on the given arguments.
 void RunCreateSnapshotFileCallback(
-    const AsyncFileUtil::CreateSnapshotFileCallback& callback,
+    AsyncFileUtil::CreateSnapshotFileCallback callback,
     base::File::Error error,
     const base::File::Info& file_info,
     const base::FilePath& local_path,
@@ -104,7 +104,8 @@ void RunCreateSnapshotFileCallback(
           local_path, scope_out_policy,
           base::CreateSequencedTaskRunnerWithTraits(
               {base::MayBlock(), base::TaskPriority::USER_BLOCKING})));
-  callback.Run(error, file_info, local_path, file_reference);
+  std::move(callback).Run(error, file_info, local_path,
+                          std::move(file_reference));
 }
 
 }  // namespace
@@ -119,12 +120,13 @@ void AsyncFileUtil::CreateOrOpen(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int file_flags,
-    const CreateOrOpenCallback& callback) {
+    CreateOrOpenCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File(base::File::FILE_ERROR_NOT_FOUND), base::Closure());
+    std::move(callback).Run(base::File(base::File::FILE_ERROR_NOT_FOUND),
+                            base::Closure());
     return;
   }
 
@@ -143,12 +145,12 @@ void AsyncFileUtil::CreateOrOpen(
 void AsyncFileUtil::EnsureFileExists(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const EnsureFileExistsCallback& callback) {
+    EnsureFileExistsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND, false);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND, false);
     return;
   }
 
@@ -166,12 +168,12 @@ void AsyncFileUtil::CreateDirectory(
     const storage::FileSystemURL& url,
     bool exclusive,
     bool recursive,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -187,12 +189,13 @@ void AsyncFileUtil::GetFileInfo(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int /* fields */,
-    const GetFileInfoCallback& callback) {
+    GetFileInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND, base::File::Info());
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND,
+                            base::File::Info());
     return;
   }
 
@@ -207,7 +210,7 @@ void AsyncFileUtil::GetFileInfo(
 void AsyncFileUtil::ReadDirectory(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const ReadDirectoryCallback& callback) {
+    ReadDirectoryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
@@ -229,12 +232,12 @@ void AsyncFileUtil::Touch(
     const storage::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -250,12 +253,12 @@ void AsyncFileUtil::Truncate(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int64_t length,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -271,14 +274,14 @@ void AsyncFileUtil::CopyFileLocal(
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
-    const CopyFileProgressCallback& progress_callback,
-    const StatusCallback& callback) {
+    CopyFileProgressCallback progress_callback,
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath src_path = util::ExtractDrivePathFromFileSystemUrl(src_url);
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);
   if (src_path.empty() || dest_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -304,13 +307,13 @@ void AsyncFileUtil::MoveFileLocal(
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath src_path = util::ExtractDrivePathFromFileSystemUrl(src_url);
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);
   if (src_path.empty() || dest_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -329,12 +332,12 @@ void AsyncFileUtil::CopyInForeignFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
     const storage::FileSystemURL& dest_url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath dest_path = util::ExtractDrivePathFromFileSystemUrl(dest_url);
   if (dest_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -349,12 +352,12 @@ void AsyncFileUtil::CopyInForeignFile(
 void AsyncFileUtil::DeleteFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -369,12 +372,12 @@ void AsyncFileUtil::DeleteFile(
 void AsyncFileUtil::DeleteDirectory(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -389,12 +392,12 @@ void AsyncFileUtil::DeleteDirectory(
 void AsyncFileUtil::DeleteRecursively(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND);
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND);
     return;
   }
 
@@ -409,15 +412,14 @@ void AsyncFileUtil::DeleteRecursively(
 void AsyncFileUtil::CreateSnapshotFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const CreateSnapshotFileCallback& callback) {
+    CreateSnapshotFileCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   base::FilePath file_path = util::ExtractDrivePathFromFileSystemUrl(url);
   if (file_path.empty()) {
-    callback.Run(base::File::FILE_ERROR_NOT_FOUND,
-                 base::File::Info(),
-                 base::FilePath(),
-                 scoped_refptr<storage::ShareableFileReference>());
+    std::move(callback).Run(base::File::FILE_ERROR_NOT_FOUND,
+                            base::File::Info(), base::FilePath(),
+                            scoped_refptr<storage::ShareableFileReference>());
     return;
   }
 
