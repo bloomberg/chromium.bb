@@ -41,8 +41,7 @@ TabLifecycleUnitSource::TabLifecycleUnit::~TabLifecycleUnit() {
 
 void TabLifecycleUnitSource::TabLifecycleUnit::SetTabStripModel(
     TabStripModel* tab_strip_model) {
-  DCHECK(tab_strip_model);
-  tab_strip_model = tab_strip_model_;
+  tab_strip_model_ = tab_strip_model;
 }
 
 void TabLifecycleUnitSource::TabLifecycleUnit::SetWebContents(
@@ -108,8 +107,12 @@ int TabLifecycleUnitSource::TabLifecycleUnit::
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
     DiscardReason reason) const {
+  // Can't discard a tab that isn't in a TabStripModel.
+  if (!tab_strip_model_)
+    return false;
+
   // Can't discard a tab that is already discarded.
-  if (GetState() == State::DISCARDED)
+  if (IsDiscarded())
     return false;
 
   if (GetWebContents()->IsCrashed())
@@ -175,7 +178,7 @@ bool TabLifecycleUnitSource::TabLifecycleUnit::CanDiscard(
 
 bool TabLifecycleUnitSource::TabLifecycleUnit::Discard(
     DiscardReason discard_reason) {
-  if (IsDiscarded())
+  if (!tab_strip_model_ || IsDiscarded())
     return false;
 
   UMA_HISTOGRAM_BOOLEAN(

@@ -218,6 +218,13 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
   DISALLOW_COPY_AND_ASSIGN(TabLifecycleUnitSourceTest);
 };
 
+#define EXPECT_FOR_ALL_DISCARD_REASONS(lifecycle_unit, method, value)    \
+  do {                                                                   \
+    EXPECT_EQ(value, lifecycle_unit->method(DiscardReason::kExternal));  \
+    EXPECT_EQ(value, lifecycle_unit->method(DiscardReason::kProactive)); \
+    EXPECT_EQ(value, lifecycle_unit->method(DiscardReason::kUrgent));    \
+  } while (false)
+
 }  // namespace
 
 TEST_F(TabLifecycleUnitSourceTest, AppendTabsToFocusedTabStrip) {
@@ -295,6 +302,41 @@ TEST_F(TabLifecycleUnitSourceTest, ReplaceWebContents) {
   EXPECT_CALL(source_observer_,
               OnLifecycleUnitDestroyed(second_lifecycle_unit));
   tab_strip_model_->CloseAllTabs();
+}
+
+TEST_F(TabLifecycleUnitSourceTest, DetachWebContents) {
+  LifecycleUnit* first_lifecycle_unit = nullptr;
+  LifecycleUnit* second_lifecycle_unit = nullptr;
+  CreateTwoTabs(true /* focus_tab_strip */, &first_lifecycle_unit,
+                &second_lifecycle_unit);
+  test_clock_.Advance(kTabFocusedProtectionTime);
+
+  // Detach the non-active tab. Verify that it can no longer be discarded.
+  EXPECT_FOR_ALL_DISCARD_REASONS(first_lifecycle_unit, CanDiscard, true);
+  auto* contents = tab_strip_model_->DetachWebContentsAt(0);
+  EXPECT_FOR_ALL_DISCARD_REASONS(first_lifecycle_unit, CanDiscard, false);
+
+  // Create a second tab strip.
+  NoUnloadListenerTabStripModelDelegate other_tab_strip_model_delegate;
+  TabStripModel other_tab_strip_model(&other_tab_strip_model_delegate,
+                                      profile());
+  other_tab_strip_model.AddObserver(&source_);
+
+  // Insert the tab into the second tab strip without focusing it. Verify that
+  // it can be discarded.
+  other_tab_strip_model.AppendWebContents(contents, false);
+  EXPECT_FOR_ALL_DISCARD_REASONS(first_lifecycle_unit, CanDiscard, true);
+
+  EXPECT_EQ(LifecycleUnit::State::LOADED, first_lifecycle_unit->GetState());
+  EXPECT_CALL(tab_observer_, OnDiscardedStateChange(testing::_, true));
+  first_lifecycle_unit->Discard(DiscardReason::kProactive);
+  testing::Mock::VerifyAndClear(&tab_observer_);
+  EXPECT_EQ(LifecycleUnit::State::DISCARDED, first_lifecycle_unit->GetState());
+
+  // Expect a notification when the tab is closed.
+  EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(testing::_))
+      .Times(other_tab_strip_model.count());
+  other_tab_strip_model.CloseAllTabs();
 }
 
 // Tab discarding is tested here rather than in TabLifecycleUnitTest because
@@ -402,9 +444,7 @@ TEST_F(TabLifecycleUnitSourceTest, CanOnlyDiscardOnce) {
   test_clock_.Advance(kTabFocusedProtectionTime);
 
   // It should be possible to discard the background tab.
-  EXPECT_TRUE(background_lifecycle_unit->CanDiscard(DiscardReason::kExternal));
-  EXPECT_TRUE(background_lifecycle_unit->CanDiscard(DiscardReason::kProactive));
-  EXPECT_TRUE(background_lifecycle_unit->CanDiscard(DiscardReason::kUrgent));
+  EXPECT_FOR_ALL_DISCARD_REASONS(background_lifecycle_unit, CanDiscard, true);
 
   // Discard the tab.
   EXPECT_EQ(LifecycleUnit::State::LOADED,

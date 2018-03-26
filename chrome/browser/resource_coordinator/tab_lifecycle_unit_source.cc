@@ -127,9 +127,27 @@ void TabLifecycleUnitSource::TabClosingAt(TabStripModel* tab_strip_model,
   DCHECK(it != tabs_.end());
   TabLifecycleUnit* lifecycle_unit = it->second.get();
   if (focused_tab_lifecycle_unit_ == lifecycle_unit)
-    focused_tab_lifecycle_unit_ = nullptr;
+    UpdateFocusedTabTo(nullptr);
   NotifyLifecycleUnitDestroyed(lifecycle_unit);
   tabs_.erase(contents);
+}
+
+void TabLifecycleUnitSource::TabDetachedAt(content::WebContents* contents,
+                                           int index) {
+  auto it = tabs_.find(contents);
+
+  // TabDetachedAt() can be called after the TabLifecycleUnit has been destroyed
+  // by TabClosingAt().
+  // TODO(fdoray): Changed this to a DCHECK once TabLifecycleUnits are destroyed
+  // from WebContentsDestroyed() rather than TabClosingAt().
+  // https://crbug.com/775644
+  if (it == tabs_.end())
+    return;
+
+  TabLifecycleUnit* lifecycle_unit = it->second.get();
+  if (focused_tab_lifecycle_unit_ == lifecycle_unit)
+    UpdateFocusedTabTo(nullptr);
+  lifecycle_unit->SetTabStripModel(nullptr);
 }
 
 void TabLifecycleUnitSource::ActiveTabChanged(

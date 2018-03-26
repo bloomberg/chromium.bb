@@ -51,8 +51,8 @@ class TabLifecycleUnitSource::TabLifecycleUnit
   ~TabLifecycleUnit() override;
 
   // Sets the TabStripModel associated with this tab. The source that created
-  // this TabLifecycleUnit is responsible for calling this when the tab moves to
-  // a different TabStripModel.
+  // this TabLifecycleUnit is responsible for calling this when the tab is
+  // removed from a TabStripModel or inserted into a new TabStripModel.
   void SetTabStripModel(TabStripModel* tab_strip_model);
 
   // Sets the WebContents associated with this tab. The source that created this
