@@ -1416,7 +1416,8 @@ TEST_F('BackgroundTest', 'TableColumnHeaders', function() {
   });
 });
 
-TEST_F('BackgroundTest', 'ActiveDescendantUpdates', function() {
+// Flaky, see http://crbug.com/825429.
+TEST_F('BackgroundTest', 'DISABLED_ActiveDescendantUpdates', function() {
   var mockFeedback = this.createMockFeedback();
   this.runWithLoadedTree(function(root) {/*!
     <div aria-label="container" tabindex=0 role="group" id="active"
