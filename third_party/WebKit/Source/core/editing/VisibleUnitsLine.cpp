@@ -259,7 +259,8 @@ PositionWithAffinityTemplate<Strategy> StartOfLineAlgorithm(
   // Please refer to https://bugs.webkit.org/show_bug.cgi?id=49107 for detail.
   PositionWithAffinityTemplate<Strategy> vis_pos =
       StartPositionForLine<Strategy, VisualOrdering>(c);
-  return HonorEditingBoundaryAtOrBefore(vis_pos, c.GetPosition());
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+      vis_pos, c.GetPosition());
 }
 
 PositionWithAffinity StartOfLine(const PositionWithAffinity& current_position) {
@@ -393,7 +394,8 @@ static PositionWithAffinityTemplate<Strategy> LogicalStartOfLineAlgorithm(
     }
   }
 
-  return HonorEditingBoundaryAtOrBefore(vis_pos, c.GetPosition());
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+      vis_pos, c.GetPosition());
 }
 
 static PositionWithAffinity LogicalStartOfLine(
@@ -481,15 +483,15 @@ static PositionWithAffinityTemplate<Strategy> EndOfLineAlgorithm(
   // with "webkit-line-break:after-white-space" style versus lines without
   // that style, which would break before a space by default.
   if (InSameLine(current_position, candidate_position)) {
-    return HonorEditingBoundaryAtOrAfter(candidate_position,
-                                         current_position.GetPosition());
+    return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+        candidate_position, current_position.GetPosition());
   }
   const PositionWithAffinityTemplate<Strategy>& adjusted_position =
       PreviousPositionOf(CreateVisiblePosition(current_position))
           .ToPositionWithAffinity();
   if (adjusted_position.IsNull())
     return PositionWithAffinityTemplate<Strategy>();
-  return HonorEditingBoundaryAtOrAfter(
+  return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
       EndPositionForLine<Strategy, VisualOrdering>(adjusted_position),
       current_position.GetPosition());
 }
@@ -556,7 +558,8 @@ static PositionWithAffinityTemplate<Strategy> LogicalEndOfLineAlgorithm(
     }
   }
 
-  return HonorEditingBoundaryAtOrAfter(vis_pos, current_position.GetPosition());
+  return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+      vis_pos, current_position.GetPosition());
 }
 
 static PositionWithAffinity LogicalEndOfLine(

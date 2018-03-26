@@ -387,8 +387,8 @@ VisiblePosition VisualWordPosition(const VisiblePosition& visible_position,
     }
 
     if (is_word_break) {
-      return HonorEditingBoundaryAtOrBefore(adjacent_character_position,
-                                            visible_position.DeepEquivalent());
+      return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+          adjacent_character_position, visible_position.DeepEquivalent());
     }
 
     current = adjacent_character_position;

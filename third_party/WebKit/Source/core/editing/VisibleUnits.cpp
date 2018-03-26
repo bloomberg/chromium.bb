@@ -166,7 +166,7 @@ PositionInFlatTree CanonicalPositionOf(const PositionInFlatTree& position) {
 
 template <typename Strategy>
 static PositionWithAffinityTemplate<Strategy>
-HonorEditingBoundaryAtOrBeforeTemplate(
+AdjustBackwardPositionToAvoidCrossingEditingBoundariesTemplate(
     const PositionWithAffinityTemplate<Strategy>& pos,
     const PositionTemplate<Strategy>& anchor) {
   if (pos.IsNull())
@@ -200,42 +200,50 @@ HonorEditingBoundaryAtOrBeforeTemplate(
                                                *highest_root));
 }
 
-PositionWithAffinity HonorEditingBoundaryAtOrBefore(
+PositionWithAffinity AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
     const PositionWithAffinity& pos,
     const Position& anchor) {
-  return HonorEditingBoundaryAtOrBeforeTemplate(pos, anchor);
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundariesTemplate(pos,
+                                                                        anchor);
 }
 
-PositionInFlatTreeWithAffinity HonorEditingBoundaryAtOrBefore(
+PositionInFlatTreeWithAffinity
+AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
     const PositionInFlatTreeWithAffinity& pos,
     const PositionInFlatTree& anchor) {
-  return HonorEditingBoundaryAtOrBeforeTemplate(pos, anchor);
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundariesTemplate(pos,
+                                                                        anchor);
 }
 
 template <typename Strategy>
-VisiblePositionTemplate<Strategy> HonorEditingBoundaryAtOrBeforeAlgorithm(
+VisiblePositionTemplate<Strategy>
+AdjustBackwardPositionToAvoidCrossingEditingBoundariesAlgorithm(
     const VisiblePositionTemplate<Strategy>& pos,
     const PositionTemplate<Strategy>& anchor) {
   DCHECK(pos.IsValid()) << pos;
   return CreateVisiblePosition(
-      HonorEditingBoundaryAtOrBefore(pos.ToPositionWithAffinity(), anchor));
+      AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+          pos.ToPositionWithAffinity(), anchor));
 }
 
-VisiblePosition HonorEditingBoundaryAtOrBefore(
+VisiblePosition AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
     const VisiblePosition& visiblePosition,
     const Position& anchor) {
-  return HonorEditingBoundaryAtOrBeforeAlgorithm(visiblePosition, anchor);
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundariesAlgorithm(
+      visiblePosition, anchor);
 }
 
-VisiblePositionInFlatTree HonorEditingBoundaryAtOrBefore(
+VisiblePositionInFlatTree
+AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
     const VisiblePositionInFlatTree& visiblePosition,
     const PositionInFlatTree& anchor) {
-  return HonorEditingBoundaryAtOrBeforeAlgorithm(visiblePosition, anchor);
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundariesAlgorithm(
+      visiblePosition, anchor);
 }
 
 template <typename Strategy>
 static PositionWithAffinityTemplate<Strategy>
-HonorEditingBoundaryAtOrAfterTemplate(
+AdjustForwardPositionToAvoidCrossingEditingBoundariesTemplate(
     const PositionWithAffinityTemplate<Strategy>& pos,
     const PositionTemplate<Strategy>& anchor) {
   if (pos.IsNull())
@@ -276,32 +284,37 @@ HonorEditingBoundaryAtOrAfterTemplate(
                                                *highest_root));
 }
 
-PositionWithAffinity HonorEditingBoundaryAtOrAfter(
+PositionWithAffinity AdjustForwardPositionToAvoidCrossingEditingBoundaries(
     const PositionWithAffinity& pos,
     const Position& anchor) {
-  return HonorEditingBoundaryAtOrAfterTemplate(pos, anchor);
+  return AdjustForwardPositionToAvoidCrossingEditingBoundariesTemplate(pos,
+                                                                       anchor);
 }
 
-PositionInFlatTreeWithAffinity HonorEditingBoundaryAtOrAfter(
+PositionInFlatTreeWithAffinity
+AdjustForwardPositionToAvoidCrossingEditingBoundaries(
     const PositionInFlatTreeWithAffinity& pos,
     const PositionInFlatTree& anchor) {
-  return HonorEditingBoundaryAtOrAfterTemplate(
+  return AdjustForwardPositionToAvoidCrossingEditingBoundariesTemplate(
       PositionInFlatTreeWithAffinity(pos), anchor);
 }
 
-VisiblePosition HonorEditingBoundaryAtOrAfter(const VisiblePosition& pos,
-                                              const Position& anchor) {
+VisiblePosition AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+    const VisiblePosition& pos,
+    const Position& anchor) {
   DCHECK(pos.IsValid()) << pos;
   return CreateVisiblePosition(
-      HonorEditingBoundaryAtOrAfter(pos.ToPositionWithAffinity(), anchor));
+      AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+          pos.ToPositionWithAffinity(), anchor));
 }
 
-VisiblePositionInFlatTree HonorEditingBoundaryAtOrAfter(
+VisiblePositionInFlatTree AdjustForwardPositionToAvoidCrossingEditingBoundaries(
     const VisiblePositionInFlatTree& pos,
     const PositionInFlatTree& anchor) {
   DCHECK(pos.IsValid()) << pos;
   return CreateVisiblePosition(
-      HonorEditingBoundaryAtOrAfter(pos.ToPositionWithAffinity(), anchor));
+      AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+          pos.ToPositionWithAffinity(), anchor));
 }
 
 template <typename Strategy>
@@ -1329,12 +1342,14 @@ static VisiblePositionTemplate<Strategy> NextPositionOfAlgorithm(
     case kCanCrossEditingBoundary:
       return next;
     case kCannotCrossEditingBoundary:
-      return HonorEditingBoundaryAtOrAfter(next, position.GetPosition());
+      return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+          next, position.GetPosition());
     case kCanSkipOverEditingBoundary:
       return SkipToEndOfEditingBoundary(next, position.GetPosition());
   }
   NOTREACHED();
-  return HonorEditingBoundaryAtOrAfter(next, position.GetPosition());
+  return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+      next, position.GetPosition());
 }
 
 VisiblePosition NextPositionOf(const VisiblePosition& visible_position,
@@ -1407,13 +1422,14 @@ static VisiblePositionTemplate<Strategy> PreviousPositionOfAlgorithm(
     case kCanCrossEditingBoundary:
       return prev;
     case kCannotCrossEditingBoundary:
-      return HonorEditingBoundaryAtOrBefore(prev, position);
+      return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(prev,
+                                                                    position);
     case kCanSkipOverEditingBoundary:
       return SkipToStartOfEditingBoundary(prev, position);
   }
 
   NOTREACHED();
-  return HonorEditingBoundaryAtOrBefore(prev, position);
+  return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(prev, position);
 }
 
 VisiblePosition PreviousPositionOf(const VisiblePosition& visible_position,

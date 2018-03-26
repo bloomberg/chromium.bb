@@ -116,9 +116,12 @@ struct TraversalLeft {
       TextDirection direction,
       const VisiblePositionTemplate<Strategy>& visible_position,
       const PositionTemplate<Strategy>& anchor) {
-    if (direction == TextDirection::kLtr)
-      return HonorEditingBoundaryAtOrBefore(visible_position, anchor);
-    return HonorEditingBoundaryAtOrAfter(visible_position, anchor);
+    if (direction == TextDirection::kLtr) {
+      return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+          visible_position, anchor);
+    }
+    return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+        visible_position, anchor);
   }
 
   static Node* LogicalStartBoxOf(TextDirection direction,
@@ -208,9 +211,12 @@ struct TraversalRight {
       TextDirection direction,
       const VisiblePositionTemplate<Strategy>& visible_position,
       const PositionTemplate<Strategy>& anchor) {
-    if (direction == TextDirection::kLtr)
-      return HonorEditingBoundaryAtOrAfter(visible_position, anchor);
-    return HonorEditingBoundaryAtOrBefore(visible_position, anchor);
+    if (direction == TextDirection::kLtr) {
+      return AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+          visible_position, anchor);
+    }
+    return AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+        visible_position, anchor);
   }
 
   static Node* LogicalStartBoxOf(TextDirection direction,

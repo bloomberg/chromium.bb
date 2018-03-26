@@ -305,31 +305,39 @@ PositionInFlatTree PreviousBoundary(const VisiblePositionInFlatTree&,
                                     BoundarySearchFunction);
 
 CORE_EXPORT PositionWithAffinity
-HonorEditingBoundaryAtOrAfter(const PositionWithAffinity&, const Position&);
+AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+    const PositionWithAffinity&,
+    const Position&);
 
-PositionInFlatTreeWithAffinity HonorEditingBoundaryAtOrAfter(
+PositionInFlatTreeWithAffinity
+AdjustForwardPositionToAvoidCrossingEditingBoundaries(
     const PositionInFlatTreeWithAffinity&,
     const PositionInFlatTree&);
 
-PositionWithAffinity HonorEditingBoundaryAtOrBefore(const PositionWithAffinity&,
-                                                    const Position&);
+PositionWithAffinity AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+    const PositionWithAffinity&,
+    const Position&);
 
-PositionInFlatTreeWithAffinity HonorEditingBoundaryAtOrBefore(
+PositionInFlatTreeWithAffinity
+AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
     const PositionInFlatTreeWithAffinity&,
     const PositionInFlatTree&);
 
-VisiblePosition HonorEditingBoundaryAtOrAfter(const VisiblePosition&,
-                                              const Position&);
+VisiblePosition AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+    const VisiblePosition&,
+    const Position&);
 
-VisiblePositionInFlatTree HonorEditingBoundaryAtOrAfter(
+VisiblePositionInFlatTree AdjustForwardPositionToAvoidCrossingEditingBoundaries(
     const VisiblePositionInFlatTree&,
     const PositionInFlatTree&);
 
 // Export below functions only for |SelectionModifier|.
-VisiblePosition HonorEditingBoundaryAtOrBefore(const VisiblePosition&,
-                                               const Position&);
+VisiblePosition AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
+    const VisiblePosition&,
+    const Position&);
 
-VisiblePositionInFlatTree HonorEditingBoundaryAtOrBefore(
+VisiblePositionInFlatTree
+AdjustBackwardPositionToAvoidCrossingEditingBoundaries(
     const VisiblePositionInFlatTree&,
     const PositionInFlatTree&);
 

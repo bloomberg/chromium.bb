@@ -223,15 +223,17 @@ TEST_F(VisibleUnitsTest, endOfDocument) {
           .DeepEquivalent());
 }
 
-TEST_F(VisibleUnitsTest, HonorEditingBoundaryAtOrAfterNestedEditable) {
+TEST_F(VisibleUnitsTest,
+       AdjustForwardPositionToAvoidCrossingEditingBoundariesNestedEditable) {
   const SelectionInDOMTree& selection = SetSelectionTextToBody(
       "<div contenteditable>"
       "abc"
       "<span contenteditable=\"false\">A^BC</span>"
       "d|ef"
       "</div>");
-  const PositionWithAffinity& result = HonorEditingBoundaryAtOrAfter(
-      PositionWithAffinity(selection.Extent()), selection.Base());
+  const PositionWithAffinity& result =
+      AdjustForwardPositionToAvoidCrossingEditingBoundaries(
+          PositionWithAffinity(selection.Extent()), selection.Base());
   ASSERT_TRUE(result.IsNotNull());
   EXPECT_EQ(
       "<div contenteditable>"
