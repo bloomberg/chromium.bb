@@ -5,6 +5,7 @@
 #include "ash/frame/default_frame_header.h"
 
 #include "ash/ash_layout_constants.h"
+#include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/frame_header_util.h"

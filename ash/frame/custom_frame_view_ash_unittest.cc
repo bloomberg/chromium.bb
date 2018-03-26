@@ -19,6 +19,7 @@
 #include "ash/wm/window_state.h"
 #include "ash/wm/window_state_delegate.h"
 #include "ash/wm/wm_event.h"
+#include "base/containers/flat_set.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/base/accelerators/accelerator.h"
@@ -418,11 +419,47 @@ class TestTarget : public ui::AcceleratorTarget {
   DISALLOW_COPY_AND_ASSIGN(TestTarget);
 };
 
+class TestButtonModel : public CaptionButtonModel {
+ public:
+  TestButtonModel() = default;
+  ~TestButtonModel() override = default;
+
+  void SetVisible(CaptionButtonIcon type, bool visible) {
+    if (visible)
+      visible_buttons_.insert(type);
+    else
+      visible_buttons_.erase(type);
+  }
+
+  void SetEnabled(CaptionButtonIcon type, bool enabled) {
+    if (enabled)
+      enabled_buttons_.insert(type);
+    else
+      enabled_buttons_.erase(type);
+  }
+
+  // CaptionButtonModel::
+  bool IsVisible(CaptionButtonIcon type) const override {
+    return visible_buttons_.count(type);
+  }
+  bool IsEnabled(CaptionButtonIcon type) const override {
+    return enabled_buttons_.count(type);
+  }
+
+ private:
+  base::flat_set<CaptionButtonIcon> visible_buttons_;
+  base::flat_set<CaptionButtonIcon> enabled_buttons_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestButtonModel);
+};
+
 }  // namespace
 
 TEST_F(CustomFrameViewAshTest, BackButton) {
   ash::AcceleratorController* controller =
       ash::Shell::Get()->accelerator_controller();
+  std::unique_ptr<TestButtonModel> model = std::make_unique<TestButtonModel>();
+  TestButtonModel* model_ptr = model.get();
 
   auto* delegate = new CustomFrameTestWidgetDelegate();
   std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
@@ -439,12 +476,19 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
   controller->Register({accelerator_back_release}, &target_back_release);
 
   CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
+  custom_frame_view->SetCaptionButtonModel(std::move(model));
+
   HeaderView* header_view =
       static_cast<HeaderView*>(custom_frame_view->GetHeaderView());
-  EXPECT_FALSE(header_view->back_button());
-  custom_frame_view->SetBackButtonState(FrameBackButtonState::kVisibleDisabled);
-  EXPECT_TRUE(header_view->back_button());
-  EXPECT_FALSE(header_view->back_button()->enabled());
+  EXPECT_FALSE(header_view->GetBackButton());
+  model_ptr->SetVisible(CAPTION_BUTTON_ICON_BACK, true);
+  LOG(ERROR) << "Enabling Back";
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(header_view->GetBackButton());
+  EXPECT_FALSE(header_view->GetBackButton()->enabled());
+
+  LOG(ERROR) << "Bounds:"
+             << header_view->GetBackButton()->GetBoundsInScreen().ToString();
 
   // Back button is disabled, so clicking on it should not should
   // generate back key sequence.
@@ -454,20 +498,22 @@ TEST_F(CustomFrameViewAshTest, BackButton) {
   EXPECT_EQ(0u, target_back_press.count());
   EXPECT_EQ(0u, target_back_release.count());
 
-  custom_frame_view->SetBackButtonState(FrameBackButtonState::kVisibleEnabled);
-  EXPECT_TRUE(header_view->back_button());
-  EXPECT_TRUE(header_view->back_button()->enabled());
+  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_BACK, true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(header_view->GetBackButton());
+  EXPECT_TRUE(header_view->GetBackButton()->enabled());
 
   // Back button is now enabled, so clicking on it should generate
   // back key sequence.
   generator.MoveMouseTo(
-      header_view->back_button()->GetBoundsInScreen().CenterPoint());
+      header_view->GetBackButton()->GetBoundsInScreen().CenterPoint());
   generator.ClickLeftButton();
   EXPECT_EQ(1u, target_back_press.count());
   EXPECT_EQ(1u, target_back_release.count());
 
-  custom_frame_view->SetBackButtonState(FrameBackButtonState::kInvisible);
-  EXPECT_FALSE(header_view->back_button());
+  model_ptr->SetVisible(CAPTION_BUTTON_ICON_BACK, false);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_FALSE(header_view->GetBackButton());
 }
 
 // Make sure that client view occupies the entire window when the
@@ -495,6 +541,61 @@ TEST_F(CustomFrameViewAshTest, FrameVisibility) {
   widget->GetRootView()->Layout();
   EXPECT_EQ(gfx::Size(200, 67), widget->client_view()->GetLocalBounds().size());
   EXPECT_TRUE(widget->non_client_view()->frame_view()->visible());
+}
+
+TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
+  std::unique_ptr<TestButtonModel> model = std::make_unique<TestButtonModel>();
+  TestButtonModel* model_ptr = model.get();
+
+  auto* delegate = new CustomFrameTestWidgetDelegate();
+  std::unique_ptr<views::Widget> widget(CreateWidget(delegate));
+  widget->Show();
+
+  CustomFrameViewAsh* custom_frame_view = delegate->custom_frame_view();
+  custom_frame_view->SetCaptionButtonModel(std::move(model));
+
+  HeaderView* header_view =
+      static_cast<HeaderView*>(custom_frame_view->GetHeaderView());
+  FrameCaptionButtonContainerView::TestApi test_api(
+      header_view->caption_button_container());
+
+  // CLOSE buttion is always visible and enabled.
+  EXPECT_TRUE(test_api.close_button());
+  EXPECT_TRUE(test_api.close_button()->visible());
+  EXPECT_TRUE(test_api.close_button()->enabled());
+
+  EXPECT_FALSE(test_api.minimize_button()->visible());
+  EXPECT_FALSE(test_api.size_button()->visible());
+
+  // Back button
+  model_ptr->SetVisible(CAPTION_BUTTON_ICON_BACK, true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(header_view->GetBackButton()->visible());
+  EXPECT_FALSE(header_view->GetBackButton()->enabled());
+
+  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_BACK, true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(header_view->GetBackButton()->enabled());
+
+  // size button
+  model_ptr->SetVisible(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(test_api.size_button()->visible());
+  EXPECT_FALSE(test_api.size_button()->enabled());
+
+  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(test_api.size_button()->enabled());
+
+  // minimize button
+  model_ptr->SetVisible(CAPTION_BUTTON_ICON_MINIMIZE, true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(test_api.minimize_button()->visible());
+  EXPECT_FALSE(test_api.minimize_button()->enabled());
+
+  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_MINIMIZE, true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(test_api.minimize_button()->enabled());
 }
 
 namespace {

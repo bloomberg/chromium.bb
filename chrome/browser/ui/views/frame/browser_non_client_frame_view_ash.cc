@@ -156,7 +156,7 @@ BrowserNonClientFrameViewAsh::~BrowserNonClientFrameViewAsh() {
 
 void BrowserNonClientFrameViewAsh::Init() {
   caption_button_container_ = new ash::FrameCaptionButtonContainerView(frame());
-  caption_button_container_->UpdateSizeButtonVisibility();
+  caption_button_container_->UpdateCaptionButtonState(false /*=animate*/);
   AddChildView(caption_button_container_);
 
   Browser* browser = browser_view()->browser();
@@ -460,7 +460,7 @@ void BrowserNonClientFrameViewAsh::OnOverviewModeEnded() {
 // ash::mojom::TabletModeClient:
 
 void BrowserNonClientFrameViewAsh::OnTabletModeToggled(bool enabled) {
-  caption_button_container_->UpdateSizeButtonVisibility();
+  caption_button_container_->UpdateCaptionButtonState(true /*=animate*/);
 
   if (enabled) {
     // Enter immersive mode if the feature is enabled and the widget is not

@@ -302,9 +302,10 @@ CustomFrameViewAsh::CustomFrameViewAsh(
     views::Widget* frame,
     ImmersiveFullscreenControllerDelegate* immersive_delegate,
     bool enable_immersive,
-    mojom::WindowStyle window_style)
+    mojom::WindowStyle window_style,
+    std::unique_ptr<CaptionButtonModel> model)
     : frame_(frame),
-      header_view_(new HeaderView(frame, window_style)),
+      header_view_(new HeaderView(frame, window_style, std::move(model))),
       overlay_view_(new OverlayView(header_view_)),
       immersive_delegate_(immersive_delegate ? immersive_delegate
                                              : header_view_),
@@ -359,8 +360,10 @@ void CustomFrameViewAsh::SetFrameColors(SkColor active_frame_color,
   frame_window->SetProperty(ash::kFrameInactiveColorKey, inactive_frame_color);
 }
 
-void CustomFrameViewAsh::SetBackButtonState(FrameBackButtonState state) {
-  header_view_->SetBackButtonState(state);
+void CustomFrameViewAsh::SetCaptionButtonModel(
+    std::unique_ptr<CaptionButtonModel> model) {
+  header_view_->caption_button_container()->SetModel(std::move(model));
+  header_view_->UpdateCaptionButtons();
 }
 
 void CustomFrameViewAsh::SetHeaderHeight(base::Optional<int> height) {
@@ -388,7 +391,7 @@ gfx::Rect CustomFrameViewAsh::GetWindowBoundsForClientBounds(
 }
 
 int CustomFrameViewAsh::NonClientHitTest(const gfx::Point& point) {
-  return FrameBorderNonClientHitTest(this, header_view_->back_button(),
+  return FrameBorderNonClientHitTest(this, header_view_->GetBackButton(),
                                      header_view_->caption_button_container(),
                                      point);
 }
@@ -409,7 +412,7 @@ void CustomFrameViewAsh::UpdateWindowTitle() {
 }
 
 void CustomFrameViewAsh::SizeConstraintsChanged() {
-  header_view_->SizeConstraintsChanged();
+  header_view_->UpdateCaptionButtons();
 }
 
 void CustomFrameViewAsh::ActivationChanged(bool active) {
