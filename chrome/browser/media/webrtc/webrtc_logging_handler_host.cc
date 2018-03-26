@@ -41,13 +41,13 @@ WebRtcLoggingHandlerHost::WebRtcLoggingHandlerHost(
     WebRtcLogUploader* log_uploader)
     : BrowserMessageFilter(WebRtcLoggingMsgStart),
       render_process_id_(render_process_id),
-      browser_context_(browser_context),
+      browser_context_directory_path_(browser_context->GetPath()),
       upload_log_on_render_close_(false),
       text_log_handler_(new WebRtcTextLogHandler(render_process_id)),
       rtp_dump_handler_(),
       stop_rtp_dump_callback_(),
       log_uploader_(log_uploader) {
-  DCHECK(browser_context_);
+  DCHECK(!browser_context_directory_path_.empty());
   DCHECK(log_uploader_);
 }
 
@@ -422,9 +422,14 @@ void WebRtcLoggingHandlerHost::OnLoggingStoppedInRenderer() {
 
 base::FilePath WebRtcLoggingHandlerHost::GetLogDirectoryAndEnsureExists() {
   DCHECK(log_uploader_->background_task_runner()->RunsTasksInCurrentSequence());
+
+  // Since we can be alive after the RenderProcessHost and the BrowserContext
+  // (profile) have gone away, we could create the log directory here after a
+  // profile has been deleted and removed from disk. If that happens it will be
+  // cleaned up (at a higher level) the next browser restart.
   base::FilePath log_dir_path =
       webrtc_logging::LogList::GetWebRtcLogDirectoryForBrowserContextPath(
-          browser_context_->GetPath());
+          browser_context_directory_path_);
   base::File::Error error;
   if (!base::CreateDirectoryAndGetError(log_dir_path, &error)) {
     DLOG(ERROR) << "Could not create WebRTC log directory, error: " << error;
