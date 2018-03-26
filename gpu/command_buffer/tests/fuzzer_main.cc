@@ -458,7 +458,7 @@ class CommandBufferSetup {
                                          GLenum severity,
                                          GLsizei length,
                                          const GLchar* message,
-                                         GLvoid* user_param) {
+                                         const GLvoid* user_param) {
     LOG_IF(FATAL, (id != GL_OUT_OF_MEMORY)) << "GL Driver Message: " << message;
   }
 
