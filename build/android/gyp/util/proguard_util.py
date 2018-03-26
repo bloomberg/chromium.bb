@@ -8,7 +8,7 @@ import time
 from util import build_utils
 
 
-class _ProguardOutputFilter(object):
+class ProguardOutputFilter(object):
   """ProGuard outputs boring stuff to stdout (proguard version, jar path, etc)
   as well as interesting stuff (notes, warnings, etc). If stdout is entirely
   boring, this class suppresses the output.
@@ -214,8 +214,8 @@ class ProguardCmdBuilder(object):
     stdout_filter = None
     stderr_filter = None
     if not self._verbose:
-      stdout_filter = _ProguardOutputFilter()
-      stderr_filter = _ProguardOutputFilter()
+      stdout_filter = ProguardOutputFilter()
+      stderr_filter = ProguardOutputFilter()
     start_time = time.time()
     build_utils.CheckOutput(self._cmd, print_stdout=True,
                             print_stderr=True,

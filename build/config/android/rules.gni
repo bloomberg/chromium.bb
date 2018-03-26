@@ -1475,9 +1475,7 @@ if (enable_java_templates) {
         deps = [
           ":$_jar_target_name",
         ]
-        sources = [
-          invoker.output,
-        ]
+        input_jars = [ invoker.output ]
         output = invoker.dex_path
       }
     }
@@ -2302,14 +2300,12 @@ if (enable_java_templates) {
 
     dex("$_final_dex_target_name") {
       deps = _dex_deps + [ ":$_build_config_target" ]
-      inputs = [
-        _build_config,
-      ]
-      sources = _dex_sources
+      input_jars = _dex_sources
       output = _final_dex_path
       enable_multidex = _enable_multidex
 
       if (_enable_multidex) {
+        forward_variables_from(invoker, [ "negative_main_dex_globs" ])
         extra_main_dex_proguard_config = _generated_proguard_main_dex_config
         deps += [ ":$_compile_resources_target" ]
       }
@@ -2323,7 +2319,8 @@ if (enable_java_templates) {
           _dex_arg_key =
               "${_rebased_build_config}:final_dex:dependency_dex_files"
         }
-        args = [ "--inputs=@FileArg($_dex_arg_key)" ]
+        build_config = _build_config
+        input_jars_file_arg = "@FileArg($_dex_arg_key)"
       }
 
       # http://crbug.com/725224. Fix for bots running out of memory.

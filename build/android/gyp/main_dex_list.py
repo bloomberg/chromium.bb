@@ -9,8 +9,10 @@ import json
 import os
 import sys
 import tempfile
+import zipfile
 
 from util import build_utils
+from util import proguard_util
 
 sys.path.append(os.path.abspath(os.path.join(
     os.path.dirname(__file__), os.pardir)))
@@ -29,19 +31,14 @@ def main(args):
                            'main dex.')
   parser.add_argument('--main-dex-list-path', required=True,
                       help='The main dex list file to generate.')
-  parser.add_argument('--enabled-configurations',
-                      help='The build configurations for which a main dex list'
-                           ' should be generated.')
-  parser.add_argument('--configuration-name',
-                      help='The current build configuration.')
-  parser.add_argument('--multidex-configuration-path',
-                      help='A JSON file containing multidex build '
-                           'configuration.')
   parser.add_argument('--inputs',
                       help='JARs for which a main dex list should be '
                            'generated.')
   parser.add_argument('--proguard-path', required=True,
                       help='Path to the proguard executable.')
+  parser.add_argument('--negative-main-dex-globs',
+      help='GN-list of globs of .class names (e.g. org/chromium/foo/Bar.class) '
+           'that will fail the build if they match files in the main dex.')
 
   parser.add_argument('paths', nargs='*', default=[],
                       help='JARs for which a main dex list should be '
@@ -49,15 +46,11 @@ def main(args):
 
   args = parser.parse_args(build_utils.ExpandFileArgs(args))
 
-  if args.multidex_configuration_path:
-    with open(args.multidex_configuration_path) as multidex_config_file:
-      multidex_config = json.loads(multidex_config_file.read())
-
-    if not multidex_config.get('enabled', False):
-      return 0
-
   if args.inputs:
     args.paths.extend(build_utils.ParseGnList(args.inputs))
+  if args.negative_main_dex_globs:
+    args.negative_main_dex_globs = build_utils.ParseGnList(
+        args.negative_main_dex_globs)
 
   shrinked_android_jar = os.path.abspath(
       os.path.join(args.android_sdk_tools, 'lib', 'shrinkedAndroid.jar'))
@@ -93,6 +86,8 @@ def main(args):
     proguard_cmd,
     main_dex_list_cmd,
   ]
+  if args.negative_main_dex_globs:
+    input_strings += args.negative_main_dex_globs
 
   output_paths = [
     args.main_dex_list_path,
@@ -100,7 +95,8 @@ def main(args):
 
   build_utils.CallAndWriteDepfileIfStale(
       lambda: _OnStaleMd5(proguard_cmd, main_dex_list_cmd, args.paths,
-                          args.main_dex_list_path),
+                          args.main_dex_list_path,
+                          args.negative_main_dex_globs),
       args,
       input_paths=input_paths,
       input_strings=input_strings,
@@ -109,21 +105,60 @@ def main(args):
   return 0
 
 
-def _OnStaleMd5(proguard_cmd, main_dex_list_cmd, paths, main_dex_list_path):
+def _CheckForUnwanted(kept_classes, proguard_cmd, negative_main_dex_globs):
+  # Check if ProGuard kept any unwanted classes.
+  found_unwanted_classes = sorted(
+      p for p in kept_classes
+      if build_utils.MatchesGlob(p, negative_main_dex_globs))
+
+  if found_unwanted_classes:
+    first_class = found_unwanted_classes[0].replace(
+        '.class', '').replace('/', '.')
+    proguard_cmd += ['-whyareyoukeeping', 'class', first_class, '{}']
+    output = build_utils.CheckOutput(
+        proguard_cmd, print_stderr=False,
+        stdout_filter=proguard_util.ProguardOutputFilter())
+    raise Exception(
+        ('Found classes that should not be in the main dex:\n    {}\n\n'
+         'Here is the -whyareyoukeeping output for {}: \n{}').format(
+             '\n    '.join(found_unwanted_classes), first_class, output))
+
+
+def _OnStaleMd5(proguard_cmd, main_dex_list_cmd, paths, main_dex_list_path,
+                negative_main_dex_globs):
   paths_arg = ':'.join(paths)
   main_dex_list = ''
   try:
     with tempfile.NamedTemporaryFile(suffix='.jar') as temp_jar:
+      # Step 1: Use ProGuard to find all @MainDex code, and all code reachable
+      # from @MainDex code (recursive).
       proguard_cmd += [
         '-injars', paths_arg,
         '-outjars', temp_jar.name
       ]
       build_utils.CheckOutput(proguard_cmd, print_stderr=False)
 
+      # Record the classes kept by ProGuard. Not used by the build, but useful
+      # for debugging what classes are kept by ProGuard vs. MainDexListBuilder.
+      with zipfile.ZipFile(temp_jar.name) as z:
+        kept_classes = [p for p in z.namelist() if p.endswith('.class')]
+      with open(main_dex_list_path + '.partial', 'w') as f:
+        f.write('\n'.join(kept_classes) + '\n')
+
+      if negative_main_dex_globs:
+        # Perform assertions before MainDexListBuilder because:
+        # a) MainDexListBuilder is not recursive, so being included by it isn't
+        #    a huge deal.
+        # b) Errors are much more actionable.
+        _CheckForUnwanted(kept_classes, proguard_cmd, negative_main_dex_globs)
+
+      # Step 2: Expand inclusion list to all classes referenced by the .class
+      # files of kept classes (non-recursive).
       main_dex_list_cmd += [
         temp_jar.name, paths_arg
       ]
       main_dex_list = build_utils.CheckOutput(main_dex_list_cmd)
+
   except build_utils.CalledProcessError as e:
     if 'output jar is empty' in e.output:
       pass

@@ -32,7 +32,6 @@ import javax.annotation.Nullable;
  *
  * For more on the operations performed by the Linker, see {@link Linker}.
  */
-@MainDex
 class LegacyLinker extends Linker {
     // Log tag for this class.
     private static final String TAG = "LibraryLoader";
@@ -564,6 +563,7 @@ class LegacyLinker extends Linker {
      * @param opaque Opaque argument.
      */
     @CalledByNative
+    @MainDex
     public static void postCallbackOnMainThread(final long opaque) {
         ThreadUtils.postOnUiThread(new Runnable() {
             @Override

@@ -5,14 +5,16 @@
 # Proguard flags for what should be kept in the main dex. Only used
 # during main dex list determination, not during actual proguarding.
 
--keep @**.MainDex class * {
+-keep @org.chromium.base.annotations.MainDex class * {
   *;
 }
 
 -keepclasseswithmembers class * {
-  @**.MainDex *;
+  @org.chromium.base.annotations.MainDex <methods>;
 }
 
+# Assume all IDL-generated classes should be kept. They can't reference other
+# non-framework classes, so fairly low-risk.
 -keepclasseswithmembers class * {
   public static ** asInterface(android.os.IBinder);
 }
@@ -22,10 +24,12 @@
   *;
 }
 
+# Renderers / GPU process don't load secondary dex.
 -keep public class * extends org.chromium.base.process_launcher.ChildProcessService {
   *;
 }
 
+# WebView doesn't load secondary dex.
 -keep public class com.android.webview.** {
   *;
 }
