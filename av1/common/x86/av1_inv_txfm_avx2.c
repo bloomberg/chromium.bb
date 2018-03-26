@@ -786,21 +786,36 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
 
 // 1D functions process 16 pixels at one time.
 static const transform_1d_avx2
-    lowbd_txfm_all_1d_w16_arr[TX_SIZES][ITX_TYPES_1D] = {
-      { NULL, NULL, NULL },
-      { NULL, NULL, NULL },
-      { idct16_new_avx2, iadst16_new_avx2, iidentity16_new_avx2 },
-      { idct32_new_avx2, NULL, NULL },
-      { idct64_low32_new_avx2, NULL, NULL },
+    lowbd_txfm_all_1d_zeros_w16_arr[TX_SIZES][ITX_TYPES_1D][4] = {
+      {
+          { NULL, NULL, NULL, NULL },
+          { NULL, NULL, NULL, NULL },
+          { NULL, NULL, NULL, NULL },
+      },
+      { { NULL, NULL, NULL, NULL },
+        { NULL, NULL, NULL, NULL },
+        { NULL, NULL, NULL, NULL } },
+      {
+          { idct16_new_avx2, idct16_new_avx2, idct16_new_avx2, NULL },
+          { iadst16_new_avx2, iadst16_new_avx2, iadst16_new_avx2, NULL },
+          { NULL, NULL, NULL, NULL },
+      },
+      { { idct32_new_avx2, idct32_new_avx2, idct32_new_avx2, idct32_new_avx2 },
+        { NULL, NULL, NULL, NULL },
+        { NULL, NULL, NULL, NULL } },
+      { { idct64_low32_new_avx2, idct64_low32_new_avx2, idct64_low32_new_avx2,
+          idct64_low32_new_avx2 },
+        { NULL, NULL, NULL, NULL },
+        { NULL, NULL, NULL, NULL } }
     };
 
 // only process w >= 16 h >= 16
-static INLINE void lowbd_inv_txfm2d_add_no_identity_avx2(const int32_t *input,
-                                                         uint8_t *output,
-                                                         int stride,
-                                                         TX_TYPE tx_type,
-                                                         TX_SIZE tx_size) {
+static INLINE void lowbd_inv_txfm2d_add_no_identity_avx2(
+    const int32_t *input, uint8_t *output, int stride, TX_TYPE tx_type,
+    TX_SIZE tx_size, int eob) {
   __m256i buf1[64 * 16];
+  int eobx, eoby;
+  get_eobx_eoby_scan_default(&eobx, &eoby, tx_size, eob);
   const int8_t *shift = inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
@@ -813,10 +828,12 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_avx2(const int32_t *input,
   const int input_stride = AOMMIN(32, txfm_size_col);
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
 
+  const int fun_idx_x = lowbd_txfm_all_1d_zeros_idx[eobx];
+  const int fun_idx_y = lowbd_txfm_all_1d_zeros_idx[eoby];
   const transform_1d_avx2 row_txfm =
-      lowbd_txfm_all_1d_w16_arr[txw_idx][hitx_1d_tab[tx_type]];
+      lowbd_txfm_all_1d_zeros_w16_arr[txw_idx][hitx_1d_tab[tx_type]][fun_idx_x];
   const transform_1d_avx2 col_txfm =
-      lowbd_txfm_all_1d_w16_arr[txh_idx][vitx_1d_tab[tx_type]];
+      lowbd_txfm_all_1d_zeros_w16_arr[txh_idx][vitx_1d_tab[tx_type]][fun_idx_y];
 
   assert(col_txfm != NULL);
   assert(row_txfm != NULL);
@@ -929,7 +946,9 @@ static INLINE void iidentity_col_16xn_avx2(uint8_t *output, int stride,
 
 static INLINE void lowbd_inv_txfm2d_add_idtx_avx2(const int32_t *input,
                                                   uint8_t *output, int stride,
-                                                  TX_SIZE tx_size) {
+                                                  TX_SIZE tx_size,
+                                                  int32_t eob) {
+  (void)eob;
   const int8_t *shift = inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
@@ -947,11 +966,11 @@ static INLINE void lowbd_inv_txfm2d_add_idtx_avx2(const int32_t *input,
   }
 }
 
-static INLINE void lowbd_inv_txfm2d_add_h_identity_avx2(const int32_t *input,
-                                                        uint8_t *output,
-                                                        int stride,
-                                                        TX_TYPE tx_type,
-                                                        TX_SIZE tx_size) {
+static INLINE void lowbd_inv_txfm2d_add_h_identity_avx2(
+    const int32_t *input, uint8_t *output, int stride, TX_TYPE tx_type,
+    TX_SIZE tx_size, int eob) {
+  int eobx, eoby;
+  get_eobx_eoby_scan_h_identity(&eobx, &eoby, tx_size, eob);
   const int8_t *shift = inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
@@ -963,8 +982,9 @@ static INLINE void lowbd_inv_txfm2d_add_h_identity_avx2(const int32_t *input,
   const int input_stride = txfm_size_col_notzero;
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
 
+  const int fun_idx_y = lowbd_txfm_all_1d_zeros_idx[eoby];
   const transform_1d_avx2 col_txfm =
-      lowbd_txfm_all_1d_w16_arr[txh_idx][vitx_1d_tab[tx_type]];
+      lowbd_txfm_all_1d_zeros_w16_arr[txh_idx][vitx_1d_tab[tx_type]][fun_idx_y];
 
   assert(col_txfm != NULL);
 
@@ -985,12 +1005,12 @@ static INLINE void lowbd_inv_txfm2d_add_h_identity_avx2(const int32_t *input,
   }
 }
 
-static INLINE void lowbd_inv_txfm2d_add_v_identity_avx2(const int32_t *input,
-                                                        uint8_t *output,
-                                                        int stride,
-                                                        TX_TYPE tx_type,
-                                                        TX_SIZE tx_size) {
+static INLINE void lowbd_inv_txfm2d_add_v_identity_avx2(
+    const int32_t *input, uint8_t *output, int stride, TX_TYPE tx_type,
+    TX_SIZE tx_size, int eob) {
   __m256i buf1[64];
+  int eobx, eoby;
+  get_eobx_eoby_scan_v_identity(&eobx, &eoby, tx_size, eob);
   const int8_t *shift = inv_txfm_shift_ls[tx_size];
   const int txw_idx = get_txw_idx(tx_size);
   const int txh_idx = get_txh_idx(tx_size);
@@ -1002,10 +1022,12 @@ static INLINE void lowbd_inv_txfm2d_add_v_identity_avx2(const int32_t *input,
   const int input_stride = AOMMIN(32, txfm_size_col);
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
 
+  const int fun_idx_x = lowbd_txfm_all_1d_zeros_idx[eobx];
   const transform_1d_avx2 row_txfm =
-      lowbd_txfm_all_1d_w16_arr[txw_idx][hitx_1d_tab[tx_type]];
+      lowbd_txfm_all_1d_zeros_w16_arr[txw_idx][hitx_1d_tab[tx_type]][fun_idx_x];
 
   assert(row_txfm != NULL);
+
   int ud_flip, lr_flip;
   get_flip_cfg(tx_type, &ud_flip, &lr_flip);
   for (int i = 0; i < buf_size_h_div16; i++) {
@@ -1058,22 +1080,22 @@ static INLINE void lowbd_inv_txfm2d_add_universe_avx2(
     case ADST_FLIPADST:
     case FLIPADST_ADST:
       lowbd_inv_txfm2d_add_no_identity_avx2(input, output, stride, tx_type,
-                                            tx_size);
+                                            tx_size, eob);
       break;
     case IDTX:
-      lowbd_inv_txfm2d_add_idtx_avx2(input, output, stride, tx_size);
+      lowbd_inv_txfm2d_add_idtx_avx2(input, output, stride, tx_size, eob);
       break;
     case V_DCT:
     case V_ADST:
     case V_FLIPADST:
       lowbd_inv_txfm2d_add_h_identity_avx2(input, output, stride, tx_type,
-                                           tx_size);
+                                           tx_size, eob);
       break;
     case H_DCT:
     case H_ADST:
     case H_FLIPADST:
       lowbd_inv_txfm2d_add_v_identity_avx2(input, output, stride, tx_type,
-                                           tx_size);
+                                           tx_size, eob);
       break;
     default:
       av1_lowbd_inv_txfm2d_add_ssse3(input, output, stride, tx_type, tx_size,

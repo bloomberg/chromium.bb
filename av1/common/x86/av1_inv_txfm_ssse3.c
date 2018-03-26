@@ -17,81 +17,6 @@
 
 // TODO(binpengsmail@gmail.com): replace some for loop with do {} while
 
-DECLARE_ALIGNED(16, static const int16_t, av1_eob_to_eobxy_8x8_default[8]) = {
-  0x0707, 0x0707, 0x0707, 0x0707, 0x0707, 0x0707, 0x0707, 0x0707,
-};
-
-DECLARE_ALIGNED(16, static const int16_t,
-                av1_eob_to_eobxy_16x16_default[16]) = {
-  0x0707, 0x0707, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f,
-  0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f,
-};
-
-DECLARE_ALIGNED(16, static const int16_t,
-                av1_eob_to_eobxy_32x32_default[32]) = {
-  0x0707, 0x0f0f, 0x0f0f, 0x0f0f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f,
-  0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f,
-  0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f,
-  0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f, 0x1f1f,
-};
-
-DECLARE_ALIGNED(16, static const int16_t, av1_eob_to_eobxy_8x16_default[16]) = {
-  0x0707, 0x0707, 0x0707, 0x0707, 0x0707, 0x0f07, 0x0f07, 0x0f07,
-  0x0f07, 0x0f07, 0x0f07, 0x0f07, 0x0f07, 0x0f07, 0x0f07, 0x0f07,
-};
-
-DECLARE_ALIGNED(16, static const int16_t, av1_eob_to_eobxy_16x8_default[8]) = {
-  0x0707, 0x0707, 0x070f, 0x070f, 0x070f, 0x070f, 0x070f, 0x070f,
-};
-
-DECLARE_ALIGNED(16, static const int16_t,
-                av1_eob_to_eobxy_16x32_default[32]) = {
-  0x0707, 0x0707, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f0f,
-  0x0f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f,
-  0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f,
-  0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f, 0x1f0f,
-};
-
-DECLARE_ALIGNED(16, static const int16_t,
-                av1_eob_to_eobxy_32x16_default[16]) = {
-  0x0707, 0x0f0f, 0x0f0f, 0x0f0f, 0x0f1f, 0x0f1f, 0x0f1f, 0x0f1f,
-  0x0f1f, 0x0f1f, 0x0f1f, 0x0f1f, 0x0f1f, 0x0f1f, 0x0f1f, 0x0f1f,
-};
-
-DECLARE_ALIGNED(16, static const int16_t, av1_eob_to_eobxy_8x32_default[32]) = {
-  0x0707, 0x0707, 0x0707, 0x0707, 0x0707, 0x0f07, 0x0f07, 0x0f07,
-  0x0f07, 0x0f07, 0x0f07, 0x0f07, 0x0f07, 0x1f07, 0x1f07, 0x1f07,
-  0x1f07, 0x1f07, 0x1f07, 0x1f07, 0x1f07, 0x1f07, 0x1f07, 0x1f07,
-  0x1f07, 0x1f07, 0x1f07, 0x1f07, 0x1f07, 0x1f07, 0x1f07, 0x1f07,
-};
-
-DECLARE_ALIGNED(16, static const int16_t, av1_eob_to_eobxy_32x8_default[8]) = {
-  0x0707, 0x070f, 0x070f, 0x071f, 0x071f, 0x071f, 0x071f, 0x071f,
-};
-
-DECLARE_ALIGNED(16, static const int16_t *,
-                av1_eob_to_eobxy_default[TX_SIZES_ALL]) = {
-  NULL,
-  av1_eob_to_eobxy_8x8_default,
-  av1_eob_to_eobxy_16x16_default,
-  av1_eob_to_eobxy_32x32_default,
-  av1_eob_to_eobxy_32x32_default,
-  NULL,
-  NULL,
-  av1_eob_to_eobxy_8x16_default,
-  av1_eob_to_eobxy_16x8_default,
-  av1_eob_to_eobxy_16x32_default,
-  av1_eob_to_eobxy_32x16_default,
-  av1_eob_to_eobxy_32x32_default,
-  av1_eob_to_eobxy_32x32_default,
-  NULL,
-  NULL,
-  av1_eob_to_eobxy_8x32_default,
-  av1_eob_to_eobxy_32x8_default,
-  av1_eob_to_eobxy_16x32_default,
-  av1_eob_to_eobxy_32x16_default,
-};
-
 static void idct4_new_sse2(const __m128i *input, __m128i *output,
                            int8_t cos_bit) {
   (void)cos_bit;
@@ -2375,11 +2300,6 @@ static const transform_1d_ssse3
       { idct64_low32_new_ssse3, NULL, NULL },
     };
 
-static const int lowbd_txfm_all_1d_zeros_w8_idx[32] = {
-  0, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2,
-  3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3,
-};
-
 // functions for blocks with eob at DC and within
 // topleft 8x8, 16x16, 32x32 corner
 static const transform_1d_ssse3
@@ -2577,26 +2497,6 @@ static INLINE void round_shift_ssse3(const __m128i *input, __m128i *output,
   }
 }
 
-// Transform block width in log2 for eob (size of 64 map to 32)
-static const int tx_size_wide_log2_eob[TX_SIZES_ALL] = {
-  2, 3, 4, 5, 5, 2, 3, 3, 4, 4, 5, 5, 5, 2, 4, 3, 5, 4, 5,
-};
-
-static INLINE void get_eobx_eoby_scan_default(int *eobx, int *eoby,
-                                              TX_SIZE tx_size, int eob) {
-  if (eob == 1) {
-    *eobx = 0;
-    *eoby = 0;
-    return;
-  }
-
-  const int tx_w_log2 = tx_size_wide_log2_eob[tx_size];
-  const int eob_row = (eob - 1) >> tx_w_log2;
-  const int eobxy = av1_eob_to_eobxy_default[tx_size][eob_row];
-  *eobx = eobxy & 0xFF;
-  *eoby = eobxy >> 8;
-}
-
 static INLINE void lowbd_inv_txfm2d_add_no_identity_ssse3(
     const int32_t *input, uint8_t *output, int stride, TX_TYPE tx_type,
     TX_SIZE tx_size, int eob) {
@@ -2616,8 +2516,8 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_ssse3(
   const int input_stride = AOMMIN(32, txfm_size_col);
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
 
-  const int fun_idx_x = lowbd_txfm_all_1d_zeros_w8_idx[eobx];
-  const int fun_idx_y = lowbd_txfm_all_1d_zeros_w8_idx[eoby];
+  const int fun_idx_x = lowbd_txfm_all_1d_zeros_idx[eobx];
+  const int fun_idx_y = lowbd_txfm_all_1d_zeros_idx[eoby];
   const transform_1d_ssse3 row_txfm =
       lowbd_txfm_all_1d_zeros_w8_arr[txw_idx][hitx_1d_tab[tx_type]][fun_idx_x];
   const transform_1d_ssse3 col_txfm =
@@ -2670,22 +2570,6 @@ static INLINE void lowbd_inv_txfm2d_add_no_identity_ssse3(
   }
 }
 
-static int eob_fill[32] = {
-  0,  7,  7,  7,  7,  7,  7,  7,  15, 15, 15, 15, 15, 15, 15, 15,
-  31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31,
-};
-
-static INLINE void get_eobx_eoby_scan_h_identity(int *eobx, int *eoby,
-                                                 TX_SIZE tx_size, int eob) {
-  eob -= 1;
-  const int txfm_size_col = tx_size_wide[tx_size];
-  const int eobx_max = AOMMIN(32, txfm_size_col) - 1;
-  *eobx = (eob >= eobx_max) ? eobx_max : eob_fill[eob];
-  const int temp_eoby = eob / (eobx_max + 1);
-  assert(temp_eoby < 32);
-  *eoby = eob_fill[temp_eoby];
-}
-
 static INLINE void lowbd_inv_txfm2d_add_h_identity_ssse3(
     const int32_t *input, uint8_t *output, int stride, TX_TYPE tx_type,
     TX_SIZE tx_size, int eob) {
@@ -2701,7 +2585,7 @@ static INLINE void lowbd_inv_txfm2d_add_h_identity_ssse3(
   const int input_stride = AOMMIN(32, txfm_size_col);
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
 
-  const int fun_idx = lowbd_txfm_all_1d_zeros_w8_idx[eoby];
+  const int fun_idx = lowbd_txfm_all_1d_zeros_idx[eoby];
   assert(fun_idx < 5);
   const transform_1d_ssse3 col_txfm =
       lowbd_txfm_all_1d_zeros_w8_arr[txh_idx][vitx_1d_tab[tx_type]][fun_idx];
@@ -2729,15 +2613,6 @@ static INLINE void lowbd_inv_txfm2d_add_h_identity_ssse3(
   }
 }
 
-static INLINE void get_eobx_eoby_scan_v_identity(int *eobx, int *eoby,
-                                                 TX_SIZE tx_size, int eob) {
-  eob -= 1;
-  const int txfm_size_row = tx_size_high[tx_size];
-  const int eoby_max = AOMMIN(32, txfm_size_row) - 1;
-  *eobx = eob / (eoby_max + 1);
-  *eoby = (eob >= eoby_max) ? eoby_max : eob_fill[eob];
-}
-
 static INLINE void lowbd_inv_txfm2d_add_v_identity_ssse3(
     const int32_t *input, uint8_t *output, int stride, TX_TYPE tx_type,
     TX_SIZE tx_size, int eob) {
@@ -2755,7 +2630,7 @@ static INLINE void lowbd_inv_txfm2d_add_v_identity_ssse3(
   const int input_stride = AOMMIN(32, txfm_size_col);
   const int rect_type = get_rect_tx_log_ratio(txfm_size_col, txfm_size_row);
 
-  const int fun_idx = lowbd_txfm_all_1d_zeros_w8_idx[eobx];
+  const int fun_idx = lowbd_txfm_all_1d_zeros_idx[eobx];
   const transform_1d_ssse3 row_txfm =
       lowbd_txfm_all_1d_zeros_w8_arr[txw_idx][hitx_1d_tab[tx_type]][fun_idx];
 

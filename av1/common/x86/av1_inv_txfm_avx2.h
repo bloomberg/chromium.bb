@@ -84,7 +84,7 @@ extern "C" {
   }
 
 static INLINE __m256i load_32bit_to_16bit_w16_avx2(const int32_t *a) {
-  const __m256i a_low = _mm256_load_si256((const __m256i *)a);
+  const __m256i a_low = _mm256_lddqu_si256((const __m256i *)a);
   const __m256i b = _mm256_packs_epi32(a_low, *(const __m256i *)(a + 8));
   return _mm256_permute4x64_epi64(b, 0xD8);
 }
