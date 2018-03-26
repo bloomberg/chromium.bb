@@ -71,14 +71,7 @@ class VM(object):
     if not self.vm_dir:
       self.vm_dir = os.path.join(osutils.GetGlobalTempDir(),
                                  'cros_vm_%d' % self.ssh_port)
-    if os.path.exists(self.vm_dir):
-      # For security, ensure that vm_dir is not a symlink, and is owned by us or
-      # by root.
-      assert not os.path.islink(self.vm_dir), \
-          'VM state dir is misconfigured; please recreate: %s' % self.vm_dir
-      st_uid = os.stat(self.vm_dir).st_uid
-      assert st_uid == 0 or st_uid == os.getuid(), \
-          'VM state dir is misconfigured; please recreate: %s' % self.vm_dir
+    self._CreateVMDir()
 
     self.pidfile = os.path.join(self.vm_dir, 'kvm.pid')
     self.kvm_monitor = os.path.join(self.vm_dir, 'kvm.monitor')
@@ -100,15 +93,20 @@ class VM(object):
     else:
       return cros_build_lib.RunCommand(*args, **kwargs)
 
-  def _CleanupFiles(self, recreate):
-    """Cleanup vm_dir.
+  def _CreateVMDir(self):
+    """Safely create vm_dir."""
+    if not osutils.SafeMakedirs(self.vm_dir, sudo=self.use_sudo):
+      # For security, ensure that vm_dir is not a symlink, and is owned by us or
+      # by root.
+      error_str = ('VM state dir is misconfigured; please recreate: %s'
+                   % self.vm_dir)
+      assert not os.path.islink(self.vm_dir), error_str
+      st_uid = os.stat(self.vm_dir).st_uid
+      assert st_uid == 0 or st_uid == os.getuid(), error_str
 
-    Args:
-      recreate: recreate vm_dir.
-    """
+  def _RmVMDir(self):
+    """Cleanup vm_dir."""
     osutils.RmDir(self.vm_dir, ignore_missing=True, sudo=self.use_sudo)
-    if recreate:
-      osutils.SafeMakedirs(self.vm_dir)
 
   @staticmethod
   def _GetCachePath(cache_name):
@@ -270,7 +268,8 @@ class VM(object):
     self._SetQemuPath()
     self._SetVMImagePath()
 
-    self._CleanupFiles(recreate=True)
+    self._RmVMDir()
+    self._CreateVMDir()
     # Make sure we can read these files later on by creating them as ourselves.
     osutils.Touch(self.kvm_serial)
     for pipe in [self.kvm_pipe_in, self.kvm_pipe_out]:
@@ -358,8 +357,7 @@ class VM(object):
       logging.info('Killing %d.', pid)
       if not self.dry_run:
         self._RunCommand(['kill', '-9', str(pid)], error_code_ok=True)
-
-    self._CleanupFiles(recreate=False)
+    self._RmVMDir()
 
   def _WaitForProcs(self):
     """Wait for expected processes to launch."""
