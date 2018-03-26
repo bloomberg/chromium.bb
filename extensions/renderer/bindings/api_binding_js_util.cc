@@ -6,6 +6,7 @@
 
 #include "base/strings/stringprintf.h"
 #include "base/values.h"
+#include "content/public/renderer/v8_value_converter.h"
 #include "extensions/renderer/bindings/api_event_handler.h"
 #include "extensions/renderer/bindings/api_request_handler.h"
 #include "extensions/renderer/bindings/api_signature.h"
@@ -51,7 +52,10 @@ gin::ObjectTemplateBuilder APIBindingJSUtil::GetObjectTemplateBuilder(
                  &APIBindingJSUtil::RunCallbackWithLastError)
       .SetMethod("handleException", &APIBindingJSUtil::HandleException)
       .SetMethod("setExceptionHandler", &APIBindingJSUtil::SetExceptionHandler)
-      .SetMethod("validateType", &APIBindingJSUtil::ValidateType);
+      .SetMethod("validateType", &APIBindingJSUtil::ValidateType)
+      .SetMethod("validateCustomSignature",
+                 &APIBindingJSUtil::ValidateCustomSignature)
+      .SetMethod("addCustomSignature", &APIBindingJSUtil::AddCustomSignature);
 }
 
 void APIBindingJSUtil::SendRequest(
@@ -266,6 +270,64 @@ void APIBindingJSUtil::ValidateType(gin::Arguments* arguments,
   if (!spec->ParseArgument(context, value, *type_refs_, nullptr, nullptr,
                            &error)) {
     arguments->ThrowTypeError(error);
+  }
+}
+
+void APIBindingJSUtil::AddCustomSignature(
+    gin::Arguments* arguments,
+    const std::string& custom_signature_name,
+    v8::Local<v8::Value> signature) {
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
+
+  // JS bindings run per-context, so it's expected that they will call this
+  // multiple times in the lifetime of the renderer process. Only handle the
+  // first call.
+  if (type_refs_->GetCustomSignature(custom_signature_name))
+    return;
+
+  if (!signature->IsArray()) {
+    NOTREACHED();
+    return;
+  }
+
+  std::unique_ptr<base::Value> base_signature =
+      content::V8ValueConverter::Create()->FromV8Value(signature, context);
+  if (!base_signature->is_list()) {
+    NOTREACHED();
+    return;
+  }
+
+  type_refs_->AddCustomSignature(
+      custom_signature_name,
+      std::make_unique<APISignature>(
+          *base::ListValue::From(std::move(base_signature))));
+}
+
+void APIBindingJSUtil::ValidateCustomSignature(
+    gin::Arguments* arguments,
+    const std::string& custom_signature_name,
+    v8::Local<v8::Value> arguments_to_validate) {
+  v8::Isolate* isolate = arguments->isolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = arguments->GetHolderCreationContext();
+
+  const APISignature* signature =
+      type_refs_->GetCustomSignature(custom_signature_name);
+  if (!signature) {
+    NOTREACHED();
+  }
+
+  std::vector<v8::Local<v8::Value>> vector_arguments;
+  if (!gin::ConvertFromV8(isolate, arguments_to_validate, &vector_arguments)) {
+    NOTREACHED();
+    return;
+  }
+
+  std::vector<v8::Local<v8::Value>> args_out;
+  std::string parse_error;
+  if (!signature->ParseArgumentsToV8(context, vector_arguments, *type_refs_,
+                                     &args_out, &parse_error)) {
+    arguments->ThrowTypeError(parse_error);
   }
 }
 
