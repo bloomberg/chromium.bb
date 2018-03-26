@@ -31,6 +31,7 @@ import org.chromium.content_public.common.ContentUrlConstants;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Instrumentation tests for {@link RecentTabsPage}.
@@ -64,7 +65,7 @@ public class RecentTabsPageTest {
     @Test
     @MediumTest
     @Feature({"RecentTabsPage"})
-    public void testRecentlyClosedTabs() throws InterruptedException {
+    public void testRecentlyClosedTabs() throws InterruptedException, ExecutionException {
         // Set a recently closed tab and confirm a view is rendered for it.
         List<RecentlyClosedTab> tabs = setRecentlyClosedTabs(1);
         Assert.assertEquals(1, mManager.getRecentlyClosedTabs(1).size());
@@ -149,8 +150,9 @@ public class RecentTabsPageTest {
         });
     }
 
-    private void invokeContextMenu(View view, int contextMenuItemId) {
-        TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), view);
+    private void invokeContextMenu(View view, int contextMenuItemId) throws ExecutionException {
+        TestTouchUtils.performLongClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), view);
         Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
                 mActivityTestRule.getActivity(), contextMenuItemId, 0));
     }

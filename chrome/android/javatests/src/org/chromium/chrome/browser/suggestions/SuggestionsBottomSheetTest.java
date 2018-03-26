@@ -29,6 +29,8 @@ import org.chromium.chrome.test.util.browser.suggestions.SuggestionsDependencies
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.ui.test.util.UiRestriction;
 
+import java.util.concurrent.ExecutionException;
+
 /**
  * Instrumentation tests for {@link SuggestionsBottomSheetContent}.
  */
@@ -52,12 +54,12 @@ public class SuggestionsBottomSheetTest {
     @Test
     @RetryOnFailure
     @MediumTest
-    public void testContextMenu() throws InterruptedException {
+    public void testContextMenu() throws InterruptedException, ExecutionException {
         ViewHolder suggestionViewHolder =
                 mActivityRule.scrollToFirstItemOfType(ItemViewType.SNIPPET);
         assertFalse(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 
-        TestTouchUtils.longClickView(
+        TestTouchUtils.performLongClickOnMainSync(
                 InstrumentationRegistry.getInstrumentation(), suggestionViewHolder.itemView);
         assertTrue(mActivityRule.getBottomSheet().onInterceptTouchEvent(createTapEvent()));
 

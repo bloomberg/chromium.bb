@@ -10,6 +10,10 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 
+import org.chromium.base.ThreadUtils;
+
+import java.util.concurrent.ExecutionException;
+
 /**
  * Collection of utilities for generating touch events.
  * Based on android.test.TouchUtils, but slightly more flexible (allows to
@@ -135,7 +139,7 @@ public class TestTouchUtils {
     }
 
     /**
-     * Drags / moves (synchronously) to the specified coordinates. Normally preceeded by
+     * Drags / moves (synchronously) to the specified coordinates. Normally preceded by
      * dragStart() and followed by dragEnd()
      *
      * @param instrumentation Instrumentation object used by the test.
@@ -161,7 +165,7 @@ public class TestTouchUtils {
 
     /**
      * Finishes (synchronously) a drag / move at the specified coordinate.
-     * Normally preceeded by dragStart() and dragTo().
+     * Normally preceded by dragStart() and dragTo().
      *
      * @param instrumentation Instrumentation object used by the test.
      * @param x The x location.
@@ -201,11 +205,17 @@ public class TestTouchUtils {
      * @param v The view to call performClick on.
      */
     public static void performClickOnMainSync(Instrumentation instrumentation, final View v) {
-        instrumentation.runOnMainSync(new Runnable() {
-            @Override
-            public void run() {
-                v.performClick();
-            }
-        });
+        instrumentation.runOnMainSync(() -> v.performClick());
+    }
+
+    /**
+     * Calls performLongClick on a View on the main UI thread.
+     *
+     * @param instrumentation Instrumentation object used by the test.
+     * @param v The view to call performLongClick on.
+     */
+    public static void performLongClickOnMainSync(Instrumentation instrumentation, final View v)
+            throws ExecutionException {
+        ThreadUtils.runOnUiThreadBlocking(() -> v.performLongClick());
     }
 }

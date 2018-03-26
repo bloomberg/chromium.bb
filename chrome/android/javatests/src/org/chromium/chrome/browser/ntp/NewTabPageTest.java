@@ -79,6 +79,7 @@ import java.util.Arrays;
 import java.util.Date;
 import java.util.List;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -319,7 +320,7 @@ public class NewTabPageTest {
     @DisabledTest // Flaked on the try bot. http://crbug.com/543138
     @SmallTest
     @Feature({"NewTabPage"})
-    public void testOpenMostVisitedItemInNewTab() throws InterruptedException {
+    public void testOpenMostVisitedItemInNewTab() throws InterruptedException, ExecutionException {
         invokeContextMenuAndOpenInANewTab(mTileGridLayout.getChildAt(0),
                 ContextMenuManager.ID_OPEN_IN_NEW_TAB, false, mSiteSuggestions.get(0).url);
     }
@@ -330,7 +331,8 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage"})
-    public void testOpenMostVisitedItemInIncognitoTab() throws InterruptedException {
+    public void testOpenMostVisitedItemInIncognitoTab()
+            throws InterruptedException, ExecutionException {
         invokeContextMenuAndOpenInANewTab(mTileGridLayout.getChildAt(0),
                 ContextMenuManager.ID_OPEN_IN_INCOGNITO_TAB, true, mSiteSuggestions.get(0).url);
     }
@@ -341,14 +343,15 @@ public class NewTabPageTest {
     @Test
     @SmallTest
     @Feature({"NewTabPage"})
-    public void testRemoveMostVisitedItem() {
+    public void testRemoveMostVisitedItem() throws ExecutionException {
         SiteSuggestion testSite = mSiteSuggestions.get(0);
         View mostVisitedItem = mTileGridLayout.getChildAt(0);
         ArrayList<View> views = new ArrayList<>();
         mTileGridLayout.findViewsWithText(views, testSite.title, View.FIND_VIEWS_WITH_TEXT);
         Assert.assertEquals(1, views.size());
 
-        TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), mostVisitedItem);
+        TestTouchUtils.performLongClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), mostVisitedItem);
         Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
                 mActivityTestRule.getActivity(), ContextMenuManager.ID_REMOVE, 0));
 
@@ -656,8 +659,9 @@ public class NewTabPageTest {
      * @param expectIncognito Whether the opened tab is expected to be incognito.
      * @param expectedUrl The expected url for the new tab.
      */
-    private void invokeContextMenuAndOpenInANewTab(View view, int contextMenuItemId,
-            boolean expectIncognito, final String expectedUrl) throws InterruptedException {
+    private void invokeContextMenuAndOpenInANewTab(
+            View view, int contextMenuItemId, boolean expectIncognito, final String expectedUrl)
+            throws InterruptedException, ExecutionException {
         final CallbackHelper createdCallback = new CallbackHelper();
         final TabModel tabModel =
                 mActivityTestRule.getActivity().getTabModelSelector().getModel(expectIncognito);
@@ -671,7 +675,8 @@ public class NewTabPageTest {
             }
         });
 
-        TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), view);
+        TestTouchUtils.performLongClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), view);
         Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
                 mActivityTestRule.getActivity(), contextMenuItemId, 0));
 
