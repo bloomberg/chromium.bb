@@ -10,6 +10,7 @@
 #include "base/time/time.h"
 #include "cc/test/geometry_test_utils.h"
 #include "chrome/browser/vr/content_input_delegate.h"
+#include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/ui_element.h"
 #include "chrome/browser/vr/model/model.h"
@@ -425,29 +426,6 @@ TEST_F(UiInputManagerContentTest, NoMouseMovesDuringClick) {
 
   input_manager_->HandleInput(MsToTicks(1), RenderInfo(), controller_model,
                               &reticle_model, &gesture_list);
-}
-
-TEST_F(UiInputManagerContentTest, ExitPromptHitTesting) {
-  model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
-  EXPECT_TRUE(RunFor(MsToDelta(500)));
-
-  UiElement* exit_prompt =
-      scene_->GetUiElementByName(UiElementName::kExitPrompt);
-  gfx::Point3F exit_prompt_center = exit_prompt->GetCenter();
-  gfx::Point3F origin;
-
-  ControllerModel controller_model;
-  controller_model.laser_direction = exit_prompt_center - origin;
-  controller_model.laser_origin = origin;
-  controller_model.touchpad_button_state = UiInputManager::ButtonState::DOWN;
-  ReticleModel reticle_model;
-  GestureList gesture_list;
-  input_manager_->HandleInput(MsToTicks(1), RenderInfo(), controller_model,
-                              &reticle_model, &gesture_list);
-
-  // We should have hit the exit prompt if our math was correct.
-  ASSERT_NE(0, reticle_model.target_element_id);
-  EXPECT_EQ(exit_prompt->id(), reticle_model.target_element_id);
 }
 
 TEST_F(UiInputManagerContentTest, AudioPermissionPromptHitTesting) {

@@ -12,8 +12,8 @@
 #include "chrome/browser/vr/elements/button.h"
 #include "chrome/browser/vr/elements/content_element.h"
 #include "chrome/browser/vr/elements/disc_button.h"
-#include "chrome/browser/vr/elements/exit_prompt.h"
 #include "chrome/browser/vr/elements/indicator_spec.h"
+#include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/rect.h"
 #include "chrome/browser/vr/elements/repositioner.h"
 #include "chrome/browser/vr/elements/ui_element.h"
@@ -80,7 +80,6 @@ const std::set<UiElementName> kElementsVisibleWithExitPrompt = {
     kCeiling,
     kFloor,
     kExitPrompt,
-    kExitPromptBackplane,
     kController,
     kReticle,
     kLaser,
@@ -114,6 +113,13 @@ void VerifyButtonColor(DiscButton* button,
   EXPECT_EQ(button->foreground()->GetColor(), foreground_color);
   EXPECT_EQ(button->background()->edge_color(), background_color);
   EXPECT_EQ(button->background()->center_color(), background_color);
+}
+
+Prompt* GetPromptFromPromptRoot(UiElement* root) {
+  DCHECK(root->type() == kTypeScaledDepthAdjuster);
+  auto& backplane = root->children().front();
+  auto& shadow = backplane->children().front();
+  return static_cast<Prompt*>(shadow->children().front().get());
 }
 
 }  // namespace
@@ -614,7 +620,8 @@ TEST_F(UiTest, UiUpdatesForShowingExitPrompt) {
 
   // Showing exit VR prompt should make prompt visible.
   model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
-  VerifyOnlyElementsVisible("Prompt visible", kElementsVisibleWithExitPrompt);
+  VerifyVisibility(kElementsVisibleWithExitPrompt, true);
+  EXPECT_EQ(NumVisibleInTree(k2dBrowsingForeground), 0);
 }
 
 TEST_F(UiTest, UiUpdatesForHidingExitPrompt) {
@@ -622,7 +629,8 @@ TEST_F(UiTest, UiUpdatesForHidingExitPrompt) {
 
   // Initial state.
   model_->active_modal_prompt_type = kModalPromptTypeExitVRForSiteInfo;
-  VerifyOnlyElementsVisible("Initial", kElementsVisibleWithExitPrompt);
+  VerifyVisibility(kElementsVisibleWithExitPrompt, true);
+  EXPECT_EQ(NumVisibleInTree(k2dBrowsingForeground), 0);
 
   // Hiding exit VR prompt should make prompt invisible.
   model_->active_modal_prompt_type = kModalPromptTypeNone;
@@ -637,14 +645,16 @@ TEST_F(UiTest, BackplaneClickTriggersOnExitPrompt) {
   VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
   ui_->ShowExitVrPrompt(UiUnsupportedMode::kUnhandledPageInfo);
 
-  VerifyOnlyElementsVisible("Prompt visible", kElementsVisibleWithExitPrompt);
+  VerifyVisibility(kElementsVisibleWithExitPrompt, true);
+  EXPECT_EQ(NumVisibleInTree(k2dBrowsingForeground), 0);
 
   // Click on backplane should trigger UI browser interface but not close
   // prompt.
   EXPECT_CALL(*browser_,
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_NONE,
                                    UiUnsupportedMode::kUnhandledPageInfo));
-  scene_->GetUiElementByName(kExitPromptBackplane)->OnButtonUp(gfx::PointF());
+  auto& backplane = scene_->GetUiElementByName(kExitPrompt)->children().front();
+  backplane->OnButtonUp(gfx::PointF());
 
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
@@ -661,7 +671,8 @@ TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
   EXPECT_CALL(*browser_,
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_STAY,
                                    UiUnsupportedMode::kUnhandledPageInfo));
-  static_cast<ExitPrompt*>(scene_->GetUiElementByName(kExitPrompt))
+  static_cast<Prompt*>(
+      GetPromptFromPromptRoot(scene_->GetUiElementByName(kExitPrompt)))
       ->ClickPrimaryButtonForTesting();
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
@@ -679,7 +690,8 @@ TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_EXIT,
                                    UiUnsupportedMode::kUnhandledPageInfo));
 
-  static_cast<ExitPrompt*>(scene_->GetUiElementByName(kExitPrompt))
+  static_cast<Prompt*>(
+      GetPromptFromPromptRoot(scene_->GetUiElementByName(kExitPrompt)))
       ->ClickSecondaryButtonForTesting();
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }

@@ -53,6 +53,62 @@ PromptTexture::PromptTexture(int content_message_id,
 
 PromptTexture::~PromptTexture() = default;
 
+gfx::Size PromptTexture::GetPreferredTextureSize(int maximum_width) const {
+  return gfx::Size(maximum_width, maximum_width * kHeight / kWidth);
+}
+
+gfx::SizeF PromptTexture::GetDrawnSize() const {
+  return size_;
+}
+
+void PromptTexture::SetPrimaryButtonHovered(bool hovered) {
+  SetAndDirty(&primary_hovered_, hovered);
+}
+
+void PromptTexture::SetPrimaryButtonPressed(bool pressed) {
+  SetAndDirty(&primary_pressed_, pressed);
+}
+
+void PromptTexture::SetSecondaryButtonHovered(bool hovered) {
+  SetAndDirty(&secondary_hovered_, hovered);
+}
+
+void PromptTexture::SetSecondaryButtonPressed(bool pressed) {
+  SetAndDirty(&secondary_pressed_, pressed);
+}
+
+void PromptTexture::SetContentMessageId(int message_id) {
+  SetAndDirty(&content_message_id_, message_id);
+}
+
+bool PromptTexture::HitsSecondaryButton(const gfx::PointF& position) const {
+  return secondary_button_rect_.Contains(PercentToPixels(position));
+}
+
+bool PromptTexture::HitsPrimaryButton(const gfx::PointF& position) const {
+  return primary_button_rect_.Contains(PercentToPixels(position));
+}
+
+void PromptTexture::SetPrimaryButtonColors(const ButtonColors& colors) {
+  SetAndDirty(&primary_button_colors_, colors);
+}
+
+void PromptTexture::SetSecondaryButtonColors(const ButtonColors& colors) {
+  SetAndDirty(&secondary_button_colors_, colors);
+}
+
+void PromptTexture::SetIconColor(SkColor color) {
+  SetAndDirty(&icon_color_, color);
+}
+
+float PromptTexture::ToPixels(float meters) const {
+  return meters * size_.width() / kWidth;
+}
+
+gfx::PointF PromptTexture::PercentToPixels(const gfx::PointF& percent) const {
+  return gfx::PointF(percent.x() * size_.width(), percent.y() * size_.height());
+}
+
 void PromptTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
   size_.set_width(texture_size.width());
   size_.set_height(texture_size.height());
@@ -148,14 +204,6 @@ void PromptTexture::Draw(SkCanvas* sk_canvas, const gfx::Size& texture_size) {
   for (auto& render_text : lines)
     render_text->Draw(canvas);
   canvas->Restore();
-}
-
-void PromptTexture::SetIconColor(SkColor color) {
-  SetAndDirty(&icon_color_, color);
-}
-
-gfx::Size PromptTexture::GetPreferredTextureSize(int maximum_width) const {
-  return gfx::Size(maximum_width, maximum_width * kHeight / kWidth);
 }
 
 }  // namespace vr

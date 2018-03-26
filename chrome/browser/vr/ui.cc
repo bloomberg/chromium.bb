@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/vr/content_input_delegate.h"
 #include "chrome/browser/vr/cpu_surface_provider.h"
-#include "chrome/browser/vr/elements/exit_prompt.h"
+#include "chrome/browser/vr/elements/prompt.h"
 #include "chrome/browser/vr/elements/text_input.h"
 #include "chrome/browser/vr/ganesh_surface_provider.h"
 #include "chrome/browser/vr/keyboard_delegate.h"
@@ -461,10 +461,10 @@ void Ui::AcceptDoffPromptForTesting() {
   DCHECK(model_->active_modal_prompt_type != kModalPromptTypeNone);
   if (model_->active_modal_prompt_type ==
       kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission) {
-    static_cast<ExitPrompt*>(scene_->GetUiElementByName(kAudioPermissionPrompt))
+    static_cast<Prompt*>(scene_->GetUiElementByName(kAudioPermissionPrompt))
         ->ClickPrimaryButtonForTesting();
   } else {
-    static_cast<ExitPrompt*>(scene_->GetUiElementByName(kExitPrompt))
+    static_cast<Prompt*>(scene_->GetUiElementByName(kExitPrompt))
         ->ClickSecondaryButtonForTesting();
   }
 }
