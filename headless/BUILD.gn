@@ -731,9 +731,6 @@ test("headless_browsertests") {
     "public/util/testing/test_in_memory_protocol_handler.h",
     "test/headless_browser_test.cc",
     "test/headless_browser_test.h",
-    "test/headless_render_browsertest.cc",
-    "test/headless_render_test.cc",
-    "test/headless_render_test.h",
     "test/headless_test_launcher.cc",
     "test/tab_socket_test.cc",
     "test/tab_socket_test.h",
@@ -788,11 +785,21 @@ test("headless_browsertests") {
     ]
   }
 
-  # Only include this if we built the js_binary
   if (is_linux) {
+    # Only include this if we built the js_binary
     data += [ "$root_out_dir/headless_browser_tests.pak" ]
-    sources += [ "test/headless_js_bindings_browsertest.cc" ]
-    deps += [ ":headless_browser_tests_pak" ]
+    sources += [
+      "test/headless_js_bindings_browsertest.cc",
+      "test/headless_render_browsertest.cc",
+      "test/headless_render_test.cc",
+      "test/headless_render_test.h",
+    ]
+    deps += [
+      ":headless_browser_tests_pak",
+      "//ui/gfx:geometry_skia",
+      "//ui/gfx/codec",
+      "//ui/gfx/geometry",
+    ]
   }
 
   if (enable_basic_printing) {

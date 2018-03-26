@@ -5,7 +5,9 @@
 #include <functional>
 
 #include "base/message_loop/message_loop.h"
+#include "base/path_service.h"
 #include "base/run_loop.h"
+#include "base/threading/thread_restrictions.h"
 #include "content/public/test/browser_test.h"
 #include "headless/public/devtools/domains/dom_snapshot.h"
 #include "headless/public/devtools/domains/page.h"
@@ -163,6 +165,24 @@ TestInMemoryProtocolHandler::Response HttpRedirect(
 
 TestInMemoryProtocolHandler::Response HttpOk(const std::string& html) {
   return TestInMemoryProtocolHandler::Response(html, TEXT_HTML);
+}
+
+TestInMemoryProtocolHandler::Response ResponseFromFile(
+    const std::string& file_name,
+    const std::string& mime_type) {
+  static const base::FilePath kTestDataDirectory(
+      FILE_PATH_LITERAL("headless/test/data"));
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  base::FilePath src_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  base::FilePath file_path =
+      src_dir.Append(kTestDataDirectory).Append(file_name);
+  std::string contents;
+  CHECK(base::ReadFileToString(file_path, &contents));
+
+  return TestInMemoryProtocolHandler::Response(contents, mime_type);
 }
 
 }  // namespace
@@ -1327,5 +1347,39 @@ class FrameLoadEvents : public HeadlessRenderTest {
   }
 };
 HEADLESS_RENDER_BROWSERTEST(FrameLoadEvents);
+
+class CustomFont : public HeadlessRenderTest {
+ private:
+  GURL GetPageUrl(HeadlessDevToolsClient* client) override {
+    GetProtocolHandler()->InsertResponse("http://www.example.com/", HttpOk(R"|(
+<html>
+  <head>
+    <style>
+      @font-face {
+        font-family: testfont;
+        src: url("font.ttf");
+      }
+      span.test {
+        font-family: testfont;
+        font-size: 200px;
+      }
+    </style>
+  </head>
+  <body>
+    <span class="test">Hello</span>
+  </body>
+</html>
+)|"));
+    GetProtocolHandler()->InsertResponse(
+        "http://www.example.com/font.ttf",
+        ResponseFromFile("font.ttf", "application/octet-stream"));
+    return GURL("http://www.example.com/");
+  }
+
+  base::Optional<ScreenshotOptions> GetScreenshotOptions() override {
+    return ScreenshotOptions("custom_font.png", 0, 0, 500, 250, 1);
+  }
+};
+HEADLESS_RENDER_BROWSERTEST(CustomFont);
 
 }  // namespace headless
