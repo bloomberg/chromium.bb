@@ -103,7 +103,6 @@ static const char* g_ui_element_name_strings[] = {
     "kExitWarningText",
     "kExitWarningBackground",
     "kExitPrompt",
-    "kExitPromptBackplane",
     "kAudioPermissionPrompt",
     "kAudioPermissionPromptShadow",
     "kAudioPermissionPromptBackplane",
