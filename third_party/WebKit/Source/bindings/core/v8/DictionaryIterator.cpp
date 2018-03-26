@@ -25,7 +25,8 @@ DictionaryIterator::DictionaryIterator(v8::Local<v8::Object> iterator,
 }
 
 bool DictionaryIterator::Next(ExecutionContext* execution_context,
-                              ExceptionState& exception_state) {
+                              ExceptionState& exception_state,
+                              v8::Local<v8::Value> next_value) {
   DCHECK(!IsNull());
 
   v8::TryCatch try_catch(isolate_);
@@ -44,10 +45,14 @@ bool DictionaryIterator::Next(ExecutionContext* execution_context,
     return false;
   }
 
+  Vector<v8::Local<v8::Value>, 1> argv;
+  if (!next_value.IsEmpty())
+    argv = {next_value};
+
   v8::Local<v8::Value> result;
   if (!V8ScriptRunner::CallFunction(v8::Local<v8::Function>::Cast(next),
-                                    execution_context, iterator_, 0, nullptr,
-                                    isolate_)
+                                    execution_context, iterator_, argv.size(),
+                                    argv.data(), isolate_)
            .ToLocal(&result)) {
     CHECK(!try_catch.Exception().IsEmpty());
     exception_state.RethrowV8Exception(try_catch.Exception());

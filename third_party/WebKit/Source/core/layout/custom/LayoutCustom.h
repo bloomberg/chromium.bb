@@ -6,6 +6,7 @@
 #define LayoutCustom_h
 
 #include "core/layout/LayoutBlockFlow.h"
+#include "core/layout/custom/CSSLayoutDefinition.h"
 
 namespace blink {
 
@@ -43,6 +44,7 @@ class LayoutCustom final : public LayoutBlockFlow {
   bool PerformLayout(bool relayout_children, SubtreeLayoutScope*);
 
   LayoutCustomState state_;
+  Persistent<CSSLayoutDefinition::Instance> instance_;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutCustom, IsLayoutCustom());

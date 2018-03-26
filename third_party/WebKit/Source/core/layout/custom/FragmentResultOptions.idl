@@ -6,6 +6,6 @@
 
 dictionary FragmentResultOptions {
   double autoBlockSize = 0;
-  // sequence<Fragment> childFragments = [];
+  sequence<LayoutFragment> childFragments = [];
   // any data = null;
 };
