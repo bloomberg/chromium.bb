@@ -134,9 +134,6 @@ public class ContextUtils {
             throw new RuntimeException("Global application context cannot be set to null.");
         }
         sApplicationContext = appContext;
-
-        // TODO(agrieve): Remove when we stop supporting JB.
-        getProcessName(); // Prime the cache for getProcessName().
     }
 
     /**
@@ -171,6 +168,8 @@ public class ContextUtils {
 
     /** @return The name of the current process. E.g. "org.chromium.chrome:privileged_process0". */
     public static String getProcessName() {
+        // Once we drop support JB, this method can be simplified to not cache sProcessName and call
+        // ActivityThread.currentProcessName().
         if (sProcessName != null) {
             return sProcessName;
         }
