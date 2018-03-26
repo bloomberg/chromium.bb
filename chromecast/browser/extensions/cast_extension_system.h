@@ -102,6 +102,7 @@ class CastExtensionSystem : public ExtensionSystem,
   bool ShouldBlockExtension(const Extension* extension) override;
 
  private:
+  void PostLoadExtension(const scoped_refptr<extensions::Extension>& extension);
   void OnExtensionRegisteredWithRequestContexts(
       scoped_refptr<Extension> extension);
   content::BrowserContext* browser_context_;  // Not owned.

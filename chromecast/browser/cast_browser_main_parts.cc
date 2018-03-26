@@ -100,6 +100,7 @@
 #include "chromecast/browser/extensions/cast_prefs.h"
 #include "chromecast/common/cast_extensions_client.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"  // nogncheck
+#include "extensions/browser/browser_context_keyed_service_factories.h"  // nogncheck
 #include "extensions/browser/extension_prefs.h"  // nogncheck
 #endif
 
@@ -540,6 +541,8 @@ void CastBrowserMainParts::PreMainMessageLoopRun() {
       std::make_unique<extensions::CastExtensionsBrowserClient>(
           cast_browser_process_->browser_context(), user_pref_service_.get());
   extensions::ExtensionsBrowserClient::Set(extensions_browser_client_.get());
+
+  extensions::EnsureBrowserContextKeyedServiceFactoriesBuilt();
 
   extensions::CastExtensionSystem* extension_system =
       static_cast<extensions::CastExtensionSystem*>(

@@ -20,8 +20,10 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/info_map.h"
+#include "extensions/browser/lazy_background_task_queue.h"
 #include "extensions/browser/notification_types.h"
 #include "extensions/browser/null_app_sorting.h"
+#include "extensions/browser/process_manager.h"
 #include "extensions/browser/quota_service.h"
 #include "extensions/browser/renderer_startup_helper.h"
 #include "extensions/browser/runtime_data.h"
@@ -32,6 +34,7 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/file_util.h"
 #include "extensions/common/manifest_constants.h"
+#include "extensions/common/manifest_handlers/background_info.h"
 
 using content::BrowserContext;
 using content::BrowserThread;
@@ -95,7 +98,7 @@ const Extension* CastExtensionSystem::LoadExtensionByManifest(
     return nullptr;
   }
 
-  extension_registrar_->AddExtension(extension);
+  PostLoadExtension(extension);
 
   return extension.get();
 }
@@ -124,9 +127,14 @@ const Extension* CastExtensionSystem::LoadExtension(
       LOG(WARNING) << warning.message;
   }
 
-  extension_registrar_->AddExtension(extension);
+  PostLoadExtension(extension);
 
   return extension.get();
+}
+
+void CastExtensionSystem::PostLoadExtension(
+    const scoped_refptr<extensions::Extension>& extension) {
+  extension_registrar_->AddExtension(extension);
 }
 
 const Extension* CastExtensionSystem::LoadApp(const base::FilePath& app_dir) {
@@ -134,6 +142,8 @@ const Extension* CastExtensionSystem::LoadApp(const base::FilePath& app_dir) {
 }
 
 void CastExtensionSystem::Init() {
+  extensions::ProcessManager::Get(browser_context_);
+
   // Inform the rest of the extensions system to start.
   ready_.Signal();
   content::NotificationService::current()->Notify(
