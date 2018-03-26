@@ -11,6 +11,7 @@
 #include "core/testing/sim/SimCompositor.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
+#include "platform/geometry/FloatRect.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/wtf/Time.h"
 
@@ -22,12 +23,23 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
  public:
   TestIntersectionObserverDelegate(Document& document)
       : document_(document), call_count_(0) {}
-  void Deliver(const HeapVector<Member<IntersectionObserverEntry>>&,
+  void Deliver(const HeapVector<Member<IntersectionObserverEntry>>& entry,
                IntersectionObserver&) override {
     call_count_++;
+
+    if (!entry.back()->intersectionRect()) {
+      last_intersection_rect_ = FloatRect();
+    } else {
+      last_intersection_rect_ =
+          FloatRect(entry.back()->intersectionRect()->x(),
+                    entry.back()->intersectionRect()->y(),
+                    entry.back()->intersectionRect()->width(),
+                    entry.back()->intersectionRect()->height());
+    }
   }
   ExecutionContext* GetExecutionContext() const override { return document_; }
   int CallCount() const { return call_count_; }
+  FloatRect LastIntersectionRect() const { return last_intersection_rect_; }
 
   void Trace(blink::Visitor* visitor) {
     IntersectionObserverDelegate::Trace(visitor);
@@ -35,6 +47,7 @@ class TestIntersectionObserverDelegate : public IntersectionObserverDelegate {
   }
 
  private:
+  FloatRect last_intersection_rect_;
   Member<Document> document_;
   int call_count_;
 };
@@ -161,6 +174,64 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
   observer->disconnect();
   testing::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
+}
+
+TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
+  WebView().GetSettings()->SetForceZeroLayoutHeight(true);
+  WebView().Resize(WebSize(800, 600));
+  SimRequest main_resource("https://example.com/", "text/html");
+  LoadURL("https://example.com/");
+  main_resource.Complete(R"HTML(
+    <!DOCTYPE html>
+    <style>
+      body {
+        margin: 0;
+        height: 2000px;
+      }
+
+      #target {
+        width: 100px;
+        height: 100px;
+        position: absolute;
+        top: 1000px;
+        left: 200px;
+      }
+    </style>
+    <div id='target'></div>
+  )HTML");
+
+  IntersectionObserverInit observer_init;
+  DummyExceptionStateForTesting exception_state;
+  TestIntersectionObserverDelegate* observer_delegate =
+      new TestIntersectionObserverDelegate(GetDocument());
+  IntersectionObserver* observer = IntersectionObserver::Create(
+      observer_init, *observer_delegate, exception_state);
+  ASSERT_FALSE(exception_state.HadException());
+
+  Element* target = GetDocument().getElementById("target");
+  ASSERT_TRUE(target);
+  observer->observe(target, exception_state);
+
+  Compositor().BeginFrame();
+  testing::RunPendingTasks();
+  ASSERT_EQ(observer_delegate->CallCount(), 1);
+  EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
+
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 600), kProgrammaticScroll);
+  Compositor().BeginFrame();
+  testing::RunPendingTasks();
+  ASSERT_EQ(observer_delegate->CallCount(), 2);
+  EXPECT_FALSE(observer_delegate->LastIntersectionRect().IsEmpty());
+  EXPECT_EQ(FloatRect(200, 400, 100, 100),
+            observer_delegate->LastIntersectionRect());
+
+  GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
+      ScrollOffset(0, 1200), kProgrammaticScroll);
+  Compositor().BeginFrame();
+  testing::RunPendingTasks();
+  ASSERT_EQ(observer_delegate->CallCount(), 3);
+  EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
 }
 
 }  // namespace blink
