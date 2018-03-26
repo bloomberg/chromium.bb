@@ -1316,7 +1316,7 @@ Subsequent notifications, windows and dialogs may be split between desktops.
         It may be attempting to steal your keystrokes
       </message>
       <message name="IDS_ASH_DETACHABLE_BASE_NOTIFICATION_UPDATE_NEEDED_TITLE" desc="Title for the notification shown to the user when the detachable base (keyboard) connected to the device has to be updated.">
-        Your detachable keybaord needs a critical update
+        Your detachable keyboard needs a critical update
       </message>
       <message name="IDS_ASH_DETACHABLE_BASE_NOTIFICATION_UPDATE_NEEDED_MESSAGE" desc="Body for the notification shown to the user when the detachable base (keyboard) connected to the device has to be updated. This notification is shown if the keyboard is usable without the update.">
         To get the update, restart your Chromebook with the keyboard attached.
