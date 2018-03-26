@@ -336,6 +336,7 @@ LocationLine.prototype.onClick_ = function(index, event) {
     pathClickEvent.entry = entry;
     this.dispatchEvent(pathClickEvent);
   }.bind(this));
+  metrics.recordUserAction('ClickBreadcrumbs');
 };
 
 /**
