@@ -114,7 +114,7 @@ class DOMWebSocketTestScope {
   ~DOMWebSocketTestScope() {
     if (!websocket_)
       return;
-    // These statements are needed to clear WebSocket::m_channel to
+    // These statements are needed to clear WebSocket::channel_ to
     // avoid ASSERTION failure on ~DOMWebSocket.
     DCHECK(Socket().Channel());
     ::testing::Mock::VerifyAndClear(Socket().Channel());

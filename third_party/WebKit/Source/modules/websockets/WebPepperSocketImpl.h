@@ -79,7 +79,7 @@ class WebPepperSocketImpl final : public WebPepperSocket {
   Persistent<WebPepperSocketChannelClientProxy> channel_proxy_;
   WebString subprotocol_;
   bool is_closing_or_closed_;
-  // m_bufferedAmount includes m_bufferedAmountAfterClose.
+  // |buffered_amount_| includes |buffered_amount_after_close_|.
   unsigned long buffered_amount_;
   unsigned long buffered_amount_after_close_;
 };

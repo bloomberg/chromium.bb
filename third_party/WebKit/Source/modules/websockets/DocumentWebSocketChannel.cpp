@@ -786,7 +786,7 @@ void DocumentWebSocketChannel::OnError(const WebString& console_message) {
 void DocumentWebSocketChannel::DidFinishLoadingBlob(DOMArrayBuffer* buffer) {
   blob_loader_.Clear();
   DCHECK(handle_);
-  // The loaded blob is always placed on m_messages[0].
+  // The loaded blob is always placed on |messages_[0]|.
   DCHECK_GT(messages_.size(), 0u);
   DCHECK_EQ(messages_.front()->type, kMessageTypeBlob);
   // We replace it with the loaded blob.
@@ -808,7 +808,7 @@ void DocumentWebSocketChannel::DidFailLoadingBlob(
 }
 
 void DocumentWebSocketChannel::TearDownFailedConnection() {
-  // m_handle and m_client can be null here.
+  // |handle_| and |client_| can be null here.
   connection_handle_for_scheduler_.reset();
   handshake_throttle_.reset();
 

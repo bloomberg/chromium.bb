@@ -192,15 +192,14 @@ class MODULES_EXPORT DocumentWebSocketChannel final
   void TearDownFailedConnection();
   bool ShouldDisallowConnection(const KURL&);
 
-  // m_handle is a handle of the connection.
-  // m_handle == 0 means this channel is closed.
+  // |handle_| is a handle of the connection.
+  // |handle_| == nullptr means this channel is closed.
   std::unique_ptr<WebSocketHandle> handle_;
 
-  // m_client can be deleted while this channel is alive, but this class
+  // |client_| can be deleted while this channel is alive, but this class
   // expects that disconnect() is called before the deletion.
   Member<WebSocketChannelClient> client_;
   KURL url_;
-  // m_identifier > 0 means calling scriptContextExecution() returns a Document.
   unsigned long identifier_;
   Member<BlobLoader> blob_loader_;
   HeapDeque<Member<Message>> messages_;

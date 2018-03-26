@@ -502,9 +502,9 @@ void DOMWebSocket::send(Blob* binary_data, ExceptionState& exception_state) {
   buffered_amount_ += size;
   DCHECK(channel_);
 
-  // When the runtime type of |binaryData| is File,
-  // binaryData->blobDataHandle()->size() returns -1. However, in order to
-  // maintain the value of |m_bufferedAmount| correctly, the WebSocket code
+  // When the runtime type of |binary_data| is File,
+  // binary_data->GetBlobDataHandle()->size() returns -1. However, in order to
+  // maintain the value of |buffered_amount_| correctly, the WebSocket code
   // needs to fix the size of the File at this point. For this reason,
   // construct a new BlobDataHandle here with the size that this method
   // observed.
