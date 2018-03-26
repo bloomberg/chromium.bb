@@ -155,6 +155,13 @@ WorkletAnimation* WorkletAnimation::Create(
     ExceptionState& exception_state) {
   DCHECK(IsMainThread());
 
+  if (!Platform::Current()->IsThreadedAnimationEnabled()) {
+    exception_state.ThrowDOMException(
+        kInvalidStateError,
+        "AnimationWorklet requires threaded animations to be enabled");
+    return nullptr;
+  }
+
   HeapVector<Member<KeyframeEffect>> keyframe_effects;
   String error_string;
   if (!ConvertAnimationEffects(effects, keyframe_effects, error_string)) {
