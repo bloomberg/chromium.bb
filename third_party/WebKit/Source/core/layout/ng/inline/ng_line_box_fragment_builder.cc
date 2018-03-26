@@ -21,7 +21,8 @@ NGLineBoxFragmentBuilder::NGLineBoxFragmentBuilder(
     WritingMode writing_mode,
     TextDirection)
     : NGContainerFragmentBuilder(style, writing_mode, TextDirection::kLtr),
-      node_(node) {}
+      node_(node),
+      base_direction_(TextDirection::kLtr) {}
 
 NGLineBoxFragmentBuilder::~NGLineBoxFragmentBuilder() = default;
 
@@ -90,6 +91,10 @@ void NGLineBoxFragmentBuilder::SetMetrics(const NGLineHeightMetrics& metrics) {
   metrics_ = metrics;
 }
 
+void NGLineBoxFragmentBuilder::SetBaseDirection(TextDirection direction) {
+  base_direction_ = direction;
+}
+
 void NGLineBoxFragmentBuilder::SwapPositionedFloats(
     Vector<NGPositionedFloat>* positioned_floats) {
   positioned_floats_.swap(*positioned_floats);
@@ -133,6 +138,7 @@ scoped_refptr<NGLayoutResult> NGLineBoxFragmentBuilder::ToLineBoxFragment() {
   scoped_refptr<NGPhysicalLineBoxFragment> fragment =
       base::AdoptRef(new NGPhysicalLineBoxFragment(
           Style(), physical_size, children_, contents_visual_rect, metrics_,
+          base_direction_,
           break_token_ ? std::move(break_token_)
                        : NGInlineBreakToken::Create(node_)));
 

@@ -219,6 +219,7 @@ class CORE_EXPORT NGPhysicalFragment
   unsigned is_placed_ : 1;
   unsigned border_edge_ : 4;  // NGBorderEdges::Physical
   unsigned style_variant_ : 2;  // NGStyleVariant
+  unsigned base_direction_ : 1;  // TextDirection, for NGPhysicalLineBoxFragment
 
  private:
   friend struct NGPhysicalFragmentTraits;

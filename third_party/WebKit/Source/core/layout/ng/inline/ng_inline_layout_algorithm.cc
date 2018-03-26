@@ -281,6 +281,7 @@ void NGInlineLayoutAlgorithm::CreateLine(NGLineInfo* line_info,
 
   container_builder_.AddChildren(line_box_);
   container_builder_.SetInlineSize(inline_size);
+  container_builder_.SetBaseDirection(line_info->BaseDirection());
   container_builder_.SetMetrics(line_box_metrics);
   container_builder_.SetBfcOffset(line_bfc_offset);
 }

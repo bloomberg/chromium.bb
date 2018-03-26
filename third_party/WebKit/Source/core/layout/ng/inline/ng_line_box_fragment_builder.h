@@ -37,6 +37,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
   void SetMetrics(const NGLineHeightMetrics&);
 
+  void SetBaseDirection(TextDirection);
+
   void SwapPositionedFloats(Vector<NGPositionedFloat>*);
 
   // Set the break token for the fragment to build.
@@ -161,6 +163,8 @@ class CORE_EXPORT NGLineBoxFragmentBuilder final
   Vector<NGPositionedFloat> positioned_floats_;
 
   scoped_refptr<NGInlineBreakToken> break_token_;
+
+  TextDirection base_direction_;
 };
 
 }  // namespace blink

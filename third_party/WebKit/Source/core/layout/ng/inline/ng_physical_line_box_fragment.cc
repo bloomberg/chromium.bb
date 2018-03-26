@@ -15,6 +15,7 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
     Vector<scoped_refptr<NGPhysicalFragment>>& children,
     const NGPhysicalOffsetRect& contents_visual_rect,
     const NGLineHeightMetrics& metrics,
+    TextDirection base_direction,
     scoped_refptr<NGBreakToken> break_token)
     : NGPhysicalContainerFragment(nullptr,
                                   style,
@@ -24,7 +25,9 @@ NGPhysicalLineBoxFragment::NGPhysicalLineBoxFragment(
                                   children,
                                   contents_visual_rect,
                                   std::move(break_token)),
-      metrics_(metrics) {}
+      metrics_(metrics) {
+  base_direction_ = static_cast<unsigned>(base_direction);
+}
 
 LayoutUnit NGPhysicalLineBoxFragment::BaselinePosition(FontBaseline) const {
   // TODO(kojii): Computing other baseline types than the used one is not
