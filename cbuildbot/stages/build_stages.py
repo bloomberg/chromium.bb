@@ -480,7 +480,8 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
                                        update_dict)
 
       # Get a list of models supported by this board.
-      models = commands.GetModels(self._build_root, self._current_board)
+      models = commands.GetModels(
+          self._build_root, self._current_board, log_output=False)
       self._run.attrs.metadata.UpdateWithDict({'unibuild': bool(models)})
       if models:
         all_fw_versions = commands.GetAllFirmwareVersions(self._build_root,

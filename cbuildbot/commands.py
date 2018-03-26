@@ -545,13 +545,14 @@ def GetFirmwareVersions(buildroot, board):
   else:
     return FirmwareVersions(None, None, None, None, None)
 
-def RunCrosConfigHost(buildroot, board, args):
+def RunCrosConfigHost(buildroot, board, args, log_output=True):
   """Run the cros_config_host tool in the buildroot
 
   Args:
     buildroot: The buildroot of the current build.
     board: The board the build is for.
     args: List of arguments to pass.
+    log_output: Whether to log the output of the cros_config_host.
 
   Returns:
     Output of the tool
@@ -566,8 +567,8 @@ def RunCrosConfigHost(buildroot, board, args):
                               'chromeos-config', 'config.dtb')
   result = cros_build_lib.RunCommand(
       [tool, '-c', config_fname] + args,
-      enter_chroot=True, capture_output=True, log_output=True, cwd=buildroot,
-      error_code_ok=True)
+      enter_chroot=True, capture_output=True, log_output=log_output,
+      cwd=buildroot, error_code_ok=True)
   if result.returncode:
     # Show the output for debugging purposes.
     if 'No such file or directory' not in result.error:
@@ -575,7 +576,7 @@ def RunCrosConfigHost(buildroot, board, args):
     return None
   return result.output.strip().splitlines()
 
-def GetModels(buildroot, board):
+def GetModels(buildroot, board, log_output=True):
   """Obtain a list of models supported by a unified board
 
   This ignored whitelabel models since GoldenEye has no specific support for
@@ -584,12 +585,14 @@ def GetModels(buildroot, board):
   Args:
     buildroot: The buildroot of the current build.
     board: The board the build is for.
+    log_output: Whether to log the output of the cros_config_host invocation.
 
   Returns:
     A list of models supported by this board, if it is a unified build; None,
     if it is not a unified build.
   """
-  return RunCrosConfigHost(buildroot, board, ['list-models'])
+  return RunCrosConfigHost(
+      buildroot, board, ['list-models'], log_output=log_output)
 
 def BuildImage(buildroot, board, images_to_build, version=None,
                builder_path=None, rootfs_verification=True, extra_env=None,
