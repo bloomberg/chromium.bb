@@ -50,7 +50,7 @@ class HeapCompact::MovableObjectFixups final {
       return;
     }
     interior_fixups_.insert(slot, nullptr);
-    LOG_HEAP_COMPACTION("Interior slot: %p\n", slot);
+    LOG_HEAP_COMPACTION() << "Interior slot: " << slot;
     Address slot_address = reinterpret_cast<Address>(slot);
     if (!interiors_) {
       interiors_ = SparseHeapBitmap::Create(slot_address);
@@ -143,8 +143,8 @@ class HeapCompact::MovableObjectFixups final {
       if (it->value)
         continue;
       Address fixup = to + offset;
-      LOG_HEAP_COMPACTION("Range interior fixup: %p %p %p\n", from + offset,
-                          it->value, fixup);
+      LOG_HEAP_COMPACTION() << "Range interior fixup: " << (from + offset)
+                            << " " << it->value << " " << fixup;
       // Fill in the relocated location of the original slot at |slot|.
       // when the backing store corresponding to |slot| is eventually
       // moved/compacted, it'll update |to + offset| with a pointer to the
@@ -168,7 +168,8 @@ class HeapCompact::MovableObjectFixups final {
       if (!slot_location) {
         interior_fixups_.Set(slot, to);
       } else {
-        LOG_HEAP_COMPACTION("Redirected slot: %p => %p\n", slot, slot_location);
+        LOG_HEAP_COMPACTION()
+            << "Redirected slot: " << slot << " => " << slot_location;
         slot = slot_location;
       }
     }
@@ -180,9 +181,9 @@ class HeapCompact::MovableObjectFixups final {
     // The slot's contents may also have been cleared during weak processing;
     // no work to be done in that case either.
     if (UNLIKELY(*slot != from)) {
-      LOG_HEAP_COMPACTION(
-          "No relocation: slot = %p, *slot = %p, from = %p, to = %p\n", slot,
-          *slot, from, to);
+      LOG_HEAP_COMPACTION()
+          << "No relocation: slot = " << slot << ", *slot = " << *slot
+          << ", from = " << from << ", to = " << to;
 #if DCHECK_IS_ON()
       // Verify that the already updated slot is valid, meaning:
       //  - has been cleared.
@@ -219,11 +220,12 @@ class HeapCompact::MovableObjectFixups final {
 
 #if DEBUG_HEAP_COMPACTION
   void dumpDebugStats() {
-    LOG_HEAP_COMPACTION(
-        "Fixups: pages=%u objects=%u callbacks=%u interior-size=%zu"
-        " interiors-f=%u\n",
-        relocatable_pages_.size(), fixups_.size(), fixup_callbacks_.size(),
-        interiors_ ? interiors_->IntervalCount() : 0, interior_fixups_.size());
+    LOG_HEAP_COMPACTION() << "Fixups: pages=" << relocatable_pages_.size()
+                          << " objects=" << fixups_.size()
+                          << " callbacks=" << fixup_callbacks_.size()
+                          << " interior-size="
+                          << (interiors_ ? interiors_->IntervalCount() : 0,
+                              interior_fixups_.size());
   }
 #endif
 
@@ -296,9 +298,9 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
   if (!RuntimeEnabledFeatures::HeapCompactionEnabled())
     return false;
 
-  LOG_HEAP_COMPACTION("shouldCompact(): gc=%s count=%zu free=%zu\n",
-                      ThreadState::GcReasonString(reason),
-                      gc_count_since_last_compaction_, free_list_size_);
+  LOG_HEAP_COMPACTION() << "shouldCompact(): gc=" << reason
+                        << " count=" << gc_count_since_last_compaction_
+                        << " free=" << free_list_size_;
   gc_count_since_last_compaction_++;
   // It is only safe to compact during non-conservative GCs.
   // TODO: for the main thread, limit this further to only idle GCs.
@@ -340,7 +342,7 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
 
 void HeapCompact::Initialize(ThreadState* state) {
   DCHECK(RuntimeEnabledFeatures::HeapCompactionEnabled());
-  LOG_HEAP_COMPACTION("Compacting: free=%zu\n", free_list_size_);
+  LOG_HEAP_COMPACTION() << "Compacting: free=" << free_list_size_;
   do_compact_ = true;
   freed_pages_ = 0;
   freed_size_ = 0;
@@ -371,7 +373,7 @@ void HeapCompact::UpdateHeapResidency(ThreadHeap* heap) {
 
   compactable_arenas_ = 0;
 #if DEBUG_HEAP_FREELIST
-  LOG_HEAP_FREELIST("Arena residencies: {");
+  std::stringstream stream;
 #endif
   for (int i = BlinkGC::kVector1ArenaIndex; i <= BlinkGC::kHashTableArenaIndex;
        ++i) {
@@ -380,7 +382,9 @@ void HeapCompact::UpdateHeapResidency(ThreadHeap* heap) {
     size_t free_list_size = arena->FreeListSize();
     total_arena_size += arena_size;
     total_free_list_size += free_list_size;
-    LOG_HEAP_FREELIST("%d: [%zu, %zu], ", i, arena_size, free_list_size);
+#if DEBUG_HEAP_FREELIST
+    stream << i << ": [" << arena_size << ", " << free_list_size << "], ";
+#endif
     // TODO: be more discriminating and consider arena
     // load factor, effectiveness of past compactions etc.
     if (!arena_size)
@@ -388,8 +392,11 @@ void HeapCompact::UpdateHeapResidency(ThreadHeap* heap) {
     // Mark the arena as compactable.
     compactable_arenas_ |= 0x1u << i;
   }
-  LOG_HEAP_FREELIST("}\nTotal = %zu, Free = %zu\n", total_arena_size,
-                    total_free_list_size);
+#if DEBUG_HEAP_FREELIST
+  LOG_HEAP_FREELIST() << "Arena residencies: {" << stream.str() << "}";
+  LOG_HEAP_FREELIST() << "Total = " << total_arena_size
+                      << ", Free = " << total_free_list_size;
+#endif
 
   // TODO(sof): consider smoothing the reported sizes.
   free_list_size_ = total_free_list_size;
@@ -443,12 +450,12 @@ void HeapCompact::FinishThreadCompaction() {
   object_size_freed_by_heap_compaction.Count(freed_size_ / 1024);
 
 #if DEBUG_LOG_HEAP_COMPACTION_RUNNING_TIME
-  LOG_HEAP_COMPACTION_INTERNAL(
-      "Compaction stats: time=%gms, pages freed=%zu, size=%zu\n",
-      time_for_heap_compaction, freed_pages_, freed_size_);
+  LOG_HEAP_COMPACTION_INTERNAL()
+      << "Compaction stats: time=" << time_for_heap_compaction
+      << "ms, pages freed=" << freed_pages_ << ", size=" << freed_size_;
 #else
-  LOG_HEAP_COMPACTION("Compaction stats: freed pages=%zu size=%zu\n",
-                      freed_pages_, freed_size_);
+  LOG_HEAP_COMPACTION() << "Compaction stats: freed pages=" << freed_pages_
+                        << " size=" << freed_size_;
 #endif
 }
 

@@ -10,7 +10,6 @@
 #include "base/memory/ptr_util.h"
 #include "platform/PlatformExport.h"
 #include "platform/heap/BlinkGC.h"
-#include "platform/wtf/DataLog.h"
 #include "platform/wtf/ThreadingPrimitives.h"
 
 #include <bitset>
@@ -177,34 +176,24 @@ class PLATFORM_EXPORT HeapCompact final {
 
 // Logging macros activated by debug switches.
 
-#define LOG_HEAP_COMPACTION_INTERNAL(msg, ...) \
-  DeprecatedDataLogF(msg, ##__VA_ARGS__)
+#define LOG_HEAP_COMPACTION_INTERNAL() DLOG(INFO)
 
 #if DEBUG_HEAP_COMPACTION
-#define LOG_HEAP_COMPACTION(msg, ...) \
-  LOG_HEAP_COMPACTION_INTERNAL(msg, ##__VA_ARGS__)
+#define LOG_HEAP_COMPACTION() LOG_HEAP_COMPACTION_INTERNAL()
 #else
-#define LOG_HEAP_COMPACTION(msg, ...) \
-  do {                                \
-  } while (0)
+#define LOG_HEAP_COMPACTION() EAT_STREAM_PARAMETERS
 #endif
 
 #if DEBUG_HEAP_FREELIST
-#define LOG_HEAP_FREELIST(msg, ...) \
-  LOG_HEAP_COMPACTION_INTERNAL(msg, ##__VA_ARGS__)
+#define LOG_HEAP_FREELIST() LOG_HEAP_COMPACTION_INTERNAL()
 #else
-#define LOG_HEAP_FREELIST(msg, ...) \
-  do {                              \
-  } while (0)
+#define LOG_HEAP_FREELIST() EAT_STREAM_PARAMETERS
 #endif
 
 #if DEBUG_HEAP_FREELIST == 2
-#define LOG_HEAP_FREELIST_VERBOSE(msg, ...) \
-  LOG_HEAP_COMPACTION_INTERNAL(msg, ##__VA_ARGS__)
+#define LOG_HEAP_FREELIST_VERBOSE() LOG_HEAP_COMPACTION_INTERNAL()
 #else
-#define LOG_HEAP_FREELIST_VERBOSE(msg, ...) \
-  do {                                      \
-  } while (0)
+#define LOG_HEAP_FREELIST_VERBOSE() EAT_STREAM_PARAMETERS
 #endif
 
 #endif  // HeapCompact_h

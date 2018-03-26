@@ -65,8 +65,6 @@ jumbo_component("wtf") {
     "ContainerAnnotations.h",
     "CryptographicallyRandomNumber.cpp",
     "CryptographicallyRandomNumber.h",
-    "DataLog.cpp",
-    "DataLog.h",
     "DateMath.cpp",
     "DateMath.h",
     "Deque.h",
