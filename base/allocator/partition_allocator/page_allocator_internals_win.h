@@ -5,6 +5,10 @@
 #ifndef BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_INTERNALS_WIN_H_
 #define BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_INTERNALS_WIN_H_
 
+#include "base/allocator/partition_allocator/page_allocator_internal.h"
+
+namespace base {
+
 // |VirtualAlloc| will fail if allocation at the hint address is blocked.
 const bool kHintIsAdvisory = false;
 std::atomic<int32_t> s_allocPageErrorCode{ERROR_SUCCESS};
@@ -38,13 +42,6 @@ void* SystemAllocPagesInternal(void* hint,
   }
   return ret;
 }
-
-// page_allocator.cc defines this function.
-void* SystemAllocPages(void* hint,
-                       size_t length,
-                       PageAccessibilityConfiguration accessibility,
-                       PageTag page_tag,
-                       bool commit);
 
 void* TrimMappingInternal(void* base,
                           size_t base_length,
@@ -116,5 +113,7 @@ void DiscardSystemPagesInternal(void* address, size_t length) {
     CHECK(ptr);
   }
 }
+
+}  // namespace base
 
 #endif  // BASE_ALLOCATOR_PARTITION_ALLOCATOR_PAGE_ALLOCATOR_INTERNALS_WIN_H_
