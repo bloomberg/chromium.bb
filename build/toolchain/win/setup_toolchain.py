@@ -211,17 +211,17 @@ def main():
           vc_bin_dir = os.path.realpath(path)
           break
 
-      for path in env['LIB'].split(os.pathsep):
+      for path in env['LIB'].split(';'):
         if os.path.exists(os.path.join(path, 'msvcrt.lib')):
           vc_lib_path = os.path.realpath(path)
           break
 
-      for path in env['LIB'].split(os.pathsep):
+      for path in env['LIB'].split(';'):
         if os.path.exists(os.path.join(path, 'atls.lib')):
           vc_lib_atlmfc_path = os.path.realpath(path)
           break
 
-      for path in env['LIB'].split(os.pathsep):
+      for path in env['LIB'].split(';'):
         if os.path.exists(os.path.join(path, 'User32.Lib')):
           vc_lib_um_path = os.path.realpath(path)
           break
