@@ -22,14 +22,18 @@ static const int kMagicRenderProcessId = 506116062;
 
 class TestWebSocketImpl : public network::WebSocket {
  public:
-  TestWebSocketImpl(std::unique_ptr<Delegate> delegate,
-                    network::mojom::WebSocketRequest request,
-                    int process_id,
-                    int frame_id,
-                    url::Origin origin,
-                    base::TimeDelta delay)
+  TestWebSocketImpl(
+      std::unique_ptr<Delegate> delegate,
+      network::mojom::WebSocketRequest request,
+      network::WebSocketThrottler::PendingConnection pending_connection_tracker,
+
+      int process_id,
+      int frame_id,
+      url::Origin origin,
+      base::TimeDelta delay)
       : network::WebSocket(std::move(delegate),
                            std::move(request),
+                           std::move(pending_connection_tracker),
                            process_id,
                            frame_id,
                            std::move(origin),
@@ -51,15 +55,20 @@ class TestWebSocketManager : public WebSocketManager {
     return sockets_;
   }
 
-  int num_pending_connections() const {
-    return num_pending_connections_;
+  int64_t num_pending_connections() const {
+    return throttler_.num_pending_connections();
   }
-  int64_t num_failed_connections() const {
-    return num_current_failed_connections_ + num_previous_failed_connections_;
+  int64_t num_current_succeeded_connections() const {
+    return throttler_.num_current_succeeded_connections();
   }
-  int64_t num_succeeded_connections() const {
-    return num_current_succeeded_connections_ +
-           num_previous_succeeded_connections_;
+  int64_t num_previous_succeeded_connections() const {
+    return throttler_.num_previous_succeeded_connections();
+  }
+  int64_t num_current_failed_connections() const {
+    return throttler_.num_current_failed_connections();
+  }
+  int64_t num_previous_failed_connections() const {
+    return throttler_.num_previous_failed_connections();
   }
 
   void DoCreateWebSocket(network::mojom::WebSocketRequest request) {
@@ -71,12 +80,14 @@ class TestWebSocketManager : public WebSocketManager {
   std::unique_ptr<network::WebSocket> CreateWebSocket(
       std::unique_ptr<network::WebSocket::Delegate> delegate,
       network::mojom::WebSocketRequest request,
+      network::WebSocketThrottler::PendingConnection pending_connection_tracker,
       int process_id,
       int frame_id,
       url::Origin origin,
       base::TimeDelta delay) override {
     auto impl = std::make_unique<TestWebSocketImpl>(
-        std::move(delegate), std::move(request), process_id, frame_id,
+        std::move(delegate), std::move(request),
+        std::move(pending_connection_tracker), process_id, frame_id,
         std::move(origin), delay);
     // We keep a vector of sockets here to track their creation order.
     sockets_.push_back(impl.get());
@@ -146,108 +157,18 @@ TEST_F(WebSocketManagerTest, SendFrameButNotConnectedYet) {
   websocket->SendFrame(true, network::mojom::WebSocketMessageType::TEXT, data);
 }
 
-TEST_F(WebSocketManagerTest, DelayFor4thPendingConnectionIsZero) {
-  AddMultipleChannels(4);
-
-  EXPECT_EQ(4, websocket_manager()->num_pending_connections());
-  EXPECT_EQ(0, websocket_manager()->num_failed_connections());
-  EXPECT_EQ(0, websocket_manager()->num_succeeded_connections());
-
-  ASSERT_EQ(4U, websocket_manager()->sockets().size());
-  EXPECT_EQ(base::TimeDelta(), websocket_manager()->sockets()[3]->delay());
-}
-
-TEST_F(WebSocketManagerTest, DelayFor8thPendingConnectionIsNonZero) {
-  AddMultipleChannels(8);
-
-  EXPECT_EQ(8, websocket_manager()->num_pending_connections());
-  EXPECT_EQ(0, websocket_manager()->num_failed_connections());
-  EXPECT_EQ(0, websocket_manager()->num_succeeded_connections());
-
-  ASSERT_EQ(8U, websocket_manager()->sockets().size());
-  EXPECT_LT(base::TimeDelta(), websocket_manager()->sockets()[7]->delay());
-}
-
-TEST_F(WebSocketManagerTest, DelayFor17thPendingConnection) {
-  AddMultipleChannels(17);
-
-  EXPECT_EQ(17, websocket_manager()->num_pending_connections());
-  EXPECT_EQ(0, websocket_manager()->num_failed_connections());
-  EXPECT_EQ(0, websocket_manager()->num_succeeded_connections());
-
-  ASSERT_EQ(17U, websocket_manager()->sockets().size());
-  EXPECT_LE(base::TimeDelta::FromMilliseconds(1000),
-            websocket_manager()->sockets()[16]->delay());
-  EXPECT_GE(base::TimeDelta::FromMilliseconds(5000),
-            websocket_manager()->sockets()[16]->delay());
-}
-
 // The 256th connection is rejected by per-renderer WebSocket throttling.
 // This is not counted as a failure.
 TEST_F(WebSocketManagerTest, Rejects256thPendingConnection) {
   AddMultipleChannels(256);
 
   EXPECT_EQ(255, websocket_manager()->num_pending_connections());
-  EXPECT_EQ(0, websocket_manager()->num_failed_connections());
-  EXPECT_EQ(0, websocket_manager()->num_succeeded_connections());
+  EXPECT_EQ(0, websocket_manager()->num_current_succeeded_connections());
+  EXPECT_EQ(0, websocket_manager()->num_previous_succeeded_connections());
+  EXPECT_EQ(0, websocket_manager()->num_current_failed_connections());
+  EXPECT_EQ(0, websocket_manager()->num_previous_failed_connections());
 
   ASSERT_EQ(255U, websocket_manager()->sockets().size());
-}
-
-TEST_F(WebSocketManagerTest, DelayIsZeroAfter3FailedConnections) {
-  AddAndCancelMultipleChannels(3);
-
-  EXPECT_EQ(0, websocket_manager()->num_pending_connections());
-  EXPECT_EQ(3, websocket_manager()->num_failed_connections());
-  EXPECT_EQ(0, websocket_manager()->num_succeeded_connections());
-
-  AddMultipleChannels(1);
-
-  ASSERT_EQ(1U, websocket_manager()->sockets().size());
-  EXPECT_EQ(base::TimeDelta(), websocket_manager()->sockets()[0]->delay());
-}
-
-TEST_F(WebSocketManagerTest, DelayIsNonZeroAfter7FailedConnections) {
-  AddAndCancelMultipleChannels(7);
-
-  EXPECT_EQ(0, websocket_manager()->num_pending_connections());
-  EXPECT_EQ(7, websocket_manager()->num_failed_connections());
-  EXPECT_EQ(0, websocket_manager()->num_succeeded_connections());
-
-  AddMultipleChannels(1);
-
-  ASSERT_EQ(1U, websocket_manager()->sockets().size());
-  EXPECT_LT(base::TimeDelta(), websocket_manager()->sockets()[0]->delay());
-}
-
-TEST_F(WebSocketManagerTest, DelayAfter16FailedConnections) {
-  AddAndCancelMultipleChannels(16);
-
-  EXPECT_EQ(0, websocket_manager()->num_pending_connections());
-  EXPECT_EQ(16, websocket_manager()->num_failed_connections());
-  EXPECT_EQ(0, websocket_manager()->num_succeeded_connections());
-
-  AddMultipleChannels(1);
-
-  ASSERT_EQ(1U, websocket_manager()->sockets().size());
-  EXPECT_LE(base::TimeDelta::FromMilliseconds(1000),
-            websocket_manager()->sockets()[0]->delay());
-  EXPECT_GE(base::TimeDelta::FromMilliseconds(5000),
-            websocket_manager()->sockets()[0]->delay());
-}
-
-TEST_F(WebSocketManagerTest, NotRejectedAfter255FailedConnections) {
-  AddAndCancelMultipleChannels(255);
-
-  EXPECT_EQ(0, websocket_manager()->num_pending_connections());
-  EXPECT_EQ(255, websocket_manager()->num_failed_connections());
-  EXPECT_EQ(0, websocket_manager()->num_succeeded_connections());
-
-  AddMultipleChannels(1);
-
-  EXPECT_EQ(1, websocket_manager()->num_pending_connections());
-  EXPECT_EQ(255, websocket_manager()->num_failed_connections());
-  EXPECT_EQ(0, websocket_manager()->num_succeeded_connections());
 }
 
 }  // namespace

@@ -13,7 +13,6 @@
 #include "base/memory/ptr_util.h"
 #include "base/memory/weak_ptr.h"
 #include "base/numerics/safe_conversions.h"
-#include "base/rand_util.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
 #include "content/browser/ssl/ssl_error_handler.h"
@@ -31,10 +30,6 @@ namespace {
 
 const char kWebSocketManagerKeyName[] = "web_socket_manager";
 
-// Max number of pending connections per WebSocketManager used for per-renderer
-// WebSocket throttling.
-const int kMaxPendingWebSocketConnections = 255;
-
 }  // namespace
 
 class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
@@ -44,10 +39,6 @@ class WebSocketManager::Delegate final : public network::WebSocket::Delegate {
 
   net::URLRequestContext* GetURLRequestContext() override {
     return manager_->GetURLRequestContext();
-  }
-
-  void OnReceivedResponseFromServer(network::WebSocket* impl) override {
-    manager_->OnReceivedResponseFromServer(impl);
   }
 
   void OnLostConnectionToClient(network::WebSocket* impl) override {
@@ -216,11 +207,6 @@ void WebSocketManager::CreateWebSocketWithOrigin(
 WebSocketManager::WebSocketManager(int process_id,
                                    StoragePartition* storage_partition)
     : process_id_(process_id),
-      num_pending_connections_(0),
-      num_current_succeeded_connections_(0),
-      num_previous_succeeded_connections_(0),
-      num_current_failed_connections_(0),
-      num_previous_failed_connections_(0),
       context_destroyed_(false) {
   if (storage_partition) {
     url_request_context_getter_ = storage_partition->GetURLRequestContext();
@@ -251,7 +237,7 @@ void WebSocketManager::DoCreateWebSocket(
     network::mojom::WebSocketRequest request) {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::IO));
 
-  if (num_pending_connections_ >= kMaxPendingWebSocketConnections) {
+  if (throttler_.HasTooManyPendingConnections()) {
     // Too many websockets!
     request.ResetWithReason(
         network::mojom::WebSocket::kInsufficientResources,
@@ -269,10 +255,10 @@ void WebSocketManager::DoCreateWebSocket(
   // Keep all network::WebSockets alive until either the client drops its
   // connection (see OnLostConnectionToClient) or we need to shutdown.
 
-  impls_.insert(CreateWebSocket(std::make_unique<Delegate>(this),
-                                std::move(request), process_id_, frame_id,
-                                std::move(origin), CalculateDelay()));
-  ++num_pending_connections_;
+  impls_.insert(CreateWebSocket(
+      std::make_unique<Delegate>(this), std::move(request),
+      throttler_.IssuePendingConnectionTracker(), process_id_, frame_id,
+      std::move(origin), throttler_.CalculateDelay()));
 
   if (!throttling_period_timer_.IsRunning()) {
     throttling_period_timer_.Start(
@@ -283,42 +269,23 @@ void WebSocketManager::DoCreateWebSocket(
   }
 }
 
-// Calculate delay as described in the per-renderer WebSocket throttling
-// design doc: https://goo.gl/tldFNn
-base::TimeDelta WebSocketManager::CalculateDelay() const {
-  int64_t f = num_previous_failed_connections_ +
-              num_current_failed_connections_;
-  int64_t s = num_previous_succeeded_connections_ +
-              num_current_succeeded_connections_;
-  int p = num_pending_connections_;
-  return base::TimeDelta::FromMilliseconds(
-      base::RandInt(1000, 5000) *
-      (1 << std::min(p + f / (s + 1), INT64_C(16))) / 65536);
-}
-
 void WebSocketManager::ThrottlingPeriodTimerCallback() {
-  num_previous_failed_connections_ = num_current_failed_connections_;
-  num_current_failed_connections_ = 0;
-
-  num_previous_succeeded_connections_ = num_current_succeeded_connections_;
-  num_current_succeeded_connections_ = 0;
-
-  if (num_pending_connections_ == 0 &&
-      num_previous_failed_connections_ == 0 &&
-      num_previous_succeeded_connections_ == 0) {
+  throttler_.Roll();
+  if (throttler_.IsClean())
     throttling_period_timer_.Stop();
-  }
 }
 
 std::unique_ptr<network::WebSocket> WebSocketManager::CreateWebSocket(
     std::unique_ptr<network::WebSocket::Delegate> delegate,
     network::mojom::WebSocketRequest request,
+    network::WebSocketThrottler::PendingConnection pending_connection_tracker,
     int child_id,
     int frame_id,
     url::Origin origin,
     base::TimeDelta delay) {
   return std::make_unique<network::WebSocket>(
-      std::move(delegate), std::move(request), child_id, frame_id,
+      std::move(delegate), std::move(request),
+      std::move(pending_connection_tracker), child_id, frame_id,
       std::move(origin), delay);
 }
 
@@ -326,22 +293,8 @@ net::URLRequestContext* WebSocketManager::GetURLRequestContext() {
   return url_request_context_getter_->GetURLRequestContext();
 }
 
-void WebSocketManager::OnReceivedResponseFromServer(network::WebSocket* impl) {
-  // The server accepted this WebSocket connection.
-  impl->OnHandshakeSucceeded();
-  --num_pending_connections_;
-  DCHECK_GE(num_pending_connections_, 0);
-  ++num_current_succeeded_connections_;
-}
-
 void WebSocketManager::OnLostConnectionToClient(network::WebSocket* impl) {
   // The client is no longer interested in this WebSocket.
-  if (!impl->handshake_succeeded()) {
-    // Update throttling counters (failure).
-    --num_pending_connections_;
-    DCHECK_GE(num_pending_connections_, 0);
-    ++num_current_failed_connections_;
-  }
   impl->GoAway();
   const auto it = impls_.find(impl);
   DCHECK(it != impls_.end());

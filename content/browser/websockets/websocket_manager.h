@@ -17,6 +17,7 @@
 #include "net/url_request/url_request_context_getter.h"
 #include "net/url_request/url_request_context_getter_observer.h"
 #include "services/network/websocket.h"
+#include "services/network/websocket_throttler.h"
 
 namespace content {
 class StoragePartition;
@@ -58,20 +59,19 @@ class CONTENT_EXPORT WebSocketManager
   void DoCreateWebSocket(int frame_id,
                          url::Origin origin,
                          network::mojom::WebSocketRequest request);
-  base::TimeDelta CalculateDelay() const;
   void ThrottlingPeriodTimerCallback();
 
   // This is virtual to support testing.
   virtual std::unique_ptr<network::WebSocket> CreateWebSocket(
       std::unique_ptr<network::WebSocket::Delegate> delegate,
       network::mojom::WebSocketRequest request,
+      network::WebSocketThrottler::PendingConnection pending_connection_tracker,
       int child_id,
       int frame_id,
       url::Origin origin,
       base::TimeDelta delay);
 
   net::URLRequestContext* GetURLRequestContext();
-  void OnReceivedResponseFromServer(network::WebSocket* impl);
   virtual void OnLostConnectionToClient(network::WebSocket* impl);
 
   void ObserveURLRequestContextGetter();
@@ -85,18 +85,7 @@ class CONTENT_EXPORT WebSocketManager
   // Timer and counters for per-renderer WebSocket throttling.
   base::RepeatingTimer throttling_period_timer_;
 
-  // The current number of pending connections.
-  int num_pending_connections_;
-
-  // The number of handshakes that failed in the current and previous time
-  // period.
-  int64_t num_current_succeeded_connections_;
-  int64_t num_previous_succeeded_connections_;
-
-  // The number of handshakes that succeeded in the current and previous time
-  // period.
-  int64_t num_current_failed_connections_;
-  int64_t num_previous_failed_connections_;
+  network::WebSocketPerProcessThrottler throttler_;
 
   bool context_destroyed_;
 

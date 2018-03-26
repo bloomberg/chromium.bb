@@ -90,6 +90,8 @@ component("network_service") {
       "websocket.h",
       "websocket_factory.cc",
       "websocket_factory.h",
+      "websocket_throttler.cc",
+      "websocket_throttler.h",
     ]
   }
 
@@ -163,7 +165,10 @@ source_set("tests") {
   ]
 
   if (!is_ios) {
-    sources += [ "proxy_resolver_factory_mojo_unittest.cc" ]
+    sources += [
+      "proxy_resolver_factory_mojo_unittest.cc",
+      "websocket_throttler_unittest.cc",
+    ]
   }
 
   deps = [

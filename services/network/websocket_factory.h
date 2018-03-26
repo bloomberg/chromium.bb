@@ -12,6 +12,7 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/websocket.h"
+#include "services/network/websocket_throttler.h"
 
 namespace url {
 class Origin;
@@ -39,6 +40,8 @@ class WebSocketFactory final : public base::SupportsWeakPtr<WebSocketFactory> {
 
   // The connections held by this factory.
   std::set<std::unique_ptr<WebSocket>, base::UniquePtrComparator> connections_;
+
+  WebSocketThrottler throttler_;
 
   // |context_| outlives this object.
   NetworkContext* const context_;
