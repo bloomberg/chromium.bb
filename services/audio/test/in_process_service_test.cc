@@ -6,10 +6,12 @@
 #include "media/audio/mock_audio_manager.h"
 #include "media/audio/test_audio_thread.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+#include "services/audio/in_process_audio_manager_accessor.h"
 #include "services/audio/public/cpp/audio_system_to_service_adapter.h"
 #include "services/audio/public/cpp/fake_system_info.h"
 #include "services/audio/public/mojom/constants.mojom.h"
-#include "services/audio/service_factory.h"
+#include "services/audio/service.h"
+#include "services/audio/test/service_lifetime_test_template.h"
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/service_manager/public/mojom/service_factory.mojom.h"
@@ -25,8 +27,10 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
   class AudioThreadContext
       : public base::RefCountedThreadSafe<AudioThreadContext> {
    public:
-    explicit AudioThreadContext(media::AudioManager* audio_manager)
-        : audio_manager_(audio_manager) {}
+    AudioThreadContext(media::AudioManager* audio_manager,
+                       base::TimeDelta service_quit_timeout)
+        : audio_manager_(audio_manager),
+          service_quit_timeout_(service_quit_timeout) {}
 
     void CreateServiceOnAudioThread(
         service_manager::mojom::ServiceRequest request) {
@@ -39,7 +43,10 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
       }
       DCHECK(!service_context_);
       service_context_ = std::make_unique<service_manager::ServiceContext>(
-          CreateEmbeddedService(audio_manager_), std::move(request));
+          std::make_unique<audio::Service>(
+              std::make_unique<InProcessAudioManagerAccessor>(audio_manager_),
+              service_quit_timeout_),
+          std::move(request));
       service_context_->SetQuitClosure(base::BindRepeating(
           &AudioThreadContext::QuitOnAudioThread, base::Unretained(this)));
     }
@@ -62,13 +69,16 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
     };
 
     media::AudioManager* const audio_manager_;
+    const base::TimeDelta service_quit_timeout_;
     std::unique_ptr<service_manager::ServiceContext> service_context_;
   };
 
   ServiceTestClient(service_manager::test::ServiceTest* test,
-                    media::AudioManager* audio_manager)
+                    media::AudioManager* audio_manager,
+                    base::TimeDelta service_quit_timeout)
       : service_manager::test::ServiceTestClient(test),
-        audio_thread_context_(new AudioThreadContext(audio_manager)) {
+        audio_thread_context_(
+            new AudioThreadContext(audio_manager, service_quit_timeout)) {
     registry_.AddInterface<service_manager::mojom::ServiceFactory>(
         base::BindRepeating(&ServiceTestClient::Create,
                             base::Unretained(this)));
@@ -115,14 +125,20 @@ class ServiceTestClient : public service_manager::test::ServiceTestClient,
 template <bool use_audio_thread>
 class InProcessServiceTest : public service_manager::test::ServiceTest {
  public:
-  InProcessServiceTest() : ServiceTest("audio_unittests") {}
+  explicit InProcessServiceTest(base::TimeDelta service_quit_timeout)
+      : ServiceTest("audio_unittests"),
+        service_quit_timeout_(service_quit_timeout) {}
+
+  InProcessServiceTest()
+      : InProcessServiceTest(base::TimeDelta() /* not timeout */) {}
 
   ~InProcessServiceTest() override {}
 
  protected:
   // service_manager::test::ServiceTest:
   std::unique_ptr<service_manager::Service> CreateService() override {
-    return std::make_unique<ServiceTestClient>(this, audio_manager_.get());
+    return std::make_unique<ServiceTestClient>(this, audio_manager_.get(),
+                                               service_quit_timeout_);
   }
 
   void SetUp() override {
@@ -153,6 +169,7 @@ class InProcessServiceTest : public service_manager::test::ServiceTest {
   std::unique_ptr<media::AudioSystem> audio_system_;
 
  private:
+  const base::TimeDelta service_quit_timeout_;
   DISALLOW_COPY_AND_ASSIGN(InProcessServiceTest);
 };
 
@@ -186,17 +203,35 @@ TEST_F(FakeSystemInfoTest, HasInputDevicesCalledOnGlobalBinderOverride) {
       mojom::kServiceName);
 }
 
+// Service lifetime tests.
+class InProcessServiceLifetimeTestBase : public InProcessServiceTest<false> {
+ public:
+  using TestBase = InProcessServiceTest<false>;
+
+  InProcessServiceLifetimeTestBase()
+      : TestBase(base::TimeDelta::FromMilliseconds(1)) {}
+  ~InProcessServiceLifetimeTestBase() override {}
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(InProcessServiceLifetimeTestBase);
+};
+
+INSTANTIATE_TYPED_TEST_CASE_P(InProcessAudioService,
+                              ServiceLifetimeTestTemplate,
+                              InProcessServiceLifetimeTestBase);
+
 }  // namespace audio
 
 // AudioSystem interface conformance tests.
 // AudioSystemTestTemplate is defined in media, so should be its instantiations.
 namespace media {
 
-using InProcessServiceTestVariations =
+using AudioSystemTestVariations =
     testing::Types<audio::InProcessServiceTest<false>,
                    audio::InProcessServiceTest<true>>;
 
-INSTANTIATE_TYPED_TEST_CASE_P(InProcessService,
+INSTANTIATE_TYPED_TEST_CASE_P(InProcessAudioService,
                               AudioSystemTestTemplate,
-                              InProcessServiceTestVariations);
+                              AudioSystemTestVariations);
+
 }  // namespace media

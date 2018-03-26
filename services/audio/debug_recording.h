@@ -17,13 +17,19 @@ class AudioManager;
 enum class AudioDebugRecordingStreamType;
 }
 
+namespace service_manager {
+class ServiceContextRef;
+}
+
 namespace audio {
 
 // Implementation for controlling audio debug recording.
 class DebugRecording : public mojom::DebugRecording {
  public:
-  DebugRecording(mojom::DebugRecordingRequest request,
-                 media::AudioManager* audio_manager);
+  DebugRecording(
+      mojom::DebugRecordingRequest request,
+      media::AudioManager* audio_manager,
+      std::unique_ptr<service_manager::ServiceContextRef> service_ref);
 
   // Disables audio debug recording if Enable() was called before.
   ~DebugRecording() override;
@@ -43,9 +49,10 @@ class DebugRecording : public mojom::DebugRecording {
       mojom::DebugRecordingFileProvider::CreateWavFileCallback reply_callback);
   bool IsEnabled();
 
+  media::AudioManager* const audio_manager_;
   mojo::Binding<mojom::DebugRecording> binding_;
   mojom::DebugRecordingFileProviderPtr file_provider_;
-  media::AudioManager* const audio_manager_;
+  std::unique_ptr<service_manager::ServiceContextRef> service_ref_;
 
   base::WeakPtrFactory<DebugRecording> weak_factory_;
   DISALLOW_COPY_AND_ASSIGN(DebugRecording);

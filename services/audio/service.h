@@ -11,6 +11,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
+#include "base/timer/timer.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
 #include "services/audio/public/mojom/system_info.mojom.h"
 #include "services/service_manager/public/cpp/binder_registry.h"
@@ -19,6 +20,10 @@
 namespace media {
 class AudioManager;
 }  // namespace media
+
+namespace service_manager {
+class ServiceContextRefFactory;
+}
 
 namespace audio {
 class DebugRecording;
@@ -39,8 +44,11 @@ class Service : public service_manager::Service {
     virtual media::AudioManager* GetAudioManager() = 0;
   };
 
-  explicit Service(
-      std::unique_ptr<AudioManagerAccessor> audio_manager_accessor);
+  // Service will attempt to quit if there are no connections to it within
+  // |quit_timeout| interval. If |quit_timeout| is base::TimeDelta() the
+  // service never quits.
+  Service(std::unique_ptr<AudioManagerAccessor> audio_manager_accessor,
+          base::TimeDelta quit_timeout);
   ~Service() final;
 
   // service_manager::Service implementation.
@@ -50,19 +58,30 @@ class Service : public service_manager::Service {
                        mojo::ScopedMessagePipeHandle interface_pipe) final;
   bool OnServiceManagerConnectionLost() final;
 
+  void SetQuitClosureForTesting(base::RepeatingClosure quit_closure);
+
  private:
   void BindSystemInfoRequest(mojom::SystemInfoRequest request);
   void BindDebugRecordingRequest(mojom::DebugRecordingRequest request);
+
+  void MaybeRequestQuitDelayed();
+  void MaybeRequestQuit();
+
+  // Thread it runs on should be the same as the main thread of AudioManager
+  // provided by AudioManagerAccessor.
+  THREAD_CHECKER(thread_checker_);
+
+  // The members below should outlive |ref_factory_|.
+  base::RepeatingClosure quit_closure_;
+  const base::TimeDelta quit_timeout_;
+  base::OneShotTimer quit_timer_;
+  std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   std::unique_ptr<AudioManagerAccessor> audio_manager_accessor_;
   std::unique_ptr<SystemInfo> system_info_;
   std::unique_ptr<DebugRecording> debug_recording_;
 
   service_manager::BinderRegistry registry_;
-
-  // Thread it runs on should be the same as the main thread of AudioManager
-  // provided by AudioManagerAccessor.
-  THREAD_CHECKER(thread_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

@@ -9,13 +9,17 @@
 
 #include "media/audio/audio_debug_recording_manager.h"
 #include "media/audio/audio_manager.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 
 namespace audio {
 
-DebugRecording::DebugRecording(mojom::DebugRecordingRequest request,
-                               media::AudioManager* audio_manager)
-    : binding_(this, std::move(request)),
-      audio_manager_(audio_manager),
+DebugRecording::DebugRecording(
+    mojom::DebugRecordingRequest request,
+    media::AudioManager* audio_manager,
+    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
+    : audio_manager_(audio_manager),
+      binding_(this, std::move(request)),
+      service_ref_(std::move(service_ref)),
       weak_factory_(this) {
   DCHECK(audio_manager_ != nullptr);
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
@@ -46,6 +50,8 @@ void DebugRecording::Enable(
 
 void DebugRecording::Disable() {
   DCHECK(audio_manager_->GetTaskRunner()->BelongsToCurrentThread());
+  // Client connection is lost, resetting the reference.
+  service_ref_.reset();
   if (!IsEnabled())
     return;
   file_provider_.reset();

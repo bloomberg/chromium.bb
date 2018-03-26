@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/test/scoped_task_environment.h"
 #include "media/audio/audio_debug_recording_test.h"
@@ -13,9 +14,11 @@
 #include "media/audio/mock_audio_manager.h"
 #include "services/audio/public/cpp/debug_recording_session.h"
 #include "services/audio/public/mojom/debug_recording.mojom.h"
+#include "services/service_manager/public/cpp/service_context_ref.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 using testing::_;
+using testing::Exactly;
 
 namespace audio {
 
@@ -53,7 +56,10 @@ class MockFileProvider : public mojom::DebugRecordingFileProvider {
 
 class DebugRecordingTest : public media::AudioDebugRecordingTest {
  public:
-  DebugRecordingTest() = default;
+  DebugRecordingTest()
+      : service_ref_factory_(
+            base::BindRepeating(&DebugRecordingTest::OnNoServiceRefs,
+                                base::Unretained(this))) {}
   ~DebugRecordingTest() override = default;
 
   void SetUp() override {
@@ -64,11 +70,14 @@ class DebugRecordingTest : public media::AudioDebugRecordingTest {
   void TearDown() override { ShutdownAudioManager(); }
 
  protected:
+  MOCK_METHOD0(OnNoServiceRefs, void());
+
   void CreateDebugRecording() {
     debug_recording_ = std::make_unique<DebugRecording>(
         mojo::MakeRequest(&debug_recording_ptr_),
-        static_cast<media::AudioManager*>(mock_audio_manager_.get()));
-    EXPECT_TRUE(debug_recording_ptr_.is_bound());
+        static_cast<media::AudioManager*>(mock_audio_manager_.get()),
+        service_ref_factory_.CreateRef());
+    EXPECT_FALSE(service_ref_factory_.HasNoRefs());
   }
 
   void EnableDebugRecording() {
@@ -77,18 +86,25 @@ class DebugRecordingTest : public media::AudioDebugRecordingTest {
         mojo::MakeRequest(&file_provider_ptr), base::FilePath(kBaseFileName));
     ASSERT_TRUE(file_provider_ptr.is_bound());
     debug_recording_ptr_->Enable(std::move(file_provider_ptr));
+    EXPECT_FALSE(service_ref_factory_.HasNoRefs());
   }
 
-  void DestroyDebugRecording() { debug_recording_ptr_.reset(); }
+  void DestroyDebugRecording() {
+    debug_recording_ptr_.reset();
+    scoped_task_environment_.RunUntilIdle();
+    EXPECT_TRUE(service_ref_factory_.HasNoRefs());
+  }
 
   std::unique_ptr<DebugRecording> debug_recording_;
   mojom::DebugRecordingPtr debug_recording_ptr_;
+  service_manager::ServiceContextRefFactory service_ref_factory_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DebugRecordingTest);
 };
 
 TEST_F(DebugRecordingTest, EnableResetEnablesDisablesDebugRecording) {
+  EXPECT_CALL(*this, OnNoServiceRefs()).Times(Exactly(1));
   CreateDebugRecording();
 
   EXPECT_CALL(*mock_debug_recording_manager_, EnableDebugRecording(_));
@@ -99,6 +115,7 @@ TEST_F(DebugRecordingTest, EnableResetEnablesDisablesDebugRecording) {
 }
 
 TEST_F(DebugRecordingTest, ResetWithoutEnableDoesNotDisableDebugRecording) {
+  EXPECT_CALL(*this, OnNoServiceRefs()).Times(Exactly(1));
   CreateDebugRecording();
 
   EXPECT_CALL(*mock_debug_recording_manager_, DisableDebugRecording()).Times(0);
@@ -106,6 +123,7 @@ TEST_F(DebugRecordingTest, ResetWithoutEnableDoesNotDisableDebugRecording) {
 }
 
 TEST_F(DebugRecordingTest, CreateWavFileCallsFileProviderCreateWavFile) {
+  EXPECT_CALL(*this, OnNoServiceRefs()).Times(Exactly(1));
   CreateDebugRecording();
 
   mojom::DebugRecordingFileProviderPtr file_provider_ptr;
@@ -125,6 +143,21 @@ TEST_F(DebugRecordingTest, CreateWavFileCallsFileProviderCreateWavFile) {
   scoped_task_environment_.RunUntilIdle();
 
   EXPECT_CALL(*mock_debug_recording_manager_, DisableDebugRecording());
+  DestroyDebugRecording();
+}
+
+TEST_F(DebugRecordingTest, SequencialCreate) {
+  EXPECT_CALL(*this, OnNoServiceRefs()).Times(Exactly(2));
+  CreateDebugRecording();
+  DestroyDebugRecording();
+  CreateDebugRecording();
+  DestroyDebugRecording();
+}
+
+TEST_F(DebugRecordingTest, ConcurrentCreate) {
+  CreateDebugRecording();
+  CreateDebugRecording();
+  EXPECT_CALL(*this, OnNoServiceRefs());
   DestroyDebugRecording();
 }
 
