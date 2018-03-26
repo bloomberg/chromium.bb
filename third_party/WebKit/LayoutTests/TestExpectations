@@ -68,7 +68,7 @@ crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/at
 crbug.com/771643 compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 crbug.com/771643 virtual/prefer_compositing_to_lcd_text/compositing/overflow/nested-border-radius-clipping.html [ Failure ]
 
-crbug.com/771643 [ Mac ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Pass Failure ]
+crbug.com/771643 [ Mac Win ] virtual/gpu-rasterization/images/color-profile-filter.html [ Timeout Pass Failure ]
 crbug.com/805134 http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 crbug.com/805134 virtual/threaded/http/tests/devtools/tracing/scroll-invalidations.js [ Failure ]
 
@@ -3008,7 +3008,6 @@ crbug.com/787971 external/wpt/WebCryptoAPI/derive_bits_keys/pbkdf2.https.worker.
 
 # Tests occasionaly timing out (flaky) on WebKit Win7 dbg builder
 crbug.com/757955 [ Win7 Debug ] http/tests/devtools/sources/debugger-pause/pause-on-elements-panel.js [ Pass Timeout ]
-crbug.com/757955 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/mozilla/cursors.html [ Pass Timeout ]
 crbug.com/757955 [ Win7 Debug ] storage/indexeddb/objectstore-cursor.html [ Pass Timeout ]
 crbug.com/757955 http/tests/devtools/tracing/timeline-paint/layer-tree.js [ Pass Failure Timeout ]
@@ -3410,3 +3409,6 @@ crbug.com/825262 [ Win Mac Linux ] external/wpt/css/css-transitions/properties-v
 crbug.com/825262 [ Win Mac Linux ] external/wpt/css/css-transitions/properties-value-inherit-002.html [ Pass Failure ]
 crbug.com/825262 [ Win ] external/wpt/css/css-transitions/properties-value-003.html [ Pass Failure ]
 crbug.com/825262 [ Win7 ] external/wpt/css/css-transitions/properties-value-implicit-001.html [ Pass Failure ]
+
+# Sheriff 2018-03-26
+crbug.com/825733 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Timeout Failure ]
