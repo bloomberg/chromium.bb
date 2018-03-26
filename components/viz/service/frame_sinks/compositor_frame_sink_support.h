@@ -70,6 +70,8 @@ class VIZ_SERVICE_EXPORT CompositorFrameSinkSupport
     return last_activated_surface_id_.local_surface_id();
   }
 
+  bool is_root() const { return is_root_; }
+
   FrameSinkManagerImpl* frame_sink_manager() { return frame_sink_manager_; }
 
   // Viz hit-test setup is only called when |is_root_| is true (except on

@@ -166,9 +166,6 @@ void FrameSinkManagerImpl::CreateRootCompositorFrameSink(
               std::move(params->compositor_frame_sink_client)),
           std::move(params->display_private),
           mojom::DisplayClientPtr(std::move(params->display_client)));
-
-  for (auto& observer : observer_list_)
-    observer.OnCreatedRootCompositorFrameSink(params->frame_sink_id);
 }
 
 void FrameSinkManagerImpl::CreateCompositorFrameSink(
@@ -180,17 +177,11 @@ void FrameSinkManagerImpl::CreateCompositorFrameSink(
 
   sink_map_[frame_sink_id] = std::make_unique<CompositorFrameSinkImpl>(
       this, frame_sink_id, std::move(request), std::move(client));
-
-  for (auto& observer : observer_list_)
-    observer.OnCreatedCompositorFrameSink(frame_sink_id);
 }
 
 void FrameSinkManagerImpl::DestroyCompositorFrameSink(
     const FrameSinkId& frame_sink_id,
     DestroyCompositorFrameSinkCallback callback) {
-  for (auto& observer : observer_list_)
-    observer.OnDestroyedCompositorFrameSink(frame_sink_id);
-
   sink_map_.erase(frame_sink_id);
   std::move(callback).Run();
 }
@@ -400,7 +391,7 @@ void FrameSinkManagerImpl::RegisterCompositorFrameSinkSupport(
     support->SetBeginFrameSource(it->second.source);
 
   for (auto& observer : observer_list_)
-    observer.OnRegisteredCompositorFrameSinkSupport(frame_sink_id, support);
+    observer.OnCreatedCompositorFrameSink(frame_sink_id, support->is_root());
 }
 
 void FrameSinkManagerImpl::UnregisterCompositorFrameSinkSupport(
@@ -408,7 +399,7 @@ void FrameSinkManagerImpl::UnregisterCompositorFrameSinkSupport(
   DCHECK(base::ContainsKey(support_map_, frame_sink_id));
 
   for (auto& observer : observer_list_)
-    observer.OnUnregisteredCompositorFrameSinkSupport(frame_sink_id);
+    observer.OnDestroyedCompositorFrameSink(frame_sink_id);
 
   for (auto& capturer : video_capturers_) {
     if (capturer->requested_target() == frame_sink_id)
