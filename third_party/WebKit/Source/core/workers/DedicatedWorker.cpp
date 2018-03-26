@@ -71,8 +71,8 @@ DedicatedWorker* DedicatedWorker::Create(ExecutionContext* context,
     return nullptr;
   }
 
-  // TODO(nhiroki): Remove this check once module scripts are supported on
-  // WorkerGlobalScope (https://crbug.com/680046).
+  // TODO(nhiroki): Remove this flag check once module loading for
+  // DedicatedWorker is enabled by default (https://crbug.com/680046).
   if (options.type() == "module" &&
       !RuntimeEnabledFeatures::ModuleDedicatedWorkerEnabled()) {
     exception_state.ThrowTypeError(

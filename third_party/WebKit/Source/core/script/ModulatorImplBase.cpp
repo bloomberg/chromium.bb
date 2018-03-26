@@ -4,6 +4,7 @@
 
 #include "core/script/ModulatorImplBase.h"
 
+#include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/modulescript/ModuleScriptFetchRequest.h"
 #include "core/loader/modulescript/ModuleScriptLoaderRegistry.h"
@@ -12,6 +13,7 @@
 #include "core/script/ModuleMap.h"
 #include "core/script/ModuleScript.h"
 #include "core/script/ScriptModuleResolverImpl.h"
+#include "platform/bindings/V8ThrowException.h"
 #include "public/platform/TaskType.h"
 
 namespace blink {
@@ -98,6 +100,12 @@ void ModulatorImplBase::ResolveDynamically(
     const KURL& referrer_url,
     const ReferrerScriptInfo& referrer_info,
     ScriptPromiseResolver* resolver) {
+  String reason;
+  if (IsDynamicImportForbidden(&reason)) {
+    resolver->Reject(V8ThrowException::CreateTypeError(
+        GetScriptState()->GetIsolate(), reason));
+    return;
+  }
   dynamic_module_resolver_->ResolveDynamically(specifier, referrer_url,
                                                referrer_info, resolver);
 }
