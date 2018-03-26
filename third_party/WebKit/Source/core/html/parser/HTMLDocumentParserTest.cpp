@@ -17,9 +17,9 @@ namespace blink {
 
 namespace {
 
-class TestPrerendererClient : public PrerendererClient {
+class MockPrerendererClient : public PrerendererClient {
  public:
-  TestPrerendererClient(Page& page, bool is_prefetch_only)
+  MockPrerendererClient(Page& page, bool is_prefetch_only)
       : PrerendererClient(page, nullptr), is_prefetch_only_(is_prefetch_only) {}
 
  private:
@@ -29,9 +29,9 @@ class TestPrerendererClient : public PrerendererClient {
   bool is_prefetch_only_;
 };
 
-class TestPrerenderingSupport : public WebPrerenderingSupport {
+class MockWebPrerenderingSupport : public WebPrerenderingSupport {
  public:
-  TestPrerenderingSupport() { Initialize(this); }
+  MockWebPrerenderingSupport() { Initialize(this); }
 
   virtual void Add(const WebPrerender&) {}
   virtual void Cancel(const WebPrerender&) {}
@@ -65,7 +65,7 @@ class HTMLDocumentParserTest : public PageTestBase {
   }
 
  private:
-  TestPrerenderingSupport prerendering_support_;
+  MockWebPrerenderingSupport prerendering_support_;
 };
 
 }  // namespace
@@ -74,7 +74,7 @@ TEST_F(HTMLDocumentParserTest, AppendPrefetch) {
   HTMLDocument& document = ToHTMLDocument(GetDocument());
   ProvidePrerendererClientTo(
       *document.GetPage(),
-      new TestPrerendererClient(*document.GetPage(), true));
+      new MockPrerendererClient(*document.GetPage(), true));
   EXPECT_TRUE(document.IsPrefetchOnly());
   HTMLDocumentParser* parser = CreateParser(document);
 
