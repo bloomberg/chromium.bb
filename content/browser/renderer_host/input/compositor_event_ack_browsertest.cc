@@ -39,7 +39,10 @@ namespace {
 // tests.
 const int kWebsiteHeight = 10000;
 
-const char kNonBlockingEventDataURL[] =
+// The event listeners will block the renderer's main thread for both wheel and
+// touchstart. This will lead to the compositor impl thread to perform
+// scrolling.
+const char kCompositorEventAckDataURL[] =
     "data:text/html;charset=utf-8,"
     "<!DOCTYPE html>"
     "<meta name='viewport' content='width=device-width'/>"
@@ -58,6 +61,8 @@ const char kNonBlockingEventDataURL[] =
     "  document.title='ready';"
     "</script>";
 
+// The event listeners will block the renderer's main thread for both
+// touchstart and touchend.
 const char kPassiveTouchStartBlockingTouchEndDataURL[] =
     "data:text/html;charset=utf-8,"
     "<!DOCTYPE html>"
@@ -76,6 +81,7 @@ const char kPassiveTouchStartBlockingTouchEndDataURL[] =
     "  document.title='ready';"
     "</script>";
 
+// The event listeners will block the renderer's main thread for touchstart.
 const char kBlockingTouchStartDataURL[] =
     "data:text/html;charset=utf-8,"
     "<!DOCTYPE html>"
@@ -97,10 +103,14 @@ const char kBlockingTouchStartDataURL[] =
 
 namespace content {
 
-class NonBlockingEventBrowserTest : public ContentBrowserTest {
+// This test will used event listeners which block the renderer's main thread.
+// This test verifies that the compositor sends back an event ack that is not
+// blocked by the main thread. Then that subsequently the compositor will
+// perform scrolling from the impl thread.
+class CompositorEventAckBrowserTest : public ContentBrowserTest {
  public:
-  NonBlockingEventBrowserTest() {}
-  ~NonBlockingEventBrowserTest() override {}
+  CompositorEventAckBrowserTest() {}
+  ~CompositorEventAckBrowserTest() override {}
 
   RenderWidgetHostImpl* GetWidgetHost() {
     return RenderWidgetHostImpl::From(
@@ -150,12 +160,15 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
     auto input_msg_watcher = std::make_unique<InputMsgWatcher>(
         GetWidgetHost(), blink::WebInputEvent::kMouseWheel);
 
+    // This event never completes its processing. As kCompositorEventAckDataURL
+    // will block the renderer's main thread once it is received.
     blink::WebMouseWheelEvent wheel_event =
         SyntheticWebMouseWheelEventBuilder::Build(10, 10, 0, -53, 0, true);
     wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
     GetWidgetHost()->ForwardWheelEvent(wheel_event);
 
-    // Runs until we get the InputMsgAck callback
+    // The compositor should send the event ack, and not be blocked by the event
+    // above. The event watcher runs until we get the InputMsgAck callback
     EXPECT_EQ(INPUT_EVENT_ACK_STATE_SET_NON_BLOCKING,
               input_msg_watcher->WaitForAck());
 
@@ -189,7 +202,7 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
     GetWidgetHost()->QueueSyntheticGesture(
         std::move(gesture),
         base::BindOnce(
-            &NonBlockingEventBrowserTest::OnSyntheticGestureCompleted,
+            &CompositorEventAckBrowserTest::OnSyntheticGestureCompleted,
             base::Unretained(this)));
 
     // Expect that the compositor scrolled at least one pixel while the
@@ -203,11 +216,11 @@ class NonBlockingEventBrowserTest : public ContentBrowserTest {
   }
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(NonBlockingEventBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(CompositorEventAckBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MouseWheel) {
-  LoadURL(kNonBlockingEventDataURL);
+IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest, MouseWheel) {
+  LoadURL(kCompositorEventAckDataURL);
   DoWheelScroll();
 }
 
@@ -217,8 +230,8 @@ IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MouseWheel) {
 #else
 #define MAYBE_TouchStart TouchStart
 #endif
-IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MAYBE_TouchStart) {
-  LoadURL(kNonBlockingEventDataURL);
+IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest, MAYBE_TouchStart) {
+  LoadURL(kCompositorEventAckDataURL);
   DoTouchScroll();
 }
 
@@ -228,7 +241,7 @@ IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest, MAYBE_TouchStart) {
 #else
 #define MAYBE_TouchStartDuringFling TouchStartDuringFling
 #endif
-IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest,
+IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
                        MAYBE_TouchStartDuringFling) {
   LoadURL(kBlockingTouchStartDataURL);
 
@@ -285,7 +298,7 @@ IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest,
 #define MAYBE_PassiveTouchStartBlockingTouchEnd \
   PassiveTouchStartBlockingTouchEnd
 #endif
-IN_PROC_BROWSER_TEST_F(NonBlockingEventBrowserTest,
+IN_PROC_BROWSER_TEST_F(CompositorEventAckBrowserTest,
                        MAYBE_PassiveTouchStartBlockingTouchEnd) {
   LoadURL(kPassiveTouchStartBlockingTouchEndDataURL);
   DoTouchScroll();
