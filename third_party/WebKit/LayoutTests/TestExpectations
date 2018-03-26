@@ -3027,6 +3027,12 @@ crbug.com/769056 fast/text/emoji-web-font.html [ Failure ]
 # Paint-timing tests timeout without threaded-compositing, so skip them.
 crbug.com/720047 external/wpt/paint-timing [ Skip ]
 
+# This feature is disabled currently, these tests should be enabled once the
+# feature has been enabled by default.
+crbug.com/694855 media/audio-src-suspend-after-have-metadata.html [ Skip ]
+crbug.com/694855 media/video-src-skip-suspend-after-have-metadata.html [ Skip ]
+crbug.com/694855 media/video-src-suspend-after-have-metadata.html [ Skip ]
+
 crbug.com/770232 [ Win10 ] editing/selection/paint-hyphen.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/hyphenate-character.html [ Failure ]
 crbug.com/770232 [ Win10 ] fast/text/unicode-fallback-font.html [ Failure ]

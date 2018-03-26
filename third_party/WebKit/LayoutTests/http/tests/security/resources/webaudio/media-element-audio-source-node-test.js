@@ -20,26 +20,32 @@ function runTest (url, oncomplete, tester)
     context = new OfflineAudioContext(1, sampleRate * lengthInSeconds, sampleRate);
 
     audio = document.createElement('audio');
-
-    if (tester) {
-        tester();
-    } else {
-        audio.src = url;
-    }
+    audio.autoplay = true;
 
     source = context.createMediaElementSource(audio);
     source.connect(context.destination);
 
+    // Note: In practice this is not a reliable way to ensure the media element
+    // is ready to provide samples; unfortunately if the element is not ready
+    // yet, the offline context may produce silence in a spin-loop.
+    //
+    // With some knowledge of the internals we can make this test work by
+    // marking the element as autoplay above; this mostly ensures that the
+    // pipeline is ready to provide samples.
     audio.addEventListener("playing", function(e) {
-            // If we receive multiple playing events, we still can't invoke
-            // startRendering multiple times.
-            context.startRendering().catch(() => {});
-        });
+        // If we receive multiple playing events, we still can't invoke
+        // startRendering multiple times.
+        context.startRendering().catch(() => {});
+    });
 
     context.oncomplete = function(e) {
         checkResult(e);
         finishJSTest();
     }
 
-    audio.play();
+    if (tester) {
+        tester();
+    } else {
+        audio.src = url;
+    }
 }
