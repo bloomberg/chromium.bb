@@ -101,7 +101,7 @@ static CompositingQueryMode g_compositing_query_mode =
 
 struct SameSizeAsPaintLayer : DisplayItemClient {
   int bit_fields;
-  void* pointers[10];
+  void* pointers[11];
   LayoutUnit layout_units[4];
   IntSize size;
   Persistent<PaintLayerScrollableArea> scrollable_area;
@@ -109,11 +109,6 @@ struct SameSizeAsPaintLayer : DisplayItemClient {
     IntSize size;
     LayoutRect rect;
   } previous_paint_status;
-
-  struct {
-    void* pointers[10];
-    IntRect int_rects[2];
-  } ancestor_dependent_compositing_inputs;
 };
 
 static_assert(sizeof(PaintLayer) == sizeof(SameSizeAsPaintLayer),
@@ -1099,7 +1094,7 @@ void PaintLayer::SetNeedsCompositingInputsUpdateInternal() {
 
 void PaintLayer::UpdateAncestorDependentCompositingInputs(
     const AncestorDependentCompositingInputs& compositing_inputs) {
-  ancestor_dependent_compositing_inputs_ = compositing_inputs;
+  EnsureAncestorDependentCompositingInputs() = compositing_inputs;
   needs_ancestor_dependent_compositing_inputs_update_ = false;
 }
 
