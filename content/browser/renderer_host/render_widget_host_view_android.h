@@ -290,7 +290,7 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void MoveCaret(const gfx::Point& point);
   void ShowContextMenuAtPoint(const gfx::Point& point, ui::MenuSourceType);
   void DismissTextHandles();
-  void SetTextHandlesTemporarilyHidden(bool hidden);
+  void SetTextHandlesTemporarilyHidden(bool hide_handles);
   void OnSelectWordAroundCaretAck(bool did_select,
                                   int start_adjust,
                                   int end_adjust);
@@ -389,6 +389,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void OnFocusInternal();
   void LostFocusInternal();
 
+  void SetTextHandlesHiddenForStylus(bool hide_handles);
+
   // The begin frame source being observed.  Null if none.
   viz::BeginFrameSource* begin_frame_source_;
   viz::BeginFrameArgs last_begin_frame_args_;
@@ -408,6 +410,12 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   // Used to customize behavior for virtual reality mode, such as the
   // appearance of overscroll glow and the keyboard.
   bool is_in_vr_;
+
+  // Specifies whether touch selection handles are hidden due to stylus.
+  bool handles_hidden_by_stylus_ = false;
+
+  // Specifies whether touch selection handles are hidden due to text selection.
+  bool handles_hidden_by_selection_ui_ = false;
 
   ImeAdapterAndroid* ime_adapter_android_;
   TapDisambiguator* tap_disambiguator_;
