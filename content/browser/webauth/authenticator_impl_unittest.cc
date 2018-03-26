@@ -22,7 +22,7 @@
 #include "content/public/test/test_service_manager_context.h"
 #include "content/test/test_render_frame_host.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
-#include "device/fido/scoped_virtual_u2f_device.h"
+#include "device/fido/scoped_virtual_fido_device.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -613,7 +613,7 @@ constexpr OriginAppIdPair kAppIdCases[] = {
 // Verify behavior for various combinations of origins and RP IDs.
 TEST_F(AuthenticatorImplTest, AppIdExtension) {
   TestServiceManagerContext smc;
-  device::test::ScopedVirtualU2fDevice virtual_device;
+  device::test::ScopedVirtualFidoDevice virtual_device;
 
   for (const auto& test_case : kAppIdCases) {
     SCOPED_TRACE(std::string(test_case.origin) + " " +
@@ -786,7 +786,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
 
  protected:
   AuthenticatorTestContentBrowserClient test_client_;
-  device::test::ScopedVirtualU2fDevice virtual_device_;
+  device::test::ScopedVirtualFidoDevice virtual_device_;
 
  private:
   static const char* AttestationConveyancePreferenceToString(

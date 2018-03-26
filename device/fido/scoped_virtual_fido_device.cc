@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/scoped_virtual_u2f_device.h"
+#include "device/fido/scoped_virtual_fido_device.h"
 
 #include <utility>
 
@@ -15,45 +15,45 @@
 namespace device {
 namespace test {
 
-// A FidoDiscovery that always vends a single |VirtualU2fDevice|.
-class VirtualU2fDeviceDiscovery : public FidoDiscovery {
+// A FidoDiscovery that always vends a single |VirtualFidoDevice|.
+class VirtualFidoDeviceDiscovery : public FidoDiscovery {
  public:
-  explicit VirtualU2fDeviceDiscovery(
-      scoped_refptr<VirtualU2fDevice::State> state)
+  explicit VirtualFidoDeviceDiscovery(
+      scoped_refptr<VirtualFidoDevice::State> state)
       : FidoDiscovery(U2fTransportProtocol::kUsbHumanInterfaceDevice),
         state_(std::move(state)) {}
-  ~VirtualU2fDeviceDiscovery() override = default;
+  ~VirtualFidoDeviceDiscovery() override = default;
 
  protected:
   void StartInternal() override {
-    auto device = std::make_unique<VirtualU2fDevice>(state_);
+    auto device = std::make_unique<VirtualFidoDevice>(state_);
     AddDevice(std::move(device));
     base::SequencedTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::BindOnce(&VirtualU2fDeviceDiscovery::NotifyDiscoveryStarted,
+        base::BindOnce(&VirtualFidoDeviceDiscovery::NotifyDiscoveryStarted,
                        base::Unretained(this), true /* success */));
   }
 
  private:
-  scoped_refptr<VirtualU2fDevice::State> state_;
-  DISALLOW_COPY_AND_ASSIGN(VirtualU2fDeviceDiscovery);
+  scoped_refptr<VirtualFidoDevice::State> state_;
+  DISALLOW_COPY_AND_ASSIGN(VirtualFidoDeviceDiscovery);
 };
 
-ScopedVirtualU2fDevice::ScopedVirtualU2fDevice()
-    : state_(new VirtualU2fDevice::State) {}
-ScopedVirtualU2fDevice::~ScopedVirtualU2fDevice() = default;
+ScopedVirtualFidoDevice::ScopedVirtualFidoDevice()
+    : state_(new VirtualFidoDevice::State) {}
+ScopedVirtualFidoDevice::~ScopedVirtualFidoDevice() = default;
 
-VirtualU2fDevice::State* ScopedVirtualU2fDevice::mutable_state() {
+VirtualFidoDevice::State* ScopedVirtualFidoDevice::mutable_state() {
   return state_.get();
 }
 
-std::unique_ptr<FidoDiscovery> ScopedVirtualU2fDevice::CreateFidoDiscovery(
+std::unique_ptr<FidoDiscovery> ScopedVirtualFidoDevice::CreateFidoDiscovery(
     U2fTransportProtocol transport,
     ::service_manager::Connector* connector) {
   if (transport != U2fTransportProtocol::kUsbHumanInterfaceDevice) {
     return nullptr;
   }
-  return std::make_unique<VirtualU2fDeviceDiscovery>(state_);
+  return std::make_unique<VirtualFidoDeviceDiscovery>(state_);
 }
 
 }  // namespace test

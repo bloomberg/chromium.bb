@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "device/fido/virtual_u2f_device.h"
+#include "device/fido/virtual_fido_device.h"
 
 #include <utility>
 
@@ -42,17 +42,17 @@ struct RegistrationData {
   DISALLOW_COPY_AND_ASSIGN(RegistrationData);
 };
 
-struct VirtualU2fDevice::State::Internal {
+struct VirtualFidoDevice::State::Internal {
   // Keyed on key handle (a.k.a. "credential ID").
   std::map<std::vector<uint8_t>, RegistrationData> registrations;
 };
 
-VirtualU2fDevice::State::State()
+VirtualFidoDevice::State::State()
     : attestation_cert_common_name("Batch Certificate"),
       individual_attestation_cert_common_name("Individual Certificate"),
       internal_(new Internal) {}
 
-VirtualU2fDevice::State::~State() = default;
+VirtualFidoDevice::State::~State() = default;
 
 namespace {
 
@@ -98,23 +98,24 @@ base::Optional<std::vector<uint8_t>> ErrorStatus(
 
 }  // namespace
 
-VirtualU2fDevice::VirtualU2fDevice() : state_(new State), weak_factory_(this) {}
+VirtualFidoDevice::VirtualFidoDevice()
+    : state_(new State), weak_factory_(this) {}
 
-VirtualU2fDevice::VirtualU2fDevice(scoped_refptr<State> state)
+VirtualFidoDevice::VirtualFidoDevice(scoped_refptr<State> state)
     : state_(std::move(state)), weak_factory_(this) {}
 
-VirtualU2fDevice::~VirtualU2fDevice() = default;
+VirtualFidoDevice::~VirtualFidoDevice() = default;
 
-void VirtualU2fDevice::TryWink(WinkCallback cb) {
+void VirtualFidoDevice::TryWink(WinkCallback cb) {
   std::move(cb).Run();
 }
 
-std::string VirtualU2fDevice::GetId() const {
+std::string VirtualFidoDevice::GetId() const {
   // Use our heap address to get a unique-ish number. (0xffe1 is a prime).
-  return "VirtualU2fDevice-" + std::to_string((size_t)this % 0xffe1);
+  return "VirtualFidoDevice-" + std::to_string((size_t)this % 0xffe1);
 }
 
-void VirtualU2fDevice::AddRegistration(
+void VirtualFidoDevice::AddRegistration(
     std::vector<uint8_t> key_handle,
     std::unique_ptr<crypto::ECPrivateKey> private_key,
     std::vector<uint8_t> application_parameter,
@@ -123,8 +124,8 @@ void VirtualU2fDevice::AddRegistration(
       std::move(private_key), std::move(application_parameter), counter);
 }
 
-void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
-                                      DeviceCallback cb) {
+void VirtualFidoDevice::DeviceTransact(std::vector<uint8_t> command,
+                                       DeviceCallback cb) {
   // Note, here we are using the code-under-test in this fake.
   auto parsed_command = apdu::ApduCommand::CreateFromMessage(command);
 
@@ -151,11 +152,11 @@ void VirtualU2fDevice::DeviceTransact(std::vector<uint8_t> command,
       FROM_HERE, base::BindOnce(std::move(cb), std::move(response)));
 }
 
-base::WeakPtr<FidoDevice> VirtualU2fDevice::GetWeakPtr() {
+base::WeakPtr<FidoDevice> VirtualFidoDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }
 
-base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
+base::Optional<std::vector<uint8_t>> VirtualFidoDevice::DoRegister(
     uint8_t ins,
     uint8_t p1,
     uint8_t p2,
@@ -242,7 +243,7 @@ base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoRegister(
       .GetEncodedResponse();
 }
 
-base::Optional<std::vector<uint8_t>> VirtualU2fDevice::DoSign(
+base::Optional<std::vector<uint8_t>> VirtualFidoDevice::DoSign(
     uint8_t ins,
     uint8_t p1,
     uint8_t p2,

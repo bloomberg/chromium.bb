@@ -22,7 +22,7 @@
 #include "device/fido/mock_fido_device.h"
 #include "device/fido/test_callback_receiver.h"
 #include "device/fido/u2f_parsing_utils.h"
-#include "device/fido/virtual_u2f_device.h"
+#include "device/fido/virtual_fido_device.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -449,7 +449,7 @@ TEST_F(U2fRegisterTest, TestRegisterSuccessWithFake) {
   request->Start();
   discovery()->WaitForCallToStartAndSimulateSuccess();
 
-  auto device = std::make_unique<VirtualU2fDevice>();
+  auto device = std::make_unique<VirtualFidoDevice>();
   discovery()->AddDevice(std::move(device));
 
   register_callback_receiver().WaitForCallback();
