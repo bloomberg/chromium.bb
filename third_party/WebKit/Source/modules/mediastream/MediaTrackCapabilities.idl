@@ -9,6 +9,8 @@ dictionary MediaTrackCapabilities {
     DoubleRange frameRate;
     sequence<DOMString> facingMode;
     sequence<boolean> echoCancellation;
+    sequence<boolean> autoGainControl;
+    sequence<boolean> noiseSuppression;
     DOMString deviceId;
     DOMString groupId;
     // W3C Image Capture API

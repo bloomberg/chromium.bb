@@ -82,6 +82,8 @@ class WebMediaStreamSource {
     WebVector<double> aspect_ratio;
     WebVector<double> frame_rate;
     WebVector<bool> echo_cancellation;
+    WebVector<bool> auto_gain_control;
+    WebVector<bool> noise_suppression;
 
     WebMediaStreamTrack::FacingMode facing_mode =
         WebMediaStreamTrack::FacingMode::kNone;

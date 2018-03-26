@@ -313,10 +313,16 @@ void MediaStreamTrack::getCapabilities(MediaTrackCapabilities& capabilities) {
   capabilities.setDeviceId(platform_capabilities.device_id);
 
   if (component_->Source()->GetType() == MediaStreamSource::kTypeAudio) {
-    Vector<bool> echo_cancellation;
+    Vector<bool> echo_cancellation, auto_gain_control, noise_suppression;
     for (bool value : platform_capabilities.echo_cancellation)
       echo_cancellation.push_back(value);
     capabilities.setEchoCancellation(echo_cancellation);
+    for (bool value : platform_capabilities.auto_gain_control)
+      auto_gain_control.push_back(value);
+    capabilities.setAutoGainControl(auto_gain_control);
+    for (bool value : platform_capabilities.noise_suppression)
+      noise_suppression.push_back(value);
+    capabilities.setNoiseSuppression(noise_suppression);
   }
 
   if (component_->Source()->GetType() == MediaStreamSource::kTypeVideo) {

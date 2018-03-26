@@ -92,6 +92,8 @@ void RemoteAudioTrackAdapter::InitializeWebAudioTrack() {
   blink::WebMediaStreamSource::Capabilities capabilities;
   capabilities.device_id = blink::WebString::FromUTF8(id());
   capabilities.echo_cancellation = std::vector<bool>({false});
+  capabilities.auto_gain_control = std::vector<bool>({false});
+  capabilities.noise_suppression = std::vector<bool>({false});
   web_track()->Source().SetCapabilities(capabilities);
 
   source->ConnectToTrack(*(web_track()));

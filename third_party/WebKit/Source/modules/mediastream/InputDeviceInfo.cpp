@@ -80,8 +80,11 @@ void InputDeviceInfo::getCapabilities(MediaTrackCapabilities& capabilities) {
   capabilities.setDeviceId(deviceId());
   capabilities.setGroupId(groupId());
 
-  if (DeviceType() == MediaDeviceType::MEDIA_AUDIO_INPUT)
+  if (DeviceType() == MediaDeviceType::MEDIA_AUDIO_INPUT) {
     capabilities.setEchoCancellation({true, false});
+    capabilities.setAutoGainControl({true, false});
+    capabilities.setNoiseSuppression({true, false});
+  }
 
   if (DeviceType() == MediaDeviceType::MEDIA_VIDEO_INPUT) {
     if (!platform_capabilities_.width.empty()) {
