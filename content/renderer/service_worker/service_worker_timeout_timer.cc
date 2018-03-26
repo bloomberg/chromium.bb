@@ -32,13 +32,12 @@ constexpr base::TimeDelta ServiceWorkerTimeoutTimer::kUpdateInterval;
 ServiceWorkerTimeoutTimer::ServiceWorkerTimeoutTimer(
     base::RepeatingClosure idle_callback)
     : ServiceWorkerTimeoutTimer(std::move(idle_callback),
-                                std::make_unique<base::DefaultTickClock>()) {}
+                                base::DefaultTickClock::GetInstance()) {}
 
 ServiceWorkerTimeoutTimer::ServiceWorkerTimeoutTimer(
     base::RepeatingClosure idle_callback,
-    std::unique_ptr<base::TickClock> tick_clock)
-    : idle_callback_(std::move(idle_callback)),
-      tick_clock_(std::move(tick_clock)) {
+    base::TickClock* tick_clock)
+    : idle_callback_(std::move(idle_callback)), tick_clock_(tick_clock) {
   // |idle_callback_| will be invoked if no event happens in |kIdleDelay|.
   idle_time_ = tick_clock_->NowTicks() + kIdleDelay;
   timer_.Start(FROM_HERE, kUpdateInterval,
