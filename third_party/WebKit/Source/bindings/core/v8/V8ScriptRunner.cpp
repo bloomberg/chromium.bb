@@ -89,12 +89,15 @@ v8::Local<v8::Value> ThrowStackOverflowExceptionIfNeeded(v8::Isolate* isolate) {
   v8::MicrotasksScope microtasks_scope(
       isolate, v8::MicrotasksScope::kDoNotRunMicrotasks);
   V8PerIsolateData::From(isolate)->SetIsHandlingRecursionLevelError(true);
+
+  ScriptForbiddenScope::AllowUserAgentScript allow_script;
   v8::Local<v8::Value> result =
       v8::Function::New(isolate->GetCurrentContext(),
                         ThrowStackOverflowException, v8::Local<v8::Value>(), 0,
                         v8::ConstructorBehavior::kThrow)
           .ToLocalChecked()
           ->Call(v8::Undefined(isolate), 0, nullptr);
+
   V8PerIsolateData::From(isolate)->SetIsHandlingRecursionLevelError(false);
   return result;
 }
