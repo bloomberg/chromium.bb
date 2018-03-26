@@ -331,7 +331,7 @@ def gclient_configure(solutions, target_os, target_os_only, target_cpu,
 def gclient_sync(
     with_branch_heads, with_tags, shallow, revisions, break_repo_locks,
     disable_syntax_validation, gerrit_repo, gerrit_ref, gerrit_reset,
-    gerrit_rebase_patch_ref, enable_gclient_experiment):
+    gerrit_rebase_patch_ref, apply_patch_on_gclient):
   # We just need to allocate a filename.
   fd, gclient_output_file = tempfile.mkstemp(suffix='.json')
   os.close(fd)
@@ -354,7 +354,7 @@ def gclient_sync(
       revision = 'origin/master'
     args.extend(['--revision', '%s@%s' % (name, revision)])
 
-  if enable_gclient_experiment:
+  if apply_patch_on_gclient:
     # TODO(ehmaldonado): Merge gerrit_repo and gerrit_ref into a patch-ref flag
     # and add support for passing multiple patch refs.
     args.extend(['--patch-ref', gerrit_repo + '@' + gerrit_ref])
@@ -368,7 +368,7 @@ def gclient_sync(
   except SubprocessFailed as e:
     # If gclient sync is handling patching, parse the output for a patch error
     # message.
-    if enable_gclient_experiment and PATCH_ERROR_RE.search(e.output):
+    if apply_patch_on_gclient and PATCH_ERROR_RE.search(e.output):
       raise PatchFailed(e.message, e.code, e.output)
     # Throw a GclientSyncFailed exception so we can catch this independently.
     raise GclientSyncFailed(e.message, e.code, e.output)
@@ -856,7 +856,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
                     target_cpu, patch_root, gerrit_repo, gerrit_ref,
                     gerrit_rebase_patch_ref, shallow, refs, git_cache_dir,
                     cleanup_dir, gerrit_reset, disable_syntax_validation,
-                    enable_gclient_experiment):
+                    apply_patch_on_gclient):
   # Get a checkout of each solution, without DEPS or hooks.
   # Calling git directly because there is no way to run Gclient without
   # invoking DEPS.
@@ -865,7 +865,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
   git_checkouts(solutions, revisions, shallow, refs, git_cache_dir, cleanup_dir)
 
   applied_gerrit_patch = False
-  if not enable_gclient_experiment:
+  if not apply_patch_on_gclient:
     print '===Processing patch solutions==='
     patch_root = patch_root or ''
     print 'Patch root is %r' % patch_root
@@ -912,7 +912,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
       gerrit_ref,
       gerrit_reset,
       gerrit_rebase_patch_ref,
-      enable_gclient_experiment)
+      apply_patch_on_gclient)
 
   # Now that gclient_sync has finished, we should revert any .DEPS.git so that
   # presubmit doesn't complain about it being modified.
@@ -920,7 +920,7 @@ def ensure_checkout(solutions, revisions, first_sln, target_os, target_os_only,
     git('checkout', 'HEAD', '--', '.DEPS.git', cwd=first_sln)
 
   # Apply the rest of the patch here (sans DEPS)
-  if gerrit_ref and not applied_gerrit_patch and not enable_gclient_experiment:
+  if gerrit_ref and not applied_gerrit_patch and not apply_patch_on_gclient:
     # If gerrit_ref was for solution's main repository, it has already been
     # applied above. This chunk is executed only for patches to DEPS-ed in
     # git repositories.
@@ -1026,7 +1026,7 @@ def parse_args():
   parse.add_option(
       '--disable-syntax-validation', action='store_true',
       help='Disable validation of .gclient and DEPS syntax.')
-  parse.add_option('--enable-gclient-experiment', action='store_true',
+  parse.add_option('--apply-patch-on-gclient', action='store_true',
                    help='Patch the gerrit ref in gclient instead of here.')
 
   options, args = parse.parse_args()
@@ -1143,7 +1143,7 @@ def checkout(options, git_slns, specs, revisions, step_text, shallow):
           cleanup_dir=options.cleanup_dir,
           gerrit_reset=not options.gerrit_no_reset,
           disable_syntax_validation=options.disable_syntax_validation,
-          enable_gclient_experiment=options.enable_gclient_experiment)
+          apply_patch_on_gclient=options.apply_patch_on_gclient)
       gclient_output = ensure_checkout(**checkout_parameters)
     except GclientSyncFailed:
       print 'We failed gclient sync, lets delete the checkout and retry.'

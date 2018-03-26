@@ -158,7 +158,7 @@ class BotUpdateUnittests(unittest.TestCase):
       'cleanup_dir': None,
       'gerrit_reset': None,
       'disable_syntax_validation': False,
-      'enable_gclient_experiment': False,
+      'apply_patch_on_gclient': False,
   }
 
   def setUp(self):
@@ -219,7 +219,7 @@ class BotUpdateUnittests(unittest.TestCase):
   def testEnableGclientExperiment(self):
     self.params['gerrit_ref'] = 'refs/changes/12/345/6'
     self.params['gerrit_repo'] = 'https://chromium.googlesource.com/v8/v8'
-    self.params['enable_gclient_experiment'] = True
+    self.params['apply_patch_on_gclient'] = True
     bot_update.ensure_checkout(**self.params)
     args = self.gclient.records[0]
     idx = args.index('--patch-ref')
