@@ -46753,6 +46753,86 @@ Full version information for the fingerprint enum values:
   <int value="1073807364" label="0x40010004 - DBG_TERMINATE_PROCESS"/>
 </enum>
 
+<enum name="WindowsNotificationActivationStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="GET_PROFILE_ID_INVALID_LAUNCH_ID"/>
+  <int value="2" label="ACTIVATION_INVALID_LAUNCH_ID"/>
+</enum>
+
+<enum name="WindowsNotificationCloseStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="GET_TOAST_HISTORY_FAILED"/>
+  <int value="2" label="REMOVING_TOAST_FAILED"/>
+</enum>
+
+<enum name="WindowsNotificationDisplayStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="RO_ACTIVATE_FAILED"/>
+  <int value="2" label="CONVERSION_FAILED_INSPECTABLE_TO_XML_IO"/>
+  <int value="3" label="LOAD_XML_FAILED"/>
+  <int value="4" label="CONVERSION_FAILED_XML_IO_TO_XML"/>
+  <int value="5" label="CREATE_FACTORY_FAILED"/>
+  <int value="6" label="CREATE_TOAST_NOTIFICATION_FAILED"/>
+  <int value="7" label="CREATE_TOAST_NOTIFICATION2_FAILED"/>
+  <int value="8" label="SETTING_GROUP_FAILED"/>
+  <int value="9" label="SETTING_TAG_FAILED"/>
+  <int value="10" label="GET_GROUP_FAILED"/>
+  <int value="11" label="GET_TAG_FAILED"/>
+  <int value="12" label="SUPPRESS_POPUP_FAILED"/>
+  <int value="13" label="ADD_TOAST_DISMISS_HANDLER_FAILED"/>
+  <int value="14" label="ADD_TOAST_ERROR_HANDLER_FAILED"/>
+  <int value="15" label="SHOWING_TOAST_FAILED"/>
+  <int value="16" label="CREATE_TOAST_NOTIFICATION_MANAGER_FAILED"/>
+  <int value="17" label="CREATE_TOAST_NOTIFIER_WITH_ID_FAILED"/>
+</enum>
+
+<enum name="WindowsNotificationGetDisplayedLaunchIdStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="DECODE_LAUNCH_ID_FAILED"/>
+</enum>
+
+<enum name="WindowsNotificationGetDisplayedStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="SUCCESS_WITH_GET_AT_FAILURE"/>
+  <int value="2" label="GET_TOAST_HISTORY_FAILED"/>
+  <int value="3" label="QUERY_TOAST_NOTIFICATION_HISTORY2_FAILED"/>
+  <int value="4" label="GET_HISTORY_WITH_ID_FAILED"/>
+  <int value="5" label="GET_SIZE_FAILED"/>
+</enum>
+
+<enum name="WindowsNotificationGetNotificationLaunchIdStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="NOTIFICATION_GET_CONTENT_FAILED"/>
+  <int value="2" label="GET_ELEMENTS_BY_TAG_FAILED"/>
+  <int value="3" label="MISSING_TOAST_ELEMENT_IN_DOC"/>
+  <int value="4" label="ITEM_AT_FAILED"/>
+  <int value="5" label="GET_ATTRIBUTES_FAILED"/>
+  <int value="6" label="GET_NAMED_ITEM_FAILED"/>
+  <int value="7" label="GET_FIRST_CHILD_FAILED"/>
+  <int value="8" label="GET_NODE_VALUE_FAILED"/>
+  <int value="9" label="CONVERSION_TO_PROP_VALUE_FAILED"/>
+  <int value="10" label="GET_STRING_FAILED"/>
+</enum>
+
+<enum name="WindowsNotificationHandleEventStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="HANDLE_EVENT_LAUNCH_ID_INVALID"/>
+</enum>
+
+<enum name="WindowsNotificationHistoryStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="CREATE_TOAST_NOTIFICATION_MANAGER_FAILED"/>
+  <int value="2" label="QUERY_TOAST_MANAGER_STATISTICS2_FAILED"/>
+  <int value="3" label="GET_TOAST_HISTORY_FAILED"/>
+</enum>
+
+<enum name="WindowsNotificationSetReadyCallbackStatus">
+  <int value="0" label="SUCCESS"/>
+  <int value="1" label="COM_NOT_INITIALIZED"/>
+  <int value="2" label="COM_SERVER_MISCONFIGURATION"/>
+  <int value="3" label="SHORTCUT_MISCONFIGURATION"/>
+</enum>
+
 <enum name="WindowsVersion">
   <int value="0" label="Pre-XP"/>
   <int value="1" label="XP"/>
