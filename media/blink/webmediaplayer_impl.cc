@@ -1370,6 +1370,26 @@ void WebMediaPlayerImpl::OnPipelineSeeked(bool time_updated) {
   // Background video optimizations are delayed when shown/hidden if pipeline
   // is seeking.
   UpdateBackgroundVideoOptimizationState();
+
+  // If we successfully completed a suspended startup, lie about our buffering
+  // state for the time being. While ultimately we want to avoid lying about the
+  // buffering state, for the initial test of true preload=metadata, signal
+  // BUFFERING_HAVE_ENOUGH so that canplay and canplaythrough fire correctly.
+  //
+  // Later we can experiment with the impact of removing this lie; initial data
+  // suggests high disruption since we've also made preload=metadata the
+  // default. Most sites are not prepared for a lack of canplay; even many of
+  // our own tests don't function correctly. See https://crbug.com/694855.
+  //
+  // Note: This call is dual purpose, it is also responsible for triggering an
+  // UpdatePlayState() call which may need to resume the pipeline once Blink
+  // has been told about the ReadyState change.
+  if (attempting_suspended_start_ &&
+      pipeline_controller_.IsPipelineSuspended()) {
+    OnBufferingStateChangeInternal(BUFFERING_HAVE_ENOUGH, true);
+  }
+
+  attempting_suspended_start_ = false;
 }
 
 void WebMediaPlayerImpl::OnPipelineSuspended() {
@@ -1567,6 +1587,10 @@ void WebMediaPlayerImpl::OnMetadata(PipelineMetadata metadata) {
   UpdatePlayState();
 }
 
+void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
+  OnBufferingStateChangeInternal(state, false);
+}
+
 void WebMediaPlayerImpl::CreateVideoDecodeStatsReporter() {
   // TODO(chcunningham): destroy reporter if we initially have video but the
   // track gets disabled. Currently not possible in default desktop Chrome.
@@ -1641,13 +1665,14 @@ bool WebMediaPlayerImpl::CanPlayThrough() {
       playback_rate_ == 0.0 ? 1.0 : playback_rate_);
 }
 
-void WebMediaPlayerImpl::OnBufferingStateChange(BufferingState state) {
+void WebMediaPlayerImpl::OnBufferingStateChangeInternal(BufferingState state,
+                                                        bool force_update) {
   DVLOG(1) << __func__ << "(" << state << ")";
   DCHECK(main_task_runner_->BelongsToCurrentThread());
 
   // Ignore buffering state changes until we've completed all outstanding
-  // operations.
-  if (!pipeline_controller_.IsStable())
+  // operations unless we've been asked to force the update.
+  if (!pipeline_controller_.IsStable() && !force_update)
     return;
 
   media_log_->AddEvent(media_log_->CreateBufferingStateChangedEvent(
@@ -2306,11 +2331,21 @@ void WebMediaPlayerImpl::StartPipeline() {
   bool is_streaming = IsStreaming();
   UMA_HISTOGRAM_BOOLEAN("Media.IsStreaming", is_streaming);
 
+  // If possible attempt to avoid decoder spool up until playback starts.
+  Pipeline::StartType start_type = Pipeline::StartType::kNormal;
+  if (base::FeatureList::IsEnabled(kPreloadMetadataSuspend) &&
+      !chunk_demuxer_ && preload_ == MultibufferDataSource::METADATA) {
+    start_type = has_poster_
+                     ? Pipeline::StartType::kSuspendAfterMetadata
+                     : Pipeline::StartType::kSuspendAfterMetadataForAudioOnly;
+    attempting_suspended_start_ = true;
+  }
+
   // ... and we're ready to go!
   // TODO(sandersd): On Android, defer Start() if the tab is not visible.
   seeking_ = true;
-  pipeline_controller_.Start(Pipeline::StartType::kNormal, demuxer_.get(), this,
-                             is_streaming, is_static);
+  pipeline_controller_.Start(start_type, demuxer_.get(), this, is_streaming,
+                             is_static);
 }
 
 void WebMediaPlayerImpl::SetNetworkState(WebMediaPlayer::NetworkState state) {

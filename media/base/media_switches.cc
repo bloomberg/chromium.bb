@@ -186,6 +186,9 @@ const base::Feature kOverlayFullscreenVideo{"overlay-fullscreen-video",
 const base::Feature kPictureInPicture{"PictureInPicture",
                                       base::FEATURE_DISABLED_BY_DEFAULT};
 
+const base::Feature kPreloadMetadataSuspend{"PreloadMetadataSuspend",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Let videos be resumed via remote controls (for example, the notification)
 // when in background.
 const base::Feature kResumeBackgroundVideo {

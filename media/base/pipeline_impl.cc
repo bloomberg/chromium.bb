@@ -1006,7 +1006,8 @@ void PipelineImpl::RendererWrapper::ReportMetadata(StartType start_type) {
   // Abort pending render initialization tasks and suspend the pipeline.
   pending_callbacks_.reset();
   DestroyRenderer();
-  shared_state_.suspend_timestamp = base::TimeDelta();
+  shared_state_.suspend_timestamp =
+      std::max(base::TimeDelta(), demuxer_->GetStartTime());
   SetState(kSuspended);
   main_task_runner_->PostTask(
       FROM_HERE, base::Bind(&PipelineImpl::OnSeekDone, weak_pipeline_, true));

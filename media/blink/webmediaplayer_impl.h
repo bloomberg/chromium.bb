@@ -532,6 +532,12 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   // without buffering.
   bool CanPlayThrough();
 
+  // Internal implementation of Pipeline::Client::OnBufferingStateChange(). When
+  // |force_update| is true, the given state will be set even if the pipeline is
+  // not currently stable.
+  void OnBufferingStateChangeInternal(BufferingState state,
+                                      bool force_update = false);
+
   // Records |natural_size| to MediaLog and video height to UMA.
   void RecordVideoNaturalSize(const gfx::Size& natural_size);
 
@@ -875,6 +881,10 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   mojom::MediaMetricsProviderPtr media_metrics_provider_;
 
   base::Optional<bool> stale_state_override_for_testing_;
+
+  // True if we attempt to start the media pipeline in a suspended state for
+  // preload=metadata. Cleared upon pipeline startup.
+  bool attempting_suspended_start_ = false;
 
   // Keeps track of the SurfaceId for Picture-in-Picture. This is used to
   // route the video to be shown in the Picture-in-Picture window.
