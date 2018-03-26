@@ -62,9 +62,9 @@ to the Windows box and run it to install the chrome you just built.
 
 You can run the Windows binaries you built on swarming, like so:
 
-    tools/run_swarmed.py -C out/gnwin -t base_unittests [ --gtest_filter=... ]
+    tools/run-swarmed.py -C out/gnwin -t base_unittests [ --gtest_filter=... ]
 
-See the contents of run_swarmed.py for how to do this manually.
+See the contents of run-swarmed.py for how to do this manually.
 
 There's a bot doing 64-bit release cross builds at
 https://ci.chromium.org/buildbot/chromium.clang/linux-win_cross-rel/
