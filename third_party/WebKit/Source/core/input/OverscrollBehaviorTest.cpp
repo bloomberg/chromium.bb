@@ -61,8 +61,11 @@ void OverscrollBehaviorTest::SetUp() {
 void OverscrollBehaviorTest::SetInnerOverscrollBehavior(EOverscrollBehavior x,
                                                         EOverscrollBehavior y) {
   Element* inner = GetDocument().getElementById("inner");
-  inner->MutableComputedStyle()->SetOverscrollBehaviorX(x);
-  inner->MutableComputedStyle()->SetOverscrollBehaviorY(y);
+  scoped_refptr<ComputedStyle> modified_style =
+      ComputedStyle::Clone(*inner->GetComputedStyle());
+  modified_style->SetOverscrollBehaviorX(x);
+  modified_style->SetOverscrollBehaviorY(y);
+  inner->GetLayoutObject()->SetStyle(std::move(modified_style));
 }
 
 void OverscrollBehaviorTest::ScrollBegin(double hint_x, double hint_y) {
