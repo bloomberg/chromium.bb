@@ -4,12 +4,12 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.app.DialogFragment;
-import android.app.FragmentManager;
 import android.content.Context;
 import android.os.Handler;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
+import android.support.v4.app.DialogFragment;
+import android.support.v4.app.FragmentManager;
 import android.text.TextUtils;
 
 import org.chromium.base.ThreadUtils;
