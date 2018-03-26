@@ -71,8 +71,7 @@ class BackdropController : public ShellObserver,
   void OnSplitViewModeEnded() override;
 
   // AccessibilityObserver:
-  void OnAccessibilityStatusChanged(
-      AccessibilityNotificationVisibility notify) override;
+  void OnAccessibilityStatusChanged() override;
 
   // SplitViewController::Observer:
   void OnSplitViewStateChanged(SplitViewController::State previous_state,

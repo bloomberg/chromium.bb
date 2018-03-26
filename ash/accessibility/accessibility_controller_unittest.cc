@@ -26,17 +26,9 @@ class TestAccessibilityObserver : public AccessibilityObserver {
   ~TestAccessibilityObserver() override = default;
 
   // AccessibilityObserver:
-  void OnAccessibilityStatusChanged(
-      AccessibilityNotificationVisibility notify) override {
-    if (notify == A11Y_NOTIFICATION_NONE) {
-      ++notification_none_changed_;
-    } else if (notify == A11Y_NOTIFICATION_SHOW) {
-      ++notification_show_changed_;
-    }
-  }
+  void OnAccessibilityStatusChanged() override { ++status_changed_count_; }
 
-  int notification_none_changed_ = 0;
-  int notification_show_changed_ = 0;
+  int status_changed_count_ = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestAccessibilityObserver);
@@ -101,15 +93,15 @@ TEST_F(AccessibilityControllerTest, SetAutoclickEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetAutoclickEnabled(true);
   EXPECT_TRUE(controller->IsAutoclickEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetAutoclickEnabled(false);
   EXPECT_FALSE(controller->IsAutoclickEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }
@@ -121,15 +113,15 @@ TEST_F(AccessibilityControllerTest, SetCaretHighlightEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetCaretHighlightEnabled(true);
   EXPECT_TRUE(controller->IsCaretHighlightEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetCaretHighlightEnabled(false);
   EXPECT_FALSE(controller->IsCaretHighlightEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }
@@ -141,15 +133,15 @@ TEST_F(AccessibilityControllerTest, SetCursorHighlightEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetCursorHighlightEnabled(true);
   EXPECT_TRUE(controller->IsCursorHighlightEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetCursorHighlightEnabled(false);
   EXPECT_FALSE(controller->IsCursorHighlightEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }
@@ -161,15 +153,15 @@ TEST_F(AccessibilityControllerTest, SetFocusHighlightEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetFocusHighlightEnabled(true);
   EXPECT_TRUE(controller->IsFocusHighlightEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetFocusHighlightEnabled(false);
   EXPECT_FALSE(controller->IsFocusHighlightEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }
@@ -181,15 +173,15 @@ TEST_F(AccessibilityControllerTest, SetHighContrastEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetHighContrastEnabled(true);
   EXPECT_TRUE(controller->IsHighContrastEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetHighContrastEnabled(false);
   EXPECT_FALSE(controller->IsHighContrastEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }
@@ -201,15 +193,15 @@ TEST_F(AccessibilityControllerTest, SetLargeCursorEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetLargeCursorEnabled(true);
   EXPECT_TRUE(controller->IsLargeCursorEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetLargeCursorEnabled(false);
   EXPECT_FALSE(controller->IsLargeCursorEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }
@@ -238,15 +230,15 @@ TEST_F(AccessibilityControllerTest, SetMonoAudioEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetMonoAudioEnabled(true);
   EXPECT_TRUE(controller->IsMonoAudioEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetMonoAudioEnabled(false);
   EXPECT_FALSE(controller->IsMonoAudioEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }
@@ -258,18 +250,15 @@ TEST_F(AccessibilityControllerTest, SetSpokenFeedbackEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
-  EXPECT_EQ(0, observer.notification_show_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
   EXPECT_TRUE(controller->IsSpokenFeedbackEnabled());
-  EXPECT_EQ(0, observer.notification_none_changed_);
-  EXPECT_EQ(1, observer.notification_show_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetSpokenFeedbackEnabled(false, A11Y_NOTIFICATION_NONE);
   EXPECT_FALSE(controller->IsSpokenFeedbackEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
-  EXPECT_EQ(1, observer.notification_show_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }
@@ -281,19 +270,19 @@ TEST_F(AccessibilityControllerTest, SetStickyKeysEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   StickyKeysController* sticky_keys_controller =
       Shell::Get()->sticky_keys_controller();
   controller->SetStickyKeysEnabled(true);
   EXPECT_TRUE(sticky_keys_controller->enabled_for_test());
   EXPECT_TRUE(controller->IsStickyKeysEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetStickyKeysEnabled(false);
   EXPECT_FALSE(sticky_keys_controller->enabled_for_test());
   EXPECT_FALSE(controller->IsStickyKeysEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }
@@ -305,17 +294,17 @@ TEST_F(AccessibilityControllerTest, SetVirtualKeyboardEnabled) {
 
   TestAccessibilityObserver observer;
   controller->AddObserver(&observer);
-  EXPECT_EQ(0, observer.notification_none_changed_);
+  EXPECT_EQ(0, observer.status_changed_count_);
 
   controller->SetVirtualKeyboardEnabled(true);
   EXPECT_TRUE(keyboard::GetAccessibilityKeyboardEnabled());
   EXPECT_TRUE(controller->IsVirtualKeyboardEnabled());
-  EXPECT_EQ(1, observer.notification_none_changed_);
+  EXPECT_EQ(1, observer.status_changed_count_);
 
   controller->SetVirtualKeyboardEnabled(false);
   EXPECT_FALSE(keyboard::GetAccessibilityKeyboardEnabled());
   EXPECT_FALSE(controller->IsVirtualKeyboardEnabled());
-  EXPECT_EQ(2, observer.notification_none_changed_);
+  EXPECT_EQ(2, observer.status_changed_count_);
 
   controller->RemoveObserver(&observer);
 }

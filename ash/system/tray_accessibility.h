@@ -122,8 +122,8 @@ class TrayAccessibility : public TrayImageItem, public AccessibilityObserver {
   void UpdateAfterLoginStatusChange(LoginStatus status) override;
 
   // Overridden from AccessibilityObserver.
-  void OnAccessibilityStatusChanged(
-      AccessibilityNotificationVisibility notify) override;
+  void OnAccessibilityStatusChanged() override;
+  void ShowAccessibilityNotification() override;
 
   views::View* default_;
   tray::AccessibilityDetailedView* detailed_menu_;

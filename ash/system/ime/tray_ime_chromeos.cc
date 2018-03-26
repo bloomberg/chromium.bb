@@ -175,8 +175,7 @@ void TrayIME::OnKeyboardSuppressionChanged(bool suppressed) {
   Update();
 }
 
-void TrayIME::OnAccessibilityStatusChanged(
-    AccessibilityNotificationVisibility notify) {
+void TrayIME::OnAccessibilityStatusChanged() {
   Update();
 }
 

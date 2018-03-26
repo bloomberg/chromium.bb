@@ -50,8 +50,7 @@ class ASH_EXPORT TouchExplorationManager
   ~TouchExplorationManager() override;
 
   // AccessibilityObserver overrides:
-  void OnAccessibilityStatusChanged(
-      AccessibilityNotificationVisibility notify) override;
+  void OnAccessibilityStatusChanged() override;
 
   // TouchExplorationControllerDelegate overrides:
   void SetOutputLevel(int volume) override;
