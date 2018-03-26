@@ -33,7 +33,13 @@ void AttestationObject::EraseAttestationStatement() {
   attestation_statement_ = std::make_unique<NoneAttestationStatement>();
   authenticator_data_.DeleteDeviceAaguid();
 
+// Attested credential data is optional section within authenticator data. But
+// if present, the first 16 bytes of it represents a device AAGUID which must
+// be set to zeros for none attestation statement format.
 #if DCHECK_IS_ON()
+  if (!authenticator_data_.attested_data())
+    return;
+
   std::vector<uint8_t> auth_data = authenticator_data_.SerializeToByteArray();
   // See diagram at https://w3c.github.io/webauthn/#sctn-attestation
   constexpr size_t kAaguidOffset =
