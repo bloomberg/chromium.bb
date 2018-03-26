@@ -27,8 +27,6 @@
 
 namespace blink {
 
-using namespace WTF::Unicode;
-
 struct SameSizeAsBidiContext
     : public ThreadSafeRefCounted<SameSizeAsBidiContext> {
   uint32_t bitfields : 16;
@@ -40,7 +38,7 @@ static_assert(sizeof(BidiContext) == sizeof(SameSizeAsBidiContext),
 
 inline scoped_refptr<BidiContext> BidiContext::CreateUncached(
     unsigned char level,
-    CharDirection direction,
+    WTF::Unicode::CharDirection direction,
     bool override,
     BidiEmbeddingSource source,
     BidiContext* parent) {
@@ -48,12 +46,14 @@ inline scoped_refptr<BidiContext> BidiContext::CreateUncached(
       new BidiContext(level, direction, override, source, parent));
 }
 
-scoped_refptr<BidiContext> BidiContext::Create(unsigned char level,
-                                               CharDirection direction,
-                                               bool override,
-                                               BidiEmbeddingSource source,
-                                               BidiContext* parent) {
-  DCHECK_EQ(direction, (level % 2 ? kRightToLeft : kLeftToRight));
+scoped_refptr<BidiContext> BidiContext::Create(
+    unsigned char level,
+    WTF::Unicode::CharDirection direction,
+    bool override,
+    BidiEmbeddingSource source,
+    BidiContext* parent) {
+  DCHECK_EQ(direction, (level % 2 ? WTF::Unicode::kRightToLeft
+                                  : WTF::Unicode::kLeftToRight));
 
   if (parent || level >= 2)
     return CreateUncached(level, direction, override, source, parent);
@@ -61,28 +61,28 @@ scoped_refptr<BidiContext> BidiContext::Create(unsigned char level,
   DCHECK_LE(level, 1);
   if (!level) {
     if (!override) {
-      DEFINE_STATIC_REF(
-          BidiContext, ltr_context,
-          (CreateUncached(0, kLeftToRight, false, kFromStyleOrDOM, nullptr)));
+      DEFINE_STATIC_REF(BidiContext, ltr_context,
+                        (CreateUncached(0, WTF::Unicode::kLeftToRight, false,
+                                        kFromStyleOrDOM, nullptr)));
       return ltr_context;
     }
 
-    DEFINE_STATIC_REF(
-        BidiContext, ltr_override_context,
-        (CreateUncached(0, kLeftToRight, true, kFromStyleOrDOM, nullptr)));
+    DEFINE_STATIC_REF(BidiContext, ltr_override_context,
+                      (CreateUncached(0, WTF::Unicode::kLeftToRight, true,
+                                      kFromStyleOrDOM, nullptr)));
     return ltr_override_context;
   }
 
   if (!override) {
-    DEFINE_STATIC_REF(
-        BidiContext, rtl_context,
-        (CreateUncached(1, kRightToLeft, false, kFromStyleOrDOM, nullptr)));
+    DEFINE_STATIC_REF(BidiContext, rtl_context,
+                      (CreateUncached(1, WTF::Unicode::kRightToLeft, false,
+                                      kFromStyleOrDOM, nullptr)));
     return rtl_context;
   }
 
-  DEFINE_STATIC_REF(
-      BidiContext, rtl_override_context,
-      (CreateUncached(1, kRightToLeft, true, kFromStyleOrDOM, nullptr)));
+  DEFINE_STATIC_REF(BidiContext, rtl_override_context,
+                    (CreateUncached(1, WTF::Unicode::kRightToLeft, true,
+                                    kFromStyleOrDOM, nullptr)));
   return rtl_override_context;
 }
 
@@ -91,7 +91,7 @@ static inline scoped_refptr<BidiContext> CopyContextAndRebaselineLevel(
     BidiContext* parent) {
   DCHECK(context);
   unsigned char new_level = parent ? parent->Level() : 0;
-  if (context->Dir() == kRightToLeft)
+  if (context->Dir() == WTF::Unicode::kRightToLeft)
     new_level = NextGreaterOddLevel(new_level);
   else if (parent)
     new_level = NextGreaterEvenLevel(new_level);
