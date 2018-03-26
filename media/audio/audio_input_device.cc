@@ -472,7 +472,7 @@ void AudioInputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   // TODO(olka, tommi): Take advantage of |capture_time| in the renderer.
   const base::TimeTicks capture_time =
       base::TimeTicks() +
-      base::TimeDelta::FromMicroseconds(buffer->params.capture_time);
+      base::TimeDelta::FromMicroseconds(buffer->params.capture_time_us);
   const base::TimeTicks now_time = base::TimeTicks::Now();
   DCHECK_GE(now_time, capture_time);
 

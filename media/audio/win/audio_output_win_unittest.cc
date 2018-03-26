@@ -547,8 +547,8 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
                  AudioBus* dest) override {
     uint32_t control_signal = 0;
     socket_->Send(&control_signal, sizeof(control_signal));
-    output_buffer()->params.delay = delay.InMicroseconds();
-    output_buffer()->params.delay_timestamp =
+    output_buffer()->params.delay_us = delay.InMicroseconds();
+    output_buffer()->params.delay_timestamp_us =
         (delay_timestamp - base::TimeTicks()).InMicroseconds();
     uint32_t size = socket_->Receive(data_.get(), packet_size_);
 
@@ -605,10 +605,10 @@ DWORD __stdcall SyncSocketThread(void* context) {
     if (ctx.socket->Receive(&control_signal, sizeof(control_signal)) == 0)
       break;
     base::TimeDelta delay =
-        base::TimeDelta::FromMicroseconds(ctx.buffer->params.delay);
+        base::TimeDelta::FromMicroseconds(ctx.buffer->params.delay_us);
     base::TimeTicks delay_timestamp =
-        base::TimeTicks() +
-        base::TimeDelta::FromMicroseconds(ctx.buffer->params.delay_timestamp);
+        base::TimeTicks() + base::TimeDelta::FromMicroseconds(
+                                ctx.buffer->params.delay_timestamp_us);
     sine.OnMoreData(delay, delay_timestamp, 0, audio_bus.get());
     ctx.socket->Send(data.get(), ctx.packet_size_bytes);
   }

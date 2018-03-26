@@ -97,9 +97,9 @@ ACTION_P2(RequestMoreData, socket, shared_memory) {
   AudioOutputBuffer* buffer =
       reinterpret_cast<AudioOutputBuffer*>(shared_memory->memory());
   buffer->params.frames_skipped = 0;
-  buffer->params.delay =
+  buffer->params.delay_us =
       base::TimeDelta::FromMilliseconds(kOutputDelayMs).InMicroseconds();
-  buffer->params.delay_timestamp =
+  buffer->params.delay_timestamp_us =
       (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
 
   constexpr int kControlSignal = 0;

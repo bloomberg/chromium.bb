@@ -40,15 +40,15 @@ static_assert(AudioBus::kChannelAlignment == PARAMETERS_ALIGNMENT,
 struct MEDIA_SHMEM_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT)
     AudioInputBufferParameters {
   double volume;
-  int64_t capture_time;  // base::TimeTicks in microseconds.
+  int64_t capture_time_us;  // base::TimeTicks in microseconds.
   uint32_t size;
   uint32_t id;
   bool key_pressed;
 };
 struct MEDIA_SHMEM_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT)
     AudioOutputBufferParameters {
-  int64_t delay;            // base::TimeDelta in microseconds.
-  int64_t delay_timestamp;  // base::TimeTicks in microseconds.
+  int64_t delay_us;            // base::TimeDelta in microseconds.
+  int64_t delay_timestamp_us;  // base::TimeTicks in microseconds.
   uint32_t frames_skipped;
   uint32_t bitstream_data_size;
   uint32_t bitstream_frames;
