@@ -121,7 +121,6 @@ Node::InsertionNotificationRequest SVGUseElement::InsertedInto(
     return kInsertionDone;
 #if DCHECK_IS_ON()
   DCHECK(!target_element_instance_ || !IsWellFormedDocument(&GetDocument()));
-  DCHECK(!HasPendingResources() || !IsWellFormedDocument(&GetDocument()));
 #endif
   InvalidateShadowTree();
   return kInsertionDone;
