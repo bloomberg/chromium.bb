@@ -7,7 +7,6 @@
 
 namespace viz {
 
-class CompositorFrameSinkSupport;
 class FrameSinkId;
 
 class FrameSinkObserver {
@@ -18,15 +17,11 @@ class FrameSinkObserver {
   // Called when FrameSinkId is being invalidated
   virtual void OnInvalidatedFrameSinkId(const FrameSinkId& frame_sink_id) = 0;
 
-  // Called when RootCompositorFrameSinkImpl is created
-  virtual void OnCreatedRootCompositorFrameSink(
-      const FrameSinkId& frame_sink_id) = 0;
+  // Called when CompositorFrameSink is created
+  virtual void OnCreatedCompositorFrameSink(const FrameSinkId& frame_sink_id,
+                                            bool is_root) = 0;
 
-  // Called when CompositorFrameSinkImpl is created
-  virtual void OnCreatedCompositorFrameSink(
-      const FrameSinkId& frame_sink_id) = 0;
-
-  // Called when [Root]CompositorFrameSinkImpl is about to be destroyed
+  // Called when CompositorFrameSink is about to be destroyed
   virtual void OnDestroyedCompositorFrameSink(
       const FrameSinkId& frame_sink_id) = 0;
 
@@ -41,15 +36,6 @@ class FrameSinkObserver {
   virtual void OnUnregisteredFrameSinkHierarchy(
       const FrameSinkId& parent_frame_sink_id,
       const FrameSinkId& child_frame_sink_id) = 0;
-
-  // Called on creating of CompositorFrameSinkSupport
-  virtual void OnRegisteredCompositorFrameSinkSupport(
-      const FrameSinkId& frame_sink_id,
-      CompositorFrameSinkSupport* support) = 0;
-
-  // Called on destroying CompositorFrameSinkSupport
-  virtual void OnUnregisteredCompositorFrameSinkSupport(
-      const FrameSinkId& frame_sink_id) = 0;
 };
 
 }  // namespace viz
