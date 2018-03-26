@@ -12,14 +12,15 @@ import android.view.ViewGroup;
  * An adapter that uses a {@link ViewBinder} to bind items in a {@link ListObservable} model to
  * {@link ViewHolder}s.
  *
- * @param <E> The type of items held by the {@link ListObservable} model.
+ * @param <E> The type of the {@link ListObservable} model.
  * @param <VH> The {@link ViewHolder} type for the {@link RecyclerView}.
  */
-public class RecyclerViewAdapter<E, VH extends ViewHolder> extends RecyclerView.Adapter<VH> {
+public class RecyclerViewAdapter<E extends ListObservable, VH extends ViewHolder>
+        extends RecyclerView.Adapter<VH> {
     /**
      * A view binder used to bind items in the {@link ListObservable} model to {@link ViewHolder}s.
      *
-     * @param <E> The type of items held by the {@link ListObservable} model.
+     * @param <E> The type of the {@link ListObservable} model.
      * @param <VH> The {@link ViewHolder} type for the {@link RecyclerView}.
      */
     public interface ViewBinder<E, VH> {
@@ -35,15 +36,18 @@ public class RecyclerViewAdapter<E, VH extends ViewHolder> extends RecyclerView.
         VH onCreateViewHolder(ViewGroup parent, int viewType);
 
         /**
-         * Called to display the {@code item} in the provided {@code holder}.
+         * Called to display the item at the specified {@code position} in the provided
+         * {@code holder}.
          *
+         * @param model The {@link ListObservable} model used to retrieve the item at
+         *              {@code position}.
          * @param holder The {@link ViewHolder} which should be updated to represent {@code item}.
-         * @param item The item to be bound.
+         * @param position The position of the item to be bound.
          */
-        void onBindViewHolder(VH holder, E item);
+        void onBindViewHolder(E model, VH holder, int position);
     }
 
-    protected final ListObservable<E> mModel;
+    protected final E mModel;
 
     private ViewBinder<E, VH> mViewBinder;
 
@@ -52,7 +56,7 @@ public class RecyclerViewAdapter<E, VH extends ViewHolder> extends RecyclerView.
      * @param model The {@link ListObservable} model used to retrieve items to display in the
      *              {@link RecyclerView}.
      */
-    public RecyclerViewAdapter(ListObservable<E> model) {
+    public RecyclerViewAdapter(E model) {
         mModel = model;
     }
 
@@ -78,6 +82,6 @@ public class RecyclerViewAdapter<E, VH extends ViewHolder> extends RecyclerView.
 
     @Override
     public void onBindViewHolder(VH holder, int position) {
-        mViewBinder.onBindViewHolder(holder, mModel.getItem(position));
+        mViewBinder.onBindViewHolder(mModel, holder, position);
     }
 }

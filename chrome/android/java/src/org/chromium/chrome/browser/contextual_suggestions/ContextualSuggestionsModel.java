@@ -8,57 +8,43 @@ import android.view.View.OnClickListener;
 
 import org.chromium.chrome.browser.modelutil.ListObservable;
 import org.chromium.chrome.browser.modelutil.PropertyObservable;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Collections;
 
 /** A model for the contextual suggestions UI component. */
 class ContextualSuggestionsModel extends PropertyObservable<PropertyKey> {
-    /** A {@link ListObservable} containing the current list of suggestions. */
-    class SuggestionsList extends ListObservable<SnippetArticle> {
-        private List<SnippetArticle> mSuggestions = new ArrayList<>();
+    /** A {@link ListObservable} containing the current cluster list. */
+    class ClusterListObservable extends ListObservable {
+        ClusterList mClusterList = new ClusterList(Collections.emptyList());
 
-        private void setSuggestions(List<SnippetArticle> suggestions) {
-            assert suggestions != null;
+        private void setClusterList(ClusterList clusterList) {
+            assert clusterList != null;
 
             int oldLength = getItemCount();
-            mSuggestions = suggestions;
+            mClusterList = clusterList;
 
             if (oldLength != 0) notifyItemRangeRemoved(0, oldLength);
-            if (mSuggestions.size() != 0) {
-                notifyItemRangeInserted(0, mSuggestions.size());
-            }
+            if (getItemCount() != 0) notifyItemRangeInserted(0, getItemCount());
         }
 
         @Override
         public int getItemCount() {
-            return mSuggestions.size();
-        }
-
-        @Override
-        public SnippetArticle getItem(int position) {
-            assert position < mSuggestions.size();
-
-            return mSuggestions.get(position);
+            return mClusterList.getItemCount();
         }
     }
 
-    SuggestionsList mSuggestionsList = new SuggestionsList();
+    ClusterListObservable mClusterListObservable = new ClusterListObservable();
     private OnClickListener mCloseButtonOnClickListener;
     private String mTitle;
 
-    /**
-     * @param suggestions The list of current suggestions. May be an empty list if no
-     *                    suggestions are available.
-     */
-    void setSuggestions(List<SnippetArticle> suggestions) {
-        mSuggestionsList.setSuggestions(suggestions);
+    /** @param suggestions The current list of clusters. */
+    void setClusterList(ClusterList clusterList) {
+        mClusterListObservable.setClusterList(clusterList);
     }
 
-    /** @return The list of current suggestions. */
-    List<SnippetArticle> getSuggestions() {
-        return mSuggestionsList.mSuggestions;
+    /** @return The current list of clusters. */
+    ClusterList getClusterList() {
+        return mClusterListObservable.mClusterList;
     }
 
     /** @param listener The {@link OnClickListener} for the close button. */
