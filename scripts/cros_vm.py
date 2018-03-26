@@ -39,15 +39,12 @@ class VM(object):
   SSH_PORT = 9222
   IMAGE_FORMAT = 'raw'
 
-  def __init__(self, argv):
+  def __init__(self, opts):
     """Initialize VM.
 
     Args:
-      argv: command line args.
+      opts: command line options.
     """
-    opts = self._ParseArgs(argv)
-    opts.Freeze()
-
     self.qemu_path = opts.qemu_path
     self.qemu_bios_path = opts.qemu_bios_path
     self.qemu_m = opts.qemu_m
@@ -70,8 +67,10 @@ class VM(object):
     self.stop = opts.stop
     self.cmd = opts.args[1:] if opts.cmd else None
 
-    self.vm_dir = os.path.join(osutils.GetGlobalTempDir(),
-                               'cros_vm_%d' % self.ssh_port)
+    self.vm_dir = opts.vm_dir
+    if not self.vm_dir:
+      self.vm_dir = os.path.join(osutils.GetGlobalTempDir(),
+                                 'cros_vm_%d' % self.ssh_port)
     if os.path.exists(self.vm_dir):
       # For security, ensure that vm_dir is not a symlink, and is owned by us or
       # by root.
@@ -89,6 +88,7 @@ class VM(object):
 
     self.remote = remote_access.RemoteDevice(remote_access.LOCALHOST,
                                              port=self.ssh_port)
+    self.device_addr = 'ssh://%s:%d' % (remote_access.LOCALHOST, self.ssh_port)
 
     # TODO(achuith): support nographics, snapshot, mem_path, usb_passthrough,
     # moblab, etc.
@@ -428,7 +428,7 @@ class VM(object):
                                     **kwargs)
 
   @staticmethod
-  def _ParseArgs(argv):
+  def GetParser():
     """Parse a list of args.
 
     Args:
@@ -470,14 +470,19 @@ class VM(object):
                         help='ssh port to communicate with VM.')
     sdk_board_env = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_BOARD_ENV)
     parser.add_argument('--board', default=sdk_board_env, help='Board to use.')
+    parser.add_argument('--vm-dir', type='path',
+                        help='Temp VM directory to use.')
     parser.add_argument('--dry-run', action='store_true', default=False,
                         help='dry run for debugging.')
     parser.add_argument('--cmd', action='store_true', default=False,
                         help='Run a command in the VM.')
     parser.add_argument('args', nargs=argparse.REMAINDER,
                         help='Command to run in the VM.')
-    return parser.parse_args(argv)
+    return parser
 
 def main(argv):
-  vm = VM(argv)
+  opts = VM.GetParser().parse_args(argv)
+  opts.Freeze()
+
+  vm = VM(opts)
   vm.Run()

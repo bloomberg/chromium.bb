@@ -3,7 +3,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""Script for running catapult smoke tests in a VM."""
+"""Script for running tests in a VM."""
 
 from __future__ import print_function
 
@@ -12,7 +12,6 @@ import datetime
 import os
 import re
 
-from chromite.lib import commandline
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
 from chromite.scripts import cros_vm
@@ -21,7 +20,12 @@ from chromite.scripts import cros_vm
 class VMTest(object):
   """Class for running VM tests."""
 
-  def __init__(self, opts, vm_args):
+  def __init__(self, opts):
+    """Initialize VMTest.
+
+    Args:
+      opts: command line options.
+    """
     self.start_time = datetime.datetime.utcnow()
     self.catapult_tests = opts.catapult_tests
     self.guest = opts.guest
@@ -30,9 +34,7 @@ class VMTest(object):
     self.results_dir = opts.results_dir
     self.start_vm = opts.start_vm
 
-    if self.board:
-      vm_args += ['--board', self.board]
-    self._vm = cros_vm.VM(vm_args)
+    self._vm = cros_vm.VM(opts)
 
   def __del__(self):
     self.StopVM()
@@ -203,19 +205,21 @@ def ParseCommandLine(argv):
     List of parsed options for VMTest, and args to pass to VM.
   """
 
-  parser = commandline.ArgumentParser(description=__doc__)
+  cros_vm_parser = cros_vm.VM.GetParser()
+  parser = argparse.ArgumentParser(description=__doc__,
+                                   parents=[cros_vm_parser],
+                                   add_help=False)
   parser.add_argument('--start-vm', action='store_true', default=False,
                       help='Start a new VM before running tests.')
   parser.add_argument('--catapult-tests', nargs='+',
                       help='Catapult test pattern to run, passed to run_tests.')
   parser.add_argument('--autotest', nargs='+',
                       help='Autotest test pattern to run, passed to test_that.')
-  parser.add_argument('--board', help='Board to use.')
   parser.add_argument('--results-dir', help='Autotest results directory.')
-  parser.add_argument('--output', type='path', help='Save output to file.')
+  parser.add_argument('--output', help='Save output to file.')
   parser.add_argument('--guest', action='store_true', default=False,
                       help='Run tests in incognito mode.')
-  parser.add_argument('--build-dir', type='path',
+  parser.add_argument('--build-dir',
                       help='Directory for building and deploying chrome.')
   parser.add_argument('--build', action='store_true', default=False,
                       help='Before running tests, build chrome using ninja, '
@@ -226,14 +230,10 @@ def ParseCommandLine(argv):
   parser.add_argument('--cwd', help='Change working directory.')
   parser.add_argument('--files', default=[], action='append',
                       help='Files to scp to the VM.')
-  parser.add_argument('--files-from', type='path',
+  parser.add_argument('--files-from',
                       help='File with list of files to copy to the VM.')
-  parser.add_argument('--cmd', action='store_true', default=False,
-                      help='Run a command in the VM.')
-  parser.add_argument('args', nargs=argparse.REMAINDER,
-                      help='Command to run in the VM.')
 
-  opts, vm_args = parser.parse_known_args(argv)
+  opts = parser.parse_args(argv)
 
   if opts.build or opts.deploy:
     if not opts.build_dir:
@@ -254,7 +254,7 @@ def ParseCommandLine(argv):
     if opts.args[0] != '--':
       parser.error('Additional args must start with \'--\': %s' % opts.args)
 
-  return opts, vm_args
+  return opts
 
 
 def FileList(files, files_from):
@@ -273,8 +273,9 @@ def FileList(files, files_from):
   return files
 
 def main(argv):
-  opts, vm_args = ParseCommandLine(argv)
-  vm_test = VMTest(opts, vm_args)
+  opts = ParseCommandLine(argv)
+
+  vm_test = VMTest(opts)
   vm_test.StartVM()
 
   if opts.build:
