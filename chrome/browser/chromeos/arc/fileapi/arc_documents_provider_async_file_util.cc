@@ -36,7 +36,7 @@ void OnGetFileInfoOnUIThread(
 }
 
 void OnReadDirectoryOnUIThread(
-    const storage::AsyncFileUtil::ReadDirectoryCallback& callback,
+    storage::AsyncFileUtil::ReadDirectoryCallback callback,
     base::File::Error result,
     std::vector<ArcDocumentsProviderRoot::ThinFileInfo> files) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -48,9 +48,9 @@ void OnReadDirectoryOnUIThread(
                                         ? storage::DirectoryEntry::DIRECTORY
                                         : storage::DirectoryEntry::FILE);
 
-  BrowserThread::PostTask(
-      BrowserThread::IO, FROM_HERE,
-      base::BindOnce(callback, result, entries, false /* has_more */));
+  BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                          base::BindOnce(std::move(callback), result, entries,
+                                         false /* has_more */));
 }
 
 void GetFileInfoOnUIThread(
@@ -80,25 +80,27 @@ void GetFileInfoOnUIThread(
 
 void ReadDirectoryOnUIThread(
     const storage::FileSystemURL& url,
-    const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
+    storage::AsyncFileUtil::ReadDirectoryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   ArcDocumentsProviderRootMap* roots =
       ArcDocumentsProviderRootMap::GetForArcBrowserContext();
   if (!roots) {
-    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_SECURITY, {});
+    OnReadDirectoryOnUIThread(std::move(callback),
+                              base::File::FILE_ERROR_SECURITY, {});
     return;
   }
 
   base::FilePath path;
   ArcDocumentsProviderRoot* root = roots->ParseAndLookup(url, &path);
   if (!root) {
-    OnReadDirectoryOnUIThread(callback, base::File::FILE_ERROR_NOT_FOUND, {});
+    OnReadDirectoryOnUIThread(std::move(callback),
+                              base::File::FILE_ERROR_NOT_FOUND, {});
     return;
   }
 
-  root->ReadDirectory(path,
-                      base::BindOnce(&OnReadDirectoryOnUIThread, callback));
+  root->ReadDirectory(
+      path, base::BindOnce(&OnReadDirectoryOnUIThread, std::move(callback)));
 }
 
 }  // namespace
@@ -113,21 +115,21 @@ void ArcDocumentsProviderAsyncFileUtil::CreateOrOpen(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int file_flags,
-    const CreateOrOpenCallback& callback) {
+    CreateOrOpenCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // TODO(nya): Implement this function if it is ever called.
   NOTIMPLEMENTED();
-  callback.Run(base::File(base::File::FILE_ERROR_INVALID_OPERATION),
-               base::Closure());
+  std::move(callback).Run(base::File(base::File::FILE_ERROR_INVALID_OPERATION),
+                          base::Closure());
 }
 
 void ArcDocumentsProviderAsyncFileUtil::EnsureFileExists(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const EnsureFileExistsCallback& callback) {
+    EnsureFileExistsCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED, false);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED, false);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::CreateDirectory(
@@ -135,29 +137,29 @@ void ArcDocumentsProviderAsyncFileUtil::CreateDirectory(
     const storage::FileSystemURL& url,
     bool exclusive,
     bool recursive,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::GetFileInfo(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int fields,
-    const GetFileInfoCallback& callback) {
+    GetFileInfoCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeArcDocumentsProvider, url.type());
 
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&GetFileInfoOnUIThread, url, fields, callback));
+      base::BindOnce(&GetFileInfoOnUIThread, url, fields, std::move(callback)));
 }
 
 void ArcDocumentsProviderAsyncFileUtil::ReadDirectory(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const ReadDirectoryCallback& callback) {
+    ReadDirectoryCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(storage::kFileSystemTypeArcDocumentsProvider, url.type());
 
@@ -171,20 +173,20 @@ void ArcDocumentsProviderAsyncFileUtil::Touch(
     const storage::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::Truncate(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int64_t length,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::CopyFileLocal(
@@ -192,11 +194,11 @@ void ArcDocumentsProviderAsyncFileUtil::CopyFileLocal(
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
-    const CopyFileProgressCallback& progress_callback,
-    const StatusCallback& callback) {
+    CopyFileProgressCallback progress_callback,
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::MoveFileLocal(
@@ -204,58 +206,58 @@ void ArcDocumentsProviderAsyncFileUtil::MoveFileLocal(
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::CopyInForeignFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
     const storage::FileSystemURL& dest_url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::DeleteFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::DeleteDirectory(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::DeleteRecursively(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTREACHED();  // Read-only file system.
-  callback.Run(base::File::FILE_ERROR_ACCESS_DENIED);
+  std::move(callback).Run(base::File::FILE_ERROR_ACCESS_DENIED);
 }
 
 void ArcDocumentsProviderAsyncFileUtil::CreateSnapshotFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const CreateSnapshotFileCallback& callback) {
+    CreateSnapshotFileCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   NOTIMPLEMENTED();  // TODO(crbug.com/671511): Implement this function.
-  callback.Run(base::File::FILE_ERROR_FAILED, base::File::Info(),
-               base::FilePath(),
-               scoped_refptr<storage::ShareableFileReference>());
+  std::move(callback).Run(base::File::FILE_ERROR_FAILED, base::File::Info(),
+                          base::FilePath(),
+                          scoped_refptr<storage::ShareableFileReference>());
 }
 
 }  // namespace arc

@@ -15,7 +15,7 @@ namespace arc {
 
 namespace {
 
-void OnGetFileSize(const storage::AsyncFileUtil::GetFileInfoCallback& callback,
+void OnGetFileSize(storage::AsyncFileUtil::GetFileInfoCallback callback,
                    int64_t size) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   base::File::Info info;
@@ -25,7 +25,7 @@ void OnGetFileSize(const storage::AsyncFileUtil::GetFileInfoCallback& callback,
   } else {
     info.size = size;
   }
-  callback.Run(error, info);
+  std::move(callback).Run(error, info);
 }
 
 }  // namespace
@@ -40,21 +40,21 @@ void ArcContentFileSystemAsyncFileUtil::CreateOrOpen(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int file_flags,
-    const CreateOrOpenCallback& callback) {
+    CreateOrOpenCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback, base::Passed(base::File()), base::Closure()));
+      FROM_HERE, base::BindOnce(std::move(callback), base::Passed(base::File()),
+                                base::Closure()));
 }
 
 void ArcContentFileSystemAsyncFileUtil::EnsureFileExists(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const EnsureFileExistsCallback& callback) {
+    EnsureFileExistsCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::BindOnce(callback, base::File::FILE_ERROR_FAILED, false));
+      FROM_HERE, base::BindOnce(std::move(callback),
+                                base::File::FILE_ERROR_FAILED, false));
 }
 
 void ArcContentFileSystemAsyncFileUtil::CreateDirectory(
@@ -62,30 +62,33 @@ void ArcContentFileSystemAsyncFileUtil::CreateDirectory(
     const storage::FileSystemURL& url,
     bool exclusive,
     bool recursive,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
 }
 
 void ArcContentFileSystemAsyncFileUtil::GetFileInfo(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int fields,
-    const GetFileInfoCallback& callback) {
+    GetFileInfoCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   file_system_operation_runner_util::GetFileSizeOnIOThread(
-      FileSystemUrlToArcUrl(url), base::Bind(&OnGetFileSize, callback));
+      FileSystemUrlToArcUrl(url),
+      base::BindOnce(&OnGetFileSize, std::move(callback)));
 }
 
 void ArcContentFileSystemAsyncFileUtil::ReadDirectory(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const ReadDirectoryCallback& callback) {
+    ReadDirectoryCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED,
-                                EntryList(), false));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED,
+                     EntryList(), false));
 }
 
 void ArcContentFileSystemAsyncFileUtil::Touch(
@@ -93,20 +96,22 @@ void ArcContentFileSystemAsyncFileUtil::Touch(
     const storage::FileSystemURL& url,
     const base::Time& last_access_time,
     const base::Time& last_modified_time,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
 }
 
 void ArcContentFileSystemAsyncFileUtil::Truncate(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
     int64_t length,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
 }
 
 void ArcContentFileSystemAsyncFileUtil::CopyFileLocal(
@@ -114,11 +119,12 @@ void ArcContentFileSystemAsyncFileUtil::CopyFileLocal(
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
-    const CopyFileProgressCallback& progress_callback,
-    const StatusCallback& callback) {
+    CopyFileProgressCallback progress_callback,
+    StatusCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
 }
 
 void ArcContentFileSystemAsyncFileUtil::MoveFileLocal(
@@ -126,57 +132,62 @@ void ArcContentFileSystemAsyncFileUtil::MoveFileLocal(
     const storage::FileSystemURL& src_url,
     const storage::FileSystemURL& dest_url,
     CopyOrMoveOption option,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
 }
 
 void ArcContentFileSystemAsyncFileUtil::CopyInForeignFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const base::FilePath& src_file_path,
     const storage::FileSystemURL& dest_url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
 }
 
 void ArcContentFileSystemAsyncFileUtil::DeleteFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
 }
 
 void ArcContentFileSystemAsyncFileUtil::DeleteDirectory(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
 }
 
 void ArcContentFileSystemAsyncFileUtil::DeleteRecursively(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const StatusCallback& callback) {
+    StatusCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::BindOnce(callback, base::File::FILE_ERROR_FAILED));
+      FROM_HERE,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED));
 }
 
 void ArcContentFileSystemAsyncFileUtil::CreateSnapshotFile(
     std::unique_ptr<storage::FileSystemOperationContext> context,
     const storage::FileSystemURL& url,
-    const CreateSnapshotFileCallback& callback) {
+    CreateSnapshotFileCallback callback) {
   NOTIMPLEMENTED();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::BindOnce(callback, base::File::FILE_ERROR_FAILED,
+      base::BindOnce(std::move(callback), base::File::FILE_ERROR_FAILED,
                      base::File::Info(), base::FilePath(),
                      scoped_refptr<storage::ShareableFileReference>()));
 }

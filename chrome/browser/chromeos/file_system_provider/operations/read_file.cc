@@ -52,14 +52,14 @@ ReadFile::ReadFile(
     scoped_refptr<net::IOBuffer> buffer,
     int64_t offset,
     int length,
-    const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback)
+    ProvidedFileSystemInterface::ReadChunkReceivedCallback callback)
     : Operation(event_router, file_system_info),
       file_handle_(file_handle),
       buffer_(buffer),
       offset_(offset),
       length_(length),
       current_offset_(0),
-      callback_(callback) {}
+      callback_(std::move(callback)) {}
 
 ReadFile::~ReadFile() {
 }

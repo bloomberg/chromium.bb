@@ -29,30 +29,37 @@ class TestingProvidedFileSystem : public FakeProvidedFileSystem {
 
   AbortCallback OpenFile(const base::FilePath& file_path,
                          OpenFileMode mode,
-                         const OpenFileCallback& callback) override {
-    open_callback_ = callback;
+                         OpenFileCallback callback) override {
+    open_callback_ = std::move(callback);
     return base::Bind(&TestingProvidedFileSystem::AbortOpen,
                       base::Unretained(this));
   }
 
   AbortCallback CloseFile(
       int file_handle,
-      const storage::AsyncFileUtil::StatusCallback& callback) override {
+      storage::AsyncFileUtil::StatusCallback callback) override {
     close_requests_.push_back(file_handle);
-    callback.Run(base::File::FILE_OK);
+    std::move(callback).Run(base::File::FILE_OK);
     return AbortCallback();
   }
 
-  const OpenFileCallback& open_callback() const { return open_callback_; }
+  bool has_open_callback() const { return !!open_callback_; }
+  OpenFileCallback open_callback() {
+    return base::Bind(&TestingProvidedFileSystem::CompleteOpen,
+                      base::Unretained(this));
+  }
   const std::vector<int> close_requests() const { return close_requests_; }
 
  private:
   OpenFileCallback open_callback_;
   std::vector<int> close_requests_;
 
+  void CompleteOpen(int file_handle, base::File::Error result) {
+    std::move(open_callback_).Run(file_handle, result);
+  }
+
   void AbortOpen() {
-    open_callback_.Run(0, base::File::FILE_ERROR_ABORT);
-    open_callback_ = OpenFileCallback();
+    std::move(open_callback_).Run(0, base::File::FILE_ERROR_ABORT);
   }
 };
 
@@ -73,7 +80,7 @@ TEST(ScopedFileOpenerTest, AbortWhileOpening) {
                                  OPEN_FILE_MODE_READ,
                                  base::Bind(&LogOpen, &log));
     base::RunLoop().RunUntilIdle();
-    EXPECT_FALSE(file_system.open_callback().is_null());
+    EXPECT_TRUE(file_system.has_open_callback());
   }
   ASSERT_EQ(1u, log.size());
   EXPECT_EQ(0, log[0].first);
@@ -81,34 +88,6 @@ TEST(ScopedFileOpenerTest, AbortWhileOpening) {
 
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(0u, file_system.close_requests().size());
-}
-
-TEST(ScopedFileOpenerTest, CloseWhileOpening) {
-  TestingProvidedFileSystem file_system;
-  content::TestBrowserThreadBundle thread_bundle;
-  OpenLog log;
-  {
-    ScopedFileOpener file_opener(&file_system, base::FilePath(),
-                                 OPEN_FILE_MODE_READ,
-                                 base::Bind(&LogOpen, &log));
-    base::RunLoop().RunUntilIdle();
-    ASSERT_FALSE(file_system.open_callback().is_null());
-    // Complete opening asynchronously, so after trying to abort.
-    const ProvidedFileSystemInterface::OpenFileCallback open_callback =
-        file_system.open_callback();
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(open_callback, 123, base::File::FILE_OK));
-  }
-
-  // Wait until the open callback is called asynchonously.
-  base::RunLoop().RunUntilIdle();
-
-  ASSERT_EQ(1u, log.size());
-  EXPECT_EQ(0, log[0].first);
-  EXPECT_EQ(base::File::FILE_ERROR_ABORT, log[0].second);
-
-  ASSERT_EQ(1u, file_system.close_requests().size());
-  EXPECT_EQ(123, file_system.close_requests()[0]);
 }
 
 TEST(ScopedFileOpenerTest, CloseAfterOpening) {
@@ -120,7 +99,7 @@ TEST(ScopedFileOpenerTest, CloseAfterOpening) {
                                  OPEN_FILE_MODE_READ,
                                  base::Bind(&LogOpen, &log));
     base::RunLoop().RunUntilIdle();
-    ASSERT_FALSE(file_system.open_callback().is_null());
+    ASSERT_TRUE(file_system.has_open_callback());
     file_system.open_callback().Run(123, base::File::FILE_OK);
   }
 
@@ -141,7 +120,7 @@ TEST(ScopedFileOpenerTest, CloseAfterAborting) {
                                  OPEN_FILE_MODE_READ,
                                  base::Bind(&LogOpen, &log));
     base::RunLoop().RunUntilIdle();
-    ASSERT_FALSE(file_system.open_callback().is_null());
+    ASSERT_TRUE(file_system.has_open_callback());
     file_system.open_callback().Run(0, base::File::FILE_ERROR_ABORT);
   }
 

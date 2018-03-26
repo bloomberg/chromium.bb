@@ -105,7 +105,7 @@ class ProvidedFileSystemInterface {
   typedef base::Callback<void(int file_handle, base::File::Error result)>
       OpenFileCallback;
 
-  typedef base::Callback<
+  typedef base::RepeatingCallback<
       void(int chunk_length, bool has_more, base::File::Error result)>
       ReadChunkReceivedCallback;
 
@@ -124,44 +124,44 @@ class ProvidedFileSystemInterface {
   // Requests unmounting of the file system. The callback is called when the
   // request is accepted or rejected, with an error code.
   virtual AbortCallback RequestUnmount(
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests metadata of the passed |entry_path|. It can be either a file
   // or a directory. All |fields| will be returned if supported. Note, that
   // default fields are always returned.
   virtual AbortCallback GetMetadata(const base::FilePath& entry_path,
                                     MetadataFieldMask fields,
-                                    const GetMetadataCallback& callback) = 0;
+                                    GetMetadataCallback callback) = 0;
 
   // Requests list of actions for the passed list of entries at |entry_paths|.
   // They can be either files or directories.
   virtual AbortCallback GetActions(
       const std::vector<base::FilePath>& entry_paths,
-      const GetActionsCallback& callback) = 0;
+      GetActionsCallback callback) = 0;
 
   // Executes the |action_id| action on the list of entries at |entry_paths|.
   virtual AbortCallback ExecuteAction(
       const std::vector<base::FilePath>& entry_paths,
       const std::string& action_id,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests enumerating entries from the passed |directory_path|. The callback
   // can be called multiple times until |has_more| is set to false.
   virtual AbortCallback ReadDirectory(
       const base::FilePath& directory_path,
-      const storage::AsyncFileUtil::ReadDirectoryCallback& callback) = 0;
+      storage::AsyncFileUtil::ReadDirectoryCallback callback) = 0;
 
   // Requests opening a file at |file_path|. If the file doesn't exist, then the
   // operation will fail. In case of any error, the returned file handle is 0.
   virtual AbortCallback OpenFile(const base::FilePath& file_path,
                                  OpenFileMode mode,
-                                 const OpenFileCallback& callback) = 0;
+                                 OpenFileCallback callback) = 0;
 
   // Requests closing a file, previously opened with OpenFile() as a file with
   // |file_handle|. The |callback| must be called.
   virtual AbortCallback CloseFile(
       int file_handle,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests reading a file previously opened with |file_handle|. The callback
   // can be called multiple times until |has_more| is set to false. On success
@@ -171,7 +171,7 @@ class ProvidedFileSystemInterface {
                                  net::IOBuffer* buffer,
                                  int64_t offset,
                                  int length,
-                                 const ReadChunkReceivedCallback& callback) = 0;
+                                 ReadChunkReceivedCallback callback) = 0;
 
   // Requests creating a directory. If |recursive| is passed, then all non
   // existing directories on the path will be created. The operation will fail
@@ -179,40 +179,40 @@ class ProvidedFileSystemInterface {
   virtual AbortCallback CreateDirectory(
       const base::FilePath& directory_path,
       bool recursive,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests creating a file. If the entry already exists, then the
   // FILE_ERROR_EXISTS error must be returned.
   virtual AbortCallback CreateFile(
       const base::FilePath& file_path,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests deleting a directory. If |recursive| is passed and the entry is
   // a directory, then all contents of it (recursively) will be deleted too.
   virtual AbortCallback DeleteEntry(
       const base::FilePath& entry_path,
       bool recursive,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests copying an entry (recursively in case of a directory) within the
   // same file system.
   virtual AbortCallback CopyEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests moving an entry (recursively in case of a directory) within the
   // same file system.
   virtual AbortCallback MoveEntry(
       const base::FilePath& source_path,
       const base::FilePath& target_path,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests truncating a file to the desired length.
   virtual AbortCallback Truncate(
       const base::FilePath& file_path,
       int64_t length,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests writing to a file previously opened with |file_handle|.
   virtual AbortCallback WriteFile(
@@ -220,7 +220,7 @@ class ProvidedFileSystemInterface {
       net::IOBuffer* buffer,
       int64_t offset,
       int length,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests adding a watcher on an entry. |recursive| must not be true for
   // files. |callback| is optional, but it can't be used for persistent
@@ -230,7 +230,7 @@ class ProvidedFileSystemInterface {
       const base::FilePath& entry_path,
       bool recursive,
       bool persistent,
-      const storage::AsyncFileUtil::StatusCallback& callback,
+      storage::AsyncFileUtil::StatusCallback callback,
       const storage::WatcherManager::NotificationCallback&
           notification_callback) = 0;
 
@@ -240,7 +240,7 @@ class ProvidedFileSystemInterface {
       const GURL& origin,
       const base::FilePath& entry_path,
       bool recursive,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Notifies about changes related to the watcher within the file system.
   // Invoked by the file system implementation. Returns an error code via the
@@ -253,13 +253,12 @@ class ProvidedFileSystemInterface {
       storage::WatcherManager::ChangeType change_type,
       std::unique_ptr<ProvidedFileSystemObserver::Changes> changes,
       const std::string& tag,
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+      storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Requests showing UI for configuring the file system by user. Once the
   // configuration process is completed, base::File::FILE_OK or an error code is
   // returned via the |callback|.
-  virtual void Configure(
-      const storage::AsyncFileUtil::StatusCallback& callback) = 0;
+  virtual void Configure(storage::AsyncFileUtil::StatusCallback callback) = 0;
 
   // Returns a provided file system info for this file system.
   virtual const ProvidedFileSystemInfo& GetFileSystemInfo() const = 0;

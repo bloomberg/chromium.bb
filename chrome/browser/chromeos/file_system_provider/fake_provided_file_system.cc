@@ -84,20 +84,22 @@ const FakeEntry* FakeProvidedFileSystem::GetEntry(
 }
 
 AbortCallback FakeProvidedFileSystem::RequestUnmount(
-    const storage::AsyncFileUtil::StatusCallback& callback) {
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+    storage::AsyncFileUtil::StatusCallback callback) {
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::GetMetadata(
     const base::FilePath& entry_path,
     ProvidedFileSystemInterface::MetadataFieldMask fields,
-    const ProvidedFileSystemInterface::GetMetadataCallback& callback) {
+    ProvidedFileSystemInterface::GetMetadataCallback callback) {
   const Entries::const_iterator entry_it = entries_.find(entry_path);
 
   if (entry_it == entries_.end()) {
-    return PostAbortableTask(base::Bind(
-        callback, base::Passed(base::WrapUnique<EntryMetadata>(NULL)),
-        base::File::FILE_ERROR_NOT_FOUND));
+    return PostAbortableTask(
+        base::BindOnce(std::move(callback),
+                       base::Passed(base::WrapUnique<EntryMetadata>(NULL)),
+                       base::File::FILE_ERROR_NOT_FOUND));
   }
 
   std::unique_ptr<EntryMetadata> metadata(new EntryMetadata);
@@ -124,29 +126,31 @@ AbortCallback FakeProvidedFileSystem::GetMetadata(
         new std::string(*entry_it->second->metadata->thumbnail));
   }
 
-  return PostAbortableTask(
-      base::Bind(callback, base::Passed(&metadata), base::File::FILE_OK));
+  return PostAbortableTask(base::BindOnce(
+      std::move(callback), base::Passed(&metadata), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::GetActions(
     const std::vector<base::FilePath>& entry_paths,
-    const ProvidedFileSystemInterface::GetActionsCallback& callback) {
+    ProvidedFileSystemInterface::GetActionsCallback callback) {
   // TODO(mtomasz): Implement it once needed.
   const std::vector<Action> actions;
-  return PostAbortableTask(base::Bind(callback, actions, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), actions, base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::ExecuteAction(
     const std::vector<base::FilePath>& entry_paths,
     const std::string& action_id,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   // TODO(mtomasz): Implement it once needed.
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::ReadDirectory(
     const base::FilePath& directory_path,
-    const storage::AsyncFileUtil::ReadDirectoryCallback& callback) {
+    storage::AsyncFileUtil::ReadDirectoryCallback callback) {
   storage::AsyncFileUtil::EntryList entry_list;
 
   for (Entries::const_iterator it = entries_.begin(); it != entries_.end();
@@ -165,35 +169,36 @@ AbortCallback FakeProvidedFileSystem::ReadDirectory(
       callback, base::File::FILE_OK, entry_list, false /* has_more */));
 }
 
-AbortCallback FakeProvidedFileSystem::OpenFile(
-    const base::FilePath& entry_path,
-    OpenFileMode mode,
-    const OpenFileCallback& callback) {
+AbortCallback FakeProvidedFileSystem::OpenFile(const base::FilePath& entry_path,
+                                               OpenFileMode mode,
+                                               OpenFileCallback callback) {
   const Entries::const_iterator entry_it = entries_.find(entry_path);
 
   if (entry_it == entries_.end()) {
-    return PostAbortableTask(base::Bind(
-        callback, 0 /* file_handle */, base::File::FILE_ERROR_NOT_FOUND));
+    return PostAbortableTask(base::BindOnce(std::move(callback),
+                                            0 /* file_handle */,
+                                            base::File::FILE_ERROR_NOT_FOUND));
   }
 
   const int file_handle = ++last_file_handle_;
   opened_files_[file_handle] = OpenedFile(entry_path, mode);
   return PostAbortableTask(
-      base::Bind(callback, file_handle, base::File::FILE_OK));
+      base::BindOnce(std::move(callback), file_handle, base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::CloseFile(
     int file_handle,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   const auto opened_file_it = opened_files_.find(file_handle);
 
   if (opened_file_it == opened_files_.end()) {
     return PostAbortableTask(
-        base::Bind(callback, base::File::FILE_ERROR_NOT_FOUND));
+        base::BindOnce(std::move(callback), base::File::FILE_ERROR_NOT_FOUND));
   }
 
   opened_files_.erase(opened_file_it);
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::ReadFile(
@@ -201,7 +206,7 @@ AbortCallback FakeProvidedFileSystem::ReadFile(
     net::IOBuffer* buffer,
     int64_t offset,
     int length,
-    const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback) {
+    ProvidedFileSystemInterface::ReadChunkReceivedCallback callback) {
   const auto opened_file_it = opened_files_.find(file_handle);
 
   if (opened_file_it == opened_files_.end() ||
@@ -258,51 +263,56 @@ AbortCallback FakeProvidedFileSystem::ReadFile(
 AbortCallback FakeProvidedFileSystem::CreateDirectory(
     const base::FilePath& directory_path,
     bool recursive,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   // TODO(mtomasz): Implement it once needed.
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::DeleteEntry(
     const base::FilePath& entry_path,
     bool recursive,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   // TODO(mtomasz): Implement it once needed.
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::CreateFile(
     const base::FilePath& file_path,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   const base::File::Error result = file_path.AsUTF8Unsafe() != kFakeFilePath
                                        ? base::File::FILE_ERROR_EXISTS
                                        : base::File::FILE_OK;
 
-  return PostAbortableTask(base::Bind(callback, result));
+  return PostAbortableTask(base::BindOnce(std::move(callback), result));
 }
 
 AbortCallback FakeProvidedFileSystem::CopyEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   // TODO(mtomasz): Implement it once needed.
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::MoveEntry(
     const base::FilePath& source_path,
     const base::FilePath& target_path,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   // TODO(mtomasz): Implement it once needed.
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::Truncate(
     const base::FilePath& file_path,
     int64_t length,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   // TODO(mtomasz): Implement it once needed.
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::WriteFile(
@@ -310,26 +320,26 @@ AbortCallback FakeProvidedFileSystem::WriteFile(
     net::IOBuffer* buffer,
     int64_t offset,
     int length,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   const auto opened_file_it = opened_files_.find(file_handle);
 
   if (opened_file_it == opened_files_.end() ||
       opened_file_it->second.file_path.AsUTF8Unsafe() != kFakeFilePath) {
-    return PostAbortableTask(
-        base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
+    return PostAbortableTask(base::BindOnce(
+        std::move(callback), base::File::FILE_ERROR_INVALID_OPERATION));
   }
 
   const Entries::iterator entry_it =
       entries_.find(opened_file_it->second.file_path);
   if (entry_it == entries_.end()) {
-    return PostAbortableTask(
-        base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
+    return PostAbortableTask(base::BindOnce(
+        std::move(callback), base::File::FILE_ERROR_INVALID_OPERATION));
   }
 
   FakeEntry* const entry = entry_it->second.get();
   if (offset > *entry->metadata->size) {
-    return PostAbortableTask(
-        base::Bind(callback, base::File::FILE_ERROR_INVALID_OPERATION));
+    return PostAbortableTask(base::BindOnce(
+        std::move(callback), base::File::FILE_ERROR_INVALID_OPERATION));
   }
 
   // Allocate the string size in advance.
@@ -340,7 +350,8 @@ AbortCallback FakeProvidedFileSystem::WriteFile(
 
   entry->contents.replace(offset, length, buffer->data(), length);
 
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 AbortCallback FakeProvidedFileSystem::AddWatcher(
@@ -348,20 +359,21 @@ AbortCallback FakeProvidedFileSystem::AddWatcher(
     const base::FilePath& entry_watcher,
     bool recursive,
     bool persistent,
-    const storage::AsyncFileUtil::StatusCallback& callback,
+    storage::AsyncFileUtil::StatusCallback callback,
     const storage::WatcherManager::NotificationCallback&
         notification_callback) {
   // TODO(mtomasz): Implement it once needed.
-  return PostAbortableTask(base::Bind(callback, base::File::FILE_OK));
+  return PostAbortableTask(
+      base::BindOnce(std::move(callback), base::File::FILE_OK));
 }
 
 void FakeProvidedFileSystem::RemoveWatcher(
     const GURL& origin,
     const base::FilePath& entry_path,
     bool recursive,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   // TODO(mtomasz): Implement it once needed.
-  callback.Run(base::File::FILE_OK);
+  std::move(callback).Run(base::File::FILE_OK);
 }
 
 const ProvidedFileSystemInfo& FakeProvidedFileSystem::GetFileSystemInfo()
@@ -399,15 +411,15 @@ void FakeProvidedFileSystem::Notify(
     storage::WatcherManager::ChangeType change_type,
     std::unique_ptr<ProvidedFileSystemObserver::Changes> changes,
     const std::string& tag,
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   NOTREACHED();
-  callback.Run(base::File::FILE_ERROR_SECURITY);
+  std::move(callback).Run(base::File::FILE_ERROR_SECURITY);
 }
 
 void FakeProvidedFileSystem::Configure(
-    const storage::AsyncFileUtil::StatusCallback& callback) {
+    storage::AsyncFileUtil::StatusCallback callback) {
   NOTREACHED();
-  callback.Run(base::File::FILE_ERROR_SECURITY);
+  std::move(callback).Run(base::File::FILE_ERROR_SECURITY);
 }
 
 base::WeakPtr<ProvidedFileSystemInterface>
@@ -416,9 +428,10 @@ FakeProvidedFileSystem::GetWeakPtr() {
 }
 
 AbortCallback FakeProvidedFileSystem::PostAbortableTask(
-    const base::Closure& callback) {
-  const int task_id = tracker_.PostTask(
-      base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE, callback);
+    base::OnceClosure callback) {
+  const int task_id =
+      tracker_.PostTask(base::ThreadTaskRunnerHandle::Get().get(), FROM_HERE,
+                        std::move(callback));
   return base::Bind(
       &FakeProvidedFileSystem::Abort, weak_ptr_factory_.GetWeakPtr(), task_id);
 }

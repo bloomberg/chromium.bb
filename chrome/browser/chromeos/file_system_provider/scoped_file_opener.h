@@ -23,11 +23,10 @@ namespace file_system_provider {
 // aborted.
 class ScopedFileOpener {
  public:
-  ScopedFileOpener(
-      ProvidedFileSystemInterface* file_system,
-      const base::FilePath& file_path,
-      OpenFileMode mode,
-      const ProvidedFileSystemInterface::OpenFileCallback& callback);
+  ScopedFileOpener(ProvidedFileSystemInterface* file_system,
+                   const base::FilePath& file_path,
+                   OpenFileMode mode,
+                   ProvidedFileSystemInterface::OpenFileCallback callback);
   ~ScopedFileOpener();
 
  private:

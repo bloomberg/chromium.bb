@@ -31,14 +31,13 @@ namespace operations {
 // Created per request.
 class ReadFile : public Operation {
  public:
-  ReadFile(
-      extensions::EventRouter* event_router,
-      const ProvidedFileSystemInfo& file_system_info,
-      int file_handle,
-      scoped_refptr<net::IOBuffer> buffer,
-      int64_t offset,
-      int length,
-      const ProvidedFileSystemInterface::ReadChunkReceivedCallback& callback);
+  ReadFile(extensions::EventRouter* event_router,
+           const ProvidedFileSystemInfo& file_system_info,
+           int file_handle,
+           scoped_refptr<net::IOBuffer> buffer,
+           int64_t offset,
+           int length,
+           ProvidedFileSystemInterface::ReadChunkReceivedCallback callback);
   ~ReadFile() override;
 
   // Operation overrides.
@@ -56,7 +55,7 @@ class ReadFile : public Operation {
   int64_t offset_;
   int length_;
   int64_t current_offset_;
-  const ProvidedFileSystemInterface::ReadChunkReceivedCallback callback_;
+  ProvidedFileSystemInterface::ReadChunkReceivedCallback callback_;
 
   DISALLOW_COPY_AND_ASSIGN(ReadFile);
 };
