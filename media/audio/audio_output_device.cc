@@ -523,11 +523,11 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t control_signal) {
   buffer->params.frames_skipped = 0;
 
   base::TimeDelta delay =
-      base::TimeDelta::FromMicroseconds(buffer->params.delay);
+      base::TimeDelta::FromMicroseconds(buffer->params.delay_us);
 
   base::TimeTicks delay_timestamp =
       base::TimeTicks() +
-      base::TimeDelta::FromMicroseconds(buffer->params.delay_timestamp);
+      base::TimeDelta::FromMicroseconds(buffer->params.delay_timestamp_us);
 
   TRACE_EVENT_BEGIN2("audio", "AudioOutputDevice::FireRenderCallback",
                      "callback_num", callback_num_, "frames skipped",

@@ -148,8 +148,8 @@ void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
       reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
   // Increase the number of skipped frames stored in shared memory.
   buffer->params.frames_skipped += prior_frames_skipped;
-  buffer->params.delay = delay.InMicroseconds();
-  buffer->params.delay_timestamp =
+  buffer->params.delay_us = delay.InMicroseconds();
+  buffer->params.delay_timestamp_us =
       (delay_timestamp - base::TimeTicks()).InMicroseconds();
 
   // Zero out the entire output buffer to avoid stuttering/repeating-buffers

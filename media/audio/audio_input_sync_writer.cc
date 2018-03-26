@@ -349,7 +349,7 @@ void AudioInputSyncWriter::WriteParametersToCurrentSegment(
   buffer->params.volume = volume;
   buffer->params.size = audio_bus_memory_size_;
   buffer->params.key_pressed = key_pressed;
-  buffer->params.capture_time =
+  buffer->params.capture_time_us =
       (capture_time - base::TimeTicks()).InMicroseconds();
   buffer->params.id = next_buffer_id_;
 }
