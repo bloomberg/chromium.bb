@@ -164,8 +164,7 @@ void BackdropController::OnSplitViewModeEnded() {
   Shell::Get()->split_view_controller()->RemoveObserver(this);
 }
 
-void BackdropController::OnAccessibilityStatusChanged(
-    AccessibilityNotificationVisibility notify) {
+void BackdropController::OnAccessibilityStatusChanged() {
   UpdateBackdrop();
 }
 

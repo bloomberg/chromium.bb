@@ -10,8 +10,6 @@
 #include "ash/accessibility/accessibility_observer.h"
 #include "ash/keyboard/keyboard_ui_observer.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
-#include "ash/system/tray_accessibility.h"
 #include "ui/keyboard/keyboard_controller.h"
 
 namespace ash {
@@ -44,8 +42,7 @@ class KeyboardUIImpl : public KeyboardUI, public AccessibilityObserver {
   }
 
   // AccessibilityObserver:
-  void OnAccessibilityStatusChanged(
-      AccessibilityNotificationVisibility notify) override {
+  void OnAccessibilityStatusChanged() override {
     bool enabled = IsEnabled();
     if (enabled_ == enabled)
       return;

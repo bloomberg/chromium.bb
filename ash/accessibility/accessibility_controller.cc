@@ -318,10 +318,9 @@ void AccessibilityController::PlaySpokenFeedbackToggleCountdown(
     client_->PlaySpokenFeedbackToggleCountdown(tick_count);
 }
 
-void AccessibilityController::NotifyAccessibilityStatusChanged(
-    AccessibilityNotificationVisibility notify) {
+void AccessibilityController::NotifyAccessibilityStatusChanged() {
   for (auto& observer : observers_)
-    observer.OnAccessibilityStatusChanged(notify);
+    observer.OnAccessibilityStatusChanged();
 }
 
 void AccessibilityController::SetClient(
@@ -342,7 +341,8 @@ void AccessibilityController::BrailleDisplayStateChanged(bool connected) {
   braille_display_connected_ = connected;
   if (braille_display_connected_)
     SetSpokenFeedbackEnabled(true, A11Y_NOTIFICATION_SHOW);
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_SHOW);
+  NotifyAccessibilityStatusChanged();
+  NotifyShowAccessibilityNotification();
 }
 
 void AccessibilityController::SetFocusHighlightRect(
@@ -466,7 +466,7 @@ void AccessibilityController::UpdateAutoclickFromPref() {
 
   autoclick_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
 
   if (Shell::GetAshConfig() == Config::MASH) {
     if (!connector_)  // Null in tests.
@@ -511,7 +511,7 @@ void AccessibilityController::UpdateCaretHighlightFromPref() {
 
   caret_highlight_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
   UpdateAccessibilityHighlightingFromPrefs();
 }
 
@@ -525,7 +525,7 @@ void AccessibilityController::UpdateCursorHighlightFromPref() {
 
   cursor_highlight_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
   UpdateAccessibilityHighlightingFromPrefs();
 }
 
@@ -543,7 +543,7 @@ void AccessibilityController::UpdateFocusHighlightFromPref() {
 
   focus_highlight_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
   UpdateAccessibilityHighlightingFromPrefs();
 }
 
@@ -557,7 +557,7 @@ void AccessibilityController::UpdateHighContrastFromPref() {
 
   high_contrast_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
 
   // Under mash the UI service (window server) handles high contrast mode.
   if (Shell::GetAshConfig() == Config::MASH) {
@@ -589,7 +589,7 @@ void AccessibilityController::UpdateLargeCursorFromPref() {
   large_cursor_enabled_ = enabled;
   large_cursor_size_in_dip_ = size;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
 
   ShellPort::Get()->SetCursorSize(
       large_cursor_enabled_ ? ui::CursorSize::kLarge : ui::CursorSize::kNormal);
@@ -606,7 +606,7 @@ void AccessibilityController::UpdateMonoAudioFromPref() {
 
   mono_audio_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
   chromeos::CrasAudioHandler::Get()->SetOutputMonoEnabled(enabled);
 }
 
@@ -620,7 +620,10 @@ void AccessibilityController::UpdateSpokenFeedbackFromPref() {
 
   spoken_feedback_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(spoken_feedback_notification_);
+  NotifyAccessibilityStatusChanged();
+  if (spoken_feedback_notification_ != A11Y_NOTIFICATION_NONE)
+    NotifyShowAccessibilityNotification();
+
   // TODO(warx): ChromeVox loading/unloading requires browser process started,
   // thus it is still handled on Chrome side.
 
@@ -656,7 +659,7 @@ void AccessibilityController::UpdateSelectToSpeakFromPref() {
 
   select_to_speak_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
 }
 
 void AccessibilityController::UpdateStickyKeysFromPref() {
@@ -669,7 +672,7 @@ void AccessibilityController::UpdateStickyKeysFromPref() {
 
   sticky_keys_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
 
   Shell::Get()->sticky_keys_controller()->Enable(enabled);
 }
@@ -684,7 +687,7 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
 
   virtual_keyboard_enabled_ = enabled;
 
-  NotifyAccessibilityStatusChanged(A11Y_NOTIFICATION_NONE);
+  NotifyAccessibilityStatusChanged();
 
   keyboard::SetAccessibilityKeyboardEnabled(enabled);
 
@@ -704,6 +707,11 @@ void AccessibilityController::UpdateVirtualKeyboardFromPref() {
     Shell::Get()->CreateKeyboard();
   else
     Shell::Get()->DestroyKeyboard();
+}
+
+void AccessibilityController::NotifyShowAccessibilityNotification() {
+  for (auto& observer : observers_)
+    observer.ShowAccessibilityNotification();
 }
 
 }  // namespace ash

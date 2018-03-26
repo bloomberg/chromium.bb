@@ -523,8 +523,7 @@ void DockedMagnifierController::OnEnabledPrefChanged() {
 
   // Update the green checkmark status in the accessibility menu in the system
   // tray.
-  shell->accessibility_controller()->NotifyAccessibilityStatusChanged(
-      A11Y_NOTIFICATION_NONE);
+  shell->accessibility_controller()->NotifyAccessibilityStatusChanged();
 
   // We use software composited mouse cursor so that it can be mirrored into the
   // magnifier viewport.

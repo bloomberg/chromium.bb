@@ -56,8 +56,7 @@ TouchExplorationManager::~TouchExplorationManager() {
   Shell::Get()->RemoveShellObserver(this);
 }
 
-void TouchExplorationManager::OnAccessibilityStatusChanged(
-    AccessibilityNotificationVisibility notify) {
+void TouchExplorationManager::OnAccessibilityStatusChanged() {
   UpdateTouchExplorationState();
 }
 

@@ -378,7 +378,7 @@ void AccessibilityManager::UpdateAlwaysShowMenuFromPref() {
   // Update system tray menu visibility.
   ash::Shell::Get()
       ->accessibility_controller()
-      ->NotifyAccessibilityStatusChanged(ash::A11Y_NOTIFICATION_NONE);
+      ->NotifyAccessibilityStatusChanged();
 }
 
 void AccessibilityManager::EnableLargeCursor(bool enabled) {
@@ -1070,7 +1070,7 @@ void AccessibilityManager::NotifyAccessibilityStatusChanged(
   if (details.notification_type == ACCESSIBILITY_TOGGLE_SCREEN_MAGNIFIER) {
     ash::Shell::Get()
         ->accessibility_controller()
-        ->NotifyAccessibilityStatusChanged(details.notify);
+        ->NotifyAccessibilityStatusChanged();
   }
 }
 

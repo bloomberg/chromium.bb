@@ -128,8 +128,7 @@ class ASH_EXPORT AccessibilityController
 
   // Public because a11y features like screen magnifier are managed outside of
   // this controller.
-  void NotifyAccessibilityStatusChanged(
-      AccessibilityNotificationVisibility notify);
+  void NotifyAccessibilityStatusChanged();
 
   // mojom::AccessibilityController:
   void SetClient(mojom::AccessibilityControllerClientPtr client) override;
@@ -163,6 +162,8 @@ class ASH_EXPORT AccessibilityController
   void UpdateStickyKeysFromPref();
   void UpdateVirtualKeyboardFromPref();
   void UpdateAccessibilityHighlightingFromPrefs();
+
+  void NotifyShowAccessibilityNotification();
 
   service_manager::Connector* connector_ = nullptr;
   std::unique_ptr<PrefChangeRegistrar> pref_change_registrar_;

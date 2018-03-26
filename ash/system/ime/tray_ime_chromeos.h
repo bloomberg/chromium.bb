@@ -40,8 +40,7 @@ class ASH_EXPORT TrayIME : public SystemTrayItem,
   void OnKeyboardSuppressionChanged(bool suppressed) override;
 
   // Overridden from AccessibilityObserver:
-  void OnAccessibilityStatusChanged(
-      AccessibilityNotificationVisibility notify) override;
+  void OnAccessibilityStatusChanged() override;
 
  private:
   friend class TrayIMETest;

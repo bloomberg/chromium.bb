@@ -531,10 +531,15 @@ void TrayAccessibility::UpdateAfterLoginStatusChange(LoginStatus status) {
   SetTrayIconVisible(GetInitialVisibility());
 }
 
-void TrayAccessibility::OnAccessibilityStatusChanged(
-    AccessibilityNotificationVisibility notify) {
+void TrayAccessibility::OnAccessibilityStatusChanged() {
   SetTrayIconVisible(GetInitialVisibility());
 
+  if (detailed_menu_)
+    detailed_menu_->OnAccessibilityStatusChanged();
+}
+
+// TODO(warx): Move ShowAccessibilityNotification() to AccessibilityController.
+void TrayAccessibility::ShowAccessibilityNotification() {
   uint32_t accessibility_state = GetAccessibilityState();
   // We'll get an extra notification if a braille display is connected when
   // spoken feedback wasn't already enabled.  This is because the braille
@@ -543,9 +548,6 @@ void TrayAccessibility::OnAccessibilityStatusChanged(
   // return early if there's no change in the state that we keep track of.
   if (accessibility_state == previous_accessibility_state_)
     return;
-
-  if (detailed_menu_)
-    detailed_menu_->OnAccessibilityStatusChanged();
 
   message_center::MessageCenter* message_center =
       message_center::MessageCenter::Get();
@@ -558,9 +560,7 @@ void TrayAccessibility::OnAccessibilityStatusChanged(
       (A11Y_SPOKEN_FEEDBACK | A11Y_BRAILLE_DISPLAY_CONNECTED);
   previous_accessibility_state_ = accessibility_state;
 
-  // Shows notification if |notify| is true and the spoken feedback is being
-  // enabled or if a braille display is connected.
-  if (notify != A11Y_NOTIFICATION_SHOW || being_enabled == A11Y_NONE)
+  if (being_enabled == A11Y_NONE)
     return;
 
   base::string16 text;
