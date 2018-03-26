@@ -1,6 +1,7 @@
 include_rules = [
     "+base/atomic_sequence_num.h",
     "+base/memory/scoped_refptr.h",
+    "+base/synchronization/waitable_event.h",
     "+base/unguessable_token.h",
     "+bindings/core",
     "+build/mac",

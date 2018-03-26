@@ -15,6 +15,12 @@
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/Optional.h"
 
+namespace base {
+
+class WaitableEvent;
+
+}  // namespace base
+
 namespace blink {
 
 class ExecutionContext;
@@ -97,6 +103,8 @@ class CORE_EXPORT ThreadedMessagingProxyBase
   std::unique_ptr<WorkerThread> worker_thread_;
 
   bool asked_to_terminate_ = false;
+
+  base::WaitableEvent* terminate_sync_load_event_ = nullptr;
 
   // Used to keep this alive until the worker thread gets terminated. This is
   // necessary because the co-owner (i.e., Worker or Worklet object) can be

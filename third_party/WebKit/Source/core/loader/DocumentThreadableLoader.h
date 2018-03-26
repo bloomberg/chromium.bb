@@ -61,7 +61,7 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   USING_GARBAGE_COLLECTED_MIXIN(DocumentThreadableLoader);
 
  public:
-  static void LoadResourceSynchronously(Document&,
+  static void LoadResourceSynchronously(ThreadableLoadingContext&,
                                         const ResourceRequest&,
                                         ThreadableLoaderClient&,
                                         const ThreadableLoaderOptions&,

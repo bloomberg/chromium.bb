@@ -24,6 +24,7 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
   ~ServiceWorkerFetchContextImpl() override;
 
   // blink::WebWorkerFetchContext implementation:
+  base::WaitableEvent* GetTerminateSyncLoadEvent() override;
   void InitializeOnWorkerThread() override;
   std::unique_ptr<blink::WebURLLoaderFactory> CreateURLLoaderFactory() override;
   std::unique_ptr<blink::WebURLLoaderFactory> WrapURLLoaderFactory(
@@ -40,9 +41,12 @@ class ServiceWorkerFetchContextImpl : public blink::WebWorkerFetchContext {
 
   // Initialized on the worker thread when InitializeOnWorkerThread() is called.
   std::unique_ptr<ResourceDispatcher> resource_dispatcher_;
+
   scoped_refptr<network::SharedURLLoaderFactory> url_loader_factory_;
 
   std::unique_ptr<URLLoaderThrottleProvider> throttle_provider_;
+
+  base::WaitableEvent terminate_sync_load_event_;
 };
 
 }  // namespace content

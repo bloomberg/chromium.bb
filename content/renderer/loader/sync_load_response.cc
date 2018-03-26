@@ -8,6 +8,11 @@ namespace content {
 
 SyncLoadResponse::SyncLoadResponse() {}
 
+SyncLoadResponse::SyncLoadResponse(SyncLoadResponse&& other) = default;
+
 SyncLoadResponse::~SyncLoadResponse() {}
+
+SyncLoadResponse& SyncLoadResponse::operator=(SyncLoadResponse&& other) =
+    default;
 
 }  // namespace content
