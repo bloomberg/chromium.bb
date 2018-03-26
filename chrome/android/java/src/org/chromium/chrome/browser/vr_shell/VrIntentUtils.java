@@ -24,6 +24,10 @@ public class VrIntentUtils {
     // The Daydream Home app adds this extra to auto-present intents.
     public static final String AUTOPRESENT_WEVBVR_EXTRA = "browser.vr.AUTOPRESENT_WEBVR";
     public static final String DAYDREAM_CATEGORY = "com.google.intent.category.DAYDREAM";
+    // Tells Chrome not to relaunch itself when receiving a VR intent. This is used by tests since
+    // the relaunch logic does not work properly with the DON flow skipped.
+    public static final String AVOID_RELAUNCH_EXTRA =
+            "org.chromium.chrome.browser.vr_shell.AVOID_RELAUNCH";
 
     static final String VR_FRE_INTENT_EXTRA = "org.chromium.chrome.browser.vr_shell.VR_FRE";
     static final String VR_FRE_CALLER_INTENT_EXTRA =

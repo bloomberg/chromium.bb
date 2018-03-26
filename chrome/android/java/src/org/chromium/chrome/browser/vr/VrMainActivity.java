@@ -51,6 +51,12 @@ public class VrMainActivity extends Activity {
                 int uiMode = config.uiMode & Configuration.UI_MODE_TYPE_MASK;
                 needsRelaunch = uiMode != Configuration.UI_MODE_TYPE_VR_HEADSET;
             }
+            // The check for relaunching does not work properly if the DON flow is skipped, which
+            // is the case during tests. So, allow intents to specify that relaunching is not
+            // necessary.
+            if (getIntent().getBooleanExtra(VrIntentUtils.AVOID_RELAUNCH_EXTRA, false)) {
+                needsRelaunch = false;
+            }
             if (needsRelaunch) {
                 VrIntentUtils.launchInVr(getIntent(), this);
                 finish();
