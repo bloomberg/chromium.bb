@@ -7,6 +7,7 @@
 #include <windows.data.xml.dom.h>
 #include <wrl/client.h>
 
+#include "base/command_line.h"
 #include "base/run_loop.h"
 #include "base/win/scoped_hstring.h"
 #include "base/win/windows_version.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/notifications/notification_display_service_tester.h"
 #include "chrome/browser/notifications/notification_platform_bridge_win.h"
 #include "chrome/browser/ui/browser.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 
@@ -187,6 +189,36 @@ IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleEvent) {
   EXPECT_EQ(action_index, last_action_index_);
   EXPECT_EQ(base::nullopt, last_reply_);
   EXPECT_EQ(base::nullopt, last_by_user_);
+}
+
+IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleActivation) {
+  // This test exercises a feature that is not enabled in older versions of
+  // Windows.
+  if (base::win::GetVersion() < base::win::VERSION_WIN8)
+    return;
+
+  base::RunLoop run_loop;
+  display_service_tester_->SetProcessNotificationOperationDelegate(
+      base::BindRepeating(&NotificationPlatformBridgeWinUITest::HandleOperation,
+                          base::Unretained(this), run_loop.QuitClosure()));
+
+  // Simulate notification activation.
+  base::CommandLine command_line(base::CommandLine::NO_PROGRAM);
+  command_line.AppendSwitchNative(
+      switches::kNotificationLaunchId,
+      L"1|1|0|Default|0|https://example.com/|notification_id");
+  NotificationPlatformBridgeWin::HandleActivation(command_line);
+  run_loop.Run();
+
+  // Validate the values.
+  base::Optional<int> action_index = 1;
+  EXPECT_EQ(NotificationCommon::CLICK, last_operation_);
+  EXPECT_EQ(NotificationHandler::Type::WEB_PERSISTENT, last_notification_type_);
+  EXPECT_EQ(GURL("https://example.com/"), last_origin_);
+  EXPECT_EQ("notification_id", last_notification_id_);
+  EXPECT_EQ(action_index, last_action_index_);
+  EXPECT_EQ(base::nullopt, last_reply_);
+  EXPECT_EQ(true, last_by_user_);
 }
 
 IN_PROC_BROWSER_TEST_F(NotificationPlatformBridgeWinUITest, HandleSettings) {
