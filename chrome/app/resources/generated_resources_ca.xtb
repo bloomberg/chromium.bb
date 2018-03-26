@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Utilitzar el micròfon i la càmera</translation>
 <translation id="1007408791287232274">No s'han pogut carregar els dispositius.</translation>
 <translation id="1008186147501209563">Exporta les adreces d'interès</translation>
-<translation id="1009147628737158130"><ph name="URL" /> vol veure informació d'identificació sobre la teva clau de seguretat</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Pàgina que no respon}other{Pàgines que no responen}}</translation>
 <translation id="1012794136286421601">S'estan sincronitzant els documents, els fulls de càlcul, les diapositives i els dibuixos. Obriu l'aplicació Google Drive per accedir-hi en línia o fora de línia.</translation>
 <translation id="1013707859758800957">S'ha pogut executar un connector de fora de la zona de proves en aquesta pàgina.</translation>
@@ -1275,7 +1274,6 @@ No crec que calgui bloquejar aquest lloc.</translation>
 <translation id="2932483646085333864">Tanca la sessió i torna-la a iniciar per començar la sincronització</translation>
 <translation id="2932883381142163287">Informa d'un ús inadequat</translation>
 <translation id="2938225289965773019">Obrir els enllaços del protocol <ph name="PROTOCOL" /></translation>
-<translation id="2938335670027321024">Mou el comandament per recol·locar la finestra. Fes clic per finalitzar.</translation>
 <translation id="2939938020978911855">Mostra els dispositius Bluetooth disponibles</translation>
 <translation id="2941112035454246133">Baixa</translation>
 <translation id="2942560570858569904">S'està esperant...</translation>
@@ -1843,7 +1841,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="379422718204375917">Utilitza Smart Lock per iniciar la sessió al teu compte</translation>
 <translation id="3796648294839530037">Xarxes preferides:</translation>
 <translation id="3797900183766075808">&amp;Cerca "<ph name="SEARCH_TERMS" />" a <ph name="SEARCH_ENGINE" /></translation>
-<translation id="3798325802885154040">Et permet activar o desactivar la funció de tocar per fer clic</translation>
 <translation id="3798449238516105146">Versió</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Obre-les totes}=1{&amp;Obre l'adreça d'interès}other{&amp;Obre-les totes (#)}}</translation>
 <translation id="3800806661949714323">Mostra-ho tot (opció recomanada)</translation>
@@ -2926,7 +2923,6 @@ Per obtenir més informació sobre els usuaris supervisats, consulteu el <ph nam
 <translation id="5556206011531515970">Feu clic a Següent per seleccionar el navegador predeterminat.</translation>
 <translation id="5556459405103347317">Torna a carregar</translation>
 <translation id="555746285996217175">Bloqueig/alimentació</translation>
-<translation id="5557579359142031072">Veure informació d'identificació sobre la teva clau de seguretat</translation>
 <translation id="5557991081552967863">No desactivis la Wi-Fi durant el repòs</translation>
 <translation id="5558129378926964177">&amp;Amplia</translation>
 <translation id="55601339223879446">Ajusta els límits de l'escriptori dins de la pantalla</translation>
@@ -4002,7 +3998,6 @@ Assegureu-vos que no es pugui accedir a informació confidencial.</translation>
 <translation id="7289225569524511578">Obre l'aplicació de fons de pantalla</translation>
 <translation id="7290242001003353852">Aquest servei d'inici de sessió, que s'allotja a <ph name="SAML_DOMAIN" />, està accedint a la càmera.</translation>
 <translation id="7290594223351252791">Confirmació del registre</translation>
-<translation id="7292324470889366655">Finalitza la recol·locació</translation>
 <translation id="729459249680637905">Intents restants: $1</translation>
 <translation id="7295662345261934369">Comparteix amb altres persones</translation>
 <translation id="729583233778673644">Permet l'encriptació AES i RC4. L'ús d'aquesta opció augmenta el risc, ja que els xifratges RC4 no són segurs.</translation>

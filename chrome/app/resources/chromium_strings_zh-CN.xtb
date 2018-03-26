@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="zh-CN">
 <translation id="1065672644894730302">系统无法读取您的偏好设置。某些功能可能无法使用，并且对偏好设置所做的更改不会保存。</translation>
+<translation id="1104942323762546749">Chromium 想导出您的密码。请输入您的 Windows 密码以允许此操作。</translation>
 <translation id="1115445892567829615">Chromium无法同步您的数据。请更新您的同步密码。</translation>
 <translation id="113122355610423240">Chromium 是您的默认浏览器</translation>
 <translation id="1170115874949214249">请在您的手机上安装 Chromium。我们会将一条短信发送到您帐号的辅助电话号码。</translation>
@@ -61,6 +62,7 @@
 <translation id="3155163173539279776">重新启动 Chromium</translation>
 <translation id="3179665906251668410">在 Chromium 无痕式窗口中打开链接(&amp;G)</translation>
 <translation id="3190315855212034486">哎呀！Chromium 崩溃了。要立即重新启动吗？</translation>
+<translation id="3229526316128325841">Chromium 想导出您的密码。</translation>
 <translation id="3256316712990552818">已复制到 Chromium</translation>
 <translation id="3258596308407688501">Chromium 无法读写其数据目录：
 
@@ -96,6 +98,7 @@
 <translation id="4285930937574705105">未知错误导致安装失败。如果 Chromium 正在运行，请将其关闭，然后重试。</translation>
 <translation id="4330585738697551178">已知此模块与 Chromium 存在冲突。</translation>
 <translation id="4407044323746248786">仍要退出 Chromium？</translation>
+<translation id="4415566066719264597">让 Chromium 在后台运行</translation>
 <translation id="4421155425831608516">此设备的管理员已禁止登录 Chromium。</translation>
 <translation id="4423735387467980091">自定义及控制 Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium 将在 1 小时后重新启动}other{Chromium 将在 # 小时后重新启动}}</translation>
@@ -158,6 +161,7 @@
 <translation id="6394232988457703198">您应立即重新启动 Chromium。</translation>
 <translation id="6400072781405947421">Chromium 可能无法正常运行，因为它不再支持 Mac OS X 10.9。</translation>
 <translation id="6403826409255603130">Chromium 是一款可高速运行网页和应用的网络浏览器。它快捷、稳定且易于使用。Chromium 内置的防护恶意软件和网上诱骗的功能可让您更安全地浏览网页。</translation>
+<translation id="6457450909262716557">{SECONDS,plural, =1{Chromium 将在 1 秒后重新启动}other{Chromium 将在 # 秒后重新启动}}</translation>
 <translation id="6475912303565314141">它还能够控制Chromium启动后显示的页面。</translation>
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐号的情况下使用Chromium，请前往<ph name="SETTINGS_LINK" />部分。</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>

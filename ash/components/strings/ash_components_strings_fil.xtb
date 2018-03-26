@@ -3,6 +3,7 @@
 <translationbundle lang="fil">
 <translation id="104962181688258143">Buksan ang app na Mga File</translation>
 <translation id="1126871238933253947">Lumipat sa nakaraang wika ng keyboard na ginagamit mo.</translation>
+<translation id="1134347825771908369">I-mute ang volume</translation>
 <translation id="1195667586424773550">I-drag ang link sa address bar ng tab</translation>
 <translation id="1204450209689312104">Magbukas ng bagong window sa incognito mode</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">I-save ang lahat ng nakabukas na page sa iyong kasalukuyang window bilang mga bookmark sa isang bagong folder</translation>
 <translation id="355103131818127604">Buksan ang link sa isang bagong tab sa background</translation>
 <translation id="3649256019230929621">I-minimize ang window</translation>
+<translation id="3655154169297074232">Mga Tab at Window</translation>
 <translation id="3668361878347172356">Gawing muli ang iyong huling pagkilos</translation>
 <translation id="3720939646656082033">Buksan ang link sa isang bagong tab at lumipat sa bagong tab</translation>
 <translation id="3725795051337497754">Isara ang kasalukuyang tab</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">I-save ang link bilang bookmark</translation>
 <translation id="4141203561740478845">I-highlight ang row na may address bar</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> o <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Overview mode</translation>
+<translation id="4472417192667361414">Mga Setting ng System at Display</translation>
 <translation id="4556221320735744018">Tingnan ang Helper sa Keyboard Shortcut</translation>
 <translation id="4628718545549558538">Buksan ang lugar ng status (kung saan lumalabas ang iyong larawan sa account)</translation>
 <translation id="4642092649622328492">Kumuha ng screenshot ng bahagi ng screen</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Pumunta sa simula ng dokumento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
 <translation id="8234414138295101081">I-rotate ang screen nang 90 degrees</translation>
+<translation id="826184564253127735">Viewer ng Keyboard Shortcut</translation>
 <translation id="836869401750819675">Buksan ang page ng Mga Download</translation>
 <translation id="8388247778047144397">I-drag ang link sa isang blankong bahagi sa tab strip</translation>
 <translation id="8389638407792712197">Magbukas ng bagong window</translation>
@@ -144,7 +149,17 @@
 <translation id="8644639153978066712">Ipakita ang mga nakatagong file sa app na Mga File</translation>
 <translation id="8717459106217102612">Piliin ang nakaraang salita o titik</translation>
 <translation id="8727232706774971183">Tingnan ang iyong mga notification</translation>
+<translation id="8855885154700222542">Key ng fullscreen</translation>
 <translation id="88986195241502842">Pababa sa pahina</translation>
 <translation id="8903921497873541725">Mag-zoom in</translation>
+<translation id="8924883688469390268">Lumipat sa nakaraang user</translation>
+<translation id="8977648847395357314">Piliin ang content sa address bar</translation>
+<translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 hanggang 8</translation>
+<translation id="9041599225465145264">I-paste ang content mula sa clipboard</translation>
+<translation id="9052808072970550123">Lumipat sa susunod na user</translation>
+<translation id="9106898733795143799">Page at Web Browser</translation>
 <translation id="9179672198516322668">Mga Sikat na Shortcut</translation>
+<translation id="93603345341560814">Pindutin ang <ph name="SHIFT" /> at mag-click ng link</translation>
+<translation id="945383118875625837">I-drag ang link papunta sa bookmarks bar</translation>
+<translation id="98120814841227350">Pumunta sa dulo ng dokumento</translation>
 </translationbundle>

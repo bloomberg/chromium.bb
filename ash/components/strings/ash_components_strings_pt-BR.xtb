@@ -3,6 +3,7 @@
 <translationbundle lang="pt-BR">
 <translation id="104962181688258143">Abrir o app Arquivos</translation>
 <translation id="1126871238933253947">Alterar para o idioma de teclado que você estava usando anteriormente.</translation>
+<translation id="1134347825771908369">Desativar volume</translation>
 <translation id="1195667586424773550">Arrastar o link até a barra de endereço da guia</translation>
 <translation id="1204450209689312104">Abrir uma nova janela no modo de navegação anônima</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Salvar todas as páginas abertas na janela atual nos favoritos em uma nova pasta</translation>
 <translation id="355103131818127604">Abrir o link em uma nova guia no plano de fundo</translation>
 <translation id="3649256019230929621">Minimizar janela</translation>
+<translation id="3655154169297074232">Guias e janelas</translation>
 <translation id="3668361878347172356">Refazer a última ação</translation>
 <translation id="3720939646656082033">Abrir o link em uma nova guia e alternar para lá</translation>
 <translation id="3725795051337497754">Fechar a guia atual</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Salvar o link como favorito</translation>
 <translation id="4141203561740478845">Destacar a linha com a barra de endereço</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ou <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Modo de visão geral</translation>
+<translation id="4472417192667361414">Configurações de exibição e do sistema</translation>
 <translation id="4556221320735744018">Ver assistente de atalhos do teclado</translation>
 <translation id="4628718545549558538">Abrir a área de status, onde a imagem da sua conta aparece</translation>
 <translation id="4642092649622328492">Fazer uma captura de tela parcial</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Ir para o início do documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
 <translation id="8234414138295101081">Girar a tela em 90 graus</translation>
+<translation id="826184564253127735">Visualizador de atalhos do teclado</translation>
 <translation id="836869401750819675">Abrir a página "Downloads"</translation>
 <translation id="8388247778047144397">Arrastar o link até uma área em branco na barra de guias</translation>
 <translation id="8389638407792712197">Abrir nova janela</translation>
@@ -144,7 +149,17 @@
 <translation id="8644639153978066712">Exibir arquivos ocultos no app Arquivos</translation>
 <translation id="8717459106217102612">Selecionar palavra ou letra anterior</translation>
 <translation id="8727232706774971183">Ver suas notificações</translation>
+<translation id="8855885154700222542">Tecla de tela cheia</translation>
 <translation id="88986195241502842">Página para baixo</translation>
 <translation id="8903921497873541725">Aumentar zoom</translation>
+<translation id="8924883688469390268">Alternar para o usuário anterior</translation>
+<translation id="8977648847395357314">Selecionar o conteúdo na barra de endereço</translation>
+<translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 a 8</translation>
+<translation id="9041599225465145264">Colar conteúdo da área de transferência</translation>
+<translation id="9052808072970550123">Alternar para o próximo usuário</translation>
+<translation id="9106898733795143799">Página e navegador da Web</translation>
 <translation id="9179672198516322668">Atalhos mais usados</translation>
+<translation id="93603345341560814">Pressionar <ph name="SHIFT" /> e clicar em um link</translation>
+<translation id="945383118875625837">Arrastar um link até a barra de favoritos</translation>
+<translation id="98120814841227350">Ir para o final do documento</translation>
 </translationbundle>

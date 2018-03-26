@@ -49,7 +49,7 @@ Einige Websites reagieren möglicherweise auf die Anfrage, indem sie Anzeigen ei
 <translation id="1690731385917361335">Keine Elemente</translation>
 <translation id="1700629756560807968"><ph name="NUMBER_OF_SELECTED_BOOKMARKS" /> ausgewählt</translation>
 <translation id="1740468249224277719">Tippen Sie hier doppelt, um die Installation zu starten.</translation>
-<translation id="1752547299766512813">Gespeicherte Passwörter</translation>
+<translation id="1752547299766512813">Passwörter speichern</translation>
 <translation id="1753905327828125965">Meistbesucht</translation>
 <translation id="1809939268435598390">Ordner löschen</translation>
 <translation id="1813414402673211292">Browserdaten löschen</translation>
@@ -370,7 +370,6 @@ Ihre Daten wurden am <ph name="TIME" /> mit Ihrer Synchronisierungspassphrase ve
 <translation id="8019783059653722575">Dadurch können Sie Fotos speichern und hochladen.</translation>
 <translation id="802154636333426148">Downloadfehler</translation>
 <translation id="8023878949384262191">Maximiert den Abschnitt</translation>
-<translation id="8053390638574070785">Diese Seite neu laden</translation>
 <translation id="8059533439631660104">Abschnitt minimieren</translation>
 <translation id="806745655614357130">Daten getrennt halten</translation>
 <translation id="8076014560081431679">Gespeicherte Website-Einstellungen werden nicht gelöscht und können möglicherweise Ihre Surfgewohnheiten wiedergeben. <ph name="BEGIN_LINK" />Weitere Informationen<ph name="END_LINK" /></translation>

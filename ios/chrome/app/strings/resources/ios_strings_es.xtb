@@ -370,7 +370,6 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8019783059653722575">Esto te permite guardar fotos y subirlas.</translation>
 <translation id="802154636333426148">No se ha podido descargar el archivo</translation>
 <translation id="8023878949384262191">Amplía la sección.</translation>
-<translation id="8053390638574070785">Cargar página de nuevo</translation>
 <translation id="8059533439631660104">Oculta la sección.</translation>
 <translation id="806745655614357130">Mantener mis datos separados</translation>
 <translation id="8076014560081431679">No se eliminará la configuración guardada de los sitios web, lo cual puede reflejar tus hábitos de navegación. <ph name="BEGIN_LINK" />Más información<ph name="END_LINK" /></translation>
@@ -412,7 +411,7 @@ Tus datos se cifraron con tu frase de contraseña de sincronización el <ph name
 <translation id="8904976895050290827">Sincronización de Chrome</translation>
 <translation id="895541991026785598">Notificar un error</translation>
 <translation id="8971089644512329999">Entendido</translation>
-<translation id="8981454092730389528">Controles de la actividad de tu cuenta de Google</translation>
+<translation id="8981454092730389528">Gestión de tu actividad en Google</translation>
 <translation id="8985320356172329008">Has iniciado sesión en Google como</translation>
 <translation id="902659348151742535">Google puede utilizar tu historial de navegación para personalizar la Búsqueda y otros servicios de Google.</translation>
 <translation id="9034759925968272072">No se cerrará la sesión en tu cuenta de Google. Es posible que tu cuenta de Google tenga otras formas del historial de navegación en la página <ph name="BEGIN_LINK" />history.google.com<ph name="END_LINK" />.</translation>

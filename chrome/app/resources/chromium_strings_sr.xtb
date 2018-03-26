@@ -4,6 +4,7 @@
 <translation id="1065672644894730302">Подешавања не могу да се прочитају.
 
 Неке функције су можда недоступне и промене подешавања неће бити сачуване.</translation>
+<translation id="1104942323762546749">Chromium жели да извезе лозинке. Унесите лозинку за Windows да бисте то омогућили.</translation>
 <translation id="1115445892567829615">Chromium не може да синхронизује податке. Ажурирајте приступну фразу за Синхронизацију.</translation>
 <translation id="113122355610423240">Chromium је подразумевани прегледач</translation>
 <translation id="1170115874949214249">Инсталирајте Chromium на телефону. Послаћемо вам SMS на број телефона за враћање приступа налогу.</translation>
@@ -63,6 +64,7 @@
 <translation id="3155163173539279776">Поново покрени Chromium</translation>
 <translation id="3179665906251668410">Отвори линк у Chromium прозору без архи&amp;вирања</translation>
 <translation id="3190315855212034486">Опа! Chromium је отказао. Желите ли да га одмах поново покренете?</translation>
+<translation id="3229526316128325841">Chromium жели да извезе лозинке.</translation>
 <translation id="3256316712990552818">Копирана у Chromium</translation>
 <translation id="3258596308407688501">Chromium не може да чита податке из директоријума са подацима нити да их уписује у њега:
 
@@ -98,6 +100,7 @@
 <translation id="4285930937574705105">Инсталација није успела због неодређене грешке. Ако је Chromium тренутно отворен, затворите га и покушајте поново.</translation>
 <translation id="4330585738697551178">За овај модул је познато да се сукобљава са Chromium-ом.</translation>
 <translation id="4407044323746248786">Желите ли ипак да затворите Chromium?</translation>
+<translation id="4415566066719264597">Нека Chromium ради у позадини</translation>
 <translation id="4421155425831608516">Пријављивање у Chromium је онемогућио администратор овог уређаја.</translation>
 <translation id="4423735387467980091">Прилагодите и контролишите Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Поново ћемо покренути Chromium за један сат}one{Поново ћемо покренути Chromium за # сат}few{Поново ћемо покренути Chromium за # сата}other{Поново ћемо покренути Chromium за # сати}}</translation>
@@ -160,6 +163,7 @@
 <translation id="6394232988457703198">Сада треба поново да покренете Chromium.</translation>
 <translation id="6400072781405947421">Chromium можда неће исправно функционисати зато што више није подржан на систему Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium је веб прегледач који покреће веб-странице и апликације муњевитом брзином. Брз је, стабилан и једноставан за коришћење. Прегледајте Веб безбедније са заштитом од малвера и „пецања“ која је уграђена у Chromium.</translation>
+<translation id="6457450909262716557">{SECONDS,plural, =1{Chromium ће се рестартовати за 1 секунду}one{Chromium ће се рестартовати за # секунду}few{Chromium ће се рестартовати за # секунде}other{Chromium ће се рестартовати за # секунди}}</translation>
 <translation id="6475912303565314141">Контролише и страницу која се приказује када покренете Chromium.</translation>
 <translation id="6485906693002546646">Користите <ph name="PROFILE_EMAIL" /> за синхронизацију Chromium садржаја. Да бисте ажурирали подешавање синхронизације или користили Chromium без Google налога, посетите <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Деинсталирај Chromium</translation>

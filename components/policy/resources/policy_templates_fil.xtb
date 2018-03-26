@@ -58,6 +58,17 @@
 
       Kung ginagamit ang patakarang ito, ibibigay ang lahat ng printer sa user maliban sa mga id na nakalista sa patakarang ito.
       </translation>
+<translation id="1181881366217399113">
+      TANDAAN: Pang-eksperimento ang patakarang ito at maaari itong makasira sa functionality!
+      Kung ie-enable ang patakaran, ang bawat isa sa mga tinukoy na pinagmulan sa isang
+      comma-separated list ay magpapatakbo ng sarili nitong proseso. Ihihiwalay rin nito
+      ang mga pinagmulang tinukoy ng mga subdomain; hal., kapag tinukoy ang https://example.com/,
+      mahihiwalay rin ang https://foo.example.com/ bilang bahagi ng
+      site na https://example.com/.
+      Kung idi-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso ng Pag-isolate ayon sa Site.
+      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
+      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomendang itakda rin ang patakaran sa device na <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> sa parehong value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+      </translation>
 <translation id="1198465924256827162">Kung gaano kadalas ipinapadala ang mga pag-upload ng status ng device, sa mga millisecond.
 
       Kung hindi itatakda ang patakarang ito, ang default na dalas ay 3 oras. Ang minimum
@@ -254,7 +265,15 @@
       Sinusundan ng format ng value ang pangalan ng mga timezone sa "IANA Time Zone Database" (tingnan ang "https://en.wikipedia.org/wiki/Tz_database"). Partikular dito, karamihan ng mga timezone ay maaaring matukoy ayon sa "continent/large_city" o "ocean/large_city."
 
       Kapag itinakda ang patakarang ito, ganap na madi-disable ang awtomatikong pag-alam sa timezone ayon sa lokasyon ng device. Io-override din nito ang SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Ang token sa pag-enroll ng patakaran sa cloud sa desktop</translation>
 <translation id="1897365952389968758">Pinapayagang magpatakbo ng JavaScript ang lahat ng mga site</translation>
+<translation id="1906888171268104594">Kinokontrol kung iuulat sa Google ang mga sukatan ng paggamit at diagnostic na data, kabilang ang mga ulat ng pag-crash.
+
+      Kung itatakda sa true, iuulat ng <ph name="PRODUCT_OS_NAME" /> ang mga sukatan ng paggamit at diagnostic na data.
+
+      Kung itatakda sa false, madi-disable ang pag-uulat ng mga sukatan at diagnostic na data.
+
+      Kung hindi iko-configure, idi-disable ang pag-uulat ng mga sukatan at diagnostic na data sa mga hindi pinamamahalaang device at ie-enable ito sa mga pinamamahalaang device.</translation>
 <translation id="193259052151668190">Whitelist ng mga nade-detach na USB device</translation>
 <translation id="1933378685401357864">Larawan na wallpaper</translation>
 <translation id="1956493342242507974">Kino-configure ang pamamahala sa power sa screen sa pag-login sa <ph name="PRODUCT_OS_NAME" />.
@@ -415,6 +434,12 @@
 <translation id="2386362615870139244">Payagan ang mga lock ng pagpapagana ng screen</translation>
 <translation id="2411817661175306360">Naka-off ang babala ng proteksyon sa password</translation>
 <translation id="2411919772666155530">I-block ang mga notification sa mga site na ito</translation>
+<translation id="2415979855753196119">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng pag-flag ng nanganganib na account para sa pagprotekta ng password. Sa pamamagitan ng pag-flag ng nanganganib na account para sa pagprotekta ng password, ipinapaalam sa Google na nanganganib na ma-hijack ang account na ito.
+
+      Kung itatakda ang patakarang ito sa 'PasswordProtectionRiskOff,' walang mati-trigger na pag-flag ng nanganganib na account para sa pagprotekta ng password.
+      Kung itatakda ang patakarang ito sa 'PasswordProtectionRiskOnPasswordReuse,' mati-trigger ang pag-flag ng nanganganib na account para sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang hindi naka-whitelist na site.
+      Kung itatakda ang patakarang ito sa 'PasswordProtectionRiskOnPhishingReuse,' mati-trigger ang pag-flag ng nanganganib na account para sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang phishing site.
+      Kung hindi itatakda ang patakarang ito, mati-trigger ang pag-flag ng nanganganib na account para sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang phishing site, ngunit mababago ng user ang setting na ito.</translation>
 <translation id="2418507228189425036">Dini-disable ang pagse-save ng history ng browser sa <ph name="PRODUCT_NAME" /> at pinipigilan ang mga user sa pagbabago sa setting na ito.
 
       Kung naka-enable ang setting na ito, hindi ise-save ang history ng pagba-browse. Dini-disable din ng setting na ito ang pagsi-syng ng tab.
@@ -610,6 +635,12 @@
 
       Kung ie-enable mo ang setting na ito, gagamitin ng Preview sa Pag-print ang default na printer ng OS system bilang default na pagpipilian.</translation>
 <translation id="2867699958489427143">Mag-roll back at manatili sa target na bersyon kung mas bago ang bersyon ng OS kaysa sa target. Magsagawa ng ganap na pag-powerwash habang nasa proseso.</translation>
+<translation id="286802604195763750">Nagbibigay-daan sa iyong kontrolin ang pag-trigger ng babala sa pagprotekta ng password. Inaalertuhan ng pagprotekta ng password ang mga user kapag ginamit nilang muli ang kanilang pinoprotektahang password sa mga posibleng kahina-hinalang site.
+
+      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOff,' walang ipapakitang babala sa pagprotekta ng password.
+      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOnPasswordReuse,' magpapakita ng babala sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang hindi naka-whitelist na site.
+      Kung itatakda ang patakarang ito sa 'PasswordProtectionWarningOnPhishingReuse,' magpapakita ng babala sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang phishing site.
+      Kung hindi itatakda ang patakarang ito, mati-trigger ang babala sa pagprotekta ng password kapag ginamit muli ng user ang kanyang password sa Google sa isang phishing site, ngunit mababago ng user ang setting na ito.</translation>
 <translation id="2872961005593481000">Shut down</translation>
 <translation id="2874209944580848064">Tala para sa mga <ph name="PRODUCT_OS_NAME" /> device na sumusuporta sa mga Android app:</translation>
 <translation id="2877225735001246144">Huwag paganahin ang paghahanap ng CNAME kapag nakikipagsundo sa pagpapatotoo ng Kerberos</translation>
@@ -1093,6 +1124,13 @@
       Bibigyang-daan ng pag-iwan sa patakarang ito na hindi nakatakda ang user na pumili kung ipapakita o hindi ang button na home.</translation>
 <translation id="4485425108474077672">I-configure ang URL ng page ng Bagong Tab</translation>
 <translation id="4492287494009043413">Huwag paganahin ang pagkuha ng mga screenshot</translation>
+<translation id="4497968613298501984">Nagko-configure sa listahan ng mga login URL ng enterprise (mga HTTP at HTTPS scheme lang). Ika-capture ang fingerprint ng password sa mga URL na ito at gagamitin ito para sa pag-detect ng muling paggamit ng password.
+      Dapat lang gamitin ang setting na ito ng mga user ng G Suite na gumagamit ng SSO/SAML system.
+      Para ma-capture nang tama ng <ph name="PRODUCT_NAME" /> ang mga fingerprint ng password, pakitiyak na sumusunod ang iyong mga page sa pag-log in sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Kung ie-enable ang setting na ito, ika-capture ng serbisyo sa pagprotekta ng password ang fingerprint ng password sa mga URL na ito para sa layunin ng pag-detect ng muling paggamit ng password.
+      Kung idi-disable o hindi itatakda ang setting na ito, ang fingerprint ng password sa https://accounts.google.com lang ang ika-capture ng serbisyo sa pagprotekta ng password.
+      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="450537894712826981">Kino-configure ang laki ng cache na gagamitin ng <ph name="PRODUCT_NAME" /> sa pag-iimbak ng mga na-cache na media file sa disk.
 
       Kung itinakda mo ang patakarang ito, gagamitin ng <ph name="PRODUCT_NAME" /> ang ibinigay na laki ng cache tinukoy man ng user ang '--media-cache-size' flag o hindi. Ang value na tinutukoy sa patakarang ito ay hindi isang ganap na hangganan ngunit sa halip ay isang suhestiyon sa sistema sa pagka-cache, masyadong maliit ang anumang value na mas mababa sa ilang megabyte at ira-round up sa isang maayos na minimum.
@@ -1211,6 +1249,13 @@
 
       Kung iniwang hindi nakatakda o blangko ang patakarang ito, makakapag-sign in ang sinumang user sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Pinapayagan ang mode na fullscreen</translation>
+<translation id="4868249328547841081">Nagko-configure sa URL sa pagpapalit ng password (mga HTTP at HTTPS scheme lang). Ipapadala ng serbisyo sa pagprotekta ng password ang mga user sa URL na ito para palitan ang kanilang mga password kung na-phish sila.
+      Dapat lang gamitin ang setting na ito ng mga user ng G Suite na gumagamit ng SSO/SAML system.
+      Para ma-capture nang tama ng <ph name="PRODUCT_NAME" /> ang bagong fingerprint ng password sa page ng pagpapalit ng password na ito, pakitiyak na sumusunod ang iyong page ng pagpapalit ng password sa mga alituntunin sa https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Kung ie-enable ang setting na ito, ipapadala ng serbisyo sa pagprotekta ng password ang mga user sa URL na ito para palitan ang kanilang mga password kung na-phish sila.
+      Kung idi-disable o hindi itatakda ang setting na ito, ipapadala ng serbisyo sa pagprotekta ng password ang mga user sa https://myaccounts.google.com para palitan ang kanilang password.
+      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="4869787217450099946">Tinutukoy kung pinapayagan ang mga lock ng pagpapagana ng screen. Mahihiling ng mga extension ang mga lock ng pagpapagana ng screen sa pamamagitan ng power management extension API.
 
           Kung nakatakda sa true o iniwang hindi nakatakda ang patakarang ito, tatanggapin ang mga lock ng pagpapagana ng screen para sa pamamahala sa power.

@@ -54,6 +54,17 @@
 
       Se esta política for usada, todas as impressoras serão fornecidas ao usuário, com exceção dos códigos listados.
       </translation>
+<translation id="1181881366217399113">
+      OBSERVAÇÃO: esta política é experimental e pode comprometer a funcionalidade.
+      Se a política for ativada, cada origem indicada em uma
+      lista separada por vírgulas será executada no próprio processo. Isso também isolará
+      as origens indicadas por subdomínios. Por exemplo, especificar https://example.com/
+      também isolará https://foo.example.com/ como parte do
+      site https://example.com/.
+      Se a política for desativada, a lógica de gerenciamento de processos por isolamento de sites entrará em vigor.
+      Se a política não for configurada, o usuário poderá alterar essa configuração.
+      No <ph name="PRODUCT_OS_NAME" />, também é recomendado configurar a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> com o mesmo valor. Se os valores especificados pelas duas políticas não forem iguais, poderá haver um atraso ao entrar em uma sessão do usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
+      </translation>
 <translation id="1198465924256827162">Frequência com que as atualizações de status do dispositivo são enviadas, em milissegundos.
 
       Se esta política não é configurada, a frequência padrão é de três horas. A frequência
@@ -244,7 +255,15 @@
       O formato do valor segue os nomes dos fusos horários do "IANA Time Zone Database" (consulte "https://en.wikipedia.org/wiki/Tz_database", link em inglês). Em particular, a maioria dos fusos horários pode ser referida como "continente/cidade_grande" ou "oceano/cidade_grande".
 
       A definição desta política desativa completamente a definição automática de fuso horário pelo local do dispositivo. Ela também substitui a política SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Token de inscrição da política de nuvem na área de trabalho</translation>
 <translation id="1897365952389968758">Permitir que todos os sites executem o JavaScript</translation>
+<translation id="1906888171268104594">Controla se as métricas de uso e os dados de diagnóstico, incluindo relatórios de erros, são informados ao Google.
+
+      Se configurada como verdadeira, o <ph name="PRODUCT_OS_NAME" /> informará as métricas de uso e os dados de diagnóstico.
+
+      Se configurada como falsa, os relatórios de métricas e dados de diagnóstico serão desativados.
+
+      Se não for configurada, os relatórios de métricas e dados de diagnóstico serão desativados em dispositivos não gerenciados e ativados em dispositivos gerenciados.</translation>
 <translation id="193259052151668190">Lista de permissões de dispositivos USB removíveis</translation>
 <translation id="1933378685401357864">Imagem do plano de fundo</translation>
 <translation id="1956493342242507974">Configurar o gerenciamento de energia na tela de login do <ph name="PRODUCT_OS_NAME" />.
@@ -399,6 +418,12 @@
 <translation id="2386362615870139244">Permitir bloqueios de ativação da tela</translation>
 <translation id="2411817661175306360">O aviso de proteção de senha está desativado</translation>
 <translation id="2411919772666155530">Bloquear notificações nestes sites</translation>
+<translation id="2415979855753196119">Permite que você controle o acionamento da sinalização de conta com proteção de senha em risco. Sinalizar a conta com proteção de senha em risco significa informar ao Google que a conta está correndo o risco de ser invadida.
+
+      Se esta política for definida como "PasswordProtectionRiskOff", nenhuma sinalização de conta com proteção de senha em risco será acionada.
+      Se esta política for definida como "PasswordProtectionRiskOnPasswordReuse", a sinalização de conta com proteção de senha em risco será acionada quando o usuário reutilizar senhas do Google em qualquer site que não esteja na lista de permissões.
+      Se esta política for definida como "PasswordProtectionRiskOnPhishingReuse", a sinalização de conta com proteção de senha em risco será acionada quando o usuário reutilizar senhas do Google em sites de phishing.
+      Se a política não for configurada, a sinalização de conta com proteção de senha em risco será acionada quando o usuário reutilizar senhas do Google em sites de phishing, mas ele conseguirá alterar essa configuração.</translation>
 <translation id="2418507228189425036">Desativa o salvamento do histórico do navegador em <ph name="PRODUCT_NAME" /> e impede que os usuários alterem esta configuração.
 
       Se esta configuração é ativada, o histórico de navegação não é salvo. Esta configuração também desativa a sincronização de guias.
@@ -583,6 +608,12 @@
 
       Se você ativar essa configuração, a Visualização de impressão utilizará a impressora padrão do sistema operacional como a escolha padrão.</translation>
 <translation id="2867699958489427143">Faça a reversão e permaneça na versão de destino se a versão do SO for mais recente que a de destino. Faça um Powerwash completo durante o processo.</translation>
+<translation id="286802604195763750">Permite que você controle o acionamento do aviso de proteção de senha. A proteção de senha alerta o usuário quando ele reutiliza a senha protegida dele em sites possivelmente suspeitos.
+
+      Se esta política for definida como "PasswordProtectionWarningOff", nenhum aviso de proteção de senha será exibido.
+      Se esta política for definida como "PasswordProtectionWarningOnPasswordReuse", o aviso de proteção de senha será exibido quando o usuário reutilizar as senhas do Google em quaisquer sites que não estejam na lista de permissões.
+      Se esta política for definida como "PasswordProtectionWarningOnPhishingReuse", o aviso de proteção de senha será exibido quando o usuário reutilizar as senhas do Google em sites de phishing.
+      Se esta política não for definida, o aviso de proteção de senha será acionado quando o usuário reutilizar senhas do Google em sites de phishing, mas ele conseguirá alterar essa configuração.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2874209944580848064">Observação para dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com apps Android:</translation>
 <translation id="2877225735001246144">Desativar consulta CNAME ao negociar a autenticação do Kerberos</translation>
@@ -617,6 +648,17 @@
           O valor da política deve ser especificado em milissegundos. Os valores são fixos de modo a serem inferiores ou iguais ao intervalo de desligamento da tela (se definido) e ao intervalo de inatividade.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controla o uso da API Web Bluetooth</translation>
+<translation id="2998886474614739865">
+      OBSERVAÇÃO: esta política é experimental e pode comprometer a funcionalidade.
+      Esta política se aplica à tela de login. Veja também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendável configurar as duas políticas com o mesmo valor. Se os valores não forem iguais, poderá haver um atraso ao entrar em uma sessão do usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
+      Se a política for ativada, cada origem indicada em uma
+      lista separada por vírgulas será executada no próprio processo. Isso também isolará
+      as origens indicadas por subdomínios. Por exemplo, especificar https://example.com/
+      também isolará https://foo.example.com/ como parte do
+      site https://example.com/.
+      Se a política for desativada, a lógica de gerenciamento de processos por isolamento de sites entrará em vigor.
+      Se a política não for configurada, as configurações de isolamento de sites padrão da plataforma serão usadas para a tela de login.
+      </translation>
 <translation id="3016255526521614822">Colocar na lista de permissões os apps de anotação permitidos na tela de bloqueio do <ph name="PRODUCT_OS_NAME" />.</translation>
 <translation id="3021562480854470924">Número de marcos em que a reversão é permitida</translation>
 <translation id="3030000825273123558">Ativa relatórios de métricas</translation>
@@ -720,6 +762,17 @@
 
           Se essa política for definida como uma string não vazia, essa string será usada como o nome do destino do <ph name="PRODUCT_NAME" />. Caso contrário, o nome do destino será o nome do dispositivo. Se essa política não for definida, o nome do destino será o nome do dispositivo, e o proprietário do dispositivo (ou um usuário do domínio que está gerenciando o dispositivo) poderá alterá-lo. O nome é limitado a 24 caracteres.</translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
+<translation id="3386001018488754001">
+      OBSERVAÇÃO: esta política é experimental e pode comprometer a funcionalidade.
+      Esta política se aplica à tela de login. Veja também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica à sessão do usuário. É recomendável configurar as duas políticas com o mesmo valor. Se os valores não forem iguais, poderá haver um atraso ao entrar em uma sessão do usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
+      Veja a configuração da política IsolateOrigins para ter os
+      melhores resultados, com isolamento e impacto limitado para os usuários, utilizando
+      IsolateOrigins com uma lista dos sites que você quer isolar. Esta configuração,
+      SitePerProcess, isola todos os sites.
+      Se a política for ativada, cada site será executado no próprio processo.
+      Se a política for desativada, a lógica de gerenciamento de processos por isolamento de sites entrará em vigor.
+      Se a política não for configurada, o usuário poderá alterar essa configuração.
+      </translation>
 <translation id="3395348522300156660">Especifica as impressoras que um usuário pode usar.
 
       Esta política será usada apenas se <ph name="PRINTERS_WHITELIST" /> for escolhida para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -756,6 +809,10 @@
           Se esta política for definida como "Falsa" ou não for definida, os intervalos de gerenciamento de energia e o limite de duração da sessão começarão a ser contados imediatamente após o início da sessão.</translation>
 <translation id="3478024346823118645">Limpa os dados do usuário ao sair</translation>
 <translation id="348495353354674884">Ativar teclado virtual</translation>
+<translation id="3487623755010328395">
+        Se esta política for configurada, <ph name="PRODUCT_NAME" /> tentará se registrar e aplicar a política de nuvem associada a todos os perfis.
+
+        O valor desta política é um token de inscrição que pode ser recuperado no Google Admin console.</translation>
 <translation id="3496296378755072552">Gerenciador de senhas</translation>
 <translation id="350443680860256679">Configurar ARC</translation>
 <translation id="3504791027627803580">Especifica o URL do mecanismo de pesquisa usado para pesquisas de imagens. As solicitações de pesquisa são enviadas com o método GET. Por outro lado, se a política DefaultSearchProviderImageURLPostParams estiver definida, as solicitações de pesquisa de imagens usarão o método POST.
@@ -1047,6 +1104,13 @@
 <translation id="4482640907922304445">Mostra o botão "Página inicial" na barra de ferramentas de <ph name="PRODUCT_NAME" />. Se ativar esta configuração, o botão "Página inicial" será sempre exibido. Se desativar esta configuração, o botão "Página inicial" nunca será exibido. Se ativar ou desativar esta configuração, os usuários não podem alterá-la ou substituí-la em <ph name="PRODUCT_NAME" />. Deixar esta política sem definição permitirá ao usuário escolher se deseja exibir o botão "Página inicial".</translation>
 <translation id="4485425108474077672">Configurar o URL da página "Nova guia"</translation>
 <translation id="4492287494009043413">Desativar captura de tela</translation>
+<translation id="4497968613298501984">Configurar a lista de URLs de login de empresas (somente para esquemas HTTP e HTTPS). Impressões digitais de senha serão capturadas nesses URLs e usadas para detecção de reutilização de senhas.
+      Esta configuração deve ser aplicada apenas para usuários do GSuite que usam um sistema SSO/SAML.
+      Para que o <ph name="PRODUCT_NAME" /> capture corretamente as impressões digitais, certifique-se de que suas páginas de login sigam as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Se esta configuração estiver ativada, o serviço de proteção de senhas capturará a impressão digital de senha nesses URLs para fins de detecção de reutilização de senha.
+      Se esta configuração estiver desativada ou não for configurada, o serviço de proteção de senhas capturará impressões digitais de senha apenas em https://accounts.google.com.
+      Esta política não está disponível em instâncias do Windows que não sejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Configura o tamanho do cache que o <ph name="PRODUCT_NAME" /> usará para armazenar os arquivos de mídia em cache no disco.
 
       Se você definir esta política, o <ph name="PRODUCT_NAME" /> usará o tamanho de cache indicado independente de o usuário especificar ou não a sinalização '--media-cache-size' O valor especificado nesta política não é um limite rígido, mas sim uma sugestão para para o sistema de armazenamento em cache, por isso qualquer valor abaixo de alguns megabytes será considerado muito pequeno e será arredondado para um mínimo razoável.
@@ -1163,6 +1227,13 @@
 
       Se esta política for deixada sem configuração ou em branco, qualquer usuário poderá fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Permitir modo de tela cheia</translation>
+<translation id="4868249328547841081">Configurar o URL de alteração de senha (somente para esquemas HTTP e HTTPS). O serviço de proteção de senhas encaminhará os usuários para este URL para alterar senhas, caso eles tenham sofrido phishing.
+      Esta configuração deve ser aplicada apenas para usuários do GSuite que usam um sistema SSO/SAML.
+      Para que o <ph name="PRODUCT_NAME" /> capture corretamente a nova impressão digital de senha, certifique-se de que sua página de alteração de senha siga as diretrizes que constam em https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Se esta configuração estiver ativada, o serviço de proteção de senhas encaminhará os usuários a este URL para alterar suas senhas caso tenham sofrido phishing.
+      Se esta configuração estiver desativada ou não for configurada, o serviço de proteção de senhas encaminhará os usuários para https://myaccounts.google.com para a alteração das senhas.
+      Esta política não está disponível em instâncias do Windows que não sejam vinculadas a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Especifica se são permitidos bloqueios de ativação da tela. Esses bloqueios podem ser solicitados por extensões por meio da API da extensão de gerenciamento de energia.
 
           Se esta política estiver definida como verdadeira ou não estiver definida, os bloqueios de ativação da tela são respeitados para o gerenciamento de energia.
@@ -1298,6 +1369,17 @@
 
       Se a política não for configurada ou for definida para a string em branco ou um alcance de porta inválido, o WebRTC terá permissão para usar qualquer porta UDP local disponível.</translation>
 <translation id="5290940294294002042">Especificar uma lista de plug-ins que podem ser ativados ou desativados pelo usuário</translation>
+<translation id="5301787427319106606">
+      OBSERVAÇÃO: esta política é experimental e pode comprometer a funcionalidade.
+      Veja a configuração da política IsolateOrigins para ter os
+      melhores resultados, com isolamento e impacto limitado para os usuários, utilizando
+      IsolateOrigins com uma lista dos sites que você quer isolar. Esta configuração,
+      SitePerProcess, isola todos os sites.
+      Se a política for ativada, cada site será executado no próprio processo.
+      Se a política for desativada, a lógica de gerenciamento de processos por isolamento de sites entrará em vigor.
+      Se a política não for configurada, o usuário poderá alterar essa configuração.
+      No <ph name="PRODUCT_OS_NAME" />, também é recomendado configurar a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> com o mesmo valor. Se os valores especificados pelas duas políticas não forem iguais, poderá haver um atraso ao entrar em uma sessão do usuário enquanto o valor especificado pela política do usuário estiver sendo aplicado.
+      </translation>
 <translation id="5302612588919538756">O uso desta política está suspenso. Use SyncDisabled em vez dela.
 
       Permite que o usuário faça login no <ph name="PRODUCT_NAME" />.
@@ -1851,6 +1933,14 @@
 <translation id="706669471845501145">Permitir que os sites exibam notificações da área de trabalho</translation>
 <translation id="7072208053150563108">Taxa de alteração da senha da máquina</translation>
 <translation id="7072406291414141328">Ativa o acelerador de largura de banda da rede</translation>
+<translation id="7074513465313721551">Configure a lista de domínios em que o recurso Navegação segura confiará. Isso significa que:
+      o Navegação segura não verificará a existência de recursos perigosos (por exemplo, phishing, malware ou softwares indesejados) se os URLs deles corresponderem a esses domínios;
+      o serviço de proteção de downloads do Navegação segura não verificará os downloads hospedados nesses domínios;
+      o serviço de proteção de senhas do Navegação segura não verificará a reutilização de senhas se o URL da página corresponder a esses domínios.
+
+      Se essa configuração for ativada, o Navegação segura confiará nesses domínios.
+      Se essa configuração for desativada ou não for configurada, a proteção padrão do Navegação segura será aplicada a todos os recursos.
+      Esta política não está disponível em instâncias do Windows que não estejam vinculadas a um domínio do <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloquear pop-ups nestes sites</translation>
 <translation id="7106631983877564505">Ativa o bloqueio quando os dispositivos <ph name="PRODUCT_OS_NAME" /> entram no modo inativo ou suspenso.
 

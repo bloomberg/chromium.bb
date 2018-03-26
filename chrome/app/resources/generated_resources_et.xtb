@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Mikrofoni ja kaamera kasutamine</translation>
 <translation id="1007408791287232274">Seadmete laadimine ebaõnnestus.</translation>
 <translation id="1008186147501209563">Järjehoidjate eksportimine</translation>
-<translation id="1009147628737158130"><ph name="URL" /> soovib vaadata teie turvavõtme identifitseerivat teavet</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Leht ei reageeri}other{Lehed ei reageeri}}</translation>
 <translation id="1012794136286421601">Teie rakenduste Dokumendid, Arvutustabelid, Esitlused ja Joonised failid sünkroonitakse. Nendele võrgus või võrguühenduseta juurdepääsemiseks avage Google Drive'i rakendus.</translation>
 <translation id="1013707859758800957">Lehel lubati liivakastist eemaldatud pistikprogrammi käitamine.</translation>
@@ -970,7 +969,7 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2508428939232952663">Google Play poe konto</translation>
 <translation id="2509495747794740764">Skaleerimise määr peab olema arv vahemikus 10–200.</translation>
 <translation id="2509566264613697683">8-kordne</translation>
-<translation id="2512222046227390255">Automaatse täitmise vormid</translation>
+<translation id="2512222046227390255">Täida vormid automaatselt</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Kontrolli</translation>
 <translation id="2518024842978892609">Kasutage oma kliendisertifikaate</translation>
@@ -1276,7 +1275,6 @@ Ma arvan, et see sait ei tohiks olla blokeeritud.</translation>
 <translation id="2932483646085333864">Sünkroonimise alustamiseks logige välja ja seejärel uuesti sisse</translation>
 <translation id="2932883381142163287">Teata väärkasutusest</translation>
 <translation id="2938225289965773019">Avada protokolli <ph name="PROTOCOL" /> lingid</translation>
-<translation id="2938335670027321024">Asendi muutmiseks liigutage kontrollerit. Klõpsake lõpetamiseks.</translation>
 <translation id="2939938020978911855">Kuva saadaolevad Bluetoothi seadmed</translation>
 <translation id="2941112035454246133">Madal</translation>
 <translation id="2942560570858569904">Ootamine …</translation>
@@ -1845,7 +1843,6 @@ Lisateabe saamiseks külastage meie <ph name="BEGIN_LINK" />abikeskust<ph name="
 <translation id="379422718204375917">Kasutage oma kontole sisselogimiseks funktsiooni Smart Lock</translation>
 <translation id="3796648294839530037">Lemmikvõrgud:</translation>
 <translation id="3797900183766075808">&amp;Otsi otsingumootoriga <ph name="SEARCH_ENGINE" /> terminit „<ph name="SEARCH_TERMS" />”</translation>
-<translation id="3798325802885154040">Võimaldab lubada/keelata funktsiooni Puuduta klõpsamiseks</translation>
 <translation id="3798449238516105146">Versioon</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Ava kõik}=1{&amp;Ava järjehoidja}other{&amp;Ava kõik (#)}}</translation>
 <translation id="3800806661949714323">Kuva kõik (soovitatud)</translation>
@@ -2927,7 +2924,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="5556206011531515970">Vaikebrauseri valimiseks klõpsake käsul Edasi.</translation>
 <translation id="5556459405103347317">Laadi uuesti</translation>
 <translation id="555746285996217175">Lukustus/toide</translation>
-<translation id="5557579359142031072">Vaadake oma turvavõtme identifitseerivat teavet</translation>
 <translation id="5557991081552967863">Hoia WiFi unerežiimis sisselülitatuna</translation>
 <translation id="5558129378926964177">Suum&amp;i</translation>
 <translation id="55601339223879446">Töölaua piiride reguleerimine ekraani ulatuses</translation>
@@ -4003,7 +3999,6 @@ kasutades juhtpaneeli funktsiooni <ph name="CONTROL_PANEL_APPLET_NAME" />.
 <translation id="7289225569524511578">Ava taustapildi rakendus</translation>
 <translation id="7290242001003353852">See domeeni <ph name="SAML_DOMAIN" /> hostitud sisselogimisteenus pääseb teie kaamerale juurde.</translation>
 <translation id="7290594223351252791">Registreerimise kinnitamine</translation>
-<translation id="7292324470889366655">Lõpeta ümberpaigutamine</translation>
 <translation id="729459249680637905">Järelejäänud katseid: $1</translation>
 <translation id="7295662345261934369">Jaga teistega</translation>
 <translation id="729583233778673644">Lubatakse AES- ja RC4-krüpteerimine. Selle valiku kasutamine suurendab riski, kuna RC4-šifrid on ebaturvalised.</translation>

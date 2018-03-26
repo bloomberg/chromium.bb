@@ -23,6 +23,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Покретач</translation>
 <translation id="1525508553941733066">ОДБАЦИ</translation>
+<translation id="1537254971476575106">Лупа за цео екран</translation>
 <translation id="15373452373711364">Велики курсор</translation>
 <translation id="1550523713251050646">Кликните за више опција</translation>
 <translation id="1567387640189251553">Нека друга тастатура је повезана откако сте последњи пут унели лозинку. Можда покушава да украде вашу комбинацију тастера.</translation>
@@ -51,8 +52,10 @@
 <translation id="2049639323467105390">Овим уређајем управља домен <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2067602449040652523">Осветљеност тастатуре</translation>
+<translation id="2081529251031312395">$1 ће и даље моћи да се пријави касније.</translation>
 <translation id="2122028596993374965">Заустави пребацивање картице <ph name="TAB_NAME" /> на <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Пуњач мале снаге</translation>
+<translation id="2135456203358955318">Монтирана лупа екрана</translation>
 <translation id="2144487987174258011">Покрените поново да бисте ажурирали Adobe Flash Player</translation>
 <translation id="2191905770366256395">Треба да инсталирате важно ажурирање одвојиве тастатуре</translation>
 <translation id="2208323208084708176">Режим спојених радних површина</translation>

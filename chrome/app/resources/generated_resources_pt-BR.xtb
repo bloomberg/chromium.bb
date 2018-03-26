@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Usar microfone e câmera</translation>
 <translation id="1007408791287232274">Não foi possível carregar os dispositivos.</translation>
 <translation id="1008186147501209563">Exportar favoritos</translation>
-<translation id="1009147628737158130"><ph name="URL" /> quer ver informações de identificação sobre sua chave de segurança</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Página sem resposta}one{Páginas sem resposta}other{Páginas sem resposta}}</translation>
 <translation id="1012794136286421601">Seus arquivos do Google Docs, Planilhas, Apresentações e Desenhos estão sendo sincronizados. Abra o aplicativo Google Drive para acessá-los on-line ou off-line.</translation>
 <translation id="1013707859758800957">Foi permitida a execução de um plug-in sem sandbox nesta página.</translation>
@@ -629,6 +628,7 @@
 <translation id="1944921356641260203">Atualização encontrada</translation>
 <translation id="1951615167417147110">Rolar uma página para cima</translation>
 <translation id="1956050014111002555">O arquivo continha muitos certificados e nenhum deles foi importado:</translation>
+<translation id="1956390763342388273">Essa ação fará o upload de todos os arquivos de "<ph name="FOLDER_PATH" />". Faça isso apenas se você confiar no site.</translation>
 <translation id="1962233722219655970">Esta página usa um aplicativo de cliente nativo que não funciona em seu computador.</translation>
 <translation id="1962969542251276847">Tela de bloqueio</translation>
 <translation id="1963227389609234879">Remover tudo</translation>
@@ -841,6 +841,7 @@
 <translation id="2294358108254308676">Quer instalar o <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">Método EAP:</translation>
 <translation id="2297705863329999812">Pesquisar impressoras</translation>
+<translation id="2300383962156589922">Personalizar e controlar o app <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">O diretório raiz da extensão é inválido.</translation>
 <translation id="2302685579236571180">Anonimato</translation>
 <translation id="23030561267973084">A extensão "<ph name="EXTENSION_NAME" />" solicitou permissões adicionais.</translation>
@@ -1276,7 +1277,6 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="2932483646085333864">Saia e faça login novamente para iniciar a sincronização</translation>
 <translation id="2932883381142163287">Denunciar abuso</translation>
 <translation id="2938225289965773019">Abrir links de <ph name="PROTOCOL" /></translation>
-<translation id="2938335670027321024">Mova o controlador para reposicionar. Clique para concluir.</translation>
 <translation id="2939938020978911855">Mostrar dispositivos Bluetooth disponíveis</translation>
 <translation id="2941112035454246133">Baixa</translation>
 <translation id="2942560570858569904">Aguardando...</translation>
@@ -1330,6 +1330,7 @@ Não acho que este site deva ser bloqueado.</translation>
 <translation id="3012917896646559015">Entre em contato com o fabricante do hardware imediatamente para enviar seu computador para a assistência técnica.</translation>
 <translation id="3013291976881901233">Dispositivos MIDI</translation>
 <translation id="3014095112974898292">Aguardando a conclusão de outras solicitações...</translation>
+<translation id="3015639418649705390">Reiniciar agora</translation>
 <translation id="3015992588037997514">Esse código aparece na sua tela do Chromebox?</translation>
 <translation id="3016641847947582299">Componente atualizado</translation>
 <translation id="3016780570757425217">Saber sua localização</translation>
@@ -1845,7 +1846,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="379422718204375917">Use o Smart Lock para fazer login na sua conta</translation>
 <translation id="3796648294839530037">Redes favoritas:</translation>
 <translation id="3797900183766075808">&amp;Pesquisar “<ph name="SEARCH_TERMS" />” no <ph name="SEARCH_ENGINE" /></translation>
-<translation id="3798325802885154040">Permite ativar/desativar o recurso "Tocar para clicar"</translation>
 <translation id="3798449238516105146">Versão</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{&amp;Abrir tudo}=1{&amp;Abrir favorito}one{&amp;Abrir tudo (#)}other{&amp;Abrir tudo (#)}}</translation>
 <translation id="3800806661949714323">Mostrar tudo (recomendado)</translation>
@@ -2206,6 +2206,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="4430369329743628066">Página adicionada como favorito</translation>
 <translation id="443454694385851356">Legado (não seguro)</translation>
 <translation id="443464694732789311">Continuar</translation>
+<translation id="443475966875174318">Atualizar ou remover aplicativos incompatíveis</translation>
 <translation id="4439318412377770121">Quer registrar o dispositivo <ph name="DEVICE_NAME" /> no Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Quer iniciar automaticamente este aplicativo quando o computador for ligado?</translation>
 <translation id="444134486829715816">Expandir...</translation>
@@ -2388,6 +2389,7 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="473775607612524610">Atualizar</translation>
 <translation id="474217410105706308">Desativar som da guia</translation>
 <translation id="4742746985488890273">Fixar na estante</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />Saiba como atualizar aplicativos<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">O download foi concluído</translation>
 <translation id="4746971725921104503">Parece que você já está gerenciando um usuário com esse nome. Quer <ph name="LINK_START" />importar <ph name="USER_DISPLAY_NAME" /> para este dispositivo<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Requer uma extensão da Chrome Web Store</translation>
@@ -2927,7 +2929,6 @@ Para ver mais informações, visite nossa <ph name="BEGIN_LINK" />Central de Aju
 <translation id="5556206011531515970">Clique ao lado para escolher o navegador padrão.</translation>
 <translation id="5556459405103347317">Recarregar</translation>
 <translation id="555746285996217175">Bloquear / ativar</translation>
-<translation id="5557579359142031072">Ver informações de identificação sobre sua chave de segurança</translation>
 <translation id="5557991081552967863">Manter Wi-Fi ativado durante a suspensão.</translation>
 <translation id="5558129378926964177">Aumentar z&amp;oom</translation>
 <translation id="55601339223879446">Ajustar as fronteiras da sua área de trabalho dentro da tela</translation>
@@ -3200,6 +3201,7 @@ Não exponha nenhuma informação confidencial.</translation>
     <ph name="BEGIN_PARAGRAPH2" />É possível ativar ou desativar esse recurso a qualquer momento nas configurações de apps Android. Isso não afeta a capacidade do seu dispositivo de enviar as informações necessárias para receber serviços essenciais, como atualizações do sistema e de segurança.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">Traduzida</translation>
 <translation id="5991049340509704927">Ampliar</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para que você possa continuar navegando na Web, peça ao seu administrador para remover esse aplicativo.}one{Para que você possa continuar navegando na Web, peça ao seu administrador para remover esse aplicativo.}other{Para que você possa continuar navegando na Web, peça ao seu administrador para remover esses aplicativos.}}</translation>
 <translation id="5993332328670040093">Seu uso de dados não será mais medido.</translation>
 <translation id="600424552813877586">Aplicativo inválido.</translation>
 <translation id="6005695835120147974">Roteador de mídia</translation>
@@ -3856,6 +3858,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7040138676081995583">Abrir com...</translation>
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7042418530779813870">&amp;Colar e pesquisar</translation>
+<translation id="7043108582968290193">Pronto! Nenhum aplicativo incompatível encontrado.</translation>
 <translation id="7049293980323620022">Manter arquivo?</translation>
 <translation id="7051943809462976355">Procurando mouse...</translation>
 <translation id="7052237160939977163">Enviar dados de rastreamento de desempenho</translation>
@@ -4005,7 +4008,6 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7289225569524511578">Abra o app de papel de parede</translation>
 <translation id="7290242001003353852">Este serviço de login, hospedado por <ph name="SAML_DOMAIN" />, está acessando sua câmara.</translation>
 <translation id="7290594223351252791">Confirmar registro</translation>
-<translation id="7292324470889366655">Concluir reposicionamento</translation>
 <translation id="729459249680637905">Tentativas restantes: $1</translation>
 <translation id="7295662345261934369">Compartilhar com outras pessoas</translation>
 <translation id="729583233778673644">Permitir a codificação AES e RC4. O uso dessa opção é mais arriscado, porque as criptografias RC4 não são seguras.</translation>
@@ -4027,6 +4029,7 @@ permanentemente excluídos assim que esse usuário for removido. Os websites vis
 <translation id="7328867076235380839">Combinação inválida</translation>
 <translation id="7329154610228416156">O login falhou porque foi configurado para usar um URL não seguro (<ph name="BLOCKED_URL" />). Entre em contato com o administrador.</translation>
 <translation id="7334190995941642545">O Smart Lock está indisponível no momento. Tente novamente mais tarde.</translation>
+<translation id="7334274148831027933">Ativar lupa ancorada</translation>
 <translation id="7339763383339757376">PKCS #7, certificado único</translation>
 <translation id="7339785458027436441">Verificar ortografia ao digitar</translation>
 <translation id="7339898014177206373">Nova janela</translation>
@@ -4401,6 +4404,7 @@ A instalação do <ph name="APP_NAME" /> faz o download de <ph name="DOWNLOAD_SI
 <translation id="7912080627461681647">Sua senha foi alterada no servidor. Saia e faça login novamente.</translation>
 <translation id="7912883689016444961">Configurar rede móvel</translation>
 <translation id="7915471803647590281">Conte-nos o que está acontecendo antes de enviar comentários.</translation>
+<translation id="792514962475806987">Nível de zoom da lupa ancorada:</translation>
 <translation id="7925247922861151263">Falha ao verificar AAA</translation>
 <translation id="7925285046818567682">Aguardando <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Não usar dados móveis na sincronização</translation>
@@ -4783,6 +4787,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">URL de descoberta automática de proxies da Web</translation>
 <translation id="8546930481464505581">Personalizar barra de toque</translation>
+<translation id="8547013269961688403">Ativar lupa de tela cheia</translation>
 <translation id="85486688517848470">Mantenha pressionada a tecla "Pesquisar" para alternar o comportamento das teclas de função</translation>
 <translation id="855081842937141170">Fixar guia</translation>
 <translation id="8551388862522347954">Licenças</translation>
@@ -4837,6 +4842,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8642947597466641025">Aumentar o texto</translation>
 <translation id="8647834505253004544">Não é um endereço da Web válido</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> ou <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">Embora você não possa mais acessar seu perfil antigo, ainda é possível removê-lo.</translation>
 <translation id="8651585100578802546">Forçar carregamento desta página</translation>
 <translation id="8652400352452647993">Erro de extensão de pacote</translation>
 <translation id="8652487083013326477">botão de opção do intervalo de páginas</translation>
@@ -4913,7 +4919,9 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="8737685506611670901">Abrir links de <ph name="PROTOCOL" /> em vez de <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741316211671074806">Picture-in-picture</translation>
+<translation id="8743390665131937741">Nível de zoom em tela cheia:</translation>
 <translation id="8743864605301774756">Atualizada 1 hora atrás</translation>
+<translation id="874689135111202667">{0,plural, =1{Fazer upload de um arquivo para este site?}one{Fazer upload de # arquivo para este site?}other{Fazer upload de # arquivos para este site?}}</translation>
 <translation id="8749863574775030885">Acessar dispositivos USB de um fornecedor desconhecido</translation>
 <translation id="8754200782896249056">&lt;p&gt; Durante a execução do <ph name="PRODUCT_NAME" /> em um ambiente de computador compatível, serão utilizadas as configurações de proxy do sistema. No entanto, seu sistema não é suportado ou ocorreu um problema ao iniciar a configuração do sistema.&lt;/p&gt;
 
@@ -5218,6 +5226,7 @@ Pessoas com conexões mais lentas talvez não vejam seu conteúdo.</translation>
 <translation id="960719561871045870">Código da operadora</translation>
 <translation id="960987915827980018">Cerca de 1 hora restante</translation>
 <translation id="962802172452141067">Árvore de pastas de favoritos</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplicativo}one{Aplicativo}other{Aplicativos}}</translation>
 <translation id="968000525894980488">Ative o Google Play Services.</translation>
 <translation id="968174221497644223">Cache de aplicativo</translation>
 <translation id="969096075394517431">Alterar idiomas</translation>

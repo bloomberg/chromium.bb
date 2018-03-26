@@ -3,6 +3,7 @@
 <translationbundle lang="sk">
 <translation id="104962181688258143">Otvorenie aplikácie Súbory</translation>
 <translation id="1126871238933253947">Prepnutie na predchádzajúci používaný jazyk klávesnice.</translation>
+<translation id="1134347825771908369">Vypnúť zvuk</translation>
 <translation id="1195667586424773550">Presunutie odkazu na panel s adresou na karte</translation>
 <translation id="1204450209689312104">Otvorenie nového okna v režime inkognito</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Uloženie všetkých otvorených stránok v aktuálnom okne ako záložiek v novom priečinku</translation>
 <translation id="355103131818127604">Otvorenie odkazu na novej karte na pozadí</translation>
 <translation id="3649256019230929621">Minimalizovať okno</translation>
+<translation id="3655154169297074232">Karty a okná</translation>
 <translation id="3668361878347172356">Opakovanie poslednej akcie</translation>
 <translation id="3720939646656082033">Otvorenie odkazu na novej karte a prepnutie na novú kartu</translation>
 <translation id="3725795051337497754">Zavretie aktuálnej karty</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Uloženie odkazu ako záložky</translation>
 <translation id="4141203561740478845">Zvýraznenie riadka s panelom s adresou</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> alebo <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Režim prehľadu</translation>
+<translation id="4472417192667361414">Nastavenia systému a zobrazenia</translation>
 <translation id="4556221320735744018">Zobrazenie pomocníka pre klávesové skratky</translation>
 <translation id="4628718545549558538">Otvorenie stavovej oblasti (kde je obrázok vášho účtu)</translation>
 <translation id="4642092649622328492">Vytvorenie čiastočnej snímky obrazovky</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Prechod na začiatok dokumentu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> alebo <ph name="E" /></translation>
 <translation id="8234414138295101081">Otočenie obrazovky o 90 stupňov</translation>
+<translation id="826184564253127735">Prehliadač klávesových skratiek</translation>
 <translation id="836869401750819675">Otvorenie stránky Stiahnuté súbory</translation>
 <translation id="8388247778047144397">Presunutie odkazu do prázdnej oblasti na paneli kariet</translation>
 <translation id="8389638407792712197">Otvorenie nového okna</translation>
@@ -144,7 +149,17 @@
 <translation id="8644639153978066712">Zobrazenie skrytých súborov v aplikácii Súbory</translation>
 <translation id="8717459106217102612">Výber predchádzajúceho slova alebo písmena</translation>
 <translation id="8727232706774971183">Zobrazenie upozornení</translation>
+<translation id="8855885154700222542">Kláves celej obrazovky</translation>
 <translation id="88986195241502842">Posunúť stránku nadol</translation>
 <translation id="8903921497873541725">Priblížiť</translation>
+<translation id="8924883688469390268">Prepnutie na predchádzajúceho používateľa</translation>
+<translation id="8977648847395357314">Výber obsahu v paneli s adresou</translation>
+<translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 až 8</translation>
+<translation id="9041599225465145264">Prilepenie obsahu zo schránky</translation>
+<translation id="9052808072970550123">Prepnutie na ďalšieho používateľa</translation>
+<translation id="9106898733795143799">Stránka a webový prehliadač</translation>
 <translation id="9179672198516322668">Obľúbené skratky</translation>
+<translation id="93603345341560814">Stlačte kláves <ph name="SHIFT" /> a kliknite na odkaz</translation>
+<translation id="945383118875625837">Presuňte odkaz na panel so záložkami</translation>
+<translation id="98120814841227350">Prechod na koniec dokumentu</translation>
 </translationbundle>

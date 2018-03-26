@@ -622,6 +622,17 @@
           Vrijednost pravila treba navesti u milisekundama. Vrijednosti su ograničene na vrijeme kraće od odgode isključivanja zaslona i odgode neaktivnosti ili jednako tom vremenu (ako je postavljeno).</translation>
 <translation id="2987155890997901449">Omogući ARC</translation>
 <translation id="2987227569419001736">Upravljanje upotrebom API-ja Web Bluetooth</translation>
+<translation id="2998886474614739865">
+      NAPOMENA: pravilo je eksperimentalno i može poremetiti funkciju!
+      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučujemo da oba pravila postavite na istu vrijednost. Ako se vrijednosti ne podudaraju, može doći do čekanja prilikom otvaranja korisničke sesije dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
+      Ako se to pravilo omogući, svaki od navedenih izvora na
+      popisu odijeljenom zarezima izvodit će se u svojem procesu. Time će se
+      također izolirati izvori navedeni prema poddomenama, npr. ako se navede
+      https://example.com/, izolirat će se i https://foo.example.com/ kao dio
+      web-lokacije https://example.com/.
+      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije po web-lokaciji.
+      Ako se to pravilo ne konfigurira, za zaslon za prijavu upotrebljavat će se zadane postavke platforme za izolaciju web-lokacija.
+      </translation>
 <translation id="3016255526521614822">Aplikacije za izradu bilježaka dopuštene na zaključanom zaslonu uređaja sa sustavom <ph name="PRODUCT_OS_NAME" /> stavi na popis dopuštenih</translation>
 <translation id="3021562480854470924">Broj dopuštenih prijelaznih točaka za vraćanje sustava</translation>
 <translation id="3030000825273123558">Omogući izvješće o metrici</translation>
@@ -721,6 +732,17 @@
 
           Ako se to pravilo postavi na niz koji nije prazan, taj će se niz upotrebljavati kao naziv odredišta za <ph name="PRODUCT_NAME" />. U suprotnom će naziv odredišta biti naziv uređaja. Ako se to pravilo ne postavi, naziv odredišta bit će naziv uređaja i vlasnik uređaja (ili korisnik s domene koja upravlja uređajem) moći će ga promijeniti. Duljina naziva ograničena je na 24 znaka.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
+<translation id="3386001018488754001">
+      NAPOMENA: pravilo je eksperimentalno i može poremetiti funkciju!
+      To se pravilo primjenjuje na zaslon za prijavu. Pogledajte i pravilo <ph name="SITE_PER_PROCESS_POLICY_NAME" /> koje se primjenjuje na korisničku sesiju. Preporučuje se postaviti oba pravila na istu vrijednost. Ako se vrijednosti ne podudaraju, može doći do čekanja prilikom otvaranja korisničke sesije dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
+      Možda biste trebali razmisliti o postavci pravila IsolateOrigins da biste
+      iskoristili prednosti obje značajke, izolacije i ograničenog utjecaja za
+      korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati.
+      Ova postavka, SitePerProcess, izolira sve web-lokacije.
+      Ako se to pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
+      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije po web-lokaciji.
+      Ako se pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
+      </translation>
 <translation id="3395348522300156660">Određuje pisače koje korisnik može upotrebljavati.
 
       To se pravilo upotrebljava samo ako je pravilo <ph name="PRINTERS_WHITELIST" /> odabrano za <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -760,6 +782,10 @@
           Ako se to pravilo postavi na neistinito ili se ne postavi, odgode upravljanja potrošnjom energije i ograničenje duljine sesije počinju teći odmah po početku sesije.</translation>
 <translation id="3478024346823118645">Izbriši korisničke podatke nakon odjave</translation>
 <translation id="348495353354674884">Omogućavanje virtualne tipkovnice</translation>
+<translation id="3487623755010328395">
+        Ako se to pravilo postavi, usluga <ph name="PRODUCT_NAME" /> pokušat će se registrirati i primijeniti povezana pravila za oblak za sve profile.
+
+        Vrijednost tog pravila token je za registraciju koji se može dobiti na konzoli Google Admina.</translation>
 <translation id="3496296378755072552">Upravitelj zaporki</translation>
 <translation id="350443680860256679">Konfiguriraj ARC</translation>
 <translation id="3504791027627803580">Određuje URL tražilice koja se upotrebljava za pretraživanje slika. Zahtjevi za pretraživanje slat će se pomoću GET metode. Ako je postavljeno pravilo "DefaultSearchProviderImageURLPostParams", zahtjevi za pretraživanje slika umjesto toga upotrebljavat će POST metodu.
@@ -1051,6 +1077,13 @@
 <translation id="4482640907922304445">Pokazuje gumb Početna na alatnoj traci proizvoda <ph name="PRODUCT_NAME" />. Ako omogućite ovu postavku, gumb Početna prikazivat će se uvijek. Ako onemogućite ovu postavku, gumb Početna neće se nikad prikazivati. Ako omogućite ili onemogućite ovu postavku, korisnici neće moći promijeniti ni poništiti ovu postavku u proizvodu <ph name="PRODUCT_NAME" />. Ako ovo pravilo nije postavljeno, korisnik će moći odabrati želi li da se prikazuje gumb Početna.</translation>
 <translation id="4485425108474077672">Konfiguriraj URL stranice nove kartice</translation>
 <translation id="4492287494009043413">Onemogući izradu snimki zaslona</translation>
+<translation id="4497968613298501984">Konfigurira popis URL-ova za prijavu u organizacijama (samo sheme HTTP i HTTPS). Na tim će se URL-ovima snimati otisak prsta za zaporku koji će se upotrebljavati za otkrivanje ponovne upotrebe zaporke.
+      Ta je postavka namijenjena jedino korisnicima GSuitea koji upotrebljavaju sustav SSO/SMAL.
+      Da bi <ph name="PRODUCT_NAME" /> pravilno snimao otiske prsta zaporke, vaše stranice za prijavu moraju slijediti smjernice na https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Ako je ta postavka omogućena, usluga zaštite zaporkom na tim će URL-ovima snimati otisak prsta za zaporku u svrhu otkrivanja ponovne upotrebe zaporke.
+      Ako se postavka onemogući ili ne postavi, zaštita zaporkom snimat će otisak prsta zaporke samo na https://accounts.google.com.
+      To pravilo nije dostupno na instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Konfigurira veličinu predmemorije koju će <ph name="PRODUCT_NAME" /> upotrebljavati za pohranu predmemoriranih medijskih datoteka na disku.
 
       Ako postavite ovo pravilo, <ph name="PRODUCT_NAME" /> upotrebljavat će ponuđenu veličinu predmemorije, bez obzira je li korisnik označio "--media-cache-size". Vrijednost navedena u ovom pravilu nije čvrsto postavljena granica, već prijedlog za sustav predmemoriranja; svaka vrijednost ispod nekoliko megabajta premala je i zaokružit će se na prihvatljivi minimum.
@@ -1168,6 +1201,13 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se ovo pravilo ne postavi ili ostavi prazno, korisnik se može prijaviti na uslugu <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Dopusti način punog zaslona</translation>
+<translation id="4868249328547841081">Konfigurira URL-ove za promjenu zaporke (samo sheme HTTP i HTTPS). Usluga za zaštitu zaporke slat će korisnike na taj URL kako bi promijenili zaporku ako je došlo do pokušaja krađe identiteta.
+      Ta je postavka namijenjena jedino korisnicima GSuitea koji upotrebljavaju sustav SSO/SAML.
+      Da bi <ph name="PRODUCT_NAME" /> pravilno snimio otisak prsta nove zaporke na toj stranici za promjenu zaporke, stranica za promjenu zaporke mora slijediti smjernice na https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Ako se ta postavka omogući, usluga za zaštitu zaporke slat će korisnike na taj URL da bi promijenili zaporku ako je došlo do pokušaja krađe identiteta.
+      Ako se ta postavka onemogući ili ne postavi, usluga za zaštitu zaporke slat će korisnike na https://myaccounts.google.com da bi promijenili zaporku.
+      To pravilo nije dostupno na instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Određuje jesu li dopuštena blokiranja aktivacije zaslona. Ta blokiranja mogu tražiti proširenja putem API-ja proširenja za upravljanje napajanjem.
 
           Ako je to pravilo postavljeno na točno ili ako nije postavljeno, blokiranja aktivacije zaslona primjenjivat će se radi upravljanja napajanjem.
@@ -1309,6 +1349,17 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 
       Ako se pravilo ne postavi ili se postavi na prazni niz ili nevažeći raspon priključaka, WebRTC može upotrebljavati bilo koji dostupni lokalni UDP priključak.</translation>
 <translation id="5290940294294002042">Odredite popis dodataka koje korisnik može omogućiti ili onemogućiti</translation>
+<translation id="5301787427319106606">
+      NAPOMENA: pravilo je eksperimentalno i može poremetiti funkciju!
+      Možda biste trebali razmisliti o postavci pravila IsolateOrigins da biste
+      iskoristili prednosti obje značajke, izolacije i ograničenog utjecaja za
+      korisnike, koristeći IsolateOrigins s popisom web-lokacija koje želite izolirati.
+      Ova postavka, SitePerProcess, izolira sve web-lokacije.
+      Ako se to pravilo omogući, svaka će se web-lokacija izvoditi u svojem procesu.
+      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije po web-lokaciji.
+      Ako se to pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
+      Preporučujemo da na sustavu <ph name="PRODUCT_OS_NAME" /> postavite i pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na istu vrijednost. Ako se vrijednosti navedene u ta dva pravila ne podudaraju, može doći do čekanja prilikom otvaranja korisničke sesije dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
+      </translation>
 <translation id="5302612588919538756">To je pravilo obustavljeno i umjesto njega možete upotrijebiti "SyncDisabled".
 
       Korisniku omogućuje prijavu u <ph name="PRODUCT_NAME" />.
@@ -1857,6 +1908,14 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="706669471845501145">Dopusti web-lokaciji prikazivanje obavijesti radne površine</translation>
 <translation id="7072208053150563108">Stopa promjene zaporke računala</translation>
 <translation id="7072406291414141328">Omogućuje usporavanje propusnosti mreže</translation>
+<translation id="7074513465313721551">Konfigurirajte popis domena koje će Sigurno pregledavanje smatrati pouzdanima. To znači sljedeće:
+      Sigurno pregledavanje neće provjeravati opasne resurse (na primjer krađu identiteta i zlonamjerni ili neželjeni softver) ako se njihovi URL-ovi podudaraju s tim domenama.
+      Usluga zaštite za preuzimanje koju pruža Sigurno pregledavanje neće provjeravati preuzimanja hostirana na tim domenama.
+      Usluga zaštite zaporki koju pruža Sigurno pregledavanje neće provjeravati ponovnu upotrebu zaporki ako se URL stranice podudara s tim domenama.
+
+      Ako se ta postavka omogući, Sigurno pregledavanje smatrat će te domene pouzdanima.
+      Ako se ta postavka onemogući ili se ne postavi, na sve se resurse primjenjuje zadana zaštita Sigurnog pregledavanja.
+      To pravilo nije dostupno u instancama Windowsa koje nisu pridružene domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blokiraj skočne prozore na ovim web-lokacijama</translation>
 <translation id="7106631983877564505">Omogući zaključavanje kada uređaji <ph name="PRODUCT_OS_NAME" /> prijeđu u stanje mirovanja ili se isključe.
 

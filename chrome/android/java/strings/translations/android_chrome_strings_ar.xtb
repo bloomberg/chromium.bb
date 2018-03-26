@@ -87,6 +87,7 @@
 <translation id="1709438864123551175">توفير البيانات</translation>
 <translation id="1718835860248848330">آخر ساعة</translation>
 <translation id="1729516292547892356">‏لعرض محتوى الواقع الافتراضي، يلزمك تحديث خدمات Google VR</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> - تم التحديث منذ <ph name="TIME_SINCE_UPDATE" /> دقائق</translation>
 <translation id="1749561566933687563">مزامنة الإشارات المرجعية</translation>
 <translation id="17513872634828108">علامات التبويب المفتوحة</translation>
 <translation id="1756600373018374892">انقر على هذا الزر للوصول السريع إلى علامات التبويب.</translation>
@@ -109,7 +110,6 @@
 <translation id="1946005195648379376">‏يمكنك التحكم في الطريقة التي تتبعها Google عند استخدام سجل التصفح لتخصيص البحث وخدمات Google الأخرى.</translation>
 <translation id="1952172573699511566">ستعرض مواقع الويب النص بلغتك المفضلة إن أمكن.</translation>
 <translation id="1966710179511230534">يُرجى تحديث تفاصيل تسجيل الدخول.</translation>
-<translation id="196723829409668860">مقالات شاهدها غيرك من المستخدمين</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="1984937141057606926">مسموح باستثناء الجهات الخارجية</translation>
 <translation id="1989112275319619282">تصفّح</translation>
@@ -229,7 +229,6 @@
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
 <translation id="311456632243022227">‏تم فتح عدّة روابط في Chrome</translation>
 <translation id="3115898365077584848">عرض المعلومات</translation>
-<translation id="3135915540460564231">أين توجد التنزيلات والإشارات المرجعية والسجل؟</translation>
 <translation id="3137521801621304719">مغادرة وضع التصفح المتخفي</translation>
 <translation id="3148434565183091099">‏للحصول على الإشارات المرجعية على جميع أجهزتك، سجِّل الدخول إلى Chrome.</translation>
 <translation id="3157842584138209013">الاطّلاع على مقدار البيانات التي حفظتها من الزر "مزيد من الخيارات"</translation>
@@ -787,6 +786,7 @@
 <translation id="8200772114523450471">استئناف</translation>
 <translation id="8209050860603202033">فتح الصورة</translation>
 <translation id="8220488350232498290">تم تنزيل <ph name="GIGABYTES" /> غيغابايت</translation>
+<translation id="8249310407154411074">نقل إلى الأعلى</translation>
 <translation id="8250920743982581267">المستندات</translation>
 <translation id="8260126382462817229">محاولة تسجيل الدخول مرة أخرى</translation>
 <translation id="8261506727792406068">حذف</translation>

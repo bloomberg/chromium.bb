@@ -58,6 +58,17 @@
 
       Jika dasar ini digunakan, semua pencetak akan disediakan kepada pengguna kecuali ID yang disenaraikan dalam dasar ini.
       </translation>
+<translation id="1181881366217399113">
+      NOTA: Dasar ini ialah percubaan dan mungkin keluar daripada fungsi!
+      Jika dasar ini didayakan, setiap asalan yang dinamakan dalam
+      senarai yang dipisahkan oleh koma akan dijalankan dalam prosesnya sendiri. Ini juga akan mengasingkan
+      asalan yang dinamakan oleh subdomain; cth. menyatakan https://example.com/ akan
+      turut menyebabkan https://foo.example.com/ diasingkan sebagai sebahagian daripada
+      tapak https://example.com/.
+      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan mengikut Tapak akan berkuat kuasa.
+      Jika dasar tidak dikonfiguraskan, pengguna akan dapat menukar tetapan ini.
+      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan supaya turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kepada nilai yang sama. Jika nilai yang ditetapkan oleh dua dasar ini tidak sepadan, kelengahan akan berlaku apabila memasuki sesi pengguna semasa nilai yang ditentukan oleh dasar pengguna sedang digunakan.
+      </translation>
 <translation id="1198465924256827162">Kekerapan muat naik status peranti dihantar, dalam milisaat.
 
       Jika dasar ini tidak ditetapkan, kekerapan lalai ialah 3 jam. Kekerapan
@@ -256,7 +267,15 @@
       Format nilai mengikut nama zon waktu dalam "Pangkalan Data Zon Waktu IANA" (lihat "https://en.wikipedia.org/wiki/Tz_database"). Secara khususnya, kebanyakan zon waktu boleh dirujuk mengikut "continent/large_city" atau "ocean/large_city".
 
       Zon waktu automatik yang diselesaikan oleh lokasi peranti akan dilumpuhkan sepenuhnya apabila dasar ini ditetapkan. Langkah ini turut mengatasi dasar SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Token pendaftaran dasar awan pada desktop</translation>
 <translation id="1897365952389968758">Benarkan semua tapak untuk menjalankan JavaScript</translation>
+<translation id="1906888171268104594">Mengawal sama ada metrik penggunaan dan data diagnostik, termasuk laporan ranap dilaporkan kembali kepada Google.
+
+      Jika ditetapkan kepada benar, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan dan data diagnostik.
+
+      Jika ditetapkan kepada palsu, pelaporan metrik dan data diagnostik akan dilumpuhkan.
+
+      Jika tidak dikonfigurasikan, pelaporan metrik dan data diagnostik akan dilumpuhkan pada peranti tidak diurus dan didayakan pada peranti yang diurus.</translation>
 <translation id="193259052151668190">Senarai putih peranti boleh tanggal USB</translation>
 <translation id="1933378685401357864">Imej hias latar</translation>
 <translation id="1956493342242507974">Konfigurasikan pengurusan kuasa pada skrin log masuk dalam <ph name="PRODUCT_OS_NAME" />.
@@ -419,6 +438,12 @@
 <translation id="2386362615870139244">Benarkan kunci bangkit skrin</translation>
 <translation id="2411817661175306360">Amaran perlindungan kata laluan dimatikan</translation>
 <translation id="2411919772666155530">Sekat pemberitahuan pada tapak ini</translation>
+<translation id="2415979855753196119">Membolehkan anda mengawal pencetusan pembenderaan akaun berisiko perlindungan kata laluan. Pembenderaan akaun berisiko perlindungan kata laluan bermakna memberitahu Google bahawa akaun ini berisiko untuk dirampas.
+
+      Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOff', pembenderaan akaun berisiko perlindungan kata laluan tidak akan dicetuskan.
+      Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOnPasswordReuse', pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada mana-mana tapak yang tidak disenaraiputihkan.
+      Jika dasar ini ditetapkan kepada 'PasswordProtectionRiskOnPhishingReuse', pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data.
+      Jika dasar ini dibiarkan tidak ditetapkan, pembenderaan akaun berisiko perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data tetapi pengguna boleh menukarnya.</translation>
 <translation id="2418507228189425036">Melumpuhkan penyimpanan sejarah penyemakan imbas dalam <ph name="PRODUCT_NAME" /> dan menghalang pengguna daripada menukar tetapan ini.
 
       Jika tetapan ini didayakan, sejarah penyemakan imbas tidak disimpan. Tetapan ini turut melumpuhkan penyegerakan tab.
@@ -612,6 +637,12 @@
 
       Jika anda mendayakan tetapan ini, Pratonton Cetakan akan menggunakan pencetak lalai sistem OS sebagai pilihan destinasi lalai.</translation>
 <translation id="2867699958489427143">Undur dan kekal pada versi sasaran jika versi OS lebih baharu daripada sasaran. Lakukan powerwash lengkap semasa proses.</translation>
+<translation id="286802604195763750">Membenarkan anda mengawal pencetusan amaran perlindungan kata laluan. Perlindungan kata laluan memaklumi pengguna apabila mereka menggunakan semula kata laluan yang dilindungi pada tapak yang mungkin mencurigakan.
+
+      Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOff', tiada amaran perlindungan kata laluan akan ditunjukkan.
+      Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOnPasswordReuse', amaran perlindungan kata laluan akan ditunjukkan apabila pengguna menggunakan semula kata laluan Google pada mana-mana tapak yang tidak disenaraiputihkan.
+      Jika dasar ini ditetapkan kepada 'PasswordProtectionWarningOnPhishingReuse', amaran perlindungan kata laluan akan ditunjukkan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data.
+      Jika dasar ini dibiarkan tidak ditetapkan, amaran perlindungan kata laluan akan dicetuskan apabila pengguna menggunakan semula kata laluan Google pada tapak pancingan data tetapi pengguna boleh menukarnya.</translation>
 <translation id="2872961005593481000">Mematikan</translation>
 <translation id="2874209944580848064">Nota untuk peranti <ph name="PRODUCT_OS_NAME" /> yang menyokong apl Android:</translation>
 <translation id="2877225735001246144">Lumpuhkan carian CNAME apabila berunding pengesahan Kerberos</translation>
@@ -646,6 +677,18 @@
           Nilai dasar ini harus ditetapkan dalam milisaat. Nilai diapit supaya kurang daripada atau sama dengan kelewatan pemadaman skrin (jika ditetapkan) dan kelewatan melahu.</translation>
 <translation id="2987155890997901449">Dayakan ARC</translation>
 <translation id="2987227569419001736">Kawal penggunaan API Bluetooth Web</translation>
+<translation id="2998886474614739865">
+      NOTA: Dasar ini masih dalam percubaan dan mungkin menjejaskan fungsian!
+      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasukkan sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
+      Jika dasar didayakan, setiap tempat asal yang dinamakan dalam
+      senarai yang dipisahkan koma akan dijalankan dalam prosesnya sendiri.
+      Tindakan ini turut mengasingkan tempat asal yang dinamakan mengikut
+      subdomain, mis. menyatakan https://example.com/ turut menyebabkan
+      https://foo.example.com/ diasingkan sebagai sebahagian daripada tapak
+      https://example.com/.
+      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan setiap Tapak akan dikuatkuasakan.
+      Jika dasar ini tidak dikonfigurasi, tetapan pengasingan tapak lalai platform akan digunakan untuk skrin log masuk.
+      </translation>
 <translation id="3016255526521614822">Apl pencatatan nota senarai putih dibenarkan pada skrin kunci <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Bilangan pengunduran pencapaian yang dibenarkan</translation>
 <translation id="3030000825273123558">Dayakan laporan metrik</translation>
@@ -755,6 +798,18 @@
 
           Jika dasar ini ditetapkan kepada rentetan tidak kosong, rentetan itu akan digunakan sebagai nama bagi destinasi <ph name="PRODUCT_NAME" />. Jika tidak, nama peranti akan dijadikan nama destinasi. Jika dasar ini tidak ditetapkan, nama peranti akan dijadikan nama destinasi dan pemilik peranti (atau pengguna daripada domain yang mengurus peranti tersebut) akan dibenarkan untuk menukar nama itu. Nama dihadkan kepada 24 aksara.</translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
+<translation id="3386001018488754001">
+      NOTA: Dasar ini masih dalam percubaan dan mungkin menjejaskan fungsian!
+      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="SITE_PER_PROCESS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasukkan sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
+      Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk
+      memanfaatkan kedua-dua keadaan, pengasingan dan kesan yang
+      terhad untuk pengguna, dengan menggunakan IsolateOrigins dengan
+      senarai tapak yang hendak diasingkan. Tetapan ini, SitePerProcess,
+      mengasingkan semua tapak.
+      Jika dasar ini didayakan, setiap tapak akan menjalankan proses masing-masing.
+      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan setiap Tapak akan dikuatkuasakan.
+      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
+      </translation>
 <translation id="3395348522300156660">Menentukan pencetak yang boleh digunakan oleh pengguna.
 
       Dasar ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -793,6 +848,10 @@
           Jika dasar ini ditetapkan kepada Palsu atau dibiarkan tanpa ditetapkan, lengah pengurusan kuasa dan had tempoh sesi akan mula dijalankan serta merta pada permulaan sesi.</translation>
 <translation id="3478024346823118645">Hapuskan data pengguna semasa log keluar</translation>
 <translation id="348495353354674884">Dayakan papan kekunci maya</translation>
+<translation id="3487623755010328395">
+        Jika dasar ini ditetapkan, <ph name="PRODUCT_NAME" /> akan cuba mendaftar sendiri dan menerapkan dasar awan yang berkaitan untuk semua profil.
+
+        Nilai dasar ini ialah token Pendaftaran yang boleh diambil daripada konsol Google Admin.</translation>
 <translation id="3496296378755072552">Pengurus kata laluan</translation>
 <translation id="350443680860256679">Konfigurasi ARC</translation>
 <translation id="3504791027627803580">Menentukan URL enjin carian yang digunakan untuk menyediakan carian imej. Permintaan carian akan dihantar menggunakan kaedah GET. Sebaliknya, jika dasar DefaultSearchProviderImageURLPostParams ditetapkan, maka permintaan carian imej akan menggunakan kaedah POST.
@@ -1101,13 +1160,13 @@
       Membiarkan tetapan tanpa ditetapkan akan membolehkan pengguna memilih sama ada untuk memaparkan butang laman utama atau tidak.</translation>
 <translation id="4485425108474077672">Konfigurasi URL halaman Tab Baharu</translation>
 <translation id="4492287494009043413">Lumpuhkan pengambilan tangkapan skrin</translation>
-<translation id="4497968613298501984">Konfigurasi senarai URL log masuk perusahaan (skim HTTP dan HTTPS sahaja). Cap jari kata laluan akan dirakam pada URL ini dan digunakan untuk pengesanan pengunaan semula kata laluan.
+<translation id="4497968613298501984">Konfigurasi senarai URL log masuk perusahaan (skim HTTP dan HTTPS sahaja). Cap jari kata laluan akan dirakam pada URL ini dan digunakan untuk pengesanan penggunaan semula kata laluan.
       Tetapan ini hendaklah digunakan oleh pengguna GSuite yang menggunakan sistem SSO/SAML sahaja.
       Untuk membolehkan <ph name="PRODUCT_NAME" /> merakam cap jari kata laluan dengan betul, sila pastikan halaman log masuk anda mengikut garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan merakam cap jari kata laluan pada URL ini bagi tujuan pengesanan penggunaan semula kata laluan.
       Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan hanya akan merakam cap jari kata laluan pada https://accounts.google.com.
-      Dasar ini tidak tersedia pada kejadian Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
+      Dasar ini tidak tersedia pada tika Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Mengkonfigurasikan saiz cache yang <ph name="PRODUCT_NAME" /> akan gunakan untuk menyimpan fail media cache pada cakera.
 
       Jika anda menetapkan dasar ini, <ph name="PRODUCT_NAME" /> akan menggunakan saiz cache yang diberikan tidak kira sama ada pengguna telah menyatakan bendera '--saiz-cache-cakera'' atau tidak. Nilai yang dinyatakan dalam dasar ini bukan sempadan keras tetapi lebih kepada cadangan kepada sistem cache, sebarang nilai di bawah beberapa megabait adalah terlalu kecil dan akan dibulatkan kepada jumlah minimum yang munasabah.
@@ -1226,13 +1285,13 @@
 
       Jika dasar ini dibiarkan tanpa ditetapkan atau kosong, maka mana-mana pengguna boleh log masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Benarkan mod skrin penuh</translation>
-<translation id="4868249328547841081">Konfigurasi penukaran kata laluan URL (skim HTTP dan HTTPS sahaja). Perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka jika mereka telah mengalami pancingan data.
+<translation id="4868249328547841081">Konfigurasi URL penukaran kata laluan (skim HTTP dan HTTPS sahaja). Perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka jika mereka telah mengalami pancingan data.
       Tetapan ini hendaklah digunakan oleh pengguna GSuite yang menggunakan sistem SSO/SAML sahaja.
       Untuk membolehkan <ph name="PRODUCT_NAME" /> merakam cap jari kata laluan baharu dengan betul pada halaman penukaran kata laluan ini, sila pastikan halaman penukaran kata laluan anda mengikut garis panduan di https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Jika tetapan ini didayakan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke URL ini untuk menukar kata laluan mereka jika mereka telah mengalami pancingan data.
-      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke https://myaccounts.google.com to change their password.
-      Dasar ini tidak tersedia pada kejadian Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
+      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perkhidmatan perlindungan kata laluan akan menghantar pengguna ke https://myaccounts.google.com untuk menukar kata laluan mereka.
+      Dasar ini tidak tersedia pada tika Windows yang tidak menyertai domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Menentukan sama ada kunci bangkit skrin dibenarkan. Kunci bangkit skrin boleh diminta oleh sambungan melalui API sambungan pengurusan kuasa.
 
           Jika dasar ini ditetapkan kepada benar atau dibiarkan tanpa ditetapkan, kunci bangkit skrin akan digunakan untuk pengurusan kuasa.
@@ -1383,6 +1442,18 @@
 
       Jika dasar ini tidak ditetapkan, atau ditetapkan pada rentetan kosong atau julat port yang tidak sah, WebRTC dibenarkan untuk menggunakan mana-mana port UDP setempat yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan senarai pemalam yang boleh didayakan atau dilumpuhkan pengguna</translation>
+<translation id="5301787427319106606">
+      NOTA: Dasar ini masih dalam percubaan dan mungkin menjejaskan fungsian!
+      Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk
+      memanfaatkan kedua-dua keadaan, pengasingan dan kesan yang
+      terhad untuk pengguna, dengan menggunakan IsolateOrigins dengan
+      senarai tapak yang hendak diasingkan. Tetapan ini, SitePerProcess,
+      mengasingkan semua tapak.
+      Jika dasar ini didayakan, setiap tapak akan menjalankan proses masing-masing.
+      Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan setiap Tapak akan dikuatkuasakan.
+      Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
+      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan untuk turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> pada nilai yang sama. Jika nilai yang dinyatakan oleh kedua-dua dasar tidak sepadan, kelewatan mungkin berlaku apabila memasukkan sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
+      </translation>
 <translation id="5302612588919538756">Dasar ini ditamatkan, sebaliknya pertimbangkan untuk menggunakan SyncDisabled.
 
       Membenarkan pengguna log masuk ke <ph name="PRODUCT_NAME" />.
@@ -1981,6 +2052,14 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="706669471845501145">Benarkan tapak untuk memaparkan pemberitahuan desktop</translation>
 <translation id="7072208053150563108">Kadar penukaran kata laluan mesin</translation>
 <translation id="7072406291414141328">Mendayakan lebar jalur pendikitan rangkaian</translation>
+<translation id="7074513465313721551">Konfigurasikan senarai domain yang akan dipercayai oleh Safe Browsing. Ini bermakna:
+      Safe Browsing tidak akan menyemak sumber berbahaya (mis. pancingan data, perisian hasad atau perisian tidak dikehendaki) jika URL sumber tersebut sepadan dengan domain ini.
+      Perkhidmatan perlindungan muat turun Safe Browsing tidak akan menyemak muat turun yang dihoskan pada domain ini.
+      Perkhidmatan perlindungan kata laluan Safe Browsing tidak akan meyemak pemasukan semula kata laluan jika URL halaman tersebut sepadan dengan domain ini.
+
+      Jika tetapan ini didayakan, maka Safe Browsing akan memparcayai domain ini.
+      Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perlindungan Safe Browsing lalai akan digunakan pada semua sumber.
+      Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Sekat pop muncul pada tapak ini</translation>
 <translation id="7106631983877564505">Dayakan kunci apabila peranti <ph name="PRODUCT_OS_NAME" /> melahu atau digantung.
 

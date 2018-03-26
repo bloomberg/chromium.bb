@@ -3,6 +3,7 @@
 <translationbundle lang="ro">
 <translation id="104962181688258143">Deschide aplicația Fișiere</translation>
 <translation id="1126871238933253947">Comută la limba tastaturii pe care o foloseai anterior.</translation>
+<translation id="1134347825771908369">Dezactivează sunetul</translation>
 <translation id="1195667586424773550">Trage linkul în bara de adrese a filei</translation>
 <translation id="1204450209689312104">Deschide o fereastră nouă în modul incognito</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Salvează toate paginile deschise în fereastra curentă ca marcaje într-un dosar nou</translation>
 <translation id="355103131818127604">Deschide linkul într-o filă nouă din fundal</translation>
 <translation id="3649256019230929621">Minimizați fereastra</translation>
+<translation id="3655154169297074232">File și ferestre</translation>
 <translation id="3668361878347172356">Repetă ultima acțiune</translation>
 <translation id="3720939646656082033">Deschide linkul într-o filă nouă și comută la aceasta</translation>
 <translation id="3725795051337497754">Închide fila curentă</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Salvează linkul ca marcaj</translation>
 <translation id="4141203561740478845">Evidențiază rândul cu bara de adrese</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> sau <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Modul de prezentare generală</translation>
+<translation id="4472417192667361414">Setări de sistem și pentru afișaj</translation>
 <translation id="4556221320735744018">Accesează Ajutorul pentru comenzile rapide de la tastatură</translation>
 <translation id="4628718545549558538">Deschide zona de stare (unde apare imaginea contului)</translation>
 <translation id="4642092649622328492">Realizează o captură de ecran parțială</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Navighează la începutul documentului</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> sau <ph name="E" /></translation>
 <translation id="8234414138295101081">Rotește ecranul la 90 de grade</translation>
+<translation id="826184564253127735">Vizualizatorul de comenzi rapide de la tastatură</translation>
 <translation id="836869401750819675">Deschide pagina Descărcări</translation>
 <translation id="8388247778047144397">Trage linkul într-o zonă liberă a barei de file</translation>
 <translation id="8389638407792712197">Deschide o fereastră nouă</translation>
@@ -144,7 +149,17 @@
 <translation id="8644639153978066712">Afișează fișiere ascunse din aplicația Fișiere</translation>
 <translation id="8717459106217102612">Selectează cuvântul anterior sau litera anterioară</translation>
 <translation id="8727232706774971183">Vezi notificările</translation>
+<translation id="8855885154700222542">Tasta pentru ecran complet</translation>
 <translation id="88986195241502842">O pagină mai jos</translation>
 <translation id="8903921497873541725">Mărește</translation>
+<translation id="8924883688469390268">Comută la utilizatorul anterior</translation>
+<translation id="8977648847395357314">Selectează conținutul din bara de adrese</translation>
+<translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 până la 8</translation>
+<translation id="9041599225465145264">Inserează conținutul din clipboard</translation>
+<translation id="9052808072970550123">Comută la următorul utilizator</translation>
+<translation id="9106898733795143799">Pagina și browserul web</translation>
 <translation id="9179672198516322668">Comenzi rapide populare</translation>
+<translation id="93603345341560814">Apasă pe tasta <ph name="SHIFT" /> și dă clic pe un link</translation>
+<translation id="945383118875625837">Trage linkul în bara de marcaje</translation>
+<translation id="98120814841227350">Accesează sfârșitul documentului</translation>
 </translationbundle>

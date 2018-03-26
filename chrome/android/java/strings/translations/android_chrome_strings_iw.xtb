@@ -87,6 +87,7 @@
 <translation id="1709438864123551175">‏חוסך הנתונים (Data Saver)</translation>
 <translation id="1718835860248848330">מהשעה האחרונה</translation>
 <translation id="1729516292547892356">‏עליך לעדכן את Google VR Services כדי שתוכל להציג תוכן של מציאות מדומה</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> - עודכן <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">סנכרון הסימניות שלך</translation>
 <translation id="17513872634828108">כרטיסיות פתוחות</translation>
 <translation id="1756600373018374892">לחץ על לחצן זה כדי לקבל גישה מהירה לכרטיסיות שלך.</translation>
@@ -109,7 +110,6 @@
 <translation id="1946005195648379376">‏קבע כיצד Google משתמשת בהיסטוריית הגלישה שלך כדי להתאים אישית את החיפוש ושירותים אחרים של Google.</translation>
 <translation id="1952172573699511566">אתרים יציגו טקסט בשפה המועדפת שלך, כשזה אפשרי.</translation>
 <translation id="1966710179511230534">עדכן את פרטי הכניסה שלך.</translation>
-<translation id="196723829409668860">אנשים הציגו גם את המאמרים הבאים</translation>
 <translation id="1974060860693918893">מתקדם</translation>
 <translation id="1984937141057606926">מותר, מלבד צד שלישי</translation>
 <translation id="1989112275319619282">דפדף</translation>
@@ -229,7 +229,6 @@
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
 <translation id="311456632243022227">‏קישורים מרובים נפתחו ב-Chrome</translation>
 <translation id="3115898365077584848">הצג פרטים</translation>
-<translation id="3135915540460564231">איפה ההורדות, הסימניות וההיסטוריה?</translation>
 <translation id="3137521801621304719">צא ממצב גלישה בסתר</translation>
 <translation id="3148434565183091099">‏כדי שהסימניות שלך יופיעו בכל המכשירים, היכנס ל-Chrome.</translation>
 <translation id="3157842584138209013">בעזרת הלחצן 'אפשרויות נוספות' אפשר לבדוק את החיסכון בצריכת נתונים</translation>
@@ -786,6 +785,7 @@
 <translation id="8200772114523450471">חדש</translation>
 <translation id="8209050860603202033">פתח את התמונה</translation>
 <translation id="8220488350232498290">‏‎<ph name="GIGABYTES" /> GB להורדות</translation>
+<translation id="8249310407154411074">העברה לראש הרשימה</translation>
 <translation id="8250920743982581267">מסמכים</translation>
 <translation id="8260126382462817229">נסה להיכנס שוב</translation>
 <translation id="8261506727792406068">מחיקה</translation>

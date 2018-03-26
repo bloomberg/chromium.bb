@@ -43,7 +43,7 @@
 <translation id="2063848847527508675">ಅಪ್‌ಡೇಟ್ ಅನ್ವಯಿಸಲು Chrome OS ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸಬೇಕಾಗುತ್ತದೆ.</translation>
 <translation id="2077129598763517140">ಲಭ್ಯವಿರುವಾಗ ಹಾರ್ಡ್‌ವೇರ್ ಆಕ್ಸಲರೇಶನ್ ಬಳಸು</translation>
 <translation id="2084710999043359739">Chrome ಗೆ ಸೇರಿಸಿ</translation>
-<translation id="2094919256425865063">ಏನಾಗಲೀ Chrome ಅನ್ನು ತ್ಯಜಿಸುವುದೇ?</translation>
+<translation id="2094919256425865063">ಹೇಗಿದ್ದರೂ Chrome ಅನ್ನು ಮುಚ್ಚುವುದೇ?</translation>
 <translation id="2120620239521071941">ಈ ಸಾಧನದಿಂದ <ph name="ITEMS_COUNT" /> ಐಟಂಗಳನ್ನು ಇದು ಅಳಿಸುತ್ತದೆ. ನಂತರ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಮರುಪಡೆಯಲು, <ph name="USER_EMAIL" /> ನಂತೆ Chrome ಗೆ ಸೈನ್‌‌ ಇನ್ ಮಾಡಿ.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />ಪ್ರಸ್ತುತ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="END_LINK" /> ವರದಿ ಮಾಡುವುದರ ಮೂಲಕ Chrome ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ</translation>
 <translation id="216054706567564023">ನಿಮ್ಮ ಫೋನ್‌ನಲ್ಲಿ Chrome ಅನ್ನು ಸ್ಥಾಪಿಸಿ. ನಿಮ್ಮ ಖಾತೆ ಮರುಪ್ರಾಪ್ತಿ ಫೋನ್ ಸಂಖ್ಯೆ‌ಗೆ ನಾವು ಎಸ್ಎಂಎಸ್ ಕಳುಹಿಸುತ್ತೇವೆ.</translation>
@@ -61,6 +61,7 @@
 <translation id="2397416548179033562">Chrome ಮೆನು ತೋರಿಸು</translation>
 <translation id="2429317896000329049">ನಿಮ್ಮ ಡೊಮೇನ್‌ನಲ್ಲಿ ಸಿಂಕ್‌ ಮಾಡುವ ಸೌಲಭ್ಯವಿಲ್ಲದ ಕಾರಣ Google Chrome ಗೆ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ.</translation>
 <translation id="2446511512801740068">ದೀರ್ಘ ಸಮಯದ ಕಾಲ Chrome ಅನ್ನು ಮರುಪ್ರಾರಂಭಿಸದೇ ಇರುವ ಕಾರಣದಿಂದ ಅದರ ಅವಧಿ ಮುಗಿದಿದೆ. ಒಂದು ಅಪ್‌ಡೇಟ್ ಲಭ್ಯವಿದ್ದು ನೀವು ಮರುಪ್ರಾರಂಭಿಸಿದ ತಕ್ಷಣವೇ ಅದನ್ನು ಅನ್ವಯಿಸಲಾಗುತ್ತದೆ.</translation>
+<translation id="2467438592969358367">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು ಬಯಸುತ್ತದೆ. ಇದನ್ನು ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="2485422356828889247">ಅಸ್ಥಾಪಿಸು</translation>
 <translation id="2534507159460261402">Google Pay (Chrome ಗೆ ನಕಲಿಸಲಾಗಿದೆ)</translation>
 <translation id="2580411288591421699">ಪ್ರಸ್ತುತ ಚಾಲನೆಯಲ್ಲಿರುವ ಅದೇ Google Chrome ಆವೃತ್ತಿಯನ್ನು ಸ್ಥಾಪಿಸಲಾಗುವುದಿಲ್ಲ. ದಯವಿಟ್ಟು Google Chrome ಮುಚ್ಚಿ ಹಾಗೂ ಮತ್ತೆ ಪ್ರಯತ್ನಿಸಿ.</translation>
@@ -131,6 +132,7 @@
 <translation id="4480040274068703980">ಸೈನ್ ಇನ್ ಮಾಡುವಲ್ಲಿ ದೋಷವಿರುವ ಕಾರಣ ನಿಮ್ಮ ಡೇಟಾವನ್ನು ಸಿಂಕ್ ಮಾಡಲು Chrome OS ಗೆ ಸಾಧ್ಯವಿಲ್ಲ.</translation>
 <translation id="4561051373932531560">Google Chrome ನೀವು ವೆಬ್‌ನಲ್ಲಿ ಫೋನ್ ಸಂಖ್ಯೆಯನ್ನು ಕ್ಲಿಕ್ ಮಾಡಲು ಅವಕಾಶ ಮಾಡುತ್ತದೆ ಮತ್ತು Skype ನೊಂದಿಗೆ ಕರೆ ಮಾಡುತ್ತದೆ!</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> ನಂತೆ ಸೈನ್ ಇನ್ ಮಾಡಿರುವಿರಿ. ನೀವು ಇದೀಗ ನಿಮ್ಮ ಎಲ್ಲಾ ಸೈನ್ ಇನ್ ಮಾಡಿರುವ ಸಾಧನಗಳಲ್ಲಿ ನಿಮ್ಮ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳು, ಇತಿಹಾಸ ಮತ್ತು ಇತರ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಬಹುದು.</translation>
+<translation id="4571503333518166079">Chrome ಅಧಿಸೂಚನೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳಿಗೆ ಹೋಗಿ</translation>
 <translation id="4600710005438004015">Chrome ಗೆ ಇತ್ತೀಚಿನ ಆವೃತ್ತಿಗೆ ಅಪ್‌ಡೇಟ್ ಮಾಡಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ, ಆದ್ದರಿಂದಾಗಿ ನೀವು ಹೊಸ ವೈಶಿಷ್ಟ್ಯಗಳು ಮತ್ತು ಭದ್ರತೆ ಸರಿಪಡಿಸುವಿಕೆಗಳನ್ನು ಕಳೆದುಕೊಳ್ಳುತ್ತಿರಬಹುದು.</translation>
 <translation id="4631713731678262610">Chrome ಮೆನುವಿನಲ್ಲಿ ಮರೆಮಾಡು</translation>
 <translation id="4633000520311261472">Chrome ಸುರಕ್ಷಿತವಾಗಿರಿಸುವಂತೆ ಮಾಡಲು, <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> ನಲ್ಲಿ ಪಟ್ಟಿ ಮಾಡಲಾದ ಕೆಲವು ವಿಸ್ತರಣೆಗಳನ್ನು ನಾವು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದೇವೆ ಮತ್ತು ಅವುಗಳನ್ನು ನಿಮ್ಮ ಅರಿವಿಲ್ಲದೆ ಸೇರಿಸಿರಬಹುದು.</translation>
@@ -166,6 +168,7 @@
 <translation id="556024056938947818">Google Chrome ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ತೋರಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> ಅಪಾಯಕಾರಿಯಾಗಿರಬಹುದು, ಹಾಗಾಗಿ Chrome ಅದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
+<translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome 1 ಸೆಕೆಂಡ್‌ನಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}one{Google Chrome # ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}other{Google Chrome # ಸೆಕೆಂಡುಗಳಲ್ಲಿ ಮರುಪ್ರಾರಂಭವಾಗುತ್ತದೆ}}</translation>
 <translation id="573759479754913123">Chrome OS ಕುರಿತು</translation>
 <translation id="5774845247549698882">ಈ ಭಾಷೆಯಲ್ಲಿ Chrome OS ಪ್ರದರ್ಶನಗೊಂಡಿದೆ</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>
@@ -194,7 +197,8 @@
 <translation id="6600954340915313787">Chrome ಗೆ ನಕಲಿಸಲಾಗಿದೆ</translation>
 <translation id="6634887557811630702">Google Chrome ಅನ್ನು ನವೀಕರಿಸಿದೆ</translation>
 <translation id="6676384891291319759">ಇಂಟರ್ನೆಟ್ ಅನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
-<translation id="677276454032249905">ಏನೇ ಆಗಲಿ Chrome ನಿಂದ ನಿರ್ಗಮಿಸುವುದೇ?</translation>
+<translation id="6679975945624592337">Google Chrome ಹಿನ್ನೆಲೆಯಲ್ಲಿ ರನ್ ಆಗಲು ಅನುಮತಿಸಿ</translation>
+<translation id="677276454032249905">ಹೇಗಿದ್ದರೂ Chrome ನಿಂದ ನಿರ್ಗಮಿಸುವುದೇ?</translation>
 <translation id="683440813066116847">mDNS ಟ್ರಾಫಿಕ್‌ಗೆ ಅನುಮತಿಸುವ ನಿಟ್ಟಿನಲ್ಲಿ Google Chrome ಕ್ಯಾನರಿಗೆ ಒಳಬರುವ ನಿಯಮ.</translation>
 <translation id="686561893457936865">ಎಲ್ಲೆಡೆ Chrome ಅನ್ನು ಕೊಂಡೊಯ್ಯಿರಿ</translation>
 <translation id="6885412569789873916">Chrome ಬೀಟಾ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು</translation>
@@ -247,6 +251,7 @@
 <translation id="8286862437124483331">Google Chrome ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪ್ರದರ್ಶಿಸಲು ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ. ಇದಕ್ಕೆ ಅನುಮತಿಸಲು ನಿಮ್ಮ Windows ಪಾಸ್‌ವರ್ಡ್‌ ಟೈಪ್ ಮಾಡಿ.</translation>
 <translation id="8290100596633877290">ಓಹ್! Google Chrome ಕ್ರ‍್ಯಾಶ್‌ ಆಗಿದೆ.ಇದೀಗ ಮರುಪ್ರಾರಂಭಿಸುವುದೆ?</translation>
 <translation id="8342675569599923794">ಈ ಫೈಲ್ ಅಪಾಯಕಾರಿಯಾಗಿದೆ, ಹೀಗಾಗಿ Chrome ಇದನ್ನು ನಿರ್ಬಂಧಿಸಿದೆ.</translation>
+<translation id="840084489713044809">Google Chrome ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ರಫ್ತು ಮಾಡಲು ಬಯಸುತ್ತದೆ.</translation>
 <translation id="8406086379114794905">Chrome ಉತ್ತಮಗೊಳಿಸುವಲ್ಲಿ ಸಹಾಯ ಮಾಡಿ.</translation>
 <translation id="8439301513305169426">Chrome ಈ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು <ph name="SAVED_PASSWORD_LINK" /> ಬಳಸಿ ಉಳಿಸುತ್ತದೆ. ನೀವು ಅದನ್ನು ನೆನಪಿಟ್ಟುಕೊಳ್ಳಬೇಕಿಲ್ಲ.</translation>
 <translation id="8455999171311319804">ಐಚ್ಛಿಕ: Google ಗೆ ಡಯಾಗ್ನಸ್ಟಿಕ್ ಮತ್ತು ಡೇಟಾ ಬಳಕೆಯನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸುವ ಮೂಲಕ Chrome OS ಅನ್ನು ಉತ್ತಮಗೊಳಿಸಲು ಸಹಾಯ ಮಾಡಿ.</translation>

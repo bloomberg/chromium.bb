@@ -802,6 +802,7 @@
 <translation id="7275334191706090484">നിയന്ത്രിത ബുക്ക്‌മാർക്കുകൾ</translation>
 <translation id="7298195798382681320">ശുപാർശചെയ്യുന്നത്</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" />-ന് ക്യാപ്‌ചർ ചെയ്‌ത ക്രാഷ് റിപ്പോർട്ടുകൾ (ഉപയോക്താവ് അഭ്യർത്ഥിച്ച അപ്‌ലോഡ്, ഇതുവരെ അപ്‌ലോഡുചെയ്‌തിട്ടില്ല)</translation>
+<translation id="7320336641823683070">കണക്ഷൻ സഹായം</translation>
 <translation id="7334320624316649418">&amp;പുനഃക്രമീകരിക്കുന്നത് വീണ്ടും ചെയ്യുക</translation>
 <translation id="733923710415886693">സർട്ടിഫിക്കറ്റ് സുതാര്യതയിലൂടെ സെർവറുടെ സർട്ടിഫിക്കറ്റ് വെളിപ്പെടുത്തിയിട്ടില്ല.</translation>
 <translation id="7353601530677266744">കമാന്‍റ് ലൈന്‍‌</translation>
@@ -886,6 +887,7 @@
 <translation id="782886543891417279">നിങ്ങൾ ഉപയോഗിക്കുന്ന Wi-Fi (<ph name="WIFI_NAME" />) അതിന്റെ ലോഗിൻ പേജ് സന്ദർശിക്കാൻ ആവശ്യപ്പെടാം..</translation>
 <translation id="785549533363645510">എന്നിരുന്നാലും നിങ്ങൾ അദൃശ്യനല്ല. ആൾമാറാട്ടത്തിലേയ്‌ക്ക് പോകുന്നത്, നിങ്ങളുടെ തൊഴിൽ ദാതാവിൽ നിന്നോ ഇന്റർനെറ്റ് സേവന ദാതാവിൽ നിന്നോ നിങ്ങൾ സന്ദർശിക്കുന്ന വെബ്‌സൈറ്റുകളിൽ നിന്നോ ഉള്ള ബ്രൗസിംഗിനെ മറയ്‌ക്കില്ല.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="CURRENCY_CODE" /> <ph name="FORMATTED_TOTAL_AMOUNT" /></translation>
+<translation id="7862185352068345852">സൈറ്റ് വിടണോ?</translation>
 <translation id="7878176543348854470">ഡെബിറ്റ് കാർഡുകളും പ്രീപെയ്ഡ് കാർഡുകളും സ്വീകരിക്കുന്നു.</translation>
 <translation id="7878562273885520351">നിങ്ങളുടെ പാസ്‍വേഡ് അപഹരിക്കപ്പെട്ടേക്കാം</translation>
 <translation id="7887683347370398519">നിങ്ങളുടെ CVC പരിശോധിച്ച് വീണ്ടും ശ്രമിക്കുക</translation>
@@ -908,6 +910,7 @@
 <translation id="8041940743680923270">ഗ്ലോബൽ ഡിഫോൾട്ട് ഉപയോഗിക്കുക (ചോദിക്കുക)</translation>
 <translation id="8042918947222776840">പിക്കപ്പ് രീതി തിരഞ്ഞെടുക്കുക</translation>
 <translation id="8057711352706143257">"<ph name="SOFTWARE_NAME" />" ശരിയായി കോൺഫിഗർ ചെയ്‌‌തിട്ടില്ല. സാധാരണഗതിയിൽ "<ph name="SOFTWARE_NAME" />" അൺഇൻസ്‌റ്റാൾ ചെയ്യുന്നതിലൂടെ ഈ പ്രശ്‌നം പരിഹരിക്കാം. <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8079031581361219619">സൈറ്റ് റീലോഡ് ചെയ്യണോ?</translation>
 <translation id="8088680233425245692">ലേഖനം കാണുന്നത് പരാജയപ്പെട്ടു.</translation>
 <translation id="8091372947890762290">സെർവറിൽ സജീവമാക്കൽ തീർപ്പാക്കിയിട്ടില്ല</translation>
 <translation id="8094917007353911263">നിങ്ങൾക്ക് ഉപയോഗിക്കുന്ന നെറ്റ്‌വർക്ക് <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> സന്ദർശിക്കാൻ നിങ്ങളോട് ആവശ്യപ്പെടാം.</translation>
@@ -923,6 +926,7 @@
 <translation id="8201077131113104583">"<ph name="EXTENSION_ID" />" എന്ന ഐഡിയുള്ള വിപുലീകരണത്തിന്റെ അപ്‌ഡേറ്റ് URL അസാധുവാണ്.</translation>
 <translation id="8202097416529803614">ഓർഡർ സംഗ്രഹം</translation>
 <translation id="8205463626947051446">അനാവശ്യമായ പരസ്യങ്ങൾ സൈറ്റ് കാണിക്കാൻ സാധ്യതയുണ്ട്</translation>
+<translation id="8211406090763984747">കണക്ഷൻ സുരക്ഷിതമാണ്</translation>
 <translation id="8218327578424803826">നൽകിയിരിക്കുന്ന ലൊക്കേഷൻ:</translation>
 <translation id="8225771182978767009">ഈ കമ്പ്യൂട്ടർ സജ്ജമാക്കിയ വ്യക്തി, ഈ സൈറ്റ് ബ്ലോക്കുചെയ്യാൻ തീരുമാനിച്ചിരുന്നു.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" />, <ph name="TYPE_2" /></translation>

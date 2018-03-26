@@ -3,6 +3,7 @@
 <translationbundle lang="hi">
 <translation id="104962181688258143">फ़ाइल ऐप्लिकेशन खोलें</translation>
 <translation id="1126871238933253947">उस पिछली कीबोर्ड भाषा पर स्विच करें जिसे आप इस्तेमाल कर रहे थे.</translation>
+<translation id="1134347825771908369">आवाज़ म्यूट करें</translation>
 <translation id="1195667586424773550">लिंक को टैब के पता बार में खींचें और छोड़ें</translation>
 <translation id="1204450209689312104">गुप्त मोड में नई विंडो खोलें</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">अपनी अभी वाली विंडो में खुले सभी पेज नए फ़ोल्डर में बुकमार्क के रूप में सेव करें</translation>
 <translation id="355103131818127604">लिंक को बैकग्राउंड में नए टैब में खोलें</translation>
 <translation id="3649256019230929621">विंडो को छोटा करें</translation>
+<translation id="3655154169297074232">टैब और विंडो</translation>
 <translation id="3668361878347172356">अपनी पिछली कार्रवाई फिर से करें</translation>
 <translation id="3720939646656082033">लिंक को नए टैब में खोलें और नए टैब पर स्‍विच करें</translation>
 <translation id="3725795051337497754">अभी वाला टैब बंद करें</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">लिंक को बुकमार्क के रूप में सेव करें</translation>
 <translation id="4141203561740478845">पता बार वाली पंक्‍ति हाइलाइट करें</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> या <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">खास जानकारी मोड</translation>
+<translation id="4472417192667361414">सिस्टम और डिसप्ले सेटिंग</translation>
 <translation id="4556221320735744018">कीबोर्ड शॉर्टकट सहायक देखें</translation>
 <translation id="4628718545549558538">हाल बताने वाली जगह खोलें (जहां आपके खाते की तस्वीर दिखाई देती है)</translation>
 <translation id="4642092649622328492">आंशिक स्क्रीनशॉट लें</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">दस्‍तावेज़ की शुरुआत में जाएं</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> या <ph name="E" /></translation>
 <translation id="8234414138295101081">स्‍क्रीन को 90 डिग्री पर घुमाएं</translation>
+<translation id="826184564253127735">कीबोर्ड शॉर्टकट व्यूअर</translation>
 <translation id="836869401750819675">डाउनलोड पेज खोलें</translation>
 <translation id="8388247778047144397">लिंक को टैब स्‍ट्रिप पर खाली जगह में खींचें और छोड़ें</translation>
 <translation id="8389638407792712197">नई विंडो खोलें</translation>
@@ -144,7 +149,17 @@
 <translation id="8644639153978066712">फ़ाइल ऐप्लिकेशन में छिपी हुई फ़ाइलें दिखाएं</translation>
 <translation id="8717459106217102612">पिछला शब्द या अक्षर चुनें</translation>
 <translation id="8727232706774971183">अपनी सूचनाएं देखें</translation>
+<translation id="8855885154700222542">फ़ुलस्क्रीन कुंजी</translation>
 <translation id="88986195241502842">Page down</translation>
 <translation id="8903921497873541725">ज़ूम इन करें</translation>
+<translation id="8924883688469390268">पिछले उपयोगकर्ता पर स्विच करें</translation>
+<translation id="8977648847395357314">पता बार में सामग्री चुनें</translation>
+<translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 से 8 तक</translation>
+<translation id="9041599225465145264">क्लिपबोर्ड से सामग्री चिपकाएं</translation>
+<translation id="9052808072970550123">अगले उपयोगकर्ता पर स्विच करें</translation>
+<translation id="9106898733795143799">पेज और वेब ब्राउज़र</translation>
 <translation id="9179672198516322668">लोकप्रिय शॉर्टकट</translation>
+<translation id="93603345341560814"><ph name="SHIFT" /> दबाएं और किसी लिंक पर क्लिक करें</translation>
+<translation id="945383118875625837">लिंक को बुकमार्क बार में खीचें और छोड़ें</translation>
+<translation id="98120814841227350">दस्तावेज़ के आखिर में जाएं</translation>
 </translationbundle>

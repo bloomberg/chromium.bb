@@ -87,6 +87,7 @@
 <translation id="1709438864123551175">Заощадження трафіку</translation>
 <translation id="1718835860248848330">Остання година</translation>
 <translation id="1729516292547892356">Щоб переглядати вміст віртуальної реальності, оновіть Google VR-сервіси</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – оновлено <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Синхронізуйте свої закладки</translation>
 <translation id="17513872634828108">Відкриті вкладки</translation>
 <translation id="1756600373018374892">Торкніться цієї кнопки, щоб отримати швидкий доступ до вкладок.</translation>
@@ -109,7 +110,6 @@
 <translation id="1946005195648379376">Укажіть, як Google має використовувати вашу історію веб-перегляду, щоб персоналізувати Пошук та інші служби Google.</translation>
 <translation id="1952172573699511566">Якщо можливо, текст на веб-сайтах відображатиметься вибраною мовою.</translation>
 <translation id="1966710179511230534">Оновіть свої дані для входу.</translation>
-<translation id="196723829409668860">Користувачі також переглядали</translation>
 <translation id="1974060860693918893">Розширені</translation>
 <translation id="1984937141057606926">Заборонено лише сторонні файли cookie</translation>
 <translation id="1989112275319619282">Переглянути</translation>
@@ -171,7 +171,7 @@
 <translation id="2498359688066513246">Довідка й відгуки</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2503472621226270518">Розгорнути панель навігації</translation>
-<translation id="2512222046227390255">Автозаповнення форм</translation>
+<translation id="2512222046227390255">Автоматично заповняти форми</translation>
 <translation id="2526148617758225454">Заощадження трафіку ввімкнено. Ви можете керувати ним у налаштуваннях.</translation>
 <translation id="2532336938189706096">Веб-версія</translation>
 <translation id="2536728043171574184">Перегляд копії сторінки в режимі офлайн</translation>
@@ -229,7 +229,6 @@
 <translation id="3089395242580810162">Відкрити в анонімній вкладці</translation>
 <translation id="311456632243022227">Кілька посилань відкрито в Chrome</translation>
 <translation id="3115898365077584848">Показати інформацію</translation>
-<translation id="3135915540460564231">Де завантаження, закладки й історія?</translation>
 <translation id="3137521801621304719">Вийти з режиму анонімного перегляду</translation>
 <translation id="3148434565183091099">Щоб мати доступ до закладок на всіх своїх пристроях, увійдіть в обліковий запис Chrome.</translation>
 <translation id="3157842584138209013">Перевірте обсяг збережених даних за допомогою кнопки "Більше опцій"</translation>
@@ -786,6 +785,7 @@
 <translation id="8200772114523450471">Поновити</translation>
 <translation id="8209050860603202033">Відкрити зображення</translation>
 <translation id="8220488350232498290">Завантажено <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="8249310407154411074">На початок</translation>
 <translation id="8250920743982581267">Документи</translation>
 <translation id="8260126382462817229">Спробуйте ввійти ще раз</translation>
 <translation id="8261506727792406068">Видалити</translation>

@@ -58,6 +58,17 @@
 
       Jika kebijakan ini digunakan, semua printer akan tersedia bagi pengguna, kecuali ID yang dicantumkan di kebijakan ini.
       </translation>
+<translation id="1181881366217399113">
+      CATATAN: Kebijakan ini bersifat eksperimental dan dapat mengganggu fungsi!
+      Jika kebijakan ini diaktifkan, tiap asal yang diberi nama dalam daftar yang dipisahkan
+      koma akan menjalankan prosesnya sendiri. Tindakan ini juga akan mengisolasi
+      asal yang diberi nama subdomain; mis. menentukan https://example.com/
+      juga akan menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
+      situs https://example.com/.
+      Jika kebijakan ini dinonaktifkan, logika pengelolaan proses Isolasi per-Situs akan diterapkan.
+      Jika kebijakan ini tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
+      Di <ph name="PRODUCT_OS_NAME" />, sebaiknya juga setel kebijakan perangkat <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> ke nilai yang sama. Jika nilai yang ditentukan oleh kedua kebijakan tersebut tidak cocok, dapat menimbulkan penundaan saat memasukkan sesi pengguna ketika nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
+      </translation>
 <translation id="1198465924256827162">Frekuensi upload status perangkat dikirimkan, dalam milidetik.
 
       Jika kebijakan ini tidak disetel, frekuensi defaultnya adalah 3 jam. Frekuensi minimum
@@ -248,7 +259,15 @@
       Format nilai mengikuti nama zona waktu dalam "IANA Time Zone Database" (Basis Data Zona Waktu IANA) (lihat "https://en.wikipedia.org/wiki/Tz_database"). Secara khusus, sebagian besar zona waktu dapat dirujuk menurut "continent/large_city" (benua/kota besar) atau "ocean/large_city" (samudra/kota besar).
 
       Menyetel kebijakan ini sepenuhnya menonaktifkan penentuan zona waktu otomatis menurut lokasi perangkat. Kebijakan ini juga menggantikan kebijakan SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Token pendaftaran kebijakan cloud di desktop</translation>
 <translation id="1897365952389968758">Izinkan semua situs menjalankan JavaScript</translation>
+<translation id="1906888171268104594">Mengontrol apakah metrik penggunaan dan data diagnostik, termasuk laporan kerusakan, dilaporkan kembali ke Google.
+
+      Jika disetel ke true, <ph name="PRODUCT_OS_NAME" /> akan melaporkan metrik penggunaan dan data diagnostik.
+
+      Jika disetel ke false, pelaporan metrik dan data diagnostik akan dinonaktifkan.
+
+      Jika tidak dikonfigurasi, pelaporan metrik dan data diagnostik akan dinonaktifkan di perangkat yang tidak dikelola dan diaktifkan di perangkat yang dikelola.</translation>
 <translation id="193259052151668190">Daftar putih perangkat USB yang dapat dilepas</translation>
 <translation id="1933378685401357864">Gambar wallpaper</translation>
 <translation id="1956493342242507974">Mengonfigurasi pengelolaan daya di layar masuk pada <ph name="PRODUCT_OS_NAME" />.
@@ -403,6 +422,12 @@
 <translation id="2386362615870139244">Izinkan penguncian layar saat bangun</translation>
 <translation id="2411817661175306360">Peringatan perlindungan sandi nonaktif</translation>
 <translation id="2411919772666155530">Mencekal pemberitahuan di situs ini</translation>
+<translation id="2415979855753196119">Memungkinkan Anda mengontrol pemicu laporan perlindungan sandi pada akun yang berisiko. Laporan perlindungan sandi pada akun yang berisiko artinya memberi tahu Google bahwa akun ini berisiko dibajak.
+
+      Jika kebijakan ini disetel ke 'PasswordProtectionRiskOff', tidak ada pemicu laporan perlindungan sandi pada akun yang berisiko.
+      Jika kebijakan ini disetel ke 'PasswordProtectionRiskOnPasswordReuse', laporan perlindungan sandi pada akun yang berisiko akan dipicu saat pengguna menggunakan kembali sandi Google di situs yang tidak diizinkan.
+      Jika kebijakan ini disetel ke 'PasswordProtectionRiskOnPhishingReuse', laporan perlindungan sandi pada akun yang berisiko akan dipicu saat pengguna menggunakan kembali sandi Google di situs phishing.
+      Jika kebijakan ini dibiarkan tidak disetel, laporan perlindungan sandi pada akun yang berisiko akan dipicu saat pengguna menggunakan kembali sandi Google di situs phishing, namun pengguna dapat mengubah setelan ini.</translation>
 <translation id="2418507228189425036">Menonaktifkan penyimpanan histori browser di <ph name="PRODUCT_NAME" /> dan mencegah pengguna mengubah setelan ini.
 
       Jika setelan ini diaktifkan, histori penjelajahan tidak disimpan. Setelan ini juga menonaktifkan sinkronisasi tab.
@@ -590,6 +615,12 @@
 
       Jika setelan ini diaktifkan, Pratinjau Cetak akan menggunakan printer default sistem OS sebagai pilihan tujuan default.</translation>
 <translation id="2867699958489427143">Rollback dan tetap menggunakan versi target jika versi OS lebih baru dari target. Lakukan powerwash penuh selama prosesnya.</translation>
+<translation id="286802604195763750">Memungkinkan Anda mengontrol pemicu peringatan perlindungan sandi. Perlindungan sandi memberi tahu pengguna saat mereka menggunakan kembali sandi yang dilindungi di situs yang berpotensi mencurigakan.
+
+      Jika kebijakan ini disetel ke 'PasswordProtectionWarningOff', peringatan perlindungan sandi tidak akan ditampilkan.
+      Jika kebijakan ini disetel ke 'PasswordProtectionWarningOnPasswordReuse', peringatan perlindungan sandi akan ditampilkan saat pengguna menggunakan kembali sandi Google di situs yang tidak diizinkan.
+      Jika kebijakan ini disetel ke 'PasswordProtectionWarningOnPhishingReuse', peringatan perlindungan sandi akan ditampilkan saat pengguna menggunakan kembali sandi Google di situs phishing.
+      Jika kebijakan ini dibiarkan tidak disetel, peringatan perlindungan sandi akan dipicu saat pengguna menggunakan kembali sandi Google di situs phishing, namun pengguna dapat mengubah setelan ini.</translation>
 <translation id="2872961005593481000">Matikan</translation>
 <translation id="2874209944580848064">Catatan untuk perangkat <ph name="PRODUCT_OS_NAME" /> yang mendukung aplikasi Android:</translation>
 <translation id="2877225735001246144">Nonaktifkan pencarian CNAME saat menegosiasikan autentikasi Kerberos</translation>
@@ -624,6 +655,17 @@
           Nilai kebijakan harus ditentukan dalam milidetik. Nilai dijepit hingga kurang dari atau setara dengan penundaan mematikan layar (jika disetel) dan penundaan waktu menganggur.</translation>
 <translation id="2987155890997901449">Aktifkan ARC</translation>
 <translation id="2987227569419001736">Mengontrol penggunaan API Bluetooth Web</translation>
+<translation id="2998886474614739865">
+      CATATAN: Kebijakan ini merupakan eksperimental dan mungkin mengganggu fungsi!
+      Kebijakan ini berlaku untuk layar login. Harap lihat juga kebijakan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> yang berlaku untuk sesi pengguna. Sebaiknya setel kedua kebijakan ini dengan nilai yang sama. Jika nilainya tidak sama, dapat menimbulkan penundaan saat memasukkan sesi pengguna ketika nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
+      Jika kebijakan ini diaktifkan, setiap asal yang diberi nama di daftar
+      yang dipisahkan koma akan dijalankan dalam prosesnya masing-masing. Tindakan ini juga akan mengisolasi
+      asal yang diberi nama oleh subdomain; misalnya, menentukan https://example.com/ juga akan
+      menyebabkan https://foo.example.com/ diisolasi sebagai bagian dari
+      situs https://example.com/.
+      Jika kebijakan ini dinonaktifkan, logika manajemen sebelum proses Isolasi Situs akan berlaku.
+      Jika kebijakan ini tidak dikonfigurasi, setelan isolasi situs default platform akan digunakan untuk layar login.
+      </translation>
 <translation id="3016255526521614822">Beri akses aplikasi pencatat yang diizinkan di layar kunci <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Jumlah rollback milestone diizinkan</translation>
 <translation id="3030000825273123558">Aktifkan pelaporan metrik</translation>
@@ -727,6 +769,17 @@
 
           Jika kebijakan ini disetel ke string yang tidak kosong, string tersebut akan digunakan sebagai nama tujuan <ph name="PRODUCT_NAME" />. Jika tidak, nama tujuan akan menjadi nama perangkat. Jika kebijakan ini tidak disetel, nama tujuan akan menjadi nama perangkat, dan pemilik perangkat (atau pengguna dari domain yang mengelola perangkat) akan diizinkan untuk mengubahnya. Karakter nama dibatasi hingga 24 karakter.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
+<translation id="3386001018488754001">
+      Catatan: Kebijakan ini bersifat eksperimental dan mungkin mengganggu fungsi!
+      Kebijakan ini berlaku untuk layar login. Harap lihat juga kebijakan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> yang berlaku untuk sesi pengguna. Sebaiknya setel kedua kebijakan ini dengan nilai yang sama. Jika nilainya tidak sama, dapat menimbulkan penundaan saat memasukkan sesi pengguna ketika nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
+      Sebaiknya lihat setelan kebijakan IsolateOrigins untuk mendapatkan yang terbaik
+      dari keduanya, isolasi dan dampak terbatas bagi pengguna, dengan menggunakan
+      IsolateOrigins yang berisi daftar situs yang ingin diisolasi. Setelan ini,
+      SitePerProcess, mengisolasi semua situs.
+      Jika kebijakan ini diaktifkan, setiap situs akan dijalankan dalam prosesnya masing-masing.
+      Jika ini kebijakan dinonaktifkan, logika manajemen sebelum proses Isolasi Situs akan berlaku.
+      Jika ini kebijakan tidak dikonfigurasi, pengguna akan dapat mengubah setelan ini.
+      </translation>
 <translation id="3395348522300156660">Menentukan printer yang dapat digunakan pengguna.
 
       Kebijakan ini hanya digunakan jika <ph name="PRINTERS_WHITELIST" /> dipilih untuk <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -765,6 +818,10 @@
           Jika kebijakan ini disetel ke False atau dibiarkan tidak disetel, penundaan pengelolaan daya dan batas lama sesi mulai berjalan langsung saat sesi dimulai.</translation>
 <translation id="3478024346823118645">Hapus data pengguna saat keluar</translation>
 <translation id="348495353354674884">Aktifkan keyboard virtual</translation>
+<translation id="3487623755010328395">
+        Jika kebijakan ini disetel, <ph name="PRODUCT_NAME" /> akan mencoba mendaftar dan menerapkan kebijakan cloud yang terkait untuk semua profil.
+
+        Nilai kebijakan ini adalah token Pendaftaran yang dapat diambil dari konsol Google Admin.</translation>
 <translation id="3496296378755072552">Pengelola sandi</translation>
 <translation id="350443680860256679">Mengonfigurasi ARC</translation>
 <translation id="3504791027627803580">Menentukan URL mesin telusur yang digunakan untuk menyediakan penelusuran gambar. Permintaan penelusuran akan dikirim menggunakan metode GET. Jika kebijakan DefaultSearchProviderImageURLPostParams disetel kemudian permintaan penelusuran gambar akan menggunakan metode POST.
@@ -1324,6 +1381,17 @@
 
       Jika kebijakan tidak disetel, atau jika disetel menjadi string kosong maupun rentang port yang tidak valid, WebRTC diizinkan untuk menggunakan port UDP lokal mana pun yang tersedia.</translation>
 <translation id="5290940294294002042">Tentukan daftar plugin yang dapat diaktifkan atau dinonaktifkan pengguna</translation>
+<translation id="5301787427319106606">
+      CATATAN: Kebijakan ini bersifat eksperimental dan mungkin menganggu fungsi!
+      Sebaiknya lihat setelan kebijakan IsolateOrigins untuk mendapatkan
+      yang terbaik dari keduanya, isolasi dan dampak terbatas bagi pengguna, dengan menggunakan
+      IsolateOrigins yang berisi daftar situs yang ingin diisolasi. Setelan ini,
+      SitePerProcess, mengisolasi semua situs.
+      Jika kebijakan diaktifkan, setiap situs akan dijalankan dalam prosesnya masing-masing.
+      Jika kebijakan dinonaktifkan, logika manajemen sebelum proses Isolasi Situs akan berlaku.
+      Jika kebijakan ini tidak dikonfigurasi, pengguna dapat mengubah setelan ini.
+      Di <ph name="PRODUCT_OS_NAME" />, sebaiknya juga setel kebijakan perangkat <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> dengan nilai yang sama. Jika nilai yang ditentukan oleh 2 kebijakan tersebut tidak cocok, mungkin menimbulkan penundaan saat memasukkan sesi pengguna ketika nilai yang ditentukan oleh kebijakan pengguna sedang diterapkan.
+      </translation>
 <translation id="5302612588919538756">Kebijakan ini tidak digunakan lagi, pertimbangkan untuk menggunakan SyncDisabled sebagai gantinya.
 
       Mengizinkan pengguna untuk masuk ke <ph name="PRODUCT_NAME" />.
@@ -1881,6 +1949,14 @@
 <translation id="706669471845501145">Izinkan situs menampilkan pemberitahuan desktop</translation>
 <translation id="7072208053150563108">Tingkat perubahan sandi mesin</translation>
 <translation id="7072406291414141328">Mengaktifkan pembatasan bandwidth jaringan</translation>
+<translation id="7074513465313721551">Mengonfigurasi daftar domain yang akan dipercaya Penelusuran Aman. Hal ini berarti:
+      Penelusuran Aman tidak akan memeriksa resources berbahaya (misalnya, phishing, malware, atau software yang tidak diinginkan) jika URL cocok dengan domain ini.
+      Layanan perlindungan download Penelusuran Aman tidak akan memeriksa download yang dihosting di domain ini.
+      Layanan perlindungan sandi Penelusuran Aman tidak akan memeriksa penggunaan kembali sandi jika URL halaman cocok dengan domain ini.
+
+      Jika setelan ini diaktifkan, Penelusuran Aman akan memercayai domain ini.
+      Jika setelan ini dinonaktifkan atau tidak disetel, perlindungan Penelusuran Aman berlaku untuk semua resource.
+      Kebijakan ini tidak tersedia di instance Windows yang tidak digabungkan dengan domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Cekal pop-up di situs ini</translation>
 <translation id="7106631983877564505">Mengaktifkan kunci jika perangkat <ph name="PRODUCT_OS_NAME" /> menganggur atau ditangguhkan.
 

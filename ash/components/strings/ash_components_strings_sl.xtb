@@ -3,6 +3,7 @@
 <translationbundle lang="sl">
 <translation id="104962181688258143">Odpiranje aplikacije Datoteke</translation>
 <translation id="1126871238933253947">Preklop na prejšnji jezik tipkovnice, ki ste ga uporabljali.</translation>
+<translation id="1134347825771908369">Izklop zvoka</translation>
 <translation id="1195667586424773550">Povlecite povezavo v naslovno vrstico zavihka</translation>
 <translation id="1204450209689312104">Odpiranje novega okna v načinu brez beleženja zgodovine</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Shranjevanje vseh odprtih strani v trenutnem oknu kot zaznamke v novi mapi</translation>
 <translation id="355103131818127604">Odpiranje povezave na novem zavihku v ozadju</translation>
 <translation id="3649256019230929621">Pomanjšanje olna</translation>
+<translation id="3655154169297074232">Zavihki in okna</translation>
 <translation id="3668361878347172356">Uveljavitev zadnjega dejanja</translation>
 <translation id="3720939646656082033">Odpiranje povezave na novem zavihku in preklop nanj</translation>
 <translation id="3725795051337497754">Zapiranje trenutnega zavihka</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Shranjevanje povezave kot zaznamek</translation>
 <translation id="4141203561740478845">Označevanje vrstice z naslovno vrstico</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="G" /> ali <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Pregledni način</translation>
+<translation id="4472417192667361414">Nastavitve sistema in zaslona</translation>
 <translation id="4556221320735744018">Ogled pomočnika za bližnjične tipke</translation>
 <translation id="4628718545549558538">Odpiranje območja stanja, na katerem je prikazana slika za vaš račun</translation>
 <translation id="4642092649622328492">Ustvarjanje delnega posnetka zaslona</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Premik na začetek dokumenta</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="K" /> ali <ph name="E" /></translation>
 <translation id="8234414138295101081">Sukanje zaslona za 90 stopinj</translation>
+<translation id="826184564253127735">Pregledovalnik bližnjičnih tipk</translation>
 <translation id="836869401750819675">Odpiranje strani s prenosi</translation>
 <translation id="8388247778047144397">Povlecite povezavo na prazno območje na traku z zavihki</translation>
 <translation id="8389638407792712197">Odpiranje novega okna</translation>
@@ -144,7 +149,17 @@
 <translation id="8644639153978066712">Prikaz skritih datotek v aplikaciji Datoteke</translation>
 <translation id="8717459106217102612">Izbira prejšnje besede ali črke</translation>
 <translation id="8727232706774971183">Ogled obvestil</translation>
+<translation id="8855885154700222542">Tipka za celozaslonski način</translation>
 <translation id="88986195241502842">Page Down</translation>
 <translation id="8903921497873541725">Povečaj</translation>
+<translation id="8924883688469390268">Preklop na prejšnjega uporabnika</translation>
+<translation id="8977648847395357314">Izbira vsebine v naslovni vrstici</translation>
+<translation id="8990356943438003669"><ph name="ALT" /> <ph name="SEPARATOR" /> od 1 do 8</translation>
+<translation id="9041599225465145264">Lepljenje vsebine iz odložišča</translation>
+<translation id="9052808072970550123">Preklop na naslednjega uporabnika</translation>
+<translation id="9106898733795143799">Stran in brskalnik</translation>
 <translation id="9179672198516322668">Priljubljene bližnjice</translation>
+<translation id="93603345341560814">Pritisnite <ph name="SHIFT" /> in kliknite povezavo</translation>
+<translation id="945383118875625837">Povlecite povezavo v vrstico z zaznamki</translation>
+<translation id="98120814841227350">Premik na konec dokumenta</translation>
 </translationbundle>

@@ -58,6 +58,18 @@
 
       Če se uporablja ta pravilnik, so uporabniku na voljo vsi tiskalniki z izjemo ID-jev, navedenih v tem pravilniku.
       </translation>
+<translation id="1181881366217399113">
+      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
+      Če je pravilnik omogočen, se bo vsak naveden izvor s seznama, ločenega
+      z vejicami, izvajal v svojem procesu. S tem bodo osamljeni tudi izvori, ki jih
+      navedejo poddomene; če na primer navedete https://example.com/, bo kot
+      del spletnega mesta https://example.com/ osamljeno tudi spletno mesto
+      https://foo.example.com/.
+      Če je pravilnik onemogočen, se uveljavi logika
+      upravljanja procesov osamitve posameznih spletnih mest.
+      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
+      Priporočamo, da v sistemu <ph name="PRODUCT_OS_NAME" /> na isto vrednost nastavite tudi pravilnik o napravah <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Če se vrednosti, navedene v teh dveh pravilnikih, ne ujemajo, lahko pri vstopu v uporabniško sejo pride do zakasnitve, medtem ko se uveljavlja vrednost, ki jo določa uporabniški pravilnik.
+      </translation>
 <translation id="1198465924256827162">Kako pogosto se pošljejo nalaganja stanja naprave (v milisekundah).
 
       Če ta pravilnik ni nastavljen, je vrednost privzete pogostosti 3 ure. Najmanjša
@@ -256,7 +268,15 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
       Oblika zapisa vrednosti je v skladu z imeni časovnih pasov v zbirki podatkov o časovnih pasovih IANA (glejte »https://en.wikipedia.org/wiki/Tz_database«). Večino časovnih pasov je mogoče navesti kot »celina/velemesto« ali »ocean/velemesto«.
 
       Če nastavite ta pravilnik, je v celoti onemogočeno samodejno določanje časovnega pasu glede na lokacijo naprave. Preglasi tudi pravilnik SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Včlanitveni žeton pravilnika o oblaku v namiznem računalniku</translation>
 <translation id="1897365952389968758">Dovoli izvajanje JavaScripta vsem mestom</translation>
+<translation id="1906888171268104594">Nadzira, ali se podatki meritev uporabe in diagnostični podatki, vključno s poročili o zrušitvah, pošljejo Googlu.
+
+      Če je pravilnik omogočen, <ph name="PRODUCT_OS_NAME" /> pošlje podatke meritev uporabe in diagnostične podatke.
+
+      Če je onemogočen, je pošiljanje podatkov meritev in diagnostičnih podatkov onemogočeno.
+
+      Če ni nastavljen, je pošiljanje podatkov meritev in diagnostičnih podatkov onemogočeno v neupravljanih napravah in omogočeno v upravljanih.</translation>
 <translation id="193259052151668190">Seznam dovoljenih naprav USB, katerih povezavo je mogoče prekiniti</translation>
 <translation id="1933378685401357864">Slika za ozadje</translation>
 <translation id="1956493342242507974">Nastavitev upravljanja porabe na prijavnem zaslonu v sistemu <ph name="PRODUCT_OS_NAME" />.
@@ -419,6 +439,12 @@ Vrednost prilagoditve mora biti 100 % ali več.</translation>
 <translation id="2386362615870139244">Omogočanje zaklepanja preklopa zaslona iz mirovanja</translation>
 <translation id="2411817661175306360">Opozorilo zaščite z geslom je izklopljeno</translation>
 <translation id="2411919772666155530">Blokiraj obvestila na teh mestih</translation>
+<translation id="2415979855753196119">Omogoča, da nadzirate sprožitev označevanja ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico. Označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico pomeni sporočanje Googlu, da temu računu grozi vdor v račun.
+
+      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOff«, označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico ne bo sproženo.
+      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOnPasswordReuse«, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabnik znova uporabi geslo za Google na katerem koli spletnem mestu, ki ni uvrščeno na seznam dovoljenih.
+      Če je ta pravilnik nastavljen na »PasswordProtectionRiskOnPhishingReuse«, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabnik znova uporabi geslo za Google na spletnih mestih z lažnim predstavljanjem.
+      Če ta pravilnik ni nastavljen, bo označevanje ogroženih računov, ki uporabljajo zaščito z geslom, z zastavico sproženo, če uporabnik znova uporabi geslo za Google na spletnih mestih z lažnim predstavljanjem, vendar lahko uporabnik to spremeni.</translation>
 <translation id="2418507228189425036">Onemogoči shranjevanje zgodovine brskanja v brskalniku <ph name="PRODUCT_NAME" /> in uporabnikom preprečuje spreminjanje te nastavitve.
 
       Če je ta nastavitev omogočena, se zgodovina brskanja ne shranjuje. Ta nastavitev prav tako onemogoča sinhronizacijo zavihkov.
@@ -614,6 +640,12 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
       Če omogočite to nastavitev, predogled tiskanja kot privzeti cilj uporabi privzeti tiskalnik operacijskega sistema.</translation>
 <translation id="2867699958489427143">Povrnite in ostanite na ciljni različici, če je različica operacijskega sistema novejša kot ciljna. Med postopkom izvede popoln Powerwash.</translation>
+<translation id="286802604195763750">Omogoča, da nadzirate sprožitev opozorila zaščite z geslom. Zaščita z geslom opozori uporabnike, ko zaščiteno geslo znova uporabijo na spletnih mestih, ki so morda sumljiva.
+
+      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOff«, ni prikazano nobeno opozorilo zaščite z geslom.
+      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPasswordReuse«, je opozorilo zaščite z geslom prikazano, ko uporabniki znova uporabijo gesla za Google na katerem koli spletnem mestu, ki ni uvrščeno na seznam dovoljenih.
+      Če je ta pravilnik nastavljen na »PasswordProtectionWarningOnPhishingReuse«, je opozorilo zaščite z geslom prikazano, ko uporabniki znova uporabijo gesla za Google na spletnih mestih z lažnim predstavljanjem.
+      Če ta pravilnik ni nastavljen, je opozorilo zaščite z geslom sproženo, ko uporabniki znova uporabijo gesla za Google na spletnih mestih z lažnim predstavljanjem, vendar lahko uporabnik to spremeni.</translation>
 <translation id="2872961005593481000">Zaustavitev</translation>
 <translation id="2874209944580848064">Opomba glede naprav s sistemom <ph name="PRODUCT_OS_NAME" />, ki podpirajo aplikacije za Android:</translation>
 <translation id="2877225735001246144">Onemogoči iskanje CNAME pri pogajanju o preverjanju pristnosti Kerberos</translation>
@@ -648,6 +680,17 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Vrednost pravilnika naj bo navedena v milisekundah. Vrednosti morajo biti manjše ali enake kot časovni zamik izklopa zaslona (če je nastavljen) in časovnik zamik nedejavnosti.</translation>
 <translation id="2987155890997901449">Omogočanje ARC-ja</translation>
 <translation id="2987227569419001736">Nadzor uporabe API-ja za Web Bluetooth</translation>
+<translation id="2998886474614739865">
+      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
+      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
+      Če je pravilnik omogočen, se bo vsak naveden izvor
+      s seznama, ločenega z vejicami, izvajal v svojem procesu. S tem bodo osamljeni
+      tudi izvori, ki jih navedejo poddomene; če na primer navedete https://example.com/,
+      bo kot del spletnega mesta https://example.com/ osamljeno tudi spletno mesto 
+      https://foo.example.com/.
+      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest.
+      Če pravilnik ni konfiguriran, bodo za zaslon za prijavo uporabljene privzete nastavitve osamitve spletnih mest za okolje.
+      </translation>
 <translation id="3016255526521614822">Uvrščanje aplikacij za zapiske, ki so omogočene na zaklenjenem zaslonu sistema <ph name="PRODUCT_OS_NAME" />, na seznam dovoljenih</translation>
 <translation id="3021562480854470924">Število mejnikov, za katere je dovoljena povrnitev</translation>
 <translation id="3030000825273123558">Omogoči pošiljanje podatkov</translation>
@@ -757,6 +800,17 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 
           Če je pravilnik nastavljen na niz, ki ni prazen, je ta niz uporabljen kot ime cilja za napravo <ph name="PRODUCT_NAME" />, sicer pa je ime cilja ime naprave. Če ta pravilnik ni nastavljen, je ime cilja ime naprave in lastnik naprave (ali uporabnik v domeni, ki upravlja napravo) ga sme spremeniti. Ime je omejeno na 24 znakov dolžine.</translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
+<translation id="3386001018488754001">
+      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
+      Ta pravilnik se nanaša na zaslon za prijavo. Oglejte si tudi pravilnik <ph name="SITE_PER_PROCESS_POLICY_NAME" />, ki se nanaša na uporabniško sejo. Priporočljivo je, da za oba pravilnika nastavite enako vrednost. Če se vrednosti ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
+      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti
+      prednosti obeh nastavitev, osamitve in omejenega vpliva za uporabnike,
+      tako da uporabite pravilnik IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev,
+      SitePerProcess, osami vsa spletna mesta.
+      Če je pravilnik omogočen, se vsako spletno mesto izvaja v svojem procesu.
+      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest.
+      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
+      </translation>
 <translation id="3395348522300156660">Določa tiskalnike, ki jih uporabnik lahko uporablja.
 
       Ta pravilnik se uporablja samo, če je za pravilnik <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> izbrana možnost <ph name="PRINTERS_WHITELIST" />.
@@ -795,6 +849,10 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
           Če je pravilnik nastavljen na »False« oziroma ni nastavljen, se zakasnitve upravljanja porabe in omejitev dolžine seje začnejo izvajati takoj ob začetku seje.</translation>
 <translation id="3478024346823118645">Ob odjavi izbriši uporabniške podatke</translation>
 <translation id="348495353354674884">Omogoči navidezno tipkovnico</translation>
+<translation id="3487623755010328395">
+        Če je ta pravilnik nastavljen, se bo <ph name="PRODUCT_NAME" /> poskusil registrirati in uporabiti povezani pravilnik oblaka za vse profile.
+
+        Vrednost tega pravilnika je žeton za včlanitev, ki ga je mogoče pridobiti v konzoli Google Admin console.</translation>
 <translation id="3496296378755072552">Upravitelj gesel</translation>
 <translation id="350443680860256679">Konfiguriranje ARC-a</translation>
 <translation id="3504791027627803580">Določa URL iskalnika, ki se uporabi za slikovno iskanje. Iskalne poizvedbe se pošljejo z metodo GET. Če je nastavljen pravilnik DefaultSearchProviderImageURLPostParams, se zahteve za slikovno iskanje pošljejo z metodo POST.
@@ -1104,6 +1162,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       Če tega pravilnika ne nastavite, lahko uporabnik izbere, ali bo gumb za domačo stran prikazan.</translation>
 <translation id="4485425108474077672">Konfiguriranje URL-ja strani »Nov zavihek«</translation>
 <translation id="4492287494009043413">Onemogoči ustvarjanje posnetkov zaslona</translation>
+<translation id="4497968613298501984">Konfiguriranje seznama URL-jev prijave za poslovna okolja (samo sheme HTTP in HTTPS). Na teh URL-jih bo zajet prstni odtis gesla in uporabljen za odkrivanje vnovične uporabe enakega gesla.
+      To nastavitev naj uporabijo samo uporabniki storitve GSuite, ki uporabljajo sistem enotne prijave/SAML.
+      Če želite, da bo <ph name="PRODUCT_NAME" /> pravilno zajel prstne odtise gesel, poskrbite, da so strani za prijavo skladne s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Če je ta nastavitev omogočena, bo storitev za zaščito gesel na teh URL-jih zajela prstni odtis gesla in ga uporabila za odkrivanje vnovične uporabe enakega gesla.
+      Če je ta nastavitev onemogočena ali ni nastavljena, bo storitev za zaščito gesel prstni odtis gesla zajela samo na naslovu https://accounts.google.com.
+      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Nastavi velikost predpomnilnika, ki ga bo izdelek <ph name="PRODUCT_NAME" /> uporabljal za shranjevanje predpomnjenih predstavnostnih datotek na disku.
 
 Če nastavite ta pravilnik, bo <ph name="PRODUCT_NAME" /> uporabil navedeno velikost predpomnilnika, ne glede na to, ali je uporabnik nastavil zastavico »--media-cache-size«. Vrednost, navedena v tem pravilniku, ni fiksna omejitev, temveč predlog predpomnilniškemu sistemu. Vrednosti pod nekaj megabajti so premajhne in bodo zaokrožene na razumno minimalno vrednost.
@@ -1222,6 +1287,13 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če ta pravilnik ni nastavljen oziroma je prazen, se lahko v storitev <ph name="PRODUCT_NAME" /> prijavi vsak uporabnik.</translation>
 <translation id="4858735034935305895">Dovoli celozaslonski način</translation>
+<translation id="4868249328547841081">Konfiguriranje URL-ja za spremembo gesla (samo sheme HTTP in HTTPS). Storitev za zaščito gesel pošlje uporabnike na ta URL, da spremenijo gesla, če so bila uporabljena za lažno predstavljanje.
+      To nastavitev naj uporabijo samo uporabniki storitve GSuite, ki uporabljajo sistem enotne prijave/SAML.
+      Če želite, da bo <ph name="PRODUCT_NAME" /> pravično zajel prstni odtis novega gesla na tej strani za spremembo gesla, poskrbite, da je stran za spremembo gesla skladna s smernicami na naslovu https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+
+      Če je ta nastavitev omogočena, storitev za zaščito gesel pošlje uporabnike na ta URL, da spremenijo gesla, če so bila uporabljena za lažno predstavljanje.
+      Če je ta nastavitev onemogočena ali ni nastavljena, storitev za zaščito gesel pošlje uporabnike na naslov https://myaccounts.google.com, da spremenijo geslo.
+      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi domeni <ph name="MS_AD_NAME" />.</translation>
 <translation id="4869787217450099946">Določa, ali je dovoljeno zaklepanje preklopa zaslona iz mirovanja. Zaklepanje preklopa zaslona iz mirovanja lahko zahtevajo razširitve prek API-ja razširitve za upravljanje porabe.
 
           Če je ta pravilnik nastavljen na »True« ali ni nastavljen, bo za upravljanje porabe uporabljeno zaklepanje preklopa zaslona iz mirovanja.
@@ -1374,6 +1446,17 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 
       Če pravilnik ni nastavljen ali je nastavljen na prazen niz oziroma neveljaven obseg vrat, je tehnologiji WebRTC dovoljeno uporabljati katera koli lokalna vrata UDP, ki so na voljo.</translation>
 <translation id="5290940294294002042">Določite seznam vtičnikov, ki jih lahko uporabnik omogoči ali onemogoči</translation>
+<translation id="5301787427319106606">
+      OPOMBA: Ta pravilnik je poskusen in lahko povzroči nedelovanje funkcije.
+      Oglejte si nastavitev pravilnika IsolateOrigins, če želite izkoristiti
+      prednosti obeh nastavitev, osamitve in omejenega vpliva za uporabnike, tako da uporabite pravilnik
+      IsolateOrigins s seznamom spletnih mest, ki jih želite osamiti. Ta nastavitev,
+      SitePerProcess, osami vsa spletna mesta.
+      Če je pravilnik omogočen, se vsako spletno mesto izvaja v svojem procesu.
+      Če je pravilnik onemogočen, se uveljavi logika upravljanja procesov osamitve posameznih spletnih mest.
+      Če pravilnik ni konfiguriran, bo uporabnik lahko spremenil to nastavitev.
+      V brskalniku <ph name="PRODUCT_OS_NAME" /> je prav tako priporočljivo nastaviti pravilnik za naprave <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> na enako vrednost. Če se vrednosti, nastavljeni z obema pravilnikoma, ne ujemata, lahko pride do zakasnitve pri odpiranju uporabniške seje, medtem ko se uporablja vrednost, ki jo določa uporabniški pravilnik.
+      </translation>
 <translation id="5302612588919538756">Ta pravilnik je zastarel, namesto njega lahko uporabite SyncDisabled.
 
       Dovoljuje uporabniku prijavo v <ph name="PRODUCT_NAME" />.
@@ -1972,6 +2055,14 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="706669471845501145">Mestom dovoli prikazovanje namiznih obvestil</translation>
 <translation id="7072208053150563108">Hitrost spreminjanja gesla naprave</translation>
 <translation id="7072406291414141328">Omogoči omejevanje omrežne pasovne širine</translation>
+<translation id="7074513465313721551">Konfiguriranje seznama domeni, ki jim Varno brskanje zaupa. To pomeni:
+      Varno brskanje ne preverja, ali so nevarna sredstva (npr. lažno predstavljanje, zlonamerna programska oprema ali neželena programska oprema), če se njihovi URL-ji ujemajo s temi domenami.
+      Storitev zaščite pred prenosi Varnega brskanja ne preverja prenosov, ki jih gostijo te domene.
+      Storitev zaščite gesel Varnega brskanja ne preverja, ali je prišlo do vnovične uporabe gesel, če se URL strani ujema s temi domenami.
+
+      Če je ta nastavitev omogočena, Varno brskanje zaupa tem domenam.
+      Če je ta nastavitev onemogočena ali ni nastavljena, se privzeta zaščita Varnega brskanja uporabi za vsa sredstva.
+      Ta pravilnik ni na voljo v primerkih sistema Windows, ki niso pridruženi v domeno <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blokiraj pojavna okna na teh mestih</translation>
 <translation id="7106631983877564505">Omogoča zaklepanje, ko so naprave s sistemom <ph name="PRODUCT_OS_NAME" /> nedejavne ali preidejo v stanje pripravljenosti.
 

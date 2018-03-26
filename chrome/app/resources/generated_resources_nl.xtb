@@ -6,7 +6,6 @@
 <translation id="1005274289863221750">Je microfoon en camera gebruiken</translation>
 <translation id="1007408791287232274">Kan apparaten niet laden.</translation>
 <translation id="1008186147501209563">Bladwijzers exporteren</translation>
-<translation id="1009147628737158130"><ph name="URL" /> wil de identificatiegegevens van je beveiligingssleutel bekijken</translation>
 <translation id="1010833424573920260">{NUM_PAGES,plural, =1{Pagina reageert niet}other{Pagina's reageren niet}}</translation>
 <translation id="1012794136286421601">Je bestanden van Google Documenten, Spreadsheets, Presentaties en Tekeningen worden gesynchroniseerd. Open de Google Drive-app om ze online of offline te openen.</translation>
 <translation id="1013707859758800957">Het uitvoeren van een plug-in zonder sandbox is toegestaan op deze pagina.</translation>
@@ -1276,7 +1275,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2932483646085333864">Log uit en weer in om de synchronisatie te starten</translation>
 <translation id="2932883381142163287">Misbruik melden</translation>
 <translation id="2938225289965773019">Links voor <ph name="PROTOCOL" /> openen</translation>
-<translation id="2938335670027321024">Verplaats de controller om te herpositioneren. Klik om te voltooien.</translation>
 <translation id="2939938020978911855">Beschikbare Bluetooth-apparaten weergeven</translation>
 <translation id="2941112035454246133">Laag</translation>
 <translation id="2942560570858569904">Wachten...</translation>
@@ -1845,7 +1843,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="379422718204375917">Gebruik Smart Lock om in te loggen op je account</translation>
 <translation id="3796648294839530037">Favoriete netwerken:</translation>
 <translation id="3797900183766075808"><ph name="SEARCH_ENGINE" /> door&amp;zoeken op '<ph name="SEARCH_TERMS" />'</translation>
-<translation id="3798325802885154040">Hiermee kun je tikken-om-te-klikken in- en uitschakelen</translation>
 <translation id="3798449238516105146">Versie</translation>
 <translation id="3799201711591988491">{COUNT,plural, =0{Alles &amp;openen}=1{Bladwijzer &amp;openen}other{Alles (#) &amp;openen}}</translation>
 <translation id="3800806661949714323">Alles weergeven (aanbevolen)</translation>
@@ -2928,7 +2925,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="5556206011531515970">Klik op 'Volgende' om je standaardbrowser te kiezen.</translation>
 <translation id="5556459405103347317">Opnieuw laden</translation>
 <translation id="555746285996217175">Vergrendelen / aan-uit</translation>
-<translation id="5557579359142031072">Identificatiegegevens van je beveiligingssleutel bekijken</translation>
 <translation id="5557991081552967863">Wifi ingeschakeld houden tijdens slaapstand</translation>
 <translation id="5558129378926964177">&amp;Inzoomen</translation>
 <translation id="55601339223879446">De grenzen van je bureaublad aanpassen binnen de weergave</translation>
@@ -4004,7 +4000,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="7289225569524511578">De achtergrond-app openen</translation>
 <translation id="7290242001003353852">Deze inlogservice wordt gehost door <ph name="SAML_DOMAIN" /> en heeft toegang tot je camera.</translation>
 <translation id="7290594223351252791">Registratie bevestigen</translation>
-<translation id="7292324470889366655">Herpositionering voltooien</translation>
 <translation id="729459249680637905">Resterende pogingen: $1</translation>
 <translation id="7295662345261934369">Delen met anderen</translation>
 <translation id="729583233778673644">AES- en RC4-versleuteling toestaan. Als je deze optie gebruikt, loop je meer risico, aangezien RC4-codering onveilig is.</translation>
