@@ -73,8 +73,6 @@ template("msvc_toolchain") {
 
       # This value needs to be passed through unchanged.
       host_toolchain = host_toolchain
-
-      current_os = "win"
     }
 
     # Make these apply to all tools below.
@@ -356,37 +354,43 @@ if (host_os == "win") {
   clang_cl = "clang-cl"
 }
 
-# 32-bit toolchains. Only define these when the target architecture is 32-bit
-# since we don't do any 32-bit cross compiles when targeting 64-bit (the
-# build does generate some 64-bit stuff from 32-bit target builds).
-if (target_cpu == "x86") {
-  x86_toolchain_data = exec_script("setup_toolchain.py",
-                                   [
-                                     visual_studio_path,
-                                     windows_sdk_path,
-                                     visual_studio_runtime_dirs,
-                                     "x86",
-                                     goma_disabled,
-                                   ],
-                                   "scope")
+# x86, arm and arm64 toolchains for Windows (not WinUWP). Only define when the
+# target architecture is one of these architectures since we don't do any arm
+# cross compiles when targeting 64-bit (the build does generate some 64-bit
+# stuff from 32-bit/arm/arm64 target builds).
+if (target_os == "win" &&
+    (target_cpu == "x86" || target_cpu == "arm" || target_cpu == "arm64")) {
+  target_cpu_toolchain_data = exec_script("setup_toolchain.py",
+                                          [
+                                            visual_studio_path,
+                                            windows_sdk_path,
+                                            visual_studio_runtime_dirs,
+                                            target_os,
+                                            target_cpu,
+                                            "environment." + target_cpu,
+                                            goma_disabled,
+                                          ],
+                                          "scope")
 
-  msvc_toolchain("x86") {
-    environment = "environment.x86"
-    cl = "${goma_prefix}\"${x86_toolchain_data.vc_bin_dir}/cl.exe\""
+  msvc_toolchain(target_cpu) {
+    environment = "environment." + target_cpu
+    cl = "${goma_prefix}\"${target_cpu_toolchain_data.vc_bin_dir}/cl.exe\""
     toolchain_args = {
-      current_cpu = "x86"
+      current_os = "win"
+      current_cpu = target_cpu
       is_clang = false
     }
   }
 
-  msvc_toolchain("win_clang_x86") {
-    environment = "environment.x86"
+  msvc_toolchain("win_clang_" + target_cpu) {
+    environment = "environment." + target_cpu
     prefix = rebase_path("$clang_base_path/bin", root_build_dir)
     cl = "${goma_prefix}$prefix/${clang_cl}"
-    sys_include_flags = "${x86_toolchain_data.include_flags_imsvc}"
+    sys_include_flags = "${target_cpu_toolchain_data.include_flags_imsvc}"
 
     toolchain_args = {
-      current_cpu = "x86"
+      current_os = "win"
+      current_cpu = target_cpu
       is_clang = true
     }
   }
@@ -398,7 +402,9 @@ x64_toolchain_data = exec_script("setup_toolchain.py",
                                    visual_studio_path,
                                    windows_sdk_path,
                                    visual_studio_runtime_dirs,
+                                   "win",
                                    "x64",
+                                   "environment.x64",
                                    goma_disabled,
                                  ],
                                  "scope")
@@ -413,6 +419,7 @@ template("win_x64_toolchains") {
         forward_variables_from(invoker.toolchain_args, "*")
       }
       is_clang = false
+      current_os = "win"
       current_cpu = "x64"
     }
   }
@@ -428,6 +435,7 @@ template("win_x64_toolchains") {
         forward_variables_from(invoker.toolchain_args, "*")
       }
       is_clang = true
+      current_os = "win"
       current_cpu = "x64"
     }
   }
@@ -450,30 +458,30 @@ win_x64_toolchains("nacl_win64") {
   }
 }
 
-# WinRT toolchains. Only define these when targeting them.
-#
-# NOTE: This is currently broken because it references vc_bin_dir. brettw@
-# changed this around a bit, and I don't know what this should be set to
-# in terms of what setup_toolchain returns for a certain CPU architecture.
-if (target_os == "winrt_81" || target_os == "winrt_81_phone" ||
-    target_os == "winrt_10") {
-  msvc_toolchain("winrt_x86") {
-    environment = "environment.winrt_x86"
-    cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
+# WinUWP toolchains. Only define these when targeting them.
 
+if (target_os == "winuwp") {
+  assert(target_cpu == "x64" || target_cpu == "x86" || target_cpu == "arm" ||
+         target_cpu == "arm64")
+  store_cpu_toolchain_data = exec_script("setup_toolchain.py",
+                                         [
+                                           visual_studio_path,
+                                           windows_sdk_path,
+                                           visual_studio_runtime_dirs,
+                                           target_os,
+                                           target_cpu,
+                                           "environment.store_" + target_cpu,
+                                           goma_disabled,
+                                         ],
+                                         "scope")
+
+  msvc_toolchain("uwp_" + target_cpu) {
+    environment = "environment.store_" + target_cpu
+    cl = "${goma_prefix}\"${store_cpu_toolchain_data.vc_bin_dir}/cl.exe\""
     toolchain_args = {
+      current_os = "winuwp"
+      current_cpu = target_cpu
       is_clang = false
-      current_cpu = "x86"
-    }
-  }
-
-  msvc_toolchain("winrt_x64") {
-    environment = "environment.winrt_x64"
-    cl = "${goma_prefix}\"${vc_bin_dir}/cl.exe\""
-
-    toolchain_args = {
-      is_clang = false
-      current_cpu = "x64"
     }
   }
 }

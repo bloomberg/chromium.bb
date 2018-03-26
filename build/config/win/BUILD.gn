@@ -8,9 +8,16 @@ import("//build/config/clang/clang.gni")
 import("//build/config/compiler/compiler.gni")
 import("//build/config/sanitizers/sanitizers.gni")
 import("//build/config/win/visual_studio_version.gni")
+import("//build/toolchain/goma.gni")
 import("//build/toolchain/toolchain.gni")
 
 assert(is_win)
+
+if (disable_goma) {
+  goma_disabled = "true"
+} else {
+  goma_disabled = "false"
+}
 
 declare_args() {
   # Set this to true to enable static analysis through Visual Studio's
@@ -24,6 +31,20 @@ declare_args() {
 
   # Turn this on to have the compiler output extra timing information.
   win_compiler_timing = false
+
+  # possible values for target_winuwp_version:
+  #   "10" - Windows UWP 10
+  #   "8.1" - Windows RT 8.1
+  #   "8.0" - Windows RT 8.0
+  target_winuwp_version = "10"
+
+  # possible values:
+  #   "app" - Windows Store Applications
+  #   "phone" - Windows Phone Applications
+  #   "system" - Windows Drivers and Tools
+  #   "server" - Windows Server Applications
+  #   "desktop" - Windows Desktop Applications
+  target_winuwp_family = "app"
 }
 
 # This is included by reference in the //build/config/compiler config that
@@ -239,6 +260,50 @@ config("runtime_library") {
     # not match ours.
     defines += [ "_LIBCPP_NO_AUTO_LINK" ]
   }
+
+  if (current_os == "winuwp") {
+    # When targeting Windows Runtime, certain compiler/linker flags are
+    # necessary.
+    defines += [
+      "WINUWP",
+      "__WRL_NO_DEFAULT_LIB__",
+    ]
+    if (target_winuwp_family == "app") {
+      defines += [ "WINAPI_FAMILY=WINAPI_FAMILY_PC_APP" ]
+    } else if (target_winuwp_family == "phone") {
+      defines += [ "WINAPI_FAMILY=WINAPI_FAMILY_PHONE_APP" ]
+    } else if (target_winuwp_family == "system") {
+      defines += [ "WINAPI_FAMILY=WINAPI_FAMILY_SYSTEM" ]
+    } else if (target_winuwp_family == "server") {
+      defines += [ "WINAPI_FAMILY=WINAPI_FAMILY_SERVER" ]
+    } else {
+      defines += [ "WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP" ]
+    }
+    cflags_cc += [
+      "/ZW",
+      "/EHsc",
+    ]
+
+    # This warning is given because the linker cannot tell the difference
+    # between consuming WinRT APIs versus authoring WinRT within static
+    # libraries as such this warning is always given by the linker. Since
+    # consuming WinRT APIs within a library is legitimate but authoring
+    # WinRT APis is not allowed, this warning is disabled to ignore the
+    # legitimate consumption of WinRT APIs within static library builds.
+    arflags = [ "/IGNORE:4264" ]
+
+    if (target_winuwp_version == "10") {
+      defines += [ "WIN10=_WIN32_WINNT_WIN10" ]
+    } else if (target_winuwp_version == "8.1") {
+      defines += [ "WIN8_1=_WIN32_WINNT_WINBLUE" ]
+    } else if (target_winuwp_version == "8.0") {
+      defines += [ "WIN8=_WIN32_WINNT_WIN8" ]
+    }
+  } else {
+    # When not targeting Windows Runtime, make sure the WINAPI family is set
+    # to desktop.
+    defines += [ "WINAPI_FAMILY=WINAPI_FAMILY_DESKTOP_APP" ]
+  }
 }
 
 # Sets the default Windows build version. This is separated because some
@@ -253,24 +318,47 @@ config("winver") {
 
 # Linker flags for Windows SDK setup, this is applied only to EXEs and DLLs.
 config("sdk_link") {
+  assert(current_cpu == "x64" || current_cpu == "x86" || current_cpu == "arm" ||
+             current_cpu == "arm64",
+         "Only supports x64, x86, arm and arm64 CPUs")
   if (current_cpu == "x64") {
     ldflags = [ "/MACHINE:X64" ]
-    lib_dirs = [
-      "$windows_sdk_path\Lib\winv6.3\um\x64",
-      "$visual_studio_path\VC\lib\amd64",
-      "$visual_studio_path\VC\atlmfc\lib\amd64",
-    ]
-  } else {
+  } else if (current_cpu == "x86") {
     ldflags = [
       "/MACHINE:X86",
       "/SAFESEH",  # Not compatible with x64 so use only for x86.
       "/largeaddressaware",
     ]
-    lib_dirs = [
-      "$windows_sdk_path\Lib\winv6.3\um\x86",
-      "$visual_studio_path\VC\lib",
-      "$visual_studio_path\VC\atlmfc\lib",
-    ]
+  } else if (current_cpu == "arm") {
+    ldflags = [ "/MACHINE:ARM" ]
+  } else if (current_cpu == "arm64") {
+    ldflags = [ "/MACHINE:ARM64" ]
+  }
+
+  vcvars_toolchain_data = exec_script("../../toolchain/win/setup_toolchain.py",
+                                      [
+                                        visual_studio_path,
+                                        windows_sdk_path,
+                                        visual_studio_runtime_dirs,
+                                        current_os,
+                                        current_cpu,
+                                        "none",
+                                        goma_disabled,
+                                      ],
+                                      "scope")
+
+  vc_lib_path = vcvars_toolchain_data.vc_lib_path
+  if (defined(vcvars_toolchain_data.vc_lib_atlmfc_path)) {
+    vc_lib_atlmfc_path = vcvars_toolchain_data.vc_lib_atlmfc_path
+  }
+  vc_lib_um_path = vcvars_toolchain_data.vc_lib_um_path
+
+  lib_dirs = [
+    "$vc_lib_um_path",
+    "$vc_lib_path",
+  ]
+  if (defined(vc_lib_atlmfc_path)) {
+    lib_dirs += [ "$vc_lib_atlmfc_path" ]
   }
 }
 
@@ -328,8 +416,10 @@ config("default_crt") {
     # exceptions on.
     configs = [ ":dynamic_crt" ]
   } else {
-    if (current_os != "win") {
-      # WindowsRT: use the dynamic CRT.
+    if (current_os == "winuwp") {
+      # https://blogs.msdn.microsoft.com/vcblog/2014/06/10/the-great-c-runtime-crt-refactoring/
+      # contains a details explanation of what is happening with the Windows
+      # CRT in Visual Studio releases related to Windows store applications.
       configs = [ ":dynamic_crt" ]
     } else {
       # Desktop Windows: static CRT.
@@ -456,21 +546,6 @@ config("lean_and_mean") {
 
 config("nominmax") {
   defines = [ "NOMINMAX" ]
-}
-
-# Target WinRT ----------------------------------------------------------------
-
-# When targeting Windows Runtime, certain compiler/linker flags are necessary.
-
-config("target_winrt") {
-  defines = [
-    "WINRT",
-    "WINAPI_FAMILY=WINAPI_FAMILY_PC_APP",
-  ]
-  cflags_cc = [
-    "/ZW",
-    "/EHsc",
-  ]
 }
 
 # Generating order files -------------------------------------------------------

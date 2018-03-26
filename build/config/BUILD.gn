@@ -208,14 +208,11 @@ config("default_libs") {
       "advapi32.lib",
       "comdlg32.lib",
       "dbghelp.lib",
-      "delayimp.lib",
       "dnsapi.lib",
       "gdi32.lib",
-      "kernel32.lib",
       "msimg32.lib",
       "odbc32.lib",
       "odbccp32.lib",
-      "ole32.lib",
       "oleaut32.lib",
       "psapi.lib",
       "shell32.lib",
@@ -234,6 +231,20 @@ config("default_libs") {
       # some extra libraries, please just add a libs = [ "foo.lib" ] to your
       # target that needs it.
     ]
+    if (current_os == "winuwp") {
+      # These libraries are needed for Windows UWP (i.e. store apps).
+      libs += [
+        "dloadhelper.lib",
+        "WindowsApp.lib",
+      ]
+    } else {
+      # These libraries are not compatible with Windows UWP (i.e. store apps.)
+      libs += [
+        "delayimp.lib",
+        "kernel32.lib",
+        "ole32.lib",
+      ]
+    }
   } else if (is_android) {
     libs = [
       "dl",

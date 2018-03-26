@@ -93,8 +93,8 @@ def SetEnvironmentAndGetRuntimeDllDirs():
     bitness = platform.architecture()[0]
     # When running 64-bit python the x64 DLLs will be in System32
     x64_path = 'System32' if bitness == '64bit' else 'Sysnative'
-    x64_path = os.path.join(r'C:\Windows', x64_path)
-    vs_runtime_dll_dirs = [x64_path, r'C:\Windows\SysWOW64']
+    x64_path = os.path.join(os.path.expandvars('%windir%'), x64_path)
+    vs_runtime_dll_dirs = [x64_path, os.path.expandvars('%windir%/SysWOW64')]
 
   return vs_runtime_dll_dirs
 
@@ -154,9 +154,12 @@ def DetectVisualStudioPath():
     # For now we use a hardcoded default with an environment variable override.
     for path in (
         os.environ.get('vs2017_install'),
-        r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Enterprise',
-        r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Professional',
-        r'C:\Program Files (x86)\Microsoft Visual Studio\2017\Community'):
+        os.path.expandvars('%ProgramFiles(x86)%'
+                           '/Microsoft Visual Studio/2017/Enterprise'),
+        os.path.expandvars('%ProgramFiles(x86)%'
+                           '/Microsoft Visual Studio/2017/Professional'),
+        os.path.expandvars('%ProgramFiles(x86)%'
+                           '/Microsoft Visual Studio/2017/Community')):
       if path and os.path.exists(path):
         return path
 
@@ -431,7 +434,8 @@ def SetEnvironmentAndGetSDKDir():
 
   # If WINDOWSSDKDIR is not set, search the default SDK path and set it.
   if not 'WINDOWSSDKDIR' in os.environ:
-    default_sdk_path = 'C:\\Program Files (x86)\\Windows Kits\\10'
+    default_sdk_path = os.path.expandvars('%ProgramFiles(x86)%'
+                                          '\\Windows Kits\\10')
     if os.path.isdir(default_sdk_path):
       os.environ['WINDOWSSDKDIR'] = default_sdk_path
 
