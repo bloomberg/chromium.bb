@@ -10,8 +10,9 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.ClusterListObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewModelChangeProcessor;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
@@ -25,7 +26,7 @@ class ContentCoordinator {
     private final ContextualSuggestionsModel mModel;
 
     private SuggestionsRecyclerView mRecyclerView;
-    private RecyclerViewModelChangeProcessor<SnippetArticle, ContextualSuggestionCardViewHolder>
+    private RecyclerViewModelChangeProcessor<ClusterListObservable, NewTabPageViewHolder>
             mModelChangeProcessor;
 
     /**
@@ -49,7 +50,7 @@ class ContentCoordinator {
         mRecyclerView.setAdapter(adapter);
 
         mModelChangeProcessor = new RecyclerViewModelChangeProcessor<>(adapter);
-        mModel.mSuggestionsList.addObserver(mModelChangeProcessor);
+        mModel.mClusterListObservable.addObserver(mModelChangeProcessor);
     }
 
     /** @return The content {@link View}. */
@@ -66,6 +67,6 @@ class ContentCoordinator {
     void destroy() {
         // The model outlives the content sub-component. Remove the observer so that this object
         // can be garbage collected.
-        mModel.mSuggestionsList.removeObserver(mModelChangeProcessor);
+        mModel.mClusterListObservable.removeObserver(mModelChangeProcessor);
     }
 }

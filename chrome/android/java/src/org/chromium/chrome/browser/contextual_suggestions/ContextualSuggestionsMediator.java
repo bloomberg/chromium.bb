@@ -25,6 +25,7 @@ import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -126,24 +127,24 @@ class ContextualSuggestionsMediator {
                          suggestions.size() + " suggestions fetched", Toast.LENGTH_SHORT)
                     .show();
 
-            if (suggestions.size() > 0) displaySuggestions(suggestions);
+            if (suggestions.size() > 0) {
+                displaySuggestions(generateClusterList(suggestions), suggestions.get(0).mTitle);
+            }
         });
     }
 
     private void clearSuggestions() {
-        mModel.setSuggestions(new ArrayList<SnippetArticle>());
+        mModel.setClusterList(new ClusterList(Collections.emptyList()));
         mModel.setCloseButtonOnClickListener(null);
         mModel.setTitle(null);
         mCoordinator.removeSuggestions();
     }
 
-    private void displaySuggestions(List<SnippetArticle> suggestions) {
-        mModel.setSuggestions(suggestions);
+    private void displaySuggestions(ClusterList clusters, String title) {
+        mModel.setClusterList(clusters);
         mModel.setCloseButtonOnClickListener(view -> { clearSuggestions(); });
 
-        // TODO(twellington): Replace this with the first cluster title.
-        mModel.setTitle(mContext.getString(
-                R.string.contextual_suggestions_toolbar_title, suggestions.get(0).mTitle));
+        mModel.setTitle(mContext.getString(R.string.contextual_suggestions_toolbar_title, title));
 
         mCoordinator.displaySuggestions();
     }
@@ -164,5 +165,41 @@ class ContextualSuggestionsMediator {
 
         mLastTab.addObserver(mTabObserver);
         refresh(mLastTab.getUrl());
+    }
+
+    // TODO(twellington): Remove after clusters are returned from the backend.
+    private ClusterList generateClusterList(List<SnippetArticle> suggestions) {
+        List<ContextualSuggestionsCluster> clusters = new ArrayList<>();
+        int clusterSize = suggestions.size() >= 6 ? 3 : 2;
+        int numClusters = suggestions.size() < 4 ? 1 : suggestions.size() / clusterSize;
+        int currentSuggestion = 0;
+
+        // Construct a list of clusters.
+        for (int i = 0; i < numClusters; i++) {
+            ContextualSuggestionsCluster cluster =
+                    new ContextualSuggestionsCluster(suggestions.get(currentSuggestion).mTitle);
+            if (i == 0) cluster.setShouldShowTitle(false);
+
+            for (int j = 0; j < clusterSize; j++) {
+                cluster.getSuggestions().add(suggestions.get(currentSuggestion));
+                currentSuggestion++;
+            }
+
+            clusters.add(cluster);
+        }
+
+        // Add the remaining suggestions to the last cluster.
+        while (currentSuggestion < suggestions.size()) {
+            clusters.get(clusters.size() - 1)
+                    .getSuggestions()
+                    .add(suggestions.get(currentSuggestion));
+            currentSuggestion++;
+        }
+
+        for (ContextualSuggestionsCluster cluster : clusters) {
+            cluster.buildChildren();
+        }
+
+        return new ClusterList(clusters);
     }
 }

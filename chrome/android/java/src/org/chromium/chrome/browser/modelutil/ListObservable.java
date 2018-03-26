@@ -11,16 +11,12 @@ import org.chromium.base.ObserverList;
 /**
  * A base class for models maintaining a list of items. Note that ListObservable models do not need
  * to be implemented as a list. Internally they may use any structure to organize their items.
- *
- * @param <E> The type of items held by the model.
  */
-public abstract class ListObservable<E> {
+public abstract class ListObservable {
     /**
      * An observer to be notified of changes to a {@link ListObservable}.
-     *
-     * @param <E> The type of items held by the observed model.
      */
-    public interface ListObserver<E> {
+    public interface ListObserver {
         /**
          * Notifies that {@code count} items starting at position {@code index} under the
          * {@code source} have been added.
@@ -29,7 +25,7 @@ public abstract class ListObservable<E> {
          * @param index The starting position of the range of added items.
          * @param count The number of added items.
          */
-        void onItemRangeInserted(ListObservable<E> source, int index, int count);
+        void onItemRangeInserted(ListObservable source, int index, int count);
 
         /**
          * Notifies that {@code count} items starting at position {@code index} under the
@@ -39,7 +35,7 @@ public abstract class ListObservable<E> {
          * @param index The starting position of the range of removed items.
          * @param count The number of removed items.
          */
-        void onItemRangeRemoved(ListObservable<E> source, int index, int count);
+        void onItemRangeRemoved(ListObservable source, int index, int count);
 
         /**
          * Notifies that {@code count} items starting at position {@code index} under the
@@ -51,31 +47,23 @@ public abstract class ListObservable<E> {
          * @param payload Optional parameter, use {@code null} to identify a "full" update.
          */
         void onItemRangeChanged(
-                ListObservable<E> source, int index, int count, @Nullable Object payload);
+                ListObservable source, int index, int count, @Nullable Object payload);
     }
 
-    private final ObserverList<ListObserver<E>> mObservers = new ObserverList<>();
+    private final ObserverList<ListObserver> mObservers = new ObserverList<>();
 
     /** @return The total number of items held by the model. */
     public abstract int getItemCount();
 
     /**
-     * Retrieve the item at the specified {@code position}.
-     *
-     * @param position The position of the item to retrieve.
-     * @return The item at the specified {@code position}.
-     */
-    public abstract E getItem(int position);
-
-    /**
      * @param observer An observer to be notified of changes to the model.
      */
-    public void addObserver(ListObserver<E> observer) {
+    public void addObserver(ListObserver observer) {
         mObservers.addObserver(observer);
     }
 
     /** @param observer The observer to remove. */
-    public void removeObserver(ListObserver<E> observer) {
+    public void removeObserver(ListObserver observer) {
         mObservers.removeObserver(observer);
     }
 
@@ -87,7 +75,7 @@ public abstract class ListObservable<E> {
      * @param count The number of added items.
      */
     protected void notifyItemRangeInserted(int index, int count) {
-        for (ListObserver<E> observer : mObservers) {
+        for (ListObserver observer : mObservers) {
             observer.onItemRangeInserted(this, index, count);
         }
     }
@@ -100,7 +88,7 @@ public abstract class ListObservable<E> {
      * @param count The number of removed items.
      */
     protected void notifyItemRangeRemoved(int index, int count) {
-        for (ListObserver<E> observer : mObservers) {
+        for (ListObserver observer : mObservers) {
             observer.onItemRangeRemoved(this, index, count);
         }
     }
@@ -114,7 +102,7 @@ public abstract class ListObservable<E> {
      * @param payload Optional parameter, use {@code null} to identify a "full" update.
      */
     protected void notifyItemRangeChanged(int index, int count, @Nullable Object payload) {
-        for (ListObserver<E> observer : mObservers) {
+        for (ListObserver observer : mObservers) {
             observer.onItemRangeChanged(this, index, count, payload);
         }
     }

@@ -8,15 +8,13 @@ import android.content.Context;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.ClusterListObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
-import org.chromium.chrome.browser.ntp.cards.SuggestionsCategoryInfo;
-import org.chromium.chrome.browser.ntp.snippets.ContentSuggestionsCardLayout;
-import org.chromium.chrome.browser.ntp.snippets.KnownCategories;
-import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
+import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
+import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.suggestions.ContentSuggestionsAdditionalAction;
 import org.chromium.chrome.browser.suggestions.SuggestionsRecyclerView;
 import org.chromium.chrome.browser.suggestions.SuggestionsUiDelegate;
 import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
@@ -25,30 +23,37 @@ import org.chromium.chrome.browser.widget.displaystyle.UiConfig;
  * An adapter that contains the view binder for the content component.
  */
 class ContextualSuggestionsAdapter
-        extends RecyclerViewAdapter<SnippetArticle, ContextualSuggestionCardViewHolder> {
+        extends RecyclerViewAdapter<ClusterListObservable, NewTabPageViewHolder> {
     private class ContextualSuggestionsViewBinder
-            implements ViewBinder<SnippetArticle, ContextualSuggestionCardViewHolder> {
+            implements ViewBinder<ClusterListObservable, NewTabPageViewHolder> {
         @Override
-        public ContextualSuggestionCardViewHolder onCreateViewHolder(
-                ViewGroup parent, int viewType) {
-            assert viewType == ItemViewType.SNIPPET;
+        public NewTabPageViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            switch (viewType) {
+                case ItemViewType.HEADER:
+                    return new SectionHeaderViewHolder(mRecyclerView, mUiConfig);
 
-            // TODO(twellington): Hook up ContextMenuManager.
-            return new ContextualSuggestionCardViewHolder(mRecyclerView, null, mUiDelegate,
-                    mUiConfig, OfflinePageBridge.getForProfile(mProfile));
+                case ItemViewType.SNIPPET:
+                    // TODO(twellington): Hook up ContextMenuManager.
+                    return new ContextualSuggestionCardViewHolder(mRecyclerView, null, mUiDelegate,
+                            mUiConfig, OfflinePageBridge.getForProfile(mProfile));
+
+                default:
+                    assert false;
+                    return null;
+            }
         }
 
         @Override
         public void onBindViewHolder(
-                ContextualSuggestionCardViewHolder holder, SnippetArticle item) {
-            holder.onBindViewHolder(item, mCategoryInfo);
+                ClusterListObservable model, NewTabPageViewHolder holder, int position) {
+            model.mClusterList.onBindViewHolder(holder, position);
         }
     }
 
     private final Profile mProfile;
     private final UiConfig mUiConfig;
     private final SuggestionsUiDelegate mUiDelegate;
-    private final SuggestionsCategoryInfo mCategoryInfo;
+    private final ContextualSuggestionsModel mModel;
 
     private SuggestionsRecyclerView mRecyclerView;
 
@@ -63,23 +68,20 @@ class ContextualSuggestionsAdapter
      */
     ContextualSuggestionsAdapter(Context context, Profile profile, UiConfig uiConfig,
             SuggestionsUiDelegate uiDelegate, ContextualSuggestionsModel model) {
-        super(model.mSuggestionsList);
+        super(model.mClusterListObservable);
 
         setViewBinder(new ContextualSuggestionsViewBinder());
 
         mProfile = profile;
         mUiConfig = uiConfig;
         mUiDelegate = uiDelegate;
-
-        mCategoryInfo = new SuggestionsCategoryInfo(KnownCategories.CONTEXTUAL, "",
-                ContentSuggestionsCardLayout.FULL_CARD, ContentSuggestionsAdditionalAction.NONE,
-                false, "");
+        mModel = model;
     }
 
     @Override
     @ItemViewType
     public int getItemViewType(int position) {
-        return ItemViewType.SNIPPET;
+        return mModel.getClusterList().getItemViewType(position);
     }
 
     @Override
@@ -93,7 +95,7 @@ class ContextualSuggestionsAdapter
     }
 
     @Override
-    public void onViewRecycled(ContextualSuggestionCardViewHolder holder) {
+    public void onViewRecycled(NewTabPageViewHolder holder) {
         holder.recycle();
     }
 }
