@@ -11,6 +11,8 @@
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
 
+class WebRTCInternalsIntegrationBrowserTest;
+
 namespace content {
 
 class BrowserContext;
@@ -133,7 +135,15 @@ class CONTENT_EXPORT WebRtcEventLogger {
           base::OnceCallback<void(std::pair<bool, bool>)>()) = 0;
 
  protected:
+  friend WebRTCInternalsIntegrationBrowserTest;  // (PostNullTaskForTesting)
+
   WebRtcEventLogger();
+
+  // Allows tests to synchronize with internal task queues (if such exist in
+  // the subclass). This allows tests to only examine products (such as log
+  // files) at a time when, if the program is behaving as expected, they would
+  // be guaranteed to be ready.
+  virtual void PostNullTaskForTesting(base::OnceClosure reply) = 0;
 };
 
 }  // namespace content

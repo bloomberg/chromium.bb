@@ -711,3 +711,7 @@ WebRtcEventLogManager::GetTaskRunnerForTesting() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   return task_runner_;
 }
+
+void WebRtcEventLogManager::PostNullTaskForTesting(base::OnceClosure reply) {
+  task_runner_->PostTask(FROM_HERE, std::move(reply));
+}

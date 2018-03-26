@@ -271,7 +271,10 @@ class WebRtcEventLogManager final : public content::RenderProcessHostObserver,
 
   // This allows unit tests that do not wish to change the task runner to still
   // check when certain operations are finished.
+  // TODO(crbug.com/775415): Remove this and use PostNullTaskForTesting instead.
   scoped_refptr<base::SequencedTaskRunner>& GetTaskRunnerForTesting();
+
+  void PostNullTaskForTesting(base::OnceClosure reply) override;
 
   static WebRtcEventLogManager* g_webrtc_event_log_manager;
 
