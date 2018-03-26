@@ -250,11 +250,14 @@ if (target_os == "android") {
   } else {
     _default_toolchain = "//build/toolchain/win:$target_cpu"
   }
+} else if (target_os == "winuwp") {
+  # Only target WinUWP on for a Windows store application and only
+  # x86, x64 and arm are supported target CPUs.
+  assert(target_cpu == "x86" || target_cpu == "x64" || target_cpu == "arm" ||
+         target_cpu == "arm64")
+  _default_toolchain = "//build/toolchain/win:uwp_$target_cpu"
 } else if (target_os == "aix") {
   _default_toolchain = "//build/toolchain/aix:$target_cpu"
-} else if (target_os == "winrt_81" || target_os == "winrt_81_phone" ||
-           target_os == "winrt_10") {
-  _default_toolchain = "//build/toolchain/win:winrt_$target_cpu"
 } else {
   assert(false, "Unsupported target_os: $target_os")
 }
@@ -285,8 +288,7 @@ if (custom_toolchain != "") {
 # aix or one of the BSDs. If you need to check these, just check the
 # current_os value directly.
 
-if (current_os == "win" || current_os == "winrt_81" ||
-    current_os == "winrt_81_phone" || current_os == "winrt_10") {
+if (current_os == "win" || current_os == "winuwp") {
   is_android = false
   is_chromeos = false
   is_fuchsia = false
@@ -536,6 +538,7 @@ default_compiler_configs = [
   "//build/config/coverage:default_coverage",
   "//build/config/sanitizers:default_sanitizer_flags",
 ]
+
 if (is_win) {
   default_compiler_configs += [
     "//build/config/win:default_crt",
@@ -545,10 +548,6 @@ if (is_win) {
     "//build/config/win:winver",
     "//build/config/win:vs_code_analysis",
   ]
-}
-if (current_os == "winrt_81" || current_os == "winrt_81_phone" ||
-    current_os == "winrt_10") {
-  default_compiler_configs += [ "//build/config/win:target_winrt" ]
 }
 
 if (is_posix) {
