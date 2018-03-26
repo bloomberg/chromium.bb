@@ -192,6 +192,7 @@ class CONTENT_EXPORT ResourceDispatcher {
     linked_ptr<base::SharedMemory> buffer;
     int buffer_size;
     net::IPAddress parsed_ip;
+    std::string mime_type;
 
     // For mojo loading.
     std::unique_ptr<ThrottlingURLLoader> url_loader;
