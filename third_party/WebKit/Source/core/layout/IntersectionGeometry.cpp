@@ -6,9 +6,11 @@
 
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutView.h"
+#include "core/page/Page.h"
 #include "core/paint/PaintLayer.h"
 
 namespace blink {
@@ -113,9 +115,19 @@ void IntersectionGeometry::InitializeTargetRect() {
 void IntersectionGeometry::InitializeRootRect() {
   if (root_->IsLayoutView() &&
       !RuntimeEnabledFeatures::RootLayerScrollingEnabled()) {
-    root_rect_ =
-        LayoutRect(ToLayoutView(root_)->GetFrameView()->VisibleContentRect());
+    root_rect_ = LayoutRect(root_->GetFrameView()->VisibleContentRect());
     root_->MapToVisualRectInAncestorSpace(nullptr, root_rect_);
+  } else if (root_->IsLayoutView() && root_->GetDocument().IsInMainFrame() &&
+             root_->GetDocument()
+                 .GetPage()
+                 ->GetSettings()
+                 .GetForceZeroLayoutHeight()) {
+    // The ForceZeroLayoutHeight quirk setting is used in Android WebView for
+    // compatibility and sets the initial-containing-block's (a.k.a.
+    // LayoutView) height to 0. Thus, we can't use its size for intersection
+    // testing. Use the FrameView geometry instead.
+    root_rect_ = LayoutRect(
+        LayoutPoint(), LayoutSize(root_->GetFrameView()->VisibleContentSize()));
   } else if (root_->IsBox() && root_->HasOverflowClip()) {
     root_rect_ = LayoutRect(ToLayoutBox(root_)->ContentBoxRect());
   } else {
