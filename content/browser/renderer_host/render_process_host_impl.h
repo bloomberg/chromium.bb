@@ -180,7 +180,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
   void AddWidget(RenderWidgetHost* widget) override;
   void RemoveWidget(RenderWidgetHost* widget) override;
 #if defined(OS_ANDROID)
-  ChildProcessImportance ComputeEffectiveImportance() override;
+  ChildProcessImportance GetEffectiveImportance() override;
 #endif
   void SetSuddenTerminationAllowed(bool enabled) override;
   bool SuddenTerminationAllowed() const override;

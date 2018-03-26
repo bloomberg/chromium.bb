@@ -257,7 +257,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
 
 #if defined(OS_ANDROID)
   // Return the highest importance of all widgets in this process.
-  virtual ChildProcessImportance ComputeEffectiveImportance() = 0;
+  virtual ChildProcessImportance GetEffectiveImportance() = 0;
 #endif
 
   // Sets a flag indicating that the process can be abnormally terminated.

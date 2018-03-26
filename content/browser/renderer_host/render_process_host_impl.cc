@@ -2327,7 +2327,7 @@ int RenderProcessHostImpl::VisibleClientCount() const {
 }
 
 #if defined(OS_ANDROID)
-ChildProcessImportance RenderProcessHostImpl::ComputeEffectiveImportance() {
+ChildProcessImportance RenderProcessHostImpl::GetEffectiveImportance() {
   return effective_importance_;
 }
 #endif
@@ -3885,7 +3885,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     // boost_for_pending_views
     !!pending_views_,
 #if defined(OS_ANDROID)
-    ComputeEffectiveImportance(),
+    GetEffectiveImportance(),
 #endif
   };
 
