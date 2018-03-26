@@ -137,6 +137,32 @@ void PDFResource::Print() {
   Post(RENDERER, PpapiHostMsg_PDF_Print());
 }
 
+void PDFResource::ShowAlertDialog(const char* message) {
+  SyncCall<PpapiPluginMsg_PDF_ShowAlertDialogReply>(
+      RENDERER, PpapiHostMsg_PDF_ShowAlertDialog(message));
+}
+
+bool PDFResource::ShowConfirmDialog(const char* message) {
+  bool bool_result = false;
+  if (SyncCall<PpapiPluginMsg_PDF_ShowConfirmDialogReply>(
+          RENDERER, PpapiHostMsg_PDF_ShowConfirmDialog(message),
+          &bool_result) != PP_OK) {
+    return false;
+  }
+  return bool_result;
+}
+
+PP_Var PDFResource::ShowPromptDialog(const char* message,
+                                     const char* default_answer) {
+  std::string str_result;
+  if (SyncCall<PpapiPluginMsg_PDF_ShowPromptDialogReply>(
+          RENDERER, PpapiHostMsg_PDF_ShowPromptDialog(message, default_answer),
+          &str_result) != PP_OK) {
+    return PP_MakeUndefined();
+  }
+  return StringVar::StringToPPVar(str_result);
+}
+
 void PDFResource::SaveAs() {
   Post(RENDERER, PpapiHostMsg_PDF_SaveAs());
 }

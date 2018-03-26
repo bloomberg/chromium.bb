@@ -44,6 +44,10 @@ class PPAPI_PROXY_EXPORT PDFResource
   void UserMetricsRecordAction(const PP_Var& action) override;
   void HasUnsupportedFeature() override;
   void Print() override;
+  void ShowAlertDialog(const char* messasge) override;
+  bool ShowConfirmDialog(const char* messasge) override;
+  PP_Var ShowPromptDialog(const char* messasge,
+                          const char* default_answer) override;
   void SaveAs() override;
   PP_Bool IsFeatureEnabled(PP_PDFFeature feature) override;
   void SetSelectedText(const char* selected_text) override;

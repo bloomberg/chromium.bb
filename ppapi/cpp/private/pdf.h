@@ -44,6 +44,13 @@ class PDF {
   static void UserMetricsRecordAction(const InstanceHandle& instance,
                                       const Var& action);
   static void HasUnsupportedFeature(const InstanceHandle& instance);
+  static void ShowAlertDialog(const InstanceHandle& instance,
+                              const char* message);
+  static bool ShowConfirmDialog(const InstanceHandle& instance,
+                                const char* message);
+  static pp::Var ShowPromptDialog(const InstanceHandle& instance,
+                                  const char* message,
+                                  const char* default_answer);
   static void SaveAs(const InstanceHandle& instance);
   static void Print(const InstanceHandle& instance);
   static bool IsFeatureEnabled(const InstanceHandle& instance,

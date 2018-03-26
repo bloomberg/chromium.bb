@@ -323,24 +323,6 @@ void ScaleRect(float scale, pp::Rect* rect) {
   rect->SetRect(left, top, right - left, bottom - top);
 }
 
-// TODO(raymes): Remove this dependency on VarPrivate/InstancePrivate. It's
-// needed right now to do a synchronous call to JavaScript, but we could easily
-// replace this with a custom PPB_PDF function.
-pp::Var ModalDialog(const pp::Instance* instance,
-                    const std::string& type,
-                    const std::string& message,
-                    const std::string& default_answer) {
-  const PPB_Instance_Private* ppb_interface =
-      reinterpret_cast<const PPB_Instance_Private*>(
-          pp::Module::Get()->GetBrowserInterface(
-              PPB_INSTANCE_PRIVATE_INTERFACE));
-  pp::VarPrivate window(
-      pp::PASS_REF, ppb_interface->GetWindowObject(instance->pp_instance()));
-  if (default_answer.empty())
-    return window.Call(type, message);
-  return window.Call(type, message, default_answer);
-}
-
 }  // namespace
 
 OutOfProcessInstance::OutOfProcessInstance(PP_Instance instance)
@@ -1375,17 +1357,17 @@ void OutOfProcessInstance::GetDocumentPassword(
 }
 
 void OutOfProcessInstance::Alert(const std::string& message) {
-  ModalDialog(this, "alert", message, std::string());
+  pp::PDF::ShowAlertDialog(this, message.c_str());
 }
 
 bool OutOfProcessInstance::Confirm(const std::string& message) {
-  pp::Var result = ModalDialog(this, "confirm", message, std::string());
-  return result.is_bool() ? result.AsBool() : false;
+  return pp::PDF::ShowConfirmDialog(this, message.c_str());
 }
 
 std::string OutOfProcessInstance::Prompt(const std::string& question,
                                          const std::string& default_answer) {
-  pp::Var result = ModalDialog(this, "prompt", question, default_answer);
+  pp::Var result =
+      pp::PDF::ShowPromptDialog(this, question.c_str(), default_answer.c_str());
   return result.is_string() ? result.AsString() : std::string();
 }
 

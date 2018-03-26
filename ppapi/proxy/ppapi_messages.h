@@ -2538,6 +2538,27 @@ IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_HasUnsupportedFeature)
 // Notifies the renderer to print the current PDF.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_Print)
 
+// Notifies the renderer to display an alert dialog.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_ShowAlertDialog,
+                     std::string /* message */)
+// Reply from the renderer that the alert has been acknowledged.
+IPC_MESSAGE_CONTROL0(PpapiPluginMsg_PDF_ShowAlertDialogReply)
+
+// Notifies the renderer to display a confirmation dialog.
+IPC_MESSAGE_CONTROL1(PpapiHostMsg_PDF_ShowConfirmDialog,
+                     std::string /* message */)
+// Reply from the renderer with the results of the confirm dialog.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_PDF_ShowConfirmDialogReply,
+                     bool /* bool result */)
+
+// Notifies the renderer to display a prompt dialog.
+IPC_MESSAGE_CONTROL2(PpapiHostMsg_PDF_ShowPromptDialog,
+                     std::string /* message */,
+                     std::string /* default answer */)
+// Reply from the renderer with the results of the prompt dialog.
+IPC_MESSAGE_CONTROL1(PpapiPluginMsg_PDF_ShowPromptDialogReply,
+                     std::string /* str_result */)
+
 // Notifies the renderer to save the current PDF.
 IPC_MESSAGE_CONTROL0(PpapiHostMsg_PDF_SaveAs)
 
