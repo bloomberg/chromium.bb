@@ -11,33 +11,33 @@
 namespace viz {
 
 ChildLocalSurfaceIdAllocator::ChildLocalSurfaceIdAllocator()
-    : last_known_local_surface_id_(kInvalidParentSequenceNumber,
-                                   kInitialChildSequenceNumber,
-                                   base::UnguessableToken()) {}
+    : current_local_surface_id_(kInvalidParentSequenceNumber,
+                                kInitialChildSequenceNumber,
+                                base::UnguessableToken()) {}
 
 const LocalSurfaceId& ChildLocalSurfaceIdAllocator::UpdateFromParent(
     const LocalSurfaceId& parent_allocated_local_surface_id) {
   DCHECK_GE(parent_allocated_local_surface_id.parent_sequence_number(),
-            last_known_local_surface_id_.parent_sequence_number());
-  if (!last_known_local_surface_id_.embed_token().is_empty()) {
+            current_local_surface_id_.parent_sequence_number());
+  if (!current_local_surface_id_.embed_token().is_empty()) {
     DCHECK_EQ(parent_allocated_local_surface_id.embed_token(),
-              last_known_local_surface_id_.embed_token());
+              current_local_surface_id_.embed_token());
   }
 
-  last_known_local_surface_id_.parent_sequence_number_ =
+  current_local_surface_id_.parent_sequence_number_ =
       parent_allocated_local_surface_id.parent_sequence_number_;
-  last_known_local_surface_id_.embed_token_ =
+  current_local_surface_id_.embed_token_ =
       parent_allocated_local_surface_id.embed_token_;
-  return last_known_local_surface_id_;
+  return current_local_surface_id_;
 }
 
 const LocalSurfaceId& ChildLocalSurfaceIdAllocator::GenerateId() {
   // UpdateFromParent must be called before we can generate a valid ID.
-  DCHECK_NE(last_known_local_surface_id_.parent_sequence_number(),
+  DCHECK_NE(current_local_surface_id_.parent_sequence_number(),
             kInvalidParentSequenceNumber);
 
-  ++last_known_local_surface_id_.child_sequence_number_;
-  return last_known_local_surface_id_;
+  ++current_local_surface_id_.child_sequence_number_;
+  return current_local_surface_id_;
 }
 
 }  // namespace viz

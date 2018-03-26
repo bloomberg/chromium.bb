@@ -36,12 +36,12 @@ class VIZ_COMMON_EXPORT ChildLocalSurfaceIdAllocator {
 
   const LocalSurfaceId& GenerateId();
 
-  const LocalSurfaceId& last_known_local_surface_id() const {
-    return last_known_local_surface_id_;
+  const LocalSurfaceId& GetCurrentLocalSurfaceId() const {
+    return current_local_surface_id_;
   }
 
  private:
-  LocalSurfaceId last_known_local_surface_id_;
+  LocalSurfaceId current_local_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ChildLocalSurfaceIdAllocator);
 };

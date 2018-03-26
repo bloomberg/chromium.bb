@@ -221,7 +221,7 @@ void BrowserPlugin::Detach() {
 }
 
 const viz::LocalSurfaceId& BrowserPlugin::GetLocalSurfaceId() const {
-  return parent_local_surface_id_allocator_.last_known_local_surface_id();
+  return parent_local_surface_id_allocator_.GetCurrentLocalSurfaceId();
 }
 
 #if defined(USE_AURA)
