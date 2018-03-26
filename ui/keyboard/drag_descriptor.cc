@@ -10,8 +10,10 @@
 namespace keyboard {
 
 DragDescriptor::DragDescriptor(const gfx::Point& keyboard_location,
-                               const gfx::Vector2d& click_offset)
+                               const gfx::Vector2d& click_offset,
+                               bool is_touch_drag)
     : original_keyboard_location_(keyboard_location),
-      original_click_offset_(click_offset) {}
+      original_click_offset_(click_offset),
+      is_touch_drag_(is_touch_drag) {}
 
 }  // namespace keyboard

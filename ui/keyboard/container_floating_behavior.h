@@ -84,10 +84,6 @@ class KEYBOARD_EXPORT ContainerFloatingBehavior : public ContainerBehavior {
   // Otherwise nullptr.
   std::unique_ptr<DragDescriptor> drag_descriptor_ = nullptr;
 
-  // Distinguish whether the current drag is from a touch event or mouse event,
-  // so drag/move events can be filtered accordingly
-  bool drag_started_by_touch_ = false;
-
   gfx::Rect draggable_area_ = gfx::Rect();
 };
 

@@ -18,16 +18,22 @@ namespace keyboard {
 class DragDescriptor {
  public:
   DragDescriptor(const gfx::Point& keyboard_location,
-                 const gfx::Vector2d& click_offset);
+                 const gfx::Vector2d& click_offset,
+                 bool is_touch_drag);
 
   gfx::Point original_keyboard_location() const {
     return original_keyboard_location_;
   }
   gfx::Vector2d original_click_offset() const { return original_click_offset_; }
+  bool is_touch_drag() { return is_touch_drag_; }
 
  private:
   const gfx::Point original_keyboard_location_;
   const gfx::Vector2d original_click_offset_;
+
+  // Distinguish whether the current drag is from a touch event or mouse event,
+  // so drag/move events can be filtered accordingly
+  const bool is_touch_drag_;
 };
 
 }  // namespace keyboard
