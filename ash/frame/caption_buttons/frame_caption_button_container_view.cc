@@ -7,6 +7,7 @@
 #include <cmath>
 #include <map>
 
+#include "ash/frame/caption_buttons/caption_button_model.h"
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_size_button.h"
 #include "ash/shell.h"
@@ -106,6 +107,46 @@ double CapAnimationValue(double value) {
   return std::min(1.0, std::max(0.0, value));
 }
 
+// A default CaptionButtonModel that uses the widget delegate's state
+// to determine if each button should be visible and enabled.
+class DefaultCaptionButtonModel : public CaptionButtonModel {
+ public:
+  explicit DefaultCaptionButtonModel(views::Widget* frame) : frame_(frame) {}
+  ~DefaultCaptionButtonModel() override {}
+
+  // CaptionButtonModel:
+  bool IsVisible(CaptionButtonIcon type) const override {
+    switch (type) {
+      case CAPTION_BUTTON_ICON_MINIMIZE:
+        return frame_->widget_delegate()->CanMinimize();
+      case CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE:
+        return !Shell::Get()
+                    ->tablet_mode_controller()
+                    ->IsTabletModeWindowManagerEnabled() &&
+               frame_->widget_delegate()->CanMaximize();
+      // Resizable widget can be snapped.
+      case CAPTION_BUTTON_ICON_LEFT_SNAPPED:
+      case CAPTION_BUTTON_ICON_RIGHT_SNAPPED:
+        return frame_->widget_delegate()->CanResize();
+      case CAPTION_BUTTON_ICON_CLOSE:
+        return true;
+      case CAPTION_BUTTON_ICON_BACK:
+        return false;
+      case CAPTION_BUTTON_ICON_LOCATION:
+      case CAPTION_BUTTON_ICON_COUNT:
+        break;
+        // not used
+    }
+    NOTREACHED();
+    return false;
+  }
+  bool IsEnabled(CaptionButtonIcon type) const override { return true; }
+
+ private:
+  views::Widget* frame_;
+  DISALLOW_COPY_AND_ASSIGN(DefaultCaptionButtonModel);
+};
+
 }  // namespace
 
 // static
@@ -114,7 +155,14 @@ const char FrameCaptionButtonContainerView::kViewClassName[] =
 
 FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     views::Widget* frame)
-    : frame_(frame) {
+    : FrameCaptionButtonContainerView(frame, nullptr) {}
+
+FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
+    views::Widget* frame,
+    std::unique_ptr<CaptionButtonModel> model)
+    : frame_(frame),
+      model_(model ? std::move(model)
+                   : std::make_unique<DefaultCaptionButtonModel>(frame)) {
   constexpr int kTouchOptimizedCaptionButtonsSpacing = 8;
   auto layout = std::make_unique<views::BoxLayout>(
       views::BoxLayout::kHorizontal, gfx::Insets(),
@@ -124,31 +172,30 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
   layout->set_cross_axis_alignment(
       views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
   SetLayoutManager(std::move(layout));
-  bool size_button_visibility = ShouldSizeButtonBeVisible();
   tablet_mode_animation_.reset(new gfx::SlideAnimation(this));
   tablet_mode_animation_->SetTweenType(gfx::Tween::LINEAR);
 
   // Ensure animation tracks visibility of size button.
-  if (size_button_visibility)
+  if (model_->IsVisible(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE))
     tablet_mode_animation_->Reset(1.0f);
 
   // Insert the buttons left to right.
   minimize_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MINIMIZE);
   minimize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
-  minimize_button_->SetVisible(frame_->widget_delegate()->CanMinimize());
   AddChildView(minimize_button_);
 
   size_button_ = new FrameSizeButton(this, frame, this);
   size_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MAXIMIZE));
-  size_button_->SetVisible(size_button_visibility);
   AddChildView(size_button_);
 
   close_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_CLOSE);
   close_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_CLOSE));
   AddChildView(close_button_);
+
+  UpdateCaptionButtonState(false /* animate */);
 }
 
 FrameCaptionButtonContainerView::~FrameCaptionButtonContainerView() = default;
@@ -202,22 +249,38 @@ int FrameCaptionButtonContainerView::NonClientHitTest(
   return HTNOWHERE;
 }
 
-void FrameCaptionButtonContainerView::UpdateSizeButtonVisibility() {
-  bool visible = ShouldSizeButtonBeVisible();
-  if (visible) {
+void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
+  bool size_button_visible =
+      model_->IsVisible(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE);
+  if (size_button_visible) {
     size_button_->SetVisible(true);
-    tablet_mode_animation_->SetSlideDuration(kShowAnimationDurationMs);
-    tablet_mode_animation_->Show();
+    if (animate) {
+      tablet_mode_animation_->SetSlideDuration(kShowAnimationDurationMs);
+      tablet_mode_animation_->Show();
+    }
   } else {
-    tablet_mode_animation_->SetSlideDuration(kHideAnimationDurationMs);
-    tablet_mode_animation_->Hide();
+    if (animate) {
+      tablet_mode_animation_->SetSlideDuration(kHideAnimationDurationMs);
+      tablet_mode_animation_->Hide();
+    } else {
+      size_button_->SetVisible(false);
+    }
   }
+  size_button_->SetEnabled(
+      model_->IsEnabled(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE));
+  minimize_button_->SetVisible(model_->IsVisible(CAPTION_BUTTON_ICON_MINIMIZE));
+  minimize_button_->SetEnabled(model_->IsEnabled(CAPTION_BUTTON_ICON_MINIMIZE));
 }
 
 void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
   minimize_button_->SetPreferredSize(size);
   size_button_->SetPreferredSize(size);
   close_button_->SetPreferredSize(size);
+}
+
+void FrameCaptionButtonContainerView::SetModel(
+    std::unique_ptr<CaptionButtonModel> model) {
+  model_ = std::move(model);
 }
 
 void FrameCaptionButtonContainerView::Layout() {
@@ -309,13 +372,6 @@ void FrameCaptionButtonContainerView::SetButtonIcon(FrameCaptionButton* button,
   auto it = button_icon_map_.find(icon);
   if (it != button_icon_map_.end())
     button->SetImage(icon, fcb_animate, *it->second);
-}
-
-bool FrameCaptionButtonContainerView::ShouldSizeButtonBeVisible() const {
-  return !Shell::Get()
-              ->tablet_mode_controller()
-              ->IsTabletModeWindowManagerEnabled() &&
-         frame_->widget_delegate()->CanMaximize();
 }
 
 void FrameCaptionButtonContainerView::ButtonPressed(views::Button* sender,

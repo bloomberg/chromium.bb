@@ -59,6 +59,7 @@ class ASH_EXPORT DefaultFrameHeader : public FrameHeader,
   void set_back_button(FrameCaptionButton* back_button) {
     back_button_ = back_button;
   }
+  FrameCaptionButton* back_button() { return back_button_; }
 
   // Sets the active and inactive frame colors. Note the inactive frame color
   // will have some transparency added when the frame is drawn.
