@@ -674,6 +674,21 @@ void GpuServiceImpl::DestroyAllChannels() {
   gpu_channel_manager_->DestroyAllChannels();
 }
 
+void GpuServiceImpl::OnBackgrounded() {
+// Currently only called on Android.
+#if defined(OS_ANDROID)
+  if (io_runner_->BelongsToCurrentThread()) {
+    main_runner_->PostTask(
+        FROM_HERE, base::BindOnce(&GpuServiceImpl::OnBackgrounded, weak_ptr_));
+    return;
+  }
+  DVLOG(1) << "GPU: Performing background cleanup";
+  gpu_channel_manager_->OnApplicationBackgrounded();
+#else
+  NOTREACHED();
+#endif
+}
+
 void GpuServiceImpl::Crash() {
   DCHECK(io_runner_->BelongsToCurrentThread());
   DVLOG(1) << "GPU: Simulating GPU crash";

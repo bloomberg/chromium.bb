@@ -35,6 +35,7 @@
 #include "cc/resources/ui_resource_manager.h"
 #include "cc/trees/layer_tree_host.h"
 #include "cc/trees/layer_tree_settings.h"
+#include "components/viz/client/frame_eviction_manager.h"
 #include "components/viz/common/features.h"
 #include "components/viz/common/gl_helper.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -54,6 +55,7 @@
 #include "content/browser/browser_main_loop.h"
 #include "content/browser/compositor/surface_utils.h"
 #include "content/browser/gpu/compositor_util.h"
+#include "content/browser/gpu/gpu_process_host.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/common/gpu_stream_constants.h"
 #include "content/public/browser/android/compositor.h"
@@ -659,11 +661,13 @@ void CompositorImpl::SetVisible(bool visible) {
           root_window_->GetBeginFrameSource());
     }
     display_.reset();
+    EnqueueLowEndBackgroundCleanup();
   } else {
     host_->SetVisible(true);
     has_submitted_frame_since_became_visible_ = false;
     if (layer_tree_frame_sink_request_pending_)
       HandlePendingLayerTreeFrameSinkRequest();
+    low_end_background_cleanup_task_.Cancel();
   }
 }
 
@@ -1002,6 +1006,37 @@ bool CompositorImpl::IsDrawingFirstVisibleFrame() const {
 void CompositorImpl::OnCompositorLockStateChanged(bool locked) {
   if (host_)
     host_->SetDeferCommits(locked);
+}
+
+void CompositorImpl::EnqueueLowEndBackgroundCleanup() {
+  if (base::SysInfo::IsLowEndDevice()) {
+    low_end_background_cleanup_task_.Reset(
+        base::BindOnce(&CompositorImpl::DoLowEndBackgroundCleanup,
+                       weak_factory_.GetWeakPtr()));
+    base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+        FROM_HERE, low_end_background_cleanup_task_.callback(),
+        base::TimeDelta::FromSeconds(5));
+  }
+}
+
+void CompositorImpl::DoLowEndBackgroundCleanup() {
+  // When we become visible, we immediately cancel the callback that runs this
+  // code.
+  DCHECK(!host_->IsVisible());
+
+  // First, evict all unlocked frames, allowing resources to be reclaimed.
+  viz::FrameEvictionManager::GetInstance()->PurgeAllUnlockedFrames();
+
+  // Next, notify the GPU process to do background processing, which will
+  // lose all renderer contexts.
+  content::GpuProcessHost::CallOnIO(
+      content::GpuProcessHost::GPU_PROCESS_KIND_SANDBOXED,
+      false /* force_create */,
+      base::BindRepeating([](content::GpuProcessHost* host) {
+        if (host) {
+          host->gpu_service()->OnBackgrounded();
+        }
+      }));
 }
 
 }  // namespace content

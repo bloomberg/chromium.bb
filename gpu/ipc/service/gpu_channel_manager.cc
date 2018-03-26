@@ -73,31 +73,15 @@ GpuChannelManager::GpuChannelManager(
       shader_translator_cache_(gpu_preferences_),
       gpu_memory_buffer_factory_(gpu_memory_buffer_factory),
       gpu_feature_info_(gpu_feature_info),
-#if defined(OS_ANDROID)
-      is_backgrounded_for_testing_(false),
-#endif
       exiting_for_lost_context_(false),
       activity_flags_(std::move(activity_flags)),
       memory_pressure_listener_(
           base::Bind(&GpuChannelManager::HandleMemoryPressure,
                      base::Unretained(this))),
       weak_factory_(this) {
-  // |application_status_listener_| must be created on the right task runner.
   DCHECK(task_runner->BelongsToCurrentThread());
   DCHECK(io_task_runner);
   DCHECK(scheduler);
-
-#if defined(OS_ANDROID)
-  // ApplicationStatusListener does not currently support being used from
-  // non-browser processes. Enable this optimization only for low-end, where GPU
-  // is run in-process.
-  if (base::SysInfo::IsLowEndDevice()) {
-    // Runs on GPU main thread and unregisters when the listener is destroyed,
-    // So, Unretained is fine here.
-    application_status_listener_.emplace(base::Bind(
-        &GpuChannelManager::OnApplicationStateChange, base::Unretained(this)));
-  }
-#endif
 }
 
 GpuChannelManager::~GpuChannelManager() {
@@ -270,43 +254,7 @@ void GpuChannelManager::DoWakeUpGpu() {
   DidAccessGpu();
 }
 
-void GpuChannelManager::OnApplicationStateChange(
-    base::android::ApplicationState state) {
-  // TODO(ericrk): Temporarily disable the context release logic due to
-  // https://crbug.com/792120. Re-enable when the fix lands.
-  return;
-
-  if (state != base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES) {
-    return;
-  }
-
-  // Clear the GL context on low-end devices after a 5 second delay, so that we
-  // don't clear in case the user pressed the home or recents button by mistake
-  // and got back to Chrome quickly.
-  const int64_t kDelayToClearContextMs = 5000;
-
-  task_runner_->PostDelayedTask(
-      FROM_HERE,
-      base::Bind(&GpuChannelManager::OnApplicationBackgrounded,
-                 weak_factory_.GetWeakPtr()),
-      base::TimeDelta::FromMilliseconds(kDelayToClearContextMs));
-  return;
-}
-
-void GpuChannelManager::OnApplicationBackgroundedForTesting() {
-  is_backgrounded_for_testing_ = true;
-  OnApplicationBackgrounded();
-}
-
 void GpuChannelManager::OnApplicationBackgrounded() {
-  // Check if the app is still in background after the delay.
-  auto state = base::android::ApplicationStatusListener::GetState();
-  if (state != base::android::APPLICATION_STATE_HAS_STOPPED_ACTIVITIES &&
-      state != base::android::APPLICATION_STATE_HAS_DESTROYED_ACTIVITIES &&
-      !is_backgrounded_for_testing_) {
-    return;
-  }
-
   // Delete all the GL contexts when the channel does not use WebGL and Chrome
   // goes to background on low-end devices.
   std::vector<int> channels_to_clear;

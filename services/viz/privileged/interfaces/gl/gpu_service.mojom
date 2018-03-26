@@ -85,6 +85,11 @@ interface GpuService {
 
   DestroyAllChannels();
 
+  // Called by the browser when the application is backgrounded. The GPU can use
+  // this message to perform appropriate cleanup. Note that this is currently
+  // only invoked on low-end Android.
+  OnBackgrounded();
+
   Crash();
   Hang();
   ThrowJavaException();

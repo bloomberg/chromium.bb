@@ -47,4 +47,8 @@ specific_include_rules = {
     "+content/shell/common/shell_switches.h",
     "+services/ui/public/cpp/gpu",
   ],
+  "gpu_browsertest_helpers.cc": [
+    "+services/ui/public/cpp/gpu/command_buffer_metrics.h",
+    "+services/ui/public/cpp/gpu/context_provider_command_buffer.h",
+  ],
 }

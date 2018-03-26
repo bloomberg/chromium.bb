@@ -52,6 +52,9 @@ class VIZ_CLIENT_EXPORT FrameEvictionManager
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
 
+  // Purges all unlocked frames, allowing us to reclaim resources.
+  void PurgeAllUnlockedFrames();
+
  private:
   FrameEvictionManager();
   ~FrameEvictionManager() override;
