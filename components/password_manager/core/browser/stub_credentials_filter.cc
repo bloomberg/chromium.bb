@@ -17,8 +17,8 @@ StubCredentialsFilter::FilterResults(
   return results;
 }
 
-bool StubCredentialsFilter::ShouldSave(const autofill::PasswordForm& form,
-                                       const GURL& main_frame_url) const {
+bool StubCredentialsFilter::ShouldSave(
+    const autofill::PasswordForm& form) const {
   return true;
 }
 

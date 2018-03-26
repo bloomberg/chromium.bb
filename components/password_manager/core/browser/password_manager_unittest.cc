@@ -48,9 +48,7 @@ namespace {
 
 class MockStoreResultFilter : public StubCredentialsFilter {
  public:
-  MOCK_CONST_METHOD2(ShouldSave,
-                     bool(const autofill::PasswordForm& form,
-                          const GURL& main_frame_url));
+  MOCK_CONST_METHOD1(ShouldSave, bool(const autofill::PasswordForm& form));
   MOCK_CONST_METHOD1(ReportFormLoginSuccess,
                      void(const PasswordFormManager& form_manager));
 };
@@ -61,7 +59,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
     EXPECT_CALL(*this, GetStoreResultFilter())
         .Times(AnyNumber())
         .WillRepeatedly(Return(&filter_));
-    ON_CALL(filter_, ShouldSave(_, _)).WillByDefault(Return(true));
+    ON_CALL(filter_, ShouldSave(_)).WillByDefault(Return(true));
   }
 
   MOCK_CONST_METHOD0(IsSavingAndFillingEnabledForCurrentPage, bool());
@@ -100,7 +98,7 @@ class MockPasswordManagerClient : public StubPasswordManagerClient {
   }
 
   void FilterAllResultsForSaving() {
-    EXPECT_CALL(filter_, ShouldSave(_, _)).WillRepeatedly(Return(false));
+    EXPECT_CALL(filter_, ShouldSave(_)).WillRepeatedly(Return(false));
   }
 
  private:
@@ -809,7 +807,7 @@ TEST_F(PasswordManagerTest, ReportFormLoginSuccessAndShouldSaveCalled) {
 
   PasswordForm submitted_form = observed_form;
   submitted_form.preferred = true;
-  EXPECT_CALL(*client_.GetStoreResultFilter(), ShouldSave(submitted_form, _));
+  EXPECT_CALL(*client_.GetStoreResultFilter(), ShouldSave(submitted_form));
   EXPECT_CALL(*store_, UpdateLogin(_));
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);

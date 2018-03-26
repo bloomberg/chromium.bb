@@ -48,6 +48,9 @@ re2::RE2* CreateMatcher(void* instance, const char* pattern);
 // Tests whether the given form is a GAIA reauthentication form.
 bool IsGaiaReauthenticationForm(const blink::WebFormElement& form);
 
+// Tests whether the given form is a GAIA form with a skip password argument.
+bool IsGaiaWithSkipSavePasswordForm(const blink::WebFormElement& form);
+
 typedef std::map<
     const blink::WebFormControlElement,
     std::pair<std::unique_ptr<base::string16>, FieldPropertiesMask>>

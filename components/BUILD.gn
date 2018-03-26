@@ -473,6 +473,7 @@ if (!is_ios) {
       "//content/test:test_support",
       "//device/bluetooth",
       "//device/geolocation/public/cpp:test_support",
+      "//google_apis",
       "//ipc:test_support",
       "//net:test_support",
       "//printing/features",
