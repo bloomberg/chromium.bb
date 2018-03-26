@@ -26,10 +26,10 @@ function MockFileSystem(volumeId, opt_rootURL) {
 
   /** @type {!Object<!Entry>} */
   this.entries = {};
-  this.entries['/'] = new MockDirectoryEntry(this, '');
+  this.entries['/'] = new MockDirectoryEntry(this, '/');
 
   /** @type {string} */
-  this.rootURL = opt_rootURL || 'filesystem:' + volumeId;
+  this.rootURL = opt_rootURL || 'filesystem:' + volumeId + '/';
 }
 
 MockFileSystem.prototype = {
@@ -50,7 +50,7 @@ MockFileSystem.prototype = {
  */
 MockFileSystem.prototype.populate = function(entries, opt_clear) {
   if (opt_clear)
-    this.entries = {'/': new MockDirectoryEntry(this, '')};
+    this.entries = {'/': new MockDirectoryEntry(this, '/')};
   entries.forEach(function(entry) {
     var path = entry.fullPath || entry;
     var metadata = entry.metadata || {size: 0};
@@ -142,7 +142,7 @@ MockEntry.prototype.toURL = function() {
     segments[i] = encodeURIComponent(segments[i]);
   }
 
-  return this.filesystem.rootURL + segments.join('/');
+  return joinPath(this.filesystem.rootURL, segments.join('/'));
 };
 
 /**
@@ -173,7 +173,7 @@ MockEntry.prototype.getParent = function(
  */
 MockEntry.prototype.moveTo = function(parent, opt_newName, onSuccess, onError) {
   Promise.resolve().then(function() {
-    this.filesystem.entries[this.fullPath] = null;
+    delete this.filesystem.entries[this.fullPath];
     return this.clone(
         joinPath(parent.fullPath, opt_newName || this.name),
         parent.filesystem);
@@ -204,7 +204,7 @@ MockEntry.prototype.copyTo =
 MockEntry.prototype.remove = function(onSuccess, onError) {
   this.removed_ = true;
   Promise.resolve().then(function() {
-    this.filesystem.entries[this.fullPath] = null;
+    delete this.filesystem.entries[this.fullPath];
   }.bind(this)).then(onSuccess, onError);
 };
 
@@ -270,11 +270,14 @@ MockFileEntry.prototype.clone = function(path, opt_filesystem) {
  *
  * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path for the entry.
- * @param {Object} metadata Metadata.
+ * @param {Object=} opt_metadata Metadata.
  * @extends {MockEntry}
  * @constructor
  */
-function MockDirectoryEntry(filesystem, fullPath, metadata) {
+function MockDirectoryEntry(filesystem, fullPath, opt_metadata) {
+  var metadata = opt_metadata || {};
+  metadata.size = metadata.size || 0;
+  metadata.modificationTime = metadata.modificationTime || new Date();
   MockEntry.call(this, filesystem, fullPath, metadata);
   this.isFile = false;
   this.isDirectory = true;

@@ -3,19 +3,21 @@
 // found in the LICENSE file.
 
 function testDeleteMenuItemIsDisabledWhenNoItemIsSelected(done) {
-  setupAndWaitUntilReady()
-      .then(detailTable => {
-        return waitForElement('list.list');
+  test.setupAndWaitUntilReady()
+      .then(() => {
+        return test.waitForElement('list.list');
       })
-      .then(emptySpace => {
-        assertTrue(test.util.sync.fakeMouseRightClick(window, 'list.list'));
-        return waitForElement('#file-context-menu:not([hidden])');
+      .then(() => {
+        assertTrue(test.fakeMouseRightClick('list.list'));
+        return test.waitForElement('#file-context-menu:not([hidden])');
       })
-      .then(result => {
-        return waitForElement(
+      .then(() => {
+        return test.waitForElement(
             'cr-menu-item[command="#delete"][disabled="disabled"]');
       })
-      .then(result => {
+      .then(() => {
+        // Click back on empty list to close #file-context-menu.
+        assertTrue(test.fakeMouseClick('list.list'));
         done();
       })
       .catch(err => {
@@ -25,42 +27,42 @@ function testDeleteMenuItemIsDisabledWhenNoItemIsSelected(done) {
 }
 
 function testDeleteOneItemFromToolbar(done) {
-  var beforeDeletion = TestEntryInfo.getExpectedRows([
-      ENTRIES.photos,
-      ENTRIES.hello,
-      ENTRIES.world,
-      ENTRIES.desktop,
-      ENTRIES.beautiful
+  var beforeDeletion = test.TestEntryInfo.getExpectedRows([
+    test.ENTRIES.photos,
+    test.ENTRIES.hello,
+    test.ENTRIES.world,
+    test.ENTRIES.desktop,
+    test.ENTRIES.beautiful,
   ]);
 
-  var afterDeletion = TestEntryInfo.getExpectedRows([
-      ENTRIES.photos,
-      ENTRIES.hello,
-      ENTRIES.world,
-      ENTRIES.beautiful
+  var afterDeletion = test.TestEntryInfo.getExpectedRows([
+    test.ENTRIES.photos,
+    test.ENTRIES.hello,
+    test.ENTRIES.world,
+    test.ENTRIES.beautiful,
   ]);
 
-  setupAndWaitUntilReady()
+  test.setupAndWaitUntilReady()
       .then(detailTable => {
-        return waitForFiles(beforeDeletion);
+        return test.waitForFiles(beforeDeletion);
       })
       .then(result => {
-        return test.util.sync.selectFile(window, 'My Desktop Background.png');
-      })
-      .then(result => {
-        assertTrue(result);
-        return test.util.sync.fakeMouseClick(window, 'button#delete-button');
+        return test.selectFile('My Desktop Background.png');
       })
       .then(result => {
         assertTrue(result);
-        return waitForElement('.cr-dialog-container.shown');
-      })
-      .then(result => {
-        return test.util.sync.fakeMouseClick(window, 'button.cr-dialog-ok');
+        return test.fakeMouseClick('button#delete-button');
       })
       .then(result => {
         assertTrue(result);
-        return waitForFiles(afterDeletion);
+        return test.waitForElement('.cr-dialog-container.shown');
+      })
+      .then(result => {
+        return test.fakeMouseClick('button.cr-dialog-ok');
+      })
+      .then(result => {
+        assertTrue(result);
+        return test.waitForFiles(afterDeletion);
       })
       .then(result => {
         done();

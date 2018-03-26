@@ -62,6 +62,7 @@ loadTimeData.data = new Proxy(
       SIZE_COLUMN_LABEL: 'Size',
       SPACE_AVAILABLE: '$1 available',
       STATUS_COLUMN_LABEL: 'Status',
+      TIME_TODAY: 'Today $1',
       TYPE_COLUMN_LABEL: 'Type',
       UI_LOCALE: 'en_US',
       RECENT_ROOT_LABEL: 'Recent',
