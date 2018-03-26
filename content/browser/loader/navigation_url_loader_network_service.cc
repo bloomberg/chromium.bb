@@ -20,11 +20,11 @@
 #include "content/browser/file_url_loader_factory.h"
 #include "content/browser/frame_host/frame_tree_node.h"
 #include "content/browser/frame_host/navigation_request_info.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_resource_handler.h"
 #include "content/browser/loader/navigation_url_loader_delegate.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
-#include "content/browser/loader/url_loader_request_handler.h"
 #include "content/browser/resource_context_impl.h"
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
@@ -72,7 +72,8 @@ namespace content {
 
 namespace {
 
-bool IsRequestHandlerEnabled() {
+// Returns true if interception by NavigationLoaderInterceptors is enabled.
+bool IsLoaderInterceptionEnabled() {
   return base::FeatureList::IsEnabled(network::features::kNetworkService) ||
          base::FeatureList::IsEnabled(features::kSignedHTTPExchange);
 }
@@ -276,7 +277,7 @@ void UnknownSchemeCallback(bool handled_externally,
 // Kept around during the lifetime of the navigation request, and is
 // responsible for dispatching a ResourceRequest to the appropriate
 // URLLoader.  In order to get the right URLLoader it builds a vector
-// of URLLoaderRequestHandler's and successively calls MaybeCreateLoader
+// of NavigationLoaderInterceptors and successively calls MaybeCreateLoader
 // on each until the request is successfully handled. The same sequence
 // may be performed multiple times when redirects happen.
 // TODO(michaeln): Expose this class and add more unittests.
@@ -284,7 +285,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     : public network::mojom::URLLoaderClient {
  public:
   URLLoaderRequestController(
-      std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers,
+      std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
+          initial_interceptors,
       std::unique_ptr<network::ResourceRequest> resource_request,
       ResourceContext* resource_context,
       scoped_refptr<URLLoaderFactoryGetter> default_url_loader_factory_getter,
@@ -295,7 +297,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       network::mojom::URLLoaderFactoryPtrInfo proxied_factory_info,
       std::set<std::string> known_schemes,
       const base::WeakPtr<NavigationURLLoaderNetworkService>& owner)
-      : handlers_(std::move(initial_handlers)),
+      : interceptors_(std::move(initial_interceptors)),
         resource_request_(std::move(resource_request)),
         resource_context_(resource_context),
         default_url_loader_factory_getter_(default_url_loader_factory_getter),
@@ -349,7 +351,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       // unretained |this|, because the passed callback will be used by a
       // SignedExchangeHandler which is indirectly owned by |this| until its
       // header is verified and parsed, that's where the getter is used.
-      handlers_.push_back(std::make_unique<WebPackageRequestHandler>(
+      interceptors_.push_back(std::make_unique<WebPackageRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
           GetURLLoaderOptions(request_info->is_main_frame),
           base::MakeRefCounted<
@@ -469,7 +471,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
       storage::BlobStorageContext* blob_storage_context = GetBlobStorageContext(
           GetChromeBlobStorageContextForResourceContext(resource_context_));
-      std::unique_ptr<URLLoaderRequestHandler> service_worker_handler =
+      std::unique_ptr<NavigationLoaderInterceptor> service_worker_interceptor =
           ServiceWorkerRequestHandler::InitializeForNavigationNetworkService(
               *resource_request_, resource_context_,
               service_worker_navigation_handle_core, blob_storage_context,
@@ -477,17 +479,17 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
               request_info->begin_params->request_context_type, frame_type,
               request_info->are_ancestors_secure,
               request_info->common_params.post_data, web_contents_getter_);
-      if (service_worker_handler)
-        handlers_.push_back(std::move(service_worker_handler));
+      if (service_worker_interceptor)
+        interceptors_.push_back(std::move(service_worker_interceptor));
     }
 
     if (appcache_handle_core) {
-      std::unique_ptr<URLLoaderRequestHandler> appcache_handler =
+      std::unique_ptr<NavigationLoaderInterceptor> appcache_interceptor =
           AppCacheRequestHandler::InitializeForNavigationNetworkService(
               *resource_request_, appcache_handle_core,
               default_url_loader_factory_getter_.get());
-      if (appcache_handler)
-        handlers_.push_back(std::move(appcache_handler));
+      if (appcache_interceptor)
+        interceptors_.push_back(std::move(appcache_interceptor));
     }
 
     if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
@@ -495,7 +497,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       // unretained |this|, because the passed callback will be used by a
       // SignedExchangeHandler which is indirectly owned by |this| until its
       // header is verified and parsed, that's where the getter is used.
-      handlers_.push_back(std::make_unique<WebPackageRequestHandler>(
+      interceptors_.push_back(std::make_unique<WebPackageRequestHandler>(
           url::Origin::Create(request_info->common_params.url),
           GetURLLoaderOptions(request_info->is_main_frame),
           default_url_loader_factory_getter_->GetNetworkFactory(),
@@ -510,30 +512,32 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
   // This could be called multiple times to follow a chain of redirects.
   void Restart() {
-    DCHECK(IsRequestHandlerEnabled());
+    DCHECK(IsLoaderInterceptionEnabled());
     // Clear |url_loader_| if it's not the default one (network). This allows
     // the restarted request to use a new loader, instead of, e.g., reusing the
     // AppCache or service worker loader. For an optimization, we keep and reuse
-    // the default url loader if the all |handlers_| doesn't handle the
+    // the default url loader if the all |interceptors_| doesn't handle the
     // redirected request.
     if (!default_loader_used_)
       url_loader_.reset();
-    handler_index_ = 0;
+    interceptor_index_ = 0;
     received_response_ = false;
-    MaybeStartLoader(nullptr /* handler */, {} /* single_request_handler */);
+    MaybeStartLoader(nullptr /* interceptor */,
+                     {} /* single_request_handler */);
   }
 
-  // |handler| is the one who called this method (as a LoaderCallback), nullptr
-  // if this method is not called by a handler.
-  // |single_request_handler| is the RequestHandler given by the |handler|,
-  // non-null if the handler wants to handle the request.
+  // |interceptor| is non-null if this is called by one of the interceptors
+  // (via a LoaderCallback).
+  // |single_request_handler| is the RequestHandler given by the |interceptor|,
+  // non-null if the interceptor wants to handle the request.
   void MaybeStartLoader(
-      URLLoaderRequestHandler* handler,
+      NavigationLoaderInterceptor* interceptor,
       SingleRequestURLLoaderFactory::RequestHandler single_request_handler) {
-    DCHECK(IsRequestHandlerEnabled());
+    DCHECK(IsLoaderInterceptionEnabled());
     if (single_request_handler) {
-      // |handler| wants to handle the request.
-      DCHECK(handler);
+      // |interceptor| wants to handle the request with
+      // |single_request_handler|.
+      DCHECK(interceptor);
       default_loader_used_ = false;
       url_loader_ = ThrottlingURLLoader::CreateLoaderAndStart(
           base::MakeRefCounted<SingleRequestURLLoaderFactory>(
@@ -544,39 +548,42 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
           base::ThreadTaskRunnerHandle::Get());
 
       subresource_loader_params_ =
-          handler->MaybeCreateSubresourceLoaderParams();
+          interceptor->MaybeCreateSubresourceLoaderParams();
 
       return;
     }
 
-    // Before falling back to the next handler, see if |handler| still wants
-    // to give additional info to the frame for subresource loading.
-    // In that case we will just fall back to the default loader (i.e.
-    // won't go on to the next handlers) but send the subresource_loader_params
-    // to the child process. This is necessary for correctness in the cases
-    // where, e.g. there's a controlling ServiceWorker that doesn't handle main
-    // resource loading, but may still want to control the page and/or handle
-    // subresource loading. In that case we want to skip AppCache.
-    if (handler) {
+    // Before falling back to the next interceptor, see if |interceptor| still
+    // wants to give additional info to the frame for subresource loading. In
+    // that case we will just fall back to the default loader (i.e. won't go on
+    // to the next interceptors) but send the subresource_loader_params to the
+    // child process. This is necessary for correctness in the cases where, e.g.
+    // there's a controlling ServiceWorker that doesn't handle main resource
+    // loading, but may still want to control the page and/or handle subresource
+    // loading. In that case we want to skip AppCache.
+    if (interceptor) {
       subresource_loader_params_ =
-          handler->MaybeCreateSubresourceLoaderParams();
+          interceptor->MaybeCreateSubresourceLoaderParams();
 
       // If non-null |subresource_loader_params_| is returned, make sure
-      // we skip the next handlers.
+      // we skip the next interceptors.
       if (subresource_loader_params_)
-        handler_index_ = handlers_.size();
+        interceptor_index_ = interceptors_.size();
     }
 
-    // See if the next handler wants to handle the request.
-    if (handler_index_ < handlers_.size()) {
-      auto* next_handler = handlers_[handler_index_++].get();
-      next_handler->MaybeCreateLoader(
+    // See if the next interceptor wants to handle the request.
+    if (interceptor_index_ < interceptors_.size()) {
+      auto* next_interceptor = interceptors_[interceptor_index_++].get();
+      next_interceptor->MaybeCreateLoader(
           *resource_request_, resource_context_,
           base::BindOnce(&URLLoaderRequestController::MaybeStartLoader,
-                         base::Unretained(this), next_handler));
+                         base::Unretained(this), next_interceptor));
       return;
     }
 
+    // If we already have the default |url_loader_| we must come here after
+    // a redirect. No interceptors wanted to intercept the redirected request,
+    // so let it just follow the redirect.
     if (url_loader_) {
       DCHECK(!redirect_info_.new_url.is_empty());
       url_loader_->FollowRedirect();
@@ -587,7 +594,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     // mojom::URLLoaderFactory pointers into SharedURLLoaderFactory. Need to
     // further refactor the factory getters to avoid this.
     scoped_refptr<network::SharedURLLoaderFactory> factory;
-    DCHECK_EQ(handlers_.size(), handler_index_);
+    DCHECK_EQ(interceptors_.size(), interceptor_index_);
     if (resource_request_->url.SchemeIs(url::kBlobScheme)) {
       factory = base::MakeRefCounted<WeakWrapperSharedURLLoaderFactory>(
           default_url_loader_factory_getter_->GetBlobFactory());
@@ -622,11 +629,11 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
       default_loader_used_ = true;
 
       // NOTE: We only support embedders proxying network-service-bound requests
-      // not handled by URLLoaderRequestHandlers above (e.g. Service Worker or
-      // AppCache). Hence this code is only reachable when one of the above
-      // handlers isn't used and the URL is either a data URL or has a scheme
-      // which is handled by the network service. We explicitly avoid proxying
-      // the data URL case here.
+      // not handled by NavigationLoaderInterceptors above (e.g. Service Worker
+      // or AppCache). Hence this code is only reachable when one of the above
+      // interceptors isn't used and the URL is either a data URL or has a
+      // scheme which is handled by the network service. We explicitly avoid
+      // proxying the data URL case here.
       if (proxied_factory_request_.is_pending() &&
           !resource_request_->url.SchemeIs(url::kDataScheme)) {
         DCHECK(proxied_factory_info_.is_valid());
@@ -653,14 +660,15 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     DCHECK(!redirect_info_.new_url.is_empty());
 
-    if (!IsRequestHandlerEnabled()) {
+    if (!IsLoaderInterceptionEnabled()) {
       url_loader_->FollowRedirect();
       return;
     }
 
-    // Update resource_request_ and call Restart to give our handlers_ a chance
-    // at handling the new location. If no handler wants to take over, we'll
-    // use the existing url_loader to follow the redirect, see MaybeStartLoader.
+    // Update |resource_request_| and call Restart to give our |interceptors_| a
+    // chance at handling the new location. If no interceptor wants to take
+    // over, we'll use the existing url_loader to follow the redirect, see
+    // MaybeStartLoader.
     // TODO(michaeln): This is still WIP and is based on URLRequest::Redirect,
     // there likely remains more to be done.
     // a. For subframe navigations, the Origin header may need to be modified
@@ -700,8 +708,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     received_response_ = true;
 
     // If the default loader (network) was used to handle the URL load request
-    // we need to see if the handlers want to potentially create a new loader
-    // for the response. e.g. AppCache.
+    // we need to see if the interceptors want to potentially create a new
+    // loader for the response. e.g. AppCache.
     if (MaybeCreateLoaderForResponse(head))
       return;
 
@@ -727,7 +735,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     bool is_download;
     bool is_stream;
     std::unique_ptr<NavigationData> cloned_navigation_data;
-    if (IsRequestHandlerEnabled()) {
+    if (IsLoaderInterceptionEnabled()) {
       is_download = !response_intercepted &&
                     IsDownload(*response.get(), url_, url_chain_,
                                initiator_origin_, suggested_filename_);
@@ -795,7 +803,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     }
 
     // Store the redirect_info for later use in FollowRedirect where we give
-    // our handlers_ a chance to intercept the request for the new location.
+    // our interceptors_ a chance to intercept the request for the new location.
     redirect_info_ = redirect_info;
 
     scoped_refptr<network::ResourceResponse> response(
@@ -840,7 +848,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
 
     if (status.error_code != net::OK && !received_response_) {
       // If the default loader (network) was used to handle the URL load
-      // request we need to see if the handlers want to potentially create a
+      // request we need to see if the interceptors want to potentially create a
       // new loader for the response. e.g. AppCache.
       if (MaybeCreateLoaderForResponse(network::ResourceResponseHead()))
         return;
@@ -853,21 +861,21 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
                        status));
   }
 
-  // Returns true if a handler wants to handle the response, i.e. return a
+  // Returns true if an interceptor wants to handle the response, i.e. return a
   // different response. For e.g. AppCache may have fallback content.
   bool MaybeCreateLoaderForResponse(
       const network::ResourceResponseHead& response) {
-    if (!IsRequestHandlerEnabled())
+    if (!IsLoaderInterceptionEnabled())
       return false;
 
     if (!default_loader_used_)
       return false;
 
-    for (auto& handler : handlers_) {
+    for (auto& interceptor : interceptors_) {
       network::mojom::URLLoaderClientRequest response_client_request;
-      if (handler->MaybeCreateLoaderForResponse(response, &response_url_loader_,
-                                                &response_client_request,
-                                                url_loader_.get())) {
+      if (interceptor->MaybeCreateLoaderForResponse(
+              response, &response_url_loader_, &response_client_request,
+              url_loader_.get())) {
         response_loader_binding_.Bind(std::move(response_client_request));
         default_loader_used_ = false;
         url_loader_.reset();
@@ -884,8 +892,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         navigation_ui_data_.get(), frame_tree_node_id_);
   }
 
-  std::vector<std::unique_ptr<URLLoaderRequestHandler>> handlers_;
-  size_t handler_index_ = 0;
+  std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors_;
+  size_t interceptor_index_ = 0;
 
   std::unique_ptr<network::ResourceRequest> resource_request_;
   int frame_tree_node_id_ = 0;
@@ -977,7 +985,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
     ServiceWorkerNavigationHandle* service_worker_navigation_handle,
     AppCacheNavigationHandle* appcache_handle,
     NavigationURLLoaderDelegate* delegate,
-    std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers)
+    std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
+        initial_interceptors)
     : delegate_(delegate),
       allow_download_(request_info->common_params.allow_download),
       weak_factory_(this) {
@@ -1003,8 +1012,8 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
   if (!base::FeatureList::IsEnabled(network::features::kNetworkService)) {
     DCHECK(!request_controller_);
     request_controller_ = std::make_unique<URLLoaderRequestController>(
-        /* initial_handlers = */
-        std::vector<std::unique_ptr<URLLoaderRequestHandler>>(),
+        /* initial_interceptors = */
+        std::vector<std::unique_ptr<NavigationLoaderInterceptor>>(),
         std::move(new_request), resource_context,
         /* default_url_factory_getter = */ nullptr,
         request_info->common_params.url,
@@ -1081,7 +1090,7 @@ NavigationURLLoaderNetworkService::NavigationURLLoaderNetworkService(
 
   DCHECK(!request_controller_);
   request_controller_ = std::make_unique<URLLoaderRequestController>(
-      std::move(initial_handlers), std::move(new_request), resource_context,
+      std::move(initial_interceptors), std::move(new_request), resource_context,
       partition->url_loader_factory_getter(), request_info->common_params.url,
       request_info->begin_params->initiator_origin,
       request_info->common_params.suggested_filename,

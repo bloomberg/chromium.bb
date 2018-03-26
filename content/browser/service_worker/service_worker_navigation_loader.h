@@ -10,7 +10,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "content/browser/loader/url_loader_request_handler.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/service_worker_fetch_dispatcher.h"
 #include "content/browser/service_worker/service_worker_metrics.h"
 #include "content/browser/service_worker/service_worker_response_type.h"
@@ -72,7 +72,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   //    This forwards the blob/stream data pipe to the NavigationURLLoader if
   //    the response body was sent as a blob/stream.
   ServiceWorkerNavigationLoader(
-      URLLoaderRequestHandler::LoaderCallback loader_callback,
+      NavigationLoaderInterceptor::LoaderCallback loader_callback,
       Delegate* delegate,
       const network::ResourceRequest& resource_request,
       scoped_refptr<URLLoaderFactoryGetter> url_loader_factory_getter);
@@ -148,7 +148,7 @@ class CONTENT_EXPORT ServiceWorkerNavigationLoader
   void DeleteIfNeeded();
 
   ResponseType response_type_ = ResponseType::NOT_DETERMINED;
-  URLLoaderRequestHandler::LoaderCallback loader_callback_;
+  NavigationLoaderInterceptor::LoaderCallback loader_callback_;
 
   Delegate* delegate_;
   network::ResourceRequest resource_request_;

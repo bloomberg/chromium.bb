@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_LOADER_URL_LOADER_REQUEST_HANDLER_H_
-#define CONTENT_BROWSER_LOADER_URL_LOADER_REQUEST_HANDLER_H_
+#ifndef CONTENT_BROWSER_LOADER_NAVIGATION_LOADER_INTERCEPTOR_H_
+#define CONTENT_BROWSER_LOADER_NAVIGATION_LOADER_INTERCEPTOR_H_
 
 #include <memory>
 
@@ -23,12 +23,15 @@ struct ResourceRequest;
 struct SubresourceLoaderParams;
 class ThrottlingURLLoader;
 
-// An instance of this class is a per-request object and kept around during
-// the lifetime of a request (including multiple redirect legs) on IO thread.
-class CONTENT_EXPORT URLLoaderRequestHandler {
+// NavigationLoaderInterceptor is given a chance to create a URLLoader and
+// intercept a navigation request before the request is handed off to the
+// default URLLoader, e.g. the one from the network service.
+// NavigationLoaderInterceptor is a per-request object and kept around during
+// the lifetime of a navigation request (including multiple redirect legs).
+class CONTENT_EXPORT NavigationLoaderInterceptor {
  public:
-  URLLoaderRequestHandler() = default;
-  virtual ~URLLoaderRequestHandler() = default;
+  NavigationLoaderInterceptor() = default;
+  virtual ~NavigationLoaderInterceptor() = default;
 
   using LoaderCallback =
       base::OnceCallback<void(SingleRequestURLLoaderFactory::RequestHandler)>;
@@ -73,4 +76,4 @@ class CONTENT_EXPORT URLLoaderRequestHandler {
 
 }  // namespace content
 
-#endif  // CONTENT_BROWSER_LOADER_URL_LOADER_REQUEST_HANDLER_H_
+#endif  // CONTENT_BROWSER_LOADER_NAVIGATION_LOADER_INTERCEPTOR_H_

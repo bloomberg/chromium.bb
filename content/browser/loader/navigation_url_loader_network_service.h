@@ -25,7 +25,7 @@ class NavigationData;
 class NavigationPostDataHandler;
 class ResourceContext;
 class StoragePartition;
-class URLLoaderRequestHandler;
+class NavigationLoaderInterceptor;
 struct GlobalRequestID;
 
 // This is an implementation of NavigationURLLoader used when
@@ -34,7 +34,7 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
     : public NavigationURLLoader {
  public:
   // The caller is responsible for ensuring that |delegate| outlives the loader.
-  // Note |initial_handlers| is there for test purposes only.
+  // Note |initial_interceptors| is there for test purposes only.
   NavigationURLLoaderNetworkService(
       ResourceContext* resource_context,
       StoragePartition* storage_partition,
@@ -43,7 +43,8 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
       ServiceWorkerNavigationHandle* service_worker_handle,
       AppCacheNavigationHandle* appcache_handle,
       NavigationURLLoaderDelegate* delegate,
-      std::vector<std::unique_ptr<URLLoaderRequestHandler>> initial_handlers);
+      std::vector<std::unique_ptr<NavigationLoaderInterceptor>>
+          initial_interceptors);
   ~NavigationURLLoaderNetworkService() override;
 
   // NavigationURLLoader implementation:

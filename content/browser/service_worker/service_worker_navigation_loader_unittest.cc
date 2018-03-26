@@ -6,7 +6,7 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
-#include "content/browser/loader/url_loader_request_handler.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/service_worker/embedded_worker_test_helper.h"
 #include "content/browser/service_worker/service_worker_context_core.h"
 #include "content/browser/service_worker/service_worker_registration.h"

@@ -232,7 +232,7 @@ void ServiceWorkerControlleeRequestHandler::MaybeCreateLoader(
                          resource_request.site_for_cookies);
 
   if (url_job_->ShouldFallbackToNetwork()) {
-    // We're falling back to the next URLLoaderRequestHandler, forward
+    // We're falling back to the next NavigationLoaderInterceptor, forward
     // the request and clear job now.
     url_job_->FallbackToNetwork();
     ClearJob();

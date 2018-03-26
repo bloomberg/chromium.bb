@@ -7,8 +7,8 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "content/browser/frame_host/navigation_request_info.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/browser/loader/navigation_url_loader.h"
-#include "content/browser/loader/url_loader_request_handler.h"
 #include "content/common/navigation_params.h"
 #include "content/common/navigation_params.mojom.h"
 #include "content/common/service_manager/service_manager_connection_impl.h"
@@ -38,9 +38,9 @@ namespace content {
 
 namespace {
 
-class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
+class TestNavigationLoaderInterceptor : public NavigationLoaderInterceptor {
  public:
-  explicit TestURLLoaderRequestHandler(
+  explicit TestNavigationLoaderInterceptor(
       base::Optional<network::ResourceRequest>* most_recent_resource_request)
       : most_recent_resource_request_(most_recent_resource_request),
         resource_scheduler_(false) {
@@ -57,7 +57,7 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
             context_->GetURLRequestContext()->network_quality_estimator());
   }
 
-  ~TestURLLoaderRequestHandler() override {
+  ~TestNavigationLoaderInterceptor() override {
     resource_scheduler_client_ = nullptr;
     context_->NotifyContextShuttingDown();
   }
@@ -66,7 +66,7 @@ class TestURLLoaderRequestHandler : public URLLoaderRequestHandler {
                          ResourceContext* resource_context,
                          LoaderCallback callback) override {
     std::move(callback).Run(
-        base::BindOnce(&TestURLLoaderRequestHandler::StartLoader,
+        base::BindOnce(&TestNavigationLoaderInterceptor::StartLoader,
                        base::Unretained(this), resource_request));
   }
 
@@ -153,9 +153,9 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
             false /* parent_is_main_frame */, false /* are_ancestors_secure */,
             -1 /* frame_tree_node_id */, false /* is_for_guests_only */,
             false /* report_raw_headers */, false /* is_prerenering */));
-    std::vector<std::unique_ptr<URLLoaderRequestHandler>> handlers;
+    std::vector<std::unique_ptr<NavigationLoaderInterceptor>> interceptors;
     most_recent_resource_request_ = base::nullopt;
-    handlers.push_back(std::make_unique<TestURLLoaderRequestHandler>(
+    interceptors.push_back(std::make_unique<TestNavigationLoaderInterceptor>(
         &most_recent_resource_request_));
 
     return std::make_unique<NavigationURLLoaderNetworkService>(
@@ -163,7 +163,7 @@ class NavigationURLLoaderNetworkServiceTest : public testing::Test {
         BrowserContext::GetDefaultStoragePartition(browser_context_.get()),
         std::move(request_info), nullptr /* navigation_ui_data */,
         nullptr /* service_worker_handle */, nullptr /* appcache_handle */,
-        delegate, std::move(handlers));
+        delegate, std::move(interceptors));
   }
 
   // Requests |redirect_url|, which must return a HTTP 3xx redirect. It's also

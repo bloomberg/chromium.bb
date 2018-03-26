@@ -6,7 +6,7 @@
 #define CONTENT_BROWSER_WEB_PACKAGE_WEB_PACKAGE_REQUEST_HANDLER_H_
 
 #include "base/memory/weak_ptr.h"
-#include "content/browser/loader/url_loader_request_handler.h"
+#include "content/browser/loader/navigation_loader_interceptor.h"
 #include "content/public/common/resource_type.h"
 #include "url/origin.h"
 
@@ -23,7 +23,7 @@ namespace content {
 class URLLoaderThrottle;
 class WebPackageLoader;
 
-class WebPackageRequestHandler final : public URLLoaderRequestHandler {
+class WebPackageRequestHandler final : public NavigationLoaderInterceptor {
  public:
   using URLLoaderThrottlesGetter = base::RepeatingCallback<
       std::vector<std::unique_ptr<content::URLLoaderThrottle>>()>;
@@ -38,7 +38,7 @@ class WebPackageRequestHandler final : public URLLoaderRequestHandler {
       scoped_refptr<net::URLRequestContextGetter> request_context_getter);
   ~WebPackageRequestHandler() override;
 
-  // URLLoaderRequestHandler implementation
+  // NavigationLoaderInterceptor implementation
   void MaybeCreateLoader(const network::ResourceRequest& resource_request,
                          ResourceContext* resource_context,
                          LoaderCallback callback) override;
