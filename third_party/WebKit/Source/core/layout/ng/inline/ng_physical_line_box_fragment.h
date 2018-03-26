@@ -21,9 +21,17 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
                             Vector<scoped_refptr<NGPhysicalFragment>>& children,
                             const NGPhysicalOffsetRect& contents_visual_rect,
                             const NGLineHeightMetrics&,
+                            TextDirection base_direction,
                             scoped_refptr<NGBreakToken> break_token = nullptr);
 
   const NGLineHeightMetrics& Metrics() const { return metrics_; }
+
+  // The base direction of this line. Also known as the paragraph direction.
+  // This may be different from the direction of the container box when
+  // first-line style is used, or when 'unicode-bidi: plaintext' is used.
+  TextDirection BaseDirection() const {
+    return static_cast<TextDirection>(base_direction_);
+  }
 
   // Compute baseline for the specified baseline type.
   LayoutUnit BaselinePosition(FontBaseline) const;
@@ -49,7 +57,7 @@ class CORE_EXPORT NGPhysicalLineBoxFragment final
     Vector<scoped_refptr<NGPhysicalFragment>> children_copy(children_);
     return base::AdoptRef(new NGPhysicalLineBoxFragment(
         Style(), size_, children_copy, contents_visual_rect_, metrics_,
-        break_token_));
+        BaseDirection(), break_token_));
   }
 
  private:
