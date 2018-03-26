@@ -1788,9 +1788,14 @@ void RenderWidgetHostViewAndroid::DismissTextHandles() {
     touch_selection_controller_->HideAndDisallowShowingAutomatically();
 }
 
-void RenderWidgetHostViewAndroid::SetTextHandlesTemporarilyHidden(bool hidden) {
-  if (touch_selection_controller_)
-    touch_selection_controller_->SetTemporarilyHidden(hidden);
+void RenderWidgetHostViewAndroid::SetTextHandlesTemporarilyHidden(
+    bool hide_handles) {
+  if (!touch_selection_controller_ ||
+      handles_hidden_by_selection_ui_ == hide_handles)
+    return;
+  handles_hidden_by_selection_ui_ = hide_handles;
+  touch_selection_controller_->SetTemporarilyHidden(
+      handles_hidden_by_selection_ui_ || handles_hidden_by_stylus_);
 }
 
 SkColor RenderWidgetHostViewAndroid::GetCachedBackgroundColor() const {
@@ -2110,10 +2115,20 @@ void RenderWidgetHostViewAndroid::OnLostResources() {
   DCHECK(ack_callbacks_.empty());
 }
 
+void RenderWidgetHostViewAndroid::SetTextHandlesHiddenForStylus(
+    bool hide_handles) {
+  if (!touch_selection_controller_ || handles_hidden_by_stylus_ == hide_handles)
+    return;
+  handles_hidden_by_stylus_ = hide_handles;
+  touch_selection_controller_->SetTemporarilyHidden(
+      handles_hidden_by_stylus_ || handles_hidden_by_selection_ui_);
+}
+
 void RenderWidgetHostViewAndroid::OnStylusSelectBegin(float x0,
                                                       float y0,
                                                       float x1,
                                                       float y1) {
+  SetTextHandlesHiddenForStylus(true);
   SelectBetweenCoordinates(gfx::PointF(x0, y0), gfx::PointF(x1, y1));
 }
 
@@ -2122,6 +2137,7 @@ void RenderWidgetHostViewAndroid::OnStylusSelectUpdate(float x, float y) {
 }
 
 void RenderWidgetHostViewAndroid::OnStylusSelectEnd(float x, float y) {
+  SetTextHandlesHiddenForStylus(false);
   ShowContextMenuAtPoint(gfx::Point(x, y), ui::MENU_SOURCE_STYLUS);
 }
 
