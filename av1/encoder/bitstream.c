@@ -2095,17 +2095,12 @@ static void encode_quantization(const AV1_COMMON *const cm,
   }
   aom_wb_write_bit(wb, cm->using_qmatrix);
   if (cm->using_qmatrix) {
-#if CONFIG_AOM_QM_EXT
     aom_wb_write_literal(wb, cm->qm_y, QM_LEVEL_BITS);
     aom_wb_write_literal(wb, cm->qm_u, QM_LEVEL_BITS);
     if (!cm->separate_uv_delta_q)
       assert(cm->qm_u == cm->qm_v);
     else
       aom_wb_write_literal(wb, cm->qm_v, QM_LEVEL_BITS);
-#else
-    aom_wb_write_literal(wb, cm->min_qmlevel, QM_LEVEL_BITS);
-    aom_wb_write_literal(wb, cm->max_qmlevel, QM_LEVEL_BITS);
-#endif
   }
 }
 

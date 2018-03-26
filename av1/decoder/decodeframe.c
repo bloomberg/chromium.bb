@@ -1203,36 +1203,22 @@ static void setup_quantization(AV1_COMMON *const cm,
   cm->dequant_bit_depth = cm->bit_depth;
   cm->using_qmatrix = aom_rb_read_bit(rb);
   if (cm->using_qmatrix) {
-#if CONFIG_AOM_QM_EXT
     cm->qm_y = aom_rb_read_literal(rb, QM_LEVEL_BITS);
     cm->qm_u = aom_rb_read_literal(rb, QM_LEVEL_BITS);
     if (!cm->separate_uv_delta_q)
       cm->qm_v = cm->qm_u;
     else
       cm->qm_v = aom_rb_read_literal(rb, QM_LEVEL_BITS);
-#else
-    cm->min_qmlevel = aom_rb_read_literal(rb, QM_LEVEL_BITS);
-    cm->max_qmlevel = aom_rb_read_literal(rb, QM_LEVEL_BITS);
-#endif
   } else {
-#if CONFIG_AOM_QM_EXT
     cm->qm_y = 0;
     cm->qm_u = 0;
     cm->qm_v = 0;
-#else
-    cm->min_qmlevel = 0;
-    cm->max_qmlevel = 0;
-#endif
   }
 }
 
 // Build y/uv dequant values based on segmentation.
 static void setup_segmentation_dequant(AV1_COMMON *const cm) {
   const int using_qm = cm->using_qmatrix;
-#if !CONFIG_AOM_QM_EXT
-  const int minqm = cm->min_qmlevel;
-  const int maxqm = cm->max_qmlevel;
-#endif  // !CONFIG_AOM_QM_EXT
   // When segmentation is disabled, only the first value is used.  The
   // remaining are don't cares.
   const int max_segments = cm->seg.enabled ? MAX_SEGMENTS : 1;
@@ -1252,27 +1238,17 @@ static void setup_segmentation_dequant(AV1_COMMON *const cm) {
     const int lossless = qindex == 0 && cm->y_dc_delta_q == 0 &&
                          cm->u_dc_delta_q == 0 && cm->u_ac_delta_q == 0 &&
                          cm->v_dc_delta_q == 0 && cm->v_ac_delta_q == 0;
-// NB: depends on base index so there is only 1 set per frame
-// No quant weighting when lossless or signalled not using QM
-#if CONFIG_AOM_QM_EXT
+    // NB: depends on base index so there is only 1 set per frame
+    // No quant weighting when lossless or signalled not using QM
     int qmlevel = (lossless || using_qm == 0) ? NUM_QM_LEVELS - 1 : cm->qm_y;
-#else
-    const int qmlevel = (lossless || using_qm == 0)
-                            ? NUM_QM_LEVELS - 1
-                            : aom_get_qmlevel(cm->base_qindex, minqm, maxqm);
-#endif
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
       cm->y_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_Y, j);
     }
-#if CONFIG_AOM_QM_EXT
     qmlevel = (lossless || using_qm == 0) ? NUM_QM_LEVELS - 1 : cm->qm_u;
-#endif
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
       cm->u_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_U, j);
     }
-#if CONFIG_AOM_QM_EXT
     qmlevel = (lossless || using_qm == 0) ? NUM_QM_LEVELS - 1 : cm->qm_v;
-#endif
     for (int j = 0; j < TX_SIZES_ALL; ++j) {
       cm->v_iqmatrix[i][j] = av1_iqmatrix(cm, qmlevel, AOM_PLANE_V, j);
     }

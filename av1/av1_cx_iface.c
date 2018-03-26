@@ -54,11 +54,9 @@ struct av1_extracfg {
   unsigned int enable_cdef;
   unsigned int enable_restoration;
   unsigned int enable_qm;
-#if CONFIG_AOM_QM_EXT
   unsigned int qm_y;
   unsigned int qm_u;
   unsigned int qm_v;
-#endif  // CONFIG_AOM_QM_EXT
   unsigned int qm_min;
   unsigned int qm_max;
 #if CONFIG_DIST_8X8
@@ -105,33 +103,31 @@ struct av1_extracfg {
 };
 
 static struct av1_extracfg default_extra_cfg = {
-  0,              // cpu_used
-  0,              // dev_sf
-  1,              // enable_auto_alt_ref
-  0,              // enable_auto_bwd_ref
-  0,              // noise_sensitivity
-  0,              // sharpness
-  0,              // static_thresh
-  0,              // tile_columns
-  0,              // tile_rows
-  7,              // arnr_max_frames
-  5,              // arnr_strength
-  0,              // min_gf_interval; 0 -> default decision
-  0,              // max_gf_interval; 0 -> default decision
-  AOM_TUNE_PSNR,  // tuning
-  10,             // cq_level
-  0,              // rc_max_intra_bitrate_pct
-  0,              // rc_max_inter_bitrate_pct
-  0,              // gf_cbr_boost_pct
-  0,              // lossless
-  1,              // enable_cdef
-  1,              // enable_restoration
-  0,              // enable_qm
-#if CONFIG_AOM_QM_EXT
+  0,                 // cpu_used
+  0,                 // dev_sf
+  1,                 // enable_auto_alt_ref
+  0,                 // enable_auto_bwd_ref
+  0,                 // noise_sensitivity
+  0,                 // sharpness
+  0,                 // static_thresh
+  0,                 // tile_columns
+  0,                 // tile_rows
+  7,                 // arnr_max_frames
+  5,                 // arnr_strength
+  0,                 // min_gf_interval; 0 -> default decision
+  0,                 // max_gf_interval; 0 -> default decision
+  AOM_TUNE_PSNR,     // tuning
+  10,                // cq_level
+  0,                 // rc_max_intra_bitrate_pct
+  0,                 // rc_max_inter_bitrate_pct
+  0,                 // gf_cbr_boost_pct
+  0,                 // lossless
+  1,                 // enable_cdef
+  1,                 // enable_restoration
+  0,                 // enable_qm
   DEFAULT_QM_Y,      // qm_y
   DEFAULT_QM_U,      // qm_u
   DEFAULT_QM_V,      // qm_v
-#endif               // CONFIG_AOM_QM_EXT
   DEFAULT_QM_FIRST,  // qm_min
   DEFAULT_QM_LAST,   // qm_max
 #if CONFIG_DIST_8X8
@@ -526,11 +522,9 @@ static aom_codec_err_t set_encoder_config(
   oxcf->enable_cdef = extra_cfg->enable_cdef;
   oxcf->enable_restoration = extra_cfg->enable_restoration;
   oxcf->using_qm = extra_cfg->enable_qm;
-#if CONFIG_AOM_QM_EXT
   oxcf->qm_y = extra_cfg->qm_y;
   oxcf->qm_u = extra_cfg->qm_u;
   oxcf->qm_v = extra_cfg->qm_v;
-#endif  // CONFIG_AOM_QM_EXT
   oxcf->qm_minlevel = extra_cfg->qm_min;
   oxcf->qm_maxlevel = extra_cfg->qm_max;
 #if CONFIG_DIST_8X8
@@ -900,7 +894,6 @@ static aom_codec_err_t ctrl_set_enable_qm(aom_codec_alg_priv_t *ctx,
   extra_cfg.enable_qm = CAST(AV1E_SET_ENABLE_QM, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#if CONFIG_AOM_QM_EXT
 static aom_codec_err_t ctrl_set_qm_y(aom_codec_alg_priv_t *ctx, va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.qm_y = CAST(AV1E_SET_QM_Y, args);
@@ -916,8 +909,6 @@ static aom_codec_err_t ctrl_set_qm_v(aom_codec_alg_priv_t *ctx, va_list args) {
   extra_cfg.qm_v = CAST(AV1E_SET_QM_V, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#endif  // CONFIG_AOM_QM_EXT
-
 static aom_codec_err_t ctrl_set_qm_min(aom_codec_alg_priv_t *ctx,
                                        va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -1652,11 +1643,9 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ENABLE_CDEF, ctrl_set_enable_cdef },
   { AV1E_SET_ENABLE_RESTORATION, ctrl_set_enable_restoration },
   { AV1E_SET_ENABLE_QM, ctrl_set_enable_qm },
-#if CONFIG_AOM_QM_EXT
   { AV1E_SET_QM_Y, ctrl_set_qm_y },
   { AV1E_SET_QM_U, ctrl_set_qm_u },
   { AV1E_SET_QM_V, ctrl_set_qm_v },
-#endif  // CONFIG_AOM_QM_EXT
   { AV1E_SET_QM_MIN, ctrl_set_qm_min },
   { AV1E_SET_QM_MAX, ctrl_set_qm_max },
 #if CONFIG_DIST_8X8
