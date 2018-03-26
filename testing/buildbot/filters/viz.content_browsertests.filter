@@ -98,7 +98,7 @@
 -MainThreadEventQueueBrowserTest.MouseMove
 
 # Browser side fling cannot use SetNeedsBeginFrame on viz https://crbug.com/823310
--NonBlockingEventBrowserTest.TouchStartDuringFling
+-CompositorEventAckBrowserTest.TouchStartDuringFling
 
 # Uses LatencyInfo for input info https://crbug.com/791557
 -MouseLatencyBrowserTest.CoalescedMouseMovesCorrectlyTerminated
