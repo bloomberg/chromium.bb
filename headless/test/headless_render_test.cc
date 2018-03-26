@@ -4,21 +4,142 @@
 
 #include "headless/test/headless_render_test.h"
 
+#include "base/base_paths.h"
+#include "base/files/file_path.h"
+#include "base/files/file_util.h"
+#include "base/path_service.h"
+#include "base/threading/thread_restrictions.h"
+#include "cc/base/switches.h"
+#include "components/viz/common/features.h"
+#include "components/viz/common/switches.h"
+#include "content/public/common/content_switches.h"
 #include "headless/public/devtools/domains/dom_snapshot.h"
 #include "headless/public/headless_devtools_client.h"
+#include "headless/public/util/compositor_controller.h"
 #include "headless/public/util/virtual_time_controller.h"
 #include "net/test/embedded_test_server/http_response.h"
 #include "net/url_request/url_request.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+#include "third_party/skia/include/core/SkColor.h"
+#include "ui/gfx/codec/png_codec.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/skia_util.h"
 
 namespace headless {
 
 namespace {
+
+static constexpr int kAnimationIntervalMs = 100;
+static constexpr bool kUpdateDisplayForAnimations = false;
+static const char kUpdateGoldens[] = "update-goldens";
+
 void SetVirtualTimePolicyDoneCallback(
     base::RunLoop* run_loop,
     std::unique_ptr<emulation::SetVirtualTimePolicyResult>) {
   run_loop->Quit();
 }
+
+bool DecodePNG(const std::string& data, SkBitmap* bitmap) {
+  return gfx::PNGCodec::Decode(
+      reinterpret_cast<unsigned const char*>(data.data()), data.size(), bitmap);
+}
+
+bool ColorsMatchWithinLimit(SkColor color1, SkColor color2, int error_limit) {
+  auto a_diff = static_cast<int>(SkColorGetA(color1)) -
+                static_cast<int>(SkColorGetA(color2));
+  auto r_diff = static_cast<int>(SkColorGetR(color1)) -
+                static_cast<int>(SkColorGetR(color2));
+  auto g_diff = static_cast<int>(SkColorGetG(color1)) -
+                static_cast<int>(SkColorGetG(color2));
+  auto b_diff = static_cast<int>(SkColorGetB(color1)) -
+                static_cast<int>(SkColorGetB(color2));
+  return a_diff * a_diff + r_diff * r_diff + g_diff * g_diff +
+             b_diff * b_diff <=
+         error_limit * error_limit;
+}
+
+bool MatchesBitmap(const SkBitmap& expected_bmp,
+                   const SkBitmap& actual_bmp,
+                   int error_limit) {
+  // Number of pixels with an error
+  int error_pixels_count = 0;
+  gfx::Rect error_bounding_rect = gfx::Rect();
+
+  // Check that bitmaps have identical dimensions.
+  EXPECT_EQ(expected_bmp.width(), actual_bmp.width());
+  EXPECT_EQ(expected_bmp.height(), actual_bmp.height());
+  if (expected_bmp.width() != actual_bmp.width() ||
+      expected_bmp.height() != actual_bmp.height()) {
+    LOG(ERROR) << "To update goldens, use --update-goldens.";
+    return false;
+  }
+
+  for (int y = 0; y < actual_bmp.height(); ++y) {
+    for (int x = 0; x < actual_bmp.width(); ++x) {
+      SkColor actual_color = actual_bmp.getColor(x, y);
+      SkColor expected_color = expected_bmp.getColor(x, y);
+      if (!ColorsMatchWithinLimit(actual_color, expected_color, error_limit)) {
+        if (error_pixels_count < 10) {
+          LOG(ERROR) << "Pixel (" << x << "," << y << "): expected " << std::hex
+                     << expected_color << " actual " << actual_color;
+        }
+        error_pixels_count++;
+        error_bounding_rect.Union(gfx::Rect(x, y, 1, 1));
+      }
+    }
+  }
+
+  if (error_pixels_count != 0) {
+    LOG(ERROR) << "Number of pixel with an error: " << error_pixels_count;
+    LOG(ERROR) << "Error Bounding Box : " << error_bounding_rect.ToString();
+    LOG(ERROR) << "To update goldens, use --update-goldens.";
+    return false;
+  }
+
+  return true;
+}
+
+bool WriteStringToFile(const base::FilePath& file_path,
+                       const std::string& content) {
+  int result = base::WriteFile(file_path, content.data(),
+                               static_cast<int>(content.size()));
+  return content.size() == static_cast<size_t>(result);
+}
+
+bool ScreenshotMatchesGolden(const std::string& screenshot_data,
+                             const std::string& golden_file_name) {
+  static const base::FilePath kGoldenDirectory(
+      FILE_PATH_LITERAL("headless/test/data/golden"));
+
+  SkBitmap actual_bitmap;
+  EXPECT_TRUE(DecodePNG(screenshot_data, &actual_bitmap));
+  if (actual_bitmap.empty())
+    return false;
+
+  base::ScopedAllowBlockingForTesting allow_blocking;
+
+  base::FilePath src_dir;
+  CHECK(base::PathService::Get(base::DIR_SOURCE_ROOT, &src_dir));
+  base::FilePath golden_path =
+      src_dir.Append(kGoldenDirectory).Append(golden_file_name);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(kUpdateGoldens)) {
+    LOG(INFO) << "Updating golden file at " << golden_path;
+    CHECK(WriteStringToFile(golden_path, screenshot_data));
+  }
+
+  std::string golden_data;
+  CHECK(base::ReadFileToString(golden_path, &golden_data));
+
+  SkBitmap expected_bitmap;
+  EXPECT_TRUE(DecodePNG(golden_data, &expected_bitmap));
+  if (expected_bitmap.empty())
+    return false;
+
+  return MatchesBitmap(expected_bitmap, actual_bitmap, 0);
+}
+
 }  // namespace
 
 HeadlessRenderTest::HeadlessRenderTest() : weak_ptr_factory_(this) {}
@@ -79,9 +200,22 @@ class HeadlessRenderTest::AdditionalVirtualTimeBudget
 void HeadlessRenderTest::RunDevTooledTest() {
   http_handler_->SetHeadlessBrowserContext(browser_context_);
 
-  // TODO(alexclarke): Use the compositor controller here too.
   virtual_time_controller_ =
       std::make_unique<VirtualTimeController>(devtools_client_.get());
+
+  SetDeviceMetricsOverride(headless::page::Viewport::Builder()
+                               .SetX(0)
+                               .SetY(0)
+                               .SetWidth(1)
+                               .SetHeight(1)
+                               .SetScale(1)
+                               .Build());
+
+  compositor_controller_ = std::make_unique<CompositorController>(
+      browser()->BrowserMainThread(), devtools_client_.get(),
+      virtual_time_controller_.get(),
+      base::TimeDelta::FromMilliseconds(kAnimationIntervalMs),
+      kUpdateDisplayForAnimations);
 
   devtools_client_->GetPage()->GetExperimental()->AddObserver(this);
   devtools_client_->GetPage()->Enable(Sync());
@@ -133,8 +267,43 @@ void HeadlessRenderTest::RunDevTooledTest() {
   // from OnGetDomSnapshotDone() or from HandleTimeout().
 }
 
+void HeadlessRenderTest::SetDeviceMetricsOverride(
+    std::unique_ptr<headless::page::Viewport> viewport) {
+  gfx::Size size = GetEmulatedWindowSize();
+  devtools_client_->GetEmulation()->GetExperimental()->SetDeviceMetricsOverride(
+      headless::emulation::SetDeviceMetricsOverrideParams::Builder()
+          .SetDeviceScaleFactor(0)
+          .SetMobile(false)
+          .SetWidth(size.width())
+          .SetHeight(size.height())
+          .SetScreenWidth(size.width())
+          .SetScreenHeight(size.height())
+          .SetViewport(std::move(viewport))
+          .Build(),
+      Sync());
+}
+
 void HeadlessRenderTest::OnTimeout() {
   ADD_FAILURE() << "Rendering timed out!";
+}
+
+void HeadlessRenderTest::SetUpCommandLine(base::CommandLine* command_line) {
+  HeadlessAsyncDevTooledBrowserTest::SetUpCommandLine(command_line);
+  // See bit.ly/headless-rendering for why we use these flags.
+  command_line->AppendSwitch(switches::kRunAllCompositorStagesBeforeDraw);
+  command_line->AppendSwitch(switches::kDisableNewContentRenderingTimeout);
+  command_line->AppendSwitch(cc::switches::kDisableCheckerImaging);
+  command_line->AppendSwitch(cc::switches::kDisableThreadedAnimation);
+  command_line->AppendSwitch(switches::kDisableImageAnimationResync);
+  command_line->AppendSwitch(switches::kDisableThreadedScrolling);
+
+  scoped_feature_list_.InitAndEnableFeature(
+      features::kEnableSurfaceSynchronization);
+}
+
+void HeadlessRenderTest::SetUp() {
+  EnablePixelOutput();
+  HeadlessAsyncDevTooledBrowserTest::SetUp();
 }
 
 void HeadlessRenderTest::CustomizeHeadlessBrowserContext(
@@ -142,6 +311,12 @@ void HeadlessRenderTest::CustomizeHeadlessBrowserContext(
   builder.SetOverrideWebPreferencesCallback(
       base::Bind(&HeadlessRenderTest::OverrideWebPreferences,
                  weak_ptr_factory_.GetWeakPtr()));
+  // Set an initial time to enable base::Time/TimeTicks overrides.
+  builder.SetInitialVirtualTime(base::Time::FromJsTime(100000.0));
+}
+
+bool HeadlessRenderTest::GetEnableBeginFrameControl() {
+  return true;
 }
 
 ProtocolHandlerMap HeadlessRenderTest::GetProtocolHandlers() {
@@ -157,6 +332,15 @@ void HeadlessRenderTest::OverrideWebPreferences(WebPreferences* preferences) {
   preferences->hide_scrollbars = true;
   preferences->javascript_enabled = true;
   preferences->autoplay_policy = content::AutoplayPolicy::kUserGestureRequired;
+}
+
+base::Optional<HeadlessRenderTest::ScreenshotOptions>
+HeadlessRenderTest::GetScreenshotOptions() {
+  return base::nullopt;
+}
+
+gfx::Size HeadlessRenderTest::GetEmulatedWindowSize() {
+  return gfx::Size(800, 600);
 }
 
 void HeadlessRenderTest::UrlRequestFailed(net::URLRequest* request,
@@ -279,6 +463,9 @@ void HeadlessRenderTest::OnRequest(const GURL& url,
   complete_request.Run();
 }
 
+void HeadlessRenderTest::VerifyDom(
+    dom_snapshot::GetSnapshotResult* dom_snapshot) {}
+
 void HeadlessRenderTest::OnPageRenderCompleted() {
   CHECK_GE(state_, LOADING);
   if (state_ >= DONE)
@@ -302,10 +489,45 @@ void HeadlessRenderTest::HandleVirtualTimeExhausted() {
 void HeadlessRenderTest::OnGetDomSnapshotDone(
     std::unique_ptr<dom_snapshot::GetSnapshotResult> result) {
   CHECK_EQ(DONE, state_);
+  VerifyDom(result.get());
+
+  base::Optional<ScreenshotOptions> screenshot_options = GetScreenshotOptions();
+  if (screenshot_options) {
+    state_ = SCREENSHOT;
+    CaptureScreenshot(*screenshot_options);
+    return;
+  }
+  RenderComplete();
+}
+
+void HeadlessRenderTest::CaptureScreenshot(const ScreenshotOptions& options) {
+  // Set up emulation according to options.
+  auto clip = headless::page::Viewport::Builder()
+                  .SetX(options.x)
+                  .SetY(options.y)
+                  .SetWidth(options.width)
+                  .SetHeight(options.height)
+                  .SetScale(options.scale)
+                  .Build();
+
+  SetDeviceMetricsOverride(std::move(clip));
+
+  compositor_controller_->CaptureScreenshot(
+      CompositorController::ScreenshotParamsFormat::PNG, 100,
+      base::BindRepeating(&HeadlessRenderTest::ScreenshotCaptured,
+                          base::Unretained(this), options));
+}
+
+void HeadlessRenderTest::ScreenshotCaptured(const ScreenshotOptions& options,
+                                            const std::string& data) {
+  EXPECT_TRUE(ScreenshotMatchesGolden(data, options.golden_file_name));
+  RenderComplete();
+}
+
+void HeadlessRenderTest::RenderComplete() {
   state_ = FINISHED;
   CleanUp();
   FinishAsynchronousTest();
-  VerifyDom(result.get());
 }
 
 void HeadlessRenderTest::HandleTimeout() {
@@ -322,5 +544,19 @@ void HeadlessRenderTest::CleanUp() {
   devtools_client_->GetPage()->Disable(Sync());
   devtools_client_->GetPage()->GetExperimental()->RemoveObserver(this);
 }
+
+HeadlessRenderTest::ScreenshotOptions::ScreenshotOptions(
+    const std::string& golden_file_name,
+    int x,
+    int y,
+    int width,
+    int height,
+    double scale)
+    : golden_file_name(golden_file_name),
+      x(x),
+      y(y),
+      width(width),
+      height(height),
+      scale(scale) {}
 
 }  // namespace headless
