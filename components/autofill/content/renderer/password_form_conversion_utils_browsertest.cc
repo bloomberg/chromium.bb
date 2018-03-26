@@ -20,6 +20,7 @@
 #include "components/autofill/core/common/password_form.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "content/public/test/render_view_test.h"
+#include "google_apis/gaia/gaia_urls.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
@@ -2225,6 +2226,40 @@ TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaReauthFormIgnored) {
     LoadWebFormFromHTML(html, &form, test_case.origin);
     EXPECT_EQ(test_case.expected_form_is_reauth,
               IsGaiaReauthenticationForm(form));
+  }
+}
+
+TEST_F(MAYBE_PasswordFormConversionUtilsTest, IsGaiaWithSkipSavePasswordForm) {
+  struct TestCase {
+    const char* origin;
+    bool expected_form_has_skip_save_password;
+  } cases[] = {
+      // A common password form is parsed successfully.
+      {"https://example.com", false},
+      // A common GAIA sign-in page, with no skip save password argument.
+      {"https://accounts.google.com", false},
+      // A common GAIA sign-in page, with "0" skip save password argument.
+      {"https://accounts.google.com/?ssp=0", false},
+      // A common GAIA sign-in page, with skip save password argument.
+      {"https://accounts.google.com/?ssp=1", true},
+      // The Gaia page that is used to start a Chrome sign-in flow when Desktop
+      // Identity Consistency is enable.
+      {GaiaUrls::GetInstance()->signin_chrome_sync_dice().spec().c_str(), true},
+  };
+
+  for (TestCase& test_case : cases) {
+    SCOPED_TRACE(testing::Message("origin=")
+                 << test_case.origin
+                 << ", expected_form_has_skip_save_password="
+                 << test_case.expected_form_has_skip_save_password);
+    std::unique_ptr<PasswordFormBuilder> builder(new PasswordFormBuilder(""));
+    builder->AddTextField("username", "", nullptr);
+    builder->AddPasswordField("password", "", nullptr);
+    std::string html = builder->ProduceHTML();
+    WebFormElement form;
+    LoadWebFormFromHTML(html, &form, test_case.origin);
+    EXPECT_EQ(test_case.expected_form_has_skip_save_password,
+              IsGaiaWithSkipSavePasswordForm(form));
   }
 }
 

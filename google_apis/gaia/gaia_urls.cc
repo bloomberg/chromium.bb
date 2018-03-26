@@ -22,8 +22,9 @@ const char kClientLoginUrlSuffix[] = "ClientLogin";
 const char kServiceLoginUrlSuffix[] = "ServiceLogin";
 const char kEmbeddedSetupChromeOsUrlSuffixV1[] = "embedded/setup/chromeos";
 const char kEmbeddedSetupChromeOsUrlSuffixV2[] = "embedded/setup/v2/chromeos";
-// Paramter "ssp=1" is used to skip showing the password bubble when a user
-// signs in to Chrome.
+// Parameter "ssp=1" is used to skip showing the password bubble when a user
+// signs in to Chrome. Note that Gaia will pass this client specified parameter
+// to all URLs that are loaded as part of thi sign-in flow.
 const char kSigninChromeSyncDice[] = "signin/chrome/sync?ssp=1";
 const char kServiceLoginAuthUrlSuffix[] = "ServiceLoginAuth";
 const char kServiceLogoutUrlSuffix[] = "Logout";

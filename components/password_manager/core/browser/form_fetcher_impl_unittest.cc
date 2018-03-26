@@ -78,13 +78,12 @@ class NameFilter : public StubCredentialsFilter {
   std::vector<std::unique_ptr<PasswordForm>> FilterResults(
       std::vector<std::unique_ptr<PasswordForm>> results) const override {
     base::EraseIf(results, [this](const std::unique_ptr<PasswordForm>& form) {
-      return !ShouldSave(*form, form->origin);
+      return !ShouldSave(*form);
     });
     return results;
   }
 
-  bool ShouldSave(const PasswordForm& form,
-                  const GURL& main_frame_url) const override {
+  bool ShouldSave(const PasswordForm& form) const override {
     return form.username_value != name_;
   }
 

@@ -27,6 +27,7 @@
 #include "components/autofill/core/common/password_form_field_prediction_map.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "google_apis/gaia/gaia_urls.h"
+#include "net/base/url_util.h"
 #include "third_party/WebKit/public/platform/WebString.h"
 #include "third_party/WebKit/public/platform/WebVector.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
@@ -865,6 +866,18 @@ bool IsGaiaReauthenticationForm(const blink::WebFormElement& form) {
   }
 
   return has_rart_field && has_continue_field;
+}
+
+bool IsGaiaWithSkipSavePasswordForm(const blink::WebFormElement& form) {
+  GURL url(form.GetDocument().Url());
+  if (url.GetOrigin() != GaiaUrls::GetInstance()->gaia_url().GetOrigin()) {
+    return false;
+  }
+
+  std::string should_skip_password;
+  if (!net::GetValueForKeyInQuery(url, "ssp", &should_skip_password))
+    return false;
+  return should_skip_password == "1";
 }
 
 std::unique_ptr<PasswordForm> CreatePasswordFormFromWebForm(

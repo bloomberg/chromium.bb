@@ -28,7 +28,6 @@
 #include "components/password_manager/core/browser/stub_password_manager_driver.h"
 #include "components/password_manager/core/common/password_manager_features.h"
 #include "components/password_manager/sync/browser/sync_username_test_base.h"
-#include "google_apis/gaia/gaia_urls.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -340,7 +339,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_NotSyncCredential) {
   ASSERT_NE("user@example.org",
             signin_manager()->GetAuthenticatedAccountInfo().email);
   SetSyncingPasswords(true);
-  EXPECT_TRUE(filter_.ShouldSave(form, GURL("https://example.org")));
+  EXPECT_TRUE(filter_.ShouldSave(form));
 }
 
 TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential) {
@@ -348,7 +347,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential) {
 
   FakeSigninAs("user@example.org");
   SetSyncingPasswords(true);
-  EXPECT_FALSE(filter_.ShouldSave(form, GURL("https://example.org")));
+  EXPECT_FALSE(filter_.ShouldSave(form));
 }
 
 TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
@@ -356,13 +355,7 @@ TEST_F(CredentialsFilterTest, ShouldSave_SyncCredential_NotSyncingPasswords) {
 
   FakeSigninAs("user@example.org");
   SetSyncingPasswords(false);
-  EXPECT_TRUE(filter_.ShouldSave(form, GURL("https://example.org")));
-}
-
-TEST_F(CredentialsFilterTest, ShouldSave_ChomeSigninURLForDice) {
-  PasswordForm form = SimpleGaiaForm("user@gmail.com");
-  EXPECT_FALSE(filter_.ShouldSave(
-      form, GaiaUrls::GetInstance()->signin_chrome_sync_dice()));
+  EXPECT_TRUE(filter_.ShouldSave(form));
 }
 
 TEST_F(CredentialsFilterTest, ShouldFilterOneForm) {
