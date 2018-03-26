@@ -7,6 +7,7 @@
 #include <memory>
 
 #import "base/logging.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
@@ -49,6 +50,10 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
                                     ? DownloadFileResult::Failure
                                     : DownloadFileResult::Completed,
                                 DownloadFileResult::Count);
+      if (task->GetErrorCode()) {
+        base::UmaHistogramSparse("Download.IOSDownloadedFileNetError",
+                                 -task->GetErrorCode());
+      }
     }
   }
   void OnDownloadDestroyed(web::DownloadTask* task) override {
