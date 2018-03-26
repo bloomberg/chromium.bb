@@ -8,13 +8,16 @@ import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.view.LayoutInflater;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
+import org.chromium.base.TraceEvent;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.compositor.CompositorViewHolder;
@@ -77,6 +80,7 @@ class WebappSplashScreenController extends EmptyTabObserver {
         mSplashScreen = new FrameLayout(context);
         mSplashScreen.setBackgroundColor(backgroundColor);
         mParentView.addView(mSplashScreen);
+        startSplashscreenTraceEvents();
 
         mWebappUma.splashscreenVisible();
         mWebappUma.recordSplashscreenBackgroundColor(webappInfo.hasValidBackgroundColor()
@@ -296,11 +300,49 @@ class WebappSplashScreenController extends EmptyTabObserver {
             public void run() {
                 if (mSplashScreen == null) return;
                 mParentView.removeView(mSplashScreen);
+                finishSplashscreenTraceEvents();
                 tab.removeObserver(WebappSplashScreenController.this);
                 mSplashScreen = null;
                 mCompositorViewHolder = null;
                 mWebappUma.splashscreenHidden(reason);
             }
         });
+    }
+
+    private static class SingleShotOnDrawListener implements ViewTreeObserver.OnDrawListener {
+        private final View mView;
+        private final Runnable mAction;
+        private boolean mHasRun;
+
+        public static void install(View view, Runnable action) {
+            SingleShotOnDrawListener listener = new SingleShotOnDrawListener(view, action);
+            view.getViewTreeObserver().addOnDrawListener(listener);
+        }
+
+        private SingleShotOnDrawListener(View view, Runnable action) {
+            mView = view;
+            mAction = action;
+        }
+
+        @Override
+        public void onDraw() {
+            if (mHasRun) return;
+            mHasRun = true;
+            mAction.run();
+            // Cannot call removeOnDrawListener within OnDraw, so do on next tick.
+            mView.post(() -> mView.getViewTreeObserver().removeOnDrawListener(this));
+        }
+    };
+
+    private void startSplashscreenTraceEvents() {
+        TraceEvent.startAsync("WebappSplashScreen", 0);
+        SingleShotOnDrawListener.install(
+                mParentView, () -> { TraceEvent.startAsync("WebappSplashScreen.visible", 0); });
+    }
+
+    private void finishSplashscreenTraceEvents() {
+        TraceEvent.finishAsync("WebappSplashScreen", 0);
+        SingleShotOnDrawListener.install(
+                mParentView, () -> { TraceEvent.finishAsync("WebappSplashScreen.visible", 0); });
     }
 }
