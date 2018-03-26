@@ -22,6 +22,10 @@
 #include "ppapi/host/resource_host.h"
 #include "ppapi/proxy/serialized_structs.h"
 
+namespace blink {
+class WebLocalFrame;
+}
+
 namespace content {
 class RenderFrame;
 class RendererPpapiHost;
@@ -92,6 +96,13 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
       ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgPrint(ppapi::host::HostMessageContext* context);
   int32_t OnHostMsgSaveAs(ppapi::host::HostMessageContext* context);
+  int32_t OnHostMsgShowAlertDialog(ppapi::host::HostMessageContext* context,
+                                   const std::string& message);
+  int32_t OnHostMsgShowConfirmDialog(ppapi::host::HostMessageContext* context,
+                                     const std::string& message);
+  int32_t OnHostMsgShowPromptDialog(ppapi::host::HostMessageContext* context,
+                                    const std::string& message,
+                                    const std::string& default_answer);
   int32_t OnHostMsgSetSelectedText(ppapi::host::HostMessageContext* context,
                                    const base::string16& selected_text);
   int32_t OnHostMsgSetLinkUnderCursor(ppapi::host::HostMessageContext* context,
@@ -117,8 +128,8 @@ class PepperPDFHost : public ppapi::host::ResourceHost,
   void CreatePdfAccessibilityTreeIfNeeded();
 
   content::RenderFrame* GetRenderFrame();
-
   mojom::PdfService* GetRemotePdfService();
+  blink::WebLocalFrame* GetWebLocalFrame();
 
   std::unique_ptr<PdfAccessibilityTree> pdf_accessibility_tree_;
   content::RendererPpapiHost* const host_;

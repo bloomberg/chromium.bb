@@ -175,6 +175,17 @@ struct PPB_PDF {
 
   // Notifies embedder that the PDF has scrolled.
   void (*DidScroll)(PP_Instance instance);
+
+  // Displays an alert dialog.
+  void (*ShowAlertDialog)(PP_Instance instance, const char* message);
+
+  // Displays a confirmation dialog. This method is synchronous.
+  bool (*ShowConfirmDialog)(PP_Instance instance, const char* message);
+
+  // Displays a prompt dialog. This method is synchronous.
+  struct PP_Var (*ShowPromptDialog)(PP_Instance instance,
+                                    const char* message,
+                                    const char* default_answer);
 };
 
 #endif  // PPAPI_C_PRIVATE_PPB_PDF_H_

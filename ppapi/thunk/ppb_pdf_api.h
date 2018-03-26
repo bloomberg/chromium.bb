@@ -23,6 +23,10 @@ class PPB_PDF_API {
   virtual void SetContentRestriction(int restrictions) = 0;
   virtual void UserMetricsRecordAction(const PP_Var& action) = 0;
   virtual void HasUnsupportedFeature() = 0;
+  virtual void ShowAlertDialog(const char* message) = 0;
+  virtual bool ShowConfirmDialog(const char* message) = 0;
+  virtual PP_Var ShowPromptDialog(const char* message,
+                                  const char* default_answer) = 0;
   virtual void SaveAs() = 0;
   virtual PP_Bool IsFeatureEnabled(PP_PDFFeature feature) = 0;
   virtual void Print() = 0;
