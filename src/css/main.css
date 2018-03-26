@@ -36,20 +36,16 @@ body {
   border: 1px solid #555;
   border-radius: 3px;
   box-sizing: border-box;
-  opacity: 0;
+  opacity: 0.4;
   position: absolute;
   transition: opacity 100ms;
 }
 
-body.controls-visible .scrollbar-track .scrollbar-thumb {
-  opacity: 0.4;
-}
-
-body.controls-visible .scrollbar-track .scrollbar-thumb:hover {
+.scrollbar-track .scrollbar-thumb:hover {
   opacity: 0.6;
 }
 
-body.controls-visible .scrollbar-track .scrollbar-thumb:active {
+.scrollbar-track .scrollbar-thumb:active {
   opacity: 0.8;
 }
 
@@ -61,16 +57,6 @@ body.controls-visible .scrollbar-track .scrollbar-thumb:active {
 .scrollbar-track-vertical,
 .scrollbar-track-vertical .scrollbar-thumb {
   width: 8px;
-}
-
-.dynamic {
-  opacity: 1;
-  transition: opacity 200ms linear;
-}
-
-body:not(.controls-visible) .dynamic {
-  opacity: 0;
-  pointer-events: none;
 }
 
 .buttons button,
@@ -97,10 +83,6 @@ body:not(.controls-visible) .dynamic {
 .buttons button:not([disabled]):active,
 .buttons input:not([disabled]):active {
   background-color: rgba(90, 90, 90, 0.75);
-}
-
-.buttons button:[disabled] {
-  opacity: 0.75;
 }
 
 #toolbar-puller-wrapper {
@@ -545,18 +527,13 @@ body.mirror #effects li canvas {
   background-position: 0 -32px;
 }
 
-body.controls-visible #toolbar {
-  opacity: 1;
-}
-
 #toolbar {
   -webkit-transform: translateY(100%);
   bottom: 52px;  /* Keep in sync with #toolbar.expanded. */
   left: 0;
   position: absolute;
   right: 0;
-  transition: -webkit-transform 200ms ease,
-              opacity 200ms linear;
+  transition: -webkit-transform 200ms ease;
 }
 
 body:not(.has-error) #toolbar.expanded {
@@ -926,7 +903,7 @@ body.album #album {
   padding: 10px;
 }
 
-body.controls-visible #tooltip.visible {
+#tooltip.visible {
   -webkit-transform: translateY(0);
   transition: opacity 500ms, -webkit-transform 500ms;
   opacity: 1;
