@@ -47,14 +47,18 @@ class BaseDiff(object):
     self.name = name
     self.banner = '\n' + '*' * 30 + name + '*' * 30
 
-  def AppendResults(self, logfile):
+  def AppendResults(self, logfiles):
     """Print and write diff results to an open |logfile|."""
-    _PrintAndWriteToFile(logfile, self.banner)
+    full, short = logfiles
+    _WriteToFile(full, self.banner)
+    _WriteToFile(short, self.banner)
+
     for s in self.Summary():
-      print s
-    print
+      _WriteToFile(short, s)
+    _WriteToFile(short, '')
+
     for s in self.DetailedResults():
-      logfile.write(s + '\n')
+      full.write(s + '\n')
 
   @property
   def summary_stat(self):
@@ -72,10 +76,10 @@ class BaseDiff(object):
     """Prepare a binary size diff with ready to print results."""
     raise NotImplementedError()
 
-  def RunDiff(self, logfile, before_dir, after_dir):
+  def RunDiff(self, logfiles, before_dir, after_dir):
     logging.info('Creating: %s', self.name)
     self.ProduceDiff(before_dir, after_dir)
-    self.AppendResults(logfile)
+    self.AppendResults(logfiles)
 
 
 class NativeDiff(BaseDiff):
@@ -420,7 +424,7 @@ class _DiffArchiveManager(object):
     """Perform diffs given two build archives."""
     before = self.build_archives[before_id]
     after = self.build_archives[after_id]
-    diff_path = self._DiffFilePath(before, after)
+    diff_path, short_diff_path = self._DiffFilePaths(before, after)
     if not self._CanDiff(before, after):
       logging.info(
           'Skipping diff for %s due to missing build archives.', diff_path)
@@ -434,26 +438,30 @@ class _DiffArchiveManager(object):
           'Skipping diff for %s and %s. Matching diff already exists: %s',
           before.rev, after.rev, diff_path)
     else:
-      if os.path.exists(diff_path):
-        os.remove(diff_path)
-      with open(diff_path, 'a') as diff_file:
+      with open(diff_path, 'w') as diff_file, \
+           open(short_diff_path, 'w') as summary_file:
         for d in self.diffs:
-          d.RunDiff(diff_file, before.dir, after.dir)
+          d.RunDiff((diff_file, summary_file), before.dir, after.dir)
       metadata.Write()
       self._AddDiffSummaryStat(before, after)
+    if os.path.exists(short_diff_path):
+      _PrintFile(short_diff_path)
     logging.info('See detailed diff results here: %s',
                  os.path.relpath(diff_path))
 
   def Summarize(self):
+    path = os.path.join(self.archive_dir, 'last_diff_summary.txt')
     if self._summary_stats:
-      path = os.path.join(self.archive_dir, 'last_diff_summary.txt')
       with open(path, 'w') as f:
         stats = sorted(
             self._summary_stats, key=lambda x: x[0].value, reverse=True)
-        _PrintAndWriteToFile(f, '\nDiff Summary')
+        _WriteToFile(f, '\nDiff Summary')
         for s, before, after in stats:
-          _PrintAndWriteToFile(f, '{:>+10} {} {} for range: {}..{}',
+          _WriteToFile(f, '{:>+10} {} {} for range: {}..{}',
                                s.value, s.units, s.name, before, after)
+    # Print cached file if all builds were cached.
+    if os.path.exists(path):
+      _PrintFile(path)
     if self.build_archives:
       supersize_path = os.path.join(_BINARY_SIZE_DIR, 'supersize')
       size2 = ''
@@ -479,8 +487,9 @@ class _DiffArchiveManager(object):
   def _CanDiff(self, before, after):
     return before.Exists() and after.Exists()
 
-  def _DiffFilePath(self, before, after):
-    return os.path.join(self._DiffDir(before, after), 'diff_results.txt')
+  def _DiffFilePaths(self, before, after):
+    ret = os.path.join(self._DiffDir(before, after), 'diff_results')
+    return ret + '.txt', ret + '.short.txt'
 
   def _DiffMetadataPath(self, before, after):
     return os.path.join(self._DiffDir(before, after), 'metadata.txt')
@@ -740,13 +749,17 @@ def _ExtractFiles(to_extract, dst, z):
   return os.path.join(dst, output_dir)
 
 
-def _PrintAndWriteToFile(logfile, s, *args, **kwargs):
+def _WriteToFile(logfile, s, *args, **kwargs):
   if isinstance(s, basestring):
     data = s.format(*args, **kwargs) + '\n'
   else:
     data = '\n'.join(s) + '\n'
-  sys.stdout.write(data)
   logfile.write(data)
+
+
+def _PrintFile(path):
+  with open(path) as f:
+    sys.stdout.write(f.read())
 
 
 @contextmanager
