@@ -105,10 +105,8 @@ CSSStyleValue* CreateStyleValueWithProperty(CSSPropertyID property_id,
   if (value.IsVariableReferenceValue())
     return CSSUnparsedValue::FromCSSValue(ToCSSVariableReferenceValue(value));
   if (value.IsCustomPropertyDeclaration()) {
-    const CSSVariableData* variable_data =
-        ToCSSCustomPropertyDeclaration(value).Value();
-    DCHECK(variable_data);
-    return CSSUnparsedValue::FromCSSValue(*variable_data);
+    return CSSUnparsedValue::FromCSSValue(
+        ToCSSCustomPropertyDeclaration(value));
   }
 
   if (!CSSOMTypes::IsPropertySupported(property_id))
@@ -166,7 +164,7 @@ CSSStyleValueVector StyleValueFactory::FromString(
         CSSVariableData::Create(range, false /* is_animation_tainted */,
                                 false /* needs variable resolution */);
     CSSStyleValueVector values;
-    values.push_back(CSSUnparsedValue::FromCSSValue(*variable_data));
+    values.push_back(CSSUnparsedValue::FromCSSVariableData(*variable_data));
     return values;
   }
 

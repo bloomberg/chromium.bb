@@ -13,6 +13,7 @@
 namespace blink {
 
 class CSSVariableReferenceValue;
+class CSSCustomPropertyDeclaration;
 class CSSVariableData;
 using CSSUnparsedSegment = StringOrCSSVariableReferenceValue;
 
@@ -30,13 +31,14 @@ class CORE_EXPORT CSSUnparsedValue final : public CSSStyleValue {
     return Create(HeapVector<CSSUnparsedSegment>());
   }
   static CSSUnparsedValue* FromCSSValue(const CSSVariableReferenceValue&);
-  static CSSUnparsedValue* FromCSSValue(const CSSVariableData&);
+  static CSSUnparsedValue* FromCSSValue(const CSSCustomPropertyDeclaration&);
+  static CSSUnparsedValue* FromCSSVariableData(const CSSVariableData&);
 
   const CSSValue* ToCSSValue() const override;
 
   StyleValueType GetType() const override { return kUnparsedType; }
 
-  CSSUnparsedSegment AnonymousIndexedGetter(unsigned, ExceptionState&);
+  CSSUnparsedSegment AnonymousIndexedGetter(unsigned, ExceptionState&) const;
   bool AnonymousIndexedSetter(unsigned,
                               const CSSUnparsedSegment&,
                               ExceptionState&);

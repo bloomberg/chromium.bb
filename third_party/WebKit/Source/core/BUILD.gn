@@ -1706,6 +1706,7 @@ jumbo_source_set("unit_tests") {
     "css/cssom/CSSResourceValueTest.cpp",
     "css/cssom/CSSStyleImageValueTest.cpp",
     "css/cssom/CSSUnitValueTest.cpp",
+    "css/cssom/CSSUnparsedValueTest.cpp",
     "css/cssom/PrepopulatedComputedStylePropertyMapTest.cpp",
     "css/invalidation/InvalidationSetTest.cpp",
     "css/invalidation/StyleInvalidatorTest.cpp",

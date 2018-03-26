@@ -4,6 +4,7 @@
 
 #include "core/css/cssom/CSSUnparsedValue.h"
 
+#include "core/css/CSSCustomPropertyDeclaration.h"
 #include "core/css/CSSVariableData.h"
 #include "core/css/CSSVariableReferenceValue.h"
 #include "core/css/cssom/CSSStyleVariableReferenceValue.h"
@@ -66,16 +67,26 @@ HeapVector<CSSUnparsedSegment> ParserTokenRangeToTokens(
 CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(
     const CSSVariableReferenceValue& value) {
   DCHECK(value.VariableDataValue());
-  return FromCSSValue(*value.VariableDataValue());
+  return FromCSSVariableData(*value.VariableDataValue());
 }
 
-CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(const CSSVariableData& value) {
+CSSUnparsedValue* CSSUnparsedValue::FromCSSValue(
+    const CSSCustomPropertyDeclaration& value) {
+  if (const CSSVariableData* data = value.Value())
+    return FromCSSVariableData(*data);
+
+  // Otherwise, it's a CSS-wide keyword
+  return FromString(value.CustomCSSText());
+}
+
+CSSUnparsedValue* CSSUnparsedValue::FromCSSVariableData(
+    const CSSVariableData& value) {
   return CSSUnparsedValue::Create(ParserTokenRangeToTokens(value.TokenRange()));
 }
 
 CSSUnparsedSegment CSSUnparsedValue::AnonymousIndexedGetter(
     unsigned index,
-    ExceptionState& exception_state) {
+    ExceptionState& exception_state) const {
   if (index < tokens_.size())
     return tokens_[index];
   return {};
