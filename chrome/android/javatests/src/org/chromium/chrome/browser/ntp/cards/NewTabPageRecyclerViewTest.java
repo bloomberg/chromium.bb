@@ -56,6 +56,7 @@ import org.chromium.ui.test.util.UiRestriction;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -180,7 +181,7 @@ public class NewTabPageRecyclerViewTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    public void testDismissArticleWithContextMenu() throws InterruptedException, TimeoutException {
+    public void testDismissArticleWithContextMenu() throws Exception {
         setSuggestionsAndWaitForUpdate(10);
         List<SnippetArticle> suggestions = mSource.getSuggestionsForCategory(TEST_CATEGORY);
         assertEquals(10, suggestions.size());
@@ -200,8 +201,7 @@ public class NewTabPageRecyclerViewTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    public void testDismissStatusCardWithContextMenu()
-            throws InterruptedException, TimeoutException {
+    public void testDismissStatusCardWithContextMenu() throws Exception {
         setSuggestionsAndWaitForUpdate(0);
         assertArrayEquals(new int[] {TEST_CATEGORY}, mSource.getCategories());
 
@@ -221,8 +221,7 @@ public class NewTabPageRecyclerViewTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    public void testDismissActionItemWithContextMenu()
-            throws InterruptedException, TimeoutException {
+    public void testDismissActionItemWithContextMenu() throws Exception {
         setSuggestionsAndWaitForUpdate(0);
         assertArrayEquals(new int[] {TEST_CATEGORY}, mSource.getCategories());
 
@@ -396,8 +395,9 @@ public class NewTabPageRecyclerViewTest {
         return suggestions;
     }
 
-    private void invokeContextMenu(View view, int contextMenuItemId) {
-        TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), view);
+    private void invokeContextMenu(View view, int contextMenuItemId) throws ExecutionException {
+        TestTouchUtils.performLongClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), view);
         assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
                 mActivityTestRule.getActivity(), contextMenuItemId, 0));
     }

@@ -43,6 +43,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.TestTouchUtils;
 import org.chromium.net.test.EmbeddedTestServer;
 
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
@@ -99,7 +100,7 @@ public class TileGroupTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    public void testDismissTileWithContextMenu() throws InterruptedException, TimeoutException {
+    public void testDismissTileWithContextMenu() throws Exception {
         SiteSuggestion siteToDismiss = mMostVisitedSites.getCurrentSites().get(0);
         final View tileView = getTileViewFor(siteToDismiss);
 
@@ -123,7 +124,7 @@ public class TileGroupTest {
     @Test
     @MediumTest
     @Feature({"NewTabPage"})
-    public void testDismissTileUndo() throws InterruptedException, TimeoutException {
+    public void testDismissTileUndo() throws Exception {
         SiteSuggestion siteToDismiss = mMostVisitedSites.getCurrentSites().get(0);
         final ViewGroup tileContainer = getTileGridLayout();
         final View tileView = getTileViewFor(siteToDismiss);
@@ -185,8 +186,9 @@ public class TileGroupTest {
         return tileView;
     }
 
-    private void invokeContextMenu(View view, int contextMenuItemId) {
-        TestTouchUtils.longClickView(InstrumentationRegistry.getInstrumentation(), view);
+    private void invokeContextMenu(View view, int contextMenuItemId) throws ExecutionException {
+        TestTouchUtils.performLongClickOnMainSync(
+                InstrumentationRegistry.getInstrumentation(), view);
         Assert.assertTrue(InstrumentationRegistry.getInstrumentation().invokeContextMenuAction(
                 mActivityTestRule.getActivity(), contextMenuItemId, 0));
     }
