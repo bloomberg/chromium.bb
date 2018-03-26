@@ -3615,6 +3615,8 @@
         logical_side: "width",
         shorthand_for_physical_side: "CSSProperty",
       },
+      keywords: ["auto"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
     },
     {
       name: "block-size",
@@ -3623,6 +3625,8 @@
         logical_side: "height",
         shorthand_for_physical_side: "CSSProperty",
       },
+      keywords: ["auto"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
     },
     {
       name: "min-inline-size",
@@ -3631,6 +3635,7 @@
         logical_side: "width",
         shorthand_for_physical_side: "CSSPropertyMin",
       },
+      typedom_types: ["Length", "Percentage"],
     },
     {
       name: "min-block-size",
@@ -3639,6 +3644,7 @@
         logical_side: "height",
         shorthand_for_physical_side: "CSSPropertyMin",
       },
+      typedom_types: ["Length", "Percentage"],
     },
     {
       name: "max-inline-size",
@@ -3647,6 +3653,8 @@
         logical_side: "width",
         shorthand_for_physical_side: "CSSPropertyMax",
       },
+      keywords: ["none"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
     },
     {
       name: "max-block-size",
@@ -3655,6 +3663,8 @@
         logical_side: "height",
         shorthand_for_physical_side: "CSSPropertyMax",
       },
+      keywords: ["none"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
     },
 
     // Non-standard direction aware properties
