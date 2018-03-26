@@ -71,11 +71,11 @@ extern "C" {
   {                                      \
     const __m256i _in0 = in0;            \
     const __m256i _in1 = in1;            \
-    in0 = _mm256_subs_epi16(_in1, _in0); \
-    in1 = _mm256_adds_epi16(_in0, _in1); \
+    in1 = _mm256_subs_epi16(_in0, _in1); \
+    in0 = _mm256_adds_epi16(_in0, _in1); \
   }
 
-#define btf_16_adds_subs_out_avx2(in0, in1, out0, out1) \
+#define btf_16_adds_subs_out_avx2(out0, out1, in0, in1) \
   {                                                     \
     const __m256i _in0 = in0;                           \
     const __m256i _in1 = in1;                           \

@@ -72,15 +72,15 @@ static void idct16_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_avx2(cospi_p56_m08, cospi_p08_p56, x1[4], x1[7], x1[4], x1[7]);
   btf_16_w16_avx2(cospi_p24_m40, cospi_p40_p24, x1[5], x1[6], x1[5], x1[6]);
   btf_16_adds_subs_avx2(x1[8], x1[9]);
-  btf_16_subs_adds_avx2(x1[10], x1[11]);
+  btf_16_subs_adds_avx2(x1[11], x1[10]);
   btf_16_adds_subs_avx2(x1[12], x1[13]);
-  btf_16_subs_adds_avx2(x1[14], x1[15]);
+  btf_16_subs_adds_avx2(x1[15], x1[14]);
 
   // stage 4
   btf_16_w16_avx2(cospi_p32_p32, cospi_p32_m32, x1[0], x1[1], x1[0], x1[1]);
   btf_16_w16_avx2(cospi_p48_m16, cospi_p16_p48, x1[2], x1[3], x1[2], x1[3]);
   btf_16_adds_subs_avx2(x1[4], x1[5]);
-  btf_16_subs_adds_avx2(x1[6], x1[7]);
+  btf_16_subs_adds_avx2(x1[7], x1[6]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[9], x1[14], x1[9], x1[14]);
   btf_16_w16_avx2(cospi_m48_m16, cospi_m16_p48, x1[10], x1[13], x1[10], x1[13]);
 
@@ -91,8 +91,8 @@ static void idct16_new_avx2(const __m256i *input, __m256i *output,
 
   btf_16_adds_subs_avx2(x1[8], x1[11]);
   btf_16_adds_subs_avx2(x1[9], x1[10]);
-  btf_16_subs_adds_avx2(x1[12], x1[15]);
-  btf_16_subs_adds_avx2(x1[13], x1[14]);
+  btf_16_subs_adds_avx2(x1[15], x1[12]);
+  btf_16_subs_adds_avx2(x1[14], x1[13]);
 
   // stage 6
 
@@ -104,14 +104,14 @@ static void idct16_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_avx2(cospi_m32_p32, cospi_p32_p32, x1[11], x1[12], x1[11], x1[12]);
 
   // stage 7
-  btf_16_adds_subs_out_avx2(x1[0], x1[15], output[0], output[15]);
-  btf_16_adds_subs_out_avx2(x1[1], x1[14], output[1], output[14]);
-  btf_16_adds_subs_out_avx2(x1[2], x1[13], output[2], output[13]);
-  btf_16_adds_subs_out_avx2(x1[3], x1[12], output[3], output[12]);
-  btf_16_adds_subs_out_avx2(x1[4], x1[11], output[4], output[11]);
-  btf_16_adds_subs_out_avx2(x1[5], x1[10], output[5], output[10]);
-  btf_16_adds_subs_out_avx2(x1[6], x1[9], output[6], output[9]);
-  btf_16_adds_subs_out_avx2(x1[7], x1[8], output[7], output[8]);
+  btf_16_adds_subs_out_avx2(output[0], output[15], x1[0], x1[15]);
+  btf_16_adds_subs_out_avx2(output[1], output[14], x1[1], x1[14]);
+  btf_16_adds_subs_out_avx2(output[2], output[13], x1[2], x1[13]);
+  btf_16_adds_subs_out_avx2(output[3], output[12], x1[3], x1[12]);
+  btf_16_adds_subs_out_avx2(output[4], output[11], x1[4], x1[11]);
+  btf_16_adds_subs_out_avx2(output[5], output[10], x1[5], x1[10]);
+  btf_16_adds_subs_out_avx2(output[6], output[9], x1[6], x1[9]);
+  btf_16_adds_subs_out_avx2(output[7], output[8], x1[7], x1[8]);
 }
 
 static void iadst16_new_avx2(const __m256i *input, __m256i *output,
@@ -359,21 +359,21 @@ static void idct32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_avx2(cospi_p12_m52, cospi_p52_p12, x1[11], x1[12], x1[11], x1[12]);
 
   btf_16_adds_subs_avx2(x1[16], x1[17]);
-  btf_16_subs_adds_avx2(x1[18], x1[19]);
+  btf_16_subs_adds_avx2(x1[19], x1[18]);
   btf_16_adds_subs_avx2(x1[20], x1[21]);
-  btf_16_subs_adds_avx2(x1[22], x1[23]);
+  btf_16_subs_adds_avx2(x1[23], x1[22]);
   btf_16_adds_subs_avx2(x1[24], x1[25]);
-  btf_16_subs_adds_avx2(x1[26], x1[27]);
+  btf_16_subs_adds_avx2(x1[27], x1[26]);
   btf_16_adds_subs_avx2(x1[28], x1[29]);
-  btf_16_subs_adds_avx2(x1[30], x1[31]);
+  btf_16_subs_adds_avx2(x1[31], x1[30]);
 
   // stage 4
   btf_16_w16_avx2(cospi_p56_m08, cospi_p08_p56, x1[4], x1[7], x1[4], x1[7]);
   btf_16_w16_avx2(cospi_p24_m40, cospi_p40_p24, x1[5], x1[6], x1[5], x1[6]);
   btf_16_adds_subs_avx2(x1[8], x1[9]);
-  btf_16_subs_adds_avx2(x1[10], x1[11]);
+  btf_16_subs_adds_avx2(x1[11], x1[10]);
   btf_16_adds_subs_avx2(x1[12], x1[13]);
-  btf_16_subs_adds_avx2(x1[14], x1[15]);
+  btf_16_subs_adds_avx2(x1[15], x1[14]);
   btf_16_w16_avx2(cospi_m08_p56, cospi_p56_p08, x1[17], x1[30], x1[17], x1[30]);
   btf_16_w16_avx2(cospi_m56_m08, cospi_m08_p56, x1[18], x1[29], x1[18], x1[29]);
   btf_16_w16_avx2(cospi_m40_p24, cospi_p24_p40, x1[21], x1[26], x1[21], x1[26]);
@@ -383,17 +383,17 @@ static void idct32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_avx2(cospi_p32_p32, cospi_p32_m32, x1[0], x1[1], x1[0], x1[1]);
   btf_16_w16_avx2(cospi_p48_m16, cospi_p16_p48, x1[2], x1[3], x1[2], x1[3]);
   btf_16_adds_subs_avx2(x1[4], x1[5]);
-  btf_16_subs_adds_avx2(x1[6], x1[7]);
+  btf_16_subs_adds_avx2(x1[7], x1[6]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[9], x1[14], x1[9], x1[14]);
   btf_16_w16_avx2(cospi_m48_m16, cospi_m16_p48, x1[10], x1[13], x1[10], x1[13]);
   btf_16_adds_subs_avx2(x1[16], x1[19]);
   btf_16_adds_subs_avx2(x1[17], x1[18]);
-  btf_16_subs_adds_avx2(x1[20], x1[23]);
-  btf_16_subs_adds_avx2(x1[21], x1[22]);
+  btf_16_subs_adds_avx2(x1[23], x1[20]);
+  btf_16_subs_adds_avx2(x1[22], x1[21]);
   btf_16_adds_subs_avx2(x1[24], x1[27]);
   btf_16_adds_subs_avx2(x1[25], x1[26]);
-  btf_16_subs_adds_avx2(x1[28], x1[31]);
-  btf_16_subs_adds_avx2(x1[29], x1[30]);
+  btf_16_subs_adds_avx2(x1[31], x1[28]);
+  btf_16_subs_adds_avx2(x1[30], x1[29]);
 
   // stage 6
   btf_16_adds_subs_avx2(x1[0], x1[3]);
@@ -401,8 +401,8 @@ static void idct32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_avx2(cospi_m32_p32, cospi_p32_p32, x1[5], x1[6], x1[5], x1[6]);
   btf_16_adds_subs_avx2(x1[8], x1[11]);
   btf_16_adds_subs_avx2(x1[9], x1[10]);
-  btf_16_subs_adds_avx2(x1[12], x1[15]);
-  btf_16_subs_adds_avx2(x1[13], x1[14]);
+  btf_16_subs_adds_avx2(x1[15], x1[12]);
+  btf_16_subs_adds_avx2(x1[14], x1[13]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[18], x1[29], x1[18], x1[29]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[19], x1[28], x1[19], x1[28]);
   btf_16_w16_avx2(cospi_m48_m16, cospi_m16_p48, x1[20], x1[27], x1[20], x1[27]);
@@ -419,10 +419,10 @@ static void idct32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_adds_subs_avx2(x1[17], x1[22]);
   btf_16_adds_subs_avx2(x1[18], x1[21]);
   btf_16_adds_subs_avx2(x1[19], x1[20]);
-  btf_16_subs_adds_avx2(x1[24], x1[31]);
-  btf_16_subs_adds_avx2(x1[25], x1[30]);
-  btf_16_subs_adds_avx2(x1[26], x1[29]);
-  btf_16_subs_adds_avx2(x1[27], x1[28]);
+  btf_16_subs_adds_avx2(x1[31], x1[24]);
+  btf_16_subs_adds_avx2(x1[30], x1[25]);
+  btf_16_subs_adds_avx2(x1[29], x1[26]);
+  btf_16_subs_adds_avx2(x1[28], x1[27]);
 
   // stage 8
   btf_16_adds_subs_avx2(x1[0], x1[15]);
@@ -439,22 +439,22 @@ static void idct32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_avx2(cospi_m32_p32, cospi_p32_p32, x1[23], x1[24], x1[23], x1[24]);
 
   // stage 9
-  btf_16_adds_subs_out_avx2(x1[0], x1[31], output[0], output[31]);
-  btf_16_adds_subs_out_avx2(x1[1], x1[30], output[1], output[30]);
-  btf_16_adds_subs_out_avx2(x1[2], x1[29], output[2], output[29]);
-  btf_16_adds_subs_out_avx2(x1[3], x1[28], output[3], output[28]);
-  btf_16_adds_subs_out_avx2(x1[4], x1[27], output[4], output[27]);
-  btf_16_adds_subs_out_avx2(x1[5], x1[26], output[5], output[26]);
-  btf_16_adds_subs_out_avx2(x1[6], x1[25], output[6], output[25]);
-  btf_16_adds_subs_out_avx2(x1[7], x1[24], output[7], output[24]);
-  btf_16_adds_subs_out_avx2(x1[8], x1[23], output[8], output[23]);
-  btf_16_adds_subs_out_avx2(x1[9], x1[22], output[9], output[22]);
-  btf_16_adds_subs_out_avx2(x1[10], x1[21], output[10], output[21]);
-  btf_16_adds_subs_out_avx2(x1[11], x1[20], output[11], output[20]);
-  btf_16_adds_subs_out_avx2(x1[12], x1[19], output[12], output[19]);
-  btf_16_adds_subs_out_avx2(x1[13], x1[18], output[13], output[18]);
-  btf_16_adds_subs_out_avx2(x1[14], x1[17], output[14], output[17]);
-  btf_16_adds_subs_out_avx2(x1[15], x1[16], output[15], output[16]);
+  btf_16_adds_subs_out_avx2(output[0], output[31], x1[0], x1[31]);
+  btf_16_adds_subs_out_avx2(output[1], output[30], x1[1], x1[30]);
+  btf_16_adds_subs_out_avx2(output[2], output[29], x1[2], x1[29]);
+  btf_16_adds_subs_out_avx2(output[3], output[28], x1[3], x1[28]);
+  btf_16_adds_subs_out_avx2(output[4], output[27], x1[4], x1[27]);
+  btf_16_adds_subs_out_avx2(output[5], output[26], x1[5], x1[26]);
+  btf_16_adds_subs_out_avx2(output[6], output[25], x1[6], x1[25]);
+  btf_16_adds_subs_out_avx2(output[7], output[24], x1[7], x1[24]);
+  btf_16_adds_subs_out_avx2(output[8], output[23], x1[8], x1[23]);
+  btf_16_adds_subs_out_avx2(output[9], output[22], x1[9], x1[22]);
+  btf_16_adds_subs_out_avx2(output[10], output[21], x1[10], x1[21]);
+  btf_16_adds_subs_out_avx2(output[11], output[20], x1[11], x1[20]);
+  btf_16_adds_subs_out_avx2(output[12], output[19], x1[12], x1[19]);
+  btf_16_adds_subs_out_avx2(output[13], output[18], x1[13], x1[18]);
+  btf_16_adds_subs_out_avx2(output[14], output[17], x1[14], x1[17]);
+  btf_16_adds_subs_out_avx2(output[15], output[16], x1[15], x1[16]);
 }
 
 static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
@@ -550,21 +550,21 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_0_avx2(cospi[38], cospi[26], x1[22], x1[22], x1[25]);
   btf_16_w16_0_avx2(-cospi[58], cospi[6], x1[24], x1[23], x1[24]);
   btf_16_adds_subs_avx2(x1[32], x1[33]);
-  btf_16_subs_adds_avx2(x1[34], x1[35]);
+  btf_16_subs_adds_avx2(x1[35], x1[34]);
   btf_16_adds_subs_avx2(x1[36], x1[37]);
-  btf_16_subs_adds_avx2(x1[38], x1[39]);
+  btf_16_subs_adds_avx2(x1[39], x1[38]);
   btf_16_adds_subs_avx2(x1[40], x1[41]);
-  btf_16_subs_adds_avx2(x1[42], x1[43]);
+  btf_16_subs_adds_avx2(x1[43], x1[42]);
   btf_16_adds_subs_avx2(x1[44], x1[45]);
-  btf_16_subs_adds_avx2(x1[46], x1[47]);
+  btf_16_subs_adds_avx2(x1[47], x1[46]);
   btf_16_adds_subs_avx2(x1[48], x1[49]);
-  btf_16_subs_adds_avx2(x1[50], x1[51]);
+  btf_16_subs_adds_avx2(x1[51], x1[50]);
   btf_16_adds_subs_avx2(x1[52], x1[53]);
-  btf_16_subs_adds_avx2(x1[54], x1[55]);
+  btf_16_subs_adds_avx2(x1[55], x1[54]);
   btf_16_adds_subs_avx2(x1[56], x1[57]);
-  btf_16_subs_adds_avx2(x1[58], x1[59]);
+  btf_16_subs_adds_avx2(x1[59], x1[58]);
   btf_16_adds_subs_avx2(x1[60], x1[61]);
-  btf_16_subs_adds_avx2(x1[62], x1[63]);
+  btf_16_subs_adds_avx2(x1[63], x1[62]);
 
   // stage 4
   btf_16_w16_0_avx2(cospi[60], cospi[4], x1[8], x1[8], x1[15]);
@@ -572,13 +572,13 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_0_avx2(cospi[44], cospi[20], x1[10], x1[10], x1[13]);
   btf_16_w16_0_avx2(-cospi[52], cospi[12], x1[12], x1[11], x1[12]);
   btf_16_adds_subs_avx2(x1[16], x1[17]);
-  btf_16_subs_adds_avx2(x1[18], x1[19]);
+  btf_16_subs_adds_avx2(x1[19], x1[18]);
   btf_16_adds_subs_avx2(x1[20], x1[21]);
-  btf_16_subs_adds_avx2(x1[22], x1[23]);
+  btf_16_subs_adds_avx2(x1[23], x1[22]);
   btf_16_adds_subs_avx2(x1[24], x1[25]);
-  btf_16_subs_adds_avx2(x1[26], x1[27]);
+  btf_16_subs_adds_avx2(x1[27], x1[26]);
   btf_16_adds_subs_avx2(x1[28], x1[29]);
-  btf_16_subs_adds_avx2(x1[30], x1[31]);
+  btf_16_subs_adds_avx2(x1[31], x1[30]);
   btf_16_w16_avx2(cospi_m04_p60, cospi_p60_p04, x1[33], x1[62], x1[33], x1[62]);
   btf_16_w16_avx2(cospi_m60_m04, cospi_m04_p60, x1[34], x1[61], x1[34], x1[61]);
   btf_16_w16_avx2(cospi_m36_p28, cospi_p28_p36, x1[37], x1[58], x1[37], x1[58]);
@@ -592,45 +592,45 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_0_avx2(cospi[56], cospi[8], x1[4], x1[4], x1[7]);
   btf_16_w16_0_avx2(-cospi[40], cospi[24], x1[6], x1[5], x1[6]);
   btf_16_adds_subs_avx2(x1[8], x1[9]);
-  btf_16_subs_adds_avx2(x1[10], x1[11]);
+  btf_16_subs_adds_avx2(x1[11], x1[10]);
   btf_16_adds_subs_avx2(x1[12], x1[13]);
-  btf_16_subs_adds_avx2(x1[14], x1[15]);
+  btf_16_subs_adds_avx2(x1[15], x1[14]);
   btf_16_w16_avx2(cospi_m08_p56, cospi_p56_p08, x1[17], x1[30], x1[17], x1[30]);
   btf_16_w16_avx2(cospi_m56_m08, cospi_m08_p56, x1[18], x1[29], x1[18], x1[29]);
   btf_16_w16_avx2(cospi_m40_p24, cospi_p24_p40, x1[21], x1[26], x1[21], x1[26]);
   btf_16_w16_avx2(cospi_m24_m40, cospi_m40_p24, x1[22], x1[25], x1[22], x1[25]);
   btf_16_adds_subs_avx2(x1[32], x1[35]);
   btf_16_adds_subs_avx2(x1[33], x1[34]);
-  btf_16_subs_adds_avx2(x1[36], x1[39]);
-  btf_16_subs_adds_avx2(x1[37], x1[38]);
+  btf_16_subs_adds_avx2(x1[39], x1[36]);
+  btf_16_subs_adds_avx2(x1[38], x1[37]);
   btf_16_adds_subs_avx2(x1[40], x1[43]);
   btf_16_adds_subs_avx2(x1[41], x1[42]);
-  btf_16_subs_adds_avx2(x1[44], x1[47]);
-  btf_16_subs_adds_avx2(x1[45], x1[46]);
+  btf_16_subs_adds_avx2(x1[47], x1[44]);
+  btf_16_subs_adds_avx2(x1[46], x1[45]);
   btf_16_adds_subs_avx2(x1[48], x1[51]);
   btf_16_adds_subs_avx2(x1[49], x1[50]);
-  btf_16_subs_adds_avx2(x1[52], x1[55]);
-  btf_16_subs_adds_avx2(x1[53], x1[54]);
+  btf_16_subs_adds_avx2(x1[55], x1[52]);
+  btf_16_subs_adds_avx2(x1[54], x1[53]);
   btf_16_adds_subs_avx2(x1[56], x1[59]);
   btf_16_adds_subs_avx2(x1[57], x1[58]);
-  btf_16_subs_adds_avx2(x1[60], x1[63]);
-  btf_16_subs_adds_avx2(x1[61], x1[62]);
+  btf_16_subs_adds_avx2(x1[63], x1[60]);
+  btf_16_subs_adds_avx2(x1[62], x1[61]);
 
   // stage 6
   btf_16_w16_0_avx2(cospi[32], cospi[32], x1[0], x1[0], x1[1]);
   btf_16_w16_0_avx2(cospi[48], cospi[16], x1[2], x1[2], x1[3]);
   btf_16_adds_subs_avx2(x1[4], x1[5]);
-  btf_16_subs_adds_avx2(x1[6], x1[7]);
+  btf_16_subs_adds_avx2(x1[7], x1[6]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[9], x1[14], x1[9], x1[14]);
   btf_16_w16_avx2(cospi_m48_m16, cospi_m16_p48, x1[10], x1[13], x1[10], x1[13]);
   btf_16_adds_subs_avx2(x1[16], x1[19]);
   btf_16_adds_subs_avx2(x1[17], x1[18]);
-  btf_16_subs_adds_avx2(x1[20], x1[23]);
-  btf_16_subs_adds_avx2(x1[21], x1[22]);
+  btf_16_subs_adds_avx2(x1[23], x1[20]);
+  btf_16_subs_adds_avx2(x1[22], x1[21]);
   btf_16_adds_subs_avx2(x1[24], x1[27]);
   btf_16_adds_subs_avx2(x1[25], x1[26]);
-  btf_16_subs_adds_avx2(x1[28], x1[31]);
-  btf_16_subs_adds_avx2(x1[29], x1[30]);
+  btf_16_subs_adds_avx2(x1[31], x1[28]);
+  btf_16_subs_adds_avx2(x1[30], x1[29]);
   btf_16_w16_avx2(cospi_m08_p56, cospi_p56_p08, x1[34], x1[61], x1[34], x1[61]);
   btf_16_w16_avx2(cospi_m08_p56, cospi_p56_p08, x1[35], x1[60], x1[35], x1[60]);
   btf_16_w16_avx2(cospi_m56_m08, cospi_m08_p56, x1[36], x1[59], x1[36], x1[59]);
@@ -646,8 +646,8 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_avx2(cospi_m32_p32, cospi_p32_p32, x1[5], x1[6], x1[5], x1[6]);
   btf_16_adds_subs_avx2(x1[8], x1[11]);
   btf_16_adds_subs_avx2(x1[9], x1[10]);
-  btf_16_subs_adds_avx2(x1[12], x1[15]);
-  btf_16_subs_adds_avx2(x1[13], x1[14]);
+  btf_16_subs_adds_avx2(x1[15], x1[12]);
+  btf_16_subs_adds_avx2(x1[14], x1[13]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[18], x1[29], x1[18], x1[29]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[19], x1[28], x1[19], x1[28]);
   btf_16_w16_avx2(cospi_m48_m16, cospi_m16_p48, x1[20], x1[27], x1[20], x1[27]);
@@ -656,18 +656,18 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_adds_subs_avx2(x1[33], x1[38]);
   btf_16_adds_subs_avx2(x1[34], x1[37]);
   btf_16_adds_subs_avx2(x1[35], x1[36]);
-  btf_16_subs_adds_avx2(x1[40], x1[47]);
-  btf_16_subs_adds_avx2(x1[41], x1[46]);
-  btf_16_subs_adds_avx2(x1[42], x1[45]);
-  btf_16_subs_adds_avx2(x1[43], x1[44]);
+  btf_16_subs_adds_avx2(x1[47], x1[40]);
+  btf_16_subs_adds_avx2(x1[46], x1[41]);
+  btf_16_subs_adds_avx2(x1[45], x1[42]);
+  btf_16_subs_adds_avx2(x1[44], x1[43]);
   btf_16_adds_subs_avx2(x1[48], x1[55]);
   btf_16_adds_subs_avx2(x1[49], x1[54]);
   btf_16_adds_subs_avx2(x1[50], x1[53]);
   btf_16_adds_subs_avx2(x1[51], x1[52]);
-  btf_16_subs_adds_avx2(x1[56], x1[63]);
-  btf_16_subs_adds_avx2(x1[57], x1[62]);
-  btf_16_subs_adds_avx2(x1[58], x1[61]);
-  btf_16_subs_adds_avx2(x1[59], x1[60]);
+  btf_16_subs_adds_avx2(x1[63], x1[56]);
+  btf_16_subs_adds_avx2(x1[62], x1[57]);
+  btf_16_subs_adds_avx2(x1[61], x1[58]);
+  btf_16_subs_adds_avx2(x1[60], x1[59]);
 
   // stage 8
   btf_16_adds_subs_avx2(x1[0], x1[7]);
@@ -680,10 +680,10 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_adds_subs_avx2(x1[17], x1[22]);
   btf_16_adds_subs_avx2(x1[18], x1[21]);
   btf_16_adds_subs_avx2(x1[19], x1[20]);
-  btf_16_subs_adds_avx2(x1[24], x1[31]);
-  btf_16_subs_adds_avx2(x1[25], x1[30]);
-  btf_16_subs_adds_avx2(x1[26], x1[29]);
-  btf_16_subs_adds_avx2(x1[27], x1[28]);
+  btf_16_subs_adds_avx2(x1[31], x1[24]);
+  btf_16_subs_adds_avx2(x1[30], x1[25]);
+  btf_16_subs_adds_avx2(x1[29], x1[26]);
+  btf_16_subs_adds_avx2(x1[28], x1[27]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[36], x1[59], x1[36], x1[59]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[37], x1[58], x1[37], x1[58]);
   btf_16_w16_avx2(cospi_m16_p48, cospi_p48_p16, x1[38], x1[57], x1[38], x1[57]);
@@ -714,14 +714,14 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_adds_subs_avx2(x1[37], x1[42]);
   btf_16_adds_subs_avx2(x1[38], x1[41]);
   btf_16_adds_subs_avx2(x1[39], x1[40]);
-  btf_16_subs_adds_avx2(x1[48], x1[63]);
-  btf_16_subs_adds_avx2(x1[49], x1[62]);
-  btf_16_subs_adds_avx2(x1[50], x1[61]);
-  btf_16_subs_adds_avx2(x1[51], x1[60]);
-  btf_16_subs_adds_avx2(x1[52], x1[59]);
-  btf_16_subs_adds_avx2(x1[53], x1[58]);
-  btf_16_subs_adds_avx2(x1[54], x1[57]);
-  btf_16_subs_adds_avx2(x1[55], x1[56]);
+  btf_16_subs_adds_avx2(x1[63], x1[48]);
+  btf_16_subs_adds_avx2(x1[62], x1[49]);
+  btf_16_subs_adds_avx2(x1[61], x1[50]);
+  btf_16_subs_adds_avx2(x1[60], x1[51]);
+  btf_16_subs_adds_avx2(x1[59], x1[52]);
+  btf_16_subs_adds_avx2(x1[58], x1[53]);
+  btf_16_subs_adds_avx2(x1[57], x1[54]);
+  btf_16_subs_adds_avx2(x1[56], x1[55]);
 
   // stage 10
   btf_16_adds_subs_avx2(x1[0], x1[31]);
@@ -750,38 +750,38 @@ static void idct64_low32_new_avx2(const __m256i *input, __m256i *output,
   btf_16_w16_avx2(cospi_m32_p32, cospi_p32_p32, x1[47], x1[48], x1[47], x1[48]);
 
   // stage 11
-  btf_16_adds_subs_out_avx2(x1[0], x1[63], output[0], output[63]);
-  btf_16_adds_subs_out_avx2(x1[1], x1[62], output[1], output[62]);
-  btf_16_adds_subs_out_avx2(x1[2], x1[61], output[2], output[61]);
-  btf_16_adds_subs_out_avx2(x1[3], x1[60], output[3], output[60]);
-  btf_16_adds_subs_out_avx2(x1[4], x1[59], output[4], output[59]);
-  btf_16_adds_subs_out_avx2(x1[5], x1[58], output[5], output[58]);
-  btf_16_adds_subs_out_avx2(x1[6], x1[57], output[6], output[57]);
-  btf_16_adds_subs_out_avx2(x1[7], x1[56], output[7], output[56]);
-  btf_16_adds_subs_out_avx2(x1[8], x1[55], output[8], output[55]);
-  btf_16_adds_subs_out_avx2(x1[9], x1[54], output[9], output[54]);
-  btf_16_adds_subs_out_avx2(x1[10], x1[53], output[10], output[53]);
-  btf_16_adds_subs_out_avx2(x1[11], x1[52], output[11], output[52]);
-  btf_16_adds_subs_out_avx2(x1[12], x1[51], output[12], output[51]);
-  btf_16_adds_subs_out_avx2(x1[13], x1[50], output[13], output[50]);
-  btf_16_adds_subs_out_avx2(x1[14], x1[49], output[14], output[49]);
-  btf_16_adds_subs_out_avx2(x1[15], x1[48], output[15], output[48]);
-  btf_16_adds_subs_out_avx2(x1[16], x1[47], output[16], output[47]);
-  btf_16_adds_subs_out_avx2(x1[17], x1[46], output[17], output[46]);
-  btf_16_adds_subs_out_avx2(x1[18], x1[45], output[18], output[45]);
-  btf_16_adds_subs_out_avx2(x1[19], x1[44], output[19], output[44]);
-  btf_16_adds_subs_out_avx2(x1[20], x1[43], output[20], output[43]);
-  btf_16_adds_subs_out_avx2(x1[21], x1[42], output[21], output[42]);
-  btf_16_adds_subs_out_avx2(x1[22], x1[41], output[22], output[41]);
-  btf_16_adds_subs_out_avx2(x1[23], x1[40], output[23], output[40]);
-  btf_16_adds_subs_out_avx2(x1[24], x1[39], output[24], output[39]);
-  btf_16_adds_subs_out_avx2(x1[25], x1[38], output[25], output[38]);
-  btf_16_adds_subs_out_avx2(x1[26], x1[37], output[26], output[37]);
-  btf_16_adds_subs_out_avx2(x1[27], x1[36], output[27], output[36]);
-  btf_16_adds_subs_out_avx2(x1[28], x1[35], output[28], output[35]);
-  btf_16_adds_subs_out_avx2(x1[29], x1[34], output[29], output[34]);
-  btf_16_adds_subs_out_avx2(x1[30], x1[33], output[30], output[33]);
-  btf_16_adds_subs_out_avx2(x1[31], x1[32], output[31], output[32]);
+  btf_16_adds_subs_out_avx2(output[0], output[63], x1[0], x1[63]);
+  btf_16_adds_subs_out_avx2(output[1], output[62], x1[1], x1[62]);
+  btf_16_adds_subs_out_avx2(output[2], output[61], x1[2], x1[61]);
+  btf_16_adds_subs_out_avx2(output[3], output[60], x1[3], x1[60]);
+  btf_16_adds_subs_out_avx2(output[4], output[59], x1[4], x1[59]);
+  btf_16_adds_subs_out_avx2(output[5], output[58], x1[5], x1[58]);
+  btf_16_adds_subs_out_avx2(output[6], output[57], x1[6], x1[57]);
+  btf_16_adds_subs_out_avx2(output[7], output[56], x1[7], x1[56]);
+  btf_16_adds_subs_out_avx2(output[8], output[55], x1[8], x1[55]);
+  btf_16_adds_subs_out_avx2(output[9], output[54], x1[9], x1[54]);
+  btf_16_adds_subs_out_avx2(output[10], output[53], x1[10], x1[53]);
+  btf_16_adds_subs_out_avx2(output[11], output[52], x1[11], x1[52]);
+  btf_16_adds_subs_out_avx2(output[12], output[51], x1[12], x1[51]);
+  btf_16_adds_subs_out_avx2(output[13], output[50], x1[13], x1[50]);
+  btf_16_adds_subs_out_avx2(output[14], output[49], x1[14], x1[49]);
+  btf_16_adds_subs_out_avx2(output[15], output[48], x1[15], x1[48]);
+  btf_16_adds_subs_out_avx2(output[16], output[47], x1[16], x1[47]);
+  btf_16_adds_subs_out_avx2(output[17], output[46], x1[17], x1[46]);
+  btf_16_adds_subs_out_avx2(output[18], output[45], x1[18], x1[45]);
+  btf_16_adds_subs_out_avx2(output[19], output[44], x1[19], x1[44]);
+  btf_16_adds_subs_out_avx2(output[20], output[43], x1[20], x1[43]);
+  btf_16_adds_subs_out_avx2(output[21], output[42], x1[21], x1[42]);
+  btf_16_adds_subs_out_avx2(output[22], output[41], x1[22], x1[41]);
+  btf_16_adds_subs_out_avx2(output[23], output[40], x1[23], x1[40]);
+  btf_16_adds_subs_out_avx2(output[24], output[39], x1[24], x1[39]);
+  btf_16_adds_subs_out_avx2(output[25], output[38], x1[25], x1[38]);
+  btf_16_adds_subs_out_avx2(output[26], output[37], x1[26], x1[37]);
+  btf_16_adds_subs_out_avx2(output[27], output[36], x1[27], x1[36]);
+  btf_16_adds_subs_out_avx2(output[28], output[35], x1[28], x1[35]);
+  btf_16_adds_subs_out_avx2(output[29], output[34], x1[29], x1[34]);
+  btf_16_adds_subs_out_avx2(output[30], output[33], x1[30], x1[33]);
+  btf_16_adds_subs_out_avx2(output[31], output[32], x1[31], x1[32]);
 }
 
 // 1D functions process 16 pixels at one time.
