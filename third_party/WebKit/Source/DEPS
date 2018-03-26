@@ -22,8 +22,6 @@ include_rules = [
     "+testing/gtest/include/gtest",
     "+v8",
 
-    # DataLog.h is deprecated. Use base/logging.h instead. crbug.com/720442
-    "!platform/wtf/DataLog.h",
     # We are moving from WTF_MAKE_NONCOPYABLE to DISALLOW_COPY_AND_ASSIGN. Stop
     # new dependencies on WTF_MAKE_NONCOPYABLE.
     "!platform/wtf/Noncopyable.h",

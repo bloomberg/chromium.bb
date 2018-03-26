@@ -459,13 +459,15 @@ size_t NormalPageArena::ArenaSize() {
     size += page->size();
     page = page->Next();
   }
-  LOG_HEAP_FREELIST_VERBOSE("Heap size: %zu (%d)\n", size, arenaIndex());
+  LOG_HEAP_FREELIST_VERBOSE()
+      << "Heap size: " << size << "(" << ArenaIndex() << ")";
   return size;
 }
 
 size_t NormalPageArena::FreeListSize() {
   size_t free_size = free_list_.FreeListSize();
-  LOG_HEAP_FREELIST_VERBOSE("Free size: %zu (%d)\n", freeSize, arenaIndex());
+  LOG_HEAP_FREELIST_VERBOSE()
+      << "Free size: " << free_size << "(" << ArenaIndex() << ")";
   return free_size;
 }
 
@@ -557,13 +559,16 @@ void NormalPageArena::SweepAndCompact() {
   // Return available pages to the free page pool, decommitting them from
   // the pagefile.
   BasePage* available_pages = context.available_pages_;
+#if DEBUG_HEAP_COMPACTION
+  std::stringstream stream;
+#endif
   while (available_pages) {
     size_t page_size = available_pages->size();
 #if DEBUG_HEAP_COMPACTION
     if (!freed_page_count)
-      LOG_HEAP_COMPACTION("Releasing:");
-    LOG_HEAP_COMPACTION(" [%p, %p]", available_pages,
-                        available_pages + page_size);
+      stream << "Releasing:";
+    stream << " [" << available_pages << ", " << (available_pages + page_size)
+           << "]";
 #endif
     freed_size += page_size;
     freed_page_count++;
@@ -585,8 +590,10 @@ void NormalPageArena::SweepAndCompact() {
     available_pages->RemoveFromHeap();
     available_pages = static_cast<NormalPage*>(next_page);
   }
+#if DEBUG_HEAP_COMPACTION
   if (freed_page_count)
-    LOG_HEAP_COMPACTION("\n");
+    LOG_HEAP_COMPACTION() << stream.str();
+#endif
   heap.Compaction()->FinishedArenaCompaction(this, freed_page_count,
                                              freed_size);
 
@@ -1201,7 +1208,7 @@ size_t FreeList::FreeListSize() const {
   }
 #if DEBUG_HEAP_FREELIST
   if (free_size) {
-    LOG_HEAP_FREELIST_VERBOSE("FreeList(%p): %zu\n", this, free_size);
+    LOG_HEAP_FREELIST_VERBOSE() << "FreeList(" << this << "): " << free_size;
     for (unsigned i = 0; i < kBlinkPageSizeLog2; ++i) {
       FreeListEntry* entry = free_lists_[i];
       size_t bucket = 0;
@@ -1212,8 +1219,9 @@ size_t FreeList::FreeListSize() const {
         entry = entry->Next();
       }
       if (bucket) {
-        LOG_HEAP_FREELIST_VERBOSE("[%d, %d]: %zu (%zu)\n", 0x1 << i,
-                                  0x1 << (i + 1), bucket, count);
+        LOG_HEAP_FREELIST_VERBOSE()
+            << "[" << (0x1 << i) << ", " << (0x1 << (i + 1)) << "]: " << bucket
+            << " (" << count << ")";
       }
     }
   }
