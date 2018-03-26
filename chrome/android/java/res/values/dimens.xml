@@ -165,6 +165,7 @@
     <dimen name="fre_vertical_spacing">32dp</dimen>
     <dimen name="fre_button_bar_height">52dp</dimen>
     <dimen name="fre_button_padding">12dp</dimen>
+    <dimen name="fre_stacked_button_margin">8dp</dimen>
     <dimen name="fre_margin">24dp</dimen>
     <dimen name="fre_image_height">120dp</dimen>
     <dimen name="fre_tos_checkbox_padding">12dp</dimen>
