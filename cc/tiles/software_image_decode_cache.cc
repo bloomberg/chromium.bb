@@ -303,7 +303,8 @@ void SoftwareImageDecodeCache::UnrefImage(const CacheKey& key) {
   auto decoded_image_it = decoded_images_.Peek(key);
   DCHECK(decoded_image_it != decoded_images_.end());
   auto* entry = decoded_image_it->second.get();
-  DCHECK_GT(entry->ref_count, 0);
+  // TODO(khushalsagar): Temp CHECK to diagnose crbug.com/802976.
+  CHECK_GT(entry->ref_count, 0);
   if (--entry->ref_count == 0) {
     if (entry->is_budgeted)
       RemoveBudgetForImage(key, entry);
