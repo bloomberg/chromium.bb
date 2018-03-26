@@ -234,8 +234,7 @@ PlatformImeController* WaylandWindow::GetPlatformImeController() {
   return nullptr;
 }
 
-bool WaylandWindow::CanDispatchEvent(const PlatformEvent& native_event) {
-  Event* event = static_cast<Event*>(native_event);
+bool WaylandWindow::CanDispatchEvent(const PlatformEvent& event) {
   if (event->IsMouseEvent())
     return has_pointer_focus_;
   if (event->IsKeyEvent())

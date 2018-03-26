@@ -9,28 +9,31 @@
 namespace ui {
 
 void DispatchEventFromNativeUiEvent(
-    const PlatformEvent& native_event,
+    const PlatformEvent& event,
     base::OnceCallback<void(ui::Event*)> callback) {
-  ui::Event* native_ui_event = static_cast<ui::Event*>(native_event);
-  if (native_ui_event->IsKeyEvent()) {
-    ui::KeyEvent key_event(native_event);
+  // NB: ui::Events are constructed here using the overload that takes a
+  // const PlatformEvent& (here ui::Event* const&) rather than the copy
+  // constructor. This has side effects and cannot be changed to use the
+  // copy constructor or Event::Clone.
+  if (event->IsKeyEvent()) {
+    ui::KeyEvent key_event(event);
     std::move(callback).Run(&key_event);
-  } else if (native_ui_event->IsMouseWheelEvent()) {
-    ui::MouseWheelEvent wheel_event(native_event);
+  } else if (event->IsMouseWheelEvent()) {
+    ui::MouseWheelEvent wheel_event(event);
     std::move(callback).Run(&wheel_event);
-  } else if (native_ui_event->IsMouseEvent()) {
-    ui::MouseEvent mouse_event(native_event);
+  } else if (event->IsMouseEvent()) {
+    ui::MouseEvent mouse_event(event);
     std::move(callback).Run(&mouse_event);
-  } else if (native_ui_event->IsTouchEvent()) {
-    ui::TouchEvent touch_event(native_event);
+  } else if (event->IsTouchEvent()) {
+    ui::TouchEvent touch_event(event);
     std::move(callback).Run(&touch_event);
-  } else if (native_ui_event->IsScrollEvent()) {
-    ui::ScrollEvent scroll_event(native_event);
+  } else if (event->IsScrollEvent()) {
+    ui::ScrollEvent scroll_event(event);
     std::move(callback).Run(&scroll_event);
-  } else if (native_ui_event->IsGestureEvent()) {
-    std::move(callback).Run(native_ui_event);
+  } else if (event->IsGestureEvent()) {
+    std::move(callback).Run(event);
     // TODO(mohsen): Use the same pattern for scroll/touch/wheel events.
-    // Apparently, there is no need for them to wrap the |native_event|.
+    // Apparently, there is no need for them to wrap the |event|.
   } else {
     NOTREACHED();
   }
