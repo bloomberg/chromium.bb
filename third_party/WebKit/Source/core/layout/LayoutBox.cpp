@@ -5979,6 +5979,9 @@ void LayoutBox::ClearCustomLayoutChild() {
   if (!rare_data_)
     return;
 
+  if (rare_data_->layout_child_)
+    rare_data_->layout_child_->ClearLayoutBox();
+
   rare_data_->layout_child_ = nullptr;
 }
 

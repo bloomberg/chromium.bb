@@ -55,6 +55,8 @@ class CSSLayoutDefinition final
     }
 
    private:
+    void ReportException(ExceptionState*);
+
     Member<CSSLayoutDefinition> definition_;
     TraceWrapperV8Reference<v8::Object> instance_;
   };

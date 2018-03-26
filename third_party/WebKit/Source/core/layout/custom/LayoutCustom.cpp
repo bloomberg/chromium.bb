@@ -8,6 +8,7 @@
 #include "core/frame/LocalDOMWindow.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/TextAutosizer.h"
+#include "core/layout/custom/CustomLayoutFragment.h"
 #include "core/layout/custom/FragmentResultOptions.h"
 #include "core/layout/custom/LayoutWorklet.h"
 #include "core/layout/custom/LayoutWorkletGlobalScope.h"
@@ -110,11 +111,11 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
     LayoutWorklet* worklet = LayoutWorklet::From(*GetDocument().domWindow());
     CSSLayoutDefinition* definition = worklet->Proxy()->FindDefinition(name);
 
-    // TODO(ikilpatrick): We'll want to store the instance on either the
-    // CSSLayoutDefinition or on the LayoutCustom object.
-    CSSLayoutDefinition::Instance* instance = definition->CreateInstance();
+    // TODO(ikilpatrick): Decide on a policy to refresh the layout instance.
+    if (!instance_)
+      instance_ = definition->CreateInstance();
 
-    if (!instance) {
+    if (!instance_) {
       GetDocument().AddConsoleMessage(ConsoleMessage::Create(
           kJSMessageSource, kInfoMessageLevel,
           "Unable to create an instance of layout class '" + name +
@@ -123,11 +124,12 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
     }
 
     FragmentResultOptions fragment_result_options;
-    if (!instance->Layout(*this, &fragment_result_options))
+    if (!instance_->Layout(*this, &fragment_result_options))
       return false;
 
-    // TODO(ikilpatrick): Currently we layout all our children so that we pass
-    // tests.
+    size_t index = 0;
+    const HeapVector<Member<CustomLayoutFragment>>& child_fragments =
+        fragment_result_options.childFragments();
     for (LayoutBox* child = FirstChildBox(); child;
          child = child->NextSiblingBox()) {
       if (child->IsOutOfFlowPositioned()) {
@@ -140,7 +142,44 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
         continue;
       }
 
-      child->LayoutIfNeeded();
+      if (index >= child_fragments.size()) {
+        GetDocument().AddConsoleMessage(
+            ConsoleMessage::Create(kJSMessageSource, kInfoMessageLevel,
+                                   "Chrome currently requires exactly one "
+                                   "LayoutFragment per LayoutChild, "
+                                   "falling back to block layout."));
+        return false;
+      }
+
+      CustomLayoutFragment* fragment = child_fragments[index++];
+      if (!fragment->IsValid()) {
+        GetDocument().AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, kInfoMessageLevel,
+            "An invalid LayoutFragment was returned from the "
+            "layout, falling back to block layout."));
+        return false;
+      }
+
+      // TODO(ikilpatrick): Implement paint order. This should abort this loop,
+      // and go into a "slow" loop which allows developers to control the paint
+      // order of the children.
+      if (child != fragment->GetLayoutBox()) {
+        return false;
+      }
+
+      // TODO(ikilpatrick): At this stage we may need to perform a re-layout on
+      // the given child. (The LayoutFragment may have been produced from a
+      // different LayoutFragmentRequest).
+    }
+
+    // Currently we only support
+    if (index != child_fragments.size()) {
+      GetDocument().AddConsoleMessage(
+          ConsoleMessage::Create(kJSMessageSource, kInfoMessageLevel,
+                                 "Chrome currently requires exactly one "
+                                 "LayoutFragment per LayoutChild, "
+                                 "falling back to block layout."));
+      return false;
     }
 
     SetLogicalHeight(LayoutUnit(fragment_result_options.autoBlockSize()));

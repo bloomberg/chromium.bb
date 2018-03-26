@@ -12,6 +12,8 @@
 namespace blink {
 
 class CSSLayoutDefinition;
+class CustomLayoutConstraintsOptions;
+class CustomLayoutFragmentRequest;
 class LayoutBox;
 
 // Represents a "CSS box" for use by a web developer. This is passed into the
@@ -30,11 +32,19 @@ class CustomLayoutChild : public ScriptWrappable {
 
   // LayoutChild.idl
   PrepopulatedComputedStylePropertyMap* styleMap() const { return style_map_; }
+  CustomLayoutFragmentRequest* layoutNextFragment(
+      const CustomLayoutConstraintsOptions&);
 
   LayoutBox* GetLayoutBox() const {
     DCHECK(box_);
     return box_;
   }
+  void ClearLayoutBox() { box_ = nullptr; }
+
+  // A layout child may be invalid if it has been removed from the tree (it is
+  // possible for a web developer to hold onto a LayoutChild object after its
+  // underlying LayoutObject has been destroyed).
+  bool IsValid() const { return box_; }
 
   void Trace(blink::Visitor*) override;
 

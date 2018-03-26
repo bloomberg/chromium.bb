@@ -7,6 +7,7 @@
 #include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/custom/CSSLayoutDefinition.h"
+#include "core/layout/custom/CustomLayoutFragmentRequest.h"
 
 namespace blink {
 
@@ -19,6 +20,11 @@ CustomLayoutChild::CustomLayoutChild(const CSSLayoutDefinition& definition,
           box->GetNode(),
           definition.ChildNativeInvalidationProperties(),
           definition.ChildCustomInvalidationProperties())) {}
+
+CustomLayoutFragmentRequest* CustomLayoutChild::layoutNextFragment(
+    const CustomLayoutConstraintsOptions& options) {
+  return new CustomLayoutFragmentRequest(this, options);
+}
 
 void CustomLayoutChild::Trace(blink::Visitor* visitor) {
   visitor->Trace(style_map_);

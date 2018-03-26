@@ -32,7 +32,9 @@ class CORE_EXPORT DictionaryIterator {
   bool IsNull() const { return iterator_.IsEmpty(); }
 
   // Returns true if the iterator is still not done.
-  bool Next(ExecutionContext*, ExceptionState&);
+  bool Next(ExecutionContext*,
+            ExceptionState&,
+            v8::Local<v8::Value> next_value = v8::Local<v8::Value>());
 
   v8::MaybeLocal<v8::Value> GetValue() { return value_; }
   bool ValueAsDictionary(Dictionary& result, ExceptionState&);

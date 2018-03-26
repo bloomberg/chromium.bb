@@ -6,11 +6,15 @@
 
 #include <memory>
 #include "bindings/core/v8/DictionaryIterator.h"
+#include "bindings/core/v8/IDLTypes.h"
+#include "bindings/core/v8/NativeValueTraitsImpl.h"
 #include "bindings/core/v8/V8BindingForCore.h"
 #include "bindings/core/v8/V8FragmentResultOptions.h"
+#include "bindings/core/v8/V8LayoutFragmentRequest.h"
 #include "core/css/cssom/PrepopulatedComputedStylePropertyMap.h"
 #include "core/dom/ExecutionContext.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/layout/custom/CustomLayoutFragment.h"
 #include "core/layout/custom/FragmentResultOptions.h"
 #include "core/layout/custom/LayoutCustom.h"
 #include "platform/bindings/ScriptState.h"
@@ -114,31 +118,97 @@ bool CSSLayoutDefinition::Instance::Layout(
       v8::Local<v8::Object>::Cast(generator_value);
 
   DictionaryIterator iterator(generator, isolate);
+  v8::Local<v8::Value> next_value;
 
   // We run the generator until it's exhausted.
   ExceptionState exception_state(isolate, ExceptionState::kExecutionContext,
                                  "CSSLayoutAPI", "Layout");
-  while (iterator.Next(execution_context, exception_state)) {
-    // TODO(ikilpatrick): If we aren't done yet, we need to process the child
-    // layout requests.
-  }
+  while (iterator.Next(execution_context, exception_state, next_value)) {
+    if (exception_state.HadException()) {
+      ReportException(&exception_state);
+      return false;
+    }
 
-  if (exception_state.HadException()) {
-    V8ScriptRunner::ReportException(isolate, exception_state.GetException());
-    exception_state.ClearException();
-    execution_context->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, kInfoMessageLevel,
-        "The layout function failed, falling back to block layout."));
+    // The value should already be non-empty, if not it should have be caught
+    // by the exception_state.HadException() above.
+    v8::Local<v8::Value> value = iterator.GetValue().ToLocalChecked();
+
+    // Process a single fragment request.
+    if (V8LayoutFragmentRequest::hasInstance(value, isolate)) {
+      CustomLayoutFragmentRequest* fragment_request =
+          V8LayoutFragmentRequest::ToImpl(v8::Local<v8::Object>::Cast(value));
+
+      CustomLayoutFragment* fragment = fragment_request->PerformLayout();
+      if (!fragment) {
+        execution_context->AddConsoleMessage(ConsoleMessage::Create(
+            kJSMessageSource, kInfoMessageLevel,
+            "Unable to perform layout request due to an invalid child, "
+            "falling back to block layout."));
+        return false;
+      }
+
+      next_value = ToV8(fragment, context->Global(), isolate);
+      continue;
+    }
+
+    // Process multiple fragment requests.
+    if (HasCallableIteratorSymbol(isolate, value, exception_state)) {
+      HeapVector<Member<CustomLayoutFragmentRequest>> requests =
+          NativeValueTraits<IDLSequence<CustomLayoutFragmentRequest>>::
+              NativeValue(isolate, value, exception_state);
+      if (exception_state.HadException()) {
+        ReportException(&exception_state);
+        return false;
+      }
+
+      v8::Local<v8::Array> results = v8::Array::New(isolate, requests.size());
+      uint32_t index = 0;
+      for (const auto& request : requests) {
+        CustomLayoutFragment* fragment = request->PerformLayout();
+
+        if (!fragment) {
+          execution_context->AddConsoleMessage(ConsoleMessage::Create(
+              kJSMessageSource, kInfoMessageLevel,
+              "Unable to perform layout request due to an invalid child, "
+              "falling back to block layout."));
+          return false;
+        }
+
+        bool success;
+        if (!results
+                 ->CreateDataProperty(
+                     context, index++,
+                     ToV8(fragment, context->Global(), isolate))
+                 .To(&success) &&
+            success)
+          return false;
+      }
+
+      next_value = results;
+      continue;
+    }
+
+    // We recieved something that wasn't either a CustomLayoutFragmentRequest,
+    // or a sequence of CustomLayoutFragmentRequests. Fallback to block layout.
+    execution_context->AddConsoleMessage(
+        ConsoleMessage::Create(kJSMessageSource, kInfoMessageLevel,
+                               "Unable to parse the layout request, "
+                               "falling back to block layout."));
     return false;
   }
 
-  // The value should already be non-empty, if not it should have be caught be
-  // the exception_state.HadException() above.
-  v8::Local<v8::Value> value = iterator.GetValue().ToLocalChecked();
+  if (exception_state.HadException()) {
+    ReportException(&exception_state);
+    return false;
+  }
+
+  // The value should already be non-empty, if not it should have be caught by
+  // the ReportException() above.
+  v8::Local<v8::Value> result_value = iterator.GetValue().ToLocalChecked();
 
   // Attempt to convert the result.
-  V8FragmentResultOptions::ToImpl(isolate, value, *fragment_result_options,
-                                  exception_state);
+  V8FragmentResultOptions::ToImpl(isolate, result_value,
+                                  *fragment_result_options, exception_state);
 
   if (exception_state.HadException()) {
     V8ScriptRunner::ReportException(isolate, exception_state.GetException());
@@ -151,6 +221,21 @@ bool CSSLayoutDefinition::Instance::Layout(
   }
 
   return true;
+}
+
+void CSSLayoutDefinition::Instance::ReportException(
+    ExceptionState* exception_state) {
+  ScriptState* script_state = definition_->GetScriptState();
+  v8::Isolate* isolate = script_state->GetIsolate();
+  ExecutionContext* execution_context = ExecutionContext::From(script_state);
+
+  // We synchronously report and clear the exception as we may never enter V8
+  // again (as the callbacks are invoked directly by the UA).
+  V8ScriptRunner::ReportException(isolate, exception_state->GetException());
+  exception_state->ClearException();
+  execution_context->AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, kInfoMessageLevel,
+      "The layout function failed, falling back to block layout."));
 }
 
 CSSLayoutDefinition::Instance* CSSLayoutDefinition::CreateInstance() {
