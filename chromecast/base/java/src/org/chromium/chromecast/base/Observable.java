@@ -4,8 +4,6 @@
 
 package org.chromium.chromecast.base;
 
-import org.chromium.base.Log;
-
 /**
  * Interface for Observable state.
  *
@@ -18,9 +16,7 @@ import org.chromium.base.Log;
  * @param <T> The type of the state data.
  */
 public abstract class Observable<T> {
-    private static final String TAG = "BaseObservable";
-
-    protected abstract void addObserver(StateObserver<? super T> observer);
+    protected abstract void addObserver(ScopeFactory<? super T> observer);
 
     /**
      * Tracks this Observable with the given scope factory.
@@ -31,7 +27,7 @@ public abstract class Observable<T> {
      * its return value's close() method.
      */
     public final Observable<T> watch(ScopeFactory<? super T> factory) {
-        addObserver(new StateObserver<>(factory));
+        addObserver(factory);
         return this;
     }
 
@@ -96,33 +92,6 @@ public abstract class Observable<T> {
             return () -> opposite.set(Unit.unit());
         });
         return opposite;
-    }
-
-    // Adapter of ScopeFactory to two callbacks that Observables use to notify of state changes.
-    protected static class StateObserver<T> {
-        private final ScopeFactory<? super T> mFactory;
-        private AutoCloseable mState;
-
-        private StateObserver(ScopeFactory<? super T> factory) {
-            super();
-            mFactory = factory;
-            mState = null;
-        }
-
-        protected final void onEnter(T data) {
-            mState = mFactory.create(data);
-        }
-
-        protected final void onExit() {
-            if (mState != null) {
-                try {
-                    mState.close();
-                } catch (Exception e) {
-                    Log.e(TAG, "Exception closing State scope", e);
-                }
-                mState = null;
-            };
-        }
     }
 
     // Owns a Controller that is activated only when both Observables are activated.
