@@ -74,7 +74,7 @@ class BotUpdateApi(recipe_api.RecipeApi):
                       patchset=None, gerrit_no_reset=False,
                       gerrit_no_rebase_patch_ref=False,
                       disable_syntax_validation=False, manifest_name=None,
-                      **kwargs):
+                      enable_gclient_experiment=False, **kwargs):
     """
     Args:
       gclient_config: The gclient configuration to use when running bot_update.
@@ -205,6 +205,8 @@ class BotUpdateApi(recipe_api.RecipeApi):
       cmd.append('--gerrit_no_rebase_patch_ref')
     if disable_syntax_validation or cfg.disable_syntax_validation:
       cmd.append('--disable-syntax-validation')
+    if enable_gclient_experiment:
+      cmd.append('--enable-gclient-experiment')
 
     # Inject Json output for testing.
     first_sln = cfg.solutions[0].name
