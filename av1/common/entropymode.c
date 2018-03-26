@@ -559,7 +559,6 @@ static const aom_cdf_prob
       { AOM_ICDF(24576), AOM_ICDF(32768), 0 },
       { AOM_ICDF(16384), AOM_ICDF(32768), 0 },
       { AOM_ICDF(13107), AOM_ICDF(32768), 0 },
-      { AOM_ICDF(13107), AOM_ICDF(32768), 0 },
     };
 
 static const aom_cdf_prob default_filter_intra_mode_cdf[CDF_SIZE(

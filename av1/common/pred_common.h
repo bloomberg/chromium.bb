@@ -158,7 +158,7 @@ static INLINE int get_comp_group_idx_context(const MACROBLOCKD *xd) {
       left_ctx = 3;
   }
 
-  return above_ctx + left_ctx;
+  return AOMMIN(5, above_ctx + left_ctx);
 }
 
 static INLINE aom_cdf_prob *av1_get_pred_cdf_seg_id(
