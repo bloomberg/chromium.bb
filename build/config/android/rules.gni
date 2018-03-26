@@ -262,7 +262,15 @@ if (enable_java_templates) {
       if (!defined(public_deps)) {
         public_deps = []
       }
-      public_deps += [ ":$_foreach_target_name" ]
+      public_deps += [
+        ":$_foreach_target_name",
+
+        # This depends on debugging_buildflags indirectly through
+        # base/android/jni_android.h, which is part of the //base target.
+        # This can't depend directly on //base without causing a dependency
+        # cycle, though.
+        "//base:debugging_buildflags",
+      ]
       public_configs = [ ":jni_includes_${target_name}" ]
     }
   }
