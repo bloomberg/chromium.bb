@@ -121,7 +121,7 @@ public final class ScopeFactories {
      *     observableA.and(observableB).watch(ScopeFactories.both((A a, B b) -> ...));
      */
     public static <A, B> ScopeFactory<Both<A, B>> both(
-            BiFunction<? super A, ? super B, AutoCloseable> function) {
+            BiFunction<? super A, ? super B, Scope> function) {
         return (Both<A, B> data) -> function.apply(data.first, data.second);
     }
 }

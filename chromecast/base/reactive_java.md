@@ -200,10 +200,13 @@ To register events that should be invoked on these state transitions, we utilize
 **scopes**. When an `Observable` is activated, an observing scope is created,
 and when the `Observable` is deactivated, that scope is `close()`d.
 
-The only requirement of a scope is that it **implements
-`java.lang.AutoCloseable`**. The side-effects of activation are in the scope's
-constructor, and the side-effects of deactivation are in the scope's `close()`
-method. This pairing of constructors with a `close()` is inspired by
+The only requirement of a scope is that it **implements `Scope`**, which has
+a single `close()` method. (`Scope` extends `java.lang.AutoCloseable`, but does
+not throw checked exceptions. This means it can be used in try-with-resources
+statements.) The side-effects of activation are in the scope's constructor (or a
+`ScopeFactory`'s `create()` method), and the side-effects of deactivation are in
+the scope's `close()` method. This pairing of constructors with a `close()` is
+inspired by
 [RAII](https://en.wikipedia.org/wiki/Resource_acquisition_is_initialization) in
 C++, and allows the activation data injected into the scope to be expressed as
 an **immutable** variable.
@@ -212,10 +215,10 @@ an **immutable** variable.
 
 To register scopes to track the state of an `Observable`, we call `watch()` on
 the `Observable`. The `watch()` method takes a single argument, a
-`ScopeFactory`, which has a `create()` method that returns an `AutoCloseable`.
-The `ScopeFactory`'s `create()` method is called when the `Observable`
-activates, and the resulting `AutoCloseable`'s `close()` method is called when
-the `Observable` deactivates.
+`ScopeFactory`, which has a `create()` method that returns a `Scope`. The
+`ScopeFactory`'s `create()` method is called when the `Observable` activates,
+and the resulting `Scope`'s `close()` method is called when the `Observable`
+deactivates.
 
 Lambda syntax can be used to easily construct `ScopeFactory` objects without
 much boilerplate. For instance, if we want to simply log the transitions of an
@@ -236,9 +239,9 @@ This is equivalent to the following, much more verbose version:
 void logStateTransitions(Observable<?> observable) {
     observable.watch(new VoidScopeFactory() {
         @Override
-        public AutoCloseable create() {
+        public Scope create() {
             Log.d(TAG, "activated");
-            return new AutoCloseable() {
+            return new Scope() {
                 @Override
                 public void close() {
                     Log.d(TAG, "deactivated");
@@ -304,8 +307,8 @@ As corollaries, any registered `ScopeFactory` objects will:
 
 *   have their `create()` methods invoked *exactly once* for each non-`null`
     `set()` call
-*   have their resulting `AutoCloseable` scopes `close()`d *exactly once* when
-    `reset()` or `set()` to `null`
+*   have their resulting `Scope`s `close()`d *exactly once* when `reset()` or
+    `set()` to `null`
 *   always clean up scopes from previous activations when new activations occur
 
 This means this:
@@ -507,9 +510,9 @@ used for.
 
 #### Use onEnter() and onExit() to observe only one kind of transition
 
-Every `ScopeFactory` returns an `AutoCloseable`, but sometimes clients do not
-care about when the state deactivates, only when it activates. It's possible to
-create a `ScopeFactory` with lambda syntax to do the job like this:
+Every `ScopeFactory` returns a `Scope`, but sometimes clients do not care about
+when the state deactivates, only when it activates. It's possible to create a
+`ScopeFactory` with lambda syntax to do the job like this:
 
 ```java
 {
@@ -558,9 +561,8 @@ recall that the `ScopeFactory` passed to `watch()` must look like this:
 ```
 
 `ScopeFactories` provides a helper method to turn any function that takes two
-arguments and returns an `AutoCloseable` into a `ScopeFactory<Both>`, which
-deconstructs the `Both` object for you and passes the constituent parts into
-the function.
+arguments and returns a `Scope` into a `ScopeFactory<Both>`, which deconstructs
+the `Both` object for you and passes the constituent parts into the function.
 
 Using `ScopeFactories.both()`, we can rewrite the above like this:
 

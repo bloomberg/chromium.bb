@@ -18,22 +18,16 @@ import java.util.ArrayDeque;
  * @param <T> The type of the state data.
  */
 public class Controller<T> extends Observable<T> {
-    private final ObserverList<StateObserver<? super T>> mObservers;
-    private T mData;
-    private boolean mIsNotifying;
-    private final ArrayDeque<Runnable> mMessageQueue;
-
-    public Controller() {
-        mObservers = new ObserverList<>();
-        mData = null;
-        mIsNotifying = false;
-        mMessageQueue = new ArrayDeque<Runnable>();
-    }
+    private final ObserverList<ScopeFactory<? super T>> mEnterObservers = new ObserverList<>();
+    private final ObserverList<Scope> mExitObservers = new ObserverList<>();
+    private T mData = null;
+    private boolean mIsNotifying = false;
+    private final ArrayDeque<Runnable> mMessageQueue = new ArrayDeque<>();
 
     @Override
-    protected void addObserver(StateObserver<? super T> observer) {
-        mObservers.addObserver(observer);
-        if (mData != null) observer.onEnter(mData);
+    protected void addObserver(ScopeFactory<? super T> observer) {
+        mEnterObservers.addObserver(observer);
+        if (mData != null) mExitObservers.addObserver(observer.create(mData));
     }
 
     /**
@@ -66,8 +60,8 @@ public class Controller<T> extends Observable<T> {
         // rather than run synchronously to allow a well-defined order of events.
         mIsNotifying = true;
         mData = data;
-        for (StateObserver<? super T> observer : mObservers) {
-            observer.onEnter(data);
+        for (ScopeFactory<? super T> observer : mEnterObservers) {
+            mExitObservers.addObserver(observer.create(data));
         }
         mIsNotifying = false;
         // Done notifying observers; process any queued set() or reset() calls that they posted.
@@ -95,9 +89,10 @@ public class Controller<T> extends Observable<T> {
         // rather than run synchronously to allow a well-defined order of events.
         mIsNotifying = true;
         mData = null;
-        for (StateObserver<? super T> observer : Itertools.reverse(mObservers)) {
-            observer.onExit();
+        for (Scope observer : Itertools.reverse(mExitObservers)) {
+            observer.close();
         }
+        mExitObservers.clear();
         mIsNotifying = false;
         // Done notifying observers; process any queued set() or reset() calls that they posted.
         while (!mMessageQueue.isEmpty()) {

@@ -8,4 +8,4 @@ package org.chromium.chromecast.base;
  * Interface representing actions to perform when entering and exiting a state, independent of
  * the activation data.
  */
-public interface VoidScopeFactory { public AutoCloseable create(); }
+public interface VoidScopeFactory { public Scope create(); }

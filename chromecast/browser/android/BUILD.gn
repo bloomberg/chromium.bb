@@ -85,6 +85,7 @@ android_library("reactive_android_java") {
   java_files = [ "$java_src_dir/org/chromium/chromecast/shell/LocalBroadcastReceiverScope.java" ]
   deps = [
     "//base:base_java",
+    "//chromecast/base:base_java",
     "//third_party/android_tools:android_support_core_utils_java",
   ]
 }

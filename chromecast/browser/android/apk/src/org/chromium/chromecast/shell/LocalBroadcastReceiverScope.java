@@ -11,13 +11,14 @@ import android.content.IntentFilter;
 import android.support.v4.content.LocalBroadcastManager;
 
 import org.chromium.base.ContextUtils;
+import org.chromium.chromecast.base.Scope;
 
 /**
  * Registers a BroadcastReceiver in the constructor, and unregisters it in the close() method.
  *
  * This can be used to react to Observables to properly control the lifetimes of BroadcastReceivers.
  */
-public class LocalBroadcastReceiverScope implements AutoCloseable {
+public class LocalBroadcastReceiverScope implements Scope {
     private final LocalBroadcastManager mBroadcastManager;
     private final BroadcastReceiver mReceiver;
 

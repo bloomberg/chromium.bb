@@ -288,6 +288,7 @@ if (is_android) {
       "$java_src_dir/org/chromium/chromecast/base/Function.java",
       "$java_src_dir/org/chromium/chromecast/base/Itertools.java",
       "$java_src_dir/org/chromium/chromecast/base/Observable.java",
+      "$java_src_dir/org/chromium/chromecast/base/Scope.java",
       "$java_src_dir/org/chromium/chromecast/base/ScopeFactories.java",
       "$java_src_dir/org/chromium/chromecast/base/ScopeFactory.java",
       "$java_src_dir/org/chromium/chromecast/base/Unit.java",
