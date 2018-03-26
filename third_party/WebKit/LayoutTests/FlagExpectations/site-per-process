@@ -154,3 +154,13 @@ crbug.com/711468 virtual/gpu/fast/canvas/canvas-scale-strokePath-shadow.html [ P
 crbug.com/711468 http/tests/intersection-observer/cross-origin-iframe-with-nesting.html [ Failure ]
 
 crbug.com/807675 http/tests/images/image-decode-in-frame.html [ Crash Failure ]
+
+# These tests have issues with —site-per-process. https://crbug.com/794631
+crbug.com/794631 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-delegation.html [ Failure Pass Timeout ]
+crbug.com/794631 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-disabled.html [ Failure Pass Timeout ]
+crbug.com/794631 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-gesture.html [ Failure Pass Timeout ]
+crbug.com/794631 http/tests/media/autoplay/document-user-activation-cross-origin-feature-policy-header.html [ Failure Pass Timeout ]
+crbug.com/794631 http/tests/media/autoplay/document-user-activation-feature-policy-alternating.html [ Failure Pass Timeout ]
+crbug.com/794631 http/tests/media/autoplay/document-user-activation-feature-policy-iframe-no-gesture.html [ Failure Pass Timeout ]
+crbug.com/794631 http/tests/media/autoplay/document-user-activation-feature-policy-same-origin.html [ Failure Pass Timeout ]
+crbug.com/794631 http/tests/media/autoplay/document-user-activation-iframe-delegation.html [ Failure Pass Timeout ]

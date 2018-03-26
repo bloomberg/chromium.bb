@@ -1,16 +1,16 @@
 <!DOCTYPE html>
 <title>Test user gesture is delegated to iframes after navigation.</title>
 <script>
-  chrome.gpuBenchmarking.pointerActionSequence([
-      {"source": "mouse",
-       "actions": [
-       { "name": "pointerDown", "x": 0, "y": 0 },
-       { "name": "pointerUp" } ]}]);
-
   if (window.testRunner) {
     testRunner.waitUntilDone();
     testRunner.dumpAsText();
   }
 
-  document.location.href = 'resources/test-autoplay-post-navigation.html';
+  chrome.gpuBenchmarking.pointerActionSequence([
+      {"source": "mouse",
+       "actions": [
+       { "name": "pointerDown", "x": 0, "y": 0 },
+       { "name": "pointerUp" } ]}], () => {
+         document.location.href = 'resources/test-autoplay-post-navigation.html';
+       });
 </script>

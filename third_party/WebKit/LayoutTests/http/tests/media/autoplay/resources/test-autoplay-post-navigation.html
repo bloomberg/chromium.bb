@@ -5,12 +5,12 @@
 <script src="/resources/testharnessreport.js"></script>
 <script src="autoplay-test.js"></script>
 <!-- This is a cross origin iframe with a same origin child with allow="autoplay" -->
-<iframe allow="autoplay" src="http://localhost:8000/media/autoplay/resources/nested-iframe-1a.html"></iframe>
+<iframe allow="autoplay"></iframe>
 <script>
-  runTest({
-    'http://127.0.0.1:8000/media/autoplay/resources/test-autoplay-post-navigation.html': true,
-    'http://localhost:8000/media/autoplay/resources/nested-iframe-1a.html': true,
-    'http://127.0.0.1:8000/media/autoplay/resources/nested-iframe-2.html': true
-  });
+  runTest(simulateNoGesture, [
+    ['http://127.0.0.1:8000/media/autoplay/resources/test-autoplay-post-navigation.html', true],
+    ['http://localhost:8000/media/autoplay/resources/nested-iframe-1a.html', true],
+    ['http://127.0.0.1:8000/media/autoplay/resources/nested-iframe-2.html', true]
+  ]);
 </script>
 </html>
