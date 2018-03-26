@@ -365,7 +365,6 @@ EC (RW) version: pyro_v1.1.5909-bd1f0c9
 Model:        electro
 BIOS image:
 BIOS version: Google_Reef.9042.87.1
-BIOS (RW) version: Google_Reef.9042.110.0
 EC version:   reef_v1.1.5900-ab1ee51
 EC (RW) version: reef_v1.1.5909-bd1f0c9
 ''')
@@ -401,6 +400,9 @@ EC (RW) version: reef_v1.1.5909-bd1f0c9
       electro = board_metadata['models']['electro']
       self.assertEquals('Google_Reef.9042.87.1',
                         electro['main-readonly-firmware-version'])
+      # Test RW firmware is defaulted to RO version if isn't specified.
+      self.assertEquals('Google_Reef.9042.87.1',
+                        electro['main-readwrite-firmware-version'])
 
   def testUnifiedBuilds(self):
     """Test that unified builds are marked as such."""

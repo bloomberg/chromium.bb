@@ -497,9 +497,10 @@ class BuildPackagesStage(generic_stages.BoardSpecificBuilderStage,
         for model in models:
           if model in all_fw_versions:
             fw_versions = all_fw_versions[model]
+
             ec = fw_versions.ec_rw or fw_versions.ec
             main_ro = fw_versions.main
-            main_rw = fw_versions.main_rw
+            main_rw = fw_versions.main_rw or main_ro
 
             # Get the firmware key-id for the current board and model.
             model_arg = '--model=' + model
