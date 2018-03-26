@@ -93,8 +93,9 @@ cryptauth::GcmDeviceInfo GetGcmDeviceInfo() {
   // The Chrome OS version tracks the Chrome version, so fill in the same value
   // as |device_software_version_code|.
   device_info.set_device_os_version_code(software_version_code);
-  // |device_display_diagonal_mils| is unset because it only applies to
-  // phones/tablets.
+  // |device_display_diagonal_mils| is unused because it only applies to
+  // phones/tablets, but it must be set due to server API verification.
+  device_info.set_device_display_diagonal_mils(0);
 
   return device_info;
 }
