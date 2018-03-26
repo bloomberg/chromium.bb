@@ -83,9 +83,11 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
     size_t length;
   };
 
-  struct ImageProcessorInputRecord {
-    ImageProcessorInputRecord();
-    ~ImageProcessorInputRecord();
+  // Store all the information of input frame passed to Encode().
+  struct InputFrameInfo {
+    InputFrameInfo();
+    InputFrameInfo(scoped_refptr<VideoFrame> frame, bool force_keyframe);
+    ~InputFrameInfo();
     scoped_refptr<VideoFrame> frame;
     bool force_keyframe;
   };
@@ -258,7 +260,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   size_t cached_h264_header_size_ = 0;
 
   // Video frames ready to be encoded.
-  base::queue<scoped_refptr<VideoFrame>> encoder_input_queue_;
+  base::queue<InputFrameInfo> encoder_input_queue_;
 
   // Encoder device.
   scoped_refptr<V4L2Device> device_;
@@ -295,7 +297,7 @@ class MEDIA_GPU_EXPORT V4L2VideoEncodeAccelerator
   // thread.
   std::vector<int> free_image_processor_output_buffers_;
   // Video frames ready to be processed. Only accessed on child thread.
-  base::queue<ImageProcessorInputRecord> image_processor_input_queue_;
+  base::queue<InputFrameInfo> image_processor_input_queue_;
   // Mapping of int index to fds of image processor output buffer.
   std::vector<std::vector<base::ScopedFD>> image_processor_output_buffer_map_;
 
