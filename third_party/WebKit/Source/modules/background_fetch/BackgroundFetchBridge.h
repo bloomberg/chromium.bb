@@ -16,7 +16,6 @@
 
 namespace blink {
 
-class BackgroundFetchOptions;
 class BackgroundFetchRegistration;
 class WebServiceWorkerRequest;
 
@@ -48,11 +47,11 @@ class BackgroundFetchBridge final
   virtual ~BackgroundFetchBridge();
 
   // Creates a new Background Fetch registration identified by |developer_id|
-  // with the given |options| for the sequence of |requests|. The |callback|
-  // will be invoked when the registration has been created.
+  // for the sequence of |requests|. The |callback| will be invoked when the
+  // registration has been created.
   void Fetch(const String& developer_id,
              Vector<WebServiceWorkerRequest> requests,
-             const BackgroundFetchOptions&,
+             mojom::blink::BackgroundFetchOptionsPtr,
              const SkBitmap& icon,
              RegistrationCallback);
 

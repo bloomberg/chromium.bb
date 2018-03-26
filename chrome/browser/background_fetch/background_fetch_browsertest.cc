@@ -274,8 +274,7 @@ class BackgroundFetchBrowserTest : public InProcessBrowserTest {
 };
 
 // Flaky. See https://crbug.com/822276
-IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
-                       DISABLED_DownloadService_Acceptance) {
+IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest, DownloadService_Acceptance) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // that request to be scheduled with the Download Service.
 
@@ -295,7 +294,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 
 // TODO(crbug.com/822944): Disabled since flaky.
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
-                       DISABLED_OfflineItemCollection_SingleFileMetadata) {
+                       OfflineItemCollection_SingleFileMetadata) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // the fetch to be registered with the offline items collection. We then
   // verify that all the appropriate values have been set.
@@ -326,7 +325,7 @@ IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
 
 // Flaky. See https://crbug.com/822276
 IN_PROC_BROWSER_TEST_F(BackgroundFetchBrowserTest,
-                       DISABLED_OfflineItemCollection_VerifyIconReceived) {
+                       OfflineItemCollection_VerifyIconReceived) {
   // Starts a Background Fetch for a single to-be-downloaded file and waits for
   // the fetch to be registered with the offline items collection. We then
   // verify that the expected icon is associated with the newly added offline

@@ -18,6 +18,7 @@
 #include "modules/background_fetch/BackgroundFetchIconLoader.h"
 #include "modules/background_fetch/BackgroundFetchOptions.h"
 #include "modules/background_fetch/BackgroundFetchRegistration.h"
+#include "modules/background_fetch/BackgroundFetchTypeConverters.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 #include "platform/bindings/ScriptState.h"
 #include "platform/bindings/V8ThrowException.h"
@@ -256,27 +257,29 @@ ScriptPromise BackgroundFetchManager::fetch(
 
   // Load Icons. Right now, we just load the first icon. Lack of icons or
   // inability to load them should not be fatal to the fetch.
+  mojom::blink::BackgroundFetchOptionsPtr options_ptr =
+      mojom::blink::BackgroundFetchOptions::From(options);
   if (options.icons().size()) {
     loader_->Start(
         execution_context, options.icons(),
         WTF::Bind(&BackgroundFetchManager::DidLoadIcons, WrapPersistent(this),
-                  id, WTF::Passed(std::move(web_requests)), options,
-                  WrapPersistent(resolver)));
+                  id, WTF::Passed(std::move(web_requests)),
+                  std::move(options_ptr), WrapPersistent(resolver)));
     return promise;
   }
 
-  DidLoadIcons(id, std::move(web_requests), options, WrapPersistent(resolver),
-               SkBitmap());
+  DidLoadIcons(id, std::move(web_requests), std::move(options_ptr),
+               WrapPersistent(resolver), SkBitmap());
   return promise;
 }
 
 void BackgroundFetchManager::DidLoadIcons(
     const String& id,
     Vector<WebServiceWorkerRequest> web_requests,
-    const BackgroundFetchOptions& options,
+    mojom::blink::BackgroundFetchOptionsPtr options,
     ScriptPromiseResolver* resolver,
     const SkBitmap& icon) {
-  bridge_->Fetch(id, std::move(web_requests), options, icon,
+  bridge_->Fetch(id, std::move(web_requests), std::move(options), icon,
                  WTF::Bind(&BackgroundFetchManager::DidFetch,
                            WrapPersistent(this), WrapPersistent(resolver)));
 }

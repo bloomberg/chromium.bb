@@ -33,17 +33,18 @@ BackgroundFetchIconLoader::~BackgroundFetchIconLoader() {
 
 // TODO(nator): Add functionality to select which icon to load.
 void BackgroundFetchIconLoader::Start(ExecutionContext* execution_context,
-                                      const HeapVector<IconDefinition>& icons,
+                                      HeapVector<IconDefinition> icons,
                                       IconCallback icon_callback) {
   DCHECK(!stopped_);
   DCHECK_GE(icons.size(), 1u);
+  icons_ = std::move(icons);
 
-  if (!icons[0].hasSrc()) {
+  if (!icons_[0].hasSrc()) {
     std::move(icon_callback).Run(SkBitmap());
     return;
   }
 
-  KURL first_icon_url = execution_context->CompleteURL(icons[0].src());
+  KURL first_icon_url = execution_context->CompleteURL(icons_[0].src());
   if (!first_icon_url.IsValid() || first_icon_url.IsEmpty()) {
     std::move(icon_callback).Run(SkBitmap());
     return;
