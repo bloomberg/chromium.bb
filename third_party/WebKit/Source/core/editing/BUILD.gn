@@ -129,6 +129,7 @@ blink_core_sources("editing") {
     "commands/FormatBlockCommand.h",
     "commands/IndentOutdentCommand.cpp",
     "commands/IndentOutdentCommand.h",
+    "commands/InsertCommands.h",
     "commands/InsertIncrementalTextCommand.cpp",
     "commands/InsertIncrementalTextCommand.h",
     "commands/InsertIntoTextNodeCommand.cpp",
