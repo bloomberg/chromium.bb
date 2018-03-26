@@ -65,7 +65,6 @@ source_set("common") {
     "browser_plugin/browser_plugin_constants.cc",
     "browser_plugin/browser_plugin_constants.h",
     "browser_plugin/browser_plugin_messages.h",
-    "cache_storage/cache_storage_messages.h",
     "cache_storage/cache_storage_types.cc",
     "cache_storage/cache_storage_types.h",
     "child_process_host_impl.cc",
