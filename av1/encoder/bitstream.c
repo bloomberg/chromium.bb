@@ -1103,7 +1103,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     }
 
     if (cpi->common.reference_mode != COMPOUND_REFERENCE &&
-        cpi->common.allow_interintra_compound && is_interintra_allowed(mbmi)) {
+        cpi->common.seq_params.enable_interintra_compound &&
+        is_interintra_allowed(mbmi)) {
       const int interintra = mbmi->ref_frame[1] == INTRA_FRAME;
       const int bsize_group = size_group_lookup[bsize];
       aom_write_symbol(w, interintra, ec_ctx->interintra_cdf[bsize_group], 2);
@@ -1134,8 +1135,8 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
     // Group A (0): jnt_comp, compound_average
     // Group B (1): interintra, compound_segment, wedge
     if (has_second_ref(mbmi)) {
-      const int masked_compound_used =
-          is_any_masked_compound_used(bsize) && cm->allow_masked_compound;
+      const int masked_compound_used = is_any_masked_compound_used(bsize) &&
+                                       cm->seq_params.enable_masked_compound;
 
       if (masked_compound_used) {
         const int ctx_comp_group_idx = get_comp_group_idx_context(xd);
@@ -2756,6 +2757,9 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 
   write_sb_size(seq_params, wb);
 
+  aom_wb_write_bit(wb, seq_params->enable_interintra_compound);
+  aom_wb_write_bit(wb, seq_params->enable_masked_compound);
+
   aom_wb_write_bit(wb, seq_params->enable_dual_filter);
 
   aom_wb_write_bit(wb, seq_params->enable_order_hint);
@@ -2792,20 +2796,6 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
   aom_wb_write_bit(wb, seq_params->enable_superres);
   aom_wb_write_bit(wb, seq_params->enable_cdef);
   aom_wb_write_bit(wb, seq_params->enable_restoration);
-}
-
-static void write_compound_tools(const AV1_COMMON *cm,
-                                 struct aom_write_bit_buffer *wb) {
-  if (!frame_is_intra_only(cm) && cm->reference_mode != COMPOUND_REFERENCE) {
-    aom_wb_write_bit(wb, cm->allow_interintra_compound);
-  } else {
-    assert(cm->allow_interintra_compound == 0);
-  }
-  if (!frame_is_intra_only(cm) && cm->reference_mode != SINGLE_REFERENCE) {
-    aom_wb_write_bit(wb, cm->allow_masked_compound);
-  } else {
-    assert(cm->allow_masked_compound == 0);
-  }
 }
 
 static void write_global_motion_params(const WarpedMotionParams *params,
@@ -3268,7 +3258,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (cm->is_skip_mode_allowed) aom_wb_write_bit(wb, cm->skip_mode_flag);
 
-  write_compound_tools(cm, wb);
   if (frame_might_use_warped_motion(cm) && cm->seq_params.enable_warped_motion)
     aom_wb_write_bit(wb, cm->allow_warped_motion);
   else

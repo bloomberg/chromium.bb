@@ -1478,7 +1478,7 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
   }
 
   mbmi->use_wedge_interintra = 0;
-  if (cm->allow_interintra_compound && !mbmi->skip_mode &&
+  if (cm->seq_params.enable_interintra_compound && !mbmi->skip_mode &&
       is_interintra_allowed(mbmi)) {
     const int bsize_group = size_group_lookup[bsize];
     const int interintra =
@@ -1531,8 +1531,8 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
   if (has_second_ref(mbmi) && !mbmi->skip_mode) {
     // Read idx to indicate current compound inter prediction mode group
-    const int masked_compound_used =
-        is_any_masked_compound_used(bsize) && cm->allow_masked_compound;
+    const int masked_compound_used = is_any_masked_compound_used(bsize) &&
+                                     cm->seq_params.enable_masked_compound;
 
     if (masked_compound_used) {
       const int ctx_comp_group_idx = get_comp_group_idx_context(xd);

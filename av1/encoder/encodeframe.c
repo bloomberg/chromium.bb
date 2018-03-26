@@ -1159,7 +1159,8 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
           }
         }
 
-        if (cm->allow_interintra_compound && is_interintra_allowed(mbmi)) {
+        if (cm->seq_params.enable_interintra_compound &&
+            is_interintra_allowed(mbmi)) {
           const int bsize_group = size_group_lookup[bsize];
           if (mbmi->ref_frame[1] == INTRA_FRAME) {
             counts->interintra[bsize_group][1]++;
@@ -1221,7 +1222,8 @@ static void update_stats(const AV1_COMMON *const cm, TileDataEnc *tile_data,
                  mbmi->motion_mode == SIMPLE_TRANSLATION);
 
           const int masked_compound_used =
-              is_any_masked_compound_used(bsize) && cm->allow_masked_compound;
+              is_any_masked_compound_used(bsize) &&
+              cm->seq_params.enable_masked_compound;
           if (masked_compound_used) {
             const int comp_group_idx_ctx = get_comp_group_idx_context(xd);
             ++counts->comp_group_idx[comp_group_idx_ctx][mbmi->comp_group_idx];
@@ -4369,12 +4371,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
 #endif  // CONFIG_EXT_DELTA_Q
 }
 
-static void make_consistent_compound_tools(AV1_COMMON *cm) {
-  if (frame_is_intra_only(cm)) cm->allow_interintra_compound = 0;
-  if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE)
-    cm->allow_masked_compound = 0;
-}
-
 void av1_encode_frame(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -4439,8 +4435,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
 
     cm->switchable_motion_mode = 1;
 
-    make_consistent_compound_tools(cm);
-
     rdc->compound_ref_used_flag = 0;
     rdc->skip_mode_used_flag = 0;
 
@@ -4458,7 +4452,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #endif  // CONFIG_ENTROPY_STATS
       }
     }
-    make_consistent_compound_tools(cm);
     // Re-check on the skip mode status as reference mode may have been changed.
     if (frame_is_intra_only(cm) || cm->reference_mode == SINGLE_REFERENCE) {
       cm->is_skip_mode_allowed = 0;
@@ -4472,7 +4465,6 @@ void av1_encode_frame(AV1_COMP *cpi) {
         cm->tx_mode = TX_MODE_LARGEST;
     }
   } else {
-    make_consistent_compound_tools(cm);
     encode_frame_internal(cpi);
   }
 }

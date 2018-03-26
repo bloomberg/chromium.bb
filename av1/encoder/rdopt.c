@@ -6306,7 +6306,7 @@ static int64_t pick_interinter_wedge(const AV1_COMP *const cpi,
   int wedge_sign = 0;
 
   assert(is_interinter_compound_used(COMPOUND_WEDGE, bsize));
-  assert(cpi->common.allow_masked_compound);
+  assert(cpi->common.seq_params.enable_masked_compound);
 
   if (cpi->sf.fast_wedge_sign_estimate) {
     wedge_sign = estimate_wedge_sign(cpi, x, bsize, p0, bw, p1, bw);
@@ -6405,7 +6405,7 @@ static int64_t pick_interintra_wedge(const AV1_COMP *const cpi,
   int wedge_index = -1;
 
   assert(is_interintra_wedge_used(bsize));
-  assert(cpi->common.allow_interintra_compound);
+  assert(cpi->common.seq_params.enable_interintra_compound);
 
   rd = pick_wedge_fixed_sign(cpi, x, bsize, p0, p1, 0, &wedge_index);
 
@@ -6813,7 +6813,7 @@ static int64_t motion_mode_rd(
   MB_MODE_INFO base_mbmi, best_mbmi;
   uint8_t best_blk_skip[MAX_MIB_SIZE * MAX_MIB_SIZE];
   int interintra_allowed =
-      cm->allow_interintra_compound && is_interintra_allowed(mbmi);
+      cm->seq_params.enable_interintra_compound && is_interintra_allowed(mbmi);
   int pts0[SAMPLES_ARRAY_SIZE], pts_inref0[SAMPLES_ARRAY_SIZE];
   int total_samples;
 
@@ -7358,8 +7358,8 @@ static int64_t handle_inter_mode(
   }
 
   mbmi->motion_mode = SIMPLE_TRANSLATION;
-  const int masked_compound_used =
-      is_any_masked_compound_used(bsize) && cm->allow_masked_compound;
+  const int masked_compound_used = is_any_masked_compound_used(bsize) &&
+                                   cm->seq_params.enable_masked_compound;
   int64_t ret_val = INT64_MAX;
   const RD_STATS backup_rd_stats = *rd_stats;
   const RD_STATS backup_rd_stats_y = *rd_stats_y;

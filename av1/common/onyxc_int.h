@@ -225,18 +225,20 @@ typedef struct SequenceHeader {
                          // 2 - adaptive
 #endif
   int monochrome;
-  int enable_dual_filter;    // 0 - disable dual interpolation filter
-                             // 1 - enable vertical and horiz filter selection
-  int enable_order_hint;     // 0 - disable order hint, and related tools:
-                             // jnt_comp, ref_frame_mvs, frame_sign_bias
-                             // if 0, enable_jnt_comp and enable_ref_frame_mvs
-                             // must be set zs 0.
-  int enable_jnt_comp;       // 0 - disable joint compound modes
-                             // 1 - enable it
-  int enable_ref_frame_mvs;  // 0 - disable ref frame mvs
-                             // 1 - enable it
-  int enable_warped_motion;  // 0 - disable warped motion for sequence
-                             // 1 - enable it for the sequence
+  int enable_interintra_compound;  // enables/disables interintra_compound
+  int enable_masked_compound;      // enables/disables masked compound
+  int enable_dual_filter;          // 0 - disable dual interpolation filter
+                                   // 1 - enable vert/horiz filter selection
+  int enable_order_hint;           // 0 - disable order hint, and related tools
+                                   // jnt_comp, ref_frame_mvs, frame_sign_bias
+                                   // if 0, enable_jnt_comp and
+                                   // enable_ref_frame_mvs must be set zs 0.
+  int enable_jnt_comp;             // 0 - disable joint compound modes
+                                   // 1 - enable it
+  int enable_ref_frame_mvs;        // 0 - disable ref frame mvs
+                                   // 1 - enable it
+  int enable_warped_motion;        // 0 - disable warped motion for sequence
+                                   // 1 - enable it for the sequence
   int enable_superres;     // 0 - Disable superres for the sequence, and disable
                            //     transmitting per-frame superres enabled flag.
                            // 1 - Enable superres for the sequence, and also
@@ -244,7 +246,6 @@ typedef struct SequenceHeader {
                            //     enabled for that frame.
   int enable_cdef;         // To turn on/off CDEF
   int enable_restoration;  // To turn on/off loop restoration
-
 #if CONFIG_OPERATING_POINTS
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
   int level[MAX_NUM_OPERATING_POINTS];
@@ -342,8 +343,6 @@ typedef struct AV1Common {
   int allow_screen_content_tools;
   int allow_intrabc;
   int allow_filter_intra;
-  int allow_interintra_compound;
-  int allow_masked_compound;
   int allow_warped_motion;
 
   // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in

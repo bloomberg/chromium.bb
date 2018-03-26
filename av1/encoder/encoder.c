@@ -937,6 +937,8 @@ void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
   seq->enable_cdef = oxcf->enable_cdef;
   seq->enable_restoration = oxcf->enable_restoration;
   seq->enable_warped_motion = oxcf->enable_warped_motion;
+  seq->enable_interintra_compound = 1;
+  seq->enable_masked_compound = 1;
 }
 
 static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
@@ -2258,11 +2260,6 @@ static void realloc_segmentation_maps(AV1_COMP *cpi) {
                   aom_calloc(cm->mi_rows * cm->mi_cols, 1));
 }
 
-void set_compound_tools(AV1_COMMON *cm) {
-  cm->allow_interintra_compound = 1;
-  cm->allow_masked_compound = 1;
-}
-
 void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
@@ -2316,7 +2313,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
     CHECK_MEM_ERROR(cm, x->palette_buffer,
                     aom_memalign(16, sizeof(*x->palette_buffer)));
   }
-  set_compound_tools(cm);
   av1_reset_segment_features(cm);
 #if CONFIG_AMVR
   set_high_precision_mv(cpi, 1, 0);
@@ -3667,7 +3663,6 @@ static void set_size_independent_vars(AV1_COMP *cpi) {
   av1_set_rd_speed_thresholds_sub8x8(cpi);
   cpi->common.interp_filter = cpi->sf.default_interp_filter;
   cpi->common.switchable_motion_mode = 1;
-  if (!frame_is_intra_only(&cpi->common)) set_compound_tools(&cpi->common);
 }
 
 static void set_size_dependent_vars(AV1_COMP *cpi, int *q, int *bottom_index,
