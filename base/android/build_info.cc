@@ -73,7 +73,9 @@ BuildInfo::BuildInfo(const std::vector<std::string>& params)
       installer_package_name_(StrDupParam(params, 16)),
       abi_name_(StrDupParam(params, 17)),
       firebase_app_id_(StrDupParam(params, 18)),
-      extracted_file_suffix_(params[19]),
+      custom_themes_(StrDupParam(params, 19)),
+      resources_version_(StrDupParam(params, 20)),
+      extracted_file_suffix_(params[21]),
       java_exception_info_(NULL) {}
 
 // static

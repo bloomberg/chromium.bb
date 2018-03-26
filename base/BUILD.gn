@@ -2678,6 +2678,7 @@ if (is_android) {
     ]
 
     deps = [
+      ":base_java_resources",
       "//third_party/android_tools:android_support_annotations_java",
       "//third_party/android_tools:android_support_multidex_java",
       "//third_party/jsr-305:jsr_305_javalib",
@@ -2768,6 +2769,11 @@ if (is_android) {
       "*/NativeLibraries.class",
       "*/NativeLibraries##*.class",
     ]
+  }
+
+  android_resources("base_java_resources") {
+    resource_dirs = [ "android/java/res" ]
+    custom_package = "org.chromium.base"
   }
 
   android_aidl("base_java_aidl") {

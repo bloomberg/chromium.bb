@@ -49,6 +49,8 @@ public class PureJavaExceptionReporter {
     public static final String EXCEPTION_INFO = "exception_info";
     public static final String PROCESS_TYPE = "ptype";
     public static final String EARLY_JAVA_EXCEPTION = "early_java_exception";
+    public static final String CUSTOM_THEMES = "custom_themes";
+    public static final String RESOURCES_VERSION = "resources_version";
 
     private static final String CRASH_DUMP_DIR = "Crash Reports";
     private static final String FILE_PREFIX = "chromium-browser-minidump-";
@@ -137,6 +139,8 @@ public class PureJavaExceptionReporter {
         addPairedString(PACKAGE,
                 String.format("%s v%s (%s)", BuildConfig.FIREBASE_APP_ID, buildInfo.versionCode,
                         buildInfo.versionName));
+        addPairedString(CUSTOM_THEMES, buildInfo.customThemes);
+        addPairedString(RESOURCES_VERSION, buildInfo.resourcesVersion);
 
         addString(mBoundary);
     }
