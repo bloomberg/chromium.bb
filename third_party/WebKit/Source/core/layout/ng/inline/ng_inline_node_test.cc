@@ -22,7 +22,7 @@ class NGInlineNodeForTest : public NGInlineNode {
  public:
   using NGInlineNode::NGInlineNode;
 
-  String& Text() { return MutableData()->text_content_; }
+  std::string Text() const { return Data().text_content_.Utf8().data(); }
   Vector<NGInlineItem>& Items() { return MutableData()->items_; }
   static Vector<NGInlineItem>& Items(NGInlineNodeData& data) {
     return data.items_;
@@ -171,6 +171,44 @@ TEST_F(NGInlineNodeTest, CollectInlinesBR) {
   TEST_ITEM_TYPE_OFFSET(items[1], kControl, 5u, 6u);
   TEST_ITEM_TYPE_OFFSET(items[2], kText, 6u, 11u);
   EXPECT_EQ(3u, items.size());
+}
+
+TEST_F(NGInlineNodeTest, CollectInlinesFloat) {
+  SetupHtml("t",
+            "<div id=t>"
+            "abc"
+            "<span style='float:right'>DEF</span>"
+            "ghi"
+            "<span style='float:left'>JKL</span>"
+            "mno"
+            "</div>");
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.CollectInlines();
+  EXPECT_EQ(u8"abc\uFFFCghi\uFFFCmno", node.Text())
+      << "floats are appeared as an object replacement character";
+  Vector<NGInlineItem>& items = node.Items();
+  ASSERT_EQ(5u, items.size());
+  TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 3u);
+  TEST_ITEM_TYPE_OFFSET(items[1], kFloating, 3u, 4u);
+  TEST_ITEM_TYPE_OFFSET(items[2], kText, 4u, 7u);
+  TEST_ITEM_TYPE_OFFSET(items[3], kFloating, 7u, 8u);
+  TEST_ITEM_TYPE_OFFSET(items[4], kText, 8u, 11u);
+}
+
+TEST_F(NGInlineNodeTest, CollectInlinesInlineBlock) {
+  SetupHtml("t",
+            "<div id=t>"
+            "abc<span style='display:inline-block'>DEF</span>jkl"
+            "</div>");
+  NGInlineNodeForTest node = CreateInlineNode();
+  node.CollectInlines();
+  EXPECT_EQ(u8"abc\uFFFCjkl", node.Text())
+      << "inline-block is appeared as an object replacement character";
+  Vector<NGInlineItem>& items = node.Items();
+  ASSERT_EQ(3u, items.size());
+  TEST_ITEM_TYPE_OFFSET(items[0], kText, 0u, 3u);
+  TEST_ITEM_TYPE_OFFSET(items[1], kAtomicInline, 3u, 4u);
+  TEST_ITEM_TYPE_OFFSET(items[2], kText, 4u, 7u);
 }
 
 TEST_F(NGInlineNodeTest, CollectInlinesUTF16) {
