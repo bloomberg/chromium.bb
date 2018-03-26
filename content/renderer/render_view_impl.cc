@@ -1922,7 +1922,7 @@ void RenderViewImpl::OnSetLocalSurfaceIdForAutoResize(
     const content::ScreenInfo& screen_info,
     uint32_t content_source_id,
     const viz::LocalSurfaceId& local_surface_id) {
-  if (!auto_resize_mode_ || resize_or_repaint_ack_num_ != sequence_number) {
+  if (!auto_resize_mode_ || auto_resize_sequence_number_ != sequence_number) {
     DidResizeOrRepaintAck();
     return;
   }
