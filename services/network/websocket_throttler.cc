@@ -51,7 +51,6 @@ base::TimeDelta WebSocketPerProcessThrottler::CalculateDelay() const {
   return base::TimeDelta::FromMilliseconds(
       base::RandInt(1000, 5000) *
       (1 << std::min(p + f / (s + 1), INT64_C(16))) / 65536);
-  return base::TimeDelta();
 }
 
 WebSocketPerProcessThrottler::PendingConnection
