@@ -19,32 +19,6 @@
 namespace extensions {
 namespace {
 
-std::set<std::string> Set(const std::string& a) {
-  std::set<std::string> set;
-  set.insert(a);
-  return set;
-}
-std::set<std::string> Set(const std::string& a, const std::string& b) {
-  std::set<std::string> set = Set(a);
-  set.insert(b);
-  return set;
-}
-std::set<std::string> Set(const std::string& a,
-                          const std::string& b,
-                          const std::string& c) {
-  std::set<std::string> set = Set(a, b);
-  set.insert(c);
-  return set;
-}
-std::set<std::string> Set(const std::string& a,
-                          const std::string& b,
-                          const std::string& c,
-                          const std::string& d) {
-  std::set<std::string> set = Set(a, b, c);
-  set.insert(d);
-  return set;
-}
-
 class BlacklistTest : public testing::Test {
  public:
   BlacklistTest()
@@ -88,10 +62,10 @@ TEST_F(BlacklistTest, OnlyIncludesRequestedIDs) {
 
   std::set<std::string> blacklisted_ids;
   blacklist.GetMalwareIDs(
-      Set(a, c), base::Bind(&Assign<std::set<std::string> >, &blacklisted_ids));
+      {a, c}, base::Bind(&Assign<std::set<std::string>>, &blacklisted_ids));
   base::RunLoop().RunUntilIdle();
 
-  EXPECT_EQ(Set(a), blacklisted_ids);
+  EXPECT_EQ((std::set<std::string>{a}), blacklisted_ids);
 }
 
 TEST_F(BlacklistTest, SafeBrowsing) {
@@ -118,48 +92,6 @@ TEST_F(BlacklistTest, SafeBrowsing) {
   EXPECT_EQ(NOT_BLACKLISTED, tester.GetBlacklistState(a));
 }
 
-// Tests that Blacklist clears the old prefs blacklist on startup.
-TEST_F(BlacklistTest, ClearsPreferencesBlacklist) {
-  std::string a = AddExtension("a");
-  std::string b = AddExtension("b");
-
-  // Blacklist an installed extension.
-  prefs()->SetExtensionBlacklistState(a, BLACKLISTED_MALWARE);
-
-  // Blacklist some non-installed extensions. This is what the old preferences
-  // blacklist looked like.
-  std::string c = "cccccccccccccccccccccccccccccccc";
-  std::string d = "dddddddddddddddddddddddddddddddd";
-  prefs()->SetExtensionBlacklistState(c, BLACKLISTED_MALWARE);
-  prefs()->SetExtensionBlacklistState(d, BLACKLISTED_MALWARE);
-
-  EXPECT_EQ(Set(a, c, d), prefs()->GetBlacklistedExtensions());
-
-  Blacklist blacklist(prefs());
-  TestBlacklist tester(&blacklist);
-
-  // Blacklist has been cleared. Only the installed extension "a" left.
-  EXPECT_EQ(Set(a), prefs()->GetBlacklistedExtensions());
-  EXPECT_TRUE(prefs()->GetInstalledExtensionInfo(a).get());
-  EXPECT_TRUE(prefs()->GetInstalledExtensionInfo(b).get());
-
-  // "a" won't actually be *blacklisted* since it doesn't appear in
-  // safebrowsing. Blacklist no longer reads from prefs. This is purely a
-  // concern of somebody else (currently, ExtensionService).
-  std::set<std::string> blacklisted_ids;
-  blacklist.GetMalwareIDs(Set(a, b, c, d),
-                          base::Bind(&Assign<std::set<std::string> >,
-                                     &blacklisted_ids));
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(std::set<std::string>(), blacklisted_ids);
-
-  // Prefs are still unaffected for installed extensions, though.
-  EXPECT_TRUE(prefs()->IsExtensionBlacklisted(a));
-  EXPECT_FALSE(prefs()->IsExtensionBlacklisted(b));
-  EXPECT_FALSE(prefs()->IsExtensionBlacklisted(c));
-  EXPECT_FALSE(prefs()->IsExtensionBlacklisted(d));
-}
-
 // Test getting different blacklist states from Blacklist.
 TEST_F(BlacklistTest, GetBlacklistStates) {
   Blacklist blacklist(prefs());
@@ -178,12 +110,12 @@ TEST_F(BlacklistTest, GetBlacklistStates) {
 
   Blacklist::BlacklistStateMap states_abc;
   Blacklist::BlacklistStateMap states_bcd;
-  blacklist.GetBlacklistedIDs(Set(a, b, c, e),
-                              base::Bind(&Assign<Blacklist::BlacklistStateMap>,
-                                         &states_abc));
-  blacklist.GetBlacklistedIDs(Set(b, c, d, e),
-                              base::Bind(&Assign<Blacklist::BlacklistStateMap>,
-                                         &states_bcd));
+  blacklist.GetBlacklistedIDs(
+      {a, b, c, e},
+      base::Bind(&Assign<Blacklist::BlacklistStateMap>, &states_abc));
+  blacklist.GetBlacklistedIDs(
+      {b, c, d, e},
+      base::Bind(&Assign<Blacklist::BlacklistStateMap>, &states_bcd));
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(BLACKLISTED_MALWARE, states_abc[a]);
@@ -197,9 +129,8 @@ TEST_F(BlacklistTest, GetBlacklistStates) {
 
   int old_request_count = tester.fetcher()->request_count();
   Blacklist::BlacklistStateMap states_ad;
-  blacklist.GetBlacklistedIDs(Set(a, d, e),
-                              base::Bind(&Assign<Blacklist::BlacklistStateMap>,
-                                         &states_ad));
+  blacklist.GetBlacklistedIDs(
+      {a, d, e}, base::Bind(&Assign<Blacklist::BlacklistStateMap>, &states_ad));
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(BLACKLISTED_MALWARE, states_ad[a]);
   EXPECT_EQ(BLACKLISTED_POTENTIALLY_UNWANTED, states_ad[d]);
@@ -234,7 +165,7 @@ TEST_F(BlacklistTest, FetchBlacklistStates) {
 
   Blacklist::BlacklistStateMap states;
   blacklist.GetBlacklistedIDs(
-      Set(a, b, c), base::Bind(&Assign<Blacklist::BlacklistStateMap>, &states));
+      {a, b, c}, base::Bind(&Assign<Blacklist::BlacklistStateMap>, &states));
   base::RunLoop().RunUntilIdle();
 
    // Two fetchers should be created.
@@ -248,8 +179,8 @@ TEST_F(BlacklistTest, FetchBlacklistStates) {
   Blacklist::BlacklistStateMap cached_states;
 
   blacklist.GetBlacklistedIDs(
-      Set(a, b, c), base::Bind(&Assign<Blacklist::BlacklistStateMap>,
-                               &cached_states));
+      {a, b, c},
+      base::Bind(&Assign<Blacklist::BlacklistStateMap>, &cached_states));
   base::RunLoop().RunUntilIdle();
 
   // No new fetchers.
