@@ -244,7 +244,9 @@ class ContentVerifierTest : public ExtensionBrowserTest {
   }
 };
 
-IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DotSlashPaths) {
+// Disabled for extremel flakiness. The culprit cannot be reverted but is
+// documents in crbug.com/825540.
+IN_PROC_BROWSER_TEST_F(ContentVerifierTest, DISABLED_DotSlashPaths) {
   TestContentVerifyJobObserver job_observer;
   std::string id = "hoipipabpcoomfapcecilckodldhmpgl";
 
