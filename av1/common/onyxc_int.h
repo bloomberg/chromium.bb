@@ -671,12 +671,14 @@ static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {
 // frame_can_use_prev_frame_mvs for that)
 static INLINE int frame_might_use_prev_frame_mvs(const AV1_COMMON *cm) {
   return !cm->error_resilient_mode && !cm->large_scale_tile &&
-         !frame_is_intra_only(cm);
+         cm->seq_params.enable_ref_frame_mvs &&
+         cm->seq_params.enable_order_hint && !frame_is_intra_only(cm);
 }
 
 // Returns 1 if this frame might use warped_motion
 static INLINE int frame_might_use_warped_motion(const AV1_COMMON *cm) {
-  return !cm->error_resilient_mode && !frame_is_intra_only(cm);
+  return !cm->error_resilient_mode && !frame_is_intra_only(cm) &&
+         cm->seq_params.enable_warped_motion;
 }
 
 static INLINE void ensure_mv_buffer(RefCntBuffer *buf, AV1_COMMON *cm) {

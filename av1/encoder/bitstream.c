@@ -3175,8 +3175,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       fix_interp_filter(cm, cpi->td.counts);
       write_frame_interp_filter(cm->interp_filter, wb);
       aom_wb_write_bit(wb, cm->switchable_motion_mode);
-      if (frame_might_use_prev_frame_mvs(cm) &&
-          cm->seq_params.enable_order_hint) {
+      if (frame_might_use_prev_frame_mvs(cm)) {
         aom_wb_write_bit(wb, cm->use_ref_frame_mvs);
       }
     }
@@ -3258,7 +3257,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
 
   if (cm->is_skip_mode_allowed) aom_wb_write_bit(wb, cm->skip_mode_flag);
 
-  if (frame_might_use_warped_motion(cm) && cm->seq_params.enable_warped_motion)
+  if (frame_might_use_warped_motion(cm))
     aom_wb_write_bit(wb, cm->allow_warped_motion);
   else
     assert(!cm->allow_warped_motion);

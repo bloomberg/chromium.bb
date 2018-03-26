@@ -2936,9 +2936,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
 
     if (!cm->intra_only && pbi->need_resync != 1) {
-      if (frame_might_use_prev_frame_mvs(cm) &&
-          cm->seq_params.enable_ref_frame_mvs &&
-          cm->seq_params.enable_order_hint)
+      if (frame_might_use_prev_frame_mvs(cm))
         cm->use_ref_frame_mvs = aom_rb_read_bit(rb);
       else
         cm->use_ref_frame_mvs = 0;
@@ -3141,7 +3139,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   av1_setup_skip_mode_allowed(cm);
   cm->skip_mode_flag = cm->is_skip_mode_allowed ? aom_rb_read_bit(rb) : 0;
 
-  if (frame_might_use_warped_motion(cm) && cm->seq_params.enable_warped_motion)
+  if (frame_might_use_warped_motion(cm))
     cm->allow_warped_motion = aom_rb_read_bit(rb);
   else
     cm->allow_warped_motion = 0;
