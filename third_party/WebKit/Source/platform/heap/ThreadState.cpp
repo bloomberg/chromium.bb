@@ -156,6 +156,7 @@ ThreadState::ThreadState()
       object_resurrection_forbidden_(false),
       gc_mixin_marker_(nullptr),
       gc_state_(kNoGCScheduled),
+      gc_phase_(GCPhase::kNone),
       isolate_(nullptr),
       trace_dom_wrappers_(nullptr),
       invalidate_dead_objects_in_wrappers_marking_deque_(nullptr),
@@ -810,6 +811,21 @@ void ThreadState::SetGCState(GCState gc_state) {
 
 #undef VERIFY_STATE_TRANSITION
 
+void ThreadState::SetGCPhase(GCPhase gc_phase) {
+  switch (gc_phase) {
+    case GCPhase::kNone:
+      DCHECK_EQ(gc_phase_, GCPhase::kSweeping);
+      break;
+    case GCPhase::kMarking:
+      DCHECK_EQ(gc_phase_, GCPhase::kNone);
+      break;
+    case GCPhase::kSweeping:
+      DCHECK_EQ(gc_phase_, GCPhase::kMarking);
+      break;
+  }
+  gc_phase_ = gc_phase;
+}
+
 void ThreadState::RunScheduledGC(BlinkGC::StackState stack_state) {
   DCHECK(CheckThread());
   if (stack_state != BlinkGC::kNoHeapPointersOnStack)
@@ -872,12 +888,15 @@ void ThreadState::PreSweep(BlinkGC::MarkingType marking_type,
     // Force setting NoGCScheduled to circumvent checkThread()
     // in setGCState().
     gc_state_ = kNoGCScheduled;
+    SetGCPhase(GCPhase::kSweeping);
+    SetGCPhase(GCPhase::kNone);
     return;
   }
 
   // We have to set the GCState to Sweeping before calling pre-finalizers
   // to disallow a GC during the pre-finalizers.
   SetGCState(kSweeping);
+  SetGCPhase(GCPhase::kSweeping);
 
   // Allocation is allowed during the pre-finalizers and destructors.
   // However, they must not mutate an object graph in a way in which
@@ -1032,6 +1051,7 @@ void ThreadState::PostSweep() {
     }
   }
 
+  SetGCPhase(GCPhase::kNone);
   switch (GcState()) {
     case kSweeping:
       SetGCState(kNoGCScheduled);
@@ -1333,6 +1353,7 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
 void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
                                     BlinkGC::MarkingType marking_type,
                                     BlinkGC::GCReason reason) {
+  SetGCPhase(GCPhase::kMarking);
   Heap().CommitCallbackStacks();
 
   current_gc_data_.stack_state = stack_state;
