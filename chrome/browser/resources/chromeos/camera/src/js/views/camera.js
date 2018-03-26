@@ -249,13 +249,6 @@ camera.views.Camera = function(context, router) {
   this.expanded_ = false;
 
   /**
-   * If the window controls are visible.
-   * @type {boolean}
-   * @private
-   */
-  this.controlsVisible_ = true;
-
-  /**
    * Toolbar animation effect wrapper.
    * @type {camera.util.StyleEffect}
    * @private
@@ -337,21 +330,6 @@ camera.views.Camera = function(context, router) {
    * @private
    */
   this.recordingTimer_ = null;
-
-  /**
-   * Window controls animation effect wrapper.
-   * @type {camera.util.StyleEffect}
-   * @private
-   */
-  this.controlsEffect_ = new camera.util.StyleEffect(
-      function(args, callback) {
-        if (args)
-          document.body.classList.add('controls-visible');
-        else
-          document.body.classList.remove('controls-visible');
-        camera.util.waitForTransitionCompletion(
-            document.body, 500, callback);
-      });
 
   /**
    * Whether a picture is being taken. Used for smoother effect previews and
@@ -550,11 +528,6 @@ camera.views.Camera = function(context, router) {
   document.querySelector('#toolbar #filters-toggle').addEventListener('click',
       this.onFiltersToggleClicked_.bind(this));
 
-  // Hide window controls when moving outside of the window.
-  window.addEventListener('mouseout', this.onWindowMouseOut_.bind(this));
-
-  // Hide window controls when any key pressed.
-  // TODO(mtomasz): Move managing window controls to main.js.
   window.addEventListener('keydown', this.onWindowKeyDown_.bind(this));
 
   document.querySelector('#toggle-record').addEventListener(
@@ -865,22 +838,8 @@ camera.views.Camera.prototype.onFiltersToggleClicked_ = function(event) {
 };
 
 /**
- * Handles moving the mouse outside of the window.
- * @param {Event} event Mouse event
- * @private
- */
-camera.views.Camera.prototype.onWindowMouseOut_ = function(event) {
-  if (this.performanceTestTimer_)
-    return;
-  if (event.toElement !== null)
-    return;
-
-  this.setControlsVisible_(false, 1000);
-};
-
-/**
  * Handles pressing a key within a window.
- * TODO(mtomasz): Simplify this logic.
+ * TODO(yuli): Remove this function when removing effects.
  *
  * @param {Event} event Key down event
  * @private
@@ -892,23 +851,6 @@ camera.views.Camera.prototype.onWindowKeyDown_ = function(event) {
   if (this.active &&
       document.activeElement == document.querySelector('#effects-wrapper')) {
     this.setExpanded_(true);
-    this.setControlsVisible_(true);
-    return;
-  }
-
-  // If anything else is focused, then hide controls when navigation keys
-  // are pressed (or space).
-  switch (camera.util.getShortcutIdentifier(event)) {
-    case 'Right':
-    case 'Left':
-    case 'Up':
-    case 'Down':
-    case 'Space':
-    case 'Home':
-    case 'End':
-      this.setControlsVisible_(false);
-    default:
-      this.setControlsVisible_(true);
   }
 };
 
@@ -1064,8 +1006,6 @@ camera.views.Camera.prototype.onToggleMirrorClicked_ = function(event) {
 camera.views.Camera.prototype.onPointerActivity_ = function(event) {
   if (this.performanceTestTimer_)
     return;
-  // Show the window controls.
-  this.setControlsVisible_(true);
 
   // Update the ribbon's visibility only when camera view is active.
   if (this.active) {
@@ -1485,24 +1425,6 @@ camera.views.Camera.prototype.setExpanded_ = function(expanded) {
       this.toolbarEffect_.invoke(false, function() {});
     }
   }
-};
-/**
- * Toggles the window controls visibility.
- *
- * @param {boolean} visible True to show the controls, false to hide.
- * @param {number=} opt_delay Optional delay before toggling.
- * @private
- */
-camera.views.Camera.prototype.setControlsVisible_ = function(
-    visible, opt_delay) {
-  if (this.controlsVisible_ == visible)
-    return;
-
-  this.controlsEffect_.invoke(visible, function() {}, opt_delay);
-
-  // Set the visibility property as soon as possible, to avoid races, when
-  // showing, and hiding one after each other.
-  this.controlsVisible_ = visible;
 };
 
 /**
@@ -2366,10 +2288,6 @@ camera.views.Camera.prototype.start_ = function() {
  * @private
  */
 camera.views.Camera.prototype.drawEffectsRibbon_ = function(mode) {
-  if (document.querySelector('#filters-toggle').disabled) {
-    return;
-  }
-
   var notDrawn = [];
 
   // Draw visible frames only when in DrawMode.NORMAL mode. Otherwise, only one
@@ -2566,7 +2484,7 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
       // Always draw in best quality as taken pictures need multiple frames.
       this.drawCameraFrame_(camera.views.Camera.DrawMode.BEST);
     } else if (this.toolbarEffect_.animating ||
-        this.controlsEffect_.animating || this.mainProcessor_.effect.isSlow() ||
+        this.mainProcessor_.effect.isSlow() ||
         this.context.isUIAnimating() || this.toastEffect_.animating ||
         (this.scrollTracker_.scrolling && this.expanded_)) {
       this.drawCameraFrame_(camera.views.Camera.DrawMode.FAST);
@@ -2576,27 +2494,28 @@ camera.views.Camera.prototype.onAnimationFrame_ = function() {
     finishMeasuring();
   }
 
-  // Draw the effects' ribbon.
-  // Process effect preview canvases. Ribbon initialization is true before the
-  // ribbon is expanded for the first time. This trick is used to fill the
-  // ribbon with images as soon as possible.
-  {
-    var finishMeasuring =
-        this.performanceMonitors_.startMeasuring('draw-ribbon');
-    if (!this.taking_ && !this.controlsEffect_.animating &&
-        !this.context.isUIAnimating() && !this.scrollTracker_.scrolling &&
-        !this.toolbarEffect_.animating && !this.toastEffect_.animating ||
-        this.ribbonInitialization_) {
-      if (this.expanded_ &&
-          this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
-        // Render all visible + one not visible.
-        this.drawEffectsRibbon_(camera.views.Camera.DrawMode.NORMAL);
-      } else {
-        // Render only one effect per frame. This is to avoid stale images.
-        this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FAST);
+  if (!document.querySelector('#filters-toggle').disabled) {
+    // Draw the effects' ribbon.
+    // Process effect preview canvases. Ribbon initialization is true before the
+    // ribbon is expanded for the first time. This trick is used to fill the
+    // ribbon with images as soon as possible.
+    {
+      var finishMeasuring =
+          this.performanceMonitors_.startMeasuring('draw-ribbon');
+      if (!this.taking_ && !this.context.isUIAnimating() &&
+          !this.scrollTracker_.scrolling && !this.toolbarEffect_.animating &&
+          !this.toastEffect_.animating || this.ribbonInitialization_) {
+        if (this.expanded_ &&
+            this.frame_ % camera.views.Camera.PREVIEW_BUFFER_SKIP_FRAMES == 0) {
+          // Render all visible + one not visible.
+          this.drawEffectsRibbon_(camera.views.Camera.DrawMode.NORMAL);
+        } else {
+          // Render only one effect per frame. This is to avoid stale images.
+          this.drawEffectsRibbon_(camera.views.Camera.DrawMode.FAST);
+        }
       }
+      finishMeasuring();
     }
-    finishMeasuring();
   }
 
   this.frame_++;
