@@ -103,14 +103,13 @@ class CONTENT_EXPORT ServiceWorkerNetworkProvider {
   bool IsControlledByServiceWorker() const;
 
  private:
+  // Creates an invalid instance (provider_id() returns
+  // kInvalidServiceWorkerProviderId).
   ServiceWorkerNetworkProvider();
 
-  // This is for service worker clients (used in CreateForNavigation and
-  // CreateForSharedWorker). |provider_id| is provided by the browser process
-  // for navigations (with PlzNavigate, which is default).
-  // |type| must be either one of SERVICE_WORKER_PROVIDER_FOR_{WINDOW,
-  // SHARED_WORKER,WORKER} (while currently we don't have code for WORKER).
-  // |is_parent_frame_secure| is only relevant when the |type| is WINDOW.
+  // This is for service worker clients (i.e., |type| must be kForWindow or
+  // kForSharedWorker). |is_parent_frame_secure| is only relevant when the
+  // |type| is kForWindow.
   //
   // For S13nServiceWorker:
   // See the comment at CreateForNavigation() for |controller_info| and

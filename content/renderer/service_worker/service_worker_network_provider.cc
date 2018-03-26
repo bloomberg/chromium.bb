@@ -149,8 +149,6 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     bool content_initiated,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory) {
-  std::unique_ptr<ServiceWorkerNetworkProvider> provider;
-
   // Determine if a ServiceWorkerNetworkProvider should be created and properly
   // initialized for the navigation. A default ServiceWorkerNetworkProvider
   // will always be created since it is expected in a certain number of places,
@@ -166,27 +164,33 @@ ServiceWorkerNetworkProvider::CreateForNavigation(
     provider_id = request_params.service_worker_provider_id;
   }
 
-  // Now create the ServiceWorkerNetworkProvider (with invalid id if needed).
-  if (should_create_provider) {
-    // Ideally Document::IsSecureContext would be called here, but the document
-    // is not created yet, and due to redirects the URL may change. So pass
-    // is_parent_frame_secure to the browser process, so it can determine the
-    // context security when deciding whether to allow a service worker to
-    // control the document.
-    const bool is_parent_frame_secure = IsFrameSecure(frame->Parent());
-
-    DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id) ||
-           provider_id == kInvalidServiceWorkerProviderId);
-    if (provider_id == kInvalidServiceWorkerProviderId)
-      provider_id = GetNextProviderId();
-
-    provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
-        route_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
-        provider_id, is_parent_frame_secure, std::move(controller_info),
-        std::move(default_loader_factory)));
-  } else {
-    provider = base::WrapUnique(new ServiceWorkerNetworkProvider());
+  // If we shouldn't create a real ServiceWorkerNetworkProvider, return one with
+  // an invalid id.
+  if (!should_create_provider) {
+    return std::make_unique<WebServiceWorkerNetworkProviderForFrame>(
+        base::WrapUnique(new ServiceWorkerNetworkProvider()));
   }
+
+  // Otherwise, create the ServiceWorkerNetworkProvider.
+
+  // Ideally Document::IsSecureContext would be called here, but the document is
+  // not created yet, and due to redirects the URL may change. So pass
+  // is_parent_frame_secure to the browser process, so it can determine the
+  // context security when deciding whether to allow a service worker to control
+  // the document.
+  const bool is_parent_frame_secure = IsFrameSecure(frame->Parent());
+
+  // If the browser process did not assign a provider id already, assign one
+  // now (see class comments for content::ServiceWorkerProviderHost).
+  DCHECK(ServiceWorkerUtils::IsBrowserAssignedProviderId(provider_id) ||
+         provider_id == kInvalidServiceWorkerProviderId);
+  if (provider_id == kInvalidServiceWorkerProviderId)
+    provider_id = GetNextProviderId();
+
+  auto provider = base::WrapUnique(new ServiceWorkerNetworkProvider(
+      route_id, blink::mojom::ServiceWorkerProviderType::kForWindow,
+      provider_id, is_parent_frame_secure, std::move(controller_info),
+      std::move(default_loader_factory)));
   return std::make_unique<WebServiceWorkerNetworkProviderForFrame>(
       std::move(provider));
 }
@@ -248,21 +252,17 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider() {}
 ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     int route_id,
     blink::mojom::ServiceWorkerProviderType provider_type,
-    int browser_provider_id,
+    int provider_id,
     bool is_parent_frame_secure,
     mojom::ControllerServiceWorkerInfoPtr controller_info,
     scoped_refptr<network::SharedURLLoaderFactory> default_loader_factory) {
-  if (browser_provider_id == kInvalidServiceWorkerProviderId)
-    return;
-
-  // We don't support dedicated worker (WORKER) as an independent service
-  // worker client yet.
+  DCHECK_NE(provider_id, kInvalidServiceWorkerProviderId);
   DCHECK(provider_type == blink::mojom::ServiceWorkerProviderType::kForWindow ||
          provider_type ==
              blink::mojom::ServiceWorkerProviderType::kForSharedWorker);
 
-  ServiceWorkerProviderHostInfo host_info(
-      browser_provider_id, route_id, provider_type, is_parent_frame_secure);
+  ServiceWorkerProviderHostInfo host_info(provider_id, route_id, provider_type,
+                                          is_parent_frame_secure);
   mojom::ServiceWorkerContainerAssociatedRequest client_request =
       mojo::MakeRequest(&host_info.client_ptr_info);
   mojom::ServiceWorkerContainerHostAssociatedPtrInfo host_ptr_info;
@@ -274,7 +274,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
   if (ChildThreadImpl::current()) {
     ServiceWorkerDispatcher::GetOrCreateThreadSpecificInstance();
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-        browser_provider_id, provider_type, std::move(client_request),
+        provider_id, provider_type, std::move(client_request),
         std::move(host_ptr_info), std::move(controller_info),
         std::move(default_loader_factory));
     ChildThreadImpl::current()->channel()->GetRemoteAssociatedInterface(
@@ -282,7 +282,7 @@ ServiceWorkerNetworkProvider::ServiceWorkerNetworkProvider(
     dispatcher_host_->OnProviderCreated(std::move(host_info));
   } else {
     context_ = base::MakeRefCounted<ServiceWorkerProviderContext>(
-        browser_provider_id, provider_type, std::move(client_request),
+        provider_id, provider_type, std::move(client_request),
         std::move(host_ptr_info), std::move(controller_info),
         std::move(default_loader_factory));
   }
