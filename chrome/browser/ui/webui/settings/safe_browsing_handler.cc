@@ -13,6 +13,21 @@
 
 namespace settings {
 
+namespace {
+
+base::DictionaryValue GetSberStateDictionaryValue(const PrefService& prefs) {
+  base::DictionaryValue dict;
+  dict.SetBoolean("enabled", safe_browsing::IsExtendedReportingEnabled(prefs));
+  // TODO(crbug.com/813107): SBEROIA policy is being deprecated, revisit this
+  // after it is removed.
+  dict.SetBoolean("managed",
+                  !safe_browsing::IsExtendedReportingOptInAllowed(prefs) ||
+                      safe_browsing::IsExtendedReportingPolicyManaged(prefs));
+  return dict;
+}
+
+}  // namespace
+
 SafeBrowsingHandler::SafeBrowsingHandler(PrefService* prefs) : prefs_(prefs) {}
 SafeBrowsingHandler::~SafeBrowsingHandler() {}
 
@@ -49,16 +64,7 @@ void SafeBrowsingHandler::HandleGetSafeBrowsingExtendedReporting(
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
-  base::DictionaryValue dict;
-  dict.SetBoolean("enabled",
-                  safe_browsing::IsExtendedReportingEnabled(*prefs_));
-  // TODO(crbug.com/813107): SBEROIA policy is being deprecated, revisit this
-  // after it is removed.
-  dict.SetBoolean("managed",
-                  !safe_browsing::IsExtendedReportingOptInAllowed(*prefs_) ||
-                      safe_browsing::IsExtendedReportingPolicyManaged(*prefs_));
-
-  ResolveJavascriptCallback(*callback_id, dict);
+  ResolveJavascriptCallback(*callback_id, GetSberStateDictionaryValue(*prefs_));
 }
 
 void SafeBrowsingHandler::HandleSetSafeBrowsingExtendedReportingEnabled(
@@ -73,8 +79,8 @@ void SafeBrowsingHandler::OnPrefChanged(const std::string& pref_name) {
   DCHECK(pref_name == prefs::kSafeBrowsingExtendedReportingEnabled ||
          pref_name == prefs::kSafeBrowsingScoutReportingEnabled);
 
-  base::Value is_enabled(safe_browsing::IsExtendedReportingEnabled(*prefs_));
-  FireWebUIListener("safe-browsing-extended-reporting-change", is_enabled);
+  FireWebUIListener("safe-browsing-extended-reporting-change",
+                    GetSberStateDictionaryValue(*prefs_));
 }
 
 }  // namespace settings
