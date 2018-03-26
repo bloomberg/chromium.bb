@@ -9,7 +9,6 @@ import android.support.annotation.StringRes;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.widget.Button;
 import android.widget.TextView;
 
@@ -100,21 +99,15 @@ public class LightweightFirstRunActivity extends FirstRunActivityBase {
         tosAndPrivacyTextView.setText(tosAndPrivacyText);
         tosAndPrivacyTextView.setMovementMethod(LinkMovementMethod.getInstance());
 
-        mOkButton = (Button) findViewById(R.id.lightweight_fre_terms_accept);
-        mOkButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                acceptTermsOfService();
-            }
-        });
+        mOkButton = (Button) findViewById(R.id.button_primary);
+        int okButtonHorizontalPadding =
+                getResources().getDimensionPixelSize(R.dimen.fre_button_padding);
+        mOkButton.setPaddingRelative(okButtonHorizontalPadding, mOkButton.getPaddingTop(),
+                okButtonHorizontalPadding, mOkButton.getPaddingBottom());
+        mOkButton.setOnClickListener(view -> acceptTermsOfService());
 
-        ((Button) findViewById(R.id.lightweight_fre_cancel))
-                .setOnClickListener(new OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        abortFirstRunExperience();
-                    }
-                });
+        ((Button) findViewById(R.id.button_secondary))
+                .setOnClickListener(view -> abortFirstRunExperience());
     }
 
     @Override
