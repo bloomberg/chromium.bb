@@ -105,24 +105,25 @@ class WebRtcAudioRendererTest : public testing::Test,
       int session_id,
       const std::string& device_id,
       const url::Origin& security_origin) {
-    scoped_refptr<media::MockAudioRendererSink> fake_sink(
-        new media::MockAudioRendererSink(
-            device_id, device_id == kInvalidOutputDeviceId
-                           ? media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL
-                           : media::OUTPUT_DEVICE_STATUS_OK,
-            media::AudioParameters(
-                media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
-                media::CHANNEL_LAYOUT_STEREO, kHardwareSampleRate, 16,
-                kHardwareBufferSize)));
+    mock_sink_ = new media::MockAudioRendererSink(
+        device_id,
+        device_id == kInvalidOutputDeviceId
+            ? media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL
+            : media::OUTPUT_DEVICE_STATUS_OK,
+        media::AudioParameters(media::AudioParameters::AUDIO_PCM_LOW_LATENCY,
+                               media::CHANNEL_LAYOUT_STEREO,
+                               kHardwareSampleRate, 16, kHardwareBufferSize));
+
     if (device_id != kInvalidOutputDeviceId) {
-      mock_sink_ = fake_sink;
       EXPECT_CALL(*mock_sink_.get(), Start());
       EXPECT_CALL(*mock_sink_.get(), Play());
+    } else {
+      EXPECT_CALL(*mock_sink_.get(), Stop());
     }
 
     MockCreateAudioRendererSink(source_type, render_frame_id, session_id,
                                 device_id, security_origin);
-    return fake_sink;
+    return mock_sink_;
   }
 
   void TearDown() override {
@@ -260,6 +261,7 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceInvalidDevice) {
   SetupRenderer(kDefaultOutputDeviceId);
   EXPECT_EQ(kDefaultOutputDeviceId,
             mock_sink_->GetOutputDeviceInfo().device_id());
+  auto original_sink = mock_sink_;
   renderer_proxy_->Start();
 
   EXPECT_CALL(*this,
@@ -274,11 +276,27 @@ TEST_F(WebRtcAudioRendererTest, SwitchOutputDeviceInvalidDevice) {
                  base::Unretained(this), &loop));
   loop.Run();
   EXPECT_EQ(kDefaultOutputDeviceId,
-            mock_sink_->GetOutputDeviceInfo().device_id());
+            original_sink->GetOutputDeviceInfo().device_id());
 
-  EXPECT_CALL(*mock_sink_.get(), Stop());
+  EXPECT_CALL(*original_sink.get(), Stop());
   EXPECT_CALL(*source_.get(), RemoveAudioRenderer(renderer_.get()));
   renderer_proxy_->Stop();
+}
+
+TEST_F(WebRtcAudioRendererTest, InitializeWithInvalidDevice) {
+  renderer_ = new WebRtcAudioRenderer(message_loop_->task_runner(), stream_, 1,
+                                      1, kInvalidOutputDeviceId, url::Origin());
+
+  EXPECT_CALL(*this,
+              MockCreateAudioRendererSink(AudioDeviceFactory::kSourceWebRtc, _,
+                                          _, kInvalidOutputDeviceId, _));
+
+  EXPECT_FALSE(renderer_->Initialize(source_.get()));
+
+  renderer_proxy_ = renderer_->CreateSharedAudioRendererProxy(stream_);
+
+  EXPECT_EQ(kInvalidOutputDeviceId,
+            mock_sink_->GetOutputDeviceInfo().device_id());
 }
 
 }  // namespace content

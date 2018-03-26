@@ -207,6 +207,7 @@ bool WebRtcAudioRenderer::Initialize(WebRtcAudioRendererSource* source) {
 
   if (sink_->GetOutputDeviceInfo().device_status() !=
       media::OUTPUT_DEVICE_STATUS_OK) {
+    sink_->Stop();
     return false;
   }
 
@@ -391,6 +392,7 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   media::OutputDeviceStatus status =
       new_sink->GetOutputDeviceInfo().device_status();
   if (status != media::OUTPUT_DEVICE_STATUS_OK) {
+    new_sink->Stop();
     callback.Run(status);
     return;
   }

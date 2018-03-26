@@ -4,6 +4,8 @@
 
 #include "content/renderer/media/stream/track_audio_renderer.h"
 
+#include <utility>
+
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
@@ -264,6 +266,7 @@ void TrackAudioRenderer::SwitchOutputDevice(
   media::OutputDeviceStatus new_sink_status =
       new_sink->GetOutputDeviceInfo().device_status();
   if (new_sink_status != media::OUTPUT_DEVICE_STATUS_OK) {
+    new_sink->Stop();
     callback.Run(new_sink_status);
     return;
   }
