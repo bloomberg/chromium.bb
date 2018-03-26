@@ -6,6 +6,7 @@
 #include <memory>
 #include <vector>
 
+#include "base/memory/ptr_util.h"
 #include "content/browser/websockets/websocket_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "ipc/ipc_message.h"
@@ -67,18 +68,18 @@ class TestWebSocketManager : public WebSocketManager {
   }
 
  private:
-  network::WebSocket* CreateWebSocket(
+  std::unique_ptr<network::WebSocket> CreateWebSocket(
       std::unique_ptr<network::WebSocket::Delegate> delegate,
       network::mojom::WebSocketRequest request,
       int process_id,
       int frame_id,
       url::Origin origin,
       base::TimeDelta delay) override {
-    TestWebSocketImpl* impl =
-        new TestWebSocketImpl(std::move(delegate), std::move(request),
-                              process_id, frame_id, std::move(origin), delay);
+    auto impl = std::make_unique<TestWebSocketImpl>(
+        std::move(delegate), std::move(request), process_id, frame_id,
+        std::move(origin), delay);
     // We keep a vector of sockets here to track their creation order.
-    sockets_.push_back(impl);
+    sockets_.push_back(impl.get());
     return impl;
   }
 

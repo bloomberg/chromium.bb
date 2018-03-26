@@ -240,9 +240,8 @@ WebSocketManager::~WebSocketManager() {
   if (!context_destroyed_ && url_request_context_getter_)
     url_request_context_getter_->RemoveObserver(this);
 
-  for (auto* impl : impls_) {
+  for (const auto& impl : impls_) {
     impl->GoAway();
-    delete impl;
   }
 }
 
@@ -311,15 +310,16 @@ void WebSocketManager::ThrottlingPeriodTimerCallback() {
   }
 }
 
-network::WebSocket* WebSocketManager::CreateWebSocket(
+std::unique_ptr<network::WebSocket> WebSocketManager::CreateWebSocket(
     std::unique_ptr<network::WebSocket::Delegate> delegate,
     network::mojom::WebSocketRequest request,
     int child_id,
     int frame_id,
     url::Origin origin,
     base::TimeDelta delay) {
-  return new network::WebSocket(std::move(delegate), std::move(request),
-                                child_id, frame_id, std::move(origin), delay);
+  return std::make_unique<network::WebSocket>(
+      std::move(delegate), std::move(request), child_id, frame_id,
+      std::move(origin), delay);
 }
 
 net::URLRequestContext* WebSocketManager::GetURLRequestContext() {
@@ -343,16 +343,16 @@ void WebSocketManager::OnLostConnectionToClient(network::WebSocket* impl) {
     ++num_current_failed_connections_;
   }
   impl->GoAway();
-  impls_.erase(impl);
-  delete impl;
+  const auto it = impls_.find(impl);
+  DCHECK(it != impls_.end());
+  impls_.erase(it);
 }
 
 void WebSocketManager::OnContextShuttingDown() {
   context_destroyed_ = true;
   url_request_context_getter_ = nullptr;
-  for (auto* impl : impls_) {
+  for (const auto& impl : impls_) {
     impl->GoAway();
-    delete impl;
   }
   impls_.clear();
 }
