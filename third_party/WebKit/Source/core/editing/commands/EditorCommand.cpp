@@ -54,6 +54,7 @@
 #include "core/editing/commands/EditorCommandNames.h"
 #include "core/editing/commands/FormatBlockCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
+#include "core/editing/commands/InsertCommands.h"
 #include "core/editing/commands/InsertListCommand.h"
 #include "core/editing/commands/RemoveFormatCommand.h"
 #include "core/editing/commands/ReplaceSelectionCommand.h"
@@ -261,7 +262,7 @@ static const bool kIsTextInsertion = true;
 // Related to Editor::selectionForCommand.
 // Certain operations continue to use the target control's selection even if the
 // event handler already moved the selection outside of the text control.
-static LocalFrame* TargetFrame(LocalFrame& frame, Event* event) {
+LocalFrame* InsertCommands::TargetFrame(LocalFrame& frame, Event* event) {
   if (!event)
     return &frame;
   Node* node = event->target()->ToNode();
@@ -444,8 +445,8 @@ static bool ExecuteApplyParagraphStyle(LocalFrame& frame,
   return false;
 }
 
-static bool ExecuteInsertFragment(LocalFrame& frame,
-                                  DocumentFragment* fragment) {
+bool InsertCommands::ExecuteInsertFragment(LocalFrame& frame,
+                                           DocumentFragment* fragment) {
   DCHECK(frame.GetDocument());
   return ReplaceSelectionCommand::Create(
              *frame.GetDocument(), fragment,
@@ -454,7 +455,8 @@ static bool ExecuteInsertFragment(LocalFrame& frame,
       ->Apply();
 }
 
-static bool ExecuteInsertElement(LocalFrame& frame, HTMLElement* content) {
+bool InsertCommands::ExecuteInsertElement(LocalFrame& frame,
+                                          HTMLElement* content) {
   DCHECK(frame.GetDocument());
   DocumentFragment* fragment = DocumentFragment::Create(*frame.GetDocument());
   DummyExceptionStateForTesting exception_state;
@@ -464,8 +466,8 @@ static bool ExecuteInsertElement(LocalFrame& frame, HTMLElement* content) {
   return ExecuteInsertFragment(frame, fragment);
 }
 
-static bool ExpandSelectionToGranularity(LocalFrame& frame,
-                                         TextGranularity granularity) {
+bool ExpandSelectionToGranularity(LocalFrame& frame,
+                                  TextGranularity granularity) {
   const VisibleSelection& selection = CreateVisibleSelectionWithGranularity(
       SelectionInDOMTree::Builder()
           .SetBaseAndExtent(
@@ -1087,19 +1089,19 @@ static bool ExecuteIndent(LocalFrame& frame,
       ->Apply();
 }
 
-static bool ExecuteInsertBacktab(LocalFrame& frame,
-                                 Event* event,
-                                 EditorCommandSource,
-                                 const String&) {
+bool InsertCommands::ExecuteInsertBacktab(LocalFrame& frame,
+                                          Event* event,
+                                          EditorCommandSource,
+                                          const String&) {
   return TargetFrame(frame, event)
       ->GetEventHandler()
       .HandleTextInputEvent("\t", event);
 }
 
-static bool ExecuteInsertHorizontalRule(LocalFrame& frame,
-                                        Event*,
-                                        EditorCommandSource,
-                                        const String& value) {
+bool InsertCommands::ExecuteInsertHorizontalRule(LocalFrame& frame,
+                                                 Event*,
+                                                 EditorCommandSource,
+                                                 const String& value) {
   DCHECK(frame.GetDocument());
   HTMLHRElement* rule = HTMLHRElement::Create(*frame.GetDocument());
   if (!value.IsEmpty())
@@ -1107,19 +1109,19 @@ static bool ExecuteInsertHorizontalRule(LocalFrame& frame,
   return ExecuteInsertElement(frame, rule);
 }
 
-static bool ExecuteInsertHTML(LocalFrame& frame,
-                              Event*,
-                              EditorCommandSource,
-                              const String& value) {
+bool InsertCommands::ExecuteInsertHTML(LocalFrame& frame,
+                                       Event*,
+                                       EditorCommandSource,
+                                       const String& value) {
   DCHECK(frame.GetDocument());
   return ExecuteInsertFragment(
       frame, CreateFragmentFromMarkup(*frame.GetDocument(), value, ""));
 }
 
-static bool ExecuteInsertImage(LocalFrame& frame,
-                               Event*,
-                               EditorCommandSource,
-                               const String& value) {
+bool InsertCommands::ExecuteInsertImage(LocalFrame& frame,
+                                        Event*,
+                                        EditorCommandSource,
+                                        const String& value) {
   DCHECK(frame.GetDocument());
   HTMLImageElement* image = HTMLImageElement::Create(*frame.GetDocument());
   if (!value.IsEmpty())
@@ -1127,10 +1129,10 @@ static bool ExecuteInsertImage(LocalFrame& frame,
   return ExecuteInsertElement(frame, image);
 }
 
-static bool ExecuteInsertLineBreak(LocalFrame& frame,
-                                   Event* event,
-                                   EditorCommandSource source,
-                                   const String&) {
+bool InsertCommands::ExecuteInsertLineBreak(LocalFrame& frame,
+                                            Event* event,
+                                            EditorCommandSource source,
+                                            const String&) {
   switch (source) {
     case EditorCommandSource::kMenuOrKeyBinding:
       return TargetFrame(frame, event)
@@ -1148,66 +1150,66 @@ static bool ExecuteInsertLineBreak(LocalFrame& frame,
   return false;
 }
 
-static bool ExecuteInsertNewline(LocalFrame& frame,
-                                 Event* event,
-                                 EditorCommandSource,
-                                 const String&) {
-  LocalFrame* target_frame = blink::TargetFrame(frame, event);
+bool InsertCommands::ExecuteInsertNewline(LocalFrame& frame,
+                                          Event* event,
+                                          EditorCommandSource,
+                                          const String&) {
+  LocalFrame* target_frame = TargetFrame(frame, event);
   return target_frame->GetEventHandler().HandleTextInputEvent(
       "\n", event,
       target_frame->GetEditor().CanEditRichly() ? kTextEventInputKeyboard
                                                 : kTextEventInputLineBreak);
 }
 
-static bool ExecuteInsertNewlineInQuotedContent(LocalFrame& frame,
-                                                Event*,
-                                                EditorCommandSource,
-                                                const String&) {
+bool InsertCommands::ExecuteInsertNewlineInQuotedContent(LocalFrame& frame,
+                                                         Event*,
+                                                         EditorCommandSource,
+                                                         const String&) {
   DCHECK(frame.GetDocument());
   return TypingCommand::InsertParagraphSeparatorInQuotedContent(
       *frame.GetDocument());
 }
 
-static bool ExecuteInsertOrderedList(LocalFrame& frame,
-                                     Event*,
-                                     EditorCommandSource,
-                                     const String&) {
+bool InsertCommands::ExecuteInsertOrderedList(LocalFrame& frame,
+                                              Event*,
+                                              EditorCommandSource,
+                                              const String&) {
   DCHECK(frame.GetDocument());
   return InsertListCommand::Create(*frame.GetDocument(),
                                    InsertListCommand::kOrderedList)
       ->Apply();
 }
 
-static bool ExecuteInsertParagraph(LocalFrame& frame,
-                                   Event*,
-                                   EditorCommandSource,
-                                   const String&) {
+bool InsertCommands::ExecuteInsertParagraph(LocalFrame& frame,
+                                            Event*,
+                                            EditorCommandSource,
+                                            const String&) {
   DCHECK(frame.GetDocument());
   return TypingCommand::InsertParagraphSeparator(*frame.GetDocument());
 }
 
-static bool ExecuteInsertTab(LocalFrame& frame,
-                             Event* event,
-                             EditorCommandSource,
-                             const String&) {
+bool InsertCommands::ExecuteInsertTab(LocalFrame& frame,
+                                      Event* event,
+                                      EditorCommandSource,
+                                      const String&) {
   return TargetFrame(frame, event)
       ->GetEventHandler()
       .HandleTextInputEvent("\t", event);
 }
 
-static bool ExecuteInsertText(LocalFrame& frame,
-                              Event*,
-                              EditorCommandSource,
-                              const String& value) {
+bool InsertCommands::ExecuteInsertText(LocalFrame& frame,
+                                       Event*,
+                                       EditorCommandSource,
+                                       const String& value) {
   DCHECK(frame.GetDocument());
   TypingCommand::InsertText(*frame.GetDocument(), value, 0);
   return true;
 }
 
-static bool ExecuteInsertUnorderedList(LocalFrame& frame,
-                                       Event*,
-                                       EditorCommandSource,
-                                       const String&) {
+bool InsertCommands::ExecuteInsertUnorderedList(LocalFrame& frame,
+                                                Event*,
+                                                EditorCommandSource,
+                                                const String&) {
   DCHECK(frame.GetDocument());
   return InsertListCommand::Create(*frame.GetDocument(),
                                    InsertListCommand::kUnorderedList)
@@ -2646,44 +2648,50 @@ static const EditorInternalCommand* InternalCommand(
       {WebEditingCommandType::kIndent, ExecuteIndent, Supported,
        EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertBacktab, ExecuteInsertBacktab,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
-       ValueStateOrNull, kIsTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertHTML, ExecuteInsertHTML, Supported,
-       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertHorizontalRule,
-       ExecuteInsertHorizontalRule, Supported, EnabledInRichlyEditableText,
-       StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertImage, ExecuteInsertImage, Supported,
-       EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertLineBreak, ExecuteInsertLineBreak,
-       Supported, EnabledInEditableText, StateNone, ValueStateOrNull,
-       kIsTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertNewline, ExecuteInsertNewline,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
-       ValueStateOrNull, kIsTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertNewlineInQuotedContent,
-       ExecuteInsertNewlineInQuotedContent, Supported,
-       EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertOrderedList, ExecuteInsertOrderedList,
-       Supported, EnabledInRichlyEditableText, StateOrderedList,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertParagraph, ExecuteInsertParagraph,
-       Supported, EnabledInEditableText, StateNone, ValueStateOrNull,
-       kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertTab, ExecuteInsertTab,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
-       ValueStateOrNull, kIsTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertText, ExecuteInsertText, Supported,
+      {WebEditingCommandType::kInsertBacktab,
+       InsertCommands::ExecuteInsertBacktab, SupportedFromMenuOrKeyBinding,
        EnabledInEditableText, StateNone, ValueStateOrNull, kIsTextInsertion,
        CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kInsertUnorderedList, ExecuteInsertUnorderedList,
-       Supported, EnabledInRichlyEditableText, StateUnorderedList,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertHTML, InsertCommands::ExecuteInsertHTML,
+       Supported, EnabledInEditableText, StateNone, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertHorizontalRule,
+       InsertCommands::ExecuteInsertHorizontalRule, Supported,
+       EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertImage, InsertCommands::ExecuteInsertImage,
+       Supported, EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertLineBreak,
+       InsertCommands::ExecuteInsertLineBreak, Supported, EnabledInEditableText,
+       StateNone, ValueStateOrNull, kIsTextInsertion,
+       CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertNewline,
+       InsertCommands::ExecuteInsertNewline, SupportedFromMenuOrKeyBinding,
+       EnabledInEditableText, StateNone, ValueStateOrNull, kIsTextInsertion,
+       CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertNewlineInQuotedContent,
+       InsertCommands::ExecuteInsertNewlineInQuotedContent, Supported,
+       EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertOrderedList,
+       InsertCommands::ExecuteInsertOrderedList, Supported,
+       EnabledInRichlyEditableText, StateOrderedList, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertParagraph,
+       InsertCommands::ExecuteInsertParagraph, Supported, EnabledInEditableText,
+       StateNone, ValueStateOrNull, kNotTextInsertion,
+       CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertTab, InsertCommands::ExecuteInsertTab,
+       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
+       ValueStateOrNull, kIsTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertText, InsertCommands::ExecuteInsertText,
+       Supported, EnabledInEditableText, StateNone, ValueStateOrNull,
+       kIsTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kInsertUnorderedList,
+       InsertCommands::ExecuteInsertUnorderedList, Supported,
+       EnabledInRichlyEditableText, StateUnorderedList, ValueStateOrNull,
+       kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kItalic, ExecuteToggleItalic, Supported,
        EnabledInRichlyEditableText, StateItalic, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
