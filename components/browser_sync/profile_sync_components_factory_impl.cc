@@ -16,8 +16,6 @@
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_webdata_service.h"
 #include "components/autofill/core/browser/webdata/web_data_model_type_controller.h"
-#include "components/autofill/core/common/autofill_pref_names.h"
-#include "components/autofill/core/common/autofill_switches.h"
 #include "components/browser_sync/browser_sync_switches.h"
 #include "components/browser_sync/profile_sync_service.h"
 #include "components/dom_distiller/core/dom_distiller_features.h"
@@ -42,9 +40,6 @@
 #include "components/sync_bookmarks/bookmark_model_associator.h"
 #include "components/sync_bookmarks/bookmark_model_type_controller.h"
 #include "components/sync_sessions/session_data_type_controller.h"
-#include "google_apis/gaia/oauth2_token_service.h"
-#include "google_apis/gaia/oauth2_token_service_request.h"
-#include "net/url_request/url_request_context_getter.h"
 
 using base::FeatureList;
 using bookmarks::BookmarkModel;
@@ -74,11 +69,6 @@ syncer::ModelTypeSet GetDisabledTypesFromCommandLine(
   return disabled_types;
 }
 
-syncer::ModelTypeSet GetEnabledTypesFromCommandLine(
-    const base::CommandLine& command_line) {
-  return syncer::ModelTypeSet();
-}
-
 }  // namespace
 
 ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
@@ -88,11 +78,8 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
     bool is_tablet,
     const base::CommandLine& command_line,
     const char* history_disabled_pref,
-    const GURL& sync_service_url,
     const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-    OAuth2TokenService* token_service,
-    net::URLRequestContextGetter* url_request_context_getter,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service,
     const scoped_refptr<password_manager::PasswordStore>& password_store)
     : sync_client_(sync_client),
@@ -101,17 +88,10 @@ ProfileSyncComponentsFactoryImpl::ProfileSyncComponentsFactoryImpl(
       is_tablet_(is_tablet),
       command_line_(command_line),
       history_disabled_pref_(history_disabled_pref),
-      sync_service_url_(sync_service_url),
       ui_thread_(ui_thread),
       db_thread_(db_thread),
-      token_service_(token_service),
-      url_request_context_getter_(url_request_context_getter),
       web_data_service_(web_data_service),
-      password_store_(password_store),
-      weak_factory_(this) {
-  DCHECK(token_service_);
-  DCHECK(url_request_context_getter_);
-}
+      password_store_(password_store) {}
 
 ProfileSyncComponentsFactoryImpl::~ProfileSyncComponentsFactoryImpl() {}
 
@@ -120,18 +100,17 @@ void ProfileSyncComponentsFactoryImpl::RegisterDataTypes(
     const RegisterDataTypesMethod& register_platform_types_method) {
   syncer::ModelTypeSet disabled_types =
       GetDisabledTypesFromCommandLine(command_line_);
-  syncer::ModelTypeSet enabled_types =
-      GetEnabledTypesFromCommandLine(command_line_);
-  RegisterCommonDataTypes(sync_service, disabled_types, enabled_types);
-  if (!register_platform_types_method.is_null())
+  RegisterCommonDataTypes(sync_service, disabled_types);
+  if (!register_platform_types_method.is_null()) {
+    syncer::ModelTypeSet enabled_types;
     register_platform_types_method.Run(sync_service, disabled_types,
                                        enabled_types);
+  }
 }
 
 void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     syncer::SyncService* sync_service,
-    syncer::ModelTypeSet disabled_types,
-    syncer::ModelTypeSet enabled_types) {
+    syncer::ModelTypeSet disabled_types) {
   base::Closure error_callback =
       base::Bind(&syncer::ReportUnrecoverableError, channel_);
 
@@ -329,41 +308,6 @@ std::unique_ptr<syncer::LocalDeviceInfoProvider>
 ProfileSyncComponentsFactoryImpl::CreateLocalDeviceInfoProvider() {
   return std::make_unique<syncer::LocalDeviceInfoProviderImpl>(
       channel_, version_, is_tablet_);
-}
-
-class TokenServiceProvider
-    : public OAuth2TokenServiceRequest::TokenServiceProvider {
- public:
-  TokenServiceProvider(
-      const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-      OAuth2TokenService* token_service);
-
-  // OAuth2TokenServiceRequest::TokenServiceProvider implementation.
-  scoped_refptr<base::SingleThreadTaskRunner> GetTokenServiceTaskRunner()
-      override;
-  OAuth2TokenService* GetTokenService() override;
-
- private:
-  ~TokenServiceProvider() override;
-
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
-  OAuth2TokenService* token_service_;
-};
-
-TokenServiceProvider::TokenServiceProvider(
-    const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
-    OAuth2TokenService* token_service)
-    : task_runner_(task_runner), token_service_(token_service) {}
-
-TokenServiceProvider::~TokenServiceProvider() {}
-
-scoped_refptr<base::SingleThreadTaskRunner>
-TokenServiceProvider::GetTokenServiceTaskRunner() {
-  return task_runner_;
-}
-
-OAuth2TokenService* TokenServiceProvider::GetTokenService() {
-  return token_service_;
 }
 
 syncer::SyncApiComponentFactory::SyncComponents
