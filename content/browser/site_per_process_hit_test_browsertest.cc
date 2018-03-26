@@ -117,29 +117,51 @@ class TestInputEventObserver : public RenderWidgetHost::InputEventObserver {
 };
 
 // |position_in_widget| is in the coord space of |rwhv|.
+template <typename PointType>
 void SetWebEventPositions(blink::WebPointerProperties* event,
-                          const gfx::PointF& position_in_widget,
-                          RenderWidgetHostViewBase* rwhv) {
-  event->SetPositionInWidget(position_in_widget.x(), position_in_widget.y());
+                          const PointType& position_in_widget,
+                          RenderWidgetHostViewBase* rwhv,
+                          RenderWidgetHostViewBase* rwhv_root) {
+  event->SetPositionInWidget(gfx::PointF(position_in_widget));
+  const gfx::PointF position_in_root =
+      rwhv->TransformPointToRootCoordSpaceF(event->PositionInWidget());
   const gfx::PointF point_in_screen =
-      event->PositionInWidget() + rwhv->GetViewBounds().OffsetFromOrigin();
+      position_in_root + rwhv_root->GetViewBounds().OffsetFromOrigin();
   event->SetPositionInScreen(point_in_screen.x(), point_in_screen.y());
 }
 
+// For convenience when setting the position in the space of the root RWHV.
+template <typename PointType>
 void SetWebEventPositions(blink::WebPointerProperties* event,
-                          const gfx::Point& position_in_widget,
-                          RenderWidgetHostViewBase* rwhv) {
-  SetWebEventPositions(event, gfx::PointF(position_in_widget), rwhv);
+                          const PointType& position_in_widget,
+                          RenderWidgetHostViewBase* rwhv_root) {
+  DCHECK(!rwhv_root->IsRenderWidgetHostViewChildFrame());
+  SetWebEventPositions(event, position_in_widget, rwhv_root, rwhv_root);
 }
 
-#if !defined(OS_MACOSX) && !defined(OS_ANDROID)
+#if defined(USE_AURA)
 // |event->location()| is in the coord space of |rwhv|.
 void UpdateEventRootLocation(ui::LocatedEvent* event,
-                             RenderWidgetHostViewBase* rwhv) {
-  event->set_root_location(event->location() +
-                           rwhv->GetViewBounds().OffsetFromOrigin());
+                             RenderWidgetHostViewBase* rwhv,
+                             RenderWidgetHostViewBase* rwhv_root) {
+  const gfx::Point position_in_root =
+      rwhv->TransformPointToRootCoordSpace(event->location());
+
+  gfx::Point root_location = position_in_root;
+  aura::Window::ConvertPointToTarget(
+      rwhv_root->GetNativeView(), rwhv_root->GetNativeView()->GetRootWindow(),
+      &root_location);
+
+  event->set_root_location(root_location);
 }
-#endif
+
+// For convenience when setting the position in the space of the root RWHV.
+void UpdateEventRootLocation(ui::LocatedEvent* event,
+                             RenderWidgetHostViewBase* rwhv_root) {
+  DCHECK(!rwhv_root->IsRenderWidgetHostViewChildFrame());
+  UpdateEventRootLocation(event, rwhv_root, rwhv_root);
+}
+#endif  // defined(USE_AURA)
 
 void RouteMouseEventAndWaitUntilDispatch(
     RenderWidgetHostInputEventRouter* router,
