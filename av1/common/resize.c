@@ -482,8 +482,8 @@ static void down2_symodd(const uint8_t *const input, int length,
 }
 
 static int get_down2_length(int length, int steps) {
-  int s;
-  for (s = 0; s < steps; ++s) length = (length + 1) >> 1;
+  assert(length > 1);
+  for (int s = 0; s < steps; ++s) length = (length + 1) >> 1;
   return length;
 }
 
@@ -493,6 +493,12 @@ static int get_down2_steps(int in_length, int out_length) {
   while ((proj_in_length = get_down2_length(in_length, 1)) >= out_length) {
     ++steps;
     in_length = proj_in_length;
+    if (in_length == 1) {
+      // Special case: we break because any further calls to get_down2_length()
+      // with be with length == 1, which return 1, resulting in an infinite
+      // loop.
+      break;
+    }
   }
   return steps;
 }
