@@ -112,6 +112,12 @@ class SkiaGpuTraceMemoryDump : public SkTraceMemoryDump {
     return kObjectsBreakdowns_LevelOfDetail;
   }
 
+  bool shouldDumpWrappedObjects() const override {
+    // Chrome already dumps objects it imports into Skia. Avoid duplicate dumps
+    // by asking Skia not to dump them.
+    return false;
+  }
+
  private:
   // Helper to create allocator dumps.
   base::trace_event::MemoryAllocatorDump* GetOrCreateAllocatorDump(
