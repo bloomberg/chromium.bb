@@ -15,9 +15,6 @@
 #include "components/sync/base/model_type.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/version_info/version_info.h"
-#include "url/gurl.h"
-
-class OAuth2TokenService;
 
 namespace autofill {
 class AutofillWebDataService;
@@ -27,23 +24,11 @@ namespace password_manager {
 class PasswordStore;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace browser_sync {
 
 class ProfileSyncComponentsFactoryImpl
     : public syncer::SyncApiComponentFactory {
  public:
-  // Constructs a ProfileSyncComponentsFactoryImpl.
-  //
-  // |sync_service_url| is the base URL of the sync server.
-  //
-  // |token_service| must outlive the ProfileSyncComponentsFactoryImpl.
-  //
-  // |url_request_context_getter| must outlive the
-  // ProfileSyncComponentsFactoryImpl.
   ProfileSyncComponentsFactoryImpl(
       syncer::SyncClient* sync_client,
       version_info::Channel channel,
@@ -51,11 +36,8 @@ class ProfileSyncComponentsFactoryImpl
       bool is_tablet,
       const base::CommandLine& command_line,
       const char* history_disabled_pref,
-      const GURL& sync_service_url,
       const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
-      OAuth2TokenService* token_service,
-      net::URLRequestContextGetter* url_request_context_getter,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service,
       const scoped_refptr<password_manager::PasswordStore>& password_store);
   ~ProfileSyncComponentsFactoryImpl() override;
@@ -89,15 +71,10 @@ class ProfileSyncComponentsFactoryImpl
 
  private:
   // Register data types which are enabled on both desktop and mobile.
-  // |disabled_types| and |enabled_types| correspond only to those types
-  // being explicitly enabled/disabled by the command line.
+  // |disabled_types| corresponds only to those types being explicitly disabled
+  // by the command line.
   void RegisterCommonDataTypes(syncer::SyncService* sync_service,
-                               syncer::ModelTypeSet disabled_types,
-                               syncer::ModelTypeSet enabled_types);
-
-  void DisableBrokenType(syncer::ModelType type,
-                         const base::Location& from_here,
-                         const std::string& message);
+                               syncer::ModelTypeSet disabled_types);
 
   // Client/platform specific members.
   syncer::SyncClient* const sync_client_;
@@ -106,15 +83,10 @@ class ProfileSyncComponentsFactoryImpl
   const bool is_tablet_;
   const base::CommandLine command_line_;
   const char* history_disabled_pref_;
-  const GURL sync_service_url_;
   const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
-  OAuth2TokenService* const token_service_;
-  net::URLRequestContextGetter* const url_request_context_getter_;
   const scoped_refptr<autofill::AutofillWebDataService> web_data_service_;
   const scoped_refptr<password_manager::PasswordStore> password_store_;
-
-  base::WeakPtrFactory<ProfileSyncComponentsFactoryImpl> weak_factory_;
 
   // Whether to override PREFERENCES to use USS.
   static bool override_prefs_controller_to_uss_for_test_;
