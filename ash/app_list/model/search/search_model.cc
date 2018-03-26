@@ -28,9 +28,12 @@ SearchModel::SearchModel()
 
 SearchModel::~SearchModel() {}
 
-void SearchModel::SetTabletMode(bool started) {
-  is_tablet_mode_ = started;
-  search_box_->SetTabletMode(started);
+void SearchModel::SetTabletMode(bool is_tablet_mode) {
+  search_box_->SetTabletMode(is_tablet_mode);
+}
+
+void SearchModel::SetSearchEngineIsGoogle(bool is_google) {
+  search_box_->SetSearchEngineIsGoogle(is_google);
 }
 
 std::vector<SearchResult*> SearchModel::FilterSearchResultsByDisplayType(

@@ -315,6 +315,10 @@ void SearchBoxView::Update() {
   NotifyQueryChanged();
 }
 
+void SearchBoxView::SearchEngineChanged() {
+  UpdateSearchIcon();
+}
+
 void SearchBoxView::OnWallpaperProminentColorsReceived(
     const std::vector<SkColor>& prominent_colors) {
   if (prominent_colors.empty())
