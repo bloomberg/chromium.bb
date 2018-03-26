@@ -116,19 +116,19 @@ PNGImageReader::~PNGImageReader() {
 // Pre-conditions before using this:
 // - |reader|.size() >= |read_offset| + |length|
 // - |buffer|.size() >= |length|
-// - |length| <= |kBufferSize|
+// - |length| <= |kPngReadBufferSize|
 //
 // The reason for the last two precondition is that currently the png signature
 // plus IHDR chunk (8B + 25B = 33B) is the largest chunk that is read using this
 // method. If the data is not consecutive, it is stored in |buffer|, which must
 // have the size of (at least) |length|, but there's no need for it to be larger
-// than |kBufferSize|.
-static constexpr size_t kBufferSize = 33;
+// than |kPngReadBufferSize|.
+static constexpr size_t kPngReadBufferSize = 33;
 const png_byte* ReadAsConstPngBytep(const FastSharedBufferReader& reader,
                                     size_t read_offset,
                                     size_t length,
                                     char* buffer) {
-  DCHECK(length <= kBufferSize);
+  DCHECK(length <= kPngReadBufferSize);
   return reinterpret_cast<const png_byte*>(
       reader.GetConsecutiveData(read_offset, length, buffer));
 }
@@ -397,7 +397,7 @@ bool PNGImageReader::Parse(SegmentReader& data, ParseQuery query) {
   // libpng for processing. A frame is registered on the next fcTL chunk or
   // when the IEND chunk is found. This ensures that only complete frames are
   // reported, unless there is an error in the stream.
-  char read_buffer[kBufferSize];
+  char read_buffer[kPngReadBufferSize];
   while (reader.size() >= read_offset_ + 8) {
     const png_byte* chunk =
         ReadAsConstPngBytep(reader, read_offset_, 8, read_buffer);
@@ -513,7 +513,7 @@ bool PNGImageReader::ParseSize(const FastSharedBufferReader& reader) {
   if (decoder_->IsDecodedSizeAvailable())
     return true;
 
-  char read_buffer[kBufferSize];
+  char read_buffer[kPngReadBufferSize];
 
   if (setjmp(JMPBUF(png_)))
     return false;
