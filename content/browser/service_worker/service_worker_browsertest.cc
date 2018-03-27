@@ -108,26 +108,25 @@ struct FetchResult {
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle;
 };
 
-void RunAndQuit(const base::Closure& closure,
-                const base::Closure& quit,
+void RunAndQuit(base::OnceClosure closure,
+                base::OnceClosure quit,
                 base::SingleThreadTaskRunner* original_message_loop) {
-  closure.Run();
-  original_message_loop->PostTask(FROM_HERE, quit);
+  std::move(closure).Run();
+  original_message_loop->PostTask(FROM_HERE, std::move(quit));
 }
 
-void RunOnIOThreadWithDelay(const base::Closure& closure,
-                            base::TimeDelta delay) {
+void RunOnIOThreadWithDelay(base::OnceClosure closure, base::TimeDelta delay) {
   base::RunLoop run_loop;
   BrowserThread::PostDelayedTask(
       BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&RunAndQuit, closure, run_loop.QuitClosure(),
+      base::BindOnce(&RunAndQuit, std::move(closure), run_loop.QuitClosure(),
                      base::RetainedRef(base::ThreadTaskRunnerHandle::Get())),
       delay);
   run_loop.Run();
 }
 
-void RunOnIOThread(const base::Closure& closure) {
-  RunOnIOThreadWithDelay(closure, base::TimeDelta());
+void RunOnIOThread(base::OnceClosure closure) {
+  RunOnIOThreadWithDelay(std::move(closure), base::TimeDelta());
 }
 
 void RunOnIOThread(
@@ -182,7 +181,7 @@ void ReadResponseBody(std::string* body,
 }
 
 void ExpectResultAndRun(bool expected,
-                        const base::Closure& continuation,
+                        base::RepeatingClosure continuation,
                         bool actual) {
   EXPECT_EQ(expected, actual);
   continuation.Run();
@@ -359,10 +358,10 @@ void CountScriptResources(
 }
 
 void StoreString(std::string* result,
-                 const base::Closure& callback,
+                 base::OnceClosure callback,
                  const base::Value* value) {
   value->GetAsString(result);
-  callback.Run();
+  std::move(callback).Run();
 }
 
 int GetInt(const base::DictionaryValue& dict, base::StringPiece path) {
