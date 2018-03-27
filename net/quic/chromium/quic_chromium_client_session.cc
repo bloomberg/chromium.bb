@@ -182,6 +182,9 @@ std::string ConnectionMigrationCauseToString(ConnectionMigrationCause cause) {
       return "OnMigrateBackToDefaultNetwork";
     case ON_PATH_DEGRADING:
       return "OnPathDegrading";
+    default:
+      QUIC_NOTREACHED();
+      break;
   }
   return "InvalidCause";
 }
@@ -211,6 +214,19 @@ std::unique_ptr<base::Value> NetLogQuicPushPromiseReceivedCallback(
   dict->SetInteger("id", stream_id);
   dict->SetInteger("promised_stream_id", promised_stream_id);
   return std::move(dict);
+}
+
+// TODO(fayang): Remove this when necessary data is collected.
+void LogProbeResultToHistogram(ConnectionMigrationCause cause, bool success) {
+  UMA_HISTOGRAM_BOOLEAN("Net.QuicSession.ConnectionMigrationProbeSuccess",
+                        success);
+  const std::string histogram_name =
+      "Net.QuicSession.ConnectionMigrationProbeSuccess." +
+      ConnectionMigrationCauseToString(cause);
+  STATIC_HISTOGRAM_POINTER_GROUP(
+      histogram_name, cause, MIGRATION_CAUSE_MAX, AddBoolean(success),
+      base::BooleanHistogram::FactoryGet(
+          histogram_name, base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
 class HpackEncoderDebugVisitor : public QuicHpackDebugVisitor {
@@ -1731,6 +1747,8 @@ void QuicChromiumClientSession::OnProbeNetworkSucceeded(
       NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_SUCCEEDED,
       NetLog::Int64Callback("network", network));
 
+  LogProbeResultToHistogram(current_connection_migration_cause_, true);
+
   // Set |this| to listen on socket write events on the packet writer
   // that was used for probing.
   writer->set_delegate(this);
@@ -1769,6 +1787,8 @@ void QuicChromiumClientSession::OnProbeNetworkFailed(
   net_log_.AddEvent(
       NetLogEventType::QUIC_CONNECTION_CONNECTIVITY_PROBING_FAILED,
       NetLog::Int64Callback("network", network));
+
+  LogProbeResultToHistogram(current_connection_migration_cause_, false);
   // Probing failure for default network can be ignored.
   DVLOG(1) << "Connectivity probing failed on NetworkHandle " << network;
   DVLOG_IF(1, network == default_network_ &&

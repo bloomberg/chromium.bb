@@ -90,6 +90,7 @@ enum ConnectionMigrationCause {
   ON_NETWORK_MADE_DEFAULT,             // With probing.
   ON_MIGRATE_BACK_TO_DEFAULT_NETWORK,  // With probing.
   ON_PATH_DEGRADING,                   // With probing.
+  MIGRATION_CAUSE_MAX
 };
 
 // Result of connection migration.
