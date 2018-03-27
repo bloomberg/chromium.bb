@@ -53,10 +53,10 @@ inline bool IsSupportedHttp2FrameType(Http2FrameType v) {
   return IsSupportedHttp2FrameType(static_cast<uint32_t>(v));
 }
 
-// The return type is 'string' so that they can generate a unique string for
-// each unsupported value. Since these are just used for debugging/error
-// messages, that isn't a cost to we need to worry about.
-// The same applies to the functions later in this file.
+// The return type is 'Http2String' so that they can generate a unique string
+// for each unsupported value. Since these are just used for debugging/error
+// messages, that isn't a cost to we need to worry about. The same applies to
+// the functions later in this file.
 HTTP2_EXPORT_PRIVATE Http2String Http2FrameTypeToString(Http2FrameType v);
 HTTP2_EXPORT_PRIVATE Http2String Http2FrameTypeToString(uint8_t v);
 HTTP2_EXPORT_PRIVATE inline std::ostream& operator<<(std::ostream& out,
