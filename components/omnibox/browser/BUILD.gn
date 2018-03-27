@@ -23,6 +23,7 @@ aggregate_vector_icons("omnibox_vector_icons") {
     "blank.icon",
     "calculator.icon",
     "extension_app.icon",
+    "extension_app_20.icon",
     "http.icon",
     "keyword_search.icon",
     "star.icon",

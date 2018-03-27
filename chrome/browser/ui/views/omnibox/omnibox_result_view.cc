@@ -375,7 +375,7 @@ gfx::Image OmniboxResultView::GetIcon() const {
 
 int OmniboxResultView::GetAnswerHeight() const {
   const int horizontal_padding =
-      GetLayoutConstant(LOCATION_BAR_PADDING) +
+      GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
   const gfx::Image icon = GetIcon();
   int icon_width = icon.Width();
@@ -431,7 +431,7 @@ bool OmniboxResultView::IsSelected() const {
 void OmniboxResultView::Layout() {
   views::View::Layout();
   const int horizontal_padding =
-      GetLayoutConstant(LOCATION_BAR_PADDING) +
+      GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING);
   const int start_x = GetIconAlignmentOffset() + horizontal_padding;
   int end_x = width();

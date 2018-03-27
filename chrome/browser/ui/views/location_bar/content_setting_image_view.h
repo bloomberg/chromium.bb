@@ -75,6 +75,7 @@ class ContentSettingImageView : public IconLabelBubbleView {
   SkColor GetInkDropBaseColor() const override;
   SkColor GetTextColor() const override;
   bool ShouldShowLabel() const override;
+  bool ShouldShowSeparator() const override;
   double WidthMultiplier() const override;
   bool IsShrinking() const override;
   bool ShowBubble(const ui::Event& event) override;

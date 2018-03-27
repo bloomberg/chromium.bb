@@ -38,6 +38,7 @@ aggregate_vector_icons("chrome_vector_icons") {
     "content_paste.icon",
     "cookie.icon",
     "crashed_tab.icon",
+    "credit_card_20.icon",
     "credit_card.icon",
     "default_touch_favicon.icon",
     "default_touch_favicon_mask.icon",

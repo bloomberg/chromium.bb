@@ -25,14 +25,12 @@
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/views/animation/ink_drop.h"
+#include "ui/views/border.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/widget/native_widget_aura.h"
 
 namespace {
-
-// Padding around content setting icons.
-constexpr int kContentSettingIconInteriorPadding = 4;
 
 constexpr int kMenuHighlightFadeDurationMs = 800;
 
@@ -140,8 +138,10 @@ HostedAppButtonContainer::ContentSettingsContainer::ContentSettingsContainer(
         std::move(model), this,
         views::NativeWidgetAura::GetWindowTitleFontList());
     image_view->SetIconColor(icon_color);
-    image_view->set_next_element_interior_padding(
-        kContentSettingIconInteriorPadding);
+    // Padding around content setting icons.
+    constexpr int kContentSettingIconInteriorPadding = 4;
+    image_view->SetBorder(views::CreateEmptyBorder(
+        gfx::Insets(kContentSettingIconInteriorPadding)));
     image_view->disable_animation();
     content_setting_views_.push_back(image_view.get());
     AddChildView(image_view.release());

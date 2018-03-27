@@ -88,11 +88,11 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/image/image.h"
-#include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/scoped_canvas.h"
 #include "ui/gfx/skia_util.h"
 #include "ui/gfx/text_utils.h"
+#include "ui/gfx/vector_icon_types.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/button_drag_utils.h"
@@ -230,8 +230,6 @@ void LocationBarView::Init() {
     ContentSettingImageView* image_view =
         new ContentSettingImageView(std::move(model), this, font_list);
     content_setting_views_.push_back(image_view);
-    image_view->set_next_element_interior_padding(
-        GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING));
     image_view->SetVisible(false);
     AddChildView(image_view);
   }
@@ -422,7 +420,7 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
         location_icon_view_->GetMinimumSizeForLabelText(GetLocationIconText())
             .width();
   } else {
-    leading_width += GetLayoutConstant(LOCATION_BAR_PADDING) +
+    leading_width += GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) +
                      location_icon_view_->GetMinimumSize().width();
   }
 
@@ -445,7 +443,7 @@ gfx::Size LocationBarView::CalculatePreferredSize() const {
   }
 
   min_size.set_width(leading_width + omnibox_view_->GetMinimumSize().width() +
-                     2 * GetLayoutConstant(LOCATION_BAR_PADDING) -
+                     2 * GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING) -
                      omnibox_view_->GetInsets().width() + trailing_width);
   return min_size;
 }
@@ -547,17 +545,8 @@ void LocationBarView::Layout() {
 
   const int edge_thickness = GetHorizontalEdgeThickness();
 
-  // Add some padding to prevent text or Views displayed at the end of
-  // LocationBarView going too close to the ending border. This is also a
-  // compromise to avoid having to clip the corners of |omnibox_view_| when
-  // LocationBarView is a pill-shape.
-  constexpr int kRoundedPaddingHeightFactor = 3;
-  const int end_padding = BackgroundWith1PxBorder::IsRounded()
-                              ? location_height / kRoundedPaddingHeightFactor
-                              : 0;
-
   // Perform layout.
-  int full_width = width() - (2 * edge_thickness) - end_padding;
+  int full_width = width() - (2 * edge_thickness);
 
   int entry_width = full_width;
   leading_decorations.LayoutPass1(&entry_width);
@@ -840,6 +829,8 @@ void LocationBarView::RefreshClearAllButtonIcon() {
       InTouchableMode() ? omnibox::kTouchableClearIcon : kTabCloseNormalIcon;
   SetImageFromVectorIcon(clear_all_button_, icon,
                          GetColor(OmniboxPart::LOCATION_BAR_CLEAR_ALL));
+  clear_all_button_->SetBorder(views::CreateEmptyBorder(
+      gfx::Insets(GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING))));
 }
 
 base::string16 LocationBarView::GetLocationIconText() const {
@@ -1120,5 +1111,5 @@ void LocationBarView::SetFocusAndSelection(bool select_all) {
 // static
 int LocationBarView::GetTotalVerticalPadding() {
   return BackgroundWith1PxBorder::kLocationBarBorderThicknessDip +
-         GetLayoutConstant(LOCATION_BAR_PADDING);
+         GetLayoutConstant(LOCATION_BAR_ELEMENT_PADDING);
 }
