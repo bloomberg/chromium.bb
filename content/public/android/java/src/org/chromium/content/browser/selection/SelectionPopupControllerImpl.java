@@ -711,9 +711,11 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
         setPasteAsPlainTextMenuItemTitle(menu);
 
-        if (mClassificationResult != null && mAdditionalMenuItemProvider != null) {
+        Context windowContext = mWindowAndroid.getContext().get();
+        if (mClassificationResult != null && mAdditionalMenuItemProvider != null
+                && windowContext != null) {
             mAdditionalMenuItemProvider.addMenuItems(
-                    mContext, menu, mClassificationResult.textClassification);
+                    windowContext, menu, mClassificationResult.textClassification);
         }
 
         if (!hasSelection() || isSelectionPassword()) return;
