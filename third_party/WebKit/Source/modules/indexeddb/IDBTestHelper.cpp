@@ -25,7 +25,7 @@ std::unique_ptr<IDBValue> CreateNullIDBValueForTesting(v8::Isolate* isolate) {
 
   scoped_refptr<SharedBuffer> idb_value_buffer = SharedBuffer::Create();
   idb_value_buffer->Append(reinterpret_cast<const char*>(ssv_wire_bytes.data()),
-                           ssv_wire_bytes.length());
+                           ssv_wire_bytes.size());
   std::unique_ptr<IDBValue> idb_value =
       IDBValue::Create(std::move(idb_value_buffer), Vector<WebBlobInfo>());
   idb_value->SetInjectedPrimaryKey(IDBKey::CreateNumber(42.0),

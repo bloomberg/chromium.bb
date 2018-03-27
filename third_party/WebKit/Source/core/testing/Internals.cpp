@@ -2813,9 +2813,9 @@ DOMArrayBuffer* Internals::serializeObject(
     scoped_refptr<SerializedScriptValue> value) const {
   base::span<const uint8_t> span = value->GetWireData();
   DOMArrayBuffer* buffer =
-      DOMArrayBuffer::CreateUninitializedOrNull(span.length(), sizeof(uint8_t));
+      DOMArrayBuffer::CreateUninitializedOrNull(span.size(), sizeof(uint8_t));
   if (buffer)
-    memcpy(buffer->Data(), span.data(), span.length());
+    memcpy(buffer->Data(), span.data(), span.size());
   return buffer;
 }
 

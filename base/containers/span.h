@@ -142,13 +142,17 @@ using EnableIfConstSpanCompatibleContainer =
 // Differences from the working group proposal
 // -------------------------------------------
 //
-// http://www.open-std.org/jtc1/sc22/wg21/docs/papers/2017/p0122r5.pdf is the
-// latest working group proposal. The biggest difference is span does not
-// support a static extent template parameter. Other differences are documented
-// in subsections below.
+// https://wg21.link/P0122 is the latest working group proposal, Chromium
+// currently implements R6. The biggest difference is span does not support a
+// static extent template parameter. Other differences are documented in
+// subsections below.
 //
 // Differences from [views.constants]:
 // - no dynamic_extent constant
+//
+// Differences from [span.objectrep]:
+// - no as_bytes()
+// - no as_writeable_bytes()
 //
 // Differences in constants and types:
 // - no element_type type alias
@@ -159,26 +163,22 @@ using EnableIfConstSpanCompatibleContainer =
 // Differences from [span.cons]:
 // - no constructor from a pointer range
 // - no constructor from std::array
-// - no constructor from std::unique_ptr
-// - no constructor from std::shared_ptr
-// - no explicitly defaulted the copy/move constructor/assignment operators,
-//   since MSVC complains about constexpr functions that aren't marked const.
 //
 // Differences from [span.sub]:
 // - no templated first()
 // - no templated last()
 // - no templated subspan()
+// - using size_t instead of ptrdiff_t for indexing
 //
 // Differences from [span.obs]:
-// - no length_bytes()
 // - no size_bytes()
+// - using size_t instead of ptrdiff_t to represent size()
 //
 // Differences from [span.elem]:
 // - no operator ()()
-//
-// Differences from [span.objectrep]:
-// - no as_bytes()
-// - no as_writeable_bytes()
+// - using size_t instead of ptrdiff_t for indexing
+
+// [span], class template span
 template <typename T>
 class span {
  public:
@@ -190,9 +190,8 @@ class span {
   using reverse_iterator = std::reverse_iterator<iterator>;
   using const_reverse_iterator = std::reverse_iterator<const_iterator>;
 
-  // span constructors, copy, assignment, and destructor
+  // [span.cons], span constructors, copy, assignment, and destructor
   constexpr span() noexcept : data_(nullptr), size_(0) {}
-  constexpr span(std::nullptr_t) noexcept : span() {}
   constexpr span(T* data, size_t size) noexcept : data_(data), size_(size) {}
   // TODO(dcheng): Implement construction from a |begin| and |end| pointer.
   template <size_t N>
@@ -208,15 +207,15 @@ class span {
       typename Container,
       typename = internal::EnableIfConstSpanCompatibleContainer<Container, T>>
   span(const Container& container) : span(container.data(), container.size()) {}
-  ~span() noexcept = default;
+  constexpr span(const span& other) noexcept = default;
   // Conversions from spans of compatible types: this allows a span<T> to be
   // seamlessly used as a span<const T>, but not the other way around.
   template <typename U, typename = internal::EnableIfLegalSpanConversion<U, T>>
   constexpr span(const span<U>& other) : span(other.data(), other.size()) {}
-  template <typename U, typename = internal::EnableIfLegalSpanConversion<U, T>>
-  constexpr span(span<U>&& other) : span(other.data(), other.size()) {}
+  constexpr span& operator=(const span& other) noexcept = default;
+  ~span() noexcept = default;
 
-  // span subviews
+  // [span.sub], span subviews
   constexpr span first(size_t count) const {
     CHECK(count <= size_);
     return span(data_, count);
@@ -228,36 +227,41 @@ class span {
   }
 
   constexpr span subspan(size_t pos, size_t count = -1) const {
+    constexpr auto npos = static_cast<size_t>(-1);
     CHECK(pos <= size_);
-    return span(data_ + pos, std::min(size_ - pos, count));
+    CHECK(count == npos || count <= size_ - pos);
+    return span(data_ + pos, count == npos ? size_ - pos : count);
   }
 
-  // span observers
-  constexpr size_t length() const noexcept { return size_; }
+  // [span.obs], span observers
   constexpr size_t size() const noexcept { return size_; }
   constexpr bool empty() const noexcept { return size_ == 0; }
 
-  // span element access
+  // [span.elem], span element access
   constexpr T& operator[](size_t index) const noexcept {
     CHECK(index < size_);
     return data_[index];
   }
   constexpr T* data() const noexcept { return data_; }
 
-  // span iterator support
-  iterator begin() const noexcept { return data_; }
-  iterator end() const noexcept { return data_ + size_; }
+  // [span.iter], span iterator support
+  constexpr iterator begin() const noexcept { return data_; }
+  constexpr iterator end() const noexcept { return data_ + size_; }
 
-  const_iterator cbegin() const noexcept { return begin(); }
-  const_iterator cend() const noexcept { return end(); }
+  constexpr const_iterator cbegin() const noexcept { return begin(); }
+  constexpr const_iterator cend() const noexcept { return end(); }
 
-  reverse_iterator rbegin() const noexcept { return reverse_iterator(end()); }
-  reverse_iterator rend() const noexcept { return reverse_iterator(begin()); }
+  constexpr reverse_iterator rbegin() const noexcept {
+    return reverse_iterator(end());
+  }
+  constexpr reverse_iterator rend() const noexcept {
+    return reverse_iterator(begin());
+  }
 
-  const_reverse_iterator crbegin() const noexcept {
+  constexpr const_reverse_iterator crbegin() const noexcept {
     return const_reverse_iterator(cend());
   }
-  const_reverse_iterator crend() const noexcept {
+  constexpr const_reverse_iterator crend() const noexcept {
     return const_reverse_iterator(cbegin());
   }
 
@@ -266,35 +270,36 @@ class span {
   size_t size_;
 };
 
+// [span.comparison], span comparison operators
 // Relational operators. Equality is a element-wise comparison.
 template <typename T>
-constexpr bool operator==(const span<T>& lhs, const span<T>& rhs) noexcept {
+constexpr bool operator==(span<T> lhs, span<T> rhs) noexcept {
   return std::equal(lhs.cbegin(), lhs.cend(), rhs.cbegin(), rhs.cend());
 }
 
 template <typename T>
-constexpr bool operator!=(const span<T>& lhs, const span<T>& rhs) noexcept {
+constexpr bool operator!=(span<T> lhs, span<T> rhs) noexcept {
   return !(lhs == rhs);
 }
 
 template <typename T>
-constexpr bool operator<(const span<T>& lhs, const span<T>& rhs) noexcept {
+constexpr bool operator<(span<T> lhs, span<T> rhs) noexcept {
   return std::lexicographical_compare(lhs.cbegin(), lhs.cend(), rhs.cbegin(),
                                       rhs.cend());
 }
 
 template <typename T>
-constexpr bool operator<=(const span<T>& lhs, const span<T>& rhs) noexcept {
+constexpr bool operator<=(span<T> lhs, span<T> rhs) noexcept {
   return !(rhs < lhs);
 }
 
 template <typename T>
-constexpr bool operator>(const span<T>& lhs, const span<T>& rhs) noexcept {
+constexpr bool operator>(span<T> lhs, span<T> rhs) noexcept {
   return rhs < lhs;
 }
 
 template <typename T>
-constexpr bool operator>=(const span<T>& lhs, const span<T>& rhs) noexcept {
+constexpr bool operator>=(span<T> lhs, span<T> rhs) noexcept {
   return !(lhs < rhs);
 }
 

@@ -268,18 +268,18 @@ void BlobData::AppendDataInternal(base::span<const char> data,
   DCHECK_EQ(file_composition_, FileCompositionStatus::NO_UNKNOWN_SIZE_FILES)
       << "Blobs with a unknown-size file cannot have other items.";
   // Skip zero-byte items, as they don't matter for the contents of the blob.
-  if (data.length() == 0)
+  if (data.size() == 0)
     return;
-  bool should_embed_bytes = current_memory_population_ + data.length() <=
+  bool should_embed_bytes = current_memory_population_ + data.size() <=
                             DataElementBytes::kMaximumEmbeddedDataSize;
   if (!elements_.IsEmpty() && elements_.back()->is_bytes()) {
     // Append bytes to previous element.
     DCHECK(last_bytes_provider_);
     const auto& bytes_element = elements_.back()->get_bytes();
-    bytes_element->length += data.length();
+    bytes_element->length += data.size();
     if (should_embed_bytes && bytes_element->embedded_data) {
-      bytes_element->embedded_data->Append(data.data(), data.length());
-      current_memory_population_ += data.length();
+      bytes_element->embedded_data->Append(data.data(), data.size());
+      current_memory_population_ += data.size();
     } else if (bytes_element->embedded_data) {
       current_memory_population_ -= bytes_element->embedded_data->size();
       bytes_element->embedded_data = WTF::nullopt;
@@ -289,12 +289,12 @@ void BlobData::AppendDataInternal(base::span<const char> data,
     last_bytes_provider_ =
         BlobBytesProvider::CreateAndBind(MakeRequest(&bytes_provider_info));
 
-    auto bytes_element = DataElementBytes::New(data.length(), WTF::nullopt,
+    auto bytes_element = DataElementBytes::New(data.size(), WTF::nullopt,
                                                std::move(bytes_provider_info));
     if (should_embed_bytes) {
       bytes_element->embedded_data = Vector<uint8_t>();
-      bytes_element->embedded_data->Append(data.data(), data.length());
-      current_memory_population_ += data.length();
+      bytes_element->embedded_data->Append(data.data(), data.size());
+      current_memory_population_ += data.size();
     }
     elements_.push_back(DataElement::NewBytes(std::move(bytes_element)));
   }

@@ -127,12 +127,11 @@ int UDPSocket::WriteImpl(net::IOBuffer* io_buffer,
   base::span<const uint8_t> data(
       reinterpret_cast<const uint8_t*>(io_buffer->data()),
       static_cast<size_t>(io_buffer_size));
-  socket_->Send(
-      data,
-      net::MutableNetworkTrafficAnnotationTag(
-          Socket::GetNetworkTrafficAnnotationTag()),
-      base::BindOnce(&UDPSocket::OnWriteOrSendToCompleted,
-                     base::Unretained(this), callback, data.length()));
+  socket_->Send(data,
+                net::MutableNetworkTrafficAnnotationTag(
+                    Socket::GetNetworkTrafficAnnotationTag()),
+                base::BindOnce(&UDPSocket::OnWriteOrSendToCompleted,
+                               base::Unretained(this), callback, data.size()));
   return net::ERR_IO_PENDING;
 }
 
@@ -181,7 +180,7 @@ void UDPSocket::SendTo(scoped_refptr<net::IOBuffer> io_buffer,
       net::MutableNetworkTrafficAnnotationTag(
           Socket::GetNetworkTrafficAnnotationTag()),
       base::BindOnce(&UDPSocket::OnWriteOrSendToCompleted,
-                     base::Unretained(this), callback, data.length()));
+                     base::Unretained(this), callback, data.size()));
 }
 
 bool UDPSocket::IsConnected() {
@@ -231,18 +230,18 @@ void UDPSocket::OnReceived(int32_t result,
   }
 
   scoped_refptr<net::IOBuffer> io_buffer =
-      new net::IOBuffer(data.value().length());
-  memcpy(io_buffer->data(), data.value().data(), data.value().length());
+      new net::IOBuffer(data.value().size());
+  memcpy(io_buffer->data(), data.value().data(), data.value().size());
 
   if (!read_callback_.is_null()) {
     base::ResetAndReturn(&read_callback_)
-        .Run(data.value().length(), io_buffer, false /* socket_destroying */);
+        .Run(data.value().size(), io_buffer, false /* socket_destroying */);
     return;
   }
 
   IPEndPointToStringAndPort(src_addr.value(), &ip, &port);
   base::ResetAndReturn(&recv_from_callback_)
-      .Run(data.value().length(), io_buffer, false /* socket_destroying */, ip,
+      .Run(data.value().size(), io_buffer, false /* socket_destroying */, ip,
            port);
 }
 

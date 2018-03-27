@@ -22,7 +22,7 @@ BlinkTransferableMessage ToBlinkTransferableMessage(
   BlinkTransferableMessage result;
   result.message = SerializedScriptValue::Create(
       reinterpret_cast<const char*>(message.encoded_message.data()),
-      message.encoded_message.length());
+      message.encoded_message.size());
   for (auto& blob : message.blobs) {
     result.message->BlobDataHandles().Set(
         WebString::FromUTF8(blob->uuid),

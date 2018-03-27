@@ -198,7 +198,7 @@ bool ServicePaintTypefaceTransferCacheEntry::Deserialize(
 
   // Set the size to however much data we read.
   size_ = initial_size - data_.size();
-  data_ = base::span<uint8_t>(nullptr);
+  data_ = base::span<uint8_t>();
   return valid_;
 }
 

@@ -2527,7 +2527,7 @@ void RenderFrameImpl::OnPostMessageEvent(
     converter.SetDateAllowed(true);
     converter.SetRegExpAllowed(true);
     base::string16 data;
-    data.resize(params.message->data.encoded_message.length() /
+    data.resize(params.message->data.encoded_message.size() /
                 sizeof(base::char16));
     std::memcpy(&data[0], params.message->data.encoded_message.data(),
                 data.length() * sizeof(base::char16));

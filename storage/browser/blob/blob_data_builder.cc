@@ -41,11 +41,11 @@ BlobDataBuilder::FutureData::~FutureData() = default;
 bool BlobDataBuilder::FutureData::Populate(base::span<const char> data,
                                            size_t offset) const {
   DCHECK(data.data());
-  base::span<char> target = GetDataToPopulate(offset, data.length());
+  base::span<char> target = GetDataToPopulate(offset, data.size());
   if (!target.data())
     return false;
-  DCHECK_EQ(target.length(), data.length());
-  std::memcpy(target.data(), data.data(), data.length());
+  DCHECK_EQ(target.size(), data.size());
+  std::memcpy(target.data(), data.data(), data.size());
   return true;
 }
 
@@ -67,7 +67,7 @@ base::span<char> BlobDataBuilder::FutureData::GetDataToPopulate(
   checked_end += length;
   if (!checked_end.IsValid() || checked_end.ValueOrDie() > item_->length()) {
     DVLOG(1) << "Invalid offset or length.";
-    return nullptr;
+    return base::span<char>();
   }
   return item_->mutable_bytes().subspan(offset, length);
 }

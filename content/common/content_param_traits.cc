@@ -198,7 +198,7 @@ struct ParamTraits<blink::mojom::SerializedBlobPtr> {
 void ParamTraits<scoped_refptr<base::RefCountedData<
     blink::TransferableMessage>>>::Write(base::Pickle* m, const param_type& p) {
   m->WriteData(reinterpret_cast<const char*>(p->data.encoded_message.data()),
-               p->data.encoded_message.length());
+               p->data.encoded_message.size());
   WriteParam(m, p->data.blobs);
   WriteParam(m, p->data.stack_trace_id);
   WriteParam(m, p->data.stack_trace_debugger_id_first);

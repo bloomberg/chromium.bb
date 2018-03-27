@@ -151,7 +151,7 @@ void SerializeV8Value(v8::Local<v8::Value> value,
                                        non_throwable_exception_state);
   base::span<const uint8_t> ssv_wire_data = serialized_value->GetWireData();
   DCHECK(wire_bytes->IsEmpty());
-  wire_bytes->Append(ssv_wire_data.data(), ssv_wire_data.length());
+  wire_bytes->Append(ssv_wire_data.data(), ssv_wire_data.size());
 
   // Sanity check that the serialization header has not changed, as the tests
   // that use this method rely on the header format.

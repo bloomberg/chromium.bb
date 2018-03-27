@@ -31,7 +31,7 @@ TEST(SerializedScriptValueTest, WireFormatRoundTrip) {
 
   scoped_refptr<SerializedScriptValue> serializedScriptValue =
       SerializedScriptValue::Create(
-          reinterpret_cast<const char*>(wire_data.data()), wire_data.length());
+          reinterpret_cast<const char*>(wire_data.data()), wire_data.size());
   v8::Local<v8::Value> deserialized =
       serializedScriptValue->Deserialize(scope.GetIsolate());
   EXPECT_TRUE(deserialized->IsTrue());

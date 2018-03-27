@@ -136,7 +136,7 @@ bool IDBValueWrapper::WrapIfBiggerThan(unsigned max_bytes) {
   DCHECK(owns_wire_bytes_) << __func__ << " called after TakeWireBytes()";
 #endif  // DCHECK_IS_ON()
 
-  unsigned wire_data_size = wire_data_.length();
+  unsigned wire_data_size = wire_data_.size();
   if (wire_data_size <= max_bytes)
     return false;
 
@@ -175,15 +175,14 @@ scoped_refptr<SharedBuffer> IDBValueWrapper::TakeWireBytes() {
   if (wire_data_buffer_.IsEmpty()) {
     // The wire bytes are coming directly from the SSV's GetWireData() call.
     DCHECK_EQ(wire_data_.data(), serialized_value_->GetWireData().data());
-    DCHECK_EQ(wire_data_.length(), serialized_value_->GetWireData().length());
-    return SharedBuffer::Create(wire_data_.data(),
-                                static_cast<size_t>(wire_data_.length()));
+    DCHECK_EQ(wire_data_.size(), serialized_value_->GetWireData().size());
+    return SharedBuffer::Create(wire_data_.data(), wire_data_.size());
   }
 
   // The wire bytes are coming from wire_data_buffer_, so we can avoid a copy.
   DCHECK_EQ(wire_data_buffer_.data(),
             reinterpret_cast<const char*>(wire_data_.data()));
-  DCHECK_EQ(wire_data_buffer_.size(), wire_data_.length());
+  DCHECK_EQ(wire_data_buffer_.size(), wire_data_.size());
   return SharedBuffer::AdoptVector(wire_data_buffer_);
 }
 
