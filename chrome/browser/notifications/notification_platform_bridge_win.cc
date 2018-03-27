@@ -755,13 +755,11 @@ class NotificationPlatformBridgeWinImpl
       winui::Notifications::IToastDismissedEventArgs* arguments) {
     winui::Notifications::ToastDismissalReason reason;
     HRESULT hr = arguments->get_Reason(&reason);
-    bool by_user = false;
-    if (SUCCEEDED(hr) &&
-        reason == winui::Notifications::ToastDismissalReason_UserCanceled) {
-      by_user = true;
-    }
-    HandleEvent(notification, NotificationCommon::CLOSE,
-                /*action_index=*/base::nullopt, by_user);
+    DCHECK(SUCCEEDED(hr));
+    HandleEvent(
+        notification, NotificationCommon::CLOSE,
+        /*action_index=*/base::nullopt,
+        reason == winui::Notifications::ToastDismissalReason_UserCanceled);
     return S_OK;
   }
 
