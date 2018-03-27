@@ -129,8 +129,8 @@ class MockRenderProcessHost : public RenderProcessHost {
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
   bool IsProcessBackgrounded() const override;
   size_t GetKeepAliveRefCount() const;
-  void IncrementKeepAliveRefCount() override;
-  void DecrementKeepAliveRefCount() override;
+  void IncrementKeepAliveRefCount(KeepAliveClientType) override;
+  void DecrementKeepAliveRefCount(KeepAliveClientType) override;
   void DisableKeepAliveRefCount() override;
   bool IsKeepAliveRefCountDisabled() override;
   void PurgeAndSuspend() override;

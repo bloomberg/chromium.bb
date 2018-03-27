@@ -142,7 +142,8 @@ void SharedWorkerServiceImpl::DestroyHost(SharedWorkerHost* host) {
     std::move(terminate_all_workers_callback_).Run();
 
   if (!IsShuttingDown(process_host))
-    process_host->DecrementKeepAliveRefCount();
+    process_host->DecrementKeepAliveRefCount(
+        RenderProcessHost::KeepAliveClientType::kSharedWorker);
 }
 
 void SharedWorkerServiceImpl::CreateWorker(
@@ -161,7 +162,8 @@ void SharedWorkerServiceImpl::CreateWorker(
     return;
 
   // Keep the renderer process alive that will be hosting the shared worker.
-  process_host->IncrementKeepAliveRefCount();
+  process_host->IncrementKeepAliveRefCount(
+      RenderProcessHost::KeepAliveClientType::kSharedWorker);
 
   auto host = std::make_unique<SharedWorkerHost>(this, std::move(instance),
                                                  worker_process_id);

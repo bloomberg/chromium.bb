@@ -209,8 +209,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
       override;
   const base::TimeTicks& GetInitTimeForNavigationMetrics() const override;
   bool IsProcessBackgrounded() const override;
-  void IncrementKeepAliveRefCount() override;
-  void DecrementKeepAliveRefCount() override;
+  void IncrementKeepAliveRefCount(
+      RenderProcessHost::KeepAliveClientType) override;
+  void DecrementKeepAliveRefCount(
+      RenderProcessHost::KeepAliveClientType) override;
   void DisableKeepAliveRefCount() override;
   bool IsKeepAliveRefCountDisabled() override;
   void PurgeAndSuspend() override;
@@ -521,6 +523,10 @@ class CONTENT_EXPORT RenderProcessHostImpl
   // GpuSwitchingObserver implementation.
   void OnGpuSwitched() override;
 
+  void RecordKeepAliveDuration(RenderProcessHost::KeepAliveClientType,
+                               base::TimeTicks start,
+                               base::TimeTicks end);
+
   // Returns the default subframe RenderProcessHost to use for |site_instance|.
   static RenderProcessHost* GetDefaultSubframeProcessHost(
       BrowserContext* browser_context,
@@ -597,6 +603,12 @@ class CONTENT_EXPORT RenderProcessHostImpl
   service_manager::mojom::ServicePtr test_service_;
 
   size_t keep_alive_ref_count_;
+
+  // TODO(panicker): Remove these after investigation in
+  // https://crbug.com/823482.
+  static const size_t kNumKeepAliveClients = 3;
+  size_t keep_alive_client_count_[kNumKeepAliveClients];
+  base::TimeTicks keep_alive_client_start_time_[kNumKeepAliveClients];
 
   // Set in DisableKeepAliveRefCount(). When true, |keep_alive_ref_count_| must
   // no longer be modified.

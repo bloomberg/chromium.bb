@@ -21,7 +21,8 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
   explicit Context(RenderProcessHost* process_host)
       : process_id_(process_host->GetID()), weak_ptr_factory_(this) {
     DCHECK(!process_host->IsKeepAliveRefCountDisabled());
-    process_host->IncrementKeepAliveRefCount();
+    process_host->IncrementKeepAliveRefCount(
+        RenderProcessHost::KeepAliveClientType::kFetch);
   }
 
   void Detach() {
@@ -32,7 +33,8 @@ class KeepAliveHandleFactory::Context final : public base::RefCounted<Context> {
     if (!process_host || process_host->IsKeepAliveRefCountDisabled())
       return;
 
-    process_host->DecrementKeepAliveRefCount();
+    process_host->DecrementKeepAliveRefCount(
+        RenderProcessHost::KeepAliveClientType::kFetch);
   }
 
   void DetachLater() {

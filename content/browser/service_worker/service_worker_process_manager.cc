@@ -66,7 +66,8 @@ void ServiceWorkerProcessManager::Shutdown() {
       if (it.second->HasProcess()) {
         RenderProcessHost* process = it.second->GetProcess();
         if (!process->IsKeepAliveRefCountDisabled())
-          process->DecrementKeepAliveRefCount();
+          process->DecrementKeepAliveRefCount(
+              RenderProcessHost::KeepAliveClientType::kServiceWorker);
       }
     }
   }
@@ -156,7 +157,8 @@ ServiceWorkerStatusCode ServiceWorkerProcessManager::AllocateWorkerProcess(
 
   worker_process_map_.emplace(embedded_worker_id, std::move(site_instance));
   if (!rph->IsKeepAliveRefCountDisabled())
-    rph->IncrementKeepAliveRefCount();
+    rph->IncrementKeepAliveRefCount(
+        RenderProcessHost::KeepAliveClientType::kServiceWorker);
   out_info->process_id = rph->GetID();
   out_info->start_situation = start_situation;
   return SERVICE_WORKER_OK;
@@ -186,7 +188,8 @@ void ServiceWorkerProcessManager::ReleaseWorkerProcess(int embedded_worker_id) {
   if (it->second->HasProcess()) {
     RenderProcessHost* process = it->second->GetProcess();
     if (!process->IsKeepAliveRefCountDisabled())
-      process->DecrementKeepAliveRefCount();
+      process->DecrementKeepAliveRefCount(
+          RenderProcessHost::KeepAliveClientType::kServiceWorker);
   }
   worker_process_map_.erase(it);
 }
