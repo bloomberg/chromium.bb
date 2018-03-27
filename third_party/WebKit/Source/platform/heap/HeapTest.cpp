@@ -4007,7 +4007,6 @@ TEST(HeapTest, CheckAndMarkPointer) {
   // to allocate anything again. We do this by forcing a GC after doing the
   // checkAndMarkPointer tests.
   {
-    ThreadState::GCForbiddenScope gc_scope(ThreadState::Current());
     TestGCScope scope(BlinkGC::kHeapPointersOnStack);
     MarkingVisitor visitor(ThreadState::Current(),
                            MarkingVisitor::kGlobalMarking);
@@ -4032,7 +4031,6 @@ TEST(HeapTest, CheckAndMarkPointer) {
   // however we don't rely on that below since we don't have any allocations.
   ClearOutOldGarbage();
   {
-    ThreadState::GCForbiddenScope gc_scope(ThreadState::Current());
     TestGCScope scope(BlinkGC::kHeapPointersOnStack);
     MarkingVisitor visitor(ThreadState::Current(),
                            MarkingVisitor::kGlobalMarking);
