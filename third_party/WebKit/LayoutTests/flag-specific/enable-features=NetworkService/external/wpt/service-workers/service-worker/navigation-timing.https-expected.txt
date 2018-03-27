@@ -1,0 +1,6 @@
+This is a testharness.js-based test.
+FAIL Service worker controlled navigation timing assert_unreached: unexpected rejection: assert_true: Expected workerStart <= fetchStart expected true got false Reached unreachable code
+PASS Service worker controlled navigation timing network fallback
+FAIL Service worker controlled navigation timing redirect assert_unreached: unexpected rejection: assert_true: Expected fetchStart <= requestStart expected true got false Reached unreachable code
+Harness: the test ran to completion.
+
