@@ -3262,9 +3262,9 @@ TEST_F(SplitViewWindowSelectorTest, DraggingUnsnappableAppWithSplitView) {
 }
 
 // Tests that if there is only one window in the MRU window list in the overview
-// mode, snapping the window to one side of the screen will end the overview
-// mode since there is no more window left in the overview window grid.
-TEST_F(SplitViewWindowSelectorTest, EmptyWindowsListExitOverview) {
+// mode, snapping the window to one side of the screen will not end the overview
+// mode even if there is no more window left in the overview window grid.
+TEST_F(SplitViewWindowSelectorTest, EmptyWindowsListNotExitOverview) {
   const gfx::Rect bounds(400, 400);
   std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
 
@@ -3277,9 +3277,68 @@ TEST_F(SplitViewWindowSelectorTest, EmptyWindowsListExitOverview) {
       GetWindowItemForWindow(grid_index, window1.get());
   DragWindowTo(selector_item1, gfx::Point(0, 0));
 
+  // Test that overview mode is active in this single window case.
   EXPECT_EQ(split_view_controller()->IsSplitViewModeActive(), true);
   EXPECT_EQ(split_view_controller()->state(),
             SplitViewController::LEFT_SNAPPED);
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+
+  // Create a new window should exit the overview mode.
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  wm::ActivateWindow(window2.get());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  // If there are only 2 snapped windows, close one of them should enter
+  // overview mode.
+  window2.reset();
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+
+  // If there are more than 2 windows in overview
+  std::unique_ptr<aura::Window> window3(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window4(CreateWindow(bounds));
+  wm::ActivateWindow(window3.get());
+  wm::ActivateWindow(window4.get());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  ToggleOverview();
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+  window3.reset();
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+  window4.reset();
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+
+  // Test that if there is only 1 snapped window, and no window in the overview
+  // grid, ToggleOverview() can't end overview.
+  ToggleOverview();
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+
+  EndSplitView();
+  EXPECT_FALSE(Shell::Get()->IsSplitViewModeActive());
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+
+  // Test that ToggleOverview() can end overview if we're not in split view
+  // mode.
+  ToggleOverview();
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+
+  // Now enter overview and split view again. Test that exiting tablet mode can
+  // end split view and overview correctly.
+  ToggleOverview();
+  selector_item1 = GetWindowItemForWindow(grid_index, window1.get());
+  DragWindowTo(selector_item1, gfx::Point(0, 0));
+  EXPECT_TRUE(Shell::Get()->IsSplitViewModeActive());
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+  Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(false);
+  EXPECT_FALSE(Shell::Get()->IsSplitViewModeActive());
+  EXPECT_FALSE(window_selector_controller()->IsSelecting());
+
+  // Test that closing all windows in overview can end overview if we're not in
+  // split view mode.
+  ToggleOverview();
+  EXPECT_TRUE(window_selector_controller()->IsSelecting());
+  window1.reset();
   EXPECT_FALSE(window_selector_controller()->IsSelecting());
 }
 

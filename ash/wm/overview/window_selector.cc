@@ -314,8 +314,6 @@ void WindowSelector::Init(const WindowList& windows,
       }
       window_grid->PrepareForOverview();
       window_grid->PositionWindows(/*animate=*/true);
-      if (num_items_ == 0 && IsNewOverviewUi())
-        window_grid->ShowNoRecentsWindowMessage(true);
       // Reset |should_animate_when_entering_| in order to animate during
       // overview mode, such as dragging animations.
       if (IsNewOverviewAnimationsEnabled())
@@ -433,20 +431,16 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
   if (IsNewOverviewUi()) {
     // If there are no longer any items on any of the grids, shutdown,
     // otherwise the empty grids will remain blurred but will have no items.
-    bool other_grids_has_items = false;
-    for (const auto& grid : grid_list_) {
-      other_grids_has_items = !grid->empty();
-      if (other_grids_has_items)
-        break;
-    }
-    if (!other_grids_has_items) {
-      // Shutdown all grids if no grids have any items. Set |index| to -1 so
-      // that it does not attempt to select any items.
-      for (const auto& grid : grid_list_)
-        grid->Shutdown();
-
+    if (IsEmpty()) {
+      // Shutdown all grids if no grids have any items and split view mode is
+      // not active. Set |index| to -1 so that it does not attempt to select any
+      // items.
       index = -1;
-      grid_list_.clear();
+      if (!Shell::Get()->IsSplitViewModeActive()) {
+        for (const auto& grid : grid_list_)
+          grid->Shutdown();
+        grid_list_.clear();
+      }
     } else {
       for (auto iter = grid_list_.begin(); iter != grid_list_.end(); ++iter) {
         if (grid == (*iter).get()) {
@@ -477,6 +471,8 @@ void WindowSelector::OnGridEmpty(WindowGrid* grid) {
   }
   if (grid_list_.empty())
     CancelSelection();
+  else
+    PositionWindows(/*animate=*/false);
 }
 
 void WindowSelector::IncrementSelection(int increment) {
@@ -589,8 +585,6 @@ void WindowSelector::RemoveWindowSelectorItem(WindowSelectorItem* item) {
     if (grid->GetWindowSelectorItemContaining(item->GetWindow())) {
       grid->RemoveItem(item);
       --num_items_;
-      if (grid->empty())
-        OnGridEmpty(grid.get());
       break;
     }
   }
@@ -645,10 +639,7 @@ bool WindowSelector::HandleKeyEvent(views::Textfield* sender,
                                     const ui::KeyEvent& key_event) {
   // Do not do anything with the events if none of the window grids have windows
   // in them.
-  bool empty_grids = true;
-  for (std::unique_ptr<WindowGrid>& grid : grid_list_)
-    empty_grids &= grid->empty();
-  if (empty_grids)
+  if (IsEmpty())
     return true;
 
   if (key_event.type() != ui::ET_KEY_PRESSED)
@@ -939,6 +930,14 @@ void WindowSelector::OnDisplayBoundsChanged() {
   RepositionTextFilterOnDisplayMetricsChange();
   if (split_view_drag_indicators_)
     split_view_drag_indicators_->OnDisplayBoundsChanged();
+}
+
+bool WindowSelector::IsEmpty() {
+  for (const auto& grid : grid_list_) {
+    if (!grid->empty())
+      return false;
+  }
+  return true;
 }
 
 }  // namespace ash

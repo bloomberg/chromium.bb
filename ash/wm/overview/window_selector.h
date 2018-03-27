@@ -202,6 +202,9 @@ class ASH_EXPORT WindowSelector : public display::DisplayObserver,
   // Called when the display area for the overview window grids changed.
   void OnDisplayBoundsChanged();
 
+  // Returns true if all its window grids don't have any window item.
+  bool IsEmpty();
+
   // Tracks observed windows.
   std::set<aura::Window*> observed_windows_;
 

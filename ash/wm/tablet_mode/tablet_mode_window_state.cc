@@ -86,7 +86,6 @@ gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
     return screen_util::GetDisplayBoundsInParent(state_object->window());
 
   if (state_object->GetStateType() == mojom::WindowStateType::LEFT_SNAPPED) {
-    DCHECK(CanSnap(state_object));
     return Shell::Get()
         ->split_view_controller()
         ->GetSnappedWindowBoundsInParent(state_object->window(),
@@ -94,7 +93,6 @@ gfx::Rect GetBoundsInMaximizedMode(wm::WindowState* state_object) {
   }
 
   if (state_object->GetStateType() == mojom::WindowStateType::RIGHT_SNAPPED) {
-    DCHECK(CanSnap(state_object));
     return Shell::Get()
         ->split_view_controller()
         ->GetSnappedWindowBoundsInParent(state_object->window(),

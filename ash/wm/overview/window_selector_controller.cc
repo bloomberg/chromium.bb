@@ -87,25 +87,28 @@ bool WindowSelectorController::CanSelect() {
 }
 
 bool WindowSelectorController::ToggleOverview() {
+  auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
+
+  // Hidden windows will be removed by ShouldExcludeWindowFromOverview so we
+  // must copy them out first.
+  std::vector<aura::Window*> hide_windows(windows.size());
+  auto end = std::copy_if(windows.begin(), windows.end(), hide_windows.begin(),
+                          ShouldHideWindowInOverview);
+  hide_windows.resize(end - hide_windows.begin());
+
+  end = std::remove_if(windows.begin(), windows.end(),
+                       ShouldExcludeWindowFromOverview);
+  windows.resize(end - windows.begin());
+
   if (IsSelecting()) {
+    // Do not allow ending overview if we're in single split mode.
+    if (windows.empty() && Shell::Get()->IsSplitViewModeActive())
+      return true;
     OnSelectionEnded();
   } else {
     // Don't start overview if window selection is not allowed.
     if (!CanSelect())
       return false;
-
-    auto windows = Shell::Get()->mru_window_tracker()->BuildMruWindowList();
-
-    // Hidden windows will be removed by ShouldExcludeWindowFromOverview so we
-    // must copy them out first.
-    std::vector<aura::Window*> hide_windows(windows.size());
-    auto end = std::copy_if(windows.begin(), windows.end(),
-                            hide_windows.begin(), ShouldHideWindowInOverview);
-    hide_windows.resize(end - hide_windows.begin());
-
-    end = std::remove_if(windows.begin(), windows.end(),
-                         ShouldExcludeWindowFromOverview);
-    windows.resize(end - windows.begin());
 
     // Don't enter overview with no windows to select from.
     if (!IsNewOverviewUi() && windows.empty())
