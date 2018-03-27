@@ -10,9 +10,12 @@
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/download/chrome_download_manager_delegate.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf_context_menu.h"
+#include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/safe_browsing/download_protection/download_feedback_service.h"
 #import "chrome/browser/themes/theme_properties.h"
 #import "chrome/browser/themes/theme_service.h"
 #import "chrome/browser/ui/cocoa/download/download_item_button.h"
@@ -353,15 +356,23 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   // user did this to detect whether we're being clickjacked.
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.save_download",
                            base::Time::Now() - creationTime_);
-  // This will change the state and notify us.
-  bridge_->download_model()->download()->ValidateDangerousDownload();
+
+  DownloadItem* download = bridge_->download_model()->download();
+  if (![self submitDownloadToFeedbackService:download
+                                 withCommand:DownloadCommands::Command::KEEP]) {
+    // This will change the state and notify us.
+    download->ValidateDangerousDownload();
+  }
 }
 
 - (IBAction)discardDownload:(id)sender {
   UMA_HISTOGRAM_LONG_TIMES("clickjacking.discard_download",
                            base::Time::Now() - creationTime_);
   DownloadItem* download = bridge_->download_model()->download();
-  download->Remove();
+  if (!
+      [self submitDownloadToFeedbackService:download
+                                withCommand:DownloadCommands::Command::DISCARD])
+    download->Remove();
   // WARNING: we are deleted at this point.  Don't access 'this'.
 }
 
@@ -369,6 +380,31 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   DCHECK(
       !base::FeatureList::IsEnabled(features::kMacMaterialDesignDownloadShelf));
   [static_cast<DownloadItemButton*>(progressView_) showContextMenu];
+}
+
+- (bool)submitDownloadToFeedbackService:(download::DownloadItem*)download
+                            withCommand:(DownloadCommands::Command)command {
+  safe_browsing::SafeBrowsingService* sb_service =
+      g_browser_process->safe_browsing_service();
+  if (!sb_service)
+    return false;
+
+  safe_browsing::DownloadProtectionService* download_protection_service =
+      sb_service->download_protection_service();
+  if (!download_protection_service)
+    return false;
+
+  DownloadItemModel* download_item_model = bridge_->download_model();
+  const Profile* profile = Profile::FromBrowserContext(
+      content::DownloadItemUtils::GetBrowserContext(download));
+  const PrefService* prefs = profile->GetPrefs();
+  if (!download_item_model->ShouldAllowDownloadFeedback() ||
+      profile->IsOffTheRecord() ||
+      !safe_browsing::IsExtendedReportingEnabled(*prefs))
+    return false;
+  download_protection_service->feedback_service()->BeginFeedbackForDownload(
+      download, command);
+  return true;
 }
 
 @end
