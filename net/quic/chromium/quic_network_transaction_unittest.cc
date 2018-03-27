@@ -947,6 +947,7 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::Bool()));
 
 TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmed) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   base::HistogramTester histograms;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
@@ -978,6 +979,7 @@ TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmed) {
 }
 
 TEST_P(QuicNetworkTransactionTest, WriteErrorHandshakeConfirmedAsync) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   base::HistogramTester histograms;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
@@ -1185,6 +1187,7 @@ TEST_P(QuicNetworkTransactionTest, LargeResponseHeaders) {
 }
 
 TEST_P(QuicNetworkTransactionTest, TooLargeResponseHeaders) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 
@@ -2069,6 +2072,7 @@ TEST_P(QuicNetworkTransactionTest, GoAwayWithConnectionMigrationOnPortsOnly) {
 // Verify that if a QUIC connection times out, the QuicHttpStream will
 // return QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   session_params_.quic_idle_connection_timeout_seconds = 5;
 
   // The request will initially go out over QUIC.
@@ -2162,6 +2166,7 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmed) {
 // Verify that if a QUIC connection RTOs, the QuicHttpStream will
 // return QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, TooManyRtosAfterHandshakeConfirmed) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   session_params_.quic_connection_options.push_back(k5RTO);
 
   // The request will initially go out over QUIC.
@@ -2364,6 +2369,7 @@ TEST_P(QuicNetworkTransactionTest,
 // Verify that if a QUIC protocol error occurs after the handshake is confirmed
 // the request fails with QUIC_PROTOCOL_ERROR.
 TEST_P(QuicNetworkTransactionTest, ProtocolErrorAfterHandshakeConfirmed) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
@@ -2546,7 +2552,6 @@ TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken) {
 // connection times out, then QUIC will be marked as broken and the request
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, TimeoutAfterHandshakeConfirmedThenBroken2) {
-  session_params_.retry_without_alt_svc_on_quic_errors = true;
   session_params_.quic_idle_connection_timeout_seconds = 5;
 
   // The request will initially go out over QUIC.
@@ -3016,7 +3021,6 @@ TEST_P(QuicNetworkTransactionTest,
 // retried over TCP and the QUIC will be marked as broken.
 TEST_P(QuicNetworkTransactionTest,
        ProtocolErrorAfterHandshakeConfirmedThenBroken) {
-  session_params_.retry_without_alt_svc_on_quic_errors = true;
   session_params_.quic_idle_connection_timeout_seconds = 5;
 
   // The request will initially go out over QUIC.
@@ -3104,8 +3108,6 @@ TEST_P(QuicNetworkTransactionTest,
 // request is reset from, then QUIC will be marked as broken and the request
 // retried over TCP.
 TEST_P(QuicNetworkTransactionTest, ResetAfterHandshakeConfirmedThenBroken) {
-  session_params_.retry_without_alt_svc_on_quic_errors = true;
-
   // The request will initially go out over QUIC.
   MockQuicData quic_data;
   QuicStreamOffset header_stream_offset = 0;
@@ -3266,7 +3268,6 @@ TEST_P(QuicNetworkTransactionTest, RemoteAltSvcWorkingWhileLocalAltSvcBroken) {
 TEST_P(QuicNetworkTransactionTest,
        ResetPooledAfterHandshakeConfirmedThenBroken) {
   session_params_.quic_allow_remote_alt_svc = true;
-  session_params_.retry_without_alt_svc_on_quic_errors = true;
 
   GURL origin1 = request_.url;
   GURL origin2("https://www.example.org/");
@@ -4163,6 +4164,7 @@ TEST_P(QuicNetworkTransactionTest, ZeroRTTWithConfirmationRequired) {
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorLocal) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data;
   QuicStreamOffset header_stream_offset = 0;
   mock_quic_data.AddWrite(
@@ -4216,6 +4218,7 @@ TEST_P(QuicNetworkTransactionTest,
 
 TEST_P(QuicNetworkTransactionTest,
        LogGranularQuicErrorCodeOnQuicProtocolErrorRemote) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data;
   QuicStreamOffset header_stream_offset = 0;
   mock_quic_data.AddWrite(
@@ -4334,6 +4337,7 @@ TEST_P(QuicNetworkTransactionTest, RstSteamErrorHandling) {
 }
 
 TEST_P(QuicNetworkTransactionTest, RstSteamBeforeHeaders) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   MockQuicData mock_quic_data;
   QuicStreamOffset header_stream_offset = 0;
   mock_quic_data.AddWrite(
@@ -4929,6 +4933,7 @@ TEST_P(QuicNetworkTransactionTest, QuicUpload) {
 }
 
 TEST_P(QuicNetworkTransactionTest, QuicUploadWriteError) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   ScopedMockNetworkChangeNotifier network_change_notifier;
   MockNetworkChangeNotifier* mock_ncn =
       network_change_notifier.mock_network_change_notifier();
@@ -5034,6 +5039,7 @@ TEST_P(QuicNetworkTransactionTest, RetryAfterSynchronousNoBufferSpace) {
 }
 
 TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterAsyncNoBufferSpace) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 
@@ -5071,6 +5077,7 @@ TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterAsyncNoBufferSpace) {
 }
 
 TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterSynchronousNoBufferSpace) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 
@@ -5108,6 +5115,7 @@ TEST_P(QuicNetworkTransactionTest, MaxRetriesAfterSynchronousNoBufferSpace) {
 }
 
 TEST_P(QuicNetworkTransactionTest, NoMigrationForMsgTooBig) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
   const QuicString error_details =
@@ -5211,6 +5219,7 @@ TEST_P(QuicNetworkTransactionTest, QuicServerPush) {
 // is closed before the pushed headers arrive, but after the connection
 // is closed and before the callbacks are executed.
 TEST_P(QuicNetworkTransactionTest, CancelServerPushAfterConnectionClose) {
+  session_params_.retry_without_alt_svc_on_quic_errors = false;
   session_params_.origins_to_force_quic_on.insert(
       HostPortPair::FromString("mail.example.org:443"));
 

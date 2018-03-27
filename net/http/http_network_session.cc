@@ -113,7 +113,7 @@ HttpNetworkSession::Params::Params()
       quic_max_server_configs_stored_in_properties(0u),
       quic_enable_socket_recv_optimization(false),
       mark_quic_broken_when_network_blackholes(false),
-      retry_without_alt_svc_on_quic_errors(false),
+      retry_without_alt_svc_on_quic_errors(true),
       support_ietf_format_quic_altsvc(false),
       quic_close_sessions_on_ip_change(false),
       quic_idle_connection_timeout_seconds(kIdleConnectionTimeoutSeconds),
