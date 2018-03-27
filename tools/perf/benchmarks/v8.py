@@ -4,25 +4,11 @@
 from core import perf_benchmark
 
 
-from measurements import v8_detached_context_age_in_gc
 import page_sets
 
 from telemetry import benchmark
 from telemetry.timeline import chrome_trace_category_filter
 from telemetry.web_perf import timeline_based_measurement
-
-
-@benchmark.Owner(emails=['ulan@chromium.org'])
-class V8DetachedContextAgeInGC(perf_benchmark.PerfBenchmark):
-  """Measures the number of GCs needed to collect a detached context.
-
-  http://www.chromium.org/developers/design-documents/rendering-benchmarks"""
-  test = v8_detached_context_age_in_gc.V8DetachedContextAgeInGC
-  page_set = page_sets.PageReloadCasesPageSet
-
-  @classmethod
-  def Name(cls):
-    return 'v8.detached_context_age_in_gc'
 
 
 class _Top25RuntimeStats(perf_benchmark.PerfBenchmark):
