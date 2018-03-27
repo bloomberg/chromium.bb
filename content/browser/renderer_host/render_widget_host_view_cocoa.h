@@ -49,7 +49,13 @@ struct DidOverscrollParams;
                       NSTextInputClient> {
  @private
   // The communications channel to the RenderWidgetHostViewMac.
+  // TODO(ccameron): When RenderWidgetHostViewCocoa no longer directly accesses
+  // RenderWidgetHostViewMac, then |client_| can be made to be a weak pointer,
+  // and |clientWasDestroyed_| can be replaced with a null-check on |client_|.
   std::unique_ptr<content::RenderWidgetHostNSViewClient> client_;
+
+  // Whether or not it is safe to call back into the |client_| (see above TODO).
+  BOOL clientWasDestroyed_;
 
   // TODO(ccameron): Make all communication with the RenderWidgetHostView go
   // through |client_| and delete this member variable.
@@ -196,6 +202,8 @@ struct DidOverscrollParams;
 
 - (void)setCanBeKeyView:(BOOL)can;
 - (void)setCloseOnDeactivate:(BOOL)b;
+// Inidicate that the client was destroyed and can't be called back into.
+- (void)setClientWasDestroyed;
 // True for always-on-top special windows (e.g. Balloons and Panels).
 - (BOOL)acceptsMouseEventsWhenInactive;
 // Cancel ongoing composition (abandon the marked text).
