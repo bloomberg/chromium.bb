@@ -528,24 +528,38 @@ SkColor CustomFrameViewAsh::GetInactiveFrameColorForTest() const {
   return header_view_->GetInactiveFrameColor();
 }
 
+void CustomFrameViewAsh::UpdateHeaderView() {
+  SplitViewController* split_view_controller =
+      Shell::Get()->split_view_controller();
+  if (in_overview_mode_ && split_view_controller->IsSplitViewModeActive() &&
+      split_view_controller->GetDefaultSnappedWindow() ==
+          frame_->GetNativeWindow()) {
+    // TODO(sammiequon): This works for now, but we may have to check if
+    // |frame_|'s native window is in the overview list instead.
+    SetShouldPaintHeader(true);
+  } else {
+    SetShouldPaintHeader(!in_overview_mode_);
+  }
+}
+
 void CustomFrameViewAsh::SetShouldPaintHeader(bool paint) {
   header_view_->SetShouldPaintHeader(paint);
 }
 
 void CustomFrameViewAsh::OnOverviewModeStarting() {
   in_overview_mode_ = true;
-  OnOverviewOrSplitViewModeChanged();
+  UpdateHeaderView();
 }
 
 void CustomFrameViewAsh::OnOverviewModeEnded() {
   in_overview_mode_ = false;
-  OnOverviewOrSplitViewModeChanged();
+  UpdateHeaderView();
 }
 
 void CustomFrameViewAsh::OnSplitViewStateChanged(
     SplitViewController::State /* previous_state */,
     SplitViewController::State /* current_state */) {
-  OnOverviewOrSplitViewModeChanged();
+  UpdateHeaderView();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -579,20 +593,6 @@ int CustomFrameViewAsh::NonClientTopBorderHeight() const {
     return 0;
 
   return header_view_->GetPreferredHeight();
-}
-
-void CustomFrameViewAsh::OnOverviewOrSplitViewModeChanged() {
-  SplitViewController* split_view_controller =
-      Shell::Get()->split_view_controller();
-  if (in_overview_mode_ && split_view_controller->IsSplitViewModeActive() &&
-      split_view_controller->GetDefaultSnappedWindow() ==
-          frame_->GetNativeWindow()) {
-    // TODO(sammiequon): This works for now, but we may have to check if
-    // |frame_|'s native window is in the overview list instead.
-    SetShouldPaintHeader(true);
-  } else {
-    SetShouldPaintHeader(!in_overview_mode_);
-  }
 }
 
 }  // namespace ash
