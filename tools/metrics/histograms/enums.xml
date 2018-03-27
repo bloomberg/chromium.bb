@@ -7803,6 +7803,11 @@ Called by update_net_error_codes.py.-->
   <int value="8" label="PlayMusic"/>
 </enum>
 
+<enum name="CrossOriginAd">
+  <int value="0" label="Main Frame Origin same as Ad"/>
+  <int value="1" label="Main Frame Origin differs from Ad"/>
+</enum>
+
 <enum name="CrossOriginAutoplayResult">
   <int value="0" label="Allowed"/>
   <int value="1" label="Blocked"/>

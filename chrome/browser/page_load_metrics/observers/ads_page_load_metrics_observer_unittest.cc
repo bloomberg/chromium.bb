@@ -59,6 +59,7 @@ enum class FrameType { AD = 0, NON_AD };
 const char kAdUrl[] = "https://tpc.googlesyndication.com/safeframe/1";
 const char kNonAdUrl[] = "https://foo.com/";
 const char kNonAdUrl2[] = "https://bar.com/";
+const char kNonAdUrlSameOrigin[] = "https://tpc.googlesyndication.com/nonad";
 
 const char kAdName[] = "google_ads_iframe_1";
 const char kNonAdName[] = "foo";
@@ -454,6 +455,59 @@ TEST_F(AdsPageLoadMetricsObserverTest, PageLoadSubFrameRenavigationMetrics) {
   ad_sub_sub_frame = NavigateFrame(kNonAdUrl2, ad_sub_sub_frame);
   tester.ExpectTotalCount(
       "PageLoad.Clients.Ads.All.Navigations.AdFrameRenavigatedToAd", 0);
+}
+
+// Test that the cross-origin ad subframe navigation metric works as it's
+// supposed to, triggering a false addition with each ad that's in the same
+// origin as the main page, and a true when when the ad has a separate origin.
+TEST_F(AdsPageLoadMetricsObserverTest, CrossOriginAdsMetrics) {
+  const char cross_origin_histogram_id[] =
+      "PageLoad.Clients.Ads.Google.FrameCounts.AdFrames.PerFrame.CrossOrigin";
+  const base::HistogramTester& histograms = histogram_tester();
+
+  // Test that when the main frame origin is different from a direct ad
+  // subframe it is correctly identified as cross-origin, but do not count
+  // indirect ad subframes.
+  RenderFrameHost* main_frame = NavigateMainFrame(kNonAdUrl);
+  RenderFrameHost* ad_sub_frame =
+      CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame);
+  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
+  LoadResource(ad_sub_frame, ResourceCached::NOT_CACHED, 10);
+  LoadResource(CreateAndNavigateSubFrame(kAdUrl, kNonAdName, ad_sub_frame),
+               ResourceCached::NOT_CACHED, 10);
+  // Trigger histograms, set up for next test with different ad origin.
+  main_frame = NavigateFrame(kNonAdUrl, main_frame);
+  // Check the histogram values.
+  histograms.ExpectTotalCount(cross_origin_histogram_id, 1);
+  histograms.ExpectBucketCount(cross_origin_histogram_id, true, 1);
+  histograms.ExpectBucketCount(cross_origin_histogram_id, false, 0);
+
+  // Add a non-ad subframe and an ad subframe and make sure the total count
+  // only adjusts by one.
+  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
+  LoadResource(CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame),
+               ResourceCached::NOT_CACHED, 10);
+  LoadResource(CreateAndNavigateSubFrame(kNonAdUrl, kNonAdName, main_frame),
+               ResourceCached::NOT_CACHED, 10);
+  // Trigger histograms, set up for next test with same origin as ad.
+  main_frame = NavigateFrame(kNonAdUrlSameOrigin, main_frame);
+  // Check the histogram values.
+  histograms.ExpectTotalCount(cross_origin_histogram_id, 2);
+  histograms.ExpectBucketCount(cross_origin_histogram_id, true, 2);
+  histograms.ExpectBucketCount(cross_origin_histogram_id, false, 0);
+
+  // Add an ad subframe in the same origin as the parent frame and make sure it
+  // gets identified as non-cross-origin. Note: top-level navigations are never
+  // considered to be ads.
+  LoadResource(main_frame, ResourceCached::NOT_CACHED, 10);
+  LoadResource(CreateAndNavigateSubFrame(kAdUrl, kNonAdName, main_frame),
+               ResourceCached::NOT_CACHED, 10);
+  // Trigger histograms.
+  main_frame = NavigateFrame(kNonAdUrl, main_frame);
+  // Check the histogram values.
+  histograms.ExpectTotalCount(cross_origin_histogram_id, 3);
+  histograms.ExpectBucketCount(cross_origin_histogram_id, true, 2);
+  histograms.ExpectBucketCount(cross_origin_histogram_id, false, 1);
 }
 
 TEST_F(AdsPageLoadMetricsObserverTest, PageWithAdFrameThatRenavigates) {
