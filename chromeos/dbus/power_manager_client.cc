@@ -88,17 +88,6 @@ class PowerManagerClientImpl : public PowerManagerClient {
  public:
   PowerManagerClientImpl()
       : origin_thread_id_(base::PlatformThread::CurrentId()),
-        power_manager_proxy_(NULL),
-        suspend_delay_id_(-1),
-        has_suspend_delay_id_(false),
-        dark_suspend_delay_id_(-1),
-        has_dark_suspend_delay_id_(false),
-        pending_suspend_id_(-1),
-        suspend_is_pending_(false),
-        suspending_from_dark_resume_(false),
-        next_suspend_readiness_callback_id_(1),
-        notifying_observers_about_suspend_imminent_(false),
-        last_is_projecting_(false),
         weak_ptr_factory_(this) {}
 
   ~PowerManagerClientImpl() override {
@@ -356,111 +345,41 @@ class PowerManagerClientImpl : public PowerManagerClient {
         base::Bind(&PowerManagerClientImpl::NameOwnerChangedReceived,
                    weak_ptr_factory_.GetWeakPtr()));
 
-    // Monitor the D-Bus signal for brightness changes. Only the power
-    // manager knows the actual brightness level. We don't cache the
-    // brightness level in Chrome as it'll make things less reliable.
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kScreenBrightnessChangedSignal,
-        base::BindRepeating(
-            &PowerManagerClientImpl::ScreenBrightnessChangedReceived,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::BindOnce(&PowerManagerClientImpl::SignalConnected,
-                       weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kKeyboardBrightnessChangedSignal,
-        base::BindRepeating(
-            &PowerManagerClientImpl::KeyboardBrightnessChangedReceived,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::BindOnce(&PowerManagerClientImpl::SignalConnected,
-                       weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kScreenIdleStateChangedSignal,
-        base::Bind(&PowerManagerClientImpl::ScreenIdleStateChangedReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kInactivityDelaysChangedSignal,
-        base::BindRepeating(
-            &PowerManagerClientImpl::InactivityDelaysChangedReceived,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::BindRepeating(&PowerManagerClientImpl::SignalConnected,
-                            weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kPeripheralBatteryStatusSignal,
-        base::Bind(&PowerManagerClientImpl::PeripheralBatteryStatusReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kPowerSupplyPollSignal,
-        base::Bind(&PowerManagerClientImpl::PowerSupplyPollReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kInputEventSignal,
-        base::Bind(&PowerManagerClientImpl::InputEventReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kSuspendImminentSignal,
-        base::Bind(
-            &PowerManagerClientImpl::HandleSuspendImminent,
-            weak_ptr_factory_.GetWeakPtr(), false),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kSuspendDoneSignal,
-        base::Bind(&PowerManagerClientImpl::SuspendDoneReceived,
-                   weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kDarkSuspendImminentSignal,
-        base::Bind(
-            &PowerManagerClientImpl::HandleSuspendImminent,
-            weak_ptr_factory_.GetWeakPtr(), true),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kIdleActionImminentSignal,
-        base::Bind(
-            &PowerManagerClientImpl::IdleActionImminentReceived,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
-
-    power_manager_proxy_->ConnectToSignal(
-        power_manager::kPowerManagerInterface,
-        power_manager::kIdleActionDeferredSignal,
-        base::Bind(
-            &PowerManagerClientImpl::IdleActionDeferredReceived,
-            weak_ptr_factory_.GetWeakPtr()),
-        base::Bind(&PowerManagerClientImpl::SignalConnected,
-                   weak_ptr_factory_.GetWeakPtr()));
+    // Listen to D-Bus signals emitted by powerd.
+    typedef void (PowerManagerClientImpl::*SignalMethod)(dbus::Signal*);
+    const std::map<const char*, SignalMethod> kSignalMethods = {
+        {power_manager::kScreenBrightnessChangedSignal,
+         &PowerManagerClientImpl::ScreenBrightnessChangedReceived},
+        {power_manager::kKeyboardBrightnessChangedSignal,
+         &PowerManagerClientImpl::KeyboardBrightnessChangedReceived},
+        {power_manager::kScreenIdleStateChangedSignal,
+         &PowerManagerClientImpl::ScreenIdleStateChangedReceived},
+        {power_manager::kInactivityDelaysChangedSignal,
+         &PowerManagerClientImpl::InactivityDelaysChangedReceived},
+        {power_manager::kPeripheralBatteryStatusSignal,
+         &PowerManagerClientImpl::PeripheralBatteryStatusReceived},
+        {power_manager::kPowerSupplyPollSignal,
+         &PowerManagerClientImpl::PowerSupplyPollReceived},
+        {power_manager::kInputEventSignal,
+         &PowerManagerClientImpl::InputEventReceived},
+        {power_manager::kSuspendImminentSignal,
+         &PowerManagerClientImpl::SuspendImminentReceived},
+        {power_manager::kSuspendDoneSignal,
+         &PowerManagerClientImpl::SuspendDoneReceived},
+        {power_manager::kDarkSuspendImminentSignal,
+         &PowerManagerClientImpl::DarkSuspendImminentReceived},
+        {power_manager::kIdleActionImminentSignal,
+         &PowerManagerClientImpl::IdleActionImminentReceived},
+        {power_manager::kIdleActionDeferredSignal,
+         &PowerManagerClientImpl::IdleActionDeferredReceived},
+    };
+    for (const auto& it : kSignalMethods) {
+      power_manager_proxy_->ConnectToSignal(
+          power_manager::kPowerManagerInterface, it.first,
+          base::BindRepeating(it.second, weak_ptr_factory_.GetWeakPtr()),
+          base::BindOnce(&PowerManagerClientImpl::SignalConnected,
+                         weak_ptr_factory_.GetWeakPtr()));
+    }
 
     RegisterSuspendDelays();
   }
@@ -730,6 +649,14 @@ class PowerManagerClientImpl : public PowerManagerClient {
       has_suspend_delay_id_ = true;
       POWER_LOG(EVENT) << "Registered suspend delay " << suspend_delay_id_;
     }
+  }
+
+  void SuspendImminentReceived(dbus::Signal* signal) {
+    HandleSuspendImminent(false /* in_dark_resume */, signal);
+  }
+
+  void DarkSuspendImminentReceived(dbus::Signal* signal) {
+    HandleSuspendImminent(true /* in_dark_resume */, signal);
   }
 
   void HandleSuspendImminent(bool in_dark_resume, dbus::Signal* signal) {
@@ -1019,31 +946,31 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // Origin thread (i.e. the UI thread in production).
   base::PlatformThreadId origin_thread_id_;
 
-  dbus::ObjectProxy* power_manager_proxy_;
+  dbus::ObjectProxy* power_manager_proxy_ = nullptr;
   base::ObserverList<Observer> observers_;
 
   // The delay ID obtained from the RegisterSuspendDelay request.
-  int32_t suspend_delay_id_;
-  bool has_suspend_delay_id_;
+  int32_t suspend_delay_id_ = -1;
+  bool has_suspend_delay_id_ = false;
 
   // The delay ID obtained from the RegisterDarkSuspendDelay request.
-  int32_t dark_suspend_delay_id_;
-  bool has_dark_suspend_delay_id_;
+  int32_t dark_suspend_delay_id_ = -1;
+  bool has_dark_suspend_delay_id_ = false;
 
   // powerd-supplied ID corresponding to an imminent (either regular or dark)
   // suspend attempt that is currently being delayed.
-  int32_t pending_suspend_id_;
-  bool suspend_is_pending_;
+  int32_t pending_suspend_id_ = -1;
+  bool suspend_is_pending_ = false;
 
   // Set to true when the suspend currently being delayed was triggered during a
   // dark resume.  Since |pending_suspend_id_| and |suspend_is_pending_| are
   // both shared by normal and dark suspends, |suspending_from_dark_resume_|
   // helps distinguish the context within which these variables are being used.
-  bool suspending_from_dark_resume_;
+  bool suspending_from_dark_resume_ = false;
 
   // Next ID to be assigned to a callback returned via
   // GetSuspendReadinessCallback().
-  int next_suspend_readiness_callback_id_;
+  int next_suspend_readiness_callback_id_ = 1;
 
   // Map from suspend readiness callback ID to the location of the code that
   // requested the callback.
@@ -1052,10 +979,10 @@ class PowerManagerClientImpl : public PowerManagerClient {
   // Inspected by MaybeReportSuspendReadiness() to avoid prematurely notifying
   // powerd about suspend readiness while |observers_|' SuspendImminent()
   // methods are being called by HandleSuspendImminent().
-  bool notifying_observers_about_suspend_imminent_;
+  bool notifying_observers_about_suspend_imminent_ = false;
 
   // Last state passed to SetIsProjecting().
-  bool last_is_projecting_;
+  bool last_is_projecting_ = false;
 
   // The delegate used to manage the power consumption of Chrome's renderer
   // processes.
