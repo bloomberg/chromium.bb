@@ -28682,6 +28682,7 @@ Called by update_use_counter_css.py.-->
   <int value="1" label="Data (range)"/>
   <int value="2" label="History (all)"/>
   <int value="3" label="History (range)"/>
+  <int value="4" label="History (expired)"/>
 </enum>
 
 <enum name="MediaEngagementSessionEvent">

@@ -138,6 +138,13 @@ class MediaEngagementService : public KeyedService,
   int GetSchemaVersion() const;
   void SetSchemaVersion(int);
 
+  // Remove origins from `deleted_origins` that have no more visits in the
+  // history service, represented as `origin_data`. This is meant to be used
+  // when the service receives a notification of history expiration.
+  void RemoveOriginsWithNoVisits(
+      const std::set<GURL>& deleted_origins,
+      const history::OriginCountAndLastVisitMap& origin_data);
+
   // Allows us to cancel the RecordScoresToHistogram task if we are destroyed.
   base::CancelableTaskTracker task_tracker_;
 
