@@ -13,7 +13,6 @@
 #include "chrome/browser/ui/views/tabs/tab.h"
 #include "chrome/browser/ui/views/tabs/tab_icon.h"
 #include "chrome/browser/ui/views/tabs/tab_renderer_data.h"
-#include "chrome/browser/ui/views/tabs/tab_strip.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_controller.h"
 #include "chrome/browser/ui/views/tabs/tab_strip_observer.h"
 #include "chrome/test/base/testing_profile.h"
@@ -131,6 +130,7 @@ class TabStripTest : public views::ViewsTestBase,
   }
 
   void TearDown() override {
+    TabStrip::ResetTabSizeInfoForTesting();
     widget_.reset();
     views::ViewsTestBase::TearDown();
   }
@@ -563,6 +563,41 @@ TEST_P(TabStripTest, AttentionIndicatorHidesOnSelect) {
   controller_->SelectTab(1);
   // Indicator should hide.
   EXPECT_FALSE(IsShowingAttentionIndicator(1));
+}
+
+// The active tab should always be at least as wide as its minimum width.
+// http://crbug.com/587688
+TEST_P(TabStripTest, ActiveTabWidthWhenTabsAreTiny) {
+  // The bug was caused when it's animating. Therefore we should make widget
+  // visible so that animation can be triggered.
+  tab_strip_->GetWidget()->Show();
+  tab_strip_->SetBounds(0, 0, 200, 20);
+
+  const int min_inactive_width = Tab::GetMinimumInactiveSize().width();
+  // Create a lot of tabs in order to make inactive tabs tiny.
+  while (tab_strip_->current_inactive_width_ != min_inactive_width)
+    controller_->CreateNewTab();
+
+  const int min_active_width = Tab::GetMinimumActiveSize().width();
+  int active_index = controller_->GetActiveIndex();
+  EXPECT_GT(tab_strip_->tab_count(), 1);
+  EXPECT_EQ(tab_strip_->tab_count() - 1, active_index);
+  EXPECT_LT(tab_strip_->ideal_bounds(0).width(),
+            tab_strip_->ideal_bounds(active_index).width());
+
+  // Even though other tabs are very tiny, the active tab should be at least
+  // as wide as it's minimum width.
+  EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(), min_active_width);
+
+  // During mouse-based tab closure, the active tab should remain at least as
+  // wide as it's minium width.
+  controller_->SelectTab(0);
+  while (tab_strip_->tab_count()) {
+    const int active_index = controller_->GetActiveIndex();
+    EXPECT_GE(tab_strip_->ideal_bounds(active_index).width(), min_active_width);
+    tab_strip_->CloseTab(tab_strip_->tab_at(active_index),
+                         CLOSE_TAB_FROM_MOUSE);
+  }
 }
 
 // Defines an alias to be used for tests that are only relevant to the touch-
