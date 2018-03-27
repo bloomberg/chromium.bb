@@ -530,11 +530,9 @@ typedef enum ATTRIBUTE_PACKED {
 #define DELTA_Q_SMALL 3
 #define DELTA_Q_PROBS (DELTA_Q_SMALL)
 #define DEFAULT_DELTA_Q_RES 4
-#if CONFIG_EXT_DELTA_Q
 #define DELTA_LF_SMALL 3
 #define DELTA_LF_PROBS (DELTA_LF_SMALL)
 #define DEFAULT_DELTA_LF_RES 2
-#endif
 
 /* Segment Feature Masks */
 #define MAX_MV_REF_CANDIDATES 2

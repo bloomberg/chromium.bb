@@ -844,7 +844,7 @@ static const aom_cdf_prob default_sgrproj_restore_cdf[CDF_SIZE(2)] = { AOM_CDF2(
 static const aom_cdf_prob default_delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)] = {
   AOM_CDF4(28160, 32120, 32677)
 };
-#if CONFIG_EXT_DELTA_Q
+
 static const aom_cdf_prob default_delta_lf_multi_cdf[FRAME_LF_COUNT][CDF_SIZE(
     DELTA_LF_PROBS + 1)] = { { AOM_CDF4(28160, 32120, 32677) },
                              { AOM_CDF4(28160, 32120, 32677) },
@@ -853,7 +853,6 @@ static const aom_cdf_prob default_delta_lf_multi_cdf[FRAME_LF_COUNT][CDF_SIZE(
 static const aom_cdf_prob default_delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)] = {
   AOM_CDF4(28160, 32120, 32677)
 };
-#endif
 
 // FIXME(someone) need real defaults here
 static const aom_cdf_prob default_seg_tree_cdf[CDF_SIZE(MAX_SEGMENTS)] = {
@@ -1040,10 +1039,8 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
 #endif
   av1_copy(fc->tx_size_cdf, default_tx_size_cdf);
   av1_copy(fc->delta_q_cdf, default_delta_q_cdf);
-#if CONFIG_EXT_DELTA_Q
   av1_copy(fc->delta_lf_cdf, default_delta_lf_cdf);
   av1_copy(fc->delta_lf_multi_cdf, default_delta_lf_multi_cdf);
-#endif
   av1_copy(fc->cfl_sign_cdf, default_cfl_sign_cdf);
   av1_copy(fc->cfl_alpha_cdf, default_cfl_alpha_cdf);
   av1_copy(fc->intrabc_cdf, default_intrabc_cdf);

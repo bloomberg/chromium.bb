@@ -27,11 +27,9 @@ static const SEG_LVL_FEATURES seg_lvl_lf_lut[MAX_MB_PLANE][2] = {
   { SEG_LVL_ALT_LF_V, SEG_LVL_ALT_LF_V }
 };
 
-#if CONFIG_EXT_DELTA_Q
 static const int delta_lf_id_lut[MAX_MB_PLANE][2] = {
   { 0, 1 }, { 2, 2 }, { 3, 3 }
 };
-#endif  // CONFIG_EXT_DELTA_Q
 
 typedef enum EDGE_DIR { VERT_EDGE = 0, HORZ_EDGE = 1, NUM_EDGE_DIRS } EDGE_DIR;
 
@@ -541,7 +539,6 @@ static void update_sharpness(loop_filter_info_n *lfi, int sharpness_lvl) {
            SIMD_WIDTH);
   }
 }
-#if CONFIG_EXT_DELTA_Q
 static uint8_t get_filter_level(const AV1_COMMON *cm,
                                 const loop_filter_info_n *lfi_n,
                                 const int dir_idx, int plane,
@@ -583,13 +580,6 @@ static uint8_t get_filter_level(const AV1_COMMON *cm,
         ->lvl[segment_id][dir_idx][mbmi->ref_frame[0]][mode_lf_lut[mbmi->mode]];
   }
 }
-#else
-static uint8_t get_filter_level(const loop_filter_info_n *lfi_n,
-                                const MB_MODE_INFO *mbmi) {
-  const int segment_id = mbmi->segment_id;
-  return lfi_n->lvl[segment_id][mbmi->ref_frame[0]][mode_lf_lut[mbmi->mode]];
-}
-#endif
 
 void av1_loop_filter_init(AV1_COMMON *cm) {
   assert(MB_MODE_COUNT == NELEMENTS(mode_lf_lut));
@@ -799,14 +789,9 @@ static void setup_masks(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
                            : mi - ((tx_size_high_unit[tx_size] * cm->mi_stride)
                                    << subsampling_y);
     const MB_MODE_INFO *const mbmi_prev = &mi_prev[0]->mbmi;
-#if CONFIG_EXT_DELTA_Q
     const uint8_t level = get_filter_level(cm, &cm->lf_info, dir, plane, mbmi);
     const uint8_t level_prev =
         get_filter_level(cm, &cm->lf_info, dir, plane, mbmi_prev);
-#else
-    const uint8_t level = get_filter_level(&cm->lf_info, mbmi);
-    const uint8_t level_prev = get_filter_level(&cm->lf_info, mbmi_prev);
-#endif  // CONFIG_EXT_DELTA_Q
     const int prev_skip = mbmi_prev->skip && is_inter_block(mbmi_prev);
     const BLOCK_SIZE bsize =
         ss_size_lookup[mbmi->sb_type][subsampling_x][subsampling_y];
@@ -1115,12 +1100,7 @@ static void build_masks(AV1_COMMON *const cm,
   const TX_SIZE tx_size_uv = txsize_sqr_map[tx_size_uv_actual];
   const TX_SIZE tx_size_uv_left = txsize_horz_map[tx_size_uv_actual];
   const TX_SIZE tx_size_uv_above = txsize_vert_map[tx_size_uv_actual];
-#if CONFIG_EXT_DELTA_Q
   const int filter_level = get_filter_level(cm, lfi_n, 0, 0, mbmi);
-#else
-  const int filter_level = get_filter_level(lfi_n, mbmi);
-  (void)cm;
-#endif
   uint64_t *const left_y = &lfm->left_y[tx_size_y_left];
   uint64_t *const above_y = &lfm->above_y[tx_size_y_above];
   uint64_t *const int_4x4_y = &lfm->int_4x4_y;
@@ -1201,12 +1181,7 @@ static void build_y_mask(AV1_COMMON *const cm,
   const TX_SIZE tx_size_y_left = txsize_horz_map[mbmi->tx_size];
   const TX_SIZE tx_size_y_above = txsize_vert_map[mbmi->tx_size];
   const BLOCK_SIZE block_size = mbmi->sb_type;
-#if CONFIG_EXT_DELTA_Q
   const int filter_level = get_filter_level(cm, lfi_n, 0, 0, mbmi);
-#else
-  const int filter_level = get_filter_level(lfi_n, mbmi);
-  (void)cm;
-#endif
   uint64_t *const left_y = &lfm->left_y[tx_size_y_left];
   uint64_t *const above_y = &lfm->above_y[tx_size_y_above];
   uint64_t *const int_4x4_y = &lfm->int_4x4_y;
@@ -1619,13 +1594,8 @@ static TX_SIZE set_lpf_parameters(
 
     // prepare outer edge parameters. deblock the edge if it's an edge of a TU
     {
-#if CONFIG_EXT_DELTA_Q
       const uint32_t curr_level =
           get_filter_level(cm, &cm->lf_info, edge_dir, plane, mbmi);
-#else
-      const uint32_t curr_level = get_filter_level(&cm->lf_info, mbmi);
-#endif  // CONFIG_EXT_DELTA_Q
-
       const int curr_skipped = mbmi->skip && is_inter_block(mbmi);
       uint32_t level = curr_level;
       if (coord) {
@@ -1638,13 +1608,8 @@ static TX_SIZE set_lpf_parameters(
           const TX_SIZE pv_ts = av1_get_transform_size(
               mi_prev, edge_dir, pv_row, pv_col, plane, plane_ptr);
 
-#if CONFIG_EXT_DELTA_Q
           const uint32_t pv_lvl = get_filter_level(cm, &cm->lf_info, edge_dir,
                                                    plane, &mi_prev->mbmi);
-#else
-          const uint32_t pv_lvl =
-              get_filter_level(&cm->lf_info, &mi_prev->mbmi);
-#endif  // CONFIG_EXT_DELTA_Q
 
           const int pv_skip =
               mi_prev->mbmi.skip && is_inter_block(&mi_prev->mbmi);
@@ -1967,9 +1932,7 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
                            int frame_filter_level_r, int plane,
                            int partial_frame) {
   int start_mi_row, end_mi_row, mi_rows_to_filter;
-#if CONFIG_EXT_DELTA_Q
   int orig_filter_level[2] = { cm->lf.filter_level[0], cm->lf.filter_level[1] };
-#endif
 
   if (!frame_filter_level && !frame_filter_level_r) return;
   start_mi_row = 0;
@@ -1983,15 +1946,11 @@ void av1_loop_filter_frame(YV12_BUFFER_CONFIG *frame, AV1_COMMON *cm,
   av1_loop_filter_frame_init(cm, frame_filter_level, frame_filter_level_r,
                              plane);
 
-#if CONFIG_EXT_DELTA_Q
   cm->lf.filter_level[0] = frame_filter_level;
   cm->lf.filter_level[1] = frame_filter_level_r;
-#endif
 
   av1_loop_filter_rows(frame, cm, xd->plane, start_mi_row, end_mi_row, plane);
 
-#if CONFIG_EXT_DELTA_Q
   cm->lf.filter_level[0] = orig_filter_level[0];
   cm->lf.filter_level[1] = orig_filter_level[1];
-#endif
 }

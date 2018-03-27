@@ -92,7 +92,6 @@ static int read_delta_qindex(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   }
   return reduced_delta_qindex;
 }
-#if CONFIG_EXT_DELTA_Q
 static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
                               int lf_id, MB_MODE_INFO *const mbmi, int mi_col,
                               int mi_row) {
@@ -132,7 +131,6 @@ static int read_delta_lflevel(AV1_COMMON *cm, MACROBLOCKD *xd, aom_reader *r,
   }
   return reduced_delta_lflevel;
 }
-#endif
 
 static UV_PREDICTION_MODE read_intra_mode_uv(FRAME_CONTEXT *ec_ctx,
                                              aom_reader *r,
@@ -781,7 +779,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
     /* Normative: Clamp to [1,MAXQ] to not interfere with lossless mode */
     xd->current_qindex = clamp(xd->current_qindex, 1, MAXQ);
     xd->prev_qindex = xd->current_qindex;
-#if CONFIG_EXT_DELTA_Q
     if (cm->delta_lf_present_flag) {
       if (cm->delta_lf_multi) {
         const int frame_lf_count =
@@ -805,7 +802,6 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
         xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
       }
     }
-#endif
   }
 
   mbmi->current_q_index = xd->current_qindex;
@@ -1626,7 +1622,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
     /* Normative: Clamp to [1,MAXQ] to not interfere with lossless mode */
     xd->current_qindex = clamp(xd->current_qindex, 1, MAXQ);
     xd->prev_qindex = xd->current_qindex;
-#if CONFIG_EXT_DELTA_Q
     if (cm->delta_lf_present_flag) {
       if (cm->delta_lf_multi) {
         const int frame_lf_count =
@@ -1650,7 +1645,6 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
         xd->prev_delta_lf_from_base = xd->current_delta_lf_from_base;
       }
     }
-#endif  // CONFIG_EXT_DELTA_Q
   }
 
   if (!mbmi->skip_mode)

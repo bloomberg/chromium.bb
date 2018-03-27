@@ -253,11 +253,8 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 
   if (p->eobs[block] == 0 && plane == 0) {
-    if (args->cpi->oxcf.aq_mode == NO_AQ
-#if CONFIG_EXT_DELTA_Q
-        && args->cpi->oxcf.deltaq_mode == NO_DELTA_Q
-#endif
-    ) {
+    if (args->cpi->oxcf.aq_mode == NO_AQ &&
+        args->cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
       // TODO(jingning,angiebird,huisu@google.com): enable txk_check when
       // enable_optimize_b is true to detect potential RD bug.
       const uint8_t disable_txk_check = args->enable_optimize_b;
@@ -551,10 +548,7 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   // again.
 #if 0
     if (args->cpi->oxcf.aq_mode == NO_AQ
-#if CONFIG_EXT_DELTA_Q
-        && args->cpi->oxcf.deltaq_mode == NO_DELTA_Q
-#endif
-    ) {
+        && args->cpi->oxcf.deltaq_mode == NO_DELTA_Q) {
       assert(mbmi->txk_type[av1_get_txk_type_index(plane_bsize, blk_row,
                                                    blk_col)] == DCT_DCT);
     }

@@ -153,10 +153,8 @@ typedef struct frame_contexts {
   aom_cdf_prob tx_size_cdf[MAX_TX_CATS][TX_SIZE_CONTEXTS]
                           [CDF_SIZE(MAX_TX_DEPTH + 1)];
   aom_cdf_prob delta_q_cdf[CDF_SIZE(DELTA_Q_PROBS + 1)];
-#if CONFIG_EXT_DELTA_Q
   aom_cdf_prob delta_lf_multi_cdf[FRAME_LF_COUNT][CDF_SIZE(DELTA_LF_PROBS + 1)];
   aom_cdf_prob delta_lf_cdf[CDF_SIZE(DELTA_LF_PROBS + 1)];
-#endif
   aom_cdf_prob intra_ext_tx_cdf[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]
                                [CDF_SIZE(TX_TYPES)];
   aom_cdf_prob inter_ext_tx_cdf[EXT_TX_SETS_INTER][EXT_TX_SIZES]
@@ -244,10 +242,8 @@ typedef struct FRAME_COUNTS {
   unsigned int compound_index[COMP_INDEX_CONTEXTS][2];
   unsigned int comp_group_idx[COMP_GROUP_IDX_CONTEXTS][2];
   unsigned int delta_q[DELTA_Q_PROBS][2];
-#if CONFIG_EXT_DELTA_Q
   unsigned int delta_lf_multi[FRAME_LF_COUNT][DELTA_LF_PROBS][2];
   unsigned int delta_lf[DELTA_LF_PROBS][2];
-#endif
 #if CONFIG_ENTROPY_STATS
   unsigned int inter_ext_tx[EXT_TX_SETS_INTER][EXT_TX_SIZES][TX_TYPES];
   unsigned int intra_ext_tx[EXT_TX_SETS_INTRA][EXT_TX_SIZES][INTRA_MODES]

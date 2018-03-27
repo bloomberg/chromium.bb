@@ -353,12 +353,8 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
 
   if (cm->delta_q_present_flag) {
     for (int i = 0; i < MAX_SEGMENTS; i++) {
-#if CONFIG_EXT_DELTA_Q
       const int current_qindex =
           av1_get_qindex(&cm->seg, i, xd->current_qindex);
-#else
-      const int current_qindex = xd->current_qindex;
-#endif  // CONFIG_EXT_DELTA_Q
       for (int j = 0; j < num_planes; ++j) {
         const int dc_delta_q =
             j == 0 ? cm->y_dc_delta_q
@@ -3008,23 +3004,11 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
   {
     int delta_q_allowed = 1;
-#if !CONFIG_EXT_DELTA_Q
-    struct segmentation *const seg = &cm->seg;
-    int segment_quantizer_active = 0;
-    for (int i = 0; i < MAX_SEGMENTS; i++) {
-      if (segfeature_active(seg, i, SEG_LVL_ALT_Q)) {
-        segment_quantizer_active = 1;
-      }
-    }
-    delta_q_allowed = !segment_quantizer_active;
-#endif
 
     cm->delta_q_res = 1;
-#if CONFIG_EXT_DELTA_Q
     cm->delta_lf_res = 1;
     cm->delta_lf_present_flag = 0;
     cm->delta_lf_multi = 0;
-#endif
     if (delta_q_allowed == 1 && cm->base_qindex > 0) {
       cm->delta_q_present_flag = aom_rb_read_bit(rb);
     } else {
@@ -3033,7 +3017,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->delta_q_present_flag) {
       xd->prev_qindex = cm->base_qindex;
       cm->delta_q_res = 1 << aom_rb_read_literal(rb, 2);
-#if CONFIG_EXT_DELTA_Q
       if (!cm->allow_intrabc || !NO_FILTER_FOR_IBC)
         cm->delta_lf_present_flag = aom_rb_read_bit(rb);
       if (cm->delta_lf_present_flag) {
@@ -3045,7 +3028,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
           xd->prev_delta_lf[lf_id] = 0;
       }
-#endif  // CONFIG_EXT_DELTA_Q
     }
   }
 #if CONFIG_AMVR

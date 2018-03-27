@@ -96,19 +96,14 @@ typedef enum {
   VARIANCE_AQ = 1,
   COMPLEXITY_AQ = 2,
   CYCLIC_REFRESH_AQ = 3,
-#if !CONFIG_EXT_DELTA_Q
-  DELTA_AQ = 4,
-#endif
   AQ_MODE_COUNT  // This should always be the last member of the enum
 } AQ_MODE;
-#if CONFIG_EXT_DELTA_Q
 typedef enum {
   NO_DELTA_Q = 0,
   DELTA_Q_ONLY = 1,
   DELTA_Q_LF = 2,
   DELTAQ_MODE_COUNT  // This should always be the last member of the enum
 } DELTAQ_MODE;
-#endif
 
 typedef enum {
   RESIZE_NONE = 0,    // No frame resizing allowed.
@@ -185,9 +180,7 @@ typedef struct AV1EncoderConfig {
   int best_allowed_q;
   int cq_level;
   AQ_MODE aq_mode;  // Adaptive Quantization mode
-#if CONFIG_EXT_DELTA_Q
   DELTAQ_MODE deltaq_mode;
-#endif
   int enable_cdef;
   int enable_restoration;
   int using_qm;

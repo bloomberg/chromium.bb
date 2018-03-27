@@ -300,7 +300,6 @@ static void write_delta_qindex(const MACROBLOCKD *xd, int delta_qindex,
   }
 }
 
-#if CONFIG_EXT_DELTA_Q
 static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                                 int lf_id, int delta_lflevel, aom_writer *w) {
   int sign = delta_lflevel < 0;
@@ -329,7 +328,6 @@ static void write_delta_lflevel(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     aom_write_bit(w, sign);
   }
 }
-#endif  // CONFIG_EXT_DELTA_Q
 
 static void pack_map_tokens(aom_writer *w, const TOKENEXTRA **tp, int n,
                             int num) {
@@ -1005,7 +1003,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
       write_delta_qindex(xd, reduced_delta_qindex, w);
       xd->prev_qindex = mbmi->current_q_index;
-#if CONFIG_EXT_DELTA_Q
       if (cm->delta_lf_present_flag) {
         if (cm->delta_lf_multi) {
           const int frame_lf_count =
@@ -1025,7 +1022,6 @@ static void pack_inter_mode_mvs(AV1_COMP *cpi, const int mi_row,
           xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
         }
       }
-#endif  // CONFIG_EXT_DELTA_Q
     }
   }
 
@@ -1240,7 +1236,6 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
           (mbmi->current_q_index - xd->prev_qindex) / cm->delta_q_res;
       write_delta_qindex(xd, reduced_delta_qindex, w);
       xd->prev_qindex = mbmi->current_q_index;
-#if CONFIG_EXT_DELTA_Q
       if (cm->delta_lf_present_flag) {
         if (cm->delta_lf_multi) {
           const int frame_lf_count =
@@ -1260,7 +1255,6 @@ static void write_mb_modes_kf(AV1_COMP *cpi, MACROBLOCKD *xd,
           xd->prev_delta_lf_from_base = mbmi->current_delta_lf_from_base;
         }
       }
-#endif  // CONFIG_EXT_DELTA_Q
     }
   }
 
@@ -1750,7 +1744,6 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
   av1_zero_above_context(cm, mi_col_start, mi_col_end);
   if (cpi->common.delta_q_present_flag) {
     xd->prev_qindex = cpi->common.base_qindex;
-#if CONFIG_EXT_DELTA_Q
     if (cpi->common.delta_lf_present_flag) {
       const int frame_lf_count =
           av1_num_planes(cm) > 1 ? FRAME_LF_COUNT : FRAME_LF_COUNT - 2;
@@ -1758,7 +1751,6 @@ static void write_modes(AV1_COMP *const cpi, const TileInfo *const tile,
         xd->prev_delta_lf[lf_id] = 0;
       xd->prev_delta_lf_from_base = 0;
     }
-#endif  // CONFIG_EXT_DELTA_Q
   }
 
   for (mi_row = mi_row_start; mi_row < mi_row_end;
@@ -3163,17 +3155,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   encode_segmentation(cm, xd, wb);
   {
     int delta_q_allowed = 1;
-#if !CONFIG_EXT_DELTA_Q
-    int i;
-    struct segmentation *const seg = &cm->seg;
-    int segment_quantizer_active = 0;
-    for (i = 0; i < MAX_SEGMENTS; i++) {
-      if (segfeature_active(seg, i, SEG_LVL_ALT_Q)) {
-        segment_quantizer_active = 1;
-      }
-    }
-    delta_q_allowed = !segment_quantizer_active;
-#endif
 
     if (cm->delta_q_present_flag)
       assert(delta_q_allowed == 1 && cm->base_qindex > 0);
@@ -3182,7 +3163,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
       if (cm->delta_q_present_flag) {
         aom_wb_write_literal(wb, OD_ILOG_NZ(cm->delta_q_res) - 1, 2);
         xd->prev_qindex = cm->base_qindex;
-#if CONFIG_EXT_DELTA_Q
         if (cm->allow_intrabc && NO_FILTER_FOR_IBC)
           assert(cm->delta_lf_present_flag == 0);
         else
@@ -3196,7 +3176,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
           for (int lf_id = 0; lf_id < frame_lf_count; ++lf_id)
             xd->prev_delta_lf[lf_id] = 0;
         }
-#endif  // CONFIG_EXT_DELTA_Q
       }
     }
   }

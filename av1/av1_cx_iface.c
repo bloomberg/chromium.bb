@@ -68,9 +68,7 @@ struct av1_extracfg {
   unsigned int frame_parallel_decoding_mode;
   int use_dual_filter;
   AQ_MODE aq_mode;
-#if CONFIG_EXT_DELTA_Q
   DELTAQ_MODE deltaq_mode;
-#endif
   unsigned int frame_periodic_boost;
   aom_bit_depth_t bit_depth;
   aom_tune_content content;
@@ -131,15 +129,13 @@ static struct av1_extracfg default_extra_cfg = {
 #if CONFIG_DIST_8X8
   0,
 #endif
-  1,                       // max number of tile groups
-  0,                       // mtu_size
-  AOM_TIMING_UNSPECIFIED,  // No picture timing signaling in bitstream
-  1,                       // frame_parallel_decoding_mode
-  1,                       // enable dual filter
-  NO_AQ,                   // aq_mode
-#if CONFIG_EXT_DELTA_Q
-  NO_DELTA_Q,  // deltaq_mode
-#endif
+  1,                            // max number of tile groups
+  0,                            // mtu_size
+  AOM_TIMING_UNSPECIFIED,       // No picture timing signaling in bitstream
+  1,                            // frame_parallel_decoding_mode
+  1,                            // enable dual filter
+  NO_AQ,                        // aq_mode
+  NO_DELTA_Q,                   // deltaq_mode
   0,                            // frame_periodic_delta_q
   AOM_BITS_8,                   // Bit depth
   AOM_CONTENT_DEFAULT,          // content
@@ -241,9 +237,7 @@ static aom_codec_err_t validate_config(aom_codec_alg_priv_t *ctx,
   RANGE_CHECK_HI(cfg, rc_min_quantizer, cfg->rc_max_quantizer);
   RANGE_CHECK_BOOL(extra_cfg, lossless);
   RANGE_CHECK_HI(extra_cfg, aq_mode, AQ_MODE_COUNT - 1);
-#if CONFIG_EXT_DELTA_Q
   RANGE_CHECK_HI(extra_cfg, deltaq_mode, DELTAQ_MODE_COUNT - 1);
-#endif
   RANGE_CHECK_HI(extra_cfg, frame_periodic_boost, 1);
   RANGE_CHECK_HI(cfg, g_threads, 64);
   RANGE_CHECK_HI(cfg, g_lag_in_frames, MAX_LAG_BUFFERS);
@@ -672,9 +666,7 @@ static aom_codec_err_t set_encoder_config(
   oxcf->frame_parallel_decoding_mode = extra_cfg->frame_parallel_decoding_mode;
 
   oxcf->aq_mode = extra_cfg->aq_mode;
-#if CONFIG_EXT_DELTA_Q
   oxcf->deltaq_mode = extra_cfg->deltaq_mode;
-#endif
 
   oxcf->frame_periodic_boost = extra_cfg->frame_periodic_boost;
   oxcf->motion_vector_unit_test = extra_cfg->motion_vector_unit_test;
@@ -1041,14 +1033,13 @@ static aom_codec_err_t ctrl_set_film_grain_table(aom_codec_alg_priv_t *ctx,
 }
 #endif
 
-#if CONFIG_EXT_DELTA_Q
 static aom_codec_err_t ctrl_set_deltaq_mode(aom_codec_alg_priv_t *ctx,
                                             va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
   extra_cfg.deltaq_mode = CAST(AV1E_SET_DELTAQ_MODE, args);
   return update_extra_cfg(ctx, &extra_cfg);
 }
-#endif
+
 static aom_codec_err_t ctrl_set_min_gf_interval(aom_codec_alg_priv_t *ctx,
                                                 va_list args) {
   struct av1_extracfg extra_cfg = ctx->extra_cfg;
@@ -1653,9 +1644,7 @@ static aom_codec_ctrl_fn_map_t encoder_ctrl_maps[] = {
   { AV1E_SET_ALLOW_WARPED_MOTION, ctrl_set_allow_warped_motion },
   { AV1E_SET_ENABLE_SUPERRES, ctrl_set_enable_superres },
   { AV1E_SET_AQ_MODE, ctrl_set_aq_mode },
-#if CONFIG_EXT_DELTA_Q
   { AV1E_SET_DELTAQ_MODE, ctrl_set_deltaq_mode },
-#endif
   { AV1E_SET_FRAME_PERIODIC_BOOST, ctrl_set_frame_periodic_boost },
   { AV1E_SET_TUNE_CONTENT, ctrl_set_tune_content },
   { AV1E_SET_CDF_UPDATE_MODE, ctrl_set_cdf_update_mode },

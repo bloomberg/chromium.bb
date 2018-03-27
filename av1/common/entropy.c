@@ -133,10 +133,8 @@ void av1_reset_cdf_symbol_counters(FRAME_CONTEXT *fc) {
   RESET_CDF_COUNTER(angle_delta_cdf);
   RESET_CDF_COUNTER(tx_size_cdf);
   RESET_CDF_COUNTER(delta_q_cdf);
-#if CONFIG_EXT_DELTA_Q
   RESET_CDF_COUNTER(delta_lf_multi_cdf);
   RESET_CDF_COUNTER(delta_lf_cdf);
-#endif
   RESET_CDF_COUNTER(intra_ext_tx_cdf);
   RESET_CDF_COUNTER(inter_ext_tx_cdf);
   RESET_CDF_COUNTER(cfl_sign_cdf);
