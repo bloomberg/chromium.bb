@@ -9961,10 +9961,18 @@ Called by update_net_error_codes.py.-->
 </enum>
 
 <enum name="DownloadFileResult">
-  <int value="0" label="Completed"/>
-  <int value="1" label="Canceled"/>
-  <int value="2" label="Failure"/>
-  <int value="3" label="Other"/>
+  <int value="0" label="Completed">Download has successfully completed.</int>
+  <int value="1" label="Canceled">
+    In progress download was cancelled by the user.
+  </int>
+  <int value="2" label="Failure">Download has completed with error.</int>
+  <int value="3" label="Other">
+    In progress download did no finish because the tab was closed or user has
+    quit the app.
+  </int>
+  <int value="4" label="Not Started">
+    The user closed Download Manager UI without starting the download.
+  </int>
 </enum>
 
 <enum name="DownloadFunctions">

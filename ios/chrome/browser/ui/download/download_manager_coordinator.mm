@@ -227,6 +227,9 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
 - (void)downloadManagerViewControllerDidClose:
     (DownloadManagerViewController*)controller {
   if (_downloadTask->GetState() != web::DownloadTask::State::kInProgress) {
+    UMA_HISTOGRAM_ENUMERATION("Download.IOSDownloadFileResult",
+                              DownloadFileResult::NotStarted,
+                              DownloadFileResult::Count);
     [self cancelDownload];
     return;
   }
