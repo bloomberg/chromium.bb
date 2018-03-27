@@ -108,9 +108,9 @@ MessageCenterController::MessageCenterController() : binding_(this) {
        &kNotificationInstalledIcon, &kNotificationMobileDataIcon,
        &kNotificationMobileDataOffIcon, &kNotificationPlayPrismIcon,
        &kNotificationPrintingDoneIcon, &kNotificationPrintingIcon,
-       &kNotificationPrintingWarningIcon, &kNotificationStorageFullIcon,
-       &kNotificationVpnIcon, &kNotificationWarningIcon,
-       &kNotificationWifiOffIcon});
+       &kNotificationPrintingWarningIcon, &kNotificationSettingsIcon,
+       &kNotificationStorageFullIcon, &kNotificationVpnIcon,
+       &kNotificationWarningIcon, &kNotificationWifiOffIcon});
 
   // Set the system notification source display name ("Chrome OS" or "Chromium
   // OS").

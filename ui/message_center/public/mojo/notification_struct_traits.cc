@@ -172,8 +172,10 @@ bool RichNotificationDataStructTraits::Read(RichNotificationDataDataView data,
   std::string icon_id;
   if (data.ReadVectorSmallImageId(&icon_id) && !icon_id.empty()) {
     out->vector_small_image = message_center::GetRegisteredVectorIcon(icon_id);
-    if (!out->vector_small_image)
+    if (!out->vector_small_image) {
       LOG(ERROR) << "Couldn't find icon: " + icon_id;
+      return false;
+    }
   }
 
   out->accent_color = data.accent_color();
