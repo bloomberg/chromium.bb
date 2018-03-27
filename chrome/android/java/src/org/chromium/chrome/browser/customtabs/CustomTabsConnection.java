@@ -50,6 +50,7 @@ import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.browserservices.BrowserSessionContentUtils;
+import org.chromium.chrome.browser.browserservices.Origin;
 import org.chromium.chrome.browser.browserservices.PostMessageHandler;
 import org.chromium.chrome.browser.device.DeviceClassManager;
 import org.chromium.chrome.browser.init.ChainedTasks;
@@ -67,7 +68,6 @@ import org.chromium.content.browser.ChildProcessLauncherHelper;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.Referrer;
-import org.chromium.net.GURLUtils;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
@@ -668,7 +668,7 @@ public class CustomTabsConnection {
     }
 
     public boolean requestPostMessageChannel(CustomTabsSessionToken session,
-            Uri postMessageOrigin) {
+            Origin postMessageOrigin) {
         boolean success = requestPostMessageChannelInternal(session, postMessageOrigin);
         logCall("requestPostMessageChannel() with origin "
                 + (postMessageOrigin != null ? postMessageOrigin.toString() : ""), success);
@@ -676,7 +676,7 @@ public class CustomTabsConnection {
     }
 
     private boolean requestPostMessageChannelInternal(final CustomTabsSessionToken session,
-            final Uri postMessageOrigin) {
+            final Origin postMessageOrigin) {
         if (!mWarmupHasBeenCalled.get()) return false;
         if (!isCallerForegroundOrSelf() && !BrowserSessionContentUtils.isActiveSession(session)) {
             return false;
@@ -711,7 +711,7 @@ public class CustomTabsConnection {
      * @return The validated origin {@link Uri} for the given session's client.
      */
     protected Uri verifyOriginForSession(
-            CustomTabsSessionToken session, int clientUid, Uri origin) {
+            CustomTabsSessionToken session, int clientUid, Origin origin) {
         if (clientUid == Process.myUid()) return Uri.EMPTY;
         return null;
     }
@@ -738,7 +738,7 @@ public class CustomTabsConnection {
     }
 
     public boolean validateRelationship(
-            CustomTabsSessionToken sessionToken, int relation, Uri origin, Bundle extras) {
+            CustomTabsSessionToken sessionToken, int relation, Origin origin, Bundle extras) {
         // Essential parts of the verification will depend on native code and will be run sync on UI
         // thread. Make sure the client has called warmup() beforehand.
         if (!mWarmupHasBeenCalled.get()) return false;
@@ -920,9 +920,9 @@ public class CustomTabsConnection {
         Uri redirectEndpoint = intent.getParcelableExtra(REDIRECT_ENDPOINT_KEY);
         if (redirectEndpoint == null || !isValid(redirectEndpoint)) return;
 
-        String origin = GURLUtils.getOrigin(url);
+        Origin origin = new Origin(url);
         if (origin == null) return;
-        if (!mClientManager.isFirstPartyOriginForSession(session, Uri.parse(origin))) return;
+        if (!mClientManager.isFirstPartyOriginForSession(session, origin)) return;
 
         WarmupManager.getInstance().maybePreconnectUrlAndSubResources(
                 Profile.getLastUsedProfile(), redirectEndpoint.toString());
@@ -953,7 +953,7 @@ public class CustomTabsConnection {
         // TODO(lizeb): Relax the restrictions.
         return ChromeBrowserInitializer.getInstance(mContext).hasNativeInitializationCompleted()
                 && ChromeFeatureList.isEnabled(ChromeFeatureList.CCT_PARALLEL_REQUEST)
-                && mClientManager.isFirstPartyOriginForSession(session, referrer);
+                && mClientManager.isFirstPartyOriginForSession(session, new Origin(referrer));
     }
 
     /**

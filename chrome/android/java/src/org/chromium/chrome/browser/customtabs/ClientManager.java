@@ -102,7 +102,7 @@ class ClientManager {
         }
 
         /**
-         * Disconnects from the remote process. Safe to call even if {@link connect()} returned
+         * Disconnects from the remote process. Safe to call even if {@link #connect} returned
          * false, or if the remote service died.
          */
         public void disconnect() {
@@ -133,7 +133,7 @@ class ClientManager {
         public final int uid;
         public final DisconnectCallback disconnectCallback;
         public final PostMessageHandler postMessageHandler;
-        public final Set<Uri> mLinkedUrls = new HashSet<>();
+        public final Set<Origin> mLinkedOrigins = new HashSet<>();
         public OriginVerifier originVerifier;
         public boolean mIgnoreFragments;
         public boolean lowConfidencePrediction;
@@ -382,7 +382,7 @@ class ClientManager {
     }
 
     public synchronized boolean validateRelationship(
-            CustomTabsSessionToken session, int relation, Uri origin, Bundle extras) {
+            CustomTabsSessionToken session, int relation, Origin origin, Bundle extras) {
         return validateRelationshipInternal(session, relation, origin, false);
     }
 
@@ -390,7 +390,7 @@ class ClientManager {
      * Validates the link between the client and the origin.
      */
     public synchronized void verifyAndInitializeWithPostMessageOriginForSession(
-            CustomTabsSessionToken session, Uri origin, @Relation int relation) {
+            CustomTabsSessionToken session, Origin origin, @Relation int relation) {
         validateRelationshipInternal(session, relation, origin, true);
     }
 
@@ -398,18 +398,18 @@ class ClientManager {
      * Can't be called on UI Thread.
      */
     private synchronized boolean validateRelationshipInternal(CustomTabsSessionToken session,
-            int relation, Uri origin, boolean initializePostMessageChannel) {
+            int relation, Origin origin, boolean initializePostMessageChannel) {
         SessionParams params = mSessionParams.get(session);
         if (params == null || TextUtils.isEmpty(params.getPackageName())) return false;
         OriginVerificationListener listener = null;
         if (initializePostMessageChannel) listener = params.postMessageHandler;
         params.originVerifier = new OriginVerifier(listener, params.getPackageName(), relation);
-        ThreadUtils.runOnUiThread(() -> { params.originVerifier.start(new Origin(origin)); });
+        ThreadUtils.runOnUiThread(() -> { params.originVerifier.start(origin); });
         if (relation == CustomTabsService.RELATION_HANDLE_ALL_URLS
                 && InstalledAppProviderImpl.isAppInstalledAndAssociatedWithOrigin(
                            params.getPackageName(), URI.create(origin.toString()),
                            mContext.getPackageManager())) {
-            params.mLinkedUrls.add(origin);
+            params.mLinkedOrigins.add(origin);
         }
         return true;
     }
@@ -433,11 +433,11 @@ class ClientManager {
         if (params == null) return false;
         String packageName = params.getPackageName();
         if (TextUtils.isEmpty(packageName)) return false;
-        boolean isAppAssociatedWithOrigin = params.mLinkedUrls.contains(url);
+        Origin origin = new Origin(url);
+        boolean isAppAssociatedWithOrigin = params.mLinkedOrigins.contains(origin);
         if (!isAppAssociatedWithOrigin) return false;
 
         // Split path from the given Uri to get only the origin before web->native verification.
-        Origin origin = new Origin(url);
         if (OriginVerifier.isValidOrigin(
                     packageName, origin, CustomTabsService.RELATION_HANDLE_ALL_URLS)) {
             return true;
@@ -637,9 +637,9 @@ class ClientManager {
      * @param origin Origin to verify
      */
     public synchronized boolean isFirstPartyOriginForSession(
-            CustomTabsSessionToken session, Uri origin) {
-        return OriginVerifier.isValidOrigin(getClientPackageNameForSession(session),
-                new Origin(origin), CustomTabsService.RELATION_USE_AS_ORIGIN);
+            CustomTabsSessionToken session, Origin origin) {
+        return OriginVerifier.isValidOrigin(getClientPackageNameForSession(session), origin,
+                CustomTabsService.RELATION_USE_AS_ORIGIN);
     }
 
     /** Tries to bind to a client to keep it alive, and returns true for success. */

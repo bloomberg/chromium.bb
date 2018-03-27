@@ -27,7 +27,7 @@ public class Origin {
      * Constructs a canonical Origin from an Uri.
      */
     public Origin(Uri uri) {
-        if (uri.getScheme() == null || uri.getAuthority() == null) {
+        if (uri == null || uri.getScheme() == null || uri.getAuthority() == null) {
             mOrigin = Uri.EMPTY;
             return;
         }
