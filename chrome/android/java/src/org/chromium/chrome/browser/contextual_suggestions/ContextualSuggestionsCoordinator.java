@@ -77,8 +77,8 @@ public class ContextualSuggestionsCoordinator {
         // a toolbar view when suggestions are fist available, and use this method to construct the
         // content view when the sheet is opened.
         mToolbarCoordinator = new ToolbarCoordinator(mActivity, mBottomSheet, mModel);
-        mContentCoordinator =
-                new ContentCoordinator(mActivity, mBottomSheet, mProfile, mUiDelegate, mModel);
+        mContentCoordinator = new ContentCoordinator(mActivity, mBottomSheet, mProfile, mUiDelegate,
+                mModel, mActivity.getWindowAndroid(), mActivity::closeContextMenu);
         mBottomSheetContent = new ContextualSuggestionsBottomSheetContent(
                 mContentCoordinator, mToolbarCoordinator);
         mBottomSheet.showContent(mBottomSheetContent);
