@@ -9,7 +9,6 @@
 #include <vector>
 
 #include "ash/public/cpp/wallpaper_types.h"
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/files/file_util.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
@@ -179,11 +178,6 @@ bool WallpaperSetWallpaperFunction::RunAsync() {
 
 void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& image) {
-  base::FilePath thumbnail_path =
-      ash::WallpaperController::GetCustomWallpaperPath(
-          ash::WallpaperController::kThumbnailWallpaperSubDir,
-          wallpaper_files_id_, params_->details.filename);
-
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       extensions::api::wallpaper::ToString(params_->details.layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(layout);
@@ -199,42 +193,13 @@ void WallpaperSetWallpaperFunction::OnWallpaperDecoded(
   // We need to generate thumbnail image anyway to make the current third party
   // wallpaper syncable through different devices.
   image.EnsureRepsForSupportedScales();
-  std::unique_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
-  // Generates thumbnail before call api function callback. We can then
-  // request thumbnail in the javascript callback.
-  GetBlockingTaskRunner()->PostTask(
-      FROM_HERE,
-      base::BindOnce(&WallpaperSetWallpaperFunction::GenerateThumbnail, this,
-                     thumbnail_path, std::move(deep_copy)));
-}
-
-void WallpaperSetWallpaperFunction::GenerateThumbnail(
-    const base::FilePath& thumbnail_path,
-    std::unique_ptr<gfx::ImageSkia> image) {
-  AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
-  if (!base::PathExists(thumbnail_path.DirName()))
-    base::CreateDirectory(thumbnail_path.DirName());
-
-  scoped_refptr<base::RefCountedBytes> original_data;
   scoped_refptr<base::RefCountedBytes> thumbnail_data;
-  ash::WallpaperController::ResizeImage(*image, ash::WALLPAPER_LAYOUT_STRETCH,
-                                        image->width(), image->height(),
-                                        &original_data, nullptr);
-  ash::WallpaperController::ResizeImage(
-      *image, ash::WALLPAPER_LAYOUT_STRETCH,
-      ash::WallpaperController::kWallpaperThumbnailWidth,
-      ash::WallpaperController::kWallpaperThumbnailHeight, &thumbnail_data,
-      nullptr);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&WallpaperSetWallpaperFunction::ThumbnailGenerated, this,
-                     base::RetainedRef(original_data),
-                     base::RetainedRef(thumbnail_data)));
-}
+  GenerateThumbnail(
+      image, gfx::Size(kWallpaperThumbnailWidth, kWallpaperThumbnailHeight),
+      &thumbnail_data);
+  scoped_refptr<base::RefCountedBytes> original_data;
+  GenerateThumbnail(image, image.size(), &original_data);
 
-void WallpaperSetWallpaperFunction::ThumbnailGenerated(
-    base::RefCountedBytes* original_data,
-    base::RefCountedBytes* thumbnail_data) {
   std::unique_ptr<Value> original_result = Value::CreateWithCopiedBuffer(
       reinterpret_cast<const char*>(original_data->front()),
       original_data->size());

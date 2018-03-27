@@ -44,6 +44,10 @@ class WallpaperPolicyHandler {
   // Returns true if user names should be shown on the login screen.
   bool ShouldShowUserNamesOnLogin();
 
+  base::FilePath device_wallpaper_file_path() {
+    return device_wallpaper_file_path_;
+  }
+
  private:
   // Gets the device policy controlled wallpaper's url and hash values. Returns
   // false if the values can't be retrieved.

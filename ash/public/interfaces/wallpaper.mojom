@@ -51,12 +51,15 @@ interface WallpaperController {
   //                             reside.
   // |chromeos_custom_wallpapers_path|: Directory where custom wallpapers
   //                                    reside.
+  // |device_policy_wallpaper_path|: The file path of the device policy
+  //                                 wallpaper (if any).
   // |is_device_wallpaper_policy_enforced|: Whether the device wallpaper policy
   //                                        is enforced on the device.
   Init(WallpaperControllerClient client,
        mojo_base.mojom.FilePath user_data_path,
        mojo_base.mojom.FilePath chromeos_wallpapers_path,
        mojo_base.mojom.FilePath chromeos_custom_wallpapers_path,
+       mojo_base.mojom.FilePath device_policy_wallpaper_path,
        bool is_device_wallpaper_policy_enforced);
 
   // Sets wallpaper from a local file and updates the saved wallpaper info for
