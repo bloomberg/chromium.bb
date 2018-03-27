@@ -131,7 +131,8 @@ void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
   SkColor symbol_color = GetBaseColor();
   if (!frame_view_->ShouldPaintAsActive() && state() != STATE_HOVERED &&
       state() != STATE_PRESSED) {
-    symbol_color = SkColorSetA(symbol_color, 0x65);
+    symbol_color = SkColorSetA(
+        symbol_color, GlassBrowserFrameView::kInactiveTitlebarFeatureAlpha);
   } else if (button_type_ == VIEW_ID_CLOSE_BUTTON &&
              hover_animation().is_animating()) {
     symbol_color = gfx::Tween::ColorValueBetween(
