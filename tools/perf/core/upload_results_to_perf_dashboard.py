@@ -165,7 +165,7 @@ def _GetPerfDashboardRevisionsWithProperties(
 
   versions = {}
   versions['rev'] = main_revision
-  versions['webrtc_rev'] = got_webrtc_revision
+  versions['webrtc_git'] = got_webrtc_revision
   versions['v8_rev'] = got_v8_revision
   versions['ver'] = version
   versions['git_revision'] = git_revision
