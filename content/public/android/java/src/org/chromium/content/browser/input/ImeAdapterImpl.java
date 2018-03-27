@@ -40,6 +40,7 @@ import org.chromium.blink_public.web.WebInputEventType;
 import org.chromium.blink_public.web.WebTextInputMode;
 import org.chromium.content.browser.WindowEventObserver;
 import org.chromium.content.browser.picker.InputDialogContainer;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
 import org.chromium.content.browser.webcontents.WebContentsUserData.UserDataFactory;
 import org.chromium.content_public.browser.ImeAdapter;
@@ -99,7 +100,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
     // ResultReceiver in the InputMethodService (IME app) gets gc'ed.
     private ShowKeyboardResultReceiver mShowKeyboardResultReceiver;
 
-    private final WebContents mWebContents;
+    private final WebContentsImpl mWebContents;
     private View mContainerView;
 
     // This holds the information necessary for constructing CursorAnchorInfo, and notifies to
@@ -207,7 +208,7 @@ public class ImeAdapterImpl implements ImeAdapter, WindowEventObserver {
      * @param webContents WebContents instance.
      */
     public ImeAdapterImpl(WebContents webContents) {
-        mWebContents = webContents;
+        mWebContents = (WebContentsImpl) webContents;
     }
 
     /**

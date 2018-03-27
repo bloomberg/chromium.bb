@@ -42,7 +42,7 @@ public class SelectPopup implements HideablePopup {
         public void hide(boolean sendsCancelMessage);
     }
 
-    private final WebContents mWebContents;
+    private final WebContentsImpl mWebContents;
     private Context mContext;
     private View mContainerView;
     private Ui mPopupView;
