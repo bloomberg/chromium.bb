@@ -9,11 +9,14 @@ import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
 
 import org.chromium.base.Log;
+import org.chromium.chrome.browser.media.router.DiscoveryCallback;
 import org.chromium.chrome.browser.media.router.DiscoveryDelegate;
 import org.chromium.chrome.browser.media.router.MediaController;
 import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaRouteProvider;
+import org.chromium.chrome.browser.media.router.MediaSink;
+import org.chromium.chrome.browser.media.router.MediaSource;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -67,6 +70,7 @@ public abstract class BaseMediaRouteProvider
     /**
      * Forward the sinks back to the native counterpart.
      */
+    // Migrated to CafMediaRouteProvider. See https://crbug.com/711860.
     protected void onSinksReceivedInternal(String sourceId, @Nonnull List<MediaSink> sinks) {
         Log.d(TAG, "Reporting %d sinks for source: %s", sinks.size(), sourceId);
         mManager.onSinksReceived(sourceId, this, sinks);
@@ -75,6 +79,7 @@ public abstract class BaseMediaRouteProvider
     /**
      * {@link DiscoveryDelegate} implementation.
      */
+    // Migrated to CafMediaRouteProvider. See https://crbug.com/711860.
     @Override
     public void onSinksReceived(String sourceId, @Nonnull List<MediaSink> sinks) {
         Log.d(TAG, "Received %d sinks for sourceId: %s", sinks.size(), sourceId);
@@ -84,11 +89,13 @@ public abstract class BaseMediaRouteProvider
     /**
      * {@link MediaRouteProvider} implementation.
      */
+    // Migrated to CafMediaRouteProvider. See https://crbug.com/711860.
     @Override
     public boolean supportsSource(@Nonnull String sourceId) {
         return getSourceFromId(sourceId) != null;
     }
 
+    // Migrated to CafMediaRouteProvider. See https://crbug.com/711860.
     @Override
     public void startObservingMediaSinks(@Nonnull String sourceId) {
         Log.d(TAG, "startObservingMediaSinks: " + sourceId);
@@ -136,6 +143,7 @@ public abstract class BaseMediaRouteProvider
         mDiscoveryCallbacks.put(applicationId, callback);
     }
 
+    // Migrated to CafMediaRouteProvider. See https://crbug.com/711860.
     @Override
     public void stopObservingMediaSinks(@Nonnull String sourceId) {
         Log.d(TAG, "stopObservingMediaSinks: " + sourceId);

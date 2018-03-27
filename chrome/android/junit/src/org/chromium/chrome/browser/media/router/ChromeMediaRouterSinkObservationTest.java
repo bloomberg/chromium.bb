@@ -18,7 +18,6 @@ import org.chromium.base.CommandLine;
 import org.chromium.base.SysUtils;
 import org.chromium.base.test.BaseRobolectricTestRunner;
 import org.chromium.base.test.util.Feature;
-import org.chromium.chrome.browser.media.router.cast.MediaSink;
 
 import java.util.ArrayList;
 import java.util.List;
