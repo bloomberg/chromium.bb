@@ -4391,8 +4391,8 @@ class DelayableNetworkTimeURLRequestJob : public net::URLRequestJob {
   int ReadRawData(net::IOBuffer* buf, int buf_size) override {
     int bytes_read =
         std::min(static_cast<size_t>(buf_size),
-                 strlen(network_time::kGoodTimeResponseBody) - data_offset_);
-    memcpy(buf->data(), network_time::kGoodTimeResponseBody + data_offset_,
+                 strlen(network_time::kGoodTimeResponseBody[0]) - data_offset_);
+    memcpy(buf->data(), network_time::kGoodTimeResponseBody[0] + data_offset_,
            bytes_read);
     data_offset_ += bytes_read;
     return bytes_read;
@@ -4405,13 +4405,13 @@ class DelayableNetworkTimeURLRequestJob : public net::URLRequestJob {
         "Content-type: text/plain\n");
     headers.append(base::StringPrintf(
         "Content-Length: %1d\n",
-        static_cast<int>(strlen(network_time::kGoodTimeResponseBody))));
+        static_cast<int>(strlen(network_time::kGoodTimeResponseBody[0]))));
     info->headers =
         new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
             headers.c_str(), static_cast<int>(headers.length())));
     info->headers->AddHeader(
         "x-cup-server-proof: " +
-        std::string(network_time::kGoodTimeResponseServerProofHeader));
+        std::string(network_time::kGoodTimeResponseServerProofHeader[0]));
   }
 
   // Resumes a previously started request that was delayed. If no
@@ -4602,7 +4602,7 @@ IN_PROC_BROWSER_TEST_P(SSLNetworkTimeBrowserTest, OnDemandFetchClockOk) {
   base::SimpleTestClock testing_clock;
   SSLErrorHandler::SetClockForTesting(&testing_clock);
   testing_clock.SetNow(
-      base::Time::FromJsTime(network_time::kGoodTimeResponseHandlerJsTime));
+      base::Time::FromJsTime(network_time::kGoodTimeResponseHandlerJsTime[0]));
   // Set the build time to match the testing clock, to ensure that the
   // build time heuristic doesn't fire.
   ssl_errors::SetBuildTimeForTesting(testing_clock.Now());
@@ -4650,7 +4650,7 @@ IN_PROC_BROWSER_TEST_P(SSLNetworkTimeBrowserTest, OnDemandFetchClockWrong) {
   base::SimpleTestClock testing_clock;
   SSLErrorHandler::SetClockForTesting(&testing_clock);
   testing_clock.SetNow(
-      base::Time::FromJsTime(network_time::kGoodTimeResponseHandlerJsTime));
+      base::Time::FromJsTime(network_time::kGoodTimeResponseHandlerJsTime[0]));
   testing_clock.Advance(base::TimeDelta::FromDays(30));
   // Set the build time to match the testing clock, to ensure that the
   // build time heuristic doesn't fire.
