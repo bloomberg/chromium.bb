@@ -695,8 +695,7 @@ TEST_P(ParameterizedLocalCaretRectTest, FloatFirstLetter) {
 
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreak) {
   LoadAhem();
-  SetBodyContent(
-      "<div style='font: 10px/10px Ahem;' contenteditable>foo<br><br></div>");
+  SetBodyContent("<div style='font: 10px/10px Ahem;'>foo<br><br></div>");
   const Node* div = GetDocument().body()->firstChild();
   const Node* foo = div->firstChild();
   const Node* first_br = foo->nextSibling();
@@ -704,14 +703,62 @@ TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreak) {
   EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position::AfterNode(*foo), TextAffinity::kDownstream)));
-  // TODO(yoichio): Following should return valid rect: crbug.com/812535.
-  EXPECT_EQ(LocalCaretRect(first_br->GetLayoutObject(), LayoutRect(0, 0, 0, 0)),
+  // TODO(yoichio): Legacy should return valid rect: crbug.com/812535.
+  EXPECT_EQ(LayoutNGEnabled() ? LocalCaretRect(second_br->GetLayoutObject(),
+                                               LayoutRect(0, 10, 1, 10))
+                              : LocalCaretRect(first_br->GetLayoutObject(),
+                                               LayoutRect(0, 0, 0, 0)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position::AfterNode(*first_br), TextAffinity::kDownstream)));
+  EXPECT_EQ(LocalCaretRect(second_br->GetLayoutObject(),
+                           LayoutNGEnabled() ? LayoutRect(0, 10, 1, 10)
+                                             : LayoutRect(0, 0, 0, 0)),
+            LocalCaretRectOfPosition(PositionWithAffinity(
+                Position::AfterNode(*second_br), TextAffinity::kDownstream)));
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPre) {
+  LoadAhem();
+  SetBodyContent("<pre style='font: 10px/10px Ahem;'>foo\n\n</pre>");
+  const Node* pre = GetDocument().body()->firstChild();
+  const Node* foo = pre->firstChild();
+  EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
+            LocalCaretRectOfPosition(PositionWithAffinity(
+                Position(foo, 3), TextAffinity::kDownstream)));
+  EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 10, 1, 10)),
+            LocalCaretRectOfPosition(PositionWithAffinity(
+                Position(foo, 4), TextAffinity::kDownstream)));
+  // TODO(yoichio): Legacy should return valid rect: crbug.com/812535.
+  EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(),
+                           LayoutNGEnabled() ? LayoutRect(0, 10, 1, 10)
+                                             : LayoutRect(0, 0, 0, 0)),
+            LocalCaretRectOfPosition(PositionWithAffinity(
+                Position(foo, 5), TextAffinity::kDownstream)));
+}
+
+TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakInPre2) {
+  LoadAhem();
+  // This test case simulates the rendering of the inner editor of
+  // <textarea>foo\n</textarea> without using text control element.
+  SetBodyContent("<pre style='font: 10px/10px Ahem;'>foo\n<br></pre>");
+  const Node* pre = GetDocument().body()->firstChild();
+  const Node* foo = pre->firstChild();
+  const Node* br = foo->nextSibling();
+  EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
+            LocalCaretRectOfPosition(PositionWithAffinity(
+                Position(foo, 3), TextAffinity::kDownstream)));
+  // TODO(yoichio): Legacy should return valid rect: crbug.com/812535.
   EXPECT_EQ(
-      LocalCaretRect(second_br->GetLayoutObject(), LayoutRect(0, 0, 0, 0)),
-      LocalCaretRectOfPosition(PositionWithAffinity(
-          Position::AfterNode(*second_br), TextAffinity::kDownstream)));
+      LayoutNGEnabled()
+          ? LocalCaretRect(br->GetLayoutObject(), LayoutRect(0, 10, 1, 10))
+          : LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 0, 0, 0)),
+      LocalCaretRectOfPosition(
+          PositionWithAffinity(Position(foo, 4), TextAffinity::kDownstream)));
+  EXPECT_EQ(LocalCaretRect(br->GetLayoutObject(), LayoutNGEnabled()
+                                                      ? LayoutRect(0, 10, 1, 10)
+                                                      : LayoutRect(0, 0, 0, 0)),
+            LocalCaretRectOfPosition(PositionWithAffinity(
+                Position::AfterNode(*br), TextAffinity::kDownstream)));
 }
 
 TEST_P(ParameterizedLocalCaretRectTest, AfterLineBreakTextArea) {
