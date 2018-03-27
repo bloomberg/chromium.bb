@@ -302,6 +302,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsMediator.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ContextualSuggestionsModel.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/DummyEventReporter.java",
+  "java/src/org/chromium/chrome/browser/contextual_suggestions/FetchHelper.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/PropertyKey.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ToolbarCoordinator.java",
   "java/src/org/chromium/chrome/browser/contextual_suggestions/ToolbarModelChangeProcessor.java",

@@ -7,7 +7,6 @@ package org.chromium.chrome.browser.contextual_suggestions;
 import android.content.Context;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
-import android.webkit.URLUtil;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.chrome.R;
@@ -15,13 +14,7 @@ import org.chromium.chrome.browser.ntp.snippets.SnippetArticle;
 import org.chromium.chrome.browser.ntp.snippets.SnippetsBridge;
 import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.profiles.Profile;
-import org.chromium.chrome.browser.tab.EmptyTabObserver;
-import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.tab.TabObserver;
-import org.chromium.chrome.browser.tabmodel.TabModel.TabSelectionType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
-import org.chromium.chrome.browser.tabmodel.TabModelSelectorTabModelObserver;
-import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.ui.widget.Toast;
 
 import java.util.ArrayList;
@@ -30,21 +23,18 @@ import java.util.List;
 
 /**
  * A mediator for the contextual suggestions UI component responsible for interacting with
- * the contextual suggestions backend, updating the model, and communicating with the
- * component coordinator(s).
+ * the contextual suggestions C++ components (via a bridge), updating the model, and communicating
+ * with the component coordinator(s).
  */
-class ContextualSuggestionsMediator {
+class ContextualSuggestionsMediator implements FetchHelper.Delegate {
     private final Context mContext;
     private final ContextualSuggestionsCoordinator mCoordinator;
     private final ContextualSuggestionsModel mModel;
     private final SnippetsBridge mBridge;
-
-    private final TabModelSelectorTabModelObserver mTabModelObserver;
-    private final TabObserver mTabObserver;
-    private Tab mLastTab;
+    private final FetchHelper mFetchHelper;
 
     @Nullable
-    private String mCurrentContextUrl;
+    private String mCurrentRequestUrl;
 
     /**
      * Construct a new {@link ContextualSuggestionsMediator}.
@@ -62,24 +52,7 @@ class ContextualSuggestionsMediator {
         mModel = model;
 
         mBridge = new SnippetsBridge(Profile.getLastUsedProfile());
-
-        // TODO(twellington): Remove the following code for tab observing after triggering logic
-        // moves to the C++ layer.
-        mTabObserver = new EmptyTabObserver() {
-            @Override
-            public void onUpdateUrl(Tab tab, String url) {
-                refresh(url);
-            }
-        };
-
-        mTabModelObserver = new TabModelSelectorTabModelObserver(tabModelSelector) {
-            @Override
-            public void didSelectTab(Tab tab, TabSelectionType type, int lastId) {
-                updateCurrentTab(tab);
-            }
-        };
-
-        updateCurrentTab(tabModelSelector.getCurrentTab());
+        mFetchHelper = new FetchHelper(this, tabModelSelector);
     }
 
     /**
@@ -94,34 +67,16 @@ class ContextualSuggestionsMediator {
 
     /** Destroys the mediator. */
     void destroy() {
-        if (mLastTab != null) {
-            mLastTab.removeObserver(mTabObserver);
-            mLastTab = null;
-        }
-        mTabModelObserver.destroy();
+        mFetchHelper.destroy();
     }
 
-    // TODO(twellington): Remove this method after triggering logic moves to the C++ layer.
-    private void refresh(@Nullable final String newUrl) {
-        if (!URLUtil.isNetworkUrl(newUrl)) {
-            clearSuggestions();
-            return;
-        }
+    @Override
+    public void requestSuggestions(String url) {
+        mCurrentRequestUrl = url;
 
-        // Do nothing if there are already suggestions in the suggestions list for the new context.
-        if (isContextTheSame(newUrl)) return;
-
-        // Context has changed, so we want to remove any old suggestions from the section.
-        clearSuggestions();
-        mCurrentContextUrl = newUrl;
-
-        Toast.makeText(ContextUtils.getApplicationContext(), "Fetching suggestions...",
-                     Toast.LENGTH_SHORT)
-                .show();
-
-        mBridge.fetchContextualSuggestions(newUrl, (suggestions) -> {
+        mBridge.fetchContextualSuggestions(url, (suggestions) -> {
             // Avoiding double fetches causing suggestions for incorrect context.
-            if (!TextUtils.equals(newUrl, mCurrentContextUrl)) return;
+            if (!TextUtils.equals(url, mCurrentRequestUrl)) return;
 
             Toast.makeText(ContextUtils.getApplicationContext(),
                          suggestions.size() + " suggestions fetched", Toast.LENGTH_SHORT)
@@ -133,38 +88,25 @@ class ContextualSuggestionsMediator {
         });
     }
 
+    @Override
+    public void clearState() {
+        clearSuggestions();
+    }
+
     private void clearSuggestions() {
+        // TODO(twellington): Does this signal need to go back to FetchHelper?
         mModel.setClusterList(new ClusterList(Collections.emptyList()));
         mModel.setCloseButtonOnClickListener(null);
         mModel.setTitle(null);
         mCoordinator.removeSuggestions();
+        mCurrentRequestUrl = "";
     }
 
     private void displaySuggestions(ClusterList clusters, String title) {
         mModel.setClusterList(clusters);
         mModel.setCloseButtonOnClickListener(view -> { clearSuggestions(); });
-
         mModel.setTitle(mContext.getString(R.string.contextual_suggestions_toolbar_title, title));
-
         mCoordinator.displaySuggestions();
-    }
-
-    private boolean isContextTheSame(String newUrl) {
-        return UrlUtilities.urlsMatchIgnoringFragments(newUrl, mCurrentContextUrl);
-    }
-
-    /**
-     * Update the current tab and refresh suggestions.
-     * @param tab The current {@link Tab}.
-     */
-    private void updateCurrentTab(Tab tab) {
-        if (mLastTab != null) mLastTab.removeObserver(mTabObserver);
-
-        mLastTab = tab;
-        if (mLastTab == null) return;
-
-        mLastTab.addObserver(mTabObserver);
-        refresh(mLastTab.getUrl());
     }
 
     // TODO(twellington): Remove after clusters are returned from the backend.
