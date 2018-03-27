@@ -469,7 +469,8 @@ static bool NeedsPaintOffsetTranslation(const LayoutObject& object) {
       // column spans when finding their containing blocks.
       // TODO(crbug.com/780242): This can be avoided if we have fully correct
       // paint property tree states for floating objects and column spans.
-      object.IsLayoutBlock() && object.HasLayer() &&
+      (object.IsLayoutBlock() || object.IsLayoutReplaced()) &&
+      object.HasLayer() &&
       !ToLayoutBoxModelObject(object).Layer()->EnclosingPaginationLayer() &&
       object.GetCompositingState() == kPaintsIntoOwnBacking)
     return true;

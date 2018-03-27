@@ -1395,7 +1395,6 @@ void PaintLayerPainter::PaintChildClippingMaskForFragments(
               context.GetPaintController(), state, client,
               DisplayItem::PaintPhaseToDrawingType(PaintPhase::kClippingMask));
           ClipRect mask_rect = fragment.background_rect;
-          mask_rect.MoveBy(fragment.fragment_data->PaintOffset());
           FillMaskingFragment(context, mask_rect, client);
         });
     return;
