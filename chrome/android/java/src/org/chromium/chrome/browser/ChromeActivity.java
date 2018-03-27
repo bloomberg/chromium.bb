@@ -1249,7 +1249,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
         VrShellDelegate.onNativeLibraryAvailable();
         super.finishNativeInitialization();
 
-        if (FeatureUtilities.isChromeDuplexEnabled()) {
+        if (FeatureUtilities.isContextualSuggestionsBottomSheetEnabled()) {
             ViewGroup coordinator = (ViewGroup) findViewById(R.id.coordinator);
             getLayoutInflater().inflate(R.layout.bottom_sheet, coordinator);
             mBottomSheet = coordinator.findViewById(R.id.bottom_sheet);
@@ -1262,11 +1262,8 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
 
             mFadingBackgroundView.addObserver(mBottomSheet);
 
-            if (ChromeFeatureList.isEnabled(
-                        ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)) {
-                mContextualSuggestionsCoordinator = new ContextualSuggestionsCoordinator(
-                        this, mBottomSheetController, getTabModelSelector());
-            }
+            mContextualSuggestionsCoordinator = new ContextualSuggestionsCoordinator(
+                    this, mBottomSheetController, getTabModelSelector());
         }
     }
 
