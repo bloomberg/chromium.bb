@@ -547,7 +547,8 @@ TEST(ProcessMemoryDumpTest, CountResidentBytesInSharedMemory) {
   shared_memory1.CreateAndMapAnonymous(size1);
   memset(shared_memory1.memory(), 0, size1);
   base::Optional<size_t> res1 =
-      ProcessMemoryDump::CountResidentBytesInSharedMemory(shared_memory1);
+      ProcessMemoryDump::CountResidentBytesInSharedMemory(
+          shared_memory1.memory(), shared_memory1.mapped_size());
   ASSERT_TRUE(res1.has_value());
   ASSERT_EQ(res1.value(), size1);
   shared_memory1.Unmap();
@@ -559,7 +560,8 @@ TEST(ProcessMemoryDumpTest, CountResidentBytesInSharedMemory) {
   shared_memory2.CreateAndMapAnonymous(kVeryLargeMemorySize);
   memset(shared_memory2.memory(), 0, kVeryLargeMemorySize);
   base::Optional<size_t> res2 =
-      ProcessMemoryDump::CountResidentBytesInSharedMemory(shared_memory2);
+      ProcessMemoryDump::CountResidentBytesInSharedMemory(
+          shared_memory2.memory(), shared_memory2.mapped_size());
   ASSERT_TRUE(res2.has_value());
   ASSERT_EQ(res2.value(), kVeryLargeMemorySize);
   shared_memory2.Unmap();
@@ -571,7 +573,8 @@ TEST(ProcessMemoryDumpTest, CountResidentBytesInSharedMemory) {
   shared_memory3.CreateAndMapAnonymous(kVeryLargeMemorySize);
   memset(shared_memory3.memory(), 0, kTouchedMemorySize);
   base::Optional<size_t> res3 =
-      ProcessMemoryDump::CountResidentBytesInSharedMemory(shared_memory3);
+      ProcessMemoryDump::CountResidentBytesInSharedMemory(
+          shared_memory3.memory(), shared_memory3.mapped_size());
   ASSERT_TRUE(res3.has_value());
   ASSERT_EQ(res3.value(), kTouchedMemorySize);
   shared_memory3.Unmap();

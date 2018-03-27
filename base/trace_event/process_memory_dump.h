@@ -74,10 +74,11 @@ class BASE_EXPORT ProcessMemoryDump {
   // process. The |start_address| must be page-aligned.
   static size_t CountResidentBytes(void* start_address, size_t mapped_size);
 
-  // Returns the total bytes resident for the given |shared_memory|'s mapped
-  // region.
+  // The same as above, but the given mapped range should belong to the
+  // shared_memory's mapped region.
   static base::Optional<size_t> CountResidentBytesInSharedMemory(
-      const SharedMemory& shared_memory);
+      void* start_address,
+      size_t mapped_size);
 #endif
 
   ProcessMemoryDump(scoped_refptr<HeapProfilerSerializationState>
