@@ -860,7 +860,7 @@ public class AwContents implements SmartClipProvider {
         onContainerViewChanged();
     }
 
-    private void createContentViewCore(Context context, ViewAndroidDelegate viewDelegate,
+    private void createContentViewCore(ViewAndroidDelegate viewDelegate,
             InternalAccessDelegate internalDispatcher, WebContents webContents,
             WindowAndroid windowAndroid) {
         mContentViewCore = ContentViewCore.create(mContext, PRODUCT_VERSION, webContents,
@@ -870,7 +870,7 @@ public class AwContents implements SmartClipProvider {
                 new AwActionModeCallback(mContext, this, controller.getActionModeCallbackHelper()));
         if (mAutofillProvider != null) {
             controller.setNonSelectionActionModeCallback(
-                    new AutofillActionModeCallback(context, mAutofillProvider));
+                    new AutofillActionModeCallback(mContext, mAutofillProvider));
         }
         controller.setSelectionClient(SelectionClient.createSmartSelectionClient(webContents));
 
@@ -1133,7 +1133,7 @@ public class AwContents implements SmartClipProvider {
         mWindowAndroid = getWindowAndroid(mContext);
         mViewAndroidDelegate =
                 new AwViewAndroidDelegate(mContainerView, mContentsClient, mScrollOffsetManager);
-        createContentViewCore(mContext, mViewAndroidDelegate, mInternalAccessAdapter, webContents,
+        createContentViewCore(mViewAndroidDelegate, mInternalAccessAdapter, webContents,
                 mWindowAndroid.getWindowAndroid());
         nativeSetJavaPeers(mNativeAwContents, this, mWebContentsDelegate, mContentsClientBridge,
                 mIoThreadClient, mInterceptNavigationDelegate, mAutofillProvider);
