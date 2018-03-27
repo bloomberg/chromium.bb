@@ -4,11 +4,14 @@
 
 #include "modules/webusb/USBDevice.h"
 
+#include <algorithm>
+
 #include "bindings/core/v8/ScriptPromise.h"
 #include "bindings/core/v8/ScriptPromiseResolver.h"
 #include "bindings/core/v8/ToV8ForCore.h"
 #include "core/dom/DOMException.h"
 #include "core/dom/ExceptionCode.h"
+#include "core/inspector/ConsoleMessage.h"
 #include "core/typed_arrays/DOMArrayBuffer.h"
 #include "core/typed_arrays/DOMArrayBufferView.h"
 #include "modules/webusb/USBConfiguration.h"
@@ -227,6 +230,15 @@ ScriptPromise USBDevice::claimInterface(ScriptState* script_state,
                                             kInterfaceStateChangeInProgress));
     } else if (claimed_interfaces_.Get(interface_index)) {
       resolver->Resolve();
+    } else if (IsProtectedInterfaceClass(interface_index)) {
+      GetExecutionContext()->AddConsoleMessage(
+          ConsoleMessage::Create(kJSMessageSource, kWarningMessageLevel,
+                                 "An attempt to claim a USB device interface "
+                                 "has been blocked because it "
+                                 "implements a protected interface class."));
+      resolver->Reject(DOMException::Create(
+          kSecurityError,
+          "The requested interface implements a protected class."));
     } else {
       interface_state_change_in_progress_.Set(interface_index);
       device_requests_.insert(resolver);
@@ -497,6 +509,39 @@ int USBDevice::FindAlternateIndex(size_t interface_index,
       return i;
   }
   return -1;
+}
+
+bool USBDevice::IsProtectedInterfaceClass(int interface_index) const {
+  DCHECK_NE(configuration_index_, -1);
+  DCHECK_NE(interface_index, -1);
+
+  // USB Class Codes are defined by the USB-IF:
+  // http://www.usb.org/developers/defined_class
+  const uint8_t kProtectedClasses[] = {
+      0x01,  // Audio
+      0x03,  // HID
+      0x08,  // Mass Storage
+      0x0B,  // Smart Card
+      0x0E,  // Video
+      0x10,  // Audio/Video
+      0xE0,  // Wireless Controller (Bluetooth and Wireless USB)
+  };
+  DCHECK(std::is_sorted(std::begin(kProtectedClasses),
+                        std::end(kProtectedClasses)));
+
+  const auto& alternates = Info()
+                               .configurations[configuration_index_]
+                               ->interfaces[interface_index]
+                               ->alternates;
+  for (const auto& alternate : alternates) {
+    if (std::binary_search(std::begin(kProtectedClasses),
+                           std::end(kProtectedClasses),
+                           alternate->class_code)) {
+      return true;
+    }
+  }
+
+  return false;
 }
 
 bool USBDevice::EnsureNoDeviceOrInterfaceChangeInProgress(
