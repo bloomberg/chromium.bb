@@ -939,6 +939,8 @@ void init_seq_coding_tools(SequenceHeader *seq, const AV1EncoderConfig *oxcf) {
   seq->enable_warped_motion = oxcf->enable_warped_motion;
   seq->enable_interintra_compound = 1;
   seq->enable_masked_compound = 1;
+  seq->enable_intra_edge_filter = 1;
+  seq->enable_filter_intra = 1;
 }
 
 static void init_config(struct AV1_COMP *cpi, AV1EncoderConfig *oxcf) {
@@ -2379,9 +2381,6 @@ void av1_change_config(struct AV1_COMP *cpi, const AV1EncoderConfig *oxcf) {
   cpi->ext_refresh_frame_context_pending = 0;
 
   highbd_set_var_fns(cpi);
-
-  cm->enable_intra_edge_filter = 1;
-  cm->allow_filter_intra = 1;
 
   // Init sequence level coding tools
   // This should not be called after the first key frame.

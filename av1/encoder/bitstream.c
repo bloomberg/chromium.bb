@@ -2757,6 +2757,9 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 
   write_sb_size(seq_params, wb);
 
+  aom_wb_write_bit(wb, seq_params->enable_filter_intra);
+  aom_wb_write_bit(wb, seq_params->enable_intra_edge_filter);
+
   aom_wb_write_bit(wb, seq_params->enable_interintra_compound);
   aom_wb_write_bit(wb, seq_params->enable_masked_compound);
   aom_wb_write_bit(wb, seq_params->enable_warped_motion);
@@ -2964,9 +2967,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   } else {
     aom_wb_write_bit(wb, cm->error_resilient_mode);
   }
-
-  aom_wb_write_bit(wb, cm->enable_intra_edge_filter);
-  aom_wb_write_bit(wb, cm->allow_filter_intra);
 
 #if CONFIG_CDF_UPDATE_MODE
   aom_wb_write_bit(wb, cm->disable_cdf_update);

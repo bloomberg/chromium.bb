@@ -67,7 +67,7 @@ static INLINE int av1_allow_intrabc(const AV1_COMMON *const cm) {
 
 static INLINE int av1_filter_intra_allowed_bsize(const AV1_COMMON *const cm,
                                                  BLOCK_SIZE bs) {
-  if (!cm->allow_filter_intra || bs == BLOCK_INVALID) return 0;
+  if (!cm->seq_params.enable_filter_intra || bs == BLOCK_INVALID) return 0;
 
   return block_size_wide[bs] <= 32 && block_size_high[bs] <= 32;
 }

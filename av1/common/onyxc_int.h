@@ -225,6 +225,8 @@ typedef struct SequenceHeader {
                          // 2 - adaptive
 #endif
   int monochrome;
+  int enable_filter_intra;         // enables/disables filterintra
+  int enable_intra_edge_filter;    // enables/disables corner/edge/upsampling
   int enable_interintra_compound;  // enables/disables interintra_compound
   int enable_masked_compound;      // enables/disables masked compound
   int enable_dual_filter;          // 0 - disable dual interpolation filter
@@ -339,10 +341,8 @@ typedef struct AV1Common {
   int cur_frame_force_integer_mv;  // 0 the default in AOM, 1 only integer
 #endif
 
-  int enable_intra_edge_filter;  // 0 - disable corner/edge/upsampling
   int allow_screen_content_tools;
   int allow_intrabc;
-  int allow_filter_intra;
   int allow_warped_motion;
 
   // MBs, mb_rows/cols is in 16-pixel units; mi_rows/cols is in

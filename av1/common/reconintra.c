@@ -1600,7 +1600,7 @@ void av1_predict_intra_block(
       cm, bsize, mi_row, mi_col, bottom_available, have_left, partition,
       tx_size, row_off, col_off, pd->subsampling_x, pd->subsampling_y);
 
-  const int disable_edge_filter = !cm->enable_intra_edge_filter;
+  const int disable_edge_filter = !cm->seq_params.enable_intra_edge_filter;
   if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
     build_intra_predictors_high(
         xd, ref, ref_stride, dst, dst_stride, mode, angle_delta,
