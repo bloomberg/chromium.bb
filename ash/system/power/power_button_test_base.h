@@ -46,13 +46,13 @@ class PowerButtonTestBase : public AshTestBase {
   // Initializes |power_button_controller_| and other members that point at
   // objects owned by it. If |initial_tablet_mode_switch_state| is not
   // UNSUPPORTED, tablet mode switch will be set and PowerButtonController will
-  // set |turn_screen_off_for_tap_| to true and create
+  // set |default_turn_screen_off_for_tap_| to true and create
   // PowerButtonScreenshotController on getting the switch.
   void InitPowerButtonControllerMembers(chromeos::PowerManagerClient::TabletMode
                                             initial_tablet_mode_switch_state);
 
-  // Sets the tablet mode switch state. And then PowerButtonController will
-  // initialize |turn_screen_off_for_tap_| and |screenshot_controller_| if the
+  // Sets the tablet mode switch state. PowerButtonController will initialize
+  // |default_turn_screen_off_for_tap_| and |screenshot_controller_| if the
   // switch state is not UNSUPPORTED.
   void SetTabletModeSwitchState(
       chromeos::PowerManagerClient::TabletMode tablet_mode_switch_state);
@@ -95,9 +95,6 @@ class PowerButtonTestBase : public AshTestBase {
 
   // Simulate that shutdown sound duration callback is done.
   void ShutdownSoundPlayed();
-
-  // True if should turn screen off when tapping the power button.
-  bool turn_screen_off_for_tap_ = false;
 
   // Ownership is passed on to chromeos::DBusThreadManager.
   chromeos::FakePowerManagerClient* power_manager_client_ = nullptr;

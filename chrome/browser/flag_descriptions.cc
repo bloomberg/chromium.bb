@@ -3033,6 +3033,12 @@ const char kAshEnablePersistentWindowBoundsName[] =
 const char kAshEnablePersistentWindowBoundsDescription[] =
     "Enable persistent window bounds in multi-displays scenario.";
 
+const char kAshEnableModeSpecificPowerButtonName[] =
+    "Enable mode-specific power button behavior.";
+const char kAshEnableModeSpecificPowerButtonDescription[] =
+    "Enable mode-specific power button behavior. While in tablet mode, tapping "
+    "the power button turns the display off.";
+
 const char kAshEnableTrilinearFilteringName[] = "Enable trilinear filtering.";
 const char kAshEnableTrilinearFilteringDescription[] =
     "Enable trilinear filtering.";

@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "ash/accelerators/accelerator_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/session/session_controller.h"
@@ -150,7 +151,7 @@ void PowerButtonController::OnPowerButtonEvent(
 
   if (down) {
     show_menu_animation_done_ = false;
-    if (turn_screen_off_for_tap_) {
+    if (ShouldTurnScreenOffForTap()) {
       force_off_on_button_up_ = true;
 
       // When the system resumes in response to the power button being pressed,
@@ -174,7 +175,7 @@ void PowerButtonController::OnPowerButtonEvent(
     screen_off_when_power_button_down_ = !display_controller_->IsScreenOn();
     display_controller_->SetBacklightsForcedOff(false);
 
-    if (!turn_screen_off_for_tap_) {
+    if (!ShouldTurnScreenOffForTap()) {
       StartPowerMenuAnimation();
     } else {
       base::TimeDelta timeout = screen_off_when_power_button_down_
@@ -208,7 +209,7 @@ void PowerButtonController::OnPowerButtonEvent(
 
     // Cancel the menu animation if it's still ongoing when the button is
     // released on a clamshell device.
-    if (!turn_screen_off_for_tap_ && !show_menu_animation_done_) {
+    if (!ShouldTurnScreenOffForTap() && !show_menu_animation_done_) {
       static_cast<PowerButtonMenuScreenView*>(menu_widget_->GetContentsView())
           ->ScheduleShowHideAnimation(false);
     }
@@ -339,10 +340,12 @@ void PowerButtonController::OnScreenStateChanged(
 }
 
 void PowerButtonController::OnTabletModeStarted() {
+  in_tablet_mode_ = true;
   StopTimersAndDismissMenu();
 }
 
 void PowerButtonController::OnTabletModeEnded() {
+  in_tablet_mode_ = false;
   StopTimersAndDismissMenu();
 }
 
@@ -354,6 +357,12 @@ void PowerButtonController::OnLockStateEvent(
   // dirty state if press lock button after login but release in lock screen.
   if (event == EVENT_LOCK_ANIMATION_FINISHED)
     lock_button_down_ = false;
+}
+
+bool PowerButtonController::ShouldTurnScreenOffForTap() const {
+  return features::IsModeSpecificPowerButtonEnabled()
+             ? in_tablet_mode_
+             : default_turn_screen_off_for_tap_;
 }
 
 void PowerButtonController::StopTimersAndDismissMenu() {
@@ -399,7 +408,7 @@ void PowerButtonController::ProcessCommandLine() {
 
 void PowerButtonController::InitTabletPowerButtonMembers() {
   if (!force_clamshell_power_button_)
-    turn_screen_off_for_tap_ = true;
+    default_turn_screen_off_for_tap_ = true;
 
   if (!screenshot_controller_) {
     screenshot_controller_ =

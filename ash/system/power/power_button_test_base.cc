@@ -71,12 +71,9 @@ void PowerButtonTestBase::InitPowerButtonControllerMembers(
   if (initial_tablet_mode_switch_state !=
       chromeos::PowerManagerClient::TabletMode::UNSUPPORTED) {
     SetTabletModeSwitchState(initial_tablet_mode_switch_state);
-    turn_screen_off_for_tap_ =
-        power_button_test_api_->ShouldTurnScreenOffForTap();
     screenshot_controller_ = power_button_test_api_->GetScreenshotController();
   } else {
-    turn_screen_off_for_tap_ = false;
-    power_button_test_api_->SetTurnScreenOffForTap(turn_screen_off_for_tap_);
+    power_button_test_api_->SetTurnScreenOffForTap(false);
     screenshot_controller_ = nullptr;
   }
 }
@@ -88,8 +85,6 @@ void PowerButtonTestBase::SetTabletModeSwitchState(
           chromeos::PowerManagerClient::LidState::OPEN,
           tablet_mode_switch_state});
 
-  turn_screen_off_for_tap_ =
-      power_button_test_api_->ShouldTurnScreenOffForTap();
   screenshot_controller_ = power_button_test_api_->GetScreenshotController();
 }
 
