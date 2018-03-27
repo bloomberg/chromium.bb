@@ -5,7 +5,6 @@
 #include <initializer_list>
 #include <vector>
 
-#include "platform/heap/CallbackStack.h"
 #include "platform/heap/GarbageCollected.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapAllocator.h"

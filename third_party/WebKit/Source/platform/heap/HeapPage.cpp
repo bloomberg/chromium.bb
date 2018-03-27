@@ -35,7 +35,6 @@
 #include "platform/MemoryCoordinator.h"
 #include "platform/bindings/ScriptForbiddenScope.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
-#include "platform/heap/CallbackStack.h"
 #include "platform/heap/HeapCompact.h"
 #include "platform/heap/MarkingVerifier.h"
 #include "platform/heap/PageMemory.h"
