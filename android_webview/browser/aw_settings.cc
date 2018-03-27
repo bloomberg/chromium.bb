@@ -417,7 +417,7 @@ void AwSettings::PopulateWebPreferencesLocked(JNIEnv* env,
   web_prefs->ignore_main_frame_overflow_hidden_quirk = support_quirks;
   web_prefs->report_screen_size_in_physical_pixels_quirk = support_quirks;
 
-  web_prefs->resue_global_for_unowned_main_frame =
+  web_prefs->reuse_global_for_unowned_main_frame =
       Java_AwSettings_getAllowEmptyDocumentPersistenceLocked(env, obj);
 
   web_prefs->password_echo_enabled =
