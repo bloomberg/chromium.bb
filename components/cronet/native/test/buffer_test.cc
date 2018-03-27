@@ -4,6 +4,8 @@
 
 #include "cronet_c.h"
 
+#include <limits>
+
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -64,30 +66,36 @@ TEST_F(BufferTest, TestInitWithAlloc) {
   // Create Cronet buffer and allocate buffer data.
   Cronet_BufferPtr buffer = Cronet_Buffer_Create();
   Cronet_Buffer_InitWithAlloc(buffer, kTestBufferSize);
-  ASSERT_TRUE(Cronet_Buffer_GetData(buffer));
-  ASSERT_EQ(Cronet_Buffer_GetSize(buffer), kTestBufferSize);
+  EXPECT_TRUE(Cronet_Buffer_GetData(buffer));
+  EXPECT_EQ(Cronet_Buffer_GetSize(buffer), kTestBufferSize);
   Cronet_Buffer_Destroy(buffer);
   ASSERT_FALSE(on_destroy_called());
 }
 
-#if defined(ADDRESS_SANITIZER)
+#if defined(ADDRESS_SANITIZER) || defined(OS_FUCHSIA)
 // ASAN malloc by default triggers crash instead of returning null on failure.
+// Fuchsia malloc() also crashes on allocation failure in some kernel builds.
 #define MAYBE_TestInitWithHugeAllocFails DISABLED_TestInitWithHugeAllocFails
 #else
 #define MAYBE_TestInitWithHugeAllocFails TestInitWithHugeAllocFails
 #endif
-// Example of allocating buffer with hugereasonable size.
+// Verify behaviour when an unsatisfiably huge buffer allocation is requested.
+// On 32-bit platforms, we want to ensure that a 64-bit range allocation size
+// is rejected, rather than resulting in a 32-bit truncated allocation.
+// Some platforms over-commit allocations, so we request an allocation of the
+// whole 64-bit address-space, which cannot possibly be satisfied in a 32- or
+// 64-bit process.
 TEST_F(BufferTest, MAYBE_TestInitWithHugeAllocFails) {
-  // Create Cronet buffer and allocate buffer data.
   Cronet_BufferPtr buffer = Cronet_Buffer_Create();
-  Cronet_Buffer_InitWithAlloc(buffer, 1000 * 1000 * 1000 * 1000);
-  ASSERT_FALSE(Cronet_Buffer_GetData(buffer));
-  ASSERT_EQ(Cronet_Buffer_GetSize(buffer), 0ull);
+  const uint64_t kHugeTestBufferSize = std::numeric_limits<uint64_t>::max();
+  Cronet_Buffer_InitWithAlloc(buffer, kHugeTestBufferSize);
+  EXPECT_FALSE(Cronet_Buffer_GetData(buffer));
+  EXPECT_EQ(Cronet_Buffer_GetSize(buffer), 0ull);
   Cronet_Buffer_Destroy(buffer);
   ASSERT_FALSE(on_destroy_called());
 }
 
-// Example of intializing buffer with app-allocated data.
+// Example of initializing buffer with app-allocated data.
 TEST_F(BufferTest, TestInitWithDataAndCallback) {
   Cronet_BufferCallbackPtr buffer_callback =
       Cronet_BufferCallback_CreateWith(BufferCallback_OnDestroy);
@@ -96,8 +104,8 @@ TEST_F(BufferTest, TestInitWithDataAndCallback) {
   Cronet_BufferPtr buffer = Cronet_Buffer_Create();
   Cronet_Buffer_InitWithDataAndCallback(buffer, malloc(kTestBufferSize),
                                         kTestBufferSize, buffer_callback);
-  ASSERT_TRUE(Cronet_Buffer_GetData(buffer));
-  ASSERT_EQ(Cronet_Buffer_GetSize(buffer), kTestBufferSize);
+  EXPECT_TRUE(Cronet_Buffer_GetData(buffer));
+  EXPECT_EQ(Cronet_Buffer_GetSize(buffer), kTestBufferSize);
   Cronet_Buffer_Destroy(buffer);
   ASSERT_TRUE(on_destroy_called());
 }

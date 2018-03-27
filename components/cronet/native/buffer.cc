@@ -7,6 +7,7 @@
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
+#include "base/numerics/safe_conversions.h"
 
 namespace {
 
@@ -62,6 +63,8 @@ void Cronet_BufferImpl::InitWithDataAndCallback(
 }
 
 void Cronet_BufferImpl::InitWithAlloc(uint64_t size) {
+  if (!base::IsValueInRangeForNumericType<size_t, uint64_t>(size))
+    return;
   data_ = malloc(size);
   if (!data_)
     return;
