@@ -328,8 +328,7 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
 
   MediaStreamAudioSource* CreateAudioSource(
       const MediaStreamDevice& device,
-      const MediaStreamSource::ConstraintsCallback& source_ready,
-      bool* has_sw_echo_cancellation) override {
+      const MediaStreamSource::ConstraintsCallback& source_ready) override {
     MediaStreamAudioSource* source;
     if (create_source_that_fails_) {
       class FailedAtLifeAudioSource : public MediaStreamAudioSource {
@@ -355,7 +354,6 @@ class UserMediaProcessorUnderTest : public UserMediaProcessor {
                          source_ready, source));
     }
 
-    *has_sw_echo_cancellation = false;
     return source;
   }
 

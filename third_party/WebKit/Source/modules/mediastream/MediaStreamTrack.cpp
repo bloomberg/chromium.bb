@@ -447,10 +447,13 @@ void MediaStreamTrack::getSettings(MediaTrackSettings& settings) {
         break;
     }
   }
-  if (platform_settings.HasEchoCancellationValue()) {
-    settings.setEchoCancellation(
-        static_cast<bool>(platform_settings.echo_cancellation));
-  }
+
+  if (platform_settings.echo_cancellation)
+    settings.setEchoCancellation(*platform_settings.echo_cancellation);
+  if (platform_settings.auto_gain_control)
+    settings.setAutoGainControl(*platform_settings.auto_gain_control);
+  if (platform_settings.noise_supression)
+    settings.setNoiseSuppression(*platform_settings.noise_supression);
 
   if (image_capture_)
     image_capture_->GetMediaTrackSettings(settings);

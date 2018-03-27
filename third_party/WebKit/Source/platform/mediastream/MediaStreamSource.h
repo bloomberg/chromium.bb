@@ -94,9 +94,9 @@ class PLATFORM_EXPORT MediaStreamSource final
     extra_data_ = std::move(extra_data);
   }
 
-  void SetEchoCancellation(bool echo_cancellation) {
-    echo_cancellation_ = WTF::make_optional(echo_cancellation);
-  }
+  void SetAudioProcessingProperties(bool echo_cancellation,
+                                    bool auto_gain_control,
+                                    bool noise_supression);
 
   void SetConstraints(WebMediaConstraints constraints) {
     constraints_ = constraints;
@@ -147,7 +147,9 @@ class PLATFORM_EXPORT MediaStreamSource final
   std::unique_ptr<ExtraData> extra_data_;
   WebMediaConstraints constraints_;
   WebMediaStreamSource::Capabilities capabilities_;
-  WTF::Optional<bool> echo_cancellation_;
+  Optional<bool> echo_cancellation_;
+  Optional<bool> auto_gain_control_;
+  Optional<bool> noise_supression_;
 };
 
 typedef HeapVector<Member<MediaStreamSource>> MediaStreamSourceVector;

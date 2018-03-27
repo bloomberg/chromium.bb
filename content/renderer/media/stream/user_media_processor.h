@@ -127,8 +127,7 @@ class CONTENT_EXPORT UserMediaProcessor
   // http://crbug.com/764293
   virtual MediaStreamAudioSource* CreateAudioSource(
       const MediaStreamDevice& device,
-      const MediaStreamSource::ConstraintsCallback& source_ready,
-      bool* has_sw_echo_cancellation);
+      const MediaStreamSource::ConstraintsCallback& source_ready);
   virtual MediaStreamVideoSource* CreateVideoSource(
       const MediaStreamDevice& device,
       const MediaStreamSource::SourceStoppedCallback& stop_callback);

@@ -26,6 +26,12 @@ promise_test(function() {
     assert_greater_than(Object.keys(settings).length, 0);
     assert_true('deviceId' in settings,
                 'Device ID missing: ' + JSON.stringify(settings));
+    assert_true('echoCancellation' in settings,
+                'Echo cancellation missing: ' + JSON.stringify(settings));
+    assert_true('autoGainControl' in settings,
+                'Automatic gain control missing: ' + JSON.stringify(settings));
+    assert_true('noiseSuppression' in settings,
+                'Noise suppression missing: ' + JSON.stringify(settings));
   });
 }, 'An audio track returns the expected variables');
 

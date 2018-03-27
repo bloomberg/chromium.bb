@@ -126,7 +126,10 @@ class WebMediaStreamSource {
   BLINK_PLATFORM_EXPORT ExtraData* GetExtraData() const;
   BLINK_PLATFORM_EXPORT void SetExtraData(ExtraData*);
 
-  BLINK_PLATFORM_EXPORT void SetEchoCancellation(bool echo_cancellation);
+  BLINK_PLATFORM_EXPORT void SetAudioProcessingProperties(
+      bool echo_cancellation,
+      bool auto_gain_control,
+      bool noise_supression);
 
   BLINK_PLATFORM_EXPORT WebMediaConstraints Constraints();
 

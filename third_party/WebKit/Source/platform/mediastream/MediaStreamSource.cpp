@@ -90,6 +90,14 @@ void MediaStreamSource::AddObserver(MediaStreamSource::Observer* observer) {
   observers_.insert(observer);
 }
 
+void MediaStreamSource::SetAudioProcessingProperties(bool echo_cancellation,
+                                                     bool auto_gain_control,
+                                                     bool noise_supression) {
+  echo_cancellation_ = echo_cancellation;
+  auto_gain_control_ = auto_gain_control;
+  noise_supression_ = noise_supression;
+}
+
 void MediaStreamSource::AddAudioConsumer(AudioDestinationConsumer* consumer) {
   DCHECK(requires_consumer_);
   MutexLocker locker(audio_consumers_lock_);
@@ -110,8 +118,12 @@ bool MediaStreamSource::RemoveAudioConsumer(
 void MediaStreamSource::GetSettings(WebMediaStreamTrack::Settings& settings) {
   settings.device_id = Id();
 
-  if (echo_cancellation_.has_value())
+  if (echo_cancellation_)
     settings.echo_cancellation = *echo_cancellation_;
+  if (auto_gain_control_)
+    settings.auto_gain_control = *auto_gain_control_;
+  if (noise_supression_)
+    settings.noise_supression = *noise_supression_;
 }
 
 void MediaStreamSource::SetAudioFormat(size_t number_of_channels,
