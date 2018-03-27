@@ -297,8 +297,14 @@ void WindowGrid::PrepareForOverview() {
 
 void WindowGrid::PositionWindows(bool animate,
                                  WindowSelectorItem* ignored_item) {
-  if (window_selector_->IsShuttingDown() || window_list_.empty())
+  if (window_selector_->IsShuttingDown())
     return;
+  if (window_list_.empty()) {
+    if (IsNewOverviewUi())
+      ShowNoRecentsWindowMessage(/*visible=*/true);
+    return;
+  }
+
   DCHECK(shield_widget_.get());
   // Keep the background shield widget covering the whole screen.
   aura::Window* widget_window = shield_widget_->GetNativeWindow();
