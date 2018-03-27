@@ -35,16 +35,17 @@ interface TCPConnectedSocketObserver {
 // Represents a TCP server socket that has been successfully bound to a local
 // address. Caller can close the socket by destroying the interface pointer.
 interface TCPServerSocket {
-  // Waits for an incoming connection request. On success, returns net::OK,
-  // |remote_addr| represents the peer address, |connected_socket| is the new
-  // connection established. Caller uses |send_stream| to send data and
-  // |receive_stream| for receiving data over the new connection. On failure,
-  // |net_error| is a net error code and other fields are null.
-  // Up to |backlog| Accept()s can be pending at a time. |backlog| is a
-  // number that is specified when requesting TCPServerSocket. If more than
-  // |backlog| number of Accept()s are outstanding,
+  // Waits for an incoming connection request. |observer| if non-null will be
+  // used to listen for any network connection error on the newly established
+  // connection. On success, returns net::OK, |remote_addr| represents the peer
+  // address, |connected_socket| is the new connection established. Caller uses
+  // |send_stream| to send data and |receive_stream| for receiving data over the
+  // new connection. On failure, |net_error| is a net error code and other
+  // fields are null. Up to |backlog| Accept()s can be pending at a time.
+  // |backlog| is a number that is specified when requesting TCPServerSocket. If
+  // more than |backlog| number of Accept()s are outstanding,
   // net::ERR_INSUFFICIENT_RESOUCES will be returned.
-  Accept(TCPConnectedSocketObserver observer)
+  Accept(TCPConnectedSocketObserver? observer)
       => (int32 net_error,
           net.interfaces.IPEndPoint? remote_addr,
           TCPConnectedSocket? connected_socket,

@@ -27,9 +27,6 @@ TCPConnectedSocket::TCPConnectedSocket(
       writable_handle_watcher_(FROM_HERE,
                                mojo::SimpleWatcher::ArmingPolicy::MANUAL),
       traffic_annotation_(traffic_annotation) {
-  // TODO(xunjieli): Consider supporting null |observer_|, if there are
-  // consumers who do not care about read/write errors.
-  DCHECK(observer_);
 }
 
 TCPConnectedSocket::TCPConnectedSocket(
@@ -165,7 +162,7 @@ void TCPConnectedSocket::OnReceiveStreamWritable(MojoResult result) {
 void TCPConnectedSocket::OnNetworkReadCompleted(int bytes_read) {
   DCHECK(pending_receive_);
 
-  if (bytes_read < 0)
+  if (bytes_read < 0 && observer_)
     observer_->OnReadError(bytes_read);
 
   if (bytes_read <= 0) {
@@ -225,7 +222,7 @@ void TCPConnectedSocket::OnSendStreamReadable(MojoResult result) {
 void TCPConnectedSocket::OnNetworkWriteCompleted(int bytes_written) {
   DCHECK(pending_send_);
 
-  if (bytes_written < 0)
+  if (bytes_written < 0 && observer_)
     observer_->OnWriteError(bytes_written);
   if (bytes_written <= 0) {
     ShutdownSend();

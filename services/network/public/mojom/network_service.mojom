@@ -213,14 +213,15 @@ interface NetworkContext {
                         TCPServerSocket& socket)
       => (int32 result, net.interfaces.IPEndPoint? local_addr_out);
 
-  // Creates a TCP socket connected to |remote_addr|. |observer| will be used
-  // to listen for any network connection error on the newly established
-  // connection. The socket created can only be used for the purpose specified
-  // in |traffic_annotation|, and cannot be re-used for other purposes.
-  // |local_addr| should be set to null unless the caller wants to bind the
-  // socket to a specific address and port. On success, |result| is net::OK.
-  // Caller is to use |send_stream| to send data and |receive_stream| to receive
-  // data over the connection. On failure, |result| is a network error code.
+  // Creates a TCP socket connected to |remote_addr|. |observer| if non-null
+  // will be used to listen for any network connection error on the newly
+  // established connection. The socket created can only be used for the purpose
+  // specified in |traffic_annotation|, and cannot be re-used for other
+  // purposes. |local_addr| should be set to null unless the caller wants to
+  // bind the socket to a specific address and port. On success, |result| is
+  // net::OK. Caller is to use |send_stream| to send data and |receive_stream|
+  // to receive data over the connection. On failure, |result| is a network
+  // error code.
   //
   // Any sockets that are created but are yet to be destroyed will be destroyed
   // when NetworkContext goes away.
@@ -229,7 +230,7 @@ interface NetworkContext {
       net.interfaces.AddressList remote_addr_list,
       MutableNetworkTrafficAnnotationTag traffic_annotation,
       TCPConnectedSocket& socket,
-      TCPConnectedSocketObserver observer)
+      TCPConnectedSocketObserver? observer)
      => (int32 result,
          handle<data_pipe_consumer>? receive_stream,
          handle<data_pipe_producer>? send_stream);
