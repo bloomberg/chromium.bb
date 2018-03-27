@@ -6,8 +6,11 @@
 
 #include <stdint.h>
 
+#include <utility>
+
 #include "base/macros.h"
-#include "base/memory/singleton.h"
+#include "base/no_destructor.h"
+#include "base/time/default_tick_clock.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/update_engine_client.h"
 
@@ -20,64 +23,79 @@ namespace {
 // be at. Once we reach the highest severity, the timer will stop.
 constexpr base::TimeDelta kNotifyCycleDelta = base::TimeDelta::FromMinutes(20);
 
-constexpr int kHighDaysThreshold = 4;
-constexpr int kElevatedDaysThreshold = 2;
-constexpr int kLowDaysThreshold = 0;
+// The default amount of time it takes for the detector's annoyance level
+// (upgrade_notification_stage()) to reach UPGRADE_ANNOYANCE_HIGH once an
+// upgrade is detected.
+constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(4);
 
-}  // namespace
+// The scale factor to determine the elevated annoyance level from the high
+// annoyance level's threshold. The elevated level always hits half-way to the
+// high level.
+constexpr double kElevatedScaleFactor = 0.5;
 
-class UpgradeDetectorChromeos::ChannelsRequester {
+class ChannelsRequester {
  public:
-  typedef base::Callback<void(const std::string&, const std::string&)>
+  typedef base::OnceCallback<void(std::string, std::string)>
       OnChannelsReceivedCallback;
 
-  ChannelsRequester() : weak_factory_(this) {}
-
-  void RequestChannels(const OnChannelsReceivedCallback& callback) {
+  static void Begin(OnChannelsReceivedCallback callback) {
+    ChannelsRequester* instance = new ChannelsRequester(std::move(callback));
     UpdateEngineClient* client =
         DBusThreadManager::Get()->GetUpdateEngineClient();
-    callback_ = callback;
+    // base::Unretained is safe because this instance keeps itself alive until
+    // both callbacks have run.
+    // TODO: use BindOnce here; see https://crbug.com/825993.
     client->GetChannel(true /* get_current_channel */,
                        base::Bind(&ChannelsRequester::SetCurrentChannel,
-                                  weak_factory_.GetWeakPtr()));
+                                  base::Unretained(instance)));
     client->GetChannel(false /* get_current_channel */,
                        base::Bind(&ChannelsRequester::SetTargetChannel,
-                                  weak_factory_.GetWeakPtr()));
+                                  base::Unretained(instance)));
   }
 
  private:
+  explicit ChannelsRequester(OnChannelsReceivedCallback callback)
+      : callback_(std::move(callback)) {}
+
+  ~ChannelsRequester() = default;
+
   void SetCurrentChannel(const std::string& current_channel) {
     DCHECK(!current_channel.empty());
     current_channel_ = current_channel;
-    TriggerCallbackIfReady();
+    TriggerCallbackAndDieIfReady();
   }
 
   void SetTargetChannel(const std::string& target_channel) {
     DCHECK(!target_channel.empty());
     target_channel_ = target_channel;
-    TriggerCallbackIfReady();
+    TriggerCallbackAndDieIfReady();
   }
 
-  void TriggerCallbackIfReady() {
+  void TriggerCallbackAndDieIfReady() {
     if (current_channel_.empty() || target_channel_.empty())
       return;
-    if (!callback_.is_null())
-      callback_.Run(current_channel_, target_channel_);
+    if (!callback_.is_null()) {
+      std::move(callback_).Run(std::move(current_channel_),
+                               std::move(target_channel_));
+    }
+    delete this;
   }
 
+  OnChannelsReceivedCallback callback_;
   std::string current_channel_;
   std::string target_channel_;
-
-  OnChannelsReceivedCallback callback_;
-
-  base::WeakPtrFactory<ChannelsRequester> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ChannelsRequester);
 };
 
-UpgradeDetectorChromeos::UpgradeDetectorChromeos()
-    : initialized_(false), weak_factory_(this) {
-}
+}  // namespace
+
+UpgradeDetectorChromeos::UpgradeDetectorChromeos(base::TickClock* tick_clock)
+    : UpgradeDetector(tick_clock),
+      high_threshold_(DetermineHighThreshold()),
+      upgrade_notification_timer_(tick_clock),
+      initialized_(false),
+      weak_factory_(this) {}
 
 UpgradeDetectorChromeos::~UpgradeDetectorChromeos() {
 }
@@ -92,26 +110,41 @@ void UpgradeDetectorChromeos::Shutdown() {
   if (!initialized_)
     return;
   DBusThreadManager::Get()->GetUpdateEngineClient()->RemoveObserver(this);
+  // Discard an outstanding request to a ChannelsRequester.
+  weak_factory_.InvalidateWeakPtrs();
+  upgrade_notification_timer_.Stop();
+  initialized_ = false;
 }
 
 base::TimeDelta UpgradeDetectorChromeos::GetHighAnnoyanceLevelDelta() {
-  return base::TimeDelta::FromDays(kHighDaysThreshold - kElevatedDaysThreshold);
+  return high_threshold_ - (high_threshold_ * kElevatedScaleFactor);
 }
 
 base::TimeTicks UpgradeDetectorChromeos::GetHighAnnoyanceDeadline() {
   const base::TimeTicks detected_time = upgrade_detected_time();
   if (detected_time.is_null())
     return detected_time;
-  return detected_time + base::TimeDelta::FromDays(kHighDaysThreshold);
+  return detected_time + high_threshold_;
+}
+
+// static
+base::TimeDelta UpgradeDetectorChromeos::DetermineHighThreshold() {
+  base::TimeDelta custom = GetRelaunchNotificationPeriod();
+  return custom.is_zero() ? kDefaultHighThreshold : custom;
+}
+
+void UpgradeDetectorChromeos::OnRelaunchNotificationPeriodPrefChanged() {
+  high_threshold_ = DetermineHighThreshold();
+  if (!upgrade_detected_time().is_null())
+    NotifyOnUpgrade();
 }
 
 void UpgradeDetectorChromeos::UpdateStatusChanged(
     const UpdateEngineClient::Status& status) {
   if (status.status == UpdateEngineClient::UPDATE_STATUS_UPDATED_NEED_REBOOT) {
-    set_upgrade_detected_time(base::TimeTicks::Now());
+    set_upgrade_detected_time(tick_clock()->NowTicks());
 
-    channels_requester_.reset(new UpgradeDetectorChromeos::ChannelsRequester());
-    channels_requester_->RequestChannels(
+    ChannelsRequester::Begin(
         base::Bind(&UpgradeDetectorChromeos::OnChannelsReceived,
                    weak_factory_.GetWeakPtr()));
   } else if (status.status ==
@@ -127,29 +160,33 @@ void UpgradeDetectorChromeos::OnUpdateOverCellularOneTimePermissionGranted() {
 }
 
 void UpgradeDetectorChromeos::NotifyOnUpgrade() {
-  base::TimeDelta delta = base::TimeTicks::Now() - upgrade_detected_time();
-  int64_t days_passed = delta.InDays();
+  base::TimeDelta delta = tick_clock()->NowTicks() - upgrade_detected_time();
 
   // These if statements must be sorted (highest interval first).
-  if (days_passed >= kHighDaysThreshold) {
+  if (delta >= high_threshold_)
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
-
-    // We can't get any higher, baby.
-    upgrade_notification_timer_.Stop();
-  } else if (days_passed >= kElevatedDaysThreshold) {
+  else if (delta >= high_threshold_ * kElevatedScaleFactor)
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
-  } else if (days_passed >= kLowDaysThreshold) {
+  else
     set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
-  } else {
-    return;  // Not ready to recommend upgrade.
+
+  // Stop the timer if the highest threshold has been reached. Otherwise, make
+  // sure it is running. It is possible that a change in the notification period
+  // (via administrative policy) has moved the detector from high annoyance back
+  // down to a lower level, in which case the timer must be restarted.
+  if (upgrade_notification_stage() == UPGRADE_ANNOYANCE_HIGH) {
+    upgrade_notification_timer_.Stop();
+  } else if (!upgrade_notification_timer_.IsRunning()) {
+    upgrade_notification_timer_.Start(
+        FROM_HERE, kNotifyCycleDelta, this,
+        &UpgradeDetectorChromeos::NotifyOnUpgrade);
   }
 
   NotifyUpgrade();
 }
 
-void UpgradeDetectorChromeos::OnChannelsReceived(
-    const std::string& current_channel,
-    const std::string& target_channel) {
+void UpgradeDetectorChromeos::OnChannelsReceived(std::string current_channel,
+                                                 std::string target_channel) {
   // As current update engine status is UPDATE_STATUS_UPDATED_NEED_REBOOT
   // and target channel is more stable than current channel, powerwash
   // will be performed after reboot.
@@ -166,7 +203,9 @@ void UpgradeDetectorChromeos::OnChannelsReceived(
 
 // static
 UpgradeDetectorChromeos* UpgradeDetectorChromeos::GetInstance() {
-  return base::Singleton<UpgradeDetectorChromeos>::get();
+  static base::NoDestructor<UpgradeDetectorChromeos> instance(
+      base::DefaultTickClock::GetInstance());
+  return instance.get();
 }
 
 // static
@@ -176,5 +215,5 @@ UpgradeDetector* UpgradeDetector::GetInstance() {
 
 // static
 base::TimeDelta UpgradeDetector::GetDefaultHighAnnoyanceThreshold() {
-  return base::TimeDelta::FromDays(kHighDaysThreshold);
+  return kDefaultHighThreshold;
 }

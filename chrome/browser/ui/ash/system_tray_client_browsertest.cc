@@ -73,7 +73,10 @@ IN_PROC_BROWSER_TEST_F(SystemTrayClientTest, UpdateTrayIcon) {
   EXPECT_FALSE(visible);
 
   // Simulate an upgrade. This sends a mojo message to ash.
-  UpgradeDetector::GetInstance()->NotifyUpgrade();
+  UpgradeDetector* detector = UpgradeDetector::GetInstance();
+  detector->set_upgrade_notification_stage(
+      UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
+  detector->NotifyUpgrade();
   content::RunAllPendingInMessageLoop();
 
   // Tray icon is now visible.

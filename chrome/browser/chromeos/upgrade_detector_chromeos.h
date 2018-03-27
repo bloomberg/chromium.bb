@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_UPGRADE_DETECTOR_CHROMEOS_H_
 #define CHROME_BROWSER_CHROMEOS_UPGRADE_DETECTOR_CHROMEOS_H_
 
+#include <string>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -14,7 +16,8 @@
 
 namespace base {
 template <typename T>
-struct DefaultSingletonTraits;
+class NoDestructor;
+class TickClock;
 }  // namespace base
 
 class UpgradeDetectorChromeos : public UpgradeDetector,
@@ -37,10 +40,15 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   base::TimeTicks GetHighAnnoyanceDeadline() override;
 
  private:
-  friend struct base::DefaultSingletonTraits<UpgradeDetectorChromeos>;
-  class ChannelsRequester;
+  friend class base::NoDestructor<UpgradeDetectorChromeos>;
 
-  UpgradeDetectorChromeos();
+  explicit UpgradeDetectorChromeos(base::TickClock* tick_clock);
+
+  // Returns the threshold to reach high annoyance level.
+  static base::TimeDelta DetermineHighThreshold();
+
+  // UpgradeDetector:
+  void OnRelaunchNotificationPeriodPrefChanged() override;
 
   // chromeos::UpdateEngineClient::Observer implementation.
   void UpdateStatusChanged(
@@ -52,15 +60,16 @@ class UpgradeDetectorChromeos : public UpgradeDetector,
   // user that a new version is available.
   void NotifyOnUpgrade();
 
-  void OnChannelsReceived(const std::string& current_channel,
-                          const std::string& target_channel);
+  void OnChannelsReceived(std::string current_channel,
+                          std::string target_channel);
+
+  // The delta from upgrade detection until high annoyance level is reached.
+  base::TimeDelta high_threshold_;
 
   // After we detect an upgrade we start a recurring timer to see if enough time
   // has passed and we should start notifying the user.
   base::RepeatingTimer upgrade_notification_timer_;
   bool initialized_;
-
-  std::unique_ptr<ChannelsRequester> channels_requester_;
 
   base::WeakPtrFactory<UpgradeDetectorChromeos> weak_factory_;
 
