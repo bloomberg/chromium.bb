@@ -110,6 +110,8 @@ def UndoHierarchicalSizing(data):
       else:
         # Sibling or higher nodes
         break
+    assert total_child_size <= size, (
+        'Child node total size exceeded parent node total size')
     node_size = size - total_child_size
     nodes.append((name, node_size))
     return next_idx, size
@@ -128,7 +130,7 @@ def CreateDexSymbols(apk_path, output_directory):
   total_node_size = sum(map(lambda x: x[1], nodes))
   assert dex_expected_size >= total_node_size, (
       'Node size too large, check for node processing errors.')
-  # We have 1+MB of just ids for methods, strings
+  # We have more than 100KB of ids for methods, strings
   id_metadata_overhead_size = dex_expected_size - total_node_size
   symbols = []
   for name, node_size in nodes:
