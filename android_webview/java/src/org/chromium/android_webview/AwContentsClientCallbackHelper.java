@@ -26,9 +26,7 @@ public class AwContentsClientCallbackHelper {
     /**
      * Interface to tell CallbackHelper to cancel posted callbacks.
      */
-    public static interface CancelCallbackPoller {
-        boolean cancelAllCallbacks();
-    }
+    public static interface CancelCallbackPoller { boolean shouldCancelAllCallbacks(); }
 
     // TODO(boliu): Consider removing DownloadInfo and LoginRequestInfo by using native
     // MessageLoop to post directly to AwContents.
@@ -156,7 +154,7 @@ public class AwContentsClientCallbackHelper {
 
         @Override
         public void handleMessage(Message msg) {
-            if (mCancelCallbackPoller != null && mCancelCallbackPoller.cancelAllCallbacks()) {
+            if (mCancelCallbackPoller != null && mCancelCallbackPoller.shouldCancelAllCallbacks()) {
                 removeCallbacksAndMessages(null);
                 return;
             }
@@ -264,6 +262,10 @@ public class AwContentsClientCallbackHelper {
     // Public for tests.
     public void setCancelCallbackPoller(CancelCallbackPoller poller) {
         mCancelCallbackPoller = poller;
+    }
+
+    CancelCallbackPoller getCancelCallbackPoller() {
+        return mCancelCallbackPoller;
     }
 
     public void postOnLoadResource(String url) {

@@ -92,7 +92,7 @@ public class AwContentsClientCallbackHelperTest {
         }
 
         @Override
-        public boolean cancelAllCallbacks() {
+        public boolean shouldCancelAllCallbacks() {
             mCallbackHelper.notifyCalled();
             return mCancelled;
         }
