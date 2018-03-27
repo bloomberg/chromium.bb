@@ -297,8 +297,7 @@ void FrameSinkVideoCaptureDevice::OnStopped() {
 }
 
 void FrameSinkVideoCaptureDevice::OnTargetChanged(
-    const viz::FrameSinkId& frame_sink_id,
-    gfx::NativeView native_view) {
+    const viz::FrameSinkId& frame_sink_id) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   target_ = frame_sink_id;
@@ -308,20 +307,12 @@ void FrameSinkVideoCaptureDevice::OnTargetChanged(
   if (capturer_ && frame_sink_id.is_valid()) {
     capturer_->ChangeTarget(frame_sink_id);
   }
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&CursorRenderer::SetTargetView,
-                     cursor_renderer_->GetWeakPtr(), native_view));
 }
 
 void FrameSinkVideoCaptureDevice::OnTargetPermanentlyLost() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   target_ = viz::FrameSinkId();
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(&CursorRenderer::SetTargetView,
-                     cursor_renderer_->GetWeakPtr(), gfx::NativeView()));
 
   OnFatalError("Capture target has been permanently lost.");
 }
