@@ -118,6 +118,8 @@ const base::FilePath::CharType* g_output_log = NULL;
 // The value is set by the switch "--rendering_fps".
 double g_rendering_fps = 60;
 
+bool g_use_gl_renderer = true;
+
 // The value is set by the switch "--num_play_throughs". The video will play
 // the specified number of times. In different test cases, we have different
 // values for |num_play_throughs|. This setting will override the value. A
@@ -263,7 +265,8 @@ class VideoDecodeAcceleratorTestEnvironment : public ::testing::Environment {
     base::WaitableEvent done(base::WaitableEvent::ResetPolicy::AUTOMATIC,
                              base::WaitableEvent::InitialState::NOT_SIGNALED);
     rendering_thread_.task_runner()->PostTask(
-        FROM_HERE, base::Bind(&RenderingHelper::InitializeOneOff, &done));
+        FROM_HERE, base::Bind(&RenderingHelper::InitializeOneOff,
+                              g_use_gl_renderer, &done));
     done.Wait();
 
 #if defined(OS_CHROMEOS)
@@ -612,10 +615,15 @@ void GLRenderingVDAClient::CreateAndStartDecoder() {
     LOG_ASSERT(decoder_->Initialize(config, this));
   } else {
     if (!vda_factory_) {
-      vda_factory_ = GpuVideoDecodeAcceleratorFactory::Create(
-          base::Bind(&RenderingHelper::GetGLContext,
-                     base::Unretained(rendering_helper_)),
-          base::Bind([]() { return true; }), base::Bind(&DummyBindImage));
+      if (g_use_gl_renderer) {
+        vda_factory_ = GpuVideoDecodeAcceleratorFactory::Create(
+            base::Bind(&RenderingHelper::GetGLContext,
+                       base::Unretained(rendering_helper_)),
+            base::Bind([]() { return true; }), base::Bind(&DummyBindImage));
+      } else {
+        vda_factory_ = GpuVideoDecodeAcceleratorFactory::CreateWithNoGL();
+      }
+
       LOG_ASSERT(vda_factory_);
     }
 
@@ -1343,6 +1351,13 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
   bool test_reuse_delay = std::get<5>(GetParam());
   const bool render_as_thumbnails = std::get<6>(GetParam());
 
+  // We cannot render thumbnails without GL
+  if (!g_use_gl_renderer && render_as_thumbnails) {
+    LOG(WARNING) << "Skipping thumbnail test because GL is deactivated by "
+                    "--disable_rendering";
+    return;
+  }
+
   if (test_video_files_.size() > 1)
     num_concurrent_decoders = test_video_files_.size();
 
@@ -1355,17 +1370,6 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
   notes_.resize(num_concurrent_decoders);
   clients_.resize(num_concurrent_decoders);
 
-  RenderingHelperParams helper_params;
-  helper_params.rendering_fps = g_rendering_fps;
-  helper_params.render_as_thumbnails = render_as_thumbnails;
-  if (render_as_thumbnails) {
-    // Only one decoder is supported with thumbnail rendering
-    LOG_ASSERT(num_concurrent_decoders == 1U);
-    helper_params.thumbnails_page_size = kThumbnailsPageSize;
-    helper_params.thumbnail_size = kThumbnailSize;
-  }
-
-  helper_params.num_windows = num_concurrent_decoders;
   // First kick off all the decoders.
   for (size_t index = 0; index < num_concurrent_decoders; ++index) {
     TestVideoFile* video_file =
@@ -1391,6 +1395,16 @@ TEST_P(VideoDecodeAcceleratorParamTest, TestSimpleDecode) {
     clients_[index] = std::move(client);
   }
 
+  RenderingHelperParams helper_params;
+  helper_params.rendering_fps = g_rendering_fps;
+  helper_params.render_as_thumbnails = render_as_thumbnails;
+  helper_params.num_windows = num_concurrent_decoders;
+  if (render_as_thumbnails) {
+    // Only one decoder is supported with thumbnail rendering
+    LOG_ASSERT(num_concurrent_decoders == 1U);
+    helper_params.thumbnails_page_size = kThumbnailsPageSize;
+    helper_params.thumbnail_size = kThumbnailSize;
+  }
   InitializeRenderingHelper(helper_params);
 
   for (size_t index = 0; index < num_concurrent_decoders; ++index) {
@@ -1841,9 +1855,8 @@ int main(int argc, char** argv) {
       LOG_ASSERT(base::StringToDouble(input, &media::g_rendering_fps));
       continue;
     }
-    // TODO(owenlin): Remove this flag once it is not used in autotest.
     if (it->first == "disable_rendering") {
-      media::g_rendering_fps = 0;
+      media::g_use_gl_renderer = false;
       continue;
     }
 
