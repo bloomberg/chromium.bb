@@ -71,7 +71,6 @@ include_rules = [
   "-chromeos/login/login_state.h",
   # TODO(jamescook): Eliminate this. http://crbug.com/644355
   "+chromeos/network",
-  "+chromeos/services/assistant/public" ,
   # TODO(jamescook): Eliminate this. http://crbug.com/644361
   "+chromeos/settings/timezone_settings.h",
   "+chromeos/system",

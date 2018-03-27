@@ -6,7 +6,6 @@
 
 #include <utility>
 
-#include "ash/public/interfaces/ash_assistant_controller.mojom.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "base/bind.h"
 #include "base/logging.h"
@@ -107,14 +106,6 @@ void Service::Init(mojom::ClientPtr client, mojom::AudioInputPtr audio_input) {
 #if BUILDFLAG(ENABLE_CROS_LIBASSISTANT)
   assistant_manager_service_ =
       std::make_unique<AssistantManagerServiceImpl>(std::move(audio_input));
-
-  // Bind to Assistant controller in ash.
-  ash::mojom::AshAssistantControllerPtr assistant_controller;
-  context()->connector()->BindInterface(ash::mojom::kServiceName,
-                                        &assistant_controller);
-  mojom::AssistantPtr ptr;
-  BindAssistantConnection(mojo::MakeRequest(&ptr));
-  assistant_controller->SetAssistant(std::move(ptr));
 #else
   assistant_manager_service_ =
       std::make_unique<FakeAssistantManagerServiceImpl>();
