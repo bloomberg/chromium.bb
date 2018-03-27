@@ -73,7 +73,7 @@ class ReadingListWebStateObserverTest : public web::WebTest {
     test_navigation_manager->SetLastCommittedItem(last_committed_item_.get());
     test_web_state_.SetNavigationManager(std::move(test_navigation_manager));
     reading_list_model_ = std::make_unique<ReadingListModelImpl>(
-        nullptr, nullptr, std::make_unique<base::DefaultClock>());
+        nullptr, nullptr, base::DefaultClock::GetInstance());
     reading_list_model_->AddEntry(GURL(kTestURL), kTestTitle,
                                   reading_list::ADDED_VIA_CURRENT_APP);
     ReadingListWebStateObserver::CreateForWebState(&test_web_state_,

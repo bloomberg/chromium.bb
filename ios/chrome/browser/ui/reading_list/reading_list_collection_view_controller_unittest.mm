@@ -58,7 +58,7 @@ class ReadingListCollectionViewControllerTest : public PlatformTest {
         .WillRepeatedly(PostReply<5>(favicon_base::FaviconRawBitmapResult()));
 
     reading_list_model_.reset(new ReadingListModelImpl(
-        nullptr, nullptr, std::make_unique<base::DefaultClock>()));
+        nullptr, nullptr, base::DefaultClock::GetInstance()));
     large_icon_service_.reset(new favicon::LargeIconService(
         &mock_favicon_service_, /*image_fetcher=*/nullptr));
     mediator_ =
