@@ -407,11 +407,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         nativeResetGestureDetection(mNativeContentViewCore);
     }
 
-    @Override
-    public boolean isAttachedToWindow() {
-        return mAttachedToWindow;
-    }
-
     @SuppressWarnings("javadoc")
     @Override
     public void onAttachedToWindow() {
