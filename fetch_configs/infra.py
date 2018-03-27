@@ -21,7 +21,6 @@ class Infra(config_util.Config):
           {
             'name'     : 'infra',
             'url'      : 'https://chromium.googlesource.com/infra/infra.git',
-            'deps_file': '.DEPS.git',
             'managed'  : False,
           }
         ],

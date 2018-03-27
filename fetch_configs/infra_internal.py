@@ -22,7 +22,6 @@ class InfraInternal(config_util.Config):
         {
           'name': 'infra_internal',
           'url': url('chrome-internal', 'infra/infra_internal'),
-          'deps_file': '.DEPS.git',
           'managed': False
         },
       ],

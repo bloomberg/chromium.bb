@@ -17,7 +17,6 @@ class Chromium(config_util.Config):
     url = 'https://chromium.googlesource.com/chromium/src.git'
     solution = { 'name'   :'src',
                  'url'    : url,
-                 'deps_file': '.DEPS.git',
                  'managed'   : False,
                  'custom_deps': {},
     }
