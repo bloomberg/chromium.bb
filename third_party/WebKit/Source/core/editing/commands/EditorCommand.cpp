@@ -34,7 +34,6 @@
 #include "core/css/CSSValueList.h"
 #include "core/css_property_names.h"
 #include "core/css_value_keywords.h"
-#include "core/dom/DocumentFragment.h"
 #include "core/dom/TagCollection.h"
 #include "core/dom/events/Event.h"
 #include "core/editing/EditingStyleUtilities.h"
@@ -55,19 +54,14 @@
 #include "core/editing/commands/FormatBlockCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
 #include "core/editing/commands/InsertCommands.h"
-#include "core/editing/commands/InsertListCommand.h"
 #include "core/editing/commands/RemoveFormatCommand.h"
-#include "core/editing/commands/ReplaceSelectionCommand.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/commands/UnlinkCommand.h"
 #include "core/editing/iterators/TextIterator.h"
-#include "core/editing/serializers/Serialization.h"
 #include "core/editing/spellcheck/SpellChecker.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLFontElement.h"
-#include "core/html/HTMLHRElement.h"
-#include "core/html/HTMLImageElement.h"
 #include "core/html_names.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/LayoutBox.h"
@@ -259,18 +253,6 @@ class EditorInternalCommand {
 static const bool kNotTextInsertion = false;
 static const bool kIsTextInsertion = true;
 
-// Related to Editor::selectionForCommand.
-// Certain operations continue to use the target control's selection even if the
-// event handler already moved the selection outside of the text control.
-LocalFrame* InsertCommands::TargetFrame(LocalFrame& frame, Event* event) {
-  if (!event)
-    return &frame;
-  Node* node = event->target()->ToNode();
-  if (!node)
-    return &frame;
-  return node->GetDocument().GetFrame();
-}
-
 static void ApplyStyle(LocalFrame& frame,
                        CSSPropertyValueSet* style,
                        InputEvent::InputType input_type) {
@@ -443,27 +425,6 @@ static bool ExecuteApplyParagraphStyle(LocalFrame& frame,
   }
   NOTREACHED();
   return false;
-}
-
-bool InsertCommands::ExecuteInsertFragment(LocalFrame& frame,
-                                           DocumentFragment* fragment) {
-  DCHECK(frame.GetDocument());
-  return ReplaceSelectionCommand::Create(
-             *frame.GetDocument(), fragment,
-             ReplaceSelectionCommand::kPreventNesting,
-             InputEvent::InputType::kNone)
-      ->Apply();
-}
-
-bool InsertCommands::ExecuteInsertElement(LocalFrame& frame,
-                                          HTMLElement* content) {
-  DCHECK(frame.GetDocument());
-  DocumentFragment* fragment = DocumentFragment::Create(*frame.GetDocument());
-  DummyExceptionStateForTesting exception_state;
-  fragment->AppendChild(content, exception_state);
-  if (exception_state.HadException())
-    return false;
-  return ExecuteInsertFragment(frame, fragment);
 }
 
 bool ExpandSelectionToGranularity(LocalFrame& frame,
@@ -1086,133 +1047,6 @@ static bool ExecuteIndent(LocalFrame& frame,
   DCHECK(frame.GetDocument());
   return IndentOutdentCommand::Create(*frame.GetDocument(),
                                       IndentOutdentCommand::kIndent)
-      ->Apply();
-}
-
-bool InsertCommands::ExecuteInsertBacktab(LocalFrame& frame,
-                                          Event* event,
-                                          EditorCommandSource,
-                                          const String&) {
-  return TargetFrame(frame, event)
-      ->GetEventHandler()
-      .HandleTextInputEvent("\t", event);
-}
-
-bool InsertCommands::ExecuteInsertHorizontalRule(LocalFrame& frame,
-                                                 Event*,
-                                                 EditorCommandSource,
-                                                 const String& value) {
-  DCHECK(frame.GetDocument());
-  HTMLHRElement* rule = HTMLHRElement::Create(*frame.GetDocument());
-  if (!value.IsEmpty())
-    rule->SetIdAttribute(AtomicString(value));
-  return ExecuteInsertElement(frame, rule);
-}
-
-bool InsertCommands::ExecuteInsertHTML(LocalFrame& frame,
-                                       Event*,
-                                       EditorCommandSource,
-                                       const String& value) {
-  DCHECK(frame.GetDocument());
-  return ExecuteInsertFragment(
-      frame, CreateFragmentFromMarkup(*frame.GetDocument(), value, ""));
-}
-
-bool InsertCommands::ExecuteInsertImage(LocalFrame& frame,
-                                        Event*,
-                                        EditorCommandSource,
-                                        const String& value) {
-  DCHECK(frame.GetDocument());
-  HTMLImageElement* image = HTMLImageElement::Create(*frame.GetDocument());
-  if (!value.IsEmpty())
-    image->SetSrc(value);
-  return ExecuteInsertElement(frame, image);
-}
-
-bool InsertCommands::ExecuteInsertLineBreak(LocalFrame& frame,
-                                            Event* event,
-                                            EditorCommandSource source,
-                                            const String&) {
-  switch (source) {
-    case EditorCommandSource::kMenuOrKeyBinding:
-      return TargetFrame(frame, event)
-          ->GetEventHandler()
-          .HandleTextInputEvent("\n", event, kTextEventInputLineBreak);
-    case EditorCommandSource::kDOM:
-      // Doesn't scroll to make the selection visible, or modify the kill ring.
-      // InsertLineBreak is not implemented in IE or Firefox, so this behavior
-      // is only needed for backward compatibility with ourselves, and for
-      // consistency with other commands.
-      DCHECK(frame.GetDocument());
-      return TypingCommand::InsertLineBreak(*frame.GetDocument());
-  }
-  NOTREACHED();
-  return false;
-}
-
-bool InsertCommands::ExecuteInsertNewline(LocalFrame& frame,
-                                          Event* event,
-                                          EditorCommandSource,
-                                          const String&) {
-  LocalFrame* target_frame = TargetFrame(frame, event);
-  return target_frame->GetEventHandler().HandleTextInputEvent(
-      "\n", event,
-      target_frame->GetEditor().CanEditRichly() ? kTextEventInputKeyboard
-                                                : kTextEventInputLineBreak);
-}
-
-bool InsertCommands::ExecuteInsertNewlineInQuotedContent(LocalFrame& frame,
-                                                         Event*,
-                                                         EditorCommandSource,
-                                                         const String&) {
-  DCHECK(frame.GetDocument());
-  return TypingCommand::InsertParagraphSeparatorInQuotedContent(
-      *frame.GetDocument());
-}
-
-bool InsertCommands::ExecuteInsertOrderedList(LocalFrame& frame,
-                                              Event*,
-                                              EditorCommandSource,
-                                              const String&) {
-  DCHECK(frame.GetDocument());
-  return InsertListCommand::Create(*frame.GetDocument(),
-                                   InsertListCommand::kOrderedList)
-      ->Apply();
-}
-
-bool InsertCommands::ExecuteInsertParagraph(LocalFrame& frame,
-                                            Event*,
-                                            EditorCommandSource,
-                                            const String&) {
-  DCHECK(frame.GetDocument());
-  return TypingCommand::InsertParagraphSeparator(*frame.GetDocument());
-}
-
-bool InsertCommands::ExecuteInsertTab(LocalFrame& frame,
-                                      Event* event,
-                                      EditorCommandSource,
-                                      const String&) {
-  return TargetFrame(frame, event)
-      ->GetEventHandler()
-      .HandleTextInputEvent("\t", event);
-}
-
-bool InsertCommands::ExecuteInsertText(LocalFrame& frame,
-                                       Event*,
-                                       EditorCommandSource,
-                                       const String& value) {
-  DCHECK(frame.GetDocument());
-  TypingCommand::InsertText(*frame.GetDocument(), value, 0);
-  return true;
-}
-
-bool InsertCommands::ExecuteInsertUnorderedList(LocalFrame& frame,
-                                                Event*,
-                                                EditorCommandSource,
-                                                const String&) {
-  DCHECK(frame.GetDocument());
-  return InsertListCommand::Create(*frame.GetDocument(),
-                                   InsertListCommand::kUnorderedList)
       ->Apply();
 }
 
