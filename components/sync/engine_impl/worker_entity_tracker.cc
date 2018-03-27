@@ -22,7 +22,7 @@ WorkerEntityTracker::WorkerEntityTracker(const std::string& client_tag_hash)
 WorkerEntityTracker::~WorkerEntityTracker() {}
 
 void WorkerEntityTracker::ReceiveUpdate(const UpdateResponseData& update) {
-  if (!UpdateContainsNewVersion(update))
+  if (!UpdateContainsNewVersion(update.response_version))
     return;
 
   highest_gu_response_version_ = update.response_version;
@@ -34,9 +34,8 @@ void WorkerEntityTracker::ReceiveUpdate(const UpdateResponseData& update) {
   ClearEncryptedUpdate();
 }
 
-bool WorkerEntityTracker::UpdateContainsNewVersion(
-    const UpdateResponseData& update) {
-  return (update.response_version > highest_gu_response_version_);
+bool WorkerEntityTracker::UpdateContainsNewVersion(int64_t update_version) {
+  return update_version > highest_gu_response_version_;
 }
 
 bool WorkerEntityTracker::ReceiveEncryptedUpdate(

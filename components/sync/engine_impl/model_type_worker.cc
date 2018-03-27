@@ -151,7 +151,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     WorkerEntityTracker* entity =
         GetOrCreateEntityTracker(data.client_tag_hash);
 
-    if (!entity->UpdateContainsNewVersion(response_data)) {
+    if (!entity->UpdateContainsNewVersion(response_data.response_version)) {
       status->increment_num_reflected_updates_downloaded_by(1);
       ++counters->num_reflected_updates_received;
     }
@@ -176,7 +176,7 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     } else if (cryptographer_ &&
                cryptographer_->CanDecrypt(specifics.encrypted())) {
       // Encrypted and we know the key.
-      if (DecryptSpecifics(specifics, &data.specifics)) {
+      if (DecryptSpecifics(*cryptographer_, specifics, &data.specifics)) {
         response_data.entity = data.PassToPtr();
         response_data.encryption_key_name = specifics.encrypted().key_name();
         entity->ReceiveUpdate(response_data);
@@ -377,7 +377,8 @@ void ModelTypeWorker::DecryptStoredEntities() {
 
       if (cryptographer_->CanDecrypt(data.specifics.encrypted())) {
         EntityData decrypted_data;
-        if (DecryptSpecifics(data.specifics, &decrypted_data.specifics)) {
+        if (DecryptSpecifics(*cryptographer_, data.specifics,
+                             &decrypted_data.specifics)) {
           // Copy other fields one by one since EntityData doesn't allow
           // copying.
           decrypted_data.id = data.id;
@@ -402,13 +403,14 @@ void ModelTypeWorker::DecryptStoredEntities() {
   }
 }
 
-bool ModelTypeWorker::DecryptSpecifics(const sync_pb::EntitySpecifics& in,
+// static
+bool ModelTypeWorker::DecryptSpecifics(const Cryptographer& cryptographer,
+                                       const sync_pb::EntitySpecifics& in,
                                        sync_pb::EntitySpecifics* out) {
-  DCHECK(cryptographer_);
   DCHECK(in.has_encrypted());
-  DCHECK(cryptographer_->CanDecrypt(in.encrypted()));
+  DCHECK(cryptographer.CanDecrypt(in.encrypted()));
 
-  std::string plaintext = cryptographer_->DecryptToString(in.encrypted());
+  std::string plaintext = cryptographer.DecryptToString(in.encrypted());
   if (plaintext.empty()) {
     LOG(ERROR) << "Failed to decrypt a decryptable entity";
     return false;
