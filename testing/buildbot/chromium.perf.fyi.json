@@ -1,4 +1,50 @@
 {
+  "Android Go": {
+    "isolated_scripts": [
+      {
+        "args": [
+          "-v",
+          "--browser=android-chromium"
+        ],
+        "isolate_name": "performance_test_suite",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "performance_test_suite",
+        "override_compile_targets": [
+          "performance_test_suite"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "os": "Android",
+              "pool": "chrome.tests.perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 14,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"id\": \"build30-a7--device1\"}, {\"id\": \"build30-a7--device2\"}, {\"id\": \"build30-a7--device3\"}, {\"id\": \"build30-a7--device4\"}, {\"id\": \"build30-a7--device5\"}, {\"id\": \"build30-a7--device6\"}, {\"id\": \"build30-a7--device7\"}, {\"id\": \"build31-a7--device1\"}, {\"id\": \"build31-a7--device2\"}, {\"id\": \"build31-a7--device3\"}, {\"id\": \"build31-a7--device4\"}, {\"id\": \"build31-a7--device5\"}, {\"id\": \"build31-a7--device6\"}, {\"id\": \"build31-a7--device7\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      }
+    ]
+  },
   "Android Nexus 5X Perf FYI": {
     "isolated_scripts": [
       {
@@ -405,7 +451,6 @@
       {
         "args": [
           "-v",
-          "--xvfb",
           "--browser=release"
         ],
         "isolate_name": "performance_test_suite",
@@ -485,7 +530,6 @@
       {
         "args": [
           "-v",
-          "--xvfb",
           "--browser=reference",
           "--testing=true"
         ],
