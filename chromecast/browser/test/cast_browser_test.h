@@ -54,6 +54,7 @@ class CastBrowserTest : public content::BrowserTestBase, CastWebView::Delegate {
                                      int32_t line_no,
                                      const base::string16& source_id) override;
   void OnVisibilityChange(VisibilityType visibility_type) override;
+  bool CanHandleGesture(GestureType gesture_type) override;
   bool ConsumeGesture(GestureType gesture_type) override;
   std::string GetId() override;
 

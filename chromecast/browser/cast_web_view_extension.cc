@@ -60,11 +60,13 @@ void CastWebViewExtension::LoadUrl(GURL url) {
 
 void CastWebViewExtension::ClosePage(const base::TimeDelta& shutdown_delay) {}
 
-void CastWebViewExtension::CreateWindow(CastWindowManager* window_manager,
-                                        bool is_visible,
-                                        VisibilityPriority initial_priority) {
+void CastWebViewExtension::InitializeWindow(
+    CastWindowManager* window_manager,
+    bool is_visible,
+    CastWindowManager::WindowId z_order,
+    VisibilityPriority initial_priority) {
   window_->CreateWindowForWebContents(web_contents(), window_manager,
-                                      is_visible, initial_priority);
+                                      is_visible, z_order, initial_priority);
   web_contents()->Focus();
 }
 

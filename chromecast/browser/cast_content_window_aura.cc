@@ -70,24 +70,35 @@ std::unique_ptr<CastContentWindow> CastContentWindow::Create(
     CastContentWindow::Delegate* delegate,
     bool is_headless,
     bool enable_touch_input) {
-  return base::WrapUnique(new CastContentWindowAura(enable_touch_input));
+  return base::WrapUnique(
+      new CastContentWindowAura(delegate, enable_touch_input));
 }
 
-CastContentWindowAura::~CastContentWindowAura() = default;
+CastContentWindowAura::CastContentWindowAura(
+    CastContentWindow::Delegate* delegate,
+    bool is_touch_enabled)
+    : delegate_(delegate), is_touch_enabled_(is_touch_enabled) {
+  DCHECK(delegate_);
+}
 
-CastContentWindowAura::CastContentWindowAura(bool is_touch_enabled)
-    : is_touch_enabled_(is_touch_enabled), touch_blocker_() {}
+CastContentWindowAura::~CastContentWindowAura() {
+  if (window_manager_)
+    window_manager_->RemoveSideSwipeGestureHandler(this);
+}
 
 void CastContentWindowAura::CreateWindowForWebContents(
     content::WebContents* web_contents,
     CastWindowManager* window_manager,
     bool is_visible,
+    CastWindowManager::WindowId z_order,
     VisibilityPriority visibility_priority) {
   DCHECK(web_contents);
-  DCHECK(window_manager);
+  window_manager_ = window_manager;
+  DCHECK(window_manager_);
   gfx::NativeView window = web_contents->GetNativeView();
-  window_manager->SetWindowId(window, CastWindowManager::APP);
-  window_manager->AddWindow(window);
+  window_manager_->SetWindowId(window, z_order);
+  window_manager_->AddWindow(window);
+  window_manager_->AddSideSwipeGestureHandler(this);
 
   touch_blocker_ = std::make_unique<TouchBlocker>(window, !is_touch_enabled_);
 
@@ -108,6 +119,24 @@ void CastContentWindowAura::RequestVisibility(
     VisibilityPriority visibility_priority){};
 
 void CastContentWindowAura::RequestMoveOut(){};
+
+void CastContentWindowAura::OnSideSwipeBegin(CastSideSwipeOrigin swipe_origin,
+                                             ui::GestureEvent* gesture_event) {
+  if (swipe_origin == CastSideSwipeOrigin::LEFT) {
+    if (delegate_->CanHandleGesture(GestureType::GO_BACK))
+      gesture_event->SetHandled();
+    return;
+  }
+}
+
+void CastContentWindowAura::OnSideSwipeEnd(CastSideSwipeOrigin swipe_origin,
+                                           ui::GestureEvent* gesture_event) {
+  if (swipe_origin == CastSideSwipeOrigin::LEFT) {
+    if (delegate_->ConsumeGesture(GestureType::GO_BACK))
+      gesture_event->SetHandled();
+    return;
+  }
+}
 
 }  // namespace shell
 }  // namespace chromecast

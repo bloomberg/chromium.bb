@@ -92,6 +92,10 @@ void CastBrowserTest::OnKeyEvent(const ui::KeyEvent& key_event) {}
 
 void CastBrowserTest::OnVisibilityChange(VisibilityType visibility_type) {}
 
+bool CastBrowserTest::CanHandleGesture(GestureType gesture_type) {
+  return false;
+};
+
 bool CastBrowserTest::ConsumeGesture(GestureType gesture_type) {
   return false;
 };

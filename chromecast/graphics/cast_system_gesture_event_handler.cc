@@ -98,6 +98,8 @@ void CastSystemGestureEventHandler::OnEvent(ui::Event* event) {
       // If handled, remember the origin and then stop the further propagation
       // of the event.
       if (event->handled()) {
+        // Record the swipe origin to properly fire OnSideSwipeEnd when the
+        // swipe gesture finishes.
         current_swipe_ = side_swipe_origin;
         event->StopPropagation();
 
@@ -122,15 +124,12 @@ void CastSystemGestureEventHandler::OnEvent(ui::Event* event) {
 
 void CastSystemGestureEventHandler::AddSideSwipeGestureHandler(
     CastSideSwipeGestureHandlerInterface* handler) {
-  swipe_gesture_handlers_.push_back(handler);
+  swipe_gesture_handlers_.insert(handler);
 }
 
 void CastSystemGestureEventHandler::RemoveSideSwipeGestureHandler(
     CastSideSwipeGestureHandlerInterface* handler) {
-  auto find = std::find(swipe_gesture_handlers_.begin(),
-                        swipe_gesture_handlers_.end(), handler);
-  if (find != swipe_gesture_handlers_.end())
-    swipe_gesture_handlers_.erase(find);
+  swipe_gesture_handlers_.erase(handler);
 }
 
 }  // namespace chromecast

@@ -73,8 +73,8 @@ void CastServiceSimple::StartInternal() {
                                            nullptr,         /* extension */
                                            GURL() /* initial_url */);
   cast_web_view_->LoadUrl(startup_url_);
-  cast_web_view_->CreateWindow(
-      window_manager_, true /* is_visible */,
+  cast_web_view_->InitializeWindow(
+      window_manager_, true /* is_visible */, CastWindowManager::APP,
       chromecast::shell::VisibilityPriority::STICKY_ACTIVITY);
 }
 
@@ -102,9 +102,13 @@ bool CastServiceSimple::OnAddMessageToConsoleReceived(
   return false;
 }
 
+bool CastServiceSimple::CanHandleGesture(GestureType gesture_type) {
+  return false;
+}
+
 bool CastServiceSimple::ConsumeGesture(GestureType gesture_type) {
   return false;
-};
+}
 
 void CastServiceSimple::OnVisibilityChange(VisibilityType visibility_type) {}
 
