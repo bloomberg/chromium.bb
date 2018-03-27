@@ -475,7 +475,8 @@ TEST_F(NetworkTimeTrackerTest, UpdateFromNetwork) {
   EXPECT_EQ(NetworkTimeTracker::NETWORK_TIME_AVAILABLE,
             tracker_->GetNetworkTime(&out_network_time, nullptr));
   EXPECT_EQ(base::Time::UnixEpoch() +
-                base::TimeDelta::FromMilliseconds(1461621971825),
+                base::TimeDelta::FromMilliseconds(
+                    (uint64_t)kGoodTimeResponseHandlerJsTime[0]),
             out_network_time);
   // Should see no backoff in the success case.
   EXPECT_EQ(base::TimeDelta::FromMinutes(60),
@@ -503,7 +504,8 @@ TEST_F(NetworkTimeTrackerTest, StartTimeFetch) {
   EXPECT_EQ(NetworkTimeTracker::NETWORK_TIME_AVAILABLE,
             tracker_->GetNetworkTime(&out_network_time, nullptr));
   EXPECT_EQ(base::Time::UnixEpoch() +
-                base::TimeDelta::FromMilliseconds(1461621971825),
+                base::TimeDelta::FromMilliseconds(
+                    (uint64_t)kGoodTimeResponseHandlerJsTime[0]),
             out_network_time);
   // Should see no backoff in the success case.
   EXPECT_EQ(base::TimeDelta::FromMinutes(60),
@@ -531,7 +533,8 @@ TEST_F(NetworkTimeTrackerTest, StartTimeFetchWithQueryInProgress) {
   EXPECT_EQ(NetworkTimeTracker::NETWORK_TIME_AVAILABLE,
             tracker_->GetNetworkTime(&out_network_time, nullptr));
   EXPECT_EQ(base::Time::UnixEpoch() +
-                base::TimeDelta::FromMilliseconds(1461621971825),
+                base::TimeDelta::FromMilliseconds(
+                    (uint64_t)kGoodTimeResponseHandlerJsTime[0]),
             out_network_time);
   // Should see no backoff in the success case.
   EXPECT_EQ(base::TimeDelta::FromMinutes(60),
@@ -838,49 +841,13 @@ class MultipleGoodTimeResponseHandler {
   base::Time GetTimeAtIndex(unsigned int i);
 
  private:
-  // |kJsTimes|, |kTimeResponseBodies|, and |kTimeProofHeaders| contain signed
-  // responses for three subsequent time queries served by
-  // MultipleGoodTimeResponseHandler. (That is, kJsTimes[i] is the timestamp
-  // contained in kTimeResponseBodies[i] with signature in kTimeProofHeader[i].)
-  // NetworkTimeTrackerTest.TimeBetweenFetchesHistogram expects that each
-  // timestamp is greater than the one before it.
-  //
-  // Update as follows:
-  //
-  // curl -v http://clients2.google.com/time/1/current?cup2key=1:123123123
-  //
-  // where 1 is the key version and 123123123 is the nonce.  Copy the
-  // response and the x-cup-server-proof header into
-  // |kTimeResponseBodies| and |kTimeProofHeaders| respectively, and the
-  // 'current_time_millis' value of the response into |kJsTimes|.
-  static const double kJsTimes[];
-  static const char* kTimeResponseBodies[];
-  static const char* kTimeProofHeaders[];
-
-  // The index into |kJsTimes|, |kTimeResponseBodies|, and
-  // |kTimeProofHeaders| that will be used in the response in the next
-  // ResponseHandler() call.
+  // The index into |kGoodTimeResponseHandlerJsTime|, |kGoodTimeResponseBody|,
+  // and |kGoodTimeResponseServerProofHeaders| that will be used in the
+  // response in the next ResponseHandler() call.
   unsigned int next_time_index_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(MultipleGoodTimeResponseHandler);
 };
-
-const double MultipleGoodTimeResponseHandler::kJsTimes[] = {1481653709754,
-                                                            1481653820879};
-const char* MultipleGoodTimeResponseHandler::kTimeResponseBodies[] = {
-    ")]}'\n"
-    "{\"current_time_millis\":1481653709754,\"server_nonce\":-2."
-    "7144232419525693E172}",
-    ")]}'\n"
-    "{\"current_time_millis\":1481653820879,\"server_nonce\":1."
-    "8874633267958474E185}"};
-const char* MultipleGoodTimeResponseHandler::kTimeProofHeaders[] = {
-    "3045022006fdfa882460cd43e15b11d7d35cfc3805b0662c558f6efe54f9bf0c38e80650"
-    "0221009777817152b6cc1c2b2ea765104a1ab6b87a4da1e87686ae0641c25b23161ea8:"
-    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
-    "3045022100b6ebcf0f2f5c42bb18bd097a60c4204dd2ed29cad4992b5fdfcf1b32bdfdc6"
-    "58022005b378c27dd3ddb6edacce39edc8b4ecf189dff5b64ce99975859f6cdc984e20:"
-    "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"};
 
 std::unique_ptr<net::test_server::HttpResponse>
 MultipleGoodTimeResponseHandler::ResponseHandler(
@@ -888,24 +855,24 @@ MultipleGoodTimeResponseHandler::ResponseHandler(
   net::test_server::BasicHttpResponse* response =
       new net::test_server::BasicHttpResponse();
 
-  if (next_time_index_ >=
-      arraysize(MultipleGoodTimeResponseHandler::kJsTimes)) {
+  if (next_time_index_ >= arraysize(kGoodTimeResponseBody)) {
     response->set_code(net::HTTP_BAD_REQUEST);
     return std::unique_ptr<net::test_server::HttpResponse>(response);
   }
 
   response->set_code(net::HTTP_OK);
-  response->set_content(kTimeResponseBodies[next_time_index_]);
-  response->AddCustomHeader("x-cup-server-proof",
-                            kTimeProofHeaders[next_time_index_]);
+  response->set_content(kGoodTimeResponseBody[next_time_index_]);
+  response->AddCustomHeader(
+      "x-cup-server-proof",
+      kGoodTimeResponseServerProofHeader[next_time_index_]);
   next_time_index_++;
   return std::unique_ptr<net::test_server::HttpResponse>(response);
 }
 
 base::Time MultipleGoodTimeResponseHandler::GetTimeAtIndex(unsigned int i) {
-  if (i >= arraysize(kJsTimes))
+  if (i >= arraysize(kGoodTimeResponseHandlerJsTime))
     return base::Time();
-  return base::Time::FromJsTime(kJsTimes[i]);
+  return base::Time::FromJsTime(kGoodTimeResponseHandlerJsTime[i]);
 }
 
 }  // namespace

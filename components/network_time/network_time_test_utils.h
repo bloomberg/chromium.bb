@@ -28,22 +28,22 @@ class HttpResponse;
 
 namespace network_time {
 
-// The body of a valid time response. Can be returned, with
+// The bodies of sample valid time responses. Can be returned, with
 // |kGoodTimeResponseServerProofHeader|, in responses from test servers
-// to simulate a network time server. This response uses 1 as the key
+// to simulate a network time server. This response uses kKeyVersion as the key
 // version and 123123123 as the nonce. Use
 // NetworkTimeTracker::OverrideNonceForTesting() to set the nonce so
 // that this response validates.
-extern const char kGoodTimeResponseBody[];
+extern const char* kGoodTimeResponseBody[2];
 
-// The x-cup-server-proof header value that should be served along with
+// The x-cup-server-proof header values that should be served along with
 // |kGoodTimeResponseBody| to make a test server response be accepted by
 // NetworkTimeTracker as a valid response.
-extern const char kGoodTimeResponseServerProofHeader[];
+extern const char* kGoodTimeResponseServerProofHeader[2];
 
-// The time that |kGoodTimeResponseBody| uses. Can be converted to a
+// The times that |kGoodTimeResponseBody| uses. Can be converted to a
 // base::Time with base::Time::FromJsTime.
-extern const double kGoodTimeResponseHandlerJsTime;
+extern const double kGoodTimeResponseHandlerJsTime[2];
 
 // Returns a valid network time response using the constants above. See
 // comments in the .cc for how to update the time returned in the response.
