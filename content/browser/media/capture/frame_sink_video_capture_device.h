@@ -22,7 +22,6 @@
 #include "media/capture/video_capture_types.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/viz/privileged/interfaces/compositing/frame_sink_video_capture.mojom.h"
-#include "ui/gfx/native_widget_types.h"
 
 namespace content {
 
@@ -84,17 +83,16 @@ class CONTENT_EXPORT FrameSinkVideoCaptureDevice
   void OnStopped() final;
 
   // These are called to notify when the capture target has changed or was
-  // permanently lost. |frame_sink_id| specifies a target compositor frame sink,
-  // while |native_view| is the local view to monitor for the puproses of mouse
-  // cursor rendering.
-  void OnTargetChanged(const viz::FrameSinkId& frame_sink_id,
-                       gfx::NativeView native_view);
+  // permanently lost.
+  void OnTargetChanged(const viz::FrameSinkId& frame_sink_id);
   void OnTargetPermanentlyLost();
 
   // Overrides the callback that is run to create the capturer.
   void SetCapturerCreatorForTesting(CapturerCreatorCallback creator);
 
  protected:
+  CursorRenderer* cursor_renderer() const { return cursor_renderer_.get(); }
+
   // Subclasses override these to perform additional start/stop tasks.
   virtual void WillStart();
   virtual void DidStop();

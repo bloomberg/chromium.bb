@@ -302,7 +302,7 @@ class FrameSinkVideoCaptureDeviceTest : public testing::Test {
     EXPECT_CALL(capturer_, MockStart(NotNull()));
 
     EXPECT_FALSE(capturer_.is_bound());
-    POST_DEVICE_METHOD_CALL(OnTargetChanged, frame_sink_id, gfx::NativeView());
+    POST_DEVICE_METHOD_CALL(OnTargetChanged, frame_sink_id);
     POST_DEVICE_METHOD_CALL(AllocateAndStartWithReceiver, GetCaptureParams(),
                             std::move(receiver));
     WAIT_FOR_DEVICE_TASKS();
