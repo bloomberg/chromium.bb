@@ -277,6 +277,25 @@ class LanguageSettingsPrivateRemoveInputMethodFunction
   DISALLOW_COPY_AND_ASSIGN(LanguageSettingsPrivateRemoveInputMethodFunction);
 };
 
+// Implements the languageSettingsPrivate.retryDownloadDictionary method.
+class LanguageSettingsPrivateRetryDownloadDictionaryFunction
+    : public UIThreadExtensionFunction {
+ public:
+  LanguageSettingsPrivateRetryDownloadDictionaryFunction();
+  DECLARE_EXTENSION_FUNCTION("languageSettingsPrivate.retryDownloadDictionary",
+                             LANGUAGESETTINGSPRIVATE_RETRYDOWNLOADDICTIONARY)
+
+ protected:
+  ~LanguageSettingsPrivateRetryDownloadDictionaryFunction() override;
+
+  // ExtensionFunction overrides.
+  ResponseAction Run() override;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(
+      LanguageSettingsPrivateRetryDownloadDictionaryFunction);
+};
+
 }  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_API_LANGUAGE_SETTINGS_PRIVATE_LANGUAGE_SETTINGS_PRIVATE_API_H_

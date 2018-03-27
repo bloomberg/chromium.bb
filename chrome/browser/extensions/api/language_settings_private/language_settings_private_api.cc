@@ -379,7 +379,7 @@ LanguageSettingsPrivateGetSpellcheckDictionaryStatusesFunction::Run() {
       LanguageSettingsPrivateDelegateFactory::GetForBrowserContext(
           browser_context());
 
-  return RespondNow(OneArgument(
+  return RespondNow(ArgumentList(
       language_settings_private::GetSpellcheckDictionaryStatuses::Results::
           Create(delegate->GetHunspellDictionaryStatuses())));
 }
@@ -653,6 +653,26 @@ LanguageSettingsPrivateRemoveInputMethodFunction::Run() {
     prefs->SetString(pref_name, base::JoinString(input_method_list, ","));
   }
 #endif
+  return RespondNow(NoArguments());
+}
+
+LanguageSettingsPrivateRetryDownloadDictionaryFunction::
+    LanguageSettingsPrivateRetryDownloadDictionaryFunction() = default;
+
+LanguageSettingsPrivateRetryDownloadDictionaryFunction::
+    ~LanguageSettingsPrivateRetryDownloadDictionaryFunction() = default;
+
+ExtensionFunction::ResponseAction
+LanguageSettingsPrivateRetryDownloadDictionaryFunction::Run() {
+  const auto parameters =
+      language_settings_private::RetryDownloadDictionary::Params::Create(
+          *args_);
+  EXTENSION_FUNCTION_VALIDATE(parameters.get());
+
+  LanguageSettingsPrivateDelegate* delegate =
+      LanguageSettingsPrivateDelegateFactory::GetForBrowserContext(
+          browser_context());
+  delegate->RetryDownloadHunspellDictionary(parameters->language_code);
   return RespondNow(NoArguments());
 }
 

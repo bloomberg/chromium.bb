@@ -38,8 +38,17 @@ class LanguageSettingsPrivateDelegate
   ~LanguageSettingsPrivateDelegate() override;
 
   // Returns the languages and statuses of the enabled spellcheck dictionaries.
-  std::vector<api::language_settings_private::SpellcheckDictionaryStatus>
+  virtual std::vector<
+      api::language_settings_private::SpellcheckDictionaryStatus>
   GetHunspellDictionaryStatuses();
+
+  // Retry downloading the spellcheck dictionary.
+  virtual void RetryDownloadHunspellDictionary(const std::string& language);
+
+  // content::NotificationObserver implementation.
+  void Observe(int type,
+               const content::NotificationSource& source,
+               const content::NotificationDetails& details) override;
 
  protected:
   explicit LanguageSettingsPrivateDelegate(content::BrowserContext* context);
@@ -50,11 +59,6 @@ class LanguageSettingsPrivateDelegate
   // EventRouter::Observer implementation.
   void OnListenerAdded(const EventListenerInfo& details) override;
   void OnListenerRemoved(const EventListenerInfo& details) override;
-
-  // content::NotificationObserver implementation.
-  void Observe(int type,
-               const content::NotificationSource& source,
-               const content::NotificationDetails& details) override;
 
   // SpellcheckHunspellDictionary::Observer implementation.
   void OnHunspellDictionaryInitialized(const std::string& language) override;
@@ -95,6 +99,8 @@ class LanguageSettingsPrivateDelegate
   void RemoveDictionaryObservers();
 
   // The hunspell dictionaries that are used for spellchecking.
+  // TODO(aee): Consider replacing with
+  // |SpellcheckService::GetHunspellDictionaries()|.
   WeakDictionaries hunspell_dictionaries_;
 
   // The custom dictionary that is used for spellchecking.
