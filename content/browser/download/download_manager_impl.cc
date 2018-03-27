@@ -845,6 +845,14 @@ void DownloadManagerImpl::DownloadRemoved(DownloadItemImpl* download) {
   downloads_.erase(download->GetId());
 }
 
+void DownloadManagerImpl::DownloadInterrupted(DownloadItemImpl* download) {
+  WebContents* web_contents = DownloadItemUtils::GetWebContents(download);
+  if (!web_contents) {
+    download::RecordDownloadCountWithSource(
+        download::INTERRUPTED_WITHOUT_WEBCONTENTS, download->download_source());
+  }
+}
+
 void DownloadManagerImpl::OnUrlDownloadHandlerCreated(
     download::UrlDownloadHandler::UniqueUrlDownloadHandlerPtr downloader) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);

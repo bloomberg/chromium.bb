@@ -234,6 +234,7 @@ class CONTENT_EXPORT DownloadManagerImpl
   bool IsMostRecentDownloadItemAtFilePath(DownloadItemImpl* download) override;
   void ShowDownloadInShell(DownloadItemImpl* download) override;
   void DownloadRemoved(DownloadItemImpl* download) override;
+  void DownloadInterrupted(DownloadItemImpl* download) override;
 
   // Helper method to start or resume a download.
   void BeginDownloadInternal(
