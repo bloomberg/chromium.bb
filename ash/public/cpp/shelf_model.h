@@ -103,7 +103,7 @@ class ASH_PUBLIC_EXPORT ShelfModel {
                             std::unique_ptr<ShelfItemDelegate> item_delegate);
 
   // Returns ShelfItemDelegate for |shelf_id|, or nullptr if none exists.
-  ShelfItemDelegate* GetShelfItemDelegate(const ShelfID& shelf_id);
+  ShelfItemDelegate* GetShelfItemDelegate(const ShelfID& shelf_id) const;
 
   void AddObserver(ShelfModelObserver* observer);
   void RemoveObserver(ShelfModelObserver* observer);
