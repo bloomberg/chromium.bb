@@ -4,7 +4,6 @@
 
 #include "ash/login/login_screen_controller.h"
 
-#include "ash/login/lock_screen_apps_focus_observer.h"
 #include "ash/login/ui/lock_screen.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/public/cpp/ash_pref_names.h"
@@ -82,117 +81,6 @@ void LoginScreenController::BindRequest(mojom::LoginScreenRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
-void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
-  login_screen_client_ = std::move(client);
-}
-
-void LoginScreenController::ShowLockScreen(ShowLockScreenCallback on_shown) {
-  OnShow();
-  ash::LockScreen::Show(ash::LockScreen::ScreenType::kLock);
-  std::move(on_shown).Run(true);
-}
-
-void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
-  // Login screen can only be used during login.
-  if (Shell::Get()->session_controller()->GetSessionState() !=
-      session_manager::SessionState::LOGIN_PRIMARY) {
-    LOG(ERROR) << "Not showing login screen since session state is "
-               << static_cast<int>(
-                      Shell::Get()->session_controller()->GetSessionState());
-    std::move(on_shown).Run(false);
-    return;
-  }
-
-  OnShow();
-  // TODO(jdufault): rename ash::LockScreen to ash::LoginScreen.
-  ash::LockScreen::Show(ash::LockScreen::ScreenType::kLogin);
-  std::move(on_shown).Run(true);
-}
-
-void LoginScreenController::ShowErrorMessage(int32_t login_attempts,
-                                             const std::string& error_text,
-                                             const std::string& help_link_text,
-                                             int32_t help_topic_id) {
-  NOTIMPLEMENTED();
-}
-
-void LoginScreenController::ClearErrors() {
-  NOTIMPLEMENTED();
-}
-
-void LoginScreenController::ShowUserPodCustomIcon(
-    const AccountId& account_id,
-    mojom::EasyUnlockIconOptionsPtr icon) {
-  DataDispatcher()->ShowEasyUnlockIcon(account_id, icon);
-}
-
-void LoginScreenController::HideUserPodCustomIcon(const AccountId& account_id) {
-  auto icon_options = mojom::EasyUnlockIconOptions::New();
-  icon_options->icon = mojom::EasyUnlockIconId::NONE;
-  DataDispatcher()->ShowEasyUnlockIcon(account_id, icon_options);
-}
-
-void LoginScreenController::SetAuthType(
-    const AccountId& account_id,
-    proximity_auth::mojom::AuthType auth_type,
-    const base::string16& initial_value) {
-  if (auth_type == proximity_auth::mojom::AuthType::USER_CLICK) {
-    DataDispatcher()->SetClickToUnlockEnabledForUser(account_id,
-                                                     true /*enabled*/);
-  } else {
-    NOTIMPLEMENTED();
-  }
-}
-
-void LoginScreenController::LoadUsers(
-    std::vector<mojom::LoginUserInfoPtr> users,
-    bool show_guest) {
-  DCHECK(DataDispatcher());
-
-  DataDispatcher()->NotifyUsers(users);
-}
-
-void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
-                                                 bool is_enabled) {
-  // Chrome will update pin pod state every time user tries to authenticate.
-  // LockScreen is destroyed in the case of authentication success.
-  if (DataDispatcher())
-    DataDispatcher()->SetPinEnabledForUser(account_id, is_enabled);
-}
-
-void LoginScreenController::SetDevChannelInfo(
-    const std::string& os_version_label_text,
-    const std::string& enterprise_info_text,
-    const std::string& bluetooth_name) {
-  if (DataDispatcher()) {
-    DataDispatcher()->SetDevChannelInfo(os_version_label_text,
-                                        enterprise_info_text, bluetooth_name);
-  }
-}
-
-void LoginScreenController::IsReadyForPassword(
-    IsReadyForPasswordCallback callback) {
-  std::move(callback).Run(LockScreen::IsShown() && !is_authenticating_);
-}
-
-void LoginScreenController::SetPublicSessionDisplayName(
-    const AccountId& account_id,
-    const std::string& display_name) {
-  if (DataDispatcher())
-    DataDispatcher()->SetPublicSessionDisplayName(account_id, display_name);
-}
-
-void LoginScreenController::SetPublicSessionLocales(
-    const AccountId& account_id,
-    std::unique_ptr<base::ListValue> locales,
-    const std::string& default_locale,
-    bool show_advanced_view) {
-  if (DataDispatcher()) {
-    DataDispatcher()->SetPublicSessionLocales(
-        account_id, std::move(locales), default_locale, show_advanced_view);
-  }
-}
-
 void LoginScreenController::AuthenticateUser(const AccountId& account_id,
                                              const std::string& password,
                                              bool authenticated_by_pin,
@@ -232,11 +120,6 @@ void LoginScreenController::AuthenticateUser(const AccountId& account_id,
   chromeos::SystemSaltGetter::Get()->GetSystemSalt(base::BindRepeating(
       &LoginScreenController::OnGetSystemSalt, weak_factory_.GetWeakPtr(),
       base::Passed(&do_authenticate)));
-}
-
-void LoginScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
-  for (auto& observer : lock_screen_apps_focus_observers_)
-    observer.OnFocusLeavingLockScreenApps(reverse);
 }
 
 void LoginScreenController::AttemptUnlock(const AccountId& account_id) {
@@ -336,18 +219,134 @@ void LoginScreenController::LaunchPublicSession(
   login_screen_client_->LaunchPublicSession(account_id, locale, input_method);
 }
 
-void LoginScreenController::AddLockScreenAppsFocusObserver(
-    LockScreenAppsFocusObserver* observer) {
-  lock_screen_apps_focus_observers_.AddObserver(observer);
+void LoginScreenController::AddObserver(
+    LoginScreenControllerObserver* observer) {
+  observers_.AddObserver(observer);
 }
 
-void LoginScreenController::RemoveLockScreenAppsFocusObserver(
-    LockScreenAppsFocusObserver* observer) {
-  lock_screen_apps_focus_observers_.RemoveObserver(observer);
+void LoginScreenController::RemoveObserver(
+    LoginScreenControllerObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 void LoginScreenController::FlushForTesting() {
   login_screen_client_.FlushForTesting();
+}
+
+void LoginScreenController::SetClient(mojom::LoginScreenClientPtr client) {
+  login_screen_client_ = std::move(client);
+}
+
+void LoginScreenController::ShowLockScreen(ShowLockScreenCallback on_shown) {
+  OnShow();
+  ash::LockScreen::Show(ash::LockScreen::ScreenType::kLock);
+  std::move(on_shown).Run(true);
+}
+
+void LoginScreenController::ShowLoginScreen(ShowLoginScreenCallback on_shown) {
+  // Login screen can only be used during login.
+  if (Shell::Get()->session_controller()->GetSessionState() !=
+      session_manager::SessionState::LOGIN_PRIMARY) {
+    LOG(ERROR) << "Not showing login screen since session state is "
+               << static_cast<int>(
+                      Shell::Get()->session_controller()->GetSessionState());
+    std::move(on_shown).Run(false);
+    return;
+  }
+
+  OnShow();
+  // TODO(jdufault): rename ash::LockScreen to ash::LoginScreen.
+  ash::LockScreen::Show(ash::LockScreen::ScreenType::kLogin);
+  std::move(on_shown).Run(true);
+}
+
+void LoginScreenController::ShowErrorMessage(int32_t login_attempts,
+                                             const std::string& error_text,
+                                             const std::string& help_link_text,
+                                             int32_t help_topic_id) {
+  NOTIMPLEMENTED();
+}
+
+void LoginScreenController::ClearErrors() {
+  NOTIMPLEMENTED();
+}
+
+void LoginScreenController::ShowUserPodCustomIcon(
+    const AccountId& account_id,
+    mojom::EasyUnlockIconOptionsPtr icon) {
+  DataDispatcher()->ShowEasyUnlockIcon(account_id, icon);
+}
+
+void LoginScreenController::HideUserPodCustomIcon(const AccountId& account_id) {
+  auto icon_options = mojom::EasyUnlockIconOptions::New();
+  icon_options->icon = mojom::EasyUnlockIconId::NONE;
+  DataDispatcher()->ShowEasyUnlockIcon(account_id, icon_options);
+}
+
+void LoginScreenController::SetAuthType(
+    const AccountId& account_id,
+    proximity_auth::mojom::AuthType auth_type,
+    const base::string16& initial_value) {
+  if (auth_type == proximity_auth::mojom::AuthType::USER_CLICK) {
+    DataDispatcher()->SetClickToUnlockEnabledForUser(account_id,
+                                                     true /*enabled*/);
+  } else {
+    NOTIMPLEMENTED();
+  }
+}
+
+void LoginScreenController::LoadUsers(
+    std::vector<mojom::LoginUserInfoPtr> users,
+    bool show_guest) {
+  DCHECK(DataDispatcher());
+
+  DataDispatcher()->NotifyUsers(users);
+}
+
+void LoginScreenController::SetPinEnabledForUser(const AccountId& account_id,
+                                                 bool is_enabled) {
+  // Chrome will update pin pod state every time user tries to authenticate.
+  // LockScreen is destroyed in the case of authentication success.
+  if (DataDispatcher())
+    DataDispatcher()->SetPinEnabledForUser(account_id, is_enabled);
+}
+
+void LoginScreenController::HandleFocusLeavingLockScreenApps(bool reverse) {
+  for (auto& observer : observers_)
+    observer.OnFocusLeavingLockScreenApps(reverse);
+}
+
+void LoginScreenController::SetDevChannelInfo(
+    const std::string& os_version_label_text,
+    const std::string& enterprise_info_text,
+    const std::string& bluetooth_name) {
+  if (DataDispatcher()) {
+    DataDispatcher()->SetDevChannelInfo(os_version_label_text,
+                                        enterprise_info_text, bluetooth_name);
+  }
+}
+
+void LoginScreenController::IsReadyForPassword(
+    IsReadyForPasswordCallback callback) {
+  std::move(callback).Run(LockScreen::IsShown() && !is_authenticating_);
+}
+
+void LoginScreenController::SetPublicSessionDisplayName(
+    const AccountId& account_id,
+    const std::string& display_name) {
+  if (DataDispatcher())
+    DataDispatcher()->SetPublicSessionDisplayName(account_id, display_name);
+}
+
+void LoginScreenController::SetPublicSessionLocales(
+    const AccountId& account_id,
+    std::unique_ptr<base::ListValue> locales,
+    const std::string& default_locale,
+    bool show_advanced_view) {
+  if (DataDispatcher()) {
+    DataDispatcher()->SetPublicSessionLocales(
+        account_id, std::move(locales), default_locale, show_advanced_view);
+  }
 }
 
 void LoginScreenController::DoAuthenticateUser(const AccountId& account_id,
