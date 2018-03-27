@@ -43,7 +43,6 @@
 #include "platform/Histogram.h"
 #include "platform/bindings/RuntimeCallStats.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
-#include "platform/heap/CallbackStack.h"
 #include "platform/heap/Handle.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/HeapCompact.h"

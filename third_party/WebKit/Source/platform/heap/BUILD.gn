@@ -30,8 +30,6 @@ blink_platform_sources("heap") {
     "BlinkGC.h",
     "BlinkGCMemoryDumpProvider.cpp",
     "BlinkGCMemoryDumpProvider.h",
-    "CallbackStack.cpp",
-    "CallbackStack.h",
     "GCInfo.cpp",
     "GCInfo.h",
     "GCTaskRunner.h",

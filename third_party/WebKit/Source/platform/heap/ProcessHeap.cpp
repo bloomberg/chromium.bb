@@ -5,7 +5,6 @@
 #include "platform/heap/ProcessHeap.h"
 
 #include "base/sampling_heap_profiler/sampling_heap_profiler.h"
-#include "platform/heap/CallbackStack.h"
 #include "platform/heap/GCInfo.h"
 #include "platform/heap/Heap.h"
 #include "platform/heap/PersistentNode.h"
@@ -31,7 +30,6 @@ void ProcessHeap::Init() {
   total_marked_object_size_ = 0;
 
   GCInfoTable::Init();
-  CallbackStackMemoryPool::Instance().Initialize();
 
   base::SamplingHeapProfiler::SetHooksInstallCallback([]() {
     HeapAllocHooks::SetAllocationHook(&BlinkGCAllocHook);
