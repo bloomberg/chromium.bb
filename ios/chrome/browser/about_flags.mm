@@ -131,6 +131,14 @@ const FeatureEntry::Choice kToolbarButtonPositionsChoices[] = {
     {"Top navigation", kToolbarButtonPositionsSwitch, "2"},
 };
 
+const FeatureEntry::Choice kSearchButtonIconChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDefault, "", ""},
+    {"Grey search engine logo", kIconSearchButtonSwitch, kIconSearchButtonGrey},
+    {"Colorful search engine logo", kIconSearchButtonSwitch,
+     kIconSearchButtonColorful},
+    {"Magnifying glass", kIconSearchButtonSwitch, kIconSearchButtonMagnifying},
+};
+
 // To add a new entry, add to the end of kFeatureEntries. There are four
 // distinct types of entries:
 // . ENABLE_DISABLE_VALUE: entry is either enabled, disabled, or uses the
@@ -257,6 +265,9 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"toolbar-button-positions", flag_descriptions::kToolbarButtonPositionsName,
      flag_descriptions::kToolbarButtonPositionsDescription, flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kToolbarButtonPositionsChoices)},
+    {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
+     flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
+     MULTI_VALUE_TYPE(kSearchButtonIconChoices)},
 };
 
 // Add all switches from experimental flags to |command_line|.

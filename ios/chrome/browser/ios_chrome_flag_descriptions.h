@@ -123,6 +123,10 @@ extern const char kToolbarButtonPositionsDescription[];
 extern const char kUIRefreshPhase1Name[];
 extern const char kUIRefreshPhase1Description[];
 
+// Title and description for the flag to toggle the flag of the search button.
+extern const char kSearchIconToggleName[];
+extern const char kSearchIconToggleDescription[];
+
 // Title and description for the flag to enable the ddljson Doodle API.
 extern const char kUseDdljsonApiName[];
 extern const char kUseDdljsonApiDescription[];
