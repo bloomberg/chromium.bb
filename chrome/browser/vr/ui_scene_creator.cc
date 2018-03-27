@@ -349,7 +349,7 @@ std::unique_ptr<UiElement> CreateSnackbar(
 
   auto text = Create<Text>(kNone, kPhaseForeground, kSnackbarFontHeightDMM);
   text->SetText(label);
-  text->SetLayoutMode(TextLayoutMode::kSingleLineFixedHeight);
+  text->SetLayoutMode(TextLayoutMode::kSingleLine);
   VR_BIND_COLOR(model, text.get(), &ColorScheme::snackbar_foreground,
                 &Text::SetColor);
 
@@ -370,7 +370,7 @@ std::unique_ptr<UiElement> CreateSnackbar(
   auto button_text =
       Create<Text>(kNone, kPhaseForeground, kSnackbarFontHeightDMM);
   button_text->SetText(button_label);
-  button_text->SetLayoutMode(TextLayoutMode::kSingleLineFixedHeight);
+  button_text->SetLayoutMode(TextLayoutMode::kSingleLine);
   button_text->AddBinding(
       VR_BIND_FUNC(SkColor, Model, model,
                    model->color_scheme().snackbar_button_colors.foreground,
@@ -489,7 +489,7 @@ std::unique_ptr<UiElement> CreateControllerLabel(UiElementName name,
   label->SetColor(model->color_scheme().controller_label_callout);
   label->SetVisible(true);
   label->SetAlignment(UiTexture::kTextAlignmentRight);
-  label->SetLayoutMode(kSingleLineFixedHeight);
+  label->SetLayoutMode(kSingleLine);
   label->SetRotate(1, 0, 0, -base::kPiFloat / 2);
   label->SetShadowsEnabled(true);
   label->SetScale(kControllerLabelScale, kControllerLabelScale,
@@ -979,7 +979,7 @@ void UiSceneCreator::CreateSystemIndicators() {
 
     auto text_element =
         Create<Text>(kNone, kPhaseForeground, kWebVrPermissionFontHeight);
-    text_element->SetLayoutMode(kSingleLineFixedHeight);
+    text_element->SetLayoutMode(kSingleLine);
     text_element->SetColor(SK_ColorWHITE);
     text_element->set_owner_name_for_test(element->name());
     text_element->SetSize(0.0f, kWebVrPermissionFontHeight);
@@ -2144,7 +2144,7 @@ void UiSceneCreator::CreateOverflowMenu() {
         Create<Text>(kNone, kPhaseForeground, kSuggestionContentTextHeightDMM);
     text->SetDrawPhase(kPhaseForeground);
     text->SetText(l10n_util::GetStringUTF16(std::get<1>(item)));
-    text->SetLayoutMode(TextLayoutMode::kSingleLineFixedHeight);
+    text->SetLayoutMode(TextLayoutMode::kSingleLine);
     text->SetAlignment(UiTexture::kTextAlignmentLeft);
     text->AddBinding(VR_BIND_FUNC(
         SkColor, Model, model_, model->color_scheme().url_bar_button.foreground,
@@ -2810,7 +2810,7 @@ void UiSceneCreator::CreateFullscreenToast() {
   element->set_corner_radius(kExclusiveScreenToastCornerRadiusDMM);
   element->AddText(l10n_util::GetStringUTF16(IDS_PRESS_APP_TO_EXIT_FULLSCREEN),
                    kExclusiveScreenToastTextFontHeightDMM,
-                   TextLayoutMode::kSingleLineFixedHeight);
+                   TextLayoutMode::kSingleLine);
 
   VR_BIND_COLOR(model_, element.get(),
                 &ColorScheme::exclusive_screen_toast_background,

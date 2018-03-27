@@ -26,9 +26,9 @@ class RenderTextWrapper;
 class TextTexture;
 
 enum TextLayoutMode {
-  kSingleLineFixedWidth,
-  kSingleLineFixedHeight,
   kMultiLineFixedWidth,
+  kSingleLine,
+  kSingleLineFixedWidth,
 };
 
 // This class describes a formatting attribute, applicable to a Text element.
