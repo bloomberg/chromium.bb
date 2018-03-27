@@ -4109,10 +4109,10 @@ void WebContentsImpl::SubresourceResponseStarted(const GURL& url,
   SetNotWaitingForResponse();
 }
 
-void WebContentsImpl::SubresourceLoadComplete(
-    mojom::SubresourceLoadInfoPtr subresource_load_info) {
+void WebContentsImpl::ResourceLoadComplete(
+    mojom::ResourceLoadInfoPtr resource_load_info) {
   for (auto& observer : observers_) {
-    observer.SubresourceLoadComplete(*subresource_load_info);
+    observer.ResourceLoadComplete(*resource_load_info);
   }
 }
 

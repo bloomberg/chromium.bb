@@ -87,8 +87,8 @@ class MockFrameHost : public mojom::FrameHost {
   void SubresourceResponseStarted(const GURL& url,
                                   net::CertStatus cert_status) override {}
 
-  void SubresourceLoadComplete(
-      mojom::SubresourceLoadInfoPtr subresource_load_info) override {}
+  void ResourceLoadComplete(
+      mojom::ResourceLoadInfoPtr resource_load_info) override {}
 
   void DidChangeName(const std::string& name,
                      const std::string& unique_name) override {}

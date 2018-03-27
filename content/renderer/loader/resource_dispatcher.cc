@@ -24,8 +24,8 @@
 #include "content/common/inter_process_time_ticks_converter.h"
 #include "content/common/navigation_params.h"
 #include "content/common/throttling_url_loader.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/subresource_load_info.mojom.h"
 #include "content/public/renderer/fixed_received_data.h"
 #include "content/public/renderer/request_peer.h"
 #include "content/public/renderer/resource_dispatcher_delegate.h"
@@ -94,18 +94,18 @@ void NotifySubresourceStarted(
   render_frame->GetFrameHost()->SubresourceResponseStarted(url, cert_status);
 }
 
-void NotifySubresourceLoadComplete(
+void NotifyResourceLoadComplete(
     scoped_refptr<base::SingleThreadTaskRunner> thread_task_runner,
     int render_frame_id,
-    mojom::SubresourceLoadInfoPtr subresource_load_info) {
+    mojom::ResourceLoadInfoPtr resource_load_info) {
   if (!thread_task_runner)
     return;
 
   if (!thread_task_runner->BelongsToCurrentThread()) {
     thread_task_runner->PostTask(
         FROM_HERE,
-        base::BindOnce(NotifySubresourceLoadComplete, thread_task_runner,
-                       render_frame_id, std::move(subresource_load_info)));
+        base::BindOnce(NotifyResourceLoadComplete, thread_task_runner,
+                       render_frame_id, std::move(resource_load_info)));
     return;
   }
 
@@ -114,8 +114,8 @@ void NotifySubresourceLoadComplete(
   if (!render_frame)
     return;
 
-  render_frame->GetFrameHost()->SubresourceLoadComplete(
-      std::move(subresource_load_info));
+  render_frame->GetFrameHost()->ResourceLoadComplete(
+      std::move(resource_load_info));
 }
 
 }  // namespace
@@ -266,20 +266,18 @@ void ResourceDispatcher::OnRequestComplete(
   request_info->buffer.reset();
   request_info->buffer_size = 0;
 
-  if (!IsResourceTypeFrame(request_info->resource_type)) {
-    auto subresource_load_info = mojom::SubresourceLoadInfo::New();
-    subresource_load_info->url = request_info->response_url;
-    subresource_load_info->referrer = request_info->response_referrer;
-    subresource_load_info->method = request_info->response_method;
-    subresource_load_info->resource_type = request_info->resource_type;
-    if (request_info->parsed_ip.IsValid())
-      subresource_load_info->ip = request_info->parsed_ip;
-    subresource_load_info->mime_type = request_info->mime_type;
-    subresource_load_info->was_cached = status.exists_in_cache;
-    NotifySubresourceLoadComplete(
-        RenderThreadImpl::DeprecatedGetMainTaskRunner(),
-        request_info->render_frame_id, std::move(subresource_load_info));
-  }
+  auto resource_load_info = mojom::ResourceLoadInfo::New();
+  resource_load_info->url = request_info->response_url;
+  resource_load_info->referrer = request_info->response_referrer;
+  resource_load_info->method = request_info->response_method;
+  resource_load_info->resource_type = request_info->resource_type;
+  if (request_info->parsed_ip.IsValid())
+    resource_load_info->ip = request_info->parsed_ip;
+  resource_load_info->mime_type = request_info->mime_type;
+  resource_load_info->was_cached = status.exists_in_cache;
+  NotifyResourceLoadComplete(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
+                             request_info->render_frame_id,
+                             std::move(resource_load_info));
 
   RequestPeer* peer = request_info->peer.get();
 

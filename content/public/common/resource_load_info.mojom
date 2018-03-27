@@ -8,9 +8,9 @@ import "content/public/common/resource_type.mojom";
 import "net/interfaces/ip_address.mojom";
 import "url/mojom/url.mojom";
 
-// Information pertaining to subresource loading.
-// This will be passed to SubresourceResponse callback methods.
-struct SubresourceLoadInfo {
+// Information pertaining to resource loading.
+// This will be passed to ResourceResponse callback methods.
+struct ResourceLoadInfo {
   // The URL of the response.
   url.mojom.Url url;
 

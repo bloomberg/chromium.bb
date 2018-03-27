@@ -3015,9 +3015,9 @@ void RenderFrameHostImpl::SubresourceResponseStarted(
   delegate_->SubresourceResponseStarted(url, cert_status);
 }
 
-void RenderFrameHostImpl::SubresourceLoadComplete(
-    mojom::SubresourceLoadInfoPtr subresource_load_info) {
-  delegate_->SubresourceLoadComplete(std::move(subresource_load_info));
+void RenderFrameHostImpl::ResourceLoadComplete(
+    mojom::ResourceLoadInfoPtr resource_load_info) {
+  delegate_->ResourceLoadComplete(std::move(resource_load_info));
 }
 
 namespace {

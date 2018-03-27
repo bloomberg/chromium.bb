@@ -1237,12 +1237,12 @@ TEST_F(ClientSideDetectionHostTest, TestPreClassificationCheckValidCached) {
 
 TEST_F(ClientSideDetectionHostTest,
        SubresourceResponseStartedSkipsMissingIPAddress) {
-  auto subresource_load_info = content::mojom::SubresourceLoadInfo::New();
-  subresource_load_info->url = GURL("http://host1.com");
-  subresource_load_info->referrer = GURL("http://host2.com");
-  subresource_load_info->method = "GET";
-  subresource_load_info->resource_type = content::RESOURCE_TYPE_SUB_FRAME;
-  csd_host_->SubresourceLoadComplete(*subresource_load_info);
+  auto resource_load_info = content::mojom::ResourceLoadInfo::New();
+  resource_load_info->url = GURL("http://host1.com");
+  resource_load_info->referrer = GURL("http://host2.com");
+  resource_load_info->method = "GET";
+  resource_load_info->resource_type = content::RESOURCE_TYPE_SUB_FRAME;
+  csd_host_->ResourceLoadComplete(*resource_load_info);
 
   EXPECT_EQ(0u, GetBrowseInfo()->ips.size());
 }
