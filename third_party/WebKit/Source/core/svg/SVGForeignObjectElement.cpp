@@ -121,7 +121,8 @@ LayoutObject* SVGForeignObjectElement::CreateLayoutObject(
   return new LayoutSVGForeignObject(this);
 }
 
-bool SVGForeignObjectElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool SVGForeignObjectElement::LayoutObjectIsNeeded(
+    const ComputedStyle& style) const {
   // Suppress foreignObject layoutObjects in SVG hidden containers.
   // (https://bugs.webkit.org/show_bug.cgi?id=87297)
   // Note that we currently do not support foreignObject instantiation via

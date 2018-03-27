@@ -45,12 +45,13 @@ LayoutObject* DetailsMarkerControl::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutDetailsMarker(this);
 }
 
-bool DetailsMarkerControl::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool DetailsMarkerControl::LayoutObjectIsNeeded(
+    const ComputedStyle& style) const {
   return SummaryElement()->IsMainSummary() &&
          HTMLDivElement::LayoutObjectIsNeeded(style);
 }
 
-HTMLSummaryElement* DetailsMarkerControl::SummaryElement() {
+HTMLSummaryElement* DetailsMarkerControl::SummaryElement() const {
   return ToHTMLSummaryElement(OwnerShadowHost());
 }
 

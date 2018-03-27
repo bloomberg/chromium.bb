@@ -97,10 +97,10 @@ void HTMLEmbedElement::CollectStyleForPresentationAttribute(
 void HTMLEmbedElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == typeAttr) {
-    service_type_ = params.new_value.LowerASCII();
+    SetServiceType(params.new_value.LowerASCII());
     size_t pos = service_type_.Find(";");
     if (pos != kNotFound)
-      service_type_ = service_type_.Left(pos);
+      SetServiceType(service_type_.Left(pos));
     if (GetLayoutObject()) {
       SetNeedsPluginUpdate(true);
       GetLayoutObject()->SetNeedsLayoutAndFullPaintInvalidation(
@@ -111,9 +111,9 @@ void HTMLEmbedElement::ParseAttribute(
   } else if (params.name == codeAttr) {
     // TODO(schenney): Remove this branch? It's not in the spec and we're not in
     // the HTMLAppletElement hierarchy.
-    url_ = StripLeadingAndTrailingHTMLSpaces(params.new_value);
+    SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
   } else if (params.name == srcAttr) {
-    url_ = StripLeadingAndTrailingHTMLSpaces(params.new_value);
+    SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
     if (GetLayoutObject() && IsImageType()) {
       if (!image_loader_)
         image_loader_ = HTMLImageLoader::Create(this);
@@ -167,13 +167,13 @@ void HTMLEmbedElement::UpdatePluginInternal() {
           GetDocument().CompleteURL(url_));
   if (!overriden_url.IsEmpty()) {
     url_ = overriden_url.GetString();
-    service_type_ = "text/html";
+    SetServiceType("text/html");
   }
 
   RequestObject(plugin_params);
 }
 
-bool HTMLEmbedElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool HTMLEmbedElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   if (IsImageType())
     return HTMLPlugInElement::LayoutObjectIsNeeded(style);
 

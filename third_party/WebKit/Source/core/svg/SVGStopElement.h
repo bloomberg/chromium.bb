@@ -51,7 +51,9 @@ class SVGStopElement final : public SVGElement {
 
   // Stop elements don't have associated layout objects
   // (they use NonLayoutObjectComputedStyle instead).
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
+    return false;
+  }
 
   Member<SVGAnimatedNumber> offset_;
 };

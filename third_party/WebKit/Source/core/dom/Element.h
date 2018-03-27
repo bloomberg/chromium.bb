@@ -460,7 +460,7 @@ class CORE_EXPORT Element : public ContainerNode {
   void DetachLayoutTree(const AttachContext& = AttachContext()) override;
 
   virtual LayoutObject* CreateLayoutObject(const ComputedStyle&);
-  virtual bool LayoutObjectIsNeeded(const ComputedStyle&);
+  virtual bool LayoutObjectIsNeeded(const ComputedStyle&) const;
   void RecalcStyle(StyleRecalcChange);
   void RecalcStyleForReattach();
   bool NeedsRebuildLayoutTree(

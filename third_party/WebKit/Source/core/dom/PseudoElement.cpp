@@ -164,7 +164,7 @@ void PseudoElement::AttachLayoutTree(AttachContext& context) {
   }
 }
 
-bool PseudoElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool PseudoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return PseudoElementLayoutObjectIsNeeded(&style);
 }
 

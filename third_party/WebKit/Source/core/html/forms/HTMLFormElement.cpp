@@ -99,7 +99,7 @@ bool HTMLFormElement::IsValidElement() {
       nullptr, kCheckValidityDispatchNoEvent);
 }
 
-bool HTMLFormElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool HTMLFormElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   if (!was_demoted_)
     return HTMLElement::LayoutObjectIsNeeded(style);
 

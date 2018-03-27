@@ -131,7 +131,7 @@ class CORE_EXPORT HTMLPlugInElement
   // if necessary.
   virtual LayoutEmbeddedContent* LayoutEmbeddedContentForJSBindings() const;
 
-  bool IsImageType();
+  bool IsImageType() const;
   LayoutEmbeddedObject* GetLayoutEmbeddedObject() const;
   bool AllowedToLoadFrameURL(const String& url);
   bool RequestObject(const PluginParameters& plugin_params);
@@ -139,6 +139,16 @@ class CORE_EXPORT HTMLPlugInElement
   void DispatchErrorEvent();
   bool IsErrorplaceholder();
   void LazyReattachIfNeeded();
+
+  void SetUrl(const String& url) {
+    url_ = url;
+    UpdateServiceTypeIfEmpty();
+  }
+
+  void SetServiceType(const String& service_type) {
+    service_type_ = service_type;
+    UpdateServiceTypeIfEmpty();
+  }
 
   String service_type_;
   String url_;
@@ -195,11 +205,13 @@ class CORE_EXPORT HTMLPlugInElement
     kFrame,
     kPlugin,
   };
-  ObjectContentType GetObjectContentType();
+  ObjectContentType GetObjectContentType() const;
 
   void SetPersistedPlugin(WebPluginContainerImpl*);
 
   bool RequestObjectInternal(const PluginParameters& plugin_params);
+
+  void UpdateServiceTypeIfEmpty();
 
   v8::Global<v8::Object> plugin_wrapper_;
   bool needs_plugin_update_;

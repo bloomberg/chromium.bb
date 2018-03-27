@@ -55,7 +55,9 @@ class SVGComponentTransferFunctionElement : public SVGElement {
 
   void SvgAttributeChanged(const QualifiedName&) final;
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) final { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle& style) const final {
+    return false;
+  }
 
  private:
   Member<SVGAnimatedNumberList> table_values_;

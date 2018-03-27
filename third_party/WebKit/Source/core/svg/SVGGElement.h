@@ -37,7 +37,7 @@ class CORE_EXPORT SVGGElement final : public SVGGraphicsElement {
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
  private:
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
 };
 
 }  // namespace blink

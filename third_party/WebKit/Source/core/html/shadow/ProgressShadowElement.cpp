@@ -47,7 +47,8 @@ HTMLProgressElement* ProgressShadowElement::ProgressElement() const {
   return ToHTMLProgressElement(OwnerShadowHost());
 }
 
-bool ProgressShadowElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool ProgressShadowElement::LayoutObjectIsNeeded(
+    const ComputedStyle& style) const {
   LayoutObject* progress_layout_object = ProgressElement()->GetLayoutObject();
   return progress_layout_object &&
          !progress_layout_object->Style()->HasAppearance() &&

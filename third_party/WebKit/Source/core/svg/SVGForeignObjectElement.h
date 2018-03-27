@@ -48,7 +48,7 @@ class SVGForeignObjectElement final : public SVGGraphicsElement {
       MutableCSSPropertyValueSet*) override;
   void SvgAttributeChanged(const QualifiedName&) override;
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
   bool SelfHasRelativeLengths() const override;

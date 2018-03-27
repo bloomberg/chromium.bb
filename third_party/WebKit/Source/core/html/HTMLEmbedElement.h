@@ -48,7 +48,7 @@ class CORE_EXPORT HTMLEmbedElement final : public HTMLPlugInElement {
       const AtomicString&,
       MutableCSSPropertyValueSet*) override;
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
 
   bool IsURLAttribute(const Attribute&) const override;
   const QualifiedName& SubResourceAttributeName() const override;

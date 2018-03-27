@@ -678,7 +678,7 @@ void HTMLMediaElement::FinishParsingChildren() {
     ScheduleTextTrackResourceLoad();
 }
 
-bool HTMLMediaElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool HTMLMediaElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return ShouldShowControls() && HTMLElement::LayoutObjectIsNeeded(style);
 }
 

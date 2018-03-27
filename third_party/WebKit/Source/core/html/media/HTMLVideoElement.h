@@ -164,7 +164,7 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
   // PausableObject functions.
   void ContextDestroyed(ExecutionContext*) final;
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   void AttachLayoutTree(AttachContext&) override;
   void ParseAttribute(const AttributeModificationParams&) override;

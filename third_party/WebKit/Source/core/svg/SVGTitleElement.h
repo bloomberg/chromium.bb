@@ -40,7 +40,9 @@ class SVGTitleElement final : public SVGElement {
   void RemovedFrom(ContainerNode*) override;
   void ChildrenChanged(const ChildrenChange&) override;
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
+    return false;
+  }
 
   bool ignore_title_updates_when_children_change_;
 };

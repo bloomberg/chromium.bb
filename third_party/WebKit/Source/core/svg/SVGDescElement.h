@@ -34,7 +34,9 @@ class SVGDescElement final : public SVGElement {
  private:
   explicit SVGDescElement(Document&);
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
+    return false;
+  }
 };
 
 }  // namespace blink

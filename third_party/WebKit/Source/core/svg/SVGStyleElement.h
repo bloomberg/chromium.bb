@@ -63,7 +63,9 @@ class SVGStyleElement final : public SVGElement, public StyleElement {
   void ChildrenChanged(const ChildrenChange&) override;
 
   void FinishParsingChildren() override;
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
+    return false;
+  }
 
   bool SheetLoaded() override {
     return StyleElement::SheetLoaded(GetDocument());

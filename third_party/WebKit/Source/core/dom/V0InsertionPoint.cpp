@@ -198,7 +198,7 @@ StaticNodeList* V0InsertionPoint::getDistributedNodes() {
   return StaticNodeList::Adopt(nodes);
 }
 
-bool V0InsertionPoint::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool V0InsertionPoint::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return !IsActive() && HTMLElement::LayoutObjectIsNeeded(style);
 }
 

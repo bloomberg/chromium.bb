@@ -74,7 +74,9 @@ class SVGFELightElement : public SVGElement {
   void SvgAttributeChanged(const QualifiedName&) final;
   void ChildrenChanged(const ChildrenChange&) final;
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
+    return false;
+  }
 
   Member<SVGAnimatedNumber> azimuth_;
   Member<SVGAnimatedNumber> elevation_;

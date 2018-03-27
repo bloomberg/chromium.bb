@@ -72,7 +72,7 @@ class HTMLFrameSetElement final : public HTMLElement {
       MutableCSSPropertyValueSet*) override;
 
   void AttachLayoutTree(AttachContext&) override;
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
 
   void DefaultEventHandler(Event*) override;
