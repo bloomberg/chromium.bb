@@ -7,6 +7,8 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/screen_util.h"
+#include "ash/session/session_controller.h"
+#include "ash/session/test_session_controller_client.h"
 #include "ash/shell.h"
 #include "ash/system/overview/overview_button_tray.h"
 #include "ash/system/status_area_widget.h"
@@ -39,6 +41,9 @@ class SplitViewControllerTest : public AshTestBase {
   // test::AshTestBase:
   void SetUp() override {
     AshTestBase::SetUp();
+    // Avoid TabletModeController::OnGetSwitchStates() from disabling tablet
+    // mode.
+    base::RunLoop().RunUntilIdle();
     Shell::Get()->tablet_mode_controller()->EnableTabletModeWindowManager(true);
   }
 
@@ -1175,6 +1180,37 @@ TEST_F(SplitViewControllerTest,
                                       SplitViewController::RIGHT);
   EXPECT_GT(divider_position(), 0.33f * workarea_bounds.width());
   EXPECT_LE(divider_position(), 0.5f * workarea_bounds.width());
+}
+
+// Test that if display configuration changes in lock screen, the split view
+// mode doesn't end.
+TEST_F(SplitViewControllerTest, DoNotEndSplitViewInLockScreen) {
+  display::test::DisplayManagerTestApi(display_manager())
+      .SetFirstDisplayAsInternalDisplay();
+  UpdateDisplay("800x400");
+  const gfx::Rect bounds(0, 0, 200, 300);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+  split_view_controller()->SnapWindow(window1.get(), SplitViewController::LEFT);
+  split_view_controller()->SnapWindow(window2.get(),
+                                      SplitViewController::RIGHT);
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+
+  // Now lock the screen.
+  Shell::Get()->session_controller()->LockScreenAndFlushForTest();
+  // Change display configuration. Split view mode is still active.
+  UpdateDisplay("400x800");
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+
+  // Now unlock the screen.
+  GetSessionControllerClient()->UnlockScreen();
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
 }
 
 }  // namespace ash
