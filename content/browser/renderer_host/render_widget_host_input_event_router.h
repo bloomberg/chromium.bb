@@ -233,7 +233,8 @@ class CONTENT_EXPORT RenderWidgetHostInputEventRouter
                                         viz::EventSource source) const;
 
   // TODO(818214): Remove once this issue no longer occurs.
-  void ReportBubblingScrollToSameView(const blink::WebGestureEvent& event);
+  void ReportBubblingScrollToSameView(const blink::WebGestureEvent& event,
+                                      const RenderWidgetHostViewBase* view);
 
   // RenderWidgetTargeter::Delegate:
   RenderWidgetTargetResult FindTargetSynchronously(

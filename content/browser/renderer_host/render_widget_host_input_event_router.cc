@@ -20,6 +20,7 @@
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/renderer_host/render_widget_host_view_child_frame.h"
 #include "content/common/frame_messages.h"
+#include "content/public/browser/devtools_agent_host.h"
 #include "services/viz/public/interfaces/hit_test/hit_test_region_list.mojom.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/base/layout.h"
@@ -731,7 +732,8 @@ void RenderWidgetHostInputEventRouter::SendMouseEnterOrLeaveEvents(
 }
 
 void RenderWidgetHostInputEventRouter::ReportBubblingScrollToSameView(
-    const blink::WebGestureEvent& event) {
+    const blink::WebGestureEvent& event,
+    const RenderWidgetHostViewBase* view) {
   static auto* type_key = base::debug::AllocateCrashKeyString(
       "same-view-bubble-event-type", base::debug::CrashKeySize::Size32);
   base::debug::ScopedCrashKeyString type_key_value(
@@ -740,6 +742,17 @@ void RenderWidgetHostInputEventRouter::ReportBubblingScrollToSameView(
       "same-view-bubble-source-device", base::debug::CrashKeySize::Size32);
   base::debug::ScopedCrashKeyString device_key_value(
       device_key, std::to_string(event.SourceDevice()));
+
+  // Issue 824772 is a potential cause for issue 818214. Report whether
+  // devtools is in use to investigate whether there are other causes.
+  auto* contents = view->host()->delegate()->GetAsWebContents();
+  const bool have_devtools =
+      contents && DevToolsAgentHost::IsDebuggerAttached(contents);
+  static auto* devtools_key = base::debug::AllocateCrashKeyString(
+      "same-view-bubble-have-devtools", base::debug::CrashKeySize::Size32);
+  base::debug::ScopedCrashKeyString devtools_key_value(
+      devtools_key, std::to_string(have_devtools));
+
   base::debug::DumpWithoutCrashing();
 }
 
@@ -822,7 +835,7 @@ void RenderWidgetHostInputEventRouter::BubbleScrollEvent(
     // bubbling.
     // TODO(818214): Remove once this issue no longer occurs.
     if (resending_view == bubbling_gesture_scroll_target_.target) {
-      ReportBubblingScrollToSameView(event);
+      ReportBubblingScrollToSameView(event, resending_view);
       first_bubbling_scroll_target_.target = nullptr;
       bubbling_gesture_scroll_target_.target = nullptr;
       return;
