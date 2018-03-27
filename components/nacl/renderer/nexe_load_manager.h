@@ -107,9 +107,6 @@ class NexeLoadManager {
   // false otherwise.
   bool IsPNaCl() const;
 
-  // Returns true if dev interfaces are enabled for this plugin.
-  bool DevInterfacesEnabled() const;
-
   // Returns the time that the work for PNaCl translation began.
   base::Time pnacl_start_time() const { return pnacl_start_time_; }
   void set_pnacl_start_time(base::Time time) {
