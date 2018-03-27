@@ -84,7 +84,7 @@ void IncrementPrefValue(const char* path) {
 }
 
 const base::Feature kUmaShortHWClass{"UmaShortHWClass",
-                                     base::FEATURE_DISABLED_BY_DEFAULT};
+                                     base::FEATURE_ENABLED_BY_DEFAULT};
 
 // Called on a background thread to load hardware class information.
 std::string GetHardwareClassOnBackgroundThread() {

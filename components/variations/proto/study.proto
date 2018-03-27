@@ -194,13 +194,13 @@ message Study {
 
   // Possible form factors Chrome is running on.
   enum FormFactor {
-    // Chrome Desktop on Windows, Mac, Linux, or ChromeOS.
+    // Chrome Desktop on Windows, Mac, Linux, or Chrome OS.
     DESKTOP = 0;
     // Phone-based mobile Chrome, e.g. an Android phone or iPhone.
     PHONE   = 1;
     // Tablet-based mobile Chrome, e.g. an Android tablet or iPad.
     TABLET  = 2;
-    // ChromeOS running in single-app Kiosk mode.
+    // Chrome OS running in single-app Kiosk mode.
     KIOSK   = 3;
   }
 
@@ -271,22 +271,35 @@ message Study {
     // Takes the same range of values as form_factor, e.g. [PHONE, TABLET].
     repeated FormFactor exclude_form_factor = 14;
 
-    // List of ChromeOS hardware classes that will receive this study. Each
-    // entry is treated as a substring of the actual device hardware_class,
-    // so "FOO" will match the client's hardware class "Device FOOBAR". If
-    // omitted, the study applies to all hardware classes unless
+    // List of Chrome OS hardware classes that will receive this study.
+    //
+    // Starting with Chrome M67, this does a case insensitive match on the same
+    // hardware class field that is reported to UMA in the SystemProfileProto's
+    // |hardware.hardware_class| field.
+    //
+    // Older versions did a case sensitive substring comparison, which was
+    // problematic for short hardware classes like "eve" that existed as
+    // substrings of other longer ones.
+    //
+    // If omitted, the study applies to all hardware classes unless
     // |exclude_hardware_class| is specified. Mutually exclusive with
     // |exclude_hardware_class|.
-    // An example might be "lumpy", "daisy", etc.
+    // Ex: ["veyron_minnie", "daisy"]
     repeated string hardware_class = 8;
 
-    // List of ChromeOS hardware classes that will be excluded in this
-    // study. Each entry is treated as a substring of the actual device
-    // hardware_class, so "FOO" will match the client's hardware class
-    // "Device FOOBAR". If omitted, the study applies to all hardware classes
-    // unless |hardware_class| is specified. Mutually exclusive with
-    // |hardware_class|.
-    // An example might be "lumpy", "daisy", etc.
+    // List of Chrome OS hardware classes that will be excluded in this study.
+    //
+    // Starting with Chrome M67, this does a case insensitive match on the same
+    // hardware class field that is reported to UMA in the SystemProfileProto's
+    // |hardware.hardware_class| field.
+    //
+    // Older versions did a case sensitive substring comparison, which was
+    // problematic for short hardware classes like "eve" that existed as
+    // substrings of other longer ones.
+    //
+    // If omitted, the study applies to all hardware classes unless
+    // |hardware_class| is specified. Mutually exclusive with |hardware_class|.
+    // Ex: ["veyron_minnie", "daisy"]
     repeated string exclude_hardware_class = 9;
 
     // List of lowercase ISO 3166-1 alpha-2 country codes that will receive this
