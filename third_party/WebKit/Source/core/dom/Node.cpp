@@ -91,6 +91,7 @@
 #include "core/html/custom/CustomElement.h"
 #include "core/html_names.h"
 #include "core/input/EventHandler.h"
+#include "core/input/InputDeviceCapabilities.h"
 #include "core/layout/LayoutBox.h"
 #include "core/layout/LayoutEmbeddedContent.h"
 #include "core/mathml_names.h"
@@ -2351,16 +2352,47 @@ void Node::CreateAndDispatchPointerEvent(const AtomicString& mouse_event_name,
   DispatchEvent(PointerEvent::Create(pointer_event_name, pointer_event_init));
 }
 
-void Node::DispatchMouseEvent(const WebMouseEvent& native_event,
+// TODO(crbug.com/665924): This function bypasses all Blink event path.
+// It should be using that flow instead of creating/sending events directly.
+void Node::DispatchMouseEvent(const WebMouseEvent& event,
                               const AtomicString& mouse_event_type,
                               int detail,
                               const String& canvas_region_id,
                               Node* related_target) {
-  CreateAndDispatchPointerEvent(mouse_event_type, native_event,
+  CreateAndDispatchPointerEvent(mouse_event_type, event,
                                 GetDocument().domWindow());
-  DispatchEvent(MouseEvent::Create(mouse_event_type, GetDocument().domWindow(),
-                                   native_event, detail, canvas_region_id,
-                                   related_target));
+
+  bool is_mouse_enter_or_leave =
+      mouse_event_type == EventTypeNames::mouseenter ||
+      mouse_event_type == EventTypeNames::mouseleave;
+  MouseEventInit initializer;
+  initializer.setBubbles(!is_mouse_enter_or_leave);
+  initializer.setCancelable(!is_mouse_enter_or_leave);
+  MouseEvent::SetCoordinatesFromWebPointerProperties(
+      event.FlattenTransform(), GetDocument().domWindow(), initializer);
+  initializer.setButton(static_cast<short>(event.button));
+  initializer.setButtons(
+      MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()));
+  initializer.setView(GetDocument().domWindow());
+  initializer.setDetail(detail);
+  initializer.setComposed(true);
+  initializer.setRegion(canvas_region_id);
+  initializer.setRelatedTarget(related_target);
+  UIEventWithKeyState::SetFromWebInputEventModifiers(
+      initializer, static_cast<WebInputEvent::Modifiers>(event.GetModifiers()));
+  initializer.setSourceCapabilities(
+      GetDocument().domWindow() ? GetDocument()
+                                      .domWindow()
+                                      ->GetInputDeviceCapabilities()
+                                      ->FiresTouchEvents(event.FromTouch())
+                                : nullptr);
+
+  DispatchEvent(MouseEvent::Create(
+      mouse_event_type, initializer,
+      TimeTicksFromSeconds(event.TimeStampSeconds()),
+      event.FromTouch() ? MouseEvent::kFromTouch
+                        : MouseEvent::kRealOrIndistinguishable,
+      event.menu_source_type));
 }
 
 void Node::DispatchSimulatedClick(Event* underlying_event,

@@ -12,137 +12,281 @@ TEST COMPLETE
 pointermove of mouse is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 view.name = innerFrame
 mousemove is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 pointerdown of mouse is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 view.name = innerFrame
 mousedown is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 pointerup of mouse is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 view.name = innerFrame
 mouseup is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
  *** Touch events inside iframe ***
 pointerdown of touch is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 view.name = innerFrame
 touchstart is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 pointermove of touch is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 view.name = innerFrame
 touchmove is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 pointerup of touch is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 view.name = innerFrame
 touchend is received:
 clientX = 150
 clientY = 100
+pageX = 175
+pageY = 200
+screenX = 200
+screenY = 200
 
 ===== scrollX=40, scrollY=140, zoomFactor=1
  *** Mouse events inside iframe ***
 pointermove of mouse is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 view.name = innerFrame
 mousemove is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 pointerdown of mouse is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 view.name = innerFrame
 mousedown is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 pointerup of mouse is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 view.name = innerFrame
 mouseup is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
  *** Touch events inside iframe ***
 pointerdown of touch is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 view.name = innerFrame
 touchstart is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 pointermove of touch is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 view.name = innerFrame
 touchmove is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 pointerup of touch is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 view.name = innerFrame
 touchend is received:
 clientX = 150
 clientY = 100
+pageX = 190
+pageY = 240
+screenX = 200
+screenY = 200
 
 ===== scrollX=40, scrollY=140, zoomFactor=2
  *** Mouse events inside iframe ***
 pointermove of mouse is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 view.name = innerFrame
 mousemove is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 pointerdown of mouse is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 view.name = innerFrame
 mousedown is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 pointerup of mouse is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 view.name = innerFrame
 mouseup is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
  *** Touch events inside iframe ***
 pointerdown of touch is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 view.name = innerFrame
 touchstart is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 pointermove of touch is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 view.name = innerFrame
 touchmove is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 pointerup of touch is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 view.name = innerFrame
 touchend is received:
 clientX = 50
 clientY = 0
+pageX = 90
+pageY = 140
+screenX = 200
+screenY = 200
 
 

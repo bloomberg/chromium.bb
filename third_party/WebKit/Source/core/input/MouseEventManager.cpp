@@ -217,10 +217,41 @@ WebInputEventResult MouseEventManager::DispatchMouseEvent(
         mouse_event_type == EventTypeNames::dblclick) {
       click_count = click_count_;
     }
+    bool is_mouse_enter_or_leave =
+        mouse_event_type == EventTypeNames::mouseenter ||
+        mouse_event_type == EventTypeNames::mouseleave;
+    MouseEventInit initializer;
+    initializer.setBubbles(!is_mouse_enter_or_leave);
+    initializer.setCancelable(!is_mouse_enter_or_leave);
+    MouseEvent::SetCoordinatesFromWebPointerProperties(
+        mouse_event.FlattenTransform(), target_node->GetDocument().domWindow(),
+        initializer);
+    initializer.setButton(static_cast<short>(mouse_event.button));
+    initializer.setButtons(MouseEvent::WebInputEventModifiersToButtons(
+        mouse_event.GetModifiers()));
+    initializer.setView(target_node->GetDocument().domWindow());
+    initializer.setComposed(true);
+    initializer.setDetail(click_count);
+    initializer.setRegion(canvas_region_id);
+    initializer.setRelatedTarget(related_target);
+    UIEventWithKeyState::SetFromWebInputEventModifiers(
+        initializer,
+        static_cast<WebInputEvent::Modifiers>(mouse_event.GetModifiers()));
+    initializer.setSourceCapabilities(
+        target_node->GetDocument().domWindow()
+            ? target_node->GetDocument()
+                  .domWindow()
+                  ->GetInputDeviceCapabilities()
+                  ->FiresTouchEvents(mouse_event.FromTouch())
+            : nullptr);
+
     MouseEvent* event = MouseEvent::Create(
-        mouse_event_type, target_node->GetDocument().domWindow(), mouse_event,
-        click_count, canvas_region_id,
-        related_target ? related_target->ToNode() : nullptr);
+        mouse_event_type, initializer,
+        TimeTicksFromSeconds(mouse_event.TimeStampSeconds()),
+        mouse_event.FromTouch() ? MouseEvent::kFromTouch
+                                : MouseEvent::kRealOrIndistinguishable,
+        mouse_event.menu_source_type);
+
     DispatchEventResult dispatch_result = target->DispatchEvent(event);
     return EventHandlingUtil::ToWebInputEventResult(dispatch_result);
   }
@@ -1009,22 +1040,32 @@ WebInputEventResult MouseEventManager::DispatchDragEvent(
       related_target->GetDocument() != drag_target->GetDocument())
     related_target = nullptr;
 
-  const Event::Cancelable cancelable =
-      (event_type != EventTypeNames::dragleave &&
-       event_type != EventTypeNames::dragend)
-          ? Event::Cancelable::kYes
-          : Event::Cancelable::kNo;
+  DragEventInit initializer;
+  initializer.setBubbles(true);
+  initializer.setCancelable(event_type != EventTypeNames::dragleave &&
+                            event_type != EventTypeNames::dragend);
+  MouseEvent::SetCoordinatesFromWebPointerProperties(
+      event.FlattenTransform(), frame_->GetDocument()->domWindow(),
+      initializer);
+  initializer.setButton(0);
+  initializer.setButtons(
+      MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()));
+  initializer.setRelatedTarget(related_target);
+  initializer.setView(frame_->GetDocument()->domWindow());
+  initializer.setComposed(true);
+  initializer.setGetDataTransfer(data_transfer);
+  initializer.setSourceCapabilities(
+      frame_->GetDocument()->domWindow()
+          ? frame_->GetDocument()
+                ->domWindow()
+                ->GetInputDeviceCapabilities()
+                ->FiresTouchEvents(event.FromTouch())
+          : nullptr);
+  UIEventWithKeyState::SetFromWebInputEventModifiers(
+      initializer, static_cast<WebInputEvent::Modifiers>(event.GetModifiers()));
 
-  IntPoint movement = FlooredIntPoint(event.MovementInRootFrame());
   DragEvent* me = DragEvent::Create(
-      event_type, Event::Bubbles::kYes, cancelable,
-      frame_->GetDocument()->domWindow(), 0, event.PositionInScreen().x,
-      event.PositionInScreen().y, event.PositionInRootFrame().x,
-      event.PositionInRootFrame().y, movement.X(), movement.Y(),
-      static_cast<WebInputEvent::Modifiers>(event.GetModifiers()), 0,
-      MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()),
-      related_target, TimeTicksFromSeconds(event.TimeStampSeconds()),
-      data_transfer,
+      event_type, initializer, TimeTicksFromSeconds(event.TimeStampSeconds()),
       event.FromTouch() ? MouseEvent::kFromTouch
                         : MouseEvent::kRealOrIndistinguishable);
 

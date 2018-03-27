@@ -41,6 +41,30 @@ long NegateIfPossible(long value) {
   return -value;
 }
 
+MouseEventInit GetMouseEventInitForWheel(const WebMouseWheelEvent& event,
+                                         AbstractView* view) {
+  MouseEventInit initializer;
+  initializer.setBubbles(true);
+  initializer.setCancelable(event.IsCancelable());
+  MouseEvent::SetCoordinatesFromWebPointerProperties(
+      event.FlattenTransform(),
+      view->IsLocalDOMWindow() ? ToLocalDOMWindow(view) : nullptr, initializer);
+  initializer.setButton(static_cast<short>(event.button));
+  initializer.setButtons(
+      MouseEvent::WebInputEventModifiersToButtons(event.GetModifiers()));
+  initializer.setView(view);
+  initializer.setComposed(true);
+  initializer.setDetail(event.click_count);
+  UIEventWithKeyState::SetFromWebInputEventModifiers(
+      initializer, static_cast<WebInputEvent::Modifiers>(event.GetModifiers()));
+
+  // TODO(zino): Should support canvas hit region because the
+  // wheel event is a kind of mouse event. Please see
+  // http://crbug.com/594075
+
+  return initializer;
+}
+
 }  // namespace
 
 WheelEvent* WheelEvent::Create(const WebMouseWheelEvent& event,
@@ -69,16 +93,8 @@ WheelEvent::WheelEvent(const AtomicString& type,
 
 WheelEvent::WheelEvent(const WebMouseWheelEvent& event, AbstractView* view)
     : MouseEvent(EventTypeNames::wheel,
-                 Bubbles::kYes,
-                 event.IsCancelable() ? Cancelable::kYes : Cancelable::kNo,
-                 view,
-                 event,
-                 event.click_count,
-                 // TODO(zino): Should support canvas hit region because the
-                 // wheel event is a kind of mouse event. Please see
-                 // http://crbug.com/594075
-                 String(),
-                 nullptr),
+                 GetMouseEventInitForWheel(event, view),
+                 TimeTicksFromSeconds(event.TimeStampSeconds())),
       wheel_delta_(event.wheel_ticks_x * kTickMultiplier,
                    event.wheel_ticks_y * kTickMultiplier),
       delta_x_(-event.DeltaXInRootFrame()),
