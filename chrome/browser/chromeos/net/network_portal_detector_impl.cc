@@ -417,7 +417,7 @@ base::TimeTicks NetworkPortalDetectorImpl::AttemptStartTime() {
   return attempt_start_time_;
 }
 
-base::TimeTicks NetworkPortalDetectorImpl::NowTicks() {
+base::TimeTicks NetworkPortalDetectorImpl::NowTicks() const {
   if (time_ticks_for_testing_.is_null())
     return base::TimeTicks::Now();
   return time_ticks_for_testing_;

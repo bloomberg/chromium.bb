@@ -66,7 +66,7 @@ class MockTickClock : public base::TickClock {
   MockTickClock() {}
   ~MockTickClock() override {}
 
-  MOCK_METHOD0(NowTicks, base::TimeTicks());
+  MOCK_CONST_METHOD0(NowTicks, base::TimeTicks());
 };
 
 class Comparator : public LevelDBComparator {

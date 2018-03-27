@@ -57,8 +57,8 @@ class AutoAdvancingTestClock : public base::SimpleTestTickClock {
       : advancing_interval_(interval) {}
   ~AutoAdvancingTestClock() override = default;
 
-  base::TimeTicks NowTicks() override {
-    Advance(advancing_interval_);
+  base::TimeTicks NowTicks() const override {
+    const_cast<AutoAdvancingTestClock*>(this)->Advance(advancing_interval_);
     return SimpleTestTickClock::NowTicks();
   }
 

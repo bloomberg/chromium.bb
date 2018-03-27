@@ -194,7 +194,7 @@ TestDataReductionProxyConfigServiceClient::TestTickClock::TestTickClock(
 }
 
 base::TimeTicks
-TestDataReductionProxyConfigServiceClient::TestTickClock::NowTicks() {
+TestDataReductionProxyConfigServiceClient::TestTickClock::NowTicks() const {
   return base::TimeTicks::UnixEpoch() + (time_ - base::Time::UnixEpoch());
 }
 

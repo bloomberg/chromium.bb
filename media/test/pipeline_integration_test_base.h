@@ -49,10 +49,10 @@ class DummyTickClock : public base::TickClock {
  public:
   DummyTickClock() : now_() {}
   ~DummyTickClock() override {}
-  base::TimeTicks NowTicks() override;
+  base::TimeTicks NowTicks() const override;
 
  private:
-  base::TimeTicks now_;
+  mutable base::TimeTicks now_;
 };
 
 class PipelineTestRendererFactory {

@@ -76,7 +76,7 @@ class MockTime : public MockableTime {
 
   // MockableTime implementation:
   base::Time Now() override;
-  base::TimeTicks NowTicks() override;
+  base::TimeTicks NowTicks() const override;
   std::unique_ptr<MockableTime::Timer> CreateTimer() override;
 
   // Pretends that |delta| has passed, and runs tasks that would've happened

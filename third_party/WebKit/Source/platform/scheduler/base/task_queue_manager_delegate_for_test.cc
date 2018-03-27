@@ -57,7 +57,7 @@ void TaskQueueManagerDelegateForTest::AddNestingObserver(
 void TaskQueueManagerDelegateForTest::RemoveNestingObserver(
     base::RunLoop::NestingObserver* observer) {}
 
-base::TimeTicks TaskQueueManagerDelegateForTest::NowTicks() {
+base::TimeTicks TaskQueueManagerDelegateForTest::NowTicks() const {
   return time_source_->NowTicks();
 }
 

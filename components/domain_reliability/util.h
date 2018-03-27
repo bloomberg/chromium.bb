@@ -84,7 +84,7 @@ class DOMAIN_RELIABILITY_EXPORT MockableTime : public base::Clock,
   // Clock impl; returns base::Time::Now() or a mocked version thereof.
   base::Time Now() override = 0;
   // TickClock impl; returns base::TimeTicks::Now() or a mocked version thereof.
-  base::TimeTicks NowTicks() override = 0;
+  base::TimeTicks NowTicks() const override = 0;
 
   // Returns a new Timer, or a mocked version thereof.
   virtual std::unique_ptr<MockableTime::Timer> CreateTimer() = 0;
@@ -106,7 +106,7 @@ class DOMAIN_RELIABILITY_EXPORT ActualTime : public MockableTime {
 
   // MockableTime implementation:
   base::Time Now() override;
-  base::TimeTicks NowTicks() override;
+  base::TimeTicks NowTicks() const override;
   std::unique_ptr<MockableTime::Timer> CreateTimer() override;
 };
 

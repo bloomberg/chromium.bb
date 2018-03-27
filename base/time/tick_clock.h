@@ -32,7 +32,7 @@ class BASE_EXPORT TickClock {
   // assume that NowTicks() is monotonic (but not strictly monotonic).
   // In other words, the returned TimeTicks will never decrease with
   // time, although they might "stand still".
-  virtual TimeTicks NowTicks() = 0;
+  virtual TimeTicks NowTicks() const = 0;
 };
 
 }  // namespace base

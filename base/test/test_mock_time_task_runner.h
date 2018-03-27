@@ -209,7 +209,7 @@ class TestMockTimeTaskRunner : public SingleThreadTaskRunner,
         : task_runner_(task_runner) {}
 
     // TickClock:
-    TimeTicks NowTicks() override;
+    TimeTicks NowTicks() const override;
 
     // Clock:
     Time Now() override;

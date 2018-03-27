@@ -10,7 +10,7 @@ namespace base {
 
 DefaultTickClock::~DefaultTickClock() = default;
 
-TimeTicks DefaultTickClock::NowTicks() {
+TimeTicks DefaultTickClock::NowTicks() const {
   return TimeTicks::Now();
 }
 
