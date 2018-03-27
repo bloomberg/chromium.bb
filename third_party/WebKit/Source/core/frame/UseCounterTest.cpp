@@ -13,6 +13,7 @@
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
 #include "platform/weborigin/KURL.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/mojom/use_counter/css_property_id.mojom-blink.h"
 
 namespace {
 // The legacy features histogram will be removed in crbug.com/811948.
@@ -46,7 +47,7 @@ int GetPageVisitsBucketforHistogram(const std::string& histogram_name) {
   if (histogram_name.find("CSS") == std::string::npos)
     return static_cast<int>(blink::mojom::WebFeature::kPageVisits);
   // For CSS histograms, the page visits bucket should be 1.
-  return 1;
+  return blink::mojom::blink::kTotalPagesMeasuredCSSSampleId;
 }
 
 }  // namespace
@@ -170,7 +171,7 @@ TEST_F(UseCounterTest, RecordingCSSProperties) {
         return use_counter.IsCounted(property);
       },
       [&](CSSPropertyID property) {
-        use_counter.Count(kHTMLStandardMode, property);
+        use_counter.Count(kHTMLStandardMode, property, nullptr);
       },
       [](CSSPropertyID property) -> int {
         return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
@@ -185,7 +186,9 @@ TEST_F(UseCounterTest, RecordingAnimatedCSSProperties) {
       [&](CSSPropertyID property) -> bool {
         return use_counter.IsCountedAnimatedCSS(property);
       },
-      [&](CSSPropertyID property) { use_counter.CountAnimatedCSS(property); },
+      [&](CSSPropertyID property) {
+        use_counter.CountAnimatedCSS(property, nullptr);
+      },
       [](CSSPropertyID property) -> int {
         return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
       },
@@ -231,7 +234,7 @@ TEST_F(UseCounterTest, SVGImageContextCSSProperties) {
         return use_counter.IsCounted(property);
       },
       [&](CSSPropertyID property) {
-        use_counter.Count(kHTMLStandardMode, property);
+        use_counter.Count(kHTMLStandardMode, property, nullptr);
       },
       [](CSSPropertyID property) -> int {
         return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
@@ -246,7 +249,9 @@ TEST_F(UseCounterTest, SVGImageContextAnimatedCSSProperties) {
       [&](CSSPropertyID property) -> bool {
         return use_counter.IsCountedAnimatedCSS(property);
       },
-      [&](CSSPropertyID property) { use_counter.CountAnimatedCSS(property); },
+      [&](CSSPropertyID property) {
+        use_counter.CountAnimatedCSS(property, nullptr);
+      },
       [](CSSPropertyID property) -> int {
         return UseCounter::MapCSSPropertyIdToCSSSampleIdForHistogram(property);
       },
@@ -268,7 +273,7 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   use_counter.MuteForInspector();
   use_counter.RecordMeasurement(feature, *GetFrame());
   EXPECT_FALSE(use_counter.HasRecordedMeasurement(feature));
-  use_counter.Count(parser_mode, property);
+  use_counter.Count(parser_mode, property, nullptr);
   EXPECT_FALSE(use_counter.IsCounted(property));
   histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
   histogram_tester_.ExpectTotalCount(kCSSHistogramName, 0);
@@ -276,7 +281,7 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   use_counter.MuteForInspector();
   use_counter.RecordMeasurement(feature, *GetFrame());
   EXPECT_FALSE(use_counter.HasRecordedMeasurement(feature));
-  use_counter.Count(parser_mode, property);
+  use_counter.Count(parser_mode, property, nullptr);
   EXPECT_FALSE(use_counter.IsCounted(property));
   histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
   histogram_tester_.ExpectTotalCount(kCSSHistogramName, 0);
@@ -284,7 +289,7 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   use_counter.UnmuteForInspector();
   use_counter.RecordMeasurement(feature, *GetFrame());
   EXPECT_FALSE(use_counter.HasRecordedMeasurement(feature));
-  use_counter.Count(parser_mode, property);
+  use_counter.Count(parser_mode, property, nullptr);
   EXPECT_FALSE(use_counter.IsCounted(property));
   histogram_tester_.ExpectTotalCount(kLegacyFeaturesHistogramName, 0);
   histogram_tester_.ExpectTotalCount(kCSSHistogramName, 0);
@@ -292,7 +297,7 @@ TEST_F(UseCounterTest, InspectorDisablesMeasurement) {
   use_counter.UnmuteForInspector();
   use_counter.RecordMeasurement(feature, *GetFrame());
   EXPECT_TRUE(use_counter.HasRecordedMeasurement(feature));
-  use_counter.Count(parser_mode, property);
+  use_counter.Count(parser_mode, property, nullptr);
   EXPECT_TRUE(use_counter.IsCounted(property));
   histogram_tester_.ExpectUniqueSample(kLegacyFeaturesHistogramName,
                                        static_cast<int>(feature), 1);
@@ -395,7 +400,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   UseCounter use_counter;
   // Counters triggered before any load are always reported.
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 0, WebFeature::kFetch, 1,
                    CSSPropertyFontWeight, 1);
 
@@ -405,7 +410,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   EXPECT_FALSE(use_counter.HasRecordedMeasurement(WebFeature::kFetch));
   EXPECT_FALSE(use_counter.IsCounted(CSSPropertyFontWeight));
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 0, WebFeature::kFetch, 1,
                    CSSPropertyFontWeight, 1);
 
@@ -417,7 +422,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   use_counter.MuteForInspector();
   use_counter.UnmuteForInspector();
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 0, WebFeature::kFetch, 1,
                    CSSPropertyFontWeight, 1);
 
@@ -425,7 +430,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   SetURL(URLTestHelpers::ToKURL("http://foo.com/"));
   use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 1, WebFeature::kFetch, 2,
                    CSSPropertyFontWeight, 2);
 
@@ -433,7 +438,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   SetURL(URLTestHelpers::ToKURL(kHttpsUrl));
   use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
@@ -441,7 +446,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   SetURL(URLTestHelpers::ToKURL(kExtensionUrl));
   use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
@@ -449,7 +454,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   SetURL(URLTestHelpers::ToKURL("chrome-devtools://1238ba908adf/"));
   use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
@@ -457,7 +462,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   SetURL(URLTestHelpers::ToKURL("data:text/plain,thisisaurl"));
   use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
@@ -465,7 +470,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   SetURL(NullURL());
   use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 
@@ -473,7 +478,7 @@ TEST_F(UseCounterTest, MutedDocuments) {
   SetURL(URLTestHelpers::ToKURL("file:///c/autoexec.bat"));
   use_counter.DidCommitLoad(GetFrame());
   use_counter.RecordMeasurement(WebFeature::kFetch, *GetFrame());
-  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight);
+  use_counter.Count(kHTMLStandardMode, CSSPropertyFontWeight, nullptr);
   ExpectHistograms(histogram_tester_, 2, WebFeature::kFetch, 3,
                    CSSPropertyFontWeight, 3);
 }

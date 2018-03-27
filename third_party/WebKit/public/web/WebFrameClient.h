@@ -661,11 +661,18 @@ class BLINK_EXPORT WebFrameClient {
   // tab page url.
   virtual bool ShouldTrackUseCounter(const WebURL&) { return true; }
 
-  // Blink hit the code path for a certain feature for the first time on this
-  // frame. As a performance optimization, features already hit on other frames
-  // associated with the same page in the renderer are not currently reported.
-  // This is used for reporting UseCounter histograms.
+  // Blink hits the code path for a certain web feature for the first time on
+  // this frame. As a performance optimization, features already hit on other
+  // frames associated with the same page in the renderer are not currently
+  // reported. This is used for reporting UseCounter features histograms.
   virtual void DidObserveNewFeatureUsage(mojom::WebFeature) {}
+  // Blink hits the code path for a certain CSS property (either an animated CSS
+  // property or not) for the first time on this frame. As a performance
+  // optimization, features already hit on other frames associated with the same
+  // page in the renderer are not currently reported. This is used for reporting
+  // UseCounter CSS histograms.
+  virtual void DidObserveNewCssPropertyUsage(int /*css_property*/,
+                                             bool /*is_animated*/) {}
 
   // Script notifications ------------------------------------------------
 

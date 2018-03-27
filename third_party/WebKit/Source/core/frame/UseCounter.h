@@ -99,11 +99,11 @@ class CORE_EXPORT UseCounter {
   static void Count(const Document&, WebFeature);
   static void Count(ExecutionContext*, WebFeature);
 
-  void Count(CSSParserMode, CSSPropertyID);
+  void Count(CSSParserMode, CSSPropertyID, const LocalFrame*);
   void Count(WebFeature, const LocalFrame*);
 
   static void CountAnimatedCSS(const Document&, CSSPropertyID);
-  void CountAnimatedCSS(CSSPropertyID);
+  void CountAnimatedCSS(CSSPropertyID, const LocalFrame*);
 
   // Count only features if they're being used in an iframe which does not
   // have script access into the top level document.

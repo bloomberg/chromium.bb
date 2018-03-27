@@ -59,6 +59,19 @@ void PageTimingMetricsSender::DidObserveNewFeatureUsage(
   EnsureSendTimer();
 }
 
+void PageTimingMetricsSender::DidObserveNewCssPropertyUsage(int css_property,
+                                                            bool is_animated) {
+  if (is_animated && !animated_css_properties_sent_.test(css_property)) {
+    animated_css_properties_sent_.set(css_property);
+    new_features_->animated_css_properties.push_back(css_property);
+    EnsureSendTimer();
+  } else if (!is_animated && !css_properties_sent_.test(css_property)) {
+    css_properties_sent_.set(css_property);
+    new_features_->css_properties.push_back(css_property);
+    EnsureSendTimer();
+  }
+}
+
 void PageTimingMetricsSender::Send(mojom::PageLoadTimingPtr timing) {
   if (last_timing_->Equals(*timing))
     return;

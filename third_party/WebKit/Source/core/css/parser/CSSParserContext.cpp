@@ -216,7 +216,7 @@ void CSSParserContext::Count(CSSParserMode mode, CSSPropertyID property) const {
   if (IsUseCounterRecordingEnabled() && document_->GetPage()) {
     UseCounter* use_counter = &document_->GetPage()->GetUseCounter();
     if (use_counter)
-      use_counter->Count(mode, property);
+      use_counter->Count(mode, property, document_->GetFrame());
   }
 }
 
