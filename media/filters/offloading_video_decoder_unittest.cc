@@ -96,6 +96,9 @@ class OffloadingVideoDecoderTest : public testing::Test {
     EXPECT_EQ(offloading_decoder_->GetDisplayName(),
               decoder_->GetDisplayName());
 
+    // When offloading decodes should not be parallelized.
+    EXPECT_EQ(offloading_decoder_->GetMaxDecodeRequests(), 1);
+
     // Verify methods are called on the current thread since the offload codec
     // requirement is not satisfied.
     VideoDecoder::OutputCB output_cb;
@@ -129,6 +132,9 @@ class OffloadingVideoDecoderTest : public testing::Test {
     EXPECT_EQ(offloading_decoder_->GetDisplayName(),
               decoder_->GetDisplayName());
 
+    // Prior to Initialize() max decode requests is still 1.
+    EXPECT_EQ(offloading_decoder_->GetMaxDecodeRequests(), 1);
+
     // Since this Initialize() should be happening on another thread, set the
     // expectation after we make the call.
     VideoDecoder::OutputCB output_cb;
@@ -143,6 +149,9 @@ class OffloadingVideoDecoderTest : public testing::Test {
         .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
                         RunCallback<3>(true), SaveArg<4>(&output_cb)));
     task_env_.RunUntilIdle();
+
+    // When offloading decodes should be parallelized.
+    EXPECT_GT(offloading_decoder_->GetMaxDecodeRequests(), 1);
 
     // Verify decode works and is called on the right thread.
     offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(),
@@ -233,6 +242,90 @@ TEST_F(OffloadingVideoDecoderTest, InitializeWithoutDetach) {
   EXPECT_CALL(*decoder_, Detach()).Times(0);
   TestNoOffloading(TestVideoConfig::Normal(kCodecVP9));
   TestNoOffloading(TestVideoConfig::Normal(kCodecVP9));
+}
+
+TEST_F(OffloadingVideoDecoderTest, ParallelizedOffloading) {
+  auto offload_config = TestVideoConfig::Large(kCodecVP9);
+  CreateWrapper(offload_config.coded_size().width(), kCodecVP9);
+
+  // Since this Initialize() should be happening on another thread, set the
+  // expectation after we make the call.
+  VideoDecoder::OutputCB output_cb;
+  offloading_decoder_->Initialize(
+      offload_config, false, nullptr, ExpectInitCB(true),
+      base::BindRepeating(&OffloadingVideoDecoderTest::OutputDone,
+                          base::Unretained(this)),
+      VideoDecoder::WaitingForDecryptionKeyCB());
+  EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _, _))
+      .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
+                      RunCallback<3>(true), SaveArg<4>(&output_cb)));
+  task_env_.RunUntilIdle();
+
+  // When offloading decodes should be parallelized.
+  EXPECT_GT(offloading_decoder_->GetMaxDecodeRequests(), 1);
+
+  // Verify decode works and is called on the right thread.
+  VideoDecoder::DecodeCB decode_cb = base::BindRepeating(
+      &OffloadingVideoDecoderTest::DecodeDone, base::Unretained(this));
+  offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb);
+  offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb);
+
+  EXPECT_CALL(*decoder_, Decode(_, _))
+      .Times(2)
+      .WillRepeatedly(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
+                            RunClosure(base::BindRepeating(output_cb, nullptr)),
+                            RunCallback<1>(DecodeStatus::OK)));
+  EXPECT_CALL(*this, DecodeDone(DecodeStatus::OK))
+      .Times(2)
+      .WillRepeatedly(VerifyOn(task_env_.GetMainThreadTaskRunner()));
+  EXPECT_CALL(*this, OutputDone(_))
+      .Times(2)
+      .WillRepeatedly(VerifyOn(task_env_.GetMainThreadTaskRunner()));
+  task_env_.RunUntilIdle();
+
+  // Reset so we can call Initialize() again.
+  offloading_decoder_->Reset(ExpectResetCB());
+  EXPECT_CALL(*decoder_, Reset(_))
+      .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
+                      RunCallback<0>()));
+  task_env_.RunUntilIdle();
+}
+
+TEST_F(OffloadingVideoDecoderTest, ParallelizedOffloadingResetAbortsDecodes) {
+  auto offload_config = TestVideoConfig::Large(kCodecVP9);
+  CreateWrapper(offload_config.coded_size().width(), kCodecVP9);
+
+  // Since this Initialize() should be happening on another thread, set the
+  // expectation after we make the call.
+  VideoDecoder::OutputCB output_cb;
+  offloading_decoder_->Initialize(
+      offload_config, false, nullptr, ExpectInitCB(true),
+      base::BindRepeating(&OffloadingVideoDecoderTest::OutputDone,
+                          base::Unretained(this)),
+      VideoDecoder::WaitingForDecryptionKeyCB());
+  EXPECT_CALL(*decoder_, Initialize(_, false, nullptr, _, _, _))
+      .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
+                      RunCallback<3>(true), SaveArg<4>(&output_cb)));
+  task_env_.RunUntilIdle();
+
+  // When offloading decodes should be parallelized.
+  EXPECT_GT(offloading_decoder_->GetMaxDecodeRequests(), 1);
+
+  // Verify decode works and is called on the right thread.
+  VideoDecoder::DecodeCB decode_cb = base::BindRepeating(
+      &OffloadingVideoDecoderTest::DecodeDone, base::Unretained(this));
+  offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb);
+  offloading_decoder_->Decode(DecoderBuffer::CreateEOSBuffer(), decode_cb);
+
+  EXPECT_CALL(*decoder_, Decode(_, _)).Times(0);
+  EXPECT_CALL(*this, DecodeDone(DecodeStatus::ABORTED))
+      .Times(2)
+      .WillRepeatedly(VerifyOn(task_env_.GetMainThreadTaskRunner()));
+  offloading_decoder_->Reset(ExpectResetCB());
+  EXPECT_CALL(*decoder_, Reset(_))
+      .WillOnce(DoAll(VerifyNotOn(task_env_.GetMainThreadTaskRunner()),
+                      RunCallback<0>()));
+  task_env_.RunUntilIdle();
 }
 
 }  // namespace media
