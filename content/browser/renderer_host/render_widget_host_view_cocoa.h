@@ -211,6 +211,9 @@ struct DidOverscrollParams;
 - (void)showLookUpDictionaryOverlayFromRange:(NSRange)range
                                   targetView:(NSView*)targetView;
 - (BOOL)suppressNextKeyUpForTesting:(int)keyCode;
+// Query the display::Display from the view's NSWindow's NSScreen and forward
+// it to the RenderWidgetHostNSViewClient (only if the screen is non-nil).
+- (void)updateScreenProperties;
 
 // Methods previously marked as private.
 - (id)initWithClient:

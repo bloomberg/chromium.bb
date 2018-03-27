@@ -172,9 +172,11 @@ BrowserCompositorMac::BrowserCompositorMac(
     BrowserCompositorMacClient* client,
     bool render_widget_host_is_hidden,
     bool ns_view_attached_to_window,
+    const display::Display& initial_display,
     const viz::FrameSinkId& frame_sink_id)
     : client_(client),
       accelerated_widget_mac_ns_view_(accelerated_widget_mac_ns_view),
+      dfh_display_(initial_display),
       weak_factory_(this) {
   g_browser_compositors.Get().insert(this);
 
@@ -183,8 +185,6 @@ BrowserCompositorMac::BrowserCompositorMac(
       frame_sink_id, this, features::IsSurfaceSynchronizationEnabled(),
       base::FeatureList::IsEnabled(features::kVizDisplayCompositor),
       true /* should_register_frame_sink_id */));
-
-  dfh_display_ = display::Screen::GetScreen()->GetDisplayNearestView(nil);
 
   SetRenderWidgetHostIsHidden(render_widget_host_is_hidden);
   SetNSViewAttachedToWindow(ns_view_attached_to_window);

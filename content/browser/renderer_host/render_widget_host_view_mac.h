@@ -26,7 +26,6 @@
 #include "ui/accelerated_widget_mac/accelerated_widget_mac.h"
 #include "ui/accelerated_widget_mac/display_link_mac.h"
 #include "ui/base/cocoa/remote_layer_api.h"
-#include "ui/display/display_observer.h"
 
 namespace content {
 class CursorManager;
@@ -69,8 +68,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
       public BrowserCompositorMacClient,
       public TextInputManager::Observer,
       public ui::AcceleratedWidgetMacNSView,
-      public IPC::Sender,
-      public display::DisplayObserver {
+      public IPC::Sender {
  public:
   // The view will associate itself with the given widget. The native view must
   // be hooked up immediately to the view hierarchy, or else when it is
@@ -207,12 +205,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // IPC::Sender implementation.
   bool Send(IPC::Message* message) override;
 
-  // display::DisplayObserver implementation.
-  void OnDisplayAdded(const display::Display& new_display) override;
-  void OnDisplayRemoved(const display::Display& old_display) override;
-  void OnDisplayMetricsChanged(const display::Display& display,
-                               uint32_t metrics) override;
-
   // Forwards the mouse event to the renderer.
   void ForwardMouseEvent(const blink::WebMouseEvent& event);
 
@@ -282,13 +274,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   int window_number() const;
 
-  // Update the size, scale factor, color profile, and any other properties
-  // of the NSView or its NSScreen. Propagate these to the RenderWidgetHostImpl
-  // as well.
+  // Update the size, scale factor, color profile, vsync parameters, and any
+  // other properties of the NSView or its NSScreen. Propagate these to the
+  // RenderWidgetHostImpl as well.
   void UpdateNSViewAndDisplayProperties();
-
-  // Ensure that the display link is associated with the correct display.
-  void UpdateDisplayLink();
 
   void PauseForPendingResizeOrRepaintsAndDraw();
 
@@ -298,6 +287,7 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
                                      bool attached_to_window) override;
   void OnNSViewWindowFrameInScreenChanged(
       const gfx::Rect& window_frame_in_screen_dip) override;
+  void OnNSViewDisplayChanged(const display::Display& display) override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
@@ -392,6 +382,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // The frame of the window in the global display::Screen coordinate system
   // (where the origin is the upper-left corner of Screen::GetPrimaryDisplay).
   gfx::Rect window_frame_in_screen_dip_;
+
+  // Cached copy of the display information pushed to us from the NSView.
+  display::Display display_;
 
   // Indicates if the page is loading.
   bool is_loading_;

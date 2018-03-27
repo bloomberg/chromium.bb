@@ -206,7 +206,7 @@ class ScreenMac : public Screen {
   Display GetDisplayNearestView(gfx::NativeView view) const override {
     NSWindow* window = [view window];
     if (!window)
-      window = [NSApp keyWindow];
+      return GetPrimaryDisplay();
     return GetDisplayNearestWindow(window);
   }
 

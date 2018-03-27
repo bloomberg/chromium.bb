@@ -32,6 +32,7 @@
 #import "ui/base/cocoa/appkit_utils.h"
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
+#include "ui/display/screen.h"
 #include "ui/events/event_utils.h"
 #include "ui/gfx/mac/coordinate_conversion.h"
 
@@ -144,7 +145,6 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)windowChangedGlobalFrame:(NSNotification*)notification;
 - (void)windowDidBecomeKey:(NSNotification*)notification;
 - (void)windowDidResignKey:(NSNotification*)notification;
-- (void)updateScreenProperties;
 - (void)showLookUpDictionaryOverlayInternal:(NSAttributedString*)string
                               baselinePoint:(NSPoint)baselinePoint
                                  targetView:(NSView*)view;
@@ -1218,19 +1218,24 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (void)updateScreenProperties {
-  renderWidgetHostView_->UpdateNSViewAndDisplayProperties();
-  renderWidgetHostView_->UpdateDisplayLink();
+  NSWindow* enclosingWindow = [self window];
+  if (!enclosingWindow)
+    return;
+
+  // TODO(ccameron): This will call [enclosingWindow screen], which may return
+  // nil. Do that call here to avoid sending bogus display info to the client.
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestView(self);
+  client_->OnNSViewDisplayChanged(display);
 }
 
-// http://developer.apple.com/library/mac/#documentation/GraphicsAnimation/Conceptual/HighResolutionOSX/CapturingScreenContents/CapturingScreenContents.html#//apple_ref/doc/uid/TP40012302-CH10-SW4
+// This will be called when the NSView's NSWindow moves from one NSScreen to
+// another, and makes note of the new screen's color space, scale factor, etc.
+// It is also called when the current NSScreen's properties change (which is
+// redundant with display::DisplayObserver::OnDisplayMetricsChanged).
 - (void)windowDidChangeBackingProperties:(NSNotification*)notification {
-  // Background tabs check if their screen scale factor, color profile, and
-  // vsync properties changed when they are added to a window.
-
-  // Allocating a CGLayerRef with the current scale factor immediately from
-  // this handler doesn't work. Schedule the backing store update on the
-  // next runloop cycle, then things are read for CGLayerRef allocations to
-  // work.
+  // Delay calling updateScreenProperties so that display::ScreenMac can
+  // update our display::Displays first (if applicable).
   [self performSelector:@selector(updateScreenProperties)
              withObject:nil
              afterDelay:0];
@@ -1864,13 +1869,11 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   if (!renderWidgetHostView_->browser_compositor_)
     return;
 
-  // Update the window's frame and the view's bounds, as they have not been
-  // updated while unattached to a window.
+  // Update the window's frame, the view's bounds, and the display info, as they
+  // have not been updated while unattached to a window.
   [self sendWindowFrameInScreenToClient];
   [self sendViewBoundsInWindowToClient];
-
-  if ([self window])
-    [self updateScreenProperties];
+  [self updateScreenProperties];
 
   // If we switch windows (or are removed from the view hierarchy), cancel any
   // open mouse-downs.

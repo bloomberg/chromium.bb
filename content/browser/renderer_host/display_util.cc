@@ -58,12 +58,9 @@ void DisplayUtil::GetDefaultScreenInfo(ScreenInfo* screen_info) {
     *screen_info = ScreenInfo();
     return;
   }
-#if defined(OS_MACOSX) || defined(USE_AURA)
-  // On macOS, we use the display nearest the nullptr view to return the most
-  // recently active screen, instead of the primary screen
-  // https://crbug.com/357443
-  // On Aura, this decision may or may not have been taken intentionally, and
-  // may or may not have any effect.
+#if defined(USE_AURA)
+  // This behavior difference between Aura and other platforms may or may not
+  // be intentional, and may or may not have any effect.
   gfx::NativeView null_native_view = nullptr;
   display::Display display = screen->GetDisplayNearestView(null_native_view);
 #else
@@ -81,14 +78,9 @@ void DisplayUtil::GetNativeViewScreenInfo(ScreenInfo* screen_info,
     *screen_info = ScreenInfo();
     return;
   }
-#if defined(OS_MACOSX)
-  // See previous comment regarding https://crbug.com/357443
-  display::Display display = screen->GetDisplayNearestView(native_view);
-#else
   display::Display display = native_view
                                  ? screen->GetDisplayNearestView(native_view)
                                  : screen->GetPrimaryDisplay();
-#endif
   DisplayToScreenInfo(screen_info, display);
 }
 
