@@ -50,6 +50,7 @@
 #if defined(OS_MACOSX)
 #include "chrome/browser/platform_util.h"
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
+#include "chrome/browser/ui/cocoa/bubble_anchor_helper_views.h"
 #endif
 
 using views::GridLayout;
@@ -189,6 +190,10 @@ void SessionCrashedBubbleView::ShowForReal(
       GetBubbleAnchorView(browser), GetBubbleAnchorRect(browser), browser,
       offer_uma_optin);
   views::BubbleDialogDelegateView::CreateBubble(crash_bubble)->Show();
+#if defined(OS_MACOSX)
+  if (views_mode_controller::IsViewsBrowserCocoa())
+    KeepBubbleAnchored(crash_bubble);
+#endif
 
   RecordBubbleHistogramValue(SESSION_CRASHED_BUBBLE_SHOWN);
   if (uma_opted_in_already)
