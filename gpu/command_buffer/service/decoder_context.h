@@ -33,6 +33,7 @@ struct ContextCreationAttribs;
 namespace gles2 {
 class ContextGroup;
 class ErrorState;
+class FeatureInfo;
 class GpuFenceManager;
 struct ContextState;
 struct DisallowedFeatures;
@@ -72,6 +73,8 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface {
   virtual void Destroy(bool have_context) = 0;
 
   virtual Capabilities GetCapabilities() = 0;
+
+  virtual const gles2::FeatureInfo* GetFeatureInfo() const = 0;
 
   // Gets the associated GLContext.
   virtual gl::GLContext* GetGLContext() = 0;
@@ -130,6 +133,9 @@ class GPU_GLES2_EXPORT DecoderContext : public AsyncAPIInterface {
   virtual void RestoreState(const gles2::ContextState* prev_state) = 0;
 
   // Restore States.
+  virtual void RestoreGlobalState() const = 0;
+  virtual void ClearAllAttributes() const = 0;
+  virtual void RestoreAllAttributes() const = 0;
   virtual void RestoreActiveTexture() const = 0;
   virtual void RestoreAllTextureUnitAndSamplerBindings(
       const gles2::ContextState* prev_state) const = 0;

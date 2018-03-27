@@ -43,7 +43,6 @@ class ServiceTransferCache;
 namespace gles2 {
 
 class ContextGroup;
-class FeatureInfo;
 class FramebufferManager;
 class GLES2Util;
 class ImageManager;
@@ -151,14 +150,8 @@ class GPU_GLES2_EXPORT GLES2Decoder : public CommonDecoder,
   // Gets the GLES2 Util which holds info.
   virtual GLES2Util* GetGLES2Util() = 0;
 
-  virtual const FeatureInfo* GetFeatureInfo() const = 0;
-
   // Restore States.
-  virtual void RestoreGlobalState() const = 0;
   virtual void RestoreDeviceWindowRectangles() const = 0;
-
-  virtual void ClearAllAttributes() const = 0;
-  virtual void RestoreAllAttributes() const = 0;
 
   virtual void SetIgnoreCachedStateForTest(bool ignore) = 0;
   virtual void SetForceShaderNameHashingForTest(bool force) = 0;
