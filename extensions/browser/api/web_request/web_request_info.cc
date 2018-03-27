@@ -148,7 +148,7 @@ bool CreateUploadDataSourcesFromURLRequest(
       data_sources->push_back(
           std::make_unique<FileUploadDataSource>(file_reader->path()));
     } else {
-      NOTIMPLEMENTED();
+      DVLOG(1) << "Ignoring upsupported upload data type for WebRequest API.";
     }
   }
 
