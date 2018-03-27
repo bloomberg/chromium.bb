@@ -112,6 +112,8 @@ const char kJSPreviewPageIndex[] = "index";
 const char kJSSetScrollPositionType[] = "setScrollPosition";
 const char kJSPositionX[] = "x";
 const char kJSPositionY[] = "y";
+// Scroll by (Plugin -> Page)
+const char kJSScrollByType[] = "scrollBy";
 // Cancel the stream URL request (Plugin -> Page)
 const char kJSCancelStreamUrlType[] = "cancelStreamUrl";
 // Navigate to the given URL (Plugin -> Page)
@@ -1239,6 +1241,14 @@ void OutOfProcessInstance::ScrollToY(int y_in_screen_coords,
     new_y_viewport_coords -= top_toolbar_height_in_viewport_coords_;
   }
   position.Set(kJSPositionY, pp::Var(new_y_viewport_coords));
+  PostMessage(position);
+}
+
+void OutOfProcessInstance::ScrollBy(const pp::Point& point) {
+  pp::VarDictionary position;
+  position.Set(kType, kJSScrollByType);
+  position.Set(kJSPositionX, pp::Var(point.x() / device_scale_));
+  position.Set(kJSPositionY, pp::Var(point.y() / device_scale_));
   PostMessage(position);
 }
 

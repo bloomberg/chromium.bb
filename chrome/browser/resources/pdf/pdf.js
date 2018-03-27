@@ -699,12 +699,10 @@ PDFViewer.prototype = {
         this.sendDocumentLoadedMessage_();
         break;
       case 'setScrollPosition':
-        var position = this.viewport_.position;
-        if (message.data.x !== undefined)
-          position.x = message.data.x;
-        if (message.data.y !== undefined)
-          position.y = message.data.y;
-        this.viewport_.position = position;
+        this.viewport_.scrollTo(/** @type {!PartialPoint} */ (message.data));
+        break;
+      case 'scrollBy':
+        this.viewport_.scrollBy(/** @type {!Point} */ (message.data));
         break;
       case 'cancelStreamUrl':
         chrome.mimeHandlerPrivate.abortStream();

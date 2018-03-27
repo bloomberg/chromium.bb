@@ -146,6 +146,9 @@ class PDFEngine {
     virtual void ScrollToY(int y_in_screen_coords,
                            bool compensate_for_toolbar) = 0;
 
+    // Scroll by a given delta relative to the current position.
+    virtual void ScrollBy(const pp::Point& point) = 0;
+
     // Scroll to zero-based |page|.
     virtual void ScrollToPage(int page) = 0;
 
