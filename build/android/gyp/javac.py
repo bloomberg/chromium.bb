@@ -10,6 +10,7 @@ import os
 import shutil
 import re
 import sys
+import zipfile
 
 from util import build_utils
 from util import md5_check
@@ -94,10 +95,10 @@ ERRORPRONE_WARNINGS_TO_ERROR = [
   'MissingOverride',
   'NarrowingCompoundAssignment',
   'ParameterName',
+  'ReferenceEquality',
   'StaticGuardedByInstance',
   'StaticQualifiedUsingExpression',
   'UseCorrectAssertInTests',
-  'ReferenceEquality',
 ]
 
 
@@ -249,6 +250,22 @@ def _WriteInfoFile(info_path, info_data, srcjar_files):
       info_file.write('{},{}\n'.format(fully_qualified_name, path))
 
 
+def _FullJavaNameFromClassFilePath(path):
+  # Input:  base/android/java/src/org/chromium/Foo.class
+  # Output: base.android.java.src.org.chromium.Foo
+  if not path.endswith('.class'):
+    return ''
+  path = os.path.splitext(path)[0]
+  parts = []
+  while path:
+    # Use split to be platform independent.
+    head, tail = os.path.split(path)
+    path = head
+    parts.append(tail)
+  parts.reverse()  # Package comes first
+  return '.'.join(parts)
+
+
 def _CreateInfoFile(java_files, options, srcjar_files):
   """Writes a .jar.info file.
 
@@ -277,7 +294,21 @@ def _CreateInfoFile(java_files, options, srcjar_files):
   # Collect all the info files for transitive dependencies of the apk.
   if options.apk_jar_info_path:
     for jar_path in options.full_classpath:
-      info_data.update(_ParseInfoFile(jar_path + '.info'))
+      # android_java_prebuilt adds jar files in the src directory (relative to
+      #     the output directory, usually ../../third_party/example.jar).
+      # android_aar_prebuilt collects jar files in the aar file and uses the
+      #     java_prebuilt rule to generate gen/example/classes.jar files.
+      # We scan these prebuilt jars to parse each class path for the FQN. This
+      #     allows us to later map these classes back to their respective src
+      #     directories.
+      if jar_path.startswith('..') or jar_path.endswith('classes.jar'):
+        with zipfile.ZipFile(jar_path) as zip_info:
+          for path in zip_info.namelist():
+            fully_qualified_name = _FullJavaNameFromClassFilePath(path)
+            if fully_qualified_name:
+              info_data[fully_qualified_name] = jar_path
+      else:
+        info_data.update(_ParseInfoFile(jar_path + '.info'))
     _WriteInfoFile(options.apk_jar_info_path, info_data, srcjar_files)
 
 
