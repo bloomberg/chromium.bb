@@ -112,8 +112,11 @@ const int kLinkColorRGB = 0x5595FE;
 + (void)configureLabel:(UILabel*)label withText:(NSString*)text {
   label.numberOfLines = 0;
   label.textColor = [[MDCPalette greyPalette] tint700];
-  label.font = [MDCTypography italicFontFromFont:[MDCTypography captionFont]];
-
+  if (IsUIRefreshPhase1Enabled()) {
+    label.font = [UIFont preferredFontForTextStyle:UIFontTextStyleFootnote];
+  } else {
+    label.font = [MDCTypography italicFontFromFont:[MDCTypography captionFont]];
+  }
   NSRange linkRange;
   NSString* strippedText = ParseStringWithLink(text, &linkRange);
   DCHECK_NE(NSNotFound, static_cast<NSInteger>(linkRange.location));
