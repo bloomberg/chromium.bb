@@ -21,6 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "components/prefs/pref_service.h"
+#include "components/printing/browser/features.h"
 #include "components/printing/browser/print_composite_client.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
@@ -532,7 +533,9 @@ IN_PROC_BROWSER_TEST_F(PrintBrowserTest, RegularPrinting) {
   ui_test_utils::NavigateToURL(browser(), url);
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSitePerProcess)) {
+          switches::kSitePerProcess) ||
+      base::FeatureList::IsEnabled(
+          printing::features::kUsePdfCompositorServiceForPrint)) {
     EXPECT_TRUE(IsOopifEnabled());
   } else {
     EXPECT_FALSE(IsOopifEnabled());

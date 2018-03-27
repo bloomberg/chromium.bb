@@ -3945,6 +3945,24 @@
             ]
         }
     ],
+    "UsePdfCompositorServiceForPrint": [
+        {
+            "platforms": [
+                "chromeos",
+                "linux",
+                "mac",
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "UsePdfCompositorServiceForPrint",
+                    "enable_features": [
+                        "UsePdfCompositorServiceForPrint"
+                    ]
+                }
+            ]
+        }
+    ],
     "UserActivityEventLogging": [
         {
             "platforms": [
