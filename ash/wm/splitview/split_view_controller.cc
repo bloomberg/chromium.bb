@@ -12,6 +12,7 @@
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/screen_util.h"
+#include "ash/session/session_controller.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/toast/toast_data.h"
@@ -670,7 +671,8 @@ void SplitViewController::OnDisplayMetricsChanged(
   // directly.
   if ((left_window_ && !CanSnap(left_window_)) ||
       (right_window_ && !CanSnap(right_window_))) {
-    EndSplitView();
+    if (!Shell::Get()->session_controller()->IsUserSessionBlocked())
+      EndSplitView();
     return;
   }
 
