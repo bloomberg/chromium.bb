@@ -16,6 +16,8 @@ const CGFloat kCornerRadius = 15;
 const CGFloat kShadowRadius = 10;
 const CGFloat kShadowOpacity = 0.3;
 const CGFloat kContentMargin = 8;
+const CGFloat kBlurBackgroundGreyScale = 0.98;
+const CGFloat kBlurBackgroundAlpha = 0.75;
 }  // namespace
 
 @interface PopupMenuViewController ()<UIGestureRecognizerDelegate>
@@ -56,14 +58,33 @@ const CGFloat kContentMargin = 8;
 // Sets the content container view up.
 - (void)setUpContentContainer {
   _contentContainer = [[UIView alloc] init];
-  _contentContainer.backgroundColor = [UIColor whiteColor];
+
+  if (UIAccessibilityIsReduceTransparencyEnabled()) {
+    _contentContainer.backgroundColor =
+        [UIColor colorWithWhite:kBlurBackgroundGreyScale alpha:1];
+  } else {
+    _contentContainer.backgroundColor = [UIColor clearColor];
+    UIBlurEffect* blurEffect =
+        [UIBlurEffect effectWithStyle:UIBlurEffectStyleLight];
+    UIVisualEffectView* blur =
+        [[UIVisualEffectView alloc] initWithEffect:blurEffect];
+    blur.contentView.backgroundColor =
+        [UIColor colorWithWhite:kBlurBackgroundGreyScale
+                          alpha:kBlurBackgroundAlpha];
+    [_contentContainer addSubview:blur];
+    blur.translatesAutoresizingMaskIntoConstraints = NO;
+    blur.layer.cornerRadius = kCornerRadius;
+    blur.layer.masksToBounds = YES;
+    AddSameConstraints(blur, _contentContainer);
+  }
+
   _contentContainer.layer.cornerRadius = kCornerRadius;
   _contentContainer.layer.shadowRadius = kShadowRadius;
   _contentContainer.layer.shadowOpacity = kShadowOpacity;
   _contentContainer.translatesAutoresizingMaskIntoConstraints = NO;
   _contentContainer.layoutMargins = UIEdgeInsetsMake(
       kContentMargin, kContentMargin, kContentMargin, kContentMargin);
-  // TODO(crbug.com/821765): Add blur effect and update the shadow.
+  // TODO(crbug.com/821765): Add update the shadow.
   [self.view addSubview:_contentContainer];
 }
 
