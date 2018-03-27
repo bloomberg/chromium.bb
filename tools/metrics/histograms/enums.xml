@@ -41578,6 +41578,41 @@ Called by update_net_trust_anchors.py.-->
   <int value="2" label="Completed Later"/>
 </enum>
 
+<enum name="SrtpErrorCode">
+  <summary>
+    Error codes reported by libsrtp (defined in
+    third_party/libsrtp/include/srtp.h).
+  </summary>
+  <int value="0" label="Nothing to report"/>
+  <int value="1" label="Unspecified failure"/>
+  <int value="2" label="Unsupported parameter"/>
+  <int value="3" label="Couldn't allocate memory"/>
+  <int value="4" label="Couldn't deallocate properly"/>
+  <int value="5" label="Couldn't initialize"/>
+  <int value="6" label="Can't process as much data as requested"/>
+  <int value="7" label="Authentication failure"/>
+  <int value="8" label="Cipher failure"/>
+  <int value="9" label="Replay check failed (bad index)"/>
+  <int value="10" label="Replay check failed (index too old)"/>
+  <int value="11" label="Algorithm failed test routine"/>
+  <int value="12" label="Unsupported operation"/>
+  <int value="13" label="No appropriate context found"/>
+  <int value="14" label="Unable to perform desired validation"/>
+  <int value="15" label="Can't use key any more"/>
+  <int value="16" label="Error in use of socket"/>
+  <int value="17" label="Error in use POSIX signals"/>
+  <int value="18" label="Nonce check failed"/>
+  <int value="19" label="Couldn't read data"/>
+  <int value="20" label="Couldn't write data"/>
+  <int value="21" label="Error parsing data"/>
+  <int value="22" label="Error encoding data"/>
+  <int value="23" label="Error while using semaphores"/>
+  <int value="24" label="Error while using pfkey"/>
+  <int value="25" label="Error MKI present in packet is invalid"/>
+  <int value="26" label="Packet index is too old to consider"/>
+  <int value="27" label="Packet index advanced, reset needed"/>
+</enum>
+
 <enum name="SRTPromptUsage">
   <obsolete>
     Deprecated as of 2017-11-01. Replaced with
