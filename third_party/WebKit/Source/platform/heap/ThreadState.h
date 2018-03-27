@@ -320,7 +320,11 @@ class PLATFORM_EXPORT ThreadState {
 
   // Support for disallowing allocation. Mainly used for sanity
   // checks asserts.
-  bool IsAllocationAllowed() const { return !no_allocation_count_; }
+  bool IsAllocationAllowed() const {
+    // Allocation is not allowed during atomic marking pause, but it is allowed
+    // during atomic sweeping pause.
+    return !InAtomicMarkingPause() && !no_allocation_count_;
+  }
   void EnterNoAllocationScope() { no_allocation_count_++; }
   void LeaveNoAllocationScope() { no_allocation_count_--; }
   bool IsWrapperTracingForbidden() { return IsMixinInConstruction(); }
@@ -406,7 +410,7 @@ class PLATFORM_EXPORT ThreadState {
   class AtomicPauseScope final {
    public:
     explicit AtomicPauseScope(ThreadState* thread_state)
-        : thread_state_(thread_state) {
+        : thread_state_(thread_state), gc_forbidden_scope(thread_state) {
       thread_state_->EnterAtomicPause();
     }
     ~AtomicPauseScope() { thread_state_->LeaveAtomicPause(); }
@@ -414,6 +418,7 @@ class PLATFORM_EXPORT ThreadState {
    private:
     ThreadState* const thread_state_;
     ScriptForbiddenScope script_forbidden_scope;
+    GCForbiddenScope gc_forbidden_scope;
   };
 
   void FlushHeapDoesNotContainCacheIfNeeded();

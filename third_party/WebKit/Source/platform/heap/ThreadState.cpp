@@ -1302,8 +1302,6 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
   RUNTIME_CALL_TIMER_SCOPE_IF_ISOLATE_EXISTS(
       GetIsolate(), RuntimeCallStats::CounterId::kCollectGarbage);
 
-  GCForbiddenScope gc_forbidden_scope(this);
-
   {
     AtomicPauseScope atomic_pause_scope(this);
     {
@@ -1403,9 +1401,6 @@ void ThreadState::MarkPhasePrologue(BlinkGC::StackState stack_state,
 void ThreadState::MarkPhaseVisitRoots() {
   double start_time = WTF::CurrentTimeTicksInMilliseconds();
 
-  // Disallow allocation during garbage collection (but not during the
-  // finalization that happens when the visitorScope is torn down).
-  NoAllocationScope no_allocation_scope(this);
   // StackFrameDepth should be disabled so we don't trace most of the object
   // graph in one incremental marking step.
   DCHECK(!Heap().GetStackFrameDepth().IsEnabled());
@@ -1428,9 +1423,6 @@ void ThreadState::MarkPhaseVisitRoots() {
 bool ThreadState::MarkPhaseAdvanceMarking(double deadline_seconds) {
   double start_time = WTF::CurrentTimeTicksInMilliseconds();
 
-  // Disallow allocation during garbage collection (but not during the
-  // finalization that happens when the visitorScope is torn down).
-  NoAllocationScope no_allocation_scope(this);
   StackFrameDepthScope stack_depth_scope(&Heap().GetStackFrameDepth());
 
   // 3. Transitive closure to trace objects including ephemerons.

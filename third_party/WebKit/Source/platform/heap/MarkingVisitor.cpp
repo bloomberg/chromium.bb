@@ -25,9 +25,7 @@ MarkingVisitor::MarkingVisitor(ThreadState* state, MarkingMode marking_mode)
       weak_callback_worklist_(Heap().GetWeakCallbackWorklist(),
                               WorklistTaskId::MainThread),
       marking_mode_(marking_mode) {
-  // See ThreadState::runScheduledGC() why we need to already be in a
-  // GCForbiddenScope before any safe point is entered.
-  DCHECK(state->IsGCForbidden());
+  DCHECK(state->InAtomicMarkingPause());
 #if DCHECK_IS_ON()
   DCHECK(state->CheckThread());
 #endif  // DCHECK_IS_ON
