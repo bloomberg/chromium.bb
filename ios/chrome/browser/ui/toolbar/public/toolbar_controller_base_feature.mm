@@ -31,3 +31,27 @@ ToolbarButtonPosition PositionForCurrentProcess() {
   }
   return ToolbarButtonPositionNavigationBottomNoTop;
 }
+
+const char kIconSearchButtonSwitch[] = "icon-search-button-switch";
+
+extern const char kIconSearchButtonGrey[] = "icon-search-button-grey";
+extern const char kIconSearchButtonColorful[] = "icon-search-button-colorful";
+extern const char kIconSearchButtonMagnifying[] =
+    "icon-search-button-magnifying";
+
+ToolbarSearchButtonIcon IconForSearchButton() {
+  const base::CommandLine* command_line =
+      base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(kIconSearchButtonSwitch)) {
+    if (command_line->GetSwitchValueASCII(kIconSearchButtonSwitch) ==
+        kIconSearchButtonColorful) {
+      return ToolbarSearchButtonIconColorful;
+    } else if (command_line->GetSwitchValueASCII(kIconSearchButtonSwitch) ==
+               kIconSearchButtonMagnifying) {
+      return ToolbarSearchButtonIconMagnifying;
+    } else {
+      return ToolbarSearchButtonIconGrey;
+    }
+  }
+  return ToolbarSearchButtonIconGrey;
+}

@@ -134,6 +134,10 @@ const char kUIRefreshPhase1Name[] = "UI Refresh Phase 1";
 const char kUIRefreshPhase1Description[] =
     "When enabled, the first phase of the iOS UI refresh will be displayed.";
 
+const char kSearchIconToggleName[] = "Change the icon for the search button";
+const char kSearchIconToggleDescription[] =
+    "Different icons for the search button.";
+
 const char kUseDdljsonApiName[] = "Use new ddljson API for Doodles";
 const char kUseDdljsonApiDescription[] =
     "Enables the new ddljson API to fetch Doodles for the NTP.";

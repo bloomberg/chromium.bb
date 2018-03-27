@@ -10,6 +10,7 @@
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_configuration.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tab_grid_button.h"
 #import "ios/chrome/browser/ui/toolbar/buttons/toolbar_tools_menu_button.h"
+#import "ios/chrome/browser/ui/toolbar/public/toolbar_controller_base_feature.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -96,8 +97,9 @@
   AddSameConstraints(self.blur, self);
 
   UIView* contentView = self;
-  if (UIVisualEffect* vibrancy = [self.buttonFactory.toolbarConfiguration
-          vibrancyEffectForBlurEffect:blurEffect]) {
+  UIVisualEffect* vibrancy = [self.buttonFactory.toolbarConfiguration
+      vibrancyEffectForBlurEffect:blurEffect];
+  if (vibrancy && IconForSearchButton() != ToolbarSearchButtonIconColorful) {
     // Add vibrancy only if we have a vibrancy effect.
     UIVisualEffectView* vibrancyView =
         [[UIVisualEffectView alloc] initWithEffect:vibrancy];
