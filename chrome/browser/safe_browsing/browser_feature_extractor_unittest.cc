@@ -602,7 +602,8 @@ TEST_F(BrowserFeatureExtractorTest, SafeBrowsingFeatures) {
        features::kSafeBrowsingOriginalUrl,
         "http://www.good.com/")));
   EXPECT_DOUBLE_EQ(1.0, features[features::kSafeBrowsingIsSubresource]);
-  EXPECT_DOUBLE_EQ(3.0, features[features::kSafeBrowsingThreatType]);
+  EXPECT_DOUBLE_EQ(SB_THREAT_TYPE_URL_MALWARE,
+                   features[features::kSafeBrowsingThreatType]);
 }
 
 TEST_F(BrowserFeatureExtractorTest, MalwareFeatures) {
