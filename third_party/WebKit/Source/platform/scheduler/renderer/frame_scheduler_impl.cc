@@ -358,7 +358,7 @@ scoped_refptr<TaskQueue> FrameSchedulerImpl::DeferrableTaskQueue() {
   if (!deferrable_task_queue_) {
     deferrable_task_queue_ = renderer_scheduler_->NewTaskQueue(
         MainThreadTaskQueue::QueueCreationParams(
-            MainThreadTaskQueue::QueueType::kFrameThrottleable)
+            MainThreadTaskQueue::QueueType::kFrameDeferrable)
             .SetCanBeDeferred(true)
             .SetCanBeStopped(
                 RuntimeEnabledFeatures::StopNonTimersInBackgroundEnabled())
