@@ -85,6 +85,11 @@ message StartVmRequest {
 
   // If true, concierge should also perform termina-specific setup.
   bool start_termina = 5;
+
+  // If true, a file descriptor must be passed along with the message and that
+  // file descriptor will be used for storage.
+  // Ignored unless |start_termina| is true.
+  bool use_fd_for_storage = 6;
 }
 
 // Information sent back by vm_concierge in response to a StartVm dbus message.
