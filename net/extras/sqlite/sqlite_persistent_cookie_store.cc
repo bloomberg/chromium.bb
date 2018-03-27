@@ -49,6 +49,18 @@ enum CookieLoadProblem {
   COOKIE_LOAD_PROBLEM_LAST_ENTRY
 };
 
+// Used to populate a histogram for problems when committing cookies.
+//
+// Please do not reorder or remove entries. New entries must be added to the
+// end of the list, just before COOKIE_COMMIT_PROBLEM_LAST_ENTRY.
+enum CookieCommitProblem {
+  COOKIE_COMMIT_PROBLEM_ENCRYPT_FAILED = 0,
+  COOKIE_COMMIT_PROBLEM_ADD = 1,
+  COOKIE_COMMIT_PROBLEM_UPDATE_ACCESS = 2,
+  COOKIE_COMMIT_PROBLEM_DELETE = 3,
+  COOKIE_COMMIT_PROBLEM_LAST_ENTRY
+};
+
 // Used to report a histogram on status of cookie commit to disk.
 //
 // Please do not reorder or remove entries. New entries must be added to the
@@ -56,13 +68,19 @@ enum CookieLoadProblem {
 enum BackingStoreResults {
   BACKING_STORE_RESULTS_SUCCESS = 0,
   BACKING_STORE_RESULTS_FAILURE = 1,
+  BACKING_STORE_RESULTS_MIXED = 2,
   BACKING_STORE_RESULTS_LAST_ENTRY
 };
 
 void RecordCookieLoadProblem(CookieLoadProblem event) {
   UMA_HISTOGRAM_ENUMERATION("Cookie.LoadProblem", event,
                             COOKIE_LOAD_PROBLEM_LAST_ENTRY);
-};
+}
+
+void RecordCookieCommitProblem(CookieCommitProblem event) {
+  UMA_HISTOGRAM_ENUMERATION("Cookie.CommitProblem", event,
+                            COOKIE_COMMIT_PROBLEM_LAST_ENTRY);
+}
 
 // The persistent cookie store is loaded into memory on eTLD at a time. This
 // variable controls the delay between loading eTLDs, so as to not overload the
@@ -1274,6 +1292,7 @@ void SQLitePersistentCookieStore::Backend::Commit() {
   if (!transaction.Begin())
     return;
 
+  bool trouble = false;
   for (PendingOperationsList::iterator it = ops.begin(); it != ops.end();
        ++it) {
     // Free the cookies as we commit them to the database.
@@ -1286,8 +1305,12 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         add_smt.BindString(2, po->cc().Name());
         if (crypto_ && crypto_->ShouldEncrypt()) {
           std::string encrypted_value;
-          if (!crypto_->EncryptString(po->cc().Value(), &encrypted_value))
+          if (!crypto_->EncryptString(po->cc().Value(), &encrypted_value)) {
+            DLOG(WARNING) << "Could not encrypt a cookie, skipping add.";
+            RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_ENCRYPT_FAILED);
+            trouble = true;
             continue;
+          }
           add_smt.BindCString(3, "");  // value
           // BindBlob() immediately makes an internal copy of the data.
           add_smt.BindBlob(4, encrypted_value.data(),
@@ -1307,8 +1330,11 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         add_smt.BindInt(12, po->cc().IsPersistent());
         add_smt.BindInt(13,
                         CookiePriorityToDBCookiePriority(po->cc().Priority()));
-        if (!add_smt.Run())
-          NOTREACHED() << "Could not add a cookie to the DB.";
+        if (!add_smt.Run()) {
+          DLOG(WARNING) << "Could not add a cookie to the DB.";
+          RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_ADD);
+          trouble = true;
+        }
         break;
 
       case PendingOperation::COOKIE_UPDATEACCESS:
@@ -1318,8 +1344,12 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         update_access_smt.BindString(1, po->cc().Name());
         update_access_smt.BindString(2, po->cc().Domain());
         update_access_smt.BindString(3, po->cc().Path());
-        if (!update_access_smt.Run())
-          NOTREACHED() << "Could not update cookie last access time in the DB.";
+        if (!update_access_smt.Run()) {
+          DLOG(WARNING)
+              << "Could not update cookie last access time in the DB.";
+          RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_UPDATE_ACCESS);
+          trouble = true;
+        }
         break;
 
       case PendingOperation::COOKIE_DELETE:
@@ -1327,8 +1357,11 @@ void SQLitePersistentCookieStore::Backend::Commit() {
         del_smt.BindString(0, po->cc().Name());
         del_smt.BindString(1, po->cc().Domain());
         del_smt.BindString(2, po->cc().Path());
-        if (!del_smt.Run())
-          NOTREACHED() << "Could not delete a cookie from the DB.";
+        if (!del_smt.Run()) {
+          DLOG(WARNING) << "Could not delete a cookie from the DB.";
+          RecordCookieCommitProblem(COOKIE_COMMIT_PROBLEM_DELETE);
+          trouble = true;
+        }
         break;
 
       default:
@@ -1337,10 +1370,12 @@ void SQLitePersistentCookieStore::Backend::Commit() {
     }
   }
   bool succeeded = transaction.Commit();
-  UMA_HISTOGRAM_ENUMERATION(
-      "Cookie.BackingStoreUpdateResults",
-      succeeded ? BACKING_STORE_RESULTS_SUCCESS : BACKING_STORE_RESULTS_FAILURE,
-      BACKING_STORE_RESULTS_LAST_ENTRY);
+  UMA_HISTOGRAM_ENUMERATION("Cookie.BackingStoreUpdateResults",
+                            succeeded
+                                ? (trouble ? BACKING_STORE_RESULTS_MIXED
+                                           : BACKING_STORE_RESULTS_SUCCESS)
+                                : BACKING_STORE_RESULTS_FAILURE,
+                            BACKING_STORE_RESULTS_LAST_ENTRY);
 }
 
 void SQLitePersistentCookieStore::Backend::SetBeforeFlushCallback(
