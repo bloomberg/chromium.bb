@@ -28,7 +28,8 @@ namespace {
 
 using SortedFilePathSet = std::set<base::FilePath>;
 
-bool WriteFile(const base::FilePath& destination, const std::string& content) {
+bool CreateDirAndWriteFile(const base::FilePath& destination,
+                           const std::string& content) {
   base::AssertBlockingAllowed();
   DCHECK(GetExtensionFileTaskRunner()->RunsTasksInCurrentSequence());
   base::FilePath dir = destination.DirName();
@@ -196,7 +197,7 @@ void ContentHash::DidFetchVerifiedContents(
 
   base::FilePath destination =
       file_util::GetVerifiedContentsPath(key.extension_root);
-  if (!WriteFile(destination, *fetched_contents)) {
+  if (!CreateDirAndWriteFile(destination, *fetched_contents)) {
     LOG(ERROR) << "Error writing computed_hashes.json at " << destination;
     ContentHash::DispatchFetchFailure(key, std::move(created_callback),
                                       is_cancelled);
