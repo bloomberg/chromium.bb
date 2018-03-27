@@ -67,7 +67,9 @@ class MouseWheelPhaseHandler {
       bool should_route_event);
   void ScheduleMouseWheelEndDispatching(bool should_route_event,
                                         const base::TimeDelta timeout);
-  bool IsWithinSlopRegion(blink::WebMouseWheelEvent wheel_event) const;
+  bool IsWithinSlopRegion(const blink::WebMouseWheelEvent& wheel_event) const;
+  bool HasDifferentModifiers(
+      const blink::WebMouseWheelEvent& wheel_event) const;
 
   RenderWidgetHostViewBase* const host_view_;
   base::OneShotTimer mouse_wheel_end_dispatch_timer_;
@@ -79,6 +81,10 @@ class MouseWheelPhaseHandler {
   // larger than some threshold. The variable value is only valid while the
   // dispatch timer is running.
   gfx::Vector2dF first_wheel_location_;
+
+  // This is used to break the timer based latching when the new wheel event has
+  // different modifiers.
+  int initial_wheel_modifiers_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseWheelPhaseHandler);
 };
