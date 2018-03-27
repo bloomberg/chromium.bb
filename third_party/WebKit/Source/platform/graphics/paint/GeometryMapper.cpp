@@ -16,7 +16,6 @@ const TransformationMatrix& GeometryMapper::SourceToDestinationProjection(
   bool success = false;
   const auto& result =
       SourceToDestinationProjectionInternal(source, destination, success);
-  DCHECK(success);
   return result;
 }
 
