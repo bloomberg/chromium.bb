@@ -29,8 +29,9 @@ writer.write(blob);
 // Verify the contents.
 assert(writer.length == 2 * testData.length + extensionOffset);
 assert(writer.position == writer.length);
+var file = entry.file();
 var reader = new FileReaderSync();
-var contents = reader.readAsBinaryString(entry.file());
+var contents = reader.readAsBinaryString(file);
 var i;
 for (i = 0; i < testData.length + extensionOffset; ++i)
     assert(contents.charCodeAt(i) == testData.charCodeAt(i));
@@ -55,7 +56,7 @@ assert(writer.length == testData.length + extensionOffset);
 assert(writer.position == writer.length);
 
 // Verify the contents.
-contents = reader.readAsBinaryString(entry.file());
+contents = reader.readAsBinaryString(file);
 for (i = 0; i < extensionOffset; ++i)
     assert(contents.charCodeAt(i) == testData.charCodeAt(i));
 for (j = 0; i < writer.length; ++i, ++j)
@@ -79,7 +80,7 @@ assert(writer.length == 2 * testData.length);
 assert(writer.position == testData.length + extensionOffset);
 
 // Verify the contents.
-contents = reader.readAsBinaryString(entry.file());
+contents = reader.readAsBinaryString(file);
 for (i = 0; i < extensionOffset; ++i)
     assert(contents.charCodeAt(i) == testData.charCodeAt(i));
 for (j = 0; i < testData.length + extensionOffset; ++i, ++j)
