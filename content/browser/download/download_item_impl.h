@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
+#include "base/threading/thread_checker_impl.h"
 #include "base/time/time.h"
 #include "components/download/public/common/download_create_info.h"
 #include "components/download/public/common/download_destination_observer.h"
@@ -36,7 +37,6 @@ class DownloadJob;
 namespace content {
 class BrowserContext;
 class DownloadItemImplDelegate;
-class WebContents;
 
 // See download_item.h for usage.
 class CONTENT_EXPORT DownloadItemImpl
@@ -614,8 +614,7 @@ class CONTENT_EXPORT DownloadItemImpl
   // INTERRUPTED state.
   download::ResumeMode GetResumeMode() const;
 
-  // Helper method to get WebContents and BrowserContext of the DownloadItem.
-  WebContents* GetWebContents() const;
+  // Helper method to get BrowserContext of the DownloadItem.;
   BrowserContext* GetBrowserContext() const;
 
   static DownloadState InternalToExternalState(
@@ -776,6 +775,8 @@ class CONTENT_EXPORT DownloadItemImpl
 
   // Source of the download, used in metrics.
   download::DownloadSource download_source_ = download::DownloadSource::UNKNOWN;
+
+  THREAD_CHECKER(thread_checker_);
 
   base::WeakPtrFactory<DownloadItemImpl> weak_ptr_factory_;
 

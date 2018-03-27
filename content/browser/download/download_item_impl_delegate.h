@@ -100,6 +100,9 @@ class CONTENT_EXPORT DownloadItemImplDelegate {
   // Assert consistent state for delgate object at various transitions.
   virtual void AssertStateConsistent(DownloadItemImpl* download) const;
 
+  // Called when the download is interrupted.
+  virtual void DownloadInterrupted(DownloadItemImpl* download);
+
  private:
   // For "Outlives attached DownloadItemImpl" invariant assertion.
   int count_;
