@@ -10,7 +10,6 @@
 #include "ash/accessibility/accessibility_controller.h"
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
-#include "ash/assistant/ash_assistant_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/display/ash_display_controller.h"
 #include "ash/highlighter/highlighter_controller.h"
@@ -41,7 +40,6 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/single_thread_task_runner.h"
-#include "chromeos/chromeos_switches.h"
 
 namespace ash {
 namespace mojo_interface_factory {
@@ -69,11 +67,6 @@ void BindAccessibilityFocusRingControllerRequestOnMainThread(
 void BindAppListControllerRequestOnMainThread(
     mojom::AppListControllerRequest request) {
   Shell::Get()->app_list_controller()->BindRequest(std::move(request));
-}
-
-void BindAshAssistantControllerRequestOnMainThread(
-    mojom::AshAssistantControllerRequest request) {
-  Shell::Get()->ash_assistant_controller()->BindRequest(std::move(request));
 }
 
 void BindAshDisplayControllerRequestOnMainThread(
@@ -201,11 +194,6 @@ void RegisterInterfaces(
       main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindAppListControllerRequestOnMainThread),
                          main_thread_task_runner);
-  if (chromeos::switches::IsAssistantEnabled()) {
-    registry->AddInterface(
-        base::Bind(&BindAshAssistantControllerRequestOnMainThread),
-        main_thread_task_runner);
-  }
   registry->AddInterface(
       base::Bind(&BindAshDisplayControllerRequestOnMainThread),
       main_thread_task_runner);
