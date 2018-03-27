@@ -80,6 +80,12 @@ void DisplayResourceProvider::SendPromotionHints(
       continue;
 
     const viz::internal::Resource* resource = LockForRead(id);
+    // TODO(ericrk): We should never fail LockForRead, but we appear to be
+    // doing so on Android in rare cases. Handle this gracefully until a better
+    // solution can be found. https://crbug.com/811858
+    if (!resource)
+      return;
+
     DCHECK(resource->wants_promotion_hint);
 
     // Insist that this is backed by a GPU texture.
@@ -121,8 +127,11 @@ size_t DisplayResourceProvider::CountPromotionHintRequestsForTesting() {
 
 #endif
 bool DisplayResourceProvider::IsOverlayCandidate(viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
-  return resource->is_overlay_candidate;
+  viz::internal::Resource* resource = TryGetResource(id);
+  // TODO(ericrk): We should never fail TryGetResource, but we appear to
+  // be doing so on Android in rare cases. Handle this gracefully until a
+  // better solution can be found. https://crbug.com/811858
+  return resource && resource->is_overlay_candidate;
 }
 
 viz::ResourceType DisplayResourceProvider::GetResourceType(viz::ResourceId id) {
@@ -135,7 +144,12 @@ gfx::BufferFormat DisplayResourceProvider::GetBufferFormat(viz::ResourceId id) {
 }
 
 void DisplayResourceProvider::WaitSyncToken(viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
+  viz::internal::Resource* resource = TryGetResource(id);
+  // TODO(ericrk): We should never fail TryGetResource, but we appear to
+  // be doing so on Android in rare cases. Handle this gracefully until a
+  // better solution can be found. https://crbug.com/811858
+  if (!resource)
+    return;
   WaitSyncTokenInternal(resource);
 #if defined(OS_ANDROID)
   // Now that the resource is synced, we may send it a promotion hint.  We could
@@ -453,7 +467,12 @@ GLenum DisplayResourceProvider::BindForSampling(viz::ResourceId resource_id,
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   GLES2Interface* gl = ContextGL();
   ResourceMap::iterator it = resources_.find(resource_id);
-  DCHECK(it != resources_.end());
+  // TODO(ericrk): We should never fail to find resource_id, but we appear to
+  // be doing so on Android in rare cases. Handle this gracefully until a
+  // better solution can be found. https://crbug.com/811858
+  if (it == resources_.end())
+    return GL_TEXTURE_2D;
+
   viz::internal::Resource* resource = &it->second;
   DCHECK(resource->lock_for_read_count);
   // TODO(xing.xu): remove locked_for_write.
@@ -544,6 +563,12 @@ DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const viz::internal::Resource* resource =
       resource_provider->LockForRead(resource_id);
+  // TODO(ericrk): We should never fail LockForRead, but we appear to be
+  // doing so on Android in rare cases. Handle this gracefully until a better
+  // solution can be found. https://crbug.com/811858
+  if (!resource)
+    return;
+
   texture_id_ = resource->gl_id;
   target_ = resource->target;
   size_ = resource->size;
@@ -552,7 +577,13 @@ DisplayResourceProvider::ScopedReadLockGL::ScopedReadLockGL(
 
 const viz::internal::Resource* DisplayResourceProvider::LockForRead(
     viz::ResourceId id) {
-  viz::internal::Resource* resource = GetResource(id);
+  // TODO(ericrk): We should never fail TryGetResource, but we appear to be
+  // doing so on Android in rare cases. Handle this gracefully until a better
+  // solution can be found. https://crbug.com/811858
+  viz::internal::Resource* resource = TryGetResource(id);
+  if (!resource)
+    return nullptr;
+
   // TODO(xing.xu): remove locked_for_write.
   DCHECK(!resource->locked_for_write)
       << "locked for write: " << resource->locked_for_write;
@@ -600,7 +631,11 @@ const viz::internal::Resource* DisplayResourceProvider::LockForRead(
 void DisplayResourceProvider::UnlockForRead(viz::ResourceId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
+  // TODO(ericrk): We should never fail to find id, but we appear to be
+  // doing so on Android in rare cases. Handle this gracefully until a better
+  // solution can be found. https://crbug.com/811858
+  if (it == resources_.end())
+    return;
 
   viz::internal::Resource* resource = &it->second;
   DCHECK_GT(resource->lock_for_read_count, 0);
@@ -660,6 +695,7 @@ DisplayResourceProvider::ScopedReadLockSkImage::ScopedReadLockSkImage(
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const viz::internal::Resource* resource =
       resource_provider->LockForRead(resource_id);
+  DCHECK(resource);
   if (resource_provider_->resource_sk_image_.find(resource_id) !=
       resource_provider_->resource_sk_image_.end()) {
     // Use cached sk_image.
@@ -704,6 +740,7 @@ DisplayResourceProvider::ScopedReadLockSoftware::ScopedReadLockSoftware(
     : resource_provider_(resource_provider), resource_id_(resource_id) {
   const viz::internal::Resource* resource =
       resource_provider->LockForRead(resource_id);
+  DCHECK(resource);
   resource_provider->PopulateSkBitmapWithResource(&sk_bitmap_, resource);
 }
 

@@ -92,6 +92,11 @@ class CC_EXPORT ResourceProvider
                                           viz::internal::Resource resource);
   viz::internal::Resource* GetResource(viz::ResourceId id);
 
+  // TODO(ericrk): TryGetResource is part of a temporary workaround for cases
+  // where resources which should be available are missing. This version may
+  // return nullptr if a resource is not found. https://crbug.com/811858
+  viz::internal::Resource* TryGetResource(viz::ResourceId id);
+
   void PopulateSkBitmapWithResource(SkBitmap* sk_bitmap,
                                     const viz::internal::Resource* resource);
 

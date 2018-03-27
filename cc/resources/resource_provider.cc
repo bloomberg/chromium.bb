@@ -149,11 +149,19 @@ viz::internal::Resource* ResourceProvider::InsertResource(
 
 viz::internal::Resource* ResourceProvider::GetResource(viz::ResourceId id) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
-  // TODO(ericrk): Changing the DCHECKs in this function to CHECKs to debug
-  // https://crbug.com/811858.
-  CHECK(id);
+  DCHECK(id);
   ResourceMap::iterator it = resources_.find(id);
-  CHECK(it != resources_.end());
+  DCHECK(it != resources_.end());
+  return &it->second;
+}
+
+viz::internal::Resource* ResourceProvider::TryGetResource(viz::ResourceId id) {
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  if (!id)
+    return nullptr;
+  ResourceMap::iterator it = resources_.find(id);
+  if (it == resources_.end())
+    return nullptr;
   return &it->second;
 }
 
