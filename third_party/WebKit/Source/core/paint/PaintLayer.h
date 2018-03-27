@@ -851,7 +851,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   // Returned value does not include any composited scroll offset of
   // the transform ancestor.
-  LayoutPoint ComputeOffsetFromTransformedAncestor() const;
+  LayoutPoint ComputeOffsetFromAncestor(const PaintLayer& ancestor_layer) const;
 
   void DidUpdateScrollsOverflow();
 
