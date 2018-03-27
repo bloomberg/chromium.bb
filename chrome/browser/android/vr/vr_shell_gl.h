@@ -143,6 +143,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   void DrawFrameSubmitNow(int16_t frame_index, const gfx::Transform& head_pose);
   bool ShouldDrawWebVr();
   void DrawWebVr();
+  bool ShouldSendGesturesToWebVr();
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
   void UpdateController(const RenderInfo& render_info,
@@ -291,6 +292,8 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
 
   // Attributes for gesture detection while holding app button.
   gfx::Vector3dF controller_start_direction_;
+  base::TimeTicks app_button_down_time_;
+  bool app_button_long_pressed_ = false;
 
   FPSMeter vr_ui_fps_meter_;
   FPSMeter webvr_fps_meter_;

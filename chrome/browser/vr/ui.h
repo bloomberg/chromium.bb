@@ -127,8 +127,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
       bool use_ganesh);
 
   void OnAppButtonClicked();
-  void OnAppButtonGesturePerformed(
-      PlatformController::SwipeDirection direction);
+  void OnAppButtonSwipePerformed(PlatformController::SwipeDirection direction);
   void OnControllerUpdated(const ControllerModel& controller_model,
                            const ReticleModel& reticle_model);
   void OnProjMatrixChanged(const gfx::Transform& proj_matrix);
@@ -136,6 +135,7 @@ class Ui : public BrowserUiInterface, public KeyboardUiInterface {
   void OnWebVrTimedOut();
   void OnWebVrTimeoutImminent();
   bool IsControllerVisible() const;
+  bool IsAppButtonLongPressed() const;
   bool SkipsRedrawWhenNotDirty() const;
   void OnSwapContents(int new_content_id);
   void OnContentBoundsChanged(int width, int height);

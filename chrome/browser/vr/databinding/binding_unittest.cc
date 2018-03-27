@@ -55,4 +55,37 @@ TEST(Binding, BoundBool) {
   EXPECT_EQ(true, b.value);
 }
 
+TEST(Binding, HistoricBinding) {
+  TestModel a;
+  a.value = true;
+
+  TestView b;
+  b.value = false;
+
+  b.binding = std::make_unique<Binding<bool>>(
+      VR_BIND_LAMBDA([](TestModel* m) { return m->value; },
+                     base::Unretained(&a)),
+      VR_BIND_LAMBDA(
+          [](TestView* v, const base::Optional<bool>& last_value,
+             const bool& value) {
+            if (last_value)
+              v->value = value;
+          },
+          base::Unretained(&b)));
+
+  EXPECT_NE(a.value, b.value);
+  b.binding->Update();
+
+  EXPECT_EQ(true, a.value);
+  EXPECT_EQ(false, b.value);
+
+  a.value = false;
+  b.binding->Update();
+  EXPECT_EQ(false, b.value);
+
+  a.value = true;
+  b.binding->Update();
+  EXPECT_EQ(true, b.value);
+}
+
 }  // namespace vr

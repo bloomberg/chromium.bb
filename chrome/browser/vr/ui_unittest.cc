@@ -1348,4 +1348,30 @@ TEST_F(UiTest, RepositionHostedUi) {
   EXPECT_EQ(original, hosted_ui->world_space_transform());
 }
 
+// Ensures that permissions appear on long press, and that when the app button
+// is released that we do not show the exclusive screen toast. Distinguishing
+// these cases requires knowledge of the previous state.
+TEST_F(UiTest, LongPressAppButtonInWebVrMode) {
+  CreateScene(kNotInCct, kInWebVr);
+  ui_->SetWebVrMode(true, true);
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  ui_->OnWebVrFrameAvailable();
+  ui_->SetCapturingState(CapturingStateModel());
+  OnBeginFrame();
+  EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
+  RunFor(MsToDelta(8000));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  model_->capturing_state.audio_capture_enabled = true;
+  model_->controller.app_button_long_pressed = true;
+  OnBeginFrame();
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_TRUE(IsVisible(kWebVrAudioCaptureIndicator));
+  RunFor(MsToDelta(8000));
+  EXPECT_FALSE(IsVisible(kWebVrAudioCaptureIndicator));
+  model_->controller.app_button_long_pressed = true;
+  OnBeginFrame();
+  EXPECT_FALSE(IsVisible(kWebVrAudioCaptureIndicator));
+  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+}
+
 }  // namespace vr
