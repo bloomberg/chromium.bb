@@ -8,6 +8,7 @@
 #include "core/testing/CoreUnitTestHelper.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/testing/runtime_enabled_features_test_helpers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace blink {
@@ -426,6 +427,44 @@ TEST_P(ParameterizedLayoutTextTest, GetUpperLeftCornerVLR) {
   Optional<FloatPoint> upper_left = layout_text->GetUpperLeftCorner();
   EXPECT_TRUE(upper_left.has_value());
   EXPECT_EQ(FloatPoint(10, 30), upper_left.value());
+}
+
+TEST_P(ParameterizedLayoutTextTest, AbsoluteRects) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      width: 5em;
+    }
+    </style>
+    <div>012<span id=target>345 67</span></div>
+  )HTML");
+  LayoutText* layout_text = GetLayoutTextById("target");
+  Vector<IntRect> rects;
+  layout_text->AbsoluteRects(rects, {LayoutUnit(100), LayoutUnit(200)});
+  EXPECT_THAT(rects, testing::ElementsAre(IntRect(130, 200, 30, 10),
+                                          IntRect(100, 210, 20, 10)));
+}
+
+TEST_P(ParameterizedLayoutTextTest, AbsoluteRectsVRL) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      width: 10em;
+      height: 5em;
+      writing-mode: vertical-rl;
+    }
+    </style>
+    <div>012<span id=target>345 67</span></div>
+  )HTML");
+  LayoutText* layout_text = GetLayoutTextById("target");
+  Vector<IntRect> rects;
+  layout_text->AbsoluteRects(rects, {LayoutUnit(100), LayoutUnit(200)});
+  EXPECT_THAT(rects, testing::ElementsAre(IntRect(100, 230, 10, 30),
+                                          IntRect(110, 200, 10, 20)));
 }
 
 TEST_P(ParameterizedLayoutTextTest, LinesBoundingBox) {
