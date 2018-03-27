@@ -12,6 +12,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
+#include "components/arc/arc_features.h"
 #include "components/user_manager/user_manager.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
@@ -165,7 +166,8 @@ bool IsArcAllowedForUser(const user_manager::User* user) {
     return false;
   }
 
-  if (user->GetType() == user_manager::USER_TYPE_CHILD) {
+  if (user->GetType() == user_manager::USER_TYPE_CHILD &&
+      !base::FeatureList::IsEnabled(arc::kAvailableForChildAccountFeature)) {
     VLOG(1) << "ARC usage by Child users is prohibited";
     return false;
   }

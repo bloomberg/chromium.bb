@@ -6,6 +6,10 @@
 
 namespace arc {
 
+// Controls whether ARC is available for CHILD accounts.
+const base::Feature kAvailableForChildAccountFeature{
+    "ArcAvailableForChildAccount", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Controls ACTION_BOOT_COMPLETED broadcast for third party applications on ARC.
 // When disabled, third party apps will not receive this broadcast.
 const base::Feature kBootCompletedBroadcastFeature {
