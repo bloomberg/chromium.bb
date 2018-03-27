@@ -21,6 +21,12 @@
 
 class GURL;
 
+namespace base {
+namespace trace_event {
+class ProcessMemoryDump;
+}
+}  // namespace base
+
 namespace net {
 
 class CookieChangeDispatcher;
@@ -145,6 +151,10 @@ class NET_EXPORT CookieStore {
   virtual bool IsEphemeral() = 0;
   void SetChannelIDServiceID(int id);
   int GetChannelIDServiceID();
+
+  // Reports the estimate of dynamically allocated memory in bytes.
+  virtual void DumpMemoryStats(base::trace_event::ProcessMemoryDump* pmd,
+                               const std::string& parent_absolute_name) const;
 
  protected:
   CookieStore();
