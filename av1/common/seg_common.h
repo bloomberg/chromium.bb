@@ -22,9 +22,7 @@ extern "C" {
 #define SEG_TREE_PROBS (MAX_SEGMENTS - 1)
 
 #define SEG_TEMPORAL_PRED_CTXS 3
-#if CONFIG_SPATIAL_SEGMENTATION
 #define SPATIAL_PREDICTION_PROBS 3
-#endif
 
 typedef enum {
   SEG_LVL_ALT_Q,       // Use alternate Quantizer ....
@@ -46,19 +44,15 @@ struct segmentation {
 
   int16_t feature_data[MAX_SEGMENTS][SEG_LVL_MAX];
   unsigned int feature_mask[MAX_SEGMENTS];
-#if CONFIG_SPATIAL_SEGMENTATION
   int last_active_segid;
   int preskip_segid;
-#endif
 };
 
 struct segmentation_probs {
   aom_cdf_prob tree_cdf[CDF_SIZE(MAX_SEGMENTS)];
   aom_cdf_prob pred_cdf[SEG_TEMPORAL_PRED_CTXS][CDF_SIZE(2)];
-#if CONFIG_SPATIAL_SEGMENTATION
   aom_cdf_prob spatial_pred_seg_cdf[SPATIAL_PREDICTION_PROBS]
                                    [CDF_SIZE(MAX_SEGMENTS)];
-#endif
 };
 
 static INLINE int segfeature_active(const struct segmentation *seg,
@@ -70,22 +64,18 @@ static INLINE int segfeature_active(const struct segmentation *seg,
 static INLINE void segfeatures_copy(struct segmentation *dst,
                                     struct segmentation *src) {
   int i, j;
-#if CONFIG_SPATIAL_SEGMENTATION
   dst->preskip_segid = 0;
   dst->last_active_segid = 0;
-#endif
   for (i = 0; i < MAX_SEGMENTS; i++) {
     dst->feature_mask[i] = src->feature_mask[i];
     for (j = 0; j < SEG_LVL_MAX; j++) {
       dst->feature_data[i][j] = src->feature_data[i][j];
-#if CONFIG_SPATIAL_SEGMENTATION
       if (src->feature_mask[i] & (1 << j)) {
         dst->preskip_segid |= j >= SEG_LVL_REF_FRAME;
         dst->last_active_segid = i;
         src->preskip_segid = dst->preskip_segid;
         src->last_active_segid = dst->last_active_segid;
       }
-#endif
     }
   }
 }

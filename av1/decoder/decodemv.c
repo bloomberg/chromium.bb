@@ -252,7 +252,6 @@ static PREDICTION_MODE read_inter_compound_mode(MACROBLOCKD *xd, aom_reader *r,
   return NEAREST_NEARESTMV + mode;
 }
 
-#if CONFIG_SPATIAL_SEGMENTATION
 int av1_neg_deinterleave(int diff, int ref, int max) {
   if (!ref) return diff;
   if (ref >= (max - 1)) return max - diff - 1;
@@ -295,11 +294,6 @@ static int read_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
   }
   return segment_id;
 }
-#else
-static int read_segment_id(aom_reader *r, struct segmentation_probs *segp) {
-  return aom_read_symbol(r, segp->tree_cdf, MAX_SEGMENTS, ACCT_STR);
-}
-#endif
 
 static int dec_get_segment_id(const AV1_COMMON *cm, const uint8_t *segment_ids,
                               int mi_offset, int x_mis, int y_mis) {
@@ -337,13 +331,7 @@ static int read_intra_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
 
   assert(seg->update_map && !seg->temporal_update);
 
-#if CONFIG_SPATIAL_SEGMENTATION
   const int segment_id = read_segment_id(cm, xd, mi_row, mi_col, r, skip);
-#else
-  FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
-  (void)skip;
-  const int segment_id = read_segment_id(r, &ec_ctx->seg);
-#endif
   set_segment_id(cm, mi_offset, x_mis, y_mis, segment_id);
   return segment_id;
 }
@@ -391,7 +379,6 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     return get_predicted_segment_id(cm, mi_offset, x_mis, y_mis);
   }
 
-#if CONFIG_SPATIAL_SEGMENTATION
   if (preskip) {
     if (!seg->preskip_segid) return 0;
   } else {
@@ -405,7 +392,6 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
       return segment_id;
     }
   }
-#endif
   (void)preskip;
   if (seg->temporal_update) {
     const int ctx = av1_get_pred_context_seg_id(xd);
@@ -414,18 +400,10 @@ static int read_inter_segment_id(AV1_COMMON *const cm, MACROBLOCKD *const xd,
     if (mbmi->seg_id_predicted) {
       segment_id = get_predicted_segment_id(cm, mi_offset, x_mis, y_mis);
     } else {
-#if CONFIG_SPATIAL_SEGMENTATION
       segment_id = read_segment_id(cm, xd, mi_row, mi_col, r, 0);
-#else
-      segment_id = read_segment_id(r, segp);
-#endif
     }
   } else {
-#if CONFIG_SPATIAL_SEGMENTATION
     segment_id = read_segment_id(cm, xd, mi_row, mi_col, r, 0);
-#else
-    segment_id = read_segment_id(r, segp);
-#endif
   }
   set_segment_id(cm, mi_offset, x_mis, y_mis, segment_id);
   return segment_id;
@@ -748,27 +726,19 @@ static void read_intra_frame_mode_info(AV1_COMMON *const cm,
   const MODE_INFO *above_mi = xd->above_mi;
   const MODE_INFO *left_mi = xd->left_mi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-#if CONFIG_SPATIAL_SEGMENTATION
   struct segmentation *const seg = &cm->seg;
-#endif
 
   FRAME_CONTEXT *ec_ctx = xd->tile_ctx;
 
-#if !CONFIG_SPATIAL_SEGMENTATION
-  mbmi->segment_id = read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, 0);
-#else
   if (seg->preskip_segid)
     mbmi->segment_id =
         read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, 0);
-#endif
 
   mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
 
-#if CONFIG_SPATIAL_SEGMENTATION
   if (!seg->preskip_segid)
     mbmi->segment_id =
         read_intra_segment_id(cm, xd, mi_row, mi_col, bsize, r, mbmi->skip);
-#endif
 
   read_cdef(cm, r, mbmi, mi_col, mi_row);
 
@@ -1597,9 +1567,7 @@ static void read_inter_frame_mode_info(AV1Decoder *const pbi,
   else
     mbmi->skip = read_skip(cm, xd, mbmi->segment_id, r);
 
-#if CONFIG_SPATIAL_SEGMENTATION
   mbmi->segment_id = read_inter_segment_id(cm, xd, mi_row, mi_col, 0, r);
-#endif
 
   read_cdef(cm, r, mbmi, mi_col, mi_row);
 

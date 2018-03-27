@@ -4662,16 +4662,12 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                                    mi_row, mi_col);
     }
 
-      // If there is at least one lossless segment, force the skip for intra
-      // block to be 0, in order to avoid the segment_id to be changed by in
-      // write_segment_id().
-#if CONFIG_SPATIAL_SEGMENTATION
+    // If there is at least one lossless segment, force the skip for intra
+    // block to be 0, in order to avoid the segment_id to be changed by in
+    // write_segment_id().
     if (!cpi->common.seg.preskip_segid && cpi->common.seg.update_map &&
         cpi->has_lossless_segment)
       mbmi->skip = 0;
-#else
-    if (cpi->common.seg.update_map && cpi->has_lossless_segment) mbmi->skip = 0;
-#endif
 
     xd->cfl.store_y = 0;
     if (av1_allow_palette(cm->allow_screen_content_tools, bsize)) {

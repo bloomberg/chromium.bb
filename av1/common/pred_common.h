@@ -42,7 +42,6 @@ static INLINE int get_segment_id(const AV1_COMMON *const cm,
   return segment_id;
 }
 
-#if CONFIG_SPATIAL_SEGMENTATION
 static INLINE int av1_get_spatial_seg_pred(const AV1_COMMON *const cm,
                                            const MACROBLOCKD *const xd,
                                            int mi_row, int mi_col,
@@ -80,7 +79,6 @@ static INLINE int av1_get_spatial_seg_pred(const AV1_COMMON *const cm,
     return prev_u;
   return (prev_ul == prev_u) ? prev_u : prev_l;
 }
-#endif  // CONFIG_SPATIAL_SEGMENTATION
 
 static INLINE int av1_get_pred_context_seg_id(const MACROBLOCKD *xd) {
   const MODE_INFO *const above_mi = xd->above_mi;
