@@ -25,6 +25,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "gin/gin_features.h"
 
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
 #if defined(OS_ANDROID)
@@ -241,6 +242,14 @@ void V8Initializer::Initialize(IsolateHolder::ScriptMode mode,
     return;
 
   v8::V8::InitializePlatform(V8Platform::Get());
+
+  if (base::FeatureList::IsEnabled(features::kV8OptimizeJavascript)) {
+    static const char optimize[] = "--opt";
+    v8::V8::SetFlagsFromString(optimize, sizeof(optimize) - 1);
+  } else {
+    static const char no_optimize[] = "--no-opt";
+    v8::V8::SetFlagsFromString(no_optimize, sizeof(no_optimize) - 1);
+  }
 
   if (IsolateHolder::kStrictMode == mode) {
     static const char use_strict[] = "--use_strict";
