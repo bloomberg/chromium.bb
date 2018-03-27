@@ -65,7 +65,7 @@
 /* #undef HAVE_LIBHISTORY */
 
 /* Define if pthread library is there (-lpthread) */
-#define HAVE_LIBPTHREAD /**/
+/* #undef HAVE_LIBPTHREAD */
 
 /* Define if readline library is there (-lreadline) */
 /* #undef HAVE_LIBREADLINE */
@@ -115,7 +115,7 @@
 #define HAVE_PRINTF 1
 
 /* Define if <pthread.h> is there */
-#define HAVE_PTHREAD_H /**/
+/* #undef HAVE_PTHREAD_H */
 
 /* Define to 1 if you have the `putenv' function. */
 #define HAVE_PUTENV 1

@@ -81,14 +81,25 @@ PATCHES = [
 
 
 # See libxml2 configure.ac and win32/configure.js to learn what
-# options are available.
-
+# options are available. We include every option here to more easily track
+# changes from one version to the next, and to be sure we only include what
+# we need.
 # These two sets of options should be in sync. You can check the
-# generated #defines in (win32|mac|linux)/include/libxml.h to confirm
+# generated #defines in (win32|mac|linux)/include/libxml/xmlversion.h to confirm
 # this.
+# We would like to disable python but it introduces a host of build errors
 SHARED_XML_CONFIGURE_OPTIONS = [
     # These options are turned ON
+    ('--with-html', 'html=yes'),
     ('--with-icu', 'icu=yes'),
+    ('--with-output', 'output=yes'),
+    ('--with-push', 'push=yes'),
+    ('--with-python', 'python=yes'),
+    ('--with-reader', 'reader=yes'),
+    ('--with-sax1', 'sax1=yes'),
+    ('--with-tree', 'tree=yes'),
+    ('--with-writer', 'writer=yes'),
+    ('--with-xpath', 'xpath=yes'),
     # These options are turned OFF
     ('--without-c14n', 'c14n=no'),
     ('--without-catalog', 'catalog=no'),
@@ -97,14 +108,17 @@ SHARED_XML_CONFIGURE_OPTIONS = [
     ('--without-ftp', 'ftp=no'),
     ('--without-http', 'http=no'),
     ('--without-iconv', 'iconv=no'),
+    ('--without-iso8859x', 'iso8859x=no'),
     ('--without-legacy', 'legacy=no'),
     ('--without-lzma', 'lzma=no'),
     ('--without-mem-debug', 'mem_debug=no'),
     ('--without-modules', 'modules=no'),
+    ('--without-pattern', 'pattern=no'),
     ('--without-regexps', 'regexps=no'),
     ('--without-run-debug', 'run_debug=no'),
     ('--without-schemas', 'schemas=no'),
     ('--without-schematron', 'schematron=no'),
+    ('--without-threads', 'threads=no'),
     ('--without-valid', 'valid=no'),
     ('--without-xinclude', 'xinclude=no'),
     ('--without-xptr', 'xptr=no'),
@@ -114,6 +128,8 @@ SHARED_XML_CONFIGURE_OPTIONS = [
 
 # These options are only available in configure.ac for Linux and Mac.
 EXTRA_NIX_XML_CONFIGURE_OPTIONS = [
+    '--without-fexceptions',
+    '--without-minimum',
     '--without-readline',
     '--without-history',
 ]
@@ -121,6 +137,7 @@ EXTRA_NIX_XML_CONFIGURE_OPTIONS = [
 
 # These options are only available in win32/configure.js for Windows.
 EXTRA_WIN32_XML_CONFIGURE_OPTIONS = [
+    'trio=no',
     'walker=no',
 ]
 
@@ -316,6 +333,7 @@ def prepare_libxml_distribution(libxml2_repo_path, temp_dir):
     with WorkingDir(temp_src_path):
         os.remove('.gitignore')
     with WorkingDir(temp_config_path):
+        print('../src/autogen.sh %s' % XML_CONFIGURE_OPTIONS)
         subprocess.check_call(['../src/autogen.sh'] + XML_CONFIGURE_OPTIONS)
         subprocess.check_call(['make', 'dist-all'])
 
