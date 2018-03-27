@@ -65,12 +65,15 @@
         outline: auto 5px -webkit-focus-ring-color;
       }
 
-      #advancedButton > span {
+      #advancedButton > span,
+      #extensionsButton > span {
         flex: 1;
       }
 
-      #advancedButton > iron-icon {
-        -webkit-margin-end: 22px;  /* 24px - 2px from margin for outline. */
+      #advancedButton > iron-icon,
+      #extensionsButton > iron-icon {
+        @apply --cr-icon-height-width;
+        -webkit-margin-end: 14px;  /* 16px - 2px from margin for outline. */
       }
 
       #menuSeparator {
@@ -80,8 +83,9 @@
         margin-top: 8px;
       }
     </style>
-    <iron-selector id="topMenu" selectable="a" attr-for-selected="href"
-        on-iron-activate="onSelectorActivate_" role="navigation">
+    <iron-selector id="topMenu" selectable="a:not([unselectable])"
+        attr-for-selected="href" on-iron-activate="onSelectorActivate_"
+        role="navigation">
 <if expr="chromeos">
       <a href="/internet">
         <iron-icon icon="settings:network-wifi"></iron-icon>
@@ -189,6 +193,11 @@
         </iron-selector>
       </iron-collapse>
       <div id="menuSeparator"></div>
+      <a id="extensionsButton" unselectable href="chrome://extensions"
+          target="_blank" on-click="onExternalLinkClick_">
+        <span>$i18n{extensionsPageTitle}</span>
+        <iron-icon class="cr-icon icon-external" actionable></iron-icon>
+      </a>
       <a id="about-menu" href="/help">$i18n{aboutPageTitle}</a>
     </iron-selector>
   </template>

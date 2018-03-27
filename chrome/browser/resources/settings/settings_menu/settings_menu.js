@@ -52,7 +52,8 @@ Polymer({
    * @private
    */
   onLinkTap_: function(event) {
-    if (event.target.hasAttribute('href'))
+    if (event.target.tagName == 'A' &&
+        !event.target.hasAttribute('unselectable'))
       event.preventDefault();
   },
 
@@ -86,5 +87,10 @@ Polymer({
    * */
   arrowState_: function(opened) {
     return opened ? 'cr:arrow-drop-up' : 'cr:arrow-drop-down';
+  },
+
+  /** @private */
+  onExternalLinkClick_: function() {
+    this.fire('external-link-click');
   },
 });
