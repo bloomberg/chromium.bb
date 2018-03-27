@@ -25,7 +25,7 @@ void UrlBar::SetToolbarState(const ToolbarState& state) {
   texture_->SetToolbarState(state);
 }
 
-void UrlBar::SetColors(const UrlBarColors& colors) {
+void UrlBar::SetColors(const UrlTextColors& colors) {
   texture_->SetColors(colors);
 }
 

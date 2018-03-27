@@ -16,7 +16,6 @@ namespace vr {
 namespace {
 
 constexpr SkColor kDefaultColor = 0xFF000001;
-constexpr SkColor kDimColor = 0xFF000002;
 constexpr SkColor kUrlColor = 0xFF000003;
 
 constexpr bool kNoOffset = false;
@@ -29,21 +28,19 @@ TEST(OmniboxFormatting, MultiLine) {
       ACMatchClassification(0, ACMatchClassification::NONE),
       ACMatchClassification(1, ACMatchClassification::URL),
       ACMatchClassification(2, ACMatchClassification::MATCH),
-      ACMatchClassification(3, ACMatchClassification::DIM),
-      ACMatchClassification(4, ACMatchClassification::INVISIBLE),
+      ACMatchClassification(3, ACMatchClassification::INVISIBLE),
   };
   size_t string_length = classifications.size();
 
   ColorScheme color_scheme;
   memset(&color_scheme, 0, sizeof(color_scheme));
-  color_scheme.suggestion_text = kDefaultColor;
-  color_scheme.suggestion_dim_text = kDimColor;
-  color_scheme.suggestion_url_text = kUrlColor;
+  color_scheme.url_bar_text = kDefaultColor;
+  color_scheme.hyperlink = kUrlColor;
 
   TextFormatting formatting =
       ConvertClassification(classifications, string_length, color_scheme);
 
-  ASSERT_EQ(formatting.size(), 6u);
+  ASSERT_EQ(formatting.size(), 5u);
 
   EXPECT_EQ(formatting[0].type(), TextFormattingAttribute::COLOR);
   EXPECT_EQ(formatting[0].color(), kDefaultColor);
@@ -62,12 +59,8 @@ TEST(OmniboxFormatting, MultiLine) {
   EXPECT_EQ(formatting[3].range(), gfx::Range(2, 3));
 
   EXPECT_EQ(formatting[4].type(), TextFormattingAttribute::COLOR);
-  EXPECT_EQ(formatting[4].color(), kDimColor);
+  EXPECT_EQ(formatting[4].color(), SK_ColorTRANSPARENT);
   EXPECT_EQ(formatting[4].range(), gfx::Range(3, 4));
-
-  EXPECT_EQ(formatting[5].type(), TextFormattingAttribute::COLOR);
-  EXPECT_EQ(formatting[5].color(), SK_ColorTRANSPARENT);
-  EXPECT_EQ(formatting[5].range(), gfx::Range(4, 5));
 }
 
 struct ElisionTestcase {

@@ -19,7 +19,7 @@ namespace vr {
 
 class UrlBarTexture;
 struct ToolbarState;
-struct UrlBarColors;
+struct UrlTextColors;
 
 class UrlBar : public TexturedElement {
  public:
@@ -29,7 +29,7 @@ class UrlBar : public TexturedElement {
   ~UrlBar() override;
 
   void SetToolbarState(const ToolbarState& state);
-  void SetColors(const UrlBarColors& colors);
+  void SetColors(const UrlTextColors& colors);
 
  private:
   UiTexture* GetTexture() const override;

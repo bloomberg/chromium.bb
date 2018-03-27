@@ -17,16 +17,16 @@ struct ButtonColors {
   SkColor GetBackgroundColor(bool hovered, bool pressed) const;
   SkColor GetForegroundColor(bool disabled) const;
 
-  SkColor background = SK_ColorBLACK;
-  SkColor background_hover = SK_ColorBLACK;
-  SkColor background_down = SK_ColorBLACK;
+  SkColor background = SK_ColorTRANSPARENT;
+  SkColor background_hover = SK_ColorTRANSPARENT;
+  SkColor background_down = SK_ColorTRANSPARENT;
   SkColor foreground = SK_ColorBLACK;
   SkColor foreground_disabled = SK_ColorBLACK;
 };
 
-struct UrlBarColors {
-  bool operator==(const UrlBarColors& other) const;
-  bool operator!=(const UrlBarColors& other) const;
+struct UrlTextColors {
+  bool operator==(const UrlTextColors& other) const;
+  bool operator!=(const UrlTextColors& other) const;
   SkColor deemphasized = SK_ColorBLACK;
   SkColor emphasized = SK_ColorBLACK;
 };
@@ -61,16 +61,9 @@ struct ColorScheme {
   SkColor floor_grid;
   SkColor web_vr_background;
 
-  // The foreground color is used for text and sometimes for icons.
-  SkColor element_foreground;
-  // The background color is used behind text or icons in the foreground color.
-  // The related hover and down colors are to be used for buttons.
-  SkColor element_background;
-  SkColor element_background_hover;
-  SkColor element_background_down;
+  ButtonColors disc_button_colors;
 
   // Specific element background and foregrounds
-  ButtonColors button_colors;
   SkColor loading_indicator_foreground;
   SkColor loading_indicator_background;
   SkColor exit_warning_foreground;
@@ -79,8 +72,6 @@ struct ColorScheme {
   SkColor web_vr_transient_toast_background;
   SkColor exclusive_screen_toast_foreground;
   SkColor exclusive_screen_toast_background;
-  SkColor system_indicator_foreground;
-  SkColor system_indicator_background;
   SkColor modal_prompt_icon_foreground;
   SkColor modal_prompt_background;
   SkColor modal_prompt_foreground;
@@ -92,12 +83,16 @@ struct ColorScheme {
   ButtonColors prompt_secondary_button_colors;
   ButtonColors prompt_primary_button_colors;
 
-  ButtonColors url_bar_button;
+  SkColor url_bar_background;
   SkColor url_bar_separator;
+  SkColor url_bar_text;
   SkColor url_bar_hint_text;
-  SkColor url_bar_default_icon;
   SkColor url_bar_dangerous_icon;
-  UrlBarColors url_bar;
+  ButtonColors url_bar_button;
+  UrlTextColors url_text;
+  SkColor omnibox_background;
+  TextSelectionColors omnibox_text_selection;
+  SkColor hyperlink;
 
   ButtonColors indicator;
 
@@ -112,17 +107,6 @@ struct ColorScheme {
   SkColor web_vr_timeout_message_foreground;
 
   SkColor speech_recognition_circle_background;
-
-  SkColor omnibox_background;
-  SkColor omnibox_icon;
-  SkColor omnibox_text;
-  SkColor omnibox_hint;
-  TextSelectionColors omnibox_text_selection;
-  SkColor suggestion_text;
-  SkColor suggestion_dim_text;
-  SkColor suggestion_url_text;
-  ButtonColors omnibox_voice_search_button_colors;
-  ButtonColors suggestion_button_colors;
 
   SkColor snackbar_background;
   SkColor snackbar_foreground;

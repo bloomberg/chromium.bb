@@ -30,7 +30,9 @@ Button::Button(base::RepeatingCallback<void()> click_handler,
   background->SetType(kTypeButtonBackground);
   background->set_bubble_events(true);
   background->set_contributes_to_parent_bounds(false);
-  background->SetTransitionedProperties({TRANSFORM});
+  background->SetColor(colors_.background);
+  background->SetTransitionedProperties(
+      {TRANSFORM, BACKGROUND_COLOR, FOREGROUND_COLOR});
   background_ = background.get();
   AddChild(std::move(background));
 

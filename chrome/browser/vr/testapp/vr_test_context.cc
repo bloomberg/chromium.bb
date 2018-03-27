@@ -84,9 +84,6 @@ VrTestContext::VrTestContext() : view_scale_factor_(kDefaultViewScaleFactor) {
 
   base::i18n::InitializeICU();
 
-  // TODO(cjgrant): Remove this when the keyboard is enabled by default.
-  base::FeatureList::InitializeInstance("VrBrowserKeyboard", "");
-
   text_input_delegate_ = std::make_unique<TextInputDelegate>();
   keyboard_delegate_ = std::make_unique<TestKeyboardDelegate>();
 
@@ -526,6 +523,11 @@ void VrTestContext::OnContentScreenBoundsChanged(const gfx::SizeF& bounds) {}
 
 void VrTestContext::StartAutocomplete(const AutocompleteRequest& request) {
   auto result = std::make_unique<OmniboxSuggestions>();
+
+  if (request.text.empty()) {
+    ui_->SetOmniboxSuggestions(std::move(result));
+    return;
+  }
 
   // Supply an in-line match if the input matches a canned URL.
   base::string16 full_string = base::UTF8ToUTF16("wikipedia.org");

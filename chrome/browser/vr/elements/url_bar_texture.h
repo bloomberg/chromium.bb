@@ -31,14 +31,14 @@ class UrlBarTexture : public UiTexture {
   gfx::Size GetPreferredTextureSize(int width) const override;
   gfx::SizeF GetDrawnSize() const override;
 
-  void SetColors(const UrlBarColors& colors);
+  void SetColors(const UrlTextColors& colors);
   void SetToolbarState(const ToolbarState& state);
 
  protected:
   static void ApplyUrlStyling(const base::string16& formatted_url,
                               const url::Parsed& parsed,
                               RenderTextWrapper* render_text,
-                              const UrlBarColors& colors);
+                              const UrlTextColors& colors);
 
  private:
   void Draw(SkCanvas* canvas, const gfx::Size& texture_size) override;
@@ -47,7 +47,7 @@ class UrlBarTexture : public UiTexture {
 
   gfx::SizeF size_;
   ToolbarState state_;
-  UrlBarColors colors_;
+  UrlTextColors colors_;
 
   base::Callback<void(UiUnsupportedMode)> failure_callback_;
 
