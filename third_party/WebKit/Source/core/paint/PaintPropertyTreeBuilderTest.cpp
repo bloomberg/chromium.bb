@@ -1621,7 +1621,7 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
       }
     </style>
     <div id='divWithTransform'>
-      <iframe style='border: 7px solid black'></iframe>
+      <iframe id='iframe' style='border: 7px solid black'></iframe>
     </div>
   )HTML");
   SetChildFrameHTML(R"HTML(
@@ -1664,8 +1664,8 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
   // Ensure that the inner div's transform is correctly rooted in the root
   // frame's transform tree.
   // This asserts that we have the following tree structure:
-  // ...
-  //   Transform transform=translation=1.000000,2.000000,3.000000
+  // Transform transform=translation=1.000000,2.000000,3.000000
+  //   PaintOffsetTranslation transform=Identity
   //     PreTranslation transform=translation=7.000000,7.000000,0.000000
   //       PaintOffsetTranslation transform=Identity
   //         ScrollTranslation transform=translation=0.000000,0.000000,0.000000
@@ -1679,8 +1679,22 @@ TEST_P(PaintPropertyTreeBuilderTest, TransformNodesAcrossSubframes) {
   EXPECT_EQ(FloatSize(), paint_offset_translation->Matrix().To2DTranslation());
   EXPECT_EQ(TransformationMatrix().Translate3d(7, 7, 0),
             iframe_pre_translation->Matrix());
-  EXPECT_EQ(div_with_transform_properties->Transform(),
-            iframe_pre_translation->Parent());
+  // SPv1 composited elements always create paint offset translation,
+  // where in SPv2 they don't.
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled()) {
+    EXPECT_EQ(div_with_transform_properties->Transform(),
+              iframe_pre_translation->Parent());
+  } else {
+    LayoutObject* iframe_element = GetLayoutObjectByElementId("iframe");
+    const ObjectPaintProperties* iframe_element_properties =
+        iframe_element->FirstFragment().PaintProperties();
+    EXPECT_EQ(iframe_element_properties->PaintOffsetTranslation(),
+              iframe_pre_translation->Parent());
+    EXPECT_EQ(TransformationMatrix(),
+              iframe_element_properties->PaintOffsetTranslation()->Matrix());
+    EXPECT_EQ(div_with_transform_properties->Transform(),
+              iframe_element_properties->PaintOffsetTranslation()->Parent());
+  }
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, TransformNodesInTransformedSubframes) {

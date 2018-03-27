@@ -59,8 +59,6 @@ crbug.com/771643 [ Mac Win Android ] virtual/disable-spv175/ [ Skip ]
 crbug.com/771643 [ Linux ] virtual/disable-spv175/paint/invalidation/compositing/subpixel-offset-scaled-transform-composited.html [ Pass Failure ]
 crbug.com/809102 virtual/disable-spv175/paint/filters/clip-absolute-under-clip-under-filter.html [ Failure ]
 
-crbug.com/808325 virtual/gpu/fast/canvas/canvas-css-clip-path.html [ Failure ]
-
 # Subpixel differences
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-color-5.html [ Failure ]
 crbug.com/771643 external/wpt/css/css-backgrounds/background-attachment-local/attachment-local-clipping-image-5.html [ Failure ]
