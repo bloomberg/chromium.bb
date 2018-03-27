@@ -4769,6 +4769,17 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                                   tile_data->allow_update_cdf);
       } else {
         if (mbmi->tx_size != get_max_rect_tx_size(bsize)) ++x->txb_split_count;
+        if (block_signals_txsize(bsize)) {
+          const int tx_size_ctx = get_tx_size_context(xd);
+          const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
+          const int depth = tx_size_to_depth(mbmi->tx_size, bsize, 0);
+          const int max_depths = bsize_to_max_depth(bsize, 0);
+
+          if (tile_data->allow_update_cdf)
+            update_cdf(xd->tile_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
+                       depth, max_depths + 1);
+          ++td->counts->intra_tx_size[tx_size_cat][tx_size_ctx][depth];
+        }
       }
       assert(IMPLIES(is_rect_tx(mbmi->tx_size), is_rect_tx_allowed(xd, mbmi)));
     } else {
@@ -4783,17 +4794,6 @@ static void encode_superblock(const AV1_COMP *const cpi, TileDataEnc *tile_data,
         }
       } else {
         intra_tx_size = mbmi->tx_size;
-        if (block_signals_txsize(bsize) && !xd->lossless[mbmi->segment_id]) {
-          const int tx_size_ctx = get_tx_size_context(xd);
-          const int32_t tx_size_cat = bsize_to_tx_size_cat(bsize, 0);
-          const int depth = tx_size_to_depth(intra_tx_size, bsize, 0);
-          const int max_depths = bsize_to_max_depth(bsize, 0);
-
-          if (tile_data->allow_update_cdf)
-            update_cdf(xd->tile_ctx->tx_size_cdf[tx_size_cat][tx_size_ctx],
-                       depth, max_depths + 1);
-          ++td->counts->intra_tx_size[tx_size_cat][tx_size_ctx][depth];
-        }
       }
 
       for (j = 0; j < mi_height; j++)
