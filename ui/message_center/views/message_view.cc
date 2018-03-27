@@ -169,6 +169,14 @@ void MessageView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->SetName(accessible_name_);
 }
 
+bool MessageView::OnMousePressed(const ui::MouseEvent& event) {
+  return true;
+}
+
+bool MessageView::OnMouseDragged(const ui::MouseEvent& event) {
+  return true;
+}
+
 void MessageView::OnMouseReleased(const ui::MouseEvent& event) {
   if (!event.IsOnlyLeftMouseButton())
     return;
