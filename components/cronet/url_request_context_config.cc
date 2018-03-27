@@ -42,7 +42,8 @@ namespace cronet {
 namespace {
 
 // Name of disk cache directory.
-const char kDiskCacheDirectoryName[] = "disk_cache";
+const base::FilePath::CharType kDiskCacheDirectoryName[] =
+    FILE_PATH_LITERAL("disk_cache");
 // TODO(xunjieli): Refactor constants in io_thread.cc.
 const char kQuicFieldTrialName[] = "QUIC";
 const char kQuicConnectionOptions[] = "connection_options";
@@ -461,7 +462,8 @@ void URLRequestContextConfig::ParseAndSetExperimentalOptions(
     } else if (it.key() == kSSLKeyLogFile) {
       std::string ssl_key_log_file_string;
       if (it.value().GetAsString(&ssl_key_log_file_string)) {
-        base::FilePath ssl_key_log_file(ssl_key_log_file_string);
+        base::FilePath ssl_key_log_file(
+            base::FilePath::FromUTF8Unsafe(ssl_key_log_file_string));
         if (!ssl_key_log_file.empty()) {
           // SetSSLKeyLogFile is only safe to call before any SSLClientSockets
           // are created. This should not be used if there are multiple
@@ -551,9 +553,8 @@ void URLRequestContextConfig::ConfigureURLRequestContextBuilder(
     net::URLRequestContextBuilder::HttpCacheParams cache_params;
     if (http_cache == DISK && !storage_path.empty()) {
       cache_params.type = net::URLRequestContextBuilder::HttpCacheParams::DISK;
-      cache_params.path =
-          base::FilePath(storage_path)
-              .Append(FILE_PATH_LITERAL(kDiskCacheDirectoryName));
+      cache_params.path = base::FilePath::FromUTF8Unsafe(storage_path)
+                              .Append(kDiskCacheDirectoryName);
     } else {
       cache_params.type =
           net::URLRequestContextBuilder::HttpCacheParams::IN_MEMORY;

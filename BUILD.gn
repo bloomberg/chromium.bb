@@ -178,8 +178,7 @@ group("gn_all") {
     ]
   }
 
-  # TODO(https://crbug.com/812268): Fix Windows build, and enable it.
-  if (!is_ios && !is_android && !is_win) {
+  if (!is_ios && !is_android) {
     deps += [
       "//components/cronet:cronet_tests",
       "//components/cronet:cronet_unittests",

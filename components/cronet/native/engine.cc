@@ -114,9 +114,15 @@ Cronet_RESULT Cronet_EngineImpl::StartWithParams(
     case Cronet_EngineParams_HTTP_CACHE_MODE_IN_MEMORY:
       context_config_builder.http_cache = URLRequestContextConfig::MEMORY;
       break;
-    case Cronet_EngineParams_HTTP_CACHE_MODE_DISK:
+    case Cronet_EngineParams_HTTP_CACHE_MODE_DISK: {
       context_config_builder.http_cache = URLRequestContextConfig::DISK;
-      if (!base::DirectoryExists(base::FilePath(params->storage_path))) {
+#if defined(OS_WIN)
+      const base::FilePath storage_path(
+          base::FilePath::FromUTF8Unsafe(params->storage_path));
+#else
+      const base::FilePath storage_path(params->storage_path);
+#endif
+      if (!base::DirectoryExists(storage_path)) {
         return CheckResult(
             Cronet_RESULT_ILLEGAL_ARGUMENT_STORAGE_PATH_MUST_EXIST);
       }
@@ -128,6 +134,7 @@ Cronet_RESULT Cronet_EngineImpl::StartWithParams(
       }
       in_use_storage_path_ = params->storage_path;
       break;
+    }
     default:
       context_config_builder.http_cache = URLRequestContextConfig::DISABLED;
   }

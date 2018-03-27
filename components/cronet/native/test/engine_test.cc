@@ -75,7 +75,7 @@ TEST_F(EngineTest, StartResults) {
   EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
   base::FilePath temp_path = base::MakeAbsoluteFilePath(temp_dir.GetPath());
   Cronet_EngineParams_storage_path_set(engine_params,
-                                       temp_path.value().c_str());
+                                       temp_path.AsUTF8Unsafe().c_str());
   // Now the engine should start successfully.
   EXPECT_EQ(Cronet_RESULT_SUCCESS,
             Cronet_Engine_StartWithParams(engine, engine_params));
@@ -170,7 +170,7 @@ TEST_F(EngineTest, StartNetLogToFile) {
       "{ \"QUIC\" : {\"max_server_configs_stored_in_properties\" : 8} }");
   // Test that net log cannot start/stop before engine start.
   EXPECT_FALSE(Cronet_Engine_StartNetLogToFile(
-      engine, net_log_file.value().c_str(), true));
+      engine, net_log_file.AsUTF8Unsafe().c_str(), true));
   Cronet_Engine_StopNetLog(engine);
 
   // Start the engine.
@@ -179,15 +179,15 @@ TEST_F(EngineTest, StartNetLogToFile) {
 
   // Test that normal start/stop net log works.
   EXPECT_TRUE(Cronet_Engine_StartNetLogToFile(
-      engine, net_log_file.value().c_str(), true));
+      engine, net_log_file.AsUTF8Unsafe().c_str(), true));
   Cronet_Engine_StopNetLog(engine);
 
   // Test that double start/stop net log works.
   EXPECT_TRUE(Cronet_Engine_StartNetLogToFile(
-      engine, net_log_file.value().c_str(), true));
+      engine, net_log_file.AsUTF8Unsafe().c_str(), true));
   // Test that second start fails.
   EXPECT_FALSE(Cronet_Engine_StartNetLogToFile(
-      engine, net_log_file.value().c_str(), true));
+      engine, net_log_file.AsUTF8Unsafe().c_str(), true));
   // Test that multiple stops work.
   Cronet_Engine_StopNetLog(engine);
   Cronet_Engine_StopNetLog(engine);
@@ -207,7 +207,7 @@ TEST_F(EngineTest, StartNetLogToFile) {
   Cronet_Engine_Shutdown(engine);
   // Test that net log cannot start/stop after engine shutdown.
   EXPECT_FALSE(Cronet_Engine_StartNetLogToFile(
-      engine, net_log_file.value().c_str(), true));
+      engine, net_log_file.AsUTF8Unsafe().c_str(), true));
   Cronet_Engine_StopNetLog(engine);
   Cronet_Engine_Destroy(engine);
 }

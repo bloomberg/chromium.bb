@@ -45,7 +45,7 @@ class HostCachePersistenceManagerTest : public testing::Test {
   // not the full contents, since the tests in this file are only intended
   // to test that writes happen when they're supposed to, not serialization
   // correctness.
-  void CheckPref(uint size) {
+  void CheckPref(size_t size) {
     const base::Value* value = pref_service_->GetUserPref(kPrefName);
     base::ListValue list;
     if (value)
