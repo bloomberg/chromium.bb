@@ -17,22 +17,22 @@ namespace proxy {
 
 PpapiCommandBufferProxy::PpapiCommandBufferProxy(
     const ppapi::HostResource& resource,
-    PluginDispatcher* dispatcher,
+    InstanceData::FlushInfo* flush_info,
+    LockedSender* sender,
     const gpu::Capabilities& capabilities,
     const SerializedHandle& shared_state,
     gpu::CommandBufferId command_buffer_id)
     : command_buffer_id_(command_buffer_id),
       capabilities_(capabilities),
       resource_(resource),
-      dispatcher_(dispatcher),
+      flush_info_(flush_info),
+      sender_(sender),
       next_fence_sync_release_(1),
       pending_fence_sync_release_(0),
       flushed_fence_sync_release_(0),
       validated_fence_sync_release_(0) {
   shared_state_shm_.reset(new base::SharedMemory(shared_state.shmem(), false));
   shared_state_shm_->Map(shared_state.size());
-  InstanceData* data = dispatcher->GetInstanceData(resource.instance());
-  flush_info_ = &data->flush_info_;
 }
 
 PpapiCommandBufferProxy::~PpapiCommandBufferProxy() {
@@ -190,7 +190,10 @@ gpu::CommandBufferId PpapiCommandBufferProxy::GetCommandBufferID() const {
 }
 
 void PpapiCommandBufferProxy::FlushPendingWork() {
-  // This is only relevant for out-of-process command buffers.
+  if (last_state_.error != gpu::error::kNoError)
+    return;
+  if (flush_info_->flush_pending)
+    FlushInternal();
 }
 
 uint64_t PpapiCommandBufferProxy::GenerateFenceSyncRelease() {
@@ -263,7 +266,7 @@ bool PpapiCommandBufferProxy::Send(IPC::Message* msg) {
   // buffer may use a sync IPC with another lock held which could lead to lock
   // and deadlock if we dropped the proxy lock here.
   // http://crbug.com/418651
-  if (dispatcher_->SendAndStayLocked(msg))
+  if (sender_->SendAndStayLocked(msg))
     return true;
 
   last_state_.error = gpu::error::kLostContext;

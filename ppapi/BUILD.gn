@@ -348,6 +348,7 @@ test("ppapi_unittests") {
     "proxy/plugin_dispatcher_unittest.cc",
     "proxy/plugin_resource_tracker_unittest.cc",
     "proxy/plugin_var_tracker_unittest.cc",
+    "proxy/ppapi_command_buffer_proxy_unittest.cc",
     "proxy/ppb_var_unittest.cc",
     "proxy/ppp_instance_private_proxy_unittest.cc",
     "proxy/ppp_instance_proxy_unittest.cc",
