@@ -3561,6 +3561,11 @@ const FeatureEntry kFeatureEntries[] = {
      flag_descriptions::kAshEnablePersistentWindowBoundsName,
      flag_descriptions::kAshEnablePersistentWindowBoundsDescription, kOsCrOS,
      FEATURE_VALUE_TYPE(ash::features::kPersistentWindowBounds)},
+
+    {"ash-enable-mode-specific-power-button",
+     flag_descriptions::kAshEnableModeSpecificPowerButtonName,
+     flag_descriptions::kAshEnableModeSpecificPowerButtonDescription, kOsCrOS,
+     FEATURE_VALUE_TYPE(ash::features::kModeSpecificPowerButton)},
 #endif  // OS_CHROMEOS
 
     {"clipboard-content-setting",

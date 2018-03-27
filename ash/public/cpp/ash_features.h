@@ -50,6 +50,11 @@ ASH_PUBLIC_EXPORT extern const base::Feature kTrilinearFiltering;
 // Enables notifications on the lock screen.
 ASH_PUBLIC_EXPORT extern const base::Feature kLockScreenNotifications;
 
+// Enables mode-specific power button behavior.
+// TODO(derat): Remove this after we make a decision about whether to enable it
+// by default: https://crbug.com/819276
+ASH_PUBLIC_EXPORT extern const base::Feature kModeSpecificPowerButton;
+
 ASH_PUBLIC_EXPORT bool IsDisplayMoveWindowAccelsEnabled();
 
 ASH_PUBLIC_EXPORT bool IsDockedMagnifierEnabled();
@@ -63,6 +68,8 @@ ASH_PUBLIC_EXPORT bool IsSystemTrayUnifiedEnabled();
 ASH_PUBLIC_EXPORT bool IsTrilinearFilteringEnabled();
 
 ASH_PUBLIC_EXPORT bool IsLockScreenNotificationsEnabled();
+
+ASH_PUBLIC_EXPORT bool IsModeSpecificPowerButtonEnabled();
 
 }  // namespace features
 }  // namespace ash

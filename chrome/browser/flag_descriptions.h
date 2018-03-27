@@ -1864,6 +1864,9 @@ extern const char kAshEnableNewOverviewAnimationsDescription[];
 extern const char kAshEnablePersistentWindowBoundsName[];
 extern const char kAshEnablePersistentWindowBoundsDescription[];
 
+extern const char kAshEnableModeSpecificPowerButtonName[];
+extern const char kAshEnableModeSpecificPowerButtonDescription[];
+
 extern const char kAshEnableTrilinearFilteringName[];
 extern const char kAshEnableTrilinearFilteringDescription[];
 

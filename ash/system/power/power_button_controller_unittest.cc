@@ -9,6 +9,7 @@
 #include "ash/display/screen_orientation_controller.h"
 #include "ash/display/screen_orientation_controller_test_api.h"
 #include "ash/media_controller.h"
+#include "ash/public/cpp/ash_features.h"
 #include "ash/public/cpp/ash_switches.h"
 #include "ash/public/cpp/config.h"
 #include "ash/session/session_controller.h"
@@ -25,6 +26,7 @@
 #include "base/command_line.h"
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
+#include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
@@ -180,7 +182,6 @@ TEST_F(PowerButtonControllerTest, LockScreenIfRequired) {
 TEST_F(PowerButtonControllerTest, TappingPowerButtonOfClamshell) {
   // Should not turn the screen off when screen is on.
   InitPowerButtonControllerMembers(PowerManagerClient::TabletMode::UNSUPPORTED);
-  EXPECT_FALSE(turn_screen_off_for_tap_);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   PressPowerButton();
   power_button_test_api_->SetShowMenuAnimationDone(false);
@@ -217,7 +218,6 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfClamshell) {
 TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
   // Should turn screen off if screen is on and power button menu will not be
   // shown.
-  EXPECT_TRUE(turn_screen_off_for_tap_);
   PressPowerButton();
   // Showing power menu animation hasn't started as power menu timer is running.
   EXPECT_TRUE(power_button_test_api_->PowerButtonMenuTimerIsRunning());
@@ -249,7 +249,6 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
   ForceClamshellPowerButton();
   SetTabletModeSwitchState(PowerManagerClient::TabletMode::ON);
   AdvanceClockToAvoidIgnoring();
-  EXPECT_FALSE(turn_screen_off_for_tap_);
   EXPECT_FALSE(power_manager_client_->backlights_forced_off());
   PressPowerButton();
   power_button_test_api_->SetShowMenuAnimationDone(false);
@@ -261,6 +260,32 @@ TEST_F(PowerButtonControllerTest, TappingPowerButtonOfTablet) {
   // Forced clamshell power button device should start dismissing menu animation
   // immediately as releasing the power button.
   EXPECT_FALSE(power_button_test_api_->IsMenuOpened());
+}
+
+// Tests that the mode-specific power button feature causes power button taps to
+// turn the screen off while in tablet mode but not in laptop mode.
+TEST_F(PowerButtonControllerTest, ModeSpecificPowerButton) {
+  base::test::ScopedFeatureList scoped_feature_list;
+  scoped_feature_list.InitAndEnableFeature(features::kModeSpecificPowerButton);
+
+  // While the device is in tablet mode, tapping the power button should turn
+  // the display off (and then back on if pressed a second time).
+  power_button_controller_->OnTabletModeStarted();
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_TRUE(power_manager_client_->backlights_forced_off());
+  PressPowerButton();
+  ReleasePowerButton();
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
+
+  // In laptop mode, tapping the power button shouldn't turn the screen off.
+  // Instead, we should start showing the power menu animation.
+  power_button_controller_->OnTabletModeEnded();
+  AdvanceClockToAvoidIgnoring();
+  PressPowerButton();
+  EXPECT_TRUE(power_button_test_api_->IsMenuOpened());
+  ReleasePowerButton();
+  EXPECT_FALSE(power_manager_client_->backlights_forced_off());
 }
 
 // Tests that release power button after menu is opened but before trigger
