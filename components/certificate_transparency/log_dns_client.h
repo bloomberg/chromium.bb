@@ -11,6 +11,7 @@
 
 #include "base/callback.h"
 #include "base/macros.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/string_piece.h"
 #include "net/base/completion_callback.h"
 #include "net/base/net_errors.h"
@@ -33,6 +34,12 @@ namespace certificate_transparency {
 // It must be created and deleted on the same thread. It is not thread-safe.
 class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
  public:
+  class AuditProofQuery {
+   public:
+    virtual ~AuditProofQuery() = default;
+    virtual const net::ct::MerkleAuditProof& GetProof() const = 0;
+  };
+
   // Creates a log client that will take ownership of |dns_client| and use it
   // to perform DNS queries. Queries will be logged to |net_log|.
   // The |dns_client| does not need to be configured first - this will be done
@@ -60,7 +67,8 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // constructor of LogDnsClient). This callback will fire once and then be
   // unregistered. Should only be used if QueryAuditProof() returns
   // net::ERR_TEMPORARILY_THROTTLED.
-  void NotifyWhenNotThrottled(const base::Closure& callback);
+  // The callback will be run on the same thread that created the LogDnsClient.
+  void NotifyWhenNotThrottled(base::OnceClosure callback);
 
   // Queries a CT log to retrieve an audit proof for the leaf with |leaf_hash|.
   // The log is identified by |domain_for_log|, which is the DNS name used as a
@@ -68,10 +76,12 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   // The |leaf_hash| is the SHA-256 Merkle leaf hash (see RFC6962, section 2.1).
   // The size of the CT log tree, for which the proof is requested, must be
   // provided in |tree_size|.
-  // The leaf index and audit proof obtained from the CT log will be placed in
-  // |out_proof|.
+  // A handle to the query will be placed in |out_query|. The audit proof can be
+  // obtained from that once the query completes. Deleting this handle before
+  // the query completes will cancel it. It must not outlive the LogDnsClient.
   // If the proof cannot be obtained synchronously, this method will return
   // net::ERR_IO_PENDING and invoke |callback| once the query is complete.
+  // The callback will be run on the same thread that created the LogDnsClient.
   // Returns:
   // - net::OK if the query was successful.
   // - net::ERR_IO_PENDING if the query was successfully started and is
@@ -85,24 +95,23 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   net::Error QueryAuditProof(base::StringPiece domain_for_log,
                              std::string leaf_hash,
                              uint64_t tree_size,
-                             net::ct::MerkleAuditProof* out_proof,
+                             std::unique_ptr<AuditProofQuery>* out_query,
                              const net::CompletionCallback& callback);
 
  private:
-  class AuditProofQuery;
-
   // Invoked when an audit proof query completes.
-  // |query| is the query that has completed.
   // |callback| is the user-provided callback that should be notified.
   // |net_error| is a net::Error indicating success or failure.
-  void QueryAuditProofComplete(AuditProofQuery* query,
-                               const net::CompletionCallback& callback,
+  void QueryAuditProofComplete(const net::CompletionCallback& callback,
                                int net_error);
 
-  // Returns true if the maximum number of queries are currently in flight.
-  // If the maximum number of concurrency queries is set to 0, this will always
+  // Invoked when an audit proof query is cancelled.
+  void QueryAuditProofCancelled();
+
+  // Returns true if the maximum number of queries are currently in-flight.
+  // If the maximum number of in-flight queries is set to 0, this will always
   // return false.
-  bool HasMaxConcurrentQueriesInProgress() const;
+  bool HasMaxQueriesInFlight() const;
 
   // Updates the |dns_client_| config using NetworkChangeNotifier.
   void UpdateDnsConfig();
@@ -111,16 +120,12 @@ class LogDnsClient : public net::NetworkChangeNotifier::DNSObserver {
   std::unique_ptr<net::DnsClient> dns_client_;
   // Passed to the DNS client for logging.
   net::NetLogWithSource net_log_;
-  // A FIFO queue of ongoing queries. Since entries will always be appended to
-  // the end and lookups will typically yield entries at the beginning,
-  // std::list is an efficient choice.
-  std::list<std::unique_ptr<AuditProofQuery>> audit_proof_queries_;
-  // The maximum number of queries that can be in flight at one time.
-  size_t max_concurrent_queries_;
-  // Callbacks to invoke when the number of concurrent queries is at its limit.
-  std::list<base::Closure> not_throttled_callbacks_;
-  // Creates weak_ptrs to this, for callback purposes.
-  base::WeakPtrFactory<LogDnsClient> weak_ptr_factory_;
+  // The number of queries that are currently in-flight.
+  size_t in_flight_queries_;
+  // The maximum number of queries that can be in-flight at one time.
+  size_t max_in_flight_queries_;
+  // Callbacks to invoke when the number of in-flight queries is at its limit.
+  std::list<base::OnceClosure> not_throttled_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(LogDnsClient);
 };
