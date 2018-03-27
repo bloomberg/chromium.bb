@@ -83,8 +83,8 @@ class CC_EXPORT DisplayResourceProvider : public ResourceProvider {
     DisplayResourceProvider* const resource_provider_;
     const viz::ResourceId resource_id_;
 
-    GLuint texture_id_;
-    GLenum target_;
+    GLuint texture_id_ = 0;
+    GLenum target_ = GL_TEXTURE_2D;
     gfx::Size size_;
     gfx::ColorSpace color_space_;
 
