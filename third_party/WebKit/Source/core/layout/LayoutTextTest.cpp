@@ -145,6 +145,61 @@ TEST_F(LayoutTextTest, ContainsOnlyWhitespaceOrNbsp) {
             GetBasicText()->ContainsOnlyWhitespaceOrNbsp());
 }
 
+struct NGOffsetMappingTestData {
+  const char* text;
+  unsigned dom_start;
+  unsigned dom_end;
+  bool success;
+  unsigned text_start;
+  unsigned text_end;
+} offset_mapping_test_data[] = {
+    {"<div id=target> a  b  </div>", 0, 1, true, 0, 0},
+    {"<div id=target> a  b  </div>", 1, 2, true, 0, 1},
+    {"<div id=target> a  b  </div>", 2, 3, true, 1, 2},
+    {"<div id=target> a  b  </div>", 2, 4, true, 1, 2},
+    {"<div id=target> a  b  </div>", 2, 5, true, 1, 3},
+    {"<div id=target> a  b  </div>", 3, 4, true, 2, 2},
+    {"<div id=target> a  b  </div>", 3, 5, true, 2, 3},
+    {"<div id=target> a  b  </div>", 5, 6, true, 3, 3},
+    {"<div id=target> a  b  </div>", 5, 7, true, 3, 3},
+    {"<div id=target> a  b  </div>", 6, 7, true, 3, 3},
+    {"<div>a <span id=target> </span>b</div>", 0, 1, false, 0, 1}};
+
+std::ostream& operator<<(std::ostream& out, NGOffsetMappingTestData data) {
+  return out << "\"" << data.text << "\" " << data.dom_start << ","
+             << data.dom_end << " => " << (data.success ? "true " : "false ")
+             << data.text_start << "," << data.text_end;
+}
+
+class MapDOMOffsetToTextContentOffset
+    : public LayoutTextTest,
+      private ScopedLayoutNGForTest,
+      public ::testing::WithParamInterface<NGOffsetMappingTestData> {
+ public:
+  MapDOMOffsetToTextContentOffset() : ScopedLayoutNGForTest(true) {}
+};
+
+INSTANTIATE_TEST_CASE_P(LayoutTextTest,
+                        MapDOMOffsetToTextContentOffset,
+                        ::testing::ValuesIn(offset_mapping_test_data));
+
+TEST_P(MapDOMOffsetToTextContentOffset, Basic) {
+  const auto data = GetParam();
+  SetBodyInnerHTML(data.text);
+  LayoutText* layout_text = GetBasicText();
+  const NGOffsetMapping* mapping = layout_text->GetNGOffsetMapping();
+  ASSERT_TRUE(mapping);
+  unsigned start = data.dom_start;
+  unsigned end = data.dom_end;
+  bool success =
+      layout_text->MapDOMOffsetToTextContentOffset(*mapping, &start, &end);
+  EXPECT_EQ(data.success, success);
+  if (success) {
+    EXPECT_EQ(data.text_start, start);
+    EXPECT_EQ(data.text_end, end);
+  }
+}
+
 TEST_P(ParameterizedLayoutTextTest, CaretMinMaxOffset) {
   SetBasicBody("foo");
   EXPECT_EQ(0, GetBasicText()->CaretMinOffset());

@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/geometry/ng_physical_offset_rect.h"
 
+#include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutRect.h"
 #include "platform/wtf/text/WTFString.h"
 
@@ -39,6 +40,10 @@ NGPhysicalOffsetRect::NGPhysicalOffsetRect(const LayoutRect& source)
                            {source.Width(), source.Height()}) {}
 
 LayoutRect NGPhysicalOffsetRect::ToLayoutRect() const {
+  return {offset.left, offset.top, size.width, size.height};
+}
+
+FloatRect NGPhysicalOffsetRect::ToFloatRect() const {
   return {offset.left, offset.top, size.width, size.height};
 }
 
