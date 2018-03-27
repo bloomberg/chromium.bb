@@ -802,6 +802,9 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, FreezeTab) {
       "window.domAutomationController.send(mainFrameFreezeCount);";
   const char kChildFrameFrozenStateJS[] =
       "window.domAutomationController.send(childFrameFreezeCount);";
+  const char kHiddenStateJS[] =
+      "window.domAutomationController.send("
+      "window.document.hidden);";
 
   const int freezing_index = 1;  // The second tab.
   // Setup the embedded_test_server to serve a cross-site frame.
@@ -828,6 +831,12 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest, FreezeTab) {
     EXPECT_NE(main_frame->GetProcess()->GetID(),
               child_frame->GetProcess()->GetID());
   }
+
+  // Ensure that the tab is hidden or backgrounded.
+  bool hidden_state_result;
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(main_frame, kHiddenStateJS,
+                                                   &hidden_state_result));
+  EXPECT_TRUE(hidden_state_result);
 
   EXPECT_TRUE(content::ExecuteScript(
       main_frame,
@@ -915,7 +924,7 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   content::WebContents* contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   content::RenderFrameHost* main_frame = contents->GetMainFrame();
-  ASSERT_LE(2u, contents->GetAllFrames().size());
+  ASSERT_EQ(3u, contents->GetAllFrames().size());
   content::RenderFrameHost* child_frame = contents->GetAllFrames()[1];
 
   // Sanity check that in this test page the main frame and the
@@ -967,11 +976,20 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
   EXPECT_TRUE(discarded_childframe_result);
 
   // Navigate the child frame, wasDiscarded is not set anymore.
-  // TODO(panicker): Add test to navigate the child frame cross site.
   GURL childframe_url(embedded_test_server()->GetURL("b.com", "/title1.html"));
   EXPECT_TRUE(NavigateIframeToURL(contents, "frame1", childframe_url));
   EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
-      child_frame, kDiscardedStateJS, &discarded_childframe_result));
+      contents->GetAllFrames()[1], kDiscardedStateJS,
+      &discarded_childframe_result));
+  EXPECT_FALSE(discarded_childframe_result);
+
+  // Navigate second child frame cross site.
+  GURL second_childframe_url(
+      embedded_test_server()->GetURL("d.com", "/title1.html"));
+  EXPECT_TRUE(NavigateIframeToURL(contents, "frame2", second_childframe_url));
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      contents->GetAllFrames()[2], kDiscardedStateJS,
+      &discarded_childframe_result));
   EXPECT_FALSE(discarded_childframe_result);
 
   // Navigate the main frame (same site) again, wasDiscarded is not set anymore.
@@ -980,8 +998,13 @@ IN_PROC_BROWSER_TEST_F(TabManagerTest,
       main_frame, kDiscardedStateJS, &discarded_mainframe_result));
   EXPECT_FALSE(discarded_mainframe_result);
 
-  // TODO(panicker): Add test to go back in history and ensure wasDiscarded is
-  // still false.
+  // Go back in history and ensure wasDiscarded is still false.
+  content::TestNavigationObserver observer(contents);
+  contents->GetController().GoBack();
+  observer.Wait();
+  EXPECT_TRUE(content::ExecuteScriptAndExtractBool(
+      main_frame, kDiscardedStateJS, &discarded_mainframe_result));
+  EXPECT_FALSE(discarded_mainframe_result);
 }
 
 namespace {
