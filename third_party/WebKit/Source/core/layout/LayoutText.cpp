@@ -1957,9 +1957,12 @@ Optional<unsigned> LayoutText::CaretOffsetForPosition(
   if (position.IsNull() || position.AnchorNode() != GetNode())
     return WTF::nullopt;
   if (GetNode()->IsTextNode()) {
-    // TODO(xiaochengh): Consider Before/AfterAnchor.
-    DCHECK(position.IsOffsetInAnchor()) << position;
+    if (position.IsBeforeAnchor())
+      return 0;
     // TODO(layout-dev): Support offset change due to text-transform.
+    if (position.IsAfterAnchor())
+      return TextLength();
+    DCHECK(position.IsOffsetInAnchor()) << position;
     DCHECK_LE(position.OffsetInContainerNode(), static_cast<int>(TextLength()))
         << position;
     return position.OffsetInContainerNode();

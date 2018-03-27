@@ -33,8 +33,14 @@ Position CreatePositionForOffsetMapping(const Node& node, unsigned dom_offset) {
 
 std::pair<const Node&, unsigned> ToNodeOffsetPair(const Position& position) {
   DCHECK(NGOffsetMapping::AcceptsPosition(position)) << position;
-  if (position.AnchorNode()->IsTextNode())
-    return {*position.AnchorNode(), position.OffsetInContainerNode()};
+  if (position.AnchorNode()->IsTextNode()) {
+    if (position.IsOffsetInAnchor())
+      return {*position.AnchorNode(), position.OffsetInContainerNode()};
+    if (position.IsBeforeAnchor())
+      return {*position.AnchorNode(), 0};
+    DCHECK(position.IsAfterAnchor());
+    return {*position.AnchorNode(), ToText(position.AnchorNode())->length()};
+  }
   if (position.IsBeforeAnchor())
     return {*position.AnchorNode(), 0};
   return {*position.AnchorNode(), 1};
@@ -127,7 +133,10 @@ bool NGOffsetMapping::AcceptsPosition(const Position& position) {
   if (position.IsNull())
     return false;
   if (position.AnchorNode()->IsTextNode()) {
-    return position.IsOffsetInAnchor();
+    // Position constructor should have rejected other anchor types.
+    DCHECK(position.IsOffsetInAnchor() || position.IsBeforeAnchor() ||
+           position.IsAfterAnchor());
+    return true;
   }
   if (!position.IsBeforeAnchor() && !position.IsAfterAnchor())
     return false;

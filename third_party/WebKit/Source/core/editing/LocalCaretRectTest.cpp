@@ -747,13 +747,10 @@ TEST_P(ParameterizedLocalCaretRectTest, CollapsedSpace) {
   EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
             LocalCaretRectOfPosition(PositionWithAffinity(
                 Position(foo, 3), TextAffinity::kDownstream)));
+  EXPECT_EQ(LocalCaretRect(foo->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
+            LocalCaretRectOfPosition(PositionWithAffinity(
+                Position::AfterNode(*foo), TextAffinity::kDownstream)));
   // TODO(yoichio): Following should return valid rect: crbug.com/812535.
-  EXPECT_EQ(
-      LayoutNGEnabled()
-          ? LocalCaretRect(foo->GetLayoutObject(), LayoutRect(0, 0, 0, 0))
-          : LocalCaretRect(foo->GetLayoutObject(), LayoutRect(30, 0, 1, 10)),
-      LocalCaretRectOfPosition(PositionWithAffinity(
-          Position::AfterNode(*foo), TextAffinity::kDownstream)));
   EXPECT_EQ(
       LocalCaretRect(first_span->GetLayoutObject(), LayoutRect(0, 0, 0, 0)),
       LocalCaretRectOfPosition(PositionWithAffinity(
