@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_OSK_OBSERVER_H_
-#define UI_BASE_WIN_OSK_OBSERVER_H_
+#ifndef UI_BASE_IME_WIN_OSK_DISPLAY_OBSERVER_H_
+#define UI_BASE_IME_WIN_OSK_DISPLAY_OBSERVER_H_
 
 namespace gfx {
 class Rect;
@@ -13,7 +13,7 @@ namespace ui {
 
 // Implemented by classes who wish to get notified about the on screen keyboard
 // becoming visible/hidden.
-class UI_BASE_EXPORT OnScreenKeyboardObserver {
+class UI_BASE_IME_EXPORT OnScreenKeyboardObserver {
  public:
   virtual ~OnScreenKeyboardObserver() {}
 
@@ -24,4 +24,4 @@ class UI_BASE_EXPORT OnScreenKeyboardObserver {
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_OSK_OBSERVER_H_
+#endif  // UI_BASE_IME_WIN_OSK_DISPLAY_OBSERVER_H_

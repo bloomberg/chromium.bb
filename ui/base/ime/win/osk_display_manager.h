@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_OSK_DISPLAY_MANAGER_H_
-#define UI_BASE_WIN_OSK_DISPLAY_MANAGER_H_
+#ifndef UI_BASE_IME_WIN_OSK_DISPLAY_MANAGER_H_
+#define UI_BASE_IME_WIN_OSK_DISPLAY_MANAGER_H_
 
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
+#include "ui/base/ime/ui_base_ime_export.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace ui {
@@ -18,7 +18,7 @@ class OnScreenKeyboardObserver;
 // This class provides functionality to display the on screen keyboard on
 // Windows 8+. It optionally notifies observers that the OSK is displayed,
 // hidden, etc.
-class UI_BASE_EXPORT OnScreenKeyboardDisplayManager {
+class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManager {
  public:
   static OnScreenKeyboardDisplayManager* GetInstance();
 
@@ -44,4 +44,4 @@ class UI_BASE_EXPORT OnScreenKeyboardDisplayManager {
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_OSK_DISPLAY_MANAGER_H_
+#endif  // UI_BASE_IME_WIN_OSK_DISPLAY_MANAGER_H_

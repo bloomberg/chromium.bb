@@ -2,17 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_STUB_H_
-#define UI_BASE_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_STUB_H_
+#ifndef UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_STUB_H_
+#define UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_STUB_H_
 
-#include "ui/base/ui_base_export.h"
-#include "ui/base/win/osk_display_manager.h"
+#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ime/win/osk_display_manager.h"
 
 namespace ui {
 
 // This class provides a stub OnScreenDisplayManager.
 // Used for < Win8 OS versions.
-class UI_BASE_EXPORT OnScreenKeyboardDisplayManagerStub
+class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerStub
     : public OnScreenKeyboardDisplayManager {
  public:
   ~OnScreenKeyboardDisplayManagerStub() override;
@@ -32,4 +32,4 @@ class UI_BASE_EXPORT OnScreenKeyboardDisplayManagerStub
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_STUB_H_
+#endif  // UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_STUB_H_
