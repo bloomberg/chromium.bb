@@ -62,6 +62,9 @@ struct EntityData {
   // hierarchical datatypes (e.g. Bookmarks).
   std::string parent_id;
 
+  // Indicate whether this is a folder or not. Relevant only for bookmarks.
+  bool is_folder = false;
+
   // Unique position of an entity among its siblings. This is supposed to be
   // set only for datatypes that support positioning (e.g. Bookmarks).
   sync_pb::UniquePosition unique_position;

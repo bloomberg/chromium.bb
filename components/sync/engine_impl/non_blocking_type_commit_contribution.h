@@ -45,11 +45,12 @@ class NonBlockingTypeCommitContribution : public CommitContribution {
   void CleanUp() override;
   size_t GetNumEntries() const override;
 
- private:
+  // Public for testing.
   // Copies data to be committed from CommitRequestData into SyncEntity proto.
   static void PopulateCommitProto(const CommitRequestData& commit_entity,
                                   sync_pb::SyncEntity* commit_proto);
 
+ private:
   // Generates id for new entites and encrypts entity if needed.
   void AdjustCommitProto(sync_pb::SyncEntity* commit_proto);
 

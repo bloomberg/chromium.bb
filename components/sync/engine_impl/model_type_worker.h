@@ -59,6 +59,9 @@ class ModelTypeWorker : public UpdateHandler,
                         public CommitContributor,
                         public CommitQueue {
  public:
+  // Public for testing.
+  enum DecryptionStatus { SUCCESS, DECRYPTION_PENDING, FAILED_TO_DECRYPT };
+
   ModelTypeWorker(ModelType type,
                   const sync_pb::ModelTypeState& initial_state,
                   bool trigger_initial_sync,
@@ -68,6 +71,14 @@ class ModelTypeWorker : public UpdateHandler,
                   DataTypeDebugInfoEmitter* debug_info_emitter,
                   CancelationSignal* cancelation_signal);
   ~ModelTypeWorker() override;
+
+  // Public for testing.
+  // |cryptographer| can be null.
+  // |response_data| must be not null.
+  static DecryptionStatus PopulateUpdateResponseData(
+      const Cryptographer* cryptographer,
+      const sync_pb::SyncEntity& update_entity,
+      UpdateResponseData* response_data);
 
   ModelType GetModelType() const;
 

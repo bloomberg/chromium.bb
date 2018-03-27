@@ -1146,6 +1146,37 @@ TEST_F(ModelTypeWorkerTest, CommitOnly) {
   EXPECT_FALSE(commit_response.specifics_hash.empty());
 }
 
+TEST_F(ModelTypeWorkerTest, PopulateUpdateResponseData) {
+  InitializeCommitOnly();
+  sync_pb::SyncEntity entity;
+
+  entity.set_id_string("SomeID");
+  entity.set_parent_id_string("ParentID");
+  entity.set_folder(false);
+  entity.mutable_unique_position()->set_custom_compressed_v1("POSITION");
+  entity.set_version(1);
+  entity.set_client_defined_unique_tag("TAG");
+  entity.set_deleted(false);
+  entity.mutable_specifics()->CopyFrom(GenerateSpecifics(kTag1, kValue1));
+  UpdateResponseData response_data;
+
+  FakeEncryptor encryptor;
+  Cryptographer cryptographer(&encryptor);
+
+  EXPECT_EQ(ModelTypeWorker::SUCCESS,
+            ModelTypeWorker::PopulateUpdateResponseData(&cryptographer, entity,
+                                                        &response_data));
+  const EntityData& data = response_data.entity.value();
+  EXPECT_FALSE(data.id.empty());
+  EXPECT_FALSE(data.parent_id.empty());
+  EXPECT_FALSE(data.is_folder);
+  EXPECT_TRUE(data.unique_position.has_custom_compressed_v1());
+  EXPECT_EQ("TAG", data.client_tag_hash);
+  EXPECT_FALSE(data.is_deleted());
+  EXPECT_EQ(kTag1, data.specifics.preference().name());
+  EXPECT_EQ(kValue1, data.specifics.preference().value());
+}
+
 class GetLocalChangesRequestTest : public testing::Test {
  public:
   GetLocalChangesRequestTest();

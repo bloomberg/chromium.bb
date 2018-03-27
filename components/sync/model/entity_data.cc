@@ -42,6 +42,7 @@ void EntityData::Swap(EntityData* other) {
   std::swap(modification_time, other->modification_time);
 
   parent_id.swap(other->parent_id);
+  std::swap(is_folder, other->is_folder);
   unique_position.Swap(&other->unique_position);
 }
 
@@ -76,6 +77,7 @@ std::unique_ptr<base::DictionaryValue> EntityData::ToDictionaryValue() {
   ADD_TO_DICT_WITH_TRANSFORM(dict, creation_time, GetTimeDebugString);
   ADD_TO_DICT_WITH_TRANSFORM(dict, modification_time, GetTimeDebugString);
   ADD_TO_DICT_WITH_TRANSFORM(dict, unique_position, UniquePositionToString);
+  dict->SetBoolean("IS_FOLDER", is_folder);
   return dict;
 }
 
@@ -99,7 +101,7 @@ void EntityDataTraits::SwapValue(EntityData* dest, EntityData* src) {
 }
 
 bool EntityDataTraits::HasValue(const EntityData& value) {
-  return !value.client_tag_hash.empty();
+  return !value.client_tag_hash.empty() || !value.id.empty();
 }
 
 const EntityData& EntityDataTraits::DefaultValue() {
