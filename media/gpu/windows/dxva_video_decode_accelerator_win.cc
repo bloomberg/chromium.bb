@@ -807,6 +807,10 @@ bool DXVAVideoDecodeAccelerator::Initialize(const Config& config,
         ::GetProcAddress(dxgi_manager_dll, "MFCreateDXGIDeviceManager"));
   }
 
+  RETURN_AND_NOTIFY_ON_FAILURE(make_context_current_cb_.Run(),
+                               "Failed to make context current",
+                               PLATFORM_FAILURE, false);
+
   RETURN_AND_NOTIFY_ON_FAILURE(
       gl::g_driver_egl.ext.b_EGL_ANGLE_surface_d3d_texture_2d_share_handle,
       "EGL_ANGLE_surface_d3d_texture_2d_share_handle unavailable",
