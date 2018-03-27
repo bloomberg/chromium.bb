@@ -3,8 +3,8 @@
 ## Summary
 
 This directory contains files that list tests that are not yet ready to run in a
-particular mode. For example - the `site-per-process.browser_tests.filter` file
-lists tests that should be excluded when running `browser_tests` in
+particular mode. For example - the `site-per-process.content_browsertests.filter` file
+lists tests that should be excluded when running `content_browsertests` in
 `--site-per-process` mode.
 
 ## File syntax

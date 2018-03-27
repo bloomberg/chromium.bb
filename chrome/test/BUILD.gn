@@ -4478,10 +4478,6 @@ if (!is_android) {
       ]
       configs += [ "//build/config:precompiled_headers" ]
 
-      data_deps = [
-        "//testing/buildbot/filters:interactive_ui_tests_filters",
-      ]
-
       defines = [ "HAS_OUT_OF_PROC_TEST_RUNNER" ]
       ldflags = []
 
@@ -4614,10 +4610,6 @@ if (!is_android) {
 
     configs += [ "//build/config:precompiled_headers" ]
 
-    data_deps = [
-      "//testing/buildbot/filters:interactive_ui_tests_filters",
-    ]
-
     data = [
       "data/",
       "//chrome/third_party/mock4js/",
@@ -4703,7 +4695,7 @@ if (!is_android) {
     }
 
     # Runtime dependencies
-    data_deps += [
+    data_deps = [
       "//ppapi:ppapi_tests",
       "//third_party/mesa:osmesa",
     ]

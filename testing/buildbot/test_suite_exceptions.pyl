@@ -1959,12 +1959,6 @@
           'shards': 1,
         },
       },
-      'Site Isolation Linux': {
-        'args': [
-          # TODO(kbr): unclear why this isn't specified on "Site Isolation Win".
-          '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.interactive_ui_tests.filter',
-        ],
-      },
       # chromium.mac
       # Unclear why this isn't swarmed.
       'Mac10.10 Tests': {

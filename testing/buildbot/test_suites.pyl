@@ -695,8 +695,7 @@
 
     'site_per_process_browser_tests': {
       'args': [
-        '--site-per-process',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter'
+        '--site-per-process'
       ],
       'swarming': {
         'shards': 10,
@@ -1457,8 +1456,7 @@
   'site_isolation_chromium_gtests': {
     'site_per_process_browser_tests': {
       'args': [
-        '--site-per-process',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter',
+        '--site-per-process'
       ],
       'swarming': {
         'shards': 10,
@@ -1561,8 +1559,7 @@
     },
     'browser_tests': {
       'args': [
-        '--site-per-process',
-        '--test-launcher-filter-file=../../testing/buildbot/filters/site-per-process.browser_tests.filter',
+        '--site-per-process'
       ],
       'swarming': {
         'shards': 10,
