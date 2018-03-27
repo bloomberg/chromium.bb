@@ -40,6 +40,11 @@
                       android:exported="true"
                       android:authorities="{{ manifest_package }}.LicenseContentProvider" />
             {% if donor_package is not defined %}
+                <!-- If you change the variations services, also see
+                     android_webview/test/shell/AndroidManifest.xml. -->
+                <service android:name="org.chromium.android_webview.services.VariationsSeedServer"
+                         android:exported="true"
+                         android:process=":webview_service" />
                 <service android:name="org.chromium.android_webview.services.CrashReceiverService"
                          android:exported="true"
                          android:process=":webview_service" />

@@ -865,6 +865,7 @@ android_library("android_webview_java") {
     "java/src/org/chromium/android_webview/ResourcesContextWrapperFactory.java",
     "java/src/org/chromium/android_webview/ScrollAccessibilityHelper.java",
     "java/src/org/chromium/android_webview/SslUtil.java",
+    "java/src/org/chromium/android_webview/VariationsSeedLoader.java",
     "java/src/org/chromium/android_webview/WebViewChromiumRunQueue.java",
     "java/src/org/chromium/android_webview/permission/AwGeolocationCallback.java",
     "java/src/org/chromium/android_webview/permission/AwPermissionRequest.java",
@@ -874,6 +875,7 @@ android_library("android_webview_java") {
     ":android_webview_commandline_java",
     ":android_webview_platform_services_java",
     ":android_webview_services_java",
+    ":android_webview_variations_utils_java",
     ":resources",
     ":strings_grd",
     ":system_webview_manifest",
@@ -886,6 +888,7 @@ android_library("android_webview_java") {
     "//components/navigation_interception/android:navigation_interception_java",
     "//components/policy/android:policy_java",
     "//components/safe_browsing/android:safe_browsing_java",
+    "//components/variations/android:variations_java",
     "//components/version_info/android:version_constants_java",
     "//components/web_contents_delegate_android:web_contents_delegate_android_java",
     "//components/web_restrictions:client_java",
@@ -911,6 +914,13 @@ android_library("android_webview_java") {
   ]
 
   android_manifest_for_lint = system_webview_android_manifest
+}
+
+android_library("android_webview_variations_utils_java") {
+  java_files = [ "java/src/org/chromium/android_webview/VariationsUtils.java" ]
+  deps = [
+    "//components/variations/android:variations_java",
+  ]
 }
 
 java_strings_grd("strings_grd") {
@@ -1010,17 +1020,21 @@ android_library("android_webview_services_java") {
     "java/src/org/chromium/android_webview/services/AwMinidumpUploaderDelegate.java",
     "java/src/org/chromium/android_webview/services/CrashReceiverService.java",
     "java/src/org/chromium/android_webview/services/ServiceInit.java",
+    "java/src/org/chromium/android_webview/services/VariationsSeedServer.java",
   ]
   deps = [
     ":android_webview_commandline_java",
     ":android_webview_platform_services_java",
+    ":android_webview_variations_utils_java",
     ":system_webview_manifest",
     "//base:base_java",
     "//components/background_task_scheduler:background_task_scheduler_java",
     "//components/minidump_uploader:minidump_uploader_java",
   ]
-
-  srcjar_deps = [ ":crash_receiver_aidl" ]
+  srcjar_deps = [
+    ":crash_receiver_aidl",
+    ":aw_variations_seed_server_aidl",
+  ]
   android_manifest_for_lint = system_webview_android_manifest
 }
 
@@ -1028,6 +1042,13 @@ android_aidl("crash_receiver_aidl") {
   import_include = [ "java/src" ]
   sources = [
     "java/src/org/chromium/android_webview/services/ICrashReceiverService.aidl",
+  ]
+}
+
+android_aidl("aw_variations_seed_server_aidl") {
+  import_include = [ "java/src" ]
+  sources = [
+    "java/src/org/chromium/android_webview/services/IVariationsSeedServer.aidl",
   ]
 }
 
