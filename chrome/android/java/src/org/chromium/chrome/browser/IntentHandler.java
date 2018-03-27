@@ -22,6 +22,7 @@ import android.provider.MediaStore;
 import android.speech.RecognizerResultsIntent;
 import android.text.TextUtils;
 import android.util.Pair;
+import android.webkit.MimeTypeMap;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.ContextUtils;
@@ -35,6 +36,7 @@ import org.chromium.chrome.browser.document.ChromeLauncherActivity;
 import org.chromium.chrome.browser.externalauth.ExternalAuthUtils;
 import org.chromium.chrome.browser.externalnav.ExternalNavigationDelegateImpl;
 import org.chromium.chrome.browser.externalnav.IntentWithGesturesHandler;
+import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.rappor.RapporServiceBridge;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
@@ -415,6 +417,12 @@ public class IntentHandler {
         String extraHeaders = getExtraHeadersFromIntent(intent);
         extraHeaders = maybeAddAdditionalExtraHeaders(intent, url, extraHeaders);
 
+        if (isIntentForMhtmlFileOrContent(intent) && tabOpenType == TabOpenType.OPEN_NEW_TAB
+                && referrerUrl == null && extraHeaders == null) {
+            handleMhtmlFileOrContentIntent(url, intent);
+            return true;
+        }
+
         // TODO(joth): Presumably this should check the action too.
         mDelegate.processUrlViewIntent(url, referrerUrl, extraHeaders, tabOpenType,
                 IntentUtils.safeGetStringExtra(intent, Browser.EXTRA_APPLICATION_ID),
@@ -588,6 +596,16 @@ public class IntentHandler {
 
         mDelegate.processWebSearchIntent(query);
         return true;
+    }
+
+    private void handleMhtmlFileOrContentIntent(final String url, final Intent intent) {
+        OfflinePageUtils.getLoadUrlParamsForOpeningMhtmlFileOrContent(url, (loadUrlParams) -> {
+            mDelegate.processUrlViewIntent(loadUrlParams.getUrl(), null,
+                    loadUrlParams.getVerbatimHeaders(), TabOpenType.OPEN_NEW_TAB, null, 0, false,
+                    intent);
+            recordExternalIntentSourceUMA(intent);
+            recordAppHandlersForIntent(intent);
+        });
     }
 
     private static PendingIntent getAuthenticationToken() {
@@ -1034,6 +1052,27 @@ public class IntentHandler {
 
         String typeHeader = "X-Chrome-intent-type: " + type;
         return (extraHeaders == null) ? typeHeader : (extraHeaders + "\n" + typeHeader);
+    }
+
+    /**
+     * @param intent An Intent to be checked.
+     * @return Whether the intent has an file:// or content:// URL with MHTML MIME type.
+     */
+    @VisibleForTesting
+    static boolean isIntentForMhtmlFileOrContent(Intent intent) {
+        String url = getUrlFromIntent(intent);
+        if (url == null) return false;
+        String scheme = getSanitizedUrlScheme(url);
+        boolean isContentUriScheme = TextUtils.equals(scheme, UrlConstants.CONTENT_SCHEME);
+        boolean isFileUriScheme = TextUtils.equals(scheme, UrlConstants.FILE_SCHEME);
+        if (!isContentUriScheme && !isFileUriScheme) return false;
+        String type = intent.getType();
+        if (type != null && (type.equals("multipart/related") || type.equals("message/rfc822"))) {
+            return true;
+        }
+        if (!isFileUriScheme || !TextUtils.isEmpty(type)) return false;
+        String extension = MimeTypeMap.getFileExtensionFromUrl(url);
+        return extension.equals("mhtml") || extension.equals("mht");
     }
 
     /**
