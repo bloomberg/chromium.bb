@@ -915,7 +915,7 @@ void UserManagerBase::RegularUserLoggedIn(const AccountId& account_id,
   active_user_ =
       RemoveRegularOrSupervisedUserFromList(account_id, false /* notify */);
 
-  if (active_user_)
+  if (active_user_ && active_user_->GetType() != user_type)
     active_user_->UpdateType(user_type);
 
   // If the user was not found on the user list, create a new user.
