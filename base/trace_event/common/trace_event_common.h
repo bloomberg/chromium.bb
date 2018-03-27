@@ -687,6 +687,11 @@
       TRACE_EVENT_PHASE_ASYNC_END, category_group, name, id,                  \
       TRACE_EVENT_API_CURRENT_THREAD_ID, timestamp, TRACE_EVENT_FLAG_NONE,    \
       arg1_name, arg1_val, arg2_name, arg2_val)
+#define TRACE_EVENT_COPY_ASYNC_END_WITH_TIMESTAMP0(category_group, name, id, \
+                                                   timestamp)                \
+  INTERNAL_TRACE_EVENT_ADD_WITH_ID_TID_AND_TIMESTAMP(                        \
+      TRACE_EVENT_PHASE_ASYNC_END, category_group, name, id,                 \
+      TRACE_EVENT_API_CURRENT_THREAD_ID, timestamp, TRACE_EVENT_FLAG_COPY)
 
 // NESTABLE_ASYNC_* APIs are used to describe an async operation, which can
 // be nested within a NESTABLE_ASYNC event and/or have inner NESTABLE_ASYNC

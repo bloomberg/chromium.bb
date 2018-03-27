@@ -324,6 +324,7 @@ public class TraceEvent implements AutoCloseable {
      * @param id   The id of the asynchronous event.
      */
     public static void startAsync(String name, long id) {
+        EarlyTraceEvent.startAsync(name, id);
         if (sEnabled) nativeStartAsync(name, id);
     }
 
@@ -333,6 +334,7 @@ public class TraceEvent implements AutoCloseable {
      * @param id   The id of the asynchronous event.
      */
     public static void finishAsync(String name, long id) {
+        EarlyTraceEvent.finishAsync(name, id);
         if (sEnabled) nativeFinishAsync(name, id);
     }
 
