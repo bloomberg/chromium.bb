@@ -45,6 +45,7 @@ namespace {
 enum CookieLoadProblem {
   COOKIE_LOAD_PROBLEM_DECRYPT_FAILED = 0,
   COOKIE_LOAD_PROBLEM_DECRYPT_TIMEOUT = 1,
+  COOKIE_LOAD_PROBLEM_NON_CANONICAL = 2,
   COOKIE_LOAD_PROBLEM_LAST_ENTRY
 };
 
@@ -908,8 +909,11 @@ void SQLitePersistentCookieStore::Backend::MakeCookiesFromSQLStatement(
             static_cast<DBCookiePriority>(smt.ColumnInt(13)))));  // priority
     DLOG_IF(WARNING, cc->CreationDate() > Time::Now())
         << L"CreationDate too recent";
-    if (cc->IsCanonical())
+    if (cc->IsCanonical()) {
       cookies->push_back(std::move(cc));
+    } else {
+      RecordCookieLoadProblem(COOKIE_LOAD_PROBLEM_NON_CANONICAL);
+    }
     ++num_cookies_read_;
   }
 }

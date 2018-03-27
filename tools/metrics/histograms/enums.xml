@@ -7228,6 +7228,7 @@ Called by update_net_error_codes.py.-->
 <enum name="CookieLoadProblem">
   <int value="0" label="Entry decryption failed"/>
   <int value="1" label="Entry decryption taking over a minute"/>
+  <int value="2" label="Cookie canonical form check failed"/>
 </enum>
 
 <enum name="CookieOrCacheDeletion">
