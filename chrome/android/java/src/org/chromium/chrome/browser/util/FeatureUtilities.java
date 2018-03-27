@@ -323,6 +323,15 @@ public class FeatureUtilities {
         return sIsChromeModernDesignEnabled;
     }
 
+    /** @return Whether the contextual suggestions bottom sheet is enabled. */
+    public static boolean isContextualSuggestionsBottomSheetEnabled() {
+        // TODO(twellington): Also check for enterprise users and users with history sync enabled
+        // without encryption.
+        return !DeviceFormFactor.isTablet() && isChromeModernDesignEnabled()
+                && ChromeFeatureList.isEnabled(
+                           ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET);
+    }
+
     private static native void nativeSetCustomTabVisible(boolean visible);
     private static native void nativeSetIsInMultiWindowMode(boolean isInMultiWindowMode);
 }
