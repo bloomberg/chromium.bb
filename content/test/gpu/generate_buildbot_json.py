@@ -1015,7 +1015,6 @@ V8_FYI_WATERFALL = {
         "gfx_unittests",
         "gn_unittests",
         "google_apis_unittests",
-        "gpu_ipc_service_unittests",
         "gpu_unittests",
         "interactive_ui_tests",
         "ipc_tests",

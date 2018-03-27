@@ -417,7 +417,6 @@
     },
     'crypto_unittests': {},
     'google_apis_unittests': {},
-    'gpu_ipc_service_unittests': {},
     'gpu_unittests': {
       'android_swarming': {
         'hard_timeout': 960,
