@@ -32,6 +32,11 @@ WebSize MediaControlDivElement::GetSizeOrDefault() const {
   return MediaControlElementsHelper::GetSizeOrDefault(*this, WebSize(0, 0));
 }
 
+bool MediaControlDivElement::IsDisabled() const {
+  // Div elements cannot be disabled.
+  return false;
+}
+
 void MediaControlDivElement::Trace(blink::Visitor* visitor) {
   HTMLDivElement::Trace(visitor);
   MediaControlElementBase::Trace(visitor);

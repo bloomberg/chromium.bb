@@ -56,6 +56,9 @@ class MODULES_EXPORT MediaControlElementBase : public GarbageCollectedMixin {
   // size because the element has not been layed out yet.
   virtual WebSize GetSizeOrDefault() const = 0;
 
+  // Whether the element has been disabled via the HTML disabled attribute.
+  virtual bool IsDisabled() const = 0;
+
   virtual void Trace(blink::Visitor*);
 
  protected:

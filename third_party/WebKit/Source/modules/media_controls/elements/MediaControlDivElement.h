@@ -27,6 +27,8 @@ class MODULES_EXPORT MediaControlDivElement : public HTMLDivElement,
   // size because the element has not been layed out yet.
   WebSize GetSizeOrDefault() const override;
 
+  bool IsDisabled() const override;
+
   virtual void Trace(blink::Visitor*);
 
  protected:

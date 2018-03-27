@@ -1159,7 +1159,7 @@ void MediaControlsImpl::UpdateOverflowMenuWanted() const {
       last_element = element;
     } else {
       add_elements = false;
-      if (element->HasOverflowButton()) {
+      if (element->HasOverflowButton() && !element->IsDisabled()) {
         overflow_wanted = true;
         element->SetOverflowElementIsWanted(true);
       }
