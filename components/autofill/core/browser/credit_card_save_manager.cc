@@ -526,11 +526,11 @@ void CreditCardSaveManager::SendUploadCardRequest() {
     upload_request_.cvc =
         client_->GetSaveCardBubbleController()->GetCvcEnteredByUser();
   }
-  if (IsAutofillSendBillingCustomerNumberExperimentEnabled()) {
-    upload_request_.billing_customer_number =
-        static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
-            prefs::kAutofillBillingCustomerNumber));
-  }
+
+  upload_request_.billing_customer_number =
+      static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
+          prefs::kAutofillBillingCustomerNumber));
+
   AutofillMetrics::LogUploadAcceptedCardOriginMetric(
       uploading_local_card_
           ? AutofillMetrics::USER_ACCEPTED_UPLOAD_OF_LOCAL_CARD

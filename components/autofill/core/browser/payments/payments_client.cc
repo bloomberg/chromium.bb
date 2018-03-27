@@ -216,8 +216,7 @@ class UnmaskCardRequest : public PaymentsRequest {
                         BuildRiskDictionary(request_details_.risk_data));
     std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
     context->SetInteger("billable_service", kUnmaskCardBillableServiceNumber);
-    if (IsAutofillSendBillingCustomerNumberExperimentEnabled() &&
-        request_details_.billing_customer_number != 0) {
+    if (request_details_.billing_customer_number != 0) {
       context->SetKey("customer_context",
                       BuildCustomerContextDictionary(
                           request_details_.billing_customer_number));
@@ -369,8 +368,7 @@ class UploadCardRequest : public PaymentsRequest {
     std::unique_ptr<base::DictionaryValue> context(new base::DictionaryValue());
     context->SetString("language_code", app_locale);
     context->SetInteger("billable_service", kUploadCardBillableServiceNumber);
-    if (IsAutofillSendBillingCustomerNumberExperimentEnabled() &&
-        request_details_.billing_customer_number != 0) {
+    if (request_details_.billing_customer_number != 0) {
       context->SetKey("customer_context",
                       BuildCustomerContextDictionary(
                           request_details_.billing_customer_number));

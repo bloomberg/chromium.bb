@@ -53,8 +53,6 @@ const base::Feature kAutofillPreferServerNamePredictions{
 const base::Feature kAutofillRationalizeFieldTypePredictions{
     "AutofillRationalizeFieldTypePredictions",
     base::FEATURE_ENABLED_BY_DEFAULT};
-const base::Feature kAutofillSendBillingCustomerNumber{
-    "AutofillSendBillingCustomerNumber", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuppressDisusedAddresses{
     "AutofillSuppressDisusedAddresses", base::FEATURE_ENABLED_BY_DEFAULT};
 const base::Feature kAutofillSuppressDisusedCreditCards{
@@ -284,10 +282,6 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   }
 
   return !group_name.empty() && group_name != "Disabled";
-}
-
-bool IsAutofillSendBillingCustomerNumberExperimentEnabled() {
-  return base::FeatureList::IsEnabled(kAutofillSendBillingCustomerNumber);
 }
 
 bool IsAutofillUpstreamRequestCvcIfMissingExperimentEnabled() {

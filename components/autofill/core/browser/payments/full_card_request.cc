@@ -68,11 +68,9 @@ void FullCardRequest::GetFullCard(const CreditCard& card,
                          card.ShouldUpdateExpiration(AutofillClock::Now()));
   if (should_unmask_card_) {
     payments_client_->Prepare();
-    if (IsAutofillSendBillingCustomerNumberExperimentEnabled()) {
-      request_->billing_customer_number =
-          static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
-              prefs::kAutofillBillingCustomerNumber));
-    }
+    request_->billing_customer_number =
+        static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
+            prefs::kAutofillBillingCustomerNumber));
   }
 
   ui_delegate_->ShowUnmaskPrompt(request_->card, reason,
