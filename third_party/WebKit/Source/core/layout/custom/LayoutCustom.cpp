@@ -170,6 +170,25 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
       // TODO(ikilpatrick): At this stage we may need to perform a re-layout on
       // the given child. (The LayoutFragment may have been produced from a
       // different LayoutFragmentRequest).
+
+      // Update the position of the child.
+      bool is_parallel_writing_mode = IsParallelWritingMode(
+          StyleRef().GetWritingMode(), child->StyleRef().GetWritingMode());
+      LayoutUnit inline_size = is_parallel_writing_mode
+                                   ? child->LogicalWidth()
+                                   : child->LogicalHeight();
+
+      LayoutUnit inline_offset =
+          LayoutUnit::FromDoubleRound(fragment->inlineOffset());
+      LayoutUnit block_offset =
+          LayoutUnit::FromDoubleRound(fragment->blockOffset());
+      LayoutUnit logical_left =
+          StyleRef().IsLeftToRightDirection()
+              ? inline_offset
+              : LogicalWidth() - inline_size - inline_offset;
+      child->SetLocationAndUpdateOverflowControlsIfNeeded(
+          IsHorizontalWritingMode() ? LayoutPoint(logical_left, block_offset)
+                                    : LayoutPoint(block_offset, logical_left));
     }
 
     // Currently we only support
@@ -182,7 +201,8 @@ bool LayoutCustom::PerformLayout(bool relayout_children,
       return false;
     }
 
-    SetLogicalHeight(LayoutUnit(fragment_result_options.autoBlockSize()));
+    SetLogicalHeight(
+        LayoutUnit::FromDoubleRound(fragment_result_options.autoBlockSize()));
 
     LayoutUnit old_client_after_edge = ClientLogicalBottom();
     UpdateLogicalHeight();

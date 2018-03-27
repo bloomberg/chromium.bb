@@ -43,12 +43,12 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout() {
   if (options_.hasFixedInlineSize()) {
     if (is_parallel_writing_mode) {
       box->SetOverrideLogicalContentWidth(
-          (LayoutUnit(options_.fixedInlineSize()) -
+          (LayoutUnit::FromDoubleRound(options_.fixedInlineSize()) -
            box->BorderAndPaddingLogicalWidth())
               .ClampNegativeToZero());
     } else {
       box->SetOverrideLogicalContentHeight(
-          (LayoutUnit(options_.fixedInlineSize()) -
+          (LayoutUnit::FromDoubleRound(options_.fixedInlineSize()) -
            box->BorderAndPaddingLogicalHeight())
               .ClampNegativeToZero());
     }
@@ -57,12 +57,12 @@ CustomLayoutFragment* CustomLayoutFragmentRequest::PerformLayout() {
   if (options_.hasFixedBlockSize()) {
     if (is_parallel_writing_mode) {
       box->SetOverrideLogicalContentHeight(
-          (LayoutUnit(options_.fixedBlockSize()) -
+          (LayoutUnit::FromDoubleRound(options_.fixedBlockSize()) -
            box->BorderAndPaddingLogicalHeight())
               .ClampNegativeToZero());
     } else {
       box->SetOverrideLogicalContentWidth(
-          (LayoutUnit(options_.fixedBlockSize()) -
+          (LayoutUnit::FromDoubleRound(options_.fixedBlockSize()) -
            box->BorderAndPaddingLogicalWidth())
               .ClampNegativeToZero());
     }

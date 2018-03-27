@@ -101,6 +101,12 @@ class LayoutUnit {
     return v;
   }
 
+  static LayoutUnit FromDoubleRound(double value) {
+    LayoutUnit v;
+    v.value_ = base::saturated_cast<int>(round(value * kFixedPointDenominator));
+    return v;
+  }
+
   int ToInt() const { return value_ / kFixedPointDenominator; }
   float ToFloat() const {
     return static_cast<float>(value_) / kFixedPointDenominator;
