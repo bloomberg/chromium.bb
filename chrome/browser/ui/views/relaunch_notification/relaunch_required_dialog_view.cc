@@ -45,6 +45,21 @@ views::Widget* RelaunchRequiredDialogView::Show(
 
 RelaunchRequiredDialogView::~RelaunchRequiredDialogView() = default;
 
+// static
+RelaunchRequiredDialogView* RelaunchRequiredDialogView::FromWidget(
+    views::Widget* widget) {
+  return static_cast<RelaunchRequiredDialogView*>(
+      widget->widget_delegate()->AsDialogDelegate());
+}
+
+void RelaunchRequiredDialogView::SetDeadline(base::TimeTicks deadline) {
+  if (deadline != relaunch_deadline_) {
+    relaunch_deadline_ = deadline;
+    // Refresh the title immediately.
+    OnTitleRefresh();
+  }
+}
+
 bool RelaunchRequiredDialogView::Accept() {
   base::RecordAction(base::UserMetricsAction("RelaunchRequired_Accept"));
 

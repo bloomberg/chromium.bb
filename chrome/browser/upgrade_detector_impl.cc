@@ -7,11 +7,13 @@
 #include <stdint.h>
 
 #include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
 #include "base/feature_list.h"
+#include "base/no_destructor.h"
 #include "base/process/launch.h"
 #include "base/sequenced_task_runner.h"
 #include "base/strings/string_number_conversions.h"
@@ -22,6 +24,7 @@
 #include "base/task_scheduler/post_task.h"
 #include "base/task_scheduler/task_traits.h"
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/google/google_brand.h"
@@ -51,17 +54,18 @@ constexpr base::TimeDelta kDefaultHighThreshold = base::TimeDelta::FromDays(7);
 
 // How long (in milliseconds) to wait (each cycle) before checking whether
 // Chrome's been upgraded behind our back.
-const int kCheckForUpgradeMs = 2 * 60 * 60 * 1000;  // 2 hours.
+constexpr base::TimeDelta kCheckForUpgrade = base::TimeDelta::FromHours(2);
 
 // How long to wait (each cycle) before checking which severity level we should
 // be at. Once we reach the highest severity, the timer will stop.
-const int kNotifyCycleTimeMs = 20 * 60 * 1000;  // 20 minutes.
+constexpr base::TimeDelta kNotifyCycleTime = base::TimeDelta::FromMinutes(20);
 
 // Same as kNotifyCycleTimeMs but only used during testing.
-const int kNotifyCycleTimeForTestingMs = 500;  // Half a second.
+constexpr base::TimeDelta kNotifyCycleTimeForTesting =
+    base::TimeDelta::FromMilliseconds(500);
 
 // The number of days after which we identify a build/install as outdated.
-const uint64_t kOutdatedBuildAgeInDays = 12 * 7;
+constexpr base::TimeDelta kOutdatedBuildAge = base::TimeDelta::FromDays(12 * 7);
 
 // Return the string that was passed as a value for the
 // kCheckForUpdateIntervalSec switch.
@@ -88,14 +92,14 @@ bool IsTesting() {
 }
 
 // How often to check for an upgrade.
-int GetCheckForUpgradeEveryMs() {
+base::TimeDelta GetCheckForUpgradeDelay() {
   // Check for a value passed via the command line.
-  int interval_ms;
+  int seconds;
   std::string interval = CmdLineInterval();
-  if (!interval.empty() && base::StringToInt(interval, &interval_ms))
-    return interval_ms * 1000;  // Command line value is in seconds.
+  if (!interval.empty() && base::StringToInt(interval, &seconds))
+    return base::TimeDelta::FromSeconds(seconds);
 
-  return kCheckForUpgradeMs;
+  return kCheckForUpgrade;
 }
 
 #if !defined(OS_WIN) || defined(GOOGLE_CHROME_BUILD)
@@ -146,11 +150,14 @@ base::Version GetCurrentlyInstalledVersionImpl(base::Version* critical_update) {
 
 }  // namespace
 
-UpgradeDetectorImpl::UpgradeDetectorImpl()
-    : blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
+UpgradeDetectorImpl::UpgradeDetectorImpl(base::TickClock* tick_clock)
+    : UpgradeDetector(tick_clock),
+      blocking_task_runner_(base::CreateSequencedTaskRunnerWithTraits(
           {base::TaskPriority::BACKGROUND,
            base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN,
            base::MayBlock()})),
+      detect_upgrade_timer_(this->tick_clock()),
+      upgrade_notification_timer_(this->tick_clock()),
       is_unstable_channel_(false),
       is_auto_update_enabled_(true),
       build_date_(base::GetBuildTime()),
@@ -296,9 +303,8 @@ void UpgradeDetectorImpl::DetectUpgradeTask(
 
 void UpgradeDetectorImpl::StartTimerForUpgradeCheck() {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  detect_upgrade_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(GetCheckForUpgradeEveryMs()),
-      this, &UpgradeDetectorImpl::CheckForUpgrade);
+  detect_upgrade_timer_.Start(FROM_HERE, GetCheckForUpgradeDelay(), this,
+                              &UpgradeDetectorImpl::CheckForUpgrade);
 }
 
 void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
@@ -311,15 +317,14 @@ void UpgradeDetectorImpl::StartUpgradeNotificationTimer() {
   // Ensure that the thresholds used by NotifyOnUpgrade have been initialized.
   InitializeThresholds();
 
-  set_upgrade_detected_time(base::TimeTicks::Now());
+  if (upgrade_detected_time().is_null())
+    set_upgrade_detected_time(tick_clock()->NowTicks());
 
   // Start the repeating timer for notifying the user after a certain period.
   // The called function will eventually figure out that enough time has passed
   // and stop the timer.
-  const int cycle_time_ms = IsTesting() ?
-      kNotifyCycleTimeForTestingMs : kNotifyCycleTimeMs;
-  upgrade_notification_timer_.Start(FROM_HERE,
-      base::TimeDelta::FromMilliseconds(cycle_time_ms),
+  upgrade_notification_timer_.Start(
+      FROM_HERE, IsTesting() ? kNotifyCycleTimeForTesting : kNotifyCycleTime,
       this, &UpgradeDetectorImpl::NotifyOnUpgrade);
 }
 
@@ -328,7 +333,17 @@ void UpgradeDetectorImpl::InitializeThresholds() {
   if (!low_threshold_.is_zero())
     return;
 
-  // Start with the default values.
+  // Use a custom notification period for the "high" level, dividing it evenly
+  // to set the "low" and "elevated" levels. Such overrides trump all else.
+  const base::TimeDelta custom_high = GetRelaunchNotificationPeriod();
+  if (!custom_high.is_zero()) {
+    low_threshold_ = custom_high / 3;
+    elevated_threshold_ = custom_high - low_threshold_;
+    high_threshold_ = custom_high;
+    return;
+  }
+
+  // Use the default values when no override is set.
   low_threshold_ = kDefaultLowThreshold;
   elevated_threshold_ = kDefaultElevatedThreshold;
   high_threshold_ = kDefaultHighThreshold;
@@ -410,8 +425,7 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
     return false;
   }
 
-  if (network_time - build_date_ >
-      base::TimeDelta::FromDays(kOutdatedBuildAgeInDays)) {
+  if (network_time - build_date_ > kOutdatedBuildAge) {
     UpgradeDetected(is_auto_update_enabled_ ?
         UPGRADE_NEEDED_OUTDATED_INSTALL :
         UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU);
@@ -420,13 +434,6 @@ bool UpgradeDetectorImpl::DetectOutdatedInstall() {
   // If we simlated an outdated install with a date, we don't want to keep
   // checking for version upgrades, which happens on non-official builds.
   return simulate_outdated;
-}
-
-void UpgradeDetectorImpl::OnExperimentChangesDetected(Severity severity) {
-  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
-  set_best_effort_experiment_updates_available(severity == BEST_EFFORT);
-  set_critical_experiment_updates_available(severity == CRITICAL);
-  StartUpgradeNotificationTimer();
 }
 
 void UpgradeDetectorImpl::UpgradeDetected(UpgradeAvailable upgrade_available) {
@@ -440,43 +447,78 @@ void UpgradeDetectorImpl::UpgradeDetected(UpgradeAvailable upgrade_available) {
   StartUpgradeNotificationTimer();
 }
 
+void UpgradeDetectorImpl::OnExperimentChangesDetected(Severity severity) {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+  set_best_effort_experiment_updates_available(severity == BEST_EFFORT);
+  set_critical_experiment_updates_available(severity == CRITICAL);
+  StartUpgradeNotificationTimer();
+}
+
 void UpgradeDetectorImpl::NotifyOnUpgradeWithTimePassed(
     base::TimeDelta time_passed) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   const bool is_critical_or_outdated =
       upgrade_available() > UPGRADE_AVAILABLE_REGULAR ||
       critical_experiment_updates_available();
-  if (is_unstable_channel_) {
-    // There's only one threat level for dev and canary channels.
-    if (is_critical_or_outdated) {
-      set_upgrade_notification_stage(UPGRADE_ANNOYANCE_CRITICAL);
-    } else if (time_passed >= low_threshold_) {
-      set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
+  // There's only one threat level for dev and canary channels.
+  const UpgradeNotificationAnnoyanceLevel max_stage =
+      is_unstable_channel_ ? UPGRADE_ANNOYANCE_LOW : UPGRADE_ANNOYANCE_HIGH;
+  bool notify = true;
 
-      // That's as high as it goes.
-      upgrade_notification_timer_.Stop();
-    } else {
-      return;  // Not ready to recommend upgrade.
-    }
-  } else {
-    // These if statements must be sorted (highest interval first).
-    if (time_passed >= high_threshold_ || is_critical_or_outdated) {
-      set_upgrade_notification_stage(is_critical_or_outdated
-                                         ? UPGRADE_ANNOYANCE_CRITICAL
-                                         : UPGRADE_ANNOYANCE_HIGH);
+  // These if statements must be sorted (highest interval first).
+  if (is_critical_or_outdated)
+    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_CRITICAL);
+  else if (!is_unstable_channel_ && time_passed >= high_threshold_)
+    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_HIGH);
+  else if (!is_unstable_channel_ && time_passed >= elevated_threshold_)
+    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
+  else if (time_passed >= low_threshold_)
+    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
+  else if (upgrade_notification_stage() != UPGRADE_ANNOYANCE_NONE)
+    set_upgrade_notification_stage(UPGRADE_ANNOYANCE_NONE);
+  else
+    notify = false;  // Not ready to recommend upgrade.
 
-      // We can't get any higher, baby.
-      upgrade_notification_timer_.Stop();
-    } else if (time_passed >= elevated_threshold_) {
-      set_upgrade_notification_stage(UPGRADE_ANNOYANCE_ELEVATED);
-    } else if (time_passed >= low_threshold_) {
-      set_upgrade_notification_stage(UPGRADE_ANNOYANCE_LOW);
-    } else {
-      return;  // Not ready to recommend upgrade.
-    }
+  // Stop the timer if the highest threshold has been reached. Otherwise, make
+  // sure it is running. It is possible that a change in the notification period
+  // (via administrative policy) has moved the detector from high annoyance back
+  // down to a lower level, in which case the timer must be restarted.
+  if (upgrade_notification_stage() >= max_stage)
+    upgrade_notification_timer_.Stop();
+  else
+    StartUpgradeNotificationTimer();
+
+  if (notify)
+    NotifyUpgrade();
+}
+
+base::TimeDelta UpgradeDetectorImpl::GetThresholdForLevel(
+    UpgradeNotificationAnnoyanceLevel level) {
+  switch (level) {
+    case UPGRADE_ANNOYANCE_LOW:
+      return low_threshold_;
+    case UPGRADE_ANNOYANCE_ELEVATED:
+      return elevated_threshold_;
+    case UPGRADE_ANNOYANCE_HIGH:
+      break;
+    case UPGRADE_ANNOYANCE_NONE:
+    case UPGRADE_ANNOYANCE_CRITICAL:
+      NOTREACHED();
+      break;
   }
+  return high_threshold_;
+}
 
-  NotifyUpgrade();
+void UpgradeDetectorImpl::OnRelaunchNotificationPeriodPrefChanged() {
+  DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
+
+  // Force a recomputation of the thresholds.
+  low_threshold_ = {};
+  InitializeThresholds();
+
+  // Broadcast the appropriate notification if an upgrade has been detected.
+  if (upgrade_available() != UPGRADE_AVAILABLE_NONE)
+    NotifyOnUpgrade();
 }
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
@@ -490,15 +532,16 @@ void UpgradeDetectorImpl::OnAutoupdatesEnabledResult(
 
 void UpgradeDetectorImpl::NotifyOnUpgrade() {
   const base::TimeDelta time_passed =
-      base::TimeTicks::Now() - upgrade_detected_time();
+      tick_clock()->NowTicks() - upgrade_detected_time();
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   NotifyOnUpgradeWithTimePassed(time_passed);
 }
 
 // static
 UpgradeDetectorImpl* UpgradeDetectorImpl::GetInstance() {
-  static auto* const instance = new UpgradeDetectorImpl();
-  return instance;
+  static base::NoDestructor<UpgradeDetectorImpl> instance(
+      base::DefaultTickClock::GetInstance());
+  return instance.get();
 }
 
 base::TimeDelta UpgradeDetectorImpl::GetHighAnnoyanceLevelDelta() {

@@ -6,12 +6,15 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/time/tick_clock.h"
 #include "chrome/app/vector_icons/vector_icons.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/ui/browser_otr_state.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_registry_simple.h"
+#include "components/prefs/pref_service.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/paint_vector_icon.h"
 
@@ -57,14 +60,27 @@ gfx::Image UpgradeDetector::GetIcon() {
   return gfx::Image(gfx::CreateVectorIcon(kBrowserToolsUpdateIcon, color));
 }
 
-UpgradeDetector::UpgradeDetector()
-    : upgrade_available_(UPGRADE_AVAILABLE_NONE),
+UpgradeDetector::UpgradeDetector(base::TickClock* tick_clock)
+    : tick_clock_(tick_clock),
+      upgrade_available_(UPGRADE_AVAILABLE_NONE),
       best_effort_experiment_updates_available_(false),
       critical_experiment_updates_available_(false),
       critical_update_acknowledged_(false),
       is_factory_reset_required_(false),
+      idle_check_timer_(tick_clock_),
       upgrade_notification_stage_(UPGRADE_ANNOYANCE_NONE),
       notify_upgrade_(false) {
+  // Not all tests provide a PrefService for local_state().
+  PrefService* local_state = g_browser_process->local_state();
+  if (local_state) {
+    pref_change_registrar_.Init(local_state);
+    // base::Unretained is safe here because |this| outlives the registrar.
+    pref_change_registrar_.Add(
+        prefs::kRelaunchNotificationPeriod,
+        base::BindRepeating(
+            &UpgradeDetector::OnRelaunchNotificationPeriodPrefChanged,
+            base::Unretained(this)));
+  }
 }
 
 UpgradeDetector::~UpgradeDetector() {
@@ -80,8 +96,31 @@ void UpgradeDetector::NotifyOutdatedInstallNoAutoUpdate() {
     observer.OnOutdatedInstallNoAutoUpdate();
 }
 
+// static
+base::TimeDelta UpgradeDetector::GetRelaunchNotificationPeriod() {
+  // Not all tests provide a PrefService for local_state().
+  auto* local_state = g_browser_process->local_state();
+  if (!local_state)
+    return base::TimeDelta();
+  const auto* preference =
+      local_state->FindPreference(prefs::kRelaunchNotificationPeriod);
+  const int value = preference->GetValue()->GetInt();
+  // Enforce the preference's documented minimum value.
+  static constexpr base::TimeDelta kMinValue = base::TimeDelta::FromHours(1);
+  if (preference->IsDefaultValue() || value < kMinValue.InMilliseconds())
+    return base::TimeDelta();
+  return base::TimeDelta::FromMilliseconds(value);
+}
+
 void UpgradeDetector::NotifyUpgrade() {
-  notify_upgrade_ = true;
+  // An implementation will request that a notification be sent after dropping
+  // back to the "none" annoyance level if the RelaunchNotificationPeriod
+  // setting changes to a large enough value such that none of the revised
+  // thresholds have been hit. In this case, consumers should not perceive that
+  // an upgrade is available when checking notify_upgrade(). In practice, this
+  // is only the case on desktop Chrome and not Chrome OS, where the lowest
+  // threshold is hit the moment the upgrade is detected.
+  notify_upgrade_ = upgrade_notification_stage_ != UPGRADE_ANNOYANCE_NONE;
 
   NotifyUpgradeRecommended();
   if (upgrade_available_ == UPGRADE_NEEDED_OUTDATED_INSTALL) {

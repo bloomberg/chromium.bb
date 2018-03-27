@@ -11,11 +11,15 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/upgrade_observer.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/base/idle/idle.h"
 #include "ui/gfx/image/image.h"
 
 class PrefRegistrySimple;
 class UpgradeObserver;
+namespace base {
+class TickClock;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // UpgradeDetector
@@ -133,7 +137,14 @@ class UpgradeDetector {
     UPGRADE_NEEDED_OUTDATED_INSTALL_NO_AU,
   };
 
-  UpgradeDetector();
+  explicit UpgradeDetector(base::TickClock* tick_clock);
+
+  // Returns the notification period specified via the
+  // RelaunchNotificationPeriod policy setting, or a zero delta if unset or out
+  // of range.
+  static base::TimeDelta GetRelaunchNotificationPeriod();
+
+  base::TickClock* tick_clock() { return tick_clock_; }
 
   // Notifies that update is recommended and triggers different actions based
   // on the update availability.
@@ -196,12 +207,24 @@ class UpgradeDetector {
   FRIEND_TEST_ALL_PREFIXES(SystemTrayClientTest, UpdateTrayIcon);
   friend class UpgradeMetricsProviderTest;
 
+  // Handles a change to the browser.relaunch_notification_period Local State
+  // preference. Subclasses should call NotifyUpgrade if observers are to be
+  // notified of the change (generally speaking, if an upgrade is available).
+  virtual void OnRelaunchNotificationPeriodPrefChanged() = 0;
+
   // Initiates an Idle check. See IdleCallback below.
   void CheckIdle();
 
   // The callback for the IdleCheck. Tells us whether Chrome has received any
   // input events since the specified time.
   void IdleCallback(ui::IdleState state);
+
+  // A provider of TimeTicks to the detector and its timers.
+  base::TickClock* const tick_clock_;
+
+  // Observes changes to the browser.relaunch_notification_period Local State
+  // preference.
+  PrefChangeRegistrar pref_change_registrar_;
 
   // Whether any software updates are available (experiment updates are tracked
   // separately via additional member variables below).

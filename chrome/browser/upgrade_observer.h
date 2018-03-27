@@ -18,9 +18,9 @@ class UpgradeObserver {
   virtual void OnUpdateOverCellularOneTimePermissionGranted() {}
 
   // Triggered when Chrome believes an update has been installed and available
-  // for long enough with the user shutting down to let it take effect. See
-  // upgrade_detector.cc for details on how long it waits. No details are
-  // expected.
+  // for long enough with the user shutting down to let it take effect, or
+  // following a change to the thresholds that move the UpgradeDetector through
+  // the low, elevated, and high annoyance levels. No details are expected.
   virtual void OnUpgradeRecommended() {}
 
   // Triggered when a critical update has been installed. No details are

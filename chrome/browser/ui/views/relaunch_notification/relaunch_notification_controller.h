@@ -9,23 +9,37 @@
 
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
+#include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/upgrade_detector.h"
 #include "chrome/browser/upgrade_observer.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/views/widget/widget_observer.h"
 
+namespace base {
+class TickClock;
+}
 namespace views {
 class Widget;
 }
 
-// A class that observes changes to the browser.relaunch_notification preference
-// (which is backed by the RelaunchNotification policy setting) and annoyance
-// levels from the UpgradeDetector. An appropriate notification is shown to the
-// user based on the policy setting and current upgrade annoyance level.
-// Notifications are shown at low, elevated, and high annoyance levels (as
-// defined by the UpgradeDetector). In cases where an administrator recommends a
-// relaunch, a bubble for such is repeatedly shown until the user relaunches.
+// A class that observes changes to the browser.relaunch_notification
+// preference (which is backed by the RelaunchNotification policy
+// setting) and upgrade notifications from the UpgradeDetector. The two
+// values for the RelaunchNotification policy setting are handled as follows:
+//
+// - Recommended (1): The controller displays the relaunch recommended bubble on
+//   each change to the UpgradeDetector's upgrade_notification_stage (an
+//   "annoyance level" of low, elevated, or high). Once the high annoyance level
+//   is reached, the controller continually reshows a the bubble on a timer with
+//   a period equal to the time delta between the "elevated" and "high"
+//   showings.
+//
+// - Required (2): The controller displays the relaunch required dialog on each
+//   change to the UpgradeDetector's upgrade_notification_stage (described
+//   above). The browser is relaunched three minutes after the third and final
+//   showing of the dialog (which takes place when the UpgradeDetector reaches
+//   the high annoyance level).
 class RelaunchNotificationController : public UpgradeObserver,
                                        public views::WidgetObserver {
  public:
@@ -35,6 +49,14 @@ class RelaunchNotificationController : public UpgradeObserver,
   ~RelaunchNotificationController() override;
 
  protected:
+  // The length of the final countdown given to the user before the browser is
+  // summarily relaunched.
+  static constexpr base::TimeDelta kRelaunchGracePeriod =
+      base::TimeDelta::FromMinutes(3);
+
+  RelaunchNotificationController(UpgradeDetector* upgrade_detector,
+                                 base::TickClock* tick_clock);
+
   // UpgradeObserver:
   void OnUpgradeRecommended() override;
 
@@ -60,28 +82,38 @@ class RelaunchNotificationController : public UpgradeObserver,
   void StartObservingUpgrades();
   void StopObservingUpgrades();
 
-  // Shows the proper notification based on the preference setting. Invoked as a
-  // result of a detected change in the UpgradeDetector's annoyance level to
-  // |level|. In the case where a relaunch is recommended and |level| indicates
-  // that the highest annoyance level has been reached, starts a timer to
-  // repeatedly show the relaunch recommended notification.
+  // Shows the proper notification based on the preference setting and starts
+  // the timer to either reshow the bubble or relaunch the browser as
+  // appropriate. |level| is the current annoyance level reported by the
+  // UpgradeDetector, and |high_deadline| is the time at which the
+  // UpgradeDetector will reach the high annoyance level; see the class comment
+  // for further details.
   void ShowRelaunchNotification(
-      UpgradeDetector::UpgradeNotificationAnnoyanceLevel level);
+      UpgradeDetector::UpgradeNotificationAnnoyanceLevel level,
+      base::TimeTicks high_deadline);
 
   // Closes any previously-shown notifications. This is safe to call if no
   // notifications have been shown. Notifications may be closed by other means
   // (e.g., by the user), so there is no expectation that a previously-shown
-  // notification is still open when this is invoked. In the case where a
-  // relaunch is recommended, the timer to repeatedly show the relaunch
-  // recommended notification is also stopped.
+  // notification is still open when this is invoked. The timer to either
+  // repeatedly show the relaunch recommended notification or to force a
+  // relaunch once the deadline is reached is also stopped.
   void CloseRelaunchNotification();
 
-  // Starts a timer to periodically re-show the relaunch recommended bubble.
+  // Starts or reschedules a timer to periodically re-show the relaunch
+  // recommended bubble.
   void StartReshowTimer();
 
   // Run on a timer once high annoyance has been reached to re-show the relaunch
   // recommended bubble.
   void OnReshowRelaunchRecommendedBubble();
+
+  // Handles a new |level| and/or |high_deadline| by adjusting the runtime of
+  // the relaunch timer, updating the deadline displayed in the title of the
+  // relaunch required dialog (if shown), and showing the dialog if needed.
+  void HandleRelaunchRequiredState(
+      UpgradeDetector::UpgradeNotificationAnnoyanceLevel level,
+      base::TimeTicks high_deadline);
 
   // The following methods, which are invoked by the controller to show or close
   // notifications, are virtual for the sake of testing.
@@ -102,6 +134,10 @@ class RelaunchNotificationController : public UpgradeObserver,
   // The process-wide upgrade detector.
   UpgradeDetector* const upgrade_detector_;
 
+  // A provider of TimeTicks to the controller and its timer for the sake of
+  // testability.
+  base::TickClock* const tick_clock_;
+
   // Observes changes to the browser.relaunch_notification Local State pref.
   PrefChangeRegistrar pref_change_registrar_;
 
@@ -117,6 +153,9 @@ class RelaunchNotificationController : public UpgradeObserver,
   // dormant (browser.relaunch_notification is 0). It is any other value only
   // when a notification has been shown.
   UpgradeDetector::UpgradeNotificationAnnoyanceLevel last_level_;
+
+  // The last observed high annoyance deadline.
+  base::TimeTicks last_high_deadline_;
 
   // The widget hosting the bubble or dialog, or null if neither is is currently
   // shown.

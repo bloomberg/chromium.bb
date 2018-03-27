@@ -17,8 +17,11 @@
 #include "components/variations/service/variations_service.h"
 
 namespace base {
+template <typename T>
+class NoDestructor;
 class SequencedTaskRunner;
 class TaskRunner;
+class TickClock;
 }
 
 // This class contains the non-CrOS desktop implementation of the detector.
@@ -40,7 +43,11 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   base::TimeTicks GetHighAnnoyanceDeadline() override;
 
  protected:
-  UpgradeDetectorImpl();
+  explicit UpgradeDetectorImpl(base::TickClock* tick_clock);
+
+  // Sends out a notification and starts a one shot timer to wait until
+  // notifying the user.
+  void UpgradeDetected(UpgradeAvailable upgrade_available);
 
   // variations::VariationsService::Observer:
   void OnExperimentChangesDetected(Severity severity) override;
@@ -49,9 +56,16 @@ class UpgradeDetectorImpl : public UpgradeDetector,
   // interval. Exposed as protected for testing.
   void NotifyOnUpgradeWithTimePassed(base::TimeDelta time_passed);
 
+  base::TimeDelta GetThresholdForLevel(UpgradeNotificationAnnoyanceLevel level);
+
  private:
+  friend class base::NoDestructor<UpgradeDetectorImpl>;
+
   // A callback that receives the results of |DetectUpgradeTask|.
   using UpgradeDetectedCallback = base::OnceCallback<void(UpgradeAvailable)>;
+
+  // UpgradeDetector:
+  void OnRelaunchNotificationPeriodPrefChanged() override;
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
   // Receives the results of AreAutoupdatesEnabled and starts the upgrade check
@@ -72,10 +86,6 @@ class UpgradeDetectorImpl : public UpgradeDetector,
 
   // Lazy-initialization for the various threshold deltas (idempotent).
   void InitializeThresholds();
-
-  // Sends out a notification and starts a one shot timer to wait until
-  // notifying the user.
-  void UpgradeDetected(UpgradeAvailable upgrade_available);
 
   // Returns true after calling UpgradeDetected if current install is outdated.
   bool DetectOutdatedInstall();

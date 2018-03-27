@@ -113,6 +113,8 @@ TEST_F(AppMenuModelTest, Basics) {
   EXPECT_GT(itemCount, 10);
 
   UpgradeDetector* detector = UpgradeDetector::GetInstance();
+  detector->set_upgrade_notification_stage(
+      UpgradeDetector::UPGRADE_ANNOYANCE_LOW);
   detector->NotifyUpgrade();
   EXPECT_TRUE(detector->notify_upgrade());
   EXPECT_EQ(browser_defaults::kShowUpgradeMenuItem,
