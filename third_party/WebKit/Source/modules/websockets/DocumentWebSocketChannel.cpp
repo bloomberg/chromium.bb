@@ -41,8 +41,6 @@
 #include "core/frame/WebLocalFrameImpl.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/loader/BaseFetchContext.h"
-#include "core/loader/DocumentLoader.h"
-#include "core/loader/FrameLoader.h"
 #include "core/loader/MixedContentChecker.h"
 #include "core/loader/SubresourceFilter.h"
 #include "core/loader/ThreadableLoadingContext.h"
@@ -208,27 +206,24 @@ bool DocumentWebSocketChannel::Connect(
   if (!handle_)
     return false;
 
-  if (GetDocument()) {
-    if (GetDocument()->GetFrame()) {
-      if (MixedContentChecker::ShouldBlockWebSocket(GetDocument()->GetFrame(),
-                                                    url))
-        return false;
+  if (GetDocument() && GetDocument()->GetFrame()) {
+    if (MixedContentChecker::ShouldBlockWebSocket(GetDocument()->GetFrame(),
+                                                  url)) {
+      return false;
     }
-    if (MixedContentChecker::IsMixedContent(GetDocument()->GetSecurityOrigin(),
-                                            url)) {
-      String message =
-          "Connecting to a non-secure WebSocket server from a secure origin is "
-          "deprecated.";
-      GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-          kJSMessageSource, kWarningMessageLevel, message));
-    }
+    connection_handle_for_scheduler_ = GetDocument()
+                                           ->GetFrame()
+                                           ->GetFrameScheduler()
+                                           ->OnActiveConnectionCreated();
+  }
 
-    if (GetDocument()->GetFrame()) {
-      connection_handle_for_scheduler_ = GetDocument()
-                                             ->GetFrame()
-                                             ->GetFrameScheduler()
-                                             ->OnActiveConnectionCreated();
-    }
+  if (MixedContentChecker::IsMixedContent(
+          GetExecutionContext()->GetSecurityOrigin(), url)) {
+    String message =
+        "Connecting to a non-secure WebSocket server from a secure origin is "
+        "deprecated.";
+    GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+        kJSMessageSource, kWarningMessageLevel, message));
   }
 
   url_ = url;
@@ -245,7 +240,7 @@ bool DocumentWebSocketChannel::Connect(
   // failure blocks the worker thread which should be avoided. Note that
   // returning "true" just indicates that this was not a mixed content error.
   if (ShouldDisallowConnection(url)) {
-    GetDocument()
+    GetExecutionContext()
         ->GetTaskRunner(TaskType::kNetworking)
         ->PostTask(
             FROM_HERE,
@@ -387,13 +382,12 @@ void DocumentWebSocketChannel::Fail(const String& reason,
                                     MessageLevel level,
                                     std::unique_ptr<SourceLocation> location) {
   NETWORK_DVLOG(1) << this << " Fail(" << reason << ")";
-  if (GetDocument()) {
+  if (GetDocument())
     probe::didReceiveWebSocketFrameError(GetDocument(), identifier_, reason);
-    const String message = "WebSocket connection to '" + url_.ElidedString() +
-                           "' failed: " + reason;
-    GetDocument()->AddConsoleMessage(ConsoleMessage::Create(
-        kJSMessageSource, level, message, std::move(location)));
-  }
+  const String message =
+      "WebSocket connection to '" + url_.ElidedString() + "' failed: " + reason;
+  GetExecutionContext()->AddConsoleMessage(ConsoleMessage::Create(
+      kJSMessageSource, level, message, std::move(location)));
   // |reason| is only for logging and should not be provided for scripts,
   // hence close reason must be empty in tearDownFailedConnection.
   TearDownFailedConnection();
@@ -560,10 +554,14 @@ void DocumentWebSocketChannel::HandleDidClose(bool was_clean,
 }
 
 Document* DocumentWebSocketChannel::GetDocument() {
-  ExecutionContext* context = loading_context_->GetExecutionContext();
+  ExecutionContext* context = GetExecutionContext();
   if (context->IsDocument())
     return ToDocument(context);
   return nullptr;
+}
+
+ExecutionContext* DocumentWebSocketChannel::GetExecutionContext() {
+  return loading_context_->GetExecutionContext();
 }
 
 void DocumentWebSocketChannel::DidConnect(WebSocketHandle* handle,
@@ -821,10 +819,8 @@ void DocumentWebSocketChannel::TearDownFailedConnection() {
 
 bool DocumentWebSocketChannel::ShouldDisallowConnection(const KURL& url) {
   DCHECK(handle_);
-  DocumentLoader* loader = GetDocument()->Loader();
-  if (!loader)
-    return false;
-  SubresourceFilter* subresource_filter = loader->GetSubresourceFilter();
+  BaseFetchContext* fetch_context = loading_context_->GetFetchContext();
+  SubresourceFilter* subresource_filter = fetch_context->GetSubresourceFilter();
   if (!subresource_filter)
     return false;
   return !subresource_filter->AllowWebSocketConnection(url);

@@ -50,6 +50,7 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
   void Trace(blink::Visitor*) override;
 
   virtual KURL GetSiteForCookies() const = 0;
+  virtual SubresourceFilter* GetSubresourceFilter() const = 0;
   virtual void CountUsage(WebFeature) const = 0;
   virtual void CountDeprecation(WebFeature) const = 0;
 
@@ -62,7 +63,6 @@ class CORE_EXPORT BaseFetchContext : public FetchContext {
  protected:
   // Used for security checks.
   virtual bool AllowScriptFromSource(const KURL&) const = 0;
-  virtual SubresourceFilter* GetSubresourceFilter() const = 0;
 
   // Note: subclasses are expected to override following methods.
   // Used in the default implementation for CanRequest, CanFollowRedirect

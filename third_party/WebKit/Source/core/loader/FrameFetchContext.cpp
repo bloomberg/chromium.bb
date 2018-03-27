@@ -333,6 +333,13 @@ KURL FrameFetchContext::GetSiteForCookies() const {
   return document->SiteForCookies();
 }
 
+SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
+  if (IsDetached())
+    return nullptr;
+  DocumentLoader* document_loader = MasterDocumentLoader();
+  return document_loader ? document_loader->GetSubresourceFilter() : nullptr;
+}
+
 LocalFrame* FrameFetchContext::GetFrame() const {
   DCHECK(!IsDetached());
 
@@ -997,13 +1004,6 @@ bool FrameFetchContext::AllowScriptFromSourceWithoutNotifying(
     return false;
   }
   return true;
-}
-
-SubresourceFilter* FrameFetchContext::GetSubresourceFilter() const {
-  if (IsDetached())
-    return nullptr;
-  DocumentLoader* document_loader = MasterDocumentLoader();
-  return document_loader ? document_loader->GetSubresourceFilter() : nullptr;
 }
 
 bool FrameFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {
