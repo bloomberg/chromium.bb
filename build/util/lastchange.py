@@ -66,6 +66,9 @@ def FetchGitRevision(directory, filter):
     output = proc.communicate()[0].strip()
     if proc.returncode == 0 and output:
       hsh = output
+    else:
+      logging.error('Git error: rc=%d, output=%r' %
+                    (proc.returncode, output))
   if not hsh:
     return None
   pos = ''
