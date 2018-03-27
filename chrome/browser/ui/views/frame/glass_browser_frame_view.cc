@@ -669,6 +669,15 @@ void GlassBrowserFrameView::PaintTitlebar(gfx::Canvas* canvas) const {
                          titlebar_rect.y(), frame_overlay_image.width() * scale,
                          frame_overlay_image.height() * scale, true);
   }
+
+  if (ShowCustomTitle()) {
+    const SkAlpha title_alpha =
+        ShouldPaintAsActive() ? SK_AlphaOPAQUE : kInactiveTitlebarFeatureAlpha;
+    const SkColor title_color = SkColorSetA(
+        color_utils::BlendTowardOppositeLuma(titlebar_color, SK_AlphaOPAQUE),
+        title_alpha);
+    window_title_->SetEnabledColor(title_color);
+  }
 }
 
 void GlassBrowserFrameView::PaintClientEdge(gfx::Canvas* canvas) const {
@@ -804,6 +813,7 @@ void GlassBrowserFrameView::LayoutTitleBar() {
     const int max_text_width = std::max(0, MinimizeButtonX() - x);
     window_title_->SetBounds(x, window_icon_bounds.y(), max_text_width,
                              window_icon_bounds.height());
+    window_title_->SetAutoColorReadabilityEnabled(false);
   }
 }
 

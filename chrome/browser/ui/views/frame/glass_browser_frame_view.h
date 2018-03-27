@@ -26,6 +26,10 @@ class GlassBrowserFrameView : public BrowserNonClientFrameView,
                               public TabIconViewModel,
                               public TabStripObserver {
  public:
+  // Alpha to use for features in the titlebar (the window title and caption
+  // buttons) when the window is inactive. They are opaque when active.
+  static constexpr SkAlpha kInactiveTitlebarFeatureAlpha = 0x65;
+
   // Constructs a non-client view for an BrowserFrame.
   GlassBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
   ~GlassBrowserFrameView() override;
