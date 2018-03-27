@@ -67,13 +67,6 @@ const uint8_t kTracksHeader[] = {
     0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // tracks(size = 0)
 };
 
-// WebM Block bytes that represent a VP8 key frame.
-const uint8_t kVP8Keyframe[] = {0x010, 0x00, 0x00, 0x9d, 0x01, 0x2a,
-                                0x00,  0x10, 0x00, 0x10, 0x00};
-
-// WebM Block bytes that represent a VP8 interframe.
-const uint8_t kVP8Interframe[] = {0x11, 0x00, 0x00};
-
 const uint8_t kCuesHeader[] = {
     0x1C, 0x53, 0xBB, 0x6B,                          // Cues ID
     0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,  // cues(size = 0)
@@ -547,17 +540,10 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
         cb.SetClusterTimecode(blocks[i].timestamp_in_ms);
 
       if (blocks[i].duration) {
-        if (blocks[i].track_number == kVideoTrackNum ||
-            blocks[i].track_number == kAlternateVideoTrackNum) {
-          AddVideoBlockGroup(&cb,
-                             blocks[i].track_number, blocks[i].timestamp_in_ms,
-                             blocks[i].duration, blocks[i].flags);
-        } else {
-          cb.AddBlockGroup(blocks[i].track_number, blocks[i].timestamp_in_ms,
-                           blocks[i].duration, blocks[i].flags,
-                           blocks[i].flags & kWebMFlagKeyframe, &data[0],
-                           data.size());
-        }
+        cb.AddBlockGroup(blocks[i].track_number, blocks[i].timestamp_in_ms,
+                         blocks[i].duration, blocks[i].flags,
+                         blocks[i].flags & kWebMFlagKeyframe, &data[0],
+                         data.size());
       } else {
         cb.AddSimpleBlock(blocks[i].track_number, blocks[i].timestamp_in_ms,
                           blocks[i].flags,
@@ -937,19 +923,6 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
     return GenerateCluster(timecode, timecode, block_count);
   }
 
-  void AddVideoBlockGroup(ClusterBuilder* cb,
-                          int track_num,
-                          int64_t timecode,
-                          int duration,
-                          int flags) {
-    const uint8_t* data =
-        (flags & kWebMFlagKeyframe) != 0 ? kVP8Keyframe : kVP8Interframe;
-    int size = (flags & kWebMFlagKeyframe) != 0 ? sizeof(kVP8Keyframe) :
-        sizeof(kVP8Interframe);
-    cb->AddBlockGroup(track_num, timecode, duration, flags,
-                      flags & kWebMFlagKeyframe, data, size);
-  }
-
   std::unique_ptr<Cluster> GenerateCluster(int first_audio_timecode,
                                            int first_video_timecode,
                                            int block_count) {
@@ -1028,14 +1001,9 @@ class ChunkDemuxerTest : public ::testing::TestWithParam<BufferingApi> {
       timecode += block_duration;
     }
 
-    if (track_number == kVideoTrackNum) {
-      AddVideoBlockGroup(&cb, track_number, timecode, block_duration,
-                         kWebMFlagKeyframe);
-    } else {
-      cb.AddBlockGroup(track_number, timecode, block_duration,
-                       kWebMFlagKeyframe, static_cast<bool>(kWebMFlagKeyframe),
-                       &data[0], data.size());
-    }
+    cb.AddBlockGroup(track_number, timecode, block_duration, kWebMFlagKeyframe,
+                     static_cast<bool>(kWebMFlagKeyframe), &data[0],
+                     data.size());
 
     return cb.Finish();
   }
