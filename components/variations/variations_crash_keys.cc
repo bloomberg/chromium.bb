@@ -59,6 +59,10 @@ class VariationsCrashKeys final : public base::FieldTrialList::Observer {
   // Updates crash keys based on internal state.
   void UpdateCrashKeys();
 
+  // Task runner corresponding to the UI thread, used to reschedule synchronous
+  // observer calls that happen on a different thread.
+  scoped_refptr<base::SequencedTaskRunner> ui_thread_task_runner_;
+
   // A serialized string containing the variations state.
   std::string variations_string_;
 
@@ -84,13 +88,12 @@ VariationsCrashKeys::VariationsCrashKeys() {
   }
   UpdateCrashKeys();
 
-  bool success = base::FieldTrialList::AddObserver(this);
-  // Ensure the observer was actually registered.
-  DCHECK(success);
+  ui_thread_task_runner_ = base::SequencedTaskRunnerHandle::Get();
+  base::FieldTrialList::SetSynchronousObserver(this);
 }
 
 VariationsCrashKeys::~VariationsCrashKeys() {
-  base::FieldTrialList::RemoveObserver(this);
+  base::FieldTrialList::RemoveSynchronousObserver(this);
   g_num_variations_crash_key.Clear();
   g_variations_crash_key.Clear();
 }
@@ -98,6 +101,20 @@ VariationsCrashKeys::~VariationsCrashKeys() {
 void VariationsCrashKeys::OnFieldTrialGroupFinalized(
     const std::string& trial_name,
     const std::string& group_name) {
+  // If this is called on a different thread, post it back to the UI thread.
+  // Note: This is safe to do because in production, this object is never
+  // deleted and if this is called, it means the constructor has already run,
+  // which is the only place that |ui_thread_task_runner_| is set.
+  if (!ui_thread_task_runner_->RunsTasksInCurrentSequence()) {
+    ui_thread_task_runner_->PostTask(
+        FROM_HERE,
+        BindOnce(&VariationsCrashKeys::OnFieldTrialGroupFinalized,
+                 // base::Unretained() is safe here because this object is
+                 // never deleted in production.
+                 base::Unretained(this), trial_name, group_name));
+    return;
+  }
+
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
   AppendFieldTrial(trial_name, group_name);

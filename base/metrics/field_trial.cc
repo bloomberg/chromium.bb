@@ -996,6 +996,18 @@ void FieldTrialList::RemoveObserver(Observer* observer) {
 }
 
 // static
+void FieldTrialList::SetSynchronousObserver(Observer* observer) {
+  DCHECK(!global_->synchronous_observer_);
+  global_->synchronous_observer_ = observer;
+}
+
+// static
+void FieldTrialList::RemoveSynchronousObserver(Observer* observer) {
+  DCHECK_EQ(global_->synchronous_observer_, observer);
+  global_->synchronous_observer_ = nullptr;
+}
+
+// static
 void FieldTrialList::OnGroupFinalized(bool is_locked, FieldTrial* field_trial) {
   if (!global_)
     return;
@@ -1034,6 +1046,11 @@ void FieldTrialList::NotifyFieldTrialGroupSelection(FieldTrial* field_trial) {
   if (tracker) {
     tracker->RecordFieldTrial(field_trial->trial_name(),
                               field_trial->group_name_internal());
+  }
+
+  if (global_->synchronous_observer_) {
+    global_->synchronous_observer_->OnFieldTrialGroupFinalized(
+        field_trial->trial_name(), field_trial->group_name_internal());
   }
 
   global_->observer_list_->Notify(

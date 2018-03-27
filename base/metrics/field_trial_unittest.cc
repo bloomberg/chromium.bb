@@ -53,11 +53,24 @@ int OneYearBeforeBuildTime() {
 // FieldTrialList::Observer implementation for testing.
 class TestFieldTrialObserver : public FieldTrialList::Observer {
  public:
-  TestFieldTrialObserver() {
-    FieldTrialList::AddObserver(this);
+  enum Type {
+    ASYNCHRONOUS,
+    SYNCHRONOUS,
+  };
+
+  TestFieldTrialObserver(Type type) : type_(type) {
+    if (type == SYNCHRONOUS)
+      FieldTrialList::SetSynchronousObserver(this);
+    else
+      FieldTrialList::AddObserver(this);
   }
 
-  ~TestFieldTrialObserver() override { FieldTrialList::RemoveObserver(this); }
+  ~TestFieldTrialObserver() override {
+    if (type_ == SYNCHRONOUS)
+      FieldTrialList::RemoveSynchronousObserver(this);
+    else
+      FieldTrialList::RemoveObserver(this);
+  }
 
   void OnFieldTrialGroupFinalized(const std::string& trial,
                                   const std::string& group) override {
@@ -69,6 +82,7 @@ class TestFieldTrialObserver : public FieldTrialList::Observer {
   const std::string& group_name() const { return group_name_; }
 
  private:
+  const Type type_;
   std::string trial_name_;
   std::string group_name_;
 
@@ -602,7 +616,7 @@ TEST_F(FieldTrialTest, CreateTrialsFromStringForceActivation) {
 TEST_F(FieldTrialTest, CreateTrialsFromStringNotActiveObserver) {
   ASSERT_FALSE(FieldTrialList::TrialExists("Abc"));
 
-  TestFieldTrialObserver observer;
+  TestFieldTrialObserver observer(TestFieldTrialObserver::ASYNCHRONOUS);
   ASSERT_TRUE(FieldTrialList::CreateTrialsFromString("Abc/def/",
                                                      std::set<std::string>()));
   RunLoop().RunUntilIdle();
@@ -918,7 +932,7 @@ TEST_F(FieldTrialTest, Observe) {
   const char kTrialName[] = "TrialToObserve1";
   const char kSecondaryGroupName[] = "SecondaryGroup";
 
-  TestFieldTrialObserver observer;
+  TestFieldTrialObserver observer(TestFieldTrialObserver::ASYNCHRONOUS);
   int default_group = -1;
   scoped_refptr<FieldTrial> trial =
       CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
@@ -926,7 +940,31 @@ TEST_F(FieldTrialTest, Observe) {
   const int chosen_group = trial->group();
   EXPECT_TRUE(chosen_group == default_group || chosen_group == secondary_group);
 
+  // Observers are called asynchronously.
+  EXPECT_TRUE(observer.trial_name().empty());
+  EXPECT_TRUE(observer.group_name().empty());
   RunLoop().RunUntilIdle();
+
+  EXPECT_EQ(kTrialName, observer.trial_name());
+  if (chosen_group == default_group)
+    EXPECT_EQ(kDefaultGroupName, observer.group_name());
+  else
+    EXPECT_EQ(kSecondaryGroupName, observer.group_name());
+}
+
+TEST_F(FieldTrialTest, SynchronousObserver) {
+  const char kTrialName[] = "TrialToObserve1";
+  const char kSecondaryGroupName[] = "SecondaryGroup";
+
+  TestFieldTrialObserver observer(TestFieldTrialObserver::SYNCHRONOUS);
+  int default_group = -1;
+  scoped_refptr<FieldTrial> trial =
+      CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
+  const int secondary_group = trial->AppendGroup(kSecondaryGroupName, 50);
+  const int chosen_group = trial->group();
+  EXPECT_TRUE(chosen_group == default_group || chosen_group == secondary_group);
+
+  // The observer should be notified synchronously by the group() call.
   EXPECT_EQ(kTrialName, observer.trial_name());
   if (chosen_group == default_group)
     EXPECT_EQ(kDefaultGroupName, observer.group_name());
@@ -937,7 +975,7 @@ TEST_F(FieldTrialTest, Observe) {
 TEST_F(FieldTrialTest, ObserveDisabled) {
   const char kTrialName[] = "TrialToObserve2";
 
-  TestFieldTrialObserver observer;
+  TestFieldTrialObserver observer(TestFieldTrialObserver::ASYNCHRONOUS);
   int default_group = -1;
   scoped_refptr<FieldTrial> trial =
       CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
@@ -961,7 +999,7 @@ TEST_F(FieldTrialTest, ObserveDisabled) {
 TEST_F(FieldTrialTest, ObserveForcedDisabled) {
   const char kTrialName[] = "TrialToObserve3";
 
-  TestFieldTrialObserver observer;
+  TestFieldTrialObserver observer(TestFieldTrialObserver::ASYNCHRONOUS);
   int default_group = -1;
   scoped_refptr<FieldTrial> trial =
       CreateFieldTrial(kTrialName, 100, kDefaultGroupName, &default_group);
@@ -1058,7 +1096,7 @@ TEST_F(FieldTrialTest, CreateSimulatedFieldTrial) {
   };
 
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
-    TestFieldTrialObserver observer;
+    TestFieldTrialObserver observer(TestFieldTrialObserver::ASYNCHRONOUS);
     scoped_refptr<FieldTrial> trial(
        FieldTrial::CreateSimulatedFieldTrial(kTrialName, 100, kDefaultGroupName,
                                              test_cases[i].entropy_value));
