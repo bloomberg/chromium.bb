@@ -5,8 +5,10 @@
 #include "components/viz/service/display/display.h"
 
 #include <stddef.h>
+#include <limits>
 
 #include "base/metrics/histogram_macros.h"
+#include "base/numerics/checked_math.h"
 #include "base/timer/elapsed_timer.h"
 #include "base/trace_event/trace_event.h"
 #include "cc/base/math_util.h"
@@ -582,10 +584,10 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
       settings_.kMinimumDrawOcclusionSize.width() * device_scale_factor_;
 
   // Total quad area to be drawn on screen before applying draw occlusion.
-  size_t total_quad_area_shown_wo_occlusion_px = 0;
+  base::CheckedNumeric<uint64_t> total_quad_area_shown_wo_occlusion_px = 0;
 
   // Total area not draw skipped by draw occlusion.
-  size_t total_area_saved_in_px = 0;
+  base::CheckedNumeric<uint64_t> total_area_saved_in_px = 0;
 
   for (const auto& pass : frame->render_pass_list) {
     // TODO(yiyix): Add filter effects to draw occlusion calculation and perform
@@ -724,13 +726,16 @@ void Display::RemoveOverdrawQuads(CompositorFrame* frame) {
   }
   UMA_HISTOGRAM_PERCENTAGE(
       "Compositing.Display.Draw.Occlusion.Percentage.Saved",
-      total_quad_area_shown_wo_occlusion_px == 0
+      total_quad_area_shown_wo_occlusion_px.ValueOrDefault(0) == 0
           ? 0
-          : total_area_saved_in_px * 100 /
-                total_quad_area_shown_wo_occlusion_px);
+          : static_cast<uint64_t>(total_area_saved_in_px.ValueOrDie()) * 100 /
+                static_cast<uint64_t>(
+                    total_quad_area_shown_wo_occlusion_px.ValueOrDie()));
+
   UMA_HISTOGRAM_COUNTS_1M(
       "Compositing.Display.Draw.Occlusion.Drawing.Area.Saved2",
-      total_area_saved_in_px);
+      static_cast<uint64_t>(total_area_saved_in_px.ValueOrDefault(
+          std::numeric_limits<uint64_t>::max())));
 }
 
 }  // namespace viz
