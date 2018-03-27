@@ -205,13 +205,9 @@ bool CreateKeyAndSelfSignedCert(const std::string& subject,
   if (!new_key)
     return false;
 
-  bool success = CreateSelfSignedCert(new_key->key(),
-                                      kSignatureDigestAlgorithm,
-                                      subject,
-                                      serial_number,
-                                      not_valid_before,
-                                      not_valid_after,
-                                      der_cert);
+  bool success = CreateSelfSignedCert(new_key->key(), kSignatureDigestAlgorithm,
+                                      subject, serial_number, not_valid_before,
+                                      not_valid_after, der_cert);
   if (success)
     *key = std::move(new_key);
 
@@ -256,7 +252,7 @@ bool CreateSelfSignedCert(EVP_PKEY* key,
       !AddTime(&validity, not_valid_before) ||
       !AddTime(&validity, not_valid_after) ||
       !AddNameWithCommonName(&tbs_cert, common_name) ||  // subject
-      !EVP_marshal_public_key(&tbs_cert, key) ||  // subjectPublicKeyInfo
+      !EVP_marshal_public_key(&tbs_cert, key) ||         // subjectPublicKeyInfo
       !CBB_finish(cbb.get(), &tbs_cert_bytes, &tbs_cert_len)) {
     return false;
   }
