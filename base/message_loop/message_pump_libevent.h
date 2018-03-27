@@ -5,6 +5,8 @@
 #ifndef BASE_MESSAGE_LOOP_MESSAGE_PUMP_LIBEVENT_H_
 #define BASE_MESSAGE_LOOP_MESSAGE_PUMP_LIBEVENT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/location.h"
 #include "base/macros.h"
@@ -54,12 +56,11 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
     friend class MessagePumpLibevent;
     friend class MessagePumpLibeventTest;
 
-    // Called by MessagePumpLibevent, ownership of |e| is transferred to this
-    // object.
-    void Init(event* e);
+    // Called by MessagePumpLibevent.
+    void Init(std::unique_ptr<event> e);
 
-    // Used by MessagePumpLibevent to take ownership of event_.
-    event* ReleaseEvent();
+    // Used by MessagePumpLibevent to take ownership of |event_|.
+    std::unique_ptr<event> ReleaseEvent();
 
     void set_pump(MessagePumpLibevent* pump) { pump_ = pump; }
     MessagePumpLibevent* pump() const { return pump_; }
@@ -69,12 +70,12 @@ class BASE_EXPORT MessagePumpLibevent : public MessagePump {
     void OnFileCanReadWithoutBlocking(int fd, MessagePumpLibevent* pump);
     void OnFileCanWriteWithoutBlocking(int fd, MessagePumpLibevent* pump);
 
-    event* event_;
-    MessagePumpLibevent* pump_;
-    Watcher* watcher_;
+    std::unique_ptr<event> event_;
+    MessagePumpLibevent* pump_ = nullptr;
+    Watcher* watcher_ = nullptr;
     // If this pointer is non-NULL, the pointee is set to true in the
     // destructor.
-    bool* was_destroyed_;
+    bool* was_destroyed_ = nullptr;
 
     const Location created_from_location_;
 

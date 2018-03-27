@@ -7,7 +7,7 @@
 #include <errno.h>
 #include <unistd.h>
 
-#include <memory>
+#include <utility>
 
 #include "base/auto_reset.h"
 #include "base/compiler_specific.h"
@@ -45,11 +45,7 @@ namespace base {
 
 MessagePumpLibevent::FileDescriptorWatcher::FileDescriptorWatcher(
     const Location& from_here)
-    : event_(nullptr),
-      pump_(nullptr),
-      watcher_(nullptr),
-      was_destroyed_(nullptr),
-      created_from_location_(from_here) {}
+    : created_from_location_(from_here) {}
 
 MessagePumpLibevent::FileDescriptorWatcher::~FileDescriptorWatcher() {
   if (event_) {
@@ -62,29 +58,28 @@ MessagePumpLibevent::FileDescriptorWatcher::~FileDescriptorWatcher() {
 }
 
 bool MessagePumpLibevent::FileDescriptorWatcher::StopWatchingFileDescriptor() {
-  event* e = ReleaseEvent();
-  if (e == nullptr)
+  std::unique_ptr<event> e = ReleaseEvent();
+  if (!e)
     return true;
 
   // event_del() is a no-op if the event isn't active.
-  int rv = event_del(e);
-  delete e;
+  int rv = event_del(e.get());
   pump_ = nullptr;
   watcher_ = nullptr;
   return (rv == 0);
 }
 
-void MessagePumpLibevent::FileDescriptorWatcher::Init(event* e) {
+void MessagePumpLibevent::FileDescriptorWatcher::Init(
+    std::unique_ptr<event> e) {
   DCHECK(e);
   DCHECK(!event_);
 
-  event_ = e;
+  event_ = std::move(e);
 }
 
-event* MessagePumpLibevent::FileDescriptorWatcher::ReleaseEvent() {
-  struct event* e = event_;
-  event_ = nullptr;
-  return e;
+std::unique_ptr<event>
+MessagePumpLibevent::FileDescriptorWatcher::ReleaseEvent() {
+  return std::move(event_);
 }
 
 void MessagePumpLibevent::FileDescriptorWatcher::OnFileCanReadWithoutBlocking(
@@ -189,12 +184,9 @@ bool MessagePumpLibevent::WatchFileDescriptor(int fd,
     return false;
   }
 
-  // Transfer ownership of evt to controller.
-  controller->Init(evt.release());
-
+  controller->Init(std::move(evt));
   controller->set_watcher(delegate);
   controller->set_pump(this);
-
   return true;
 }
 
