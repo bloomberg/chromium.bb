@@ -115,7 +115,7 @@ TEST_F(ClientTelemetryLoggerTest, LogStatistics) {
   protocol::PerformanceTracker perf_tracker;
   log_writer_->AddExpectedEvent(
       ChromotingEvent(ChromotingEvent::Type::CONNECTION_STATISTICS));
-  logger_->LogStatistics(&perf_tracker);
+  logger_->LogStatistics(perf_tracker);
 }
 
 TEST_F(ClientTelemetryLoggerTest, SessionIdGeneration) {
@@ -154,7 +154,7 @@ TEST_F(ClientTelemetryLoggerTest, SessionIdExpiration) {
   logger_->SetSessionIdGenerationTimeForTest(base::TimeTicks::Now() -
                                              base::TimeDelta::FromDays(2));
   protocol::PerformanceTracker perf_tracker;
-  logger_->LogStatistics(&perf_tracker);
+  logger_->LogStatistics(perf_tracker);
   EXPECT_NE(last_id, logger_->session_id());
 }
 

@@ -26,10 +26,11 @@ void RateCounter::Record(int64_t value) {
   data_points_.push(std::make_pair(now, value));
 }
 
-double RateCounter::Rate() {
+double RateCounter::Rate() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
 
-  EvictOldDataPoints(tick_clock_->NowTicks());
+  // This is just to ensure the rate is up to date.
+  const_cast<RateCounter*>(this)->EvictOldDataPoints(tick_clock_->NowTicks());
   return sum_ / time_window_.InSecondsF();
 }
 
