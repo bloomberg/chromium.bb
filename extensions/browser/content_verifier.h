@@ -101,9 +101,12 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
   GURL GetSignatureFetchUrlForTest(const ExtensionId& extension_id,
                                    const base::Version& extension_version);
 
- private:
-  DISALLOW_COPY_AND_ASSIGN(ContentVerifier);
+  // Test helper to recompute |io_data_| for |extension| without having to
+  // call |OnExtensionLoaded|.
+  void ResetIODataForTesting(const Extension* extension);
 
+ private:
+  friend class ContentVerifierTest;
   friend class base::RefCountedThreadSafe<ContentVerifier>;
   friend class HashHelper;
   ~ContentVerifier() override;
@@ -160,6 +163,8 @@ class ContentVerifier : public base::RefCountedThreadSafe<ContentVerifier>,
 
   // Data that should only be used on the IO thread.
   scoped_refptr<ContentVerifierIOData> io_data_;
+
+  DISALLOW_COPY_AND_ASSIGN(ContentVerifier);
 };
 
 }  // namespace extensions

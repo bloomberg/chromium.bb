@@ -665,6 +665,56 @@ TEST_P(ExtensionProtocolsTest, VerificationSeenForZeroByteFile) {
   }
 }
 
+TEST_P(ExtensionProtocolsTest, VerifyScriptListedAsIcon) {
+  SetProtocolHandler(false);
+
+  const std::string kBackgroundJs("background.js");
+  base::ScopedTempDir temp_dir;
+  ASSERT_TRUE(temp_dir.CreateUniqueTempDir());
+  base::FilePath unzipped_path = temp_dir.GetPath();
+
+  base::FilePath path;
+  EXPECT_TRUE(PathService::Get(extensions::DIR_TEST_DATA, &path));
+
+  scoped_refptr<Extension> extension =
+      content_verifier_test_utils::UnzipToDirAndLoadExtension(
+          path.AppendASCII("content_hash_fetcher")
+              .AppendASCII("manifest_mislabeled_script")
+              .AppendASCII("source.zip"),
+          unzipped_path);
+  ASSERT_TRUE(extension.get());
+
+  base::FilePath kRelativePath(FILE_PATH_LITERAL("background.js"));
+  ExtensionId extension_id = extension->id();
+
+  // Request background.js.
+  {
+    TestContentVerifySingleJobObserver observer(extension_id, kRelativePath);
+
+    content_verifier_->OnExtensionLoaded(browser_context(), extension.get());
+    // Wait for PostTask to ContentVerifierIOData::AddData() to finish.
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(net::OK, DoRequestOrLoad(extension, kBackgroundJs).result());
+    EXPECT_EQ(ContentVerifyJob::NONE, observer.WaitForJobFinished());
+  }
+
+  // Modify background.js and request it.
+  {
+    base::FilePath file_path = unzipped_path.AppendASCII("background.js");
+    const std::string content = "new content";
+    EXPECT_NE(base::WriteFile(file_path, content.c_str(), content.size()), -1);
+    TestContentVerifySingleJobObserver observer(extension_id, kRelativePath);
+
+    content_verifier_->OnExtensionLoaded(browser_context(), extension.get());
+    // Wait for PostTask to ContentVerifierIOData::AddData() to finish.
+    base::RunLoop().RunUntilIdle();
+
+    EXPECT_EQ(net::OK, DoRequestOrLoad(extension, kBackgroundJs).result());
+    EXPECT_EQ(ContentVerifyJob::HASH_MISMATCH, observer.WaitForJobFinished());
+  }
+}
+
 // Tests that mime types are properly set for returned extension resources.
 TEST_P(ExtensionProtocolsTest, MimeTypesForKnownFiles) {
   // Register a non-incognito extension protocol handler.

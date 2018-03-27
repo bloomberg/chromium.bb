@@ -25,6 +25,8 @@
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_l10n_util.h"
 #include "extensions/common/file_util.h"
+#include "extensions/common/manifest_handlers/background_info.h"
+#include "extensions/common/manifest_handlers/content_scripts_handler.h"
 
 namespace extensions {
 
@@ -55,6 +57,46 @@ base::FilePath NormalizeRelativePath(const base::FilePath& path) {
   // should work for all platforms.
   return base::FilePath(
       base::JoinString(parts, base::FilePath::StringType(1, '/')));
+}
+
+bool IsBackgroundPage(const Extension* extension,
+                      const base::FilePath& relative_path) {
+  return BackgroundInfo::HasBackgroundPage(extension) &&
+         extensions::file_util::ExtensionURLToRelativeFilePath(
+             BackgroundInfo::GetBackgroundURL(extension)) == relative_path;
+}
+
+bool IsBackgroundScript(const Extension* extension,
+                        const base::FilePath& relative_path) {
+  for (const std::string& script :
+       BackgroundInfo::GetBackgroundScripts(extension)) {
+    if (extension->GetResource(script).relative_path() == relative_path)
+      return true;
+  }
+  return false;
+}
+
+bool IsContentScript(const Extension* extension,
+                     const base::FilePath& relative_path) {
+  for (const std::unique_ptr<UserScript>& script :
+       ContentScriptsInfo::GetContentScripts(extension)) {
+    for (const std::unique_ptr<UserScript::File>& js_file :
+         script->js_scripts()) {
+      if (js_file->relative_path() == relative_path)
+        return true;
+    }
+  }
+  return false;
+}
+
+bool HasScriptFileExt(const base::FilePath& requested_path) {
+  return requested_path.Extension() == FILE_PATH_LITERAL(".js");
+}
+
+bool HasPageFileExt(const base::FilePath& requested_path) {
+  base::FilePath::StringType file_extension = requested_path.Extension();
+  return file_extension == FILE_PATH_LITERAL(".html") ||
+         file_extension == FILE_PATH_LITERAL(".htm");
 }
 
 }  // namespace
@@ -542,6 +584,10 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
 
   const std::set<base::FilePath>& browser_images = *(data->browser_image_paths);
 
+  ExtensionRegistry* registry = ExtensionRegistry::Get(context_);
+  const Extension* extension =
+      registry->GetExtensionById(extension_id, ExtensionRegistry::EVERYTHING);
+
   base::FilePath locales_dir = extension_root.Append(kLocaleFolder);
   std::unique_ptr<std::set<std::string>> all_locales;
 
@@ -553,6 +599,20 @@ bool ContentVerifier::ShouldVerifyAnyPaths(
 
     if (relative_unix_path == manifest_file)
       continue;
+
+    // JavaScript and HTML files should always be verified.
+    if (HasScriptFileExt(relative_unix_path) ||
+        HasPageFileExt(relative_unix_path)) {
+      return true;
+    }
+
+    // Background pages, scripts and content scripts should always be verified
+    // regardless of their file type.
+    if (extension && (IsBackgroundPage(extension, relative_unix_path) ||
+                      IsBackgroundScript(extension, relative_unix_path) ||
+                      IsContentScript(extension, relative_unix_path))) {
+      return true;
+    }
 
     if (base::ContainsKey(browser_images, relative_unix_path))
       continue;
@@ -600,6 +660,20 @@ ContentVerifier::HashHelper* ContentVerifier::GetOrCreateHashHelper() {
     hash_helper_created_ = true;
   }
   return hash_helper_.get();
+}
+
+void ContentVerifier::ResetIODataForTesting(const Extension* extension) {
+  std::set<base::FilePath> original_image_paths =
+      delegate_->GetBrowserImagePaths(extension);
+
+  auto image_paths = std::make_unique<std::set<base::FilePath>>();
+  for (const auto& path : original_image_paths) {
+    image_paths->insert(NormalizeRelativePath(path));
+  }
+
+  auto data = std::make_unique<ContentVerifierIOData::ExtensionData>(
+      std::move(image_paths), extension->version());
+  io_data_->AddData(extension->id(), std::move(data));
 }
 
 }  // namespace extensions
