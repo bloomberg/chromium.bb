@@ -3492,15 +3492,6 @@
       'Linux ASan LSan Tests (1)',
     ],
   },
-  'viz_browser_tests': {
-    'remove_from': [
-      # Currently too flaky on Windows.
-      'Win 7 Tests x64 (1)',
-      'Win10 Tests x64',
-      'Win7 Tests (1)',
-      'Win7 Tests (dbg)(1)',
-    ],
-  },
   'viz_unittests': {
     'remove_from': [
       # On chromium.android, unclear why these aren't run on all bots.

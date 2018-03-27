@@ -94,6 +94,7 @@
 
 # Windows timeouts. https://crbug.com/821029
 -ManifestVerifierBrowserTest.*
+-PDFIsolatedExtensionTest.MultipleDomains
 -PrefHashBrowserTest*
 -UserInitiatedRunsDisabled*
 -UserInitiatedRunsEnabled*
