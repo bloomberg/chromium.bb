@@ -834,6 +834,101 @@ void aom_smooth_predictor_16x64_ssse3(uint8_t *dst, ptrdiff_t stride,
 // -----------------------------------------------------------------------------
 // SMOOTH_V_PRED
 
+// pixels[0]: above and below_pred interleave vector
+static INLINE void load_pixel_v_w4(const uint8_t *above, const uint8_t *left,
+                                   int height, __m128i *pixels) {
+  const __m128i zero = _mm_setzero_si128();
+  __m128i d = _mm_cvtsi32_si128(((const uint32_t *)above)[0]);
+  const __m128i bp = _mm_set1_epi16((uint16_t)left[height - 1]);
+  d = _mm_unpacklo_epi8(d, zero);
+  pixels[0] = _mm_unpacklo_epi16(d, bp);
+}
+
+// weights[0]: weights_h vector
+// weights[1]: scale - weights_h vector
+static INLINE void load_weight_v_w4(const uint8_t *weight_array, int height,
+                                    __m128i *weights) {
+  const __m128i zero = _mm_setzero_si128();
+  const __m128i d = _mm_set1_epi16((uint16_t)(1 << sm_weight_log2_scale));
+
+  if (height == 4) {
+    const __m128i weight =
+        _mm_cvtsi32_si128(((const uint32_t *)weight_array)[1]);
+    weights[0] = _mm_unpacklo_epi8(weight, zero);
+    weights[1] = _mm_sub_epi16(d, weights[0]);
+  } else if (height == 8) {
+    const __m128i weight = _mm_loadl_epi64((const __m128i *)&weight_array[8]);
+    weights[0] = _mm_unpacklo_epi8(weight, zero);
+    weights[1] = _mm_sub_epi16(d, weights[0]);
+  } else {
+    const __m128i weight = _mm_loadu_si128((const __m128i *)&weight_array[16]);
+    weights[0] = _mm_unpacklo_epi8(weight, zero);
+    weights[1] = _mm_sub_epi16(d, weights[0]);
+    weights[2] = _mm_unpackhi_epi8(weight, zero);
+    weights[3] = _mm_sub_epi16(d, weights[2]);
+  }
+}
+
+static INLINE void smooth_v_pred_4xh(const __m128i *pixel,
+                                     const __m128i *weight, int h, uint8_t *dst,
+                                     ptrdiff_t stride) {
+  const __m128i pred_round = _mm_set1_epi32((1 << (sm_weight_log2_scale - 1)));
+  const __m128i inc = _mm_set1_epi16(0x202);
+  const __m128i gat = _mm_set1_epi32(0xc080400);
+  __m128i d = _mm_set1_epi16(0x100);
+
+  for (int i = 0; i < h; ++i) {
+    const __m128i wg_wg = _mm_shuffle_epi8(weight[0], d);
+    const __m128i sc_sc = _mm_shuffle_epi8(weight[1], d);
+    const __m128i wh_sc = _mm_unpacklo_epi16(wg_wg, sc_sc);
+    __m128i sum = _mm_madd_epi16(pixel[0], wh_sc);
+    sum = _mm_add_epi32(sum, pred_round);
+    sum = _mm_srai_epi32(sum, sm_weight_log2_scale);
+    sum = _mm_shuffle_epi8(sum, gat);
+    *(uint32_t *)dst = _mm_cvtsi128_si32(sum);
+    dst += stride;
+    d = _mm_add_epi16(d, inc);
+  }
+}
+
+void aom_smooth_v_predictor_4x4_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  __m128i pixels;
+  load_pixel_v_w4(above, left, 4, &pixels);
+
+  __m128i weights[2];
+  load_weight_v_w4(sm_weight_arrays, 4, weights);
+
+  smooth_v_pred_4xh(&pixels, weights, 4, dst, stride);
+}
+
+void aom_smooth_v_predictor_4x8_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                      const uint8_t *above,
+                                      const uint8_t *left) {
+  __m128i pixels;
+  load_pixel_v_w4(above, left, 8, &pixels);
+
+  __m128i weights[2];
+  load_weight_v_w4(sm_weight_arrays, 8, weights);
+
+  smooth_v_pred_4xh(&pixels, weights, 8, dst, stride);
+}
+
+void aom_smooth_v_predictor_4x16_ssse3(uint8_t *dst, ptrdiff_t stride,
+                                       const uint8_t *above,
+                                       const uint8_t *left) {
+  __m128i pixels;
+  load_pixel_v_w4(above, left, 16, &pixels);
+
+  __m128i weights[4];
+  load_weight_v_w4(sm_weight_arrays, 16, weights);
+
+  smooth_v_pred_4xh(&pixels, weights, 8, dst, stride);
+  dst += stride << 3;
+  smooth_v_pred_4xh(&pixels, &weights[2], 8, dst, stride);
+}
+
 // pixels[0]: above and below_pred interleave vector, first half
 // pixels[1]: above and below_pred interleave vector, second half
 static INLINE void load_pixel_v_w8(const uint8_t *above, const uint8_t *left,
