@@ -32,7 +32,7 @@ class RateCounter {
 
   // Returns the rate-per-second of values recorded over the time window.
   // Note that rates reported before |time_window| has elapsed are not accurate.
-  double Rate();
+  double Rate() const;
 
   void set_tick_clock_for_tests(base::TickClock* tick_clock) {
     tick_clock_ = tick_clock;

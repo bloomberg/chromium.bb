@@ -515,7 +515,7 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
 void ChromotingSession::Core::LogPerfStats() {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
-  session_context_->logger->LogStatistics(perf_tracker_.get());
+  session_context_->logger->LogStatistics(*perf_tracker_);
 }
 
 // ChromotingSession implementation.

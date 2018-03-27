@@ -82,7 +82,7 @@ void ClientTelemetryLogger::LogSessionStateChange(
 }
 
 void ClientTelemetryLogger::LogStatistics(
-    protocol::PerformanceTracker* perf_tracker) {
+    const protocol::PerformanceTracker& perf_tracker) {
   DCHECK(thread_checker_.CalledOnValidThread());
   RefreshSessionIdIfOutdated();
 
@@ -97,27 +97,27 @@ base::WeakPtr<ClientTelemetryLogger> ClientTelemetryLogger::GetWeakPtr() {
 }
 
 void ClientTelemetryLogger::PrintLogStatistics(
-    protocol::PerformanceTracker* perf_tracker) {
+    const protocol::PerformanceTracker& perf_tracker) {
 #if defined(OS_ANDROID)
   __android_log_print(
       ANDROID_LOG_INFO, "stats",
 #else
-  VLOG(1) << base::StringPrintf(
+  VLOG(0) << base::StringPrintf(
 #endif  // OS_ANDROID
       "Bandwidth:%.0f FrameRate:%.1f;"
       " (Avg, Max) Capture:%.1f, %" PRId64 " Encode:%.1f, %" PRId64
       " Decode:%.1f, %" PRId64 " Render:%.1f, %" PRId64 " RTL:%.0f, %" PRId64,
-      perf_tracker->video_bandwidth(), perf_tracker->video_frame_rate(),
-      perf_tracker->video_capture_ms().Average(),
-      perf_tracker->video_capture_ms().Max(),
-      perf_tracker->video_encode_ms().Average(),
-      perf_tracker->video_encode_ms().Max(),
-      perf_tracker->video_decode_ms().Average(),
-      perf_tracker->video_decode_ms().Max(),
-      perf_tracker->video_paint_ms().Average(),
-      perf_tracker->video_paint_ms().Max(),
-      perf_tracker->round_trip_ms().Average(),
-      perf_tracker->round_trip_ms().Max());
+      perf_tracker.video_bandwidth(), perf_tracker.video_frame_rate(),
+      perf_tracker.video_capture_ms().Average(),
+      perf_tracker.video_capture_ms().Max(),
+      perf_tracker.video_encode_ms().Average(),
+      perf_tracker.video_encode_ms().Max(),
+      perf_tracker.video_decode_ms().Average(),
+      perf_tracker.video_decode_ms().Max(),
+      perf_tracker.video_paint_ms().Average(),
+      perf_tracker.video_paint_ms().Max(),
+      perf_tracker.round_trip_ms().Average(),
+      perf_tracker.round_trip_ms().Max());
 }
 
 void ClientTelemetryLogger::SetSessionIdGenerationTimeForTest(
@@ -256,32 +256,32 @@ void ClientTelemetryLogger::RefreshSessionIdIfOutdated() {
 }
 
 ChromotingEvent ClientTelemetryLogger::MakeStatsEvent(
-    protocol::PerformanceTracker* perf_tracker) {
+    const protocol::PerformanceTracker& perf_tracker) {
   ChromotingEvent event(ChromotingEvent::Type::CONNECTION_STATISTICS);
   FillEventContext(&event);
 
   event.SetDouble(ChromotingEvent::kVideoBandwidthKey,
-                  perf_tracker->video_bandwidth());
+                  perf_tracker.video_bandwidth());
   event.SetDouble(ChromotingEvent::kCaptureLatencyKey,
-                  perf_tracker->video_capture_ms().Average());
+                  perf_tracker.video_capture_ms().Average());
   event.SetDouble(ChromotingEvent::kEncodeLatencyKey,
-                  perf_tracker->video_encode_ms().Average());
+                  perf_tracker.video_encode_ms().Average());
   event.SetDouble(ChromotingEvent::kDecodeLatencyKey,
-                  perf_tracker->video_decode_ms().Average());
+                  perf_tracker.video_decode_ms().Average());
   event.SetDouble(ChromotingEvent::kRenderLatencyKey,
-                  perf_tracker->video_paint_ms().Average());
+                  perf_tracker.video_paint_ms().Average());
   event.SetDouble(ChromotingEvent::kRoundtripLatencyKey,
-                  perf_tracker->round_trip_ms().Average());
+                  perf_tracker.round_trip_ms().Average());
   event.SetDouble(ChromotingEvent::kMaxCaptureLatencyKey,
-                  perf_tracker->video_capture_ms().Max());
+                  perf_tracker.video_capture_ms().Max());
   event.SetDouble(ChromotingEvent::kMaxEncodeLatencyKey,
-                  perf_tracker->video_encode_ms().Max());
+                  perf_tracker.video_encode_ms().Max());
   event.SetDouble(ChromotingEvent::kMaxDecodeLatencyKey,
-                  perf_tracker->video_decode_ms().Max());
+                  perf_tracker.video_decode_ms().Max());
   event.SetDouble(ChromotingEvent::kMaxRenderLatencyKey,
-                  perf_tracker->video_paint_ms().Max());
+                  perf_tracker.video_paint_ms().Max());
   event.SetDouble(ChromotingEvent::kMaxRoundtripLatencyKey,
-                  perf_tracker->round_trip_ms().Max());
+                  perf_tracker.round_trip_ms().Max());
 
   return event;
 }

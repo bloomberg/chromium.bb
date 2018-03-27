@@ -42,14 +42,14 @@ class PerformanceTracker : public FrameStatsConsumer {
   static const int kStatsUpdatePeriodSeconds = 1;
 
   // Return rates and running-averages for different metrics.
-  double video_bandwidth() { return video_bandwidth_.Rate(); }
-  double video_frame_rate() { return video_frame_rate_.Rate(); }
-  double video_packet_rate() { return video_packet_rate_.Rate(); }
-  const RunningSamples& video_capture_ms() { return video_capture_ms_; }
-  const RunningSamples& video_encode_ms() { return video_encode_ms_; }
-  const RunningSamples& video_decode_ms() { return video_decode_ms_; }
-  const RunningSamples& video_paint_ms() { return video_paint_ms_; }
-  const RunningSamples& round_trip_ms() { return round_trip_ms_; }
+  double video_bandwidth() const { return video_bandwidth_.Rate(); }
+  double video_frame_rate() const { return video_frame_rate_.Rate(); }
+  double video_packet_rate() const { return video_packet_rate_.Rate(); }
+  const RunningSamples& video_capture_ms() const { return video_capture_ms_; }
+  const RunningSamples& video_encode_ms() const { return video_encode_ms_; }
+  const RunningSamples& video_decode_ms() const { return video_decode_ms_; }
+  const RunningSamples& video_paint_ms() const { return video_paint_ms_; }
+  const RunningSamples& round_trip_ms() const { return round_trip_ms_; }
 
   // FrameStatsConsumer interface.
   void OnVideoFrameStats(const FrameStats& stats) override;
