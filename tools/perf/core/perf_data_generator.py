@@ -136,6 +136,7 @@ def get_waterfall_config():
          ('gpu_perftests', 'build73-b1--device2'),
          #  ('cc_perftests', 'build73-b1--device2'),  # crbug.com/721757
          ('media_perftests', 'build74-b1--device7'),
+         ('components_perftests', 'build74-b1--device1'),
        ],
        'perf_tests_with_args': [
          ('angle_perftests', 'build73-b1--device4', ['--shard-timeout=300'],
@@ -164,6 +165,7 @@ def get_waterfall_config():
          ('tracing_perftests', 'build13-b1--device2'),
          ('gpu_perftests', 'build13-b1--device2'),
          ('cc_perftests', 'build13-b1--device2'),
+         ('components_perftests', 'build48-b1--device5'),
         ]
       }
     ])
@@ -316,7 +318,8 @@ def get_waterfall_config():
           ],
        'perf_tests': [
          ('media_perftests', 'build189-a9'),
-         ('views_perftests', 'build190-a9')]
+         ('views_perftests', 'build190-a9'),
+         ('components_perftests', 'build191-a9')]
       }
     ])
   waterfall = add_tester(
@@ -352,7 +355,8 @@ def get_waterfall_config():
          ('load_library_perf_tests', 'build187-m1'),
          # crbug.com/735679
          # ('performance_browser_tests', 'build187-m1'),
-         ('media_perftests', 'build188-m1')]
+         ('media_perftests', 'build188-m1'),
+         ('components_perftests', 'build189-m1')]
       }
     ])
   waterfall = add_tester(
@@ -906,7 +910,9 @@ NON_TELEMETRY_BENCHMARKS = {
     'performance_browser_tests': BenchmarkMetadata(
         'miu@chromium.org', None, False),
     'views_perftests': BenchmarkMetadata(
-        'tapted@chromium.org', 'Internals>Views', False)
+        'tapted@chromium.org', 'Internals>Views', False),
+    'components_perftests': BenchmarkMetadata(
+        'csharrison@chromium.org', None, False)
 }
 
 

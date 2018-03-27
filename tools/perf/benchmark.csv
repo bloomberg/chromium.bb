@@ -17,6 +17,7 @@ blink_perf.parser,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromi
 blink_perf.shadow_dom,hayato@chromium.org,
 blink_perf.svg,"kouhei@chromium.org, fs@opera.com",
 cc_perftests,enne@chromium.org,
+components_perftests,csharrison@chromium.org,
 dromaeo,"jbroman@chromium.org, yukishiino@chromium.org, haraken@chromium.org",
 dummy_benchmark.histogram_benchmark_1,"eakuefner@chromium.org, simonhatch@chromium.org",
 dummy_benchmark.noisy_benchmark_1,nednguyen@google.com,
