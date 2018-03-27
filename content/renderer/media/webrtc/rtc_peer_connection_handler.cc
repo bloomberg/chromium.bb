@@ -847,6 +847,14 @@ class PeerConnectionUMAObserver : public webrtc::UMAObserver {
         base::UmaHistogramSparse("WebRTC.PeerConnection.SslCipherSuite.Data",
                                  counter);
         break;
+      case webrtc::kEnumCounterSrtpUnprotectError:
+        base::UmaHistogramSparse("WebRTC.PeerConnection.SrtpUnprotectError",
+                                 counter);
+        break;
+      case webrtc::kEnumCounterSrtcpUnprotectError:
+        base::UmaHistogramSparse("WebRTC.PeerConnection.SrtcpUnprotectError",
+                                 counter);
+        break;
       default:
         // The default clause is expected to reach when new enum types are
         // added.
