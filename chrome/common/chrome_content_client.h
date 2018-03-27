@@ -18,7 +18,7 @@
 #include "chrome/common/origin_trials/chrome_origin_trial_policy.h"
 #include "components/nacl/common/buildflags.h"
 #include "content/public/common/content_client.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "content/public/common/pepper_plugin_info.h"

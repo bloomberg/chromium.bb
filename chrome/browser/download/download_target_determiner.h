@@ -21,7 +21,7 @@
 #include "components/download/public/common/download_danger_type.h"
 #include "components/download/public/common/download_item.h"
 #include "content/public/browser/download_manager_delegate.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 class Profile;
 class DownloadPrefs;

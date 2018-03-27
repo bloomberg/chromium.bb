@@ -11,7 +11,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "content/public/browser/navigation_handle.h"
 #include "net/http/http_util.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"

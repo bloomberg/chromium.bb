@@ -51,7 +51,7 @@ public_deps = [
   "//media",
   "//media/base/ipc",
   "//net",
-  "//ppapi/features",
+  "//ppapi/buildflags",
   "//services/network/public/cpp",
   "//third_party/WebKit/public/common",
   "//ui/accessibility",

@@ -6,7 +6,7 @@
 #define CHROME_TEST_BASE_TEST_SWITCHES_H_
 
 #include "build/build_config.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 namespace switches {
 

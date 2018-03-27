@@ -41,7 +41,7 @@
 #include "device/geolocation/public/cpp/geoposition.h"
 #include "gpu/config/gpu_info.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "services/device/public/mojom/geolocation.mojom.h"
 #include "services/device/public/mojom/geolocation_context.mojom.h"

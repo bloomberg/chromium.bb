@@ -50,7 +50,7 @@
 #include "chrome/common/buildflags.h"
 #include "components/spellcheck/spellcheck_buildflags.h"
 #include "extensions/browser/api/bluetooth_low_energy/bluetooth_low_energy_api.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/extensions/file_manager/event_router_factory.h"

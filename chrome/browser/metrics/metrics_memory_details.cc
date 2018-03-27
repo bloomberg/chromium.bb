@@ -18,7 +18,7 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/process_type.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "third_party/leveldatabase/leveldb_chrome.h"
 
 MetricsMemoryDetails::MetricsMemoryDetails(

@@ -15,7 +15,7 @@
 #include "content/browser/loader/resource_controller.h"
 #include "content/common/content_export.h"
 #include "content/public/common/request_context_type.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 namespace net {
 class URLRequest;

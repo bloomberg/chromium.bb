@@ -9,7 +9,7 @@ import("//build/config/win/console_app.gni")
 import("//build/config/win/manifest.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
@@ -273,7 +273,7 @@ static_library("content_shell_lib") {
     "//net",
     "//net:net_resources",
     "//net:test_support",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//sandbox",
     "//services/device/public/mojom",
     "//services/network/public/cpp",

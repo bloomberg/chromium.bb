@@ -19,7 +19,7 @@ import("//device/vr/buildflags/buildflags.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//printing/features/features.gni")
 import("//rlz/features/features.gni")
 import("//sandbox/features.gni")
@@ -1770,7 +1770,7 @@ jumbo_split_static_library("browser") {
     "//mojo/public/cpp/bindings",
     "//net:extras",
     "//net:net_browser_services",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//printing/features",
     "//rlz/features",
     "//services/data_decoder/public/cpp",
@@ -3862,7 +3862,7 @@ jumbo_split_static_library("browser") {
     deps += [
       "//components/pdf/browser",
       "//media:media_buildflags",
-      "//ppapi/features",
+      "//ppapi/buildflags",
       "//ppapi/proxy:ipc",
       "//services/device/public/mojom",
       "//third_party/adobe/flash:flapper_version_h",

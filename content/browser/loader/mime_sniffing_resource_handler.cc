@@ -37,7 +37,7 @@
 #include "net/http/http_content_disposition.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_response.h"
 #include "third_party/WebKit/public/common/mime_util/mime_util.h"

@@ -42,7 +42,7 @@
 #include "content/public/browser/web_contents.h"
 #include "device/vr/buildflags/buildflags.h"
 #include "extensions/common/constants.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/flash_permission_context.h"

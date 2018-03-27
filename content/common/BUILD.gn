@@ -9,7 +9,7 @@ import("//build/config/ui.gni")
 import("//ipc/features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//sandbox/features.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 if (is_mac) {
@@ -360,7 +360,7 @@ source_set("common") {
     "//mojo/common:common_base",
     "//mojo/edk",
     "//net",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//sandbox",
     "//sandbox:sandbox_features",
     "//services/network/public/cpp",

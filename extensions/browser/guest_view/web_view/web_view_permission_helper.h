@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/media_stream_request.h"
 #include "extensions/browser/guest_view/web_view/web_view_permission_types.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 namespace extensions {
 

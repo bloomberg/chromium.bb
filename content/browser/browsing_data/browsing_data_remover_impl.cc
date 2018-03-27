@@ -36,7 +36,7 @@
 #include "net/ssl/channel_id_store.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/network/public/cpp/features.h"
 #include "storage/browser/quota/special_storage_policy.h"
 #include "url/origin.h"

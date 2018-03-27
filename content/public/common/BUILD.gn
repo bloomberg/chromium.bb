@@ -10,7 +10,7 @@ import("//build/config/ui.gni")
 import("//content/public/common/zygote_features.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/webrtc/webrtc.gni")
 
 # See //content/BUILD.gn for how this works.
@@ -281,8 +281,8 @@ jumbo_source_set("common_sources") {
     "//content/common:mojo_bindings",
     "//media",
     "//mojo/common",
+    "//ppapi/buildflags",
     "//ppapi/c",
-    "//ppapi/features",
     "//services/network/public/cpp",
     "//services/service_manager/public/cpp",
     "//skia",

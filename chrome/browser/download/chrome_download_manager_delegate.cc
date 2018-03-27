@@ -62,7 +62,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/base/filename_util.h"
 #include "net/base/mime_util.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_ANDROID)

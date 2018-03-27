@@ -7,7 +7,7 @@
 
 #include <vector>
 
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #if !BUILDFLAG(ENABLE_PLUGINS)
 #error "Plugins should be enabled"

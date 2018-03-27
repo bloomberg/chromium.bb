@@ -61,7 +61,7 @@
 #include "extensions/buildflags/buildflags.h"
 #include "net/http/http_server_properties.h"
 #include "net/http/transport_security_state.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "services/preferences/public/cpp/in_process_service_factory.h"
 #include "services/preferences/public/cpp/pref_service_main.h"
 #include "services/preferences/public/mojom/preferences.mojom.h"

@@ -3,5 +3,5 @@ include_rules = [
   "+media/base",
   "+media/cdm",
   "+media/media_buildflags.h",
-  "+ppapi/features",
+  "+ppapi/buildflags",
 ]

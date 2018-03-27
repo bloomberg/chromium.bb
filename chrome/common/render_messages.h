@@ -25,7 +25,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "media/media_buildflags.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "url/gurl.h"
 #include "url/ipc/url_param_traits.h"
 #include "url/origin.h"

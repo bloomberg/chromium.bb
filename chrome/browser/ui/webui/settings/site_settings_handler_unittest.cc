@@ -31,7 +31,7 @@
 #include "content/public/test/test_web_ui.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/extension_builder.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_CHROMEOS)

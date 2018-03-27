@@ -38,7 +38,7 @@ static_library("browser") {
     "//mojo/common:common_base",
     "//mojo/public/cpp/bindings",
     "//net",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//services/device/public/mojom",
     "//services/service_manager/public/cpp",
     "//sql",

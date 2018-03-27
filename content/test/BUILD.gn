@@ -12,7 +12,7 @@ import("//build/config/ui.gni")
 import("//media/media_options.gni")
 import("//net/features.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
@@ -903,7 +903,7 @@ test("content_browsertests") {
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//services/audio/public/cpp",
     "//services/catalog:lib",
     "//services/device/public/cpp:device_features",
@@ -1717,8 +1717,8 @@ test("content_unittests") {
     "//mojo/public/cpp/test_support:test_utils",
     "//net:extras",
     "//net:test_support",
+    "//ppapi/buildflags",
     "//ppapi/c",
-    "//ppapi/features",
     "//printing",
     "//services/catalog:lib",
     "//services/device/public/cpp/generic_sensor",

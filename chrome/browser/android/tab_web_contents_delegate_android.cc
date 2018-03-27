@@ -51,7 +51,7 @@
 #include "content/public/common/file_chooser_params.h"
 #include "content/public/common/media_stream_request.h"
 #include "jni/TabWebContentsDelegateAndroid_jni.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_f.h"
 

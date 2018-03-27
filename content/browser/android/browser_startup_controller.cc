@@ -8,7 +8,7 @@
 #include "base/android/jni_string.h"
 #include "content/browser/android/content_startup_flags.h"
 #include "content/browser/browser_main_loop.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #include "jni/BrowserStartupController_jni.h"
 

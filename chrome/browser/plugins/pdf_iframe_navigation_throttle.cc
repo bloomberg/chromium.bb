@@ -15,7 +15,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/base/escape.h"
 #include "net/http/http_response_headers.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #if BUILDFLAG(ENABLE_PLUGINS)
 #include "chrome/browser/plugins/chrome_plugin_service_filter.h"

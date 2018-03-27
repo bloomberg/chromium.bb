@@ -19,7 +19,7 @@ import("//chrome/process_version_rc_template.gni")
 import("//components/nacl/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//third_party/WebKit/public/public_features.gni")
 import("//third_party/widevine/cdm/widevine.gni")
 import("//tools/resources/generate_resource_whitelist.gni")
@@ -402,7 +402,7 @@ if (is_win) {
       "//crypto",
       "//headless:headless_shell_browser_lib",
       "//net:net_resources",
-      "//ppapi/features",
+      "//ppapi/buildflags",
       "//services/service_manager/embedder",
       "//third_party/cld_3/src/src:cld_3",
       "//third_party/wtl",
