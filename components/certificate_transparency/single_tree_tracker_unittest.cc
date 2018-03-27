@@ -655,6 +655,45 @@ TEST_F(SingleTreeTrackerTest, TestEntryIncludedAfterInclusionCheckSuccess) {
       net_log_, LeafHash(chain_.get(), cert_sct_.get()), true));
 }
 
+// Tests that inclusion checks are aborted and SCTs discarded if under critical
+// memory pressure.
+TEST_F(SingleTreeTrackerTest,
+       TestInclusionCheckCancelledIfUnderMemoryPressure) {
+  CreateTreeTracker();
+  AddCacheEntry(host_resolver_.GetHostCache(), kHostname,
+                net::HostCache::Entry::SOURCE_DNS, kZeroTTL);
+
+  tree_tracker_->OnSCTVerified(kHostname, chain_.get(), cert_sct_.get());
+  EXPECT_EQ(
+      SingleTreeTracker::SCT_PENDING_NEWER_STH,
+      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+
+  // Provide with a fresh STH, which is for a tree of size 2.
+  SignedTreeHead sth;
+  ASSERT_TRUE(GetSignedTreeHeadForTreeOfSize2(&sth));
+  ASSERT_TRUE(log_->VerifySignedTreeHead(sth));
+
+  // Make the first event that is processed a critical memory pressure
+  // notification. This should be handled before the response to the first DNS
+  // request, so no requests after the first one should be sent (the leaf index
+  // request).
+  base::MemoryPressureListener::NotifyMemoryPressure(
+      base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL);
+
+  ASSERT_TRUE(mock_dns_.ExpectLeafIndexRequestAndResponse(
+      Base32LeafHash(chain_.get(), cert_sct_.get()) + ".hash." +
+          kDNSRequestSuffix,
+      0));
+
+  tree_tracker_->NewSTHObserved(sth);
+  base::RunLoop().RunUntilIdle();
+
+  // Expect the SCT to have been discarded.
+  EXPECT_EQ(
+      SingleTreeTracker::SCT_NOT_OBSERVED,
+      tree_tracker_->GetLogEntryInclusionStatus(chain_.get(), cert_sct_.get()));
+}
+
 // Test that pending entries transition states correctly according to the
 // STHs provided:
 // * Start without an STH.

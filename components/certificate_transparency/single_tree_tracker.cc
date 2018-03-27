@@ -202,8 +202,9 @@ struct SingleTreeTracker::EntryAuditState {
   // Current phase of inclusion check.
   AuditState state;
 
-  // The proof to be filled in by the LogDnsClient
-  MerkleAuditProof proof;
+  // The audit proof query performed by LogDnsClient.
+  // It is null unless a query has been started.
+  std::unique_ptr<LogDnsClient::AuditProofQuery> audit_proof_query;
 
   // The root hash of the tree for which an inclusion proof was requested.
   // The root hash is needed after the inclusion proof is fetched for validating
@@ -414,9 +415,9 @@ void SingleTreeTracker::ProcessPendingEntries() {
         crypto::kSHA256Length);
     net::Error result = dns_client_->QueryAuditProof(
         ct_log_->dns_domain(), leaf_hash, verified_sth_.tree_size,
-        &(it->second.proof),
+        &(it->second.audit_proof_query),
         base::Bind(&SingleTreeTracker::OnAuditProofObtained,
-                   weak_factory_.GetWeakPtr(), it->first));
+                   base::Unretained(this), it->first));
     // Handling proofs returned synchronously is not implemeted.
     DCHECK_NE(result, net::OK);
     if (result == net::ERR_IO_PENDING) {
@@ -424,9 +425,12 @@ void SingleTreeTracker::ProcessPendingEntries() {
       // and continue to the next one.
       it->second.state = INCLUSION_PROOF_REQUESTED;
     } else if (result == net::ERR_TEMPORARILY_THROTTLED) {
+      // Need to use a weak pointer here, as this callback could be triggered
+      // when the SingleTreeTracker is deleted (and pending queries are
+      // cancelled).
       dns_client_->NotifyWhenNotThrottled(
-          base::Bind(&SingleTreeTracker::ProcessPendingEntries,
-                     weak_factory_.GetWeakPtr()));
+          base::BindOnce(&SingleTreeTracker::ProcessPendingEntries,
+                         weak_factory_.GetWeakPtr()));
       // Exit the loop since all subsequent calls to QueryAuditProof
       // will be throttled.
       break;
@@ -494,8 +498,9 @@ void SingleTreeTracker::OnAuditProofObtained(const EntryToAudit& entry,
   std::string leaf_hash(reinterpret_cast<const char*>(entry.leaf_hash.data),
                         crypto::kSHA256Length);
 
-  bool verified = ct_log_->VerifyAuditProof(it->second.proof,
-                                            it->second.root_hash, leaf_hash);
+  bool verified =
+      ct_log_->VerifyAuditProof(it->second.audit_proof_query->GetProof(),
+                                it->second.root_hash, leaf_hash);
   LogAuditResultToNetLog(entry, verified);
 
   if (!verified) {
@@ -514,7 +519,7 @@ void SingleTreeTracker::OnMemoryPressure(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
       break;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_CRITICAL:
-      pending_entries_.clear();
+      ResetPendingQueue();
       // Fall through to clearing the other cache.
       FALLTHROUGH;
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
