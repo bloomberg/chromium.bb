@@ -35,6 +35,9 @@ class HardwareDisplayPlaneManagerLegacy : public HardwareDisplayPlaneManager {
                     uint32_t crtc_id,
                     const gfx::Rect& src_rect,
                     CrtcController* crtc) override;
+  bool IsCompatible(HardwareDisplayPlane* plane,
+                    const OverlayPlane& overlay,
+                    uint32_t crtc_index) const override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HardwareDisplayPlaneManagerLegacy);

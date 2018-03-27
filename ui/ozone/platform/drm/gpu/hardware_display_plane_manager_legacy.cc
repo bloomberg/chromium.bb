@@ -173,4 +173,17 @@ bool HardwareDisplayPlaneManagerLegacy::SetPlaneData(
   return true;
 }
 
+bool HardwareDisplayPlaneManagerLegacy::IsCompatible(
+    HardwareDisplayPlane* plane,
+    const OverlayPlane& overlay,
+    uint32_t crtc_index) const {
+  if (!plane->CanUseForCrtc(crtc_index))
+    return false;
+
+  // When using legacy kms we always scanout only one plane (the primary),
+  // and we always use the opaque fb. Refer to SetPlaneData above.
+  const uint32_t format = overlay.buffer->GetOpaqueFramebufferPixelFormat();
+  return plane->IsSupportedFormat(format);
+}
+
 }  // namespace ui

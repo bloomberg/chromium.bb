@@ -137,9 +137,9 @@ class HardwareDisplayPlaneManager {
 
   // Returns true if |plane| can support |overlay| and compatible with
   // |crtc_index|.
-  bool IsCompatible(HardwareDisplayPlane* plane,
-                    const OverlayPlane& overlay,
-                    uint32_t crtc_index) const;
+  virtual bool IsCompatible(HardwareDisplayPlane* plane,
+                            const OverlayPlane& overlay,
+                            uint32_t crtc_index) const;
 
   void ResetCurrentPlaneList(HardwareDisplayPlaneList* plane_list) const;
 
