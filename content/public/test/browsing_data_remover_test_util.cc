@@ -3,13 +3,15 @@
 // found in the LICENSE file.
 
 #include "content/public/test/browsing_data_remover_test_util.h"
+
+#include "base/bind.h"
 #include "base/task_scheduler/task_scheduler.h"
 
 namespace content {
 
 BrowsingDataRemoverCompletionObserver::BrowsingDataRemoverCompletionObserver(
     BrowsingDataRemover* remover)
-    : message_loop_runner_(new MessageLoopRunner()), observer_(this) {
+    : observer_(this) {
   observer_.Add(remover);
 }
 
@@ -18,17 +20,17 @@ BrowsingDataRemoverCompletionObserver::
 
 void BrowsingDataRemoverCompletionObserver::BlockUntilCompletion() {
   base::TaskScheduler::GetInstance()->FlushForTesting();
-  message_loop_runner_->Run();
+  run_loop_.Run();
 }
 
 void BrowsingDataRemoverCompletionObserver::OnBrowsingDataRemoverDone() {
   observer_.RemoveAll();
-  message_loop_runner_->Quit();
+  run_loop_.QuitWhenIdle();
 }
 
 BrowsingDataRemoverCompletionInhibitor::BrowsingDataRemoverCompletionInhibitor(
     BrowsingDataRemover* remover)
-    : remover_(remover), message_loop_runner_(new content::MessageLoopRunner) {
+    : remover_(remover), run_loop_(new base::RunLoop) {
   DCHECK(remover);
   remover_->SetWouldCompleteCallbackForTesting(
       base::Bind(&BrowsingDataRemoverCompletionInhibitor::
@@ -51,8 +53,8 @@ void BrowsingDataRemoverCompletionInhibitor::Reset() {
 
 void BrowsingDataRemoverCompletionInhibitor::BlockUntilNearCompletion() {
   base::TaskScheduler::GetInstance()->FlushForTesting();
-  message_loop_runner_->Run();
-  message_loop_runner_ = new MessageLoopRunner();
+  run_loop_->Run();
+  run_loop_ = std::make_unique<base::RunLoop>();
 }
 
 void BrowsingDataRemoverCompletionInhibitor::ContinueToCompletion() {
@@ -65,7 +67,7 @@ void BrowsingDataRemoverCompletionInhibitor::OnBrowsingDataRemoverWouldComplete(
     const base::Closure& continue_to_completion) {
   DCHECK(continue_to_completion_callback_.is_null());
   continue_to_completion_callback_ = continue_to_completion;
-  message_loop_runner_->Quit();
+  run_loop_->QuitWhenIdle();
 }
 
 }  // namespace content
