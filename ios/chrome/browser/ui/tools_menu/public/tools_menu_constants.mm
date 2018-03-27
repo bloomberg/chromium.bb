@@ -19,6 +19,8 @@ NSString* const kToolsMenuDidHideNotification =
     @"kToolsMenuDidHideNotification";
 
 // Tools menu item IDs.
+NSString* const kToolsMenuReload = @"kToolsMenuReload";
+NSString* const kToolsMenuStop = @"kToolsMenuStop";
 NSString* const kToolsMenuNewTabId = @"kToolsMenuNewTabId";
 NSString* const kToolsMenuNewIncognitoTabId = @"kToolsMenuNewIncognitoTabId";
 NSString* const kToolsMenuCloseAllTabsId = @"kToolsMenuCloseAllTabsId";
@@ -34,3 +36,5 @@ NSString* const kToolsMenuRequestDesktopId = @"kToolsMenuRequestDesktopId";
 NSString* const kToolsMenuSettingsId = @"kToolsMenuSettingsId";
 NSString* const kToolsMenuHelpId = @"kToolsMenuHelpId";
 NSString* const kToolsMenuRequestMobileId = @"kToolsMenuRequestMobileId";
+NSString* const kToolsMenuReadLater = @"kToolsMenuReadLater";
+NSString* const kToolsMenuSiteInformation = @"kToolsMenuSiteInformation";

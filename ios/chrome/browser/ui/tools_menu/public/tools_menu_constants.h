@@ -18,6 +18,10 @@ extern NSString* const kToolsMenuDidShowNotification;
 extern NSString* const kToolsMenuDidHideNotification;
 
 // Tools Menu item IDs.
+// Reload item accessibility Identifier.
+extern NSString* const kToolsMenuReload;
+// Stop item accessibility Identifier.
+extern NSString* const kToolsMenuStop;
 // New Tab item accessibility Identifier.
 extern NSString* const kToolsMenuNewTabId;
 // New incognito Tab item accessibility Identifier.
@@ -46,6 +50,10 @@ extern NSString* const kToolsMenuSettingsId;
 extern NSString* const kToolsMenuHelpId;
 // Request mobile item accessibility Identifier.
 extern NSString* const kToolsMenuRequestMobileId;
+// ReadLater item accessibility Identifier.
+extern NSString* const kToolsMenuReadLater;
+// SiteInformation item accessibility Identifier.
+extern NSString* const kToolsMenuSiteInformation;
 
 // Identifiers for tools menu items (for metrics purposes).
 typedef NS_ENUM(int, ToolsMenuItemID) {
