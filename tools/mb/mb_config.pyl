@@ -552,7 +552,6 @@
       'android_cfi_rel_ng': 'android_cfi_full_cfi_diag_thin_lto_release_static_dcheck_always_on_goma',
       'android_clang_dbg_recipe': 'android_clang_asan_debug_trybot_compile_only',
       'android_compile_dbg': 'android_debug_trybot_compile_only',
-      'android_compile_mips_dbg': 'android_debug_trybot_compile_only_mipsel',
       'android_compile_x64_dbg': 'android_debug_trybot_compile_only_x64',
       'android_compile_x86_dbg': 'android_debug_trybot_compile_only_x86',
       'android_coverage': 'android_debug_trybot_java_coverage',
@@ -926,10 +925,6 @@
 
     'android_debug_trybot_compile_only_arm64': [
       'android', 'debug_trybot', 'compile_only', 'arm64',
-    ],
-
-    'android_debug_trybot_compile_only_mipsel': [
-      'android', 'debug_trybot', 'compile_only', 'mipsel',
     ],
 
     'android_debug_trybot_compile_only_x64': [
