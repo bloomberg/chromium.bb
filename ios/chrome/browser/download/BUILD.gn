@@ -10,7 +10,6 @@ source_set("download") {
     "browser_download_service_factory.mm",
     "download_directory_util.cc",
     "download_directory_util.h",
-    "download_manager_metric_names.cc",
     "download_manager_metric_names.h",
     "download_manager_tab_helper.h",
     "download_manager_tab_helper.mm",

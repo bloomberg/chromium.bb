@@ -333,7 +333,7 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
 // Called when Google Drive app is installed after starting StoreKitCoordinator.
 - (void)didInstallGoogleDriveApp {
   base::RecordAction(
-      base::UserMetricsAction(kDownloadManagerGoogleDriveInstalled));
+      base::UserMetricsAction("MobileDownloadFileUIInstallGoogleDrive"));
 }
 
 // Called when Open In... menu was not presented. This method shows the alert

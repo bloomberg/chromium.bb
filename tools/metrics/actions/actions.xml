@@ -11641,6 +11641,14 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="MobileDownloadFileUIInstallGoogleDrive">
+  <owner>eugenebut@chromium.org</owner>
+  <description>
+    User has requested installation of Google Drive app from the Download file
+    UI.
+  </description>
+</action>
+
 <action name="MobileDownloadFileUIShown">
   <owner>eugenebut@chromium.org</owner>
   <description>User was presented with the Download file UI.</description>

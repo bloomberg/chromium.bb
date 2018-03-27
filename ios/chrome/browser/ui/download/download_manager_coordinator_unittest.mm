@@ -348,7 +348,7 @@ TEST_F(DownloadManagerCoordinatorTest, InstallDrive) {
   // Simulate Google Drive app installation and verify that expected user action
   // has been recorded.
   ASSERT_EQ(0, user_action_tester_.GetActionCount(
-                   kDownloadManagerGoogleDriveInstalled));
+                   "MobileDownloadFileUIInstallGoogleDrive"));
   // SKStoreProductViewController uses UIApplication, so it's not possible to
   // install the mock before the test run.
   application_ = OCMClassMock([UIApplication class]);
@@ -357,7 +357,7 @@ TEST_F(DownloadManagerCoordinatorTest, InstallDrive) {
   EXPECT_TRUE(WaitUntilConditionOrTimeout(testing::kWaitForActionTimeout, ^{
     base::RunLoop().RunUntilIdle();
     return user_action_tester_.GetActionCount(
-               kDownloadManagerGoogleDriveInstalled) == 1;
+               "MobileDownloadFileUIInstallGoogleDrive") == 1;
   }));
 }
 
