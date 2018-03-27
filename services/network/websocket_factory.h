@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/containers/unique_ptr_adapters.h"
-#include "base/memory/weak_ptr.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/network/public/mojom/websocket.mojom.h"
 #include "services/network/websocket.h"
@@ -22,8 +21,7 @@ namespace network {
 
 class NetworkContext;
 
-// TODO(yhirano): Implement throttling.
-class WebSocketFactory final : public base::SupportsWeakPtr<WebSocketFactory> {
+class WebSocketFactory final {
  public:
   explicit WebSocketFactory(NetworkContext* context);
   ~WebSocketFactory();
