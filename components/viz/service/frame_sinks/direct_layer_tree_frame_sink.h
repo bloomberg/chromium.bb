@@ -88,6 +88,8 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
 
   mojom::HitTestRegionListPtr CreateHitTestData(
       const CompositorFrame& frame) const;
+  void DidReceiveCompositorFrameAckInternal(
+      const std::vector<ReturnedResource>& resources);
 
   // This class is only meant to be used on a single thread.
   THREAD_CHECKER(thread_checker_);
@@ -107,6 +109,7 @@ class VIZ_SERVICE_EXPORT DirectLayerTreeFrameSink
   float device_scale_factor_ = 1.f;
   bool is_lost_ = false;
   std::unique_ptr<ExternalBeginFrameSource> begin_frame_source_;
+  base::WeakPtrFactory<DirectLayerTreeFrameSink> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DirectLayerTreeFrameSink);
 };
