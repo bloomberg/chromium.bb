@@ -118,6 +118,7 @@ jumbo_component("ime") {
     "//net",
     "//third_party/icu",
     "//ui/base",
+    "//ui/base/ime/chromeos/public/interfaces",
     "//ui/display",
     "//ui/events",
     "//ui/gfx",

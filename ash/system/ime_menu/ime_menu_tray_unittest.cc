@@ -285,7 +285,8 @@ TEST_F(ImeMenuTrayTest, ShowEmojiKeyset) {
   accessibility_controller->SetVirtualKeyboardEnabled(true);
   EXPECT_TRUE(accessibility_controller->IsVirtualKeyboardEnabled());
 
-  GetTray()->ShowKeyboardWithKeyset(mojom::ImeKeyset::kEmoji);
+  GetTray()->ShowKeyboardWithKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kEmoji);
   // The menu should be hidden.
   EXPECT_FALSE(IsBubbleShown());
   // The virtual keyboard should be enabled.
@@ -306,7 +307,8 @@ TEST_F(ImeMenuTrayTest, ForceToShowEmojiKeyset) {
 
   TestImeControllerClient client;
   ime_controller->SetClient(client.CreateInterfacePtr());
-  GetTray()->ShowKeyboardWithKeyset(mojom::ImeKeyset::kEmoji);
+  GetTray()->ShowKeyboardWithKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kEmoji);
   // Keyboard is shown asynchronously through Mojo
   ime_controller->FlushMojoForTesting();
   // The virtual keyboard should be enabled.

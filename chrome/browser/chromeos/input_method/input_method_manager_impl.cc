@@ -105,6 +105,19 @@ InputMethodCategory GetInputMethodCategory(const std::string& input_method_id,
   return category;
 }
 
+std::string KeysetToString(mojom::ImeKeyset keyset) {
+  switch (keyset) {
+    case mojom::ImeKeyset::kNone:
+      return "";
+    case mojom::ImeKeyset::kEmoji:
+      return "emoji";
+    case mojom::ImeKeyset::kHandwriting:
+      return "hwt";
+    case mojom::ImeKeyset::kVoice:
+      return "voice";
+  }
+}
+
 }  // namespace
 
 // ------------------------ InputMethodManagerImpl::StateImpl
@@ -1262,7 +1275,7 @@ void InputMethodManagerImpl::MaybeNotifyImeMenuActivationChanged() {
                         is_ime_menu_activated_);
 }
 
-void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
+void InputMethodManagerImpl::OverrideKeyboardKeyset(mojom::ImeKeyset keyset) {
   GURL url = state_->GetInputViewUrl();
 
   // If fails to find ref or tag "id" in the ref, it means the current IME is
@@ -1276,7 +1289,7 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
   if (i == std::string::npos)
     return;
 
-  if (keyset.empty()) {
+  if (keyset == mojom::ImeKeyset::kNone) {
     // Resets the url as the input method default url and notify the hash
     // changed to VK.
     state_->input_view_url = state_->current_input_method.input_view_url();
@@ -1294,9 +1307,9 @@ void InputMethodManagerImpl::OverrideKeyboardUrlRef(const std::string& keyset) {
   // id like: id=${keyset}.emoji/hwt/voice.
   auto j = overridden_ref.find("&", i + 1);
   if (j == std::string::npos) {
-    overridden_ref += "." + keyset;
+    overridden_ref += "." + KeysetToString(keyset);
   } else {
-    overridden_ref.replace(j, 0, "." + keyset);
+    overridden_ref.replace(j, 0, "." + KeysetToString(keyset));
   }
 
   GURL::Replacements replacements;

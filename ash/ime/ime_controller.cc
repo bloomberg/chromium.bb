@@ -162,12 +162,13 @@ void ImeController::SetCapsLockEnabled(bool caps_enabled) {
     client_->SetCapsLockEnabled(caps_enabled);
 }
 
-void ImeController::OverrideKeyboardKeyset(ash::mojom::ImeKeyset keyset) {
+void ImeController::OverrideKeyboardKeyset(
+    chromeos::input_method::mojom::ImeKeyset keyset) {
   OverrideKeyboardKeyset(keyset, base::DoNothing());
 }
 
 void ImeController::OverrideKeyboardKeyset(
-    ash::mojom::ImeKeyset keyset,
+    chromeos::input_method::mojom::ImeKeyset keyset,
     mojom::ImeControllerClient::OverrideKeyboardKeysetCallback callback) {
   if (client_)
     client_->OverrideKeyboardKeyset(keyset, std::move(callback));

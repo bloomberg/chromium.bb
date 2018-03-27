@@ -24,7 +24,7 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
   void SwitchImeById(const std::string& id, bool show_message) override;
   void ActivateImeMenuItem(const std::string& key) override;
   void SetCapsLockEnabled(bool enabled) override;
-  void OverrideKeyboardKeyset(mojom::ImeKeyset keyset,
+  void OverrideKeyboardKeyset(chromeos::input_method::mojom::ImeKeyset keyset,
                               OverrideKeyboardKeysetCallback callback) override;
 
   int next_ime_count_ = 0;
@@ -33,7 +33,8 @@ class TestImeControllerClient : public mojom::ImeControllerClient {
   int set_caps_lock_count_ = 0;
   std::string last_switch_ime_id_;
   bool last_show_message_ = false;
-  mojom::ImeKeyset last_keyset_ = ash::mojom::ImeKeyset::kNone;
+  chromeos::input_method::mojom::ImeKeyset last_keyset_ =
+      chromeos::input_method::mojom::ImeKeyset::kNone;
 
  private:
   mojo::Binding<mojom::ImeControllerClient> binding_;

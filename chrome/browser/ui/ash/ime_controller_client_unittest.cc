@@ -120,8 +120,9 @@ class TestInputMethodManager : public MockInputMethodManager {
   void ActivateInputMethodMenuItem(const std::string& key) override {
     last_activate_menu_item_key_ = key;
   }
-  void OverrideKeyboardUrlRef(const std::string& key_set) override {
-    keyboard_url_ref_ = key_set;
+  void OverrideKeyboardKeyset(
+      chromeos::input_method::mojom::ImeKeyset keyset) override {
+    keyboard_keyset_ = keyset;
   }
 
   InputMethodUtil* GetInputMethodUtil() override { return &util_; }
@@ -135,7 +136,7 @@ class TestInputMethodManager : public MockInputMethodManager {
   int add_menu_observer_count_ = 0;
   int remove_menu_observer_count_ = 0;
   std::string last_activate_menu_item_key_;
-  std::string keyboard_url_ref_;
+  chromeos::input_method::mojom::ImeKeyset keyboard_keyset_;
   FakeInputMethodDelegate delegate_;
   InputMethodUtil util_;
 
@@ -337,10 +338,11 @@ TEST_F(ImeControllerClientTest, OverrideKeyboardKeyset) {
   ImeControllerClient client(&input_method_manager_);
   bool callback_called = false;
   client.OverrideKeyboardKeyset(
-      ash::mojom::ImeKeyset::kEmoji,
+      chromeos::input_method::mojom::ImeKeyset::kEmoji,
       base::BindLambdaForTesting(
           [&callback_called]() { callback_called = true; }));
-  EXPECT_EQ("emoji", input_method_manager_.keyboard_url_ref_);
+  EXPECT_EQ(chromeos::input_method::mojom::ImeKeyset::kEmoji,
+            input_method_manager_.keyboard_keyset_);
   EXPECT_TRUE(callback_called);
 }
 

@@ -71,9 +71,9 @@ class ASH_EXPORT ImeController : public mojom::ImeController {
   void SwitchImeById(const std::string& ime_id, bool show_message);
   void ActivateImeMenuItem(const std::string& key);
   void SetCapsLockEnabled(bool caps_enabled);
-  void OverrideKeyboardKeyset(mojom::ImeKeyset keyset);
+  void OverrideKeyboardKeyset(chromeos::input_method::mojom::ImeKeyset keyset);
   void OverrideKeyboardKeyset(
-      mojom::ImeKeyset keyset,
+      chromeos::input_method::mojom::ImeKeyset keyset,
       mojom::ImeControllerClient::OverrideKeyboardKeysetCallback callback);
 
   // Returns true if the switch is allowed and the keystroke should be
