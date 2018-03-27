@@ -10,6 +10,7 @@
 
 #include "base/big_endian.h"
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/files/file.h"
 #include "base/files/file_enumerator.h"
 #include "base/files/file_path.h"
@@ -19,6 +20,7 @@
 #include "base/rand_util.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/common/content_switches.h"
 
 // TODO(crbug.com/775415): Block remote-bound logging on mobile devices.
 
@@ -88,7 +90,10 @@ const size_t kRemoteBoundLogFileHeaderSizeBytes = sizeof(uint32_t);
 
 WebRtcRemoteEventLogManager::WebRtcRemoteEventLogManager(
     WebRtcRemoteEventLogsObserver* observer)
-    : observer_(observer),
+    : upload_suppression_disabled_(
+          base::CommandLine::ForCurrentProcess()->HasSwitch(
+              ::switches::kWebRtcRemoteEventLogUploadNoSuppression)),
+      observer_(observer),
       uploader_factory_(new WebRtcEventLogUploaderImpl::Factory) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DETACH_FROM_SEQUENCE(io_task_sequence_checker_);
@@ -507,7 +512,7 @@ bool WebRtcRemoteEventLogManager::AdditionalActiveLogAllowed(
 
 bool WebRtcRemoteEventLogManager::UploadingAllowed() const {
   DCHECK_CALLED_ON_VALID_SEQUENCE(io_task_sequence_checker_);
-  return active_peer_connections_.empty();
+  return upload_suppression_disabled_ || active_peer_connections_.empty();
 }
 
 void WebRtcRemoteEventLogManager::MaybeStartUploading() {

@@ -27,6 +27,7 @@
 #include "base/strings/string_util.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_command_line.h"
 #include "base/test/scoped_feature_list.h"
 #include "base/test/simple_test_clock.h"
 #include "base/time/time.h"
@@ -36,6 +37,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "content/public/common/content_features.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -536,6 +538,21 @@ class WebRtcEventLogManagerTestWithRemoteLoggingDisabled
   WebRtcEventLogManagerTestWithRemoteLoggingDisabled() {
     event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
   }
+};
+
+class WebRtcEventLogManagerTestUploadSuppressionDisablingFlag
+    : public WebRtcEventLogManagerTestBase {
+ public:
+  WebRtcEventLogManagerTestUploadSuppressionDisablingFlag() {
+    scoped_feature_list_.InitAndEnableFeature(features::kWebRtcRemoteEventLog);
+    scoped_command_line_.GetProcessCommandLine()->AppendSwitch(
+        ::switches::kWebRtcRemoteEventLogUploadNoSuppression);
+    event_log_manager_ = WebRtcEventLogManager::CreateSingletonInstance();
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+  base::test::ScopedCommandLine scoped_command_line_;
 };
 
 namespace {
@@ -2664,4 +2681,27 @@ TEST_F(WebRtcEventLogManagerTestWithRemoteLoggingDisabled,
   ASSERT_FALSE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
   EXPECT_EQ(OnWebRtcEventLogWrite(key.render_process_id, key.lid, "log"),
             std::make_pair(false, false));
+}
+
+TEST_F(WebRtcEventLogManagerTestUploadSuppressionDisablingFlag,
+       UploadingNotSuppressedByActivePeerConnections) {
+  SuppressUploading();
+
+  const auto key = GetPeerConnectionKey(rph_.get(), kLid);
+  ASSERT_TRUE(PeerConnectionAdded(key.render_process_id, key.lid));
+
+  base::Optional<base::FilePath> log_file;
+  ON_CALL(remote_observer_, OnRemoteLogStarted(key, _))
+      .WillByDefault(Invoke(SaveFilePathTo(&log_file)));
+  ASSERT_TRUE(StartRemoteLogging(key.render_process_id, GetUniqueId(key)));
+  ASSERT_TRUE(log_file);
+
+  base::RunLoop run_loop;
+  std::list<base::FilePath> expected_files = {*log_file};
+  SetWebRtcEventLogUploaderFactoryForTesting(
+      std::make_unique<FileListExpectingWebRtcEventLogUploader::Factory>(
+          &expected_files, true, &run_loop));
+
+  ASSERT_TRUE(PeerConnectionRemoved(key.render_process_id, key.lid));
+  WaitForPendingTasks(&run_loop);
 }
