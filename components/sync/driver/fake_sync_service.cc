@@ -5,6 +5,7 @@
 #include "components/sync/driver/fake_sync_service.h"
 
 #include "base/values.h"
+#include "components/signin/core/browser/account_info.h"
 #include "components/sync/driver/data_type_controller.h"
 #include "components/sync/syncable/base_transaction.h"
 #include "components/sync/syncable/user_share.h"
@@ -204,8 +205,8 @@ base::WeakPtr<JsController> FakeSyncService::GetJsController() {
 void FakeSyncService::GetAllNodes(
     const base::Callback<void(std::unique_ptr<base::ListValue>)>& callback) {}
 
-SigninManagerBase* FakeSyncService::signin() const {
-  return nullptr;
+AccountInfo FakeSyncService::GetAuthenticatedAccountInfo() const {
+  return AccountInfo();
 }
 
 GlobalIdMapper* FakeSyncService::GetGlobalIdMapper() const {

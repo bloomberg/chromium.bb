@@ -281,8 +281,8 @@ bool ProfileSyncServiceHarness::RestartSyncService() {
 
 void ProfileSyncServiceHarness::SignoutSyncService() {
   DCHECK(!username_.empty());
-  service()->GoogleSignedOut(service()->signin()->GetAuthenticatedAccountId(),
-                             username_);
+  service()->GoogleSignedOut(
+      service()->GetAuthenticatedAccountInfo().account_id, username_);
 }
 
 bool ProfileSyncServiceHarness::AwaitMutualSyncCycleCompletion(

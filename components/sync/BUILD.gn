@@ -783,6 +783,7 @@ static_library("test_support_driver") {
   deps = [
     ":sync",
     ":test_support_engine",
+    "//components/signin/core/browser:account_info",
     "//components/sync_preferences:test_support",
     "//components/version_info",
     "//google_apis",
