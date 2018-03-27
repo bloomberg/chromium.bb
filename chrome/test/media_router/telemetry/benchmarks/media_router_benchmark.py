@@ -107,7 +107,7 @@ class CPUMemoryBenckmark(perf_benchmark.PerfBenchmark):
     options.AppendExtraBrowserArgs([
         '--load-extension=' +
              os.path.join(path_util.GetChromiumSrcDir(), 'out',
-             'Release', 'media_router', 'test_extension'),
+             'Release', 'media_router', 'telemetry_extension'),
         '--media-router=0',
         '--enable-stats-collection-bindings'
     ])
