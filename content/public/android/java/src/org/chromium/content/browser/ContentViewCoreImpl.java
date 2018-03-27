@@ -679,12 +679,14 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         // action mode menu items according to the new rotation. So Chrome
         // has to re-create the action mode.
         if (mWebContents != null) {
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M
-                    && getSelectionPopupController().isActionModeValid()) {
+            SelectionPopupControllerImpl controller = getSelectionPopupController();
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && controller != null
+                    && controller.isActionModeValid()) {
                 hidePopupsAndPreserveSelection();
-                getSelectionPopupController().showActionModeOrClearOnFailure();
+                controller.showActionModeOrClearOnFailure();
             }
-            getTextSuggestionHost().hidePopups();
+            TextSuggestionHost host = getTextSuggestionHost();
+            if (host != null) host.hidePopups();
         }
 
         int rotationDegrees = 0;
