@@ -30,6 +30,7 @@
 #include "gpu/command_buffer/service/error_state.h"
 #include "gpu/command_buffer/service/feature_info.h"
 #include "gpu/command_buffer/service/framebuffer_manager.h"
+#include "gpu/command_buffer/service/image_manager.h"
 #include "gpu/command_buffer/service/logger.h"
 #include "gpu/command_buffer/service/mailbox_manager.h"
 #include "gpu/command_buffer/service/query_manager.h"
@@ -275,6 +276,7 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   Logger* GetLogger() override;
 
   void SetIgnoreCachedStateForTest(bool ignore) override;
+  ImageManager* GetImageManagerForTest() override;
 
  private:
   std::unordered_map<GLuint, TextureMetadata> texture_metadata_;
@@ -315,6 +317,8 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   }
 
   TextureManager* texture_manager() { return group_->texture_manager(); }
+
+  ImageManager* image_manager() { return group_->image_manager(); }
 
   // Creates a Texture for the given texture.
   TextureRef* CreateTexture(GLuint client_id, GLuint service_id) {
@@ -380,13 +384,9 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void DoFlush();
   void DoGetIntegerv(GLenum pname, GLint* params, GLsizei params_size);
   void DoTexParameteri(GLuint texture_id, GLenum pname, GLint param);
-  void DoBindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
-    NOTIMPLEMENTED();
-  }
+  void DoBindTexImage2DCHROMIUM(GLuint texture_id, GLint image_id);
   void DoProduceTextureDirect(GLuint texture, const volatile GLbyte* key);
-  void DoReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id) {
-    NOTIMPLEMENTED();
-  }
+  void DoReleaseTexImage2DCHROMIUM(GLuint texture_id, GLint image_id);
   void TexStorage2DImage(TextureRef* texture_ref,
                          const TextureMetadata& texture_metadata,
                          GLsizei width,
@@ -957,6 +957,10 @@ void RasterDecoderImpl::SetIgnoreCachedStateForTest(bool ignore) {
   state_.SetIgnoreCachedStateForTest(ignore);
 }
 
+ImageManager* RasterDecoderImpl::GetImageManagerForTest() {
+  return group_->image_manager();
+}
+
 void RasterDecoderImpl::BeginDecoding() {
   gpu_debug_commands_ = log_commands() || debug();
 }
@@ -1464,6 +1468,101 @@ void RasterDecoderImpl::DoTexParameteri(GLuint client_id,
 
   texture_manager()->SetParameteri("glTexParameteri", GetErrorState(), texture,
                                    pname, param);
+}
+
+void RasterDecoderImpl::DoBindTexImage2DCHROMIUM(GLuint client_id,
+                                                 GLint image_id) {
+  TextureRef* texture_ref = GetTexture(client_id);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "BindTexImage2DCHROMIUM",
+                       "unknown texture");
+    return;
+  }
+
+  TextureMetadata* texture_metadata = GetTextureMetadata(client_id);
+  if (!texture_metadata) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "BindTexImage2DCHROMIUM",
+                       "unknown texture");
+    return;
+  }
+
+  gl::GLImage* image = image_manager()->LookupImage(image_id);
+  if (!image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "BindTexImage2DCHROMIUM",
+                       "no image found with the given ID");
+    return;
+  }
+
+  Texture* texture = texture_ref->texture();
+  if (texture->IsImmutable()) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "BindTexImage2DCHROMIUM",
+                       "texture is immutable");
+    return;
+  }
+
+  Texture::ImageState image_state = Texture::UNBOUND;
+
+  {
+    ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
+                               texture_metadata->target());
+
+    if (image->BindTexImage(texture_metadata->target()))
+      image_state = Texture::BOUND;
+  }
+
+  gfx::Size size = image->GetSize();
+  texture_manager()->SetLevelInfo(
+      texture_ref, texture_metadata->target(), 0, image->GetInternalFormat(),
+      size.width(), size.height(), 1, 0, image->GetInternalFormat(),
+      GL_UNSIGNED_BYTE, gfx::Rect(size));
+  texture_manager()->SetLevelImage(texture_ref, texture_metadata->target(), 0,
+                                   image, image_state);
+}
+
+void RasterDecoderImpl::DoReleaseTexImage2DCHROMIUM(GLuint client_id,
+                                                    GLint image_id) {
+  TRACE_EVENT0("gpu", "RasterDecoderImpl::DoReleaseTexImage2DCHROMIUM");
+
+  TextureRef* texture_ref = GetTexture(client_id);
+  if (!texture_ref) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "ReleaseTexImage2DCHROMIUM",
+                       "unknown texture");
+    return;
+  }
+
+  TextureMetadata* texture_metadata = GetTextureMetadata(client_id);
+  if (!texture_metadata) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "ReleaseTexImage2DCHROMIUM",
+                       "unknown texture");
+    return;
+  }
+
+  gl::GLImage* image = image_manager()->LookupImage(image_id);
+  if (!image) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_OPERATION, "ReleaseTexImage2DCHROMIUM",
+                       "no image found with the given ID");
+    return;
+  }
+
+  Texture::ImageState image_state;
+
+  // Do nothing when image is not currently bound.
+  if (texture_ref->texture()->GetLevelImage(texture_metadata->target(), 0,
+                                            &image_state) != image)
+    return;
+
+  if (image_state == Texture::BOUND) {
+    ScopedTextureBinder binder(&state_, texture_manager(), texture_ref,
+                               texture_metadata->target());
+
+    image->ReleaseTexImage(texture_metadata->target());
+    texture_manager()->SetLevelInfo(texture_ref, texture_metadata->target(), 0,
+                                    GL_RGBA, 0, 0, 1, 0, GL_RGBA,
+                                    GL_UNSIGNED_BYTE, gfx::Rect());
+  }
+
+  texture_manager()->SetLevelImage(texture_ref, texture_metadata->target(), 0,
+                                   nullptr, Texture::UNBOUND);
 }
 
 void RasterDecoderImpl::DoProduceTextureDirect(GLuint client_id,
