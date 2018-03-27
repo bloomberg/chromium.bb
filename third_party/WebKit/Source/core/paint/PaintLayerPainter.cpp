@@ -588,8 +588,6 @@ PaintResult PaintLayerPainter::PaintLayerContents(
                                  ? ClipRect()
                                  : filter_fragments[0].background_rect,
                              local_painting_info, paint_flags);
-    } else if (RuntimeEnabledFeatures::SlimmingPaintV175Enabled() &&
-               paint_layer_.PaintsWithFilters()) {
     }
 
     bool is_painting_root_layer = (&paint_layer_) == painting_info.root_layer;
