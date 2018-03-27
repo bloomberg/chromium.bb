@@ -37,6 +37,7 @@ import org.chromium.chrome.browser.TabLoadStatus;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager;
 import org.chromium.chrome.browser.fullscreen.ChromeFullscreenManager.FullscreenListener;
 import org.chromium.chrome.browser.tab.Tab;
+import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.toolbar.ActionModeController.ActionBarDelegate;
 import org.chromium.chrome.browser.toolbar.ViewShiftingActionBarDelegate;
@@ -672,13 +673,14 @@ public class BottomSheet
 
         assert mTabModelSelector != null;
 
-        int tabLoadStatus;
+        int tabLoadStatus = TabLoadStatus.DEFAULT_PAGE_LOAD;
 
         if (getActiveTab() != null && getActiveTab().isIncognito() == incognito) {
             tabLoadStatus = getActiveTab().loadUrl(params);
         } else {
-            // Do nothing if there is no available tab to load in.
-            return TabLoadStatus.PAGE_LOAD_FAILED;
+            // If no compatible tab is active behind the sheet, open a new one.
+            mTabModelSelector.openNewTab(
+                    params, TabModel.TabLaunchType.FROM_CHROME_UI, getActiveTab(), incognito);
         }
 
         // In all non-native cases, minimize the sheet.

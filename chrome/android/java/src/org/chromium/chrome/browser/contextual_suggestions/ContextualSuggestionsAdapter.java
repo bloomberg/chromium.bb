@@ -10,6 +10,7 @@ import android.view.ViewGroup;
 
 import org.chromium.chrome.browser.contextual_suggestions.ContextualSuggestionsModel.ClusterListObservable;
 import org.chromium.chrome.browser.modelutil.RecyclerViewAdapter;
+import org.chromium.chrome.browser.ntp.ContextMenuManager;
 import org.chromium.chrome.browser.ntp.cards.ItemViewType;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageViewHolder;
 import org.chromium.chrome.browser.ntp.snippets.SectionHeaderViewHolder;
@@ -33,9 +34,9 @@ class ContextualSuggestionsAdapter
                     return new SectionHeaderViewHolder(mRecyclerView, mUiConfig);
 
                 case ItemViewType.SNIPPET:
-                    // TODO(twellington): Hook up ContextMenuManager.
-                    return new ContextualSuggestionCardViewHolder(mRecyclerView, null, mUiDelegate,
-                            mUiConfig, OfflinePageBridge.getForProfile(mProfile));
+                    return new ContextualSuggestionCardViewHolder(mRecyclerView,
+                            mContextMenuManager, mUiDelegate, mUiConfig,
+                            OfflinePageBridge.getForProfile(mProfile));
 
                 default:
                     assert false;
@@ -54,6 +55,7 @@ class ContextualSuggestionsAdapter
     private final UiConfig mUiConfig;
     private final SuggestionsUiDelegate mUiDelegate;
     private final ContextualSuggestionsModel mModel;
+    private final ContextMenuManager mContextMenuManager;
 
     private SuggestionsRecyclerView mRecyclerView;
 
@@ -65,9 +67,11 @@ class ContextualSuggestionsAdapter
      * @param uiDelegate The {@link SuggestionsUiDelegate} used to help construct items in the
      *                   content view.
      * @param model The {@link ContextualSuggestionsModel} for the component.
+     * @param contextMenuManager The {@link ContextMenuManager} used to display a context menu.
      */
     ContextualSuggestionsAdapter(Context context, Profile profile, UiConfig uiConfig,
-            SuggestionsUiDelegate uiDelegate, ContextualSuggestionsModel model) {
+            SuggestionsUiDelegate uiDelegate, ContextualSuggestionsModel model,
+            ContextMenuManager contextMenuManager) {
         super(model.mClusterListObservable);
 
         setViewBinder(new ContextualSuggestionsViewBinder());
@@ -76,6 +80,7 @@ class ContextualSuggestionsAdapter
         mUiConfig = uiConfig;
         mUiDelegate = uiDelegate;
         mModel = model;
+        mContextMenuManager = contextMenuManager;
     }
 
     @Override
