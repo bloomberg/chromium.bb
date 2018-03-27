@@ -534,7 +534,9 @@ void PersistentTabRestoreService::Delegate::OnClearEntries() {
 
   // Schedule a pending reset so that we nuke the file on next write.
   base_session_service_->set_pending_reset(true);
-  base_session_service_->StartSaveTimer();
+  // Schedule a command, otherwise if there are no pending commands Save does
+  // nothing.
+  base_session_service_->ScheduleCommand(CreateRestoredEntryCommand(1));
 }
 
 void PersistentTabRestoreService::Delegate::OnNavigationEntriesDeleted() {
@@ -543,7 +545,9 @@ void PersistentTabRestoreService::Delegate::OnNavigationEntriesDeleted() {
 
   // Schedule a pending reset so that we nuke the file on next write.
   base_session_service_->set_pending_reset(true);
-  base_session_service_->StartSaveTimer();
+  // Schedule a command, otherwise if there are no pending commands Save does
+  // nothing.
+  base_session_service_->ScheduleCommand(CreateRestoredEntryCommand(1));
 }
 
 void PersistentTabRestoreService::Delegate::OnRestoreEntryById(
