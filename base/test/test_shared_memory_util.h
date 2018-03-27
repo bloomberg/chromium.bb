@@ -5,6 +5,7 @@
 #ifndef BASE_TEST_TEST_SHARED_MEMORY_UTIL_H_
 #define BASE_TEST_TEST_SHARED_MEMORY_UTIL_H_
 
+#include "base/memory/platform_shared_memory_region.h"
 #include "base/memory/shared_memory_handle.h"
 
 namespace base {
@@ -14,6 +15,9 @@ namespace base {
 // in case of success (i.e. writable mappings are _not_ allowed), or false
 // otherwise.
 bool CheckReadOnlySharedMemoryHandleForTesting(SharedMemoryHandle handle);
+
+bool CheckReadOnlyPlatformSharedMemoryRegionForTesting(
+    subtle::PlatformSharedMemoryRegion region);
 
 }  // namespace base
 
