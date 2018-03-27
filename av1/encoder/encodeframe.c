@@ -3690,10 +3690,8 @@ void av1_init_tile_data(AV1_COMP *cpi) {
       tile_tok = allocated_tokens(
           *tile_info, cm->seq_params.mib_size_log2 + MI_SIZE_LOG2, num_planes);
       tile_data->allow_update_cdf = !cm->large_scale_tile;
-#if CONFIG_CDF_UPDATE_MODE
       tile_data->allow_update_cdf =
           tile_data->allow_update_cdf && !cm->disable_cdf_update;
-#endif  // CONFIG_CDF_UPDATE_MODE
     }
   }
 }

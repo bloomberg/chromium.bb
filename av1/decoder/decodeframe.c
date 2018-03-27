@@ -1853,9 +1853,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   if (tile_rows_end <= tile_rows_start || tile_cols_end <= tile_cols_start)
     return data;
 
-#if CONFIG_CDF_UPDATE_MODE
   allow_update_cdf = allow_update_cdf && !cm->disable_cdf_update;
-#endif  // CONFIG_CDF_UPDATE_MODE
 
   assert(tile_rows <= MAX_TILE_ROWS);
   assert(tile_cols <= MAX_TILE_COLS);
@@ -2615,10 +2613,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 #endif
   cm->intra_only = cm->frame_type == INTRA_ONLY_FRAME;
   cm->error_resilient_mode = frame_is_sframe(cm) ? 1 : aom_rb_read_bit(rb);
-
-#if CONFIG_CDF_UPDATE_MODE
   cm->disable_cdf_update = aom_rb_read_bit(rb);
-#endif  // CONFIG_CDF_UPDATE_MODE
 
   if (cm->seq_params.force_screen_content_tools == 2) {
     cm->allow_screen_content_tools = aom_rb_read_bit(rb);
@@ -2944,12 +2939,8 @@ static int read_uncompressed_header(AV1Decoder *pbi,
                        " state");
   }
 
-#if CONFIG_CDF_UPDATE_MODE
   const int might_bwd_adapt =
       !(cm->large_scale_tile) && !(cm->disable_cdf_update);
-#else
-  const int might_bwd_adapt = !(cm->large_scale_tile);
-#endif
   if (might_bwd_adapt) {
     cm->refresh_frame_context = aom_rb_read_bit(rb)
                                     ? REFRESH_FRAME_CONTEXT_DISABLED

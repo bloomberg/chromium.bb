@@ -282,9 +282,7 @@ typedef struct AV1EncoderConfig {
   const char *film_grain_table_filename;
 #endif
 
-#if CONFIG_CDF_UPDATE_MODE
   uint8_t cdf_update_mode;
-#endif  // CONFIG_CDF_UPDATE_MODE
   aom_superblock_size_t superblock_size;
   unsigned int large_scale_tile;
   unsigned int single_tile_decoding;

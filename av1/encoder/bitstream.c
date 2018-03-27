@@ -2937,9 +2937,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
     aom_wb_write_bit(wb, cm->error_resilient_mode);
   }
 
-#if CONFIG_CDF_UPDATE_MODE
   aom_wb_write_bit(wb, cm->disable_cdf_update);
-#endif  // CONFIG_CDF_UPDATE_MODE
 
   if (cm->seq_params.force_screen_content_tools == 2) {
     aom_wb_write_bit(wb, cm->allow_screen_content_tools);
@@ -3153,12 +3151,9 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
   if (cm->seq_params.frame_id_numbers_present_flag)
     cm->refresh_mask = get_refresh_mask(cpi);
 
-#if CONFIG_CDF_UPDATE_MODE
   const int might_bwd_adapt =
       !(cm->large_scale_tile) && !(cm->disable_cdf_update);
-#else
-  const int might_bwd_adapt = !(cm->large_scale_tile);
-#endif
+
   if (might_bwd_adapt) {
     aom_wb_write_bit(
         wb, cm->refresh_frame_context == REFRESH_FRAME_CONTEXT_DISABLED);
@@ -3633,10 +3628,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
         this_tile->tctx = *cm->fc;
         cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
         mode_bc.allow_update_cdf = !cm->large_scale_tile;
-#if CONFIG_CDF_UPDATE_MODE
         mode_bc.allow_update_cdf =
             mode_bc.allow_update_cdf && !cm->disable_cdf_update;
-#endif  // CONFIG_CDF_UPDATE_MODE
         aom_start_encode(&mode_bc, buf->data + data_offset);
         write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
         assert(tok == tok_end);
@@ -3787,10 +3780,8 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       this_tile->tctx = *cm->fc;
       cpi->td.mb.e_mbd.tile_ctx = &this_tile->tctx;
       mode_bc.allow_update_cdf = 1;
-#if CONFIG_CDF_UPDATE_MODE
       mode_bc.allow_update_cdf =
           mode_bc.allow_update_cdf && !cm->disable_cdf_update;
-#endif  // CONFIG_CDF_UPDATE_MODE
       const int num_planes = av1_num_planes(cm);
       av1_reset_loop_restoration(&cpi->td.mb.e_mbd, num_planes);
 

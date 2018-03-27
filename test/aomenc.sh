@@ -199,8 +199,7 @@ aomenc_av1_webm_non_square_par() {
 }
 
 aomenc_av1_webm_cdf_update_mode() {
-  if [ "$(aom_config_option_enabled CONFIG_CDF_UPDATE_MODE)" = "yes" ] && \
-     [ "$(aomenc_can_encode_av1)" = "yes" ] && \
+  if [ "$(aomenc_can_encode_av1)" = "yes" ] && \
      [ "$(webm_io_available)" = "yes" ]; then
     for mode in 0 1 2; do
       local readonly output="${AOM_TEST_OUTPUT_DIR}/cdf_mode_${mode}.webm"
