@@ -13,6 +13,7 @@
 #include "base/json/json_writer.h"
 #include "base/run_loop.h"
 #include "base/test/gtest_util.h"
+#include "base/test/scoped_task_environment.h"
 #include "base/test/test_mock_time_task_runner.h"
 #include "base/time/tick_clock.h"
 #include "base/time/time.h"
@@ -23,6 +24,7 @@
 #include "content/test/test_render_frame_host.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
 #include "device/fido/scoped_virtual_fido_device.h"
+#include "device/fido/test_callback_receiver.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/device/public/mojom/constants.mojom.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -167,6 +169,13 @@ constexpr OriginRelyingPartyIdPair kInvalidRelyingPartyTestCases[] = {
     {"https://login.awesomecompany", "awesomecompany"},
 };
 
+using TestMakeCredentialCallback = device::test::StatusAndValueCallbackReceiver<
+    AuthenticatorStatus,
+    MakeCredentialAuthenticatorResponsePtr>;
+using TestGetAssertionCallback = device::test::StatusAndValueCallbackReceiver<
+    AuthenticatorStatus,
+    GetAssertionAuthenticatorResponsePtr>;
+
 std::vector<uint8_t> GetTestChallengeBytes() {
   return std::vector<uint8_t>(std::begin(kTestChallengeBytes),
                               std::end(kTestChallengeBytes));
@@ -232,77 +241,6 @@ GetTestPublicKeyCredentialRequestOptions() {
       webauth::mojom::UserVerificationRequirement::PREFERRED;
   return options;
 }
-
-class TestMakeCredentialCallback {
- public:
-  TestMakeCredentialCallback()
-      : callback_(base::BindOnce(&TestMakeCredentialCallback::ReceivedCallback,
-                                 base::Unretained(this))) {}
-  ~TestMakeCredentialCallback() {}
-
-  void ReceivedCallback(AuthenticatorStatus status,
-                        MakeCredentialAuthenticatorResponsePtr credential) {
-    response_ = std::make_pair(status, std::move(credential));
-    std::move(closure_).Run();
-  }
-
-  // TODO(crbug.com/799044) - simplify the runloop usage.
-  void WaitForCallback() {
-    closure_ = run_loop_.QuitClosure();
-    run_loop_.Run();
-  }
-
-  AuthenticatorImpl::MakeCredentialCallback callback() {
-    return std::move(callback_);
-  }
-
-  AuthenticatorStatus GetResponseStatus() { return response_.first; }
-
-  const MakeCredentialAuthenticatorResponsePtr& response() const {
-    CHECK_EQ(AuthenticatorStatus::SUCCESS, response_.first);
-    return response_.second;
-  }
-
- private:
-  std::pair<AuthenticatorStatus, MakeCredentialAuthenticatorResponsePtr>
-      response_;
-  base::Closure closure_;
-  AuthenticatorImpl::MakeCredentialCallback callback_;
-  base::RunLoop run_loop_;
-};
-
-class TestGetAssertionCallback {
- public:
-  TestGetAssertionCallback()
-      : callback_(base::BindOnce(&TestGetAssertionCallback::ReceivedCallback,
-                                 base::Unretained(this))) {}
-  ~TestGetAssertionCallback() {}
-
-  void ReceivedCallback(AuthenticatorStatus status,
-                        GetAssertionAuthenticatorResponsePtr credential) {
-    response_ = std::make_pair(status, std::move(credential));
-    std::move(closure_).Run();
-  }
-
-  // TODO(crbug.com/799044) - simplify the runloop usage.
-  void WaitForCallback() {
-    closure_ = run_loop_.QuitClosure();
-    run_loop_.Run();
-  }
-
-  AuthenticatorStatus GetResponseStatus() { return response_.first; }
-
-  AuthenticatorImpl::GetAssertionCallback callback() {
-    return std::move(callback_);
-  }
-
- private:
-  std::pair<AuthenticatorStatus, GetAssertionAuthenticatorResponsePtr>
-      response_;
-  base::OnceClosure closure_;
-  AuthenticatorImpl::GetAssertionCallback callback_;
-  base::RunLoop run_loop_;
-};
 
 }  // namespace
 
@@ -375,7 +313,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     TestMakeCredentialCallback cb;
     authenticator->MakeCredential(std::move(options), cb.callback());
     cb.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.GetResponseStatus());
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.status());
   }
 
   // These instances pass the origin and relying party checks and return at
@@ -394,7 +332,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialOriginAndRpIds) {
     TestMakeCredentialCallback cb;
     authenticator->MakeCredential(std::move(options), cb.callback());
     cb.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
+    EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
   }
 }
 
@@ -411,7 +349,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialNoSupportedAlgorithm) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
 }
 
 // Test that service returns NOT_SUPPORTED_ERROR if user verification is
@@ -427,7 +365,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionUserVerification) {
   TestGetAssertionCallback cb;
   authenticator->GetAssertion(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
 }
 
 // Test that service returns NOT_SUPPORTED_ERROR if user verification is
@@ -444,7 +382,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialUserVerification) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
 }
 
 // Test that service returns NOT_SUPPORTED_ERROR if resident key is
@@ -460,7 +398,7 @@ TEST_F(AuthenticatorImplTest, MakeCredentialResidentKey) {
   TestMakeCredentialCallback cb;
   authenticator->MakeCredential(std::move(options), cb.callback());
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_SUPPORTED_ERROR, cb.status());
 }
 
 // Parses its arguments as JSON and expects that all the keys in the first are
@@ -557,7 +495,7 @@ TEST_F(AuthenticatorImplTest, TestMakeCredentialTimeout) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
 }
 
 // Verify behavior for various combinations of origins and RP IDs.
@@ -578,7 +516,7 @@ TEST_F(AuthenticatorImplTest, GetAssertionOriginAndRpIds) {
     TestGetAssertionCallback cb;
     authenticator->GetAssertion(std::move(options), cb.callback());
     cb.WaitForCallback();
-    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.GetResponseStatus());
+    EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.status());
   }
 }
 
@@ -631,10 +569,11 @@ TEST_F(AuthenticatorImplTest, AppIdExtension) {
     authenticator->GetAssertion(std::move(options), cb.callback());
     cb.WaitForCallback();
 
+    const AuthenticatorStatus status = cb.status();
     if (test_case.should_succeed) {
-      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.GetResponseStatus());
+      EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, status);
     } else {
-      EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, cb.GetResponseStatus());
+      EXPECT_EQ(AuthenticatorStatus::INVALID_DOMAIN, status);
     }
   }
 
@@ -673,7 +612,7 @@ TEST_F(AuthenticatorImplTest, TestGetAssertionTimeout) {
   base::RunLoop().RunUntilIdle();
   task_runner->FastForwardBy(base::TimeDelta::FromMinutes(1));
   cb.WaitForCallback();
-  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.GetResponseStatus());
+  EXPECT_EQ(AuthenticatorStatus::NOT_ALLOWED_ERROR, cb.status());
 }
 
 enum class IndividualAttestation {
@@ -763,7 +702,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
       TestMakeCredentialCallback cb;
       authenticator->MakeCredential(std::move(options), cb.callback());
       cb.WaitForCallback();
-      ASSERT_EQ(test.expected_status, cb.GetResponseStatus());
+      ASSERT_EQ(test.expected_status, cb.status());
 
       if (test.expected_status != AuthenticatorStatus::SUCCESS) {
         ASSERT_STREQ("", test.expected_attestation_format);
@@ -771,7 +710,7 @@ class AuthenticatorContentBrowserClientTest : public AuthenticatorImplTest {
       }
 
       base::Optional<CBORValue> attestation_value =
-          CBORReader::Read(cb.response()->attestation_object);
+          CBORReader::Read(cb.value()->attestation_object);
       ASSERT_TRUE(attestation_value);
       ASSERT_TRUE(attestation_value->is_map());
       const auto& attestation = attestation_value->GetMap();
