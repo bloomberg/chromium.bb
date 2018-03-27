@@ -1837,15 +1837,32 @@ static void decode_tile(AV1Decoder *pbi, int tile_row, int tile_col) {
        mi_row += cm->seq_params.mib_size) {
     decode_tile_sb_row(pbi, td, tile_info, mi_row);
   }
+
+#if CONFIG_TRAILING_BITS
+  uint32_t nb_bits = aom_reader_tell(&td->bit_reader);
+  uint32_t nb_bytes = (nb_bits + 7) >> 3;
+
+  const uint8_t *p_begin = aom_reader_find_begin(&td->bit_reader);
+  const uint8_t *p_end = aom_reader_find_end(&td->bit_reader);
+  const uint8_t *p = p_begin + nb_bytes;
+
+  if (p > p_end) cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+
+  uint8_t last_byte = p[-1];
+  uint8_t pattern = 128 >> ((nb_bits - 1) & 7);
+  if ((last_byte & (2 * pattern - 1)) != pattern)
+    cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+
+  while (p < p_end) {
+    if (*p != 0) cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+    p++;
+  }
+#endif
 }
 
 static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                                    const uint8_t *data_end, int startTile,
-#if CONFIG_TRAILING_BITS
-                                   int endTile, uint32_t *last_bit_pos) {
-#else
                                    int endTile) {
-#endif
   AV1_COMMON *const cm = &pbi->common;
   const int num_planes = av1_num_planes(cm);
   const int tile_cols = cm->tile_cols;
@@ -1991,9 +2008,6 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
   }
 
   TileData *const td = pbi->tile_data + endTile;
-#if CONFIG_TRAILING_BITS
-  *last_bit_pos = aom_reader_tell(&td->bit_reader) % 8;
-#endif
 
   return aom_reader_find_end(&td->bit_reader);
 }
@@ -3304,23 +3318,13 @@ static void setup_frame_info(AV1Decoder *pbi) {
 void av1_decode_tg_tiles_and_wrapup(AV1Decoder *pbi, const uint8_t *data,
                                     const uint8_t *data_end,
                                     const uint8_t **p_data_end, int startTile,
-#if CONFIG_TRAILING_BITS
-                                    int endTile, int initialize_flag,
-                                    uint32_t *last_bit_pos) {
-#else
                                     int endTile, int initialize_flag) {
-#endif
   AV1_COMMON *const cm = &pbi->common;
   MACROBLOCKD *const xd = &pbi->mb;
 
   if (initialize_flag) setup_frame_info(pbi);
 
-#if CONFIG_TRAILING_BITS
-  *p_data_end =
-      decode_tiles(pbi, data, data_end, startTile, endTile, last_bit_pos);
-#else
   *p_data_end = decode_tiles(pbi, data, data_end, startTile, endTile);
-#endif
 
   const int num_planes = av1_num_planes(cm);
   // If the bit stream is monochrome, set the U and V buffers to a constant.

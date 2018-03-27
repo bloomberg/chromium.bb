@@ -47,12 +47,7 @@ int av1_decode_frame_headers_and_setup(struct AV1Decoder *pbi,
 void av1_decode_tg_tiles_and_wrapup(struct AV1Decoder *pbi, const uint8_t *data,
                                     const uint8_t *data_end,
                                     const uint8_t **p_data_end, int startTile,
-#if CONFIG_TRAILING_BITS
-                                    int endTile, int initialize_flag,
-                                    uint32_t *last_bit_pos);
-#else
                                     int endTile, int initialize_flag);
-#endif
 
 void av1_read_bitdepth_colorspace_sampling(AV1_COMMON *cm,
                                            struct aom_read_bit_buffer *rb,

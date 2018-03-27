@@ -57,6 +57,10 @@ static INLINE int aom_reader_init(aom_reader *r, const uint8_t *buffer,
   return aom_daala_reader_init(r, buffer, (int)size);
 }
 
+static INLINE const uint8_t *aom_reader_find_begin(aom_reader *r) {
+  return aom_daala_reader_find_begin(r);
+}
+
 static INLINE const uint8_t *aom_reader_find_end(aom_reader *r) {
   return aom_daala_reader_find_end(r);
 }

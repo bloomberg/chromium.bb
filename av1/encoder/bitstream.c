@@ -3640,9 +3640,6 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
       const TOKENEXTRA *tok = tok_buffers[tile_row][tile_col];
       const TOKENEXTRA *tok_end = tok + cpi->tok_count[tile_row][tile_col];
       int is_last_tile_in_tg = 0;
-#if CONFIG_TRAILING_BITS
-      int nb_bits = 0;
-#endif
 
       if (new_tg) {
         data = dst + total_size;
@@ -3694,33 +3691,9 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
 
       aom_start_encode(&mode_bc, dst + total_size);
       write_modes(cpi, &tile_info, &mode_bc, &tok, tok_end);
-#if CONFIG_TRAILING_BITS
-      nb_bits = aom_stop_encode(&mode_bc);
-#else
       aom_stop_encode(&mode_bc);
-#endif
       tile_size = mode_bc.pos;
       assert(tile_size >= AV1_MIN_TILE_SIZE_BYTES);
-
-#if CONFIG_TRAILING_BITS
-      const int is_last_row = (tile_row == tile_rows - 1);
-      const int is_last_col = (tile_col == tile_cols - 1);
-      const int is_last_tile = is_last_col && is_last_row;
-      // similar to add_trailing_bits, but specific to end of last tile
-      if (is_last_tile) {
-        if (nb_bits % 8 == 0) {
-          // the arithmetic encoder ended on a byte boundary
-          // adding a 0b10000000 byte
-          *(dst + total_size + tile_size) = 0x80;
-          tile_size += 1;
-        } else {
-          // arithmetic encoder left several 0 bits
-          // changing the first 0 bit to 1
-          int bit_offset = 7 - nb_bits % 8;
-          *(dst + total_size + tile_size - 1) |= 1 << bit_offset;
-        }
-      }
-#endif
 
       curr_tg_data_size += (tile_size + (is_last_tile_in_tg ? 0 : 4));
       buf->size = tile_size;

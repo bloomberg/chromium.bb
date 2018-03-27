@@ -289,7 +289,9 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
   od_ec_window m;
   od_ec_window e;
   od_ec_window l;
+#if !CONFIG_TRAILING_BITS
   unsigned r;
+#endif
   int c;
   int s;
   if (enc->error) return NULL;
@@ -307,21 +309,24 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
   /*We output the minimum number of bits that ensures that the symbols encoded
      thus far will be decoded correctly regardless of the bits that follow.*/
   l = enc->low;
+#if !CONFIG_TRAILING_BITS
   r = enc->rng;
+#endif
   c = enc->cnt;
 #if CONFIG_TRAILING_BITS
   s = 10;
   m = 0x3FFF;
+  e = ((l + m) & ~m) | (m + 1);
 #else
   s = 9;
   m = 0x7FFF;
-#endif
   e = (l + m) & ~m;
   while ((e | m) >= l + r) {
     s++;
     m >>= 1;
     e = (l + m) & ~m;
   }
+#endif
   s += c;
   offs = enc->offs;
   buf = enc->precarry_buf;
