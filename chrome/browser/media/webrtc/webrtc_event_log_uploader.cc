@@ -129,7 +129,7 @@ WebRtcEventLogUploaderImpl::Factory::Create(
 }
 
 std::unique_ptr<WebRtcEventLogUploader>
-WebRtcEventLogUploaderImpl::Factory::CreateWithCurstomMaxSizeForTesting(
+WebRtcEventLogUploaderImpl::Factory::CreateWithCustomMaxSizeForTesting(
     const base::FilePath& log_file,
     WebRtcEventLogUploaderObserver* observer,
     size_t max_log_file_size_bytes) {
@@ -186,6 +186,11 @@ WebRtcEventLogUploaderImpl::~WebRtcEventLogUploaderImpl() {
     DCHECK(!url_fetcher_);
   } else {
     DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+    // This is only expected to happen during Chrome shutdown.
+    bool will_delete =
+        io_task_runner_->DeleteSoon(FROM_HERE, url_fetcher_.release());
+    DCHECK(!will_delete)
+        << "Task runners must have been stopped by this stage of shutdown.";
   }
 }
 

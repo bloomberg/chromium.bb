@@ -133,7 +133,7 @@ class WebRtcEventLogUploaderImplTest : public ::testing::Test {
             [](WebRtcEventLogUploaderImplTest* test,
                size_t max_log_size_bytes) {
               test->uploader_ =
-                  test->uploader_factory_.CreateWithCurstomMaxSizeForTesting(
+                  test->uploader_factory_.CreateWithCustomMaxSizeForTesting(
                       test->log_file_, &test->observer_, max_log_size_bytes);
             },
             base::Unretained(this), max_log_size_bytes));
