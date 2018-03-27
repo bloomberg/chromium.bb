@@ -3128,6 +3128,8 @@
       default_value: "GapLength()",
       type_name: "GapLength",
       converter: "ConvertGapLength",
+      keywords: ["normal"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
     },
     {
       name: "row-gap",
@@ -3139,6 +3141,8 @@
       default_value: "GapLength()",
       type_name: "GapLength",
       converter: "ConvertGapLength",
+      keywords: ["normal"],
+      typedom_types: ["Keyword", "Length", "Percentage"],
     },
     {
       name: "column-rule-color",
