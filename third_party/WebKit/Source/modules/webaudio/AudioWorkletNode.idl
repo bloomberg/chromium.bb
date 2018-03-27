@@ -8,7 +8,6 @@
     ActiveScriptWrappable,
     Constructor(BaseAudioContext context, DOMString name, optional AudioWorkletNodeOptions options),
     ConstructorCallWith=ScriptState,
-    Global=(Worklet,AudioWorklet),
     MeasureAs=AudioWorkletNodeConstructor,
     RaisesException=Constructor
 ] interface AudioWorkletNode : AudioNode {

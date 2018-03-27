@@ -11,7 +11,7 @@ PASS AudioWorkletNode interface object name
 FAIL AudioWorkletNode interface: existence and properties of interface prototype object Cannot read property 'has_extended_attribute' of undefined
 PASS AudioWorkletNode interface: existence and properties of interface prototype object's "constructor" property
 PASS AudioWorkletNode interface: existence and properties of interface prototype object's @@unscopables property
-FAIL AudioWorkletNode interface: attribute parameters assert_true: The prototype object must have a property "parameters" expected true got false
+PASS AudioWorkletNode interface: attribute parameters
 PASS Unscopable handled correctly for parameters property on AudioWorkletNode
 Harness: the test ran to completion.
 
