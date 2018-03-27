@@ -40,7 +40,7 @@ class ChromeProcessManagerDelegate : public ProcessManagerDelegate,
 
  private:
   // Notification handlers.
-  void OnBrowserWindowReady(Browser* browser);
+  void OnBrowserOpened(Browser* browser);
   void OnProfileCreated(Profile* profile);
   void OnProfileDestroyed(Profile* profile);
 

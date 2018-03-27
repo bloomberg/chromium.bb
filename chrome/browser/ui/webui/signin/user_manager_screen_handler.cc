@@ -857,7 +857,7 @@ void UserManagerScreenHandler::ReportAuthenticationResult(
   }
 }
 
-void UserManagerScreenHandler::OnBrowserWindowReady(Browser* browser) {
+void UserManagerScreenHandler::OnBrowserOpened(Browser* browser) {
   DCHECK(browser);
   DCHECK(browser->window());
 
@@ -891,12 +891,12 @@ void UserManagerScreenHandler::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_WINDOW_READY, type);
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_OPENED, type);
 
-  // Only respond to one Browser Window Ready event.
-  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+  // Only respond to one Browser Opened event.
+  registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_OPENED,
                     content::NotificationService::AllSources());
-  OnBrowserWindowReady(content::Source<Browser>(source).ptr());
+  OnBrowserOpened(content::Source<Browser>(source).ptr());
 }
 
 // This callback is run after switching to a new profile has finished. This
@@ -908,10 +908,9 @@ void UserManagerScreenHandler::OnSwitchToProfileComplete(
     Profile* profile, Profile::CreateStatus profile_create_status) {
   Browser* browser = chrome::FindAnyBrowser(profile, false);
   if (browser && browser->window()) {
-    OnBrowserWindowReady(browser);
+    OnBrowserOpened(browser);
   } else {
-    registrar_.Add(this,
-                   chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                    content::NotificationService::AllSources());
   }
 }

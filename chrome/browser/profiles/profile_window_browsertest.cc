@@ -130,7 +130,7 @@ Browser* ProfileWindowBrowserTest::OpenGuestBrowser() {
   // does incomplete initialization that would lead to
   // SystemUrlRequestContextGetter being leaked.
   content::WindowedNotificationObserver browser_creation_observer(
-      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      chrome::NOTIFICATION_BROWSER_OPENED,
       content::NotificationService::AllSources());
   profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
 

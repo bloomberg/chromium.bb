@@ -44,12 +44,6 @@ enum NotificationType {
   // DEPRECATED: Use BrowserListObserver::OnBrowserAdded()
   NOTIFICATION_BROWSER_OPENED = NOTIFICATION_CHROME_START,
 
-  // This message is sent soon after BROWSER_OPENED, and indicates that
-  // the Browser's |window_| is now non-NULL. The source is a Source<Browser>
-  // containing the affected Browser.  No details are expected.
-  // DEPRECATED: Use BrowserListObserver::OnBrowserAdded()
-  NOTIFICATION_BROWSER_WINDOW_READY,
-
   // This message is sent after a window has been closed.  The source is a
   // Source<Browser> containing the affected Browser.  No details are expected.
   // DEPRECATED: Use BrowserListObserver::OnBrowserRemoved()

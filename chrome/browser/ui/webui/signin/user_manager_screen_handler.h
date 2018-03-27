@@ -91,8 +91,8 @@ class UserManagerScreenHandler
   void OnOAuthError() override;
   void OnNetworkError(int response_code) override;
 
-  // Handle when Notified of a NOTIFICATION_BROWSER_WINDOW_READY event.
-  void OnBrowserWindowReady(Browser* browser);
+  // Handle when Notified of a NOTIFICATION_BROWSER_OPENED event.
+  void OnBrowserOpened(Browser* browser);
 
   // Sends user list to account chooser.
   void SendUserList();

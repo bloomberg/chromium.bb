@@ -263,7 +263,7 @@ ExtensionAppShimHandler::ExtensionAppShimHandler()
                  content::NotificationService::AllBrowserContextsAndSources());
   registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                  content::NotificationService::AllBrowserContextsAndSources());
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllBrowserContextsAndSources());
   BrowserList::AddObserver(this);
 }
@@ -689,7 +689,7 @@ void ExtensionAppShimHandler::Observe(
       }
       break;
     }
-    case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
+    case chrome::NOTIFICATION_BROWSER_OPENED: {
       Browser* browser = content::Source<Browser>(source).ptr();
       // Don't keep track of browsers that are not associated with an app.
       const Extension* extension = MaybeGetAppForBrowser(browser);
@@ -745,7 +745,7 @@ void ExtensionAppShimHandler::OnAppStop(content::BrowserContext* context,
 
 // The BrowserWindow may be NULL when this is called.
 // Therefore we listen for the notification
-// chrome::NOTIFICATION_BROWSER_WINDOW_READY and then call OnAppActivated.
+// chrome::NOTIFICATION_BROWSER_OPENED and then call OnAppActivated.
 // If this notification is removed, check that OnBrowserAdded is called after
 // the BrowserWindow is ready.
 void ExtensionAppShimHandler::OnBrowserAdded(Browser* browser) {
