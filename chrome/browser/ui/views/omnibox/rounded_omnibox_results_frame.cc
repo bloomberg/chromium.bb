@@ -10,7 +10,6 @@
 #include "chrome/browser/ui/views/frame/browser_view.h"
 #include "chrome/browser/ui/views/location_bar/background_with_1_px_border.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_view.h"
-#include "ui/base/material_design/material_design_controller.h"
 #include "ui/compositor/layer.h"
 #include "ui/views/painter.h"
 
