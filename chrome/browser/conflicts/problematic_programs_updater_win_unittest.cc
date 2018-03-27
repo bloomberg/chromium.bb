@@ -48,26 +48,24 @@ class MockInstalledPrograms : public InstalledPrograms {
   ~MockInstalledPrograms() override = default;
 
   void AddInstalledProgram(const base::FilePath& file_path,
-                           InstalledPrograms::ProgramInfo program_info) {
+                           ProgramInfo program_info) {
     programs_.insert({file_path, std::move(program_info)});
   }
 
-  // Given a |file|, checks if it matches with an installed program on the
-  // user's machine and returns all the matching programs. Do not call this
-  // before the initialization is done.
-  // Virtual to allow mocking.
   bool GetInstalledPrograms(const base::FilePath& file,
                             std::vector<ProgramInfo>* programs) const override {
-    auto iter = programs_.find(file);
-    if (iter == programs_.end())
+    auto range = programs_.equal_range(file);
+
+    if (std::distance(range.first, range.second) == 0)
       return false;
 
-    programs->push_back(iter->second);
+    for (auto it = range.first; it != range.second; ++it)
+      programs->push_back(it->second);
     return true;
   }
 
  private:
-  std::map<base::FilePath, ProgramInfo> programs_;
+  std::multimap<base::FilePath, ProgramInfo> programs_;
 
   DISALLOW_COPY_AND_ASSIGN(MockInstalledPrograms);
 };
@@ -200,6 +198,24 @@ TEST_F(ProblematicProgramsUpdaterTest, OneConflict) {
   auto program_names = ProblematicProgramsUpdater::GetCachedPrograms();
   ASSERT_EQ(1u, program_names.size());
   EXPECT_EQ(L"Foo", program_names[0].info.name);
+}
+
+TEST_F(ProblematicProgramsUpdaterTest, SameModuleMultiplePrograms) {
+  AddProblematicProgram(dll1_, L"Foo", Option::ADD_REGISTRY_ENTRY);
+  AddProblematicProgram(dll1_, L"Bar", Option::ADD_REGISTRY_ENTRY);
+
+  auto problematic_programs_updater =
+      std::make_unique<ProblematicProgramsUpdater>(
+          exe_certificate_info(), module_list_filter(), installed_programs());
+
+  // Simulate the module loading into the process.
+  problematic_programs_updater->OnNewModuleFound(ModuleInfoKey(dll1_, 0, 0, 0),
+                                                 CreateLoadedModuleInfoData());
+  problematic_programs_updater->OnModuleDatabaseIdle();
+
+  EXPECT_TRUE(ProblematicProgramsUpdater::HasCachedPrograms());
+  auto program_names = ProblematicProgramsUpdater::GetCachedPrograms();
+  ASSERT_EQ(2u, program_names.size());
 }
 
 TEST_F(ProblematicProgramsUpdaterTest, MultipleCallsToOnModuleDatabaseIdle) {

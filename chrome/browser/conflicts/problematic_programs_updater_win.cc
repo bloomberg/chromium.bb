@@ -279,24 +279,20 @@ void ProblematicProgramsUpdater::OnNewModuleFound(
 
   std::unique_ptr<chrome::conflicts::BlacklistAction> blacklist_action =
       module_list_filter_.IsBlacklisted(module_key, module_data);
-  if (blacklist_action) {
-    for (auto&& associated_program : associated_programs) {
-      problematic_programs_.emplace_back(std::move(associated_program),
-                                         std::move(blacklist_action));
-    }
-    return;
+  if (!blacklist_action) {
+    // The default behavior is to suggest to uninstall.
+    blacklist_action = std::make_unique<chrome::conflicts::BlacklistAction>();
+    blacklist_action->set_allow_load(true);
+    blacklist_action->set_message_type(
+        chrome::conflicts::BlacklistMessageType::UNINSTALL);
+    blacklist_action->set_message_url(std::string());
   }
 
-  // The default behavior is to suggest to uninstall.
-  blacklist_action = std::make_unique<chrome::conflicts::BlacklistAction>();
-  blacklist_action->set_allow_load(true);
-  blacklist_action->set_message_type(
-      chrome::conflicts::BlacklistMessageType::UNINSTALL);
-  blacklist_action->set_message_url(std::string());
-
   for (auto&& associated_program : associated_programs) {
-    problematic_programs_.emplace_back(std::move(associated_program),
-                                       std::move(blacklist_action));
+    problematic_programs_.emplace_back(
+        std::move(associated_program),
+        std::make_unique<chrome::conflicts::BlacklistAction>(
+            *blacklist_action));
   }
 }
 
