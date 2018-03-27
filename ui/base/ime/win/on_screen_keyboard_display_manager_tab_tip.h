@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef UI_BASE_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAP_TIP_H_
-#define UI_BASE_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAP_TIP_H_
+#ifndef UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAB_TIP_H_
+#define UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAB_TIP_H_
 
 #include "base/gtest_prod_util.h"
 #include "base/strings/string16.h"
-#include "ui/base/ui_base_export.h"
-#include "ui/base/win/osk_display_manager.h"
+#include "ui/base/ime/ui_base_ime_export.h"
+#include "ui/base/ime/win/osk_display_manager.h"
 
 namespace ui {
 
@@ -17,7 +17,7 @@ class OnScreenKeyboardDetector;
 // This class provides an implementation of the OnScreenKeyboardDisplayManager
 // that uses heuristics and the TabTip.exe to display the on screen keyboard.
 // Used on Windows > 7 and Windows < 10.0.10240.0
-class UI_BASE_EXPORT OnScreenKeyboardDisplayManagerTabTip
+class UI_BASE_IME_EXPORT OnScreenKeyboardDisplayManagerTabTip
     : public OnScreenKeyboardDisplayManager {
  public:
   ~OnScreenKeyboardDisplayManagerTabTip() override;
@@ -48,4 +48,4 @@ class UI_BASE_EXPORT OnScreenKeyboardDisplayManagerTabTip
 
 }  // namespace ui
 
-#endif  // UI_BASE_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAP_TIP_H_
+#endif  // UI_BASE_IME_WIN_ON_SCREEN_KEYBOARD_DISPLAY_MANAGER_TAB_TIP_H_

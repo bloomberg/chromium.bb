@@ -108,9 +108,9 @@
 #include "content/browser/accessibility/browser_accessibility_manager_win.h"
 #include "content/browser/accessibility/browser_accessibility_win.h"
 #include "content/browser/renderer_host/legacy_render_widget_host_win.h"
+#include "ui/base/ime/win/osk_display_manager.h"
+#include "ui/base/ime/win/osk_display_observer.h"
 #include "ui/base/win/hidden_window.h"
-#include "ui/base/win/osk_display_manager.h"
-#include "ui/base/win/osk_display_observer.h"
 #include "ui/display/win/screen_win.h"
 #include "ui/gfx/gdi_util.h"
 #endif

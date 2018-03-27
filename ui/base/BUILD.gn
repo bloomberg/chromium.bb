@@ -312,15 +312,8 @@ component("base") {
     "win/message_box_win.h",
     "win/mouse_wheel_util.cc",
     "win/mouse_wheel_util.h",
-    "win/on_screen_keyboard_display_manager_stub.cc",
-    "win/on_screen_keyboard_display_manager_stub.h",
-    "win/on_screen_keyboard_display_manager_tab_tip.cc",
-    "win/on_screen_keyboard_display_manager_tab_tip.h",
     "win/open_file_name_win.cc",
     "win/open_file_name_win.h",
-    "win/osk_display_manager.cc",
-    "win/osk_display_manager.h",
-    "win/osk_display_observer.h",
     "win/scoped_ole_initializer.cc",
     "win/scoped_ole_initializer.h",
     "win/shell.cc",
@@ -886,6 +879,7 @@ test("ui_base_unittests") {
       "ime/input_method_base_unittest.cc",
       "ime/input_method_chromeos_unittest.cc",
       "ime/win/imm32_manager_unittest.cc",
+      "ime/win/on_screen_keyboard_display_manager_unittest.cc",
       "ime/win/tsf_input_scope_unittest.cc",
       "ime/win/tsf_text_store_unittest.cc",
     ]
@@ -940,7 +934,6 @@ test("ui_base_unittests") {
       "win/direct_manipulation_unittest.cc",
       "win/hwnd_subclass_unittest.cc",
       "win/open_file_name_win_unittest.cc",
-      "win/osk_display_manager_unittest.cc",
     ]
 
     ldflags = [

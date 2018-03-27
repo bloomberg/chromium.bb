@@ -46,7 +46,7 @@
 #include "url/url_util.h"
 
 #if defined(OS_WIN)
-#include "ui/base/win/osk_display_manager.h"
+#include "ui/base/ime/win/osk_display_manager.h"
 #endif
 
 using bookmarks::BookmarkModel;

@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/base/win/osk_display_manager.h"
+#include "ui/base/ime/win/osk_display_manager.h"
 
 #include "base/debug/leak_annotations.h"
 #include "base/win/windows_version.h"
-#include "ui/base/win/on_screen_keyboard_display_manager_stub.h"
-#include "ui/base/win/on_screen_keyboard_display_manager_tab_tip.h"
+#include "ui/base/ime/win/on_screen_keyboard_display_manager_stub.h"
+#include "ui/base/ime/win/on_screen_keyboard_display_manager_tab_tip.h"
 
 namespace ui {
 
