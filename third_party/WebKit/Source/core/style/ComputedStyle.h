@@ -2524,6 +2524,9 @@ class ComputedStyle : public ComputedStyleBase,
   FRIEND_TEST_ALL_PREFIXES(
       ComputedStyleTest,
       UpdatePropertySpecificDifferencesCompositingReasonsWillChange);
+  FRIEND_TEST_ALL_PREFIXES(
+      ComputedStyleTest,
+      UpdatePropertySpecificDifferencesCompositingReasonsUsedStylePreserve3D);
 };
 
 inline bool ComputedStyle::SetZoom(float f) {

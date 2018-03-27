@@ -204,6 +204,19 @@ TEST(ComputedStyleTest,
   EXPECT_TRUE(diff.CompositingReasonsChanged());
 }
 
+TEST(ComputedStyleTest,
+     UpdatePropertySpecificDifferencesCompositingReasonsUsedStylePreserve3D) {
+  scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
+  style->SetTransformStyle3D(ETransformStyle3D::kPreserve3d);
+  scoped_refptr<ComputedStyle> other = ComputedStyle::Clone(*style);
+
+  // This induces a flat used transform style.
+  other->SetOpacity(0.5);
+  StyleDifference diff;
+  style->UpdatePropertySpecificDifferences(*other, diff);
+  EXPECT_TRUE(diff.CompositingReasonsChanged());
+}
+
 TEST(ComputedStyleTest, HasOutlineWithCurrentColor) {
   scoped_refptr<ComputedStyle> style = ComputedStyle::Create();
   EXPECT_FALSE(style->HasOutline());
