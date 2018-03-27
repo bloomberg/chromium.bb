@@ -17,9 +17,14 @@ import org.chromium.base.VisibleForTesting;
  */
 @VisibleForTesting
 public class ServiceInit {
-    private static final String WEBVIEW_SERVICE_DIR_BASENAME = "webview";
-
     private static boolean sInitDone;
+
+    @VisibleForTesting
+    public static void setPrivateDataDirectorySuffix() {
+        // This is unrelated to the PathUtils directory set in WebView proper, because this code
+        // runs only in the service process.
+        PathUtils.setPrivateDataDirectorySuffix("webview");
+    }
 
     public static void init(Context appContext) {
         ThreadUtils.assertOnUiThread();
@@ -28,9 +33,7 @@ public class ServiceInit {
         // In Monochrome, ChromeApplication.attachBaseContext() will set Chrome's command line.
         // initCommandLine() overwrites this with WebView's command line.
         CommandLineUtil.initCommandLine();
-        // This is unrelated to the PathUtils directory set in WebView proper, because this code
-        // runs only in the service process.
-        PathUtils.setPrivateDataDirectorySuffix(WEBVIEW_SERVICE_DIR_BASENAME);
+        setPrivateDataDirectorySuffix();
         sInitDone = true;
     }
 }

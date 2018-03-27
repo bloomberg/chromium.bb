@@ -163,7 +163,7 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
     @TargetApi(Build.VERSION_CODES.N) // For getSystemService() and isUserUnlocked().
     private void initialize(WebViewDelegate webViewDelegate) {
         // The package is used to locate the services for copying crash minidumps and requesting
-        // variatinos seeds. So it must be set before initializing variations and before a renderer
+        // variations seeds. So it must be set before initializing variations and before a renderer
         // has a chance to crash.
         PackageInfo packageInfo = WebViewFactory.getLoadedPackageInfo();
         AwBrowserProcess.setWebViewPackageName(packageInfo.packageName);
@@ -236,6 +236,8 @@ public class WebViewChromiumFactoryProvider implements WebViewFactoryProvider {
             StrictMode.setThreadPolicy(oldPolicy);
         }
         // Now safe to use WebView data directory.
+
+        mAwInit.startVariationsInit();
 
         mShouldDisableThreadChecking =
                 shouldDisableThreadChecking(ContextUtils.getApplicationContext());

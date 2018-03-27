@@ -22,6 +22,10 @@ import java.net.MalformedURLException;
 import java.net.SocketTimeoutException;
 import java.net.URL;
 import java.net.UnknownHostException;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -123,6 +127,13 @@ public class VariationsSeedFetcher {
         public String date;
         public boolean isGzipCompressed;
         public byte[] seedData;
+
+        public Date parseDate() throws ParseException {
+            // The date field comes from the HTTP "Date" header, which has this format. (See RFC
+            // 2616, sections 3.3.1 and 14.18.) SimpleDateFormat is weirdly not thread-safe, so
+            // instantiate a new one for each call.
+            return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss z", Locale.US).parse(date);
+        }
     }
 
     /**

@@ -47,9 +47,9 @@ import java.nio.channels.FileLock;
  */
 @JNINamespace("android_webview")
 public final class AwBrowserProcess {
-    public static final String WEBVIEW_DIR_BASENAME = "webview";
-
     private static final String TAG = "AwBrowserProcess";
+
+    private static final String WEBVIEW_DIR_BASENAME = "webview";
     private static final String EXCLUSIVE_LOCK_FILE = "webview_data.lock";
     private static RandomAccessFile sLockFile;
     private static FileLock sExclusiveFileLock;

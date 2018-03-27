@@ -32,6 +32,7 @@ import org.chromium.android_webview.AwResource;
 import org.chromium.android_webview.AwServiceWorkerController;
 import org.chromium.android_webview.AwTracingController;
 import org.chromium.android_webview.HttpAuthDatabase;
+import org.chromium.android_webview.VariationsSeedLoader;
 import org.chromium.android_webview.command_line.CommandLineUtil;
 import org.chromium.base.BuildConfig;
 import org.chromium.base.ContextUtils;
@@ -65,6 +66,7 @@ public class WebViewChromiumAwInit {
     private WebViewDatabaseAdapter mWebViewDatabase;
     private AwServiceWorkerController mServiceWorkerController;
     private AwTracingController mAwTracingController;
+    private VariationsSeedLoader mSeedLoader;
 
     // Guards accees to the other members, and is notifyAll() signalled on the UI thread
     // when the chromium process has been started.
@@ -145,6 +147,11 @@ public class WebViewChromiumAwInit {
         // NOTE: Finished writing Java resources. From this point on, it's safe to use them.
 
         AwBrowserProcess.configureChildProcessLauncher();
+
+        // finishVariationsInitLocked() must precede native initialization so the seed is available
+        // when AwFieldTrialCreator::SetUpFieldTrials() runs.
+        finishVariationsInitLocked();
+
         AwBrowserProcess.start();
         AwBrowserProcess.handleMinidumpsAndSetMetricsConsent(true /* updateMetricsConsent */);
 
@@ -357,5 +364,25 @@ public class WebViewChromiumAwInit {
             }
         }
         return mWebViewDatabase;
+    }
+
+    // See comments in VariationsSeedLoader.java on when it's safe to call this.
+    public void startVariationsInit() {
+        synchronized (mLock) {
+            if (mSeedLoader == null) {
+                mSeedLoader = new VariationsSeedLoader();
+                mSeedLoader.startVariationsInit();
+            }
+        }
+    }
+
+    private void finishVariationsInitLocked() {
+        assert Thread.holdsLock(mLock);
+        if (mSeedLoader == null) {
+            Log.e(TAG, "finishVariationsInitLocked() called before startVariationsInit()");
+            startVariationsInit();
+        }
+        mSeedLoader.finishVariationsInit();
+        mSeedLoader = null; // Allow this to be GC'd after its background thread finishes.
     }
 }
