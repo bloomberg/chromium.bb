@@ -77,6 +77,7 @@
   [self addLongPressGestureToView:self.view.backButton];
   [self addLongPressGestureToView:self.view.forwardButton];
   [self addLongPressGestureToView:self.view.forwardButtonTrailingPosition];
+  [self addLongPressGestureToView:self.view.tabGridButton];
 }
 
 - (void)traitCollectionDidChange:(UITraitCollection*)previousTraitCollection {
@@ -270,6 +271,8 @@
     } else {
       [self.dispatcher showTabHistoryPopupForForwardHistory];
     }
+  } else if (gesture.view == self.view.tabGridButton) {
+    [self.dispatcher showTabGridButtonPopup];
   }
 }
 

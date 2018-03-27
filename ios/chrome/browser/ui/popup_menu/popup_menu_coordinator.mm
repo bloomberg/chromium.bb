@@ -94,12 +94,18 @@
 }
 
 - (void)showTabGridButtonPopup {
-  UIViewController* viewController = [[UIViewController alloc] init];
-  UILabel* label = [[UILabel alloc] init];
-  label.text = @"TabGrid";
-  viewController.view = label;
-  // TODO(crbug.com/821560): Use the tab grid menu instead of a label.
-  [self presentPopupForContent:viewController fromNamedGuide:kTabSwitcherGuide];
+  PopupMenuTableViewController* tableViewController =
+      [[PopupMenuTableViewController alloc] init];
+  tableViewController.dispatcher =
+      static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
+  tableViewController.baseViewController = self.baseViewController;
+
+  self.mediator = [[PopupMenuMediator alloc] initWithType:PopupMenuTypeTabGrid];
+  self.mediator.webStateList = self.webStateList;
+  self.mediator.popupMenu = tableViewController;
+
+  [self presentPopupForContent:tableViewController
+                fromNamedGuide:kTabSwitcherGuide];
 }
 
 - (void)searchButtonPopup {
