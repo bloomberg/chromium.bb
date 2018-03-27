@@ -13,6 +13,7 @@
           "ash::mojom::AccessibilityController",
           "ash::mojom::AccessibilityFocusRingController",
           "ash::mojom::AppListController",
+          "ash::mojom::AshAssistantController",
           "ash::mojom::AshMessageCenterController",
           "ash::mojom::CastConfig",
           "ash::mojom::DockedMagnifierController",
