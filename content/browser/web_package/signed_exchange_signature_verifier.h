@@ -31,7 +31,7 @@ class SignedExchangeHeader;
 // of the certificate used to generate the signature, which can't be done
 // synchronously. (See SignedExchangeCertFetcher for this logic.)
 //
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.6
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
 class CONTENT_EXPORT SignedExchangeSignatureVerifier final {
  public:
   enum class Result {
