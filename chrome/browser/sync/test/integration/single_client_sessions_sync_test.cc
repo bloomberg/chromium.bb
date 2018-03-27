@@ -428,7 +428,8 @@ IN_PROC_BROWSER_TEST_F(SingleClientSessionsSyncTest,
   // want to block here and not create the HistogramTester below until we know
   // the cookie jar stats have been updated.
   UpdateCookieJarAccountsAndWait(
-      {GetClient(0)->service()->signin()->GetAuthenticatedAccountId()}, false);
+      {GetClient(0)->service()->GetAuthenticatedAccountInfo().account_id},
+      false);
 
   {
     HistogramTester histogram_tester;

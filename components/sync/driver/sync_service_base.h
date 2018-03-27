@@ -47,7 +47,7 @@ class SyncServiceBase : public SyncService, public SyncEngineHost {
   void AddObserver(SyncServiceObserver* observer) override;
   void RemoveObserver(SyncServiceObserver* observer) override;
   bool HasObserver(const SyncServiceObserver* observer) const override;
-  SigninManagerBase* signin() const override;
+  AccountInfo GetAuthenticatedAccountInfo() const override;
 
   // Given base path (path to profile) formats path to "Sync Data" folder where
   // sync engine stores directory database.

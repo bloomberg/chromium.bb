@@ -7,12 +7,13 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/path_service.h"
 #include "base/syslog_logging.h"
 #include "components/invalidation/public/invalidation_service.h"
+#include "components/signin/core/browser/account_info.h"
+#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/device_info/local_device_info_provider.h"
 #include "components/sync/driver/sync_driver_switches.h"
@@ -82,9 +83,10 @@ bool SyncServiceBase::HasObserver(const SyncServiceObserver* observer) const {
   return observers_.HasObserver(observer);
 }
 
-SigninManagerBase* SyncServiceBase::signin() const {
+AccountInfo SyncServiceBase::GetAuthenticatedAccountInfo() const {
   DCHECK(thread_checker_.CalledOnValidThread());
-  return signin_ ? signin_->GetOriginal() : nullptr;
+  return signin_ ? signin_->GetOriginal()->GetAuthenticatedAccountInfo()
+                 : AccountInfo();
 }
 
 // static

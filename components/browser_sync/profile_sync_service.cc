@@ -336,14 +336,14 @@ void ProfileSyncService::StartSyncingWithServer() {
 void ProfileSyncService::RegisterAuthNotifications() {
   DCHECK(thread_checker_.CalledOnValidThread());
   oauth2_token_service_->AddObserver(this);
-  if (signin())
-    signin()->AddObserver(this);
+  if (signin_)
+    signin_->GetOriginal()->AddObserver(this);
 }
 
 void ProfileSyncService::UnregisterAuthNotifications() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (signin())
-    signin()->RemoveObserver(this);
+  if (signin_)
+    signin_->GetOriginal()->RemoveObserver(this);
   if (oauth2_token_service_)
     oauth2_token_service_->RemoveObserver(this);
 }

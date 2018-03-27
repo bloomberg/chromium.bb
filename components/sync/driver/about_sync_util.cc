@@ -12,7 +12,6 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
-#include "components/signin/core/browser/signin_manager_base.h"
 #include "components/strings/grit/components_strings.h"
 #include "components/sync/driver/sync_service.h"
 #include "components/sync/engine/cycle/sync_cycle_snapshot.h"
@@ -245,11 +244,8 @@ std::string GetConnectionStatus(const SyncService::SyncTokenStatus& status) {
 std::unique_ptr<base::DictionaryValue> ConstructAboutInformation_DEPRECATED(
     SyncService* service,
     version_info::Channel channel) {
-  AccountInfo primary_account_info;
-  if (service->signin())
-    primary_account_info = service->signin()->GetAuthenticatedAccountInfo();
-
-  return ConstructAboutInformation(service, primary_account_info, channel);
+  return ConstructAboutInformation(
+      service, service->GetAuthenticatedAccountInfo(), channel);
 }
 
 // This function both defines the structure of the message to be returned and
