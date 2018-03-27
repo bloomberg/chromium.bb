@@ -20,6 +20,7 @@ const int kMaxDtsBeyondPtsWarnings = 10;
 const int kMaxAudioNonKeyframeWarnings = 10;
 const int kMaxNumKeyframeTimeGreaterThanDependantWarnings = 1;
 const int kMaxMuxedSequenceModeWarnings = 1;
+const int kMaxSkippedEmptyFrameWarnings = 5;
 
 // Helper class to capture per-track details needed by a frame processor. Some
 // of this information may be duplicated in the short-term in the associated
@@ -370,9 +371,21 @@ bool FrameProcessor::ProcessFrames(
   // https://rawgit.com/w3c/media-source/d8f901f22/
   //     index.html#sourcebuffer-coded-frame-processing
   // 1. For each coded frame in the media segment run the following steps:
-  for (StreamParser::BufferQueue::const_iterator frames_itr = frames.begin();
-       frames_itr != frames.end(); ++frames_itr) {
-    if (!ProcessFrame(*frames_itr, append_window_start, append_window_end,
+  for (const auto& frame : frames) {
+    // Skip any 0-byte audio or video buffers, since they cannot produce any
+    // valid decode output (and are rejected by FFmpeg A/V decode.) Retain
+    // 0-byte text buffers because their |side_data| just might be useful, and
+    // we don't feed them to FFmpeg later.
+    if (!frame->data_size() && frame->type() != DemuxerStream::TEXT) {
+      LIMITED_MEDIA_LOG(DEBUG, media_log_, num_skipped_empty_frame_warnings_,
+                        kMaxSkippedEmptyFrameWarnings)
+          << "Discarding empty audio or video coded frame, PTS="
+          << frame->timestamp().InMicroseconds()
+          << "us, DTS=" << frame->GetDecodeTimestamp().InMicroseconds() << "us";
+      continue;
+    }
+
+    if (!ProcessFrame(frame, append_window_start, append_window_end,
                       timestamp_offset)) {
       FlushProcessedFrames();
       return false;
