@@ -424,7 +424,7 @@ TEST_F(CupsPrintersManagerTest, UpdateConfiguredPrinter) {
       "New Display Name");
 
   // Do the same thing for the Automatic and Discovered printers.
-  // Create a configuration for the enterprise printer, which should shift it
+  // Create a configuration for the zeroconf printer, which should shift it
   // into the configured category.
   manager_->UpdateConfiguredPrinter(Printer("Automatic"));
   scoped_task_environment_.RunUntilIdle();
