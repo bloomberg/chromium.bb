@@ -96,7 +96,7 @@ void SigninErrorController::AuthStatusChanged() {
   }
 
   if (error_changed) {
-    signin_metrics::LogAuthError(auth_error_.state());
+    signin_metrics::LogAuthError(auth_error_);
     for (auto& observer : observer_list_)
       observer.OnErrorChanged();
   }

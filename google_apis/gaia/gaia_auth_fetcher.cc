@@ -900,7 +900,9 @@ GoogleServiceAuthError GaiaAuthFetcher::GenerateAuthError(
     return GoogleServiceAuthError(GoogleServiceAuthError::ACCOUNT_DISABLED);
   if (error == kBadAuthenticationError) {
     return GoogleServiceAuthError(
-        GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+        GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+            GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                CREDENTIALS_REJECTED_BY_SERVER));
   }
   if (error == kServiceUnavailableError) {
     return GoogleServiceAuthError(

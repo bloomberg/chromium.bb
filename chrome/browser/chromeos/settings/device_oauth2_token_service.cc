@@ -133,7 +133,12 @@ void DeviceOAuth2TokenService::FlushPendingRequests(
 void DeviceOAuth2TokenService::FailRequest(
     RequestImpl* request,
     GoogleServiceAuthError::State error) {
-  GoogleServiceAuthError auth_error(error);
+  GoogleServiceAuthError auth_error =
+      (error == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)
+          ? GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                    CREDENTIALS_REJECTED_BY_SERVER)
+          : GoogleServiceAuthError(error);
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&RequestImpl::InformConsumer, request->AsWeakPtr(),
                             auth_error, std::string(), base::Time()));

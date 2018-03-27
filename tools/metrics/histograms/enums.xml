@@ -40440,6 +40440,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="Undo">The sync was aborted with an undo button.</int>
 </enum>
 
+<enum name="SigninInvalidGaiaCredentialsReason">
+  <int value="0" label="Unknown"/>
+  <int value="1" label="Credentials rejected by server"/>
+  <int value="2" label="Credentials rejected by client"/>
+  <int value="3" label="Credentials missing"/>
+</enum>
+
 <enum name="SigninInvestigatedScenario">
   <int value="0" label="Upgrade low risk"/>
   <int value="1" label="Upgrade high risk"/>

@@ -236,8 +236,9 @@ void OAuth2AccessTokenFetcherImpl::EndGetAccessToken(
 
       OnGetTokenFailure(
           access_error == OAUTH2_ACCESS_ERROR_INVALID_GRANT
-              ? GoogleServiceAuthError(
-                    GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)
+              ? GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                    GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                        CREDENTIALS_REJECTED_BY_SERVER)
               : GoogleServiceAuthError(GoogleServiceAuthError::SERVICE_ERROR));
       return;
     }
@@ -250,8 +251,10 @@ void OAuth2AccessTokenFetcherImpl::EndGetAccessToken(
         // The other errors are treated as permanent error.
         DLOG(ERROR) << "Unexpected persistent error: http_status="
                     << source->GetResponseCode();
-        OnGetTokenFailure(GoogleServiceAuthError(
-            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+        OnGetTokenFailure(
+            GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                    CREDENTIALS_REJECTED_BY_SERVER));
       }
       return;
     }

@@ -352,6 +352,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   EXPECT_EQ(OAuth2TokenServiceDelegate::
                 LOAD_CREDENTIALS_FINISHED_WITH_NO_TOKEN_FOR_PRIMARY_ACCOUNT,
             oauth2_service_delegate_->GetLoadCredentialsState());
+  EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                    CREDENTIALS_MISSING),
+            signin_error_controller_.auth_error());
   EXPECT_EQ(1, start_batch_changes_);
   EXPECT_EQ(1, end_batch_changes_);
   ExpectOneTokensLoadedNotification();
@@ -375,6 +379,8 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest,
   base::RunLoop().RunUntilIdle();
   EXPECT_EQ(OAuth2TokenServiceDelegate::LOAD_CREDENTIALS_FINISHED_WITH_SUCCESS,
             oauth2_service_delegate_->GetLoadCredentialsState());
+  EXPECT_EQ(GoogleServiceAuthError::AuthErrorNone(),
+            signin_error_controller_.auth_error());
   EXPECT_EQ(2, token_available_count_);
   EXPECT_EQ(0, token_revoked_count_);
   EXPECT_EQ(1, tokens_loaded_count_);
@@ -684,9 +690,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, UpdateInvalidToken) {
   ExpectOneTokenAvailableNotification();
 
   // The account is in authentication error.
-  EXPECT_EQ(
-      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS),
-      signin_error_controller_.auth_error());
+  EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                    CREDENTIALS_REJECTED_BY_CLIENT),
+            signin_error_controller_.auth_error());
 
   // Update the token: authentication error is fixed, no actual server
   // revocation.
@@ -711,9 +718,10 @@ TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, LoadInvalidToken) {
                oauth2_service_delegate_->GetRefreshToken("account_id").c_str());
 
   // The account is in authentication error.
-  EXPECT_EQ(
-      GoogleServiceAuthError(GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS),
-      signin_error_controller_.auth_error());
+  EXPECT_EQ(GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                    CREDENTIALS_REJECTED_BY_CLIENT),
+            signin_error_controller_.auth_error());
 }
 
 TEST_F(MutableProfileOAuth2TokenServiceDelegateTest, PersistenceNotifications) {
