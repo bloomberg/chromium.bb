@@ -234,7 +234,7 @@ class LocalFrameClientImpl final : public LocalFrameClient {
 
   KURL OverrideFlashEmbedWithHTML(const KURL&) override;
 
-  void SetHasReceivedUserGesture(bool received_previously) override;
+  void SetHasReceivedUserGesture() override;
 
   void SetHasReceivedUserGestureBeforeNavigation(bool value) override;
 
