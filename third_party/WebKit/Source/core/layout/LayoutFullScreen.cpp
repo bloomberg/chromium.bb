@@ -77,6 +77,9 @@ LayoutFullScreen* LayoutFullScreen::CreateAnonymous(Document* document) {
 
 void LayoutFullScreen::WillBeDestroyed() {
   if (placeholder_) {
+    // Remove children before self.
+    if (LayoutObjectChildList* children = Children())
+      children->DestroyLeftoverChildren();
     Remove();
     if (!placeholder_->BeingDestroyed())
       placeholder_->Destroy();
