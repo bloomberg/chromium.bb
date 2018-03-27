@@ -963,7 +963,8 @@ class CORE_EXPORT Element : public ContainerNode {
 
   void RebuildPseudoElementLayoutTree(PseudoId, WhitespaceAttacher&);
   void RebuildShadowRootLayoutTree(WhitespaceAttacher&);
-  inline void CheckForEmptyStyleChange();
+  inline void CheckForEmptyStyleChange(const Node* node_before_change,
+                                       const Node* node_after_change);
 
   void UpdatePseudoElement(PseudoId, StyleRecalcChange);
   bool UpdateFirstLetter(Element*);

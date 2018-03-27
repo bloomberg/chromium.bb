@@ -2683,22 +2683,41 @@ bool Element::ChildTypeAllowed(NodeType type) const {
   return false;
 }
 
-void Element::CheckForEmptyStyleChange() {
-  const ComputedStyle* style = GetComputedStyle();
+namespace {
 
-  if (!style && !StyleAffectedByEmpty())
-    return;
+bool HasSiblingsForNonEmpty(const Node* sibling,
+                            Node* (*next_func)(const Node&)) {
+  for (; sibling; sibling = next_func(*sibling)) {
+    if (sibling->IsElementNode())
+      return true;
+    if (sibling->IsTextNode() && !ToText(sibling)->data().IsEmpty())
+      return true;
+  }
+  return false;
+}
+
+}  // namespace
+
+void Element::CheckForEmptyStyleChange(const Node* node_before_change,
+                                       const Node* node_after_change) {
   if (!InActiveDocument())
     return;
-  if (!style ||
-      (StyleAffectedByEmpty() && (!style->EmptyState() || HasChildren())))
-    PseudoStateChanged(CSSSelector::kPseudoEmpty);
+  if (!StyleAffectedByEmpty())
+    return;
+  if (HasSiblingsForNonEmpty(node_before_change,
+                             NodeTraversal::PreviousSibling) ||
+      HasSiblingsForNonEmpty(node_after_change, NodeTraversal::NextSibling)) {
+    return;
+  }
+  PseudoStateChanged(CSSSelector::kPseudoEmpty);
 }
 
 void Element::ChildrenChanged(const ChildrenChange& change) {
   ContainerNode::ChildrenChanged(change);
 
-  CheckForEmptyStyleChange();
+  CheckForEmptyStyleChange(change.sibling_before_change,
+                           change.sibling_after_change);
+
   if (!change.by_parser && change.IsChildElementChange())
     CheckForSiblingStyleChanges(
         change.type == kElementRemoved ? kSiblingElementRemoved
@@ -2713,7 +2732,7 @@ void Element::ChildrenChanged(const ChildrenChange& change) {
 
 void Element::FinishParsingChildren() {
   SetIsFinishedParsingChildren(true);
-  CheckForEmptyStyleChange();
+  CheckForEmptyStyleChange(this, this);
   CheckForSiblingStyleChanges(kFinishedParsingChildren, nullptr, lastChild(),
                               nullptr);
 }

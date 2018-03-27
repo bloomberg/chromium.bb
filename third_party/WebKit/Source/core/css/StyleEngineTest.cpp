@@ -19,6 +19,7 @@
 #include "core/frame/FrameTestHelpers.h"
 #include "core/frame/LocalFrameView.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLSpanElement.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/geometry/FloatSize.h"
@@ -1249,6 +1250,158 @@ TEST_F(StyleEngineTest, MediaQueryAffectingValueChanged_StyleElementMediaType) {
   GetDocument().View()->UpdateAllLifecyclePhases();
   GetStyleEngine().MediaQueryAffectingValueChanged();
   EXPECT_TRUE(GetStyleEngine().NeedsActiveStyleUpdate());
+}
+
+TEST_F(StyleEngineTest, EmptyPseudo_RemoveLast) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      .empty:empty + span { color: purple }
+    </style>
+    <div id=t1 class=empty>Text</div>
+    <span></span>
+    <div id=t2 class=empty><span></span></div>
+    <span></span>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* t1 = GetDocument().getElementById("t1");
+  t1->firstChild()->remove();
+  EXPECT_TRUE(t1->NeedsStyleInvalidation());
+
+  Element* t2 = GetDocument().getElementById("t2");
+  t2->firstChild()->remove();
+  EXPECT_TRUE(t2->NeedsStyleInvalidation());
+}
+
+TEST_F(StyleEngineTest, EmptyPseudo_RemoveNotLast) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      .empty:empty + span { color: purple }
+    </style>
+    <div id=t1 class=empty>Text<span></span></div>
+    <span></span>
+    <div id=t2 class=empty><span></span><span></span></div>
+    <span></span>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* t1 = GetDocument().getElementById("t1");
+  t1->firstChild()->remove();
+  EXPECT_FALSE(t1->NeedsStyleInvalidation());
+
+  Element* t2 = GetDocument().getElementById("t2");
+  t2->firstChild()->remove();
+  EXPECT_FALSE(t2->NeedsStyleInvalidation());
+}
+
+TEST_F(StyleEngineTest, EmptyPseudo_InsertFirst) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      .empty:empty + span { color: purple }
+    </style>
+    <div id=t1 class=empty></div>
+    <span></span>
+    <div id=t2 class=empty></div>
+    <span></span>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* t1 = GetDocument().getElementById("t1");
+  t1->appendChild(Text::Create(GetDocument(), "Text"));
+  EXPECT_TRUE(t1->NeedsStyleInvalidation());
+
+  Element* t2 = GetDocument().getElementById("t2");
+  t2->appendChild(HTMLSpanElement::Create(GetDocument()));
+  EXPECT_TRUE(t2->NeedsStyleInvalidation());
+}
+
+TEST_F(StyleEngineTest, EmptyPseudo_InsertNotFirst) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      .empty:empty + span { color: purple }
+    </style>
+    <div id=t1 class=empty>Text</div>
+    <span></span>
+    <div id=t2 class=empty><span></span></div>
+    <span></span>
+  )HTML");
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  Element* t1 = GetDocument().getElementById("t1");
+  t1->appendChild(Text::Create(GetDocument(), "Text"));
+  EXPECT_FALSE(t1->NeedsStyleInvalidation());
+
+  Element* t2 = GetDocument().getElementById("t2");
+  t2->appendChild(HTMLSpanElement::Create(GetDocument()));
+  EXPECT_FALSE(t2->NeedsStyleInvalidation());
+}
+
+TEST_F(StyleEngineTest, EmptyPseudo_ModifyTextData_SingleNode) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      .empty:empty + span { color: purple }
+    </style>
+    <div id=t1 class=empty>Text</div>
+    <span></span>
+    <div id=t2 class=empty></div>
+    <span></span>
+    <div id=t3 class=empty>Text</div>
+    <span></span>
+  )HTML");
+
+  Element* t1 = GetDocument().getElementById("t1");
+  Element* t2 = GetDocument().getElementById("t2");
+  Element* t3 = GetDocument().getElementById("t3");
+
+  t2->appendChild(Text::Create(GetDocument(), ""));
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  ToText(t1->firstChild())->setData("");
+  EXPECT_TRUE(t1->NeedsStyleInvalidation());
+
+  ToText(t2->firstChild())->setData("Text");
+  EXPECT_TRUE(t2->NeedsStyleInvalidation());
+
+  // This is not optimal. We do not detect that we change text to/from
+  // non-empty string.
+  ToText(t3->firstChild())->setData("NewText");
+  EXPECT_TRUE(t3->NeedsStyleInvalidation());
+}
+
+TEST_F(StyleEngineTest, EmptyPseudo_ModifyTextData_HasSiblings) {
+  GetDocument().body()->SetInnerHTMLFromString(R"HTML(
+    <style>
+      .empty:empty + span { color: purple }
+    </style>
+    <div id=t1 class=empty>Text<span></span></div>
+    <span></span>
+    <div id=t2 class=empty><span></span></div>
+    <span></span>
+    <div id=t3 class=empty>Text<span></span></div>
+    <span></span>
+  )HTML");
+
+  Element* t1 = GetDocument().getElementById("t1");
+  Element* t2 = GetDocument().getElementById("t2");
+  Element* t3 = GetDocument().getElementById("t3");
+
+  t2->appendChild(Text::Create(GetDocument(), ""));
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  ToText(t1->firstChild())->setData("");
+  EXPECT_FALSE(t1->NeedsStyleInvalidation());
+
+  ToText(t2->lastChild())->setData("Text");
+  EXPECT_FALSE(t2->NeedsStyleInvalidation());
+
+  ToText(t3->firstChild())->setData("NewText");
+  EXPECT_FALSE(t3->NeedsStyleInvalidation());
 }
 
 }  // namespace blink

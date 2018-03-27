@@ -789,13 +789,8 @@ bool SelectorChecker::CheckPseudoClass(const SelectorCheckingContext& context,
           }
         }
       }
-      if (mode_ == kResolvingStyle) {
+      if (mode_ == kResolvingStyle)
         element.SetStyleAffectedByEmpty();
-        if (context.in_rightmost_compound)
-          element_style_->SetEmptyState(result);
-        else if (element.GetComputedStyle())
-          element.MutableComputedStyle()->SetEmptyState(result);
-      }
       return result;
     }
     case CSSSelector::kPseudoFirstChild:
