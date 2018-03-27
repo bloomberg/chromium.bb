@@ -60,11 +60,14 @@ class AdsPageLoadMetricsObserver
 
  private:
   struct AdFrameData {
-    AdFrameData(FrameTreeNodeId frame_tree_node_id, AdTypes ad_types);
+    AdFrameData(FrameTreeNodeId frame_tree_node_id,
+                AdTypes ad_types,
+                bool cross_origin);
     size_t frame_bytes;
     size_t frame_bytes_uncached;
     const FrameTreeNodeId frame_tree_node_id;
     AdTypes ad_types;
+    bool cross_origin;
   };
 
   // subresource_filter::SubresourceFilterObserver:
