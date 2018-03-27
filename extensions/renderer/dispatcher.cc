@@ -668,8 +668,6 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
       {"guestViewDeny", IDR_GUEST_VIEW_DENY_JS},
       {"guestViewEvents", IDR_GUEST_VIEW_EVENTS_JS},
       {"imageUtil", IDR_IMAGE_UTIL_JS},
-      {"json_schema", IDR_JSON_SCHEMA_JS},
-      {kSchemaUtils, IDR_SCHEMA_UTILS_JS},
       {"setIcon", IDR_SET_ICON_JS},
       {"test", IDR_TEST_CUSTOM_BINDINGS_JS},
       {"test_environment_specific_bindings",
@@ -715,6 +713,8 @@ std::vector<Dispatcher::JsResourceInfo> Dispatcher::GetJsResources() {
     resources.push_back({kEventBindings, IDR_EVENT_BINDINGS_JS});
     resources.push_back({"lastError", IDR_LAST_ERROR_JS});
     resources.push_back({"sendRequest", IDR_SEND_REQUEST_JS});
+    resources.push_back({kSchemaUtils, IDR_SCHEMA_UTILS_JS});
+    resources.push_back({"json_schema", IDR_JSON_SCHEMA_JS});
 
     resources.push_back({"messaging", IDR_MESSAGING_JS});
     resources.push_back({"messaging_utils", IDR_MESSAGING_UTILS_JS});
