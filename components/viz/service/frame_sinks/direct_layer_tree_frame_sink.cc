@@ -42,7 +42,8 @@ DirectLayerTreeFrameSink::DirectLayerTreeFrameSink(
       frame_sink_manager_(frame_sink_manager),
       display_(display),
       display_client_(display_client),
-      use_viz_hit_test_(use_viz_hit_test) {
+      use_viz_hit_test_(use_viz_hit_test),
+      weak_factory_(this) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
   capabilities_.must_always_swap = true;
   // Display and DirectLayerTreeFrameSink share a GL context, so sync
@@ -153,6 +154,17 @@ void DirectLayerTreeFrameSink::DisplayDidReceiveCALayerParams(
 }
 
 void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAck(
+    const std::vector<ReturnedResource>& resources) {
+  // Submitting a CompositorFrame can synchronously draw and dispatch a frame
+  // ack. PostTask to ensure the client is notified on a new stack frame.
+  compositor_task_runner_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &DirectLayerTreeFrameSink::DidReceiveCompositorFrameAckInternal,
+          weak_factory_.GetWeakPtr(), resources));
+}
+
+void DirectLayerTreeFrameSink::DidReceiveCompositorFrameAckInternal(
     const std::vector<ReturnedResource>& resources) {
   client_->ReclaimResources(resources);
   client_->DidReceiveCompositorFrameAck();
