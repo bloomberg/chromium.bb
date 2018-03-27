@@ -1404,6 +1404,9 @@ weston_wm_handle_icon(struct weston_wm *wm, struct weston_wm_window *window)
 		return;
 	}
 
+	if (window->icon_surface)
+		cairo_surface_destroy(window->icon_surface);
+
 	cairo_surface_set_user_data(new_surface, NULL, reply,
 				    &handle_icon_surface_destroy);
 
@@ -1506,6 +1509,8 @@ weston_wm_window_destroy(struct weston_wm_window *window)
 		wl_event_source_remove(window->repaint_source);
 	if (window->cairo_surface)
 		cairo_surface_destroy(window->cairo_surface);
+	if (window->icon_surface)
+		cairo_surface_destroy(window->icon_surface);
 
 	if (window->frame_id) {
 		xcb_reparent_window(wm->conn, window->id, wm->wm_window, 0, 0);
