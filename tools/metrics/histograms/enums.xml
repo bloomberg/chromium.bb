@@ -2738,6 +2738,8 @@ uploading your change for review.  These are checked by presubmit scripts.
 <enum name="BackingStoreResults">
   <int value="0" label="Success"/>
   <int value="1" label="Failure"/>
+  <int value="2"
+      label="Mixed. Some steps failed, but transaction committed successfully"/>
 </enum>
 
 <enum name="BadMessageReasonChrome">
@@ -7166,6 +7168,13 @@ Called by update_net_error_codes.py.-->
 <enum name="ContextualSearchTapSuppression">
   <int value="0" label="Tap suppressed"/>
   <int value="1" label="Tap not suppressed"/>
+</enum>
+
+<enum name="CookieCommitProblem">
+  <int value="0" label="Entry encryption failed"/>
+  <int value="1" label="Adding cookie to DB failed."/>
+  <int value="2" label="Updating access time of cookie failed."/>
+  <int value="3" label="Deleting cookie failed."/>
 </enum>
 
 <enum name="CookieDeleteEquivalent">
