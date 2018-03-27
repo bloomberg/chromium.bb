@@ -119,12 +119,6 @@ namespace {
 
 const char kSignalingStateClosedMessage[] =
     "The RTCPeerConnection's signalingState is 'closed'.";
-const char kSignalingStatePreventsOfferMessage[] =
-    "The RTCPeerConnection's signalingState must be 'stable' or "
-    "'have-local-offer' to apply an offer";
-const char kSignalingStatePreventsAnswerMessage[] =
-    "The RTCPeerConnection's signalingState must be 'have-remote-offer' or "
-    "'have-local-pranswer' to apply an answer";
 const char kModifiedSdpMessage[] =
     "The SDP does not match the previously generated SDP for this type";
 
@@ -750,11 +744,6 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
 
   *sdp = session_description_init.sdp();
   if (session_description_init.type() == "offer") {
-    if (signaling_state_ != kSignalingStateStable &&
-        signaling_state_ != kSignalingStateHaveLocalOffer) {
-      return DOMException::Create(kInvalidStateError,
-                                  kSignalingStatePreventsOfferMessage);
-    }
     if (sdp->IsNull() || sdp->IsEmpty()) {
       *sdp = last_offer_;
     } else if (session_description_init.sdp() != last_offer_) {
@@ -769,11 +758,6 @@ DOMException* RTCPeerConnection::checkSdpForStateErrors(
     }
   } else if (session_description_init.type() == "answer" ||
              session_description_init.type() == "pranswer") {
-    if (signaling_state_ != kSignalingStateHaveRemoteOffer &&
-        signaling_state_ != kSignalingStateHaveLocalPrAnswer) {
-      return DOMException::Create(kInvalidStateError,
-                                  kSignalingStatePreventsAnswerMessage);
-    }
     if (sdp->IsNull() || sdp->IsEmpty()) {
       *sdp = last_answer_;
     } else if (session_description_init.sdp() != last_answer_) {
