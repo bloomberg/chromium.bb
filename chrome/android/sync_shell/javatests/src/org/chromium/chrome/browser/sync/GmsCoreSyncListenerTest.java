@@ -80,12 +80,12 @@ public class GmsCoreSyncListenerTest {
     public void testGetsKey() throws Throwable {
         Account account = mSyncTestRule.setUpTestAccountAndSignIn();
         Assert.assertEquals(0, mListener.callCount());
-        encryptWithPassphrase(PASSPHRASE);
+        SyncTestUtil.encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(1);
         mSyncTestRule.signOut();
         mSyncTestRule.signIn(account);
         Assert.assertEquals(1, mListener.callCount());
-        decryptWithPassphrase(PASSPHRASE);
+        SyncTestUtil.decryptWithPassphrase(PASSPHRASE);
         waitForCallCount(2);
     }
 
@@ -95,45 +95,12 @@ public class GmsCoreSyncListenerTest {
     public void testClearData() throws Throwable {
         Account account = mSyncTestRule.setUpTestAccountAndSignIn();
         Assert.assertEquals(0, mListener.callCount());
-        encryptWithPassphrase(PASSPHRASE);
+        SyncTestUtil.encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(1);
         mSyncTestRule.clearServerData();
         mSyncTestRule.signIn(account);
-        encryptWithPassphrase(PASSPHRASE);
+        SyncTestUtil.encryptWithPassphrase(PASSPHRASE);
         waitForCallCount(2);
-    }
-
-    private void encryptWithPassphrase(final String passphrase) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ProfileSyncService.get().setEncryptionPassphrase(passphrase);
-            }
-        });
-        waitForCryptographer();
-        // Make sure the new encryption settings make it to the server.
-        SyncTestUtil.triggerSyncAndWaitForCompletion();
-    }
-
-    private void decryptWithPassphrase(final String passphrase) {
-        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
-            @Override
-            public void run() {
-                ProfileSyncService.get().setDecryptionPassphrase(passphrase);
-            }
-        });
-    }
-
-    private void waitForCryptographer() {
-        CriteriaHelper.pollUiThread(new Criteria(
-                "Timed out waiting for cryptographer to be ready.") {
-            @Override
-            public boolean isSatisfied() {
-                ProfileSyncService syncService = ProfileSyncService.get();
-                return syncService.isUsingSecondaryPassphrase()
-                        && syncService.isCryptographerReady();
-            }
-        });
     }
 
     private void waitForCallCount(int count) {

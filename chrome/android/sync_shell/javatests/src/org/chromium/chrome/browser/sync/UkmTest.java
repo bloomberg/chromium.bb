@@ -20,6 +20,8 @@ import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.metrics.UmaSessionStats;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
+import org.chromium.chrome.test.util.browser.sync.SyncTestUtil;
+import org.chromium.components.sync.ModelType;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.ui.base.PageTransition;
 
@@ -129,5 +131,91 @@ public class UkmTest {
         // Finally, sign in and UKM is enabled.
         Account account = mSyncTestRule.setUpTestAccountAndSignIn();
         Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+    }
+
+    @Test
+    @SmallTest
+    public void secondaryPassphraseCheck() throws Exception {
+        // Keep in sync with UkmBrowserTest.SecondaryPassphraseCheck in
+        // chrome/browser/metrics/ukm_browsertest.cc.
+        // Make sure that UKM is disabled when an secondary passphrase is set.
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> UmaSessionStats.updateMetricsAndCrashReportingForTesting(true));
+
+        // Enable a Syncing account.
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Tab normalTab = mSyncTestRule.getActivity().getActivityTab();
+        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+
+        String clientId = getUkmClientId(normalTab);
+
+        // Add a passphrase. This should disable UKM.
+        SyncTestUtil.encryptWithPassphrase("passphrase");
+
+        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+
+        // Client ID should have been reset.
+        Assert.assertNotEquals("Client id:", clientId, getUkmClientId(normalTab));
+    }
+
+    @Test
+    @SmallTest
+    public void singleSyncSignoutCheck() throws Exception {
+        // Keep in sync with UkmBrowserTest.SingleSyncSignoutCheck in
+        // chrome/browser/metrics/ukm_browsertest.cc.
+        // Make sure that UKM is disabled when an secondary passphrase is set.
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> UmaSessionStats.updateMetricsAndCrashReportingForTesting(true));
+
+        // Enable a Syncing account.
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Tab normalTab = mSyncTestRule.getActivity().getActivityTab();
+        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+
+        String clientId = getUkmClientId(normalTab);
+
+        // Signing out should disable UKM.
+        mSyncTestRule.signOut();
+
+        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+
+        // Client ID should have been reset.
+        Assert.assertNotEquals("Client id:", clientId, getUkmClientId(normalTab));
+    }
+
+    @Test
+    @SmallTest
+    public void singleDisableHistorySyncCheck() throws Exception {
+        // Keep in sync with UkmBrowserTest.SingleDisableHistorySyncCheck in
+        // chrome/browser/metrics/ukm_browsertest.cc.
+        // Make sure that UKM is disabled when an secondary passphrase is set.
+
+        ThreadUtils.runOnUiThreadBlocking(
+                () -> UmaSessionStats.updateMetricsAndCrashReportingForTesting(true));
+
+        // Enable a Syncing account.
+        Account account = mSyncTestRule.setUpTestAccountAndSignIn();
+        Tab normalTab = mSyncTestRule.getActivity().getActivityTab();
+        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+
+        String originalClientId = getUkmClientId(normalTab);
+
+        // Disable Sync for history.
+        mSyncTestRule.disableDataType(ModelType.TYPED_URLS);
+
+        Assert.assertFalse("UKM Enabled:", isUkmEnabled(normalTab));
+
+        // Client ID should have been reset.
+        Assert.assertNotEquals("Client id:", originalClientId, getUkmClientId(normalTab));
+
+        // Re-enable Sync for history.
+        mSyncTestRule.enableDataType(ModelType.TYPED_URLS);
+
+        Assert.assertTrue("UKM Enabled:", isUkmEnabled(normalTab));
+
+        // Client ID should still be different.
+        Assert.assertNotEquals("Client id:", originalClientId, getUkmClientId(normalTab));
     }
 }

@@ -432,6 +432,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, ConsentAddedButNoSyncCheck) {
 }
 
 // Make sure that UKM is disabled when an open sync window disables history.
+// Keep in sync with UkmTest.singleDisableHistorySyncCheck in
+// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleDisableHistorySyncCheck) {
   MetricsConsentOverride metrics_consent(true);
 
@@ -563,6 +566,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MultiDisableExtensionsSyncCheck) {
 }
 
 // Make sure that UKM is disabled when an secondary passphrase is set.
+// Keep in sync with UkmTest.secondaryPassphraseCheck in
+// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SecondaryPassphraseCheck) {
   MetricsConsentOverride metrics_consent(true);
 
@@ -591,6 +597,9 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SecondaryPassphraseCheck) {
 }
 
 // Make sure that UKM is disabled when the profile signs out of Sync.
+// Keep in sync with UkmTest.singleSyncSignoutCheck in
+// chrome/android/sync_shell/javatests/src/org/chromium/chrome/browser/sync/
+// UkmTest.java.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, SingleSyncSignoutCheck) {
   MetricsConsentOverride metrics_consent(true);
 
@@ -667,8 +676,6 @@ IN_PROC_BROWSER_TEST_F(UkmBrowserTest, MetricsReportingCheck) {
   harness->service()->RequestStop(browser_sync::ProfileSyncService::CLEAR_DATA);
   CloseBrowserSynchronously(sync_browser);
 }
-
-// TODO(crbug/745939): Add a tests for guest profile.
 
 // Make sure that pending data is deleted when user deletes history.
 IN_PROC_BROWSER_TEST_F(UkmBrowserTest, HistoryDeleteCheck) {

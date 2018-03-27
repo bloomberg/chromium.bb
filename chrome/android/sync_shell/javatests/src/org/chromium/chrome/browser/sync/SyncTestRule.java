@@ -183,6 +183,19 @@ public class SyncTestRule extends ChromeActivityTestRule<ChromeActivity> {
         }, SyncTestUtil.TIMEOUT_MS, SyncTestUtil.INTERVAL_MS);
     }
 
+    /*
+     * Enable the |modelType| Sync data type. This also forces all types to be
+     * USER_SELECTABLE_TYPES.
+     */
+    public void enableDataType(final int modelType) {
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Set<Integer> preferredTypes = mProfileSyncService.getPreferredDataTypes();
+            preferredTypes.retainAll(USER_SELECTABLE_TYPES);
+            preferredTypes.add(modelType);
+            mProfileSyncService.setPreferredDataTypes(false, preferredTypes);
+        });
+    }
+
     public void disableDataType(final int modelType) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
