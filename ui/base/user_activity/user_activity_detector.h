@@ -27,7 +27,10 @@ class UI_BASE_EXPORT UserActivityDetector : public PlatformEventObserver {
   // is received that displays' power states are being changed.
   static const int kDisplayPowerChangeIgnoreMouseMs;
 
-  UserActivityDetector();
+  // If |observe_event_source| is true, this detector observes platform events
+  // directly from the PlatformEventSource. Otherwise, this instance relies on
+  // reports of events through |HandleExternalUserActivity|.
+  explicit UserActivityDetector(bool observe_event_source = true);
   ~UserActivityDetector() override;
 
   // Returns the UserActivityDetector instance if one was created.

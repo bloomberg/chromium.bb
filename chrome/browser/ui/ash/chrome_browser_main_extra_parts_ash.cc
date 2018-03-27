@@ -198,8 +198,9 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
     immersive_handler_factory_ = std::make_unique<ImmersiveHandlerFactoryMus>();
 
     // Enterprise support in the browser can monitor user activity. Connect to
-    // the UI service to monitor activity. The ash process has its own monitor.
-    user_activity_detector_ = std::make_unique<ui::UserActivityDetector>();
+    // the UI service to monitor activity, as this detector cannot observe the
+    // platform event source directly. The ash process has its own detector.
+    user_activity_detector_ = std::make_unique<ui::UserActivityDetector>(false);
     ui::mojom::UserActivityMonitorPtr user_activity_monitor;
     content::ServiceManagerConnection::GetForProcess()
         ->GetConnector()

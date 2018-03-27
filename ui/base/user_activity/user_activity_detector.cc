@@ -47,13 +47,13 @@ const int UserActivityDetector::kNotifyIntervalMs = 200;
 // and we'll ignore legitimate activity.
 const int UserActivityDetector::kDisplayPowerChangeIgnoreMouseMs = 1000;
 
-UserActivityDetector::UserActivityDetector() {
+UserActivityDetector::UserActivityDetector(bool observe_event_source) {
   CHECK(!g_instance);
   g_instance = this;
 
   PlatformEventSource* platform_event_source =
       PlatformEventSource::GetInstance();
-  if (platform_event_source)
+  if (platform_event_source && observe_event_source)
     platform_event_source->AddPlatformEventObserver(this);
 }
 
