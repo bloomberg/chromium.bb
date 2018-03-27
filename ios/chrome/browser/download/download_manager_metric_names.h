@@ -34,6 +34,8 @@ enum class DownloadFileResult {
   // In progress download did no finish because the tab was closed or user has
   // quit the app.
   Other = 3,
+  // The user closed Download Manager UI without starting the download.
+  NotStarted = 4,
   Count
 };
 

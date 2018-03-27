@@ -305,6 +305,10 @@ TEST_F(DownloadManagerCoordinatorTest, Close) {
   EXPECT_EQ(0U, base_view_controller_.childViewControllers.count);
   EXPECT_FALSE(coordinator_.downloadTask);
   EXPECT_EQ(web::DownloadTask::State::kCancelled, task.GetState());
+  histogram_tester_.ExpectUniqueSample(
+      "Download.IOSDownloadFileResult",
+      static_cast<base::HistogramBase::Sample>(DownloadFileResult::NotStarted),
+      1);
 }
 
 // Tests presenting Install Google Drive dialog. Coordinator presents StoreKit
