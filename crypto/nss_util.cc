@@ -618,6 +618,11 @@ class NSSInitSingleton {
         initializing_tpm_token_(false),
         chaps_module_(nullptr),
         root_(nullptr) {
+    // Initializing NSS causes us to do blocking IO.
+    // Temporarily allow it until we fix
+    //   http://code.google.com/p/chromium/issues/detail?id=59847
+    base::ThreadRestrictions::ScopedAllowIO allow_io;
+
     // It's safe to construct on any thread, since LazyInstance will prevent any
     // other threads from accessing until the constructor is done.
     thread_checker_.DetachFromThread();
@@ -772,10 +777,6 @@ void EnsureNSPRInit() {
 }
 
 void EnsureNSSInit() {
-  // Initializing SSL causes us to do blocking IO.
-  // Temporarily allow it until we fix
-  //   http://code.google.com/p/chromium/issues/detail?id=59847
-  base::ThreadRestrictions::ScopedAllowIO allow_io;
   g_nss_singleton.Get();
 }
 
