@@ -699,11 +699,14 @@ TEST_F(WebURLLoaderImplTest, ResponseCert) {
   base::StringPiece cert1_der =
       net::x509_util::CryptoBufferAsStringPiece(certs[1]->cert_buffer());
 
-  network::ResourceResponseInfo info;
+  net::SSLInfo ssl_info;
+  ssl_info.cert =
+      net::X509Certificate::CreateFromDERCertChain({cert0_der, cert1_der});
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &info.ssl_connection_status);
-  info.certificate.emplace_back(cert0_der);
-  info.certificate.emplace_back(cert1_der);
+                                     &ssl_info.connection_status);
+
+  network::ResourceResponseInfo info;
+  info.ssl_info = ssl_info;
   blink::WebURLResponse web_url_response;
   WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true);
 
@@ -735,10 +738,12 @@ TEST_F(WebURLLoaderImplTest, ResponseCertWithNoSANs) {
   base::StringPiece cert0_der =
       net::x509_util::CryptoBufferAsStringPiece(certs[0]->cert_buffer());
 
-  network::ResourceResponseInfo info;
+  net::SSLInfo ssl_info;
   net::SSLConnectionStatusSetVersion(net::SSL_CONNECTION_VERSION_TLS1_2,
-                                     &info.ssl_connection_status);
-  info.certificate.emplace_back(cert0_der);
+                                     &ssl_info.connection_status);
+  ssl_info.cert = certs[0];
+  network::ResourceResponseInfo info;
+  info.ssl_info = ssl_info;
   blink::WebURLResponse web_url_response;
   WebURLLoaderImpl::PopulateURLResponse(url, info, &web_url_response, true);
 
