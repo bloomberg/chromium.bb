@@ -2198,7 +2198,7 @@ StyleRecalcChange Element::RecalcOwnStyle(StyleRecalcChange change) {
   DCHECK(change >= kIndependentInherit || NeedsStyleRecalc());
   DCHECK(ParentComputedStyle());
 
-  scoped_refptr<ComputedStyle> old_style = MutableComputedStyle();
+  scoped_refptr<const ComputedStyle> old_style = GetComputedStyle();
 
   // When propagating inherited changes, we don't need to do a full style recalc
   // if the only changed properties are independent. In this case, we can simply
