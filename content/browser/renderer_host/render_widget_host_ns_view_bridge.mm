@@ -11,6 +11,8 @@
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/animation_utils.h"
+#include "ui/display/display_observer.h"
+#include "ui/display/screen.h"
 
 namespace content {
 
@@ -20,7 +22,8 @@ namespace {
 // process as the NSView. The caller of this interface may exist in another
 // process.
 class RenderWidgetHostViewNSViewBridgeLocal
-    : public RenderWidgetHostNSViewBridge {
+    : public RenderWidgetHostNSViewBridge,
+      public display::DisplayObserver {
  public:
   explicit RenderWidgetHostViewNSViewBridgeLocal(
       std::unique_ptr<RenderWidgetHostNSViewClient> client);
@@ -31,6 +34,10 @@ class RenderWidgetHostViewNSViewBridgeLocal
   void SetVisible(bool visible) override;
 
  private:
+  // display::DisplayObserver implementation.
+  void OnDisplayMetricsChanged(const display::Display& display,
+                               uint32_t metrics) override;
+
   // Weak, this is owned by |cocoa_view_|'s |client_|, and |cocoa_view_| owns
   // its |client_|.
   RenderWidgetHostViewCocoa* cocoa_view_ = nil;
@@ -43,6 +50,8 @@ class RenderWidgetHostViewNSViewBridgeLocal
 
 RenderWidgetHostViewNSViewBridgeLocal::RenderWidgetHostViewNSViewBridgeLocal(
     std::unique_ptr<RenderWidgetHostNSViewClient> client) {
+  display::Screen::GetScreen()->AddObserver(this);
+
   // Since we autorelease |cocoa_view|, our caller must put |GetNativeView()|
   // into the view hierarchy right after calling us.
   cocoa_view_ = [[[RenderWidgetHostViewCocoa alloc]
@@ -54,7 +63,9 @@ RenderWidgetHostViewNSViewBridgeLocal::RenderWidgetHostViewNSViewBridgeLocal(
 }
 
 RenderWidgetHostViewNSViewBridgeLocal::
-    ~RenderWidgetHostViewNSViewBridgeLocal() {}
+    ~RenderWidgetHostViewNSViewBridgeLocal() {
+  display::Screen::GetScreen()->RemoveObserver(this);
+}
 
 RenderWidgetHostViewCocoa*
 RenderWidgetHostViewNSViewBridgeLocal::GetRenderWidgetHostViewCocoa() {
@@ -71,6 +82,15 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetBackgroundColor(SkColor color) {
 void RenderWidgetHostViewNSViewBridgeLocal::SetVisible(bool visible) {
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:!visible];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::OnDisplayMetricsChanged(
+    const display::Display& display,
+    uint32_t changed_metrics) {
+  // Note that -updateScreenProperties is also be called by the notification
+  // NSWindowDidChangeBackingPropertiesNotification (some of these calls
+  // will be redundant).
+  [cocoa_view_ updateScreenProperties];
 }
 
 }  // namespace

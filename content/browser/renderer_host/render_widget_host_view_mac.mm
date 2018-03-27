@@ -229,14 +229,19 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
   ns_view_bridge_ = RenderWidgetHostNSViewBridge::Create(
       std::unique_ptr<RenderWidgetHostNSViewClient>(this));
 
+  // Guess that the initial screen we will be on is the screen of the current
+  // window (since that's the best guess that we have, and is usually right).
+  // https://crbug.com/357443
+  display_ =
+      display::Screen::GetScreen()->GetDisplayNearestWindow([NSApp keyWindow]);
+
   viz::FrameSinkId frame_sink_id = is_guest_view_hack_
                                        ? AllocateFrameSinkIdForGuestViewHack()
                                        : host()->GetFrameSinkId();
 
-  browser_compositor_.reset(new BrowserCompositorMac(
-      this, this, host()->is_hidden(), [cocoa_view() window], frame_sink_id));
-
-  display::Screen::GetScreen()->AddObserver(this);
+  browser_compositor_.reset(
+      new BrowserCompositorMac(this, this, host()->is_hidden(),
+                               [cocoa_view() window], display_, frame_sink_id));
 
   if (!is_guest_view_hack_)
     host()->SetView(this);
@@ -276,8 +281,6 @@ RenderWidgetHostViewMac::RenderWidgetHostViewMac(RenderWidgetHost* widget,
 }
 
 RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
-  display::Screen::GetScreen()->RemoveObserver(this);
-
   // |this| is owned by RenderWidgetHostViewCocoa and is destroyed when the
   // RenderWidgetHostViewCocoa is deallocated, so destroy the bridge to the
   // RenderWidgetHostViewCocoa.
@@ -443,26 +446,6 @@ int RenderWidgetHostViewMac::window_number() const {
   return [window windowNumber];
 }
 
-void RenderWidgetHostViewMac::UpdateDisplayLink() {
-  static bool is_vsync_disabled =
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableGpuVsync);
-  if (is_vsync_disabled)
-    return;
-
-  NSScreen* screen = [[cocoa_view() window] screen];
-  NSDictionary* screen_description = [screen deviceDescription];
-  NSNumber* screen_number = [screen_description objectForKey:@"NSScreenNumber"];
-  CGDirectDisplayID display_id = [screen_number unsignedIntValue];
-
-  display_link_ = ui::DisplayLinkMac::GetForDisplay(display_id);
-  if (!display_link_.get()) {
-    // Note that on some headless systems, the display link will fail to be
-    // created, so this should not be a fatal error.
-    LOG(ERROR) << "Failed to create display link.";
-  }
-}
-
 void RenderWidgetHostViewMac::UpdateDisplayVSyncParameters() {
   if (!host() || !display_link_.get())
     return;
@@ -499,6 +482,18 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
   if (!browser_compositor_)
     return;
 
+  static bool is_vsync_disabled =
+      base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kDisableGpuVsync);
+  if (!is_vsync_disabled) {
+    display_link_ = ui::DisplayLinkMac::GetForDisplay(display_.id());
+    if (!display_link_.get()) {
+      // Note that on some headless systems, the display link will fail to be
+      // created, so this should not be a fatal error.
+      LOG(ERROR) << "Failed to create display link.";
+    }
+  }
+
   // During auto-resize it is the responsibility of the caller to ensure that
   // the NSView and RenderWidgetHostImpl are kept in sync.
   if (host()->auto_resize_enabled())
@@ -509,17 +504,12 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
   else
     host()->SendScreenRects();
 
-  // TODO(ccameron): Push the display::Display from the RWHVCocoa through its
-  // client, rather than querying it here.
-  display::Display display =
-      display::Screen::GetScreen()->GetDisplayNearestView(cocoa_view());
-
   // RenderWidgetHostImpl will query BrowserCompositorMac for the dimensions
   // to send to the renderer, so it is required that BrowserCompositorMac be
   // updated first. Only notify RenderWidgetHostImpl of the update if any
   // properties it will query have changed.
   if (browser_compositor_->UpdateNSViewAndDisplay(
-          view_bounds_in_window_dip_.size(), display)) {
+          view_bounds_in_window_dip_.size(), display_)) {
     host()->NotifyScreenInfoChanged();
   }
 }
@@ -1353,7 +1343,7 @@ bool RenderWidgetHostViewMac::TransformPointToLocalCoordSpace(
     gfx::PointF* transformed_point) {
   // Transformations use physical pixels rather than DIP, so conversion
   // is necessary.
-  float scale_factor = ui::GetScaleFactorForNativeView(cocoa_view());
+  float scale_factor = display_.device_scale_factor();
   gfx::PointF point_in_pixels = gfx::ConvertPointToPixel(scale_factor, point);
   if (!browser_compositor_->GetDelegatedFrameHost()
            ->TransformPointToLocalCoordSpace(point_in_pixels, original_surface,
@@ -1513,23 +1503,6 @@ RenderWidgetHostViewMac::AllocateFrameSinkIdForGuestViewHack() {
       ->AllocateFrameSinkId();
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// display::DisplayObserver, public:
-
-void RenderWidgetHostViewMac::OnDisplayAdded(const display::Display& display) {}
-
-void RenderWidgetHostViewMac::OnDisplayRemoved(
-    const display::Display& display) {}
-
-void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
-    const display::Display& display,
-    uint32_t changed_metrics) {
-  display::Screen* screen = display::Screen::GetScreen();
-  if (display.id() != screen->GetDisplayNearestView(cocoa_view()).id())
-    return;
-  UpdateNSViewAndDisplayProperties();
-}
-
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostNSViewClient implementation:
 
@@ -1570,6 +1543,12 @@ void RenderWidgetHostViewMac::OnNSViewBoundsInWindowChanged(
 void RenderWidgetHostViewMac::OnNSViewWindowFrameInScreenChanged(
     const gfx::Rect& window_frame_in_screen_dip) {
   window_frame_in_screen_dip_ = window_frame_in_screen_dip;
+}
+
+void RenderWidgetHostViewMac::OnNSViewDisplayChanged(
+    const display::Display& display) {
+  display_ = display;
+  UpdateNSViewAndDisplayProperties();
 }
 
 Class GetRenderWidgetHostViewCocoaClassForTesting() {

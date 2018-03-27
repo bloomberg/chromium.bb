@@ -37,6 +37,9 @@ class RenderWidgetHostNSViewClient {
   virtual void OnNSViewWindowFrameInScreenChanged(
       const gfx::Rect& window_frame_in_screen_dip) = 0;
 
+  // Indicate the NSView's NSScreen's properties.
+  virtual void OnNSViewDisplayChanged(const display::Display& display) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewClient);
 };
