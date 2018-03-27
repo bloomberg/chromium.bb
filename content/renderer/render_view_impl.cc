@@ -895,7 +895,7 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->SetReportScreenSizeInPhysicalPixelsQuirk(
       prefs.report_screen_size_in_physical_pixels_quirk);
   settings->SetShouldReuseGlobalForUnownedMainFrame(
-      prefs.resue_global_for_unowned_main_frame);
+      prefs.reuse_global_for_unowned_main_frame);
   settings->SetPreferHiddenVolumeControls(true);
   settings->SetSpellCheckEnabledByDefault(prefs.spellcheck_enabled_by_default);
 
