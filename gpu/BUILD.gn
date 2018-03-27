@@ -150,6 +150,7 @@ static_library("test_support") {
     "command_buffer/service/gles2_cmd_decoder_mock.h",
     "command_buffer/service/raster_decoder_mock.cc",
     "command_buffer/service/raster_decoder_mock.h",
+    "ipc/service/gpu_memory_buffer_factory_test_template.h",
   ]
 
   public_deps = [
@@ -159,9 +160,12 @@ static_library("test_support") {
   ]
   deps = [
     "//gpu/command_buffer/common",
+    "//gpu/ipc/common",
+    "//gpu/ipc/service",
     "//testing/gmock",
     "//testing/gtest",
     "//ui/gl:gl_unittest_utils",
+    "//ui/gl:test_support",
   ]
 }
 
@@ -387,18 +391,32 @@ test("gpu_unittests") {
     "ipc/common/gpu_preferences_util_unittest.cc",
     "ipc/common/struct_traits_unittest.cc",
     "ipc/host/shader_disk_cache_unittest.cc",
+    "ipc/service/gpu_channel_manager_unittest.cc",
+    "ipc/service/gpu_channel_test_common.cc",
+    "ipc/service/gpu_channel_test_common.h",
+    "ipc/service/gpu_channel_unittest.cc",
   ]
 
   if (is_mac) {
-    sources += [ "ipc/common/gpu_memory_buffer_impl_io_surface_unittest.cc" ]
+    sources += [
+      "ipc/common/gpu_memory_buffer_impl_io_surface_unittest.cc",
+      "ipc/service/gpu_memory_buffer_factory_io_surface_unittest.cc",
+    ]
   }
 
   if (is_linux) {
-    sources += [ "ipc/common/gpu_memory_buffer_impl_native_pixmap_unittest.cc" ]
+    sources += [
+      "ipc/common/gpu_memory_buffer_impl_native_pixmap_unittest.cc",
+      "ipc/service/gpu_memory_buffer_factory_native_pixmap_unittest.cc",
+    ]
   }
 
   if (is_win) {
-    sources += [ "ipc/common/gpu_memory_buffer_impl_dxgi_unittest.cc" ]
+    sources += [
+      "ipc/common/gpu_memory_buffer_impl_dxgi_unittest.cc",
+      "ipc/service/gpu_memory_buffer_factory_dxgi_unittest.cc",
+      "ipc/service/gpu_vsync_provider_unittest_win.cc",
+    ]
   }
 
   if (is_android) {
@@ -436,25 +454,32 @@ test("gpu_unittests") {
     "//gpu/command_buffer/client:gles2_c_lib",
     "//gpu/command_buffer/client:gles2_implementation",
     "//gpu/command_buffer/client:raster",
+    "//gpu/command_buffer/common",
     "//gpu/command_buffer/common:gles2_utils",
+    "//gpu/command_buffer/service",
     "//gpu/ipc:gl_in_process_context",
     "//gpu/ipc/client",
+    "//gpu/ipc/common",
     "//gpu/ipc/common:gpu_preferences_util",
     "//gpu/ipc/common:test_interfaces",
     "//gpu/ipc/host",
+    "//gpu/ipc/service",
     "//ipc:test_support",
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//net:test_support",
+    "//skia",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/angle:translator",
+    "//third_party/mesa:mesa_headers",
     "//ui/gfx",
     "//ui/gfx:test_support",
     "//ui/gfx/geometry",
     "//ui/gl",
     "//ui/gl:gl_unittest_utils",
     "//ui/gl:test_support",
+    "//url",
   ]
 
   if (is_android) {

@@ -156,7 +156,6 @@ group("gn_all") {
       "//content/test:content_perftests",
       "//content/test:content_unittests",
       "//gpu:gpu_unittests",
-      "//gpu/ipc/service:gpu_ipc_service_unittests",
       "//ipc:ipc_tests",
       "//media:media_unittests",
       "//media/midi:midi_unittests",

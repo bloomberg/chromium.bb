@@ -1853,28 +1853,6 @@
       'Win7 Tests (dbg)(1)',
     ],
   },
-  'gpu_ipc_service_unittests': {
-    'remove_from': [
-      # chromium.clang
-      'CrWinClngLLD64dbg',
-      # chromium.fyi
-      'Win 10 Fast Ring',
-      # chromium.linux
-      'Linux Tests (dbg)(1)(32)',
-    ],
-    'modifications': {
-      'KitKat Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 120,
-        },
-      },
-      'Marshmallow Tablet Tester': {
-        'swarming': {
-          'hard_timeout': 120,
-        },
-      },
-    },
-  },
   'headless_browsertests': {
     'remove_from': [
       'Linux Tests (dbg)(1)(32)',
