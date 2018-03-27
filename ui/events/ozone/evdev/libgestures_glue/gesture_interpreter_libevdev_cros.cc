@@ -211,6 +211,14 @@ void GestureInterpreterLibevdevCros::OnLibEvdevCrosEvent(Evdev* evdev,
     hwstate.buttons_down |= GESTURES_BUTTON_FORWARD;
   }
 
+  // Check if this event has an MSC_TIMESTAMP field
+  if (EvdevBitIsSet(evdev->info.msc_bitmask, MSC_TIMESTAMP)) {
+    hwstate.msc_timestamp = static_cast<stime_t>(Event_Get_Timestamp(evdev)) /
+                            base::Time::kMicrosecondsPerSecond;
+  } else {
+    hwstate.msc_timestamp = 0.0;
+  }
+
   GestureInterpreterPushHardwareState(interpreter_, &hwstate);
 }
 
