@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #import "ios/chrome/browser/snapshots/snapshot_tab_helper.h"
+#import "ios/web/public/web_state/ui/crw_web_view_proxy.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -82,11 +83,17 @@ void PagePlaceholderTabHelper::AddPlaceholder() {
   // Update placeholder view's image and display it on top of WebState's view.
   __weak UIImageView* weak_placeholder_view = placeholder_view_;
   __weak UIView* weak_web_state_view = web_state_->GetView();
-  // placeholder_view_.image = SnapshotTabHelper::DefautSnapshotImage();
+  __weak id<CRWWebViewProxy> web_view_proxy = web_state_->GetWebViewProxy();
   SnapshotTabHelper::FromWebState(web_state_)
       ->RetrieveGreySnapshot(^(UIImage* snapshot) {
+        CGRect frame = weak_web_state_view.frame;
+        UIEdgeInsets inset = web_view_proxy.contentInset;
+        frame.origin.x += inset.left;
+        frame.origin.y += inset.top;
+        frame.size.width -= (inset.right + inset.left);
+        frame.size.height -= (inset.bottom + inset.top);
+        weak_placeholder_view.frame = frame;
         weak_placeholder_view.image = snapshot;
-        weak_placeholder_view.frame = weak_web_state_view.frame;
         [weak_web_state_view addSubview:weak_placeholder_view];
       });
 
