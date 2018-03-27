@@ -122,9 +122,6 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
                           const std::string& system_salt);
   void OnAuthenticateComplete(OnAuthenticateCallback callback, bool success);
 
-  void OnGetSystemSalt(PendingDoAuthenticateUser then,
-                       const std::string& system_salt);
-
   // Returns the active data dispatcher or nullptr if there is no lock screen.
   LoginDataDispatcher* DataDispatcher() const;
 
@@ -137,8 +134,14 @@ class ASH_EXPORT LoginScreenController : public mojom::LoginScreen {
   // Bindings for users of the LockScreen interface.
   mojo::BindingSet<mojom::LoginScreen> bindings_;
 
-  // True iff we are currently authentication.
-  bool is_authenticating_ = false;
+  // The current authentication stage. Used to get more verbose logging.
+  enum class AuthenticationStage {
+    kIdle,
+    kGetSystemSalt,
+    kDoAuthenticate,
+    kUserCallback,
+  };
+  AuthenticationStage authentication_stage_ = AuthenticationStage::kIdle;
 
   base::ObserverList<LoginScreenControllerObserver> observers_;
 
