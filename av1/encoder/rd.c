@@ -280,14 +280,12 @@ void av1_fill_mode_rates(AV1_COMMON *const cm, MACROBLOCK *x,
     for (i = 0; i < BLOCK_SIZES_ALL; ++i)
       av1_cost_tokens_from_cdf(x->compound_type_cost[i],
                                fc->compound_type_cdf[i], NULL);
-#if WEDGE_IDX_ENTROPY_CODING
     for (i = 0; i < BLOCK_SIZES_ALL; ++i) {
       if (get_interinter_wedge_bits(i)) {
         av1_cost_tokens_from_cdf(x->wedge_idx_cost[i], fc->wedge_idx_cdf[i],
                                  NULL);
       }
     }
-#endif
     for (i = 0; i < BLOCK_SIZE_GROUPS; ++i) {
       av1_cost_tokens_from_cdf(x->interintra_cost[i], fc->interintra_cdf[i],
                                NULL);

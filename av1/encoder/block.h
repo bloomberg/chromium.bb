@@ -266,9 +266,7 @@ struct macroblock {
   int comp_bwdref_cost[REF_CONTEXTS][BWD_REFS - 1][2];
   int inter_compound_mode_cost[INTER_MODE_CONTEXTS][INTER_COMPOUND_MODES];
   int compound_type_cost[BLOCK_SIZES_ALL][COMPOUND_TYPES - 1];
-#if WEDGE_IDX_ENTROPY_CODING
   int wedge_idx_cost[BLOCK_SIZES_ALL][16];
-#endif
   int interintra_cost[BLOCK_SIZE_GROUPS][2];
   int wedge_interintra_cost[BLOCK_SIZES_ALL][2];
   int interintra_mode_cost[BLOCK_SIZE_GROUPS][INTERINTRA_MODES];

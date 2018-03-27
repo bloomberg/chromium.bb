@@ -64,7 +64,6 @@ static const aom_cdf_prob
       { AOM_CDF2(16384) }
     };
 
-#if WEDGE_IDX_ENTROPY_CODING
 static const aom_cdf_prob default_wedge_idx_cdf[BLOCK_SIZES_ALL][CDF_SIZE(16)] =
     { { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
                   20480, 22528, 24576, 26624, 28672, 30720) },
@@ -110,7 +109,6 @@ static const aom_cdf_prob default_wedge_idx_cdf[BLOCK_SIZES_ALL][CDF_SIZE(16)] =
                   20480, 22528, 24576, 26624, 28672, 30720) },
       { AOM_CDF16(2048, 4096, 6144, 8192, 10240, 12288, 14336, 16384, 18432,
                   20480, 22528, 24576, 26624, 28672, 30720) } };
-#endif
 
 static const aom_cdf_prob default_interintra_cdf[BLOCK_SIZE_GROUPS][CDF_SIZE(
     2)] = { { AOM_CDF2(128 * 128) },
@@ -1095,9 +1093,7 @@ static void init_mode_probs(FRAME_CONTEXT *fc) {
   av1_copy(fc->obmc_cdf, default_obmc_cdf);
   av1_copy(fc->inter_compound_mode_cdf, default_inter_compound_mode_cdf);
   av1_copy(fc->compound_type_cdf, default_compound_type_cdf);
-#if WEDGE_IDX_ENTROPY_CODING
   av1_copy(fc->wedge_idx_cdf, default_wedge_idx_cdf);
-#endif
   av1_copy(fc->interintra_cdf, default_interintra_cdf);
   av1_copy(fc->wedge_interintra_cdf, default_wedge_interintra_cdf);
   av1_copy(fc->interintra_mode_cdf, default_interintra_mode_cdf);

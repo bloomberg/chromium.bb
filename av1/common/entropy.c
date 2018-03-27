@@ -92,9 +92,7 @@ void av1_reset_cdf_symbol_counters(FRAME_CONTEXT *fc) {
   RESET_CDF_COUNTER(drl_cdf);
   RESET_CDF_COUNTER(inter_compound_mode_cdf);
   RESET_CDF_COUNTER(compound_type_cdf);
-#if WEDGE_IDX_ENTROPY_CODING
   RESET_CDF_COUNTER(wedge_idx_cdf);
-#endif
   RESET_CDF_COUNTER(interintra_cdf);
   RESET_CDF_COUNTER(wedge_interintra_cdf);
   RESET_CDF_COUNTER(interintra_mode_cdf);
