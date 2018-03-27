@@ -79,6 +79,10 @@ RankerModelStatus ValidateModel(const RankerModel& model) {
 const char kDefaultTranslateRankerModelURL[] =
     "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/"
     "translate/android/translate_ranker_model_android_20170918.pb.bin";
+#elif defined(USE_AURA)
+const char kDefaultTranslateRankerModelURL[] =
+    "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/"
+    "translate/translate_ranker_20180123.model";
 #else
 const char kDefaultTranslateRankerModelURL[] =
     "https://www.gstatic.com/chrome/intelligence/assist/ranker/models/"
@@ -91,7 +95,7 @@ const base::Feature kTranslateRankerEnforcement{
     "TranslateRankerEnforcement", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTranslateRankerAutoBlacklistOverride{
-    "TranslateRankerAutoBlacklistOverride", base::FEATURE_DISABLED_BY_DEFAULT};
+    "TranslateRankerAutoBlacklistOverride", base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kTranslateRankerPreviousLanguageMatchesOverride{
     "TranslateRankerPreviousLanguageMatchesOverride",
