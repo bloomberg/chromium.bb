@@ -189,11 +189,11 @@ class NET_EXPORT HttpCache : public HttpTransactionFactory {
   // not changed. This method returns without blocking, and the operation will
   // be performed asynchronously without any completion notification.
   // Takes ownership of |buf|.
-  void WriteMetadata(const GURL& url,
-                     RequestPriority priority,
-                     base::Time expected_response_time,
-                     IOBuffer* buf,
-                     int buf_len);
+  virtual void WriteMetadata(const GURL& url,
+                             RequestPriority priority,
+                             base::Time expected_response_time,
+                             IOBuffer* buf,
+                             int buf_len);
 
   // Get/Set the cache's mode.
   void set_mode(Mode value) { mode_ = value; }

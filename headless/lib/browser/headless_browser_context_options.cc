@@ -84,6 +84,11 @@ bool HeadlessBrowserContextOptions::block_new_web_contents() const {
                                browser_options_->block_new_web_contents);
 }
 
+bool HeadlessBrowserContextOptions::capture_resource_metadata() const {
+  return ReturnOverriddenValue(capture_resource_metadata_,
+                               browser_options_->capture_resource_metadata);
+}
+
 base::Optional<base::Time> HeadlessBrowserContextOptions::initial_virtual_time()
     const {
   if (initial_virtual_time_)

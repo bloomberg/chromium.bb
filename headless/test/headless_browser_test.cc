@@ -252,10 +252,13 @@ void HeadlessAsyncDevTooledBrowserTest::RunTest() {
   browser()->SetDefaultBrowserContext(browser_context_);
   browser()->GetDevToolsTarget()->AttachClient(browser_devtools_client_.get());
 
-  web_contents_ = browser_context_->CreateWebContentsBuilder()
-                      .SetAllowTabSockets(GetAllowTabSockets())
-                      .SetEnableBeginFrameControl(GetEnableBeginFrameControl())
-                      .Build();
+  HeadlessWebContents::Builder web_contents_builder =
+      browser_context_->CreateWebContentsBuilder();
+  web_contents_builder.SetAllowTabSockets(GetAllowTabSockets());
+  web_contents_builder.SetEnableBeginFrameControl(GetEnableBeginFrameControl());
+  CustomizeHeadlessWebContents(web_contents_builder);
+  web_contents_ = web_contents_builder.Build();
+
   web_contents_->AddObserver(this);
 
   RunAsynchronousTest();
@@ -284,5 +287,8 @@ bool HeadlessAsyncDevTooledBrowserTest::GetEnableBeginFrameControl() {
 
 void HeadlessAsyncDevTooledBrowserTest::CustomizeHeadlessBrowserContext(
     HeadlessBrowserContext::Builder& builder) {}
+
+void HeadlessAsyncDevTooledBrowserTest::CustomizeHeadlessWebContents(
+    HeadlessWebContents::Builder& builder) {}
 
 }  // namespace headless

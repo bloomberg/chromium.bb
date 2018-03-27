@@ -289,6 +289,8 @@ component("headless") {
     "lib/browser/headless_network_conditions.h",
     "lib/browser/headless_network_delegate.cc",
     "lib/browser/headless_network_delegate.h",
+    "lib/browser/headless_network_transaction_factory.cc",
+    "lib/browser/headless_network_transaction_factory.h",
     "lib/browser/headless_permission_manager.cc",
     "lib/browser/headless_permission_manager.h",
     "lib/browser/headless_platform_event_source.cc",

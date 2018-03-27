@@ -30,7 +30,12 @@ STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_DEFAULT,
                    WebSettings::kV8CacheOptionsDefault);
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_NONE, WebSettings::kV8CacheOptionsNone);
 STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE, WebSettings::kV8CacheOptionsCode);
-STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST, WebSettings::kV8CacheOptionsCode);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_CODE_WITHOUT_HEAT_CHECK,
+                   WebSettings::kV8CacheOptionsCodeWithoutHeatCheck);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_FULLCODE_WITHOUT_HEAT_CHECK,
+                   WebSettings::kV8CacheOptionsFullCodeWithoutHeatCheck);
+STATIC_ASSERT_ENUM(V8_CACHE_OPTIONS_LAST,
+                   WebSettings::kV8CacheOptionsFullCodeWithoutHeatCheck);
 
 STATIC_ASSERT_ENUM(SavePreviousDocumentResources::NEVER,
                    WebSettings::SavePreviousDocumentResources::kNever);

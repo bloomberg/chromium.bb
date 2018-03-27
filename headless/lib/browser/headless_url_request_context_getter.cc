@@ -18,6 +18,7 @@
 #include "headless/lib/browser/headless_browser_context_impl.h"
 #include "headless/lib/browser/headless_browser_context_options.h"
 #include "headless/lib/browser/headless_network_delegate.h"
+#include "headless/lib/browser/headless_network_transaction_factory.h"
 #include "net/cookies/cookie_store.h"
 #include "net/dns/mapped_host_resolver.h"
 #include "net/http/http_auth_handler_factory.h"
@@ -55,6 +56,7 @@ HeadlessURLRequestContextGetter::HeadlessURLRequestContextGetter(
       proxy_config_(options->proxy_config()),
       request_interceptors_(std::move(request_interceptors)),
       net_log_(net_log),
+      capture_resource_metadata_(options->capture_resource_metadata()),
       headless_browser_context_(headless_browser_context) {
   // Must first be created on the UI thread.
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -224,6 +226,13 @@ HeadlessURLRequestContextGetter::GetURLRequestContext() {
       headless_browser_context_->SetRemoveHeaders(false);
       builder.SetCreateHttpTransactionFactoryCallback(
           base::BindOnce(&content::CreateDevToolsNetworkTransactionFactory));
+    }
+    if (capture_resource_metadata_) {
+      builder.SetCreateHttpTransactionFactoryCallback(
+          base::BindOnce(&HeadlessNetworkTransactionFactory::Create,
+                         headless_browser_context_));
+      // We want to use the http cache inside HeadlessNetworkTransactionFactory.
+      builder.DisableHttpCache();
     }
 
     url_request_context_ = builder.Build();

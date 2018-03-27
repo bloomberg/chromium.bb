@@ -153,6 +153,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
                        scoped_refptr<net::HttpResponseHeaders> response_headers,
                        const char* body,
                        size_t body_size,
+                       scoped_refptr<net::IOBufferWithSize> metadata,
                        const net::LoadTimingInfo& load_timing_info,
                        size_t total_received_bytes) override;
 
@@ -189,6 +190,7 @@ class HEADLESS_EXPORT GenericURLRequestJob
   HeadlessBrowserContext* headless_browser_context_;           // Not owned.
   const content::ResourceRequestInfo* request_resource_info_;  // Not owned.
   const char* body_ = nullptr;  // Not owned.
+  scoped_refptr<net::IOBufferWithSize> metadata_;
   size_t body_size_ = 0;
   size_t read_offset_ = 0;
   net::LoadTimingInfo load_timing_info_;

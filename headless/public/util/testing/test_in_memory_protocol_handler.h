@@ -10,6 +10,7 @@
 
 #include "base/macros.h"
 #include "base/single_thread_task_runner.h"
+#include "net/base/io_buffer.h"
 #include "net/url_request/url_request_job_factory.h"
 
 namespace headless {
@@ -48,9 +49,12 @@ class TestInMemoryProtocolHandler
                body) {}
 
     std::string data;
+    scoped_refptr<net::IOBufferWithSize> metadata;
   };
 
   void InsertResponse(const std::string& url, const Response& response);
+  void SetResponseMetadata(const std::string& url,
+                           scoped_refptr<net::IOBufferWithSize> metadata);
 
   // net::URLRequestJobFactory::ProtocolHandler implementation::
   net::URLRequestJob* MaybeCreateJob(
@@ -86,7 +90,7 @@ class TestInMemoryProtocolHandler
 
   std::unique_ptr<TestDelegate> test_delegate_;
   std::unique_ptr<ExpeditedDispatcher> dispatcher_;
-  std::map<std::string, Response> response_map_;
+  std::map<std::string, std::unique_ptr<Response>> response_map_;
   HeadlessBrowserContext* headless_browser_context_;
   std::map<std::string, std::string> url_to_devtools_frame_id_;
   std::vector<std::string> urls_requested_;

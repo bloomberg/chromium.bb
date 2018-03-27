@@ -73,6 +73,7 @@ class HeadlessURLRequestContextGetter
   content::ProtocolHandlerMap protocol_handlers_;
   content::URLRequestInterceptorScopedVector request_interceptors_;
   net::NetLog* net_log_;  // Not owned
+  bool capture_resource_metadata_;
 
   base::Lock lock_;  // Protects |headless_browser_context_|.
   HeadlessBrowserContextImpl* headless_browser_context_;  // Not owned.
