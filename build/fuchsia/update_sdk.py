@@ -21,6 +21,9 @@ sys.path.append(os.path.join(REPOSITORY_ROOT, 'build'))
 
 import find_depot_tools
 
+SDK_SUBIDRS = ["arch", "pkg", "qemu", "sysroot", "target",
+               "toolchain_libs", "tools"]
+
 
 def EnsureDirExists(path):
   if not os.path.exists(path):
@@ -28,10 +31,25 @@ def EnsureDirExists(path):
     os.makedirs(path)
 
 
+# Removes previous SDK from the specified path if it's detected there.
+def Cleanup(path):
+  hash_file = os.path.join(path, '.hash')
+  if os.path.exists(hash_file):
+    print 'Removing old SDK from %s.' % path
+    for d in SDK_SUBIDRS:
+      shutil.rmtree(os.path.join(path, d))
+    os.remove(hash_file)
+
+
 def main():
   if len(sys.argv) != 1:
     print >>sys.stderr, 'usage: %s' % sys.argv[0]
     return 1
+
+  # Previously SDK was unpacked in //third_party/fuchsia-sdk instead of
+  # //third_party/fuchsia-sdk/sdk . Remove the old files if they are still
+  # there.
+  Cleanup(os.path.join(REPOSITORY_ROOT, 'third_party', 'fuchsia-sdk'))
 
   with open(SDK_HASH_FILE, 'r') as f:
     sdk_hash = f.read().strip()
@@ -40,7 +58,8 @@ def main():
     print >>sys.stderr, 'No SHA1 found in %s' % SDK_HASH_FILE
     return 1
 
-  output_dir = os.path.join(REPOSITORY_ROOT, 'third_party', 'fuchsia-sdk')
+  output_dir = os.path.join(REPOSITORY_ROOT, 'third_party', 'fuchsia-sdk',
+                            'sdk')
 
   hash_filename = os.path.join(output_dir, '.hash')
   if os.path.exists(hash_filename):
