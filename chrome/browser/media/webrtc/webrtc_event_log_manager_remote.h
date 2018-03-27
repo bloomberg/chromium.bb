@@ -185,6 +185,8 @@ class WebRtcRemoteEventLogManager final
   // Initiating a new upload is only allowed when there are no active peer
   // connection which might be adversely affected by the bandwidth consumption
   // of the upload.
+  // This can be overridden by a command line flag - see
+  // kWebRtcRemoteEventLogUploadNoSuppression.
   // TODO(eladalon): Add support for pausing/resuming an upload when peer
   // connections are added/removed after an upload was already initiated.
   // https://crbug.com/775415
@@ -216,6 +218,10 @@ class WebRtcRemoteEventLogManager final
   // This object is expected to be created and destroyed on the UI thread,
   // but live on its owner's internal, IO-capable task queue.
   SEQUENCE_CHECKER(io_task_sequence_checker_);
+
+  // Normally, uploading is suppressed while there are active peer connections.
+  // This may be disabled from the command line.
+  const bool upload_suppression_disabled_;
 
   // This is used to inform WebRtcEventLogManager when remote-bound logging
   // of a peer connection starts/stops, which allows WebRtcEventLogManager to

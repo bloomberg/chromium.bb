@@ -249,6 +249,7 @@ CONTENT_EXPORT extern const char kEnforceWebRtcIPPermissionCheck[];
 CONTENT_EXPORT extern const char kForceWebRtcIPHandlingPolicy[];
 extern const char kWebRtcMaxCaptureFramerate[];
 extern const char kWebRtcMaxCpuConsumptionPercentage[];
+CONTENT_EXPORT extern const char kWebRtcRemoteEventLogUploadNoSuppression[];
 CONTENT_EXPORT extern const char kWebRtcStunProbeTrialParameter[];
 #endif
 
