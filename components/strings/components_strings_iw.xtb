@@ -430,6 +430,7 @@
 <translation id="4103249731201008433">המספר הסידורי של המכשיר אינו חוקי</translation>
 <translation id="410351446219883937">הפעלה אוטומטית</translation>
 <translation id="4103763322291513355">‏היכנס לכתובת &lt;strong&gt;chrome://policy&lt;/strong&gt; כדי לראות רשימה של כתובות אתרים שנמנעה אליהם הגישה, כמו גם תקנונים אחרים שנאכפו על ידי מנהל המערכת שלך.</translation>
+<translation id="4110652170750985508">בדיקת התשלום</translation>
 <translation id="4116663294526079822">אפשר תמיד באתר זה</translation>
 <translation id="4117700440116928470">היקף המדיניות אינו נתמך.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{אחד נוסף}two{שניים נוספים}many{# נוספים}other{# נוספים}}</translation>
