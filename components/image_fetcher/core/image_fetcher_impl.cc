@@ -10,6 +10,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "net/base/load_flags.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "ui/gfx/image/image.h"
 
 namespace image_fetcher {
 
@@ -98,21 +99,24 @@ void ImageFetcherImpl::OnImageURLFetched(const GURL& image_url,
   DCHECK(request->image_data.empty());
   DCHECK_EQ(RequestMetadata::RESPONSE_CODE_INVALID,
             request->request_metadata.http_response_code);
-  request->image_data = image_data;
-  request->request_metadata = metadata;
   for (auto& callback : request->image_data_callbacks) {
-    std::move(callback).Run(request->image_data, request->request_metadata);
+    std::move(callback).Run(image_data, metadata);
   }
   request->image_data_callbacks.clear();
 
-  if (!request->image_callbacks.empty()) {
-    image_decoder_->DecodeImage(
-        image_data, desired_image_frame_size_,
-        base::BindRepeating(&ImageFetcherImpl::OnImageDecoded,
-                            base::Unretained(this), image_url, metadata));
-  } else {
+  if (image_data.empty() || request->image_callbacks.empty()) {
+    for (auto& callback : request->image_callbacks) {
+      std::move(callback).Run(request->id, gfx::Image(), metadata);
+    }
     pending_net_requests_.erase(it);
+    return;
   }
+  request->image_data = image_data;
+  request->request_metadata = metadata;
+  image_decoder_->DecodeImage(
+      image_data, desired_image_frame_size_,
+      base::BindRepeating(&ImageFetcherImpl::OnImageDecoded,
+                          base::Unretained(this), image_url, metadata));
 }
 
 void ImageFetcherImpl::OnImageDecoded(const GURL& image_url,
