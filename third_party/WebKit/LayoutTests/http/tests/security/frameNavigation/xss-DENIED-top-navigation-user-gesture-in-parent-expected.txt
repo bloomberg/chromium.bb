@@ -1,2 +1,6 @@
-localhost
-PASSED: Navigation succeeded.
+
+
+--------
+Frame: '<!--framePath //<!--frame0-->-->'
+--------
+The navigation should fail. This text should be visible.
