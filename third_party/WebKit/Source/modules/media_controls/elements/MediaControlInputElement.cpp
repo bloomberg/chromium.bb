@@ -270,6 +270,10 @@ WebSize MediaControlInputElement::GetSizeOrDefault() const {
   return MediaControlElementsHelper::GetSizeOrDefault(*this, WebSize(0, 0));
 }
 
+bool MediaControlInputElement::IsDisabled() const {
+  return hasAttribute(HTMLNames::disabledAttr);
+}
+
 void MediaControlInputElement::Trace(blink::Visitor* visitor) {
   HTMLInputElement::Trace(visitor);
   MediaControlElementBase::Trace(visitor);

@@ -93,6 +93,21 @@ function overflowMenu(video)
   return element;
 }
 
+function overflowItem(video, controlID) {
+  var element = mediaControlsElement(overflowMenu(video).firstChild, controlID);
+  if (!element)
+    throw 'Failed to find overflow item: ' + controlID;
+  return element;
+}
+
+function fullscreenOverflowItem(video) {
+  return overflowItem(video, '-webkit-media-controls-fullscreen-button');
+}
+
+function muteOverflowItem(video) {
+  return overflowItem(video, '-webkit-media-controls-mute-button');
+}
+
 function mediaControlsElement(first, id)
 {
     for (var element = first; element; element = element.nextSibling) {
