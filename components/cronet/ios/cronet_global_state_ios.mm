@@ -75,7 +75,7 @@ std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
   return nullptr;
 }
 
-std::unique_ptr<net::ProxyResolutionService> CreateProxyService(
+std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log) {
   return nullptr;

@@ -43,7 +43,7 @@ ProxyServiceFactory::CreatePrefProxyConfigTrackerOfLocalState(
 
 // static
 std::unique_ptr<net::ProxyResolutionService>
-ProxyServiceFactory::CreateProxyService(
+ProxyServiceFactory::CreateProxyResolutionService(
     net::NetLog* net_log,
     net::URLRequestContext* context,
     net::NetworkDelegate* network_delegate,

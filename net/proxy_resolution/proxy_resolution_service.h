@@ -236,9 +236,9 @@ class NET_EXPORT ProxyResolutionService
   // to downloading and testing the PAC files.
   void ForceReloadProxyConfig();
 
-  // Same as CreateProxyServiceUsingV8ProxyResolver, except it uses system
-  // libraries for evaluating the PAC script if available, otherwise skips
-  // proxy autoconfig.
+  // Same as CreateProxyResolutionServiceUsingV8ProxyResolver, except it uses
+  // system libraries for evaluating the PAC script if available, otherwise
+  // skips proxy autoconfig.
   static std::unique_ptr<ProxyResolutionService> CreateUsingSystemProxyResolver(
       std::unique_ptr<ProxyConfigService> proxy_config_service,
       NetLog* net_log);
@@ -304,8 +304,10 @@ class NET_EXPORT ProxyResolutionService
   }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(ProxyServiceTest, UpdateConfigAfterFailedAutodetect);
-  FRIEND_TEST_ALL_PREFIXES(ProxyServiceTest, UpdateConfigFromPACToDirect);
+  FRIEND_TEST_ALL_PREFIXES(ProxyResolutionServiceTest,
+                           UpdateConfigAfterFailedAutodetect);
+  FRIEND_TEST_ALL_PREFIXES(ProxyResolutionServiceTest,
+                           UpdateConfigFromPACToDirect);
   friend class Request;
   class InitProxyResolver;
   class PacFileDeciderPoller;

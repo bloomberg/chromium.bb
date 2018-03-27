@@ -516,10 +516,10 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
               base::ThreadTaskRunnerHandle::Get().get());
     }
 #endif  // !defined(OS_LINUX) && !defined(OS_ANDROID)
-    proxy_resolution_service_ =
-        CreateProxyService(std::move(proxy_config_service_), context.get(),
-                           context->host_resolver(),
-                           context->network_delegate(), context->net_log());
+    proxy_resolution_service_ = CreateProxyResolutionService(
+        std::move(proxy_config_service_), context.get(),
+        context->host_resolver(), context->network_delegate(),
+        context->net_log());
     proxy_resolution_service_->set_quick_check_enabled(pac_quick_check_enabled_);
     proxy_resolution_service_->set_sanitize_url_policy(pac_sanitize_url_policy_);
   }
@@ -659,7 +659,7 @@ std::unique_ptr<URLRequestContext> URLRequestContextBuilder::Build() {
 }
 
 std::unique_ptr<ProxyResolutionService>
-URLRequestContextBuilder::CreateProxyService(
+URLRequestContextBuilder::CreateProxyResolutionService(
     std::unique_ptr<ProxyConfigService> proxy_config_service,
     URLRequestContext* url_request_context,
     HostResolver* host_resolver,

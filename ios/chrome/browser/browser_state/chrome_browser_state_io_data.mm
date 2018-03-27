@@ -354,9 +354,9 @@ void ChromeBrowserStateIOData::Init(
   network_delegate->set_cookie_settings(profile_params_->cookie_settings.get());
   network_delegate->set_enable_do_not_track(&enable_do_not_track_);
 
-  // NOTE: Proxy service uses the default io thread network delegate, not the
-  // delegate just created.
-  proxy_resolution_service_ = ProxyServiceFactory::CreateProxyService(
+  // NOTE: The proxy resolution service uses the default io thread network
+  // delegate, not the delegate just created.
+  proxy_resolution_service_ = ProxyServiceFactory::CreateProxyResolutionService(
       io_thread->net_log(), nullptr,
       io_thread_globals->system_network_delegate.get(),
       std::move(profile_params_->proxy_config_service),
