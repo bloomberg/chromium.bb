@@ -135,7 +135,7 @@ class VM(object):
       SDK version.
     """
     sdk_version = os.environ.get(cros_chrome_sdk.SDKFetcher.SDK_VERSION_ENV)
-    if not sdk_version:
+    if not sdk_version and self.board:
       misc_cache = cache.DiskCache(self._GetCachePath(
           cros_chrome_sdk.SDKFetcher.MISC_CACHE))
       with misc_cache.Lookup((self.board, 'latest')) as ref:
@@ -151,7 +151,7 @@ class VM(object):
     """
     tarball_cache = cache.TarballCache(self._GetCachePath(
         cros_chrome_sdk.SDKFetcher.TARBALL_CACHE))
-    if self._SDKVersion():
+    if self.board and self._SDKVersion():
       cache_key = (self.board, self._SDKVersion(), key)
       with tarball_cache.Lookup(cache_key) as ref:
         if ref.Exists():
