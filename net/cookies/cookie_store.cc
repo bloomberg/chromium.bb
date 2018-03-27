@@ -40,6 +40,10 @@ int CookieStore::GetChannelIDServiceID() {
   return channel_id_service_id_;
 }
 
+void CookieStore::DumpMemoryStats(
+    base::trace_event::ProcessMemoryDump* pmd,
+    const std::string& parent_absolute_name) const {}
+
 CookieStore::CookieStore() : channel_id_service_id_(-1) {}
 
 }  // namespace net
