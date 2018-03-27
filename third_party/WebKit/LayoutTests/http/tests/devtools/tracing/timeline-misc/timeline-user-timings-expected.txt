@@ -1,0 +1,22 @@
+Test timeline aggregated details.
+
+
+CallTree
+Number of options >= 2: true
+Option #2 title: User Timing
+  HTML done parsing: 0.250  1.000
+    eval scripts: 0.750  0.750
+
+BottomUp
+Number of options >= 2: true
+Option #2 title: User Timing
+  eval scripts: 0.750  0.750
+    HTML done parsing: 0.750  0.750
+  HTML done parsing: 0.250  1.000
+
+EventLog
+Number of options >= 2: true
+Option #2 title: User Timing
+  HTML done parsing: 0.250  1.000
+    eval scripts: 0.750  0.750
+
