@@ -109,7 +109,7 @@ void LeScanManager::RemoveObserver(Observer* observer) {
 
 void LeScanManager::SetScanEnable(bool enable, SetScanEnableCallback cb) {
   MAKE_SURE_IO_THREAD(SetScanEnable, enable,
-                      BindToCurrentThread(std::move(cb)));
+                      BindToCurrentSequence(std::move(cb)));
   bool success;
   if (enable) {
     success = le_scanner_->StartScan();
@@ -129,7 +129,7 @@ void LeScanManager::SetScanEnable(bool enable, SetScanEnableCallback cb) {
 
 void LeScanManager::GetScanResults(GetScanResultsCallback cb,
                                    base::Optional<uint16_t> service_uuid) {
-  MAKE_SURE_IO_THREAD(GetScanResults, BindToCurrentThread(std::move(cb)),
+  MAKE_SURE_IO_THREAD(GetScanResults, BindToCurrentSequence(std::move(cb)),
                       service_uuid);
   std::move(cb).Run(GetScanResultsInternal(service_uuid));
 }

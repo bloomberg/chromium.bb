@@ -75,7 +75,7 @@ void GattClientManager::RemoveObserver(Observer* o) {
 void GattClientManager::GetDevice(
     const bluetooth_v2_shlib::Addr& addr,
     base::OnceCallback<void(scoped_refptr<RemoteDevice>)> cb) {
-  MAKE_SURE_IO_THREAD(GetDevice, addr, BindToCurrentThread(std::move(cb)));
+  MAKE_SURE_IO_THREAD(GetDevice, addr, BindToCurrentSequence(std::move(cb)));
   DCHECK(cb);
   std::move(cb).Run(GetDeviceSync(addr));
 }

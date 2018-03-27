@@ -66,7 +66,7 @@ RemoteDevice::RemoteDevice(
 RemoteDevice::~RemoteDevice() = default;
 
 void RemoteDevice::Connect(StatusCallback cb) {
-  MAKE_SURE_IO_THREAD(Connect, BindToCurrentThread(std::move(cb)));
+  MAKE_SURE_IO_THREAD(Connect, BindToCurrentSequence(std::move(cb)));
   if (!ConnectSync()) {
     // Error logged.
     EXEC_CB_AND_RET(cb, false);
@@ -96,7 +96,7 @@ bool RemoteDevice::ConnectSync() {
 }
 
 void RemoteDevice::Disconnect(StatusCallback cb) {
-  MAKE_SURE_IO_THREAD(Disconnect, BindToCurrentThread(std::move(cb)));
+  MAKE_SURE_IO_THREAD(Disconnect, BindToCurrentSequence(std::move(cb)));
   if (!DisconnectSync()) {
     // Error logged.
     EXEC_CB_AND_RET(cb, false);
@@ -127,7 +127,7 @@ bool RemoteDevice::DisconnectSync() {
 }
 
 void RemoteDevice::ReadRemoteRssi(RssiCallback cb) {
-  MAKE_SURE_IO_THREAD(ReadRemoteRssi, BindToCurrentThread(std::move(cb)));
+  MAKE_SURE_IO_THREAD(ReadRemoteRssi, BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(cb, false, 0);
@@ -146,7 +146,7 @@ void RemoteDevice::ReadRemoteRssi(RssiCallback cb) {
 }
 
 void RemoteDevice::RequestMtu(int mtu, StatusCallback cb) {
-  MAKE_SURE_IO_THREAD(RequestMtu, mtu, BindToCurrentThread(std::move(cb)));
+  MAKE_SURE_IO_THREAD(RequestMtu, mtu, BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(cb, false);
@@ -172,7 +172,7 @@ void RemoteDevice::ConnectionParameterUpdate(int min_interval,
                                              int timeout,
                                              StatusCallback cb) {
   MAKE_SURE_IO_THREAD(ConnectionParameterUpdate, min_interval, max_interval,
-                      latency, timeout, BindToCurrentThread(std::move(cb)));
+                      latency, timeout, BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(cb, false);
@@ -184,7 +184,7 @@ void RemoteDevice::ConnectionParameterUpdate(int min_interval,
 }
 
 void RemoteDevice::DiscoverServices(DiscoverServicesCb cb) {
-  MAKE_SURE_IO_THREAD(DiscoverServices, BindToCurrentThread(std::move(cb)));
+  MAKE_SURE_IO_THREAD(DiscoverServices, BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(cb, false, {});
@@ -219,7 +219,7 @@ int RemoteDevice::GetMtu() {
 
 void RemoteDevice::GetServices(
     base::OnceCallback<void(std::vector<scoped_refptr<RemoteService>>)> cb) {
-  MAKE_SURE_IO_THREAD(GetServices, BindToCurrentThread(std::move(cb)));
+  MAKE_SURE_IO_THREAD(GetServices, BindToCurrentSequence(std::move(cb)));
   auto ret = GetServicesSync();
   EXEC_CB_AND_RET(cb, std::move(ret));
 }
@@ -238,7 +238,7 @@ void RemoteDevice::GetServiceByUuid(
     const bluetooth_v2_shlib::Uuid& uuid,
     base::OnceCallback<void(scoped_refptr<RemoteService>)> cb) {
   MAKE_SURE_IO_THREAD(GetServiceByUuid, uuid,
-                      BindToCurrentThread(std::move(cb)));
+                      BindToCurrentSequence(std::move(cb)));
   auto ret = GetServiceByUuidSync(uuid);
   EXEC_CB_AND_RET(cb, std::move(ret));
 }
