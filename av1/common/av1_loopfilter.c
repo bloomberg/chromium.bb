@@ -1039,6 +1039,31 @@ void av1_setup_bitmask(AV1_COMMON *const cm, int mi_row, int mi_col, int plane,
 
   {
     // place hoder: for potential special case handling.
+    // 64x64 (Y) or 32x32 (U/V) boundaries must be filtered.
+    const int num_64x64 = MAX_MIB_SIZE == MI_SIZE_64X64 ? 1 : 4;
+    if (plane == 0) {
+      for (int i = 0; i < num_64x64; ++i) {
+        for (int j = 0; j < 4; ++j) {
+          if (mi_col || i & 1)
+            lfm->lfm_info[i].left_y[TX_64X64].bits[j] |=
+                left_txform_mask[TX_64X64].bits[j];
+          if (mi_row || i > 1)
+            lfm->lfm_info[i].above_y[TX_64X64].bits[j] |=
+                above_txform_mask[TX_64X64].bits[j];
+        }
+      }
+    } else {
+      for (int i = 0; i < num_64x64; ++i) {
+        if (mi_col || i & 1) {
+          lfm->lfm_info[i].left_u[TX_32X32] |= left_txform_mask_uv[TX_32X32];
+          lfm->lfm_info[i].left_v[TX_32X32] |= left_txform_mask_uv[TX_32X32];
+        }
+        if (mi_row || i > 1) {
+          lfm->lfm_info[i].above_u[TX_32X32] |= above_txform_mask_uv[TX_32X32];
+          lfm->lfm_info[i].above_v[TX_32X32] |= above_txform_mask_uv[TX_32X32];
+        }
+      }
+    }
 
     // Let 16x16 hold 32x32 (Y/U/V) and 64x64(Y only).
     // Even tx size is greater, we only apply max length filter, which is 16.
