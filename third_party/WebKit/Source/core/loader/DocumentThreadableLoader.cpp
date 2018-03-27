@@ -74,7 +74,8 @@ namespace blink {
 namespace {
 
 // Fetch API Spec: https://fetch.spec.whatwg.org/#cors-preflight-fetch-0
-String CreateAccessControlRequestHeadersHeader(const HTTPHeaderMap& headers) {
+AtomicString CreateAccessControlRequestHeadersHeader(
+    const HTTPHeaderMap& headers) {
   Vector<String> filtered_headers;
   for (const auto& header : headers) {
     // Exclude CORS-safelisted headers.
@@ -102,7 +103,7 @@ String CreateAccessControlRequestHeadersHeader(const HTTPHeaderMap& headers) {
     header_buffer.Append(header);
   }
 
-  return header_buffer.ToString();
+  return header_buffer.ToAtomicString();
 }
 
 class EmptyDataHandle final : public WebDataConsumerHandle {
@@ -165,45 +166,51 @@ void DocumentThreadableLoader::LoadResourceSynchronously(
 }
 
 // static
-WebURLRequest DocumentThreadableLoader::CreateAccessControlPreflightRequest(
-    const WebURLRequest& request) {
+std::unique_ptr<ResourceRequest>
+DocumentThreadableLoader::CreateAccessControlPreflightRequest(
+    const ResourceRequest& request,
+    const SecurityOrigin* origin) {
   const KURL& request_url = request.Url();
 
   DCHECK(request_url.User().IsEmpty());
   DCHECK(request_url.Pass().IsEmpty());
 
-  WebURLRequest preflight_request(request_url);
-  preflight_request.SetHTTPMethod(HTTPNames::OPTIONS);
-  preflight_request.SetHTTPHeaderField(HTTPNames::Access_Control_Request_Method,
-                                       request.HttpMethod());
-  preflight_request.SetPriority(request.GetPriority());
-  preflight_request.SetRequestContext(request.GetRequestContext());
-  preflight_request.SetFetchCredentialsMode(
+  std::unique_ptr<ResourceRequest> preflight_request =
+      std::make_unique<ResourceRequest>(request_url);
+  preflight_request->SetHTTPMethod(HTTPNames::OPTIONS);
+  preflight_request->SetHTTPHeaderField(
+      HTTPNames::Access_Control_Request_Method, request.HttpMethod());
+  preflight_request->SetPriority(request.Priority());
+  preflight_request->SetRequestContext(request.GetRequestContext());
+  preflight_request->SetFetchCredentialsMode(
       network::mojom::FetchCredentialsMode::kOmit);
-  preflight_request.SetSkipServiceWorker(true);
-  preflight_request.SetHTTPReferrer(request.HttpHeaderField(HTTPNames::Referer),
-                                    request.GetReferrerPolicy());
+  preflight_request->SetSkipServiceWorker(true);
+  preflight_request->SetHTTPReferrer(
+      Referrer(request.HttpReferrer(), request.GetReferrerPolicy()));
 
   if (request.IsExternalRequest()) {
-    preflight_request.SetHTTPHeaderField(
+    preflight_request->SetHTTPHeaderField(
         HTTPNames::Access_Control_Request_External, "true");
   }
 
-  String request_headers = CreateAccessControlRequestHeadersHeader(
-      request.ToResourceRequest().HttpHeaderFields());
+  const AtomicString request_headers =
+      CreateAccessControlRequestHeadersHeader(request.HttpHeaderFields());
   if (request_headers != g_null_atom) {
-    preflight_request.SetHTTPHeaderField(
+    preflight_request->SetHTTPHeaderField(
         HTTPNames::Access_Control_Request_Headers, request_headers);
   }
+
+  if (origin)
+    preflight_request->SetHTTPOrigin(origin);
 
   return preflight_request;
 }
 
 // static
-WebURLRequest
+std::unique_ptr<ResourceRequest>
 DocumentThreadableLoader::CreateAccessControlPreflightRequestForTesting(
-    const WebURLRequest& request) {
-  return CreateAccessControlPreflightRequest(request);
+    const ResourceRequest& request) {
+  return CreateAccessControlPreflightRequest(request, nullptr);
 }
 
 // static
@@ -456,16 +463,8 @@ void DocumentThreadableLoader::PrepareCrossOriginRequest(
 void DocumentThreadableLoader::LoadPreflightRequest(
     const ResourceRequest& actual_request,
     const ResourceLoaderOptions& actual_options) {
-  WebURLRequest web_url_request = CreateAccessControlPreflightRequest(
-      WrappedResourceRequest(actual_request));
-
-  ResourceRequest& preflight_request =
-      web_url_request.ToMutableResourceRequest();
-
-  // TODO(tyoshino): Call PrepareCrossOriginRequest(preflight_request) to also
-  // set the referrer header.
-  if (GetSecurityOrigin())
-    preflight_request.SetHTTPOrigin(GetSecurityOrigin());
+  std::unique_ptr<ResourceRequest> preflight_request =
+      CreateAccessControlPreflightRequest(actual_request, GetSecurityOrigin());
 
   actual_request_ = actual_request;
   actual_options_ = actual_options;
@@ -479,7 +478,7 @@ void DocumentThreadableLoader::LoadPreflightRequest(
   // Create a ResourceLoaderOptions for preflight.
   ResourceLoaderOptions preflight_options = actual_options;
 
-  LoadRequest(preflight_request, preflight_options);
+  LoadRequest(*preflight_request, preflight_options);
 }
 
 void DocumentThreadableLoader::MakeCrossOriginAccessRequest(
@@ -1345,10 +1344,10 @@ void DocumentThreadableLoader::LoadRequest(
     case network::mojom::FetchCredentialsMode::kOmit:
       break;
     case network::mojom::FetchCredentialsMode::kSameOrigin:
-      // TODO(tyoshino): It's wrong to use |cors_flag| here. Fix it to use the
+      // TODO(toyoshim): It's wrong to use |cors_flag| here. Fix it to use the
       // response tainting.
       //
-      // TODO(tyoshino): The credentials mode must work even when the "no-cors"
+      // TODO(toyoshim): The credentials mode must work even when the "no-cors"
       // mode is in use. See the following issues:
       // - https://github.com/whatwg/fetch/issues/130
       // - https://github.com/whatwg/fetch/issues/169
