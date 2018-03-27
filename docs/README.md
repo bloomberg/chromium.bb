@@ -287,9 +287,6 @@ used when committed.
 *   [VoiceOver](ios/voiceover.md) - Using Apple's VoiceOver feature with
     Chromium on iOS.
 
-### Memory
-*   [Memory Overview](memory/README.md)
-
 ### Memory Infrastructure Timeline Profiling (MemoryInfra)
 *   [Overview](memory-infra/README.md)
 *   [GPU Profiling](memory-infra/probe-gpu.md)
@@ -298,6 +295,7 @@ used when committed.
 *   [Memory Usage in CC](memory-infra/probe-cc.md)
 *   [Memory Benchmarks](memory-infra/memory_benchmarks.md)
 *   [Heap Profiling](memory-infra/heap_profiler.md)
+*   [Heap Profiling Internals](memory-infra/heap_profiler_internals.md)
 
 ### Misc
 *   [Useful URLs](useful_urls.md) - A collection of links to various tools and

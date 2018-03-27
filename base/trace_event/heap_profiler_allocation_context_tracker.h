@@ -15,25 +15,11 @@
 namespace base {
 namespace trace_event {
 
-// AllocationContextTracker is a thread-local object. Its main purpose is to
-// keep track of a pseudo stack of trace events. Chrome has been instrumented
-// with lots of `TRACE_EVENT` macros. These trace events push their name to a
-// thread-local stack when they go into scope, and pop when they go out of
-// scope, if all of the following conditions have been met:
-//
-//  * A trace is being recorded.
-//  * The category of the event is enabled in the trace config.
-//  * Heap profiling is enabled (with the `--enable-heap-profiling` flag).
-//
-// This means that allocations that occur before tracing is started will not
-// have backtrace information in their context.
-//
-// AllocationContextTracker also keeps track of some thread state not related to
-// trace events. See |AllocationContext|.
-//
-// A thread-local instance of the context tracker is initialized lazily when it
-// is first accessed. This might be because a trace event pushed or popped, or
-// because `GetContextSnapshot()` was called when an allocation occurred
+// The allocation context tracker keeps track of thread-local context for heap
+// profiling. It includes a pseudo stack of trace events. On every allocation
+// the tracker provides a snapshot of its context in the form of an
+// |AllocationContext| that is to be stored together with the allocation
+// details.
 class BASE_EXPORT AllocationContextTracker {
  public:
   enum class CaptureMode : int32_t {

@@ -201,6 +201,44 @@ MemoryDumpManager::~MemoryDumpManager() {
   g_memory_dump_manager_for_testing = nullptr;
 }
 
+// static
+HeapProfilingMode MemoryDumpManager::GetHeapProfilingModeFromCommandLine() {
+  if (!CommandLine::InitializedForCurrentProcess() ||
+      !CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableHeapProfiling)) {
+    return kHeapProfilingModeDisabled;
+  }
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+  std::string profiling_mode =
+      CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kEnableHeapProfiling);
+  if (profiling_mode == switches::kEnableHeapProfilingTaskProfiler)
+    return kHeapProfilingModeTaskProfiler;
+  if (profiling_mode == switches::kEnableHeapProfilingModePseudo)
+    return kHeapProfilingModePseudo;
+  if (profiling_mode == switches::kEnableHeapProfilingModeNative)
+    return kHeapProfilingModeNative;
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+  return kHeapProfilingModeInvalid;
+}
+
+void MemoryDumpManager::EnableHeapProfilingIfNeeded() {
+#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+  HeapProfilingMode profiling_mode = GetHeapProfilingModeFromCommandLine();
+  if (IsHeapProfilingModeEnabled(profiling_mode)) {
+    EnableHeapProfiling(profiling_mode);
+  } else {
+    if (profiling_mode == kHeapProfilingModeInvalid) {
+      // Heap profiling is misconfigured, disable it permanently.
+      EnableHeapProfiling(kHeapProfilingModeDisabled);
+    }
+  }
+#else
+  // Heap profiling is unsupported, disable it permanently.
+  EnableHeapProfiling(kHeapProfilingModeDisabled);
+#endif  // BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
+}
+
 bool MemoryDumpManager::EnableHeapProfiling(HeapProfilingMode profiling_mode) {
   AutoLock lock(lock_);
 #if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
@@ -291,6 +329,7 @@ void MemoryDumpManager::Initialize(
     request_dump_function_ = request_dump_function;
     is_coordinator_ = is_coordinator;
   }
+  EnableHeapProfilingIfNeeded();
 
 // Enable the core dump providers.
 #if defined(MALLOC_MEMORY_TRACING_SUPPORTED)

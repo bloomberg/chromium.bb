@@ -142,6 +142,7 @@ static const char* const kSwitchNames[] = {
     switches::kEnableAcceleratedVpxDecode,
 #endif
     switches::kEnableGpuRasterization,
+    switches::kEnableHeapProfiling,
     switches::kEnableLogging,
     switches::kEnableOOPRasterization,
     switches::kEnableVizDevTools,

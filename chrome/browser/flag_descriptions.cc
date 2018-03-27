@@ -390,6 +390,12 @@ const char kEnableHDRName[] = "HDR mode";
 const char kEnableHDRDescription[] =
     "Enables HDR support on compatible displays.";
 
+const char kEnableHeapProfilingName[] = "Heap profiling";
+const char kEnableHeapProfilingDescription[] = "Enables heap profiling.";
+const char kEnableHeapProfilingModePseudo[] = "Enabled (pseudo mode)";
+const char kEnableHeapProfilingModeNative[] = "Enabled (native mode)";
+const char kEnableHeapProfilingTaskProfiler[] = "Enabled (task mode)";
+
 const char kEnableHttpFormWarningName[] =
     "Show in-form warnings for sensitive fields when the top-level page is not "
     "HTTPS";

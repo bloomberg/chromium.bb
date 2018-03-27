@@ -2647,6 +2647,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kDomAutomationController,
     switches::kEnableAutomation,
     switches::kEnableExperimentalWebPlatformFeatures,
+    switches::kEnableHeapProfiling,
     switches::kEnableGPUClientLogging,
     switches::kEnableGpuClientTracing,
     switches::kEnableGpuMemoryBufferVideoFrames,

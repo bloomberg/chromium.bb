@@ -959,6 +959,16 @@ const FeatureEntry::FeatureVariation kDataReductionMainMenuFeatureVariations[] =
       arraysize(kPersistentMenuItemEnabled), nullptr}};
 #endif  // OS_ANDROID
 
+const FeatureEntry::Choice kEnableHeapProfilingChoices[] = {
+    {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
+    {flag_descriptions::kEnableHeapProfilingModePseudo,
+     switches::kEnableHeapProfiling, switches::kEnableHeapProfilingModePseudo},
+    {flag_descriptions::kEnableHeapProfilingModeNative,
+     switches::kEnableHeapProfiling, switches::kEnableHeapProfilingModeNative},
+    {flag_descriptions::kEnableHeapProfilingTaskProfiler,
+     switches::kEnableHeapProfiling,
+     switches::kEnableHeapProfilingTaskProfiler}};
+
 const FeatureEntry::Choice kEnableOutOfProcessHeapProfilingChoices[] = {
     {flags_ui::kGenericExperimentChoiceDisabled, "", ""},
     {flag_descriptions::kEnableOutOfProcessHeapProfilingModeMinimal,
@@ -3145,6 +3155,10 @@ const FeatureEntry kFeatureEntries[] = {
     {"sampling-heap-profiler", flag_descriptions::kSamplingHeapProfilerName,
      flag_descriptions::kSamplingHeapProfilerDescription, kOsAll,
      SINGLE_VALUE_TYPE(switches::kSamplingHeapProfiler)},
+
+    {"enable-heap-profiling", flag_descriptions::kEnableHeapProfilingName,
+     flag_descriptions::kEnableHeapProfilingDescription, kOsAll,
+     MULTI_VALUE_TYPE(kEnableHeapProfilingChoices)},
 
     {"memlog", flag_descriptions::kEnableOutOfProcessHeapProfilingName,
      flag_descriptions::kEnableOutOfProcessHeapProfilingDescription, kOsAll,
