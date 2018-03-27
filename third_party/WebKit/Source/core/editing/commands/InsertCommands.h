@@ -106,7 +106,7 @@ class InsertCommands {
   // Related to Editor::selectionForCommand.
   // Certain operations continue to use the target control's selection even if
   // the event handler already moved the selection outside of the text control.
-  static LocalFrame* TargetFrame(LocalFrame&, Event*);
+  static LocalFrame& TargetFrame(LocalFrame&, Event*);
 };
 
 }  // namespace blink
