@@ -70,6 +70,9 @@ class MockRasterDecoder : public RasterDecoder {
   MOCK_METHOD0(PerformIdleWork, void());
   MOCK_CONST_METHOD0(HasPollingWork, bool());
   MOCK_METHOD0(PerformPollingWork, void());
+  MOCK_CONST_METHOD0(RestoreGlobalState, void());
+  MOCK_CONST_METHOD0(ClearAllAttributes, void());
+  MOCK_CONST_METHOD0(RestoreAllAttributes, void());
   MOCK_METHOD1(RestoreState, void(const gles2::ContextState* prev_state));
   MOCK_CONST_METHOD0(RestoreActiveTexture, void());
   MOCK_CONST_METHOD1(RestoreAllTextureUnitAndSamplerBindings,

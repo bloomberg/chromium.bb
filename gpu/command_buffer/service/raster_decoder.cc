@@ -23,6 +23,7 @@
 #include "gpu/command_buffer/common/raster_cmd_format.h"
 #include "gpu/command_buffer/common/raster_cmd_ids.h"
 #include "gpu/command_buffer/common/sync_token.h"
+#include "gpu/command_buffer/service/buffer_manager.h"
 #include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/context_state.h"
 #include "gpu/command_buffer/service/decoder_client.h"
@@ -209,7 +210,13 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   void Destroy(bool have_context) override;
   bool MakeCurrent() override;
   gl::GLContext* GetGLContext() override;
+  const FeatureInfo* GetFeatureInfo() const override {
+    return feature_info_.get();
+  }
   Capabilities GetCapabilities() override;
+  void RestoreGlobalState() const override;
+  void ClearAllAttributes() const override;
+  void RestoreAllAttributes() const override;
   void RestoreState(const gles2::ContextState* prev_state) override;
   void RestoreActiveTexture() const override;
   void RestoreAllTextureUnitAndSamplerBindings(
@@ -292,6 +299,8 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   }
 
   MemoryTracker* memory_tracker() { return group_->memory_tracker(); }
+
+  BufferManager* buffer_manager() { return group_->buffer_manager(); }
 
   bool EnsureGPUMemoryAvailable(size_t estimated_size) {
     MemoryTracker* tracker = memory_tracker();
@@ -499,6 +508,11 @@ class RasterDecoderImpl : public RasterDecoder, public gles2::ErrorStateClient {
   // A table of CommandInfo for all the commands.
   static const CommandInfo command_info[kNumCommands - kFirstRasterCommand];
 
+  // Most recent generation of the TextureManager.  If this no longer matches
+  // the current generation when our context becomes current, then we'll rebind
+  // all the textures to stay up to date with Texture::service_id() changes.
+  uint32_t texture_manager_service_id_generation_;
+
   // Number of commands remaining to be processed in DoCommands().
   int commands_to_process_;
 
@@ -602,6 +616,7 @@ RasterDecoderImpl::RasterDecoderImpl(
     Outputter* outputter,
     ContextGroup* group)
     : RasterDecoder(command_buffer_service),
+      texture_manager_service_id_generation_(0),
       commands_to_process_(0),
       current_decoder_error_(error::kNoError),
       client_(client),
@@ -718,6 +733,11 @@ bool RasterDecoderImpl::MakeCurrent() {
     group_->LoseContexts(error::kUnknown);
     return false;
   }
+  DCHECK_EQ(api(), gl::g_current_gl_context);
+
+  // Rebind textures if the service ids may have changed.
+  RestoreAllExternalTextureBindingsIfNeeded();
+
   return true;
 }
 
@@ -739,30 +759,61 @@ Capabilities RasterDecoderImpl::GetCapabilities() {
   return caps;
 }
 
+void RasterDecoderImpl::RestoreGlobalState() const {
+  state_.RestoreGlobalState(nullptr);
+}
+
+void RasterDecoderImpl::ClearAllAttributes() const {
+  // Must use native VAO 0, as RestoreAllAttributes can't fully restore
+  // other VAOs.
+  if (feature_info_->feature_flags().native_vertex_array_object)
+    api()->glBindVertexArrayOESFn(0);
+
+  for (uint32_t i = 0; i < group_->max_vertex_attribs(); ++i) {
+    if (i != 0)  // Never disable attribute 0
+      state_.vertex_attrib_manager->SetDriverVertexAttribEnabled(i, false);
+    if (features().angle_instanced_arrays)
+      api()->glVertexAttribDivisorANGLEFn(i, 0);
+  }
+}
+
+void RasterDecoderImpl::RestoreAllAttributes() const {
+  state_.RestoreVertexAttribs();
+}
+
 void RasterDecoderImpl::RestoreState(const ContextState* prev_state) {
-  NOTIMPLEMENTED();
+  TRACE_EVENT1("gpu", "RasterDecoderImpl::RestoreState", "context",
+               logger_.GetLogPrefix());
+  state_.RestoreState(prev_state);
 }
 
 void RasterDecoderImpl::RestoreActiveTexture() const {
-  NOTIMPLEMENTED();
+  state_.RestoreActiveTexture();
 }
 
 void RasterDecoderImpl::RestoreAllTextureUnitAndSamplerBindings(
     const ContextState* prev_state) const {
-  NOTIMPLEMENTED();
+  state_.RestoreAllTextureUnitAndSamplerBindings(prev_state);
 }
 
 void RasterDecoderImpl::RestoreActiveTextureUnitBinding(
     unsigned int target) const {
-  NOTIMPLEMENTED();
+  state_.RestoreActiveTextureUnitBinding(target);
 }
 
 void RasterDecoderImpl::RestoreBufferBinding(unsigned int target) {
-  NOTIMPLEMENTED();
+  if (target == GL_PIXEL_PACK_BUFFER) {
+    state_.UpdatePackParameters();
+  } else if (target == GL_PIXEL_UNPACK_BUFFER) {
+    state_.UpdateUnpackParameters();
+  }
+  gles2::Buffer* bound_buffer =
+      buffer_manager()->GetBufferInfoForTarget(&state_, target);
+  api()->glBindBufferFn(target, bound_buffer ? bound_buffer->service_id() : 0);
 }
 
 void RasterDecoderImpl::RestoreBufferBindings() const {
-  NOTIMPLEMENTED();
+  state_.RestoreBufferBindings();
 }
 
 void RasterDecoderImpl::RestoreFramebufferBindings() const {
@@ -770,19 +821,34 @@ void RasterDecoderImpl::RestoreFramebufferBindings() const {
 }
 
 void RasterDecoderImpl::RestoreRenderbufferBindings() {
-  NOTIMPLEMENTED();
+  state_.RestoreRenderbufferBindings();
 }
 
 void RasterDecoderImpl::RestoreProgramBindings() const {
-  NOTIMPLEMENTED();
+  state_.RestoreProgramSettings(nullptr, false);
 }
 
 void RasterDecoderImpl::RestoreTextureState(unsigned service_id) const {
-  NOTIMPLEMENTED();
+  Texture* texture = texture_manager()->GetTextureForServiceId(service_id);
+  if (texture) {
+    GLenum target = texture->target();
+    api()->glBindTextureFn(target, service_id);
+    api()->glTexParameteriFn(target, GL_TEXTURE_WRAP_S, texture->wrap_s());
+    api()->glTexParameteriFn(target, GL_TEXTURE_WRAP_T, texture->wrap_t());
+    api()->glTexParameteriFn(target, GL_TEXTURE_MIN_FILTER,
+                             texture->min_filter());
+    api()->glTexParameteriFn(target, GL_TEXTURE_MAG_FILTER,
+                             texture->mag_filter());
+    if (feature_info_->IsWebGL2OrES3Context()) {
+      api()->glTexParameteriFn(target, GL_TEXTURE_BASE_LEVEL,
+                               texture->base_level());
+    }
+    RestoreTextureUnitBindings(state_.active_texture_unit);
+  }
 }
 
 void RasterDecoderImpl::RestoreTextureUnitBindings(unsigned unit) const {
-  NOTIMPLEMENTED();
+  state_.RestoreTextureUnitBindings(unit, nullptr);
 }
 
 void RasterDecoderImpl::RestoreVertexAttribArray(unsigned index) {
@@ -790,7 +856,30 @@ void RasterDecoderImpl::RestoreVertexAttribArray(unsigned index) {
 }
 
 void RasterDecoderImpl::RestoreAllExternalTextureBindingsIfNeeded() {
-  NOTIMPLEMENTED();
+  if (texture_manager()->GetServiceIdGeneration() ==
+      texture_manager_service_id_generation_)
+    return;
+
+  // Texture manager's version has changed, so rebind all external textures
+  // in case their service ids have changed.
+  for (unsigned texture_unit_index = 0;
+       texture_unit_index < state_.texture_units.size(); texture_unit_index++) {
+    const TextureUnit& texture_unit = state_.texture_units[texture_unit_index];
+    if (texture_unit.bind_target != GL_TEXTURE_EXTERNAL_OES)
+      continue;
+
+    if (TextureRef* texture_ref =
+            texture_unit.bound_texture_external_oes.get()) {
+      api()->glActiveTextureFn(GL_TEXTURE0 + texture_unit_index);
+      api()->glBindTextureFn(GL_TEXTURE_EXTERNAL_OES,
+                             texture_ref->service_id());
+    }
+  }
+
+  api()->glActiveTextureFn(GL_TEXTURE0 + state_.active_texture_unit);
+
+  texture_manager_service_id_generation_ =
+      texture_manager()->GetServiceIdGeneration();
 }
 
 QueryManager* RasterDecoderImpl::GetQueryManager() {

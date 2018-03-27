@@ -4,6 +4,7 @@
 
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
 
+#include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -33,8 +34,7 @@ CopyTexImageResourceManager::CopyTexImageResourceManager(
 
 CopyTexImageResourceManager::~CopyTexImageResourceManager() = default;
 
-void CopyTexImageResourceManager::Initialize(
-    const gles2::GLES2Decoder* decoder) {
+void CopyTexImageResourceManager::Initialize(const DecoderContext* decoder) {
   if (initialized_) {
     return;
   }
@@ -141,7 +141,7 @@ void CopyTexImageResourceManager::Destroy() {
 }
 
 void CopyTexImageResourceManager::DoCopyTexImage2DToLUMACompatibilityTexture(
-    const gles2::GLES2Decoder* decoder,
+    const DecoderContext* decoder,
     GLuint dest_texture,
     GLenum dest_texture_target,
     GLenum dest_target,
@@ -170,7 +170,7 @@ void CopyTexImageResourceManager::DoCopyTexImage2DToLUMACompatibilityTexture(
 }
 
 void CopyTexImageResourceManager::DoCopyTexSubImageToLUMACompatibilityTexture(
-    const gles2::GLES2Decoder* decoder,
+    const DecoderContext* decoder,
     GLuint dest_texture,
     GLenum dest_texture_target,
     GLenum dest_target,

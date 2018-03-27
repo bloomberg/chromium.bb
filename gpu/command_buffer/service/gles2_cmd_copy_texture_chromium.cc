@@ -8,9 +8,9 @@
 
 #include <algorithm>
 
+#include "gpu/command_buffer/service/decoder_context.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_copy_tex_image.h"
-#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "ui/gl/gl_version_info.h"
 
@@ -557,7 +557,7 @@ bool BindFramebufferTexture2D(GLenum target,
 }
 
 void DoCopyTexImage2D(
-    const gpu::gles2::GLES2Decoder* decoder,
+    const gpu::DecoderContext* decoder,
     GLenum source_target,
     GLuint source_id,
     GLint source_level,
@@ -610,7 +610,7 @@ void DoCopyTexImage2D(
 }
 
 void DoCopyTexSubImage2D(
-    const gpu::gles2::GLES2Decoder* decoder,
+    const gpu::DecoderContext* decoder,
     GLenum source_target,
     GLuint source_id,
     GLint source_level,
@@ -782,7 +782,7 @@ enum TexImageCommandType {
 };
 
 void DoReadbackAndTexImage(TexImageCommandType command_type,
-                           const gpu::gles2::GLES2Decoder* decoder,
+                           const gpu::DecoderContext* decoder,
                            GLenum source_target,
                            GLuint source_id,
                            GLint source_level,
@@ -878,7 +878,7 @@ CopyTextureCHROMIUMResourceManager::~CopyTextureCHROMIUMResourceManager() {
 }
 
 void CopyTextureCHROMIUMResourceManager::Initialize(
-    const gles2::GLES2Decoder* decoder,
+    const DecoderContext* decoder,
     const gles2::FeatureInfo::FeatureFlags& feature_flags) {
   static_assert(
       kVertexPositionAttrib == 0u,
@@ -947,7 +947,7 @@ void CopyTextureCHROMIUMResourceManager::Destroy() {
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
-    const gles2::GLES2Decoder* decoder,
+    const DecoderContext* decoder,
     GLenum source_target,
     GLuint source_id,
     GLint source_level,
@@ -1022,7 +1022,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTexture(
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopySubTexture(
-    const gles2::GLES2Decoder* decoder,
+    const DecoderContext* decoder,
     GLenum source_target,
     GLuint source_id,
     GLint source_level,
@@ -1114,7 +1114,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopySubTexture(
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopySubTextureWithTransform(
-    const gles2::GLES2Decoder* decoder,
+    const DecoderContext* decoder,
     GLenum source_target,
     GLuint source_id,
     GLint source_level,
@@ -1148,7 +1148,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopySubTextureWithTransform(
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
-    const gles2::GLES2Decoder* decoder,
+    const DecoderContext* decoder,
     GLenum source_target,
     GLuint source_id,
     GLint source_level,
@@ -1175,7 +1175,7 @@ void CopyTextureCHROMIUMResourceManager::DoCopyTextureWithTransform(
 }
 
 void CopyTextureCHROMIUMResourceManager::DoCopyTextureInternal(
-    const gles2::GLES2Decoder* decoder,
+    const DecoderContext* decoder,
     GLenum source_target,
     GLuint source_id,
     GLint source_level,

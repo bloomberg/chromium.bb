@@ -621,12 +621,14 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   void RestoreBufferBindings() const override {
     state_.RestoreBufferBindings();
   }
-  void RestoreGlobalState() const override { state_.RestoreGlobalState(NULL); }
+  void RestoreGlobalState() const override {
+    state_.RestoreGlobalState(nullptr);
+  }
   void RestoreProgramBindings() const override {
     state_.RestoreProgramSettings(nullptr, false);
   }
   void RestoreTextureUnitBindings(unsigned unit) const override {
-    state_.RestoreTextureUnitBindings(unit, NULL);
+    state_.RestoreTextureUnitBindings(unit, nullptr);
   }
   void RestoreVertexAttribArray(unsigned index) override {
     RestoreStateForAttrib(index, true);
@@ -867,7 +869,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     return texture_manager()->CreateTexture(client_id, service_id);
   }
 
-  // Gets the texture info for the given texture. Returns NULL if none exists.
+  // Gets the texture info for the given texture. Returns nullptr if none
+  // exists.
   TextureRef* GetTexture(GLuint client_id) const {
     return texture_manager()->GetTexture(client_id);
   }
@@ -883,7 +886,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     return sampler_manager()->CreateSampler(client_id, service_id);
   }
 
-  // Gets the sampler info for the given sampler. Returns NULL if none exists.
+  // Gets the sampler info for the given sampler. Returns nullptr if none
+  // exists.
   Sampler* GetSampler(GLuint client_id) {
     return sampler_manager()->GetSampler(client_id);
   }
@@ -1152,7 +1156,8 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
     return program_manager()->CreateProgram(client_id, service_id);
   }
 
-  // Gets the program info for the given program. Returns NULL if none exists.
+  // Gets the program info for the given program. Returns nullptr if none
+  // exists.
   Program* GetProgram(GLuint client_id) {
     return program_manager()->GetProgram(client_id);
   }
@@ -1186,7 +1191,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 #endif
 
   // Gets the program info for the given program. If it's not a program
-  // generates a GL error. Returns NULL if not program.
+  // generates a GL error. Returns nullptr if not program.
   Program* GetProgramInfoNotShader(
       GLuint client_id, const char* function_name) {
     Program* program = GetProgram(client_id);
@@ -1212,13 +1217,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
         client_id, service_id, shader_type);
   }
 
-  // Gets the shader info for the given shader. Returns NULL if none exists.
+  // Gets the shader info for the given shader. Returns nullptr if none exists.
   Shader* GetShader(GLuint client_id) {
     return shader_manager()->GetShader(client_id);
   }
 
   // Gets the shader info for the given shader. If it's not a shader generates a
-  // GL error. Returns NULL if not shader.
+  // GL error. Returns nullptr if not shader.
   Shader* GetShaderInfoNotProgram(
       GLuint client_id, const char* function_name) {
     Shader* shader = GetShader(client_id);
@@ -2116,7 +2121,7 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   Renderbuffer* GetRenderbufferInfoForTarget(
       GLenum target) {
-    Renderbuffer* renderbuffer = NULL;
+    Renderbuffer* renderbuffer = nullptr;
     switch (target) {
       case GL_RENDERBUFFER:
         renderbuffer = state_.bound_renderbuffer.get();
@@ -2220,13 +2225,13 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
 
   bool ShouldDeferDraws() {
     return !offscreen_target_frame_buffer_.get() &&
-           framebuffer_state_.bound_draw_framebuffer.get() == NULL &&
+           framebuffer_state_.bound_draw_framebuffer.get() == nullptr &&
            surface_->DeferDraws();
   }
 
   bool ShouldDeferReads() {
     return !offscreen_target_frame_buffer_.get() &&
-           framebuffer_state_.bound_read_framebuffer.get() == NULL &&
+           framebuffer_state_.bound_read_framebuffer.get() == nullptr &&
            surface_->DeferDraws();
   }
 
@@ -2890,9 +2895,9 @@ bool BackTexture::AllocateStorage(
                                      decoder_->state_.GetErrorState());
   ScopedTextureBinder binder(&decoder_->state_, id(), Target());
   uint32_t image_size = 0;
-  GLES2Util::ComputeImageDataSizes(
-      size.width(), size.height(), 1, format, GL_UNSIGNED_BYTE, 8, &image_size,
-      NULL, NULL);
+  GLES2Util::ComputeImageDataSizes(size.width(), size.height(), 1, format,
+                                   GL_UNSIGNED_BYTE, 8, &image_size, nullptr,
+                                   nullptr);
 
   if (!memory_tracker_.EnsureGPUMemoryAvailable(image_size)) {
     return false;
@@ -3357,7 +3362,8 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   // and we are using a software renderer, fail.
   if (attrib_helper.fail_if_major_perf_caveat &&
       feature_info_->feature_flags().is_swiftshader_for_webgl) {
-    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
+    // Must not destroy ContextGroup if it is not initialized.
+    group_ = nullptr;
     Destroy(true);
     LOG(ERROR) << "ContextResult::kFatalFailure: "
                   "fail_if_major_perf_caveat + swiftshader";
@@ -3367,7 +3373,8 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   auto result =
       group_->Initialize(this, attrib_helper.context_type, disallowed_features);
   if (result != gpu::ContextResult::kSuccess) {
-    group_ = NULL;  // Must not destroy ContextGroup if it is not initialized.
+    // Must not destroy ContextGroup if it is not initialized.
+    group_ = nullptr;
     Destroy(true);
     return result;
   }
@@ -3477,7 +3484,7 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   }
   api()->glGenBuffersARBFn(1, &attrib_0_buffer_id_);
   api()->glBindBufferFn(GL_ARRAY_BUFFER, attrib_0_buffer_id_);
-  api()->glVertexAttribPointerFn(0, 1, GL_FLOAT, GL_FALSE, 0, NULL);
+  api()->glVertexAttribPointerFn(0, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
   api()->glBindBufferFn(GL_ARRAY_BUFFER, 0);
   api()->glGenBuffersARBFn(1, &fixed_attrib_buffer_id_);
 
@@ -3726,8 +3733,8 @@ gpu::ContextResult GLES2DecoderImpl::Initialize(
   state_.scissor_height = state_.viewport_height;
 
   // Set all the default state because some GL drivers get it wrong.
-  state_.InitCapabilities(NULL);
-  state_.InitState(NULL);
+  state_.InitCapabilities(nullptr);
+  state_.InitState(nullptr);
 
   // Default state must be set before offscreen resources can be created.
   if (offscreen) {
@@ -4223,7 +4230,7 @@ bool GLES2DecoderImpl::InitializeShaderTranslator() {
       force_shader_name_hashing_for_test)
     resources.HashFunction = &CityHash64;
   else
-    resources.HashFunction = NULL;
+    resources.HashFunction = nullptr;
 
   ShCompileOptions driver_bug_workarounds = 0;
   if (workarounds().init_gl_position_in_vertex_shader)
@@ -4444,11 +4451,11 @@ void GLES2DecoderImpl::DeleteFramebuffersHelper(
 
         api()->glBindFramebufferEXTFn(target, GetBackbufferServiceId());
         state_.UpdateWindowRectanglesForBoundDrawFramebufferClientID(0);
-        framebuffer_state_.bound_draw_framebuffer = NULL;
+        framebuffer_state_.bound_draw_framebuffer = nullptr;
         framebuffer_state_.clear_state_dirty = true;
       }
       if (framebuffer == framebuffer_state_.bound_read_framebuffer.get()) {
-        framebuffer_state_.bound_read_framebuffer = NULL;
+        framebuffer_state_.bound_read_framebuffer = nullptr;
         GLenum target = GetReadFramebufferTarget();
         api()->glBindFramebufferEXTFn(target, GetBackbufferServiceId());
       }
@@ -4468,7 +4475,7 @@ void GLES2DecoderImpl::DeleteRenderbuffersHelper(
     Renderbuffer* renderbuffer = GetRenderbuffer(client_id);
     if (renderbuffer && !renderbuffer->IsDeleted()) {
       if (state_.bound_renderbuffer.get() == renderbuffer) {
-        state_.bound_renderbuffer = NULL;
+        state_.bound_renderbuffer = nullptr;
       }
       // Unbind from current framebuffers.
       if (supports_separate_framebuffer_binds) {
@@ -5126,7 +5133,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   // state_.current_program must be reset before group_ is reset because
   // the later deletes the ProgramManager object that referred by
   // state_.current_program object.
-  state_.current_program = NULL;
+  state_.current_program = nullptr;
 
   apply_framebuffer_attachment_cmaa_intel_.reset();
   copy_tex_image_blit_.reset();
@@ -5192,7 +5199,7 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
 
   if (group_.get()) {
     group_->Destroy(this, have_context);
-    group_ = NULL;
+    group_ = nullptr;
   }
 
   // Destroy the surface before the context, some surface destructors make GL
@@ -5200,13 +5207,13 @@ void GLES2DecoderImpl::Destroy(bool have_context) {
   surface_ = nullptr;
 
   if (context_.get()) {
-    context_->ReleaseCurrent(NULL);
-    context_ = NULL;
+    context_->ReleaseCurrent(nullptr);
+    context_ = nullptr;
   }
 }
 
 void GLES2DecoderImpl::SetSurface(const scoped_refptr<gl::GLSurface>& surface) {
-  DCHECK(context_->IsCurrent(NULL));
+  DCHECK(context_->IsCurrent(nullptr));
   DCHECK(surface);
   surface_ = surface;
   RestoreCurrentFramebufferBindings();
@@ -5709,7 +5716,7 @@ void GLES2DecoderImpl::DoActiveTexture(GLenum texture_unit) {
 }
 
 void GLES2DecoderImpl::DoBindBuffer(GLenum target, GLuint client_id) {
-  Buffer* buffer = NULL;
+  Buffer* buffer = nullptr;
   GLuint service_id = 0;
   if (client_id != 0) {
     buffer = GetBuffer(client_id);
@@ -6103,7 +6110,7 @@ void GLES2DecoderImpl::OnUseFramebuffer() const {
 }
 
 void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
-  Framebuffer* framebuffer = NULL;
+  Framebuffer* framebuffer = nullptr;
   GLuint service_id = 0;
   if (client_id != 0) {
     framebuffer = GetFramebuffer(client_id);
@@ -6140,7 +6147,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
 
   // If we are rendering to the backbuffer get the FBO id for any simulated
   // backbuffer.
-  if (framebuffer == NULL) {
+  if (framebuffer == nullptr) {
     service_id = GetBackbufferServiceId();
   }
 
@@ -6150,7 +6157,7 @@ void GLES2DecoderImpl::DoBindFramebuffer(GLenum target, GLuint client_id) {
 
 void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
   DCHECK_EQ(target, (GLenum)GL_RENDERBUFFER);
-  Renderbuffer* renderbuffer = NULL;
+  Renderbuffer* renderbuffer = nullptr;
   GLuint service_id = 0;
   if (client_id != 0) {
     renderbuffer = GetRenderbuffer(client_id);
@@ -6178,7 +6185,7 @@ void GLES2DecoderImpl::DoBindRenderbuffer(GLenum target, GLuint client_id) {
 }
 
 void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint client_id) {
-  TextureRef* texture_ref = NULL;
+  TextureRef* texture_ref = nullptr;
   GLuint service_id = 0;
   if (client_id != 0) {
     texture_ref = GetTexture(client_id);
@@ -7299,10 +7306,10 @@ bool GLES2DecoderImpl::GetHelper(
 bool GLES2DecoderImpl::GetNumValuesReturnedForGLGet(
     GLenum pname, GLsizei* num_values) {
   *num_values = 0;
-  if (state_.GetStateAsGLint(pname, NULL, num_values)) {
+  if (state_.GetStateAsGLint(pname, nullptr, num_values)) {
     return true;
   }
-  return GetHelper(pname, NULL, num_values);
+  return GetHelper(pname, nullptr, num_values);
 }
 
 GLenum GLES2DecoderImpl::AdjustGetPname(GLenum pname) {
@@ -7930,7 +7937,7 @@ void GLES2DecoderImpl::DoFramebufferRenderbuffer(
     return;
   }
   GLuint service_id = 0;
-  Renderbuffer* renderbuffer = NULL;
+  Renderbuffer* renderbuffer = nullptr;
   if (client_renderbuffer_id) {
     renderbuffer = GetRenderbuffer(client_renderbuffer_id);
     if (!renderbuffer) {
@@ -8164,7 +8171,7 @@ void GLES2DecoderImpl::DoFramebufferTexture2DCommon(
     return;
   }
   GLuint service_id = 0;
-  TextureRef* texture_ref = NULL;
+  TextureRef* texture_ref = nullptr;
   if (client_texture_id) {
     texture_ref = GetTexture(client_texture_id);
     if (!texture_ref) {
@@ -9015,7 +9022,7 @@ bool GLES2DecoderImpl::VerifyMultisampleRenderbufferIntegrity(
     // Texture only needs to be 1x1.
     api()->glBindTextureFn(GL_TEXTURE_2D, validation_texture);
     api()->glTexImage2DFn(GL_TEXTURE_2D, 0, format, 1, 1, 0, pixel_format,
-                          pixel_type, NULL);
+                          pixel_type, nullptr);
   } else {
     validation_texture = iter->second;
   }
@@ -10302,7 +10309,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
       state_.vertex_attrib_manager->GetVertexAttrib(0);
   // If it's enabled or it's not used then we don't need to do anything.
   bool attrib_0_used =
-      state_.current_program->GetAttribInfoByLocation(0) != NULL;
+      state_.current_program->GetAttribInfoByLocation(0) != nullptr;
   if (attrib->enabled() && attrib_0_used) {
     return true;
   }
@@ -10328,7 +10335,8 @@ bool GLES2DecoderImpl::SimulateAttrib0(
 
   bool new_buffer = static_cast<GLsizei>(size_needed) > attrib_0_size_;
   if (new_buffer) {
-    api()->glBufferDataFn(GL_ARRAY_BUFFER, size_needed, NULL, GL_DYNAMIC_DRAW);
+    api()->glBufferDataFn(GL_ARRAY_BUFFER, size_needed, nullptr,
+                          GL_DYNAMIC_DRAW);
     GLenum error = api()->glGetErrorFn();
     if (error != GL_NO_ERROR) {
       LOCAL_SET_GL_ERROR(
@@ -10352,7 +10360,7 @@ bool GLES2DecoderImpl::SimulateAttrib0(
     attrib_0_size_ = size_needed;
   }
 
-  api()->glVertexAttribPointerFn(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+  api()->glVertexAttribPointerFn(0, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
 
   if (feature_info_->feature_flags().angle_instanced_arrays)
     api()->glVertexAttribDivisorANGLEFn(0, 0);
@@ -10465,7 +10473,8 @@ bool GLES2DecoderImpl::SimulateFixedAttribs(
 
   api()->glBindBufferFn(GL_ARRAY_BUFFER, fixed_attrib_buffer_id_);
   if (static_cast<GLsizei>(size_needed) > fixed_attrib_buffer_size_) {
-    api()->glBufferDataFn(GL_ARRAY_BUFFER, size_needed, NULL, GL_DYNAMIC_DRAW);
+    api()->glBufferDataFn(GL_ARRAY_BUFFER, size_needed, nullptr,
+                          GL_DYNAMIC_DRAW);
     GLenum error = api()->glGetErrorFn();
     if (error != GL_NO_ERROR) {
       LOCAL_SET_GL_ERROR(
@@ -11115,7 +11124,7 @@ bool GLES2DecoderImpl::DoIsProgram(GLuint client_id) {
   // IsProgram is true for programs as soon as they are created, until they are
   // deleted and no longer in use.
   const Program* program = GetProgram(client_id);
-  return program != NULL && !program->IsDeleted();
+  return program != nullptr && !program->IsDeleted();
 }
 
 bool GLES2DecoderImpl::DoIsRenderbuffer(GLuint client_id) {
@@ -11128,7 +11137,7 @@ bool GLES2DecoderImpl::DoIsShader(GLuint client_id) {
   // IsShader is true for shaders as soon as they are created, until they
   // are deleted and not attached to any programs.
   const Shader* shader = GetShader(client_id);
-  return shader != NULL && !shader->IsDeleted();
+  return shader != nullptr && !shader->IsDeleted();
 }
 
 bool GLES2DecoderImpl::DoIsTexture(GLuint client_id) {
@@ -11809,7 +11818,7 @@ void GLES2DecoderImpl::FinishReadPixels(GLsizei width,
   TRACE_EVENT0("gpu", "GLES2DecoderImpl::FinishReadPixels");
   typedef cmds::ReadPixels::Result Result;
   uint32_t pixels_size;
-  Result* result = NULL;
+  Result* result = nullptr;
   if (result_shm_id != 0) {
     result = GetSharedMemoryAs<Result*>(result_shm_id, result_shm_offset,
                                         sizeof(*result));
@@ -11821,7 +11830,8 @@ void GLES2DecoderImpl::FinishReadPixels(GLsizei width,
     }
   }
   GLES2Util::ComputeImageDataSizes(width, height, 1, format, type,
-                                   pack_alignment, &pixels_size, NULL, NULL);
+                                   pack_alignment, &pixels_size, nullptr,
+                                   nullptr);
   void* pixels =
       GetSharedMemoryAs<void*>(pixels_shm_id, pixels_shm_offset, pixels_size);
   if (!pixels) {
@@ -11852,7 +11862,7 @@ void GLES2DecoderImpl::FinishReadPixels(GLsizei width,
     api()->glDeleteBuffersARBFn(1, &buffer);
   }
 
-  if (result != NULL) {
+  if (result != nullptr) {
     result->success = 1;
   }
 }
@@ -12120,7 +12130,7 @@ error::Error GLES2DecoderImpl::HandleReadPixels(uint32_t immediate_data_size,
       // For ANGLE client version 2, GL_STREAM_READ is not available.
       const GLenum usage_hint =
           gl_version_info().is_angle ? GL_STATIC_DRAW : GL_STREAM_READ;
-      api()->glBufferDataFn(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, NULL,
+      api()->glBufferDataFn(GL_PIXEL_PACK_BUFFER_ARB, pixels_size, nullptr,
                             usage_hint);
       GLenum error = api()->glGetErrorFn();
       if (error == GL_NO_ERROR) {
@@ -12839,8 +12849,8 @@ error::Error GLES2DecoderImpl::HandleGetUniformIndices(
   Result* result = GetSharedMemoryAs<Result*>(
       c.indices_shm_id, c.indices_shm_offset,
       Result::ComputeSize(static_cast<size_t>(count)));
-  GLuint* indices = result ? result->GetData() : NULL;
-  if (indices == NULL) {
+  GLuint* indices = result ? result->GetData() : nullptr;
+  if (indices == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
@@ -13058,7 +13068,7 @@ error::Error GLES2DecoderImpl::HandleBufferData(uint32_t immediate_data_size,
   uint32_t data_shm_id = static_cast<uint32_t>(c.data_shm_id);
   uint32_t data_shm_offset = static_cast<uint32_t>(c.data_shm_offset);
   GLenum usage = static_cast<GLenum>(c.usage);
-  const void* data = NULL;
+  const void* data = nullptr;
   if (data_shm_id != 0 || data_shm_offset != 0) {
     data = GetSharedMemoryAs<const void*>(data_shm_id, data_shm_offset, size);
     if (!data) {
@@ -13141,9 +13151,9 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
 
   uint32_t size;
   uint32_t padded_row_size;
-  if (!GLES2Util::ComputeImageDataSizes(
-          width, height, 1, format, type, state_.unpack_alignment, &size,
-          NULL, &padded_row_size)) {
+  if (!GLES2Util::ComputeImageDataSizes(width, height, 1, format, type,
+                                        state_.unpack_alignment, &size, nullptr,
+                                        &padded_row_size)) {
     return false;
   }
 
@@ -13159,9 +13169,9 @@ bool GLES2DecoderImpl::ClearLevel(Texture* texture,
     // We should never have a large total size with a zero row size.
     DCHECK_GT(padded_row_size, 0U);
     tile_height = kMaxZeroSize / padded_row_size;
-    if (!GLES2Util::ComputeImageDataSizes(
-            width, tile_height, 1, format, type, state_.unpack_alignment, &size,
-            NULL, NULL)) {
+    if (!GLES2Util::ComputeImageDataSizes(width, tile_height, 1, format, type,
+                                          state_.unpack_alignment, &size,
+                                          nullptr, nullptr)) {
       return false;
     }
   } else {
@@ -14846,9 +14856,9 @@ void GLES2DecoderImpl::DoCopyTexImage2D(
       GetErrorState(), func_name, true, format, type, internal_format, level));
 
   // Only target image size is validated here.
-  if (!GLES2Util::ComputeImageDataSizes(
-      width, height, 1, format, type,
-      state_.unpack_alignment, &pixels_size, NULL, NULL)) {
+  if (!GLES2Util::ComputeImageDataSizes(width, height, 1, format, type,
+                                        state_.unpack_alignment, &pixels_size,
+                                        nullptr, nullptr)) {
     LOCAL_SET_GL_ERROR(GL_OUT_OF_MEMORY, func_name, "dimensions too large");
     return;
   }
@@ -15806,8 +15816,8 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformBlockiv(
   typedef cmds::GetActiveUniformBlockiv::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
@@ -15901,8 +15911,8 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniformsiv(
   typedef cmds::GetActiveUniformsiv::Result Result;
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(count));
-  GLint* params = result ? result->GetData() : NULL;
-  if (params == NULL) {
+  GLint* params = result ? result->GetData() : nullptr;
+  if (params == nullptr) {
     return error::kOutOfBounds;
   }
   // Check that the client initialized the result.
@@ -16000,7 +16010,7 @@ error::Error GLES2DecoderImpl::HandleShaderBinary(
   GLenum binaryformat = static_cast<GLenum>(c.binaryformat);
   const void* binary = GetSharedMemoryAs<const void*>(
       c.binary_shm_id, c.binary_shm_offset, length);
-  if (shaders == NULL || binary == NULL) {
+  if (shaders == nullptr || binary == nullptr) {
     return error::kOutOfBounds;
   }
   std::unique_ptr<GLuint[]> service_ids(new GLuint[n]);
@@ -16344,7 +16354,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoCHROMIUM(
   uint32_t bucket_id = c.bucket_id;
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(ProgramInfoHeader));  // in case we fail.
-  Program* program = NULL;
+  Program* program = nullptr;
   program = GetProgram(program_id);
   if (!program || !program->IsValid()) {
     return error::kNoError;
@@ -16365,7 +16375,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformBlocksCHROMIUM(
   uint32_t bucket_id = c.bucket_id;
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(UniformBlocksHeader));  // in case we fail.
-  Program* program = NULL;
+  Program* program = nullptr;
   program = GetProgram(program_id);
   if (!program || !program->IsValid()) {
     return error::kNoError;
@@ -16386,7 +16396,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformsES3CHROMIUM(
   uint32_t bucket_id = c.bucket_id;
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(UniformsES3Header));  // in case we fail.
-  Program* program = NULL;
+  Program* program = nullptr;
   program = GetProgram(program_id);
   if (!program || !program->IsValid()) {
     return error::kNoError;
@@ -16471,7 +16481,7 @@ error::Error GLES2DecoderImpl::HandleGetTransformFeedbackVaryingsCHROMIUM(
   uint32_t bucket_id = c.bucket_id;
   Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(sizeof(TransformFeedbackVaryingsHeader));  // in case we fail.
-  Program* program = NULL;
+  Program* program = nullptr;
   program = GetProgram(program_id);
   if (!program || !program->IsValid()) {
     return error::kNoError;
@@ -16509,7 +16519,7 @@ void GLES2DecoderImpl::MarkContextLost(error::ContextLostReason reason) {
 
 bool GLES2DecoderImpl::CheckResetStatus() {
   DCHECK(!WasContextLost());
-  DCHECK(context_->IsCurrent(NULL));
+  DCHECK(context_->IsCurrent(nullptr));
 
   if (IsRobustnessSupported()) {
     // If the reason for the call was a GL error, we can try to determine the
@@ -16953,7 +16963,7 @@ void GLES2DecoderImpl::DeleteVertexArraysOESHelper(
 }
 
 void GLES2DecoderImpl::DoBindVertexArrayOES(GLuint client_id) {
-  VertexAttribManager* vao = NULL;
+  VertexAttribManager* vao = nullptr;
   if (client_id != 0) {
     vao = GetVertexAttribManager(client_id);
     if (!vao) {
@@ -17915,7 +17925,7 @@ void GLES2DecoderImpl::DoCompressedCopyTextureCHROMIUM(GLuint source_id,
       LOCAL_COPY_REAL_GL_ERRORS_TO_WRAPPER(kFunctionName);
       api()->glCompressedTexImage2DFn(GL_TEXTURE_2D, 0, source_internal_format,
                                       source_width, source_height, 0,
-                                      source_size, NULL);
+                                      source_size, nullptr);
       GLenum error = LOCAL_PEEK_GL_ERROR(kFunctionName);
       if (error != GL_NO_ERROR) {
         RestoreCurrentTextureBindings(&state_, dest_texture->target(),
@@ -18848,7 +18858,7 @@ error::Error GLES2DecoderImpl::HandleGetInternalformativ(
   }
   Result* result = GetSharedMemoryAs<Result*>(
       c.params_shm_id, c.params_shm_offset, Result::ComputeSize(num_values));
-  GLint* params = result ? result->GetData() : NULL;
+  GLint* params = result ? result->GetData() : nullptr;
   if (params == nullptr) {
     return error::kOutOfBounds;
   }
@@ -19491,7 +19501,7 @@ error::Error GLES2DecoderImpl::HandlePathCommandsCHROMIUM(
     return error::kNoError;
   }
 
-  const void* coords = NULL;
+  const void* coords = nullptr;
 
   if (num_coords > 0) {
     uint32_t coords_size = 0;
@@ -20221,7 +20231,7 @@ error::Error GLES2DecoderImpl::HandleProgramPathFragmentInputGenCHROMIUM(
   }
   GLint real_location = fragment_input_info->location;
 
-  const GLfloat* coeffs = NULL;
+  const GLfloat* coeffs = nullptr;
 
   if (components > 0) {
     GLint components_needed = -1;

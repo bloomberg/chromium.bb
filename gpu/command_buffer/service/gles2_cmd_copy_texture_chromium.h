@@ -14,9 +14,11 @@
 #include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
+
+class DecoderContext;
+
 namespace gles2 {
 
-class GLES2Decoder;
 class CopyTexImageResourceManager;
 
 enum CopyTextureMethod {
@@ -49,11 +51,11 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
   CopyTextureCHROMIUMResourceManager();
   ~CopyTextureCHROMIUMResourceManager();
 
-  void Initialize(const gles2::GLES2Decoder* decoder,
+  void Initialize(const DecoderContext* decoder,
                   const gles2::FeatureInfo::FeatureFlags& feature_flags);
   void Destroy();
 
-  void DoCopyTexture(const gles2::GLES2Decoder* decoder,
+  void DoCopyTexture(const DecoderContext* decoder,
                      GLenum source_target,
                      GLuint source_id,
                      GLint source_level,
@@ -71,7 +73,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
                      CopyTextureMethod method,
                      CopyTexImageResourceManager* luma_emulation_blitter);
 
-  void DoCopySubTexture(const gles2::GLES2Decoder* decoder,
+  void DoCopySubTexture(const DecoderContext* decoder,
                         GLenum source_target,
                         GLuint source_id,
                         GLint source_level,
@@ -98,7 +100,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
                         CopyTexImageResourceManager* luma_emulation_blitter);
 
   void DoCopySubTextureWithTransform(
-      const gles2::GLES2Decoder* decoder,
+      const DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -129,7 +131,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
   // matrix should be given in column-major form, so it can be passed
   // directly to GL.
   void DoCopyTextureWithTransform(
-      const gles2::GLES2Decoder* decoder,
+      const DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,
@@ -178,7 +180,7 @@ class GPU_GLES2_EXPORT CopyTextureCHROMIUMResourceManager {
   };
 
   void DoCopyTextureInternal(
-      const gles2::GLES2Decoder* decoder,
+      const DecoderContext* decoder,
       GLenum source_target,
       GLuint source_id,
       GLint source_level,

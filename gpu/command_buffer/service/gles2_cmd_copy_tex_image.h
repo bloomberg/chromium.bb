@@ -14,9 +14,9 @@
 #include "gpu/gpu_gles2_export.h"
 
 namespace gpu {
-namespace gles2 {
+class DecoderContext;
 
-class GLES2Decoder;
+namespace gles2 {
 
 // This class encapsulates the resources required to implement the
 // glCopyTexImage and glCopyTexSubImage commands.  These commands somtimes
@@ -26,11 +26,11 @@ class GPU_GLES2_EXPORT CopyTexImageResourceManager {
   explicit CopyTexImageResourceManager(const gles2::FeatureInfo* feature_info);
   ~CopyTexImageResourceManager();
 
-  void Initialize(const gles2::GLES2Decoder* decoder);
+  void Initialize(const DecoderContext* decoder);
   void Destroy();
 
   void DoCopyTexImage2DToLUMACompatibilityTexture(
-      const gles2::GLES2Decoder* decoder,
+      const DecoderContext* decoder,
       GLuint dest_texture,
       GLenum dest_texture_target,
       GLenum dest_target,
@@ -46,7 +46,7 @@ class GPU_GLES2_EXPORT CopyTexImageResourceManager {
       GLenum source_framebuffer_internal_format);
 
   void DoCopyTexSubImageToLUMACompatibilityTexture(
-      const gles2::GLES2Decoder* decoder,
+      const DecoderContext* decoder,
       GLuint dest_texture,
       GLenum dest_texture_target,
       GLenum dest_target,
