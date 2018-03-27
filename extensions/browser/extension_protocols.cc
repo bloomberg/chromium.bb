@@ -506,10 +506,7 @@ void GetSecurityPolicyForURL(const GURL& url,
                                                               resource_path);
   }
 
-  if ((extension->manifest_version() >= 2 ||
-       extensions::WebAccessibleResourcesInfo::HasWebAccessibleResources(
-           extension)) &&
-      extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
+  if (extensions::WebAccessibleResourcesInfo::IsResourceWebAccessible(
           extension, resource_path)) {
     *send_cors_header = true;
   }

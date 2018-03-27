@@ -97,19 +97,24 @@ scoped_refptr<Extension> CreateTestExtension(const std::string& name,
 }
 
 scoped_refptr<Extension> CreateWebStoreExtension() {
-  base::DictionaryValue manifest;
-  manifest.SetString("name", "WebStore");
-  manifest.SetString("version", "1");
-  manifest.SetString("icons.16", "webstore_icon_16.png");
+  std::unique_ptr<base::DictionaryValue> manifest =
+      DictionaryBuilder()
+          .Set("name", "WebStore")
+          .Set("version", "1")
+          .Set("manifest_version", 2)
+          .Set("icons",
+               DictionaryBuilder().Set("16", "webstore_icon_16.png").Build())
+          .Set("web_accessible_resources",
+               ListBuilder().Append("webstore_icon_16.png").Build())
+          .Build();
 
   base::FilePath path;
   EXPECT_TRUE(PathService::Get(chrome::DIR_RESOURCES, &path));
   path = path.AppendASCII("web_store");
 
   std::string error;
-  scoped_refptr<Extension> extension(
-      Extension::Create(path, Manifest::COMPONENT, manifest,
-                        Extension::NO_FLAGS, &error));
+  scoped_refptr<Extension> extension(Extension::Create(
+      path, Manifest::COMPONENT, *manifest, Extension::NO_FLAGS, &error));
   EXPECT_TRUE(extension.get()) << error;
   return extension;
 }
