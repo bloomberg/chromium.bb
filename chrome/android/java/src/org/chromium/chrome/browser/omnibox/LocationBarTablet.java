@@ -601,6 +601,7 @@ public class LocationBarTablet extends LocationBarLayout {
         View largestChildView = null;
         for (int i = urlContainerChildIndex + 1; i < getChildCount(); i++) {
             View childView = getChildAt(i);
+            if (childView.getVisibility() == View.GONE) continue;
             FrameLayout.LayoutParams childLayoutParams =
                     (FrameLayout.LayoutParams) childView.getLayoutParams();
             int width = childLayoutParams.width
