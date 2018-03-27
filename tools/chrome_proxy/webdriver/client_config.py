@@ -6,6 +6,7 @@ import common
 from common import TestDriver
 from common import IntegrationTest
 from decorators import ChromeVersionEqualOrAfterM
+from decorators import SkipIfForcedBrowserArg
 import json
 
 
@@ -31,6 +32,7 @@ class ClientConfig(IntegrationTest):
         self.assertEqual(200, response.status)
 
   # Ensure Chrome uses a direct connection when no valid client config is given.
+  @SkipIfForcedBrowserArg('data-reduction-proxy-config-url')
   def testNoClientConfigUseDirect(self):
     with TestDriver() as t:
       t.AddChromeArg('--enable-spdy-proxy-auth')
