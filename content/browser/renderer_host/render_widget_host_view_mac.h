@@ -208,8 +208,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Forwards the mouse event to the renderer.
   void ForwardMouseEvent(const blink::WebMouseEvent& event);
 
-  void KillSelf();
-
   void SetTextInputActive(bool active);
 
   // Returns true and stores first rectangle for character range if the
@@ -283,6 +281,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // RenderWidgetHostNSViewClient implementation.
   RenderWidgetHostViewMac* GetRenderWidgetHostViewMac() override;
+  void OnNSViewRequestShutdown() override;
+  void OnNSViewIsFirstResponderChanged(bool is_first_responder) override;
+  void OnNSViewWindowIsKeyChanged(bool is_key) override;
   void OnNSViewBoundsInWindowChanged(const gfx::Rect& view_bounds_in_window_dip,
                                      bool attached_to_window) override;
   void OnNSViewWindowFrameInScreenChanged(
@@ -386,6 +387,9 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   // Cached copy of the display information pushed to us from the NSView.
   display::Display display_;
 
+  // Whether or not the NSView is first responder.
+  bool is_first_responder_ = false;
+
   // Indicates if the page is loading.
   bool is_loading_;
 
@@ -394,9 +398,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // The last scroll offset of the view.
   gfx::Vector2dF last_scroll_offset_;
-
-  // The text to be shown in the tooltip, supplied by the renderer.
-  base::string16 tooltip_text_;
 
   // True when this view acts as a platform view hack for a
   // RenderWidgetHostViewGuest.

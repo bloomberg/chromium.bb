@@ -144,13 +144,6 @@ using blink::WebGestureEvent;
 
 @end
 
-namespace {
-
-// Maximum number of characters we allow in a tooltip.
-const size_t kMaxTooltipLength = 1024;
-
-}  // namespace
-
 namespace content {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -623,11 +616,11 @@ gfx::NativeViewAccessible RenderWidgetHostViewMac::GetNativeViewAccessible() {
 }
 
 void RenderWidgetHostViewMac::Focus() {
-  [[cocoa_view() window] makeFirstResponder:cocoa_view()];
+  ns_view_bridge_->MakeFirstResponder();
 }
 
 bool RenderWidgetHostViewMac::HasFocus() const {
-  return [[cocoa_view() window] firstResponder] == cocoa_view();
+  return is_first_responder_;
 }
 
 bool RenderWidgetHostViewMac::IsSurfaceAvailableForCopy() const {
@@ -792,10 +785,9 @@ void RenderWidgetHostViewMac::Destroy() {
               object:popup_window_];
 
   // We've been told to destroy.
-  [cocoa_view() retain];
-  [cocoa_view() removeFromSuperview];
-  [cocoa_view() autorelease];
-
+  if (ns_view_bridge_)
+    ns_view_bridge_->Destroy();
+  ns_view_bridge_.reset();
   [popup_window_ close];
   popup_window_.autorelease();
 
@@ -829,25 +821,9 @@ void RenderWidgetHostViewMac::Destroy() {
   RenderWidgetHostViewBase::Destroy();
 }
 
-// Called from the renderer to tell us what the tooltip text should be. It
-// calls us frequently so we need to cache the value to prevent doing a lot
-// of repeat work.
 void RenderWidgetHostViewMac::SetTooltipText(
     const base::string16& tooltip_text) {
-  if (tooltip_text != tooltip_text_ && [[cocoa_view() window] isKeyWindow]) {
-    tooltip_text_ = tooltip_text;
-
-    // Clamp the tooltip length to kMaxTooltipLength. It's a DOS issue on
-    // Windows; we're just trying to be polite. Don't persist the trimmed
-    // string, as then the comparison above will always fail and we'll try to
-    // set it again every single time the mouse moves.
-    base::string16 display_text = tooltip_text_;
-    if (tooltip_text_.length() > kMaxTooltipLength)
-      display_text = tooltip_text_.substr(0, kMaxTooltipLength);
-
-    NSString* tooltip_nsstring = base::SysUTF16ToNSString(display_text);
-    [cocoa_view() setToolTipAtMousePoint:tooltip_nsstring];
-  }
+  ns_view_bridge_->SetTooltipText(tooltip_text);
 }
 
 viz::ScopedSurfaceIdAllocator RenderWidgetHostViewMac::ResizeDueToAutoResize(
@@ -987,10 +963,8 @@ void RenderWidgetHostViewMac::ForwardMouseEvent(const WebMouseEvent& event) {
   if (host())
     host()->ForwardMouseEvent(event);
 
-  if (event.GetType() == WebInputEvent::kMouseLeave) {
-    [cocoa_view() setToolTipAtMousePoint:nil];
-    tooltip_text_.clear();
-  }
+  if (event.GetType() == WebInputEvent::kMouseLeave)
+    ns_view_bridge_->SetTooltipText(base::string16());
 }
 
 void RenderWidgetHostViewMac::SetNeedsBeginFrames(bool needs_begin_frames) {
@@ -1011,15 +985,6 @@ void RenderWidgetHostViewMac::OnResizeDueToAutoResizeComplete(
 
 void RenderWidgetHostViewMac::SetWantsAnimateOnlyBeginFrames() {
   browser_compositor_->SetWantsAnimateOnlyBeginFrames();
-}
-
-void RenderWidgetHostViewMac::KillSelf() {
-  if (!weak_factory_.HasWeakPtrs()) {
-    [cocoa_view() setHidden:YES];
-    base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&RenderWidgetHostViewMac::ShutdownHost,
-                              weak_factory_.GetWeakPtr()));
-  }
 }
 
 bool RenderWidgetHostViewMac::GetLineBreakIndex(
@@ -1261,7 +1226,7 @@ bool RenderWidgetHostViewMac::LockMouse() {
   [NSCursor hide];
 
   // Clear the tooltip window.
-  SetTooltipText(base::string16());
+  ns_view_bridge_->SetTooltipText(base::string16());
 
   return true;
 }
@@ -1508,6 +1473,32 @@ RenderWidgetHostViewMac::AllocateFrameSinkIdForGuestViewHack() {
 
 RenderWidgetHostViewMac* RenderWidgetHostViewMac::GetRenderWidgetHostViewMac() {
   return this;
+}
+
+void RenderWidgetHostViewMac::OnNSViewRequestShutdown() {
+  if (!weak_factory_.HasWeakPtrs()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::BindOnce(&RenderWidgetHostViewMac::ShutdownHost,
+                                  weak_factory_.GetWeakPtr()));
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewIsFirstResponderChanged(
+    bool is_first_responder) {
+  if (is_first_responder_ == is_first_responder)
+    return;
+  is_first_responder_ = is_first_responder;
+  if (is_first_responder_) {
+    host()->GotFocus();
+    SetTextInputActive(true);
+  } else {
+    SetTextInputActive(false);
+    host()->LostFocus();
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewWindowIsKeyChanged(bool is_key) {
+  SetActive(is_key);
 }
 
 void RenderWidgetHostViewMac::OnNSViewBoundsInWindowChanged(

@@ -296,6 +296,10 @@ void ExtractUnderlines(NSAttributedString* string,
   closeOnDeactivate_ = b;
 }
 
+- (void)setClientWasDestroyed {
+  clientWasDestroyed_ = YES;
+}
+
 - (BOOL)shouldIgnoreMouseEvent:(NSEvent*)theEvent {
   NSWindow* window = [self window];
   // If this is a background window, don't handle mouse movement events. This
@@ -1277,7 +1281,7 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (BOOL)acceptsFirstResponder {
-  if (!renderWidgetHostView_->host())
+  if (clientWasDestroyed_)
     return NO;
 
   return canBeKeyView_;
@@ -1289,7 +1293,7 @@ void ExtractUnderlines(NSAttributedString* string,
   if ([responderDelegate_ respondsToSelector:@selector(windowDidBecomeKey)])
     [responderDelegate_ windowDidBecomeKey];
   if ([self window].isKeyWindow && [[self window] firstResponder] == self)
-    renderWidgetHostView_->SetActive(true);
+    client_->OnNSViewWindowIsKeyChanged(true);
 }
 
 - (void)windowDidResignKey:(NSNotification*)notification {
@@ -1304,17 +1308,16 @@ void ExtractUnderlines(NSAttributedString* string,
     return;
 
   if ([[self window] firstResponder] == self)
-    renderWidgetHostView_->SetActive(false);
+    client_->OnNSViewWindowIsKeyChanged(false);
 }
 
 - (BOOL)becomeFirstResponder {
-  if (!renderWidgetHostView_->host())
+  if (clientWasDestroyed_)
     return NO;
   if ([responderDelegate_ respondsToSelector:@selector(becomeFirstResponder)])
     [responderDelegate_ becomeFirstResponder];
 
-  renderWidgetHostView_->host()->GotFocus();
-  renderWidgetHostView_->SetTextInputActive(true);
+  client_->OnNSViewIsFirstResponderChanged(true);
 
   // Cancel any onging composition text which was left before we lost focus.
   // TODO(suzhe): We should do it in -resignFirstResponder: method, but
@@ -1337,14 +1340,15 @@ void ExtractUnderlines(NSAttributedString* string,
 - (BOOL)resignFirstResponder {
   if ([responderDelegate_ respondsToSelector:@selector(resignFirstResponder)])
     [responderDelegate_ resignFirstResponder];
-  renderWidgetHostView_->SetTextInputActive(false);
-  if (!renderWidgetHostView_->host())
+
+  if (clientWasDestroyed_)
     return YES;
 
-  if (closeOnDeactivate_)
-    renderWidgetHostView_->KillSelf();
-
-  renderWidgetHostView_->host()->LostFocus();
+  client_->OnNSViewIsFirstResponderChanged(false);
+  if (closeOnDeactivate_) {
+    [self setHidden:YES];
+    client_->OnNSViewRequestShutdown();
+  }
 
   // We should cancel any onging composition whenever RWH's Blur() method gets
   // called, because in this case, webkit will confirm the ongoing composition
@@ -1869,11 +1873,15 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   if (!renderWidgetHostView_->browser_compositor_)
     return;
 
-  // Update the window's frame, the view's bounds, and the display info, as they
-  // have not been updated while unattached to a window.
+  // Update the window's frame, the view's bounds, focus, and the display info,
+  // as they have not been updated while unattached to a window.
   [self sendWindowFrameInScreenToClient];
   [self sendViewBoundsInWindowToClient];
   [self updateScreenProperties];
+  if (!clientWasDestroyed_) {
+    client_->OnNSViewIsFirstResponderChanged([[self window] firstResponder] ==
+                                             self);
+  }
 
   // If we switch windows (or are removed from the view hierarchy), cancel any
   // open mouse-downs.
@@ -2019,7 +2027,8 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
 }
 
 - (void)popupWindowWillClose:(NSNotification*)notification {
-  renderWidgetHostView_->KillSelf();
+  [self setHidden:YES];
+  client_->OnNSViewRequestShutdown();
 }
 
 @end

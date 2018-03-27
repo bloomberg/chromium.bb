@@ -7,6 +7,7 @@
 #import <Cocoa/Cocoa.h>
 
 #import "base/mac/scoped_nsobject.h"
+#include "base/strings/sys_string_conversions.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
 #import "skia/ext/skia_utils_mac.h"
@@ -30,8 +31,11 @@ class RenderWidgetHostViewNSViewBridgeLocal
   ~RenderWidgetHostViewNSViewBridgeLocal() override;
   RenderWidgetHostViewCocoa* GetRenderWidgetHostViewCocoa() override;
 
+  void Destroy() override;
+  void MakeFirstResponder() override;
   void SetBackgroundColor(SkColor color) override;
   void SetVisible(bool visible) override;
+  void SetTooltipText(const base::string16& display_text) override;
 
  private:
   // display::DisplayObserver implementation.
@@ -44,6 +48,9 @@ class RenderWidgetHostViewNSViewBridgeLocal
 
   // The background CoreAnimation layer which is hosted by |cocoa_view_|.
   base::scoped_nsobject<CALayer> background_layer_;
+
+  // Cached copy of the tooltip text, to avoid redundant calls.
+  base::string16 tooltip_text_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewNSViewBridgeLocal);
 };
@@ -72,6 +79,18 @@ RenderWidgetHostViewNSViewBridgeLocal::GetRenderWidgetHostViewCocoa() {
   return cocoa_view_;
 }
 
+void RenderWidgetHostViewNSViewBridgeLocal::Destroy() {
+  [cocoa_view_ setClientWasDestroyed];
+  [cocoa_view_ retain];
+  [cocoa_view_ removeFromSuperview];
+  [cocoa_view_ autorelease];
+  cocoa_view_ = nil;
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::MakeFirstResponder() {
+  [[cocoa_view_ window] makeFirstResponder:cocoa_view_];
+}
+
 void RenderWidgetHostViewNSViewBridgeLocal::SetBackgroundColor(SkColor color) {
   ScopedCAActionDisabler disabler;
   base::ScopedCFTypeRef<CGColorRef> cg_color(
@@ -82,6 +101,30 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetBackgroundColor(SkColor color) {
 void RenderWidgetHostViewNSViewBridgeLocal::SetVisible(bool visible) {
   ScopedCAActionDisabler disabler;
   [cocoa_view_ setHidden:!visible];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::SetTooltipText(
+    const base::string16& tooltip_text) {
+  // Called from the renderer to tell us what the tooltip text should be. It
+  // calls us frequently so we need to cache the value to prevent doing a lot
+  // of repeat work.
+  if (tooltip_text == tooltip_text_ || ![[cocoa_view_ window] isKeyWindow])
+    return;
+  tooltip_text_ = tooltip_text;
+
+  // Maximum number of characters we allow in a tooltip.
+  const size_t kMaxTooltipLength = 1024;
+
+  // Clamp the tooltip length to kMaxTooltipLength. It's a DOS issue on
+  // Windows; we're just trying to be polite. Don't persist the trimmed
+  // string, as then the comparison above will always fail and we'll try to
+  // set it again every single time the mouse moves.
+  base::string16 display_text = tooltip_text_;
+  if (tooltip_text_.length() > kMaxTooltipLength)
+    display_text = tooltip_text_.substr(0, kMaxTooltipLength);
+
+  NSString* tooltip_nsstring = base::SysUTF16ToNSString(display_text);
+  [cocoa_view_ setToolTipAtMousePoint:tooltip_nsstring];
 }
 
 void RenderWidgetHostViewNSViewBridgeLocal::OnDisplayMetricsChanged(
