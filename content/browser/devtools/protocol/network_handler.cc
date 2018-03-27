@@ -1045,20 +1045,14 @@ Response NetworkHandler::SetBypassServiceWorker(bool bypass) {
 namespace {
 
 std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
-    const network::ResourceResponseInfo& info) {
-  if (info.certificate.empty())
+    const net::SSLInfo& ssl_info) {
+  if (!ssl_info.cert)
     return nullptr;
-  scoped_refptr<net::X509Certificate> cert(
-      net::X509Certificate::CreateFromBytes(info.certificate[0].data(),
-                                            info.certificate[0].size()));
-  if (!cert)
-    return nullptr;
-
   std::unique_ptr<
       protocol::Array<protocol::Network::SignedCertificateTimestamp>>
       signed_certificate_timestamp_list =
           protocol::Array<Network::SignedCertificateTimestamp>::create();
-  for (auto const& sct : info.signed_certificate_timestamps) {
+  for (auto const& sct : ssl_info.signed_certificate_timestamps) {
     std::unique_ptr<protocol::Network::SignedCertificateTimestamp>
         signed_certificate_timestamp =
             Network::SignedCertificateTimestamp::Create()
@@ -1082,7 +1076,7 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
   }
   std::vector<std::string> san_dns;
   std::vector<std::string> san_ip;
-  cert->GetSubjectAltName(&san_dns, &san_ip);
+  ssl_info.cert->GetSubjectAltName(&san_dns, &san_ip);
   std::unique_ptr<Array<String>> san_list = Array<String>::create();
   for (const std::string& san : san_dns)
     san_list->addItem(san);
@@ -1093,7 +1087,7 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
   }
 
   int ssl_version =
-      net::SSLConnectionStatusToVersion(info.ssl_connection_status);
+      net::SSLConnectionStatusToVersion(ssl_info.connection_status);
   const char* protocol;
   net::SSLVersionToString(&protocol, ssl_version);
 
@@ -1103,7 +1097,7 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
   bool is_aead;
   bool is_tls13;
   uint16_t cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(info.ssl_connection_status);
+      net::SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
                                &is_tls13, cipher_suite);
   if (key_exchange == nullptr) {
@@ -1116,25 +1110,24 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
           .SetProtocol(protocol)
           .SetKeyExchange(key_exchange)
           .SetCipher(cipher)
-          .SetSubjectName(cert->subject().common_name)
+          .SetSubjectName(ssl_info.cert->subject().common_name)
           .SetSanList(std::move(san_list))
-          .SetIssuer(cert->issuer().common_name)
-          .SetValidFrom(cert->valid_start().ToDoubleT())
-          .SetValidTo(cert->valid_expiry().ToDoubleT())
+          .SetIssuer(ssl_info.cert->issuer().common_name)
+          .SetValidFrom(ssl_info.cert->valid_start().ToDoubleT())
+          .SetValidTo(ssl_info.cert->valid_expiry().ToDoubleT())
           .SetCertificateId(0)  // Keep this in protocol for compatability.
           .SetSignedCertificateTimestampList(
               std::move(signed_certificate_timestamp_list))
           .Build();
 
-  if (info.ssl_key_exchange_group != 0) {
+  if (ssl_info.key_exchange_group != 0) {
     const char* key_exchange_group =
-        SSL_get_curve_name(info.ssl_key_exchange_group);
+        SSL_get_curve_name(ssl_info.key_exchange_group);
     if (key_exchange_group)
       security_details->SetKeyExchangeGroup(key_exchange_group);
   }
   if (mac)
     security_details->SetMac(mac);
-
   return security_details;
 }
 
@@ -1199,7 +1192,8 @@ std::unique_ptr<Network::Response> BuildResponse(
   response->SetProtocol(GetProtocol(url, info));
   response->SetRemoteIPAddress(info.socket_address.HostForURL());
   response->SetRemotePort(info.socket_address.port());
-  response->SetSecurityDetails(BuildSecurityDetails(info));
+  if (info.ssl_info.has_value())
+    response->SetSecurityDetails(BuildSecurityDetails(*info.ssl_info));
 
   return response;
 }

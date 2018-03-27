@@ -47,10 +47,12 @@
 #include "net/cert/cert_status_flags.h"
 #include "net/cert/ct_sct_to_string.h"
 #include "net/cert/x509_certificate.h"
+#include "net/cert/x509_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_util.h"
 #include "net/ssl/ssl_cipher_suite_names.h"
 #include "net/ssl/ssl_connection_status_flags.h"
+#include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request_data_job.h"
 #include "services/network/loader_util.h"
 #include "services/network/public/cpp/resource_request.h"
@@ -245,6 +247,12 @@ blink::WebURLResponse::SignedCertificateTimestamp NetSCTToBlinkSCT(
           sct_and_status.sct->signature.signature_data.length())));
 }
 
+WebString CryptoBufferAsWebString(const CRYPTO_BUFFER* buffer) {
+  base::StringPiece sp = net::x509_util::CryptoBufferAsStringPiece(buffer);
+  return blink::WebString::FromLatin1(
+      reinterpret_cast<const blink::WebLChar*>(sp.begin()), sp.size());
+}
+
 void SetSecurityStyleAndDetails(const GURL& url,
                                 const network::ResourceResponseInfo& info,
                                 WebURLResponse* response,
@@ -261,13 +269,15 @@ void SetSecurityStyleAndDetails(const GURL& url,
   // The resource loader does not provide a guarantee that requests always have
   // security info (such as a certificate) attached. Use WebSecurityStyleUnknown
   // in this case where there isn't enough information to be useful.
-  if (info.certificate.empty()) {
+  if (!info.ssl_info.has_value()) {
     response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
     return;
   }
 
+  const net::SSLInfo& ssl_info = *info.ssl_info;
+
   int ssl_version =
-      net::SSLConnectionStatusToVersion(info.ssl_connection_status);
+      net::SSLConnectionStatusToVersion(ssl_info.connection_status);
   const char* protocol;
   net::SSLVersionToString(&protocol, ssl_version);
 
@@ -277,7 +287,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
   bool is_aead;
   bool is_tls13;
   uint16_t cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(info.ssl_connection_status);
+      net::SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
   net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
                                &is_tls13, cipher_suite);
   if (key_exchange == nullptr) {
@@ -291,9 +301,9 @@ void SetSecurityStyleAndDetails(const GURL& url,
   }
 
   const char* key_exchange_group = "";
-  if (info.ssl_key_exchange_group != 0) {
+  if (ssl_info.key_exchange_group != 0) {
     // Historically the field was named 'curve' rather than 'group'.
-    key_exchange_group = SSL_get_curve_name(info.ssl_key_exchange_group);
+    key_exchange_group = SSL_get_curve_name(ssl_info.key_exchange_group);
     if (!key_exchange_group) {
       NOTREACHED();
       key_exchange_group = "";
@@ -304,15 +314,12 @@ void SetSecurityStyleAndDetails(const GURL& url,
       GetSecurityStyleForResource(url, info.cert_status));
 
   blink::WebURLResponse::SignedCertificateTimestampList sct_list(
-      info.signed_certificate_timestamps.size());
+      ssl_info.signed_certificate_timestamps.size());
 
   for (size_t i = 0; i < sct_list.size(); ++i)
-    sct_list[i] = NetSCTToBlinkSCT(info.signed_certificate_timestamps[i]);
+    sct_list[i] = NetSCTToBlinkSCT(ssl_info.signed_certificate_timestamps[i]);
 
-  scoped_refptr<net::X509Certificate> cert(
-      net::X509Certificate::CreateFromBytes(info.certificate[0].data(),
-                                            info.certificate[0].size()));
-  if (!cert) {
+  if (!ssl_info.cert) {
     NOTREACHED();
     response->SetSecurityStyle(blink::kWebSecurityStyleUnknown);
     return;
@@ -320,7 +327,7 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
   std::vector<std::string> san_dns;
   std::vector<std::string> san_ip;
-  cert->GetSubjectAltName(&san_dns, &san_ip);
+  ssl_info.cert->GetSubjectAltName(&san_dns, &san_ip);
   blink::WebVector<blink::WebString> web_san(san_dns.size() + san_ip.size());
   std::transform(
       san_dns.begin(), san_dns.end(), web_san.begin(),
@@ -332,19 +339,20 @@ void SetSecurityStyleAndDetails(const GURL& url,
                    return blink::WebString::FromLatin1(ip.ToString());
                  });
 
-  blink::WebVector<blink::WebString> web_cert(info.certificate.size());
-  std::transform(
-      info.certificate.begin(), info.certificate.end(), web_cert.begin(),
-      [](const std::string& h) { return blink::WebString::FromLatin1(h); });
+  blink::WebVector<blink::WebString> web_cert;
+  web_cert.reserve(ssl_info.cert->intermediate_buffers().size() + 1);
+  web_cert.emplace_back(CryptoBufferAsWebString(ssl_info.cert->cert_buffer()));
+  for (const auto& cert : ssl_info.cert->intermediate_buffers())
+    web_cert.emplace_back(CryptoBufferAsWebString(cert.get()));
 
   blink::WebURLResponse::WebSecurityDetails webSecurityDetails(
       WebString::FromASCII(protocol), WebString::FromASCII(key_exchange),
       WebString::FromASCII(key_exchange_group), WebString::FromASCII(cipher),
       WebString::FromASCII(mac),
-      WebString::FromUTF8(cert->subject().common_name), web_san,
-      WebString::FromUTF8(cert->issuer().common_name),
-      cert->valid_start().ToDoubleT(), cert->valid_expiry().ToDoubleT(),
-      web_cert, sct_list);
+      WebString::FromUTF8(ssl_info.cert->subject().common_name), web_san,
+      WebString::FromUTF8(ssl_info.cert->issuer().common_name),
+      ssl_info.cert->valid_start().ToDoubleT(),
+      ssl_info.cert->valid_expiry().ToDoubleT(), web_cert, sct_list);
 
   response->SetSecurityDetails(webSecurityDetails);
 }
