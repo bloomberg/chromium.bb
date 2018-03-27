@@ -384,6 +384,9 @@ void ResourceFetcher::DidLoadResourceFromMemoryCache(
   resource_request.SetFrameType(original_resource_request.GetFrameType());
   resource_request.SetRequestContext(
       original_resource_request.GetRequestContext());
+  if (original_resource_request.IsAdResource())
+    resource_request.SetIsAdResource();
+
   Context().DispatchDidLoadResourceFromMemoryCache(identifier, resource_request,
                                                    resource->GetResponse());
   Context().DispatchWillSendRequest(

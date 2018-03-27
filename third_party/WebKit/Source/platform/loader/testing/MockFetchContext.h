@@ -12,6 +12,7 @@
 #include "platform/loader/fetch/ResourceTimingInfo.h"
 #include "platform/scheduler/test/fake_frame_scheduler.h"
 #include "platform/scheduler/test/fake_task_runner.h"
+#include "platform/wtf/Optional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoaderFactory.h"
 
@@ -49,7 +50,20 @@ class MockFetchContext : public FetchContext {
     security_origin_ = security_origin;
   }
 
+  // The last ResourceRequest passed to DispatchWillSendRequest.
+  WTF::Optional<ResourceRequest> RequestFromWillSendRequest() const {
+    return will_send_request_;
+  }
+
   // FetchContext:
+  void DispatchWillSendRequest(
+      unsigned long identifier,
+      ResourceRequest& request,
+      const ResourceResponse& redirect_response,
+      Resource::Type,
+      const FetchInitiatorInfo& = FetchInitiatorInfo()) override {
+    will_send_request_ = request;
+  }
   bool AllowImage(bool images_enabled, const KURL&) const override {
     return true;
   }
@@ -144,6 +158,7 @@ class MockFetchContext : public FetchContext {
   std::unique_ptr<WebURLLoaderFactory> url_loader_factory_;
   bool complete_;
   long long transfer_size_;
+  WTF::Optional<ResourceRequest> will_send_request_;
 };
 
 }  // namespace blink
