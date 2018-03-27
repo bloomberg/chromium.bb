@@ -47,6 +47,8 @@ OfflineItem::OfflineItem()
       is_openable(false),
       is_off_the_record(false),
       state(OfflineItemState::COMPLETE),
+      fail_state(FailState::NO_FAILURE),
+      pending_state(PendingState::NOT_PENDING),
       is_resumable(false),
       allow_metered(false),
       received_bytes(0),
@@ -76,7 +78,8 @@ bool OfflineItem::operator==(const OfflineItem& offline_item) const {
          page_url == offline_item.page_url &&
          original_url == offline_item.original_url &&
          is_off_the_record == offline_item.is_off_the_record &&
-         state == offline_item.state &&
+         state == offline_item.state && fail_state == offline_item.fail_state &&
+         pending_state == offline_item.pending_state &&
          is_resumable == offline_item.is_resumable &&
          allow_metered == offline_item.allow_metered &&
          received_bytes == offline_item.received_bytes &&

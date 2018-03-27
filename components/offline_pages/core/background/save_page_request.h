@@ -8,10 +8,12 @@
 #include <stdint.h>
 
 #include "base/time/time.h"
+#include "components/offline_items_collection/core/fail_state.h"
 #include "components/offline_items_collection/core/pending_state.h"
 #include "components/offline_pages/core/offline_page_item.h"
 #include "url/gurl.h"
 
+using offline_items_collection::FailState;
 using offline_items_collection::PendingState;
 
 namespace offline_pages {
@@ -58,6 +60,9 @@ class SavePageRequest {
 
   RequestState request_state() const { return state_; }
   void set_request_state(RequestState new_state) { state_ = new_state; }
+
+  FailState fail_state() const { return fail_state_; }
+  void set_fail_state(FailState new_state) { fail_state_ = new_state; }
 
   PendingState pending_state() const { return pending_state_; }
   void set_pending_state(PendingState new_state) { pending_state_ = new_state; }
@@ -124,6 +129,9 @@ class SavePageRequest {
 
   // The current state of this request.
   RequestState state_;
+
+  // The reason the request failed downloading.
+  FailState fail_state_;
 
   // The reason the request is available.
   PendingState pending_state_;
