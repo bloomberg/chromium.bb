@@ -270,9 +270,9 @@ Tree link: https://github.com/PolymerElements/paper-spinner/tree/v2.0.0
 
 Name: paper-styles
 Repository: https://github.com/PolymerElements/paper-styles.git
-Tree: v1.3.1
-Revision: 1ed324102daa36458d153dd20eac80be9758b00e
-Tree link: https://github.com/PolymerElements/paper-styles/tree/v1.3.1
+Tree: v2.1.0
+Revision: fc4b85ab853f107fc8bb18ea6cda1c2e9ac5a75f
+Tree link: https://github.com/PolymerElements/paper-styles/tree/v2.1.0
 
 Name: paper-tabs
 Repository: https://github.com/PolymerElements/paper-tabs.git
