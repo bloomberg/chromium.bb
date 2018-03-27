@@ -56,21 +56,6 @@ public abstract class Observable<T> {
     }
 
     /**
-     * Returns an Observable that applies the given Function to this Observable's activation
-     * values.
-     *
-     * @param <R> The return type of the transform function.
-     */
-    public final <R> Observable<R> transform(Function<? super T, ? extends R> transform) {
-        Controller<R> controller = new Controller<>();
-        watch((T value) -> {
-            controller.set(transform.apply(value));
-            return () -> controller.reset();
-        });
-        return controller;
-    }
-
-    /**
      * Returns an Observable that is activated when `this` and `other` are activated in order.
      *
      * This is similar to `and()`, but does not activate if `other` is activated before `this`.
@@ -79,6 +64,36 @@ public abstract class Observable<T> {
      */
     public final <U> Observable<Both<T, U>> andThen(Observable<U> other) {
         return new SequenceStateObserver<>(this, other).asObservable();
+    }
+
+    /**
+     * Returns an Observable that applies the given Function to this Observable's activation
+     * values.
+     *
+     * @param <R> The return type of the transform function.
+     */
+    public final <R> Observable<R> map(Function<? super T, ? extends R> transform) {
+        Controller<R> controller = new Controller<>();
+        watch((T value) -> {
+            controller.set(transform.apply(value));
+            return controller::reset;
+        });
+        return controller;
+    }
+
+    /**
+     * Returns an Observable that is only activated when `this` is activated with a value such that
+     * the given `predicate` returns true.
+     */
+    public final Observable<T> filter(Predicate<? super T> predicate) {
+        Controller<T> controller = new Controller<>();
+        watch((T value) -> {
+            if (predicate.test(value)) {
+                controller.set(value);
+            }
+            return controller::reset;
+        });
+        return controller;
     }
 
     /**

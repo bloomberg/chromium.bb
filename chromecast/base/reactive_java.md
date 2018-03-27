@@ -159,9 +159,9 @@ This really does cover all the cases we need. If multiple `set*()` calls are
 made, an implicit `reset()` call will be made to the relevant `Controller` and
 the `C` object associated with the first scope will be `close()`d.
 
-What's better about this? First, notice that we **don't need to have any mutable
-variables**. Both `Controller` objects are `final`, and are never `null`. We
-don't at any point need to know what state the object is in inside any method
+What's better about this? First, notice we **don't need mutable variables**.
+Both `Controller` objects are `final`, and are never `null`. We don't at any
+point need to know what state the object is in inside any method
 implementations; the `Controller`s and the pipeline set up by the `and()` and
 `watch()` calls handle that for you.
 
@@ -595,8 +595,8 @@ and return an appropriate `ScopeFactory<Both>`:
 There are numerous instances where one may want to take the activation data of
 some `Observable` and use it to set the state of a `Controller`, and reset that
 `Controller` when the `Observable` is deactivated. A shortcut to doing this
-without having to instantiate any `Controller` is provided with the
-`transform()` method in the `Observable` interface.
+without having to instantiate any `Controller` is provided with the `map()`
+method in the `Observable` interface.
 
 For example, we might have an `Activity` that overrides `onNewIntent()`, and
 extracts some data from the `Intent` it receives. We might want to register
@@ -608,8 +608,8 @@ public class MyActivity extends Activity {
     private final Controller<Intent> mIntentState = new Controller<>();
 
     {
-        Observable<Uri> uriState = mIntentState.transform(Intent::getData);
-        Observable<String> instanceIdState = uriState.transform(Uri::getPath);
+        Observable<Uri> uriState = mIntentState.map(Intent::getData);
+        Observable<String> instanceIdState = uriState.map(Uri::getPath);
         ...
     }
 
@@ -625,11 +625,10 @@ public class MyActivity extends Activity {
 }
 ```
 
-The `transform()` method takes any function on the `Observable`'s activation
-data and creates a new `Observable` of the result of that function applied to
-the original `Observable`'s activation data. So the activation lifetime of
-`uriState` and `instanceIdState` are the same as `mIntentState` in this
-example.
+The `map()` method takes any function on the `Observable`'s activation data and
+creates a new `Observable` of the result of that function applied to the
+original `Observable`'s activation data. So the activation lifetime of
+`uriState` and `instanceIdState` are the same as `mIntentState` in this example.
 
 The instance initializer can then call `watch()` on `uriState` or
 `instanceIdState` to register callbacks for when we get a new URI or instance
@@ -638,15 +637,15 @@ from the `Uri` is delegated to methods with no side-effects.
 
 ### Handling null
 
-If a function provided to a `transform()` method returns `null`, then the
-resulting `Observable` will be put in a deactivated state, even if the source
-`Observable` is activated. This can be used to **filter** invalid data from
-`Observable`s in the pipeline:
+If a function provided to a `map()` method returns `null`, then the resulting
+`Observable` will be put in a deactivated state, even if the source `Observable`
+is activated. This can be used to **filter** invalid data from `Observable`s in
+the pipeline:
 
 ```java
 {
-    mIntentState.transform(Intent::getExtras)
-            .transform((Bundle bundle) -> bundle.getString(INTENT_EXTRA_FOO))
+    mIntentState.map(Intent::getExtras)
+            .map((Bundle bundle) -> bundle.getString(INTENT_EXTRA_FOO))
             .watch((String foo) -> ...);
 }
 ```
@@ -655,6 +654,76 @@ The `bundle.getString()` call might return `null` if the source `Intent` does
 not have the correct extra data field set. When this happens, the resulting
 `Observable` simply does not activate, so the `ScopeFactory` registered in the
 `watch()` call does not need to worry that `foo` might be `null`.
+
+### Filtering data
+
+One may wish to construct an `Observable` that is only activated if some
+*predicate* on some other `Observable`'s activation data is true. This is easily
+done using the `filter()` method on `Observable`.
+
+This example will only log `"Got FOO intent"` if `mIntentState` was `set()` with
+an `Intent` with action `"org.my.app.action.FOO"`:
+
+```java
+{
+    String ACTION_FOO = "org.my.app.action.FOO";
+    mIntentState.map(Intent::getAction)
+            .filter(ACTION_FOO::equals)
+            .watch(ScopeFactories.onEnter(() -> {
+                Log.d(TAG, "Got FOO intent");
+            }));
+}
+```
+
+Since `Observable<T>#filter()` takes any `Predicate<T>`, which is a functional
+interface whose method takes a `T` and returns a `boolean`, the parameter can be
+an instance of a class that implements `Predicate<T>`:
+
+```java
+    class InRangePredicate implements Predicate<Integer> {
+        private final int mMin;
+        private final int mMax;
+
+        private InRangePredicate(int min, int max) {
+            mMin = min;
+            mMax = max;
+        }
+
+        @Override
+        public boolean test(Integer value) {
+            return mMin <= value && value <= mMax;
+        }
+    }
+
+    InRangePredicate inRange(int min, int max) {
+        return new InRangePredicate(min, max);
+    }
+
+    Controller<Integer> hasIntState = new Controller<>();
+    Observable<Integer> hasValidIntState = hasIntState.filter(inRange(0, 10));
+}
+```
+
+... or a method reference for a method that takes the activation data and
+returns a boolean:
+
+```java
+    class Util {
+        static boolean inRange(int i) {
+            return 0 <= i && i <= 10;
+        }
+    }
+    Controller<Integer> hasIntState = new Controller<>();
+    Observable<Integer> hasValidIntState = hasIntState.filter(Util::inRange);
+```
+
+... or a lambda that takes the activation data and returns a boolean:
+
+```java
+    Controller<Integer> hasIntState = new Controller<>();
+    Observable<Integer> hasValidIntState =
+            hasIntState.filter(i -> 0 <= i && i <= 10);
+```
 
 ## Tips and best practices
 
@@ -678,7 +747,7 @@ Generally, `Observable` methods like `watch()` should be called before any
 `Controller` methods. A couple of things that one can do to help with this:
 
 *   Instantiate `Controller` objects in field initializers, not the constructor.
-*   Set up the pipeline (`watch()`, `and()`, `transform()`, etc.) in an instance
+*   Set up the pipeline (`watch()`, `and()`, `map()`, etc.) in an instance
     initializer. This is run before anything else when creating an instance,
     including the constructor, and is the same regardless of which constructor
     is being used. This also removes the potential of accidentally depending on
