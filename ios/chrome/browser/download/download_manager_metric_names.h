@@ -5,10 +5,6 @@
 #ifndef IOS_CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_METRIC_NAMES_H_
 #define IOS_CHROME_BROWSER_DOWNLOAD_DOWNLOAD_MANAGER_METRIC_NAMES_H_
 
-// MobileDownloadFileUIInstallGoogleDrive UMA action. Logged when Google Drive
-// app is installed after presenting Store Kit dialog from the Download Manager.
-extern const char kDownloadManagerGoogleDriveInstalled[];
-
 // Values of the UMA Download.IOSDownloadedFileAction histogram. This enum is
 // append only.
 enum class DownloadedFileAction {
