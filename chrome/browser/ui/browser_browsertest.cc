@@ -931,6 +931,11 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, NullOpenerRedirectForksProcess) {
 // http://www.google.com/chrome/intl/en/webmasters-faq.html#newtab will not
 // fork a new renderer process.
 IN_PROC_BROWSER_TEST_F(BrowserTest, OtherRedirectsDontForkProcess) {
+  // TODO(lukasza): https://crbug.com/824962: Investigate why this test fails
+  // with --site-per-process.
+  if (content::AreAllSitesIsolatedForTesting())
+    return;
+
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kDisablePopupBlocking);
 

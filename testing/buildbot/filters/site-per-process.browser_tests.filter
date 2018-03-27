@@ -1,6 +1,0 @@
-# crbug.com/417518: Get tests working with --site-per-process
--BrowserTest.OtherRedirectsDontForkProcess
-
-# crbug.com/671734: WebNavigationApiTest.ServerRedirectSingleProcess from
-# fails with --site-per-process
--WebNavigationApiTest.ServerRedirectSingleProcess

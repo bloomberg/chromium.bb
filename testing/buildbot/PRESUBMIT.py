@@ -42,7 +42,9 @@ def CommonChecks(input_api, output_api):
   except ImportError:
     messages.append(output_api.PresubmitNotifyResult(
         'Python\'s coverage module is not installed; '
-        'coverage tests in //testing/buildbot are disabled.'))
+        'coverage tests in //testing/buildbot are disabled. '
+        'To fix this on linux try running: '
+        'sudo apt-get install python-coverage'))
 
   messages.extend(input_api.RunTests(commands))
   return messages
