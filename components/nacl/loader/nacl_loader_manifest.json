@@ -6,10 +6,10 @@
       "provides": {
         "browser": [
           "IPC::mojom::ChannelBootstrap",
-          "chrome::mojom::ResourceUsageReporter",
           "content::mojom::Child",
           "content::mojom::ChildControl",
-          "content::mojom::ChildHistogramFetcherFactory"
+          "content::mojom::ChildHistogramFetcherFactory",
+          "content::mojom::ResourceUsageReporter"
         ]
       }
     }
