@@ -18,6 +18,7 @@
 #include "chrome/browser/ui/app_list/search/arc/icon_decode_request.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/arc/app/arc_playstore_search_request_state.h"
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 
@@ -103,4 +104,57 @@ TEST_F(ArcPlayStoreSearchProviderTest, Basic) {
   }
 }
 
+TEST_F(ArcPlayStoreSearchProviderTest, FailedQuery) {
+  constexpr size_t kMaxResults = 12;
+  constexpr char kQuery[] = "Play App";
+  const base::string16 kQueryString16 = base::UTF8ToUTF16(kQuery);
+
+  std::unique_ptr<ArcPlayStoreSearchProvider> provider =
+      CreateSearch(kMaxResults);
+  EXPECT_TRUE(provider->results().empty());
+  IconDecodeRequest::DisableSafeDecodingForTesting();
+
+  // Test for empty queries.
+  // Create a non-empty query.
+  provider->Start(kQueryString16);
+  EXPECT_GT(provider->results().size(), 0u);
+
+  // Create an empty query and it should clear the result list.
+  provider->Start(base::string16());
+  EXPECT_EQ(0u, provider->results().size());
+
+  // Test for queries with a failure state code.
+  constexpr char kFailedQueryPrefix[] = "FailedQueryWithCode-";
+  using RequestState = arc::ArcPlayStoreSearchRequestState;
+  const std::array<RequestState, 15> kErrorStates = {
+      RequestState::PLAY_STORE_PROXY_NOT_AVAILABLE,
+      RequestState::FAILED_TO_CALL_CANCEL,
+      RequestState::FAILED_TO_CALL_FINDAPPS,
+      RequestState::REQUEST_HAS_INVALID_PARAMS,
+      RequestState::REQUEST_TIMEOUT,
+      RequestState::PHONESKY_RESULT_REQUEST_CODE_UNMATCHED,
+      RequestState::PHONESKY_RESULT_SESSION_ID_UNMATCHED,
+      RequestState::PHONESKY_REQUEST_REQUEST_CODE_UNMATCHED,
+      RequestState::PHONESKY_APP_DISCOVERY_NOT_AVAILABLE,
+      RequestState::PHONESKY_VERSION_NOT_SUPPORTED,
+      RequestState::PHONESKY_UNEXPECTED_EXCEPTION,
+      RequestState::PHONESKY_MALFORMED_QUERY,
+      RequestState::PHONESKY_INTERNAL_ERROR,
+      RequestState::PHONESKY_RESULT_INVALID_DATA,
+      RequestState::CHROME_GOT_INVALID_RESULT,
+  };
+  static_assert(
+      kErrorStates.size() == static_cast<size_t>(RequestState::STATE_COUNT) - 3,
+      "Missing entries");
+  for (const auto& error_state : kErrorStates) {
+    // Create a non-empty query.
+    provider->Start(kQueryString16);
+    EXPECT_GT(provider->results().size(), 0u);
+
+    // Fabricate a failing query and it should clear the result list.
+    provider->Start(base::UTF8ToUTF16(
+        base::StringPrintf("%s%d", kFailedQueryPrefix, error_state)));
+    EXPECT_EQ(0u, provider->results().size());
+  }
+}
 }  // namespace app_list
