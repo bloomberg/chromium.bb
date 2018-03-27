@@ -16,8 +16,8 @@
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/visibility.h"
 #include "content/public/common/frame_navigate_params.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/subresource_load_info.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "mojo/public/cpp/system/message_pipe.h"
 #include "services/service_manager/public/cpp/bind_source_info.h"
@@ -256,10 +256,10 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener {
       const std::string& mime_type,
       ResourceType resource_type) {}
 
-  // This method is invoked when a subresource has been loaded, successfully or
+  // This method is invoked when a resource has been loaded, successfully or
   // not.
-  virtual void SubresourceLoadComplete(
-      const mojom::SubresourceLoadInfo& subresource_load_info) {}
+  virtual void ResourceLoadComplete(
+      const mojom::ResourceLoadInfo& resource_load_info) {}
 
   // This method is invoked when a new non-pending navigation entry is created.
   // This corresponds to one NavigationController entry being created

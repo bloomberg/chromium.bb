@@ -8,7 +8,7 @@ import "content/common/navigation_params.mojom";
 import "content/common/service_worker/controller_service_worker.mojom";
 import "content/common/url_loader_factory_bundle.mojom";
 import "content/public/common/resource_type.mojom";
-import "content/public/common/subresource_load_info.mojom";
+import "content/public/common/resource_load_info.mojom";
 import "content/public/common/transferrable_url_loader.mojom";
 import "content/public/common/window_container_type.mojom";
 import "mojo/public/mojom/base/string16.mojom";
@@ -276,8 +276,8 @@ interface FrameHost {
   // net/cert/cert_status_flags.h).
   SubresourceResponseStarted(url.mojom.Url url, uint32 cert_status);
 
-  // Sent when a subresource load finished, successfully or not.
-  SubresourceLoadComplete(SubresourceLoadInfo url_load_info);
+  // Sent when a resource load finished, successfully or not.
+  ResourceLoadComplete(ResourceLoadInfo url_load_info);
 
   // Sent when the frame changes its window.name.
   DidChangeName(string name, string unique_name);

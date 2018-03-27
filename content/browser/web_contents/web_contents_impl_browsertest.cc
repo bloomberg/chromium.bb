@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <utility>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -49,6 +50,12 @@
 #include "url/gurl.h"
 
 namespace content {
+
+#define SCOPE_TRACED(statement) \
+  {                             \
+    SCOPED_TRACE(#statement);   \
+    statement;                  \
+  }
 
 void ResizeWebContentsView(Shell* shell, const gfx::Size& size,
                            bool set_start_page) {
@@ -524,84 +531,132 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   EXPECT_TRUE(new_web_contents_observer.RenderViewCreatedCalled());
 }
 
-// Observer class to track subresource loads.
-class SubresourceLoadObserver : public WebContentsObserver {
+// Observer class to track resource loads.
+class ResourceLoadObserver : public WebContentsObserver {
  public:
-  explicit SubresourceLoadObserver(Shell* shell)
+  explicit ResourceLoadObserver(Shell* shell)
       : WebContentsObserver(shell->web_contents()) {}
 
-  mojom::SubresourceLoadInfo* last_subresource_load_info() const {
-    return last_subresource_load_info_.get();
+  const std::vector<mojom::ResourceLoadInfoPtr>& resource_load_infos() const {
+    return resource_load_infos_;
   }
 
-  GURL last_memory_cached_loaded_url() const {
-    return last_memory_cached_loaded_url_;
+  const std::vector<GURL>& memory_cached_loaded_urls() const {
+    return memory_cached_loaded_urls_;
+  }
+
+  // Use this method with the SCOPED_TRACE macro, so it shows the caller context
+  // if it fails.
+  void CheckResourceLoaded(const GURL& url,
+                           const GURL& referrer,
+                           const std::string& load_method,
+                           content::ResourceType resource_type,
+                           const std::string& mime_type,
+                           const std::string& ip_address,
+                           bool was_cached) {
+    bool resource_load_info_found = false;
+    for (const auto& resource_load_info : resource_load_infos_) {
+      if (resource_load_info->url == url) {
+        resource_load_info_found = true;
+        EXPECT_EQ(referrer, resource_load_info->referrer);
+        EXPECT_EQ(load_method, resource_load_info->method);
+        EXPECT_EQ(resource_type, resource_load_info->resource_type);
+        EXPECT_EQ(mime_type, resource_load_info->mime_type);
+        if (!ip_address.empty()) {
+          ASSERT_TRUE(resource_load_info->ip);
+          EXPECT_EQ(ip_address, resource_load_info->ip->ToString());
+        }
+        EXPECT_EQ(was_cached, resource_load_info->was_cached);
+      }
+    }
+    EXPECT_TRUE(resource_load_info_found);
   }
 
   void Reset() {
-    last_subresource_load_info_.reset();
-    last_memory_cached_loaded_url_ = GURL();
+    resource_load_infos_.clear();
+    memory_cached_loaded_urls_.clear();
   }
 
  private:
   // WebContentsObserver implementation:
-  void SubresourceLoadComplete(
-      const mojom::SubresourceLoadInfo& subresource_load_info) override {
-    last_subresource_load_info_ = subresource_load_info.Clone();
+  void ResourceLoadComplete(
+      const mojom::ResourceLoadInfo& resource_load_info) override {
+    resource_load_infos_.push_back(resource_load_info.Clone());
   }
 
   void DidLoadResourceFromMemoryCache(const GURL& url,
                                       const std::string& mime_type,
                                       ResourceType resource_type) override {
-    last_memory_cached_loaded_url_ = url;
+    memory_cached_loaded_urls_.push_back(url);
   }
 
-  GURL last_memory_cached_loaded_url_;
-  mojom::SubresourceLoadInfoPtr last_subresource_load_info_;
+  std::vector<GURL> memory_cached_loaded_urls_;
+  std::vector<mojom::ResourceLoadInfoPtr> resource_load_infos_;
 
-  DISALLOW_COPY_AND_ASSIGN(SubresourceLoadObserver);
+  DISALLOW_COPY_AND_ASSIGN(ResourceLoadObserver);
 };
 
-IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, SubresourceLoadComplete) {
-  SubresourceLoadObserver observer(shell());
+IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, ResourceLoadComplete) {
+  ResourceLoadObserver observer(shell());
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL page_url(embedded_test_server()->GetURL("/page_with_image.html"));
+  // Load a page with an image and an image.
+  GURL page_url(embedded_test_server()->GetURL("/page_with_iframe.html"));
   NavigateToURL(shell(), page_url);
-  mojom::SubresourceLoadInfo* subresource_load_info =
-      observer.last_subresource_load_info();
-  ASSERT_TRUE(subresource_load_info);
-  EXPECT_EQ(embedded_test_server()->GetURL("/blank.jpg"),
-            subresource_load_info->url);
-  EXPECT_EQ(page_url, subresource_load_info->referrer);
-  EXPECT_EQ("GET", subresource_load_info->method);
-  EXPECT_EQ(content::RESOURCE_TYPE_IMAGE, subresource_load_info->resource_type);
-  EXPECT_EQ("image/jpeg", subresource_load_info->mime_type);
-  ASSERT_TRUE(subresource_load_info->ip);
-  EXPECT_EQ("127.0.0.1", subresource_load_info->ip->ToString());
+  ASSERT_EQ(3U, observer.resource_load_infos().size());
+  // TODO(crbug.com/826082): we should test the IP address/MIME type parameters
+  // for frames once they are reported correctly.
+  SCOPE_TRACED(observer.CheckResourceLoaded(
+      page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
+      /*mime-type*/ "",
+      /*ip_address=*/"",
+      /*was_cached=*/false));
+  SCOPE_TRACED(observer.CheckResourceLoaded(
+      embedded_test_server()->GetURL("/image.jpg"),
+      /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_IMAGE, "image/jpeg",
+      "127.0.0.1",
+      /*was_cached=*/false));
+  SCOPE_TRACED(observer.CheckResourceLoaded(
+      embedded_test_server()->GetURL("/title1.html"),
+      /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SUB_FRAME,
+      /*mime_type=*/"",
+      /*ip_address=*/"",
+      /*was_cached=*/false));
 }
 
-// Same as WebContentsImplBrowserTest.SubresourceLoadComplete but for a resource
+// Same as WebContentsImplBrowserTest.ResourceLoadComplete but with resources
 // retrieved from the network cache.
 IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
-                       SubresourceLoadCompleteFromNetworkCache) {
-  SubresourceLoadObserver observer(shell());
+                       ResourceLoadCompleteFromNetworkCache) {
+  ResourceLoadObserver observer(shell());
   ASSERT_TRUE(embedded_test_server()->Start());
-  GURL url(
+  GURL page_url(
       embedded_test_server()->GetURL("/page_with_cached_subresource.html"));
-  NavigateToURL(shell(), url);
+  NavigateToURL(shell(), page_url);
 
-  mojom::SubresourceLoadInfo* subresource_load_info =
-      observer.last_subresource_load_info();
-  GURL subresource_url = embedded_test_server()->GetURL("/cachetime");
-  ASSERT_TRUE(subresource_load_info);
-  EXPECT_EQ(subresource_url, subresource_load_info->url);
-  EXPECT_FALSE(subresource_load_info->was_cached);
+  // TODO(crbug.com/826082): we should test the IP address/MIME type parameters
+  // for frames once they are reported correctly.
+  GURL resource_url = embedded_test_server()->GetURL("/cachetime");
+  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  SCOPE_TRACED(observer.CheckResourceLoaded(
+      page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
+      /*mime-type*/ "",
+      /*ip_address=*/"", /*was_cached=*/false));
+  SCOPE_TRACED(observer.CheckResourceLoaded(
+      resource_url, /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SCRIPT,
+      "text/html", "127.0.0.1",
+      /*was_cached=*/false));
+  EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
   observer.Reset();
 
   // Loading again should serve the request out of the in-memory cache.
-  NavigateToURL(shell(), url);
-  ASSERT_FALSE(observer.last_subresource_load_info());
-  EXPECT_EQ(subresource_url, observer.last_memory_cached_loaded_url());
+  NavigateToURL(shell(), page_url);
+  ASSERT_EQ(1U, observer.resource_load_infos().size());
+  SCOPE_TRACED(observer.CheckResourceLoaded(
+      page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
+      /*mime-type*/ "", /*ip_address=*/"",
+      /*was_cached=*/false));
+  ASSERT_EQ(1U, observer.memory_cached_loaded_urls().size());
+  EXPECT_EQ(resource_url, observer.memory_cached_loaded_urls()[0]);
   observer.Reset();
 
   // Kill the renderer process so when the navigate again, it will be a fresh
@@ -609,12 +664,17 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest,
   NavigateToURL(shell(), GURL("chrome:crash"));
 
   // Reload that URL, the subresource should be served from the network cache.
-  NavigateToURL(shell(), url);
-  subresource_load_info = observer.last_subresource_load_info();
-  ASSERT_TRUE(subresource_load_info);
-  EXPECT_EQ(subresource_url, subresource_load_info->url);
-  EXPECT_TRUE(subresource_load_info->was_cached);
-  EXPECT_FALSE(observer.last_memory_cached_loaded_url().is_valid());
+  NavigateToURL(shell(), page_url);
+  ASSERT_EQ(2U, observer.resource_load_infos().size());
+  SCOPE_TRACED(observer.CheckResourceLoaded(
+      page_url, /*referrer=*/GURL(), "GET", content::RESOURCE_TYPE_MAIN_FRAME,
+      /*mime-type*/ "", /*ip_address=*/"",
+      /*was_cached=*/false));
+  SCOPE_TRACED(observer.CheckResourceLoaded(
+      resource_url, /*referrer=*/page_url, "GET", content::RESOURCE_TYPE_SCRIPT,
+      "text/html", "127.0.0.1",
+      /*was_cached=*/true));
+  EXPECT_TRUE(observer.memory_cached_loaded_urls().empty());
 }
 
 struct LoadProgressDelegateAndObserver : public WebContentsDelegate,

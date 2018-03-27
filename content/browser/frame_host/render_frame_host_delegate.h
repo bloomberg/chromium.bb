@@ -19,8 +19,8 @@
 #include "content/public/browser/site_instance.h"
 #include "content/public/common/javascript_dialog_type.h"
 #include "content/public/common/media_stream_request.h"
+#include "content/public/common/resource_load_info.mojom.h"
 #include "content/public/common/resource_type.h"
-#include "content/public/common/subresource_load_info.mojom.h"
 #include "mojo/public/cpp/bindings/scoped_interface_endpoint_handle.h"
 #include "net/cert/cert_status_flags.h"
 #include "net/http/http_response_headers.h"
@@ -349,8 +349,8 @@ class CONTENT_EXPORT RenderFrameHostDelegate {
                                           net::CertStatus cert_status) {}
 
   // Notifies that the render finished loading a subresource.
-  virtual void SubresourceLoadComplete(
-      mojom::SubresourceLoadInfoPtr subresource_load_info) {}
+  virtual void ResourceLoadComplete(
+      mojom::ResourceLoadInfoPtr resource_load_info) {}
 
   // Request to print a frame that is in a different process than its parent.
   virtual void PrintCrossProcessSubframe(const gfx::Rect& rect,
