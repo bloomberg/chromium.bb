@@ -152,13 +152,13 @@ source_set("zlib_inflate_chunk_simd") {
         "contrib/optimizations/inflate.c",
       ]
 
-      # TODO(772870) back off from -O3 while investigating Android
-      # One perf bot PNG decode regression.
-      # if (!is_debug) {
-      #  # Use optimize_speed (-O3) to output the _smallest_ code.
-      #  configs -= [ "//build/config/compiler:default_optimization" ]
-      #  configs += [ "//build/config/compiler:optimize_speed" ]
-      # }
+      if (!is_debug) {
+        # Here we trade better performance on newer/bigger ARMv8 cores
+        # for less perf on ARMv7. For details, check:
+        # https://bugs.chromium.org/p/chromium/issues/detail?id=772870#c40
+        configs -= [ "//build/config/compiler:default_optimization" ]
+        configs += [ "//build/config/compiler:optimize_speed" ]
+      }
     }
   }
 
