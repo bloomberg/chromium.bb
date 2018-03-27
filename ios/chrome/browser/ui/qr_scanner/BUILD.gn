@@ -52,6 +52,19 @@ source_set("coordinator") {
   ]
 }
 
+source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  testonly = true
+  sources = [
+    "camera_controller_unittest.mm",
+  ]
+  deps = [
+    ":qr_scanner",
+    "//base",
+    "//testing/gtest:gtest",
+  ]
+}
+
 source_set("eg_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true

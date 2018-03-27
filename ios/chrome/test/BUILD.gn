@@ -213,6 +213,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/ui/popup_menu:unit_tests",
     "//ios/chrome/browser/ui/presenters:unit_tests",
     "//ios/chrome/browser/ui/promos:unit_tests",
+    "//ios/chrome/browser/ui/qr_scanner:unit_tests",
     "//ios/chrome/browser/ui/reading_list:unit_tests",
     "//ios/chrome/browser/ui/safe_mode:unit_tests",
     "//ios/chrome/browser/ui/settings:unit_tests",
