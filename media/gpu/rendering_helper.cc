@@ -56,6 +56,8 @@ static void CreateShader(GLuint program,
 
 namespace media {
 
+bool RenderingHelper::use_gl_ = false;
+
 RenderingHelperParams::RenderingHelperParams()
     : rendering_fps(0), render_as_thumbnails(false) {}
 
@@ -86,9 +88,11 @@ RenderingHelper::RenderedVideo::RenderedVideo(const RenderedVideo& other) =
 RenderingHelper::RenderedVideo::~RenderedVideo() {}
 
 // static
-void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
+void RenderingHelper::InitializeOneOff(bool use_gl, base::WaitableEvent* done) {
   base::CommandLine* cmd_line = base::CommandLine::ForCurrentProcess();
   cmd_line->AppendSwitchASCII(switches::kUseGL, gl::kGLImplementationEGLName);
+
+  use_gl_ = use_gl;
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::InitParams params;
@@ -96,6 +100,11 @@ void RenderingHelper::InitializeOneOff(base::WaitableEvent* done) {
   ui::OzonePlatform::InitializeForGPU(params);
   ui::OzonePlatform::GetInstance()->AfterSandboxEntry();
 #endif
+
+  if (!use_gl_) {
+    done->Signal();
+    return;
+  }
 
   if (!gl::init::InitializeGLOneOff())
     LOG(FATAL) << "Could not initialize GL";
@@ -132,12 +141,18 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
   render_as_thumbnails_ = params.render_as_thumbnails;
   task_runner_ = base::ThreadTaskRunnerHandle::Get();
 
+  videos_.resize(params.num_windows);
+
+  // Skip all the GL stuff if we don't use it
+  if (!use_gl_) {
+    done->Signal();
+    return;
+  }
+
   gl_surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size());
   gl_context_ = gl::init::CreateGLContext(nullptr, gl_surface_.get(),
                                           gl::GLContextAttribs());
   CHECK(gl_context_->MakeCurrent(gl_surface_.get()));
-
-  videos_.resize(params.num_windows);
 
   if (render_as_thumbnails_) {
     CHECK_EQ(videos_.size(), 1U);
@@ -275,9 +290,21 @@ void RenderingHelper::Initialize(const RenderingHelperParams& params,
 }
 
 void RenderingHelper::UnInitialize(base::WaitableEvent* done) {
+  // We have never been initialized in the first place...
+  if (task_runner_.get() == nullptr) {
+    done->Signal();
+    return;
+  }
+
   CHECK(task_runner_->BelongsToCurrentThread());
 
   render_task_.Cancel();
+
+  if (!use_gl_) {
+    Clear();
+    done->Signal();
+    return;
+  }
 
   if (render_as_thumbnails_) {
     glDeleteTextures(1, &thumbnails_texture_id_);
@@ -305,6 +332,13 @@ void RenderingHelper::CreateTexture(uint32_t texture_target,
                    texture_target, texture_id, size, done));
     return;
   }
+
+  if (!use_gl_) {
+    *texture_id = 0;
+    done->Signal();
+    return;
+  }
+
   glGenTextures(1, texture_id);
   glBindTexture(texture_target, *texture_id);
   if (texture_target == GL_TEXTURE_2D) {
@@ -335,6 +369,8 @@ static inline void GLSetViewPort(const gfx::Rect& area) {
 void RenderingHelper::RenderThumbnail(uint32_t texture_target,
                                       uint32_t texture_id) {
   CHECK(task_runner_->BelongsToCurrentThread());
+  CHECK(use_gl_);
+
   const int width = thumbnail_size_.width();
   const int height = thumbnail_size_.height();
   const int thumbnails_in_row = thumbnails_fbo_size_.width() / width;
@@ -401,6 +437,10 @@ void RenderingHelper::RenderTexture(uint32_t texture_target,
 
 void RenderingHelper::DeleteTexture(uint32_t texture_id) {
   CHECK(task_runner_->BelongsToCurrentThread());
+
+  if (!use_gl_)
+    return;
+
   glDeleteTextures(1, &texture_id);
   CHECK_EQ(static_cast<int>(glGetError()), GL_NO_ERROR);
 }
@@ -427,7 +467,7 @@ void RenderingHelper::Clear() {
 
 void RenderingHelper::GetThumbnailsAsRGBA(std::vector<unsigned char>* rgba,
                                           base::WaitableEvent* done) {
-  CHECK(render_as_thumbnails_);
+  CHECK(render_as_thumbnails_ && use_gl_);
 
   const size_t num_pixels = thumbnails_fbo_size_.GetArea();
   rgba->resize(num_pixels * 4);
