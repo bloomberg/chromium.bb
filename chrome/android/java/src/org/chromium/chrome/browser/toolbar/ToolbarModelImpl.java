@@ -19,6 +19,7 @@ import org.chromium.chrome.browser.locale.LocaleManager;
 import org.chromium.chrome.browser.ntp.NativePageFactory;
 import org.chromium.chrome.browser.ntp.NewTabPage;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
+import org.chromium.chrome.browser.omnibox.AutocompleteController;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.search_engines.TemplateUrlService;
 import org.chromium.chrome.browser.tab.Tab;
@@ -372,12 +373,16 @@ public class ToolbarModelImpl
      *         display search terms in place of SRP URL.
      */
     private String extractSearchTermsFromUrl(String url) {
-        boolean shouldShowSearchTerms =
-                mQueryInOmniboxEnabled && securityLevelSafeForQueryInOmnibox();
-        if (!shouldShowSearchTerms) return null;
+        if (!mQueryInOmniboxEnabled || !securityLevelSafeForQueryInOmnibox()) return null;
+
         String searchTerms = TemplateUrlService.getInstance().extractSearchTermsFromUrl(url);
         if (!TextUtils.isEmpty(searchTerms)) {
-            return searchTerms;
+            // Avoid showing search terms that would be interpreted as a URL if typed into the
+            // omnibox.
+            if (TextUtils.isEmpty(
+                        AutocompleteController.nativeQualifyPartialURLQuery(searchTerms))) {
+                return searchTerms;
+            }
         }
         return null;
     }
