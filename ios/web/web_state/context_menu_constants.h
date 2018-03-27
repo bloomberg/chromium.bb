@@ -16,7 +16,7 @@ namespace web {
 // Represents a unique string request ID that is passed through directly from a
 // call to findElementAtPoint to the response dictionary. The request ID should
 // be used to correlate a response with a previous call to findElementAtPoint.
-extern NSString* const kContextMenuElementRequestID;
+extern NSString* const kContextMenuElementRequestId;
 
 // Optional key. Represents element's href attribute if present or parent's href
 // if element is an image.

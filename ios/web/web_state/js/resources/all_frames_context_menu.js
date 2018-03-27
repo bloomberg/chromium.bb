@@ -132,14 +132,14 @@ var getResponseForImageElement = function(element) {
  * back to the application by posting a 'FindElementResultHandler' message.
  * The object will be of the same form as returned by
  * {@code getResponseForLinkElement} or {@code getResponseForImageElement}.
- * @param {string} requestID An identifier which will be returned in the result
+ * @param {string} requestId An identifier which will be returned in the result
  *                 dictionary of this request.
  * @param {number} x Horizontal center of the selected point in page
  *                 coordinates.
  * @param {number} y Vertical center of the selected point in page
  *                 coordinates.
  */
-__gCrWeb['findElementAtPointInPageCoordinates'] = function(requestID, x, y) {
+__gCrWeb['findElementAtPointInPageCoordinates'] = function(requestId, x, y) {
   var hitCoordinates = spiralCoordinates_(x, y);
   for (var index = 0; index < hitCoordinates.length; index++) {
     var coordinates = hitCoordinates[index];
@@ -152,7 +152,7 @@ __gCrWeb['findElementAtPointInPageCoordinates'] = function(requestID, x, y) {
          element.tagName.toLowerCase() === 'frame')) {
       var payload = {
         type: 'org.chromium.contextMenuMessage',
-        requestID: requestID,
+        requestId: requestId,
         x: x - element.offsetLeft,
         y: y - element.offsetTop
       };
@@ -177,19 +177,19 @@ __gCrWeb['findElementAtPointInPageCoordinates'] = function(requestID, x, y) {
           tagName === 'select' || tagName === 'option') {
         // If the element is a known input element, stop the spiral search and
         // return empty results.
-        sendFindElementAtPointResponse(requestID, /*response=*/{});
+        sendFindElementAtPointResponse(requestId, /*response=*/{});
         return;
       }
 
       if (getComputedWebkitTouchCallout_(element) !== 'none') {
         if (tagName === 'a' && element.href) {
-          sendFindElementAtPointResponse(requestID,
+          sendFindElementAtPointResponse(requestId,
                                          getResponseForLinkElement(element));
           return;
         }
 
         if (tagName === 'img' && element.src) {
-          sendFindElementAtPointResponse(requestID,
+          sendFindElementAtPointResponse(requestId,
                                          getResponseForImageElement(element));
           return;
         }
@@ -197,18 +197,18 @@ __gCrWeb['findElementAtPointInPageCoordinates'] = function(requestID, x, y) {
       element = element.parentNode;
     }
   }
-  sendFindElementAtPointResponse(requestID, /*response=*/{});
+  sendFindElementAtPointResponse(requestId, /*response=*/{});
 };
 
 /**
- * Inserts |requestID| into |response| and sends the result as the payload of a
+ * Inserts |requestId| into |response| and sends the result as the payload of a
  * 'FindElementResultHandler' message back to the native application.
- * @param {string} requestID An identifier which will be returned in the result
+ * @param {string} requestId An identifier which will be returned in the result
  *                 dictionary of this request.
  * @param {!Object} response The 'FindElementResultHandler' message payload.
  */
-var sendFindElementAtPointResponse = function(requestID, response) {
-  response.requestID = requestID;
+var sendFindElementAtPointResponse = function(requestId, response) {
+  response.requestId = requestId;
   __gCrWeb.common.sendWebKitMessage('FindElementResultHandler', response);
 };
 
@@ -385,7 +385,7 @@ window.addEventListener('message', function(message) {
   var payload = message.data;
   if (payload.hasOwnProperty('type') &&
       payload.type == 'org.chromium.contextMenuMessage') {
-    __gCrWeb.findElementAtPointInPageCoordinates(payload.requestID,
+    __gCrWeb.findElementAtPointInPageCoordinates(payload.requestId,
                                                  payload.x,
                                                  payload.y);
   }

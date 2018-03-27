@@ -10,7 +10,7 @@
 
 namespace web {
 
-NSString* const kContextMenuElementRequestID = @"requestID";
+NSString* const kContextMenuElementRequestId = @"requestId";
 NSString* const kContextMenuElementHyperlink = @"href";
 NSString* const kContextMenuElementSource = @"src";
 NSString* const kContextMenuElementTitle = @"title";

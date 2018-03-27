@@ -120,7 +120,7 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
   // The location of the last reconized long press in the |webView|.
   CGPoint _locationForLastTouch;
   // Details for currently in progress element fetches. The objects are
-  // instances of HTMLElementFetchRequest and are keyed by a unique requestID
+  // instances of HTMLElementFetchRequest and are keyed by a unique requestId
   // string.
   NSMutableDictionary* _pendingElementFetchRequests;
 }
@@ -328,7 +328,7 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
 
 - (void)didReceiveScriptMessage:(WKScriptMessage*)message {
   NSDictionary* response = message.body;
-  NSString* requestID = response[web::kContextMenuElementRequestID];
+  NSString* requestID = response[web::kContextMenuElementRequestId];
   HTMLElementFetchRequest* fetchRequest =
       _pendingElementFetchRequests[requestID];
   // Do not process the message if a fetch request with a matching |requestID|

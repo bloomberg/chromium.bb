@@ -19,7 +19,7 @@ goog.provide('__crWeb.mainFrameContextMenu');
  * the application by posting a 'FindElementResultHandler' message.
  * The object returned in the message is of the same form as
  * {@code getElementFromPointInPageCoordinates} result.
- * @param {string} requestID An identifier which be returned in the result
+ * @param {string} requestId An identifier which be returned in the result
  *                 dictionary of this request.
  * @param {number} x Horizontal center of the selected point in web view
  *                 coordinates.
@@ -29,9 +29,9 @@ goog.provide('__crWeb.mainFrameContextMenu');
  * @param {number} webViewHeight the height of web view.
  */
 __gCrWeb['findElementAtPoint'] =
-    function(requestID, x, y, webViewWidth, webViewHeight) {
+    function(requestId, x, y, webViewWidth, webViewHeight) {
       var scale = getPageWidth() / webViewWidth;
-      __gCrWeb.findElementAtPointInPageCoordinates(requestID,
+      __gCrWeb.findElementAtPointInPageCoordinates(requestId,
                                                    x * scale,
                                                    y * scale);
     };
