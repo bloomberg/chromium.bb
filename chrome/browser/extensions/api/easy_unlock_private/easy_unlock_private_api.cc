@@ -127,6 +127,11 @@ EasyUnlockPrivateCryptoDelegate* EasyUnlockPrivateAPI::GetCryptoDelegate() {
   return crypto_delegate_.get();
 }
 
+void EasyUnlockPrivateAPI::Shutdown() {
+  // Any dependency which references BrowserContext must be cleaned up here.
+  connection_manager_.reset();
+}
+
 EasyUnlockPrivateGetStringsFunction::EasyUnlockPrivateGetStringsFunction() {
 }
 EasyUnlockPrivateGetStringsFunction::~EasyUnlockPrivateGetStringsFunction() {

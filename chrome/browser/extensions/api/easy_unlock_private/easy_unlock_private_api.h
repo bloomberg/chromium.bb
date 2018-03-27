@@ -64,6 +64,9 @@ class EasyUnlockPrivateAPI : public BrowserContextKeyedAPI {
   // BrowserContextKeyedAPI implementation.
   static const char* service_name() { return "EasyUnlockPrivate"; }
 
+  // KeyedService implementation.
+  void Shutdown() override;
+
   std::unique_ptr<EasyUnlockPrivateCryptoDelegate> crypto_delegate_;
 
   std::unique_ptr<EasyUnlockPrivateConnectionManager> connection_manager_;
