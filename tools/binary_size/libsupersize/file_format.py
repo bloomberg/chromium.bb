@@ -72,8 +72,9 @@ def _SaveSizeInfoToFile(size_info, file_obj):
 
   write_numeric(lambda s: s.address, delta=True)
   _LogSize(file_obj, 'addresses')  # For libchrome, adds 300kb.
-  # Do not write padding, it will be recalcualted from addresses on load.
-  write_numeric(lambda s: s.size_without_padding)
+  # Do not write padding except for overhead symbols, it will be recalculated
+  # from addresses on load.
+  write_numeric(lambda s: s.size if s.IsOverhead() else s.size_without_padding)
   _LogSize(file_obj, 'sizes')  # For libchrome, adds 300kb
   write_numeric(lambda s: path_tuples[(s.object_path, s.source_path)],
                 delta=True)

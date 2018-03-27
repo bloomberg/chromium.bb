@@ -36,7 +36,7 @@ Section .pak.translations: has 100.0% of 6821 bytes accounted for from 207 symbo
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .other: has 100.0% of 33984171 bytes accounted for from 1 symbols. 0 bytes are unaccounted for.
-* Padding accounts for 0 bytes (0.0%)
+* Padding accounts for 33984171 bytes (100.0%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 .data@2de7000(size_without_padding=4,padding=0,full_name=google::protobuf::internal::pLinuxKernelCmpxchg,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=1)
@@ -54,7 +54,7 @@ Section .other: has 100.0% of 33984171 bytes accounted for from 1 symbols. 0 byt
 .data.rel.ro.local@2c17740(size_without_padding=789904,padding=0,full_name=chrome::mojom::FieldTrialRecorderProxy [vtable],object_path=third_party/WebKit.a/ContiguousContainer.o,source_path=third_party/container.c,flags={},num_aliases=1)
 .data.rel.ro.local@2cd84e0(size_without_padding=16,padding=16,full_name=.Lswitch.table.45,object_path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libcontroller_api_impl.a_controller_api_impl.o,source_path=,flags={},num_aliases=1)
 .data.rel.ro.local@2cd84f0(size_without_padding=8,padding=0,full_name=kSystemClassPrefixes,object_path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o,source_path=,flags={anon},num_aliases=1)
-.other@0(size_without_padding=33984171,padding=0,full_name=Overhead: ELF file,object_path=,source_path=,flags={},num_aliases=1)
+.other@0(size_without_padding=0,padding=33984171,full_name=Overhead: ELF file,object_path=,source_path=,flags={},num_aliases=1)
 .rodata@266e600(size_without_padding=5,padding=0,full_name=string literal,object_path=base/base/page_allocator.o,source_path=base/page_allocator.cc,flags={},num_aliases=2)
 .rodata@266e600(size_without_padding=5,padding=0,full_name=string literal,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=2)
 .rodata@266e605(size_without_padding=16,padding=0,full_name=string literal,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=1)

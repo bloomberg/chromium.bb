@@ -291,6 +291,9 @@ class BaseSymbol(object):
   def IsNative(self):
     return self.section_name in NATIVE_SECTIONS
 
+  def IsOverhead(self):
+    return self.full_name.startswith('Overhead: ')
+
   def IsGroup(self):
     return False
 

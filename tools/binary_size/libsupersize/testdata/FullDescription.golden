@@ -67,7 +67,7 @@ Section .bss: has 40.3% of 524520 bytes accounted for from 6 symbols. 775936 byt
 * Contains 0 aliases
 * 0 symbols have shared ownership
 Section .other: has 100.0% of 33984171 bytes accounted for from 1 symbols. 0 bytes are unaccounted for.
-* Padding accounts for 0 bytes (0.0%)
+* Padding accounts for 33984171 bytes (100.0%)
 * Contains 0 aliases
 * 0 symbols have shared ownership
 
@@ -127,7 +127,7 @@ Index | Running Total | Section@Address | ...
 14)   1957016 (2.5%)  R@0x2cd84f0  pss=8  padding=0  num_aliases=1
              source_path= 	object_path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
              flags={anon}  name=kSystemClassPrefixes
-15)  35941187 (46.2%) o@0x0        pss=33984171  padding=0  num_aliases=1
+15)  35941187 (46.2%) o@0x0        pss=33984171  padding=33984171  num_aliases=1
              source_path= 	object_path=
              flags={}  name=Overhead: ELF file
 16)  35941189 (46.2%) r@0x266e600  pss=2.5 (size=5)  padding=0  num_aliases=2
@@ -309,7 +309,7 @@ Index | Running Total | Section@Address | ...
 14)   1957016 (2.5%)  R@0x2cd84f0  pss=8  padding=0  num_aliases=1
              source_path= 	object_path=third_party/gvr-android-sdk/libgvr_shim_static_arm.a/libport_android_jni.a_jni_utils.o
              flags={anon}  name=kSystemClassPrefixes
-15)  35941187 (46.2%) o@0x0        pss=33984171  padding=0  num_aliases=1
+15)  35941187 (46.2%) o@0x0        pss=33984171  padding=33984171  num_aliases=1
              source_path= 	object_path=
              flags={}  name=Overhead: ELF file
 16)  35941189 (46.2%) r@0x266e600  pss=2.5 (size=5)  padding=0  num_aliases=2
