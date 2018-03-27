@@ -443,8 +443,8 @@ TEST_P(ParameterizedLayoutTextTest, AbsoluteRects) {
   LayoutText* layout_text = GetLayoutTextById("target");
   Vector<IntRect> rects;
   layout_text->AbsoluteRects(rects, {LayoutUnit(100), LayoutUnit(200)});
-  EXPECT_THAT(rects, testing::ElementsAre(IntRect(130, 200, 30, 10),
-                                          IntRect(100, 210, 20, 10)));
+  EXPECT_THAT(rects, ::testing::ElementsAre(IntRect(130, 200, 30, 10),
+                                            IntRect(100, 210, 20, 10)));
 }
 
 TEST_P(ParameterizedLayoutTextTest, AbsoluteRectsVRL) {
@@ -463,8 +463,8 @@ TEST_P(ParameterizedLayoutTextTest, AbsoluteRectsVRL) {
   LayoutText* layout_text = GetLayoutTextById("target");
   Vector<IntRect> rects;
   layout_text->AbsoluteRects(rects, {LayoutUnit(100), LayoutUnit(200)});
-  EXPECT_THAT(rects, testing::ElementsAre(IntRect(100, 230, 10, 30),
-                                          IntRect(110, 200, 10, 20)));
+  EXPECT_THAT(rects, ::testing::ElementsAre(IntRect(100, 230, 10, 30),
+                                            IntRect(110, 200, 10, 20)));
 }
 
 TEST_P(ParameterizedLayoutTextTest, LinesBoundingBox) {
