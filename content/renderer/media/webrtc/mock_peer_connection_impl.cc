@@ -398,6 +398,18 @@ void MockPeerConnectionImpl::GetStats(
   callback->OnStatsDelivered(stats_report_);
 }
 
+void MockPeerConnectionImpl::GetStats(
+    rtc::scoped_refptr<webrtc::RtpSenderInterface> selector,
+    rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback> callback) {
+  callback->OnStatsDelivered(stats_report_);
+}
+
+void MockPeerConnectionImpl::GetStats(
+    rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector,
+    rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback> callback) {
+  callback->OnStatsDelivered(stats_report_);
+}
+
 void MockPeerConnectionImpl::SetGetStatsReport(webrtc::RTCStatsReport* report) {
   stats_report_ = report;
 }

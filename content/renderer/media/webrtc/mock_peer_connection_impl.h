@@ -103,6 +103,12 @@ class MockPeerConnectionImpl : public webrtc::PeerConnectionInterface {
                 webrtc::MediaStreamTrackInterface* track,
                 StatsOutputLevel level) override;
   void GetStats(webrtc::RTCStatsCollectorCallback* callback) override;
+  void GetStats(
+      rtc::scoped_refptr<webrtc::RtpSenderInterface> selector,
+      rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback> callback) override;
+  void GetStats(
+      rtc::scoped_refptr<webrtc::RtpReceiverInterface> selector,
+      rtc::scoped_refptr<webrtc::RTCStatsCollectorCallback> callback) override;
 
   // Call this function to make sure next call to legacy GetStats fail.
   void SetGetStatsResult(bool result) { getstats_result_ = result; }

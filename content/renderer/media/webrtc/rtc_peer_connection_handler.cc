@@ -698,52 +698,6 @@ void GetStatsOnSignalingThread(
   }
 }
 
-// A stats collector callback.
-// It is invoked on the WebRTC signaling thread and will post a task to invoke
-// |callback| on the thread given in the |main_thread| argument.
-// The argument to the callback will be a |blink::WebRTCStatsReport|.
-class GetRTCStatsCallback : public webrtc::RTCStatsCollectorCallback {
- public:
-  static rtc::scoped_refptr<GetRTCStatsCallback> Create(
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-      std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
-    return rtc::scoped_refptr<GetRTCStatsCallback>(
-        new rtc::RefCountedObject<GetRTCStatsCallback>(
-            main_thread, callback.release()));
-  }
-
-  void OnStatsDelivered(
-      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override {
-    main_thread_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&GetRTCStatsCallback::OnStatsDeliveredOnMainThread, this,
-                       report));
-  }
-
- protected:
-  GetRTCStatsCallback(
-      const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
-      blink::WebRTCStatsReportCallback* callback)
-      : main_thread_(main_thread),
-        callback_(callback) {
-  }
-  ~GetRTCStatsCallback() override { DCHECK(!callback_); }
-
-  void OnStatsDeliveredOnMainThread(
-      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
-    DCHECK(main_thread_->BelongsToCurrentThread());
-    DCHECK(report);
-    DCHECK(callback_);
-    callback_->OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport>(
-        new RTCStatsReport(base::WrapRefCounted(report.get()))));
-    // Make sure the callback is destroyed in the main thread as well.
-    callback_.reset();
-  }
-
-  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
-  std::unique_ptr<blink::WebRTCStatsReportCallback> callback_;
-};
-
 void GetRTCStatsOnSignalingThread(
     const scoped_refptr<base::SingleThreadTaskRunner>& main_thread,
     scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
@@ -751,7 +705,7 @@ void GetRTCStatsOnSignalingThread(
   TRACE_EVENT0("webrtc", "GetRTCStatsOnSignalingThread");
 
   native_peer_connection->GetStats(
-      GetRTCStatsCallback::Create(main_thread, std::move(callback)));
+      RTCStatsCollectorCallbackImpl::Create(main_thread, std::move(callback)));
 }
 
 class PeerConnectionUMAObserver : public webrtc::UMAObserver {

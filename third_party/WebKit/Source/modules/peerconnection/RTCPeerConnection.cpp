@@ -83,6 +83,7 @@
 #include "modules/peerconnection/RTCTrackEvent.h"
 #include "modules/peerconnection/RTCVoidRequestImpl.h"
 #include "modules/peerconnection/RTCVoidRequestPromiseImpl.h"
+#include "modules/peerconnection/WebRTCStatsReportCallbackResolver.h"
 #include "modules/peerconnection/testing/InternalsRTCPeerConnection.h"
 #include "platform/InstanceCounters.h"
 #include "platform/bindings/Microtask.h"
@@ -415,35 +416,6 @@ RTCOfferOptionsPlatform* ParseOfferOptions(const Dictionary& options,
       ice_restart);
   return rtc_offer_options;
 }
-
-// Helper class for
-// |RTCPeerConnection::getStats(ScriptState*, MediaStreamTrack*)|
-class WebRTCStatsReportCallbackResolver : public WebRTCStatsReportCallback {
- public:
-  // Takes ownership of |resolver|.
-  static std::unique_ptr<WebRTCStatsReportCallback> Create(
-      ScriptPromiseResolver* resolver) {
-    return std::unique_ptr<WebRTCStatsReportCallback>(
-        new WebRTCStatsReportCallbackResolver(resolver));
-  }
-
-  ~WebRTCStatsReportCallbackResolver() override {
-    DCHECK(
-        ExecutionContext::From(resolver_->GetScriptState())->IsContextThread());
-  }
-
- private:
-  explicit WebRTCStatsReportCallbackResolver(ScriptPromiseResolver* resolver)
-      : resolver_(resolver) {}
-
-  void OnStatsDelivered(std::unique_ptr<WebRTCStatsReport> report) override {
-    DCHECK(
-        ExecutionContext::From(resolver_->GetScriptState())->IsContextThread());
-    resolver_->Resolve(new RTCStatsReport(std::move(report)));
-  }
-
-  Persistent<ScriptPromiseResolver> resolver_;
-};
 
 bool FingerprintMismatch(String old_sdp, String new_sdp) {
   // Check special case of externally generated SDP without fingerprints.
