@@ -245,6 +245,23 @@ static int get_coeff_cost(const tran_low_t qc, const int scan_idx,
                           const LV_MAP_COEFF_COST *const txb_costs,
                           const int coeff_ctx);
 
+static INLINE int get_nz_map_ctx(const uint8_t *const levels,
+                                 const int coeff_idx, const int bwl,
+                                 const int height, const int scan_idx,
+                                 const int is_eob, const TX_SIZE tx_size,
+                                 const TX_TYPE tx_type) {
+  if (is_eob) {
+    if (scan_idx == 0) return 0;
+    if (scan_idx <= (height << bwl) / 8) return 1;
+    if (scan_idx <= (height << bwl) / 4) return 2;
+    return 3;
+  }
+  const TX_CLASS tx_class = tx_type_to_class[tx_type];
+  const int stats =
+      get_nz_mag(levels + get_padded_idx(coeff_idx, bwl), bwl, tx_class);
+  return get_nz_map_ctx_from_stats(stats, coeff_idx, bwl, tx_size, tx_class);
+}
+
 static void get_dist_cost_stats(LevelDownStats *const stats, const int scan_idx,
                                 const int is_eob,
                                 const LV_MAP_COEFF_COST *const txb_costs,
