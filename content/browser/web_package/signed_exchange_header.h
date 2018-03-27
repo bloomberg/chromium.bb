@@ -22,7 +22,7 @@ namespace content {
 
 // SignedExchangeHeader contains all information captured in signed exchange
 // envelope but the payload.
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html
 class CONTENT_EXPORT SignedExchangeHeader {
  public:
   static constexpr size_t kEncodedHeaderLengthInBytes = 3;
@@ -35,10 +35,10 @@ class CONTENT_EXPORT SignedExchangeHeader {
   using HeaderMap = std::map<std::string, std::string>;
 
   // Parse headers from the application/signed-exchange;v=b0 format.
-  // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#rfc.section.5.3
+  // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#application-signed-exchange
   //
   // This also performs the step 3 and 4 of "Cross-origin trust" validation.
-  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.4
+  // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cross-origin-trust
   static base::Optional<SignedExchangeHeader> Parse(
       base::span<const uint8_t> input);
   SignedExchangeHeader();
