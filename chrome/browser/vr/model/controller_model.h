@@ -33,6 +33,7 @@ struct ControllerModel {
   bool quiescent = false;
   bool resting_in_viewport = false;
   bool recentered = false;
+  bool app_button_long_pressed = false;
   PlatformController::Handedness handedness = PlatformController::kRightHanded;
 };
 

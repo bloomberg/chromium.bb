@@ -313,9 +313,8 @@ void Ui::OnAppButtonClicked() {
   }
 }
 
-void Ui::OnAppButtonGesturePerformed(
-    PlatformController::SwipeDirection direction) {
-}
+void Ui::OnAppButtonSwipePerformed(
+    PlatformController::SwipeDirection direction) {}
 
 void Ui::OnControllerUpdated(const ControllerModel& controller_model,
                              const ReticleModel& reticle_model) {
@@ -360,6 +359,10 @@ void Ui::OnPlatformControllerInitialized(PlatformController* controller) {
 bool Ui::IsControllerVisible() const {
   UiElement* controller_group = scene_->GetUiElementByName(kControllerGroup);
   return controller_group && controller_group->GetTargetOpacity() > 0.0f;
+}
+
+bool Ui::IsAppButtonLongPressed() const {
+  return model_->controller.app_button_long_pressed;
 }
 
 bool Ui::SkipsRedrawWhenNotDirty() const {

@@ -32,11 +32,26 @@ class Binding : public BindingBase {
       : getter_(getter), setter_(setter) {}
 
   Binding(const base::RepeatingCallback<T()>& getter,
+          const base::RepeatingCallback<void(const base::Optional<T>&,
+                                             const T&)>& setter)
+      : getter_(getter), historic_setter_(setter) {}
+
+  Binding(const base::RepeatingCallback<T()>& getter,
           const std::string& getter_text,
           const base::RepeatingCallback<void(const T&)>& setter,
           const std::string& setter_text)
       : getter_(getter),
         setter_(setter),
+        getter_text_(getter_text),
+        setter_text_(setter_text) {}
+
+  Binding(const base::RepeatingCallback<T()>& getter,
+          const std::string& getter_text,
+          const base::RepeatingCallback<void(const base::Optional<T>&,
+                                             const T&)>& setter,
+          const std::string& setter_text)
+      : getter_(getter),
+        historic_setter_(setter),
         getter_text_(getter_text),
         setter_text_(setter_text) {}
   ~Binding() override = default;
@@ -48,8 +63,11 @@ class Binding : public BindingBase {
     T current_value = getter_.Run();
     if (last_value_ && current_value == last_value_.value())
       return false;
+    if (setter_)
+      setter_.Run(current_value);
+    if (historic_setter_)
+      historic_setter_.Run(last_value_, current_value);
     last_value_ = current_value;
-    setter_.Run(current_value);
     return true;
   }
 
@@ -64,6 +82,8 @@ class Binding : public BindingBase {
  private:
   base::RepeatingCallback<T()> getter_;
   base::RepeatingCallback<void(const T&)> setter_;
+  base::RepeatingCallback<void(const base::Optional<T>&, const T&)>
+      historic_setter_;
   base::Optional<T> last_value_;
 
   std::string getter_text_;

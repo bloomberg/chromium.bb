@@ -2745,7 +2745,6 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
                                    nullptr,
                                    nullptr};
   auto app_button_to_exit = CreateWebVrIndicator(model_, app_button_spec);
-  VR_BIND_VISIBILITY(app_button_to_exit, model->web_vr.show_exit_toast);
   indicators->AddChild(std::move(app_button_to_exit));
 
   // TODO(crbug.com/824472): add an indicator for the transient URL toast.
@@ -2756,19 +2755,40 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
   }
 
   parent = CreateTransientParent(kNone, kToastTimeoutSeconds, true);
-  parent->AddBinding(std::make_unique<Binding<bool>>(
+  parent->AddBinding(std::make_unique<Binding<std::pair<bool, bool>>>(
       VR_BIND_LAMBDA(
           [](Model* model, UiElement* splash_screen) {
-            return model->web_vr.has_produced_frames() &&
-                   model->web_vr.has_received_permissions &&
-                   splash_screen->GetTargetOpacity() == 0.f;
+            return std::make_pair(model->web_vr_enabled() &&
+                                      model->web_vr.has_produced_frames() &&
+                                      model->web_vr.has_received_permissions &&
+                                      splash_screen->GetTargetOpacity() == 0.f,
+                                  model->controller.app_button_long_pressed);
           },
           base::Unretained(model_),
           base::Unretained(
               scene_->GetUiElementByName(kSplashScreenTransientParent))),
       VR_BIND_LAMBDA(
-          [](UiElement* e, Model* model, UiScene* scene, const bool& value) {
-            SetVisibleInLayout(e, value);
+          [](TransientElement* e, Model* model, UiScene* scene,
+             const base::Optional<std::pair<bool, bool>>& last_value,
+             const std::pair<bool, bool>& value) {
+            if (!value.first) {
+              e->SetVisibleImmediately(false);
+              return;
+            }
+
+            // The reason we need the previous state is to disguish the
+            // situation where the app button has been released after a long
+            // press, and the situation when we want to initially show the
+            // indicators.
+            if (last_value && last_value.value().second && !value.second)
+              return;
+
+            e->SetVisible(true);
+            e->RefreshVisible();
+            SetVisibleInLayout(
+                scene->GetUiElementByName(kExclusiveScreenToastViewportAware),
+                model->web_vr.show_exit_toast && !value.second);
+
             auto specs = GetIndicatorSpecs();
             for (const auto& spec : specs) {
               SetVisibleInLayout(
@@ -2778,6 +2798,11 @@ void UiSceneCreator::CreateWebVrOverlayElements() {
             }
 
             e->RemoveKeyframeModels(TRANSFORM);
+            if (value.second) {
+              e->SetTranslate(0, 0, 0);
+              return;
+            }
+
             e->SetTranslate(0, kWebVrPermissionOffsetStart, 0);
 
             // Build up a keyframe model for the initial transition.
