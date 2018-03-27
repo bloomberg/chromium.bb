@@ -18,10 +18,6 @@
 #include "content/public/browser/render_widget_host.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
-namespace viz {
-class CompositorFrameMetadata;
-}
-
 namespace content {
 class DevToolsAgentHostImpl;
 class RenderFrameHostImpl;
@@ -40,8 +36,7 @@ class InputHandler : public DevToolsDomainHandler, public Input::Backend {
   void SetRenderer(int process_host_id,
                    RenderFrameHostImpl* frame_host) override;
 
-  void OnSwapCompositorFrame(
-      const viz::CompositorFrameMetadata& frame_metadata);
+  void OnPageScaleFactorChanged(float page_scale_factor);
   Response Disable() override;
 
   void DispatchKeyEvent(
