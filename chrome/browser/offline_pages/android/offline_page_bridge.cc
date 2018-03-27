@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string16.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/tab_android.h"
@@ -172,6 +173,18 @@ void GetLaunchUrlByOfflineIdCallback(
   JNIEnv* env = base::android::AttachCurrentThread();
   base::android::RunCallbackAndroid(j_callback_obj,
                                     ConvertUTF8ToJavaString(env, result));
+}
+
+void GetLaunchUrlBySizeAndDigestCallback(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const GURL& url,
+    const std::string& extra_headers) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  ScopedJavaLocalRef<jobject> loadUrlParams =
+      Java_OfflinePageBridge_createLoadUrlParams(
+          env, ConvertUTF8ToJavaString(env, url.spec()),
+          ConvertUTF8ToJavaString(env, extra_headers));
+  base::android::RunCallbackAndroid(j_callback_obj, loadUrlParams);
 }
 
 void ValidateFileCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
@@ -836,6 +849,30 @@ void OfflinePageBridge::GetLaunchUrlByOfflineId(
                                weak_ptr_factory_.GetWeakPtr(), j_callback_ref));
 }
 
+void OfflinePageBridge::GetLoadUrlParamsForOpeningMhtmlFileOrContent(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jstring>& j_url,
+    const base::android::JavaParamRef<jobject>& j_callback_obj) {
+  GURL url(ConvertJavaStringToUTF8(env, j_url));
+  base::FilePath file_path;
+  if (url.SchemeIsFile()) {
+    net::FileURLToFilePath(url, &file_path);
+  } else {
+    DCHECK(url.SchemeIs("content"));
+    // Content URI can be embeded in the file path and FileStream knows how to
+    // read it.
+    file_path = base::FilePath(url.spec());
+  }
+
+  ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, {base::MayBlock(), base::TaskPriority::BACKGROUND},
+      base::Bind(&ArchiveValidator::GetSizeAndComputeDigest, file_path),
+      base::Bind(&OfflinePageBridge::GetSizeAndComputeDigestDone,
+                 weak_ptr_factory_.GetWeakPtr(), j_callback_ref, url));
+}
+
 jboolean OfflinePageBridge::IsShowingTrustedOfflinePage(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj,
@@ -867,6 +904,48 @@ void OfflinePageBridge::GetPageByOfflineIdDone(
                  offline_page->file_size, offline_page->digest),
       base::Bind(&ValidateFileCallback, j_callback_obj, offline_page->url,
                  offline_page->file_path));
+}
+
+void OfflinePageBridge::GetSizeAndComputeDigestDone(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const GURL& intent_url,
+    std::pair<int64_t, std::string> size_and_digest) {
+  // If size or digest can't be obtained, launch the intent URL.
+  if (!size_and_digest.first || size_and_digest.second.empty()) {
+    GetLaunchUrlBySizeAndDigestCallback(j_callback_obj, intent_url,
+                                        std::string());
+    return;
+  }
+
+  offline_page_model_->GetPageBySizeAndDigest(
+      size_and_digest.first, size_and_digest.second,
+      base::Bind(&OfflinePageBridge::GetPageBySizeAndDigestDone,
+                 weak_ptr_factory_.GetWeakPtr(), j_callback_obj, intent_url));
+}
+
+void OfflinePageBridge::GetPageBySizeAndDigestDone(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    const GURL& intent_url,
+    const OfflinePageItem* offline_page) {
+  GURL launch_url;
+  std::string extra_headers;
+  if (offline_page) {
+    launch_url = offline_page->url;
+    offline_pages::OfflinePageHeader offline_header;
+    offline_header.reason =
+        intent_url.SchemeIsFile()
+            ? offline_pages::OfflinePageHeader::Reason::FILE_URL_INTENT
+            : offline_pages::OfflinePageHeader::Reason::CONTENT_URL_INTENT;
+    offline_header.need_to_persist = true;
+    offline_header.id = base::Int64ToString(offline_page->offline_id);
+    offline_header.intent_url = intent_url;
+    extra_headers = offline_header.GetCompleteHeaderString();
+  } else {
+    // If the offline page can't be found, launch the intent URL.
+    launch_url = intent_url;
+  }
+  GetLaunchUrlBySizeAndDigestCallback(j_callback_obj, launch_url,
+                                      extra_headers);
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {

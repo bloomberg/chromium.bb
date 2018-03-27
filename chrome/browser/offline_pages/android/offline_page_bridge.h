@@ -201,6 +201,12 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       jlong j_offline_id,
       const base::android::JavaParamRef<jobject>& j_callback_obj);
 
+  void GetLoadUrlParamsForOpeningMhtmlFileOrContent(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jstring>& j_url,
+      const base::android::JavaParamRef<jobject>& j_callback_obj);
+
   jboolean IsShowingTrustedOfflinePage(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj,
@@ -209,6 +215,16 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
  private:
   void GetPageByOfflineIdDone(
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
+      const OfflinePageItem* offline_page);
+
+  void GetSizeAndComputeDigestDone(
+      const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
+      const GURL& intent_url,
+      std::pair<int64_t, std::string> size_and_digest);
+
+  void GetPageBySizeAndDigestDone(
+      const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
+      const GURL& intent_url,
       const OfflinePageItem* offline_page);
 
   void NotifyIfDoneLoading() const;

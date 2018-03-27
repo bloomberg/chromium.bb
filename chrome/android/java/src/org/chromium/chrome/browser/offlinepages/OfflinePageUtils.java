@@ -488,6 +488,25 @@ public class OfflinePageUtils {
     }
 
     /**
+     * A load url parameters to handle the intent for viewing MHTML file or content. If the
+     * trusted offline page is found, the URL (http/https) of the offline page is to be opened.
+     * Otherwise, the file or content URL from the intent will be launched.
+     * @param internUrl URL from the intent.
+     * @param callback  The callback to pass back the launching URL and extra headers.
+     */
+    public static void getLoadUrlParamsForOpeningMhtmlFileOrContent(
+            final String intentUrl, Callback<LoadUrlParams> callback) {
+        OfflinePageBridge offlinePageBridge =
+                getInstance().getOfflinePageBridge(Profile.getLastUsedProfile());
+        if (offlinePageBridge == null) {
+            callback.onResult(new LoadUrlParams(intentUrl));
+            return;
+        }
+
+        offlinePageBridge.getLoadUrlParamsForOpeningMhtmlFileOrContent(intentUrl, callback);
+    }
+
+    /**
      * @return True if an offline preview is being shown.
      * @param tab The current tab.
      */

@@ -17,6 +17,7 @@
 #include "base/task_runner_util.h"
 #include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/offline_pages/offline_page_model_factory.h"
 #include "chrome/browser/offline_pages/offline_page_tab_helper.h"
@@ -768,9 +769,14 @@ void OfflinePageRequestJob::OnTrustedOfflinePageFound() {
   // content:// denoted in the intent instead. Otherwise, open the archive file
   // associated with the offline page.
   base::FilePath file_path;
-  if (IsProcessingFileOrContentUrlIntent()) {
+  if (IsProcessingFileUrlIntent()) {
     bool valid = net::FileURLToFilePath(offline_header_.intent_url, &file_path);
     DCHECK(valid);
+#if defined(OS_ANDROID)
+  } else if (IsProcessingContentUrlIntent()) {
+    file_path = base::FilePath(offline_header_.intent_url.spec());
+    DCHECK(file_path.IsContentUri());
+#endif  // defined(OS_ANDROID)
   } else {
     file_path = GetCurrentOfflinePage().file_path;
   }
@@ -885,10 +891,17 @@ const OfflinePageItem& OfflinePageRequestJob::GetCurrentOfflinePage() const {
   return candidates_[candidate_index_].offline_page;
 }
 
+bool OfflinePageRequestJob::IsProcessingFileUrlIntent() const {
+  return offline_header_.reason == OfflinePageHeader::Reason::FILE_URL_INTENT;
+}
+
+bool OfflinePageRequestJob::IsProcessingContentUrlIntent() const {
+  return offline_header_.reason ==
+         OfflinePageHeader::Reason::CONTENT_URL_INTENT;
+}
+
 bool OfflinePageRequestJob::IsProcessingFileOrContentUrlIntent() const {
-  return offline_header_.reason == OfflinePageHeader::Reason::FILE_URL_INTENT ||
-         offline_header_.reason ==
-             OfflinePageHeader::Reason::CONTENT_URL_INTENT;
+  return IsProcessingFileUrlIntent() || IsProcessingContentUrlIntent();
 }
 
 void OfflinePageRequestJob::OpenFile(const base::FilePath& file_path,
@@ -896,8 +909,14 @@ void OfflinePageRequestJob::OpenFile(const base::FilePath& file_path,
   if (!stream_)
     stream_ = std::make_unique<net::FileStream>(file_task_runner_);
 
-  int flags = base::File::FLAG_OPEN | base::File::FLAG_READ |
-              base::File::FLAG_EXCLUSIVE_READ | base::File::FLAG_ASYNC;
+  int flags =
+      base::File::FLAG_OPEN | base::File::FLAG_READ | base::File::FLAG_ASYNC;
+#if defined(OS_ANDROID)
+  if (!file_path.IsContentUri())
+    flags |= base::File::FLAG_EXCLUSIVE_READ;
+#else
+  flags |= base::File::FLAG_EXCLUSIVE_READ;
+#endif  // defined(OS_ANDROID)
   int result = stream_->Open(file_path, flags, callback);
   if (result != net::ERR_IO_PENDING)
     callback.Run(result);

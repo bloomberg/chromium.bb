@@ -212,6 +212,8 @@ class OfflinePageRequestJob : public net::URLRequestJob {
 
   const OfflinePageItem& GetCurrentOfflinePage() const;
 
+  bool IsProcessingFileUrlIntent() const;
+  bool IsProcessingContentUrlIntent() const;
   bool IsProcessingFileOrContentUrlIntent() const;
 
   void OnTrustedOfflinePageFound();

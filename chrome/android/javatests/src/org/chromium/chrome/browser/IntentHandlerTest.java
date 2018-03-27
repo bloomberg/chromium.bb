@@ -91,6 +91,18 @@ public class IntentHandlerTest {
                     + "://navigate?url=content://com.android.chrome.FileProvider",
     };
 
+    private static final String[][] INTENT_URLS_AND_TYPES_FOR_MHTML = {
+            {"file://foo.mhtml", ""}, {"file://foo.mht", ""}, {"file://foo", "multipart/related"},
+            {"file://foo", "message/rfc822"}, {"content://example.com/1", "multipart/related"},
+            {"content://example.com/1", "message/rfc822"},
+    };
+
+    private static final String[][] INTENT_URLS_AND_TYPES_NOT_FOR_MHTML = {
+            {"http://www.example.com", ""}, {"ftp://www.example.com", ""}, {"file://foo", ""},
+            {"file://foo.txt", ""}, {"file://foo.mhtml", "text/html"},
+            {"content://example.com/1", ""}, {"content://example.com/1", "text/html"},
+    };
+
     private static final String GOOGLE_URL = "https://www.google.com";
 
     private IntentHandler mIntentHandler;
@@ -106,6 +118,26 @@ public class IntentHandlerTest {
             }
         }
         Assert.assertTrue(failedTests.toString(), failedTests.isEmpty());
+    }
+
+    private void checkIntentForMhtmlFileOrContent(String[][] urlsAndTypes, boolean isValid) {
+        List<String> failedTests = new ArrayList<>();
+
+        for (String[] urlAndType : urlsAndTypes) {
+            Uri url = Uri.parse(urlAndType[0]);
+            String type = urlAndType[1];
+            if (type.equals("")) {
+                mIntent.setData(url);
+            } else {
+                mIntent.setDataAndType(url, type);
+            }
+            if (IntentHandler.isIntentForMhtmlFileOrContent(mIntent) != isValid) {
+                failedTests.add(url.toString() + "," + type);
+            }
+        }
+        Assert.assertTrue(
+                "Expect " + isValid + " Actual " + !isValid + ": " + failedTests.toString(),
+                failedTests.isEmpty());
     }
 
     @Before
@@ -400,5 +432,13 @@ public class IntentHandlerTest {
                     IntentHandler.maybeAddAdditionalExtraHeaders(
                             intent, downloadContentUrl, "Foo: bar"));
         }
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testIsIntentForMhtmlFileOrContent() {
+        checkIntentForMhtmlFileOrContent(INTENT_URLS_AND_TYPES_FOR_MHTML, true);
+        checkIntentForMhtmlFileOrContent(INTENT_URLS_AND_TYPES_NOT_FOR_MHTML, false);
     }
 }
