@@ -2827,6 +2827,14 @@
       'Win7 Tests (dbg)(1)',
       'Win10 Tests x64',
     ],
+    'modifications': {
+      # chromium.fyi
+      'Fuchsia': {
+        'args': [
+          '--use-new-test-runner',
+        ],
+      },
+    }
   },
   'services_unittests': {
     'remove_from': [

@@ -44,7 +44,7 @@ mojom::ConnectResult LaunchAndConnectToProcess(
     service_manager::Connector* connector,
     base::Process* process) {
   base::FilePath target_path;
-  CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
+  CHECK(base::PathService::Get(base::DIR_ASSETS, &target_path));
   target_path = target_path.AppendASCII(target_exe_name);
 
   base::CommandLine child_command_line(target_path);

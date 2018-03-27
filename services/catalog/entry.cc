@@ -8,6 +8,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/path_service.h"
 #include "base/values.h"
+#include "build/build_config.h"
 #include "services/catalog/public/cpp/manifest_parsing_util.h"
 #include "services/catalog/store.h"
 #include "services/service_manager/public/mojom/interface_provider_spec.mojom.h"
@@ -144,10 +145,10 @@ std::unique_ptr<Entry> Entry::Deserialize(const base::Value& manifest_root) {
   // By default we assume a standalone service executable. The catalog may
   // override this layer based on configuration external to the service's own
   // manifest.
-  base::FilePath module_path;
-  base::PathService::Get(base::DIR_MODULE, &module_path);
-  entry->set_path(
-      module_path.AppendASCII(entry->name() + kServiceExecutableExtension));
+  base::FilePath service_exe_root;
+  CHECK(base::PathService::Get(base::DIR_ASSETS, &service_exe_root));
+  entry->set_path(service_exe_root.AppendASCII(entry->name() +
+                                               kServiceExecutableExtension));
 
   // Human-readable name.
   std::string display_name;

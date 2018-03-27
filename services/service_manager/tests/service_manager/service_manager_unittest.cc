@@ -244,7 +244,8 @@ class ServiceManagerTest : public test::ServiceTest,
 
   void StartTarget() {
     base::FilePath target_path;
-    CHECK(base::PathService::Get(base::DIR_EXE, &target_path));
+    CHECK(base::PathService::Get(base::DIR_ASSETS, &target_path));
+
 #if defined(OS_WIN)
     target_path = target_path.Append(
         FILE_PATH_LITERAL("service_manager_unittest_target.exe"));
