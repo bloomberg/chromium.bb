@@ -4,7 +4,7 @@
 
 module IPC.mojom;
 
-import "mojo/common/read_only_buffer.mojom";
+import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "mojo/public/interfaces/bindings/native_struct.mojom";
 
 // A placeholder interface type since we don't yet support generic associated
@@ -17,7 +17,7 @@ interface Channel {
   SetPeerPid(int32 pid);
 
   // Transmits a classical Chrome IPC message.
-  Receive(mojo.common.mojom.ReadOnlyBuffer data,
+  Receive(mojo_base.mojom.ReadOnlyBuffer data,
           array<mojo.native.SerializedHandle>? handles);
 
   // Requests a Channel-associated interface.

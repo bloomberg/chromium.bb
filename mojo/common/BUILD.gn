@@ -24,12 +24,6 @@ mojom("common_custom_types") {
   ]
 }
 
-mojom("read_only_buffer") {
-  sources = [
-    "read_only_buffer.mojom",
-  ]
-}
-
 component("common_base") {
   output_name = "mojo_common_lib"
 

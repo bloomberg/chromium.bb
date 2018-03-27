@@ -5,7 +5,7 @@
 module network.mojom;
 
 import "services/network/public/mojom/mutable_network_traffic_annotation_tag.mojom";
-import "mojo/common/read_only_buffer.mojom";
+import "mojo/public/mojom/base/read_only_buffer.mojom";
 import "net/interfaces/address_family.mojom";
 import "net/interfaces/ip_address.mojom";
 import "net/interfaces/ip_endpoint.mojom";
@@ -160,14 +160,14 @@ interface UDPSocket {
   //   requests will be failed quickly (which might happen before the completion
   //   of requests that were sent earlier).
   SendTo(net.interfaces.IPEndPoint dest_addr,
-         mojo.common.mojom.ReadOnlyBuffer data,
+         mojo_base.mojom.ReadOnlyBuffer data,
          MutableNetworkTrafficAnnotationTag traffic_annotation)
       => (int32 result);
 
   // Same as SendTo(), except this method sends data to the destination
   // specified in an earlier Connect(). This method should only be called after
   // a successful Connect().
-  Send(mojo.common.mojom.ReadOnlyBuffer data,
+  Send(mojo_base.mojom.ReadOnlyBuffer data,
        MutableNetworkTrafficAnnotationTag traffic_annotation)
       => (int32 result);
 
@@ -194,5 +194,5 @@ interface UDPSocketReceiver {
   // net::OK, which indicates a zero-byte payload.
   OnReceived(int32 result,
              net.interfaces.IPEndPoint? src_addr,
-             mojo.common.mojom.ReadOnlyBuffer? data);
+             mojo_base.mojom.ReadOnlyBuffer? data);
 };
