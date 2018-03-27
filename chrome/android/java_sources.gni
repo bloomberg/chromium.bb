@@ -621,6 +621,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/media/router/MediaRouteDialogManager.java",
   "java/src/org/chromium/chrome/browser/media/router/MediaRouteManager.java",
   "java/src/org/chromium/chrome/browser/media/router/MediaRouteProvider.java",
+  "java/src/org/chromium/chrome/browser/media/router/caf/CafMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/BaseMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/CastMediaRouteProvider.java",
   "java/src/org/chromium/chrome/browser/media/router/cast/CastMediaSource.java",

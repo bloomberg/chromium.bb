@@ -13,6 +13,8 @@ import org.chromium.base.SysUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.media.router.caf.CafMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.cast.CastMediaRouteProvider;
 import org.chromium.chrome.browser.media.router.cast.MediaSink;
 import org.chromium.chrome.browser.media.router.cast.MediaSource;
@@ -38,12 +40,21 @@ public class ChromeMediaRouter implements MediaRouteManager {
             new MediaRouteProvider.Factory() {
                 @Override
                 public void addProviders(MediaRouteManager manager) {
-                    MediaRouteProvider castProvider = CastMediaRouteProvider.create(manager);
-                    manager.addMediaRouteProvider(castProvider);
+                    // Bypass feature check in tests as ChromeFeatureList might not be initialized
+                    // yet.
+                    if (ChromeFeatureList.isInitialized()
+                            && ChromeFeatureList.isEnabled(
+                                       ChromeFeatureList.CAF_MEDIA_ROUTER_IMPL)) {
+                        MediaRouteProvider cafProvider = CafMediaRouteProvider.create(manager);
+                        manager.addMediaRouteProvider(cafProvider);
+                    } else {
+                        MediaRouteProvider castProvider = CastMediaRouteProvider.create(manager);
+                        manager.addMediaRouteProvider(castProvider);
 
-                    MediaRouteProvider remotingProvider =
-                            RemotingMediaRouteProvider.create(manager);
-                    manager.addMediaRouteProvider(remotingProvider);
+                        MediaRouteProvider remotingProvider =
+                                RemotingMediaRouteProvider.create(manager);
+                        manager.addMediaRouteProvider(remotingProvider);
+                    }
                 }
             };
 
