@@ -17,24 +17,25 @@ void GetAllTokens(base::StringTokenizer& t) {
 
 // Entry point for LibFuzzer.
 extern "C" int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
-  if (size < 1) {
+  uint8_t size_t_bytes = sizeof(size_t);
+  if (size < size_t_bytes + 1) {
     return 0;
   }
+
+  // Calculate pattern size based on remaining bytes, otherwise fuzzing is
+  // inefficient with bailouts in most cases.
+  size_t pattern_size =
+      *reinterpret_cast<const size_t*>(data) % (size - size_t_bytes);
+
+  std::string pattern(reinterpret_cast<const char*>(data + size_t_bytes),
+                      pattern_size);
+  std::string input(
+      reinterpret_cast<const char*>(data + size_t_bytes + pattern_size),
+      size - pattern_size - size_t_bytes);
 
   // Allow quote_chars and options to be set. Otherwise full coverage
   // won't be possible since IsQuote, FullGetNext and other functions
   // won't be called.
-  size_t pattern_size = data[0];
-
-  if (pattern_size > size - 1) {
-    return 0;
-  }
-
-  std::string pattern(reinterpret_cast<const char*>(data + 1), pattern_size);
-
-  std::string input(reinterpret_cast<const char*>(data + 1 + pattern_size),
-                    size - pattern_size - 1);
-
   base::StringTokenizer t(input, pattern);
   GetAllTokens(t);
 
