@@ -82,9 +82,7 @@ class LongRunningMemoryBenchmarkSitesDesktop(memory._MemoryInfra):
   def SetExtraBrowserOptions(self, options):
     super(LongRunningMemoryBenchmarkSitesDesktop, self).SetExtraBrowserOptions(
         options)
-    options.AppendExtraBrowserArgs([
-        '--memlog=all', '--memlog-sampling',
-        '--memlog-stack-mode=native-with-thread-names'])
+    options.AppendExtraBrowserArgs(['--enable-heap-profiling=native'])
     # Disable taking screenshot on failing pages.
     options.take_screenshot_for_failed_page = False
 

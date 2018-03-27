@@ -126,6 +126,14 @@ class DesktopMemorySystemHealth(_MemorySystemHealthBenchmark):
   def Name(cls):
     return 'system_health.memory_desktop'
 
+  def SetExtraBrowserOptions(self, options):
+    super(DesktopMemorySystemHealth, self).SetExtraBrowserOptions(
+          options)
+    # Heap profiling is disabled because of crbug.com/757847.
+    #options.AppendExtraBrowserArgs([
+    #  '--enable-heap-profiling=native',
+    #])
+
 
 @benchmark.Owner(emails=['perezju@chromium.org'])
 class MobileMemorySystemHealth(_MemorySystemHealthBenchmark):

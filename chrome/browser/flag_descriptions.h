@@ -271,6 +271,12 @@ extern const char kEnableGenericSensorExtraClassesDescription[];
 extern const char kEnableHDRName[];
 extern const char kEnableHDRDescription[];
 
+extern const char kEnableHeapProfilingName[];
+extern const char kEnableHeapProfilingDescription[];
+extern const char kEnableHeapProfilingModePseudo[];
+extern const char kEnableHeapProfilingModeNative[];
+extern const char kEnableHeapProfilingTaskProfiler[];
+
 extern const char kEnableHttpFormWarningName[];
 extern const char kEnableHttpFormWarningDescription[];
 

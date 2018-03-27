@@ -273,15 +273,16 @@ void ProfilingProcessHost::AddClientToProfilingService(
 ProfilingProcessHost::Mode ProfilingProcessHost::GetModeForStartup() {
   const base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
 #if BUILDFLAG(USE_ALLOCATOR_SHIM)
-  if (cmdline->HasSwitch("enable-heap-profiling")) {
-    LOG(ERROR) << "--enable-heap-profiling is no longer supported. Use "
-                  "--memlog instead. See documentation at "
-                  "docs/memory/debugging_memory_issues.md";
-    return Mode::kNone;
-  }
-
   if (cmdline->HasSwitch(switches::kMemlog) ||
       base::FeatureList::IsEnabled(kOOPHeapProfilingFeature)) {
+    if (cmdline->HasSwitch(switches::kEnableHeapProfiling)) {
+      // PartitionAlloc doesn't support chained allocation hooks so we can't
+      // run both heap profilers at the same time.
+      LOG(ERROR) << "--" << switches::kEnableHeapProfiling
+                 << " specified with --" << switches::kMemlog
+                 << "which are not compatible. Memlog will be disabled.";
+      return Mode::kNone;
+    }
 
     std::string mode;
     // Respect the commandline switch above the field trial.

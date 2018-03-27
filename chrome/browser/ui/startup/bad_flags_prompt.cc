@@ -119,6 +119,25 @@ void ShowBadFeatureFlagsInfoBar(content::WebContents* web_contents,
 }  // namespace
 
 void ShowBadFlagsPrompt(content::WebContents* web_contents) {
+  // Flags only available in specific builds, for which to display a warning
+  // "the flag is not implemented in this build", if necessary.
+  struct {
+    const char* name;
+    bool is_invalid;
+  } conditional_flags[] = {
+      {switches::kEnableHeapProfiling,
+       base::trace_event::MemoryDumpManager::
+               GetHeapProfilingModeFromCommandLine() ==
+           base::trace_event::kHeapProfilingModeInvalid},
+  };
+  for (auto conditional_flag : conditional_flags) {
+    if (conditional_flag.is_invalid) {
+      ShowBadFlagsInfoBar(web_contents, IDS_UNIMPLEMENTED_FLAGS_WARNING_MESSAGE,
+                          conditional_flag.name);
+      return;
+    }
+  }
+
   for (const char* flag : kBadFlags) {
     if (base::CommandLine::ForCurrentProcess()->HasSwitch(flag)) {
       ShowBadFlagsInfoBar(web_contents, IDS_BAD_FLAGS_WARNING_MESSAGE, flag);
