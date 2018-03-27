@@ -89,14 +89,6 @@ class MemoryBenchmarkTrivialSitesDesktop(_MemoryInfra):
     return page_sets.TrivialSitesStorySet(wait_in_seconds=0,
                                           measure_memory=True)
 
-  def SetExtraBrowserOptions(self, options):
-    super(MemoryBenchmarkTrivialSitesDesktop, self).SetExtraBrowserOptions(
-          options)
-    # Heap profiling is disabled because of crbug.com/757847.
-    #options.AppendExtraBrowserArgs([
-    #  '--enable-heap-profiling=native',
-    #])
-
   @classmethod
   def Name(cls):
     return 'memory.desktop'

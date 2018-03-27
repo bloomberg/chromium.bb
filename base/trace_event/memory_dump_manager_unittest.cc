@@ -961,54 +961,6 @@ TEST_F(MemoryDumpManagerTestAsCoordinator, EnableHeapProfilingDisableDisabled) {
 }
 #endif  //  BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
 
-TEST_F(MemoryDumpManagerTest, EnableHeapProfilingIfNeeded) {
-  MockMemoryDumpProvider mdp1;
-  MemoryDumpProvider::Options supported_options;
-  supported_options.supports_heap_profiling = true;
-  RegisterDumpProvider(&mdp1, ThreadTaskRunnerHandle::Get(), supported_options);
-
-  // Should be noop.
-  mdm_->EnableHeapProfilingIfNeeded();
-  ASSERT_EQ(AllocationContextTracker::CaptureMode::DISABLED,
-            AllocationContextTracker::capture_mode());
-  mdm_->EnableHeapProfilingIfNeeded();
-  ASSERT_EQ(AllocationContextTracker::CaptureMode::DISABLED,
-            AllocationContextTracker::capture_mode());
-
-#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
-  testing::InSequence sequence;
-  EXPECT_CALL(mdp1, OnHeapProfilingEnabled(true)).Times(1);
-  EXPECT_CALL(mdp1, OnHeapProfilingEnabled(false)).Times(1);
-
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  cmdline->AppendSwitchASCII(switches::kEnableHeapProfiling, "");
-  mdm_->EnableHeapProfilingIfNeeded();
-  RunLoop().RunUntilIdle();
-  ASSERT_EQ(AllocationContextTracker::CaptureMode::PSEUDO_STACK,
-            AllocationContextTracker::capture_mode());
-  EXPECT_TRUE(mdm_->EnableHeapProfiling(kHeapProfilingModeDisabled));
-  RunLoop().RunUntilIdle();
-  ASSERT_EQ(AllocationContextTracker::CaptureMode::DISABLED,
-            AllocationContextTracker::capture_mode());
-  EXPECT_FALSE(mdm_->EnableHeapProfiling(kHeapProfilingModeBackground));
-  ASSERT_EQ(AllocationContextTracker::CaptureMode::DISABLED,
-            AllocationContextTracker::capture_mode());
-#endif  //  BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
-}
-
-TEST_F(MemoryDumpManagerTest, EnableHeapProfilingIfNeededUnsupported) {
-#if BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
-  ASSERT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeDisabled);
-  CommandLine* cmdline = CommandLine::ForCurrentProcess();
-  cmdline->AppendSwitchASCII(switches::kEnableHeapProfiling, "unsupported");
-  mdm_->EnableHeapProfilingIfNeeded();
-  EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeInvalid);
-#else
-  mdm_->EnableHeapProfilingIfNeeded();
-  EXPECT_EQ(mdm_->GetHeapProfilingMode(), kHeapProfilingModeInvalid);
-#endif  //  BUILDFLAG(USE_ALLOCATOR_SHIM) && !defined(OS_NACL)
-}
-
 // Mock MDP class that tests if the number of OnMemoryDump() calls are expected.
 // It is implemented without gmocks since EXPECT_CALL implementation is slow
 // when there are 1000s of instances, as required in

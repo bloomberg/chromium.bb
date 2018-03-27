@@ -131,15 +131,6 @@ class BASE_EXPORT MemoryDumpManager {
   void CreateProcessDump(const MemoryDumpRequestArgs& args,
                          const ProcessMemoryDumpCallback& callback);
 
-  // Returns the heap profiling mode configured on the command-line, if any.
-  // If heap profiling is configured but not supported by this binary, or if an
-  // invalid mode is specified, then kHeapProfilingInvalid is returned.
-  static HeapProfilingMode GetHeapProfilingModeFromCommandLine();
-
-  // Enable heap profiling if supported, and kEnableHeapProfiling command line
-  // is specified.
-  void EnableHeapProfilingIfNeeded();
-
   // Enable heap profiling with specified |profiling_mode|.
   // Use kHeapProfilingModeDisabled to disable, but it can't be re-enabled then.
   // Returns true if mode has been *changed* to the desired |profiling_mode|.

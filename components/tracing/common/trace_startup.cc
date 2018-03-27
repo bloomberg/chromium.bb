@@ -22,10 +22,6 @@ void EnableStartupTracingIfNeeded(bool can_access_file_system) {
   // https://crbug.com/764357
   base::trace_event::TraceLog::GetInstance();
 
-  // Enables heap profiling if "--enable-heap-profiling" flag is passed.
-  base::trace_event::MemoryDumpManager::GetInstance()
-      ->EnableHeapProfilingIfNeeded();
-
   if (command_line.HasSwitch(switches::kTraceStartup)) {
     base::trace_event::TraceConfig trace_config(
         command_line.GetSwitchValueASCII(switches::kTraceStartup),
