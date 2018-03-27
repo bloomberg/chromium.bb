@@ -54,6 +54,15 @@ TEST(FrameMetricsFixedPointTest, kFixedPointRootMultiplier) {
   EXPECT_LE(error1, 1);
 }
 
+TEST(FrameMetricsFixedPointTest, kFixedPointRootMultiplierSqrt) {
+  EXPECT_EQ(kFixedPointRootMultiplierSqrt,
+            std::sqrt(kFixedPointRootMultiplier));
+}
+
+TEST(FrameMetricsFixedPointTest, kFixedPointRootShift) {
+  EXPECT_EQ(kFixedPointRootMultiplier, 1LL << kFixedPointRootShift);
+}
+
 // Verify Accumulator96b's squared weight constructor.
 TEST(FrameMetricsFixedPointTest, Accumulator96bConstructor) {
   // A small value that fits in 32 bits.

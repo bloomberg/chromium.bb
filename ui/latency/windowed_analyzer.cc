@@ -24,6 +24,18 @@ WindowedAnalyzer::WindowedAnalyzer(
 
 WindowedAnalyzer::~WindowedAnalyzer() = default;
 
+void WindowedAnalyzer::ResetWorstValues() {
+  results_.reset();
+}
+
+void WindowedAnalyzer::ResetHistory() {
+  total_weight_ = 0;
+  accumulator_ = 0;
+  root_accumulator_ = 0;
+  square_accumulator_ = Accumulator96b();
+  window_queue_.resize(0);
+}
+
 void WindowedAnalyzer::AddSample(uint32_t value,
                                  uint32_t weight,
                                  uint64_t weighted_value,
@@ -128,12 +140,6 @@ void WindowedAnalyzer::AsValueInto(
   state->BeginDictionary("worst_rms");
   region.AsValueInto(state);
   state->EndDictionary();
-}
-
-void WindowedAnalyzer::ResetWorstValues() {
-  // Reset the worst windows, but not the current window history so that we
-  // don't lose coverage at the reset boundaries.
-  results_.reset();
 }
 
 }  // namespace frame_metrics

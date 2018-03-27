@@ -11,7 +11,7 @@
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/latency/fixed_point.h"
-#include "ui/latency/histograms_test_common.h"
+#include "ui/latency/frame_metrics_test_common.h"
 
 namespace ui {
 namespace frame_metrics {

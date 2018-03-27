@@ -23,6 +23,8 @@ constexpr int64_t kFixedPointMultiplier{1LL << kFixedPointShift};
 // root and undoing that shift after squaring in the SMR calculation.
 constexpr int kFixedPointRootShift = 32;
 constexpr int64_t kFixedPointRootMultiplier{1LL << kFixedPointRootShift};
+constexpr int64_t kFixedPointRootMultiplierSqrt{1LL
+                                                << (kFixedPointRootShift / 2)};
 
 // We need a huge range to accumulate values for RMS calculations, which
 // need double the range internally compared to the range we are targeting

@@ -12,7 +12,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/perf/perf_test.h"
 #include "ui/latency/fixed_point.h"
-#include "ui/latency/histograms_test_common.h"
+#include "ui/latency/frame_metrics_test_common.h"
 
 namespace ui {
 namespace frame_metrics {
@@ -147,7 +147,7 @@ class VSyncHistogramBaseline : public Histogram {
     for (const auto& b : kTestVSyncBoundries) {
       bucket_ranges_.set_range(i++, b);
     }
-    // BucketRanges needs the last elemet set to INT_MAX.
+    // BucketRanges needs the last element set to INT_MAX.
     bucket_ranges_.set_range(i++, INT_MAX);
   }
 

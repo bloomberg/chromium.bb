@@ -69,6 +69,14 @@ class WindowedAnalyzer {
                    const SharedWindowedAnalyzerClient* shared_client);
   virtual ~WindowedAnalyzer();
 
+  // ResetWosrtValues only resets the memory of worst values encountered,
+  // without resetting recent sample history.
+  void ResetWorstValues();
+
+  // ResetHistory only resets recent sample history without resetting memory
+  // of the worst values ecnountered.
+  void ResetHistory();
+
   // Callers of AddSample will already have calculated weighted values to
   // track cumulative results, so just let them pass in the values here
   // rather than re-calculating them.
@@ -84,8 +92,6 @@ class WindowedAnalyzer {
   FrameRegionResult WorstSMR() const;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
-
-  void ResetWorstValues();
 
  protected:
   struct QueueEntry {

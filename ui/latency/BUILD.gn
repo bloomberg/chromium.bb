@@ -16,6 +16,8 @@ jumbo_source_set("latency") {
     "latency_info.h",
     "latency_tracker.cc",
     "latency_tracker.h",
+    "stream_analyzer.cc",
+    "stream_analyzer.h",
     "windowed_analyzer.cc",
     "windowed_analyzer.h",
   ]
@@ -44,10 +46,11 @@ jumbo_source_set("test_support") {
 test("latency_unittests") {
   sources = [
     "fixed_point_unittest.cc",
-    "histograms_test_common.cc",
-    "histograms_test_common.h",
+    "frame_metrics_test_common.cc",
+    "frame_metrics_test_common.h",
     "histograms_unittest.cc",
     "latency_info_unittest.cc",
+    "stream_analyzer_unittest.cc",
     "windowed_analyzer_unittest.cc",
   ]
 
@@ -77,9 +80,9 @@ test("latency_unittests") {
 
 test("latency_perftests") {
   sources = [
+    "frame_metrics_test_common.cc",
+    "frame_metrics_test_common.h",
     "histograms_perftest.cc",
-    "histograms_test_common.cc",
-    "histograms_test_common.h",
   ]
 
   deps = [

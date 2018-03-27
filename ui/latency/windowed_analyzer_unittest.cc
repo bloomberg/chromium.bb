@@ -6,86 +6,11 @@
 
 #include "base/time/time.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-// Some convenience macros for checking expected error.
-#define EXPECT_ABS_LT(a, b) EXPECT_LT(std::abs(a), std::abs(b))
-#define EXPECT_ABS_LE(a, b) EXPECT_LE(std::abs(a), std::abs(b))
-#define EXPECT_NEAR_SMR(expected, actual, weight) \
-  EXPECT_NEAR(expected, actual, MaxErrorSMR(expected, weight))
+#include "ui/latency/frame_metrics_test_common.h"
 
 namespace ui {
 namespace frame_metrics {
 namespace {
-
-// A simple client to verify it is actually used.
-class TestWindowedAnalyzerClient : public WindowedAnalyzerClient {
- public:
-  double TransformResult(double result) const override {
-    return result * result_scale;
-  }
-
-  static constexpr double result_scale = 2.0;
-};
-
-// The WindowedAnalyzer expects the caller to give it some precomputed values,
-// even though they are redundant. Precompute them with a helper function to
-// remove boilerplate.
-template <typename AnalyzerType>
-void AddSamplesHelper(AnalyzerType* analyzer,
-                      uint64_t value,
-                      uint64_t weight,
-                      size_t iterations) {
-  DCHECK_LE(value, std::numeric_limits<uint32_t>::max());
-  DCHECK_LE(weight, std::numeric_limits<uint32_t>::max());
-  uint64_t weighted_value = weight * value;
-  uint64_t weighted_root = weight * std::sqrt(value << kFixedPointRootShift);
-  Accumulator96b weighted_square(value, weight);
-  for (size_t i = 0; i < iterations; i++) {
-    analyzer->AddSample(value, weight, weighted_value, weighted_root,
-                        weighted_square);
-  }
-}
-
-// Moves the |shared_client|'s window forward in time by 1 microsecond and
-// adds all of the elements in |values| multipled by kFixedPointMultiplier.
-template <typename AnalyzerType>
-void AddPatternHelper(SharedWindowedAnalyzerClient* shared_client,
-                      AnalyzerType* analyzer,
-                      const std::vector<uint32_t>& values,
-                      const uint32_t weight) {
-  for (auto i : values) {
-    shared_client->window_begin += base::TimeDelta::FromMicroseconds(1);
-    shared_client->window_end += base::TimeDelta::FromMicroseconds(1);
-    AddSamplesHelper(analyzer, i * kFixedPointMultiplier, weight, 1);
-  }
-}
-
-// Same as AddPatternHelper, but uses each value (+1) as its own weight.
-// The "Cubed" name comes from the fact that the squared_accumulator
-// for the RMS will effectively be a "cubed accumulator".
-template <typename AnalyzerType>
-void AddCubedPatternHelper(SharedWindowedAnalyzerClient* shared_client,
-                           AnalyzerType* analyzer,
-                           const std::vector<uint32_t>& values) {
-  for (auto i : values) {
-    shared_client->window_begin += base::TimeDelta::FromMicroseconds(1);
-    shared_client->window_end += base::TimeDelta::FromMicroseconds(1);
-    // weight is i+1 to avoid divide by zero.
-    AddSamplesHelper(analyzer, i, i + 1, 1);
-  }
-}
-
-// Mean and RMS can be exact for most values, however SMR loses a bit of
-// precision internally when accumulating the roots. Make sure the SMR
-// precision is at least within .5 (i.e. rounded to the nearest integer
-// properly), or 8 decimal places if that is less precise.
-// When used with kFixedPointMultiplier, this gives us a total precision of
-// between ~5 and ~13 decimal places.
-// The precicion should be even better when the sample's |weight| > 1 since
-// the implementation should only do any rounding after scaling by weight.
-double MaxErrorSMR(double expected_value, uint64_t weight) {
-  return std::max(.5, 1e-8 * expected_value / weight);
-}
 
 // Verify that the worst values for Mean, SMR, and RMS are all the same if
 // every value added is the same. Makes for a nice sanity check.
@@ -393,9 +318,10 @@ TEST(FrameMetricsWindowedAnalyzerTest, ResetWorstValues) {
 }
 
 // WindowedAnalyzerNaive is a version of WindowedAnalyzer that doesn't use
-// fixed point math and can accumulate error. This is used to verify patterns
-// that accumulate error without fixed point math, so we can then verify those
-// patterns don't result in acculated error in the actual implementation.
+// fixed point math and can accumulate error, even with double precision
+// accumulators. This is used to verify patterns that accumulate error without
+// fixed point math, so we can then verify those patterns don't result in
+// acculated error in the actual implementation.
 class WindowedAnalyzerNaive {
  public:
   WindowedAnalyzerNaive(size_t max_window_size)
