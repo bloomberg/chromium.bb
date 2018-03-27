@@ -14,77 +14,77 @@ namespace blink {
 namespace {
 
 TEST(DocumentThreadableLoaderCreatePreflightRequestTest, LexicographicalOrder) {
-  WebURLRequest request;
+  ResourceRequest request;
   request.AddHTTPHeaderField("Orange", "Orange");
   request.AddHTTPHeaderField("Apple", "Red");
   request.AddHTTPHeaderField("Kiwifruit", "Green");
   request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
   request.AddHTTPHeaderField("Strawberry", "Red");
 
-  WebURLRequest preflight =
+  std::unique_ptr<ResourceRequest> preflight =
       DocumentThreadableLoader::CreateAccessControlPreflightRequestForTesting(
           request);
 
   EXPECT_EQ("apple,content-type,kiwifruit,orange,strawberry",
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST(DocumentThreadableLoaderCreatePreflightRequestTest, ExcludeSimpleHeaders) {
-  WebURLRequest request;
+  ResourceRequest request;
   request.AddHTTPHeaderField("Accept", "everything");
   request.AddHTTPHeaderField("Accept-Language", "everything");
   request.AddHTTPHeaderField("Content-Language", "everything");
   request.AddHTTPHeaderField("Save-Data", "on");
 
-  WebURLRequest preflight =
+  std::unique_ptr<ResourceRequest> preflight =
       DocumentThreadableLoader::CreateAccessControlPreflightRequestForTesting(
           request);
 
   // Do not emit empty-valued headers; an empty list of non-"CORS safelisted"
   // request headers should cause "Access-Control-Request-Headers:" to be
   // left out in the preflight request.
-  EXPECT_EQ(WebString(g_null_atom),
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
+  EXPECT_EQ(g_null_atom,
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST(DocumentThreadableLoaderCreatePreflightRequestTest,
      ExcludeSimpleContentTypeHeader) {
-  WebURLRequest request;
+  ResourceRequest request;
   request.AddHTTPHeaderField("Content-Type", "text/plain");
 
-  WebURLRequest preflight =
+  std::unique_ptr<ResourceRequest> preflight =
       DocumentThreadableLoader::CreateAccessControlPreflightRequestForTesting(
           request);
 
   // Empty list also; see comment in test above.
-  EXPECT_EQ(WebString(g_null_atom),
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
+  EXPECT_EQ(g_null_atom,
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST(DocumentThreadableLoaderCreatePreflightRequestTest,
      IncludeNonSimpleHeader) {
-  WebURLRequest request;
+  ResourceRequest request;
   request.AddHTTPHeaderField("X-Custom-Header", "foobar");
 
-  WebURLRequest preflight =
+  std::unique_ptr<ResourceRequest> preflight =
       DocumentThreadableLoader::CreateAccessControlPreflightRequestForTesting(
           request);
 
   EXPECT_EQ("x-custom-header",
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 TEST(DocumentThreadableLoaderCreatePreflightRequestTest,
      IncludeNonSimpleContentTypeHeader) {
-  WebURLRequest request;
+  ResourceRequest request;
   request.AddHTTPHeaderField("Content-Type", "application/octet-stream");
 
-  WebURLRequest preflight =
+  std::unique_ptr<ResourceRequest> preflight =
       DocumentThreadableLoader::CreateAccessControlPreflightRequestForTesting(
           request);
 
   EXPECT_EQ("content-type",
-            preflight.HttpHeaderField("Access-Control-Request-Headers"));
+            preflight->HttpHeaderField("Access-Control-Request-Headers"));
 }
 
 }  // namespace
