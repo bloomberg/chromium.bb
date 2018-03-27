@@ -15,6 +15,7 @@
 #include "base/optional.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/download/internal/background_service/controller.h"
+#include "components/download/internal/background_service/download_blockage_status.h"
 #include "components/download/internal/background_service/download_driver.h"
 #include "components/download/internal/background_service/entry.h"
 #include "components/download/internal/background_service/log_source.h"
@@ -165,6 +166,10 @@ class ControllerImpl : public Controller,
   // or resume a download accordingly.
   void UpdateDriverState(Entry* entry);
 
+  // Returns a struct representing various reasons whether the download cannot
+  // start or continue at this time.
+  DownloadBlockageStatus IsDownloadBlocked(Entry* entry);
+
   // Notifies all Client in |clients_| that this controller is initialized and
   // lets them know which download requests we are aware of for their
   // DownloadClient.
@@ -202,6 +207,10 @@ class ControllerImpl : public Controller,
   void RemoveCleanupEligibleDownloads();
 
   void HandleExternalDownload(const std::string& guid, bool active);
+  void PrepareToStartDownload(Entry* entry);
+  void OnDownloadReadyToStart(
+      const std::string& guid,
+      scoped_refptr<network::ResourceRequestBody> post_body);
 
   // Postable methods meant to just be pass throughs to Client APIs.  This is
   // meant to help prevent reentrancy.
@@ -230,6 +239,10 @@ class ControllerImpl : public Controller,
   // Kills the downloads which have surpassed their cancel_after time.
   void KillTimedOutDownloads();
 
+  // A periodical task that will kill all the pending uploads that haven't
+  // received upload data from their respective clients.
+  void KillTimedOutUploads();
+
   Configuration* config_;
   LogSink* log_sink_;
 
@@ -251,9 +264,11 @@ class ControllerImpl : public Controller,
   State controller_state_;
   StartupStatus startup_status_;
   std::set<std::string> externally_active_downloads_;
+  std::set<std::string> pending_uploads_;
   std::map<std::string, DownloadParams::StartCallback> start_callbacks_;
   std::map<DownloadTaskType, TaskFinishedCallback> task_finished_callbacks_;
   base::CancelableClosure cancel_downloads_callback_;
+  base::CancelableClosure cancel_uploads_callback_;
 
   // Only used to post tasks on the same thread.
   base::WeakPtrFactory<ControllerImpl> weak_ptr_factory_;

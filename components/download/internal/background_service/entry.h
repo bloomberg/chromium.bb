@@ -96,7 +96,9 @@ struct Entry {
   // Stores the number of times the service tried to delete the download file.
   uint32_t cleanup_attempt_count;
 
-  // Stores whether this request also has some data to be uploaded.
+  // Stores whether this request has some data to be uploaded. This is set to
+  // true only when the client has provided with the upload data and is not
+  // cleared afterwards. Retry and resumption logic are impacted by this.
   bool has_upload_data;
 
   // Traffic annotation for the network request.

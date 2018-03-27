@@ -46,6 +46,14 @@ void TransitTo(Entry* entry, Entry::State new_state, Model* model) {
   model->Update(*entry);
 }
 
+// Helper function to post the callback once again before starting a download.
+void RunOnDownloadReadyToStart(
+    GetUploadDataCallback callback,
+    scoped_refptr<network::ResourceRequestBody> post_body) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), post_body));
+}
+
 // Helper function to move from a CompletionType to a Client::FailureReason.
 Client::FailureReason FailureReasonFromCompletionType(CompletionType type) {
   // SUCCEED does not map to a FailureReason.
@@ -60,6 +68,8 @@ Client::FailureReason FailureReasonFromCompletionType(CompletionType type) {
       return Client::FailureReason::ABORTED;
     case CompletionType::TIMEOUT:
       return Client::FailureReason::TIMEDOUT;
+    case CompletionType::UPLOAD_TIMEOUT:
+      return Client::FailureReason::UPLOAD_TIMEDOUT;
     case CompletionType::UNKNOWN:
       return Client::FailureReason::UNKNOWN;
     case CompletionType::CANCEL:
@@ -442,7 +452,8 @@ void ControllerImpl::OnDownloadFailed(const DriverEntry& download,
     return;
   }
 
-  if (!download.done && failure_type == FailureType::RECOVERABLE) {
+  if (!download.done && failure_type == FailureType::RECOVERABLE &&
+      !entry->has_upload_data) {
     // Because the network offline signal comes later than actual download
     // failure, retry the download after a delay to avoid the retry to fail
     // immediately again.
@@ -795,7 +806,8 @@ void ControllerImpl::ResolveInitialRequestStates() {
           case DriverEntry::State::INTERRUPTED:
             // The DriverEntry isn't done, so we need to set the Entry to the
             // 'active' state.
-            new_state = active;
+            new_state =
+                entry->has_upload_data ? Entry::State::COMPLETE : active;
             break;
           case DriverEntry::State::COMPLETE:  // Intentional fallthrough.
           // TODO(dtrainor, xingliu) Revisit this CANCELLED state to make sure
@@ -848,6 +860,7 @@ void ControllerImpl::ResolveInitialRequestStates() {
                driver_entry->state == DriverEntry::State::INTERRUPTED)
                   ? CompletionType::UNKNOWN
                   : CompletionType::SUCCEED;
+          // TODO(shaktisahu) : May be set a completion type for upload.
           HandleCompleteDownload(completion_type, entry->guid);
         } else {
           // We're staying in COMPLETE.  Make sure there is no DriverEntry here.
@@ -878,8 +891,9 @@ void ControllerImpl::UpdateDriverStateWithGuid(const std::string& guid) {
 void ControllerImpl::UpdateDriverState(Entry* entry) {
   DCHECK_EQ(controller_state_, State::READY);
 
-  if (entry->state != Entry::State::ACTIVE &&
-      entry->state != Entry::State::PAUSED) {
+  if ((entry->state != Entry::State::ACTIVE &&
+       entry->state != Entry::State::PAUSED) ||
+      pending_uploads_.find(entry->guid) != pending_uploads_.end()) {
     return;
   }
 
@@ -900,27 +914,14 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
 
   bool active = driver_entry.has_value() &&
                 driver_entry->state == DriverEntry::State::IN_PROGRESS;
-  bool want_active = entry->state == Entry::State::ACTIVE;
 
-  bool blocked_by_criteria =
-      !device_status_listener_->CurrentDeviceStatus()
-           .MeetsCondition(entry->scheduling_params,
-                           config_->download_battery_percentage)
-           .MeetsRequirements();
-  bool blocked_by_downloads =
-      !externally_active_downloads_.empty() &&
-      entry->scheduling_params.priority <= SchedulingParams::Priority::NORMAL;
+  auto blockage_status = IsDownloadBlocked(entry);
 
-  bool blocked_by_navigation = ShouldBlockDownloadOnNavigation(entry);
-  bool is_blocked =
-      blocked_by_criteria || blocked_by_downloads || blocked_by_navigation;
-
-  if (!want_active || is_blocked) {
+  if (blockage_status.IsBlocked()) {
     if (active) {
       stats::LogEntryEvent(stats::DownloadEvent::SUSPEND);
-      stats::LogDownloadPauseReason(blocked_by_criteria, !want_active,
-                                    blocked_by_navigation,
-                                    blocked_by_downloads);
+      stats::LogDownloadPauseReason(blockage_status,
+                                    false /*on_upload_data_received*/);
     }
 
     if (driver_entry.has_value())
@@ -959,16 +960,94 @@ void ControllerImpl::UpdateDriverState(Entry* entry) {
     }
 
     if (driver_entry.has_value()) {
+      // For uploads, we should never call resume unless it is already in
+      // progress, since we have to re-supply the upload data from client.
+      DCHECK(!entry->has_upload_data ||
+             driver_entry->state == DriverEntry::State::IN_PROGRESS);
+
       driver_->Resume(entry->guid);
     } else {
       stats::LogEntryEvent(stats::DownloadEvent::START);
-      driver_->Start(
-          entry->request_params, entry->guid, entry->target_file_path, nullptr,
-          net::NetworkTrafficAnnotationTag(entry->traffic_annotation));
+      PrepareToStartDownload(entry);
     }
   }
 
   log_sink_->OnServiceDownloadChanged(entry->guid);
+}
+
+void ControllerImpl::PrepareToStartDownload(Entry* entry) {
+  pending_uploads_.insert(entry->guid);
+
+  auto* client = clients_->GetClient(entry->client);
+  DCHECK(client);
+
+  auto callback = base::BindOnce(&ControllerImpl::OnDownloadReadyToStart,
+                                 weak_ptr_factory_.GetWeakPtr(), entry->guid);
+
+  // To ensure no re-entrancy, we post the response again after receiving from
+  // the client
+  client->GetUploadData(entry->guid, base::BindOnce(&RunOnDownloadReadyToStart,
+                                                    std::move(callback)));
+
+  // Reset the timeout timer in case client doesn't respond.
+  cancel_uploads_callback_.Reset(base::BindRepeating(
+      &ControllerImpl::KillTimedOutUploads, weak_ptr_factory_.GetWeakPtr()));
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE, cancel_uploads_callback_.callback(),
+      config_->pending_upload_timeout_delay);
+}
+
+void ControllerImpl::OnDownloadReadyToStart(
+    const std::string& guid,
+    scoped_refptr<network::ResourceRequestBody> post_body) {
+  DCHECK(pending_uploads_.find(guid) != pending_uploads_.end());
+  pending_uploads_.erase(guid);
+
+  auto* entry = model_->Get(guid);
+  if (!entry) {
+    stats::LogEntryRemovedWhileWaitingForUploadResponse();
+    return;
+  }
+
+  if (post_body) {
+    entry->has_upload_data = true;
+    model_->Update(*entry);
+  }
+
+  stats::LogHasUploadData(entry->client, entry->has_upload_data);
+
+  auto blockage_status = IsDownloadBlocked(entry);
+  if (blockage_status.IsBlocked()) {
+    stats::LogDownloadPauseReason(blockage_status,
+                                  true /*on_upload_data_received*/);
+    return;
+  }
+
+  DCHECK(!driver_->Find(guid).has_value());
+  driver_->Start(entry->request_params, entry->guid, entry->target_file_path,
+                 post_body,
+                 net::NetworkTrafficAnnotationTag(entry->traffic_annotation));
+}
+
+DownloadBlockageStatus ControllerImpl::IsDownloadBlocked(Entry* entry) {
+  DownloadBlockageStatus status;
+  status.blocked_by_criteria =
+      !device_status_listener_->CurrentDeviceStatus()
+           .MeetsCondition(entry->scheduling_params,
+                           config_->download_battery_percentage)
+           .MeetsRequirements();
+  status.blocked_by_downloads =
+      !externally_active_downloads_.empty() &&
+      entry->scheduling_params.priority <= SchedulingParams::Priority::NORMAL;
+
+  status.blocked_by_navigation = ShouldBlockDownloadOnNavigation(entry);
+  status.entry_not_active = entry->state != Entry::State::ACTIVE;
+  return status;
+}
+
+void ControllerImpl::KillTimedOutUploads() {
+  for (const std::string& guid : std::move(pending_uploads_))
+    HandleCompleteDownload(CompletionType::UPLOAD_TIMEOUT, guid);
 }
 
 void ControllerImpl::NotifyClientsOfStartup(bool state_lost) {
