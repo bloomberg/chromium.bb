@@ -283,4 +283,13 @@ IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, WebUIBindings) {
   EXPECT_FALSE(api_exists("chrome.browserAction"));
 }
 
+// Tests creating an API from a context that hasn't been initialized yet
+// by doing so in a parent frame. Regression test for https://crbug.com/819968.
+IN_PROC_BROWSER_TEST_F(NativeBindingsApiTest, APICreationFromNewContext) {
+  embedded_test_server()->ServeFilesFromDirectory(test_data_dir_);
+  ASSERT_TRUE(StartEmbeddedTestServer());
+  ASSERT_TRUE(RunExtensionTest("native_bindings/context_initialization"))
+      << message_;
+}
+
 }  // namespace extensions

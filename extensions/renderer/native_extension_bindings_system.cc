@@ -575,6 +575,12 @@ void NativeExtensionBindingsSystem::BindingAccessor(
   v8::HandleScope handle_scope(isolate);
   v8::Local<v8::Context> context = info.Holder()->CreationContext();
 
+  // Force binding creation in the owning context (even if another context is
+  // calling in). This is also important to ensure that objects created through
+  // the initialization process are all instantiated for the owning context.
+  // See https://crbug.com/819968.
+  v8::Context::Scope context_scope(context);
+
   // We use info.Data() to store a real name here instead of using the provided
   // one to handle any weirdness from the caller (non-existent strings, etc).
   v8::Local<v8::String> api_name = info.Data().As<v8::String>();

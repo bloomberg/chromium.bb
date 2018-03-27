@@ -137,6 +137,9 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
   StringSourceMap* source_map() { return &source_map_; }
   TestIPCMessageSender* ipc_message_sender() { return ipc_message_sender_; }
   ScriptContextSet* script_context_set() { return script_context_set_.get(); }
+  void set_allow_unregistered_contexts(bool allow_unregistered_contexts) {
+    allow_unregistered_contexts_ = allow_unregistered_contexts;
+  }
 
  private:
   ExtensionIdSet extension_ids_;
@@ -151,6 +154,10 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
 
   StringSourceMap source_map_;
   TestExtensionsRendererClient renderer_client_;
+
+  // True if we allow some v8::Contexts to avoid registration as a
+  // ScriptContext.
+  bool allow_unregistered_contexts_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(NativeExtensionBindingsSystemUnittest);
 };

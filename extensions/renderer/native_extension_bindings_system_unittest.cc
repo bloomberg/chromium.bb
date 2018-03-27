@@ -1068,4 +1068,54 @@ TEST_F(NativeExtensionBindingsSystemUnittest, CanDeleteAPIs) {
   EXPECT_TRUE(property->IsUndefined());
 }
 
+// Test that API initialization happens in the owning context.
+TEST_F(NativeExtensionBindingsSystemUnittest, APIIsInitializedByOwningContext) {
+  // Attach custom JS hooks.
+  const char kCustomBinding[] =
+      R"(this.apiBridge = apiBridge;
+         apiBridge.registerCustomHook(() => {});)";
+  source_map()->RegisterModule("idle", kCustomBinding);
+
+  scoped_refptr<Extension> extension =
+      ExtensionBuilder("foo").AddPermission("idle").Build();
+  RegisterExtension(extension);
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = MainContext();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  {
+    // Create a second, uninitialized context, which will trigger the
+    // construction of chrome.idle in the first context.
+    set_allow_unregistered_contexts(true);
+    v8::Local<v8::Context> second_context = AddContext();
+
+    v8::Local<v8::Function> get_idle = FunctionFromString(
+        second_context, "(function(chrome) { chrome.idle; })");
+    v8::Local<v8::Value> chrome =
+        context->Global()
+            ->Get(context, gin::StringToV8(isolate(), "chrome"))
+            .ToLocalChecked();
+    ASSERT_TRUE(chrome->IsObject());
+
+    v8::Context::Scope context_scope(second_context);
+    v8::Local<v8::Value> args[] = {chrome};
+    RunFunction(get_idle, second_context, arraysize(args), args);
+  }
+
+  // The apiBridge should have been created in the owning (original) context,
+  // even though the initialization was triggered by the second context.
+  v8::Local<v8::Value> api_bridge =
+      context->Global()
+          ->Get(context, gin::StringToV8(isolate(), "apiBridge"))
+          .ToLocalChecked();
+  ASSERT_TRUE(api_bridge->IsObject());
+  EXPECT_EQ(context, api_bridge.As<v8::Object>()->CreationContext());
+}
+
 }  // namespace extensions
