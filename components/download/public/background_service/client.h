@@ -55,6 +55,10 @@ class Client {
     // DownloadParams::cancel_after timeout.
     TIMEDOUT,
 
+    // Used when the upload data was not received from the client before
+    // timeout.
+    UPLOAD_TIMEDOUT,
+
     // Used when the download was cancelled by the Client.
     CANCELLED,
 

@@ -121,6 +121,8 @@ std::string CompletionTypeToHistogramSuffix(CompletionType type) {
       return "OutOfRetries";
     case CompletionType::OUT_OF_RESUMPTIONS:
       return "OutOfResumptions";
+    case CompletionType::UPLOAD_TIMEOUT:
+      return "UploadTimeout";
     case CompletionType::COUNT:
       NOTREACHED();
   }
@@ -167,9 +169,12 @@ void LogDatabaseRecords(Entry::State state, uint32_t record_count) {
 }
 
 // Helper method to log the pause reason for a particular download.
-void LogDownloadPauseReason(PauseReason reason) {
-  UMA_HISTOGRAM_ENUMERATION("Download.Service.PauseReason", reason,
-                            PauseReason::COUNT);
+void LogDownloadPauseReason(PauseReason reason, bool on_upload_data_received) {
+  std::string name(on_upload_data_received
+                       ? "Download.Service.OnUploadDataReceived.PauseReason"
+                       : "Download.Service.PauseReason");
+
+  base::UmaHistogramEnumeration(name, reason, PauseReason::COUNT);
 }
 
 }  // namespace
@@ -261,23 +266,24 @@ void LogDownloadCompletion(CompletionType type, uint64_t file_size_bytes) {
   base::UmaHistogramCustomCounts(name, file_size_kb, 1, kMaxFileSizeKB, 50);
 }
 
-void LogDownloadPauseReason(bool unmet_device_criteria,
-                            bool pause_by_client,
-                            bool external_navigation,
-                            bool external_download) {
-  LogDownloadPauseReason(PauseReason::ANY);
+void LogDownloadPauseReason(const DownloadBlockageStatus& blockage_status,
+                            bool currently_in_progress) {
+  LogDownloadPauseReason(PauseReason::ANY, currently_in_progress);
 
-  if (unmet_device_criteria)
-    LogDownloadPauseReason(PauseReason::UNMET_DEVICE_CRITERIA);
+  if (blockage_status.blocked_by_criteria)
+    LogDownloadPauseReason(PauseReason::UNMET_DEVICE_CRITERIA,
+                           currently_in_progress);
 
-  if (pause_by_client)
-    LogDownloadPauseReason(PauseReason::PAUSE_BY_CLIENT);
+  if (blockage_status.entry_not_active)
+    LogDownloadPauseReason(PauseReason::PAUSE_BY_CLIENT, currently_in_progress);
 
-  if (external_navigation)
-    LogDownloadPauseReason(PauseReason::EXTERNAL_NAVIGATION);
+  if (blockage_status.blocked_by_navigation)
+    LogDownloadPauseReason(PauseReason::EXTERNAL_NAVIGATION,
+                           currently_in_progress);
 
-  if (external_download)
-    LogDownloadPauseReason(PauseReason::EXTERNAL_DOWNLOAD);
+  if (blockage_status.blocked_by_downloads)
+    LogDownloadPauseReason(PauseReason::EXTERNAL_DOWNLOAD,
+                           currently_in_progress);
 }
 
 void LogModelOperationResult(ModelAction action, bool success) {
@@ -375,6 +381,16 @@ void LogEntryResumptionCount(uint32_t resume_count) {
 
 void LogEntryRetryCount(uint32_t retry_count) {
   UMA_HISTOGRAM_COUNTS_100("Download.Service.Entry.RetryCount", retry_count);
+}
+
+void LogEntryRemovedWhileWaitingForUploadResponse() {
+  UMA_HISTOGRAM_BOOLEAN("Download.Service.Upload.EntryNotFound", true);
+}
+
+void LogHasUploadData(DownloadClient client, bool has_upload_data) {
+  std::string name("Download.Service.Upload.HasUploadData");
+  name.append(".").append(ClientToHistogramSuffix(client));
+  base::UmaHistogramBoolean(name, has_upload_data);
 }
 
 }  // namespace stats

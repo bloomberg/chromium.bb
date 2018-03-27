@@ -8,6 +8,7 @@
 #include "base/files/file.h"
 #include "base/optional.h"
 #include "components/download/internal/background_service/controller.h"
+#include "components/download/internal/background_service/download_blockage_status.h"
 #include "components/download/internal/background_service/driver_entry.h"
 #include "components/download/internal/background_service/entry.h"
 #include "components/download/public/background_service/clients.h"
@@ -174,10 +175,9 @@ void LogDownloadCompletion(CompletionType type, uint64_t file_size_bytes);
 
 // Logs various pause reasons for download. The reasons are not mutually
 // exclusive.
-void LogDownloadPauseReason(bool unmet_device_criteria,
-                            bool pause_by_client,
-                            bool external_navigation,
-                            bool external_download);
+void LogDownloadPauseReason(const DownloadBlockageStatus& blockage_status,
+                            bool on_upload_data_received);
+void LogEntryRemovedWhileWaitingForUploadResponse();
 
 // Logs statistics about the result of a model operation.  Used to track failure
 // cases.
@@ -223,6 +223,9 @@ void LogEntryResumptionCount(uint32_t resume_count);
 
 // At the time of a retry, logs which retry attempt count this is.
 void LogEntryRetryCount(uint32_t retry_count);
+
+// Records whether the entry was an upload.
+void LogHasUploadData(DownloadClient client, bool has_upload_data);
 
 }  // namespace stats
 }  // namespace download

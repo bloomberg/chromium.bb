@@ -69,8 +69,8 @@ constexpr char kNavigationCompletionDelaySecondsConfig[] =
 constexpr char kNavigationTimeoutDelaySecondsConfig[] =
     "navigation_timeout_delay_seconds";
 
-// Configuration name for the timeout value after which an upload will be killed
-// if the client still hasn't responded with the upload data. Measured in
+// Configuration name for the minimum timeout value after which an upload can be
+// killed if the client still hasn't responded with the upload data. Measured in
 // seconds.
 constexpr char kPendingUploadTimeoutDelaySecondsConfig[] =
     "pending_upload_timeout_delay_seconds";
@@ -148,8 +148,8 @@ struct Configuration {
   // The timeout to wait for after a navigation starts.
   base::TimeDelta navigation_timeout_delay;
 
-  // The timeout after which upload entries waiting on data from their clients
-  // will be aborted.
+  // The minimum timeout after which upload entries waiting on data from their
+  // clients might be killed.
   base::TimeDelta pending_upload_timeout_delay;
 
   // The delay to retry a download when the download is failed.

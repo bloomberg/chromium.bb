@@ -4208,6 +4208,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Unresponsive"/>
 </enum>
 
+<enum name="BooleanUpload">
+  <int value="0" label="Download"/>
+  <int value="1" label="Upload"/>
+</enum>
+
 <enum name="BooleanUsage">
   <int value="0" label="Not Used"/>
   <int value="1" label="Used"/>

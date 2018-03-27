@@ -36,8 +36,10 @@ enum class CompletionType {
   OUT_OF_RETRIES = 6,
   // The download expended it's number of 'free' retries.
   OUT_OF_RESUMPTIONS = 7,
+  // The upload was timed out due to unresponsive client.
+  UPLOAD_TIMEOUT = 8,
   // The count of entries for the enum.
-  COUNT = 8,
+  COUNT = 9,
 };
 
 // The core Controller responsible for gluing various DownloadService components
