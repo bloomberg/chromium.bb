@@ -72,7 +72,8 @@ class CONTENT_EXPORT BrowserCompositorMac : public DelegatedFrameHostClient {
   // NSView. This will allocate a new SurfaceId if needed. This will return
   // true if any properties that need to be communicated to the
   // RenderWidgetHostImpl have changed.
-  bool UpdateNSViewAndDisplay();
+  bool UpdateNSViewAndDisplay(const gfx::Size& new_size_dip,
+                              const display::Display& new_display);
 
   // Update the renderer's SurfaceId to reflect |size_dip| in anticipation of
   // the NSView resizing during auto-resize.

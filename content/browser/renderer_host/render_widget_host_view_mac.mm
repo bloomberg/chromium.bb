@@ -48,6 +48,7 @@
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
+#include "ui/gfx/mac/coordinate_conversion.h"
 #include "ui/gl/gl_switches.h"
 
 using blink::WebInputEvent;
@@ -147,46 +148,6 @@ namespace {
 
 // Maximum number of characters we allow in a tooltip.
 const size_t kMaxTooltipLength = 1024;
-
-float FlipYFromRectToScreen(float y, float rect_height) {
-  TRACE_EVENT0("browser", "FlipYFromRectToScreen");
-  display::Screen* screen = display::Screen::GetScreen();
-  display::Display display = screen->GetPrimaryDisplay();
-  CGFloat screen_zero_height = display.bounds().height();
-  if (screen_zero_height == 0.f)
-    return y;
-  return screen_zero_height - y - rect_height;
-}
-
-// Adjusts an NSRect in Cocoa screen coordinates to have an origin in the upper
-// left of the primary screen (Carbon coordinates), and stuffs it into a
-// gfx::Rect.
-gfx::Rect FlipNSRectToRectScreen(const NSRect& rect) {
-  gfx::Rect new_rect(NSRectToCGRect(rect));
-  new_rect.set_y(FlipYFromRectToScreen(new_rect.y(), new_rect.height()));
-  return new_rect;
-}
-
-// Returns the window that visually contains the given view. This is different
-// from [view window] in the case of tab dragging, where the view's owning
-// window is a floating panel attached to the actual browser window that the tab
-// is visually part of.
-NSWindow* ApparentWindowForView(NSView* view) {
-  // TODO(shess): In case of !window, the view has been removed from
-  // the view hierarchy because the tab isn't main.  Could retrieve
-  // the information from the main tab for our window.
-  NSWindow* enclosing_window = [view window];
-
-  // See if this is a tab drag window. The width check is to distinguish that
-  // case from extension popup windows.
-  NSWindow* ancestor_window = [enclosing_window parentWindow];
-  if (ancestor_window && (NSWidth([enclosing_window frame]) ==
-                          NSWidth([ancestor_window frame]))) {
-    enclosing_window = ancestor_window;
-  }
-
-  return enclosing_window;
-}
 
 }  // namespace
 
@@ -396,12 +357,8 @@ void RenderWidgetHostViewMac::InitAsPopup(
   [cocoa_view() setCloseOnDeactivate:YES];
   [cocoa_view() setCanBeKeyView:activatable ? YES : NO];
 
-  NSPoint origin_global = NSPointFromCGPoint(pos.origin().ToCGPoint());
-  origin_global.y = FlipYFromRectToScreen(origin_global.y, pos.height());
-
   popup_window_.reset([[RenderWidgetPopupWindow alloc]
-      initWithContentRect:NSMakeRect(origin_global.x, origin_global.y,
-                                     pos.width(), pos.height())
+      initWithContentRect:gfx::ScreenRectToNSRect(pos)
                 styleMask:NSBorderlessWindowMask
                   backing:NSBackingStoreBuffered
                     defer:NO]);
@@ -552,12 +509,19 @@ void RenderWidgetHostViewMac::UpdateNSViewAndDisplayProperties() {
   else
     host()->SendScreenRects();
 
+  // TODO(ccameron): Push the display::Display from the RWHVCocoa through its
+  // client, rather than querying it here.
+  display::Display display =
+      display::Screen::GetScreen()->GetDisplayNearestView(cocoa_view());
+
   // RenderWidgetHostImpl will query BrowserCompositorMac for the dimensions
   // to send to the renderer, so it is required that BrowserCompositorMac be
   // updated first. Only notify RenderWidgetHostImpl of the update if any
   // properties it will query have changed.
-  if (browser_compositor_->UpdateNSViewAndDisplay())
+  if (browser_compositor_->UpdateNSViewAndDisplay(
+          view_bounds_in_window_dip_.size(), display)) {
     host()->NotifyScreenInfoChanged();
+  }
 }
 
 void RenderWidgetHostViewMac::GetScreenInfo(ScreenInfo* screen_info) const {
@@ -642,12 +606,7 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   if (isRelativeToScreen) {
     // The position of |rect| is screen coordinate system and we have to
     // consider Cocoa coordinate system is upside-down and also multi-screen.
-    NSPoint origin_global = NSPointFromCGPoint(rect.origin().ToCGPoint());
-    NSSize size = NSMakeSize(rect.width(), rect.height());
-    size = [cocoa_view() convertSize:size toView:nil];
-    origin_global.y = FlipYFromRectToScreen(origin_global.y, size.height);
-    NSRect frame = NSMakeRect(origin_global.x, origin_global.y,
-                              size.width, size.height);
+    NSRect frame = gfx::ScreenRectToNSRect(rect);
     if (IsPopup())
       [popup_window_ setFrame:frame display:YES];
     else
@@ -691,17 +650,8 @@ bool RenderWidgetHostViewMac::IsShowing() {
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetViewBounds() const {
-  NSRect bounds = [cocoa_view() bounds];
-  // TODO(shess): In case of !window, the view has been removed from
-  // the view hierarchy because the tab isn't main.  Could retrieve
-  // the information from the main tab for our window.
-  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view());
-  if (!enclosing_window)
-    return gfx::Rect(gfx::Size(NSWidth(bounds), NSHeight(bounds)));
-
-  bounds = [cocoa_view() convertRect:bounds toView:nil];
-  bounds = [enclosing_window convertRectToScreen:bounds];
-  return FlipNSRectToRectScreen(bounds);
+  return view_bounds_in_window_dip_ +
+         window_frame_in_screen_dip_.OffsetFromOrigin();
 }
 
 void RenderWidgetHostViewMac::UpdateCursor(const WebCursor& cursor) {
@@ -805,30 +755,17 @@ void RenderWidgetHostViewMac::OnSelectionBoundsChanged(
   if (!region)
     return;
 
-  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view());
-  if (!enclosing_window)
-    return;
-
   // Create a rectangle for the edge of the selection focus, which will be
   // the same as the caret position if the selection is collapsed. That's
   // what we want to try to keep centered on-screen if possible.
   gfx::Rect gfx_caret_rect(region->focus.edge_top_rounded().x(),
                            region->focus.edge_top_rounded().y(),
                            1, region->focus.GetHeight());
+  gfx_caret_rect += view_bounds_in_window_dip_.OffsetFromOrigin();
+  gfx_caret_rect += window_frame_in_screen_dip_.OffsetFromOrigin();
 
-  // Convert the caret rect to CG-style flipped widget-relative coordinates.
+  // Note that UAZoomChangeFocus wants unflipped screen coordinates.
   NSRect caret_rect = NSRectFromCGRect(gfx_caret_rect.ToCGRect());
-  caret_rect.origin.y = NSHeight([cocoa_view() bounds]) -
-                        (caret_rect.origin.y + caret_rect.size.height);
-
-  // Now convert that to screen coordinates.
-  caret_rect = [cocoa_view() convertRect:caret_rect toView:nil];
-  caret_rect = [enclosing_window convertRectToScreen:caret_rect];
-
-  // Finally, flip it again because UAZoomChangeFocus wants unflipped screen
-  // coordinates, and call UAZoomChangeFocus to initiate the scroll.
-  caret_rect.origin.y = FlipYFromRectToScreen(
-      caret_rect.origin.y, caret_rect.size.height);
   UAZoomChangeFocus(&caret_rect, &caret_rect, kUAZoomFocusTypeInsertionPoint);
 }
 
@@ -1320,15 +1257,7 @@ gfx::Vector2d RenderWidgetHostViewMac::GetOffsetFromRootSurface() {
 }
 
 gfx::Rect RenderWidgetHostViewMac::GetBoundsInRootWindow() {
-  // TODO(shess): In case of !window, the view has been removed from
-  // the view hierarchy because the tab isn't main.  Could retrieve
-  // the information from the main tab for our window.
-  NSWindow* enclosing_window = ApparentWindowForView(cocoa_view());
-  if (!enclosing_window)
-    return gfx::Rect();
-
-  NSRect bounds = [enclosing_window frame];
-  return FlipNSRectToRectScreen(bounds);
+  return window_frame_in_screen_dip_;
 }
 
 bool RenderWidgetHostViewMac::LockMouse() {
@@ -1606,6 +1535,41 @@ void RenderWidgetHostViewMac::OnDisplayMetricsChanged(
 
 RenderWidgetHostViewMac* RenderWidgetHostViewMac::GetRenderWidgetHostViewMac() {
   return this;
+}
+
+void RenderWidgetHostViewMac::OnNSViewBoundsInWindowChanged(
+    const gfx::Rect& view_bounds_in_window_dip,
+    bool attached_to_window) {
+  if (!browser_compositor_)
+    return;
+
+  bool view_size_changed =
+      view_bounds_in_window_dip_.size() != view_bounds_in_window_dip.size();
+
+  browser_compositor_->SetNSViewAttachedToWindow(attached_to_window);
+
+  if (attached_to_window) {
+    view_bounds_in_window_dip_ = view_bounds_in_window_dip;
+  } else {
+    // If not attached to a window, do not update the bounds origin (since it is
+    // meaningless, and the last value is the best guess at the next meaningful
+    // value).
+    view_bounds_in_window_dip_.set_size(view_bounds_in_window_dip.size());
+  }
+
+  if (view_size_changed) {
+    UpdateNSViewAndDisplayProperties();
+    // Wait for the frame that WasResize might have requested. If the view is
+    // being made visible at a new size, then this call will have no effect
+    // because the view widget is still hidden, and the pause call in WasShown
+    // will have this effect for us.
+    PauseForPendingResizeOrRepaintsAndDraw();
+  }
+}
+
+void RenderWidgetHostViewMac::OnNSViewWindowFrameInScreenChanged(
+    const gfx::Rect& window_frame_in_screen_dip) {
+  window_frame_in_screen_dip_ = window_frame_in_screen_dip;
 }
 
 Class GetRenderWidgetHostViewCocoaClassForTesting() {
