@@ -125,8 +125,9 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
         context_getter_(
             new net::TestURLRequestContextGetter(network_task_runner)) {
     network_task_runner->PostTask(
-        FROM_HERE, base::Bind(&TestDelegate::CreateProxyServiceOnNetworkThread,
-                              base::Unretained(this)));
+        FROM_HERE,
+        base::Bind(&TestDelegate::CreateProxyResolutionServiceOnNetworkThread,
+                   base::Unretained(this)));
     RunPendingTasks(network_task_runner);
   }
 
@@ -145,7 +146,7 @@ class TestDelegate : public ProxyResolutionServiceProvider::Delegate {
  private:
   // Helper method for the constructor that initializes
   // |proxy_resolution_service_| and injects it into |context_getter_|'s context.
-  void CreateProxyServiceOnNetworkThread() {
+  void CreateProxyResolutionServiceOnNetworkThread() {
     CHECK(context_getter_->GetNetworkTaskRunner()->BelongsToCurrentThread());
 
     // Setting a mandatory PAC URL makes |proxy_resolution_service_| query

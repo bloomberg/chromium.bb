@@ -39,10 +39,10 @@ void EnsureInitialized();
 std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
     const scoped_refptr<base::SequencedTaskRunner>& io_task_runner);
 
-// Creates a proxy service appropriate for this platform that fetches the
-// system proxy settings. Cronet will call this API only after a prior call
+// Creates a proxy resolution service appropriate for this platform that fetches
+// the system proxy settings. Cronet will call this API only after a prior call
 // to EnsureInitialized() has returned.
-std::unique_ptr<net::ProxyResolutionService> CreateProxyService(
+std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log);
 

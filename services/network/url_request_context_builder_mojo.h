@@ -62,7 +62,7 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) URLRequestContextBuilderMojo
       net::NetworkQualityEstimator* network_quality_estimator);
 
  private:
-  std::unique_ptr<net::ProxyResolutionService> CreateProxyService(
+  std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
       std::unique_ptr<net::ProxyConfigService> proxy_config_service,
       net::URLRequestContext* url_request_context,
       net::HostResolver* host_resolver,

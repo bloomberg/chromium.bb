@@ -155,8 +155,8 @@ std::unique_ptr<net::ProxyConfigService> CreateProxyConfigService(
   return service;
 }
 
-// Creates a proxy service appropriate for this platform.
-std::unique_ptr<net::ProxyResolutionService> CreateProxyService(
+// Creates a proxy resolution service appropriate for this platform.
+std::unique_ptr<net::ProxyResolutionService> CreateProxyResolutionService(
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     net::NetLog* net_log) {
   // Android provides a local HTTP proxy server that handles proxying when a PAC

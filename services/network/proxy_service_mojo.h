@@ -22,8 +22,8 @@ class ProxyResolutionService;
 
 namespace network {
 
-// Creates a proxy service that uses |mojo_proxy_factory| to create and connect
-// to a Mojo proxy resolver service. This proxy service polls
+// Creates a proxy resolution service that uses |mojo_proxy_factory| to create
+// and connect to a Mojo proxy resolver service. This proxy service polls
 // |proxy_config_service| to notice when the proxy settings change.
 //
 // |pac_file_fetcher| specifies the dependency to use for downloading
@@ -36,7 +36,8 @@ namespace network {
 // should use for any DNS queries. It must remain valid throughout the
 // lifetime of the ProxyResolutionService.
 COMPONENT_EXPORT(NETWORK_SERVICE)
-std::unique_ptr<net::ProxyResolutionService> CreateProxyServiceUsingMojoFactory(
+std::unique_ptr<net::ProxyResolutionService>
+CreateProxyResolutionServiceUsingMojoFactory(
     proxy_resolver::mojom::ProxyResolverFactoryPtr mojo_proxy_factory,
     std::unique_ptr<net::ProxyConfigService> proxy_config_service,
     std::unique_ptr<net::PacFileFetcher> pac_file_fetcher,
