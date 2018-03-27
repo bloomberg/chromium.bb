@@ -18,7 +18,9 @@ interface Assistant {
   AddAssistantEventSubscriber(AssistantEventSubscriber subscriber);
 };
 
-// Subscribes to assistant's event.
+// Subscribes to assistant's event. Responses from the assistant may contain
+// untrusted third-party content. Subscriber implementations must be sure to
+// handle the response data appropriately.
 interface AssistantEventSubscriber {
   // Assistant's got Html response from server.
   OnHtmlResponse(string response);
