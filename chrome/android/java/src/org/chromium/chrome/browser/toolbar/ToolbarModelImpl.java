@@ -44,7 +44,13 @@ public class ToolbarModelImpl
     private boolean mIsIncognito;
     private int mPrimaryColor;
     private boolean mIsUsingBrandColor;
+
+    // Query in Omnibox cached values to avoid unnecessary expensive calls.
     private boolean mQueryInOmniboxEnabled;
+    private String mPreviousUrl;
+    @ConnectionSecurityLevel
+    private int mPreviousSecurityLevel;
+    private String mCachedSearchTerms;
 
     /**
      * Default constructor for this class.
@@ -365,7 +371,8 @@ public class ToolbarModelImpl
     }
 
     /**
-     * Extracts query terms from a URL if it's a SRP URL from the default search engine.
+     * Extracts query terms from a URL if it's a SRP URL from the default search engine, caching
+     * the result of the more expensive call to {@link #extractSearchTermsFromUrlInternal}.
      *
      * @param url The URL to extract search terms from.
      * @return The search terms. Returns null if not a DSE SRP URL or there are no search terms to
@@ -373,6 +380,31 @@ public class ToolbarModelImpl
      *         display search terms in place of SRP URL.
      */
     private String extractSearchTermsFromUrl(String url) {
+        if (url == null) {
+            mCachedSearchTerms = null;
+        } else {
+            @ConnectionSecurityLevel
+            int securityLevel = getSecurityLevel();
+            if (!url.equals(mPreviousUrl) || securityLevel != mPreviousSecurityLevel) {
+                mCachedSearchTerms = extractSearchTermsFromUrlInternal(url);
+                mPreviousUrl = url;
+                mPreviousSecurityLevel = securityLevel;
+            }
+        }
+        return mCachedSearchTerms;
+    }
+
+    /**
+     * Extracts query terms from a URL if it's a SRP URL from the default search engine, returning
+     * the cached result of the previous call if this call is being performed for the same URL and
+     * security level as last time.
+     *
+     * @param url The URL to extract search terms from.
+     * @return The search terms. Returns null if not a DSE SRP URL or there are no search terms to
+     *         extract, if query in omnibox is disabled, or if the security level is insufficient to
+     *         display search terms in place of SRP URL.
+     */
+    private String extractSearchTermsFromUrlInternal(String url) {
         if (!mQueryInOmniboxEnabled || !securityLevelSafeForQueryInOmnibox()) return null;
 
         String searchTerms = TemplateUrlService.getInstance().extractSearchTermsFromUrl(url);
