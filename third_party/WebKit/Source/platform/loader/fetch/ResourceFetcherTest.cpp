@@ -56,6 +56,7 @@
 #include "platform/testing/weburl_loader_mock_factory_impl.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Allocator.h"
+#include "platform/wtf/Optional.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebURLLoader.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
@@ -146,6 +147,39 @@ TEST_F(ResourceFetcherTest, UseExistingResource) {
 
   Resource* new_resource = MockResource::Fetch(fetch_params, fetcher, nullptr);
   EXPECT_EQ(resource, new_resource);
+}
+
+// Verify that the ad bit is copied to WillSendRequest's request when the
+// response is served from the memory cache.
+TEST_F(ResourceFetcherTest, WillSendRequestAdBit) {
+  // Add a resource to the memory cache.
+  scoped_refptr<const SecurityOrigin> source_origin =
+      SecurityOrigin::CreateUnique();
+  Context()->SetSecurityOrigin(source_origin);
+  KURL url("http://127.0.0.1:8000/foo.html");
+  Resource* resource = RawResource::CreateForTest(url, Resource::kRaw);
+  AddResourceToMemoryCache(resource, source_origin);
+  ResourceResponse response(url);
+  response.SetHTTPStatusCode(200);
+  response.SetHTTPHeaderField(HTTPNames::Cache_Control, "max-age=3600");
+  resource->ResponseReceived(response, nullptr);
+  resource->FinishForTest();
+
+  // Fetch the cached resource. The request to DispatchWillSendRequest should
+  // preserve the ad bit.
+  ResourceFetcher* fetcher = ResourceFetcher::Create(Context());
+  ResourceRequest resource_request(url);
+  resource_request.SetIsAdResource();
+  resource_request.SetRequestContext(WebURLRequest::kRequestContextInternal);
+  FetchParameters fetch_params(resource_request);
+  platform_->GetURLLoaderMockFactory()->RegisterURL(url, WebURLResponse(), "");
+  Resource* new_resource = RawResource::Fetch(fetch_params, fetcher, nullptr);
+
+  EXPECT_EQ(resource, new_resource);
+  WTF::Optional<ResourceRequest> new_request =
+      Context()->RequestFromWillSendRequest();
+  EXPECT_TRUE(new_request.has_value());
+  EXPECT_TRUE(new_request.value().IsAdResource());
 }
 
 TEST_F(ResourceFetcherTest, Vary) {
