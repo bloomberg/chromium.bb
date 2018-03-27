@@ -191,7 +191,7 @@ void ClusterBuilder::WriteBlock(uint8_t* buf,
   DCHECK_GE(flags, 0);
   DCHECK_LE(flags, 0xff);
   DCHECK(data);
-  DCHECK_GT(size, 0);
+  DCHECK_GE(size, 0);  // For testing, allow 0-byte coded frames.
   DCHECK_NE(cluster_timecode_, -1);
 
   int64_t timecode_delta = timecode - cluster_timecode_;

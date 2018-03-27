@@ -190,6 +190,7 @@ class MEDIA_EXPORT FrameProcessor {
   int num_dts_beyond_pts_warnings_ = 0;
   int num_audio_non_keyframe_warnings_ = 0;
   int num_muxed_sequence_mode_warnings_ = 0;
+  int num_skipped_empty_frame_warnings_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(FrameProcessor);
 };

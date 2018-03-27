@@ -381,6 +381,13 @@ MATCHER_P3(NegativeDtsFailureWhenByDts, frame_type, pts_us, dts_us, "") {
                "and filtering against append window");
 }
 
+MATCHER_P2(DiscardingEmptyFrame, pts_us, dts_us, "") {
+  return CONTAINS_STRING(arg,
+                         "Discarding empty audio or video coded frame, PTS=" +
+                             base::IntToString(pts_us) +
+                             "us, DTS=" + base::IntToString(dts_us) + "us");
+}
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_TEST_HELPERS_H_
