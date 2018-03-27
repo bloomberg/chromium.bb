@@ -154,51 +154,51 @@ void ServiceWorkerDispatcherHost::OnProviderCreated(
     return;
   }
 
-  if (IsBrowserSideNavigationEnabled() &&
-      ServiceWorkerUtils::IsBrowserAssignedProviderId(info.provider_id)) {
-    std::unique_ptr<ServiceWorkerProviderHost> provider_host;
-    // PlzNavigate
+  // Provider hosts for navigations are precreated on the browser process with a
+  // browser-assigned id. The renderer process calls OnProviderCreated once it
+  // creates the provider.
+  if (ServiceWorkerUtils::IsBrowserAssignedProviderId(info.provider_id)) {
+    if (info.type != blink::mojom::ServiceWorkerProviderType::kForWindow) {
+      bad_message::ReceivedBadMessage(
+          this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_NOT_WINDOW);
+      return;
+    }
+
     // Retrieve the provider host previously created for navigation requests.
+    std::unique_ptr<ServiceWorkerProviderHost> provider_host;
     ServiceWorkerNavigationHandleCore* navigation_handle_core =
         GetContext()->GetNavigationHandleCore(info.provider_id);
     if (navigation_handle_core != nullptr)
       provider_host = navigation_handle_core->RetrievePreCreatedHost();
 
     // If no host is found, create one.
-    if (provider_host == nullptr) {
+    // TODO(crbug.com/789111#c14): This is probably not right, see bug.
+    if (!provider_host) {
       GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
           render_process_id_, std::move(info), GetContext()->AsWeakPtr(),
           AsWeakPtr()));
       return;
     }
 
-    // Otherwise, completed the initialization of the pre-created host.
-    if (info.type != blink::mojom::ServiceWorkerProviderType::kForWindow) {
-      bad_message::ReceivedBadMessage(
-          this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_NOT_WINDOW);
-      return;
-    }
+    // Otherwise, complete initialization of the pre-created host.
     provider_host->CompleteNavigationInitialized(render_process_id_,
                                                  std::move(info), AsWeakPtr());
     GetContext()->AddProviderHost(std::move(provider_host));
-  } else {
-    // Provider hosts for service workers should be pre-created in StartWorker
-    // in ServiceWorkerVersion.
-    if (info.type ==
-        blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
-      bad_message::ReceivedBadMessage(
-          this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_CONTROLLER);
-      return;
-    }
-    if (ServiceWorkerUtils::IsBrowserAssignedProviderId(info.provider_id)) {
-      bad_message::ReceivedBadMessage(
-          this, bad_message::SWDH_PROVIDER_CREATED_BAD_ID);
-      return;
-    }
-    GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
-        render_process_id_, std::move(info), GetContext()->AsWeakPtr(),
-        AsWeakPtr()));
+    return;
   }
+
+  // Provider hosts for service workers don't call OnProviderCreated. They are
+  // precreated and ServiceWorkerProviderHost::CompleteStartWorkerPreparation is
+  // called during the startup sequence once a process is allocated.
+  if (info.type == blink::mojom::ServiceWorkerProviderType::kForServiceWorker) {
+    bad_message::ReceivedBadMessage(
+        this, bad_message::SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_SERVICE_WORKER);
+    return;
+  }
+
+  GetContext()->AddProviderHost(ServiceWorkerProviderHost::Create(
+      render_process_id_, std::move(info), GetContext()->AsWeakPtr(),
+      AsWeakPtr()));
 }
 
 ServiceWorkerContextCore* ServiceWorkerDispatcherHost::GetContext() {
