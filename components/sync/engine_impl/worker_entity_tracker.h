@@ -40,8 +40,8 @@ class WorkerEntityTracker {
   // Handles receipt of an update from the server.
   void ReceiveUpdate(const UpdateResponseData& update);
 
-  // Check if update contains newer version than local.
-  bool UpdateContainsNewVersion(const UpdateResponseData& update);
+  // Check if |update_version| is newer than local.
+  bool UpdateContainsNewVersion(int64_t update_version);
 
   // Handles the receipt of an encrypted update from the server.
   //
