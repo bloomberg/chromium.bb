@@ -187,10 +187,17 @@ Optional<unsigned> LayoutTextFragment::CaretOffsetForPosition(
     const Position& position) const {
   if (position.IsNull() || position.AnchorNode() != AssociatedTextNode())
     return WTF::nullopt;
-  // TODO(xiaochengh): Consider Before/AfterAnchor.
-  DCHECK(position.IsOffsetInAnchor()) << position;
-  // TODO(layout-dev): Support offset change due to text-transform.
-  unsigned dom_offset = position.OffsetInContainerNode();
+  unsigned dom_offset;
+  if (position.IsBeforeAnchor()) {
+    dom_offset = 0;
+  } else if (position.IsAfterAnchor()) {
+    // TODO(layout-dev): Support offset change due to text-transform.
+    dom_offset = Start() + FragmentLength();
+  } else {
+    DCHECK(position.IsOffsetInAnchor()) << position;
+    // TODO(layout-dev): Support offset change due to text-transform.
+    dom_offset = position.OffsetInContainerNode();
+  }
   if (dom_offset < Start() || dom_offset > Start() + FragmentLength())
     return WTF::nullopt;
   return dom_offset - Start();
