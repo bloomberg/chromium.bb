@@ -5,26 +5,49 @@
 #ifndef NET_QUIC_PLATFORM_IMPL_QUIC_TEST_IMPL_H_
 #define NET_QUIC_PLATFORM_IMPL_QUIC_TEST_IMPL_H_
 
+#include "base/logging.h"
+#include "net/quic/platform/api/quic_flags.h"
 #include "testing/gmock/include/gmock/gmock.h"  // IWYU pragma: export
 #include "testing/gtest/include/gtest/gtest.h"  // IWYU pragma: export
 
-// When constructed, checks that all QUIC flags have their correct default
-// values and when destructed, restores those values.
+// When constructed, saves the current values of all QUIC flags. When
+// destructed, restores all QUIC flags to the saved values.
 class QuicFlagSaverImpl {
  public:
   QuicFlagSaverImpl();
   ~QuicFlagSaverImpl();
+
+ private:
+#define QUIC_FLAG(type, flag, value) type saved_##flag##_;
+#include "net/quic/core/quic_flags_list.h"
+#undef QUIC_FLAG
+};
+
+// Checks if all QUIC flags are on their default values on construction.
+class QuicFlagChecker {
+ public:
+  QuicFlagChecker() {
+#define QUIC_FLAG(type, flag, value)                                      \
+  CHECK_EQ(value, flag)                                                   \
+      << "Flag set to an unexpected value.  A prior test is likely "      \
+      << "setting a flag without using a QuicFlagSaver. Use QuicTest to " \
+         "avoid this issue.";
+#include "net/quic/core/quic_flags_list.h"
+#undef QUIC_FLAG
+  }
 };
 
 class QuicTestImpl : public ::testing::Test {
  private:
-  QuicFlagSaverImpl flags_;  // Save/restore all QUIC flag values.
+  QuicFlagChecker checker_;
+  QuicFlagSaverImpl saver_;  // Save/restore all QUIC flag values.
 };
 
 template <class T>
 class QuicTestWithParamImpl : public ::testing::TestWithParam<T> {
  private:
-  QuicFlagSaverImpl flags_;  // Save/restore all QUIC flag values.
+  QuicFlagChecker checker_;
+  QuicFlagSaverImpl saver_;  // Save/restore all QUIC flag values.
 };
 
 #endif  // NET_QUIC_PLATFORM_IMPL_QUIC_TEST_IMPL_H_

@@ -4,20 +4,14 @@
 
 #include "net/quic/platform/impl/quic_test_impl.h"
 
-#include "base/logging.h"
-#include "net/quic/platform/api/quic_flags.h"
-
 QuicFlagSaverImpl::QuicFlagSaverImpl() {
-#define QUIC_FLAG(type, flag, value)                                 \
-  CHECK_EQ(value, flag)                                              \
-      << "Flag set to an unexpected value.  A prior test is likely " \
-      << "setting a flag without using a QuicFlagSaver";
+#define QUIC_FLAG(type, flag, value) saved_##flag##_ = flag;
 #include "net/quic/core/quic_flags_list.h"
 #undef QUIC_FLAG
 }
 
 QuicFlagSaverImpl::~QuicFlagSaverImpl() {
-#define QUIC_FLAG(type, flag, value) flag = value;
+#define QUIC_FLAG(type, flag, value) flag = saved_##flag##_;
 #include "net/quic/core/quic_flags_list.h"
 #undef QUIC_FLAG
 }
