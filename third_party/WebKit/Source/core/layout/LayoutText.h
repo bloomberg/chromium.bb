@@ -265,6 +265,18 @@ class CORE_EXPORT LayoutText : public LayoutObject {
 
   virtual UChar PreviousCharacter() const;
 
+  // Returns the NGOffsetMapping object when the current text is laid out with
+  // LayoutNG.
+  // Note that the text can be in legacy layout even when LayoutNG is enabled,
+  // so we can't simply check the RuntimeEnabledFeature.
+  const NGOffsetMapping* GetNGOffsetMapping() const;
+
+  // Map DOM offset to LayoutNG text content offset.
+  // Returns false if all characters in this LayoutText are collapsed.
+  bool MapDOMOffsetToTextContentOffset(const NGOffsetMapping&,
+                                       unsigned* start,
+                                       unsigned* end) const;
+
  protected:
   void WillBeDestroyed() override;
 
@@ -284,12 +296,6 @@ class CORE_EXPORT LayoutText : public LayoutObject {
       unsigned short length);  // Subclassed by SVG.
 
   void InvalidateDisplayItemClients(PaintInvalidationReason) const override;
-
-  // Returns the NGOffsetMapping object when the current text is laid out with
-  // LayoutNG.
-  // Note that the text can be in legacy layout even when LayoutNG is enabled,
-  // so we can't simply check the RuntimeEnabledFeature.
-  const NGOffsetMapping* GetNGOffsetMapping() const;
 
   bool CanBeSelectionLeafInternal() const final { return true; }
 

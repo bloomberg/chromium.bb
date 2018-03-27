@@ -4,6 +4,7 @@
 
 #include "core/layout/ng/inline/ng_physical_text_fragment.h"
 
+#include "core/layout/ng/geometry/ng_logical_rect.h"
 #include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "core/layout/ng/ng_layout_test.h"
 #include "core/layout/ng/ng_physical_box_fragment.h"
@@ -35,6 +36,84 @@ class NGPhysicalTextFragmentTest : public NGLayoutTest {
     return result;
   }
 };
+
+TEST_F(NGPhysicalTextFragmentTest, LocalRect) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      width: 5em;
+    }
+    </style>
+    <div id=container>01234 67890</div>
+  )HTML");
+  auto text_fragments = CollectTextFragmentsInContainer("container");
+  ASSERT_EQ(2u, text_fragments.size());
+  EXPECT_EQ(NGPhysicalOffsetRect({LayoutUnit(20), LayoutUnit(0)},
+                                 {LayoutUnit(20), LayoutUnit(10)}),
+            text_fragments[1]->LocalRect(8, 10));
+}
+
+TEST_F(NGPhysicalTextFragmentTest, LocalRectRTL) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      width: 10em;
+      direction: rtl;
+      unicode-bidi: bidi-override;
+    }
+    </style>
+    <div id=container>0123456789 123456789</div>
+  )HTML");
+  auto text_fragments = CollectTextFragmentsInContainer("container");
+  ASSERT_EQ(2u, text_fragments.size());
+  // The 2nd line starts at 12, because the div has a bidi-control.
+  EXPECT_EQ(12u, text_fragments[1]->StartOffset());
+  EXPECT_EQ(NGPhysicalOffsetRect({LayoutUnit(50), LayoutUnit(0)},
+                                 {LayoutUnit(20), LayoutUnit(10)}),
+            text_fragments[1]->LocalRect(14, 16));
+}
+
+TEST_F(NGPhysicalTextFragmentTest, LocalRectVLR) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      height: 5em;
+      writing-mode: vertical-lr;
+    }
+    </style>
+    <div id=container>01234 67890</div>
+  )HTML");
+  auto text_fragments = CollectTextFragmentsInContainer("container");
+  ASSERT_EQ(2u, text_fragments.size());
+  EXPECT_EQ(NGPhysicalOffsetRect({LayoutUnit(0), LayoutUnit(20)},
+                                 {LayoutUnit(10), LayoutUnit(20)}),
+            text_fragments[1]->LocalRect(8, 10));
+}
+
+TEST_F(NGPhysicalTextFragmentTest, LocalRectVRL) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      height: 5em;
+      writing-mode: vertical-rl;
+    }
+    </style>
+    <div id=container>01234 67890</div>
+  )HTML");
+  auto text_fragments = CollectTextFragmentsInContainer("container");
+  ASSERT_EQ(2u, text_fragments.size());
+  EXPECT_EQ(NGPhysicalOffsetRect({LayoutUnit(0), LayoutUnit(20)},
+                                 {LayoutUnit(10), LayoutUnit(20)}),
+            text_fragments[1]->LocalRect(8, 10));
+}
 
 TEST_F(NGPhysicalTextFragmentTest, NormalTextIsNotAnonymousText) {
   SetBodyInnerHTML("<div id=div>text</div>");

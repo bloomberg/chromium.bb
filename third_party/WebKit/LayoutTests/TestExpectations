@@ -450,7 +450,6 @@ crbug.com/714962 virtual/layout_ng/fast/writing-mode/fallback-orientation.html [
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/fieldsets.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/flipped-blocks-hit-test-line-edges.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/flipped-blocks-inline-map-local-to-container.html [ Failure ]
-crbug.com/714962 virtual/layout_ng/fast/writing-mode/flipped-blocks-text-map-local-to-container.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/japanese-lr-selection.html [ Failure ]
 crbug.com/714962 [ Mac Win ] virtual/layout_ng/fast/writing-mode/japanese-lr-text.html [ Failure ]
 crbug.com/714962 virtual/layout_ng/fast/writing-mode/japanese-rl-selection.html [ Failure ]

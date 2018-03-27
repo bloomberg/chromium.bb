@@ -45,9 +45,11 @@
 #include "core/layout/line/EllipsisBox.h"
 #include "core/layout/line/GlyphOverflow.h"
 #include "core/layout/line/InlineTextBox.h"
+#include "core/layout/ng/geometry/ng_logical_rect.h"
 #include "core/layout/ng/inline/ng_inline_fragment_traversal.h"
 #include "core/layout/ng/inline/ng_inline_node.h"
 #include "core/layout/ng/inline/ng_offset_mapping.h"
+#include "core/layout/ng/inline/ng_physical_text_fragment.h"
 #include "core/layout/ng/layout_ng_block_flow.h"
 #include "platform/fonts/CharacterRange.h"
 #include "platform/geometry/FloatQuad.h"
@@ -409,6 +411,48 @@ void LayoutText::AbsoluteQuads(Vector<FloatQuad>& quads,
   Quads(quads, kNoClipping, kAbsoluteQuads, mode);
 }
 
+bool LayoutText::MapDOMOffsetToTextContentOffset(const NGOffsetMapping& mapping,
+                                                 unsigned* start,
+                                                 unsigned* end) const {
+  DCHECK_LE(*start, *end);
+
+  // Adjust |start| to the next non-collapsed offset if |start| is collapsed.
+  Position start_position =
+      PositionForCaretOffset(std::min(*start, TextLength()));
+  Position non_collapsed_start_position =
+      mapping.StartOfNextNonCollapsedContent(start_position);
+
+  // If all characters after |start| are collapsed, adjust to the last
+  // non-collapsed offset.
+  if (non_collapsed_start_position.IsNull()) {
+    non_collapsed_start_position =
+        mapping.EndOfLastNonCollapsedContent(start_position);
+
+    // If all characters are collapsed, return false.
+    if (non_collapsed_start_position.IsNull())
+      return false;
+  }
+
+  *start = mapping.GetTextContentOffset(non_collapsed_start_position).value();
+
+  // Adjust |end| to the last non-collapsed offset if |end| is collapsed.
+  Position end_position = PositionForCaretOffset(std::min(*end, TextLength()));
+  Position non_collpased_end_position =
+      mapping.EndOfLastNonCollapsedContent(end_position);
+
+  if (non_collpased_end_position.IsNull() ||
+      non_collpased_end_position.OffsetInContainerNode() <=
+          non_collapsed_start_position.OffsetInContainerNode()) {
+    // If all characters in the range are collapsed, make |end| = |start|.
+    *end = *start;
+  } else {
+    *end = mapping.GetTextContentOffset(non_collpased_end_position).value();
+  }
+
+  DCHECK_LE(*start, *end);
+  return true;
+}
+
 void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
                                        unsigned start,
                                        unsigned end) const {
@@ -423,6 +467,28 @@ void LayoutText::AbsoluteQuadsForRange(Vector<FloatQuad>& quads,
   DCHECK_LE(start, static_cast<unsigned>(INT_MAX));
   start = std::min(start, static_cast<unsigned>(INT_MAX));
   end = std::min(end, static_cast<unsigned>(INT_MAX));
+
+  if (auto* mapping = GetNGOffsetMapping()) {
+    if (!MapDOMOffsetToTextContentOffset(*mapping, &start, &end))
+      return;
+
+    // Find fragments that have text for the specified range.
+    DCHECK_LE(start, end);
+    auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+    for (const NGPaintFragment* fragment : fragments) {
+      const NGPhysicalTextFragment& text_fragment =
+          ToNGPhysicalTextFragment(fragment->PhysicalFragment());
+      if (start > text_fragment.EndOffset() ||
+          end < text_fragment.StartOffset())
+        continue;
+      NGPhysicalOffsetRect rect =
+          text_fragment.LocalRect(std::max(start, text_fragment.StartOffset()),
+                                  std::min(end, text_fragment.EndOffset()));
+      rect.offset += fragment->InlineOffsetToContainerBox();
+      quads.push_back(LocalToAbsoluteQuad(rect.ToFloatRect()));
+    }
+    return;
+  }
 
   const unsigned caret_min_offset = static_cast<unsigned>(CaretMinOffset());
   const unsigned caret_max_offset = static_cast<unsigned>(CaretMaxOffset());

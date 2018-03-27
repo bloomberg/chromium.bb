@@ -105,6 +105,11 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragment {
     return IsHorizontal() ? kAlphabeticBaseline : kIdeographicBaseline;
   }
 
+  // The layout box of text in (start, end) range in local coordinate.
+  // Start and end offsets must be between StartOffset() and EndOffset().
+  NGPhysicalOffsetRect LocalRect(unsigned start_offset,
+                                 unsigned end_offset) const;
+
   // The visual bounding box that includes glpyh bounding box and CSS
   // properties, in local coordinates.
   NGPhysicalOffsetRect SelfVisualRect() const;

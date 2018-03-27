@@ -12,6 +12,7 @@
 
 namespace blink {
 
+class FloatRect;
 class LayoutRect;
 
 // NGPhysicalOffsetRect is the position and size of a rect (typically a
@@ -39,6 +40,7 @@ struct CORE_EXPORT NGPhysicalOffsetRect {
   // logical/physical distinctions.
   explicit NGPhysicalOffsetRect(const LayoutRect&);
   LayoutRect ToLayoutRect() const;
+  FloatRect ToFloatRect() const;
 
   String ToString() const;
 };
