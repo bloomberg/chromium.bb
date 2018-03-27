@@ -45,7 +45,7 @@ public class ContentViewLocationTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().onHide();
+                mActivityTestRule.getWebContents().onHide();
             }
         });
     }
@@ -54,7 +54,7 @@ public class ContentViewLocationTest {
         InstrumentationRegistry.getInstrumentation().runOnMainSync(new Runnable() {
             @Override
             public void run() {
-                mActivityTestRule.getContentViewCore().onShow();
+                mActivityTestRule.getWebContents().onShow();
             }
         });
     }

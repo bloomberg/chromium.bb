@@ -15,15 +15,14 @@ import android.widget.FrameLayout;
 
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /***
  * This view is used by a ContentView to render its content.
- * Call {@link #setCurrentContentViewCore(ContentViewCore)} with the contentViewCore that should be
- * managing the view.
- * Note that only one ContentViewCore can be shown at a time.
+ * Call {@link #setCurrentWebContents(WebContents)} with the webContents that should be
+ * managing the content.
+ * Note that only one WebContents can be shown at a time.
  */
 @JNINamespace("content")
 public class ContentViewRenderView extends FrameLayout {
@@ -33,7 +32,7 @@ public class ContentViewRenderView extends FrameLayout {
     private WindowAndroid mWindowAndroid;
 
     private final SurfaceView mSurfaceView;
-    protected ContentViewCore mContentViewCore;
+    protected WebContents mWebContents;
 
     private int mWidth;
     private int mHeight;
@@ -77,9 +76,9 @@ public class ContentViewRenderView extends FrameLayout {
                 assert mNativeContentViewRenderView != 0;
                 nativeSurfaceChanged(mNativeContentViewRenderView,
                         format, width, height, holder.getSurface());
-                if (mContentViewCore != null) {
-                    nativeOnPhysicalBackingSizeChanged(mNativeContentViewRenderView,
-                            mContentViewCore.getWebContents(), width, height);
+                if (mWebContents != null) {
+                    nativeOnPhysicalBackingSizeChanged(
+                            mNativeContentViewRenderView, mWebContents, width, height);
                 }
             }
 
@@ -112,9 +111,7 @@ public class ContentViewRenderView extends FrameLayout {
     protected void onSizeChanged(int w, int h, int oldw, int oldh) {
         mWidth = w;
         mHeight = h;
-        WebContents webContents =
-                mContentViewCore != null ? mContentViewCore.getWebContents() : null;
-        if (webContents != null) webContents.setSize(w, h);
+        if (mWebContents != null) mWebContents.setSize(w, h);
     }
 
     /**
@@ -163,11 +160,10 @@ public class ContentViewRenderView extends FrameLayout {
         mNativeContentViewRenderView = 0;
     }
 
-    public void setCurrentContentViewCore(ContentViewCore contentViewCore) {
+    public void setCurrentWebContents(WebContents webContents) {
         assert mNativeContentViewRenderView != 0;
-        mContentViewCore = contentViewCore;
+        mWebContents = webContents;
 
-        WebContents webContents = contentViewCore != null ? contentViewCore.getWebContents() : null;
         if (webContents != null) {
             webContents.setSize(mWidth, mHeight);
             nativeOnPhysicalBackingSizeChanged(

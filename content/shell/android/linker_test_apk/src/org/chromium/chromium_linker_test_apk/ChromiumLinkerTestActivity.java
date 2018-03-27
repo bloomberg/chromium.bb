@@ -18,7 +18,7 @@ import org.chromium.base.library_loader.LibraryProcessType;
 import org.chromium.base.library_loader.Linker;
 import org.chromium.base.library_loader.ProcessInitException;
 import org.chromium.content.browser.BrowserStartupController;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell.Shell;
 import org.chromium.content_shell.ShellManager;
 import org.chromium.ui.base.ActivityWindowAndroid;
@@ -147,16 +147,16 @@ public class ChromiumLinkerTestActivity extends Activity {
     protected void onStop() {
         super.onStop();
 
-        ContentViewCore contentViewCore = getActiveContentViewCore();
-        if (contentViewCore != null) contentViewCore.onHide();
+        WebContents webContents = getActiveWebContents();
+        if (webContents != null) webContents.onHide();
     }
 
     @Override
     protected void onStart() {
         super.onStart();
 
-        ContentViewCore contentViewCore = getActiveContentViewCore();
-        if (contentViewCore != null) contentViewCore.onShow();
+        WebContents webContents = getActiveWebContents();
+        if (webContents != null) webContents.onHide();
     }
 
     @Override
@@ -170,19 +170,12 @@ public class ChromiumLinkerTestActivity extends Activity {
     }
 
     /**
-     * @return The {@link ContentViewCore} owned by the currently visible {@link Shell} or null if
+     * @return The {@link WebContents} owned by the currently visible {@link Shell} or null if
      *         one is not showing.
      */
-    public ContentViewCore getActiveContentViewCore() {
-        if (mShellManager == null) {
-            return null;
-        }
-
+    public WebContents getActiveWebContents() {
+        if (mShellManager == null) return null;
         Shell shell = mShellManager.getActiveShell();
-        if (shell == null) {
-            return null;
-        }
-
-        return shell.getContentViewCore();
+        return shell != null ? shell.getWebContents() : null;
     }
 }

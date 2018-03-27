@@ -1268,7 +1268,7 @@ public class Tab
             loadIfNeeded();
             assert !isFrozen();
 
-            if (mContentViewCore != null) mContentViewCore.onShow();
+            if (getWebContents() != null) getWebContents().onShow();
 
             if (mTabUma != null) {
                 mTabUma.onShow(type, getTimestampMillis(),
@@ -1309,7 +1309,7 @@ public class Tab
             mIsHidden = true;
             updateInteractableState();
 
-            if (mContentViewCore != null) mContentViewCore.onHide();
+            if (getWebContents() != null) getWebContents().onHide();
 
             // Clean up any fullscreen state that might impact other tabs.
             if (mFullscreenManager != null) {
@@ -2611,7 +2611,7 @@ public class Tab
         if (mContentViewCore != null) {
             originalWidth = mContentView.getWidth();
             originalHeight = mContentView.getHeight();
-            mContentViewCore.onHide();
+            mContentViewCore.getWebContents().onHide();
         }
 
         Rect bounds = new Rect();
@@ -2634,7 +2634,7 @@ public class Tab
             nativeOnPhysicalBackingSizeChanged(mNativeTabAndroid,
                     newContentViewCore.getWebContents(), bounds.right, bounds.bottom);
         }
-        newContentViewCore.onShow();
+        newContentViewCore.getWebContents().onShow();
         setContentViewCore(newContentViewCore);
 
         destroyNativePageInternal(previousNativePage);

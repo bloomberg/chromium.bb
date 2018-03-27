@@ -185,8 +185,8 @@ public class ContentShellActivity extends Activity {
     protected void onStart() {
         super.onStart();
 
-        ContentViewCore contentViewCore = getActiveContentViewCore();
-        if (contentViewCore != null) contentViewCore.onShow();
+        WebContents webContents = getActiveWebContents();
+        if (webContents != null) webContents.onShow();
     }
 
     @Override

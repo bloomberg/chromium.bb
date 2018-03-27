@@ -377,21 +377,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         return nativeGetTopControlsShrinkBlinkHeightPixForTesting(mNativeContentViewCore);
     }
 
-    @Override
-    public void onShow() {
-        assert mWebContents != null;
-        mWebContents.onShow();
-        getWebContentsAccessibility().refreshState();
-        getSelectionPopupController().restoreSelectionPopupsIfNecessary();
-    }
-
-    @Override
-    public void onHide() {
-        assert mWebContents != null;
-        hidePopupsAndPreserveSelection();
-        mWebContents.onHide();
-    }
-
     private void hidePopupsAndClearSelection() {
         getSelectionPopupController().destroyActionModeAndUnselect();
         mWebContents.dismissTextHandles();

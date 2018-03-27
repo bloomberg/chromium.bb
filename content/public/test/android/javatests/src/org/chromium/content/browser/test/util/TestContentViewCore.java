@@ -50,12 +50,6 @@ public class TestContentViewCore implements ContentViewCore {
     }
 
     @Override
-    public void onShow() {}
-
-    @Override
-    public void onHide() {}
-
-    @Override
     public void onAttachedToWindow() {}
 
     @Override
