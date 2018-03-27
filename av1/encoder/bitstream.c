@@ -3810,7 +3810,7 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
           // arithmetic encoder left several 0 bits
           // changing the first 0 bit to 1
           int bit_offset = 7 - nb_bits % 8;
-          *(dst + total_size + tile_size) |= 1 << bit_offset;
+          *(dst + total_size + tile_size - 1) |= 1 << bit_offset;
         }
       }
 #endif

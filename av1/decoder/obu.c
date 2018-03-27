@@ -263,13 +263,29 @@ static uint32_t read_one_tile_group_obu(AV1Decoder *pbi,
   AV1_COMMON *const cm = &pbi->common;
   int startTile, endTile;
   uint32_t header_size, tg_payload_size;
+#if CONFIG_TRAILING_BITS
+  uint32_t last_bit_pos;
+#endif
 
   header_size = read_tile_group_header(pbi, rb, &startTile, &endTile);
   if (startTile > endTile) return header_size;
   data += header_size;
   av1_decode_tg_tiles_and_wrapup(pbi, data, data_end, p_data_end, startTile,
+#if CONFIG_TRAILING_BITS
+                                 endTile, is_first_tg, &last_bit_pos);
+#else
                                  endTile, is_first_tg);
+#endif
+
   tg_payload_size = (uint32_t)(*p_data_end - data);
+
+#if CONFIG_TRAILING_BITS
+  if (!pbi->common.large_scale_tile) {
+    av1_init_read_bit_buffer(pbi, rb, *p_data_end - 1, data_end);
+    rb->bit_offset = last_bit_pos;
+    av1_check_trailing_bits(pbi, rb);
+  }
+#endif
 
   // TODO(shan):  For now, assume all tile groups received in order
   *is_last_tg = endTile == cm->tile_rows * cm->tile_cols - 1;

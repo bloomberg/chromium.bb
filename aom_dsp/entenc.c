@@ -309,8 +309,13 @@ unsigned char *od_ec_enc_done(od_ec_enc *enc, uint32_t *nbytes) {
   l = enc->low;
   r = enc->rng;
   c = enc->cnt;
+#if CONFIG_TRAILING_BITS
+  s = 10;
+  m = 0x3FFF;
+#else
   s = 9;
   m = 0x7FFF;
+#endif
   e = (l + m) & ~m;
   while ((e | m) >= l + r) {
     s++;
