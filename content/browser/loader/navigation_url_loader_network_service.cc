@@ -347,7 +347,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     default_loader_used_ = true;
     if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
       DCHECK(!default_url_loader_factory_getter_);
-      // It is safa to pass the callback of CreateURLLoaderThrottles with the
+      // It is safe to pass the callback of CreateURLLoaderThrottles with the
       // unretained |this|, because the passed callback will be used by a
       // SignedExchangeHandler which is indirectly owned by |this| until its
       // header is verified and parsed, that's where the getter is used.
@@ -493,7 +493,7 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
     }
 
     if (base::FeatureList::IsEnabled(features::kSignedHTTPExchange)) {
-      // It is safa to pass the callback of CreateURLLoaderThrottles with the
+      // It is safe to pass the callback of CreateURLLoaderThrottles with the
       // unretained |this|, because the passed callback will be used by a
       // SignedExchangeHandler which is indirectly owned by |this| until its
       // header is verified and parsed, that's where the getter is used.
