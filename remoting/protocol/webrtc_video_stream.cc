@@ -265,7 +265,9 @@ void WebrtcVideoStream::OnFrameEncoded(
 
   webrtc::EncodedImageCallback::Result result =
       webrtc_transport_->video_encoder_factory()->SendEncodedFrame(
-          *frame, current_frame_stats_->capture_started_time);
+          *frame, current_frame_stats_->capture_started_time,
+          current_frame_stats_->encode_started_time,
+          current_frame_stats_->encode_ended_time);
   if (result.error != webrtc::EncodedImageCallback::Result::OK) {
     // TODO(sergeyu): Stop the stream.
     LOG(ERROR) << "Failed to send video frame.";
