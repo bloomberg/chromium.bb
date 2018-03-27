@@ -165,7 +165,8 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   return 0;
 }
 
-TEST_F(IPCMojoBootstrapTest, ReceiveEmptyMessage) {
+// TODO(https://crbug.com/826450): Fix flakiness and re-enable.
+TEST_F(IPCMojoBootstrapTest, DISABLED_ReceiveEmptyMessage) {
   base::MessageLoop message_loop;
   Connection connection(
       IPC::MojoBootstrap::Create(
