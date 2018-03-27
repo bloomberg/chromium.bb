@@ -1503,6 +1503,10 @@
     'tools_win_chromeexts': {
       'filepath': 'tools/win/chromeexts',
     },
+    'touch_selection': {
+      'filepath': 'ui/touch_selection/'\
+                  '|content/public/android/java/src/org/chromium/content/browser/selection/'
+    },
     'tracing': {
       'filepath': 'base/debug/trace_event.*'\
                   '|base/trace_event/'\
@@ -2303,6 +2307,8 @@
                            'yusukes+watch@chromium.org'],
     'timers': ['chirantan+watch@chromium.org'],
     'tools_win_chromeexts': ['robliao+watch@chromium.org'],
+    'touch_selection': ['ajith.v@samsung.com',
+                        'ajith.v@chromium.org'],
     'tracing': ['tracing+reviews@chromium.org',
                 'wfh+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
