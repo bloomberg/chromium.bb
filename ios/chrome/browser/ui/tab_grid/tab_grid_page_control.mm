@@ -195,6 +195,14 @@ NSString* StringForItemCount(long count) {
   self.selectedImageView.center =
       [self convertPoint:RectCenter(self.bounds) toView:self.sliderView];
   _sliderPosition = sliderPosition;
+
+  // |_selectedPage| should be kept in sync with the slider position.
+  if (sliderPosition < 0.25)
+    _selectedPage = TabGridPageIncognitoTabs;
+  else if (sliderPosition < 0.75)
+    _selectedPage = TabGridPageRegularTabs;
+  else
+    _selectedPage = TabGridPageRemoteTabs;
 }
 
 // Setters for the control's text values. These need to update three things:
