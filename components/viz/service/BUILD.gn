@@ -5,6 +5,7 @@
 import("//build/config/ui.gni")
 import("//components/viz/viz.gni")
 import("//gpu/vulkan/features.gni")
+import("//testing/libfuzzer/fuzzer_test.gni")
 
 config("viz_service_implementation") {
 }
@@ -362,5 +363,20 @@ viz_source_set("perf_tests") {
     "//components/viz/test:test_support",
     "//testing/gtest",
     "//testing/perf",
+  ]
+}
+
+fuzzer_test("hit_test_manager_fuzzer") {
+  sources = [
+    "hit_test/hit_test_manager_fuzzer.cc",
+  ]
+
+  libfuzzer_options = [ "max_len=81920" ]
+
+  deps = [
+    ":service",
+    "//base/test:test_support",
+    "//components/viz/test:test_support",
+    "//mojo/edk",
   ]
 }

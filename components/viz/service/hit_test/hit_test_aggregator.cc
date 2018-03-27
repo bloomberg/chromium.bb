@@ -11,24 +11,20 @@
 
 namespace viz {
 
-namespace {
-// TODO(gklassen): Review and select appropriate sizes based on
-// telemetry / UMA.
-constexpr uint32_t kInitialSize = 1024;
-constexpr uint32_t kIncrementalSize = 1024;
-constexpr uint32_t kMaxSize = 100 * 1024;
-
-}  // namespace
-
 HitTestAggregator::HitTestAggregator(
     const HitTestManager* hit_test_manager,
     HitTestAggregatorDelegate* delegate,
     LatestLocalSurfaceIdLookupDelegate* local_surface_id_lookup_delegate,
-    const FrameSinkId& frame_sink_id)
+    const FrameSinkId& frame_sink_id,
+    uint32_t initial_region_size,
+    uint32_t max_region_size)
     : hit_test_manager_(hit_test_manager),
       delegate_(delegate),
       local_surface_id_lookup_delegate_(local_surface_id_lookup_delegate),
       root_frame_sink_id_(frame_sink_id),
+      initial_region_size_(initial_region_size),
+      incremental_region_size_(initial_region_size),
+      max_region_size_(max_region_size),
       weak_ptr_factory_(this) {
   AllocateHitTestRegionArray();
 }
@@ -43,7 +39,7 @@ void HitTestAggregator::Aggregate(const SurfaceId& display_surface_id) {
 }
 
 void HitTestAggregator::GrowRegionList() {
-  ResizeHitTestRegionArray(write_size_ + kIncrementalSize);
+  ResizeHitTestRegionArray(write_size_ + incremental_region_size_);
 }
 
 void HitTestAggregator::Swap() {
@@ -65,9 +61,9 @@ void HitTestAggregator::Swap() {
 }
 
 void HitTestAggregator::AllocateHitTestRegionArray() {
-  ResizeHitTestRegionArray(kInitialSize);
+  ResizeHitTestRegionArray(initial_region_size_);
   SwapHandles();
-  ResizeHitTestRegionArray(kInitialSize);
+  ResizeHitTestRegionArray(initial_region_size_);
 }
 
 void HitTestAggregator::ResizeHitTestRegionArray(uint32_t size) {
@@ -128,7 +124,7 @@ size_t HitTestAggregator::AppendRegion(size_t region_index,
                                        const mojom::HitTestRegionPtr& region) {
   size_t parent_index = region_index++;
   if (region_index >= write_size_ - 1) {
-    if (write_size_ > kMaxSize) {
+    if (write_size_ > max_region_size_) {
       MarkEndAt(parent_index);
       return region_index;
     } else {
