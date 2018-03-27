@@ -127,11 +127,51 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
 @implementation BlacklistedFormContentItem
 @end
 
+@protocol PasswordExportActivityViewControllerDelegate<NSObject>
+
+// Used to reset the export state when the activity view disappears.
+- (void)resetExport;
+
+@end
+
+@interface PasswordExportActivityViewController : UIActivityViewController
+
+- (PasswordExportActivityViewController*)
+initWithActivityItems:(NSArray*)activityItems
+             delegate:
+                 (id<PasswordExportActivityViewControllerDelegate>)delegate;
+
+@end
+
+@implementation PasswordExportActivityViewController {
+  __weak id<PasswordExportActivityViewControllerDelegate> _weakDelegate;
+}
+
+- (PasswordExportActivityViewController*)
+initWithActivityItems:(NSArray*)activityItems
+             delegate:
+                 (id<PasswordExportActivityViewControllerDelegate>)delegate {
+  self = [super initWithActivityItems:activityItems applicationActivities:nil];
+  if (self) {
+    _weakDelegate = delegate;
+  }
+
+  return self;
+}
+
+- (void)viewDidDisappear:(BOOL)animated {
+  [_weakDelegate resetExport];
+  [super viewDidDisappear:animated];
+}
+
+@end
+
 @interface SavePasswordsCollectionViewController ()<
     BooleanObserver,
     PasswordDetailsCollectionViewControllerDelegate,
     SuccessfulReauthTimeAccessor,
-    PasswordExporterDelegate> {
+    PasswordExporterDelegate,
+    PasswordExportActivityViewControllerDelegate> {
   // The observable boolean that binds to the password manager setting state.
   // Saved passwords are only on if the password manager is enabled.
   PrefBackedBoolean* passwordManagerEnabled_;
@@ -516,10 +556,10 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   if (enabled) {
     DCHECK(exportReady_ && ![self.editor isEditing]);
     exportPasswordsItem_.textColor = [[MDCPalette greyPalette] tint900];
-    exportPasswordsItem_.accessibilityTraits = UIAccessibilityTraitButton;
+    exportPasswordsItem_.accessibilityTraits &= ~UIAccessibilityTraitNotEnabled;
   } else {
     exportPasswordsItem_.textColor = [[MDCPalette greyPalette] tint500];
-    exportPasswordsItem_.accessibilityTraits = UIAccessibilityTraitNotEnabled;
+    exportPasswordsItem_.accessibilityTraits |= UIAccessibilityTraitNotEnabled;
   }
   [self reconfigureCellsForItems:@[ exportPasswordsItem_ ]];
 }
@@ -858,9 +898,10 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
                                                     NSArray* returnedItems,
                                                     NSError* activityError))
                                               completionHandler {
-  UIActivityViewController* activityViewController =
-      [[UIActivityViewController alloc] initWithActivityItems:activityItems
-                                        applicationActivities:nil];
+  PasswordExportActivityViewController* activityViewController =
+      [[PasswordExportActivityViewController alloc]
+          initWithActivityItems:activityItems
+                       delegate:self];
   NSArray* excludedActivityTypes = @[
     UIActivityTypeAddToReadingList, UIActivityTypeAirDrop,
     UIActivityTypeCopyToPasteboard, UIActivityTypeOpenInIBooks,
@@ -893,6 +934,14 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
   [self presentViewController:activityViewController];
 }
 
+#pragma mark - PasswordExportActivityViewControllerDelegate
+
+- (void)resetExport {
+  [self.passwordExporter resetExportState];
+}
+
+#pragma mark Helper methods
+
 - (void)presentViewController:(UIViewController*)viewController {
   if (self.presentedViewController == preparingPasswordsAlert_ &&
       !preparingPasswordsAlert_.beingDismissed) {
@@ -907,8 +956,6 @@ void SavePasswordsConsumer::OnGetPasswordStoreResults(
     [self presentViewController:viewController animated:YES completion:nil];
   }
 }
-
-#pragma mark Helper methods
 
 // Sets the save passwords switch item's enabled status to |enabled| and
 // reconfigures the corresponding cell.

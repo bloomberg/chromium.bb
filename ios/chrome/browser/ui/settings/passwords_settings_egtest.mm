@@ -24,6 +24,7 @@
 #include "ios/chrome/browser/passwords/ios_chrome_password_store_factory.h"
 #import "ios/chrome/browser/ui/settings/reauthentication_module.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
+#include "ios/chrome/browser/ui/ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
 #import "ios/chrome/test/app/chrome_test_util.h"
 #import "ios/chrome/test/app/password_test_util.h"
@@ -57,6 +58,7 @@ using chrome_test_util::ButtonWithAccessibilityLabel;
 using chrome_test_util::SettingsMenuBackButton;
 using chrome_test_util::NavigationBarDoneButton;
 using chrome_test_util::SetUpAndReturnMockReauthenticationModule;
+using chrome_test_util::SetUpAndReturnMockReauthenticationModuleForExport;
 
 namespace {
 
@@ -1578,6 +1580,74 @@ PasswordForm CreateSampleFormWithIndex(int index) {
   [[EarlGrey selectElementWithMatcher:ButtonWithAccessibilityLabel(
                                           @"example.com, concrete username")]
       assertWithMatcher:grey_notNil()];
+}
+
+// Test export flow
+- (void)testExportFlow {
+  if (!base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordExport)) {
+    return;
+  }
+  // Saving a form is needed for exporting passwords.
+  SaveExamplePasswordForm();
+
+  OpenPasswordSettings();
+
+  MockReauthenticationModule* mock_reauthentication_module =
+      SetUpAndReturnMockReauthenticationModuleForExport();
+  mock_reauthentication_module.shouldSucceed = YES;
+
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_EXPORT_PASSWORDS)]
+      performAction:grey_tap()];
+
+  // Tap the alert's Export passwords... button to confirm. Check
+  // accessibilityTrait to differentiate against the above matching element,
+  // which has UIAccessibilityTraitSelected.
+  // TODO(crbug.com/751311): Revisit and check if there is a better solution to
+  // match the button.
+  id<GREYMatcher> exportConfirmationButton = grey_allOf(
+      ButtonWithAccessibilityLabel(
+          l10n_util::GetNSString(IDS_IOS_EXPORT_PASSWORDS)),
+      grey_not(grey_accessibilityTrait(UIAccessibilityTraitSelected)), nil);
+  [[EarlGrey selectElementWithMatcher:exportConfirmationButton]
+      performAction:grey_tap()];
+
+  // Wait until the alerts are dismissed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Check that export button is disabled
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_EXPORT_PASSWORDS)]
+      assertWithMatcher:grey_accessibilityTrait(
+                            UIAccessibilityTraitNotEnabled)];
+
+  if (IsIPadIdiom()) {
+    // Tap outside the activity view to dismiss it, because it is not
+    // accompanied by a "Cancel" button on iPad.
+    [[EarlGrey selectElementWithMatcher:
+                   chrome_test_util::ButtonWithAccessibilityLabelId(
+                       IDS_IOS_EXPORT_PASSWORDS)] performAction:grey_tap()];
+  } else {
+    // Tap on the "Cancel" button accompanying the activity view to dismiss it.
+    [[EarlGrey
+        selectElementWithMatcher:grey_allOf(
+                                     ButtonWithAccessibilityLabel(@"Cancel"),
+                                     grey_interactable(), nullptr)]
+        performAction:grey_tap()];
+  }
+
+  // Wait until the activity view is dismissed.
+  [[GREYUIThreadExecutor sharedInstance] drainUntilIdle];
+
+  // Check that export button is re-enabled.
+  [[EarlGrey
+      selectElementWithMatcher:chrome_test_util::ButtonWithAccessibilityLabelId(
+                                   IDS_IOS_EXPORT_PASSWORDS)]
+      assertWithMatcher:grey_not(grey_accessibilityTrait(
+                            UIAccessibilityTraitNotEnabled))];
 }
 
 @end

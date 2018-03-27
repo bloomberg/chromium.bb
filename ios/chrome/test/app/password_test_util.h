@@ -28,6 +28,11 @@ namespace chrome_test_util {
 // blocked with a reauth prompt, and return the fake reauthentication module.
 MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule();
 
+// Replace the reauthentication module in
+// PasswordExporter with a fake one to avoid being
+// blocked with a reauth prompt, and return the fake reauthentication module.
+MockReauthenticationModule* SetUpAndReturnMockReauthenticationModuleForExport();
+
 }  // namespace chrome_test_util
 
 #endif  // IOS_CHROME_TEST_APP_PASSWORD_TEST_UTIL_H_

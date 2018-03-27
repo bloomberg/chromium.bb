@@ -33,6 +33,7 @@
 #include "components/metrics/metrics_pref_names.h"
 #include "components/metrics/metrics_service.h"
 #include "components/ntp_snippets/content_suggestions_service.h"
+#include "components/password_manager/core/common/password_manager_features.h"
 #include "components/payments/core/features.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -86,6 +87,7 @@
 #import "ios/chrome/browser/metrics/previous_session_info.h"
 #import "ios/chrome/browser/net/cookie_util.h"
 #include "ios/chrome/browser/ntp_snippets/ios_chrome_content_suggestions_service_factory.h"
+#import "ios/chrome/browser/passwords/passwords_directory_util.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher.h"
 #include "ios/chrome/browser/payments/ios_payment_instrument_launcher_factory.h"
 #import "ios/chrome/browser/payments/payment_request_constants.h"
@@ -196,6 +198,9 @@ NSString* const kCheckForFirstPartyApps = @"CheckForFirstPartyApps";
 
 // Constants for deferred deletion of leftover user downloaded files.
 NSString* const kDeleteDownloads = @"DeleteDownloads";
+
+// Constants for deferred deletion of leftover temporary passwords files.
+NSString* const kDeleteTempPasswords = @"DeleteTempPasswords";
 
 // Constants for deferred sending of queued feedback.
 NSString* const kSendQueuedFeedback = @"SendQueuedFeedback";
@@ -502,6 +507,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // Schedules the deletion of user downloaded files that might be leftover
 // from the last time Chrome was run.
 - (void)scheduleDeleteDownloadsDirectory;
+// Schedule the deletion of the temporary passwords files that might
+// be left over from incomplete export operations.
+- (void)scheduleDeleteTempPasswordsDirectory;
 // Returns whether or not the app can launch in incognito mode.
 - (BOOL)canLaunchInIncognito;
 // Determines which UI should be shown on startup, and shows it.
@@ -1150,6 +1158,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   [self sendQueuedFeedback];
   [self scheduleSpotlightResync];
   [self scheduleDeleteDownloadsDirectory];
+  if (base::FeatureList::IsEnabled(
+          password_manager::features::kPasswordExport)) {
+    [self scheduleDeleteTempPasswordsDirectory];
+  }
   [self scheduleStartupAttemptReset];
   [self startFreeMemoryMonitoring];
   [self scheduleAppDistributionPings];
@@ -1174,6 +1186,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
       enqueueBlockNamed:kDeleteDownloads
                   block:^{
                     DeleteDownloadsDirectory();
+                  }];
+}
+
+- (void)scheduleDeleteTempPasswordsDirectory {
+  [[DeferredInitializationRunner sharedInstance]
+      enqueueBlockNamed:kDeleteTempPasswords
+                  block:^{
+                    DeletePasswordsDirectory();
                   }];
 }
 
