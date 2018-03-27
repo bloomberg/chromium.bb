@@ -242,6 +242,7 @@ class PDFExtensionTest : public ExtensionApiTest,
       ASSERT_FALSE(filename.empty());
 
       std::string pdf_file = dir_name + "/" + filename;
+      SCOPED_TRACE(pdf_file);
       if (static_cast<int>(base::Hash(filename) % kNumberLoadTestParts) == k) {
         LOG(INFO) << "Loading: " << pdf_file;
         bool success = LoadPdf(embedded_test_server()->GetURL("/" + pdf_file));
