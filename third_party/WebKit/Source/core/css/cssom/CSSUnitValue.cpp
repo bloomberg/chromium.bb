@@ -55,6 +55,9 @@ bool IsValueOutOfRangeForProperty(CSSPropertyID property_id, double value) {
     case CSSPropertyMaxInlineSize:
     case CSSPropertyMinBlockSize:
     case CSSPropertyMinInlineSize:
+    case CSSPropertyR:
+    case CSSPropertyRx:
+    case CSSPropertyRy:
       return value < 0;
     case CSSPropertyFontWeight:
       return value < 0 || value > 1000;
