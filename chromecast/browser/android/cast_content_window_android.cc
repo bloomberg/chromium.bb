@@ -62,6 +62,7 @@ void CastContentWindowAndroid::CreateWindowForWebContents(
     content::WebContents* web_contents,
     CastWindowManager* /* window_manager */,
     bool /* is_visible */,
+    CastWindowManager::WindowId /* z_order */,
     VisibilityPriority visibility_priority) {
   DCHECK(web_contents);
   JNIEnv* env = base::android::AttachCurrentThread();

@@ -145,16 +145,17 @@ void CastWebViewDefault::CloseContents(content::WebContents* source) {
   delegate_->OnPageStopped(net::OK);
 }
 
-void CastWebViewDefault::CreateWindow(CastWindowManager* window_manager,
-                                      bool is_visible,
-                                      VisibilityPriority initial_priority) {
+void CastWebViewDefault::InitializeWindow(CastWindowManager* window_manager,
+                                          bool is_visible,
+                                          CastWindowManager::WindowId z_order,
+                                          VisibilityPriority initial_priority) {
   if (media::CastMediaShlib::ClearVideoPlaneImage) {
     media::CastMediaShlib::ClearVideoPlaneImage();
   }
 
   DCHECK(window_manager);
   window_->CreateWindowForWebContents(web_contents_.get(), window_manager,
-                                      is_visible, initial_priority);
+                                      is_visible, z_order, initial_priority);
   web_contents_->Focus();
 }
 
