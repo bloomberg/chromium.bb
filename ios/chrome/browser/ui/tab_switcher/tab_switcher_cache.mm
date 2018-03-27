@@ -14,7 +14,7 @@
 #import "ios/chrome/browser/tabs/tab_model.h"
 #import "ios/chrome/browser/ui/uikit_ui_util.h"
 #import "ios/chrome/browser/web/page_placeholder_tab_helper.h"
-#include "ios/chrome/common/ios_app_bundle_id_prefix.h"
+#include "ios/chrome/common/ios_app_bundle_id_prefix_buildflags.h"
 #include "ios/web/public/navigation_item.h"
 #import "ios/web/public/web_state/web_state.h"
 

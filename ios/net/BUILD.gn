@@ -8,8 +8,8 @@ import("//ios/features.gni")
 import("//testing/test.gni")
 import("//url/features.gni")
 
-buildflag_header("ios_net_features") {
-  header = "ios_net_features.h"
+buildflag_header("ios_net_buildflags") {
+  header = "ios_net_buildflags.h"
   flags = [ "CRONET_BUILD=$is_cronet_build" ]
 }
 
@@ -22,7 +22,7 @@ group("all_tests") {
 
 source_set("net") {
   deps = [
-    ":ios_net_features",
+    ":ios_net_buildflags",
     "//base",
     "//net",
     "//url:url_features",
