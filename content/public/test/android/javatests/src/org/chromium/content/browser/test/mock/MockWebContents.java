@@ -92,27 +92,6 @@ public class MockWebContents implements WebContents {
     public void stop() {}
 
     @Override
-    public void cut() {}
-
-    @Override
-    public void copy() {}
-
-    @Override
-    public void paste() {}
-
-    @Override
-    public void pasteAsPlainText() {}
-
-    @Override
-    public void replace(String word) {}
-
-    @Override
-    public void selectAll() {}
-
-    @Override
-    public void collapseSelection() {}
-
-    @Override
     public void onHide() {}
 
     @Override
@@ -120,12 +99,6 @@ public class MockWebContents implements WebContents {
 
     @Override
     public void setImportance(int importance) {}
-
-    @Override
-    public void dismissTextHandles() {}
-
-    @Override
-    public void showContextMenuAtTouchHandle(int x, int y) {}
 
     @Override
     public void suspendAllMediaPlayers() {}

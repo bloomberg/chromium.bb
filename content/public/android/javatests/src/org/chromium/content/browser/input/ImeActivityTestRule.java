@@ -29,9 +29,9 @@ import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content.browser.test.util.TestCallbackHelperContainer;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper;
 import org.chromium.content.browser.test.util.TestInputMethodManagerWrapper.InputConnectionProvider;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ImeAdapter;
-import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.ui.base.ime.TextInputType;
 
@@ -343,7 +343,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     // After calling this method, we should call assertClipboardContents() to wait for the clipboard
     // to get updated. See cubug.com/621046
     void copy() {
-        final WebContents webContents = getWebContents();
+        final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -353,7 +353,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void cut() {
-        final WebContents webContents = getWebContents();
+        final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -375,7 +375,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void paste() {
-        final WebContents webContents = getWebContents();
+        final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -385,7 +385,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void selectAll() {
-        final WebContents webContents = getWebContents();
+        final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -395,7 +395,7 @@ class ImeActivityTestRule extends ContentShellActivityTestRule {
     }
 
     void collapseSelection() {
-        final WebContents webContents = getWebContents();
+        final WebContentsImpl webContents = (WebContentsImpl) getWebContents();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

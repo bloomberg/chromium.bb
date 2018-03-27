@@ -23,7 +23,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.UrlUtils;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.chromium.content_public.browser.WebContents;
+import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule.RerunWithUpdatedContainerView;
 
@@ -78,7 +78,8 @@ public class ClipboardTest {
         clipboardManager.setPrimaryClip(ClipData.newPlainText(null, ""));
         Assert.assertFalse(hasPrimaryClip(clipboardManager));
 
-        final WebContents webContents = mActivityTestRule.getContentViewCore().getWebContents();
+        final WebContentsImpl webContents =
+                (WebContentsImpl) mActivityTestRule.getContentViewCore().getWebContents();
         selectAll(webContents);
         copy(webContents);
 
@@ -106,7 +107,7 @@ public class ClipboardTest {
         });
     }
 
-    private void copy(final WebContents webContents) {
+    private void copy(final WebContentsImpl webContents) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -115,7 +116,7 @@ public class ClipboardTest {
         });
     }
 
-    private void selectAll(final WebContents webContents) {
+    private void selectAll(final WebContentsImpl webContents) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {

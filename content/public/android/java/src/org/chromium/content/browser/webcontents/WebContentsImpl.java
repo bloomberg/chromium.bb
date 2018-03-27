@@ -305,37 +305,51 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         nativeStop(mNativeWebContentsAndroid);
     }
 
-    @Override
+    /**
+     * Cut the selected content.
+     */
     public void cut() {
         nativeCut(mNativeWebContentsAndroid);
     }
 
-    @Override
+    /**
+     * Copy the selected content.
+     */
     public void copy() {
         nativeCopy(mNativeWebContentsAndroid);
     }
 
-    @Override
+    /**
+     * Paste content from the clipboard.
+     */
     public void paste() {
         nativePaste(mNativeWebContentsAndroid);
     }
 
-    @Override
+    /**
+     * Paste content from the clipboard without format.
+     */
     public void pasteAsPlainText() {
         nativePasteAsPlainText(mNativeWebContentsAndroid);
     }
 
-    @Override
+    /**
+     * Replace the selected text with the {@code word}.
+     */
     public void replace(String word) {
         nativeReplace(mNativeWebContentsAndroid, word);
     }
 
-    @Override
+    /**
+     * Select all content.
+     */
     public void selectAll() {
         nativeSelectAll(mNativeWebContentsAndroid);
     }
 
-    @Override
+    /**
+     * Collapse the selection to the end of selection range.
+     */
     public void collapseSelection() {
         // collapseSelection may get triggered when certain selection-related widgets
         // are destroyed. As the timing for such destruction is unpredictable,
@@ -634,12 +648,16 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
         callback.onFinishDownloadImage(id, httpStatusCode, imageUrl, bitmaps, sizes);
     }
 
-    @Override
+    /**
+     * Removes handles used in text selection.
+     */
     public void dismissTextHandles() {
         nativeDismissTextHandles(mNativeWebContentsAndroid);
     }
 
-    @Override
+    /**
+     * Shows paste popup menu at the touch handle at specified location.
+     */
     public void showContextMenuAtTouchHandle(int x, int y) {
         nativeShowContextMenuAtTouchHandle(mNativeWebContentsAndroid, x, y);
     }
