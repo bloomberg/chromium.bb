@@ -52,9 +52,7 @@ int get_obu_type(uint8_t obu_header, OBU_TYPE *obu_type) {
 #if CONFIG_OBU_REDUNDANT_FRAME_HEADER
     case OBU_REDUNDANT_FRAME_HEADER:
 #endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
-#if CONFIG_OBU_FRAME
     case OBU_FRAME:
-#endif  // CONFIG_OBU_FRAME
     case OBU_TILE_GROUP:
     case OBU_METADATA:
     case OBU_PADDING: break;
@@ -73,9 +71,7 @@ static int valid_obu_type(int obu_type) {
 #if CONFIG_OBU_REDUNDANT_FRAME_HEADER
     case OBU_REDUNDANT_FRAME_HEADER:
 #endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
-#if CONFIG_OBU_FRAME
     case OBU_FRAME:
-#endif  // CONFIG_OBU_FRAME
     case OBU_TILE_GROUP:
     case OBU_METADATA:
     case OBU_PADDING: valid_type = 1; break;
@@ -485,9 +481,7 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
 #if CONFIG_OBU_REDUNDANT_FRAME_HEADER
       case OBU_REDUNDANT_FRAME_HEADER:
 #endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
-#if CONFIG_OBU_FRAME
       case OBU_FRAME:
-#endif  // CONFIG_OBU_FRAME
 #if CONFIG_OPERATING_POINTS
         // don't decode obu if it's not in current operating mode
         if (!is_obu_in_current_operating_point(pbi, obu_header)) {
@@ -516,16 +510,12 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
           frame_decoding_finished = 1;
           break;
         }
-#if CONFIG_OBU_FRAME
         if (obu_header.type != OBU_FRAME) break;
         obu_payload_offset = frame_header_size;
 #if !CONFIG_TRAILING_BITS
         av1_init_read_bit_buffer(pbi, &rb, data + obu_payload_offset, data_end);
 #endif                             // !CONFIG_TRAILING_BITS
         AOM_FALLTHROUGH_INTENDED;  // fall through to read tile group.
-#else                              // CONFIG_OBU_FRAME
-        break;
-#endif                             // CONFIG_OBU_FRAME
       case OBU_TILE_GROUP:
         if (!frame_header_received) {
           cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;

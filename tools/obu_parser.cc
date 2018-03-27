@@ -69,9 +69,7 @@ bool ValidObuType(int obu_type) {
 #if CONFIG_OBU_REDUNDANT_FRAME_HEADER
     case OBU_REDUNDANT_FRAME_HEADER:
 #endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
-#if CONFIG_OBU_FRAME
     case OBU_FRAME:
-#endif  // CONFIG_OBU_FRAME
     case OBU_METADATA:
     case OBU_PADDING: return true;
   }
