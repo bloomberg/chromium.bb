@@ -46,7 +46,15 @@ AutoAdvancingVirtualTimeDomain::~AutoAdvancingVirtualTimeDomain() {
 base::Optional<base::TimeDelta>
 AutoAdvancingVirtualTimeDomain::DelayTillNextTask(LazyNow* lazy_now) {
   base::TimeTicks run_time;
-  if (!can_advance_virtual_time_ || !NextScheduledRunTime(&run_time))
+  if (!NextScheduledRunTime(&run_time))
+    return base::nullopt;
+
+  // We may have advanced virtual time past the next task when a
+  // WebScopedVirtualTimePauser unpauses.
+  if (run_time <= Now())
+    return base::TimeDelta();
+
+  if (!can_advance_virtual_time_)
     return base::nullopt;
 
   if (MaybeAdvanceVirtualTime(run_time)) {
@@ -89,7 +97,6 @@ void AutoAdvancingVirtualTimeDomain::SetMaxVirtualTimeTaskStarvationCount(
 
 void AutoAdvancingVirtualTimeDomain::SetVirtualTimeFence(
     base::TimeTicks virtual_time_fence) {
-  DCHECK_GE(virtual_time_fence, virtual_time_fence);
   virtual_time_fence_ = virtual_time_fence;
   if (!requested_next_virtual_time_.is_null())
     MaybeAdvanceVirtualTime(requested_next_virtual_time_);
