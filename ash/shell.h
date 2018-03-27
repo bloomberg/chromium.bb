@@ -19,7 +19,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
-#include "chromeos/chromeos_switches.h"
 #include "ui/app_list/app_list_constants.h"
 #include "ui/aura/window.h"
 #include "ui/display/screen.h"
@@ -79,7 +78,6 @@ class AcceleratorController;
 class AccessibilityController;
 class AccessibilityDelegate;
 class AccessibilityFocusRingController;
-class AshAssistantController;
 class AshDisplayController;
 class AppListControllerImpl;
 class NativeCursorManagerAsh;
@@ -316,10 +314,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   ::wm::ActivationClient* activation_client();
   AppListControllerImpl* app_list_controller() {
     return app_list_controller_.get();
-  }
-  AshAssistantController* ash_assistant_controller() {
-    DCHECK(chromeos::switches::IsAssistantEnabled());
-    return ash_assistant_controller_.get();
   }
   AshDisplayController* ash_display_controller() {
     return ash_display_controller_.get();
@@ -672,7 +666,6 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AccessibilityFocusRingController>
       accessibility_focus_ring_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
-  std::unique_ptr<AshAssistantController> ash_assistant_controller_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;

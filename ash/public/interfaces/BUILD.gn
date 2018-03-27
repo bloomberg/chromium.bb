@@ -16,7 +16,6 @@ mojom("interfaces_internal") {
     "accessibility_controller.mojom",
     "accessibility_focus_ring_controller.mojom",
     "app_list.mojom",
-    "ash_assistant_controller.mojom",
     "ash_display_controller.mojom",
     "ash_message_center_controller.mojom",
     "cast_config.mojom",
@@ -57,7 +56,6 @@ mojom("interfaces_internal") {
   ]
 
   public_deps = [
-    "//chromeos/services/assistant/public/mojom",
     "//components/password_manager/public/interfaces",
     "//components/proximity_auth/public/interfaces",
     "//components/signin/public/interfaces",
