@@ -1968,7 +1968,7 @@ camera.views.Camera.prototype.mediaRecorderRecording_ = function() {
 
     // Mute to avoid echo from the captured audio.
     this.video_.muted = true;
-    this.video_.src = window.URL.createObjectURL(stream);
+    this.video_.srcObject = stream;
     this.stream_ = stream;
     var onLoadedMetadata = function() {
       this.video_.removeEventListener('loadedmetadata', onLoadedMetadata);
