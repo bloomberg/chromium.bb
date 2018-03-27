@@ -1243,6 +1243,9 @@ extern const char kEnableWebPaymentsMethodSectionOrderV2Description[];
 extern const char kGrantNotificationsToDSEName[];
 extern const char kGrantNotificationsToDSENameDescription[];
 
+extern const char kHomePageButtonName[];
+extern const char kHomePageButtonDescription[];
+
 extern const char kInterestFeedContentSuggestionsName[];
 extern const char kInterestFeedContentSuggestionsDescription[];
 

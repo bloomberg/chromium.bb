@@ -26077,6 +26077,7 @@ from previous Chrome versions.
   <int value="-1261263046"
       label="RemoveUsageOfDeprecatedGaiaSigninEndpoint:disabled"/>
   <int value="-1259901957" label="VrBrowserKeyboard:disabled"/>
+  <int value="-1255427595" label="HomePageButtonForceEnabled:enabled"/>
   <int value="-1254070521" label="enable-slimming-paint-invalidation"/>
   <int value="-1251411236" label="disable-new-md-input-view"/>
   <int value="-1248478422" label="enable-zip-archiver-packer"/>
@@ -26729,6 +26730,7 @@ from previous Chrome versions.
   <int value="379428799" label="security-chip-animation"/>
   <int value="385969127" label="disable-win32k-lockdown"/>
   <int value="387178525" label="VideoFullscreenOrientationLock:enabled"/>
+  <int value="387233614" label="HomePageButtonForceEnabled:disabled"/>
   <int value="388786873" label="EnableUnifiedMultiDeviceSettings:enabled"/>
   <int value="388996324" label="CustomContextMenu:disabled"/>
   <int value="393704200" label="account-consistency"/>

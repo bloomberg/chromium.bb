@@ -47,6 +47,7 @@ extern const base::Feature kDontPrefetchLibraries;
 extern const base::Feature kDownloadAutoResumptionThrottling;
 extern const base::Feature kDownloadHomeShowStorageInfo;
 extern const base::Feature kFullscreenActivity;
+extern const base::Feature kHomePageButtonForceEnabled;
 extern const base::Feature kImprovedA2HS;
 extern const base::Feature kLanguagesPreference;
 extern const base::Feature kModalPermissionDialogView;

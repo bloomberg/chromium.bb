@@ -92,6 +92,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kDownloadHomeShowStorageInfo,
     &data_reduction_proxy::features::kDataReductionMainMenu,
     &kFullscreenActivity,
+    &kHomePageButtonForceEnabled,
     &kImprovedA2HS,
     &kLanguagesPreference,
     &kModalPermissionDialogView,
@@ -267,6 +268,9 @@ const base::Feature kDownloadHomeShowStorageInfo{
 
 const base::Feature kFullscreenActivity{"FullscreenActivity",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kHomePageButtonForceEnabled{
+    "HomePageButtonForceEnabled", base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Makes "Add to Home screen" in the app menu generate an APK for the shortcut
 // URL which opens Chrome in fullscreen.

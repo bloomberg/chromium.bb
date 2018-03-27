@@ -44,6 +44,7 @@ public class FeatureUtilities {
 
     private static Boolean sIsSoleEnabled;
     private static Boolean sIsChromeModernDesignEnabled;
+    private static Boolean sIsHomePageButtonForceEnabled;
 
     /**
      * Determines whether or not the {@link RecognizerIntent#ACTION_WEB_SEARCH} {@link Intent}
@@ -150,6 +151,7 @@ public class FeatureUtilities {
         cacheCommandLineOnNonRootedEnabled();
         FirstRunUtils.cacheFirstRunPrefs();
         cacheChromeModernDesignEnabled();
+        cacheHomePageButtonForceEnabled();
 
         // Propagate DONT_PREFETCH_LIBRARIES feature value to LibraryLoader. This can't
         // be done in LibraryLoader itself because it lives in //base and can't depend
@@ -178,6 +180,37 @@ public class FeatureUtilities {
 
         ChromePreferenceManager manager = ChromePreferenceManager.getInstance();
         manager.setChromeModernDesignEnabled(isModernEnabled);
+    }
+
+    /**
+     * Cache whether or not the home page button is force enabled so on next startup, the value can
+     * be made available immediately.
+     */
+    public static void cacheHomePageButtonForceEnabled() {
+        ChromePreferenceManager.getInstance().setHomePageButtonForceEnabled(
+                ChromeFeatureList.isEnabled(ChromeFeatureList.HOME_PAGE_BUTTON_FORCE_ENABLED));
+    }
+
+    /**
+     * @return Whether or not the home page button is force enabled.
+     */
+    public static boolean isHomePageButtonForceEnabled() {
+        if (sIsHomePageButtonForceEnabled == null) {
+            ChromePreferenceManager prefManager = ChromePreferenceManager.getInstance();
+
+            try (StrictModeContext unused = StrictModeContext.allowDiskReads()) {
+                sIsHomePageButtonForceEnabled = prefManager.isHomePageButtonForceEnabled();
+            }
+        }
+        return sIsHomePageButtonForceEnabled;
+    }
+
+    /**
+     * Resets whether the home page button is enabled for tests. After this is called, the next
+     * call to #isHomePageButtonForceEnabled() will retrieve the value from shared preferences.
+     */
+    public static void resetHomePageButtonForceEnabledForTests() {
+        sIsHomePageButtonForceEnabled = null;
     }
 
     /**
