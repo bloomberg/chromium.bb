@@ -72,6 +72,10 @@ struct DidOverscrollParams;
   // Is YES if the cursor is hidden by key events.
   BOOL cursorHidden_;
 
+  // Set during -setFrame to avoid spamming client_ with origin and size
+  // changes.
+  BOOL inSetFrame_;
+
   // Variables used by our implementaion of the NSTextInput protocol.
   // An input method of Mac calls the methods of this protocol not only to
   // notify an application of its status, but also to retrieve the status of

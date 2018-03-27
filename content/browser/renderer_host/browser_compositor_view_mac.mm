@@ -256,12 +256,9 @@ void BrowserCompositorMac::SetBackgroundColor(SkColor background_color) {
   }
 }
 
-bool BrowserCompositorMac::UpdateNSViewAndDisplay() {
-  NSView* ns_view =
-      accelerated_widget_mac_ns_view_->AcceleratedWidgetGetNSView();
-  display::Display new_display =
-      display::Screen::GetScreen()->GetDisplayNearestView(ns_view);
-  gfx::Size new_size_dip([ns_view bounds].size);
+bool BrowserCompositorMac::UpdateNSViewAndDisplay(
+    const gfx::Size& new_size_dip,
+    const display::Display& new_display) {
   if (new_size_dip == dfh_size_dip_ && new_display == dfh_display_)
     return false;
 

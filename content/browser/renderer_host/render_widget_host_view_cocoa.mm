@@ -33,6 +33,7 @@
 #include "ui/base/cocoa/cocoa_base_utils.h"
 #include "ui/base/cocoa/text_services_context_menu.h"
 #include "ui/events/event_utils.h"
+#include "ui/gfx/mac/coordinate_conversion.h"
 
 using content::BrowserAccessibility;
 using content::BrowserAccessibilityManager;
@@ -147,6 +148,8 @@ void ExtractUnderlines(NSAttributedString* string,
 - (void)showLookUpDictionaryOverlayInternal:(NSAttributedString*)string
                               baselinePoint:(NSPoint)baselinePoint
                                  targetView:(NSView*)view;
+- (void)sendViewBoundsInWindowToClient;
+- (void)sendWindowFrameInScreenToClient;
 @end
 
 @implementation RenderWidgetHostViewCocoa
@@ -194,6 +197,36 @@ void ExtractUnderlines(NSAttributedString* string,
                     : "text input no longer held on");
 
   [super dealloc];
+}
+
+- (void)sendViewBoundsInWindowToClient {
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewCocoa::sendViewBoundsInWindowToClient");
+  if (inSetFrame_)
+    return;
+
+  NSRect viewBoundsInView = [self bounds];
+  NSWindow* enclosingWindow = [self window];
+  if (!enclosingWindow) {
+    client_->OnNSViewBoundsInWindowChanged(gfx::Rect(viewBoundsInView), false);
+    return;
+  }
+
+  NSRect viewBoundsInWindow = [self convertRect:viewBoundsInView toView:nil];
+  gfx::Rect gfxViewBoundsInWindow(viewBoundsInWindow);
+  gfxViewBoundsInWindow.set_y(NSHeight([enclosingWindow frame]) -
+                              NSMaxY(viewBoundsInWindow));
+  client_->OnNSViewBoundsInWindowChanged(gfxViewBoundsInWindow, true);
+}
+
+- (void)sendWindowFrameInScreenToClient {
+  TRACE_EVENT0("browser",
+               "RenderWidgetHostViewCocoa::sendWindowFrameInScreenToClient");
+  NSWindow* enclosingWindow = [self window];
+  if (!enclosingWindow)
+    return;
+  client_->OnNSViewWindowFrameInScreenChanged(
+      gfx::ScreenRectFromNSRect([enclosingWindow frame]));
 }
 
 - (void)setResponderDelegate:
@@ -1148,7 +1181,7 @@ void ExtractUnderlines(NSAttributedString* string,
                                   name:NSWindowDidMoveNotification
                                 object:oldWindow];
     [notificationCenter removeObserver:self
-                                  name:NSWindowDidEndLiveResizeNotification
+                                  name:NSWindowDidResizeNotification
                                 object:oldWindow];
     [notificationCenter removeObserver:self
                                   name:NSWindowDidBecomeKeyNotification
@@ -1169,7 +1202,7 @@ void ExtractUnderlines(NSAttributedString* string,
                              object:newWindow];
     [notificationCenter addObserver:self
                            selector:@selector(windowChangedGlobalFrame:)
-                               name:NSWindowDidEndLiveResizeNotification
+                               name:NSWindowDidResizeNotification
                              object:newWindow];
     [notificationCenter addObserver:self
                            selector:@selector(windowDidBecomeKey:)
@@ -1180,6 +1213,8 @@ void ExtractUnderlines(NSAttributedString* string,
                                name:NSWindowDidResignKeyNotification
                              object:newWindow];
   }
+
+  [self sendWindowFrameInScreenToClient];
 }
 
 - (void)updateScreenProperties {
@@ -1202,23 +1237,31 @@ void ExtractUnderlines(NSAttributedString* string,
 }
 
 - (void)windowChangedGlobalFrame:(NSNotification*)notification {
-  renderWidgetHostView_->UpdateNSViewAndDisplayProperties();
+  [self sendWindowFrameInScreenToClient];
+  // Update the view bounds relative to the window, as they may have changed
+  // during layout, and we don't explicitly listen for re-layout of parent
+  // views.
+  [self sendViewBoundsInWindowToClient];
+}
+
+- (void)setFrame:(NSRect)r {
+  // Note that -setFrame: calls through -setFrameSize: and -setFrameOrigin. To
+  // avoid spamming the client with transiently invalid states, only send one
+  // message at the end.
+  inSetFrame_ = YES;
+  [super setFrame:r];
+  inSetFrame_ = NO;
+  [self sendViewBoundsInWindowToClient];
+}
+
+- (void)setFrameOrigin:(NSPoint)newOrigin {
+  [super setFrameOrigin:newOrigin];
+  [self sendViewBoundsInWindowToClient];
 }
 
 - (void)setFrameSize:(NSSize)newSize {
-  TRACE_EVENT0("browser", "RenderWidgetHostViewCocoa::setFrameSize");
-
-  // NB: -[NSView setFrame:] calls through -setFrameSize:, so overriding
-  // -setFrame: isn't neccessary.
   [super setFrameSize:newSize];
-
-  renderWidgetHostView_->UpdateNSViewAndDisplayProperties();
-
-  // Wait for the frame that WasResize might have requested. If the view is
-  // being made visible at a new size, then this call will have no effect
-  // because the view widget is still hidden, and the pause call in WasShown
-  // will have this effect for us.
-  renderWidgetHostView_->PauseForPendingResizeOrRepaintsAndDraw();
+  [self sendViewBoundsInWindowToClient];
 }
 
 - (BOOL)canBecomeKeyView {
@@ -1821,10 +1864,13 @@ extern NSString* NSTextInputReplacementRangeAttributeName;
   if (!renderWidgetHostView_->browser_compositor_)
     return;
 
+  // Update the window's frame and the view's bounds, as they have not been
+  // updated while unattached to a window.
+  [self sendWindowFrameInScreenToClient];
+  [self sendViewBoundsInWindowToClient];
+
   if ([self window])
     [self updateScreenProperties];
-  renderWidgetHostView_->browser_compositor_->SetNSViewAttachedToWindow(
-      [self window]);
 
   // If we switch windows (or are removed from the view hierarchy), cancel any
   // open mouse-downs.

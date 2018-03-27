@@ -294,6 +294,10 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // RenderWidgetHostNSViewClient implementation.
   RenderWidgetHostViewMac* GetRenderWidgetHostViewMac() override;
+  void OnNSViewBoundsInWindowChanged(const gfx::Rect& view_bounds_in_window_dip,
+                                     bool attached_to_window) override;
+  void OnNSViewWindowFrameInScreenChanged(
+      const gfx::Rect& window_frame_in_screen_dip) override;
 
   // BrowserCompositorMacClient implementation.
   SkColor BrowserCompositorMacGetGutterColor() const override;
@@ -380,6 +384,14 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // State tracked by Show/Hide/IsShowing.
   bool is_visible_ = false;
+
+  // The bounds of the view in its NSWindow's coordinate system (with origin
+  // in the upper-left).
+  gfx::Rect view_bounds_in_window_dip_;
+
+  // The frame of the window in the global display::Screen coordinate system
+  // (where the origin is the upper-left corner of Screen::GetPrimaryDisplay).
+  gfx::Rect window_frame_in_screen_dip_;
 
   // Indicates if the page is loading.
   bool is_loading_;

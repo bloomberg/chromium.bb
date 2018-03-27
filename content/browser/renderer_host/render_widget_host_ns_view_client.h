@@ -23,6 +23,20 @@ class RenderWidgetHostNSViewClient {
   // RenderWidgetHostNSViewBridge, this method is to be removed.
   virtual RenderWidgetHostViewMac* GetRenderWidgetHostViewMac() = 0;
 
+  // Indicates the NSView's bounds in its NSWindow's DIP coordinate system (with
+  // the origin at the upper-left corner), and indicate if the the NSView is
+  // attached to an NSWindow (if it is not, then |view_bounds_in_window_dip|'s
+  // origin is meaningless, but its size is still relevant).
+  virtual void OnNSViewBoundsInWindowChanged(
+      const gfx::Rect& view_bounds_in_window_dip,
+      bool attached_to_window) = 0;
+
+  // Indicates the NSView's NSWindow's frame in the global display::Screen
+  // DIP coordinate system (where the origin the upper-left corner of
+  // Screen::GetPrimaryDisplay).
+  virtual void OnNSViewWindowFrameInScreenChanged(
+      const gfx::Rect& window_frame_in_screen_dip) = 0;
+
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewClient);
 };
