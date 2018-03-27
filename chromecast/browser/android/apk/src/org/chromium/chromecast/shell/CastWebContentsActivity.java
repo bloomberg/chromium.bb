@@ -55,9 +55,9 @@ public class CastWebContentsActivity extends Activity {
     {
         // Create an Observable that only supplies the Intent when not finishing.
         Observable<Intent> hasIntentState =
-                mGotIntentState.and(Observable.not(mIsFinishingState)).transform(Both::getFirst);
+                mGotIntentState.and(Observable.not(mIsFinishingState)).map(Both::getFirst);
         Observable<Intent> gotIntentAfterFinishingState =
-                mIsFinishingState.andThen(mGotIntentState).transform(Both::getSecond);
+                mIsFinishingState.andThen(mGotIntentState).map(Both::getSecond);
 
         mCreatedState.and(Observable.not(mIsTestingState))
                 .watch(() -> {

@@ -262,18 +262,36 @@ public class ObservableAndControllerTest {
     }
 
     @Test
-    public void testTransform() {
+    public void testMap() {
         Controller<String> a = new Controller<>();
         List<String> result = new ArrayList<>();
         a.watch(report(result, "unchanged"))
-                .transform(String::toLowerCase)
+                .map(String::toLowerCase)
                 .watch(report(result, "lower"))
-                .transform(String::toUpperCase)
+                .map(String::toUpperCase)
                 .watch(report(result, "upper"));
         a.set("sImPlY sTeAmEd KaLe");
         assertThat(result,
                 contains("enter unchanged: sImPlY sTeAmEd KaLe", "enter lower: simply steamed kale",
                         "enter upper: SIMPLY STEAMED KALE"));
+    }
+
+    @Test
+    public void testFilter() {
+        Controller<String> a = new Controller<>();
+        List<String> result = new ArrayList<>();
+        a.filter(String::isEmpty).watch(report(result, "empty"));
+        a.filter(s -> s.startsWith("a")).watch(report(result, "starts with a"));
+        a.filter(s -> s.endsWith("a")).watch(report(result, "ends with a"));
+        a.set("");
+        a.set("none");
+        a.set("add");
+        a.set("doa");
+        a.set("ada");
+        assertThat(result,
+                contains("enter empty: ", "exit empty", "enter starts with a: add",
+                        "exit starts with a", "enter ends with a: doa", "exit ends with a",
+                        "enter starts with a: ada", "enter ends with a: ada"));
     }
 
     @Test
