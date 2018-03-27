@@ -3203,6 +3203,8 @@
       computed_style_custom_functions: ["setter"],
       converter: "ConvertComputedLength<float>",
       custom_apply_functions_all: true,
+      keywords: ["auto"],
+      typedom_types: ["Keyword", "Length"],
     },
     {
       name: "-webkit-highlight",
