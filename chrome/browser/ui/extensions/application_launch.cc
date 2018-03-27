@@ -16,6 +16,7 @@
 #include "chrome/browser/banners/app_banner_settings_helper.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
 #include "chrome/browser/extensions/extension_service.h"
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/launch_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/profiles/profile.h"
@@ -434,8 +435,9 @@ bool CanLaunchViaEvent(const extensions::Extension* extension) {
   return feature && feature->IsAvailableToExtension(extension).is_available();
 }
 
-void ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
-                                       const extensions::Extension* extension) {
+Browser* ReparentWebContentsIntoAppBrowser(
+    content::WebContents* contents,
+    const extensions::Extension* extension) {
   Browser* source_browser = chrome::FindBrowserWithWebContents(contents);
   Profile* profile = Profile::FromBrowserContext(contents->GetBrowserContext());
   // Incognito tabs reparent correctly, but remain incognito without any
@@ -454,4 +456,15 @@ void ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
           source_tabstrip->GetIndexOfWebContents(contents)),
       true);
   target_browser->window()->Show();
+
+  return target_browser;
+}
+
+Browser* ReparentSecureActiveTabIntoPwaWindow(Browser* browser) {
+  const extensions::Extension* extension =
+      extensions::util::GetPwaForSecureActiveTab(browser);
+  if (!extension)
+    return nullptr;
+  return ReparentWebContentsIntoAppBrowser(
+      browser->tab_strip_model()->GetActiveWebContents(), extension);
 }

@@ -69,6 +69,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/text_elider.h"
 
 #if defined(GOOGLE_CHROME_BUILD)
 #include "base/feature_list.h"
@@ -90,6 +91,8 @@ using base::UserMetricsAction;
 using content::WebContents;
 
 namespace {
+
+constexpr size_t kMaxAppNameLength = 30;
 
 #if defined(OS_MACOSX)
 // An empty command used because of a bug in AppKit menus.
@@ -768,7 +771,18 @@ void AppMenuModel::Build() {
   AddItemWithStringId(IDC_FIND, IDS_FIND);
   if (extensions::util::IsNewBookmarkAppsEnabled() &&
       banners::AppBannerManager::IsExperimentalAppBannersEnabled()) {
-    AddItem(IDC_CREATE_HOSTED_APP, GetCreateHostedAppMenuItemName(browser_));
+    const extensions::Extension* pwa =
+        extensions::util::GetPwaForSecureActiveTab(browser_);
+    if (pwa) {
+      AddItem(
+          IDC_OPEN_IN_PWA_WINDOW,
+          l10n_util::GetStringFUTF16(
+              IDS_OPEN_IN_APP_WINDOW,
+              gfx::TruncateString(base::UTF8ToUTF16(pwa->name()),
+                                  kMaxAppNameLength, gfx::CHARACTER_BREAK)));
+    } else {
+      AddItem(IDC_CREATE_HOSTED_APP, GetCreateHostedAppMenuItemName(browser_));
+    }
   }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(

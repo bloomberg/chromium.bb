@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_window.h"
 #include "chrome/browser/ui/chrome_pages.h"
+#include "chrome/browser/ui/extensions/application_launch.h"
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
@@ -400,6 +401,10 @@ bool BrowserCommandController::ExecuteCommandWithDisposition(
       break;
     case IDC_FULLSCREEN:
       chrome::ToggleFullscreenMode(browser_);
+      break;
+    case IDC_OPEN_IN_PWA_WINDOW:
+      base::RecordAction(base::UserMetricsAction("OpenActiveTabInPwaWindow"));
+      ReparentSecureActiveTabIntoPwaWindow(browser_);
       break;
 
 #if defined(OS_CHROMEOS)
@@ -833,6 +838,7 @@ void BrowserCommandController::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_RESTORE_WINDOW, true);
   command_updater_.UpdateCommandEnabled(IDC_USE_SYSTEM_TITLE_BAR, true);
 #endif
+  command_updater_.UpdateCommandEnabled(IDC_OPEN_IN_PWA_WINDOW, true);
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);

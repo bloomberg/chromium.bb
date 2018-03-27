@@ -23,6 +23,7 @@ namespace gfx {
 class ImageSkia;
 }
 
+class Browser;
 class GURL;
 class Profile;
 
@@ -119,6 +120,10 @@ const Extension* GetInstalledPwaForUrl(
     content::BrowserContext* context,
     const GURL& url,
     base::Optional<LaunchContainer> launch_container_filter = base::nullopt);
+
+// Finds the first PWA with the active tab's url in its scope, returns nullptr
+// if there are none or the tab's is not secure.
+const Extension* GetPwaForSecureActiveTab(Browser* browser);
 
 }  // namespace util
 }  // namespace extensions
