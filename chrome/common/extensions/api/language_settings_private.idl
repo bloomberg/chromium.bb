@@ -126,6 +126,9 @@ namespace languageSettingsPrivate {
     // Removes the input method from the current user's list of enabled input
     // methods, disabling the input method for the current user. Chrome OS only.
     static void removeInputMethod(DOMString inputMethodId);
+
+    // Tries to download the dictionary after a failed download.
+    static void retryDownloadDictionary(DOMString languageCode);
   };
 
   interface Events {

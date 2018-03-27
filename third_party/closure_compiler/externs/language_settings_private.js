@@ -1,4 +1,4 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,6 +170,13 @@ chrome.languageSettingsPrivate.addInputMethod = function(inputMethodId) {};
  * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-removeInputMethod
  */
 chrome.languageSettingsPrivate.removeInputMethod = function(inputMethodId) {};
+
+/**
+ * Tries to download the dictionary after a failed download.
+ * @param {string} languageCode
+ * @see https://developer.chrome.com/extensions/languageSettingsPrivate#method-retryDownloadDictionary
+ */
+chrome.languageSettingsPrivate.retryDownloadDictionary = function(languageCode) {};
 
 /**
  * Called when the pref for the dictionaries used for spell checking changes or
