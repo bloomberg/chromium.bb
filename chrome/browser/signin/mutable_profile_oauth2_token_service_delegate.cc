@@ -505,8 +505,9 @@ void MutableProfileOAuth2TokenServiceDelegate::OnWebDataServiceRequestDone(
   for (auto& token : refresh_tokens_) {
     if (!RefreshTokenIsAvailable(token.first)) {
       UpdateAuthError(token.first,
-                      GoogleServiceAuthError(
-                          GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS));
+                      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                              CREDENTIALS_MISSING));
       break;
     }
   }
@@ -693,11 +694,13 @@ void MutableProfileOAuth2TokenServiceDelegate::UpdateCredentialsInMemory(
     AddAccountStatus(account_id, refresh_token);
   }
 
-  UpdateAuthError(account_id,
-                  (refresh_token == kInvalidRefreshToken)
-                      ? GoogleServiceAuthError(
-                            GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS)
-                      : GoogleServiceAuthError::AuthErrorNone());
+  GoogleServiceAuthError error =
+      (refresh_token == kInvalidRefreshToken)
+          ? GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                    CREDENTIALS_REJECTED_BY_CLIENT)
+          : GoogleServiceAuthError::AuthErrorNone();
+  UpdateAuthError(account_id, error);
 }
 
 void MutableProfileOAuth2TokenServiceDelegate::PersistCredentials(

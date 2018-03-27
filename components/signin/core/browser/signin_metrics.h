@@ -358,7 +358,7 @@ void LogExternalCcResultFetches(
     const base::TimeDelta& time_to_check_connections);
 
 // Track when the current authentication error changed.
-void LogAuthError(GoogleServiceAuthError::State auth_error);
+void LogAuthError(const GoogleServiceAuthError& auth_error);
 
 void LogSigninConfirmHistogramValue(ConfirmationUsage action);
 

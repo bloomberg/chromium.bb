@@ -553,11 +553,14 @@ void JNI_OAuth2TokenService_OAuth2TokenFetched(
     token = ConvertJavaStringToUTF8(env, authToken);
   std::unique_ptr<FetchOAuth2TokenCallback> heap_callback(
       reinterpret_cast<FetchOAuth2TokenCallback*>(nativeCallback));
-  GoogleServiceAuthError
-      err(authToken
-              ? GoogleServiceAuthError::NONE
-              : isTransientError
-                    ? GoogleServiceAuthError::CONNECTION_FAILED
-                    : GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  GoogleServiceAuthError err = GoogleServiceAuthError::AuthErrorNone();
+  if (!authToken) {
+    err =
+        isTransientError
+            ? GoogleServiceAuthError(GoogleServiceAuthError::CONNECTION_FAILED)
+            : GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+                  GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+                      CREDENTIALS_REJECTED_BY_SERVER);
+  }
   heap_callback->Run(err, token, base::Time());
 }

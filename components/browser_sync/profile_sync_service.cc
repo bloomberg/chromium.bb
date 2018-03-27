@@ -1001,7 +1001,9 @@ AuthError ConnectionStatusToAuthError(syncer::ConnectionStatus status) {
       return AuthError::AuthErrorNone();
       break;
     case syncer::CONNECTION_AUTH_ERROR:
-      return AuthError(AuthError::INVALID_GAIA_CREDENTIALS);
+      return AuthError(AuthError::FromInvalidGaiaCredentialsReason(
+          AuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER));
       break;
     case syncer::CONNECTION_SERVER_ERROR:
       return AuthError(AuthError::CONNECTION_FAILED);

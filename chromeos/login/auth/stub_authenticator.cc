@@ -44,8 +44,10 @@ void StubAuthenticator::AuthenticateToLogin(content::BrowserContext* context,
                            base::Bind(&StubAuthenticator::OnAuthSuccess, this));
     return;
   }
-  GoogleServiceAuthError error(
-      GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS);
+  GoogleServiceAuthError error =
+      GoogleServiceAuthError::FromInvalidGaiaCredentialsReason(
+          GoogleServiceAuthError::InvalidGaiaCredentialsReason::
+              CREDENTIALS_REJECTED_BY_SERVER);
   task_runner_->PostTask(
       FROM_HERE, base::Bind(&StubAuthenticator::OnAuthFailure, this,
                             AuthFailure::FromNetworkAuthFailure(error)));

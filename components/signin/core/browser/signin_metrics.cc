@@ -219,9 +219,15 @@ void LogExternalCcResultFetches(
   }
 }
 
-void LogAuthError(GoogleServiceAuthError::State auth_error) {
-  UMA_HISTOGRAM_ENUMERATION("Signin.AuthError", auth_error,
-      GoogleServiceAuthError::State::NUM_STATES);
+void LogAuthError(const GoogleServiceAuthError& auth_error) {
+  UMA_HISTOGRAM_ENUMERATION("Signin.AuthError", auth_error.state(),
+                            GoogleServiceAuthError::State::NUM_STATES);
+  if (auth_error.state() == GoogleServiceAuthError::INVALID_GAIA_CREDENTIALS) {
+    UMA_HISTOGRAM_ENUMERATION(
+        "Signin.InvalidGaiaCredentialsReason",
+        auth_error.GetInvalidGaiaCredentialsReason(),
+        GoogleServiceAuthError::InvalidGaiaCredentialsReason::NUM_REASONS);
+  }
 }
 
 void LogSigninConfirmHistogramValue(ConfirmationUsage action) {
