@@ -61,6 +61,8 @@ class COMPONENT_EXPORT(APDU) ApduCommand {
   size_t response_length() const { return response_length_; }
   const std::vector<uint8_t>& data() const { return data_; }
 
+  static constexpr size_t kApduMaxResponseLength = 65536;
+
  private:
   FRIEND_TEST_ALL_PREFIXES(ApduTest, TestDeserializeBasic);
   FRIEND_TEST_ALL_PREFIXES(ApduTest, TestDeserializeComplex);
@@ -76,7 +78,6 @@ class COMPONENT_EXPORT(APDU) ApduCommand {
   // also limited to 16 bits in length with a value of 0x0000 corresponding to
   // a length of 65536.
   static constexpr size_t kApduMaxDataLength = 65535;
-  static constexpr size_t kApduMaxResponseLength = 65536;
   static constexpr size_t kApduMaxLength =
       kApduMaxDataLength + kApduMaxHeader + 2;
 
