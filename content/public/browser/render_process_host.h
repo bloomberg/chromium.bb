@@ -341,6 +341,11 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // Returns true if this process currently has backgrounded priority.
   virtual bool IsProcessBackgrounded() const = 0;
 
+  enum class KeepAliveClientType {
+    kServiceWorker = 0,
+    kSharedWorker = 1,
+    kFetch = 2,
+  };
   // "Keep alive ref count" represents the number of the customers of this
   // render process who wish the renderer process to be alive. While the ref
   // count is positive, |this| object will keep the renderer process alive,
@@ -362,8 +367,8 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   //    When a fetch request with keepalive flag
   //    (https://fetch.spec.whatwg.org/#request-keepalive-flag) specified is
   //    pending, it wishes the renderer process to be kept alive.
-  virtual void IncrementKeepAliveRefCount() = 0;
-  virtual void DecrementKeepAliveRefCount() = 0;
+  virtual void IncrementKeepAliveRefCount(KeepAliveClientType) = 0;
+  virtual void DecrementKeepAliveRefCount(KeepAliveClientType) = 0;
 
   // Sets keep alive ref counts to zero. Called when the browser context will be
   // destroyed so this RenderProcessHost can immediately die.

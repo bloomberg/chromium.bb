@@ -1387,6 +1387,9 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       shared_bitmap_allocation_notifier_impl_(
           viz::ServerSharedBitmapManager::current()),
       weak_factory_(this) {
+  for (size_t i = 0; i < kNumKeepAliveClients; i++)
+    keep_alive_client_count_[i] = 0;
+
   widget_helper_ = new RenderWidgetHelper();
 
   ChildProcessSecurityPolicyImpl::GetInstance()->Add(GetID());
@@ -2165,23 +2168,61 @@ bool RenderProcessHostImpl::IsProcessBackgrounded() const {
   return priority_.background;
 }
 
-void RenderProcessHostImpl::IncrementKeepAliveRefCount() {
+void RenderProcessHostImpl::IncrementKeepAliveRefCount(
+    RenderProcessHost::KeepAliveClientType client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_keep_alive_ref_count_disabled_);
+  base::TimeTicks now = base::TimeTicks::Now();
+  size_t client_type = static_cast<size_t>(client);
+  keep_alive_client_count_[client_type]++;
+  if (keep_alive_client_count_[client_type] == 1)
+    keep_alive_client_start_time_[client_type] = now;
+
   ++keep_alive_ref_count_;
-  if (keep_alive_ref_count_ - 1 == 0) {
+  if (keep_alive_ref_count_ == 1) {
     GetRendererInterface()->SetSchedulerKeepActive(true);
   }
 }
 
-void RenderProcessHostImpl::DecrementKeepAliveRefCount() {
+void RenderProcessHostImpl::DecrementKeepAliveRefCount(
+    RenderProcessHost::KeepAliveClientType client) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   DCHECK(!is_keep_alive_ref_count_disabled_);
   DCHECK_GT(keep_alive_ref_count_, 0U);
+  base::TimeTicks now = base::TimeTicks::Now();
+  size_t client_type = static_cast<size_t>(client);
+  keep_alive_client_count_[client_type]--;
+  if (keep_alive_client_count_[client_type] == 0) {
+    RecordKeepAliveDuration(client, keep_alive_client_start_time_[client_type],
+                            now);
+  }
+
   --keep_alive_ref_count_;
   if (keep_alive_ref_count_ == 0) {
     Cleanup();
     GetRendererInterface()->SetSchedulerKeepActive(false);
+  }
+}
+
+void RenderProcessHostImpl::RecordKeepAliveDuration(
+    RenderProcessHost::KeepAliveClientType client,
+    base::TimeTicks start,
+    base::TimeTicks end) {
+  switch (client) {
+    case RenderProcessHost::KeepAliveClientType::kServiceWorker:
+      UMA_HISTOGRAM_LONG_TIMES(
+          "BrowserRenderProcessHost.KeepAliveDuration.ServiceWorker",
+          end - start);
+      break;
+    case RenderProcessHost::KeepAliveClientType::kSharedWorker:
+      UMA_HISTOGRAM_LONG_TIMES(
+          "BrowserRenderProcessHost.KeepAliveDuration.SharedWorker",
+          end - start);
+      break;
+    case RenderProcessHost::KeepAliveClientType::kFetch:
+      UMA_HISTOGRAM_LONG_TIMES(
+          "BrowserRenderProcessHost.KeepAliveDuration.Fetch", end - start);
+      break;
   }
 }
 
@@ -2191,6 +2232,16 @@ void RenderProcessHostImpl::DisableKeepAliveRefCount() {
   if (!keep_alive_ref_count_)
     return;
   keep_alive_ref_count_ = 0;
+  base::TimeTicks now = base::TimeTicks::Now();
+  for (size_t i = 0; i < kNumKeepAliveClients; i++) {
+    if (keep_alive_client_count_[i] > 0) {
+      RecordKeepAliveDuration(
+          static_cast<RenderProcessHost::KeepAliveClientType>(i),
+          keep_alive_client_start_time_[i], now);
+      keep_alive_client_count_[i] = 0;
+    }
+  }
+
   // Cleaning up will also remove this from the SpareRenderProcessHostManager.
   Cleanup();
 }
