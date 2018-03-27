@@ -4,6 +4,8 @@
 
 import("//build/config/ui.gni")
 
+import("//third_party/protobuf/proto_library.gni")
+
 if (is_android) {
   import("//build/config/android/config.gni")
   import("//build/config/android/rules.gni")
@@ -136,6 +138,7 @@ static_library("ntp_snippets") {
   ]
 
   deps = [
+    ":explore_protos",
     "//components/bookmarks/browser",
     "//components/data_use_measurement/core",
     "//components/favicon/core",
@@ -174,6 +177,14 @@ if (is_android) {
       "content_suggestions_service.cc",
     ]
   }
+}
+
+proto_library("explore_protos") {
+  sources = [
+    "contextual/proto/chrome_search_api_request_context.proto",
+    "contextual/proto/get_pivots_request.proto",
+    "contextual/proto/get_pivots_response.proto",
+  ]
 }
 
 source_set("unit_tests") {
