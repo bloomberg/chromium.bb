@@ -171,8 +171,8 @@ Process LaunchProcess(const std::vector<std::string>& argv,
   }
 
   if ((status = launchpad_load_from_file(lp.get(), argv_cstr[0])) != ZX_OK) {
-    LOG(ERROR) << "launchpad_load_from_file(): "
-               << zx_status_get_string(status);
+    LOG(ERROR) << "launchpad_load_from_file(" << argv_cstr[0]
+               << "): " << zx_status_get_string(status);
     return Process();
   }
 

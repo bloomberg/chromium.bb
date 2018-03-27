@@ -3620,7 +3620,8 @@
       },
       {
         "args": [
-          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.service_manager_unittests.filter"
+          "--test-launcher-filter-file=../../testing/buildbot/filters/fuchsia.service_manager_unittests.filter",
+          "--use-new-test-runner"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
