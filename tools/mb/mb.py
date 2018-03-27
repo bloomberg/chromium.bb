@@ -26,6 +26,7 @@ import subprocess
 import tempfile
 import traceback
 import urllib2
+import zipfile
 
 from collections import OrderedDict
 
@@ -115,12 +116,12 @@ class MetaBuildWrapper(object):
                             help='analyze whether changes to a set of files '
                                  'will cause a set of binaries to be rebuilt.')
     AddCommonOptions(subp)
-    subp.add_argument('path', nargs=1,
+    subp.add_argument('path',
                       help='path build was generated into.')
-    subp.add_argument('input_path', nargs=1,
+    subp.add_argument('input_path',
                       help='path to a file containing the input arguments '
                            'as a JSON object.')
-    subp.add_argument('output_path', nargs=1,
+    subp.add_argument('output_path',
                       help='path to a file containing the output arguments '
                            'as a JSON object.')
     subp.set_defaults(func=self.CmdAnalyze)
@@ -141,7 +142,7 @@ class MetaBuildWrapper(object):
     subp.add_argument('--swarming-targets-file',
                       help='save runtime dependencies for targets listed '
                            'in file.')
-    subp.add_argument('path', nargs=1,
+    subp.add_argument('path',
                       help='path to generate build into')
     subp.set_defaults(func=self.CmdGen)
 
@@ -149,9 +150,14 @@ class MetaBuildWrapper(object):
                             help='generate the .isolate files for a given'
                                  'binary')
     AddCommonOptions(subp)
-    subp.add_argument('path', nargs=1,
+    subp.add_argument('--no-build', dest='build', default=True,
+                      action='store_false',
+                      help='Do not build, just isolate')
+    subp.add_argument('-j', '--jobs', type=int,
+                      help='Number of jobs to pass to ninja')
+    subp.add_argument('path',
                       help='path build was generated into')
-    subp.add_argument('target', nargs=1,
+    subp.add_argument('target',
                       help='ninja target to generate the isolate for')
     subp.set_defaults(func=self.CmdIsolate)
 
@@ -183,12 +189,12 @@ class MetaBuildWrapper(object):
         '\n'
     )
     AddCommonOptions(subp)
-    subp.add_argument('-j', '--jobs', dest='jobs', type=int,
+    subp.add_argument('-j', '--jobs', type=int,
                       help='Number of jobs to pass to ninja')
     subp.add_argument('--no-build', dest='build', default=True,
                       action='store_false',
                       help='Do not build, just isolate and run')
-    subp.add_argument('path', nargs=1,
+    subp.add_argument('path',
                       help=('path to generate build into (or use).'
                             ' This can be either a regular path or a '
                             'GN-style source-relative path like '
@@ -201,7 +207,7 @@ class MetaBuildWrapper(object):
     subp.add_argument('--no-default-dimensions', action='store_false',
                       dest='default_dimensions', default=True,
                       help='Do not automatically add dimensions to the task')
-    subp.add_argument('target', nargs=1,
+    subp.add_argument('target',
                       help='ninja target to build and run')
     subp.add_argument('extra_args', nargs='*',
                       help=('extra args to pass to the isolate to run. Use '
@@ -224,6 +230,23 @@ class MetaBuildWrapper(object):
                       help='path to config file (default is %(default)s)')
     subp.set_defaults(func=self.CmdBuildbucket)
 
+    subp = subps.add_parser('zip',
+                            help='generate a .zip containing the files needed '
+                                 'for a given binary')
+    AddCommonOptions(subp)
+    subp.add_argument('--no-build', dest='build', default=True,
+                      action='store_false',
+                      help='Do not build, just isolate')
+    subp.add_argument('-j', '--jobs', type=int,
+                      help='Number of jobs to pass to ninja')
+    subp.add_argument('path',
+                      help='path build was generated into')
+    subp.add_argument('target',
+                      help='ninja target to generate the isolate for')
+    subp.add_argument('zip_path',
+                      help='path to zip file to create')
+    subp.set_defaults(func=self.CmdZip)
+
     subp = subps.add_parser('help',
                             help='Get help on a subcommand.')
     subp.add_argument(nargs='?', action='store', dest='subcommand',
@@ -244,7 +267,7 @@ class MetaBuildWrapper(object):
 
     if getattr(self.args, 'input_path', None):
       DumpContentsOfFilePassedTo(
-          'argv[0] (input_path)', self.args.input_path[0])
+          'argv[0] (input_path)', self.args.input_path)
     if getattr(self.args, 'swarming_targets_file', None):
       DumpContentsOfFilePassedTo(
           '--swarming-targets-file', self.args.swarming_targets_file)
@@ -295,6 +318,10 @@ class MetaBuildWrapper(object):
     vals = self.GetConfig()
     if not vals:
       return 1
+    if self.args.build:
+      ret = self.Build(self.args.target)
+      if ret:
+        return ret
     return self.RunGNIsolate(vals)
 
   def CmdLookup(self):
@@ -311,12 +338,8 @@ class MetaBuildWrapper(object):
     vals = self.GetConfig()
     if not vals:
       return 1
-
-    build_dir = self.args.path[0]
-    target = self.args.target[0]
-
     if self.args.build:
-      ret = self.Build(target)
+      ret = self.Build(self.args.target)
       if ret:
         return ret
     ret = self.RunGNIsolate(vals)
@@ -324,9 +347,37 @@ class MetaBuildWrapper(object):
       return ret
 
     if self.args.swarmed:
-      return self._RunUnderSwarming(build_dir, target)
+      return self._RunUnderSwarming(self.args.path, self.args.target)
     else:
-      return self._RunLocallyIsolated(build_dir, target)
+      return self._RunLocallyIsolated(self.args.path, self.args.target)
+
+  def CmdZip(self):
+      ret = self.CmdIsolate()
+      if ret:
+          return ret
+
+      zip_dir = None
+      try:
+          zip_dir = self.TempDir()
+          remap_cmd = [
+            self.executable,
+            self.PathJoin(self.chromium_src_dir, 'tools', 'swarming_client',
+                          'isolate.py'),
+            'remap',
+            '-s', self.PathJoin(self.args.path, self.args.target + '.isolated'),
+            '-o', zip_dir
+          ]
+          self.Run(remap_cmd)
+
+          zip_path = self.args.zip_path
+          with zipfile.ZipFile(zip_path, 'w', zipfile.ZIP_DEFLATED) as fp:
+              for root, _, files in os.walk(zip_dir):
+                  for filename in files:
+                      path = self.PathJoin(root, filename)
+                      fp.write(path, self.RelPath(path, zip_dir))
+      finally:
+          if zip_dir:
+              self.RemoveDirectory(zip_dir)
 
   @staticmethod
   def _AddBaseSoftware(cmd):
@@ -536,7 +587,7 @@ class MetaBuildWrapper(object):
     return 0
 
   def GetConfig(self):
-    build_dir = self.args.path[0]
+    build_dir = self.args.path
 
     vals = self.DefaultVals()
     if self.args.builder or self.args.master or self.args.config:
@@ -718,7 +769,7 @@ class MetaBuildWrapper(object):
     return vals
 
   def RunGNGen(self, vals, compute_grit_inputs_for_analyze=False):
-    build_dir = self.args.path[0]
+    build_dir = self.args.path
 
     cmd = self.GNCmd('gen', build_dir, '--check')
     gn_args = self.GNArgs(vals)
@@ -813,14 +864,14 @@ class MetaBuildWrapper(object):
     return 0
 
   def RunGNIsolate(self, vals):
-    target = self.args.target[0]
+    target = self.args.target
     isolate_map = self.ReadIsolateMap()
     err, labels = self.MapTargetsToLabels(isolate_map, [target])
     if err:
       raise MBErr(err)
     label = labels[0]
 
-    build_dir = self.args.path[0]
+    build_dir = self.args.path
     command, extra_files = self.GetIsolateCommand(target, vals)
 
     cmd = self.GNCmd('desc', build_dir, label, 'runtime_deps')
@@ -1013,11 +1064,10 @@ class MetaBuildWrapper(object):
           '../../testing/test_env.py',
           '../../' + self.ToSrcRelPath(isolate_map[target]['script'])
       ]
-    elif test_type in ('raw'):
+    elif test_type in ('raw', 'additional_compile_target'):
       cmdline = [
           './' + str(target) + executable_suffix,
       ]
-
     else:
       self.WriteFailureAndRaise('No command line for %s found (test type %s).'
                                 % (target, test_type), output_path=None)
@@ -1049,10 +1099,10 @@ class MetaBuildWrapper(object):
     if ret:
       return ret
 
-    build_path = self.args.path[0]
-    input_path = self.args.input_path[0]
+    build_path = self.args.path
+    input_path = self.args.input_path
     gn_input_path = input_path + '.gn'
-    output_path = self.args.output_path[0]
+    output_path = self.args.output_path
     gn_output_path = output_path + '.gn'
 
     inp = self.ReadInputJSON(['files', 'test_targets',
@@ -1177,8 +1227,8 @@ class MetaBuildWrapper(object):
     return 0
 
   def ReadInputJSON(self, required_keys):
-    path = self.args.input_path[0]
-    output_path = self.args.output_path[0]
+    path = self.args.input_path
+    output_path = self.args.output_path
     if not self.Exists(path):
       self.WriteFailureAndRaise('"%s" does not exist' % path, output_path)
 
@@ -1253,7 +1303,7 @@ class MetaBuildWrapper(object):
     self.Print(json.dumps(obj, indent=2, sort_keys=True))
 
   def Build(self, target):
-    build_dir = self.ToSrcRelPath(self.args.path[0])
+    build_dir = self.ToSrcRelPath(self.args.path)
     ninja_cmd = ['ninja', '-C', build_dir]
     if self.args.jobs:
       ninja_cmd.extend(['-j', '%d' % self.args.jobs])
@@ -1346,6 +1396,10 @@ class MetaBuildWrapper(object):
       self.Run(['cmd.exe', '/c', 'rmdir', '/q', '/s', abs_path])
     else:
       shutil.rmtree(abs_path, ignore_errors=True)
+
+  def TempDir(self):
+    # This function largely exists so it can be overriden for testing.
+    return tempfile.mkdtemp(prefix='mb_')
 
   def TempFile(self, mode='w'):
     # This function largely exists so it can be overriden for testing.
