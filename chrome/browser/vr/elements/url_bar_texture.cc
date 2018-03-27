@@ -35,7 +35,7 @@ constexpr float kHeight = kUrlBarHeightDMM;
 void SetEmphasis(RenderTextWrapper* render_text,
                  bool emphasis,
                  const gfx::Range& range,
-                 const UrlBarColors& colors) {
+                 const UrlTextColors& colors) {
   SkColor color = emphasis ? colors.emphasized : colors.deemphasized;
   if (range.IsValid()) {
     render_text->ApplyColor(color, range);
@@ -99,7 +99,7 @@ float UrlBarTexture::ToMeters(float pixels) const {
   return pixels * kWidth / size_.width();
 }
 
-void UrlBarTexture::SetColors(const UrlBarColors& colors) {
+void UrlBarTexture::SetColors(const UrlTextColors& colors) {
   SetAndDirty(&colors_, colors);
 }
 
@@ -148,11 +148,10 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
 
 // static
 // This method replicates behavior in OmniboxView::UpdateTextStyle().
-void UrlBarTexture::ApplyUrlStyling(
-    const base::string16& formatted_url,
-    const url::Parsed& parsed,
-    RenderTextWrapper* render_text,
-    const UrlBarColors& colors) {
+void UrlBarTexture::ApplyUrlStyling(const base::string16& formatted_url,
+                                    const url::Parsed& parsed,
+                                    RenderTextWrapper* render_text,
+                                    const UrlTextColors& colors) {
   const url::Component& scheme = parsed.scheme;
   const url::Component& host = parsed.host;
 

@@ -27,15 +27,10 @@ using security_state::SecurityLevel;
 
 namespace vr {
 
-// TODO(cjgrant): Use ColorScheme instead of hardcoded values
-// where it makes sense.
-static const SkColor kEmphasizedColor = SK_ColorBLACK;
-static const SkColor kDeemphasizedColor = 0xFF5A5A5A;
+constexpr SkColor kEmphasizedColor = 0x01010101;
+constexpr SkColor kDeemphasizedColor = 0x02020202;
 
-static const SkColor kIncognitoDeemphasizedColor = 0xCCFFFFFF;
-static const SkColor kIncognitoEmphasizedColor = 0xFFFFFFFF;
-
-static constexpr int kUrlWidthPixels = 1024;
+constexpr int kUrlWidthPixels = 1024;
 
 class TestUrlBarTexture : public UrlBarTexture {
  public:
@@ -62,8 +57,10 @@ class TestUrlBarTexture : public UrlBarTexture {
   static void TestUrlStyling(const base::string16& formatted_url,
                              const url::Parsed& parsed,
                              security_state::SecurityLevel security_level,
-                             vr::RenderTextWrapper* render_text,
-                             const UrlBarColors& colors) {
+                             vr::RenderTextWrapper* render_text) {
+    UrlTextColors colors;
+    colors.deemphasized = kDeemphasizedColor;
+    colors.emphasized = kEmphasizedColor;
     ApplyUrlStyling(formatted_url, parsed, render_text, colors);
   }
 
@@ -102,7 +99,11 @@ TestUrlBarTexture::TestUrlBarTexture()
           base::BindRepeating(&TestUrlBarTexture::OnUnsupportedFeature,
                               base::Unretained(this))) {
   gfx::FontList::SetDefaultFontDescription("Arial, Times New Roman, 15px");
-  SetColors(ColorScheme::GetColorScheme(ColorScheme::kModeNormal).url_bar);
+
+  UrlTextColors colors;
+  colors.deemphasized = kDeemphasizedColor;
+  colors.emphasized = kEmphasizedColor;
+  SetColors(colors);
   SetBackgroundColor(SK_ColorBLACK);
   SetForegroundColor(SK_ColorWHITE);
 }
@@ -118,12 +119,7 @@ class UrlEmphasisTest : public testing::Test {
         url, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &parsed, nullptr,
         nullptr);
     EXPECT_EQ(formatted_url, base::UTF8ToUTF16(expected_string));
-    TestUrlBarTexture::TestUrlStyling(
-        formatted_url, parsed, level, &mock_,
-        ColorScheme::GetColorScheme(ColorScheme::kModeNormal).url_bar);
-    TestUrlBarTexture::TestUrlStyling(
-        formatted_url, parsed, level, &mock_,
-        ColorScheme::GetColorScheme(ColorScheme::kModeIncognito).url_bar);
+    TestUrlBarTexture::TestUrlStyling(formatted_url, parsed, level, &mock_);
   }
 
   testing::InSequence in_sequence_;
@@ -143,16 +139,12 @@ TEST(UrlBarTextureTest, WillNotFailOnNonAsciiURLs) {
 TEST_F(UrlEmphasisTest, SecureHttpsHost) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(0, 8)));
-  EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
-  EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(0, 8)));
   Verify("https://host.com/page", SecurityLevel::SECURE, "host.com/page");
 }
 
 TEST_F(UrlEmphasisTest, NotSecureHttpsHost) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(0, 8)));
-  EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
-  EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(0, 8)));
   Verify("https://host.com/page", SecurityLevel::HTTP_SHOW_WARNING,
          "host.com/page");
 }
@@ -160,8 +152,6 @@ TEST_F(UrlEmphasisTest, NotSecureHttpsHost) {
 TEST_F(UrlEmphasisTest, NotSecureHttpHost) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(0, 8)));
-  EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
-  EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(0, 8)));
   Verify("http://host.com/page", SecurityLevel::HTTP_SHOW_WARNING,
          "host.com/page");
 }
@@ -169,8 +159,6 @@ TEST_F(UrlEmphasisTest, NotSecureHttpHost) {
 TEST_F(UrlEmphasisTest, Data) {
   EXPECT_CALL(mock_, SetColor(kDeemphasizedColor));
   EXPECT_CALL(mock_, ApplyColor(kEmphasizedColor, gfx::Range(0, 4)));
-  EXPECT_CALL(mock_, SetColor(kIncognitoDeemphasizedColor));
-  EXPECT_CALL(mock_, ApplyColor(kIncognitoEmphasizedColor, gfx::Range(0, 4)));
   Verify("data:text/html,lots of data", SecurityLevel::NONE,
          "data:text/html,lots of data");
 }

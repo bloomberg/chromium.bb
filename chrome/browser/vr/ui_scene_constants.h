@@ -199,7 +199,7 @@ static constexpr float kOmniboxShadowIntensity = 0.4f;
 static constexpr int kOmniboxTransitionMs = 300;
 
 static constexpr float kOmniboxTextFieldIconButtonSizeDMM = 0.064f;
-static constexpr float kOmniboxTextFieldIconButtonHoverOffsetDMM = 0.012f;
+static constexpr float kUrlBarButtonHoverOffsetDMM = 0.012f;
 static constexpr float kOmniboxTextFieldRightMargin =
     ((kOmniboxHeightDMM - kOmniboxTextFieldIconButtonSizeDMM) / 2);
 

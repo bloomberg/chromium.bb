@@ -146,8 +146,9 @@ void OnSuggestionModelAdded(UiScene* scene,
   icon->SetDrawPhase(kPhaseForeground);
   icon->SetType(kTypeOmniboxSuggestionIcon);
   icon->SetSize(kSuggestionIconSizeDMM, kSuggestionIconSizeDMM);
-  VR_BIND_COLOR(model, icon.get(), &ColorScheme::omnibox_icon,
-                &VectorIcon::SetColor);
+  icon->AddBinding(VR_BIND_FUNC(SkColor, Model, model,
+                                model->color_scheme().url_bar_button.foreground,
+                                VectorIcon, icon.get(), SetColor));
   VectorIcon* p_icon = icon.get();
 
   auto icon_box = std::make_unique<UiElement>();
@@ -208,8 +209,7 @@ void OnSuggestionModelAdded(UiScene* scene,
   background->set_bubble_events(true);
   background->set_bounds_contain_children(true);
   background->set_hover_offset(0.0);
-  VR_BIND_BUTTON_COLORS(model, background.get(),
-                        &ColorScheme::suggestion_button_colors,
+  VR_BIND_BUTTON_COLORS(model, background.get(), &ColorScheme::url_bar_button,
                         &Button::SetButtonColors);
   background->AddChild(std::move(suggestion_layout));
 
@@ -285,26 +285,6 @@ std::unique_ptr<TransientElement> CreateTransientParent(UiElementName name,
   return element;
 }
 
-std::unique_ptr<Rect> CreateOmniboxSpacer(Model* model) {
-  auto spacer = Create<Rect>(kNone, kPhaseForeground);
-  spacer->SetType(kTypeSpacer);
-  spacer->SetSize(kOmniboxWidthDMM, kSuggestionVerticalPaddingDMM);
-  spacer->set_focusable(false);
-  spacer->set_hit_testable(true);
-  spacer->AddBinding(std::make_unique<Binding<bool>>(
-      VR_BIND_LAMBDA([](Model* m) { return !m->omnibox_suggestions.empty(); },
-                     base::Unretained(model)),
-      VR_BIND_LAMBDA(
-          [](UiElement* e, const bool& v) {
-            e->SetVisible(v);
-            e->set_requires_layout(v);
-          },
-          base::Unretained(spacer.get()))));
-  VR_BIND_COLOR(model, spacer.get(), &ColorScheme::omnibox_background,
-                &Rect::SetColor);
-  return spacer;
-}
-
 // Util to bind the visibility of the given control element to the given
 // property in the model and the visibility of the voice search UI root.
 #define BIND_VISIBILITY_CONTROL_FOR_VOICE(control_element, model, property) \
@@ -323,6 +303,7 @@ std::unique_ptr<Rect> CreateOmniboxSpacer(Model* model) {
 
 std::unique_ptr<UiElement> CreateSpacer(float width, float height) {
   auto spacer = Create<UiElement>(kNone, kPhaseNone);
+  spacer->SetType(kTypeSpacer);
   spacer->SetSize(width, height);
   return spacer;
 }
@@ -1337,7 +1318,7 @@ void UiSceneCreator::CreateWebVrTimeoutScreen() {
   button->SetSize(kWebVrTimeoutMessageButtonDiameterDMM,
                   kWebVrTimeoutMessageButtonDiameterDMM);
   VR_BIND_VISIBILITY(button, model->web_vr.state == kWebVrTimedOut);
-  VR_BIND_BUTTON_COLORS(model_, button.get(), &ColorScheme::button_colors,
+  VR_BIND_BUTTON_COLORS(model_, button.get(), &ColorScheme::disc_button_colors,
                         &DiscButton::SetButtonColors);
 
   auto timeout_button_text =
@@ -1611,7 +1592,8 @@ void UiSceneCreator::CreateVoiceSearchUiGroup() {
   close_button->SetTranslate(0, -kVoiceSearchCloseButtonYOffset, 0);
   close_button->SetRotate(
       1, 0, 0, atan(-kVoiceSearchCloseButtonYOffset / kContentDistance));
-  VR_BIND_BUTTON_COLORS(model_, close_button.get(), &ColorScheme::button_colors,
+  VR_BIND_BUTTON_COLORS(model_, close_button.get(),
+                        &ColorScheme::disc_button_colors,
                         &DiscButton::SetButtonColors);
   scene_->AddUiElement(kSpeechRecognitionListening, std::move(close_button));
 
@@ -1848,7 +1830,7 @@ void UiSceneCreator::CreateUrlBar() {
   url_bar->set_bounds_contain_children(true);
   url_bar->set_corner_radius(kUrlBarHeightDMM / 2);
   VR_BIND_VISIBILITY(url_bar, !model->fullscreen_enabled());
-  VR_BIND_COLOR(model_, url_bar.get(), &ColorScheme::element_background,
+  VR_BIND_COLOR(model_, url_bar.get(), &ColorScheme::url_bar_background,
                 &Rect::SetColor);
   scene_->AddUiElement(kUrlBarDmmRoot, std::move(url_bar));
 
@@ -1962,7 +1944,7 @@ void UiSceneCreator::CreateUrlBar() {
   security_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
   security_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
   security_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
-  security_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
+  security_button->set_hover_offset(kUrlBarButtonHoverOffsetDMM);
   VR_BIND_VISIBILITY(security_button, model->toolbar_state.should_display_url);
   VR_BIND_BUTTON_COLORS(model_, security_button.get(),
                         &ColorScheme::url_bar_button, &Button::SetButtonColors);
@@ -1983,8 +1965,6 @@ void UiSceneCreator::CreateUrlBar() {
             if (m->toolbar_state.security_level ==
                 security_state::SecurityLevel::DANGEROUS) {
               colors.foreground = m->color_scheme().url_bar_dangerous_icon;
-            } else {
-              colors.foreground = m->color_scheme().url_bar_default_icon;
             }
             return colors;
           },
@@ -2005,11 +1985,9 @@ void UiSceneCreator::CreateUrlBar() {
   url_text->AddBinding(VR_BIND_FUNC(ToolbarState, Model, model_,
                                     model->toolbar_state, UrlBar,
                                     url_text.get(), SetToolbarState));
-  url_text->AddBinding(VR_BIND_FUNC(UrlBarColors, Model, model_,
-                                    model->color_scheme().url_bar, UrlBar,
+  url_text->AddBinding(VR_BIND_FUNC(UrlTextColors, Model, model_,
+                                    model->color_scheme().url_text, UrlBar,
                                     url_text.get(), SetColors));
-  VR_BIND_COLOR(model_, url_text.get(), &ColorScheme::element_background,
-                &TexturedElement::SetBackgroundColor);
   scene_->AddUiElement(kUrlBarOriginLayout, std::move(url_text));
 
   auto right_margin = Create<Rect>(kNone, kPhaseNone);
@@ -2076,7 +2054,7 @@ void UiSceneCreator::CreateOverflowMenu() {
   overflow_menu->set_bounds_contain_children(true);
   overflow_menu->SetTranslate(0, kOverflowMenuOffset, 0);
   overflow_menu->set_corner_radius(kUrlBarItemCornerRadiusDMM);
-  VR_BIND_COLOR(model_, overflow_menu.get(), &ColorScheme::element_background,
+  VR_BIND_COLOR(model_, overflow_menu.get(), &ColorScheme::omnibox_background,
                 &Rect::SetColor);
 
   auto overflow_layout =
@@ -2101,7 +2079,7 @@ void UiSceneCreator::CreateOverflowMenu() {
     button->SetDrawPhase(kPhaseForeground);
     button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
     button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
-    button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
+    button->set_hover_offset(kUrlBarButtonHoverOffsetDMM);
     button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
     button->set_requires_layout(false);
     button->set_contributes_to_parent_bounds(false);
@@ -2168,8 +2146,9 @@ void UiSceneCreator::CreateOverflowMenu() {
     text->SetText(l10n_util::GetStringUTF16(std::get<1>(item)));
     text->SetLayoutMode(TextLayoutMode::kSingleLineFixedHeight);
     text->SetAlignment(UiTexture::kTextAlignmentLeft);
-    VR_BIND_COLOR(model_, text.get(), &ColorScheme::element_foreground,
-                  &Text::SetColor);
+    text->AddBinding(VR_BIND_FUNC(
+        SkColor, Model, model_, model->color_scheme().url_bar_button.foreground,
+        Text, text.get(), SetColor));
     layout->AddChild(std::move(text));
 
     auto spacer = Create<Rect>(kNone, kPhaseNone);
@@ -2184,7 +2163,8 @@ void UiSceneCreator::CreateOverflowMenu() {
     background->set_bounds_contain_children(true);
     background->set_hover_offset(0);
     background->set_padding(kOverflowMenuItemXPadding, 0);
-    VR_BIND_BUTTON_COLORS(model_, background.get(), &ColorScheme::button_colors,
+    VR_BIND_BUTTON_COLORS(model_, background.get(),
+                          &ColorScheme::url_bar_button,
                           &Button::SetButtonColors);
     background->AddChild(std::move(layout));
 
@@ -2242,8 +2222,8 @@ void UiSceneCreator::CreateOmnibox() {
       Create<UiElement>(kOmniboxVisibiltyControlForVoice, kPhaseNone);
   visibility_control_root->set_contributes_to_parent_bounds(false);
 
-  auto scaler = std::make_unique<ScaledDepthAdjuster>(kUrlBarDistance);
-  scaler->SetName(kOmniboxDmmRoot);
+  auto scaler =
+      Create<ScaledDepthAdjuster>(kOmniboxDmmRoot, kPhaseNone, kUrlBarDistance);
 
   auto visibility_toggle_for_audio_permission = Create<UiElement>(
       kOmniboxVisibilityControlForAudioPermissionPrompt, kPhaseNone);
@@ -2256,27 +2236,22 @@ void UiSceneCreator::CreateOmnibox() {
           kModalPromptTypeExitVRForVoiceSearchRecordAudioOsPermission,
       UiElement, visibility_toggle_for_audio_permission.get(), SetVisible));
 
-  auto omnibox_root = std::make_unique<UiElement>();
-  omnibox_root->SetName(kOmniboxRoot);
-  omnibox_root->SetDrawPhase(kPhaseNone);
-  omnibox_root->SetVisible(false);
+  auto omnibox_root = Create<UiElement>(kOmniboxRoot, kPhaseNone);
   omnibox_root->SetTransitionedProperties({OPACITY});
+  omnibox_root->SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kOmniboxTransitionMs));
   VR_BIND_VISIBILITY(omnibox_root, model->omnibox_editing_enabled());
 
-  auto shadow = std::make_unique<Shadow>();
-  shadow->SetName(kOmniboxShadow);
-  shadow->SetDrawPhase(kPhaseForeground);
+  // The shadow also controls omnibox Y offset.
+  auto shadow = Create<Shadow>(kOmniboxShadow, kPhaseForeground);
   shadow->set_intensity(kOmniboxShadowIntensity);
   shadow->set_y_anchoring(TOP);
   shadow->set_y_centering(BOTTOM);
   shadow->set_corner_radius(kOmniboxCornerRadiusDMM);
-
-  auto omnibox_outer_layout = std::make_unique<LinearLayout>(LinearLayout::kUp);
-  omnibox_outer_layout->SetName(kOmniboxOuterLayout);
-  omnibox_outer_layout->SetTranslate(
-      0, kUrlBarVerticalOffsetDMM - 0.5f * kOmniboxHeightDMM,
-      kOmniboxShadowOffset);
-  omnibox_outer_layout->AddBinding(std::make_unique<Binding<bool>>(
+  shadow->SetTransitionedProperties({TRANSFORM});
+  shadow->SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kOmniboxTransitionMs));
+  shadow->AddBinding(std::make_unique<Binding<bool>>(
       VR_BIND_LAMBDA([](Model* m) { return m->omnibox_editing_enabled(); },
                      base::Unretained(model_)),
       VR_BIND_LAMBDA(
@@ -2286,44 +2261,16 @@ void UiSceneCreator::CreateOmnibox() {
             y_offset -= 0.5 * kOmniboxHeightDMM;
             e->SetTranslate(0, y_offset, kOmniboxShadowOffset);
           },
-          omnibox_outer_layout.get())));
+          shadow.get())));
 
-  auto omnibox_outer_layout_spacer =
-      Create<Rect>(kOmniboxOuterLayoutSpacer, kPhaseForeground);
-  omnibox_outer_layout_spacer->set_hit_testable(true);
-  omnibox_outer_layout_spacer->SetSize(kOmniboxWidthDMM, kSuggestionGapDMM);
-  omnibox_outer_layout_spacer->set_hit_testable(true);
-  VR_BIND_COLOR(model_, omnibox_outer_layout_spacer.get(),
+  auto omnibox_outer_layout =
+      Create<LinearLayout>(kOmniboxOuterLayout, kPhaseNone, LinearLayout::kUp);
+
+  auto omnibox_suggestion_divider = Create<Rect>(kNone, kPhaseForeground);
+  omnibox_suggestion_divider->SetType(kTypeSpacer);
+  omnibox_suggestion_divider->SetSize(kOmniboxWidthDMM, kSuggestionGapDMM);
+  VR_BIND_COLOR(model_, omnibox_suggestion_divider.get(),
                 &ColorScheme::url_bar_separator, &Rect::SetColor);
-  VR_BIND_VISIBILITY(omnibox_outer_layout_spacer,
-                     !model->omnibox_suggestions.empty());
-
-  auto omnibox_container = std::make_unique<Rect>();
-  omnibox_container->SetName(kOmniboxContainer);
-  omnibox_container->SetDrawPhase(kPhaseForeground);
-  omnibox_container->SetSize(kOmniboxWidthDMM, kOmniboxHeightDMM);
-  omnibox_container->SetTransitionedProperties({TRANSFORM, OPACITY});
-  omnibox_container->SetTransitionDuration(
-      base::TimeDelta::FromMilliseconds(kOmniboxTransitionMs));
-  omnibox_container->set_focusable(false);
-  omnibox_container->set_hit_testable(true);
-  omnibox_container->AddBinding(std::make_unique<Binding<bool>>(
-      VR_BIND_LAMBDA([](Model* m) { return m->omnibox_suggestions.empty(); },
-                     base::Unretained(model_)),
-      VR_BIND_LAMBDA(
-          [](Rect* r, const bool& v) {
-            if (v) {
-              r->SetCornerRadii(
-                  {kOmniboxCornerRadiusDMM, kOmniboxCornerRadiusDMM,
-                   kOmniboxCornerRadiusDMM, kOmniboxCornerRadiusDMM});
-            } else {
-              r->SetCornerRadii(
-                  {0, 0, kOmniboxCornerRadiusDMM, kOmniboxCornerRadiusDMM});
-            }
-          },
-          omnibox_container.get())));
-  VR_BIND_COLOR(model_, omnibox_container.get(),
-                &ColorScheme::omnibox_background, &Rect::SetColor);
 
   auto omnibox_text_field = Create<OmniboxTextField>(
       kOmniboxTextField, kPhaseNone, kOmniboxTextHeightDMM,
@@ -2340,7 +2287,6 @@ void UiSceneCreator::CreateOmnibox() {
       base::BindRepeating(
           [](UiBrowserInterface* browser) { browser->StopAutocomplete(); },
           base::Unretained(browser_)));
-
   omnibox_text_field->SetTextInputDelegate(text_input_delegate_);
   omnibox_text_field->set_hit_testable(false);
   omnibox_text_field->SetHintText(
@@ -2428,10 +2374,10 @@ void UiSceneCreator::CreateOmnibox() {
       bool, Model, model_, model->supports_selection, OmniboxTextField,
       omnibox_text_field.get(), set_allow_inline_autocomplete));
 
-  VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::omnibox_text,
+  VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::url_bar_text,
                 &TextInput::SetTextColor);
-  VR_BIND_COLOR(model_, omnibox_text_field.get(), &ColorScheme::omnibox_hint,
-                &TextInput::SetHintColor);
+  VR_BIND_COLOR(model_, omnibox_text_field.get(),
+                &ColorScheme::url_bar_hint_text, &TextInput::SetHintColor);
   omnibox_text_field->AddBinding(std::make_unique<Binding<TextSelectionColors>>(
       VR_BIND_LAMBDA(
           [](Model* m) { return m->color_scheme().omnibox_text_selection; },
@@ -2448,38 +2394,27 @@ void UiSceneCreator::CreateOmnibox() {
           [](UiBrowserInterface* b, Ui* ui) { b->SetVoiceSearchActive(true); },
           base::Unretained(browser_), base::Unretained(ui_)),
       vector_icons::kMicIcon, audio_delegate_);
-  mic_button->SetIconScaleFactor(kVoiceSearchIconScaleFactor);
-  mic_button->SetSize(kOmniboxTextFieldIconButtonSizeDMM,
-                      kOmniboxTextFieldIconButtonSizeDMM);
-  mic_button->set_hover_offset(kOmniboxTextFieldIconButtonHoverOffsetDMM);
+  mic_button->SetSize(kUrlBarButtonSizeDMM, kUrlBarButtonSizeDMM);
+  mic_button->SetIconScaleFactor(kUrlBarButtonIconScaleFactor);
+  mic_button->set_hover_offset(kUrlBarButtonHoverOffsetDMM);
   mic_button->set_corner_radius(kUrlBarItemCornerRadiusDMM);
-
   VR_BIND_VISIBILITY(mic_button,
                      model->speech.has_or_can_request_audio_permission &&
                          !model->incognito &&
                          !model->capturing_state.audio_capture_enabled);
-
-  VR_BIND_BUTTON_COLORS(model_, mic_button.get(),
-                        &ColorScheme::omnibox_voice_search_button_colors,
+  VR_BIND_BUTTON_COLORS(model_, mic_button.get(), &ColorScheme::url_bar_button,
                         &Button::SetButtonColors);
-
-  auto left_spacer = Create<Rect>(kNone, kPhaseNone);
-  left_spacer->SetSize(kOmniboxTextMarginDMM, kOmniboxTextHeightDMM);
-  left_spacer->SetType(kTypeSpacer);
-  auto middle_spacer = Create<Rect>(kNone, kPhaseNone);
-  middle_spacer->SetType(kTypeSpacer);
-  middle_spacer->SetSize(kOmniboxTextMarginDMM, kOmniboxTextHeightDMM);
-  auto right_spacer = Create<Rect>(kNone, kPhaseNone);
-  right_spacer->SetSize(kOmniboxTextFieldRightMargin, kOmniboxTextHeightDMM);
-  right_spacer->SetType(kTypeSpacer);
 
   auto text_field_layout = Create<LinearLayout>(
       kOmniboxTextFieldLayout, kPhaseNone, LinearLayout::kRight);
-  text_field_layout->AddChild(std::move(left_spacer));
+  text_field_layout->AddChild(
+      CreateSpacer(kOmniboxTextMarginDMM, kOmniboxHeightDMM));
   text_field_layout->AddChild(std::move(omnibox_text_field));
-  text_field_layout->AddChild(std::move(middle_spacer));
+  text_field_layout->AddChild(
+      CreateSpacer(kOmniboxTextMarginDMM, kOmniboxHeightDMM));
   text_field_layout->AddChild(std::move(mic_button));
-  text_field_layout->AddChild(std::move(right_spacer));
+  text_field_layout->AddChild(
+      CreateSpacer(kOmniboxTextFieldRightMargin, kOmniboxHeightDMM));
 
   // Set up the vector binding to manage suggestions dynamically.
   SuggestionSetBinding::ModelAddedCallback added_callback = base::BindRepeating(
@@ -2489,18 +2424,13 @@ void UiSceneCreator::CreateOmnibox() {
   SuggestionSetBinding::ModelRemovedCallback removed_callback =
       base::BindRepeating(&OnSuggestionModelRemoved, base::Unretained(scene_));
 
-  auto suggestions_outer_layout =
-      std::make_unique<LinearLayout>(LinearLayout::kDown);
-  suggestions_outer_layout->SetName(kOmniboxSuggestionsOuterLayout);
-
-  auto suggestions_layout = std::make_unique<LinearLayout>(LinearLayout::kUp);
-  suggestions_layout->SetName(kOmniboxSuggestions);
-  suggestions_layout->SetDrawPhase(kPhaseNone);
+  auto suggestions_layout =
+      Create<LinearLayout>(kOmniboxSuggestions, kPhaseNone, LinearLayout::kUp);
   suggestions_layout->AddBinding(std::make_unique<SuggestionSetBinding>(
       &model_->omnibox_suggestions, added_callback, removed_callback));
 
-  auto button_scaler =
-      std::make_unique<ScaledDepthAdjuster>(kOmniboxCloseButtonDepthOffset);
+  auto button_scaler = Create<ScaledDepthAdjuster>(
+      kNone, kPhaseNone, kOmniboxCloseButtonDepthOffset);
 
   auto close_button = Create<DiscButton>(
       kOmniboxCloseButton, kPhaseForeground,
@@ -2513,23 +2443,38 @@ void UiSceneCreator::CreateOmnibox() {
   close_button->SetTranslate(0, kOmniboxCloseButtonVerticalOffsetDMM, 0);
   close_button->SetRotate(1, 0, 0, atan(kOmniboxCloseButtonVerticalOffsetDMM));
   close_button->set_hover_offset(kButtonZOffsetHoverDMM);
-  VR_BIND_BUTTON_COLORS(model_, close_button.get(), &ColorScheme::button_colors,
+  VR_BIND_BUTTON_COLORS(model_, close_button.get(),
+                        &ColorScheme::disc_button_colors,
                         &DiscButton::SetButtonColors);
 
-  auto spacer = CreateOmniboxSpacer(model_);
-  spacer->SetCornerRadii(
-      {kOmniboxCornerRadiusDMM, kOmniboxCornerRadiusDMM, 0, 0});
-  suggestions_outer_layout->AddChild(std::move(spacer));
+  auto suggestions_outer_layout = Create<LinearLayout>(
+      kOmniboxSuggestionsOuterLayout, kPhaseNone, LinearLayout::kUp);
+  VR_BIND_VISIBILITY(suggestions_outer_layout,
+                     !model->omnibox_suggestions.empty());
+  suggestions_outer_layout->AddBinding(VR_BIND_FUNC(
+      bool, Model, model_, !model->omnibox_suggestions.empty(), LinearLayout,
+      suggestions_outer_layout.get(), set_requires_layout));
+  suggestions_outer_layout->AddChild(std::move(omnibox_suggestion_divider));
+  suggestions_outer_layout->AddChild(
+      CreateSpacer(kOmniboxWidthDMM, kSuggestionVerticalPaddingDMM));
   suggestions_outer_layout->AddChild(std::move(suggestions_layout));
-  suggestions_outer_layout->AddChild(CreateOmniboxSpacer(model_));
+  suggestions_outer_layout->AddChild(
+      CreateSpacer(kOmniboxWidthDMM, kSuggestionVerticalPaddingDMM));
 
-  omnibox_container->AddChild(std::move(text_field_layout));
-
-  omnibox_outer_layout->AddChild(std::move(omnibox_container));
-  omnibox_outer_layout->AddChild(std::move(omnibox_outer_layout_spacer));
+  omnibox_outer_layout->AddChild(std::move(text_field_layout));
   omnibox_outer_layout->AddChild(std::move(suggestions_outer_layout));
 
-  shadow->AddChild(std::move(omnibox_outer_layout));
+  // Rounded-corner background of all omnibox and suggestion elements.
+  auto omnibox_background = Create<Rect>(kOmniboxBackground, kPhaseForeground);
+  omnibox_background->set_bounds_contain_children(true);
+  omnibox_background->set_hit_testable(true);
+  omnibox_background->set_focusable(false);
+  omnibox_background->set_corner_radius(kOmniboxCornerRadiusDMM);
+  VR_BIND_COLOR(model_, omnibox_background.get(),
+                &ColorScheme::omnibox_background, &Rect::SetColor);
+  omnibox_background->AddChild(std::move(omnibox_outer_layout));
+
+  shadow->AddChild(std::move(omnibox_background));
 
   button_scaler->AddChild(std::move(close_button));
 
@@ -2564,7 +2509,7 @@ void UiSceneCreator::CreateCloseButton() {
   element->set_hover_offset(kButtonZOffsetHoverDMM * kCloseButtonDistance);
   element->set_y_anchoring(BOTTOM);
   element->SetTranslate(0, kCloseButtonRelativeOffset, -kCloseButtonDistance);
-  VR_BIND_BUTTON_COLORS(model_, element.get(), &ColorScheme::button_colors,
+  VR_BIND_BUTTON_COLORS(model_, element.get(), &ColorScheme::disc_button_colors,
                         &DiscButton::SetButtonColors);
 
   // Close button is a special control element that needs to be hidden when

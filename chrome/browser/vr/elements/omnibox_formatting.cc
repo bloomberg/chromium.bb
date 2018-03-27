@@ -16,7 +16,7 @@ TextFormatting ConvertClassification(
     size_t text_length,
     const ColorScheme& color_scheme) {
   TextFormatting formatting;
-  formatting.push_back(TextFormattingAttribute(color_scheme.suggestion_text,
+  formatting.push_back(TextFormattingAttribute(color_scheme.url_bar_text,
                                                gfx::Range(0, text_length)));
 
   for (size_t i = 0; i < classifications.size(); ++i) {
@@ -41,11 +41,8 @@ TextFormatting ConvertClassification(
     }
 
     if (classifications[i].style & ACMatchClassification::URL) {
-      formatting.push_back(TextFormattingAttribute(
-          color_scheme.suggestion_url_text, current_range));
-    } else if (classifications[i].style & ACMatchClassification::DIM) {
-      formatting.push_back(TextFormattingAttribute(
-          color_scheme.suggestion_dim_text, current_range));
+      formatting.push_back(
+          TextFormattingAttribute(color_scheme.hyperlink, current_range));
     } else if (classifications[i].style & ACMatchClassification::INVISIBLE) {
       formatting.push_back(
           TextFormattingAttribute(SK_ColorTRANSPARENT, current_range));
