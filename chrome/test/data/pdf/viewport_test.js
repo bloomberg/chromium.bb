@@ -605,6 +605,110 @@ var tests = [
     chrome.test.succeed();
   },
 
+  function testScrollTo() {
+    var mockWindow = new MockWindow(100, 100);
+    var mockSizer = new MockSizer();
+    var mockCallback = new MockViewportChangedCallback();
+    var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
+                                function() {}, function() {}, function() {},
+                                0, 1, 0);
+    var documentDimensions = new MockDocumentDimensions();
+
+    documentDimensions.addPage(200, 200);
+    viewport.setDocumentDimensions(documentDimensions);
+    viewport.setZoom(1);
+
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(0, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollTo({x: 0, y: 0});
+    chrome.test.assertFalse(mockCallback.wasCalled);
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(0, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollTo({x: 10, y: 20});
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(10, viewport.position.x);
+    chrome.test.assertEq(20, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollTo({y: 30});
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(10, viewport.position.x);
+    chrome.test.assertEq(30, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollTo({y: 30});
+    chrome.test.assertFalse(mockCallback.wasCalled);
+    chrome.test.assertEq(10, viewport.position.x);
+    chrome.test.assertEq(30, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollTo({x: 40});
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(40, viewport.position.x);
+    chrome.test.assertEq(30, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollTo({});
+    chrome.test.assertFalse(mockCallback.wasCalled);
+    chrome.test.assertEq(40, viewport.position.x);
+    chrome.test.assertEq(30, viewport.position.y);
+
+    chrome.test.succeed();
+  },
+
+  function testScrollBy() {
+    var mockWindow = new MockWindow(100, 100);
+    var mockSizer = new MockSizer();
+    var mockCallback = new MockViewportChangedCallback();
+    var viewport = new Viewport(mockWindow, mockSizer, mockCallback.callback,
+                                function() {}, function() {}, function() {},
+                                0, 1, 0);
+    var documentDimensions = new MockDocumentDimensions();
+
+    documentDimensions.addPage(200, 200);
+    viewport.setDocumentDimensions(documentDimensions);
+    viewport.setZoom(1);
+
+    chrome.test.assertEq(0, viewport.position.x);
+    chrome.test.assertEq(0, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollBy({x: 10, y: 20});
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(10, viewport.position.x);
+    chrome.test.assertEq(20, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollBy({x: 10, y: 20});
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(20, viewport.position.x);
+    chrome.test.assertEq(40, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollBy({x: -5, y: 0});
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(15, viewport.position.x);
+    chrome.test.assertEq(40, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollBy({x: 0, y: 60});
+    chrome.test.assertTrue(mockCallback.wasCalled);
+    chrome.test.assertEq(15, viewport.position.x);
+    chrome.test.assertEq(100, viewport.position.y);
+
+    mockCallback.reset();
+    viewport.scrollBy({x: 0, y: 0});
+    chrome.test.assertFalse(mockCallback.wasCalled);
+    chrome.test.assertEq(15, viewport.position.x);
+    chrome.test.assertEq(100, viewport.position.y);
+
+    chrome.test.succeed();
+  },
+
   function testGetPageScreenRect() {
     var mockWindow = new MockWindow(100, 100);
     var mockSizer = new MockSizer();

@@ -3,6 +3,22 @@
 // found in the LICENSE file.
 
 /**
+ * @typedef {{
+ *   x: number,
+ *   y: number
+ * }}
+ */
+let Point;
+
+/**
+ * @typedef {{
+ *   x: number | undefined,
+ *   y: number | undefined
+ * }}
+ */
+let PartialPoint;
+
+/**
  * Returns the height of the intersection of two rectangles.
  * @param {Object} rect1 the first rect
  * @param {Object} rect2 the second rect
@@ -254,7 +270,7 @@ Viewport.prototype = {
 
   /**
    * Scroll the viewport to the specified position.
-   * @type {Object} position the position to scroll to.
+   * @type {Object} position The position to scroll to.
    */
   set position(position) {
     this.window_.scrollTo(position.x, position.y + this.topToolbarHeight_);
@@ -906,5 +922,38 @@ Viewport.prototype = {
     return (
         this.fittingType_ == FittingType.FIT_TO_PAGE ||
         this.fittingType_ == FittingType.FIT_TO_HEIGHT);
+  },
+
+  /**
+   * Scroll the viewport to the specified position.
+   *
+   * @param {!PartialPoint} point The position to which to move the viewport.
+   */
+  scrollTo: function(point) {
+    let changed = false;
+    const newPosition = this.position;
+    if (point.x !== undefined && point.x != newPosition.x) {
+      newPosition.x = point.x;
+      changed = true;
+    }
+    if (point.y !== undefined && point.y != newPosition.y) {
+      newPosition.y = point.y;
+      changed = true;
+    }
+
+    if (changed)
+      this.position = newPosition;
+  },
+
+  /**
+   * Scroll the viewport by the specified delta.
+   *
+   * @param {!Point} delta The delta by which to move the viewport.
+   */
+  scrollBy: function(delta) {
+    const newPosition = this.position;
+    newPosition.x += delta.x;
+    newPosition.y += delta.y;
+    this.scrollTo(newPosition);
   }
 };

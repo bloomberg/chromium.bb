@@ -295,9 +295,14 @@ class PDFiumEngine : public PDFEngine,
   bool OnMouseDown(const pp::MouseInputEvent& event);
   bool OnMouseUp(const pp::MouseInputEvent& event);
   bool OnMouseMove(const pp::MouseInputEvent& event);
+  void OnMouseEnter(const pp::MouseInputEvent& event);
   bool OnKeyDown(const pp::KeyboardInputEvent& event);
   bool OnKeyUp(const pp::KeyboardInputEvent& event);
   bool OnChar(const pp::KeyboardInputEvent& event);
+
+  // Decide what cursor should be displayed.
+  PP_CursorType_Dev DetermineCursorType(PDFiumPage::Area area,
+                                        int form_type) const;
 
   bool ExtendSelection(int page_index, int char_index);
 
@@ -698,6 +703,12 @@ class PDFiumEngine : public PDFEngine,
 
   // True if left mouse button is currently being held down.
   bool mouse_left_button_down_;
+
+  // True if middle mouse button is currently being held down.
+  bool mouse_middle_button_down_;
+
+  // Last known position while performing middle mouse button pan.
+  pp::Point mouse_middle_button_last_position_;
 
   // The current text used for searching.
   std::string current_find_text_;
