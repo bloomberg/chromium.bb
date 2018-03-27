@@ -77,11 +77,11 @@ FileOperationManager.prototype.deleteEntries = function(entries) {};
 /**
  * Creates a zip file for the selection of files.
  *
- * @param {!DirectoryEntry} dirEntry The directory containing the selection.
  * @param {!Array<!Entry>} selectionEntries The selected entries.
+ * @param {!DirectoryEntry} dirEntry The directory containing the selection.
  */
 FileOperationManager.prototype.zipSelection = function(
-    dirEntry, selectionEntries) {};
+    selectionEntries, dirEntry) {};
 
 /**
  * Generates new task ID.

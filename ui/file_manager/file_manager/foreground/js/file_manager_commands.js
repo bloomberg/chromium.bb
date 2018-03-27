@@ -1434,7 +1434,7 @@ CommandHandler.COMMANDS_['zip-selection'] = /** @type {Command} */ ({
     } else {
       var selectionEntries = fileManager.getSelection().entries;
       fileManager.fileOperationManager.zipSelection(
-          /** @type {!DirectoryEntry} */ (dirEntry), selectionEntries);
+          selectionEntries, /** @type {!DirectoryEntry} */ (dirEntry));
     }
   },
   /**

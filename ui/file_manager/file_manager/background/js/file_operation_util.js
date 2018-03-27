@@ -486,9 +486,7 @@ fileOperationUtil.copyTo = function(
 fileOperationUtil.zipSelection = function(
     sources, parent, newName, successCallback, errorCallback) {
   chrome.fileManagerPrivate.zipSelection(
-      parent,
-      sources,
-      newName, function(success) {
+      sources, parent, newName, function(success) {
         if (!success) {
           // Failed to create a zip archive.
           errorCallback(

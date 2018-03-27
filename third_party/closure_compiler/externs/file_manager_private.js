@@ -515,12 +515,12 @@ chrome.fileManagerPrivate.searchFilesByHashes = function(volumeId, hashes,
  * The files must be under the directory specified by |parentEntry|. |destName|
  * Name of the destination zip file. The zip file will be created under the
  * directory specified by |parentEntry|.
- * @param {!DirectoryEntry} parentEntry
  * @param {!Array<!Entry>} entries
+ * @param {!DirectoryEntry} parentEntry
  * @param {string} destName
  * @param {function((boolean|undefined))} callback
  */
-chrome.fileManagerPrivate.zipSelection = function(parentEntry, entries,
+chrome.fileManagerPrivate.zipSelection = function(entries, parentEntry,
     destName, callback) {};
 
 /**

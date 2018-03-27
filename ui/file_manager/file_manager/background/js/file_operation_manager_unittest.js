@@ -152,7 +152,7 @@ function FakeVolumeManager() {}
  */
 FakeVolumeManager.prototype.getVolumeInfo = function(entry) {
   return { volumeId: entry.filesystem.name };
-}
+};
 
 /**
  * Returns file system of the url.
@@ -827,13 +827,13 @@ function testZip(callback) {
   });
   window.webkitResolveLocalFileSystemURL =
       resolveTestFileSystemURL.bind(null, fileSystem);
-  chrome.fileManagerPrivate.zipSelection =
-      function(parent, sources, newName, success, error) {
-        var newPath = joinPath('/', newName);
-        var newEntry = new MockFileEntry(fileSystem, newPath, {size: 10});
-        fileSystem.entries[newPath] = newEntry;
-        success(newEntry);
-      };
+  chrome.fileManagerPrivate.zipSelection = function(
+      sources, parent, newName, success, error) {
+    var newPath = joinPath('/', newName);
+    var newEntry = new MockFileEntry(fileSystem, newPath, {size: 10});
+    fileSystem.entries[newPath] = newEntry;
+    success(newEntry);
+  };
 
   volumeManager = new FakeVolumeManager();
   fileOperationManager = new FileOperationManager();
@@ -862,6 +862,5 @@ function testZip(callback) {
   }), callback);
 
   fileOperationManager.zipSelection(
-      fileSystem.entries['/'],
-      [fileSystem.entries['/test.txt']]);
+      [fileSystem.entries['/test.txt']], fileSystem.entries['/']);
 }
