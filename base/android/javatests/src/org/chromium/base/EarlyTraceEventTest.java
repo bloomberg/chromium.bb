@@ -4,6 +4,9 @@
 
 package org.chromium.base;
 
+import static org.chromium.base.EarlyTraceEvent.AsyncEvent;
+import static org.chromium.base.EarlyTraceEvent.Event;
+
 import android.os.Process;
 import android.support.test.filters.SmallTest;
 
@@ -11,8 +14,6 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import static org.chromium.base.EarlyTraceEvent.Event;
 
 import org.chromium.base.library_loader.LibraryLoader;
 import org.chromium.base.library_loader.LibraryProcessType;
@@ -28,6 +29,7 @@ import org.chromium.base.test.util.Feature;
 public class EarlyTraceEventTest {
     private static final String EVENT_NAME = "MyEvent";
     private static final String EVENT_NAME2 = "MyOtherEvent";
+    private static final long EVENT_ID = 1;
 
     @Before
     public void setUp() throws Exception {
@@ -55,6 +57,29 @@ public class EarlyTraceEventTest {
                 beforeNanos <= event.mBeginTimeNanos && event.mBeginTimeNanos <= afterNanos);
         Assert.assertTrue(event.mBeginTimeNanos <= event.mEndTimeNanos);
         Assert.assertTrue(beforeNanos <= event.mEndTimeNanos && event.mEndTimeNanos <= afterNanos);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testCanRecordAsyncEvent() {
+        EarlyTraceEvent.enable();
+        long beforeNanos = Event.elapsedRealtimeNanos();
+        EarlyTraceEvent.startAsync(EVENT_NAME, EVENT_ID);
+        EarlyTraceEvent.finishAsync(EVENT_NAME, EVENT_ID);
+        long afterNanos = Event.elapsedRealtimeNanos();
+
+        Assert.assertEquals(2, EarlyTraceEvent.sAsyncEvents.size());
+        Assert.assertTrue(EarlyTraceEvent.sPendingEvents.isEmpty());
+        AsyncEvent eventStart = EarlyTraceEvent.sAsyncEvents.get(0);
+        AsyncEvent eventEnd = EarlyTraceEvent.sAsyncEvents.get(1);
+        Assert.assertEquals(EVENT_NAME, eventStart.mName);
+        Assert.assertEquals(EVENT_ID, eventStart.mId);
+        Assert.assertEquals(EVENT_NAME, eventEnd.mName);
+        Assert.assertEquals(EVENT_ID, eventEnd.mId);
+        Assert.assertTrue(beforeNanos <= eventStart.mTimestampNanos
+                && eventEnd.mTimestampNanos <= afterNanos);
+        Assert.assertTrue(eventStart.mTimestampNanos <= eventEnd.mTimestampNanos);
     }
 
     @Test
@@ -118,6 +143,15 @@ public class EarlyTraceEventTest {
             // Required comment to pass presubmit checks.
         }
         Assert.assertNull(EarlyTraceEvent.sCompletedEvents);
+    }
+
+    @Test
+    @SmallTest
+    @Feature({"Android-AppBase"})
+    public void testIgnoreAsyncEventsWhenDisabled() {
+        EarlyTraceEvent.startAsync(EVENT_NAME, EVENT_ID);
+        EarlyTraceEvent.finishAsync(EVENT_NAME, EVENT_ID);
+        Assert.assertNull(EarlyTraceEvent.sAsyncEvents);
     }
 
     @Test

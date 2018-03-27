@@ -35,5 +35,33 @@ static void JNI_EarlyTraceEvent_RecordEarlyEvent(
       TRACE_EVENT_FLAG_COPY);
 }
 
+static void JNI_EarlyTraceEvent_RecordEarlyStartAsyncEvent(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jname,
+    jlong id,
+    jlong timestamp_ns) {
+  std::string name = ConvertJavaStringToUTF8(env, jname);
+  int64_t timestamp_us = timestamp_ns / 1000;
+
+  TRACE_EVENT_COPY_ASYNC_BEGIN_WITH_TIMESTAMP0(
+      kEarlyJavaCategory, name.c_str(), id,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(timestamp_us));
+}
+
+static void JNI_EarlyTraceEvent_RecordEarlyFinishAsyncEvent(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& jname,
+    jlong id,
+    jlong timestamp_ns) {
+  std::string name = ConvertJavaStringToUTF8(env, jname);
+  int64_t timestamp_us = timestamp_ns / 1000;
+
+  TRACE_EVENT_COPY_ASYNC_END_WITH_TIMESTAMP0(
+      kEarlyJavaCategory, name.c_str(), id,
+      base::TimeTicks() + base::TimeDelta::FromMicroseconds(timestamp_us));
+}
+
 }  // namespace android
 }  // namespace base
