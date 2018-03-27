@@ -126,6 +126,10 @@ bool TraceConfigFile::IsEnabled() const {
   return is_enabled_;
 }
 
+void TraceConfigFile::SetDisabled() {
+  is_enabled_ = false;
+}
+
 base::trace_event::TraceConfig TraceConfigFile::GetTraceConfig() const {
   DCHECK(IsEnabled());
   return trace_config_;

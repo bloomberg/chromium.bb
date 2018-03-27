@@ -26,8 +26,10 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/tracing/common/trace_config_file.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/bad_message.h"
+#include "content/browser/browser_main_loop.h"
 #include "content/browser/histogram_controller.h"
 #include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/service_manager/service_manager_context.h"
@@ -207,6 +209,44 @@ void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
   base::FieldTrialList::CopyFieldTrialStateToFlags(
       switches::kFieldTrialHandle, switches::kEnableFeatures,
       switches::kDisableFeatures, cmd_line);
+}
+
+// static
+void BrowserChildProcessHostImpl::CopyTraceStartupFlags(
+    base::CommandLine* cmd_line) {
+  const base::CommandLine& browser_cmd_line =
+      *base::CommandLine::ForCurrentProcess();
+
+  if (browser_cmd_line.HasSwitch(switches::kTraceStartup) &&
+      BrowserMainLoop::GetInstance()->is_tracing_startup_for_duration()) {
+    // Pass kTraceStartup switch to renderer only if startup tracing has not
+    // finished.
+    cmd_line->AppendSwitchASCII(
+        switches::kTraceStartup,
+        browser_cmd_line.GetSwitchValueASCII(switches::kTraceStartup));
+    if (browser_cmd_line.HasSwitch(switches::kTraceStartupRecordMode)) {
+      cmd_line->AppendSwitchASCII(switches::kTraceStartupRecordMode,
+                                  browser_cmd_line.GetSwitchValueASCII(
+                                      switches::kTraceStartupRecordMode));
+    }
+  } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
+    const auto trace_config =
+        tracing::TraceConfigFile::GetInstance()->GetTraceConfig();
+    if (!trace_config.IsArgumentFilterEnabled()) {
+      // The only trace option that we can pass through switches is the record
+      // mode. Other trace options should have the default value.
+      //
+      // TODO(chiniforooshan): Add other trace options to switches if, for
+      // example, they are used in a telemetry test that needs startup trace
+      // events from renderer processes.
+      cmd_line->AppendSwitchASCII(switches::kTraceStartup,
+                                  trace_config.ToCategoryFilterString());
+      cmd_line->AppendSwitchASCII(
+          switches::kTraceStartupRecordMode,
+          base::trace_event::TraceConfig::TraceRecordModeToStr(
+              trace_config.GetTraceRecordMode()));
+    }
+  }
 }
 
 void BrowserChildProcessHostImpl::Launch(

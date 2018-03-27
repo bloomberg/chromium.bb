@@ -490,8 +490,7 @@ bool TracingHandler::IsTracing() const {
 }
 
 bool TracingHandler::IsStartupTracingActive() {
-  return ::tracing::TraceConfigFile::GetInstance()->IsEnabled() &&
-      TracingController::GetInstance()->IsTracing();
+  return ::tracing::TraceConfigFile::GetInstance()->IsEnabled();
 }
 
 // static

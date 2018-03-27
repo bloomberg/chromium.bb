@@ -2655,7 +2655,6 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     switches::kTestType,
     switches::kTouchEventFeatureDetection,
     switches::kTouchTextSelectionStrategy,
-    switches::kTraceConfigFile,
     switches::kTraceToConsole,
     switches::kUseFakeUIForMediaStream,
     // This flag needs to be propagated to the renderer process for
@@ -2734,15 +2733,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
                                  arraysize(kSwitchNames));
 
   BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(renderer_cmd);
-
-  if (browser_cmd.HasSwitch(switches::kTraceStartup) &&
-      BrowserMainLoop::GetInstance()->is_tracing_startup_for_duration()) {
-    // Pass kTraceStartup switch to renderer only if startup tracing has not
-    // finished.
-    renderer_cmd->AppendSwitchASCII(
-        switches::kTraceStartup,
-        browser_cmd.GetSwitchValueASCII(switches::kTraceStartup));
-  }
+  BrowserChildProcessHostImpl::CopyTraceStartupFlags(renderer_cmd);
 
 #if BUILDFLAG(ENABLE_WEBRTC)
   // Only run the Stun trials in the first renderer.

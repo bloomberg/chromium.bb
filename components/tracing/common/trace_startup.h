@@ -10,9 +10,7 @@
 namespace tracing {
 
 // Enables TraceLog with config based on the command line flags of the process.
-// If |can_access_file_system| is false then TraceLog is not enabled in case it
-// is required to read config file to start tracing.
-void TRACING_EXPORT EnableStartupTracingIfNeeded(bool can_access_file_system);
+void TRACING_EXPORT EnableStartupTracingIfNeeded();
 
 }  // namespace tracing
 

@@ -1606,7 +1606,8 @@ void BrowserMainLoop::InitializeMojo() {
   if (parsed_command_line_.HasSwitch(switches::kTraceStartup)) {
     base::trace_event::TraceConfig trace_config(
         parsed_command_line_.GetSwitchValueASCII(switches::kTraceStartup),
-        base::trace_event::RECORD_UNTIL_FULL);
+        parsed_command_line_.GetSwitchValueASCII(
+            switches::kTraceStartupRecordMode));
     TracingController::GetInstance()->StartTracing(
         trace_config, TracingController::StartTracingDoneCallback());
   } else if (parsed_command_line_.HasSwitch(switches::kTraceToConsole)) {

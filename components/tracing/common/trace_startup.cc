@@ -14,7 +14,7 @@
 
 namespace tracing {
 
-void EnableStartupTracingIfNeeded(bool can_access_file_system) {
+void EnableStartupTracingIfNeeded() {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -25,7 +25,7 @@ void EnableStartupTracingIfNeeded(bool can_access_file_system) {
   if (command_line.HasSwitch(switches::kTraceStartup)) {
     base::trace_event::TraceConfig trace_config(
         command_line.GetSwitchValueASCII(switches::kTraceStartup),
-        base::trace_event::RECORD_UNTIL_FULL);
+        command_line.GetSwitchValueASCII(switches::kTraceStartupRecordMode));
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
         trace_config, base::trace_event::TraceLog::RECORDING_MODE);
   } else if (command_line.HasSwitch(switches::kTraceToConsole)) {
@@ -36,8 +36,7 @@ void EnableStartupTracingIfNeeded(bool can_access_file_system) {
                << trace_config.ToCategoryFilterString() << "'.";
     base::trace_event::TraceLog::GetInstance()->SetEnabled(
         trace_config, base::trace_event::TraceLog::RECORDING_MODE);
-  } else if (can_access_file_system &&
-             tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
+  } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
     const base::trace_event::TraceConfig& trace_config =
         tracing::TraceConfigFile::GetInstance()->GetTraceConfig();
     uint8_t modes = base::trace_event::TraceLog::RECORDING_MODE;

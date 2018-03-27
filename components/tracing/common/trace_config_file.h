@@ -73,7 +73,15 @@ class TRACING_EXPORT TraceConfigFile {
  public:
   static TraceConfigFile* GetInstance();
 
+  // IsEnabled() returns true if a valid trace config file is specified and
+  // either we are passed the trace duration, if it is positive, or startup
+  // tracing is stopped by other means, e.g. via DevTools protocol.
   bool IsEnabled() const;
+
+  // SetDisabled() is used by the tracing controller to indicate that startup
+  // tracing is finished.
+  void SetDisabled();
+
   base::trace_event::TraceConfig GetTraceConfig() const;
   int GetStartupDuration() const;
 #if !defined(OS_ANDROID)
