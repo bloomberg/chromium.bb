@@ -6,6 +6,7 @@
 
 #include "base/mac/foundation_util.h"
 #import "ios/chrome/browser/ui/settings/password_details_collection_view_controller_for_testing.h"
+#import "ios/chrome/browser/ui/settings/save_passwords_collection_view_controller.h"
 #import "ios/chrome/browser/ui/settings/settings_navigation_controller.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
 
@@ -57,6 +58,26 @@ MockReauthenticationModule* SetUpAndReturnMockReauthenticationModule() {
               settings_navigation_controller.topViewController);
   [password_details_collection_view_controller
       setReauthenticationModule:mock_reauthentication_module];
+  return mock_reauthentication_module;
+}
+
+// Replace the reauthentication module in
+// PasswordExporter with a fake one to avoid being
+// blocked with a reauth prompt, and return the fake reauthentication module.
+MockReauthenticationModule*
+SetUpAndReturnMockReauthenticationModuleForExport() {
+  MockReauthenticationModule* mock_reauthentication_module =
+      [[MockReauthenticationModule alloc] init];
+  // TODO(crbug.com/754642): Stop using TopPresentedViewController();
+  SettingsNavigationController* settings_navigation_controller =
+      base::mac::ObjCCastStrict<SettingsNavigationController>(
+          top_view_controller::TopPresentedViewController());
+  SavePasswordsCollectionViewController*
+      save_passwords_collection_view_controller =
+          base::mac::ObjCCastStrict<SavePasswordsCollectionViewController>(
+              settings_navigation_controller.topViewController);
+  [save_passwords_collection_view_controller
+      setReauthenticationModuleForExporter:mock_reauthentication_module];
   return mock_reauthentication_module;
 }
 

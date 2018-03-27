@@ -56,6 +56,9 @@
 // error.
 @property(nonatomic, assign) WriteToURLStatus writingStatus;
 
+// Whether a write operation was attempted.
+@property(nonatomic, assign) BOOL writeAttempted;
+
 @end
 
 @implementation FakePasswordFileWriter {
@@ -64,10 +67,20 @@
 }
 
 @synthesize writingStatus = _writingStatus;
+@synthesize writeAttempted = _writeAttempted;
+
+- (instancetype)init {
+  self = [super init];
+  if (self) {
+    _writeAttempted = NO;
+  }
+  return self;
+}
 
 - (void)writeData:(NSString*)data
             toURL:(NSURL*)fileURL
           handler:(void (^)(WriteToURLStatus))handler {
+  _writeAttempted = YES;
   _writeStatusHandler = handler;
 }
 
@@ -104,30 +117,6 @@ class PasswordExporterTest : public PlatformTest {
     return password_forms;
   }
 
-  void TearDown() override {
-    NSURL* passwords_file_url = GetPasswordsFileURL();
-    if ([[NSFileManager defaultManager]
-            fileExistsAtPath:[passwords_file_url path]]) {
-      [[NSFileManager defaultManager] removeItemAtURL:passwords_file_url
-                                                error:nil];
-    }
-    PlatformTest::TearDown();
-  }
-
-  NSURL* GetPasswordsFileURL() {
-    NSString* passwords_file_name =
-        [l10n_util::GetNSString(IDS_PASSWORD_MANAGER_DEFAULT_EXPORT_FILENAME)
-            stringByAppendingString:@".csv"];
-    return [[NSURL fileURLWithPath:NSTemporaryDirectory() isDirectory:YES]
-        URLByAppendingPathComponent:passwords_file_name
-                        isDirectory:NO];
-  }
-
-  BOOL PasswordFileExists() {
-    return [[NSFileManager defaultManager]
-        fileExistsAtPath:[GetPasswordsFileURL() path]];
-  }
-
   id password_exporter_delegate_;
   PasswordExporter* password_exporter_;
   MockReauthenticationModule* mock_reauthentication_module_;
@@ -135,14 +124,17 @@ class PasswordExporterTest : public PlatformTest {
   base::HistogramTester histogram_tester_;
 };
 
-// Tests that when reauthentication is successful, the passwords file is written
-// and showing the activity view is requested.
+// Tests that when reauthentication is successful, writing the passwords file
+// is attempted and a call to show the activity view is made.
 TEST_F(PasswordExporterTest, PasswordFileWriteReauthSucceeded) {
   mock_reauthentication_module_.shouldSucceed = YES;
-  NSURL* passwords_file_url = GetPasswordsFileURL();
+  FakePasswordFileWriter* fake_password_file_writer =
+      [[FakePasswordFileWriter alloc] init];
+  fake_password_file_writer.writingStatus = WriteToURLStatus::SUCCESS;
+  [password_exporter_ setPasswordFileWriter:fake_password_file_writer];
 
   OCMExpect([password_exporter_delegate_
-      showActivityViewWithActivityItems:[OCMArg isEqual:@[ passwords_file_url ]]
+      showActivityViewWithActivityItems:[OCMArg any]
                       completionHandler:[OCMArg any]]);
 
   [password_exporter_ startExportFlow:CreatePasswordList()];
@@ -150,45 +142,12 @@ TEST_F(PasswordExporterTest, PasswordFileWriteReauthSucceeded) {
   // Wait for all asynchronous tasks to complete.
   scoped_task_environment_.RunUntilIdle();
 
-  EXPECT_TRUE(PasswordFileExists());
+  EXPECT_TRUE(fake_password_file_writer.writeAttempted);
+
+  // Execute file write completion handler to continue the flow.
+  [fake_password_file_writer executeHandler];
+
   EXPECT_OCMOCK_VERIFY(password_exporter_delegate_);
-
-  histogram_tester_.ExpectTotalCount(
-      "PasswordManager.TimeReadingExportedPasswords", 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportPasswordsToCSVResult",
-      password_manager::metrics_util::ExportPasswordsResult::SUCCESS, 1);
-  histogram_tester_.ExpectUniqueSample(
-      "PasswordManager.ExportedPasswordsPerUserInCSV", 1, 1);
-}
-
-// Tests that the exporter becomes idle after the export finishes.
-TEST_F(PasswordExporterTest, ExportIdleAfterFinishing) {
-  mock_reauthentication_module_.shouldSucceed = YES;
-  NSURL* passwords_file_url = GetPasswordsFileURL();
-
-  OCMStub(
-      [password_exporter_delegate_
-          showActivityViewWithActivityItems:[OCMArg
-                                                isEqual:@[ passwords_file_url ]]
-                          completionHandler:[OCMArg any]])
-      .andDo(^(NSInvocation* invocation) {
-        void (^completionHandler)(NSString* activityType, BOOL completed,
-                                  NSArray* returnedItems,
-                                  NSError* activityError);
-        [invocation getArgument:&completionHandler atIndex:3];
-        // Since the completion handler doesn't use any of the
-        // passed in parameters, dummy arguments are passed for
-        // convenience.
-        completionHandler(@"", YES, @[], nil);
-      });
-
-  [password_exporter_ startExportFlow:CreatePasswordList()];
-
-  // Wait for all asynchronous tasks to complete.
-  scoped_task_environment_.RunUntilIdle();
-
-  EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
 
   histogram_tester_.ExpectTotalCount(
       "PasswordManager.TimeReadingExportedPasswords", 1);
@@ -297,6 +256,11 @@ TEST_F(PasswordExporterTest, ExportInterruptedWhenReauthFails) {
       [[FakePasswordSerialzerBridge alloc] init];
   [password_exporter_
       setPasswordSerializerBridge:fake_password_serializer_bridge];
+
+  FakePasswordFileWriter* fake_password_file_writer =
+      [[FakePasswordFileWriter alloc] init];
+  [password_exporter_ setPasswordFileWriter:fake_password_file_writer];
+
   [[password_exporter_delegate_ reject]
       showActivityViewWithActivityItems:[OCMArg any]
                       completionHandler:[OCMArg any]];
@@ -324,8 +288,8 @@ TEST_F(PasswordExporterTest, ExportInterruptedWhenReauthFails) {
   scoped_task_environment_.RunUntilIdle();
 
   // Serializing passwords has finished, but reauthentication was not
-  // successful, so the file is not written.
-  EXPECT_FALSE(PasswordFileExists());
+  // successful, so writing the file was not attempted.
+  EXPECT_FALSE(fake_password_file_writer.writeAttempted);
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
 
   histogram_tester_.ExpectTotalCount(
@@ -345,6 +309,10 @@ TEST_F(PasswordExporterTest, CancelWaitsForSerializationFinished) {
       [[FakePasswordSerialzerBridge alloc] init];
   [password_exporter_
       setPasswordSerializerBridge:fake_password_serializer_bridge];
+
+  FakePasswordFileWriter* fake_password_file_writer =
+      [[FakePasswordFileWriter alloc] init];
+  [password_exporter_ setPasswordFileWriter:fake_password_file_writer];
 
   [[password_exporter_delegate_ reject]
       showActivityViewWithActivityItems:[OCMArg any]
@@ -366,7 +334,7 @@ TEST_F(PasswordExporterTest, CancelWaitsForSerializationFinished) {
     // is invoked. As this should not happen, mark the test as failed.
     GTEST_FAIL();
   }
-  EXPECT_FALSE(PasswordFileExists());
+  EXPECT_FALSE(fake_password_file_writer.writeAttempted);
   EXPECT_EQ(ExportState::IDLE, password_exporter_.exportState);
 
   histogram_tester_.ExpectTotalCount(

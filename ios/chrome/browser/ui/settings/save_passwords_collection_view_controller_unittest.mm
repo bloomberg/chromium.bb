@@ -333,14 +333,16 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
 
   UIColor* disabledColor = [[MDCPalette greyPalette] tint500];
   EXPECT_NSEQ(disabledColor, exportButton.textColor);
-  EXPECT_EQ(UIAccessibilityTraitNotEnabled, exportButton.accessibilityTraits);
+  EXPECT_TRUE(exportButton.accessibilityTraits &
+              UIAccessibilityTraitNotEnabled);
 
   // Add blacklisted form.
   AddBlacklistedForm1();
   // The export button should still be disabled as exporting blacklisted forms
   // is not currently supported.
   EXPECT_NSEQ(disabledColor, exportButton.textColor);
-  EXPECT_EQ(UIAccessibilityTraitNotEnabled, exportButton.accessibilityTraits);
+  EXPECT_TRUE(exportButton.accessibilityTraits &
+              UIAccessibilityTraitNotEnabled);
 }
 
 TEST_P(SavePasswordsCollectionViewControllerTest,
@@ -352,7 +354,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
 
   CheckTextCellTitleWithId(IDS_IOS_EXPORT_PASSWORDS, 3, 0);
   EXPECT_NSEQ([[MDCPalette greyPalette] tint900], exportButton.textColor);
-  EXPECT_NE(UIAccessibilityTraitNotEnabled, exportButton.accessibilityTraits);
+  EXPECT_FALSE(exportButton.accessibilityTraits &
+               UIAccessibilityTraitNotEnabled);
 }
 
 // Tests that the "Export Passwords..." button is greyed out in edit mode.
@@ -371,7 +374,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
       collectionViewWillBeginEditing:save_passwords_controller.collectionView];
 
   EXPECT_NSEQ([[MDCPalette greyPalette] tint500], exportButton.textColor);
-  EXPECT_EQ(UIAccessibilityTraitNotEnabled, exportButton.accessibilityTraits);
+  EXPECT_TRUE(exportButton.accessibilityTraits &
+              UIAccessibilityTraitNotEnabled);
 }
 
 // Tests that the "Export Passwords..." button is enabled after exiting
@@ -393,7 +397,8 @@ TEST_P(SavePasswordsCollectionViewControllerTest,
       collectionViewWillEndEditing:save_passwords_controller.collectionView];
 
   EXPECT_NSEQ([[MDCPalette greyPalette] tint900], exportButton.textColor);
-  EXPECT_NE(UIAccessibilityTraitNotEnabled, exportButton.accessibilityTraits);
+  EXPECT_FALSE(exportButton.accessibilityTraits &
+               UIAccessibilityTraitNotEnabled);
 }
 
 TEST_P(SavePasswordsCollectionViewControllerTest, PropagateDeletionToStore) {

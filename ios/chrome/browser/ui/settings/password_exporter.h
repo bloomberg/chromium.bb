@@ -96,6 +96,9 @@ enum class ExportState {
 // Called when the user cancels the export operation.
 - (void)cancelExport;
 
+// Called to re-enable export functionality when the export UI flow finishes.
+- (void)resetExportState;
+
 // State of the export operation.
 @property(nonatomic, readonly, assign) ExportState exportState;
 
