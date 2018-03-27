@@ -35,15 +35,18 @@ void WifiDataProviderCommon::StartDataProvider() {
     return;
   }
 
-  if (!WifiPollingPolicy::IsInitialized())
-    WifiPollingPolicy::Initialize(CreatePollingPolicy());
-  DCHECK(WifiPollingPolicy::IsInitialized());
+  DCHECK(!polling_policy_);
+  polling_policy_ = CreatePollingPolicy();
+  DCHECK(polling_policy_);
 
-  ScheduleNextScan(WifiPollingPolicy::Get()->PollingInterval());
+  // Perform first scan ASAP regardless of the polling policy. If this scan
+  // fails we'll retry at a rate in line with the polling policy.
+  ScheduleNextScan(0);
 }
 
 void WifiDataProviderCommon::StopDataProvider() {
   wlan_api_.reset();
+  polling_policy_.reset();
 }
 
 bool WifiDataProviderCommon::GetData(WifiData* data) {
@@ -61,12 +64,12 @@ void WifiDataProviderCommon::DoWifiScanTask() {
   bool update_available = false;
   WifiData new_data;
   if (!wlan_api_->GetAccessPointData(&new_data.access_point_data)) {
-    ScheduleNextScan(WifiPollingPolicy::Get()->NoWifiInterval());
+    ScheduleNextScan(polling_policy_->NoWifiInterval());
   } else {
     update_available = wifi_data_.DiffersSignificantly(new_data);
     wifi_data_ = new_data;
-    WifiPollingPolicy::Get()->UpdatePollingInterval(update_available);
-    ScheduleNextScan(WifiPollingPolicy::Get()->PollingInterval());
+    polling_policy_->UpdatePollingInterval(update_available);
+    ScheduleNextScan(polling_policy_->PollingInterval());
   }
   if (update_available || !is_first_scan_complete_) {
     is_first_scan_complete_ = true;
