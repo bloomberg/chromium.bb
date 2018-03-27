@@ -1094,6 +1094,21 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
           'build215-a9', 'build216-a9', 'build217-a9', 'build218-a9',
           'build219-a9', 'build220-a9'
       ],
+    },
+    'Android Go': {
+      'isolate': 'performance_test_suite',
+      'platform': 'android',
+      'dimension': {
+        'pool': 'chrome.tests.perf-fyi',
+        'os': 'Android',
+      },
+      'device_ids': [
+          'build30-a7--device1', 'build30-a7--device2', 'build30-a7--device3',
+          'build30-a7--device4', 'build30-a7--device5', 'build30-a7--device6',
+          'build30-a7--device7', 'build31-a7--device1', 'build31-a7--device2',
+          'build31-a7--device3', 'build31-a7--device4', 'build31-a7--device5',
+          'build31-a7--device6', 'build31-a7--device7'
+      ],
     }
   }
 }
@@ -1141,7 +1156,6 @@ def generate_performance_test_suite(tester_config):
 
   test_args = [
     '-v',
-    '--xvfb',
     '--browser=%s' % browser_name
   ]
 
