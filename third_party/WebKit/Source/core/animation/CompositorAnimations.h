@@ -101,7 +101,7 @@ class CORE_EXPORT CompositorAnimations {
                                                        const EffectModel&);
   static void StartAnimationOnCompositor(const Element&,
                                          int group,
-                                         double start_time,
+                                         WTF::Optional<double> start_time,
                                          double time_offset,
                                          const Timing&,
                                          const Animation*,
@@ -137,7 +137,7 @@ class CORE_EXPORT CompositorAnimations {
   static void GetAnimationOnCompositor(
       const Timing&,
       int group,
-      double start_time,
+      WTF::Optional<double> start_time,
       double time_offset,
       const KeyframeEffectModelBase&,
       Vector<std::unique_ptr<CompositorKeyframeModel>>& animations,

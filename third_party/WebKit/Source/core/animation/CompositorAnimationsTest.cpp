@@ -153,9 +153,9 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
       StringKeyframeEffectModel& effect,
       Vector<std::unique_ptr<CompositorKeyframeModel>>& keyframe_models,
       double animation_playback_rate) {
-    CompositorAnimations::GetAnimationOnCompositor(
-        timing, 0, std::numeric_limits<double>::quiet_NaN(), 0, effect,
-        keyframe_models, animation_playback_rate);
+    CompositorAnimations::GetAnimationOnCompositor(timing, 0, WTF::nullopt, 0,
+                                                   effect, keyframe_models,
+                                                   animation_playback_rate);
   }
 
   bool DuplicateSingleKeyframeAndTestIsCandidateOnResult(

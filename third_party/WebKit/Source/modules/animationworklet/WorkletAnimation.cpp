@@ -289,7 +289,7 @@ bool WorkletAnimation::StartOnCompositor(String* failure_message) {
   CompositorAnimations::AttachCompositedLayers(target,
                                                compositor_animation_.get());
 
-  double start_time = std::numeric_limits<double>::quiet_NaN();
+  WTF::Optional<double> start_time = WTF::nullopt;
   double time_offset = 0;
   int group = 0;
 
