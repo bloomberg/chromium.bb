@@ -118,12 +118,11 @@ Animation::Animation(ExecutionContext* execution_context,
       play_state_(kIdle),
       playback_rate_(1),
       start_time_(),
-      hold_time_(0),
+      hold_time_(),
       sequence_number_(NextSequenceNumber()),
       content_(content),
       timeline_(&timeline),
       paused_(false),
-      held_(false),
       is_paused_for_testing_(false),
       is_composited_animation_disabled_for_testing_(false),
       outdated_(false),
@@ -197,12 +196,12 @@ void Animation::SetCurrentTimeInternal(double new_current_time,
                                        TimingUpdateReason reason) {
   DCHECK(std::isfinite(new_current_time));
 
-  bool old_held = held_;
   bool outdated = false;
   bool is_limited = Limited(new_current_time);
-  held_ = paused_ || !playback_rate_ || is_limited || !start_time_;
-  if (held_) {
-    if (!old_held || hold_time_ != new_current_time)
+  bool is_held = paused_ || !playback_rate_ || is_limited || !start_time_;
+  if (is_held) {
+    // We only need to update the animation if the seek changes the hold time.
+    if (!hold_time_ || hold_time_ != new_current_time)
       outdated = true;
     hold_time_ = new_current_time;
     if (paused_ || !playback_rate_) {
@@ -212,7 +211,7 @@ void Animation::SetCurrentTimeInternal(double new_current_time,
       start_time_ = CalculateStartTime(new_current_time);
     }
   } else {
-    hold_time_ = NullValue();
+    hold_time_ = WTF::nullopt;
     start_time_ = CalculateStartTime(new_current_time);
     finished_ = false;
     outdated = true;
@@ -227,15 +226,15 @@ void Animation::SetCurrentTimeInternal(double new_current_time,
 void Animation::UpdateCurrentTimingState(TimingUpdateReason reason) {
   if (play_state_ == kIdle)
     return;
-  if (held_) {
-    double new_current_time = hold_time_;
+  if (hold_time_) {
+    double new_current_time = hold_time_.value();
     if (play_state_ == kFinished && start_time_ && timeline_) {
       // Add hystersis due to floating point error accumulation
       if (!Limited(CalculateCurrentTime() + 0.001 * playback_rate_)) {
         // The current time became unlimited, eg. due to a backwards
         // seek of the timeline.
         new_current_time = CalculateCurrentTime();
-      } else if (!Limited(hold_time_)) {
+      } else if (!Limited(hold_time_.value())) {
         // The hold time became unlimited, eg. due to the effect
         // becoming longer.
         new_current_time =
@@ -244,7 +243,6 @@ void Animation::UpdateCurrentTimingState(TimingUpdateReason reason) {
     }
     SetCurrentTimeInternal(new_current_time, reason);
   } else if (Limited(CalculateCurrentTime())) {
-    held_ = true;
     hold_time_ = playback_rate_ < 0 ? 0 : EffectEnd();
   }
 }
@@ -269,21 +267,21 @@ double Animation::currentTime(bool& is_null) {
 double Animation::currentTime() {
   PlayStateUpdateScope update_scope(*this, kTimingUpdateOnDemand);
 
-  if (PlayStateInternal() == kIdle || (!held_ && !start_time_))
+  if (PlayStateInternal() == kIdle || (!hold_time_ && !start_time_))
     return std::numeric_limits<double>::quiet_NaN();
 
   return CurrentTimeInternal() * 1000;
 }
 
 double Animation::CurrentTimeInternal() const {
-  double result = held_ ? hold_time_ : CalculateCurrentTime();
+  double result = hold_time_.value_or(CalculateCurrentTime());
 #if DCHECK_IS_ON()
   // We can't enforce this check during Unset due to other
   // assertions.
   if (play_state_ != kUnset) {
     const_cast<Animation*>(this)->UpdateCurrentTimingState(
         kTimingUpdateOnDemand);
-    DCHECK_EQ(result, (held_ ? hold_time_ : CalculateCurrentTime()));
+    DCHECK_EQ(result, hold_time_.value_or(CalculateCurrentTime()));
   }
 #endif
   return result;
@@ -412,7 +410,8 @@ void Animation::NotifyCompositorStartTime(double timeline_time) {
     DCHECK_EQ(compositor_state_->pending_action, kStart);
     DCHECK(!compositor_state_->start_time);
 
-    double initial_compositor_hold_time = compositor_state_->hold_time;
+    double initial_compositor_hold_time =
+        compositor_state_->hold_time.value_or(NullValue());
     compositor_state_->pending_action = kNone;
     // TODO(crbug.com/791086): Determine whether this can ever be null.
     double start_time = timeline_time + CurrentTimeInternal() / -playback_rate_;
@@ -441,7 +440,7 @@ void Animation::NotifyCompositorStartTime(double timeline_time) {
 void Animation::NotifyStartTime(double timeline_time) {
   if (Playing()) {
     DCHECK(!start_time_);
-    DCHECK(held_);
+    DCHECK(hold_time_.has_value());
 
     if (playback_rate_ == 0) {
       SetStartTimeInternal(timeline_time);
@@ -504,10 +503,10 @@ void Animation::SetStartTimeInternal(WTF::Optional<double> new_start_time) {
   bool had_start_time = start_time_.has_value();
   double previous_current_time = CurrentTimeInternal();
   start_time_ = new_start_time;
-  if (held_ && playback_rate_) {
+  if (hold_time_ && playback_rate_) {
     // If held, the start time would still be derrived from the hold time.
     // Force a new, limited, current time.
-    held_ = false;
+    hold_time_ = WTF::nullopt;
     double current_time = CalculateCurrentTime();
     if (playback_rate_ > 0 && current_time > EffectEnd()) {
       current_time = EffectEnd();
@@ -643,7 +642,6 @@ void Animation::play(ExceptionState& exception_state) {
   }
 
   if (PlayStateInternal() == kIdle) {
-    held_ = true;
     hold_time_ = 0;
   }
 
@@ -1052,7 +1050,7 @@ bool Animation::IsEventDispatchAllowed() const {
 
 double Animation::TimeToEffectChange() {
   DCHECK(!outdated_);
-  if (!start_time_ || held_)
+  if (!start_time_ || hold_time_)
     return std::numeric_limits<double>::infinity();
 
   if (!content_)
@@ -1073,7 +1071,7 @@ void Animation::cancel() {
   if (PlayStateInternal() == kIdle)
     return;
 
-  held_ = false;
+  hold_time_ = WTF::nullopt;
   paused_ = false;
   play_state_ = kIdle;
   start_time_ = WTF::nullopt;

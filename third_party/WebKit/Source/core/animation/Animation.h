@@ -279,7 +279,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   AnimationPlayState play_state_;
   double playback_rate_;
   WTF::Optional<double> start_time_;
-  double hold_time_;
+  WTF::Optional<double> hold_time_;
 
   unsigned sequence_number_;
 
@@ -291,7 +291,6 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
 
   // Reflects all pausing, including via pauseForTesting().
   bool paused_;
-  bool held_;
   bool is_paused_for_testing_;
   bool is_composited_animation_disabled_for_testing_;
 
@@ -320,7 +319,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
           effect_changed(false),
           pending_action(kStart) {}
     WTF::Optional<double> start_time;
-    double hold_time;
+    WTF::Optional<double> hold_time;
     double playback_rate;
     bool effect_changed;
     CompositorAction pending_action;
