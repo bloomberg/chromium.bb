@@ -872,7 +872,7 @@ static_library("extensions") {
     "//google_apis",
     "//media:media_buildflags",
     "//net",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//printing/features",
     "//rlz/features",
     "//services/audio/public/cpp",

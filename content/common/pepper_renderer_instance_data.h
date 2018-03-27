@@ -5,7 +5,7 @@
 #ifndef CONTENT_COMMON_PEPPER_RENDERER_INSTANCE_DATA_H_
 #define CONTENT_COMMON_PEPPER_RENDERER_INSTANCE_DATA_H_
 
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "url/gurl.h"
 
 #if !BUILDFLAG(ENABLE_PLUGINS)

@@ -23,7 +23,7 @@ include_rules = [
   "+grit/extensions_strings.h",
   "+net",
   # This directory contains build flags and does not pull all of PPAPI in.
-  "+ppapi/features",
+  "+ppapi/buildflags",
   "+services/data_decoder/public",
   "+services/network/public/cpp",
   "+services/network/public/mojom",

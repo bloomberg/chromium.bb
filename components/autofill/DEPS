@@ -13,5 +13,5 @@ include_rules = [
   "-components/autofill/content",
 
   # This directory contains build flags and does not pull all of PPAPI in.
-  "+ppapi/features",
+  "+ppapi/buildflags",
 ]

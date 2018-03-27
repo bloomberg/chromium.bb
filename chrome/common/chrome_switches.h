@@ -10,7 +10,7 @@
 
 #include "build/build_config.h"
 #include "chrome/common/buildflags.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "printing/features/features.h"
 #include "ui/base/ui_features.h"
 

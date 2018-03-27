@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "build/build_config.h"
 #include "chrome/test/base/test_switches.h"
-#include "ppapi/features/features.h"
+#include "build/build_config.h"
+#include "ppapi/buildflags/buildflags.h"
 
 namespace switches {
 

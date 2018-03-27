@@ -61,7 +61,7 @@
 #include "components/variations/pref_names.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 #if defined(OS_ANDROID)
 #include "chrome/browser/search/contextual_search_policy_handler_android.h"

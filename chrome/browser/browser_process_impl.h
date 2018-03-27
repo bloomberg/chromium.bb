@@ -28,7 +28,7 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "extensions/buildflags/buildflags.h"
 #include "media/media_buildflags.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "printing/features/features.h"
 #include "services/network/public/mojom/network_service.mojom.h"
 

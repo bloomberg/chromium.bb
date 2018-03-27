@@ -4,7 +4,7 @@
 
 import("//tools/grit/grit_rule.gni")
 import("//build/config/nacl/config.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 
 # Applied by targets internal to content.
 config("content_implementation") {

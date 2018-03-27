@@ -6,7 +6,7 @@
 
 #include "chrome/renderer/plugins/plugin_uma.h"
 #include "media/media_buildflags.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 
 class PluginUMATest : public testing::Test {
  public:

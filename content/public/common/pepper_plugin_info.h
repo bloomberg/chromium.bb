@@ -13,9 +13,9 @@
 #include "base/files/file_path.h"
 #include "content/common/content_export.h"
 #include "content/public/common/webplugininfo.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "ppapi/c/pp_module.h"
 #include "ppapi/c/ppb.h"
-#include "ppapi/features/features.h"
 
 #if !BUILDFLAG(ENABLE_PLUGINS)
 #error "Plugins should be enabled"

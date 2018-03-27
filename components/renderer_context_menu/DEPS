@@ -6,6 +6,6 @@ include_rules = [
   "+ui/gfx",
   "+ui/views",
   # This directory contains build flags and does not pull all of PPAPI in.
-  "+ppapi/features",
+  "+ppapi/buildflags",
   "+third_party/WebKit/public/web",
 ]

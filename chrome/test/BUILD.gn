@@ -18,7 +18,7 @@ import("//components/spellcheck/spellcheck_build_features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//remoting/remoting_enable.gni")
 import("//rlz/features/features.gni")
 import("//services/service_manager/public/service_manifest.gni")
@@ -160,7 +160,7 @@ static_library("test_support") {
     "//net",
     "//net:test_support",
     "//pdf",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//printing/features",
     "//skia",
     "//sql",
@@ -364,7 +364,7 @@ test("browser_tests") {
     "//extensions/buildflags",
     "//media:media_buildflags",
     "//net:test_support",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//printing/features",
     "//rlz/features",
     "//third_party/WebKit/public:features",
@@ -2753,7 +2753,7 @@ test("unit_tests") {
     "//mojo/public/cpp/bindings",
     "//net",
     "//net:test_support",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//services/data_decoder/public/cpp:test_support",
     "//services/network/public/cpp",
     "//skia",

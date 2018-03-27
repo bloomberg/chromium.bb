@@ -12,7 +12,7 @@ import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 import("//pdf/features.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//tools/grit/grit_rule.gni")
 
 if (enable_pdf) {
@@ -265,7 +265,7 @@ static_library("common") {
     "//mojo/edk",
     "//mojo/public/cpp/bindings",
     "//pdf:buildflags",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//printing/features",
     "//services/service_manager/sandbox",
     "//skia",
@@ -527,7 +527,7 @@ static_library("non_code_constants") {
     ":buildflags",
     ":version_header",
     "//base",
-    "//ppapi/features",
+    "//ppapi/buildflags",
   ]
 
   public_deps = [
@@ -574,7 +574,7 @@ static_library("constants") {
     "//device/vr/buildflags",
     "//media:media_buildflags",
     "//media/cdm:cdm_paths",  # Needed by chrome_paths.cc.
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//third_party/widevine/cdm:headers",
   ]
 

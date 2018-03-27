@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "content/public/renderer/render_view_observer.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/range/range.h"
 

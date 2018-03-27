@@ -13,7 +13,7 @@ import("//components/offline_pages/buildflags/features.gni")
 import("//components/signin/features.gni")
 import("//extensions/buildflags/buildflags.gni")
 import("//media/media_options.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//printing/features/features.gni")
 import("//rlz/features/features.gni")
 import("//ui/base/ui_features.gni")
@@ -1053,7 +1053,7 @@ split_static_library("ui") {
     "//extensions/buildflags",
     "//media",
     "//net:net",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//printing/features",
     "//rlz/features",
     "//services/metrics/public/cpp:ukm_builders",

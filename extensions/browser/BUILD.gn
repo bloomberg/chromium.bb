@@ -385,7 +385,7 @@ jumbo_source_set("browser_sources") {
     "//extensions/common/api",
     "//extensions/strings",
     "//google_apis",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//services/device/public/mojom",
     "//services/preferences/public/cpp",
     "//services/service_manager/public/cpp",

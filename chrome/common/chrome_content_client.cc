@@ -53,7 +53,7 @@
 #include "media/media_buildflags.h"
 #include "net/http/http_util.h"
 #include "pdf/buildflags.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/layout.h"
 #include "ui/base/resource/resource_bundle.h"

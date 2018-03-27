@@ -6,7 +6,7 @@ import("//build/config/ui.gni")
 import("//chrome/common/features.gni")
 import("//chromeos/assistant/assistant.gni")
 import("//components/nacl/features.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 import("//printing/features/features.gni")
 import("//services/catalog/public/tools/catalog.gni")
 import("//services/service_manager/public/service_manifest.gni")
@@ -334,7 +334,7 @@ static_library("test_support") {
     "//content/public/common",
     "//content/public/common:service_names",
     "//pdf",
-    "//ppapi/features",
+    "//ppapi/buildflags",
     "//printing/features",
     "//services/service_manager/embedder",
     "//ui/base",

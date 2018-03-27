@@ -58,7 +58,7 @@
 #include "content/public/common/service_names.mojom.h"
 #include "extensions/common/constants.h"
 #include "pdf/buildflags.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "printing/features/features.h"
 #include "services/service_manager/embedder/switches.h"
 #include "ui/base/material_design/material_design_controller.h"

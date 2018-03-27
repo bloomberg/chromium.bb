@@ -27,7 +27,7 @@
 #include "components/ukm/observers/sync_disable_observer.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "third_party/metrics_proto/system_profile.pb.h"
 
 class PluginMetricsProvider;

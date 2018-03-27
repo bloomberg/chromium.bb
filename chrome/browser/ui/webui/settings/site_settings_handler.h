@@ -16,7 +16,7 @@
 #include "content/public/browser/host_zoom_map.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "third_party/WebKit/public/mojom/quota/quota_types.mojom.h"
 
 class HostContentSettingsMap;

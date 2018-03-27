@@ -23,7 +23,7 @@
 #include "base/win/iat_patch_function.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
-#include "ppapi/features/features.h"
+#include "ppapi/buildflags/buildflags.h"
 #include "skia/ext/fontmgr_default_win.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/ports/SkFontMgr.h"

@@ -5,7 +5,7 @@
 import("//build/config/features.gni")
 import("//build/config/jumbo.gni")
 import("//media/media_options.gni")
-import("//ppapi/features/features.gni")
+import("//ppapi/buildflags/buildflags.gni")
 
 # See //content/BUILD.gn for how this works.
 group("renderer") {
@@ -91,8 +91,8 @@ target(link_target_type, "renderer_sources") {
     "//media/capture",
     "//media/gpu/ipc/client",
     "//net",
+    "//ppapi/buildflags",
     "//ppapi/c",
-    "//ppapi/features",
     "//skia",
     "//third_party/WebKit/public:blink_headers",
     "//third_party/widevine/cdm:headers",
