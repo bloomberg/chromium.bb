@@ -20,7 +20,7 @@ class TestTickClock : public base::TickClock {
   explicit TestTickClock(base::TimeTicks now);
   ~TestTickClock() override;
 
-  base::TimeTicks NowTicks() override;
+  base::TimeTicks NowTicks() const override;
   void set_now(base::TimeTicks now) { now_ticks_ = now; }
 
  private:

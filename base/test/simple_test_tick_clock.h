@@ -21,7 +21,7 @@ class SimpleTestTickClock : public TickClock {
   SimpleTestTickClock();
   ~SimpleTestTickClock() override;
 
-  TimeTicks NowTicks() override;
+  TimeTicks NowTicks() const override;
 
   // Advances the clock by |delta|, which must not be negative.
   void Advance(TimeDelta delta);
@@ -31,7 +31,7 @@ class SimpleTestTickClock : public TickClock {
 
  private:
   // Protects |now_ticks_|.
-  Lock lock_;
+  mutable Lock lock_;
 
   TimeTicks now_ticks_;
 };

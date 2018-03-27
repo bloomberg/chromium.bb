@@ -75,7 +75,7 @@ class FakeNightLightClient : public NightLightClient,
   base::Time Now() override { return fake_now_; }
 
   // base::TickClock:
-  base::TimeTicks NowTicks() override { return fake_now_ticks_; }
+  base::TimeTicks NowTicks() const override { return fake_now_ticks_; }
 
   void set_fake_now(base::Time now) { fake_now_ = now; }
   void set_fake_now_ticks(base::TimeTicks now_ticks) {

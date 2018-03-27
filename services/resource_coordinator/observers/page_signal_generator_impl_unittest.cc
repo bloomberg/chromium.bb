@@ -28,7 +28,7 @@ class TickClockWrapper : public base::TickClock {
   ~TickClockWrapper() override {}
 
   // base::TickClock implementation:
-  base::TimeTicks NowTicks() override { return tick_clock_->NowTicks(); }
+  base::TimeTicks NowTicks() const override { return tick_clock_->NowTicks(); }
 
  private:
   base::TickClock* tick_clock_;

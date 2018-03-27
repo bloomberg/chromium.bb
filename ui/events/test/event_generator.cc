@@ -37,18 +37,21 @@
 namespace ui {
 namespace test {
 
+// A TickClock that advances time by one millisecond on each call to NowTicks().
 class TestTickClock : public base::TickClock {
  public:
-  // Starts off with a clock set to TimeTicks().
-  TestTickClock() {}
+  TestTickClock() = default;
 
-  base::TimeTicks NowTicks() override {
-    return base::TimeTicks() +
-           base::TimeDelta::FromMicroseconds(ticks_++ * 1000);
+  // Unconditionally returns a tick count that is 1ms later than the previous
+  // call, starting at 1ms.
+  base::TimeTicks NowTicks() const override {
+    static constexpr base::TimeDelta kOneMillisecond =
+        base::TimeDelta::FromMilliseconds(1);
+    return ticks_ += kOneMillisecond;
   }
 
  private:
-  int64_t ticks_ = 1;
+  mutable base::TimeTicks ticks_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTickClock);
 };

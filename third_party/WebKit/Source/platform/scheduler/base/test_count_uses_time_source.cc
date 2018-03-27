@@ -12,7 +12,7 @@ TestCountUsesTimeSource::TestCountUsesTimeSource() : now_calls_count_(0) {}
 
 TestCountUsesTimeSource::~TestCountUsesTimeSource() = default;
 
-base::TimeTicks TestCountUsesTimeSource::NowTicks() {
+base::TimeTicks TestCountUsesTimeSource::NowTicks() const {
   now_calls_count_++;
   // Don't return 0, as it triggers some assertions.
   return base::TimeTicks() + base::TimeDelta::FromSeconds(1);

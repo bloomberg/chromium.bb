@@ -41,7 +41,7 @@ class SimpleOffsetTestTickClock : public base::TickClock {
   ~SimpleOffsetTestTickClock() override {}
 
   // Returns the spoofed time as Now.
-  base::TimeTicks NowTicks() override {
+  base::TimeTicks NowTicks() const override {
     return base::TimeTicks::UnixEpoch() + now_offset_;
   }
 

@@ -680,7 +680,7 @@ void PipelineIntegrationTestBase::RunUntilIdleEndedOrErrorInternal(
   scoped_task_environment_.RunUntilIdle();
 }
 
-base::TimeTicks DummyTickClock::NowTicks() {
+base::TimeTicks DummyTickClock::NowTicks() const {
   now_ += base::TimeDelta::FromSeconds(60);
   return now_;
 }

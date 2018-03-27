@@ -26,10 +26,10 @@ class SkewedTickClock : public base::TickClock {
   // jump forwards or backwards, only changing the offset will
   // do that.
   void SetSkew(double skew, base::TimeDelta offset);
-  base::TimeTicks NowTicks() final;
+  base::TimeTicks NowTicks() const final;
 
  private:
-  base::TimeTicks SkewTicks(base::TimeTicks now);
+  base::TimeTicks SkewTicks(base::TimeTicks now) const;
   base::TickClock* clock_;  // Not owned.
   double skew_;
   base::TimeTicks last_skew_set_time_;

@@ -242,7 +242,9 @@ ActualTime::ActualTime() {}
 ActualTime::~ActualTime() {}
 
 base::Time ActualTime::Now() { return base::Time::Now(); }
-base::TimeTicks ActualTime::NowTicks() { return base::TimeTicks::Now(); }
+base::TimeTicks ActualTime::NowTicks() const {
+  return base::TimeTicks::Now();
+}
 
 std::unique_ptr<MockableTime::Timer> ActualTime::CreateTimer() {
   return std::unique_ptr<MockableTime::Timer>(new ActualTimer());

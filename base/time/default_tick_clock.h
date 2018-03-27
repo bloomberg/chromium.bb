@@ -17,7 +17,7 @@ class BASE_EXPORT DefaultTickClock : public TickClock {
   ~DefaultTickClock() override;
 
   // Simply returns TimeTicks::Now().
-  TimeTicks NowTicks() override;
+  TimeTicks NowTicks() const override;
 
   // Returns a shared instance of DefaultTickClock. This is thread-safe.
   static DefaultTickClock* GetInstance();

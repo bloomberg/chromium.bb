@@ -16,13 +16,13 @@ class TestCountUsesTimeSource : public base::TickClock {
   explicit TestCountUsesTimeSource();
   ~TestCountUsesTimeSource() override;
 
-  base::TimeTicks NowTicks() override;
-  int now_calls_count() { return now_calls_count_; }
+  base::TimeTicks NowTicks() const override;
+  int now_calls_count() const { return now_calls_count_; }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TestCountUsesTimeSource);
 
-  int now_calls_count_;
+  mutable int now_calls_count_;
 };
 
 }  // namespace scheduler

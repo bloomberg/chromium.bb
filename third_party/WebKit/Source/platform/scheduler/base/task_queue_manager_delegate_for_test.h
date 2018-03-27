@@ -38,7 +38,7 @@ class TaskQueueManagerDelegateForTest : public TaskQueueManagerDelegate {
   void RemoveNestingObserver(base::RunLoop::NestingObserver* observer) override;
 
   // TickClock:
-  base::TimeTicks NowTicks() override;
+  base::TimeTicks NowTicks() const override;
 
  protected:
   ~TaskQueueManagerDelegateForTest() override;

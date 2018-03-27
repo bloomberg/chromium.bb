@@ -140,7 +140,7 @@ class NetworkPortalDetectorImpl : public NetworkPortalDetector,
   // PortalDetectorStrategy::Delegate implementation:
   int NoResponseResultCount() override;
   base::TimeTicks AttemptStartTime() override;
-  base::TimeTicks NowTicks() override;
+  base::TimeTicks NowTicks() const override;
 
   // content::NotificationObserver implementation:
   void Observe(int type,
