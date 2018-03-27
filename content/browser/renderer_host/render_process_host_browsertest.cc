@@ -79,10 +79,6 @@ class RenderProcessHostTest : public ContentBrowserTest,
     command_line->AppendSwitchASCII(
         switches::kAutoplayPolicy,
         switches::autoplay::kNoUserGestureRequiredPolicy);
-    // These flags are necessary to emulate camera input for getUserMedia()
-    // tests.
-    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
-    command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
   }
 
  protected:
@@ -557,6 +553,25 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
     rph->RemoveObserver(this);
 }
 
+// Test class instance to run specific setup steps for capture streams.
+class CaptureStreamRenderProcessHostTest : public RenderProcessHostTest {
+ public:
+  void SetUp() override {
+    // Pixel output is needed when digging pixel values out of video tags for
+    // verification in VideoCaptureStream tests.
+    EnablePixelOutput();
+    RenderProcessHostTest::SetUp();
+  }
+
+  void SetUpCommandLine(base::CommandLine* command_line) override {
+    // These flags are necessary to emulate camera input for getUserMedia()
+    // tests.
+    command_line->AppendSwitch(switches::kUseFakeDeviceForMediaStream);
+    command_line->AppendSwitch(switches::kUseFakeUIForMediaStream);
+    RenderProcessHostTest::SetUpCommandLine(command_line);
+  }
+};
+
 // These tests contain WebRTC calls and cannot be run when it isn't enabled.
 #if !BUILDFLAG(ENABLE_WEBRTC)
 #define GetUserMediaIncrementsVideoCaptureStreams \
@@ -572,7 +587,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessZerosAudioStreams) {
 
 // Tests that video capture stream count increments when getUserMedia() is
 // called.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        GetUserMediaIncrementsVideoCaptureStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
@@ -588,7 +603,8 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 
 // Tests that video capture stream count resets when getUserMedia() is called
 // and stopped.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, StopResetsVideoCaptureStreams) {
+IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
+                       StopResetsVideoCaptureStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
                 embedded_test_server()->GetURL("/media/getusermedia.html"));
@@ -604,7 +620,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, StopResetsVideoCaptureStreams) {
 // Tests that video capture stream counts (used for process priority
 // calculations) are properly set and cleared during media playback and renderer
 // terminations.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        KillProcessZerosVideoCaptureStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
@@ -650,7 +666,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 
 // Tests that media stream count increments when getUserMedia() is
 // called with audio only.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        GetUserMediaAudioOnlyIncrementsMediaStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
@@ -668,7 +684,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
 // Tests that media stream counts (used for process priority
 // calculations) are properly set and cleared during media playback and renderer
 // terminations for audio only streams.
-IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
+IN_PROC_BROWSER_TEST_F(CaptureStreamRenderProcessHostTest,
                        KillProcessZerosAudioCaptureStreams) {
   ASSERT_TRUE(embedded_test_server()->Start());
   NavigateToURL(shell(),
