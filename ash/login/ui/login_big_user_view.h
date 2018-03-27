@@ -14,9 +14,8 @@
 
 namespace ash {
 
-// This class displays the big user view in the login screen.
-// This is a container view which has one of the following views as its only
-// child:
+// Displays the big user view in the login screen. This is a container view
+// which has one of the following views as its only child:
 //  - LoginAuthUserView: for regular user.
 //  - LoginPublicAccountUserView: for public account user.
 class ASH_EXPORT LoginBigUserView : public NonAccessibleView {
@@ -27,14 +26,6 @@ class ASH_EXPORT LoginBigUserView : public NonAccessibleView {
       const LoginPublicAccountUserView::Callbacks& public_account_callbacks);
   ~LoginBigUserView() override;
 
-  // Create LoginAuthUserView and add it as child view.
-  // |public_account_| will be deleted if exists to ensure the single child.
-  void CreateAuthUser(const mojom::LoginUserInfoPtr& user);
-
-  // Create LoginPublicAccountUserView and add it as child view.
-  // |auth_user_| will be deleted if exists to ensure the single child.
-  void CreatePublicAccount(const mojom::LoginUserInfoPtr& user);
-
   // Base on the user type, call CreateAuthUser or CreatePublicAccount;
   void CreateChildView(const mojom::LoginUserInfoPtr& user);
 
@@ -43,17 +34,25 @@ class ASH_EXPORT LoginBigUserView : public NonAccessibleView {
 
   const mojom::LoginUserInfoPtr& GetCurrentUser() const;
   LoginUserView* GetUserView();
-  bool auth_enabled() const;
 
-  // views::View:
-  void RequestFocus() override;
+  bool IsAuthEnabled() const;
 
   LoginPublicAccountUserView* public_account() { return public_account_; }
   LoginAuthUserView* auth_user() { return auth_user_; }
 
+  // views::View:
+  void RequestFocus() override;
+
  private:
-  // One of these is nullptr, one is not, ie.
-  // DCHECK(!!public_account_^!!auth_user_);
+  // Create LoginAuthUserView and add it as child view.
+  // |public_account_| will be deleted if exists to ensure the single child.
+  void CreateAuthUser(const mojom::LoginUserInfoPtr& user);
+
+  // Create LoginPublicAccountUserView and add it as child view.
+  // |auth_user_| will be deleted if exists to ensure the single child.
+  void CreatePublicAccount(const mojom::LoginUserInfoPtr& user);
+
+  // Either |auth_user_| or |public_account_| must be null.
   LoginPublicAccountUserView* public_account_ = nullptr;
   LoginAuthUserView* auth_user_ = nullptr;
 

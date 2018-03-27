@@ -13,6 +13,11 @@ bool IsPublicAccountUser(const mojom::LoginUserInfoPtr& user) {
   return user->basic_user_info->type == user_manager::USER_TYPE_PUBLIC_ACCOUNT;
 }
 
+// Returns true if either a or b have a value, but not both.
+bool OnlyOneSet(views::View* a, views::View* b) {
+  return !!a ^ !!b;
+}
+
 }  // namespace
 
 LoginBigUserView::LoginBigUserView(
@@ -27,6 +32,55 @@ LoginBigUserView::LoginBigUserView(
 }
 
 LoginBigUserView::~LoginBigUserView() = default;
+
+void LoginBigUserView::CreateChildView(const mojom::LoginUserInfoPtr& user) {
+  if (IsPublicAccountUser(user))
+    CreatePublicAccount(user);
+  else
+    CreateAuthUser(user);
+}
+
+void LoginBigUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
+  // Rebuild child view for the following swap case:
+  // 1. Public Account -> Auth User
+  // 2. Auth User      -> Public Account
+  if (IsPublicAccountUser(user) != IsPublicAccountUser(GetCurrentUser()))
+    CreateChildView(user);
+
+  DCHECK(OnlyOneSet(public_account_, auth_user_));
+  if (public_account_)
+    public_account_->UpdateForUser(user);
+  if (auth_user_)
+    auth_user_->UpdateForUser(user);
+}
+
+const mojom::LoginUserInfoPtr& LoginBigUserView::GetCurrentUser() const {
+  DCHECK(OnlyOneSet(public_account_, auth_user_));
+  if (public_account_)
+    return public_account_->current_user();
+  return auth_user_->current_user();
+}
+
+LoginUserView* LoginBigUserView::GetUserView() {
+  DCHECK(OnlyOneSet(public_account_, auth_user_));
+  if (public_account_)
+    return public_account_->user_view();
+  return auth_user_->user_view();
+}
+
+bool LoginBigUserView::IsAuthEnabled() const {
+  DCHECK(OnlyOneSet(public_account_, auth_user_));
+  if (public_account_)
+    return public_account_->auth_enabled();
+  return auth_user_->auth_methods() != LoginAuthUserView::AUTH_NONE;
+}
+
+void LoginBigUserView::RequestFocus() {
+  DCHECK(OnlyOneSet(public_account_, auth_user_));
+  if (public_account_)
+    return public_account_->RequestFocus();
+  return auth_user_->RequestFocus();
+}
 
 void LoginBigUserView::CreateAuthUser(const mojom::LoginUserInfoPtr& user) {
   DCHECK(!IsPublicAccountUser(user));
@@ -48,55 +102,6 @@ void LoginBigUserView::CreatePublicAccount(
   delete auth_user_;
   auth_user_ = nullptr;
   AddChildView(public_account_);
-}
-
-void LoginBigUserView::CreateChildView(const mojom::LoginUserInfoPtr& user) {
-  if (IsPublicAccountUser(user))
-    CreatePublicAccount(user);
-  else
-    CreateAuthUser(user);
-}
-
-void LoginBigUserView::UpdateForUser(const mojom::LoginUserInfoPtr& user) {
-  // Rebuild child view for the following swap case:
-  // 1. Public Account -> Auth User
-  // 2. Auth User      -> Public Account
-  if (IsPublicAccountUser(user) != IsPublicAccountUser(GetCurrentUser()))
-    CreateChildView(user);
-
-  DCHECK(!!public_account_ ^ !!auth_user_);
-  if (public_account_)
-    public_account_->UpdateForUser(user);
-  if (auth_user_)
-    auth_user_->UpdateForUser(user);
-}
-
-const mojom::LoginUserInfoPtr& LoginBigUserView::GetCurrentUser() const {
-  DCHECK(!!public_account_ ^ !!auth_user_);
-  if (public_account_)
-    return public_account_->current_user();
-  return auth_user_->current_user();
-}
-
-LoginUserView* LoginBigUserView::GetUserView() {
-  DCHECK(!!public_account_ ^ !!auth_user_);
-  if (public_account_)
-    return public_account_->user_view();
-  return auth_user_->user_view();
-}
-
-bool LoginBigUserView::auth_enabled() const {
-  DCHECK(!!public_account_ ^ !!auth_user_);
-  if (public_account_)
-    return public_account_->auth_enabled();
-  return auth_user_->auth_methods() != LoginAuthUserView::AUTH_NONE;
-}
-
-void LoginBigUserView::RequestFocus() {
-  DCHECK(!!public_account_ ^ !!auth_user_);
-  if (public_account_)
-    return public_account_->RequestFocus();
-  return auth_user_->RequestFocus();
 }
 
 }  // namespace ash

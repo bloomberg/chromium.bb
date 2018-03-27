@@ -351,8 +351,8 @@ TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
   EXPECT_NE(primary_user, secondary_user);
 
   // Primary user starts with auth. Secondary user does not have any auth.
-  EXPECT_TRUE(test_api.primary_big_view()->auth_enabled());
-  EXPECT_FALSE(test_api.opt_secondary_big_view()->auth_enabled());
+  EXPECT_TRUE(test_api.primary_big_view()->IsAuthEnabled());
+  EXPECT_FALSE(test_api.opt_secondary_big_view()->IsAuthEnabled());
   ASSERT_NE(nullptr, test_api.opt_secondary_big_view()->auth_user());
 
   // Send event to swap users.
@@ -372,8 +372,8 @@ TEST_F(LockContentsViewUnitTest, SwapAuthUsersInTwoUserLayout) {
                                 ->basic_user_info->account_id);
 
   // Active auth user (ie, which user is showing password) is swapped.
-  EXPECT_FALSE(test_api.primary_big_view()->auth_enabled());
-  EXPECT_TRUE(test_api.opt_secondary_big_view()->auth_enabled());
+  EXPECT_FALSE(test_api.primary_big_view()->IsAuthEnabled());
+  EXPECT_TRUE(test_api.opt_secondary_big_view()->IsAuthEnabled());
 }
 
 // Ensures that when swapping from a user list, the entire user info is swapped.
@@ -1039,8 +1039,8 @@ TEST_F(LockContentsViewUnitTest, SwapAuthAndPublicAccountUserInTwoUserLayout) {
   EXPECT_NE(primary_user, secondary_user);
 
   // Primary user starts with auth. Secondary user does not have any auth.
-  EXPECT_TRUE(test_api.primary_big_view()->auth_enabled());
-  EXPECT_FALSE(test_api.opt_secondary_big_view()->auth_enabled());
+  EXPECT_TRUE(test_api.primary_big_view()->IsAuthEnabled());
+  EXPECT_FALSE(test_api.opt_secondary_big_view()->IsAuthEnabled());
 
   // Verify the LoginBigUserView has built the child view correctly.
   ASSERT_TRUE(test_api.primary_big_view()->public_account());
@@ -1071,8 +1071,8 @@ TEST_F(LockContentsViewUnitTest, SwapAuthAndPublicAccountUserInTwoUserLayout) {
   ASSERT_TRUE(test_api.opt_secondary_big_view()->auth_user());
 
   // Active auth (ie, which user is showing password) is swapped.
-  EXPECT_FALSE(test_api.primary_big_view()->auth_enabled());
-  EXPECT_TRUE(test_api.opt_secondary_big_view()->auth_enabled());
+  EXPECT_FALSE(test_api.primary_big_view()->IsAuthEnabled());
+  EXPECT_TRUE(test_api.opt_secondary_big_view()->IsAuthEnabled());
 }
 
 // Ensures that when swapping from a user list, the entire user info is swapped
