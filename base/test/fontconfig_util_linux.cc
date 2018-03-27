@@ -30,8 +30,6 @@ const char kFontsConfTemplate[] = R"(<?xml version="1.0"?>
   <dir>$2</dir>
 
   <!-- System fonts.  TODO(thomasanderson): Remove these. -->
-  <dir>/usr/share/fonts/opentype/ipafont-gothic</dir>
-  <dir>/usr/share/fonts/opentype/ipafont-mincho</dir>
   <dir>/usr/share/fonts/truetype/msttcorefonts</dir>
 
   <!-- The rejectfont element is used to exclude entire directories.  Then
