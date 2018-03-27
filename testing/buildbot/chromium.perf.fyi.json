@@ -4,6 +4,7 @@
       {
         "args": [
           "-v",
+          "--xvfb",
           "--browser=android-chromium"
         ],
         "isolate_name": "performance_test_suite",
@@ -451,6 +452,7 @@
       {
         "args": [
           "-v",
+          "--xvfb",
           "--browser=release"
         ],
         "isolate_name": "performance_test_suite",
@@ -530,6 +532,7 @@
       {
         "args": [
           "-v",
+          "--xvfb",
           "--browser=reference",
           "--testing=true"
         ],
