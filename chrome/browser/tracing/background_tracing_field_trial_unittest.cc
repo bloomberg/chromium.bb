@@ -34,7 +34,7 @@ TEST_P(BackgroundTracingTest, SetupBackgroundTracingFieldTrial) {
     base::CommandLine::ForCurrentProcess()->AppendSwitch(
         switches::kTraceStartup);
     // Normally is runned from ContentMainRunnerImpl::Initialize().
-    tracing::EnableStartupTracingIfNeeded(false);
+    tracing::EnableStartupTracingIfNeeded();
   }
 
   base::FieldTrialList field_trial_list(nullptr);

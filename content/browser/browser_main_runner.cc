@@ -26,7 +26,6 @@
 #include "content/browser/browser_shutdown_profile_dumper.h"
 #include "content/browser/notification_service_impl.h"
 #include "content/common/content_switches_internal.h"
-#include "content/public/browser/tracing_controller.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/main_function_params.h"
 #include "third_party/skia/include/core/SkGraphics.h"
@@ -191,8 +190,7 @@ class BrowserMainRunnerImpl : public BrowserMainRunner {
         startup_profiler.reset(
             new BrowserShutdownProfileDumper(main_loop_->startup_trace_file()));
       }
-    } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled() &&
-               TracingController::GetInstance()->IsTracing()) {
+    } else if (tracing::TraceConfigFile::GetInstance()->IsEnabled()) {
       base::FilePath result_file;
 #if defined(OS_ANDROID)
       TracingControllerAndroid::GenerateTracingFilePath(&result_file);

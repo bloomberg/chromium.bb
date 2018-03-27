@@ -14,7 +14,7 @@ namespace content {
 
 bool LibraryLoaded(JNIEnv* env, jclass clazz) {
   // Enable startup tracing asap to avoid early TRACE_EVENT calls being ignored.
-  tracing::EnableStartupTracingIfNeeded(true /* can_access_file_system */);
+  tracing::EnableStartupTracingIfNeeded();
 
   // Android's main browser loop is custom so we set the browser
   // name here as early as possible.

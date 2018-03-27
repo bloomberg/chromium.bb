@@ -120,6 +120,8 @@ class BASE_EXPORT TraceConfig {
   };
   typedef std::vector<EventFilterConfig> EventFilters;
 
+  static std::string TraceRecordModeToStr(TraceRecordMode record_mode);
+
   TraceConfig();
 
   // Create TraceConfig object from category filter and trace options strings.

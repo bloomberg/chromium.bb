@@ -152,8 +152,6 @@ static const char* const kSwitchNames[] = {
     switches::kNoSandbox,
     switches::kRunAllCompositorStagesBeforeDraw,
     switches::kTestGLLib,
-    switches::kTraceConfigFile,
-    switches::kTraceStartup,
     switches::kTraceToConsole,
     switches::kUseFakeJpegDecodeAccelerator,
     switches::kUseGpuInTests,
@@ -1223,6 +1221,7 @@ bool GpuProcessHost::LaunchGpuProcess() {
   cmd_line->AppendSwitchASCII(switches::kProcessType, switches::kGpuProcess);
 
   BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line.get());
+  BrowserChildProcessHostImpl::CopyTraceStartupFlags(cmd_line.get());
 
 #if defined(OS_WIN)
   cmd_line->AppendArg(switches::kPrefetchArgumentGpu);

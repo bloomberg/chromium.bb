@@ -46,6 +46,10 @@ const char kTraceStartupDuration[]          = "trace-startup-duration";
 // all events since startup.
 const char kTraceStartupFile[]              = "trace-startup-file";
 
+// If supplied, sets the tracing record mode; otherwise, the default
+// "record-until-full" mode will be used.
+const char kTraceStartupRecordMode[] = "trace-startup-record-mode";
+
 // Sends a pretty-printed version of tracing info to the console.
 const char kTraceToConsole[]                = "trace-to-console";
 

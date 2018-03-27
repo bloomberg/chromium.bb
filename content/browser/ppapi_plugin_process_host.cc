@@ -351,6 +351,7 @@ bool PpapiPluginProcessHost::Init(const PepperPluginInfo& info) {
                               is_broker_ ? switches::kPpapiBrokerProcess
                                          : switches::kPpapiPluginProcess);
   BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(cmd_line.get());
+  BrowserChildProcessHostImpl::CopyTraceStartupFlags(cmd_line.get());
 
 #if defined(OS_WIN)
   cmd_line->AppendArg(is_broker_ ? switches::kPrefetchArgumentPpapiBroker

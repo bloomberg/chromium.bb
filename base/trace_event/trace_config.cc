@@ -182,6 +182,23 @@ bool TraceConfig::EventFilterConfig::IsCategoryGroupEnabled(
   return category_filter_.IsCategoryGroupEnabled(category_group_name);
 }
 
+// static
+std::string TraceConfig::TraceRecordModeToStr(TraceRecordMode record_mode) {
+  switch (record_mode) {
+    case RECORD_UNTIL_FULL:
+      return kRecordUntilFull;
+    case RECORD_CONTINUOUSLY:
+      return kRecordContinuously;
+    case RECORD_AS_MUCH_AS_POSSIBLE:
+      return kRecordAsMuchAsPossible;
+    case ECHO_TO_CONSOLE:
+      return kTraceToConsole;
+    default:
+      NOTREACHED();
+  }
+  return kRecordUntilFull;
+}
+
 TraceConfig::TraceConfig() {
   InitializeDefault();
 }
@@ -193,24 +210,8 @@ TraceConfig::TraceConfig(StringPiece category_filter_string,
 
 TraceConfig::TraceConfig(StringPiece category_filter_string,
                          TraceRecordMode record_mode) {
-  std::string trace_options_string;
-  switch (record_mode) {
-    case RECORD_UNTIL_FULL:
-      trace_options_string = kRecordUntilFull;
-      break;
-    case RECORD_CONTINUOUSLY:
-      trace_options_string = kRecordContinuously;
-      break;
-    case RECORD_AS_MUCH_AS_POSSIBLE:
-      trace_options_string = kRecordAsMuchAsPossible;
-      break;
-    case ECHO_TO_CONSOLE:
-      trace_options_string = kTraceToConsole;
-      break;
-    default:
-      NOTREACHED();
-  }
-  InitializeFromStrings(category_filter_string, trace_options_string);
+  InitializeFromStrings(category_filter_string,
+                        TraceConfig::TraceRecordModeToStr(record_mode));
 }
 
 TraceConfig::TraceConfig(const DictionaryValue& config) {
@@ -470,23 +471,8 @@ void TraceConfig::SetEventFiltersFromConfigList(
 
 std::unique_ptr<DictionaryValue> TraceConfig::ToDict() const {
   auto dict = std::make_unique<DictionaryValue>();
-  switch (record_mode_) {
-    case RECORD_UNTIL_FULL:
-      dict->SetString(kRecordModeParam, kRecordUntilFull);
-      break;
-    case RECORD_CONTINUOUSLY:
-      dict->SetString(kRecordModeParam, kRecordContinuously);
-      break;
-    case RECORD_AS_MUCH_AS_POSSIBLE:
-      dict->SetString(kRecordModeParam, kRecordAsMuchAsPossible);
-      break;
-    case ECHO_TO_CONSOLE:
-      dict->SetString(kRecordModeParam, kTraceToConsole);
-      break;
-    default:
-      NOTREACHED();
-  }
-
+  dict->SetString(kRecordModeParam,
+                  TraceConfig::TraceRecordModeToStr(record_mode_));
   dict->SetBoolean(kEnableSystraceParam, enable_systrace_);
   dict->SetBoolean(kEnableArgumentFilterParam, enable_argument_filter_);
 
