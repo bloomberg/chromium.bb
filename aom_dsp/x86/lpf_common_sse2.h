@@ -16,8 +16,69 @@
 
 #include "./aom_config.h"
 
-static INLINE void highbd_transpose(uint16_t *src[], int in_p, uint16_t *dst[],
-                                    int out_p, int num_8x8_to_transpose) {
+static INLINE void highbd_transpose6x6(uint16_t *src[], int in_p,
+                                       uint16_t *dst[], int out_p,
+                                       int num_6x6_to_transpose) {
+  int idx6x6 = 0;
+  __m128i p0, p1, p2, p3, p4, p5, x0, x1, x2, x3, x4, x5;
+  do {
+    uint16_t *in = src[idx6x6];
+    uint16_t *out = dst[idx6x6];
+
+    p0 =
+        _mm_loadu_si128((__m128i *)(in + 0 * in_p));  // 00 01 02 03 04 05 xx xx
+    p1 =
+        _mm_loadu_si128((__m128i *)(in + 1 * in_p));  // 10 11 12 13 14 15 xx xx
+    p2 =
+        _mm_loadu_si128((__m128i *)(in + 2 * in_p));  // 20 21 22 23 24 25 xx xx
+    p3 =
+        _mm_loadu_si128((__m128i *)(in + 3 * in_p));  // 30 31 32 33 34 35 xx xx
+    p4 =
+        _mm_loadu_si128((__m128i *)(in + 4 * in_p));  // 40 41 42 43 44 45 xx xx
+    p5 =
+        _mm_loadu_si128((__m128i *)(in + 5 * in_p));  // 50 51 52 53 54 55 xx xx
+
+    x0 = _mm_unpacklo_epi16(p0, p1);  // 00 10 01 11 02 12 03 13
+    x1 = _mm_unpacklo_epi16(p2, p3);  // 20 30 21 31 22 32 23 33
+    x2 = _mm_unpacklo_epi16(p4, p5);  // 40 50 41 51 42 52 43 53
+
+    x3 = _mm_unpackhi_epi16(p0, p1);  // 04 14 05 15 xx xx xx xx
+    x4 = _mm_unpackhi_epi16(p2, p3);  // 24 34 25 35 xx xx xx xx
+    x5 = _mm_unpackhi_epi16(p4, p5);  // 44 54 45 55 xx xx xx xx
+
+    p5 = _mm_unpacklo_epi32(x0, x1);  // 00 10 20 30 01 11 21 31
+    _mm_storel_epi64((__m128i *)(out + 0 * out_p), p5);     // 00 10 20 30
+    *(int *)(out + 4 + 0 * out_p) = _mm_cvtsi128_si32(x2);  // 40 50
+
+    _mm_storel_epi64((__m128i *)(out + 1 * out_p),
+                     _mm_srli_si128(p5, 8));  // 01 11 21 31
+    *(int *)(out + 4 + 1 * out_p) =
+        _mm_cvtsi128_si32(_mm_srli_si128(x2, 4));  // 41 51
+
+    p1 = _mm_unpackhi_epi32(x0, x1);  // 02 12 22 32 03 13 23 33
+    _mm_storel_epi64((__m128i *)(out + 2 * out_p), p1);  // 02 12 22 32
+    *(int *)(out + 4 + 2 * out_p) =
+        _mm_cvtsi128_si32(_mm_srli_si128(x2, 8));  // 42 52
+
+    _mm_storel_epi64((__m128i *)(out + 3 * out_p),
+                     _mm_srli_si128(p1, 8));  // 03 13 23 33
+    *(int *)(out + 4 + 3 * out_p) =
+        _mm_cvtsi128_si32(_mm_srli_si128(x2, 12));  // 43 53
+
+    p2 = _mm_unpacklo_epi32(x3, x4);  //  04 14 24 34 05 15 25 35
+    _mm_storel_epi64((__m128i *)(out + 4 * out_p), p2);     // 04 14 24 34
+    *(int *)(out + 4 + 4 * out_p) = _mm_cvtsi128_si32(x5);  // 44 54
+
+    _mm_storel_epi64((__m128i *)(out + 5 * out_p),
+                     _mm_srli_si128(p2, 8));  // 05 15 25 35
+    *(int *)(out + 4 + 5 * out_p) =
+        _mm_cvtsi128_si32(_mm_srli_si128(x5, 4));  // 45 55
+  } while (++idx6x6 < num_6x6_to_transpose);
+}
+
+static INLINE void highbd_transpose8x8(uint16_t *src[], int in_p,
+                                       uint16_t *dst[], int out_p,
+                                       int num_8x8_to_transpose) {
   int idx8x8 = 0;
   __m128i p0, p1, p2, p3, p4, p5, p6, p7, x0, x1, x2, x3, x4, x5, x6, x7;
   do {
@@ -40,7 +101,7 @@ static INLINE void highbd_transpose(uint16_t *src[], int in_p, uint16_t *dst[],
         _mm_loadu_si128((__m128i *)(in + 6 * in_p));  // 60 61 62 63 64 65 66 67
     p7 =
         _mm_loadu_si128((__m128i *)(in + 7 * in_p));  // 70 71 72 73 74 75 76 77
-    // 00 10 01 11 02 12 03 13
+                                                      // 00 10 01 11 02 12 03 13
     x0 = _mm_unpacklo_epi16(p0, p1);
     // 20 30 21 31 22 32 23 33
     x1 = _mm_unpacklo_epi16(p2, p3);
@@ -124,7 +185,7 @@ static INLINE void highbd_transpose8x16(uint16_t *in0, uint16_t *in1, int in_p,
   src1[0] = in1;
   dest0[0] = out;
   dest1[0] = out + 8;
-  highbd_transpose(src0, in_p, dest0, out_p, 1);
-  highbd_transpose(src1, in_p, dest1, out_p, 1);
+  highbd_transpose8x8(src0, in_p, dest0, out_p, 1);
+  highbd_transpose8x8(src1, in_p, dest1, out_p, 1);
 }
 #endif  // _AOM_DSP_X86_LPF_COMMON_X86_H
