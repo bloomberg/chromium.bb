@@ -119,8 +119,12 @@ std::vector<uint8_t> ApduCommand::GetEncodedCommand() const {
   }
 
   if (response_length_ > 0) {
-    encoded.push_back((response_length_ >> 8) & 0xff);
-    encoded.push_back(response_length_ & 0xff);
+    size_t response_length = response_length_;
+    if (response_length > kApduMaxResponseLength)
+      response_length = kApduMaxResponseLength;
+    // A zero value represents a response length of 65,536 bytes.
+    encoded.push_back((response_length >> 8) & 0xff);
+    encoded.push_back(response_length & 0xff);
   }
   return encoded;
 }

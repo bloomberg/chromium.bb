@@ -97,6 +97,7 @@ base::Optional<std::vector<uint8_t>> U2fRequest::GetU2fSignApduCommand(
   command.set_ins(base::strict_cast<uint8_t>(U2fApduInstruction::kSign));
   command.set_p1(is_check_only_sign ? kP1CheckOnly : kP1TupRequiredConsumed);
   command.set_data(data);
+  command.set_response_length(apdu::ApduCommand::kApduMaxResponseLength);
   return command.GetEncodedCommand();
 }
 
@@ -114,6 +115,7 @@ base::Optional<std::vector<uint8_t>> U2fRequest::GetU2fRegisterApduCommand(
   command.set_p1(kP1TupRequiredConsumed |
                  (is_individual_attestation ? kP1IndividualAttestation : 0));
   command.set_data(data);
+  command.set_response_length(apdu::ApduCommand::kApduMaxResponseLength);
   return command.GetEncodedCommand();
 }
 
