@@ -382,16 +382,23 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     const bool automatic_flushes = false;
     const bool support_locking = false;
 
-    auto context_provider =
-        base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
-            gpu_channel_, gpu_memory_buffer_manager_, kGpuStreamIdDefault,
-            kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle,
-            GURL("chrome://gpu/"
-                 "LayoutTestDependenciesImpl::CreateOutputSurface"),
-            automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
-            attributes, nullptr,
-            ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
-    context_provider->BindToCurrentThread();
+    scoped_refptr<viz::ContextProvider> context_provider;
+
+    gpu::ContextResult context_result = gpu::ContextResult::kTransientFailure;
+    while (context_result != gpu::ContextResult::kSuccess) {
+      context_provider = base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
+          gpu_channel_, gpu_memory_buffer_manager_, kGpuStreamIdDefault,
+          kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle,
+          GURL("chrome://gpu/"
+               "LayoutTestDependenciesImpl::CreateOutputSurface"),
+          automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
+          attributes, nullptr,
+          ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
+      context_result = context_provider->BindToCurrentThread();
+
+      // Layout tests can't recover from a fatal failure.
+      CHECK_NE(context_result, gpu::ContextResult::kFatalFailure);
+    }
 
     bool flipped_output_surface = false;
     return std::make_unique<cc::PixelTestOutputSurface>(
