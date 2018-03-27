@@ -308,6 +308,10 @@ TEST_F(TabMetricsTest, InputEvents) {
   content::WebContents* test_contents_2 =
       tab_activity_simulator_.AddWebContentsAndNavigate(tab_strip_model,
                                                         GURL(kTestUrls[1]));
+
+  // RunUntilIdle is needed because the widget input handler is initialized
+  // asynchronously via mojo (see SetupWidgetInputHandler).
+  base::RunLoop().RunUntilIdle();
   tab_strip_model->ActivateTabAt(0, false);
 
   UkmMetricMap expected_metrics_1(kBasicMetricValues);

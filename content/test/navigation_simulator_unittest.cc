@@ -46,7 +46,7 @@ class NavigationSimulatorTest
   }
 
   void TearDown() override {
-    EXPECT_EQ(expect_navigation_to_finish_, did_finish_navigation_);
+    EXPECT_TRUE(did_finish_navigation_);
     RenderViewHostImplTestHarness::TearDown();
   }
 
@@ -73,7 +73,6 @@ class NavigationSimulatorTest
   base::Optional<TestNavigationThrottle::ThrottleMethod> cancel_time_;
   TestNavigationThrottle::ResultSynchrony sync_;
   std::unique_ptr<NavigationSimulator> simulator_;
-  bool expect_navigation_to_finish_ = true;
   bool did_finish_navigation_ = false;
   bool will_fail_request_called_ = false;
   base::WeakPtrFactory<NavigationSimulatorTest> weak_ptr_factory_;
@@ -95,6 +94,10 @@ TEST_P(NavigationSimulatorTest, Cancel) {
       cancel_time_.value() == TestNavigationThrottle::WILL_START_REQUEST) {
     EXPECT_EQ(NavigationThrottle::CANCEL,
               simulator_->GetLastThrottleCheckResult());
+    // NavigationRequest::OnStartChecksComplete will post a task to finish the
+    // navigation, so pump the run loop here to ensure checks in TearDown()
+    // succeed.
+    base::RunLoop().RunUntilIdle();
     return;
   }
   EXPECT_EQ(NavigationThrottle::PROCEED,

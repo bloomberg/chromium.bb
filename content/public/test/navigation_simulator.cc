@@ -4,6 +4,8 @@
 
 #include "content/public/test/navigation_simulator.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
@@ -282,8 +284,11 @@ void NavigationSimulator::Start() {
     return;
   }
 
-  WaitForThrottleChecksComplete();
+  WaitForThrottleChecksComplete(base::BindOnce(
+      &NavigationSimulator::StartComplete, weak_factory_.GetWeakPtr()));
+}
 
+void NavigationSimulator::StartComplete() {
   CHECK_EQ(1, num_did_start_navigation_called_);
   if (GetLastThrottleCheckResult().action() == NavigationThrottle::PROCEED) {
     CHECK_EQ(1, num_will_start_request_called_);
@@ -332,8 +337,15 @@ void NavigationSimulator::Redirect(const GURL& new_url) {
       redirect_info,
       scoped_refptr<network::ResourceResponse>(new network::ResourceResponse));
 
-  WaitForThrottleChecksComplete();
+  WaitForThrottleChecksComplete(base::BindOnce(
+      &NavigationSimulator::RedirectComplete, weak_factory_.GetWeakPtr(),
+      previous_num_will_redirect_request_called,
+      previous_did_redirect_navigation_called));
+}
 
+void NavigationSimulator::RedirectComplete(
+    int previous_num_will_redirect_request_called,
+    int previous_did_redirect_navigation_called) {
   if (GetLastThrottleCheckResult().action() == NavigationThrottle::PROCEED) {
     CHECK_EQ(previous_num_will_redirect_request_called + 1,
              num_will_redirect_request_called_);
@@ -370,10 +382,21 @@ void NavigationSimulator::ReadyToCommit() {
     return;
   }
 
-  if (!same_document_ && !navigation_url_.IsAboutBlank() &&
-      IsURLHandledByNetworkStack(navigation_url_)) {
-    WaitForThrottleChecksComplete();
+  bool needs_throttle_checks = !same_document_ &&
+                               !navigation_url_.IsAboutBlank() &&
+                               IsURLHandledByNetworkStack(navigation_url_);
+  auto complete_closure =
+      base::BindOnce(&NavigationSimulator::ReadyToCommitComplete,
+                     weak_factory_.GetWeakPtr(), needs_throttle_checks);
+  if (needs_throttle_checks) {
+    WaitForThrottleChecksComplete(std::move(complete_closure));
+    return;
+  }
+  std::move(complete_closure).Run();
+}
 
+void NavigationSimulator::ReadyToCommitComplete(bool ran_throttles) {
+  if (ran_throttles) {
     if (GetLastThrottleCheckResult().action() != NavigationThrottle::PROCEED) {
       state_ = FAILED;
       return;
@@ -381,7 +404,6 @@ void NavigationSimulator::ReadyToCommit() {
     CHECK_EQ(1, num_will_process_response_called_);
     CHECK_EQ(1, num_ready_to_commit_called_);
   }
-
 
   request_id_ = handle_->GetGlobalRequestID();
 
@@ -469,7 +491,6 @@ void NavigationSimulator::Fail(int error_code) {
 
   state_ = FAILED;
 
-  bool should_result_in_error_page = error_code != net::ERR_ABORTED;
   PrepareCompleteCallbackOnHandle();
   NavigationRequest* request = frame_tree_node_->navigation_request();
   CHECK(request);
@@ -477,8 +498,20 @@ void NavigationSimulator::Fail(int error_code) {
       static_cast<TestNavigationURLLoader*>(request->loader_for_testing());
   CHECK(url_loader);
   url_loader->SimulateError(error_code);
+
+  auto complete_closure =
+      base::BindOnce(&NavigationSimulator::FailComplete,
+                     weak_factory_.GetWeakPtr(), error_code);
   if (error_code != net::ERR_ABORTED) {
-    WaitForThrottleChecksComplete();
+    WaitForThrottleChecksComplete(std::move(complete_closure));
+    return;
+  }
+  std::move(complete_closure).Run();
+}
+
+void NavigationSimulator::FailComplete(int error_code) {
+  bool should_result_in_error_page = error_code != net::ERR_ABORTED;
+  if (error_code != net::ERR_ABORTED) {
     NavigationThrottle::ThrottleCheckResult result =
         GetLastThrottleCheckResult();
     if (result.action() == NavigationThrottle::CANCEL ||
@@ -494,8 +527,6 @@ void NavigationSimulator::Fail(int error_code) {
     // commit the error page.
     render_frame_host_ =
         static_cast<TestRenderFrameHost*>(handle_->GetRenderFrameHost());
-  } else {
-    CHECK_EQ(1, num_did_finish_navigation_called_);
   }
 }
 
@@ -838,27 +869,29 @@ bool NavigationSimulator::SimulateRendererInitiatedStart() {
   return true;
 }
 
-void NavigationSimulator::WaitForThrottleChecksComplete() {
+void NavigationSimulator::WaitForThrottleChecksComplete(
+    base::OnceClosure complete_closure) {
   // If last_throttle_check_result_ is set, then throttle checks completed
   // synchronously.
-  if (!last_throttle_check_result_) {
-    base::RunLoop run_loop;
-    throttle_checks_wait_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-    throttle_checks_wait_closure_.Reset();
+  if (last_throttle_check_result_) {
+    std::move(complete_closure).Run();
+    return;
   }
 
-  // Run message loop once since NavigationRequest::OnStartChecksComplete posted
-  // a task.
-  base::RunLoop().RunUntilIdle();
+  throttle_checks_complete_closure_ = std::move(complete_closure);
+  base::RunLoop run_loop;
+  wait_closure_ = run_loop.QuitClosure();
+  run_loop.Run();
 }
 
 void NavigationSimulator::OnThrottleChecksComplete(
     NavigationThrottle::ThrottleCheckResult result) {
   DCHECK(!last_throttle_check_result_);
   last_throttle_check_result_ = result;
-  if (throttle_checks_wait_closure_)
-    throttle_checks_wait_closure_.Run();
+  if (wait_closure_)
+    std::move(wait_closure_).Run();
+  if (throttle_checks_complete_closure_)
+    std::move(throttle_checks_complete_closure_).Run();
 }
 
 void NavigationSimulator::PrepareCompleteCallbackOnHandle() {

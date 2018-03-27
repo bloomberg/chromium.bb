@@ -269,6 +269,12 @@ class NavigationSimulator : public WebContentsObserver {
   void ReadyToCommitNavigation(NavigationHandle* navigation_handle) override;
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
 
+  void StartComplete();
+  void RedirectComplete(int previous_num_will_redirect_request_called,
+                        int previous_did_redirect_navigation_called);
+  void ReadyToCommitComplete(bool ran_throttles);
+  void FailComplete(int error_code);
+
   void OnWillStartRequest();
   void OnWillRedirectRequest();
   void OnWillFailRequest();
@@ -283,10 +289,11 @@ class NavigationSimulator : public WebContentsObserver {
   bool SimulateRendererInitiatedStart();
 
   // This method will block waiting for throttle checks to complete.
-  void WaitForThrottleChecksComplete();
+  void WaitForThrottleChecksComplete(base::OnceClosure complete_closure);
 
-  // Sets |last_throttle_check_result_| and calls
-  // |throttle_checks_wait_closure_|.
+  // Sets |last_throttle_check_result_| and calls both the
+  // |wait_closure_| and the |throttle_checks_complete_closure_|, if they are
+  // set.
   void OnThrottleChecksComplete(NavigationThrottle::ThrottleCheckResult result);
 
   // Helper method to set the OnThrottleChecksComplete callback on the
@@ -361,8 +368,13 @@ class NavigationSimulator : public WebContentsObserver {
   // WillProcessResponse has been invoked on the NavigationHandle.
   content::GlobalRequestID request_id_;
 
-  // Closure that is set when WaitForThrottleChecksComplete is called.
-  base::Closure throttle_checks_wait_closure_;
+  // Closure that is set when WaitForThrottleChecksComplete is called. Called in
+  // OnThrottleChecksComplete.
+  base::OnceClosure throttle_checks_complete_closure_;
+
+  // Closure that is called in OnThrottleChecksComplete if we are waiting on the
+  // result. Calling this will quit the nested run loop.
+  base::OnceClosure wait_closure_;
 
   base::WeakPtrFactory<NavigationSimulator> weak_factory_;
 };

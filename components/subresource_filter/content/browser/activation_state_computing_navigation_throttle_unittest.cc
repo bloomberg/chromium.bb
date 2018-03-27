@@ -505,10 +505,12 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, Speculation) {
   base::HistogramTester main_histogram_tester;
   CreateTestNavigationForMainFrame(GURL("http://example.test/"));
   SimulateStartAndExpectToProceed();
+  base::RunLoop().RunUntilIdle();
   int main_frame_checks = dryrun_speculation() ? 1 : 0;
   main_histogram_tester.ExpectTotalCount(kActivationCPU, main_frame_checks);
 
   SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
+  base::RunLoop().RunUntilIdle();
   main_frame_checks += dryrun_speculation() ? 1 : 0;
   main_histogram_tester.ExpectTotalCount(kActivationCPU, main_frame_checks);
 
@@ -523,9 +525,11 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, Speculation) {
                                       last_activation_state());
   // For subframes, do a ruleset lookup at the start and every redirect.
   SimulateStartAndExpectToProceed();
+  base::RunLoop().RunUntilIdle();
   sub_histogram_tester.ExpectTotalCount(kActivationCPU, 1);
 
   SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
+  base::RunLoop().RunUntilIdle();
   sub_histogram_tester.ExpectTotalCount(kActivationCPU, 2);
 
   // No ruleset lookup required at commit because we've already checked the
