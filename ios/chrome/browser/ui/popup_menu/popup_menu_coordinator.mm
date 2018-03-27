@@ -79,7 +79,8 @@
 
 - (void)showToolsMenuPopup {
   PopupMenuTableViewController* tableViewController =
-      [[PopupMenuTableViewController alloc] init];
+      [[PopupMenuTableViewController alloc]
+          initWithStyle:UITableViewStyleGrouped];
   tableViewController.dispatcher =
       static_cast<id<ApplicationCommands, BrowserCommands>>(self.dispatcher);
   tableViewController.baseViewController = self.baseViewController;
