@@ -477,7 +477,8 @@ void PaintCanvasVideoRenderer::Copy(
   cc::PaintFlags flags;
   flags.setBlendMode(SkBlendMode::kSrc);
   flags.setFilterQuality(kLow_SkFilterQuality);
-  Paint(video_frame, canvas, gfx::RectF(video_frame->visible_rect()), flags,
+  Paint(video_frame, canvas,
+        gfx::RectF(gfx::SizeF(video_frame->visible_rect().size())), flags,
         media::VIDEO_ROTATION_0, context_3d);
 }
 

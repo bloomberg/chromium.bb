@@ -76,9 +76,8 @@ void DevToolsFrameTraceRecorderForViz::OnFrameCaptured(
 
   scoped_refptr<media::VideoFrame> frame;
   frame = media::VideoFrame::WrapExternalData(
-      info->pixel_format, info->coded_size, info->visible_rect,
-      info->visible_rect.size(), static_cast<uint8_t*>(mapping.get()),
-      buffer_size, info->timestamp);
+      info->pixel_format, info->coded_size, content_rect, content_rect.size(),
+      static_cast<uint8_t*>(mapping.get()), buffer_size, info->timestamp);
   if (!frame)
     return;
   frame->AddDestructionObserver(base::BindOnce(
@@ -86,8 +85,7 @@ void DevToolsFrameTraceRecorderForViz::OnFrameCaptured(
 
   media::PaintCanvasVideoRenderer renderer;
   SkBitmap skbitmap;
-  skbitmap.allocN32Pixels(info->visible_rect.width(),
-                          info->visible_rect.height());
+  skbitmap.allocN32Pixels(content_rect.width(), content_rect.height());
   cc::SkiaPaintCanvas canvas(skbitmap);
   renderer.Copy(frame, &canvas, media::Context3D());
   callbacks->Done();
