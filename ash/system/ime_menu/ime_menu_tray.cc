@@ -177,13 +177,14 @@ class ImeButtonsView : public views::View, public views::ButtonListener {
     // The |keyset| will be used for drawing input view keyset in IME
     // extensions. ImeMenuTray::ShowKeyboardWithKeyset() will deal with
     // the |keyset| string to generate the right input view url.
-    mojom::ImeKeyset keyset = mojom::ImeKeyset::kNone;
+    using chromeos::input_method::mojom::ImeKeyset;
+    ImeKeyset keyset = ImeKeyset::kNone;
     if (sender == emoji_button_)
-      keyset = mojom::ImeKeyset::kEmoji;
+      keyset = ImeKeyset::kEmoji;
     else if (sender == voice_button_)
-      keyset = mojom::ImeKeyset::kVoice;
+      keyset = ImeKeyset::kVoice;
     else if (sender == handwriting_button_)
-      keyset = mojom::ImeKeyset::kHandwriting;
+      keyset = ImeKeyset::kHandwriting;
     else
       NOTREACHED();
 
@@ -338,7 +339,8 @@ void ImeMenuTray::ShowImeMenuBubbleInternal(bool show_by_click) {
   SetIsActive(true);
 }
 
-void ImeMenuTray::ShowKeyboardWithKeyset(ash::mojom::ImeKeyset keyset) {
+void ImeMenuTray::ShowKeyboardWithKeyset(
+    chromeos::input_method::mojom::ImeKeyset keyset) {
   CloseBubble();
 
   // This will override the url ref of the keyboard to make it shown with
@@ -463,7 +465,8 @@ void ImeMenuTray::HideBubble(const views::TrayBubbleView* bubble_view) {
 }
 
 void ImeMenuTray::OnKeyboardClosed() {
-  ime_controller_->OverrideKeyboardKeyset(ash::mojom::ImeKeyset::kNone);
+  ime_controller_->OverrideKeyboardKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kNone);
   keyboard::KeyboardController* keyboard_controller =
       keyboard::KeyboardController::GetInstance();
   if (keyboard_controller)
@@ -490,7 +493,8 @@ void ImeMenuTray::OnKeyboardHidden() {
 
   // If the the IME menu has overriding the input view url, we should write it
   // back to normal keyboard when hiding the input view.
-  ime_controller_->OverrideKeyboardKeyset(ash::mojom::ImeKeyset::kNone);
+  ime_controller_->OverrideKeyboardKeyset(
+      chromeos::input_method::mojom::ImeKeyset::kNone);
   show_keyboard_ = false;
 
   // If the keyboard is forced to be shown by IME menu for once, we need to

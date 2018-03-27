@@ -65,6 +65,7 @@ mojom("interfaces_internal") {
     "//services/preferences/public/mojom",
     "//skia/public/interfaces",
     "//ui/accessibility:ax_enums_mojo",
+    "//ui/base/ime/chromeos/public/interfaces",
     "//ui/events/mojo:interfaces",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/image/mojo:interfaces",

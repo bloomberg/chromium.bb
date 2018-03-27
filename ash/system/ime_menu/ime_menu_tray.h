@@ -13,6 +13,7 @@
 #include "ash/system/tray/tray_bubble_wrapper.h"
 #include "ash/system/virtual_keyboard/virtual_keyboard_observer.h"
 #include "base/macros.h"
+#include "ui/base/ime/chromeos/public/interfaces/ime_keyset.mojom.h"
 #include "ui/keyboard/keyboard_controller_observer.h"
 #include "ui/views/bubble/tray_bubble_view.h"
 
@@ -38,7 +39,7 @@ class ASH_EXPORT ImeMenuTray : public TrayBackgroundView,
 
   // Shows the virtual keyboard with the given keyset: emoji, handwriting or
   // voice.
-  void ShowKeyboardWithKeyset(mojom::ImeKeyset keyset);
+  void ShowKeyboardWithKeyset(chromeos::input_method::mojom::ImeKeyset keyset);
 
   // Returns true if the menu should show emoji, handwriting and voice buttons
   // on the bottom. Otherwise, the menu will show a 'Customize...' bottom row
