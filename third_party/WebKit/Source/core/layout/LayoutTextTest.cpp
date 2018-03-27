@@ -393,6 +393,41 @@ TEST_P(ParameterizedLayoutTextTest, IsBeforeAfterNonCollapsedCharacterBR) {
   EXPECT_TRUE(GetBasicText()->IsAfterNonCollapsedCharacter(1));
 }
 
+TEST_P(ParameterizedLayoutTextTest, GetUpperLeftCorner) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      width: 5em;
+    }
+    </style>
+    <div>12345 123<span id="target">45</span></div>
+  )HTML");
+  LayoutText* layout_text = GetLayoutTextById("target");
+  Optional<FloatPoint> upper_left = layout_text->GetUpperLeftCorner();
+  EXPECT_TRUE(upper_left.has_value());
+  EXPECT_EQ(FloatPoint(30, 10), upper_left.value());
+}
+
+TEST_P(ParameterizedLayoutTextTest, GetUpperLeftCornerVLR) {
+  LoadAhem();
+  SetBodyInnerHTML(R"HTML(
+    <style>
+    div {
+      font: 10px/1 Ahem;
+      height: 5em;
+      writing-mode: vertical-lr;
+    }
+    </style>
+    <div>12345 123<span id="target">45</span></div>
+  )HTML");
+  LayoutText* layout_text = GetLayoutTextById("target");
+  Optional<FloatPoint> upper_left = layout_text->GetUpperLeftCorner();
+  EXPECT_TRUE(upper_left.has_value());
+  EXPECT_EQ(FloatPoint(10, 30), upper_left.value());
+}
+
 TEST_P(ParameterizedLayoutTextTest, LinesBoundingBox) {
   LoadAhem();
   SetBasicBody(
