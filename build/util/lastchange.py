@@ -8,6 +8,7 @@ lastchange.py -- Chromium revision fetching utility.
 """
 
 import re
+import logging
 import optparse
 import os
 import subprocess
@@ -42,7 +43,8 @@ def RunGitCommand(directory, command):
                             cwd=directory,
                             shell=(sys.platform=='win32'))
     return proc
-  except OSError:
+  except OSError as e:
+    logging.error('Command %r failed: %s' % (' '.join(command), e))
     return None
 
 
@@ -173,6 +175,8 @@ def main(argv=None):
                     "'^Change-Id:' to suppress local commits.",
                     default='^Change-Id:')
   opts, args = parser.parse_args(argv[1:])
+
+  logging.basicConfig(level=logging.WARNING)
 
   out_file = opts.output
   header = opts.header
