@@ -160,11 +160,6 @@ public interface ContentViewCore {
     void onHide();
 
     /**
-     * Whether or not the associated ContentView is currently attached to a window.
-     */
-    boolean isAttachedToWindow();
-
-    /**
      * @see View#onAttachedToWindow()
      */
     void onAttachedToWindow();

@@ -56,11 +56,6 @@ public class TestContentViewCore implements ContentViewCore {
     public void onHide() {}
 
     @Override
-    public boolean isAttachedToWindow() {
-        return false;
-    }
-
-    @Override
     public void onAttachedToWindow() {}
 
     @Override
