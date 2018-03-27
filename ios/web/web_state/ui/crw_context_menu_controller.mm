@@ -336,7 +336,11 @@ NSString* const kFindElementResultHandlerName = @"FindElementResultHandler";
   // this CRWContextMenuController instance.
   if (fetchRequest) {
     [_pendingElementFetchRequests removeObjectForKey:requestID];
-    [self logElementFetchDurationWithStartTime:fetchRequest.creationTime];
+    // Only log performance metric if the response is from the main frame in
+    // order to keep metric comparible.
+    if (message.frameInfo.mainFrame) {
+      [self logElementFetchDurationWithStartTime:fetchRequest.creationTime];
+    }
     [fetchRequest runHandlerWithResponse:response];
   } else {
     UMA_HISTOGRAM_BOOLEAN(
