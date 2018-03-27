@@ -56,6 +56,8 @@ class FakeBaseTabStripController : public TabStripController {
   Profile* GetProfile() const override;
 
  private:
+  void SetActiveIndex(int new_index);
+
   TabStrip* tab_strip_ = nullptr;
 
   int num_tabs_ = 0;

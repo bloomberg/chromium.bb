@@ -115,6 +115,8 @@ const int kPinnedToNonPinnedOffset = 2;
 const int kPinnedToNonPinnedOffset = 3;
 #endif
 
+TabSizeInfo* g_tab_size_info = nullptr;
+
 // Returns the width needed for the new tab button (and padding).
 int GetNewTabButtonWidth(bool is_incognito) {
   return GetLayoutSize(NEW_TAB_BUTTON, is_incognito).width() +
@@ -213,18 +215,17 @@ TabDragController::EventSource EventSourceFromEvent(
 }
 
 const TabSizeInfo& GetTabSizeInfo() {
-  static TabSizeInfo* tab_size_info = nullptr;
-  if (tab_size_info)
-    return *tab_size_info;
+  if (g_tab_size_info)
+    return *g_tab_size_info;
 
-  tab_size_info = new TabSizeInfo;
-  tab_size_info->pinned_tab_width = Tab::GetPinnedWidth();
-  tab_size_info->min_active_width = Tab::GetMinimumActiveSize().width();
-  tab_size_info->min_inactive_width = Tab::GetMinimumInactiveSize().width();
-  tab_size_info->max_size = Tab::GetStandardSize();
-  tab_size_info->tab_overlap = Tab::GetOverlap();
-  tab_size_info->pinned_to_normal_offset = kPinnedToNonPinnedOffset;
-  return *tab_size_info;
+  g_tab_size_info = new TabSizeInfo;
+  g_tab_size_info->pinned_tab_width = Tab::GetPinnedWidth();
+  g_tab_size_info->min_active_width = Tab::GetMinimumActiveSize().width();
+  g_tab_size_info->min_inactive_width = Tab::GetMinimumInactiveSize().width();
+  g_tab_size_info->max_size = Tab::GetStandardSize();
+  g_tab_size_info->tab_overlap = Tab::GetOverlap();
+  g_tab_size_info->pinned_to_normal_offset = kPinnedToNonPinnedOffset;
+  return *g_tab_size_info;
 }
 
 }  // namespace
@@ -654,13 +655,24 @@ void TabStrip::SetSelection(const ui::ListSelectionModel& old_selection,
       AnimateToIdealBounds();
     SchedulePaint();
   } else {
-    // We have "tiny tabs" if the tabs are so tiny that the unselected ones are
-    // a different size to the selected ones.
-    bool tiny_tabs = current_inactive_width_ != current_active_width_;
-    if (!IsAnimating() && (!in_tab_close_ || tiny_tabs)) {
-      DoLayout();
-    } else {
+    if (current_inactive_width_ == current_active_width_) {
+      // When tabs are wide enough, selecting a new tab cannot change the
+      // ideal bounds, so only a repaint is necessary.
       SchedulePaint();
+    } else if (IsAnimating()) {
+      // The selection change will have modified the ideal bounds of the tabs
+      // in |old_selection| and |new_selection|.  We need to recompute.
+      // Note: This is safe even if we're in the midst of mouse-based tab
+      // closure--we won't expand the tabstrip back to the full window
+      // width--because PrepareForCloseAt() will have set
+      // |available_width_for_tabs_| already.
+      GenerateIdealBounds();
+      AnimateToIdealBounds();
+    } else {
+      // As in the animating case above, the selection change will have
+      // affected the desired bounds of the tabs, but since we're not animating
+      // we can just snap to the new bounds.
+      DoLayout();
     }
   }
 
@@ -2204,6 +2216,14 @@ int TabStrip::GetStartXForNormalTabs() const {
     return 0;
   return pinned_tab_count * (Tab::GetPinnedWidth() - Tab::GetOverlap()) +
          kPinnedToNonPinnedOffset;
+}
+
+// static
+void TabStrip::ResetTabSizeInfoForTesting() {
+  if (g_tab_size_info) {
+    delete g_tab_size_info;
+    g_tab_size_info = nullptr;
+  }
 }
 
 Tab* TabStrip::FindTabForEvent(const gfx::Point& point) {

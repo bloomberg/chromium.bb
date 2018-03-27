@@ -284,6 +284,7 @@ class TabStrip : public views::View,
   FRIEND_TEST_ALL_PREFIXES(TabDragControllerTest, GestureEndShouldEndDragTest);
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabForEventWhenStacked);
   FRIEND_TEST_ALL_PREFIXES(TabStripTest, TabCloseButtonVisibilityWhenStacked);
+  FRIEND_TEST_ALL_PREFIXES(TabStripTest, ActiveTabWidthWhenTabsAreTiny);
 
   // Used during a drop session of a url. Tracks the position of the drop as
   // well as a window used to highlight where the drop occurs.
@@ -518,6 +519,10 @@ class TabStrip : public views::View,
   // Returns true if the specified point in TabStrip coords is within the
   // hit-test region of the specified Tab.
   bool IsPointInTab(Tab* tab, const gfx::Point& point_in_tabstrip_coords);
+
+  // Reset cached tab size info. Because Tab size info can be different
+  // depending on touch ui optimization, we should be able to reset this.
+  static void ResetTabSizeInfoForTesting();
 
   // -- Touch Layout ----------------------------------------------------------
 
