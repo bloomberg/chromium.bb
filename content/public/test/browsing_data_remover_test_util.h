@@ -5,11 +5,12 @@
 #ifndef CONTENT_PUBLIC_TEST_BROWSING_DATA_REMOVER_TEST_UTIL_H_
 #define CONTENT_PUBLIC_TEST_BROWSING_DATA_REMOVER_TEST_UTIL_H_
 
+#include <memory>
+
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/scoped_observer.h"
 #include "content/public/browser/browsing_data_remover.h"
-#include "content/public/test/test_utils.h"
 
 namespace content {
 
@@ -28,7 +29,7 @@ class BrowsingDataRemoverCompletionObserver
   void OnBrowsingDataRemoverDone() override;
 
  private:
-  scoped_refptr<MessageLoopRunner> message_loop_runner_;
+  base::RunLoop run_loop_;
   ScopedObserver<BrowsingDataRemover, BrowsingDataRemover::Observer> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverCompletionObserver);
@@ -60,7 +61,7 @@ class BrowsingDataRemoverCompletionInhibitor {
   // this class is responsible for calling Reset().
   BrowsingDataRemover* remover_;
 
-  scoped_refptr<content::MessageLoopRunner> message_loop_runner_;
+  std::unique_ptr<base::RunLoop> run_loop_;
   base::Closure continue_to_completion_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowsingDataRemoverCompletionInhibitor);
