@@ -265,11 +265,26 @@ void LayoutText::DeleteTextBoxes() {
 
 Optional<FloatPoint> LayoutText::GetUpperLeftCorner() const {
   DCHECK(!IsBR());
-  // TODO(layoutng) Implement GetUpperLeftCorner for layoutng
-  if (!HasLegacyTextBoxes())
-    return WTF::nullopt;
-  return FloatPoint(LinesBoundingBox().X(),
-                    FirstTextBox()->Root().LineTop().ToFloat());
+  if (HasLegacyTextBoxes()) {
+    if (StyleRef().IsHorizontalWritingMode()) {
+      return FloatPoint(LinesBoundingBox().X(),
+                        FirstTextBox()->Root().LineTop().ToFloat());
+    }
+    return FloatPoint(FirstTextBox()->Root().LineTop().ToFloat(),
+                      LinesBoundingBox().Y());
+  }
+  auto fragments = NGPaintFragment::InlineFragmentsFor(this);
+  if (!fragments.IsEmpty()) {
+    const NGPaintFragment* line_box = fragments.begin()->ContainerLineBox();
+    DCHECK(line_box);
+    if (StyleRef().IsHorizontalWritingMode()) {
+      return FloatPoint(LinesBoundingBox().X(),
+                        line_box->InlineOffsetToContainerBox().top.ToFloat());
+    }
+    return FloatPoint(line_box->InlineOffsetToContainerBox().left.ToFloat(),
+                      LinesBoundingBox().Y());
+  }
+  return WTF::nullopt;
 }
 
 bool LayoutText::HasTextBoxes() const {

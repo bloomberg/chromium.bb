@@ -113,6 +113,8 @@ class CORE_EXPORT NGPaintFragment : public DisplayItemClient,
       return is_in_layout_ng_inline_formatting_context_;
     }
 
+    bool IsEmpty() const { return !first_; }
+
     class iterator {
      public:
       explicit iterator(NGPaintFragment* first) : current_(first) {}
