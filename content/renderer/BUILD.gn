@@ -27,6 +27,7 @@ target(link_target_type, "renderer") {
     ":for_content_tests",
     "//content/app:*",
     "//content/public/renderer:renderer_sources",
+    "//content/renderer:audio_decoder_fuzzer",
   ]
 
   sources = [
@@ -1119,4 +1120,15 @@ group("for_content_tests") {
       ":renderer",
     ]
   }
+}
+
+fuzzer_test("audio_decoder_fuzzer") {
+  sources = [
+    "media/audio_decoder_fuzzer.cpp",
+  ]
+  deps = [
+    "//content/public/renderer:renderer_sources",
+    "//content/renderer:renderer",
+  ]
+  seed_corpus = "//media/test/data"
 }
