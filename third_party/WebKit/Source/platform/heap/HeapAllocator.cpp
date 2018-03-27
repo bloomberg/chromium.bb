@@ -13,7 +13,7 @@ void HeapAllocator::BackingFree(void* address) {
   ThreadState* state = ThreadState::Current();
   if (state->SweepForbidden())
     return;
-  DCHECK(!state->IsInGC());
+  DCHECK(!state->in_atomic_pause());
 
   // Don't promptly free large objects because their page is never reused.
   // Don't free backings allocated on other threads.
@@ -41,8 +41,7 @@ void HeapAllocator::FreeInlineVectorBacking(void* address) {
 }
 
 void HeapAllocator::FreeHashTableBacking(void* address, bool is_weak_table) {
-  if (!ThreadState::Current()->IsIncrementalMarkingInProgress() ||
-      !is_weak_table)
+  if (!ThreadState::Current()->IsMarkingInProgress() || !is_weak_table)
     BackingFree(address);
 }
 
@@ -53,7 +52,7 @@ bool HeapAllocator::BackingExpand(void* address, size_t new_size) {
   ThreadState* state = ThreadState::Current();
   if (state->SweepForbidden())
     return false;
-  DCHECK(!state->IsInGC());
+  DCHECK(!state->in_atomic_pause());
   DCHECK(state->IsAllocationAllowed());
   DCHECK_EQ(&state->Heap(), &ThreadState::FromObject(address)->Heap());
 
@@ -94,7 +93,7 @@ bool HeapAllocator::BackingShrink(void* address,
   ThreadState* state = ThreadState::Current();
   if (state->SweepForbidden())
     return false;
-  DCHECK(!state->IsInGC());
+  DCHECK(!state->in_atomic_pause());
   DCHECK(state->IsAllocationAllowed());
   DCHECK_EQ(&state->Heap(), &ThreadState::FromObject(address)->Heap());
 
