@@ -123,7 +123,7 @@ class ContentVerifier::HashHelper {
             &HashHelper::ReadHashOnFileTaskRunner, extension_key, fetch_params,
             base::BindRepeating(&IsCancelledChecker::IsCancelled, checker),
             base::BindOnce(&HashHelper::DidReadHash, weak_factory_.GetWeakPtr(),
-                           callback_key)));
+                           callback_key, checker)));
   }
 
  private:
@@ -218,8 +218,19 @@ class ContentVerifier::HashHelper {
   }
 
   void DidReadHash(const CallbackKey& key,
+                   const scoped_refptr<IsCancelledChecker>& checker,
                    const scoped_refptr<ContentHash>& content_hash,
                    bool was_cancelled) {
+    DCHECK(checker);
+    if (was_cancelled ||
+        // The request might have been cancelled on IO after |content_hash| was
+        // built.
+        // TODO(lazyboy): Add a specific test case for this. See
+        // https://crbug.com/825470 for a likely example of this.
+        checker->IsCancelled()) {
+      return;
+    }
+
     auto iter = callback_infos_.find(key);
     DCHECK(iter != callback_infos_.end());
     auto& callback_info = iter->second;
@@ -237,18 +248,27 @@ class ContentVerifier::HashHelper {
                          base::BindRepeating(&IsCancelledChecker::IsCancelled,
                                              callback_info.cancelled_checker),
                          base::BindOnce(&HashHelper::CompleteDidReadHash,
-                                        weak_factory_.GetWeakPtr(), key)));
+                                        weak_factory_.GetWeakPtr(), key,
+                                        callback_info.cancelled_checker)));
       return;
     }
 
-    CompleteDidReadHash(key, std::move(content_hash), was_cancelled);
+    CompleteDidReadHash(key, callback_info.cancelled_checker,
+                        std::move(content_hash), was_cancelled);
   }
 
   void CompleteDidReadHash(const CallbackKey& key,
+                           const scoped_refptr<IsCancelledChecker>& checker,
                            const scoped_refptr<ContentHash>& content_hash,
                            bool was_cancelled) {
     DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-    DCHECK(!was_cancelled);
+    DCHECK(checker);
+    if (was_cancelled ||
+        // The request might have been cancelled on IO after |content_hash| was
+        // built.
+        checker->IsCancelled()) {
+      return;
+    }
 
     auto iter = callback_infos_.find(key);
     DCHECK(iter != callback_infos_.end());
