@@ -3093,6 +3093,48 @@ TEST_F(DisplayTest, CompositorFrameWithNonInvertibleTransform) {
   TearDownDisplay();
 }
 
+// Check if draw occlusion works with very large DrawQuad. crbug.com/824528.
+TEST_F(DisplayTest, DrawOcclusionWithLargeDrawQuad) {
+  SetUpDisplay(RendererSettings(), TestWebGraphicsContext3D::Create());
+
+  StubDisplayClient client;
+  display_->Initialize(&client, manager_.surface_manager());
+
+  CompositorFrame frame = MakeDefaultCompositorFrame();
+  // The size of this DrawQuad will be 19770x97790 > 2^32 (uint32_t.max())
+  // which caused the integer overflow in the bug.
+  gfx::Rect rect1(197790, 97790);
+
+  bool is_clipped = false;
+  bool are_contents_opaque = true;
+  float opacity = 1.f;
+  SharedQuadState* shared_quad_state =
+      frame.render_pass_list.front()->CreateAndAppendSharedQuadState();
+  auto* quad = frame.render_pass_list.front()
+                   ->quad_list.AllocateAndConstruct<SolidColorDrawQuad>();
+
+  // +----+
+  // |    |
+  // +----+
+  {
+    shared_quad_state->SetAll(gfx::Transform(), rect1, rect1, rect1, is_clipped,
+                              are_contents_opaque, opacity,
+                              SkBlendMode::kSrcOver, 0);
+
+    quad->SetNew(shared_quad_state, rect1, rect1, SK_ColorBLACK, false);
+    EXPECT_EQ(1u, frame.render_pass_list.front()->quad_list.size());
+    display_->RemoveOverdrawQuads(&frame);
+    // This is a base case, the compositor frame contains only one
+    // DrawQuad, so the size of quad_list remains unchanged after calling
+    // RemoveOverdrawQuads.
+    EXPECT_EQ(1u, frame.render_pass_list.front()->quad_list.size());
+    EXPECT_EQ(rect1.ToString(), frame.render_pass_list.front()
+                                    ->quad_list.ElementAt(0)
+                                    ->visible_rect.ToString());
+  }
+  TearDownDisplay();
+}
+
 TEST_F(DisplayTest, CompositorFrameWithPresentationToken) {
   RendererSettings settings;
   const LocalSurfaceId local_surface_id(id_allocator_.GenerateId());
