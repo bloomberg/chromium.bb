@@ -35,7 +35,7 @@ bool SignWithPrivateKey(const base::android::JavaRef<jobject>& private_key_ref,
 
   // Convert message to byte[] array.
   ScopedJavaLocalRef<jbyteArray> input_ref =
-      ToJavaByteArray(env, input.data(), input.length());
+      ToJavaByteArray(env, input.data(), input.size());
   DCHECK(!input_ref.is_null());
 
   // Invoke platform API

@@ -217,7 +217,7 @@ std::pair<FileCreationInfo, int64_t> CreateFileAndWriteItems(
   file.SetLength(total_size_bytes);
   int bytes_written = 0;
   for (const auto& item : data) {
-    size_t length = item.length();
+    size_t length = item.size();
     size_t bytes_left = length;
     while (bytes_left > 0) {
       bytes_written =

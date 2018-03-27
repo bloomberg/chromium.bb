@@ -241,9 +241,9 @@ class BlobBuilderFromStream::WritePipeToFutureDataHelper
     if (item_->type() == BlobDataItem::Type::kBytesDescription)
       item_->AllocateBytes();
     std::memcpy(item_->mutable_bytes()
-                    .subspan(bytes_previously_written, data.length())
+                    .subspan(bytes_previously_written, data.size())
                     .data(),
-                data.data(), data.length());
+                data.data(), data.size());
     return true;
   }
 

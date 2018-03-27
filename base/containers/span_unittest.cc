@@ -19,8 +19,8 @@ using ::testing::Pointwise;
 
 namespace base {
 
-TEST(SpanTest, ConstructFromNullptr) {
-  span<int> span(nullptr);
+TEST(SpanTest, DefaultConstructor) {
+  span<int> span;
   EXPECT_EQ(nullptr, span.data());
   EXPECT_EQ(0u, span.size());
 }
@@ -292,19 +292,6 @@ TEST(SpanTest, Subspan) {
     EXPECT_EQ(1, subspan[0]);
     EXPECT_EQ(2, subspan[1]);
     EXPECT_EQ(3, subspan[2]);
-  }
-}
-
-TEST(SpanTest, Length) {
-  {
-    span<int> span;
-    EXPECT_EQ(0u, span.length());
-  }
-
-  {
-    int array[] = {1, 2, 3};
-    span<int> span(array);
-    EXPECT_EQ(3u, span.length());
   }
 }
 

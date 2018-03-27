@@ -152,11 +152,11 @@ void BlobBytesProvider::AppendData(scoped_refptr<RawData> data) {
 }
 
 void BlobBytesProvider::AppendData(base::span<const char> data) {
-  if (data_.IsEmpty() || data_.back()->length() + data.length() >
-                             kMaxConsolidatedItemSizeInBytes) {
+  if (data_.IsEmpty() ||
+      data_.back()->length() + data.size() > kMaxConsolidatedItemSizeInBytes) {
     AppendData(RawData::Create());
   }
-  data_.back()->MutableData()->Append(data.data(), data.length());
+  data_.back()->MutableData()->Append(data.data(), data.size());
 }
 
 void BlobBytesProvider::RequestAsReply(RequestAsReplyCallback callback) {
