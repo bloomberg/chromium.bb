@@ -257,19 +257,12 @@ def _RenderRJavaSource(package, resources_by_type, rjava_build_options):
       else:
         non_final_resources_by_type[res_type].append(entry)
 
-  def _UnrollArray(entry):
-    res_ids = re.findall(r'0x[0-9a-f]{8}', entry.value)
-    qualified_array_name = '%s.%s' % (entry.resource_type, entry.name)
-    unrolled = []
-    for i, res_id in enumerate(res_ids):
-      if res_id.startswith('0x7f'):
-        unrolled.append("%s[%d] ^= packageIdTransform;" %
-                        (qualified_array_name, i))
-
-    return unrolled
   # Keep these assignments all on one line to make diffing against regular
   # aapt-generated files easier.
   create_id = ('{{ e.resource_type }}.{{ e.name }} ^= packageIdTransform;')
+  create_id_arr = ('{{ e.resource_type }}.{{ e.name }}[i] ^='
+                   ' packageIdTransform;')
+
   # Here we diverge from what aapt does. Because we have so many
   # resources, the onResourcesLoaded method was exceeding the 64KB limit that
   # Java imposes. For this reason we split onResourcesLoaded into different
@@ -299,9 +292,9 @@ public final class R {
         onResourcesLoaded{{ resource_type|title }}(packageIdTransform);
         {% for e in non_final_resources[resource_type] %}
         {% if e.java_type == 'int[]' %}
-        {% for line in unrollArray(e) %}
-        {{ line }}
-        {% endfor %}
+        for(int i = 0; i < {{ e.resource_type }}.{{ e.name }}.length; ++i) {
+            """ + create_id_arr + """
+        }
         {% endif %}
         {% endfor %}
         {% endfor %}
@@ -325,8 +318,7 @@ public final class R {
       resource_types=sorted(resources_by_type),
       has_on_resources_loaded=rjava_build_options.has_on_resources_loaded,
       final_resources=final_resources_by_type,
-      non_final_resources=non_final_resources_by_type,
-      unrollArray=_UnrollArray)
+      non_final_resources=non_final_resources_by_type)
 
 
 def ExtractPackageFromManifest(manifest_path):
