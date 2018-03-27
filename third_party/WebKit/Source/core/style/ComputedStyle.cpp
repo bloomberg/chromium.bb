@@ -2117,7 +2117,6 @@ void ComputedStyle::GetBorderEdgeInfo(BorderEdge edges[],
 }
 
 void ComputedStyle::CopyChildDependentFlagsFrom(const ComputedStyle& other) {
-  SetEmptyState(other.EmptyState());
   if (other.HasExplicitlyInheritedProperties())
     SetHasExplicitlyInheritedProperties();
 }
