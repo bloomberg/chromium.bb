@@ -2,12 +2,28 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ui/latency/histograms_test_common.h"
+#include "ui/latency/frame_metrics_test_common.h"
 
 #include "base/logging.h"
 
 namespace ui {
 namespace frame_metrics {
+
+double TestStreamAnalyzerClient::TransformResult(double result) const {
+  return result * result_scale;
+}
+
+template <>
+void AddSamplesHelper(StreamAnalyzer* analyzer,
+                      uint64_t value,
+                      uint64_t weight,
+                      size_t iterations) {
+  DCHECK_LE(value, std::numeric_limits<uint32_t>::max());
+  DCHECK_LE(weight, std::numeric_limits<uint32_t>::max());
+  for (size_t i = 0; i < iterations; i++) {
+    analyzer->AddSample(value, weight);
+  }
+}
 
 TestRatioBoundaries::TestRatioBoundaries() {
   const uint32_t one = kFixedPointMultiplier;
@@ -50,6 +66,26 @@ TestRatioBoundaries::TestRatioBoundaries() {
     boundaries[i++] = (4096ULL << j) * one;
   boundaries[i++] = 1ULL << 32;
   DCHECK_EQ(112, i);
+}
+
+TestHistogram::TestHistogram() = default;
+TestHistogram::~TestHistogram() = default;
+
+void TestHistogram::AddSample(uint32_t value, uint32_t weight) {
+  added_samples_.push_back({value, weight});
+}
+
+PercentileResults TestHistogram::CalculatePercentiles() const {
+  return results_;
+}
+
+std::vector<TestHistogram::ValueWeightPair>
+TestHistogram::GetAndResetAllAddedSamples() {
+  return std::move(added_samples_);
+}
+
+void TestHistogram::SetResults(PercentileResults results) {
+  results_ = results;
 }
 
 }  // namespace frame_metrics
