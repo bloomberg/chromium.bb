@@ -89,7 +89,7 @@ void BreakList<T>::ApplyValue(T value, const Range& range) {
     return;
   DCHECK(!breaks_.empty());
   DCHECK(!range.is_reversed());
-  DCHECK(Range(0, max_).Contains(range));
+  DCHECK(Range(0, static_cast<uint32_t>(max_)).Contains(range));
 
   // Erase any breaks in |range|, then add start and end breaks as needed.
   typename std::vector<Break>::iterator start = GetBreak(range.start());
