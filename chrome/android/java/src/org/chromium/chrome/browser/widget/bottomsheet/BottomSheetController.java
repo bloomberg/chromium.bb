@@ -125,6 +125,13 @@ public class BottomSheetController {
     }
 
     /**
+     * @return The {@link BottomSheet} controlled by this class.
+     */
+    public BottomSheet getBottomSheet() {
+        return mBottomSheet;
+    }
+
+    /**
      * Request that some content be shown in the bottom sheet.
      * @param content The content to be shown in the bottom sheet.
      * @param animate Whether the appearance of the bottom sheet should be animated.

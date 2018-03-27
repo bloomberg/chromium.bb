@@ -1265,7 +1265,7 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             if (ChromeFeatureList.isEnabled(
                         ChromeFeatureList.CONTEXTUAL_SUGGESTIONS_BOTTOM_SHEET)) {
                 mContextualSuggestionsCoordinator = new ContextualSuggestionsCoordinator(
-                        this, mBottomSheet, getTabModelSelector());
+                        this, mBottomSheetController, getTabModelSelector());
             }
         }
     }
