@@ -41,6 +41,7 @@
 namespace gpu {
 
 namespace gles2 {
+class ImageManager;
 class MemoryTracker;
 }  // namespace gles2
 
@@ -153,6 +154,9 @@ class RasterDecoderTestBase : public ::testing::TestWithParam<bool>,
   }
 
   RasterDecoder* GetDecoder() const { return decoder_.get(); }
+  gles2::ImageManager* GetImageManagerForTest() {
+    return decoder_->GetImageManagerForTest();
+  }
 
   typedef gles2::TestHelper::AttribInfo AttribInfo;
   typedef gles2::TestHelper::UniformInfo UniformInfo;

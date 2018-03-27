@@ -33,6 +33,7 @@ class ContextGroup;
 class ErrorState;
 class GpuFenceManager;
 class GLES2Util;
+class ImageManager;
 struct ContextState;
 class FeatureInfo;
 class Logger;
@@ -92,6 +93,7 @@ class MockRasterDecoder : public RasterDecoder {
   MOCK_METHOD0(GetQueryManager, QueryManager*());
   MOCK_METHOD0(GetGpuFenceManager, gpu::gles2::GpuFenceManager*());
   MOCK_METHOD1(SetIgnoreCachedStateForTest, void(bool ignore));
+  MOCK_METHOD0(GetImageManagerForTest, gles2::ImageManager*());
   MOCK_METHOD4(DoCommands,
                error::Error(unsigned int num_commands,
                             const volatile void* buffer,

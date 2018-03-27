@@ -16,6 +16,7 @@ class DecoderClient;
 
 namespace gles2 {
 class GLES2Util;
+class ImageManager;
 class Logger;
 class Outputter;
 }  // namespace gles2
@@ -53,6 +54,9 @@ class GPU_GLES2_EXPORT RasterDecoder : public DecoderContext,
   virtual gles2::GLES2Util* GetGLES2Util() = 0;
   virtual gles2::Logger* GetLogger() = 0;
   virtual void SetIgnoreCachedStateForTest(bool ignore) = 0;
+
+  // Gets the ImageManager for this context.
+  virtual gles2::ImageManager* GetImageManagerForTest() = 0;
 
   void set_initialized() { initialized_ = true; }
 
