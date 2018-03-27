@@ -6,6 +6,8 @@ source_set("declarative_net_request") {
   sources = [
     "constants.cc",
     "constants.h",
+    "declarative_net_request_api.cc",
+    "declarative_net_request_api.h",
     "flat_ruleset_indexer.cc",
     "flat_ruleset_indexer.h",
     "indexed_rule.cc",

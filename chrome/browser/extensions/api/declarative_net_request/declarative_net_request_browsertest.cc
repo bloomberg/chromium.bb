@@ -16,6 +16,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "base/values.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extension_service.h"
 #include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/load_error_reporter.h"
 #include "chrome/browser/net/profile_network_context_service.h"
@@ -30,8 +31,10 @@
 #include "components/proxy_config/proxy_config_pref_names.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/notification_source.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/test/browser_test_utils.h"
+#include "content/public/test/test_utils.h"
 #include "extensions/browser/api/declarative_net_request/constants.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_manager.h"
 #include "extensions/browser/api/declarative_net_request/ruleset_matcher.h"
@@ -39,7 +42,10 @@
 #include "extensions/browser/api/web_request/web_request_info.h"
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/browser/extension_registry.h"
+#include "extensions/browser/extension_system.h"
 #include "extensions/browser/extension_util.h"
+#include "extensions/browser/notification_types.h"
+#include "extensions/browser/runtime_data.h"
 #include "extensions/common/api/declarative_net_request/constants.h"
 #include "extensions/common/api/declarative_net_request/test_utils.h"
 #include "extensions/common/constants.h"
@@ -156,6 +162,11 @@ class DeclarativeNetRequestBrowserTest
 
   content::PageType GetPageType() const { return GetPageType(browser()); }
 
+  // Sets whether the extension should have a background script.
+  void set_has_background_script(bool has_background_script) {
+    has_background_script_ = has_background_script;
+  }
+
   // Loads an extension with the given declarative |rules| in the given
   // |directory|. Generates a fatal failure if the extension failed to load.
   // |hosts| specifies the host permissions, the extensions should
@@ -170,7 +181,8 @@ class DeclarativeNetRequestBrowserTest
     EXPECT_TRUE(base::CreateDirectory(extension_dir));
 
     WriteManifestAndRuleset(extension_dir, kJSONRulesetFilepath,
-                            kJSONRulesFilename, rules, hosts);
+                            kJSONRulesFilename, rules, hosts,
+                            has_background_script_);
 
     const Extension* extension = nullptr;
     switch (GetParam()) {
@@ -210,6 +222,7 @@ class DeclarativeNetRequestBrowserTest
 
  private:
   base::ScopedTempDir temp_dir_;
+  bool has_background_script_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(DeclarativeNetRequestBrowserTest);
 };
@@ -1109,6 +1122,117 @@ IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest,
   // resources, even with "<all_urls>" host permissions.
   ui_test_utils::NavigateToURL(browser(), get_manifest_url(extension_id_2));
   EXPECT_EQ(content::PAGE_TYPE_NORMAL, GetPageType());
+}
+
+// Tests the pages whitelisting API.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
+                       PRE_PageWhitelistingAPI) {
+  // This is not tested for unpacked extensions since the unpacked extension
+  // directory won't be persisted across browser sessions.
+  ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
+
+  set_has_background_script(true);
+  LoadExtensionWithRules({});
+
+  const Extension* dnr_extension = extension_service()->GetExtensionById(
+      last_loaded_extension_id(), false /*include_disabled*/);
+  ASSERT_TRUE(dnr_extension);
+  EXPECT_EQ("Test extension", dnr_extension->name());
+
+  // Ensure the background page is ready before dispatching the script to it.
+  if (!ExtensionSystem::Get(profile())->runtime_data()->IsBackgroundPageReady(
+          dnr_extension)) {
+    content::WindowedNotificationObserver(
+        NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+        content::Source<Extension>(dnr_extension))
+        .Wait();
+  }
+
+  // Whitelist "https://www.google.com/".
+  const char* script1 = R"(
+    chrome.declarativeNetRequest.addWhitelistedPages(
+        ['https://www.google.com/'], function() {
+          window.domAutomationController.send('success');
+        });
+  )";
+  EXPECT_EQ("success",
+            ExecuteScriptInBackgroundPage(last_loaded_extension_id(), script1));
+
+  // Ensure that the page was whitelisted.
+  const char* script2 = R"(
+    chrome.declarativeNetRequest.getWhitelistedPages(function(patterns) {
+      if (patterns.length === 1 && patterns[0] === 'https://www.google.com/')
+        window.domAutomationController.send('success');
+      else
+        window.domAutomationController.send('error');
+    });
+  )";
+
+  EXPECT_EQ("success",
+            ExecuteScriptInBackgroundPage(last_loaded_extension_id(), script2));
+}
+
+// Tests that the pages whitelisted using the page whitelisting API are
+// persisted across browser sessions.
+IN_PROC_BROWSER_TEST_P(DeclarativeNetRequestBrowserTest_Packed,
+                       PageWhitelistingAPI) {
+  // This is not tested for unpacked extensions since the unpacked extension
+  // directory won't be persisted across browser sessions.
+  ASSERT_EQ(ExtensionLoadType::PACKED, GetParam());
+
+  // Retrieve the extension installed in the previous browser session.
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  const Extension* dnr_extension = nullptr;
+  for (const scoped_refptr<const Extension>& extension :
+       registry->enabled_extensions()) {
+    if (extension->name() == "Test extension") {
+      dnr_extension = extension.get();
+      break;
+    }
+  }
+  ASSERT_TRUE(dnr_extension);
+
+  // Ensure the background page is ready before dispatching the script to it.
+  if (!ExtensionSystem::Get(profile())->runtime_data()->IsBackgroundPageReady(
+          dnr_extension)) {
+    content::WindowedNotificationObserver(
+        NOTIFICATION_EXTENSION_BACKGROUND_PAGE_READY,
+        content::Source<Extension>(dnr_extension))
+        .Wait();
+  }
+
+  const char* script1 = R"(
+    chrome.declarativeNetRequest.getWhitelistedPages(function(patterns) {
+        if (patterns.length === 1 && patterns[0] === "https://www.google.com/")
+          window.domAutomationController.send("success");
+        else
+          window.domAutomationController.send("error");
+    });
+  )";
+  ASSERT_EQ("success",
+            ExecuteScriptInBackgroundPage(dnr_extension->id(), script1));
+
+  // Remove "https://www.google.com/" from the whitelist.
+  const char* script2 = R"(
+    chrome.declarativeNetRequest.removeWhitelistedPages(
+      ["https://www.google.com/"], function() {
+        window.domAutomationController.send("success");
+    });
+  )";
+  ASSERT_EQ("success",
+            ExecuteScriptInBackgroundPage(dnr_extension->id(), script2));
+
+  // Ensure that the page was removed from the whitelist.
+  const char* script3 = R"(
+    chrome.declarativeNetRequest.getWhitelistedPages(function(patterns) {
+        if (patterns.length === 0)
+          window.domAutomationController.send("success");
+        else
+          window.domAutomationController.send("error");
+    });
+  )";
+  EXPECT_EQ("success",
+            ExecuteScriptInBackgroundPage(dnr_extension->id(), script3));
 }
 
 // Test fixture to verify that host permissions for the request url and the

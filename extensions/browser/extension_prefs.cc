@@ -191,6 +191,10 @@ constexpr const char kPrefNeedsSync[] = "needs_sync";
 // The indexed ruleset checksum for the Declarative Net Request API.
 constexpr const char kPrefDNRRulesetChecksum[] = "dnr_ruleset_checksum";
 
+// List of match patterns representing the set of whitelisted pages for an
+// extension for the Declarative Net Request API.
+constexpr const char kPrefDNRWhitelistedPages[] = "dnr_whitelisted_pages";
+
 // Provider of write access to a dictionary storing extension prefs.
 class ScopedExtensionPrefUpdate : public prefs::ScopedDictionaryPrefUpdate {
  public:
@@ -1681,6 +1685,19 @@ bool ExtensionPrefs::GetDNRRulesetChecksum(const ExtensionId& extension_id,
                                            int* dnr_ruleset_checksum) const {
   return ReadPrefAsInteger(extension_id, kPrefDNRRulesetChecksum,
                            dnr_ruleset_checksum);
+}
+
+void ExtensionPrefs::SetDNRWhitelistedPages(const ExtensionId& extension_id,
+                                            URLPatternSet set) {
+  SetExtensionPrefURLPatternSet(extension_id, kPrefDNRWhitelistedPages, set);
+}
+
+URLPatternSet ExtensionPrefs::GetDNRWhitelistedPages(
+    const ExtensionId& extension_id) const {
+  URLPatternSet result;
+  ReadPrefAsURLPatternSet(extension_id, kPrefDNRWhitelistedPages, &result,
+                          URLPattern::SCHEME_ALL);
+  return result;
 }
 
 // static

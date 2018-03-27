@@ -555,6 +555,13 @@ class ExtensionPrefs : public KeyedService {
   bool GetDNRRulesetChecksum(const ExtensionId& extension_id,
                              int* dnr_ruleset_checksum) const;
 
+  // Sets the set of whitelisted pages for the given |extension_id|.
+  void SetDNRWhitelistedPages(const ExtensionId& extension_id,
+                              URLPatternSet set);
+
+  // Returns the set of whitelisted pages for the given |extension_id|.
+  URLPatternSet GetDNRWhitelistedPages(const ExtensionId& extension_id) const;
+
   // When called before the ExtensionService is created, alerts that are
   // normally suppressed in first run will still trigger.
   static void SetRunAlertsInFirstRunForTest();

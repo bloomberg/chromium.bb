@@ -109,4 +109,28 @@ namespace declarativeNetRequest {
     // The action to take if this rule is matched.
     RuleAction action;
   };
+
+  callback EmptyCallback = void();
+  callback GetWhitelistedPagesCallback = void(DOMString[] result);
+
+  interface Functions {
+    // Adds |page_patterns| to the set of whitelisted pages. Requests from these
+    // pages are not intercepted by the extension. These are persisted across
+    // browser sessions.
+    // |page_patterns| : Array of match patterns which are to be added to the
+    // whitelist.
+    // |callback|: Called after the |page_patterns| have been added.
+    static void addWhitelistedPages(DOMString[] page_patterns, optional EmptyCallback callback);
+
+    // Removes |page_patterns| from the set of whitelisted pages.
+    // |page_patterns| : Array of match patterns which are to be removed from
+    // the whitelist.
+    // |callback|: Called after the |page_patterns| have been removed.
+    static void removeWhitelistedPages(DOMString[] page_patterns, optional EmptyCallback callback);
+
+    // Returns the current set of whitelisted pages.
+    // |callback|: Called with the set of currently whitelisted pages.
+    static void getWhitelistedPages(GetWhitelistedPagesCallback callback);
+  };
+
 };
