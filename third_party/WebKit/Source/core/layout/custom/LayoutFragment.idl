@@ -13,8 +13,8 @@ interface LayoutFragment {
   readonly attribute double inlineSize;
   readonly attribute double blockSize;
 
-  // attribute double inlineOffset;
-  // attribute double blockOffset;
+  attribute double inlineOffset;
+  attribute double blockOffset;
 
   // readonly attribute any data;
 };
