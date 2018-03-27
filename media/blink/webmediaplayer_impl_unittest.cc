@@ -404,11 +404,6 @@ class WebMediaPlayerImplTest : public testing::Test {
   }
 
   void OnMetadata(PipelineMetadata metadata) {
-    if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
-      EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
-          .WillOnce(ReturnRef(frame_sink_id_));
-      EXPECT_CALL(*compositor_, EnableSubmission(_, _));
-    }
     wmpi_->OnMetadata(metadata);
   }
 
@@ -927,6 +922,13 @@ TEST_F(WebMediaPlayerImplTest, NoStreams) {
   InitializeWebMediaPlayerImpl();
   PipelineMetadata metadata;
 
+  EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+
+  if (base::FeatureList::IsEnabled(media::kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId()).Times(0);
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _)).Times(0);
+  }
+
   // Nothing should happen.  In particular, no assertions should fail.
   OnMetadata(metadata);
 }
@@ -938,7 +940,15 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange) {
   metadata.video_decoder_config = TestVideoConfig::Normal();
   metadata.natural_size = gfx::Size(320, 240);
 
-  EXPECT_CALL(client_, SetWebLayer(NotNull()));
+  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _));
+  } else {
+    EXPECT_CALL(client_, SetWebLayer(NotNull()));
+  }
+
   OnMetadata(metadata);
   ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
 
@@ -955,7 +965,15 @@ TEST_F(WebMediaPlayerImplTest, NaturalSizeChange_Rotated) {
       TestVideoConfig::NormalRotated(VIDEO_ROTATION_90);
   metadata.natural_size = gfx::Size(320, 240);
 
-  EXPECT_CALL(client_, SetWebLayer(NotNull()));
+  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _));
+  } else {
+    EXPECT_CALL(client_, SetWebLayer(NotNull()));
+  }
+
   OnMetadata(metadata);
   ASSERT_EQ(blink::WebSize(320, 240), wmpi_->NaturalSize());
 
@@ -972,7 +990,16 @@ TEST_F(WebMediaPlayerImplTest, VideoLockedWhenPausedWhenHidden) {
   PipelineMetadata metadata;
   metadata.has_video = true;
   metadata.video_decoder_config = TestVideoConfig::Normal();
-  EXPECT_CALL(client_, SetWebLayer(NotNull()));
+
+  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _));
+  } else {
+    EXPECT_CALL(client_, SetWebLayer(NotNull()));
+  }
+
   OnMetadata(metadata);
 
   EXPECT_FALSE(IsVideoLockedWhenPausedWhenHidden());
@@ -1037,7 +1064,16 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
   metadata.has_audio = true;
   metadata.audio_decoder_config = TestAudioConfig::Normal();
   metadata.natural_size = gfx::Size(400, 400);
-  EXPECT_CALL(client_, SetWebLayer(NotNull()));
+
+  if (base::FeatureList::IsEnabled(kUseSurfaceLayerForVideo)) {
+    EXPECT_CALL(client_, SetWebLayer(_)).Times(0);
+    EXPECT_CALL(*surface_layer_bridge_ptr_, GetFrameSinkId())
+        .WillOnce(ReturnRef(frame_sink_id_));
+    EXPECT_CALL(*compositor_, EnableSubmission(_, _));
+  } else {
+    EXPECT_CALL(client_, SetWebLayer(NotNull()));
+  }
+
   OnMetadata(metadata);
 
   EXPECT_EQ(std::numeric_limits<double>::infinity(), wmpi_->Duration());
@@ -1056,7 +1092,7 @@ TEST_F(WebMediaPlayerImplTest, InfiniteDuration) {
 
 TEST_F(WebMediaPlayerImplTest, SetContentsLayerGetsWebLayerFromBridge) {
   base::test::ScopedFeatureList feature_list;
-  feature_list.InitFromCommandLine("UseSurfaceLayerForVideo", "");
+  feature_list.InitFromCommandLine(kUseSurfaceLayerForVideo.name, "");
 
   InitializeWebMediaPlayerImpl();
 
