@@ -88,6 +88,8 @@ NSString* const kSessionStorageKey = @"sessionStorage";
 - (CWVAutofillController*)newAutofillController;
 // Returns a new CWVTranslationController created from |_webState|.
 - (CWVTranslationController*)newTranslationController;
+// Updates |_webState| visiblity.
+- (void)updateWebStateVisibility;
 
 @end
 
@@ -206,14 +208,10 @@ static NSString* gUserAgentProduct = nil;
 
 #pragma mark - UIView
 
-- (void)willMoveToSuperview:(UIView*)newSuperview {
-  [super willMoveToSuperview:newSuperview];
+- (void)didMoveToSuperview {
+  [super didMoveToSuperview];
 
-  if (newSuperview) {
-    _webState->WasShown();
-  } else {
-    _webState->WasHidden();
-  }
+  [self updateWebStateVisibility];
 }
 
 #pragma mark - CRWWebStateObserver
@@ -449,6 +447,14 @@ static NSString* gUserAgentProduct = nil;
 
 #pragma mark - Private methods
 
+- (void)updateWebStateVisibility {
+  if (self.superview) {
+    _webState->WasShown();
+  } else {
+    _webState->WasHidden();
+  }
+}
+
 // Creates a WebState instance and assigns it to |_webState|.
 // It replaces the old |_webState| if any.
 // The WebState is restored from |sessionStorage| if provided.
@@ -477,6 +483,8 @@ static NSString* gUserAgentProduct = nil;
     _webStateObserver = std::make_unique<web::WebStateObserverBridge>(self);
   }
   _webState->AddObserver(_webStateObserver.get());
+
+  [self updateWebStateVisibility];
 
   _webStateDelegate = std::make_unique<web::WebStateDelegateBridge>(self);
   _webState->SetDelegate(_webStateDelegate.get());
