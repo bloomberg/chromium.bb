@@ -109,6 +109,10 @@ KURL WorkerFetchContext::GetSiteForCookies() const {
   return web_context_->SiteForCookies();
 }
 
+SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
+  return subresource_filter_.Get();
+}
+
 bool WorkerFetchContext::AllowScriptFromSource(const KURL&) const {
   // Currently we don't use WorkerFetchContext for loading scripts. So this
   // method must not be called.
@@ -117,10 +121,6 @@ bool WorkerFetchContext::AllowScriptFromSource(const KURL&) const {
   // worker thread.
   NOTREACHED();
   return false;
-}
-
-SubresourceFilter* WorkerFetchContext::GetSubresourceFilter() const {
-  return subresource_filter_.Get();
 }
 
 bool WorkerFetchContext::ShouldBlockRequestByInspector(const KURL& url) const {

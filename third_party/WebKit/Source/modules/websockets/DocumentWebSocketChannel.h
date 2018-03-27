@@ -155,8 +155,9 @@ class MODULES_EXPORT DocumentWebSocketChannel final
                       const String& reason);
 
   // This may return nullptr.
-  // TODO(kinuko): Remove dependency to document.
+  // TODO(nhiroki): Remove dependency to document (https://crbug.com/825740).
   Document* GetDocument();
+  ExecutionContext* GetExecutionContext();
 
   // WebSocketHandleClient functions.
   void DidConnect(WebSocketHandle*,
