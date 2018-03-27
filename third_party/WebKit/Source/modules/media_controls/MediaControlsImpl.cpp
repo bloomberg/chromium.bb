@@ -163,11 +163,14 @@ bool ShouldShowCastButton(HTMLMediaElement& media_element) {
   if (media_element.FastHasAttribute(HTMLNames::disableremoteplaybackAttr))
     return false;
 
-  // Explicitly do not show cast button when the mediaControlsEnabled setting is
-  // false to make sure the overlay does not appear.
+  // Explicitly do not show cast button when:
+  // - the mediaControlsEnabled setting is false, to make sure the overlay does
+  //   not appear;
+  // - the immersiveModeEnabled setting is true.
   Document& document = media_element.GetDocument();
   if (document.GetSettings() &&
-      !document.GetSettings()->GetMediaControlsEnabled()) {
+      (!document.GetSettings()->GetMediaControlsEnabled() ||
+       document.GetSettings()->GetImmersiveModeEnabled())) {
     return false;
   }
 
