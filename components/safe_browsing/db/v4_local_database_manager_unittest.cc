@@ -13,7 +13,6 @@
 #include "base/run_loop.h"
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/safe_browsing/db/notification_types.h"
 #include "components/safe_browsing/db/v4_database.h"
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/db/v4_test_util.h"
@@ -1114,10 +1113,10 @@ TEST_F(V4LocalDatabaseManagerTest, DeleteUnusedStoreFileRandomFileNotDeleted) {
 }
 
 TEST_F(V4LocalDatabaseManagerTest, NotificationOnUpdate) {
-  content::WindowedNotificationObserver observer(
-      NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
-      content::Source<SafeBrowsingDatabaseManager>(
-          v4_local_database_manager_.get()));
+  base::RunLoop run_loop;
+  auto callback_subscription =
+      v4_local_database_manager_->RegisterDatabaseUpdatedCallback(
+          run_loop.QuitClosure());
 
   // Creates and associates a V4Database instance.
   StoreAndHashPrefixes store_and_hash_prefixes;
@@ -1125,8 +1124,7 @@ TEST_F(V4LocalDatabaseManagerTest, NotificationOnUpdate) {
 
   v4_local_database_manager_->DatabaseUpdated();
 
-  // This observer waits until it receives the notification.
-  observer.Wait();
+  run_loop.Run();
 }
 
 }  // namespace safe_browsing

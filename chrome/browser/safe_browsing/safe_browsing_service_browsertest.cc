@@ -68,7 +68,6 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/db/database_manager.h"
 #include "components/safe_browsing/db/metadata.pb.h"
-#include "components/safe_browsing/db/notification_types.h"
 #include "components/safe_browsing/db/test_database_manager.h"
 #include "components/safe_browsing/db/util.h"
 #include "components/safe_browsing/db/v4_database.h"
@@ -2114,15 +2113,18 @@ class SafeBrowsingDatabaseManagerCookieTest : public InProcessBrowserTest {
 // and can save cookies.
 IN_PROC_BROWSER_TEST_F(SafeBrowsingDatabaseManagerCookieTest,
                        TestSBUpdateCookies) {
-  content::WindowedNotificationObserver observer(
-      NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
-      content::Source<SafeBrowsingDatabaseManager>(
-          sb_factory_->test_safe_browsing_service()->database_manager().get()));
+  base::RunLoop run_loop;
+  auto callback_subscription =
+      sb_factory_->test_safe_browsing_service()
+          ->database_manager()
+          .get()
+          ->RegisterDatabaseUpdatedCallback(run_loop.QuitClosure());
+
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&SafeBrowsingDatabaseManagerCookieTest::ForceUpdate,
                      base::Unretained(this)));
-  observer.Wait();
+  run_loop.Run();
 }
 
 // Tests the safe browsing blocking page in a browser.

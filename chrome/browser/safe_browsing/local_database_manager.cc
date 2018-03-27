@@ -35,10 +35,8 @@
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/safe_browsing/common/safebrowsing_switches.h"
-#include "components/safe_browsing/db/notification_types.h"
 #include "components/safe_browsing/db/util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_service.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "url/url_constants.h"
 
@@ -693,10 +691,7 @@ void LocalSafeBrowsingDatabaseManager::StopOnIOThread(bool shutdown) {
 void LocalSafeBrowsingDatabaseManager::NotifyDatabaseUpdateFinished(
     bool update_succeeded) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  content::NotificationService::current()->Notify(
-      NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
-      content::Source<SafeBrowsingDatabaseManager>(this),
-      content::Details<bool>(&update_succeeded));
+  update_complete_callback_list_.Notify();
 }
 
 LocalSafeBrowsingDatabaseManager::QueuedCheck::QueuedCheck(
