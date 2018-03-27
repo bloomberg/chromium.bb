@@ -79,11 +79,11 @@
               <div class="protocol-host">[[item.host]]</div>
               <div class="secondary protocol-protocol">[[item.protocol]]</div>
             </div>
-
-            <button is="paper-icon-button-light" on-click="onRemoveIgnored_"
-                class="icon-clear" title="$i18n{moreActions}"
-                id="removeIgnoredButton">
-            </button>
+            <paper-icon-button-light class="icon-clear">
+              <button id="removeIgnoredButton" on-click="onRemoveIgnored_"
+                  title="$i18n{handlerRemove}">
+              </button>
+            </paper-icon-button-light>
           </div>
         </template>
       </div>
