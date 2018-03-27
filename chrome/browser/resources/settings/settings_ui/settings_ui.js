@@ -59,7 +59,7 @@ Polymer({
     lastSearchQuery_: {
       type: String,
       value: '',
-    }
+    },
   },
 
   listeners: {
@@ -80,6 +80,10 @@ Polymer({
     // Lazy-create the drawer the first time it is opened or swiped into view.
     listenOnce(this.$.drawer, 'open-changed', () => {
       this.$.drawerTemplate.if = true;
+    });
+
+    this.addEventListener('external-link-click', () => {
+      this.$.drawer.closeDrawer();
     });
 
     window.addEventListener('popstate', e => {

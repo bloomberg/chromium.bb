@@ -2331,6 +2331,11 @@ void AddMultideviceStrings(content::WebUIDataSource* html_source) {
 }
 #endif
 
+void AddExtensionsStrings(content::WebUIDataSource* html_source) {
+  html_source->AddLocalizedString("extensionsPageTitle",
+                                  IDS_SETTINGS_EXTENSIONS_CHECKBOX_LABEL);
+}
+
 }  // namespace
 
 void AddLocalizedStrings(content::WebUIDataSource* html_source,
@@ -2379,6 +2384,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddImportDataStrings(html_source);
   AddSystemStrings(html_source);
 #endif
+  AddExtensionsStrings(html_source);
 
 #if defined(USE_NSS_CERTS)
   certificate_manager::AddLocalizedStrings(html_source);
