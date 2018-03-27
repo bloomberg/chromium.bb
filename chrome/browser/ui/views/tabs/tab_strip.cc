@@ -2170,41 +2170,16 @@ void TabStrip::StartPinnedTabAnimation() {
 }
 
 void TabStrip::StartMouseInitiatedRemoveTabAnimation(int model_index) {
-  // The user initiated the close. We want to persist the bounds of all the
-  // existing tabs, so we manually shift ideal_bounds then animate.
-  Tab* tab_closing = tab_at(model_index);
-  int delta = tab_closing->width() - Tab::GetOverlap();
-  // If the tab being closed is a pinned tab next to a non-pinned tab, be sure
-  // to add the extra padding.
-  DCHECK_LT(model_index, tab_count() - 1);
-  if (tab_closing->data().pinned && !tab_at(model_index + 1)->data().pinned)
-    delta += kPinnedToNonPinnedOffset;
-
-  // Set the ideal bounds of everything to be moved over to cover for the
-  // removed tab. This does not recompute the ideal bounds so every tab slides
-  // over without expansion until the user moves the mouse away.
-  for (int i = model_index + 1; i < tab_count(); ++i) {
-    gfx::Rect bounds = ideal_bounds(i);
-    bounds.set_x(bounds.x() - delta);
-    tabs_.set_ideal_bounds(i, bounds);
-  }
-
-  // Don't just subtract |delta| from the New Tab x-coordinate, as we might have
-  // overflow tabs that will be able to animate into the strip, in which case
-  // the new tab button should stay where it is.
-  new_tab_button_bounds_.set_x(
-      std::min(width() - new_tab_button_bounds_.width(),
-               ideal_bounds(tab_count() - 1).right() +
-                   GetLayoutConstant(TABSTRIP_NEW_TAB_BUTTON_SPACING)));
-
   PrepareForAnimation();
 
+  Tab* tab_closing = tab_at(model_index);
   tab_closing->set_closing(true);
 
   // We still need to paint the tab until we actually remove it. Put it in
   // tabs_closing_map_ so we can find it.
   RemoveTabFromViewModel(model_index);
 
+  GenerateIdealBounds();
   AnimateToIdealBounds();
 
   gfx::Rect tab_bounds = tab_closing->bounds();
