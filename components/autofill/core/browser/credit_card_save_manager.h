@@ -80,7 +80,8 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
   // Begins the process to offer upload credit card save to the user if the
   // imported card passes all requirements and Google Payments approves.
   void AttemptToOfferCardUploadSave(const FormStructure& submitted_form,
-                                    const CreditCard& card);
+                                    const CreditCard& card,
+                                    const bool uploading_local_card);
 
   // Returns true if all the conditions for enabling the upload of credit card
   // are satisfied.
@@ -168,6 +169,10 @@ class CreditCardSaveManager : public payments::PaymentsClientSaveDelegate {
   // decisions made when determining if credit card upload save should be
   // offered.
   int upload_decision_metrics_ = 0;
+
+  // |true| if the card being offered for upload is already a local card on the
+  // device; |false| otherwise.
+  bool uploading_local_card_ = false;
 
   // |true| if the user has opted to upload save their credit card to Google.
   bool user_did_accept_upload_prompt_ = false;

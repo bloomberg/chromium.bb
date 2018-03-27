@@ -907,4 +907,40 @@ IN_PROC_BROWSER_TEST_F(
   WaitForObservedEvent();
 }
 
+// Tests UMA logging for the upload save bubble. Ensures that if the user
+// declines upload, Autofill.UploadAcceptedCardOrigin is not logged.
+IN_PROC_BROWSER_TEST_F(
+    SaveCardBubbleViewsFullFormBrowserTest,
+    Upload_DecliningUploadDoesNotLogUserAcceptedCardOriginUMA) {
+  // Enable the SecondaryUiMd experiment (required for clicking the Close
+  // button).
+  scoped_feature_list_.InitAndEnableFeature(features::kSecondaryUiMd);
+
+  // Set up the Payments RPC.
+  SetUploadDetailsRpcPaymentsAccepts();
+
+  // Submitting the form should show the upload save bubble and legal footer.
+  // (Must wait for response from Payments before accessing the controller.)
+  base::HistogramTester histogram_tester;
+  ResetEventWaiterForSequence(
+      {DialogEvent::REQUESTED_UPLOAD_SAVE,
+       DialogEvent::RECEIVED_GET_UPLOAD_DETAILS_RESPONSE});
+  FillAndSubmitForm();
+  WaitForObservedEvent();
+  EXPECT_TRUE(
+      FindViewInBubbleById(DialogViewId::MAIN_CONTENT_VIEW_UPLOAD)->visible());
+  EXPECT_TRUE(FindViewInBubbleById(DialogViewId::FOOTNOTE_VIEW)->visible());
+
+  // Clicking the [X] close button should dismiss the bubble.
+  content::TestNavigationObserver nav_observer(GetActiveWebContents(), 1);
+  ClickOnDialogView(
+      GetSaveCardBubbleViews()->GetBubbleFrameView()->GetCloseButtonForTest());
+
+  // Ensure that UMA was logged correctly.
+  histogram_tester.ExpectUniqueSample(
+      "Autofill.UploadOfferedCardOrigin",
+      AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD, 1);
+  histogram_tester.ExpectTotalCount("Autofill.UploadAcceptedCardOrigin", 0);
+}
+
 }  // namespace autofill

@@ -129,7 +129,8 @@ void FormDataImporter::ImportFormData(const FormStructure& submitted_form,
     // note that unless the "send detected values" experiment is enabled, they
     // must pass address/name/CVC validation requirements first.
     credit_card_save_manager_->AttemptToOfferCardUploadSave(
-        submitted_form, *imported_credit_card);
+        submitted_form, *imported_credit_card,
+        offering_upload_of_local_credit_card_);
   }
 }
 
@@ -343,6 +344,9 @@ bool FormDataImporter::ImportCreditCard(
       // without setting |imported_credit_card|.
       if (!should_return_local_card)
         return true;
+      // Mark that the credit card potentially being offered to upload is
+      // already a local card.
+      offering_upload_of_local_credit_card_ = true;
 
       break;
     }

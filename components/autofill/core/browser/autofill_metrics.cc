@@ -629,6 +629,14 @@ void AutofillMetrics::UpdateSourceURL(ukm::UkmRecorder* ukm_recorder,
 }
 
 // static
+void AutofillMetrics::LogSubmittedCardStateMetric(
+    SubmittedCardStateMetric metric) {
+  DCHECK_LT(metric, NUM_SUBMITTED_CARD_STATE_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.SubmittedCardState", metric,
+                            NUM_SUBMITTED_CARD_STATE_METRICS);
+}
+
+// static
 void AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
     SubmittedServerCardExpirationStatusMetric metric) {
   DCHECK_LT(metric, NUM_SUBMITTED_SERVER_CARD_EXPIRATION_STATUS_METRICS);
@@ -638,11 +646,19 @@ void AutofillMetrics::LogSubmittedServerCardExpirationStatusMetric(
 }
 
 // static
-void AutofillMetrics::LogSubmittedCardStateMetric(
-    SubmittedCardStateMetric metric) {
-  DCHECK_LT(metric, NUM_SUBMITTED_CARD_STATE_METRICS);
-  UMA_HISTOGRAM_ENUMERATION("Autofill.SubmittedCardState", metric,
-                            NUM_SUBMITTED_CARD_STATE_METRICS);
+void AutofillMetrics::LogUploadOfferedCardOriginMetric(
+    UploadOfferedCardOriginMetric metric) {
+  DCHECK_LT(metric, NUM_UPLOAD_OFFERED_CARD_ORIGIN_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.UploadOfferedCardOrigin", metric,
+                            NUM_UPLOAD_OFFERED_CARD_ORIGIN_METRICS);
+}
+
+// static
+void AutofillMetrics::LogUploadAcceptedCardOriginMetric(
+    UploadAcceptedCardOriginMetric metric) {
+  DCHECK_LT(metric, NUM_UPLOAD_ACCEPTED_CARD_ORIGIN_METRICS);
+  UMA_HISTOGRAM_ENUMERATION("Autofill.UploadAcceptedCardOrigin", metric,
+                            NUM_UPLOAD_ACCEPTED_CARD_ORIGIN_METRICS);
 }
 
 // static

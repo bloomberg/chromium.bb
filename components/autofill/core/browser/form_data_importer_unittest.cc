@@ -1992,6 +1992,53 @@ TEST_F(FormDataImporterTest,
   EXPECT_EQ(0, credit_card.Compare(*results[0]));
 }
 
+// Ensures that |offering_upload_of_local_credit_card_| is set correctly.
+TEST_F(FormDataImporterTest, ImportCreditCard_TrackOfferingUploadOfLocalCard) {
+  // Start with a single valid credit card stored via the preferences.
+  CreditCard saved_credit_card(base::GenerateGUID(), "https://www.example.com");
+  test::SetCreditCardInfo(&saved_credit_card, "Biggie Smalls",
+                          "4111 1111 1111 1111" /* Visa */, "01", "2999", "");
+  personal_data_manager_->AddCreditCard(saved_credit_card);
+
+  WaitForOnPersonalDataChanged();
+
+  const std::vector<CreditCard*>& results =
+      personal_data_manager_->GetCreditCards();
+  ASSERT_EQ(1U, results.size());
+  EXPECT_EQ(0, saved_credit_card.Compare(*results[0]));
+
+  // Simulate a form submission with the same card.
+  FormData form;
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_TRUE(ImportCreditCard(form_structure, true, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  // |offering_upload_of_local_credit_card_| should be true because upload was
+  // offered and the card is a local card already on the device.
+  ASSERT_TRUE(form_data_importer_->offering_upload_of_local_credit_card_);
+}
+
+// Ensures that |offering_upload_of_local_credit_card_| is set correctly.
+TEST_F(FormDataImporterTest, ImportCreditCard_TrackOfferingUploadOfNewCard) {
+  // Simulate a form submission with a new credit card.
+  FormData form;
+  AddFullCreditCardForm(&form, "Biggie Smalls", "4111 1111 1111 1111", "01",
+                        "2999");
+
+  FormStructure form_structure(form);
+  form_structure.DetermineHeuristicTypes(nullptr /* ukm_service */);
+  std::unique_ptr<CreditCard> imported_credit_card;
+  EXPECT_TRUE(ImportCreditCard(form_structure, true, &imported_credit_card));
+  ASSERT_TRUE(imported_credit_card);
+  // |offering_upload_of_local_credit_card_| should be false because upload was
+  // offered but the card is NOT a local card already on the device.
+  ASSERT_FALSE(form_data_importer_->offering_upload_of_local_credit_card_);
+}
+
 // ImportFormData tests (both addresses and credit cards).
 
 // Test that a form with both address and credit card sections imports the

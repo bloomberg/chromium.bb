@@ -104,6 +104,10 @@ class FormDataImporter {
   // May be NULL.  NULL indicates OTR.
   PersonalDataManager* personal_data_manager_;
 
+  // For metrics, to be passed to |credit_card_save_manager_|. Notes if the
+  // credit card being offered for upload is already a locally-saved card.
+  bool offering_upload_of_local_credit_card_ = false;
+
   std::string app_locale_;
 
   friend class AutofillMergeTest;
@@ -115,6 +119,10 @@ class FormDataImporter {
                            AllowDuplicateMaskedServerCardIfFlagEnabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, DontDuplicateFullServerCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest, DontDuplicateMaskedServerCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportCreditCard_TrackOfferingUploadOfLocalCard);
+  FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
+                           ImportCreditCard_TrackOfferingUploadOfNewCard);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
                            ImportFormData_OneAddressCreditCardDisabled);
   FRIEND_TEST_ALL_PREFIXES(FormDataImporterTest,
