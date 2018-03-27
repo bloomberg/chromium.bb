@@ -296,11 +296,12 @@ MainWindowComponent.prototype.onToggleViewButtonClick_ = function(event) {
       this.ui_.listContainer.currentListType === ListContainer.ListType.DETAIL ?
       ListContainer.ListType.THUMBNAIL :
       ListContainer.ListType.DETAIL;
-
   this.ui_.setCurrentListType(listType);
   this.appStateController_.saveViewOptions();
 
   this.ui_.listContainer.focus();
+  metrics.recordEnum(
+      'ToggleFileListType', listType, ListContainer.ListTypesForUMA);
 };
 
 /**

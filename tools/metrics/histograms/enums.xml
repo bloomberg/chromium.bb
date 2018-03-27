@@ -18864,6 +18864,12 @@ Called by update_net_error_codes.py.-->
   <int value="6" label="Error"/>
 </enum>
 
+<enum name="FileManagerListType">
+  <int value="0" label="Uninitialized"/>
+  <int value="1" label="List view (detail)"/>
+  <int value="2" label="Grid view (thumbnail)"/>
+</enum>
+
 <enum name="FileManagerMenuCommands">
   <int value="0" label="Help"/>
   <int value="1" label="Help (In Google Drive)"/>

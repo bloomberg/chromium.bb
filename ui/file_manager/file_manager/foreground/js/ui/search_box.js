@@ -189,7 +189,7 @@ SearchBox.prototype.clear = function() {
 SearchBox.prototype.setHidden = function(hidden) {
   this.element.hidden = hidden;
   this.searchButton.hidden = hidden;
-}
+};
 
 /**
  * @private
@@ -208,6 +208,7 @@ SearchBox.prototype.onFocus_ = function() {
   this.autocompleteList.attachToInput(this.inputElement);
   this.updateStyles_();
   this.searchButtonToggleRipple_.activated = true;
+  metrics.recordUserAction('SelectSearch');
 };
 
 /**

@@ -149,6 +149,25 @@ ListContainer.ListType = {
   THUMBNAIL: 'thumb'
 };
 
+/**
+ * Keep the order of this in sync with FileManagerListType in
+ * tools/metrics/histograms/enums.xml.
+ * The array indices will be recorded in UMA as enum values. The index for each
+ * root type should never be renumbered nor reused in this array.
+ *
+ * @type {Array<ListContainer.ListType>}
+ * @const
+ */
+ListContainer.ListTypesForUMA = Object.freeze([
+  ListContainer.ListType.UNINITIALIZED,
+  ListContainer.ListType.DETAIL,
+  ListContainer.ListType.THUMBNAIL,
+]);
+console.assert(
+    Object.keys(ListContainer.ListType).length ===
+        ListContainer.ListTypesForUMA.length,
+    'Members in ListTypesForUMA do not match those in ListType.');
+
 ListContainer.prototype = /** @struct */ {
   /**
    * @return {!FileTable|!FileGrid}
