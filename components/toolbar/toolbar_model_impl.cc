@@ -22,6 +22,7 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_connection_status_flags.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/text_elider.h"
 #include "ui/gfx/vector_icon_types.h"
 
@@ -88,6 +89,9 @@ security_state::SecurityLevel ToolbarModelImpl::GetSecurityLevel(
 
 const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
 #if (!defined(OS_ANDROID) || BUILDFLAG(ENABLE_VR)) && !defined(OS_IOS)
+  const bool is_touch_ui =
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+
   auto* const icon_override = delegate_->GetVectorIconOverride();
   if (icon_override)
     return *icon_override;
@@ -98,14 +102,16 @@ const gfx::VectorIcon& ToolbarModelImpl::GetVectorIcon() const {
   switch (GetSecurityLevel(false)) {
     case security_state::NONE:
     case security_state::HTTP_SHOW_WARNING:
-      return toolbar::kHttpIcon;
+      return is_touch_ui ? toolbar::kHttp20Icon : toolbar::kHttpIcon;
     case security_state::EV_SECURE:
     case security_state::SECURE:
-      return toolbar::kHttpsValidIcon;
+      return is_touch_ui ? toolbar::kHttpsValid20Icon
+                         : toolbar::kHttpsValidIcon;
     case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
       return vector_icons::kBusinessIcon;
     case security_state::DANGEROUS:
-      return toolbar::kHttpsInvalidIcon;
+      return is_touch_ui ? toolbar::kHttpsInvalid20Icon
+                         : toolbar::kHttpsInvalidIcon;
     case security_state::SECURITY_LEVEL_COUNT:
       NOTREACHED();
       return toolbar::kHttpIcon;

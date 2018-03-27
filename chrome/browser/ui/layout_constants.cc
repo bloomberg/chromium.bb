@@ -43,17 +43,26 @@ int GetLayoutConstant(LayoutConstant constant) {
         return 1;
       return hybrid ? 8 : 6;
     case LOCATION_BAR_ELEMENT_PADDING:
-      return hybrid ? 3 : 1;
-    case LOCATION_BAR_PADDING:
+      // Under touch, the padding gets moved from between the location bar
+      // elements to inside the location bar elements for larger touch targets
+      // (i.e. currently, LOCATION_BAR_ICON_INTERIOR_PADDING).
+      if (touch_optimized_material)
+        return 0;
       return hybrid ? 3 : 1;
     case LOCATION_BAR_HEIGHT: {
       constexpr int kHeights[] = {28, 32, 36, 28};
       return kHeights[mode];
     }
     case LOCATION_BAR_ICON_SIZE:
-      return 16;
+      return touch_optimized_material ? 20 : 16;
     case LOCATION_BAR_ICON_INTERIOR_PADDING:
-      return touch_optimized_material ? 8 : 4;
+      if (touch_optimized_material) {
+        // TODO(crbug.com/801583): This should actually be 8, but until
+        // LocationBarView is updated to remove its stroke, subtract the dips
+        // reserved for the stroke first.
+        return 7;
+      }
+      return 4;
     case TABSTRIP_NEW_TAB_BUTTON_SPACING: {
       // In non-touch optimized UI, we make the new tab button overlap with the
       // last tab in the tabstrip (i.e negative spacing). However, in

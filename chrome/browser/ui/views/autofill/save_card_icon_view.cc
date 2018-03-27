@@ -15,6 +15,7 @@
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/grit/generated_resources.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 namespace autofill {
 
@@ -58,6 +59,8 @@ void SaveCardIconView::OnExecuting(
     BubbleIconView::ExecuteSource execute_source) {}
 
 const gfx::VectorIcon& SaveCardIconView::GetVectorIcon() const {
+  if (ui::MaterialDesignController::IsTouchOptimizedUiEnabled())
+    return kCreditCard20Icon;
   return kCreditCardIcon;
 }
 

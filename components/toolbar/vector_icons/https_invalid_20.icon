@@ -1,0 +1,25 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// TODO(crbug.com/647286): This is a duplicate of the existing
+// kHttpsInvalidIcon, just sized to 20x20dips for use in Chrome's touch mode.
+// Delete this when vector icons can support multiple icon sizes.
+CANVAS_DIMENSIONS, 20,
+MOVE_TO, 1, 18,
+R_H_LINE_TO, 18,
+LINE_TO, 10, 2,
+LINE_TO, 1, 18,
+CLOSE,
+R_MOVE_TO, 10, -2,
+H_LINE_TO, 9,
+R_V_LINE_TO, -2,
+R_H_LINE_TO, 2,
+R_V_LINE_TO, 2,
+CLOSE,
+R_MOVE_TO, -2, -3,
+V_LINE_TO, 8,
+R_H_LINE_TO, 2,
+R_V_LINE_TO, 5,
+H_LINE_TO, 9,
+CLOSE

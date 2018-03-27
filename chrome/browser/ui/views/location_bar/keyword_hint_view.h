@@ -43,14 +43,15 @@ class KeywordHintView : public views::Button {
 
   void SetKeyword(const base::string16& keyword);
 
- private:
   // views::View:
-  gfx::Size CalculatePreferredSize() const override;
+  gfx::Insets GetInsets() const override;
   // The minimum size is just big enough to show the tab.
   gfx::Size GetMinimumSize() const override;
-  void Layout() override;
   const char* GetClassName() const override;
+  void Layout() override;
+  gfx::Size CalculatePreferredSize() const override;
 
+ private:
   views::Label* CreateLabel(const gfx::FontList& font_list,
                             SkColor text_color,
                             SkColor background_color);

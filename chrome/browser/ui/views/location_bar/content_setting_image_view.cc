@@ -133,6 +133,10 @@ bool ContentSettingImageView::ShouldShowLabel() const {
          (slide_animator_.is_animating() || pause_animation_);
 }
 
+bool ContentSettingImageView::ShouldShowSeparator() const {
+  return false;
+}
+
 double ContentSettingImageView::WidthMultiplier() const {
   double state = pause_animation_ ? pause_animation_state_
                                   : slide_animator_.GetCurrentValue();

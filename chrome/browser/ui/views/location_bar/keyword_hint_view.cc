@@ -129,23 +129,41 @@ void KeywordHintView::SetKeyword(const base::string16& keyword) {
   NotifyAccessibilityEvent(ax::mojom::Event::kLiveRegionChanged, true);
 }
 
-gfx::Size KeywordHintView::CalculatePreferredSize() const {
-  // Height will be ignored by the LocationBarView.
-  return gfx::Size(leading_label_->GetPreferredSize().width() +
-                       chip_container_->GetPreferredSize().width() +
-                       trailing_label_->GetPreferredSize().width() +
-                       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING),
-                   0);
+gfx::Insets KeywordHintView::GetInsets() const {
+  if (!BackgroundWith1PxBorder::IsRounded())
+    return gfx::Insets();
+
+  // The location bar and keyword hint view chip have rounded ends. Ensure the
+  // chip label's corner with the furthest extent from its midpoint is still at
+  // least kMinDistanceFromBorder DIPs away from the location bar rounded end.
+  constexpr float kMinDistanceFromBorder = 1;
+  const int radius = GetLayoutConstant(LOCATION_BAR_HEIGHT) / 2;
+  const int hypotenuse = radius - kMinDistanceFromBorder;
+  const float chip_midpoint = chip_container_->height() / 2.f;
+  const float extent = std::max(chip_midpoint - chip_label_->y(),
+                                chip_label_->bounds().bottom() - chip_midpoint);
+  DCHECK_GE(hypotenuse, extent)
+      << "LOCATION_BAR_HEIGHT must be tall enough to contain the chip.";
+  const float subsumed_width =
+      std::sqrt(hypotenuse * hypotenuse - extent * extent);
+  const int end_margin = gfx::ToCeiledInt(radius - subsumed_width);
+  return gfx::Insets(0, 0, 0, end_margin);
 }
 
 gfx::Size KeywordHintView::GetMinimumSize() const {
   // Height will be ignored by the LocationBarView.
-  return chip_container_->GetPreferredSize();
+  gfx::Size chip_size = chip_container_->GetPreferredSize();
+  chip_size.Enlarge(GetInsets().width(), GetInsets().height());
+  return chip_size;
+}
+
+const char* KeywordHintView::GetClassName() const {
+  return "KeywordHintView";
 }
 
 void KeywordHintView::Layout() {
   int chip_width = chip_container_->GetPreferredSize().width();
-  bool show_labels = (width() != chip_width);
+  bool show_labels = width() - GetInsets().width() > chip_width;
   gfx::Size leading_size(leading_label_->GetPreferredSize());
   leading_label_->SetBounds(0, 0, show_labels ? leading_size.width() : 0,
                             height());
@@ -156,8 +174,13 @@ void KeywordHintView::Layout() {
                              show_labels ? trailing_size.width() : 0, height());
 }
 
-const char* KeywordHintView::GetClassName() const {
-  return "KeywordHintView";
+gfx::Size KeywordHintView::CalculatePreferredSize() const {
+  // Height will be ignored by the LocationBarView.
+  return gfx::Size(leading_label_->GetPreferredSize().width() +
+                       chip_container_->GetPreferredSize().width() +
+                       trailing_label_->GetPreferredSize().width() +
+                       GetLayoutConstant(LOCATION_BAR_ICON_INTERIOR_PADDING),
+                   0);
 }
 
 views::Label* KeywordHintView::CreateLabel(const gfx::FontList& font_list,

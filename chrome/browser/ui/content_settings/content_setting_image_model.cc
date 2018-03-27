@@ -21,6 +21,7 @@
 #include "chrome/browser/prerender/prerender_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/blocked_content/framebust_block_tab_helper.h"
+#include "chrome/browser/ui/layout_constants.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
@@ -31,7 +32,9 @@
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/color_utils.h"
+#include "ui/gfx/favicon_size.h"
 #include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icon_types.h"
 
 using content::WebContents;
 
@@ -329,7 +332,13 @@ void ContentSettingBlockedImageModel::UpdateFromWebContents(
   else if (content_settings->IsContentBlocked(type))
     badge_id = &kBlockedBadgeIcon;
 
-  set_icon(image_details->icon, *badge_id);
+  const gfx::VectorIcon* icon = &image_details->icon;
+  // Touch mode uses a different tab audio icon.
+  if (image_details->content_type == CONTENT_SETTINGS_TYPE_SOUND &&
+      ui::MaterialDesignController::IsTouchOptimizedUiEnabled()) {
+    icon = &kTabAudioRoundedIcon;
+  }
+  set_icon(*icon, *badge_id);
   set_explanatory_string_id(explanation_id);
   DCHECK(tooltip_id);
   set_tooltip(l10n_util::GetStringUTF16(tooltip_id));
@@ -677,8 +686,12 @@ void ContentSettingFramebustBlockImageModel::SetAnimationHasRun(
 // Base class ------------------------------------------------------------------
 
 gfx::Image ContentSettingImageModel::GetIcon(SkColor icon_color) const {
-  return gfx::Image(
-      gfx::CreateVectorIconWithBadge(*icon_, 16, icon_color, *icon_badge_));
+  int icon_size = GetLayoutConstant(LOCATION_BAR_ICON_SIZE);
+#if defined(OS_MACOSX) && !BUILDFLAG(MAC_VIEWS_BROWSER)
+  icon_size = gfx::kFaviconSize;
+#endif
+  return gfx::Image(gfx::CreateVectorIconWithBadge(*icon_, icon_size,
+                                                   icon_color, *icon_badge_));
 }
 
 ContentSettingImageModel::ContentSettingImageModel(ImageType image_type)

@@ -102,6 +102,9 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Returns true when the label should be visible.
   virtual bool ShouldShowLabel() const;
 
+  // Returns true when the separator should be visible.
+  virtual bool ShouldShowSeparator() const;
+
   // Returns a multiplier used to calculate the actual width of the view based
   // on its desired width.  This ranges from 0 for a zero-width view to 1 for a
   // full-width view and can be used to animate the width of the view.
@@ -164,8 +167,15 @@ class IconLabelBubbleView : public views::InkDropObserver,
   // Returns the amount of space reserved for the separator in DIP.
   int GetSeparatorLayoutWidth() const;
 
+  // Retrieves the width taken the separator including padding before the
+  // separator stroke, taking into account whether it is shown or not.
+  int GetPrefixedSeparatorWidth() const;
+
   // Padding after the separator.
-  int GetPostSeparatorPadding() const;
+  int GetEndPadding() const;
+
+  // Gets the minimum size to use when the label is not shown.
+  gfx::Size GetNonLabelSize() const;
 
   float GetScaleFactor() const;
 

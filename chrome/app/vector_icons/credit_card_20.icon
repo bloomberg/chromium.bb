@@ -1,0 +1,29 @@
+// Copyright 2018 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+// TODO(crbug.com/647286): This is a duplicate of the existing kCreditCardIcon,
+// just sized to 20x20dips for use in Chrome's touch mode. Delete this when
+// vector icons can support multiple icon sizes.
+MOVE_TO, 40, 8,
+H_LINE_TO, 8,
+R_CUBIC_TO, -2.21f, 0, -3.98f, 1.79f, -3.98f, 4,
+LINE_TO, 4, 36,
+R_CUBIC_TO, 0, 2.21f, 1.79f, 4, 4, 4,
+R_H_LINE_TO, 32,
+R_CUBIC_TO, 2.21f, 0, 4, -1.79f, 4, -4,
+V_LINE_TO, 12,
+R_CUBIC_TO, 0, -2.21f, -1.79f, -4, -4, -4,
+CLOSE,
+R_MOVE_TO, 0, 28,
+H_LINE_TO, 8,
+V_LINE_TO, 24,
+R_H_LINE_TO, 32,
+R_V_LINE_TO, 12,
+CLOSE,
+R_MOVE_TO, 0, -20,
+H_LINE_TO, 8,
+R_V_LINE_TO, -4,
+R_H_LINE_TO, 32,
+R_V_LINE_TO, 4,
+CLOSE
