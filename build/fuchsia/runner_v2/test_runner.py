@@ -100,8 +100,9 @@ def main():
     if args.enable_test_server:
       test_server, forwarder = SetupTestServer(target, test_concurrency)
 
-    RunPackage(args.output_directory, target, args.package, args.package_name,
-               child_args, args.package_manifest)
+    returncode = RunPackage(args.output_directory, target, args.package,
+                            args.package_name, child_args,
+                            args.package_manifest)
 
     if forwarder:
       forwarder.terminate()
@@ -109,6 +110,8 @@ def main():
 
     if args.test_launcher_summary_output:
       target.GetFile(TEST_RESULT_PATH, args.test_launcher_summary_output)
+
+    return returncode
 
 
 if __name__ == '__main__':
