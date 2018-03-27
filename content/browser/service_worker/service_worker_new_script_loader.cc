@@ -132,7 +132,6 @@ void ServiceWorkerNewScriptLoader::ResumeReadingBodyFromNet() {
 
 void ServiceWorkerNewScriptLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   if (!version_->context() || version_->is_redundant()) {
     CommitCompleted(network::URLLoaderCompletionStatus(net::ERR_FAILED));
@@ -143,8 +142,8 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
   // At least we need headers and SSL info.
   auto response_info = std::make_unique<net::HttpResponseInfo>();
   response_info->headers = response_head.headers;
-  if (ssl_info.has_value())
-    response_info->ssl_info = *ssl_info;
+  if (response_head.ssl_info.has_value())
+    response_info->ssl_info = *response_head.ssl_info;
   response_info->was_fetched_via_spdy = response_head.was_fetched_via_spdy;
   response_info->was_alpn_negotiated = response_head.was_alpn_negotiated;
   response_info->alpn_negotiated_protocol =
@@ -206,8 +205,7 @@ void ServiceWorkerNewScriptLoader::OnReceiveResponse(
   WriteHeaders(
       base::MakeRefCounted<HttpResponseInfoIOBuffer>(response_info.release()));
 
-  client_->OnReceiveResponse(response_head, ssl_info,
-                             std::move(downloaded_file));
+  client_->OnReceiveResponse(response_head, std::move(downloaded_file));
 }
 
 void ServiceWorkerNewScriptLoader::OnReceiveRedirect(

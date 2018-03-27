@@ -17,7 +17,6 @@
 #include "net/cert/cert_verifier.h"
 #include "net/cert/cert_verify_result.h"
 #include "net/log/net_log_with_source.h"
-#include "net/ssl/ssl_info.h"
 #include "services/network/public/cpp/shared_url_loader_factory.h"
 #include "url/gurl.h"
 #include "url/origin.h"
@@ -46,13 +45,12 @@ class SignedExchangeCertFetcherFactory;
 class CONTENT_EXPORT SignedExchangeHandler {
  public:
   // TODO(https://crbug.com/803774): Add verification status here.
-  using ExchangeHeadersCallback =
-      base::OnceCallback<void(net::Error error,
-                              const GURL& request_url,
-                              const std::string& request_method,
-                              const network::ResourceResponseHead&,
-                              std::unique_ptr<net::SourceStream> payload_stream,
-                              base::Optional<net::SSLInfo>)>;
+  using ExchangeHeadersCallback = base::OnceCallback<void(
+      net::Error error,
+      const GURL& request_url,
+      const std::string& request_method,
+      const network::ResourceResponseHead&,
+      std::unique_ptr<net::SourceStream> payload_stream)>;
 
   // TODO(https://crbug.com/817187): Find a more sophisticated way to use a
   // MockCertVerifier in browser tests instead of using the static method.

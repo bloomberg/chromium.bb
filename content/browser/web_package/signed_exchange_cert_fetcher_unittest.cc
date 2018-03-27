@@ -221,8 +221,7 @@ class SignedExchangeCertFetcherTest : public testing::Test {
         base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
 
     mock_loader_factory_.client_ptr()->OnReceiveResponse(
-        resource_response, base::Optional<net::SSLInfo>(),
-        nullptr /* downloaded_file */);
+        resource_response, nullptr /* downloaded_file */);
   }
 
   DeferringURLLoaderThrottle* InitializeDeferringURLLoaderThrottle() {
@@ -656,8 +655,7 @@ TEST_F(SignedExchangeCertFetcherTest, MaxCertSize_ContentLengthCheck) {
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 200 OK");
   resource_response.content_length = message.size();
   mock_loader_factory_.client_ptr()->OnReceiveResponse(
-      resource_response, base::Optional<net::SSLInfo>(),
-      nullptr /* downloaded_file */);
+      resource_response, nullptr /* downloaded_file */);
   mojo::DataPipe data_pipe(message.size());
   CHECK(
       mojo::common::BlockingCopyFromString(message, data_pipe.producer_handle));
@@ -692,8 +690,7 @@ TEST_F(SignedExchangeCertFetcherTest, Abort_404) {
   resource_response.headers =
       base::MakeRefCounted<net::HttpResponseHeaders>("HTTP/1.1 404 Not Found");
   mock_loader_factory_.client_ptr()->OnReceiveResponse(
-      resource_response, base::Optional<net::SSLInfo>(),
-      nullptr /* downloaded_file */);
+      resource_response, nullptr /* downloaded_file */);
   RunUntilIdle();
 
   EXPECT_TRUE(callback_called_);

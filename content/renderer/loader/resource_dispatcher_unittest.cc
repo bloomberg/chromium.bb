@@ -85,7 +85,7 @@ class ResourceDispatcherTest : public testing::Test,
     head.headers = new net::HttpResponseHeaders(raw_headers);
     head.mime_type = kTestPageMimeType;
     head.charset = kTestPageCharset;
-    client->OnReceiveResponse(head, {}, {});
+    client->OnReceiveResponse(head, {});
   }
 
   std::unique_ptr<network::ResourceRequest> CreateResourceRequest() {
@@ -322,7 +322,7 @@ class TimeConversionTest : public ResourceDispatcherTest {
     ASSERT_EQ(1u, loader_and_clients_.size());
     auto client = std::move(loader_and_clients_[0].second);
     loader_and_clients_.clear();
-    client->OnReceiveResponse(response_head, {}, {});
+    client->OnReceiveResponse(response_head, {});
   }
 
   const network::ResourceResponseInfo& response_info() const {

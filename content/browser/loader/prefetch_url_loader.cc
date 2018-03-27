@@ -76,7 +76,6 @@ void PrefetchURLLoader::ResumeReadingBodyFromNet() {
 
 void PrefetchURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   if (WebPackagePrefetchHandler::IsResponseForWebPackage(response)) {
     DCHECK(!web_package_prefetch_handler_);
@@ -90,8 +89,7 @@ void PrefetchURLLoader::OnReceiveResponse(
         request_context_getter_, this);
     return;
   }
-  forwarding_client_->OnReceiveResponse(response, ssl_info,
-                                        std::move(downloaded_file));
+  forwarding_client_->OnReceiveResponse(response, std::move(downloaded_file));
 }
 
 void PrefetchURLLoader::OnReceiveRedirect(

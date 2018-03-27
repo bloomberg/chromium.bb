@@ -67,7 +67,6 @@ class CONTENT_EXPORT PrefetchURLLoader
   // network::mojom::URLLoaderClient overrides:
   void OnReceiveResponse(
       const network::ResourceResponseHead& head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const network::ResourceResponseHead& head) override;

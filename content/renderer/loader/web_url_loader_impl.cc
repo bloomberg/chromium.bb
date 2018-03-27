@@ -276,37 +276,40 @@ void SetSecurityStyleAndDetails(const GURL& url,
 
   const net::SSLInfo& ssl_info = *info.ssl_info;
 
-  int ssl_version =
-      net::SSLConnectionStatusToVersion(ssl_info.connection_status);
-  const char* protocol;
-  net::SSLVersionToString(&protocol, ssl_version);
-
-  const char* key_exchange;
-  const char* cipher;
-  const char* mac;
-  bool is_aead;
-  bool is_tls13;
-  uint16_t cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
-  net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
-                               &is_tls13, cipher_suite);
-  if (key_exchange == nullptr) {
-    DCHECK(is_tls13);
-    key_exchange = "";
-  }
-
-  if (mac == nullptr) {
-    DCHECK(is_aead);
-    mac = "";
-  }
-
+  const char* protocol = "";
+  const char* key_exchange = "";
+  const char* cipher = "";
+  const char* mac = "";
   const char* key_exchange_group = "";
-  if (ssl_info.key_exchange_group != 0) {
-    // Historically the field was named 'curve' rather than 'group'.
-    key_exchange_group = SSL_get_curve_name(ssl_info.key_exchange_group);
-    if (!key_exchange_group) {
-      NOTREACHED();
-      key_exchange_group = "";
+
+  if (ssl_info.connection_status) {
+    int ssl_version =
+        net::SSLConnectionStatusToVersion(ssl_info.connection_status);
+    net::SSLVersionToString(&protocol, ssl_version);
+
+    bool is_aead;
+    bool is_tls13;
+    uint16_t cipher_suite =
+        net::SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
+    net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
+                                 &is_tls13, cipher_suite);
+    if (key_exchange == nullptr) {
+      DCHECK(is_tls13);
+      key_exchange = "";
+    }
+
+    if (mac == nullptr) {
+      DCHECK(is_aead);
+      mac = "";
+    }
+
+    if (ssl_info.key_exchange_group != 0) {
+      // Historically the field was named 'curve' rather than 'group'.
+      key_exchange_group = SSL_get_curve_name(ssl_info.key_exchange_group);
+      if (!key_exchange_group) {
+        NOTREACHED();
+        key_exchange_group = "";
+      }
     }
   }
 

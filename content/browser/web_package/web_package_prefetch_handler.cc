@@ -76,7 +76,6 @@ WebPackagePrefetchHandler::FollowRedirect(
 
 void WebPackagePrefetchHandler::OnReceiveResponse(
     const network::ResourceResponseHead& head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   NOTREACHED();
 }

@@ -120,6 +120,8 @@ void NavigationResourceHandler::OnResponseStarted(
   ResourceRequestInfoImpl* info = GetRequestInfo();
 
   response->head.encoded_data_length = request()->raw_header_size();
+  if (request()->ssl_info().cert)
+    response->head.ssl_info = request()->ssl_info();
 
   std::unique_ptr<NavigationData> cloned_data;
   if (resource_dispatcher_host_delegate_) {
@@ -132,10 +134,9 @@ void NavigationResourceHandler::OnResponseStarted(
       cloned_data = navigation_data->Clone();
   }
 
-  core_->NotifyResponseStarted(response, std::move(stream_handle_),
-                               request()->ssl_info(), std::move(cloned_data),
-                               info->GetGlobalRequestID(), info->IsDownload(),
-                               info->is_stream());
+  core_->NotifyResponseStarted(
+      response, std::move(stream_handle_), std::move(cloned_data),
+      info->GetGlobalRequestID(), info->IsDownload(), info->is_stream());
   HoldController(std::move(controller));
   response_ = response;
 }

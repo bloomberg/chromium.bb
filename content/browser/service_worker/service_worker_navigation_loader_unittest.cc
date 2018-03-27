@@ -85,7 +85,6 @@ class NavigationPreloadLoaderClient final
   // network::mojom::URLLoaderClient implementation
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override {
     response_head_ = response_head;
   }
@@ -178,7 +177,7 @@ class MockNetworkURLLoaderFactory final
     network::ResourceResponseHead response;
     response.headers = info.headers;
     response.headers->GetMimeType(&response.mime_type);
-    client->OnReceiveResponse(response, base::nullopt, nullptr);
+    client->OnReceiveResponse(response, nullptr);
 
     std::string body = "this body came from the network";
     uint32_t bytes_written = body.size();

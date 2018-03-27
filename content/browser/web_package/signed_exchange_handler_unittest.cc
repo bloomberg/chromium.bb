@@ -177,8 +177,7 @@ class SignedExchangeHandlerTest
                      const GURL&,
                      const std::string&,
                      const network::ResourceResponseHead& resource_response,
-                     std::unique_ptr<net::SourceStream> payload_stream,
-                     base::Optional<net::SSLInfo>) {
+                     std::unique_ptr<net::SourceStream> payload_stream) {
     read_header_ = true;
     error_ = error;
     resource_response_ = resource_response;

@@ -176,11 +176,10 @@ class SubresourceLoader : public network::mojom::URLLoader,
   // Called by either the appcache or network loader, whichever is in use.
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override {
     // Don't MaybeFallback for appcache produced responses.
     if (appcache_loader_ || !handler_) {
-      remote_client_->OnReceiveResponse(response_head, ssl_info,
+      remote_client_->OnReceiveResponse(response_head,
                                         std::move(downloaded_file));
       return;
     }
@@ -189,19 +188,18 @@ class SubresourceLoader : public network::mojom::URLLoader,
     handler_->MaybeFallbackForSubresourceResponse(
         response_head,
         base::BindOnce(&SubresourceLoader::ContinueOnReceiveResponse,
-                       weak_factory_.GetWeakPtr(), response_head, ssl_info,
+                       weak_factory_.GetWeakPtr(), response_head,
                        std::move(downloaded_file)));
   }
 
   void ContinueOnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file,
       SingleRequestURLLoaderFactory::RequestHandler handler) {
     if (handler) {
       CreateAndStartAppCacheLoader(std::move(handler));
     } else {
-      remote_client_->OnReceiveResponse(response_head, ssl_info,
+      remote_client_->OnReceiveResponse(response_head,
                                         std::move(downloaded_file));
     }
   }

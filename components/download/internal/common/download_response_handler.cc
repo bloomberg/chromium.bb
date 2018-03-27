@@ -82,12 +82,9 @@ DownloadResponseHandler::~DownloadResponseHandler() = default;
 
 void DownloadResponseHandler::OnReceiveResponse(
     const network::ResourceResponseHead& head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   create_info_ = CreateDownloadCreateInfo(head);
-
-  if (ssl_info)
-    cert_status_ = ssl_info->cert_status;
+  cert_status_ = head.cert_status;
 
   // TODO(xingliu): Do not use http cache.
   // Sets page transition type correctly and call

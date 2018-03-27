@@ -55,7 +55,6 @@ class AppCacheUpdateJob::UpdateURLLoaderRequest
   // These methods are called by the network loader.
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,

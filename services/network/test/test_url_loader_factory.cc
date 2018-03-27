@@ -83,7 +83,7 @@ bool TestURLLoaderFactory::CreateLoaderAndStartInternal(
   for (auto it = responses_.begin(); it != responses_.end(); ++it) {
     if (it->url == url) {
       CHECK(it->redirects.empty()) << "TODO(jam): handle redirects";
-      client->OnReceiveResponse(it->head, base::nullopt, nullptr);
+      client->OnReceiveResponse(it->head, nullptr);
       mojo::DataPipe data_pipe;
       uint32_t bytes_written = it->content.size();
       CHECK_EQ(MOJO_RESULT_OK, data_pipe.producer_handle->WriteData(

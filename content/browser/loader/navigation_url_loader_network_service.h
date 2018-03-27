@@ -54,7 +54,6 @@ class CONTENT_EXPORT NavigationURLLoaderNetworkService
   void OnReceiveResponse(
       scoped_refptr<network::ResourceResponse> response,
       network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-      const base::Optional<net::SSLInfo>& maybe_ssl_info,
       std::unique_ptr<NavigationData> navigation_data,
       const GlobalRequestID& global_request_id,
       bool is_download,

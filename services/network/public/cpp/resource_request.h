@@ -202,6 +202,9 @@ struct COMPONENT_EXPORT(NETWORK_CPP_BASE) ResourceRequest {
   bool allow_download = false;
 
   // Whether to intercept headers to pass back to the renderer.
+  // This also enables reporting of SSLInfo in URLLoaderClient's
+  // OnResponseReceived and OnComplete, as well as invocation of
+  // OnTransferSizeUpdated().
   bool report_raw_headers = false;
 
   // Whether or not to request a Preview version of the resource or let the

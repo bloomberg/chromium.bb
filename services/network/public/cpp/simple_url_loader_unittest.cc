@@ -1502,8 +1502,7 @@ class MockURLLoader : public network::mojom::URLLoader {
           response_info.headers =
               new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
                   headers.c_str(), headers.size()));
-          client_->OnReceiveResponse(response_info,
-                                     base::Optional<net::SSLInfo>(), nullptr);
+          client_->OnReceiveResponse(response_info, nullptr);
           break;
         }
         case TestLoaderEvent::kReceived401Response: {
@@ -1512,8 +1511,7 @@ class MockURLLoader : public network::mojom::URLLoader {
           response_info.headers =
               new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
                   headers.c_str(), headers.size()));
-          client_->OnReceiveResponse(response_info,
-                                     base::Optional<net::SSLInfo>(), nullptr);
+          client_->OnReceiveResponse(response_info, nullptr);
           break;
         }
         case TestLoaderEvent::kReceived501Response: {
@@ -1522,8 +1520,7 @@ class MockURLLoader : public network::mojom::URLLoader {
           response_info.headers =
               new net::HttpResponseHeaders(net::HttpUtil::AssembleRawHeaders(
                   headers.c_str(), headers.size()));
-          client_->OnReceiveResponse(response_info,
-                                     base::Optional<net::SSLInfo>(), nullptr);
+          client_->OnReceiveResponse(response_info, nullptr);
           break;
         }
         case TestLoaderEvent::kBodyBufferReceived: {

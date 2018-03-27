@@ -260,7 +260,6 @@ void SignedExchangeCertFetcher::OnDataComplete() {
 // network::mojom::URLLoaderClient
 void SignedExchangeCertFetcher::OnReceiveResponse(
     const network::ResourceResponseHead& head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "SignedExchangeCertFetcher::OnReceiveResponse");

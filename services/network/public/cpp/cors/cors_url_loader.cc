@@ -127,7 +127,6 @@ void CORSURLLoader::ResumeReadingBodyFromNet() {
 
 void CORSURLLoader::OnReceiveResponse(
     const ResourceResponseHead& response_head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK(network_loader_);
   DCHECK(forwarding_client_);
@@ -147,7 +146,7 @@ void CORSURLLoader::OnReceiveResponse(
       return;
     }
   }
-  forwarding_client_->OnReceiveResponse(response_head, ssl_info,
+  forwarding_client_->OnReceiveResponse(response_head,
                                         std::move(downloaded_file));
 }
 

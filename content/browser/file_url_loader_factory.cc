@@ -159,7 +159,7 @@ class FileURLDirectoryLoader
     network::ResourceResponseHead head;
     head.mime_type = "text/html";
     head.charset = "utf-8";
-    client->OnReceiveResponse(head, base::nullopt, nullptr);
+    client->OnReceiveResponse(head, nullptr);
     client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
     client_ = std::move(client);
 
@@ -554,7 +554,7 @@ class FileURLLoader : public network::mojom::URLLoader {
           base::StringPrintf("%s: %s", net::HttpRequestHeaders::kContentType,
                              head.mime_type.c_str()));
     }
-    client->OnReceiveResponse(head, base::nullopt, nullptr);
+    client->OnReceiveResponse(head, nullptr);
     client->OnStartLoadingResponseBody(std::move(pipe.consumer_handle));
     client_ = std::move(client);
 

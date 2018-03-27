@@ -121,12 +121,11 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveResponse(
     const network::ResourceResponseHead& head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   current_response_ = head;
   HandleResponseOrRedirectHeaders(base::BindRepeating(
       &InProgressRequest::ContinueToResponseStarted, weak_factory_.GetWeakPtr(),
-      ssl_info, base::Passed(&downloaded_file)));
+      base::Passed(&downloaded_file)));
 }
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::OnReceiveRedirect(
@@ -288,7 +287,6 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
 void WebRequestProxyingURLLoaderFactory::InProgressRequest::
     ContinueToResponseStarted(
-        const base::Optional<net::SSLInfo>& ssl_info,
         network::mojom::DownloadedTempFilePtr downloaded_file,
         int error_code) {
   if (error_code != net::OK) {
@@ -338,7 +336,7 @@ void WebRequestProxyingURLLoaderFactory::InProgressRequest::
 
   ExtensionWebRequestEventRouter::GetInstance()->OnResponseStarted(
       factory_->browser_context_, factory_->info_map_, &info_.value(), net::OK);
-  target_client_->OnReceiveResponse(current_response_, ssl_info,
+  target_client_->OnReceiveResponse(current_response_,
                                     std::move(downloaded_file));
 }
 

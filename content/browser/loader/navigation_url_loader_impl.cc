@@ -98,7 +98,6 @@ void NavigationURLLoaderImpl::NotifyRequestRedirected(
 void NavigationURLLoaderImpl::NotifyResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
-    const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -107,9 +106,10 @@ void NavigationURLLoaderImpl::NotifyResponseStarted(
 
   delegate_->OnResponseStarted(
       response, network::mojom::URLLoaderClientEndpointsPtr(), std::move(body),
-      ssl_info, std::move(navigation_data), request_id, is_download, is_stream,
+      std::move(navigation_data), request_id, is_download, is_stream,
       base::nullopt);
 }
+
 void NavigationURLLoaderImpl::NotifyRequestFailed(
     bool in_cache,
     int net_error,

@@ -19,7 +19,7 @@ void StartHistogramInternalsURLLoader(
   network::ResourceResponseHead resource_response;
   resource_response.headers = headers;
   resource_response.mime_type = "text/html";
-  client->OnReceiveResponse(resource_response, base::nullopt, nullptr);
+  client->OnReceiveResponse(resource_response, nullptr);
 
   base::StatisticsRecorder::ImportProvidedHistograms();
   std::string data = HistogramInternalsRequestJob::GenerateHTML(request.url);

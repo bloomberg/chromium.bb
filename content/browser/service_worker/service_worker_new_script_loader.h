@@ -70,7 +70,6 @@ class CONTENT_EXPORT ServiceWorkerNewScriptLoader
   // network::mojom::URLLoaderClient for the network load:
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,

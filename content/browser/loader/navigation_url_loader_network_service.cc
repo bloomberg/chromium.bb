@@ -703,7 +703,6 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
       const network::ResourceResponseHead& head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override {
     received_response_ = true;
 
@@ -789,9 +788,8 @@ class NavigationURLLoaderNetworkService::URLLoaderRequestController
         base::BindOnce(&NavigationURLLoaderNetworkService::OnReceiveResponse,
                        owner_, response->DeepCopy(),
                        std::move(url_loader_client_endpoints),
-                       std::move(ssl_info), std::move(cloned_navigation_data),
-                       global_request_id_, is_download, is_stream,
-                       std::move(downloaded_file)));
+                       std::move(cloned_navigation_data), global_request_id_,
+                       is_download, is_stream, std::move(downloaded_file)));
   }
 
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
@@ -1125,7 +1123,6 @@ void NavigationURLLoaderNetworkService::ProceedWithResponse() {}
 void NavigationURLLoaderNetworkService::OnReceiveResponse(
     scoped_refptr<network::ResourceResponse> response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
-    const base::Optional<net::SSLInfo>& maybe_ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& global_request_id,
     bool is_download,
@@ -1137,13 +1134,10 @@ void NavigationURLLoaderNetworkService::OnReceiveResponse(
 
   // TODO(scottmg): This needs to do more of what
   // NavigationResourceHandler::OnResponseStarted() does.
-  net::SSLInfo ssl_info;
-  if (maybe_ssl_info.has_value())
-    ssl_info = maybe_ssl_info.value();
 
   delegate_->OnResponseStarted(
       std::move(response), std::move(url_loader_client_endpoints), nullptr,
-      std::move(ssl_info), std::move(navigation_data), global_request_id,
+      std::move(navigation_data), global_request_id,
       allow_download_ && is_download, is_stream,
       request_controller_->TakeSubresourceLoaderParams());
 }

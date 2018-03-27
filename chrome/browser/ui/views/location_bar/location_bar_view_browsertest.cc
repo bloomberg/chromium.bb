@@ -257,7 +257,8 @@ class SecurityIndicatorTest : public InProcessBrowserTest {
         net::ct::CTPolicyCompliance::CT_POLICY_COMPLIES_VIA_SCTS;
     network::ResourceResponseHead resource_response;
     resource_response.mime_type = "text/html";
-    params->client->OnReceiveResponse(resource_response, ssl_info,
+    resource_response.ssl_info = ssl_info;
+    params->client->OnReceiveResponse(resource_response,
                                       /*downloaded_file=*/nullptr);
     network::URLLoaderCompletionStatus completion_status;
     completion_status.ssl_info = ssl_info;

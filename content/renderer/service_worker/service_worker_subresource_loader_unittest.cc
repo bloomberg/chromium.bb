@@ -55,7 +55,7 @@ class FakeNetworkURLLoaderFactory final
     network::ResourceResponseHead response;
     response.headers = info.headers;
     response.headers->GetMimeType(&response.mime_type);
-    client->OnReceiveResponse(response, base::nullopt, nullptr);
+    client->OnReceiveResponse(response, nullptr);
 
     std::string body = "this body came from the network";
     uint32_t bytes_written = body.size();

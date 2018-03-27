@@ -164,7 +164,7 @@ void BlobURLLoader::HeadersCompleted(net::HttpStatusCode status_code,
 
   // TODO(jam): some of this code can be shared with
   // services/network/url_loader.h
-  client_->OnReceiveResponse(response, base::nullopt, nullptr);
+  client_->OnReceiveResponse(response, nullptr);
   sent_headers_ = true;
 
   if (metadata) {

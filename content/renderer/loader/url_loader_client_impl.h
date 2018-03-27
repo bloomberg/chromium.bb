@@ -62,7 +62,6 @@ class CONTENT_EXPORT URLLoaderClientImpl final
   // network::mojom::URLLoaderClient implementation
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,

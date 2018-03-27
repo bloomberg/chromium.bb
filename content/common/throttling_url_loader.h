@@ -102,7 +102,6 @@ class CONTENT_EXPORT ThrottlingURLLoader
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
@@ -194,12 +193,10 @@ class CONTENT_EXPORT ThrottlingURLLoader
 
   struct ResponseInfo {
     ResponseInfo(const network::ResourceResponseHead& in_response_head,
-                 const base::Optional<net::SSLInfo>& in_ssl_info,
                  network::mojom::DownloadedTempFilePtr in_downloaded_file);
     ~ResponseInfo();
 
     network::ResourceResponseHead response_head;
-    base::Optional<net::SSLInfo> ssl_info;
     network::mojom::DownloadedTempFilePtr downloaded_file;
   };
   // Set if response is deferred.

@@ -95,7 +95,6 @@ int AppCacheUpdateJob::UpdateURLLoaderRequest::Cancel() {
 
 void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   response_ = response_head;
 
@@ -104,8 +103,8 @@ void AppCacheUpdateJob::UpdateURLLoaderRequest::OnReceiveResponse(
   // have a helper function which populates the HttpResponseInfo structure from
   // the ResourceResponseHead structure.
   http_response_info_.reset(new net::HttpResponseInfo());
-  if (ssl_info.has_value())
-    http_response_info_->ssl_info = *ssl_info;
+  if (response_head.ssl_info.has_value())
+    http_response_info_->ssl_info = *response_head.ssl_info;
   http_response_info_->headers = response_head.headers;
   http_response_info_->was_fetched_via_spdy =
       response_head.was_fetched_via_spdy;

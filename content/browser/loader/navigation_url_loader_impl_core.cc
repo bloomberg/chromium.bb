@@ -50,6 +50,10 @@ void NavigationURLLoaderImplCore::Start(
   base::WeakPtr<NavigationURLLoaderImplCore> weak_this =
       weak_factory_.GetWeakPtr();
 
+  uint32_t options = network::mojom::kURLLoadOptionSendSSLInfoWithResponse;
+  if (request_info->is_main_frame)
+    options |= network::mojom::kURLLoadOptionSendSSLInfoForCertificateError;
+
   // The ResourceDispatcherHostImpl can be null in unit tests.
   if (ResourceDispatcherHostImpl::Get()) {
     GlobalRequestID global_request_id;  // unused.
@@ -59,8 +63,7 @@ void NavigationURLLoaderImplCore::Start(
         std::move(navigation_ui_data), this,
         network::mojom::URLLoaderClientPtr(),
         network::mojom::URLLoaderRequest(), service_worker_handle_core,
-        appcache_handle_core, network::mojom::kURLLoadOptionNone,
-        &global_request_id);
+        appcache_handle_core, options, &global_request_id);
   }
 
   // Careful, |this| could be destroyed at this point. Don't notify start if
@@ -121,7 +124,6 @@ void NavigationURLLoaderImplCore::NotifyRequestRedirected(
 void NavigationURLLoaderImplCore::NotifyResponseStarted(
     network::ResourceResponse* response,
     std::unique_ptr<StreamHandle> body,
-    const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -143,7 +145,7 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
   BrowserThread::PostTask(
       BrowserThread::UI, FROM_HERE,
       base::BindOnce(&NavigationURLLoaderImpl::NotifyResponseStarted, loader_,
-                     response->DeepCopy(), std::move(body), ssl_info,
+                     response->DeepCopy(), std::move(body),
                      std::move(navigation_data), request_id, is_download,
                      is_stream));
 }
