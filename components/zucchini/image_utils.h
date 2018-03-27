@@ -20,7 +20,8 @@ namespace zucchini {
 using offset_t = uint32_t;
 // Divide by 2 since label marking uses the most significant bit.
 constexpr offset_t kOffsetBound = static_cast<offset_t>(-1) / 2;
-constexpr offset_t kInvalidOffset = static_cast<offset_t>(-1);
+// Use 0xFFFFFFF*E*, since 0xFFFFFFF*F* is a sentinel value for Dex references.
+constexpr offset_t kInvalidOffset = static_cast<offset_t>(-2);
 
 // key_t is used to identify an offset in a table.
 using key_t = uint32_t;
