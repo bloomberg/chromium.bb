@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.content.Context;
 
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.PendingState;
 
 /**
@@ -47,9 +48,9 @@ public class SystemDownloadNotifier2 implements DownloadNotifier {
     }
 
     @Override
-    public void notifyDownloadFailed(DownloadInfo info) {
+    public void notifyDownloadFailed(DownloadInfo info, @FailState int failState) {
         mDownloadNotificationService.notifyDownloadFailed(
-                info.getContentId(), info.getFileName(), info.getIcon());
+                info.getContentId(), info.getFileName(), info.getIcon(), failState);
     }
 
     @Override

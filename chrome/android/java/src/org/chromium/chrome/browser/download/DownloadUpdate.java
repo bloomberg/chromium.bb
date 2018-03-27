@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download;
 import android.graphics.Bitmap;
 
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.PendingState;
 
@@ -31,6 +32,7 @@ public final class DownloadUpdate {
     private final long mStartTime;
     private final long mSystemDownloadId;
     private final long mTimeRemainingInMillis;
+    private final @FailState int mFailState;
     private final @PendingState int mPendingState;
 
     private DownloadUpdate(Builder builder) {
@@ -50,6 +52,7 @@ public final class DownloadUpdate {
         this.mStartTime = builder.mStartTime;
         this.mSystemDownloadId = builder.mSystemDownloadId;
         this.mTimeRemainingInMillis = builder.mTimeRemainingInMillis;
+        this.mFailState = builder.mFailState;
         this.mPendingState = builder.mPendingState;
     }
 
@@ -121,6 +124,10 @@ public final class DownloadUpdate {
         return mTimeRemainingInMillis;
     }
 
+    public @FailState int getFailState() {
+        return mFailState;
+    }
+
     public @PendingState int getPendingState() {
         return mPendingState;
     }
@@ -145,6 +152,7 @@ public final class DownloadUpdate {
         private long mStartTime;
         private long mSystemDownloadId = -1;
         private long mTimeRemainingInMillis;
+        private @FailState int mFailState;
         private @PendingState int mPendingState;
 
         public Builder setContentId(ContentId contentId) {
@@ -224,6 +232,11 @@ public final class DownloadUpdate {
 
         public Builder setTimeRemainingInMillis(long timeRemainingInMillis) {
             this.mTimeRemainingInMillis = timeRemainingInMillis;
+            return this;
+        }
+
+        public Builder setFailState(@FailState int failState) {
+            this.mFailState = failState;
             return this;
         }
 

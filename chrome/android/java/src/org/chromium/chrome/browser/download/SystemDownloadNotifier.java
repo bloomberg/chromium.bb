@@ -15,6 +15,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.browser.download.DownloadNotificationService.Observer;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.PendingState;
 
 import java.util.ArrayList;
@@ -185,7 +186,7 @@ public class SystemDownloadNotifier implements DownloadNotifier, Observer {
     }
 
     @Override
-    public void notifyDownloadFailed(DownloadInfo downloadInfo) {
+    public void notifyDownloadFailed(DownloadInfo downloadInfo, @FailState int notUsed) {
         updateDownloadNotification(
                 new PendingNotificationInfo(DOWNLOAD_NOTIFICATION_TYPE_FAILURE, downloadInfo),
                 true);

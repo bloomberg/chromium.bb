@@ -13,6 +13,7 @@ import android.graphics.Bitmap;
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.PendingState;
 
@@ -91,11 +92,12 @@ public class MockDownloadNotificationService2 extends DownloadNotificationServic
     }
 
     @Override
-    public void notifyDownloadFailed(final ContentId id, final String fileName, final Bitmap icon) {
+    public void notifyDownloadFailed(final ContentId id, final String fileName, final Bitmap icon,
+            @FailState int failState) {
         ThreadUtils.runOnUiThreadBlocking(
                 ()
                         -> MockDownloadNotificationService2.super.notifyDownloadFailed(
-                                id, fileName, icon));
+                                id, fileName, icon, failState));
     }
 
     @Override

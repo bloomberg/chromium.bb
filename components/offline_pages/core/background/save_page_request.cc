@@ -18,7 +18,8 @@ SavePageRequest::SavePageRequest(int64_t request_id,
       started_attempt_count_(0),
       completed_attempt_count_(0),
       user_requested_(user_requested),
-      state_(RequestState::AVAILABLE) {}
+      state_(RequestState::AVAILABLE),
+      fail_state_(FailState::NO_FAILURE) {}
 
 SavePageRequest::SavePageRequest(const SavePageRequest& other)
     : request_id_(other.request_id_),
@@ -30,6 +31,7 @@ SavePageRequest::SavePageRequest(const SavePageRequest& other)
       last_attempt_time_(other.last_attempt_time_),
       user_requested_(other.user_requested_),
       state_(other.state_),
+      fail_state_(other.fail_state_),
       pending_state_(other.pending_state_),
       original_url_(other.original_url_),
       request_origin_(other.request_origin_) {}

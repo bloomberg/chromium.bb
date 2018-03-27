@@ -238,6 +238,8 @@ public final class DownloadNotificationFactory {
 
             case FAILED:
                 iconId = android.R.drawable.stat_sys_download_done;
+                // TODO(cmsy): Use downloadUpdate.getFailState() to determine which descriptive
+                // status text to use.
                 contentText =
                         context.getResources().getString(R.string.download_notification_failed);
                 break;

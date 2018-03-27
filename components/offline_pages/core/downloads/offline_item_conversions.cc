@@ -64,7 +64,7 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
   switch (request.request_state()) {
     case SavePageRequest::RequestState::AVAILABLE:
       item.state = OfflineItemState::PENDING;
-      item.pendingState = request.pending_state();
+      item.pending_state = request.pending_state();
       break;
     case SavePageRequest::RequestState::OFFLINING:
       item.state = OfflineItemState::IN_PROGRESS;
@@ -75,7 +75,7 @@ OfflineItem OfflineItemConversions::CreateOfflineItem(
     default:
       NOTREACHED();
   }
-
+  item.fail_state = request.fail_state();
   item.progress.value = 0;
   item.progress.unit = OfflineItemProgressUnit::PERCENTAGE;
 

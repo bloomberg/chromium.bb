@@ -10,6 +10,7 @@
 #include "base/files/file_path.h"
 #include "base/optional.h"
 #include "base/time/time.h"
+#include "components/offline_items_collection/core/fail_state.h"
 #include "components/offline_items_collection/core/offline_item_filter.h"
 #include "components/offline_items_collection/core/offline_item_state.h"
 #include "components/offline_items_collection/core/pending_state.h"
@@ -150,8 +151,11 @@ struct OfflineItem {
   // The current state of the OfflineItem.
   OfflineItemState state;
 
+  // Reason OfflineItem failed to download.
+  FailState fail_state;
+
   // Reason OfflineItem is pending.
-  PendingState pendingState;
+  PendingState pending_state;
 
   // Whether or not the offlining of this content can be resumed if it was
   // paused or interrupted.

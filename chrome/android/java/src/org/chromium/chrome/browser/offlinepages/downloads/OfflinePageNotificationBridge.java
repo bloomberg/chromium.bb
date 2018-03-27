@@ -10,6 +10,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.download.DownloadNotifier;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.ui.widget.Toast;
@@ -48,16 +49,18 @@ public class OfflinePageNotificationBridge {
      * @param guid        GUID of a request to download a page related to the notification.
      * @param url         URL of the page to download.
      * @param displayName Name to be displayed on notification.
+     * @param failState   The reason the download failed.
      */
     @CalledByNative
-    public static void notifyDownloadFailed(String guid, String url, String displayName) {
+    public static void notifyDownloadFailed(
+            String guid, String url, String displayName, @FailState int failState) {
         DownloadNotifier notifier = getDownloadNotifier();
         if (notifier == null) return;
 
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                 .setIsOfflinePage(true).setDownloadGuid(guid).setFileName(displayName).build();
 
-        notifier.notifyDownloadFailed(downloadInfo);
+        notifier.notifyDownloadFailed(downloadInfo, failState);
     }
 
     /**

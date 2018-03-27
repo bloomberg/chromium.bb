@@ -40,6 +40,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.components.feature_engagement.EventConstants;
 import org.chromium.components.feature_engagement.Tracker;
 import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.FailState;
 import org.chromium.components.offline_items_collection.LegacyHelpers;
 import org.chromium.components.offline_items_collection.PendingState;
 import org.chromium.content.browser.BrowserStartupController;
@@ -448,7 +449,8 @@ public class DownloadManagerService
                 removeFromDownloadProgressMap = notificationUpdateScheduled;
                 break;
             case DOWNLOAD_STATUS_FAILED:
-                mDownloadNotifier.notifyDownloadFailed(info);
+                // TODO(cmsy): Use correct FailState.
+                mDownloadNotifier.notifyDownloadFailed(info, FailState.CANNOT_DOWNLOAD);
                 Log.w(TAG, "Download failed: " + info.getFilePath());
                 onDownloadFailed(info.getFileName(), DownloadManager.ERROR_UNKNOWN);
                 break;
@@ -508,7 +510,8 @@ public class DownloadManagerService
                             info, result.first, result.second, isSupportedMimeType);
                     broadcastDownloadSuccessful(info);
                 } else {
-                    mDownloadNotifier.notifyDownloadFailed(info);
+                    // TODO(cmsy): Use correct FailState.
+                    mDownloadNotifier.notifyDownloadFailed(info, FailState.CANNOT_DOWNLOAD);
                     // TODO(qinmin): get the failure message from native.
                     onDownloadFailed(info.getFileName(), DownloadManager.ERROR_UNKNOWN);
                 }
@@ -1062,8 +1065,10 @@ public class DownloadManagerService
 
     @CalledByNative
     void onResumptionFailed(String downloadGuid) {
+        // TODO(cmsy): Use correct FailState.
         mDownloadNotifier.notifyDownloadFailed(
-                new DownloadInfo.Builder().setDownloadGuid(downloadGuid).build());
+                new DownloadInfo.Builder().setDownloadGuid(downloadGuid).build(),
+                FailState.CANNOT_DOWNLOAD);
         removeDownloadProgress(downloadGuid);
         recordDownloadResumption(UMA_DOWNLOAD_RESUMPTION_FAILED);
         recordDownloadFinishedUMA(DOWNLOAD_STATUS_FAILED, downloadGuid, 0);

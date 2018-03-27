@@ -44,7 +44,8 @@ void OfflinePageNotificationBridge::NotifyDownloadFailed(
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadFailed(
       env, ConvertUTF8ToJavaString(env, item.id.id),
-      ConvertUTF8ToJavaString(env, item.page_url.spec()), GetDisplayName(item));
+      ConvertUTF8ToJavaString(env, item.page_url.spec()), GetDisplayName(item),
+      static_cast<jint>(item.fail_state));
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadProgress(
@@ -69,7 +70,7 @@ void OfflinePageNotificationBridge::NotifyDownloadInterrupted(
   JNIEnv* env = AttachCurrentThread();
   Java_OfflinePageNotificationBridge_notifyDownloadInterrupted(
       env, ConvertUTF8ToJavaString(env, item.id.id), GetDisplayName(item),
-      static_cast<jint>(item.pendingState));
+      static_cast<jint>(item.pending_state));
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadCanceled(
