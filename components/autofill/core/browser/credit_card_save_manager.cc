@@ -97,9 +97,11 @@ void CreditCardSaveManager::OfferCardLocalSave(const CreditCard& card) {
 
 void CreditCardSaveManager::AttemptToOfferCardUploadSave(
     const FormStructure& submitted_form,
-    const CreditCard& card) {
+    const CreditCard& card,
+    const bool uploading_local_card) {
   upload_request_ = payments::PaymentsClient::UploadRequestDetails();
   upload_request_.card = card;
+  uploading_local_card_ = uploading_local_card;
 
   // In order to prompt the user to upload their card, we must have both:
   //  1) Card with CVC
@@ -249,6 +251,9 @@ void CreditCardSaveManager::OnDidGetUploadDetails(
         base::Bind(&CreditCardSaveManager::OnDidGetUploadRiskData,
                    weak_ptr_factory_.GetWeakPtr()));
     upload_decision_metrics_ |= AutofillMetrics::UPLOAD_OFFERED;
+    AutofillMetrics::LogUploadOfferedCardOriginMetric(
+        uploading_local_card_ ? AutofillMetrics::OFFERING_UPLOAD_OF_LOCAL_CARD
+                              : AutofillMetrics::OFFERING_UPLOAD_OF_NEW_CARD);
   } else {
     // If the upload details request failed, fall back to a local save. The
     // reasoning here is as follows:
@@ -526,6 +531,10 @@ void CreditCardSaveManager::SendUploadCardRequest() {
         static_cast<int64_t>(payments_client_->GetPrefService()->GetDouble(
             prefs::kAutofillBillingCustomerNumber));
   }
+  AutofillMetrics::LogUploadAcceptedCardOriginMetric(
+      uploading_local_card_
+          ? AutofillMetrics::USER_ACCEPTED_UPLOAD_OF_LOCAL_CARD
+          : AutofillMetrics::USER_ACCEPTED_UPLOAD_OF_NEW_CARD);
   payments_client_->UploadCard(upload_request_);
 }
 

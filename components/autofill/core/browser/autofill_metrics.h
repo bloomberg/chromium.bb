@@ -151,6 +151,26 @@ class AutofillMetrics {
     NUM_SUBMITTED_SERVER_CARD_EXPIRATION_STATUS_METRICS,
   };
 
+  // Metric to measure if a card for which upload was offered is already stored
+  // as a local card on the device or if it has not yet been seen.
+  enum UploadOfferedCardOriginMetric {
+    // Credit card upload was offered for a local card already on the device.
+    OFFERING_UPLOAD_OF_LOCAL_CARD,
+    // Credit card upload was offered for a newly-seen credit card.
+    OFFERING_UPLOAD_OF_NEW_CARD,
+    NUM_UPLOAD_OFFERED_CARD_ORIGIN_METRICS,
+  };
+
+  // Metric to measure if a card for which upload was accepted is already stored
+  // as a local card on the device or if it has not yet been seen.
+  enum UploadAcceptedCardOriginMetric {
+    // The user accepted upload of a local card already on the device.
+    USER_ACCEPTED_UPLOAD_OF_LOCAL_CARD,
+    // The user accepted upload of a newly-seen credit card.
+    USER_ACCEPTED_UPLOAD_OF_NEW_CARD,
+    NUM_UPLOAD_ACCEPTED_CARD_ORIGIN_METRICS,
+  };
+
   // Metrics to measure user interaction with the save credit card prompt.
   //
   // SAVE_CARD_PROMPT_DISMISS_FOCUS is not stored explicitly, but can be
@@ -701,13 +721,23 @@ class AutofillMetrics {
                               ukm::SourceId source_id,
                               const GURL& url);
 
+  static void LogSubmittedCardStateMetric(SubmittedCardStateMetric metric);
+
   // If a credit card that matches a server card (unmasked or not) was submitted
   // on a form, logs whether the submitted card's expiration date matched the
   // server card's known expiration date.
   static void LogSubmittedServerCardExpirationStatusMetric(
       SubmittedServerCardExpirationStatusMetric metric);
 
-  static void LogSubmittedCardStateMetric(SubmittedCardStateMetric metric);
+  // When credit card upload is offered, logs whether the card being offered is
+  // already a local card on the device or not.
+  static void LogUploadOfferedCardOriginMetric(
+      UploadOfferedCardOriginMetric metric);
+
+  // When credit card upload is accepted, logs whether the card being accepted
+  // is already a local card on the device or not.
+  static void LogUploadAcceptedCardOriginMetric(
+      UploadAcceptedCardOriginMetric metric);
 
   // |upload_decision_metrics| is a bitmask of |CardUploadDecisionMetric|.
   static void LogCardUploadDecisionMetrics(int upload_decision_metrics);

@@ -85,6 +85,9 @@ class SaveCardBubbleViews : public SaveCardBubbleView,
   FRIEND_TEST_ALL_PREFIXES(
       SaveCardBubbleViewsFullFormBrowserTest,
       Upload_ClickingCloseClosesBubbleIfSecondaryUiMdExpOn);
+  FRIEND_TEST_ALL_PREFIXES(
+      SaveCardBubbleViewsFullFormBrowserTest,
+      Upload_DecliningUploadDoesNotLogUserAcceptedCardOriginUMA);
 
   // The current step of the save card flow.  Accounts for:
   //  1) Local save vs. Upload save
