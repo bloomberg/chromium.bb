@@ -498,8 +498,23 @@ void OmniboxResultView::Layout() {
 
   // NOTE: While animating the keyword match, both matches may be visible.
   int x = start_x;
-  x += icon.Width() + horizontal_padding;
   int y = GetVerticalMargin();
+
+  if (base::FeatureList::IsEnabled(omnibox::kOmniboxRichEntitySuggestions) &&
+      match_.answer) {
+    icon_view_->SetVisible(false);
+    int image_edge_length = text_height + description_view_->GetLineHeight();
+    image_view_->SetImageSize(gfx::Size(image_edge_length, image_edge_length));
+    image_view_->SetBounds(x, y, image_edge_length, image_edge_length);
+    x += image_edge_length + horizontal_padding;
+    content_view_->SetBounds(x, y, end_x - x, text_height);
+    y += text_height;
+    description_view_->SetBounds(x, y, end_x - x, text_height);
+    return;
+  }
+
+  icon_view_->SetVisible(true);
+  x += icon.Width() + horizontal_padding;
   if (match_.answer) {
     content_view_->SetBounds(x, y, end_x - x, text_height);
     y += text_height;
