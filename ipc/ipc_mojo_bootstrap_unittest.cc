@@ -11,6 +11,7 @@
 #include "base/files/file.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
+#include "base/test/bind_test_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "ipc/ipc.mojom.h"
@@ -96,6 +97,12 @@ class PeerPidReceiver : public IPC::mojom::Channel {
 
   int32_t peer_pid() const { return peer_pid_; }
 
+  void RunUntilDisconnect() {
+    base::RunLoop run_loop;
+    binding_.set_connection_error_handler(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
  private:
   mojo::AssociatedBinding<IPC::mojom::Channel> binding_;
   const base::Closure on_peer_pid_set_;
@@ -130,27 +137,7 @@ TEST_F(IPCMojoBootstrapTest, Connect) {
 
   EXPECT_EQ(kTestClientPid, impl.peer_pid());
 
-  EXPECT_TRUE(helper_.WaitForChildTestShutdown());
-}
-
-// TODO(https://crbug.com/821254): Fix this test and re-enable it.
-TEST_F(IPCMojoBootstrapTest, DISABLED_ReceiveEmptyMessage) {
-  base::MessageLoop message_loop;
-  Connection connection(
-      IPC::MojoBootstrap::Create(
-          helper_.StartChild("IPCMojoBootstrapTestEmptyMessage"),
-          IPC::Channel::MODE_SERVER, base::ThreadTaskRunnerHandle::Get(),
-          base::ThreadTaskRunnerHandle::Get()),
-      kTestServerPid);
-
-  IPC::mojom::ChannelAssociatedRequest receiver;
-  connection.TakeReceiver(&receiver);
-
-  base::RunLoop run_loop;
-  PeerPidReceiver impl(std::move(receiver), run_loop.QuitClosure(),
-                       PeerPidReceiver::MessageExpectation::kExpectedInvalid);
-  run_loop.Run();
-
+  impl.RunUntilDisconnect();
   EXPECT_TRUE(helper_.WaitForChildTestShutdown());
 }
 
@@ -176,6 +163,30 @@ MULTIPROCESS_TEST_MAIN_WITH_SETUP(
   EXPECT_EQ(kTestServerPid, impl.peer_pid());
 
   return 0;
+}
+
+TEST_F(IPCMojoBootstrapTest, ReceiveEmptyMessage) {
+  base::MessageLoop message_loop;
+  Connection connection(
+      IPC::MojoBootstrap::Create(
+          helper_.StartChild("IPCMojoBootstrapTestEmptyMessage"),
+          IPC::Channel::MODE_SERVER, base::ThreadTaskRunnerHandle::Get(),
+          base::ThreadTaskRunnerHandle::Get()),
+      kTestServerPid);
+
+  IPC::mojom::ChannelAssociatedRequest receiver;
+  connection.TakeReceiver(&receiver);
+
+  base::RunLoop run_loop;
+  PeerPidReceiver impl(std::move(receiver), run_loop.QuitClosure(),
+                       PeerPidReceiver::MessageExpectation::kExpectedInvalid);
+  run_loop.Run();
+
+  // Wait for the Channel to be disconnected so we can reasonably assert that
+  // the child's empty message must have been received before we pass the test.
+  impl.RunUntilDisconnect();
+
+  EXPECT_TRUE(helper_.WaitForChildTestShutdown());
 }
 
 // A long running process that connects to us.
