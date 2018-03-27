@@ -77,11 +77,11 @@ int TestWebContents::DownloadImage(const GURL& url,
                                    bool is_favicon,
                                    uint32_t max_bitmap_size,
                                    bool bypass_cache,
-                                   const ImageDownloadCallback& callback) {
+                                   ImageDownloadCallback callback) {
   static int g_next_image_download_id = 0;
   ++g_next_image_download_id;
   pending_image_downloads_[url].emplace_back(g_next_image_download_id,
-                                             callback);
+                                             std::move(callback));
   return g_next_image_download_id;
 }
 
@@ -181,7 +181,8 @@ bool TestWebContents::TestDidDownloadImage(
   if (!HasPendingDownloadImage(url))
     return false;
   int id = pending_image_downloads_[url].front().first;
-  ImageDownloadCallback callback = pending_image_downloads_[url].front().second;
+  ImageDownloadCallback callback =
+      std::move(pending_image_downloads_[url].front().second);
   pending_image_downloads_[url].pop_front();
   std::move(callback).Run(id, http_status_code, url, bitmaps,
                           original_bitmap_sizes);

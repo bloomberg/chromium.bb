@@ -442,7 +442,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
                     bool is_favicon,
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
-                    const ImageDownloadCallback& callback) override;
+                    ImageDownloadCallback callback) override;
   bool IsSubframe() const override;
   void Find(int request_id,
             const base::string16& search_text,
@@ -450,7 +450,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void StopFinding(StopFindAction action) override;
   bool WasRecentlyAudible() override;
   bool WasEverAudible() override;
-  void GetManifest(const GetManifestCallback& callback) override;
+  void GetManifest(GetManifestCallback callback) override;
   bool IsFullscreenForCurrentTab() const override;
   void ExitFullscreen(bool will_cause_resize) override;
   void ResumeLoadingCreatedWebContents() override;
@@ -1080,7 +1080,7 @@ class CONTENT_EXPORT WebContentsImpl : public WebContents,
   void DoWasUnOccluded();
 
   // Called with the result of a DownloadImage() request.
-  void OnDidDownloadImage(const ImageDownloadCallback& callback,
+  void OnDidDownloadImage(ImageDownloadCallback callback,
                           int id,
                           const GURL& image_url,
                           int32_t http_status_code,

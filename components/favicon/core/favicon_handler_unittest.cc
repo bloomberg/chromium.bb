@@ -151,13 +151,14 @@ class FakeImageDownloader {
     }
 
     int download_id = next_download_id_++;
-    base::Closure bound_callback =
-        base::Bind(callback, download_id, response.http_status_code, url,
-                   response.bitmaps, response.original_bitmap_sizes);
+    base::OnceClosure bound_callback = base::BindOnce(
+        std::move(callback), download_id, response.http_status_code, url,
+        response.bitmaps, response.original_bitmap_sizes);
     if (url == manual_callback_url_)
-      manual_callbacks_.push_back(bound_callback);
+      manual_callbacks_.push_back(std::move(bound_callback));
     else
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, bound_callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    std::move(bound_callback));
     return download_id;
   }
 
@@ -195,8 +196,8 @@ class FakeImageDownloader {
   bool RunCallbackManually() {
     if (!HasPendingManualCallback())
       return false;
-    for (base::Closure& callback : std::move(manual_callbacks_))
-      callback.Run();
+    for (auto& callback : std::move(manual_callbacks_))
+      std::move(callback).Run();
     return true;
   }
 
@@ -208,7 +209,7 @@ class FakeImageDownloader {
   GURL manual_callback_url_;
 
   // Callback for DownloadImage() request for |manual_callback_url_|.
-  std::vector<base::Closure> manual_callbacks_;
+  std::vector<base::OnceClosure> manual_callbacks_;
 
   // Registered responses.
   std::map<GURL, Response> responses_;
@@ -236,11 +237,13 @@ class FakeManifestDownloader {
     downloads_->push_back(url);
 
     const Response& response = responses_[url];
-    base::Closure bound_callback = base::Bind(callback, response.favicon_urls);
+    base::OnceClosure bound_callback =
+        base::BindOnce(std::move(callback), response.favicon_urls);
     if (url == manual_callback_url_)
-      manual_callbacks_.push_back(bound_callback);
+      manual_callbacks_.push_back(std::move(bound_callback));
     else
-      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, bound_callback);
+      base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                    std::move(bound_callback));
   }
 
   void Add(const GURL& manifest_url,
@@ -270,8 +273,8 @@ class FakeManifestDownloader {
   bool RunCallbackManually() {
     if (!HasPendingManualCallback())
       return false;
-    for (base::Closure& callback : std::move(manual_callbacks_))
-      callback.Run();
+    for (auto& callback : std::move(manual_callbacks_))
+      std::move(callback).Run();
     return true;
   }
 
@@ -282,7 +285,7 @@ class FakeManifestDownloader {
   GURL manual_callback_url_;
 
   // Callback for DownloadManifest() request for |manual_callback_url_|.
-  std::vector<base::Closure> manual_callbacks_;
+  std::vector<base::OnceClosure> manual_callbacks_;
 
   // Registered responses.
   std::map<GURL, Response> responses_;
@@ -295,22 +298,20 @@ class MockDelegate : public FaviconHandler::Delegate {
   MockDelegate()
       : fake_image_downloader_(&downloads_),
         fake_manifest_downloader_(&downloads_) {
-    // Delegate image downloading to FakeImageDownloader.
-    ON_CALL(*this, DownloadImage(_, _, _))
-        .WillByDefault(Invoke(&fake_image_downloader_,
-                              &FakeImageDownloader::DownloadImage));
-    // Delegate manifest downloading to FakeManifestDownloader.
-    ON_CALL(*this, DownloadManifest(_, _))
-        .WillByDefault(Invoke(&fake_manifest_downloader_,
-                              &FakeManifestDownloader::DownloadManifest));
   }
 
-  MOCK_METHOD3(DownloadImage,
-               int(const GURL& url,
-                   int max_image_size,
-                   ImageDownloadCallback callback));
-  MOCK_METHOD2(DownloadManifest,
-               void(const GURL& url, ManifestDownloadCallback callback));
+  int DownloadImage(const GURL& url,
+                    int max_image_size,
+                    ImageDownloadCallback callback) override {
+    return fake_image_downloader_.DownloadImage(url, max_image_size,
+                                                std::move(callback));
+  }
+
+  void DownloadManifest(const GURL& url,
+                        ManifestDownloadCallback callback) override {
+    fake_manifest_downloader_.DownloadManifest(url, std::move(callback));
+  }
+
   MOCK_METHOD0(IsOffTheRecord, bool());
   MOCK_METHOD1(IsBookmarked, bool(const GURL& url));
   MOCK_METHOD5(OnFaviconUpdated,

@@ -79,17 +79,15 @@ class FaviconHandler {
   class Delegate {
    public:
     // Mimics WebContents::ImageDownloadCallback.
-    typedef base::Callback<void(
+    using ImageDownloadCallback = base::OnceCallback<void(
         int id,
         int status_code,
         const GURL& image_url,
         const std::vector<SkBitmap>& bitmaps,
-        const std::vector<gfx::Size>& original_bitmap_sizes)>
-        ImageDownloadCallback;
+        const std::vector<gfx::Size>& original_bitmap_sizes)>;
 
-    typedef base::Callback<void(
-        const std::vector<favicon::FaviconURL>& favicons)>
-        ManifestDownloadCallback;
+    using ManifestDownloadCallback = base::OnceCallback<void(
+        const std::vector<favicon::FaviconURL>& favicons)>;
 
     // Starts the download for the given favicon. When finished, the callback
     // is called with the results. Returns the unique id of the download

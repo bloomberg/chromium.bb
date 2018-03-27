@@ -789,8 +789,8 @@ void AppWindow::StartAppIconDownload() {
       true,   // is a favicon
       0,      // no maximum size
       false,  // normal cache policy
-      base::Bind(&AppWindow::DidDownloadFavicon,
-                 image_loader_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&AppWindow::DidDownloadFavicon,
+                     image_loader_ptr_factory_.GetWeakPtr()));
 }
 
 void AppWindow::DidDownloadFavicon(

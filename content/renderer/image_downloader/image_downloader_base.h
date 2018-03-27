@@ -28,13 +28,13 @@ class ImageDownloaderBase : public RenderFrameObserver,
   ~ImageDownloaderBase() override;
 
   using DownloadCallback =
-      base::Callback<void(int32_t, const std::vector<SkBitmap>&)>;
-  // Request to aynchronously download an image. When done, |callback| will be
+      base::OnceCallback<void(int32_t, const std::vector<SkBitmap>&)>;
+  // Request to asynchronously download an image. When done, |callback| will be
   // called.
   void DownloadImage(const GURL& url,
                      bool is_favicon,
                      bool bypass_cache,
-                     const DownloadCallback& callback);
+                     DownloadCallback callback);
 
  protected:
   // RenderFrameObserver implementation.
@@ -42,19 +42,18 @@ class ImageDownloaderBase : public RenderFrameObserver,
 
  private:
   // Requests to fetch an image. When done, the image downloader is notified by
-  // way of DidFetchImage. Returns true if the request was successfully started,
-  // false otherwise. If the image is a favicon, cookies will not be sent nor
-  // accepted during download. If the image has multiple frames, all frames are
-  // returned.
-  bool FetchImage(const GURL& image_url,
+  // way of DidFetchImage. If the image is a favicon, cookies will not be sent
+  // nor accepted during download. If the image has multiple frames, all frames
+  // are returned.
+  void FetchImage(const GURL& image_url,
                   bool is_favicon,
                   bool bypass_cache,
-                  const DownloadCallback& callback);
+                  DownloadCallback callback);
 
   // This callback is triggered when FetchImage completes, either
-  // succesfully or with a failure. See FetchImage for more
+  // successfully or with a failure. See FetchImage for more
   // details.
-  void DidFetchImage(const DownloadCallback& callback,
+  void DidFetchImage(DownloadCallback callback,
                      MultiResolutionImageResourceFetcher* fetcher,
                      const std::vector<SkBitmap>& images);
 

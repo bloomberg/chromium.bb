@@ -28,8 +28,8 @@ MultiResolutionImageResourceFetcher::MultiResolutionImageResourceFetcher(
     int id,
     WebURLRequest::RequestContext request_context,
     blink::mojom::FetchCacheMode cache_mode,
-    const Callback& callback)
-    : callback_(callback),
+    Callback callback)
+    : callback_(std::move(callback)),
       id_(id),
       http_status_code_(0),
       image_url_(image_url) {
@@ -73,17 +73,15 @@ void MultiResolutionImageResourceFetcher::OnURLFetchComplete(
     // If we get here, it means no image from server or couldn't decode the
     // response as an image. The delegate will see an empty vector.
 
-  // Take a reference to the callback as running the callback may lead to our
-  // destruction.
-  Callback callback = callback_;
-  std::move(callback).Run(this, bitmaps);
+  // Take local ownership of the callback as running the callback may lead to
+  // our destruction.
+  base::ResetAndReturn(&callback_).Run(this, bitmaps);
 }
 
 void MultiResolutionImageResourceFetcher::OnRenderFrameDestruct() {
-  // Take a reference to the callback as running the callback may lead to our
-  // destruction.
-  Callback callback = callback_;
-  std::move(callback).Run(this, std::vector<SkBitmap>());
+  // Take local ownership of the callback as running the callback may lead to
+  // our destruction.
+  base::ResetAndReturn(&callback_).Run(this, std::vector<SkBitmap>());
 }
 
 }  // namespace content
