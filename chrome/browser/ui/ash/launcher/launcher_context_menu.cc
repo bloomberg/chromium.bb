@@ -11,9 +11,11 @@
 #include "base/metrics/user_metrics.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_util.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
+#include "chrome/browser/ui/ash/launcher/crostini_shelf_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/extension_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/tablet_mode_client.h"
 #include "chrome/grit/generated_resources.h"
@@ -31,6 +33,12 @@ std::unique_ptr<LauncherContextMenu> LauncherContextMenu::Create(
   if (arc::IsArcItem(controller->profile(), item->id.app_id)) {
     return std::make_unique<ArcLauncherContextMenu>(controller, item,
                                                     display_id);
+  }
+
+  // Create an CrostiniShelfContextMenu if the item is Crostini app.
+  if (IsCrostiniAppId(item->id.app_id)) {
+    return std::make_unique<CrostiniShelfContextMenu>(controller, item,
+                                                      display_id);
   }
 
   // Create an ExtensionLauncherContextMenu for other items.

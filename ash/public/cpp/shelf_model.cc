@@ -299,7 +299,8 @@ void ShelfModel::SetShelfItemDelegate(
   }
 }
 
-ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(const ShelfID& shelf_id) {
+ShelfItemDelegate* ShelfModel::GetShelfItemDelegate(
+    const ShelfID& shelf_id) const {
   auto it = id_to_item_delegate_map_.find(shelf_id);
   if (it != id_to_item_delegate_map_.end())
     return it->second.get();

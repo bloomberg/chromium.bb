@@ -35,6 +35,7 @@
 #include "chrome/browser/ui/app_list/app_sync_ui_state.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon_loader.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/app_list/crostini/crostini_util.h"
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_launcher_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_shortcut_launcher_item_controller.h"
@@ -45,6 +46,7 @@
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/browser_status_monitor.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_util.h"
+#include "chrome/browser/ui/ash/launcher/crostini_app_window_shelf_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_arc_app_updater.h"
 #include "chrome/browser/ui/ash/launcher/launcher_controller_helper.h"
 #include "chrome/browser/ui/ash/launcher/launcher_extension_app_updater.h"
@@ -257,6 +259,10 @@ ChromeLauncherController::ChromeLauncherController(Profile* profile,
   app_window_controllers_.push_back(std::move(extension_app_window_controller));
   app_window_controllers_.push_back(
       std::make_unique<ArcAppWindowLauncherController>(this));
+  if (IsExperimentalCrostiniUIAvailable()) {
+    app_window_controllers_.push_back(
+        std::make_unique<CrostiniAppWindowShelfController>(this));
+  }
 }
 
 ChromeLauncherController::~ChromeLauncherController() {
