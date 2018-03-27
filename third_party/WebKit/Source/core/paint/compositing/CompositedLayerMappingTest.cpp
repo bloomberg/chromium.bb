@@ -2614,4 +2614,41 @@ TEST_P(CompositedLayerMappingTest, SquashingScrollInterestRect) {
             squashed->GroupedMapping()->SquashingLayer()->InterestRect());
 }
 
+TEST_P(CompositedLayerMappingTest,
+       SquashingBoundsUnderCompositedScrollingWithTransform) {
+  if (RuntimeEnabledFeatures::SlimmingPaintV2Enabled())
+    return;
+
+  SetHtmlInnerHTML(R"HTML(
+    <div id=scroller style="transform: translateZ(0); overflow: scroll;
+    width: 200px; height: 400px;">
+      <div id=squashing
+          style='width: 200px; height: 200px; position: relative; will-change:
+transform'></div>
+      <div id=squashed style="width: 200px; height: 6000px; top: -100px;
+          position: relative;">
+      </div>
+    </div>
+    )HTML");
+  Element* scroller_element = GetDocument().getElementById("scroller");
+  auto* scroller = scroller_element->GetLayoutObject();
+  EXPECT_EQ(kPaintsIntoOwnBacking, scroller->GetCompositingState());
+
+  auto* squashing =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashing"))->Layer();
+  EXPECT_EQ(kPaintsIntoOwnBacking, squashing->GetCompositingState());
+
+  auto* squashed =
+      ToLayoutBoxModelObject(GetLayoutObjectByElementId("squashed"))->Layer();
+  EXPECT_EQ(kPaintsIntoGroupedBacking, squashed->GetCompositingState());
+
+  scroller_element->setScrollTop(300);
+
+  GetDocument().View()->UpdateAllLifecyclePhases();
+
+  // 100px down from squashing's main graphics layer.
+  EXPECT_EQ(FloatPoint(0, 100),
+            squashed->GraphicsLayerBacking()->GetPosition());
+}
+
 }  // namespace blink

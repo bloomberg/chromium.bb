@@ -985,15 +985,15 @@ PaintLayer* PaintLayer::ContainingLayer(const PaintLayer* ancestor,
   return nullptr;
 }
 
-LayoutPoint PaintLayer::ComputeOffsetFromTransformedAncestor() const {
+LayoutPoint PaintLayer::ComputeOffsetFromAncestor(
+    const PaintLayer& ancestor_layer) const {
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatPoint());
-  const LayoutBoxModelObject& ancestor =
-      TransformAncestorOrRoot().GetLayoutObject();
-
-  GetLayoutObject().MapLocalToAncestor(&ancestor, transform_state, 0);
-  if (ancestor.UsesCompositedScrolling())
-    transform_state.Move(ToLayoutBox(ancestor).ScrolledContentOffset());
+  const LayoutBoxModelObject& ancestor_object =
+      ancestor_layer.GetLayoutObject();
+  GetLayoutObject().MapLocalToAncestor(&ancestor_object, transform_state, 0);
+  if (ancestor_object.UsesCompositedScrolling())
+    transform_state.Move(ToLayoutBox(ancestor_object).ScrolledContentOffset());
   transform_state.Flatten();
   return LayoutPoint(transform_state.LastPlanarPoint());
 }

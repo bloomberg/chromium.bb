@@ -1272,8 +1272,8 @@ TEST_P(PaintLayerTest, SquashingOffsets) {
       squashed->GetLayoutObject(), rect);
   EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
 
-  EXPECT_EQ(LayoutPoint(0, 0),
-            squashed->ComputeOffsetFromTransformedAncestor());
+  EXPECT_EQ(LayoutPoint(0, 0), squashed->ComputeOffsetFromAncestor(
+                                   squashed->TransformAncestorOrRoot()));
 
   GetDocument().View()->LayoutViewportScrollableArea()->ScrollBy(
       ScrollOffset(0, 25), kUserScroll);
@@ -1287,8 +1287,8 @@ TEST_P(PaintLayerTest, SquashingOffsets) {
       squashed->GetLayoutObject(), rect);
   EXPECT_EQ(LayoutRect(0, 0, 200, 200), rect);
 
-  EXPECT_EQ(LayoutPoint(0, 0),
-            squashed->ComputeOffsetFromTransformedAncestor());
+  EXPECT_EQ(LayoutPoint(0, 0), squashed->ComputeOffsetFromAncestor(
+                                   squashed->TransformAncestorOrRoot()));
 }
 
 TEST_P(PaintLayerTest, HitTestWithIgnoreClipping) {

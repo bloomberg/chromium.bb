@@ -1004,21 +1004,22 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
         compositing_container->SubpixelAccumulation();
   }
 
-#if 0 && DCHECK_IS_ON()
-  // TODO(trchen): We should enable this for below comment out |DCHECK()| once
-  // we have simple reproduce case and fix it. See http://crbug.com/646437 for
-  // details.
-  const PaintLayer* commonTransformAncestor = nullptr;
-  if (compositingContainer && compositingContainer->transform())
-    commonTransformAncestor = compositingContainer;
-  else if (compositingContainer)
-    commonTransformAncestor = compositingContainer->transformAncestor();
-#endif
+  const PaintLayer* common_transform_ancestor = nullptr;
+  if (compositing_container && compositing_container->Transform()) {
+    common_transform_ancestor = compositing_container;
+  } else if (compositing_container) {
+    common_transform_ancestor =
+        &compositing_container->TransformAncestorOrRoot();
+  }
+
+  // What about a null compositing container?
+
   // FIXME: Cache these offsets.
   LayoutPoint compositing_container_offset_from_transformed_ancestor;
-  if (compositing_container && !compositing_container->Transform()) {
+  if (compositing_container) {
     compositing_container_offset_from_transformed_ancestor =
-        compositing_container->ComputeOffsetFromTransformedAncestor();
+        compositing_container->ComputeOffsetFromAncestor(
+            *common_transform_ancestor);
   }
 
   LayoutRect total_squash_bounds;
@@ -1029,14 +1030,12 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
     // Store the local bounds of the Layer subtree before applying the offset.
     layers[i].composited_bounds = squashed_bounds;
 
-#if 0 && DCHECK_IS_ON()
-    // TODO(trchen): We should enable this |DCHECK()| once we have simple
-    // reproduce case and fix it. See http://crbug.com/646437 for details.
-    DCHECK(layers[i].paintLayer->transformAncestor() ==
-           commonTransformAncestor);
-#endif
+    DCHECK(&layers[i].paint_layer->TransformAncestorOrRoot() ==
+           common_transform_ancestor);
+
     LayoutPoint squashed_layer_offset_from_transformed_ancestor =
-        layers[i].paint_layer->ComputeOffsetFromTransformedAncestor();
+        layers[i].paint_layer->ComputeOffsetFromAncestor(
+            *common_transform_ancestor);
     LayoutSize squashed_layer_offset_from_compositing_container =
         squashed_layer_offset_from_transformed_ancestor -
         compositing_container_offset_from_transformed_ancestor;
@@ -1071,7 +1070,8 @@ void CompositedLayerMapping::UpdateSquashingLayerGeometry(
   // painting code expects the offset to be.
   for (size_t i = 0; i < layers.size(); ++i) {
     const LayoutPoint squashed_layer_offset_from_transformed_ancestor =
-        layers[i].paint_layer->ComputeOffsetFromTransformedAncestor();
+        layers[i].paint_layer->ComputeOffsetFromAncestor(
+            *common_transform_ancestor);
     const LayoutSize offset_from_squash_layer_origin =
         (squashed_layer_offset_from_transformed_ancestor -
          compositing_container_offset_from_transformed_ancestor) -
