@@ -36,29 +36,31 @@
         <button id="dots" title="[[i18n('moreActions')]]" on-tap="onDotsTap_">
         </button>
       </paper-icon-button-light>
-      <template is="cr-lazy-render" id="menu">
-        <cr-action-menu>
-          <button slot="item" class="dropdown-item" id="view"
-              on-tap="onViewTap_">
-            [[i18n('certificateManagerView')]]
-          </button>
-          <button slot="item" class="dropdown-item" id="edit"
-              hidden$="[[!canEdit_(certificateType, model)]]"
-              on-tap="onEditTap_">
-            [[i18n('edit')]]
-          </button>
-          <button slot="item" class="dropdown-item" id="export"
-              hidden$="[[!canExport_(certificateType, model)]]"
-              on-tap="onExportTap_">
-            [[i18n('certificateManagerExport')]]
-          </button>
-          <button slot="item" class="dropdown-item" id="delete"
-              hidden$="[[!canDelete_(model)]]"
-              on-tap="onDeleteTap_">
-            [[i18n('certificateManagerDelete')]]
-          </button>
-        </cr-action-menu>
-      </template>
+      <cr-lazy-render id="menu">
+        <template>
+          <cr-action-menu>
+            <button slot="item" class="dropdown-item" id="view"
+                on-tap="onViewTap_">
+              [[i18n('certificateManagerView')]]
+            </button>
+            <button slot="item" class="dropdown-item" id="edit"
+                hidden$="[[!canEdit_(certificateType, model)]]"
+                on-tap="onEditTap_">
+              [[i18n('edit')]]
+            </button>
+            <button slot="item" class="dropdown-item" id="export"
+                hidden$="[[!canExport_(certificateType, model)]]"
+                on-tap="onExportTap_">
+              [[i18n('certificateManagerExport')]]
+            </button>
+            <button slot="item" class="dropdown-item" id="delete"
+                hidden$="[[!canDelete_(model)]]"
+                on-tap="onDeleteTap_">
+              [[i18n('certificateManagerDelete')]]
+            </button>
+          </cr-action-menu>
+        </template>
+      </cr-lazy-render>
     <div>
   </template>
   <script src="certificate_subentry.js"></script>

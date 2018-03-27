@@ -265,55 +265,58 @@
           </div>
         </iron-collapse>
 </if>
-        <template is="cr-lazy-render" id="menu">
-          <cr-action-menu
-              class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
+        <cr-lazy-render id="menu">
+          <template>
+            <cr-action-menu
+                class$="[[getMenuClass_(prefs.translate.enabled.value)]]">
 <if expr="chromeos or is_win">
-            <paper-checkbox id="uiLanguageItem" slot="item"
-                class="dropdown-item"
-                checked="[[isProspectiveUILanguage_(
-                    detailLanguage_.language.code,
-                    languages.prospectiveUILanguage)]]"
-                on-change="onUILanguageChange_"
-                disabled="[[disableUILanguageCheckbox_(
-                    detailLanguage_, languages.prospectiveUILanguage)]]">
-                $i18n{displayInThisLanguage}
-            </paper-checkbox>
+              <paper-checkbox id="uiLanguageItem" slot="item"
+                  class="dropdown-item"
+                  checked="[[isProspectiveUILanguage_(
+                      detailLanguage_.language.code,
+                      languages.prospectiveUILanguage)]]"
+                  on-change="onUILanguageChange_"
+                  disabled="[[disableUILanguageCheckbox_(
+                      detailLanguage_, languages.prospectiveUILanguage)]]">
+                  $i18n{displayInThisLanguage}
+              </paper-checkbox>
 </if>
-            <paper-checkbox id="offerTranslations" slot="item"
-                class="dropdown-item"
-                checked="[[detailLanguage_.translateEnabled]]"
-                on-change="onTranslateCheckboxChange_"
-                hidden="[[!prefs.translate.enabled.value]]"
-                disabled="[[disableTranslateCheckbox_(
-                    detailLanguage_.language, languages.translateTarget)]]">
-              $i18n{offerToTranslateInThisLanguage}
-            </paper-checkbox>
-            <hr slot="item">
-            <button slot="item" class="dropdown-item" role="menuitem"
-                on-click="onMoveToTopTap_"
-                hidden="[[isNthLanguage_(
-                    0, detailLanguage_, languages.enabled.*)]]">
-              $i18n{moveToTop}
-            </button>
-            <button slot="item" class="dropdown-item" role="menuitem"
-                on-click="onMoveUpTap_"
-                hidden="[[!showMoveUp_(detailLanguage_, languages.enabled.*)]]">
-              $i18n{moveUp}
-            </button>
-            <button slot="item" class="dropdown-item" role="menuitem"
-                on-click="onMoveDownTap_"
-                hidden="[[!showMoveDown_(
-                    detailLanguage_, languages.enabled.*)]]">
-              $i18n{moveDown}
-            </button>
-            <button slot="item" class="dropdown-item" role="menuitem"
-                on-click="onRemoveLanguageTap_"
-                hidden="[[!detailLanguage_.removable]]">
-              $i18n{removeLanguage}
-            </button>
-          </cr-action-menu>
-        </template>
+              <paper-checkbox id="offerTranslations" slot="item"
+                  class="dropdown-item"
+                  checked="[[detailLanguage_.translateEnabled]]"
+                  on-change="onTranslateCheckboxChange_"
+                  hidden="[[!prefs.translate.enabled.value]]"
+                  disabled="[[disableTranslateCheckbox_(
+                      detailLanguage_.language, languages.translateTarget)]]">
+                $i18n{offerToTranslateInThisLanguage}
+              </paper-checkbox>
+              <hr slot="item">
+              <button slot="item" class="dropdown-item" role="menuitem"
+                  on-click="onMoveToTopTap_"
+                  hidden="[[isNthLanguage_(
+                      0, detailLanguage_, languages.enabled.*)]]">
+                $i18n{moveToTop}
+              </button>
+              <button slot="item" class="dropdown-item" role="menuitem"
+                  on-click="onMoveUpTap_"
+                  hidden="[[!showMoveUp_(detailLanguage_,
+                      languages.enabled.*)]]">
+                $i18n{moveUp}
+              </button>
+              <button slot="item" class="dropdown-item" role="menuitem"
+                  on-click="onMoveDownTap_"
+                  hidden="[[!showMoveDown_(
+                      detailLanguage_, languages.enabled.*)]]">
+                $i18n{moveDown}
+              </button>
+              <button slot="item" class="dropdown-item" role="menuitem"
+                  on-click="onRemoveLanguageTap_"
+                  hidden="[[!detailLanguage_.removable]]">
+                $i18n{removeLanguage}
+              </button>
+            </cr-action-menu>
+          </template>
+        </cr-lazy-render>
       </neon-animatable>
 <if expr="chromeos">
       <template is="dom-if" route-path="/inputMethods">

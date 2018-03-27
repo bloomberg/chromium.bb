@@ -103,15 +103,17 @@
       </iron-pages>
     </div>
 
-    <template is="cr-lazy-render" id="drawer">
-      <cr-drawer heading="$i18n{title}" align="$i18n{textdirection}"
-          swipe-open>
-        <history-side-bar id="drawer-side-bar" class="drawer-content"
-            selected-page="{{selectedPage_}}"
-            show-footer="[[showSidebarFooter]]">
-        </history-side-bar>
-      </cr-drawer>
-    </template>
+    <cr-lazy-render id="drawer">
+      <template>
+        <cr-drawer heading="$i18n{title}" align="$i18n{textdirection}"
+            swipe-open>
+          <history-side-bar id="drawer-side-bar" class="drawer-content"
+              selected-page="{{selectedPage_}}"
+              show-footer="[[showSidebarFooter]]">
+          </history-side-bar>
+        </cr-drawer>
+      </template>
+    </cr-lazy-render>
 
     <iron-media-query query="(max-width: 1023px)"
         query-matches="{{hasDrawer_}}">

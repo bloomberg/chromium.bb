@@ -87,23 +87,29 @@
           apps="[[apps_]]" extensions="[[extensions_]]"
           on-show-install-warnings="onShowInstallWarnings_">
       </extensions-item-list>
-      <template id="details-view" is="cr-lazy-render">
-        <extensions-detail-view delegate="[[delegate]]" slot="view"
-            in-dev-mode="[[inDevMode]]"
-            incognito-available="[[incognitoAvailable_]]"
-            data="[[detailViewItem_]]">
-        </extensions-detail-view>
-      </template>
-      <template id="keyboard-shortcuts" is="cr-lazy-render">
-        <extensions-keyboard-shortcuts delegate="[[delegate]]" slot="view"
-            items="[[extensions_]]">
-        </extensions-keyboard-shortcuts>
-      </template>
-      <template id="error-page" is="cr-lazy-render">
-        <extensions-error-page data="[[errorPageItem_]]" slot="view"
-            delegate="[[delegate]]" slot="view">
-        </extensions-error-page>
-      </template>
+      <cr-lazy-render id="details-view">
+        <template>
+          <extensions-detail-view delegate="[[delegate]]" slot="view"
+              in-dev-mode="[[inDevMode]]"
+              incognito-available="[[incognitoAvailable_]]"
+              data="[[detailViewItem_]]">
+          </extensions-detail-view>
+        </template>
+      </cr-lazy-render>
+      <cr-lazy-render id="keyboard-shortcuts">
+        <template>
+          <extensions-keyboard-shortcuts delegate="[[delegate]]" slot="view"
+              items="[[extensions_]]">
+          </extensions-keyboard-shortcuts>
+        </template>
+      </cr-lazy-render>
+      <cr-lazy-render id="error-page">
+        <template>
+          <extensions-error-page data="[[errorPageItem_]]" slot="view"
+              delegate="[[delegate]]" slot="view">
+          </extensions-error-page>
+        </template>
+      </cr-lazy-render>
     </extensions-view-manager>
     <template is="dom-if" if="[[showOptionsDialog_]]" restamp>
       <extensions-options-dialog id="options-dialog"

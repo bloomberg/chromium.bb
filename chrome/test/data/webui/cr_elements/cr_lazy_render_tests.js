@@ -13,15 +13,17 @@ suite('cr-lazy-render', function() {
 
   setup(function() {
     PolymerTest.clearBody();
-    const template =
-        '<template is="dom-bind" id="bind">' +
-        '  <template is="cr-lazy-render" id="lazy">' +
-        '    <h1>' +
-        '      <paper-checkbox checked="{{checked}}"></paper-checkbox>' +
-        '      {{name}}' +
-        '    </h1>' +
-        '  </template>' +
-        '</template>';
+    const template = `
+        <template is="dom-bind" id="bind">
+          <cr-lazy-render id="lazy">
+            <template>
+              <h1>
+                <paper-checkbox checked="{{checked}}"></paper-checkbox>
+                {{name}}
+              </h1>
+            </template>
+          </cr-lazy-render>
+        </template>`;
     document.body.innerHTML = template;
     lazy = document.getElementById('lazy');
     bind = document.getElementById('bind');

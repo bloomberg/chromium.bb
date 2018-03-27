@@ -7,16 +7,20 @@
  * cr-lazy-render is a simple variant of dom-if designed for lazy rendering
  * of elements that are accessed imperatively.
  * Usage:
- *   <template is="cr-lazy-render" id="menu">
- *     <heavy-menu></heavy-menu>
- *   </template>
+ *   <cr-lazy-render id="menu">
+ *     <template>
+ *       <heavy-menu></heavy-menu>
+ *     </template>
+ *   </cr-lazy-render>
  *
  *   this.$.menu.get().show();
+ *
+ * TODO(calamity): Use Polymer.Templatize instead of inheriting the
+ * Polymer.Templatizer behavior once Polymer 2.0 is available.
  */
 
 Polymer({
   is: 'cr-lazy-render',
-  extends: 'template',
 
   behaviors: [Polymer.Templatizer],
 
@@ -43,8 +47,9 @@ Polymer({
 
   /** @private */
   render_: function() {
-    if (!this.ctor)
-      this.templatize(this);
+    var template = this.getContentChildren()[0];
+    if (!template.ctor)
+      this.templatize(template);
     var parentNode = this.parentNode;
     if (parentNode && !this.child_) {
       var instance = this.stamp({});

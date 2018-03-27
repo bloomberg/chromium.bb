@@ -88,14 +88,16 @@
         </button>
       </div>
     </print-preview-settings-section>
-    <template is="cr-lazy-render" id="destinationDialog">
-      <print-preview-destination-dialog
-          destination-store="[[destinationStore]]"
-          recent-destinations="[[recentDestinations]]"
-          user-info="{{userInfo}}"
-          show-cloud-print-promo="{{showCloudPrintPromo_}}">
-      </print-preview-destination-dialog>
-    </template>
+    <cr-lazy-render id="destinationDialog">
+      <template>
+        <print-preview-destination-dialog
+            destination-store="[[destinationStore]]"
+            recent-destinations="[[recentDestinations]]"
+            user-info="{{userInfo}}"
+            show-cloud-print-promo="{{showCloudPrintPromo_}}">
+        </print-preview-destination-dialog>
+      </template>
+    </cr-lazy-render>
   </template>
   <script src="destination_settings.js"></script>
 </dom-module>

@@ -58,36 +58,40 @@
         lower-threshold="500" on-lower-threshold="onScrollToBottom_">
     </iron-scroll-threshold>
 
-    <template is="cr-lazy-render" id="dialog">
-      <dialog is="cr-dialog">
-        <div slot="title">$i18n{removeSelected}</div>
-        <div slot="body">$i18n{deleteWarning}</div>
-        <div slot="button-container">
-          <paper-button class="cancel-button" on-click="onDialogCancelTap_">
-            $i18n{cancel}
-          </paper-button>
-          <paper-button class="action-button" on-click="onDialogConfirmTap_">
-            $i18n{deleteConfirm}
-          </paper-button>
-        </div>
-      </dialog>
-    </template>
+    <cr-lazy-render id="dialog">
+      <template>
+        <dialog is="cr-dialog">
+          <div slot="title">$i18n{removeSelected}</div>
+          <div slot="body">$i18n{deleteWarning}</div>
+          <div slot="button-container">
+            <paper-button class="cancel-button" on-click="onDialogCancelTap_">
+              $i18n{cancel}
+            </paper-button>
+            <paper-button class="action-button" on-click="onDialogConfirmTap_">
+              $i18n{deleteConfirm}
+            </paper-button>
+          </div>
+        </dialog>
+      </template>
+    </cr-lazy-render>
 
-    <template is="cr-lazy-render" id="sharedMenu">
-      <cr-action-menu>
-        <button id="menuMoreButton" slot="item" class="dropdown-item"
-            hidden="[[!canSearchMoreFromSite_(
-                searchedTerm, actionMenuModel_.item.domain)]]"
-            on-click="onMoreFromSiteTap_">
-          $i18n{moreFromSite}
-        </button>
-        <button id="menuRemoveButton" slot="item" class="dropdown-item"
-            hidden="[[!canDeleteHistory_]]"
-            on-click="onRemoveFromHistoryTap_">
-          $i18n{removeFromHistory}
-        </button>
-      </cr-action-menu>
-    </template>
+    <cr-lazy-render id="sharedMenu">
+      <template>
+        <cr-action-menu>
+          <button id="menuMoreButton" slot="item" class="dropdown-item"
+              hidden="[[!canSearchMoreFromSite_(
+                  searchedTerm, actionMenuModel_.item.domain)]]"
+              on-click="onMoreFromSiteTap_">
+            $i18n{moreFromSite}
+          </button>
+          <button id="menuRemoveButton" slot="item" class="dropdown-item"
+              hidden="[[!canDeleteHistory_]]"
+              on-click="onRemoveFromHistoryTap_">
+            $i18n{removeFromHistory}
+          </button>
+        </cr-action-menu>
+      </template>
+    </cr-lazy-render>
   </template>
   <script src="chrome://history/history_list.js"></script>
 </dom-module>
