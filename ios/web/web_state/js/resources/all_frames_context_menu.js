@@ -9,6 +9,7 @@
 goog.provide('__crWeb.allFramesContextMenu');
 
 goog.require('__crWeb.base');
+goog.require('__crWeb.common');
 
 /** Beginning of anonymous object */
 (function() {
@@ -19,21 +20,10 @@ goog.require('__crWeb.base');
  *                 coordinates.
  * @param {number} y Vertical center of the selected point in page
  *                 coordinates.
- * @return {Object} null if no element was found or an object of the form {
- *     href,  // URL of the link under the point
- *     innerText,  // innerText of the link, if the selected element is a link
- *     src,  // src of the image, if the selected element is an image
- *     title,  // title of the image, if the selected
- *     referrerPolicy
- *   }
- *   where:
- *     <ul>
- *     <li>href, innerText are set if the selected element is a link.
- *     <li>src, title are set if the selected element is an image.
- *     <li>href is also set if the selected element is an image with a link.
- *     <li>referrerPolicy is the referrer policy to use for navigations away
- *         from the current page.
- *     </ul>
+ * @return {Object} An object of the same form as returned by
+ *                  {@code getResponseForLinkElement} or
+ *                  {@code getResponseForImageElement} or null if no element was
+ *                  found.
  */
 __gCrWeb['getElementFromPointInPageCoordinates'] = function(x, y) {
   var hitCoordinates = spiralCoordinates_(x, y);
@@ -64,47 +54,162 @@ __gCrWeb['getElementFromPointInPageCoordinates'] = function(x, y) {
 
       if (getComputedWebkitTouchCallout_(element) !== 'none') {
         if (tagName === 'a' && element.href) {
-          // Found a link.
-          return {
-            href: element.href,
-            referrerPolicy: getReferrerPolicy_(element),
-            innerText: element.innerText
-          };
+          return getResponseForLinkElement(element);
         }
 
         if (tagName === 'img' && element.src) {
-          // Found an image.
-          var result = {src: element.src, referrerPolicy: getReferrerPolicy_()};
-          // Copy the title, if any.
-          if (element.title) {
-            result.title = element.title;
-          }
-          // Check if the image is also a link.
-          var parent = element.parentNode;
-          while (parent) {
-            if (parent.tagName && parent.tagName.toLowerCase() === 'a' &&
-                parent.href) {
-              // This regex identifies strings like void(0),
-              // void(0)  ;void(0);, ;;;;
-              // which result in a NOP when executed as JavaScript.
-              var regex = RegExp('^javascript:(?:(?:void\\(0\\)|;)\\s*)+$');
-              if (parent.href.match(regex)) {
-                parent = parent.parentNode;
-                continue;
-              }
-              result.href = parent.href;
-              result.referrerPolicy = getReferrerPolicy_(parent);
-              break;
-            }
-            parent = parent.parentNode;
-          }
-          return result;
+          return getResponseForImageElement(element);
         }
       }
       element = element.parentNode;
     }
   }
   return {};
+};
+
+/**
+ * Returns an object representing the details of a given link element.
+ * @param {HTMLElement} element The element whose details will be returned.
+ * @return {!Object} An object of the form {
+ *                     {@code href} The URL of the link.
+ *                     {@code referrerPolicy} The referrer policy to use for
+ *                         navigations away from the current page.
+ *                     {@code innerText} The inner text of the link.
+ *                   }.
+ */
+var getResponseForLinkElement = function(element) {
+  return {
+    href: element.href,
+    referrerPolicy: getReferrerPolicy_(element),
+    innerText: element.innerText
+  };
+};
+
+/**
+ * Returns an object representing the details of a given image element.
+ * @param {HTMLElement} element The element whose details will be returned.
+ * @return {!Object} An object of the form {
+ *                     {@code src} The src of the image.
+ *                     {@code referrerPolicy} The referrer policy to use for
+ *                         navigations away from the current page.
+ *                     {@code title} (optional) The title of the image, if one
+ *                         exists.
+ *                     {@code href} (optional) The URL of the link, if one
+ *                         exists.
+ *                   }.
+ */
+var getResponseForImageElement = function(element) {
+  var result = {src: element.src, referrerPolicy: getReferrerPolicy_()};
+  var parent = element.parentNode;
+  // Copy the title, if any.
+  if (element.title) {
+    result.title = element.title;
+  }
+  // Check if the image is also a link.
+  while (parent) {
+    if (parent.tagName && parent.tagName.toLowerCase() === 'a' &&
+        parent.href) {
+      // This regex identifies strings like void(0),
+      // void(0)  ;void(0);, ;;;;
+      // which result in a NOP when executed as JavaScript.
+      var regex = RegExp('^javascript:(?:(?:void\\(0\\)|;)\\s*)+$');
+      if (parent.href.match(regex)) {
+        parent = parent.parentNode;
+        continue;
+      }
+      result.href = parent.href;
+      result.referrerPolicy = getReferrerPolicy_(parent);
+      break;
+    }
+  parent = parent.parentNode;
+  }
+  return result;
+};
+
+/**
+ * Finds the url of the image or link under the selected point. Sends details
+ * about the found element (or an empty object if no links or images are found)
+ * back to the application by posting a 'FindElementResultHandler' message.
+ * The object will be of the same form as returned by
+ * {@code getResponseForLinkElement} or {@code getResponseForImageElement}.
+ * @param {string} requestID An identifier which will be returned in the result
+ *                 dictionary of this request.
+ * @param {number} x Horizontal center of the selected point in page
+ *                 coordinates.
+ * @param {number} y Vertical center of the selected point in page
+ *                 coordinates.
+ */
+__gCrWeb['findElementAtPointInPageCoordinates'] = function(requestID, x, y) {
+  var hitCoordinates = spiralCoordinates_(x, y);
+  for (var index = 0; index < hitCoordinates.length; index++) {
+    var coordinates = hitCoordinates[index];
+
+    var coordinateDetails = newCoordinate(coordinates.x, coordinates.y);
+    var element = elementsFromCoordinates(coordinateDetails);
+    // if element is a frame, tell it to respond to this element request
+    if (element &&
+        (element.tagName.toLowerCase() === 'iframe' ||
+         element.tagName.toLowerCase() === 'frame')) {
+      var payload = {
+        type: 'org.chromium.contextMenuMessage',
+        requestID: requestID,
+        x: x - element.offsetLeft,
+        y: y - element.offsetTop
+      };
+      element.contentWindow.postMessage(payload, element.src);
+      return;
+    }
+
+    if (!element || !element.tagName) {
+      // Nothing under the hit point. Try the next hit point.
+      continue;
+    }
+
+    // Also check element's ancestors. A bound on the level is used here to
+    // avoid large overhead when no links or images are found.
+    var level = 0;
+    while (++level < 8 && element && element != document) {
+      var tagName = element.tagName;
+      if (!tagName) continue;
+      tagName = tagName.toLowerCase();
+
+      if (tagName === 'input' || tagName === 'textarea' ||
+          tagName === 'select' || tagName === 'option') {
+        // If the element is a known input element, stop the spiral search and
+        // return empty results.
+        sendFindElementAtPointResponse(requestID, /*response=*/{});
+        return;
+      }
+
+      if (getComputedWebkitTouchCallout_(element) !== 'none') {
+        if (tagName === 'a' && element.href) {
+          sendFindElementAtPointResponse(requestID,
+                                         getResponseForLinkElement(element));
+          return;
+        }
+
+        if (tagName === 'img' && element.src) {
+          sendFindElementAtPointResponse(requestID,
+                                         getResponseForImageElement(element));
+          return;
+        }
+      }
+      element = element.parentNode;
+    }
+  }
+  sendFindElementAtPointResponse(requestID, /*response=*/{});
+};
+
+/**
+ * Inserts |requestID| into |response| and sends the result as the payload of a
+ * 'FindElementResultHandler' message back to the native application.
+ * @param {string} requestID An identifier which will be returned in the result
+ *                 dictionary of this request.
+ * @param {!Object} response The 'FindElementResultHandler' message payload.
+ */
+var sendFindElementAtPointResponse = function(requestID, response) {
+  response.requestID = requestID;
+  __gCrWeb.common.sendWebKitMessage('FindElementResultHandler', response);
 };
 
 /**
@@ -272,5 +377,18 @@ var getReferrerPolicy_ = function(opt_linkElement) {
   }
   return 'default';
 };
+
+/**
+ * Processes context menu messages received by the window.
+ */
+window.addEventListener('message', function(message) {
+  var payload = message.data;
+  if (payload.hasOwnProperty('type') &&
+      payload.type == 'org.chromium.contextMenuMessage') {
+    __gCrWeb.findElementAtPointInPageCoordinates(payload.requestID,
+                                                 payload.x,
+                                                 payload.y);
+  }
+});
 
 }());  // End of anonymouse object
