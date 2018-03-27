@@ -398,16 +398,25 @@ template("mojom") {
     } else if (is_win) {
       enabled_features += [ "is_win" ]
     }
-    action_foreach(parser_target_name) {
+
+    action(parser_target_name) {
       script = mojom_generator_script
       inputs = mojom_generator_sources + jinja2_sources
       sources = invoker.sources
-      outputs = [
-        "{{source_gen_dir}}/{{source_name_part}}.p",
-      ]
+      outputs = []
+      filelist = []
+      foreach(source, invoker.sources) {
+        filename = get_path_info("$source", "name")
+        dirname = get_path_info("$source", "gen_dir")
+        outputs += [ "$dirname/$filename.p" ]
+        filelist += [ rebase_path("$source", root_build_dir) ]
+      }
+
+      response_file_contents = filelist
+
       args = [
         "parse",
-        "{{source}}",
+        "--filelist={{response_file_name}}",
         "-o",
         rebase_path(root_gen_dir, root_build_dir),
         "-d",
@@ -443,20 +452,28 @@ template("mojom") {
       verify_deps_target_name = "${target_name}__verify_deps"
       verify_deps_target_names += [ ":$verify_deps_target_name" ]
       source_file_name = target_name
-      action_foreach(verify_deps_target_name) {
+
+      action(verify_deps_target_name) {
         script = mojom_generator_script
         inputs = mojom_generator_sources + jinja2_sources
         sources = invoker.sources
         deps = [
           ":$parsed_target_name",
         ]
-        outputs = [
-          "{{source_gen_dir}}/{{source_name_part}}.v",
-        ]
+        outputs = []
+        filelist = []
+        foreach(source, invoker.sources) {
+          filename = get_path_info("$source", "name")
+          dirname = get_path_info("$source", "gen_dir")
+          outputs += [ "$dirname/$filename.v" ]
+          filelist += [ rebase_path("$source", root_build_dir) ]
+        }
+
+        response_file_contents = filelist
 
         args = [
           "verify",
-          "{{source}}",
+          "--filelist={{response_file_name}}",
           "-f",
           rebase_path("$target_gen_dir/$source_file_name.deps_sources_list",
                       root_build_dir),
@@ -476,7 +493,6 @@ template("mojom") {
     common_generator_args = [
       "--use_bundled_pylibs",
       "generate",
-      "{{source}}",
       "-d",
       rebase_path("//", root_build_dir),
       "-I",
@@ -536,7 +552,7 @@ template("mojom") {
       }
     }
 
-    action_foreach(generator_cpp_message_ids_target_name) {
+    action(generator_cpp_message_ids_target_name) {
       script = mojom_generator_script
       inputs = mojom_generator_sources + jinja2_sources
       sources = invoker.sources
@@ -544,11 +560,18 @@ template("mojom") {
         ":$parsed_target_name",
         "//mojo/public/tools/bindings:precompile_templates",
       ]
-      outputs = [
-        "{{source_gen_dir}}/{{source_name_part}}.mojom-shared-message-ids.h",
-      ]
+      outputs = []
       args = common_generator_args
+      filelist = []
+      foreach(source, invoker.sources) {
+        outputs += [ "$target_gen_dir/$source-shared-message-ids.h" ]
+        filelist += [ rebase_path("$source", root_build_dir) ]
+      }
+
+      response_file_contents = filelist
+
       args += [
+        "--filelist={{response_file_name}}",
         "--generate_non_variant_code",
         "--generate_message_ids",
         "-g",
@@ -568,7 +591,7 @@ template("mojom") {
       "{{source_gen_dir}}/{{source_name_part}}.mojom-shared.h",
     ]
     generator_shared_target_name = "${target_name}_shared__generator"
-    action_foreach(generator_shared_target_name) {
+    action(generator_shared_target_name) {
       script = mojom_generator_script
       inputs = mojom_generator_sources + jinja2_sources
       sources = invoker.sources
@@ -577,9 +600,22 @@ template("mojom") {
                "//mojo/public/tools/bindings:precompile_templates",
              ] + verify_deps_target_names
 
-      outputs = generator_shared_cpp_outputs
+      outputs = []
       args = common_generator_args
+      filelist = []
+      foreach(source, invoker.sources) {
+        filelist += [ rebase_path("$source", root_build_dir) ]
+        outputs += [
+          "$target_gen_dir/$source-shared-internal.h",
+          "$target_gen_dir/$source-shared.cc",
+          "$target_gen_dir/$source-shared.h",
+        ]
+      }
+
+      response_file_contents = filelist
+
       args += [
+        "--filelist={{response_file_name}}",
         "--generate_non_variant_code",
         "-g",
         "c++",
@@ -742,7 +778,7 @@ template("mojom") {
       }
 
       generator_target_name = "${target_name}${variant_suffix}__generator"
-      action_foreach(generator_target_name) {
+      action(generator_target_name) {
         script = mojom_generator_script
         inputs = mojom_generator_sources + jinja2_sources
         sources = invoker.sources
@@ -751,9 +787,21 @@ template("mojom") {
                  ":$type_mappings_target_name",
                  "//mojo/public/tools/bindings:precompile_templates",
                ] + verify_deps_target_names
-        outputs = generator_cpp_outputs
+        outputs = []
         args = common_generator_args
+        filelist = []
+        foreach(source, invoker.sources) {
+          filelist += [ rebase_path("$source", root_build_dir) ]
+          outputs += [
+            "$target_gen_dir/${source}${variant_dash_suffix}.cc",
+            "$target_gen_dir/${source}${variant_dash_suffix}.h",
+          ]
+        }
+
+        response_file_contents = filelist
+
         args += [
+          "--filelist={{response_file_name}}",
           "-g",
           "c++",
         ]
@@ -994,7 +1042,7 @@ template("mojom") {
       if (enabled_sources != []) {
         generator_java_outputs =
             [ "{{source_gen_dir}}/{{source_name_part}}.mojom.srcjar" ]
-        action_foreach(java_generator_target_name) {
+        action(java_generator_target_name) {
           script = mojom_generator_script
           inputs = mojom_generator_sources + jinja2_sources
           sources = enabled_sources
@@ -1003,9 +1051,18 @@ template("mojom") {
                    ":$type_mappings_target_name",
                    "//mojo/public/tools/bindings:precompile_templates",
                  ] + verify_deps_target_names
-          outputs = generator_java_outputs
+          outputs = []
           args = common_generator_args
+          filelist = []
+          foreach(source, invoker.sources) {
+            filelist += [ rebase_path("$source", root_build_dir) ]
+            outputs += [ "$target_gen_dir/$source.srcjar" ]
+          }
+
+          response_file_contents = filelist
+
           args += [
+            "--filelist={{response_file_name}}",
             "-g",
             "java",
           ]
@@ -1078,7 +1135,7 @@ template("mojom") {
         "{{source_gen_dir}}/{{source_name_part}}.mojom.js",
         "{{source_gen_dir}}/{{source_name_part}}.mojom.externs.js",
       ]
-      action_foreach(generator_js_target_name) {
+      action(generator_js_target_name) {
         script = mojom_generator_script
         inputs = mojom_generator_sources + jinja2_sources
         sources = []
@@ -1089,9 +1146,21 @@ template("mojom") {
                  ":$parsed_target_name",
                  "//mojo/public/tools/bindings:precompile_templates",
                ] + verify_deps_target_names
-        outputs = generator_js_outputs
+        outputs = []
         args = common_generator_args
+        filelist = []
+        foreach(source, invoker.sources) {
+          filelist += [ rebase_path("$source", root_build_dir) ]
+          outputs += [
+            "$target_gen_dir/$source.js",
+            "$target_gen_dir/$source.externs.js",
+          ]
+        }
+
+        response_file_contents = filelist
+
         args += [
+          "--filelist={{response_file_name}}",
           "-g",
           "javascript",
         ]
