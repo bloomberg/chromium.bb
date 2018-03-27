@@ -61,7 +61,6 @@ class WebGraphicsContext3DProvider {
   virtual gpu::gles2::GLES2Interface* ContextGL() = 0;
   virtual bool BindToCurrentThread() = 0;
   virtual GrContext* GetGrContext() = 0;
-  virtual void InvalidateGrContext(uint32_t state) = 0;
   virtual const gpu::Capabilities& GetCapabilities() const = 0;
   virtual const gpu::GpuFeatureInfo& GetGpuFeatureInfo() const = 0;
   // Creates a viz::GLHelper after first call and returns that instance. This

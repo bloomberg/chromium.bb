@@ -212,6 +212,10 @@ class ContextSupportStub : public ContextSupport {
       const std::vector<std::pair<uint32_t, uint32_t>>& entries) override {}
   void DeleteTransferCacheEntry(uint32_t type, uint32_t id) override {}
   unsigned int GetTransferBufferFreeSize() const override { return 0; }
+  bool HasGrContextSupport() const override { return false; }
+  void SetGrContext(GrContext* gr) override {}
+  void WillCallGLFromSkia() override {}
+  void DidCallGLFromSkia() override {}
 
  private:
   std::unique_ptr<char[]> mapped_transfer_cache_entry_;

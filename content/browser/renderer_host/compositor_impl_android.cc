@@ -236,14 +236,15 @@ void CreateContextProviderAfterGpuChannelEstablished(
 
   constexpr bool automatic_flushes = false;
   constexpr bool support_locking = false;
+  constexpr bool support_grcontext = false;
 
   auto context_provider =
       base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
           std::move(gpu_channel_host), factory->GetGpuMemoryBufferManager(),
           stream_id, stream_priority, handle,
           GURL(std::string("chrome://gpu/Compositor::CreateContextProvider")),
-          automatic_flushes, support_locking, shared_memory_limits, attributes,
-          nullptr /* shared_context */,
+          automatic_flushes, support_locking, support_grcontext,
+          shared_memory_limits, attributes, nullptr /* shared_context */,
           ui::command_buffer_metrics::CONTEXT_TYPE_UNKNOWN);
   callback.Run(std::move(context_provider));
 }
@@ -800,6 +801,7 @@ void CompositorImpl::OnGpuChannelEstablished(
 
   constexpr bool support_locking = false;
   constexpr bool automatic_flushes = false;
+  constexpr bool support_grcontext = true;
   display_color_space_ = display::Screen::GetScreen()
                              ->GetDisplayNearestWindow(root_window_)
                              .color_space();
@@ -811,7 +813,7 @@ void CompositorImpl::OnGpuChannelEstablished(
           stream_id, stream_priority, surface_handle_,
           GURL(std::string("chrome://gpu/CompositorImpl::") +
                std::string("CompositorContextProvider")),
-          automatic_flushes, support_locking,
+          automatic_flushes, support_locking, support_grcontext,
           GetCompositorContextSharedMemoryLimits(root_window_),
           GetCompositorContextAttributes(display_color_space_,
                                          requires_alpha_channel_),

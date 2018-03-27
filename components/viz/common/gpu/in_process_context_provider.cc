@@ -107,18 +107,13 @@ class GrContext* InProcessContextProvider::GrContext() {
                                               &max_glyph_cache_texture_bytes);
 
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
-      ContextGL(), ContextCapabilities(), max_resource_cache_bytes,
-      max_glyph_cache_texture_bytes));
+      ContextGL(), ContextSupport(), ContextCapabilities(),
+      max_resource_cache_bytes, max_glyph_cache_texture_bytes));
   return gr_context_->get();
 }
 
 ContextCacheController* InProcessContextProvider::CacheController() {
   return cache_controller_.get();
-}
-
-void InProcessContextProvider::InvalidateGrContext(uint32_t state) {
-  if (gr_context_)
-    gr_context_->ResetContext(state);
 }
 
 base::Lock* InProcessContextProvider::GetLock() {

@@ -65,6 +65,10 @@ class TestContextSupport : public gpu::ContextSupport {
   void DeleteTransferCacheEntry(uint32_t entry_type,
                                 uint32_t entry_id) override;
   unsigned int GetTransferBufferFreeSize() const override;
+  bool HasGrContextSupport() const override;
+  void SetGrContext(GrContext* gr) override;
+  void WillCallGLFromSkia() override;
+  void DidCallGLFromSkia() override;
 
   void CallAllSyncPointCallbacks();
 

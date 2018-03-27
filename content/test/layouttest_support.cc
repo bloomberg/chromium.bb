@@ -381,6 +381,7 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
     attributes.lose_context_when_out_of_memory = true;
     const bool automatic_flushes = false;
     const bool support_locking = false;
+    const bool support_grcontext = true;
 
     scoped_refptr<viz::ContextProvider> context_provider;
 
@@ -391,8 +392,8 @@ class LayoutTestDependenciesImpl : public LayoutTestDependencies,
           kGpuStreamPriorityDefault, gpu::kNullSurfaceHandle,
           GURL("chrome://gpu/"
                "LayoutTestDependenciesImpl::CreateOutputSurface"),
-          automatic_flushes, support_locking, gpu::SharedMemoryLimits(),
-          attributes, nullptr,
+          automatic_flushes, support_locking, support_grcontext,
+          gpu::SharedMemoryLimits(), attributes, nullptr,
           ui::command_buffer_metrics::OFFSCREEN_CONTEXT_FOR_TESTING);
       context_result = context_provider->BindToCurrentThread();
 
