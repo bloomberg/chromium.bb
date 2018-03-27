@@ -49,9 +49,6 @@ class ZoomBubbleViewsBrowserTest : public ZoomBubbleBrowserTest {
 // TODO(linux_aura) http://crbug.com/163931
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS) && defined(USE_AURA)
 #define MAYBE_NonImmersiveFullscreen DISABLED_NonImmersiveFullscreen
-#elif defined(OS_MACOSX)
-// Trips AppKit assert on Mac: https://crbug.com/824757
-#define MAYBE_NonImmersiveFullscreen DISABLED_NonImmersiveFullscreen
 #else
 #define MAYBE_NonImmersiveFullscreen NonImmersiveFullscreen
 #endif
