@@ -18,7 +18,7 @@ For more discussion of MB, see also [the design spec](design_spec.md).
 
 ## MB subcommands
 
-### `mb analyze`
+### mb analyze
 
 `mb analyze` is reponsible for determining what targets are affected by
 a list of files (e.g., the list of files in a patch on a trybot):
@@ -93,7 +93,7 @@ differences can be subtle.  We won't even go into how the `targets` and
 The `-b/--builder`, `-c/--config`, `-f/--config-file`, `-m/--master`,
 `-q/--quiet`, and `-v/--verbose` flags work as documented for `mb gen`.
 
-### `mb gen`
+### mb gen
 
 `mb gen` is responsible for generating the Ninja files by invoking GN with
 the right sets of build args for the given bot. It takes arguments to
@@ -128,18 +128,18 @@ If the build config will use the Goma distributed-build system, you can pass
 the path to your Goma client in the `-g/--goma-dir` flag, and it will be
 incorporated into the appropriate flags for GN as needed.
 
-### `mb help`
+### mb help
 
 Produces help output on the other subcommands
 
-### `mb isolate`
+### mb isolate
 
 Builds a given (ninja) target and produces an `.isolated` file suitable
 for then running the command either locally in an isolated environment,
 or remotely by uploading it to an isolate server and running it under
 swarming. See below for more information on isolates and swarming.
 
-### `mb lookup`
+### mb lookup
 
 Prints what command will be run by `mb gen` (like `mb gen -n` but does
 not require you to specify a path).
@@ -148,7 +148,7 @@ The `-b/--builder`, `-c/--config`, `-f/--config-file`, `-m/--master`,
 `--phase`, `-q/--quiet`, and `-v/--verbose` flags work as documented for
 `mb gen`.
 
-### `mb run`
+### mb run
 
 Builds and runs a given (ninja) target. By default the target will
 be run locally but isolated (i.e., outside of the source tree, just
@@ -166,7 +166,7 @@ information on isolates and swarming.
 In either case, any flags past `--` will be passed on to the command
 to be run inside the isolate.
 
-### `mb validate`
+### mb validate
 
 Does internal checking to make sure the config file is syntactically
 valid and that all of the entries are used properly. It does not validate
@@ -180,7 +180,13 @@ The `-f/--config-file` and `-q/--quiet` flags work as documented for
 This is mostly useful as a presubmit check and for verifying changes to
 the config file.
 
-### `mb gerrit-buildbucket-config`
+### mb zip
+
+Builds and isolates a given (ninja) target like the `isolate` command does,
+and then takes all of the files in the isolate and writes them into a single
+zip file that can then easily be redistributed.
+
+### mb gerrit-buildbucket-config
 
 Generates a gerrit buildbucket configuration file and prints it to
 stdout. This file contains the list of trybots shown in gerrit's UI.
@@ -217,7 +223,7 @@ look up the command line for each target (currently this is hard-coded
 in [mb.py](https://code.google.com/p/chromium/codesearch?q=mb.py#chromium/src/tools/mb/mb.py&q=mb.py%20GetIsolateCommand&sq=package:chromium&type=cs)), and write out the
 matching `.isolate` and `.isolated.gen.json` files.
 
-## The `mb_config.pyl` config file
+## The mb_config.pyl config file
 
 The `mb_config.pyl` config file is intended to enumerate all of the
 supported build configurations for Chromium. Generally speaking, you
