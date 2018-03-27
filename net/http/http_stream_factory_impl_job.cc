@@ -1051,14 +1051,8 @@ int HttpStreamFactoryImpl::Job::DoInitConnectionComplete(int result) {
         net_log_.AddEvent(
             NetLogEventType::HTTP_STREAM_REQUEST_PROTO,
             base::Bind(&NetLogHttpStreamProtoCallback, negotiated_protocol_));
-        if (negotiated_protocol_ == kProtoHTTP2) {
-          // If request is WebSocket, HTTP/2 must not have been advertised in
-          // the TLS handshake.  The TLS layer must not have accepted the
-          // server choosing HTTP/2.
-          // TODO(bnc): Change to DCHECK once https://crbug.com/819101 is fixed.
-          CHECK(!is_websocket_);
+        if (negotiated_protocol_ == kProtoHTTP2)
           using_spdy_ = true;
-        }
       }
     }
   } else if (proxy_info_.is_https() && connection_->socket() &&
@@ -1218,10 +1212,6 @@ int HttpStreamFactoryImpl::Job::DoCreateStream() {
   }
 
   CHECK(!stream_.get());
-
-  // WebSocket over HTTP/2 is only allowed to use existing connections.
-  // TODO(bnc): Change to DCHECK once https://crbug.com/819101 is fixed.
-  CHECK(!is_websocket_ || existing_spdy_session_);
 
   // It is possible that a pushed stream has been opened by a server since last
   // time Job checked above.
