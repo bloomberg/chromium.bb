@@ -86,8 +86,14 @@ Shell::Shell(WebContents* web_contents)
       hide_toolbar_(false) {
   web_contents_->SetDelegate(this);
 
-  if (switches::IsRunLayoutTestSwitchPresent())
+  if (switches::IsRunLayoutTestSwitchPresent()) {
     headless_ = true;
+    // In a headless shell, disable occlusion tracking. Otherwise, WebContents
+    // would always behave as if they were occluded, i.e. would not render
+    // frames and would not receive input events.
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableBackgroundingOccludedWindowsForTesting);
+  }
 
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kContentShellHideToolbar))

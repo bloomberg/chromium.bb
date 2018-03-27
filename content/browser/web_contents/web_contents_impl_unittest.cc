@@ -2735,78 +2735,114 @@ TEST_F(WebContentsImplTest, CapturerOverridesPreferredSize) {
   EXPECT_EQ(original_preferred_size, contents()->GetPreferredSize());
 }
 
-TEST_F(WebContentsImplTest, CapturerPreventsHiding) {
-  const gfx::Size original_preferred_size(1024, 768);
-  contents()->UpdatePreferredSize(original_preferred_size);
-
+TEST_F(WebContentsImplTest, UpdateWebContentsVisibility) {
   TestRenderWidgetHostView* view = static_cast<TestRenderWidgetHostView*>(
       main_test_rfh()->GetRenderViewHost()->GetWidget()->GetView());
+  TestWebContentsObserver observer(contents());
 
-  // With no capturers, setting and un-setting occlusion should change the
-  // view's occlusion state.
   EXPECT_FALSE(view->is_showing());
-  contents()->WasShown();
-  EXPECT_TRUE(view->is_showing());
-  contents()->WasHidden();
-  EXPECT_FALSE(view->is_showing());
-  contents()->WasShown();
-  EXPECT_TRUE(view->is_showing());
+  EXPECT_FALSE(view->is_occluded());
 
-  // Add a capturer and try to hide the contents. The view will remain visible.
-  contents()->IncrementCapturerCount(gfx::Size());
-  contents()->WasHidden();
-  EXPECT_TRUE(view->is_showing());
-
-  // Remove the capturer, and the WasHidden should take effect.
-  contents()->DecrementCapturerCount();
+  // WebContents must be made visible once before it can be hidden.
+  contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
   EXPECT_FALSE(view->is_showing());
+  EXPECT_FALSE(view->is_occluded());
+  EXPECT_EQ(Visibility::VISIBLE, contents()->GetVisibility());
+
+  contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(view->is_showing());
+  EXPECT_FALSE(view->is_occluded());
+  EXPECT_EQ(Visibility::VISIBLE, contents()->GetVisibility());
+
+  // Hiding/occluding/showing the WebContents should hide and show |view|.
+  contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  EXPECT_FALSE(view->is_showing());
+  EXPECT_FALSE(view->is_occluded());
+  EXPECT_EQ(Visibility::HIDDEN, contents()->GetVisibility());
+
+  contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(view->is_showing());
+  EXPECT_FALSE(view->is_occluded());
+  EXPECT_EQ(Visibility::VISIBLE, contents()->GetVisibility());
+
+  contents()->UpdateWebContentsVisibility(Visibility::OCCLUDED);
+  EXPECT_TRUE(view->is_showing());
+  EXPECT_TRUE(view->is_occluded());
+  EXPECT_EQ(Visibility::OCCLUDED, contents()->GetVisibility());
+
+  contents()->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(view->is_showing());
+  EXPECT_FALSE(view->is_occluded());
+  EXPECT_EQ(Visibility::VISIBLE, contents()->GetVisibility());
+
+  contents()->UpdateWebContentsVisibility(Visibility::OCCLUDED);
+  EXPECT_TRUE(view->is_showing());
+  EXPECT_TRUE(view->is_occluded());
+  EXPECT_EQ(Visibility::OCCLUDED, contents()->GetVisibility());
+
+  contents()->UpdateWebContentsVisibility(Visibility::HIDDEN);
+  EXPECT_FALSE(view->is_showing());
+  EXPECT_EQ(Visibility::HIDDEN, contents()->GetVisibility());
 }
 
-TEST_F(WebContentsImplTest, CapturerPreventsOcclusion) {
-  const gfx::Size original_preferred_size(1024, 768);
-  contents()->UpdatePreferredSize(original_preferred_size);
+namespace {
 
+void HideOrOccludeWithCapturerTest(WebContentsImpl* contents,
+                                   Visibility hidden_or_occluded) {
   TestRenderWidgetHostView* view = static_cast<TestRenderWidgetHostView*>(
-      main_test_rfh()->GetRenderViewHost()->GetWidget()->GetView());
+      contents->GetRenderWidgetHostView());
 
-  // With no capturers, setting and un-setting occlusion should change the
-  // view's occlusion state.
-  EXPECT_FALSE(view->is_occluded());
-  contents()->WasOccluded();
-  EXPECT_TRUE(view->is_occluded());
-  contents()->WasUnOccluded();
-  EXPECT_FALSE(view->is_occluded());
-  contents()->WasOccluded();
-  EXPECT_TRUE(view->is_occluded());
+  EXPECT_FALSE(view->is_showing());
 
-  // Adding a capturer on an occluded WebContents should cause the view to be
-  // unoccluded. Removing the capturer should cause the view to be occluded
-  // again.
-  contents()->IncrementCapturerCount(gfx::Size());
+  // WebContents must be made visible once before it can be hidden.
+  contents->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(view->is_showing());
+  EXPECT_FALSE(view->is_occluded());
+  EXPECT_EQ(Visibility::VISIBLE, contents->GetVisibility());
+
+  // Add a capturer when the contents is visible and then hide the contents.
+  // |view| should remain visible.
+  contents->IncrementCapturerCount(gfx::Size());
+  contents->UpdateWebContentsVisibility(hidden_or_occluded);
+  EXPECT_TRUE(view->is_showing());
+  EXPECT_FALSE(view->is_occluded());
+  EXPECT_EQ(hidden_or_occluded, contents->GetVisibility());
+
+  // Remove the capturer when the contents is hidden/occluded. |view| should be
+  // hidden/occluded.
+  contents->DecrementCapturerCount();
+  if (hidden_or_occluded == Visibility::HIDDEN) {
+    EXPECT_FALSE(view->is_showing());
+  } else {
+    EXPECT_TRUE(view->is_showing());
+    EXPECT_TRUE(view->is_occluded());
+  }
+
+  // Add a capturer when the contents is hidden. |view| should be unoccluded.
+  contents->IncrementCapturerCount(gfx::Size());
   EXPECT_FALSE(view->is_occluded());
 
-  contents()->DecrementCapturerCount();
-  EXPECT_TRUE(view->is_occluded());
-
-  // Adding a capturer on an unoccluded WebContents should not change the
-  // occlusion state of the view. Calling WasOccluded() on an unoccluded
-  // WebContents() that has a capturer should not change the occlusion state of
-  // the view. Removing the capturer should cause the view to become occluded.
-  contents()->WasUnOccluded();
+  // Show the contents. The view should be visible.
+  contents->UpdateWebContentsVisibility(Visibility::VISIBLE);
+  EXPECT_TRUE(view->is_showing());
   EXPECT_FALSE(view->is_occluded());
-  contents()->IncrementCapturerCount(gfx::Size());
-  EXPECT_FALSE(view->is_occluded());
+  EXPECT_EQ(Visibility::VISIBLE, contents->GetVisibility());
 
-  contents()->WasOccluded();
+  // Remove the capturer when the contents is visible. The view should remain
+  // visible.
+  contents->DecrementCapturerCount();
+  EXPECT_TRUE(view->is_showing());
   EXPECT_FALSE(view->is_occluded());
+}
 
-  contents()->DecrementCapturerCount();
-  EXPECT_TRUE(view->is_occluded());
+}  // namespace
 
-  // Calling WasUnoccluded() on a WebContents with no capturers should cause the
-  // view to become unoccluded.
-  contents()->WasUnOccluded();
-  EXPECT_FALSE(view->is_occluded());
+TEST_F(WebContentsImplTest, HideWithCapturer) {
+  HideOrOccludeWithCapturerTest(contents(), Visibility::HIDDEN);
+}
+
+TEST_F(WebContentsImplTest, OccludeWithCapturer) {
+  HideOrOccludeWithCapturerTest(contents(), Visibility::OCCLUDED);
 }
 
 // Tests that GetLastActiveTime starts with a real, non-zero time and updates

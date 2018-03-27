@@ -8,10 +8,12 @@
 
 #include <memory>
 
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_observer.h"
+#include "content/public/common/content_switches.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/web_contents_tester.h"
@@ -150,6 +152,9 @@ class WebViewUnitTest : public views::test::WidgetTest {
     // Set the test content browser client to avoid pulling in needless
     // dependencies from content.
     SetBrowserClientForTesting(&test_browser_client_);
+
+    base::CommandLine::ForCurrentProcess()->AppendSwitch(
+        switches::kDisableBackgroundingOccludedWindowsForTesting);
 
     // Create a top level widget and add a child, and give it a WebView as a
     // child.
