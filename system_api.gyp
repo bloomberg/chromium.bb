@@ -227,6 +227,19 @@
       'includes': ['../../platform2/common-mk/protoc.gypi'],
     },
     {
+      'target_name': 'system_api-vm_concierge-goprotos-gen',
+      'type': 'none',
+      'variables': {
+        'gen_go': 1,
+        'proto_in_dir': 'dbus/vm_concierge',
+        'proto_out_dir': 'go/src/chromiumos/system_api/vm_concierge',
+      },
+      'sources': [
+        '<(proto_in_dir)/service.proto',
+      ],
+      'includes': ['../../platform2/common-mk/protoc.gypi'],
+    },
+    {
       'target_name': 'system_api-vm_concierge-protos',
       'type': 'static_library',
       'standalone_static_library': 1,
