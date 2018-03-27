@@ -29,6 +29,11 @@ constexpr gfx::Size kDummyBufferSize(32, 32);
 // Currently we have no way to know the resources of ProtectedBufferAllocator.
 // Arbitrarily chosen a reasonable constant as the limit.
 constexpr size_t kMaxConcurrentProtectedBufferAllocators = 32;
+
+// Maximum number of concurrent allocated protected buffers in a single
+// ProtectedBufferAllocator. This limitation, 48, is chosen expectedly, 16 for
+// protected input buffers and 32 for protected output buffers.
+constexpr size_t kMaxBuffersPerAllocator = 48;
 }  // namespace
 
 class ProtectedBufferManager::ProtectedBuffer {
@@ -291,11 +296,8 @@ bool ProtectedBufferManager::AllocateProtectedSharedMemory(
     return false;
 
   base::AutoLock lock(buffer_map_lock_);
-
-  if (buffer_map_.find(id) != buffer_map_.end()) {
-    VLOGF(1) << "A protected buffer for this handle already exists";
+  if (!CanAllocateFor(allocator_id, id))
     return false;
-  }
 
   // Allocate a protected buffer and associate it with the dummy pixmap.
   // The pixmap needs to be stored to ensure the id remains the same for
@@ -306,17 +308,14 @@ bool ProtectedBufferManager::AllocateProtectedSharedMemory(
     return false;
   }
 
-  VLOGF(2) << "New protected shared memory buffer, handle id: " << id;
-
-  // This will always succeed as we find() first above.
-  buffer_map_.emplace(id, std::move(protected_shmem));
-
-  DCHECK_EQ(allocator_to_buffers_map_.count(allocator_id), 1u);
   if (!allocator_to_buffers_map_[allocator_id].insert(id).second) {
     VLOGF(1) << "Failed inserting id: " << id
              << " to allocator_to_buffers_map_, allocator_id: " << allocator_id;
     return false;
   }
+  // This will always succeed as we find() first in CanAllocateFor().
+  buffer_map_.emplace(id, std::move(protected_shmem));
+  VLOGF(2) << "New protected shared memory buffer, handle id: " << id;
   return true;
 }
 
@@ -337,11 +336,8 @@ bool ProtectedBufferManager::AllocateProtectedNativePixmap(
     return false;
 
   base::AutoLock lock(buffer_map_lock_);
-
-  if (buffer_map_.find(id) != buffer_map_.end()) {
-    VLOGF(1) << "A protected buffer for this handle already exists";
+  if (!CanAllocateFor(allocator_id, id))
     return false;
-  }
 
   // Allocate a protected buffer and associate it with the dummy pixmap.
   // The pixmap needs to be stored to ensure the id remains the same for
@@ -352,16 +348,14 @@ bool ProtectedBufferManager::AllocateProtectedNativePixmap(
     return false;
   }
 
-  VLOGF(2) << "New protected native pixmap, handle id: " << id;
-  // This will always succeed as we find() first above.
-  buffer_map_.emplace(id, std::move(protected_pixmap));
-
-  DCHECK_EQ(allocator_to_buffers_map_.count(allocator_id), 1u);
   if (!allocator_to_buffers_map_[allocator_id].insert(id).second) {
     VLOGF(1) << "Failed inserting id: " << id
              << " to allocator_to_buffers_map_, allocator_id: " << allocator_id;
     return false;
   }
+  // This will always succeed as we find() first in CanAllocateFor().
+  buffer_map_.emplace(id, std::move(protected_pixmap));
+  VLOGF(2) << "New protected native pixmap, handle id: " << id;
   return true;
 }
 
@@ -384,10 +378,8 @@ void ProtectedBufferManager::ReleaseProtectedBuffer(uint64_t allocator_id,
     VLOGF(1) << "No allocated buffer by allocator id " << allocator_id;
     return;
   }
-  if (it->second.erase(id) != 1) {
+  if (it->second.erase(id) != 1)
     VLOGF(1) << "No buffer id " << id << " to destroy";
-    return;
-  }
 }
 
 void ProtectedBufferManager::ReleaseAllProtectedBuffers(uint64_t allocator_id) {
@@ -494,5 +486,30 @@ void ProtectedBufferManager::RemoveEntry(uint32_t id) {
   auto num_erased = buffer_map_.erase(id);
   if (num_erased != 1)
     VLOGF(1) << "No buffer id " << id << " to destroy";
+}
+
+bool ProtectedBufferManager::CanAllocateFor(uint64_t allocator_id,
+                                            uint32_t id) {
+  buffer_map_lock_.AssertAcquired();
+  if (buffer_map_.find(id) != buffer_map_.end()) {
+    VLOGF(1) << "A protected buffer for this handle already exists";
+    return false;
+  }
+
+  auto it = allocator_to_buffers_map_.find(allocator_id);
+  if (it == allocator_to_buffers_map_.end()) {
+    VLOGF(1) << "allocator_to_buffers_map_ has no entry, allocator_id="
+             << allocator_id;
+    return false;
+  }
+  auto& allocated_protected_buffer_ids = it->second;
+  // Check if the number of allocated protected buffers for |allocator_id| is
+  // less than kMaxBuffersPerAllocator.
+  if (allocated_protected_buffer_ids.size() >= kMaxBuffersPerAllocator) {
+    VLOGF(1) << "Too many allocated protected buffers: "
+             << kMaxBuffersPerAllocator;
+    return false;
+  }
+  return true;
 }
 }  // namespace arc

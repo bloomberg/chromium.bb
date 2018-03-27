@@ -113,6 +113,10 @@ class ProtectedBufferManager
   // Removes an entry for given |id| from buffer_map_.
   void RemoveEntry(uint32_t id);
 
+  // Returns whether a protected buffer whose unique id is |id| can be
+  // allocated by PBA whose allocator id is |allocator_id|.
+  bool CanAllocateFor(uint64_t allocator_id, uint32_t id);
+
   // A map of unique ids to the ProtectedBuffers associated with them.
   using ProtectedBufferMap =
       std::map<uint32_t, std::unique_ptr<ProtectedBuffer>>;
