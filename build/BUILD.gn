@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 config("compiler_defaults") {
+  cflags = [ "-std=c++11" ]
   if (current_os == "linux") {
-    cflags = [
+    cflags += [
       "-fPIC",
       "-fvisibility=hidden",
     ]
