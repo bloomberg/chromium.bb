@@ -815,14 +815,14 @@ public class ContextualSearchManager
         mSearchPanel.loadUrlInPanel(searchUrl);
         mDidStartLoadingResolvedSearchRequest = true;
 
-        // TODO(pedrosimonetti): If the user taps on a word and quickly after that taps on the
+        // TODO(donnd): If the user taps on a word and quickly after that taps on the
         // peeking Search Bar, the Search Content View will not be displayed. It seems that
-        // calling ContentViewCore.onShow() while it's being created has no effect. Need
+        // calling WebContents.onShow() while it's being created has no effect. Need
         // to coordinate with Chrome-Android folks to come up with a proper fix for this.
         // For now, we force the ContentView to be displayed by calling onShow() again
         // when a URL is being loaded. See: crbug.com/398206
-        if (mSearchPanel.isContentShowing() && getSearchPanelContentViewCore() != null) {
-            getSearchPanelContentViewCore().onShow();
+        if (mSearchPanel.isContentShowing() && getSearchPanelWebContents() != null) {
+            getSearchPanelWebContents().onShow();
         }
     }
 

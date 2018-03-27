@@ -33,6 +33,7 @@ import org.chromium.content.browser.test.util.CriteriaHelper;
 import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content_public.browser.ImeAdapter;
 import org.chromium.content_public.browser.SelectionClient;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_shell_apk.ContentShellActivityTestRule;
 
 import java.util.concurrent.Callable;
@@ -107,7 +108,7 @@ public class ContentViewCoreSelectionTest {
 
         mContentViewCore = mActivityTestRule.getContentViewCore();
         mSelectionPopupController =
-                SelectionPopupControllerImpl.fromWebContents(mContentViewCore.getWebContents());
+                SelectionPopupControllerImpl.fromWebContents(mActivityTestRule.getWebContents());
         waitForSelectActionBarVisible(false);
         waitForPastePopupStatus(false);
     }
@@ -635,7 +636,7 @@ public class ContentViewCoreSelectionTest {
     private CharSequence getTextBeforeCursor(final int length, final int flags) {
         final ChromiumBaseInputConnection connection =
                 (ChromiumBaseInputConnection) ImeAdapter
-                        .fromWebContents(mContentViewCore.getWebContents())
+                        .fromWebContents(mActivityTestRule.getWebContents())
                         .getInputConnectionForTest();
         return ImeTestUtils.runBlockingOnHandlerNoException(
                 connection.getHandler(), new Callable<CharSequence>() {
@@ -860,14 +861,14 @@ public class ContentViewCoreSelectionTest {
     }
 
     private void setVisibileOnUiThread(final boolean show) {
-        final ContentViewCoreImpl contentViewCore = mContentViewCore;
+        final WebContents webContents = mActivityTestRule.getWebContents();
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
                 if (show) {
-                    contentViewCore.onShow();
+                    webContents.onShow();
                 } else {
-                    contentViewCore.onHide();
+                    webContents.onHide();
                 }
             }
         });

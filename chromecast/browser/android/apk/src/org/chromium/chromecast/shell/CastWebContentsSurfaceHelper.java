@@ -210,13 +210,13 @@ class CastWebContentsSurfaceHelper {
         mContentViewCore = ContentViewCore.create(context, "", webContents,
                 ViewAndroidDelegate.createBasicDelegate(mContentView), mContentView, mWindow);
         // Enable display of current webContents.
-        mContentViewCore.onShow();
+        webContents.onShow();
         mCastWebContentsLayout.addView(mContentView,
                 new FrameLayout.LayoutParams(FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
         mContentView.setFocusable(true);
         mContentView.requestFocus();
-        mContentViewRenderView.setCurrentContentViewCore(mContentViewCore);
+        mContentViewRenderView.setCurrentWebContents(webContents);
     }
 
     // Remove the currently displayed webContents. no-op if nothing is being displayed.

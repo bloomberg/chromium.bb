@@ -13,7 +13,7 @@ import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.ContentViewRenderView;
-import org.chromium.content_public.browser.ContentViewCore;
+import org.chromium.content_public.browser.WebContents;
 import org.chromium.ui.base.WindowAndroid;
 
 /**
@@ -109,10 +109,10 @@ public class ShellManager extends FrameLayout {
         addView(shellView, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT, FrameLayout.LayoutParams.MATCH_PARENT));
         mActiveShell = shellView;
-        ContentViewCore contentViewCore = mActiveShell.getContentViewCore();
-        if (contentViewCore != null) {
-            mContentViewRenderView.setCurrentContentViewCore(contentViewCore);
-            contentViewCore.onShow();
+        WebContents webContents = mActiveShell.getWebContents();
+        if (webContents != null) {
+            mContentViewRenderView.setCurrentWebContents(webContents);
+            webContents.onShow();
         }
     }
 
@@ -120,8 +120,8 @@ public class ShellManager extends FrameLayout {
     private void removeShell(Shell shellView) {
         if (shellView == mActiveShell) mActiveShell = null;
         if (shellView.getParent() == null) return;
-        ContentViewCore contentViewCore = shellView.getContentViewCore();
-        if (contentViewCore != null) contentViewCore.onHide();
+        WebContents webContents = shellView.getWebContents();
+        if (webContents != null) webContents.onHide();
         shellView.setContentViewRenderView(null);
         removeView(shellView);
     }

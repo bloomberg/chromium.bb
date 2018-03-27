@@ -150,16 +150,6 @@ public interface ContentViewCore {
     boolean isAlive();
 
     /**
-     * To be called when the ContentView is shown.
-     */
-    void onShow();
-
-    /**
-     * To be called when the ContentView is hidden.
-     */
-    void onHide();
-
-    /**
      * @see View#onAttachedToWindow()
      */
     void onAttachedToWindow();

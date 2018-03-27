@@ -557,10 +557,10 @@ public class ContextualSearchManagerTest {
     }
 
     /**
-     * Asserts that the Panel's ContentViewCore onShow() method was never called.
+     * Asserts that the Panel's WebContents.onShow() method was never called.
      */
-    private void assertNeverCalledContentViewCoreOnShow() {
-        Assert.assertFalse(mFakeServer.didEverCallContentViewCoreOnShow());
+    private void assertNeverCalledWebContentsOnShow() {
+        Assert.assertFalse(mFakeServer.didEverCallWebContentsOnShow());
     }
 
     /**
@@ -569,7 +569,7 @@ public class ContextualSearchManagerTest {
     private void assertContentViewCoreCreatedButNeverMadeVisible() {
         assertContentViewCoreCreated();
         Assert.assertFalse(isContentViewCoreVisible());
-        assertNeverCalledContentViewCoreOnShow();
+        assertNeverCalledWebContentsOnShow();
     }
 
     /**
@@ -2541,7 +2541,7 @@ public class ContextualSearchManagerTest {
 
         // Now simulate a long press, leaving the Panel peeking.
         simulateLongPressSearch("resolution");
-        assertNeverCalledContentViewCoreOnShow();
+        assertNeverCalledWebContentsOnShow();
         Assert.assertEquals(1, mFakeServer.getLoadedUrlCount());
 
         // Expanding the Panel should load and display the new search.

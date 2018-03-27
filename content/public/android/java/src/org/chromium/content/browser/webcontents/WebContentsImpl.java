@@ -23,8 +23,10 @@ import org.chromium.base.annotations.JNINamespace;
 import org.chromium.content.browser.AppWebMessagePort;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content.browser.RenderCoordinates;
+import org.chromium.content.browser.accessibility.WebContentsAccessibilityImpl;
 import org.chromium.content.browser.framehost.RenderFrameHostDelegate;
 import org.chromium.content.browser.framehost.RenderFrameHostImpl;
+import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content_public.browser.AccessibilitySnapshotCallback;
 import org.chromium.content_public.browser.AccessibilitySnapshotNode;
 import org.chromium.content_public.browser.ChildProcessImportance;
@@ -344,12 +346,22 @@ public class WebContentsImpl implements WebContents, RenderFrameHostDelegate {
 
     @Override
     public void onHide() {
+        SelectionPopupControllerImpl controller = getSelectionPopupController();
+        if (controller != null) controller.hidePopupsAndPreserveSelection();
         nativeOnHide(mNativeWebContentsAndroid);
     }
 
     @Override
     public void onShow() {
+        WebContentsAccessibilityImpl wcax = WebContentsAccessibilityImpl.fromWebContents(this);
+        if (wcax != null) wcax.refreshState();
+        SelectionPopupControllerImpl controller = getSelectionPopupController();
+        if (controller != null) controller.restoreSelectionPopupsIfNecessary();
         nativeOnShow(mNativeWebContentsAndroid);
+    }
+
+    private SelectionPopupControllerImpl getSelectionPopupController() {
+        return SelectionPopupControllerImpl.fromWebContents(this);
     }
 
     @Override

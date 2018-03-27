@@ -59,7 +59,7 @@ class ContextualSearchFakeServer
     private boolean mShouldUseHttps;
     private boolean mIsOnline = true;
 
-    private boolean mDidEverCallContentViewCoreOnShow;
+    private boolean mDidEverCallWebContentsOnShow;
 
     private class ContentsObserver extends WebContentsObserver {
         private boolean mIsVisible;
@@ -75,7 +75,7 @@ class ContextualSearchFakeServer
         @Override
         public void wasShown() {
             mIsVisible = true;
-            mDidEverCallContentViewCoreOnShow = true;
+            mDidEverCallWebContentsOnShow = true;
         }
 
         @Override
@@ -489,11 +489,11 @@ class ContextualSearchFakeServer
     }
 
     /**
-     * @return Whether onShow() was ever called for the current {@code ContentViewCore}.
+     * @return Whether onShow() was ever called for the current {@code WebContents}.
      */
     @VisibleForTesting
-    boolean didEverCallContentViewCoreOnShow() {
-        return mDidEverCallContentViewCoreOnShow;
+    boolean didEverCallWebContentsOnShow() {
+        return mDidEverCallWebContentsOnShow;
     }
 
     /**

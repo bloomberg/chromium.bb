@@ -102,7 +102,7 @@ public class CastWebContentsService extends Service {
         mContentViewCore = ContentViewCore.create(this, "", webContents,
                 ViewAndroidDelegate.createBasicDelegate(mContentView), mContentView, mWindow);
         // Enable display of current webContents.
-        mContentViewCore.onShow();
+        webContents.onShow();
     }
 
     // Remove the currently displayed webContents. no-op if nothing is being displayed.

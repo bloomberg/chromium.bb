@@ -125,6 +125,7 @@ public class Shell extends LinearLayout {
         mWindow = null;
         mNativeShell = 0;
         mContentViewCore.destroy();
+        mWebContents = null;
     }
 
     /**
@@ -303,11 +304,11 @@ public class Shell extends LinearLayout {
         mViewAndroidDelegate = new ShellViewAndroidDelegate(cv);
         mContentViewCore = (ContentViewCoreImpl) ContentViewCore.create(
                 context, "", webContents, mViewAndroidDelegate, cv, mWindow);
-        mWebContents = mContentViewCore.getWebContents();
+        mWebContents = webContents;
         SelectionPopupController controller = SelectionPopupController.fromWebContents(webContents);
         controller.setActionModeCallback(defaultActionCallback());
         mNavigationController = mWebContents.getNavigationController();
-        if (getParent() != null) mContentViewCore.onShow();
+        if (getParent() != null) mWebContents.onShow();
         if (mWebContents.getVisibleUrl() != null) {
             mUrlTextView.setText(mWebContents.getVisibleUrl());
         }
@@ -316,7 +317,7 @@ public class Shell extends LinearLayout {
                         FrameLayout.LayoutParams.MATCH_PARENT,
                         FrameLayout.LayoutParams.MATCH_PARENT));
         cv.requestFocus();
-        mContentViewRenderView.setCurrentContentViewCore(mContentViewCore);
+        mContentViewRenderView.setCurrentWebContents(mWebContents);
     }
 
     /**
