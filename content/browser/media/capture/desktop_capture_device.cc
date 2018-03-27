@@ -499,8 +499,7 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
           webrtc::DesktopCapturer::CreateScreenCapturer(options));
       if (screen_capturer && screen_capturer->SelectSource(source.id)) {
         capturer.reset(new webrtc::DesktopAndCursorComposer(
-            screen_capturer.release(),
-            webrtc::MouseCursorMonitor::CreateForScreen(options, source.id)));
+            std::move(screen_capturer), options));
         IncrementDesktopCaptureCounter(SCREEN_CAPTURER_CREATED);
         IncrementDesktopCaptureCounter(
             source.audio_share ? SCREEN_CAPTURER_CREATED_WITH_AUDIO
@@ -515,8 +514,7 @@ std::unique_ptr<media::VideoCaptureDevice> DesktopCaptureDevice::Create(
       if (window_capturer && window_capturer->SelectSource(source.id)) {
         window_capturer->FocusOnSelectedSource();
         capturer.reset(new webrtc::DesktopAndCursorComposer(
-            window_capturer.release(),
-            webrtc::MouseCursorMonitor::CreateForWindow(options, source.id)));
+            std::move(window_capturer), options));
         IncrementDesktopCaptureCounter(WINDOW_CAPTURER_CREATED);
       }
       break;
