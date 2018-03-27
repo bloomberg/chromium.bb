@@ -15,6 +15,8 @@ import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
 import org.chromium.chrome.browser.media.router.MediaRouteProvider;
+import org.chromium.chrome.browser.media.router.MediaSink;
+import org.chromium.chrome.browser.media.router.MediaSource;
 
 import java.util.HashMap;
 import java.util.Map;

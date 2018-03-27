@@ -22,6 +22,7 @@ import org.chromium.base.test.util.Feature;
 import org.chromium.chrome.browser.media.router.ChromeMediaRouter;
 import org.chromium.chrome.browser.media.router.MediaRoute;
 import org.chromium.chrome.browser.media.router.MediaRouteManager;
+import org.chromium.chrome.browser.media.router.MediaSink;
 
 import java.util.ArrayList;
 

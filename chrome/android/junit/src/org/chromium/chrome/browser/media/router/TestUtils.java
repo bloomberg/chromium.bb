@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-package org.chromium.chrome.browser.media.router.cast;
+package org.chromium.chrome.browser.media.router;
 
 import android.support.v7.media.MediaRouter;
 import android.support.v7.media.MediaRouter.RouteInfo;
@@ -20,11 +20,10 @@ public class TestUtils {
      * @return The initialized mock RouteInfo instance
      */
     static RouteInfo createMockRouteInfo(String id, String name) {
-        Class<?>[] paramClasses = new Class[] {
-                MediaRouter.ProviderInfo.class, String.class, String.class};
+        Class<?>[] paramClasses =
+                new Class[] {MediaRouter.ProviderInfo.class, String.class, String.class};
         Object[] paramValues = new Object[] {null, "", ""};
-        RouteInfo routeInfo = ReflectionHelpers.callConstructor(
-                RouteInfo.class,
+        RouteInfo routeInfo = ReflectionHelpers.callConstructor(RouteInfo.class,
                 ReflectionHelpers.ClassParameter.fromComponentLists(paramClasses, paramValues));
         ReflectionHelpers.setField(routeInfo, "mUniqueId", id);
         ReflectionHelpers.setField(routeInfo, "mName", name);
