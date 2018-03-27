@@ -139,7 +139,6 @@
                         object:self];
 
       [self performWindowDragWithEvent:event];
-      return;
     }
   }
 
