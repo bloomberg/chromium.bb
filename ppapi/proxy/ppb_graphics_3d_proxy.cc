@@ -61,9 +61,12 @@ bool Graphics3D::Init(gpu::gles2::GLES2Implementation* share_gles2,
   if (!dispatcher)
     return false;
 
+  InstanceData* data = dispatcher->GetInstanceData(host_resource().instance());
+  DCHECK(data);
+
   command_buffer_.reset(new PpapiCommandBufferProxy(
-      host_resource(), dispatcher, capabilities, shared_state,
-      command_buffer_id));
+      host_resource(), &data->flush_info, dispatcher, capabilities,
+      shared_state, command_buffer_id));
 
   return CreateGLES2Impl(share_gles2);
 }
