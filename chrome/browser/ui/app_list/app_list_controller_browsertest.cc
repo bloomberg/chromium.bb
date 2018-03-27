@@ -14,7 +14,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_model_updater.h"
-#include "chrome/browser/ui/app_list/app_list_service.h"
+#include "chrome/browser/ui/app_list/app_list_service_impl.h"
 #include "chrome/browser/ui/app_list/test/chrome_app_list_test_support.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -60,10 +60,12 @@ IN_PROC_BROWSER_TEST_F(AppListControllerSearchResultsBrowserTest,
       .AppendASCII("platform_apps")
       .AppendASCII("minimal");
 
-  AppListService* service = AppListService::Get();
+  AppListServiceImpl* service = AppListServiceImpl::GetInstance();
   ASSERT_TRUE(service);
   AppListModelUpdater* model_updater = test::GetModelUpdater(service);
   ASSERT_TRUE(model_updater);
+  // Getting the AppListClient to associate it with the current profile.
+  ASSERT_TRUE(service->GetAppListClient());
 
   // Install the extension.
   const extensions::Extension* extension = InstallExtension(
