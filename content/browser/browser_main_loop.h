@@ -13,7 +13,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/timer/timer.h"
 #include "build/build_config.h"
-#include "content/browser/browser_process_sub_thread.h"
 #include "content/public/browser/browser_main_runner.h"
 #include "media/media_buildflags.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
@@ -92,6 +91,7 @@ class HostFrameSinkManager;
 namespace content {
 class BrowserMainParts;
 class BrowserOnlineStateObserver;
+class BrowserProcessSubThread;
 class BrowserThreadImpl;
 class LoaderDelegateImpl;
 class MediaStreamManager;
@@ -243,7 +243,10 @@ class CONTENT_EXPORT BrowserMainLoop {
 
   void MainMessageLoopRun();
 
+  // Initializes |io_thread_|. It will not be promoted to BrowserThread::IO
+  // until CreateThreads().
   void InitializeIOThread();
+
   void InitializeMojo();
   base::FilePath GetStartupTraceFileName(
       const base::CommandLine& command_line) const;
@@ -285,6 +288,7 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<base::MessageLoop> main_message_loop_;
 
   // Members initialized in |PostMainMessageLoopStart()| -----------------------
+  std::unique_ptr<BrowserProcessSubThread> io_thread_;
   std::unique_ptr<base::SystemMonitor> system_monitor_;
   std::unique_ptr<base::PowerMonitor> power_monitor_;
   std::unique_ptr<base::HighResolutionTimerManager> hi_res_timer_manager_;
@@ -334,9 +338,6 @@ class CONTENT_EXPORT BrowserMainLoop {
   std::unique_ptr<internal::GpuDataManagerVisualProxy>
       gpu_data_manager_visual_proxy_;
 #endif
-
-  // Members initialized in |CreateThreads()| ----------------------------------
-  std::unique_ptr<BrowserProcessSubThread> io_thread_;
 
   // Members initialized in |BrowserThreadsStarted()| --------------------------
   std::unique_ptr<ServiceManagerContext> service_manager_context_;
