@@ -4736,10 +4736,10 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
 
   // S_FRAMEs are always error resilient
   cm->error_resilient_mode = oxcf->error_resilient_mode || frame_is_sframe(cm);
-  cm->use_ref_frame_mvs =
-      cpi->oxcf.allow_ref_frame_mvs && frame_might_use_prev_frame_mvs(cm);
+  cm->allow_ref_frame_mvs =
+      cpi->oxcf.allow_ref_frame_mvs && frame_might_allow_ref_frame_mvs(cm);
   cm->allow_warped_motion =
-      cpi->oxcf.allow_warped_motion && frame_might_use_warped_motion(cm);
+      cpi->oxcf.allow_warped_motion && frame_might_allow_warped_motion(cm);
 
   // Reset the frame packet stamp index.
   if (cm->frame_type == KEY_FRAME) cm->current_video_frame = 0;

@@ -416,7 +416,7 @@ typedef struct AV1Common {
   MODE_INFO **prev_mi_grid_visible;
 
   // Whether to use previous frames' motion vectors for prediction.
-  int use_ref_frame_mvs;
+  int allow_ref_frame_mvs;
 
   uint8_t *last_frame_seg_map;
   uint8_t *current_frame_seg_map;
@@ -664,17 +664,15 @@ static INLINE RefCntBuffer *get_prev_frame(const AV1_COMMON *const cm) {
   }
 }
 
-// Returns 1 if this frame might use mvs from some previous frame. This
-// function doesn't consider whether prev_frame is actually suitable (see
-// frame_can_use_prev_frame_mvs for that)
-static INLINE int frame_might_use_prev_frame_mvs(const AV1_COMMON *cm) {
+// Returns 1 if this frame might allow mvs from some reference frame.
+static INLINE int frame_might_allow_ref_frame_mvs(const AV1_COMMON *cm) {
   return !cm->error_resilient_mode && !cm->large_scale_tile &&
          cm->seq_params.enable_ref_frame_mvs &&
          cm->seq_params.enable_order_hint && !frame_is_intra_only(cm);
 }
 
 // Returns 1 if this frame might use warped_motion
-static INLINE int frame_might_use_warped_motion(const AV1_COMMON *cm) {
+static INLINE int frame_might_allow_warped_motion(const AV1_COMMON *cm) {
   return !cm->error_resilient_mode && !frame_is_intra_only(cm) &&
          cm->seq_params.enable_warped_motion;
 }

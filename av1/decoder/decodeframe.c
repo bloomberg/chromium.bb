@@ -2291,11 +2291,9 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   seq_params->enable_interintra_compound = aom_rb_read_bit(rb);
   seq_params->enable_masked_compound = aom_rb_read_bit(rb);
   seq_params->enable_warped_motion = aom_rb_read_bit(rb);
-
   seq_params->enable_dual_filter = aom_rb_read_bit(rb);
 
   seq_params->enable_order_hint = aom_rb_read_bit(rb);
-
   seq_params->enable_jnt_comp =
       seq_params->enable_order_hint ? aom_rb_read_bit(rb) : 0;
   seq_params->enable_ref_frame_mvs =
@@ -2748,7 +2746,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     if (cm->allow_screen_content_tools &&
         (av1_superres_unscaled(cm) || !NO_FILTER_FOR_IBC))
       cm->allow_intrabc = aom_rb_read_bit(rb);
-    cm->use_ref_frame_mvs = 0;
+    cm->allow_ref_frame_mvs = 0;
     cm->prev_frame = NULL;
   } else {
 #if CONFIG_EXPLICIT_ORDER_HINT
@@ -2783,7 +2781,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
 #endif  // CONFIG_EXPLICIT_ORDER_HINT
 
-    cm->use_ref_frame_mvs = 0;
+    cm->allow_ref_frame_mvs = 0;
 
     if (cm->intra_only) {
 #if CONFIG_FILM_GRAIN
@@ -2914,10 +2912,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
     }
 
     if (!cm->intra_only && pbi->need_resync != 1) {
-      if (frame_might_use_prev_frame_mvs(cm))
-        cm->use_ref_frame_mvs = aom_rb_read_bit(rb);
+      if (frame_might_allow_ref_frame_mvs(cm))
+        cm->allow_ref_frame_mvs = aom_rb_read_bit(rb);
       else
-        cm->use_ref_frame_mvs = 0;
+        cm->allow_ref_frame_mvs = 0;
 
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         RefBuffer *const ref_buf = &cm->frame_refs[i];
@@ -3117,16 +3115,16 @@ static int read_uncompressed_header(AV1Decoder *pbi,
   av1_setup_skip_mode_allowed(cm);
   cm->skip_mode_flag = cm->is_skip_mode_allowed ? aom_rb_read_bit(rb) : 0;
 
-  if (frame_might_use_warped_motion(cm))
+  if (frame_might_allow_warped_motion(cm))
     cm->allow_warped_motion = aom_rb_read_bit(rb);
   else
     cm->allow_warped_motion = 0;
 
   cm->reduced_tx_set_used = aom_rb_read_bit(rb);
 
-  if (cm->use_ref_frame_mvs && !frame_might_use_prev_frame_mvs(cm)) {
+  if (cm->allow_ref_frame_mvs && !frame_might_allow_ref_frame_mvs(cm)) {
     aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                       "Frame wrongly requests previous frame MVs");
+                       "Frame wrongly requests reference frame MVs");
   }
 
   if (!frame_is_intra_only(cm)) read_global_motion(cm, rb);

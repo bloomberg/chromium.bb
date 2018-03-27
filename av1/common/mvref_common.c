@@ -599,7 +599,7 @@ static void setup_ref_mv_list(
   for (int idx = 0; idx < nearest_refmv_count[ref_frame]; ++idx)
     ref_mv_stack[ref_frame][idx].weight += REF_CAT_LEVEL;
 
-  if (cm->use_ref_frame_mvs) {
+  if (cm->allow_ref_frame_mvs) {
     int coll_blk_count[MODE_CTX_REF_FRAMES] = { 0 };
     const int voffset = AOMMAX(mi_size_high[BLOCK_8X8], xd->n8_h);
     const int hoffset = AOMMAX(mi_size_wide[BLOCK_8X8], xd->n8_w);
