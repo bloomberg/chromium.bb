@@ -8,6 +8,7 @@
 #include <string>
 
 #include "ash/public/cpp/app_types.h"
+#include "base/base_switches.h"
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -220,6 +221,18 @@ TEST_F(ArcUtilTest, IsArcAllowedForUser) {
 
   // Ephemeral user is also allowed for ARC.
   EXPECT_TRUE(IsArcAllowedForUser(ephemeral_user));
+}
+
+TEST_F(ArcUtilTest, IsArcAllowedForChildUserWithExperiment) {
+  auto* command_line = base::CommandLine::ForCurrentProcess();
+  command_line->InitFromArgv(
+      {"", "--enable-features=ArcAvailableForChildAccount"});
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitFromCommandLine(
+      command_line->GetSwitchValueASCII(switches::kEnableFeatures),
+      command_line->GetSwitchValueASCII(switches::kDisableFeatures));
+  const FakeUser user(user_manager::USER_TYPE_CHILD);
+  EXPECT_TRUE(IsArcAllowedForUser(&user));
 }
 
 TEST_F(ArcUtilTest, ArcStartModeDefault) {

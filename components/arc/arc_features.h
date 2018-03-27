@@ -12,6 +12,7 @@
 namespace arc {
 
 // Please keep alphabetized.
+extern const base::Feature kAvailableForChildAccountFeature;
 extern const base::Feature kBootCompletedBroadcastFeature;
 extern const base::Feature kNativeBridgeExperimentFeature;
 extern const base::Feature kUsbHostFeature;
