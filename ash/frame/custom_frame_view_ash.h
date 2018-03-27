@@ -129,6 +129,13 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
   SkColor GetActiveFrameColorForTest() const;
   SkColor GetInactiveFrameColorForTest() const;
 
+ protected:
+  // Called when overview mode or split view state changed. If overview mode and
+  // split view mode are both active at the same time, the header of the window
+  // in split view should be visible, but the headers of other windows in
+  // overview are not.
+  void UpdateHeaderView();
+
  private:
   class AvatarObserver;
   class OverlayView;
@@ -146,12 +153,6 @@ class ASH_EXPORT CustomFrameViewAsh : public views::NonClientFrameView,
 
   // Height from top of window to top of client area.
   int NonClientTopBorderHeight() const;
-
-  // Called when overview mode or split view state changed. If overview mode and
-  // split view mode are both active at the same time, the header of the window
-  // in split view should be visible, but the headers of other windows in
-  // overview are not.
-  void OnOverviewOrSplitViewModeChanged();
 
   // Not owned.
   views::Widget* frame_;
