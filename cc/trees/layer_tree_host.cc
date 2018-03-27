@@ -18,6 +18,7 @@
 #include "base/command_line.h"
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_functions.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/single_thread_task_runner.h"
@@ -670,12 +671,16 @@ bool LayerTreeHost::UpdateLayers() {
   micro_benchmark_controller_.DidUpdateLayers();
 
   if (const char* client_name = GetClientNameForMetrics()) {
+    auto elapsed = timer.Elapsed().InMicroseconds();
+
     std::string histogram_name =
-        base::StringPrintf("Compositing.%s.LayersUpdateTime.%d", client_name,
-                           GetLayersUpdateTimeHistogramBucket(NumLayers()));
-    base::Histogram::FactoryGet(histogram_name, 0, 10000000, 50,
-                                base::HistogramBase::kUmaTargetedHistogramFlag)
-        ->Add(timer.Elapsed().InMicroseconds());
+        base::StringPrintf("Compositing.%s.LayersUpdateTime", client_name);
+    base::UmaHistogramCounts10M(histogram_name, elapsed);
+
+    // Also add UpdateLayers metrics bucketed by the layer count.
+    base::StringAppendF(&histogram_name, ".%d",
+                        GetLayersUpdateTimeHistogramBucket(NumLayers()));
+    base::UmaHistogramCounts10M(histogram_name, elapsed);
   }
 
   return result;
