@@ -260,6 +260,7 @@ static_library("util") {
   }
 
   if (crashpad_is_linux || crashpad_is_android) {
+    set_sources_assignment_filter([])
     sources += [
       "linux/address_types.h",
       "linux/auxiliary_vector.cc",
@@ -548,6 +549,7 @@ source_set("util_test") {
   }
 
   if (crashpad_is_linux || crashpad_is_android) {
+    set_sources_assignment_filter([])
     sources += [
       "linux/auxiliary_vector_test.cc",
       "linux/memory_map_test.cc",
@@ -617,14 +619,14 @@ source_set("util_test") {
 }
 
 if (crashpad_is_win) {
-  executable("crashpad_util_test_process_info_test_child") {
+  crashpad_executable("crashpad_util_test_process_info_test_child") {
     testonly = true
     sources = [
       "win/process_info_test_child.cc",
     ]
   }
 
-  executable("crashpad_util_test_safe_terminate_process_test_child") {
+  crashpad_executable("crashpad_util_test_safe_terminate_process_test_child") {
     testonly = true
     sources = [
       "win/safe_terminate_process_test_child.cc",
