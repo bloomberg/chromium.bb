@@ -58,9 +58,10 @@ WEAK_IMPORT_ATTRIBUTE
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle {
   // - NSThemeFrame and its subclasses will be nil if it's missing at runtime.
-  if ([BrowserWindowFrame class])
+  if ([BrowserWindowFrame class]) {
     // TODO(crbug/825968): fullscreen should have a reduced titlebar height.
     return [BrowserWindowFrame class];
+  }
   return [super frameViewClassForStyleMask:windowStyle];
 }
 
