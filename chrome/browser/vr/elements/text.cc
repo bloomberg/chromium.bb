@@ -279,15 +279,15 @@ UiTexture* Text::GetTexture() const {
 }
 
 void TextTexture::LayOutText() {
-  gfx::FontList fonts;
   int pixel_font_height = DmmToPixel(font_height_dmms_);
-  GetDefaultFontList(pixel_font_height, text_, &fonts);
   gfx::Rect text_bounds;
-  if (text_layout_mode_ == kSingleLineFixedHeight) {
-    text_bounds.set_height(pixel_font_height);
-  } else {
+  if (text_layout_mode_ == kSingleLineFixedWidth ||
+      text_layout_mode_ == kMultiLineFixedWidth) {
     text_bounds.set_width(DmmToPixel(text_width_));
   }
+
+  gfx::FontList fonts;
+  GetDefaultFontList(pixel_font_height, text_, &fonts);
 
   TextRenderParameters parameters;
   parameters.color = color_;
