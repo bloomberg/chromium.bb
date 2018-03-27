@@ -405,6 +405,11 @@ ARC_BUILDS_NEED_ARTIFACTS_RENAMED = {
     'SDK_GOOGLE_X86_USERDEBUG',
     'SDK_GOOGLE_X86_64_USERDEBUG',
 }
+# All builds will have the same name without target prefix.
+# Emerge checksum failures will be workarounded by ebuild rename symbol (->).
+ARC_ARTIFACTS_RENAME_NOT_NEEDED = [
+    'sepolicy.zip',
+]
 
 GOB_COOKIE_PATH = os.path.expanduser('~/.git-credential-cache/cookie')
 GITCOOKIES_PATH = os.path.expanduser('~/.gitcookies')

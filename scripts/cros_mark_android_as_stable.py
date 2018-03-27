@@ -210,6 +210,8 @@ def _GetArcBasename(build, basename):
   """
   if build not in constants.ARC_BUILDS_NEED_ARTIFACTS_RENAMED:
     return basename
+  if basename in constants.ARC_ARTIFACTS_RENAME_NOT_NEEDED:
+    return basename
   to_discard, sep, to_keep = basename.partition('-')
   if not sep:
     logging.error(('Build %s: Could not find separator "-" in artifact'

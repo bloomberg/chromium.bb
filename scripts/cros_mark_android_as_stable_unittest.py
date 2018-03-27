@@ -199,11 +199,11 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
 
       # Show files.
       mock_file_template_list = {
-          'ARM': ['file-%(version)s.zip', 'adb'],
+          'ARM': ['file-%(version)s.zip', 'adb', 'sepolicy.zip'],
           'X86': ['file-%(version)s.zip', 'file.zip.internal'],
           'X86_INTERNAL': ['file.zip.internal', 'file-%(version)s.zip'],
           'X86_64': ['file-%(version)s.zip'],
-          'X86_USERDEBUG': ['cheets_x86-file-%(version)s.zip'],
+          'X86_USERDEBUG': ['cheets_x86-file-%(version)s.zip', 'sepolicy.zip'],
           'X86_64_USERDEBUG': ['cheets_x86_64-file-%(version)s.zip'],
           'AOSP_X86_USERDEBUG': ['aosp_cheets_x86-file-%(version)s.zip'],
           'SDK_GOOGLE_X86_USERDEBUG':
@@ -226,13 +226,14 @@ class CrosMarkAndroidAsStable(cros_test_lib.MockTempDirTestCase):
       dst_url = self.makeDstUrl(target, version)
       # Show files.
       mock_file_template_list = {
-          'ARM': ['file-%(version)s.zip', 'adb'],
+          'ARM': ['file-%(version)s.zip', 'adb', 'sepolicy.zip'],
           # Skip internal files.
           'X86': ['file-%(version)s.zip'],
           # Internal files only.
           'X86_INTERNAL': ['file.zip.internal'],
           'X86_64': ['file-%(version)s.zip'],
-          'X86_USERDEBUG': ['cheets_x86_userdebug-file-%(version)s.zip'],
+          'X86_USERDEBUG':
+              ['cheets_x86_userdebug-file-%(version)s.zip', 'sepolicy.zip'],
           'X86_64_USERDEBUG': ['cheets_x86_64_userdebug-file-%(version)s.zip'],
           'AOSP_X86_USERDEBUG':
               ['cheets_aosp_x86_userdebug-file-%(version)s.zip'],
