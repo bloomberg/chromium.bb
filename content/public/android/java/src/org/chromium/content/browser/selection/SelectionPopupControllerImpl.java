@@ -88,9 +88,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     // A large value to force text processing menu items to be at the end of the
     // context menu. Chosen to be bigger than the order of possible items in the
     // XML template.
-    // TODO(timav): remove this constant and use show/hide for Assist item instead
-    // of adding and removing it once we switch to Android O SDK. The show/hide method
-    // does not require ordering information.
     private static final int MENU_ITEM_ORDER_TEXT_PROCESS_START = 100;
 
     // A flag to determine if we should get readback view from WindowAndroid.
@@ -123,7 +120,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     private View mView;
     private ActionMode mActionMode;
-    private MenuDescriptor mActionMenuDescriptor;
 
     // Bit field for mappings from menu item to a flag indicating it is allowed.
     private int mAllowedMenuItems;
@@ -560,7 +556,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
             // Should be nulled out in case #onDestroyActionMode() is not invoked in response.
             mActionMode = null;
-            mActionMenuDescriptor = null;
         }
     }
 
@@ -705,10 +700,8 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
 
     private void createActionMenu(ActionMode mode, Menu menu) {
         initializeMenu(mContext, mode, menu);
-
-        mActionMenuDescriptor = createActionMenuDescriptor();
-        mActionMenuDescriptor.apply(menu);
-
+        updateAssistMenuItem(menu);
+        removeActionMenuItemsIfNecessary(menu);
         setPasteAsPlainTextMenuItemTitle(menu);
 
         Context windowContext = mWindowAndroid.getContext().get();
@@ -723,52 +716,42 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         initializeTextProcessingMenu(menu);
     }
 
-    private MenuDescriptor createActionMenuDescriptor() {
-        MenuDescriptor descriptor = new MenuDescriptor();
-
-        updateAssistMenuItem(descriptor);
-
+    private void removeActionMenuItemsIfNecessary(Menu menu) {
         if (!isFocusedNodeEditable() || !canPaste()) {
-            descriptor.removeItem(R.id.select_action_menu_paste);
-            descriptor.removeItem(R.id.select_action_menu_paste_as_plain_text);
+            menu.removeItem(R.id.select_action_menu_paste);
+            menu.removeItem(R.id.select_action_menu_paste_as_plain_text);
         }
 
         if (!canPasteAsPlainText()) {
-            descriptor.removeItem(R.id.select_action_menu_paste_as_plain_text);
+            menu.removeItem(R.id.select_action_menu_paste_as_plain_text);
         }
 
         if (!hasSelection()) {
-            descriptor.removeItem(R.id.select_action_menu_select_all);
-            descriptor.removeItem(R.id.select_action_menu_cut);
-            descriptor.removeItem(R.id.select_action_menu_copy);
-            descriptor.removeItem(R.id.select_action_menu_share);
-            descriptor.removeItem(R.id.select_action_menu_web_search);
-            return descriptor;
+            menu.removeItem(R.id.select_action_menu_select_all);
+            menu.removeItem(R.id.select_action_menu_cut);
+            menu.removeItem(R.id.select_action_menu_copy);
+            menu.removeItem(R.id.select_action_menu_share);
+            menu.removeItem(R.id.select_action_menu_web_search);
+            return;
         }
 
         if (!isFocusedNodeEditable()) {
-            descriptor.removeItem(R.id.select_action_menu_cut);
+            menu.removeItem(R.id.select_action_menu_cut);
         }
 
         if (isFocusedNodeEditable() || !isSelectActionModeAllowed(MENU_ITEM_SHARE)) {
-            descriptor.removeItem(R.id.select_action_menu_share);
+            menu.removeItem(R.id.select_action_menu_share);
         }
 
         if (isFocusedNodeEditable() || isIncognito()
                 || !isSelectActionModeAllowed(MENU_ITEM_WEB_SEARCH)) {
-            descriptor.removeItem(R.id.select_action_menu_web_search);
+            menu.removeItem(R.id.select_action_menu_web_search);
         }
 
         if (isSelectionPassword()) {
-            descriptor.removeItem(R.id.select_action_menu_copy);
-            descriptor.removeItem(R.id.select_action_menu_cut);
+            menu.removeItem(R.id.select_action_menu_copy);
+            menu.removeItem(R.id.select_action_menu_cut);
         }
-
-        return descriptor;
-    }
-
-    private boolean needsActionMenuUpdate() {
-        return !createActionMenuDescriptor().equals(mActionMenuDescriptor);
     }
 
     private boolean canPaste() {
@@ -818,13 +801,14 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
         return description.hasMimeType(ClipDescription.MIMETYPE_TEXT_HTML);
     }
 
-    private void updateAssistMenuItem(MenuDescriptor descriptor) {
+    private void updateAssistMenuItem(Menu menu) {
         // There is no Assist functionality before Android O.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return;
 
         if (mClassificationResult != null && mClassificationResult.hasNamedAction()) {
-            descriptor.addItem(R.id.select_action_menu_assist_items, android.R.id.textAssist, 1,
-                    mClassificationResult.label, mClassificationResult.icon);
+            menu.add(R.id.select_action_menu_assist_items, android.R.id.textAssist, 1,
+                        mClassificationResult.label)
+                    .setIcon(mClassificationResult.icon);
         }
     }
 
@@ -918,7 +902,6 @@ public class SelectionPopupControllerImpl extends ActionModeCallbackHelper
     @Override
     public void onDestroyActionMode() {
         mActionMode = null;
-        mActionMenuDescriptor = null;
         if (mUnselectAllOnDismiss) {
             mWebContents.dismissTextHandles();
             clearSelection();

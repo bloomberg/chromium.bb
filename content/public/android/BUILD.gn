@@ -214,7 +214,6 @@ android_library("content_java") {
     "java/src/org/chromium/content/browser/selection/HandleViewResources.java",
     "java/src/org/chromium/content/browser/selection/LGEmailActionModeWorkaround.java",
     "java/src/org/chromium/content/browser/selection/LegacyPastePopupMenu.java",
-    "java/src/org/chromium/content/browser/selection/MenuDescriptor.java",
     "java/src/org/chromium/content/browser/selection/PastePopupMenu.java",
     "java/src/org/chromium/content/browser/selection/SelectionEventProxyImpl.java",
     "java/src/org/chromium/content/browser/selection/SelectionIndicesConverter.java",
@@ -525,7 +524,6 @@ junit_binary("content_junit_tests") {
     "junit/src/org/chromium/content/browser/input/ThreadedInputConnectionTest.java",
     "junit/src/org/chromium/content/browser/picker/DateDialogNormalizerTest.java",
     "junit/src/org/chromium/content/browser/remoteobjects/RemoteObjectImplTest.java",
-    "junit/src/org/chromium/content/browser/selection/MenuDescriptorTest.java",
     "junit/src/org/chromium/content/browser/selection/SelectionPopupControllerTest.java",
     "junit/src/org/chromium/content/browser/selection/SmartSelectionMetricsLoggerTest.java",
   ]
