@@ -323,6 +323,16 @@ public class ProcessInitializationHandler {
         deferredStartupHandler.addDeferredTask(new Runnable() {
             @Override
             public void run() {
+                if (HomepageManager.shouldShowHomepageSetting()) {
+                    RecordHistogram.recordBooleanHistogram("Settings.ShowHomeButtonPreferenceState",
+                            HomepageManager.isHomepageEnabled());
+                }
+            }
+        });
+
+        deferredStartupHandler.addDeferredTask(new Runnable() {
+            @Override
+            public void run() {
                 // Starts syncing with GSA.
                 AppHooks.get().createGsaHelper().startSync();
             }

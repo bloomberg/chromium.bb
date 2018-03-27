@@ -1894,6 +1894,9 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-chrome-modern-design", flag_descriptions::kChromeModernDesignName,
      flag_descriptions::kChromeModernDesignDescription, kOsAndroid,
      FEATURE_VALUE_TYPE(chrome::android::kChromeModernDesign)},
+    {"force-enable-home-page-button", flag_descriptions::kHomePageButtonName,
+     flag_descriptions::kHomePageButtonDescription, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kHomePageButtonForceEnabled)},
 #endif  // OS_ANDROID
 #if defined(OS_ANDROID)
     {"enable-tab-modal-js-dialog-android",

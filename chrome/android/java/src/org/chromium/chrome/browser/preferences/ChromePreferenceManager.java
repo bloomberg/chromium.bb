@@ -47,6 +47,9 @@ public class ChromePreferenceManager {
     private static final String CHROME_DEFAULT_BROWSER = "applink.chrome_default_browser";
     private static final String CHROME_MODERN_DESIGN_ENABLED_KEY = "chrome_modern_design_enabled";
 
+    private static final String HOME_PAGE_BUTTON_FORCE_ENABLED_KEY =
+            "home_page_button_force_enabled";
+
     private static final String CONTENT_SUGGESTIONS_SHOWN_KEY = "content_suggestions_shown";
 
     private static final String SETTINGS_PERSONALIZED_SIGNIN_PROMO_DISMISSED =
@@ -419,6 +422,22 @@ public class ChromePreferenceManager {
      */
     public boolean isChromeHomeEnabled() {
         return mSharedPreferences.getBoolean(CHROME_HOME_ENABLED_KEY, false);
+    }
+
+    /**
+     * Set whether or not the home page button is force enabled.
+     * @param isEnabled If the home page button is force enabled.
+     */
+    public void setHomePageButtonForceEnabled(boolean isEnabled) {
+        writeBoolean(HOME_PAGE_BUTTON_FORCE_ENABLED_KEY, isEnabled);
+    }
+
+    /**
+     * Get whether or not the home page button is force enabled.
+     * @return True if the home page button is force enabled.
+     */
+    public boolean isHomePageButtonForceEnabled() {
+        return mSharedPreferences.getBoolean(HOME_PAGE_BUTTON_FORCE_ENABLED_KEY, false);
     }
 
     /**
