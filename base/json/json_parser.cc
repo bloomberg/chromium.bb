@@ -506,7 +506,7 @@ bool JSONParser::ConsumeStringRaw(StringBuilder* out) {
       string.Convert();
 
       // Read past the escape '\' and ensure there's a character following.
-      if (!CanConsume(1)) {
+      if (!CanConsume(2)) {
         ReportError(JSONReader::JSON_INVALID_ESCAPE, 0);
         return false;
       }
