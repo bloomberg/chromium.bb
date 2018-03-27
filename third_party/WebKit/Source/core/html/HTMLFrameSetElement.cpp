@@ -228,7 +228,8 @@ void HTMLFrameSetElement::ParseAttribute(
   }
 }
 
-bool HTMLFrameSetElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool HTMLFrameSetElement::LayoutObjectIsNeeded(
+    const ComputedStyle& style) const {
   // For compatibility, frames layoutObject even when display: none is set.
   // However, we delay creating a layoutObject until stylesheets have loaded.
   return style.IsStyleAvailable();

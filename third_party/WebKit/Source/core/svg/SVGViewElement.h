@@ -43,7 +43,9 @@ class SVGViewElement final : public SVGElement,
 
   void ParseAttribute(const AttributeModificationParams&) override;
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
+    return false;
+  }
 };
 
 }  // namespace blink

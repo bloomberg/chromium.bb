@@ -1789,7 +1789,7 @@ const AtomicString Element::ImageSourceURL() const {
   return getAttribute(srcAttr);
 }
 
-bool Element::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool Element::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return style.Display() != EDisplay::kNone &&
          style.Display() != EDisplay::kContents;
 }

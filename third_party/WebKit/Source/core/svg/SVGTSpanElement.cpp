@@ -34,7 +34,7 @@ LayoutObject* SVGTSpanElement::CreateLayoutObject(const ComputedStyle&) {
   return new LayoutSVGTSpan(this);
 }
 
-bool SVGTSpanElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool SVGTSpanElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   if (parentNode() &&
       (IsSVGAElement(*parentNode()) || IsSVGTextElement(*parentNode()) ||
        IsSVGTextPathElement(*parentNode()) || IsSVGTSpanElement(*parentNode())))

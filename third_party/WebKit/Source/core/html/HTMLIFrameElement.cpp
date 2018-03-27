@@ -292,7 +292,7 @@ ParsedFeaturePolicy HTMLIFrameElement::ConstructContainerPolicy(
   return container_policy;
 }
 
-bool HTMLIFrameElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool HTMLIFrameElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return ContentFrame() && !collapsed_by_client_ &&
          HTMLElement::LayoutObjectIsNeeded(style);
 }

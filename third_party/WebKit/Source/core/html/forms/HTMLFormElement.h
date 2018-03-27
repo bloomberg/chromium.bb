@@ -110,7 +110,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
  private:
   explicit HTMLFormElement(Document&);
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
   InsertionNotificationRequest InsertedInto(ContainerNode*) override;
   void RemovedFrom(ContainerNode*) override;
   void FinishParsingChildren() override;

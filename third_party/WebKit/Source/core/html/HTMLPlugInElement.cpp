@@ -511,7 +511,8 @@ bool HTMLPlugInElement::IsFocusableStyle() const {
   return plugin_is_available_;
 }
 
-HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType() {
+HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType()
+    const {
   String mime_type = service_type_;
   KURL url = GetDocument().CompleteURL(url_);
   if (mime_type.IsEmpty()) {
@@ -545,10 +546,7 @@ HTMLPlugInElement::ObjectContentType HTMLPlugInElement::GetObjectContentType() {
   return ObjectContentType::kNone;
 }
 
-bool HTMLPlugInElement::IsImageType() {
-  if (service_type_.IsEmpty() && ProtocolIs(url_, "data"))
-    service_type_ = MimeTypeFromDataURL(url_);
-
+bool HTMLPlugInElement::IsImageType() const {
   if (GetDocument().GetFrame())
     return GetObjectContentType() == ObjectContentType::kImage;
   return Image::SupportsType(service_type_);
@@ -721,6 +719,12 @@ void HTMLPlugInElement::LazyReattachIfNeeded() {
       !IsImageType()) {
     LazyReattachIfAttached();
     SetPersistedPlugin(nullptr);
+  }
+}
+
+void HTMLPlugInElement::UpdateServiceTypeIfEmpty() {
+  if (service_type_.IsEmpty() && ProtocolIs(url_, "data")) {
+    service_type_ = MimeTypeFromDataURL(url_);
   }
 }
 

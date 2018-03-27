@@ -156,7 +156,9 @@ class CORE_EXPORT SVGSMILElement : public SVGElement, public SVGTests {
                                unsigned repeat,
                                SVGSMILElement* result_element) = 0;
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
+    return false;
+  }
 
   SMILTime FindInstanceTime(BeginOrEnd,
                             SMILTime minimum_time,

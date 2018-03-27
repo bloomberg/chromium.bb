@@ -1042,7 +1042,7 @@ scoped_refptr<ComputedStyle> SVGElement::CustomStyleForLayoutObject() {
       CorrespondingElement(), style, style);
 }
 
-bool SVGElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool SVGElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return IsValid() && HasSVGParent() && Element::LayoutObjectIsNeeded(style);
 }
 

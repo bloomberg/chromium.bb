@@ -126,7 +126,7 @@ void HTMLVideoElement::ContextDestroyed(ExecutionContext* context) {
   HTMLMediaElement::ContextDestroyed(context);
 }
 
-bool HTMLVideoElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool HTMLVideoElement::LayoutObjectIsNeeded(const ComputedStyle& style) const {
   return HTMLElement::LayoutObjectIsNeeded(style);
 }
 

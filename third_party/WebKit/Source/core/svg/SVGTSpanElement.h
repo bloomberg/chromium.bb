@@ -35,7 +35,7 @@ class SVGTSpanElement final : public SVGTextPositioningElement {
   explicit SVGTSpanElement(Document&);
 
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
 };
 
 }  // namespace blink

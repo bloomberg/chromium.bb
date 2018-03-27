@@ -44,7 +44,8 @@ inline HTMLNoScriptElement::HTMLNoScriptElement(Document& document)
 
 DEFINE_NODE_FACTORY(HTMLNoScriptElement)
 
-bool HTMLNoScriptElement::LayoutObjectIsNeeded(const ComputedStyle& style) {
+bool HTMLNoScriptElement::LayoutObjectIsNeeded(
+    const ComputedStyle& style) const {
   if (GetDocument().CanExecuteScripts(kNotAboutToExecuteScript))
     return false;
   return Element::LayoutObjectIsNeeded(style);

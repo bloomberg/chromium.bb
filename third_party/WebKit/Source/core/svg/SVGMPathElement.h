@@ -52,7 +52,9 @@ class SVGMPathElement final : public SVGElement, public SVGURIReference {
 
   void SvgAttributeChanged(const QualifiedName&) override;
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override { return false; }
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override {
+    return false;
+  }
   void NotifyParentOfPathChange(ContainerNode*);
 
   Member<IdTargetObserver> target_id_observer_;

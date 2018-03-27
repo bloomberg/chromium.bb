@@ -183,7 +183,7 @@ class CORE_EXPORT HTMLInputElement
                                    const String& direction,
                                    ExceptionState&);
 
-  bool LayoutObjectIsNeeded(const ComputedStyle&) final;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const final;
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
   void DetachLayoutTree(const AttachContext& = AttachContext()) final;
   void UpdateFocusAppearanceWithOptions(SelectionBehaviorOnFocus,

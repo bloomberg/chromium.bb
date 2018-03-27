@@ -45,9 +45,9 @@ class DetailsMarkerControl final : public HTMLDivElement {
 
  private:
   LayoutObject* CreateLayoutObject(const ComputedStyle&) override;
-  bool LayoutObjectIsNeeded(const ComputedStyle&) override;
+  bool LayoutObjectIsNeeded(const ComputedStyle&) const override;
 
-  HTMLSummaryElement* SummaryElement();
+  HTMLSummaryElement* SummaryElement() const;
 };
 
 inline DetailsMarkerControl* DetailsMarkerControl::Create(Document& document) {

@@ -99,10 +99,10 @@ void HTMLObjectElement::ParseAttribute(
   if (name == formAttr) {
     FormAttributeChanged();
   } else if (name == typeAttr) {
-    service_type_ = params.new_value.LowerASCII();
+    SetServiceType(params.new_value.LowerASCII());
     size_t pos = service_type_.Find(";");
     if (pos != kNotFound)
-      service_type_ = service_type_.Left(pos);
+      SetServiceType(service_type_.Left(pos));
     // TODO(schenney): crbug.com/572908 What is the right thing to do here?
     // Should we suppress the reload stuff when a persistable widget-type is
     // specified?
@@ -110,7 +110,7 @@ void HTMLObjectElement::ParseAttribute(
     if (!GetLayoutObject())
       RequestPluginCreationWithoutLayoutObjectIfPossible();
   } else if (name == dataAttr) {
-    url_ = StripLeadingAndTrailingHTMLSpaces(params.new_value);
+    SetUrl(StripLeadingAndTrailingHTMLSpaces(params.new_value));
     if (GetLayoutObject() && IsImageType()) {
       SetNeedsPluginUpdate(true);
       if (!image_loader_)
@@ -164,14 +164,14 @@ void HTMLObjectElement::ParametersForPlugin(PluginParameters& plugin_params) {
     // to a plugin.
     if (url_.IsEmpty() && !DeprecatedEqualIgnoringCase(name, "data") &&
         HTMLParamElement::IsURLParameter(name)) {
-      url_ = StripLeadingAndTrailingHTMLSpaces(p->Value());
+      SetUrl(StripLeadingAndTrailingHTMLSpaces(p->Value()));
     }
     // TODO(schenney): crbug.com/572908 serviceType calculation does not belong
     // in this function.
     if (service_type_.IsEmpty() && DeprecatedEqualIgnoringCase(name, "type")) {
       size_t pos = p->Value().Find(";");
       if (pos != kNotFound)
-        service_type_ = p->Value().GetString().Left(pos);
+        SetServiceType(p->Value().GetString().Left(pos));
     }
   }
 
@@ -277,7 +277,7 @@ void HTMLObjectElement::UpdatePluginInternal() {
           GetDocument().CompleteURL(url_));
   if (!overriden_url.IsEmpty()) {
     url_ = overriden_url.GetString();
-    service_type_ = "text/html";
+    SetServiceType("text/html");
   }
 
   if (!HasValidClassId() || !RequestObject(plugin_params)) {
@@ -354,7 +354,7 @@ void HTMLObjectElement::RenderFallbackContent() {
   if (image_loader_ && image_loader_->GetContent() &&
       image_loader_->GetContent()->GetContentStatus() !=
           ResourceStatus::kLoadError) {
-    service_type_ = image_loader_->GetContent()->GetResponse().MimeType();
+    SetServiceType(image_loader_->GetContent()->GetResponse().MimeType());
     if (!IsImageType()) {
       // If we don't think we have an image type anymore, then clear the image
       // from the loader.
