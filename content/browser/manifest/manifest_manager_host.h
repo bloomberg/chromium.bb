@@ -30,12 +30,12 @@ class ManifestManagerHost : public WebContentsObserver,
   ~ManifestManagerHost() override;
 
   using GetManifestCallback =
-      base::Callback<void(const GURL&, const Manifest&)>;
+      base::OnceCallback<void(const GURL&, const Manifest&)>;
 
   // Calls the given callback with the manifest associated with the main frame.
   // If the main frame has no manifest or if getting it failed the callback will
   // have an empty manifest.
-  void GetManifest(const GetManifestCallback& callback);
+  void GetManifest(GetManifestCallback callback);
 
   void RequestManifestDebugInfo(
       blink::mojom::ManifestManager::RequestManifestDebugInfoCallback callback);

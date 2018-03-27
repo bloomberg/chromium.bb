@@ -56,7 +56,7 @@ class TestWebContents : public WebContentsImpl, public WebContentsTester {
                     bool is_favicon,
                     uint32_t max_bitmap_size,
                     bool bypass_cache,
-                    const ImageDownloadCallback& callback) override;
+                    ImageDownloadCallback callback) override;
   const GURL& GetLastCommittedURL() const override;
 
   // WebContentsTester implementation.

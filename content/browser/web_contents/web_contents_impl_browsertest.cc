@@ -1431,8 +1431,8 @@ void DownloadImageTestInternal(Shell* shell,
   shell->LoadURL(GURL("about:blank"));
   shell->web_contents()->DownloadImage(
       image_url, false, 1024, false,
-      base::Bind(&DownloadImageObserver::OnFinishDownloadImage,
-                 base::Unretained(&download_image_observer)));
+      base::BindOnce(&DownloadImageObserver::OnFinishDownloadImage,
+                     base::Unretained(&download_image_observer)));
 
   // Wait for response.
   loop_runner->Run();
@@ -1484,7 +1484,7 @@ IN_PROC_BROWSER_TEST_F(WebContentsImplBrowserTest, DownloadImage_NoValidImage) {
   base::RunLoop run_loop;
   shell()->web_contents()->DownloadImage(
       kImageUrl, false, 2, false,
-      base::Bind(&ExpectNoValidImageCallback, run_loop.QuitClosure()));
+      base::BindOnce(&ExpectNoValidImageCallback, run_loop.QuitClosure()));
 
   run_loop.Run();
 }

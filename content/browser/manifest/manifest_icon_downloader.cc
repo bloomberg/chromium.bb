@@ -59,10 +59,10 @@ bool ManifestIconDownloader::Download(
       false,  // is_favicon
       0,      // max_bitmap_size - 0 means no maximum size.
       false,  // bypass_cache
-      base::Bind(&ManifestIconDownloader::OnIconFetched, ideal_icon_size_in_px,
-                 minimum_icon_size_in_px,
-                 base::Owned(new DevToolsConsoleHelper(web_contents)),
-                 callback));
+      base::BindOnce(&ManifestIconDownloader::OnIconFetched,
+                     ideal_icon_size_in_px, minimum_icon_size_in_px,
+                     base::Owned(new DevToolsConsoleHelper(web_contents)),
+                     callback));
   return true;
 }
 

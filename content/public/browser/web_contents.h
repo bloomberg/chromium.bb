@@ -707,17 +707,16 @@ class WebContents : public PageNavigator,
   // Returns the WakeLockContext accociated with this WebContents.
   virtual device::mojom::WakeLockContext* GetWakeLockContext() = 0;
 
-  typedef base::Callback<void(
-      int, /* id */
-      int, /* HTTP status code */
-      const GURL&, /* image_url */
+  using ImageDownloadCallback = base::OnceCallback<void(
+      int,                          /* id */
+      int,                          /* HTTP status code */
+      const GURL&,                  /* image_url */
       const std::vector<SkBitmap>&, /* bitmaps */
       /* The sizes in pixel of the bitmaps before they were resized due to the
          max bitmap size passed to DownloadImage(). Each entry in the bitmaps
          vector corresponds to an entry in the sizes vector. If a bitmap was
          resized, there should be a single returned bitmap. */
-      const std::vector<gfx::Size>&)>
-          ImageDownloadCallback;
+      const std::vector<gfx::Size>&)>;
 
   // Sends a request to download the given image |url| and returns the unique
   // id of the download request. When the download is finished, |callback| will
@@ -734,7 +733,7 @@ class WebContents : public PageNavigator,
                             bool is_favicon,
                             uint32_t max_bitmap_size,
                             bool bypass_cache,
-                            const ImageDownloadCallback& callback) = 0;
+                            ImageDownloadCallback callback) = 0;
 
   // Returns true if the WebContents is responsible for displaying a subframe
   // in a different process from its parent page.
@@ -762,11 +761,11 @@ class WebContents : public PageNavigator,
   // The callback invoked when the renderer responds to a request for the main
   // frame document's manifest. The url will be empty if the document specifies
   // no manifest, and the manifest will be empty if any other failures occurred.
-  typedef base::Callback<void(const GURL&, const Manifest&)>
-      GetManifestCallback;
+  using GetManifestCallback =
+      base::OnceCallback<void(const GURL&, const Manifest&)>;
 
   // Requests the manifest URL and the Manifest of the main frame's document.
-  virtual void GetManifest(const GetManifestCallback& callback) = 0;
+  virtual void GetManifest(GetManifestCallback callback) = 0;
 
   // Returns whether the renderer is in fullscreen mode.
   virtual bool IsFullscreenForCurrentTab() const = 0;

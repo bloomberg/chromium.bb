@@ -26,7 +26,7 @@ namespace favicon {
 namespace {
 
 void ExtractManifestIcons(
-    const ContentFaviconDriver::ManifestDownloadCallback& callback,
+    ContentFaviconDriver::ManifestDownloadCallback callback,
     const GURL& manifest_url,
     const content::Manifest& manifest) {
   std::vector<FaviconURL> candidates;
@@ -34,7 +34,7 @@ void ExtractManifestIcons(
     candidates.emplace_back(icon.src, favicon_base::IconType::kWebManifestIcon,
                             icon.sizes);
   }
-  callback.Run(candidates);
+  std::move(callback).Run(candidates);
 }
 
 }  // namespace
@@ -129,12 +129,13 @@ int ContentFaviconDriver::DownloadImage(const GURL& url,
   bypass_cache_page_url_ = GURL();
 
   return web_contents()->DownloadImage(url, true, max_image_size, bypass_cache,
-                                       callback);
+                                       std::move(callback));
 }
 
 void ContentFaviconDriver::DownloadManifest(const GURL& url,
                                             ManifestDownloadCallback callback) {
-  web_contents()->GetManifest(base::Bind(&ExtractManifestIcons, callback));
+  web_contents()->GetManifest(
+      base::BindOnce(&ExtractManifestIcons, std::move(callback)));
 }
 
 bool ContentFaviconDriver::IsOffTheRecord() {

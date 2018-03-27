@@ -3634,7 +3634,7 @@ int WebContentsImpl::DownloadImage(
     bool is_favicon,
     uint32_t max_bitmap_size,
     bool bypass_cache,
-    const WebContents::ImageDownloadCallback& callback) {
+    WebContents::ImageDownloadCallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   static int next_image_download_id = 0;
   const content::mojom::ImageDownloaderPtr& mojo_image_downloader =
@@ -3643,20 +3643,22 @@ int WebContentsImpl::DownloadImage(
   if (!mojo_image_downloader) {
     // If the renderer process is dead (i.e. crash, or memory pressure on
     // Android), the downloader service will be invalid. Pre-Mojo, this would
-    // hang the callback indefinetly since the IPC would be dropped. Now,
+    // hang the callback indefinitely since the IPC would be dropped. Now,
     // respond with a 400 HTTP error code to indicate that something went wrong.
     BrowserThread::PostTask(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
-                       weak_factory_.GetWeakPtr(), callback, download_id, url,
-                       400, std::vector<SkBitmap>(), std::vector<gfx::Size>()));
+                       weak_factory_.GetWeakPtr(), std::move(callback),
+                       download_id, url, 400, std::vector<SkBitmap>(),
+                       std::vector<gfx::Size>()));
     return download_id;
   }
 
   mojo_image_downloader->DownloadImage(
       url, is_favicon, max_bitmap_size, bypass_cache,
       base::BindOnce(&WebContentsImpl::OnDidDownloadImage,
-                     weak_factory_.GetWeakPtr(), callback, download_id, url));
+                     weak_factory_.GetWeakPtr(), std::move(callback),
+                     download_id, url));
   return download_id;
 }
 
@@ -3691,8 +3693,8 @@ bool WebContentsImpl::WasEverAudible() {
   return was_ever_audible_;
 }
 
-void WebContentsImpl::GetManifest(const GetManifestCallback& callback) {
-  manifest_manager_host_->GetManifest(callback);
+void WebContentsImpl::GetManifest(GetManifestCallback callback) {
+  manifest_manager_host_->GetManifest(std::move(callback));
 }
 
 void WebContentsImpl::ExitFullscreen(bool will_cause_resize) {
@@ -5827,13 +5829,14 @@ bool WebContentsImpl::CompletedFirstVisuallyNonEmptyPaint() const {
 #endif
 
 void WebContentsImpl::OnDidDownloadImage(
-    const ImageDownloadCallback& callback,
+    ImageDownloadCallback callback,
     int id,
     const GURL& image_url,
     int32_t http_status_code,
     const std::vector<SkBitmap>& images,
     const std::vector<gfx::Size>& original_image_sizes) {
-  callback.Run(id, http_status_code, image_url, images, original_image_sizes);
+  std::move(callback).Run(id, http_status_code, image_url, images,
+                          original_image_sizes);
 }
 
 void WebContentsImpl::OnDialogClosed(int render_process_id,

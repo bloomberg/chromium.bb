@@ -49,11 +49,11 @@ void FaviconDownloader::Start() {
 int FaviconDownloader::DownloadImage(const GURL& url) {
   return web_contents()->DownloadImage(
       url,
-      true,  // is_favicon
-      0,     // no max size
+      true,   // is_favicon
+      0,      // no max size
       false,  // normal cache policy
-      base::Bind(&FaviconDownloader::DidDownloadFavicon,
-                 weak_ptr_factory_.GetWeakPtr()));
+      base::BindOnce(&FaviconDownloader::DidDownloadFavicon,
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
 std::vector<content::FaviconURL>

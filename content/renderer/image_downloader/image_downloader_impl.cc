@@ -119,8 +119,9 @@ void ImageDownloaderImpl::DownloadImage(const GURL& image_url,
 
   ImageDownloaderBase::DownloadImage(
       image_url, is_favicon, bypass_cache,
-      base::Bind(&ImageDownloaderImpl::DidDownloadImage, base::Unretained(this),
-                 max_bitmap_size, base::Passed(&callback)));
+      base::BindOnce(&ImageDownloaderImpl::DidDownloadImage,
+                     base::Unretained(this), max_bitmap_size,
+                     std::move(callback)));
 }
 
 void ImageDownloaderImpl::DidDownloadImage(
