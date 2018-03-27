@@ -467,11 +467,11 @@ FileOperationManager.prototype.serviceDeleteTask_ = function(task, callback) {
 /**
  * Creates a zip file for the selection of files.
  *
- * @param {!DirectoryEntry} dirEntry The directory containing the selection.
  * @param {!Array<!Entry>} selectionEntries The selected entries.
+ * @param {!DirectoryEntry} dirEntry The directory containing the selection.
  */
 FileOperationManager.prototype.zipSelection = function(
-    dirEntry, selectionEntries) {
+    selectionEntries, dirEntry) {
   var zipTask = new fileOperationUtil.ZipTask(
       this.generateTaskId(), selectionEntries, dirEntry, dirEntry);
   this.eventRouter_.sendProgressEvent(

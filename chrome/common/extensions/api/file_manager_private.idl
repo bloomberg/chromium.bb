@@ -926,10 +926,9 @@ interface Functions {
   // |destName| Name of the destination zip file. The zip file will be created
   //     under the directory specified by |parentEntry|.
   // |callback|
-  // TODO(mtomasz): Swap order of |entries| and |parentEntry|.
   [nocompile]
-  static void zipSelection([instanceof=DirectoryEntry] object parentEntry,
-                           [instanceof=Entry] object[] entries,
+  static void zipSelection([instanceof=Entry] object[] entries,
+                           [instanceof=DirectoryEntry] object parentEntry,
                            DOMString destName,
                            ZipSelectionCallback callback);
 
