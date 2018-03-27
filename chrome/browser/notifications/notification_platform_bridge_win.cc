@@ -763,11 +763,13 @@ class NotificationPlatformBridgeWinImpl
     return S_OK;
   }
 
-  HRESULT OnFailed(
-      winui::Notifications::IToastNotification* notification,
-      winui::Notifications::IToastFailedEventArgs* /* arguments */) {
-    // TODO(chengx): Investigate what the correct behavior should be here and
-    // implement it.
+  HRESULT OnFailed(winui::Notifications::IToastNotification* notification,
+                   winui::Notifications::IToastFailedEventArgs* arguments) {
+    HRESULT error_code;
+    HRESULT hr = arguments->get_ErrorCode(&error_code);
+    DCHECK(SUCCEEDED(hr));
+    LOG(ERROR) << "Failed to raise the toast notification, error code: "
+               << std::hex << error_code;
     return S_OK;
   }
 
