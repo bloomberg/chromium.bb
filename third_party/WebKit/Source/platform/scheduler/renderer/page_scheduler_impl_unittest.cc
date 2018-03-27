@@ -548,6 +548,77 @@ TEST_F(PageSchedulerImplTest,
   EXPECT_TRUE(scheduler_->VirtualTimeAllowedToAdvance());
 }
 
+namespace {
+
+void RecordVirtualTime(RendererSchedulerImpl* scheduler, base::TimeTicks* out) {
+  *out = scheduler->GetVirtualTimeDomain()->Now();
+}
+
+void PauseAndUnpauseVirtualTime(RendererSchedulerImpl* scheduler,
+                                FrameSchedulerImpl* frame_scheduler,
+                                base::TimeTicks* paused,
+                                base::TimeTicks* unpaused) {
+  *paused = scheduler->GetVirtualTimeDomain()->Now();
+
+  {
+    WebScopedVirtualTimePauser virtual_time_pauser =
+        frame_scheduler->CreateWebScopedVirtualTimePauser(
+            WebScopedVirtualTimePauser::VirtualTaskDuration::kNonInstant);
+    virtual_time_pauser.PauseVirtualTime(true);
+  }
+
+  *unpaused = scheduler->GetVirtualTimeDomain()->Now();
+}
+
+}  // namespace
+
+TEST_F(PageSchedulerImplTest,
+       WebScopedVirtualTimePauserWithInterleavedTasks_DETERMINISTIC_LOADING) {
+  // Make task queue manager ask the virtual time domain for the next task delay
+  // after each task.
+  scheduler_->GetSchedulerHelperForTesting()->SetWorkBatchSizeForTesting(1);
+
+  page_scheduler_->EnableVirtualTime();
+  page_scheduler_->SetVirtualTimePolicy(
+      VirtualTimePolicy::kDeterministicLoading);
+
+  base::TimeTicks initial_virtual_time =
+      scheduler_->GetVirtualTimeDomain()->Now();
+
+  base::TimeTicks time_paused;
+  base::TimeTicks time_unpaused;
+  base::TimeTicks time_second_task;
+
+  std::unique_ptr<FrameSchedulerImpl> frame_scheduler =
+      page_scheduler_->CreateFrameSchedulerImpl(
+          nullptr, FrameScheduler::FrameType::kSubframe);
+
+  // Pauses and unpauses virtual time, thereby advancing virtual time by an
+  // additional 10ms due to WebScopedVirtualTimePauser's delay.
+  ThrottleableTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      WTF::Bind(&PauseAndUnpauseVirtualTime, WTF::Unretained(scheduler_.get()),
+                WTF::Unretained(frame_scheduler.get()),
+                WTF::Unretained(&time_paused), WTF::Unretained(&time_unpaused)),
+      base::TimeDelta::FromMilliseconds(3));
+
+  // Will run after the first task has advanced virtual time past 5ms.
+  ThrottleableTaskRunner()->PostDelayedTask(
+      FROM_HERE,
+      WTF::Bind(&RecordVirtualTime, WTF::Unretained(scheduler_.get()),
+                WTF::Unretained(&time_second_task)),
+      base::TimeDelta::FromMilliseconds(5));
+
+  mock_task_runner_->RunUntilIdle();
+
+  EXPECT_EQ(time_paused,
+            initial_virtual_time + base::TimeDelta::FromMilliseconds(3));
+  EXPECT_EQ(time_unpaused,
+            initial_virtual_time + base::TimeDelta::FromMilliseconds(13));
+  EXPECT_EQ(time_second_task,
+            initial_virtual_time + base::TimeDelta::FromMilliseconds(13));
+}
+
 TEST_F(PageSchedulerImplTest,
        MultipleWebScopedVirtualTimePausers_DETERMINISTIC_LOADING) {
   page_scheduler_->SetVirtualTimePolicy(
