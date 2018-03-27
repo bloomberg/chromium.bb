@@ -42,6 +42,7 @@ import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.WarmupManager;
 import org.chromium.chrome.browser.firstrun.FirstRunFlowSequencer;
 import org.chromium.chrome.browser.metrics.MemoryUma;
+import org.chromium.chrome.browser.metrics.UmaUtils;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
 import org.chromium.chrome.browser.upgrade.UpgradeActivity;
@@ -258,6 +259,7 @@ public abstract class AsyncInitializationActivity extends AppCompatActivity impl
     }
 
     private final void onCreateInternal(Bundle savedInstanceState) {
+        UmaUtils.recordActivityStartTime();
         setIntent(validateIntent(getIntent()));
 
         @LaunchIntentDispatcher.Action

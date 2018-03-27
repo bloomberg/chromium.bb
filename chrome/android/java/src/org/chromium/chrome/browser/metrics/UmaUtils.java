@@ -23,10 +23,11 @@ public class UmaUtils {
 
     // All these values originate from SystemClock.uptimeMillis().
     private static long sApplicationStartTimeMs;
+    private static long sActivityStartTimeMs;
     private static long sForegroundStartTimeMs;
     private static long sBackgroundTimeMs;
 
-    // Event duration recorded from the |sApplicationStartTimeMs|.
+    // Event duration recorded from the |sActivityStartTimeMs|.
     private static long sFirstCommitTimeMs;
 
     /**
@@ -41,6 +42,10 @@ public class UmaUtils {
         // save it in a static that the C++ can fetch once it has initialized the JNI.
         sApplicationStartWallClockMs = System.currentTimeMillis();
         sApplicationStartTimeMs = SystemClock.uptimeMillis();
+    }
+
+    public static void recordActivityStartTime() {
+        sActivityStartTimeMs = SystemClock.uptimeMillis();
     }
 
     /**
@@ -68,9 +73,10 @@ public class UmaUtils {
      */
     public static void registerFinishNavigation(boolean isTrackedPage) {
         if (!isRunningApplicationStart()) return;
+        assert sActivityStartTimeMs != 0;
 
         if (isTrackedPage && hasComeToForeground() && !hasComeToBackground()) {
-            sFirstCommitTimeMs = SystemClock.uptimeMillis() - sApplicationStartTimeMs;
+            sFirstCommitTimeMs = SystemClock.uptimeMillis() - sActivityStartTimeMs;
             RecordHistogram.recordLongTimesHistogram100(
                     "Startup.Android.Experimental.Cold.TimeToFirstNavigationCommit",
                     sFirstCommitTimeMs, TimeUnit.MILLISECONDS);
@@ -91,7 +97,7 @@ public class UmaUtils {
         if (hasComeToForeground() && !hasComeToBackground()) {
             RecordHistogram.recordLongTimesHistogram100(
                     "Startup.Android.Experimental.Cold.TimeToFirstContentfulPaint",
-                    firstContentfulPaintMs - sApplicationStartTimeMs, TimeUnit.MILLISECONDS);
+                    firstContentfulPaintMs - sActivityStartTimeMs, TimeUnit.MILLISECONDS);
         }
     }
 
