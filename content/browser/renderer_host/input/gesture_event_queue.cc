@@ -5,8 +5,6 @@
 #include "content/browser/renderer_host/input/gesture_event_queue.h"
 
 #include "base/auto_reset.h"
-#include "base/debug/crash_logging.h"
-#include "base/debug/dump_without_crashing.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/renderer_host/input/touchpad_tap_suppression_controller.h"
 #include "content/browser/renderer_host/input/touchscreen_tap_suppression_controller.h"
@@ -171,41 +169,8 @@ bool GestureEventQueue::ShouldForwardForBounceReduction(
   }
 }
 
-void GestureEventQueue::ReportPossibleHang(
-    const blink::WebGestureEvent& event) {
-  if (processing_acks_ && !did_report_hang_ &&
-      (base::TimeTicks::Now() - processing_acks_start_) >
-          base::TimeDelta::FromSeconds(2)) {
-    // Diagnostic for the hang in https://crbug.com/818214
-    static auto* type_key = base::debug::AllocateCrashKeyString(
-        "gesture-event-queue-hang-event-type",
-        base::debug::CrashKeySize::Size32);
-    base::debug::ScopedCrashKeyString type_key_value(
-        type_key, std::to_string(event.GetType()));
-    static auto* device_key = base::debug::AllocateCrashKeyString(
-        "gesture-event-queue-hang-source-device",
-        base::debug::CrashKeySize::Size32);
-    base::debug::ScopedCrashKeyString device_key_value(
-        device_key, std::to_string(event.SourceDevice()));
-    static auto* size_key = base::debug::AllocateCrashKeyString(
-        "gesture-event-queue-hang-queue-size",
-        base::debug::CrashKeySize::Size32);
-    base::debug::ScopedCrashKeyString size_key_value(
-        size_key, std::to_string(coalesced_gesture_events_.size()));
-    static auto* iterations_key = base::debug::AllocateCrashKeyString(
-        "gesture-event-queue-hang-num-iterations",
-        base::debug::CrashKeySize::Size32);
-    base::debug::ScopedCrashKeyString iterations_key_value(
-        iterations_key, std::to_string(processing_acks_iterations_));
-    base::debug::DumpWithoutCrashing();
-    did_report_hang_ = true;
-  }
-}
-
 void GestureEventQueue::QueueAndForwardIfNecessary(
     const GestureEventWithLatencyInfo& gesture_event) {
-  ReportPossibleHang(gesture_event.event);
-
   if (allow_multiple_inflight_events_) {
     // Event coalescing should be handled in compositor thread event queue.
     if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel)
@@ -297,10 +262,7 @@ void GestureEventQueue::AckCompletedEvents() {
   if (processing_acks_)
     return;
   base::AutoReset<bool> process_acks(&processing_acks_, true);
-  processing_acks_start_ = base::TimeTicks::Now();
-  base::AutoReset<int> process_acks_iterations(&processing_acks_iterations_, 0);
   while (!coalesced_gesture_events_.empty()) {
-    ++processing_acks_iterations_;
     auto iter = coalesced_gesture_events_.begin();
     if (iter->ack_state() == INPUT_EVENT_ACK_STATE_UNKNOWN)
       break;
