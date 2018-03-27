@@ -24,11 +24,13 @@
         </button>
       </div>
     </print-preview-settings-section>
-    <template is="cr-lazy-render" id="advancedDialog">
-      <print-preview-advanced-dialog
-          settings="{{settings}}" destination="[[destination]]">
-      </print-preview-advanced-dialog>
-    </template>
+    <cr-lazy-render id="advancedDialog">
+      <template>
+        <print-preview-advanced-dialog
+            settings="{{settings}}" destination="[[destination]]">
+        </print-preview-advanced-dialog>
+      </template>
+    </cr-lazy-render>
   </template>
   <script src="advanced_options_settings.js"></script>
 </dom-module>

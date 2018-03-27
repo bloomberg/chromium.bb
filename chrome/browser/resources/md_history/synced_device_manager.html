@@ -87,18 +87,20 @@
       </paper-button>
     </div>
 
-    <template is="cr-lazy-render" id="menu">
-      <cr-action-menu>
-        <button id="menuOpenButton" slot="item" class="dropdown-item"
-            on-click="onOpenAllTap_">
-          $i18n{openAll}
-        </button>
-        <button id="menuDeleteButton" slot="item" class="dropdown-item"
-            on-click="onDeleteSessionTap_">
-          $i18n{deleteSession}
-        </button>
-      </cr-action-menu>
-    </template>
+    <cr-lazy-render id="menu">
+      <template>
+        <cr-action-menu>
+          <button id="menuOpenButton" slot="item" class="dropdown-item"
+              on-click="onOpenAllTap_">
+            $i18n{openAll}
+          </button>
+          <button id="menuDeleteButton" slot="item" class="dropdown-item"
+              on-click="onDeleteSessionTap_">
+            $i18n{deleteSession}
+          </button>
+        </cr-action-menu>
+      </template>
+    </cr-lazy-render>
   </template>
   <script src="chrome://history/synced_device_manager.js"></script>
 </dom-module>

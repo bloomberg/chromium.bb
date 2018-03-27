@@ -80,8 +80,7 @@ cr.define('extensions', function() {
       const animationFunction = extensions.viewAnimations.get(animation);
       assert(animationFunction);
 
-      let effectiveView =
-          view.matches('[is=cr-lazy-render]') ? view.get() : view;
+      let effectiveView = view.matches('cr-lazy-render') ? view.get() : view;
 
       effectiveView.classList.add('active');
       effectiveView.dispatchEvent(new CustomEvent('view-enter-start'));

@@ -40,10 +40,13 @@
         </div>
         <!-- Keep a single instance of reset-profile-dialog on purpose, to
           preserve state across show/hide operations. -->
-        <template is="cr-lazy-render" id="resetProfileDialog">
-          <settings-reset-profile-dialog on-close="onResetProfileDialogClose_">
-          </settings-reset-profile-dialog>
-        </template>
+        <cr-lazy-render id="resetProfileDialog">
+          <template>
+            <settings-reset-profile-dialog
+                on-close="onResetProfileDialogClose_">
+            </settings-reset-profile-dialog>
+          </template>
+        </cr-lazy-render>
 <if expr="chromeos">
         <div class="settings-box two-line" id="powerwash" actionable
             on-click="onShowPowerwashDialog_" hidden="[[!allowPowerwash_]]">

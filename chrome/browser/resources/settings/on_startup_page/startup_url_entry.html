@@ -30,17 +30,19 @@
               focus-row-control focus-type="menu">
           </button>
         </paper-icon-button-light>
-        <template is="cr-lazy-render" id="menu">
-          <cr-action-menu>
-            <button slot="item" class="dropdown-item" on-click="onEditTap_">
-              $i18n{edit}
-            </button>
-            <button slot="item" class="dropdown-item" id="remove"
-                on-click="onRemoveTap_">
-              $i18n{onStartupRemove}
-            </button>
-          </cr-action-menu>
-        </template>
+        <cr-lazy-render id="menu">
+          <template>
+            <cr-action-menu>
+              <button slot="item" class="dropdown-item" on-click="onEditTap_">
+                $i18n{edit}
+              </button>
+              <button slot="item" class="dropdown-item" id="remove"
+                  on-click="onRemoveTap_">
+                $i18n{onStartupRemove}
+              </button>
+            </cr-action-menu>
+          </template>
+        </cr-lazy-render>
       </template>
     </div>
   </template>

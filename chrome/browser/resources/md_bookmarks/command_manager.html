@@ -28,44 +28,49 @@
         display: none;
       }
     </style>
-    <template is="cr-lazy-render" id="dropdown">
-      <cr-action-menu on-mousedown="onMenuMousedown_">
-        <template is="dom-repeat" items="[[menuCommands_]]" as="command">
-          <button slot="item" class="dropdown-item"
-              command$="[[command]]"
-              hidden$="[[!isCommandVisible_(command, menuIds_)]]"
-              disabled$="[[!isCommandEnabled_(command, menuIds_)]]"
-              on-click="onCommandClick_">
-            <span class="label">
-              [[getCommandLabel_(command, menuIds_)]]
-            </span>
-            <span class="sublabel">
-              [[getCommandSublabel_(command, menuIds_)]]
-            </span>
-          </button>
-          <hr hidden$="[[!showDividerAfter_(command, menuIds_)]]"
-              aria-hidden="true">
-          </hr>
-        </template>
-      </cr-action-menu>
-    </template>
-    <template is="cr-lazy-render" id="editDialog">
-      <bookmarks-edit-dialog></bookmarks-edit-dialog>
-    </template>
-    <template is="cr-lazy-render" id="openDialog">
-      <dialog is="cr-dialog">
-        <div slot="title">$i18n{openDialogTitle}</div>
-        <div slot="body"></div>
-        <div slot="button-container">
-          <paper-button class="cancel-button" on-click="onOpenCancelTap_">
-            $i18n{cancel}
-          </paper-button>
-          <paper-button class="action-button" on-click="onOpenConfirmTap_">
-            $i18n{openDialogConfirm}
-          </paper-button>
-        </div>
-      </dialog>
-    </template>
+    <cr-lazy-render id="dropdown">
+      <template>
+        <cr-action-menu on-mousedown="onMenuMousedown_">
+          <template is="dom-repeat" items="[[menuCommands_]]" as="command">
+            <button slot="item" class="dropdown-item"
+                command$="[[command]]"
+                hidden$="[[!isCommandVisible_(command, menuIds_)]]"
+                disabled$="[[!isCommandEnabled_(command, menuIds_)]]"
+                on-click="onCommandClick_">
+              <span class="label">
+                [[getCommandLabel_(command, menuIds_)]]
+              </span>
+              <span class="sublabel">
+                [[getCommandSublabel_(command, menuIds_)]]
+              </span>
+            </button>
+            <hr hidden$="[[!showDividerAfter_(command, menuIds_)]]"
+                aria-hidden="true">
+          </template>
+        </cr-action-menu>
+      </template>
+    </cr-lazy-render>
+    <cr-lazy-render id="editDialog">
+      <template>
+        <bookmarks-edit-dialog></bookmarks-edit-dialog>
+      </template>
+    </cr-lazy-render>
+    <cr-lazy-render id="openDialog">
+      <template>
+        <dialog is="cr-dialog">
+          <div slot="title">$i18n{openDialogTitle}</div>
+          <div slot="body"></div>
+          <div slot="button-container">
+            <paper-button class="cancel-button" on-click="onOpenCancelTap_">
+              $i18n{cancel}
+            </paper-button>
+            <paper-button class="action-button" on-click="onOpenConfirmTap_">
+              $i18n{openDialogConfirm}
+            </paper-button>
+          </div>
+        </dialog>
+      </template>
+    </cr-lazy-render>
   </template>
   <script src="chrome://bookmarks/command_manager.js"></script>
 </dom-module>
