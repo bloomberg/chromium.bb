@@ -2759,7 +2759,7 @@ void write_sequence_header(AV1_COMP *cpi, struct aom_write_bit_buffer *wb) {
 
   aom_wb_write_bit(wb, seq_params->enable_interintra_compound);
   aom_wb_write_bit(wb, seq_params->enable_masked_compound);
-
+  aom_wb_write_bit(wb, seq_params->enable_warped_motion);
   aom_wb_write_bit(wb, seq_params->enable_dual_filter);
 
   aom_wb_write_bit(wb, seq_params->enable_order_hint);

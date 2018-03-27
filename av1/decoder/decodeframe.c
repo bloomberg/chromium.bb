@@ -2311,6 +2311,7 @@ void read_sequence_header(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
 
   seq_params->enable_interintra_compound = aom_rb_read_bit(rb);
   seq_params->enable_masked_compound = aom_rb_read_bit(rb);
+  seq_params->enable_warped_motion = aom_rb_read_bit(rb);
 
   seq_params->enable_dual_filter = aom_rb_read_bit(rb);
 
