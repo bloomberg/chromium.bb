@@ -48,9 +48,8 @@ class PLATFORM_EXPORT GeometryMapper {
       const TransformPaintPropertyNode* source,
       const TransformPaintPropertyNode* destination);
 
-  // Same as SourceToDestinationVisualRect() except that only transforms are
-  // applied.
-  //
+  // Same as SourceToDestinationProjection() except that it maps the rect
+  // rather than returning the matrix.
   // |mapping_rect| is both input and output.
   static void SourceToDestinationRect(
       const TransformPaintPropertyNode* source_transform_node,

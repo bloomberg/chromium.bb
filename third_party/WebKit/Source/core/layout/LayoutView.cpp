@@ -492,6 +492,10 @@ bool LayoutView::MapToVisualRectInAncestorSpace(
     LayoutRect& rect,
     MapCoordinatesFlags mode,
     VisualRectFlags visual_rect_flags) const {
+  if (MapToVisualRectInAncestorSpaceInternalFastPath(ancestor, rect,
+                                                     visual_rect_flags))
+    return !rect.IsEmpty();
+
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatQuad(FloatRect(rect)));
   bool retval = MapToVisualRectInAncestorSpaceInternal(

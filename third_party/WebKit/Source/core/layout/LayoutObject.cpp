@@ -95,6 +95,7 @@
 #include "platform/geometry/TransformState.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/TouchAction.h"
+#include "platform/graphics/paint/GeometryMapper.h"
 #include "platform/graphics/paint/PropertyTreeState.h"
 #include "platform/instrumentation/tracing/TracedValue.h"
 #include "platform/runtime_enabled_features.h"
@@ -1550,10 +1551,40 @@ LayoutRect LayoutObject::LocalVisualRectIgnoringVisibility() const {
   return LayoutRect();
 }
 
+bool LayoutObject::MapToVisualRectInAncestorSpaceInternalFastPath(
+    const LayoutBoxModelObject* ancestor,
+    LayoutRect& rect,
+    VisualRectFlags visual_rect_flags) const {
+  if (!(visual_rect_flags & kUseGeometryMapper) ||
+      !RuntimeEnabledFeatures::SlimmingPaintV175Enabled() ||
+      (visual_rect_flags & kEdgeInclusive) ||
+      !FirstFragment().HasLocalBorderBoxProperties() || !ancestor ||
+      !ancestor->FirstFragment().HasLocalBorderBoxProperties()) {
+    return false;
+  }
+
+  if (ancestor == this)
+    return true;
+
+  rect.MoveBy(FirstFragment().PaintOffset());
+  FloatClipRect clip_rect((FloatRect(rect)));
+  GeometryMapper::LocalToAncestorVisualRect(
+      FirstFragment().LocalBorderBoxProperties(),
+      ancestor->FirstFragment().ContentsProperties(), clip_rect);
+  rect = LayoutRect(clip_rect.Rect());
+  rect.MoveBy(-ancestor->FirstFragment().PaintOffset());
+
+  return true;
+}
+
 bool LayoutObject::MapToVisualRectInAncestorSpace(
     const LayoutBoxModelObject* ancestor,
     LayoutRect& rect,
     VisualRectFlags visual_rect_flags) const {
+  if (MapToVisualRectInAncestorSpaceInternalFastPath(ancestor, rect,
+                                                     visual_rect_flags))
+    return !rect.IsEmpty();
+
   TransformState transform_state(TransformState::kApplyTransformDirection,
                                  FloatQuad(FloatRect(rect)));
   bool retval = MapToVisualRectInAncestorSpaceInternal(

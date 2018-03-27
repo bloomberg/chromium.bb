@@ -24,8 +24,7 @@ class PLATFORM_EXPORT FloatClipRect {
         is_tight_(true),
         is_infinite_(true) {}
 
-  explicit FloatClipRect(const FloatRect& rect)
-      : rect_(rect), has_radius_(false), is_tight_(true), is_infinite_(false) {}
+  explicit FloatClipRect(const FloatRect& rect) { SetRect(rect); }
 
   explicit FloatClipRect(const FloatRoundedRect& rect)
       : rect_(rect.Rect()),
@@ -36,6 +35,13 @@ class PLATFORM_EXPORT FloatClipRect {
   const FloatRect& Rect() const { return rect_; }
 
   FloatRect& Rect() { return rect_; }
+
+  void SetRect(const FloatRect& rect) {
+    rect_ = rect;
+    has_radius_ = false;
+    is_tight_ = true;
+    is_infinite_ = false;
+  }
 
   void Intersect(const FloatClipRect& other) {
     if (is_infinite_) {

@@ -89,17 +89,12 @@ void PaintPropertyTreeBuilderTest::SetUp() {
 
 #define CHECK_VISUAL_RECT(expected, source_object, ancestor, slop_factor)      \
   do {                                                                         \
-    if ((source_object)->HasLayer() && (ancestor)->HasLayer()) {               \
-      LayoutRect source((source_object)->LocalVisualRect());                   \
-      source.MoveBy((source_object)->FirstFragment().PaintOffset());           \
-      auto contents_properties =                                               \
-          (ancestor)->FirstFragment().ContentsProperties();                    \
-      FloatClipRect actual_float_rect((FloatRect(source)));                    \
-      GeometryMapper::LocalToAncestorVisualRect(                               \
-          (source_object)->FirstFragment().LocalBorderBoxProperties(),         \
-          contents_properties, actual_float_rect);                             \
-      LayoutRect actual(actual_float_rect.Rect());                             \
-      actual.MoveBy(-(ancestor)->FirstFragment().PaintOffset());               \
+    if ((source_object)->HasLayer() && (ancestor)->HasLayer() &&               \
+        RuntimeEnabledFeatures::SlimmingPaintV175Enabled()) {                  \
+      LayoutRect actual((source_object)->LocalVisualRect());                   \
+      (source_object)                                                          \
+          ->MapToVisualRectInAncestorSpace(ancestor, actual,                   \
+                                           kUseGeometryMapper);                \
       SCOPED_TRACE("GeometryMapper: ");                                        \
       EXPECT_EQ(expected, actual);                                             \
     }                                                                          \

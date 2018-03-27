@@ -80,7 +80,11 @@ struct PaintInfo;
 struct PaintInvalidatorContext;
 struct WebScrollIntoViewParams;
 
-enum VisualRectFlags { kDefaultVisualRectFlags = 0, kEdgeInclusive = 1 };
+enum VisualRectFlags {
+  kDefaultVisualRectFlags = 0,
+  kEdgeInclusive = 1,
+  kUseGeometryMapper = 2,  // Use the GeometryMapper fast-path, if possible.
+};
 
 enum CursorDirective { kSetCursorBasedOnStyle, kSetCursor, kDoNotSetCursor };
 
@@ -2034,7 +2038,13 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // changes at all).
   virtual bool AnonymousHasStylePropagationOverride() { return false; }
 
- protected:
+  // A fast path for MapToVisualRectInAncestorSpace for when GeometryMapper
+  // can be used.
+  bool MapToVisualRectInAncestorSpaceInternalFastPath(
+      const LayoutBoxModelObject* ancestor,
+      LayoutRect&,
+      VisualRectFlags) const;
+
   // This function is called before calling the destructor so that some clean-up
   // can happen regardless of whether they call a virtual function or not. As a
   // rule of thumb, this function should be preferred to the destructor. See
