@@ -217,6 +217,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
       case PopupMenuTypeNavigationBackward:
         break;
       case PopupMenuTypeTabGrid:
+        self.items = @[ [self itemsForNewTab] ];
         break;
       case PopupMenuTypeSearch:
         break;
