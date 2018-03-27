@@ -172,24 +172,6 @@ WebPointerEvent TransformWebPointerEvent(LocalFrameView* frame_view,
 WebMouseEventBuilder::WebMouseEventBuilder(const LocalFrameView* plugin_parent,
                                            const LayoutObject* layout_object,
                                            const MouseEvent& event) {
-  if (event.NativeEvent()) {
-    *static_cast<WebMouseEvent*>(this) =
-        event.NativeEvent()->FlattenTransform();
-    WebFloatPoint absolute_location = PositionInRootFrame();
-
-    // TODO(dtapuska): |plugin_parent| should never be null. Remove this
-    // conditional code.
-    // Translate the root frame position to content coordinates.
-    if (plugin_parent) {
-      absolute_location = plugin_parent->RootFrameToContents(absolute_location);
-    }
-
-    FloatPoint local_point =
-        layout_object->AbsoluteToLocal(absolute_location, kUseTransforms);
-    SetPositionInWidget(local_point.X(), local_point.Y());
-    return;
-  }
-
   // Code below here can be removed once OOPIF ships.
   // OOPIF will prevent synthetic events being dispatched into
   // other frames; but for now we allow the fallback to generate

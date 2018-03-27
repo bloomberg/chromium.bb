@@ -28,7 +28,6 @@
 #include "core/events/MouseEventInit.h"
 #include "core/events/UIEventWithKeyState.h"
 #include "public/platform/WebMenuSourceType.h"
-#include "public/platform/WebMouseEvent.h"
 
 namespace blink {
 class DataTransfer;
@@ -52,11 +51,10 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   static MouseEvent* Create() { return new MouseEvent; }
 
   static MouseEvent* Create(const AtomicString& event_type,
-                            AbstractView*,
-                            const WebMouseEvent&,
-                            int detail,
-                            const String& canvas_region_id,
-                            Node* related_target);
+                            const MouseEventInit&,
+                            TimeTicks platform_time_stamp,
+                            SyntheticEventType,
+                            WebMenuSourceType);
 
   static MouseEvent* Create(ScriptState*,
                             const AtomicString& event_type,
@@ -70,6 +68,10 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   ~MouseEvent() override;
 
   static unsigned short WebInputEventModifiersToButtons(unsigned modifiers);
+  static void SetCoordinatesFromWebPointerProperties(
+      const WebPointerProperties&,
+      const LocalDOMWindow*,
+      MouseEventInit&);
 
   void initMouseEvent(ScriptState*,
                       const AtomicString& type,
@@ -116,8 +118,6 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
   unsigned which() const override;
 
   int ClickCount() { return detail(); }
-
-  const WebMouseEvent* NativeEvent() const { return native_event_.get(); }
 
   enum class PositionType {
     kPosition,
@@ -192,36 +192,11 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
  protected:
   MouseEvent(const AtomicString& type,
-             Bubbles,
-             Cancelable,
-             AbstractView*,
-             const WebMouseEvent&,
-             int detail,
-             const String& region,
-             EventTarget* related_target);
-
-  MouseEvent(const AtomicString& type,
-             Bubbles,
-             Cancelable,
-             AbstractView*,
-             int detail,
-             double screen_x,
-             double screen_y,
-             double window_x,
-             double window_y,
-             double movement_x,
-             double movement_y,
-             WebInputEvent::Modifiers,
-             short button,
-             unsigned short buttons,
-             EventTarget* related_target,
-             TimeTicks platform_time_stamp,
-             SyntheticEventType,
-             const String& region);
-
-  MouseEvent(const AtomicString& type,
              const MouseEventInit&,
-             TimeTicks platform_time_stamp);
+             TimeTicks platform_time_stamp,
+             SyntheticEventType = kRealOrIndistinguishable,
+             WebMenuSourceType = kMenuSourceNone);
+
   MouseEvent(const AtomicString& type, const MouseEventInit& init)
       : MouseEvent(type, init, CurrentTimeTicks()) {}
 
@@ -254,7 +229,6 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
                               unsigned short buttons = 0);
 
   void InitCoordinates(const double client_x, const double client_y);
-  void InitCoordinatesFromRootFrame(double window_x, double window_y);
 
   void ComputePageLocation();
   void ComputeRelativePosition();
@@ -274,8 +248,6 @@ class CORE_EXPORT MouseEvent : public UIEventWithKeyState {
 
   // Only used for contextmenu events.
   WebMenuSourceType menu_source_type_;
-
-  std::unique_ptr<WebMouseEvent> native_event_;
 };
 
 DEFINE_EVENT_TYPE_CASTS(MouseEvent);

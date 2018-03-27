@@ -10,80 +10,13 @@
 
 namespace blink {
 
-DragEvent* DragEvent::Create(const AtomicString& type,
-                             Bubbles bubbles,
-                             Cancelable cancelable,
-                             AbstractView* view,
-                             int detail,
-                             double screen_x,
-                             double screen_y,
-                             double window_x,
-                             double window_y,
-                             double movement_x,
-                             double movement_y,
-                             WebInputEvent::Modifiers modifiers,
-                             short button,
-                             unsigned short buttons,
-                             EventTarget* related_target,
-                             TimeTicks platform_time_stamp,
-                             DataTransfer* data_transfer,
-                             SyntheticEventType synthetic_event_type) {
-  return new DragEvent(
-      type, bubbles, cancelable, view, detail, screen_x, screen_y, window_x,
-      window_y, movement_x, movement_y, modifiers, button, buttons,
-      related_target, platform_time_stamp, data_transfer, synthetic_event_type);
-}
-
 DragEvent::DragEvent() : data_transfer_(nullptr) {}
 
-DragEvent::DragEvent(DataTransfer* data_transfer)
-    : data_transfer_(data_transfer) {}
-
-DragEvent::DragEvent(const AtomicString& event_type,
-                     Bubbles bubbles,
-                     Cancelable cancelable,
-                     AbstractView* view,
-                     int detail,
-                     double screen_x,
-                     double screen_y,
-                     double window_x,
-                     double window_y,
-                     double movement_x,
-                     double movement_y,
-                     WebInputEvent::Modifiers modifiers,
-                     short button,
-                     unsigned short buttons,
-                     EventTarget* related_target,
+DragEvent::DragEvent(const AtomicString& type,
+                     const DragEventInit& initializer,
                      TimeTicks platform_time_stamp,
-                     DataTransfer* data_transfer,
                      SyntheticEventType synthetic_event_type)
-    : MouseEvent(
-          event_type,
-          bubbles,
-          cancelable,
-          view,
-          detail,
-          screen_x,
-          screen_y,
-          window_x,
-          window_y,
-          movement_x,
-          movement_y,
-          modifiers,
-          button,
-          buttons,
-          related_target,
-          platform_time_stamp,
-          synthetic_event_type,
-          // TODO(zino): Should support canvas hit region because the drag event
-          // is a kind of mouse event. Please see http://crbug.com/594073
-          String()),
-      data_transfer_(data_transfer)
-
-{}
-
-DragEvent::DragEvent(const AtomicString& type, const DragEventInit& initializer)
-    : MouseEvent(type, initializer),
+    : MouseEvent(type, initializer, platform_time_stamp, synthetic_event_type),
       data_transfer_(initializer.getDataTransfer()) {}
 
 bool DragEvent::IsDragEvent() const {

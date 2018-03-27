@@ -94,18 +94,12 @@ MouseEvent* MouseEvent::Create(ScriptState* script_state,
 }
 
 MouseEvent* MouseEvent::Create(const AtomicString& event_type,
-                               AbstractView* view,
-                               const WebMouseEvent& event,
-                               int detail,
-                               const String& canvas_region_id,
-                               Node* related_target) {
-  bool is_mouse_enter_or_leave = event_type == EventTypeNames::mouseenter ||
-                                 event_type == EventTypeNames::mouseleave;
-  Cancelable cancelable =
-      (!is_mouse_enter_or_leave) ? Cancelable::kYes : Cancelable::kNo;
-  Bubbles bubbles = (!is_mouse_enter_or_leave) ? Bubbles::kYes : Bubbles::kNo;
-  return new MouseEvent(event_type, bubbles, cancelable, view, event, detail,
-                        canvas_region_id, related_target);
+                               const MouseEventInit& initializer,
+                               TimeTicks platform_time_stamp,
+                               SyntheticEventType synthetic_event_type,
+                               WebMenuSourceType menu_source_type) {
+  return new MouseEvent(event_type, initializer, platform_time_stamp,
+                        synthetic_event_type, menu_source_type);
 }
 
 MouseEvent* MouseEvent::Create(const AtomicString& event_type,
@@ -128,12 +122,19 @@ MouseEvent* MouseEvent::Create(const AtomicString& event_type,
     screen_y = mouse_event->screenY();
   }
 
+  MouseEventInit initializer;
+  initializer.setBubbles(true);
+  initializer.setCancelable(true);
+  initializer.setScreenX(screen_x);
+  initializer.setScreenY(screen_y);
+  initializer.setView(view);
+  initializer.setComposed(true);
+  UIEventWithKeyState::SetFromWebInputEventModifiers(initializer, modifiers);
+
   TimeTicks timestamp = underlying_event ? underlying_event->PlatformTimeStamp()
                                          : CurrentTimeTicks();
   MouseEvent* created_event =
-      new MouseEvent(event_type, Bubbles::kYes, Cancelable::kYes, view, 0,
-                     screen_x, screen_y, 0, 0, 0, 0, modifiers, 0, 0, nullptr,
-                     timestamp, synthetic_type, String());
+      new MouseEvent(event_type, initializer, timestamp, synthetic_type);
 
   created_event->SetTrusted(creation_scope ==
                             SimulatedClickCreationScope::kFromUserAgent);
@@ -156,97 +157,24 @@ MouseEvent::MouseEvent()
       synthetic_event_type_(kRealOrIndistinguishable) {}
 
 MouseEvent::MouseEvent(const AtomicString& event_type,
-                       Bubbles bubbles,
-                       Cancelable cancelable,
-                       AbstractView* abstract_view,
-                       const WebMouseEvent& event,
-                       int detail,
-                       const String& region,
-                       EventTarget* related_target)
-    : UIEventWithKeyState(
-          event_type,
-          bubbles,
-          cancelable,
-          abstract_view,
-          detail,
-          static_cast<WebInputEvent::Modifiers>(event.GetModifiers()),
-          TimeTicksFromSeconds(event.TimeStampSeconds()),
-          abstract_view
-              ? abstract_view->GetInputDeviceCapabilities()->FiresTouchEvents(
-                    event.FromTouch())
-              : nullptr),
-      screen_location_(event.PositionInScreen().x, event.PositionInScreen().y),
-      movement_delta_(event.MovementInRootFrame()),
-      position_type_(PositionType::kPosition),
-      button_(static_cast<short>(event.button)),
-      buttons_(WebInputEventModifiersToButtons(event.GetModifiers())),
-      related_target_(related_target),
-      synthetic_event_type_(event.FromTouch() ? kFromTouch
-                                              : kRealOrIndistinguishable),
-      region_(region),
-      menu_source_type_(event.menu_source_type) {
-  FloatPoint root_frame_coordinates = event.PositionInRootFrame();
-  InitCoordinatesFromRootFrame(root_frame_coordinates.X(),
-                               root_frame_coordinates.Y());
-}
-
-MouseEvent::MouseEvent(const AtomicString& event_type,
-                       Bubbles bubbles,
-                       Cancelable cancelable,
-                       AbstractView* abstract_view,
-                       int detail,
-                       double screen_x,
-                       double screen_y,
-                       double window_x,
-                       double window_y,
-                       double movement_x,
-                       double movement_y,
-                       WebInputEvent::Modifiers modifiers,
-                       short button,
-                       unsigned short buttons,
-                       EventTarget* related_target,
+                       const MouseEventInit& initializer,
                        TimeTicks platform_time_stamp,
                        SyntheticEventType synthetic_event_type,
-                       const String& region)
-    : UIEventWithKeyState(
-          event_type,
-          bubbles,
-          cancelable,
-          abstract_view,
-          detail,
-          modifiers,
-          platform_time_stamp,
-          abstract_view
-              ? abstract_view->GetInputDeviceCapabilities()->FiresTouchEvents(
-                    synthetic_event_type == kFromTouch)
-              : nullptr),
-      screen_location_(screen_x, screen_y),
-      movement_delta_(movement_x, movement_y),
-      position_type_(synthetic_event_type == kPositionless
-                         ? PositionType::kPositionless
-                         : PositionType::kPosition),
-      button_(button),
-      buttons_(buttons),
-      related_target_(related_target),
-      synthetic_event_type_(synthetic_event_type),
-      region_(region) {
-  InitCoordinatesFromRootFrame(window_x, window_y);
-}
-
-MouseEvent::MouseEvent(const AtomicString& event_type,
-                       const MouseEventInit& initializer,
-                       TimeTicks platform_time_stamp)
+                       WebMenuSourceType menu_source_type)
     : UIEventWithKeyState(event_type, initializer, platform_time_stamp),
       screen_location_(
           DoublePoint(initializer.screenX(), initializer.screenY())),
       movement_delta_(
           IntPoint(initializer.movementX(), initializer.movementY())),
-      position_type_(PositionType::kPosition),
+      position_type_(synthetic_event_type == kPositionless
+                         ? PositionType::kPositionless
+                         : PositionType::kPosition),
       button_(initializer.button()),
       buttons_(initializer.buttons()),
       related_target_(initializer.relatedTarget()),
-      synthetic_event_type_(kRealOrIndistinguishable),
-      region_(initializer.region()) {
+      synthetic_event_type_(synthetic_event_type),
+      region_(initializer.region()),
+      menu_source_type_(menu_source_type) {
   InitCoordinates(initializer.clientX(), initializer.clientY());
 }
 
@@ -263,35 +191,32 @@ void MouseEvent::InitCoordinates(const double client_x, const double client_y) {
   has_cached_relative_position_ = false;
 }
 
-void MouseEvent::InitCoordinatesFromRootFrame(double window_x,
-                                              double window_y) {
-  DoublePoint adjusted_page_location;
-  DoubleSize scroll_offset;
-
-  LocalFrame* frame = view() && view()->IsLocalDOMWindow()
-                          ? ToLocalDOMWindow(view())->GetFrame()
-                          : nullptr;
-  if (frame && HasPosition()) {
-    scroll_offset = ContentsScrollOffset(view());
-    if (LocalFrameView* frame_view = frame->View()) {
-      adjusted_page_location =
-          frame_view->RootFrameToDocument(FloatPoint(window_x, window_y));
-      float scale_factor = 1 / frame->PageZoomFactor();
-      if (scale_factor != 1.0f)
-        adjusted_page_location.Scale(scale_factor, scale_factor);
-    }
+void MouseEvent::SetCoordinatesFromWebPointerProperties(
+    const WebPointerProperties& web_pointer_properties,
+    const LocalDOMWindow* dom_window,
+    MouseEventInit& initializer) {
+  FloatPoint client_point;
+  float scale_factor = 1.0f;
+  if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
+    LocalFrame* frame = dom_window->GetFrame();
+    FloatPoint page_point = frame->View()->RootFrameToContents(
+        web_pointer_properties.PositionInWidget());
+    scale_factor = 1.0f / frame->PageZoomFactor();
+    FloatPoint scroll_position(frame->View()->GetScrollOffset());
+    client_point = page_point.ScaledBy(scale_factor);
+    client_point.MoveBy(scroll_position.ScaledBy(-scale_factor));
   }
 
-  client_location_ = adjusted_page_location - scroll_offset;
-  page_location_ = adjusted_page_location;
+  initializer.setScreenX(web_pointer_properties.PositionInScreen().x);
+  initializer.setScreenY(web_pointer_properties.PositionInScreen().y);
+  initializer.setClientX(client_point.X());
+  initializer.setClientY(client_point.Y());
 
-  // Set up initial values for coordinates.
-  // Correct values are computed lazily, see computeRelativePosition.
-  layer_location_ = page_location_;
-  offset_location_ = page_location_;
-
-  ComputePageLocation();
-  has_cached_relative_position_ = false;
+  // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we do
+  // that here and round it to the int again it causes inconsistencies between
+  // screenX/Y and cumulative movementX/Y.
+  initializer.setMovementX(web_pointer_properties.movement_x);
+  initializer.setMovementY(web_pointer_properties.movement_y);
 }
 
 MouseEvent::~MouseEvent() = default;

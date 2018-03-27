@@ -19,32 +19,18 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
  public:
   static DragEvent* Create() { return new DragEvent; }
 
-  static DragEvent* Create(DataTransfer* data_transfer) {
-    return new DragEvent(data_transfer);
+  static DragEvent* Create(const AtomicString& type,
+                           const DragEventInit& initializer,
+                           TimeTicks platform_time_stamp,
+                           SyntheticEventType synthetic_event_type) {
+    return new DragEvent(type, initializer, platform_time_stamp,
+                         synthetic_event_type);
   }
 
   static DragEvent* Create(const AtomicString& type,
-                           Bubbles,
-                           Cancelable,
-                           AbstractView*,
-                           int detail,
-                           double screen_x,
-                           double screen_y,
-                           double window_x,
-                           double window_y,
-                           double movement_x,
-                           double movement_y,
-                           WebInputEvent::Modifiers,
-                           short button,
-                           unsigned short buttons,
-                           EventTarget* related_target,
-                           TimeTicks platform_time_stamp,
-                           DataTransfer*,
-                           SyntheticEventType = kRealOrIndistinguishable);
-
-  static DragEvent* Create(const AtomicString& type,
                            const DragEventInit& initializer) {
-    return new DragEvent(type, initializer);
+    return new DragEvent(type, initializer, CurrentTimeTicks(),
+                         kRealOrIndistinguishable);
   }
 
   DataTransfer* getDataTransfer() const override {
@@ -60,27 +46,10 @@ class CORE_EXPORT DragEvent final : public MouseEvent {
 
  private:
   DragEvent();
-  DragEvent(DataTransfer*);
   DragEvent(const AtomicString& type,
-            Bubbles,
-            Cancelable,
-            AbstractView*,
-            int detail,
-            double screen_x,
-            double screen_y,
-            double window_x,
-            double window_y,
-            double movement_x,
-            double movement_y,
-            WebInputEvent::Modifiers,
-            short button,
-            unsigned short buttons,
-            EventTarget* related_target,
+            const DragEventInit&,
             TimeTicks platform_time_stamp,
-            DataTransfer*,
             SyntheticEventType);
-
-  DragEvent(const AtomicString& type, const DragEventInit&);
 
   Member<DataTransfer> data_transfer_;
 };

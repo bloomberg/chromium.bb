@@ -88,31 +88,16 @@ void UpdateCommonPointerEventInit(const WebPointerEvent& web_pointer_event,
   WebPointerEvent web_pointer_event_in_root_frame =
       web_pointer_event.WebPointerEventInRootFrame();
 
-  FloatPoint client_point;
-  float scale_factor = 1.0f;
-  if (dom_window && dom_window->GetFrame() && dom_window->GetFrame()->View()) {
-    LocalFrame* frame = dom_window->GetFrame();
-    FloatPoint page_point = frame->View()->RootFrameToContents(
-        web_pointer_event_in_root_frame.PositionInWidget());
-    scale_factor = 1.0f / frame->PageZoomFactor();
-    FloatPoint scroll_position(frame->View()->GetScrollOffset());
-    client_point = page_point.ScaledBy(scale_factor);
-    client_point.MoveBy(scroll_position.ScaledBy(-scale_factor));
-  }
-
-  pointer_event_init->setScreenX(web_pointer_event.PositionInScreen().x);
-  pointer_event_init->setScreenY(web_pointer_event.PositionInScreen().y);
-  pointer_event_init->setClientX(client_point.X());
-  pointer_event_init->setClientY(client_point.Y());
-  // TODO(nzolghadr): We need to scale movement attrinutes as well. But if we do
-  // that here and round it to the int again it causes inconsistencies between
-  // screenX/Y and cumulative movementX/Y.
-  pointer_event_init->setMovementX(web_pointer_event_in_root_frame.movement_x);
-  pointer_event_init->setMovementY(web_pointer_event_in_root_frame.movement_y);
+  MouseEvent::SetCoordinatesFromWebPointerProperties(
+      web_pointer_event_in_root_frame, dom_window, *pointer_event_init);
   // If width/height is unknown we let PointerEventInit set it to 1.
   // See https://w3c.github.io/pointerevents/#dom-pointerevent-width
   if (web_pointer_event_in_root_frame.HasWidth() &&
       web_pointer_event_in_root_frame.HasHeight()) {
+    float scale_factor = 1.0f;
+    if (dom_window && dom_window->GetFrame())
+      scale_factor = 1.0f / dom_window->GetFrame()->PageZoomFactor();
+
     FloatSize point_shape = FloatSize(web_pointer_event_in_root_frame.width,
                                       web_pointer_event_in_root_frame.height)
                                 .ScaledBy(scale_factor);
