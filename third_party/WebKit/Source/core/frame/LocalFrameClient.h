@@ -365,7 +365,7 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
     return nullptr;
   }
 
-  virtual void SetHasReceivedUserGesture(bool received_previously) {}
+  virtual void SetHasReceivedUserGesture() {}
 
   virtual void SetHasReceivedUserGestureBeforeNavigation(bool value) {}
 

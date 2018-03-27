@@ -181,12 +181,8 @@ void Frame::NotifyUserActivationInLocalTree() {
 }
 
 void Frame::NotifyUserActivation() {
-  bool had_gesture = HasBeenActivated();
-  if (RuntimeEnabledFeatures::UserActivationV2Enabled() || !had_gesture)
-    NotifyUserActivationInLocalTree();
-
-  DCHECK(IsLocalFrame());
-  ToLocalFrame(this)->Client()->SetHasReceivedUserGesture(had_gesture);
+  NotifyUserActivationInLocalTree();
+  ToLocalFrame(this)->Client()->SetHasReceivedUserGesture();
 }
 
 bool Frame::ConsumeTransientUserActivation() {
