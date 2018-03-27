@@ -74,6 +74,11 @@ class CONTENT_EXPORT BackgroundFetchContext
                   const SkBitmap& icon,
                   blink::mojom::BackgroundFetchService::FetchCallback callback);
 
+  // Gets display size for the icon for Background Fetch UI.
+  void GetIconDisplaySize(
+      blink::mojom::BackgroundFetchService::GetIconDisplaySizeCallback
+          callback);
+
   // Aborts the Background Fetch for the |registration_id|. The callback will be
   // invoked with INVALID_ID if the registration has already completed or
   // aborted, STORAGE_ERROR if an I/O error occurs, or NONE for success.

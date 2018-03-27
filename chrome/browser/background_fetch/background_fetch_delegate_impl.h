@@ -48,6 +48,7 @@ class BackgroundFetchDelegateImpl
   void Shutdown() override;
 
   // BackgroundFetchDelegate implementation:
+  void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
   void CreateDownloadJob(
       const std::string& job_unique_id,
       const std::string& title,

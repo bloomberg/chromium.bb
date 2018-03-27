@@ -16,7 +16,9 @@
 
 namespace blink {
 
+class BackgroundFetchBridge;
 class IconDefinition;
+struct WebSize;
 
 class MODULES_EXPORT BackgroundFetchIconLoader final
     : public GarbageCollectedFinalized<BackgroundFetchIconLoader>,
@@ -35,7 +37,10 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
 
   // Asynchronously download an icon from the given url, decodes the loaded
   // data, and passes the bitmap to the given callback.
-  void Start(ExecutionContext*, HeapVector<IconDefinition>, IconCallback);
+  void Start(BackgroundFetchBridge*,
+             ExecutionContext*,
+             HeapVector<IconDefinition>,
+             IconCallback);
 
   // Cancels the pending load, if there is one. The |icon_callback_| will not
   // be run.
@@ -54,7 +59,14 @@ class MODULES_EXPORT BackgroundFetchIconLoader final
   }
 
  private:
+  friend class BackgroundFetchIconLoaderTest;
   void RunCallbackWithEmptyBitmap();
+
+  // Callback for BackgroundFetchBridge::GetIconDisplaySize()
+  void DidGetIconDisplaySizeIfSoLoadIcon(
+      ExecutionContext*,
+      IconCallback,
+      const WebSize& icon_display_size_pixels);
 
   bool stopped_ = false;
   scoped_refptr<SharedBuffer> data_;

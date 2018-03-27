@@ -39,6 +39,7 @@ class BackgroundFetchBridge final
   using RegistrationCallback =
       base::OnceCallback<void(mojom::blink::BackgroundFetchError,
                               BackgroundFetchRegistration*)>;
+  using GetIconDisplaySizeCallback = base::OnceCallback<void(const WebSize&)>;
   using UpdateUICallback =
       base::OnceCallback<void(mojom::blink::BackgroundFetchError)>;
 
@@ -54,6 +55,9 @@ class BackgroundFetchBridge final
              mojom::blink::BackgroundFetchOptionsPtr,
              const SkBitmap& icon,
              RegistrationCallback);
+
+  // Gets the size of the icon to be displayed in Background Fetch UI.
+  void GetIconDisplaySize(GetIconDisplaySizeCallback);
 
   // Updates the user interface for the Background Fetch identified by
   // |unique_id| with the updated |title|. Will invoke the |callback| when the

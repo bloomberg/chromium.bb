@@ -41,6 +41,11 @@ BackgroundFetchBridge::BackgroundFetchBridge(
 
 BackgroundFetchBridge::~BackgroundFetchBridge() = default;
 
+void BackgroundFetchBridge::GetIconDisplaySize(
+    GetIconDisplaySizeCallback callback) {
+  GetService()->GetIconDisplaySize(std::move(callback));
+}
+
 void BackgroundFetchBridge::Fetch(
     const String& developer_id,
     Vector<WebServiceWorkerRequest> requests,

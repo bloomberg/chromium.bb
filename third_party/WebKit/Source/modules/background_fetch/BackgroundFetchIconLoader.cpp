@@ -6,14 +6,17 @@
 
 #include "core/dom/ExecutionContext.h"
 #include "core/loader/ThreadableLoader.h"
+#include "modules/background_fetch/BackgroundFetchBridge.h"
 #include "modules/background_fetch/IconDefinition.h"
 #include "platform/graphics/ColorBehavior.h"
+#include "platform/heap/HeapAllocator.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/loader/fetch/ResourceLoaderOptions.h"
 #include "platform/loader/fetch/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "platform/wtf/Threading.h"
+#include "public/platform/WebSize.h"
 #include "public/platform/WebURLRequest.h"
 #include "skia/ext/image_operations.h"
 
@@ -32,14 +35,28 @@ BackgroundFetchIconLoader::~BackgroundFetchIconLoader() {
 }
 
 // TODO(nator): Add functionality to select which icon to load.
-void BackgroundFetchIconLoader::Start(ExecutionContext* execution_context,
+void BackgroundFetchIconLoader::Start(BackgroundFetchBridge* bridge,
+                                      ExecutionContext* execution_context,
                                       HeapVector<IconDefinition> icons,
                                       IconCallback icon_callback) {
   DCHECK(!stopped_);
   DCHECK_GE(icons.size(), 1u);
-  icons_ = std::move(icons);
+  DCHECK(bridge);
 
-  if (!icons_[0].hasSrc()) {
+  icons_ = std::move(icons);
+  bridge->GetIconDisplaySize(
+      WTF::Bind(&BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon,
+                WrapWeakPersistent(this), WrapWeakPersistent(execution_context),
+                std::move(icon_callback)));
+}
+
+void BackgroundFetchIconLoader::DidGetIconDisplaySizeIfSoLoadIcon(
+    ExecutionContext* execution_context,
+    IconCallback icon_callback,
+    const WebSize& icon_display_size_pixels) {
+  // TODO(nator): Pick the appropriate icon based on display size instead,
+  // and resize it, if needed.
+  if (icon_display_size_pixels.IsEmpty() || !icons_[0].hasSrc()) {
     std::move(icon_callback).Run(SkBitmap());
     return;
   }

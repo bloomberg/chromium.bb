@@ -261,7 +261,7 @@ ScriptPromise BackgroundFetchManager::fetch(
       mojom::blink::BackgroundFetchOptions::From(options);
   if (options.icons().size()) {
     loader_->Start(
-        execution_context, options.icons(),
+        bridge_.Get(), execution_context, options.icons(),
         WTF::Bind(&BackgroundFetchManager::DidLoadIcons, WrapPersistent(this),
                   id, WTF::Passed(std::move(web_requests)),
                   std::move(options_ptr), WrapPersistent(resolver)));

@@ -11,6 +11,7 @@
 #include "platform/testing/URLTestHelpers.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "platform/weborigin/KURL.h"
+#include "public/platform/WebSize.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/WebURLLoaderMockFactory.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -27,6 +28,8 @@ enum class BackgroundFetchLoadState {
 constexpr char kBackgroundFetchImageLoaderBaseUrl[] = "http://test.com/";
 constexpr char kBackgroundFetchImageLoaderBaseDir[] = "notifications/";
 constexpr char kBackgroundFetchImageLoaderIcon500x500[] = "500x500.png";
+
+}  // namespace
 
 class BackgroundFetchIconLoaderTest : public PageTestBase {
  public:
@@ -63,9 +66,11 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
     icon.setType("image/png");
     icon.setSizes("500x500");
     HeapVector<IconDefinition> icons(1, icon);
-    loader_->Start(GetContext(), icons,
-                   Bind(&BackgroundFetchIconLoaderTest::IconLoaded,
-                        WTF::Unretained(this)));
+    loader_->icons_ = std::move(icons);
+    loader_->DidGetIconDisplaySizeIfSoLoadIcon(
+        GetContext(),
+        Bind(&BackgroundFetchIconLoaderTest::IconLoaded, WTF::Unretained(this)),
+        WebSize(192, 192));
   }
 
   ExecutionContext* GetContext() const { return &GetDocument(); }
@@ -85,5 +90,4 @@ TEST_F(BackgroundFetchIconLoaderTest, SuccessTest) {
   EXPECT_EQ(BackgroundFetchLoadState::kLoadSuccessful, loaded_);
 }
 
-}  // namespace
 }  // namespace blink

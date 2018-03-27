@@ -100,6 +100,12 @@ void BackgroundFetchServiceImpl::Fetch(
                                         icon, std::move(callback));
 }
 
+void BackgroundFetchServiceImpl::GetIconDisplaySize(
+    blink::mojom::BackgroundFetchService::GetIconDisplaySizeCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  background_fetch_context_->GetIconDisplaySize(std::move(callback));
+}
+
 void BackgroundFetchServiceImpl::UpdateUI(const std::string& unique_id,
                                           const std::string& title,
                                           UpdateUICallback callback) {
