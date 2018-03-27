@@ -1,49 +1,41 @@
 <!DOCTYPE html>
-<html>
-<script src="../../resources/js-test.js"></script>
-<script src="resources/SVGAnimationTestCase.js"></script>
+<title>SVGSVGElement.getCurrentTime() with setCurrentTime() when animation is paused and unpaused</title>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<svg height="0">
+  <rect fill="green" width="20" height="20">
+    <animate attributeName="x" from="0" to="200" begin="0s" dur="3s"></animate>
+  </rect>
+</svg>
 <script>
-  function load() {
-    if (window.testRunner) {
-      testRunner.dumpAsText();
-      testRunner.waitUntilDone();
-    }
-    
-    svg = document.getElementById("svg");
-    rect = document.getElementById("rect");
-    
+async_test(t => {
+  window.onload = t.step_func(() => {
+    let svg = document.querySelector("svg");
     svg.pauseAnimations();
-    
-    setTimeout(function() {
-      svg.setCurrentTime(0.5);
-      shouldBeCloseEnough("svg.getCurrentTime()", "0.5", 0.01);
-      svg.unpauseAnimations();
-      setTimeout(function() {
-        svg.setCurrentTime(1);
-        shouldBeCloseEnough("svg.getCurrentTime()", "1", 0.01);
-        svg.pauseAnimations();
-        setTimeout(function() {
-          svg.setCurrentTime(2);
-          shouldBeCloseEnough("svg.getCurrentTime()", "2", 0.01);
-          svg.unpauseAnimations();
-          setTimeout(function() {
-            svg.setCurrentTime(3.5);
-            shouldBeCloseEnough("svg.getCurrentTime()", "3.5", 0.01);
-            if (window.testRunner)
-              testRunner.notifyDone();
-          }, 20);
-        }, 20);
-      }, 0);
-    }, 0);
-  }
-</script>
-<head><title>svg.getCurrentTime() with setCurrentTime() when SVG animation is paused and unpaused</title></head>
-<body onload="load()">
-  <svg id="svg" xmlns="http://www.w3.org/2000/svg">
-    <rect id="rect" fill="green" width="20" height="20">
-      <animate attributeName="x" from="0" to="200" begin="0s" dur="3s"></animate>
-    </rect>
-  </svg>
-</body>
-</html>
+    assert_equals(svg.getCurrentTime(), 0, 'initial');
 
+    t.step_timeout(t.step_func(() => {
+      svg.setCurrentTime(0.5);
+      assert_approx_equals(svg.getCurrentTime(), 0.5, 0.01);
+      svg.unpauseAnimations();
+
+      t.step_timeout(t.step_func(() => {
+        svg.setCurrentTime(1);
+        assert_approx_equals(svg.getCurrentTime(), 1, 0.01);
+        svg.pauseAnimations();
+
+        t.step_timeout(t.step_func(() => {
+          svg.setCurrentTime(2);
+          assert_approx_equals(svg.getCurrentTime(), 2, 0.01);
+          svg.unpauseAnimations();
+
+          t.step_timeout(t.step_func_done(() => {
+            svg.setCurrentTime(3.5);
+            assert_approx_equals(svg.getCurrentTime(), 3.5, 0.01);
+          }), 20);
+        }), 20);
+      }), 0);
+    }), 0);
+  });
+});
+</script>
