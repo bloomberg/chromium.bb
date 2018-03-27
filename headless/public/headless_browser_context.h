@@ -25,6 +25,10 @@ namespace base {
 class FilePath;
 }
 
+namespace net {
+class IOBuffer;
+};
+
 namespace headless {
 class HeadlessBrowserImpl;
 class HeadlessBrowserContextOptions;
@@ -96,6 +100,12 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Observer {
                                 int net_error,
                                 DevToolsStatus devtools_status) {}
 
+  // Called when metadata for a resource (e.g. v8 code cache) has been sent by a
+  // renderer.
+  virtual void OnMetadataForResource(const GURL& url,
+                                     net::IOBuffer* buf,
+                                     int buf_len) {}
+
   // Indicates the HeadlessBrowserContext is about to be deleted.
   virtual void OnHeadlessBrowserContextDestruct() {}
 
@@ -144,6 +154,7 @@ class HEADLESS_EXPORT HeadlessBrowserContext::Builder {
   Builder& SetAllowCookies(bool incognito_mode);
   Builder& SetOverrideWebPreferencesCallback(
       base::RepeatingCallback<void(WebPreferences*)> callback);
+  Builder& SetCaptureResourceMetadata(bool capture_resource_metadata);
 
   HeadlessBrowserContext* Build();
 

@@ -66,6 +66,8 @@ class WebSettings {
     kV8CacheOptionsDefault,
     kV8CacheOptionsNone,
     kV8CacheOptionsCode,
+    kV8CacheOptionsCodeWithoutHeatCheck,
+    kV8CacheOptionsFullCodeWithoutHeatCheck
   };
 
   enum class SavePreviousDocumentResources {

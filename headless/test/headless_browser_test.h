@@ -151,6 +151,10 @@ class HeadlessAsyncDevTooledBrowserTest : public HeadlessBrowserTest,
   virtual void CustomizeHeadlessBrowserContext(
       HeadlessBrowserContext::Builder& builder);
 
+  // Allows the HeadlessWebContents used in testing to be customized.
+  virtual void CustomizeHeadlessWebContents(
+      HeadlessWebContents::Builder& builder);
+
  protected:
   void RunTest();
 

@@ -54,8 +54,8 @@ class TestInMemoryProtocolHandler::MockURLFetcher : public URLFetcher {
       net::LoadTimingInfo load_timing_info;
       load_timing_info.receive_headers_end = base::TimeTicks::Now();
       result_listener->OnFetchCompleteExtractHeaders(
-          url, response->data.c_str(), response->data.size(), load_timing_info,
-          0);
+          url, response->data.c_str(), response->data.size(),
+          response->metadata, load_timing_info, 0);
     } else {
       result_listener->OnFetchStartError(net::ERR_FILE_NOT_FOUND);
     }
@@ -108,16 +108,21 @@ void TestInMemoryProtocolHandler::SetHeadlessBrowserContext(
 
 void TestInMemoryProtocolHandler::InsertResponse(const std::string& url,
                                                  const Response& response) {
-  response_map_[url] = response;
+  response_map_[url].reset(new Response(response));
+}
+
+void TestInMemoryProtocolHandler::SetResponseMetadata(
+    const std::string& url,
+    scoped_refptr<net::IOBufferWithSize> metadata) {
+  response_map_[url]->metadata = metadata;
 }
 
 const TestInMemoryProtocolHandler::Response*
 TestInMemoryProtocolHandler::GetResponse(const std::string& url) const {
-  std::map<std::string, Response>::const_iterator find_it =
-      response_map_.find(url);
+  const auto find_it = response_map_.find(url);
   if (find_it == response_map_.end())
     return nullptr;
-  return &find_it->second;
+  return find_it->second.get();
 }
 
 net::URLRequestJob* TestInMemoryProtocolHandler::MaybeCreateJob(

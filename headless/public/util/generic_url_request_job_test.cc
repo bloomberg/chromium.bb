@@ -133,7 +133,8 @@ class MockFetcher : public URLFetcher {
       total_received_bytes = total_received_bytes_value->GetInt();
     result_listener->OnFetchComplete(
         GURL(final_url_value->GetString()), std::move(response_headers),
-        response_data_.c_str(), response_data_.size(), load_timing_info,
+        response_data_.c_str(), response_data_.size(),
+        scoped_refptr<net::IOBufferWithSize>(), load_timing_info,
         total_received_bytes);
   }
 

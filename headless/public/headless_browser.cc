@@ -198,6 +198,11 @@ Builder& Builder::SetCrashReporterEnabled(bool enabled) {
   return *this;
 }
 
+Builder& Builder::SetCaptureResourceMetadata(bool capture_resource_metadata) {
+  options_.capture_resource_metadata = capture_resource_metadata;
+  return *this;
+}
+
 Builder& Builder::SetCrashDumpsDir(const base::FilePath& dir) {
   options_.crash_dumps_dir = dir;
   return *this;

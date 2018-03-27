@@ -120,6 +120,10 @@ class HEADLESS_EXPORT HeadlessBrowserContextImpl final
                               int net_error,
                               DevToolsStatus devtools_status);
 
+  void NotifyMetadataForResource(const GURL& url,
+                                 net::IOBuffer* buf,
+                                 int buf_len);
+
   void SetNetworkConditions(HeadlessNetworkConditions conditions);
   HeadlessNetworkConditions GetNetworkConditions() override;
 

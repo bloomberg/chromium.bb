@@ -806,5 +806,9 @@ scoped_refptr<CachedMetadata> V8ScriptRunner::GenerateFullCodeCache(
 STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsDefault, kV8CacheOptionsDefault);
 STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsNone, kV8CacheOptionsNone);
 STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsCode, kV8CacheOptionsCode);
+STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsCodeWithoutHeatCheck,
+                   kV8CacheOptionsCodeWithoutHeatCheck);
+STATIC_ASSERT_ENUM(WebSettings::kV8CacheOptionsFullCodeWithoutHeatCheck,
+                   kV8CacheOptionsFullCodeWithoutHeatCheck);
 
 }  // namespace blink

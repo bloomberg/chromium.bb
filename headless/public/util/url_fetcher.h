@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "headless/public/headless_export.h"
+#include "net/base/io_buffer.h"
 #include "net/base/load_timing_info.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
@@ -45,6 +46,7 @@ class HEADLESS_EXPORT URLFetcher {
         scoped_refptr<net::HttpResponseHeaders> response_headers,
         const char* body,
         size_t body_size,
+        scoped_refptr<net::IOBufferWithSize> metadata,
         const net::LoadTimingInfo& load_timing_info,
         size_t total_received_bytes) = 0;
 
@@ -54,6 +56,7 @@ class HEADLESS_EXPORT URLFetcher {
         const GURL& final_url,
         const char* response_data,
         size_t response_data_size,
+        scoped_refptr<net::IOBufferWithSize> metadata,
         const net::LoadTimingInfo& load_timing_info,
         size_t total_received_bytes);
 
