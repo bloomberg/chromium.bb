@@ -1156,6 +1156,7 @@ def generate_performance_test_suite(tester_config):
 
   test_args = [
     '-v',
+    '--xvfb',
     '--browser=%s' % browser_name
   ]
 
