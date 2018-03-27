@@ -44,19 +44,20 @@ namespace cc {
 class LayerTreeFrameSink;
 class LayerTreeResourceProvider;
 
+// Specifies what type of data is contained in the mailboxes, as well as how
+// many mailboxes will be present.
+enum class VideoFrameResourceType {
+  NONE,
+  YUV,
+  RGB,
+  RGBA_PREMULTIPLIED,
+  RGBA,
+  STREAM_TEXTURE,
+};
+
 class CC_EXPORT VideoFrameExternalResources {
  public:
-  // Specifies what type of data is contained in the mailboxes, as well as how
-  // many mailboxes will be present.
-  enum ResourceType {
-    NONE,
-    YUV_RESOURCE,
-    RGB_RESOURCE,
-    RGBA_PREMULTIPLIED_RESOURCE,
-    RGBA_RESOURCE,
-    STREAM_TEXTURE_RESOURCE,
-  };
-  ResourceType type = NONE;
+  VideoFrameResourceType type = VideoFrameResourceType::NONE;
   std::vector<viz::TransferableResource> resources;
   std::vector<viz::ReleaseCallback> release_callbacks;
 
@@ -191,7 +192,7 @@ class CC_EXPORT VideoResourceUpdater
   // Temporary pixel buffer when converting between formats.
   std::vector<uint8_t> upload_pixels_;
 
-  VideoFrameExternalResources::ResourceType frame_resource_type_;
+  VideoFrameResourceType frame_resource_type_;
 
   float frame_resource_offset_;
   float frame_resource_multiplier_;

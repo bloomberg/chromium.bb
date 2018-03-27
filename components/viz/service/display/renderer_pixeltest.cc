@@ -275,7 +275,7 @@ void CreateTestYUVVideoDrawQuad_FromVideoFrame(
       video_resource_updater->CreateExternalResourcesFromVideoFrame(
           video_frame);
 
-  EXPECT_EQ(cc::VideoFrameExternalResources::YUV_RESOURCE, resources.type);
+  EXPECT_EQ(cc::VideoFrameResourceType::YUV, resources.type);
   EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
             resources.resources.size());
   EXPECT_EQ(media::VideoFrame::NumPlanes(video_frame->format()),
@@ -379,7 +379,7 @@ void CreateTestY16TextureDrawQuad_FromVideoFrame(
       video_resource_updater->CreateExternalResourcesFromVideoFrame(
           video_frame);
 
-  EXPECT_EQ(cc::VideoFrameExternalResources::RGBA_RESOURCE, resources.type);
+  EXPECT_EQ(cc::VideoFrameResourceType::RGBA, resources.type);
   EXPECT_EQ(1u, resources.resources.size());
   EXPECT_EQ(1u, resources.release_callbacks.size());
 
