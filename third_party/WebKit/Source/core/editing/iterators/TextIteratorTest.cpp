@@ -1067,6 +1067,24 @@ TEST_F(TextIteratorTest, BasicIterationInputiWithBr) {
   EXPECT_EQ("[b]", IteratePartial<DOMTree>(start, end));
 }
 
+TEST_P(ParameterizedTextIteratorTest, FloatLeft) {
+  SetBodyContent("abc<span style='float:left'>DEF</span>ghi");
+  EXPECT_EQ("[abc][DEF][ghi]", Iterate<DOMTree>())
+      << "float doesn't affect text iteration";
+}
+
+TEST_P(ParameterizedTextIteratorTest, FloatRight) {
+  SetBodyContent("abc<span style='float:right'>DEF</span>ghi");
+  EXPECT_EQ("[abc][DEF][ghi]", Iterate<DOMTree>())
+      << "float doesn't affect text iteration";
+}
+
+TEST_P(ParameterizedTextIteratorTest, InlineBlock) {
+  SetBodyContent("abc<span style='display:inline-block'>DEF<br>GHI</span>jkl");
+  EXPECT_EQ("[abc][DEF][\n][GHI][jkl]", Iterate<DOMTree>())
+      << "inline-block doesn't insert newline around itself.";
+}
+
 TEST_P(ParameterizedTextIteratorTest, NoZWSForSpaceAfterNoWrapSpace) {
   SetBodyContent("<span style='white-space: nowrap'>foo </span> bar");
   EXPECT_EQ("[foo ][bar]", Iterate<DOMTree>());
