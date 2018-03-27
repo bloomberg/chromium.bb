@@ -12,10 +12,6 @@
 #include "components/signin/core/account_id/account_id.h"
 #include "net/url_request/url_request_status.h"
 
-namespace base {
-class RefCountedBytes;
-}
-
 // Implementation of chrome.wallpaper.setWallpaper API.
 // After this API being called, a jpeg encoded wallpaper will be saved to
 // /home/chronos/custom_wallpaper/{resolution}/{wallpaper_files_id_}/file_name.
@@ -39,15 +35,6 @@ class WallpaperSetWallpaperFunction : public WallpaperFunctionBase {
 
  private:
   void OnWallpaperDecoded(const gfx::ImageSkia& image) override;
-
-  // Generates thumbnail of custom wallpaper. A simple STRETCH is used for
-  // generating thumbnail.
-  void GenerateThumbnail(const base::FilePath& thumbnail_path,
-                         std::unique_ptr<gfx::ImageSkia> image);
-
-  // Thumbnail is ready. Calls api function javascript callback.
-  void ThumbnailGenerated(base::RefCountedBytes* original_data,
-                          base::RefCountedBytes* thumbnail_data);
 
   // Called by OnURLFetchComplete().
   void OnWallpaperFetched(bool success, const std::string& response);

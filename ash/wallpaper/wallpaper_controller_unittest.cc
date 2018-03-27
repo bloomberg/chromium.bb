@@ -150,15 +150,10 @@ void WaitUntilCustomWallpapersDeleted(const AccountId& account_id) {
       WallpaperController::GetCustomWallpaperDir(
           WallpaperController::kOriginalWallpaperSubDir)
           .Append(wallpaper_file_id);
-  base::FilePath thumbnail_wallpaper_dir =
-      WallpaperController::GetCustomWallpaperDir(
-          WallpaperController::kThumbnailWallpaperSubDir)
-          .Append(wallpaper_file_id);
 
   while (base::PathExists(small_wallpaper_dir) ||
          base::PathExists(large_wallpaper_dir) ||
-         base::PathExists(original_wallpaper_dir) ||
-         base::PathExists(thumbnail_wallpaper_dir)) {
+         base::PathExists(original_wallpaper_dir)) {
   }
 }
 

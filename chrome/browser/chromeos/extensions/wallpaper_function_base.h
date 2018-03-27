@@ -13,6 +13,7 @@
 #include "ui/gfx/image/image_skia.h"
 
 namespace base {
+class RefCountedBytes;
 class SequencedTaskRunner;
 }
 
@@ -32,6 +33,9 @@ void RecordCustomWallpaperLayout(const ash::WallpaperLayout& layout);
 // wallpaper data.
 class WallpaperFunctionBase : public AsyncExtensionFunction {
  public:
+  static const int kWallpaperThumbnailWidth;
+  static const int kWallpaperThumbnailHeight;
+
   WallpaperFunctionBase();
 
   // For tasks that are worth blocking shutdown, i.e. saving user's custom
@@ -61,6 +65,12 @@ class WallpaperFunctionBase : public AsyncExtensionFunction {
 
   // Handles failure case. Sets error message.
   void OnFailure(const std::string& error);
+
+  // Resize the image to |size|, encode it and save to |thumbnail_data_out|.
+  void GenerateThumbnail(
+      const gfx::ImageSkia& image,
+      const gfx::Size& size,
+      scoped_refptr<base::RefCountedBytes>* thumbnail_data_out);
 
  private:
   virtual void OnWallpaperDecoded(const gfx::ImageSkia& wallpaper) = 0;

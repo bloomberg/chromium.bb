@@ -33,6 +33,7 @@ void TestWallpaperController::Init(
     const base::FilePath& user_data_path,
     const base::FilePath& chromeos_wallpapers_path,
     const base::FilePath& chromeos_custom_wallpapers_path,
+    const base::FilePath& device_policy_wallpaper_path,
     bool is_device_wallpaper_policy_enforced) {
   was_client_set_ = true;
 }

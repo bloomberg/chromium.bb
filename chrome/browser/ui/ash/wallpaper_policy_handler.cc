@@ -4,9 +4,9 @@
 
 #include "chrome/browser/ui/ash/wallpaper_policy_handler.h"
 
-#include "ash/wallpaper/wallpaper_controller.h"
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/path_service.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/task_scheduler/post_task.h"
@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/customization/customization_wallpaper_downloader.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
+#include "chrome/common/chrome_paths.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "crypto/sha2.h"
 #include "url/gurl.h"
@@ -21,6 +22,10 @@
 using chromeos::CrosSettings;
 
 namespace {
+
+// The directory and file name to save the downloaded device policy wallpaper.
+constexpr char kDeviceWallpaperDir[] = "device_wallpaper";
+constexpr char kDeviceWallpaperFile[] = "device_wallpaper_image.jpg";
 
 // A helper function to check the existing/downloaded device wallpaper file's
 // hash value matches with the hash value provided in the policy settings.
@@ -54,6 +59,15 @@ WallpaperPolicyHandler::WallpaperPolicyHandler(Delegate* delegate)
           base::Bind(
               &WallpaperPolicyHandler::ShowUserNamesOnSignInPolicyChanged,
               weak_factory_.GetWeakPtr()));
+
+  // Initialize the desired file path for device policy wallpaper. The path will
+  // be used by WallpaperController to access the wallpaper file.
+  base::FilePath chromeos_wallpapers_path;
+  CHECK(PathService::Get(chrome::DIR_CHROMEOS_WALLPAPERS,
+                         &chromeos_wallpapers_path));
+  device_wallpaper_file_path_ =
+      chromeos_wallpapers_path.Append(kDeviceWallpaperDir)
+          .Append(kDeviceWallpaperFile);
 }
 
 WallpaperPolicyHandler::~WallpaperPolicyHandler() {
@@ -93,12 +107,6 @@ bool WallpaperPolicyHandler::GetDeviceWallpaperPolicyStrings(
 }
 
 void WallpaperPolicyHandler::DeviceWallpaperPolicyChanged() {
-  // Get the desired file path for device policy wallpaper first.
-  if (device_wallpaper_file_path_.empty()) {
-    device_wallpaper_file_path_ =
-        ash::WallpaperController::GetDevicePolicyWallpaperFilePath();
-  }
-
   // First check if the device policy was cleared.
   const base::DictionaryValue* dict = nullptr;
   if (!CrosSettings::Get()->GetDictionary(chromeos::kDeviceWallpaperImage,

@@ -522,11 +522,6 @@ bool WallpaperPrivateSetCustomWallpaperFunction::RunAsync() {
 
 void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
     const gfx::ImageSkia& image) {
-  base::FilePath thumbnail_path =
-      ash::WallpaperController::GetCustomWallpaperPath(
-          ash::WallpaperController::kThumbnailWallpaperSubDir,
-          wallpaper_files_id_, params->file_name);
-
   ash::WallpaperLayout layout = wallpaper_api_util::GetLayoutEnum(
       wallpaper_base::ToString(params->layout));
   wallpaper_api_util::RecordCustomWallpaperLayout(layout);
@@ -538,43 +533,17 @@ void WallpaperPrivateSetCustomWallpaperFunction::OnWallpaperDecoded(
 
   if (params->generate_thumbnail) {
     image.EnsureRepsForSupportedScales();
-    std::unique_ptr<gfx::ImageSkia> deep_copy(image.DeepCopy());
-    // Generates thumbnail before call api function callback. We can then
-    // request thumbnail in the javascript callback.
-    GetBlockingTaskRunner()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail,
-            this, thumbnail_path, std::move(deep_copy)));
+    scoped_refptr<base::RefCountedBytes> thumbnail_data;
+    GenerateThumbnail(
+        image, gfx::Size(kWallpaperThumbnailWidth, kWallpaperThumbnailHeight),
+        &thumbnail_data);
+    SetResult(Value::CreateWithCopiedBuffer(
+        reinterpret_cast<const char*>(thumbnail_data->front()),
+        thumbnail_data->size()));
+    SendResponse(true);
   } else {
     SendResponse(true);
   }
-}
-
-void WallpaperPrivateSetCustomWallpaperFunction::GenerateThumbnail(
-    const base::FilePath& thumbnail_path,
-    std::unique_ptr<gfx::ImageSkia> image) {
-  AssertCalledOnWallpaperSequence(GetBlockingTaskRunner());
-  if (!base::PathExists(thumbnail_path.DirName()))
-    base::CreateDirectory(thumbnail_path.DirName());
-
-  scoped_refptr<base::RefCountedBytes> data;
-  ash::WallpaperController::ResizeImage(
-      *image, ash::WALLPAPER_LAYOUT_STRETCH,
-      ash::WallpaperController::kWallpaperThumbnailWidth,
-      ash::WallpaperController::kWallpaperThumbnailHeight, &data, nullptr);
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::BindOnce(
-          &WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated, this,
-          base::RetainedRef(data)));
-}
-
-void WallpaperPrivateSetCustomWallpaperFunction::ThumbnailGenerated(
-    base::RefCountedBytes* data) {
-  SetResult(Value::CreateWithCopiedBuffer(
-      reinterpret_cast<const char*>(data->front()), data->size()));
-  SendResponse(true);
 }
 
 WallpaperPrivateSetCustomWallpaperLayoutFunction::

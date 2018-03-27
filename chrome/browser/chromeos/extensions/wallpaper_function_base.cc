@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/extensions/wallpaper_function_base.h"
 
 #include "base/macros.h"
+#include "base/memory/ref_counted_memory.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/synchronization/cancellation_flag.h"
 #include "base/task_scheduler/lazy_task_runner.h"
@@ -14,6 +15,8 @@
 #include "chromeos/login/login_state.h"
 #include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/gfx/codec/jpeg_codec.h"
+#include "ui/gfx/image/image_skia_operations.h"
 
 using content::BrowserThread;
 
@@ -115,11 +118,12 @@ class WallpaperFunctionBase::UnsafeWallpaperDecoder
 WallpaperFunctionBase::UnsafeWallpaperDecoder*
     WallpaperFunctionBase::unsafe_wallpaper_decoder_;
 
-WallpaperFunctionBase::WallpaperFunctionBase() {
-}
+const int WallpaperFunctionBase::kWallpaperThumbnailWidth = 108;
+const int WallpaperFunctionBase::kWallpaperThumbnailHeight = 68;
 
-WallpaperFunctionBase::~WallpaperFunctionBase() {
-}
+WallpaperFunctionBase::WallpaperFunctionBase() = default;
+
+WallpaperFunctionBase::~WallpaperFunctionBase() = default;
 
 base::SequencedTaskRunner* WallpaperFunctionBase::GetBlockingTaskRunner() {
   return wallpaper_api_util::g_blocking_task_runner.Get().get();
@@ -145,13 +149,24 @@ void WallpaperFunctionBase::StartDecode(const std::vector<char>& data) {
 }
 
 void WallpaperFunctionBase::OnCancel() {
-  unsafe_wallpaper_decoder_ = NULL;
+  unsafe_wallpaper_decoder_ = nullptr;
   SetError(wallpaper_api_util::kCancelWallpaperMessage);
   SendResponse(false);
 }
 
 void WallpaperFunctionBase::OnFailure(const std::string& error) {
-  unsafe_wallpaper_decoder_ = NULL;
+  unsafe_wallpaper_decoder_ = nullptr;
   SetError(error);
   SendResponse(false);
+}
+
+void WallpaperFunctionBase::GenerateThumbnail(
+    const gfx::ImageSkia& image,
+    const gfx::Size& size,
+    scoped_refptr<base::RefCountedBytes>* thumbnail_data_out) {
+  *thumbnail_data_out = new base::RefCountedBytes();
+  gfx::ImageSkia thumbnail_image = gfx::ImageSkiaOperations::CreateResizedImage(
+      image, skia::ImageOperations::RESIZE_LANCZOS3, size);
+  gfx::JPEGCodec::Encode(*thumbnail_image.bitmap(), 90 /*quality=*/,
+                         &(*thumbnail_data_out)->data());
 }
