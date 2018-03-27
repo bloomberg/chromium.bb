@@ -274,10 +274,9 @@
 #include "chrome/browser/chrome_browser_main_mac.h"
 #elif defined(OS_CHROMEOS)
 #include "ash/public/interfaces/constants.mojom.h"
-#include "chrome/browser/chromeos/arc/arc_util.h"
+#include "chrome/browser/chromeos/apps/intent_helper/apps_navigation_throttle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_backend_delegate.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_backend_delegate.h"
-#include "chrome/browser/chromeos/arc/intent_helper/arc_navigation_throttle.h"
 #include "chrome/browser/chromeos/chrome_browser_main_chromeos.h"
 #include "chrome/browser/chromeos/chrome_service_name.h"
 #include "chrome/browser/chromeos/drive/fileapi/file_system_backend_delegate.h"
@@ -3557,18 +3556,10 @@ ChromeContentBrowserClient::CreateThrottlesForNavigation(
       throttles.push_back(MergeSessionNavigationThrottle::Create(handle));
     }
 
-    if (arc::IsArcPlayStoreEnabledForProfile(Profile::FromBrowserContext(
-            handle->GetWebContents()->GetBrowserContext())) &&
-        !handle->GetWebContents()->GetBrowserContext()->IsOffTheRecord()) {
-      prerender::PrerenderContents* prerender_contents =
-          prerender::PrerenderContents::FromWebContents(
-              handle->GetWebContents());
-      if (!prerender_contents) {
-        auto url_to_arc_throttle =
-            std::make_unique<arc::ArcNavigationThrottle>(handle);
-        throttles.push_back(std::move(url_to_arc_throttle));
-      }
-    }
+    auto url_to_apps_throttle =
+        chromeos::AppsNavigationThrottle::MaybeCreate(handle);
+    if (url_to_apps_throttle)
+      throttles.push_back(std::move(url_to_apps_throttle));
   }
 #endif
 
