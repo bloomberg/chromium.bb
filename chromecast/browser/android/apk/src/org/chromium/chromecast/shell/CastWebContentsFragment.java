@@ -82,12 +82,13 @@ public class CastWebContentsFragment extends Fragment {
         Log.d(TAG, "onStart");
         super.onStart();
 
-        sendIntentSync(CastWebContentsIntentUtils.onVisibilityChange(mSurfaceHelper.getInstanceId(),
-                CastWebContentsIntentUtils.VISIBITY_TYPE_FULL_SCREEN));
-
         if (mSurfaceHelper != null) {
+            sendIntentSync(
+                    CastWebContentsIntentUtils.onVisibilityChange(mSurfaceHelper.getInstanceId(),
+                            CastWebContentsIntentUtils.VISIBITY_TYPE_FULL_SCREEN));
             return;
         }
+
         mSurfaceHelper = new CastWebContentsSurfaceHelper(getActivity(), /* hostActivity */
                     (FrameLayout) getView().findViewById(R.id.web_contents_container),
                     true /* showInFragment */);
@@ -105,6 +106,8 @@ public class CastWebContentsFragment extends Fragment {
         boolean touchInputEnabled = CastWebContentsIntentUtils.isTouchable(bundle);
 
         mSurfaceHelper.onNewWebContents(uri, webContents, touchInputEnabled);
+        sendIntentSync(CastWebContentsIntentUtils.onVisibilityChange(mSurfaceHelper.getInstanceId(),
+                CastWebContentsIntentUtils.VISIBITY_TYPE_FULL_SCREEN));
     }
 
     @Override
