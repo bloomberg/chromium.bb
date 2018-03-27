@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/commands/browser_commands.h"
 #import "ios/chrome/browser/ui/commands/open_new_tab_command.h"
+#import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_footer_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/table_view/chrome_table_view_styler.h"
 
@@ -17,6 +18,10 @@
 #endif
 
 using base::UserMetricsAction;
+
+namespace {
+const CGFloat kFooterHeight = 30;
+}  // namespace
 
 @implementation PopupMenuTableViewController
 
@@ -31,8 +36,12 @@ using base::UserMetricsAction;
   [super viewDidLoad];
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionHeaderHeight = 0;
-  self.tableView.sectionFooterHeight = 0;
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
+  // Adding a tableHeaderView is needed to prevent a wide inset on top of the
+  // collection.
+  self.tableView.tableHeaderView = [[UIView alloc]
+      initWithFrame:CGRectMake(0.0f, 0.0f, self.tableView.bounds.size.width,
+                               0.01f)];
 }
 
 - (void)setPopupMenuItems:
@@ -44,6 +53,14 @@ using base::UserMetricsAction;
     for (TableViewItem<PopupMenuItem>* item in items[section]) {
       [self.tableViewModel addItem:item
            toSectionWithIdentifier:sectionIdentifier];
+    }
+
+    if (section != items.count - 1) {
+      // Add a footer for all sections except the last one.
+      TableViewHeaderFooterItem* footer =
+          [[PopupMenuFooterItem alloc] initWithType:kItemTypeEnumZero];
+      [self.tableViewModel setFooter:footer
+            forSectionWithIdentifier:sectionIdentifier];
     }
   }
   [self.tableView reloadData];
@@ -75,6 +92,13 @@ using base::UserMetricsAction;
   UIView* cell = [self.tableView cellForRowAtIndexPath:indexPath];
   CGPoint center = [cell convertPoint:cell.center toView:nil];
   [self executeActionForIdentifier:item.actionIdentifier origin:center];
+}
+
+- (CGFloat)tableView:(UITableView*)tableView
+    heightForFooterInSection:(NSInteger)section {
+  if (section == self.tableViewModel.numberOfSections - 1)
+    return 0;
+  return kFooterHeight;
 }
 
 #pragma mark - Private

@@ -17,7 +17,7 @@
 namespace {
 const CGFloat kMinHeight = 200;
 const CGFloat kMinWidth = 200;
-const CGFloat kMaxWidth = 250;
+const CGFloat kMaxWidth = 300;
 const CGFloat kMaxHeight = 400;
 const CGFloat kMinMargin = 16;
 }  // namespace
