@@ -36,16 +36,20 @@ WifiDataProviderChromeOs::~WifiDataProviderChromeOs() = default;
 void WifiDataProviderChromeOs::StartDataProvider() {
   DCHECK(CalledOnClientThread());
 
-  if (!WifiPollingPolicy::IsInitialized())
-    WifiPollingPolicy::Initialize(CreatePollingPolicy());
-  DCHECK(WifiPollingPolicy::IsInitialized());
+  DCHECK(polling_policy_ == nullptr);
+  polling_policy_.reset(
+      new GenericWifiPollingPolicy<kDefaultPollingIntervalMilliseconds,
+                                   kNoChangePollingIntervalMilliseconds,
+                                   kTwoNoChangePollingIntervalMilliseconds,
+                                   kNoWifiPollingIntervalMilliseconds>);
 
-  ScheduleStart(WifiPollingPolicy::Get()->PollingInterval());
+  ScheduleStart();
 }
 
 void WifiDataProviderChromeOs::StopDataProvider() {
   DCHECK(CalledOnClientThread());
 
+  polling_policy_.reset();
   ScheduleStop();
 }
 
@@ -79,7 +83,7 @@ void WifiDataProviderChromeOs::DidWifiScanTaskNoResults() {
   // Schedule next scan if started (StopDataProvider could have been called
   // in between DoWifiScanTaskOnNetworkHandlerThread and this method).
   if (started_)
-    ScheduleNextScan(WifiPollingPolicy::Get()->NoWifiInterval());
+    ScheduleNextScan(polling_policy_->NoWifiInterval());
 }
 
 void WifiDataProviderChromeOs::DidWifiScanTask(const WifiData& new_data) {
@@ -89,8 +93,8 @@ void WifiDataProviderChromeOs::DidWifiScanTask(const WifiData& new_data) {
   // Schedule next scan if started (StopDataProvider could have been called
   // in between DoWifiScanTaskOnNetworkHandlerThread and this method).
   if (started_) {
-    WifiPollingPolicy::Get()->UpdatePollingInterval(update_available);
-    ScheduleNextScan(WifiPollingPolicy::Get()->PollingInterval());
+    polling_policy_->UpdatePollingInterval(update_available);
+    ScheduleNextScan(polling_policy_->PollingInterval());
   }
 
   if (update_available || !is_first_scan_complete_) {
@@ -120,7 +124,7 @@ void WifiDataProviderChromeOs::ScheduleStop() {
   started_ = false;
 }
 
-void WifiDataProviderChromeOs::ScheduleStart(int interval) {
+void WifiDataProviderChromeOs::ScheduleStart() {
   DCHECK(CalledOnClientThread());
   DCHECK(!started_);
   if (!NetworkHandler::IsInitialized()) {
@@ -128,12 +132,13 @@ void WifiDataProviderChromeOs::ScheduleStart(int interval) {
     return;
   }
   started_ = true;
-  NetworkHandler::Get()->task_runner()->PostDelayedTask(
+  // Perform first scan ASAP regardless of the polling policy. If this scan
+  // fails we'll retry at a rate in line with the polling policy.
+  NetworkHandler::Get()->task_runner()->PostTask(
       FROM_HERE,
       base::Bind(
           &WifiDataProviderChromeOs::DoWifiScanTaskOnNetworkHandlerThread,
-          this),
-      base::TimeDelta::FromMilliseconds(interval));
+          this));
 }
 
 bool WifiDataProviderChromeOs::GetAccessPointData(
@@ -169,14 +174,6 @@ bool WifiDataProviderChromeOs::GetAccessPointData(
   if (age_ms > kTwoNoChangePollingIntervalMilliseconds * 2)
     return false;
   return true;
-}
-
-std::unique_ptr<WifiPollingPolicy>
-WifiDataProviderChromeOs::CreatePollingPolicy() {
-  return std::make_unique<GenericWifiPollingPolicy<
-      kDefaultPollingIntervalMilliseconds, kNoChangePollingIntervalMilliseconds,
-      kTwoNoChangePollingIntervalMilliseconds,
-      kNoWifiPollingIntervalMilliseconds>>();
 }
 
 // static
