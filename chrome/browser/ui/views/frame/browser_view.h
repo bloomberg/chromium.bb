@@ -79,7 +79,6 @@ enum class Channel;
 }
 
 namespace views {
-class AccessiblePaneView;
 class ExternalFocusTracker;
 class WebView;
 }
@@ -518,10 +517,6 @@ class BrowserView : public BrowserWindow,
   // tab navigations and need to give users a visual clue as to what tabs are
   // affected.
   void RevealTabStripIfNeeded();
-
-  // Appends to |toolbars| a pointer to each AccessiblePaneView that
-  // can be traversed using F6, in the order they should be traversed.
-  void GetAccessiblePanes(std::vector<views::AccessiblePaneView*>* panes);
 
   // Constructs and initializes the child views.
   void InitViews();
