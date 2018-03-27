@@ -13,6 +13,7 @@
 namespace web {
 
 class WebState;
+class TestWebState;
 
 // Decides the navigation policy for a web state.
 class WebStatePolicyDecider {
@@ -55,6 +56,7 @@ class WebStatePolicyDecider {
 
  private:
   friend class WebStateImpl;
+  friend class TestWebState;
 
   // Resets the current web state.
   void ResetWebState();
