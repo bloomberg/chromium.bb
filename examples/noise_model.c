@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
   } else {
     die("--input-denoised file must be specified");
   }
-  aom_film_grain_table_t grain_table = { 0 };
+  aom_film_grain_table_t grain_table = { 0, 0 };
 
   int64_t prev_timestamp = 0;
   int frame_count = 0;
