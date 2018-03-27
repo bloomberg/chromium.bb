@@ -658,6 +658,49 @@ def _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api):
     return []
 
 
+def _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api):
+  """This is a simplified version of
+  _CheckNoProductionCodeUsingTestOnlyFunctions for Java files.
+  """
+  javadoc_start_re = input_api.re.compile(r'^\s*/\*\*')
+  javadoc_end_re = input_api.re.compile(r'^\s*\*/')
+  name_pattern = r'ForTest(s|ing)?'
+  # Describes an occurrence of "ForTest*" inside a // comment.
+  comment_re = input_api.re.compile(r'//.*%s' % name_pattern)
+  # Catch calls.
+  inclusion_re = input_api.re.compile(r'(%s)\s*\(' % name_pattern)
+  # Ignore definitions. (Comments are ignored separately.)
+  exclusion_re = input_api.re.compile(r'(%s)[^;]+\{' % name_pattern)
+
+  problems = []
+  sources = lambda x: input_api.FilterSourceFile(
+    x,
+    black_list=(('(?i).*test', r'.*\/junit\/')
+                + input_api.DEFAULT_BLACK_LIST),
+    white_list=(r'.*\.java$',)
+  )
+  for f in input_api.AffectedFiles(include_deletes=False, file_filter=sources):
+    local_path = f.LocalPath()
+    is_inside_javadoc = False
+    for line_number, line in f.ChangedContents():
+      if is_inside_javadoc and javadoc_end_re.search(line):
+        is_inside_javadoc = False
+      if not is_inside_javadoc and javadoc_start_re.search(line):
+        is_inside_javadoc = True
+      if is_inside_javadoc:
+        continue
+      if (inclusion_re.search(line) and
+          not comment_re.search(line) and
+          not exclusion_re.search(line)):
+        problems.append(
+          '%s:%d\n    %s' % (local_path, line_number, line.strip()))
+
+  if problems:
+    return [output_api.PresubmitPromptOrNotify(_TEST_ONLY_WARNING, problems)]
+  else:
+    return []
+
+
 def _CheckNoIOStreamInHeaders(input_api, output_api):
   """Checks to make sure no .h files include <iostream>."""
   files = []
@@ -2667,6 +2710,8 @@ def _CommonChecks(input_api, output_api):
 
   results.extend(
       _CheckNoProductionCodeUsingTestOnlyFunctions(input_api, output_api))
+  results.extend(
+      _CheckNoProductionCodeUsingTestOnlyFunctionsJava(input_api, output_api))
   results.extend(_CheckNoIOStreamInHeaders(input_api, output_api))
   results.extend(_CheckNoUNIT_TESTInSourceFiles(input_api, output_api))
   results.extend(_CheckDCHECK_IS_ONHasBraces(input_api, output_api))
