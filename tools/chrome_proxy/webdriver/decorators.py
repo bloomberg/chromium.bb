@@ -125,3 +125,12 @@ def Slow(func):
     else:
       func(*args, **kwargs)
   return wrapper
+
+def SkipIfForcedBrowserArg(arg):
+  def puesdo_wrapper(func):
+    def wrapper(*args, **kwargs):
+      if ParseFlags().browser_args and arg in ParseFlags().browser_args:
+        args[0].skipTest(
+          'Test skipped because "%s" was given on the command line' % arg)
+    return wrapper
+  return puesdo_wrapper
