@@ -32,8 +32,7 @@
 namespace extensions {
 
 ChromeProcessManagerDelegate::ChromeProcessManagerDelegate() {
-  registrar_.Add(this,
-                 chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllSources());
   registrar_.Add(this,
                  chrome::NOTIFICATION_PROFILE_CREATED,
@@ -112,7 +111,7 @@ bool ChromeProcessManagerDelegate::DeferCreatingStartupBackgroundHosts(
 
   // There are no browser windows open and the browser process was
   // started to show the app launcher. Background hosts will be loaded later
-  // via NOTIFICATION_BROWSER_WINDOW_READY. http://crbug.com/178260
+  // via NOTIFICATION_BROWSER_OPENED. http://crbug.com/178260
   return chrome::GetBrowserCount(profile) == 0 &&
          base::CommandLine::ForCurrentProcess()->HasSwitch(
              switches::kShowAppList);
@@ -123,9 +122,9 @@ void ChromeProcessManagerDelegate::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
+    case chrome::NOTIFICATION_BROWSER_OPENED: {
       Browser* browser = content::Source<Browser>(source).ptr();
-      OnBrowserWindowReady(browser);
+      OnBrowserOpened(browser);
       break;
     }
     case chrome::NOTIFICATION_PROFILE_CREATED: {
@@ -143,7 +142,7 @@ void ChromeProcessManagerDelegate::Observe(
   }
 }
 
-void ChromeProcessManagerDelegate::OnBrowserWindowReady(Browser* browser) {
+void ChromeProcessManagerDelegate::OnBrowserOpened(Browser* browser) {
   Profile* profile = browser->profile();
   DCHECK(profile);
 

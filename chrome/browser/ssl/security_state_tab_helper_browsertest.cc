@@ -2152,7 +2152,7 @@ IN_PROC_BROWSER_TEST_F(SecurityStateTabHelperTest,
   // Create a new browser in Guest Mode.
   EXPECT_EQ(1U, BrowserList::GetInstance()->size());
   content::WindowedNotificationObserver browser_creation_observer(
-      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      chrome::NOTIFICATION_BROWSER_OPENED,
       content::NotificationService::AllSources());
   profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
   browser_creation_observer.Wait();

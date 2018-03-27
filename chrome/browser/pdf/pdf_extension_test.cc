@@ -1141,7 +1141,7 @@ IN_PROC_BROWSER_TEST_F(PDFExtensionLinkClickTest, ShiftLeft) {
   WebContents* web_contents = GetActiveWebContents();
 
   content::WindowedNotificationObserver observer(
-      chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+      chrome::NOTIFICATION_BROWSER_OPENED,
       content::NotificationService::AllSources());
   content::SimulateMouseClickAt(web_contents, blink::WebInputEvent::kShiftKey,
                                 blink::WebMouseEvent::Button::kLeft,

@@ -233,7 +233,7 @@ void MultiUserWindowManagerChromeOS::Init() {
 
   // The BrowserListObserver would have been better to use then the old
   // notification system, but that observer fires before the window got created.
-  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+  registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                  content::NotificationService::AllSources());
 
   // Add an app window observer & all already running apps.
@@ -484,7 +484,7 @@ void MultiUserWindowManagerChromeOS::Observe(
     int type,
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
-  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_WINDOW_READY, type);
+  DCHECK_EQ(chrome::NOTIFICATION_BROWSER_OPENED, type);
   AddBrowserWindow(content::Source<Browser>(source).ptr());
 }
 

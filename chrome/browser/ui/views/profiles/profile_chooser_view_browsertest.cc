@@ -155,7 +155,7 @@ class ProfileChooserViewExtensionsTest
     }
     if (name == kGuest || name == kDiceGuest) {
       content::WindowedNotificationObserver browser_creation_observer(
-          chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+          chrome::NOTIFICATION_BROWSER_OPENED,
           content::NotificationService::AllSources());
       profiles::SwitchToGuestProfile(ProfileManager::CreateCallback());
       browser_creation_observer.Wait();

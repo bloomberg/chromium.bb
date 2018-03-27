@@ -113,7 +113,7 @@ class ProfileLaunchObserver : public content::NotificationObserver {
         activated_profile_(false) {
     registrar_.Add(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                    content::NotificationService::AllSources());
-    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+    registrar_.Add(this, chrome::NOTIFICATION_BROWSER_OPENED,
                    content::NotificationService::AllSources());
   }
   ~ProfileLaunchObserver() override {}
@@ -133,7 +133,7 @@ class ProfileLaunchObserver : public content::NotificationObserver {
         MaybeActivateProfile();
         break;
       }
-      case chrome::NOTIFICATION_BROWSER_WINDOW_READY: {
+      case chrome::NOTIFICATION_BROWSER_OPENED: {
         Browser* browser = content::Source<Browser>(source).ptr();
         DCHECK(browser);
         opened_profiles_.insert(browser->profile());
@@ -153,7 +153,7 @@ class ProfileLaunchObserver : public content::NotificationObserver {
     launched_profiles_.insert(profile);
     if (chrome::FindBrowserWithProfile(profile)) {
       // A browser may get opened before we get initialized (e.g., in tests),
-      // so we never see the NOTIFICATION_BROWSER_WINDOW_READY for it.
+      // so we never see the NOTIFICATION_BROWSER_OPENED for it.
       opened_profiles_.insert(profile);
     }
   }
@@ -189,7 +189,7 @@ class ProfileLaunchObserver : public content::NotificationObserver {
         base::BindOnce(&ProfileLaunchObserver::ActivateProfile,
                        base::Unretained(this)));
     // Avoid posting more than once before ActivateProfile gets called.
-    registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_WINDOW_READY,
+    registrar_.Remove(this, chrome::NOTIFICATION_BROWSER_OPENED,
                       content::NotificationService::AllSources());
     registrar_.Remove(this, chrome::NOTIFICATION_PROFILE_DESTROYED,
                       content::NotificationService::AllSources());
