@@ -9,6 +9,7 @@
 #include "base/guid.h"
 #include "base/values.h"
 #include "components/sync/base/time.h"
+#include "components/sync/base/unique_position.h"
 #include "components/sync/engine/non_blocking_sync_common.h"
 #include "components/sync/engine_impl/model_type_worker.h"
 #include "components/sync/protocol/proto_value_conversions.h"
@@ -153,18 +154,29 @@ void NonBlockingTypeCommitContribution::PopulateCommitProto(
     const CommitRequestData& commit_entity,
     sync_pb::SyncEntity* commit_proto) {
   const EntityData& entity_data = commit_entity.entity.value();
-
   commit_proto->set_id_string(entity_data.id);
   commit_proto->set_client_defined_unique_tag(entity_data.client_tag_hash);
   commit_proto->set_version(commit_entity.base_version);
   commit_proto->set_deleted(entity_data.is_deleted());
-  commit_proto->set_folder(false);
+  commit_proto->set_folder(entity_data.is_folder);
   commit_proto->set_name(entity_data.non_unique_name);
-  // TODO(stanisc): This doesn't support bookmarks yet.
-  DCHECK(entity_data.parent_id.empty());
-  // TODO(crbug.com/516866): Set parent_id_string for hierarchical types here.
 
   if (!entity_data.is_deleted()) {
+    // Handle bookmarks separately.
+    if (entity_data.specifics.has_bookmark()) {
+      // position_in_parent field is set only for legacy reasons.  See comments
+      // in sync.proto for more information.
+      commit_proto->set_position_in_parent(
+          syncer::UniquePosition::FromProto(entity_data.unique_position)
+              .ToInt64());
+      commit_proto->mutable_unique_position()->CopyFrom(
+          entity_data.unique_position);
+      // TODO(mamir): check if parent_id_string needs to be populated for
+      // non-deletions.
+      if (!entity_data.parent_id.empty()) {
+        commit_proto->set_parent_id_string(entity_data.parent_id);
+      }
+    }
     commit_proto->set_ctime(TimeToProtoTime(entity_data.creation_time));
     commit_proto->set_mtime(TimeToProtoTime(entity_data.modification_time));
     commit_proto->mutable_specifics()->CopyFrom(entity_data.specifics);

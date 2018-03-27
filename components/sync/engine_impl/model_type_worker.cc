@@ -137,66 +137,86 @@ SyncerError ModelTypeWorker::ProcessGetUpdatesResponse(
     // TODO(crbug.com/516866): this wouldn't be true for bookmarks.
     DCHECK(!client_tag_hash.empty());
 
-    // Prepare the message for the model thread.
-    EntityData data;
-    data.id = update_entity->id_string();
-    data.client_tag_hash = client_tag_hash;
-    data.creation_time = ProtoTimeToTime(update_entity->ctime());
-    data.modification_time = ProtoTimeToTime(update_entity->mtime());
-    data.non_unique_name = update_entity->name();
+    WorkerEntityTracker* entity = GetOrCreateEntityTracker(client_tag_hash);
 
-    UpdateResponseData response_data;
-    response_data.response_version = update_entity->version();
-
-    WorkerEntityTracker* entity =
-        GetOrCreateEntityTracker(data.client_tag_hash);
-
-    if (!entity->UpdateContainsNewVersion(response_data.response_version)) {
+    if (!entity->UpdateContainsNewVersion(update_entity->version())) {
       status->increment_num_reflected_updates_downloaded_by(1);
       ++counters->num_reflected_updates_received;
     }
+
     if (update_entity->deleted()) {
       status->increment_num_tombstone_updates_downloaded_by(1);
       ++counters->num_tombstone_updates_received;
     }
 
-    // Deleted entities must use the default instance of EntitySpecifics in
-    // order for EntityData to correctly reflect that they are deleted.
-    const sync_pb::EntitySpecifics& specifics =
-        update_entity->deleted() ? sync_pb::EntitySpecifics::default_instance()
-                                 : update_entity->specifics();
-
-    // Check if specifics are encrypted and try to decrypt if so.
-    if (!specifics.has_encrypted()) {
-      // No encryption.
-      data.specifics = specifics;
-      response_data.entity = data.PassToPtr();
-      entity->ReceiveUpdate(response_data);
-      pending_updates_.push_back(response_data);
-    } else if (cryptographer_ &&
-               cryptographer_->CanDecrypt(specifics.encrypted())) {
-      // Encrypted and we know the key.
-      if (DecryptSpecifics(*cryptographer_, specifics, &data.specifics)) {
-        response_data.entity = data.PassToPtr();
-        response_data.encryption_key_name = specifics.encrypted().key_name();
+    UpdateResponseData response_data;
+    switch (PopulateUpdateResponseData(cryptographer_.get(), *update_entity,
+                                       &response_data)) {
+      case SUCCESS:
         entity->ReceiveUpdate(response_data);
         pending_updates_.push_back(response_data);
-      } else {
+        break;
+      case DECRYPTION_PENDING:
+        entity->ReceiveEncryptedUpdate(response_data);
+        has_encrypted_updates_ = true;
+        break;
+      case FAILED_TO_DECRYPT:
         // Failed to decrypt the entity. Likely it is corrupt. Drop the entity
         // and move on.
         entities_.erase(client_tag_hash);
-      }
-    } else {
-      // Can't decrypt right now. Ask the entity tracker to handle it.
-      data.specifics = specifics;
-      response_data.entity = data.PassToPtr();
-      entity->ReceiveEncryptedUpdate(response_data);
-      has_encrypted_updates_ = true;
+        break;
     }
   }
 
   debug_info_emitter_->EmitUpdateCountersUpdate();
   return SYNCER_OK;
+}
+
+// static
+// |cryptographer| can be null.
+// |response_data| must be not null.
+ModelTypeWorker::DecryptionStatus ModelTypeWorker::PopulateUpdateResponseData(
+    const Cryptographer* cryptographer,
+    const sync_pb::SyncEntity& update_entity,
+    UpdateResponseData* response_data) {
+  response_data->response_version = update_entity.version();
+  EntityData data;
+  // Prepare the message for the model thread.
+  data.id = update_entity.id_string();
+  data.client_tag_hash = update_entity.client_defined_unique_tag();
+  data.creation_time = ProtoTimeToTime(update_entity.ctime());
+  data.modification_time = ProtoTimeToTime(update_entity.mtime());
+  data.non_unique_name = update_entity.name();
+  data.is_folder = update_entity.folder();
+  data.parent_id = update_entity.parent_id_string();
+  data.unique_position = update_entity.unique_position();
+
+  // Deleted entities must use the default instance of EntitySpecifics in
+  // order for EntityData to correctly reflect that they are deleted.
+  const sync_pb::EntitySpecifics& specifics =
+      update_entity.deleted() ? sync_pb::EntitySpecifics::default_instance()
+                              : update_entity.specifics();
+
+  // Check if specifics are encrypted and try to decrypt if so.
+  if (!specifics.has_encrypted()) {
+    // No encryption.
+    data.specifics = specifics;
+    response_data->entity = data.PassToPtr();
+    return SUCCESS;
+  }
+  if (cryptographer && cryptographer->CanDecrypt(specifics.encrypted())) {
+    // Encrypted and we know the key.
+    if (!DecryptSpecifics(*cryptographer, specifics, &data.specifics)) {
+      return FAILED_TO_DECRYPT;
+    }
+    response_data->entity = data.PassToPtr();
+    response_data->encryption_key_name = specifics.encrypted().key_name();
+    return SUCCESS;
+  }
+  // Can't decrypt right now. Ask the entity tracker to handle it.
+  data.specifics = specifics;
+  response_data->entity = data.PassToPtr();
+  return DECRYPTION_PENDING;
 }
 
 void ModelTypeWorker::ApplyUpdates(StatusController* status) {
