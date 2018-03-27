@@ -650,7 +650,6 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     }
     if (!is_win) {
       cflags = [
-        "-ffp-contract=fast",
         "-mavx2",
         "-mbmi",
         "-mbmi2",
