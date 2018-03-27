@@ -782,6 +782,9 @@ const char kMarketUrlForTesting[] = "market-url-for-testing";
 // Specifies Android phone page loading progress bar animation.
 const char kProgressBarAnimation[]          = "progress-bar-animation";
 
+// Specifies a base URL for the trusted CDN for tests.
+const char kTrustedCDNBaseURLForTests[] = "trusted-cdn-base-url-for-tests";
+
 // Custom WebAPK server URL for the sake of testing.
 const char kWebApkServerUrl[] = "webapk-server-url";
 #endif  // defined(OS_ANDROID)

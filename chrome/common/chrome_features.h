@@ -278,6 +278,10 @@ extern const base::Feature kSecurityKeyAttestationPrompt;
 extern const base::Feature kShowAllDialogsWithViewsToolkit;
 #endif
 
+#if defined(OS_ANDROID)
+extern const base::Feature kShowTrustedPublisherURL;
+#endif
+
 extern const base::Feature kSimplifiedFullscreenUI;
 
 #if defined(OS_ANDROID)
