@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/memory/shared_memory_handle.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/stl_util.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -201,6 +202,13 @@ void PrintCompositeClient::OnDidCompositePageToPdf(
     printing::mojom::PdfCompositor::CompositePageToPdfCallback callback,
     printing::mojom::PdfCompositor::Status status,
     mojo::ScopedSharedBufferHandle handle) {
+  // Due to https://crbug.com/742517, we can not add and use COUNT for enums in
+  // mojo.
+  UMA_HISTOGRAM_ENUMERATION(
+      "CompositePageToPdf.Status", status,
+      static_cast<int32_t>(
+          printing::mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
+          1);
   std::move(callback).Run(status, std::move(handle));
 }
 
@@ -212,6 +220,14 @@ void PrintCompositeClient::OnDidCompositeDocumentToPdf(
   RemoveCompositeRequest(document_cookie);
   // Clear all stored printed subframes.
   printed_subframes_.erase(document_cookie);
+
+  // Due to https://crbug.com/742517, we can not add and use COUNT for enums in
+  // mojo.
+  UMA_HISTOGRAM_ENUMERATION(
+      "CompositeDocToPdf.Status", status,
+      static_cast<int32_t>(
+          printing::mojom::PdfCompositor::Status::COMPOSTING_FAILURE) +
+          1);
   std::move(callback).Run(status, std::move(handle));
 }
 

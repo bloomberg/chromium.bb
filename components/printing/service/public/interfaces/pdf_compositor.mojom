@@ -8,11 +8,13 @@ const string kServiceName = "pdf_compositor";
 
 interface PdfCompositor {
   // The status of composition and conversion execution.
+  // These values are persisted to logs. Entries should not be renumbered and
+  // numeric values should never be reused.
   enum Status {
-    SUCCESS,
-    HANDLE_MAP_ERROR,
-    CONTENT_FORMAT_ERROR,
-    COMPOSTING_FAILURE,
+    SUCCESS = 0,
+    HANDLE_MAP_ERROR = 1,
+    CONTENT_FORMAT_ERROR = 2,
+    COMPOSTING_FAILURE = 3,
   };
 
   // Notifies that a subframe is unavailable, such as the render frame process
