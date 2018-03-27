@@ -581,9 +581,17 @@ UIResponder* GetFirstResponder() {
 // action. This is a no-op for devices that do not support it.
 void TriggerHapticFeedbackForAction() {
   if (@available(iOS 10, *)) {
-    UIImpactFeedbackGenerator* generator =
-        [[UIImpactFeedbackGenerator alloc] init];
-    [generator impactOccurred];
+    // Although Apple documentation claims that UIFeedbackGenerator and its
+    // concrete subclasses are available on iOS 10+, they are not really
+    // available on an app whose deployment target is iOS 10.0 (iOS 10.1+ are
+    // okay) and Chrome will fail at dynamic link time and instantly crash.
+    // NSClassFromString() checks if Objective-C run-time has the class before
+    // using it.
+    Class generatorClass = NSClassFromString(@"UIImpactFeedbackGenerator");
+    if (generatorClass) {
+      UIImpactFeedbackGenerator* generator = [[generatorClass alloc] init];
+      [generator impactOccurred];
+    }
   }
 }
 
@@ -591,9 +599,17 @@ void TriggerHapticFeedbackForAction() {
 // This is a no-op for devices that do not support it.
 void TriggerHapticFeedbackForSelectionChange() {
   if (@available(iOS 10, *)) {
-    UISelectionFeedbackGenerator* generator =
-        [[UISelectionFeedbackGenerator alloc] init];
-    [generator selectionChanged];
+    // Although Apple documentation claims that UIFeedbackGenerator and its
+    // concrete subclasses are available on iOS 10+, they are not really
+    // available on an app whose deployment target is iOS 10.0 (iOS 10.1+ are
+    // okay) and Chrome will fail at dynamic link time and instantly crash.
+    // NSClassFromString() checks if Objective-C run-time has the class before
+    // using it.
+    Class generatorClass = NSClassFromString(@"UISelectionFeedbackGenerator");
+    if (generatorClass) {
+      UISelectionFeedbackGenerator* generator = [[generatorClass alloc] init];
+      [generator selectionChanged];
+    }
   }
 }
 
@@ -601,9 +617,19 @@ void TriggerHapticFeedbackForSelectionChange() {
 // This is a no-op for devices that do not support it.
 void TriggerHapticFeedbackForNotification(UINotificationFeedbackType type) {
   if (@available(iOS 10, *)) {
-    UINotificationFeedbackGenerator* generator =
-        [[UINotificationFeedbackGenerator alloc] init];
-    [generator notificationOccurred:type];
+    // Although Apple documentation claims that UIFeedbackGenerator and its
+    // concrete subclasses are available on iOS 10+, they are not really
+    // available on an app whose deployment target is iOS 10.0 (iOS 10.1+ are
+    // okay) and Chrome will fail at dynamic link time and instantly crash.
+    // NSClassFromString() checks if Objective-C run-time has the class before
+    // using it.
+    Class generatorClass =
+        NSClassFromString(@"UINotificationFeedbackGenerator");
+    if (generatorClass) {
+      UINotificationFeedbackGenerator* generator =
+          [[generatorClass alloc] init];
+      [generator notificationOccurred:type];
+    }
   }
 }
 
