@@ -40,11 +40,6 @@
 
 namespace content {
 
-static const uint32_t kGrInvalidateState =
-    kRenderTarget_GrGLBackendState | kTextureBinding_GrGLBackendState |
-    kView_GrGLBackendState | kVertex_GrGLBackendState |
-    kProgram_GrGLBackendState | kPixelStore_GrGLBackendState;
-
 namespace {
 
 bool IsCodecSupported(media::VideoCodec codec) {
@@ -355,8 +350,6 @@ bool VideoDecoderShim::YUVConverter::Initialize() {
 
   gl_->TraceEndCHROMIUM();
 
-  context_provider_->InvalidateGrContext(kGrInvalidateState);
-
   return (program_ != 0);
 }
 
@@ -587,8 +580,6 @@ void VideoDecoderShim::YUVConverter::Convert(
   gl_->PixelStorei(GL_UNPACK_ROW_LENGTH_EXT, 0);
 
   gl_->TraceEndCHROMIUM();
-
-  context_provider_->InvalidateGrContext(kGrInvalidateState);
 }
 
 struct VideoDecoderShim::PendingDecode {

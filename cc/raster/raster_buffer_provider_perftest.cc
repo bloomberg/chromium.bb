@@ -122,9 +122,6 @@ class PerfContextProvider
   viz::ContextCacheController* CacheController() override {
     return &cache_controller_;
   }
-  void InvalidateGrContext(uint32_t state) override {
-    test_context_provider_->GrContext()->resetContext(state);
-  }
   base::Lock* GetLock() override { return &context_lock_; }
   void AddObserver(viz::ContextLostObserver* obs) override {}
   void RemoveObserver(viz::ContextLostObserver* obs) override {}

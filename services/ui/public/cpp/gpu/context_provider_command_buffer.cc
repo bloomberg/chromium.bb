@@ -19,7 +19,6 @@
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/viz/common/gpu/context_cache_controller.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
-#include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_trace_implementation.h"
 #include "gpu/command_buffer/client/gpu_switches.h"
 #include "gpu/command_buffer/client/implementation_base.h"
@@ -30,6 +29,7 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/ipc/client/command_buffer_proxy_impl.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/skia_bindings/gles2_implementation_with_grcontext_support.h"
 #include "gpu/skia_bindings/grcontext_for_gles2_interface.h"
 #include "services/ui/public/cpp/gpu/command_buffer_metrics.h"
 #include "third_party/skia/include/core/SkTraceMemoryDump.h"
@@ -150,6 +150,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
     const GURL& active_url,
     bool automatic_flushes,
     bool support_locking,
+    bool support_grcontext,
     const gpu::SharedMemoryLimits& memory_limits,
     const gpu::ContextCreationAttribs& attributes,
     ContextProviderCommandBuffer* shared_context_provider,
@@ -160,6 +161,7 @@ ContextProviderCommandBuffer::ContextProviderCommandBuffer(
       active_url_(active_url),
       automatic_flushes_(automatic_flushes),
       support_locking_(support_locking),
+      support_grcontext_(support_grcontext),
       memory_limits_(memory_limits),
       attributes_(attributes),
       context_type_(type),
@@ -272,6 +274,7 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
     if (attributes_.enable_raster_decoder) {
       DCHECK(attributes_.enable_raster_interface);
       DCHECK(!attributes_.enable_gles2_interface);
+      DCHECK(!support_grcontext_);
       // The raster helper writes the command buffer protocol.
       auto raster_helper =
           std::make_unique<gpu::raster::RasterCmdHelper>(command_buffer_.get());
@@ -322,12 +325,22 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
       // The GLES2Implementation exposes the OpenGLES2 API, as well as the
       // gpu::ContextSupport interface.
       constexpr bool support_client_side_arrays = false;
-      gles2_impl_ = std::make_unique<gpu::gles2::GLES2Implementation>(
-          gles2_helper.get(), share_group, transfer_buffer_.get(),
-          attributes_.bind_generates_resource,
-          attributes_.lose_context_when_out_of_memory,
-          support_client_side_arrays, command_buffer_.get());
-
+      if (support_grcontext_) {
+        // GLES2ImplementationWithGrContextSupport adds a bit of overhead, so
+        // we only use it if grcontext_support was requested.
+        gles2_impl_ = std::make_unique<
+            skia_bindings::GLES2ImplementationWithGrContextSupport>(
+            gles2_helper.get(), share_group, transfer_buffer_.get(),
+            attributes_.bind_generates_resource,
+            attributes_.lose_context_when_out_of_memory,
+            support_client_side_arrays, command_buffer_.get());
+      } else {
+        gles2_impl_ = std::make_unique<gpu::gles2::GLES2Implementation>(
+            gles2_helper.get(), share_group, transfer_buffer_.get(),
+            attributes_.bind_generates_resource,
+            attributes_.lose_context_when_out_of_memory,
+            support_client_side_arrays, command_buffer_.get());
+      }
       bind_result_ = gles2_impl_->Initialize(memory_limits_);
       if (bind_result_ != gpu::ContextResult::kSuccess) {
         DLOG(ERROR) << "Failed to initialize GLES2Implementation.";
@@ -459,6 +472,8 @@ gpu::ContextSupport* ContextProviderCommandBuffer::ContextSupport() {
 class GrContext* ContextProviderCommandBuffer::GrContext() {
   DCHECK(bind_tried_);
   DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
+  DCHECK(support_grcontext_);
+  DCHECK(ContextSupport()->HasGrContextSupport());
   CheckValidThreadOrLockAcquired();
 
   if (gr_context_)
@@ -476,6 +491,7 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
   skia_bindings::GrContextForGLES2Interface::
       DetermineCacheLimitsFromAvailableMemory(&max_resource_cache_bytes,
                                               &max_glyph_cache_texture_bytes);
+
   gpu::gles2::GLES2Interface* gl_interface;
   if (trace_impl_)
     gl_interface = trace_impl_.get();
@@ -483,8 +499,8 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
     gl_interface = gles2_impl_.get();
 
   gr_context_.reset(new skia_bindings::GrContextForGLES2Interface(
-      gl_interface, ContextCapabilities(), max_resource_cache_bytes,
-      max_glyph_cache_texture_bytes));
+      gl_interface, ContextSupport(), ContextCapabilities(),
+      max_resource_cache_bytes, max_glyph_cache_texture_bytes));
   cache_controller_->SetGrContext(gr_context_->get());
 
   // If GlContext is already lost, also abandon the new GrContext.
@@ -498,15 +514,6 @@ class GrContext* ContextProviderCommandBuffer::GrContext() {
 viz::ContextCacheController* ContextProviderCommandBuffer::CacheController() {
   CheckValidThreadOrLockAcquired();
   return cache_controller_.get();
-}
-
-void ContextProviderCommandBuffer::InvalidateGrContext(uint32_t state) {
-  if (gr_context_) {
-    DCHECK(bind_tried_);
-    DCHECK_EQ(bind_result_, gpu::ContextResult::kSuccess);
-    CheckValidThreadOrLockAcquired();
-    gr_context_->ResetContext(state);
-  }
 }
 
 void ContextProviderCommandBuffer::SetDefaultTaskRunner(

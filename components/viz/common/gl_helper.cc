@@ -955,13 +955,6 @@ gfx::Size I420Converter::GetChromaPlaneTextureSize(
                    (output_size.height() + 1) / 2);
 }
 
-// static
-uint32_t ReadbackYUVInterface::GetGrGLBackendStateChanges() {
-  return kTextureBinding_GrGLBackendState | kView_GrGLBackendState |
-         kVertex_GrGLBackendState | kProgram_GrGLBackendState |
-         kRenderTarget_GrGLBackendState;
-}
-
 namespace {
 
 I420ConverterImpl::I420ConverterImpl(GLES2Interface* gl,

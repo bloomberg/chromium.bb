@@ -167,9 +167,6 @@ class ScopedGrContextAccess {
       : context_provider_(context_provider) {
     gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();
     ri->BeginGpuRaster();
-
-    class GrContext* gr_context = context_provider_->GrContext();
-    gr_context->resetContext();
   }
   ~ScopedGrContextAccess() {
     gpu::raster::RasterInterface* ri = context_provider_->RasterInterface();

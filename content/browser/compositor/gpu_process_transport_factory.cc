@@ -394,10 +394,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       bool support_locking = true;
       bool support_gles2_interface = false;
       bool support_raster_interface = true;
+      bool support_grcontext = false;
       shared_worker_context_provider_ = CreateContextCommon(
           gpu_channel_host, gpu::kNullSurfaceHandle, need_alpha_channel,
           false /* support_stencil */, support_locking, support_gles2_interface,
-          support_raster_interface,
+          support_raster_interface, support_grcontext,
           ui::command_buffer_metrics::BROWSER_WORKER_CONTEXT);
       auto result = shared_worker_context_provider_->BindToCurrentThread();
       if (result != gpu::ContextResult::kSuccess) {
@@ -420,10 +421,11 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       bool support_locking = false;
       bool support_gles2_interface = true;
       bool support_raster_interface = false;
+      bool support_grcontext = true;
       context_provider = CreateContextCommon(
           std::move(gpu_channel_host), surface_handle, need_alpha_channel,
           support_stencil, support_locking, support_gles2_interface,
-          support_raster_interface,
+          support_raster_interface, support_grcontext,
           ui::command_buffer_metrics::DISPLAY_COMPOSITOR_ONSCREEN_CONTEXT);
       // On Mac, GpuCommandBufferMsg_SwapBuffersCompleted must be handled in
       // a nested run loop during resize.
@@ -969,9 +971,11 @@ GpuProcessTransportFactory::SharedMainThreadContextProvider() {
   bool support_locking = false;
   bool support_gles2_interface = true;
   bool support_raster_interface = false;
+  bool support_grcontext = true;
   shared_main_thread_contexts_ = CreateContextCommon(
       std::move(gpu_channel_host), gpu::kNullSurfaceHandle, need_alpha_channel,
       false, support_locking, support_gles2_interface, support_raster_interface,
+      support_grcontext,
       ui::command_buffer_metrics::BROWSER_OFFSCREEN_MAINTHREAD_CONTEXT);
   shared_main_thread_contexts_->AddObserver(this);
   auto result = shared_main_thread_contexts_->BindToCurrentThread();
@@ -1060,6 +1064,7 @@ GpuProcessTransportFactory::CreateContextCommon(
     bool support_locking,
     bool support_gles2_interface,
     bool support_raster_interface,
+    bool support_grcontext,
     ui::command_buffer_metrics::ContextType type) {
   DCHECK(gpu_channel_host);
   DCHECK(!is_gpu_compositing_disabled_);
@@ -1100,7 +1105,8 @@ GpuProcessTransportFactory::CreateContextCommon(
   return base::MakeRefCounted<ui::ContextProviderCommandBuffer>(
       std::move(gpu_channel_host), GetGpuMemoryBufferManager(), stream_id,
       stream_priority, surface_handle, url, automatic_flushes, support_locking,
-      gpu::SharedMemoryLimits(), attributes, nullptr /* share_context */, type);
+      support_grcontext, gpu::SharedMemoryLimits(), attributes,
+      nullptr /* share_context */, type);
 }
 
 }  // namespace content

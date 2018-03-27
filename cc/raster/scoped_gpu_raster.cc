@@ -30,8 +30,12 @@ void ScopedGpuRaster::BeginGpuRaster() {
   // arguments even when tracing is disabled.
   gl->TraceBeginCHROMIUM("ScopedGpuRaster", "GpuRasterization");
 
-  class GrContext* gr_context = context_provider_->GrContext();
-  gr_context->resetContext();
+  // TODO(junov): The following should not be necessary because state changes
+  // are supposed to be automatically tracked and handled by
+  // GLES2ImplementationWithGrContextSupport.  Need to figure out what is
+  // dirtying the vertex attribute state without being detected.
+  GrContext* gr_context = context_provider_->GrContext();
+  gr_context->resetContext(kVertex_GrGLBackendState);
 }
 
 void ScopedGpuRaster::EndGpuRaster() {

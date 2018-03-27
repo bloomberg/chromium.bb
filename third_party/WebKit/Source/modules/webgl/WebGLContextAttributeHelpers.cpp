@@ -32,7 +32,8 @@ Platform::ContextAttributes ToPlatformContextAttributes(
   Platform::ContextAttributes result;
   result.fail_if_major_performance_caveat =
       attrs.fail_if_major_performance_caveat;
-  result.web_gl_version = web_gl_version;
+  result.context_type = web_gl_version == 2 ? Platform::kWebGL2ContextType
+                                            : Platform::kWebGL1ContextType;
   if (support_own_offscreen_surface) {
     // Only ask for alpha/depth/stencil/antialias if we may be using the default
     // framebuffer. They are not needed for standard offscreen rendering.

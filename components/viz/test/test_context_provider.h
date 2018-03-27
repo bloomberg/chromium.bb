@@ -62,7 +62,6 @@ class TestContextProvider
   gpu::ContextSupport* ContextSupport() override;
   class GrContext* GrContext() override;
   ContextCacheController* CacheController() override;
-  void InvalidateGrContext(uint32_t state) override;
   base::Lock* GetLock() override;
   void AddObserver(ContextLostObserver* obs) override;
   void RemoveObserver(ContextLostObserver* obs) override;
