@@ -194,7 +194,11 @@ interface AudioWorklet : Worklet
     method constructor
 interface AudioWorkletNode : AudioNode
     attribute @@toStringTag
+    getter onprocessorerror
+    getter parameters
+    getter port
     method constructor
+    setter onprocessorerror
 interface BarProp
     attribute @@toStringTag
     getter visible

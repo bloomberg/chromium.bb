@@ -1242,9 +1242,9 @@ PASS AudioWorkletNode interface object name
 PASS AudioWorkletNode interface: existence and properties of interface prototype object
 PASS AudioWorkletNode interface: existence and properties of interface prototype object's "constructor" property
 PASS AudioWorkletNode interface: existence and properties of interface prototype object's @@unscopables property
-FAIL AudioWorkletNode interface: attribute parameters assert_true: The prototype object must have a property "parameters" expected true got false
+PASS AudioWorkletNode interface: attribute parameters
 PASS Unscopable handled correctly for parameters property on AudioWorkletNode
-FAIL AudioWorkletNode interface: attribute port assert_true: The prototype object must have a property "port" expected true got false
+PASS AudioWorkletNode interface: attribute port
 PASS Unscopable handled correctly for port property on AudioWorkletNode
 FAIL AudioWorkletNode interface: attribute processorState assert_true: The prototype object must have a property "processorState" expected true got false
 PASS Unscopable handled correctly for processorState property on AudioWorkletNode
@@ -1252,8 +1252,8 @@ FAIL AudioWorkletNode interface: attribute onprocessorstatechange assert_true: T
 PASS Unscopable handled correctly for onprocessorstatechange property on AudioWorkletNode
 PASS AudioWorkletNode must be primary interface of [object AudioWorkletNode]
 PASS Stringification of [object AudioWorkletNode]
-FAIL AudioWorkletNode interface: [object AudioWorkletNode] must inherit property "parameters" with the proper type assert_inherits: property "parameters" found on object expected in prototype chain
-FAIL AudioWorkletNode interface: [object AudioWorkletNode] must inherit property "port" with the proper type assert_inherits: property "port" found on object expected in prototype chain
+PASS AudioWorkletNode interface: [object AudioWorkletNode] must inherit property "parameters" with the proper type
+PASS AudioWorkletNode interface: [object AudioWorkletNode] must inherit property "port" with the proper type
 FAIL AudioWorkletNode interface: [object AudioWorkletNode] must inherit property "processorState" with the proper type assert_inherits: property "processorState" not found in prototype chain
 FAIL AudioWorkletNode interface: [object AudioWorkletNode] must inherit property "onprocessorstatechange" with the proper type assert_inherits: property "onprocessorstatechange" not found in prototype chain
 PASS AudioNode interface: [object AudioWorkletNode] must inherit property "connect(AudioNode, unsigned long, unsigned long)" with the proper type
