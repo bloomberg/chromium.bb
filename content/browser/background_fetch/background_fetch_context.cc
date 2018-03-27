@@ -114,6 +114,13 @@ void BackgroundFetchContext::StartFetch(
                      std::move(callback)));
 }
 
+void BackgroundFetchContext::GetIconDisplaySize(
+    blink::mojom::BackgroundFetchService::GetIconDisplaySizeCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  delegate_proxy_.GetIconDisplaySize(std::move(callback));
+}
+
 void BackgroundFetchContext::DidCreateRegistration(
     const BackgroundFetchRegistrationId& registration_id,
     const BackgroundFetchOptions& options,

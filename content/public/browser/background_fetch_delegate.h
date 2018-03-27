@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/files/file_path.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -16,6 +17,10 @@
 
 class GURL;
 class SkBitmap;
+
+namespace gfx {
+class Size;
+}
 
 namespace net {
 class HttpRequestHeaders;
@@ -36,6 +41,8 @@ struct BackgroundFetchResult;
 // BackgroundFetchDelegateProxy.
 class CONTENT_EXPORT BackgroundFetchDelegate {
  public:
+  using GetIconDisplaySizeCallback = base::OnceCallback<void(const gfx::Size&)>;
+
   // Client interface that a BackgroundFetchDelegate would use to signal the
   // progress of a background fetch.
   class Client {
@@ -74,6 +81,9 @@ class CONTENT_EXPORT BackgroundFetchDelegate {
   BackgroundFetchDelegate();
 
   virtual ~BackgroundFetchDelegate();
+
+  // Gets size of the icon to display with the Background Fetch UI.
+  virtual void GetIconDisplaySize(GetIconDisplaySizeCallback callback) = 0;
 
   // Creates a new download grouping identified by |job_unique_id|. Further
   // downloads started by DownloadUrl will also use this |job_unique_id| so that

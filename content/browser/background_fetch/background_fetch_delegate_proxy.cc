@@ -10,7 +10,6 @@
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_url_parameters.h"
 #include "content/browser/background_fetch/background_fetch_job_controller.h"
-#include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/download_manager.h"
 
@@ -39,6 +38,29 @@ class BackgroundFetchDelegateProxy::Core
   base::WeakPtr<Core> GetWeakPtrOnUI() {
     DCHECK_CURRENTLY_ON(BrowserThread::UI);
     return weak_ptr_factory_.GetWeakPtr();
+  }
+
+  void ForwardGetIconDisplaySizeCallbackToIO(
+      BackgroundFetchDelegate::GetIconDisplaySizeCallback callback,
+      const gfx::Size& display_size) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+    BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
+                            base::BindOnce(std::move(callback), display_size));
+  }
+
+  void GetIconDisplaySize(
+      BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) {
+    DCHECK_CURRENTLY_ON(BrowserThread::UI);
+
+    if (delegate_) {
+      delegate_->GetIconDisplaySize(
+          base::BindOnce(&Core::ForwardGetIconDisplaySizeCallbackToIO,
+                         weak_ptr_factory_.GetWeakPtr(), std::move(callback)));
+    } else {
+      BrowserThread::PostTask(
+          BrowserThread::IO, FROM_HERE,
+          base::BindOnce(std::move(callback), gfx::Size(0, 0)));
+    }
   }
 
   void CreateDownloadJob(const std::string& job_unique_id,
@@ -228,6 +250,14 @@ BackgroundFetchDelegateProxy::BackgroundFetchDelegateProxy(
 
 BackgroundFetchDelegateProxy::~BackgroundFetchDelegateProxy() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+}
+
+void BackgroundFetchDelegateProxy::GetIconDisplaySize(
+    BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) {
+  DCHECK_CURRENTLY_ON(BrowserThread::IO);
+  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                          base::BindOnce(&Core::GetIconDisplaySize,
+                                         ui_core_ptr_, std::move(callback)));
 }
 
 void BackgroundFetchDelegateProxy::CreateDownloadJob(

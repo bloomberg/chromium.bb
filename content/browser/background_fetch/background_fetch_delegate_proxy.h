@@ -15,8 +15,10 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "content/browser/background_fetch/background_fetch_request_info.h"
+#include "content/public/browser/background_fetch_delegate.h"
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
+#include "third_party/WebKit/public/platform/modules/background_fetch/background_fetch.mojom.h"
 
 class SkBitmap;
 
@@ -55,6 +57,10 @@ class CONTENT_EXPORT BackgroundFetchDelegateProxy {
   explicit BackgroundFetchDelegateProxy(BackgroundFetchDelegate* delegate);
 
   ~BackgroundFetchDelegateProxy();
+
+  // Gets size of the icon to display with the Background Fetch UI.
+  void GetIconDisplaySize(
+      BackgroundFetchDelegate::GetIconDisplaySizeCallback callback);
 
   // Creates a new download grouping identified by |job_unique_id|. Further
   // downloads started by StartRequest will also use this |job_unique_id| so

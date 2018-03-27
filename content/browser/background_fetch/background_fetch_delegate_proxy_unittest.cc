@@ -27,6 +27,8 @@ class FakeBackgroundFetchDelegate : public BackgroundFetchDelegate {
   FakeBackgroundFetchDelegate() {}
 
   // BackgroundFetchDelegate implementation:
+  void GetIconDisplaySize(
+      BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) override {}
   void CreateDownloadJob(
       const std::string& job_unique_id,
       const std::string& title,

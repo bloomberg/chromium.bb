@@ -10,6 +10,7 @@
 #include "base/guid.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "build/build_config.h"
 #include "chrome/browser/download/download_service_factory.h"
 #include "chrome/browser/offline_items_collection/offline_content_aggregator_factory.h"
 #include "chrome/browser/profiles/profile.h"
@@ -20,6 +21,7 @@
 #include "content/public/browser/background_fetch_response.h"
 #include "content/public/browser/browser_thread.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/gfx/geometry/size.h"
 #include "ui/gfx/image/image_skia.h"
 
 BackgroundFetchDelegateImpl::BackgroundFetchDelegateImpl(Profile* profile)
@@ -88,6 +90,22 @@ void BackgroundFetchDelegateImpl::JobDetails::UpdateOfflineItem() {
     offline_item.state = OfflineItemState::COMPLETE;
   else
     offline_item.state = OfflineItemState::IN_PROGRESS;
+}
+
+void BackgroundFetchDelegateImpl::GetIconDisplaySize(
+    BackgroundFetchDelegate::GetIconDisplaySizeCallback callback) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  // If Android, return 192x192, else return 0x0. 0x0 means not loading an
+  // icon at all, which is returned for all non-Android platforms as the
+  // icons can't be displayed on the UI yet.
+  // TODO(nator): Move this logic to OfflineItemsCollection, and return icon
+  // size based on display.
+  gfx::Size display_size;
+#if defined(OS_ANDROID)
+  display_size = gfx::Size(192, 192);
+#endif
+  std::move(callback).Run(display_size);
 }
 
 void BackgroundFetchDelegateImpl::CreateDownloadJob(

@@ -6,6 +6,7 @@ module blink.mojom;
 
 import "skia/public/interfaces/bitmap.mojom";
 import "third_party/WebKit/public/platform/modules/fetch/fetch_api_request.mojom";
+import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum BackgroundFetchError {
   NONE,
@@ -98,6 +99,10 @@ interface BackgroundFetchService {
   GetDeveloperIds(int64 service_worker_registration_id)
       => (BackgroundFetchError error,
           array<string> developer_ids);
+
+  // Gets size of the icon to display with the Background Fetch UI.
+  GetIconDisplaySize()
+    => (gfx.mojom.Size icon_size_pixels);
 
   // Registers the |observer| to receive events for the given registration
   // that is identified by the |unique_id|.
