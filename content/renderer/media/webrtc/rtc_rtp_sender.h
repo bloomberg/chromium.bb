@@ -33,15 +33,6 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
                rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
                blink::WebMediaStreamTrack web_track,
                std::vector<blink::WebMediaStream> web_streams);
-  // TODO(hbos): Remove these in favor of the above constructor that creates the
-  // corresponding adapter refs. They won't be needed after
-  // https://crbug.com/738929.
-  RTCRtpSender(
-      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-      scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
-      scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
-      rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
-      std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref);
   RTCRtpSender(
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
       scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,

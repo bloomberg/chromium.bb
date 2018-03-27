@@ -6,9 +6,11 @@
 #define CONTENT_RENDERER_MEDIA_WEBRTC_RTC_STATS_H_
 
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/WebRTCStats.h"
 #include "third_party/webrtc/api/stats/rtcstats.h"
+#include "third_party/webrtc/api/stats/rtcstatscollectorcallback.h"
 #include "third_party/webrtc/api/stats/rtcstatsreport.h"
 
 namespace content {
@@ -83,6 +85,32 @@ class CONTENT_EXPORT RTCStatsMember : public blink::WebRTCStatsMember {
   const scoped_refptr<const webrtc::RTCStatsReport> stats_owner_;
   // Pointer to member of a stats object that is owned by |stats_owner_|.
   const webrtc::RTCStatsMemberInterface* const member_;
+};
+
+// A stats collector callback.
+// It is invoked on the WebRTC signaling thread and will post a task to invoke
+// |callback| on the thread given in the |main_thread| argument.
+// The argument to the callback will be a |blink::WebRTCStatsReport|.
+class RTCStatsCollectorCallbackImpl : public webrtc::RTCStatsCollectorCallback {
+ public:
+  static rtc::scoped_refptr<RTCStatsCollectorCallbackImpl> Create(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      std::unique_ptr<blink::WebRTCStatsReportCallback> callback);
+
+  void OnStatsDelivered(
+      const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) override;
+
+ protected:
+  RTCStatsCollectorCallbackImpl(
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      blink::WebRTCStatsReportCallback* callback);
+  ~RTCStatsCollectorCallbackImpl() override;
+
+  void OnStatsDeliveredOnMainThread(
+      rtc::scoped_refptr<const webrtc::RTCStatsReport> report);
+
+  const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
+  std::unique_ptr<blink::WebRTCStatsReportCallback> callback_;
 };
 
 CONTENT_EXPORT void WhitelistStatsForTesting(const char* type);

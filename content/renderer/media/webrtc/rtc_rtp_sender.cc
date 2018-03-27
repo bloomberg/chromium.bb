@@ -206,21 +206,6 @@ RTCRtpSender::RTCRtpSender(
     scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
     scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
     rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
-    std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref)
-    : RTCRtpSender(
-          std::move(main_thread),
-          std::move(signaling_thread),
-          std::move(stream_map),
-          std::move(webrtc_sender),
-          std::move(track_ref),
-          std::vector<
-              std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>()) {}
-
-RTCRtpSender::RTCRtpSender(
-    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-    scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
-    scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
-    rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
     std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
     std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
         stream_refs)

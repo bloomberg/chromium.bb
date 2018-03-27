@@ -7,6 +7,7 @@
 #include <set>
 #include <string>
 
+#include "base/bind.h"
 #include "base/logging.h"
 #include "base/time/time.h"
 #include "third_party/webrtc/api/stats/rtcstats_objects.h"
@@ -278,6 +279,45 @@ blink::WebVector<blink::WebString> RTCStatsMember::ValueSequenceString() const {
   for (size_t i = 0; i < sequence.size(); ++i)
     web_sequence[i] = blink::WebString::FromUTF8(sequence[i]);
   return web_sequence;
+}
+
+// static
+rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>
+RTCStatsCollectorCallbackImpl::Create(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+  return rtc::scoped_refptr<RTCStatsCollectorCallbackImpl>(
+      new rtc::RefCountedObject<RTCStatsCollectorCallbackImpl>(
+          std::move(main_thread), callback.release()));
+}
+
+RTCStatsCollectorCallbackImpl::RTCStatsCollectorCallbackImpl(
+    scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+    blink::WebRTCStatsReportCallback* callback)
+    : main_thread_(std::move(main_thread)), callback_(callback) {}
+
+RTCStatsCollectorCallbackImpl::~RTCStatsCollectorCallbackImpl() {
+  DCHECK(!callback_);
+}
+
+void RTCStatsCollectorCallbackImpl::OnStatsDelivered(
+    const rtc::scoped_refptr<const webrtc::RTCStatsReport>& report) {
+  main_thread_->PostTask(
+      FROM_HERE,
+      base::BindOnce(
+          &RTCStatsCollectorCallbackImpl::OnStatsDeliveredOnMainThread, this,
+          report));
+}
+
+void RTCStatsCollectorCallbackImpl::OnStatsDeliveredOnMainThread(
+    rtc::scoped_refptr<const webrtc::RTCStatsReport> report) {
+  DCHECK(main_thread_->BelongsToCurrentThread());
+  DCHECK(report);
+  DCHECK(callback_);
+  callback_->OnStatsDelivered(std::unique_ptr<blink::WebRTCStatsReport>(
+      new RTCStatsReport(base::WrapRefCounted(report.get()))));
+  // Make sure the callback is destroyed in the main thread as well.
+  callback_.reset();
 }
 
 void WhitelistStatsForTesting(const char* type) {
