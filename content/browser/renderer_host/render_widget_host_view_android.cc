@@ -1250,7 +1250,12 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   view_.UpdateFrameInfo({scrollable_viewport_size_dip, top_content_offset});
 
   bool top_changed = !FloatEquals(top_shown_pix, prev_top_shown_pix_);
-  if (top_changed || !controls_initialized_) {
+  // TODO(carlosil, https://crbug.com/825765): Remove the IsInVR() check here,
+  // which is a temporary hack. When interstitial pages load they set the
+  // top controls offset to 0, and if we don't ignore that hit targeting on
+  // interstitial pages breaks. The fix is still crucial for VR as VR needs the
+  // top controls to be initially hidden correctly.
+  if (top_changed || (!controls_initialized_ && IsInVR())) {
     float translate = top_shown_pix - top_controls_pix;
     view_.OnTopControlsChanged(translate, top_shown_pix);
     prev_top_shown_pix_ = top_shown_pix;
@@ -1260,7 +1265,7 @@ void RenderWidgetHostViewAndroid::OnFrameMetadataUpdated(
   float bottom_shown_pix =
       bottom_controls_pix * frame_metadata.bottom_controls_shown_ratio;
   bool bottom_changed = !FloatEquals(bottom_shown_pix, prev_bottom_shown_pix_);
-  if (bottom_changed || !controls_initialized_) {
+  if (bottom_changed || (!controls_initialized_ && IsInVR())) {
     float translate = bottom_controls_pix - bottom_shown_pix;
     view_.OnBottomControlsChanged(translate, bottom_shown_pix);
     prev_bottom_shown_pix_ = bottom_shown_pix;
