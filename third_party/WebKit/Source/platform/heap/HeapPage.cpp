@@ -226,7 +226,7 @@ size_t BaseArena::ObjectPayloadSizeForTesting() {
 }
 
 void BaseArena::PrepareForSweep() {
-  DCHECK(GetThreadState()->IsInGC());
+  DCHECK(GetThreadState()->InAtomicMarkingPause());
   DCHECK(SweepingCompleted());
 
   ClearFreeLists();
@@ -1791,7 +1791,7 @@ size_t HeapDoesNotContainCache::GetHash(Address address) {
 }
 
 bool HeapDoesNotContainCache::Lookup(Address address) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->InAtomicMarkingPause());
 
   size_t index = GetHash(address);
   DCHECK(!(index & 1));
@@ -1804,7 +1804,7 @@ bool HeapDoesNotContainCache::Lookup(Address address) {
 }
 
 void HeapDoesNotContainCache::AddEntry(Address address) {
-  DCHECK(ThreadState::Current()->IsInGC());
+  DCHECK(ThreadState::Current()->InAtomicMarkingPause());
 
   has_entries_ = true;
   size_t index = GetHash(address);

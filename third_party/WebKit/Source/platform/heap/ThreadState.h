@@ -150,10 +150,6 @@ class PLATFORM_EXPORT ThreadState {
     kPreciseGCScheduled,
     kFullGCScheduled,
     kPageNavigationGCScheduled,
-    kGCRunning,
-    kSweeping,
-    kSweepingAndIdleGCScheduled,
-    kSweepingAndPreciseGCScheduled,
   };
 
   // The phase that the GC is in. The GCPhase will not return kNone for mutators
@@ -263,17 +259,13 @@ class PLATFORM_EXPORT ThreadState {
   void SchedulePageNavigationGCIfNeeded(float estimated_removal_ratio);
   void SchedulePageNavigationGC();
   void ScheduleGCIfNeeded();
+  void PostIdleGCTask();
   void WillStartV8GC(BlinkGC::V8GCType);
   void SetGCState(GCState);
   GCState GcState() const { return gc_state_; }
   void SetGCPhase(GCPhase);
-  bool IsInGC() const { return GcState() == kGCRunning; }
   bool IsMarkingInProgress() const { return gc_phase_ == GCPhase::kMarking; }
-  bool IsSweepingInProgress() const {
-    return GcState() == kSweeping ||
-           GcState() == kSweepingAndPreciseGCScheduled ||
-           GcState() == kSweepingAndIdleGCScheduled;
-  }
+  bool IsSweepingInProgress() const { return gc_phase_ == GCPhase::kSweeping; }
 
   // Incremental GC.
 
@@ -285,11 +277,6 @@ class PLATFORM_EXPORT ThreadState {
   void IncrementalMarkingStep();
   void IncrementalMarkingFinalize();
 
-  bool IsIncrementalMarkingInProgress() const {
-    return GcState() == kIncrementalMarkingStepScheduled ||
-           GcState() == kIncrementalMarkingFinalizeScheduled;
-  }
-
   // A GC runs in the following sequence.
   //
   // 1) preGC() is called.
@@ -300,12 +287,6 @@ class PLATFORM_EXPORT ThreadState {
   // 4) Lazy sweeping sweeps heaps incrementally. completeSweep() may be called
   //    to complete the sweeping.
   // 5) postSweep() is called.
-  //
-  // Notes:
-  // - The world is stopped between 1) and 3).
-  // - isInGC() returns true between 1) and 3).
-  // - isSweepingInProgress() returns true while any sweeping operation is
-  //   running.
   void MarkPhasePrologue(BlinkGC::StackState,
                          BlinkGC::MarkingType,
                          BlinkGC::GCReason);

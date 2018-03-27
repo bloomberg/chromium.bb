@@ -147,7 +147,7 @@ class PLATFORM_EXPORT MarkingVisitor final : public Visitor {
 
 inline bool MarkingVisitor::MarkHeaderNoTracing(HeapObjectHeader* header) {
   DCHECK(header);
-  DCHECK(State()->IsInGC() || State()->IsIncrementalMarking());
+  DCHECK(State()->InAtomicMarkingPause() || State()->IsIncrementalMarking());
   // A GC should only mark the objects that belong in its heap.
   DCHECK_EQ(State(),
             PageFromObject(header->Payload())->Arena()->GetThreadState());

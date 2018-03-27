@@ -162,7 +162,7 @@ ThreadHeap::~ThreadHeap() {
 
 Address ThreadHeap::CheckAndMarkPointer(MarkingVisitor* visitor,
                                         Address address) {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
 
 #if !DCHECK_IS_ON()
   if (heap_does_not_contain_cache_->Lookup(address))
@@ -196,7 +196,7 @@ Address ThreadHeap::CheckAndMarkPointer(
     MarkingVisitor* visitor,
     Address address,
     MarkedPointerCallbackForTesting callback) {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
 
   if (BasePage* page = LookupPageForAddress(address)) {
     DCHECK(page->Contains(address));
@@ -213,7 +213,7 @@ Address ThreadHeap::CheckAndMarkPointer(
 
 void ThreadHeap::RegisterWeakTable(void* table,
                                    EphemeronCallback iteration_callback) {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
 #if DCHECK_IS_ON()
   auto result = ephemeron_callbacks_.insert(table, iteration_callback);
   DCHECK(result.is_new_entry ||
@@ -451,18 +451,16 @@ void ThreadHeap::ReportMemoryUsageForTracing() {
 }
 
 size_t ThreadHeap::ObjectPayloadSizeForTesting() {
+  ThreadState::AtomicPauseScope atomic_pause_scope(thread_state_);
   size_t object_payload_size = 0;
   thread_state_->SetGCPhase(ThreadState::GCPhase::kMarking);
-  thread_state_->SetGCState(ThreadState::kGCRunning);
   thread_state_->Heap().MakeConsistentForGC();
   thread_state_->Heap().PrepareForSweep();
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     object_payload_size += arenas_[i]->ObjectPayloadSizeForTesting();
   MakeConsistentForMutator();
   thread_state_->SetGCPhase(ThreadState::GCPhase::kSweeping);
-  thread_state_->SetGCState(ThreadState::kSweeping);
   thread_state_->SetGCPhase(ThreadState::GCPhase::kNone);
-  thread_state_->SetGCState(ThreadState::kNoGCScheduled);
   return object_payload_size;
 }
 
@@ -487,19 +485,19 @@ bool ThreadHeap::IsAddressInHeapDoesNotContainCache(Address address) {
 }
 
 void ThreadHeap::VisitPersistentRoots(Visitor* visitor) {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitPersistentRoots");
   thread_state_->VisitPersistents(visitor);
 }
 
 void ThreadHeap::VisitStackRoots(MarkingVisitor* visitor) {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
   TRACE_EVENT0("blink_gc", "ThreadHeap::visitStackRoots");
   thread_state_->VisitStack(visitor);
 }
 
 BasePage* ThreadHeap::LookupPageForAddress(Address address) {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
   if (PageMemoryRegion* region = region_tree_->Lookup(address)) {
     return region->PageFromAddress(address);
   }
@@ -507,7 +505,7 @@ BasePage* ThreadHeap::LookupPageForAddress(Address address) {
 }
 
 void ThreadHeap::ResetHeapCounters() {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
 
   ThreadHeap::ReportMemoryUsageForTracing();
 
@@ -518,14 +516,14 @@ void ThreadHeap::ResetHeapCounters() {
 }
 
 void ThreadHeap::MakeConsistentForGC() {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
   TRACE_EVENT0("blink_gc", "ThreadHeap::MakeConsistentForGC");
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     arenas_[i]->MakeConsistentForGC();
 }
 
 void ThreadHeap::MakeConsistentForMutator() {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
   for (int i = 0; i < BlinkGC::kNumberOfArenas; ++i)
     arenas_[i]->MakeConsistentForMutator();
 }
@@ -555,7 +553,7 @@ void ThreadHeap::Compact() {
 }
 
 void ThreadHeap::PrepareForSweep() {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
   DCHECK(thread_state_->CheckThread());
   for (int i = 0; i < BlinkGC::kNumberOfArenas; i++)
     arenas_[i]->PrepareForSweep();
@@ -659,7 +657,7 @@ BasePage* ThreadHeap::FindPageFromAddress(Address address) {
 #endif
 
 void ThreadHeap::TakeSnapshot(SnapshotType type) {
-  DCHECK(thread_state_->IsInGC());
+  DCHECK(thread_state_->InAtomicMarkingPause());
 
   // 0 is used as index for freelist entries. Objects are indexed 1 to
   // gcInfoIndex.
