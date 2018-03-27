@@ -61,7 +61,7 @@ void RemoteDescriptor::ReadAuth(
     bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
     ReadCallback callback) {
   MAKE_SURE_IO_THREAD(ReadAuth, auth_req,
-                      BindToCurrentThread(std::move(callback)));
+                      BindToCurrentSequence(std::move(callback)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(callback, false, {});
@@ -90,7 +90,7 @@ void RemoteDescriptor::WriteAuth(
     const std::vector<uint8_t>& value,
     StatusCallback callback) {
   MAKE_SURE_IO_THREAD(WriteAuth, auth_req, value,
-                      BindToCurrentThread(std::move(callback)));
+                      BindToCurrentSequence(std::move(callback)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(callback, false);

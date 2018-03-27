@@ -105,7 +105,7 @@ scoped_refptr<RemoteDescriptor> RemoteCharacteristic::GetDescriptorByUuid(
 void RemoteCharacteristic::SetRegisterNotification(bool enable,
                                                    StatusCallback cb) {
   MAKE_SURE_IO_THREAD(SetRegisterNotification, enable,
-                      BindToCurrentThread(std::move(cb)));
+                      BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(cb, false);
@@ -129,7 +129,7 @@ void RemoteCharacteristic::SetRegisterNotification(bool enable,
 
 void RemoteCharacteristic::SetNotification(bool enable, StatusCallback cb) {
   MAKE_SURE_IO_THREAD(SetNotification, enable,
-                      BindToCurrentThread(std::move(cb)));
+                      BindToCurrentSequence(std::move(cb)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(cb, false);
@@ -148,7 +148,7 @@ void RemoteCharacteristic::ReadAuth(
     bluetooth_v2_shlib::Gatt::Client::AuthReq auth_req,
     ReadCallback callback) {
   MAKE_SURE_IO_THREAD(ReadAuth, auth_req,
-                      BindToCurrentThread(std::move(callback)));
+                      BindToCurrentSequence(std::move(callback)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(callback, false, {});
@@ -177,7 +177,7 @@ void RemoteCharacteristic::WriteAuth(
     const std::vector<uint8_t>& value,
     StatusCallback callback) {
   MAKE_SURE_IO_THREAD(WriteAuth, auth_req, write_type, value,
-                      BindToCurrentThread(std::move(callback)));
+                      BindToCurrentSequence(std::move(callback)));
   if (!gatt_client_manager_) {
     LOG(ERROR) << __func__ << " failed: Destroyed";
     EXEC_CB_AND_RET(callback, false);

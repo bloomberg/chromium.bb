@@ -14,6 +14,7 @@
 #include "base/location.h"
 #include "base/memory/ref_counted.h"
 #include "base/task_runner.h"
+#include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_task_runner_handle.h"
 
 // This is a helper utility for Bind()ing callbacks to a given TaskRunner.
@@ -79,6 +80,19 @@ template <typename T>
 base::RepeatingCallback<T> BindToCurrentThread(
     base::RepeatingCallback<T> callback) {
   return BindToTaskRunner(base::ThreadTaskRunnerHandle::Get(),
+                          std::move(callback));
+}
+
+template <typename T>
+base::OnceCallback<T> BindToCurrentSequence(base::OnceCallback<T> callback) {
+  return BindToTaskRunner(base::SequencedTaskRunnerHandle::Get(),
+                          std::move(callback));
+}
+
+template <typename T>
+base::RepeatingCallback<T> BindToCurrentSequence(
+    base::RepeatingCallback<T> callback) {
+  return BindToTaskRunner(base::SequencedTaskRunnerHandle::Get(),
                           std::move(callback));
 }
 
