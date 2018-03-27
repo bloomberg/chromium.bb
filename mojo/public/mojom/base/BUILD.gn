@@ -28,3 +28,9 @@ mojom_component("base") {
   output_prefix = "mojo_base_mojom"
   macro_prefix = "MOJO_BASE_MOJOM"
 }
+
+mojom("read_only_buffer") {
+  sources = [
+    "read_only_buffer.mojom",
+  ]
+}

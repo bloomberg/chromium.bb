@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-module mojo.common.mojom;
+module mojo_base.mojom;
 
 // This struct is typemapped to base::span<const uint8_t>.
 // Note: At the receiving end, this base::span<const uint8_t> refers to a memory

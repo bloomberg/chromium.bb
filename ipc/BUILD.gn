@@ -176,8 +176,8 @@ mojom_component("mojom") {
     "ipc.mojom",
   ]
   public_deps = [
-    "//mojo/common:read_only_buffer",
     "//mojo/public/interfaces/bindings",
+    "//mojo/public/mojom/base:read_only_buffer",
   ]
 
   # Don't generate a variant sources since we depend on generated internal

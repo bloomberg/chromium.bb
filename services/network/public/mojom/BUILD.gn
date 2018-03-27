@@ -46,7 +46,7 @@ mojom("udp_socket_interface") {
 
   public_deps = [
     ":mutable_network_traffic_annotation_interface",
-    "//mojo/common:read_only_buffer",
+    "//mojo/public/mojom/base:read_only_buffer",
     "//net/interfaces:interfaces",
   ]
 }

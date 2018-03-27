@@ -51,6 +51,7 @@ source_set("tests") {
     "big_string_unittest.cc",
     "file_path_unittest.cc",
     "file_unittest.cc",
+    "read_only_buffer_unittest.cc",
     "ref_counted_memory_unittest.cc",
     "string16_unittest.cc",
     "text_direction_unittest.cc",
@@ -67,6 +68,7 @@ source_set("tests") {
     "//base/test:test_support",
     "//mojo/public/cpp/test_support:test_utils",
     "//mojo/public/mojom/base",
+    "//mojo/public/mojom/base:read_only_buffer",
     "//testing/gtest",
   ]
 }
