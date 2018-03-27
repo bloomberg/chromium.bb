@@ -352,6 +352,8 @@ class MapFileParserLld(object):
             # Treat all literals as stirng literals.
             # FIXME(huangs): Refine this. Checking align == 1 is insufficient.
             sym_maker.cur_sym.full_name = '** lld merge strings'
+          elif cur_obj == 'lto.tmp' or cur_obj.startswith('thinlto-cache'):
+            pass
           else:
             sym_maker.cur_sym.object_path = cur_obj
 
