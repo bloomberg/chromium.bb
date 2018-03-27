@@ -173,13 +173,13 @@ TEST(WebSocketPerProcessThrottlerTest, Roll) {
   EXPECT_EQ(0, throttler.num_previous_failed_connections());
 }
 
-TEST(WebSocketPerProcessThrottlerTest, CalculateDelay_4Pending) {
+TEST(WebSocketPerProcessThrottlerTest, CalculateDelay_3Pending) {
   WebSocketPerProcessThrottler throttler;
   std::vector<WebSocketPerProcessThrottler::PendingConnection> trackers;
-  for (int i = 0; i < 4; ++i)
+  for (int i = 0; i < 3; ++i)
     trackers.push_back(throttler.IssuePendingConnectionTracker());
 
-  EXPECT_EQ(4, throttler.num_pending_connections());
+  EXPECT_EQ(3, throttler.num_pending_connections());
   EXPECT_EQ(0, throttler.num_current_succeeded_connections());
   EXPECT_EQ(0, throttler.num_previous_succeeded_connections());
   EXPECT_EQ(0, throttler.num_current_failed_connections());
@@ -187,13 +187,13 @@ TEST(WebSocketPerProcessThrottlerTest, CalculateDelay_4Pending) {
   EXPECT_EQ(base::TimeDelta(), throttler.CalculateDelay());
 }
 
-TEST(WebSocketPerProcessThrottlerTest, CalculateDelay_8Pending) {
+TEST(WebSocketPerProcessThrottlerTest, CalculateDelay_7Pending) {
   WebSocketPerProcessThrottler throttler;
   std::vector<WebSocketPerProcessThrottler::PendingConnection> trackers;
-  for (int i = 0; i < 8; ++i)
+  for (int i = 0; i < 7; ++i)
     trackers.push_back(throttler.IssuePendingConnectionTracker());
 
-  EXPECT_EQ(8, throttler.num_pending_connections());
+  EXPECT_EQ(7, throttler.num_pending_connections());
   EXPECT_EQ(0, throttler.num_current_succeeded_connections());
   EXPECT_EQ(0, throttler.num_previous_succeeded_connections());
   EXPECT_EQ(0, throttler.num_current_failed_connections());
@@ -201,13 +201,13 @@ TEST(WebSocketPerProcessThrottlerTest, CalculateDelay_8Pending) {
   EXPECT_LT(base::TimeDelta(), throttler.CalculateDelay());
 }
 
-TEST(WebSocketPerProcessThrottlerTest, CalculateDelay_17Pending) {
+TEST(WebSocketPerProcessThrottlerTest, CalculateDelay_16Pending) {
   WebSocketPerProcessThrottler throttler;
   std::vector<WebSocketPerProcessThrottler::PendingConnection> trackers;
-  for (int i = 0; i < 17; ++i)
+  for (int i = 0; i < 16; ++i)
     trackers.push_back(throttler.IssuePendingConnectionTracker());
 
-  EXPECT_EQ(17, throttler.num_pending_connections());
+  EXPECT_EQ(16, throttler.num_pending_connections());
   EXPECT_EQ(0, throttler.num_current_succeeded_connections());
   EXPECT_EQ(0, throttler.num_previous_succeeded_connections());
   EXPECT_EQ(0, throttler.num_current_failed_connections());
