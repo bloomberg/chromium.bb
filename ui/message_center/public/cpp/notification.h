@@ -237,10 +237,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
       bool include_small_image,
       bool include_icon_images);
 
-  // Copies the internal on-memory state from |base|, i.e. shown_as_popup,
-  // is_read and never_timeout.
-  void CopyState(Notification* base);
-
   NotificationType type() const { return type_; }
   void set_type(NotificationType type) { type_ = type; }
 
@@ -368,15 +364,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
     optional_fields_.buttons = buttons;
   }
   void SetButtonIcon(size_t index, const gfx::Image& icon);
-
-  bool shown_as_popup() const { return shown_as_popup_; }
-  void set_shown_as_popup(bool shown_as_popup) {
-    shown_as_popup_ = shown_as_popup;
-  }
-
-  // Read status in the message center.
-  bool IsRead() const;
-  void set_is_read(bool read) { is_read_ = read; }
 
   // Used to keep the order of notifications with the same timestamp.
   // The notification with lesser serial_number is considered 'older'.
@@ -506,8 +493,6 @@ class MESSAGE_CENTER_PUBLIC_EXPORT Notification {
   // TODO(estade): these book-keeping fields should be moved into
   // NotificationList.
   unsigned serial_number_;
-  bool shown_as_popup_ = false;  // True if this has been shown as a popup.
-  bool is_read_ = false;  // True if this has been seen in the message center.
 
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.

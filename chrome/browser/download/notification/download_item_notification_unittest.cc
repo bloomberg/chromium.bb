@@ -117,8 +117,6 @@ class DownloadItemNotificationTest : public testing::Test {
         download_item_notification_->GetNotificationId(), false);
   }
 
-  bool ShownAsPopUp() { return !LookUpNotification()->shown_as_popup(); }
-
   void CreateDownloadItemNotification() {
     download_notification_manager_->OnNewDownloadReady(download_item_.get());
     download_item_notification_ =
@@ -146,9 +144,6 @@ TEST_F(DownloadItemNotificationTest, ShowAndCloseNotification) {
   // Shows a notification
   CreateDownloadItemNotification();
   download_item_->NotifyObserversDownloadOpened();
-
-  // Confirms that the notification is shown as a popup.
-  EXPECT_TRUE(ShownAsPopUp());
   EXPECT_EQ(1u, NotificationCount());
 
   // Makes sure the DownloadItem::Cancel() is not called.

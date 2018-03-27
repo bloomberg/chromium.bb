@@ -24,6 +24,8 @@ using base::UTF8ToUTF16;
 
 namespace message_center {
 
+using NotificationState = NotificationList::NotificationState;
+
 class NotificationListTest : public testing::Test {
  public:
   NotificationListTest() {}
@@ -90,7 +92,13 @@ class NotificationListTest : public testing::Test {
     auto iter = notification_list()->GetNotification(id);
     if (iter == notification_list()->notifications_.end())
       return NULL;
-    return iter->get();
+    return iter->first.get();
+  }
+
+  NotificationState GetNotificationState(const std::string& id) {
+    auto iter = notification_list()->GetNotification(id);
+    EXPECT_FALSE(iter == notification_list()->notifications_.end());
+    return iter->second;
   }
 
   NotificationList* notification_list() { return notification_list_.get(); }
@@ -191,8 +199,8 @@ TEST_F(NotificationListTest, UpdateNotificationWithPriority) {
     std::string old_id;
     auto old_notification = MakeNotification(&old_id);
     old_notification->set_priority(DEFAULT_PRIORITY);
-    old_notification->set_shown_as_popup(true);
     notification_list()->AddNotification(std::move(old_notification));
+    notification_list()->MarkSinglePopupAsShown(old_id, true);
     EXPECT_EQ(1u, notification_list()->NotificationCount(blockers()));
 
     std::string new_id;
@@ -210,8 +218,14 @@ TEST_F(NotificationListTest, UpdateNotificationWithPriority) {
     // again.
     // In quiet mode, |shown_as_popup| should not be reset , as popup should not
     // be shown even though the priority is promoted.
-    EXPECT_EQ(static_cast<bool>(quiet_mode),
-              (*notifications.begin())->shown_as_popup());
+    const NotificationList::PopupNotifications popup_notifications =
+        notification_list()->GetPopupNotifications(blockers(), nullptr);
+    if (quiet_mode) {
+      ASSERT_EQ(0U, popup_notifications.size());
+    } else {
+      ASSERT_EQ(1U, popup_notifications.size());
+      EXPECT_EQ(new_id, (*popup_notifications.begin())->id());
+    }
   }
 }
 
@@ -576,15 +590,15 @@ TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
 
   EXPECT_EQ(2u, GetPopupCounts());
 
-  const Notification* n1 = GetNotification(id1);
-  EXPECT_FALSE(n1->shown_as_popup());
-  EXPECT_TRUE(n1->IsRead());
+  NotificationState n1_state = GetNotificationState(id1);
+  EXPECT_FALSE(n1_state.shown_as_popup);
+  EXPECT_TRUE(n1_state.is_read);
 
   notification_list()->MarkSinglePopupAsShown(id1, true);
 
-  n1 = GetNotification(id1);
-  EXPECT_TRUE(n1->shown_as_popup());
-  EXPECT_TRUE(n1->IsRead());
+  n1_state = GetNotificationState(id1);
+  EXPECT_TRUE(n1_state.shown_as_popup);
+  EXPECT_TRUE(n1_state.is_read);
 
   const std::string replaced("test-replaced-id");
   std::unique_ptr<Notification> notification(new Notification(
@@ -593,11 +607,11 @@ TEST_F(NotificationListTest, UpdateAfterMarkedAsShown) {
       NotifierId(NotifierId::APPLICATION, kExtensionId), RichNotificationData(),
       NULL));
   notification_list()->UpdateNotificationMessage(id1, std::move(notification));
-  n1 = GetNotification(id1);
+  Notification* n1 = GetNotification(id1);
   EXPECT_TRUE(n1 == NULL);
-  const Notification* nr = GetNotification(replaced);
-  EXPECT_TRUE(nr->shown_as_popup());
-  EXPECT_TRUE(nr->IsRead());
+  const NotificationState nr_state = GetNotificationState(replaced);
+  EXPECT_TRUE(nr_state.shown_as_popup);
+  EXPECT_TRUE(nr_state.is_read);
 }
 
 TEST_F(NotificationListTest, QuietMode) {
@@ -614,19 +628,6 @@ TEST_F(NotificationListTest, QuietMode) {
   EXPECT_EQ(1u, GetPopupCounts());
 
   // TODO(mukai): Add test of quiet mode with expiration.
-}
-
-TEST_F(NotificationListTest, TestPushingShownNotification) {
-  // Create a notification and mark it as shown.
-  std::string id1;
-  std::unique_ptr<Notification> notification(MakeNotification(&id1));
-  notification->set_shown_as_popup(true);
-
-  // Call PushNotification on this notification.
-  notification_list()->PushNotification(std::move(notification));
-
-  // Ensure it is still marked as shown.
-  EXPECT_TRUE(GetNotification(id1)->shown_as_popup());
 }
 
 TEST_F(NotificationListTest, TestHasNotificationOfType) {

@@ -76,15 +76,6 @@ void MessageCenterImpl::OnBlockingStateChanged(NotificationBlocker* blocker) {
   NotificationList::PopupNotifications popups =
       notification_list_->GetPopupNotifications(blockers_, &blocked);
 
-  // Close already displayed pop-ups that are blocked now.
-  for (const std::string& notification_id : blocked) {
-    // Do not call MessageCenterImpl::MarkSinglePopupAsShown() directly here
-    // just for performance reason. MessageCenterImpl::MarkSinglePopupAsShown()
-    // calls NotificationList::MarkSinglePopupAsShown(), but the whole cache
-    // will be recreated below.
-    if (FindVisibleNotificationById(notification_id)->IsRead())
-      notification_list_->MarkSinglePopupAsShown(notification_id, true);
-  }
   visible_notifications_ =
       notification_list_->GetVisibleNotifications(blockers_);
 
