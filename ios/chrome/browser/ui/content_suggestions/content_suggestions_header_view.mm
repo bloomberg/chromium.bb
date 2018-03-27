@@ -83,8 +83,9 @@ const CGFloat kSearchIconLeftMargin = 9;
 }
 
 - (void)addViewsToSearchField:(UIView*)searchField {
-  UIBlurEffect* blurEffect = [[ToolbarButtonFactory alloc] initWithStyle:NORMAL]
-                                 .toolbarConfiguration.blurEffect;
+  ToolbarButtonFactory* buttonFactory =
+      [[ToolbarButtonFactory alloc] initWithStyle:NORMAL];
+  UIBlurEffect* blurEffect = buttonFactory.toolbarConfiguration.blurEffect;
   UIVisualEffectView* blur =
       [[UIVisualEffectView alloc] initWithEffect:blurEffect];
   blur.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
@@ -92,12 +93,20 @@ const CGFloat kSearchIconLeftMargin = 9;
   blur.translatesAutoresizingMaskIntoConstraints = NO;
   AddSameConstraints(blur, searchField);
 
+  UIVisualEffect* vibrancy = [buttonFactory.toolbarConfiguration
+      vibrancyEffectForBlurEffect:blurEffect];
+  UIVisualEffectView* vibrancyView =
+      [[UIVisualEffectView alloc] initWithEffect:vibrancy];
+  [searchField insertSubview:vibrancyView atIndex:1];
+  vibrancyView.translatesAutoresizingMaskIntoConstraints = NO;
+  AddSameConstraints(vibrancyView, searchField);
+
   UIView* backgroundContainer = [[UIView alloc] init];
   backgroundContainer.userInteractionEnabled = NO;
   backgroundContainer.backgroundColor =
       UIColorFromRGB(content_suggestions::kSearchFieldBackgroundColor);
   backgroundContainer.layer.cornerRadius = kAdaptiveLocationBarCornerRadius;
-  [searchField insertSubview:backgroundContainer atIndex:1];
+  [vibrancyView.contentView addSubview:backgroundContainer];
 
   backgroundContainer.translatesAutoresizingMaskIntoConstraints = NO;
   self.backgroundLeadingConstraint = [backgroundContainer.leadingAnchor
@@ -116,7 +125,7 @@ const CGFloat kSearchIconLeftMargin = 9;
 
   UIImage* search_icon = [UIImage imageNamed:@"ntp_search_icon"];
   UIImageView* search_view = [[UIImageView alloc] initWithImage:search_icon];
-  [searchField addSubview:search_view];
+  [vibrancyView.contentView addSubview:search_view];
   search_view.translatesAutoresizingMaskIntoConstraints = NO;
   [NSLayoutConstraint activateConstraints:@[
     [search_view.centerYAnchor
