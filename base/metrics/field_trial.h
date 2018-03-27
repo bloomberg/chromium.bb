@@ -621,6 +621,20 @@ class BASE_EXPORT FieldTrialList {
   // Remove an observer.
   static void RemoveObserver(Observer* observer);
 
+  // Similar to AddObserver(), but the passed observer will be notified
+  // synchronously when a field trial is activated and its group selected. It
+  // will be notified synchronously on the same thread where the activation and
+  // group selection happened. It is the responsibility of the observer to make
+  // sure that this is a safe operation and the operation must be fast, as this
+  // work is done synchronously as part of group() or related APIs. Only a
+  // single such observer is supported, exposed specifically for crash
+  // reporting. Must be called on the main thread before any other threads
+  // have been started.
+  static void SetSynchronousObserver(Observer* observer);
+
+  // Removes the single synchronous observer.
+  static void RemoveSynchronousObserver(Observer* observer);
+
   // Grabs the lock if necessary and adds the field trial to the allocator. This
   // should only be called from FinalizeGroupChoice().
   static void OnGroupFinalized(bool is_locked, FieldTrial* field_trial);
@@ -762,6 +776,9 @@ class BASE_EXPORT FieldTrialList {
 
   // List of observers to be notified when a group is selected for a FieldTrial.
   scoped_refptr<ObserverListThreadSafe<Observer> > observer_list_;
+
+  // Single synchronous observer to be notified when a trial group is chosen.
+  Observer* synchronous_observer_ = nullptr;
 
   // Allocator in shared memory containing field trial data. Used in both
   // browser and child processes, but readonly in the child.
