@@ -206,6 +206,11 @@ class CORE_EXPORT LocalFrameClient : public FrameClient {
   // Will be called when a new UseCounter feature has been observed in a frame.
   // This propogates feature usage to the browser process for histograms.
   virtual void DidObserveNewFeatureUsage(mojom::WebFeature) {}
+  // Will be called when a new UseCounter CSS property or animated CSS property
+  // has been observed in a frame. This propogates feature usage to the browser
+  // process for histograms.
+  virtual void DidObserveNewCssPropertyUsage(int /*css_property*/,
+                                             bool /*is_animated*/) {}
   // Will be called by a Page upon DidCommitLoad, deciding whether to track
   // UseCounter usage or not based on its url.
   virtual bool ShouldTrackUseCounter(const KURL&) { return true; }

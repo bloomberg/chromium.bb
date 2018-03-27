@@ -8,6 +8,8 @@ See http://dev.chromium.org/developers/how-tos/depottools/presubmit-scripts
 for more details about the presubmit API built into gcl.
 """
 
+CSS_PROPERTY_ID_HEADER_PATH = (
+    'third_party/WebKit/public/mojom/use_counter/css_property_id.mojom')
 
 def _RunUseCounterChecks(input_api, output_api):
     for f in input_api.AffectedFiles():
@@ -24,16 +26,25 @@ def _RunUseCounterChecks(input_api, output_api):
     bucket_finder = input_api.re.compile(
         r'case CSSProperty\w*?:\s+?return (\d+);',
         input_api.re.MULTILINE)
-    # Looking for a line like "constexpr int kMaximumCSSSampleId = 452;"
-    expected_max_finder = input_api.re.compile(
-        r'constexpr int kMaximumCSSSampleId = (\d+);')
-    joined_contents = '\n'.join(use_counter_cpp_file.NewContents())
 
-    expected_max_match = expected_max_finder.search(joined_contents)
+    # Looking for a line like "const int32 kMaximumCSSSampleId = 452;"
+    expected_max_finder = input_api.re.compile(
+        r'const int32 kMaximumCSSSampleId = (\d+);')
+
+    for f in input_api.change.AffectedFiles():
+        if f.AbsoluteLocalPath().endswith(CSS_PROPERTY_ID_HEADER_PATH):
+            expected_max_match = expected_max_finder.search(
+                '\n'.join(f.NewContents()))
+            break
+    else:
+        return []
+
     if expected_max_match:
         expected_max_bucket = int(expected_max_match.group(1))
 
-    for bucket_match in bucket_finder.finditer(joined_contents):
+    for bucket_match in bucket_finder.finditer(
+            '\n'.join(use_counter_cpp_file.NewContents())):
+
         bucket = int(bucket_match.group(1))
         largest_found_bucket = max(largest_found_bucket, bucket)
 
@@ -47,7 +58,8 @@ def _RunUseCounterChecks(input_api, output_api):
             'Largest found CSSProperty bucket Id (%d) does not match '
             'maximumCSSSampleId (%d)' % (
                 largest_found_bucket, expected_max_bucket),
-            items=[use_counter_cpp_file.LocalPath()])]
+            items=[use_counter_cpp_file.LocalPath(),
+                   CSS_PROPERTY_ID_HEADER_PATH])]
 
     return []
 

@@ -1,9 +1,29 @@
 <html manifest="./not-actually-a-manifest.appcache">
-  <head><title>UseCounter Features Test</title></head>
+  <head>
+    <title>UseCounter Features Test</title>
+    <style>
+      div {
+        animation-duration: 3s;
+        animation-name: test;
+      }
+
+      @keyframes test {
+        from {
+          margin-left: 100%;
+          width: 300%;
+        }
+
+        to {
+          margin-left: 0%;
+          width: 100%;
+        }
+      }
+    </style>
+  </head>
   <body>
-    <div id="div"></div>
+    <div id="div">This is a div</div>
     <link href="data:text/css,#foo { color: red; }" rel="stylesheet">
-    <p id="para">TEST</p>
+    <p id="para" style="font-size:50px; font-family:serif;">TEST</p>
   <script type="text/javascript">
   for (var i = 0; i < 3; i++) {
     document.getElementById("div").animate([

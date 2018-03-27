@@ -76,6 +76,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/public/mojom/use_counter/css_property_id.mojom.h"
 #include "third_party/WebKit/public/platform/web_feature.mojom.h"
 #include "url/gurl.h"
 
@@ -1215,6 +1216,52 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterCSSPropertiesInMainFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/use_counter_features.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  // CSSPropertyFontFamily
+  histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
+                                      1);
+  // CSSPropertyFontSize
+  histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
+                                      1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kCssPropertiesHistogramName,
+      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterAnimatedCSSPropertiesInMainFrame) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/use_counter_features.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  // CSSPropertyWidth
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName, 161, 1);
+  // CSSPropertyMarginLeft
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName, 91, 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName,
+      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
                        UseCounterFeaturesMixedContent) {
   // UseCounterFeaturesInMainFrame loads the test file on a loopback
   // address. Loopback is treated as a secure origin in most ways, but it
@@ -1246,6 +1293,68 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterCSSPropertiesMixedContent) {
+  // UseCounterCSSPropertiesInMainFrame loads the test file on a loopback
+  // address. Loopback is treated as a secure origin in most ways, but it
+  // doesn't count as mixed content when it loads http://
+  // subresources. Therefore, this test loads the test file on a real HTTPS
+  // server.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server.GetURL("/page_load_metrics/use_counter_features.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  // CSSPropertyFontFamily
+  histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
+                                      1);
+  // CSSPropertyFontSize
+  histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
+                                      1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kCssPropertiesHistogramName,
+      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+}
+
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterAnimatedCSSPropertiesMixedContent) {
+  // UseCounterCSSPropertiesInMainFrame loads the test file on a loopback
+  // address. Loopback is treated as a secure origin in most ways, but it
+  // doesn't count as mixed content when it loads http://
+  // subresources. Therefore, this test loads the test file on a real HTTPS
+  // server.
+  net::EmbeddedTestServer https_server(net::EmbeddedTestServer::TYPE_HTTPS);
+  https_server.AddDefaultHandlers(
+      base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
+  ASSERT_TRUE(https_server.Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      https_server.GetURL("/page_load_metrics/use_counter_features.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  // CSSPropertyWidth
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName, 161, 1);
+  // CSSPropertyMarginLeft
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName, 91, 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName,
+      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
@@ -1410,6 +1519,108 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
   histogram_tester_.ExpectBucketCount(
       internal::kFeaturesHistogramName,
       static_cast<int32_t>(WebFeature::kPageVisits), 1);
+}
+
+// Test UseCounter CSS properties observed in a child frame are recorded,
+// exactly once per feature.
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterCSSPropertiesInIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/use_counter_features_in_iframe.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  // CSSPropertyFontFamily
+  histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
+                                      1);
+  // CSSPropertyFontSize
+  histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
+                                      1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kCssPropertiesHistogramName,
+      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+}
+
+// Test UseCounter CSS Properties observed in multiple child frames are
+// recorded, exactly once per feature.
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterCSSPropertiesInIframes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/page_load_metrics/use_counter_features_in_iframes.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  // CSSPropertyFontFamily
+  histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 6,
+                                      1);
+  // CSSPropertyFontSize
+  histogram_tester_.ExpectBucketCount(internal::kCssPropertiesHistogramName, 7,
+                                      1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kCssPropertiesHistogramName,
+      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+}
+
+// Test UseCounter CSS properties observed in a child frame are recorded,
+// exactly once per feature.
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterAnimatedCSSPropertiesInIframe) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(), embedded_test_server()->GetURL(
+                     "/page_load_metrics/use_counter_features_in_iframe.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  // CSSPropertyWidth
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName, 161, 1);
+  // CSSPropertyMarginLeft
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName, 91, 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName,
+      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
+}
+
+// Test UseCounter CSS Properties observed in multiple child frames are
+// recorded, exactly once per feature.
+IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
+                       UseCounterAnimatedCSSPropertiesInIframes) {
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  auto waiter = CreatePageLoadMetricsWaiter();
+  waiter->AddPageExpectation(TimingField::LOAD_EVENT);
+  ui_test_utils::NavigateToURL(
+      browser(),
+      embedded_test_server()->GetURL(
+          "/page_load_metrics/use_counter_features_in_iframes.html"));
+  waiter->Wait();
+  NavigateToUntrackedUrl();
+
+  // CSSPropertyWidth
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName, 161, 1);
+  // CSSPropertyMarginLeft
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName, 91, 1);
+  histogram_tester_.ExpectBucketCount(
+      internal::kAnimatedCssPropertiesHistogramName,
+      blink::mojom::kTotalPagesMeasuredCSSSampleId, 1);
 }
 
 // Test UseCounter Features observed for SVG pages.

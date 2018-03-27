@@ -117,9 +117,11 @@ class CONTENT_EXPORT RenderFrameObserver : public IPC::Listener,
   virtual void DidObserveLoadingBehavior(
       blink::WebLoadingBehaviorFlag behavior) {}
 
-  // Notification when the renderer observes a new feature usage during a page
-  // load. This is used for UseCounter feature metrics.
+  // Notification when the renderer observes a new use counter usage during a
+  // page load. This is used for UseCounter metrics.
   virtual void DidObserveNewFeatureUsage(blink::mojom::WebFeature feature) {}
+  virtual void DidObserveNewCssPropertyUsage(int css_property,
+                                             bool is_animated) {}
 
   // Called when the focused node has changed to |node|.
   virtual void FocusedNodeChanged(const blink::WebNode& node) {}
