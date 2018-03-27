@@ -390,7 +390,7 @@ class VMTestConfig(object):
     max_retries: Integer, maximum job retries allowed at suite level.
                  None for no max.
   """
-  DEFAULT_TEST_TIMEOUT = 60 * 60
+  DEFAULT_TEST_TIMEOUT = 90 * 60
 
   def __init__(self, test_type, test_suite=None,
                timeout=DEFAULT_TEST_TIMEOUT, retry=False,
