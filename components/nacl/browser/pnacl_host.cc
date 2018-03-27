@@ -566,9 +566,11 @@ void PnaclHost::RendererClosing(int render_process_id) {
     PendingTranslationMap::iterator to_erase(it++);
     if (to_erase->first.first == render_process_id) {
       // Clean up the open files.
-      std::unique_ptr<base::File> file(to_erase->second.nexe_fd);
-      to_erase->second.nexe_fd = NULL;
-      CloseBaseFile(std::move(*file.get()));
+      if (to_erase->second.nexe_fd) {
+        std::unique_ptr<base::File> file(to_erase->second.nexe_fd);
+        to_erase->second.nexe_fd = NULL;
+        CloseBaseFile(std::move(*file.get()));
+      }
       std::string key(to_erase->second.cache_key);
       bool may_be_cached = TranslationMayBeCached(to_erase);
       pending_translations_.erase(to_erase);
