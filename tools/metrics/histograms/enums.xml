@@ -34852,6 +34852,13 @@ Called by update_net_trust_anchors.py.-->
   <int value="15" label="Email, Phone, Shipping Address and Name"/>
 </enum>
 
+<enum name="PdfCompositionStatus">
+  <int value="0" label="PDF compositor service finished successfully"/>
+  <int value="1" label="PDF compositor service encountered memory map error"/>
+  <int value="2" label="PDF compositor service detected file format error"/>
+  <int value="3" label="PDF compositor service failed to composite"/>
+</enum>
+
 <enum name="PDFFeatures">
   <int value="0" label="Loaded Document"/>
   <int value="1" label="Has Title"/>
