@@ -38,10 +38,12 @@
 <translation id="1873233029667955273">Google Chrome не является браузером по умолчанию.</translation>
 <translation id="1874309113135274312">Google Chrome (бета, mDNS-In)</translation>
 <translation id="1877026089748256423">Версия Chrome устарела</translation>
+<translation id="2007150628464581396">{0,plural, =1{Chrome перезапустится через 1 минуту}one{Chrome перезапустится через # минуту}few{Chrome перезапустится через # минуты}many{Chrome перезапустится через # минут}other{Chrome перезапустится через # минуты}}</translation>
 <translation id="2063848847527508675">Перезагрузите Chrome OS, чтобы установить обновление.</translation>
 <translation id="2077129598763517140">Использовать аппаратное ускорение (при наличии)</translation>
 <translation id="2084710999043359739">Установить</translation>
 <translation id="2094919256425865063">Завершить работу Chrome?</translation>
+<translation id="210890598424854131">{0,plural, =0{Chrome перезапускается}=1{Chrome перезапустится через 1 секунду}one{Chrome перезапустится через # секунду}few{Chrome перезапустится через # секунды}many{Chrome перезапустится через # секунд}other{Chrome перезапустится через # секунды}}</translation>
 <translation id="2120620239521071941">С устройства будут удалены объекты (<ph name="ITEMS_COUNT" />). Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Отправьте отчет о <ph name="BEGIN_LINK" />текущих настройках Chrome<ph name="END_LINK" />, чтобы помочь нам улучшить браузер</translation>
 <translation id="216054706567564023">Установите Chrome на телефон. Мы отправим SMS на номер, указанный в вашем аккаунте.</translation>
@@ -61,6 +63,7 @@
 <translation id="2446511512801740068">Для текущей версии Chrome доступно обновление. Оно будет установлено при перезапуске приложения.</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2534507159460261402">Google Pay (скопирована в Chrome)</translation>
+<translation id="2535429035253759792">Администратор просит перезапустить Chrome для установки обновления</translation>
 <translation id="2580411288591421699">Не удается установить версию Google Chrome, аналогичную уже выполняемой. Закройте Google Chrome и повторите попытку.</translation>
 <translation id="2586406160782125153">Данные о работе в браузере будут удалены с устройства. Чтобы восстановить данные позже, войдите в Chrome как <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Логотип Chrome</translation>
@@ -97,6 +100,7 @@
 <translation id="345171907106878721">Добавить пользователя Chrome</translation>
 <translation id="3479552764303398839">Не сейчас</translation>
 <translation id="3503306920980160878">Для этого сайта Chrome запрашивает доступ к данным о вашем местоположении.</translation>
+<translation id="3582972582564653026">Синхронизируйте данные Chrome на всех устройствах</translation>
 <translation id="3612333635265770873">Известно, что модуль с таким названием конфликтует с Google Chrome.</translation>
 <translation id="3622797965165704966">Теперь с Chrome ещё удобнее работать в аккаунте Google, в том числе на общих компьютерах.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Условия использования<ph name="END_TERMS_OF_SERVICE_LINK" /> Google Chrome OS</translation>
@@ -119,6 +123,7 @@
 <translation id="4149882025268051530">Не удалось извлечь файлы из архива. Скачайте Google Chrome заново.</translation>
 <translation id="4251615635259297716">Связать данные Chrome с этим аккаунтом?</translation>
 <translation id="4251625577313994583">скачайте Chrome для iOS</translation>
+<translation id="4293420128516039005">Войдите, чтобы синхронизировать данные Chrome на всех устройствах</translation>
 <translation id="4309555186815777032">(необходимо <ph name="BEGIN_BUTTON" />перезапустить<ph name="END_BUTTON" /> Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome для разработчиков (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -254,6 +259,7 @@
 <translation id="8547799825197623713">Панель запуска Chrome Canary</translation>
 <translation id="8556340503434111824">Доступна новая версия Google Chrome, которая стала еще быстрее.</translation>
 <translation id="8568392309447938879">Для работы с приложениями необходимо выполнить вход в Chrome. Это обеспечит синхронизацию приложений, закладок, истории, паролей и настроек, сохраненных на всех ваших устройствах.</translation>
+<translation id="859960207076826247">{0,plural, =0{Доступно обновление Chrome}=1{Доступно обновление Chrome}one{Обновление Chrome доступно # день}few{Обновление Chrome доступно # дня}many{Обновление Chrome доступно # дней}other{Обновление Chrome доступно # дня}}</translation>
 <translation id="8606668294522778825">Для более качественной работы Google Chrome может использовать веб-сервисы. При необходимости вы можете отключить их. <ph name="BEGIN_LINK" />Подробнее…<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome не отвечает. Перезапустить сейчас?</translation>
 <translation id="8667808506758191620">На устройстве <ph name="DEVICE_TYPE" /> используется последняя версия Chromium OS.</translation>
@@ -261,6 +267,7 @@
 <translation id="8679801911857917785">Кроме того, расширение изменило стартовую страницу Chrome.</translation>
 <translation id="870251953148363156">Обновить &amp;Google Chrome</translation>
 <translation id="873133009373065397">Google Chrome не удалось определить или задать браузер по умолчанию</translation>
+<translation id="8736674169840206667">Администратор требует перезапустить Chrome для установки обновления</translation>
 <translation id="8796108026289707191">Перезапустите Google Chrome</translation>
 <translation id="8823341990149967727">Версия Chrome устарела</translation>
 <translation id="884296878221830158">Кроме того, расширение изменило стартовую страницу Chrome и страницу, отображаемую при нажатии кнопки "Главная страница".</translation>

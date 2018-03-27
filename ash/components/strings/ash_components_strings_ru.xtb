@@ -3,6 +3,7 @@
 <translationbundle lang="ru">
 <translation id="104962181688258143">Открыть приложение "Файлы"</translation>
 <translation id="1126871238933253947">Переключиться на предыдущий язык ввода.</translation>
+<translation id="1134347825771908369">Отключить звук</translation>
 <translation id="1195667586424773550">Перетащить ссылку в адресную строку вкладки</translation>
 <translation id="1204450209689312104">Открыть новое окно в режиме инкогнито</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Сохранить все страницы, открытые в текущем окне, в закладках (в новой папке)</translation>
 <translation id="355103131818127604">Открыть ссылку в новой фоновой вкладке</translation>
 <translation id="3649256019230929621">Свернуть окно</translation>
+<translation id="3655154169297074232">Вкладки и окна</translation>
 <translation id="3668361878347172356">Повторить отмененное действие</translation>
 <translation id="3720939646656082033">Открыть ссылку в новой вкладке и переключиться на нее</translation>
 <translation id="3725795051337497754">Закрыть активную вкладку</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Сохранить ссылку как закладку</translation>
 <translation id="4141203561740478845">Выделить ряд с адресной строкой</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> или <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Режим обзора</translation>
+<translation id="4472417192667361414">Настройки экрана и системы</translation>
 <translation id="4556221320735744018">Открыть страницу справки по быстрым клавишам</translation>
 <translation id="4628718545549558538">Открыть панель состояния (на которой расположено изображение профиля)</translation>
 <translation id="4642092649622328492">Сделать скриншот части экрана</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Перейти к началу документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> или <ph name="E" /></translation>
 <translation id="8234414138295101081">Повернуть экран на 90 градусов</translation>
+<translation id="826184564253127735">Просмотр быстрых клавиш</translation>
 <translation id="836869401750819675">Открыть страницу "Скачанные файлы"</translation>
 <translation id="8388247778047144397">Перетащить ссылку в пустую область на панели вкладок</translation>
 <translation id="8389638407792712197">Открыть новое окно</translation>
@@ -146,5 +151,6 @@
 <translation id="8727232706774971183">Посмотреть уведомления</translation>
 <translation id="88986195241502842">На страницу вниз</translation>
 <translation id="8903921497873541725">Увеличить</translation>
+<translation id="9106898733795143799">Страница и браузер</translation>
 <translation id="9179672198516322668">Часто используемые быстрые клавиши</translation>
 </translationbundle>
