@@ -14,12 +14,10 @@
 
 namespace network {
 
-class WebSocketFactory::Delegate final
-    : public WebSocket::Delegate,
-      public base::SupportsWeakPtr<Delegate> {
+class WebSocketFactory::Delegate final : public WebSocket::Delegate {
  public:
   Delegate(WebSocketFactory* factory, int32_t process_id)
-      : factory_(factory), process_id_(process_id) {}
+      : factory_(factory), process_id_(process_id), weak_factory_(this) {}
   ~Delegate() override {}
 
   net::URLRequestContext* GetURLRequestContext() override {
@@ -54,7 +52,7 @@ class WebSocketFactory::Delegate final
         process_id, render_frame_id, request_id, resource_type, url, ssl_info,
         fatal,
         base::BindRepeating(&Delegate::OnSSLCertificateErrorResponse,
-                            AsWeakPtr(), ssl_info));
+                            weak_factory_.GetWeakPtr(), ssl_info));
   }
 
   void ReportBadMessage(BadMessageReason reason, WebSocket* impl) override {
@@ -85,6 +83,8 @@ class WebSocketFactory::Delegate final
   WebSocketFactory* const factory_;
   const int process_id_;
   std::unique_ptr<net::WebSocketEventInterface::SSLErrorCallbacks> callbacks_;
+
+  base::WeakPtrFactory<Delegate> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(Delegate);
 };
