@@ -164,7 +164,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "base/allocator/allocator_interception_mac.h"
 #include "base/memory/memory_pressure_monitor_mac.h"
 #include "content/browser/cocoa/system_hotkey_helper_mac.h"
 #include "content/browser/mach_broker_mac.h"
@@ -265,7 +264,6 @@ pid_t LaunchZygoteHelper(base::CommandLine* cmd_line,
   // to the zygote/renderers.
   static const char* const kForwardSwitches[] = {
       switches::kAndroidFontsPath, switches::kClearKeyCdmPathForTesting,
-      switches::kEnableHeapProfiling,
       switches::kEnableLogging,  // Support, e.g., --enable-logging=stderr.
       // Need to tell the zygote that it is headless so that we don't try to use
       // the wrong type of main delegate.
@@ -838,14 +836,6 @@ int BrowserMainLoop::PreCreateThreads() {
   }
 
   InitializeMemoryManagementComponent();
-
-#if defined(OS_MACOSX)
-  if (base::CommandLine::InitializedForCurrentProcess() &&
-      base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kEnableHeapProfiling)) {
-    base::allocator::PeriodicallyShimNewMallocZones();
-  }
-#endif
 
 #if BUILDFLAG(ENABLE_PLUGINS)
   // Prior to any processing happening on the IO thread, we create the
