@@ -23,6 +23,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/FrameOwner.h"
 #include "core/frame/Settings.h"
+#include "core/frame/UseCounter.h"
 #include "core/frame/WebFeature.h"
 #include "core/html/HTMLIFrameElement.h"
 #include "core/inspector/ConsoleMessage.h"
@@ -52,6 +53,7 @@
 #include "platform/wtf/text/StringBuilder.h"
 #include "public/platform/Platform.h"
 #include "public/platform/TaskType.h"
+#include "public/platform/web_feature.mojom-blink.h"
 #include "services/service_manager/public/cpp/interface_provider.h"
 
 namespace {
@@ -811,6 +813,13 @@ ScriptPromise PaymentRequest::show(ScriptState* script_state) {
     return ScriptPromise::RejectWithDOMException(
         script_state, DOMException::Create(kInvalidStateError,
                                            "Cannot show the payment request"));
+  }
+
+  // TODO(crbug.com/825270): Reject with SecurityError DOMException if triggered
+  // without user activation.
+  if (!Frame::HasTransientUserActivation(GetFrame())) {
+    UseCounter::Count(GetExecutionContext(),
+                      WebFeature::kPaymentRequestShowWithoutGesture);
   }
 
   // TODO(crbug.com/779126): add support for handling payment requests in
