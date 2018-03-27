@@ -6,7 +6,7 @@
 
 #include <memory>
 
-#include "ash/resources/vector_icons/vector_icons.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/system/power/power_status.h"
 #include "base/macros.h"
 #include "base/threading/thread_task_runner_handle.h"

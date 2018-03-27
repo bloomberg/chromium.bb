@@ -20,6 +20,7 @@ aggregate_vector_icons("ash_public_vector_icons") {
     "notification_printing.icon",
     "notification_printing_done.icon",
     "notification_printing_warning.icon",
+    "notification_settings.icon",
     "notification_storage_full.icon",
     "notification_vpn.icon",
     "notification_warning.icon",

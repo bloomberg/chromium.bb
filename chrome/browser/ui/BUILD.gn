@@ -2122,7 +2122,6 @@ split_static_library("ui") {
       "//ash/components/shortcut_viewer:ksv",
       "//ash/public/cpp",
       "//ash/public/cpp/vector_icons",
-      "//ash/resources/vector_icons",
       "//ash/strings",
       "//chrome/browser/chromeos",
       "//chromeos:cryptohome_proto",
