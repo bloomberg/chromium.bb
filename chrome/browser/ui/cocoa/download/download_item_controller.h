@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/time/time.h"
+#include "chrome/browser/download/download_commands.h"
 
 @class ChromeUILocalizer;
 @class DownloadItemCell;
@@ -157,6 +158,8 @@ class MenuModel;
 - (IBAction)saveDownload:(id)sender;
 - (IBAction)discardDownload:(id)sender;
 - (IBAction)showContextMenu:(id)sender;
+- (bool)submitDownloadToFeedbackService:(download::DownloadItem*)download
+                            withCommand:(DownloadCommands::Command)command;
 
 @end
 
