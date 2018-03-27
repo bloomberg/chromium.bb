@@ -10,18 +10,14 @@ namespace content {
 constexpr char kAcceptHeaderSignedExchangeSuffix[] =
     ",application/signed-exchange;v=b0";
 
-// Field names defined in the application/http-exchange+cbor content type:
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.5
+// Field names defined in the application/signed-exchange content type:
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#application-signed-exchange
 
 constexpr char kCertSha256Key[] = "certSha256";
 constexpr char kDateKey[] = "date";
 constexpr char kExpiresKey[] = "expires";
 constexpr char kHeadersKey[] = "headers";
-constexpr char kHtxg[] = "htxg";
 constexpr char kMethodKey[] = ":method";
-constexpr char kPayload[] = "payload";
-constexpr char kRequest[] = "request";
-constexpr char kResponse[] = "response";
 constexpr char kSignature[] = "signature";
 constexpr char kStatusKey[] = ":status";
 constexpr char kUrlKey[] = ":url";

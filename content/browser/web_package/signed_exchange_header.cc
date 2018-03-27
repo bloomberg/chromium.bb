@@ -21,7 +21,7 @@ namespace {
 // header field. Stateful header fields will cause validation failure of
 // signed exchanges.
 // Note that |name| must be lower-cased.
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.4.1
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#stateful-headers
 bool IsStatefulRequestHeader(base::StringPiece name) {
   DCHECK_EQ(name, base::ToLowerASCII(name));
 
