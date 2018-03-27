@@ -127,7 +127,7 @@ TEST_F(OfflineURLUtilsTest, IsOfflineURL) {
 // Checks that the offline URLs are correctly detected by |IsOfflineURL|.
 TEST_F(OfflineURLUtilsTest, IsOfflineURLValid) {
   auto reading_list_model = std::make_unique<ReadingListModelImpl>(
-      nullptr, nullptr, std::make_unique<base::DefaultClock>());
+      nullptr, nullptr, base::DefaultClock::GetInstance());
   GURL entry_url("http://entry_url.com");
   base::FilePath distilled_path("distilled/page.html");
   GURL distilled_url("http://distilled_url.com");

@@ -95,11 +95,8 @@ class ReadingListStoreTest : public testing::Test,
         base::BindOnce(&syncer::ModelTypeStoreTestUtil::MoveStoreToCallback,
                        std::move(store_)),
         CreateModelTypeChangeProcessor());
-    auto clock = std::make_unique<base::SimpleTestClock>();
-    clock_ = clock.get();
-    model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr,
-                                                    std::move(clock));
-    reading_list_store_->SetReadingListModel(model_.get(), this, clock_);
+    model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr, &clock_);
+    reading_list_store_->SetReadingListModel(model_.get(), this, &clock_);
 
     base::RunLoop().RunUntilIdle();
   }
@@ -175,7 +172,7 @@ class ReadingListStoreTest : public testing::Test,
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
   std::unique_ptr<ReadingListModelImpl> model_;
-  base::SimpleTestClock* clock_;
+  base::SimpleTestClock clock_;
   std::unique_ptr<ReadingListStore> reading_list_store_;
   int put_called_;
   int delete_called_;
@@ -195,9 +192,9 @@ TEST_F(ReadingListStoreTest, CheckEmpties) {
 
 TEST_F(ReadingListStoreTest, SaveOneRead) {
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
-                         AdvanceAndGetTime(clock_));
-  entry.SetRead(true, AdvanceAndGetTime(clock_));
-  AdvanceAndGetTime(clock_);
+                         AdvanceAndGetTime(&clock_));
+  entry.SetRead(true, AdvanceAndGetTime(&clock_));
+  AdvanceAndGetTime(&clock_);
   reading_list_store_->SaveEntry(entry);
   AssertCounts(1, 0, 0, 0, 0);
   syncer::EntityData* data = put_multimap_["http://read.example.com/"].get();
@@ -210,7 +207,7 @@ TEST_F(ReadingListStoreTest, SaveOneRead) {
 
 TEST_F(ReadingListStoreTest, SaveOneUnread) {
   ReadingListEntry entry(GURL("http://unread.example.com/"), "unread title",
-                         AdvanceAndGetTime(clock_));
+                         AdvanceAndGetTime(&clock_));
   reading_list_store_->SaveEntry(entry);
   AssertCounts(1, 0, 0, 0, 0);
   syncer::EntityData* data = put_multimap_["http://unread.example.com/"].get();
@@ -224,8 +221,8 @@ TEST_F(ReadingListStoreTest, SaveOneUnread) {
 TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
   syncer::EntityChangeList remote_input;
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
-                         AdvanceAndGetTime(clock_));
-  entry.SetRead(true, AdvanceAndGetTime(clock_));
+                         AdvanceAndGetTime(&clock_));
+  entry.SetRead(true, AdvanceAndGetTime(&clock_));
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
       entry.AsReadingListSpecifics();
 
@@ -248,8 +245,8 @@ TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
 
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title",
-                         AdvanceAndGetTime(clock_));
-  entry.SetRead(true, AdvanceAndGetTime(clock_));
+                         AdvanceAndGetTime(&clock_));
+  entry.SetRead(true, AdvanceAndGetTime(&clock_));
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
       entry.AsReadingListSpecifics();
   syncer::EntityData data;
@@ -269,13 +266,13 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
 }
 
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
-  AdvanceAndGetTime(clock_);
+  AdvanceAndGetTime(&clock_);
   model_->AddEntry(GURL("http://unread.example.com/"), "unread title",
                    reading_list::ADDED_VIA_CURRENT_APP);
 
   ReadingListEntry new_entry(GURL("http://unread.example.com/"), "unread title",
-                             AdvanceAndGetTime(clock_));
-  new_entry.SetRead(true, AdvanceAndGetTime(clock_));
+                             AdvanceAndGetTime(&clock_));
+  new_entry.SetRead(true, AdvanceAndGetTime(&clock_));
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
       new_entry.AsReadingListSpecifics();
   syncer::EntityData data;
@@ -296,10 +293,10 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
   // Read entry but with unread URL as it must update the other one.
   ReadingListEntry old_entry(GURL("http://unread.example.com/"),
-                             "old unread title", AdvanceAndGetTime(clock_));
-  old_entry.SetRead(true, AdvanceAndGetTime(clock_));
+                             "old unread title", AdvanceAndGetTime(&clock_));
+  old_entry.SetRead(true, AdvanceAndGetTime(&clock_));
 
-  AdvanceAndGetTime(clock_);
+  AdvanceAndGetTime(&clock_);
   model_->AddEntry(GURL("http://unread.example.com/"), "new unread title",
                    reading_list::ADDED_VIA_CURRENT_APP);
   AssertCounts(0, 0, 0, 0, 0);

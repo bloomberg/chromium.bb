@@ -34,7 +34,7 @@ class ReadingListModelImpl : public ReadingListModel,
   // |clock| will be used to timestamp all the operations.
   ReadingListModelImpl(std::unique_ptr<ReadingListModelStorage> storage_layer,
                        PrefService* pref_service,
-                       std::unique_ptr<base::Clock> clock_);
+                       base::Clock* clock_);
 
   ReadingListModelImpl();
 
@@ -141,8 +141,7 @@ class ReadingListModelImpl : public ReadingListModel,
   // Set the unseen flag to true.
   void SetUnseenFlag();
 
-  // |storage_layer_| depends on |clock_| so keep the order.
-  std::unique_ptr<base::Clock> clock_;
+  base::Clock* clock_;
   std::unique_ptr<ReadingListModelStorage> storage_layer_;
   PrefService* pref_service_;
   bool has_unseen_;

@@ -30,11 +30,7 @@ using testing::_;
 class ReadingListMediatorTest : public PlatformTest {
  public:
   ReadingListMediatorTest() {
-    std::unique_ptr<base::SimpleTestClock> clock =
-        std::make_unique<base::SimpleTestClock>();
-    clock_ = clock.get();
-    model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr,
-                                                    std::move(clock));
+    model_ = std::make_unique<ReadingListModelImpl>(nullptr, nullptr, &clock_);
     EXPECT_CALL(mock_favicon_service_,
                 GetLargestRawFaviconForPageURL(_, _, _, _, _))
         .WillRepeatedly(
@@ -49,10 +45,10 @@ class ReadingListMediatorTest : public PlatformTest {
     model_->SetReadStatus(GURL("http://chromium.org/read1"), true);
     model_->AddEntry(GURL("http://chromium.org/unread2"), "unread2",
                      reading_list::ADDED_VIA_CURRENT_APP);
-    clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+    clock_.Advance(base::TimeDelta::FromMilliseconds(10));
     model_->AddEntry(no_title_entry_url_, "",
                      reading_list::ADDED_VIA_CURRENT_APP);
-    clock_->Advance(base::TimeDelta::FromMilliseconds(10));
+    clock_.Advance(base::TimeDelta::FromMilliseconds(10));
     model_->AddEntry(GURL("http://chromium.org/read2"), "read2",
                      reading_list::ADDED_VIA_CURRENT_APP);
     model_->SetReadStatus(GURL("http://chromium.org/read2"), true);
@@ -69,7 +65,7 @@ class ReadingListMediatorTest : public PlatformTest {
   testing::StrictMock<favicon::MockFaviconService> mock_favicon_service_;
   std::unique_ptr<ReadingListModelImpl> model_;
   ReadingListMediator* mediator_;
-  base::SimpleTestClock* clock_;
+  base::SimpleTestClock clock_;
   GURL no_title_entry_url_;
   std::unique_ptr<favicon::LargeIconService> large_icon_service_;
 

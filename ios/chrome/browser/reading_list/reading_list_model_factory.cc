@@ -72,9 +72,9 @@ std::unique_ptr<KeyedService> ReadingListModelFactory::BuildServiceInstanceFor(
   std::unique_ptr<ReadingListStore> store = std::make_unique<ReadingListStore>(
       std::move(store_factory), std::move(change_processor));
   std::unique_ptr<KeyedService> reading_list_model =
-      std::make_unique<ReadingListModelImpl>(
-          std::move(store), chrome_browser_state->GetPrefs(),
-          std::make_unique<base::DefaultClock>());
+      std::make_unique<ReadingListModelImpl>(std::move(store),
+                                             chrome_browser_state->GetPrefs(),
+                                             base::DefaultClock::GetInstance());
   return reading_list_model;
 }
 
