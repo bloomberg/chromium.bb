@@ -482,7 +482,6 @@ static void down2_symodd(const uint8_t *const input, int length,
 }
 
 static int get_down2_length(int length, int steps) {
-  assert(length > 1);
   for (int s = 0; s < steps; ++s) length = (length + 1) >> 1;
   return length;
 }
