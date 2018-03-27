@@ -19,7 +19,6 @@
 #include "components/safe_browsing/db/v4_protocol_manager_util.h"
 #include "components/safe_browsing/db/v4_update_protocol_manager.h"
 #include "components/safe_browsing/proto/webui.pb.h"
-#include "content/public/browser/notification_service.h"
 #include "url/gurl.h"
 
 namespace safe_browsing {
@@ -278,11 +277,10 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
                                     const FullHashToStoreAndHashPrefixesMap&
                                         full_hash_to_store_and_hash_prefixes);
 
-  // Post a notification about the completion of database update process.
-  // This is currently used by the extension blacklist checker to disable any
-  // installed extensions that have been blacklisted since.
-  static void PostUpdateNotificationOnUIThread(
-      const content::NotificationSource& source);
+  // Make callbacks about the completion of database update process. This is
+  // currently used by the extension blacklist checker to disable any installed
+  // extensions that have been blacklisted since.
+  void PostUpdateNotificationOnUIThread();
 
   // When the database is ready to use, process the checks that were queued
   // while the database was loading from disk.

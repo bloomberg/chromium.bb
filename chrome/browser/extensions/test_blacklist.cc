@@ -77,6 +77,7 @@ void TestBlacklist::Attach(Blacklist* blacklist) {
 
 void TestBlacklist::Detach() {
   blacklist_->ResetBlacklistStateFetcherForTest();
+  blacklist_->ResetDatabaseUpdatedListenerForTest();
 }
 
 void TestBlacklist::SetBlacklistState(const std::string& extension_id,

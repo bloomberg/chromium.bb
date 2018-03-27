@@ -14,6 +14,7 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/callback_list.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted_delete_on_sequence.h"
@@ -221,6 +222,17 @@ class SafeBrowsingDatabaseManager
       net::URLRequestContextGetter* request_context_getter,
       const V4ProtocolConfig& config);
 
+  //
+  // Method to manage getting database updates of the DatabaseManager.
+  //
+
+  // Subscribe to receive callbacks when the database is updated, both initially
+  // when it's loaded from disk at startup, and then periodically. These
+  // callbacks will be on the UI thread.
+  using OnDatabaseUpdated = base::RepeatingClosure;
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  RegisterDatabaseUpdatedCallback(const OnDatabaseUpdated& cb);
+
   // Called to stop or shutdown operations on the io_thread. All subclasses
   // should override this method, set enabled_ to false and call the base class
   // method at the bottom of it.
@@ -288,6 +300,9 @@ class SafeBrowsingDatabaseManager
 
   // Created and destroyed via StartOnIOThread/StopOnIOThread.
   std::unique_ptr<V4GetHashProtocolManager> v4_get_hash_protocol_manager_;
+
+  // A list of parties to be notified about database updates.
+  base::CallbackList<void()> update_complete_callback_list_;
 
  private:
   // Returns an iterator to the pending API check with the given |client|.

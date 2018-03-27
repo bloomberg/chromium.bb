@@ -8,6 +8,7 @@
 #include <iterator>
 
 #include "base/bind.h"
+#include "base/callback_list.h"
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -19,11 +20,8 @@
 #include "chrome/browser/extensions/blacklist_state_fetcher.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "components/prefs/pref_service.h"
-#include "components/safe_browsing/db/notification_types.h"
 #include "components/safe_browsing/db/util.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/browser/notification_details.h"
-#include "content/public/browser/notification_source.h"
 #include "extensions/browser/extension_prefs.h"
 
 using content::BrowserThread;
@@ -53,10 +51,17 @@ class LazySafeBrowsingDatabaseManager {
 
   void set(scoped_refptr<SafeBrowsingDatabaseManager> instance) {
     instance_ = instance;
+    database_changed_callback_list_.Notify();
+  }
+
+  std::unique_ptr<base::CallbackList<void()>::Subscription>
+  RegisterDatabaseChangedCallback(const base::RepeatingClosure& cb) {
+    return database_changed_callback_list_.Add(cb);
   }
 
  private:
   scoped_refptr<SafeBrowsingDatabaseManager> instance_;
+  base::CallbackList<void()> database_changed_callback_list_;
 };
 
 static base::LazyInstance<LazySafeBrowsingDatabaseManager>::DestructorAtExit
@@ -160,13 +165,14 @@ Blacklist::ScopedDatabaseManagerForTest::~ScopedDatabaseManagerForTest() {
 }
 
 Blacklist::Blacklist(ExtensionPrefs* prefs) {
-  scoped_refptr<SafeBrowsingDatabaseManager> database_manager =
-      GetDatabaseManager();
-  if (database_manager.get()) {
-    registrar_.Add(
-        this, safe_browsing::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE,
-        content::Source<SafeBrowsingDatabaseManager>(database_manager.get()));
-  }
+  auto& lazy_database_manager = g_database_manager.Get();
+  // Using base::Unretained is safe because when this object goes away, the
+  // subscription will automatically be destroyed.
+  database_changed_subscription_ =
+      lazy_database_manager.RegisterDatabaseChangedCallback(base::BindRepeating(
+          &Blacklist::ObserveNewDatabase, base::Unretained(this)));
+
+  ObserveNewDatabase();
 }
 
 Blacklist::~Blacklist() {
@@ -310,6 +316,10 @@ BlacklistStateFetcher* Blacklist::ResetBlacklistStateFetcherForTest() {
   return state_fetcher_.release();
 }
 
+void Blacklist::ResetDatabaseUpdatedListenerForTest() {
+  database_updated_subscription_.reset();
+}
+
 void Blacklist::AddObserver(Observer* observer) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   observers_.AddObserver(observer);
@@ -331,10 +341,21 @@ scoped_refptr<SafeBrowsingDatabaseManager> Blacklist::GetDatabaseManager() {
   return g_database_manager.Get().get();
 }
 
-void Blacklist::Observe(int type,
-                        const content::NotificationSource& unused_source,
-                        const content::NotificationDetails& unused_details) {
-  DCHECK_EQ(safe_browsing::NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE, type);
+void Blacklist::ObserveNewDatabase() {
+  auto database_manager = GetDatabaseManager();
+  if (database_manager.get()) {
+    // Using base::Unretained is safe because when this object goes away, the
+    // subscription to the callback list will automatically be destroyed.
+    database_updated_subscription_ =
+        database_manager.get()->RegisterDatabaseUpdatedCallback(
+            base::BindRepeating(&Blacklist::NotifyObservers,
+                                base::Unretained(this)));
+  } else {
+    database_updated_subscription_.reset();
+  }
+}
+
+void Blacklist::NotifyObservers() {
   for (auto& observer : observers_)
     observer.OnBlacklistUpdated();
 }

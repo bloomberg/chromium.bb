@@ -128,7 +128,7 @@ void GlobalErrorBubbleTest::ShowUi(const std::string& name) {
     // delay, but some tasks run on the IO thread, so post a task there to
     // ensure it was flushed.
     // The test also needs to invoke OnBlacklistUpdated() directly. Usually this
-    // happens via NOTIFICATION_SAFE_BROWSING_UPDATE_COMPLETE but TestBlacklist
+    // happens via a callback from the SafeBrowsing DB, but TestBlacklist
     // replaced the SafeBrowsing DB with a fake one, so the notification source
     // is different.
     static_cast<extensions::Blacklist::Observer*>(extension_service)
