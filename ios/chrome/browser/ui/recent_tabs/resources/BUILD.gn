@@ -8,7 +8,7 @@ imageset("show_history") {
   sources = [
     "show_history.imageset/Contents.json",
     "show_history.imageset/show_history.png",
-    "show_history.imageset/show_history_@2x.png",
-    "show_history.imageset/show_history_@3x.png",
+    "show_history.imageset/show_history@2x.png",
+    "show_history.imageset/show_history@3x.png",
   ]
 }
