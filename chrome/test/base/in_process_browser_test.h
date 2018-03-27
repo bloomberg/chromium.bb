@@ -41,6 +41,10 @@ class ScopedCOMInitializer;
 #endif  // defined(OS_WIN)
 }  // namespace base
 
+#if defined(TOOLKIT_VIEWS)
+class AccessibilityChecker;
+#endif
+
 class Browser;
 class Profile;
 #if defined(OS_MACOSX)
@@ -270,6 +274,10 @@ class InProcessBrowserTest : public content::BrowserTestBase {
 
 #if defined(OS_WIN)
   std::unique_ptr<base::win::ScopedCOMInitializer> com_initializer_;
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  std::unique_ptr<AccessibilityChecker> accessibility_checker_;
 #endif
 };
 

@@ -250,6 +250,8 @@ static_library("test_support") {
     public_deps += [ "//ui/views:test_support" ]
     sources += [
       "../browser/ui/views/media_router/app_menu_test_api.h",
+      "views/accessibility_checker.cc",
+      "views/accessibility_checker.h",
       "views/chrome_views_test_base.cc",
       "views/chrome_views_test_base.h",
       "views/scoped_macviews_browser_mode.cc",
@@ -2649,6 +2651,11 @@ test("unit_tests") {
     "../../third_party/zlib/google/zip_reader_unittest.cc",
     "../../third_party/zlib/google/zip_unittest.cc",
   ]
+
+  if (toolkit_views) {
+    # Test accessibility checks that audit any UI opened in a browser test.
+    sources += [ "views/accessibility_checker_unittest.cc" ]
+  }
 
   if (is_win) {
     assert(toolkit_views)

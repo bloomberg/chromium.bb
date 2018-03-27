@@ -96,6 +96,10 @@
 #include "extensions/browser/extension_api_frame_id_map.h"
 #endif
 
+#if defined(TOOLKIT_VIEWS)
+#include "chrome/test/views/accessibility_checker.h"
+#endif
+
 namespace {
 
 // Passed as value of kTestType.
@@ -145,6 +149,10 @@ InProcessBrowserTest::InProcessBrowserTest()
 
 #if defined(OS_CHROMEOS)
   DefaultAshEventGeneratorDelegate::GetInstance();
+#endif
+
+#if defined(TOOLKIT_VIEWS)
+  accessibility_checker_ = std::make_unique<AccessibilityChecker>();
 #endif
 }
 
