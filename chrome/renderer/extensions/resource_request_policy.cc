@@ -34,6 +34,12 @@ ResourceRequestPolicy::~ResourceRequestPolicy() = default;
 
 void ResourceRequestPolicy::OnExtensionLoaded(const Extension& extension) {
   if (WebAccessibleResourcesInfo::HasWebAccessibleResources(&extension) ||
+      // Extensions below manifest version 2 had all resources accessible by
+      // default.
+      // TODO(devlin): Two things - first, we might not have any v1 extensions
+      // anymore; second, this should maybe be included in
+      // HasWebAccessibleResources().
+      extension.manifest_version() < 2 ||
       WebviewInfo::HasWebviewAccessibleResources(
           extension, dispatcher_->webview_partition_id()) ||
       // Hosted app icons are accessible.

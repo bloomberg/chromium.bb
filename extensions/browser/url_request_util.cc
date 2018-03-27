@@ -79,6 +79,13 @@ bool AllowCrossRendererResourceLoad(const GURL& url,
 
   DCHECK_EQ(extension->url(), url.GetWithEmptyPath());
 
+  // Extensions with manifest before v2 did not have web_accessible_resource
+  // section, therefore the request needs to be allowed.
+  if (extension->manifest_version() < 2) {
+    *allowed = true;
+    return true;
+  }
+
   // Navigating the main frame to an extension URL is allowed, even if not
   // explicitly listed as web_accessible_resource.
   if (resource_type == content::RESOURCE_TYPE_MAIN_FRAME) {

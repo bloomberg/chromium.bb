@@ -13,43 +13,70 @@ class WebAccessibleResourcesManifestTest : public ChromeManifestTest {
 };
 
 TEST_F(WebAccessibleResourcesManifestTest, WebAccessibleResources) {
-  // No web_accessible_resources.
-  scoped_refptr<Extension> none(
-      LoadAndExpectSuccess("web_accessible_resources_none.json"));
+  // Manifest version 2 with web accessible resources specified.
+  scoped_refptr<Extension> extension1(
+      LoadAndExpectSuccess("web_accessible_resources_1.json"));
+
+  // Manifest version 2 with no web accessible resources.
+  scoped_refptr<Extension> extension2(
+      LoadAndExpectSuccess("web_accessible_resources_2.json"));
+
+  // Default manifest version with web accessible resources specified.
+  scoped_refptr<Extension> extension3(
+      LoadAndExpectSuccess("web_accessible_resources_3.json"));
+
+  // Default manifest version with no web accessible resources.
+  scoped_refptr<Extension> extension4(
+      LoadAndExpectSuccess("web_accessible_resources_4.json"));
+
+  // Default manifest version with wildcard web accessible resource.
+  scoped_refptr<Extension> extension5(
+      LoadAndExpectSuccess("web_accessible_resources_5.json"));
+
+  // Default manifest version with wildcard with specific path and extension.
+  scoped_refptr<Extension> extension6(
+      LoadAndExpectSuccess("web_accessible_resources_6.json"));
+
+  EXPECT_TRUE(
+      WebAccessibleResourcesInfo::HasWebAccessibleResources(extension1.get()));
   EXPECT_FALSE(
-      WebAccessibleResourcesInfo::HasWebAccessibleResources(none.get()));
+      WebAccessibleResourcesInfo::HasWebAccessibleResources(extension2.get()));
+  EXPECT_TRUE(
+      WebAccessibleResourcesInfo::HasWebAccessibleResources(extension3.get()));
   EXPECT_FALSE(
-      WebAccessibleResourcesInfo::IsResourceWebAccessible(none.get(), "test"));
-
-  // web_accessible_resources: ["test"].
-  scoped_refptr<Extension> single(
-      LoadAndExpectSuccess("web_accessible_resources_single.json"));
+      WebAccessibleResourcesInfo::HasWebAccessibleResources(extension4.get()));
   EXPECT_TRUE(
-      WebAccessibleResourcesInfo::HasWebAccessibleResources(single.get()));
-  EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(single.get(),
-                                                                  "test"));
-  EXPECT_FALSE(WebAccessibleResourcesInfo::IsResourceWebAccessible(single.get(),
-                                                                   "other"));
-
-  // web_accessible_resources: ["*"].
-  scoped_refptr<Extension> wildcard(
-      LoadAndExpectSuccess("web_accessible_resources_wildcard.json"));
+      WebAccessibleResourcesInfo::HasWebAccessibleResources(extension5.get()));
   EXPECT_TRUE(
-      WebAccessibleResourcesInfo::HasWebAccessibleResources(wildcard.get()));
-  EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
-      wildcard.get(), "anything"));
-  EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
-      wildcard.get(), "path/anything"));
+      WebAccessibleResourcesInfo::HasWebAccessibleResources(extension6.get()));
 
-  // web_accessible_resources: ["path/*.ext"].
-  scoped_refptr<Extension> pattern(
-      LoadAndExpectSuccess("web_accessible_resources_pattern.json"));
-  EXPECT_TRUE(
-      WebAccessibleResourcesInfo::HasWebAccessibleResources(pattern.get()));
   EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
-      pattern.get(), "path/anything.ext"));
+      extension1.get(), "test"));
   EXPECT_FALSE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
-      pattern.get(), "anything.ext"));
+      extension1.get(), "none"));
+
   EXPECT_FALSE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
-      pattern.get(), "path/anything.badext"));
+      extension2.get(), "test"));
+
+  EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+      extension3.get(), "test"));
+  EXPECT_FALSE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+      extension3.get(), "none"));
+
+  EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+      extension4.get(), "test"));
+  EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+      extension4.get(), "none"));
+
+  EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+      extension5.get(), "anything"));
+  EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+      extension5.get(), "path/anything"));
+
+  EXPECT_TRUE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+      extension6.get(), "path/anything.ext"));
+  EXPECT_FALSE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+      extension6.get(), "anything.ext"));
+  EXPECT_FALSE(WebAccessibleResourcesInfo::IsResourceWebAccessible(
+      extension6.get(), "path/anything.badext"));
 }
