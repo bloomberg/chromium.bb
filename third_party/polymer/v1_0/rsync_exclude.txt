@@ -33,4 +33,8 @@ iron-flex-layout/classes/
 paper-spinner/paper-spinner.html
 
 # paper-styles
-paper-styles/classes/shadow-layout.html
+paper-styles/classes/global.html
+paper-styles/element-styles/paper-item-styles.html
+paper-styles/gen-tsd.json
+paper-styles/paper-styles-classes.html
+paper-styles/paper-styles.html
