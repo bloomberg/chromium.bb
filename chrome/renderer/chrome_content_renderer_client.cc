@@ -1107,31 +1107,6 @@ bool ChromeContentRendererClient::IsNaClAllowed(
       is_extension_force_installed ||
       is_invoked_by_webstore_installed_extension;
   bool is_nacl_allowed = is_nacl_allowed_by_location || is_nacl_unrestricted;
-  if (is_nacl_allowed) {
-    // Make sure that PPAPI 'dev' interfaces are only available for unpacked
-    // and component extensions.  Also allow dev interfaces when --enable-nacl
-    // is set, but do not allow --enable-nacl to provide dev interfaces to
-    // webstore installed and other normally allowed URLs.
-    std::string dev_attribute("@dev");
-    if (is_extension_unrestricted ||
-        (is_nacl_unrestricted && !is_nacl_allowed_by_location)) {
-      // Add the special '@dev' attribute.
-      std::vector<WebPluginMimeType::Param> mime_params;
-      mime_params.emplace_back(base::ASCIIToUTF16(dev_attribute),
-                               base::string16());
-      AppendParams(mime_params, &params->attribute_names,
-                   &params->attribute_values);
-    } else {
-      // If the params somehow contain '@dev', remove it.
-      size_t attribute_count = params->attribute_names.size();
-      for (size_t i = 0; i < attribute_count; ++i) {
-        if (params->attribute_names[i].Equals(dev_attribute.data(),
-                                              dev_attribute.length())) {
-          params->attribute_names[i] = WebString();
-        }
-      }
-    }
-  }
   return is_nacl_allowed;
 }
 #endif  // BUILDFLAG(ENABLE_NACL)

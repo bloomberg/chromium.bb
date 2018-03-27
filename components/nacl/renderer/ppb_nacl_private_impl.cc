@@ -439,11 +439,6 @@ void PPBNaClPrivate::LaunchSelLdr(
   instance_info.url = GURL(alleged_url);
 
   uint32_t perm_bits = ppapi::PERMISSION_NONE;
-  // Conditionally block 'Dev' interfaces. We do this for the NaCl process, so
-  // it's clearer to developers when they are using 'Dev' inappropriately. We
-  // must also check on the trusted side of the proxy.
-  if (load_manager->DevInterfacesEnabled())
-    perm_bits |= ppapi::PERMISSION_DEV;
   instance_info.permissions =
       ppapi::PpapiPermissions::GetForCommandLine(perm_bits);
 
