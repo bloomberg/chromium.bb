@@ -446,11 +446,10 @@ class WebContents : public PageNavigator,
   virtual void WasShown() = 0;
   virtual void WasHidden() = 0;
 
-  // Invoked when the WebContents becomes occluded/unoccluded. An occluded
-  // WebContents isn't painted on the screen, except in a window switching
-  // feature (e.g. Alt-Tab).
+  // Invoked when the WebContents becomes occluded. An occluded WebContents
+  // isn't painted on the screen, except in a window switching feature (e.g.
+  // Alt-Tab).
   virtual void WasOccluded() = 0;
-  virtual void WasUnOccluded() = 0;
 
   // Returns the visibility of the WebContents' view.
   virtual Visibility GetVisibility() const = 0;

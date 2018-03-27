@@ -10,6 +10,7 @@
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
+#include "ui/aura/window_occlusion_tracker.h"
 #include "ui/base/cursor/cursor.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/paint_recorder.h"
@@ -106,6 +107,11 @@ void NativeViewHostAura::AttachNativeView() {
 }
 
 void NativeViewHostAura::NativeViewDetaching(bool destroyed) {
+  // This method causes a succession of window tree changes.
+  // ScopedPauseOcclusionTracking ensures that occlusion is recomputed at the
+  // end of the method instead of after each change.
+  aura::WindowOcclusionTracker::ScopedPauseOcclusionTracking pause_occlusion;
+
   clipping_window_delegate_->set_native_view(NULL);
   RemoveClippingWindow();
   if (!destroyed) {

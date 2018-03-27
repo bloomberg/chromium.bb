@@ -128,9 +128,7 @@ class CONTENT_EXPORT RenderWidgetHostView {
 
   // Indicates if the view is currently occluded (e.g, not visible because it's
   // covered up by other windows), and as a result the view's renderer may be
-  // suspended. If Show() is called on a view then its state should be re-set to
-  // being un-occluded (an explicit WasUnOccluded call will not be made for
-  // that). These calls are not necessarily made in pairs.
+  // suspended. Calling Show()/Hide() overrides the state set by these methods.
   virtual void WasUnOccluded() = 0;
   virtual void WasOccluded() = 0;
 
