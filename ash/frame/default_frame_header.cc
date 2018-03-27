@@ -324,6 +324,9 @@ void DefaultFrameHeader::UpdateAllButtonImages() {
 
   UpdateSizeButtonImages();
 
+  caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_MENU,
+                                            kWindowControlMenuIcon);
+
   caption_button_container_->SetButtonImage(CAPTION_BUTTON_ICON_CLOSE,
                                             kWindowControlCloseIcon);
 
@@ -339,9 +342,14 @@ void DefaultFrameHeader::UpdateSizeButtonImages() {
   // buttons as it would cause mismatch beteen window state and size button.
   if (frame_->IsMinimized())
     return;
+  bool use_zoom_icons = caption_button_container_->model()->InZoomMode();
+  const gfx::VectorIcon& restore_icon =
+      use_zoom_icons ? kWindowControlDezoomIcon : kWindowControlRestoreIcon;
+  const gfx::VectorIcon& maximize_icon =
+      use_zoom_icons ? kWindowControlZoomIcon : kWindowControlMaximizeIcon;
   const gfx::VectorIcon& icon = frame_->IsMaximized() || frame_->IsFullscreen()
-                                    ? kWindowControlRestoreIcon
-                                    : kWindowControlMaximizeIcon;
+                                    ? restore_icon
+                                    : maximize_icon;
   caption_button_container_->SetButtonImage(
       CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE, icon);
 }

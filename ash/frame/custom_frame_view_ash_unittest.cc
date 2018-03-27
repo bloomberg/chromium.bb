@@ -11,6 +11,7 @@
 #include "ash/frame/caption_buttons/frame_caption_button.h"
 #include "ash/frame/caption_buttons/frame_caption_button_container_view.h"
 #include "ash/frame/header_view.h"
+#include "ash/public/cpp/vector_icons/vector_icons.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
@@ -424,6 +425,8 @@ class TestButtonModel : public CaptionButtonModel {
   TestButtonModel() = default;
   ~TestButtonModel() override = default;
 
+  void set_zoom_mode(bool zoom_mode) { zoom_mode_ = zoom_mode; }
+
   void SetVisible(CaptionButtonIcon type, bool visible) {
     if (visible)
       visible_buttons_.insert(type);
@@ -445,10 +448,12 @@ class TestButtonModel : public CaptionButtonModel {
   bool IsEnabled(CaptionButtonIcon type) const override {
     return enabled_buttons_.count(type);
   }
+  bool InZoomMode() const override { return zoom_mode_; }
 
  private:
   base::flat_set<CaptionButtonIcon> visible_buttons_;
   base::flat_set<CaptionButtonIcon> enabled_buttons_;
+  bool zoom_mode_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(TestButtonModel);
 };
@@ -566,6 +571,7 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
 
   EXPECT_FALSE(test_api.minimize_button()->visible());
   EXPECT_FALSE(test_api.size_button()->visible());
+  EXPECT_FALSE(test_api.menu_button()->visible());
 
   // Back button
   model_ptr->SetVisible(CAPTION_BUTTON_ICON_BACK, true);
@@ -596,6 +602,31 @@ TEST_F(CustomFrameViewAshTest, CustomButtonModel) {
   model_ptr->SetEnabled(CAPTION_BUTTON_ICON_MINIMIZE, true);
   custom_frame_view->SizeConstraintsChanged();
   EXPECT_TRUE(test_api.minimize_button()->enabled());
+
+  // menu button
+  model_ptr->SetVisible(CAPTION_BUTTON_ICON_MENU, true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(test_api.menu_button()->visible());
+  EXPECT_FALSE(test_api.menu_button()->enabled());
+
+  model_ptr->SetEnabled(CAPTION_BUTTON_ICON_MENU, true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_TRUE(test_api.menu_button()->enabled());
+
+// The addresses in library and in the main binary differ in
+// comoponent build.
+#if !defined(COMPONENT_BUILD)
+  // zoom button
+  EXPECT_EQ(&kWindowControlMaximizeIcon,
+            test_api.size_button()->icon_definition_for_test());
+  model_ptr->set_zoom_mode(true);
+  custom_frame_view->SizeConstraintsChanged();
+  EXPECT_EQ(&ash::kWindowControlZoomIcon,
+            test_api.size_button()->icon_definition_for_test());
+  widget->Maximize();
+  EXPECT_EQ(&ash::kWindowControlDezoomIcon,
+            test_api.size_button()->icon_definition_for_test());
+#endif
 }
 
 namespace {

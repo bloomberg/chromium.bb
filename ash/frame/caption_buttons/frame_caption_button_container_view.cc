@@ -130,7 +130,9 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
         return frame_->widget_delegate()->CanResize();
       case CAPTION_BUTTON_ICON_CLOSE:
         return true;
+      // No back or menu button by default.
       case CAPTION_BUTTON_ICON_BACK:
+      case CAPTION_BUTTON_ICON_MENU:
         return false;
       case CAPTION_BUTTON_ICON_LOCATION:
       case CAPTION_BUTTON_ICON_COUNT:
@@ -141,6 +143,7 @@ class DefaultCaptionButtonModel : public CaptionButtonModel {
     return false;
   }
   bool IsEnabled(CaptionButtonIcon type) const override { return true; }
+  bool InZoomMode() const override { return false; }
 
  private:
   views::Widget* frame_;
@@ -180,6 +183,11 @@ FrameCaptionButtonContainerView::FrameCaptionButtonContainerView(
     tablet_mode_animation_->Reset(1.0f);
 
   // Insert the buttons left to right.
+  menu_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MENU);
+  menu_button_->SetAccessibleName(
+      l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MENU));
+  AddChildView(menu_button_);
+
   minimize_button_ = new FrameCaptionButton(this, CAPTION_BUTTON_ICON_MINIMIZE);
   minimize_button_->SetAccessibleName(
       l10n_util::GetStringUTF16(IDS_APP_ACCNAME_MINIMIZE));
@@ -209,7 +217,7 @@ void FrameCaptionButtonContainerView::SetButtonImage(
     const gfx::VectorIcon& icon_definition) {
   button_icon_map_[icon] = &icon_definition;
 
-  FrameCaptionButton* buttons[] = {minimize_button_, size_button_,
+  FrameCaptionButton* buttons[] = {menu_button_, minimize_button_, size_button_,
                                    close_button_};
   for (size_t i = 0; i < arraysize(buttons); ++i) {
     if (buttons[i]->icon() == icon)
@@ -219,12 +227,14 @@ void FrameCaptionButtonContainerView::SetButtonImage(
 }
 
 void FrameCaptionButtonContainerView::SetPaintAsActive(bool paint_as_active) {
+  menu_button_->set_paint_as_active(paint_as_active);
   minimize_button_->set_paint_as_active(paint_as_active);
   size_button_->set_paint_as_active(paint_as_active);
   close_button_->set_paint_as_active(paint_as_active);
 }
 
 void FrameCaptionButtonContainerView::SetUseLightImages(bool light) {
+  menu_button_->set_use_light_images(light);
   minimize_button_->set_use_light_images(light);
   size_button_->set_use_light_images(light);
   close_button_->set_use_light_images(light);
@@ -245,6 +255,9 @@ int FrameCaptionButtonContainerView::NonClientHitTest(
   } else if (minimize_button_->visible() &&
              ConvertPointToViewAndHitTest(this, minimize_button_, point)) {
     return HTMINBUTTON;
+  } else if (menu_button_->visible() &&
+             ConvertPointToViewAndHitTest(this, menu_button_, point)) {
+    return HTMENU;
   }
   return HTNOWHERE;
 }
@@ -270,9 +283,12 @@ void FrameCaptionButtonContainerView::UpdateCaptionButtonState(bool animate) {
       model_->IsEnabled(CAPTION_BUTTON_ICON_MAXIMIZE_RESTORE));
   minimize_button_->SetVisible(model_->IsVisible(CAPTION_BUTTON_ICON_MINIMIZE));
   minimize_button_->SetEnabled(model_->IsEnabled(CAPTION_BUTTON_ICON_MINIMIZE));
+  menu_button_->SetVisible(model_->IsVisible(CAPTION_BUTTON_ICON_MENU));
+  menu_button_->SetEnabled(model_->IsEnabled(CAPTION_BUTTON_ICON_MENU));
 }
 
 void FrameCaptionButtonContainerView::SetButtonSize(const gfx::Size& size) {
+  menu_button_->SetPreferredSize(size);
   minimize_button_->SetPreferredSize(size);
   size_button_->SetPreferredSize(size);
   close_button_->SetPreferredSize(size);
@@ -417,6 +433,7 @@ bool FrameCaptionButtonContainerView::IsMinimizeButtonVisible() const {
 void FrameCaptionButtonContainerView::SetButtonsToNormal(Animate animate) {
   SetButtonIcons(CAPTION_BUTTON_ICON_MINIMIZE, CAPTION_BUTTON_ICON_CLOSE,
                  animate);
+  menu_button_->SetState(views::Button::STATE_NORMAL);
   minimize_button_->SetState(views::Button::STATE_NORMAL);
   size_button_->SetState(views::Button::STATE_NORMAL);
   close_button_->SetState(views::Button::STATE_NORMAL);
@@ -438,7 +455,7 @@ const FrameCaptionButton* FrameCaptionButtonContainerView::GetButtonClosestTo(
   gfx::Point position(position_in_screen);
   views::View::ConvertPointFromScreen(this, &position);
 
-  FrameCaptionButton* buttons[] = {minimize_button_, size_button_,
+  FrameCaptionButton* buttons[] = {menu_button_, minimize_button_, size_button_,
                                    close_button_};
   int min_squared_distance = INT_MAX;
   FrameCaptionButton* closest_button = NULL;
@@ -463,7 +480,7 @@ const FrameCaptionButton* FrameCaptionButtonContainerView::GetButtonClosestTo(
 void FrameCaptionButtonContainerView::SetHoveredAndPressedButtons(
     const FrameCaptionButton* to_hover,
     const FrameCaptionButton* to_press) {
-  FrameCaptionButton* buttons[] = {minimize_button_, size_button_,
+  FrameCaptionButton* buttons[] = {menu_button_, minimize_button_, size_button_,
                                    close_button_};
   for (size_t i = 0; i < arraysize(buttons); ++i) {
     FrameCaptionButton* button = buttons[i];

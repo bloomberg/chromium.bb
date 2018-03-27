@@ -20,6 +20,10 @@ class CaptionButtonModel {
 
   // Returns true if |type| is enabled.
   virtual bool IsEnabled(CaptionButtonIcon type) const = 0;
+
+  // In zoom mode, the maximize/restore button will be repalced
+  // with zoom/unzoom button.
+  virtual bool InZoomMode() const = 0;
 };
 
 }  // namespace ash

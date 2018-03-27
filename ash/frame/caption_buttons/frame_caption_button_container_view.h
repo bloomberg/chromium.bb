@@ -63,6 +63,10 @@ class ASH_EXPORT FrameCaptionButtonContainerView
       return container_view_->close_button_;
     }
 
+    FrameCaptionButton* menu_button() const {
+      return container_view_->menu_button_;
+    }
+
    private:
     FrameCaptionButtonContainerView* container_view_;
 
@@ -142,6 +146,7 @@ class ASH_EXPORT FrameCaptionButtonContainerView
 
   // The buttons. In the normal button style, at most one of |minimize_button_|
   // and |size_button_| is visible.
+  FrameCaptionButton* menu_button_ = nullptr;
   FrameCaptionButton* minimize_button_ = nullptr;
   FrameCaptionButton* size_button_ = nullptr;
   FrameCaptionButton* close_button_ = nullptr;
