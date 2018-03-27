@@ -2937,9 +2937,9 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="172" label="RFPH_ILLEGAL_UPLOAD_PARAMS"/>
   <int value="173" label="OBSOLETE_SWDH_PROVIDER_CREATED_ILLEGAL_TYPE"/>
   <int value="174" label="SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_NOT_WINDOW"/>
-  <int value="175" label="SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_CONTROLLER"/>
+  <int value="175" label="SWDH_PROVIDER_CREATED_ILLEGAL_TYPE_SERVICE_WORKER"/>
   <int value="176" label="SWDH_PROVIDER_CREATED_DUPLICATE_ID"/>
-  <int value="177" label="SWDH_PROVIDER_CREATED_BAD_ID"/>
+  <int value="177" label="OBSOLETE_SWDH_PROVIDER_CREATED_BAD_ID"/>
   <int value="178" label="RFH_KEEP_ALIVE_HANDLE_REQUESTED_INCORRECTLY"/>
   <int value="179" label="BFSI_INVALID_UNIQUE_ID"/>
   <int value="180" label="BPE_UNEXPECTED_MESSAGE_BEFORE_BPGM_CREATION"/>
