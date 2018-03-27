@@ -2457,6 +2457,8 @@ NON_TELEMETRY_ISOLATED_SCRIPT_TESTS = {
       {
         'names': [
           'Linux FYI Ozone (Intel)',
+          # anglebug.com/2433
+          'Android FYI Release (Nexus 6)',
         ],
       },
     ],
