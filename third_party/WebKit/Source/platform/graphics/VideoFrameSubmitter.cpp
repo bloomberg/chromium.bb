@@ -5,6 +5,7 @@
 #include "platform/graphics/VideoFrameSubmitter.h"
 
 #include "base/threading/sequenced_task_runner_handle.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/paint/filter_operations.h"
 #include "cc/resources/resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
@@ -116,6 +117,7 @@ void VideoFrameSubmitter::StartSubmitting(const viz::FrameSinkId& id) {
 void VideoFrameSubmitter::SubmitFrame(
     viz::BeginFrameAck begin_frame_ack,
     scoped_refptr<media::VideoFrame> video_frame) {
+  TRACE_EVENT0("media", "VideoFrameSubmitter::SubmitFrame");
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   DCHECK(compositor_frame_sink_);
 
@@ -152,6 +154,7 @@ void VideoFrameSubmitter::SubmitFrame(
 }
 
 void VideoFrameSubmitter::OnBeginFrame(const viz::BeginFrameArgs& args) {
+  TRACE_EVENT0("media", "VideoFrameSubmitter::OnBeginFrame");
   DCHECK_CALLED_ON_VALID_THREAD(media_thread_checker_);
   viz::BeginFrameAck current_begin_frame_ack =
       viz::BeginFrameAck(args.source_id, args.sequence_number, false);

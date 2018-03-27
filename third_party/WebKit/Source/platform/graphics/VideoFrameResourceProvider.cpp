@@ -7,6 +7,7 @@
 #include <memory>
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
+#include "base/trace_event/trace_event.h"
 #include "cc/resources/layer_tree_resource_provider.h"
 #include "cc/resources/video_resource_updater.h"
 #include "components/viz/common/gpu/context_provider.h"
@@ -68,6 +69,7 @@ void VideoFrameResourceProvider::AppendQuads(
     viz::RenderPass* render_pass,
     scoped_refptr<media::VideoFrame> frame,
     media::VideoRotation rotation) {
+  TRACE_EVENT0("media", "VideoFrameResourceProvider::AppendQuads");
   gfx::Transform transform = gfx::Transform();
   gfx::Size rotated_size = frame->coded_size();
 
