@@ -62,6 +62,17 @@ extern "C" {
 #define FRAME_OFFSET_BITS 5
 #define MAX_FRAME_DISTANCE ((1 << FRAME_OFFSET_BITS) - 1)
 
+#define REF_FRAMES_LOG2 3
+#define REF_FRAMES (1 << REF_FRAMES_LOG2)
+
+// 4 scratch frames for the new frames to support a maximum of 4 cores decoding
+// in parallel, 3 for scaled references on the encoder.
+// TODO(hkuang): Add ondemand frame buffers instead of hardcoding the number
+// of framebuffers.
+// TODO(jkoleszar): These 3 extra references could probably come from the
+// normal reference pool.
+#define FRAME_BUFFERS (REF_FRAMES + 7)
+
 // 4 frame filter levels: y plane vertical, y plane horizontal,
 // u plane, and v plane
 #define FRAME_LF_COUNT 4
@@ -544,7 +555,6 @@ typedef uint8_t TXFM_CONTEXT;
 #define NONE_FRAME -1
 #define INTRA_FRAME 0
 #define LAST_FRAME 1
-
 #define LAST2_FRAME 2
 #define LAST3_FRAME 3
 #define GOLDEN_FRAME 4
@@ -554,7 +564,6 @@ typedef uint8_t TXFM_CONTEXT;
 #define LAST_REF_FRAMES (LAST3_FRAME - LAST_FRAME + 1)
 
 #define INTER_REFS_PER_FRAME (ALTREF_FRAME - LAST_FRAME + 1)
-#define TOTAL_REFS_PER_FRAME (ALTREF_FRAME - INTRA_FRAME + 1)
 
 #define FWD_REFS (GOLDEN_FRAME - LAST_FRAME + 1)
 #define FWD_RF_OFFSET(ref) (ref - LAST_FRAME)
@@ -586,7 +595,7 @@ typedef enum ATTRIBUTE_PACKED {
 // NOTE: A limited number of unidirectional reference pairs can be signalled for
 //       compound prediction. The use of skip mode, on the other hand, makes it
 //       possible to have a reference pair not listed for explicit signaling.
-#define MODE_CTX_REF_FRAMES (TOTAL_REFS_PER_FRAME + TOTAL_COMP_REFS)
+#define MODE_CTX_REF_FRAMES (REF_FRAMES + TOTAL_COMP_REFS)
 
 typedef enum ATTRIBUTE_PACKED {
   RESTORE_NONE,

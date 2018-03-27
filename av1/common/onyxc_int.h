@@ -21,6 +21,7 @@
 #include "av1/common/entropy.h"
 #include "av1/common/entropymode.h"
 #include "av1/common/entropymv.h"
+#include "av1/common/enums.h"
 #include "av1/common/frame_buffers.h"
 #include "av1/common/mv.h"
 #include "av1/common/quant_common.h"
@@ -54,17 +55,6 @@ extern "C" {
 #endif
 
 #define CDEF_MAX_STRENGTHS 16
-
-#define REF_FRAMES_LOG2 3
-#define REF_FRAMES (1 << REF_FRAMES_LOG2)
-
-// 4 scratch frames for the new frames to support a maximum of 4 cores decoding
-// in parallel, 3 for scaled references on the encoder.
-// TODO(hkuang): Add ondemand frame buffers instead of hardcoding the number
-// of framebuffers.
-// TODO(jkoleszar): These 3 extra references could probably come from the
-// normal reference pool.
-#define FRAME_BUFFERS (REF_FRAMES + 7)
 
 /* Constant values while waiting for the sequence header */
 #define FRAME_ID_LENGTH 15
@@ -140,7 +130,7 @@ typedef struct {
   // the sizes that can be derived from the buf structure)
   int width;
   int height;
-  WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
+  WarpedMotionParams global_motion[REF_FRAMES];
 #if CONFIG_FILM_GRAIN_SHOWEX
   int showable_frame;  // frame can be used as show existing frame in future
 #endif
@@ -168,7 +158,7 @@ typedef struct {
   int col;
 
   // Inter frame reference frame delta for loop filter
-  int8_t ref_deltas[TOTAL_REFS_PER_FRAME];
+  int8_t ref_deltas[REF_FRAMES];
 
   // 0 = ZERO_MV, MV
   int8_t mode_deltas[MAX_MODE_LF_DELTAS];
@@ -443,7 +433,7 @@ typedef struct AV1Common {
   // a frame decode
   REFRESH_FRAME_CONTEXT_MODE refresh_frame_context;
 
-  int ref_frame_sign_bias[TOTAL_REFS_PER_FRAME]; /* Two state 0, 1 */
+  int ref_frame_sign_bias[REF_FRAMES]; /* Two state 0, 1 */
 
   struct loopfilter lf;
   struct segmentation seg;
@@ -519,7 +509,7 @@ typedef struct AV1Common {
   TXFM_CONTEXT *top_txfm_context[MAX_MB_PLANE];
   TXFM_CONTEXT left_txfm_context[MAX_MB_PLANE][2 * MAX_MIB_SIZE];
   int above_context_alloc_cols;
-  WarpedMotionParams global_motion[TOTAL_REFS_PER_FRAME];
+  WarpedMotionParams global_motion[REF_FRAMES];
 #if CONFIG_FILM_GRAIN
   aom_film_grain_table_t *film_grain_table;
   int film_grain_params_present;
@@ -556,7 +546,7 @@ typedef struct AV1Common {
   TPL_MV_REF *tpl_mvs;
   int tpl_mvs_mem_size;
   // TODO(jingning): This can be combined with sign_bias later.
-  int8_t ref_frame_side[TOTAL_REFS_PER_FRAME];
+  int8_t ref_frame_side[REF_FRAMES];
 
 #if CONFIG_FRAME_REFS_SIGNALING
   int frame_refs_short_signaling;

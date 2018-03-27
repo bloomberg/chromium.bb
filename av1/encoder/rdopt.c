@@ -5114,12 +5114,13 @@ static INLINE int mv_check_bounds(const MvLimits *mv_limits, const MV *mv) {
 
 // Check if NEARESTMV/NEARMV/GLOBALMV is the cheapest way encode zero motion.
 // TODO(aconverse): Find out if this is still productive then clean up or remove
-static int check_best_zero_mv(
-    const AV1_COMP *const cpi, const MACROBLOCK *const x,
-    const int16_t mode_context[TOTAL_REFS_PER_FRAME],
-    int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME], int this_mode,
-    const MV_REFERENCE_FRAME ref_frames[2], const BLOCK_SIZE bsize, int mi_row,
-    int mi_col) {
+static int check_best_zero_mv(const AV1_COMP *const cpi,
+                              const MACROBLOCK *const x,
+                              const int16_t mode_context[REF_FRAMES],
+                              int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES],
+                              int this_mode,
+                              const MV_REFERENCE_FRAME ref_frames[2],
+                              const BLOCK_SIZE bsize, int mi_row, int mi_col) {
   int_mv zeromv[2] = { { .as_int = 0 } };
   int comp_pred_mode = ref_frames[1] > INTRA_FRAME;
   if (this_mode == GLOBALMV || this_mode == GLOBAL_GLOBALMV) {
@@ -5390,16 +5391,15 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
 static void estimate_ref_frame_costs(
     const AV1_COMMON *cm, const MACROBLOCKD *xd, const MACROBLOCK *x,
     int segment_id, unsigned int *ref_costs_single,
-    unsigned int (*ref_costs_comp)[TOTAL_REFS_PER_FRAME]) {
+    unsigned int (*ref_costs_comp)[REF_FRAMES]) {
   int seg_ref_active =
       segfeature_active(&cm->seg, segment_id, SEG_LVL_REF_FRAME);
   if (seg_ref_active) {
-    memset(ref_costs_single, 0,
-           TOTAL_REFS_PER_FRAME * sizeof(*ref_costs_single));
+    memset(ref_costs_single, 0, REF_FRAMES * sizeof(*ref_costs_single));
     int ref_frame;
-    for (ref_frame = 0; ref_frame < TOTAL_REFS_PER_FRAME; ++ref_frame)
+    for (ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame)
       memset(ref_costs_comp[ref_frame], 0,
-             TOTAL_REFS_PER_FRAME * sizeof((*ref_costs_comp)[0]));
+             REF_FRAMES * sizeof((*ref_costs_comp)[0]));
   } else {
     int intra_inter_ctx = av1_get_intra_inter_context(xd);
     ref_costs_single[INTRA_FRAME] = x->intra_inter_cost[intra_inter_ctx][0];
@@ -5450,7 +5450,7 @@ static void estimate_ref_frame_costs(
       const int ref_comp_ctx_p2 = av1_get_pred_context_comp_ref_p2(xd);
 
       const int comp_ref_type_ctx = av1_get_comp_reference_type_context(xd);
-      unsigned int ref_bicomp_costs[TOTAL_REFS_PER_FRAME] = { 0 };
+      unsigned int ref_bicomp_costs[REF_FRAMES] = { 0 };
 
       ref_bicomp_costs[LAST_FRAME] = ref_bicomp_costs[LAST2_FRAME] =
           ref_bicomp_costs[LAST3_FRAME] = ref_bicomp_costs[GOLDEN_FRAME] =
@@ -5544,9 +5544,8 @@ static void store_coding_context(MACROBLOCK *x, PICK_MODE_CONTEXT *ctx,
 static void setup_buffer_inter(
     const AV1_COMP *const cpi, MACROBLOCK *x, MV_REFERENCE_FRAME ref_frame,
     BLOCK_SIZE block_size, int mi_row, int mi_col,
-    int_mv frame_nearest_mv[TOTAL_REFS_PER_FRAME],
-    int_mv frame_near_mv[TOTAL_REFS_PER_FRAME],
-    struct buf_2d yv12_mb[TOTAL_REFS_PER_FRAME][MAX_MB_PLANE]) {
+    int_mv frame_nearest_mv[REF_FRAMES], int_mv frame_near_mv[REF_FRAMES],
+    struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   const YV12_BUFFER_CONFIG *yv12 = get_ref_frame_buffer(cpi, ref_frame);
@@ -6053,7 +6052,7 @@ static void do_masked_motion_search_indexed(
 
   mask = av1_get_compound_type_mask(comp_data, sb_type);
 
-  int_mv frame_mv[TOTAL_REFS_PER_FRAME];
+  int_mv frame_mv[REF_FRAMES];
   MV_REFERENCE_FRAME rf[2] = { mbmi->ref_frame[0], mbmi->ref_frame[1] };
 
   frame_mv[rf[0]].as_int = cur_mv[0].as_int;
@@ -6078,8 +6077,7 @@ static void do_masked_motion_search_indexed(
 // near mv modes to reduce distortion in subsequent blocks and also improve
 // visual quality.
 static int discount_newmv_test(const AV1_COMP *const cpi, int this_mode,
-                               int_mv this_mv,
-                               int_mv (*mode_mv)[TOTAL_REFS_PER_FRAME],
+                               int_mv this_mv, int_mv (*mode_mv)[REF_FRAMES],
                                int ref_frame) {
   return (!cpi->rc.is_src_frame_alt_ref && (this_mode == NEWMV) &&
           (this_mv.as_int != 0) &&
@@ -6509,13 +6507,13 @@ typedef struct {
   int *single_newmv_valid;
   // Pointer to array of predicted rate-distortion
   // Should point to first of 2 arrays in 2D array
-  int64_t (*modelled_rd)[TOTAL_REFS_PER_FRAME];
-  InterpFilter single_filter[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME];
+  int64_t (*modelled_rd)[REF_FRAMES];
+  InterpFilter single_filter[MB_MODE_COUNT][REF_FRAMES];
 } HandleInterModeArgs;
 
 static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
                             const BLOCK_SIZE bsize,
-                            int_mv (*const mode_mv)[TOTAL_REFS_PER_FRAME],
+                            int_mv (*const mode_mv)[REF_FRAMES],
                             const int mi_row, const int mi_col,
                             int *const rate_mv, int_mv *const single_newmv,
                             HandleInterModeArgs *const args) {
@@ -6607,8 +6605,7 @@ static int64_t handle_newmv(const AV1_COMP *const cpi, MACROBLOCK *const x,
 static int64_t interpolation_filter_search(
     MACROBLOCK *const x, const AV1_COMP *const cpi, BLOCK_SIZE bsize,
     int mi_row, int mi_col, const BUFFER_SET *const tmp_dst,
-    BUFFER_SET *const orig_dst,
-    InterpFilter (*const single_filter)[TOTAL_REFS_PER_FRAME],
+    BUFFER_SET *const orig_dst, InterpFilter (*const single_filter)[REF_FRAMES],
     int64_t *const rd, int *const switchable_rate, int *const skip_txfm_sb,
     int64_t *const skip_sse_sb) {
   const AV1_COMMON *cm = &cpi->common;
@@ -6775,12 +6772,14 @@ static InterpFilters condition_interp_filters_on_mv(
 
 // TODO(afergs): Refactor the MBMI references in here - there's four
 // TODO(afergs): Refactor optional args - add them to a struct or remove
-static int64_t motion_mode_rd(
-    const AV1_COMP *const cpi, MACROBLOCK *const x, BLOCK_SIZE bsize,
-    RD_STATS *rd_stats, RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
-    int *disable_skip, int_mv (*mode_mv)[TOTAL_REFS_PER_FRAME], int mi_row,
-    int mi_col, HandleInterModeArgs *const args, const int64_t ref_best_rd,
-    const int *refs, int rate_mv, BUFFER_SET *orig_dst) {
+static int64_t motion_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
+                              BLOCK_SIZE bsize, RD_STATS *rd_stats,
+                              RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
+                              int *disable_skip, int_mv (*mode_mv)[REF_FRAMES],
+                              int mi_row, int mi_col,
+                              HandleInterModeArgs *const args,
+                              const int64_t ref_best_rd, const int *refs,
+                              int rate_mv, BUFFER_SET *orig_dst) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
@@ -7279,11 +7278,13 @@ static int64_t skip_mode_rd(const AV1_COMP *const cpi, MACROBLOCK *const x,
   return 0;
 }
 
-static int64_t handle_inter_mode(
-    const AV1_COMP *const cpi, MACROBLOCK *x, BLOCK_SIZE bsize,
-    RD_STATS *rd_stats, RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
-    int *disable_skip, int_mv (*mode_mv)[TOTAL_REFS_PER_FRAME], int mi_row,
-    int mi_col, HandleInterModeArgs *args, const int64_t ref_best_rd) {
+static int64_t handle_inter_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
+                                 BLOCK_SIZE bsize, RD_STATS *rd_stats,
+                                 RD_STATS *rd_stats_y, RD_STATS *rd_stats_uv,
+                                 int *disable_skip,
+                                 int_mv (*mode_mv)[REF_FRAMES], int mi_row,
+                                 int mi_col, HandleInterModeArgs *args,
+                                 const int64_t ref_best_rd) {
   const AV1_COMMON *cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *xd = &x->e_mbd;
@@ -7300,7 +7301,7 @@ static int64_t handle_inter_mode(
   int rate_mv = 0;
   int pred_exists = 1;
   const int bw = block_size_wide[bsize];
-  int_mv single_newmv[TOTAL_REFS_PER_FRAME];
+  int_mv single_newmv[REF_FRAMES];
   uint8_t ref_frame_type = av1_ref_frame_type(mbmi->ref_frame);
   DECLARE_ALIGNED(32, uint8_t, tmp_buf_[2 * MAX_MB_PLANE * MAX_SB_SQUARE]);
   uint8_t *tmp_buf;
@@ -8173,8 +8174,8 @@ static void calc_target_weighted_pred(const AV1_COMMON *cm, const MACROBLOCK *x,
 static void estimate_skip_mode_rdcost(
     const AV1_COMP *const cpi, TileDataEnc *tile_data, MACROBLOCK *const x,
     BLOCK_SIZE bsize, int mi_row, int mi_col,
-    int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME],
-    struct buf_2d yv12_mb[TOTAL_REFS_PER_FRAME][MAX_MB_PLANE]) {
+    int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES],
+    struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE]) {
   const AV1_COMMON *const cm = &cpi->common;
   const int num_planes = av1_num_planes(cm);
   MACROBLOCKD *const xd = &x->e_mbd;
@@ -8182,14 +8183,14 @@ static void estimate_skip_mode_rdcost(
   MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
 
   int *mode_map = tile_data->mode_map[bsize];
-  static const int flag_list[TOTAL_REFS_PER_FRAME] = { 0,
-                                                       AOM_LAST_FLAG,
-                                                       AOM_LAST2_FLAG,
-                                                       AOM_LAST3_FLAG,
-                                                       AOM_GOLD_FLAG,
-                                                       AOM_BWD_FLAG,
-                                                       AOM_ALT2_FLAG,
-                                                       AOM_ALT_FLAG };
+  static const int flag_list[REF_FRAMES] = { 0,
+                                             AOM_LAST_FLAG,
+                                             AOM_LAST2_FLAG,
+                                             AOM_LAST3_FLAG,
+                                             AOM_GOLD_FLAG,
+                                             AOM_BWD_FLAG,
+                                             AOM_ALT2_FLAG,
+                                             AOM_ALT_FLAG };
   int i;
 
   for (int midx = 0; midx < MAX_MODES; ++midx) {
@@ -8308,21 +8309,21 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   MV_REFERENCE_FRAME ref_frame, second_ref_frame;
   unsigned char segment_id = mbmi->segment_id;
   int comp_pred, i, k;
-  int_mv frame_mv[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME];
-  struct buf_2d yv12_mb[TOTAL_REFS_PER_FRAME][MAX_MB_PLANE];
+  int_mv frame_mv[MB_MODE_COUNT][REF_FRAMES];
+  struct buf_2d yv12_mb[REF_FRAMES][MAX_MB_PLANE];
   // Save a set of single_newmv for each checked ref_mv.
-  int_mv single_newmv[MAX_REF_MV_SERCH][TOTAL_REFS_PER_FRAME] = { { { 0 } } };
-  int single_newmv_rate[MAX_REF_MV_SERCH][TOTAL_REFS_PER_FRAME] = { { 0 } };
-  int single_newmv_valid[MAX_REF_MV_SERCH][TOTAL_REFS_PER_FRAME] = { { 0 } };
-  int64_t modelled_rd[MB_MODE_COUNT][TOTAL_REFS_PER_FRAME];
-  static const int flag_list[TOTAL_REFS_PER_FRAME] = { 0,
-                                                       AOM_LAST_FLAG,
-                                                       AOM_LAST2_FLAG,
-                                                       AOM_LAST3_FLAG,
-                                                       AOM_GOLD_FLAG,
-                                                       AOM_BWD_FLAG,
-                                                       AOM_ALT2_FLAG,
-                                                       AOM_ALT_FLAG };
+  int_mv single_newmv[MAX_REF_MV_SERCH][REF_FRAMES] = { { { 0 } } };
+  int single_newmv_rate[MAX_REF_MV_SERCH][REF_FRAMES] = { { 0 } };
+  int single_newmv_valid[MAX_REF_MV_SERCH][REF_FRAMES] = { { 0 } };
+  int64_t modelled_rd[MB_MODE_COUNT][REF_FRAMES];
+  static const int flag_list[REF_FRAMES] = { 0,
+                                             AOM_LAST_FLAG,
+                                             AOM_LAST2_FLAG,
+                                             AOM_LAST3_FLAG,
+                                             AOM_GOLD_FLAG,
+                                             AOM_BWD_FLAG,
+                                             AOM_ALT2_FLAG,
+                                             AOM_ALT_FLAG };
   int64_t best_rd = best_rd_so_far;
   int best_rate_y = INT_MAX, best_rate_uv = INT_MAX;
   int64_t best_pred_diff[REFERENCE_MODES];
@@ -8333,8 +8334,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   int rate_skip1 = x->skip_cost[skip_ctx][1];
   int best_mode_skippable = 0;
   int midx, best_mode_index = -1;
-  unsigned int ref_costs_single[TOTAL_REFS_PER_FRAME];
-  unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME][TOTAL_REFS_PER_FRAME];
+  unsigned int ref_costs_single[REF_FRAMES];
+  unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES];
   int *comp_inter_cost = x->comp_inter_cost[av1_get_reference_mode_context(xd)];
   int64_t best_intra_rd = INT64_MAX;
   unsigned int best_pred_sse = UINT_MAX;
@@ -8352,7 +8353,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
   const int *const intra_mode_cost = x->mbmode_cost[size_group_lookup[bsize]];
   int best_skip2 = 0;
   uint16_t ref_frame_skip_mask[2] = { 0 };
-  uint32_t mode_skip_mask[TOTAL_REFS_PER_FRAME] = { 0 };
+  uint32_t mode_skip_mask[REF_FRAMES] = { 0 };
   int mode_skip_start = sf->mode_skip_start + 1;
   const int *const rd_threshes = rd_opt->threshes[segment_id][bsize];
   const int *const rd_thresh_freq_fact = tile_data->thresh_freq_fact[bsize];
@@ -8399,8 +8400,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     args.left_pred_buf[2] = x->left_pred_buf + MAX_SB_SQUARE;
   }
 
-  int64_t dist_refs[TOTAL_REFS_PER_FRAME];
-  int dist_order_refs[TOTAL_REFS_PER_FRAME];
+  int64_t dist_refs[REF_FRAMES];
+  int dist_order_refs[REF_FRAMES];
   int num_available_refs = 0;
   memset(dist_refs, -1, sizeof(dist_refs));
   memset(dist_order_refs, -1, sizeof(dist_order_refs));
@@ -8415,9 +8416,9 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 
   for (i = 0; i < REFERENCE_MODES; ++i) best_pred_rd[i] = INT64_MAX;
   for (i = 0; i < TX_SIZES_ALL; i++) rate_uv_intra[i] = INT_MAX;
-  for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) x->pred_sse[i] = INT_MAX;
+  for (i = 0; i < REF_FRAMES; ++i) x->pred_sse[i] = INT_MAX;
   for (i = 0; i < MB_MODE_COUNT; ++i) {
-    for (k = 0; k < TOTAL_REFS_PER_FRAME; ++k) {
+    for (k = 0; k < REF_FRAMES; ++k) {
       args.single_filter[i][k] = SWITCHABLE;
     }
   }
@@ -8603,7 +8604,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     x->use_default_inter_tx_type = 0;
 
   for (i = 0; i < MB_MODE_COUNT; ++i)
-    for (ref_frame = 0; ref_frame < TOTAL_REFS_PER_FRAME; ++ref_frame)
+    for (ref_frame = 0; ref_frame < REF_FRAMES; ++ref_frame)
       modelled_rd[i][ref_frame] = INT64_MAX;
 
   x->skip_mode_rdcost = -1;
@@ -8692,9 +8693,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
           ref_frame_skip_mask[1] |= SECOND_REF_FRAME_MASK;
           break;
         case NONE_FRAME:
-        case TOTAL_REFS_PER_FRAME:
-          assert(0 && "Invalid Reference frame");
-          break;
+        case REF_FRAMES: assert(0 && "Invalid Reference frame"); break;
       }
     }
 
@@ -9394,8 +9393,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
         // Reach the last single ref prediction mode
         if (ref_frame == ALTREF_FRAME && this_mode == GLOBALMV) {
           // bubble sort dist_refs and the order index
-          for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) {
-            for (k = i + 1; k < TOTAL_REFS_PER_FRAME; ++k) {
+          for (i = 0; i < REF_FRAMES; ++i) {
+            for (k = i + 1; k < REF_FRAMES; ++k) {
               if (dist_refs[i] < dist_refs[k]) {
                 int64_t tmp_dist = dist_refs[i];
                 dist_refs[i] = dist_refs[k];
@@ -9408,7 +9407,7 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
             }
           }
 
-          for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) {
+          for (i = 0; i < REF_FRAMES; ++i) {
             if (dist_refs[i] == -1) break;
             num_available_refs = i;
           }
@@ -9853,8 +9852,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   const int comp_pred = 0;
   int i;
   int64_t best_pred_diff[REFERENCE_MODES];
-  unsigned int ref_costs_single[TOTAL_REFS_PER_FRAME];
-  unsigned int ref_costs_comp[TOTAL_REFS_PER_FRAME][TOTAL_REFS_PER_FRAME];
+  unsigned int ref_costs_single[REF_FRAMES];
+  unsigned int ref_costs_comp[REF_FRAMES][REF_FRAMES];
   int *comp_inter_cost = x->comp_inter_cost[av1_get_reference_mode_context(xd)];
   InterpFilter best_filter = SWITCHABLE;
   int64_t this_rd = INT64_MAX;
@@ -9868,9 +9867,8 @@ void av1_rd_pick_inter_mode_sb_seg_skip(const AV1_COMP *cpi,
   estimate_ref_frame_costs(cm, xd, x, segment_id, ref_costs_single,
                            ref_costs_comp);
 
-  for (i = 0; i < TOTAL_REFS_PER_FRAME; ++i) x->pred_sse[i] = INT_MAX;
-  for (i = LAST_FRAME; i < TOTAL_REFS_PER_FRAME; ++i)
-    x->pred_mv_sad[i] = INT_MAX;
+  for (i = 0; i < REF_FRAMES; ++i) x->pred_sse[i] = INT_MAX;
+  for (i = LAST_FRAME; i < REF_FRAMES; ++i) x->pred_mv_sad[i] = INT_MAX;
 
   rd_cost->rate = INT_MAX;
 

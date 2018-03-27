@@ -174,11 +174,11 @@ static INLINE int8_t av1_ref_frame_type(const MV_REFERENCE_FRAME *const rf) {
   if (rf[1] > INTRA_FRAME) {
     const int8_t uni_comp_ref_idx = get_uni_comp_ref_idx(rf);
     if (uni_comp_ref_idx >= 0) {
-      assert((TOTAL_REFS_PER_FRAME + FWD_REFS * BWD_REFS + uni_comp_ref_idx) <
+      assert((REF_FRAMES + FWD_REFS * BWD_REFS + uni_comp_ref_idx) <
              MODE_CTX_REF_FRAMES);
-      return TOTAL_REFS_PER_FRAME + FWD_REFS * BWD_REFS + uni_comp_ref_idx;
+      return REF_FRAMES + FWD_REFS * BWD_REFS + uni_comp_ref_idx;
     } else {
-      return TOTAL_REFS_PER_FRAME + FWD_RF_OFFSET(rf[0]) +
+      return REF_FRAMES + FWD_RF_OFFSET(rf[0]) +
              BWD_RF_OFFSET(rf[1]) * FWD_REFS;
     }
   }
@@ -211,9 +211,9 @@ static MV_REFERENCE_FRAME ref_frame_map[TOTAL_COMP_REFS][2] = {
 
 static INLINE void av1_set_ref_frame(MV_REFERENCE_FRAME *rf,
                                      int8_t ref_frame_type) {
-  if (ref_frame_type >= TOTAL_REFS_PER_FRAME) {
-    rf[0] = ref_frame_map[ref_frame_type - TOTAL_REFS_PER_FRAME][0];
-    rf[1] = ref_frame_map[ref_frame_type - TOTAL_REFS_PER_FRAME][1];
+  if (ref_frame_type >= REF_FRAMES) {
+    rf[0] = ref_frame_map[ref_frame_type - REF_FRAMES][0];
+    rf[1] = ref_frame_map[ref_frame_type - REF_FRAMES][1];
   } else {
     rf[0] = ref_frame_type;
     rf[1] = NONE_FRAME;

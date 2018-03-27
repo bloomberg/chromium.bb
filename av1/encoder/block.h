@@ -195,11 +195,11 @@ struct macroblock {
   BLOCK_SIZE min_partition_size;
   BLOCK_SIZE max_partition_size;
 
-  int mv_best_ref_index[TOTAL_REFS_PER_FRAME];
-  unsigned int max_mv_context[TOTAL_REFS_PER_FRAME];
+  int mv_best_ref_index[REF_FRAMES];
+  unsigned int max_mv_context[REF_FRAMES];
   unsigned int source_variance;
-  unsigned int pred_sse[TOTAL_REFS_PER_FRAME];
-  int pred_mv_sad[TOTAL_REFS_PER_FRAME];
+  unsigned int pred_sse[REF_FRAMES];
+  int pred_mv_sad[REF_FRAMES];
 
   int *nmvjointcost;
   int nmv_vec_cost[MV_JOINTS];
@@ -300,7 +300,7 @@ struct macroblock {
   int intrabc_cost[2];
 
   // Used to store sub partition's choices.
-  MV pred_mv[TOTAL_REFS_PER_FRAME];
+  MV pred_mv[REF_FRAMES];
 
   // Store the best motion vector during motion search
   int_mv best_mv;

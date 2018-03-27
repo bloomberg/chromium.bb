@@ -1993,14 +1993,14 @@ static void encode_loopfilter(AV1_COMMON *cm, struct aom_write_bit_buffer *wb) {
       const int prime_idx = cm->primary_ref_frame;
       const int buf_idx =
           prime_idx == PRIMARY_REF_NONE ? -1 : cm->frame_refs[prime_idx].idx;
-      int8_t last_ref_deltas[TOTAL_REFS_PER_FRAME];
+      int8_t last_ref_deltas[REF_FRAMES];
       if (prime_idx == PRIMARY_REF_NONE || buf_idx < 0) {
         av1_set_default_ref_deltas(last_ref_deltas);
       } else {
         memcpy(last_ref_deltas, cm->buffer_pool->frame_bufs[buf_idx].ref_deltas,
-               TOTAL_REFS_PER_FRAME);
+               REF_FRAMES);
       }
-      for (i = 0; i < TOTAL_REFS_PER_FRAME; i++) {
+      for (i = 0; i < REF_FRAMES; i++) {
         const int delta = lf->ref_deltas[i];
         const int changed = delta != last_ref_deltas[i];
         aom_wb_write_bit(wb, changed);
@@ -2579,8 +2579,7 @@ static void write_film_grain_params(AV1_COMP *cpi,
   if (!pars->update_parameters) {
     RefCntBuffer *const frame_bufs = cm->buffer_pool->frame_bufs;
     int ref_frame, ref_idx, buf_idx;
-    for (ref_frame = LAST_FRAME; ref_frame < TOTAL_REFS_PER_FRAME;
-         ref_frame++) {
+    for (ref_frame = LAST_FRAME; ref_frame < REF_FRAMES; ref_frame++) {
       ref_idx = get_ref_frame_map_idx(cpi, ref_frame);
       assert(ref_idx != INVALID_IDX);
       buf_idx = cm->ref_frame_map[ref_idx];
@@ -2589,7 +2588,7 @@ static void write_film_grain_params(AV1_COMP *cpi,
         break;
       }
     }
-    assert(ref_frame < TOTAL_REFS_PER_FRAME);
+    assert(ref_frame < REF_FRAMES);
     aom_wb_write_literal(wb, ref_idx, 3);
     return;
   }

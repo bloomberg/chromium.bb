@@ -3855,14 +3855,14 @@ static int is_screen_content(const uint8_t *src, int use_hbd, int bd,
 // (INTER_REFS_PER_FRAME - 1)
 static void enforce_max_ref_frames(AV1_COMP *cpi) {
   AV1_COMMON *const cm = &cpi->common;
-  static const int flag_list[TOTAL_REFS_PER_FRAME] = { 0,
-                                                       AOM_LAST_FLAG,
-                                                       AOM_LAST2_FLAG,
-                                                       AOM_LAST3_FLAG,
-                                                       AOM_GOLD_FLAG,
-                                                       AOM_BWD_FLAG,
-                                                       AOM_ALT2_FLAG,
-                                                       AOM_ALT_FLAG };
+  static const int flag_list[REF_FRAMES] = { 0,
+                                             AOM_LAST_FLAG,
+                                             AOM_LAST2_FLAG,
+                                             AOM_LAST3_FLAG,
+                                             AOM_GOLD_FLAG,
+                                             AOM_BWD_FLAG,
+                                             AOM_ALT2_FLAG,
+                                             AOM_ALT_FLAG };
   MV_REFERENCE_FRAME ref_frame;
   int total_valid_refs = 0;
 
@@ -4006,14 +4006,14 @@ static int check_skip_mode_enabled(AV1_COMP *const cpi) {
   // High Latency: Turn off skip mode if all refs are fwd.
   if (cpi->all_one_sided_refs && cpi->oxcf.lag_in_frames > 0) return 0;
 
-  static const int flag_list[TOTAL_REFS_PER_FRAME] = { 0,
-                                                       AOM_LAST_FLAG,
-                                                       AOM_LAST2_FLAG,
-                                                       AOM_LAST3_FLAG,
-                                                       AOM_GOLD_FLAG,
-                                                       AOM_BWD_FLAG,
-                                                       AOM_ALT2_FLAG,
-                                                       AOM_ALT_FLAG };
+  static const int flag_list[REF_FRAMES] = { 0,
+                                             AOM_LAST_FLAG,
+                                             AOM_LAST2_FLAG,
+                                             AOM_LAST3_FLAG,
+                                             AOM_GOLD_FLAG,
+                                             AOM_BWD_FLAG,
+                                             AOM_ALT2_FLAG,
+                                             AOM_ALT_FLAG };
   const int ref_frame[2] = { cm->ref_frame_idx_0 + LAST_FRAME,
                              cm->ref_frame_idx_1 + LAST_FRAME };
   if (!(cpi->ref_frame_flags & flag_list[ref_frame[0]]) ||
@@ -4193,10 +4193,10 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     av1_set_default_ref_deltas(cm->lf.ref_deltas);
     av1_set_default_mode_deltas(cm->lf.mode_deltas);
   } else if (cm->prev_frame) {
-    memcpy(cm->lf.ref_deltas, cm->prev_frame->ref_deltas, TOTAL_REFS_PER_FRAME);
+    memcpy(cm->lf.ref_deltas, cm->prev_frame->ref_deltas, REF_FRAMES);
     memcpy(cm->lf.mode_deltas, cm->prev_frame->mode_deltas, MAX_MODE_LF_DELTAS);
   }
-  memcpy(cm->cur_frame->ref_deltas, cm->lf.ref_deltas, TOTAL_REFS_PER_FRAME);
+  memcpy(cm->cur_frame->ref_deltas, cm->lf.ref_deltas, REF_FRAMES);
   memcpy(cm->cur_frame->mode_deltas, cm->lf.mode_deltas, MAX_MODE_LF_DELTAS);
 
   // Special case: set prev_mi to NULL when the previous mode info
@@ -4210,7 +4210,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
   av1_zero(cpi->gmparams_cost);
   if (cpi->common.frame_type == INTER_FRAME && cpi->source &&
       !cpi->global_motion_search_done) {
-    YV12_BUFFER_CONFIG *ref_buf[TOTAL_REFS_PER_FRAME];
+    YV12_BUFFER_CONFIG *ref_buf[REF_FRAMES];
     int frame;
     double params_by_motion[RANSAC_NUM_MOTIONS * (MAX_PARAMDIM - 1)];
     const double *params_this_motion;
@@ -4323,7 +4323,7 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cpi->global_motion_search_done = 1;
   }
   memcpy(cm->cur_frame->global_motion, cm->global_motion,
-         TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
+         REF_FRAMES * sizeof(WarpedMotionParams));
 
   av1_setup_motion_field(cm);
 

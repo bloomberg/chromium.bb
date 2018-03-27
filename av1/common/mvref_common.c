@@ -1095,9 +1095,9 @@ static int get_block_position(AV1_COMMON *cm, int *mi_r, int *mi_c, int blk_row,
 static int motion_field_projection(AV1_COMMON *cm, MV_REFERENCE_FRAME ref_frame,
                                    int dir) {
   TPL_MV_REF *tpl_mvs_base = cm->tpl_mvs;
-  int cur_rf_index[TOTAL_REFS_PER_FRAME] = { 0 };
-  int cur_offset[TOTAL_REFS_PER_FRAME] = { 0 };
-  int ref_offset[TOTAL_REFS_PER_FRAME] = { 0 };
+  int cur_rf_index[REF_FRAMES] = { 0 };
+  int cur_offset[REF_FRAMES] = { 0 };
+  int ref_offset[REF_FRAMES] = { 0 };
 
   (void)dir;
 

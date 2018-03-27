@@ -577,7 +577,7 @@ typedef struct macroblockd {
 
   // Counts of each reference frame in the above and left neighboring blocks.
   // NOTE: Take into account both single and comp references.
-  uint8_t neighbors_ref_counts[TOTAL_REFS_PER_FRAME];
+  uint8_t neighbors_ref_counts[REF_FRAMES];
 
   FRAME_CONTEXT *tile_ctx;
   /* Bit depth: 8, 10, 12 */

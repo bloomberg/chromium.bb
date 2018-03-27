@@ -1108,7 +1108,7 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   assert(!cm->coded_lossless);
   if (cm->prev_frame) {
     // write deltas to frame buffer
-    memcpy(lf->ref_deltas, cm->prev_frame->ref_deltas, TOTAL_REFS_PER_FRAME);
+    memcpy(lf->ref_deltas, cm->prev_frame->ref_deltas, REF_FRAMES);
     memcpy(lf->mode_deltas, cm->prev_frame->mode_deltas, MAX_MODE_LF_DELTAS);
   } else {
     av1_set_default_ref_deltas(lf->ref_deltas);
@@ -1132,7 +1132,7 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   if (lf->mode_ref_delta_enabled) {
     lf->mode_ref_delta_update = aom_rb_read_bit(rb);
     if (lf->mode_ref_delta_update) {
-      for (int i = 0; i < TOTAL_REFS_PER_FRAME; i++)
+      for (int i = 0; i < REF_FRAMES; i++)
         if (aom_rb_read_bit(rb))
           lf->ref_deltas[i] = aom_rb_read_inv_signed_literal(rb, 6);
 
@@ -1143,7 +1143,7 @@ static void setup_loopfilter(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
   }
 
   // write deltas to frame buffer
-  memcpy(cm->cur_frame->ref_deltas, lf->ref_deltas, TOTAL_REFS_PER_FRAME);
+  memcpy(cm->cur_frame->ref_deltas, lf->ref_deltas, REF_FRAMES);
   memcpy(cm->cur_frame->mode_deltas, lf->mode_deltas, MAX_MODE_LF_DELTAS);
 }
 
@@ -2427,7 +2427,7 @@ static void read_global_motion(AV1_COMMON *cm, struct aom_read_bit_buffer *rb) {
            */
   }
   memcpy(cm->cur_frame->global_motion, cm->global_motion,
-         TOTAL_REFS_PER_FRAME * sizeof(WarpedMotionParams));
+         REF_FRAMES * sizeof(WarpedMotionParams));
 }
 
 #if !CONFIG_EXPLICIT_ORDER_HINT

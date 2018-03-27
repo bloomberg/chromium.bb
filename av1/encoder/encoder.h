@@ -318,7 +318,7 @@ typedef struct TileDataEnc {
 typedef struct RD_COUNTS {
   int64_t comp_pred_diff[REFERENCE_MODES];
   // Stores number of 4x4 blocks using global motion per reference frame.
-  int global_motion_used[TOTAL_REFS_PER_FRAME];
+  int global_motion_used[REF_FRAMES];
   int compound_ref_used_flag;
   int skip_mode_used_flag;
 } RD_COUNTS;
@@ -397,7 +397,7 @@ typedef struct AV1_COMP {
   int cur_poc;  // DebugInfo
 #endif
 
-  int scaled_ref_idx[TOTAL_REFS_PER_FRAME];
+  int scaled_ref_idx[REF_FRAMES];
   int lst_fb_idxes[LAST_REF_FRAMES];
   int gld_fb_idx;
   int bwd_fb_idx;   // BWDREF_FRAME
@@ -435,7 +435,7 @@ typedef struct AV1_COMP {
   CODING_CONTEXT coding_context;
 
   int gmtype_cost[TRANS_TYPES];
-  int gmparams_cost[TOTAL_REFS_PER_FRAME];
+  int gmparams_cost[REF_FRAMES];
 
   int nmv_costs[2][MV_VALS];
   int nmv_costs_hp[2][MV_VALS];

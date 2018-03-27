@@ -639,7 +639,7 @@ void av1_loop_filter_frame_init(AV1_COMMON *cm, int default_filt_lvl,
         lfi->lvl[seg_id][dir][INTRA_FRAME][0] =
             clamp(intra_lvl, 0, MAX_LOOP_FILTER);
 
-        for (ref = LAST_FRAME; ref < TOTAL_REFS_PER_FRAME; ++ref) {
+        for (ref = LAST_FRAME; ref < REF_FRAMES; ++ref) {
           for (mode = 0; mode < MAX_MODE_LF_DELTAS; ++mode) {
             const int inter_lvl = lvl_seg + lf->ref_deltas[ref] * scale +
                                   lf->mode_deltas[mode] * scale;
