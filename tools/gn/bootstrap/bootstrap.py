@@ -486,6 +486,7 @@ def write_gn_ninja(path, root_gen_dir, options):
       'base/message_loop/message_pump.cc',
       'base/message_loop/message_pump_default.cc',
       'base/metrics/bucket_ranges.cc',
+      'base/metrics/dummy_histogram.cc',
       'base/metrics/field_trial.cc',
       'base/metrics/field_trial_param_associator.cc',
       'base/metrics/field_trial_params.cc',
