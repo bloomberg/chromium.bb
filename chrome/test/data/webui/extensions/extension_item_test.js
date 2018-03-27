@@ -105,6 +105,8 @@ cr.define('extension_item_tests', function() {
       expectTrue(item.$['enable-toggle'].checked);
       item.set('data.state', 'DISABLED');
       expectFalse(item.$['enable-toggle'].checked);
+      item.set('data.state', 'BLACKLISTED');
+      expectFalse(item.$['enable-toggle'].checked);
     });
 
     test(assert(TestNames.ElementVisibilityDeveloperState), function() {
@@ -301,7 +303,15 @@ cr.define('extension_item_tests', function() {
 
     test(assert(TestNames.EnableToggle), function() {
       expectFalse(item.$['enable-toggle'].disabled);
+
+      // Test case where user does not have permission.
       item.set('data.userMayModify', false);
+      Polymer.dom.flush();
+      expectTrue(item.$['enable-toggle'].disabled);
+
+      // Test case of a blacklisted extension.
+      item.set('data.userMayModify', true);
+      item.set('data.state', 'BLACKLISTED');
       Polymer.dom.flush();
       expectTrue(item.$['enable-toggle'].disabled);
     });

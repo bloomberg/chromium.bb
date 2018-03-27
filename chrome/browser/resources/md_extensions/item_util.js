@@ -24,6 +24,7 @@ cr.define('extensions', function() {
       case chrome.developerPrivate.ExtensionState.ENABLED:
       case chrome.developerPrivate.ExtensionState.TERMINATED:
         return true;
+      case chrome.developerPrivate.ExtensionState.BLACKLISTED:
       case chrome.developerPrivate.ExtensionState.DISABLED:
         return false;
     }
