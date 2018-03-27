@@ -32,7 +32,7 @@ MockSignedExchangeHandler::MockSignedExchangeHandler(
   }
   base::SequencedTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::BindOnce(std::move(headers_callback), error, request_url,
-                                "GET", head, std::move(body), base::nullopt));
+                                "GET", head, std::move(body)));
 }
 
 MockSignedExchangeHandler::~MockSignedExchangeHandler() {}

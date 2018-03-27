@@ -173,9 +173,8 @@ class DelegatingURLLoaderClient final : public network::mojom::URLLoaderClient {
   }
   void OnReceiveResponse(
       const network::ResourceResponseHead& head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override {
-    client_->OnReceiveResponse(head, ssl_info, std::move(downloaded_file));
+    client_->OnReceiveResponse(head, std::move(downloaded_file));
     DCHECK(on_response_);
     std::move(on_response_).Run();
     AddDevToolsCallback(

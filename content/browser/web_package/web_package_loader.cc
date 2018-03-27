@@ -123,7 +123,6 @@ WebPackageLoader::~WebPackageLoader() = default;
 
 void WebPackageLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   // Must not be called because this WebPackageLoader and the client endpoints
   // were bound after OnReceiveResponse() is called.
@@ -229,8 +228,7 @@ void WebPackageLoader::OnHTTPExchangeFound(
     const GURL& request_url,
     const std::string& request_method,
     const network::ResourceResponseHead& resource_response,
-    std::unique_ptr<net::SourceStream> payload_stream,
-    base::Optional<net::SSLInfo> ssl_info) {
+    std::unique_ptr<net::SourceStream> payload_stream) {
   if (error) {
     // This will eventually delete |this|.
     forwarding_client_->OnComplete(network::URLLoaderCompletionStatus(error));
@@ -244,19 +242,24 @@ void WebPackageLoader::OnHTTPExchangeFound(
       std::move(original_response_timing_info_)->CreateRedirectResponseHead());
   forwarding_client_.reset();
 
-  if (ssl_info &&
+  const base::Optional<net::SSLInfo>& ssl_info = resource_response.ssl_info;
+  if (ssl_info.has_value() &&
       (url_loader_options_ &
        network::mojom::kURLLoadOptionSendSSLInfoForCertificateError) &&
       net::IsCertStatusError(ssl_info->cert_status) &&
       !net::IsCertStatusMinorError(ssl_info->cert_status)) {
     ssl_info_ = ssl_info;
   }
-  if (!(url_loader_options_ &
+  if (ssl_info.has_value() &&
+      !(url_loader_options_ &
         network::mojom::kURLLoadOptionSendSSLInfoWithResponse)) {
-    ssl_info = base::nullopt;
+    network::ResourceResponseHead response_info = resource_response;
+    response_info.ssl_info = base::nullopt;
+    client_->OnReceiveResponse(response_info, nullptr /* downloaded_file */);
+  } else {
+    client_->OnReceiveResponse(resource_response,
+                               nullptr /* downloaded_file */);
   }
-  client_->OnReceiveResponse(resource_response, std::move(ssl_info),
-                             nullptr /* downloaded_file */);
 
   // Currently we always assume that we have body.
   // TODO(https://crbug.com/80374): Add error handling and bail out

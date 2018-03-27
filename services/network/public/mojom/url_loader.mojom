@@ -86,10 +86,7 @@ interface DownloadedTempFile {
 interface URLLoaderClient {
   // Called when the response head is received.
   // |downloaded_file| is non-null in the 'download_to_file' case.
-  // |ssl_info| is non-null if |kURLLoadOptionsSendSSLInfoWithResponse|
-  // was specified to CreateLoaderAndStart.
   OnReceiveResponse(URLResponseHead head,
-                    SSLInfo? ssl_info,
                     DownloadedTempFile? downloaded_file);
 
   // Called when the request has been redirected. The receiver is expected to

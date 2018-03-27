@@ -79,11 +79,10 @@ class HeaderRewritingURLLoaderClient : public network::mojom::URLLoaderClient {
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK(url_loader_client_.is_bound());
     url_loader_client_->OnReceiveResponse(
-        rewrite_header_callback_.Run(response_head), ssl_info,
+        rewrite_header_callback_.Run(response_head),
         std::move(downloaded_file));
   }
 
@@ -482,7 +481,6 @@ void ServiceWorkerSubresourceLoader::CommitResponseHeaders() {
   status_ = Status::kSentHeader;
   // TODO(kinuko): Fill the ssl_info.
   url_loader_client_->OnReceiveResponse(response_head_,
-                                        base::nullopt /* ssl_info_ */,
                                         nullptr /* downloaded_file */);
 }
 

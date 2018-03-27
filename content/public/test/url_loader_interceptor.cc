@@ -264,7 +264,7 @@ void URLLoaderInterceptor::WriteResponse(
   network::ResourceResponseHead response;
   response.headers = info.headers;
   response.headers->GetMimeType(&response.mime_type);
-  client->OnReceiveResponse(response, base::nullopt, nullptr);
+  client->OnReceiveResponse(response, nullptr);
 
   uint32_t bytes_written = body.size();
   mojo::DataPipe data_pipe;

@@ -22,7 +22,7 @@ void StartBlobInternalsURLLoader(
 
   network::mojom::URLLoaderClientPtr client;
   client.Bind(std::move(client_info));
-  client->OnReceiveResponse(resource_response, base::nullopt, nullptr);
+  client->OnReceiveResponse(resource_response, nullptr);
 
   std::string output = storage::ViewBlobInternalsJob::GenerateHTML(
       blob_storage_context->context());

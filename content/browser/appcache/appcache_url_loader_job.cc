@@ -282,9 +282,11 @@ void AppCacheURLLoaderJob::SendResponseInfo() {
   response_head.was_fetched_via_spdy = http_info->was_fetched_via_spdy;
   response_head.was_alpn_negotiated = http_info->was_alpn_negotiated;
   response_head.alpn_negotiated_protocol = http_info->alpn_negotiated_protocol;
+  if (http_info->ssl_info.cert)
+    response_head.ssl_info = http_info->ssl_info;
   response_head.load_timing = load_timing_info_;
 
-  client_->OnReceiveResponse(response_head, http_info->ssl_info,
+  client_->OnReceiveResponse(response_head,
                              network::mojom::DownloadedTempFilePtr());
   client_->OnStartLoadingResponseBody(std::move(data_pipe_.consumer_handle));
 }

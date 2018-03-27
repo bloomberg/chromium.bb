@@ -126,10 +126,8 @@ ThrottlingURLLoader::StartInfo::~StartInfo() = default;
 
 ThrottlingURLLoader::ResponseInfo::ResponseInfo(
     const network::ResourceResponseHead& in_response_head,
-    const base::Optional<net::SSLInfo>& in_ssl_info,
     network::mojom::DownloadedTempFilePtr in_downloaded_file)
     : response_head(in_response_head),
-      ssl_info(in_ssl_info),
       downloaded_file(std::move(in_downloaded_file)) {}
 
 ThrottlingURLLoader::ResponseInfo::~ResponseInfo() = default;
@@ -310,7 +308,6 @@ void ThrottlingURLLoader::StopDeferringForThrottle(
 
 void ThrottlingURLLoader::OnReceiveResponse(
     const network::ResourceResponseHead& response_head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   DCHECK_EQ(DEFERRED_NONE, deferred_stage_);
   DCHECK(!loader_cancelled_);
@@ -330,13 +327,13 @@ void ThrottlingURLLoader::OnReceiveResponse(
     if (deferred) {
       deferred_stage_ = DEFERRED_RESPONSE;
       response_info_ = std::make_unique<ResponseInfo>(
-          response_head, ssl_info, std::move(downloaded_file));
+          response_head, std::move(downloaded_file));
       client_binding_.PauseIncomingMethodCallProcessing();
       return;
     }
   }
 
-  forwarding_client_->OnReceiveResponse(response_head, ssl_info,
+  forwarding_client_->OnReceiveResponse(response_head,
                                         std::move(downloaded_file));
 }
 
@@ -479,7 +476,7 @@ void ThrottlingURLLoader::Resume() {
     case DEFERRED_RESPONSE: {
       client_binding_.ResumeIncomingMethodCallProcessing();
       forwarding_client_->OnReceiveResponse(
-          response_info_->response_head, response_info_->ssl_info,
+          response_info_->response_head,
           std::move(response_info_->downloaded_file));
       break;
     }

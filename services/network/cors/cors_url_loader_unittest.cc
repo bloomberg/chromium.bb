@@ -40,8 +40,7 @@ class TestURLLoaderFactory : public mojom::URLLoaderFactory {
     if (!extra_header.empty())
       response.headers->AddHeader(extra_header);
 
-    client_ptr_->OnReceiveResponse(response, base::nullopt /* ssl_info */,
-                                   nullptr /* downloaded_file */);
+    client_ptr_->OnReceiveResponse(response, nullptr /* downloaded_file */);
   }
 
   void NotifyClientOnComplete(int error_code) {

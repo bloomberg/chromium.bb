@@ -70,7 +70,6 @@ class WebRequestProxyingURLLoaderFactory
     // network::mojom::URLLoaderClient:
     void OnReceiveResponse(
         const network::ResourceResponseHead& head,
-        const base::Optional<net::SSLInfo>& ssl_info,
         network::mojom::DownloadedTempFilePtr downloaded_file) override;
     void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                            const network::ResourceResponseHead& head) override;
@@ -88,7 +87,6 @@ class WebRequestProxyingURLLoaderFactory
     void ContinueToBeforeSendHeaders(int error_code);
     void ContinueToSendHeaders(int error_code);
     void ContinueToResponseStarted(
-        const base::Optional<net::SSLInfo>& ssl_info,
         network::mojom::DownloadedTempFilePtr downloaded_file,
         int error_code);
     void ContinueToBeforeRedirect(const net::RedirectInfo& redirect_info,

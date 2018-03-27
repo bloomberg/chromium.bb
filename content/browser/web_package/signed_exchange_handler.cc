@@ -22,6 +22,7 @@
 #include "net/filter/source_stream.h"
 #include "net/ssl/ssl_config.h"
 #include "net/ssl/ssl_config_service.h"
+#include "net/ssl/ssl_info.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "services/network/public/cpp/features.h"
@@ -244,7 +245,7 @@ void SignedExchangeHandler::RunErrorCallback(net::Error error) {
   DCHECK_NE(state_, State::kHeadersCallbackCalled);
   std::move(headers_callback_)
       .Run(error, GURL(), std::string(), network::ResourceResponseHead(),
-           nullptr, base::nullopt);
+           nullptr);
   state_ = State::kHeadersCallbackCalled;
 }
 
@@ -358,10 +359,11 @@ void SignedExchangeHandler::OnCertVerifyComplete(int result) {
   ssl_info.is_fatal_cert_error =
       net::IsCertStatusError(ssl_info.cert_status) &&
       !net::IsCertStatusMinorError(ssl_info.cert_status);
+  response_head.ssl_info = std::move(ssl_info);
   // TODO(https://crbug.com/815025): Verify the Certificate Transparency status.
   std::move(headers_callback_)
       .Run(net::OK, header_->request_url(), header_->request_method(),
-           response_head, std::move(mi_stream), ssl_info);
+           response_head, std::move(mi_stream));
   state_ = State::kHeadersCallbackCalled;
   TRACE_EVENT_END0(TRACE_DISABLED_BY_DEFAULT("loading"),
                    "SignedExchangeHandler::OnCertVerifyComplete");

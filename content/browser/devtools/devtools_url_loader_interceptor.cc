@@ -148,7 +148,6 @@ struct ResponseMetadata {
 
   network::ResourceResponseHead head;
   std::unique_ptr<net::RedirectInfo> redirect_info;
-  base::Optional<net::SSLInfo> ssl_info;
   network::mojom::DownloadedTempFilePtr downloaded_file;
   std::vector<uint8_t> cached_metadata;
   size_t encoded_length = 0;
@@ -233,7 +232,6 @@ class InterceptionJob : public network::mojom::URLLoaderClient,
   // network::mojom::URLLoaderClient methods
   void OnReceiveResponse(
       const network::ResourceResponseHead& head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const network::ResourceResponseHead& head) override;
@@ -744,7 +742,6 @@ Response InterceptionJob::InnerContinueRequest(
     DCHECK_EQ(State::kResponseReceived, state_);
     DCHECK(!body_reader_);
     client_->OnReceiveResponse(response_metadata_->head,
-                               response_metadata_->ssl_info,
                                std::move(response_metadata_->downloaded_file));
     response_metadata_.reset();
     loader_->ResumeReadingBodyFromNet();
@@ -897,7 +894,6 @@ Response InterceptionJob::ProcessRedirectByClient(const std::string& location) {
 
 void InterceptionJob::SendResponse(const base::StringPiece& body) {
   client_->OnReceiveResponse(response_metadata_->head,
-                             response_metadata_->ssl_info,
                              std::move(response_metadata_->downloaded_file));
 
   // We shouldn't be able to transfer a string that big over the protocol,
@@ -1062,19 +1058,17 @@ void InterceptionJob::ResumeReadingBodyFromNet() {
 // URLLoaderClient methods
 void InterceptionJob::OnReceiveResponse(
     const network::ResourceResponseHead& head,
-    const base::Optional<net::SSLInfo>& ssl_info,
     network::mojom::DownloadedTempFilePtr downloaded_file) {
   state_ = State::kResponseReceived;
   DCHECK(!response_metadata_);
   if (!(stage_ & InterceptionStage::RESPONSE)) {
-    client_->OnReceiveResponse(head, ssl_info, std::move(downloaded_file));
+    client_->OnReceiveResponse(head, std::move(downloaded_file));
     return;
   }
   loader_->PauseReadingBodyFromNet();
   client_binding_.PauseIncomingMethodCallProcessing();
 
   response_metadata_ = std::make_unique<ResponseMetadata>(head);
-  response_metadata_->ssl_info = ssl_info;
   response_metadata_->downloaded_file = std::move(downloaded_file);
 
   NotifyClient(BuildRequestInfo(&head));

@@ -61,7 +61,6 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
     const scoped_refptr<network::ResourceResponse>& response,
     network::mojom::URLLoaderClientEndpointsPtr url_loader_client_endpoints,
     std::unique_ptr<StreamHandle> body,
-    const net::SSLInfo& ssl_info,
     std::unique_ptr<NavigationData> navigation_data,
     const GlobalRequestID& request_id,
     bool is_download,
@@ -70,7 +69,8 @@ void TestNavigationURLLoaderDelegate::OnResponseStarted(
   response_ = response;
   url_loader_client_endpoints_ = std::move(url_loader_client_endpoints);
   body_ = std::move(body);
-  ssl_info_ = ssl_info;
+  if (response->head.ssl_info.has_value())
+    ssl_info_ = *response->head.ssl_info;
   is_download_ = is_download;
   if (response_started_)
     response_started_->Quit();

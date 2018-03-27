@@ -57,7 +57,6 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
   // Only OnStartLoadingResponseBody() and OnComplete() are called.
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(
       const net::RedirectInfo& redirect_info,
@@ -96,8 +95,7 @@ class WebPackageLoader final : public network::mojom::URLLoaderClient,
       const GURL& request_url,
       const std::string& request_method,
       const network::ResourceResponseHead& resource_response,
-      std::unique_ptr<net::SourceStream> payload_stream,
-      base::Optional<net::SSLInfo> ssl_info);
+      std::unique_ptr<net::SourceStream> payload_stream);
 
   void FinishReadingBody(int result);
 

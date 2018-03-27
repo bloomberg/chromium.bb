@@ -1086,23 +1086,27 @@ std::unique_ptr<protocol::Network::SecurityDetails> BuildSecurityDetails(
             .ToString());
   }
 
+  const char* protocol = "";
+  const char* key_exchange = "";
+  const char* cipher = "";
+  const char* mac = nullptr;
+
   int ssl_version =
       net::SSLConnectionStatusToVersion(ssl_info.connection_status);
-  const char* protocol;
-  net::SSLVersionToString(&protocol, ssl_version);
 
-  const char* key_exchange;
-  const char* cipher;
-  const char* mac;
-  bool is_aead;
-  bool is_tls13;
-  uint16_t cipher_suite =
-      net::SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
-  net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
-                               &is_tls13, cipher_suite);
-  if (key_exchange == nullptr) {
-    DCHECK(is_tls13);
-    key_exchange = "";
+  if (ssl_info.connection_status) {
+    net::SSLVersionToString(&protocol, ssl_version);
+
+    bool is_aead;
+    bool is_tls13;
+    uint16_t cipher_suite =
+        net::SSLConnectionStatusToCipherSuite(ssl_info.connection_status);
+    net::SSLCipherSuiteToStrings(&key_exchange, &cipher, &mac, &is_aead,
+                                 &is_tls13, cipher_suite);
+    if (key_exchange == nullptr) {
+      DCHECK(is_tls13);
+      key_exchange = "";
+    }
   }
 
   std::unique_ptr<protocol::Network::SecurityDetails> security_details =

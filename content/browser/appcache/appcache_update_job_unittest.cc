@@ -624,7 +624,7 @@ class MockURLLoaderFactory : public network::mojom::URLLoaderFactory {
     response.headers = info.headers;
     response.headers->GetMimeType(&response.mime_type);
 
-    client->OnReceiveResponse(response, base::nullopt, nullptr);
+    client->OnReceiveResponse(response, nullptr);
 
     mojo::DataPipe data_pipe;
 

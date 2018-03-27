@@ -194,12 +194,13 @@ void MojoAsyncResourceHandler::OnResponseStarted(
                                      response->head.download_file_path);
   }
 
-  base::Optional<net::SSLInfo> ssl_info;
-  if (url_loader_options_ &
-      network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
-    ssl_info = request()->ssl_info();
+  if ((url_loader_options_ &
+       network::mojom::kURLLoadOptionSendSSLInfoWithResponse) &&
+      request()->ssl_info().cert) {
+    response->head.ssl_info = request()->ssl_info();
+  }
 
-  url_loader_client_->OnReceiveResponse(response->head, std::move(ssl_info),
+  url_loader_client_->OnReceiveResponse(response->head,
                                         std::move(downloaded_file_ptr));
 
   net::IOBufferWithSize* metadata = GetResponseMetadata(request());

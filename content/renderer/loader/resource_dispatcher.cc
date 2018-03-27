@@ -574,7 +574,7 @@ void ResourceDispatcher::ContinueForNavigation(
   // the request. ResourceResponseHead can be empty here because we
   // pull the StreamOverride's one in
   // WebURLLoaderImpl::Context::OnReceivedResponse.
-  client_ptr->OnReceiveResponse(network::ResourceResponseHead(), base::nullopt,
+  client_ptr->OnReceiveResponse(network::ResourceResponseHead(),
                                 network::mojom::DownloadedTempFilePtr());
   // TODO(clamy): Move the replaying of redirects from WebURLLoaderImpl here.
 

@@ -54,8 +54,7 @@ class TestURLLoaderFactory : public network::mojom::URLLoaderFactory,
   }
 
   void NotifyClientOnReceiveResponse() {
-    client_ptr_->OnReceiveResponse(network::ResourceResponseHead(),
-                                   base::nullopt, nullptr);
+    client_ptr_->OnReceiveResponse(network::ResourceResponseHead(), nullptr);
   }
 
   void NotifyClientOnReceiveRedirect() {
@@ -148,7 +147,6 @@ class TestURLLoaderClient : public network::mojom::URLLoaderClient {
   // network::mojom::URLLoaderClient implementation:
   void OnReceiveResponse(
       const network::ResourceResponseHead& response_head,
-      const base::Optional<net::SSLInfo>& ssl_info,
       network::mojom::DownloadedTempFilePtr downloaded_file) override {
     on_received_response_called_++;
     if (on_received_response_callback_)

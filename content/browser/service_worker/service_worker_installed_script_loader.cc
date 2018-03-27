@@ -78,11 +78,10 @@ void ServiceWorkerInstalledScriptLoader::OnHttpInfoRead(
   head.socket_address = info->socket_address;
   head.cert_status = info->ssl_info.cert_status;
 
-  base::Optional<net::SSLInfo> ssl_info;
   if (options_ & network::mojom::kURLLoadOptionSendSSLInfoWithResponse)
-    ssl_info = info->ssl_info;
+    head.ssl_info = info->ssl_info;
 
-  client_->OnReceiveResponse(head, ssl_info, nullptr /* downloaded_file */);
+  client_->OnReceiveResponse(head, nullptr /* downloaded_file */);
   client_->OnStartLoadingResponseBody(std::move(body_handle_));
   // We continue in OnFinished().
 }
