@@ -57,9 +57,9 @@ WEAK_IMPORT_ATTRIBUTE
 // NSWindow (PrivateAPI) overrides.
 
 + (Class)frameViewClassForStyleMask:(NSUInteger)windowStyle {
-  // - Ignore fullscreen so that the drop-down title bar isn't huge.
   // - NSThemeFrame and its subclasses will be nil if it's missing at runtime.
-  if (!(windowStyle & NSFullScreenWindowMask) && [BrowserWindowFrame class])
+  if ([BrowserWindowFrame class])
+    // TODO(crbug/825968): fullscreen should have a reduced titlebar height.
     return [BrowserWindowFrame class];
   return [super frameViewClassForStyleMask:windowStyle];
 }
