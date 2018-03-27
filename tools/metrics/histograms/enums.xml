@@ -46863,6 +46863,11 @@ Full version information for the fingerprint enum values:
   <int value="15" label="SHOWING_TOAST_FAILED"/>
   <int value="16" label="CREATE_TOAST_NOTIFICATION_MANAGER_FAILED"/>
   <int value="17" label="CREATE_TOAST_NOTIFIER_WITH_ID_FAILED"/>
+  <int value="18" label="GET_NOTIFICATION_SETTING_FAILED"/>
+  <int value="19" label="DISABLED_FOR_APPLICATION"/>
+  <int value="20" label="DISABLED_FOR_USER"/>
+  <int value="21" label="DISABLED_BY_GROUP_POLICY"/>
+  <int value="22" label="DISABLED_BY_MANIFEST"/>
 </enum>
 
 <enum name="WindowsNotificationGetDisplayedLaunchIdStatus">
