@@ -103,7 +103,6 @@ v8.browsing_desktop,"mythria@chromium.org, ulan@chromium.org",
 v8.browsing_desktop-future,"mythria@chromium.org, ulan@chromium.org",
 v8.browsing_mobile,"mythria@chromium.org, ulan@chromium.org",
 v8.browsing_mobile-future,"mythria@chromium.org, ulan@chromium.org",
-v8.detached_context_age_in_gc,ulan@chromium.org,
 v8.runtime_stats.top_25,cbruni@chromium.org,
 validating_command_buffer_perftests,"piman@chromium.org, chrome-gpu-perf-owners@chromium.org",Internals>GPU
 views_perftests,tapted@chromium.org,Internals>Views
