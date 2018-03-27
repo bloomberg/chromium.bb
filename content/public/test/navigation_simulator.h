@@ -9,6 +9,7 @@
 
 #include "base/callback.h"
 #include "base/optional.h"
+#include "base/run_loop.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_throttle.h"
 #include "content/public/browser/reload_type.h"
@@ -200,6 +201,14 @@ class NavigationSimulator : public WebContentsObserver {
   // committed. Returns the RenderFrameHost the navigation committed in.
   virtual RenderFrameHost* GetFinalRenderFrameHost();
 
+  // Only used if AutoAdvance is turned off. Will wait until the current stage
+  // of the navigation is complete.
+  void Wait();
+
+  // Returns true if the navigation is deferred waiting for navigation throttles
+  // to complete.
+  bool IsDeferred();
+
   // --------------------------------------------------------------------------
 
   // The following functions are used to specify the parameters of the
@@ -239,6 +248,15 @@ class NavigationSimulator : public WebContentsObserver {
   // Provides the contents mime type to be set at commit. It should be
   // specified before calling |Commit|.
   virtual void SetContentsMimeType(const std::string& contents_mime_type);
+
+  // Whether or not the NavigationSimulator automatically advances the
+  // navigation past the stage requested (e.g. through asynchronous
+  // NavigationThrottles). Defaults to true. Useful for testing throttles which
+  // defer the navigation.
+  //
+  // If the test sets this to false, it should follow up any calls that result
+  // in throttles deferring the navigation with a call to Wait().
+  virtual void SetAutoAdvance(bool auto_advance);
 
   // --------------------------------------------------------------------------
 
@@ -288,8 +306,10 @@ class NavigationSimulator : public WebContentsObserver {
   // navigation failed synchronously.
   bool SimulateRendererInitiatedStart();
 
-  // This method will block waiting for throttle checks to complete.
-  void WaitForThrottleChecksComplete(base::OnceClosure complete_closure);
+  // This method will block waiting for throttle checks to complete if
+  // |auto_advance_|. Otherwise will just set up state for checking the result
+  // when the throttles end up finishing.
+  void MaybeWaitForThrottleChecksComplete(base::OnceClosure complete_closure);
 
   // Sets |last_throttle_check_result_| and calls both the
   // |wait_closure_| and the |throttle_checks_complete_closure_|, if they are
@@ -347,6 +367,8 @@ class NavigationSimulator : public WebContentsObserver {
   service_manager::mojom::InterfaceProviderRequest interface_provider_request_;
   std::string contents_mime_type_;
 
+  bool auto_advance_ = true;
+
   // These are used to sanity check the content/public/ API calls emitted as
   // part of the navigation.
   int num_did_start_navigation_called_ = 0;
@@ -368,8 +390,8 @@ class NavigationSimulator : public WebContentsObserver {
   // WillProcessResponse has been invoked on the NavigationHandle.
   content::GlobalRequestID request_id_;
 
-  // Closure that is set when WaitForThrottleChecksComplete is called. Called in
-  // OnThrottleChecksComplete.
+  // Closure that is set when MaybeWaitForThrottleChecksComplete is called.
+  // Called in OnThrottleChecksComplete.
   base::OnceClosure throttle_checks_complete_closure_;
 
   // Closure that is called in OnThrottleChecksComplete if we are waiting on the
