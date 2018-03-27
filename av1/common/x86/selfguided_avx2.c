@@ -581,8 +581,7 @@ void av1_selfguided_restoration_avx2(const uint8_t *dgd8, int width, int height,
     integral_images(dgd0, dgd_stride, width_ext, height_ext, Ctl, Dtl,
                     buf_stride);
 
-// Write to flt0 and flt1
-#if CONFIG_SKIP_SGR
+  // Write to flt0 and flt1
   // If params->r == 0 we skip the corresponding filter. We only allow one of
   // the radii to be 0, as having both equal to 0 would be equivalent to
   // skipping SGR entirely.
@@ -603,23 +602,6 @@ void av1_selfguided_restoration_avx2(const uint8_t *dgd8, int width, int height,
     final_filter(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
                  height, highbd);
   }
-#else   // CONFIG_SKIP_SGR
-  assert(params->r0 < AOMMIN(SGRPROJ_BORDER_VERT, SGRPROJ_BORDER_HORZ));
-
-  // r == 2 filter
-  assert(params->r0 == 2);
-  calc_ab_fast(A, B, C, D, width, height, buf_stride, params->e0, bit_depth,
-               params->r0);
-  final_filter_fast(flt0, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
-                    height, highbd);
-
-  // r == 1 filter
-  assert(params->r1 == 1);
-  calc_ab(A, B, C, D, width, height, buf_stride, params->e1, bit_depth,
-          params->r1);
-  final_filter(flt1, flt_stride, A, B, buf_stride, dgd8, dgd_stride, width,
-               height, highbd);
-#endif  // CONFIG_SKIP_SGR
 }
 
 void apply_selfguided_restoration_avx2(const uint8_t *dat8, int width,
@@ -630,18 +612,11 @@ void apply_selfguided_restoration_avx2(const uint8_t *dat8, int width,
   int32_t *flt0 = tmpbuf;
   int32_t *flt1 = flt0 + RESTORATION_UNITPELS_MAX;
   assert(width * height <= RESTORATION_UNITPELS_MAX);
-#if CONFIG_SKIP_SGR
   const sgr_params_type *params = &sgr_params[eps];
   av1_selfguided_restoration_avx2(dat8, width, height, stride, flt0, flt1,
                                   width, params, bit_depth, highbd);
   int xq[2];
   decode_xq(xqd, xq, params);
-#else   // CONFIG_SKIP_SGR
-  av1_selfguided_restoration_avx2(dat8, width, height, stride, flt0, flt1,
-                                  width, &sgr_params[eps], bit_depth, highbd);
-  int xq[2];
-  decode_xq(xqd, xq);
-#endif  // CONFIG_SKIP_SGR
 
   __m256i xq0 = _mm256_set1_epi32(xq[0]);
   __m256i xq1 = _mm256_set1_epi32(xq[1]);
@@ -669,7 +644,6 @@ void apply_selfguided_restoration_avx2(const uint8_t *dat8, int width,
       const __m256i u_0 = _mm256_slli_epi32(ep_0, SGRPROJ_RST_BITS);
       const __m256i u_1 = _mm256_slli_epi32(ep_1, SGRPROJ_RST_BITS);
 
-#if CONFIG_SKIP_SGR
       __m256i v_0 = _mm256_slli_epi32(u_0, SGRPROJ_PRJ_BITS);
       __m256i v_1 = _mm256_slli_epi32(u_1, SGRPROJ_PRJ_BITS);
 
@@ -688,22 +662,6 @@ void apply_selfguided_restoration_avx2(const uint8_t *dat8, int width,
         const __m256i f2_1 = _mm256_sub_epi32(yy_loadu_256(&flt1[k + 8]), u_1);
         v_1 = _mm256_add_epi32(v_1, _mm256_mullo_epi32(xq1, f2_1));
       }
-#else   // CONFIG_SKIP_SGR
-      const __m256i f1_0 = _mm256_sub_epi32(yy_loadu_256(&flt0[k]), u_0);
-      const __m256i f1_1 = _mm256_sub_epi32(yy_loadu_256(&flt0[k + 8]), u_1);
-
-      const __m256i f2_0 = _mm256_sub_epi32(yy_loadu_256(&flt1[k]), u_0);
-      const __m256i f2_1 = _mm256_sub_epi32(yy_loadu_256(&flt1[k + 8]), u_1);
-
-      const __m256i v_0 =
-          _mm256_add_epi32(_mm256_add_epi32(_mm256_mullo_epi32(xq0, f1_0),
-                                            _mm256_mullo_epi32(xq1, f2_0)),
-                           _mm256_slli_epi32(u_0, SGRPROJ_PRJ_BITS));
-      const __m256i v_1 =
-          _mm256_add_epi32(_mm256_add_epi32(_mm256_mullo_epi32(xq0, f1_1),
-                                            _mm256_mullo_epi32(xq1, f2_1)),
-                           _mm256_slli_epi32(u_1, SGRPROJ_PRJ_BITS));
-#endif  // CONFIG_SKIP_SGR
 
       const __m256i rounding =
           round_for_shift(SGRPROJ_PRJ_BITS + SGRPROJ_RST_BITS);
