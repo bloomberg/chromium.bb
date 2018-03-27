@@ -220,7 +220,7 @@ class WebSocketStreamCreateTest : public TestWithParam<HandshakeStreamType>,
 
     // WebSocket request.
     SpdyHeaderBlock request_headers =
-        WebSocketHttp2Request(socket_path, "www.example.org:443",
+        WebSocketHttp2Request(socket_path, "www.example.org",
                               "http://www.example.org", extra_request_headers);
     frames_.push_back(spdy_util_.ConstructSpdyHeaders(
         3, std::move(request_headers), DEFAULT_PRIORITY, false));
@@ -1566,6 +1566,10 @@ TEST_P(WebSocketMultiProtocolStreamCreateTest, Http2StreamReset) {
                              NoSubProtocols(), Origin(), Url(), {}, {}, {});
     base::RunLoop().RunUntilIdle();
     stream_request_.reset();
+
+    EXPECT_TRUE(has_failed());
+    EXPECT_EQ("Stream closed with error: net::ERR_SPDY_PROTOCOL_ERROR",
+              failure_message());
 
     auto samples = histogram_tester.GetHistogramSamplesSinceCreation(
         "Net.WebSocket.HandshakeResult2");

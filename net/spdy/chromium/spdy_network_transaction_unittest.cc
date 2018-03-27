@@ -7124,7 +7124,7 @@ TEST_F(SpdyNetworkTransactionTest, WebSocketOverHTTP2) {
 
   SpdyHeaderBlock websocket_request_headers;
   websocket_request_headers[kHttp2MethodHeader] = "CONNECT";
-  websocket_request_headers[kHttp2AuthorityHeader] = "www.example.org:443";
+  websocket_request_headers[kHttp2AuthorityHeader] = "www.example.org";
   websocket_request_headers[kHttp2SchemeHeader] = "https";
   websocket_request_headers[kHttp2PathHeader] = "/";
   websocket_request_headers[kHttp2ProtocolHeader] = "websocket";
