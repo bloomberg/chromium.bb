@@ -25,6 +25,8 @@ component("gin") {
     "function_template.cc",
     "function_template.h",
     "gin_export.h",
+    "gin_features.cc",
+    "gin_features.h",
     "handle.h",
     "interceptor.cc",
     "interceptor.h",
