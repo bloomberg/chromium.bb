@@ -46,7 +46,7 @@ using content::WebContents;
 
 namespace {
 
-const char kBubbleReshowsHistogramName[] =
+const char kFullscreenBubbleReshowsHistogramName[] =
     "ExclusiveAccess.BubbleReshowsPerSession.Fullscreen";
 
 }  // namespace
@@ -330,7 +330,8 @@ void FullscreenController::NotifyTabExclusiveAccessLost() {
 
 void FullscreenController::RecordBubbleReshowsHistogram(
     int bubble_reshow_count) {
-  UMA_HISTOGRAM_COUNTS_100(kBubbleReshowsHistogramName, bubble_reshow_count);
+  UMA_HISTOGRAM_COUNTS_100(kFullscreenBubbleReshowsHistogramName,
+                           bubble_reshow_count);
 }
 
 void FullscreenController::ToggleFullscreenModeInternal(

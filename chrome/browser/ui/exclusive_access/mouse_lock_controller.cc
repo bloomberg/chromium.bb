@@ -24,7 +24,7 @@ using content::WebContents;
 
 namespace {
 
-const char kBubbleReshowsHistogramName[] =
+const char kMouseLockBubbleReshowsHistogramName[] =
     "ExclusiveAccess.BubbleReshowsPerSession.MouseLock";
 
 }  // namespace
@@ -103,7 +103,8 @@ void MouseLockController::NotifyTabExclusiveAccessLost() {
 
 void MouseLockController::RecordBubbleReshowsHistogram(
     int bubble_reshow_count) {
-  UMA_HISTOGRAM_COUNTS_100(kBubbleReshowsHistogramName, bubble_reshow_count);
+  UMA_HISTOGRAM_COUNTS_100(kMouseLockBubbleReshowsHistogramName,
+                           bubble_reshow_count);
 }
 
 bool MouseLockController::HandleUserPressedEscape() {
