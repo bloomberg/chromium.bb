@@ -295,13 +295,6 @@ const char kEnableAutofillCreditCardUploadSendPanFirstSixDescription[] =
     "Payments, sends the first six digits of the card number to avoid cases "
     "where card upload is likely to fail.";
 
-const char kEnableAutofillSendBillingCustomerNumberName[] =
-    "Enable autofill sending billing customer number when calling Google "
-    "Payments";
-const char kEnableAutofillSendBillingCustomerNumberDescription[] =
-    "If enabled, autofill sends billing customer number when calling Google "
-    "Payments.";
-
 const char kEnableAutofillNativeDropdownViewsName[] =
     "Display Autofill Dropdown Using Views";
 const char kEnableAutofillNativeDropdownViewsDescription[] =
