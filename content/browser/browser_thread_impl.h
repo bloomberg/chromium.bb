@@ -20,7 +20,7 @@ class TestBrowserThread;
 // BrowserThread::ID. On ~BrowserThreadImpl() that ID enters a SHUTDOWN state
 // (in which BrowserThread::IsThreadInitialized() returns false) but the mapping
 // isn't undone to avoid shutdown races (the task runner is free to stop
-// accepting tasks however).
+// accepting tasks by then however).
 //
 // Very few users should use this directly. To mock BrowserThreads, tests should
 // use TestBrowserThreadBundle instead.
@@ -49,7 +49,9 @@ class CONTENT_EXPORT BrowserThreadImpl : public BrowserThread {
   // threads.
   friend class TestBrowserThread;
 
-  // Binds |identifier| to |task_runner| for the browser_thread.h API.
+  // Binds |identifier| to |task_runner| for the browser_thread.h API. This
+  // needs to happen on the main thread before //content and embedders are
+  // kicked off and enabled to invoke the BrowserThread API from other threads.
   BrowserThreadImpl(BrowserThread::ID identifier,
                     scoped_refptr<base::SingleThreadTaskRunner> task_runner);
 

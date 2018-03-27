@@ -125,8 +125,6 @@ void BrowserProcessSubThread::CleanUp() {
 #if defined(OS_WIN)
   com_initializer_.reset();
 #endif
-
-  browser_thread_.reset();
 }
 
 void BrowserProcessSubThread::CompleteInitializationOnBrowserThread() {
