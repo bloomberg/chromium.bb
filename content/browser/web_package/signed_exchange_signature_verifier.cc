@@ -24,18 +24,18 @@ namespace content {
 
 namespace {
 
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.6
-// Step 11. "Let message be the concatenation of the following byte strings."
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
+// Step 7. "Let message be the concatenation of the following byte strings."
 constexpr uint8_t kMessageHeader[] =
-    // 11.1. "A string that consists of octet 32 (0x20) repeated 64 times."
+    // 7.1. "A string that consists of octet 32 (0x20) repeated 64 times."
     // [spec text]
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
     "\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20\x20"
-    // 11.2. "A context string: the ASCII encoding of "HTTP Exchange"."
+    // 7.2. "A context string: the ASCII encoding of "HTTP Exchange"."
     // [spec text]
-    // 11.3. "A single 0 byte which serves as a separator." [spec text]
+    // 7.3. "A single 0 byte which serves as a separator." [spec text]
     "HTTP Exchange";
 
 base::Optional<cbor::CBORValue> GenerateCanonicalRequestCBOR(
@@ -72,7 +72,7 @@ base::Optional<cbor::CBORValue> GenerateCanonicalResponseCBOR(
 }
 
 // Generate CBORValue from |header| as specified in:
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.4
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#cbor-representation
 base::Optional<cbor::CBORValue> GenerateCanonicalExchangeHeadersCBOR(
     const SignedExchangeHeader& header) {
   auto req_val = GenerateCanonicalRequestCBOR(header);
@@ -89,18 +89,18 @@ base::Optional<cbor::CBORValue> GenerateCanonicalExchangeHeadersCBOR(
 }
 
 // Generate a CBOR map value as specified in
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.6
-// Step 11.4.
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
+// Step 7.4.
 base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
     const SignedExchangeHeader& header) {
   auto headers_val = GenerateCanonicalExchangeHeadersCBOR(header);
   if (!headers_val)
     return base::nullopt;
 
-  // 11.4. "The bytes of the canonical CBOR serialization (Section 3.5) of
+  // 7.4. "The bytes of the canonical CBOR serialization (Section 3.4) of
   // a CBOR map mapping:" [spec text]
   cbor::CBORValue::MapValue map;
-  // 11.4.1. "If certSha256 is set: The text string "certSha256" to the byte
+  // 7.4.1. "If certSha256 is set: The text string "certSha256" to the byte
   // string value of certSha256." [spec text]
   if (header.signature().cert_sha256.has_value()) {
     map.insert_or_assign(
@@ -111,19 +111,19 @@ base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
                               sizeof(header.signature().cert_sha256->data)),
             cbor::CBORValue::Type::BYTE_STRING));
   }
-  // 11.4.2. "The text string "validityUrl" to the byte string value of
+  // 7.4.2. "The text string "validityUrl" to the byte string value of
   // validityUrl." [spec text]
   map.insert_or_assign(cbor::CBORValue(kValidityUrlKey),
                        cbor::CBORValue(header.signature().validity_url.spec(),
                                        cbor::CBORValue::Type::BYTE_STRING));
-  // 11.4.3. "The text string "date" to the integer value of date." [spec text]
+  // 7.4.3. "The text string "date" to the integer value of date." [spec text]
   if (!base::IsValueInRangeForNumericType<int64_t>(header.signature().date))
     return base::nullopt;
 
   map.insert_or_assign(
       cbor::CBORValue(kDateKey),
       cbor::CBORValue(base::checked_cast<int64_t>(header.signature().date)));
-  // 11.4.4. "The text string "expires" to the integer value of expires."
+  // 7.4.4. "The text string "expires" to the integer value of expires."
   // [spec text]
   if (!base::IsValueInRangeForNumericType<int64_t>(header.signature().expires))
     return base::nullopt;
@@ -131,8 +131,8 @@ base::Optional<cbor::CBORValue> GenerateSignedMessageCBOR(
   map.insert_or_assign(
       cbor::CBORValue(kExpiresKey),
       cbor::CBORValue(base::checked_cast<int64_t>(header.signature().expires)));
-  // 11.4.5. "The text string "headers" to the CBOR representation
-  // (Section 3.4) of exchange's headers." [spec text]
+  // 7.4.5. "The text string "headers" to the CBOR representation
+  // (Section 3.2) of exchange's headers." [spec text]
   map.insert_or_assign(cbor::CBORValue(kHeadersKey), std::move(*headers_val));
   return cbor::CBORValue(map);
 }
@@ -195,7 +195,7 @@ base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
   TRACE_EVENT_BEGIN0(TRACE_DISABLED_BY_DEFAULT("loading"),
                      "GenerateSignedMessage");
 
-  // GenerateSignedMessageCBOR corresponds to Step 11.4.
+  // GenerateSignedMessageCBOR corresponds to Step 7.4.
   base::Optional<cbor::CBORValue> cbor_val = GenerateSignedMessageCBOR(header);
   if (!cbor_val) {
     TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
@@ -213,15 +213,15 @@ base::Optional<std::vector<uint8_t>> GenerateSignedMessage(
     return base::nullopt;
   }
 
-  // https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.6
-  // Step 11. "Let message be the concatenation of the following byte strings."
+  // https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
+  // Step 7. "Let message be the concatenation of the following byte strings."
   std::vector<uint8_t> message;
-  // see kMessageHeader for Steps 11.1 to 11.3.
+  // see kMessageHeader for Steps 7.1 to 7.3.
   message.reserve(arraysize(kMessageHeader) + cbor_message->size());
   message.insert(message.end(), std::begin(kMessageHeader),
                  std::end(kMessageHeader));
-  // 11.4. "The text string “headers” to the CBOR representation (Section 3.4)
-  // of exchange’s headers." [spec text]
+  // 7.4. "The bytes of the canonical CBOR serialization (Section 3.4) of
+  // a CBOR map mapping:" [spec text]
   message.insert(message.end(), cbor_message->begin(), cbor_message->end());
   TRACE_EVENT_END1(TRACE_DISABLED_BY_DEFAULT("loading"),
                    "GenerateSignedMessage", "dump", HexDump(message));
@@ -232,8 +232,8 @@ base::Time TimeFromSignedExchangeUnixTime(uint64_t t) {
   return base::Time::UnixEpoch() + base::TimeDelta::FromSeconds(t);
 }
 
-// Implements steps 9-10 of
-// https://wicg.github.io/webpackage/draft-yasskin-http-origin-signed-responses.html#rfc.section.3.6
+// Implements steps 5-6 of
+// https://wicg.github.io/webpackage/draft-yasskin-httpbis-origin-signed-exchanges-impl.html#signature-validity
 bool VerifyTimestamps(const SignedExchangeHeader& header,
                       const base::Time& verification_time) {
   base::Time expires_time =
@@ -241,12 +241,12 @@ bool VerifyTimestamps(const SignedExchangeHeader& header,
   base::Time creation_time =
       TimeFromSignedExchangeUnixTime(header.signature().date);
 
-  // 9. "If expires is more than 7 days (604800 seconds) after date, return
+  // 5. "If expires is more than 7 days (604800 seconds) after date, return
   // "invalid"." [spec text]
   if ((expires_time - creation_time).InSeconds() > 604800)
     return false;
 
-  // 10. "If the current time is before date or after expires, return
+  // 6. "If the current time is before date or after expires, return
   // "invalid"."
   if (verification_time < creation_time || expires_time < verification_time)
     return false;
