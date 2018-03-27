@@ -5,6 +5,7 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_table_view_controller.h"
 
 #include "base/logging.h"
+#include "base/mac/foundation_util.h"
 #include "base/metrics/user_metrics.h"
 #include "base/metrics/user_metrics_action.h"
 #include "base/strings/sys_string_conversions.h"
@@ -769,6 +770,15 @@ const int kRelativeTimeMaxHours = 4;
   if (tapGesture.state == UIGestureRecognizerStateEnded) {
     [self toggleExpansionOfSectionIdentifier:
               self.lastTappedHeaderSectionIdentifier];
+
+    // Highlight the section header being tapped.
+    NSInteger section = [self.tableViewModel
+        sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
+    UITableViewHeaderFooterView* headerView =
+        [self.tableView headerViewForSection:section];
+    TableViewTextHeaderFooterView* headerTextView =
+        base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerView);
+    [headerTextView animateHighlight];
   }
 }
 
@@ -816,6 +826,15 @@ const int kRelativeTimeMaxHours = 4;
       // Only handle LongPress for SessionHeaders.
       return;
     }
+
+    // Highlight the section header being long pressed.
+    NSInteger section = [self.tableViewModel
+        sectionForSectionIdentifier:self.lastTappedHeaderSectionIdentifier];
+    UITableViewHeaderFooterView* headerView =
+        [self.tableView headerViewForSection:section];
+    TableViewTextHeaderFooterView* headerTextView =
+        base::mac::ObjCCastStrict<TableViewTextHeaderFooterView>(headerView);
+    [headerTextView animateHighlight];
 
     web::ContextMenuParams params;
     // Get view coordinates in local space.
