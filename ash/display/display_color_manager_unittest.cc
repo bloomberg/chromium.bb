@@ -165,7 +165,7 @@ TEST_F(DisplayColorManagerTest, VCGTOnly) {
           .SetCurrentMode(kDisplaySize)
           .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(false)
-          .SetProductId(0x06af5c10)
+          .SetProductCode(0x06af5c10)
           .Build();
   std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
@@ -187,7 +187,7 @@ TEST_F(DisplayColorManagerTest, VCGTOnlyWithPlatformCTM) {
           .SetCurrentMode(kDisplaySize)
           .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(true)
-          .SetProductId(0x06af5c10)
+          .SetProductCode(0x06af5c10)
           .Build();
   std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
@@ -210,7 +210,7 @@ TEST_F(DisplayColorManagerTest, FullWithPlatformCTM) {
           .SetCurrentMode(kDisplaySize)
           .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(true)
-          .SetProductId(0x4c834a42)
+          .SetProductCode(0x4c834a42)
           .Build();
   std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
@@ -233,7 +233,7 @@ TEST_F(DisplayColorManagerTest, FullWithoutPlatformCTM) {
           .SetCurrentMode(kDisplaySize)
           .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(false)
-          .SetProductId(0x4c834a42)
+          .SetProductCode(0x4c834a42)
           .Build();
   std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
@@ -255,7 +255,7 @@ TEST_F(DisplayColorManagerTest, NoMatchProductID) {
           .SetCurrentMode(kDisplaySize)
           .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(false)
-          .SetProductId(0)
+          .SetProductCode(0)
           .Build();
   std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
@@ -278,7 +278,7 @@ TEST_F(DisplayColorManagerTest, NoVCGT) {
           .SetCurrentMode(kDisplaySize)
           .SetType(display::DISPLAY_CONNECTION_TYPE_INTERNAL)
           .SetHasColorCorrectionMatrix(false)
-          .SetProductId(0x0dae3211)
+          .SetProductCode(0x0dae3211)
           .Build();
   std::vector<display::DisplaySnapshot*> outputs({snapshot.get()});
   native_display_delegate_->set_outputs(outputs);
