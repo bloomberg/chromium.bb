@@ -170,6 +170,10 @@ class ActivationStateComputingNavigationThrottleTest
     return simple_task_runner_;
   }
 
+  void set_parent_activation_state(const ActivationState& state) {
+    parent_activation_state_ = state;
+  }
+
  protected:
   // content::WebContentsObserver:
   void DidStartNavigation(
@@ -541,18 +545,6 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, Speculation) {
 TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
   InitializeRulesetHandles(simple_task_runner());
 
-  // TODO(csharrison): Once crbug.com/822275 is resolved, implement this via a
-  // Wait() style interface on NavigationSimulator. Right now it is very hacky:
-  // essentially we post a task to finish tasks on |simple_task_runner_| before
-  // a navigation stage (when necessary). NavigationSimulator internals pump the
-  // run loop which runs this task after throttles run.
-  auto task_runner = simple_task_runner();
-  auto post_advance = [task_runner]() {
-    base::SequencedTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::BindOnce(&base::TestSimpleTaskRunner::RunPendingTasks,
-                                  base::RetainedRef(task_runner)));
-  };
-
   // Use the activation performance metric as a proxy for how many times
   // activation computation occurred.
   base::HistogramTester main_histogram_tester;
@@ -560,41 +552,65 @@ TEST_P(ActivationStateComputingThrottleSubFrameTest, SpeculationWithDelay) {
       "SubresourceFilter.DocumentLoad.Activation.CPUDuration";
 
   // Main frames will do speculative lookup only in some cases.
-  CreateTestNavigationForMainFrame(GURL("http://example.test/"));
-  SimulateStartAndExpectToProceed();
+  auto simulator = content::NavigationSimulator::CreateRendererInitiated(
+      GURL("http://example.test/"), main_rfh());
+  simulator->SetAutoAdvance(false);
+
+  simulator->Start();
+  EXPECT_FALSE(simulator->IsDeferred());
   main_histogram_tester.ExpectTotalCount(kActivationCPU, 0);
 
-  SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
+  simulator->Redirect(GURL("http://example.test2/"));
+  EXPECT_FALSE(simulator->IsDeferred());
   main_histogram_tester.ExpectTotalCount(kActivationCPU, 0);
 
   NotifyPageActivation(ActivationState(ActivationLevel::ENABLED));
-  post_advance();
-  SimulateCommitAndExpectToProceed();
+  simulator->ReadyToCommit();
+  EXPECT_TRUE(simulator->IsDeferred());
+  EXPECT_LT(0u, simple_task_runner()->NumPendingTasks());
+  simple_task_runner()->RunPendingTasks();
   // If speculation was enabled for this test, will do a lookup at start and
   // redirect.
   main_histogram_tester.ExpectTotalCount(kActivationCPU,
                                          dryrun_speculation() ? 2 : 1);
+  simulator->Wait();
+  EXPECT_FALSE(simulator->IsDeferred());
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            simulator->GetLastThrottleCheckResult());
+  simulator->Commit();
 
   base::HistogramTester sub_histogram_tester;
-  CreateSubframeAndInitTestNavigation(GURL("http://example.test/"),
-                                      last_committed_frame_host(),
-                                      last_activation_state());
+  auto subframe_simulator =
+      content::NavigationSimulator::CreateRendererInitiated(
+          GURL("http://example.test"),
+          content::RenderFrameHostTester::For(main_rfh())
+              ->AppendChild("subframe"));
+  subframe_simulator->SetAutoAdvance(false);
+  set_parent_activation_state(last_activation_state());
 
   // Simulate slow ruleset checks for the subframe, these should not delay the
   // navigation until commit time.
-  SimulateStartAndExpectToProceed();
+  subframe_simulator->Start();
+  EXPECT_FALSE(subframe_simulator->IsDeferred());
   sub_histogram_tester.ExpectTotalCount(kActivationCPU, 0);
 
   // Calling redirect should ensure that the throttle does not receive the
   // results of the check, but the task to actually perform the check will still
   // happen.
-  SimulateRedirectAndExpectToProceed(GURL("http://example.test2/"));
+  subframe_simulator->Redirect(GURL("http://example.test2/"));
+  EXPECT_FALSE(subframe_simulator->IsDeferred());
   sub_histogram_tester.ExpectTotalCount(kActivationCPU, 0);
 
   // Finish the checks dispatched in the start and redirect phase when the
   // navigation is ready to commit.
-  post_advance();
-  SimulateCommitAndExpectToProceed();
+  subframe_simulator->ReadyToCommit();
+  EXPECT_TRUE(subframe_simulator->IsDeferred());
+  EXPECT_LT(0u, simple_task_runner()->NumPendingTasks());
+  simple_task_runner()->RunPendingTasks();
+  subframe_simulator->Wait();
+  EXPECT_FALSE(subframe_simulator->IsDeferred());
+  EXPECT_EQ(content::NavigationThrottle::PROCEED,
+            simulator->GetLastThrottleCheckResult());
   sub_histogram_tester.ExpectTotalCount(kActivationCPU, 2);
 }
 
