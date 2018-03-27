@@ -32,21 +32,6 @@ using libaom_test::ACMRandom;
       make_tuple(TX_32X16, &function), make_tuple(TX_32X32, &function)
 
 namespace {
-typedef cfl_subsample_lbd_fn (*get_subsample_fn)(TX_SIZE tx_size);
-
-typedef cfl_predict_lbd_fn (*get_predict_fn)(TX_SIZE tx_size);
-
-typedef cfl_predict_hbd_fn (*get_predict_fn_hbd)(TX_SIZE tx_size);
-
-typedef cfl_subtract_average_fn (*sub_avg_fn)(TX_SIZE tx_size);
-
-typedef ::testing::tuple<TX_SIZE, get_subsample_fn> subsample_param;
-
-typedef ::testing::tuple<TX_SIZE, get_predict_fn> predict_param;
-
-typedef ::testing::tuple<TX_SIZE, get_predict_fn_hbd> predict_param_hbd;
-
-typedef ::testing::tuple<TX_SIZE, sub_avg_fn> sub_avg_param;
 
 template <typename A>
 static void assert_eq(const A *a, const A *b, int width, int height) {
@@ -74,37 +59,32 @@ static void printSpeed(int ref_elapsed_time, int elapsed_time, int width,
             << std::endl;
 }
 
-template <typename F>
-class CFLTest
-    : public ::testing::TestWithParam< ::testing::tuple<TX_SIZE, F> > {
+class CFLTest {
  public:
   virtual ~CFLTest() {}
-  virtual void SetUp() {
-    tx_size = ::testing::get<0>(this->GetParam());
+  void init(TX_SIZE tx) {
+    tx_size = tx;
     width = tx_size_wide[tx_size];
     height = tx_size_high[tx_size];
-    fun_under_test = ::testing::get<1>(this->GetParam());
     rnd(ACMRandom::DeterministicSeed());
   }
 
  protected:
-  ACMRandom rnd;
-  F fun_under_test;
   TX_SIZE tx_size;
   int width;
   int height;
+  ACMRandom rnd;
 };
 
-template <typename F, typename I>
-class CFLTestWithData : public CFLTest<F> {
+template <typename I>
+class CFLTestWithData : public CFLTest {
  public:
   virtual ~CFLTestWithData() {}
 
  protected:
   I data[CFL_BUF_SQUARE];
   I data_ref[CFL_BUF_SQUARE];
-
-  void init(I (ACMRandom::*random)()) {
+  void randData(I (ACMRandom::*random)()) {
     for (int j = 0; j < this->height; j++) {
       for (int i = 0; i < this->width; i++) {
         const I d = (this->rnd.*random)();
@@ -115,12 +95,10 @@ class CFLTestWithData : public CFLTest<F> {
   }
 };
 
-template <typename F, typename I>
-class CFLTestWithAlignedData : public CFLTest<F> {
+template <typename I>
+class CFLTestWithAlignedData : public CFLTest {
  public:
-  virtual ~CFLTestWithAlignedData() {}
-  virtual void SetUp() {
-    CFLTest<F>::SetUp();
+  CFLTestWithAlignedData() {
     chroma_pels_ref =
         reinterpret_cast<I *>(aom_memalign(32, sizeof(I) * CFL_BUF_SQUARE));
     chroma_pels =
@@ -134,8 +112,7 @@ class CFLTestWithAlignedData : public CFLTest<F> {
     memset(sub_luma_pels_ref, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
     memset(sub_luma_pels, 0, sizeof(int16_t) * CFL_BUF_SQUARE);
   }
-
-  virtual void TearDown() {
+  ~CFLTestWithAlignedData() {
     aom_free(chroma_pels_ref);
     aom_free(sub_luma_pels_ref);
     aom_free(chroma_pels);
@@ -149,7 +126,7 @@ class CFLTestWithAlignedData : public CFLTest<F> {
   int16_t *sub_luma_pels;
   int alpha_q3;
   I dc;
-  void init(int bd) {
+  void randData(int bd) {
     alpha_q3 = this->rnd(33) - 16;
     dc = this->rnd(1 << bd);
     for (int j = 0; j < this->height; j++) {
@@ -163,180 +140,211 @@ class CFLTestWithAlignedData : public CFLTest<F> {
   }
 };
 
-class CFLSubAvgTest : public CFLTestWithData<sub_avg_fn, int16_t> {
+typedef cfl_subtract_average_fn (*sub_avg_fn)(TX_SIZE tx_size);
+typedef ::testing::tuple<TX_SIZE, sub_avg_fn> sub_avg_param;
+class CFLSubAvgTest : public ::testing::TestWithParam<sub_avg_param>,
+                      public CFLTestWithData<int16_t> {
  public:
+  virtual void SetUp() {
+    CFLTest::init(::testing::get<0>(this->GetParam()));
+    sub_avg = ::testing::get<1>(this->GetParam())(tx_size);
+    sub_avg_ref = get_subtract_average_fn_c(tx_size);
+  }
   virtual ~CFLSubAvgTest() {}
-};
 
-class CFLSubsampleTest : public CFLTestWithData<get_subsample_fn, uint8_t> {
- public:
-  virtual ~CFLSubsampleTest() {}
-};
-
-class CFLPredictTest : public CFLTestWithAlignedData<get_predict_fn, uint8_t> {
- public:
-  virtual ~CFLPredictTest() {}
-};
-
-class CFLPredictHBDTest
-    : public CFLTestWithAlignedData<get_predict_fn_hbd, uint16_t> {
- public:
-  virtual ~CFLPredictHBDTest() {}
+ protected:
+  cfl_subtract_average_fn sub_avg;
+  cfl_subtract_average_fn sub_avg_ref;
 };
 
 TEST_P(CFLSubAvgTest, SubAvgTest) {
-  const cfl_subtract_average_fn ref_sub = get_subtract_average_fn_c(tx_size);
-  const cfl_subtract_average_fn sub = fun_under_test(tx_size);
   for (int it = 0; it < NUM_ITERATIONS; it++) {
-    init(&ACMRandom::Rand15Signed);
-    sub(data);
-    ref_sub(data_ref);
+    randData(&ACMRandom::Rand15Signed);
+    sub_avg(data);
+    sub_avg_ref(data_ref);
     assert_eq<int16_t>(data, data_ref, width, height);
   }
 }
 
 TEST_P(CFLSubAvgTest, DISABLED_SubAvgSpeedTest) {
-  const cfl_subtract_average_fn ref_sub = get_subtract_average_fn_c(tx_size);
-  const cfl_subtract_average_fn sub = fun_under_test(tx_size);
-
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
-
-  init(&ACMRandom::Rand15Signed);
+  randData(&ACMRandom::Rand15Signed);
   aom_usec_timer_start(&ref_timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    ref_sub(data_ref);
+    sub_avg_ref(data_ref);
   }
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
-
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    sub(data);
+    sub_avg(data);
   }
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
-
   printSpeed(ref_elapsed_time, elapsed_time, width, height);
   assertFaster(ref_elapsed_time, elapsed_time);
 }
 
-TEST_P(CFLSubsampleTest, SubsampleTest) {
-  int16_t sub_luma_pels[CFL_BUF_SQUARE];
-  int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
-  const int sub_width = width >> 1;
-  const int sub_height = height >> 1;
+typedef cfl_subsample_lbd_fn (*get_subsample_fn)(TX_SIZE tx_size);
+typedef ::testing::tuple<TX_SIZE, get_subsample_fn> subsample_param;
+class CFLSubsampleTest : public ::testing::TestWithParam<subsample_param>,
+                         public CFLTestWithData<uint8_t> {
+ public:
+  virtual ~CFLSubsampleTest() {}
 
-  for (int it = 0; it < NUM_ITERATIONS; it++) {
-    init(&ACMRandom::Rand8);
-    fun_under_test(tx_size)(data, CFL_BUF_LINE, sub_luma_pels);
-    cfl_get_luma_subsampling_420_lbd_c(tx_size)(data_ref, CFL_BUF_LINE,
-                                                sub_luma_pels_ref);
-    assert_eq<int16_t>(sub_luma_pels, sub_luma_pels_ref, sub_width, sub_height);
+  virtual void SetUp() {
+    CFLTest::init(::testing::get<0>(this->GetParam()));
+    fun_420 = ::testing::get<1>(this->GetParam())(tx_size);
+    fun_420_ref = cfl_get_luma_subsampling_420_lbd_c(tx_size);
   }
+
+ protected:
+  cfl_subsample_lbd_fn fun_420;
+  cfl_subsample_lbd_fn fun_420_ref;
+
+  void subsampleTest(cfl_subsample_lbd_fn fun, cfl_subsample_lbd_fn fun_ref,
+                     int sub_width, int sub_height) {
+    int16_t sub_luma_pels[CFL_BUF_SQUARE];
+    int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
+
+    for (int it = 0; it < NUM_ITERATIONS; it++) {
+      randData(&ACMRandom::Rand8);
+      fun(data, CFL_BUF_LINE, sub_luma_pels);
+      fun_ref(data_ref, CFL_BUF_LINE, sub_luma_pels_ref);
+      assert_eq<int16_t>(sub_luma_pels, sub_luma_pels_ref, sub_width,
+                         sub_height);
+    }
+  }
+
+  void subsampleSpeedTest(cfl_subsample_lbd_fn fun,
+                          cfl_subsample_lbd_fn fun_ref) {
+    int16_t sub_luma_pels[CFL_BUF_SQUARE];
+    int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
+
+    aom_usec_timer ref_timer;
+    aom_usec_timer timer;
+
+    randData(&ACMRandom::Rand8);
+    aom_usec_timer_start(&ref_timer);
+    for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
+      fun_ref(data_ref, CFL_BUF_LINE, sub_luma_pels);
+    }
+    aom_usec_timer_mark(&ref_timer);
+    int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
+    aom_usec_timer_start(&timer);
+    for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
+      fun(data, CFL_BUF_LINE, sub_luma_pels_ref);
+    }
+    aom_usec_timer_mark(&timer);
+    int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
+    printSpeed(ref_elapsed_time, elapsed_time, width, height);
+    assertFaster(ref_elapsed_time, elapsed_time);
+  }
+};
+
+TEST_P(CFLSubsampleTest, Subsample420Test) {
+  subsampleTest(fun_420, fun_420_ref, width >> 1, height >> 1);
 }
 
-TEST_P(CFLSubsampleTest, DISABLED_SubsampleSpeedTest) {
-  int16_t sub_luma_pels[CFL_BUF_SQUARE];
-  int16_t sub_luma_pels_ref[CFL_BUF_SQUARE];
-  cfl_subsample_lbd_fn subsample = fun_under_test(tx_size);
-  cfl_subsample_lbd_fn subsample_ref =
-      cfl_get_luma_subsampling_420_lbd_c(tx_size);
-  aom_usec_timer ref_timer;
-  aom_usec_timer timer;
-
-  init(&ACMRandom::Rand8);
-  aom_usec_timer_start(&ref_timer);
-  for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    subsample_ref(data_ref, CFL_BUF_LINE, sub_luma_pels);
-  }
-  aom_usec_timer_mark(&ref_timer);
-  int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
-
-  aom_usec_timer_start(&timer);
-  for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    subsample(data, CFL_BUF_LINE, sub_luma_pels_ref);
-  }
-  aom_usec_timer_mark(&timer);
-  int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
-
-  printSpeed(ref_elapsed_time, elapsed_time, width, height);
-  assertFaster(ref_elapsed_time, elapsed_time);
+TEST_P(CFLSubsampleTest, DISABLED_Subsample420SpeedTest) {
+  subsampleSpeedTest(fun_420, fun_420_ref);
 }
+
+typedef cfl_predict_lbd_fn (*get_predict_fn)(TX_SIZE tx_size);
+typedef ::testing::tuple<TX_SIZE, get_predict_fn> predict_param;
+class CFLPredictTest : public ::testing::TestWithParam<predict_param>,
+                       public CFLTestWithAlignedData<uint8_t> {
+ public:
+  virtual void SetUp() {
+    CFLTest::init(::testing::get<0>(this->GetParam()));
+    predict = ::testing::get<1>(this->GetParam())(tx_size);
+    predict_ref = get_predict_lbd_fn_c(tx_size);
+  }
+
+  virtual ~CFLPredictTest() {}
+
+ protected:
+  cfl_predict_lbd_fn predict;
+  cfl_predict_lbd_fn predict_ref;
+};
 
 TEST_P(CFLPredictTest, PredictTest) {
   for (int it = 0; it < NUM_ITERATIONS; it++) {
-    init(8);
-    fun_under_test(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3);
-    get_predict_lbd_fn_c(tx_size)(sub_luma_pels_ref, chroma_pels_ref,
-                                  CFL_BUF_LINE, alpha_q3);
-
+    randData(8);
+    predict(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3);
+    predict_ref(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, alpha_q3);
     assert_eq<uint8_t>(chroma_pels, chroma_pels_ref, width, height);
   }
 }
-
 TEST_P(CFLPredictTest, DISABLED_PredictSpeedTest) {
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
+  randData(8);
 
-  init(8);
-  cfl_predict_lbd_fn predict_impl = get_predict_lbd_fn_c(tx_size);
   aom_usec_timer_start(&ref_timer);
-
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    predict_impl(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, alpha_q3);
+    predict_ref(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, alpha_q3);
   }
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
 
-  predict_impl = fun_under_test(tx_size);
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    predict_impl(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3);
+    predict(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3);
   }
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
-
   printSpeed(ref_elapsed_time, elapsed_time, width, height);
   assertFaster(ref_elapsed_time, elapsed_time);
 }
+
+typedef cfl_predict_hbd_fn (*get_predict_fn_hbd)(TX_SIZE tx_size);
+typedef ::testing::tuple<TX_SIZE, get_predict_fn_hbd> predict_param_hbd;
+class CFLPredictHBDTest : public ::testing::TestWithParam<predict_param_hbd>,
+                          public CFLTestWithAlignedData<uint16_t> {
+ public:
+  virtual void SetUp() {
+    CFLTest::init(::testing::get<0>(this->GetParam()));
+    predict = ::testing::get<1>(this->GetParam())(tx_size);
+    predict_ref = get_predict_hbd_fn_c(tx_size);
+  }
+
+  virtual ~CFLPredictHBDTest() {}
+
+ protected:
+  cfl_predict_hbd_fn predict;
+  cfl_predict_hbd_fn predict_ref;
+};
 
 TEST_P(CFLPredictHBDTest, PredictHBDTest) {
   int bd = 12;
   for (int it = 0; it < NUM_ITERATIONS; it++) {
-    init(bd);
-    fun_under_test(tx_size)(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3,
-                            bd);
-    get_predict_hbd_fn_c(tx_size)(sub_luma_pels_ref, chroma_pels_ref,
-                                  CFL_BUF_LINE, alpha_q3, bd);
-
+    randData(bd);
+    predict(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3, bd);
+    predict_ref(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, alpha_q3, bd);
     assert_eq<uint16_t>(chroma_pels, chroma_pels_ref, width, height);
   }
 }
-
 TEST_P(CFLPredictHBDTest, DISABLED_PredictHBDSpeedTest) {
   aom_usec_timer ref_timer;
   aom_usec_timer timer;
-  int bd = 12;
-  init(bd);
-  cfl_predict_hbd_fn predict_impl = get_predict_hbd_fn_c(tx_size);
-  aom_usec_timer_start(&ref_timer);
+  const int bd = 12;
+  randData(bd);
 
+  aom_usec_timer_start(&ref_timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    predict_impl(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, alpha_q3,
-                 bd);
+    predict_ref(sub_luma_pels_ref, chroma_pels_ref, CFL_BUF_LINE, alpha_q3, bd);
   }
   aom_usec_timer_mark(&ref_timer);
   int ref_elapsed_time = (int)aom_usec_timer_elapsed(&ref_timer);
 
-  predict_impl = fun_under_test(tx_size);
   aom_usec_timer_start(&timer);
   for (int k = 0; k < NUM_ITERATIONS_SPEED; k++) {
-    predict_impl(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3, bd);
+    predict(sub_luma_pels, chroma_pels, CFL_BUF_LINE, alpha_q3, bd);
   }
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
-
   printSpeed(ref_elapsed_time, elapsed_time, width, height);
   assertFaster(ref_elapsed_time, elapsed_time);
 }
