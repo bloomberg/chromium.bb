@@ -751,6 +751,7 @@ _waterfall_config_map = {
         'kevin-full',
         'lakitu-full',
         'oak-full',
+        'tael-full',
         'tatl-full',
 
         # ASAN.
@@ -2505,6 +2506,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'grunt',
       'nami',
       'octopus',
+      'tael',
       'atlas',
   ])
 

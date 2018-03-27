@@ -313,6 +313,8 @@ kevin-full (gce_beefy)
 lakitu-full (baremetal)
 moblab-generic-vm-paladin (baremetal)
 oak-full (gce_beefy)
+tael-full (gce_beefy)
+tael-paladin (gce_beefy)
 tatl-full (gce_beefy)
 tatl-paladin (gce_beefy)
 
