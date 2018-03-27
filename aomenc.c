@@ -269,10 +269,8 @@ static const arg_def_t lag_in_frames =
 static const arg_def_t large_scale_tile =
     ARG_DEF(NULL, "large-scale-tile", 1,
             "Large scale tile coding (0: off (default), 1: on)");
-#if CONFIG_MONO_VIDEO
 static const arg_def_t monochrome =
     ARG_DEF(NULL, "monochrome", 0, "Monochrome video (no chroma planes)");
-#endif  // CONFIG_MONO_VIDEO
 
 static const arg_def_t *global_args[] = { &use_yv12,
                                           &use_i420,
@@ -295,9 +293,7 @@ static const arg_def_t *global_args[] = { &use_yv12,
                                           &bitdeptharg,
                                           &lag_in_frames,
                                           &large_scale_tile,
-#if CONFIG_MONO_VIDEO
                                           &monochrome,
-#endif  // CONFIG_MONO_VIDEO
                                           NULL };
 
 static const arg_def_t dropframe_thresh =
@@ -1173,10 +1169,8 @@ static int parse_stream_params(struct AvxEncoderConfig *global,
       config->cfg.g_lag_in_frames = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &large_scale_tile, argi)) {
       config->cfg.large_scale_tile = arg_parse_uint(&arg);
-#if CONFIG_MONO_VIDEO
     } else if (arg_match(&arg, &monochrome, argi)) {
       config->cfg.monochrome = 1;
-#endif  // CONFIG_MONO_VIDEO
     } else if (arg_match(&arg, &dropframe_thresh, argi)) {
       config->cfg.rc_dropframe_thresh = arg_parse_uint(&arg);
     } else if (arg_match(&arg, &resize_mode, argi)) {

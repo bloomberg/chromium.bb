@@ -911,12 +911,7 @@ static int main_loop(int argc, const char **argv_) {
       aom_input_ctx.width = img->d_w;
       aom_input_ctx.height = img->d_h;
 
-#if CONFIG_MONO_VIDEO
       int num_planes = (!use_y4m && opt_raw && img->monochrome) ? 1 : 3;
-#else
-      int num_planes = 3;
-      (void)opt_raw;
-#endif
 
       if (single_file) {
         if (use_y4m) {
