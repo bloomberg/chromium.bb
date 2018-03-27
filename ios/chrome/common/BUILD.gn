@@ -93,7 +93,7 @@ source_set("noarc_unit_tests") {
   ]
 }
 
-buildflag_header("ios_app_bundle_id_prefix_header") {
-  header = "ios_app_bundle_id_prefix.h"
+buildflag_header("ios_app_bundle_id_prefix_buildflags") {
+  header = "ios_app_bundle_id_prefix_buildflags.h"
   flags = [ "IOS_APP_BUNDLE_ID_PREFIX=\"$ios_app_bundle_id_prefix\"" ]
 }

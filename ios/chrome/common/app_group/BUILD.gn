@@ -18,7 +18,7 @@ source_set("app_group") {
   deps = [
     "//base",
     "//components/version_info",
-    "//ios/chrome/common:ios_app_bundle_id_prefix_header",
+    "//ios/chrome/common:ios_app_bundle_id_prefix_buildflags",
   ]
 }
 

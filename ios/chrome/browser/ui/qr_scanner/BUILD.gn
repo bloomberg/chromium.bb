@@ -25,7 +25,7 @@ source_set("qr_scanner") {
     "//ios/chrome/browser/ui",
     "//ios/chrome/browser/ui/icons",
     "//ios/chrome/browser/ui/qr_scanner/requirements",
-    "//ios/chrome/common:ios_app_bundle_id_prefix_header",
+    "//ios/chrome/common:ios_app_bundle_id_prefix_buildflags",
     "//ios/third_party/material_components_ios",
     "//ui/base",
   ]
