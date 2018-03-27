@@ -868,6 +868,9 @@ are declared in build/common.gypi.
           <message name="IDS_SITE_SETTINGS" desc="The text label of the Site Settings menu item for the Hosted App app menu">
             &amp;Site settings
           </message>
+          <message name="IDS_OPEN_IN_APP_WINDOW" desc="The text label of the menu item for moving the current tab to a standalone app window">
+            Open in <ph name="APP">$1<ex>Gmail App</ex></ph>
+          </message>
         </if>
         <if expr="use_titlecase">
           <message name="IDS_NEW_TAB" desc="In Title Case: The text label of a menu item for opening a new tab">
@@ -938,6 +941,9 @@ are declared in build/common.gypi.
           </message>
           <message name="IDS_SITE_SETTINGS" desc="In Title Case: The text label of the Site Settings menu item for the Hosted App app menu">
             &amp;Site Settings
+          </message>
+          <message name="IDS_OPEN_IN_APP_WINDOW" desc="In Title Case: The text label of the menu item for moving the current tab to a standalone app window">
+            Open in <ph name="APP">$1<ex>Gmail App</ex></ph>
           </message>
         </if>
       </if>

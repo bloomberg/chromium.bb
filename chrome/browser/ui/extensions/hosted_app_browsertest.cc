@@ -29,6 +29,7 @@
 #include "chrome/browser/ui/extensions/hosted_app_browser_controller.h"
 #include "chrome/browser/ui/page_info/page_info_dialog.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/browser/ui/toolbar/app_menu_model.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/test/base/ui_test_utils.h"
@@ -188,8 +189,15 @@ class HostedAppTest
                                   "/ssl/page_displays_insecure_content.html");
   }
 
-  void InstallMixedContentPWA() {
-    GURL app_url = GetMixedContentAppURL();
+  GURL GetSecureAppURL() {
+    return https_server()->GetURL("app.com", "/ssl/google.html");
+  }
+
+  void InstallMixedContentPWA() { return InstallPWA(GetMixedContentAppURL()); }
+
+  void InstallSecurePWA() { return InstallPWA(GetSecureAppURL()); }
+
+  void InstallPWA(const GURL& app_url) {
     WebApplicationInfo web_app_info;
     web_app_info.app_url = app_url;
     web_app_info.scope = app_url.GetWithoutFilename();
@@ -249,6 +257,19 @@ class HostedAppTest
     EXPECT_EQ(target_url, new_tab->GetLastCommittedURL());
   }
 
+  bool IsOpenInAppWindowOptionPresent(Browser* browser) {
+    DCHECK(!browser->hosted_app_controller())
+        << "This only applies to regular browser windows.";
+    auto model =
+        std::make_unique<AppMenuModel>(&empty_accelerator_provider_, browser);
+    model->Init();
+    for (int i = 0; i < model->GetItemCount(); ++i) {
+      if (model->GetCommandIdAt(i) == IDC_OPEN_IN_PWA_WINDOW)
+        return true;
+    }
+    return false;
+  }
+
   Browser* app_browser_;
   const extensions::Extension* app_;
 
@@ -257,6 +278,16 @@ class HostedAppTest
   net::EmbeddedTestServer* https_server() { return &https_server_; }
 
  private:
+  class EmptyAcceleratorProvider : public ui::AcceleratorProvider {
+   public:
+    // Don't handle accelerators.
+    bool GetAcceleratorForCommandId(
+        int command_id,
+        ui::Accelerator* accelerator) const override {
+      return false;
+    }
+  } empty_accelerator_provider_;
+
   base::test::ScopedFeatureList scoped_feature_list_;
   AppType app_type_;
 
@@ -350,8 +381,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, WebContentsPrefsReparentWebContents) {
       browser()->tab_strip_model()->GetActiveWebContents();
   CheckWebContentsDoesNotHaveAppPrefs(current_tab);
 
-  ReparentWebContentsIntoAppBrowser(current_tab, app_);
-  ASSERT_NE(browser(), chrome::FindLastActive());
+  Browser* app_browser = ReparentWebContentsIntoAppBrowser(current_tab, app_);
+  ASSERT_NE(browser(), app_browser);
 
   CheckWebContentsHasAppPrefs(
       chrome::FindLastActive()->tab_strip_model()->GetActiveWebContents());
@@ -574,6 +605,27 @@ IN_PROC_BROWSER_TEST_P(HostedAppTest, MixedContentInBookmarkApp) {
 
 using HostedAppPWAOnlyTest = HostedAppTest;
 
+// Tests that the command for OpenActiveTabInPwaWindow is available for secure
+// pages in an app's scope.
+IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
+                       ReparentSecureActiveTabIntoPwaWindow) {
+  ASSERT_TRUE(https_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->Start());
+
+  InstallSecurePWA();
+
+  NavigateToURLAndWait(browser(), GetSecureAppURL());
+  content::WebContents* tab_contents =
+      browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_EQ(tab_contents->GetLastCommittedURL(), GetSecureAppURL());
+
+  EXPECT_TRUE(IsOpenInAppWindowOptionPresent(browser()));
+
+  Browser* app_browser = ReparentSecureActiveTabIntoPwaWindow(browser());
+
+  ASSERT_EQ(app_browser->hosted_app_controller()->GetExtension(), app_);
+}
+
 // Tests that mixed content is not loaded inside PWA windows.
 IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentInPWA) {
   ASSERT_TRUE(https_server()->Start());
@@ -603,6 +655,7 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentOpenInChrome) {
 
   // The WebContents is just reparented, so mixed content is still not loaded.
   CheckMixedContentFailedToLoad(browser());
+  EXPECT_TRUE(IsOpenInAppWindowOptionPresent(browser()));
 
   ui_test_utils::UrlLoadObserver url_observer(
       GetMixedContentAppURL(), content::NotificationService::AllSources());
@@ -611,7 +664,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, MixedContentOpenInChrome) {
 
   // After reloading, mixed content should successfully load because the
   // WebContents is no longer in a PWA window.
+
   CheckMixedContentLoaded(browser());
+  EXPECT_FALSE(IsOpenInAppWindowOptionPresent(browser()));
+  EXPECT_EQ(ReparentSecureActiveTabIntoPwaWindow(browser()), nullptr);
 }
 
 // Tests that when calling ReparentWebContentsIntoAppBrowser, mixed content
@@ -630,10 +686,10 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest,
 
   // A regular tab should be able to load mixed content.
   CheckMixedContentLoaded(browser());
+  EXPECT_FALSE(IsOpenInAppWindowOptionPresent(browser()));
 
-  ReparentWebContentsIntoAppBrowser(tab_contents, app_);
+  Browser* app_browser = ReparentWebContentsIntoAppBrowser(tab_contents, app_);
 
-  Browser* app_browser = chrome::FindLastActive();
   ASSERT_NE(app_browser, browser());
   ASSERT_EQ(GetMixedContentAppURL(), app_browser->tab_strip_model()
                                          ->GetActiveWebContents()

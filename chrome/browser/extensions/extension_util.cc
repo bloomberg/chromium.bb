@@ -20,6 +20,7 @@
 #include "chrome/browser/extensions/scripting_permissions_modifier.h"
 #include "chrome/browser/extensions/shared_module_service.h"
 #include "chrome/browser/profiles/profile.h"
+#include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/webui/extensions/extension_icon_source.h"
 #include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
@@ -349,6 +350,27 @@ const Extension* GetInstalledPwaForUrl(
       return app.get();
   }
   return nullptr;
+}
+
+const Extension* GetPwaForSecureActiveTab(Browser* browser) {
+  switch (browser->toolbar_model()->GetSecurityLevel(true)) {
+    case security_state::SECURITY_LEVEL_COUNT:
+      NOTREACHED();
+      FALLTHROUGH;
+    case security_state::NONE:
+    case security_state::HTTP_SHOW_WARNING:
+    case security_state::DANGEROUS:
+      return nullptr;
+    case security_state::EV_SECURE:
+    case security_state::SECURE:
+    case security_state::SECURE_WITH_POLICY_INSTALLED_CERT:
+      break;
+  }
+  content::WebContents* web_contents =
+      browser->tab_strip_model()->GetActiveWebContents();
+  return GetInstalledPwaForUrl(
+      web_contents->GetBrowserContext(),
+      web_contents->GetMainFrame()->GetLastCommittedURL());
 }
 
 }  // namespace util

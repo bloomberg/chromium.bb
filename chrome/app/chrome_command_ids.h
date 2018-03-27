@@ -72,6 +72,8 @@
 #define IDC_RESTORE_WINDOW              34052
 #endif
 
+#define IDC_OPEN_IN_PWA_WINDOW          34053
+
 // Hosted app commands
 #define IDC_COPY_URL                    34060
 #define IDC_OPEN_IN_CHROME              34061

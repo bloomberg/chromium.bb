@@ -8,6 +8,7 @@
 #include "chrome/browser/ui/extensions/app_launch_params.h"
 #include "url/gurl.h"
 
+class Browser;
 class Profile;
 
 namespace content {
@@ -37,7 +38,13 @@ content::WebContents* OpenAppShortcutWindow(Profile* profile,
 bool CanLaunchViaEvent(const extensions::Extension* extension);
 
 // Reparents |contents| into a new app browser for |extension|.
-void ReparentWebContentsIntoAppBrowser(content::WebContents* contents,
-                                       const extensions::Extension* extension);
+Browser* ReparentWebContentsIntoAppBrowser(
+    content::WebContents* contents,
+    const extensions::Extension* extension);
+
+// Reparents the active tab into a new app browser for the PWA that has the
+// tab's URL in its scope. Does nothing if the tab is not secure or there is no
+// applicable PWA.
+Browser* ReparentSecureActiveTabIntoPwaWindow(Browser* browser);
 
 #endif  // CHROME_BROWSER_UI_EXTENSIONS_APPLICATION_LAUNCH_H_
