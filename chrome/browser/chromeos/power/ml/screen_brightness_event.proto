@@ -8,10 +8,10 @@ package chromeos.power.ml;
 
 option optimize_for = LITE_RUNTIME;
 
-// ScreenBrightness contains features, labels and related information for the
-// Adaptive Screen Brightness project. These will be used for logging and model
-// inference.
-message ScreenBrightness {
+// ScreenBrightnessEvent contains features, labels and related information for
+// the Adaptive Screen Brightness project. These will be used for logging and
+// model inference.
+message ScreenBrightnessEvent {
   message Features {
     // DeviceSpec is fixed per device. It's really important to have these info
     // as perceived brightness varies a lot across different devices.
