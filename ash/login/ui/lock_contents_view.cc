@@ -239,7 +239,7 @@ LockContentsView::LockContentsView(
       keyboard_observer_(this) {
   data_dispatcher_->AddObserver(this);
   display_observer_.Add(display::Screen::GetScreen());
-  Shell::Get()->login_screen_controller()->AddLockScreenAppsFocusObserver(this);
+  Shell::Get()->login_screen_controller()->AddObserver(this);
   Shell::Get()->system_tray_notifier()->AddSystemTrayFocusObserver(this);
   auth_error_bubble_ = std::make_unique<LoginBubble>();
   detachable_base_error_bubble_ = std::make_unique<LoginBubble>();
@@ -282,8 +282,7 @@ LockContentsView::LockContentsView(
 
 LockContentsView::~LockContentsView() {
   data_dispatcher_->RemoveObserver(this);
-  Shell::Get()->login_screen_controller()->RemoveLockScreenAppsFocusObserver(
-      this);
+  Shell::Get()->login_screen_controller()->RemoveObserver(this);
   Shell::Get()->system_tray_notifier()->RemoveSystemTrayFocusObserver(this);
 
   if (unlock_attempt_ > 0) {

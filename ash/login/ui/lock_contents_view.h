@@ -10,7 +10,8 @@
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/login/lock_screen_apps_focus_observer.h"
+#include "ash/login/login_screen_controller.h"
+#include "ash/login/login_screen_controller_observer.h"
 #include "ash/login/ui/login_data_dispatcher.h"
 #include "ash/login/ui/login_display_style.h"
 #include "ash/login/ui/non_accessible_view.h"
@@ -55,7 +56,7 @@ enum class TrayActionState;
 // but it is always shown on the primary display. There is only one instance
 // at a time.
 class ASH_EXPORT LockContentsView : public NonAccessibleView,
-                                    public LockScreenAppsFocusObserver,
+                                    public LoginScreenControllerObserver,
                                     public LoginDataDispatcher::Observer,
                                     public SystemTrayFocusObserver,
                                     public display::DisplayObserver,
@@ -96,7 +97,7 @@ class ASH_EXPORT LockContentsView : public NonAccessibleView,
   void AboutToRequestFocusFromTabTraversal(bool reverse) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
 
-  // LockScreenAppsFocusObserver:
+  // LoginScreenController::Observer:
   void OnFocusLeavingLockScreenApps(bool reverse) override;
 
   // LoginDataDispatcher::Observer:
