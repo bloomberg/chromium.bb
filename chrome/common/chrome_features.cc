@@ -513,11 +513,9 @@ const base::Feature kShowAllDialogsWithViewsToolkit{
 #endif  // defined(OS_MACOSX)
 
 #if defined(OS_ANDROID)
-// Enables separate notification channels in Android O for notifications from
-// different origins, instead of sending them all to a single 'Sites' channel.
-const base::Feature kSiteNotificationChannels{"SiteNotificationChannels",
-                                              base::FEATURE_ENABLED_BY_DEFAULT};
-#endif  // defined(OS_ANDROID)
+const base::Feature kShowTrustedPublisherURL{"ShowTrustedPublisherURL",
+                                             base::FEATURE_DISABLED_BY_DEFAULT};
+#endif
 
 // Alternative to switches::kSitePerProcess, for turning on full site isolation.
 // Launch bug: https://crbug.com/739418.  This is a //chrome-layer feature to
@@ -530,6 +528,13 @@ const base::Feature kSitePerProcess{"site-per-process",
 // lock states.
 const base::Feature kSimplifiedFullscreenUI{"ViewsSimplifiedFullscreenUI",
                                             base::FEATURE_ENABLED_BY_DEFAULT};
+
+#if defined(OS_ANDROID)
+// Enables separate notification channels in Android O for notifications from
+// different origins, instead of sending them all to a single 'Sites' channel.
+const base::Feature kSiteNotificationChannels{"SiteNotificationChannels",
+                                              base::FEATURE_ENABLED_BY_DEFAULT};
+#endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
 // Enables or disables the ability to add a Samba Share to the Files app

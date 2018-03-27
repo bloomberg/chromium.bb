@@ -45,6 +45,7 @@ class TabContentManager;
 
 namespace content {
 class DevToolsAgentHost;
+class NavigationHandle;
 class WebContents;
 }
 
@@ -299,6 +300,8 @@ class TabAndroid : public CoreTabHelperDelegate,
   void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void NavigationEntryChanged(
       const content::EntryChangedDetails& change_details) override;
+  void DidFinishNavigation(
+      content::NavigationHandle* navigation_handle) override;
 
  private:
   class MediaDownloadInProductHelp;

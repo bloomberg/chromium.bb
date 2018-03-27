@@ -2166,6 +2166,8 @@ jumbo_split_static_library("browser") {
       "android/thumbnail/thumbnail.h",
       "android/thumbnail/thumbnail_cache.cc",
       "android/thumbnail/thumbnail_cache.h",
+      "android/trusted_cdn.cc",
+      "android/trusted_cdn.h",
       "android/url_utilities.cc",
       "android/usb/web_usb_chooser_service_android.cc",
       "android/usb/web_usb_chooser_service_android.h",

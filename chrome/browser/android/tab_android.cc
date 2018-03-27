@@ -16,6 +16,7 @@
 #include "chrome/browser/android/compositor/tab_content_manager.h"
 #include "chrome/browser/android/metrics/uma_utils.h"
 #include "chrome/browser/android/tab_web_contents_delegate_android.h"
+#include "chrome/browser/android/trusted_cdn.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/bookmarks/managed_bookmark_service_factory.h"
 #include "chrome/browser/browser_about_handler.h"
@@ -45,7 +46,6 @@
 #include "chrome/browser/ui/startup/bad_flags_prompt.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
-#include "chrome/common/chrome_render_frame.mojom.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -65,6 +65,7 @@
 #include "content/public/browser/devtools_agent_host.h"
 #include "content/public/browser/interstitial_page.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
@@ -101,6 +102,25 @@ using content::NavigationController;
 using content::WebContents;
 using navigation_interception::InterceptNavigationDelegate;
 using navigation_interception::NavigationParams;
+
+namespace {
+
+GURL GetPublisherURLForTrustedCDN(
+    content::NavigationHandle* navigation_handle) {
+  if (!trusted_cdn::IsTrustedCDN(navigation_handle->GetURL()))
+    return GURL();
+
+  const net::HttpResponseHeaders* headers =
+      navigation_handle->GetResponseHeaders();
+  DCHECK(headers);
+  std::string publisher_url;
+  if (!headers->GetNormalizedHeader("x-amp-cache", &publisher_url))
+    return GURL();
+
+  return GURL(publisher_url);
+}
+
+}  // namespace
 
 // This class is created and owned by the MediaDownloadInProductHelpManager.
 class TabAndroid::MediaDownloadInProductHelp
@@ -933,6 +953,25 @@ void TabAndroid::NavigationEntryChanged(
     const content::EntryChangedDetails& change_details) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_Tab_onNavEntryChanged(env, weak_java_tab_.get(env));
+}
+
+void TabAndroid::DidFinishNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Skip subframe, same-document, or non-committed navigations (downloads or
+  // 204/205 responses).
+  if (!navigation_handle->IsInMainFrame() ||
+      navigation_handle->IsSameDocument() ||
+      !navigation_handle->HasCommitted()) {
+    return;
+  }
+
+  GURL publisher_url = GetPublisherURLForTrustedCDN(navigation_handle);
+  JNIEnv* env = base::android::AttachCurrentThread();
+  base::android::ScopedJavaLocalRef<jstring> j_publisher_url;
+  if (publisher_url.is_valid())
+    j_publisher_url = ConvertUTF8ToJavaString(env, publisher_url.spec());
+
+  // TODO(https://crbug.com/814365): Pass publisher URL to Java Tab.
 }
 
 void TabAndroid::ShowMediaDownloadInProductHelp(
