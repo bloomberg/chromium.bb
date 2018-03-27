@@ -14,7 +14,8 @@ MouseWheelPhaseHandler::MouseWheelPhaseHandler(
     RenderWidgetHostViewBase* const host_view)
     : host_view_(host_view),
       mouse_wheel_end_dispatch_timeout_(kDefaultMouseWheelLatchingTransaction),
-      scroll_phase_state_(SCROLL_STATE_UNKNOWN) {}
+      scroll_phase_state_(SCROLL_STATE_UNKNOWN),
+      initial_wheel_modifiers_(0) {}
 
 void MouseWheelPhaseHandler::AddPhaseIfNeededAndScheduleEndEvent(
     blink::WebMouseWheelEvent& mouse_wheel_event,
@@ -48,15 +49,18 @@ void MouseWheelPhaseHandler::AddPhaseIfNeededAndScheduleEndEvent(
         mouse_wheel_event.has_synthetic_phase = true;
         // Break the latching when the location difference between the current
         // and the initial wheel event positions exceeds the maximum allowed
-        // threshold.
-        if (!IsWithinSlopRegion(mouse_wheel_event))
+        // threshold or when the event modifiers have changed.
+        if (!IsWithinSlopRegion(mouse_wheel_event) ||
+            HasDifferentModifiers(mouse_wheel_event)) {
           DispatchPendingWheelEndEvent();
+        }
 
         if (!mouse_wheel_end_dispatch_timer_.IsRunning()) {
           mouse_wheel_event.phase = blink::WebMouseWheelEvent::kPhaseBegan;
           first_wheel_location_ =
               gfx::Vector2dF(mouse_wheel_event.PositionInWidget().x,
                              mouse_wheel_event.PositionInWidget().y);
+          initial_wheel_modifiers_ = mouse_wheel_event.GetModifiers();
           ScheduleMouseWheelEndDispatching(should_route_event,
                                            mouse_wheel_end_dispatch_timeout_);
         } else {  // mouse_wheel_end_dispatch_timer_.IsRunning()
@@ -159,12 +163,25 @@ void MouseWheelPhaseHandler::ScheduleMouseWheelEndDispatching(
 }
 
 bool MouseWheelPhaseHandler::IsWithinSlopRegion(
-    blink::WebMouseWheelEvent wheel_event) const {
+    const blink::WebMouseWheelEvent& wheel_event) const {
+  // This function is called to check if breaking timer-based wheel scroll
+  // latching sequence is needed or not, and timer-based wheel scroll latching
+  // happens only when scroll state is unknown.
   DCHECK(scroll_phase_state_ == SCROLL_STATE_UNKNOWN);
   gfx::Vector2dF current_wheel_location(wheel_event.PositionInWidget().x,
                                         wheel_event.PositionInWidget().y);
   return (current_wheel_location - first_wheel_location_).LengthSquared() <
          kWheelLatchingSlopRegion * kWheelLatchingSlopRegion;
+}
+
+bool MouseWheelPhaseHandler::HasDifferentModifiers(
+    const blink::WebMouseWheelEvent& wheel_event) const {
+  // This function is called to check if breaking timer-based wheel scroll
+  // latching sequence is needed or not, and timer-based wheel scroll latching
+  // happens only when scroll state is unknown.
+  DCHECK(scroll_phase_state_ == SCROLL_STATE_UNKNOWN);
+  DCHECK(scroll_phase_state_ == SCROLL_STATE_UNKNOWN);
+  return wheel_event.GetModifiers() != initial_wheel_modifiers_;
 }
 
 }  // namespace content

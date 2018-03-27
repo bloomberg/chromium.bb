@@ -576,7 +576,10 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
     ImageTransportFactory::Terminate();
   }
 
-  void SetUp() override { SetUpEnvironment(); }
+  void SetUp() override {
+    SetFeatureList();
+    SetUpEnvironment();
+  }
 
   void TearDown() override { TearDownEnvironment(); }
 
@@ -628,6 +631,7 @@ class RenderWidgetHostViewAuraTest : public testing::Test {
 
   void TimerBasedWheelEventPhaseInfo();
   void TimerBasedLatchingBreaksWithMouseMove();
+  void TimerBasedLatchingBreaksWithModifiersChange();
   void TouchpadFlingStartResetsWheelPhaseState();
   void GSBWithTouchSourceStopsWheelScrollSequence();
 
@@ -722,7 +726,7 @@ class RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest
     SetFeatureList();
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         0);
-    RenderWidgetHostViewAuraTest::SetUp();
+    RenderWidgetHostViewAuraTest::SetUpEnvironment();
   }
 };
 
@@ -735,7 +739,7 @@ class RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest
     SetFeatureList();
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         0);
-    RenderWidgetHostViewAuraTest::SetUp();
+    RenderWidgetHostViewAuraTest::SetUpEnvironment();
   }
 };
 
@@ -846,7 +850,7 @@ class RenderWidgetHostViewAuraOverscrollTest
     ui::GestureConfiguration::GetInstance()->set_scroll_debounce_interval_in_ms(
         debounce_interval_in_ms);
 
-    RenderWidgetHostViewAuraTest::SetUp();
+    RenderWidgetHostViewAuraTest::SetUpEnvironment();
 
     view_->SetOverscrollControllerEnabled(true);
     gfx::Size display_size = display::Screen::GetScreen()
@@ -1878,6 +1882,84 @@ TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
 TEST_F(RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest,
        TimerBasedLatchingBreaksWithMouseMove) {
   TimerBasedLatchingBreaksWithMouseMove();
+}
+
+// Tests that latching breaks when the current wheel event has different
+// modifiers.
+void RenderWidgetHostViewAuraTest::
+    TimerBasedLatchingBreaksWithModifiersChange() {
+  // The test is valid only when wheel scroll latching is enabled.
+  if (wheel_scrolling_mode_ == kWheelScrollingModeNone)
+    return;
+
+  // Set the mouse_wheel_phase_handler_ timer timeout to a large value to make
+  // sure that the timer is still running when the wheel event with different
+  // modifiers is sent.
+  view_->event_handler()->set_mouse_wheel_wheel_phase_handler_timeout(
+      TestTimeouts::action_max_timeout());
+
+  view_->InitAsChild(nullptr);
+  view_->Show();
+  sink_->ClearMessages();
+
+  ui::MouseWheelEvent event(gfx::Vector2d(0, 5), gfx::Point(2, 2),
+                            gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0);
+  view_->OnMouseEvent(&event);
+  base::RunLoop().RunUntilIdle();
+  MockWidgetInputHandler::MessageVector events =
+      GetAndResetDispatchedMessages();
+
+  EXPECT_TRUE(events[0]->ToEvent());
+  const WebMouseWheelEvent* wheel_event =
+      static_cast<const WebMouseWheelEvent*>(
+          events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
+  events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  events = GetAndResetDispatchedMessages();
+
+  // Send the second wheel event with the same modifiers. The second wheel event
+  // will still be part of the current scrolling sequence.
+  ui::MouseWheelEvent event2(gfx::Vector2d(0, 5), gfx::Point(2, 2),
+                             gfx::Point(2, 2), ui::EventTimeForNow(), 0, 0);
+  view_->OnMouseEvent(&event2);
+  base::RunLoop().RunUntilIdle();
+  events = GetAndResetDispatchedMessages();
+  if (wheel_scrolling_mode_ == kWheelScrollLatching)
+    EXPECT_EQ("MouseWheel", GetMessageNames(events));
+  else
+    EXPECT_EQ("MouseWheel GestureScrollUpdate", GetMessageNames(events));
+
+  wheel_event = static_cast<const WebMouseWheelEvent*>(
+      events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseChanged, wheel_event->phase);
+  if (wheel_scrolling_mode_ == kWheelScrollLatching)
+    events[0]->ToEvent()->CallCallback(INPUT_EVENT_ACK_STATE_NOT_CONSUMED);
+  events = GetAndResetDispatchedMessages();
+
+  // Send the third wheel event with a ctrl key down. The third wheel event will
+  // break the latching since the event modifiers have changed.
+  ui::MouseWheelEvent event3(gfx::Vector2d(0, 5), gfx::Point(2, 2),
+                             gfx::Point(2, 2), ui::EventTimeForNow(),
+                             ui::EF_CONTROL_DOWN, 0);
+  view_->OnMouseEvent(&event3);
+  base::RunLoop().RunUntilIdle();
+  events = GetAndResetDispatchedMessages();
+  EXPECT_EQ("MouseWheel GestureScrollEnd MouseWheel", GetMessageNames(events));
+  wheel_event = static_cast<const WebMouseWheelEvent*>(
+      events[0]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseEnded, wheel_event->phase);
+
+  wheel_event = static_cast<const WebMouseWheelEvent*>(
+      events[2]->ToEvent()->Event()->web_event.get());
+  EXPECT_EQ(WebMouseWheelEvent::kPhaseBegan, wheel_event->phase);
+}
+TEST_F(RenderWidgetHostViewAuraWheelScrollLatchingEnabledTest,
+       TimerBasedLatchingBreaksWithModifiersChange) {
+  TimerBasedLatchingBreaksWithModifiersChange();
+}
+TEST_F(RenderWidgetHostViewAuraAsyncWheelEventsEnabledTest,
+       TimerBasedLatchingBreaksWithModifiersChange) {
+  TimerBasedLatchingBreaksWithModifiersChange();
 }
 
 // Tests that a gesture fling start with touchpad source resets wheel phase
