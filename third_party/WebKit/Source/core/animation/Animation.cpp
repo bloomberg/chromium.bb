@@ -906,19 +906,19 @@ void Animation::StartAnimationOnCompositor(
 
   bool reversed = playback_rate_ < 0;
 
-  // TODO(crbug.com/791086): Make StartAnimationOnCompositor use WTF::Optional.
-  double start_time = NullValue();
+  WTF::Optional<double> start_time = WTF::nullopt;
   double time_offset = 0;
   if (start_time_) {
     start_time = TimelineInternal()->ZeroTime() + start_time_.value();
     if (reversed)
-      start_time -= EffectEnd() / fabs(playback_rate_);
+      start_time = start_time.value() - (EffectEnd() / fabs(playback_rate_));
   } else {
     time_offset =
         reversed ? EffectEnd() - CurrentTimeInternal() : CurrentTimeInternal();
     time_offset = time_offset / fabs(playback_rate_);
   }
 
+  DCHECK(!start_time || !IsNull(start_time.value()));
   DCHECK_NE(compositor_group_, 0);
   ToKeyframeEffect(content_.Get())
       ->StartAnimationOnCompositor(compositor_group_, start_time, time_offset,
