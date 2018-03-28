@@ -172,14 +172,18 @@ namespace {
 // password pair in |AccountSelectFillData|. "Show all" item is appended.
 NSArray* BuildSuggestions(const AccountSelectFillData& fillData,
                           NSString* formName,
-                          NSString* fieldIdentifier) {
+                          NSString* fieldIdentifier,
+                          NSString* fieldType) {
   base::string16 form_name = base::SysNSStringToUTF16(formName);
   base::string16 field_identifier = base::SysNSStringToUTF16(fieldIdentifier);
+  bool is_password_field = [fieldType isEqualToString:@"password"];
 
   NSMutableArray* suggestions = [NSMutableArray array];
-  if (fillData.IsSuggestionsAvailable(form_name, field_identifier)) {
+  if (fillData.IsSuggestionsAvailable(form_name, field_identifier,
+                                      is_password_field)) {
     std::vector<password_manager::UsernameAndRealm> username_and_realms_ =
-        fillData.RetrieveSuggestions(form_name, field_identifier);
+        fillData.RetrieveSuggestions(form_name, field_identifier,
+                                     is_password_field);
 
     // Add credentials.
     for (const auto& username_and_realm : username_and_realms_) {
@@ -704,35 +708,31 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
 
   bool should_send_request_to_store =
       !sentRequestToStore_ && [type isEqual:@"focus"];
-
-  if ([fieldType isEqual:@"password"]) {
-    if (should_send_request_to_store)
-      [self findPasswordFormsAndSendThemToPasswordStore];
-    // Always display "Show all" on the password field.
-    completion(YES);
-    return;
-  }
+  bool is_password_field = [fieldType isEqual:@"password"];
 
   if (should_send_request_to_store) {
     // Save the completion and go look for suggestions.
     suggestionsAvailableCompletion_ =
         [^(const AccountSelectFillData* fill_data) {
-          if (!fill_data)
+          if (is_password_field) {
+            // Always display "Show all" on the password field.
+            completion(YES);
+          } else if (!fill_data) {
             completion(NO);
-          else {
+          } else {
             completion(fill_data->IsSuggestionsAvailable(
                 base::SysNSStringToUTF16(formName),
-                base::SysNSStringToUTF16(fieldIdentifier)));
+                base::SysNSStringToUTF16(fieldIdentifier), false));
           }
         } copy];
     [self findPasswordFormsAndSendThemToPasswordStore];
     return;
   }
 
-  completion(!fillData_.Empty() &&
+  completion(is_password_field ||
              fillData_.IsSuggestionsAvailable(
                  base::SysNSStringToUTF16(formName),
-                 base::SysNSStringToUTF16(fieldIdentifier)));
+                 base::SysNSStringToUTF16(fieldIdentifier), false));
 }
 
 - (void)retrieveSuggestionsForForm:(NSString*)formName
@@ -744,7 +744,8 @@ bool GetPageURLAndCheckTrustLevel(web::WebState* web_state, GURL* page_url) {
                           webState:(web::WebState*)webState
                  completionHandler:(SuggestionsReadyCompletion)completion {
   DCHECK(GetPageURLAndCheckTrustLevel(webState, nullptr));
-  completion(BuildSuggestions(fillData_, formName, fieldIdentifier), self);
+  completion(BuildSuggestions(fillData_, formName, fieldIdentifier, fieldType),
+             self);
 }
 
 - (void)didSelectSuggestion:(FormSuggestion*)suggestion

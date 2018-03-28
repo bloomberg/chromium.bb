@@ -1183,12 +1183,12 @@ TEST_F(PasswordControllerTest, SuggestionUpdateTests) {
       @"[]=, onkeyup=false, onchange=false"
     },
     {
-      "Should not show password suggestions when focusing password field",
+      "Should show password suggestions when focusing password field",
       @[(@"var evt = document.createEvent('Events');"
           "evt.initEvent('focus', true, true, window, 1);"
           "password_.dispatchEvent(evt);"),
         @""],
-      @[showAll],
+      @[@"user0 ••••••••", @"abc ••••••••", showAll],
       @"[]=, onkeyup=false, onchange=false"
     },
     {
