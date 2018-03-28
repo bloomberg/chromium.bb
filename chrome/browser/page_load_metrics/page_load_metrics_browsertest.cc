@@ -1078,36 +1078,6 @@ IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest,
       "Prerender.none_PrefetchTTFCP.Reference.Cacheable.Visible", 0);
 }
 
-// Flaky on Linux; see https://crbug.com/788651.
-#if defined(OS_LINUX)
-#define MAYBE_CSSTiming DISABLED_CSSTiming
-#else
-#define MAYBE_CSSTiming CSSTiming
-#endif
-IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, MAYBE_CSSTiming) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-
-  auto waiter = CreatePageLoadMetricsWaiter();
-  waiter->AddPageExpectation(TimingField::FIRST_CONTENTFUL_PAINT);
-
-  // Careful: Blink code clamps timestamps to 5us, so any CSS parsing we do here
-  // must take >> 5us, otherwise we'll log 0 for the value and it will remain
-  // unset here.
-  ui_test_utils::NavigateToURL(
-      browser(),
-      embedded_test_server()->GetURL("/page_load_metrics/page_with_css.html"));
-  waiter->Wait();
-
-  histogram_tester_.ExpectTotalCount(internal::kHistogramFirstContentfulPaint,
-                                     1);
-  histogram_tester_.ExpectTotalCount(
-      "PageLoad.CSSTiming.Parse.BeforeFirstContentfulPaint", 1);
-  histogram_tester_.ExpectTotalCount(
-      "PageLoad.CSSTiming.Update.BeforeFirstContentfulPaint", 1);
-  histogram_tester_.ExpectTotalCount(
-      "PageLoad.CSSTiming.ParseAndUpdate.BeforeFirstContentfulPaint", 1);
-}
-
 IN_PROC_BROWSER_TEST_F(PageLoadMetricsBrowserTest, PayloadSize) {
   ASSERT_TRUE(embedded_test_server()->Start());
 
