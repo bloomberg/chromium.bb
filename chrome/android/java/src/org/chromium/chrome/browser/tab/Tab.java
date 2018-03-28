@@ -422,6 +422,11 @@ public class Tab
     private int mBottomControlsHeight;
     private boolean mControlsResizeView;
 
+    /**
+     * The publisher URL for pages hosted on a trusted CDN, or null otherwise.
+     */
+    private @Nullable String mTrustedCdnPublisherUrl;
+
     private GestureStateListener createGestureStateListener() {
         return new GestureStateListener() {
             @Override
@@ -3513,6 +3518,22 @@ public class Tab
         Tracker tracker = TrackerFactory.getTrackerForProfile(Profile.getLastUsedProfile());
         tracker.dismissed(FeatureConstants.MEDIA_DOWNLOAD_FEATURE);
         nativeMediaDownloadInProductHelpDismissed(mNativeTabAndroid);
+    }
+
+    /**
+     * @return The publisher URL if the current page is hosted on a trusted CDN, or null otherwise.
+     */
+    public @Nullable String getTrustedCdnPublisherUrl() {
+        ChromeActivity activity = getActivity();
+        if (activity == null) return null;
+        if (!activity.canShowTrustedCdnPublisherUrl()) return null;
+        if (getSecurityLevel() == ConnectionSecurityLevel.DANGEROUS) return null;
+        return mTrustedCdnPublisherUrl;
+    }
+
+    @CalledByNative
+    private void setTrustedCdnPublisherUrl(@Nullable String url) {
+        mTrustedCdnPublisherUrl = url;
     }
 
     private native void nativeInit();

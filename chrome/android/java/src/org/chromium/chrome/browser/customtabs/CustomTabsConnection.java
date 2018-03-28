@@ -158,6 +158,7 @@ public class CustomTabsConnection {
 
     private static final CustomTabsConnection sInstance =
             AppHooks.get().createCustomTabsConnection();
+    private @Nullable String mTrustedPublisherUrlPackage;
 
     /** Holds the parameters for the current speculation. */
     @VisibleForTesting
@@ -1534,6 +1535,18 @@ public class CustomTabsConnection {
         }
         if (referrer == null) referrer = "";
         return referrer;
+    }
+
+    /**
+     * @return The package name of a client for which the publisher URL from a trusted CDN can be
+     *         shown, or null to disallow showing the publisher URL.
+     */
+    public @Nullable String getTrustedCdnPublisherUrlPackage() {
+        return mTrustedPublisherUrlPackage;
+    }
+
+    void setTrustedPublisherUrlPackageForTest(@Nullable String packageName) {
+        mTrustedPublisherUrlPackage = packageName;
     }
 
     private static void recordSpeculationStatusOnStart(int status) {

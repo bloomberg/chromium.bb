@@ -971,7 +971,8 @@ void TabAndroid::DidFinishNavigation(
   if (publisher_url.is_valid())
     j_publisher_url = ConvertUTF8ToJavaString(env, publisher_url.spec());
 
-  // TODO(https://crbug.com/814365): Pass publisher URL to Java Tab.
+  Java_Tab_setTrustedCdnPublisherUrl(env, weak_java_tab_.get(env),
+                                     j_publisher_url);
 }
 
 void TabAndroid::ShowMediaDownloadInProductHelp(

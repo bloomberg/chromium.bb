@@ -172,6 +172,12 @@ public class UrlBar extends AutocompleteEditText {
         void onTextChangedForAutocomplete();
 
         /**
+         * @return True if the displayed URL should be emphasized, false if the displayed text
+         *         already has formatting for emphasis applied.
+         */
+        boolean shouldEmphasizeUrl();
+
+        /**
          * @return Whether the light security theme should be used.
          */
         boolean shouldEmphasizeHttpsScheme();
@@ -653,11 +659,12 @@ public class UrlBar extends AutocompleteEditText {
      * @param displayText Formatted URL or alternate text for user display. Null if there isn't one.
      * @return Whether the visible text has changed.
      */
-    public boolean setUrl(String pageUrl, String displayText) {
+    public boolean setUrl(String pageUrl, CharSequence displayText) {
         if (!TextUtils.isEmpty(displayText)) {
             try {
                 URL javaUrl = new URL(pageUrl);
-                mFormattedUrlLocation = getUrlContentsPrePath(displayText, javaUrl.getHost());
+                mFormattedUrlLocation =
+                        getUrlContentsPrePath(displayText.toString(), javaUrl.getHost());
                 mOriginalUrlLocation = getUrlContentsPrePath(pageUrl, javaUrl.getHost());
             } catch (MalformedURLException mue) {
                 mOriginalUrlLocation = null;
@@ -686,7 +693,7 @@ public class UrlBar extends AutocompleteEditText {
         }
     }
 
-    public void scrollDisplayTextInternal() {
+    private void scrollDisplayTextInternal() {
         switch (mUrlBarDelegate.getScrollType()) {
             case SCROLL_TO_TLD:
                 scrollToTLD();
@@ -898,14 +905,12 @@ public class UrlBar extends AutocompleteEditText {
      * Emphasize components of the URL for readability.
      */
     public void emphasizeUrl() {
-        Editable url = getText();
-        if (hasFocus()) {
-            return;
-        }
+        if (hasFocus()) return;
 
-        if (url.length() < 1) {
-            return;
-        }
+        if (mUrlBarDelegate != null && !mUrlBarDelegate.shouldEmphasizeUrl()) return;
+
+        Editable url = getText();
+        if (url.length() < 1) return;
 
         Tab currentTab = mUrlBarDelegate.getCurrentTab();
         if (currentTab == null || currentTab.getProfile() == null) return;

@@ -1403,6 +1403,11 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @Override
+    public boolean shouldEmphasizeUrl() {
+        return true;
+    }
+
+    @Override
     public boolean shouldEmphasizeHttpsScheme() {
         if (mToolbarDataProvider.isUsingBrandColor() || mToolbarDataProvider.isIncognito()) {
             return false;

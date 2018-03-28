@@ -13,6 +13,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
 import org.chromium.chrome.browser.locale.LocaleManager;
@@ -30,6 +31,8 @@ import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
+
+import java.net.URI;
 
 /**
  * Contains the data and state for the toolbar.
@@ -305,7 +308,9 @@ public class ToolbarModelImpl
 
     @Override
     public int getSecurityLevel() {
-        return getSecurityLevel(getTab(), isOfflinePage());
+        Tab tab = getTab();
+        return getSecurityLevel(
+                tab, isOfflinePage(), tab == null ? null : tab.getTrustedCdnPublisherUrl());
     }
 
     @Override
@@ -320,11 +325,19 @@ public class ToolbarModelImpl
 
     @VisibleForTesting
     @ConnectionSecurityLevel
-    static int getSecurityLevel(Tab tab, boolean isOfflinePage) {
+    static int getSecurityLevel(Tab tab, boolean isOfflinePage, @Nullable String publisherUrl) {
         if (tab == null || isOfflinePage) {
             return ConnectionSecurityLevel.NONE;
         }
-        return tab.getSecurityLevel();
+
+        int securityLevel = tab.getSecurityLevel();
+        if (publisherUrl != null) {
+            assert securityLevel != ConnectionSecurityLevel.DANGEROUS;
+            return (URI.create(publisherUrl).getScheme().equals(UrlConstants.HTTPS_SCHEME))
+                    ? ConnectionSecurityLevel.SECURE
+                    : ConnectionSecurityLevel.HTTP_SHOW_WARNING;
+        }
+        return securityLevel;
     }
 
     @VisibleForTesting

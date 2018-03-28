@@ -2461,6 +2461,9 @@ Google may use your browsing activity, content on some sites you visit, and othe
       <message name="IDS_BUTTON_NEW_INCOGNITO_TAB" desc="Tooltip for the button to open a new incognito browser tab.">
         New incognito tab
       </message>
+      <message name="IDS_CUSTOM_TAB_AMP_PUBLISHER_URL" desc="Text shown in a Custom Tab toolbar for a web page that is hosted by the Google content delivery network but was originally published by someone else.">
+        From <ph name="PUBLISHER_ORIGIN">%1$s<ex>example.com</ex></ph> – <ph name="BEGIN_DEEMPHASIZED">&lt;bg&gt;</ph>delivered by Google<ph name="END_DEEMPHASIZED">&lt;/bg&gt;</ph>
+      </message>
 
       <!-- Main menu items -->
       <message name="IDS_MENU_UPDATE" desc="Menu item for updating chrome. [CHAR-LIMIT=24]">
