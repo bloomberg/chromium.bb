@@ -7,10 +7,16 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/atomicops.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros_local.h"
+#include "base/no_destructor.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/numerics/safe_math.h"
+#include "base/trace_event/memory_allocator_dump.h"
+#include "base/trace_event/memory_dump_manager.h"
+#include "base/trace_event/memory_dump_provider.h"
+#include "base/trace_event/trace_event.h"
 #include "mojo/edk/system/core.h"
 #include "mojo/edk/system/node_channel.h"
 #include "mojo/edk/system/node_controller.h"
@@ -253,6 +259,47 @@ MojoResult CreateOrExtendSerializedEventMessage(
   return MOJO_RESULT_OK;
 }
 
+base::subtle::Atomic32 g_message_count = 0;
+
+void IncrementMessageCount() {
+  base::subtle::NoBarrier_AtomicIncrement(&g_message_count, 1);
+}
+
+void DecrementMessageCount() {
+  base::subtle::NoBarrier_AtomicIncrement(&g_message_count, -1);
+}
+
+class MessageMemoryDumpProvider : public base::trace_event::MemoryDumpProvider {
+ public:
+  MessageMemoryDumpProvider() {
+    base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
+        this, "MojoMessages", nullptr);
+  }
+
+  ~MessageMemoryDumpProvider() override {
+    base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
+        this);
+  }
+
+ private:
+  // base::trace_event::MemoryDumpProvider:
+  bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
+                    base::trace_event::ProcessMemoryDump* pmd) override {
+    auto* dump = pmd->CreateAllocatorDump("mojo/messages");
+    dump->AddScalar(base::trace_event::MemoryAllocatorDump::kNameObjectCount,
+                    base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                    base::subtle::NoBarrier_Load(&g_message_count));
+    return true;
+  }
+
+  DISALLOW_COPY_AND_ASSIGN(MessageMemoryDumpProvider);
+};
+
+void EnsureMemoryDumpProviderExists() {
+  static base::NoDestructor<MessageMemoryDumpProvider> provider;
+  ALLOW_UNUSED_LOCAL(provider);
+}
+
 }  // namespace
 
 // static
@@ -283,6 +330,8 @@ UserMessageImpl::~UserMessageImpl() {
         Core::Get()->Close(dispatcher.local_handle);
     }
   }
+
+  DecrementMessageCount();
 }
 
 // static
@@ -591,8 +640,10 @@ void UserMessageImpl::FailHandleSerializationForTesting(bool fail) {
 }
 
 UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event)
-    : ports::UserMessage(&kUserMessageTypeInfo),
-      message_event_(message_event) {}
+    : ports::UserMessage(&kUserMessageTypeInfo), message_event_(message_event) {
+  EnsureMemoryDumpProviderExists();
+  IncrementMessageCount();
+}
 
 UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event,
                                  Channel::MessagePtr channel_message,
@@ -608,7 +659,10 @@ UserMessageImpl::UserMessageImpl(ports::UserMessageEvent* message_event,
       header_(header),
       header_size_(header_size),
       user_payload_(user_payload),
-      user_payload_size_(user_payload_size) {}
+      user_payload_size_(user_payload_size) {
+  EnsureMemoryDumpProviderExists();
+  IncrementMessageCount();
+}
 
 bool UserMessageImpl::WillBeRoutedExternally() {
   MojoResult result = SerializeIfNecessary();
