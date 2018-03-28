@@ -8,30 +8,66 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
+#include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_notification_controller.h"
 #include "components/proximity_auth/notification_controller.h"
+#include "ui/message_center/public/cpp/notification.h"
+#include "ui/message_center/public/cpp/notification_delegate.h"
 
 class Profile;
 
 namespace chromeos {
 
-// Responsible for displaying all notifications for EasyUnlock.
 class EasyUnlockNotificationController
     : public proximity_auth::NotificationController {
  public:
-  // Creates an instance of the EasyUnlockNotificationController.
-  static std::unique_ptr<EasyUnlockNotificationController> Create(
-      Profile* profile);
-
-  EasyUnlockNotificationController() {}
-  ~EasyUnlockNotificationController() override {}
+  explicit EasyUnlockNotificationController(Profile* profile);
+  ~EasyUnlockNotificationController() override;
 
   // proximity_auth::NotificationController:
-  void ShowChromebookAddedNotification() override = 0;
-  void ShowPairingChangeNotification() override = 0;
+  void ShowChromebookAddedNotification() override;
+  void ShowPairingChangeNotification() override;
   void ShowPairingChangeAppliedNotification(
-      const std::string& phone_name) override = 0;
-  void ShowPromotionNotification() override = 0;
+      const std::string& phone_name) override;
+  void ShowPromotionNotification() override;
+
+ protected:
+  // Exposed for testing.
+  virtual void LaunchEasyUnlockSettings();
+  virtual void LockScreen();
+
+ private:
+  // NotificationDelegate implementation for handling click events.
+  class NotificationDelegate : public message_center::NotificationDelegate {
+   public:
+    NotificationDelegate(const std::string& notification_id,
+                         const base::WeakPtr<EasyUnlockNotificationController>&
+                             notification_controller);
+
+    // message_center::NotificationDelegate:
+    void Click() override;
+    void ButtonClick(int button_index) override;
+
+   private:
+    ~NotificationDelegate() override;
+
+    std::string notification_id_;
+    base::WeakPtr<EasyUnlockNotificationController> notification_controller_;
+
+    DISALLOW_COPY_AND_ASSIGN(NotificationDelegate);
+  };
+
+  // Displays the notification to the user.
+  void ShowNotification(
+      std::unique_ptr<message_center::Notification> notification);
+
+  Profile* profile_;
+
+  base::WeakPtrFactory<EasyUnlockNotificationController> weak_ptr_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(EasyUnlockNotificationController);
 };
 
 }  // namespace chromeos
