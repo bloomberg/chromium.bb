@@ -26,7 +26,6 @@ import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
 import org.chromium.components.offline_items_collection.OfflineItemFilter;
 import org.chromium.components.offline_items_collection.OfflineItemState;
-import org.chromium.components.offline_items_collection.VisualsCallback;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.ui.widget.Toast;
 
@@ -177,9 +176,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
     /** @return The file extension type. See list at the top of the file. */
     public abstract int getFileExtensionType();
-
-    /** Requests the backend provider to provide thumbnail for this item. */
-    public abstract void requestVisualsFromProvider(VisualsCallback callback);
 
     /** @return How much of the download has completed, or null if there is no progress. */
     abstract Progress getDownloadProgress();
@@ -354,9 +350,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
-        public void requestVisualsFromProvider(VisualsCallback callback) {}
-
-        @Override
         public Progress getDownloadProgress() {
             return mItem.getDownloadInfo().getProgress();
         }
@@ -509,6 +502,7 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         public String getId() {
+            // TODO(shaktisahu): May be change this to mItem.id.toString().
             return mItem.id.id;
         }
 
@@ -563,11 +557,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         public int getFileExtensionType() {
             // TODO(shaktisahu): Fix this.
             return FILE_EXTENSION_OTHER;
-        }
-
-        @Override
-        public void requestVisualsFromProvider(VisualsCallback callback) {
-            getOfflineContentProvider().getVisualsForItem(mItem.id, callback);
         }
 
         @Override
