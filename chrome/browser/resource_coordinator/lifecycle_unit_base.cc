@@ -5,6 +5,7 @@
 #include "chrome/browser/resource_coordinator/lifecycle_unit_base.h"
 
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
+#include "chrome/browser/resource_coordinator/time.h"
 
 namespace resource_coordinator {
 
@@ -18,6 +19,10 @@ int32_t LifecycleUnitBase::GetID() const {
 
 LifecycleUnit::State LifecycleUnitBase::GetState() const {
   return state_;
+}
+
+base::TimeTicks LifecycleUnitBase::GetLastVisibilityChangeTime() const {
+  return last_visibility_change_time_;
 }
 
 void LifecycleUnitBase::AddObserver(LifecycleUnitObserver* observer) {
@@ -40,6 +45,7 @@ void LifecycleUnitBase::OnLifecycleUnitVisibilityChanged(
     content::Visibility visibility) {
   for (auto& observer : observers_)
     observer.OnLifecycleUnitVisibilityChanged(this, visibility);
+  last_visibility_change_time_ = NowTicks();
 }
 
 void LifecycleUnitBase::OnLifecycleUnitDestroyed() {
