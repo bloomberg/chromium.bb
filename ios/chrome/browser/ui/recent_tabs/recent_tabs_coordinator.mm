@@ -49,10 +49,22 @@
   recentTabsTableViewController.handsetCommandHandler = self;
 
   // Initialize and configure RecentTabsMediator.
-  self.mediator = [[RecentTabsMediator alloc] init];
-  self.mediator.browserState = self.browserState;
-  self.mediator.consumer = recentTabsTableViewController;
-  [self.mediator initObservers];
+
+  // TODO(crbug.com/825431): If BVC's clearPresentedState is ever called (such
+  // as in tearDown after a failed egtest), then this coordinator is left in a
+  // started state even though its corresponding VC is no longer on screen.
+  // That causes issues when the coordinator is started again and we destroy the
+  // old mediator without disconnecting it first.  Temporarily work around these
+  // issues by only creating the mediator if it doesn't already exist.  A
+  // longer-term solution will require finding a way to stop this coordinator so
+  // that the mediator is properly disconnected and destroyed and does not live
+  // longer than its associated VC.
+  if (!self.mediator) {
+    self.mediator = [[RecentTabsMediator alloc] init];
+    self.mediator.browserState = self.browserState;
+    self.mediator.consumer = recentTabsTableViewController;
+    [self.mediator initObservers];
+  }
   [self.mediator reloadSessions];
 
   // Initialize and configure RecentTabsViewController.
