@@ -237,7 +237,7 @@ AbortCallback SmbFileSystem::ExecuteAction(
     const std::vector<base::FilePath>& entry_paths,
     const std::string& action_id,
     storage::AsyncFileUtil::StatusCallback callback) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return CreateAbortCallback();
 }
 
@@ -413,7 +413,7 @@ AbortCallback SmbFileSystem::AddWatcher(
     const storage::WatcherManager::NotificationCallback&
         notification_callback) {
   // Watchers are not supported.
-  NOTIMPLEMENTED();
+  NOTREACHED();
   std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
   return CreateAbortCallback();
 }
@@ -424,7 +424,7 @@ void SmbFileSystem::RemoveWatcher(
     bool recursive,
     storage::AsyncFileUtil::StatusCallback callback) {
   // Watchers are not supported.
-  NOTIMPLEMENTED();
+  NOTREACHED();
   std::move(callback).Run(base::File::FILE_ERROR_INVALID_OPERATION);
 }
 
@@ -434,29 +434,29 @@ SmbFileSystem::GetFileSystemInfo() const {
 }
 
 file_system_provider::RequestManager* SmbFileSystem::GetRequestManager() {
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return NULL;
 }
 
 file_system_provider::Watchers* SmbFileSystem::GetWatchers() {
   // Watchers are not supported.
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return nullptr;
 }
 
 const file_system_provider::OpenedFiles& SmbFileSystem::GetOpenedFiles() const {
-  NOTIMPLEMENTED();
+  NOTREACHED();
   return opened_files_;
 }
 
 void SmbFileSystem::AddObserver(
     file_system_provider::ProvidedFileSystemObserver* observer) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void SmbFileSystem::RemoveObserver(
     file_system_provider::ProvidedFileSystemObserver* observer) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void SmbFileSystem::SmbFileSystem::Notify(
@@ -467,11 +467,11 @@ void SmbFileSystem::SmbFileSystem::Notify(
         changes,
     const std::string& tag,
     storage::AsyncFileUtil::StatusCallback callback) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void SmbFileSystem::Configure(storage::AsyncFileUtil::StatusCallback callback) {
-  NOTIMPLEMENTED();
+  NOTREACHED();
 }
 
 void SmbFileSystem::HandleRequestReadDirectoryCallback(
