@@ -36,22 +36,6 @@ OSStatus AudioDeviceDuck(AudioDeviceID inDevice,
                          Float32 inRampDuration) __attribute__((weak_import));
 }
 
-void UpmixMonoToStereoInPlace(AudioBuffer* audio_buffer, int bytes_per_sample) {
-  constexpr int channels = 2;
-  const int total_bytes = audio_buffer->mDataByteSize;
-  const int frames = total_bytes / bytes_per_sample / channels;
-  char* byte_ptr = reinterpret_cast<char*>(audio_buffer->mData);
-  for (int i = frames - 1; i > 0; --i) {
-    int in_offset = (bytes_per_sample * i);
-    int out_offset = (channels * bytes_per_sample * i);
-    for (int b = 0; b != bytes_per_sample; ++b) {
-      const char byte = byte_ptr[in_offset + b];
-      byte_ptr[out_offset + bytes_per_sample + b] = byte;
-      byte_ptr[out_offset + bytes_per_sample * 2 + b] = byte;
-    }
-  }
-}
-
 }  // namespace
 
 namespace media {
@@ -1366,6 +1350,43 @@ void AUAudioInputStream::ReportAndResetStats() {
   last_number_of_frames_ = 0;
   total_lost_frames_ = 0;
   largest_glitch_frames_ = 0;
+}
+
+// TODO(ossu): Ideally, we'd just use the mono stream directly. However, since
+// mono or stereo (may) depend on if we want to run the echo canceller, and
+// since we can't provide two sets of AudioParameters for a device, this is the
+// best we can do right now.
+//
+// The algorithm works by copying a sample at offset N to 2*N and 2*N + 1, e.g.:
+//  ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// | a1 | a2 | a3 | b1 | b2 | b3 | c1 | c2 | c3 | -- | -- | -- | -- | -- | ...
+//  ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+//  into
+//  ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+// | a1 | a2 | a3 | a1 | a2 | a3 | b1 | b2 | b3 | b1 | b2 | b3 | c1 | c2 | ...
+//  ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ---- ----
+//
+// To support various different sample sizes, this is done byte-by-byte. Only
+// the first half of the buffer will be used as input. It is expected to contain
+// mono audio. The second half is output only. Since the data is expanding, the
+// algorithm starts copying from the last sample. Otherwise it would overwrite
+// data not already copied.
+void AUAudioInputStream::UpmixMonoToStereoInPlace(AudioBuffer* audio_buffer,
+                                                  int bytes_per_sample) {
+  constexpr int channels = 2;
+  DCHECK_EQ(audio_buffer->mNumberChannels, static_cast<UInt32>(channels));
+  const int total_bytes = audio_buffer->mDataByteSize;
+  const int frames = total_bytes / bytes_per_sample / channels;
+  char* byte_ptr = reinterpret_cast<char*>(audio_buffer->mData);
+  for (int i = frames - 1; i >= 0; --i) {
+    int in_offset = (bytes_per_sample * i);
+    int out_offset = (channels * bytes_per_sample * i);
+    for (int b = 0; b < bytes_per_sample; ++b) {
+      const char byte = byte_ptr[in_offset + b];
+      byte_ptr[out_offset + b] = byte;
+      byte_ptr[out_offset + bytes_per_sample + b] = byte;
+    }
+  }
 }
 
 }  // namespace media

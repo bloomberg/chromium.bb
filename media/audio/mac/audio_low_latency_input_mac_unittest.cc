@@ -285,4 +285,54 @@ TEST_F(MacAudioInputTest, DISABLED_AUAudioInputStreamRecordToFile) {
   ais->Close();
 }
 
+TEST(MacAudioInputUpmixerTest, Upmix16bit) {
+  constexpr int kNumFrames = 512;
+  constexpr int kBytesPerSample = sizeof(int16_t);
+  int16_t mono[kNumFrames];
+  int16_t stereo[kNumFrames * 2];
+
+  // Fill the mono buffer and the first half of the stereo buffer with data
+  for (int i = 0; i != kNumFrames; ++i) {
+    mono[i] = i;
+    stereo[i] = i;
+  }
+
+  AudioBuffer audio_buffer;
+  audio_buffer.mNumberChannels = 2;
+  audio_buffer.mDataByteSize = kNumFrames * kBytesPerSample * 2;
+  audio_buffer.mData = stereo;
+  AUAudioInputStream::UpmixMonoToStereoInPlace(&audio_buffer, kBytesPerSample);
+
+  // Assert that the samples have been distributed properly
+  for (int i = 0; i != kNumFrames; ++i) {
+    ASSERT_EQ(mono[i], stereo[i * 2]);
+    ASSERT_EQ(mono[i], stereo[i * 2 + 1]);
+  }
+}
+
+TEST(MacAudioInputUpmixerTest, Upmix32bit) {
+  constexpr int kNumFrames = 512;
+  constexpr int kBytesPerSample = sizeof(int32_t);
+  int32_t mono[kNumFrames];
+  int32_t stereo[kNumFrames * 2];
+
+  // Fill the mono buffer and the first half of the stereo buffer with data
+  for (int i = 0; i != kNumFrames; ++i) {
+    mono[i] = i;
+    stereo[i] = i;
+  }
+
+  AudioBuffer audio_buffer;
+  audio_buffer.mNumberChannels = 2;
+  audio_buffer.mDataByteSize = kNumFrames * kBytesPerSample * 2;
+  audio_buffer.mData = stereo;
+  AUAudioInputStream::UpmixMonoToStereoInPlace(&audio_buffer, kBytesPerSample);
+
+  // Assert that the samples have been distributed properly
+  for (int i = 0; i != kNumFrames; ++i) {
+    ASSERT_EQ(mono[i], stereo[i * 2]);
+    ASSERT_EQ(mono[i], stereo[i * 2 + 1]);
+  }
+}
+
 }  // namespace media

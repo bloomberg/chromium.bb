@@ -98,6 +98,11 @@ class MEDIA_EXPORT AUAudioInputStream
   }
   AudioUnit audio_unit() const { return audio_unit_; }
 
+  // Fan out the data from the first half of audio_buffer into interleaved
+  // stereo across the whole of audio_buffer. Public for testing only.
+  static void UpmixMonoToStereoInPlace(AudioBuffer* audio_buffer,
+                                       int bytes_per_sample);
+
  private:
   bool OpenAUHAL();
   bool OpenVoiceProcessingAU();
