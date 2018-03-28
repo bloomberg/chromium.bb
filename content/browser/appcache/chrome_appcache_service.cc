@@ -75,7 +75,7 @@ void ChromeAppCacheService::DeleteOnCorrectThread() const {
     delete this;
     return;
   }
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+  if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
     return;
   }

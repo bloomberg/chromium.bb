@@ -183,7 +183,7 @@ ChromeBrowserStateIOData::ChromeBrowserStateIOData(
 }
 
 ChromeBrowserStateIOData::~ChromeBrowserStateIOData() {
-  if (web::WebThread::IsMessageLoopValid(web::WebThread::IO))
+  if (web::WebThread::IsThreadInitialized(web::WebThread::IO))
     DCHECK_CURRENTLY_ON(web::WebThread::IO);
 
   // Pull the contents of the request context maps onto the stack for sanity
@@ -466,7 +466,7 @@ void ChromeBrowserStateIOData::ShutdownOnUIThread(
     chrome_http_user_agent_settings_->CleanupOnUIThread();
 
   if (!context_getters->empty()) {
-    if (web::WebThread::IsMessageLoopValid(web::WebThread::IO)) {
+    if (web::WebThread::IsThreadInitialized(web::WebThread::IO)) {
       web::WebThread::PostTask(web::WebThread::IO, FROM_HERE,
                                base::Bind(&NotifyContextGettersOfShutdownOnIO,
                                           base::Passed(&context_getters)));

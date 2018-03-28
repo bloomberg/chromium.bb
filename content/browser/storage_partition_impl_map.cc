@@ -546,7 +546,7 @@ void StoragePartitionImplMap::PostCreateInitialization(
   }
 
   // Check first to avoid memory leak in unittests.
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+  if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
         base::BindOnce(

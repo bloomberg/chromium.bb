@@ -114,7 +114,7 @@ void PredictorDatabaseInternal::Initialize() {
 
 void PredictorDatabaseInternal::SetCancelled() {
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
 
   autocomplete_table_->SetCancelled();
   resource_prefetch_tables_->SetCancelled();

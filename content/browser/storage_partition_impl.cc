@@ -581,7 +581,7 @@ std::unique_ptr<StoragePartitionImpl> StoragePartitionImpl::Create(
   // Ensure that these methods are called on the UI thread, except for
   // unittests where a UI thread might not have been created.
   DCHECK(BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
 
   base::FilePath partition_path =
       context->GetPath().Append(relative_partition_path);

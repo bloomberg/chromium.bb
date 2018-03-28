@@ -285,7 +285,7 @@ net::URLRequestContextGetter* IOSIOThread::system_url_request_context_getter() {
   DCHECK_CURRENTLY_ON(web::WebThread::UI);
   if (!system_url_request_context_getter_.get()) {
     // If we're in unit_tests, IOSIOThread may not be run.
-    if (!web::WebThread::IsMessageLoopValid(web::WebThread::IO))
+    if (!web::WebThread::IsThreadInitialized(web::WebThread::IO))
       return nullptr;
     system_url_request_context_getter_ =
         new SystemURLRequestContextGetter(this);

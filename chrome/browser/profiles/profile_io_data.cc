@@ -666,7 +666,7 @@ ProfileIOData::ProfileIOData(Profile::ProfileType profile_type)
 }
 
 ProfileIOData::~ProfileIOData() {
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO))
+  if (BrowserThread::IsThreadInitialized(BrowserThread::IO))
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   // Pull the contents of the request context maps onto the stack for sanity
@@ -1441,7 +1441,7 @@ void ProfileIOData::ShutdownOnUIThread(
 #endif
 
   if (!context_getters->empty()) {
-    if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+    if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&NotifyContextGettersOfShutdownOnIO,

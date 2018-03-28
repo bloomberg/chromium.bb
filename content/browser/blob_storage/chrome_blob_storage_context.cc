@@ -98,7 +98,8 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
             blob.get()));
 
     // Check first to avoid memory leak in unittests.
-    bool io_thread_valid = BrowserThread::IsMessageLoopValid(BrowserThread::IO);
+    bool io_thread_valid =
+        BrowserThread::IsThreadInitialized(BrowserThread::IO);
 
     // Resolve our storage directories.
     FilePath blob_storage_parent =
@@ -195,7 +196,7 @@ std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
 ChromeBlobStorageContext::~ChromeBlobStorageContext() {}
 
 void ChromeBlobStorageContext::DeleteOnCorrectThread() const {
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO) &&
+  if (BrowserThread::IsThreadInitialized(BrowserThread::IO) &&
       !BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
     return;
