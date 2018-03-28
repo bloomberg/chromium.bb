@@ -30,7 +30,6 @@
 
 #include "public/web/WebInputElement.h"
 
-#include "core/dom/ElementShadow.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/html/forms/HTMLDataListElement.h"
 #include "core/html/forms/HTMLDataListOptionsCollection.h"

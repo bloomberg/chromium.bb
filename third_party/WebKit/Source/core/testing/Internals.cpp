@@ -45,8 +45,6 @@
 #include "core/dom/DOMStringList.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ElementShadow.h"
-#include "core/dom/ElementShadowV0.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FlatTreeTraversal.h"
 #include "core/dom/Iterator.h"
@@ -54,6 +52,7 @@
 #include "core/dom/PseudoElement.h"
 #include "core/dom/Range.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/ShadowRootV0.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TreeScope.h"
 #include "core/dom/ViewportDescription.h"
@@ -596,7 +595,7 @@ bool Internals::hasShadowInsertionPoint(const Node* root,
         kInvalidAccessError, "The node argument is not a shadow root.");
     return false;
   }
-  return ToShadowRoot(root)->ContainsShadowElements();
+  return ToShadowRoot(root)->V0().ContainsShadowElements();
 }
 
 bool Internals::hasContentElement(const Node* root,
@@ -607,7 +606,7 @@ bool Internals::hasContentElement(const Node* root,
         kInvalidAccessError, "The node argument is not a shadow root.");
     return false;
   }
-  return ToShadowRoot(root)->ContainsContentElements();
+  return ToShadowRoot(root)->V0().ContainsContentElements();
 }
 
 size_t Internals::countElementShadow(const Node* root,

@@ -28,10 +28,9 @@
 
 #include "core/css/SelectorChecker.h"
 #include "core/css/parser/CSSParser.h"
-#include "core/dom/ElementShadow.h"
-#include "core/dom/ElementShadowV0.h"
 #include "core/dom/QualifiedName.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/ShadowRootV0.h"
 #include "core/frame/UseCounter.h"
 #include "core/html_names.h"
 
@@ -69,8 +68,8 @@ void HTMLContentElement::ParseAttribute(
     const AttributeModificationParams& params) {
   if (params.name == selectAttr) {
     if (ShadowRoot* root = ContainingShadowRoot()) {
-      if (!root->IsV1() && root->Owner())
-        root->Owner()->V0().WillAffectSelector();
+      if (!root->IsV1())
+        root->V0().WillAffectSelector();
     }
     should_parse_select_ = true;
     select_ = params.new_value;

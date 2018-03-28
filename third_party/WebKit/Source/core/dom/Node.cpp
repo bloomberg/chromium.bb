@@ -42,7 +42,6 @@
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementRareData.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/FlatTreeTraversal.h"
@@ -792,10 +791,8 @@ void Node::UpdateDistribution() {
 void Node::RecalcDistribution() {
   DCHECK(ChildNeedsDistributionRecalc());
 
-  if (IsElementNode()) {
-    if (ElementShadow* shadow = ToElement(this)->Shadow())
-      shadow->DistributeIfNeeded();
-  }
+  if (GetShadowRoot())
+    GetShadowRoot()->DistributeIfNeeded();
 
   DCHECK(ScriptForbiddenScope::IsScriptForbidden());
   for (Node* child = firstChild(); child; child = child->nextSibling()) {
@@ -861,7 +858,7 @@ static ContainerNode* GetReattachParent(Node& node) {
       return slot;
   }
   if (node.IsInV0ShadowTree() || node.IsChildOfV0ShadowHost()) {
-    if (ShadowWhereNodeCanBeDistributedForV0(node)) {
+    if (ShadowRootWhereNodeCanBeDistributedForV0(node)) {
       if (V0InsertionPoint* insertion_point =
               const_cast<V0InsertionPoint*>(ResolveReprojection(&node))) {
         return insertion_point;
@@ -1199,19 +1196,19 @@ bool Node::IsInV0ShadowTree() const {
   return shadow_root && !shadow_root->IsV1();
 }
 
-ElementShadow* Node::ParentElementShadow() const {
+ShadowRoot* Node::ParentElementShadowRoot() const {
   Element* parent = parentElement();
-  return parent ? parent->Shadow() : nullptr;
+  return parent ? parent->GetShadowRoot() : nullptr;
 }
 
 bool Node::IsChildOfV1ShadowHost() const {
-  ElementShadow* parent_shadow = ParentElementShadow();
-  return parent_shadow && parent_shadow->IsV1();
+  ShadowRoot* parent_shadow_root = ParentElementShadowRoot();
+  return parent_shadow_root && parent_shadow_root->IsV1();
 }
 
 bool Node::IsChildOfV0ShadowHost() const {
-  ElementShadow* parent_shadow = ParentElementShadow();
-  return parent_shadow && !parent_shadow->IsV1();
+  ShadowRoot* parent_shadow_root = ParentElementShadowRoot();
+  return parent_shadow_root && !parent_shadow_root->IsV1();
 }
 
 ShadowRoot* Node::V1ShadowRootOfParent() const {

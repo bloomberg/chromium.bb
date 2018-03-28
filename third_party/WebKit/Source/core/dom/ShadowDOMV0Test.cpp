@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/dom/ElementShadow.h"
-#include "core/dom/ElementShadowV0.h"
+#include "core/dom/ShadowRoot.h"
+#include "core/dom/ShadowRootV0.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/testing/sim/SimRequest.h"
 #include "core/testing/sim/SimTest.h"
@@ -14,21 +14,26 @@ namespace {
 
 bool HasSelectorForIdInShadow(Element* host, const AtomicString& id) {
   DCHECK(host);
-  return host->Shadow()->V0().EnsureSelectFeatureSet().HasSelectorForId(id);
+  return host->GetShadowRoot()->V0().EnsureSelectFeatureSet().HasSelectorForId(
+      id);
 }
 
 bool HasSelectorForClassInShadow(Element* host,
                                  const AtomicString& class_name) {
   DCHECK(host);
-  return host->Shadow()->V0().EnsureSelectFeatureSet().HasSelectorForClass(
-      class_name);
+  return host->GetShadowRoot()
+      ->V0()
+      .EnsureSelectFeatureSet()
+      .HasSelectorForClass(class_name);
 }
 
 bool HasSelectorForAttributeInShadow(Element* host,
                                      const AtomicString& attribute_name) {
   DCHECK(host);
-  return host->Shadow()->V0().EnsureSelectFeatureSet().HasSelectorForAttribute(
-      attribute_name);
+  return host->GetShadowRoot()
+      ->V0()
+      .EnsureSelectFeatureSet()
+      .HasSelectorForAttribute(attribute_name);
 }
 
 class ShadowDOMVTest : public SimTest {};

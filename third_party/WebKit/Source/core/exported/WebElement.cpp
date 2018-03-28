@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ExceptionState.h"
 #include "core/dom/Element.h"
-#include "core/dom/ElementShadow.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/fullscreen/Fullscreen.h"
 #include "core/html/custom/CustomElement.h"

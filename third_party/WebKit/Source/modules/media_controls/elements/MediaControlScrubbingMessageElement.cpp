@@ -5,7 +5,7 @@
 #include "modules/media_controls/elements/MediaControlScrubbingMessageElement.h"
 
 #include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ElementShadow.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html/media/HTMLMediaElement.h"
 #include "modules/media_controls/MediaControlsResourceLoader.h"

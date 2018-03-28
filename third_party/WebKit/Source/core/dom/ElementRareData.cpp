@@ -94,7 +94,7 @@ ElementRareData::EnsureResizeObserverData() {
 void ElementRareData::TraceAfterDispatch(blink::Visitor* visitor) {
   visitor->Trace(dataset_);
   visitor->Trace(class_list_);
-  visitor->Trace(shadow_);
+  visitor->Trace(shadow_root_);
   visitor->Trace(attribute_map_);
   visitor->Trace(attr_node_list_);
   visitor->Trace(element_animations_);
@@ -117,7 +117,7 @@ void ElementRareData::TraceWrappersAfterDispatch(
     }
   }
   visitor->TraceWrappers(dataset_);
-  visitor->TraceWrappers(shadow_);
+  visitor->TraceWrappers(shadow_root_);
   visitor->TraceWrappers(class_list_);
   visitor->TraceWrappers(attribute_map_);
   visitor->TraceWrappers(accessible_node_);

@@ -10,7 +10,6 @@
 #include "core/dom/CharacterData.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ShadowRootInit.h"
 #include "core/editing/EditingUtilities.h"

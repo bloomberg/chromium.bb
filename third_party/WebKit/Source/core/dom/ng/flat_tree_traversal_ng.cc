@@ -27,7 +27,6 @@
 #include "core/dom/ng/flat_tree_traversal_ng.h"
 
 #include "core/dom/Element.h"
-#include "core/dom/ElementShadow.h"
 #include "core/html/HTMLShadowElement.h"
 #include "core/html/HTMLSlotElement.h"
 
@@ -113,7 +112,7 @@ Node* FlatTreeTraversalNg::TraverseSiblings(const Node& node,
   if (node.IsChildOfV1ShadowHost())
     return TraverseSiblingsForV1HostChild(node, direction);
 
-  if (ShadowWhereNodeCanBeDistributedForV0(node))
+  if (ShadowRootWhereNodeCanBeDistributedForV0(node))
     return TraverseSiblingsForV0Distribution(node, direction);
 
   Node* sibling = direction == kTraversalDirectionForward
@@ -182,20 +181,20 @@ ContainerNode* FlatTreeTraversalNg::TraverseParent(
   if (CanBeDistributedToV0InsertionPoint(node))
     return TraverseParentForV0(node, details);
 
-  DCHECK(!ShadowWhereNodeCanBeDistributedForV0(node));
+  DCHECK(!ShadowRootWhereNodeCanBeDistributedForV0(node));
   return TraverseParentOrHost(node);
 }
 
 ContainerNode* FlatTreeTraversalNg::TraverseParentForV0(
     const Node& node,
     ParentTraversalDetails* details) {
-  if (ShadowWhereNodeCanBeDistributedForV0(node)) {
+  if (ShadowRootWhereNodeCanBeDistributedForV0(node)) {
     if (const V0InsertionPoint* insertion_point = ResolveReprojection(&node)) {
       if (details)
         details->DidTraverseInsertionPoint(insertion_point);
       // The node is distributed. But the distribution was stopped at this
       // insertion point.
-      if (ShadowWhereNodeCanBeDistributedForV0(*insertion_point))
+      if (ShadowRootWhereNodeCanBeDistributedForV0(*insertion_point))
         return nullptr;
       return TraverseParent(*insertion_point);
     }

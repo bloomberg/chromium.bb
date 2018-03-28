@@ -33,11 +33,10 @@
 #include <array>
 #include "core/css/StyleChangeReason.h"
 #include "core/css/StyleEngine.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/NodeComputedStyle.h"
 #include "core/dom/NodeTraversal.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/SlotAssignment.h"
-#include "core/dom/V0InsertionPoint.h"
 #include "core/dom/WhitespaceAttacher.h"
 #include "core/dom/events/Event.h"
 #include "core/frame/UseCounter.h"
@@ -212,7 +211,7 @@ void HTMLSlotElement::RecalcDistributedNodes() {
     }
 
     if (IsChildOfV1ShadowHost())
-      ParentElementShadow()->SetNeedsDistributionRecalc();
+      ParentElementShadowRoot()->SetNeedsDistributionRecalc();
   }
 }
 
@@ -395,7 +394,6 @@ Node::InsertionNotificationRequest HTMLSlotElement::InsertedInto(
     ShadowRoot* root = ContainingShadowRoot();
     DCHECK(root);
     DCHECK(root->IsV1());
-    DCHECK(root->Owner());
     if (root == insertion_point->ContainingShadowRoot()) {
       // This slot is inserted into the same tree of |insertion_point|
       root->DidAddSlot(*this);
@@ -562,7 +560,7 @@ void HTMLSlotElement::
   if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
     ContainingShadowRoot()->GetSlotAssignment().SetNeedsAssignmentRecalc();
   else
-    ContainingShadowRoot()->Owner()->SetNeedsDistributionRecalc();
+    ContainingShadowRoot()->SetNeedsDistributionRecalc();
 }
 
 void HTMLSlotElement::DidSlotChange(SlotChangeType slot_change_type) {

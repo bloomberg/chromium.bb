@@ -28,22 +28,22 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef ShadowRootRareDataV0_h
-#define ShadowRootRareDataV0_h
+#ifndef ShadowRootV0_h
+#define ShadowRootV0_h
 
+#include "core/css/SelectRuleFeatureSet.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "platform/wtf/Vector.h"
 
 namespace blink {
 
-class ShadowRootRareDataV0 : public GarbageCollected<ShadowRootRareDataV0> {
+class CORE_EXPORT ShadowRootV0 final
+    : public GarbageCollectedFinalized<ShadowRootV0> {
  public:
-  ShadowRootRareDataV0()
-      : descendant_shadow_element_count_(0),
-        descendant_content_element_count_(0) {}
+  using NodeToDestinationInsertionPoints =
+      HeapHashMap<Member<const Node>, Member<DestinationInsertionPoints>>;
 
-  void DidAddInsertionPoint(V0InsertionPoint*);
-  void DidRemoveInsertionPoint(V0InsertionPoint*);
+  explicit ShadowRootV0(ShadowRoot& shadow_root) : shadow_root_(&shadow_root) {}
 
   bool ContainsShadowElements() const {
     return descendant_shadow_element_count_;
@@ -51,34 +51,62 @@ class ShadowRootRareDataV0 : public GarbageCollected<ShadowRootRareDataV0> {
   bool ContainsContentElements() const {
     return descendant_content_element_count_;
   }
+  bool ContainsInsertionPoints() const {
+    return ContainsShadowElements() || ContainsContentElements();
+  }
 
   unsigned DescendantShadowElementCount() const {
     return descendant_shadow_element_count_;
   }
+  void DidAddInsertionPoint(V0InsertionPoint*);
+  void DidRemoveInsertionPoint(V0InsertionPoint*);
 
-  const HeapVector<Member<V0InsertionPoint>>& DescendantInsertionPoints() {
-    return descendant_insertion_points_;
-  }
-  void SetDescendantInsertionPoints(
-      HeapVector<Member<V0InsertionPoint>>& list) {
-    descendant_insertion_points_.swap(list);
-  }
-  void ClearDescendantInsertionPoints() {
-    descendant_insertion_points_.clear();
-  }
+  const HeapVector<Member<V0InsertionPoint>>& DescendantInsertionPoints();
+  void InvalidateDescendantInsertionPoints();
+
+  const V0InsertionPoint* FinalDestinationInsertionPointFor(
+      const Node* key) const;
+  const DestinationInsertionPoints* DestinationInsertionPointsFor(
+      const Node* key) const;
+
+  void Distribute();
+  void DidDistributeNode(const Node*, V0InsertionPoint*);
+  void ClearDistribution();
+
+  void WillAffectSelector();
+  const SelectRuleFeatureSet& EnsureSelectFeatureSet();
+  void CollectSelectFeatureSetFrom();
+  bool NeedsSelectFeatureSet() const { return needs_select_feature_set_; }
+  void SetNeedsSelectFeatureSet() { needs_select_feature_set_ = true; }
+  SelectRuleFeatureSet& SelectFeatures() { return select_features_; }
 
   void Trace(blink::Visitor* visitor) {
+    visitor->Trace(shadow_root_);
     visitor->Trace(descendant_insertion_points_);
+    visitor->Trace(node_to_insertion_points_);
+  }
+
+  void TraceWrappers(const ScriptWrappableVisitor* visitor) const {
+    visitor->TraceWrappers(shadow_root_);
   }
 
  private:
-  unsigned descendant_shadow_element_count_;
-  unsigned descendant_content_element_count_;
+  ShadowRoot& GetShadowRoot() const { return *shadow_root_; }
+
+  TraceWrapperMember<ShadowRoot> shadow_root_;
+  unsigned descendant_shadow_element_count_ = 0;
+  unsigned descendant_content_element_count_ = 0;
   HeapVector<Member<V0InsertionPoint>> descendant_insertion_points_;
+
+  NodeToDestinationInsertionPoints node_to_insertion_points_;
+  SelectRuleFeatureSet select_features_;
+  bool needs_select_feature_set_ = false;
+  bool descendant_insertion_points_is_valid_ = false;
+
+  DISALLOW_COPY_AND_ASSIGN(ShadowRootV0);
 };
 
-inline void ShadowRootRareDataV0::DidAddInsertionPoint(
-    V0InsertionPoint* point) {
+inline void ShadowRootV0::DidAddInsertionPoint(V0InsertionPoint* point) {
   DCHECK(point);
   if (IsHTMLShadowElement(*point))
     ++descendant_shadow_element_count_;
@@ -86,10 +114,10 @@ inline void ShadowRootRareDataV0::DidAddInsertionPoint(
     ++descendant_content_element_count_;
   else
     NOTREACHED();
+  InvalidateDescendantInsertionPoints();
 }
 
-inline void ShadowRootRareDataV0::DidRemoveInsertionPoint(
-    V0InsertionPoint* point) {
+inline void ShadowRootV0::DidRemoveInsertionPoint(V0InsertionPoint* point) {
   DCHECK(point);
   if (IsHTMLShadowElement(*point)) {
     DCHECK_GT(descendant_shadow_element_count_, 0u);
@@ -100,6 +128,12 @@ inline void ShadowRootRareDataV0::DidRemoveInsertionPoint(
   } else {
     NOTREACHED();
   }
+  InvalidateDescendantInsertionPoints();
+}
+
+inline void ShadowRootV0::InvalidateDescendantInsertionPoints() {
+  descendant_insertion_points_is_valid_ = false;
+  descendant_insertion_points_.clear();
 }
 
 }  // namespace blink
