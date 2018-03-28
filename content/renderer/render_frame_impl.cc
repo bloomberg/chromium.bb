@@ -3734,7 +3734,8 @@ blink::WebLocalFrame* RenderFrameImpl::CreateChildFrame(
   service_manager::mojom::InterfaceProviderPtr child_interface_provider;
   child_interface_provider.Bind(
       service_manager::mojom::InterfaceProviderPtrInfo(
-          mojo::ScopedMessagePipeHandle(child_interface_provider_handle), 0u));
+          mojo::ScopedMessagePipeHandle(child_interface_provider_handle), 0u),
+      GetTaskRunner(blink::TaskType::kInternalIPC));
 
   // This method is always called by local frames, never remote frames.
 
