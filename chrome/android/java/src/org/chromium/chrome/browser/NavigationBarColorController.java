@@ -22,12 +22,14 @@ import org.chromium.chrome.browser.tabmodel.TabModel;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate.VrModeObserver;
 
 /**
  * Controls the bottom system navigation bar color for the provided {@link Window}.
  */
 @TargetApi(Build.VERSION_CODES.O_MR1)
-public class NavigationBarColorController {
+public class NavigationBarColorController implements VrModeObserver {
     private final Window mWindow;
     private final ViewGroup mRootView;
     private final Resources mResources;
@@ -90,6 +92,8 @@ public class NavigationBarColorController {
         mOverviewModeBehavior.addOverviewModeObserver(mOverviewModeObserver);
 
         updateNavigationBarColor();
+
+        VrShellDelegate.registerVrModeObserver(this);
     }
 
     /**
@@ -98,7 +102,18 @@ public class NavigationBarColorController {
     public void destroy() {
         mTabModelSelector.removeObserver(mTabModelSelectorObserver);
         mOverviewModeBehavior.removeOverviewModeObserver(mOverviewModeObserver);
+        VrShellDelegate.unregisterVrModeObserver(this);
     }
+
+    @Override
+    public void onExitVr() {
+        // The platform ignores the light navigation bar system UI flag when launching an Activity
+        // in VR mode, so we need to restore it when VR is exited.
+        updateSystemUiVisibility(mUseLightNavigation);
+    }
+
+    @Override
+    public void onEnterVr() {}
 
     private void updateNavigationBarColor() {
         boolean overviewVisible = mOverviewModeBehavior.overviewVisible() && !mOverviewModeHiding;
@@ -114,6 +129,10 @@ public class NavigationBarColorController {
                                   mResources, R.color.bottom_system_nav_color)
                         : Color.BLACK);
 
+        updateSystemUiVisibility(useLightNavigation);
+    }
+
+    private void updateSystemUiVisibility(boolean useLightNavigation) {
         int visibility = mRootView.getSystemUiVisibility();
         if (useLightNavigation) {
             visibility |= View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR;
