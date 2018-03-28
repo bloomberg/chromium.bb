@@ -21,6 +21,7 @@ class LifecycleUnitBase : public LifecycleUnit {
   // LifecycleUnit:
   int32_t GetID() const override;
   State GetState() const override;
+  base::TimeTicks GetLastVisibilityChangeTime() const override;
   void AddObserver(LifecycleUnitObserver* observer) override;
   void RemoveObserver(LifecycleUnitObserver* observer) override;
 
@@ -44,6 +45,8 @@ class LifecycleUnitBase : public LifecycleUnit {
 
   // Current state of this LifecycleUnit.
   State state_ = State::LOADED;
+
+  base::TimeTicks last_visibility_change_time_;
 
   base::ObserverList<LifecycleUnitObserver> observers_;
 

@@ -5,7 +5,9 @@
 #include "chrome/browser/resource_coordinator/lifecycle_unit_base.h"
 
 #include "base/macros.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
+#include "chrome/browser/resource_coordinator/time.h"
 #include "content/public/browser/visibility.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -99,29 +101,48 @@ TEST(LifecycleUnitBaseTest, DestroyNotifiesObservers) {
 }
 
 // Verify that observers are notified when the visibility of the LifecyleUnit
-// changes.
-TEST(LifecycleUnitBaseTest, ChangeVisibilityNotifiesObservers) {
+// changes. Verify that when visibility changes |last_visibility_change_time_|
+// is updated with the time of the change.
+TEST(LifecycleUnitBaseTest, VisibilityChangeNotifiesObserversAndUpdatesTime) {
+  base::SimpleTestTickClock test_clock_;
+  ScopedSetTickClockForTesting scoped_set_tick_clock_for_testing_(&test_clock_);
   testing::StrictMock<MockLifecycleUnitObserver> observer;
   DummyLifecycleUnit lifecycle_unit;
   lifecycle_unit.AddObserver(&observer);
 
   // Observer is notified when the visibility changes.
   EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
-                            &lifecycle_unit, content::Visibility::HIDDEN));
+                            &lifecycle_unit, content::Visibility::HIDDEN))
+      .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit,
+                                    content::Visibility visibility) {
+        EXPECT_EQ(NowTicks(), lifecycle_unit->GetLastVisibilityChangeTime());
+      }));
+
   lifecycle_unit.OnLifecycleUnitVisibilityChanged(content::Visibility::HIDDEN);
   testing::Mock::VerifyAndClear(&observer);
 
   EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
-                            &lifecycle_unit, content::Visibility::OCCLUDED));
+                            &lifecycle_unit, content::Visibility::OCCLUDED))
+      .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit,
+                                    content::Visibility visibility) {
+        EXPECT_EQ(NowTicks(), lifecycle_unit->GetLastVisibilityChangeTime());
+      }));
+
   lifecycle_unit.OnLifecycleUnitVisibilityChanged(
       content::Visibility::OCCLUDED);
   testing::Mock::VerifyAndClear(&observer);
 
   EXPECT_CALL(observer, OnLifecycleUnitVisibilityChanged(
-                            &lifecycle_unit, content::Visibility::VISIBLE));
+                            &lifecycle_unit, content::Visibility::VISIBLE))
+      .WillOnce(testing::Invoke([&](LifecycleUnit* lifecycle_unit,
+                                    content::Visibility visibility) {
+        EXPECT_EQ(NowTicks(), lifecycle_unit->GetLastVisibilityChangeTime());
+      }));
+
   lifecycle_unit.OnLifecycleUnitVisibilityChanged(content::Visibility::VISIBLE);
   testing::Mock::VerifyAndClear(&observer);
 
   lifecycle_unit.RemoveObserver(&observer);
 }
+
 }  // namespace resource_coordinator

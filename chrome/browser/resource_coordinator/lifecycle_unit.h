@@ -75,6 +75,9 @@ class LifecycleUnit {
   // Returns the current state of this LifecycleUnit.
   virtual State GetState() const = 0;
 
+  // Returns the last time that the visibility of the LifecycleUnit changed.
+  virtual base::TimeTicks GetLastVisibilityChangeTime() const = 0;
+
   // Returns the estimated number of kilobytes that would be freed if this
   // LifecycleUnit was discarded.
   //
