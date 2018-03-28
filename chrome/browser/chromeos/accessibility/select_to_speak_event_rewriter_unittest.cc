@@ -88,6 +88,10 @@ class SelectToSpeakEventRewriterTest : public ash::AshTestBase {
 
   void SetUp() override {
     ash::AshTestBase::SetUp();
+    // This test triggers a resize of WindowTreeHost, which will end up
+    // throttling events. set_throttle_input_on_resize_for_testing() disables
+    // this.
+    aura::Env::GetInstance()->set_throttle_input_on_resize_for_testing(false);
     select_to_speak_event_rewriter_.reset(
         new SelectToSpeakEventRewriter(CurrentContext()));
     mouse_event_delegate_.reset(new SelectToSpeakMouseEventDelegate());
@@ -195,11 +199,7 @@ TEST_F(SelectToSpeakEventRewriterTest, SearchPlusDrag) {
 }
 
 TEST_F(SelectToSpeakEventRewriterTest, SearchPlusDragOnLargeDisplay) {
-  // TODO: Failing in mus_unit_tests, see https://crbug.com/818362.
-  if (ash::Shell::GetAshConfig() == ash::Config::MUS) {
-    return;
-  }
-  // This display has twice the number of pixels per DIP. THis means that
+  // This display has twice the number of pixels per DIP. This means that
   // each event coming in in px needs to be divided by two to be converted
   // to DIPs.
   UpdateDisplay("800x600*2");
