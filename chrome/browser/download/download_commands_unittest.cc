@@ -7,7 +7,7 @@
 #include <vector>
 
 #include "base/strings/stringprintf.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -58,10 +58,7 @@ class DownloadCommandsTest : public testing::Test {
         .WillByDefault(ReturnRefOfCopy(base::FilePath(kDefaultTargetFilePath)));
   }
 
-  content::MockDownloadItem& item() {
-    return item_;
-  }
-
+  download::MockDownloadItem& item() { return item_; }
 
   bool IsCommandEnabled(DownloadCommands::Command command) {
     return commands().IsCommandEnabled(command);
@@ -77,7 +74,7 @@ class DownloadCommandsTest : public testing::Test {
   }
 
  private:
-  NiceMock<content::MockDownloadItem> item_;
+  NiceMock<download::MockDownloadItem> item_;
   DownloadCommands commands_;
 };
 

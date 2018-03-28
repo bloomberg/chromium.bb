@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/run_loop.h"
 #include "chrome/browser/download/download_status_updater.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -105,8 +105,8 @@ class DownloadStatusUpdaterTest : public testing::Test {
 
     std::vector<download::DownloadItem*> item_list;
     for (int i = 0; i < item_count; ++i) {
-      std::unique_ptr<content::MockDownloadItem> item =
-          std::make_unique<StrictMock<content::MockDownloadItem>>();
+      std::unique_ptr<download::MockDownloadItem> item =
+          std::make_unique<StrictMock<download::MockDownloadItem>>();
       download::DownloadItem::DownloadState state =
           i < in_progress_count ? download::DownloadItem::IN_PROGRESS
                                 : download::DownloadItem::CANCELLED;
@@ -125,12 +125,12 @@ class DownloadStatusUpdaterTest : public testing::Test {
   }
 
   // Return the specified item.
-  content::MockDownloadItem* Item(int manager_index, int item_index) {
+  download::MockDownloadItem* Item(int manager_index, int item_index) {
     DCHECK_GT(manager_items_.size(), static_cast<size_t>(manager_index));
     DCHECK_GT(manager_items_[manager_index].size(),
               static_cast<size_t>(item_index));
     // All DownloadItems in manager_items_ are MockDownloadItems.
-    return static_cast<content::MockDownloadItem*>(
+    return static_cast<download::MockDownloadItem*>(
         manager_items_[manager_index][item_index]);
   }
 
@@ -138,7 +138,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
   // for the specified item.
   void SetItemValues(int manager_index, int item_index,
                      int received_bytes, int total_bytes, bool notify) {
-    content::MockDownloadItem* item(Item(manager_index, item_index));
+    download::MockDownloadItem* item(Item(manager_index, item_index));
     EXPECT_CALL(*item, GetReceivedBytes())
         .WillRepeatedly(Return(received_bytes));
     EXPECT_CALL(*item, GetTotalBytes())
@@ -149,7 +149,7 @@ class DownloadStatusUpdaterTest : public testing::Test {
 
   // Transition specified item to completed.
   void CompleteItem(int manager_index, int item_index) {
-    content::MockDownloadItem* item(Item(manager_index, item_index));
+    download::MockDownloadItem* item(Item(manager_index, item_index));
     EXPECT_CALL(*item, GetState())
         .WillRepeatedly(Return(download::DownloadItem::COMPLETE));
     updater_->OnDownloadUpdated(managers_[manager_index].get(), item);

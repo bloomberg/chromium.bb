@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_
-#define CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_DOWNLOAD_ITEM_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_DOWNLOAD_ITEM_H_
 
 #include <stdint.h>
 
@@ -16,12 +16,11 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
-namespace content {
+namespace download {
 
-class MockDownloadItem : public download::DownloadItem {
+class MockDownloadItem : public DownloadItem {
  public:
   MockDownloadItem();
   ~MockDownloadItem() override;
@@ -51,7 +50,7 @@ class MockDownloadItem : public download::DownloadItem {
   MOCK_CONST_METHOD0(GetId, uint32_t());
   MOCK_CONST_METHOD0(GetGuid, const std::string&());
   MOCK_CONST_METHOD0(GetState, DownloadState());
-  MOCK_CONST_METHOD0(GetLastReason, download::DownloadInterruptReason());
+  MOCK_CONST_METHOD0(GetLastReason, DownloadInterruptReason());
   MOCK_CONST_METHOD0(IsPaused, bool());
   MOCK_CONST_METHOD0(IsTemporary, bool());
   MOCK_CONST_METHOD0(CanResume, bool());
@@ -86,18 +85,17 @@ class MockDownloadItem : public download::DownloadItem {
   MOCK_CONST_METHOD0(GetHashState, const std::string&());
   MOCK_CONST_METHOD0(GetFileExternallyRemoved, bool());
   MOCK_METHOD1(DeleteFile, void(const base::Callback<void(bool)>&));
-  MOCK_METHOD0(GetDownloadFile, download::DownloadFile*());
+  MOCK_METHOD0(GetDownloadFile, DownloadFile*());
   MOCK_CONST_METHOD0(IsDangerous, bool());
-  MOCK_CONST_METHOD0(GetDangerType, download::DownloadDangerType());
+  MOCK_CONST_METHOD0(GetDangerType, DownloadDangerType());
   MOCK_CONST_METHOD1(TimeRemaining, bool(base::TimeDelta*));
   MOCK_CONST_METHOD0(CurrentSpeed, int64_t());
   MOCK_CONST_METHOD0(PercentComplete, int());
   MOCK_CONST_METHOD0(AllDataSaved, bool());
   MOCK_CONST_METHOD0(GetTotalBytes, int64_t());
   MOCK_CONST_METHOD0(GetReceivedBytes, int64_t());
-  MOCK_CONST_METHOD0(
-      GetReceivedSlices,
-      const std::vector<download::DownloadItem::ReceivedSlice>&());
+  MOCK_CONST_METHOD0(GetReceivedSlices,
+                     const std::vector<DownloadItem::ReceivedSlice>&());
   MOCK_CONST_METHOD0(GetStartTime, base::Time());
   MOCK_CONST_METHOD0(GetEndTime, base::Time());
   MOCK_METHOD0(CanShowInFolder, bool());
@@ -109,20 +107,18 @@ class MockDownloadItem : public download::DownloadItem {
   MOCK_CONST_METHOD0(GetLastAccessTime, base::Time());
   MOCK_CONST_METHOD0(IsTransient, bool());
   MOCK_METHOD2(OnContentCheckCompleted,
-               void(download::DownloadDangerType,
-                    download::DownloadInterruptReason));
+               void(DownloadDangerType, DownloadInterruptReason));
   MOCK_METHOD1(SetOpenWhenComplete, void(bool));
   MOCK_METHOD1(SetOpened, void(bool));
   MOCK_METHOD1(SetLastAccessTime, void(base::Time));
   MOCK_METHOD1(SetDisplayName, void(const base::FilePath&));
   MOCK_CONST_METHOD1(DebugString, std::string(bool));
-  MOCK_METHOD1(SimulateErrorForTesting,
-               void(download::DownloadInterruptReason));
+  MOCK_METHOD1(SimulateErrorForTesting, void(DownloadInterruptReason));
 
  private:
   base::ObserverList<Observer> observers_;
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_PUBLIC_TEST_MOCK_DOWNLOAD_ITEM_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_DOWNLOAD_ITEM_H_

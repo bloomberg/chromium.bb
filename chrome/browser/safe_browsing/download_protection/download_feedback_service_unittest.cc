@@ -17,8 +17,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/task_scheduler/post_task.h"
 #include "chrome/browser/safe_browsing/download_protection/download_feedback.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/url_request/url_request_test_util.h"
@@ -110,7 +110,7 @@ class FakeDownloadFeedbackFactory : public DownloadFeedbackFactory {
 bool WillStorePings(DownloadCheckResult result,
                     bool upload_requested,
                     int64_t size) {
-  content::MockDownloadItem item;
+  download::MockDownloadItem item;
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(size));
 
   EXPECT_FALSE(DownloadFeedbackService::IsEnabledForDownload(item));
@@ -211,7 +211,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndDiscardDownload) {
 
   download::DownloadItem::AcquireFileCallback download_discarded_callback;
 
-  content::MockDownloadItem item;
+  download::MockDownloadItem item;
   EXPECT_CALL(item, GetDangerType())
       .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(1000));
@@ -250,7 +250,7 @@ TEST_F(DownloadFeedbackServiceTest, SingleFeedbackCompleteAndKeepDownload) {
 
   download::DownloadItem::AcquireFileCallback download_discarded_callback;
 
-  content::MockDownloadItem item;
+  download::MockDownloadItem item;
   EXPECT_CALL(item, GetDangerType())
       .WillRepeatedly(Return(download::DOWNLOAD_DANGER_TYPE_UNCOMMON_CONTENT));
   EXPECT_CALL(item, GetReceivedBytes()).WillRepeatedly(Return(1000));
@@ -294,7 +294,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiplePendingFeedbackComplete) {
       download_discarded_callback[kNumDownloads];
 
   base::FilePath file_path[kNumDownloads];
-  content::MockDownloadItem item[kNumDownloads];
+  download::MockDownloadItem item[kNumDownloads];
   for (size_t i = 0; i < kNumDownloads; ++i) {
     file_path[i] = CreateTestFile(i);
     EXPECT_CALL(item[i], GetDangerType())
@@ -364,7 +364,7 @@ TEST_F(DownloadFeedbackServiceTest, MultiFeedbackWithIncomplete) {
       download_discarded_callback[kNumDownloads];
 
   base::FilePath file_path[kNumDownloads];
-  content::MockDownloadItem item[kNumDownloads];
+  download::MockDownloadItem item[kNumDownloads];
   for (size_t i = 0; i < kNumDownloads; ++i) {
     file_path[i] = CreateTestFile(i);
     EXPECT_CALL(item[i], GetDangerType())

@@ -8,7 +8,7 @@
 
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
@@ -92,7 +92,7 @@ TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
   std::vector<download::DownloadItem*> downloads;
 
   // Safe, in-progress items should be passed over.
-  testing::StrictMock<content::MockDownloadItem> in_progress;
+  testing::StrictMock<download::MockDownloadItem> in_progress;
   EXPECT_CALL(in_progress, IsDangerous()).WillOnce(testing::Return(false));
   EXPECT_CALL(in_progress, IsTransient()).WillOnce(testing::Return(false));
   EXPECT_CALL(in_progress, GetState())
@@ -100,13 +100,13 @@ TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
   downloads.push_back(&in_progress);
 
   // Dangerous items should be removed (regardless of state).
-  testing::StrictMock<content::MockDownloadItem> dangerous;
+  testing::StrictMock<download::MockDownloadItem> dangerous;
   EXPECT_CALL(dangerous, IsDangerous()).WillOnce(testing::Return(true));
   EXPECT_CALL(dangerous, Remove());
   downloads.push_back(&dangerous);
 
   // Completed items should be marked as hidden from the shelf.
-  testing::StrictMock<content::MockDownloadItem> completed;
+  testing::StrictMock<download::MockDownloadItem> completed;
   EXPECT_CALL(completed, IsDangerous()).WillOnce(testing::Return(false));
   EXPECT_CALL(completed, IsTransient()).WillRepeatedly(testing::Return(false));
   EXPECT_CALL(completed, GetState())
@@ -132,7 +132,7 @@ TEST_F(MdDownloadsDOMHandlerTest, ClearAll) {
 TEST_F(MdDownloadsDOMHandlerTest, HandleSaveDownload) {
   // When user chooses to recover a download, download danger prompt should NOT
   // be shown if download danger type is DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE.
-  testing::StrictMock<content::MockDownloadItem> dangerous_file_type;
+  testing::StrictMock<download::MockDownloadItem> dangerous_file_type;
   EXPECT_CALL(dangerous_file_type, GetDangerType())
       .WillRepeatedly(
           testing::Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_FILE));
@@ -145,7 +145,7 @@ TEST_F(MdDownloadsDOMHandlerTest, HandleSaveDownload) {
 
   // For other download danger types, download danger prompt should
   // be shown.
-  testing::StrictMock<content::MockDownloadItem> malicious_download;
+  testing::StrictMock<download::MockDownloadItem> malicious_download;
   EXPECT_CALL(malicious_download, GetDangerType())
       .WillRepeatedly(
           testing::Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_URL));

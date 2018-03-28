@@ -8,7 +8,7 @@
 #import "base/mac/scoped_nsobject.h"
 #include "chrome/browser/download/download_item_model.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "testing/gtest_mac.h"
 
 namespace {
@@ -29,7 +29,7 @@ class MDDownloadItemViewTest : public ui::CocoaTest {
   }
 
  protected:
-  testing::NiceMock<content::MockDownloadItem> item_;
+  testing::NiceMock<download::MockDownloadItem> item_;
   DownloadItemModel model_{&item_};
   MDDownloadItemView* view_;  // Weak, owned by test_window().
 

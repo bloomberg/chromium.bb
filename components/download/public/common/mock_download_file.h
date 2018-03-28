@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_FILE_H_
-#define CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_FILE_H_
+#ifndef COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_DOWNLOAD_FILE_H_
+#define COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_DOWNLOAD_FILE_H_
 
 #include <stddef.h>
 #include <stdint.h>
@@ -16,41 +16,33 @@
 #include "base/memory/ref_counted.h"
 #include "components/download/public/common/download_file.h"
 #include "components/download/public/common/input_stream.h"
-#include "content/browser/byte_stream.h"
-#include "content/public/browser/download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
-#include "testing/gtest/include/gtest/gtest.h"
 
-namespace content {
+namespace download {
 
-class MockDownloadFile : public download::DownloadFile {
+class MockDownloadFile : public DownloadFile {
  public:
   MockDownloadFile();
   virtual ~MockDownloadFile();
 
   // DownloadFile functions.
   // Using the legacy workaround for move-only types in mock methods.
-  MOCK_METHOD4(
-      Initialize,
-      void(InitializeCallback initialize_callback,
-           const CancelRequestCallback& cancel_request_callback,
-           const download::DownloadItem::ReceivedSlices& received_slices,
-           bool is_parallelizable));
-  void AddInputStream(std::unique_ptr<download::InputStream> input_stream,
+  MOCK_METHOD4(Initialize,
+               void(InitializeCallback initialize_callback,
+                    const CancelRequestCallback& cancel_request_callback,
+                    const DownloadItem::ReceivedSlices& received_slices,
+                    bool is_parallelizable));
+  void AddInputStream(std::unique_ptr<InputStream> input_stream,
                       int64_t offset,
                       int64_t length) override;
   MOCK_METHOD3(DoAddInputStream,
-               void(download::InputStream* input_stream,
-                    int64_t offset,
-                    int64_t length));
+               void(InputStream* input_stream, int64_t offset, int64_t length));
   MOCK_METHOD2(OnResponseCompleted,
-               void(int64_t offset, download::DownloadInterruptReason status));
+               void(int64_t offset, DownloadInterruptReason status));
   MOCK_METHOD2(AppendDataToFile,
-               download::DownloadInterruptReason(const char* data,
-                                                 size_t data_len));
-  MOCK_METHOD1(
-      Rename,
-      download::DownloadInterruptReason(const base::FilePath& full_path));
+               DownloadInterruptReason(const char* data, size_t data_len));
+  MOCK_METHOD1(Rename,
+               DownloadInterruptReason(const base::FilePath& full_path));
   MOCK_METHOD2(RenameAndUniquify,
                void(const base::FilePath& full_path,
                     const RenameCompletionCallback& callback));
@@ -71,12 +63,11 @@ class MockDownloadFile : public download::DownloadFile {
   MOCK_METHOD1(GetHash, bool(std::string* hash));
   MOCK_METHOD0(SendUpdate, void());
   MOCK_CONST_METHOD0(Id, int());
-  MOCK_METHOD0(GetDownloadManager, DownloadManager*());
   MOCK_CONST_METHOD0(DebugString, std::string());
   MOCK_METHOD0(Pause, void());
   MOCK_METHOD0(Resume, void());
 };
 
-}  // namespace content
+}  // namespace download
 
-#endif  // CONTENT_BROWSER_DOWNLOAD_MOCK_DOWNLOAD_FILE_H_
+#endif  // COMPONENTS_DOWNLOAD_PUBLIC_COMMON_MOCK_DOWNLOAD_FILE_H_

@@ -12,9 +12,9 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/test_download_shelf.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/notification_service.h"
-#include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "extensions/common/extension.h"
@@ -34,9 +34,7 @@ class DownloadShelfTest : public testing::Test {
   DownloadShelfTest();
 
  protected:
-  content::MockDownloadItem* download_item() {
-    return download_item_.get();
-  }
+  download::MockDownloadItem* download_item() { return download_item_.get(); }
   content::MockDownloadManager* download_manager() {
     return download_manager_.get();
   }
@@ -52,17 +50,17 @@ class DownloadShelfTest : public testing::Test {
   }
 
  private:
-  std::unique_ptr<content::MockDownloadItem> GetInProgressMockDownload();
+  std::unique_ptr<download::MockDownloadItem> GetInProgressMockDownload();
 
   content::TestBrowserThreadBundle test_browser_thread_bundle_;
-  std::unique_ptr<content::MockDownloadItem> download_item_;
+  std::unique_ptr<download::MockDownloadItem> download_item_;
   std::unique_ptr<content::MockDownloadManager> download_manager_;
   TestDownloadShelf shelf_;
   std::unique_ptr<TestingProfile> profile_;
 };
 
 DownloadShelfTest::DownloadShelfTest() : profile_(new TestingProfile()) {
-  download_item_.reset(new ::testing::NiceMock<content::MockDownloadItem>());
+  download_item_.reset(new ::testing::NiceMock<download::MockDownloadItem>());
   ON_CALL(*download_item_, GetAutoOpened()).WillByDefault(Return(false));
   ON_CALL(*download_item_, GetMimeType()).WillByDefault(Return("text/plain"));
   ON_CALL(*download_item_, GetOpenWhenComplete()).WillByDefault(Return(false));

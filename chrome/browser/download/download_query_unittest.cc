@@ -20,8 +20,8 @@
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/download_item_utils.h"
-#include "content/public/test/mock_download_item.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -64,7 +64,7 @@ class DownloadQueryTest : public testing::Test {
 
   void CreateMocks(int count) {
     for (int i = 0; i < count; ++i) {
-      owned_mocks_.push_back(std::make_unique<content::MockDownloadItem>());
+      owned_mocks_.push_back(std::make_unique<download::MockDownloadItem>());
       mocks_.push_back(owned_mocks_.back().get());
       EXPECT_CALL(mock(mocks_.size() - 1), GetId()).WillRepeatedly(Return(
           mocks_.size() - 1));
@@ -72,7 +72,7 @@ class DownloadQueryTest : public testing::Test {
     }
   }
 
-  content::MockDownloadItem& mock(int index) { return *mocks_[index]; }
+  download::MockDownloadItem& mock(int index) { return *mocks_[index]; }
 
   DownloadQuery* query() { return &query_; }
 
@@ -107,8 +107,8 @@ class DownloadQueryTest : public testing::Test {
   // These two vectors hold the MockDownloadItems. |mocks_| contains just the
   // pointers, but is necessary because DownloadQuery processes vectors of
   // unowned pointers. |owned_mocks_| holds the ownership of the mock objects.
-  std::vector<content::MockDownloadItem*> mocks_;
-  std::vector<std::unique_ptr<content::MockDownloadItem>> owned_mocks_;
+  std::vector<download::MockDownloadItem*> mocks_;
+  std::vector<std::unique_ptr<download::MockDownloadItem>> owned_mocks_;
   DownloadQuery query_;
   DownloadVector results_;
 

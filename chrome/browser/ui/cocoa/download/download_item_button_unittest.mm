@@ -6,7 +6,7 @@
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/download/download_item_model.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -17,7 +17,7 @@ TEST(DownloadItemButtonTest, Create) {
       initWithFrame:NSMakeRect(0,0,500,500)]);
 
   // Test setter
-  testing::NiceMock<content::MockDownloadItem> download;
+  testing::NiceMock<download::MockDownloadItem> download;
   DownloadItemModel download_model(&download);
   [button.get() setStateFromDownload:&download_model];
 }
