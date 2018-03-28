@@ -454,6 +454,11 @@ const base::Feature kWebAssemblyTrapHandler{"WebAssemblyTrapHandler",
 const base::Feature kWebAuth{"WebAuthentication",
                              base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Controls whether BLE authenticators can be used via the WebAuthentication
+// API. https://w3c.github.io/webauthn
+const base::Feature kWebAuthBle{"WebAuthenticationBle",
+                                base::FEATURE_DISABLED_BY_DEFAULT};
+
 // If WebGL Image Chromium is allowed, this feature controls whether it is
 // enabled.
 const base::Feature kWebGLImageChromium{"WebGLImageChromium",

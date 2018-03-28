@@ -20,6 +20,7 @@
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "device/fido/fake_fido_discovery.h"
 #include "device/fido/fake_hid_impl_for_testing.h"
 #include "net/dns/mock_host_resolver.h"
 #include "services/device/public/mojom/constants.mojom.h"
@@ -82,23 +83,27 @@ class MockGetCallback {
   DISALLOW_COPY_AND_ASSIGN(MockGetCallback);
 };
 
-}  // namespace
-
-class WebAuthBrowserTest : public content::ContentBrowserTest {
- public:
-  WebAuthBrowserTest() : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {
-    scoped_feature_list_.InitAndEnableFeature(features::kWebAuth);
-  }
+// Helper object for common tasks.
+class WebAuthBrowserTestBase : public content::ContentBrowserTest {
+ protected:
+  WebAuthBrowserTestBase()
+      : https_server_(net::EmbeddedTestServer::TYPE_HTTPS) {}
 
   void SetUp() override { content::ContentBrowserTest::SetUp(); }
 
   void SetUpOnMainThread() override {
     host_resolver()->AddRule("*", "127.0.0.1");
-    https_server_.ServeFilesFromSourceDirectory("content/test/data");
-    ASSERT_TRUE(https_server_.Start());
+    https_server().ServeFilesFromSourceDirectory("content/test/data");
+    ASSERT_TRUE(https_server().Start());
 
     NavigateToURL(shell(), GetHttpsURL("www.example.com", "/title1.html"));
-    authenticator_ptr_ = ConnectToAuthenticatorWithTestConnector();
+    ConnectToAuthenticator(shell()->web_contents());
+  }
+
+  virtual void ConnectToAuthenticator(WebContents* web_contents) {
+    authenticator_impl_.reset(
+        new content::AuthenticatorImpl(web_contents->GetMainFrame()));
+    authenticator_impl_->Bind(mojo::MakeRequest(&authenticator_ptr_));
   }
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -154,31 +159,6 @@ class WebAuthBrowserTest : public content::ContentBrowserTest {
     return mojo_options;
   }
 
-  GURL GetHttpsURL(const std::string& hostname,
-                   const std::string& relative_url) {
-    return https_server_.GetURL(hostname, relative_url);
-  }
-
-  AuthenticatorPtr ConnectToAuthenticatorWithTestConnector() {
-    // Set up service_manager::Connector for tests.
-    auto fake_hid_manager = std::make_unique<device::FakeHidManager>();
-    service_manager::mojom::ConnectorRequest request;
-    auto connector = service_manager::Connector::Create(&request);
-    service_manager::Connector::TestApi test_api(connector.get());
-    test_api.OverrideBinderForTesting(
-        service_manager::Identity(device::mojom::kServiceName),
-        device::mojom::HidManager::Name_,
-        base::BindRepeating(&device::FakeHidManager::AddBinding,
-                            base::Unretained(fake_hid_manager.get())));
-
-    authenticator_impl_.reset(new content::AuthenticatorImpl(
-        shell()->web_contents()->GetMainFrame(), connector.get(),
-        std::make_unique<base::OneShotTimer>()));
-    AuthenticatorPtr authenticator;
-    authenticator_impl_->Bind(mojo::MakeRequest(&authenticator));
-    return authenticator;
-  }
-
   void ResetAuthenticatorImplAndWaitForConnectionError() {
     EXPECT_TRUE(authenticator_impl_);
     EXPECT_TRUE(authenticator_ptr_);
@@ -192,7 +172,28 @@ class WebAuthBrowserTest : public content::ContentBrowserTest {
     run_loop.Run();
   }
 
+  GURL GetHttpsURL(const std::string& hostname,
+                   const std::string& relative_url) {
+    return https_server_.GetURL(hostname, relative_url);
+  }
+
   AuthenticatorPtr& authenticator() { return authenticator_ptr_; }
+  net::EmbeddedTestServer& https_server() { return https_server_; }
+
+ private:
+  net::EmbeddedTestServer https_server_;
+  std::unique_ptr<content::AuthenticatorImpl> authenticator_impl_;
+  AuthenticatorPtr authenticator_ptr_;
+};
+
+}  // namespace
+
+class WebAuthBrowserTest : public WebAuthBrowserTestBase {
+ public:
+  WebAuthBrowserTest() {
+    scoped_feature_list_.InitWithFeatures(
+        {features::kWebAuth, features::kWebAuthBle}, {});
+  }
 
   // Templates to be used with base::ReplaceStringPlaceholders. Can be
   // modified to include up to 9 replacements.
@@ -272,11 +273,21 @@ class WebAuthBrowserTest : public content::ContentBrowserTest {
 
  private:
   base::test::ScopedFeatureList scoped_feature_list_;
-  net::EmbeddedTestServer https_server_;
-  std::unique_ptr<content::AuthenticatorImpl> authenticator_impl_;
-  AuthenticatorPtr authenticator_ptr_;
 
   DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserTest);
+};
+
+// A test fixture that does not enable BLE discovery.
+class WebAuthBrowserBleDisabledTest : public WebAuthBrowserTestBase {
+ public:
+  WebAuthBrowserBleDisabledTest() {
+    scoped_feature_list_.InitAndEnableFeature(features::kWebAuth);
+  }
+
+ private:
+  base::test::ScopedFeatureList scoped_feature_list_;
+
+  DISALLOW_COPY_AND_ASSIGN(WebAuthBrowserBleDisabledTest);
 };
 
 // Tests that no crash occurs when the implementation is destroyed with a
@@ -347,6 +358,25 @@ IN_PROC_BROWSER_TEST_F(WebAuthBrowserTest,
   ASSERT_NO_FATAL_FAILURE(
       GetPublicKeyCredentialWithUserVerificationAndExpectNotSupported(
           shell()->web_contents()));
+}
+
+// WebAuthBrowserBleDisabledTest ------------------------------
+
+// Tests that the BLE discovery does not start when the WebAuthnBle feature
+// flag is disabled.
+IN_PROC_BROWSER_TEST_F(WebAuthBrowserBleDisabledTest, CheckBleDisabled) {
+  device::test::ScopedFakeFidoDiscoveryFactory factory;
+  auto* fake_hid_discovery = factory.ForgeNextHidDiscovery();
+  auto* fake_ble_discovery = factory.ForgeNextBleDiscovery();
+
+  // Do something that will start discoveries.
+  MockCreateCallback create_callback;
+  authenticator()->MakeCredential(BuildBasicCreateOptions(),
+                                  create_callback.Get());
+
+  fake_hid_discovery->WaitForCallToStart();
+  EXPECT_TRUE(fake_hid_discovery->is_start_requested());
+  EXPECT_FALSE(fake_ble_discovery->is_start_requested());
 }
 
 }  // namespace content

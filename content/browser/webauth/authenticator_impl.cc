@@ -18,6 +18,7 @@
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/common/content_client.h"
+#include "content/public/common/content_features.h"
 #include "content/public/common/origin_util.h"
 #include "content/public/common/service_manager_connection.h"
 #include "crypto/sha2.h"
@@ -282,6 +283,11 @@ AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host)
       weak_factory_(this) {
   DCHECK(render_frame_host_);
   DCHECK(timer_);
+
+  protocols_.insert(device::U2fTransportProtocol::kUsbHumanInterfaceDevice);
+  if (base::FeatureList::IsEnabled(features::kWebAuthBle)) {
+    protocols_.insert(device::U2fTransportProtocol::kBluetoothLowEnergy);
+  }
 }
 
 AuthenticatorImpl::AuthenticatorImpl(RenderFrameHost* render_frame_host,
