@@ -9,6 +9,7 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/color_space.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 
+// Corresponds to viz::ResourceFormat.
 enum ResourceFormat {
   RGBA_8888,
   RGBA_4444,
@@ -17,6 +18,10 @@ enum ResourceFormat {
   LUMINANCE_8,
   RGB_565,
   ETC1,
+  RED_8,
+  LUMINANCE_F16,
+  RGBA_F16,
+  R16_EXT,
 };
 
 // See cc/resources/transferable_resource.h.
