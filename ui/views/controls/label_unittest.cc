@@ -190,7 +190,7 @@ class LabelSelectionTest : public LabelTest {
     return widget()->GetFocusManager()->GetFocusedView();
   }
 
-  void PerformMousePress(const gfx::Point& point, int extra_flags = 0) {
+  void PerformMousePress(const gfx::Point& point) {
     ui::MouseEvent pressed_event = ui::MouseEvent(
         ui::ET_MOUSE_PRESSED, point, point, ui::EventTimeForNow(),
         ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
@@ -204,8 +204,8 @@ class LabelSelectionTest : public LabelTest {
     label()->OnMouseReleased(released_event);
   }
 
-  void PerformClick(const gfx::Point& point, int extra_flags = 0) {
-    PerformMousePress(point, extra_flags);
+  void PerformClick(const gfx::Point& point) {
+    PerformMousePress(point);
     PerformMouseRelease(point);
   }
 
@@ -1088,7 +1088,7 @@ TEST_F(LabelSelectionTest, DoubleTripleClick) {
   EXPECT_TRUE(GetSelectedText().empty());
 
   // Double clicking should select the word under cursor.
-  PerformClick(GetCursorPoint(0), ui::EF_IS_DOUBLE_CLICK);
+  PerformClick(GetCursorPoint(0));
   EXPECT_STR_EQ("Label", GetSelectedText());
 
   // Triple clicking should select all the text.
@@ -1102,7 +1102,7 @@ TEST_F(LabelSelectionTest, DoubleTripleClick) {
   // Clicking at another location should clear the selection.
   PerformClick(GetCursorPoint(8));
   EXPECT_TRUE(GetSelectedText().empty());
-  PerformClick(GetCursorPoint(8), ui::EF_IS_DOUBLE_CLICK);
+  PerformClick(GetCursorPoint(8));
   EXPECT_STR_EQ("double", GetSelectedText());
 }
 
@@ -1298,7 +1298,7 @@ TEST_F(LabelSelectionTest, MouseDragWord) {
   ASSERT_TRUE(label()->SetSelectable(true));
 
   PerformClick(GetCursorPoint(8));
-  PerformMousePress(GetCursorPoint(8), ui::EF_IS_DOUBLE_CLICK);
+  PerformMousePress(GetCursorPoint(8));
   EXPECT_STR_EQ("drag", GetSelectedText());
 
   PerformMouseDragTo(GetCursorPoint(0));

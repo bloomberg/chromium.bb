@@ -728,7 +728,7 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
               menu->IsEnabledAt(menu_index++ /* SELECT ALL */));
   }
 
-  void PressMouseButton(ui::EventFlags mouse_button_flags, int extra_flags) {
+  void PressMouseButton(ui::EventFlags mouse_button_flags) {
     ui::MouseEvent press(ui::ET_MOUSE_PRESSED, mouse_position_, mouse_position_,
                          ui::EventTimeForNow(), mouse_button_flags,
                          mouse_button_flags);
@@ -742,21 +742,21 @@ class TextfieldTest : public ViewsTestBase, public TextfieldController {
     textfield_->OnMouseReleased(release);
   }
 
-  void PressLeftMouseButton(int extra_flags = 0) {
-    PressMouseButton(ui::EF_LEFT_MOUSE_BUTTON, extra_flags);
+  void PressLeftMouseButton() {
+    PressMouseButton(ui::EF_LEFT_MOUSE_BUTTON);
   }
 
   void ReleaseLeftMouseButton() {
     ReleaseMouseButton(ui::EF_LEFT_MOUSE_BUTTON);
   }
 
-  void ClickLeftMouseButton(int extra_flags = 0) {
-    PressLeftMouseButton(extra_flags);
+  void ClickLeftMouseButton() {
+    PressLeftMouseButton();
     ReleaseLeftMouseButton();
   }
 
   void ClickRightMouseButton() {
-    PressMouseButton(ui::EF_RIGHT_MOUSE_BUTTON, 0);
+    PressMouseButton(ui::EF_RIGHT_MOUSE_BUTTON);
     ReleaseMouseButton(ui::EF_RIGHT_MOUSE_BUTTON);
   }
 
@@ -1574,7 +1574,7 @@ TEST_F(TextfieldTest, DoubleAndTripleClickTest) {
   MoveMouseTo(gfx::Point(0, GetCursorYForTesting()));
   ClickLeftMouseButton();
   EXPECT_TRUE(textfield_->GetSelectedText().empty());
-  ClickLeftMouseButton(ui::EF_IS_DOUBLE_CLICK);
+  ClickLeftMouseButton();
   EXPECT_STR_EQ("hello", textfield_->GetSelectedText());
 
   // Test for triple click.
