@@ -36,7 +36,6 @@
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkOverdrawColorFilter.h"
 #include "third_party/skia/include/gpu/GrBackendSurface.h"
-#include "third_party/skia/include/gpu/GrContext.h"
 #include "ui/gfx/geometry/axis_transform2d.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/skia_util.h"
@@ -147,7 +146,6 @@ void SkiaRenderer::FinishDrawingFrame() {
   }
   non_root_surface_ = nullptr;
   current_canvas_ = nullptr;
-  current_surface_ = nullptr;
 
   swap_buffer_rect_ = current_frame()->root_damage_rect;
 
@@ -230,14 +228,14 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
     // surface.
     GrGLFramebufferInfo framebuffer_info;
     framebuffer_info.fFBOID = 0;
-    framebuffer_info.fFormat = GL_RGB8_OES;
+    framebuffer_info.fFormat = GL_RGBA8_OES;
     GrBackendRenderTarget render_target(
         current_frame()->device_viewport_size.width(),
         current_frame()->device_viewport_size.height(), 0, 8, framebuffer_info);
 
     root_surface_ = SkSurface::MakeFromBackendRenderTarget(
         gr_context, render_target, kBottomLeft_GrSurfaceOrigin,
-        kRGB_888x_SkColorType, nullptr, &surface_props);
+        kRGBA_8888_SkColorType, nullptr, &surface_props);
   }
 #endif
 
@@ -252,10 +250,8 @@ void SkiaRenderer::BindFramebufferToOutputSurface() {
     nway_canvas_->addCanvas(overdraw_canvas_.get());
     nway_canvas_->addCanvas(root_canvas_);
     current_canvas_ = nway_canvas_.get();
-    current_surface_ = overdraw_surface_.get();
   } else {
     current_canvas_ = root_canvas_;
-    current_surface_ = root_surface_.get();
   }
 }
 
@@ -267,7 +263,6 @@ void SkiaRenderer::BindFramebufferToTexture(const RenderPassId render_pass_id) {
   RenderPassBacking& backing = iter->second;
   non_root_surface_ = backing.render_pass_surface;
   current_canvas_ = non_root_surface_->getCanvas();
-  current_surface_ = non_root_surface_.get();
 }
 
 void SkiaRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
@@ -644,9 +639,6 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
   // should be backing ready.
   RenderPassBacking& content_texture = iter->second;
 
-  // TODO(weiliangc): GL Renderer has optimization that when Render Pass has a
-  // single quad inside we would draw that directly. We could add similar
-  // optimization here by using the quad's SkImage.
   sk_sp<SkImage> content =
       content_texture.render_pass_surface->makeImageSnapshot();
 
@@ -675,7 +667,6 @@ void SkiaRenderer::DrawRenderPassQuad(const RenderPassDrawQuad* quad) {
                                  &current_paint_);
 
   SkRect dest_rect = gfx::RectFToSkRect(QuadVertexRect());
-
   SkMatrix content_mat;
   content_mat.setRectToRect(content_rect, dest_rect,
                             SkMatrix::kFill_ScaleToFit);
@@ -713,31 +704,7 @@ void SkiaRenderer::DrawUnsupportedQuad(const DrawQuad* quad) {
 void SkiaRenderer::CopyDrawnRenderPass(
     std::unique_ptr<CopyOutputRequest> request) {
   // TODO(weiliangc): Make copy request work. (crbug.com/644851)
-  TRACE_EVENT0("viz", "SkiaRenderer::CopyDrawnRenderPass");
-
-  gfx::Rect copy_rect = current_frame()->current_render_pass->output_rect;
-  if (request->has_area())
-    copy_rect.Intersect(request->area());
-
-  if (copy_rect.IsEmpty())
-    return;
-
-  gfx::Rect window_copy_rect = MoveFromDrawToWindowSpace(copy_rect);
-
-  sk_sp<SkImage> copy_image = current_surface_->makeImageSnapshot()->makeSubset(
-      RectToSkIRect(window_copy_rect));
-
-  if (request->result_format() == CopyOutputResult::Format::RGBA_BITMAP) {
-    // Send copy request by copying into a bitmap.
-    SkBitmap bitmap;
-    copy_image->asLegacyBitmap(&bitmap);
-
-    request->SendResult(
-        std::make_unique<CopyOutputSkBitmapResult>(copy_rect, bitmap));
-    return;
-  }
-
-  NOTREACHED();
+  NOTIMPLEMENTED();
 }
 
 void SkiaRenderer::SetEnableDCLayers(bool enable) {

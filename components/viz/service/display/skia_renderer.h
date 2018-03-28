@@ -128,7 +128,6 @@ class VIZ_SERVICE_EXPORT SkiaRenderer : public DirectRenderer {
   std::unique_ptr<SkNWayCanvas> nway_canvas_;
   SkCanvas* root_canvas_ = nullptr;
   SkCanvas* current_canvas_ = nullptr;
-  SkSurface* current_surface_ = nullptr;
   SkPaint current_paint_;
 
   base::Optional<SyncQueryCollection> sync_queries_;

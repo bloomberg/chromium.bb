@@ -192,14 +192,6 @@ void PixelTest::SetUpGLRenderer(bool flipped_output_surface) {
   renderer_->SetVisible(true);
 }
 
-void PixelTest::SetUpSkiaRenderer() {
-  SetUpGLWithoutRenderer(false);
-  renderer_ = std::make_unique<viz::SkiaRenderer>(
-      &renderer_settings_, output_surface_.get(), resource_provider_.get());
-  renderer_->Initialize();
-  renderer_->SetVisible(true);
-}
-
 void PixelTest::EnableExternalStencilTest() {
   static_cast<PixelTestOutputSurface*>(output_surface_.get())
       ->set_has_external_stencil_test(true);
