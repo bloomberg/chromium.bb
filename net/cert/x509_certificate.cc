@@ -440,6 +440,20 @@ bool X509Certificate::Equals(const X509Certificate* other) const {
                                       other->cert_buffer_.get());
 }
 
+bool X509Certificate::EqualsIncludingChain(const X509Certificate* other) const {
+  if (intermediate_ca_certs_.size() != other->intermediate_ca_certs_.size() ||
+      !Equals(other)) {
+    return false;
+  }
+  for (size_t i = 0; i < intermediate_ca_certs_.size(); ++i) {
+    if (!x509_util::CryptoBufferEqual(intermediate_ca_certs_[i].get(),
+                                      other->intermediate_ca_certs_[i].get())) {
+      return false;
+    }
+  }
+  return true;
+}
+
 bool X509Certificate::IsIssuedByEncoded(
     const std::vector<std::string>& valid_issuers) {
   std::vector<std::string> normalized_issuers;

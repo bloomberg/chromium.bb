@@ -732,6 +732,108 @@ TEST(X509CertificateTest, IntermediateCertificates) {
                                            thawte_cert->cert_buffer()));
 }
 
+TEST(X509CertificateTest, Equals) {
+  CertificateList certs = CreateCertificateListFromFile(
+      GetTestCertsDirectory(), "multi-root-chain1.pem",
+      X509Certificate::FORMAT_PEM_CERT_SEQUENCE);
+  ASSERT_EQ(4u, certs.size());
+
+  // Comparing X509Certificates with no intermediates.
+  EXPECT_TRUE(certs[0]->Equals(certs[0].get()));
+  EXPECT_FALSE(certs[1]->Equals(certs[0].get()));
+  EXPECT_FALSE(certs[0]->Equals(certs[1].get()));
+  EXPECT_TRUE(certs[0]->EqualsIncludingChain(certs[0].get()));
+  EXPECT_FALSE(certs[1]->EqualsIncludingChain(certs[0].get()));
+  EXPECT_FALSE(certs[0]->EqualsIncludingChain(certs[1].get()));
+
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates1;
+  intermediates1.push_back(x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
+  scoped_refptr<X509Certificate> cert0_with_intermediate =
+      X509Certificate::CreateFromBuffer(
+          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
+          std::move(intermediates1));
+  ASSERT_TRUE(cert0_with_intermediate);
+
+  // Comparing X509Certificate with one intermediate to X509Certificate with no
+  // intermediates.
+  EXPECT_TRUE(certs[0]->Equals(cert0_with_intermediate.get()));
+  EXPECT_TRUE(cert0_with_intermediate->Equals(certs[0].get()));
+  EXPECT_FALSE(certs[0]->EqualsIncludingChain(cert0_with_intermediate.get()));
+  EXPECT_FALSE(cert0_with_intermediate->EqualsIncludingChain(certs[0].get()));
+
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates2;
+  intermediates2.push_back(x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  scoped_refptr<X509Certificate> cert0_with_intermediate2 =
+      X509Certificate::CreateFromBuffer(
+          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
+          std::move(intermediates1));
+  ASSERT_TRUE(cert0_with_intermediate2);
+
+  // Comparing X509Certificate with one intermediate to X509Certificate with
+  // one different intermediate.
+  EXPECT_TRUE(cert0_with_intermediate2->Equals(cert0_with_intermediate.get()));
+  EXPECT_TRUE(cert0_with_intermediate->Equals(cert0_with_intermediate2.get()));
+  EXPECT_FALSE(cert0_with_intermediate2->EqualsIncludingChain(
+      cert0_with_intermediate.get()));
+  EXPECT_FALSE(cert0_with_intermediate->EqualsIncludingChain(
+      cert0_with_intermediate2.get()));
+
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates12;
+  intermediates12.push_back(
+      x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
+  intermediates12.push_back(
+      x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  scoped_refptr<X509Certificate> cert0_with_intermediates12 =
+      X509Certificate::CreateFromBuffer(
+          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
+          std::move(intermediates12));
+  ASSERT_TRUE(cert0_with_intermediates12);
+
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates21;
+  intermediates21.push_back(
+      x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  intermediates21.push_back(
+      x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
+  scoped_refptr<X509Certificate> cert0_with_intermediates21 =
+      X509Certificate::CreateFromBuffer(
+          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
+          std::move(intermediates21));
+  ASSERT_TRUE(cert0_with_intermediates21);
+
+  // Comparing X509Certificate with two intermediates to X509Certificate with
+  // same two intermediates but in reverse order
+  EXPECT_TRUE(
+      cert0_with_intermediates21->Equals(cert0_with_intermediates12.get()));
+  EXPECT_TRUE(
+      cert0_with_intermediates12->Equals(cert0_with_intermediates21.get()));
+  EXPECT_FALSE(cert0_with_intermediates21->EqualsIncludingChain(
+      cert0_with_intermediates12.get()));
+  EXPECT_FALSE(cert0_with_intermediates12->EqualsIncludingChain(
+      cert0_with_intermediates21.get()));
+
+  std::vector<bssl::UniquePtr<CRYPTO_BUFFER>> intermediates12b;
+  intermediates12b.push_back(
+      x509_util::DupCryptoBuffer(certs[1]->cert_buffer()));
+  intermediates12b.push_back(
+      x509_util::DupCryptoBuffer(certs[2]->cert_buffer()));
+  scoped_refptr<X509Certificate> cert0_with_intermediates12b =
+      X509Certificate::CreateFromBuffer(
+          x509_util::DupCryptoBuffer(certs[0]->cert_buffer()),
+          std::move(intermediates12b));
+  ASSERT_TRUE(cert0_with_intermediates12b);
+
+  // Comparing X509Certificate with two intermediates to X509Certificate with
+  // same two intermediates in same order.
+  EXPECT_TRUE(
+      cert0_with_intermediates12->Equals(cert0_with_intermediates12b.get()));
+  EXPECT_TRUE(
+      cert0_with_intermediates12b->Equals(cert0_with_intermediates12.get()));
+  EXPECT_TRUE(cert0_with_intermediates12->EqualsIncludingChain(
+      cert0_with_intermediates12b.get()));
+  EXPECT_TRUE(cert0_with_intermediates12b->EqualsIncludingChain(
+      cert0_with_intermediates12.get()));
+}
+
 TEST(X509CertificateTest, IsIssuedByEncoded) {
   base::FilePath certs_dir = GetTestCertsDirectory();
 
