@@ -108,15 +108,9 @@ WebRtcMediaStreamTrackAdapterMap::GetOrCreateLocalTrackAdapter(
     return base::WrapUnique(
         new AdapterRef(this, AdapterRef::Type::kLocal, *adapter_ptr));
   }
-  scoped_refptr<WebRtcMediaStreamTrackAdapter> new_adapter;
-  {
-    // Do not hold |lock_| while creating the adapter in case that operation
-    // synchronizes with the signaling thread. If we do and the signaling thread
-    // is blocked waiting for |lock_| we end up in a deadlock.
-    base::AutoUnlock scoped_unlock(lock_);
-    new_adapter = WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
-        factory_, main_thread_, web_track);
-  }
+  scoped_refptr<WebRtcMediaStreamTrackAdapter> new_adapter =
+      WebRtcMediaStreamTrackAdapter::CreateLocalTrackAdapter(
+          factory_, main_thread_, web_track);
   DCHECK(new_adapter->is_initialized());
   local_track_adapters_.Insert(web_track.UniqueId(), new_adapter);
   local_track_adapters_.SetSecondaryKey(web_track.UniqueId(),
@@ -167,15 +161,9 @@ WebRtcMediaStreamTrackAdapterMap::GetOrCreateRemoteTrackAdapter(
     return base::WrapUnique(
         new AdapterRef(this, AdapterRef::Type::kRemote, *adapter_ptr));
   }
-  scoped_refptr<WebRtcMediaStreamTrackAdapter> new_adapter;
-  {
-    // Do not hold |lock_| while creating the adapter in case that operation
-    // synchronizes with the main thread. If we do and the main thread is
-    // blocked waiting for |lock_| we end up in a deadlock.
-    base::AutoUnlock scoped_unlock(lock_);
-    new_adapter = WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
-        factory_, main_thread_, webrtc_track);
-  }
+  scoped_refptr<WebRtcMediaStreamTrackAdapter> new_adapter =
+      WebRtcMediaStreamTrackAdapter::CreateRemoteTrackAdapter(
+          factory_, main_thread_, webrtc_track);
   remote_track_adapters_.Insert(webrtc_track.get(), new_adapter);
   // The new adapter is initialized in a post to the main thread. As soon as it
   // is initialized we map its |webrtc_track| to the |remote_track_adapters_|
