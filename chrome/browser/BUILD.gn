@@ -743,6 +743,8 @@ jumbo_split_static_library("browser") {
     "net/chrome_net_log_helper.h",
     "net/chrome_network_delegate.cc",
     "net/chrome_network_delegate.h",
+    "net/chrome_report_sender.cc",
+    "net/chrome_report_sender.h",
     "net/chrome_url_request_context_getter.cc",
     "net/chrome_url_request_context_getter.h",
     "net/default_network_context_params.cc",

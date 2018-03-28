@@ -31,6 +31,8 @@ class NET_EXPORT ReportSender
     : public URLRequest::Delegate,
       public TransportSecurityState::ReportSenderInterface {
  public:
+  static const int kLoadFlags;
+
   using SuccessCallback = base::Callback<void()>;
   using ErrorCallback = base::Callback<
       void(const GURL&, int /* net_error */, int /* http_response_code */)>;
