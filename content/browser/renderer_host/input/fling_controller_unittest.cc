@@ -100,6 +100,9 @@ class FlingControllerTest : public testing::Test,
     WebGestureEvent fling_cancel(
         WebInputEvent::kGestureFlingCancel, 0,
         ui::EventTimeStampToSeconds(base::TimeTicks::Now()), source_device);
+    // autoscroll fling cancel doesn't allow fling boosting.
+    if (source_device == blink::kWebGestureDeviceSyntheticAutoscroll)
+      fling_cancel.data.fling_cancel.prevent_boosting = true;
     GestureEventWithLatencyInfo fling_cancel_with_latency(fling_cancel);
     last_fling_cancel_filtered_ =
         fling_controller_->FilterGestureEvent(fling_cancel_with_latency);
@@ -472,6 +475,34 @@ TEST_F(FlingControllerTest, ControllerNotifiesTheClientAfterFlingStart) {
   EXPECT_FALSE(FlingInProgress());
   EXPECT_EQ(WebInputEvent::kGestureScrollEnd, last_sent_gesture_.GetType());
   EXPECT_TRUE(notified_client_after_fling_stop_);
+}
+
+TEST_F(FlingControllerTest, MiddleClickAutoScrollFling) {
+  base::TimeTicks progress_time = base::TimeTicks::Now();
+  SimulateFlingStart(blink::kWebGestureDeviceSyntheticAutoscroll,
+                     gfx::Vector2dF(1000, 0));
+  EXPECT_TRUE(FlingInProgress());
+
+  progress_time += base::TimeDelta::FromMilliseconds(17);
+  ProgressFling(progress_time);
+  ASSERT_EQ(WebInputEvent::kGestureScrollUpdate, last_sent_gesture_.GetType());
+  EXPECT_EQ(WebGestureEvent::kMomentumPhase,
+            last_sent_gesture_.data.scroll_update.inertial_phase);
+  EXPECT_GT(last_sent_gesture_.data.scroll_update.delta_x, 0.f);
+
+  // Now send a new fling with different velocity and without sending a fling
+  // cancel event, the new fling should always replace the old one even when
+  // they are in the same direction.
+  SimulateFlingStart(blink::kWebGestureDeviceSyntheticAutoscroll,
+                     gfx::Vector2dF(2000, 0));
+  EXPECT_TRUE(FlingInProgress());
+  EXPECT_FALSE(FlingBoosted());
+
+  // Now cancel the fling. The GFC won't get suppressed by fling booster since
+  // autoscroll fling doesn't have boosting.
+  SimulateFlingCancel(blink::kWebGestureDeviceSyntheticAutoscroll);
+  EXPECT_FALSE(last_fling_cancel_filtered_);
+  EXPECT_FALSE(FlingInProgress());
 }
 
 }  // namespace content

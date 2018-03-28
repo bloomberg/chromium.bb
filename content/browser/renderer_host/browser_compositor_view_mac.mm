@@ -476,7 +476,7 @@ void BrowserCompositorMac::OnFirstSurfaceActivation(
 }
 
 void BrowserCompositorMac::OnBeginFrame(base::TimeTicks frame_time) {
-  client_->BrowserCompositorMacOnBeginFrame();
+  client_->BrowserCompositorMacOnBeginFrame(frame_time);
 }
 
 bool BrowserCompositorMac::IsAutoResizeEnabled() const {

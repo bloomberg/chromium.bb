@@ -159,7 +159,11 @@ SkColor RenderWidgetHostViewMac::BrowserCompositorMacGetGutterColor() const {
   return last_frame_root_background_color_;
 }
 
-void RenderWidgetHostViewMac::BrowserCompositorMacOnBeginFrame() {
+void RenderWidgetHostViewMac::BrowserCompositorMacOnBeginFrame(
+    base::TimeTicks frame_time) {
+  // ProgressFling must get called for middle click autoscroll fling on Mac.
+  if (host())
+    host()->ProgressFling(frame_time);
   UpdateNeedsBeginFramesInternal();
 }
 
