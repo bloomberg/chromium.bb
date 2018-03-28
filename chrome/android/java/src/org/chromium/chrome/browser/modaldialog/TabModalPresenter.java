@@ -94,7 +94,7 @@ public class TabModalPresenter extends ModalDialogManager.Presenter {
         mDialogContainer.setVisibility(View.VISIBLE);
 
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                MarginLayoutParams.MATCH_PARENT, MarginLayoutParams.WRAP_CONTENT, Gravity.CENTER);
+                MarginLayoutParams.WRAP_CONTENT, MarginLayoutParams.WRAP_CONTENT, Gravity.CENTER);
         mDialogContainer.addView(dialogView, params);
         mChromeActivity.addViewObscuringAllTabs(mDialogContainer);
         updateContainerHierarchy(true);

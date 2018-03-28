@@ -32,9 +32,20 @@ public class AppModalPresenter extends ModalDialogManager.Presenter {
                 R.layout.modal_dialog_container, null);
         mDialog.setContentView(container);
         FrameLayout.LayoutParams params =
-                new FrameLayout.LayoutParams(ViewGroup.MarginLayoutParams.MATCH_PARENT,
+                new FrameLayout.LayoutParams(ViewGroup.MarginLayoutParams.WRAP_CONTENT,
                         ViewGroup.MarginLayoutParams.WRAP_CONTENT, Gravity.CENTER);
         container.addView(dialogView, params);
+        if (getModalDialog().getCancelOnTouchOutside()) {
+            mDialog.setCanceledOnTouchOutside(true);
+            // The dialog container covers the entire screen. To achieve the cancel on touch outside
+            // behavior cancel the dialog if the container is touched.
+            container.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    mDialog.cancel();
+                }
+            });
+        }
         mDialog.show();
     }
 

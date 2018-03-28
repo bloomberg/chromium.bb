@@ -79,6 +79,11 @@ public class ModalDialogView implements View.OnClickListener {
          * must be null if negativeButtonTextId is not zero
          */
         public String negativeButtonText;
+
+        /**
+         * Optional: If true the dialog gets cancelled when the user touches outside of the dialog.
+         */
+        public boolean cancelOnTouchOutside;
     }
 
     @IntDef({BUTTON_POSITIVE, BUTTON_NEGATIVE})
@@ -198,5 +203,12 @@ public class ModalDialogView implements View.OnClickListener {
      */
     public String getContentDescription() {
         return mParams.title;
+    }
+
+    /**
+     * @return Returns true if the dialog is dismissed when the user touches outside of the dialog.
+     */
+    public boolean getCancelOnTouchOutside() {
+        return mParams.cancelOnTouchOutside;
     }
 }
