@@ -2434,6 +2434,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'betty-arc64',
       'bob',
       'caroline',
+      'caroline-arcnext',
       'cave',
       'chell',
       'coral',
@@ -2451,6 +2452,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'hana',
       'kahlee',
       'kevin',
+      'kevin-arcnext',
       'kip',
       'lakitu',
       'lakitu-gpu',
@@ -2500,9 +2502,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'auron',
       'auron_paine',
       'betty-arcnext',
-      'caroline-arcnext',
       'grunt',
-      'kevin-arcnext',
       'nami',
       'octopus',
       'atlas',
@@ -3239,10 +3239,12 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   _chrome_pfq_important_boards = frozenset([
       'betty',
       'caroline',
+      'caroline-arcnext',
       'chell',
       'coral',
       'cyan',
       'daisy_skate',
+      'kevin-arcnext',
       'peach_pit',
       'peppy',
       'reef',
@@ -3254,16 +3256,14 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   _chrome_pfq_experimental_boards = frozenset([
       'betty-arcnext',
       'bob',
-      'caroline-arcnext',
       'eve-arcnext',
       'hana',
-      'kevin-arcnext',
       'nyan_big',
       'scarlet',
       'terra',
   ])
 
-  _chromte_pfq_tryjob_boards = (
+  _chrome_pfq_tryjob_boards = (
       (boards_dict['all_release_boards'] & _chrome_boards) -
       (_chrome_pfq_important_boards | _chrome_pfq_experimental_boards)
   )
@@ -3291,7 +3291,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
   # Define the result of the build configs for tryjob purposes.
   site_config.AddForBoards(
       'chrome-pfq',
-      _chromte_pfq_tryjob_boards,
+      _chrome_pfq_tryjob_boards,
       internal_board_configs,
       site_config.templates.chrome_pfq,
       important=False,
