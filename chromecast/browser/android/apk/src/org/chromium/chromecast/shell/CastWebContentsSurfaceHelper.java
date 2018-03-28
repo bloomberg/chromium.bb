@@ -18,6 +18,7 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chromecast.base.CastSwitches;
 import org.chromium.chromecast.base.Controller;
+import org.chromium.chromecast.base.ScopeFactories;
 import org.chromium.chromecast.base.Unit;
 import org.chromium.components.content_view.ContentView;
 import org.chromium.content.browser.ActivityContentVideoViewEmbedder;
@@ -46,16 +47,13 @@ class CastWebContentsSurfaceHelper {
 
     private static final int TEARDOWN_GRACE_PERIOD_TIMEOUT_MILLIS = 300;
 
-    private final Controller<WebContents> mHasWebContentsState = new Controller<>();
     private final Controller<Unit> mResumedState = new Controller<>();
     private final Controller<Uri> mHasUriState = new Controller<>();
-    private final Controller<Uri> mTouchEnabledState = new Controller<>();
 
     private final Activity mHostActivity;
     private final boolean mShowInFragment;
     private final Handler mHandler;
     private final FrameLayout mCastWebContentsLayout;
-    private final CastAudioManager mAudioManager;
 
     private Uri mUri;
     private String mInstanceId;
@@ -80,10 +78,9 @@ class CastWebContentsSurfaceHelper {
         mCastWebContentsLayout.setBackgroundColor(CastSwitches.getSwitchValueColor(
                 CastSwitches.CAST_APP_BACKGROUND_COLOR, Color.BLACK));
         mHandler = new Handler();
-        mAudioManager = CastAudioManager.getAudioManager(getActivity());
 
         // Receive broadcasts indicating the screen turned off while we have active WebContents.
-        mHasWebContentsState.watch(() -> {
+        mHasUriState.watch(() -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastIntents.ACTION_SCREEN_OFF);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
@@ -111,7 +108,7 @@ class CastWebContentsSurfaceHelper {
         // Receive broadcasts indicating that touch input should be enabled.
         // TODO(yyzhong) Handle this intent in an external activity hosting a cast fragment as
         // well.
-        mTouchEnabledState.watch((Uri uri) -> {
+        mHasUriState.watch((Uri uri) -> {
             IntentFilter filter = new IntentFilter();
             filter.addAction(CastWebContentsIntentUtils.ACTION_ENABLE_TOUCH_INPUT);
             return new LocalBroadcastReceiverScope(filter, (Intent intent) -> {
@@ -124,6 +121,19 @@ class CastWebContentsSurfaceHelper {
                 mTouchInputEnabled = CastWebContentsIntentUtils.isTouchable(intent);
             });
         });
+
+        mResumedState.watch(() -> {
+            if (mContentViewCore != null) {
+                mContentViewCore.onResume();
+            }
+            return () -> {
+                if (mContentViewCore != null) {
+                    mContentViewCore.onPause();
+                }
+            };
+        });
+        // On pause events, unmute so that that other activities can control the mute state on L.
+        mResumedState.watch(ScopeFactories.onExit(() -> releaseStreamMuteIfNecessary()));
     }
 
     void onNewWebContents(
@@ -146,8 +156,6 @@ class CastWebContentsSurfaceHelper {
         mHostActivity.setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
         mHasUriState.set(mUri);
-        mHasWebContentsState.set(webContents);
-        mTouchEnabledState.set(mUri);
 
         showWebContents(webContents);
     }
@@ -220,7 +228,7 @@ class CastWebContentsSurfaceHelper {
     }
 
     // Remove the currently displayed webContents. no-op if nothing is being displayed.
-    void detachWebContentsIfAny() {
+    private void detachWebContentsIfAny() {
         Log.d(TAG, "Maybe detach web contents if any: " + mUri);
         if (mContentView != null) {
             mCastWebContentsLayout.removeView(mContentView);
@@ -240,17 +248,11 @@ class CastWebContentsSurfaceHelper {
     void onPause() {
         Log.d(TAG, "onPause: " + mUri);
         mResumedState.reset();
-
-        if (mContentViewCore != null) {
-            mContentViewCore.onPause();
-        }
-
-        releaseStreamMuteIfNecessary();
     }
 
     @SuppressWarnings("deprecation")
     private void releaseStreamMuteIfNecessary() {
-        AudioManager audioManager = mAudioManager.getInternal();
+        AudioManager audioManager = CastAudioManager.getAudioManager(getActivity()).getInternal();
         boolean isMuted = false;
         try {
             isMuted = (Boolean) audioManager.getClass()
@@ -269,19 +271,13 @@ class CastWebContentsSurfaceHelper {
     void onResume() {
         Log.d(TAG, "onResume: " + mUri);
         mResumedState.set(Unit.unit());
-
-        if (mContentViewCore != null) {
-            mContentViewCore.onResume();
-        }
     }
 
     // Destroys all resources. After calling this method, this object must be dropped.
     void onDestroy() {
         Log.d(TAG, "onDestroy: " + mUri);
         detachWebContentsIfAny();
-        mHasWebContentsState.reset();
         mHasUriState.reset();
-        mTouchEnabledState.reset();
     }
 
     String getInstanceId() {
