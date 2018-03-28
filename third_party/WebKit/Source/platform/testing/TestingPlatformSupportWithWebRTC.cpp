@@ -34,6 +34,7 @@ class DummyWebRTCRtpSender : public WebRTCRtpSender {
   std::unique_ptr<WebRTCRtpParameters> GetParameters() const override {
     return std::unique_ptr<WebRTCRtpParameters>();
   }
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override {}
 
  private:
   const uintptr_t id_;
