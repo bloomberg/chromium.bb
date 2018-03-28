@@ -35,12 +35,7 @@ int file_is_obu(struct ObuDecInputContext *obu_ctx);
 // via 'bytes_read'.
 int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
                               uint8_t **buffer, size_t *bytes_read,
-#if CONFIG_SCALABILITY
-                              size_t *buffer_size, int last_layer_id
-#else
-                              size_t *buffer_size
-#endif
-);
+                              size_t *buffer_size, int last_layer_id);
 
 void obudec_free(struct ObuDecInputContext *obu_ctx);
 

@@ -235,12 +235,7 @@ int file_is_obu(struct ObuDecInputContext *obu_ctx) {
 
 int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
                               uint8_t **buffer, size_t *bytes_read,
-#if CONFIG_SCALABILITY
-                              size_t *buffer_size, int last_layer_id
-#else
-                              size_t *buffer_size
-#endif
-) {
+                              size_t *buffer_size, int last_layer_id) {
   FILE *f = obu_ctx->avx_ctx->file;
   if (!f) return -1;
 
@@ -264,12 +259,9 @@ int obudec_read_temporal_unit(struct ObuDecInputContext *obu_ctx,
       return -1;
     }
 
-    if (obu_header.type == OBU_TEMPORAL_DELIMITER || obu_size == 0
-#if CONFIG_SCALABILITY
-        || (obu_header.has_extension &&
-            obu_header.enhancement_layer_id > last_layer_id)
-#endif
-    ) {
+    if (obu_header.type == OBU_TEMPORAL_DELIMITER || obu_size == 0 ||
+        (obu_header.has_extension &&
+         obu_header.enhancement_layer_id > last_layer_id)) {
       const size_t tu_size = obu_ctx->bytes_buffered;
 
 #if defined AOM_MAX_ALLOCABLE_MEMORY

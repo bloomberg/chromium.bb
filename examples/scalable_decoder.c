@@ -79,9 +79,7 @@
 #include "../tools_common.h"
 #include "../video_reader.h"
 #include "./aom_config.h"
-#if CONFIG_SCALABILITY
 #include "./obudec.h"
-#endif
 
 static const char *exec_name;
 

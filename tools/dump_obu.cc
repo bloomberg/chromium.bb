@@ -24,10 +24,7 @@
 
 namespace {
 
-#if CONFIG_SCALABILITY
 const int kIgnoreLayers = 8;  // Used to ignore layer info in obudec.
-#endif
-
 const size_t kInitialBufferSize = 100 * 1024;
 
 struct InputContext {
@@ -77,12 +74,7 @@ bool ReadTemporalUnit(InputContext *ctx, size_t *unit_size) {
     }
     case FILE_TYPE_OBU: {
       if (obudec_read_temporal_unit(ctx->obu_ctx, &ctx->unit_buffer, unit_size,
-#if CONFIG_SCALABILITY
-                                    &ctx->unit_buffer_size, kIgnoreLayers
-#else
-                                    &ctx->unit_buffer_size
-#endif
-                                    )) {
+                                    &ctx->unit_buffer_size, kIgnoreLayers)) {
         return false;
       }
       break;

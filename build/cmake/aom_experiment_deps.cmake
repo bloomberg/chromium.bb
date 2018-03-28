@@ -30,12 +30,6 @@ macro (fix_experiment_configs)
     change_config_and_warn(CONFIG_RD_DEBUG 0 CONFIG_JNT_COMP)
   endif()
 
-  if (CONFIG_FRAME_COUNTER_FOR_SCALABILITY)
-    if (NOT CONFIG_SCALABILITY)
-      change_config_and_warn(CONFIG_SCALABILITY 1
-                             CONFIG_FRAME_COUNTER_FOR_SCALABILITY)
-    endif ()
-  endif()
 endmacro ()
 
 endif ()  # AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_

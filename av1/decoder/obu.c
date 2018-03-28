@@ -22,7 +22,6 @@
 #include "av1/decoder/decodeframe.h"
 #include "av1/decoder/obu.h"
 
-#if CONFIG_SCALABILITY
 // Picture prediction structures (0-12 are predefined) in scalability metadata.
 typedef enum {
   SCALABILITY_L1T2 = 0,
@@ -40,7 +39,6 @@ typedef enum {
   SCALABILITY_S2T3h = 12,
   SCALABILITY_SS = 13
 } SCALABILITY_STRUCTURES;
-#endif
 
 int get_obu_type(uint8_t obu_header, OBU_TYPE *obu_type) {
   if (!obu_type) return -1;
@@ -153,22 +151,14 @@ static uint32_t read_sequence_header_obu(AV1Decoder *pbi,
   cm->profile = av1_read_profile(rb);
 
 #if !CONFIG_OPERATING_POINTS
-#if !CONFIG_SCALABILITY
-  aom_rb_read_literal(rb, 4);  // level
-#else
   int i;
   pbi->common.enhancement_layers_cnt = aom_rb_read_literal(rb, 2);
   for (i = 0; i <= pbi->common.enhancement_layers_cnt; i++) {
     aom_rb_read_literal(rb, 4);  // level for each enhancement layer
   }
-#endif
-#else  // CONFIG_OPERATING_POINTS
-#if CONFIG_SCALABILITY
+#else   // CONFIG_OPERATING_POINTS
   uint8_t operating_points_minus1_cnt = aom_rb_read_literal(rb, 5);
   pbi->common.enhancement_layers_cnt = operating_points_minus1_cnt + 1;
-#else
-  uint8_t operating_points_minus1_cnt = 0;
-#endif
   int i;
   SequenceHeader *seq_params = &cm->seq_params;
   for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
@@ -317,7 +307,6 @@ static void read_metadata_hdr_mdcv(const uint8_t *data) {
   mem_get_le16(data);
 }
 
-#if CONFIG_SCALABILITY
 static void scalability_structure(struct aom_read_bit_buffer *rb) {
   int enhancement_layers_cnt = aom_rb_read_literal(rb, 2);
   int enhancement_layer_dimensions_present_flag = aom_rb_read_literal(rb, 1);
@@ -360,7 +349,6 @@ static void read_metadata_scalability(const uint8_t *data, size_t sz) {
     scalability_structure(&rb);
   }
 }
-#endif
 
 static size_t read_metadata(const uint8_t *data, size_t sz) {
   if (sz < 2) return sz;  // Invalid data size.
@@ -372,10 +360,8 @@ static size_t read_metadata(const uint8_t *data, size_t sz) {
     read_metadata_hdr_cll(data + 2);
   } else if (metadata_type == OBU_METADATA_TYPE_HDR_MDCV) {
     read_metadata_hdr_mdcv(data + 2);
-#if CONFIG_SCALABILITY
   } else if (metadata_type == OBU_METADATA_TYPE_SCALABILITY) {
     read_metadata_scalability(data + 2, sz - 2);
-#endif
   }
 
   return sz;
@@ -453,10 +439,8 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
       return;
     }
 
-#if CONFIG_SCALABILITY
     cm->temporal_layer_id = obu_header.temporal_layer_id;
     cm->enhancement_layer_id = obu_header.enhancement_layer_id;
-#endif
 
     switch (obu_header.type) {
       case OBU_TEMPORAL_DELIMITER:

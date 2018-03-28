@@ -243,13 +243,8 @@ static int read_frame(struct AvxDecInputContext *input, uint8_t **buf,
       return ivf_read_frame(input->aom_input_ctx->file, buf, bytes_in_buffer,
                             buffer_size);
     case FILE_TYPE_OBU:
-      return obudec_read_temporal_unit(input->obu_ctx, buf,
-#if CONFIG_SCALABILITY
-                                       bytes_in_buffer, buffer_size, 0
-#else
-                                       bytes_in_buffer, buffer_size
-#endif
-      );
+      return obudec_read_temporal_unit(input->obu_ctx, buf, bytes_in_buffer,
+                                       buffer_size, 0);
     default: return 1;
   }
 }

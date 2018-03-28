@@ -26,10 +26,7 @@
 
 #define MAG_SIZE (4)
 #define MAX_INDEX_SIZE (256)
-
-#if CONFIG_SCALABILITY
 #define MAX_NUM_ENHANCEMENT_LAYERS 128
-#endif
 
 struct av1_extracfg {
   int cpu_used;  // available cpu percentage in 1/16
@@ -1299,10 +1296,8 @@ static aom_codec_err_t encoder_encode(aom_codec_alg_priv_t *ctx,
       pkt.data.frame.partition_id = -1;
 
       int write_temporal_delimiter = 1;
-#if CONFIG_SCALABILITY
       // only write OBU_TD if base layer
       write_temporal_delimiter = !cpi->common.enhancement_layer_id;
-#endif  // CONFIG_SCALABILITY
       if (write_temporal_delimiter) {
         // move data and insert OBU_TD preceded by optional 4 byte size
         uint32_t obu_header_size = 1;
@@ -1496,32 +1491,20 @@ static aom_codec_err_t ctrl_set_scale_mode(aom_codec_alg_priv_t *ctx,
 
 static aom_codec_err_t ctrl_set_enhancement_layer_id(aom_codec_alg_priv_t *ctx,
                                                      va_list args) {
-#if CONFIG_SCALABILITY
   const int enhancement_layer_id = va_arg(args, int);
   if (enhancement_layer_id > MAX_NUM_ENHANCEMENT_LAYERS)
     return AOM_CODEC_INVALID_PARAM;
   ctx->cpi->common.enhancement_layer_id = enhancement_layer_id;
   return AOM_CODEC_OK;
-#else
-  (void)ctx;
-  (void)args;
-  return AOM_CODEC_UNSUP_FEATURE;
-#endif
 }
 
 static aom_codec_err_t ctrl_set_number_spatial_layers(aom_codec_alg_priv_t *ctx,
                                                       va_list args) {
-#if CONFIG_SCALABILITY
   const int number_spatial_layers = va_arg(args, int);
   if (number_spatial_layers > MAX_NUM_ENHANCEMENT_LAYERS)
     return AOM_CODEC_INVALID_PARAM;
   ctx->cpi->common.enhancement_layers_cnt = number_spatial_layers - 1;
   return AOM_CODEC_OK;
-#else
-  (void)ctx;
-  (void)args;
-  return AOM_CODEC_UNSUP_FEATURE;
-#endif
 }
 
 static aom_codec_err_t ctrl_set_tune_content(aom_codec_alg_priv_t *ctx,

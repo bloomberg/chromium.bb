@@ -69,14 +69,10 @@ extern "C" {
 #define NUM_PING_PONG_BUFFERS 2
 
 #if CONFIG_OPERATING_POINTS
-#if CONFIG_SCALABILITY
 #define MAX_NUM_TEMPORAL_LAYERS 8
 #define MAX_NUM_SPATIAL_LAYERS 4
 #define MAX_NUM_OPERATING_POINTS \
   MAX_NUM_TEMPORAL_LAYERS + MAX_NUM_SPATIAL_LAYERS
-#else
-#define MAX_NUM_OPERATING_POINTS 1
-#endif
 #endif
 
 // TODO(jingning): Turning this on to set up transform coefficient
@@ -546,12 +542,9 @@ typedef struct AV1Common {
   // TODO(jingning): This can be combined with sign_bias later.
   int8_t ref_frame_side[REF_FRAMES];
   int frame_refs_short_signaling;
-
-#if CONFIG_SCALABILITY
   int temporal_layer_id;
   int enhancement_layer_id;
   int enhancement_layers_cnt;
-#endif
 
 #if TXCOEFF_TIMER
   int64_t cum_txcoeff_timer;

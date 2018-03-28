@@ -3375,13 +3375,8 @@ static void add_trailing_bits(struct aom_write_bit_buffer *wb) {
 }
 #endif
 
-static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst
-#if CONFIG_SCALABILITY
-                                          ,
+static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst,
                                           uint8_t enhancement_layers_cnt) {
-#else
-) {
-#endif
   AV1_COMMON *const cm = &cpi->common;
   struct aom_write_bit_buffer wb = { dst, 0 };
   uint32_t size = 0;
@@ -3389,21 +3384,13 @@ static uint32_t write_sequence_header_obu(AV1_COMP *cpi, uint8_t *const dst
   write_profile(cm->profile, &wb);
 
 #if !CONFIG_OPERATING_POINTS
-#if !CONFIG_SCALABILITY
-  aom_wb_write_literal(&wb, 0, 4);
-#else
   aom_wb_write_literal(&wb, enhancement_layers_cnt, 2);
   int i;
   for (i = 0; i <= enhancement_layers_cnt; i++) {
     aom_wb_write_literal(&wb, 0, 4);
   }
-#endif
-#else  // CONFIG_OPERATING_POINTS
-#if !CONFIG_SCALABILITY
-  uint8_t operating_points_minus1_cnt = 0;
-#else
+#else   // CONFIG_OPERATING_POINTS
   uint8_t operating_points_minus1_cnt = enhancement_layers_cnt;
-#endif
   aom_wb_write_literal(&wb, operating_points_minus1_cnt, 5);
   int i;
   for (i = 0; i < operating_points_minus1_cnt + 1; i++) {
@@ -3830,13 +3817,9 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   uint32_t obu_header_size = 0;
   uint32_t obu_payload_size = 0;
   FrameHeaderInfo fh_info = { NULL, 0, 0 };
-#if CONFIG_SCALABILITY
   const uint8_t enhancement_layers_cnt = cm->enhancement_layers_cnt;
   const uint8_t obu_extension_header =
       cm->temporal_layer_id << 5 | cm->enhancement_layer_id << 3 | 0;
-#else
-  uint8_t obu_extension_header = 0;
-#endif  // CONFIG_SCALABILITY
 
 #if CONFIG_BITSTREAM_DEBUG
   bitstream_queue_reset_write();
@@ -3848,13 +3831,8 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
   if (cm->frame_type == KEY_FRAME) {
     obu_header_size = write_obu_header(OBU_SEQUENCE_HEADER, 0, data);
 
-#if CONFIG_SCALABILITY
     obu_payload_size = write_sequence_header_obu(cpi, data + obu_header_size,
                                                  enhancement_layers_cnt);
-#else
-    obu_payload_size = write_sequence_header_obu(cpi, data + obu_header_size);
-#endif  // CONFIG_SCALABILITY
-
     const size_t length_field_size =
         obu_memmove(obu_header_size, obu_payload_size, data);
     if (write_uleb_obu_size(obu_header_size, obu_payload_size, data) !=
