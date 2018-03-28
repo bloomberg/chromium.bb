@@ -24,7 +24,12 @@ void AdjustForBackwardsRange(int* index, int* count) {
 }  // namespace
 
 PDFiumRange::PDFiumRange(PDFiumPage* page, int char_index, int char_count)
-    : page_(page), char_index_(char_index), char_count_(char_count) {}
+    : page_(page), char_index_(char_index), char_count_(char_count) {
+#if DCHECK_IS_ON()
+  AdjustForBackwardsRange(&char_index, &char_count);
+  DCHECK_LE(char_count, FPDFText_CountChars(page_->GetTextPage()));
+#endif
+}
 
 PDFiumRange::PDFiumRange(const PDFiumRange& that) = default;
 
@@ -32,6 +37,11 @@ PDFiumRange::~PDFiumRange() = default;
 
 void PDFiumRange::SetCharCount(int char_count) {
   char_count_ = char_count;
+#if DCHECK_IS_ON()
+  int dummy_index = 0;
+  AdjustForBackwardsRange(&dummy_index, &char_count);
+  DCHECK_LE(char_count, FPDFText_CountChars(page_->GetTextPage()));
+#endif
 
   cached_screen_rects_offset_ = pp::Point();
   cached_screen_rects_zoom_ = 0;
@@ -52,6 +62,8 @@ const std::vector<pp::Rect>& PDFiumRange::GetScreenRects(
 
   int char_index = char_index_;
   int char_count = char_count_;
+  if (char_count == 0)
+    return cached_screen_rects_;
 
   AdjustForBackwardsRange(&char_index, &char_count);
   DCHECK_GE(char_index, 0) << " start: " << char_index_
@@ -80,6 +92,8 @@ base::string16 PDFiumRange::GetText() const {
   int index = char_index_;
   int count = char_count_;
   base::string16 rv;
+  if (count == 0)
+    return rv;
 
   AdjustForBackwardsRange(&index, &count);
   if (count > 0) {
