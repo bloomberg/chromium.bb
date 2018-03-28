@@ -4055,6 +4055,11 @@ uploading your change for review.  These are checked by presubmit scripts.
   <int value="1" label="Renamed"/>
 </enum>
 
+<enum name="BooleanReplaced">
+  <int value="0" label="Did Not Replace"/>
+  <int value="1" label="Replaced"/>
+</enum>
+
 <enum name="BooleanReported">
   <int value="0" label="Not reported"/>
   <int value="1" label="Reported"/>
