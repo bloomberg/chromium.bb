@@ -172,19 +172,6 @@ void SystemTrayNotifier::NotifyFocusOut(bool reverse) {
     observer.OnFocusLeavingSystemTray(reverse);
 }
 
-void SystemTrayNotifier::AddTracingObserver(TracingObserver* observer) {
-  tracing_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveTracingObserver(TracingObserver* observer) {
-  tracing_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyTracingModeChanged(bool value) {
-  for (auto& observer : tracing_observers_)
-    observer.OnTracingModeChanged(value);
-}
-
 void SystemTrayNotifier::AddVirtualKeyboardObserver(
     VirtualKeyboardObserver* observer) {
   virtual_keyboard_observers_.AddObserver(observer);

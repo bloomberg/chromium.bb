@@ -559,6 +559,8 @@ component("ash") {
     "system/model/enterprise_domain_model.h",
     "system/model/system_tray_model.cc",
     "system/model/system_tray_model.h",
+    "system/model/tracing_model.cc",
+    "system/model/tracing_model.h",
     "system/network/network_feature_pod_button.cc",
     "system/network/network_feature_pod_button.h",
     "system/network/network_feature_pod_controller.cc",

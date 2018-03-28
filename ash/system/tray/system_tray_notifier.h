@@ -24,7 +24,6 @@ class NetworkPortalDetectorObserver;
 class ScreenCaptureObserver;
 class ScreenShareObserver;
 class SystemTrayFocusObserver;
-class TracingObserver;
 class VirtualKeyboardObserver;
 
 namespace mojom {
@@ -88,11 +87,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveSystemTrayFocusObserver(SystemTrayFocusObserver* observer);
   void NotifyFocusOut(bool reverse);
 
-  // Tracing.
-  void AddTracingObserver(TracingObserver* observer);
-  void RemoveTracingObserver(TracingObserver* observer);
-  void NotifyTracingModeChanged(bool value);
-
   // Virtual keyboard.
   void AddVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
   void RemoveVirtualKeyboardObserver(VirtualKeyboardObserver* observer);
@@ -108,7 +102,6 @@ class ASH_EXPORT SystemTrayNotifier {
   base::ObserverList<ScreenCaptureObserver> screen_capture_observers_;
   base::ObserverList<ScreenShareObserver> screen_share_observers_;
   base::ObserverList<SystemTrayFocusObserver> system_tray_focus_observers_;
-  base::ObserverList<TracingObserver> tracing_observers_;
   base::ObserverList<VirtualKeyboardObserver> virtual_keyboard_observers_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayNotifier);
