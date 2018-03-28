@@ -13,7 +13,6 @@
 #include "remoting/client/chromoting_session.h"
 #include "remoting/client/connect_to_host_info.h"
 #include "remoting/client/jni/jni_gl_display_handler.h"
-#include "remoting/client/jni/jni_pairing_secret_fetcher.h"
 #include "remoting/client/jni/jni_runtime_delegate.h"
 #include "remoting/client/jni/jni_touch_event_data.h"
 #include "remoting/protocol/video_renderer.h"
@@ -44,34 +43,22 @@ void JniClient::ConnectToHost(const ConnectToHostInfo& info) {
   DCHECK(!display_handler_);
   DCHECK(!audio_player_);
   DCHECK(!session_);
-  DCHECK(!secret_fetcher_);
-  display_handler_.reset(new JniGlDisplayHandler(java_client_));
-  secret_fetcher_.reset(
-      new JniPairingSecretFetcher(GetWeakPtr(), info.host_id));
+  host_id_ = info.host_id;
 
-  protocol::ClientAuthenticationConfig client_auth_config;
-  client_auth_config.host_id = info.host_id;
-  client_auth_config.pairing_client_id = info.pairing_id;
-  client_auth_config.pairing_secret = info.pairing_secret;
-  client_auth_config.fetch_secret_callback = base::Bind(
-      &JniPairingSecretFetcher::FetchSecret, secret_fetcher_->GetWeakPtr());
+  display_handler_.reset(new JniGlDisplayHandler(java_client_));
 
   audio_player_.reset(new AudioPlayerAndroid());
 
   session_.reset(new ChromotingSession(
       weak_ptr_, display_handler_->CreateCursorShapeStub(),
       display_handler_->CreateVideoRenderer(), audio_player_->GetWeakPtr(),
-      info, client_auth_config));
+      info));
   session_->Connect();
 }
 
 void JniClient::DisconnectFromHost() {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
   session_.reset();
-  if (secret_fetcher_) {
-    runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
-                                                secret_fetcher_.release());
-  }
   if (audio_player_) {
     runtime_->network_task_runner()->DeleteSoon(FROM_HERE,
                                                 audio_player_.release());
@@ -108,19 +95,38 @@ void JniClient::CommitPairingCredentials(const std::string& host,
                                        j_secret);
 }
 
-void JniClient::FetchThirdPartyToken(const std::string& token_url,
-                                     const std::string& client_id,
-                                     const std::string& scope) {
+void JniClient::FetchSecret(
+    bool pairing_supported,
+    const protocol::SecretFetchedCallback& secret_fetched_callback) {
   DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(secret_fetched_callback_);
+
+  secret_fetched_callback_ = secret_fetched_callback;
+
+  // Delete pairing credentials if they exist.
+  CommitPairingCredentials(host_id_, std::string(), std::string());
+
+  DisplayAuthenticationPrompt(pairing_supported);
+}
+
+void JniClient::FetchThirdPartyToken(
+    const std::string& token_url,
+    const std::string& client_id,
+    const std::string& scopes,
+    const protocol::ThirdPartyTokenFetchedCallback& callback) {
+  DCHECK(runtime_->ui_task_runner()->BelongsToCurrentThread());
+  DCHECK(third_party_token_fetched_callback_);
+
+  third_party_token_fetched_callback_ = callback;
   JNIEnv* env = base::android::AttachCurrentThread();
 
   ScopedJavaLocalRef<jstring> j_url = ConvertUTF8ToJavaString(env, token_url);
   ScopedJavaLocalRef<jstring> j_client_id =
       ConvertUTF8ToJavaString(env, client_id);
-  ScopedJavaLocalRef<jstring> j_scope = ConvertUTF8ToJavaString(env, scope);
+  ScopedJavaLocalRef<jstring> j_scopes = ConvertUTF8ToJavaString(env, scopes);
 
   Java_Client_fetchThirdPartyToken(env, java_client_, j_url, j_client_id,
-                                   j_scope);
+                                   j_scopes);
 }
 
 void JniClient::SetCapabilities(const std::string& capabilities) {
@@ -191,11 +197,8 @@ void JniClient::AuthenticationResponse(
     session_->RequestPairing(ConvertJavaStringToUTF8(env, deviceName));
   }
 
-  if (secret_fetcher_) {
-    runtime_->network_task_runner()->PostTask(
-        FROM_HERE, base::Bind(&JniPairingSecretFetcher::ProvideSecret,
-                              secret_fetcher_->GetWeakPtr(),
-                              ConvertJavaStringToUTF8(env, pin)));
+  if (secret_fetched_callback_) {
+    std::move(secret_fetched_callback_).Run(ConvertJavaStringToUTF8(env, pin));
   }
 }
 
@@ -276,9 +279,11 @@ void JniClient::OnThirdPartyTokenFetched(
     const base::android::JavaParamRef<jobject>& caller,
     const JavaParamRef<jstring>& token,
     const JavaParamRef<jstring>& shared_secret) {
-  session_->HandleOnThirdPartyTokenFetched(
-      ConvertJavaStringToUTF8(env, token),
-      ConvertJavaStringToUTF8(env, shared_secret));
+  if (third_party_token_fetched_callback_) {
+    std::move(third_party_token_fetched_callback_)
+        .Run(ConvertJavaStringToUTF8(env, token),
+             ConvertJavaStringToUTF8(env, shared_secret));
+  }
 }
 
 void JniClient::SendExtensionMessage(

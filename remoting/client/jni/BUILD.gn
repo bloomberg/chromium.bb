@@ -35,8 +35,6 @@ shared_library("remoting_client_jni") {
     "jni_gl_display_handler.h",
     "jni_oauth_token_getter.cc",
     "jni_oauth_token_getter.h",
-    "jni_pairing_secret_fetcher.cc",
-    "jni_pairing_secret_fetcher.h",
     "jni_runtime_delegate.cc",
     "jni_runtime_delegate.h",
     "jni_touch_event_data.cc",

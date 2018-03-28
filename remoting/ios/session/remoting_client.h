@@ -11,6 +11,7 @@
 #import "remoting/ios/display/gl_display_handler.h"
 
 #include "remoting/client/feedback_data.h"
+#include "remoting/protocol/client_authentication_config.h"
 #include "remoting/protocol/connection_to_host.h"
 
 namespace remoting {
@@ -65,9 +66,18 @@ extern NSString* const kHostSessionPin;
                                      id:(NSString*)id
                                  secret:(NSString*)secret;
 
+- (void)
+fetchSecretWithPairingSupported:(BOOL)pairingSupported
+                       callback:
+                           (const remoting::protocol::SecretFetchedCallback&)
+                               secretFetchedCallback;
+
 - (void)fetchThirdPartyTokenForUrl:(NSString*)tokenUrl
                           clientId:(NSString*)clinetId
-                             scope:(NSString*)scope;
+                            scopes:(NSString*)scopes
+                          callback:(const remoting::protocol::
+                                        ThirdPartyTokenFetchedCallback&)
+                                       tokenFetchedCallback;
 
 - (void)setCapabilities:(NSString*)capabilities;
 
