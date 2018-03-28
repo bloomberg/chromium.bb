@@ -181,8 +181,10 @@ base::File::Error Service::MountFileSystemInternal(
   mount_point_name_to_key_map_[mount_point_name] =
       FileSystemKey(provider_id.ToString(), options.file_system_id);
   if (options.persistent) {
-    registry_->RememberFileSystem(file_system_info,
-                                  *file_system_ptr->GetWatchers());
+    const Watchers& watchers = file_system_info.watchable()
+                                   ? *file_system_ptr->GetWatchers()
+                                   : Watchers();
+    registry_->RememberFileSystem(file_system_info, watchers);
   }
 
   for (auto& observer : observers_) {
@@ -376,8 +378,11 @@ void Service::RestoreFileSystems(const ProviderId& provider_id) {
         GetProvidedFileSystem(restored_file_system.provider_id,
                               restored_file_system.options.file_system_id);
     DCHECK(file_system);
-    file_system->GetWatchers()->insert(restored_file_system.watchers.begin(),
-                                       restored_file_system.watchers.end());
+
+    if (file_system->GetFileSystemInfo().watchable()) {
+      file_system->GetWatchers()->insert(restored_file_system.watchers.begin(),
+                                         restored_file_system.watchers.end());
+    }
   }
 }
 

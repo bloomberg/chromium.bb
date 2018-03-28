@@ -72,6 +72,7 @@ scoped_refptr<extensions::Extension> CreateFakeExtension(
   std::unique_ptr<base::DictionaryValue> capabilities(
       new base::DictionaryValue);
   capabilities->SetString("source", "network");
+  capabilities->SetBoolean("watchable", true);
   manifest.Set(extensions::manifest_keys::kFileSystemProviderCapabilities,
                std::move(capabilities));
 
@@ -333,7 +334,7 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   options.supports_notify_tag = true;
   ProvidedFileSystemInfo file_system_info(
       kProviderId, options, base::FilePath(FILE_PATH_LITERAL("/a/b/c")),
-      false /* configurable */, false /* watchable */, extensions::SOURCE_FILE,
+      false /* configurable */, true /* watchable */, extensions::SOURCE_FILE,
       IconSet());
   Watchers fake_watchers;
   fake_watchers[WatcherKey(fake_watcher_.entry_path, fake_watcher_.recursive)] =
@@ -358,6 +359,8 @@ TEST_F(FileSystemProviderServiceTest, RestoreFileSystem_OnExtensionLoad) {
   EXPECT_EQ(file_system_info.file_system_id(),
             observer.mounts[0].file_system_info().file_system_id());
   EXPECT_EQ(file_system_info.writable(),
+            observer.mounts[0].file_system_info().writable());
+  EXPECT_EQ(file_system_info.watchable(),
             observer.mounts[0].file_system_info().watchable());
   EXPECT_EQ(file_system_info.supports_notify_tag(),
             observer.mounts[0].file_system_info().supports_notify_tag());
