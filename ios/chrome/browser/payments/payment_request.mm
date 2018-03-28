@@ -107,16 +107,7 @@ PaymentRequest::PaymentRequest(
   ParsePaymentMethodData();
   CreateNativeAppPaymentMethods();
 
-  SetSelectedShippingOption();
-
-  if (request_shipping()) {
-    // If the merchant provided a default shipping option, and the
-    // highest-ranking shipping profile is usable, select it.
-    if (selected_shipping_option_ && !shipping_profiles_.empty() &&
-        profile_comparator_.IsShippingComplete(shipping_profiles_[0])) {
-      selected_shipping_profile_ = shipping_profiles_[0];
-    }
-  }
+  SetSelectedShippingOptionAndProfile();
 
   if (request_payer_name() || request_payer_email() || request_payer_phone()) {
     // If the highest-ranking contact profile is usable, select it. Otherwise,
@@ -237,7 +228,7 @@ void PaymentRequest::UpdatePaymentDetails(const PaymentDetails& details) {
     web_payment_request_.details.total = std::move(old_total);
 
   PopulateAvailableShippingOptions();
-  SetSelectedShippingOption();
+  SetSelectedShippingOptionAndProfile();
 }
 
 bool PaymentRequest::request_shipping() const {
@@ -584,7 +575,6 @@ void PaymentRequest::PopulateAvailablePaymentMethods() {
 
 void PaymentRequest::PopulateAvailableShippingOptions() {
   shipping_options_.clear();
-  selected_shipping_option_ = nullptr;
   if (web_payment_request_.details.shipping_options.empty())
     return;
 
@@ -596,13 +586,24 @@ void PaymentRequest::PopulateAvailableShippingOptions() {
                  [](PaymentShippingOption& option) { return &option; });
 }
 
-void PaymentRequest::SetSelectedShippingOption() {
+void PaymentRequest::SetSelectedShippingOptionAndProfile() {
   // If more than one option has |selected| set, the last one in the sequence
   // should be treated as the selected item.
+  selected_shipping_option_ = nullptr;
   for (auto* shipping_option : base::Reversed(shipping_options_)) {
     if (shipping_option->selected) {
       selected_shipping_option_ = shipping_option;
       break;
+    }
+  }
+
+  selected_shipping_profile_ = nullptr;
+  if (request_shipping()) {
+    // If the merchant provided a default shipping option, and the
+    // highest-ranking shipping profile is usable, select it.
+    if (selected_shipping_option_ && !shipping_profiles_.empty() &&
+        profile_comparator_.IsShippingComplete(shipping_profiles_[0])) {
+      selected_shipping_profile_ = shipping_profiles_[0];
     }
   }
 }

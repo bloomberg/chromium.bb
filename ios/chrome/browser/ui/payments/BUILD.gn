@@ -248,6 +248,7 @@ source_set("eg_tests") {
     "payment_request_payment_app_egtest.mm",
     "payment_request_payment_method_identifier_egtest.mm",
     "payment_request_payment_response_egtest.mm",
+    "payment_request_show_egtest.mm",
     "payment_request_use_stats_egtest.mm",
   ]
 
