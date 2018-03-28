@@ -383,3 +383,9 @@ def gerrit_test_cq_normal(c):
   soln = c.solutions.add()
   soln.name = 'gerrit-test-cq-normal'
   soln.url = 'https://chromium.googlesource.com/playground/gerrit-cq/normal.git'
+
+@config_ctx()
+def angle(c):
+  soln = c.solutions.add()
+  soln.name = 'angle'
+  soln.url = 'https://chromium.googlesource.com/angle/angle.git'
