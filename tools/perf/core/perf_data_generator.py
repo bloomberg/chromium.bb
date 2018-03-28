@@ -166,7 +166,11 @@ def get_waterfall_config():
          ('gpu_perftests', 'build13-b1--device2'),
          ('cc_perftests', 'build13-b1--device2'),
          ('components_perftests', 'build48-b1--device5'),
-        ]
+        ],
+       'perf_tests_with_args': [
+         ('angle_perftests', 'build13-b1--device3', ['--shard-timeout=300'],
+           'angle_perftests'),
+       ]
       }
     ])
 
@@ -216,7 +220,11 @@ def get_waterfall_config():
          ('tracing_perftests', 'build9-b1--device2'),
          ('gpu_perftests', 'build10-b1--device2'),
          ('cc_perftests', 'build49-b1--device2'),
-        ]
+        ],
+       'perf_tests_with_args': [
+         ('angle_perftests', 'build49-b1--device7', ['--shard-timeout=300'],
+           'angle_perftests'),
+       ]
       }
     ])
 
@@ -241,7 +249,11 @@ def get_waterfall_config():
          ('tracing_perftests', 'build17-b1--device2'),
          # ('gpu_perftests', 'build18-b1--device2'), https://crbug.com/775219
          # ('cc_perftests', 'build47-b1--device2'), https://crbug.com/736150
-        ]
+        ],
+       'perf_tests_with_args': [
+         ('angle_perftests', 'build17-b1--device7', ['--shard-timeout=300'],
+           'angle_perftests'),
+       ]
       }
     ])
 
