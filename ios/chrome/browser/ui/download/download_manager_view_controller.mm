@@ -412,7 +412,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   if (!_statusLabel) {
     _statusLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _statusLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _statusLabel.font = [MDCTypography subheadFont];
+    _statusLabel.font = [MDCTypography body1Font];
     [_statusLabel
         setContentCompressionResistancePriority:UILayoutPriorityDefaultLow
                                         forAxis:
@@ -427,6 +427,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     _actionButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _actionButton.translatesAutoresizingMaskIntoConstraints = NO;
     _actionButton.exclusiveTouch = YES;
+    _actionButton.titleLabel.font = [MDCTypography buttonFont];
     [_actionButton setTitleColor:[MDCPalette bluePalette].tint600
                         forState:UIControlStateNormal];
 
@@ -443,6 +444,7 @@ NSString* GetSizeString(long long size_in_bytes) {
     _installDriveButton = [UIButton buttonWithType:UIButtonTypeCustom];
     _installDriveButton.translatesAutoresizingMaskIntoConstraints = NO;
     _installDriveButton.exclusiveTouch = YES;
+    _installDriveButton.titleLabel.font = [MDCTypography buttonFont];
     [_installDriveButton setTitleColor:[MDCPalette bluePalette].tint600
                               forState:UIControlStateNormal];
 
@@ -471,7 +473,7 @@ NSString* GetSizeString(long long size_in_bytes) {
   if (!_installDriveLabel) {
     _installDriveLabel = [[UILabel alloc] initWithFrame:CGRectZero];
     _installDriveLabel.translatesAutoresizingMaskIntoConstraints = NO;
-    _installDriveLabel.font = [MDCTypography subheadFont];
+    _installDriveLabel.font = [MDCTypography body1Font];
     _installDriveLabel.text =
         l10n_util::GetNSString(IDS_IOS_DOWNLOAD_MANAGER_GOOGLE_DRIVE);
     [_installDriveLabel sizeToFit];
