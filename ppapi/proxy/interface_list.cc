@@ -203,12 +203,16 @@ InterfaceList::InterfaceList() {
     Permission current_required_permission = PERMISSION_PRIVATE;
     #include "ppapi/thunk/interfaces_ppb_private.h"
   }
-  {
 #if !defined(OS_NACL)
+  {
     Permission current_required_permission = PERMISSION_FLASH;
     #include "ppapi/thunk/interfaces_ppb_private_flash.h"
-#endif  // !defined(OS_NACL)
   }
+  {
+    Permission current_required_permission = PERMISSION_PDF;
+    #include "ppapi/thunk/interfaces_ppb_private_pdf.h"
+  }
+#endif  // !defined(OS_NACL)
   {
     Permission current_required_permission = PERMISSION_DEV_CHANNEL;
     #include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
@@ -267,12 +271,11 @@ InterfaceList::InterfaceList() {
   // TODO(brettw) remove these.
   AddProxy(API_ID_PPB_INSTANCE_PRIVATE, &ProxyFactory<PPB_Instance_Proxy>);
   AddPPB(PPB_INSTANCE_PRIVATE_INTERFACE_0_1,
-         thunk::GetPPB_Instance_Private_0_1_Thunk(),
-         PERMISSION_PRIVATE);
+         thunk::GetPPB_Instance_Private_0_1_Thunk(), PERMISSION_PRIVATE);
 
   AddProxy(API_ID_PPB_VAR_DEPRECATED, &ProxyFactory<PPB_Var_Deprecated_Proxy>);
   AddPPB(PPB_VAR_DEPRECATED_INTERFACE,
-         PPB_Var_Deprecated_Proxy::GetProxyInterface(), PERMISSION_DEV);
+         PPB_Var_Deprecated_Proxy::GetProxyInterface(), PERMISSION_FLASH);
 
   // TODO(tomfinegan): Figure out where to put these once we refactor things
   // to load the PPP interface struct from the PPB interface.

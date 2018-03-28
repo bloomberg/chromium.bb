@@ -69,7 +69,7 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
   if (host_->GetPpapiHost()->permissions().HasPermission(
           ppapi::PERMISSION_FLASH) ||
       host_->GetPpapiHost()->permissions().HasPermission(
-          ppapi::PERMISSION_PRIVATE)) {
+          ppapi::PERMISSION_PDF)) {
     switch (message.type()) {
       case PpapiHostMsg_FlashFontFile_Create::ID: {
         ppapi::proxy::SerializedFontDescription description;
@@ -88,7 +88,7 @@ ChromeRendererPepperHostFactory::CreateResourceHost(
   }
 
   if (host_->GetPpapiHost()->permissions().HasPermission(
-          ppapi::PERMISSION_PRIVATE)) {
+          ppapi::PERMISSION_PDF)) {
     switch (message.type()) {
       case PpapiHostMsg_PDF_Create::ID: {
         return std::make_unique<pdf::PepperPDFHost>(host_, instance, resource);

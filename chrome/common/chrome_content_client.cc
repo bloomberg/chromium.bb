@@ -112,8 +112,8 @@ const char kPDFPluginExtension[] = "pdf";
 const char kPDFPluginDescription[] = "Portable Document Format";
 const char kPDFPluginOutOfProcessMimeType[] =
     "application/x-google-chrome-pdf";
-const uint32_t kPDFPluginPermissions =
-    ppapi::PERMISSION_PRIVATE | ppapi::PERMISSION_DEV;
+const uint32_t kPDFPluginPermissions = ppapi::PERMISSION_PDF |
+                                       ppapi::PERMISSION_DEV;
 #endif  // BUILDFLAG(ENABLE_PDF)
 
 content::PepperPluginInfo::GetInterfaceFunc g_pdf_get_interface;

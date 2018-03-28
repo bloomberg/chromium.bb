@@ -36,7 +36,7 @@ ObjectProxy* ToObjectProxy(void* data) {
   ObjectProxy* obj = reinterpret_cast<ObjectProxy*>(data);
   if (!obj || !obj->dispatcher)
     return NULL;
-  if (!obj->dispatcher->permissions().HasPermission(PERMISSION_DEV))
+  if (!obj->dispatcher->permissions().HasPermission(PERMISSION_FLASH))
     return NULL;
   return obj;
 }

@@ -3,7 +3,7 @@
  * found in the LICENSE file.
  */
 
-/* From trusted/ppb_url_loader_trusted.idl modified Wed Oct  5 14:06:02 2011. */
+/* From trusted/ppb_url_loader_trusted.idl modified Mon Mar 19 13:26:48 2018. */
 
 #ifndef PPAPI_C_TRUSTED_PPB_URL_LOADER_TRUSTED_H_
 #define PPAPI_C_TRUSTED_PPB_URL_LOADER_TRUSTED_H_
@@ -24,6 +24,11 @@
 /**
  * @addtogroup Typedefs
  * @{
+ */
+/**
+ * NOTE: Permission checks for functions added to this file must be done in
+ * pepper_url_loader.cc.
+ *
  */
 /**
  * Callback that indicates the status of the download and upload for the

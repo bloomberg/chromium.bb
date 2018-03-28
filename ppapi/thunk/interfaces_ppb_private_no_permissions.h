@@ -56,4 +56,8 @@ PROXIED_IFACE(PPB_VIDEOSOURCE_PRIVATE_INTERFACE_0_1,
 PROXIED_IFACE(PPB_UMA_PRIVATE_INTERFACE_0_3,
               PPB_UMA_Private_0_3)
 
+// This has permission checks done in pepper_url_loader_host.cc
+PROXIED_IFACE(PPB_URLLOADERTRUSTED_INTERFACE_0_3,
+              PPB_URLLoaderTrusted_0_3)
+
 #include "ppapi/thunk/interfaces_postamble.h"

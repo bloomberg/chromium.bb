@@ -309,11 +309,13 @@ int32_t PepperURLLoaderHost::OnHostMsgClose(
 
 int32_t PepperURLLoaderHost::OnHostMsgGrantUniversalAccess(
     ppapi::host::HostMessageContext* context) {
-  // Only plugins with private permission can bypass same origin.
-  if (!host()->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
-    return PP_ERROR_FAILED;
-  has_universal_access_ = true;
-  return PP_OK;
+  // Only plugins with permission can bypass same origin.
+  if (host()->permissions().HasPermission(ppapi::PERMISSION_PDF) ||
+      host()->permissions().HasPermission(ppapi::PERMISSION_FLASH)) {
+    has_universal_access_ = true;
+    return PP_OK;
+  }
+  return PP_ERROR_FAILED;
 }
 
 void PepperURLLoaderHost::SendUpdateToPlugin(

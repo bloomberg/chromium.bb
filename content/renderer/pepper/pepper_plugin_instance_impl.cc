@@ -1571,7 +1571,7 @@ void PepperPluginInstanceImpl::StopFind() {
 }
 
 bool PepperPluginInstanceImpl::LoadFindInterface() {
-  if (!module_->permissions().HasPermission(ppapi::PERMISSION_PRIVATE))
+  if (!module_->permissions().HasPermission(ppapi::PERMISSION_PDF))
     return false;
   if (!plugin_find_interface_) {
     plugin_find_interface_ = static_cast<const PPP_Find_Private*>(

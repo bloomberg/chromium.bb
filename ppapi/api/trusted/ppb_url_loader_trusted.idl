@@ -12,6 +12,12 @@ label Chrome {
 };
 
 /**
+ * NOTE: Permission checks for functions added to this file must be done in
+ * pepper_url_loader.cc.
+ *
+ */
+
+/**
  * Callback that indicates the status of the download and upload for the
  * given URLLoader resource.
  */
