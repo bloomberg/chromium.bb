@@ -802,9 +802,21 @@ class GClientSmokeGIT(GClientSmokeBase):
                   # defined in the DEPS.
                   '--custom-var', 'custom_true_var=True',
                   # This should override 'true_var=True' from the DEPS.
-                  '--custom-var', 'true_var="0"'])
+                  '--custom-var', 'true_var="False"'])
     self.gclient(['sync'])
     self.gclient(['flatten', '-v', '-v', '-v', '--output-deps', output_deps])
+
+    # Assert we can sync to the flattened DEPS we just wrote.
+    solutions = [{
+        "url": self.git_base + 'repo_6',
+        'name': 'src',
+        'deps_file': output_deps
+    }]
+    results = self.gclient([
+        'sync',
+        '--spec=solutions=%s' % solutions
+    ])
+    self.assertEqual(results[2], 0)
 
     with open(output_deps) as f:
       deps_contents = f.read()
@@ -961,7 +973,7 @@ class GClientSmokeGIT(GClientSmokeBase):
         '  "true_str_var": \'True\',',
         '',
         '  # src [custom_var override]',
-        '  "true_var": \'0\',',
+        '  "true_var": \'False\',',
         '',
         '}',
         '',
