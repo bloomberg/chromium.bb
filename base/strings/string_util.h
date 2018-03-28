@@ -285,9 +285,8 @@ BASE_EXPORT bool ContainsOnlyChars(StringPiece16 input,
 BASE_EXPORT bool IsStringUTF8(StringPiece str);
 BASE_EXPORT bool IsStringASCII(StringPiece str);
 BASE_EXPORT bool IsStringASCII(StringPiece16 str);
-BASE_EXPORT bool IsStringASCII(const string16& str);
 #if defined(WCHAR_T_IS_UTF32)
-BASE_EXPORT bool IsStringASCII(const std::wstring& str);
+BASE_EXPORT bool IsStringASCII(WStringPiece str);
 #endif
 
 // Compare the lower-case form of the given string against the given

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef BASE_STRINGS_UTF_STRING_CONVERSIONS_H_
-#define BASE_STRINGS_UTF_STRING_CONVERSIONS_H_
+#ifndef BASE_STRINGS_OLD_UTF_STRING_CONVERSIONS_H_
+#define BASE_STRINGS_OLD_UTF_STRING_CONVERSIONS_H_
 
 #include <stddef.h>
 
@@ -13,7 +13,12 @@
 #include "base/strings/string16.h"
 #include "base/strings/string_piece.h"
 
-namespace base {
+namespace base_old {
+
+using base::char16;
+using base::string16;
+using base::StringPiece16;
+using base::StringPiece;
 
 // These convert between UTF-8, -16, and -32 strings. They are potentially slow,
 // so avoid unnecessary conversions. The low-level versions return a boolean
@@ -21,23 +26,28 @@ namespace base {
 // do the best it can and put the result in the output buffer. The versions that
 // return strings ignore this error and just return the best conversion
 // possible.
-BASE_EXPORT bool WideToUTF8(const wchar_t* src, size_t src_len,
+BASE_EXPORT bool WideToUTF8(const wchar_t* src,
+                            size_t src_len,
                             std::string* output);
-BASE_EXPORT std::string WideToUTF8(WStringPiece wide);
-BASE_EXPORT bool UTF8ToWide(const char* src, size_t src_len,
+BASE_EXPORT std::string WideToUTF8(const std::wstring& wide);
+BASE_EXPORT bool UTF8ToWide(const char* src,
+                            size_t src_len,
                             std::wstring* output);
 BASE_EXPORT std::wstring UTF8ToWide(StringPiece utf8);
 
-BASE_EXPORT bool WideToUTF16(const wchar_t* src, size_t src_len,
+BASE_EXPORT bool WideToUTF16(const wchar_t* src,
+                             size_t src_len,
                              string16* output);
-BASE_EXPORT string16 WideToUTF16(WStringPiece wide);
-BASE_EXPORT bool UTF16ToWide(const char16* src, size_t src_len,
+BASE_EXPORT string16 WideToUTF16(const std::wstring& wide);
+BASE_EXPORT bool UTF16ToWide(const char16* src,
+                             size_t src_len,
                              std::wstring* output);
-BASE_EXPORT std::wstring UTF16ToWide(StringPiece16 utf16);
+BASE_EXPORT std::wstring UTF16ToWide(const string16& utf16);
 
 BASE_EXPORT bool UTF8ToUTF16(const char* src, size_t src_len, string16* output);
 BASE_EXPORT string16 UTF8ToUTF16(StringPiece utf8);
-BASE_EXPORT bool UTF16ToUTF8(const char16* src, size_t src_len,
+BASE_EXPORT bool UTF16ToUTF8(const char16* src,
+                             size_t src_len,
                              std::string* output);
 BASE_EXPORT std::string UTF16ToUTF8(StringPiece16 utf16);
 
@@ -49,6 +59,6 @@ BASE_EXPORT string16 ASCIIToUTF16(StringPiece ascii);
 // beforehand.
 BASE_EXPORT std::string UTF16ToASCII(StringPiece16 utf16);
 
-}  // namespace base
+}  // namespace base_old
 
-#endif  // BASE_STRINGS_UTF_STRING_CONVERSIONS_H_
+#endif  // BASE_STRINGS_OLD_UTF_STRING_CONVERSIONS_H_
