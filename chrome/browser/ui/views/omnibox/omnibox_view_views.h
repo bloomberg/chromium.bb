@@ -85,6 +85,7 @@ class OmniboxViewViews : public OmniboxView,
   void ResetTabState(content::WebContents* web_contents);
 
   // OmniboxView:
+  void EmphasizeURLComponents() override;
   void Update() override;
   base::string16 GetText() const override;
   using OmniboxView::SetUserText;
@@ -102,7 +103,6 @@ class OmniboxViewViews : public OmniboxView,
   // views::Textfield:
   gfx::Size GetMinimumSize() const override;
   void OnPaint(gfx::Canvas* canvas) override;
-  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
   void ExecuteCommand(int command_id, int event_flags) override;
   ui::TextInputType GetTextInputType() const override;
   void AddedToWidget() override;
@@ -174,7 +174,6 @@ class OmniboxViewViews : public OmniboxView,
   bool IsImeShowingPopup() const override;
   void ShowImeIfNeeded() override;
   int GetOmniboxTextLength() const override;
-  void EmphasizeURLComponents() override;
   void SetEmphasis(bool emphasize, const gfx::Range& range) override;
   void UpdateSchemeStyle(const gfx::Range& range) override;
 

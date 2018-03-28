@@ -157,7 +157,8 @@ LocationBarView::LocationBarView(Browser* browser,
       browser_(browser),
       delegate_(delegate),
       is_popup_mode_(is_popup_mode),
-      tint_(GetTintForProfile(profile)) {
+      tint_(GetTintForProfile(profile)),
+      popup_observer_(this) {
   edit_bookmarks_enabled_.Init(
       bookmarks::prefs::kEditBookmarksEnabled, profile->GetPrefs(),
       base::Bind(&LocationBarView::UpdateWithoutTabRestore,
@@ -200,6 +201,9 @@ void LocationBarView::Init() {
       is_popup_mode_, this, font_list);
   omnibox_view_->Init();
   AddChildView(omnibox_view_);
+
+  RefreshBackground();
+  popup_observer_.Add(omnibox_view_->model()->popup_model());
 
   // Initialize the inline autocomplete view which is visible only when IME is
   // turned on.  Use the same font with the omnibox and highlighted background.
@@ -589,17 +593,14 @@ void LocationBarView::OnThemeChanged() {
 }
 
 void LocationBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  // ToolbarView::Init() adds |this| to the view hierarchy before initializing,
+  // which will trigger an early theme change.
+  if (!IsInitialized())
+    return;
+
+  RefreshBackground();
   RefreshLocationIcon();
   RefreshClearAllButtonIcon();
-  if (is_popup_mode_) {
-    SetBackground(views::CreateSolidBackground(
-        GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND)));
-  } else {
-    // This border color will be blended on top of the toolbar (which may use an
-    // image in the case of themes).
-    SetBackground(std::make_unique<BackgroundWith1PxBorder>(
-        GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND), GetBorderColor()));
-  }
   SchedulePaint();
 }
 
@@ -733,12 +734,29 @@ int LocationBarView::GetHorizontalEdgeThickness() const {
              : BackgroundWith1PxBorder::kLocationBarBorderThicknessDip;
 }
 
-void LocationBarView::RefreshLocationIcon() {
-  // |omnibox_view_| may not be ready yet if Init() has not been called. The
-  // icon will be set soon by OnChanged().
-  if (!omnibox_view_)
-    return;
+void LocationBarView::RefreshBackground() {
+  SkColor background_color = GetColor(OmniboxPart::LOCATION_BAR_BACKGROUND);
+  SkColor border_color = GetBorderColor();
 
+  // When the omnibox dropdown is open, match its color.
+  if (InTouchableMode() && GetOmniboxPopupView()->IsOpen()) {
+    background_color = border_color = GetColor(OmniboxPart::RESULTS_BACKGROUND);
+  }
+
+  if (is_popup_mode_) {
+    SetBackground(views::CreateSolidBackground(background_color));
+  } else {
+    SetBackground(std::make_unique<BackgroundWith1PxBorder>(background_color,
+                                                            border_color));
+  }
+
+  // Keep the views::Textfield in sync. It needs an opaque background to
+  // correctly enable subpixel AA.
+  omnibox_view_->SetBackgroundColor(background_color);
+  omnibox_view_->EmphasizeURLComponents();
+}
+
+void LocationBarView::RefreshLocationIcon() {
   security_state::SecurityLevel security_level =
       GetToolbarModel()->GetSecurityLevel(false);
   location_icon_view_->SetImage(gfx::CreateVectorIcon(
@@ -822,9 +840,6 @@ bool LocationBarView::RefreshFindBarIcon() {
 }
 
 void LocationBarView::RefreshClearAllButtonIcon() {
-  if (!clear_all_button_)
-    return;
-
   const gfx::VectorIcon& icon =
       InTouchableMode() ? omnibox::kTouchableClearIcon : kTabCloseNormalIcon;
   SetImageFromVectorIcon(clear_all_button_, icon,
@@ -878,6 +893,11 @@ bool LocationBarView::ShouldAnimateLocationIconTextVisibilityChange() const {
     return false;
   return level == SecurityLevel::DANGEROUS ||
          level == SecurityLevel::HTTP_SHOW_WARNING;
+}
+
+OmniboxPopupView* LocationBarView::GetOmniboxPopupView() {
+  DCHECK(IsInitialized());
+  return omnibox_view_->model()->popup_model()->view();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1008,7 +1028,7 @@ const char* LocationBarView::GetClassName() const {
 }
 
 void LocationBarView::OnBoundsChanged(const gfx::Rect& previous_bounds) {
-  OmniboxPopupView* popup = omnibox_view_->model()->popup_model()->view();
+  OmniboxPopupView* popup = GetOmniboxPopupView();
   if (popup->IsOpen())
     popup->UpdatePopupAppearance();
 }
@@ -1103,6 +1123,13 @@ const ToolbarModel* LocationBarView::GetToolbarModel() const {
 
 void LocationBarView::SetFocusAndSelection(bool select_all) {
   FocusLocation(select_all);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarView, private OmniboxPopupModelObserver implementation:
+
+void LocationBarView::OnOmniboxPopupShownOrHidden() {
+  RefreshBackground();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
