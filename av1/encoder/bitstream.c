@@ -3753,12 +3753,10 @@ static uint32_t write_tiles_in_tg_obus(AV1_COMP *const cpi, uint8_t *const dst,
           // Insert a copy of the Frame Header OBU.
           memcpy(data, fh_info->frame_header, fh_info->total_length);
 
-#if CONFIG_OBU_REDUNDANT_FRAME_HEADER
           // Rewrite the OBU header to change the OBU type to Redundant Frame
           // Header.
           write_obu_header(OBU_REDUNDANT_FRAME_HEADER, obu_extension_header,
                            &data[fh_info->obu_header_byte_offset]);
-#endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
 
           data += fh_info->total_length;
 
@@ -3861,10 +3859,7 @@ int av1_pack_bitstream(AV1_COMP *const cpi, uint8_t *dst, size_t *size) {
       return AOM_CODEC_ERROR;
     }
 
-#if CONFIG_OBU_REDUNDANT_FRAME_HEADER
     fh_info.obu_header_byte_offset = 0;
-#endif  // CONFIG_OBU_REDUNDANT_FRAME_HEADER
-
     fh_info.total_length =
         obu_header_size + obu_payload_size + length_field_size;
     data += fh_info.total_length;
