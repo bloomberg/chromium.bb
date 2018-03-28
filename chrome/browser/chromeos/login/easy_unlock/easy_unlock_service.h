@@ -211,7 +211,7 @@ class EasyUnlockService : public KeyedService {
 
   // Called when the user reauths (e.g. in chrome://settings) so we can cache
   // the user context for the setup flow.
-  virtual void HandleUserReauth(const chromeos::UserContext& user_context);
+  virtual void HandleUserReauth(const UserContext& user_context);
 
   void AddObserver(EasyUnlockServiceObserver* observer);
   void RemoveObserver(EasyUnlockServiceObserver* observer);
@@ -320,7 +320,7 @@ class EasyUnlockService : public KeyedService {
       const AccountId& account_id,
       const std::set<std::string> paired_devices,
       bool success,
-      const chromeos::EasyUnlockDeviceKeyDataList& key_data_list);
+      const EasyUnlockDeviceKeyDataList& key_data_list);
 
   // Updates the service to state for handling system suspend.
   void PrepareForSuspend();

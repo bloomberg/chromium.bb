@@ -35,7 +35,7 @@ class SecureMessageDelegateChromeOS : public cryptauth::SecureMessageDelegate {
       const UnwrapSecureMessageCallback& callback) override;
 
  private:
-  chromeos::EasyUnlockClient* dbus_client_;
+  EasyUnlockClient* dbus_client_;
 
   DISALLOW_COPY_AND_ASSIGN(SecureMessageDelegateChromeOS);
 };

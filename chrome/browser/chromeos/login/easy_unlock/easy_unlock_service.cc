@@ -84,7 +84,7 @@ EasyUnlockService* EasyUnlockService::Get(Profile* profile) {
 // static
 EasyUnlockService* EasyUnlockService::GetForUser(
     const user_manager::User& user) {
-  Profile* profile = chromeos::ProfileHelper::Get()->GetProfileByUser(&user);
+  Profile* profile = ProfileHelper::Get()->GetProfileByUser(&user);
   if (!profile)
     return NULL;
   return EasyUnlockService::Get(profile);
@@ -166,18 +166,15 @@ class EasyUnlockService::BluetoothDetector
   DISALLOW_COPY_AND_ASSIGN(BluetoothDetector);
 };
 
-class EasyUnlockService::PowerMonitor
-    : public chromeos::PowerManagerClient::Observer {
+class EasyUnlockService::PowerMonitor : public PowerManagerClient::Observer {
  public:
   explicit PowerMonitor(EasyUnlockService* service)
       : service_(service), waking_up_(false), weak_ptr_factory_(this) {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
-        this);
+    DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(this);
   }
 
   ~PowerMonitor() override {
-    chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(
-        this);
+    DBusThreadManager::Get()->GetPowerManagerClient()->RemoveObserver(this);
   }
 
   // Called when the remote device has been authenticated to record the time
@@ -194,7 +191,7 @@ class EasyUnlockService::PowerMonitor
   bool waking_up() const { return waking_up_; }
 
  private:
-  // chromeos::PowerManagerClient::Observer:
+  // PowerManagerClient::Observer:
   void SuspendImminent(power_manager::SuspendImminent::Reason reason) override {
     service_->PrepareForSuspend();
   }
@@ -494,9 +491,9 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
   const base::ListValue* device_list = GetRemoteDevices();
   std::set<std::string> paired_devices;
   if (device_list) {
-    chromeos::EasyUnlockDeviceKeyDataList parsed_paired;
-    chromeos::EasyUnlockKeyManager::RemoteDeviceListToDeviceDataList(
-        *device_list, &parsed_paired);
+    EasyUnlockDeviceKeyDataList parsed_paired;
+    EasyUnlockKeyManager::RemoteDeviceListToDeviceDataList(*device_list,
+                                                           &parsed_paired);
     for (const auto& device_key_data : parsed_paired)
       paired_devices.insert(device_key_data.psk);
   }
@@ -511,12 +508,12 @@ void EasyUnlockService::CheckCryptohomeKeysAndMaybeHardlock() {
     return;
   }
 
-  chromeos::EasyUnlockKeyManager* key_manager =
-      chromeos::UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
+  EasyUnlockKeyManager* key_manager =
+      UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
   DCHECK(key_manager);
 
   key_manager->GetDeviceDataList(
-      chromeos::UserContext(account_id),
+      UserContext(account_id),
       base::Bind(&EasyUnlockService::OnCryptohomeKeysFetchedForChecking,
                  weak_ptr_factory_.GetWeakPtr(), account_id, paired_devices));
 }
@@ -749,7 +746,7 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
     const AccountId& account_id,
     const std::set<std::string> paired_devices,
     bool success,
-    const chromeos::EasyUnlockDeviceKeyDataList& key_data_list) {
+    const EasyUnlockDeviceKeyDataList& key_data_list) {
   DCHECK(account_id.is_valid() && !paired_devices.empty());
 
   if (!success) {
@@ -771,8 +768,7 @@ void EasyUnlockService::OnCryptohomeKeysFetchedForChecking(
   }
 }
 
-void EasyUnlockService::HandleUserReauth(
-    const chromeos::UserContext& user_context) {}
+void EasyUnlockService::HandleUserReauth(const UserContext& user_context) {}
 
 void EasyUnlockService::PrepareForSuspend() {
   app_manager_->DisableAppIfLoaded();

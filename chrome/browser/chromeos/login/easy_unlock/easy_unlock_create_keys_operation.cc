@@ -83,7 +83,7 @@ class EasyUnlockCreateKeysOperation::ChallengeCreator {
   std::string esk_;
 
   // Owned by DBusThreadManager
-  chromeos::EasyUnlockClient* easy_unlock_client_;
+  EasyUnlockClient* easy_unlock_client_;
 
   base::WeakPtrFactory<ChallengeCreator> weak_ptr_factory_;
 
@@ -101,8 +101,7 @@ EasyUnlockCreateKeysOperation::ChallengeCreator::ChallengeCreator(
       tpm_pub_key_(tpm_pub_key),
       device_(device),
       callback_(callback),
-      easy_unlock_client_(
-          chromeos::DBusThreadManager::Get()->GetEasyUnlockClient()),
+      easy_unlock_client_(DBusThreadManager::Get()->GetEasyUnlockClient()),
       weak_ptr_factory_(this) {}
 
 EasyUnlockCreateKeysOperation::ChallengeCreator::~ChallengeCreator() {}

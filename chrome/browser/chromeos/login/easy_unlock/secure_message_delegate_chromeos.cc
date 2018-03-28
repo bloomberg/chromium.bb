@@ -72,7 +72,7 @@ void HandleKeyPairResult(
 }  // namespace
 
 SecureMessageDelegateChromeOS::SecureMessageDelegateChromeOS()
-    : dbus_client_(chromeos::DBusThreadManager::Get()->GetEasyUnlockClient()) {}
+    : dbus_client_(DBusThreadManager::Get()->GetEasyUnlockClient()) {}
 
 SecureMessageDelegateChromeOS::~SecureMessageDelegateChromeOS() {}
 
@@ -101,7 +101,7 @@ void SecureMessageDelegateChromeOS::CreateSecureMessage(
     return;
   }
 
-  chromeos::EasyUnlockClient::CreateSecureMessageOptions options;
+  EasyUnlockClient::CreateSecureMessageOptions options;
   options.key.assign(key);
 
   if (!create_options.associated_data.empty())
@@ -134,7 +134,7 @@ void SecureMessageDelegateChromeOS::UnwrapSecureMessage(
     return;
   }
 
-  chromeos::EasyUnlockClient::UnwrapSecureMessageOptions options;
+  EasyUnlockClient::UnwrapSecureMessageOptions options;
   options.key.assign(key);
 
   if (!unwrap_options.associated_data.empty())

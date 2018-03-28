@@ -30,7 +30,7 @@ class EasyUnlockChallengeWrapper;
 class EasyUnlockServiceSignin
     : public EasyUnlockService,
       public proximity_auth::ScreenlockBridge::Observer,
-      public chromeos::LoginState::Observer {
+      public LoginState::Observer {
  public:
   explicit EasyUnlockServiceSignin(Profile* profile);
   ~EasyUnlockServiceSignin() override;
@@ -71,7 +71,7 @@ class EasyUnlockServiceSignin
     UserDataState state;
 
     // The data as returned from cryptohome.
-    chromeos::EasyUnlockDeviceKeyDataList devices;
+    EasyUnlockDeviceKeyDataList devices;
 
     // The list of remote device dictionaries understood by Easy unlock app.
     // This will be returned by |GetRemoteDevices| method.
@@ -120,7 +120,7 @@ class EasyUnlockServiceSignin
       override;
   void OnFocusedUserChanged(const AccountId& account_id) override;
 
-  // chromeos::LoginState::Observer implementation:
+  // LoginState::Observer implementation:
   void LoggedInStateChanged() override;
 
   // Loads the device data associated with the user's Easy unlock keys from
@@ -130,7 +130,7 @@ class EasyUnlockServiceSignin
   // Callback invoked when the user's device data is loaded from cryptohome.
   void OnUserDataLoaded(const AccountId& account_id,
                         bool success,
-                        const chromeos::EasyUnlockDeviceKeyDataList& data);
+                        const EasyUnlockDeviceKeyDataList& data);
 
   // If the device data has been loaded for the current user, returns it.
   // Otherwise, returns NULL.
@@ -160,7 +160,7 @@ class EasyUnlockServiceSignin
   base::TimeTicks user_pod_last_focused_timestamp_;
 
   // Handles wrapping the user's challenge with the TPM.
-  std::unique_ptr<chromeos::EasyUnlockChallengeWrapper> challenge_wrapper_;
+  std::unique_ptr<EasyUnlockChallengeWrapper> challenge_wrapper_;
 
   // Manages the EasyUnlock prefs for the local state.
   std::unique_ptr<proximity_auth::ProximityAuthLocalStatePrefManager>

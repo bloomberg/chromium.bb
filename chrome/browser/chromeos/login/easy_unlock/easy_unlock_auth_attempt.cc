@@ -170,7 +170,7 @@ void EasyUnlockAuthAttempt::FinalizeSignin(const AccountId& account_id,
   }
 
   std::string unwrapped_secret = UnwrapSecret(wrapped_secret, raw_session_key);
-  std::string key_label = chromeos::EasyUnlockKeyManager::GetKeyLabel(0u);
+  std::string key_label = EasyUnlockKeyManager::GetKeyLabel(0u);
 
   const bool kSuccess = true;
   finalized_callback_.Run(type_, kSuccess, account_id, unwrapped_secret,

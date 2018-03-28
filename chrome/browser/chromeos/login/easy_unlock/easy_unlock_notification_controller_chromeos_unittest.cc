@@ -11,12 +11,13 @@
 #include "ui/message_center/public/cpp/notification.h"
 #include "ui/message_center/public/cpp/notification_types.h"
 
+namespace chromeos {
 namespace {
 
 const char kPhoneName[] = "Nexus 6";
 
 class TestableNotificationController
-    : public chromeos::EasyUnlockNotificationController {
+    : public EasyUnlockNotificationController {
  public:
   explicit TestableNotificationController(Profile* profile)
       : EasyUnlockNotificationController(profile) {}
@@ -30,8 +31,6 @@ class TestableNotificationController
  private:
   DISALLOW_COPY_AND_ASSIGN(TestableNotificationController);
 };
-
-}  // namespace
 
 class EasyUnlockNotificationControllerTest : public BrowserWithTestWindowTest {
  protected:
@@ -159,3 +158,6 @@ TEST_F(EasyUnlockNotificationControllerTest, TestShowPromotionNotification) {
   EXPECT_CALL(*notification_controller_, LaunchEasyUnlockSettings());
   notification->Click();
 }
+
+}  // namespace
+}  // namespace chromeos

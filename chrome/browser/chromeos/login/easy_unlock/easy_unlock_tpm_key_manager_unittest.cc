@@ -30,6 +30,7 @@
 #include "crypto/scoped_test_system_nss_key_slot.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace chromeos {
 namespace {
 
 // User that is associated with test user profile.
@@ -196,7 +197,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
  public:
   EasyUnlockTpmKeyManagerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::REAL_IO_THREAD),
-        user_manager_(new chromeos::FakeChromeUserManager()),
+        user_manager_(new FakeChromeUserManager()),
         user_manager_enabler_(base::WrapUnique(user_manager_)),
         profile_manager_(TestingBrowserProcess::GetGlobal()) {}
   ~EasyUnlockTpmKeyManagerTest() override {}
@@ -344,7 +345,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   std::unique_ptr<crypto::ScopedTestNSSChromeOSUser> test_nss_user_;
 
   // Needed to properly set up signin and user profiles for test.
-  chromeos::FakeChromeUserManager* user_manager_;
+  FakeChromeUserManager* user_manager_;
   user_manager::ScopedUserManager user_manager_enabler_;
   TestingProfileManager profile_manager_;
 
@@ -588,3 +589,4 @@ TEST_F(EasyUnlockTpmKeyManagerTest, SignDataNoPrivateKeyPresent) {
 }
 
 }  // namespace
+}  // namespace chromeos

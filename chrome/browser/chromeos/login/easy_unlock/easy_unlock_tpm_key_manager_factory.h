@@ -19,6 +19,8 @@ template <typename T>
 struct DefaultSingletonTraits;
 }  // namespace base
 
+namespace chromeos {
+
 class EasyUnlockTpmKeyManager;
 
 // Singleton factory that builds and owns all EasyUnlockTpmKeyManager services.
@@ -44,5 +46,7 @@ class EasyUnlockTpmKeyManagerFactory
 
   DISALLOW_COPY_AND_ASSIGN(EasyUnlockTpmKeyManagerFactory);
 };
+
+}  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_EASY_UNLOCK_EASY_UNLOCK_TPM_KEY_MANAGER_FACTORY_H_
