@@ -254,8 +254,9 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   // By default, all three actions should be visible.
   EXPECT_EQ(3u, toolbar_actions_bar()->GetIconCount());
   const gfx::Size view_size = ToolbarActionsBar::GetViewSize();
+
   // Check the widths.
-  int expected_width = 3 * view_size.width();
+  int expected_width = 3 * view_size.width() + platform_settings.left_padding;
   EXPECT_EQ(expected_width, toolbar_actions_bar()->GetFullSize().width());
   // Since all icons are showing, the current width should be the max width.
   int maximum_width = expected_width;
@@ -271,7 +272,7 @@ TEST_P(ToolbarActionsBarUnitTest, BasicToolbarActionsBarTest) {
   EXPECT_EQ(2u, toolbar_actions_bar()->GetIconCount());
 
   // The current width should now be enough for two icons.
-  expected_width = 2 * view_size.width();
+  expected_width = 2 * view_size.width() + platform_settings.left_padding;
   EXPECT_EQ(expected_width, toolbar_actions_bar()->GetFullSize().width());
   // The maximum and minimum widths should have remained constant (since we have
   // the same number of actions).
@@ -443,7 +444,11 @@ TEST_P(ToolbarActionsBarUnitTest, TestHighlightMode) {
 TEST_P(ToolbarActionsBarUnitTest, TestActionFrameBounds) {
   const auto icon_rect = [](int x, int y) {
     const auto size = ToolbarActionsBar::GetViewSize();
-    return gfx::Rect(gfx::Point(x * size.width(), y * size.height()), size);
+    return gfx::Rect(
+        gfx::Point(
+            x * size.width() + GetLayoutConstant(TOOLBAR_ACTION_LEFT_PADDING),
+            y * size.height()),
+        size);
   };
 
   constexpr int kIconsPerOverflowRow = 3;
