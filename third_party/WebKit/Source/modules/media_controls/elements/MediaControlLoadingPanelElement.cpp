@@ -127,13 +127,15 @@ void MediaControlLoadingPanelElement::CleanupShadowDOM() {
   // Clear the shadow DOM children and all references to it.
   ShadowRoot* shadow_root = GetShadowRoot();
   DCHECK(shadow_root->HasChildren());
-  event_listener_->Detach();
+  if (event_listener_) {
+    event_listener_->Detach();
+    event_listener_.Clear();
+  }
   shadow_root->RemoveChildren();
 
   spinner_.Clear();
   mask1_background_.Clear();
   mask2_background_.Clear();
-  event_listener_.Clear();
 }
 
 void MediaControlLoadingPanelElement::SetAnimationIterationCount(
