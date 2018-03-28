@@ -23,6 +23,7 @@
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/fileapi/external_mount_points.h"
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/browser/fileapi/file_system_context.h"
@@ -457,7 +458,7 @@ class ObfuscatedFileUtilTest : public testing::Test {
       std::set<base::FilePath::StringType>* files,
       std::set<base::FilePath::StringType>* directories) {
     std::unique_ptr<FileSystemOperationContext> context;
-    std::vector<storage::DirectoryEntry> entries;
+    std::vector<filesystem::mojom::DirectoryEntry> entries;
     EXPECT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::ReadDirectory(file_system_context(),
                                                  root_url, &entries));
@@ -499,27 +500,27 @@ class ObfuscatedFileUtilTest : public testing::Test {
     FillTestDirectory(root_url, &files, &directories);
 
     std::unique_ptr<FileSystemOperationContext> context;
-    std::vector<storage::DirectoryEntry> entries;
+    std::vector<filesystem::mojom::DirectoryEntry> entries;
     context.reset(NewContext(NULL));
     EXPECT_EQ(base::File::FILE_OK,
               AsyncFileTestHelper::ReadDirectory(
                   file_system_context(), root_url, &entries));
-    std::vector<storage::DirectoryEntry>::iterator entry_iter;
+    std::vector<filesystem::mojom::DirectoryEntry>::iterator entry_iter;
     EXPECT_EQ(files.size() + directories.size(), entries.size());
     EXPECT_TRUE(change_observer()->HasNoChange());
     for (entry_iter = entries.begin(); entry_iter != entries.end();
         ++entry_iter) {
-      const storage::DirectoryEntry& entry = *entry_iter;
+      const filesystem::mojom::DirectoryEntry& entry = *entry_iter;
       std::set<base::FilePath::StringType>::iterator iter =
-          files.find(entry.name);
+          files.find(entry.name.value());
       if (iter != files.end()) {
-        EXPECT_FALSE(entry.is_directory);
+        EXPECT_EQ(entry.type, filesystem::mojom::FsFileType::REGULAR_FILE);
         files.erase(iter);
         continue;
       }
-      iter = directories.find(entry.name);
+      iter = directories.find(entry.name.value());
       EXPECT_FALSE(directories.end() == iter);
-      EXPECT_TRUE(entry.is_directory);
+      EXPECT_EQ(entry.type, filesystem::mojom::FsFileType::DIRECTORY);
       directories.erase(iter);
     }
   }
@@ -1233,7 +1234,7 @@ TEST_F(ObfuscatedFileUtilTest, TestReadDirectoryOnFile) {
             ofu()->EnsureFileExists(context.get(), url, &created));
   ASSERT_TRUE(created);
 
-  std::vector<storage::DirectoryEntry> entries;
+  std::vector<filesystem::mojom::DirectoryEntry> entries;
   EXPECT_EQ(base::File::FILE_ERROR_NOT_A_DIRECTORY,
             AsyncFileTestHelper::ReadDirectory(file_system_context(), url,
                                                &entries));
@@ -1811,7 +1812,7 @@ TEST_F(ObfuscatedFileUtilTest, TestIncompleteDirectoryReading) {
     EXPECT_TRUE(created);
   }
 
-  std::vector<storage::DirectoryEntry> entries;
+  std::vector<filesystem::mojom::DirectoryEntry> entries;
   EXPECT_EQ(base::File::FILE_OK,
             AsyncFileTestHelper::ReadDirectory(
                 file_system_context(), empty_path, &entries));

@@ -14,9 +14,9 @@
 #include "base/files/file.h"
 #include "base/files/file_util_proxy.h"
 #include "base/macros.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/common/fileapi/directory_entry.h"
 
 namespace base {
 class Time;
@@ -65,7 +65,7 @@ class AsyncFileUtil {
       base::Callback<void(base::File::Error result,
                           const base::File::Info& file_info)>;
 
-  using EntryList = std::vector<DirectoryEntry>;
+  using EntryList = std::vector<filesystem::mojom::DirectoryEntry>;
   using ReadDirectoryCallback = base::RepeatingCallback<
       void(base::File::Error result, EntryList file_list, bool has_more)>;
 

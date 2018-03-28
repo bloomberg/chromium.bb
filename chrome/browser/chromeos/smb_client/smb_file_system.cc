@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/smb_client/smb_file_system.h"
 
 #include <algorithm>
+#include <memory>
+#include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/posix/eintr_wrapper.h"
@@ -12,6 +14,7 @@
 #include "chrome/browser/chromeos/file_system_provider/service.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/smb_provider_client.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "net/base/io_buffer.h"
 
 namespace chromeos {
@@ -68,9 +71,9 @@ namespace smb_client {
 
 namespace {
 
-storage::DirectoryEntry::DirectoryEntryType MapEntryType(bool is_directory) {
-  return is_directory ? storage::DirectoryEntry::DIRECTORY
-                      : storage::DirectoryEntry::FILE;
+filesystem::mojom::FsFileType MapEntryType(bool is_directory) {
+  return is_directory ? filesystem::mojom::FsFileType::DIRECTORY
+                      : filesystem::mojom::FsFileType::REGULAR_FILE;
 }
 
 constexpr size_t kTaskQueueCapacity = 2;
@@ -481,7 +484,8 @@ void SmbFileSystem::HandleRequestReadDirectoryCallback(
 
   // Loop through the entries and send when the desired batch size is hit.
   for (const smbprovider::DirectoryEntryProto& entry : entries.entries()) {
-    entry_list.emplace_back(entry.name(), MapEntryType(entry.is_directory()));
+    entry_list.emplace_back(base::FilePath(entry.name()),
+                            MapEntryType(entry.is_directory()));
 
     if (entry_list.size() == batch_size) {
       callback.Run(base::File::FILE_OK, entry_list, true /* has_more */);

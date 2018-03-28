@@ -1,11 +1,12 @@
 include_rules = [
+  "+components/services/filesystem",
   "+mojo",
   "+net",
   "+services/network/public/cpp",
   "+services/network/public/mojom",
   "+sql",
-  "+third_party/leveldatabase",
-  "+third_party/sqlite",
   "+third_party/WebKit/public/mojom",
   "+third_party/WebKit/public/platform",
+  "+third_party/leveldatabase",
+  "+third_party/sqlite",
 ]

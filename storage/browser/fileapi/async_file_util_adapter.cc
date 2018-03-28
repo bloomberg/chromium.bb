@@ -16,6 +16,7 @@
 #include "base/sequenced_task_runner.h"
 #include "base/task_runner_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
@@ -102,7 +103,7 @@ void ReadDirectoryHelper(FileSystemFileUtil* file_util,
   if (error == base::File::FILE_OK && !file_info.is_directory)
     error = base::File::FILE_ERROR_NOT_A_DIRECTORY;
 
-  std::vector<DirectoryEntry> entries;
+  std::vector<filesystem::mojom::DirectoryEntry> entries;
   if (error != base::File::FILE_OK) {
     origin_runner->PostTask(FROM_HERE, base::BindOnce(callback, error, entries,
                                                       false /* has_more */));
@@ -119,10 +120,10 @@ void ReadDirectoryHelper(FileSystemFileUtil* file_util,
 
   base::FilePath current;
   while (!(current = file_enum->Next()).empty()) {
-    DirectoryEntry entry;
-    entry.is_directory = file_enum->IsDirectory();
-    entry.name = VirtualPath::BaseName(current).value();
-    entries.push_back(entry);
+    entries.emplace_back(VirtualPath::BaseName(current),
+                         file_enum->IsDirectory()
+                             ? filesystem::mojom::FsFileType::DIRECTORY
+                             : filesystem::mojom::FsFileType::REGULAR_FILE);
 
     if (entries.size() == kResultChunkSize) {
       origin_runner->PostTask(

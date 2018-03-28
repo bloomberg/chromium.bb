@@ -29,6 +29,7 @@
 #include "chrome/browser/media_galleries/win/mtp_device_operations_util.h"
 #include "chrome/browser/media_galleries/win/portable_device_map_service.h"
 #include "chrome/browser/media_galleries/win/snapshot_file_details.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "components/storage_monitor/storage_monitor.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -202,10 +203,10 @@ base::File::Error ReadDirectoryOnBlockingPoolThread(
     return error;
 
   while (!(current = file_enum->Next()).empty()) {
-    storage::DirectoryEntry entry;
-    entry.is_directory = file_enum->IsDirectory();
-    entry.name = storage::VirtualPath::BaseName(current).value();
-    entries->push_back(entry);
+    entries->emplace_back(storage::VirtualPath::BaseName(current),
+                          file_enum->IsDirectory()
+                              ? filesystem::mojom::FsFileType::DIRECTORY
+                              : filesystem::mojom::FsFileType::REGULAR_FILE);
   }
   return error;
 }

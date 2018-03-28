@@ -19,6 +19,7 @@
 #include "base/threading/thread.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -37,7 +38,6 @@
 #include "storage/browser/fileapi/file_permission_policy.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/isolated_context.h"
-#include "storage/common/fileapi/directory_entry.h"
 #include "storage/common/fileapi/file_system_info.h"
 #include "storage/common/fileapi/file_system_types.h"
 #include "storage/common/fileapi/file_system_util.h"
@@ -502,7 +502,7 @@ void FileAPIMessageFilter::DidGetMetadataForStreaming(
 void FileAPIMessageFilter::DidReadDirectory(
     int request_id,
     base::File::Error result,
-    std::vector<storage::DirectoryEntry> entries,
+    std::vector<filesystem::mojom::DirectoryEntry> entries,
     bool has_more) {
   if (result == base::File::FILE_OK) {
     if (!entries.empty() || !has_more)

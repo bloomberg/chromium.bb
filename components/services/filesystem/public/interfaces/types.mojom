@@ -4,6 +4,8 @@
 
 module filesystem.mojom;
 
+import "mojo/public/mojom/base/file_path.mojom";
+
 // Used to explain the meaning of an offset within a file. These values line up
 // exactly with base::File.
 enum Whence {
@@ -72,8 +74,12 @@ enum FsFileType {
 
 // Describes a directory entry (i.e., a single member of a directory).
 struct DirectoryEntry {
+  // It contains only the entry name, i.e.: /path/to/a/file would be just
+  // "file". TODO(https://crbug/779196): Use Basename type when available.
+  mojo_base.mojom.FilePath name;
+
+  // Type of a given entry.
   FsFileType type;
-  string name;
 };
 
 // Deletion flags:

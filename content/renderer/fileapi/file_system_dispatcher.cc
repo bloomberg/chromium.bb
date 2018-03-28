@@ -5,12 +5,14 @@
 #include "content/renderer/fileapi/file_system_dispatcher.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/process/process.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "content/child/child_thread_impl.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "storage/common/fileapi/file_system_info.h"
@@ -19,15 +21,6 @@ namespace content {
 
 class FileSystemDispatcher::CallbackDispatcher {
  public:
-  typedef CallbackDispatcher self;
-  typedef FileSystemDispatcher::StatusCallback StatusCallback;
-  typedef FileSystemDispatcher::MetadataCallback MetadataCallback;
-  typedef FileSystemDispatcher::ReadDirectoryCallback ReadDirectoryCallback;
-  typedef FileSystemDispatcher::OpenFileSystemCallback OpenFileSystemCallback;
-  typedef FileSystemDispatcher::ResolveURLCallback ResolveURLCallback;
-  typedef FileSystemDispatcher::WriteCallback WriteCallback;
-  typedef FileSystemDispatcher::OpenFileCallback OpenFileCallback;
-
   static std::unique_ptr<CallbackDispatcher> Create(
       const StatusCallback& callback) {
     auto dispatcher = base::WrapUnique(new CallbackDispatcher);
@@ -86,9 +79,7 @@ class FileSystemDispatcher::CallbackDispatcher {
 
   ~CallbackDispatcher() {}
 
-  void DidSucceed() {
-    status_callback_.Run(base::File::FILE_OK);
-  }
+  void DidSucceed() { status_callback_.Run(base::File::FILE_OK); }
 
   void DidFail(base::File::Error error_code) {
     error_callback_.Run(error_code);
@@ -106,8 +97,9 @@ class FileSystemDispatcher::CallbackDispatcher {
     snapshot_callback_.Run(file_info, platform_path, request_id);
   }
 
-  void DidReadDirectory(const std::vector<storage::DirectoryEntry>& entries,
-                        bool has_more) {
+  void DidReadDirectory(
+      const std::vector<filesystem::mojom::DirectoryEntry>& entries,
+      bool has_more) {
     directory_callback_.Run(entries, has_more);
   }
 
@@ -376,7 +368,7 @@ void FileSystemDispatcher::OnDidCreateSnapshotFile(
 
 void FileSystemDispatcher::OnDidReadDirectory(
     int request_id,
-    const std::vector<storage::DirectoryEntry>& entries,
+    const std::vector<filesystem::mojom::DirectoryEntry>& entries,
     bool has_more) {
   CallbackDispatcher* dispatcher = dispatchers_.Lookup(request_id);
   DCHECK(dispatcher);

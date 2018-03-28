@@ -4,8 +4,11 @@
 
 #include <stddef.h>
 #include <stdint.h>
+
 #include <map>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/containers/queue.h"
@@ -19,6 +22,7 @@
 #include "base/stl_util.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/fileapi/copy_or_move_file_validator.h"
 #include "storage/browser/fileapi/copy_or_move_operation_delegate.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
@@ -335,7 +339,7 @@ class CopyOrMoveOperationTestHelper {
         root.virtual_path().AppendRelativePath(url.virtual_path(), &relative);
         relative = relative.NormalizePathSeparators();
         ASSERT_TRUE(base::ContainsKey(test_case_map, relative));
-        if (entries[i].is_directory) {
+        if (entries[i].type == filesystem::mojom::FsFileType::DIRECTORY) {
           EXPECT_TRUE(test_case_map[relative]->is_directory);
           directories.push(url);
         } else {

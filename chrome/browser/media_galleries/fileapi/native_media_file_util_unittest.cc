@@ -8,6 +8,7 @@
 #include <set>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -94,9 +95,8 @@ void DidReadDirectory(std::set<base::FilePath::StringType>* content,
                       bool has_more) {
   EXPECT_TRUE(!*completed);
   *completed = !has_more;
-  for (FileEntryList::const_iterator itr = file_list.begin();
-       itr != file_list.end(); ++itr)
-    EXPECT_TRUE(content->insert(itr->name).second);
+  for (const auto& entry : file_list)
+    EXPECT_TRUE(content->insert(entry.name.value()).second);
 }
 
 void PopulateDirectoryWithTestCases(const base::FilePath& dir,

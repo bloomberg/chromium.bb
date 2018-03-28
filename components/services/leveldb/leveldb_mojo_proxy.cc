@@ -8,6 +8,7 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/files/file_path.h"
 #include "base/threading/thread_restrictions.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 #include "mojo/public/cpp/bindings/sync_call_restrictions.h"
@@ -238,7 +239,8 @@ void LevelDBMojoProxy::GetChildrenImpl(OpaqueDir* dir,
 
   if (directory_contents.has_value()) {
     for (size_t i = 0; i < directory_contents->size(); ++i)
-      out_contents->push_back(directory_contents.value()[i]->name);
+      out_contents->push_back(
+          directory_contents.value()[i]->name.AsUTF8Unsafe());
   }
 }
 

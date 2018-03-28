@@ -208,6 +208,7 @@ component("browser") {
   ]
 
   public_deps = [
+    "//components/services/filesystem/public/interfaces",
     "//storage/common",
   ]
   deps = [
@@ -305,6 +306,7 @@ source_set("unittests") {
     ":browser",
     ":test_support",
     "//base/test:test_support",
+    "//components/services/filesystem/public/interfaces",
     "//mojo/common",
     "//mojo/edk",
     "//net:test_support",

@@ -228,7 +228,7 @@ OperationID FileSystemOperationRunner::ReadDirectory(
       BeginOperation(std::move(operation), scope.AsWeakPtr());
   if (!operation_raw) {
     DidReadDirectory(handle, std::move(callback), error,
-                     std::vector<DirectoryEntry>(), false);
+                     std::vector<filesystem::mojom::DirectoryEntry>(), false);
     return handle.id;
   }
   PrepareForRead(handle.id, url);
@@ -588,7 +588,7 @@ void FileSystemOperationRunner::DidReadDirectory(
     const OperationHandle& handle,
     const ReadDirectoryCallback& callback,
     base::File::Error rv,
-    std::vector<DirectoryEntry> entries,
+    std::vector<filesystem::mojom::DirectoryEntry> entries,
     bool has_more) {
   if (handle.scope) {
     finished_operations_.insert(handle.id);

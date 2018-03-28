@@ -65,7 +65,7 @@ TEST_F(DirectoryImplTest, Read) {
   for (size_t i = 0; i < directory_contents->size(); i++) {
     auto& item = directory_contents.value()[i];
     ASSERT_TRUE(item);
-    auto it = expected_contents.find(item->name);
+    auto it = expected_contents.find(item->name.AsUTF8Unsafe());
     ASSERT_TRUE(it != expected_contents.end());
     EXPECT_EQ(it->second, item->type);
     expected_contents.erase(it);
