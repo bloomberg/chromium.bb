@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "base/memory/ref_counted.h"
-#include "base/rand_util.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
 #include "base/test/scoped_task_environment.h"
@@ -34,10 +33,6 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
 
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
 
-  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const {
-    return dependency_factory_->GetWebRtcSignalingThread();
-  }
-
   blink::WebMediaStreamTrack CreateLocalTrack(const std::string& id) {
     blink::WebMediaStreamSource web_source;
     web_source.Initialize(
@@ -58,7 +53,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
       webrtc::MediaStreamTrackInterface* webrtc_track) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter;
-    signaling_thread()->PostTask(
+    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
         FROM_HERE,
         base::BindOnce(&WebRtcMediaStreamTrackAdapterMapTest::
                            GetOrCreateRemoteTrackAdapterOnSignalingThread,
@@ -71,7 +66,8 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
   void GetOrCreateRemoteTrackAdapterOnSignalingThread(
       webrtc::MediaStreamTrackInterface* webrtc_track,
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>* adapter) {
-    DCHECK(signaling_thread()->BelongsToCurrentThread());
+    DCHECK(dependency_factory_->GetWebRtcSignalingThread()
+               ->BelongsToCurrentThread());
     *adapter = map_->GetOrCreateRemoteTrackAdapter(webrtc_track);
   }
 
@@ -82,7 +78,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
     base::WaitableEvent waitable_event(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-    signaling_thread()->PostTask(
+    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
         FROM_HERE, base::BindOnce(&WebRtcMediaStreamTrackAdapterMapTest::
                                       RunMessageLoopUntilIdleOnSignalingThread,
                                   base::Unretained(this), &waitable_event));
@@ -92,7 +88,8 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
 
   void RunMessageLoopUntilIdleOnSignalingThread(
       base::WaitableEvent* waitable_event) {
-    DCHECK(signaling_thread()->BelongsToCurrentThread());
+    DCHECK(dependency_factory_->GetWebRtcSignalingThread()
+               ->BelongsToCurrentThread());
     base::RunLoop().RunUntilIdle();
     waitable_event->Signal();
   }
@@ -214,101 +211,6 @@ TEST_F(WebRtcMediaStreamTrackAdapterMapTest, GetMissingRemoteTrackAdapter) {
   scoped_refptr<MockWebRtcAudioTrack> webrtc_track =
       MockWebRtcAudioTrack::Create("missing");
   EXPECT_EQ(nullptr, map_->GetRemoteTrackAdapter(webrtc_track.get()));
-}
-
-// Continuously calls GetOrCreateLocalTrackAdapter() on the main thread and
-// GetOrCreateRemoteTrackAdapter() on the signaling thread hoping to hit
-// deadlocks if the operations were to synchronize with the other thread while
-// holding the lock.
-//
-// Note that this deadlock has been notoriously difficult to reproduce. This
-// test is added as an attempt to guard against this type of regression, but do
-// not trust that if this test passes there is no risk of deadlock.
-class WebRtcMediaStreamTrackAdapterMapStressTest
-    : public WebRtcMediaStreamTrackAdapterMapTest {
- public:
-  WebRtcMediaStreamTrackAdapterMapStressTest()
-      : WebRtcMediaStreamTrackAdapterMapTest(), remaining_iterations_(0u) {}
-
-  void RunStressTest(size_t iterations) {
-    base::RunLoop run_loop;
-    remaining_iterations_ = iterations;
-    PostSignalingThreadLoop();
-    MainThreadLoop(&run_loop);
-    run_loop.Run();
-    // The run loop ensures all operations have began executing, but does not
-    // guarantee that all of them are complete, i.e. that track adapters have
-    // been fully initialized and subequently disposed. For that we need to run
-    // until idle or else we may tear down the test prematurely.
-    RunMessageLoopsUntilIdle();
-  }
-
-  void MainThreadLoop(base::RunLoop* run_loop) {
-    for (size_t i = 0u; i < 5u; ++i) {
-      map_->GetOrCreateLocalTrackAdapter(CreateLocalTrack("local_track_id"));
-    }
-    if (--remaining_iterations_ > 0) {
-      PostSignalingThreadLoop();
-      PostMainThreadLoop(run_loop);
-    } else {
-      // We are now done, but there may still be operations pending to execute
-      // on signaling thread so we perform Quit() in a post to the signaling
-      // thread. This ensures that Quit() is called after all operations have
-      // began executing (but does not guarantee that all operations have
-      // completed).
-      signaling_thread()->PostTask(
-          FROM_HERE,
-          base::BindOnce(&WebRtcMediaStreamTrackAdapterMapStressTest::
-                             QuitRunLoopOnSignalingThread,
-                         base::Unretained(this), base::Unretained(run_loop)));
-    }
-  }
-
-  void PostMainThreadLoop(base::RunLoop* run_loop) {
-    main_thread_->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &WebRtcMediaStreamTrackAdapterMapStressTest::MainThreadLoop,
-            base::Unretained(this), base::Unretained(run_loop)));
-  }
-
-  void SignalingThreadLoop() {
-    std::vector<std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
-        track_refs;
-    for (size_t i = 0u; i < 5u; ++i) {
-      track_refs.push_back(map_->GetOrCreateRemoteTrackAdapter(
-          MockWebRtcAudioTrack::Create("remote_track_id")));
-    }
-    main_thread_->PostTask(
-        FROM_HERE,
-        base::BindOnce(&WebRtcMediaStreamTrackAdapterMapStressTest::
-                           DestroyAdapterRefsOnMainThread,
-                       base::Unretained(this), std::move(track_refs)));
-  }
-
-  void PostSignalingThreadLoop() {
-    signaling_thread()->PostTask(
-        FROM_HERE,
-        base::BindOnce(
-            &WebRtcMediaStreamTrackAdapterMapStressTest::SignalingThreadLoop,
-            base::Unretained(this)));
-  }
-
-  void DestroyAdapterRefsOnMainThread(
-      std::vector<std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>>
-          track_refs) {}
-
-  void QuitRunLoopOnSignalingThread(base::RunLoop* run_loop) {
-    run_loop->Quit();
-  }
-
- private:
-  size_t remaining_iterations_;
-};
-
-TEST_F(WebRtcMediaStreamTrackAdapterMapStressTest, StressTest) {
-  const size_t kNumStressTestIterations = 1000u;
-  RunStressTest(kNumStressTestIterations);
 }
 
 }  // namespace content
