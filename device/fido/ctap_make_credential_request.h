@@ -36,6 +36,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   CtapMakeCredentialRequest& operator=(CtapMakeCredentialRequest&& that);
   ~CtapMakeCredentialRequest();
 
+  // Serializes MakeCredential request parameter into CBOR encoded map with
+  // integer keys and CBOR encoded values as defined by the CTAP spec.
+  // https://drafts.fidoalliance.org/fido-2/latest/fido-client-to-authenticator-protocol-v2.0-wd-20180305.html#authenticatorMakeCredential
   std::vector<uint8_t> EncodeAsCBOR() const;
 
   CtapMakeCredentialRequest& SetUserVerificationRequired(
