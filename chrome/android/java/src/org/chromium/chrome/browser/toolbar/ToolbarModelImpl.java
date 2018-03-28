@@ -13,6 +13,7 @@ import org.chromium.base.ContextUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
+import org.chromium.chrome.browser.ChromeTabbedActivity;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerServiceFactory;
 import org.chromium.chrome.browser.dom_distiller.DomDistillerTabUtils;
@@ -411,6 +412,7 @@ public class ToolbarModelImpl
      *         display search terms in place of SRP URL.
      */
     private String extractSearchTermsFromUrlInternal(String url) {
+        if (mTab != null && !(mTab.getActivity() instanceof ChromeTabbedActivity)) return null;
         if (!mQueryInOmniboxEnabled || !securityLevelSafeForQueryInOmnibox()) return null;
 
         String searchTerms = TemplateUrlService.getInstance().extractSearchTermsFromUrl(url);
