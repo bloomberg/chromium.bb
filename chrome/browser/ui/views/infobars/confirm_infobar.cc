@@ -15,7 +15,6 @@
 #include "chrome/browser/ui/views_mode_controller.h"
 #include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/window_open_disposition.h"
-#include "ui/native_theme/native_theme.h"
 #include "ui/views/controls/button/label_button.h"
 #include "ui/views/controls/button/md_text_button.h"
 #include "ui/views/controls/label.h"
@@ -42,9 +41,6 @@ ConfirmInfoBar::ConfirmInfoBar(std::unique_ptr<ConfirmInfoBarDelegate> delegate)
       ok_button_(nullptr),
       cancel_button_(nullptr),
       link_(nullptr) {
-  // Always use the standard theme for the platform on infobars (infobars in
-  // incognito should have the same appearance as normal infobars).
-  SetNativeTheme(ui::NativeTheme::GetInstanceForNativeUi());
 }
 
 ConfirmInfoBar::~ConfirmInfoBar() {

@@ -501,7 +501,7 @@ SkColor ThemeService::GetDefaultColor(int id, bool incognito) const {
     case ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR:
       // Use a faint version of the text color as the separator color.
       return SkColorSetA(
-          GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito), 0x20);
+          GetColor(ThemeProperties::COLOR_BOOKMARK_TEXT, incognito), 0x26);
     case ThemeProperties::COLOR_NTP_TEXT_LIGHT:
       return IncreaseLightness(GetColor(kNtpText, incognito), 0.40);
     case ThemeProperties::COLOR_TAB_THROBBER_SPINNING:

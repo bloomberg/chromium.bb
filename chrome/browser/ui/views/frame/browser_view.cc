@@ -2143,7 +2143,7 @@ void BrowserView::OnOmniboxPopupShownOrHidden() {
 
 SkColor BrowserView::GetInfoBarSeparatorColor() const {
   return GetThemeProvider()->GetColor(
-      ThemeProperties::COLOR_TOOLBAR_BOTTOM_SEPARATOR);
+      ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_SEPARATOR);
 }
 
 void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
@@ -2151,12 +2151,7 @@ void BrowserView::InfoBarContainerStateChanged(bool is_animating) {
 }
 
 bool BrowserView::DrawInfoBarArrows(int* x) const {
-  if (x) {
-    gfx::Point anchor(toolbar_->location_bar()->GetInfoBarAnchorPoint());
-    ConvertPointToTarget(toolbar_->location_bar(), this, &anchor);
-    *x = anchor.x();
-  }
-  return true;
+  return false;
 }
 
 void BrowserView::InitViews() {

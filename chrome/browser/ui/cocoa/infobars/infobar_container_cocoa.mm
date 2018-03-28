@@ -39,7 +39,5 @@ void InfoBarContainerCocoa::InfoBarContainerStateChanged(bool is_animating) {
 }
 
 bool InfoBarContainerCocoa::DrawInfoBarArrows(int* x) const {
-  if (x)
-    *x = [controller_ infobarArrowX];
-  return ![controller_ shouldSuppressTopInfoBarTip];
+  return false;
 }

@@ -15,7 +15,6 @@
 #include "ui/views/view.h"
 
 InfoBarBackground::InfoBarBackground() {
-  SetNativeControlColor(infobars::InfoBar::kBackgroundColor);
 }
 
 InfoBarBackground::~InfoBarBackground() {

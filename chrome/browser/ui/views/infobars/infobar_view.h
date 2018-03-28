@@ -57,6 +57,8 @@ class InfoBarView : public infobars::InfoBar,
   void Layout() override;
   void ViewHierarchyChanged(
       const ViewHierarchyChangedDetails& details) override;
+  void OnThemeChanged() override;
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override;
 
   // views::ButtonListener:
   // NOTE: This must not be called if we're unowned.  (Subclasses should ignore
@@ -103,6 +105,14 @@ class InfoBarView : public infobars::InfoBar,
   // views::ViewTargeterDelegate:
   bool DoesIntersectRect(const View* target,
                          const gfx::Rect& rect) const override;
+
+  // Returns the current color for the theme property |id|.  Will return the
+  // wrong value if no theme provider is available.
+  SkColor GetColor(int id) const;
+
+  // Sets various attributes on |label| that are common to all child links and
+  // labels.
+  void SetLabelDetails(views::Label* label) const;
 
   // This container holds the children and clips their painting during
   // animation.
