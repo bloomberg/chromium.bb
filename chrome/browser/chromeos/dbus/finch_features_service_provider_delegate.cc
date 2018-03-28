@@ -15,8 +15,7 @@ FinchFeaturesServiceProviderDelegate::FinchFeaturesServiceProviderDelegate() {}
 FinchFeaturesServiceProviderDelegate::~FinchFeaturesServiceProviderDelegate() {}
 
 bool FinchFeaturesServiceProviderDelegate::IsCrostiniEnabled() {
-  return base::FeatureList::IsEnabled(features::kCrostini) &&
-         virtual_machines::AreVirtualMachinesAllowedByPolicy();
+  return virtual_machines::AreVirtualMachinesAllowedByPolicy();
 }
 
 }  // namespace chromeos
