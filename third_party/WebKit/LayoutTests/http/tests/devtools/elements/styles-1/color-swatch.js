@@ -12,6 +12,7 @@
       #inspected {
           color: red;
           --variable: red;
+          background: var(--variable);
       }
       </style>
       <div id="inspected">Inspected div</div>
@@ -40,6 +41,13 @@
       var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('--variable');
       var swatch = treeItem.valueElement.querySelector('span[is=color-swatch]');
       TestRunner.addResult('Custom property has a color swatch: ' + !!swatch);
+      next();
+    },
+
+    function testColorSwatchInVarFunction(next) {
+      var treeItem = ElementsTestRunner.getMatchedStylePropertyTreeItem('background');
+      var swatch = treeItem.valueElement.querySelector('span[is=color-swatch]');
+      TestRunner.addResult('var function has a color swatch: ' + !!swatch);
       next();
     },
 

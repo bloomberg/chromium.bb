@@ -2,5 +2,5 @@ Tests that url(...) with space-delimited color names as filename segments do not
 
 url(red green blue.jpg)
 [] red
-var(--blue)
+[] var(--blue)
 
