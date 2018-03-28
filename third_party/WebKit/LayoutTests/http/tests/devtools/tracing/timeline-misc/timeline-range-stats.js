@@ -111,7 +111,7 @@
     for (var endTime = startTime + 1000; endTime <= 109000; endTime += 1000) {
       dumpStats(
           startTime, endTime,
-          Timeline.TimelineUIUtils.statsForTimeRange(timelineModel, startTime / 1000, endTime / 1000));
+          Timeline.TimelineUIUtils.statsForTimeRange(timelineModel.mainThreadEvents(), startTime / 1000, endTime / 1000));
     }
   }
   function dumpStats(t1, t2, obj) {

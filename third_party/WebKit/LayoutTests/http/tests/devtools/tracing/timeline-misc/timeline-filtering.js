@@ -282,7 +282,7 @@
   tabbedPane.selectTab(Timeline.TimelineDetailsView.Tab.EventLog);
   const view = tabbedPane.visibleView;
 
-  view.setModel(model);
+  view.setModel(model, model.timelineModel().mainThreadEvents());
   view.updateContents(Timeline.TimelineSelection.fromRange(
       model.timelineModel().minimumRecordTime(), model.timelineModel().maximumRecordTime()));
   function printEventMessage(event, level) {
