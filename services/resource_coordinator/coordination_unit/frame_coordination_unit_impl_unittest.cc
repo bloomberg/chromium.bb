@@ -18,25 +18,21 @@ namespace {
 class FrameCoordinationUnitImplTest : public CoordinationUnitTestHarness {
  public:
   void SetUp() override {
-    ResourceCoordinatorClock::SetClockForTesting(
-        std::make_unique<base::SimpleTestTickClock>());
-    clock_ = static_cast<base::SimpleTestTickClock*>(
-        ResourceCoordinatorClock::GetClockForTesting());
+    ResourceCoordinatorClock::SetClockForTesting(&clock_);
 
     // Sets a valid starting time.
-    clock_->SetNowTicks(base::TimeTicks::Now());
+    clock_.SetNowTicks(base::TimeTicks::Now());
   }
 
   void TearDown() override {
-    clock_ = nullptr;
     ResourceCoordinatorClock::ResetClockForTesting();
   }
 
  protected:
-  void AdvanceClock(base::TimeDelta delta) { clock_->Advance(delta); }
+  void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }
 
  private:
-  base::SimpleTestTickClock* clock_ = nullptr;
+  base::SimpleTestTickClock clock_;
 };
 
 using FrameCoordinationUnitImplDeathTest = FrameCoordinationUnitImplTest;

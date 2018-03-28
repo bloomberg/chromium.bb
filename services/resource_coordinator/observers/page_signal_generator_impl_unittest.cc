@@ -18,24 +18,6 @@
 
 namespace resource_coordinator {
 
-// A wrapper for a tick clock. ResourceCoordinatorClock wants TickClock
-// ownership, but the test harness only provides a raw pointer.
-class TickClockWrapper : public base::TickClock {
- public:
-  explicit TickClockWrapper(base::TickClock* tick_clock)
-      : tick_clock_(tick_clock) {}
-
-  ~TickClockWrapper() override {}
-
-  // base::TickClock implementation:
-  base::TimeTicks NowTicks() const override { return tick_clock_->NowTicks(); }
-
- private:
-  base::TickClock* tick_clock_;
-
-  DISALLOW_COPY_AND_ASSIGN(TickClockWrapper);
-};
-
 class MockPageSignalGeneratorImpl : public PageSignalGeneratorImpl {
  public:
   // Overridden from PageSignalGeneratorImpl.
@@ -163,8 +145,7 @@ TEST_F(PageSignalGeneratorImplTest, PageDataCorrectlyManaged) {
 
 void PageSignalGeneratorImplTest::TestPageAlmostIdleTransitions(bool timeout) {
   EnablePAI();
-  ResourceCoordinatorClock::SetClockForTesting(
-      std::make_unique<TickClockWrapper>(task_env().GetMockTickClock()));
+  ResourceCoordinatorClock::SetClockForTesting(task_env().GetMockTickClock());
   task_env().FastForwardBy(base::TimeDelta::FromSeconds(1));
 
   MockSinglePageInSingleProcessCoordinationUnitGraph cu_graph;

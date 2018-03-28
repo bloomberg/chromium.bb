@@ -27,9 +27,8 @@ class ResourceCoordinatorClock {
 
   static base::TickClock* GetClockForTesting();
 
-  // Sets a TickClock for testing, the ownership of the |tick_clock| will be
-  // transferred to the global clock.
-  static void SetClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+  // Sets a TickClock for testing.
+  static void SetClockForTesting(base::TickClock* tick_clock);
 
   static void ResetClockForTesting();
 
