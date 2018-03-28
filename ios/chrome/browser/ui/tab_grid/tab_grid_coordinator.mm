@@ -245,6 +245,7 @@
       command.incognito ? self.incognitoTabModel : self.regularTabModel;
   // TODO(crbug.com/804587) : It is better to use the mediator to insert a
   // webState and show the active tab.
+  DCHECK(self.tabSwitcher);
   [self.tabSwitcher
       dismissWithNewTabAnimationToModel:activeTabModel
                                 withURL:GURL(kChromeUINewTabURL)
