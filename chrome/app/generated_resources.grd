@@ -1923,18 +1923,18 @@ are declared in build/common.gypi.
       </if>
       <!-- Bookmark app bubble -->
       <if expr="chromeos">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the shelf.">
-          Add to shelf
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for creating a shortcut to this website, and adding it to the shelf.">
+          Add shortcut to shelf
         </message>
       </if>
       <if expr="is_macosx">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble adding a bookmark app to the Applications Folder on Mac. Note `Applications` should match the name that appears under Favourites in Finder on macOS.">
-          Add to Applications
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble creating a shortcut to this website, and adding it to the Applications Folder on Mac. Note `Applications` should match the name that appears under Favourites in Finder on macOS.">
+          Add Shortcut to Applications
         </message>
       </if>
       <if expr="not chromeos and not is_macosx">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the desktop.">
-          Add to desktop
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for creating a shortcut to this website, and adding it to the desktop.">
+          Add shortcut to desktop
         </message>
       </if>
 
@@ -1980,18 +1980,18 @@ are declared in build/common.gypi.
 
       <!-- "Create application shortcuts" menu item -->
       <if expr="chromeos">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for adding a bookmark app to the shelf.">
-          Add to shelf...
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for creating a shortcut to this website, and adding it to the shelf.">
+          Add shortcut to shelf...
         </message>
       </if>
       <if expr="is_macosx">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="In Title Case: Button text for adding a bookmark app to the Applications Folder. Note `Applications` should match the name that appears under Favourites in Finder on macOS">
-          Add to Applications...
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="In Title Case: Button text for creating a shortcut to this website, and adding it to the Applications Folder. Note `Applications` should match the name that appears under Favourites in Finder on macOS">
+          Add Shortcut to Applications...
         </message>
       </if>
       <if expr="not chromeos and not is_macosx">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for adding a bookmark app to the desktop.">
-          Add to desktop...
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for creating a shortcut to this website, and adding it to the desktop.">
+          Add shortcut to desktop...
         </message>
       </if>
 
