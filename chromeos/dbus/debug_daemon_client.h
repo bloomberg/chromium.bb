@@ -215,6 +215,15 @@ class CHROMEOS_EXPORT DebugDaemonClient
                                  const CupsRemovePrinterCallback& callback,
                                  const base::Closure& error_callback) = 0;
 
+  // A callback to handle the result of StartVmConcierge/StopVmConcierge.
+  using VmConciergeCallback = base::OnceCallback<void(bool success)>;
+  // Calls debugd::kStartVmConcierge, which starts the Concierge service.
+  // |callback| is called when the method finishes.
+  virtual void StartVmConcierge(VmConciergeCallback callback) = 0;
+  // Calls debugd::StopVmConcierge, which stops the Concierge service.
+  // |callback| is called when the method finishes.
+  virtual void StopVmConcierge(VmConciergeCallback callback) = 0;
+
   // Factory function, creates a new instance and returns ownership.
   // For normal usage, access the singleton via DBusThreadManager::Get().
   static DebugDaemonClient* Create();

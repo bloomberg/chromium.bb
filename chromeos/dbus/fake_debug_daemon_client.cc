@@ -258,4 +258,14 @@ void FakeDebugDaemonClient::CupsRemovePrinter(
       FROM_HERE, base::Bind(callback, has_printer));
 }
 
+void FakeDebugDaemonClient::StartVmConcierge(VmConciergeCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
+void FakeDebugDaemonClient::StopVmConcierge(VmConciergeCallback callback) {
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::BindOnce(std::move(callback), true));
+}
+
 }  // namespace chromeos

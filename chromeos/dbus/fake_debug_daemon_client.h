@@ -86,6 +86,8 @@ class CHROMEOS_EXPORT FakeDebugDaemonClient : public DebugDaemonClient {
   void CupsRemovePrinter(const std::string& name,
                          const CupsRemovePrinterCallback& callback,
                          const base::Closure& error_callback) override;
+  void StartVmConcierge(VmConciergeCallback callback) override;
+  void StopVmConcierge(VmConciergeCallback callback) override;
 
   // Sets debugging features mask for testing.
   virtual void SetDebuggingFeaturesStatus(int featues_mask);
