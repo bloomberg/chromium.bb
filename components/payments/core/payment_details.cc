@@ -136,7 +136,7 @@ bool PaymentDetails::FromDictionaryValue(const base::DictionaryValue& value,
           const base::DictionaryValue* additional_display_item_dict = nullptr;
           PaymentItem additional_display_item;
           if (!additional_display_items_list->GetDictionary(
-                  i, &additional_display_item_dict) ||
+                  j, &additional_display_item_dict) ||
               !additional_display_item.FromDictionaryValue(
                   *additional_display_item_dict)) {
             return false;

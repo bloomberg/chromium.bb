@@ -277,6 +277,19 @@ INSTANTIATE_TEST_CASE_P(TestCases,
         "label": "Debit card discount",
         "amount": {"currency": "USD", "value": "-0.20"}
       }]
+    }, {
+      "supportedMethods": ["basic-card"],
+      "data": {
+        "supportedTypes": ["mastercard"]
+      },
+      "total": {
+        "label": "MasterCard discounted total",
+        "amount": {"currency": "USD", "value": "0.80"}
+      },
+      "additionalDisplayItems": [{
+        "label": "MasterCard discount",
+        "amount": {"currency": "USD", "value": "-0.20"}
+      }]
     }]
 })",
                                                    DO_NOT_REQUIRE_TOTAL,
