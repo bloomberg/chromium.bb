@@ -1274,6 +1274,13 @@ jumbo_component("base") {
     # Needs to be a public config so that dependent targets link against it as
     # well when doing a component build.
     public_configs = [ ":android_system_libs" ]
+
+    if (can_unwind_with_cfi_table) {
+      sources += [
+        "trace_event/cfi_backtrace_android.cc",
+        "trace_event/cfi_backtrace_android.h",
+      ]
+    }
   }
 
   # Chromeos.
@@ -2462,6 +2469,20 @@ test("base_unittests") {
   }
 
   if (is_android) {
+    # Add unwind tables in base_unittests_apk test apk. The unwind tables are
+    # generated from debug info in the binary. Removing "default_symbols" and
+    # adding symbols config removes the "strip_debug" config that strips the
+    # debug info, on base unittests apk.
+    if (can_unwind_with_cfi_table) {
+      configs -= [ "//build/config/compiler:default_symbols" ]
+      if (symbol_level == 2) {
+        configs += [ "//build/config/compiler:symbols" ]
+      } else {
+        configs += [ "//build/config/compiler:minimal_symbols" ]
+      }
+      add_unwind_tables_in_apk = true
+      sources += [ "trace_event/cfi_backtrace_android_unittest.cc" ]
+    }
     sources -= [
       "process/process_unittest.cc",
       "process/process_util_unittest.cc",
