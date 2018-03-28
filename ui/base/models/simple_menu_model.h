@@ -75,6 +75,12 @@ class UI_BASE_EXPORT SimpleMenuModel : public MenuModel {
   // Methods for adding items to the model.
   void AddItem(int command_id, const base::string16& label);
   void AddItemWithStringId(int command_id, int string_id);
+  void AddItemWithIcon(int command_id,
+                       const base::string16& label,
+                       const gfx::ImageSkia& icon);
+  void AddItemWithStringIdAndIcon(int command_id,
+                                  int string_id,
+                                  const gfx::ImageSkia& icon);
   void AddCheckItem(int command_id, const base::string16& label);
   void AddCheckItemWithStringId(int command_id, int string_id);
   void AddRadioItem(int command_id, const base::string16& label, int group_id);

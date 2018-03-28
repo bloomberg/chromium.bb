@@ -83,6 +83,20 @@ void SimpleMenuModel::AddItemWithStringId(int command_id, int string_id) {
   AddItem(command_id, l10n_util::GetStringUTF16(string_id));
 }
 
+void SimpleMenuModel::AddItemWithIcon(int command_id,
+                                      const base::string16& label,
+                                      const gfx::ImageSkia& icon) {
+  Item item(command_id, TYPE_COMMAND, label);
+  item.icon = gfx::Image(icon);
+  AppendItem(std::move(item));
+}
+
+void SimpleMenuModel::AddItemWithStringIdAndIcon(int command_id,
+                                                 int string_id,
+                                                 const gfx::ImageSkia& icon) {
+  AddItemWithIcon(command_id, l10n_util::GetStringUTF16(string_id), icon);
+}
+
 void SimpleMenuModel::AddCheckItem(int command_id,
                                    const base::string16& label) {
   AppendItem(Item(command_id, TYPE_CHECK, label));

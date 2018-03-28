@@ -593,6 +593,9 @@ void MenuItemView::Layout() {
               (icon_area_width_ - size.width()) / 2;
       if (config.icons_in_label || type_ == CHECKBOX || type_ == RADIO)
         x = label_start_;
+      if (GetMenuController() && GetMenuController()->use_touchable_layout())
+        x = config.touchable_item_left_margin;
+
       int y =
           (height() + GetTopMargin() - GetBottomMargin() - size.height()) / 2;
       icon_view_->SetPosition(gfx::Point(x, y));
@@ -600,13 +603,15 @@ void MenuItemView::Layout() {
 
     if (radio_check_image_view_) {
       int x = config.item_left_margin + left_icon_margin_;
+      if (GetMenuController() && GetMenuController()->use_touchable_layout())
+        x = config.touchable_item_left_margin;
       int y =
           (height() + GetTopMargin() - GetBottomMargin() - kMenuCheckSize) / 2;
       radio_check_image_view_->SetBounds(x, y, kMenuCheckSize, kMenuCheckSize);
     }
 
     if (submenu_arrow_image_view_) {
-      int x = this->width() - config.arrow_width - config.arrow_to_edge_padding;
+      int x = width() - config.arrow_width - config.arrow_to_edge_padding;
       int y =
           (height() + GetTopMargin() - GetBottomMargin() - kSubmenuArrowSize) /
           2;
@@ -678,6 +683,9 @@ void MenuItemView::UpdateMenuPartSizes() {
     padding = (has_icons_ || HasChecksOrRadioButtons()) ?
         config.icon_to_label_padding : 0;
   }
+  if (GetMenuController() && GetMenuController()->use_touchable_layout())
+    padding = config.touchable_icon_to_label_padding;
+
   label_start_ += padding;
 
   EmptyMenuMenuItem menu_item(this);
@@ -843,6 +851,8 @@ void MenuItemView::PaintButton(gfx::Canvas* canvas, PaintButtonMode mode) {
   // Calculate some colors.
   SkColor fg_color = GetTextColor(false, render_selection, emphasized);
   SkColor icon_color = color_utils::DeriveDefaultIconColor(fg_color);
+  if (GetMenuController() && GetMenuController()->use_touchable_layout())
+    icon_color = config.touchable_icon_color;
 
   // Render the check.
   if (type_ == CHECKBOX && delegate->IsItemChecked(GetCommand())) {

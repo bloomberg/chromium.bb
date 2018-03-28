@@ -40,7 +40,7 @@ void ArcLauncherContextMenu::Init() {
   const bool app_is_open = controller()->IsOpen(item().id);
   if (!app_is_open) {
     DCHECK(app_info->launchable);
-    AddItemWithStringId(MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
+    AddContextMenuOption(MENU_OPEN_NEW, IDS_APP_CONTEXT_MENU_ACTIVATE_ARC);
     if (!features::IsTouchableAppContextMenuEnabled())
       AddSeparator(ui::NORMAL_SEPARATOR);
   }
@@ -49,7 +49,7 @@ void ArcLauncherContextMenu::Init() {
     AddPinMenu();
 
   if (app_is_open)
-    AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+    AddContextMenuOption(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   if (!features::IsTouchableAppContextMenuEnabled())
     AddSeparator(ui::NORMAL_SEPARATOR);
 }

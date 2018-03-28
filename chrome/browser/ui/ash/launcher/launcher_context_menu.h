@@ -8,6 +8,7 @@
 #include "ash/public/cpp/shelf_item.h"
 #include "base/macros.h"
 #include "ui/base/models/simple_menu_model.h"
+#include "ui/gfx/vector_icon_types.h"
 
 class ChromeLauncherController;
 
@@ -60,6 +61,14 @@ class LauncherContextMenu : public ui::SimpleMenuModel,
 
   // Helper method to execute common commands. Returns true if handled.
   bool ExecuteCommonCommand(int command_id, int event_flags);
+
+  // Helper method to add touchable or normal context menu options.
+  void AddContextMenuOption(MenuItem type, int string_id);
+
+  // Helper method to get the gfx::VectorIcon for a |type|. Returns an empty
+  // gfx::VectorIcon if there is no icon for this |type|.
+  const gfx::VectorIcon& GetMenuItemVectorIcon(MenuItem type,
+                                               int string_id) const;
 
   int64_t display_id() const { return display_id_; }
 
