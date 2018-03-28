@@ -443,6 +443,8 @@ static void update_state(const AV1_COMP *const cpi, TileDataEnc *tile_data,
                                         ctx->rate, ctx->dist, x->skip);
       reset_tx_size(x, mbmi, cm->tx_mode);
     }
+    if (mbmi->uv_mode == UV_CFL_PRED && !is_cfl_allowed(xd))
+      mbmi->uv_mode = UV_DC_PRED;
   }
 
   for (i = 0; i < num_planes; ++i) {
