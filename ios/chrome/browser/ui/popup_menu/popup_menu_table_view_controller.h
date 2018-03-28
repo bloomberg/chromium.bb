@@ -11,16 +11,23 @@
 @protocol BrowserCommands;
 @protocol PopupMenuItem;
 
+// Delegate for the table view.
+@protocol PopupMenuTableViewControllerCommand
+// Adds the current page to the reading list.
+- (void)readPageLater;
+@end
+
 // TableViewController for the popup menu.
 @interface PopupMenuTableViewController : ChromeTableViewController
 
 // The model of this controller.
 @property(nonatomic, readonly, strong)
     TableViewModel<TableViewItem<PopupMenuItem>*>* tableViewModel;
-
 // Dispatcher.
 @property(nonatomic, weak) id<ApplicationCommands, BrowserCommands> dispatcher;
-
+// Command handler for this table view.
+@property(nonatomic, weak) id<PopupMenuTableViewControllerCommand>
+    commandHandler;
 // Presenting ViewController for the ViewController needing to be presented as
 // result of an interaction with the popup.
 @property(nonatomic, weak) UIViewController* baseViewController;

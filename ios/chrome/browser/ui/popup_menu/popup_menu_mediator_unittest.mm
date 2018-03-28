@@ -42,6 +42,7 @@ class PopupMenuMediatorTest : public PlatformTest {
     popup_menu_strict_ =
         OCMStrictClassMock([PopupMenuTableViewController class]);
     OCMExpect([popup_menu_strict_ setPopupMenuItems:[OCMArg any]]);
+    OCMExpect([popup_menu_strict_ setCommandHandler:[OCMArg any]]);
     SetUpWebStateList();
   }
 
@@ -93,10 +94,12 @@ class PopupMenuMediatorTest : public PlatformTest {
 // Test no setup is being done on the PopupMenu if there's no Webstate.
 TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoWebstate) {
   mediator_.popupMenu = popup_menu_strict_;
+  EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
 }
 
 // Test no setup is being done on the LocationBar if there's no active Webstate.
 TEST_F(PopupMenuMediatorTest, TestPopupMenuSetupWithNoActiveWebstate) {
   mediator_.webStateList = web_state_list_.get();
   mediator_.popupMenu = popup_menu_strict_;
+  EXPECT_OCMOCK_VERIFY(popup_menu_strict_);
 }

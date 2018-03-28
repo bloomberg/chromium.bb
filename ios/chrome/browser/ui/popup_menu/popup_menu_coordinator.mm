@@ -89,6 +89,7 @@
       [[PopupMenuMediator alloc] initWithType:PopupMenuTypeToolsMenu];
   self.mediator.webStateList = self.webStateList;
   self.mediator.popupMenu = tableViewController;
+  self.mediator.dispatcher = static_cast<id<BrowserCommands>>(self.dispatcher);
 
   [self presentPopupForContent:tableViewController
                 fromNamedGuide:kToolsMenuGuide];
