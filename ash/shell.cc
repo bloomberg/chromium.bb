@@ -19,6 +19,7 @@
 #include "ash/accessibility/accessibility_focus_ring_controller.h"
 #include "ash/app_list/app_list_controller_impl.h"
 #include "ash/ash_constants.h"
+#include "ash/assistant/ash_assistant_controller.h"
 #include "ash/autoclick/autoclick_controller.h"
 #include "ash/cast_config_controller.h"
 #include "ash/detachable_base/detachable_base_handler.h"
@@ -1008,6 +1009,10 @@ void Shell::Init(ui::ContextFactory* context_factory,
   app_list_controller_ = std::make_unique<AppListControllerImpl>();
   tablet_mode_controller_ = std::make_unique<TabletModeController>();
   shelf_controller_ = std::make_unique<ShelfController>();
+
+  ash_assistant_controller_ = chromeos::switches::IsAssistantEnabled()
+                                  ? std::make_unique<AshAssistantController>()
+                                  : nullptr;
 
   magnifier_key_scroll_handler_ = MagnifierKeyScroller::CreateHandler();
   AddPreTargetHandler(magnifier_key_scroll_handler_.get());

@@ -78,6 +78,7 @@ class AcceleratorController;
 class AccessibilityController;
 class AccessibilityDelegate;
 class AccessibilityFocusRingController;
+class AshAssistantController;
 class AshDisplayController;
 class AppListControllerImpl;
 class NativeCursorManagerAsh;
@@ -314,6 +315,12 @@ class ASH_EXPORT Shell : public SessionObserver,
   ::wm::ActivationClient* activation_client();
   AppListControllerImpl* app_list_controller() {
     return app_list_controller_.get();
+  }
+  AshAssistantController* ash_assistant_controller() {
+    // TODO(dmblack): Add DCHECK(chromeos::switches::IsAssistantEnabled());
+    // Note that this requires removing an unused header in
+    // chrome/test/base/ui_test_utils.cc to avoid breaking the build.
+    return ash_assistant_controller_.get();
   }
   AshDisplayController* ash_display_controller() {
     return ash_display_controller_.get();
@@ -666,6 +673,7 @@ class ASH_EXPORT Shell : public SessionObserver,
   std::unique_ptr<AccessibilityFocusRingController>
       accessibility_focus_ring_controller_;
   std::unique_ptr<AppListControllerImpl> app_list_controller_;
+  std::unique_ptr<AshAssistantController> ash_assistant_controller_;
   std::unique_ptr<AshDisplayController> ash_display_controller_;
   std::unique_ptr<BacklightsForcedOffSetter> backlights_forced_off_setter_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
