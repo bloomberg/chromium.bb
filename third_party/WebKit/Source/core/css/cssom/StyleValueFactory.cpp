@@ -90,6 +90,16 @@ CSSStyleValue* CreateStyleValueWithPropertyInternal(CSSPropertyID property_id,
       }
       return CreateStyleValue(value);
     }
+    case CSSPropertyTextDecorationLine: {
+      if (value.IsIdentifierValue())
+        return CreateStyleValue(value);
+
+      const auto& value_list = ToCSSValueList(value);
+      // Only single keywords are supported in level 1.
+      if (value_list.length() == 1U)
+        return CreateStyleValue(value_list.Item(0));
+      return nullptr;
+    }
     default:
       // TODO(meade): Implement other properties.
       break;
