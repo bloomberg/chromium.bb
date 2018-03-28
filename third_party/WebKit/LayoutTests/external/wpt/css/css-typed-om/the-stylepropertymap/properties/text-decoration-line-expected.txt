@@ -13,6 +13,7 @@ PASS Setting 'text-decoration-line' to a percent throws TypeError
 PASS Setting 'text-decoration-line' to a time throws TypeError
 PASS Setting 'text-decoration-line' to a number throws TypeError
 PASS Setting 'text-decoration-line' to a position throws TypeError
+PASS Setting 'text-decoration-line' to a URL throws TypeError
 PASS Setting 'text-decoration-line' to a transform throws TypeError
 Harness: the test ran to completion.
 

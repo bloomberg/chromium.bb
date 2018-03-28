@@ -9,6 +9,7 @@ PASS Setting 'font-palette' to a percent throws TypeError
 PASS Setting 'font-palette' to a time throws TypeError
 PASS Setting 'font-palette' to a number throws TypeError
 PASS Setting 'font-palette' to a position throws TypeError
+PASS Setting 'font-palette' to a URL throws TypeError
 PASS Setting 'font-palette' to a transform throws TypeError
 FAIL 'font-palette' does not supported 'Augusta' Failed to execute 'get' on 'StylePropertyMapReadOnly': Invalid propertyName: font-palette
 Harness: the test ran to completion.

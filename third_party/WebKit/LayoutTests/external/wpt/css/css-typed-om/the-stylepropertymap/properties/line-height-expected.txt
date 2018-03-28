@@ -7,6 +7,7 @@ FAIL Can set 'line-height' to a number assert_equals: relative lengths must comp
 FAIL Can set 'line-height' to a percent assert_equals: relative lengths must compute to a CSSUnitValue expected "[object CSSUnitValue]" but got "[object CSSKeywordValue]"
 PASS Setting 'line-height' to a time throws TypeError
 PASS Setting 'line-height' to a position throws TypeError
+PASS Setting 'line-height' to a URL throws TypeError
 PASS Setting 'line-height' to a transform throws TypeError
 Harness: the test ran to completion.
 
