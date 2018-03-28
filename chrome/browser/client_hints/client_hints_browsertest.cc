@@ -268,10 +268,13 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("device-memory")->second, &value));
         EXPECT_LT(0.0, value);
+        main_frame_device_memory_observed_ = value;
 
         EXPECT_TRUE(
             base::StringToDouble(request.headers.find("dpr")->second, &value));
         EXPECT_LT(0.0, value);
+        main_frame_dpr_observed_ = value;
+
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("viewport-width")->second, &value));
 #if !defined(OS_ANDROID)
@@ -279,6 +282,7 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
 #else
         EXPECT_EQ(980, value);
 #endif
+        main_frame_viewport_width_observed_ = value;
       }
     }
 
@@ -295,10 +299,16 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("device-memory")->second, &value));
         EXPECT_LT(0.0, value);
+        if (main_frame_device_memory_observed_ > 0) {
+          EXPECT_EQ(main_frame_device_memory_observed_, value);
+        }
 
         EXPECT_TRUE(
             base::StringToDouble(request.headers.find("dpr")->second, &value));
         EXPECT_LT(0.0, value);
+        if (main_frame_dpr_observed_ > 0) {
+          EXPECT_EQ(main_frame_dpr_observed_, value);
+        }
 
         EXPECT_TRUE(base::StringToDouble(
             request.headers.find("viewport-width")->second, &value));
@@ -306,6 +316,14 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
         EXPECT_LT(0.0, value);
 #else
         EXPECT_EQ(980, value);
+#endif
+#if defined(OS_ANDROID)
+        // TODO(tbansal): https://crbug.com/825892: Viewport width on main
+        // frame requests may be incorrect when the Chrome window is not
+        // maximized.
+        if (main_frame_viewport_width_observed_ > 0) {
+          EXPECT_EQ(main_frame_viewport_width_observed_, value);
+        }
 #endif
       }
     }
@@ -331,6 +349,10 @@ class ClientHintsBrowserTest : public InProcessBrowserTest {
   GURL without_accept_ch_without_lifetime_img_foo_com_;
   GURL without_accept_ch_without_lifetime_img_localhost_;
   GURL accept_ch_without_lifetime_img_localhost_;
+
+  double main_frame_dpr_observed_ = -1;
+  double main_frame_viewport_width_observed_ = -1;
+  double main_frame_device_memory_observed_ = -1;
 
   // Expect client hints on all the main frame request.
   bool expect_client_hints_on_main_frame_;
