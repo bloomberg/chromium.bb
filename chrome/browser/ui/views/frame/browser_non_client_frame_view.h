@@ -69,7 +69,7 @@ class BrowserNonClientFrameView : public views::NonClientFrameView,
 
   // Returns the profile switcher button, if this frame has any, nullptr if it
   // doesn't.
-  views::View* GetProfileSwitcherView() const;
+  views::Button* GetProfileSwitcherButton() const;
 
   // Provided for mus. Updates the client-area of the WindowTreeHostMus.
   virtual void UpdateClientArea();

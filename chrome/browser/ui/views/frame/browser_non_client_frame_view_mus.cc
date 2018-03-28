@@ -253,7 +253,7 @@ int BrowserNonClientFrameViewMus::NonClientHitTest(const gfx::Point& point) {
   int hit_test = HTCLIENT;
 
 #if defined(FRAME_AVATAR_BUTTON)
-  views::View* profile_switcher_view = GetProfileSwitcherView();
+  views::View* profile_switcher_view = GetProfileSwitcherButton();
   if (hit_test == HTCAPTION && profile_switcher_view &&
       ConvertedHitTest(this, profile_switcher_view, point)) {
     return HTCLIENT;
@@ -309,7 +309,7 @@ void BrowserNonClientFrameViewMus::Layout() {
     LayoutIncognitoButton();
 
 #if defined(FRAME_AVATAR_BUTTON)
-  if (GetProfileSwitcherView())
+  if (GetProfileSwitcherButton())
     LayoutProfileSwitcher();
 #endif
 
@@ -391,7 +391,7 @@ int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
   int right_inset = kTabstripRightSpacing + frame_right_insets;
 
 #if defined(FRAME_AVATAR_BUTTON)
-  views::View* profile_switcher_view = GetProfileSwitcherView();
+  views::View* profile_switcher_view = GetProfileSwitcherButton();
   if (profile_switcher_view) {
     right_inset +=
         kAvatarButtonOffset + profile_switcher_view->GetPreferredSize().width();
@@ -410,7 +410,7 @@ bool BrowserNonClientFrameViewMus::UsePackagedAppHeaderStyle() const {
 
 void BrowserNonClientFrameViewMus::LayoutProfileSwitcher() {
 #if defined(FRAME_AVATAR_BUTTON)
-  views::View* profile_switcher_view = GetProfileSwitcherView();
+  views::View* profile_switcher_view = GetProfileSwitcherButton();
   gfx::Size button_size = profile_switcher_view->GetPreferredSize();
   int button_x = width() - GetTabStripRightInset() + kAvatarButtonOffset;
   profile_switcher_view->SetBounds(button_x, 0, button_size.width(),

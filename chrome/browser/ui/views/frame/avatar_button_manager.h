@@ -28,12 +28,11 @@ class AvatarButtonManager : public views::MenuButtonListener {
   // properties.
   void Update(AvatarButtonStyle style);
 
-  // Gets the avatar button as a view::View.
-  views::View* view() const {
+  AvatarButton* avatar_button() const {
 #if defined(OS_CHROMEOS)
     return nullptr;
 #else
-    return view_;
+    return avatar_button_;
 #endif  // defined(OS_CHROMEOS)
   }
 
@@ -57,8 +56,8 @@ class AvatarButtonManager : public views::MenuButtonListener {
 
   // Menu button that displays the name of the active or guest profile.
   // May be null and will not be displayed for off the record profiles.
-  AvatarButton* view_ = nullptr;  // Owned by views hierarchy.
-#endif                            // !defined(OS_CHROMEOS)
+  AvatarButton* avatar_button_ = nullptr;  // Owned by views hierarchy.
+#endif                                     // !defined(OS_CHROMEOS)
 
 #if BUILDFLAG(ENABLE_NATIVE_WINDOW_NAV_BUTTONS)
   views::NavButtonProvider* nav_button_provider_ = nullptr;

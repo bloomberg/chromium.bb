@@ -88,8 +88,8 @@ SkColor BrowserNonClientFrameView::GetToolbarTopSeparatorColor() const {
                                      color_id, browser_view_->IsIncognito());
 }
 
-views::View* BrowserNonClientFrameView::GetProfileSwitcherView() const {
-  return profile_switcher_.view();
+views::Button* BrowserNonClientFrameView::GetProfileSwitcherButton() const {
+  return profile_switcher_.avatar_button();
 }
 
 void BrowserNonClientFrameView::UpdateClientArea() {}
@@ -103,7 +103,7 @@ int BrowserNonClientFrameView::GetTabStripLeftInset() const {
 }
 
 void BrowserNonClientFrameView::ChildPreferredSizeChanged(views::View* child) {
-  if (child == GetProfileSwitcherView()) {
+  if (child == GetProfileSwitcherButton()) {
     // Perform a re-layout if the avatar button has changed, since that can
     // affect the size of the tabs.
     frame()->GetRootView()->Layout();

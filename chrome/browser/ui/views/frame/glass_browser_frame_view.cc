@@ -148,7 +148,7 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
 
     // The profile switcher button is optionally displayed to the left of the
     // minimize button.
-    views::View* profile_switcher = GetProfileSwitcherView();
+    views::View* profile_switcher = GetProfileSwitcherButton();
     if (profile_switcher) {
       const int old_end_x = end_x;
       end_x -= profile_switcher->width() + kProfileSwitcherButtonOffset;
@@ -280,7 +280,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;
 
   // See if the point is within the incognito icon or the profile switcher menu.
-  views::View* profile_switcher_view = GetProfileSwitcherView();
+  views::View* profile_switcher_view = GetProfileSwitcherButton();
   if ((profile_indicator_icon() &&
        profile_indicator_icon()->GetMirroredBounds().Contains(point)) ||
       (profile_switcher_view &&
@@ -466,7 +466,7 @@ bool GlassBrowserFrameView::DoesIntersectRect(const views::View* target,
   bool hit_incognito_icon =
       profile_indicator_icon() &&
       profile_indicator_icon()->GetMirroredBounds().Intersects(rect);
-  views::View* profile_switcher_view = GetProfileSwitcherView();
+  views::View* profile_switcher_view = GetProfileSwitcherButton();
   bool hit_profile_switcher_button =
       profile_switcher_view &&
       profile_switcher_view->GetMirroredBounds().Intersects(rect);
@@ -728,7 +728,7 @@ void GlassBrowserFrameView::FillClientEdgeRects(int x,
 void GlassBrowserFrameView::LayoutProfileSwitcher() {
   DCHECK(browser_view()->IsRegularOrGuestSession());
 
-  View* profile_switcher = GetProfileSwitcherView();
+  View* profile_switcher = GetProfileSwitcherButton();
   if (!profile_switcher)
     return;
 
@@ -769,9 +769,9 @@ void GlassBrowserFrameView::LayoutIncognitoIcon() {
   // In RTL, the icon needs to start after the caption buttons.
   if (CaptionButtonsOnLeadingEdge()) {
     x = width() - frame()->GetMinimizeButtonOffset() +
-        (GetProfileSwitcherView() ? (GetProfileSwitcherView()->width() +
-                                     kProfileSwitcherButtonOffset)
-                                  : 0);
+        (GetProfileSwitcherButton() ? (GetProfileSwitcherButton()->width() +
+                                       kProfileSwitcherButtonOffset)
+                                    : 0);
   }
   const int bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
                      GetAvatarIconPadding();

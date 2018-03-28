@@ -117,6 +117,7 @@ ToolbarView::ToolbarView(Browser* browser)
   chrome::AddCommandObserver(browser_, IDC_FORWARD, this);
   chrome::AddCommandObserver(browser_, IDC_RELOAD, this);
   chrome::AddCommandObserver(browser_, IDC_HOME, this);
+  chrome::AddCommandObserver(browser_, IDC_SHOW_AVATAR_MENU, this);
   chrome::AddCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 
   UpgradeDetector::GetInstance()->AddObserver(this);
@@ -129,6 +130,7 @@ ToolbarView::~ToolbarView() {
   chrome::RemoveCommandObserver(browser_, IDC_FORWARD, this);
   chrome::RemoveCommandObserver(browser_, IDC_RELOAD, this);
   chrome::RemoveCommandObserver(browser_, IDC_HOME, this);
+  chrome::RemoveCommandObserver(browser_, IDC_SHOW_AVATAR_MENU, this);
   chrome::RemoveCommandObserver(browser_, IDC_LOAD_NEW_TAB_PAGE, this);
 }
 
@@ -197,6 +199,23 @@ void ToolbarView::Init() {
   browser_actions_ =
       new BrowserActionsContainer(browser_, main_container, this);
 
+// ChromeOS never shows a profile icon in the browser window.
+#if !defined(OS_CHROMEOS)
+  if (ui::MaterialDesignController::IsNewerMaterialUi()) {
+    avatar_ = new ToolbarButton(browser_->profile(), this, nullptr);
+    avatar_->set_triggerable_event_flags(ui::EF_LEFT_MOUSE_BUTTON |
+                                         ui::EF_MIDDLE_MOUSE_BUTTON);
+    avatar_->set_tag(IDC_SHOW_AVATAR_MENU);
+    // TODO(pbos): Incorporate GetAvatarButtonTextForProfile. See AvatarButton.
+    avatar_->SetTooltipText(
+        l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
+    avatar_->SetAccessibleName(
+        l10n_util::GetStringUTF16(IDS_GENERIC_USER_AVATAR_LABEL));
+    avatar_->set_id(VIEW_ID_AVATAR_BUTTON);
+    avatar_->Init();
+  }
+#endif  // !defined(OS_CHROMEOS)
+
   app_menu_button_ = new AppMenuButton(this);
   app_menu_button_->EnableCanvasFlippingForRTLUI(true);
   app_menu_button_->SetAccessibleName(
@@ -212,6 +231,8 @@ void ToolbarView::Init() {
   AddChildView(home_);
   AddChildView(location_bar_);
   AddChildView(browser_actions_);
+  if (avatar_)
+    AddChildView(avatar_);
   AddChildView(app_menu_button_);
 
   LoadImages();
@@ -409,6 +430,9 @@ void ToolbarView::EnabledStateChangedForCommand(int id, bool enabled) {
     case IDC_HOME:
       button = home_;
       break;
+    case IDC_SHOW_AVATAR_MENU:
+      button = avatar_;
+      break;
   }
   if (button)
     button->SetEnabled(enabled);
@@ -526,6 +550,10 @@ void ToolbarView::Layout() {
       width() - end_padding - app_menu_width -
       (browser_actions_->GetPreferredSize().IsEmpty() ? right_padding : 0) -
       next_element_x);
+  if (avatar_) {
+    available_width -= avatar_->GetPreferredSize().width();
+    available_width -= element_padding;
+  }
   // Don't allow the omnibox to shrink to the point of non-existence, so
   // subtract its minimum width from the available width to reserve it.
   const int browser_actions_width = browser_actions_->GetWidthForMaxWidth(
@@ -558,6 +586,13 @@ void ToolbarView::Layout() {
   // TODO(sidchat): Rework the above behavior so that explicit layout is not
   //                required.
   browser_actions_->Layout();
+
+  if (avatar_) {
+    avatar_->SetBounds(next_element_x, toolbar_button_y,
+                       avatar_->GetPreferredSize().width(),
+                       toolbar_button_height);
+    next_element_x = avatar_->bounds().right() + element_padding;
+  }
 
   // Extend the app menu to the screen's right edge in tablet mode just like
   // we extend the back button to the left edge.
@@ -714,6 +749,9 @@ void ToolbarView::LoadImages() {
 
   const bool is_touch =
       ui::MaterialDesignController::IsTouchOptimizedUiEnabled();
+  // TODO(pbos): Move these constants to LayoutProvider or LayoutConstants.
+  const int icon_size = is_touch ? 24 : 16;
+
   const gfx::VectorIcon& back_image =
       is_touch ? kBackArrowTouchIcon : vector_icons::kBackArrowIcon;
   back_->SetImage(views::Button::STATE_NORMAL,
@@ -732,6 +770,14 @@ void ToolbarView::LoadImages() {
       is_touch ? kNavigateHomeTouchIcon : kNavigateHomeIcon;
   home_->SetImage(views::Button::STATE_NORMAL,
                   gfx::CreateVectorIcon(home_image, normal_color));
+
+  if (avatar_) {
+    // TODO(pbos): Account for incognito by either changing the icon and
+    // effectively disabling the menu or by not showing it at all in incognito.
+    avatar_->SetImage(
+        views::Button::STATE_NORMAL,
+        gfx::CreateVectorIcon(kUserAccountAvatarIcon, icon_size, normal_color));
+  }
   app_menu_button_->UpdateIcon(false);
 
   const SkColor ink_drop_color = color_utils::BlendTowardOppositeLuma(
@@ -739,6 +785,8 @@ void ToolbarView::LoadImages() {
   back_->set_ink_drop_base_color(ink_drop_color);
   forward_->set_ink_drop_base_color(ink_drop_color);
   home_->set_ink_drop_base_color(ink_drop_color);
+  if (avatar_)
+    avatar_->set_ink_drop_base_color(ink_drop_color);
   app_menu_button_->set_ink_drop_base_color(ink_drop_color);
 
   reload_->LoadImages();
