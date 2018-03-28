@@ -3553,7 +3553,6 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   struct macroblock_plane *const p = &x->plane[0];
-  struct macroblockd_plane *const pd = &xd->plane[0];
   const int max_blocks_high = max_block_high(xd, plane_bsize, 0);
   const int max_blocks_wide = max_block_wide(xd, plane_bsize, 0);
   const int bw = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
@@ -3651,6 +3650,7 @@ static void select_tx_block(const AV1_COMP *cpi, MACROBLOCK *x, int blk_row,
     int64_t tmp_rd = 0;
 #if CONFIG_DIST_8X8
     int sub8x8_eob[4] = { 0, 0, 0, 0 };
+    struct macroblockd_plane *const pd = &xd->plane[0];
 #endif
     sum_rd_stats.rate = x->txfm_partition_cost[ctx][1];
 
