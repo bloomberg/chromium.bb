@@ -128,11 +128,11 @@ class ProguardCmdBuilder(object):
     for optimization in self._disabled_optimizations:
       cmd += [ '-optimizations', '!' + optimization ]
 
-    # Filter out META-INF files to avoid warnings about multiple inputs having
-    # the same files.
+    # Filter to just .class files to avoid warnings about multiple inputs having
+    # the same files in META_INF/.
     cmd += [
         '-injars',
-        ':'.join('{}(!META-INF/**,!.empty)'.format(x) for x in self._injars)
+        ':'.join('{}(**.class)'.format(x) for x in self._injars)
     ]
 
     for config_file in self._configs:
