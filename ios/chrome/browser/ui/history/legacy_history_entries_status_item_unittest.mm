@@ -8,6 +8,7 @@
 #include "components/strings/grit/components_strings.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
+#import "ios/chrome/browser/ui/history/history_entries_status_item_delegate.h"
 #import "ios/chrome/browser/ui/util/label_link_controller.h"
 #import "ios/chrome/common/string_util.h"
 #include "ios/chrome/grit/ios_strings.h"

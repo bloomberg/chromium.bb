@@ -7,11 +7,8 @@
 
 #include "components/history/core/browser/browsing_history_service.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
+#import "ios/chrome/browser/ui/history/history_entry_item_interface.h"
 #import "ios/third_party/material_components_ios/src/components/Collections/src/MaterialCollections.h"
-
-namespace base {
-class Time;
-}  // namespace base
 
 namespace ios {
 class ChromeBrowserState;
@@ -19,41 +16,11 @@ class ChromeBrowserState;
 
 @class FaviconView;
 @protocol FaviconViewProviderDelegate;
-class GURL;
-@class LegacyHistoryEntryItem;
-
-// Delegate for HistoryEntryItem. Handles actions invoked as custom
-// accessibility actions.
-@protocol HistoryEntryItemDelegate
-// Called when custom accessibility action to delete the entry is invoked.
-- (void)historyEntryItemDidRequestDelete:(LegacyHistoryEntryItem*)item;
-// Called when custom accessibility action to open the entry in a new tab is
-// invoked.
-- (void)historyEntryItemDidRequestOpenInNewTab:(LegacyHistoryEntryItem*)item;
-// Called when custom accessibility action to open the entry in a new incognito
-// tab is invoked.
-- (void)historyEntryItemDidRequestOpenInNewIncognitoTab:
-    (LegacyHistoryEntryItem*)item;
-// Called when custom accessibility action to copy the entry's URL is invoked.
-- (void)historyEntryItemDidRequestCopy:(LegacyHistoryEntryItem*)item;
-// Called when the view associated with the HistoryEntryItem should be updated.
-- (void)historyEntryItemShouldUpdateView:(LegacyHistoryEntryItem*)item;
-@end
+@protocol HistoryEntryItemDelegate;
 
 // Model object for the cell that displays a history entry.
-@interface LegacyHistoryEntryItem : CollectionViewItem
-
-// Text for the content view. Rendered at the top trailing the favicon.
-@property(nonatomic, copy) NSString* text;
-// Detail text for content view. Rendered below text.
-@property(nonatomic, copy) NSString* detailText;
-// Text for the time stamp. Rendered aligned to trailing edge at same level as
-// |text|.
-@property(nonatomic, copy) NSString* timeText;
-// URL of the associated history entry.
-@property(nonatomic, assign) GURL URL;
-// Timestamp of the associated history entry.
-@property(nonatomic, assign) base::Time timestamp;
+@interface LegacyHistoryEntryItem
+    : CollectionViewItem<HistoryEntryItemInterface>
 
 // The |delegate| is notified when the favicon has loaded, and may be nil.
 - (instancetype)initWithType:(NSInteger)type
@@ -63,10 +30,6 @@ class GURL;
                     delegate:(id<HistoryEntryItemDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithType:(NSInteger)type NS_UNAVAILABLE;
-
-// HistoryEntryItems are equal if they have the same URL and
-// timestamp.
-- (BOOL)isEqualToHistoryEntryItem:(LegacyHistoryEntryItem*)item;
 
 @end
 

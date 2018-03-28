@@ -8,18 +8,8 @@
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 
-class GURL;
-@class LegacyHistoryEntriesStatusItem;
 @class LabelLinkController;
-
-// Delegate HistoryEntriesStatusItem. Handles link taps on
-// HistoryEntriesStatusCell.
-@protocol HistoryEntriesStatusItemDelegate<NSObject>
-// Called when a link is pressed on a HistoryEntriesStatusCell.
-- (void)historyEntriesStatusItem:(LegacyHistoryEntriesStatusItem*)item
-               didRequestOpenURL:(const GURL&)URL;
-
-@end
+@protocol HistoryEntriesStatusItemDelegate;
 
 // Model item for HistoryEntriesStatusCell. Manages links added to the cell.
 @interface LegacyHistoryEntriesStatusItem : CollectionViewItem
