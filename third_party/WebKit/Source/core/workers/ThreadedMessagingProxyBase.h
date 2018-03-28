@@ -104,7 +104,9 @@ class CORE_EXPORT ThreadedMessagingProxyBase
 
   bool asked_to_terminate_ = false;
 
-  base::WaitableEvent* terminate_sync_load_event_ = nullptr;
+  // Used to terminate the synchronous resource loading (XMLHttpRequest) on the
+  // worker thread from the main thread.
+  base::WaitableEvent terminate_sync_load_event_;
 
   // Used to keep this alive until the worker thread gets terminated. This is
   // necessary because the co-owner (i.e., Worker or Worklet object) can be
