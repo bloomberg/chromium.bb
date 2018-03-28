@@ -6,6 +6,8 @@ static_library("certificate_transparency") {
   sources = [
     "ct_policy_manager.cc",
     "ct_policy_manager.h",
+    "features.cc",
+    "features.h",
     "log_dns_client.cc",
     "log_dns_client.h",
     "pref_names.cc",

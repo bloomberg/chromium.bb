@@ -96,6 +96,7 @@ void CertVerifierBrowserTest::SetUpCommandLine(
 }
 
 void CertVerifierBrowserTest::SetUpInProcessBrowserTestFixture() {
+  IOThread::SetCertVerifierForTesting(mock_cert_verifier_.get());
   ProfileIOData::SetCertVerifierForTesting(mock_cert_verifier_.get());
 
   if (content::IsNetworkServiceRunningInProcess()) {
@@ -105,6 +106,7 @@ void CertVerifierBrowserTest::SetUpInProcessBrowserTestFixture() {
 }
 
 void CertVerifierBrowserTest::TearDownInProcessBrowserTestFixture() {
+  IOThread::SetCertVerifierForTesting(nullptr);
   ProfileIOData::SetCertVerifierForTesting(nullptr);
   if (content::IsNetworkServiceRunningInProcess())
     network::NetworkContext::SetCertVerifierForTesting(nullptr);

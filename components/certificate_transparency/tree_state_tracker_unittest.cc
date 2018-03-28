@@ -4,16 +4,15 @@
 
 #include "components/certificate_transparency/tree_state_tracker.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 
-#include <memory>
-
-#include "base/feature_list.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
+#include "components/certificate_transparency/features.h"
 #include "net/base/net_errors.h"
 #include "net/cert/ct_log_verifier.h"
 #include "net/cert/ct_serialization.h"
@@ -34,9 +33,6 @@ using net::ct::GetTestPublicKeyId;
 using net::ct::GetTestPublicKey;
 using net::ct::kSthRootHashLength;
 using net::ct::GetX509CertSCT;
-
-const base::Feature kCTLogAuditing = {"CertificateTransparencyLogAuditing",
-                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 constexpr char kHostname[] = "example.test";
 constexpr base::TimeDelta kZeroTTL;
