@@ -11,7 +11,6 @@
 #include "components/viz/common/quads/render_pass.h"
 #include "components/viz/service/display/gl_renderer.h"
 #include "components/viz/service/display/output_surface.h"
-#include "components/viz/service/display/skia_renderer.h"
 #include "components/viz/service/display/software_renderer.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/size.h"
@@ -76,7 +75,6 @@ class PixelTest : public testing::Test {
 
   void SetUpGLWithoutRenderer(bool flipped_output_surface);
   void SetUpGLRenderer(bool flipped_output_surface);
-  void SetUpSkiaRenderer();
   void SetUpSoftwareRenderer();
 
   void EnableExternalStencilTest();
@@ -166,14 +164,8 @@ inline void RendererPixelTest<SoftwareRendererWithExpandedViewport>::SetUp() {
   SetUpSoftwareRenderer();
 }
 
-template <>
-inline void RendererPixelTest<viz::SkiaRenderer>::SetUp() {
-  SetUpSkiaRenderer();
-}
-
 typedef RendererPixelTest<viz::GLRenderer> GLRendererPixelTest;
 typedef RendererPixelTest<viz::SoftwareRenderer> SoftwareRendererPixelTest;
-typedef RendererPixelTest<viz::SkiaRenderer> SkiaRendererPixelTest;
 
 }  // namespace cc
 

@@ -38,7 +38,6 @@
 
 using cc::RendererPixelTest;
 using cc::GLRendererPixelTest;
-using cc::SkiaRendererPixelTest;
 using gpu::gles2::GLES2Interface;
 
 namespace viz {
@@ -735,7 +734,6 @@ void CreateTestY16TextureDrawQuad_TwoColor(
 using RendererTypes =
     ::testing::Types<GLRenderer,
                      SoftwareRenderer,
-                     SkiaRenderer,
                      cc::GLRendererWithExpandedViewport,
                      cc::SoftwareRendererWithExpandedViewport>;
 TYPED_TEST_CASE(RendererPixelTest, RendererTypes);
@@ -747,18 +745,6 @@ using SoftwareRendererTypes =
     ::testing::Types<SoftwareRenderer,
                      cc::SoftwareRendererWithExpandedViewport>;
 TYPED_TEST_CASE(SoftwareRendererPixelTest, SoftwareRendererTypes);
-
-// TODO(weiliangc): Move these tests to normal RendererPixelTest as they pass
-// with SkiaRenderer.
-template <typename RendererType>
-class NonSkiaRendererPixelTest : public cc::RendererPixelTest<RendererType> {};
-
-using NonSkiaRendererTypes =
-    ::testing::Types<GLRenderer,
-                     SoftwareRenderer,
-                     cc::GLRendererWithExpandedViewport,
-                     cc::SoftwareRendererWithExpandedViewport>;
-TYPED_TEST_CASE(NonSkiaRendererPixelTest, NonSkiaRendererTypes);
 
 template <typename RendererType>
 class FuzzyForSoftwareOnlyPixelComparator : public cc::PixelComparator {
@@ -1109,10 +1095,6 @@ class IntersectingQuadPixelTest : public RendererPixelTest<TypeParam> {
 };
 
 template <typename TypeParam>
-class IntersectingQuadNonSkiaPixelTest
-    : public IntersectingQuadPixelTest<TypeParam> {};
-
-template <typename TypeParam>
 class IntersectingQuadGLPixelTest
     : public IntersectingQuadPixelTest<TypeParam> {
  public:
@@ -1147,7 +1129,6 @@ using GLRendererTypes =
     ::testing::Types<GLRenderer, cc::GLRendererWithExpandedViewport>;
 
 TYPED_TEST_CASE(IntersectingQuadPixelTest, RendererTypes);
-TYPED_TEST_CASE(IntersectingQuadNonSkiaPixelTest, NonSkiaRendererTypes);
 TYPED_TEST_CASE(IntersectingQuadGLPixelTest, GLRendererTypes);
 TYPED_TEST_CASE(IntersectingQuadSoftwareTest, SoftwareRendererTypes);
 
@@ -1182,7 +1163,7 @@ SkColor GetColor<cc::GLRendererWithExpandedViewport>(const SkColor& color) {
   return GetColor<GLRenderer>(color);
 }
 
-TYPED_TEST(IntersectingQuadNonSkiaPixelTest, TexturedQuads) {
+TYPED_TEST(IntersectingQuadPixelTest, TexturedQuads) {
   this->SetupQuadStateAndRenderPass();
   CreateTestTwoColoredTextureDrawQuad(
       this->use_gpu(), this->quad_rect_,
@@ -1258,7 +1239,7 @@ TYPED_TEST(IntersectingQuadSoftwareTest, PictureQuads) {
       FILE_PATH_LITERAL("intersecting_blue_green_squares.png"));
 }
 
-TYPED_TEST(IntersectingQuadNonSkiaPixelTest, RenderPassQuads) {
+TYPED_TEST(IntersectingQuadPixelTest, RenderPassQuads) {
   this->SetupQuadStateAndRenderPass();
   int child_pass_id1 = 2;
   int child_pass_id2 = 3;
@@ -1757,7 +1738,7 @@ TEST_F(VideoGLRendererPixelTest, TwoColorY16Rect) {
       cc::FuzzyPixelOffByOneComparator(true)));
 }
 
-TYPED_TEST(NonSkiaRendererPixelTest, FastPassColorFilterAlpha) {
+TYPED_TEST(RendererPixelTest, FastPassColorFilterAlpha) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -1835,7 +1816,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, FastPassColorFilterAlpha) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(NonSkiaRendererPixelTest, FastPassSaturateFilter) {
+TYPED_TEST(RendererPixelTest, FastPassSaturateFilter) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -1895,7 +1876,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, FastPassSaturateFilter) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(NonSkiaRendererPixelTest, FastPassFilterChain) {
+TYPED_TEST(RendererPixelTest, FastPassFilterChain) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -1957,7 +1938,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, FastPassFilterChain) {
       FuzzyForSoftwareOnlyPixelComparator<TypeParam>(false)));
 }
 
-TYPED_TEST(NonSkiaRendererPixelTest, FastPassColorFilterAlphaTranslation) {
+TYPED_TEST(RendererPixelTest, FastPassColorFilterAlphaTranslation) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2139,7 +2120,7 @@ TYPED_TEST(RendererPixelTest, EnlargedRenderPassTextureWithAntiAliasing) {
 
 // This tests the case where we have a RenderPass with a mask, but the quad
 // for the masked surface does not include the full surface texture.
-TYPED_TEST(NonSkiaRendererPixelTest, RenderPassAndMaskWithPartialQuad) {
+TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -2238,7 +2219,7 @@ TYPED_TEST(NonSkiaRendererPixelTest, RenderPassAndMaskWithPartialQuad) {
 
 // This tests the case where we have a RenderPass with a mask, but the quad
 // for the masked surface does not include the full surface texture.
-TYPED_TEST(NonSkiaRendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
+TYPED_TEST(RendererPixelTest, RenderPassAndMaskWithPartialQuad2) {
   gfx::Rect viewport_rect(this->device_viewport_size_);
 
   int root_pass_id = 1;
@@ -3185,7 +3166,7 @@ TYPED_TEST(SoftwareRendererPixelTest, PictureDrawQuadNearestNeighbor) {
 
 // This disables filtering by setting |nearest_neighbor| on the
 // TileDrawQuad.
-TYPED_TEST(NonSkiaRendererPixelTest, TileDrawQuadNearestNeighbor) {
+TYPED_TEST(RendererPixelTest, TileDrawQuadNearestNeighbor) {
   gfx::Rect viewport(this->device_viewport_size_);
   bool swizzle_contents = true;
   bool contents_premultiplied = true;

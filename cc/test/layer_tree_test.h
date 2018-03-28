@@ -168,8 +168,6 @@ class LayerTreeTest : public testing::Test, public TestHooks {
     begin_frame_source_ = begin_frame_source;
   }
 
-  bool use_skia_renderer_ = false;
-
  private:
   virtual void DispatchAddOpacityAnimation(
       SingleKeyframeEffectAnimation* animation_to_receive_animation,
