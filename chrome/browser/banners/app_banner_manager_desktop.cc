@@ -31,6 +31,12 @@ bool AppBannerManagerDesktop::IsEnabled() {
          IsExperimentalAppBannersEnabled();
 }
 
+// static
+AppBannerManager* AppBannerManager::FromWebContents(
+    content::WebContents* web_contents) {
+  return AppBannerManagerDesktop::FromWebContents(web_contents);
+}
+
 void AppBannerManagerDesktop::DisableTriggeringForTesting() {
   gDisableTriggeringForTesting = true;
 }

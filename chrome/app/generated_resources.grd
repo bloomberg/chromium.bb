@@ -1941,17 +1941,17 @@ are declared in build/common.gypi.
       <!-- "Install web app" confirmation bubble -->
       <if expr="chromeos">
         <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for installing a web app to the shelf.">
-          Install to shelf
+          Add to shelf?
         </message>
       </if>
       <if expr="is_macosx">
         <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble for installing a web app to the Applications Folder on Mac. Note `Applications` should match the name that appears under Favourites in Finder on macOS.">
-          Install to Applications
+          Add to Applications?
         </message>
       </if>
       <if expr="not chromeos and not is_macosx">
         <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for installing a web app to the desktop.">
-          Install to desktop
+          Add to desktop?
         </message>
       </if>
 
@@ -1998,17 +1998,17 @@ are declared in build/common.gypi.
       <!-- "Install web app" menu item -->
       <if expr="chromeos">
         <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE" desc="Button text for installing a web app to the shelf.">
-          Install to shelf...
+          Add <ph name="APP">$1<ex>Gmail</ex></ph> to shelf...
         </message>
       </if>
       <if expr="is_macosx">
         <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE" desc="In Title Case: Button text for installing a web app to the Applications Folder. Note `Applications` should match the name that appears under Favourites in Finder on macOS">
-          Install to Applications...
+          Add <ph name="APP">$1<ex>Gmail</ex></ph> to Applications...
         </message>
       </if>
       <if expr="not chromeos and not is_macosx">
         <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE" desc="Button text for installing a web app to the desktop.">
-          Install to desktop...
+          Add <ph name="APP">$1<ex>Gmail</ex></ph> to desktop...
         </message>
       </if>
 

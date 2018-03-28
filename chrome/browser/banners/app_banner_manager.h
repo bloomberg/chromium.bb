@@ -11,6 +11,7 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "base/strings/string16.h"
 #include "chrome/browser/engagement/site_engagement_observer.h"
 #include "chrome/browser/installable/installable_ambient_badge_infobar_delegate.h"
 #include "chrome/browser/installable/installable_logging.h"
@@ -115,6 +116,11 @@ class AppBannerManager : public content::WebContentsObserver,
   // Returns whether the new experimental flow and UI is enabled.
   static bool IsExperimentalAppBannersEnabled();
 
+  // Returns the app name if the current page is installable, otherwise returns
+  // the empty string.
+  static base::string16 GetInstallableAppName(
+      content::WebContents* web_contents);
+
   // Requests an app banner. If |is_debug_mode| is true, any failure in the
   // pipeline will be reported to the devtools console.
   virtual void RequestAppBanner(const GURL& validated_url, bool is_debug_mode);
@@ -148,9 +154,6 @@ class AppBannerManager : public content::WebContentsObserver,
   // desktop platforms.
   virtual void OnAppIconFetched(const SkBitmap& bitmap) {}
 
-  // Returns the installability status of a site.
-  static Installable GetInstallable(content::WebContents* web_contents);
-
   // InstallableAmbientBadgeInfoBarDelegate::Client overrides. Further
   // overridden on Android.
   void AddToHomescreenFromBadge() override {}
@@ -174,6 +177,9 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Return a string identifying this app for metrics.
   virtual std::string GetAppIdentifier();
+
+  // Return the name of the app for this page.
+  virtual base::string16 GetAppName() const;
 
   // Return a string describing what type of banner is being created. Used when
   // alerting websites that a banner is about to be created.
@@ -293,6 +299,10 @@ class AppBannerManager : public content::WebContentsObserver,
  private:
   friend class AppBannerManagerTest;
 
+  // Retrieves the platform specific instance of AppBannerManager from
+  // |web_contents|.
+  static AppBannerManager* FromWebContents(content::WebContents* web_contents);
+
   // Record that the banner could be shown at this point, if the triggering
   // heuristic allowed.
   void RecordCouldShowBanner();
@@ -323,10 +333,6 @@ class AppBannerManager : public content::WebContentsObserver,
 
   // Returns a status code based on the current state, to log when terminating.
   InstallableStatusCode TerminationCode() const;
-
-  // Returns the installability status of the site pertaining to the
-  // AppBannerManager.
-  Installable installable() const;
 
   // Fetches the data required to display a banner for the current page.
   InstallableManager* manager_;
