@@ -80,6 +80,7 @@ namespace midi {
 class TaskService;  // https://crbug.com/796830
 }
 namespace mojo {
+class CoreLibraryInitializer;
 class SyncCallRestrictions;
 namespace edk {
 class ScopedIPCSupport;
@@ -215,6 +216,7 @@ class BASE_EXPORT ScopedAllowBlocking {
   friend class content::BrowserProcessSubThread;
   friend class cronet::CronetPrefsManager;
   friend class cronet::CronetURLRequestContext;
+  friend class mojo::CoreLibraryInitializer;
   friend class resource_coordinator::TabManagerDelegate;  // crbug.com/778703
   friend class ScopedAllowBlockingForTesting;
   friend class StackSamplingProfiler;

@@ -815,6 +815,10 @@
     "label": "//mojo/common:mojo_common_unittests",
     "type": "console_test_launcher",
   },
+  "mojo_core_unittests": {
+    "label": "//mojo/edk:mojo_core_unittests",
+    "type": "console_test_launcher",
+  },
   "mojo_unittests": {
     "label": "//mojo:mojo_unittests",
     "type": "console_test_launcher",

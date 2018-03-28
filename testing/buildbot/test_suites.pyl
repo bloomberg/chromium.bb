@@ -460,6 +460,10 @@
     'remoting_unittests': {},
   },
 
+  'chromium_gtests_for_linux_and_chromeos_only': {
+    'mojo_core_unittests': {},
+  },
+
   'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output': {
     'viz_unittests': {},
   },
@@ -1943,6 +1947,7 @@
     'aura_non_clang_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
+    'chromium_gtests_for_linux_and_chromeos_only',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
     'linux_and_chromeos_non_clang_specific_chromium_gtests',
@@ -1982,6 +1987,7 @@
     'aura_non_clang_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
+    'chromium_gtests_for_linux_and_chromeos_only',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
     'linux_and_chromeos_non_clang_specific_chromium_gtests',
@@ -2009,6 +2015,7 @@
     'aura_non_clang_gtests',
     'chromium_gtests',
     'chromium_gtests_for_devices_with_graphical_output',
+    'chromium_gtests_for_linux_and_chromeos_only',
     'chromium_gtests_for_non_clang_and_fyi_mac_win_devices_with_graphical_output',
     'chromium_gtests_for_non_clang_win_devices_with_graphical_output',
     'linux_and_chromeos_non_clang_specific_chromium_gtests',
