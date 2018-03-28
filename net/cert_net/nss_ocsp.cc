@@ -845,26 +845,10 @@ char* GetAlternateOCSPAIAInfo(CERTCertificate *cert) {
 
 }  // anonymous namespace
 
-void SetMessageLoopForNSSHttpIO() {
-  // Must have a MessageLoopForIO.
-  DCHECK(base::MessageLoopForIO::current());
-
-  bool used = g_ocsp_io_loop.Get().used();
-
-  // Should not be called when g_ocsp_io_loop has already been used.
-  DCHECK(!used);
-}
-
 void EnsureNSSHttpIOInit() {
-  g_ocsp_io_loop.Get().StartUsing();
   g_ocsp_nss_initialization.Get();
 }
 
-void ShutdownNSSHttpIO() {
-  g_ocsp_io_loop.Get().Shutdown();
-}
-
-// This function would be called before NSS initialization.
 void SetURLRequestContextForNSSHttpIO(URLRequestContext* request_context) {
   pthread_mutex_lock(&g_request_context_lock);
   if (request_context) {
@@ -872,6 +856,12 @@ void SetURLRequestContextForNSSHttpIO(URLRequestContext* request_context) {
   }
   g_request_context = request_context;
   pthread_mutex_unlock(&g_request_context_lock);
+
+  if (request_context) {
+    g_ocsp_io_loop.Get().StartUsing();
+  } else {
+    g_ocsp_io_loop.Get().Shutdown();
+  }
 }
 
 }  // namespace net

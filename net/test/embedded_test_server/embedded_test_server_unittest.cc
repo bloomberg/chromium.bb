@@ -16,7 +16,6 @@
 #include "base/synchronization/lock.h"
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "crypto/nss_util.h"
 #include "net/base/test_completion_callback.h"
 #include "net/http/http_response_headers.h"
 #include "net/log/net_log_source.h"
@@ -35,10 +34,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#endif
 
 using net::test::IsOk;
 
@@ -130,15 +125,6 @@ class EmbeddedTestServerTest
   }
 
   void SetUp() override {
-#if defined(USE_NSS_CERTS)
-    // This is needed so NSS's HTTP client functions are initialized on the
-    // right thread. These tests create SSLClientSockets on a different thread.
-    // TODO(davidben): Initialization can't be deferred to SSLClientSocket. See
-    // https://crbug.com/539520.
-    crypto::EnsureNSSInit();
-    EnsureNSSHttpIOInit();
-#endif
-
     base::Thread::Options thread_options;
     thread_options.message_loop_type = base::MessageLoop::TYPE_IO;
     ASSERT_TRUE(io_thread_.StartWithOptions(thread_options));
@@ -153,9 +139,6 @@ class EmbeddedTestServerTest
   void TearDown() override {
     if (server_->Started())
       ASSERT_TRUE(server_->ShutdownAndWaitUntilComplete());
-#if defined(USE_NSS_CERTS)
-    ShutdownNSSHttpIO();
-#endif
   }
 
   // URLFetcherDelegate override.
@@ -516,24 +499,7 @@ typedef std::tr1::tuple<bool, bool, EmbeddedTestServer::Type>
     ThreadingTestParams;
 
 class EmbeddedTestServerThreadingTest
-    : public testing::TestWithParam<ThreadingTestParams> {
-  void SetUp() override {
-#if defined(USE_NSS_CERTS)
-    // This is needed so NSS's HTTP client functions are initialized on the
-    // right thread. These tests create SSLClientSockets on a different thread.
-    // TODO(davidben): Initialization can't be deferred to SSLClientSocket. See
-    // https://crbug.com/539520.
-    crypto::EnsureNSSInit();
-    EnsureNSSHttpIOInit();
-#endif
-  }
-
-  void TearDown() override {
-#if defined(USE_NSS_CERTS)
-    ShutdownNSSHttpIO();
-#endif
-  }
-};
+    : public testing::TestWithParam<ThreadingTestParams> {};
 
 class EmbeddedTestServerThreadingTestDelegate
     : public base::PlatformThread::Delegate,

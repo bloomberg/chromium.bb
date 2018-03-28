@@ -106,7 +106,7 @@ class NssHttpTest : public ::testing::Test {
   }
 
   void TearDown() override {
-    ShutdownNSSHttpIO();
+    SetURLRequestContextForNSSHttpIO(nullptr);
 
     if (handler_)
       URLRequestFilter::GetInstance()->RemoveHostnameHandler("http", kAiaHost);

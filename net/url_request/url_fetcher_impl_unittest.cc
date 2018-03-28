@@ -32,7 +32,6 @@
 #include "base/threading/thread.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
-#include "crypto/nss_util.h"
 #include "net/base/elements_upload_data_stream.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/upload_bytes_element_reader.h"
@@ -50,10 +49,6 @@
 #include "net/url_request/url_request_throttler_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#endif
 
 namespace net {
 
@@ -456,17 +451,6 @@ class URLFetcherTest : public testing::Test {
         "http://example.com:%d%s", test_server_->host_port_pair().port(),
         kDefaultResponsePath));
     ASSERT_TRUE(hanging_url_.is_valid());
-
-#if defined(USE_NSS_CERTS)
-    crypto::EnsureNSSInit();
-    EnsureNSSHttpIOInit();
-#endif
-  }
-
-  void TearDown() override {
-#if defined(USE_NSS_CERTS)
-    ShutdownNSSHttpIO();
-#endif
   }
 
   // Initializes |test_server_| without starting it.  Allows subclasses to use

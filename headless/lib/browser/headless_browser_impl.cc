@@ -154,11 +154,6 @@ void HeadlessBrowserImpl::PreMainMessageLoopRun() {
 }
 
 void HeadlessBrowserImpl::RunOnStartCallback() {
-#if defined(USE_NSS_CERTS)
-  content::BrowserThread::PostTask(
-      content::BrowserThread::IO, FROM_HERE,
-      base::BindOnce(&net::SetMessageLoopForNSSHttpIO));
-#endif
   // We don't support the tethering domain on this agent host.
   agent_host_ = content::DevToolsAgentHost::CreateForBrowser(
       nullptr, content::DevToolsAgentHost::CreateServerSocketCallback());
