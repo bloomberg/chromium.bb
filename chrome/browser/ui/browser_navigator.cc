@@ -31,6 +31,7 @@
 #include "chrome/browser/ui/status_bubble.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/url_constants.h"
 #include "components/prefs/pref_service.h"
 #include "content/public/browser/browser_url_handler.h"
@@ -53,6 +54,7 @@
 #endif
 
 #if BUILDFLAG(ENABLE_EXTENSIONS)
+#include "chrome/browser/extensions/extension_util.h"
 #include "chrome/browser/extensions/tab_helper.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "extensions/browser/extension_registry.h"
@@ -135,6 +137,24 @@ bool AdjustNavigateParamsForURL(NavigateParams* params) {
 std::pair<Browser*, int> GetBrowserAndTabForDisposition(
     const NavigateParams& params) {
   Profile* profile = params.initiating_profile;
+
+#if BUILDFLAG(ENABLE_EXTENSIONS)
+  if (base::FeatureList::IsEnabled(features::kDesktopPWAWindowing) &&
+      params.open_pwa_window_if_possible) {
+    const extensions::Extension* app = extensions::util::GetInstalledPwaForUrl(
+        profile, params.url, extensions::LAUNCH_CONTAINER_WINDOW);
+    if (app) {
+      std::string app_name =
+          web_app::GenerateApplicationNameFromExtensionId(app->id());
+      return {
+          new Browser(Browser::CreateParams::CreateForApp(
+              app_name,
+              true,  // trusted_source. Installed PWAs are considered trusted.
+              params.window_bounds, profile, params.user_gesture)),
+          -1};
+    }
+  }
+#endif
 
   switch (params.disposition) {
     case WindowOpenDisposition::SWITCH_TO_TAB:
