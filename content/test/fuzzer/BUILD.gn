@@ -137,3 +137,16 @@ fuzzer_test("signed_exchange_cert_fetcher_parser_fuzzer") {
   ]
   seed_corpus = "//content/test/data/fuzzer_corpus/signed_exchange_cert_fetcher_parser_data/"
 }
+
+fuzzer_test("appcache_manifest_parser_fuzzer") {
+  sources = [
+    "appcache_manifest_parser_fuzzer.cc",
+  ]
+  deps = [
+    "//base:i18n",
+    "//content/test:test_support",
+  ]
+  dict = "//content/test/data/fuzzer_dictionaries/appcache_manifest_parser_fuzzer.dict"
+  seed_corpus =
+      "//third_party/WebKit/LayoutTests/http/tests/appcache/resources/"
+}
