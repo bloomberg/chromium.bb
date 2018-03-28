@@ -108,12 +108,15 @@ class OzonePlatformX11 : public OzonePlatform {
  private:
   // Performs initialization steps need by both UI and GPU.
   void InitializeCommon(const InitParams& params) {
-    // TODO(kylechar): Add DCHECK we only enter InitializeCommon() twice for
-    // single process mode.
     if (common_initialized_)
       return;
 
-    // Always initialze in multi-thread mode, since this is used only during
+    // If XOpenDisplay() failed there is nothing we can do. Crash here instead
+    // of crashing later. If you are crashing here, make sure there is an X
+    // server running and $DISPLAY is set.
+    CHECK(gfx::GetXDisplay()) << "Missing X server or $DISPLAY";
+
+    // Always initialize in multi-thread mode, since this is used only during
     // development.
     XInitThreads();
 
