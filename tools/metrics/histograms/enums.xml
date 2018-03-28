@@ -15115,7 +15115,7 @@ Called by update_net_error_codes.py.-->
   <int value="37" label="kCryptotokenPrivate"/>
   <int value="38" label="kDataReductionProxy"/>
   <int value="39" label="kDiagnostics"/>
-  <int value="40" label="kDial"/>
+  <int value="40" label="kDeleted_Dial"/>
   <int value="41" label="kDebugger"/>
   <int value="42" label="kDeclarative"/>
   <int value="43" label="kDeclarativeContent"/>
