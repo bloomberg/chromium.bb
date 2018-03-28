@@ -56,6 +56,19 @@
 
       Jeśli ta zasada jest używana, użytkownik ma dostęp do wszystkich drukarek z wyjątkiem tych, których identyfikatory zostały w niej określone.
       </translation>
+<translation id="1181881366217399113">
+      UWAGA: ta zasada jest eksperymentalna i może zakłócać poprawne działanie innych funkcji.
+      Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej
+      przecinkami będzie działać w obrębie własnego procesu. Powoduje to też
+      izolację źródeł z nazwami subdomen, np. określenie https://example.com/
+      spowoduje, że także adres https://foo.example.com/ będzie izolowany jako
+      część witryny https://example.com/.
+      Jeśli ta zasada jest wyłączona, działa logika zarządzania procesem
+      sprzed izolacji witryny.
+      Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić
+      to ustawienie.
+      W systemie <ph name="PRODUCT_OS_NAME" /> zaleca się również ustawienie tej samej wartości zasady dotyczącej urządzeń <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
+      </translation>
 <translation id="1198465924256827162">Częstotliwość wysyłania raportów o stanie urządzenia (w milisekundach).
 
       Jeśli ta zasada nie jest skonfigurowana, domyślna częstotliwość wynosi trzy
@@ -246,7 +259,14 @@
       Format wartości musi być zgodny z nazwami stref czasowych w bazie danych stref czasowych IANA (patrz: „http://en.wikipedia.org/wiki/List_of_tz_database_time_zones” – strona w języku angielskim). To oznacza, że większość stref czasowych można podawać w formacie „kontynent/duże_miasto” lub „ocean/duże_miasto”.
 
       Ustawienie tej zasady całkowicie wyłącza zmienianie strefy czasowej na podstawie lokalizacji urządzenia. Zastępuje ona również zasadę SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Token rejestracji zasad dotyczących chmury na komputerze</translation>
 <translation id="1897365952389968758">Zezwalaj na wykonywanie kodu JavaScript we wszystkich witrynach</translation>
+<translation id="1906888171268104594">Określa, czy statystyki użytkowania i dane diagnostyczne (w tym raporty o awariach) mają być przesyłane do Google.
+
+      Jeśli włączysz tę opcję, <ph name="PRODUCT_OS_NAME" /> będzie przesyłać statystyki użytkowania i dane diagnostyczne.
+
+      Jeśli jej nie włączysz, przesyłanie statystyk i danych diagnostycznych będzie wyłączone.
+      Jeśli jej nie skonfigurujesz, przesyłanie statystyk użytkowania i danych diagnostycznych będzie wyłączone na urządzeniach niezarządzanych, ale włączone na zarządzanych.</translation>
 <translation id="193259052151668190">Biała lista odłączanych urządzeń USB</translation>
 <translation id="1933378685401357864">Tapeta</translation>
 <translation id="1956493342242507974">Konfiguruje zarządzanie energią na ekranie logowania w <ph name="PRODUCT_OS_NAME" />.
@@ -402,6 +422,13 @@
 <translation id="2386362615870139244">Zezwalaj na blokowanie wybudzania ekranu</translation>
 <translation id="2411817661175306360">Ostrzeżenie dotyczące ochrony hasłem jest wyłączone</translation>
 <translation id="2411919772666155530">Blokuj powiadomienia w tych witrynach.</translation>
+<translation id="2415979855753196119">Umożliwia sterowanie wyzwalaniem oznaczania kont jako zagrożonych w zakresie ochrony hasłem. 
+Oznaczanie kont jako zagrożonych w zakresie ochrony hasłem oznacza informowanie Google, że dane konto jest narażone na włamanie.
+
+      Jeśli ta zasada ma ustawioną opcję „PasswordProtectionRiskOff”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem nie będzie nigdy wyzwalane.
+      Jeśli ma ustawioną opcję „PasswordProtectionRiskOnPasswordReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w innych witrynach spoza białej listy.
+      Jeśli ma ustawioną opcję „PasswordProtectionRiskOnPhishingReuse”, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w witrynach wyłudzających informacje.
+      Jeśli zasada nie jest skonfigurowana, oznaczanie kont jako zagrożonych w zakresie ochrony hasłem będzie wyzwalane, gdy użytkownicy będą stosować hasła do kont Google w witrynach wyłudzających informacje, ale użytkownik może zmienić to ustawienie.</translation>
 <translation id="2418507228189425036">Wyłącza zapisywanie historii przeglądarki <ph name="PRODUCT_NAME" /> i blokuje możliwość zmiany tego ustawienia przez użytkowników.
 
       Po włączeniu ustawienia historia przeglądania nie jest zapisywana. To ustawienie wyłącza również synchronizowanie kart.
@@ -587,6 +614,13 @@
 
       Jeśli włączysz to ustawienie, w podglądzie wydruku zostanie wybrana domyślna drukarka systemowa.</translation>
 <translation id="2867699958489427143">Cofnięcie i pozostawienie docelowej wersji systemu operacyjnego, jeśli zainstalowana jest wersja nowsza niż docelowa. W trakcie tego procesu zostanie wykonana pełna procedura Powerwash.</translation>
+<translation id="286802604195763750">Umożliwia sterowanie wyzwalaniem ostrzeżenia dotyczącego ochrony hasłem. 
+Alerty dotyczące ochrony hasłem ostrzegają użytkowników, gdy chcą stosować chronione hasła w potencjalnie niebezpiecznych witrynach.
+
+      Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOff”, nie wyświetli się żadne ostrzeżenie dotyczące ochrony hasłem.
+      Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOnPasswordReuse”, ostrzeżenie dotyczące ochrony hasłem wyświetli się, gdy użytkownicy będą stosować hasła do kont Google w witrynach, które nie znajdują się na białej liście.
+      Jeśli ta zasada jest ustawiona na „PasswordProtectionWarningOnPhishingReuse”, ostrzeżenie dotyczące ochrony hasłem wyświetli się, gdy użytkownicy będą stosować hasła do kont Google w witrynach wyłudzających informacje.
+      Jeśli zasada nie jest skonfigurowana, ostrzeżenie dotyczące ochrony hasłem wyświetli się, gdy użytkownicy będą stosować hasła do kont Google w witrynach wyłudzających informacje, ale użytkownik może zmienić to ustawienie.</translation>
 <translation id="2872961005593481000">Wyłącz</translation>
 <translation id="2874209944580848064">Uwaga dotycząca urządzeń z <ph name="PRODUCT_OS_NAME" /> obsługujących aplikacje na Androida:</translation>
 <translation id="2877225735001246144">Wyłącz wyszukiwanie rekordu CNAME podczas negocjowania uwierzytelniania Kerberos</translation>
@@ -621,6 +655,17 @@
           Wartość tej zasady powinna być określona w milisekundach. Wartości nie mogą być większe niż opóźnienie wyłączenia ekranu (jeśli jest ustawione) i opóźnienie bezczynności.</translation>
 <translation id="2987155890997901449">Włączenie ARC</translation>
 <translation id="2987227569419001736">Kontrolowanie użycia interfejsu API Web Bluetooth</translation>
+<translation id="2998886474614739865">
+      UWAGA: ta zasada jest eksperymentalna i może zakłócać poprawne działanie innych funkcji.
+      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
+      Jeśli ta zasada jest włączona, każde nazwane źródło na liście oddzielonej
+      przecinkami będzie działać w obrębie własnego procesu. Powoduje to też
+      izolację źródeł z nazwami subdomen, np. określenie https://example.com/
+      spowoduje, że także adres https://foo.example.com/ będzie izolowany jako
+      część witryny https://example.com/.
+      Jeśli ta zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny.
+      Jeśli zasada nie jest skonfigurowana, do ekranu logowania będą stosowane domyślne ustawienia platformy dotyczące izolacji witryn.
+      </translation>
 <translation id="3016255526521614822">Aplikacje do robienia notatek dodane do białej listy, które są dozwolone na ekranie blokady w: <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Liczba kamieni milowych, dla której dozwolone jest cofnięcie wersji oprogramowania</translation>
 <translation id="3030000825273123558">Włącz raportowanie danych</translation>
@@ -721,6 +766,19 @@
 
           Jeśli ta zasada jest ustawiona na niepusty ciąg znaków, to jest on nazwą miejsca docelowego <ph name="PRODUCT_NAME" />. W przeciwnym razie nazwą miejsca docelowego jest nazwa urządzenia. Jeśli ta zasada nie jest ustawiona, nazwą miejsca docelowego jest nazwa urządzenia, a właściciel urządzenia (lub użytkownik z domeny zarządzającej urządzeniem) może ją zmienić. Nazwa może mieć maksymalnie 24 znaki.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
+<translation id="3386001018488754001">
+      UWAGA: ta zasada jest eksperymentalna i może zakłócać poprawne działanie innych funkcji.
+      Ta zasada ma wpływ na ekran logowania. Zapoznaj się też z informacjami o zasadzie <ph name="SITE_PER_PROCESS_POLICY_NAME" />, która ma wpływ na sesję użytkownika. Zaleca się skonfigurowanie obu tych zasad w jednakowy sposób. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
+      Możesz dostosować ustawienie zasady IsolateOrigins, by uzyskać najlepsze
+      rezultaty z użycia obu opcji – izolacji i ograniczonego wpływu na
+      użytkowników. W tym celu dodaj do zasady IsolateOrigins listę witryn,
+      które chcesz izolować.
+ Ustawienie SitePerProcess
+      izoluje wszystkie witryny.
+      Jeśli ta zasada jest włączona, każda witryna będzie działać w obrębie własnego procesu.
+      Jeśli ta zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny.
+      Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
+      </translation>
 <translation id="3395348522300156660">Określa drukarki, z których może korzystać użytkownik.
 
       Ta zasada jest używana tylko wtedy, gdy dla zasady <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> wybrano ustawienie <ph name="PRINTERS_WHITELIST" />
@@ -757,6 +815,10 @@ Jeśli nie podasz wartości albo wybierzesz ustawienie „Wyłącz”, stosowani
          Jeśli ta zasada będzie wyłączona lub nieustawiona, odliczanie opóźnień związanych z zarządzaniem energią oraz czasu związanego z limitem długości sesji będzie rozpoczynane od razu po rozpoczęciu sesji.</translation>
 <translation id="3478024346823118645">Wyczyść dane użytkownika przy wylogowaniu</translation>
 <translation id="348495353354674884">Włącz wirtualną klawiaturę</translation>
+<translation id="3487623755010328395">
+        Jeśli ta zasada jest włączona, usługa <ph name="PRODUCT_NAME" /> podejmie próbę zarejestrowania samej siebie i zastosowania powiązanych zasad dotyczących chmury we wszystkich profilach.
+
+        Wartość tej zasady stanowi token rejestracji, który można pobrać z konsoli Google Admin.</translation>
 <translation id="3496296378755072552">Menedżer haseł</translation>
 <translation id="350443680860256679">Konfigurowanie aplikacji ARC</translation>
 <translation id="3504791027627803580">Określa adres URL wyszukiwarki używanej do wyszukiwania obrazem. Żądania wyszukiwania będą wysyłane przy użyciu metody GET. Jeśli zasada DefaultSearchProviderImageURLPostParams jest ustawiona, wtedy takie żądania będą używać metody POST.
@@ -1310,6 +1372,18 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli zasada nie jest ustawiona lub jest ustawiona na pusty ciąg lub nieprawidłowy zakres portów, WebRTC może skorzystać z dowolnego lokalnego portu UDP, jaki jest dostępny.</translation>
 <translation id="5290940294294002042">Określ listę wtyczek, które użytkownik może włączyć lub wyłączyć</translation>
+<translation id="5301787427319106606">
+      UWAGA: ta zasada jest eksperymentalna i może zakłócać poprawne działanie innych funkcji.
+      Możesz dostosować ustawienie zasady IsolateOrigins, by uzyskać najlepsze
+      rezultaty z użycia obu opcji – izolacji i ograniczonego wpływu na
+      użytkowników. W tym celu dodaj do zasady IsolateOrigins listę witryn,
+      które chcesz izolować.
+ Ustawienie SitePerProcess izoluje wszystkie witryny.
+      Jeśli ta zasada jest włączona, każda witryna będzie działać w obrębie własnego procesu.
+      Jeśli ta zasada jest wyłączona, działa logika zarządzania procesem sprzed izolacji witryny.
+      Jeśli ta zasada nie jest skonfigurowana, użytkownik może zmienić to ustawienie.
+      W systemie <ph name="PRODUCT_OS_NAME" /> zaleca się również ustawienie tej samej wartości zasady dotyczącej urządzeń <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Jeśli wartości tych zasad są różne, przy uruchamianiu sesji użytkownika może nastąpić opóźnienie, gdy stosowana jest wartość określona przez zasady dotyczące użytkowników.
+      </translation>
 <translation id="5302612588919538756">Ta zasada została wycofana. Zamiast niej możesz użyć SyncDisabled.
 
       Pozwala użytkownikowi na zalogowanie się w <ph name="PRODUCT_NAME" />.
@@ -1856,6 +1930,14 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="706669471845501145">Zezwalaj witrynom na pokazywanie powiadomień na pulpicie</translation>
 <translation id="7072208053150563108">Częstotliwość zmieniania hasła komputera</translation>
 <translation id="7072406291414141328">Włącza ograniczanie przepustowości sieci</translation>
+<translation id="7074513465313721551">Pozwala skonfigurować listę domen, którym będzie ufać Bezpieczne przeglądanie. Działanie zasady:
+      Bezpieczne przeglądanie nie będzie sprawdzać, czy witryny zawierają niebezpieczne zasoby (np. wyłudzające informacje, złośliwe lub niechciane oprogramowanie), jeśli ich adresy URL pasują do tych domen.
+      Usługa ochrony przy pobieraniu Bezpiecznego przeglądania nie będzie sprawdzać plików pobieranych z tych domen.
+      Usługa ochrony haseł Bezpiecznego przeglądania nie będzie sprawdzać użycia haseł, jeśli adresy URL stron będą pasować do tych domen.
+
+      Jeśli ta zasada jest włączona, Bezpieczne przeglądanie będzie ufać tym domenom.
+      Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, funkcje Bezpiecznego przeglądania są stosowane do wszystkich zasobów.
+      Ta zasada jest niedostępna w systemach Windows niepołączonych z domeną <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Blokuj wyskakujące okienka w tych witrynach</translation>
 <translation id="7106631983877564505">Powoduje włączenie blokady w przypadku bezczynności lub zawieszenia działania urządzenia z systemem operacyjnym <ph name="PRODUCT_OS_NAME" />.
 

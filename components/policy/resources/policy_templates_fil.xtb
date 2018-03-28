@@ -675,6 +675,17 @@
           Dapat tukuyin ang halaga ng patakaran ayon sa millisecond. Kinakailangang mas mababa kaysa sa o katumbas ng delay ng pag-off ng screen (kung nakatakda) at idle delay ang mga halaga.</translation>
 <translation id="2987155890997901449">I-enable ang ARC</translation>
 <translation id="2987227569419001736">Kontrolin ang paggamit ng Web Bluetooth API</translation>
+<translation id="2998886474614739865">
+      TANDAAN: Pang-eksperimento ang patakarang ito at maaari itong makasira sa functionality!
+      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa iisang value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+      Kung ie-enable ang patakaran, ang bawat isa sa mga tinukoy na pinagmulan sa isang
+      comma-separated list ay magpapatakbo ng sarili nitong proseso. Ia-isolate din nito ang
+      mga pinagmulang tinukoy ng mga subdomain; hal., kapag tinukoy ang https://example.com/,
+      maa-isolate din ang https://foo.example.com/ bilang bahagi ng
+      site na https://example.com/.
+      Kung idi-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso ng Pag-isolate ayon sa Site.
+      Kung hindi iko-configure ang patakaran, gagamitin ang mga default na setting sa pag-isolate ng site ng platform para sa screen ng pag-sign in.
+      </translation>
 <translation id="3016255526521614822">Pinapayagan ang mga app sa paggawa ng tala ng Whitelist sa lock screen ng <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Pinapayagan ang bilang ng pag-rollback ng mga milestone</translation>
 <translation id="3030000825273123558">Paganahin ang pag-uulat ng mga sukatan</translation>
@@ -783,6 +794,17 @@
 
           Kung nakatakda ang patakarang ito sa isang may lamang string, gagamitin ang string na iyon bilang pangalan ng destinasyon ng <ph name="PRODUCT_NAME" />. Kung hindi, ang pangalan ng device ang magiging pangalan ng destinasyon. Kung hindi nakatakda ang patakarang ito, ang pangalan ng device ang magiging pangalan ng destinasyon, at papayagan ang may-ari ng device (o isang user mula sa domain na namamahala sa device) na palitan ito. Nalilimitahan ang pangalan sa 24 na character.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
+<translation id="3386001018488754001">
+      TANDAAN: Pang-eksperimento ang patakarang ito at maaari itong makasira sa functionality!
+      Nalalapat ang patakarang ito sa screen ng pag-sign in. Pakitingnan din ang patakarang <ph name="SITE_PER_PROCESS_POLICY_NAME" /> na nalalapat sa session ng user. Inirerekomendang itakda ang dalawang patakaran sa iisang value. Kung hindi magtutugma ang mga value, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+      Mainam na suriin ang setting ng patakarang IsolateOrigins para
+      masulit ang pag-isolate at pagkakaroon ng limitadong epekto sa mga user, sa pamamagitan ng paggamit sa
+      IsolateOrigins nang may listahan ng mga site na gusto mong i-isolate. Ina-isolate
+      ng setting na SitePerProcess ang lahat ng site.
+      Kung ie-enable ang patakaran, magpapatakbo ang bawat site ng sarili nitong proseso.
+      Kung idi-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso ng Pag-isolate ayon sa Site.
+      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
+      </translation>
 <translation id="3395348522300156660">Tumutukoy sa mga printer na magagamit ng user.
 
       Ginagamit lang ang patakarang ito kung pipiliin ang <ph name="PRINTERS_WHITELIST" /> para sa <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -821,6 +843,10 @@
           Kung nakatakda ang patakarang ito sa False o iniwang hindi nakatakda, agad na tatakbo ang mga pagkaantala sa pamamahala sa power at ang limitasyon sa haba ng session sa pagsisimula ng session.</translation>
 <translation id="3478024346823118645">I-wipe ang data ng user sa pag-sign-out</translation>
 <translation id="348495353354674884">Paganahin ang virtual keyboard</translation>
+<translation id="3487623755010328395">
+        Kung itatakda ang patakarang ito, susubukan ng <ph name="PRODUCT_NAME" /> na irehistro ang sarili nito at ilapat ang nauugnay na patakaran ng cloud para sa lahat ng profile.
+
+        Ang value ng patakarang ito ay isang Token sa pag-enroll na maaaring makuha sa Google Admin console.</translation>
 <translation id="3496296378755072552">Tagapamahala ng password</translation>
 <translation id="350443680860256679">I-configure ang ARC</translation>
 <translation id="3504791027627803580">Tinutukoy ang URL ng search engine na ginamit upang magbigay ng paghahanap ng larawan. Ipapadala ang mga kahilingan sa paghahanap gamit ang GET na paraan. Kung nakatakda ang patakarang DefaultSearchProviderImageURLPostParams, gagamitin sa halip ng mga kahilingan sa paghahanap ng larawan ang POST na paraan.
@@ -1407,6 +1433,17 @@
 
       Kung hindi nakatakda ang patakaran, o kung nakatakda ito sa walang lamang string o di-wastong hanay ng port, pinapayagan ang WebRTC na gamitin ang anumang available na lokal na UDP port.</translation>
 <translation id="5290940294294002042">Tumukoy ng listahan ng mga plugin na maaaring paganahin o hindi paganahin ng user</translation>
+<translation id="5301787427319106606">
+      TANDAAN: Pang-eksperimento ang patakarang ito at maaari itong makasira sa functionality!
+      Mainam na suriin ang setting ng patakarang IsolateOrigins para
+      masulit ang pag-isolate at pagkakaroon ng limitadong epekto sa mga user, sa pamamagitan ng paggamit sa
+      IsolateOrigins nang may listahan ng mga site na gusto mong i-isolate. Ina-isolate ng
+      setting na ito na SitePerProcess ang lahat ng site.
+      Kung ie-enable ang patakaran, magpapatakbo ang bawat site ng sarili nitong proseso.
+      Kung idi-disable ang patakaran, magkakaroon ng bisa ang logic ng pamamahala sa proseso ng Pag-isolate ayon sa Site.
+      Kung hindi iko-configure ang patakaran, mababago ng user ang setting na ito.
+      Sa <ph name="PRODUCT_OS_NAME" />, inirerekomendang itakda rin ang patakaran ng device na <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> sa parehong value. Kung hindi magtutugma ang mga value na tinukoy ng dalawang patakaran, maaaring magkaroon ng pagkaantala sa pagpasok sa isang session ng user habang inilalapat ang value na tinukoy ng patakaran ng user.
+      </translation>
 <translation id="5302612588919538756">Hindi na ginagamit ang patakarang ito, pag-isipang gamitin na lang ang SyncDisabled.
 
       Pinapayagan ang user na mag-sign in sa <ph name="PRODUCT_NAME" />.
@@ -2006,6 +2043,14 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="706669471845501145">Payagan ang mga site upang magpakita ng mga notification sa desktop</translation>
 <translation id="7072208053150563108">Rate ng pagpapalit ng password ng machine</translation>
 <translation id="7072406291414141328">Ine-enable ang pag-throttle sa bandwidth ng network</translation>
+<translation id="7074513465313721551">Nagko-configure sa listahan ng mga domain na pagkakatiwalaan ng Ligtas na Pag-browse. Ang ibig sabihin nito ay:
+      Hindi susuriin ng Ligtas na Pag-browse kung may mga mapanganib na resource (hal., phishing, malware, o hindi kanais-nais na software) kung tutugma ang mga URL ng mga ito sa mga domain na ito.
+      Hindi susuriin ng serbisyo ng proteksyon sa pag-download ng Ligtas na Pag-browse ang mga pag-download na naka-host sa mga domain na ito.
+      Hindi susuriin ng serbisyo sa pagprotekta ng password ng Ligtas na Pag-browse kung may muling paggamit ng password kung tutugma ang URL ng page sa mga domain na ito.
+
+      Kung ie-enable ang setting na ito, pagkakatiwalaan ng Ligtas na Pag-browse ang mga domain na ito.
+      Kung idi-disable o hindi itatakda ang setting na ito, ilalapat ang default na proteksyon ng Ligtas na Pag-browse sa lahat ng resource.
+      Hindi available ang patakarang ito sa mga instance ng Windows na hindi kasali sa isang <ph name="MS_AD_NAME" /> domain.</translation>
 <translation id="7079519252486108041">I-block ang mga popup sa mga site na ito</translation>
 <translation id="7106631983877564505">Paganahin ang pag-lock kapag naging idle o nasuspinde ang mga device ng <ph name="PRODUCT_OS_NAME" />.
 

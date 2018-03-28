@@ -396,7 +396,7 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="2303795211377219696">Aktivovať Automatické dopĺňanie pre kreditné karty</translation>
 <translation id="2309390639296060546">Predvolené nastavenie geolokácie</translation>
 <translation id="2312134445771258233">Umožňuje konfigurovať stránky, ktoré sa načítavajú pri spustení. Ak ste v časti „Akcie pri spustení“ nezvolili možnosť „Otvoriť zoznam webových adries“, položky v zozname „Webové adresy otvárané pri spustení“ sa ignorujú.</translation>
-<translation id="2327252517317514801">Definovať domény s povoleným prístupom do služby G Suite</translation>
+<translation id="2327252517317514801">Definovať domény s povoleným prístupom do služby G Suite</translation>
 <translation id="2334591568684482454">Umožňuje konfigurovať dostupnosť a správanie funkcií aktualizácie firmvéru <ph name="TPM_FIRMWARE_UPDATE_TPM" />.
 
       Jednotlivé nastavenia môžete určiť vo vlastnostiach JSON:
@@ -1930,7 +1930,7 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
 <translation id="6903814433019432303">Toto pravidlo je aktívne iba v režime určenom pre predaj.
 
       Určuje súbor webových adries, ktoré sa majú načítať po spustení ukážkovej relácie. Toto pravidlo prepíše akékoľvek ďalšie mechanizmy, ktoré slúžia na nastavenie počiatočných webových adries, a tak sa môže použiť iba v reláciách, ktoré nie sú spojené s konkrétnym používateľom.</translation>
-<translation id="6908347296939885026">Umožňuje povoliť obmedzený denník prehliadača <ph name="PRODUCT_NAME" /> vo funkcii v službe G Suite a zabráni používateľom toto nastavenie meniť.
+<translation id="6908347296939885026">Umožňuje povoliť obmedzený denník prehliadača <ph name="PRODUCT_NAME" /> vo funkcii v službe G Suite a zabráni používateľom toto nastavenie meniť.
 
       Ak toto nastavenie definujete, používateľ získa prístup iba k aplikáciám Google
       používajúcim účty z určených domén (upozorňujeme, že to nefunguje
@@ -1939,11 +1939,11 @@ volania rozhrania API zlyhajú a nahlásia kód chyby.</translation>
       Toto nastavenie NEZABRÁNI používateľom prihlasovať sa na spravovaných
       zariadeniach, ktoré vyžadujú overenie totožnosti na Googli. Používateľ sa bude môcť naďalej
       prihlasovať do účtov z iných domén, ale ak sa v nich pokúsi použiť
-      službu G Suite, zobrazí sa chybové hlásenie.
+      službu G Suite, zobrazí sa chybové hlásenie.
 .
 
       Ak toto nastavenie ponecháte prázdne alebo ho nenakonfigurujete, používateľ získa prístup
-      do služby G Suite bez účtu.
+      do služby G Suite bez účtu.
 
       Toto pravidlo spôsobí, že hlavička X-GoogApps-Allowed-Domains bude pripojená
       k všetkým žiadostiam HTTP a HTTPS do všetkých domén google.com tak, ako je to opísané na adrese

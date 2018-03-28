@@ -58,6 +58,18 @@
 
       Se esta política for utilizada, todas as impressoras são disponibilizadas ao utilizador, exceto aquelas cujos IDs forem indicados nesta política.
       </translation>
+<translation id="1181881366217399113">
+      NOTA: esta política é experimental e pode interferir no funcionamento!
+      Se a política estiver ativada, cada uma das origens nomeadas numa
+      lista separada por vírgulas é executada no seu próprio processo. Deste modo, são
+      também isoladas as origens nomeadas por subdomínios. Por exemplo, ao
+      especificar https://example.com/, https://foo.example.com/ também é isolado
+      como parte do site https://example.com/.
+      Se a política estiver desativada, aplica-se a lógica de gestão de processos de
+      isolamento por site.
+      Se a política não estiver configurada, o utilizador pode alterar esta definição.
+      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina também a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> para o mesmo valor. Se os valores especificados pelas duas políticas forem diferentes, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador for aplicado.
+      </translation>
 <translation id="1198465924256827162">Com que frequência os carregamentos do estado do dispositivo são enviados, em milissegundos.
 
       Se esta política não for definida, a frequência predefinida é de 3 horas. A frequência mínima
@@ -248,7 +260,15 @@
       O formato do valor segue os nomes dos fusos horários na "Base de dados de fuso horário IANA" (consulte "https://en.wikipedia.org/wiki/Tz_database"). Em particular, a maioria dos fusos horários pode ser referida como "continente/grande_cidade" ou "oceano/grande_cidade".
 
       A definição desta política desativa completamente a resolução automática do fuso horário através da localização do dispositivo. Além disso, substitui a política SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">O símbolo de inscrição da política da nuvem no computador</translation>
 <translation id="1897365952389968758">Permitir que todos os sites executem JavaScript</translation>
+<translation id="1906888171268104594">Controla se as métricas de utilização e os dados de diagnóstico, incluindo os relatórios de falhas, são comunicados à Google.
+
+      Se a política estiver definida como verdadeira, o <ph name="PRODUCT_OS_NAME" /> comunica as métricas de utilização e os dados de diagnóstico.
+
+      Se a política estiver definida como falsa, o relatório de métricas e de dados de diagnóstico é desativado.
+
+      Se a política não estiver configurada, o relatório de métricas e de dados de diagnóstico é desativado em dispositivos não geridos e é ativado em dispositivos geridos.</translation>
 <translation id="193259052151668190">Lista de autorizações de dispositivos USB amovíveis</translation>
 <translation id="1933378685401357864">Imagem de fundo</translation>
 <translation id="1956493342242507974">Configure a gestão de energia no ecrã de início de sessão no <ph name="PRODUCT_OS_NAME" />.
@@ -410,6 +430,12 @@
 <translation id="2386362615870139244">Permitir bloqueios de ativação do ecrã</translation>
 <translation id="2411817661175306360">O aviso de proteção por palavra-passe está desativado.</translation>
 <translation id="2411919772666155530">Bloquear notificações nestes Web sites</translation>
+<translation id="2415979855753196119">Permite-lhe controlar o acionamento da sinalização de conta protegidas por palavra-passe em risco. A sinalização de conta protegida por palavra-passe em risco consiste em informar a Google de que esta conta está em risco de ser acedida indevidamente.
+
+      Se esta política estiver definida como "PasswordProtectionRiskOff", não é acionada qualquer sinalização de conta protegida por palavra-passe em risco.
+      Se esta política estiver definida como "PasswordProtectionRiskOnPasswordReuse", a sinalização de conta protegida por palavra-passe em risco é acionada quando os utilizadores reutilizarem as palavras-passe Google em sites que não tenham sido adicionados à lista de autorizações.
+      Se esta política estiver definida como "PasswordProtectionRiskOnPhishingReuse", a sinalização de conta protegida por palavra-passe em risco é acionada quando os utilizadores reutilizarem as palavras-passe Google em sites de phishing.
+      Se esta política não for definida, a sinalização de conta protegida por palavra-passe em risco é acionada quando os utilizadores reutilizarem as palavras-passe Google em sites de phishing, mas os utilizadores podem alterar esta definição.</translation>
 <translation id="2418507228189425036">Desativa o registo do histórico de navegação no <ph name="PRODUCT_NAME" /> e impede que os utilizadores alterem esta definição.
 
       Se esta definição estiver ativada, o histórico de navegação não é guardado. Esta definição também desativa a sincronização de separadores.
@@ -595,6 +621,12 @@
 
       Se ativar esta definição, a Pré-visualização de impressão utiliza a impressora predefinida do SO como a escolha de destino predefinida.</translation>
 <translation id="2867699958489427143">Reverta e continue a utilizar a versão de destino se a versão do SO for mais recente do que a de destino. Efetue um Powerwash completo durante o processo.</translation>
+<translation id="286802604195763750">Permite-lhe controlar o acionamento do aviso de proteção por palavra-passe. A proteção por palavra-passe alerta os utilizadores quando reutilizarem as respetivas palavras-passe protegidas em sites potencialmente suspeitos.
+
+      Se esta política estiver definida como "PasswordProtectionWarningOff", não é mostrado nenhum aviso de proteção por palavra-passe.
+      Se esta política estiver definida como "PasswordProtectionWarningOnPasswordReuse", o aviso de proteção por palavra-passe é mostrado quando os utilizadores reutilizarem as palavras-passe Google em sites que não tenham sido adicionados à lista de autorizações.
+      Se esta política estiver definida como "PasswordProtectionWarningOnPhishingReuse", o aviso de proteção por palavra-passe é mostrado quando os utilizadores reutilizarem as palavras-passe Google em sites de phishing.
+      Se esta política não for definida, o aviso de proteção por palavra-passe é acionado quando os utilizadores reutilizarem as palavras-passe Google em sites de phishing, mas os utilizadores podem alterar esta definição.</translation>
 <translation id="2872961005593481000">Encerrar</translation>
 <translation id="2874209944580848064">Nota para os dispositivos <ph name="PRODUCT_OS_NAME" /> compatíveis com aplicações Android:</translation>
 <translation id="2877225735001246144">Desativar a procura de CNAME ao negociar a autenticação Kerberos</translation>
@@ -629,6 +661,18 @@
           O valor da política deve ser especificado em milissegundos. Os valores devem ser inferiores ou iguais ao atraso para desligar o ecrã (se estiver definido) e ao atraso de inatividade.</translation>
 <translation id="2987155890997901449">Ativar ARC</translation>
 <translation id="2987227569419001736">Controlar a utilização da API Web Bluetooth</translation>
+<translation id="2998886474614739865">
+      NOTA: esta política é experimental e pode interferir no funcionamento!
+      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas com o mesmo valor. Se os valores forem diferentes, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+      Se a política estiver ativada, cada uma das origens nomeadas numa
+      lista separada por vírgulas é executada no seu próprio processo. Deste modo, são também isoladas
+      as origens nomeadas por subdomínios. Por exemplo, ao especificar https://example.com/,
+      https://foo.example.com/ também é isolado como parte do site
+      https://example.com/.
+      Se a política estiver desativada, aplica-se a lógica de gestão de processos de
+      isolamento por site.
+      Se a política não estiver configurada, são utilizadas as predefinições de isolamento de site da plataforma para o ecrã de início de sessão.
+      </translation>
 <translation id="3016255526521614822">Adicionar à lista de autorizações as aplicações para tirar notas permitidas no ecrã de bloqueio do <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Número de marcos para os quais é autorizada a reversão.</translation>
 <translation id="3030000825273123558">Ativar relatório de métricas</translation>
@@ -732,6 +776,18 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 
          Se esta política estiver definida como uma string não vazia, essa string é utilizada como o nome do destino do <ph name="PRODUCT_NAME" />. Caso contrário, o nome do destino é o nome do dispositivo. Se esta política não estiver definida, o nome do destino é o nome do dispositivo e o proprietário do dispositivo (ou um utilizador do domínio que gere o dispositivo) pode alterá-lo. O nome tem um limite de 24 carateres.</translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
+<translation id="3386001018488754001">
+      NOTA: esta política é experimental e pode interferir no funcionamento!
+      Esta política aplica-se ao ecrã de início de sessão. Consulte também a política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que se aplica à sessão do utilizador. É recomendável definir ambas as políticas com o mesmo valor. Se os valores forem diferentes, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+      Recomendamos que consulte a definição da política IsolateOrigins para obter o
+      melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar a
+      IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição,
+      SitePerProcess, isola todos os sites.
+      Se a política estiver ativada, cada site é executado no seu próprio processo.
+      Se a política estiver desativada, aplica-se a lógica de gestão de processos de
+      isolamento por site.
+      Se a política não estiver configurada, o utilizador pode alterar esta definição.
+      </translation>
 <translation id="3395348522300156660">Especifica as impressoras disponíveis para um utilizador.
 
       Esta política é apenas utilizada se <ph name="PRINTERS_WHITELIST" /> for selecionado para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -770,6 +826,10 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
           Se esta política estiver definida como Falsa ou não estiver definida, os atrasos de gestão de energia e o limite de duração da sessão começarão imediatamente após o início da sessão.</translation>
 <translation id="3478024346823118645">Limpar os dados do utilizador ao terminar sessão</translation>
 <translation id="348495353354674884">Ativar teclado virtual</translation>
+<translation id="3487623755010328395">
+        Se esta política estiver definida, o <ph name="PRODUCT_NAME" /> tentará registar-se e aplicar a política de nuvem associada a todos os perfis.
+
+        O valor desta política é um símbolo de inscrição que pode ser obtido na Consola do administrador do Google.</translation>
 <translation id="3496296378755072552">Gestor de palavras-passe</translation>
 <translation id="350443680860256679">Configurar ARC</translation>
 <translation id="3504791027627803580">Especifique o URL do motor de pesquisa utilizado para fornecer a pesquisa de imagens. Os pedidos de pesquisa serão enviados através do método GET. Se a política DefaultSearchProviderImageURLPostParams estiver definida, os pedidos de pesquisa de imagens utilizarão, em alternativa, o método POST.
@@ -1331,6 +1391,18 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 
       Se a política não for definida ou se for definida para a string vazia ou um intervalo de portas inválido, o WebRTC está autorizado a utilizar qualquer porta UDP local disponível.</translation>
 <translation id="5290940294294002042">Indique uma lista de plug-ins que o utilizador pode ativar ou desativar</translation>
+<translation id="5301787427319106606">
+      NOTA: esta política é experimental e pode interferir no funcionamento!
+      Recomendamos que consulte a definição da política IsolateOrigins para obter o
+      melhor de dois mundos: isolamento e impacto limitado para os utilizadores, ao utilizar a
+      IsolateOrigins com uma lista dos sites que pretende isolar. Esta definição,
+      SitePerProcess, isola todos os sites.
+      Se a política estiver ativada, cada site é executado no seu próprio processo.
+      Se a política estiver desativada, aplica-se a lógica de gestão de processos de
+      isolamento por site.
+      Se a política não estiver configurada, o utilizador pode alterar esta definição.
+      No <ph name="PRODUCT_OS_NAME" />, recomenda-se que defina também a política do dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> com o mesmo valor. Se os valores especificados pelas duas políticas forem diferentes, pode ocorrer um atraso ao entrar numa sessão de utilizador enquanto o valor especificado pela Política do Utilizador é aplicado.
+      </translation>
 <translation id="5302612588919538756">Esta política foi descontinuada. Considere a utilização de SyncDisabled em alternativa.
 
       Permite que o utilizador inicie sessão no <ph name="PRODUCT_NAME" />.
@@ -1888,6 +1960,14 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="706669471845501145">Permitir que os sites mostrem notificações do ambiente de trabalho</translation>
 <translation id="7072208053150563108">Taxa de alteração da palavra-passe da máquina</translation>
 <translation id="7072406291414141328">Permite controlar a largura de banda da rede</translation>
+<translation id="7074513465313721551">Configure a lista de domínios em que a Navegação segura irá confiar. Isto significa que:
+      A Navegação segura não irá verificar a existência de recursos perigosos (por exemplo, phishing, software malicioso ou software indesejado) se os URL corresponderem a estes domínios.
+      O serviço de proteção de transferências da Navegação segura não irá verificar as transferências alojadas nestes domínios.
+      O serviço de proteção por palavra-passe da Navegação segura não irá verificar a reutilização de palavras-passe se o URL da página corresponder a estes domínios.
+
+      Se esta definição estiver ativada, a Navegação segura irá confiar nestes domínios.
+      Se esta definição estiver desativada, ou não estiver definida, é aplicada a proteção predefinida da Navegação segura a todos os recursos.
+      Esta política não está disponível em instâncias do Windows que não pertençam a um domínio <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloquear pop-ups nestes sites</translation>
 <translation id="7106631983877564505">Ativar o bloqueio quando os dispositivos <ph name="PRODUCT_OS_NAME" /> ficam inativos ou entram em suspensão.
 

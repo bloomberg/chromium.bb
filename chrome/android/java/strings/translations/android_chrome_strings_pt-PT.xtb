@@ -87,6 +87,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="1709438864123551175">Poupança de dados</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1729516292547892356">Para ver conteúdo de realidade virtual, atualize os Serviços de RV da Google</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – atualizado <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Sincronizar os marcadores</translation>
 <translation id="17513872634828108">Separadores abertos</translation>
 <translation id="1756600373018374892">Toque neste botão para aceder rapidamente aos seus separadores.</translation>
@@ -170,7 +171,7 @@ Tem de ter a Localização e o Bluetooth ativados para poder utilizar a Web fís
 <translation id="2498359688066513246">Ajuda e comentários</translation>
 <translation id="2501278716633472235">Retroceder</translation>
 <translation id="2503472621226270518">Expandir painel de navegação</translation>
-<translation id="2512222046227390255">Preenchimento autom. formulários</translation>
+<translation id="2512222046227390255">Preencher autom. formulários</translation>
 <translation id="2526148617758225454">A Poupança de dados está ativada. Pode geri-la nas Definições.</translation>
 <translation id="2532336938189706096">Visualização na Web</translation>
 <translation id="2536728043171574184">Visualização de uma cópia offline desta página</translation>
@@ -784,6 +785,7 @@ Por exemplo, alguns Sites podem responder a este pedido ao mostrar-lhe anúncios
 <translation id="8200772114523450471">Continuar</translation>
 <translation id="8209050860603202033">Abrir imagem</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB transferido(s)</translation>
+<translation id="8249310407154411074">Mover para o início</translation>
 <translation id="8250920743982581267">Documentos</translation>
 <translation id="8260126382462817229">Experimente iniciar sessão novamente</translation>
 <translation id="8261506727792406068">Eliminar</translation>

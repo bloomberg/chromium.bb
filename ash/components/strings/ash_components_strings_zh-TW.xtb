@@ -3,6 +3,7 @@
 <translationbundle lang="zh-TW">
 <translation id="104962181688258143">開啟「檔案」應用程式</translation>
 <translation id="1126871238933253947">切換至你使用的上一個鍵盤語言。</translation>
+<translation id="1134347825771908369">設為靜音</translation>
 <translation id="1195667586424773550">將連結拖曳至該分頁的網址列</translation>
 <translation id="1204450209689312104">以無痕模式開啟新視窗</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">將目前視窗中所有開啟的網頁儲存為書籤，並放在新資料夾中</translation>
 <translation id="355103131818127604">在新分頁中開啟連結，顯示在背景中</translation>
 <translation id="3649256019230929621">將視窗縮到最小</translation>
+<translation id="3655154169297074232">分頁與視窗</translation>
 <translation id="3668361878347172356">重做上一個動作</translation>
 <translation id="3720939646656082033">在新分頁中開啟連結，並切換到新開啟的分頁</translation>
 <translation id="3725795051337497754">關閉目前的分頁</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">將連結儲存為書籤</translation>
 <translation id="4141203561740478845">醒目顯示網址列所在的行</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> 鍵或 <ph name="ENTER" /> 鍵</translation>
+<translation id="4240486403425279990">總覽模式</translation>
+<translation id="4472417192667361414">系統與顯示設定</translation>
 <translation id="4556221320735744018">查看鍵盤快速鍵說明</translation>
 <translation id="4628718545549558538">開啟狀態區 (顯示帳戶圖片的位置)</translation>
 <translation id="4642092649622328492">擷取部分螢幕畫面</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">前往文件開頭</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> 鍵或 <ph name="E" /> 鍵</translation>
 <translation id="8234414138295101081">將畫面旋轉 90 度</translation>
+<translation id="826184564253127735">鍵盤快速鍵檢視器</translation>
 <translation id="836869401750819675">開啟下載內容頁面</translation>
 <translation id="8388247778047144397">將連結拖曳至分頁列中的空白區域</translation>
 <translation id="8389638407792712197">開啟新視窗</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /> <ph name="SEPARATOR" /> 1 到 8 鍵</translation>
 <translation id="9041599225465145264">貼上剪貼簿中的內容</translation>
 <translation id="9052808072970550123">切換至下一個使用者</translation>
+<translation id="9106898733795143799">網頁與網路瀏覽器</translation>
 <translation id="9179672198516322668">常用快速鍵</translation>
 <translation id="93603345341560814">按住 <ph name="SHIFT" /> 鍵，然後按一下連結</translation>
 <translation id="945383118875625837">將連結拖曳到書籤列</translation>

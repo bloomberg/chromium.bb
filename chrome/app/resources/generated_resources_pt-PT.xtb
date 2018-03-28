@@ -629,6 +629,7 @@
 <translation id="1944921356641260203">Atualização encontrada</translation>
 <translation id="1951615167417147110">Deslocar uma página para cima</translation>
 <translation id="1956050014111002555">O ficheiro continha vários certificados e nenhum deles foi importado:</translation>
+<translation id="1956390763342388273">Esta ação irá carregar todos os ficheiros de "<ph name="FOLDER_PATH" />". Faça isto apenas se confiar no site.</translation>
 <translation id="1962233722219655970">Esta página utiliza uma aplicação Native Client que não funciona no computador.</translation>
 <translation id="1962969542251276847">Bloqueio de Ecrã</translation>
 <translation id="1963227389609234879">Remover tudo</translation>
@@ -841,6 +842,7 @@
 <translation id="2294358108254308676">Pretende instalar o <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">Método EAP:</translation>
 <translation id="2297705863329999812">Pesquisar impressoras</translation>
+<translation id="2300383962156589922">Personalizar e controlar a aplicação <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">O directório de raiz da extensão é inválido.</translation>
 <translation id="2302685579236571180">Efectuar uma navegação anónima</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" solicitou permissões adicionais.</translation>
@@ -970,7 +972,7 @@ Acho que este site não deveria estar bloqueado.</translation>
 <translation id="2508428939232952663">Conta da Google Play Store</translation>
 <translation id="2509495747794740764">O valor de dimensionamento tem de ser um número entre 10 e 200.</translation>
 <translation id="2509566264613697683">8x</translation>
-<translation id="2512222046227390255">Preenchimento autom. formulários</translation>
+<translation id="2512222046227390255">Preencher autom. formulários</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Analisar</translation>
 <translation id="2518024842978892609">Utilizar os certificados de cliente</translation>
@@ -1330,6 +1332,7 @@ Pretende pará-lo?</translation>
 <translation id="3012917896646559015">Contacte o seu fabricante de hardware imediatamente para enviar o seu computador para reparação.</translation>
 <translation id="3013291976881901233">Dispositivos MIDI</translation>
 <translation id="3014095112974898292">A aguardar a conclusão de outros pedidos...</translation>
+<translation id="3015639418649705390">Reiniciar agora</translation>
 <translation id="3015992588037997514">Este código é apresentado no ecrã do Chromebox?</translation>
 <translation id="3016641847947582299">Componente atualizado</translation>
 <translation id="3016780570757425217">Conhecer a sua localização</translation>
@@ -2205,6 +2208,7 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="4430369329743628066">Marcador adicionado</translation>
 <translation id="443454694385851356">Antigos (inseguros)</translation>
 <translation id="443464694732789311">Continuar</translation>
+<translation id="443475966875174318">Atualizar ou remover aplicações incompatíveis</translation>
 <translation id="4439318412377770121">Pretende registar o <ph name="DEVICE_NAME" /> no Google Cloud Devices?</translation>
 <translation id="4441124369922430666">Pretende iniciar automaticamente esta aplicação quando o computador é ligado?</translation>
 <translation id="444134486829715816">Expandir...</translation>
@@ -2387,6 +2391,7 @@ Para obter mais informações, aceda ao nosso <ph name="BEGIN_LINK" />Centro de 
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="474217410105706308">Desativar Som do Separador</translation>
 <translation id="4742746985488890273">Afixar na prateleira</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />Saiba como atualizar aplicações<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">A transferência foi concluída</translation>
 <translation id="4746971725921104503">Parece que já está a gerir um utilizador com esse nome. Pretendia <ph name="LINK_START" />importá-lo <ph name="USER_DISPLAY_NAME" /> para este dispositivo<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Requer extensão da Web Store do Chrome</translation>
@@ -3198,6 +3203,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
     <ph name="BEGIN_PARAGRAPH2" />Pode ativá-las ou desativá-las a qualquer momento nas definições das aplicações Android. Isto não afeta a capacidade de o dispositivo enviar as informações de que necessita para receber serviços essenciais, tais como atualizações do sistema e de segurança.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">Tradução</translation>
 <translation id="5991049340509704927">Ampliar</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para garantir que pode continuar a navegar na Web, peça ao administrador para remover esta aplicação.}other{Para garantir que pode continuar a navegar na Web, peça ao administrador para remover estas aplicações.}}</translation>
 <translation id="5993332328670040093">A utilização de dados já não será medida.</translation>
 <translation id="600424552813877586">Aplicação inválida.</translation>
 <translation id="6005695835120147974">Media Router</translation>
@@ -3853,6 +3859,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7040138676081995583">Abrir com...</translation>
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7042418530779813870">Colar e pesqui&amp;sar</translation>
+<translation id="7043108582968290193">Concluído! Não foram encontradas aplicações incompatíveis.</translation>
 <translation id="7049293980323620022">Pretende manter este ficheiro?</translation>
 <translation id="7051943809462976355">A pesquisar rato...</translation>
 <translation id="7052237160939977163">Enviar dados de rastreio do desempenho</translation>
@@ -4023,6 +4030,7 @@ Certifique-se de que não revela informações confidenciais.</translation>
 <translation id="7328867076235380839">Combinação inválida.</translation>
 <translation id="7329154610228416156">O início de sessão falhou porque foi configurado para utilizar um URL não seguro (<ph name="BLOCKED_URL" />). Contacte o gestor.</translation>
 <translation id="7334190995941642545">O Smart Lock não está disponível atualmente. Tente novamente mais tarde.</translation>
+<translation id="7334274148831027933">Ativar lupa ancorada</translation>
 <translation id="7339763383339757376">PKCS #7, certificado único</translation>
 <translation id="7339785458027436441">Verificar a ortografia durante a escrita</translation>
 <translation id="7339898014177206373">Nova janela</translation>
@@ -4396,6 +4404,7 @@ A instalação da aplicação <ph name="APP_NAME" /> implica uma transferência 
 <translation id="7912080627461681647">A sua palavra-passe foi alterada no servidor. Termine e inicie sessão novamente.</translation>
 <translation id="7912883689016444961">Configurar rede móvel</translation>
 <translation id="7915471803647590281">Indique-nos o que está a acontecer antes de enviar os comentários.</translation>
+<translation id="792514962475806987">Nível de zoom da lupa ancorada:</translation>
 <translation id="7925247922861151263">A verificação AAA falhou</translation>
 <translation id="7925285046818567682">A aguardar por <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Não utilizar dados móveis para sincronização</translation>
@@ -4777,6 +4786,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">URL de deteção automática de proxy da Web</translation>
 <translation id="8546930481464505581">Personalizar a barra tátil</translation>
+<translation id="8547013269961688403">Ativar lupa de ecrã inteiro</translation>
 <translation id="85486688517848470">Mantenha premida a tecla Pesquisar para alterar o comportamento das teclas da linha superior</translation>
 <translation id="855081842937141170">Fixar separador</translation>
 <translation id="8551388862522347954">Licenças</translation>
@@ -4831,6 +4841,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8642947597466641025">Aumentar o tamanho do texto</translation>
 <translation id="8647834505253004544">Não é um endereço Web válido</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> ou <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">Embora já não possa aceder ao seu perfil antigo, pode removê-lo.</translation>
 <translation id="8651585100578802546">Forçar o recarregamento desta página</translation>
 <translation id="8652400352452647993">Erro de extensão do pacote</translation>
 <translation id="8652487083013326477">botão de opção do intervalo de páginas</translation>
@@ -4907,7 +4918,9 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8737685506611670901">Abrir links de <ph name="PROTOCOL" /> em vez de <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741316211671074806">Ecrã no ecrã</translation>
+<translation id="8743390665131937741">Nível de zoom da lupa de ecrã inteiro:</translation>
 <translation id="8743864605301774756">Atualizada há 1 hora</translation>
+<translation id="874689135111202667">{0,plural, =1{Pretender carregar um ficheiro para este site?}other{Pretende carregar # ficheiros para este site?}}</translation>
 <translation id="8749863574775030885">Aceder a dispositivos USB de um fornecedor desconhecido</translation>
 <translation id="8754200782896249056">&lt;p&gt;Ao executar o <ph name="PRODUCT_NAME" /> num ambiente de trabalho suportado, são utilizadas as definições de proxy do sistema. No entanto, o seu sistema não é suportado ou ocorreu um problema no início da configuração do sistema.&lt;/p&gt;
 
@@ -5212,6 +5225,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="960719561871045870">Código do operador</translation>
 <translation id="960987915827980018">Falta cerca de 1 hora</translation>
 <translation id="962802172452141067">Árvore de pastas de marcadores</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplicação}other{Aplicações}}</translation>
 <translation id="968000525894980488">Ative os Serviços do Google Play.</translation>
 <translation id="968174221497644223">Cache da aplicação</translation>
 <translation id="969096075394517431">Alterar idiomas</translation>

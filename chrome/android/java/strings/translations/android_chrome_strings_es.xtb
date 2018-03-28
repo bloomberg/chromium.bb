@@ -87,6 +87,7 @@ Debes activar la ubicación y el Bluetooth para utilizar la Web física.</transl
 <translation id="1709438864123551175">Ahorro de datos</translation>
 <translation id="1718835860248848330">Última hora</translation>
 <translation id="1729516292547892356">Para ver contenido de realidad virtual, actualiza Servicios RV de Google</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> (actualizado hace <ph name="TIME_SINCE_UPDATE" />)</translation>
 <translation id="1749561566933687563">Sincronizar marcadores</translation>
 <translation id="17513872634828108">Pestañas abiertas</translation>
 <translation id="1756600373018374892">Toca este botón para acceder rápidamente a tus pestañas.</translation>
@@ -784,6 +785,7 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mostrándote anu
 <translation id="8200772114523450471">Reanudar</translation>
 <translation id="8209050860603202033">Abrir imagen</translation>
 <translation id="8220488350232498290">GB descargados: <ph name="GIGABYTES" /></translation>
+<translation id="8249310407154411074">Mover al principio</translation>
 <translation id="8250920743982581267">Documentos</translation>
 <translation id="8260126382462817229">Prueba a iniciar sesión de nuevo</translation>
 <translation id="8261506727792406068">Eliminar</translation>

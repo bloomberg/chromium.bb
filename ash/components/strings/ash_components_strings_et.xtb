@@ -3,6 +3,7 @@
 <translationbundle lang="et">
 <translation id="104962181688258143">Rakenduse Failid avamine</translation>
 <translation id="1126871238933253947">Eelmisele kasutatud klaviatuurikeelele vahetamine.</translation>
+<translation id="1134347825771908369">Heli vaigistamine</translation>
 <translation id="1195667586424773550">Lohistage link vahelehe aadressiribale</translation>
 <translation id="1204450209689312104">Uue akna avamine inkognito režiimis</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Aktiivse akna kõikide avatud lehtede salvestamine uude kausta järjehoidjatena</translation>
 <translation id="355103131818127604">Lingi avamine taustal uuel vahelehel</translation>
 <translation id="3649256019230929621">Minimeeri aken</translation>
+<translation id="3655154169297074232">Vahelehed ja aknad</translation>
 <translation id="3668361878347172356">Viimase toimingu uuesti tegemine</translation>
 <translation id="3720939646656082033">Lingi avamine uuel vahelehel ja uuele vahelehele vahetamine</translation>
 <translation id="3725795051337497754">Aktiivse vahelehe sulgemine</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Lingi salvestamine järjehoidjana</translation>
 <translation id="4141203561740478845">Aadressiribaga rea esiletõstmine</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="G" /> või <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Ülevaaterežiim</translation>
+<translation id="4472417192667361414">Süsteemi- ja kuvaseaded</translation>
 <translation id="4556221320735744018">Klaviatuuri otseteede abi vaatamine</translation>
 <translation id="4628718545549558538">Olekuala (kus on kuvatud teie kontopilt) avamine</translation>
 <translation id="4642092649622328492">Osalise ekraanipildi jäädvustamine</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Dokumendi algusesse liikumine</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /> <ph name="SEPARATOR" /> <ph name="K" /> või <ph name="E" /></translation>
 <translation id="8234414138295101081">Ekraani pööramine 90 kraadi</translation>
+<translation id="826184564253127735">Klaviatuuri otseteede vaatur</translation>
 <translation id="836869401750819675">Allalaadimiste lehe avamine</translation>
 <translation id="8388247778047144397">Lohistage link vahelehtede ribal tühjale alale</translation>
 <translation id="8389638407792712197">Uue akna avamine</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1–8</translation>
 <translation id="9041599225465145264">Lõikelaua sisu kleepimine</translation>
 <translation id="9052808072970550123">Järgmisele kasutajale vahetamine</translation>
+<translation id="9106898733795143799">Leht ja veebibrauser</translation>
 <translation id="9179672198516322668">Populaarsed otseteed</translation>
 <translation id="93603345341560814">Vajutage klahvi <ph name="SHIFT" /> ja klõpsake lingil</translation>
 <translation id="945383118875625837">Lohistage link järjehoidjaribale</translation>

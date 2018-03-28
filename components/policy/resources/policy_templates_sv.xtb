@@ -58,6 +58,17 @@
 
       Om principen används får användaren tillgång till alla skrivare utom dem vars id anges i den här principen.
       </translation>
+<translation id="1181881366217399113">
+      OBS! Det här är en experimentell princip som kan göra att något slutar fungera.
+      Om principen aktiveras körs alla namngivna ursprung, som anges i en
+      kommaavgränsad lista, som egna processer. Även underdomäner isoleras.
+      Om du exempelvis anger https://example.com/ isoleras även 
+      https://foo.example.com/ som en del av webbplatsen https://example.com/.
+      Om principen inaktiveras hanteras processerna enligt logiken
+      för webbplatsisolering.
+      Om principen inte konfigureras kan användaren ändra inställningen.
+      På <ph name="PRODUCT_OS_NAME" /> bör enhetsprincipen <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> ges samma värde som används här. Om de båda principerna har olika värden kan en fördröjning uppstå i början av en användarsession medan den angivna användarprincipen tillämpas.
+      </translation>
 <translation id="1198465924256827162">Hur ofta information om enhetsstatus laddas upp, uttryckt i millisekunder.
 
       Om inget värde anges för principen är standardfrekvensen 3 timmar. Den kortaste
@@ -257,7 +268,15 @@
       Formatvärdet följer namnen på tidszonerna i databasen IANA Time Zone Database (besök http://sv.wikipedia.org/wiki/Tz_database). Det går att hänvisa till de flesta tidszoner som continent/large_city eller ocean/large_city.
 
       När du anger principen inaktiveras automatiska tidszoner efter enhetens plats. Principen SystemTimezoneAutomaticDetection åsidosätts också.</translation>
+<translation id="1888871729456797026">Registreringstoken för molnprincip på stationär dator</translation>
 <translation id="1897365952389968758">Tillåt alla webbplatser att köra JavaScript (rekommenderas)</translation>
+<translation id="1906888171268104594">Styr om användarstatistik och diagnostisk data, till exempel felrapporter, rapporteras till Google.
+
+      Om värdet är sant rapporterar <ph name="PRODUCT_OS_NAME" /> användarstatistik och diagnostisk data.
+
+      Om värdet är falskt inaktiveras rapportering av statistik och diagnostisk data.
+
+      Om principen inte har konfigurerats inaktiveras rapporteringen av statistik och diagnostisk data på enheter som inte hanteras men aktiveras på hanterade enheter.</translation>
 <translation id="193259052151668190">Vitlista med frånkopplingsbara USB-enheter</translation>
 <translation id="1933378685401357864">Bakgrundsbild</translation>
 <translation id="1956493342242507974">Konfigurera  energihanteringen på inloggningsskärmen i <ph name="PRODUCT_OS_NAME" />.
@@ -420,6 +439,12 @@
 <translation id="2386362615870139244">Tillåt skärmaktiveringslås</translation>
 <translation id="2411817661175306360">Lösenordsskyddets varningar har inaktiverats</translation>
 <translation id="2411919772666155530">Blockera meddelanden på dessa webbplatser</translation>
+<translation id="2415979855753196119">Låter dig styra vad som utlöser varningar om att ett konto är utsatt för risk från lösenordsskyddet. En varning om att kontot är utsatt för risk innebär att Google får kännedom om att kontot löper risk att bli kapat.
+
+      När principen är inställd på PasswordProtectionRiskOff aktiveras inga varningar om att kontot är utsatt för risk.
+      När principen är inställd på PasswordProtectionRiskOnPasswordReuse utlöses en varning om att kontot är utsatt för risk när någon återanvänder sitt lösenord för Google på en webbplats som inte står med på vitlistan.
+      När principen är inställd på PasswordProtectionRiskOnPhishingReuse utlöses en varning om att kontot är utsatt för risk när någon återanvänder sitt lösenord för Google på en webbplats som används för nätfiske.
+      Om principen har lämnats utan inställning utlöses en varning om att kontot är utsatt för risk när någon återanvänder sitt lösenord för Google på en webbplats som används för nätfiske, men användaren kan ändra detta.</translation>
 <translation id="2418507228189425036">Policyn gör att webbhistoriken inte sparas i <ph name="PRODUCT_NAME" /> och förhindrar att användarna ändrar inställningen.
 
       Om inställningen är aktiverad sparas ingen webbhistorik. Inställningen inaktiverar även fliksynkronisering.
@@ -615,6 +640,12 @@
 
       Om du aktiverar den här inställningen används operativsystemets standardskrivare som standardval för Förhandsgranskning.</translation>
 <translation id="2867699958489427143">Återställ till målversionen om operativsystemet är nyare än målversionen. Utför en komplett powerwash under processen.</translation>
+<translation id="286802604195763750">Låter dig styra vad som ska utlösa en varning från lösenordsskyddet. Lösenordsskyddet varnar användarna om de återanvänder ett skyddat lösenord på en webbplats som kan vara misstänkt.
+
+      När principen är inställd på PasswordProtectionWarningOff visas inga varningar.
+      När principen är inställd på PasswordProtectionWarningOnPasswordReuse visas en varning om någon återanvänder sitt lösenord för Google på en webbplats som inte står med på vitlistan.
+      När principen är inställd på PasswordProtectionWarningOnPhishingReuse visas en varning om någon återanvänder sitt lösenord för Google på en webbplats som används för nätfiske.
+      Om principen har lämnats utan inställning utlöses en varning när någon återanvänder sitt lösenord för Google på en webbplats som används för nätfiske, men användaren kan ändra detta.</translation>
 <translation id="2872961005593481000">Stäng av</translation>
 <translation id="2874209944580848064">Tänk på detta för <ph name="PRODUCT_OS_NAME" />-enheter som stöder Android-appar:</translation>
 <translation id="2877225735001246144">Inaktivera CNAME-sökning när Kerberos-autentisering kontrolleras</translation>

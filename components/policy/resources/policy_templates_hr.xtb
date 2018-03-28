@@ -58,6 +58,17 @@
 
       Ako se to pravilo upotrebljava, korisniku se pružaju svi pisači osim pisača s ID-ovima navedenima u pravilu.
       </translation>
+<translation id="1181881366217399113">
+      NAPOMENA: pravilo je eksperimentalno i može poremetiti funkciju!
+      Ako se to pravilo omogući, svaki od navedenih izvora na popisu
+      odijeljenom zarezima izvodit će se u svojem procesu. Time će se također
+      izolirati izvori navedeni prema poddomenama, npr. ako se navede
+      https://example.com/, izolirat će se i https://foo.example.com/ kao dio
+      web-lokacije https://example.com/.
+      Ako se to pravilo onemogući, djelovat će logika upravljanja procesom izolacije po web-lokaciji.
+      Ako se pravilo ne konfigurira, korisnik će moći promijeniti tu postavku.
+      Preporučujemo da u sustavu <ph name="PRODUCT_OS_NAME" /> i pravilo za uređaje <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> postavite na istu vrijednost. Ako se vrijednosti navedene u ta dva pravila ne podudaraju, može doći do čekanja prilikom otvaranja korisničke sesije dok se ne primijeni vrijednost koja je određena korisničkim pravilom.
+      </translation>
 <translation id="1198465924256827162">Učestalost slanja prijenosa statusa uređaja u milisekundama.
 
       Ako se to pravilo ne postavi, zadana učestalost iznosi 3 sata. Minimalna
@@ -248,7 +259,15 @@
       Format vrijednosti slijedi nazive vremenskih zona navedenih u bazi podataka vremenskih zona organizacije IANA (pogledajte "https://en.wikipedia.org/wiki/Tz_database"). To konkretno znači da se većina vremenskih zona navodi kao "kontinent/veliki_grad" ili "ocean/veliki_grad".
 
       Postavljanjem tog pravila potpuno se onemogućuje automatsko određivanje vremenske zone prema lokaciji uređaja, a nadjačava se i pravilo SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Token za prijavu za pravila oblaka na računalu</translation>
 <translation id="1897365952389968758">Dopusti svim web-lokacijama izvođenje JavaScripta</translation>
+<translation id="1906888171268104594">Kontrolira šalju li se Googleu izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima, uključujući izvješća o rušenju.
+
+      Ako se postavi na "točno", <ph name="PRODUCT_OS_NAME" /> slat će izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima.
+
+      Ako se postavi na "netočno", izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima bit će onemogućena.
+
+      Ako se ne konfigurira, izvješća s mjernim podacima o upotrebi i dijagnostičkim podacima na neupravljanim će uređajima biti onemogućena, a na upravljanim omogućena.</translation>
 <translation id="193259052151668190">Popis dopuštenih odvojivih USB uređaja</translation>
 <translation id="1933378685401357864">Pozadinska slika</translation>
 <translation id="1956493342242507974">Konfigurira upravljanje potrošnjom energije na zaslonu za prijavu u proizvodu <ph name="PRODUCT_OS_NAME" />.
@@ -403,6 +422,12 @@
 <translation id="2386362615870139244">Dopusti blokiranja aktivacije zaslona</translation>
 <translation id="2411817661175306360">Upozorenje o zaštiti zaporkom isključeno je</translation>
 <translation id="2411919772666155530">Blokiranje obavijesti na ovim web-lokacijama</translation>
+<translation id="2415979855753196119">Omogućuje vam da odredite okidač na temelju kojeg će zaštita zaporke označiti račun koji je ugrožen. Označavanjem računa čija je zaštita zaporkom ugrožena Google se informira o mogućoj opasnosti od napada otmičara za taj račun.
+
+      Ako se to pravilo postavi na "PasswordProtectionRiskOff", označavanje računa čija je zaštita zaporkom ugrožena neće se aktivirati.
+      Ako se pravilo postavi na "PasswordProtectionRiskOnPasswordReuse", označavanje računa čija je zaštita zaporkom ugrožena aktivirat će se kada korisnik pokuša ponovo upotrijebiti svoju zaporku za Google na web-lokaciji koja nije dopuštena.
+      Ako se pravilo postavi na "PasswordProtectionRiskOnPhishingReuse", označavanje računa čija je zaštita zaporkom ugrožena aktivirat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji za krađu identiteta.
+      Ako se to pravilo ne postavi, označavanje računa čija je zaštita zaporkom ugrožena aktivirat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji za krađu identiteta, ali će korisnik moći promijeniti tu postavku.</translation>
 <translation id="2418507228189425036">Onemogućuje spremanje povijesti preglednika u pregledniku <ph name="PRODUCT_NAME" /> i korisnicima onemogućuje promjenu te postavke.
 
       Ako je postavka omogućena, povijest pregledavanja ne sprema se. Ta postavka onemogućuje i sinkroniziranje kartica.
@@ -588,6 +613,12 @@
 
       Ako omogućite tu postavku, u Pregledu ispisa upotrebljavat će se zadani pisač OS-a kao zadani odredišni pisač.</translation>
 <translation id="2867699958489427143">Vrati se na ciljnu verziju i ostani na njoj ako je verzija OS-a novija od ciljne. Tijekom postupka izvrši potpuni powerwash.</translation>
+<translation id="286802604195763750">Omogućuje vam da odredite okidač na temelju kojeg će zaštita zaporke prikazati upozorenje. Zaštita zaporke to upozorenje prikazuje korisnicima kada ponovo upotrijebe svoju zaštićenu zaporku na potencijalno sumnjivim web-lokacijama.
+
+      Ako se pravilo postavi na "PasswordProtectionWarningOff", upozorenje zaštite zaporke neće se prikazati.
+      Ako se pravilo postavi na "PasswordProtectionWarningOnPasswordReuse", upozorenje zaštite zaporke prikazat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji koja nije dopuštena.
+      Ako se pravilo postavi na "PasswordProtectionWarningOnPhishingReuse", upozorenje zaštite zaporke prikazat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji za krađu identiteta.
+      Ako se pravilo ne postavi, upozorenje zaštite zaporke prikazat će se kada korisnik ponovo upotrijebi svoju zaporku za Google na web-lokaciji za krađu identiteta, ali će korisnik moći promijeniti tu postavku.</translation>
 <translation id="2872961005593481000">Isključi</translation>
 <translation id="2874209944580848064">Napomena za uređaje <ph name="PRODUCT_OS_NAME" /> koji podržavaju Androidove aplikacije:</translation>
 <translation id="2877225735001246144">Onemogući CNAME pretraživanje prilikom provjere Kerberos autentičnosti</translation>

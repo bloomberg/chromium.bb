@@ -430,6 +430,7 @@
 <translation id="4103249731201008433">Enhetens serienummer er ugyldig</translation>
 <translation id="410351446219883937">Autoavspilling</translation>
 <translation id="4103763322291513355">Gå til &lt;strong&gt;chrome://policy&lt;/strong&gt; for å se listen over sperrede nettadresser og andre innstillinger aktivert av systemadministratoren din.</translation>
+<translation id="4110652170750985508">Gjennomgå betalingen</translation>
 <translation id="4116663294526079822">Tillat alltid på dette nettstedet</translation>
 <translation id="4117700440116928470">Omfanget for innstillingen støttes ikke.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 til}other{# til}}</translation>

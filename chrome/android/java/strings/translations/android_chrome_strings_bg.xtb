@@ -87,6 +87,7 @@
 <translation id="1709438864123551175">Икономия на данни</translation>
 <translation id="1718835860248848330">Последния час</translation>
 <translation id="1729516292547892356">За да гледате съдържанието за виртуална реалност, актуализирайте съответните услуги на Google</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – актуализирано <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Синхронизирайте отметките си</translation>
 <translation id="17513872634828108">Отворени раздели</translation>
 <translation id="1756600373018374892">Докоснете този бутон, за да стигнете бързо до разделите си.</translation>
@@ -170,7 +171,7 @@
 <translation id="2498359688066513246">Помощ и отзиви</translation>
 <translation id="2501278716633472235">Назад</translation>
 <translation id="2503472621226270518">Разгъване на навигационния панел</translation>
-<translation id="2512222046227390255">Авт. попълване на формуляри</translation>
+<translation id="2512222046227390255">Попълвайте автоматично формуляри</translation>
 <translation id="2526148617758225454">Разширението Икономия на данни е включено. Управлявайте го от „Настройки“.</translation>
 <translation id="2532336938189706096">Изглед в мрежата</translation>
 <translation id="2536728043171574184">Преглеждате офлайн копие на страницата</translation>
@@ -784,6 +785,7 @@
 <translation id="8200772114523450471">Възобновяване</translation>
 <translation id="8209050860603202033">Отваряне на изображението</translation>
 <translation id="8220488350232498290">Изтеглени файлове: <ph name="GIGABYTES" /> ГБ</translation>
+<translation id="8249310407154411074">Преместване най-горе</translation>
 <translation id="8250920743982581267">Документи</translation>
 <translation id="8260126382462817229">Опитайте да влезете отново</translation>
 <translation id="8261506727792406068">Изтриване</translation>

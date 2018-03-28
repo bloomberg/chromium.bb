@@ -23,6 +23,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">লঞ্চার</translation>
 <translation id="1525508553941733066">খারিজ করুন</translation>
+<translation id="1537254971476575106">ফুল স্ক্রিন ম্যাগনিফায়ার</translation>
 <translation id="15373452373711364">বড় মাউস কার্সার</translation>
 <translation id="1550523713251050646">আরও বিকল্পের জন্য ক্লিক করুন</translation>
 <translation id="1567387640189251553">আপনি যখন শেষবার পাসওয়ার্ডটি লিখেছিলেন তার পরে অন্য একটি কীবোর্ডে কানেক্ট করা হয়েছিল। এটি আপনার পাসওয়ার্ড চুরি করার চেষ্টা করতে পারে।</translation>
@@ -51,8 +52,10 @@
 <translation id="2049639323467105390">এই ডিভাইস <ph name="DOMAIN" /> দ্বারা পরিচালিত হয়৷</translation>
 <translation id="2050339315714019657">প্রতিকৃতি</translation>
 <translation id="2067602449040652523">কীবোর্ডের উজ্জ্বলতা</translation>
+<translation id="2081529251031312395">এখনও $1 পরে সাইন-ইন করতে পারেন।</translation>
 <translation id="2122028596993374965"><ph name="TAB_NAME" /> কে <ph name="RECEIVER_NAME" /> এ কাস্ট করা বন্ধ করুন</translation>
 <translation id="2127372758936585790">নিম্ন শক্তির চার্জার</translation>
+<translation id="2135456203358955318">ডক করা ম্যাগনিফায়ার</translation>
 <translation id="2144487987174258011">Adobe ফ্ল্যাশ প্লেয়ার আপডেট করার জন্য বন্ধ করে আবার চালু করুন</translation>
 <translation id="2208323208084708176">একীভূত ডেস্কটপ মোড</translation>
 <translation id="2220572644011485463">PIN বা পাসওয়ার্ড</translation>

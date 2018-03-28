@@ -40,10 +40,12 @@
 <translation id="1873233029667955273">Το Google Chrome δεν είναι το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
 <translation id="1874309113135274312">Google Chrome Beta (mDNS-In)</translation>
 <translation id="1877026089748256423">Το Chrome δεν είναι ενημερωμένο</translation>
+<translation id="2007150628464581396">{0,plural, =1{Η επανεκκίνηση του Chrome θα γίνει σε 1 λεπτό}other{Η επανεκκίνηση του Chrome θα γίνει σε # λεπτά}}</translation>
 <translation id="2063848847527508675">Για να εφαρμοστεί η ενημέρωση, πρέπει να γίνει επανεκκίνηση του Chrome OS.</translation>
 <translation id="2077129598763517140">Χρήση της επιτάχυνσης υλικού όταν είναι διαθέσιμη</translation>
 <translation id="2084710999043359739">Προσθήκη στο Chrome</translation>
 <translation id="2094919256425865063">Να τερματιστεί η λειτουργία του Chrome ούτως ή άλλως;</translation>
+<translation id="210890598424854131">{0,plural, =0{Η επανεκκίνηση του Chrome θα γίνει τώρα}=1{Η επανεκκίνηση του Chrome θα γίνει σε 1 δευτερόλεπτο}other{Η επανεκκίνηση του Chrome θα γίνει σε # δευτερόλεπτα}}</translation>
 <translation id="2120620239521071941">Με αυτήν την ενέργεια θα διαγραφούν <ph name="ITEMS_COUNT" /> στοιχεία από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Συμβάλετε στη βελτίωση του Chrome, αναφέροντας τις <ph name="BEGIN_LINK" />τρέχουσες ρυθμίσεις<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Εγκαταστήστε το Chrome στο τηλέφωνό σας. Θα στείλουμε ένα SMS στον αριθμό τηλεφώνου ανάκτησης του λογαριασμού σας.</translation>
@@ -64,6 +66,7 @@
 <translation id="2467438592969358367">Το Google Chrome θέλει να εξαγάγει τους κωδικούς πρόσβασής σας. Για να το επιτρέψετε αυτό, πληκτρολογήστε τον κωδικό πρόσβασης για τα Windows.</translation>
 <translation id="2485422356828889247">Κατάργηση Εγκατάστασης</translation>
 <translation id="2534507159460261402">Google Pay (αντιγράφηκε στο Chrome)</translation>
+<translation id="2535429035253759792">Ο διαχειριστής σας ζητάει να επανεκκινήσετε το Chrome, προκειμένου να εφαρμοστεί αυτή η ενημέρωση</translation>
 <translation id="2580411288591421699">Δεν είναι δυνατή η εγκατάσταση της ίδιας έκδοσης του Google Chrome που εκτελείται αυτήν τη στιγμή. Κλείστε το Google Chrome και προσπαθήστε ξανά.</translation>
 <translation id="2586406160782125153">Με αυτήν την ενέργεια θα διαγραφούν τα δεδομένα περιήγησης από αυτήν τη συσκευή. Για να ανακτήσετε τα δεδομένα σας αργότερα, συνδεθείτε στο Chrome ως <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Λογότυπο Chrome</translation>
@@ -100,6 +103,7 @@
 <translation id="345171907106878721">Προσθήκη του εαυτού σας στο Chrome</translation>
 <translation id="3479552764303398839">Όχι τώρα</translation>
 <translation id="3503306920980160878">Το Chrome χρειάζεται πρόσβαση στην τοποθεσία σας, για να την κοινοποιήσει σε αυτόν τον ιστότοπο</translation>
+<translation id="3582972582564653026">Συγχρονίστε και εξατομικεύστε το Chrome στις συσκευές σας</translation>
 <translation id="3612333635265770873">Έχει διαπιστωθεί ότι μια λειτουργική μονάδα με το ίδιο όνομα βρίσκεται σε διένεξη με το Google Chrome.</translation>
 <translation id="3622797965165704966">Τώρα μπορείτε να χρησιμοποιείτε πιο εύκολα το Chrome με το Λογαριασμό σας Google και σε κοινόχρηστους υπολογιστές.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Όροι Παροχής Υπηρεσιών<ph name="END_TERMS_OF_SERVICE_LINK" /> του Google Chrome OS</translation>
@@ -122,6 +126,7 @@
 <translation id="4149882025268051530">Η αποσυμπίεση του αρχείου από το πρόγραμμα εγκατάστασης απέτυχε. Κατεβάστε το Google Chrome ξανά.</translation>
 <translation id="4251615635259297716">Να συνδεθούν τα δεδομένα σας στο Chrome με αυτόν το λογαριασμό;</translation>
 <translation id="4251625577313994583">λήψη Chrome στο iPhone</translation>
+<translation id="4293420128516039005">Συνδεθείτε, για να συγχρονίσετε και να εξατομικεύσετε το Chrome στις συσκευές σας</translation>
 <translation id="4309555186815777032">(απαιτείται <ph name="BEGIN_BUTTON" />επανεκκίνηση<ph name="END_BUTTON" /> του Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome Dev (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -263,6 +268,7 @@
 <translation id="8547799825197623713">Λειτουργία εκκίνησης εφαρμογών Chrome Canary</translation>
 <translation id="8556340503434111824">Υπάρχει μια νέα έκδοση του Google Chrome και είναι ταχύτερη από ποτέ.</translation>
 <translation id="8568392309447938879">Θα πρέπει να έχετε συνδεθεί στο Chrome για να χρησιμοποιείτε εφαρμογές. Αυτό δίνει τη δυνατότητα στο Chrome να συγχρονίσει τις εφαρμογές, τους σελιδοδείκτες, το ιστορικό, τους κωδικούς πρόσβασης και άλλες ρυθμίσεις στις συσκευές σας.</translation>
+<translation id="859960207076826247">{0,plural, =0{Υπάρχει μια διαθέσιμη ενημέρωση του Chrome}=1{Υπάρχει μια διαθέσιμη ενημέρωση του Chrome}other{Υπάρχει μια διαθέσιμη ενημέρωση του Chrome για # ημέρες}}</translation>
 <translation id="8606668294522778825">Το Google Chrome ενδέχεται να χρησιμοποιεί υπηρεσίες ιστού για να βελτιώσει την εμπειρία περιήγησής σας. Μπορείτε, εάν θέλετε, να απενεργοποιήσετε αυτές τις υπηρεσίες. <ph name="BEGIN_LINK" />Μάθετε περισσότερα<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Το Google Chrome δεν αποκρίνεται. Επανεκκίνηση τώρα;</translation>
 <translation id="8667808506758191620">Το <ph name="DEVICE_TYPE" /> είναι ενημερωμένο.</translation>
@@ -270,6 +276,7 @@
 <translation id="8679801911857917785">Επίσης, ελέγχει τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome.</translation>
 <translation id="870251953148363156">Ενημέρωση &amp;του Google Chrome</translation>
 <translation id="873133009373065397">Το Google Chrome δεν μπορεί να καθορίσει ή να ορίσει το προεπιλεγμένο πρόγραμμα περιήγησης</translation>
+<translation id="8736674169840206667">Ο διαχειριστής σας απαιτεί να επανεκκινήσετε το Chrome, προκειμένου να εφαρμοστεί μια ενημέρωση</translation>
 <translation id="8796108026289707191">Τώρα θα πρέπει να επανεκκινήσετε το Google Chrome.</translation>
 <translation id="8823341990149967727">Το Chrome δεν είναι ενημερωμένο</translation>
 <translation id="884296878221830158">Επίσης, ελέγχει τη σελίδα που εμφανίζεται κατά την εκκίνηση του Chrome ή όταν κάνετε κλικ στο κουμπί αρχικής σελίδας.</translation>

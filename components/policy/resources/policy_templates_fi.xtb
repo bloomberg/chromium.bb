@@ -58,6 +58,17 @@
 
       Jos tämä käytäntö on käytössä, käyttäjä voi käyttää kaikkia tulostimia, paitsi niitä, joiden tunnukset on lueteltu tässä.
       </translation>
+<translation id="1181881366217399113">
+      HUOM. Tämä käytäntö on kokeellinen ja saattaa rikkoa toimintoja!
+      Jos käytäntö on otettu käyttöön, kaikki pilkuilla erotetun luettelon
+      nimetyistä alkuperistä suorittavat oman prosessinsa. Tämä eristää myös
+      aliverkkotunnusten mukaan nimetyt alkuperät, esim. jos https://example.com/
+      määritetään, https://foo.example.com/ eristetään myös osana
+      https://example.com/-sivustoa.
+      Jos käytäntöä ei ole otettu käyttöön, sivuston eristämistä edeltävän prosessin hallintalogiikka tulee voimaan. 
+      Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa tämän asetuksen.
+      Tuotteen <ph name="PRODUCT_OS_NAME" /> kohdalla myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> kannattaa määrittää sama arvo. Jos käytännöissä määritetyt arvot eivät täsmää, käyttökerran aloittamisen yhteydessä saattaa esiintyä viive, kun käyttäjäkäytännössä määritetty arvo otetaan käyttöön.
+      </translation>
 <translation id="1198465924256827162">Laitteen tilatietojen lähetystiheys millisekunteina.
 
       Jos tätä käytäntöä ei aseteta, käytetään oletustiheyttä 3 tuntia.
@@ -248,7 +259,15 @@
       Arvon muoto noudattaa IANA Time Zone Databasen aikavyöhykkeiden nimiä (nähtävissä osoitteessa https://en.wikipedia.org/wiki/Tz_database). Useimpiin aikavyöhykkeisiin voidaan viitata seuraavasti: ”maanosa/suuri_kaupunki” tai ”valtameri/suuri_kaupunki”.
 
       Kun tämä käytäntö määritetään, aikavyöhykkeen määrittäminen laitteen sijainnin perusteella poistuu käytöstä. Käytäntö myös ohittaa SystemTimezoneAutomaticDetection-käytännön.</translation>
+<translation id="1888871729456797026">Työpöydän pilvikäytännön rekisteröintitunnus</translation>
 <translation id="1897365952389968758">Anna kaikkien sivustojen käyttää JavaScriptiä (suositus)</translation>
+<translation id="1906888171268104594">Määrittää, lähetetäänkö Googlelle käyttötilastoja sekä kaatumisraportteja ja muuta diagnostiikkadataa
+
+      Jos arvo on tosi, <ph name="PRODUCT_OS_NAME" /> lähettää käyttötilastoja ja diagnostiikkadataa.
+
+      Jos arvo on epätosi tai sitä ei määritetä, käyttötilastoja ja diagnostiikkadataa ei lähetetä.
+
+      Jos käytäntöä ei ole määritetty, käyttötilastojen ja diagnostiikkadatan raportointi poistetaan käytöstä hallinnoimattomilla laitteilla, ja se otetaan käyttöön hallinnoiduilla laitteilla.</translation>
 <translation id="193259052151668190">Sallittujen USB-laitteiden luettelo</translation>
 <translation id="1933378685401357864">Taustakuva</translation>
 <translation id="1956493342242507974">Määritä virranhallinta-asetukset tuotteen <ph name="PRODUCT_OS_NAME" /> kirjautumisruudulla.
@@ -403,6 +422,12 @@
 <translation id="2386362615870139244">Salli näytön herätyksen lukitus</translation>
 <translation id="2411817661175306360">Salasanasuojauksen varoitus on poissa käytöstä</translation>
 <translation id="2411919772666155530">Estä ilmoitukset näillä sivustoilla</translation>
+<translation id="2415979855753196119">Sallii salasanasuojauksen riskialttiin tilin merkinnän käynnistyksen hallinnan. Salasanasuojauksen riskialttiin tilin merkintä tarkoittaa sitä, että Googlelle ilmoitetaan tilin olevan riskialtis kaappauksille.
+
+      Jos käytännön arvoksi on määritetty PasswordProtectionRiskOff, salasanasuojauksen riskialttiin tilin merkintää ei käynnistetä.
+      Jos käytännön arvoksi on määritetty PasswordProtectionRiskOnPasswordReuse, salasanasuojauksen riskialttiin tilin merkintä käynnistetään, kun käyttäjät käyttävät Google-salasanojaan sivustoilla, joita ei ole lisätty sallittujen sivustojen listaan.
+      Jos käytännön arvoksi on määritetty PasswordProtectionRiskOnPhishingReuse, salasanasuojauksen riskialttiin tilin merkintä käynnistetään, kun käyttäjät käyttävät Google-salasanojaan tietojenkalastelusivustoilla.
+      Jos käytäntöä ei ole määritetty, salasanasuojauksen riskialttiin tilin merkintä käynnistetään, kun käyttäjät käyttävät Google-salasanojaan tietojenkalastelusivustoilla. Käyttäjä voi kuitenkin muuttaa tämän asetuksen.</translation>
 <translation id="2418507228189425036">Määrittää, että <ph name="PRODUCT_NAME" /> ei tallenna selaushistoriaa, ja estää käyttäjiä muokkaamasta tätä asetusta.
 
       Jos tämä asetus on käytössä, selaushistoriaa ei tallenneta. Lisäksi tämä asetus poistaa käytöstä välilehtien synkronoinnin.
@@ -588,6 +613,12 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
 
       Jos otat tämän asetuksen käyttöön, Tulostuksen esikatselussa valitaan oletuskohteeksi käyttöjärjestelmän oletustulostin.</translation>
 <translation id="2867699958489427143">Palaa ja pysy kohdeversiossa, jos käyttöjärjestelmän versio on uudempi kuin kohde. Suorita täysi powerwash-toiminto prosessin aikana.</translation>
+<translation id="286802604195763750">Sallii salasanasuojauksen varoituksen käynnistyksen hallinnan. Salasanasuojaus ilmoittaa käyttäjille, jos nämä käyttävät suojattuja salasanoja uudelleen mahdollisesti haitallisilla sivustoilla.
+
+      Jos tämän käytännön arvo on PasswordProtectionWarningOff, salasanasuojauksen varoitusta ei näytetä.
+      Jos tämän käytännön arvo on PasswordProtectionWarningOnPasswordReuse, salasanasuojauksen varoitus näytetään, kun käyttäjät käyttävät Google-salasanojaan sivustoilla, joita ei ole lisätty sallittujen sivustojen listaan.
+      Jos tämän käytännön arvo on PasswordProtectionWarningOnPhishingReuse, salasanasuojauksen varoitus näytetään, kun käyttäjät käyttävät Google-salasanojaan tietojenkalastelusivustoilla.
+      Jos tätä käytäntöä ei ole määritetty, salasanasuojauksen varoitus käynnistyy käyttäjien käyttäessä Google-salasanojaan tietojenkalastelusivustoilla. Käyttäjä voi kuitenkin muuttaa tämän asetuksen.</translation>
 <translation id="2872961005593481000">Sammuta</translation>
 <translation id="2874209944580848064">Huomioitavaa, jos laitteesi käyttöjärjestelmä on <ph name="PRODUCT_OS_NAME" /> ja tukee Android-sovelluksia:</translation>
 <translation id="2877225735001246144">Poista CNAME-haku käytöstä Kerberos-todennusta suoritettaessa</translation>
@@ -622,6 +653,17 @@ Kaikki luettelon kohteet ovat tunnuksia, joiden perusteella erotetaan laitteesee
           Tämän käytännön arvo täytyy määrittää millisekunteina. Arvo rajoitetaan korkeintaan mahdollisen ruudun sammutuksen viiveen ja käyttämättömyysajan suuruiseksi.</translation>
 <translation id="2987155890997901449">Ota ARC käyttöön.</translation>
 <translation id="2987227569419001736">Hallinnoi Web Bluetooth ‑sovellusliittymän käyttöä</translation>
+<translation id="2998886474614739865">
+      HUOM. Tämä käytäntö on kokeellinen ja saattaa häiritä toimintoja.
+      Tämä käytäntö koskee kirjautumisnäyttöjä. Tutustu myös <ph name="ISOLATE_ORIGINS_POLICY_NAME" />-käytäntöön, joka koskee käyttökertaa. Suosittelemme määrittämään molemmille käytännöille saman arvon. Jos käytännöissä määritetyt arvot eivät täsmää, käyttökerran aloittamisen yhteydessä saattaa esiintyä viive, kun käyttäjäkäytännössä määritetty arvo otetaan käyttöön.
+      Jos käytäntö on otettu käyttöön, jokainen pilkuilla erotetun luettelon nimetyistä
+      alkuperistä suorittaa oman prosessinsa. Tämä eristää myös aliverkkotunnusten
+      mukaan nimetyt alkuperät. Jos esim. https://example.com/ määritetään,
+      https://foo.example.com/ eristetään myös osana
+      https://example.com/-sivustoa.
+      Jos käytäntö on poissa käytöstä, sivustokohtaisen erilläänpidon hallintalogiikka tulee voimaan.
+      Jos käytäntöä ei ole määritetty, alustan sivun erilläänpidon oletusasetusta käytetään kirjautumisnäytöllä.
+      </translation>
 <translation id="3016255526521614822">Luo luettelo sallituista muistiinpanosovelluksista, jotka <ph name="PRODUCT_OS_NAME" /> voi näyttää lukitusnäytöllä.</translation>
 <translation id="3021562480854470924">Palautukselle sallittujen virstanpylväiden määrä</translation>
 <translation id="3030000825273123558">Ota tilastoraportit käyttöön</translation>
@@ -725,6 +767,17 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
           Jos tämän käytännön arvo on ei-tyhjä merkkijono, <ph name="PRODUCT_NAME" /> näyttää kyseisen merkkijonon kohdenimenä. Muussa tapauksessa kohdenimenä käytetään laitteen nimeä. Jos tätä käytäntöä ei ole määritetty, kohdenimenä käytetään laitteen nimeä ja laitteen omistaja (tai laitetta hallinnoivan verkkotunnuksen käyttäjä) voi vaihtaa nimen. Nimen enimmäispituus on 24 merkkiä.</translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
+<translation id="3386001018488754001">
+      HUOM. Tämä käytäntö on kokeellinen ja saattaa häiritä toimintoja.
+      Tämä käytäntö koskee kirjautumisnäyttöjä. Tutustu myös <ph name="SITE_PER_PROCESS_POLICY_NAME" />-käytäntöön, joka koskee käyttökertaa. Suosittelemme määrittämään molemmille käytännöille saman arvon. Jos käytännöissä määritetyt arvot eivät täsmää, käyttökerran aloittamisen yhteydessä saattaa esiintyä viive, kun käyttäjäkäytännössä määritetty arvo otetaan käyttöön.
+      Suosittelemme tutustumaan IsolateOrigins-käytännön asetukseen, sillä käyttämällä sitä yhdessä
+      erillään pidettävien sivustojen luettelon kanssa voit saada molempien parhaat puolet –
+      erilläänpidon ja rajallisen vaikutuksen käyttäjille. Tämä asetus,
+      SitePerProcess, eristää kaikki sivustot. Jos käytäntö on otettu käyttöön,
+      jokainen sivusto suorittaa oman prosessinsa. Jos käytäntö on poissa käytöstä,
+      sivustokohtaisen erilläänpidon hallintalogiikka tulee voimaan.
+      Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa tämän asetuksen.
+      </translation>
 <translation id="3395348522300156660">Määrittää tulostimet, joita käyttäjä voi käyttää.
 
       Tätä käytäntöä käytetään vain, jos <ph name="PRINTERS_WHITELIST" />-tilaksi on valittu <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -763,6 +816,10 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
           Jos tämän käytännön arvoksi on määritetty epätosi tai jos sitä ei ole määritetty ollenkaan, virranhallinnan viiveet ja istuntojen pituusrajoitukset alkavat heti istunnon alusta.</translation>
 <translation id="3478024346823118645">Käyttäjätietojen tyhjennys uloskirjautumisen yhteydessä</translation>
 <translation id="348495353354674884">Ota virtuaalinen näppäimistö käyttöön</translation>
+<translation id="3487623755010328395">
+        Jos tämä käytäntö on määritetty, <ph name="PRODUCT_NAME" /> yrittää rekisteröityä ja soveltaa siihen liittyvää pilvikäytäntöä kaikkiin profiileihin.
+
+        Käytännön arvo on Google-hallintakonsolista saatava rekisteröitymistunnus.</translation>
 <translation id="3496296378755072552">Salasanan hallinta</translation>
 <translation id="350443680860256679">Määritä ARC.</translation>
 <translation id="3504791027627803580">Määrittää kuvahaun tarjoavan hakukoneen URL-osoitteen. Hakupyynnöt lähetetään GET-metodin avulla. Jos käytäntö DefaultSearchProviderImageURLPostParams on määritetty, kuvahakupyynnöt suoritetaan sen sijaan POST-metodin avulla.
@@ -1322,6 +1379,16 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 
       Jos käytäntöä ei määritetä tai sen arvo on tyhjä merkkijono tai virheellinen porttiväli, WebRTC voi käyttää kaikkia käytettävissä olevia paikallisia UDP-portteja.</translation>
 <translation id="5290940294294002042">Määritä laajennukset, jotka käyttäjä voi ottaa käyttöön tai poistaa käytöstä</translation>
+<translation id="5301787427319106606">
+      HUOM. Tämä käytäntö on kokeellinen ja saattaa häiritä toimintoja.
+      Suosittelemme tutustumaan IsolateOrigins-käytännön asetukseen, sillä käyttämällä sitä yhdessä
+      erillään pidettävien sivustojen luettelon kanssa voit saada molempien parhaat puolet –
+      erilläänpidon ja rajallisen vaikutuksen käyttäjille. Tämä asetus, SitePerProcess, eristää kaikki sivustot.
+      Jos käytäntö on otettu käyttöön, jokainen sivusto suorittaa oman prosessinsa.
+      Jos käytäntö on poissa käytöstä, sivustokohtaisen erilläänpidon hallintalogiikka tulee voimaan.
+      Jos käytäntöä ei ole määritetty, käyttäjä voi muuttaa tämän asetuksen.
+      Tuotteen <ph name="PRODUCT_OS_NAME" /> kohdalla myös laitekäytännölle <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> kannattaa määrittää sama arvo. Jos käytäntöjen arvot eivät täsmää, käyttökerran aloittamisen yhteydessä saattaa esiintyä viive, kun käyttäjäkäytännössä määritetty arvo otetaan käyttöön.
+      </translation>
 <translation id="5302612588919538756">Tämä käytäntö on vanhentunut, ja sen sijaan tulee harkita käytäntöä SyncDisabled.
 
       Määrittää, salliiko <ph name="PRODUCT_NAME" /> käyttäjän kirjautumisen.
@@ -1875,6 +1942,14 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="706669471845501145">Anna kaikkien sivustojen näyttää työpöytäilmoituksia</translation>
 <translation id="7072208053150563108">Laitteen salasanan muutostiheys</translation>
 <translation id="7072406291414141328">Ottaa käyttöön verkon kaistanleveyden rajoituksen</translation>
+<translation id="7074513465313721551">Määrittää listan verkkotunnuksia, joihin Selaussuoja luottaa. Tämä tarkoittaa, että
+      Selaussuoja ei tee vaarallisten resurssien (esim. tietojenkalastelu, haittaohjelmat tai ei-toivotut ohjelmat) tarkastusta, jos URL-osoite vastaa jotakin näistä verkkotunnuksista
+      Selaussuojan lataussuoja ei tarkasta näistä verkkotunnuksista peräisin olevia latauksia
+      Selaussuojan salasanapalvelu ei tarkasta salasanan uudelleenkäyttöä, jos sivun URL-osoite vastaa näiden verkkotunnusten luetteloa.
+
+      Jos tämä asetus on käytössä, Selaussuoja luottaa näihin verkkotunnuksiin.
+      Jos asetus on pois käytöstä tai sitä ole määritetty, Selaussuojan oletussuojausta sovelletaan kaikkiin resursseihin.
+       Tämä käytäntö ei ole käytettävissä Windowsin esiintymissä, joita ei ole liitetty <ph name="MS_AD_NAME" /> ‑verkkotunnukseen.</translation>
 <translation id="7079519252486108041">Estä ponnahdusikkunat näissä sivustoissa</translation>
 <translation id="7106631983877564505">Ota lukitus käyttöön, kun tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävä laite on käyttämättömänä tai virransäästötilassa.
 

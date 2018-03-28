@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">ঠিকানা ১</translation>
 <translation id="1545749641540134597">QR কোড স্ক্যান করুন</translation>
 <translation id="1580783302095112590">মেল পাঠানো হয়েছে৷</translation>
+<translation id="1582732959743469162">এর ফলে আপনি এখন যা ডাউনলোড করছেন সেগুলি সব বন্ধ হয়ে যাবে।</translation>
 <translation id="1612730193129642006">ট্যাব গ্রিড দেখান</translation>
 <translation id="1644574205037202324">ইতিহাস</translation>
 <translation id="1646446875146297738">‘ট্র্যাক করবেন না’ সক্ষম করার মানে হল যে আপনার ব্রাউজিং ট্রাফিকের সাথে একটি অনুরোধ অন্তর্ভুক্ত করা হবে৷ একটি ওয়েবসাইট অনুরোধটিতে সাড়া দেবে কিনা এবং কিভাবে অনুরোধটিকে ব্যাখ্যা করে তার উপর যেকোনো ফল নির্ভর করে৷
@@ -285,6 +286,7 @@
 <translation id="633809752005859102">সত্যিই কিছু ভুল রয়েছে৷ আমরা এটির উপরে কাজ করব৷</translation>
 <translation id="6342069812937806050">এখনই</translation>
 <translation id="6344783595350022745">পাঠ্য সাফ করুন</translation>
+<translation id="6346549652287021269">নতুন ডাউনলোড শুরু করবেন?</translation>
 <translation id="6362362396625799311">কোনো ছদ্মবেশী ট্যাব নেই</translation>
 <translation id="6374469231428023295">আবার চেষ্টা করুন</translation>
 <translation id="6380866119319257197">আপনি যদি আপনার পাসফ্রেজ ভুলে যান বা এই সেটিং পরিবর্তন করতে চান, তাহলে <ph name="BEGIN_LINK" />সিঙ্ক পুনরায় সেট করুন<ph name="END_LINK" /></translation>
@@ -326,6 +328,7 @@
 <translation id="7031882061095297553">এতে সিঙ্ক করুন</translation>
 <translation id="7053983685419859001">ব্লক করুন</translation>
 <translation id="7062545763355031412">স্বীকার করে অ্যাকাউন্টগুলি সুইচ করুন</translation>
+<translation id="7102005569666697658"><ph name="FILE_SIZE" /> ডাউনলোড করা হচ্ছে…</translation>
 <translation id="7108338896283013870">লুকান</translation>
 <translation id="7133798577887235672">সম্পূর্ণ নাম</translation>
 <translation id="7136892417564438900">ক্যামেরা অনুপলব্ধ</translation>
@@ -361,6 +364,7 @@
 <translation id="7769602470925380267">স্বীকার করে প্রস্থান করুন</translation>
 <translation id="7772032839648071052">পাসফ্রেজ নিশ্চিত করুন</translation>
 <translation id="780301667611848630">না থাক</translation>
+<translation id="7856733331829174190">ডাউনলোড করা যায়নি</translation>
 <translation id="7859704718976024901">ব্রাউজিং ইতিহাস</translation>
 <translation id="7938254975914653459">ফেসটাইম</translation>
 <translation id="7939128259257418052">পাসওয়ার্ড এক্সপোর্ট করুন...</translation>
@@ -423,6 +427,7 @@
 <translation id="9083392325882095631">১টি আইটেম</translation>
 <translation id="9100610230175265781">পাসফ্রেজের প্রয়োজন</translation>
 <translation id="9148126808321036104">আবার প্রবেশ করুন</translation>
+<translation id="915371508759614899">ডাউনলোড বাতিল করবেন?</translation>
 <translation id="9157836665414082580">ডায়ালগ রুদ্ধ করুন</translation>
 <translation id="9188680907066685419">পরিচালিত অ্যাকাউন্ট থেকে প্রস্থান করুন</translation>
 <translation id="9203116392574189331">Handoff</translation>

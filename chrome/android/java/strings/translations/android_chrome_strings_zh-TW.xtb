@@ -87,6 +87,7 @@
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1718835860248848330">過去 1 小時</translation>
 <translation id="1729516292547892356">如要查看虛擬實境內容，請更新 Google VR 服務</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> - 上次更新時間：<ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">同步處理您的書籤</translation>
 <translation id="17513872634828108">開啟分頁</translation>
 <translation id="1756600373018374892">輕觸這個按鈕即可快速存取分頁。</translation>
@@ -784,6 +785,7 @@
 <translation id="8200772114523450471">繼續</translation>
 <translation id="8209050860603202033">開啟圖片</translation>
 <translation id="8220488350232498290">下載內容佔 <ph name="GIGABYTES" /> GB</translation>
+<translation id="8249310407154411074">移至頂端</translation>
 <translation id="8250920743982581267">文件</translation>
 <translation id="8260126382462817229">請嘗試重新登入</translation>
 <translation id="8261506727792406068">刪除</translation>

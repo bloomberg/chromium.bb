@@ -628,6 +628,7 @@
 <translation id="1944921356641260203">Güncelleme bulundu</translation>
 <translation id="1951615167417147110">Bir sayfa yukarı kaydır</translation>
 <translation id="1956050014111002555">Dosya birden çok sertifika içeriyordu, bunların hiçbiri içe aktarılmadı:</translation>
+<translation id="1956390763342388273">Bu işlem, "<ph name="FOLDER_PATH" />" klasöründeki tüm dosyaları yükleyecek. Bunu yalnızca siteye güveniyorsanız yapın.</translation>
 <translation id="1962233722219655970">Bu sayfada, bilgisayarınızda çalışmayan bir Native Client uygulaması kullanılmaktadır.</translation>
 <translation id="1962969542251276847">Kilit Ekranı</translation>
 <translation id="1963227389609234879">Tümünü Kaldır</translation>
@@ -840,6 +841,7 @@
 <translation id="2294358108254308676"><ph name="PRODUCT_NAME" /> ürününü yüklemek istiyor musunuz?</translation>
 <translation id="2296019197782308739">EAP yöntemi:</translation>
 <translation id="2297705863329999812">Yazıcı ara</translation>
+<translation id="2300383962156589922"><ph name="APP_NAME" /> uygulamasını özelleştirin ve denetleyin</translation>
 <translation id="2301382460326681002">Uzantı kök dizini geçersiz.</translation>
 <translation id="2302685579236571180">Gizli moda geç</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" ek izinler istedi.</translation>
@@ -1328,6 +1330,7 @@ Sunucunun mesajı: <ph name="SERVER_MSG" /></translation>
 <translation id="3012917896646559015">Lütfen bilgisayarınızı bir onarım tesisine göndermek üzere derhal donanım üreticinizle bağlantı kurun.</translation>
 <translation id="3013291976881901233">MIDI cihazlar</translation>
 <translation id="3014095112974898292">Diğer isteklerin tamamlanması bekleniyor...</translation>
+<translation id="3015639418649705390">Şimdi yeniden başlat</translation>
 <translation id="3015992588037997514">Chromebox ekranınızda bu kod görünüyor mu?</translation>
 <translation id="3016641847947582299">Bileşen güncellendi</translation>
 <translation id="3016780570757425217">Konumunuzu bilme</translation>
@@ -2203,6 +2206,7 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="4430369329743628066">Yer işareti eklendi</translation>
 <translation id="443454694385851356">Eski (güvenli değil)</translation>
 <translation id="443464694732789311">Devam</translation>
+<translation id="443475966875174318">Uyumsuz uygulamaları güncelleyin veya kaldırın</translation>
 <translation id="4439318412377770121"><ph name="DEVICE_NAME" /> adlı cihazı Google Cloud Devices'a kaydetmek istiyor musunuz?</translation>
 <translation id="4441124369922430666">Makine açıldığında bu uygulamayı otomatik olarak başlatmak istiyor musunuz?</translation>
 <translation id="444134486829715816">Genişlet...</translation>
@@ -2385,6 +2389,7 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="473775607612524610">Güncelle</translation>
 <translation id="474217410105706308">Sekmenin Sesini Kapat</translation>
 <translation id="4742746985488890273">Rafa sabitle</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />Uygulamaların nasıl güncelleneceğini öğrenin<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">İndirmeniz tamamlandı</translation>
 <translation id="4746971725921104503">Bu adı taşıyan bir kullanıcıyı zaten yönettiğiniz görünüyor. <ph name="LINK_START" /><ph name="USER_DISPLAY_NAME" /> kullanıcısını bu cihaza aktarmak<ph name="LINK_END" /> mı istediniz?</translation>
 <translation id="4748762018725435655">Chrome Web Store'dan bir uzantı gerektiriyor</translation>
@@ -3196,6 +3201,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
     <ph name="BEGIN_PARAGRAPH2" />Bu özelliği istediğiniz zaman Android uygulamalarındaki Ayarlar'dan açabilir veya kapatabilirsiniz. Bu ayar, cihazın, sistem güncellemeleri ve güvenlik gibi önemli hizmetleri almak için ihtiyaç duyduğu bilgileri gönderme yeteneğini etkilemez.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">Çevrildi</translation>
 <translation id="5991049340509704927">Büyüt</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Web'e göz atmaya devam edebildiğinizden emin olmak için yöneticinizden bu uygulamayı kaldırmasını isteyin.}other{Web'e göz atmaya devam edebildiğinizden emin olmak için yöneticinizden bu uygulamayı kaldırmasını isteyin.}}</translation>
 <translation id="5993332328670040093">Veri kullanımınız artık ölçülmeyecek.</translation>
 <translation id="600424552813877586">Geçersiz uygulama.</translation>
 <translation id="6005695835120147974">Medya Yönlendiricisi</translation>
@@ -3851,6 +3857,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7040138676081995583">Birlikte aç...</translation>
 <translation id="7040230719604914234">Operatör</translation>
 <translation id="7042418530779813870">Ya&amp;pıştır ve ara</translation>
+<translation id="7043108582968290193">Bitti! Uyumsuz uygulama bulunamadı.</translation>
 <translation id="7049293980323620022">Dosya tutulsun mu?</translation>
 <translation id="7051943809462976355">Fare aranıyor...</translation>
 <translation id="7052237160939977163">Performans izleme verilerini gönder</translation>
@@ -4021,6 +4028,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7328867076235380839">Geçersiz kombinasyon</translation>
 <translation id="7329154610228416156">Güvenli olmayan bir URL (<ph name="BLOCKED_URL" />) kullanmak üzere yapılandırıldığından oturum açılamadı. Lütfen yöneticinizle iletişime geçin.</translation>
 <translation id="7334190995941642545">Smart Lock şu anda kullanılamıyor. Lütfen daha sonra tekrar deneyin.</translation>
+<translation id="7334274148831027933">Yerleştirilmiş büyüteci etkinleştir</translation>
 <translation id="7339763383339757376">PKCS #7, tek sertifika</translation>
 <translation id="7339785458027436441">Yazarken Yazımı Denetle</translation>
 <translation id="7339898014177206373">Yeni pencere</translation>
@@ -4394,6 +4402,7 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="7912080627461681647">Şifreniz sunucuda değiştirildi. Lütfen oturumu kapatıp tekrar açın.</translation>
 <translation id="7912883689016444961">Mobil ağı yapılandır</translation>
 <translation id="7915471803647590281">Geri bildirimi göndermeden önce lütfen bize ne olduğunu söyleyin.</translation>
+<translation id="792514962475806987">Yerleştirilmişken yakınlaştırma düzeyi:</translation>
 <translation id="7925247922861151263">AAA kontrolü başarısız oldu</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> bekleniyor...</translation>
 <translation id="7925686952655276919">Senkronizasyon için mobil veri kullanma</translation>
@@ -4775,6 +4784,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">Web Proxy Otomatik Bulma URL'si:</translation>
 <translation id="8546930481464505581">Dokunmatik Çubuğu Özelleştir</translation>
+<translation id="8547013269961688403">Tam ekran büyüteci etkinleştir</translation>
 <translation id="85486688517848470">Üst satırdaki tuşların davranışını değiştirmek için Arama tuşunu basılı tutun</translation>
 <translation id="855081842937141170">Sekmeyi iğnele</translation>
 <translation id="8551388862522347954">Lisanslar</translation>
@@ -4829,6 +4839,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8642947597466641025">Metni Büyüt</translation>
 <translation id="8647834505253004544">Geçerli bir web adresi değil</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> veya <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">Artık eski profilinize erişemeseniz de onu yine de kaldırabilirsiniz.</translation>
 <translation id="8651585100578802546">Bu Sayfayı Tekrar Yüklemeye Zorla</translation>
 <translation id="8652400352452647993">Uzantı paketleme hatası</translation>
 <translation id="8652487083013326477">sayfa aralığı radyo düğmesi</translation>
@@ -4905,7 +4916,9 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> yerine <ph name="PROTOCOL" /> bağlantılarını açma</translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741316211671074806">Pencere İçinde Pencere</translation>
+<translation id="8743390665131937741">Tam ekran yakınlaştırma düzeyi:</translation>
 <translation id="8743864605301774756">1 saat önce güncellendi</translation>
+<translation id="874689135111202667">{0,plural, =1{Bu siteye bir dosya yüklensin mi?}other{Bu siteye # dosya yüklensin mi?}}</translation>
 <translation id="8749863574775030885">Bilinmeyen bir tedarikçinin USB cihazlarına erişme</translation>
 <translation id="8754200782896249056">&lt;p&gt;<ph name="PRODUCT_NAME" />, desteklenen bir masaüstü ortamında çalışırken sistem proxy ayarları kullanılır. Ancak, ya sisteminiz desteklenmiyor ya da sistem yapılandırmanız başlatılırken bir hata oluştu.&lt;/p&gt;
 
@@ -5210,6 +5223,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="960719561871045870">Operatör kodu</translation>
 <translation id="960987915827980018">Yaklaşık 1 saat kaldı</translation>
 <translation id="962802172452141067">Yer işareti klasör ağacı</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Uygulama}other{Uygulamalar}}</translation>
 <translation id="968000525894980488">Google Play hizmetlerini açın.</translation>
 <translation id="968174221497644223">Uygulama önbelleği</translation>
 <translation id="969096075394517431">Dilleri değiştir</translation>

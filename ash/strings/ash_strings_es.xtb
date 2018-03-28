@@ -23,6 +23,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Menú de aplicaciones</translation>
 <translation id="1525508553941733066">IGNORAR</translation>
+<translation id="1537254971476575106">Lupa de pantalla completa</translation>
 <translation id="15373452373711364">Cursor del ratón grande</translation>
 <translation id="1550523713251050646">Haz clic aquí para obtener más opciones</translation>
 <translation id="1567387640189251553">Se ha conectado otro teclado desde la última vez que introdujiste la contraseña. Es posible que esté intentando captar tus pulsaciones de teclas.</translation>
@@ -51,8 +52,10 @@
 <translation id="2049639323467105390">Este dispositivo está gestionado por <ph name="DOMAIN" /></translation>
 <translation id="2050339315714019657">Vertical</translation>
 <translation id="2067602449040652523">Brillo del teclado</translation>
+<translation id="2081529251031312395">$1 aún podrá iniciar sesión.</translation>
 <translation id="2122028596993374965">Dejar de enviar el contenido de la pestaña <ph name="TAB_NAME" /> a <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Carga lenta</translation>
+<translation id="2135456203358955318">Lupa de vista fijada</translation>
 <translation id="2144487987174258011">Reinicia para actualizar Adobe Flash Player</translation>
 <translation id="2208323208084708176">Modo de escritorio unificado</translation>
 <translation id="2220572644011485463">PIN o contraseña</translation>

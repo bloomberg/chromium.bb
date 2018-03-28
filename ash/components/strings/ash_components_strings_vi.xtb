@@ -3,6 +3,7 @@
 <translationbundle lang="vi">
 <translation id="104962181688258143">Mở ứng dụng Tệp</translation>
 <translation id="1126871238933253947">Chuyển về ngôn ngữ bàn phím mà bạn đã sử dụng trước đó.</translation>
+<translation id="1134347825771908369">Tắt tiếng</translation>
 <translation id="1195667586424773550">Kéo liên kết vào thanh địa chỉ của tab</translation>
 <translation id="1204450209689312104">Mở cửa sổ mới ở chế độ ẩn danh</translation>
 <translation id="1293699935367580298">Thoát</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Lưu tất cả các trang đang mở trong cửa sổ hiện tại của bạn làm dấu trang trong một thư mục mới</translation>
 <translation id="355103131818127604">Mở liên kết trong tab mới trên nền</translation>
 <translation id="3649256019230929621">Thu nhỏ cửa sổ</translation>
+<translation id="3655154169297074232">Tab và Windows</translation>
 <translation id="3668361878347172356">Làm lại thao tác bạn thực hiện gần đây nhất</translation>
 <translation id="3720939646656082033">Mở liên kết trong một tab mới và chuyển sang tab mới đó</translation>
 <translation id="3725795051337497754">Đóng tab hiện tại</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Lưu liên kết làm dấu trang</translation>
 <translation id="4141203561740478845">Đánh dấu hàng bằng thanh địa chỉ</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> hoặc <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Chế độ tổng quan</translation>
+<translation id="4472417192667361414">Cài đặt hiển thị và hệ thống</translation>
 <translation id="4556221320735744018">Xem Trình trợ giúp về phím tắt</translation>
 <translation id="4628718545549558538">Mở khu vực trạng thái (nơi ảnh tài khoản của bạn xuất hiện)</translation>
 <translation id="4642092649622328492">Chụp ảnh một phần màn hình</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Chuyển tới đầu tài liệu</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> hoặc <ph name="E" /></translation>
 <translation id="8234414138295101081">Xoay màn hình 90 độ</translation>
+<translation id="826184564253127735">Trình xem phím tắt</translation>
 <translation id="836869401750819675">Mở trang Tài nguyên đã tải xuống</translation>
 <translation id="8388247778047144397">Kéo liên kết vào một vùng trống trên thanh tab</translation>
 <translation id="8389638407792712197">Mở cửa sổ mới</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 đến 8</translation>
 <translation id="9041599225465145264">Dán nội dung từ khay nhớ tạm</translation>
 <translation id="9052808072970550123">Chuyển sang người dùng tiếp theo</translation>
+<translation id="9106898733795143799">Trang và trình duyệt web</translation>
 <translation id="9179672198516322668">Các phím tắt thông dụng</translation>
 <translation id="93603345341560814">Nhấn phím <ph name="SHIFT" /> và nhấp vào liên kết</translation>
 <translation id="945383118875625837">Kéo liên kết vào thanh dấu trang</translation>

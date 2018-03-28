@@ -87,6 +87,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="1709438864123551175">Duomenų taupymo priemonė</translation>
 <translation id="1718835860248848330">Paskutinė valanda</translation>
 <translation id="1729516292547892356">Kad galėtumėte peržiūrėti virtualiosios realybės turinį, atnaujinkite „Google“ VR paslaugas</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – atnaujinta <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Sinchronizuokite žymes</translation>
 <translation id="17513872634828108">Atidaryti skirtukai</translation>
 <translation id="1756600373018374892">Palieskite šį mygtuką, kad greitai pasiektumėte skirtukus.</translation>
@@ -170,7 +171,7 @@ Kad galėtumėte naudoti Fizinį žiniatinklį, būtina įgalinti „Bluetooth�
 <translation id="2498359688066513246">Pagalba ir atsiliepimai</translation>
 <translation id="2501278716633472235">Grįžti</translation>
 <translation id="2503472621226270518">Išskleisti naršymo skydelį</translation>
-<translation id="2512222046227390255">Automatinis formų pildymas</translation>
+<translation id="2512222046227390255">Automatiškai užpildyti formas</translation>
 <translation id="2526148617758225454">Įjungta Duomenų taupymo priemonė. Ją galite tvarkyti nustatymuose.</translation>
 <translation id="2532336938189706096">Žiniatinklio rodinys</translation>
 <translation id="2536728043171574184">Žiūrima neprisijungus naudojama šio puslapio kopija</translation>
@@ -784,6 +785,7 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="8200772114523450471">Atnaujinti</translation>
 <translation id="8209050860603202033">Atidaryti vaizdą</translation>
 <translation id="8220488350232498290">Atsisiųsta <ph name="GIGABYTES" /> GB</translation>
+<translation id="8249310407154411074">Perkelti į viršų</translation>
 <translation id="8250920743982581267">Dokumentai</translation>
 <translation id="8260126382462817229">Bandykite prisijungti dar kartą</translation>
 <translation id="8261506727792406068">Ištrinti</translation>

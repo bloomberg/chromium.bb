@@ -23,6 +23,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Стартов панел</translation>
 <translation id="1525508553941733066">ОТХВЪРЛЯНЕ</translation>
+<translation id="1537254971476575106">Лупа за увеличаване на целия екран</translation>
 <translation id="15373452373711364">Голям курсор на мишката</translation>
 <translation id="1550523713251050646">Кликнете за още опции</translation>
 <translation id="1567387640189251553">Свързана е различна клавиатура, откакто последно въведохте паролата си. Тя може да се опитва да записва кои клавиши натискате.</translation>
@@ -51,8 +52,10 @@
 <translation id="2049639323467105390">Това устройство се управлява от <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Вертикално</translation>
 <translation id="2067602449040652523">Яркост на клавиатурата</translation>
+<translation id="2081529251031312395">$1 пак може да влезе в профила си по-късно.</translation>
 <translation id="2122028596993374965">Спиране на предаването на „<ph name="TAB_NAME" />“ към „<ph name="RECEIVER_NAME" />“</translation>
 <translation id="2127372758936585790">Зарядно устройство с малка мощност</translation>
+<translation id="2135456203358955318">Лупа в прикрепен режим</translation>
 <translation id="2144487987174258011">Рестартирайте, за да актуализирате Adobe Flash Player</translation>
 <translation id="2208323208084708176">Режим на обединен работен плот</translation>
 <translation id="2220572644011485463">ПИН код или парола</translation>

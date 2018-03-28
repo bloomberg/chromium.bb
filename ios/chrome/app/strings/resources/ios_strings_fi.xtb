@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Osoite 1</translation>
 <translation id="1545749641540134597">Skannaa QR-koodi</translation>
 <translation id="1580783302095112590">Viesti lähetetty.</translation>
+<translation id="1582732959743469162">Tämä keskeyttää nykyisen latauksen edistymisen.</translation>
 <translation id="1612730193129642006">Näytä välilehtiruudukko</translation>
 <translation id="1644574205037202324">Historia</translation>
 <translation id="1646446875146297738">Do Not Track -valinta lisää pyynnön selaustietoliikenteeseesi. Sen vaikutus riippuu siitä, miten verkkosivustot vastaavat pyyntöön ja tulkitsevat sitä.
@@ -284,6 +285,7 @@ Handoff täytyy ottaa käyttöön myös Asetusten Yleiset-osiossa. Lisäksi mole
 <translation id="633809752005859102">Jotain meni pahasti vikaan. Pyrimme korjaamaan tilanteen.</translation>
 <translation id="6342069812937806050">Valmistui juuri</translation>
 <translation id="6344783595350022745">Tyhjennä teksti</translation>
+<translation id="6346549652287021269">Aloitetaanko uusi lataus?</translation>
 <translation id="6362362396625799311">Ei incognito-välilehtiä</translation>
 <translation id="6374469231428023295">Yritä uudelleen</translation>
 <translation id="6380866119319257197">Jos unohdat tunnuslauseesi tai haluat muokata tätä asetusta, <ph name="BEGIN_LINK" />nollaa synkronointi<ph name="END_LINK" />.</translation>
@@ -325,6 +327,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7031882061095297553">Synkronoi tilille</translation>
 <translation id="7053983685419859001">Estä</translation>
 <translation id="7062545763355031412">Hyväksy ja vaihda tiliä</translation>
+<translation id="7102005569666697658">Ladataan… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Piilota</translation>
 <translation id="7133798577887235672">Koko nimi</translation>
 <translation id="7136892417564438900">Kamera ei ole käytettävissä</translation>
@@ -360,6 +363,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="7769602470925380267">Hyväksy ja kirjaudu ulos</translation>
 <translation id="7772032839648071052">Vahvista tunnuslause</translation>
 <translation id="780301667611848630">Ei kiitos</translation>
+<translation id="7856733331829174190">Lataus epäonnistui</translation>
 <translation id="7859704718976024901">Selaushistoria</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Vie salasanat…</translation>
@@ -422,6 +426,7 @@ Tietosi salattiin tunnuslauseesi avulla <ph name="TIME" />. Aloita synkronointi 
 <translation id="9083392325882095631">1 kohde</translation>
 <translation id="9100610230175265781">Tunnuslause tarvitaan</translation>
 <translation id="9148126808321036104">Kirjaudu sisään uudelleen</translation>
+<translation id="915371508759614899">Peruutetaanko lataus?</translation>
 <translation id="9157836665414082580">Estä valintaikkunat</translation>
 <translation id="9188680907066685419">Kirjaudu ulos hallinnoidulta tililtä</translation>
 <translation id="9203116392574189331">Handoff</translation>

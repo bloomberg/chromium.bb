@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Cím 1. sora</translation>
 <translation id="1545749641540134597">QR-kód beolvasása</translation>
 <translation id="1580783302095112590">Levél elküldve.</translation>
+<translation id="1582732959743469162">Ezzel leállítja az aktuális letöltést.</translation>
 <translation id="1612730193129642006">Laprács megjelenítése</translation>
 <translation id="1644574205037202324">Előzmények</translation>
 <translation id="1646446875146297738">A „Nincs nyomon követés” funkció engedélyezése azzal jár, hogy egy adott kérés beleszámít majd a böngészési forgalomba. A hatása attól is függ, hogy az adott webhely válaszol-e a kérésre, és hogyan értelmezi azt.
@@ -284,6 +285,7 @@ Az Átadást engedélyezni kell a Beállítások általános részében is, és 
 <translation id="633809752005859102">Hiba történt. Dolgozunk a kijavításán.</translation>
 <translation id="6342069812937806050">Éppen most</translation>
 <translation id="6344783595350022745">Szöveg törlése</translation>
+<translation id="6346549652287021269">Elindítja az új letöltést?</translation>
 <translation id="6362362396625799311">Nincsenek inkognitólapok</translation>
 <translation id="6374469231428023295">Próbálja újra</translation>
 <translation id="6380866119319257197">Ha elfelejti az összetett jelszót, vagy módosítani szeretné ezt a beállítást, <ph name="BEGIN_LINK" />állítsa alaphelyzetbe a szinkronizálást<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7031882061095297553">Szinkronizálás a következőknél</translation>
 <translation id="7053983685419859001">Letiltás</translation>
 <translation id="7062545763355031412">Elfogadás és fiókváltás</translation>
+<translation id="7102005569666697658">Letöltés… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Elrejtés</translation>
 <translation id="7133798577887235672">Teljes név</translation>
 <translation id="7136892417564438900">A kamera nem áll rendelkezésre</translation>
@@ -360,6 +363,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="7769602470925380267">Elfogadás és kijelentkezés</translation>
 <translation id="7772032839648071052">Összetett jelszó megerősítése</translation>
 <translation id="780301667611848630">Köszönöm, nem</translation>
+<translation id="7856733331829174190">Nem sikerült letölteni</translation>
 <translation id="7859704718976024901">Böngészési előzmények</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Jelszavak exportálása…</translation>
@@ -423,6 +427,7 @@ Adatainak titkosítása megtörtént összetett szinkronizálási jelszavával a
 <translation id="9083392325882095631">1 elem</translation>
 <translation id="9100610230175265781">Összetett jelszó szükséges</translation>
 <translation id="9148126808321036104">Jelentkezzen be újra</translation>
+<translation id="915371508759614899">Megszakítja a letöltést?</translation>
 <translation id="9157836665414082580">Párbeszédablakok elrejtése</translation>
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
 <translation id="9203116392574189331">Átadás</translation>

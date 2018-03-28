@@ -628,6 +628,7 @@
 <translation id="1944921356641260203">আপডেট পাওয়া গেছে</translation>
 <translation id="1951615167417147110">একটি পৃষ্ঠা স্ক্রোল করুন</translation>
 <translation id="1956050014111002555">ফাইলটিতে একাধিক শংসাপত্র রয়েছে, এর মধ্যে কোনওটিই আমদানি করা হয়নি:</translation>
+<translation id="1956390763342388273">এটি ''<ph name="FOLDER_PATH" />'' থেকে সমস্ত ফাইল আপলোড করবে। আপনি এই সাইটটি বিশ্বাস করে থাকলে তবেই এটি করুন।</translation>
 <translation id="1962233722219655970">এই পৃষ্ঠাটি একটি নেটিভ ক্লায়েন্ট অ্যাপ্লিকেশন ব্যবহার করে যা আপনার কম্পিউটারে কাজ করে না৷</translation>
 <translation id="1962969542251276847">স্ক্রিন লক করুন</translation>
 <translation id="1963227389609234879">সকল সরান</translation>
@@ -840,6 +841,7 @@
 <translation id="2294358108254308676">আপনি কি <ph name="PRODUCT_NAME" /> ইনস্টল করতে চান?</translation>
 <translation id="2296019197782308739">EAP পদ্ধতি:</translation>
 <translation id="2297705863329999812">প্রিন্টার খুঁজুন</translation>
+<translation id="2300383962156589922"><ph name="APP_NAME" /> কাস্টমাইজ এবং নিয়ন্ত্রণ করুন</translation>
 <translation id="2301382460326681002">এক্সটেনশন রুট ডিরেক্টরিটি অবৈধ৷</translation>
 <translation id="2302685579236571180">ছদ্মবেশে যান</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" অতিরিক্ত অনুমতির অনুরোধ জানিয়েছে৷</translation>
@@ -969,7 +971,7 @@
 <translation id="2508428939232952663">Google Play স্টোর অ্যাকাউন্ট</translation>
 <translation id="2509495747794740764">স্কেলের মাপকে অবশ্যই ১০ থেকে ১০০ এর মধ্যের একটি সংখ্যা হতে হবে।</translation>
 <translation id="2509566264613697683">৮x</translation>
-<translation id="2512222046227390255">স্বতঃপূর্ণ ফর্মগুলি</translation>
+<translation id="2512222046227390255">ফর্মগুলি স্বতঃপূর্ণ করুন</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">স্ক্যান করুন</translation>
 <translation id="2518024842978892609">আপনার ক্লায়েন্ট শংসাপত্র ব্যবহার করুন</translation>
@@ -1233,7 +1235,7 @@
 <translation id="2867768963760577682">পিনযুক্ত ট্যাব রূপে খুলুন</translation>
 <translation id="2868746137289129307">এই এক্সটেনশানটির পুরনো সংস্করণের এবং এন্টারপ্রাইজ নীতি অক্ষম করা রয়েছে৷ যখনই নতুন সংস্করণ উপলব্ধ থাকবে তখন এটি স্বয়ংক্রিয়ভারে সক্ষমিত হবে৷</translation>
 <translation id="2870560284913253234">সাইট</translation>
-<translation id="2870909136778269686">আপডেট হচ্ছে...</translation>
+<translation id="2870909136778269686">আপডেট করা হচ্ছে...</translation>
 <translation id="2871813825302180988">এই অ্যাকাউন্টটি ইতিমধ্যেই এই ডিভাইসটিতে ব্যবহার করা হচ্ছে৷</translation>
 <translation id="2872353916818027657">প্রাথমিক মনিটর অদলবদল করুন</translation>
 <translation id="287286579981869940">যোগ করুন <ph name="PROVIDER_NAME" />...</translation>
@@ -1330,6 +1332,7 @@
 <translation id="3012917896646559015">দয়া করে আপনার কম্পিউটারকে মেরামতের সুবিধা প্রদানকারীর কাছে পাঠাতে অবিলম্বে আপনার হার্ডওয়্যার প্রস্তুতকারকের সাথে যোগাযোগ করুন৷</translation>
 <translation id="3013291976881901233">MIDI ডিভাইসগুলি</translation>
 <translation id="3014095112974898292">অন্য অনুরোধগুলি সম্পূর্ণ হওয়ার জন্য অপেক্ষা করা হচ্ছে...</translation>
+<translation id="3015639418649705390">এখনই রিলঞ্চ করুন</translation>
 <translation id="3015992588037997514">এই কোডটি কি আপনার Chromebox এর স্ক্রীনে প্রদর্শিত হয়?</translation>
 <translation id="3016641847947582299">কম্পোনেন্ট আপডেট করা আছে</translation>
 <translation id="3016780570757425217">আপনার অবস্থান জানুন</translation>
@@ -2200,6 +2203,7 @@
 <translation id="4430369329743628066">বুকমার্ক যুক্ত হয়েছে</translation>
 <translation id="443454694385851356">লিগ্যাসি (অসুরক্ষিত)</translation>
 <translation id="443464694732789311">অবিরত থাকুন</translation>
+<translation id="443475966875174318">অসঙ্গত অ্যাপ্লিকেশনগুলি আপডেট করুন অথবা সরিয়ে দিন</translation>
 <translation id="4439318412377770121">Google ক্লাউড ডিভাইসগুলিতে আপনি কি <ph name="DEVICE_NAME" /> নিবন্ধন করতে চান?</translation>
 <translation id="4441124369922430666">আপনি কি মেশিন চালু হওয়ার সময় স্বয়ংক্রিয়ভাবে এই অ্যাপ্লিকেশানটিকে চালু করতে চান?</translation>
 <translation id="444134486829715816">প্রসারিত করুন...</translation>
@@ -2382,6 +2386,7 @@
 <translation id="473775607612524610">আপডেট</translation>
 <translation id="474217410105706308">ট্যাব নিঃশব্দ করুন</translation>
 <translation id="4742746985488890273">শেল্ফে পিন করুন</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />অ্যাপ্লিকেশন কীভাবে আপডেট করতে হয় তা জানুন<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">আপনার ডাউনলোড সম্পূর্ণ হয়েছে</translation>
 <translation id="4746971725921104503">দেখে মনে হচ্ছে আপনি ইতিমধ্যে এই নাম দিয়ে একটি ব্যবহারকারীকে পরিচালনা করছেন৷ আপনি কি  <ph name="LINK_START" /> <ph name="USER_DISPLAY_NAME" /> এই ডিভাইসে আমদানি করতে চান<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Chrome ওয়েব স্টোর থেকে এক্সটেনশানের প্রয়োজন</translation>
@@ -3191,6 +3196,7 @@
     <ph name="BEGIN_PARAGRAPH2" />আপনি যে কোনো সময় Android অ্যাপ্লিকেশান সেটিংস থেকে এটি চালু বা বন্ধ করতে পারেন। এর ফলে প্রয়োজনীয় পরিষেবা যেমন, সিস্টেম আপডেট ও নিরাপত্তা গ্রহণের জন্য আপনার ডিভাইসটির প্রয়োজনীয় ডেটা পাঠানোর সক্ষমতা প্রভাবিত হবে না।<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">অনূদিত</translation>
 <translation id="5991049340509704927">বিবর্ধিত করুন</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{আপনি যাতে ওয়েব ব্রাউজ করা চালিয়ে যেতে পারেন তার জন্য অ্যাডমিনিস্ট্রেটরকে এই অ্যাপ্লিকেশনটি সরিয়ে দিতে বলুন।}one{আপনি যাতে ওয়েব ব্রাউজ করা চালিয়ে যেতে পারেন তার জন্য অ্যাডমিনিস্ট্রেটরকে এই অ্যাপ্লিকেশনগুলি সরিয়ে দিতে বলুন।}other{আপনি যাতে ওয়েব ব্রাউজ করা চালিয়ে যেতে পারেন তার জন্য অ্যাডমিনিস্ট্রেটরকে এই অ্যাপ্লিকেশনগুলি সরিয়ে দিতে বলুন।}}</translation>
 <translation id="5993332328670040093">আপনার ডেটা ব্যবহার আর পরিমাপ করা হবে না।</translation>
 <translation id="600424552813877586">অবৈধ অ্যাপ্লিকেশান৷</translation>
 <translation id="6005695835120147974">মিডিয়া রাউটার</translation>
@@ -3846,6 +3852,7 @@
 <translation id="7040138676081995583">এর মাধ্যমে খুলুন...</translation>
 <translation id="7040230719604914234">অপারেটর</translation>
 <translation id="7042418530779813870">প্রতি&amp;লেপন এবং খুঁজুন</translation>
+<translation id="7043108582968290193">হয়ে গেছে! কোনও অসঙ্গত অ্যাপ্লিকেশন খুঁজে পাওয়া যায়নি।</translation>
 <translation id="7049293980323620022">ফাইল রাখবেন?</translation>
 <translation id="7051943809462976355">মাউসের জন্য অনুসন্ধান করা হচ্ছে...</translation>
 <translation id="7052237160939977163">কার্য-সম্পাদনা ট্রেস ডেটা পাঠান</translation>
@@ -4016,6 +4023,7 @@
 <translation id="7328867076235380839">এই কম্বিনেশন ব্যবহার করা যাবে না</translation>
 <translation id="7329154610228416156">এটি একটি অ-নিরাপদ URL (<ph name="BLOCKED_URL" />) ব্যবহারের জন্য কনফিগার করা থাকায় প্রবেশ করুন ব্যর্থ হয়েছে। দয়া করে আপনার প্রশাসকের সাথে যোগাযোগ করুন।</translation>
 <translation id="7334190995941642545">Smart Lock বর্তমানে অনুপলব্ধ৷ অনুগ্রহ করে পরে আবার চেষ্টা করুন৷</translation>
+<translation id="7334274148831027933">ডক করা ম্যাগনিফায়ার চালু করুন</translation>
 <translation id="7339763383339757376">PKCS #7, একক শংসাপত্র</translation>
 <translation id="7339785458027436441">টাইপ করার সময় বানান পরীক্ষা করুন</translation>
 <translation id="7339898014177206373">নতুন উইন্ডো</translation>
@@ -4387,6 +4395,7 @@
 <translation id="7912080627461681647">সার্ভারে আপনার পাসওয়ার্ড পাল্টানো হয়েছে। অনুগ্রহ করে সাইন-আউট করে আবার সাইন-ইন করুন।</translation>
 <translation id="7912883689016444961">মোবাইল নেটওয়ার্ক কনফিগার করুন</translation>
 <translation id="7915471803647590281">প্রতিক্রিয়াটি প্রেরণের আগে কী ঘটছে তা দয়া করে আমাদের জানান৷ </translation>
+<translation id="792514962475806987">ডক করা জুম লেবেল:</translation>
 <translation id="7925247922861151263">AAA যাচাই ব্যর্থ</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" />-এর জন্য অপেক্ষা করা হচ্ছে...</translation>
 <translation id="7925686952655276919">সিঙ্ক-এর জন্য মোবাইল ডেটা ব্যবহার করবেন না</translation>
@@ -4769,6 +4778,7 @@
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">ওয়েব প্রক্সী স্বতঃআবিষ্কার URL:</translation>
 <translation id="8546930481464505581">টাচ বার কাস্টমাইজ করুন</translation>
+<translation id="8547013269961688403">ফুলস্ক্রিন ম্যাগনিফায়ার চালু করুন</translation>
 <translation id="85486688517848470">সবথেকে উপরের-সারির কীগুলির আচরণ পরিবর্তন করতে অনুসন্ধান কী ধরে থাকুন</translation>
 <translation id="855081842937141170">ট্যাব পিন করুন</translation>
 <translation id="8551388862522347954">লাইসেন্সগুলি</translation>
@@ -4823,6 +4833,7 @@
 <translation id="8642947597466641025">পাঠ্যকে আরও বড় করুন</translation>
 <translation id="8647834505253004544">ওয়েব ঠিকানাটি ভুল</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> অথবা <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">যদিও পুরনো প্রোফাইলটি আপনি আর অ্যাক্সেস করতে পারবেন না, আপনি সেটি সরিয়ে দিতে পারেন।</translation>
 <translation id="8651585100578802546">এই পৃষ্ঠাটি পুনঃলোড করার জন্য জোর করুন</translation>
 <translation id="8652400352452647993">Pack এক্সটেনশানে ত্রুটি হয়েছে</translation>
 <translation id="8652487083013326477">পৃষ্ঠা শ্রেণি রেডিও বোতাম</translation>
@@ -4899,7 +4910,9 @@
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" />-এর পরিবর্তে <ph name="PROTOCOL" /> লিঙ্কসমূহ খুলুন</translation>
 <translation id="8737709691285775803">শিল</translation>
 <translation id="8741316211671074806">ছবির-মধ্যে-ছবি</translation>
+<translation id="8743390665131937741">ফুলস্ক্রিন জুম লেবেল:</translation>
 <translation id="8743864605301774756">১ঘণ্টা আগে আপডেট করা হয়েছে</translation>
+<translation id="874689135111202667">{0,plural, =1{এই সাইটে একটি ফাইল আপলোড করবেন?}one{এই সাইটে #টি ফাইল আপলোড করবেন?}other{এই সাইটে #টি ফাইল আপলোড করবেন?}}</translation>
 <translation id="8749863574775030885">একটি অজানা বিক্রেতা থেকে USB ডিভাইস অ্যাক্সেস করুন</translation>
 <translation id="8754200782896249056">&lt;p&gt;কোন সমর্থিত ডেস্কটপ পরিবেশে <ph name="PRODUCT_NAME" /> চলার সময়, সিস্টেম প্রক্সি সেটিংস ব্যবহার করা হবে৷ যদিও, আপনার সিস্টেম সমর্থিত নয় অথবা আপনার সিস্টেম কনফিগারেশান প্রবর্তন করার সময় একটি সমস্যা হয়েছে৷&lt;/p&gt;
 
@@ -5204,6 +5217,7 @@
 <translation id="960719561871045870">অপারেটরের কোড</translation>
 <translation id="960987915827980018">প্রায় 1 ঘণ্টা বাকি</translation>
 <translation id="962802172452141067">বুকমার্ক ফোল্ডার ট্রি</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{অ্যাপ্লিকেশন}one{অ্যাপ্লিকেশনগুলি}other{অ্যাপ্লিকেশনগুলি}}</translation>
 <translation id="968000525894980488">Google Play পরিষেবা চালু করুন।</translation>
 <translation id="968174221497644223">অ্যাপ্লিকেশন ক্যাশে</translation>
 <translation id="969096075394517431">ভাষাগুলি পরিবর্তন করুন</translation>

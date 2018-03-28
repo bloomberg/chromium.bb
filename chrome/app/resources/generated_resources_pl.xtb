@@ -628,6 +628,7 @@
 <translation id="1944921356641260203">Znaleziono aktualizację</translation>
 <translation id="1951615167417147110">Przewiń o jedną stronę w górę</translation>
 <translation id="1956050014111002555">Plik zawierał wiele certyfikatów, z których żaden nie został zaimportowany:</translation>
+<translation id="1956390763342388273">Spowoduje to przesłanie wszystkich plików z folderu „<ph name="FOLDER_PATH" />”. Zdecyduj się na ten krok tylko jeśli ufasz witrynie.</translation>
 <translation id="1962233722219655970">Ta strona używa aplikacji klienta natywnego, która nie działa na Twoim komputerze.</translation>
 <translation id="1962969542251276847">Zablokuj ekran</translation>
 <translation id="1963227389609234879">Usuń wszystko</translation>
@@ -840,6 +841,7 @@
 <translation id="2294358108254308676">Czy chcesz zainstalować aplikację <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">Metoda EAP:</translation>
 <translation id="2297705863329999812">Wyszukaj drukarki</translation>
+<translation id="2300383962156589922">Ustawienia aplikacji <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Główny katalog rozszerzenia jest nieprawidłowy.</translation>
 <translation id="2302685579236571180">Przejdź do trybu incognito</translation>
 <translation id="23030561267973084">„<ph name="EXTENSION_NAME" />” żąda dodatkowych pozwoleń.</translation>
@@ -969,7 +971,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2508428939232952663">Konto w Sklepie Google Play</translation>
 <translation id="2509495747794740764">Współczynnik skalowania musi wynosić od 10 do 200.</translation>
 <translation id="2509566264613697683">8x</translation>
-<translation id="2512222046227390255">Autouzupełnianie formularzy</translation>
+<translation id="2512222046227390255">Autouzupełniaj formularze</translation>
 <translation id="2515586267016047495">Alt</translation>
 <translation id="2517472476991765520">Skanuj</translation>
 <translation id="2518024842978892609">Używanie certyfikatów klienta</translation>
@@ -1328,6 +1330,7 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="3012917896646559015">Jak najszybciej skontaktuj się z producentem sprzętu, aby wysłać komputer do serwisu.</translation>
 <translation id="3013291976881901233">Urządzenia MIDI</translation>
 <translation id="3014095112974898292">Oczekuję na ukończenie innych żądań…</translation>
+<translation id="3015639418649705390">Uruchom ponownie teraz</translation>
 <translation id="3015992588037997514">Widzisz ten kod na ekranie Chromeboxa?</translation>
 <translation id="3016641847947582299">Składnik został zaktualizowany</translation>
 <translation id="3016780570757425217">Sprawdzanie Twojej lokalizacji</translation>
@@ -2203,6 +2206,7 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4430369329743628066">Dodano zakładkę</translation>
 <translation id="443454694385851356">Starszy typ (niebezpieczne)</translation>
 <translation id="443464694732789311">Dalej</translation>
+<translation id="443475966875174318">Zaktualizuj lub usuń niezgodne aplikacje</translation>
 <translation id="4439318412377770121">Czy chcesz zarejestrować urządzenie <ph name="DEVICE_NAME" /> w chmurze Google?</translation>
 <translation id="4441124369922430666">Chcesz, by ta aplikacja była uruchamiana automatycznie po włączeniu urządzenia?</translation>
 <translation id="444134486829715816">Rozwiń...</translation>
@@ -2385,6 +2389,7 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="473775607612524610">Aktualizuj</translation>
 <translation id="474217410105706308">Wycisz kartę</translation>
 <translation id="4742746985488890273">Przypnij do półki</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />Dowiedz się, jak zaktualizować aplikacje<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">Pobieranie zakończone</translation>
 <translation id="4746971725921104503">Wygląda na to, że już zarządzasz użytkownikiem o tej nazwie. Chcesz <ph name="LINK_START" />zaimportować użytkownika <ph name="USER_DISPLAY_NAME" /> na to urządzenie<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Wymagane jest rozszerzenie z Chrome Web Store</translation>
@@ -3195,6 +3200,7 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
     <ph name="BEGIN_PARAGRAPH2" />Tę opcję możesz włączyć lub wyłączyć w dowolnym momencie w ustawieniach aplikacji na Androida. Nie ma ona wpływu na możliwość wysyłania z urządzenia informacji potrzebnych do uzyskiwania podstawowych usług, jak aktualizacje i zabezpieczenia systemu.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">Przetłumaczona</translation>
 <translation id="5991049340509704927">Powiększ</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tej aplikacji.}few{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tych aplikacji.}many{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tych aplikacji.}other{Aby móc dalej przeglądać internet, poproś administratora o usunięcie tych aplikacji.}}</translation>
 <translation id="5993332328670040093">Pomiar użycia danych został zakończony.</translation>
 <translation id="600424552813877586">Nieprawidłowa aplikacja.</translation>
 <translation id="6005695835120147974">Router multimediów</translation>
@@ -3850,6 +3856,7 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="7040138676081995583">Otwórz za pomocą...</translation>
 <translation id="7040230719604914234">Operator</translation>
 <translation id="7042418530779813870">Wk&amp;lej i wyszukaj</translation>
+<translation id="7043108582968290193">Gotowe. Nie ma niezgodnych aplikacji.</translation>
 <translation id="7049293980323620022">Zachować plik?</translation>
 <translation id="7051943809462976355">Szukam myszy...</translation>
 <translation id="7052237160939977163">Wyślij dane śledzenia wydajności</translation>
@@ -4020,6 +4027,7 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="7328867076235380839">Niepoprawna kombinacja</translation>
 <translation id="7329154610228416156">Nie udało się zalogować, bo mechanizm logowania korzysta z niezabezpieczonego URL-a (<ph name="BLOCKED_URL" />). Skontaktuj się z administratorem.</translation>
 <translation id="7334190995941642545">Smart Lock jest obecnie niedostępny. Spróbuj ponownie później.</translation>
+<translation id="7334274148831027933">Włącz lupę zadokowaną</translation>
 <translation id="7339763383339757376">PKCS #7, jeden certyfikat</translation>
 <translation id="7339785458027436441">Sprawdzaj pisownię w trakcie pisania</translation>
 <translation id="7339898014177206373">Nowe okno</translation>
@@ -4385,6 +4393,7 @@ Zainstalowanie aplikacji <ph name="APP_NAME" /> wymaga pobrania <ph name="DOWNLO
 <translation id="7912080627461681647">Twoje hasło zostało zmienione na serwerze. Wyloguj się i zaloguj się ponownie.</translation>
 <translation id="7912883689016444961">Skonfiguruj sieć komórkową</translation>
 <translation id="7915471803647590281">Zanim wyślesz opinię, powiedz nam, co się dzieje.</translation>
+<translation id="792514962475806987">Poziom powiększenia lupy zadokowanej:</translation>
 <translation id="7925247922861151263">Sprawdzenie AAA nie powiodło się</translation>
 <translation id="7925285046818567682">Czekam na <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Nie synchronizuj przez połączenie komórkowe</translation>
@@ -4767,6 +4776,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">URL autowykrywania internetowego serwera proxy</translation>
 <translation id="8546930481464505581">Dostosuj pasek dotykowy</translation>
+<translation id="8547013269961688403">Włącz lupę pełnego ekranu</translation>
 <translation id="85486688517848470">Przytrzymaj klawisz wyszukiwania, by zmienić działanie klawiszy z górnego rzędu</translation>
 <translation id="855081842937141170">Przypnij kartę</translation>
 <translation id="8551388862522347954">Licencje</translation>
@@ -4821,6 +4831,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8642947597466641025">Powiększ tekst</translation>
 <translation id="8647834505253004544">Nieprawidłowy adres internetowy</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> lub <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">Chociaż nie możesz już używać swojego starego profilu, możesz go usunąć.</translation>
 <translation id="8651585100578802546">Wymuś ponowne załadowanie tej strony</translation>
 <translation id="8652400352452647993">Błąd rozszerzenia pakietu</translation>
 <translation id="8652487083013326477">opcja zakresu stron</translation>
@@ -4897,7 +4908,9 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="8737685506611670901">Otwieranie linków protokołu <ph name="PROTOCOL" /> zamiast modułu <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Menedżer połączeń</translation>
 <translation id="8741316211671074806">Obraz w obrazie</translation>
+<translation id="8743390665131937741">Poziom powiększenia lupy pełnego ekranu:</translation>
 <translation id="8743864605301774756">Zaktualizowano przed godziną</translation>
+<translation id="874689135111202667">{0,plural, =1{Przesłać jeden plik do tej witryny?}few{Przesłać # pliki do tej witryny?}many{Przesłać # plików do tej witryny?}other{Przesłać # pliku do tej witryny?}}</translation>
 <translation id="8749863574775030885">Dostęp do urządzeń USB od nieznanego dostawcy</translation>
 <translation id="8754200782896249056">&lt;p&gt;Po uruchomieniu programu <ph name="PRODUCT_NAME" /> w obsługiwanym środowisku pulpitu są używane systemowe ustawienia serwera proxy. Jednak ten system nie jest obsługiwany lub wystąpił problem z zastosowaniem konfiguracji systemu.&lt;/p&gt;
 
@@ -5202,6 +5215,7 @@ Osoby z wolnym połączeniem mogą nie zobaczyć treści, które przesyłasz.</
 <translation id="960719561871045870">Kod operatora</translation>
 <translation id="960987915827980018">Zostało około 1 godziny</translation>
 <translation id="962802172452141067">Drzewo folderów zakładek</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplikacja}few{Aplikacje}many{Aplikacje}other{Aplikacje}}</translation>
 <translation id="968000525894980488">Włącz Usługi Google Play.</translation>
 <translation id="968174221497644223">Pamięć podręczna aplikacji</translation>
 <translation id="969096075394517431">Zmień języki</translation>

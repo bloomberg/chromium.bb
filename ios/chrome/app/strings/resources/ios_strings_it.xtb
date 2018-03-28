@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Indirizzo 1</translation>
 <translation id="1545749641540134597">Leggi il codice QR</translation>
 <translation id="1580783302095112590">Messaggio inviato.</translation>
+<translation id="1582732959743469162">Verrà interrotto l'avanzamento del tuo download attuale.</translation>
 <translation id="1612730193129642006">Mostra griglia schede</translation>
 <translation id="1644574205037202324">Cronologia</translation>
 <translation id="1646446875146297738">Se attivi "Non tenere traccia", viene inclusa una richiesta con il tuo traffico di navigazione. Gli eventuali effetti dipendono dalla risposta o meno di un sito web alla richiesta e dalla modalità di interpretazione della richiesta.
@@ -284,6 +285,7 @@ La funzione Handoff deve anche essere attivata nella sezione Generali di Imposta
 <translation id="633809752005859102">Si è verificato un problema. Stiamo cercando una soluzione.</translation>
 <translation id="6342069812937806050">In questo momento</translation>
 <translation id="6344783595350022745">Cancella testo</translation>
+<translation id="6346549652287021269">Iniziare un nuovo download?</translation>
 <translation id="6362362396625799311">Nessuna scheda in incognito</translation>
 <translation id="6374469231428023295">Riprova</translation>
 <translation id="6380866119319257197">Se non ricordi la passphrase o vuoi modificare questa impostazione, <ph name="BEGIN_LINK" />reimposta la sincronizzazione<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7031882061095297553">Sincronizza con</translation>
 <translation id="7053983685419859001">Blocca</translation>
 <translation id="7062545763355031412">Accetta e cambia account</translation>
+<translation id="7102005569666697658">Download in corso… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Nascondi</translation>
 <translation id="7133798577887235672">Nome e cognome</translation>
 <translation id="7136892417564438900">La videocamera non è disponibile</translation>
@@ -360,6 +363,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="7769602470925380267">Accetta ed esci</translation>
 <translation id="7772032839648071052">Conferma passphrase</translation>
 <translation id="780301667611848630">No grazie</translation>
+<translation id="7856733331829174190">Download non riuscito</translation>
 <translation id="7859704718976024901">Cronologia di navigazione</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Esporta password...</translation>
@@ -422,6 +426,7 @@ I tuoi dati sono stati criptati con la tua passphrase di sincronizzazione in dat
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Passphrase obbligatoria</translation>
 <translation id="9148126808321036104">Esegui di nuovo l'accesso</translation>
+<translation id="915371508759614899">Annullare il download?</translation>
 <translation id="9157836665414082580">Elimina finestre di dialogo</translation>
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
 <translation id="9203116392574189331">Handoff</translation>

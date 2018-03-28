@@ -58,6 +58,17 @@
 
       Hvis denne regelen brukes, får brukeren tilgang til alle skrivere – unntatt eventuelle ID-er som er oppført i denne regelen.
       </translation>
+<translation id="1181881366217399113">
+      MERK: Denne regelen er på forsøksstadiet og kan føre til at funksjonaliteten ikke fungerer som den skal.
+      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
+      kommadelte lister i sine egne prosesser. Da isoleres også
+      opprinnelser som har navn basert på underdomener. Hvis for eksempel
+      https://example.com/ angis, isoleres også https://foo.example.com/ som
+      en del av nettstedet https://example.com/.
+      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
+      Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
+      I <ph name="PRODUCT_OS_NAME" /> bør du også angi enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> til samme verdi. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      </translation>
 <translation id="1198465924256827162">Hvor ofte opplastinger av enhetsstatusen sendes, i millisekunder.
 
       Hvis denne regelen ikke spesifiseres, er standardfrekvensen 3 timer. 
@@ -254,7 +265,15 @@
       Formatet på verdien følger navnene på tidssonene i «IANA Time Zone Database» (se https://en.wikipedia.org/wiki/Tz_database). De fleste tidssonene kan angis som «kontinent/stor_by» eller «hav/stor_by».
 
       Hvis du spesifiserer denne regelen, blir den automatiske påvisningen av tidssoner basert på enhetens posisjon slått av. Regelen SystemTimezoneAutomaticDetection overstyres også.</translation>
+<translation id="1888871729456797026">Registreringstokenet for retningslinjer for nettskyen på datamaskiner</translation>
 <translation id="1897365952389968758">Tillat alle nettsteder å kjøre JavaScript</translation>
+<translation id="1906888171268104594">Kontrollerer om bruksberegninger og diagnostikkdata, inkludert programstopprapporter, rapporteres til Google.
+
+      Hvis regelen er angitt som «True» (sann), rapporterer <ph name="PRODUCT_OS_NAME" /> bruksberegninger og diagnostikkdata.
+
+      Hvis regelen er angitt som «False» (usann), er rapportering av beregninger og diagnostikkdata deaktivert.
+
+      Hvis den ikke er konfigurert, er rapportering av beregninger og diagnostikkdata deaktivert på ikke-administrerte enheter og aktivert på administrerte enheter.</translation>
 <translation id="193259052151668190">Godkjenningsliste for frakoblingsbare USB-enheter</translation>
 <translation id="1933378685401357864">Bakgrunnsbilde</translation>
 <translation id="1956493342242507974">Konfigurer strømstrømstyring på påloggingssiden i <ph name="PRODUCT_OS_NAME" />.
@@ -409,6 +428,12 @@
 <translation id="2386362615870139244">Tillat låser for skjermaktivering</translation>
 <translation id="2411817661175306360">Advarsler om passordbeskyttelse er slått av</translation>
 <translation id="2411919772666155530">Blokkér varsler på disse nettstedene</translation>
+<translation id="2415979855753196119">Lar deg styre hva som utløser rapportering av kontoer der passordbeskyttelsen kan være kompromittert, som innebærer at Google informeres om at denne kontoen står i fare for å bli kapret.
+
+      Hvis denne regelen er angitt som «PasswordProtectionRiskOff», blir det ikke utløst noen rapportering av kontoer der passordbeskyttelsen kan være kompromittert.
+      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPasswordReuse», blir det utløst rapportering av kontoer der passordbeskyttelsen kan være kompromittert, når brukerne bruker Google-passord om igjen på nettsteder som ikke er på godkjenningslisten.
+      Hvis denne regelen er angitt som «PasswordProtectionRiskOnPhishingReuse», blir det utløst rapportering av kontoer der passordbeskyttelsen kan være kompromittert, når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking.
+      Hvis denne regelen ikke er angitt, blir det utløst rapportering av kontoer der passordbeskyttelsen kan være kompromittert, når brukerne bruker Google-passord om igjen på nettsteder som driver med nettfisking, men brukerne kan endre denne innstillingen.</translation>
 <translation id="2418507228189425036">Slår av lagringen av nettleserloggen i <ph name="PRODUCT_NAME" /> og hindrer brukerne i å endre denne innstillingen.
 
       Hvis denne innstillingen er slått på, lagres ikke nettleserloggen, og fanesynkronisering blir slått av.
@@ -602,6 +627,12 @@
 
       Hvis du aktiverer denne innstillingen, brukes skriveren som er standard for OS-et, som standard destinasjonsvalg.</translation>
 <translation id="2867699958489427143">Rull tilbake til og bli på målversjonen hvis OS-versjonen er nyere enn målet. Utfør en fullstendig powerwash i løpet av prosessen.</translation>
+<translation id="286802604195763750">Lar deg styre hva som utløser advarsler om passordbeskyttelse. Passordbeskyttelsen varsler brukerne når de bruker det beskyttede passordet sitt om igjen på potensielt mistenkelige nettsteder.
+
+      Hvis denne regelen er angitt som «PasswordProtectionWarningOff», blir det ikke vist noen advarsler om passordbeskyttelse.
+      Hvis denne regelen er angitt som «PasswordProtectionWarningOnPasswordReuse», blir det vist en advarsel om passordbeskyttelse når brukerne bruker Google-passord om igjen på nettsteder som ikke står på godkjenningslisten.
+      Hvis denne regelen er angitt som «PasswordProtectionWarningOnPhishingReuse», blir det vist en advarsel om passordbeskyttelse når brukere bruker Google-passord om igjen på nettsteder som driver med nettfisking.
+      Hvis denne regelen ikke er angitt, blir det utløst en advarsel om passordbeskyttelse når brukere bruker Google-passord om igjen på nettsteder som driver med nettfisking, men brukerne kan endre denne innstillingen.</translation>
 <translation id="2872961005593481000">Slå av</translation>
 <translation id="2874209944580848064">Merknad for <ph name="PRODUCT_OS_NAME" />-enheter som støtter Android-apper:</translation>
 <translation id="2877225735001246144">Deaktiver CNAME-oppslag under forhandling om Kerberos-godkjenning</translation>
@@ -636,6 +667,17 @@
           Innstillingsverdien må spesifiseres i millisekunder. Verdien er låst til å være lavere enn eller samsvarende med forsinkelsen for å slå av skjermen (hvis den er konfigurert) og inaktivitetsforsinkelsen.</translation>
 <translation id="2987155890997901449">Slå på ARC</translation>
 <translation id="2987227569419001736">Kontrollér bruken av Web Bluetooth API</translation>
+<translation id="2998886474614739865">
+      MERK: Denne regelen er på forsøksstadiet og kan føre til at funksjonaliteten ikke fungerer som den skal.
+      Denne regelen gjelder for påloggingsskjermen. Se også regelen <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i kommadelte
+      lister i sine egne prosesser. Da isoleres også opprinnelser som har navn som er
+      basert på underdomener. Hvis for eksempel https://example.com/ angis,
+      isoleres også https://foo.example.com/ som en del av nettstedet
+      https://example.com/.
+      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
+      Hvis regelen ikke er konfigurert, brukes plattformens standardinnstillinger for nettstedsisolering for påloggingsskjermen.
+      </translation>
 <translation id="3016255526521614822">Godkjenn notatapper for å tillate dem på låseskjermen for <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Antall milepæler rollback er tillatt for</translation>
 <translation id="3030000825273123558">Aktiver rapportering av beregninger</translation>
@@ -734,6 +776,18 @@
 
           Hvis denne innstillingen er satt til en streng som ikke er tom, brukes denne strengen som navnet på destinasjonen for <ph name="PRODUCT_NAME" />. Ellers blir enhetsnavnet angitt som destinasjonsnavnet. Hvis denne innstillingen ikke er satt til noen verdi, blir enhetsnavnet angitt som destinasjonsnavnet, og eieren av enheten (eller en bruker fra domenet som administrerer enheten) kan endre det. Navnet er begrenset til 24 tegn.</translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
+<translation id="3386001018488754001">
+      MERK: Denne regelen er på forsøksstadiet og kan føre til at funksjonaliteten ikke fungerer som den skal.
+      Denne regelen gjelder for påloggingsskjermen. Se også regelen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      Det kan være lurt å endre innstillingen for IsolateOrigins-regelen
+      for å få det beste fra begge verdener – isolering og begrenset
+      innvirkning for brukere – ved å bruke IsolateOrigins sammen med
+      en liste over nettstedene du vil isolere. Denne innstillingen
+      (SitePerProcess) isolerer alle nettsteder.
+      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
+      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
+      Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
+      </translation>
 <translation id="3395348522300156660">Angir skriverne som en bruker kan bruke.
 
       Denne regelen brukes bare hvis <ph name="PRINTERS_WHITELIST" /> er valgt for <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -774,6 +828,10 @@
           Hvis innstillingen er satt til False eller ikke er angitt, begynner tidtakingen av strømstyringsforsinkelser og øktens varighet å løpe umiddelbart når økten starter.</translation>
 <translation id="3478024346823118645">Slett brukerdata ved avlogging</translation>
 <translation id="348495353354674884">Aktiver virtuelt tastatur</translation>
+<translation id="3487623755010328395">
+        Hvis denne regelen er angitt, prøver <ph name="PRODUCT_NAME" /> å registrere seg og bruke tilknyttede retningslinjer for nettskyen for alle profiler.
+
+        Verdien til denne regelen er et registreringstoken som kan hentes ut fra Google Administrasjonskonsoll.</translation>
 <translation id="3496296378755072552">Passordbehandling</translation>
 <translation id="350443680860256679">Konfigurer ARC</translation>
 <translation id="3504791027627803580">Angir nettadressen for søkemotoren som brukes til bildesøk. Søkeforespørsler blir sendt via GET-metoden. Hvis DefaultSearchProviderImageURLPostParams-innstillingen er angitt, bruker bildesøkforespørsler POST-metoden i stedet.
@@ -1344,6 +1402,17 @@
 
       Hvis regelen ikke er konfigurert, eller hvis den er angitt som en tom streng eller et ugyldig portområde, kan WebRTC bruke alle tilgjengelige lokale UDP-porter.</translation>
 <translation id="5290940294294002042">Angi en liste over programtillegg som brukeren kan aktivere eller deaktivere</translation>
+<translation id="5301787427319106606">
+      MERK: Denne regelen er på forsøksstadiet og kan føre til at funksjonaliteten ikke fungerer som den skal!
+      Det kan være lurt å endre innstillingen for IsolateOrigins-regelen for å få
+      det beste fra begge verdener – isolering og begrenset innvirkning for brukere –
+      ved å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere.
+      Denne innstillingen (SitePerProcess) isolerer alle nettsteder.
+      Hvis regelen er aktivert, kjøres alle nettsteder i sine egne prosesser.
+      Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
+      Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
+      I <ph name="PRODUCT_OS_NAME" /> bør du også angi enhetsinnstillingene for <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> til samme verdi. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      </translation>
 <translation id="5302612588919538756">Denne regelen er avviklet. Vurder å bruke SyncDisabled i stedet.
 
       Tillater at brukeren logger på <ph name="PRODUCT_NAME" />.
@@ -1937,6 +2006,14 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="706669471845501145">Tillat nettsteder å vise varsler på skrivebordet</translation>
 <translation id="7072208053150563108">Endringsfrekvens for maskinpassord</translation>
 <translation id="7072406291414141328">Slår på reduksjon av båndbredde for nettverk</translation>
+<translation id="7074513465313721551">Konfigurer listen over domener som Safe Browsing skal stole på. Dette betyr at
+     Safe Browsing ikke ser etter skadelige ressurser (f.eks. nettfisking, skadelig programvare og uønsket programvare) hvis nettadressene deres samsvarer med disse domenene
+      Safe Browsing-tjenesten for nedlastingsbeskyttelse ikke kontrollerer nedlastinger fra disse domenene
+      Safe Browsing-tjenesten for passordbeskyttelse ikke kontrollerer gjenbruk av passord for sider med nettadresser som samsvarer med disse domenene
+
+      Hvis denne innstillingen er aktivert, stoler Safe Browsing på disse domenene.
+      Hvis denne innstillingen er deaktivert, brukes standard Safe Browsing-beskyttelse for alle ressurser.
+      Denne regelen er ikke tilgjengelig i Windows-forekomster som ikke er knyttet til noe <ph name="MS_AD_NAME" />-domene.</translation>
 <translation id="7079519252486108041">Blokkér forgrunnsvinder på disse nettstedene</translation>
 <translation id="7106631983877564505">Slå på lås når <ph name="PRODUCT_OS_NAME" />-enheter blir inaktive eller suspenderes.
 

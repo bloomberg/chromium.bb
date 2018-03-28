@@ -59,6 +59,14 @@
 
       Bu politika kullanılırsa, bu politikada listelenen kimlikler dışındaki tüm yazıcılar kullanıcıya sağlanır.
       </translation>
+<translation id="1181881366217399113">
+      NOT: Bu politika deneme niteliğinde olup işleyişi bozabilir!
+      Bu politikanın etkinleştirilmesi halinde, virgülle ayrılmış listede adı verilen her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de izole edilmesine neden olur.
+      Bu politikanın devre dışı bırakılması halinde Site İzolasyonu öncesi işlem yönetimi mantığı etkin olur.
+      Bu politikanın yapılandırılmaması halinde kullanıcı bu ayarı değiştirebilir.
+
+      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde, <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> cihaz politikasının aynı değere ayarlanması da önerilir. İki politikanın belirttiği değerler eşleşmezse, kullanıcı politikası tarafından belirtilen değer uygulanırken kullanıcı oturumuna girişte bir gecikme olabilir.
+      </translation>
 <translation id="1198465924256827162">Cihaz durumuyla ilgili güncellemelerin ne sıklıkta (mili saniye olarak) gönderileceğini belirleyin.
 
       Bu politika ayarlanmadan bırakılırsa varsayılan sıklık 3 saattir. İzin
@@ -259,7 +267,15 @@
       Değerin biçimi "IANA Saat Dilimleri Veritabanı" (bkz."https://tr.wikipedia.org/wiki/IANA_zaman_dilimi_veritaban%C4%B1") içindeki saat dilimi adlarına uygundur. Özellikle, saat dilimlerinin çoğu "kıta/büyük_kent" veya "okyanus/büyük_kent" olarak anılır.
 
       Bu politikanın ayarlanması, cihaz konumuna göre otomatik saat dilimi belirlemeyi devre dışı bırakır. Ayrıca, SystemTimezoneAutomaticDetection politikasını da geçersiz kılar.</translation>
+<translation id="1888871729456797026">Masaüstünde bulut politikasının kayıt jetonu</translation>
 <translation id="1897365952389968758">Tüm sitelerin JavaScript çalıştırmasına izin ver</translation>
+<translation id="1906888171268104594">Kilitlenme raporları da dahil olmak üzere kullanım ölçümlerinin ve teşhis verilerinin Google'a bildirilip bildirilmeyeceğini denetler.
+
+      Doğru (true) değerine ayarlanırsa <ph name="PRODUCT_OS_NAME" /> kullanım ölçümleri ve teşhis verileri rapor edilir.
+
+      Yanlış (false) değerine ayarlanırsa, ölçüm ve teşhis verilerini raporlama işlevi devre dışı olur.
+
+      Yapılandırılmazsa, ölçüm ve teşhis verileri yönetilmeyen cihazlarda devre dışı bırakılır, yönetilen cihazlarda etkinleştirilir.</translation>
 <translation id="193259052151668190">Çıkarılabilir USB cihazları beyaz listesi</translation>
 <translation id="1933378685401357864">Duvar kağıdı resmi</translation>
 <translation id="1956493342242507974"><ph name="PRODUCT_OS_NAME" /> sisteminde güç yönetimini giriş ekranında yapılandır.
@@ -420,6 +436,12 @@
 <translation id="2386362615870139244">Ekran uyandırma kilitlerine izin ver</translation>
 <translation id="2411817661175306360">Şifre koruma uyarısı kapalı</translation>
 <translation id="2411919772666155530">Bu sitelerde bildirimleri engelle</translation>
+<translation id="2415979855753196119">Şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliğinin tetiklenmesini kontrol etmenize olanak tanır. Şifre koruma hizmetinin risk altındaki hesabı işaretlemesi, Google'ın bu hesabın ele geçirilme riski taşıdığı konusunda bilgilendirilmesi anlamına gelir.
+
+      Bu politika "PasswordProtectionRiskOff" olarak ayarlanırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği tetiklenmez.
+      Bu politika "PasswordProtectionRiskOnPasswordReuse" olarak ayarlanırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kullanıcı Google şifresini beyaz listede olmayan bir sitede yeniden kullandığında tetiklenir.
+      Bu politika "PasswordProtectionRiskOnPhishingReuse" olarak ayarlanırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kullanıcı Google şifresini kimlik avı sitelerinde yeniden kullandığında tetiklenir.
+      Bu politika ayarlanmadan bırakılırsa, şifre koruma hizmetinin risk altındaki hesabı işaretleme özelliği, kullanıcı Google şifresini kimlik avı sitelerinde yeniden kullandığında tetiklenir ama kullanıcı, bu ayarı değiştirebilir.</translation>
 <translation id="2418507228189425036"><ph name="PRODUCT_NAME" /> ürününde tarayıcı geçmişini kaydetmeyi devre dışı bırakır ve kullanıcıların bu ayarı değiştirmesine izin vermez.
 
       Bu ayar etkinleştirilirse tarama geçmişi kaydedilmez. Bu ayar aynı zamanda sekme senkronizasyonunu da devre dışı bırakır.
@@ -615,6 +637,12 @@
 
       Bu ayarı etkinleştirirseniz Baskı Önizleme, varsayılan hedef seçenek olarak işletim sisteminin varsayılan yazıcısını kullanır.</translation>
 <translation id="2867699958489427143">OS sürümü hedeften daha yeniyse sürümü geri alıp hedef sürümde kalır. Bu süreçte tam bir powerwash işlemi gerçekleştirir.</translation>
+<translation id="286802604195763750">Şifre koruma uyarısının tetiklenmesini kontrol etmenize olanak tanır. Şifre koruma, korunan şifrelerini şüpheli olabilecek sitelerde yeniden kullandıklarında kullanıcıları uyarır.
+
+      Bu politikanın "PasswordProtectionWarningOff" değerine ayarlanması halinde herhangi bir şifre koruma uyarısı gösterilmez.
+      Bu politikanın "PasswordProtectionWarningOnPasswordReuse" değerine ayarlanması halinde, kullanıcı Google şifresini beyaz listede yer almayan sitelerde yeniden kullandığında şifre koruma uyarısı gösterilir.
+      Bu politikanın "PasswordProtectionWarningOnPhishingReuse" değerine ayarlanması halinde, kullanıcı Google şifresini kimlik avı sitelerinde yeniden kullandığında şifre koruma uyarısı gösterilir.
+      Bu politikanın ayarlanmadan bırakılması halinde, kullanıcı Google şifresini bir kimlik avı sitesinde yeniden kullandığında şifre koruma uyarısı tetiklenir ancak kullanıcı bu ayarı değiştirebilir.</translation>
 <translation id="2872961005593481000">Kapat</translation>
 <translation id="2874209944580848064">Android uygulamalarını destekleyen <ph name="PRODUCT_OS_NAME" /> cihazlarına ilişkin not:</translation>
 <translation id="2877225735001246144">Kerberos kimlik doğrulaması anlaşmasını yaparken CNAME aramasını devre dışı bırak</translation>
@@ -649,6 +677,13 @@
           Politika değeri milisaniye olarak belirtilmelidir. Değerler ekran kapanma gecikmesinden (ayarlanmışsa) ve boşta kalma gecikmesinden küçük veya ona eşit olacak şekilde bir aralığa sıkıştırılır.</translation>
 <translation id="2987155890997901449">ARC'yi etkinleştir</translation>
 <translation id="2987227569419001736">Web Bluetooth API'sının kullanımını kontrol et</translation>
+<translation id="2998886474614739865">
+      NOT: Bu politika deneme niteliğinde olup işleyişi bozabilir!
+      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse, kullanıcı politikası tarafından belirtilen değer uygulanırken kullanıcı oturuma girmesi gecikebilir.
+      Bu politikanın etkinleştirilmesi halinde, virgülle ayrılmış listede ad verilmiş her kaynak kendi işleminde çalışır. Bu politika ayrıca alt alan adlarıyla adlandırılan kaynakları da izole eder; örneğin, https://example.com/ adresinin belirtilmesi, https://example.com/ sitesinin bir parçası olarak https://foo.example.com/ sitesinin de izole edilmesine neden olur.
+      Bu politikanın devre dışı bırakılması halinde Site Bazlı İzolasyon işlem yönetimi mantığı etkin olur.
+      Bu politikanın yapılandırılmaması halinde oturum açma ekranı için platformun varsayılan site izolasyonu ayarları kullanılır.
+      </translation>
 <translation id="3016255526521614822">Beyaz listedeki not alma uygulamalarına <ph name="PRODUCT_OS_NAME" /> kilit ekranında izin verilir</translation>
 <translation id="3021562480854470924">Geri alma işleminin izin verildiği dönüm noktası sayısı</translation>
 <translation id="3030000825273123558">Ölçüm raporlamayı etkinleştir</translation>
@@ -757,6 +792,14 @@
 
           Bu politika boş olmayan bir dizeye ayarlanırsa, söz konusu dize <ph name="PRODUCT_NAME" /> hedefinin adı olarak kullanılır. Aksi halde hedef adı cihaz adı olur. Bu politika ayarlanmazsa hedef adı cihaz adı olur ve cihaz sahibi (veya alandan cihazı yöneten bir kullanıcı), adı değiştirme iznine sahip olur. Ad, 24 karakterle sınırlıdır.</translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
+<translation id="3386001018488754001">
+      NOT: Bu politika deneme niteliğinde olup işleyişi bozabilir!
+      Bu politika, oturum açma ekranı için geçerlidir. Lütfen ayrıca kullanıcı oturumu için geçerli olan <ph name="SITE_PER_PROCESS_POLICY_NAME" /> politikasına da bakın. Her iki politikanın da aynı değere ayarlanması önerilir. Değerler eşleşmezse, kullanıcı politikası tarafından belirtilen değer uygulanırken kullanıcı oturuma girmesi gecikebilir.
+      Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar (SitePerProcess) tüm siteleri izole eder.
+      Bu politikanın etkinleştirilmesi halinde her site kendi işleminde çalışır.
+      Bu politikanın devre dışı bırakılması halinde Site Bazlı İzolasyon işlem yönetimi mantığı etkin olur.
+      Bu politikanın yapılandırılmaması halinde kullanıcı bu ayarı değiştirebilir.
+      </translation>
 <translation id="3395348522300156660">Bir kullanıcının kullanabileceği yazıcıları belirtir.
 
       Bu politika yalnızca <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> için <ph name="PRINTERS_WHITELIST" /> değeri seçilirse kullanılır
@@ -793,6 +836,10 @@ Bu ayar Kapalı değerine getirilirse veya herhangi bir değer belirlenmezse <ph
          Bu politika Yanlış seçeneğine ayarlanır veya ayarlanmadan bırakılırsa güç yönetimi gecikmeleri ve oturum süresi sınırı oturumun başında hemen çalışmaya başlar.</translation>
 <translation id="3478024346823118645">Çıkışta kullanıcı verilerini sil</translation>
 <translation id="348495353354674884">Sanal klavyeyi etkinleştir</translation>
+<translation id="3487623755010328395">
+        Bu politika ayarlanırsa <ph name="PRODUCT_NAME" /> kendisini kaydetmeye çalışır ve tüm profiller için ilişkili bulut politikasını uygular.
+
+        Bu politikanın değeri, Google Yönetim konsolundan alınabilecek bir Kayıt jetonudur.</translation>
 <translation id="3496296378755072552">Şifre yöneticisi</translation>
 <translation id="350443680860256679">ARC'yi yapılandır</translation>
 <translation id="3504791027627803580">Resim araması sağlamak için kullanılacak arama motorunun URL'sini belirtir. Arama istekleri GET yöntemi kullanılarak gönderilir. DefaultSearchProviderImageURLPostParams politikası ayarlanırsa, resim araması istekleri GET yöntemi yerine POST yöntemini kullanır.
@@ -1397,6 +1444,15 @@ politikayı geçersiz kılamaz.
 
       Politika ayarlanmazsa veya boş dize değerine ya da geçersiz bir bağlantı noktası aralığına ayarlanırsa, WebRTC'nin kullanılabilir herhangi bir yerel UDP bağlantı noktasını kullanmasına izin verilir.</translation>
 <translation id="5290940294294002042">Kullanıcının etkinleştirebileceği veya devre dışı bırakabileceği eklentilerin listesini belirt</translation>
+<translation id="5301787427319106606">
+      NOT: Bu politika deneme niteliğinde olup işleyişi bozabilir!
+      Hem izolasyondan hem de kullanıcılar için sınırlı etkiden en iyi şekilde yararlanmak üzere IsolateOrigins politika ayarına bakmak isteyebilirsiniz. Bunun için, izole etmek istediğiniz sitelerin listesiyle IsolateOrigins'i kullanabilirsiniz. Bu ayar (SitePerProcess) tüm siteleri izole eder.
+      Bu politikanın etkinleştirilmesi halinde her site kendi işleminde çalışır.
+      Bu politikanın devre dışı bırakılması halinde Site Bazlı İzolasyon işlem yönetimi mantığı etkin olur.
+
+      Bu politikanın yapılandırılmaması halinde kullanıcı bu ayarı değiştirebilir.
+      <ph name="PRODUCT_OS_NAME" /> işletim sisteminde, <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> cihaz politikasının aynı değere ayarlanması da önerilir. İki politikanın belirttiği değerler eşleşmezse, kullanıcı politikası tarafından belirtilen değer uygulanırken kullanıcı oturumuna girişte bir gecikme olabilir.
+      </translation>
 <translation id="5302612588919538756">Bu politika kullanımdan kaldırılmıştır. Bunun yerine SyncDisabled'i kullanmayı düşünün.
 
       Kullanıcının <ph name="PRODUCT_NAME" /> ürününde oturum açmasına olanak verir.
@@ -1993,6 +2049,14 @@ politikayı geçersiz kılamaz.
 <translation id="706669471845501145">Sitelerin masaüstü bildirimi göstermesine izin ver</translation>
 <translation id="7072208053150563108">Makine şifresi değişim hızı</translation>
 <translation id="7072406291414141328">Ağ bant genişliğini daraltmayı etkinleştirir</translation>
+<translation id="7074513465313721551">Güvenli Tarama'nın güveneceği alanların listesini yapılandırın. Bunun anlamı şudur:
+      Tehlikeli kaynakların (ör. kimlik avı, kötü amaçlı yazılım veya istenmeyen yazılım) URL'leri bu alanlarla eşleşirse Güvenli Tarama tehlikeli kaynakları kontrol etmeyecektir.
+      Güvenli Tarama'nın indirme koruma hizmeti, bu alanlarda barındırılan indirmeleri kontrol etmeyecektir.
+      Sayfa URL'si bu alanlarla eşleşirse Güvenli Tarama'nın şifre koruma hizmeti şifre yeniden kullanımını kontrol etmeyecektir.
+
+      Bu ayar etkinleştirilirse Güvenli Tarama bu alanlara güvenecektir.
+      Bu ayar devre dışı bırakılırsa veya ayarlanmazsa varsayılan Güvenli Tarama koruması tüm kaynaklara uygulanır.
+      Bu politika, bir <ph name="MS_AD_NAME" /> alanına katılmayan Windows örneklerinde kullanılamaz.</translation>
 <translation id="7079519252486108041">Bu sitelerde pop-up'ları engelle</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" /> cihazları boştayken veya askıya alındığında kilidi etkinleştir.
 

@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">주소 1</translation>
 <translation id="1545749641540134597">QR 코드 스캔</translation>
 <translation id="1580783302095112590">메일이 전송되었습니다.</translation>
+<translation id="1582732959743469162">현재 진행 중인 다운로드가 모두 중지됩니다.</translation>
 <translation id="1612730193129642006">탭을 격자로 보기</translation>
 <translation id="1644574205037202324">방문 기록</translation>
 <translation id="1646446875146297738">'추적 안함'을 사용 설정하면 요청이 탐색 트래픽에 포함됩니다. 웹사이트가 요청에 응답하는지 여부와 요청이 어떻게 해석되는가에 따라 결과가 달라집니다.
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">문제가 발생했습니다. 조사해 보겠습니다.</translation>
 <translation id="6342069812937806050">완료됨</translation>
 <translation id="6344783595350022745">텍스트 삭제</translation>
+<translation id="6346549652287021269">다운로드를 새로 시작하시겠습니까?</translation>
 <translation id="6362362396625799311">시크릿 탭 없음</translation>
 <translation id="6374469231428023295">다시 시도</translation>
 <translation id="6380866119319257197">암호를 잊어버렸거나 이 설정을 변경하려면 <ph name="BEGIN_LINK" />동기화를 재설정<ph name="END_LINK" />합니다.</translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">동기화 가능 계정</translation>
 <translation id="7053983685419859001">차단</translation>
 <translation id="7062545763355031412">동의 및 계정 전환</translation>
+<translation id="7102005569666697658">다운로드 중… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">숨기기</translation>
 <translation id="7133798577887235672">이름</translation>
 <translation id="7136892417564438900">카메라를 사용할 수 없음</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">동의 및 로그아웃</translation>
 <translation id="7772032839648071052">암호 확인</translation>
 <translation id="780301667611848630">아니요, 괜찮습니다.</translation>
+<translation id="7856733331829174190">다운로드할 수 없음</translation>
 <translation id="7859704718976024901">인터넷 사용 기록</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">비밀번호 내보내기...</translation>
@@ -422,6 +426,7 @@
 <translation id="9083392325882095631">항목 1개</translation>
 <translation id="9100610230175265781">암호를 입력해야 합니다.</translation>
 <translation id="9148126808321036104">다시 로그인</translation>
+<translation id="915371508759614899">다운로드를 취소하시겠습니까?</translation>
 <translation id="9157836665414082580">대화상자 숨기기</translation>
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
 <translation id="9203116392574189331">Handoff</translation>

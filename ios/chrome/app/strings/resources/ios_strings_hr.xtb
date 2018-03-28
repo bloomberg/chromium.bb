@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">1. adresni redak</translation>
 <translation id="1545749641540134597">Skeniranje QR koda</translation>
 <translation id="1580783302095112590">Poruka je poslana.</translation>
+<translation id="1582732959743469162">Time će se zaustaviti trenutačno preuzimanje i izbrisati sve što je dosad preuzeto.</translation>
 <translation id="1612730193129642006">Prikaz rešetke kartice</translation>
 <translation id="1644574205037202324">Povijest</translation>
 <translation id="1646446875146297738">Ako omogućite "Nemoj pratiti", taj će se zahtjev slati uz vaš promet pregledavanja. Učinak ovisi o tome hoće li web-lokacija reagirati na taj zahtjev i kako će se on tumačiti.
@@ -284,6 +285,7 @@ Handoff mora biti omogućen i u odjeljku Općenito u Postavkama, a vaši uređaj
 <translation id="633809752005859102">Dogodila se velika pogreška. Poradit ćemo na tome.</translation>
 <translation id="6342069812937806050">Samo sad</translation>
 <translation id="6344783595350022745">Izbriši tekst</translation>
+<translation id="6346549652287021269">Pokrenuti novo preuzimanje?</translation>
 <translation id="6362362396625799311">Nema anonimnih kartica</translation>
 <translation id="6374469231428023295">Pokušaj ponovo</translation>
 <translation id="6380866119319257197">Ako zaboravite šifru ili želite promijeniti tu postavku, <ph name="BEGIN_LINK" />poništite sinkronizaciju<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7031882061095297553">Sinkronizacija s računima</translation>
 <translation id="7053983685419859001">Blokiraj</translation>
 <translation id="7062545763355031412">Prihvati i promijeni račun</translation>
+<translation id="7102005569666697658">Preuzimanje… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Sakrij preglednik</translation>
 <translation id="7133798577887235672">Ime i prezime</translation>
 <translation id="7136892417564438900">Fotoaparat nije dostupan</translation>
@@ -360,6 +363,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="7769602470925380267">Prihvati i odjavi se</translation>
 <translation id="7772032839648071052">Potvrdi zaporku</translation>
 <translation id="780301667611848630">Ne, hvala</translation>
+<translation id="7856733331829174190">Preuzimanje nije moguće</translation>
 <translation id="7859704718976024901">Povijest pregledavanja</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Izvoz zaporki...</translation>
@@ -422,6 +426,7 @@ Vaši su podaci šifrirani vašom šifrom za sinkronizaciju <ph name="TIME" />. 
 <translation id="9083392325882095631">1 stavka</translation>
 <translation id="9100610230175265781">Potrebna je zaporka</translation>
 <translation id="9148126808321036104">Prijavite se ponovno</translation>
+<translation id="915371508759614899">Otkazati preuzimanje?</translation>
 <translation id="9157836665414082580">Izostavi dijaloge</translation>
 <translation id="9188680907066685419">Odjava s upravljanog računa</translation>
 <translation id="9203116392574189331">Handoff</translation>

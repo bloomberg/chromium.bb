@@ -58,6 +58,13 @@
 
       如果使用此政策，那么除了与此政策中所列 ID 对应的打印机之外，其他所有打印机都可供用户使用。
       </translation>
+<translation id="1181881366217399113">
+      请注意：此政策尚处于实验阶段，因此它的功能可能会出现中断！
+      如果启用了此政策，则相关列表中以英文逗号分隔的每个指定来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
+      如果停用了此政策，“按网站隔离”进程管理逻辑即会生效。
+      如果未配置此政策，用户将能够更改此设置。
+      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 这项设备政策设为相同的值。如果这两项政策指定的值不一致，并且当前所应用的是由用户政策指定的值，那么系统在进入用户会话时便可能会发生延迟。
+      </translation>
 <translation id="1198465924256827162">发送设备状态上传内容的频率（以毫秒为单位）。
 
       如果此政策未设置，默认频率为 3 小时。允许的最低频率为 60 秒。</translation>
@@ -235,7 +242,15 @@
       时区值格式遵循“IANA 时区数据库”（请访问“https://en.wikipedia.org/wiki/Tz_database”）中的时区名称所采用的格式。具体而言，大多数时区均可以依照“大陆/大城市”或“海洋/大城市”的格式命名。
 
       设置此政策后，系统将完全停用根据设备位置信息自动解析时区的功能，SystemTimezoneAutomaticDetection 政策也会遭到覆盖。</translation>
+<translation id="1888871729456797026">云政策在桌面设备上的注册令牌</translation>
 <translation id="1897365952389968758">允许所有网站运行 JavaScript</translation>
+<translation id="1906888171268104594">控制是否要将使用情况指标和诊断数据（包括崩溃报告）反馈给 Google。
+
+      如果此政策设为 true，<ph name="PRODUCT_OS_NAME" />将会报告使用情况指标和诊断数据。
+
+      如果此政策设为 false，指标和诊断数据报告功能便会被停用。
+
+      如果未配置此政策，指标和诊断数据报告功能将会在非托管设备上停用，但会在托管设备上启用。</translation>
 <translation id="193259052151668190">分离式 USB 设备白名单</translation>
 <translation id="1933378685401357864">壁纸图片</translation>
 <translation id="1956493342242507974">指定<ph name="PRODUCT_OS_NAME" />中登录屏幕的电源管理设置。
@@ -384,6 +399,12 @@
 <translation id="2386362615870139244">允许使用屏幕唤醒锁定</translation>
 <translation id="2411817661175306360">密码保护服务警告功能处于关闭状态</translation>
 <translation id="2411919772666155530">阻止在这些网站上显示通知</translation>
+<translation id="2415979855753196119">可让您控制“密码保护服务举报面临风险的帐号”功能的触发条件。该功能可在相应帐号面临被盗用的风险时向 Google 发出通知。
+
+      如果此政策设为“PasswordProtectionRiskOff”，则一律不会触发“密码保护服务举报面临风险的帐号”功能。
+      如果此政策设为“PasswordProtectionRiskOnPasswordReuse”，那么每当用户在任何未列入白名单的网站上重复使用 Google 密码时，都会触发“密码保护服务举报面临风险的帐号”功能。
+      如果此政策设为“PasswordProtectionRiskOnPhishingReuse”，那么每当用户在网上诱骗网站上重复使用 Google 密码时，都会触发“密码保护服务举报面临风险的帐号”功能。
+      如果未设置此政策，那么当用户在网上诱骗网站上重复使用 Google 密码时，“密码保护服务举报面临风险的帐号”功能便会被触发，但用户可以更改此设置。</translation>
 <translation id="2418507228189425036">停用 <ph name="PRODUCT_NAME" /> 中的浏览记录保存功能，并禁止用户更改此设置。
 
       如果此设置处于启用状态，系统将不会保存浏览记录，并且会停用标签页同步功能。
@@ -569,6 +590,12 @@
 
       如果您启用此设置，打印预览则会将操作系统默认打印机用作默认目标选项。</translation>
 <translation id="2867699958489427143">如果操作系统版本比目标版本新，则回滚到并持续使用目标版本。在此过程中，请执行完整的 Powerwash 操作。</translation>
+<translation id="286802604195763750">可让您控制“密码保护服务警告”功能的触发条件。当用户在可疑的网站上重复使用受保护的密码时，密码保护服务会向用户发出提醒。
+
+      如果此政策设为“PasswordProtectionWarningOff”，则一律不会触发密码保护服务警告。
+      如果此政策设为“PasswordProtectionWarningOnPasswordReuse”，那么每当用户在任何未列入白名单的网站上重复使用 Google 密码时，都会触发密码保护服务警告。
+      如果此政策设为“PasswordProtectionWarningOnPhishingReuse”，那么每当用户在网上诱骗网站上重复使用 Google 密码时，都会触发密码保护服务警告。
+      如果未设置此政策，那么当用户在网上诱骗网站上重复使用 Google 密码时，密码保护服务警告便会被触发，但用户可以更改此设置。</translation>
 <translation id="2872961005593481000">关机</translation>
 <translation id="2874209944580848064">针对支持 Android 应用的 <ph name="PRODUCT_OS_NAME" />设备的注意事项：</translation>
 <translation id="2877225735001246144">在协商 Kerberos 身份验证时停用 CNAME 查找</translation>
@@ -603,6 +630,13 @@
           指定的政策值应以毫秒为单位，并且不得大于屏幕关闭延迟时间（如果设置了的话）和闲置延迟时间。</translation>
 <translation id="2987155890997901449">启用 ARC</translation>
 <translation id="2987227569419001736">控制对 Web Bluetooth API 的使用</translation>
+<translation id="2998886474614739865">
+      请注意：此政策尚处于实验阶段，因此它的功能可能会出现中断！
+      此政策适用于登录屏幕。另请参阅适用于用户会话的“<ph name="ISOLATE_ORIGINS_POLICY_NAME" />”政策。我们建议您将这两项政策设为相同的值。如果这两项政策指定的值不一致，并且当前所应用的是由用户政策指定的值，那么系统在进入用户会话时便可能会发生延迟。
+      如果启用了此政策，则相关列表中以英文逗号分隔的每个指定来源都会在自己的进程中运行。这也会隔离以子网域命名的来源；例如，指定 https://example.com/ 也会导致 https://foo.example.com/ 被隔离（作为 https://example.com/ 网站的一部分）。
+      如果停用了此政策，“按网站隔离”进程管理逻辑即会生效。
+      如果未配置此政策，系统则会为登录屏幕使用相应平台默认的网站隔离设置。
+      </translation>
 <translation id="3016255526521614822">允许在 <ph name="PRODUCT_OS_NAME" />锁定屏幕启用加入白名单的备注应用</translation>
 <translation id="3021562480854470924">指定允许回滚到的里程碑的数量</translation>
 <translation id="3030000825273123558">启用指标报告</translation>
@@ -702,6 +736,14 @@
 
           如果此政策设为非空字符串，该字符串将被用作 <ph name="PRODUCT_NAME" /> 目标名称。否则，目标名称便是设备名称。如果此政策未设置，则目标名称将是设备名称，且设备所有者（或者该设备的托管网域内的用户）将能更改该名称。该名称的长度不得超过 24 个字符。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
+<translation id="3386001018488754001">
+      请注意：此政策尚处于实验阶段，因此它的功能可能会出现中断！
+      此政策适用于登录屏幕。另请参阅适用于用户会话的“<ph name="SITE_PER_PROCESS_POLICY_NAME" />”政策。我们建议您将这两项政策设为相同的值。如果这两项政策指定的值不一致，并且当前所应用的是由用户政策指定的值，那么系统在进入用户会话时便可能会发生延迟。
+      若想做到两全其美（既能实现隔离，又能减少给用户带来的影响），您最好先查看一下 IsolateOrigins 政策设置，了解如何使用 IsolateOrigins 政策来指定您想隔离的一系列网站。SitePerProcess 这项设置会隔离所有网站。
+      如果启用了此政策，每个网站都会在自己的进程中运行。
+      如果停用了此政策，“按网站隔离”进程管理逻辑即会生效。
+      如果未配置此政策，用户将能够更改此设置。
+      </translation>
 <translation id="3395348522300156660">指定用户可以使用的打印机。
 
       仅当为 <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> 选择了 <ph name="PRINTERS_WHITELIST" /> 时，才可使用此政策。
@@ -738,6 +780,10 @@
           如果该政策设置为 False 或未设置，电源管理延迟和会话长度限制将在会话启动后立即开始计算。</translation>
 <translation id="3478024346823118645">退出时清除用户数据</translation>
 <translation id="348495353354674884">启用虚拟键盘</translation>
+<translation id="3487623755010328395">
+        如果已设置此政策，<ph name="PRODUCT_NAME" /> 将会尝试自行注册并为所有个人资料应用关联的云政策。
+
+        此政策的值是一个可从 Google 管理控制台中检索到的注册令牌。</translation>
 <translation id="3496296378755072552">密码管理器</translation>
 <translation id="350443680860256679">配置 ARC</translation>
 <translation id="3504791027627803580">指定用于提供图片搜索结果的搜索引擎网址。系统将使用 GET 方法发送搜索请求。如果设置了 DefaultSearchProviderImageURLPostParams 政策，那么图片搜索请求会改用 POST 方式。
@@ -1280,6 +1326,14 @@
 
       如果此政策未设置，或者它设置为空字符串或无效端口范围，则允许 WebRTC 使用任何可用的本地 UDP 端口。</translation>
 <translation id="5290940294294002042">指定该用户可启用或停用的插件的列表</translation>
+<translation id="5301787427319106606">
+      请注意：此政策尚处于实验阶段，因此它的功能可能会出现中断！
+      若想做到两全其美（既能实现隔离，又能减少给用户带来的影响），您最好先查看一下 IsolateOrigins 政策设置，了解如何使用 IsolateOrigins 政策来指定您想隔离的一系列网站。SitePerProcess 这项设置会隔离所有网站。
+      如果启用了此政策，每个网站都会在自己的进程中运行。
+      如果停用了此政策，“按网站隔离”进程管理逻辑即会生效。
+      如果未配置此政策，用户将能够更改此设置。
+      倘若您使用的是 <ph name="PRODUCT_OS_NAME" />，我们建议您也将 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 这项设备政策设为相同的值。如果这两项政策指定的值不一致，并且当前所应用的是由用户政策指定的值，那么系统在进入用户会话时便可能会发生延迟。
+      </translation>
 <translation id="5302612588919538756">此政策已弃用，请考虑改用 SyncDisabled。
 
       允许用户登录到 <ph name="PRODUCT_NAME" />。
@@ -1826,6 +1880,14 @@
 <translation id="706669471845501145">允许网站显示桌面通知</translation>
 <translation id="7072208053150563108">设备密码更改率</translation>
 <translation id="7072406291414141328">启用调节网络带宽的功能</translation>
+<translation id="7074513465313721551">配置安全浏览功能将会信任的一系列网域。这意味着：
+      如果相应网址与所指定的任一网域匹配，安全浏览功能将不会检查其中是否含有危险资源（例如网上诱骗、恶意软件或垃圾软件）。
+      安全浏览功能的下载保护服务将不会检查托管在这些网域上的下载内容。
+      如果相应网页的网址与所指定的任一网域匹配，安全浏览功能的密码保护服务将不会检查密码重用情况。
+
+      如果启用了此设置，安全浏览功能将会信任这些网域。
+      如果停用了或未设定此设置，系统则会将默认的安全浏览保护功能应用于所有资源。
+      此政策不适用于未加入 <ph name="MS_AD_NAME" /> 网域的 Windows 实例。</translation>
 <translation id="7079519252486108041">在这些网站上阻止弹出式窗口</translation>
 <translation id="7106631983877564505"><ph name="PRODUCT_OS_NAME" />设备进入待机或暂停状态时，启用锁定功能。
 

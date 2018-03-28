@@ -87,6 +87,7 @@
 <translation id="1709438864123551175">데이터 절약 모드</translation>
 <translation id="1718835860248848330">지난 1시간</translation>
 <translation id="1729516292547892356">가상 현실 콘텐츠를 보려면 Google VR 서비스를 업데이트하세요.</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" />: <ph name="TIME_SINCE_UPDATE" />에 업데이트됨</translation>
 <translation id="1749561566933687563">북마크 동기화</translation>
 <translation id="17513872634828108">열린 탭</translation>
 <translation id="1756600373018374892">내 탭에 빠르게 액세스하려면 이 버튼을 탭하세요.</translation>
@@ -784,6 +785,7 @@
 <translation id="8200772114523450471">다시 시작</translation>
 <translation id="8209050860603202033">이미지 열기</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" />GB가 다운로드됨</translation>
+<translation id="8249310407154411074">맨 위로 이동</translation>
 <translation id="8250920743982581267">문서</translation>
 <translation id="8260126382462817229">다시 로그인해 주세요.</translation>
 <translation id="8261506727792406068">삭제</translation>

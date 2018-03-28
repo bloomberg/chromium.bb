@@ -628,6 +628,7 @@
 <translation id="1944921356641260203">Actualización encontrada</translation>
 <translation id="1951615167417147110">Desplazarse hacia arriba en una página</translation>
 <translation id="1956050014111002555">El archivo contenía varios certificados, pero no se ha importado ninguno de ellos:</translation>
+<translation id="1956390763342388273">Se subirán todos los archivos de "<ph name="FOLDER_PATH" />". Realiza esta acción únicamente si confías en el sitio web.</translation>
 <translation id="1962233722219655970">Esta página utiliza una aplicación de Native Client que no funciona en tu ordenador.</translation>
 <translation id="1962969542251276847">Bloquear pantalla</translation>
 <translation id="1963227389609234879">Eliminar todo</translation>
@@ -840,6 +841,7 @@
 <translation id="2294358108254308676">¿Quieres instalar <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">Método EAP:</translation>
 <translation id="2297705863329999812">Buscar impresoras</translation>
+<translation id="2300383962156589922">Personaliza y controla <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">El directorio raíz de la extensión no es válido.</translation>
 <translation id="2302685579236571180">Navegar de incógnito</translation>
 <translation id="23030561267973084"><ph name="EXTENSION_NAME" /> ha solicitado permisos adicionales.</translation>
@@ -1330,6 +1332,7 @@ sistema operativo desde una unidad USB
 <translation id="3012917896646559015">Ponte en contacto inmediatamente con el fabricante del hardware para enviar tu ordenador a un centro de reparación.</translation>
 <translation id="3013291976881901233">Dispositivos MIDI</translation>
 <translation id="3014095112974898292">Esperando a que otras solicitudes se completen…</translation>
+<translation id="3015639418649705390">Reiniciar ahora</translation>
 <translation id="3015992588037997514">¿Aparece este código en la pantalla de Chromebox?</translation>
 <translation id="3016641847947582299">Componente actualizado</translation>
 <translation id="3016780570757425217">Conocer tu ubicación</translation>
@@ -2202,6 +2205,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4430369329743628066">Añadida a Marcadores</translation>
 <translation id="443454694385851356">Antiguos (no seguro)</translation>
 <translation id="443464694732789311">Continuar</translation>
+<translation id="443475966875174318">Actualizar o quitar aplicaciones incompatibles</translation>
 <translation id="4439318412377770121">¿Quieres registrar <ph name="DEVICE_NAME" /> en Google Cloud Devices?</translation>
 <translation id="4441124369922430666">¿Quieres que esta aplicación se inicie de forma automática cuando se active el ordenador?</translation>
 <translation id="444134486829715816">Ampliar...</translation>
@@ -2384,6 +2388,7 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="473775607612524610">Actualizar</translation>
 <translation id="474217410105706308">Silenciar pestaña</translation>
 <translation id="4742746985488890273">Fijar en la estantería</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />Cómo actualizar aplicaciones<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">La descarga se ha completado.</translation>
 <translation id="4746971725921104503">Parece que ya tienes un usuario administrado con ese nombre. ¿Querías <ph name="LINK_START" />importar <ph name="USER_DISPLAY_NAME" /> en este dispositivo<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Se necesita una extensión de Chrome Web Store</translation>
@@ -3193,6 +3198,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
     <ph name="BEGIN_PARAGRAPH2" />Puedes activar o desactivar esta opción en cualquier momento en los ajustes de las aplicaciones de Android sin que esto afecte a la capacidad de tu dispositivo de enviar la información necesaria para recibir servicios esenciales, como actualizaciones del sistema y funciones de seguridad.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">Traducida</translation>
 <translation id="5991049340509704927">Ampliar</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Para seguir navegando por Internet, pide a tu administrador que quite esta aplicación.}other{Para seguir navegando por Internet, pide a tu administrador que quite estas aplicaciones.}}</translation>
 <translation id="5993332328670040093">El uso de datos dejará de medirse.</translation>
 <translation id="600424552813877586">La aplicación no es válida.</translation>
 <translation id="6005695835120147974">Router multimedia</translation>
@@ -3847,6 +3853,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7040138676081995583">Abrir con...</translation>
 <translation id="7040230719604914234">Operador</translation>
 <translation id="7042418530779813870">Pe&amp;gar y buscar</translation>
+<translation id="7043108582968290193">¡Listo! No se han encontrado aplicaciones incompatibles.</translation>
 <translation id="7049293980323620022">¿Quieres conservar el archivo?</translation>
 <translation id="7051943809462976355">Buscando el ratón...</translation>
 <translation id="7052237160939977163">Enviar datos de seguimiento de rendimiento</translation>
@@ -4017,6 +4024,7 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="7328867076235380839">Combinación no válida</translation>
 <translation id="7329154610228416156">No ha sido posible iniciar la sesión porque se ha establecido una URL de inicio de sesión no segura (<ph name="BLOCKED_URL" />). Ponte en contacto con el administrador.</translation>
 <translation id="7334190995941642545">Smart Lock no está disponible en este momento. Inténtalo de nuevo más tarde.</translation>
+<translation id="7334274148831027933">Habilitar lupa de vista fijada</translation>
 <translation id="7339763383339757376">Certificado único PKCS #7</translation>
 <translation id="7339785458027436441">Comprobar ortografía al escribir</translation>
 <translation id="7339898014177206373">Nueva ventana</translation>
@@ -4389,6 +4397,7 @@ Al instalar <ph name="APP_NAME" />, se descargarán <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7912080627461681647">Tu contraseña se ha cambiado en el servidor. Cierra la sesión y vuelve a iniciarla.</translation>
 <translation id="7912883689016444961">Configurar red móvil</translation>
 <translation id="7915471803647590281">Debes describir el error.</translation>
+<translation id="792514962475806987">Nivel de zoom de vista fijada:</translation>
 <translation id="7925247922861151263">Error de comprobación de AAA</translation>
 <translation id="7925285046818567682">Esperando a <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">No utilizar datos móviles para la sincronización</translation>
@@ -4770,6 +4779,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">URL de detección automática de proxy web:</translation>
 <translation id="8546930481464505581">Personalizar la barra táctil</translation>
+<translation id="8547013269961688403">Habilitar lupa de pantalla completa</translation>
 <translation id="85486688517848470">Mantén pulsada la tecla de búsqueda para cambiar el comportamiento de las teclas de la fila superior</translation>
 <translation id="855081842937141170">Fijar pestaña</translation>
 <translation id="8551388862522347954">Licencias</translation>
@@ -4824,6 +4834,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8642947597466641025">Ampliar el tamaño del texto</translation>
 <translation id="8647834505253004544">La dirección web no es válida</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> o <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">Aunque ya no puedas acceder a tu antiguo perfil, puedes eliminarlo.</translation>
 <translation id="8651585100578802546">Forzar recarga de esta página</translation>
 <translation id="8652400352452647993">No se ha podido empaquetar la extensión</translation>
 <translation id="8652487083013326477">botón de selección de intervalo de páginas</translation>
@@ -4900,7 +4911,9 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8737685506611670901">Abrir enlaces de <ph name="PROTOCOL" /> en lugar de <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741316211671074806">Imagen en imagen</translation>
+<translation id="8743390665131937741">Nivel de zoom de pantalla completa:</translation>
 <translation id="8743864605301774756">Actualizada hace 1 hora</translation>
+<translation id="874689135111202667">{0,plural, =1{¿Quieres subir un archivo a este sitio web?}other{¿Quieres subir # archivos a este sitio web?}}</translation>
 <translation id="8749863574775030885">Acceder a dispositivos USB desde un proveedor desconocido</translation>
 <translation id="8754200782896249056">&lt;p&gt;Al ejecutar <ph name="PRODUCT_NAME" /> en un entorno de escritorio compatible, se utilizará la configuración de proxy del sistema. Sin embargo, tu sistema no es compatible o ha habido algún problema al iniciar la configuración del sistema.&lt;/p&gt;
 
@@ -5205,6 +5218,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="960719561871045870">Código del operador</translation>
 <translation id="960987915827980018">Aproximadamente 1 hora</translation>
 <translation id="962802172452141067">Árbol de la carpeta de marcadores</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{Aplicación}other{Aplicaciones}}</translation>
 <translation id="968000525894980488">Activa los Servicios de Google Play.</translation>
 <translation id="968174221497644223">Caché de aplicación</translation>
 <translation id="969096075394517431">Cambiar idiomas</translation>

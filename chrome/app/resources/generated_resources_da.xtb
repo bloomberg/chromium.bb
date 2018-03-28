@@ -625,6 +625,7 @@
 <translation id="1944921356641260203">En opdatering er fundet</translation>
 <translation id="1951615167417147110">Rul en side op</translation>
 <translation id="1956050014111002555">Filen indeholdt flere certifikater, hvoraf ingen af dem blev importeret:</translation>
+<translation id="1956390763342388273">Denne handling uploader alle filer fra "<ph name="FOLDER_PATH" />". Gør kun dette, hvis du har tillid til websitet.</translation>
 <translation id="1962233722219655970">Denne side bruger en Native Client-app, der ikke virker på din computer.</translation>
 <translation id="1962969542251276847">Skærmlås</translation>
 <translation id="1963227389609234879">Slet alle</translation>
@@ -837,6 +838,7 @@
 <translation id="2294358108254308676">Vil du installere <ph name="PRODUCT_NAME" />?</translation>
 <translation id="2296019197782308739">EAP-metode:</translation>
 <translation id="2297705863329999812">Søg efter printere</translation>
+<translation id="2300383962156589922">Tilpas og administrer <ph name="APP_NAME" /></translation>
 <translation id="2301382460326681002">Udvidelsens rodmappe er ugyldig.</translation>
 <translation id="2302685579236571180">Vær inkognito</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" har anmodet om yderligere tilladelser.</translation>
@@ -1326,6 +1328,7 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="3012917896646559015">Kontakt straks din hardwareproducent, og send din computer til reparation.</translation>
 <translation id="3013291976881901233">MIDI-enheder</translation>
 <translation id="3014095112974898292">Venter på andre anmodninger om at fuldføre...</translation>
+<translation id="3015639418649705390">Genstart nu</translation>
 <translation id="3015992588037997514">Vises denne kode på din Chromebox-skærm?</translation>
 <translation id="3016641847947582299">Komponenten er opdateret</translation>
 <translation id="3016780570757425217">Kende din placering</translation>
@@ -2203,6 +2206,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4430369329743628066">Bogmærket er tilføjet</translation>
 <translation id="443454694385851356">Forældet (ikke sikkert)</translation>
 <translation id="443464694732789311">Fortsæt</translation>
+<translation id="443475966875174318">Opdater eller fjern ikke-kompatible apps</translation>
 <translation id="4439318412377770121">Vil du tilmelde <ph name="DEVICE_NAME" /> til Google Cloud-enheder?</translation>
 <translation id="4441124369922430666">Skal denne app startes automatisk, når du tænder computeren?</translation>
 <translation id="444134486829715816">Udvid...</translation>
@@ -2385,6 +2389,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="473775607612524610">Opdater</translation>
 <translation id="474217410105706308">Slå fanens lyd fra</translation>
 <translation id="4742746985488890273">Fastgør til hylde</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />Se, hvordan du opdaterer apps<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">Din download er fuldført</translation>
 <translation id="4746971725921104503">Det ser ud til, at du allerede administrerer en bruger med dette navn. Prøvede du på at <ph name="LINK_START" />importere <ph name="USER_DISPLAY_NAME" /> til denne enhed<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Kræver en udvidelse fra Chrome Webshop</translation>
@@ -3195,6 +3200,7 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
     <ph name="BEGIN_PARAGRAPH2" />Du kan til enhver tid slå dette til eller fra i indstillingerne for Android-apps. Dette påvirker ikke enhedens mulighed for at sende de oplysninger, den har brug for for at modtage vigtige tjenester, som f.eks. systemopdateringer og sikkerhed.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">Oversat</translation>
 <translation id="5991049340509704927">Forstør</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne denne app.}one{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne denne app.}other{Hvis du vil være sikker på fortsat at kunne bruge internettet, skal du bede din administrator om at fjerne disse apps.}}</translation>
 <translation id="5993332328670040093">Dit dataforbrug måles ikke længere.</translation>
 <translation id="600424552813877586">Ugyldig applikation.</translation>
 <translation id="6005695835120147974">Medierouter</translation>
@@ -3851,6 +3857,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7040138676081995583">Åbn med...</translation>
 <translation id="7040230719604914234">Udbyder</translation>
 <translation id="7042418530779813870">Indsæt og søg</translation>
+<translation id="7043108582968290193">Udført. Der blev ikke fundet nogen ikke-kompatible apps.</translation>
 <translation id="7049293980323620022">Vil du beholde filen?</translation>
 <translation id="7051943809462976355">Søger efter mus...</translation>
 <translation id="7052237160939977163">Send data om ydeevne</translation>
@@ -4021,6 +4028,7 @@ slettes permanent, når den administrerede bruger fjernes. Besøgte websites og 
 <translation id="7328867076235380839">Ugyldig kombination</translation>
 <translation id="7329154610228416156">Login mislykkedes, da det er konfigureret til at anvende en webadresse, der ikke er sikker (<ph name="BLOCKED_URL" />). Kontakt din administrator.</translation>
 <translation id="7334190995941642545">Smart Lock er ikke tilgængelig i øjeblikket. Prøv igen senere.</translation>
+<translation id="7334274148831027933">Aktivér lup for fast visning</translation>
 <translation id="7339763383339757376">PKCS #7, enkeltcertifikat</translation>
 <translation id="7339785458027436441">Kontrollér stavning under indtastning</translation>
 <translation id="7339898014177206373">Nyt vindue</translation>
@@ -4393,6 +4401,7 @@ Installationen af <ph name="APP_NAME" /> downloader <ph name="DOWNLOAD_SIZE" /> 
 <translation id="7912080627461681647">Din adgangskode er blevet ændret på serveren. Log ud, og log derefter ind igen.</translation>
 <translation id="7912883689016444961">Konfigurer mobilnetværk</translation>
 <translation id="7915471803647590281">Fortæl os, hvad der sker, inden du sender feedback.</translation>
+<translation id="792514962475806987">Zoomniveau for fast visning:</translation>
 <translation id="7925247922861151263">AAA-kontrol mislykkedes</translation>
 <translation id="7925285046818567682">Venter på <ph name="HOST_NAME" />...</translation>
 <translation id="7925686952655276919">Brug ikke mobildata til synkronisering</translation>
@@ -4774,6 +4783,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8546541260734613940">[*.]eksempel.dk</translation>
 <translation id="854655314928502177">Webadresse for automatisk registrering af webproxy:</translation>
 <translation id="8546930481464505581">Tilpas Touch Bar</translation>
+<translation id="8547013269961688403">Aktivér forstørrelse af fuld skærm</translation>
 <translation id="85486688517848470">Hold tasten Søg nede for at skifte funktion for den øverste række taster</translation>
 <translation id="855081842937141170">Fastgør fane</translation>
 <translation id="8551388862522347954">Licenser</translation>
@@ -4828,6 +4838,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8642947597466641025">Gør teksten større</translation>
 <translation id="8647834505253004544">Ikke en gyldig webadresse</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> eller <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">Du kan godt fjerne din gamle profil, selvom du ikke længere har adgang til den.</translation>
 <translation id="8651585100578802546">Gennemtving genindlæsning af denne side</translation>
 <translation id="8652400352452647993">Fejl i pakkeudvidelse</translation>
 <translation id="8652487083013326477">alternativknap til sideinterval</translation>
@@ -4904,7 +4915,9 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="8737685506611670901">Åbne <ph name="PROTOCOL" />-links i stedet for <ph name="REPLACED_HANDLER_TITLE" /></translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741316211671074806">Integreret billede</translation>
+<translation id="8743390665131937741">Zoomniveau i fuld skærm:</translation>
 <translation id="8743864605301774756">Opdateret for én time siden</translation>
+<translation id="874689135111202667">{0,plural, =1{Vil du uploade én fil til dette website?}one{Vil du uploade # fil til dette website?}other{Vil du uploade # filer til dette website?}}</translation>
 <translation id="8749863574775030885">Få adgang til USB-enheder fra en ukendt leverandør</translation>
 <translation id="8754200782896249056">&lt;p&gt;Når <ph name="PRODUCT_NAME" /> kører i et understøttet computermiljø, anvendes systemets proxyindstillinger. Dit system understøttes imidlertid ikke, eller også er der opstået et problem ved opstart af din systemkonfiguration.
 &lt;/p&gt;
@@ -5210,6 +5223,7 @@ Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye 
 <translation id="960719561871045870">Operatørkode</translation>
 <translation id="960987915827980018">Omkring én time tilbage</translation>
 <translation id="962802172452141067">Bogmærkemappe i trævisning</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{App}one{App}other{Apps}}</translation>
 <translation id="968000525894980488">Aktivér Google Play-tjenester.</translation>
 <translation id="968174221497644223">Applikationscache</translation>
 <translation id="969096075394517431">Skift sprog</translation>

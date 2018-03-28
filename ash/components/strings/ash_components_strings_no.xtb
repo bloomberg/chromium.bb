@@ -3,6 +3,7 @@
 <translationbundle lang="no">
 <translation id="104962181688258143">Åpne Filer-appen</translation>
 <translation id="1126871238933253947">Bytt til det forrige tastaturspråket du brukte.</translation>
+<translation id="1134347825771908369">Kutt lyden</translation>
 <translation id="1195667586424773550">Dra linken til adressefeltet i fanen</translation>
 <translation id="1204450209689312104">Åpne et nytt vindu i inkognitomodus</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Lagre alle åpne sider i det aktive vinduet som bokmerker i en ny mappe</translation>
 <translation id="355103131818127604">Åpne linken i en ny fane i bakgrunnen</translation>
 <translation id="3649256019230929621">Minimerer vinduet</translation>
+<translation id="3655154169297074232">Faner og vinduer</translation>
 <translation id="3668361878347172356">Utfør forrige handling likevel</translation>
 <translation id="3720939646656082033">Åpne linken i en ny fane, og bytt til den nye fanen</translation>
 <translation id="3725795051337497754">Lukk den aktive fanen</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Lagre linken som et bokmerke</translation>
 <translation id="4141203561740478845">Fremhev raden med adressefeltet</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> eller <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Oversiktsmodus</translation>
+<translation id="4472417192667361414">System- og visningsinnstillinger</translation>
 <translation id="4556221320735744018">Se hurtigstasthjelpen</translation>
 <translation id="4628718545549558538">Åpne statusfeltet (der du ser kontobildet ditt)</translation>
 <translation id="4642092649622328492">Ta en delvis skjermdump</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Gå til begynnelsen av dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
 <translation id="8234414138295101081">Rotér skjermen 90 grader</translation>
+<translation id="826184564253127735">Hurtigtastvisning</translation>
 <translation id="836869401750819675">Åpne nedlastingssiden</translation>
 <translation id="8388247778047144397">Dra linken til et tomt område på faneraden.</translation>
 <translation id="8389638407792712197">Åpne et nytt vindu</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1–8</translation>
 <translation id="9041599225465145264">Lim inn innholdet fra utklippstavlen</translation>
 <translation id="9052808072970550123">Bytt til den neste brukeren</translation>
+<translation id="9106898733795143799">Side og nettleser</translation>
 <translation id="9179672198516322668">Populære hurtigtaster</translation>
 <translation id="93603345341560814">Trykk på <ph name="SHIFT" /> og klikk på en link</translation>
 <translation id="945383118875625837">Dra linken til bokmerkeraden</translation>

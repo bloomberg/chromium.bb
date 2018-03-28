@@ -3,6 +3,7 @@
 <translationbundle lang="de">
 <translation id="104962181688258143">App "Dateien" öffnen</translation>
 <translation id="1126871238933253947">Zur vorher verwendeten Tastatursprache wechseln.</translation>
+<translation id="1134347825771908369">Stummschalten</translation>
 <translation id="1195667586424773550">Link in Adressleiste des Tabs ziehen</translation>
 <translation id="1204450209689312104">Neues Fenster im Inkognitomodus öffnen</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Alle geöffneten Webseiten im aktuellen Fenster als Lesezeichen in einem neuen Ordner speichern</translation>
 <translation id="355103131818127604">Link in einem neuen Tab im Hintergrund öffnen</translation>
 <translation id="3649256019230929621">Fenster minimieren</translation>
+<translation id="3655154169297074232">Tabs &amp; Fenster</translation>
 <translation id="3668361878347172356">Letzte Aktion wiederholen</translation>
 <translation id="3720939646656082033">Link in einem neuen Tab öffnen und dorthin wechseln</translation>
 <translation id="3725795051337497754">Aktuellen Tab schließen</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Link als Lesezeichen speichern</translation>
 <translation id="4141203561740478845">Zeile mit der Adressleiste markieren</translation>
 <translation id="4148761611071495477">"<ph name="CTRL" />" <ph name="SEPARATOR" /> "<ph name="G" />" oder "<ph name="ENTER" />"</translation>
+<translation id="4240486403425279990">Übersichtsmodus</translation>
+<translation id="4472417192667361414">System- &amp; Displayeinstellungen</translation>
 <translation id="4556221320735744018">Siehe Hilfe zu Tastenkombinationen</translation>
 <translation id="4628718545549558538">Statusbereich mit dem Kontobild öffnen</translation>
 <translation id="4642092649622328492">Screenshot eines Bildschirmausschnitts erstellen</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Zum Anfang des Dokuments springen</translation>
 <translation id="8147954207400281792">"<ph name="CTRL" />" <ph name="SEPARATOR" /> "<ph name="K" />" oder "<ph name="E" />"</translation>
 <translation id="8234414138295101081">Bildschirm um 90 Grad drehen</translation>
+<translation id="826184564253127735">Anzeige für Tastenkombinationen</translation>
 <translation id="836869401750819675">Seite "Downloads" öffnen</translation>
 <translation id="8388247778047144397">Link in einen leeren Bereich auf der Tableiste ziehen</translation>
 <translation id="8389638407792712197">Neues Fenster öffnen</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 bis 8</translation>
 <translation id="9041599225465145264">Inhalt aus der Zwischenablage einfügen</translation>
 <translation id="9052808072970550123">Zum nächsten Nutzer wechseln</translation>
+<translation id="9106898733795143799">Seite &amp; Webbrowser</translation>
 <translation id="9179672198516322668">Häufig verwendete Tastenkombinationen</translation>
 <translation id="93603345341560814"><ph name="SHIFT" /> drücken und auf einen Link klicken</translation>
 <translation id="945383118875625837">Link auf die Lesezeichenleiste ziehen</translation>

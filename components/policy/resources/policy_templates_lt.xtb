@@ -58,6 +58,17 @@
 
       Jei ši politika naudojama, naudotojui teikiami visi spausdintuvai, išskyrus šioje politikoje nurodytus ID.
       </translation>
+<translation id="1181881366217399113">
+      PASTABA. Ši politika yra eksperimentinė ir gali sugadinti sistemos funkcijas!
+      Įgalinus politiką kiekvienas pavadinimą turintis šaltinis, įtrauktas į
+      kableliais atskirtų verčių sąrašą, vykdys atskirą procesą. Taip pat bus atskiriami
+      šaltiniai, pavadinti pagal padomenius, pvz., nurodžius https://example.com/
+      taip pat bus atskiriamas ir padomenis https://foo.example.com/ kaip svetainės
+      https://example.com/ dalis.
+      Išjungus politiką įsigalios kiekvienos svetainės atskyrimo proceso tvarkymo logika.
+      Nesukonfigūravus politikos naudotojas galės pakeisti šį nustatymą.
+      Naudojant „<ph name="PRODUCT_OS_NAME" />“ taip pat rekomenduojama nustatyti tą pačią įrenginio politikos „<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />“ vertę. Jei abiejų tipų politikos vertės neatitinka, pradedant naudotojo sesiją gali būti uždelsta, kol taikoma naudotojo politikos nurodyta vertė.
+      </translation>
 <translation id="1198465924256827162">Įrenginio būsenos įkėlimo nustatymo dažnis milisekundėmis.
 
       Jei ši politika nenustatyta, numatytasis dažnis yra 3 val. Minimalus
@@ -256,7 +267,15 @@
       Vertės formatas atitinka laiko juostų pavadinimus, nurodytus „IANA laiko juostų duomenų bazėje“ (žr. adresu https://en.wikipedia.org/wiki/Tz_database (anglų k.). Konkrečiau kalbant, daugelio laiko juostų pavadinimus galima sukurti naudojant formatą „žemynas / didelis_miestas“ arba „vandenynas / didelis_miestas“.
 
       Nustačius šią politiką visiškai išjungiama automatinio laiko juostos nustatymo pagal įrenginio vietovę funkcija. Be to, nepaisoma politikos „SystemTimezoneAutomaticDetection“.</translation>
+<translation id="1888871729456797026">Debesies politikos registracijos prieigos raktas staliniuose kompiuteriuose</translation>
 <translation id="1897365952389968758">Leisti visose svetainėse paleisti „JavaScript“</translation>
+<translation id="1906888171268104594">Valdoma, ar naudojimo metrikos ir diagnostikos duomenų ataskaitos, įskaitant strigčių ataskaitas, teikiamos atgal į sistemą „Google“.
+
+      Jei nustatyta kaip „true“, „<ph name="PRODUCT_OS_NAME" />“ teiks naudojimo metrikos ir diagnostikos duomenų ataskaitas.
+
+      Jei nustatyta kaip „false“, metrikos ir diagnostikos duomenų ataskaitų teikimas bus išjungtas.
+
+      Jei nesukonfigūruota, metrikos ir diagnostikos duomenų ataskaitos bus išjungtos netvarkomuose įrenginiuose ir įgalintos tvarkomuose įrenginiuose.</translation>
 <translation id="193259052151668190">Atjungiamų USB įrenginių baltasis sąrašas</translation>
 <translation id="1933378685401357864">Ekrano fono vaizdas</translation>
 <translation id="1956493342242507974">Konfigūruokite maitinimo tvarkymą „<ph name="PRODUCT_OS_NAME" />“ prisijungimo ekrane.
@@ -419,6 +438,12 @@
 <translation id="2386362615870139244">Leisti ekrano pažadinimo užraktus</translation>
 <translation id="2411817661175306360">Įspėjimas dėl slaptažodžio apsaugos išjungtas</translation>
 <translation id="2411919772666155530">Blokuoti pranešimus šiose svetainėse</translation>
+<translation id="2415979855753196119">Leidžiama valdyti paskyros, kuriai iškilo pavojus, žymėjimo dėl slaptažodžio apsaugos suaktyvinimą. Paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos – tai „Google“ informavimas, kad ši paskyra gali būti užgrobta.
+
+      Jei ši politika nustatyta kaip „PasswordProtectionRiskOff“, nesuaktyvinamas joks paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos.
+      Jei ši politika nustatyta kaip „PasswordProtectionRiskOnPasswordReuse“, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojas pakartotinai naudoja „Google“ slaptažodį bet kurioje svetainėje, kuri neįtraukta į baltąjį sąrašą.
+      Jei ši politika nustatyta kaip „PasswordProtectionRiskOnPhishingReuse“, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojas pakartotinai naudoja „Google“ slaptažodį sukčiavimo svetainėje.
+      Jei ši politika nenustatyta, paskyros, kuriai iškilo pavojus, žymėjimas dėl slaptažodžio apsaugos suaktyvinamas, kai naudotojas pakartotinai naudoja „Google“ slaptažodį sukčiavimo svetainėje, bet naudotojas gali pakeisti šį nustatymą.</translation>
 <translation id="2418507228189425036">„<ph name="PRODUCT_NAME" />“ neleidžiama išsaugoti naršyklės istorijos ir naudotojams keisti šio nustatymo.
 
       Jei įgalinsite šį nustatymą, naršymo istorija nebus išsaugoma. Be to, nustačius šį nustatymą išjungiamas skirtukų sinchronizavimas.
@@ -614,6 +639,12 @@
 
       Įjungus šį nustatymą funkcija „Spaudinio peržiūra“ naudos OS sistemos numatytąjį spausdintuvą kaip numatytąją paskirties vietos parinktį.</translation>
 <translation id="2867699958489427143">Grąžinti ir palikti tikslinę versiją, jei OS versija naujesnė nei tikslinė. Atlikti išsamų „Powerwash“ vykdant procesą.</translation>
+<translation id="286802604195763750">Galite valdyti įspėjimo dėl slaptažodžio apsaugos suaktyvinimą. Slaptažodžio apsauga įspėja naudotojus, kai jie pakartotinai naudoja apsaugotus slaptažodžius potencialiai įtartinose svetainėse.
+
+      Jei ši politika nustatyta kaip „PasswordProtectionWarningOff“, nebus rodomas įspėjimas dėl slaptažodžio apsaugos.
+      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPasswordReuse“, įspėjimas dėl slaptažodžio apsaugos bus rodomas, kai naudotojas pakartotinai naudos „Google“ slaptažodį svetainėje, kuri neįtraukta į baltąjį sąrašą.
+      Jei ši politika nustatyta kaip „PasswordProtectionWarningOnPhishingReuse“, įspėjimas dėl slaptažodžio apsaugos bus rodomas, kai naudotojas pakartotinai naudos „Google“ slaptažodį svetainėje, kurioje sukčiaujama.
+      Jei ši politika nenustatyta, įspėjimas dėl slaptažodžio apsaugos bus suaktyvintas, kai naudotojas pakartotinai naudos „Google“ slaptažodį svetainėje, kurioje sukčiaujama, bet naudotojas galės pakeisti šį nustatymą.</translation>
 <translation id="2872961005593481000">Stabdyti</translation>
 <translation id="2874209944580848064">„<ph name="PRODUCT_OS_NAME" />“ įrenginiams, kuriuose palaikomos „Android“ programos, skirta pastaba:</translation>
 <translation id="2877225735001246144">Neleisti CNAME paieškos vykdant „Kerberos“ tapatumo nustatymą</translation>

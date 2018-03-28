@@ -429,6 +429,7 @@
 <translation id="4103249731201008433">Серийный номер устройства недействителен</translation>
 <translation id="410351446219883937">Автовоспроизведение</translation>
 <translation id="4103763322291513355">Чтобы просмотреть URL, внесенные в черный список, и другие правила, заданные системным администратором, перейдите по адресу: &lt;strong&gt;chrome://policy&lt;/strong&gt;.</translation>
+<translation id="4110652170750985508">Просмотр платежа</translation>
 <translation id="4116663294526079822">Всегда разрешать на этом сайте</translation>
 <translation id="4117700440116928470">Область действия правил не поддерживается.</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{ещё 1 вариант}one{ещё # вариант}few{ещё # варианта}many{ещё # вариантов}other{ещё # варианта}}</translation>
@@ -802,6 +803,7 @@
 <translation id="7275334191706090484">Управляемые закладки</translation>
 <translation id="7298195798382681320">Рекомендованные</translation>
 <translation id="7309308571273880165"><ph name="CRASH_TIME" />: отчет о сбое сохранен, но ещё не загружен (пользователь запросил загрузку)</translation>
+<translation id="7320336641823683070">Устранение ошибок при подключении к Интернету</translation>
 <translation id="7334320624316649418">&amp;Повторить изменение порядка</translation>
 <translation id="733923710415886693">Сертификат сервера не проходил проверку.</translation>
 <translation id="7353601530677266744">Командная строка</translation>
@@ -886,6 +888,7 @@
 <translation id="782886543891417279">Возможно, вам нужно перейти на страницу входа сети Wi-Fi (<ph name="WIFI_NAME" />).</translation>
 <translation id="785549533363645510">Тем не менее ваши действия будут видны системному администратору и интернет-провайдеру, а также доступны веб-сайтам, которые вы посещаете.</translation>
 <translation id="7855695075675558090"><ph name="TOTAL_LABEL" /> <ph name="FORMATTED_TOTAL_AMOUNT" /> <ph name="CURRENCY_CODE" /></translation>
+<translation id="7862185352068345852">Закрыть сайт?</translation>
 <translation id="7878176543348854470">Принимаются дебетовые карты и карты предоплаты.</translation>
 <translation id="7878562273885520351">Злоумышленники могли узнать ваш пароль</translation>
 <translation id="7887683347370398519">Проверьте CVC-код и повторите попытку</translation>
@@ -908,6 +911,7 @@
 <translation id="8041940743680923270">Использовать глобальный параметр по умолчанию (спрашивать)</translation>
 <translation id="8042918947222776840">Выбрать способ получения</translation>
 <translation id="8057711352706143257">Программа "<ph name="SOFTWARE_NAME" />" настроена неправильно. Чтобы устранить проблему, удалите программу "<ph name="SOFTWARE_NAME" />". <ph name="FURTHER_EXPLANATION" /></translation>
+<translation id="8079031581361219619">Перезагрузить сайт?</translation>
 <translation id="8088680233425245692">Не удалось показать статью</translation>
 <translation id="8091372947890762290">Активация управления устройствами не завершена</translation>
 <translation id="8094917007353911263">Возможно, вам нужно перейти на страницу <ph name="BEGIN_BOLD" /><ph name="LOGIN_URL" /><ph name="END_BOLD" /> используемой сети.</translation>
@@ -923,6 +927,7 @@
 <translation id="8201077131113104583">Недействительный URL для обновления расширения с идентификатором <ph name="EXTENSION_ID" />.</translation>
 <translation id="8202097416529803614">Информация о заказе</translation>
 <translation id="8205463626947051446">На сайте может быть много навязчивой рекламы</translation>
+<translation id="8211406090763984747">Безопасное подключение</translation>
 <translation id="8218327578424803826">Назначенное местоположение:</translation>
 <translation id="8225771182978767009">Тот, кто настраивал компьютер, заблокировал этот сайт.</translation>
 <translation id="822964464349305906"><ph name="TYPE_1" /> и <ph name="TYPE_2" /></translation>

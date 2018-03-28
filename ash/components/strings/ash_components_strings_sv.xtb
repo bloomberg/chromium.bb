@@ -3,6 +3,7 @@
 <translationbundle lang="sv">
 <translation id="104962181688258143">Öppna appen Filer</translation>
 <translation id="1126871238933253947">Byt till det tangentbordsspråk som du använde tidigare.</translation>
+<translation id="1134347825771908369">Stäng av ljudet</translation>
 <translation id="1195667586424773550">Dra länken till flikens adressfält</translation>
 <translation id="1204450209689312104">Öppna ett nytt fönster i inkognitoläge</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Spara alla öppna sidor i det aktuella fönstret som bokmärken i en ny mapp</translation>
 <translation id="355103131818127604">Öppna länken på en ny flik i bakgrunden</translation>
 <translation id="3649256019230929621">Minimera fönstret</translation>
+<translation id="3655154169297074232">Flikar och fönster</translation>
 <translation id="3668361878347172356">Gör om den senaste åtgärden</translation>
 <translation id="3720939646656082033">Öppna länken på en ny flik och byt till den nya fliken</translation>
 <translation id="3725795051337497754">Stäng den aktuella fliken</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Sparar länken som ett bokmärke</translation>
 <translation id="4141203561740478845">Markera raden med adressfältet</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> eller <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Översiktsläge</translation>
+<translation id="4472417192667361414">System- och visningsinställningar</translation>
 <translation id="4556221320735744018">Visa hjälpen för kortkommandon</translation>
 <translation id="4628718545549558538">Klicka i statusfältet där kontobilden visas</translation>
 <translation id="4642092649622328492">Ta en skärmdump av en del av skärmen</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Till början av dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
 <translation id="8234414138295101081">Rotera skärmen 90 grader</translation>
+<translation id="826184564253127735">Kortkommandovisaren</translation>
 <translation id="836869401750819675">Öppna sidan Nedladdningar</translation>
 <translation id="8388247778047144397">Dra länken till ett tomt område i flikhuvudet</translation>
 <translation id="8389638407792712197">Öppna nytt fönster</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 till 8</translation>
 <translation id="9041599225465145264">Klistra in innehållet i Urklipp</translation>
 <translation id="9052808072970550123">Växla till nästa användare</translation>
+<translation id="9106898733795143799">Sidor och webbläsare</translation>
 <translation id="9179672198516322668">Populära kortkommandon</translation>
 <translation id="93603345341560814">Tryck på <ph name="SHIFT" /> och klicka på en länk</translation>
 <translation id="945383118875625837">Dra länken till bokmärkesfältet</translation>

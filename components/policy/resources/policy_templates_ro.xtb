@@ -1117,12 +1117,12 @@ Dacă politica este activată, fiecare dintre originile indicate într-o listă 
 <translation id="4482640907922304445">Afișează butonul Pagină de pornire în bara de instrumente din <ph name="PRODUCT_NAME" />. Dacă activați această setare, butonul Pagina de pornire este întotdeauna afișat. Dacă dezactivați această setare, butonul Pagina de pornire nu este afișat. Dacă activați sau dezactivați această setare, utilizatorii nu o pot modifica sau anula în <ph name="PRODUCT_NAME" />. Dacă lăsați această politică nesetată, acest lucru va permite utilizatorului să aleagă dacă să afișeze sau nu butonul Pagină de pornire.</translation>
 <translation id="4485425108474077672">Configurează adresa URL a paginii Filă nouă</translation>
 <translation id="4492287494009043413">Dezactivați capturile de ecran</translation>
-<translation id="4497968613298501984">Configurează lista de adrese URL de autentificare de întreprindere (doar schemele HTTP și HTTPS). Amprenta digitală a parolei va fi scanată în aceste adrese URL și folosită pentru detectarea refolosirii parolelor.
+<translation id="4497968613298501984">Configurează lista de adrese URL de autentificare de întreprindere (doar schemele HTTP și HTTPS). Amprenta parolei va fi scanată la aceste adrese URL și folosită pentru detectarea refolosirii parolelor.
       Această setare trebuie aplicată doar de utilizatorii GSuite care folosesc un sistem SSO/SMAL.
-      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect amprentele parolei, asigură-te că paginile de conectare respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      Pentru ca <ph name="PRODUCT_NAME" /> să scaneze corect amprenta parolei, asigură-te că paginile de conectare respectă regulile prevăzute în https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
-      Dacă această setare este activată, serviciul de protecție prin parolă va scana amprenta digitală a parolelor pe aceste adrese URL pentru a detecta refolosirea parolelor.
-      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va scana amprenta digitală a parolei doar pe https://accounts.google.com.
+      Dacă această setare este activată, serviciul de protecție prin parolă va scana amprenta parolei la aceste adrese URL pentru a detecta refolosirea parolelor.
+      Dacă această setare este dezactivată sau nu este configurată, serviciul de protecție prin parolă va scana amprenta parolei doar la https://accounts.google.com.
       Această politică nu este disponibilă în instanțele Windows care nu sunt asociate unui domeniu <ph name="MS_AD_NAME" />.</translation>
 <translation id="450537894712826981">Configurează dimensiunea memoriei cache pe care <ph name="PRODUCT_NAME" /> o va utiliza pentru a stoca pe disc fișierele media salvate în memoria cache.
 

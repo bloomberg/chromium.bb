@@ -3,6 +3,7 @@
 <translationbundle lang="kn">
 <translation id="104962181688258143">ಫೈಲ್‌ಗಳ ಅಪ್ಲಿಕೇಶನ್ ತೆರೆಯಿರಿ</translation>
 <translation id="1126871238933253947">ನೀವು ಹಿಂದೆ ಬಳಸುತ್ತಿದ್ದ ಕೀಬೋರ್ಡ್ ಭಾಷೆಗೆ ಬದಲಾಯಿಸಿ.</translation>
+<translation id="1134347825771908369">ವಾಲ್ಯೂಮ್ ಮ್ಯೂಟ್ ಮಾಡಿ</translation>
 <translation id="1195667586424773550">ಟ್ಯಾಬ್‌ನ ವಿಳಾಸ ಪಟ್ಟಿಗೆ ಲಿಂಕ್‌ ಅನ್ನು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
 <translation id="1204450209689312104">ಅಜ್ಞಾತ ಮೋಡ್‌ನಲ್ಲಿ ಹೊಸ ವಿಂಡೋ ತೆರೆಯಿರಿ</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">ನಿಮ್ಮ ಪ್ರಸ್ತುತ ವಿಂಡೋದಲ್ಲಿ ತೆರೆದಿರುವ ಎಲ್ಲಾ ಪುಟಗಳನ್ನು ಹೊಸ ಫೋಲ್ಡರ್‌ನಲ್ಲಿ ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳಂತೆ ಉಳಿಸಿ</translation>
 <translation id="355103131818127604">ಹಿನ್ನೆಲೆಯಲ್ಲಿ ಲಿಂಕ್‌ ಅನ್ನು ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="3649256019230929621">ವಿಂಡೋ ಕಿರಿದಾಗಿಸಿ</translation>
+<translation id="3655154169297074232">ಟ್ಯಾಬ್‌ಗಳು ಮತ್ತು ವಿಂಡೋಗಳು</translation>
 <translation id="3668361878347172356">ನಿಮ್ಮ ಕೊನೆಯ ಕ್ರಿಯೆಯನ್ನು ಪುನಃ ಲೋಡ್‌ ಮಾಡಿ</translation>
 <translation id="3720939646656082033">ಲಿಂಕ್‌ ಅನ್ನು ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ ಮತ್ತು ಹೊಸ ಟ್ಯಾಬ್‌ಗೆ ಬದಲಿಸಿ</translation>
 <translation id="3725795051337497754">ಪ್ರಸ್ತುತ ಟ್ಯಾಬ್ ಮುಚ್ಚಿ</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">ಬುಕ್‌ಮಾರ್ಕ್‌ನಂತೆ ಲಿಂಕ್ ಉಳಿಸಿ</translation>
 <translation id="4141203561740478845">ವಿಳಾಸ ಪಟ್ಟಿ ಹೊಂದಿರುವ ಸಾಲನ್ನು ಹೈಲೈಟ್ ಮಾಡಿ</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ಅಥವಾ <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">ಅವಲೋಕನ ಮೋಡ್‌</translation>
+<translation id="4472417192667361414">ಸಿಸ್ಟಂ ಮತ್ತು ಡಿಸ್‌ಪ್ಲೇ ಸೆಟ್ಟಿಂಗ್‌ಗಳು</translation>
 <translation id="4556221320735744018">ಕೀಬೋರ್ಡ್‌ ಶಾರ್ಟ್‌ಕಟ್‌ ಸಹಾಯಕವನ್ನು ನೋಡಿ</translation>
 <translation id="4628718545549558538">ಸ್ಥಿತಿ ಪ್ರದೇಶವನ್ನು ತೆರೆಯಿರಿ (ನಿಮ್ಮ ಖಾತೆ ಚಿತ್ರ ಗೋಚರಿಸುವಲ್ಲಿ)</translation>
 <translation id="4642092649622328492">ಭಾಗಶಃ ಸ್ಕ್ರೀನ್‌ಶಾಟ್ ಅನ್ನು ತೆಗೆದುಕೊಳ್ಳಿ</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">ಡಾಕ್ಯುಮೆಂಟ್‌ನ ಪ್ರಾರಂಭಕ್ಕೆ ಹೋಗಿ</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ಅಥವಾ <ph name="E" /></translation>
 <translation id="8234414138295101081">ಪರದೆಯನ್ನು 90 ಡಿಗ್ರಿಗಳಲ್ಲಿ ತಿರುಗಿಸಿ</translation>
+<translation id="826184564253127735">ಕೀಬೋರ್ಡ್ ಶಾರ್ಟ್‌ಕಟ್ ವೀಕ್ಷಕ</translation>
 <translation id="836869401750819675">ಡೌನ್‌ಲೋಡ್‌ಗಳ ಪುಟ ತೆರೆಯಿರಿ</translation>
 <translation id="8388247778047144397">ಟ್ಯಾಬ್ ಪಟ್ಟಿಯಲ್ಲಿನ ಖಾಲಿ ವಲಯಕ್ಕೆ ಲಿಂಕ್ ಎಳೆಯಿರಿ</translation>
 <translation id="8389638407792712197">ಹೊಸ ವಿಂಡೋವನ್ನು ತೆರೆಯಿರಿ</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 ರಿಂದ 8 ರವರೆಗೆ</translation>
 <translation id="9041599225465145264">ಕ್ಲಿಪ್‌ಬೋರ್ಡ್‌ನಿಂದ ವಿಷಯವನ್ನು ಅಂಟಿಸಿ</translation>
 <translation id="9052808072970550123">ಮುಂದಿನ ಬಳಕೆದಾರರಿಗೆ ಬದಲಿಸಿ</translation>
+<translation id="9106898733795143799">ಪುಟ ಮತ್ತು ವೆಬ್ ಬ್ರೌಸರ್</translation>
 <translation id="9179672198516322668">ಜನಪ್ರಿಯ ಶಾರ್ಟ್‌ಕಟ್‌ಗಳು</translation>
 <translation id="93603345341560814"><ph name="SHIFT" /> ಅನ್ನು ಒತ್ತಿರಿ ಮತ್ತು ಲಿಂಕ್‌ ಅನ್ನು ಕ್ಲಿಕ್‌ ಮಾಡಿ</translation>
 <translation id="945383118875625837">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಪಟ್ಟಿಗೆ ಲಿಂಕ್‌ ಅನ್ನು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
