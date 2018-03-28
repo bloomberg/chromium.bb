@@ -26,7 +26,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Shows the dialog to choose a host browser to launch WebAPK. Calls the listener callback when the
@@ -142,8 +144,12 @@ public class ChooseHostBrowserDialog {
             PackageManager packageManager, List<ResolveInfo> resolveInfos) {
         List<BrowserItem> browsers = new ArrayList<>();
         List<String> browsersSupportingWebApk = WebApkUtils.getBrowsersSupportingWebApk();
+        Set<String> packages = new HashSet<>();
 
         for (ResolveInfo info : resolveInfos) {
+            if (packages.contains(info.activityInfo.packageName)) continue;
+            packages.add(info.activityInfo.packageName);
+
             browsers.add(new BrowserItem(info.activityInfo.packageName,
                     info.loadLabel(packageManager), info.loadIcon(packageManager),
                     browsersSupportingWebApk.contains(info.activityInfo.packageName)));
