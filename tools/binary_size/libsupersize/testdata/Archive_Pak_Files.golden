@@ -92,7 +92,7 @@ Section .other: has 100.0% of 33984171 bytes accounted for from 1 symbols. 0 byt
 .bss@2dffda0(size_without_padding=28,padding=0,full_name=g_chrome_content_browser_client,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=1)
 .bss@2dffe80(size_without_padding=4,padding=196,full_name=SaveHistogram(_JNIEnv*, base::android::JavaParamRef<_jobject*> const&, base::android::JavaParamRef<_jstring*> const&, base::android::JavaParamRef<_jlongArray*> const&, int)::atomic_histogram_pointer,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={gen},num_aliases=1)
 .bss@2dffe84(size_without_padding=4,padding=0,full_name=g_AnimationFrameTimeHistogram_clazz,object_path=third_party/icu/icuuc/ucnv_ext.o,source_path=third_party/icu/ucnv_ext.c,flags={anon,gen},num_aliases=1)
-.pak.translations@0(size_without_padding=18,padding=0,full_name=en-US.pak: overhead,object_path=,source_path=,flags={},num_aliases=1)
+.pak.translations@0(size_without_padding=18,padding=0,full_name=../mock_apk/assets/en-US.pak: overhead,object_path=,source_path=,flags={},num_aliases=1)
 .pak.translations@0(size_without_padding=0,padding=0,full_name=Pak compression leftover artifacts,object_path=,source_path=,flags={},num_aliases=1)
 .pak.translations@3ac6(size_without_padding=40,padding=0,full_name=../../components/app_modal_strings.grdp: IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE,object_path=,source_path=,flags={},num_aliases=1)
 .pak.translations@3d7c(size_without_padding=24,padding=0,full_name=../../components/policy_strings.grdp: IDS_POLICY_TYPE_ERROR,object_path=,source_path=,flags={},num_aliases=1)
