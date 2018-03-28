@@ -58,6 +58,10 @@ class ToolbarActionsBar : public ToolbarActionsModel::Observer,
     // container and the first item, and between the last item and end of
     // the container.
     int item_spacing;
+
+    // The additional spacing between the container and omnibox.
+    int left_padding;
+
     // The number of icons per row in the overflow menu.
     int icons_per_overflow_menu_row;
   };

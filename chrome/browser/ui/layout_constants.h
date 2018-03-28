@@ -98,6 +98,10 @@ enum LayoutConstant {
   // one side)
   TAB_STANDARD_WIDTH,
 
+  // Additional left horizontal padding between the browser actions and the
+  // omnibox.
+  TOOLBAR_ACTION_LEFT_PADDING,
+
   // Additional horizontal padding between the elements in the toolbar.
   TOOLBAR_ELEMENT_PADDING,
 
