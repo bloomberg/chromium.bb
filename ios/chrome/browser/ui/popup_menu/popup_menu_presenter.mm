@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/presenters/contained_presenter_delegate.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #import "ios/chrome/browser/ui/util/named_guide.h"
+#import "ios/chrome/common/material_timing.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
 #error "This file requires ARC support."
@@ -19,11 +20,17 @@ const CGFloat kMinHeight = 200;
 const CGFloat kMinWidth = 200;
 const CGFloat kMaxWidth = 300;
 const CGFloat kMaxHeight = 400;
-const CGFloat kMinMargin = 16;
+const CGFloat kMinHorizontalMargin = 5;
+const CGFloat kMinVerticalMargin = 15;
+const CGFloat kDamping = 0.85;
 }  // namespace
 
 @interface PopupMenuPresenter ()
 @property(nonatomic, strong) PopupMenuViewController* popupViewController;
+// Constraints used for the initial positioning of the popup.
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* initialConstraints;
+// Constraints used for the positioning of the popup when presented.
+@property(nonatomic, strong) NSArray<NSLayoutConstraint*>* presentedConstraints;
 @end
 
 @implementation PopupMenuPresenter
@@ -33,6 +40,8 @@ const CGFloat kMinMargin = 16;
 @synthesize delegate = _delegate;
 @synthesize guideName = _guideName;
 @synthesize popupViewController = _popupViewController;
+@synthesize initialConstraints = _initialConstraints;
+@synthesize presentedConstraints = _presentedConstraints;
 @synthesize presentedViewController = _presentedViewController;
 
 #pragma mark - Public
@@ -74,49 +83,94 @@ const CGFloat kMinMargin = 16;
       [self.presentedViewController.view.widthAnchor
           constraintEqualToConstant:width];
   widthConstraint.priority = UILayoutPriorityDefaultHigh + 1;
-  widthConstraint.active = YES;
 
   NSLayoutConstraint* heightConstraint =
       [self.presentedViewController.view.heightAnchor
           constraintEqualToConstant:fittingSize.height];
   heightConstraint.priority = UILayoutPriorityDefaultHigh + 1;
-  heightConstraint.active = YES;
 
+  UIView* popup = self.popupViewController.contentContainer;
+  [NSLayoutConstraint activateConstraints:@[
+    widthConstraint,
+    heightConstraint,
+    [popup.heightAnchor constraintLessThanOrEqualToConstant:kMaxHeight],
+    [popup.widthAnchor constraintLessThanOrEqualToConstant:kMaxWidth],
+    [popup.widthAnchor constraintGreaterThanOrEqualToConstant:kMinWidth],
+  ]];
   [self.popupViewController addContent:self.presentedViewController];
 
   [self.baseViewController addChildViewController:self.popupViewController];
   [self.baseViewController.view addSubview:self.popupViewController.view];
   self.popupViewController.view.frame = self.baseViewController.view.bounds;
 
-  // TODO(crbug.com/804774): Prepare for animation.
-  self.popupViewController.contentContainer.alpha = 0;
-  [self positionPopupOnNamedGuide];
+  UILayoutGuide* namedGuide =
+      [NamedGuide guideWithName:self.guideName
+                           view:self.baseViewController.view];
+  self.initialConstraints = @[
+    [popup.centerXAnchor constraintEqualToAnchor:namedGuide.centerXAnchor],
+    [popup.centerYAnchor constraintEqualToAnchor:namedGuide.centerYAnchor],
+  ];
+  [self setUpPresentedConstraints];
+
+  // Configure the initial state of the animation.
+  popup.alpha = 0;
+  popup.transform = CGAffineTransformMakeScale(0.1, 0.1);
+  [NSLayoutConstraint activateConstraints:self.initialConstraints];
+  [self.baseViewController.view layoutIfNeeded];
 
   [self.popupViewController
       didMoveToParentViewController:self.baseViewController];
 }
 
 - (void)presentAnimated:(BOOL)animated {
-  // TODO(crbug.com/804774): Add animation based on |guideName|.
-  self.popupViewController.contentContainer.alpha = 1;
+  [NSLayoutConstraint deactivateConstraints:self.initialConstraints];
+  [NSLayoutConstraint activateConstraints:self.presentedConstraints];
+  [self animate:^{
+    self.popupViewController.contentContainer.alpha = 1;
+    [self.baseViewController.view layoutIfNeeded];
+    self.popupViewController.contentContainer.transform =
+        CGAffineTransformIdentity;
+  }
+      withCompletion:nil];
 }
 
 - (void)dismissAnimated:(BOOL)animated {
   [self.popupViewController willMoveToParentViewController:nil];
-  // TODO(crbug.com/804771): Add animation.
-  [self.popupViewController.view removeFromSuperview];
-  [self.popupViewController removeFromParentViewController];
-  self.popupViewController = nil;
-  [self.delegate containedPresenterDidDismiss:self];
+  [NSLayoutConstraint deactivateConstraints:self.presentedConstraints];
+  [NSLayoutConstraint activateConstraints:self.initialConstraints];
+  [self animate:^{
+    self.popupViewController.contentContainer.alpha = 0;
+    [self.baseViewController.view layoutIfNeeded];
+    self.popupViewController.contentContainer.transform =
+        CGAffineTransformMakeScale(0.1, 0.1);
+  }
+      withCompletion:^(BOOL finished) {
+        [self.popupViewController.view removeFromSuperview];
+        [self.popupViewController removeFromParentViewController];
+        self.popupViewController = nil;
+        [self.delegate containedPresenterDidDismiss:self];
+      }];
 }
 
 #pragma mark - Private
 
-// Positions the popup relatively to the |guideName| layout guide. The popup is
-// positioned closest to the layout guide, by default it is presented below the
-// layout guide, aligned on its leading edge. However, it is respecting the safe
-// area bounds.
-- (void)positionPopupOnNamedGuide {
+// Animate the |animations| then execute |completion|.
+- (void)animate:(void (^)(void))animation
+    withCompletion:(void (^)(BOOL finished))completion {
+  [UIView animateWithDuration:ios::material::kDuration1
+                        delay:0
+       usingSpringWithDamping:kDamping
+        initialSpringVelocity:0
+                      options:UIViewAnimationOptionBeginFromCurrentState
+                   animations:animation
+                   completion:completion];
+}
+
+// Sets |presentedConstraints| up, such as they are positioning the popup
+// relatively to the |guideName| layout guide. The popup is positioned closest
+// to the layout guide, by default it is presented below the layout guide,
+// aligned on its leading edge. However, it is respecting the safe area bounds.
+- (void)setUpPresentedConstraints {
   UIView* parentView = self.baseViewController.view;
   UIView* container = self.popupViewController.contentContainer;
 
@@ -126,38 +180,39 @@ const CGFloat kMinMargin = 16;
       [self.popupViewController.view convertRect:namedGuide.layoutFrame
                                         fromView:namedGuide.owningView];
 
+  NSLayoutConstraint* verticalPositioning = nil;
   if (CGRectGetMaxY(guideFrame) + kMinHeight >
       CGRectGetHeight(parentView.frame)) {
     // Display above.
-    [container.bottomAnchor constraintEqualToAnchor:namedGuide.topAnchor]
-        .active = YES;
+    verticalPositioning =
+        [container.bottomAnchor constraintEqualToAnchor:namedGuide.topAnchor];
   } else {
     // Display below.
-    [container.topAnchor constraintEqualToAnchor:namedGuide.bottomAnchor]
-        .active = YES;
+    verticalPositioning =
+        [container.topAnchor constraintEqualToAnchor:namedGuide.bottomAnchor];
   }
 
+  NSLayoutConstraint* center = [container.centerXAnchor
+      constraintEqualToAnchor:namedGuide.centerXAnchor];
+  center.priority = UILayoutPriorityDefaultHigh;
+
   id<LayoutGuideProvider> safeArea = SafeAreaLayoutGuideForView(parentView);
-  [NSLayoutConstraint activateConstraints:@[
+  self.presentedConstraints = @[
+    center,
+    verticalPositioning,
     [container.leadingAnchor
         constraintGreaterThanOrEqualToAnchor:safeArea.leadingAnchor
-                                    constant:kMinMargin],
+                                    constant:kMinHorizontalMargin],
     [container.trailingAnchor
         constraintLessThanOrEqualToAnchor:safeArea.trailingAnchor
-                                 constant:-kMinMargin],
-    [container.heightAnchor constraintLessThanOrEqualToConstant:kMaxHeight],
-    [container.widthAnchor constraintLessThanOrEqualToConstant:kMaxWidth],
-    [container.widthAnchor constraintGreaterThanOrEqualToConstant:kMinWidth],
+                                 constant:-kMinHorizontalMargin],
     [container.bottomAnchor
         constraintLessThanOrEqualToAnchor:safeArea.bottomAnchor
-                                 constant:-kMinMargin],
-    [container.topAnchor constraintGreaterThanOrEqualToAnchor:safeArea.topAnchor
-                                                     constant:kMinMargin],
-  ]];
-  NSLayoutConstraint* leading = [container.leadingAnchor
-      constraintEqualToAnchor:namedGuide.leadingAnchor];
-  leading.priority = UILayoutPriorityDefaultHigh;
-  leading.active = YES;
+                                 constant:-kMinVerticalMargin],
+    [container.topAnchor
+        constraintGreaterThanOrEqualToAnchor:safeArea.topAnchor
+                                    constant:kMinVerticalMargin],
+  ];
 }
 
 @end
