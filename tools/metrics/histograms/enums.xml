@@ -26065,6 +26065,7 @@ from previous Chrome versions.
   <int value="-1311133348" label="VrBrowsingNativeAndroidUi:enabled"/>
   <int value="-1310737697" label="MaterialDesignSettings:enabled"/>
   <int value="-1302904242" label="enable-navigation-tracing"/>
+  <int value="-1302859198" label="enable-stylus-virtual-keyboard:disabled"/>
   <int value="-1294050129" label="ContentFullscreen:disabled"/>
   <int value="-1290053302"
       label="OfflinePagesInDownloadHomeOpenInCct:disabled"/>
@@ -26629,6 +26630,7 @@ from previous Chrome versions.
   <int value="67639499" label="stop-loading-in-background:disabled"/>
   <int value="70878462" label="WebAssembly:disabled"/>
   <int value="73929836" label="VrBrowsingInCustomTab:enabled"/>
+  <int value="75207621" label="enable-stylus-virtual-keyboard:enabled"/>
   <int value="75237697" label="ash-enable-new-overview-ui"/>
   <int value="75747474" label="disable-webview-signin-flow"/>
   <int value="78998551" label="disable-hosted-app-shim-creation"/>

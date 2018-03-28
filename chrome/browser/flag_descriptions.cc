@@ -2631,6 +2631,12 @@ const char kEnableImeMenuName[] = "Enable opt-in IME menu";
 const char kEnableImeMenuDescription[] =
     "Enable access to the new IME menu in the Language Settings page.";
 
+const char kEnableStylusVirtualKeyboardName[] =
+    "Enable stylus virtual keyboard";
+const char kEnableStylusVirtualKeyboardDescription[] =
+    "If enabled, tapping with a stylus will show the handwriting virtual "
+    "keyboard.";
+
 const char kEnableUnifiedMultiDeviceSettingsName[] =
     "Enable unified MultiDevice settings";
 const char kEnableUnifiedMultiDeviceSettingsDescription[] =

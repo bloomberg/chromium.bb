@@ -1622,6 +1622,9 @@ extern const char kEnableFloatingVirtualKeyboardDescription[];
 extern const char kEnableImeMenuName[];
 extern const char kEnableImeMenuDescription[];
 
+extern const char kEnableStylusVirtualKeyboardName[];
+extern const char kEnableStylusVirtualKeyboardDescription[];
+
 extern const char kEnableUnifiedMultiDeviceSettingsName[];
 extern const char kEnableUnifiedMultiDeviceSettingsDescription[];
 
