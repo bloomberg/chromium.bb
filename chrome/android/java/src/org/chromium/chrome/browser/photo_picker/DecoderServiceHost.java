@@ -39,6 +39,12 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
     // A tag for logging error messages.
     private static final String TAG = "ImageDecoderHost";
 
+    // The number of successful decodes, per batch.
+    private int mSuccessfulDecodes = 0;
+
+    // The number of failed decodes, per batch.
+    private int mFailedDecodes = 0;
+
     // A callback to use for testing to see if decoder is ready.
     static ServiceReadyCallback sReadyCallbackForTesting;
 
@@ -174,6 +180,15 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
             DecoderServiceParams params = mRequests.entrySet().iterator().next().getValue();
             params.mTimestamp = SystemClock.elapsedRealtime();
             dispatchDecodeImageRequest(params.mFilePath, params.mSize);
+        } else {
+            int totalRequests = mSuccessfulDecodes + mFailedDecodes;
+            if (totalRequests > 0) {
+                int successPercentage = 100 * mSuccessfulDecodes / totalRequests;
+                RecordHistogram.recordPercentageHistogram(
+                        "Android.PhotoPicker.DecoderHostSuccess", successPercentage);
+                mSuccessfulDecodes = 0;
+                mFailedDecodes = 0;
+            }
         }
     }
 
@@ -185,14 +200,19 @@ public class DecoderServiceHost extends IDecoderServiceCallback.Stub {
         ThreadUtils.runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                // Read the reply back from the service.
-                String filePath = payload.getString(DecoderService.KEY_FILE_PATH);
-                Boolean success = payload.getBoolean(DecoderService.KEY_SUCCESS);
-                Bitmap bitmap = success
-                        ? (Bitmap) payload.getParcelable(DecoderService.KEY_IMAGE_BITMAP)
-                        : null;
-                long decodeTime = payload.getLong(DecoderService.KEY_DECODE_TIME);
-                closeRequest(filePath, bitmap, decodeTime);
+                try {
+                    // Read the reply back from the service.
+                    String filePath = payload.getString(DecoderService.KEY_FILE_PATH);
+                    Boolean success = payload.getBoolean(DecoderService.KEY_SUCCESS);
+                    Bitmap bitmap = success
+                            ? (Bitmap) payload.getParcelable(DecoderService.KEY_IMAGE_BITMAP)
+                            : null;
+                    long decodeTime = payload.getLong(DecoderService.KEY_DECODE_TIME);
+                    mSuccessfulDecodes++;
+                    closeRequest(filePath, bitmap, decodeTime);
+                } catch (RuntimeException e) {
+                    mFailedDecodes++;
+                }
             }
         });
     }
