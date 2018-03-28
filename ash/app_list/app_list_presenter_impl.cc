@@ -219,6 +219,10 @@ void AppListPresenterImpl::SetView(AppListView* view) {
   widget->AddObserver(this);
   aura::client::GetFocusClient(widget->GetNativeView())->AddObserver(this);
   view_->GetAppsPaginationModel()->AddObserver(this);
+
+  // Sync the |onscreen_keyboard_shown_| in case |view_| is not initiated when
+  // the on-screen is shown.
+  view_->set_onscreen_keyboard_shown(controller_->onscreen_keyboard_shown());
   view_->ShowWhenReady();
 }
 

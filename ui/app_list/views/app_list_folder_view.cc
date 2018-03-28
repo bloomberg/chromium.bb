@@ -16,6 +16,7 @@
 #include "ui/app_list/app_list_util.h"
 #include "ui/app_list/pagination_model.h"
 #include "ui/app_list/views/app_list_item_view.h"
+#include "ui/app_list/views/app_list_view.h"
 #include "ui/app_list/views/apps_container_view.h"
 #include "ui/app_list/views/apps_grid_view.h"
 #include "ui/app_list/views/contents_view.h"
@@ -31,6 +32,7 @@
 #include "ui/gfx/animation/slide_animation.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/keyboard/keyboard_controller.h"
 #include "ui/strings/grit/ui_strings.h"
 #include "ui/views/background.h"
 #include "ui/views/controls/label.h"
@@ -47,6 +49,7 @@ constexpr int kFolderBackgroundCornerRadius = 4;
 constexpr int kFolderIconCornerRadius = 24;
 constexpr int kItemGridsBottomPadding = 24;
 constexpr int kFolderPadding = 12;
+constexpr int kOnscreenKeyboardTopPadding = 8;
 
 // Indexes of interesting views in ViewModel of AppListFolderView.
 constexpr int kIndexBackground = 0;
@@ -559,6 +562,42 @@ void AppListFolderView::OnAppListItemWillBeDeleted(AppListItem* item) {
   }
 }
 
+void AppListFolderView::UpdatePreferredBounds() {
+  const AppListItemView* activated_folder_item_view =
+      GetActivatedFolderItemView();
+  DCHECK(activated_folder_item_view);
+
+  // Calculate the folder icon's bounds relative to AppsContainerView.
+  gfx::RectF rect(activated_folder_item_view->GetIconBounds());
+  ConvertRectToTarget(activated_folder_item_view, container_view_, &rect);
+  gfx::Rect icon_bounds_in_container = gfx::ToEnclosingRect(rect);
+
+  // The opened folder view's center should try to overlap with the folder
+  // item's center while it must fit within the bounds of AppsContainerView.
+  preferred_bounds_ = gfx::Rect(GetPreferredSize());
+  preferred_bounds_ += (icon_bounds_in_container.CenterPoint() -
+                        preferred_bounds_.CenterPoint());
+  preferred_bounds_.AdjustToFit(container_view_->GetContentsBounds());
+
+  keyboard::KeyboardController* const keyboard_controller =
+      keyboard::KeyboardController::GetInstance();
+  if (keyboard_controller &&
+      contents_view_->app_list_view()->onscreen_keyboard_shown()) {
+    // This view should be on top of on-screen keyboard to prevent the folder
+    // title from being blocked.
+    gfx::Point keyboard_top_right =
+        keyboard_controller->current_keyboard_bounds().top_right();
+    ConvertPointFromScreen(parent(), &keyboard_top_right);
+    int y_offset = keyboard_top_right.y() - kOnscreenKeyboardTopPadding -
+                   preferred_bounds_.bottom();
+    preferred_bounds_.Offset(0, std::min(0, y_offset));
+  }
+
+  // Calculate the folder icon's bounds relative to this view.
+  folder_item_icon_bounds_ =
+      icon_bounds_in_container - preferred_bounds_.OffsetFromOrigin();
+}
+
 bool AppListFolderView::IsAnimationRunning() const {
   return top_icon_animation_ && top_icon_animation_->IsAnimationRunning();
 }
@@ -630,29 +669,6 @@ void AppListFolderView::StartSetupDragInRootLevelAppsGridView(
       ->InitiateDragFromReparentItemInRootLevelGridView(
           original_drag_view, rect_in_root_grid_view, drag_point_in_root_grid,
           has_native_drag);
-}
-
-void AppListFolderView::UpdatePreferredBounds() {
-  const AppListItemView* activated_folder_item_view =
-      GetActivatedFolderItemView();
-  DCHECK(activated_folder_item_view);
-
-  // Calculate the folder icon's bounds relative to AppsContainerView.
-  gfx::RectF rect(activated_folder_item_view->GetIconBounds());
-  views::View::ConvertRectToTarget(activated_folder_item_view, container_view_,
-                                   &rect);
-  gfx::Rect icon_bounds_in_container = gfx::ToEnclosingRect(rect);
-
-  // The opened folder view's center should try to overlap with the folder
-  // item's center while it must fit within the bounds of AppsContainerView.
-  preferred_bounds_ = gfx::Rect(GetPreferredSize());
-  preferred_bounds_ += (icon_bounds_in_container.CenterPoint() -
-                        preferred_bounds_.CenterPoint());
-  preferred_bounds_.AdjustToFit(container_view_->GetContentsBounds());
-
-  // Calculate the folder icon's bounds relative to this view.
-  folder_item_icon_bounds_ =
-      icon_bounds_in_container - preferred_bounds_.OffsetFromOrigin();
 }
 
 bool AppListFolderView::IsPointOutsideOfFolderBoundary(

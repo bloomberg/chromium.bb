@@ -1317,6 +1317,20 @@ void AppListView::RedirectKeyEventToSearchBox(ui::KeyEvent* event) {
   }
 }
 
+void AppListView::OnScreenKeyboardShown(bool shown) {
+  if (onscreen_keyboard_shown_ == shown)
+    return;
+
+  onscreen_keyboard_shown_ = shown;
+  if (!GetAppsContainerView()->IsInFolderView())
+    return;
+  // Update the folder's bounds to avoid being blocked by the on-screen
+  // keyboard.
+  GetAppsContainerView()->app_list_folder_view()->UpdatePreferredBounds();
+  GetAppsContainerView()->Layout();
+  GetAppsContainerView()->SchedulePaint();
+}
+
 void AppListView::OnDisplayMetricsChanged(const display::Display& display,
                                           uint32_t changed_metrics) {
   // Set the |fullscreen_widget_| size to fit the new display metrics.

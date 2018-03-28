@@ -70,6 +70,10 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
   // AppListModelObserver
   void OnAppListItemWillBeDeleted(AppListItem* item) override;
 
+  // Updates preferred bounds of this view based on the activated folder item
+  // icon's bounds.
+  void UpdatePreferredBounds();
+
   // Returns true if this view's child views are in animation for opening or
   // closing the folder.
   bool IsAnimationRunning() const;
@@ -99,10 +103,6 @@ class APP_LIST_EXPORT AppListFolderView : public views::View,
 
  private:
   void CalculateIdealBounds();
-
-  // Updates preferred bounds of this view based on the activated folder item
-  // icon's bounds.
-  void UpdatePreferredBounds();
 
   // Starts setting up drag in root level apps grid view for re-parenting a
   // folder item.

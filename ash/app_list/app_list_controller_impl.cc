@@ -58,7 +58,8 @@ AppListControllerImpl::AppListControllerImpl()
       presenter_(
           std::make_unique<AppListPresenterDelegateFactory>(
               std::make_unique<ViewDelegateFactoryImpl>(&view_delegate_)),
-          this) {
+          this),
+      keyboard_observer_(this) {
   model_.AddObserver(this);
 
   // Create only for non-mash. Mash uses window tree embed API to get a
@@ -67,9 +68,12 @@ AppListControllerImpl::AppListControllerImpl()
     answer_card_contents_registry_ =
         std::make_unique<app_list::AnswerCardContentsRegistry>();
   }
+
+  ash::Shell::Get()->AddShellObserver(this);
 }
 
 AppListControllerImpl::~AppListControllerImpl() {
+  ash::Shell::Get()->RemoveShellObserver(this);
   model_.RemoveObserver(this);
 }
 
@@ -359,6 +363,26 @@ app_list::AppListViewState AppListControllerImpl::GetAppListViewState() {
 
 void AppListControllerImpl::FlushForTesting() {
   bindings_.FlushForTesting();
+}
+
+void AppListControllerImpl::OnVirtualKeyboardStateChanged(
+    bool activated,
+    aura::Window* root_window) {
+  auto* keyboard_controller = keyboard::KeyboardController::GetInstance();
+  if (!keyboard_controller)
+    return;
+  if (activated && !keyboard_observer_.IsObserving(keyboard_controller))
+    keyboard_observer_.Add(keyboard_controller);
+  else if (!activated && keyboard_observer_.IsObserving(keyboard_controller))
+    keyboard_observer_.Remove(keyboard_controller);
+}
+
+void AppListControllerImpl::OnKeyboardAvailabilityChanged(
+    const bool is_available) {
+  onscreen_keyboard_shown_ = is_available;
+  app_list::AppListView* app_list_view = presenter_.GetView();
+  if (app_list_view)
+    app_list_view->OnScreenKeyboardShown(is_available);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

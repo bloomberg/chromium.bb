@@ -167,6 +167,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
   // necessary key events to the search box.
   void RedirectKeyEventToSearchBox(ui::KeyEvent* event);
 
+  // Called when on-screen keyboard's visibility is changed.
+  void OnScreenKeyboardShown(bool shown);
+
   // Sets |is_in_drag_| and updates the visibility of app list items.
   void SetIsInDrag(bool is_in_drag);
 
@@ -215,6 +218,11 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   void SetIsIgnoringScrollEvents(bool is_ignoring);
   bool is_ignoring_scroll_events() const { return is_ignoring_scroll_events_; }
+
+  void set_onscreen_keyboard_shown(bool onscreen_keyboard_shown) {
+    onscreen_keyboard_shown_ = onscreen_keyboard_shown;
+  }
+  bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
 
  private:
   // A widget observer that is responsible for keeping the AppListView state up
@@ -379,6 +387,9 @@ class APP_LIST_EXPORT AppListView : public views::WidgetDelegateView,
 
   // Whether to ignore the scroll events.
   bool is_ignoring_scroll_events_ = false;
+
+  // Whether the on-screen keyboard is shown.
+  bool onscreen_keyboard_shown_ = false;
 
   // Observes the completion of scroll animation.
   std::unique_ptr<ui::ImplicitAnimationObserver> scroll_animation_observer_;
