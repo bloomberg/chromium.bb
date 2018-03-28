@@ -37,4 +37,13 @@ base::scoped_nsobject<CIImage> CreateCIImageFromSkBitmap(
   return ci_image;
 }
 
+gfx::RectF ConvertCGToGfxCoordinates(CGRect bounds, int height) {
+  // In the default Core Graphics coordinate space, the origin is located
+  // in the lower-left corner, and thus |ci_image| is flipped vertically.
+  // We need to adjust |y| coordinate of bounding box before sending it.
+  return gfx::RectF(bounds.origin.x,
+                    height - bounds.origin.y - bounds.size.height,
+                    bounds.size.width, bounds.size.height);
+}
+
 }  // namespace shape_detection

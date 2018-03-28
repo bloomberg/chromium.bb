@@ -36,15 +36,8 @@ void FaceDetectionImplMac::Detect(const SkBitmap& bitmap,
 
   std::vector<mojom::FaceDetectionResultPtr> results;
   for (CIFaceFeature* const f in features) {
-    // In the default Core Graphics coordinate space, the origin is located
-    // in the lower-left corner, and thus |ci_image| is flipped vertically.
-    // We need to adjust |y| coordinate of bounding box before sending it.
-    gfx::RectF boundingbox(f.bounds.origin.x,
-                           height - f.bounds.origin.y - f.bounds.size.height,
-                           f.bounds.size.width, f.bounds.size.height);
-
     auto face = shape_detection::mojom::FaceDetectionResult::New();
-    face->bounding_box = std::move(boundingbox);
+    face->bounding_box = ConvertCGToGfxCoordinates(f.bounds, height);
 
     if (f.hasLeftEyePosition) {
       auto landmark = shape_detection::mojom::Landmark::New();

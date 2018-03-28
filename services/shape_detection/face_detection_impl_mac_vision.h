@@ -37,9 +37,9 @@ class API_AVAILABLE(macos(10.13)) FaceDetectionImplMacVision
 
  private:
   class VisionAPIAsyncRequestMac;
-
   void OnFacesDetected(VNRequest* request, NSError* error);
 
+  CGSize image_size_;
   std::unique_ptr<VisionAPIAsyncRequestMac> landmarks_async_request_;
   DetectCallback detected_callback_;
   mojo::StrongBindingPtr<mojom::FaceDetection> binding_;
