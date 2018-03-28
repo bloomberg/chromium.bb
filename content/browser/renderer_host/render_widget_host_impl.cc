@@ -543,6 +543,19 @@ void RenderWidgetHostImpl::SendScreenRects() {
   waiting_for_screen_rects_ack_ = true;
 }
 
+void RenderWidgetHostImpl::SetFrameDepth(unsigned int depth) {
+  if (frame_depth_ == depth)
+    return;
+
+  frame_depth_ = depth;
+  UpdatePriority();
+}
+
+void RenderWidgetHostImpl::UpdatePriority() {
+  if (!destroyed_)
+    process_->UpdateClientPriority(this);
+}
+
 void RenderWidgetHostImpl::Init() {
   DCHECK(process_->HasConnection());
 
@@ -1620,12 +1633,22 @@ void RenderWidgetHostImpl::SetCursor(const CursorInfo& cursor_info) {
 }
 
 RenderProcessHost::Priority RenderWidgetHostImpl::GetPriority() {
-  return {
+  RenderProcessHost::Priority priority = {
     is_hidden_,
+    frame_depth_,
 #if defined(OS_ANDROID)
-        importance_,
+    importance_,
 #endif
   };
+  if (owner_delegate_ &&
+      !owner_delegate_->ShouldContributePriorityToProcess()) {
+    priority.is_hidden = true;
+    priority.frame_depth = RenderProcessHostImpl::kMaxFrameDepthForPriority;
+#if defined(OS_ANDROID)
+    priority.importance = ChildProcessImportance::NORMAL;
+#endif
+  }
+  return priority;
 }
 
 mojom::WidgetInputHandler* RenderWidgetHostImpl::GetWidgetInputHandler() {

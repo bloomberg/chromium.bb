@@ -422,8 +422,8 @@ public class ChildProcessLauncherHelper {
     }
 
     @CalledByNative
-    private void setPriority(int pid, boolean foreground, boolean boostForPendingViews,
-            @ChildProcessImportance int importance) {
+    private void setPriority(int pid, boolean foreground, long frameDepth,
+            boolean boostForPendingViews, @ChildProcessImportance int importance) {
         assert LauncherThread.runningOnLauncherThread();
         assert mLauncher.getPid() == pid;
 

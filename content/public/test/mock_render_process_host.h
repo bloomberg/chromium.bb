@@ -75,6 +75,7 @@ class MockRenderProcessHost : public RenderProcessHost {
   void ShutdownForBadMessage(CrashReportMode crash_report_mode) override;
   void UpdateClientPriority(PriorityClient* client) override;
   int VisibleClientCount() const override;
+  unsigned int GetFrameDepthForTesting() const override;
   bool IsForGuestsOnly() const override;
   RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() override;

@@ -77,6 +77,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // priority / importance than a RenderProcessHost with hidden clients only.
   struct Priority {
     bool is_hidden;
+    unsigned int frame_depth;
 #if defined(OS_ANDROID)
     ChildProcessImportance importance;
 #endif
@@ -151,9 +152,15 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
   // will be reported as well.
   virtual void ShutdownForBadMessage(CrashReportMode crash_report_mode) = 0;
 
-  // Track the count of visible clients.
+  // Recompute Priority state. PriorityClient should call this when their
+  // individual priority changes.
   virtual void UpdateClientPriority(PriorityClient* client) = 0;
+
+  // Number of visible (ie |!is_hidden|) PriorityClients.
   virtual int VisibleClientCount() const = 0;
+
+  // Get computed frame depth from PriorityClients.
+  virtual unsigned int GetFrameDepthForTesting() const = 0;
 
   virtual RendererAudioOutputStreamFactoryContext*
   GetRendererAudioOutputStreamFactoryContext() = 0;

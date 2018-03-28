@@ -184,7 +184,8 @@ void ChildProcessLauncherHelper::SetProcessPriorityOnLauncherThread(
   DCHECK(env);
   return Java_ChildProcessLauncherHelper_setPriority(
       env, java_peer_, process.Handle(), !priority.background,
-      priority.boost_for_pending_views, static_cast<jint>(priority.importance));
+      priority.frame_depth, priority.boost_for_pending_views,
+      static_cast<jint>(priority.importance));
 }
 
 // static

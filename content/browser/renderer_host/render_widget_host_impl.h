@@ -280,6 +280,9 @@ class CONTENT_EXPORT RenderWidgetHostImpl
     return owned_by_render_frame_host_;
   }
 
+  void SetFrameDepth(unsigned int depth);
+  void UpdatePriority();
+
   // Tells the renderer to die and optionally delete |this|.
   void ShutdownAndDestroyWidget(bool also_delete);
 
@@ -909,6 +912,10 @@ class CONTENT_EXPORT RenderWidgetHostImpl
   // Indicates whether a page is hidden or not. Need to call
   // process_->UpdateClientPriority when this value changes.
   bool is_hidden_;
+
+  // For a widget that does not have an associated RenderFrame/View, assume it
+  // is depth 1, ie just below the root widget.
+  unsigned int frame_depth_ = 1u;
 
 #if defined(OS_ANDROID)
   // Tracks the current importance of widget.

@@ -170,7 +170,7 @@ ChildProcessLauncher::Client* ChildProcessLauncher::ReplaceClientForTest(
 
 bool ChildProcessLauncherPriority::operator==(
     const ChildProcessLauncherPriority& other) const {
-  return background == other.background &&
+  return background == other.background && frame_depth == other.frame_depth &&
          boost_for_pending_views == other.boost_for_pending_views
 #if defined(OS_ANDROID)
          && importance == other.importance
