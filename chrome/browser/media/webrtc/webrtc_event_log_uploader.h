@@ -121,6 +121,11 @@ class WebRtcEventLogUploaderImpl : public WebRtcEventLogUploader {
     ~Delegate() override = default;
 
     // net::URLFetcherDelegate implementation.
+#if DCHECK_IS_ON()
+    void OnURLFetchUploadProgress(const net::URLFetcher* source,
+                                  int64_t current,
+                                  int64_t total) override;
+#endif
     void OnURLFetchComplete(const net::URLFetcher* source) override;
 
    private:

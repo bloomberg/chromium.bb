@@ -142,6 +142,28 @@ WebRtcEventLogUploaderImpl::Delegate::Delegate(
     WebRtcEventLogUploaderImpl* owner)
     : owner_(owner) {}
 
+#if DCHECK_IS_ON()
+void WebRtcEventLogUploaderImpl::Delegate::OnURLFetchUploadProgress(
+    const net::URLFetcher* source,
+    int64_t current,
+    int64_t total) {
+  std::string unit;
+  if (total <= 1000) {
+    unit = "bytes";
+  } else if (total <= 1000 * 1000) {
+    unit = "KBs";
+    current /= 1000;
+    total /= 1000;
+  } else {
+    unit = "MBs";
+    current /= 1000 * 1000;
+    total /= 1000 * 1000;
+  }
+  VLOG(1) << "WebRTC event log upload progress: " << current << " / " << total
+          << " " << unit << ".";
+}
+#endif
+
 void WebRtcEventLogUploaderImpl::Delegate::OnURLFetchComplete(
     const net::URLFetcher* source) {
   owner_->OnURLFetchComplete(source);
