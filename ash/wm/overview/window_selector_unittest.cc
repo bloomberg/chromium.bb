@@ -355,6 +355,10 @@ class WindowSelectorTest : public AshTestBase {
     return !!item->transform_window_.mask_;
   }
 
+  gfx::Rect GetMaskBoundsForItem(WindowSelectorItem* item) const {
+    return item->transform_window_.GetMaskBoundsForTesting();
+  }
+
  private:
   aura::test::TestWindowDelegate delegate_;
   std::unique_ptr<ShelfViewTestAPI> shelf_view_test_api_;
@@ -2795,6 +2799,24 @@ TEST_F(WindowSelectorTest, RoundedEdgeMaskVisibility) {
 
   // Test that leaving overview mode cleans up properly.
   ToggleOverview();
+}
+
+// Verify that if the window's bounds are changed while it's in overview mode,
+// the rounded edge mask's bounds are also changed accordingly.
+TEST_F(WindowSelectorTest, WindowBoundsChangeTest) {
+  UpdateDisplay("400x400");
+  const gfx::Rect bounds(0, 0, 200, 200);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+
+  ToggleOverview();
+  WindowSelectorItem* item1 = GetWindowItemForWindow(0, window1.get());
+  EXPECT_TRUE(HasMaskForItem(item1));
+  EXPECT_EQ(GetMaskBoundsForItem(item1), window1->bounds());
+  EXPECT_EQ(GetMaskBoundsForItem(item1), bounds);
+
+  wm::GetWindowState(window1.get())->Maximize();
+  EXPECT_EQ(GetMaskBoundsForItem(item1), window1->bounds());
+  EXPECT_NE(GetMaskBoundsForItem(item1), bounds);
 }
 
 // Verify that the system does not crash when exiting overview mode after
