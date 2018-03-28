@@ -196,14 +196,6 @@ void SetShelfAutoHideBehaviorPref(PrefService* prefs,
   }
 }
 
-bool AreShelfPrefsAvailable(PrefService* prefs) {
-  return prefs->FindPreference(prefs::kShelfAlignmentLocal) &&
-         prefs->FindPreference(prefs::kShelfAlignment) &&
-         prefs->FindPreference(prefs::kShelfAutoHideBehaviorLocal) &&
-         prefs->FindPreference(prefs::kShelfAutoHideBehavior) &&
-         prefs->FindPreference(prefs::kShelfPreferences);
-}
-
 ShelfAlignment GetShelfAlignmentPref(PrefService* prefs, int64_t display_id) {
   DCHECK_NE(display_id, display::kInvalidDisplayId);
 
