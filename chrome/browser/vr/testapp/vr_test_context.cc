@@ -583,8 +583,6 @@ void VrTestContext::StopAutocomplete() {
   ui_->SetOmniboxSuggestions(std::make_unique<OmniboxSuggestions>());
 }
 
-typedef bool CapturingStateModel::*CapturingStateModelMemberPtr;
-
 void VrTestContext::CycleIndicators() {
   static size_t state = 0;
 
@@ -595,7 +593,7 @@ void VrTestContext::CycleIndicators() {
       &CapturingStateModel::bluetooth_connected,
       &CapturingStateModel::screen_capture_enabled};
 
-  state = (state + 1) % (1 << signals.size());
+  state = (state + 1) % (1 << (signals.size() + 1));
   for (size_t i = 0; i < signals.size(); ++i) {
     model_->capturing_state.*signals[i] = state & (1 << i);
   }
