@@ -13,6 +13,8 @@ if (is_win) {
     ]
     data = [
              "//third_party/webdriver/pylib/",
+             "//testing/scripts/",
+             "//testing/xvfb.py",
              "//third_party/depot_tools/download_from_google_storage.py",
              "//third_party/depot_tools/gsutil.py",
            ] +

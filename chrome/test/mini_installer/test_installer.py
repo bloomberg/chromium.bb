@@ -27,8 +27,11 @@ import _winreg
 from variable_expander import VariableExpander
 import verifier_runner
 
+# Use absolute paths
 THIS_DIR = os.path.dirname(os.path.abspath(__file__))
 SRC_DIR = os.path.join(THIS_DIR, '..', '..', '..')
+RUNNING_LOCALLY = (
+  os.getenv('SWARMING_HEADLESS') != '1' and os.getenv('CHROME_HEADLESS') != '1')
 
 
 class Config(object):
@@ -200,7 +203,7 @@ def DeleteGoogleUpdateRegistration(system_level, registry_subkey,
 
 
 def RunCleanCommand(force_clean, variable_expander):
-  """Puts the machine in the clean state (i.e. Chrome not installed).
+  """Puts the machine in the clean state (e.g. Chrome not installed).
 
   Args:
     force_clean: A boolean indicating whether to force cleaning existing
@@ -390,66 +393,121 @@ def ConfigureTempOnDrive(drive):
         raise Exception('Failed to entirely delete directory %s' % tmp_created)
 
 
+def GetAbsoluteExecutablePath(build_dir, target, path):
+  """Gets the absolute path to the an executable.
+
+  The path can either be an absolute or relative path, as well as the
+  executable's name. These are used to probe user-specified and common
+  binary paths.
+
+  This method searches for the binary in common locations:
+  - path location (when specifying a non-standard location)
+  - build_dir\target\path (explicitly passed via build_dir and target flags,
+      path here is the filename)
+  - out\Release\path (local default path, path here is the filename)
+  - out\Default\path (alternate local default path)
+  - out\Release_x64\path (on waterfall)
+
+  Note: If build_dir and target are empty (default) just the path is used. This
+  allows the user to pass in paths without having to worry about conflicts with
+  the build_dir and target args.
+
+  Args:
+    build_dir: The build directory (e.g. out)
+    target: The target directory (e.g. Release)
+    path: The path to the file. This can be an absolute or relative path.
+
+  Returns:
+    Absolute path to installer.
+  """
+  possible_paths = [
+    os.path.abspath(os.path.join(build_dir, target, path)),
+    os.path.abspath(os.path.join('out', 'Release', path)),
+    os.path.abspath(os.path.join('out', 'Release_x64', path)),
+    os.path.abspath(os.path.join('out', 'Default', path)),
+    ]
+  for _path in possible_paths:
+    if os.path.exists(_path):
+      return _path
+  raise RuntimeError('Binary can\'t be found: %s' % path)
+
+
+def GetAbsoluteConfigPath(path):
+  """Gets the absolute path to the config file.
+
+  Args:
+    path: The path to the file.
+
+  Returns:
+    Absolute path to config.
+  """
+  if os.path.exists(path):
+    pass
+  else:
+    path = os.path.join(THIS_DIR, 'config', path)
+
+  assert os.path.exists(path), 'Config can\'t be found: %s' % path
+  logging.info('Config found at %s', path)
+  return os.path.abspath(path)
+
+
 def DoMain():
   # TODO(mmeade): Replace --build-dir and --target with a new path
   # flags and plumb it through.
-  parser = parser = argparse.ArgumentParser(
+  parser = argparse.ArgumentParser(
     description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
   parser.add_argument('-q', '--quiet', action='store_true', default=False,
                       help='Reduce test runner output')
-  parser.add_argument('--build-dir', default='out',
+  parser.add_argument('--build-dir', default='',
                       help='Path to main build directory (the parent of the '
                       'Release or Debug directory)')
-  parser.add_argument('--target', default='Release',
+  parser.add_argument('--target', default='',
                       help='Build target (Release or Debug)')
   parser.add_argument('--force-clean', action='store_true', default=False,
                       help='Force cleaning existing installations')
   parser.add_argument('--write-full-results-to', metavar='FILENAME',
                       help='Path to write the list of full results to.')
-  parser.add_argument('--config', default=os.path.join(
-    'chrome', 'test', 'mini_installer', 'config', 'config.config'),
-    metavar='FILENAME', help='Path to test configuration file')
-  parser.add_argument('--chromedriver-path',
-                      default='', metavar='FILENAME',
-                      help='The path to chromedriver.')
   parser.add_argument('test', nargs='*',
                       help='Name(s) of tests to run.')
 
   # The following flags will replace the build-dir, target, and filename arg.
   parser.add_argument('--installer-path',
-                      default='', metavar='FILENAME',
+                      default='mini_installer.exe',
+                      metavar='FILENAME',
                       help='The path of the installer.')
   parser.add_argument('--next-version-installer-path',
-                      default='', metavar='FILENAME',
+                      default='next_version_mini_installer.exe',
+                      metavar='FILENAME',
                       help='The path of the next version installer.')
-  parser.add_argument('--results-directory', default='',
-                      help='The path of the results directory.')
+  parser.add_argument('--chromedriver-path',
+                      default='chromedriver.exe',
+                      help='The path to chromedriver.')
+  parser.add_argument('--config', default='config.config',
+                      metavar='FILENAME',
+                      help='Path to test configuration file')
   args = parser.parse_args()
 
-  if not args.config:
-    parser.error('missing mandatory --config FILENAME argument')
-
-  # TODO(mmeade): Fully switch to paths
-  installer_path = (
-    args.installer_path or
-    os.path.join(args.build_dir, args.target, 'mini_installer.exe'))
-  assert os.path.exists(installer_path), (
-    'Could not find file %s' % installer_path)
-
-  next_version_installer_path = (
-    args.next_version_installer_path or
-    os.path.join(args.build_dir, args.target,
-                 'next_version_mini_installer.exe'))
-  assert os.path.exists(next_version_installer_path), (
-      'Could not find file %s' % next_version_installer_path)
-
-  chromedriver_path = (
-    args.chromedriver_path or
-    os.path.join(args.build_dir, args.target, 'chromedriver.exe'))
-
+  # Due to what looks like a bug the root handlers need to be cleared out
+  # so the right handler will be created.
+  logging.Logger.root.handlers = []
   logging.basicConfig(
     format='[%(asctime)s:%(filename)s(%(lineno)d)] %(message)s',
     datefmt='%m%d/%H%M%S', level=logging.ERROR if args.quiet else logging.INFO)
+
+  # TODO(mmeade): Fully switch to paths
+  # Use absolute paths.
+  installer_path = GetAbsoluteExecutablePath(
+    args.build_dir, args.target, args.installer_path)
+  next_version_installer_path = GetAbsoluteExecutablePath(
+    args.build_dir, args.target, args.next_version_installer_path)
+  chromedriver_path = GetAbsoluteExecutablePath(
+    args.build_dir, args.target, args.chromedriver_path)
+  config_path = GetAbsoluteConfigPath(args.config)
+
+  # Set --force-clean when not running locally
+  if not RUNNING_LOCALLY:
+    logging.info('Setting --force-clean')
+    args.force_clean = True
 
   suite = unittest.TestSuite()
 
@@ -457,7 +515,7 @@ def DoMain():
                                        next_version_installer_path,
                                        chromedriver_path,
                                        args.quiet)
-  config = ParseConfigFile(args.config, variable_expander)
+  config = ParseConfigFile(config_path, variable_expander)
 
   RunCleanCommand(args.force_clean, variable_expander)
   for test in config.tests:

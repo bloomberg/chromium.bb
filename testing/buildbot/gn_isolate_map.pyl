@@ -811,6 +811,15 @@
     "label": "//chrome/installer/mini_installer:mini_installer",
     "type": "additional_compile_target",
   },
+  "mini_installer_tests": {
+    "label": "//chrome/test/mini_installer:mini_installer_tests",
+    "type": "script",
+    "script": "//testing/scripts/run_isolated_script_test.py",
+    "args": [
+      "--isolated-script-test-output=${ISOLATED_OUTDIR}/results.json",
+      "../../chrome/test/mini_installer/test_installer.py",
+    ],
+  },
   "mojo_common_unittests": {
     "label": "//mojo/common:mojo_common_unittests",
     "type": "console_test_launcher",
