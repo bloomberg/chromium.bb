@@ -159,6 +159,8 @@ class ASH_EXPORT ScopedTransformOverviewWindow
     return window_selector_bounds_;
   }
 
+  gfx::Rect GetMaskBoundsForTesting() const;
+
   // Closes the transient root of the window managed by |this|.
   void Close();
 

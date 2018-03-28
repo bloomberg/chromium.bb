@@ -104,15 +104,21 @@ class ScopedTransformOverviewWindow::LayerCachingAndFilteringObserver
 
 // WindowMask is applied to overview windows to give them rounded edges while
 // they are in overview mode.
-class ScopedTransformOverviewWindow::WindowMask : public ui::LayerDelegate {
+class ScopedTransformOverviewWindow::WindowMask : public ui::LayerDelegate,
+                                                  public aura::WindowObserver {
  public:
   explicit WindowMask(aura::Window* window)
       : layer_(ui::LAYER_TEXTURED), window_(window) {
+    window_->AddObserver(this);
     layer_.set_delegate(this);
     layer_.SetFillsBoundsOpaquely(false);
   }
 
-  ~WindowMask() override { layer_.set_delegate(nullptr); }
+  ~WindowMask() override {
+    if (window_)
+      window_->RemoveObserver(this);
+    layer_.set_delegate(nullptr);
+  }
 
   void set_top_inset(int top_inset) { top_inset_ = top_inset; }
   ui::Layer* layer() { return &layer_; }
@@ -146,6 +152,19 @@ class ScopedTransformOverviewWindow::WindowMask : public ui::LayerDelegate {
 
   void OnDeviceScaleFactorChanged(float old_device_scale_factor,
                                   float new_device_scale_factor) override {}
+
+  // aura::WindowObserver:
+  void OnWindowBoundsChanged(aura::Window* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds,
+                             ui::PropertyChangeReason reason) override {
+    layer_.SetBounds(new_bounds);
+  }
+
+  void OnWindowDestroying(aura::Window* window) override {
+    window_->RemoveObserver(this);
+    window_ = nullptr;
+  }
 
   ui::Layer layer_;
   int top_inset_ = 0;
@@ -474,6 +493,12 @@ gfx::Rect ScopedTransformOverviewWindow::ShrinkRectToFitPreservingAspectRatio(
   }
 
   return new_bounds;
+}
+
+gfx::Rect ScopedTransformOverviewWindow::GetMaskBoundsForTesting() const {
+  if (!mask_)
+    return gfx::Rect();
+  return mask_->layer()->bounds();
 }
 
 void ScopedTransformOverviewWindow::Close() {
