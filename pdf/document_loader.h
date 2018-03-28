@@ -11,6 +11,7 @@
 #include <memory>
 #include <string>
 
+#include "base/macros.h"
 #include "pdf/chunk_stream.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
@@ -62,8 +63,9 @@ class DocumentLoader {
   void RequestData(uint32_t position, uint32_t size);
 
   bool IsDocumentComplete() const;
+  void SetDocumentSize(uint32_t size);
   uint32_t GetDocumentSize() const;
-  uint32_t count_of_bytes_received() const { return count_of_bytes_received_; }
+  uint32_t bytes_received() const { return bytes_received_; }
 
   // Clear pending requests from the queue.
   void ClearPendingRequests();
@@ -99,6 +101,8 @@ class DocumentLoader {
 
   bool SaveChunkData(char* input, uint32_t input_size);
 
+  uint32_t EndOfCurrentChunk() const;
+
   Client* const client_;
   std::string url_;
   std::unique_ptr<URLLoaderWrapper> loader_;
@@ -112,9 +116,15 @@ class DocumentLoader {
   static constexpr uint32_t kReadBufferSize = 256 * 1024;
   char buffer_[kReadBufferSize];
 
+  // The current chunk DocumentLoader is working with.
   Chunk chunk_;
+
+  // In units of Chunks.
   RangeSet pending_requests_;
-  uint32_t count_of_bytes_received_ = 0;
+
+  uint32_t bytes_received_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(DocumentLoader);
 };
 
 }  // namespace chrome_pdf
