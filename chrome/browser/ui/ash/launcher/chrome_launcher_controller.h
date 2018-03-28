@@ -27,7 +27,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
-class AccountId;
 class AppIconLoader;
 class AppSyncUIState;
 class AppWindowLauncherController;
@@ -40,7 +39,6 @@ class Profile;
 class LauncherControllerHelper;
 
 namespace ash {
-class Shelf;
 class ShelfModel;
 }  // namespace ash
 
@@ -203,13 +201,6 @@ class ChromeLauncherController
   // Returns the ash::ShelfItemDelegate of BrowserShortcut.
   BrowserShortcutLauncherItemController*
   GetBrowserShortcutLauncherItemController();
-
-  // Check if the shelf visibility (location, visibility) will change with a new
-  // user profile or not. However, since the full visibility calculation of the
-  // shelf cannot be performed here, this is only a probability used for
-  // animation predictions.
-  bool ShelfBoundsChangesProbablyWithUser(ash::Shelf* shelf,
-                                          const AccountId& account_id) const;
 
   // Called when the user profile is fully loaded and ready to switch to.
   void OnUserProfileReadyToSwitch(Profile* profile);
