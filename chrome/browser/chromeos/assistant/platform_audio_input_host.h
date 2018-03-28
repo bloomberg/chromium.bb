@@ -40,9 +40,9 @@ class PlatformAudioInputHost : public mojom::AudioInput {
   class Writer;
   class EventHandler;
 
-  scoped_refptr<media::AudioInputController> audio_input_controller_;
   std::unique_ptr<Writer> sync_writer_;
   std::unique_ptr<EventHandler> event_handler_;
+  scoped_refptr<media::AudioInputController> audio_input_controller_;
   mojo::InterfacePtrSet<mojom::AudioInputObserver> observers_;
 
   bool recording_ = false;
