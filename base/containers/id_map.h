@@ -48,14 +48,14 @@ class IDMap final {
     // access it from a different, but consistent, thread (or sequence)
     // post-construction. The first call to CalledOnValidSequence() will re-bind
     // it.
-    sequence_checker_.DetachFromSequence();
+    DETACH_FROM_SEQUENCE(sequence_checker_);
   }
 
   ~IDMap() {
     // Many IDMap's are static, and hence will be destroyed on the main
     // thread. However, all the accesses may take place on another thread (or
     // sequence), such as the IO thread. Detaching again to clean this up.
-    sequence_checker_.DetachFromSequence();
+    DETACH_FROM_SEQUENCE(sequence_checker_);
   }
 
   // Sets whether Add and Replace should DCHECK if passed in NULL data.
@@ -72,7 +72,7 @@ class IDMap final {
   void AddWithID(V data, KeyType id) { AddWithIDInternal(std::move(data), id); }
 
   void Remove(KeyType id) {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     typename HashTable::iterator i = data_.find(id);
     if (i == data_.end()) {
       NOTREACHED() << "Attempting to remove an item not in the list";
@@ -89,7 +89,7 @@ class IDMap final {
   // Replaces the value for |id| with |new_data| and returns the existing value.
   // Should only be called with an already added id.
   V Replace(KeyType id, V new_data) {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!check_on_null_data_ || new_data);
     typename HashTable::iterator i = data_.find(id);
     DCHECK(i != data_.end());
@@ -99,7 +99,7 @@ class IDMap final {
   }
 
   void Clear() {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     if (iteration_depth_ == 0) {
       data_.clear();
     } else {
@@ -110,12 +110,12 @@ class IDMap final {
   }
 
   bool IsEmpty() const {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return size() == 0u;
   }
 
   T* Lookup(KeyType id) const {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     typename HashTable::const_iterator i = data_.find(id);
     if (i == data_.end())
       return nullptr;
@@ -123,7 +123,7 @@ class IDMap final {
   }
 
   size_t size() const {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     return data_.size() - removed_ids_.size();
   }
 
@@ -156,7 +156,7 @@ class IDMap final {
     }
 
     ~Iterator() {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(map_->sequence_checker_);
 
       // We're going to decrement iteration depth. Make sure it's greater than
       // zero so that it doesn't become negative.
@@ -167,29 +167,29 @@ class IDMap final {
     }
 
     bool IsAtEnd() const {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(map_->sequence_checker_);
       return iter_ == map_->data_.end();
     }
 
     KeyType GetCurrentKey() const {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(map_->sequence_checker_);
       return iter_->first;
     }
 
     ReturnType* GetCurrentValue() const {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(map_->sequence_checker_);
       return &*iter_->second;
     }
 
     void Advance() {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(map_->sequence_checker_);
       ++iter_;
       SkipRemovedEntries();
     }
 
    private:
     void Init() {
-      DCHECK(map_->sequence_checker_.CalledOnValidSequence());
+      DCHECK_CALLED_ON_VALID_SEQUENCE(map_->sequence_checker_);
       ++map_->iteration_depth_;
       SkipRemovedEntries();
     }
@@ -211,7 +211,7 @@ class IDMap final {
 
  private:
   KeyType AddInternal(V data) {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!check_on_null_data_ || data);
     KeyType this_id = next_id_;
     DCHECK(data_.find(this_id) == data_.end()) << "Inserting duplicate item";
@@ -221,7 +221,7 @@ class IDMap final {
   }
 
   void AddWithIDInternal(V data, KeyType id) {
-    DCHECK(sequence_checker_.CalledOnValidSequence());
+    DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!check_on_null_data_ || data);
     DCHECK(data_.find(id) == data_.end()) << "Inserting duplicate item";
     data_[id] = std::move(data);
@@ -251,7 +251,7 @@ class IDMap final {
   // See description above setter.
   bool check_on_null_data_;
 
-  base::SequenceChecker sequence_checker_;
+  SEQUENCE_CHECKER(sequence_checker_);
 
   DISALLOW_COPY_AND_ASSIGN(IDMap);
 };
