@@ -3,7 +3,6 @@
 # found in the LICENSE file.
 
 import("//build/config/nacl/config.gni")
-import("//mojo/edk/mojo_core_library.gni")
 import("//testing/test.gni")
 
 # Targets should depend on this if directly referencing the |mojo::edk|
@@ -207,7 +206,7 @@ core_impl_source_set("impl_for_edk") {
   for_mojo_core = false
 }
 
-if (enable_mojo_core_library) {
+if (is_chromeos || is_linux) {
   core_impl_source_set("impl_for_mojo_core") {
     for_mojo_core = true
   }
@@ -233,11 +232,14 @@ if (enable_mojo_core_library) {
     ]
 
     deps = [
-      ":mojo_core",
       "//base",
       "//base/test:test_support",
       "//mojo/public/c/system",
       "//testing/gtest",
+    ]
+
+    data_deps = [
+      ":mojo_core",
     ]
   }
 }

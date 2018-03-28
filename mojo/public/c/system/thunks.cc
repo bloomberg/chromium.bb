@@ -9,7 +9,18 @@
 #include <cstring>
 
 #include "base/logging.h"
+#include "base/macros.h"
+#include "base/no_destructor.h"
+#include "build/build_config.h"
 #include "mojo/public/c/system/core.h"
+
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+#include "base/environment.h"
+#include "base/files/file_path.h"
+#include "base/optional.h"
+#include "base/scoped_native_library.h"
+#include "base/threading/thread_restrictions.h"
+#endif
 
 namespace {
 
@@ -17,32 +28,74 @@ MojoSystemThunks g_thunks = {0};
 
 }  // namespace
 
+namespace mojo {
+
+// NOTE: This is defined within the global mojo namespace so that it can be
+// referenced as a friend to base::ScopedAllowBlocking when library support is
+// enabled.
+class CoreLibraryInitializer {
+ public:
+  typedef void (*MojoGetSystemThunksFunction)(MojoSystemThunks* thunks);
+
+  CoreLibraryInitializer() {
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+    auto environment = base::Environment::Create();
+
+    base::FilePath library_path;
+    std::string library_path_value;
+    const char kLibraryPathEnvironmentVar[] = "MOJO_CORE_LIBRARY_PATH";
+    if (environment->GetVar(kLibraryPathEnvironmentVar, &library_path_value)) {
+      library_path = base::FilePath::FromUTF8Unsafe(library_path_value);
+    } else {
+      // Default to looking for the library in the current working directory.
+      const base::FilePath::CharType kDefaultLibraryPathValue[] =
+          FILE_PATH_LITERAL("./libmojo_core.so");
+      library_path = base::FilePath(kDefaultLibraryPathValue);
+    }
+
+    base::ScopedAllowBlocking allow_blocking;
+    library_.emplace(library_path);
+    CHECK(library_->is_valid())
+        << "Unable to load the mojo_core library. Make sure the library is in "
+        << "the working directory or is correctly pointed to by the "
+        << "MOJO_CORE_LIBRARY_PATH environment variable.";
+
+    const char kGetThunksFunctionName[] = "MojoGetSystemThunks";
+    MojoGetSystemThunksFunction get_thunks =
+        reinterpret_cast<MojoGetSystemThunksFunction>(
+            library_->GetFunctionPointer(kGetThunksFunctionName));
+    CHECK(get_thunks) << "Invalid mojo_core library";
+
+    DCHECK_EQ(g_thunks.size, 0u);
+    g_thunks.size = sizeof(g_thunks);
+    get_thunks(&g_thunks);
+
+    CHECK_GT(g_thunks.size, 0u) << "Invalid mojo_core library";
+#else   // defined(OS_CHROMEOS) || defined(OS_LINUX)
+    NOTREACHED()
+        << "Dynamic mojo_core loading is not supported on this platform.";
+#endif  // defined(OS_CHROMEOS) || defined(OS_LINUX)
+  }
+
+  ~CoreLibraryInitializer() = default;
+
+ private:
+#if defined(OS_CHROMEOS) || defined(OS_LINUX)
+  base::Optional<base::ScopedNativeLibrary> library_;
+#endif
+
+  DISALLOW_COPY_AND_ASSIGN(CoreLibraryInitializer);
+};
+
+}  // namespace mojo
+
 extern "C" {
 
-#if defined(ENABLE_MOJO_CORE_LIBRARY)
-
-// If the system API sources are built with ENABLE_MOJO_CORE_LIBRARY, we assume
-// that an imported |MojoGetSystemThunks()| definition is available. This is
-// exported to us by the mojo_core shared library.
-#if defined(WIN32)
-#define IMPORT_FROM_MOJO_CORE __declspec(dllimport)
-#else
-#define IMPORT_FROM_MOJO_CORE
-#endif
-
-IMPORT_FROM_MOJO_CORE void MojoGetSystemThunks(MojoSystemThunks* thunks);
-
-#endif  // defined(ENABLE_MOJO_CORE_LIBRARY)
-
 MojoResult MojoInitialize(const struct MojoInitializeOptions* options) {
-#if defined(ENABLE_MOJO_CORE_LIBRARY)
-  g_thunks.size = sizeof(g_thunks);
-  MojoGetSystemThunks(&g_thunks);
-#else
-  CHECK(g_thunks.size) << "You must either build with ENABLE_MOJO_CORE_LIBRARY "
-                       << "or manually initialize the EDK before you can use "
-                       << "the Mojo system API.";
-#endif
+  static base::NoDestructor<mojo::CoreLibraryInitializer> initializer;
+  ALLOW_UNUSED_LOCAL(initializer);
+  DCHECK(g_thunks.Initialize);
+
   return g_thunks.Initialize(options);
 }
 

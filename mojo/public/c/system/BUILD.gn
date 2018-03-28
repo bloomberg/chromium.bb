@@ -2,8 +2,6 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-import("//mojo/edk/mojo_core_library.gni")
-
 component("system") {
   output_name = "mojo_public_system"
 
@@ -20,11 +18,6 @@ component("system") {
   deps = [
     "//base",
   ]
-
-  if (enable_mojo_core_library) {
-    defines += [ "ENABLE_MOJO_CORE_LIBRARY" ]
-    public_deps += [ "//mojo/edk:mojo_core" ]
-  }
 }
 
 source_set("headers") {
