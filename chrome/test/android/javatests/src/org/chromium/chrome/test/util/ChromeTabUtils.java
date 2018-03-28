@@ -30,7 +30,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelUtils;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.LoadUrlParams;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -339,7 +338,7 @@ public class ChromeTabUtils {
                     }
                 });
         // Tablet and phone have different new tab buttons; click the right one.
-        if (DeviceFormFactor.isTablet()) {
+        if (activity.isTablet()) {
             StripLayoutHelper strip =
                     TabStripUtils.getStripLayoutHelper(activity, false /* incognito */);
             CompositorButton newTabButton = strip.getNewTabButton();

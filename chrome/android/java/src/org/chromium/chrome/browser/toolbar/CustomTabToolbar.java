@@ -56,6 +56,7 @@ import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.content_public.common.ContentUrlConstants;
+import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.interpolators.BakedBezierInterpolator;
 import org.chromium.ui.widget.Toast;
@@ -492,22 +493,18 @@ public class CustomTabToolbar extends ToolbarLayout implements LocationBar,
     public void updateSecurityIcon() {
         if (mState == STATE_TITLE_ONLY) return;
 
-        boolean showSecurityButton = true;
-        if (!getToolbarDataProvider().shouldShowSecurityIcon()) {
+        int securityIconResource = getToolbarDataProvider().getSecurityIconResource(
+                DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext()));
+        if (securityIconResource == 0) {
             // Hide the button if we don't have an actual icon to display.
-            showSecurityButton = false;
             mSecurityButton.setImageDrawable(null);
+            mAnimDelegate.hideSecurityButton();
         } else {
             // ImageView#setImageResource is no-op if given resource is the current one.
-            mSecurityButton.setImageResource(getToolbarDataProvider().getSecurityIconResource());
+            mSecurityButton.setImageResource(securityIconResource);
             mSecurityButton.setTint(
                     LocationBarLayout.getColorStateList(getToolbarDataProvider(), getResources()));
-        }
-
-        if (showSecurityButton) {
             mAnimDelegate.showSecurityButton();
-        } else {
-            mAnimDelegate.hideSecurityButton();
         }
 
         mUrlBar.emphasizeUrl();

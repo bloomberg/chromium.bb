@@ -388,7 +388,8 @@ public class NewTabPageView
         final TextView searchBoxTextView =
                 (TextView) mSearchBoxView.findViewById(R.id.search_box_text);
         String hintText = getResources().getString(R.string.search_or_type_web_address);
-        if (!DeviceFormFactor.isTablet() || SuggestionsConfig.useModernLayout()) {
+        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(getContext())
+                || SuggestionsConfig.useModernLayout()) {
             searchBoxTextView.setHint(hintText);
         } else {
             searchBoxTextView.setContentDescription(hintText);

@@ -15,6 +15,7 @@ import org.junit.runner.RunWith;
 import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.AwContentsClient;
 import org.chromium.android_webview.AwSettings;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
@@ -55,8 +56,10 @@ public class AwLegacyQuirksTest {
 
         settings.setJavaScriptEnabled(true);
 
-        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return DisplayAndroid.getNonMultiDisplay(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext());
+        });
         mActivityTestRule.loadDataSync(
                 awContents, onPageFinishedHelper, pageDeviceDpi, "text/html", false);
         int actualWidth = Integer.parseInt(mActivityTestRule.getTitleOnUiThread(awContents));
@@ -97,8 +100,10 @@ public class AwLegacyQuirksTest {
         settings.setJavaScriptEnabled(true);
         settings.setUseWideViewPort(true);
 
-        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return DisplayAndroid.getNonMultiDisplay(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext());
+        });
         mActivityTestRule.loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         float displayWidth =
                 displayAndroid.getDisplayWidth() / displayAndroid.getDipScale();
@@ -128,8 +133,10 @@ public class AwLegacyQuirksTest {
 
         settings.setJavaScriptEnabled(true);
 
-        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return DisplayAndroid.getNonMultiDisplay(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext());
+        });
         mActivityTestRule.loadDataSync(awContents, onPageFinishedHelper, page, "text/html", false);
         float displayWidth =
                 displayAndroid.getDisplayWidth() / displayAndroid.getDipScale();
@@ -160,8 +167,10 @@ public class AwLegacyQuirksTest {
         mActivityTestRule.loadUrlSync(
                 awContents, onPageFinishedHelper, ContentUrlConstants.ABOUT_BLANK_DISPLAY_URL);
 
-        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
-                InstrumentationRegistry.getInstrumentation().getTargetContext());
+        DisplayAndroid displayAndroid = ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            return DisplayAndroid.getNonMultiDisplay(
+                    InstrumentationRegistry.getInstrumentation().getTargetContext());
+        });
         float dipScale = displayAndroid.getDipScale();
         float physicalDisplayWidth = displayAndroid.getDisplayWidth();
         float physicalDisplayHeight = displayAndroid.getDisplayHeight();

@@ -5,27 +5,18 @@
 package org.chromium.chrome.browser.compositor.overlays.strip;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyBoolean;
-import static org.mockito.ArgumentMatchers.anyFloat;
-import static org.mockito.ArgumentMatchers.anyInt;
-import static org.mockito.ArgumentMatchers.isNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-import android.content.Context;
-import android.content.res.Configuration;
-import android.content.res.Resources;
-import android.content.res.TypedArray;
+import android.app.Activity;
 import android.text.TextUtils;
-import android.util.AttributeSet;
-import android.util.DisplayMetrics;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.robolectric.Robolectric;
 import org.robolectric.annotation.Config;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
@@ -45,17 +36,14 @@ import java.util.List;
 @RunWith(BaseRobolectricTestRunner.class)
 @Config(manifest = Config.NONE, sdk = 21)
 public class StripLayoutHelperTest {
-    @Mock private Context mContext;
-    @Mock private Resources mResources;
     @Mock private LayoutUpdateHost mUpdateHost;
     @Mock private LayoutRenderHost mRenderHost;
+    private Activity mActivity;
     private TestTabModel mModel = new TestTabModel();
     private StripLayoutHelper mStripLayoutHelper;
     private boolean mIncognito;
     private static final String[] TEST_TAB_TITLES = {"Tab 1", "Tab 2", "Tab 3", "", null};
     private static final String CLOSE_TAB = "Close %1$s tab";
-    private static final String NEW_TAB = "New tab test string";
-    private static final String NEW_INCOGNITO_TAB = "New incognito tab test string";
     private static final String IDENTIFIER = "Tab";
     private static final String IDENTIFIER_SELECTED = "Selected Tab";
     private static final String INCOGNITO_IDENTIFIER = "Incognito Tab";
@@ -64,35 +52,8 @@ public class StripLayoutHelperTest {
     /** Reset the environment before each test. */
     @Before
     public void beforeTest() {
-
         MockitoAnnotations.initMocks(this);
-        when(mContext.getResources()).thenReturn(mResources);
-        when(mResources.getString(R.string.accessibility_tabstrip_btn_close_tab)).thenReturn(
-                CLOSE_TAB);
-        when(mResources.getString(R.string.accessibility_toolbar_btn_new_tab)).thenReturn(NEW_TAB);
-        when(mResources.getString(R.string.accessibility_toolbar_btn_new_incognito_tab))
-                .thenReturn(NEW_INCOGNITO_TAB);
-        when(mResources.getString(R.string.accessibility_tabstrip_identifier))
-                .thenReturn(IDENTIFIER);
-        when(mResources.getString(R.string.accessibility_tabstrip_identifier_selected))
-                .thenReturn(IDENTIFIER_SELECTED);
-        when(mResources.getString(R.string.accessibility_tabstrip_incognito_identifier))
-                .thenReturn(INCOGNITO_IDENTIFIER);
-        when(mResources.getString(R.string.accessibility_tabstrip_incognito_identifier_selected))
-                .thenReturn(INCOGNITO_IDENTIFIER_SELECTED);
-
-        // CompositorButton
-        when(mResources.getDisplayMetrics()).thenReturn(new DisplayMetrics());
-        when(mResources.getDimension(anyInt())).thenReturn(100.0f);
-
-        // ListPopupWindow
-        final TypedArray mockTypedArray = mock(TypedArray.class);
-        when(mockTypedArray.getDimension(anyInt(), anyFloat())).thenReturn(0f);
-        when(mockTypedArray.getBoolean(anyInt(), anyBoolean())).thenReturn(false);
-        when(mContext.obtainStyledAttributes((AttributeSet) isNull(), any(int[].class), anyInt(),
-                anyInt())).thenReturn(mockTypedArray);
-        final Configuration mockConfiguration = mock(Configuration.class);
-        when(mResources.getConfiguration()).thenReturn(mockConfiguration);
+        mActivity = Robolectric.buildActivity(Activity.class).setup().get();
     }
 
     /**
@@ -180,16 +141,18 @@ public class StripLayoutHelperTest {
             assertEquals(expectedDescription, views.get(i).getAccessibilityDescription());
         }
 
-        assertEquals(mIncognito ? NEW_INCOGNITO_TAB : NEW_TAB,
-                     views.get(views.size() - 1).getAccessibilityDescription());
+        assertEquals(mActivity.getResources().getString(mIncognito
+                                     ? R.string.accessibility_toolbar_btn_new_incognito_tab
+                                     : R.string.accessibility_toolbar_btn_new_tab),
+                views.get(views.size() - 1).getAccessibilityDescription());
     }
 
     private StripLayoutHelper createStripLayoutHelper(boolean rtl, boolean incognito) {
         LocalizationUtils.setRtlForTesting(rtl);
         final StripLayoutHelper stripLayoutHelper =
-                new StripLayoutHelper(mContext, mUpdateHost, mRenderHost, incognito);
+                new StripLayoutHelper(mActivity, mUpdateHost, mRenderHost, incognito);
         // Initialize StackScroller
-        stripLayoutHelper.onContextChanged(mContext);
+        stripLayoutHelper.onContextChanged(mActivity);
         return stripLayoutHelper;
     }
 

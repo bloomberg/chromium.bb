@@ -96,11 +96,6 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
-    public boolean shouldShowSecurityIcon() {
-        return false;
-    }
-
-    @Override
     public boolean shouldShowVerboseStatus() {
         return false;
     }
@@ -111,7 +106,7 @@ class SearchBoxDataProvider implements ToolbarDataProvider {
     }
 
     @Override
-    public int getSecurityIconResource() {
+    public int getSecurityIconResource(boolean isTablet) {
         return 0;
     }
 

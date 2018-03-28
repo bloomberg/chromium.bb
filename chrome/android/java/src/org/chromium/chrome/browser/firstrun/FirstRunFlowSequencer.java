@@ -33,6 +33,7 @@ import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.webapps.WebApkActivity;
 import org.chromium.components.signin.AccountManagerFacade;
 import org.chromium.components.signin.ChromeSigninController;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
@@ -412,8 +413,7 @@ public abstract class FirstRunFlowSequencer  {
         if (!(caller instanceof Activity)) return false;
 
         // We must be on a tablet (where FRE is a dialog).
-        boolean isTablet = caller.getResources().getBoolean(R.bool.is_tablet);
-        if (!isTablet) return false;
+        if (!DeviceFormFactor.isNonMultiDisplayContextOnTablet(caller)) return false;
 
         // Caller must use a theme with @drawable/window_background (the same background
         // used by TabbedModeFRE).

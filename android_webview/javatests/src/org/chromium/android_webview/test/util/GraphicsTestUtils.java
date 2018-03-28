@@ -4,6 +4,7 @@
 
 package org.chromium.android_webview.test.util;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.view.View;
@@ -12,11 +13,17 @@ import org.chromium.android_webview.AwContents;
 import org.chromium.android_webview.test.AwActivityTestRule;
 import org.chromium.android_webview.test.AwTestContainerView;
 import org.chromium.base.ThreadUtils;
+import org.chromium.ui.display.DisplayAndroid;
 
 /**
  * Graphics-related test utils.
  */
 public class GraphicsTestUtils {
+    public static float dipScaleForContext(Context context) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(
+                () -> { return DisplayAndroid.getNonMultiDisplay(context).getDipScale(); });
+    }
+
     /**
      * Draws the supplied {@link AwContents} into the returned {@link Bitmap}.
      *

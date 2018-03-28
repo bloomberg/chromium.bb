@@ -92,11 +92,6 @@ public interface ToolbarDataProvider {
     boolean shouldShowGoogleG(String urlBarText);
 
     /**
-     * @return Whether the security icon should be displayed.
-     */
-    boolean shouldShowSecurityIcon();
-
-    /**
      * @return Whether verbose status next to the security icon should be displayed.
      */
     boolean shouldShowVerboseStatus();
@@ -108,11 +103,10 @@ public interface ToolbarDataProvider {
     int getSecurityLevel();
 
     /**
-     * Determines the icon that should be displayed for the current security level.
-     * @return The resource ID of the icon that should be displayed, 0 if no icon should show.
+     * @return The resource ID of the icon that should be displayed or 0 if no icon should be shown.
      */
     @DrawableRes
-    int getSecurityIconResource();
+    int getSecurityIconResource(boolean isTablet);
 
     /**
      * @return Whether or not we're currently showing a search query instead of a URL.

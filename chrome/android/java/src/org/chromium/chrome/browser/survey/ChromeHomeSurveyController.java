@@ -35,7 +35,6 @@ import org.chromium.chrome.browser.tabmodel.TabModelSelector;
 import org.chromium.chrome.browser.tabmodel.TabModelSelectorObserver;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.components.variations.VariationsAssociatedData;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -158,7 +157,6 @@ public class ChromeHomeSurveyController implements InfoBarContainer.InfoBarAnima
 
     /** @return Whether the user qualifies for the survey. */
     private boolean doesUserQualifyForSurvey() {
-        if (DeviceFormFactor.isTablet()) return false;
         if (!isUMAEnabled() && !sForceUmaEnabledForTesting) return false;
         if (hasInfoBarBeenDisplayed()) return false;
         if (!FeatureUtilities.isChromeHomeEnabled()) return true;

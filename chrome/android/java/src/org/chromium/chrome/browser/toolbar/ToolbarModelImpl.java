@@ -30,7 +30,6 @@ import org.chromium.components.dom_distiller.core.DomDistillerService;
 import org.chromium.components.dom_distiller.core.DomDistillerUrlUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Contains the data and state for the toolbar.
@@ -295,11 +294,6 @@ public class ToolbarModelImpl
     }
 
     @Override
-    public boolean shouldShowSecurityIcon() {
-        return getSecurityIconResource() != 0;
-    }
-
-    @Override
     public boolean shouldShowVerboseStatus() {
         // Because is offline page is cleared a bit slower, we also ensure that connection security
         // level is NONE or HTTP_SHOW_WARNING (http://crbug.com/671453).
@@ -315,14 +309,13 @@ public class ToolbarModelImpl
     }
 
     @Override
-    public int getSecurityIconResource() {
+    public int getSecurityIconResource(boolean isTablet) {
         // If we're showing a query in the omnibox, and the security level is high enough to show
         // the search icon, return that instead of the security icon.
         if (isDisplayingQueryTerms()) {
             return R.drawable.ic_search;
         }
-        return getSecurityIconResource(
-                getSecurityLevel(), !DeviceFormFactor.isTablet(), isOfflinePage());
+        return getSecurityIconResource(getSecurityLevel(), !isTablet, isOfflinePage());
     }
 
     @VisibleForTesting

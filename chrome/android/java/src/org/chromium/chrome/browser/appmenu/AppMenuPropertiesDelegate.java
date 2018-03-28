@@ -139,7 +139,8 @@ public class AppMenuPropertiesDelegate {
             boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_URL_PREFIX);
             boolean shouldShowIconRow = !mActivity.isTablet()
                     || mActivity.getWindow().getDecorView().getWidth()
-                            < DeviceFormFactor.getMinimumTabletWidthPx(mActivity);
+                            < DeviceFormFactor.getMinimumTabletWidthPx(
+                                      mActivity.getWindowAndroid().getDisplay());
 
             // Update the icon row items (shown in narrow form factors).
             menu.findItem(R.id.icon_row_menu_id).setVisible(shouldShowIconRow);

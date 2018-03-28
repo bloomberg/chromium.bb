@@ -11,7 +11,6 @@ import android.view.ViewStub;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
-import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Manages the interactions with the find toolbar.
@@ -64,7 +63,7 @@ public class FindToolbarManager {
     public void showToolbar() {
         if (mFindToolbar == null) {
             int stubId = R.id.find_toolbar_stub;
-            if (DeviceFormFactor.isTablet()) {
+            if (mActivity.isTablet()) {
                 stubId = R.id.find_toolbar_tablet_stub;
             }
             mFindToolbar = (FindToolbar) ((ViewStub) mActivity.findViewById(stubId)).inflate();

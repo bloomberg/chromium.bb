@@ -298,10 +298,11 @@ public class LocationBarLayoutTest {
 
         TintedImageButton securityButton = getSecurityButton();
         Assert.assertNotEquals(SEARCH_TERMS, urlBar.getText().toString());
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> Assert.assertNotEquals(
-                                mTestToolbarModel.getSecurityIconResource(), SEARCH_ICON_RESOURCE));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertNotEquals(mTestToolbarModel.getSecurityIconResource(
+                                           mActivityTestRule.getActivity().isTablet()),
+                    SEARCH_ICON_RESOURCE);
+        });
     }
 
     @Test
@@ -317,10 +318,11 @@ public class LocationBarLayoutTest {
 
         TintedImageButton securityButton = getSecurityButton();
         Assert.assertEquals(securityButton.getVisibility(), View.VISIBLE);
-        ThreadUtils.runOnUiThreadBlocking(
-                ()
-                        -> Assert.assertEquals(
-                                mTestToolbarModel.getSecurityIconResource(), SEARCH_ICON_RESOURCE));
+        ThreadUtils.runOnUiThreadBlocking(() -> {
+            Assert.assertEquals(mTestToolbarModel.getSecurityIconResource(
+                                        mActivityTestRule.getActivity().isTablet()),
+                    SEARCH_ICON_RESOURCE);
+        });
     }
 
     @Test
