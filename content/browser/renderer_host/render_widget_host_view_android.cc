@@ -2011,7 +2011,7 @@ void RenderWidgetHostViewAndroid::OnDetachedFromWindow() {
 void RenderWidgetHostViewAndroid::OnAttachCompositor() {
   DCHECK(view_.parent());
   CreateOverscrollControllerIfPossible();
-  if (observing_root_window_) {
+  if (observing_root_window_ && using_browser_compositor_) {
     ui::WindowAndroidCompositor* compositor =
         view_.GetWindowAndroid()->GetCompositor();
     delegated_frame_host_->AttachToCompositor(compositor);
@@ -2020,10 +2020,10 @@ void RenderWidgetHostViewAndroid::OnAttachCompositor() {
 
 void RenderWidgetHostViewAndroid::OnDetachCompositor() {
   DCHECK(view_.parent());
-  DCHECK(using_browser_compositor_);
   RunAckCallbacks();
   overscroll_controller_.reset();
-  delegated_frame_host_->DetachFromCompositor();
+  if (using_browser_compositor_)
+    delegated_frame_host_->DetachFromCompositor();
 }
 
 void RenderWidgetHostViewAndroid::OnBeginFrame(
