@@ -782,8 +782,8 @@ bool EasyUnlockPrivateGetSignInChallengeFunction::RunAsync() {
   const std::string challenge =
       chromeos::EasyUnlockService::Get(profile)->GetChallenge();
   if (!challenge.empty() && !params->nonce.empty()) {
-    EasyUnlockTpmKeyManager* key_manager =
-        EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile);
+    chromeos::EasyUnlockTpmKeyManager* key_manager =
+        chromeos::EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile);
     if (!key_manager) {
       SetError("No EasyUnlockTpmKeyManager.");
       return false;

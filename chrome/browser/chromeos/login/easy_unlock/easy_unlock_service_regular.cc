@@ -250,7 +250,7 @@ void EasyUnlockServiceRegular::LaunchSetup() {
   if (short_lived_user_context_ && short_lived_user_context_->user_context()) {
     OpenSetupApp();
   } else {
-    bool reauth_success = chromeos::EasyUnlockReauth::ReauthForUserContext(
+    bool reauth_success = EasyUnlockReauth::ReauthForUserContext(
         base::Bind(&EasyUnlockServiceRegular::OpenSetupAppAfterReauth,
                    weak_ptr_factory_.GetWeakPtr()));
     if (!reauth_success)
@@ -259,17 +259,17 @@ void EasyUnlockServiceRegular::LaunchSetup() {
 }
 
 void EasyUnlockServiceRegular::HandleUserReauth(
-    const chromeos::UserContext& user_context) {
+    const UserContext& user_context) {
   // Cache the user context for the next X minutes, so the user doesn't have to
   // reauth again.
-  short_lived_user_context_.reset(new chromeos::ShortLivedUserContext(
+  short_lived_user_context_.reset(new ShortLivedUserContext(
       user_context,
       apps::AppLifetimeMonitorFactory::GetForBrowserContext(profile()),
       base::ThreadTaskRunnerHandle::Get().get()));
 }
 
 void EasyUnlockServiceRegular::OpenSetupAppAfterReauth(
-    const chromeos::UserContext& user_context) {
+    const UserContext& user_context) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   HandleUserReauth(user_context);
 
@@ -279,8 +279,8 @@ void EasyUnlockServiceRegular::OpenSetupAppAfterReauth(
   // cleared earlier.
   const base::ListValue* devices = GetRemoteDevices();
   if (!devices || devices->empty()) {
-    chromeos::EasyUnlockKeyManager* key_manager =
-        chromeos::UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
+    EasyUnlockKeyManager* key_manager =
+        UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
     key_manager->RefreshKeys(
         user_context, base::ListValue(),
         base::Bind(&EasyUnlockServiceRegular::SetHardlockAfterKeyOperation,
@@ -518,7 +518,7 @@ bool EasyUnlockServiceRegular::IsAllowedInternal() const {
   if (user_manager->IsCurrentUserNonCryptohomeDataEphemeral())
     return false;
 
-  if (!chromeos::ProfileHelper::IsPrimaryProfile(profile()))
+  if (!ProfileHelper::IsPrimaryProfile(profile()))
     return false;
 
   if (!profile()->GetPrefs()->GetBoolean(prefs::kEasyUnlockAllowed))
@@ -722,14 +722,12 @@ void EasyUnlockServiceRegular::RefreshCryptohomeKeysIfPossible() {
     if (!IsChromeOSLoginEnabled() || !remote_devices_list)
       remote_devices_list = &empty_list;
 
-    chromeos::UserSessionManager::GetInstance()
-        ->GetEasyUnlockKeyManager()
-        ->RefreshKeys(
-            *short_lived_user_context_->user_context(),
-            base::ListValue(remote_devices_list->GetList()),
-            base::Bind(&EasyUnlockServiceRegular::SetHardlockAfterKeyOperation,
-                       weak_ptr_factory_.GetWeakPtr(),
-                       EasyUnlockScreenlockStateHandler::NO_HARDLOCK));
+    UserSessionManager::GetInstance()->GetEasyUnlockKeyManager()->RefreshKeys(
+        *short_lived_user_context_->user_context(),
+        base::ListValue(remote_devices_list->GetList()),
+        base::Bind(&EasyUnlockServiceRegular::SetHardlockAfterKeyOperation,
+                   weak_ptr_factory_.GetWeakPtr(),
+                   EasyUnlockScreenlockStateHandler::NO_HARDLOCK));
   } else {
     CheckCryptohomeKeysAndMaybeHardlock();
   }

@@ -77,12 +77,11 @@ KeyedService* EasyUnlockServiceFactory::BuildServiceInstanceFor(
   EasyUnlockService* service = NULL;
   int manifest_id = 0;
 
-  if (chromeos::ProfileHelper::IsLockScreenAppProfile(
+  if (ProfileHelper::IsLockScreenAppProfile(
           Profile::FromBrowserContext(context))) {
     return nullptr;
   }
-  if (chromeos::ProfileHelper::IsSigninProfile(
-          Profile::FromBrowserContext(context))) {
+  if (ProfileHelper::IsSigninProfile(Profile::FromBrowserContext(context))) {
     if (!context->IsOffTheRecord())
       return NULL;
 
@@ -115,8 +114,7 @@ void EasyUnlockServiceFactory::RegisterProfilePrefs(
 
 content::BrowserContext* EasyUnlockServiceFactory::GetBrowserContextToUse(
     content::BrowserContext* context) const {
-  if (chromeos::ProfileHelper::IsSigninProfile(
-          Profile::FromBrowserContext(context))) {
+  if (ProfileHelper::IsSigninProfile(Profile::FromBrowserContext(context))) {
     return chrome::GetBrowserContextOwnInstanceInIncognito(context);
   }
 

@@ -33,6 +33,8 @@
 
 using proximity_auth::ScreenlockState;
 
+namespace chromeos {
+
 ChromeProximityAuthClient::ChromeProximityAuthClient(Profile* profile)
     : profile_(profile) {}
 
@@ -48,22 +50,19 @@ std::string ChromeProximityAuthClient::GetAuthenticatedUsername() const {
 }
 
 void ChromeProximityAuthClient::UpdateScreenlockState(ScreenlockState state) {
-  chromeos::EasyUnlockService* service =
-      chromeos::EasyUnlockService::Get(profile_);
+  EasyUnlockService* service = EasyUnlockService::Get(profile_);
   if (service)
     service->UpdateScreenlockState(state);
 }
 
 void ChromeProximityAuthClient::FinalizeUnlock(bool success) {
-  chromeos::EasyUnlockService* service =
-      chromeos::EasyUnlockService::Get(profile_);
+  EasyUnlockService* service = EasyUnlockService::Get(profile_);
   if (service)
     service->FinalizeUnlock(success);
 }
 
 void ChromeProximityAuthClient::FinalizeSignin(const std::string& secret) {
-  chromeos::EasyUnlockService* service =
-      chromeos::EasyUnlockService::Get(profile_);
+  EasyUnlockService* service = EasyUnlockService::Get(profile_);
   if (service)
     service->FinalizeSignin(secret);
 }
@@ -73,16 +72,14 @@ void ChromeProximityAuthClient::GetChallengeForUserAndDevice(
     const std::string& remote_public_key,
     const std::string& channel_binding_data,
     base::Callback<void(const std::string& challenge)> callback) {
-  chromeos::EasyUnlockService* easy_unlock_service =
-      chromeos::EasyUnlockService::Get(profile_);
-  if (easy_unlock_service->GetType() ==
-      chromeos::EasyUnlockService::TYPE_REGULAR) {
+  EasyUnlockService* easy_unlock_service = EasyUnlockService::Get(profile_);
+  if (easy_unlock_service->GetType() == EasyUnlockService::TYPE_REGULAR) {
     PA_LOG(ERROR) << "Unable to get challenge when user is logged in.";
     callback.Run(std::string());
     return;
   }
 
-  static_cast<chromeos::EasyUnlockServiceSignin*>(easy_unlock_service)
+  static_cast<EasyUnlockServiceSignin*>(easy_unlock_service)
       ->WrapChallengeForUserAndDevice(AccountId::FromUserEmail(user_id),
                                       remote_public_key, channel_binding_data,
                                       callback);
@@ -90,8 +87,7 @@ void ChromeProximityAuthClient::GetChallengeForUserAndDevice(
 
 proximity_auth::ProximityAuthPrefManager*
 ChromeProximityAuthClient::GetPrefManager() {
-  chromeos::EasyUnlockService* service =
-      chromeos::EasyUnlockService::Get(profile_);
+  EasyUnlockService* service = EasyUnlockService::Get(profile_);
   if (service)
     return service->GetProximityAuthPrefManager();
   return nullptr;
@@ -102,7 +98,7 @@ ChromeProximityAuthClient::CreateSecureMessageDelegate() {
   // Note: Although CryptAuthService::CreateSecureMessageDelegate() exists, we
   // don't use it here (as opposed to other methods in this class) because the
   // CryptAuthService is not available on the ChromeOS login screen.
-  return std::make_unique<chromeos::SecureMessageDelegateChromeOS>();
+  return std::make_unique<SecureMessageDelegateChromeOS>();
 }
 
 std::unique_ptr<cryptauth::CryptAuthClientFactory>
@@ -129,8 +125,8 @@ ChromeProximityAuthClient::GetCryptAuthDeviceManager() {
 }
 
 cryptauth::CryptAuthService* ChromeProximityAuthClient::GetCryptAuthService() {
-  return chromeos::ChromeCryptAuthServiceFactory::GetInstance()
-      ->GetForBrowserContext(profile_);
+  return ChromeCryptAuthServiceFactory::GetInstance()->GetForBrowserContext(
+      profile_);
 }
 
 std::string ChromeProximityAuthClient::GetLocalDevicePublicKey() {
@@ -139,3 +135,5 @@ std::string ChromeProximityAuthClient::GetLocalDevicePublicKey() {
   provider.GetLocalDeviceData(&local_public_key, nullptr);
   return local_public_key;
 }
+
+}  // namespace chromeos

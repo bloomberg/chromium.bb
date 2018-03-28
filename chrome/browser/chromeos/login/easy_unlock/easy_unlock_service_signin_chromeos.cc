@@ -56,7 +56,7 @@ uint32_t GetNextBackoffInterval(uint32_t backoff) {
 void LoadDataForUser(
     const AccountId& account_id,
     uint32_t backoff_ms,
-    const chromeos::EasyUnlockKeyManager::GetDeviceDataListCallback& callback);
+    const EasyUnlockKeyManager::GetDeviceDataListCallback& callback);
 
 // Callback passed to |LoadDataForUser()|.
 // If |LoadDataForUser| function succeeded, it invokes |callback| with the
@@ -67,9 +67,9 @@ void LoadDataForUser(
 void RetryDataLoadOnError(
     const AccountId& account_id,
     uint32_t backoff_ms,
-    const chromeos::EasyUnlockKeyManager::GetDeviceDataListCallback& callback,
+    const EasyUnlockKeyManager::GetDeviceDataListCallback& callback,
     bool success,
-    const chromeos::EasyUnlockDeviceKeyDataList& data_list) {
+    const EasyUnlockDeviceKeyDataList& data_list) {
   if (success) {
     callback.Run(success, data_list);
     return;
@@ -91,13 +91,13 @@ void RetryDataLoadOnError(
 void LoadDataForUser(
     const AccountId& account_id,
     uint32_t backoff_ms,
-    const chromeos::EasyUnlockKeyManager::GetDeviceDataListCallback& callback) {
-  chromeos::EasyUnlockKeyManager* key_manager =
-      chromeos::UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
+    const EasyUnlockKeyManager::GetDeviceDataListCallback& callback) {
+  EasyUnlockKeyManager* key_manager =
+      UserSessionManager::GetInstance()->GetEasyUnlockKeyManager();
   DCHECK(key_manager);
 
   key_manager->GetDeviceDataList(
-      chromeos::UserContext(account_id),
+      UserContext(account_id),
       base::Bind(&RetryDataLoadOnError, account_id, backoff_ms, callback));
 }
 
@@ -194,7 +194,7 @@ void EasyUnlockServiceSignin::WrapChallengeForUserAndDevice(
     if (device_data.public_key == device_public_key_base64) {
       PA_LOG(INFO) << "Wrapping challenge for " << account_id.Serialize()
                    << "...";
-      challenge_wrapper_.reset(new chromeos::EasyUnlockChallengeWrapper(
+      challenge_wrapper_.reset(new EasyUnlockChallengeWrapper(
           device_data.challenge, channel_binding_data, account_id,
           EasyUnlockTpmKeyManagerFactory::GetInstance()->Get(profile())));
       challenge_wrapper_->WrapChallenge(callback);
@@ -326,7 +326,7 @@ void EasyUnlockServiceSignin::SetAutoPairingResult(bool success,
 }
 
 void EasyUnlockServiceSignin::InitializeInternal() {
-  if (chromeos::LoginState::Get()->IsUserLoggedIn())
+  if (LoginState::Get()->IsUserLoggedIn())
     return;
 
   service_active_ = true;
@@ -334,7 +334,7 @@ void EasyUnlockServiceSignin::InitializeInternal() {
   pref_manager_.reset(new proximity_auth::ProximityAuthLocalStatePrefManager(
       g_browser_process->local_state()));
 
-  chromeos::LoginState::Get()->AddObserver(this);
+  LoginState::Get()->AddObserver(this);
   proximity_auth::ScreenlockBridge* screenlock_bridge =
       proximity_auth::ScreenlockBridge::Get();
   screenlock_bridge->AddObserver(this);
@@ -349,13 +349,13 @@ void EasyUnlockServiceSignin::ShutdownInternal() {
 
   weak_ptr_factory_.InvalidateWeakPtrs();
   proximity_auth::ScreenlockBridge::Get()->RemoveObserver(this);
-  chromeos::LoginState::Get()->RemoveObserver(this);
+  LoginState::Get()->RemoveObserver(this);
   user_data_.clear();
 }
 
 bool EasyUnlockServiceSignin::IsAllowedInternal() const {
   return service_active_ && account_id_.is_valid() &&
-         !chromeos::LoginState::Get()->IsUserLoggedIn() &&
+         !LoginState::Get()->IsUserLoggedIn() &&
          (pref_manager_ && pref_manager_->IsEasyUnlockAllowed());
 }
 
@@ -453,11 +453,11 @@ void EasyUnlockServiceSignin::OnFocusedUserChanged(
   // Start loading TPM system token.
   // The system token will be needed to sign a nonce using TPM private key
   // during the sign-in protocol.
-  chromeos::TPMTokenLoader::Get()->EnsureStarted();
+  TPMTokenLoader::Get()->EnsureStarted();
 }
 
 void EasyUnlockServiceSignin::LoggedInStateChanged() {
-  if (!chromeos::LoginState::Get()->IsUserLoggedIn())
+  if (!LoginState::Get()->IsUserLoggedIn())
     return;
   DisableAppWithoutResettingScreenlockState();
 }
@@ -491,14 +491,14 @@ void EasyUnlockServiceSignin::LoadCurrentUserDataIfNeeded() {
 void EasyUnlockServiceSignin::OnUserDataLoaded(
     const AccountId& account_id,
     bool success,
-    const chromeos::EasyUnlockDeviceKeyDataList& devices) {
+    const EasyUnlockDeviceKeyDataList& devices) {
   allow_cryptohome_backoff_ = false;
 
   UserData* data = user_data_[account_id].get();
   data->state = USER_DATA_STATE_LOADED;
   if (success) {
     data->devices = devices;
-    chromeos::EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
+    EasyUnlockKeyManager::DeviceDataListToRemoteDeviceList(
         account_id, devices, &data->remote_devices_value);
 
     // User could have a NO_HARDLOCK state but has no remote devices if
