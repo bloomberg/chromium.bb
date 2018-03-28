@@ -47,7 +47,7 @@ class PDFiumRange {
   // Cache of ScreenRect, and the associated variables used when caching it.
   std::vector<pp::Rect> cached_screen_rects_;
   pp::Point cached_screen_rects_offset_;
-  double cached_screen_rects_zoom_;
+  double cached_screen_rects_zoom_ = 0;
 };
 
 }  // namespace chrome_pdf
