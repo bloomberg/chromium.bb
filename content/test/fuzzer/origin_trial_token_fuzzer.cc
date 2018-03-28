@@ -9,7 +9,6 @@
 
 #include "base/at_exit.h"
 #include "base/i18n/icu_util.h"
-#include "content/test/fuzzer/fuzzer_support.h"
 #include "url/gurl.h"
 
 struct TestCase {
