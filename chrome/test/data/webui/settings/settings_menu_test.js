@@ -76,10 +76,10 @@ cr.define('settings_menu', function() {
       assertEquals('', settings.getQueryParameters().toString());
     });
 
-    test('extensionsButtonClicked', function() {
+    test('extensionsLinkClicked', function() {
       const eventPromise =
           test_util.eventToPromise('external-link-click', settingsMenu);
-      settingsMenu.$.extensionsButton.click();
+      settingsMenu.$.extensionsLink.click();
       return eventPromise;
     });
   });
