@@ -1193,14 +1193,8 @@ TEST_F(NavigationAndLoadCallbacksTest, DownloadNavigation) {
   }));
 }
 
-#if TARGET_IPHONE_SIMULATOR
-#define MAYBE_FailedLoad FailedLoad
-#else
-#define MAYBE_FailedLoad DISABLED_FailedLoad
-#endif
 // Tests failed load after the navigation is sucessfully finished.
-// TODO(crbug.com/812669): Re-enable this test on devices.
-TEST_F(NavigationAndLoadCallbacksTest, MAYBE_FailedLoad) {
+TEST_F(NavigationAndLoadCallbacksTest, FailedLoad) {
   GURL url = test_server_->GetURL("/exabyte_response");
 
   NavigationContext* context = nullptr;
