@@ -1,33 +1,49 @@
-<html> 
-<head>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
-if (window.testRunner)
-     testRunner.dumpEditingCallbacks();
-</script>
+function doDoubleClick(selection) {
+  if (!window.eventSender)
+    throw 'This test requires eventSender.';
+  // Reset mouse state
+  eventSender.mouseMoveTo(0, 0);
+  eventSender.leapForward(9999);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
 
-
-<script>
-
-function editingTest() {
-    var elem = document.getElementById("end");
-    x = elem.offsetLeft + elem.offsetWidth + 10;
-    y = elem.offsetTop + 10;
-    
-    eventSender.mouseMoveTo(x, y);
-    eventSender.mouseDown();
-    eventSender.mouseUp();
-    eventSender.mouseDown();
-    eventSender.mouseUp();
+  const target = selection.document.getElementById('end');
+  eventSender.mouseMoveTo(
+      selection.computeLeft(target) + target.offsetWidth + 10,
+      selection.computeTop(target) + 10);
+  eventSender.mouseDown();
+  eventSender.mouseUp();
+  eventSender.mouseDown();
+  eventSender.mouseUp();
 }
 
+// Selection should not cross editing boundaries.
+selection_test(
+  [
+    '<div contenteditable>abc<span id="end">\u00A0</span></div>',
+    'This text is not editable.',
+  ],
+  selection => doDoubleClick(selection),
+  [
+    '<div contenteditable>abc<span id="end">\u00A0|</span></div>',
+    'This text is not editable.',
+  ],
+  '1 double-click at &nbsp');
+
+selection_test(
+  [
+    '<div contenteditable>abc<span id="end">.</span></div>',
+    'This text is not editable.',
+  ],
+  selection => doDoubleClick(selection),
+  [
+    '<div contenteditable>abc<span id="end">.|</span></div>',
+    'This text is not editable.',
+  ],
+  '2 double-click at period');
 </script>
-</head>
-<body>
-<p>This tests double clicking inside and at the end of an editable div.  The selection that is created should not extend outside the editable region.</p>
-<div id="editablediv" contenteditable="true">This text is inside an editable div<span id="end">&nbsp;</span></div>
-<p style="overflow: hidden;">This text is not editable.</p>
-</body>
-<script>
-editingTest();
-</script>
-</html>
