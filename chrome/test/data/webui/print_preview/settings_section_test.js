@@ -26,30 +26,45 @@ cr.define('settings_sections_tests', function() {
 
   const suiteName = 'SettingsSectionsTests';
   suite(suiteName, function() {
+    /** @type {?PrintPreviewAppElement} */
     let page = null;
 
     /** @override */
     setup(function() {
+      const initialSettings = {
+        isInKioskAutoPrintMode: false,
+        isInAppKioskMode: false,
+        thousandsDelimeter: ',',
+        decimalDelimeter: '.',
+        unitType: 1,
+        previewModifiable: true,
+        documentTitle: 'title',
+        documentHasSelection: true,
+        shouldPrintSelectionOnly: false,
+        printerName: 'FooDevice',
+        serializedAppStateStr: null,
+        serializedDefaultDestinationSelectionRulesStr: null
+      };
+
+      const nativeLayer = new print_preview.NativeLayerStub();
+      nativeLayer.setInitialSettings(initialSettings);
+      nativeLayer.setLocalDestinationCapabilities(
+          print_preview_test_utils.getCddTemplate(initialSettings.printerName));
+      nativeLayer.setPageCount(3);
+      print_preview.NativeLayer.setInstance(nativeLayer);
       PolymerTest.clearBody();
       page = document.createElement('print-preview-app');
+      const previewArea = page.$$('print-preview-preview-area');
+      previewArea.plugin_ = new print_preview.PDFPluginStub(previewArea);
       document.body.appendChild(page);
 
-      // Since onInitialSettingsSet_ will never be called to check if there are
-      // sticky settings, set this manually.
-      page.$.model.hasStickySettings_ = false;
-
-      const fooDestination = new print_preview.Destination(
-          'FooPrinter', print_preview.DestinationType.LOCAL,
-          print_preview.DestinationOrigin.LOCAL, 'Foo Printer',
-          false /*isRecent*/, print_preview.DestinationConnectionStatus.ONLINE);
-      fooDestination.capabilities =
-          print_preview_test_utils.getCddTemplate(fooDestination.id)
-              .capabilities;
-      page.set('destination_', fooDestination);
-      initDocumentInfo(false, false);
-      // Manually set ready state, since destination is set manually.
-      page.$.state.transitTo(print_preview_new.State.READY);
-      Polymer.dom.flush();
+      // Wait for initialization to complete.
+      return Promise.all([
+        nativeLayer.whenCalled('getInitialSettings'),
+        nativeLayer.whenCalled('getPrinterCapabilities')
+      ]).then(function() {
+        Polymer.dom.flush();
+      });
     });
 
     /**
@@ -63,6 +78,7 @@ cr.define('settings_sections_tests', function() {
         info.updateFitToPageScaling(98);
       info.updatePageCount(3);
       page.set('documentInfo_', info);
+      Polymer.dom.flush();
     }
 
     function addSelection() {
@@ -331,7 +347,7 @@ cr.define('settings_sections_tests', function() {
       // Default value is all pages. Print ticket expects this to be empty.
       const allRadio = pagesElement.$$('#all-radio-button');
       const customRadio = pagesElement.$$('#custom-radio-button');
-      const pagesInput = pagesElement.$$('#page-settings-custom-input');
+      const pagesInput = pagesElement.$.pageSettingsCustomInput;
       const hint = pagesElement.$$('.hint');
 
       /**
@@ -356,33 +372,39 @@ cr.define('settings_sections_tests', function() {
       allRadio.dispatchEvent(new CustomEvent('change'));
       pagesInput.value = '1-2';
       pagesInput.dispatchEvent(new CustomEvent('input'));
-      validateInputState(false, '1-2', true);
-      assertEquals(1, page.settings.ranges.value.length);
-      expectEquals(1, page.settings.ranges.value[0].from);
-      expectEquals(2, page.settings.ranges.value[0].to);
-      expectEquals(2, page.settings.pages.value.length);
-      expectEquals(true, page.settings.pages.valid);
+      return test_util.eventToPromise('input-change', pagesElement).then(
+          function() {
+        validateInputState(false, '1-2', true);
+        assertEquals(1, page.settings.ranges.value.length);
+        expectEquals(1, page.settings.ranges.value[0].from);
+        expectEquals(2, page.settings.ranges.value[0].to);
+        expectEquals(2, page.settings.pages.value.length);
+        expectEquals(true, page.settings.pages.valid);
 
-      // Select pages 1 and 3
-      pagesInput.value = '1, 3';
-      pagesInput.dispatchEvent(new CustomEvent('input'));
-      validateInputState(false, '1, 3', true);
-      assertEquals(2, page.settings.ranges.value.length);
-      expectEquals(1, page.settings.ranges.value[0].from);
-      expectEquals(1, page.settings.ranges.value[0].to);
-      expectEquals(3, page.settings.ranges.value[1].from);
-      expectEquals(3, page.settings.ranges.value[1].to);
-      expectEquals(2, page.settings.pages.value.length);
-      expectEquals(true, page.settings.pages.valid);
+        // Select pages 1 and 3
+        pagesInput.value = '1, 3';
+        pagesInput.dispatchEvent(new CustomEvent('input'));
+        return test_util.eventToPromise('input-change', pagesElement);
+      }).then(function() {
+        validateInputState(false, '1, 3', true);
+        assertEquals(2, page.settings.ranges.value.length);
+        expectEquals(1, page.settings.ranges.value[0].from);
+        expectEquals(1, page.settings.ranges.value[0].to);
+        expectEquals(3, page.settings.ranges.value[1].from);
+        expectEquals(3, page.settings.ranges.value[1].to);
+        expectEquals(2, page.settings.pages.value.length);
+        expectEquals(true, page.settings.pages.valid);
 
-      // Enter an out of bounds value.
-      pagesInput.value = '5';
-      pagesInput.dispatchEvent(new CustomEvent('input'));
-
-      // Now the pages settings value should be invalid, and the error
-      // message should be displayed.
-      validateInputState(false, '5', false);
-      expectEquals(false, page.settings.pages.valid);
+        // Enter an out of bounds value.
+        pagesInput.value = '5';
+        pagesInput.dispatchEvent(new CustomEvent('input'));
+        return test_util.eventToPromise('input-change', pagesElement);
+      }).then(function() {
+        // Now the pages settings value should be invalid, and the error
+        // message should be displayed.
+        validateInputState(false, '5', false);
+        expectEquals(false, page.settings.pages.valid);
+      });
     });
 
     test(assert(TestNames.SetCopies), function() {
@@ -399,18 +421,21 @@ cr.define('settings_sections_tests', function() {
       // Change to 2
       copiesInput.value = '2';
       copiesInput.dispatchEvent(new CustomEvent('input'));
-      expectEquals(2, page.settings.copies.value);
+      return test_util.eventToPromise('input-change', copiesElement).then(
+          function() {
+        expectEquals(2, page.settings.copies.value);
 
-      // Collate is true by default.
-      const collateInput = copiesElement.$.collate;
-      expectEquals(true, collateInput.checked);
-      expectEquals(true, page.settings.collate.value);
+        // Collate is true by default.
+        const collateInput = copiesElement.$.collate;
+        expectEquals(true, collateInput.checked);
+        expectEquals(true, page.settings.collate.value);
 
-      // Uncheck the box.
-      MockInteractions.tap(collateInput);
-      expectEquals(false, collateInput.checked);
-      collateInput.dispatchEvent(new CustomEvent('change'));
-      expectEquals(false, page.settings.collate.value);
+        // Uncheck the box.
+        MockInteractions.tap(collateInput);
+        expectEquals(false, collateInput.checked);
+        collateInput.dispatchEvent(new CustomEvent('change'));
+        expectEquals(false, page.settings.collate.value);
+      });
     });
 
     test(assert(TestNames.SetLayout), function() {
@@ -516,10 +541,7 @@ cr.define('settings_sections_tests', function() {
     });
 
     test(assert(TestNames.SetScaling), function() {
-      // Set PDF so both scaling and fit to page are active.
-      initDocumentInfo(true, false);
       const scalingElement = page.$$('print-preview-scaling-settings');
-      expectEquals(false, scalingElement.hidden);
 
       // Default is 100
       const scalingInput =
@@ -542,40 +564,53 @@ cr.define('settings_sections_tests', function() {
         expectEquals(fitToPage, fitToPageCheckbox.checked);
         expectEquals(fitToPage, page.settings.fitToPage.value);
       };
+
+      // Set PDF so both scaling and fit to page are active.
+      initDocumentInfo(true, false);
+      expectEquals(false, scalingElement.hidden);
+
+      // Default is 100
       validateScalingState('100', true, false);
 
       // Change to 105
       scalingInput.value = '105';
       scalingInput.dispatchEvent(new CustomEvent('input'));
-      validateScalingState('105', true, false);
+      return test_util.eventToPromise('input-change', scalingElement).then(
+          function() {
+        validateScalingState('105', true, false);
 
-      // Change to fit to page. Should display fit to page scaling but not
-      // alter the scaling setting.
-      fitToPageCheckbox.checked = true;
-      fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
-      validateScalingState('105', true, true);
+        // Change to fit to page. Should display fit to page scaling but not
+        // alter the scaling setting.
+        fitToPageCheckbox.checked = true;
+        fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+        validateScalingState('105', true, true);
 
-      // Set scaling. Should uncheck fit to page and set the settings for
-      // scaling and fit to page.
-      scalingInput.value = '95';
-      scalingInput.dispatchEvent(new CustomEvent('input'));
-      validateScalingState('95', true, false);
+        // Set scaling. Should uncheck fit to page and set the settings for
+        // scaling and fit to page.
+        scalingInput.value = '95';
+        scalingInput.dispatchEvent(new CustomEvent('input'));
+        return test_util.eventToPromise('input-change', scalingElement);
+      }).then(function() {
+        validateScalingState('95', true, false);
 
-      // Set scaling to something invalid. Should change setting validity but
-      // not value.
-      scalingInput.value = '5';
-      scalingInput.dispatchEvent(new CustomEvent('input'));
-      validateScalingState('95', false, false);
+        // Set scaling to something invalid. Should change setting validity but
+        // not value.
+        scalingInput.value = '5';
+        scalingInput.dispatchEvent(new CustomEvent('input'));
+        return test_util.eventToPromise('input-change', scalingElement);
+      }).then(function() {
+        validateScalingState('95', false, false);
 
-      // Check fit to page. Should set scaling valid.
-      fitToPageCheckbox.checked = true;
-      fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
-      validateScalingState('95', true, true);
+        // Check fit to page. Should set scaling valid.
+        fitToPageCheckbox.checked = true;
+        fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+        validateScalingState('95', true, true);
 
-      // Uncheck fit to page. Should reset scaling to last valid.
-      fitToPageCheckbox.checked = false;
-      fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
-      validateScalingState('95', true, false);
+        // Uncheck fit to page. Should reset scaling to last valid.
+        fitToPageCheckbox.checked = false;
+        fitToPageCheckbox.dispatchEvent(new CustomEvent('change'));
+        validateScalingState('95', true, false);
+      });
     });
 
     test(assert(TestNames.SetOther), function() {

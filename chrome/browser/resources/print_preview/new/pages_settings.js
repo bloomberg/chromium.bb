@@ -15,7 +15,7 @@ const PagesInputErrorState = {
 Polymer({
   is: 'print-preview-pages-settings',
 
-  behaviors: [SettingsBehavior],
+  behaviors: [SettingsBehavior, print_preview_new.InputBehavior],
 
   properties: {
     /** @type {!print_preview.DocumentInfo} */
@@ -72,6 +72,23 @@ Polymer({
     'onRadioChange_(allSelected_, customSelected_)'
   ],
 
+  listeners: {
+    'input-change': 'onInputChange_',
+  },
+
+  /** @return {!HTMLInputElement} The input field element for InputBehavior. */
+  getInput: function() {
+    return this.$.pageSettingsCustomInput;
+  },
+
+  /**
+   * @param {!CustomEvent} e Contains the new input value.
+   * @private
+   */
+  onInputChange_: function(e) {
+    this.inputString_ = /** @type {string} */ (e.detail);
+  },
+
   /**
    * @return {boolean} Whether the controls should be disabled.
    * @private
@@ -102,7 +119,7 @@ Polymer({
       this.errorState_ = PagesInputErrorState.NO_ERROR;
       return this.allPagesArray_;
     }
-    if (!this.$$('.user-value').validity.valid) {
+    if (!this.$.pageSettingsCustomInput.validity.valid) {
       this.errorState_ = PagesInputErrorState.INVALID_SYNTAX;
       return this.pagesToPrint_;
     }
@@ -153,6 +170,7 @@ Polymer({
         }
       }
     }
+    this.errorState_ = PagesInputErrorState.NO_ERROR;
     return pages;
   },
 
@@ -205,10 +223,10 @@ Polymer({
   onRangeChange_: function() {
     if (this.errorState_ != PagesInputErrorState.NO_ERROR) {
       this.setSettingValid('pages', false);
-      this.$$('.user-value').classList.add('invalid');
+      this.$.pageSettingsCustomInput.classList.add('invalid');
       return;
     }
-    this.$$('.user-value').classList.remove('invalid');
+    this.$.pageSettingsCustomInput.classList.remove('invalid');
     this.setSettingValid('pages', true);
     if (!this.settingMatches_()) {
       this.setSetting('pages', this.pagesToPrint_);
@@ -226,7 +244,7 @@ Polymer({
 
   /** @private */
   onCustomRadioClick_: function() {
-    this.$$('#page-settings-custom-input').focus();
+    this.$.pageSettingsCustomInput.focus();
   },
 
   /** @private */

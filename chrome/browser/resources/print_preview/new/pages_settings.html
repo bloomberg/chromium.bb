@@ -2,6 +2,7 @@
 
 <link rel="import" href="checkbox_radio_css.html">
 <link rel="import" href="../data/document_info.html">
+<link rel="import" href="input_behavior.html">
 <link rel="import" href="input_css.html">
 <link rel="import" href="print_preview_shared_css.html">
 <link rel="import" href="settings_behavior.html">
@@ -34,14 +35,13 @@
             <span>$i18n{optionAllPages}</span>
           </label>
           <label class="custom-input-wrapper"
-              for="page-settings-custom-input" tabindex=-1>
+              for="pageSettingsCustomInput" tabindex=-1>
             <input type="radio" name="pages" id="custom-radio-button"
                 disabled$="[[getDisabled_(disabled, settings.pages.valid)]]"
                 on-click="onCustomRadioClick_">
-            <input class="user-value" type="text"
-                value="{{inputString_::input}}" id="page-settings-custom-input"
-                checked="{{customSelected_::change}}"
-                disabled$="[[getDisabled_(dsiabled, settings.pages.valid)]]"
+            <input id="pageSettingsCustomInput" class="user-value" type="text"
+                checked="{{customSelected_::change}}" data-timeout-delay="500"
+                disabled$="[[getDisabled_(disabled, settings.pages.valid)]]"
                 pattern="([0-9]*(-)?[0-9]*(,)( )?)*([0-9]*(-)?[0-9]*(,)?( )?)?"
                 on-focus="onCustomInputFocus_" on-blur="onCustomInputBlur_"
                 placeholder="$i18n{examplePageRangeText}"
