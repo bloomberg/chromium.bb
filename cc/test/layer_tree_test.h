@@ -227,11 +227,10 @@ class LayerTreeTest : public testing::Test, public TestHooks {
   }                                                               \
   class SingleThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
-// TODO(crbug.com/822473): Fix flaky test.
-#define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)                            \
-  TEST_F(TEST_FIXTURE_NAME, DISABLED_RunMultiThread_DelegatingRenderer) { \
-    RunTest(CompositorMode::THREADED);                                    \
-  }                                                                       \
+#define MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME)                   \
+  TEST_F(TEST_FIXTURE_NAME, RunMultiThread_DelegatingRenderer) { \
+    RunTest(CompositorMode::THREADED);                           \
+  }                                                              \
   class MultiThreadDelegatingImplNeedsSemicolon##TEST_FIXTURE_NAME {}
 
 #define SINGLE_AND_MULTI_THREAD_TEST_F(TEST_FIXTURE_NAME) \
