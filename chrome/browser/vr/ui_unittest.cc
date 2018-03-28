@@ -123,39 +123,39 @@ TEST_F(UiTest, ToastStateTransitions) {
   // presentation.
   CreateScene(kNotInCct, kInWebVr);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   CreateScene(kNotInCct, kNotInWebVr);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetFullscreen(true);
   EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(true, true);
   ui_->OnWebVrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel());
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
-  EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(false, false);
   // TODO(crbug.com/787582): we should not show the fullscreen toast again when
   // returning to fullscreen mode after presenting webvr.
   EXPECT_TRUE(IsVisible(kExclusiveScreenToast));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetFullscreen(false);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(true, false);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(false, false);
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 }
 
 TEST_F(UiTest, ToastTransience) {
@@ -171,13 +171,13 @@ TEST_F(UiTest, ToastTransience) {
   ui_->SetWebVrMode(true, true);
   ui_->OnWebVrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel());
-  EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
   EXPECT_TRUE(RunFor(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds +
                                                    kSmallDelaySeconds)));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
   ui_->SetWebVrMode(false, false);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 }
 
 TEST_F(UiTest, CaptureToasts) {
@@ -194,14 +194,14 @@ TEST_F(UiTest, CaptureToasts) {
       state.*spec.potential_signal = true;
 
       ui_->SetCapturingState(state);
-      EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
+      EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
       EXPECT_TRUE(IsVisible(spec.webvr_name));
       EXPECT_TRUE(RunFor(base::TimeDelta::FromSecondsD(kToastTimeoutSeconds +
                                                        kSmallDelaySeconds)));
-      EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+      EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 
       ui_->SetWebVrMode(false, false);
-      EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+      EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
       EXPECT_FALSE(IsVisible(spec.webvr_name));
     }
   }
@@ -433,22 +433,18 @@ TEST_F(UiTest, WebVrAutopresented) {
 
   // Enter WebVR with autopresentation.
   ui_->SetWebVrMode(true, false);
+  ui_->SetCapturingState(CapturingStateModel());
 
   // The splash screen should go away.
   RunFor(
       MsToDelta(1000 * (kSplashScreenMinDurationSeconds + kSmallDelaySeconds)));
   ui_->OnWebVrFrameAvailable();
-  EXPECT_TRUE(RunFor(MsToDelta(10)));
-  VerifyOnlyElementsVisible("Autopresented", {kWebVrUrlToast});
+  RunFor(MsToDelta(200));
+  EXPECT_TRUE(IsVisible(kWebVrUrlToast));
 
   // Make sure the transient URL bar times out.
   RunFor(MsToDelta(1000 * (kWebVrUrlToastTimeoutSeconds + kSmallDelaySeconds)));
-  UiElement* transient_url_bar =
-      scene_->GetUiElementByName(kWebVrUrlToastTransientParent);
-  EXPECT_TRUE(IsAnimating(transient_url_bar, {OPACITY}));
-  // Finish the transition.
-  EXPECT_TRUE(RunFor(MsToDelta(1000)));
-  EXPECT_FALSE(IsAnimating(transient_url_bar, {OPACITY}));
+  RunFor(MsToDelta(1000));
   EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 }
 
@@ -1121,24 +1117,42 @@ TEST_F(UiTest, TransientToastsWithDelayedFirstFrame) {
   CreateSceneForAutoPresentation();
 
   // Initially, we should only show the splash screen.
-  VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
+  EXPECT_TRUE(IsVisible(kSplashScreenText));
+  EXPECT_TRUE(IsVisible(kWebVrBackground));
+  EXPECT_FALSE(IsVisible(kWebVrUrlToast));
+
   // Enter WebVR with autopresentation.
   ui_->SetWebVrMode(true, false);
-  EXPECT_TRUE(RunFor(MsToDelta(1000 * kSplashScreenMinDurationSeconds)));
-  VerifyOnlyElementsVisible("Initial", {kSplashScreenText, kWebVrBackground});
+  ui_->SetCapturingState(CapturingStateModel());
+  OnBeginFrame(MsToDelta(1000 * kSplashScreenMinDurationSeconds));
+  EXPECT_TRUE(IsVisible(kSplashScreenText));
+  EXPECT_TRUE(IsVisible(kWebVrBackground));
+  EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 
-  EXPECT_FALSE(RunFor(MsToDelta(2000)));
+  OnBeginFrame(MsToDelta(2000));
   ui_->OnWebVrTimeoutImminent();
-  EXPECT_TRUE(RunFor(MsToDelta(3000)));
+  OnBeginFrame(MsToDelta(3000));
   ui_->OnWebVrTimedOut();
-  EXPECT_TRUE(RunFor(MsToDelta(5000)));
+
+  // A while later, receive only one frame (possibly a splash screen). This will
+  // trigger indicators to start fading in, but they won't actually be visible
+  // on the first frame.  The transient element should know that it's not
+  // visible, and not start its timeout.
+  OnBeginFrame(MsToDelta(5000));
   ui_->OnWebVrFrameAvailable();
-  OnBeginFrame();
+  EXPECT_FALSE(IsVisible(kSplashScreenText));
+  EXPECT_FALSE(IsVisible(kWebVrBackground));
+  EXPECT_TRUE(IsVisible(kWebVrUrlToast));
 
   // If we advance far beyond the timeout for our first frame and our logic was
-  // naive, we would start to hide the transient element.
+  // naive, we would start to hide the transient element.  But, because the
+  // transient element was never actually visible, it should still be showing.
   OnBeginFrame(MsToDelta(40000));
-  VerifyOnlyElementsVisible("Autopresented", {kWebVrUrlToast});
+  EXPECT_TRUE(IsVisible(kWebVrUrlToast));
+
+  // Now that it's been seen, it should transiently fade.
+  OnBeginFrame(MsToDelta(10000));
+  EXPECT_FALSE(IsVisible(kWebVrUrlToast));
 }
 
 TEST_F(UiTest, DefaultBackgroundWhenNoAssetAvailable) {
@@ -1342,24 +1356,24 @@ TEST_F(UiTest, RepositionHostedUi) {
 TEST_F(UiTest, LongPressAppButtonInWebVrMode) {
   CreateScene(kNotInCct, kInWebVr);
   ui_->SetWebVrMode(true, true);
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   ui_->OnWebVrFrameAvailable();
   ui_->SetCapturingState(CapturingStateModel());
   OnBeginFrame();
-  EXPECT_TRUE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_TRUE(IsVisible(kWebVrExclusiveScreenToast));
   RunFor(MsToDelta(8000));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   model_->capturing_state.audio_capture_enabled = true;
   model_->controller.app_button_long_pressed = true;
   OnBeginFrame();
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
   EXPECT_TRUE(IsVisible(kWebVrAudioCaptureIndicator));
   RunFor(MsToDelta(8000));
   EXPECT_FALSE(IsVisible(kWebVrAudioCaptureIndicator));
   model_->controller.app_button_long_pressed = true;
   OnBeginFrame();
   EXPECT_FALSE(IsVisible(kWebVrAudioCaptureIndicator));
-  EXPECT_FALSE(IsVisible(kExclusiveScreenToastViewportAware));
+  EXPECT_FALSE(IsVisible(kWebVrExclusiveScreenToast));
 }
 
 }  // namespace vr

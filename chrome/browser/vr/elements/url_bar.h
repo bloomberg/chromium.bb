@@ -30,6 +30,7 @@ class UrlBar : public TexturedElement {
 
   void SetToolbarState(const ToolbarState& state);
   void SetColors(const UrlTextColors& colors);
+  void SetSingleColor(SkColor color);
 
  private:
   UiTexture* GetTexture() const override;

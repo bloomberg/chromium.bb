@@ -22,8 +22,8 @@ class VectorIconTexture : public UiTexture {
 
   SkColor GetColor() const { return color_; }
 
-  void SetIcon(const gfx::VectorIcon& icon) {
-    SetAndDirty(&icon_no_1x_.rep, icon.rep);
+  void SetIcon(const gfx::VectorIcon* icon) {
+    SetAndDirty(&icon_no_1x_.rep, icon ? icon->rep : nullptr);
   }
 
  private:
@@ -69,6 +69,10 @@ SkColor VectorIcon::GetColor() const {
 }
 
 void VectorIcon::SetIcon(const gfx::VectorIcon& icon) {
+  texture_->SetIcon(&icon);
+}
+
+void VectorIcon::SetIcon(const gfx::VectorIcon* icon) {
   texture_->SetIcon(icon);
 }
 

@@ -104,30 +104,28 @@ void UrlBarTexture::SetColors(const UrlTextColors& colors) {
 }
 
 void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
-  size_.set_height(texture_size.height());
-  size_.set_width(texture_size.width());
-
-  std::unique_ptr<gfx::RenderText> render_text;
-  gfx::FontList font_list;
   int pixel_font_height =
       texture_size.height() * kUrlBarFontHeightDMM / kHeight;
-
-  gfx::Rect url_text_bounds(0, 0, texture_size.width(), texture_size.height());
 
   url::Parsed parsed;
   const base::string16 text = url_formatter::FormatUrl(
       state_.gurl, GetVrFormatUrlTypes(), net::UnescapeRule::NORMAL, &parsed,
       nullptr, nullptr);
 
+  gfx::FontList font_list;
   if (!GetDefaultFontList(pixel_font_height, text, &font_list))
     failure_callback_.Run(UiUnsupportedMode::kUnhandledCodePoint);
 
-  render_text = CreateRenderText();
+  std::unique_ptr<gfx::RenderText> render_text = CreateRenderText();
   render_text->SetFontList(font_list);
   render_text->SetHorizontalAlignment(gfx::ALIGN_LEFT);
   render_text->SetDirectionalityMode(gfx::DIRECTIONALITY_AS_URL);
   render_text->SetText(text);
-  render_text->SetDisplayRect(url_text_bounds);
+
+  gfx::Rect text_bounds;
+  text_bounds.set_width(texture_size.width());
+  text_bounds.set_height(render_text->GetStringSize().height());
+  render_text->SetDisplayRect(text_bounds);
 
   RenderTextWrapper vr_render_text(render_text.get());
   ApplyUrlStyling(text, parsed, &vr_render_text, colors_);
@@ -144,6 +142,9 @@ void UrlBarTexture::Draw(SkCanvas* canvas, const gfx::Size& texture_size) {
   float fade_width = ToPixels(kUrlBarOriginFadeWidth);
   ApplyUrlFading(canvas, render_text->display_rect(), fade_width,
                  elision_parameters.fade_left, elision_parameters.fade_right);
+
+  size_.set_width(text_bounds.width());
+  size_.set_height(text_bounds.height());
 }
 
 // static

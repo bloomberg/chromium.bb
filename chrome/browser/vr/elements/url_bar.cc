@@ -29,4 +29,9 @@ void UrlBar::SetColors(const UrlTextColors& colors) {
   texture_->SetColors(colors);
 }
 
+void UrlBar::SetSingleColor(SkColor color) {
+  UrlTextColors colors = {color, color};
+  texture_->SetColors(colors);
+}
+
 }  // namespace vr
