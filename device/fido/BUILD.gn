@@ -21,6 +21,8 @@ component("fido") {
     "authenticator_get_info_response.h",
     "authenticator_make_credential_response.cc",
     "authenticator_make_credential_response.h",
+    "authenticator_selection_criteria.cc",
+    "authenticator_selection_criteria.h",
     "authenticator_supported_options.cc",
     "authenticator_supported_options.h",
     "ctap_empty_authenticator_request.cc",

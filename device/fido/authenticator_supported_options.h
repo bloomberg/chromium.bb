@@ -16,6 +16,22 @@ namespace device {
 // AuthenticatorGetInfo command.
 class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
  public:
+  enum class UserVerificationAvailability {
+    // e.g. Authenticator with finger print sensor and user's fingerprint is
+    // registered to the device.
+    kSupportedAndConfigured,
+    // e.g. Authenticator with fingerprint sensor without user's fingerprint
+    // registered.
+    kSupportedButNotConfigured,
+    kNotSupported
+  };
+
+  enum class ClientPinAvailability {
+    kSupportedAndPinSet,
+    kSupportedButPinNotSet,
+    kNotSupported,
+  };
+
   AuthenticatorSupportedOptions();
   AuthenticatorSupportedOptions(AuthenticatorSupportedOptions&& other);
   AuthenticatorSupportedOptions& operator=(
@@ -26,20 +42,21 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   AuthenticatorSupportedOptions& SetIsPlatformDevice(bool is_platform_device);
   AuthenticatorSupportedOptions& SetSupportsResidentKey(
       bool supports_resident_key);
-  AuthenticatorSupportedOptions& SetUserVerificationRequired(
-      bool user_verification_required);
+  AuthenticatorSupportedOptions& SetUserVerificationAvailability(
+      UserVerificationAvailability user_verification_required);
   AuthenticatorSupportedOptions& SetUserPresenceRequired(
       bool user_presence_required);
-  AuthenticatorSupportedOptions& SetClientPinStored(bool client_pin_stored);
+  AuthenticatorSupportedOptions& SetClientPinAvailability(
+      ClientPinAvailability client_pin_availability);
 
   bool is_platform_device() const { return is_platform_device_; }
   bool supports_resident_key() const { return supports_resident_key_; }
-  bool user_verification_required() const {
-    return user_verification_required_;
+  UserVerificationAvailability user_verification_availability() const {
+    return user_verification_availability_;
   }
   bool user_presence_required() const { return user_presence_required_; }
-  const base::Optional<bool>& client_pin_stored() const {
-    return client_pin_stored_;
+  ClientPinAvailability client_pin_availability() const {
+    return client_pin_availability_;
   }
 
  private:
@@ -50,11 +67,13 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorSupportedOptions {
   // and therefore can satisfy the authenticatorGetAssertion request with
   // allowList parameter not specified or empty.
   bool supports_resident_key_ = false;
-  bool user_verification_required_ = false;
+  // Indicates whether the device is capable of verifying the user on its own.
+  UserVerificationAvailability user_verification_availability_ =
+      UserVerificationAvailability::kNotSupported;
   bool user_presence_required_ = true;
   // Represents whether client pin in set and stored in device. Set as null
   // optional if client pin capability is not supported by the authenticator.
-  base::Optional<bool> client_pin_stored_;
+  ClientPinAvailability client_pin_availability_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorSupportedOptions);
 };

@@ -21,6 +21,8 @@ const std::array<uint8_t, 32> kBogusChallenge = {
 const char kResidentKeyMapKey[] = "rk";
 const char kUserVerificationMapKey[] = "uv";
 const char kUserPresenceMapKey[] = "up";
+const char kClientPinMapKey[] = "client_pin";
+const char kPlatformDeviceMapKey[] = "plat";
 
 const size_t kHidPacketSize = 64;
 const uint32_t kHidBroadcastChannel = 0xffffffff;

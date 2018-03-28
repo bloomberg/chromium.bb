@@ -55,7 +55,8 @@ class FidoRequestHandlerTest : public ::testing::Test {
         nullptr,
         base::flat_set<U2fTransportProtocol>(
             {U2fTransportProtocol::kUsbHumanInterfaceDevice}),
-        std::move(request_parameter), cb_.callback());
+        std::move(request_parameter), AuthenticatorSelectionCriteria(),
+        cb_.callback());
   }
 
   test::FakeFidoDiscovery* discovery() const { return discovery_; }
