@@ -34,13 +34,13 @@ def EnsureEmptyDir(path):
 def BuildForArch(arch):
   Run('scripts/build-zircon.sh', '-t', arch)
   Run('build/gn/gen.py', '--target_cpu=' + arch,
-      '--packages=garnet/packages/sdk', '--release')
+      '--packages=garnet/packages/sdk/base', '--release')
   Run('buildtools/ninja', '-C', 'out/release-' + arch)
   # Also build the deprecated bootfs-based image.
   # TODO(crbug.com/805057): Remove this once the bootfs path is turned down.
   build_dir_bootfs = 'out/release-' + arch + '-bootfs'
   Run('build/gn/gen.py', '--target_cpu=' + arch,
-      '--packages=garnet/packages/sdk_bootfs', '--release',
+      '--packages=garnet/packages/sdk/bootfs', '--release',
       '--args=bootfs_packages=true',
       '--build-dir='+build_dir_bootfs)
   Run('buildtools/ninja', '-C', build_dir_bootfs)
@@ -68,7 +68,8 @@ def main(args):
   # Nuke the SDK from DEPS, put our just-built one there, and set a fake .hash
   # file. This means that on next gclient runhooks, we'll restore to the
   # real DEPS-determined SDK.
-  output_dir = os.path.join(REPOSITORY_ROOT, 'third_party', 'fuchsia-sdk')
+  output_dir = os.path.join(REPOSITORY_ROOT, 'third_party', 'fuchsia-sdk',
+                            'sdk')
   EnsureEmptyDir(output_dir)
   tarfile.open(sdk_tar, mode='r:gz').extractall(path=output_dir)
 
