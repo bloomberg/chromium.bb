@@ -26,12 +26,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialDescriptor {
 
   PublicKeyCredentialDescriptor(std::string credential_type,
                                 std::vector<uint8_t> id);
-  PublicKeyCredentialDescriptor(PublicKeyCredentialDescriptor&& other);
   PublicKeyCredentialDescriptor(const PublicKeyCredentialDescriptor& other);
-  PublicKeyCredentialDescriptor& operator=(
-      PublicKeyCredentialDescriptor&& other);
+  PublicKeyCredentialDescriptor(PublicKeyCredentialDescriptor&& other);
   PublicKeyCredentialDescriptor& operator=(
       const PublicKeyCredentialDescriptor& other);
+  PublicKeyCredentialDescriptor& operator=(
+      PublicKeyCredentialDescriptor&& other);
   ~PublicKeyCredentialDescriptor();
 
   cbor::CBORValue ConvertToCBOR() const;

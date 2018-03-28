@@ -13,7 +13,13 @@ PublicKeyCredentialParams::PublicKeyCredentialParams(
     : public_key_credential_params_(std::move(credential_params)) {}
 
 PublicKeyCredentialParams::PublicKeyCredentialParams(
+    const PublicKeyCredentialParams& other) = default;
+
+PublicKeyCredentialParams::PublicKeyCredentialParams(
     PublicKeyCredentialParams&& other) = default;
+
+PublicKeyCredentialParams& PublicKeyCredentialParams::operator=(
+    const PublicKeyCredentialParams& other) = default;
 
 PublicKeyCredentialParams& PublicKeyCredentialParams::operator=(
     PublicKeyCredentialParams&& other) = default;

@@ -139,6 +139,11 @@ void MockFidoDevice::ExpectCtap2CommandAndRespondWith(
       .WillOnce(::testing::WithArg<1>(::testing::Invoke(send_response)));
 }
 
+void MockFidoDevice::ExpectCtap2CommandWithoutResponse(
+    CtapRequestCommand command) {
+  EXPECT_CALL(*this, DeviceTransactPtr(IsCtap2Command(command), ::testing::_));
+}
+
 base::WeakPtr<FidoDevice> MockFidoDevice::GetWeakPtr() {
   return weak_factory_.GetWeakPtr();
 }

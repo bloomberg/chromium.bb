@@ -43,16 +43,16 @@ PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
     : credential_type_(std::move(credential_type)), id_(std::move(id)) {}
 
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
-    PublicKeyCredentialDescriptor&& other) = default;
+    const PublicKeyCredentialDescriptor& other) = default;
 
 PublicKeyCredentialDescriptor::PublicKeyCredentialDescriptor(
-    const PublicKeyCredentialDescriptor& other) = default;
-
-PublicKeyCredentialDescriptor& PublicKeyCredentialDescriptor::operator=(
     PublicKeyCredentialDescriptor&& other) = default;
 
 PublicKeyCredentialDescriptor& PublicKeyCredentialDescriptor::operator=(
     const PublicKeyCredentialDescriptor& other) = default;
+
+PublicKeyCredentialDescriptor& PublicKeyCredentialDescriptor::operator=(
+    PublicKeyCredentialDescriptor&& other) = default;
 
 PublicKeyCredentialDescriptor::~PublicKeyCredentialDescriptor() = default;
 

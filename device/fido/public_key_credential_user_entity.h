@@ -26,12 +26,12 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialUserEntity {
       const cbor::CBORValue& cbor);
 
   explicit PublicKeyCredentialUserEntity(std::vector<uint8_t> user_id);
-  PublicKeyCredentialUserEntity(PublicKeyCredentialUserEntity&& other);
   PublicKeyCredentialUserEntity(const PublicKeyCredentialUserEntity& other);
-  PublicKeyCredentialUserEntity& operator=(
-      PublicKeyCredentialUserEntity&& other);
+  PublicKeyCredentialUserEntity(PublicKeyCredentialUserEntity&& other);
   PublicKeyCredentialUserEntity& operator=(
       const PublicKeyCredentialUserEntity& other);
+  PublicKeyCredentialUserEntity& operator=(
+      PublicKeyCredentialUserEntity&& other);
   ~PublicKeyCredentialUserEntity();
 
   cbor::CBORValue ConvertToCBOR() const;

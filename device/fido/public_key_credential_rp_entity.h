@@ -22,7 +22,10 @@ namespace device {
 class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialRpEntity {
  public:
   explicit PublicKeyCredentialRpEntity(std::string rp_id);
+  PublicKeyCredentialRpEntity(const PublicKeyCredentialRpEntity& other);
   PublicKeyCredentialRpEntity(PublicKeyCredentialRpEntity&& other);
+  PublicKeyCredentialRpEntity& operator=(
+      const PublicKeyCredentialRpEntity& other);
   PublicKeyCredentialRpEntity& operator=(PublicKeyCredentialRpEntity&& other);
   ~PublicKeyCredentialRpEntity();
 
@@ -39,8 +42,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) PublicKeyCredentialRpEntity {
   std::string rp_id_;
   base::Optional<std::string> rp_name_;
   base::Optional<GURL> rp_icon_url_;
-
-  DISALLOW_COPY_AND_ASSIGN(PublicKeyCredentialRpEntity);
 };
 
 }  // namespace device
