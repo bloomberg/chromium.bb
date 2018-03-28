@@ -3659,7 +3659,6 @@
       'WebKit Linux layout_ng Dummy Builder': {
         'args': [
           '--additional-driver-flag=--enable-blink-features=LayoutNG',
-          '--additional-driver-flag=--enable-blink-features=LayoutNGPaintFragments',
           '--additional-driver-flag=--enable-slimming-paint-v175',
         ],
         'swarming': {

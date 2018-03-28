@@ -8190,7 +8190,6 @@
       {
         "args": [
           "--additional-driver-flag=--enable-blink-features=LayoutNG",
-          "--additional-driver-flag=--enable-blink-features=LayoutNGPaintFragments",
           "--additional-driver-flag=--enable-slimming-paint-v175"
         ],
         "isolate_name": "webkit_layout_tests_exparchive",
