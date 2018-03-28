@@ -15,6 +15,7 @@ import org.chromium.base.TraceEvent;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.document.ChromeLauncherActivity;
+import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrIntentUtils;
 import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 
@@ -54,10 +55,15 @@ public class VrMainActivity extends Activity {
             // The check for relaunching does not work properly if the DON flow is skipped, which
             // is the case during tests. So, allow intents to specify that relaunching is not
             // necessary.
-            if (getIntent().getBooleanExtra(VrIntentUtils.AVOID_RELAUNCH_EXTRA, false)) {
+            if (IntentUtils.safeGetBooleanExtra(
+                        getIntent(), VrIntentUtils.AVOID_RELAUNCH_EXTRA, false)) {
                 needsRelaunch = false;
             }
             if (needsRelaunch) {
+                // Under some situations, like with the skip DON flow developer setting on, we can
+                // get stuck in a relaunch loop as the VR Headset configuration won't get set. Add
+                // an extra to never relaunch more than once.
+                getIntent().putExtra(VrIntentUtils.AVOID_RELAUNCH_EXTRA, true);
                 VrIntentUtils.launchInVr(getIntent(), this);
                 finish();
                 return;
