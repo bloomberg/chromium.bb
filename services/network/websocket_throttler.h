@@ -18,8 +18,7 @@ namespace network {
 
 // WebSocketPerProcessThrottler provies a throttling functionality per
 // renderer process. See https://goo.gl/tldFNn.
-class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocketPerProcessThrottler final
-    : public base::SupportsWeakPtr<WebSocketPerProcessThrottler> {
+class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocketPerProcessThrottler final {
  public:
   // A PendingConnection represents a connection that has not finished a
   // handshake.
@@ -96,6 +95,8 @@ class COMPONENT_EXPORT(NETWORK_SERVICE) WebSocketPerProcessThrottler final
   int64_t num_previous_failed_connections_ = 0;
 
   static constexpr int kMaxPendingWebSocketConnections = 255;
+
+  base::WeakPtrFactory<WebSocketPerProcessThrottler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSocketPerProcessThrottler);
 };
