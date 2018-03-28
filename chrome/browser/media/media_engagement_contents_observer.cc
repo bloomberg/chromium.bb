@@ -503,7 +503,12 @@ void MediaEngagementContentsObserver::SetTaskRunnerForTest(
 void MediaEngagementContentsObserver::ReadyToCommitNavigation(
     content::NavigationHandle* handle) {
   // TODO(beccahughes): Convert MEI API to using origin.
-  GURL url = handle->GetWebContents()->GetURL();
+  // If the navigation is occuring in the main frame we should use the URL
+  // provided by |handle| as the navigation has not committed yet. If the
+  // navigation is in a sub frame then use the URL from the main frame.
+  GURL url = handle->IsInMainFrame()
+                 ? handle->GetURL()
+                 : handle->GetWebContents()->GetLastCommittedURL();
   MediaEngagementScore score = service_->CreateEngagementScore(url);
   bool has_high_engagement = score.high_score();
 
