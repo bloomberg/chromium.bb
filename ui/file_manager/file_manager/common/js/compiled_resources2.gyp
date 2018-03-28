@@ -59,6 +59,14 @@
       'includes': ['../../../compile_js2.gypi'],
     },
     {
+      'target_name': 'mock_entry',
+      'dependencies': [
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        'util',
+      ],
+      'includes': ['../../../compile_js2.gypi'],
+    },
+    {
       'target_name': 'progress_center_common',
       'includes': ['../../../compile_js2.gypi'],
     },

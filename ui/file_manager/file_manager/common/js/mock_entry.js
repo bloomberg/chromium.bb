@@ -19,6 +19,7 @@ function joinPath(a, b) {
  * @param {string=} opt_rootURL URL string of root which is used in
  *     MockEntry.toURL.
  * @constructor
+ * @extends {FileSystem}
  */
 function MockFileSystem(volumeId, opt_rootURL) {
   /** @type {string} */
@@ -70,7 +71,7 @@ MockFileSystem.prototype.populate = function(entries, opt_clear) {
 
 /**
  * Returns all children of the supplied directoryEntry.
- * @param  {!DirectoryEntry} directoryEntry
+ * @param  {!DirectoryEntry} directory parent directory to find children of.
  * @return {!Array<!Entry>}
  * @private
  */
@@ -93,10 +94,11 @@ MockFileSystem.prototype.findChildren_ = function(directory) {
 /**
  * Base class of mock entries.
  *
- * @param {MockFileSystem} filesystem File system where the entry is localed.
+ * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path of the entry.
- * @param {Object} metadata Metadata.
+ * @param {!Metadata} metadata Metadata.
  * @constructor
+ * @extends {Entry}
  */
 function MockEntry(filesystem, fullPath, metadata) {
   filesystem.entries[fullPath] = this;
@@ -119,16 +121,13 @@ MockEntry.prototype = {
  * Obtains metadata of the entry.
  *
  * @param {function(!Metadata)} onSuccess Function to take the metadata.
- * @param {function(Error)} onError
+ * @param {function(!FileError)=} onError
  */
 MockEntry.prototype.getMetadata = function(onSuccess, onError) {
-  new Promise(function(fulfill, reject) {
-    if (this.filesystem && !this.filesystem.entries[this.fullPath])
-      reject(new DOMError('NotFoundError'));
-    else
-      onSuccess(this.metadata);
-  }.bind(this))
-      .then(onSuccess, onError);
+  if (this.filesystem.entries[this.fullPath])
+    onSuccess(this.metadata);
+  else
+    onError(/** @type {!FileError} */ ({name: util.FileError.NOT_FOUND_ERR}));
 };
 
 /**
@@ -148,71 +147,78 @@ MockEntry.prototype.toURL = function() {
 /**
  * Obtains parent directory.
  *
- * @param {function(MockDirectoryEntry)} onSuccess Callback invoked with
+ * @param {function(!Entry)} onSuccess Callback invoked with
  *     the parent directory.
- * @param {function(Object)} onError Callback invoked with an error
+ * @param {function(!FileError)=} onError Callback invoked with an error
  *     object.
  */
-MockEntry.prototype.getParent = function(
-    onSuccess, onError) {
+MockEntry.prototype.getParent = function(onSuccess, onError) {
   var path = this.fullPath.replace(/\/[^\/]+$/, '') || '/';
   if (this.filesystem.entries[path])
     onSuccess(this.filesystem.entries[path]);
   else
-    onError({name: util.FileError.NOT_FOUND_ERR});
+    onError(/** @type {!FileError} */ ({name: util.FileError.NOT_FOUND_ERR}));
 };
 
 /**
  * Moves the entry to the directory.
  *
- * @param {MockDirectoryEntry} parent Destination directory.
+ * @param {!DirectoryEntry} parent Destination directory.
  * @param {string=} opt_newName New name.
- * @param {function(MockDirectoryEntry)} onSuccess Callback invoked with the
+ * @param {function(!Entry)=} opt_successCallback Callback invoked with the
  *     moved entry.
- * @param {function(Object)} onError Callback invoked with an error object.
+ * @param {function(!FileError)=} opt_errorCallback Callback invoked with an
+ *     error object.
  */
-MockEntry.prototype.moveTo = function(parent, opt_newName, onSuccess, onError) {
-  Promise.resolve().then(function() {
-    delete this.filesystem.entries[this.fullPath];
-    return this.clone(
-        joinPath(parent.fullPath, opt_newName || this.name),
-        parent.filesystem);
-  }.bind(this)).then(onSuccess, onError);
+MockEntry.prototype.moveTo = function(
+    parent, opt_newName, opt_successCallback, opt_errorCallback) {
+  Promise.resolve()
+      .then(() => {
+        delete this.filesystem.entries[this.fullPath];
+        return this.clone(
+            joinPath(parent.fullPath, opt_newName || this.name),
+            parent.filesystem);
+      })
+      .then(opt_successCallback);
 };
 
 /**
- * @param {MockDirectoryEntry} parent
+ * @param {DirectoryEntry} parent
  * @param {string=} opt_newName
- * @param {function(!MockEntry)} successCallback
- * @param {function} errorCallback
+ * @param {function(!Entry)=} opt_successCallback
+ * @param {function(!FileError)=} opt_errorCallback
  */
-MockEntry.prototype.copyTo =
-    function(parent, opt_newName, successCallback, errorCallback) {
-  Promise.resolve().then(function() {
-    return this.clone(
-        joinPath(parent.fullPath, opt_newName || this.name),
-        parent.filesystem);
-  }.bind(this)).then(successCallback, errorCallback);
+MockEntry.prototype.copyTo = function(
+    parent, opt_newName, opt_successCallback, opt_errorCallback) {
+  Promise.resolve()
+      .then(() => {
+        return this.clone(
+            joinPath(parent.fullPath, opt_newName || this.name),
+            parent.filesystem);
+      })
+      .then(opt_successCallback);
 };
 
 /**
  * Removes the entry.
  *
  * @param {function()} onSuccess Success callback.
- * @param {function(Object)} onError Callback invoked with an error object.
+ * @param {function(!FileError)=} onError Callback invoked with an error object.
  */
 MockEntry.prototype.remove = function(onSuccess, onError) {
   this.removed_ = true;
-  Promise.resolve().then(function() {
+  Promise.resolve().then(() => {
     delete this.filesystem.entries[this.fullPath];
-  }.bind(this)).then(onSuccess, onError);
+    onSuccess();
+  });
 };
 
 /**
  * Asserts that the entry was removed.
  */
 MockEntry.prototype.assertRemoved = function() {
-  assertTrue(this.removed_);
+  if (!this.removed_)
+    throw new Error('expected removed for file ' + this.name);
 };
 
 /**
@@ -220,7 +226,7 @@ MockEntry.prototype.assertRemoved = function() {
  *
  * @param {string} fullpath New fullpath.
  * @param {FileSystem=} opt_filesystem New file system
- * @return {MockEntry} Cloned entry.
+ * @return {Entry} Cloned entry.
  */
 MockEntry.prototype.clone = function(fullpath, opt_filesystem) {
   throw new Error('Not implemented.');
@@ -231,7 +237,7 @@ MockEntry.prototype.clone = function(fullpath, opt_filesystem) {
  *
  * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path for the entry.
- * @param {Object} metadata Metadata.
+ * @param {!Metadata} metadata Metadata.
  * @param {Blob=} opt_content Optional content.
  * @extends {MockEntry}
  * @constructor
@@ -251,7 +257,7 @@ MockFileEntry.prototype = {
  * Returns a File that this represents.
  *
  * @param {function(!File)} onSuccess Function to take the file.
- * @param {function(Error)} onError
+ * @param {function(!Error)} onError
  */
 MockFileEntry.prototype.file = function(onSuccess, onError) {
   onSuccess(new File([this.content], this.toURL()));
@@ -270,12 +276,12 @@ MockFileEntry.prototype.clone = function(path, opt_filesystem) {
  *
  * @param {FileSystem} filesystem File system where the entry is localed.
  * @param {string} fullPath Full path for the entry.
- * @param {Object=} opt_metadata Metadata.
+ * @param {Metadata=} opt_metadata Metadata.
  * @extends {MockEntry}
  * @constructor
  */
 function MockDirectoryEntry(filesystem, fullPath, opt_metadata) {
-  var metadata = opt_metadata || {};
+  var metadata = opt_metadata || /** @type {!Metadata} */ ({});
   metadata.size = metadata.size || 0;
   metadata.modificationTime = metadata.modificationTime || new Date();
   MockEntry.call(this, filesystem, fullPath, metadata);
@@ -302,21 +308,22 @@ MockDirectoryEntry.prototype.getAllChildren = function() {
   return this.filesystem.findChildren_(this);
 };
 
-  /**
+/**
  * Returns a file under the directory.
  *
  * @param {string} path Path.
  * @param {Object} option Option.
- * @param {callback(MockFileEntry)} onSuccess Success callback.
- * @param {callback(Object)} onError Failure callback;
+ * @param {function(!FileEntry)} onSuccess Success callback.
+ * @param {function(!FileError)} onError Failure callback;
  */
 MockDirectoryEntry.prototype.getFile = function(
     path, option, onSuccess, onError) {
   var fullPath = path[0] === '/' ? path : joinPath(this.fullPath, path);
   if (!this.filesystem.entries[fullPath])
-    onError({name: util.FileError.NOT_FOUND_ERR});
+    onError(/** @type {!FileError} */ ({name: util.FileError.NOT_FOUND_ERR}));
   else if (!(this.filesystem.entries[fullPath] instanceof MockFileEntry))
-    onError({name: util.FileError.TYPE_MISMATCH_ERR});
+    onError(
+        /** @type {!FileError} */ ({name: util.FileError.TYPE_MISMATCH_ERR}));
   else
     onSuccess(this.filesystem.entries[fullPath]);
 };
@@ -326,8 +333,8 @@ MockDirectoryEntry.prototype.getFile = function(
  *
  * @param {string} path Path.
  * @param {Object} option Option.
- * @param {callback(MockDirectoryEntry)} onSuccess Success callback.
- * @param {callback(Object)} onError Failure callback;
+ * @param {function(!MockDirectoryEntry)} onSuccess Success callback.
+ * @param {function(Object)} onError Failure callback;
  */
 MockDirectoryEntry.prototype.getDirectory =
     function(path, option, onSuccess, onError) {
@@ -353,7 +360,7 @@ MockDirectoryEntry.prototype.getDirectory =
 
 /**
  * Creates a MockDirectoryReader for the entry.
- * @return {DirectoryReader} A directory reader.
+ * @return {!DirectoryReader} A directory reader.
  */
 MockDirectoryEntry.prototype.createReader = function() {
   return new MockDirectoryReader(this.filesystem.findChildren_(this));
@@ -362,6 +369,8 @@ MockDirectoryEntry.prototype.createReader = function() {
 /**
  * Mock class for DirectoryReader.
  * @param {!Array<!Entry>} entries
+ * @constructor
+ * @extends {DirectoryReader}
  */
 function MockDirectoryReader(entries) {
   this.entries_ = entries;
@@ -371,8 +380,8 @@ function MockDirectoryReader(entries) {
  * Returns entries from the filesystem associated with this directory
  * in chunks of 2.
  *
- * @param {function(Array)} success Success callback.
- * @param {function} error Error callback.
+ * @param {function(!Array<!Entry>)} success Success callback.
+ * @param {function(!FileError)=} error Error callback.
  */
 MockDirectoryReader.prototype.readEntries = function(success, error) {
   if (this.entries_.length > 0) {

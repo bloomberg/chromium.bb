@@ -5,6 +5,7 @@
 /**
  * Mock class for VolumeManager.
  * @constructor
+ * @implements {VolumeManager}
  */
 function MockVolumeManager() {
   this.volumeInfoList = new VolumeInfoListImpl();
@@ -41,7 +42,7 @@ MockVolumeManager.installMockSingleton = function(opt_singleton) {
 /**
  * Creates, installs and returns a mock VolumeInfo instance.
  *
- * @param {!VolumeType} type
+ * @param {!VolumeManagerCommon.VolumeType} type
  * @param {string} volumeId
  * @param {string} label
  *
@@ -58,7 +59,7 @@ MockVolumeManager.prototype.createVolumeInfo =
 /**
  * Returns the corresponding VolumeInfo.
  *
- * @param {MockFileEntry} entry MockFileEntry pointing anywhere on a volume.
+ * @param {!Entry|!FakeEntry} entry FileEntry pointing anywhere on a volume.
  * @return {VolumeInfo} Corresponding VolumeInfo.
  */
 MockVolumeManager.prototype.getVolumeInfo = function(entry) {
@@ -69,7 +70,7 @@ MockVolumeManager.prototype.getVolumeInfo = function(entry) {
  * Obtains location information from an entry.
  * Current implementation can handle only fake entries.
  *
- * @param {Entry} entry A fake entry.
+ * @param {!Entry|!FakeEntry} entry A fake entry.
  * @return {EntryLocation} Location information.
  */
 MockVolumeManager.prototype.getLocationInfo = function(entry) {
@@ -80,8 +81,8 @@ MockVolumeManager.prototype.getLocationInfo = function(entry) {
 
   if (entry.filesystem.name === VolumeManagerCommon.VolumeType.DRIVE) {
     var volumeInfo = this.volumeInfoList.item(0);
-    var roootType;
-    var isRootEntry;
+    var rootType = VolumeManagerCommon.RootType.DRIVE;
+    var isRootEntry = entry.fullPath === '/root';
     if (entry.fullPath.startsWith('/team_drives')) {
       if (entry.fullPath === '/team_drives') {
         rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
@@ -90,9 +91,6 @@ MockVolumeManager.prototype.getLocationInfo = function(entry) {
         rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
         isRootEntry = util.isTeamDriveRoot(entry);
       }
-    } else {
-      rootType = VolumeManagerCommon.RootType.DRIVE;
-      isRootEntry = entry.fullPath === '/root';
     }
     return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, true);
   }
@@ -105,8 +103,13 @@ MockVolumeManager.prototype.getLocationInfo = function(entry) {
  * @return {VolumeInfo} Volume info.
  */
 MockVolumeManager.prototype.getCurrentProfileVolumeInfo = function(volumeType) {
-  return VolumeManagerImpl.prototype.getCurrentProfileVolumeInfo.call(
-      this, volumeType);
+  for (var i = 0; i < this.volumeInfoList.length; i++) {
+    var volumeInfo = this.volumeInfoList.item(i);
+    if (volumeInfo.profile.isCurrentProfile &&
+        volumeInfo.volumeType === volumeType)
+      return volumeInfo;
+  }
+  return null;
 };
 
 /**
@@ -119,32 +122,53 @@ MockVolumeManager.prototype.getDriveConnectionState = function() {
 
 /**
  * Utility function to create a mock VolumeInfo.
- * @param {VolumeType} type Volume type.
+ * @param {!VolumeManagerCommon.VolumeType} type Volume type.
  * @param {string} volumeId Volume id.
  * @param {string} label Label.
- * @return {VolumeInfo} Created mock VolumeInfo.
+ * @return {!VolumeInfo} Created mock VolumeInfo.
  */
 MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
   var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
 
   var volumeInfo = new VolumeInfoImpl(
       type, volumeId, fileSystem,
-      '',                                         // error
-      '',                                         // deviceType
-      '',                                         // devicePath
-      false,                                      // isReadOnly
-      false,                                      // isReadOnlyRemovableDevice
-      {isCurrentProfile: true, displayName: ''},  // profile
-      label,                                      // label
-      undefined,                                  // providerId
-      false,                                      // hasMedia
-      false,                                      // configurable
-      false,                                      // watchable
-      'network',                                  // source
-      '',                                         // diskFileSystemType
-      {});                                        // iconSet
+      '',                                          // error
+      '',                                          // deviceType
+      '',                                          // devicePath
+      false,                                       // isReadOnly
+      false,                                       // isReadOnlyRemovableDevice
+      {isCurrentProfile: true, displayName: ''},   // profile
+      label,                                       // label
+      undefined,                                   // providerId
+      false,                                       // hasMedia
+      false,                                       // configurable
+      false,                                       // watchable
+      VolumeManagerCommon.Source.NETWORK,          // source
+      VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
+      {});                                         // iconSet
 
   return volumeInfo;
+};
+
+MockVolumeManager.prototype.mountArchive = function(
+    fileUrl, successCallback, errorCallback) {
+  throw new Error('Not implemented.');
+};
+MockVolumeManager.prototype.unmount = function(
+    volumeInfo, successCallback, errorCallback) {
+  throw new Error('Not implemented.');
+};
+MockVolumeManager.prototype.configure = function(volumeInfo) {
+  throw new Error('Not implemented.');
+};
+MockVolumeManager.prototype.addEventListener = function(type, handler) {
+  throw new Error('Not implemented.');
+};
+MockVolumeManager.prototype.removeEventListener = function(type, handler) {
+  throw new Error('Not implemented.');
+};
+MockVolumeManager.prototype.dispatchEvent = function(event) {
+  throw new Error('Not implemented.');
 };
 
 /**
@@ -178,7 +202,8 @@ MockVolumeManagerWrapper.instance_ = null;
  */
 MockVolumeManagerWrapper.installMockSingleton = function(opt_singleton) {
   MockVolumeManagerWrapper.instance_ =
-      opt_singleton || new MockVolumeManagerWrapper();
+      /** @type {!VolumeManager} */ (
+          opt_singleton || new MockVolumeManagerWrapper());
   volumeManagerFactory.getInstance = function() {
     return Promise.resolve(MockVolumeManagerWrapper.instance_);
   };
@@ -186,7 +211,7 @@ MockVolumeManagerWrapper.installMockSingleton = function(opt_singleton) {
 /**
  * Creates, installs and returns a mock VolumeInfo instance.
  *
- * @param {!VolumeType} type
+ * @param {!VolumeManagerCommon.VolumeType} type
  * @param {string} volumeId
  * @param {string} label
  *
@@ -202,13 +227,13 @@ MockVolumeManagerWrapper.prototype.createVolumeInfo =
 /**
  * Returns the corresponding VolumeInfo.
  *
- * @param {MockFileEntry} entry MockFileEntry pointing anywhere on a volume.
+ * @param {FileEntry} entry MockFileEntry pointing anywhere on a volume.
  * @return {VolumeInfo} Corresponding VolumeInfo.
  */
 MockVolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
   for (var i = 0; i < this.volumeInfoList.length; i++) {
     if (this.volumeInfoList.item(i).volumeId === entry.filesystem.name)
-      return this.volumeInfoList.item(i);
+      return /** @type {!VolumeInfo} */ (this.volumeInfoList.item(i));
   }
   return null;
 };
@@ -216,18 +241,17 @@ MockVolumeManagerWrapper.prototype.getVolumeInfo = function(entry) {
  * Obtains location information from an entry.
  * Current implementation can handle only fake entries.
  *
- * @param {Entry} entry A fake entry.
+ * @param {!Entry} entry A fake entry.
  * @return {EntryLocation} Location information.
  */
 MockVolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
+  var volumeInfo = /** @type {!VolumeInfo} */ (this.volumeInfoList.item(0));
   if (util.isFakeEntry(entry)) {
-    return new EntryLocationImpl(
-        this.volumeInfoList.item(0), entry.rootType, true, true);
+    return new EntryLocationImpl(volumeInfo, entry.rootType, true, true);
   }
   if (entry.filesystem.name === VolumeManagerCommon.VolumeType.DRIVE) {
-    var volumeInfo = this.volumeInfoList.item(0);
-    var roootType;
-    var isRootEntry;
+    var rootType = VolumeManagerCommon.RootType.DRIVE;
+    var isRootEntry = entry.fullPath === '/root';
     if (entry.fullPath.startsWith('/team_drives')) {
       if (entry.fullPath === '/team_drives') {
         rootType = VolumeManagerCommon.RootType.TEAM_DRIVES_GRAND_ROOT;
@@ -236,9 +260,6 @@ MockVolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
         rootType = VolumeManagerCommon.RootType.TEAM_DRIVE;
         isRootEntry = util.isTeamDriveRoot(entry);
       }
-    } else {
-      rootType = VolumeManagerCommon.RootType.DRIVE;
-      isRootEntry = entry.fullPath === '/root';
     }
     return new EntryLocationImpl(volumeInfo, rootType, isRootEntry, true);
   }
@@ -248,46 +269,43 @@ MockVolumeManagerWrapper.prototype.getLocationInfo = function(entry) {
  * @param {VolumeManagerCommon.VolumeType} volumeType Volume type.
  * @return {VolumeInfo} Volume info.
  */
-MockVolumeManagerWrapper.prototype.getCurrentProfileVolumeInfo =
-    function(volumeType) {
+MockVolumeManagerWrapper.prototype.getCurrentProfileVolumeInfo = function(
+    volumeType) {
   return VolumeManager.prototype.getCurrentProfileVolumeInfo.call(
-      this, volumeType);
+      /** @type {!VolumeManager} */ (this), volumeType);
 };
-
 /**
  * @return {VolumeManagerCommon.DriveConnectionState} Current drive connection
  *     state.
  */
-MockVolumeManagerWrapper.getDriveConnectionState = function() {
+MockVolumeManagerWrapper.prototype.getDriveConnectionState = function() {
   return this.driveConnectionState;
 };
-
 /**
  * Utility function to create a mock VolumeInfo.
- * @param {VolumeType} type Volume type.
+ * @param {VolumeManagerCommon.VolumeType} type Volume type.
  * @param {string} volumeId Volume id.
  * @param {string} label Label.
- * @return {VolumeInfo} Created mock VolumeInfo.
+ * @return {!VolumeInfo} Created mock VolumeInfo.
  */
 MockVolumeManagerWrapper.createMockVolumeInfo =
     function(type, volumeId, label) {
   var fileSystem = new MockFileSystem(volumeId, 'filesystem:' + volumeId);
   var volumeInfo = new VolumeInfoImpl(
       type, volumeId, fileSystem,
-      '',                                         // error
-      '',                                         // deviceType
-      '',                                         // devicePath
-      false,                                      // isReadonly
-      false,                                      // isReadOnlyRemovableDevice
-      {isCurrentProfile: true, displayName: ''},  // profile
-      label,                                      // label
-      undefined,                                  // providerId
-      {},                                         // iconSet
-      false,                                      // hasMedia
-      false,                                      // configurable
-      false,                                      // watchable
-      'network',                                  // source
-      '',                                         // diskFileSystemType
-      {});                                        // iconSet
+      '',                                          // error
+      '',                                          // deviceType
+      '',                                          // devicePath
+      false,                                       // isReadonly
+      false,                                       // isReadOnlyRemovableDevice
+      {isCurrentProfile: true, displayName: ''},   // profile
+      label,                                       // label
+      undefined,                                   // providerId
+      false,                                       // hasMedia
+      false,                                       // configurable
+      false,                                       // watchable
+      VolumeManagerCommon.Source.NETWORK,          // source
+      VolumeManagerCommon.FileSystemType.UNKNOWN,  // diskFileSystemType
+      {});                                         // iconSet
   return volumeInfo;
 };
