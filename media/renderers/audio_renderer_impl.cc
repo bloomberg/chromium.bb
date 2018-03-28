@@ -679,12 +679,17 @@ void AudioRendererImpl::DecodedAudioReady(
       last_decoded_sample_rate_ = buffer->sample_rate();
 
       if (last_decoded_channel_layout_ != buffer->channel_layout()) {
-        last_decoded_channel_layout_ = buffer->channel_layout();
-        last_decoded_channels_ = buffer->channel_count();
-
-        // Input layouts should never be discrete.
-        DCHECK_NE(last_decoded_channel_layout_, CHANNEL_LAYOUT_DISCRETE);
-        ConfigureChannelMask();
+        if (buffer->channel_layout() == CHANNEL_LAYOUT_DISCRETE) {
+          MEDIA_LOG(ERROR, media_log_)
+              << "Unsupported midstream configuration change! Discrete channel"
+              << " layout not allowed by sink.";
+          HandleAbortedReadOrDecodeError(PIPELINE_ERROR_DECODE);
+          return;
+        } else {
+          last_decoded_channel_layout_ = buffer->channel_layout();
+          last_decoded_channels_ = buffer->channel_count();
+          ConfigureChannelMask();
+        }
       }
     }
 
