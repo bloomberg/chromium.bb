@@ -10,6 +10,7 @@
 #include "base/bind_helpers.h"
 #include "base/run_loop.h"
 #include "base/test/bind_test_util.h"
+#include "base/test/histogram_tester.h"
 #include "base/test/mock_callback.h"
 #include "build/build_config.h"
 #include "content/browser/frame_host/navigation_handle_impl.h"
@@ -274,6 +275,11 @@ class DropBeforeUnloadACKFilter : public BrowserMessageFilter {
 
   DISALLOW_COPY_AND_ASSIGN(DropBeforeUnloadACKFilter);
 };
+
+mojo::ScopedMessagePipeHandle CreateDisconnectedMessagePipeHandle() {
+  mojo::MessagePipe pipe;
+  return std::move(pipe.handle0);
+}
 
 }  // namespace
 
@@ -1297,6 +1303,86 @@ IN_PROC_BROWSER_TEST_F(
   EXPECT_TRUE(child->has_committed_real_load());
   EXPECT_EQ(kSubframeURLThree, child->current_url());
   EXPECT_EQ(url::Origin::Create(kMainFrameURL), child->current_origin());
+}
+
+// Verify that if the UMA histograms are correctly recording if interface
+// provider requests are getting dropped because they racily arrive from the
+// previously active document (after the next navigation already committed).
+IN_PROC_BROWSER_TEST_F(RenderFrameHostImplBrowserTest,
+                       DroppedInterfaceRequestCounter) {
+  const GURL kUrl1(embedded_test_server()->GetURL("/title1.html"));
+  const GURL kUrl2(embedded_test_server()->GetURL("/title2.html"));
+  const GURL kUrl3(embedded_test_server()->GetURL("/title3.html"));
+  const GURL kUrl4(embedded_test_server()->GetURL("/empty.html"));
+
+  // Client ends of the fake interface provider requests injected for the first
+  // and second navigations.
+  service_manager::mojom::InterfaceProviderPtr interface_provider_1;
+  service_manager::mojom::InterfaceProviderPtr interface_provider_2;
+
+  base::RunLoop wait_until_connection_error_loop_1;
+  base::RunLoop wait_until_connection_error_loop_2;
+
+  {
+    ScopedFakeInterfaceProviderRequestInjector injector(
+        shell()->web_contents());
+    injector.set_fake_request_for_next_commit(
+        mojo::MakeRequest(&interface_provider_1));
+    interface_provider_1.set_connection_error_handler(
+        wait_until_connection_error_loop_1.QuitClosure());
+    ASSERT_TRUE(NavigateToURL(shell(), kUrl1));
+  }
+
+  {
+    ScopedFakeInterfaceProviderRequestInjector injector(
+        shell()->web_contents());
+    injector.set_fake_request_for_next_commit(
+        mojo::MakeRequest(&interface_provider_2));
+    interface_provider_2.set_connection_error_handler(
+        wait_until_connection_error_loop_2.QuitClosure());
+    ASSERT_TRUE(NavigateToURL(shell(), kUrl2));
+  }
+
+  // Simulate two interface requests corresponding to the first navigation
+  // arrived after the second navigation was committed, hence were dropped.
+  interface_provider_1->GetInterface("content::mojom::BrowserTarget",
+                                     CreateDisconnectedMessagePipeHandle());
+  interface_provider_1->GetInterface("content::mojom::BrowserTarget",
+                                     CreateDisconnectedMessagePipeHandle());
+
+  // RFHI destroys the DroppedInterfaceRequestLogger from navigation `n` on
+  // navigation `n+2`. Histrograms are recorded on destruction, there should
+  // be a single sample indicating two requests having been dropped for the
+  // first URL.
+  {
+    base::HistogramTester histogram_tester;
+    ASSERT_TRUE(NavigateToURL(shell(), kUrl3));
+    histogram_tester.ExpectUniqueSample(
+        "RenderFrameHostImpl.DroppedInterfaceRequests", 2, 1);
+  }
+
+  // Simulate one interface request dropped for the second URL.
+  interface_provider_2->GetInterface("content::mojom::BrowserTarget",
+                                     CreateDisconnectedMessagePipeHandle());
+
+  // A final navigation should record the sample from the second URL.
+  {
+    base::HistogramTester histogram_tester;
+    ASSERT_TRUE(NavigateToURL(shell(), kUrl4));
+    histogram_tester.ExpectUniqueSample(
+        "RenderFrameHostImpl.DroppedInterfaceRequests", 1, 1);
+  }
+
+  // Both the DroppedInterfaceRequestLogger for the first and second URLs are
+  // destroyed -- even more interfacerequests should not cause any crashes.
+  interface_provider_1->GetInterface("content::mojom::BrowserTarget",
+                                     CreateDisconnectedMessagePipeHandle());
+  interface_provider_2->GetInterface("content::mojom::BrowserTarget",
+                                     CreateDisconnectedMessagePipeHandle());
+
+  // The interface connections should be broken.
+  wait_until_connection_error_loop_1.Run();
+  wait_until_connection_error_loop_2.Run();
 }
 
 }  // namespace content

@@ -766,6 +766,8 @@ class CONTENT_EXPORT RenderFrameHostImpl
   FRIEND_TEST_ALL_PREFIXES(SecurityExploitBrowserTest,
                            AttemptDuplicateRenderViewHost);
 
+  class DroppedInterfaceRequestLogger;
+
   // IPC Message handlers.
   void OnDidAddMessageToConsole(int32_t level,
                                 const base::string16& message,
@@ -1479,6 +1481,14 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // interfaces.
   mojo::Binding<service_manager::mojom::InterfaceProvider>
       document_scoped_interface_provider_binding_;
+
+  // Logs interface requests that arrive after the frame has already committed a
+  // non-same-document navigation, and has already unbound
+  // |document_scoped_interface_provider_binding_| from the interface connection
+  // that had been used to service RenderFrame::GetRemoteInterface for the
+  // previously active document in the frame.
+  std::unique_ptr<DroppedInterfaceRequestLogger>
+      dropped_interface_request_logger_;
 
   // IPC-friendly token that represents this host for AndroidOverlays, if we
   // have created one yet.

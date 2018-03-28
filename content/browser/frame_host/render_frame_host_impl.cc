@@ -374,6 +374,36 @@ bool IsOutOfProcessNetworkService() {
 
 }  // namespace
 
+class RenderFrameHostImpl::DroppedInterfaceRequestLogger
+    : public service_manager::mojom::InterfaceProvider {
+ public:
+  DroppedInterfaceRequestLogger(
+      service_manager::mojom::InterfaceProviderRequest request)
+      : binding_(this) {
+    binding_.Bind(std::move(request));
+  }
+  ~DroppedInterfaceRequestLogger() override {
+    UMA_HISTOGRAM_EXACT_LINEAR("RenderFrameHostImpl.DroppedInterfaceRequests",
+                               num_dropped_requests_, 20);
+  }
+
+ protected:
+  // service_manager::mojom::InterfaceProvider:
+  void GetInterface(const std::string& interface_name,
+                    mojo::ScopedMessagePipeHandle pipe) override {
+    ++num_dropped_requests_;
+    DLOG(WARNING)
+        << "InterfaceRequest was dropped, the document is no longer active: "
+        << interface_name;
+  }
+
+ private:
+  mojo::Binding<service_manager::mojom::InterfaceProvider> binding_;
+  int num_dropped_requests_ = 0;
+
+  DISALLOW_COPY_AND_ASSIGN(DroppedInterfaceRequestLogger);
+};
+
 // static
 RenderFrameHost* RenderFrameHost::FromID(int render_process_id,
                                          int render_frame_id) {
@@ -1568,7 +1598,11 @@ void RenderFrameHostImpl::DidCommitProvisionalLoad(
     // request end of a new InterfaceProvider connection that will be used by
     // the new document to issue interface requests to access RenderFrameHost
     // services.
-    document_scoped_interface_provider_binding_.Close();
+    auto interface_provider_request_of_previous_document =
+        document_scoped_interface_provider_binding_.Unbind();
+    dropped_interface_request_logger_ =
+        std::make_unique<DroppedInterfaceRequestLogger>(
+            std::move(interface_provider_request_of_previous_document));
     BindInterfaceProviderRequest(std::move(interface_provider_request));
   } else {
     // If there had already been a real load committed in the frame, and this is
