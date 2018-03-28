@@ -60,6 +60,7 @@
     {
       'target_name': 'pages_settings',
       'dependencies': [
+        'input_behavior',
         'settings_behavior',
         '../data/compiled_resources2.gyp:document_info',
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:load_time_data',
@@ -141,6 +142,7 @@
     {
       'target_name': 'number_settings_section',
       'dependencies': [
+        'input_behavior',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
     },
@@ -157,6 +159,13 @@
       'target_name': 'settings_behavior',
       'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:assert',
+        '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
+      ],
+      'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],
+    },
+    {
+      'target_name': 'input_behavior',
+      'dependencies': [
         '<(DEPTH)/ui/webui/resources/js/compiled_resources2.gyp:cr',
       ],
       'includes': ['../../../../../third_party/closure_compiler/compile_js2.gypi'],

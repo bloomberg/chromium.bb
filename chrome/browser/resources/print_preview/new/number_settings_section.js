@@ -5,6 +5,8 @@
 Polymer({
   is: 'print-preview-number-settings-section',
 
+  behaviors: [print_preview_new.InputBehavior],
+
   properties: {
     /** @private {string} */
     inputString_: {
@@ -40,6 +42,23 @@ Polymer({
     disabled: Boolean,
   },
 
+  listeners: {
+    'input-change': 'onInputChange_',
+  },
+
+  /** @return {!HTMLInputElement} The input field element for InputBehavior. */
+  getInput: function() {
+    return this.$.userValue;
+  },
+
+  /**
+   * @param {!CustomEvent} e Contains the new input value.
+   * @private
+   */
+  onInputChange_: function(e) {
+    this.inputString_ = /** @type {string} */ (e.detail);
+  },
+
   /**
    * @return {boolean} Whether the input should be disabled.
    * @private
@@ -60,6 +79,8 @@ Polymer({
   onBlur_: function() {
     if (this.inputString_ == '')
       this.set('inputString_', this.defaultValue);
+    if (this.$.userValue.value == '')
+      this.$.userValue.value = this.defaultValue;
   },
 
   /** @private */
@@ -81,8 +102,8 @@ Polymer({
    */
   computeValid_: function() {
     // Make sure value updates first, in case inputString_ was updated by JS.
-    this.$$('.user-value').value = this.inputString_;
-    return this.$$('.user-value').validity.valid && this.inputString_ != '';
+    this.$.userValue.value = this.inputString_;
+    return this.$.userValue.validity.valid && this.inputString_ != '';
   },
 
   /**

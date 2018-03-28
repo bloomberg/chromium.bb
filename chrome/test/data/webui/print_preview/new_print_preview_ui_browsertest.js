@@ -50,6 +50,10 @@ PrintPreviewSettingsSectionsTest = class extends NewPrintPreviewTest {
   /** @override */
   get extraLibraries() {
     return super.extraLibraries.concat([
+      ROOT_PATH + 'chrome/test/data/webui/settings/test_util.js',
+      '../test_browser_proxy.js',
+      'native_layer_stub.js',
+      'plugin_stub.js',
       'print_preview_test_utils.js',
       'settings_section_test.js',
     ]);
