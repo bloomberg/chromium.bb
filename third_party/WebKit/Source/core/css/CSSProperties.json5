@@ -1297,6 +1297,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -1304,6 +1305,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2985,6 +2987,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
@@ -2992,6 +2995,7 @@
       property_methods: ["ParseSingleValue", "CSSValueFromComputedStyleInternal"],
       interpolable: true,
       svg: true,
+      typedom_types: ["Length", "Percentage"],
       converter: "ConvertLength",
     },
     {
