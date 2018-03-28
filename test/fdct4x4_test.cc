@@ -94,17 +94,5 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(make_tuple(&av1_highbd_fwht4x4_c, &iwht4x4_10, DCT_DCT,
                                  AOM_BITS_10, 16),
                       make_tuple(&av1_highbd_fwht4x4_c, &iwht4x4_12, DCT_DCT,
-                                 AOM_BITS_12, 16),
-                      make_tuple(&av1_fwht4x4_c, &aom_iwht4x4_16_add_c, DCT_DCT,
-                                 AOM_BITS_8, 16)));
-
-#if HAVE_SSE2
-INSTANTIATE_TEST_CASE_P(
-    SSE2, Trans4x4WHT,
-    ::testing::Values(make_tuple(&av1_fwht4x4_c, &aom_iwht4x4_16_add_c, DCT_DCT,
-                                 AOM_BITS_8, 16),
-                      make_tuple(&av1_fwht4x4_c, &aom_iwht4x4_16_add_sse2,
-                                 DCT_DCT, AOM_BITS_8, 16)));
-#endif
-
+                                 AOM_BITS_12, 16)));
 }  // namespace

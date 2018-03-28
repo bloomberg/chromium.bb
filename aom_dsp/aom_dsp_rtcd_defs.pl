@@ -441,11 +441,6 @@ if (aom_config("CONFIG_AV1_ENCODER") eq "yes"){
 #
 # Inverse transform
 if (aom_config("CONFIG_AV1") eq "yes") {
-  add_proto qw/void aom_iwht4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-
-  add_proto qw/void aom_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride";
-  specialize qw/aom_iwht4x4_16_add sse2/;
-
   add_proto qw/void aom_highbd_iwht4x4_1_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
 
   add_proto qw/void aom_highbd_iwht4x4_16_add/, "const tran_low_t *input, uint8_t *dest, int dest_stride, int bd";
