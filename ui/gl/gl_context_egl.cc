@@ -218,6 +218,14 @@ void GLContextEGL::Destroy() {
 
 YUVToRGBConverter* GLContextEGL::GetYUVToRGBConverter(
     const gfx::ColorSpace& color_space) {
+  // Make sure YUVToRGBConverter objects never get created when surfaceless EGL
+  // contexts aren't supported since support for surfaceless EGL contexts is
+  // required in order to properly release YUVToRGBConverter objects (see
+  // GLContextEGL::ReleaseYUVToRGBConverters())
+  if (!GLSurfaceEGL::IsEGLSurfacelessContextSupported()) {
+    return nullptr;
+  }
+
   std::unique_ptr<YUVToRGBConverter>& yuv_to_rgb_converter =
       yuv_to_rgb_converters_[color_space];
   if (!yuv_to_rgb_converter) {
