@@ -1076,12 +1076,11 @@ public class MediaNotificationManager {
         } else if (mMediaNotificationInfo.notificationLargeIcon != null) {
             builder.setLargeIcon(mMediaNotificationInfo.notificationLargeIcon);
         } else if (!isRunningAtLeastN()) {
-            if (mDefaultNotificationLargeIcon == null) {
-                int resourceId = (mMediaNotificationInfo.defaultNotificationLargeIcon != 0)
-                        ? mMediaNotificationInfo.defaultNotificationLargeIcon
-                        : R.drawable.audio_playing_square;
+            if (mDefaultNotificationLargeIcon == null
+                    && mMediaNotificationInfo.defaultNotificationLargeIcon != 0) {
                 mDefaultNotificationLargeIcon = downscaleIconToIdealSize(
-                        BitmapFactory.decodeResource(getContext().getResources(), resourceId));
+                        BitmapFactory.decodeResource(getContext().getResources(),
+                                mMediaNotificationInfo.defaultNotificationLargeIcon));
             }
             builder.setLargeIcon(mDefaultNotificationLargeIcon);
         }

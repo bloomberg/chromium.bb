@@ -23,6 +23,7 @@ import org.robolectric.annotation.Config;
 import org.robolectric.shadows.ShadowNotification;
 
 import org.chromium.base.test.BaseRobolectricTestRunner;
+import org.chromium.chrome.R;
 import org.chromium.content_public.common.MediaMetadata;
 
 /**
@@ -126,7 +127,10 @@ public class MediaNotificationManagerNotificationTest extends MediaNotificationM
 
         mMediaNotificationInfoBuilder.setNotificationLargeIcon(null);
 
-        MediaNotificationInfo info = mMediaNotificationInfoBuilder.build();
+        MediaNotificationInfo info =
+                mMediaNotificationInfoBuilder
+                        .setDefaultNotificationLargeIcon(R.drawable.audio_playing_square)
+                        .build();
         Notification notification = updateNotificationBuilderAndBuild(info);
 
         assertNotNull(getManager().mDefaultNotificationLargeIcon);
