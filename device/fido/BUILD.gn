@@ -63,6 +63,8 @@ component("fido") {
     "fido_request_handler.h",
     "fido_task.cc",
     "fido_task.h",
+    "get_assertion_task.cc",
+    "get_assertion_task.h",
     "make_credential_request_handler.cc",
     "make_credential_request_handler.h",
     "make_credential_task.cc",
