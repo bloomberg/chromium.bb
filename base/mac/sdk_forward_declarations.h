@@ -293,6 +293,17 @@ typedef NSString* VNImageOption NS_STRING_ENUM;
 - (BOOL)performRequests:(NSArray<VNRequest*>*)requests error:(NSError**)error;
 @end
 
+// VNFaceObservation forward declarations.
+@interface VNObservation : NSObject<NSCopying, NSSecureCoding>
+@end
+
+@interface VNDetectedObjectObservation : VNObservation
+@property(readonly, nonatomic, assign) CGRect boundingBox;
+@end
+
+@interface VNFaceObservation : VNDetectedObjectObservation
+@end
+
 #endif  // MAC_OS_X_VERSION_10_13
 // ----------------------------------------------------------------------------
 // The symbol for kCWSSIDDidChangeNotification is available in the

@@ -6,6 +6,7 @@
 
 #include <dlfcn.h>
 #include <objc/runtime.h>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -125,6 +126,7 @@ void FaceDetectionImplMacVision::Detect(const SkBitmap& bitmap,
     return;
   }
 
+  image_size_ = CGSizeMake(bitmap.width(), bitmap.height());
   // Hold on the callback until async request completes.
   detected_callback_ = std::move(callback);
   // This prevents the Detect function from being called before the
@@ -134,8 +136,29 @@ void FaceDetectionImplMacVision::Detect(const SkBitmap& bitmap,
 
 void FaceDetectionImplMacVision::OnFacesDetected(VNRequest* request,
                                                  NSError* error) {
-  std::move(detected_callback_).Run({});
   binding_->ResumeIncomingMethodCallProcessing();
+
+  if (![request.results count] || error) {
+    std::move(detected_callback_).Run({});
+    return;
+  }
+
+  std::vector<mojom::FaceDetectionResultPtr> results;
+  for (VNFaceObservation* const observation in request.results) {
+    auto face = shape_detection::mojom::FaceDetectionResult::New();
+    // The coordinate are normalized to the dimensions of the processed image.
+    face->bounding_box = ConvertCGToGfxCoordinates(
+        CGRectMake(observation.boundingBox.origin.x * image_size_.width,
+                   observation.boundingBox.origin.y * image_size_.height,
+                   observation.boundingBox.size.width * image_size_.width,
+                   observation.boundingBox.size.height * image_size_.height),
+        image_size_.height);
+
+    results.push_back(std::move(face));
+  }
+  std::move(detected_callback_).Run(std::move(results));
+
+  return;
 }
 
 }  // namespace shape_detection
