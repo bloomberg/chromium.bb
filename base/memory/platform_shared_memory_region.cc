@@ -33,14 +33,5 @@ PlatformSharedMemoryRegion::PassPlatformHandle() {
   return std::move(handle_);
 }
 
-// static
-bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
-    PlatformHandle handle,
-    Mode mode,
-    size_t size) {
-  // TODO(https://crbug.com/825177): implement this in platform-specific way.
-  return true;
-}
-
 }  // namespace subtle
 }  // namespace base

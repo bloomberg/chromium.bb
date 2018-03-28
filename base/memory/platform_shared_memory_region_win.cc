@@ -305,6 +305,15 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
                                     UnguessableToken::Create());
 }
 
+// static
+bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
+    PlatformHandle handle,
+    Mode mode,
+    size_t size) {
+  // TODO(https://crbug.com/825177): implement this.
+  return true;
+}
+
 PlatformSharedMemoryRegion::PlatformSharedMemoryRegion(
     win::ScopedHandle handle,
     Mode mode,
