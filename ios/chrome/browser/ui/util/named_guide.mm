@@ -12,6 +12,11 @@
 #error "This file requires ARC support."
 #endif
 
+namespace {
+// The key path for whether NSLayoutConstraints are active.
+NSString* const kActiveKeyPath = @"active";
+}
+
 @interface NamedGuide ()
 
 // The constraints used to connect the guide to |constrainedView| or
@@ -27,6 +32,10 @@
 // |autoresizingMask|.  This function will lazily instantiate the view if
 // necessary and set up constraints so that this layout guide follows the view.
 - (void)updateConstrainedFrameView;
+
+// Checks whether the constraints have been deactivated, resetting them if
+// necessary.
+- (void)checkForInactiveConstraints;
 
 @end
 
@@ -47,13 +56,15 @@
 }
 
 - (void)dealloc {
-  _constrainedView = nil;
-  _constrainedFrame = CGRectNull;
-  if (_constraints.count)
-    [NSLayoutConstraint deactivateConstraints:_constraints];
+  [self resetConstraints];
 }
 
 #pragma mark - Accessors
+
+- (BOOL)isConstrained {
+  [self checkForInactiveConstraints];
+  return self.constraints.count > 0;
+}
 
 - (void)setConstrainedView:(UIView*)constrainedView {
   if (_constrainedView == constrainedView)
@@ -89,11 +100,21 @@
 - (void)setConstraints:(NSArray*)constraints {
   if (_constraints == constraints)
     return;
-  if (_constraints.count)
+  if (_constraints.count) {
+    for (NSLayoutConstraint* constraint in _constraints)
+      [constraint removeObserver:self forKeyPath:kActiveKeyPath];
     [NSLayoutConstraint deactivateConstraints:_constraints];
+  }
   _constraints = constraints;
-  if (_constraints.count)
+  if (_constraints.count) {
     [NSLayoutConstraint activateConstraints:_constraints];
+    for (NSLayoutConstraint* constraint in _constraints) {
+      [constraint addObserver:self
+                   forKeyPath:kActiveKeyPath
+                      options:NSKeyValueObservingOptionNew
+                      context:nullptr];
+    }
+  }
 }
 
 - (void)setConstrainedFrameView:(UIView*)constrainedFrameView {
@@ -127,8 +148,21 @@
 }
 
 - (void)resetConstraints {
-  self.constrainedView = nil;
-  self.constrainedFrame = CGRectNull;
+  _constrainedView = nil;
+  _constrainedFrame = CGRectNull;
+  self.constraints = nil;
+}
+
+#pragma mark - NSKeyValueObserving
+
+- (void)observeValueForKeyPath:(NSString*)key
+                      ofObject:(id)object
+                        change:(NSDictionary*)change
+                       context:(void*)context {
+  DCHECK([key isEqualToString:kActiveKeyPath]);
+  DCHECK([self.constraints containsObject:object]);
+  DCHECK(!base::mac::ObjCCastStrict<NSLayoutConstraint>(object).active);
+  [self checkForInactiveConstraints];
 }
 
 #pragma mark - Private
@@ -161,9 +195,18 @@
   if (!self.constrainedFrameView) {
     self.constrainedFrameView = [[UIView alloc] init];
     self.constrainedFrameView.backgroundColor = [UIColor clearColor];
+    self.constrainedFrameView.userInteractionEnabled = NO;
   }
   self.constrainedFrameView.frame = self.constrainedFrame;
   self.constrainedFrameView.autoresizingMask = self.autoresizingMask;
+}
+
+- (void)checkForInactiveConstraints {
+  for (NSLayoutConstraint* constraint in self.constraints) {
+    if (constraint.active)
+      return;
+  }
+  [self resetConstraints];
 }
 
 @end

@@ -26,11 +26,15 @@
 // Resets |constrainedView| and |constrainedFrame|, deactivating constraints
 // that were created to support following the view/frame.  Note that calling
 // this function has no effect on constraints that were created outside of this
-// class.
+// class.  |isConstrained| will return NO after calling this function.
 - (void)resetConstraints;
 
 // The GuideName passed on initialization.
 @property(nonatomic, readonly) GuideName* name;
+
+// Whether this NamedGuide is constrained to either a view or frame (using
+// |constrainedView| or |constrainedFrame|, respectively).
+@property(nonatomic, readonly, getter=isConstrained) BOOL constrained;
 
 // The view to which this guide should be constrained.  Setting this property
 // to a new value will update the guide's constraints to match the new view.
@@ -44,7 +48,8 @@
 // windows.  Setting this property to a new value will update the guide's
 // constraints to match the specified frame according to |autoresizingMask|.
 // Setting to CGRectNull removes constraints.  Setting this property to a non-
-// CGRectNull value will reset |constrainedView| to nil.
+// CGRectNull value will reset |constrainedView| to nil.  If |constrainedView|
+// is removed from |owningView|'s hierarchy, this property will be reset to nil.
 @property(nonatomic, assign) CGRect constrainedFrame;
 
 // The autoresizing behavior to use when setting up constraints for
