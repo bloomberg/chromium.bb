@@ -28,6 +28,7 @@
 #define GraphicsLayer_h
 
 #include <memory>
+#include "base/memory/weak_ptr.h"
 #include "cc/layers/layer_client.h"
 #include "platform/PlatformExport.h"
 #include "platform/geometry/FloatPoint.h"
@@ -430,6 +431,8 @@ class PLATFORM_EXPORT GraphicsLayer : public cc::LayerClient,
   std::unique_ptr<LayerState> layer_state_;
 
   std::unique_ptr<CompositedLayerRasterInvalidator> raster_invalidator_;
+
+  base::WeakPtrFactory<GraphicsLayer> weak_ptr_factory_;
 };
 
 // ObjectPaintInvalidatorWithContext::InvalidatePaintRectangleWithContext uses
