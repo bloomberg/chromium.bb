@@ -8,7 +8,7 @@
 
 #include <memory>
 
-#include "base/memory/ptr_util.h"
+#include "base/test/gtest_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace base {
@@ -376,6 +376,24 @@ TEST(IDMapTest, Int64KeyType) {
 
   map.Remove(kId1);
   EXPECT_TRUE(map.IsEmpty());
+}
+
+TEST(IDMapTest, RemovedValueHandling) {
+  TestObject obj;
+  IDMap<TestObject*> map;
+  int key = map.Add(&obj);
+
+  IDMap<TestObject*>::iterator itr(&map);
+  map.Clear();
+  EXPECT_DCHECK_DEATH(map.Remove(key));
+  EXPECT_DCHECK_DEATH(map.Replace(key, &obj));
+  EXPECT_FALSE(map.Lookup(key));
+  EXPECT_FALSE(itr.IsAtEnd());
+  EXPECT_FALSE(itr.GetCurrentValue());
+
+  EXPECT_TRUE(map.IsEmpty());
+  map.AddWithID(&obj, key);
+  EXPECT_EQ(1u, map.size());
 }
 
 }  // namespace base
