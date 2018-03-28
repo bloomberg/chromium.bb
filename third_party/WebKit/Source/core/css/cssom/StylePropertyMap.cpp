@@ -5,6 +5,7 @@
 #include "core/css/cssom/StylePropertyMap.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/CSSIdentifierValue.h"
 #include "core/css/CSSValueList.h"
 #include "core/css/cssom/CSSOMTypes.h"
 #include "core/css/cssom/CSSStyleValue.h"
@@ -47,6 +48,28 @@ const CSSValue* StyleValueToCSSValue(
         property.PropertyID(), style_value.toString(),
         CSSParserContext::Create(execution_context));
   }
+
+  // Handle properties that use ad-hoc structures for their CSSValues:
+  // TODO(https://crbug.com/545324): Move this into a method on
+  // CSSProperty when there are more of these cases.
+  switch (property_id) {
+    case CSSPropertyTextDecorationLine: {
+      // level 1 only accepts single keywords
+      const auto* value = style_value.ToCSSValue();
+      // only 'none' is stored as an identifier, the other keywords are
+      // wrapped in a list.
+      if (value->IsIdentifierValue() && !value->IsCSSWideKeyword() &&
+          ToCSSIdentifierValue(value)->GetValueID() != CSSValueNone) {
+        CSSValueList* list = CSSValueList::CreateSpaceSeparated();
+        list->Append(*style_value.ToCSSValue());
+        return list;
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
   return style_value.ToCSSValueWithProperty(property_id);
 }
 

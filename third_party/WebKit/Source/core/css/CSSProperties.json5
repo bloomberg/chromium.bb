@@ -2727,6 +2727,7 @@
       field_group: "visual",
       field_template: "multi_keyword",
       keywords: ["none", "underline", "overline", "line-through", "blink"],
+      typedom_types: ["Keyword"],
       default_value: "none",
       name_for_methods: "TextDecoration",
       type_name: "TextDecoration",
@@ -2739,6 +2740,7 @@
       field_group: "*",
       field_template: "keyword",
       keywords: ["none", "auto"],
+      typedom_types: ["Keyword"],
       default_value: "auto",
     },
     {
