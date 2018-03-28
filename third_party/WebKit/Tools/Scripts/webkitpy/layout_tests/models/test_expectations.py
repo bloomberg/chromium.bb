@@ -239,6 +239,17 @@ class TestExpectationLine(object):
         self.warnings = []
         self.is_extra_skipped_test = False
 
+        # WARNING: If flag_expectations are not set, base_expectations will
+        # always be empty. In this case, 'expectations' are base_expectations.
+        # This quirk is caused by the way expectations are computed.
+        #  base | flags | expectations | base_expectations | flag_expectations
+        #   0   |   0   |   []         |        []         | []
+        #   X   |   0   |   [base]     |        []         | []
+        #   0   |   X   |   [flag]     |        [base]     | [flag]
+        #   X   |   X   | [flag+base]  |        [base]     | [flag]
+        self.base_expectations = []
+        self.flag_expectations = []
+
     def __str__(self):
         return 'TestExpectationLine{name=%s, matching_configurations=%s, original_string=%s}' % (
             self.name, self.matching_configurations, self.original_string)
@@ -485,6 +496,8 @@ class TestExpectationLine(object):
         result.matching_tests = list(list(set(line1.matching_tests) | set(line2.matching_tests)))
         result.warnings = list(set(line1.warnings) | set(line2.warnings))
         result.is_extra_skipped_test = line1.is_extra_skipped_test or line2.is_extra_skipped_test
+        result.base_expectations = line1.base_expectations if line1.base_expectations else line2.base_expectations
+        result.flag_expectations = line1.flag_expectations if line1.flag_expectations else line2.flag_expectations
         return result
 
     def to_string(self, test_configuration_converter=None, include_specifiers=True,
@@ -587,6 +600,7 @@ class TestExpectationsModel(object):
         self._result_type_to_tests = self._dict_of_sets(TestExpectations.RESULT_TYPES)
 
         self._shorten_filename = shorten_filename or (lambda x: x)
+        self._flag_name = None
 
     def all_lines(self):
         return sorted(self._test_to_expectation_line.values(),
@@ -610,7 +624,7 @@ class TestExpectationsModel(object):
         for key in other_dict:
             self_dict[key] |= other_dict[key]
 
-    def merge_model(self, other):
+    def merge_model(self, other, is_flag_specific=False):
         self._merge_test_map(self._test_to_expectations, other._test_to_expectations)
 
         # merge_expectation_lines is O(tests per line). Therefore, this loop
@@ -627,10 +641,15 @@ class TestExpectationsModel(object):
                 if other_line not in merge_lines_cache[self_line]:
                     merge_lines_cache[self_line][other_line] = TestExpectationLine.merge_expectation_lines(
                         self_line, other_line, model_all_expectations=False)
+                    if is_flag_specific:
+                        merge_lines_cache[self_line][other_line].base_expectations = self_line.expectations
+                        merge_lines_cache[self_line][other_line].flag_expectations = other_line.expectations
 
                 merged_line = merge_lines_cache[self_line][other_line]
             else:
                 merged_line = other_line
+                if is_flag_specific:
+                    merged_line.flag_expectations = other_line.expectations
 
             self._test_to_expectation_line[test] = merged_line
 
@@ -670,6 +689,15 @@ class TestExpectationsModel(object):
 
     def has_test(self, test):
         return test in self._test_to_expectation_line
+
+    def get_flag_name(self):
+        return self._flag_name
+
+    def append_flag_name(self, flag_name):
+        if self._flag_name:
+            self._flag_name += ' ' + flag_name
+        else:
+            self._flag_name = flag_name
 
     def get_expectation_line(self, test):
         return self._test_to_expectation_line.get(test)
@@ -1048,7 +1076,10 @@ class TestExpectations(object):
                 model = TestExpectationsModel(self._shorten_filename)
                 self._add_expectations(expectations, model)
                 self._expectations += expectations
-                self._model.merge_model(model)
+                flag_specific_match = re.match('.*' + port.FLAG_EXPECTATIONS_PREFIX + '(.*)', path)
+                if flag_specific_match is not None:
+                    self._model.append_flag_name(flag_specific_match.group(1))
+                self._model.merge_model(model, flag_specific_match is not None)
 
         self.add_extra_skipped_tests(set(port.get_option('ignore_tests', [])))
         self.add_expectations_from_bot()
