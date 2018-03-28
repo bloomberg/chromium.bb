@@ -37,12 +37,15 @@ class VRDisplayHost : public device::mojom::VRDisplayHost {
   void RequestPresent(device::mojom::VRSubmitFrameClientPtr client,
                       device::mojom::VRPresentationProviderRequest request,
                       device::mojom::VRRequestPresentOptionsPtr options,
+                      bool triggered_by_displayactive,
                       RequestPresentCallback callback) override;
   void ExitPresent() override;
   void SetListeningForActivate(bool listening);
   void SetInFocusedFrame(bool in_focused_frame);
 
  private:
+  void ReportRequestPresent();
+
   std::unique_ptr<device::VRDisplayImpl> display_;
 
   content::RenderFrameHost* render_frame_host_;

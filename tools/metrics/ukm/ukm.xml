@@ -3180,6 +3180,14 @@ be describing additional metrics about the same event.
       some element on the page.
     </summary>
   </metric>
+  <metric name="EnteredVROnPageReason">
+    <summary>
+      An enum that indicates that the user entered VR on this page and what
+      triggered the entry into VR, where 1 means VR was entered through headset
+      activation, and 2 means that request presentation triggered the entry into
+      VR.
+    </summary>
+  </metric>
   <metric name="TimeOnPage">
     <summary>
       Deprecated.

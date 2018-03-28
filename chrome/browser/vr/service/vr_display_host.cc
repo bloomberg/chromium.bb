@@ -6,6 +6,9 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "chrome/browser/vr/metrics/session_metrics_helper.h"
+#include "chrome/browser/vr/mode.h"
+#include "components/ukm/content/source_url_recorder.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_widget_host_view.h"
 #include "content/public/browser/web_contents.h"
@@ -52,6 +55,7 @@ void VRDisplayHost::RequestPresent(
     device::mojom::VRSubmitFrameClientPtr client,
     device::mojom::VRPresentationProviderRequest request,
     device::mojom::VRRequestPresentOptionsPtr options,
+    bool triggered_by_displayactive,
     RequestPresentCallback callback) {
   bool requires_secure_context =
       !kAllowHTTPWebVRWithFlag ||
@@ -61,8 +65,27 @@ void VRDisplayHost::RequestPresent(
     std::move(callback).Run(false, nullptr);
     return;
   }
+
+  if (!triggered_by_displayactive) {
+    ReportRequestPresent();
+  }
+
   display_->RequestPresent(std::move(client), std::move(request),
                            std::move(options), std::move(callback));
+}
+
+void VRDisplayHost::ReportRequestPresent() {
+  content::WebContents* web_contents =
+      content::WebContents::FromRenderFrameHost(render_frame_host_);
+  SessionMetricsHelper* metrics_helper =
+      SessionMetricsHelper::FromWebContents(web_contents);
+  if (!metrics_helper) {
+    // This will only happen if we are not already in VR, set start params
+    // accordingly.
+    metrics_helper = SessionMetricsHelper::CreateForWebContents(
+        web_contents, Mode::kNoVr, false);
+  }
+  metrics_helper->ReportRequestPresent();
 }
 
 void VRDisplayHost::ExitPresent() {

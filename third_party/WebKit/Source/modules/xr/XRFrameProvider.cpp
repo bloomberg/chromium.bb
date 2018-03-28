@@ -108,9 +108,12 @@ void XRFrameProvider::BeginExclusiveSession(XRSession* session,
     options->preserve_drawing_buffer = false;
     options->webxr_input = true;
 
+    // TODO(offenwanger): Once device activation is sorted out for WebXR, either
+    // pass in the value for metrics, or remove it as soon as legacy API has
+    // been removed.
     device_->xrDisplayHostPtr()->RequestPresent(
         frame_transport_->GetSubmitFrameClient(),
-        mojo::MakeRequest(&presentation_provider_), std::move(options),
+        mojo::MakeRequest(&presentation_provider_), std::move(options), false,
         WTF::Bind(&XRFrameProvider::OnPresentComplete, WrapPersistent(this)));
 
     presentation_provider_.set_connection_error_handler(

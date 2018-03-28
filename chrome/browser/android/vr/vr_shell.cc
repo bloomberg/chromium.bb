@@ -237,7 +237,7 @@ void VrShell::SwapContents(JNIEnv* env,
 
   // TODO(https://crbug.com/684661): Make SessionMetricsHelper tab-aware and
   // able to track multiple tabs.
-  if (web_contents_) {
+  if (web_contents_ && !SessionMetricsHelper::FromWebContents(web_contents_)) {
     SessionMetricsHelper::CreateForWebContents(
         web_contents_,
         webvr_mode_ ? Mode::kWebXrVrPresentation : Mode::kVrBrowsingRegular,
@@ -725,6 +725,14 @@ void VrShell::LogUnsupportedModeUserMetric(JNIEnv* env,
                                            const JavaParamRef<jobject>& obj,
                                            int mode) {
   LogUnsupportedModeUserMetric((UiUnsupportedMode)mode);
+}
+
+void VrShell::RecordVrStartAction(PageSessionStartAction action) {
+  SessionMetricsHelper* metrics_helper =
+      SessionMetricsHelper::FromWebContents(web_contents_);
+  if (metrics_helper) {
+    metrics_helper->RecordVrStartAction(action);
+  }
 }
 
 void VrShell::ShowSoftInput(JNIEnv* env,

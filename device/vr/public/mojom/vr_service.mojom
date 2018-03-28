@@ -216,7 +216,8 @@ interface VRDisplayHost {
   // a failure result but must be non-null for a success result.
   RequestPresent(VRSubmitFrameClient client,
                  VRPresentationProvider& request,
-                 VRRequestPresentOptions options) => (
+                 VRRequestPresentOptions options,
+                 bool triggered_by_displayactive) => (
                      bool success,
                      VRDisplayFrameTransportOptions? transport_options);
   ExitPresent();

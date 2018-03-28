@@ -17,6 +17,22 @@
 
 namespace vr {
 
+// This enum describes various ways a Chrome VR session started.
+// GENERATED_JAVA_ENUM_PACKAGE: org.chromium.chrome.browser.vr_shell
+enum class PageSessionStartAction : int {
+  // The user activated a headset. For example, inserted phone in Daydream, or
+  // put on an Occulus or Vive.
+  kHeadsetActivation = 1,
+  // The user triggered a presentation request on a page, probably by clicking
+  // an enter VR button.
+  kPresentationRequest = 2,
+  // The user launched a deep linked app, probably from Daydream home.
+  kDeepLinkedApp = 3,
+  // Chrome VR was started by an intent from another app. Most likely the user
+  // clicked the icon in Daydream home.
+  kIntentLaunch = 4,
+};
+
 // SessionTimer will monitor the time between calls to StartSession and
 // StopSession.  It will combine multiple segments into a single session if they
 // are sufficiently close in time.  It will also only include segments if they
@@ -121,6 +137,9 @@ class SessionMetricsHelper : public content::WebContentsObserver {
   void RecordVoiceSearchStarted();
   void RecordUrlRequested(GURL url, NavigationMethod method);
 
+  void RecordVrStartAction(PageSessionStartAction action);
+  void ReportRequestPresent();
+
  private:
   SessionMetricsHelper(content::WebContents* contents,
                        Mode initial_mode,
@@ -140,6 +159,8 @@ class SessionMetricsHelper : public content::WebContentsObserver {
 
   void SetVrMode(Mode mode);
   void UpdateMode();
+
+  void MaybeSetPageSessionStartAction(PageSessionStartAction action);
 
   void OnEnterAnyVr();
   void OnExitAllVr();
@@ -168,6 +189,8 @@ class SessionMetricsHelper : public content::WebContentsObserver {
 
   GURL last_requested_url_;
   NavigationMethod last_url_request_method_;
+
+  base::Optional<PageSessionStartAction> pending_page_session_start_action_;
 
   int num_videos_playing_ = 0;
   int num_session_navigation_ = 0;
