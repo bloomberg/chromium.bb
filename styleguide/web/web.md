@@ -268,7 +268,7 @@ background-image: url(../path/to/image.svg);
 The contents of file.png are base64-encoded and the `url()` is replaced with
 
 ```css
-background-image: url(data:image/xml+svg;base64,...);
+background-image: url(data:image/svg+xml;base64,...);
 ```
 
 if `flattenhtml="true"` is specified in your .grd file.
