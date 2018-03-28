@@ -16,6 +16,9 @@ namespace features {
 const base::Feature kEnableFloatingVirtualKeyboard = {
     "enable-floating-virtual-keyboard", base::FEATURE_ENABLED_BY_DEFAULT};
 
+const base::Feature kEnableStylusVirtualKeyboard = {
+    "enable-stylus-virtual-keyboard", base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Applies the material design mode to elements throughout Chrome (not just top
 // Chrome).
 const base::Feature kSecondaryUiMd = {"SecondaryUiMd",
