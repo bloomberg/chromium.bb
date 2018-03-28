@@ -1,11 +1,11 @@
-// Copyright 2017 The Chromium Authors. All rights reserved.
+// Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROMECAST_DEVICE_BLUETOOTH_SHLIB_LE_SCANNER_H_
 #define CHROMECAST_DEVICE_BLUETOOTH_SHLIB_LE_SCANNER_H_
 
-#include "chromecast/internal/public/bluetooth_v2_shlib/le_scanner.h"
+#include "chromecast/public/bluetooth/le_scanner.h"
 
 namespace chromecast {
 namespace bluetooth_v2_shlib {
