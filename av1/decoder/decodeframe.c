@@ -2691,9 +2691,7 @@ static int read_uncompressed_header(AV1Decoder *pbi,
       frame_is_sframe(cm) ? 1 : aom_rb_read_literal(rb, 1);
   cm->allow_intrabc = 0;
 
-#if CONFIG_FRAME_REFS_SIGNALING
   cm->frame_refs_short_signaling = 0;
-#endif  // CONFIG_FRAME_REFS_SIGNALING
   cm->primary_ref_frame = PRIMARY_REF_NONE;
 
 #if CONFIG_EXPLICIT_ORDER_HINT
@@ -2796,7 +2794,6 @@ static int read_uncompressed_header(AV1Decoder *pbi,
         cm->is_reference_frame = 0;
       }
 
-#if CONFIG_FRAME_REFS_SIGNALING
       // Frame refs short signaling is off when error resilient mode is on.
       if (cm->seq_params.enable_order_hint)
         cm->frame_refs_short_signaling = aom_rb_read_bit(rb);
@@ -2825,13 +2822,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
 
         av1_set_frame_refs(cm, lst_ref, gld_ref);
       }
-#endif  // CONFIG_FRAME_REFS_SIGNALING
 
       for (int i = 0; i < INTER_REFS_PER_FRAME; ++i) {
         int ref = 0;
-#if CONFIG_FRAME_REFS_SIGNALING
         if (!cm->frame_refs_short_signaling) {
-#endif  // CONFIG_FRAME_REFS_SIGNALING
           ref = aom_rb_read_literal(rb, REF_FRAMES_LOG2);
           const int idx = cm->ref_frame_map[ref];
 
@@ -2848,12 +2842,10 @@ static int read_uncompressed_header(AV1Decoder *pbi,
           RefBuffer *const ref_frame = &cm->frame_refs[i];
           ref_frame->idx = idx;
           ref_frame->buf = &frame_bufs[idx].buf;
-#if CONFIG_FRAME_REFS_SIGNALING
           ref_frame->map_idx = ref;
         } else {
           ref = cm->frame_refs[i].map_idx;
         }
-#endif  // CONFIG_FRAME_REFS_SIGNALING
 
         cm->ref_frame_sign_bias[LAST_FRAME + i] = 0;
 

@@ -1559,7 +1559,6 @@ void av1_setup_skip_mode_allowed(AV1_COMMON *cm) {
   }
 }
 
-#if CONFIG_FRAME_REFS_SIGNALING
 typedef struct {
   int map_idx;  // frame map index
   int buf_idx;  // frame buffer index
@@ -1798,4 +1797,3 @@ void av1_set_frame_refs(AV1_COMMON *const cm, int lst_map_idx,
     assert(ref_flag_list[i] == 1);
   }
 }
-#endif  // CONFIG_FRAME_REFS_SIGNALING

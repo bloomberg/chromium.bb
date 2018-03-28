@@ -2931,9 +2931,7 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
                              cm->height != cm->seq_params.max_frame_height);
   if (!frame_is_sframe(cm)) aom_wb_write_bit(wb, frame_size_override_flag);
 
-#if CONFIG_FRAME_REFS_SIGNALING
   cm->frame_refs_short_signaling = 0;
-#endif  // CONFIG_FRAME_REFS_SIGNALING
 
 #if CONFIG_EXPLICIT_ORDER_HINT
   aom_wb_write_literal(wb, cm->frame_offset,
@@ -3033,7 +3031,6 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         cm->is_reference_frame = 0;
       }
 
-#if CONFIG_FRAME_REFS_SIGNALING
       assert(cm->frame_refs_short_signaling == 0);
       // NOTE: Error resilient mode turns off frame_refs_short_signaling
       //       automatically.
@@ -3050,13 +3047,10 @@ static void write_uncompressed_header_obu(AV1_COMP *cpi,
         aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, GOLDEN_FRAME),
                              REF_FRAMES_LOG2);
       }
-#endif  // CONFIG_FRAME_REFS_SIGNALING
 
       for (ref_frame = LAST_FRAME; ref_frame <= ALTREF_FRAME; ++ref_frame) {
         assert(get_ref_frame_map_idx(cpi, ref_frame) != INVALID_IDX);
-#if CONFIG_FRAME_REFS_SIGNALING
         if (!cm->frame_refs_short_signaling)
-#endif  // CONFIG_FRAME_REFS_SIGNALING
           aom_wb_write_literal(wb, get_ref_frame_map_idx(cpi, ref_frame),
                                REF_FRAMES_LOG2);
         if (frame_is_sframe(cm)) {
