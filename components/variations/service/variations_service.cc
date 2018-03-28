@@ -59,7 +59,7 @@ namespace variations {
 namespace {
 
 const base::Feature kHttpRetryFeature{"VariationsHttpRetry",
-                                      base::FEATURE_ENABLED_BY_DEFAULT};
+                                      base::FEATURE_DISABLED_BY_DEFAULT};
 
 // Constants used for encrypting the if-none-match header if we are retrieving a
 // seed over http.
