@@ -77,11 +77,6 @@
 #include <windows.h>
 #endif
 
-#if defined(USE_AURA)
-#include "ash/shell.h"
-#include "ui/aura/window_event_dispatcher.h"
-#endif
-
 using content::NavigationController;
 using content::NavigationEntry;
 using content::OpenURLParams;
