@@ -137,10 +137,9 @@ void DocumentLoadTiming::SetNavigationStart(TimeTicks navigation_start) {
 void DocumentLoadTiming::AddRedirect(const KURL& redirecting_url,
                                      const KURL& redirected_url) {
   redirect_count_++;
-  if (redirect_start_.is_null())
-    SetRedirectStart(fetch_start_);
-  MarkRedirectEnd();
-  MarkFetchStart();
+
+  // Note: we update load timings for redirects in WebDocumentLoaderImpl::
+  // UpdateNavigation, hence updating no timings here.
 
   // Check if the redirected url is allowed to access the redirecting url's
   // timing information.
