@@ -183,11 +183,6 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
 
 - (void)downloadManagerTabHelper:(nonnull DownloadManagerTabHelper*)tabHelper
                  didHideDownload:(nonnull web::DownloadTask*)download {
-  if (!_downloadTask) {
-    // TODO(crbug.com/805653): This callback can be called multiple times.
-    return;
-  }
-
   DCHECK_EQ(_downloadTask, download);
   self.animatesPresentation = NO;
   [self stop];
