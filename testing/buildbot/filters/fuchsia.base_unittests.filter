@@ -28,6 +28,12 @@
 -SysInfoTest.AmountOfMem
 -SysInfoTest.AmountOfTotalDiskSpace
 
+# These tests are affected by an issue with cloning namespace entries from
+# inside a package. See https://crbug.com/826018
+-ProcessUtilTest.CloneAlternateDir
+-ProcessUtilTest.KillSlowChild
+-ProcessUtilTest.SelectivelyClonedDir
+
 # These tests all rely on being able to set the exit code of an externally
 # terminated process, which mx_task_kill() does not support.
 # https://crbug.com/753490.
