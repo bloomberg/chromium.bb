@@ -40,6 +40,10 @@ class CallbackInfo : public base::SupportsUserData::Data {
 
 namespace net {
 
+const int ReportSender::kLoadFlags =
+    LOAD_BYPASS_CACHE | LOAD_DISABLE_CACHE | LOAD_DO_NOT_SEND_AUTH_DATA |
+    LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES;
+
 ReportSender::ReportSender(URLRequestContext* request_context,
                            net::NetworkTrafficAnnotationTag traffic_annotation)
     : request_context_(request_context),
@@ -59,9 +63,7 @@ void ReportSender::Send(const GURL& report_uri,
       &kUserDataKey,
       std::make_unique<CallbackInfo>(success_callback, error_callback));
 
-  url_request->SetLoadFlags(
-      LOAD_BYPASS_CACHE | LOAD_DISABLE_CACHE | LOAD_DO_NOT_SEND_AUTH_DATA |
-      LOAD_DO_NOT_SEND_COOKIES | LOAD_DO_NOT_SAVE_COOKIES);
+  url_request->SetLoadFlags(kLoadFlags);
 
   HttpRequestHeaders extra_headers;
   extra_headers.SetHeader(HttpRequestHeaders::kContentType, content_type);
