@@ -52,8 +52,7 @@ Polymer({
    * @private
    */
   onLinkTap_: function(event) {
-    if (event.target.tagName == 'A' &&
-        !event.target.hasAttribute('unselectable'))
+    if (event.target.matches('a:not(#extensionsLink)'))
       event.preventDefault();
   },
 
@@ -90,7 +89,9 @@ Polymer({
   },
 
   /** @private */
-  onExternalLinkClick_: function() {
+  onExtensionsLinkClick_: function() {
+    chrome.metricsPrivate.recordUserAction(
+        'SettingsMenu_ExtensionsLinkClicked');
     this.fire('external-link-click');
   },
 });

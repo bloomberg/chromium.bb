@@ -66,12 +66,12 @@
       }
 
       #advancedButton > span,
-      #extensionsButton > span {
+      #extensionsLink > span {
         flex: 1;
       }
 
       #advancedButton > iron-icon,
-      #extensionsButton > iron-icon {
+      #extensionsLink > iron-icon {
         @apply --cr-icon-height-width;
         -webkit-margin-end: 14px;  /* 16px - 2px from margin for outline. */
       }
@@ -83,7 +83,7 @@
         margin-top: 8px;
       }
     </style>
-    <iron-selector id="topMenu" selectable="a:not([unselectable])"
+    <iron-selector id="topMenu" selectable="a:not(#extensionsLink)"
         attr-for-selected="href" on-iron-activate="onSelectorActivate_"
         role="navigation">
 <if expr="chromeos">
@@ -193,8 +193,8 @@
         </iron-selector>
       </iron-collapse>
       <div id="menuSeparator"></div>
-      <a id="extensionsButton" unselectable href="chrome://extensions"
-          target="_blank" on-click="onExternalLinkClick_">
+      <a id="extensionsLink" href="chrome://extensions" target="_blank"
+          on-click="onExtensionsLinkClick_">
         <span>$i18n{extensionsPageTitle}</span>
         <iron-icon class="cr-icon icon-external" actionable></iron-icon>
       </a>
