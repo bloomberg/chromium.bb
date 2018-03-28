@@ -93,6 +93,8 @@ static_library("renderer") {
     "security_filter_peer.h",
     "ssl/ssl_certificate_error_page_controller.cc",
     "ssl/ssl_certificate_error_page_controller.h",
+    "supervised_user/supervised_user_error_page_controller.cc",
+    "supervised_user/supervised_user_error_page_controller.h",
     "tts_dispatcher.cc",
     "tts_dispatcher.h",
     "url_loader_throttle_provider_impl.cc",

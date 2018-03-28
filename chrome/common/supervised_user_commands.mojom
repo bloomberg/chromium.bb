@@ -10,8 +10,9 @@ interface SupervisedUserCommands {
   // Go back to the previous page.
   GoBack();
   // Request permission from supervised user administrator to view the current
-  // URL.
-  RequestPermission();
+  // URL. Expects a |success| response indicating whether or not sending the
+  // request was successful.
+  RequestPermission() => (bool success);
   // Send feedback about the decision to block the current URL.
   Feedback();
 };

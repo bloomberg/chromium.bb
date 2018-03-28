@@ -20,6 +20,7 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/chrome_render_thread_observer.h"
 #include "chrome/renderer/ssl/ssl_certificate_error_page_controller.h"
+#include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
 #include "components/error_page/common/error.h"
 #include "components/error_page/common/error_page_params.h"
 #include "components/error_page/common/localized_error.h"
@@ -122,7 +123,8 @@ NetErrorHelper::NetErrorHelper(RenderFrame* render_frame, bool online)
     : RenderFrameObserver(render_frame),
       content::RenderFrameObserverTracker<NetErrorHelper>(render_frame),
       weak_controller_delegate_factory_(this),
-      weak_ssl_error_controller_delegate_factory_(this) {
+      weak_ssl_error_controller_delegate_factory_(this),
+      weak_supervised_user_error_controller_delegate_factory_(this) {
   RenderThread::Get()->AddObserver(this);
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
   bool auto_reload_enabled =
@@ -219,6 +221,22 @@ void NetErrorHelper::SendCommand(
   }
 }
 
+void NetErrorHelper::GoBack() {
+  if (supervised_user_interface_)
+    supervised_user_interface_->GoBack();
+}
+
+void NetErrorHelper::RequestPermission(
+    base::OnceCallback<void(bool)> callback) {
+  if (supervised_user_interface_)
+    supervised_user_interface_->RequestPermission(std::move(callback));
+}
+
+void NetErrorHelper::Feedback() {
+  if (supervised_user_interface_)
+    supervised_user_interface_->Feedback();
+}
+
 void NetErrorHelper::DidStartProvisionalLoad(
     blink::WebDocumentLoader* document_loader) {
   core_->OnStartLoad(GetFrameType(render_frame()),
@@ -238,6 +256,7 @@ void NetErrorHelper::DidCommitProvisionalLoad(
   // it.
   weak_controller_delegate_factory_.InvalidateWeakPtrs();
   weak_ssl_error_controller_delegate_factory_.InvalidateWeakPtrs();
+  weak_supervised_user_error_controller_delegate_factory_.InvalidateWeakPtrs();
 
   core_->OnCommitLoad(GetFrameType(render_frame()),
                       render_frame()->GetWebFrame()->GetDocument().Url());
@@ -339,6 +358,12 @@ void NetErrorHelper::EnablePageHelperFunctions(net::Error net_error) {
   }
   NetErrorPageController::Install(
       render_frame(), weak_controller_delegate_factory_.GetWeakPtr());
+
+  render_frame()->GetRemoteAssociatedInterfaces()->GetInterface(
+      &supervised_user_interface_);
+  SupervisedUserErrorPageController::Install(
+      render_frame(),
+      weak_supervised_user_error_controller_delegate_factory_.GetWeakPtr());
 }
 
 void NetErrorHelper::UpdateErrorPage(const error_page::Error& error,

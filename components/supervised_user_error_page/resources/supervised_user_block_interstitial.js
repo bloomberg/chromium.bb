@@ -37,6 +37,20 @@ function setupMobileNav() {
 document.addEventListener('DOMContentLoaded', setupMobileNav);
 
 function sendCommand(cmd) {
+  if (window.supervisedUserErrorPageController) {
+    switch (cmd) {
+      case 'back':
+        supervisedUserErrorPageController.goBack();
+        break;
+      case 'request':
+        supervisedUserErrorPageController.requestPermission();
+        break;
+      case 'feedback':
+        supervisedUserErrorPageController.feedback();
+        break;
+    }
+    return;
+  }
   // TODO(bauerb): domAutomationController is not defined when this page is
   // shown in chrome://interstitials. Use a MessageHandler or something to
   // support interactions.
