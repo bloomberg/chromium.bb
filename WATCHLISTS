@@ -1108,8 +1108,13 @@
       'filepath': 'mojo',
     },
     'multidevice': {
-      'filepath': 'components/multidevice/'\
-                  '|chromeos/components/multidevice_setup/',
+      'filepath': 'ash/multidevice_setup/'\
+                  '|chrome/browser/resources/chromeos/multidevice_setup/'\
+                  '|chromeos/services/device_sync/'\
+                  '|chromeos/services/multidevice_setup/'\
+                  '|chromeos/services/secure_channel/'\
+                  '|components/cryptauth/'\
+                  '|components/proximity_auth/'\
     },
     'mus': {
       'filepath': 'services/ui/'\
@@ -1475,9 +1480,11 @@
       'filepath': 'apitest|unittest|browsertest|uitest|chrome/test/',
     },
     'tether': {
-      'filepath': 'components/cryptauth/'\
+      'filepath': 'chrome/browser/chromeos/tether/'\
+                  '|chrome/browser/ui/ash/network/tether*'\
                   '|chromeos/components/tether/'\
-                  '|components/proximity_auth/',
+                  '|components/cryptauth/'\
+                  '|components/proximity_auth/logging'
     },
     'textinput': {
       'filepath': 'chrome/browser/ui/input_method'\
