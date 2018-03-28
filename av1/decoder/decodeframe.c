@@ -1805,6 +1805,40 @@ static void get_tile_buffers(AV1Decoder *pbi, const uint8_t *data,
   }
 }
 
+static void decode_tile_sb_row(AV1Decoder *pbi, TileData *const td,
+                               TileInfo tile_info, const int mi_row) {
+  AV1_COMMON *const cm = &pbi->common;
+  av1_zero_left_context(&td->xd);
+
+  for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
+       mi_col += cm->seq_params.mib_size) {
+    decode_partition(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
+                     cm->seq_params.sb_size);
+  }
+  aom_merge_corrupted_flag(&pbi->mb.corrupted, td->xd.corrupted);
+  if (pbi->mb.corrupted)
+    aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
+                       "Failed to decode tile data");
+}
+
+static void decode_tile(AV1Decoder *pbi, int tile_row, int tile_col) {
+  TileInfo tile_info;
+
+  AV1_COMMON *const cm = &pbi->common;
+  const int num_planes = av1_num_planes(cm);
+  TileData *const td = pbi->tile_data + cm->tile_cols * tile_row + tile_col;
+
+  av1_tile_set_row(&tile_info, cm, tile_row);
+  av1_tile_set_col(&tile_info, cm, tile_col);
+  av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
+  av1_reset_loop_restoration(&td->xd, num_planes);
+
+  for (int mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
+       mi_row += cm->seq_params.mib_size) {
+    decode_tile_sb_row(pbi, td, tile_info, mi_row);
+  }
+}
+
 static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
                                    const uint8_t *data_end, int startTile,
 #if CONFIG_TRAILING_BITS
@@ -1911,14 +1945,9 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
 
   for (tile_row = tile_rows_start; tile_row < tile_rows_end; ++tile_row) {
     const int row = inv_row_order ? tile_rows - 1 - tile_row : tile_row;
-    int mi_row = 0;
-    TileInfo tile_info;
-
-    av1_tile_set_row(&tile_info, cm, row);
 
     for (tile_col = tile_cols_start; tile_col < tile_cols_end; ++tile_col) {
       const int col = inv_col_order ? tile_cols - 1 - tile_col : tile_col;
-      TileData *const td = pbi->tile_data + tile_cols * row + col;
 
       if (tile_row * cm->tile_cols + tile_col < startTile ||
           tile_row * cm->tile_cols + tile_col > endTile)
@@ -1930,26 +1959,7 @@ static const uint8_t *decode_tiles(AV1Decoder *pbi, const uint8_t *data,
             aom_reader_tell_frac(&td->bit_reader);
       }
 #endif
-
-      av1_tile_set_col(&tile_info, cm, col);
-
-      av1_zero_above_context(cm, tile_info.mi_col_start, tile_info.mi_col_end);
-      av1_reset_loop_restoration(&td->xd, num_planes);
-
-      for (mi_row = tile_info.mi_row_start; mi_row < tile_info.mi_row_end;
-           mi_row += cm->seq_params.mib_size) {
-        av1_zero_left_context(&td->xd);
-
-        for (int mi_col = tile_info.mi_col_start; mi_col < tile_info.mi_col_end;
-             mi_col += cm->seq_params.mib_size) {
-          decode_partition(pbi, &td->xd, mi_row, mi_col, &td->bit_reader,
-                           cm->seq_params.sb_size);
-        }
-        aom_merge_corrupted_flag(&pbi->mb.corrupted, td->xd.corrupted);
-        if (pbi->mb.corrupted)
-          aom_internal_error(&cm->error, AOM_CODEC_CORRUPT_FRAME,
-                             "Failed to decode tile data");
-      }
+      decode_tile(pbi, row, col);
     }
   }
 
