@@ -141,12 +141,6 @@ if (current_cpu == "arm" && arm_use_thumb) {
 
 assert(!can_unwind_with_frame_pointers || enable_frame_pointers)
 
-# Unwinding with CFI table is only possible on static library builds and
-# requried only when frame pointers are not enabled.
-can_unwind_with_cfi_table =
-    is_android && !is_component_build && !can_unwind_with_frame_pointers &&
-    current_cpu == "arm"
-
 declare_args() {
   # Whether or not the official builds should be built with full WPO. Enabled by
   # default for the PGO and the x64 builds.
