@@ -39,6 +39,11 @@ class URLFetcherResponseWriter;
 class URLRequestContextGetter;
 class URLRequestStatus;
 
+// NOTE:  This class should not be used by content embedders, as it requires an
+// in-process network stack. Content embedders should use
+// network::SimpleURLLoader instead, which works with both in-process and
+// out-of-process network stacks.
+//
 // To use this class, create an instance with the desired URL and a pointer to
 // the object to be notified when the URL has been loaded:
 //   std::unique_ptr<URLFetcher> fetcher =
