@@ -1806,6 +1806,7 @@ buildflag_header("debugging_buildflags") {
     "ENABLE_PROFILING=$enable_profiling",
     "CAN_UNWIND_WITH_FRAME_POINTERS=$can_unwind_with_frame_pointers",
     "UNSAFE_DEVELOPER_BUILD=$is_unsafe_developer_build",
+    "CAN_UNWIND_WITH_CFI_TABLE=$can_unwind_with_cfi_table",
   ]
 }
 
