@@ -43809,14 +43809,6 @@ Full version information for the fingerprint enum values:
   vendor specific: 852100E30274706D3738FFFFFF
   version fingerprint: 847042924 327cd96c
 
-  TPM family: 322e3000
-  spec level: 0000000000000074
-  manufacturer: 43524f53
-  tpm_model: 00000001
-  firmware version: 0dc5c85b01a68fe6
-  vendor specific: 784347206654504D
-  version fingerprint: 987235505 3ad804b1
-
   TPM family: 312e3200
   spec level: 0000000200000003
   manufacturer: 49465800
@@ -43889,14 +43881,6 @@ Full version information for the fingerprint enum values:
   vendor specific: 041F02C20074706D3332FFFFFF
   version fingerprint: 1828625721 6cfe9d39
 
-  TPM family: 322e3000
-  spec level: 0000000000000074
-  manufacturer: 43524f53
-  tpm_model: 00000001
-  firmware version: 0fd788bd01a68fe6
-  vendor specific: 784347206654504D
-  version fingerprint: 1887455524 70804924
-
   TPM family: 312e3200
   spec level: 0000000200000003
   manufacturer: 49465800
@@ -43928,30 +43912,67 @@ Full version information for the fingerprint enum values:
   firmware version: 0000000000000422
   vendor specific: 042203F20274706D3332FFFFFF
   version fingerprint: 2024714959 78aeb2cf
+
+  <=====
+  Google H1 based Security Chip running Cr50 firmware presents itself as a TPM
+  2.0 with the following properties:
+
+  TPM family: 322e3000
+  spec level: 0000000000000074
+  manufacturer: 43524f53
+  tpm_model: 00000001
+  firmware version: 0dc5c85b01a68fe6 *
+  vendor specific: 784347206654504D
+  version fingerprint: 987235505 3ad804b1 *
+
+  * Firmware version and vendor specific fields are different for different
+    versions of Cr50 firmware, all released versions are listed in the enum
+    below
+  =====>
 -->
 
+  <int value="29785307" label="CROS Cr50 0.1.2"/>
+  <int value="91664959" label="CROS Cr50 0.0.16"/>
+  <int value="113099773" label="CROS Cr50 0.0.23 Eve Flags 0x7f00(prod)"/>
   <int value="157181839" label="IFX 9655 rev 41 fw 4.34 build 03f2"/>
+  <int value="230386903" label="CROS Cr50 0.0.24 Eve Flags 0x7f00(prod)"/>
+  <int value="276176597" label="CROS Cr50 0.1.0 Flags 0x10(pre-pvt)"/>
   <int value="305524852" label="IFX 9655 rev 41 fw 4.32 build 036f"/>
   <int value="368058567" label="STM d08"/>
+  <int value="379654202" label="CROS Cr50 0.0.13"/>
+  <int value="399636984" label="CROS Cr50 0.0.18"/>
   <int value="487001745" label="IFX 9655 rev 38 fw 4.34 build 03f2"/>
   <int value="517482723" label="IFX 9655 rev 38 fw 4.32 build 036f"/>
   <int value="545386023" label="IFX 9670 rev 15 fw 6.43 build 00f3"/>
   <int value="639195905" label="IFX 9655 rev 35 fw 4.32 build 036f"/>
+  <int value="691364586" label="CROS Cr50 0.0.22 Eve Flags 0xff00(unknown)"/>
+  <int value="707846933" label="CROS Cr50 0.1.1 Flags 0x10(pre-pvt)"/>
+  <int value="752842103" label="CROS Cr50 0.0.25 Flags 0x10(pre-pvt)"/>
   <int value="847042924" label="IFX 9645 rev 78 fw 133.33 build 00e3"/>
-  <int value="987235505" label="CROS 0dc5c85b01a68fe6"/>
+  <int value="893364096" label="CROS Cr50 0.3.3"/>
+  <int value="928190862" label="CROS Cr50 0.0.17"/>
+  <int value="987235505" label="CROS Cr50 0.0.20"/>
   <int value="987973414" label="IFX 9670 rev 15 fw 6.40 build 00be"/>
+  <int value="1013730596" label="CROS Cr50 0.0.26 Flags 0x10(pre-pvt)"/>
+  <int value="1065916186" label="CROS Cr50 0.0.19"/>
+  <int value="1190683265" label="CROS Cr50 0.0.14"/>
   <int value="1311411160" label="WEC 345"/>
   <int value="1353576267" label="IFX 9635 fw 3.18 build 0009"/>
   <int value="1437720528" label="IFX 9645 rev 78 fw 133.32 build 0050"/>
   <int value="1451134301" label="IFX 9635 147.18 build 000f"/>
   <int value="1490841853" label="IFX 9645 rev 49 fw 133.32 build 0050"/>
+  <int value="1632371059" label="CROS Cr50 0.0.22"/>
   <int value="1716634300" label="IFX 9645 rev 45 fw 133.32 build 0050"/>
   <int value="1733077393" label="IFX 9645 rev 49 fw 133.33 build 00e3"/>
+  <int value="1774347833" label="CROS Cr50 0.0.15"/>
   <int value="1828625721" label="IFX 9655 rev 32 fw 4.31 build 02c2"/>
-  <int value="1887455524" label="CROS 0fd788bd01a68fe6"/>
+  <int value="1861735666" label="CROS Cr50 0.2.1 Flags 0x10(pre-pvt)"/>
+  <int value="1865292977" label="CROS Cr50 0.0.24 aka 0.3.0"/>
+  <int value="1887455524" label="CROS Cr50 0.0.21"/>
   <int value="1941011596" label="IFX 9655 rev 35 fw 4.34 build 03f2"/>
   <int value="1953654937" label="IFX 9645 rev 45 fw 133.33 build 00e3"/>
   <int value="2024714959" label="IFX 9655 rev 32 fw 4.34 build 03f2"/>
+  <int value="2061474747" label="CROS Cr50 0.2.2 Flags 0x10(pre-pvt)"/>
 </enum>
 
 <enum name="TrackedPreference">
