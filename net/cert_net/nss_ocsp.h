@@ -11,22 +11,13 @@ namespace net {
 
 class URLRequestContext;
 
-// Sets the MessageLoop for NSS's HTTP client functions (i.e. OCSP, CA
-// certificate and CRL fetches) to the current message loop.  This should be
-// called before EnsureNSSHttpIOInit() if you want to control the message loop.
-NET_EXPORT void SetMessageLoopForNSSHttpIO();
-
-// Initializes HTTP client functions for NSS.  This must be called before any
-// certificate verification functions.  This function is thread-safe, and HTTP
-// handlers will only ever be initialized once.  ShutdownNSSHttpIO() must be
-// called on shutdown.
+// Initializes HTTP client functions for NSS.  This function is thread-safe,
+// and HTTP handlers will only ever be initialized once.
 NET_EXPORT void EnsureNSSHttpIOInit();
 
-// This should be called once on shutdown to stop issuing URLRequests for NSS
-// related HTTP fetches.
-NET_EXPORT void ShutdownNSSHttpIO();
-
-// Sets the URLRequestContext for HTTP requests issued by NSS.
+// Sets the URLRequestContext and MessageLoop for HTTP requests issued by NSS
+// (i.e. OCSP, CA certificate and CRL fetches).  Must be called again with
+// |request_context|=nullptr before the URLRequestContext is destroyed.
 NET_EXPORT void SetURLRequestContextForNSSHttpIO(
     URLRequestContext* request_context);
 

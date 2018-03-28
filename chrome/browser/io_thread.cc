@@ -448,10 +448,6 @@ void IOThread::Init() {
   TRACE_EVENT0("startup", "IOThread::InitAsync");
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-#if defined(USE_NSS_CERTS)
-  net::SetMessageLoopForNSSHttpIO();
-#endif
-
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
 
@@ -538,10 +534,6 @@ void IOThread::Init() {
 
 void IOThread::CleanUp() {
   base::debug::LeakTracker<SafeBrowsingURLRequestContext>::CheckForLeaks();
-
-#if defined(USE_NSS_CERTS)
-  net::ShutdownNSSHttpIO();
-#endif
 
   system_url_request_context_getter_ = nullptr;
 

@@ -10,10 +10,6 @@
 #include "net/spdy/chromium/spdy_session.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(USE_NSS_CERTS)
-#include "net/cert_net/nss_ocsp.h"
-#endif
-
 namespace {
 base::test::ScopedTaskEnvironment::MainThreadType kDefaultMainThreadType =
     base::test::ScopedTaskEnvironment::MainThreadType::IO;
@@ -38,10 +34,6 @@ void NetTestSuite::Initialize() {
 }
 
 void NetTestSuite::Shutdown() {
-#if defined(USE_NSS_CERTS)
-  net::ShutdownNSSHttpIO();
-#endif
-
   // We want to destroy this here before the TestSuite continues to tear down
   // the environment.
   scoped_task_environment_.reset();

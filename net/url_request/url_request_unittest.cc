@@ -10759,7 +10759,6 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 
 #if defined(USE_NSS_CERTS)
     SetURLRequestContextForNSSHttpIO(&context_);
-    EnsureNSSHttpIOInit();
 #endif
   }
 
@@ -10807,7 +10806,7 @@ class HTTPSOCSPTest : public HTTPSRequestTest {
 #endif
 
 #if defined(USE_NSS_CERTS)
-    ShutdownNSSHttpIO();
+    SetURLRequestContextForNSSHttpIO(nullptr);
 #endif
   }
 
