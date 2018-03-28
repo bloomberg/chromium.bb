@@ -37,15 +37,17 @@ enum Permission {
   // Chrome.
   PERMISSION_DEV_CHANNEL = 1 << 5,
 
+  // PDF-related interfaces.
+  PERMISSION_PDF = 1 << 6,
+
   // NOTE: If you add stuff be sure to update PERMISSION_ALL_BITS.
 
   // Meta permission for initializing plugins registered on the command line
   // that get all permissions.
   PERMISSION_ALL_BITS = PERMISSION_DEV | PERMISSION_PRIVATE |
-                        PERMISSION_BYPASS_USER_GESTURE |
-                        PERMISSION_TESTING |
-                        PERMISSION_FLASH |
-                        PERMISSION_DEV_CHANNEL
+                        PERMISSION_BYPASS_USER_GESTURE | PERMISSION_TESTING |
+                        PERMISSION_FLASH | PERMISSION_DEV_CHANNEL |
+                        PERMISSION_PDF
 };
 
 class PPAPI_SHARED_EXPORT PpapiPermissions {

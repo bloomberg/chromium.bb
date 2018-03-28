@@ -19,11 +19,12 @@
   } }
 
 #include "ppapi/thunk/interfaces_ppb_private.h"
-#include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
 #include "ppapi/thunk/interfaces_ppb_private_flash.h"
-#include "ppapi/thunk/interfaces_ppb_public_stable.h"
+#include "ppapi/thunk/interfaces_ppb_private_no_permissions.h"
+#include "ppapi/thunk/interfaces_ppb_private_pdf.h"
 #include "ppapi/thunk/interfaces_ppb_public_dev.h"
 #include "ppapi/thunk/interfaces_ppb_public_dev_channel.h"
+#include "ppapi/thunk/interfaces_ppb_public_stable.h"
 
 #undef PROXIED_IFACE
 

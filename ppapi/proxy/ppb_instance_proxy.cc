@@ -1003,7 +1003,7 @@ void PPB_Instance_Proxy::OnHostMsgGetDefaultCharSet(
 
 void PPB_Instance_Proxy::OnHostMsgSetPluginToHandleFindRequests(
     PP_Instance instance) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PDF))
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
@@ -1014,7 +1014,7 @@ void PPB_Instance_Proxy::OnHostMsgNumberOfFindResultsChanged(
     PP_Instance instance,
     int32_t total,
     PP_Bool final_result) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PDF))
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded()) {
@@ -1026,7 +1026,7 @@ void PPB_Instance_Proxy::OnHostMsgNumberOfFindResultsChanged(
 void PPB_Instance_Proxy::OnHostMsgSelectFindResultChanged(
     PP_Instance instance,
     int32_t index) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PDF))
     return;
   EnterInstanceNoLock enter(instance);
   if (enter.succeeded())
@@ -1036,7 +1036,7 @@ void PPB_Instance_Proxy::OnHostMsgSelectFindResultChanged(
 void PPB_Instance_Proxy::OnHostMsgSetTickmarks(
     PP_Instance instance,
     const std::vector<PP_Rect>& tickmarks) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_PRIVATE))
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_PDF))
     return;
   const PP_Rect* array = tickmarks.empty() ? NULL : &tickmarks[0];
   EnterInstanceNoLock enter(instance);

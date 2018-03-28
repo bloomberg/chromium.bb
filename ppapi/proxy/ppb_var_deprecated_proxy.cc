@@ -317,7 +317,7 @@ const PPB_Var_Deprecated* PPB_Var_Deprecated_Proxy::GetProxyInterface() {
 }
 
 bool PPB_Var_Deprecated_Proxy::OnMessageReceived(const IPC::Message& msg) {
-  if (!dispatcher()->permissions().HasPermission(PERMISSION_DEV))
+  if (!dispatcher()->permissions().HasPermission(PERMISSION_FLASH))
     return false;
 
   // Prevent the dispatcher from going away during a call to Call or other
