@@ -41,4 +41,13 @@ void SessionActivationObserverHolder::NotifyActiveSessionChanged(
   base::EraseIf(observer_map_, [](auto& item) { return item.second->empty(); });
 }
 
+void SessionActivationObserverHolder::NotifyLockStateChanged(bool locked) {
+  for (const auto& it : observer_map_) {
+    it.second->ForAllPtrs(
+        [locked](auto* ptr) { ptr->OnLockStateChanged(locked); });
+  }
+
+  base::EraseIf(observer_map_, [](auto& item) { return item.second->empty(); });
+}
+
 }  // namespace ash

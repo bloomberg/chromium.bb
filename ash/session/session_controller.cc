@@ -5,6 +5,8 @@
 #include "ash/session/session_controller.h"
 
 #include <algorithm>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "ash/public/interfaces/pref_connector.mojom.h"
@@ -438,6 +440,8 @@ void SessionController::ShowMultiprofilesSessionAbortedDialog(
 void SessionController::AddSessionActivationObserverForAccountId(
     const AccountId& account_id,
     mojom::SessionActivationObserverPtr observer) {
+  bool locked = state_ == SessionState::LOCKED;
+  observer->OnLockStateChanged(locked);
   observer->OnSessionActivated(user_sessions_.size() &&
                                user_sessions_[0]->user_info->account_id ==
                                    account_id);
@@ -490,6 +494,8 @@ void SessionController::SetSessionState(SessionState state) {
 
     for (auto& observer : observers_)
       observer.OnLockStateChanged(locked);
+
+    session_activation_observer_holder_.NotifyLockStateChanged(locked);
   }
 
   // Signin profile prefs are needed at OOBE and login screen, but don't request

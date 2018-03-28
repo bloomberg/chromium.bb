@@ -85,8 +85,14 @@ void Service::BindAssistantPlatformConnection(
 
 void Service::OnSessionActivated(bool activated) {
   DCHECK(client_);
+  session_active_ = activated;
   client_->OnAssistantStatusChanged(activated);
-  assistant_manager_service_->EnableListening(activated);
+  UpdateListeningState();
+}
+
+void Service::OnLockStateChanged(bool locked) {
+  locked_ = locked;
+  UpdateListeningState();
 }
 
 void Service::RequestAccessToken() {
@@ -171,6 +177,12 @@ void Service::AddAshSessionObserver() {
   session_observer_binding_.Bind(mojo::MakeRequest(&observer));
   session_controller->AddSessionActivationObserverForAccountId(
       account_id_, std::move(observer));
+}
+
+void Service::UpdateListeningState() {
+  bool should_listen = !locked_ && session_active_;
+  DVLOG(1) << "Update assistant listening state: " << should_listen;
+  assistant_manager_service_->EnableListening(should_listen);
 }
 
 }  // namespace assistant

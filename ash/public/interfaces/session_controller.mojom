@@ -209,4 +209,7 @@ interface SessionControllerClient {
 interface SessionActivationObserver {
   // Called the session is becoming active or inactive.
   OnSessionActivated(bool activated);
+
+  // Called when lock screen state changes.
+  OnLockStateChanged(bool locked);
 };
