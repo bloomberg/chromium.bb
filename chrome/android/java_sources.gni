@@ -1015,7 +1015,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/preferences/languages/LanguageItem.java",
   "java/src/org/chromium/chrome/browser/preferences/languages/LanguageListBaseAdapter.java",
   "java/src/org/chromium/chrome/browser/preferences/languages/LanguageListPreference.java",
-  "java/src/org/chromium/chrome/browser/preferences/password/ByteArrayIntCallback.java",
   "java/src/org/chromium/chrome/browser/preferences/password/CallbackDelayer.java",
   "java/src/org/chromium/chrome/browser/preferences/password/DialogManager.java",
   "java/src/org/chromium/chrome/browser/preferences/password/ExportErrorDialogFragment.java",
