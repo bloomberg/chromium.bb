@@ -148,62 +148,42 @@ video::-internal-media-controls-download-button {
 
 audio::-webkit-media-controls-play-button,
 video::-webkit-media-controls-play-button {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_play_arrow.png) 1x,
-    url(default_200_percent/modern/ic_play_arrow.png) 2x);
+  background-image: -webkit-image-set(url(ic_play_arrow.svg) 1x);
 }
 video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-play-button"] {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_play_arrow_white.png) 1x,
-    url(default_200_percent/modern/ic_play_arrow_white.png) 2x);
+  background-image: -webkit-image-set(url(ic_play_arrow_white.svg) 1x);
 }
 
 audio::-webkit-media-controls-mute-button,
 video::-webkit-media-controls-mute-button {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_volume_up.png) 1x,
-    url(default_200_percent/modern/ic_volume_up.png) 2x);
+  background-image: -webkit-image-set(url(ic_volume_up.svg) 1x);
 }
 video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-mute-button"] {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_volume_up_white.png) 1x,
-    url(default_200_percent/modern/ic_volume_up_white.png) 2x);
+  background-image: -webkit-image-set(url(ic_volume_up_white.svg) 1x);
 }
 
 audio::-webkit-media-controls-mute-button.muted,
 video::-webkit-media-controls-mute-button.muted {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_volume_off.png) 1x,
-    url(default_200_percent/modern/ic_volume_off.png) 2x);
+  background-image: -webkit-image-set(url(ic_volume_off.svg) 1x);
 }
 video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-mute-button"].muted {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_volume_off_white.png) 1x,
-    url(default_200_percent/modern/ic_volume_off_white.png) 2x);
+  background-image: -webkit-image-set(url(ic_volume_off_white.svg) 1x);
 }
 
 audio::-webkit-media-controls-fullscreen-button,
 video::-webkit-media-controls-fullscreen-button {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_fullscreen.png) 1x,
-    url(default_200_percent/modern/ic_fullscreen.png) 2x);
+  background-image: -webkit-image-set(url(ic_fullscreen.svg) 1x);
 }
 video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-fullscreen-button"] {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_fullscreen_white.png) 1x,
-    url(default_200_percent/modern/ic_fullscreen_white.png) 2x);
+  background-image: -webkit-image-set(url(ic_fullscreen_white.svg) 1x);
 }
 
 audio::-webkit-media-controls-fullscreen-button.fullscreen,
 video::-webkit-media-controls-fullscreen-button.fullscreen {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_fullscreen_exit.png) 1x,
-    url(default_200_percent/modern/ic_fullscreen_exit.png) 2x);
+  background-image: -webkit-image-set(url(ic_fullscreen_exit.svg) 1x);
 }
 video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-webkit-media-controls-fullscreen-button"].fullscreen {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_fullscreen_exit_white.png) 1x,
-    url(default_200_percent/modern/ic_fullscreen_exit_white.png) 2x);
+  background-image: -webkit-image-set(url(ic_fullscreen_exit_white.svg) 1x);
 }
 
 video::-webkit-media-controls-mute-button:disabled,
@@ -213,46 +193,33 @@ video::-webkit-media-controls-fullscreen-button:disabled {
 
 audio::-internal-media-controls-cast-button,
 video::-internal-media-controls-cast-button {
-  background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_cast_off.png) 1x);
+  background-image: -webkit-image-set(url(ic_cast_off.svg) 1x);
 }
 
 audio::-internal-media-controls-cast-button.on,
 video::-internal-media-controls-cast-button.on {
-  background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_cast_on.png) 1x);
+  background-image: -webkit-image-set(url(ic_cast_on.svg) 1x);
 }
 
 audio::-webkit-media-controls-toggle-closed-captions-button {
-    display: none;
+  display: none;
 }
 
 video::-webkit-media-controls-toggle-closed-captions-button {
-  background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_closedcaption_disabled.png) 1x);
-}
-
-video::-webkit-media-controls-toggle-closed-captions-button.visible {
-  background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_closedcaption.png) 1x);
+  background-image: -webkit-image-set(url(ic_closed_caption.svg) 1x);
 }
 
 video::-internal-media-controls-download-button,
 audio::-internal-media-controls-download-button {
-  background-image: -webkit-image-set(
-    url(default_100_percent/legacy/mediaplayer_download.png) 1x);
+  background-image: -webkit-image-set(url(ic_download.svg) 1x);
 }
 
 video::-internal-media-controls-overflow-button,
 audio::-internal-media-controls-overflow-button {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_menu.png) 1x,
-    url(default_200_percent/modern/ic_menu.png) 2x);
+  background-image: -webkit-image-set(url(ic_menu.svg) 1x);
 }
 video::-webkit-media-controls:not(.audio-only) [pseudo="-webkit-media-controls-panel"] [pseudo="-internal-media-controls-overflow-button"] {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_menu_white.png) 1x,
-    url(default_200_percent/modern/ic_menu_white.png) 2x);
+  background-image: -webkit-image-set(url(ic_menu_white.svg) 1x);
 }
 
 video::-webkit-media-controls-overlay-play-button {
@@ -278,9 +245,7 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
   background-size: 24px;
   background-repeat: no-repeat;
   background-position: center center;
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_play_arrow.png) 1x,
-    url(default_200_percent/modern/ic_play_arrow.png) 2x);
+  background-image: -webkit-image-set(url(ic_play_arrow.svg) 1x);
   background-color: rgba(255, 255, 255, .9);
 
   transition: opacity cubic-bezier(0.4, 0.0, 0.6, 1) 600ms;
@@ -292,9 +257,7 @@ input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-co
 
 .state-playing input[pseudo="-webkit-media-controls-play-button" i],
 .state-playing input[pseudo="-webkit-media-controls-overlay-play-button" i]::-internal-media-controls-overlay-play-button-internal {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_pause.png) 1x,
-    url(default_200_percent/modern/ic_pause.png) 2x);
+  background-image: -webkit-image-set(url(ic_pause.svg) 1x);
 }
 
 /**
@@ -525,9 +488,7 @@ video::-internal-media-controls-text-track-list-header {
   background-size: 18px;
   background-position: 20px center;
   background-repeat: no-repeat;
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_arrow_back.png) 1x,
-    url(default_200_percent/modern/ic_arrow_back.png) 2x);
+  background-image: -webkit-image-set(url(ic_arrow_back.svg) 1x);
 }
 
 label[pseudo="-internal-media-controls-text-track-list-item"] input {
@@ -539,9 +500,7 @@ label[pseudo="-internal-media-controls-text-track-list-item"] input {
 }
 
 label[pseudo="-internal-media-controls-text-track-list-item"] input:checked {
-  background-image: -webkit-image-set(
-    url(default_100_percent/modern/ic_check_blue.png) 1x,
-    url(default_200_percent/modern/ic_check_blue.png) 2x);
+  background-image: -webkit-image-set(url(ic_check_blue.svg) 1x);
 }
 
 /**
