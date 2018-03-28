@@ -14,23 +14,6 @@
 
 namespace zucchini {
 
-// Constants that appear inside a patch.
-enum class PatchType : uint32_t {
-  // Patch contains a single raw element, corresponding to an element match that
-  // covers the entire images, and with ExecutableType::kExeTypeNoOp.
-  kRawPatch = 0,
-
-  // Patch contains a single executable element, corresponding to an element
-  // match that covers the entire images.
-  kSinglePatch = 1,
-
-  // Patch contains multiple raw and/or executable elements.
-  kEnsemblePatch = 2,
-
-  // Used when type is uninitialized.
-  kUnrecognisedPatch
-};
-
 // A Zucchini 'ensemble' patch is the concatenation of a patch header with a
 // list of patch 'elements', each containing data for patching individual
 // elements.

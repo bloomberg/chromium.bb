@@ -272,31 +272,11 @@ bool EnsemblePatchReader::Initialize(BufferSource* source) {
     LOG(ERROR) << "Patch contains invalid magic.";
     return false;
   }
-  uint32_t patch_type_int =
-      static_cast<uint32_t>(PatchType::kUnrecognisedPatch);
-  if (!source->GetValue(&patch_type_int)) {
-    LOG(ERROR) << "Impossible to read patch_type from source.";
-    return false;
-  }
-  patch_type_ = static_cast<PatchType>(patch_type_int);
-  if (patch_type_ != PatchType::kRawPatch &&
-      patch_type_ != PatchType::kSinglePatch &&
-      patch_type_ != PatchType::kEnsemblePatch) {
-    LOG(ERROR) << "Invalid patch_type encountered.";
-    return false;
-  }
 
   uint32_t element_count = 0;
   if (!source->GetValue(&element_count)) {
     LOG(ERROR) << "Impossible to read element_count from source.";
     return false;
-  }
-  if (patch_type_ == PatchType::kRawPatch ||
-      patch_type_ == PatchType::kSinglePatch) {
-    if (element_count != 1) {
-      LOG(ERROR) << "Unexpected number of elements in patch.";
-      return false;  // Only one element expected.
-    }
   }
 
   offset_t current_dst_offset = 0;

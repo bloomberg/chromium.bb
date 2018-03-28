@@ -263,12 +263,10 @@ class EnsemblePatchReader {
   bool CheckNewFile(ConstBufferView new_image) const;
 
   const PatchHeader& header() const { return header_; }
-  PatchType patch_type() const { return patch_type_; }
   const std::vector<PatchElementReader>& elements() const { return elements_; }
 
  private:
   PatchHeader header_;
-  PatchType patch_type_;
   std::vector<PatchElementReader> elements_;
 };
 

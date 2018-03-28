@@ -170,7 +170,6 @@ for more info.
 Name | Format | Description
 --- | --- | ---
 header | PatchHeader | The header.
-patch_type | uint32 | Type of this patch, see `enum PatchType`.
 elements_count | uint32 | Number of patch units.
 elements | PatchElement[elements_count] | List of all patch elements.
 

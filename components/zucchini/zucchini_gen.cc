@@ -311,18 +311,6 @@ status::Code GenerateEnsemble(ConstBufferView old_image,
     return GenerateRaw(old_image, new_image, patch_writer);
   }
 
-  PatchType patch_type = PatchType::kRawPatch;
-  if (num_elements == 1 && matches[0].old_element.size == old_image.size() &&
-      matches[0].new_element.size == new_image.size()) {
-    // If |old_image| matches |new_image| entirely then we have single patch.
-    LOG(INFO) << "Old and new files are executables, "
-              << "generating single-file patch.";
-    patch_type = PatchType::kSinglePatch;
-  } else {
-    LOG(INFO) << "Generating ensemble patch.";
-    patch_type = PatchType::kEnsemblePatch;
-  }
-
   // "Gaps" are |new_image| bytes not covered by new_elements in |matches|.
   // These are treated as raw data, and patched against the entire |old_image|.
 
@@ -358,9 +346,6 @@ status::Code GenerateEnsemble(ConstBufferView old_image,
       patch_element_map.erase(it_and_success.first);
     }
   }
-
-  if (covered_new_bytes == 0)
-    patch_type = PatchType::kRawPatch;
 
   if (covered_new_bytes < new_image.size()) {
     // Process all "gaps", which are patched against the entire "old" image. To
@@ -400,7 +385,6 @@ status::Code GenerateEnsemble(ConstBufferView old_image,
     }
   }
 
-  patch_writer->SetPatchType(patch_type);
   // Write all PatchElementWriter sorted by "new" offset.
   for (auto& new_lo_and_patch_element : patch_element_map)
     patch_writer->AddElement(std::move(new_lo_and_patch_element.second));
@@ -411,8 +395,6 @@ status::Code GenerateEnsemble(ConstBufferView old_image,
 status::Code GenerateRaw(ConstBufferView old_image,
                          ConstBufferView new_image,
                          EnsemblePatchWriter* patch_writer) {
-  patch_writer->SetPatchType(PatchType::kRawPatch);
-
   ImageIndex old_image_index(old_image);
   EncodedView old_view(old_image_index);
   std::vector<offset_t> old_sa =

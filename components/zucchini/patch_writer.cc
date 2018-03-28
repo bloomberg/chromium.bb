@@ -266,8 +266,7 @@ void EnsemblePatchWriter::AddElement(PatchElementWriter&& patch_element) {
 }
 
 size_t EnsemblePatchWriter::SerializedSize() const {
-  size_t serialized_size =
-      sizeof(PatchHeader) + sizeof(PatchType) + sizeof(uint32_t);
+  size_t serialized_size = sizeof(PatchHeader) + sizeof(uint32_t);
   for (const auto& patch_element : elements_) {
     serialized_size += patch_element.SerializedSize();
   }
@@ -275,11 +274,9 @@ size_t EnsemblePatchWriter::SerializedSize() const {
 }
 
 bool EnsemblePatchWriter::SerializeInto(BufferSink* sink) const {
-  DCHECK_NE(patch_type_, PatchType::kUnrecognisedPatch);
   DCHECK_EQ(current_dst_offset_, header_.new_size);
   bool ok =
       sink->PutValue<PatchHeader>(header_) &&
-      sink->PutValue<PatchType>(patch_type_) &&
       sink->PutValue<uint32_t>(base::checked_cast<uint32_t>(elements_.size()));
   if (!ok)
     return false;
