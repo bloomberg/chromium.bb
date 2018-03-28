@@ -31,6 +31,8 @@ class ClientTelemetryLogger {
                         ChromotingEvent::Mode mode);
   ~ClientTelemetryLogger();
 
+  void SetAuthMethod(ChromotingEvent::AuthMethod auth_method);
+
   // Sets the host info to be posted along with other log data. By default
   // no host info will be logged.
   void SetHostInfo(const std::string& host_version,
@@ -96,6 +98,9 @@ class ClientTelemetryLogger {
   base::TimeTicks session_id_generation_time_;
 
   ChromotingEvent current_session_state_event_;
+
+  ChromotingEvent::AuthMethod auth_method_ =
+      ChromotingEvent::AuthMethod::NOT_SET;
 
   ChromotingEvent::Mode mode_;
 

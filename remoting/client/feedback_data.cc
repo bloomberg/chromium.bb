@@ -19,9 +19,9 @@ const NameMapElement<FeedbackData::Key> kFeedbackDataKeyNames[]{
     {FeedbackData::Key::SESSION_HOST_OS, "session-host-os"},
     {FeedbackData::Key::SESSION_HOST_OS_VERSION, "session-host-os-version"},
     {FeedbackData::Key::SESSION_HOST_VERSION, "session-host-version"},
+    {FeedbackData::Key::SESSION_CREDENTIALS_TYPE, "session-credentials-type"},
 
     // TODO(yuweih): Collect session info for these fields.
-    {FeedbackData::Key::SESSION_CREDENTIALS_TYPE, "session-credentials-type"},
     {FeedbackData::Key::SESSION_PERFORMANCE_STATS, "session-performance-stats"},
     {FeedbackData::Key::SESSION_PEER_CONNECTION_STATS,
      "session-peer-connection-stats"},
@@ -75,6 +75,9 @@ void FeedbackData::FillWithChromotingEvent(const ChromotingEvent& event) {
                                            ChromotingEvent::kModeKey);
   SetEnumIfNotEmpty<ChromotingEvent::Os>(&data_, Key::SESSION_HOST_OS, event,
                                          ChromotingEvent::kHostOsKey);
+  SetEnumIfNotEmpty<ChromotingEvent::AuthMethod>(
+      &data_, Key::SESSION_CREDENTIALS_TYPE, event,
+      ChromotingEvent::kAuthMethodKey);
   SetStringIfNotEmpty(&data_, Key::SESSION_HOST_OS_VERSION, event,
                       ChromotingEvent::kHostOsVersionKey);
   SetStringIfNotEmpty(&data_, Key::SESSION_HOST_VERSION, event,

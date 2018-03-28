@@ -42,14 +42,23 @@ ClientTelemetryLogger::~ClientTelemetryLogger() {
   DCHECK(thread_checker_.CalledOnValidThread());
 }
 
+void ClientTelemetryLogger::SetAuthMethod(
+    ChromotingEvent::AuthMethod auth_method) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_NE(ChromotingEvent::AuthMethod::NOT_SET, auth_method);
+  auth_method_ = auth_method;
+}
+
 void ClientTelemetryLogger::SetHostInfo(const std::string& host_version,
                                         ChromotingEvent::Os host_os,
                                         const std::string& host_os_version) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_info_.reset(new HostInfo{host_version, host_os, host_os_version});
 }
 
 void ClientTelemetryLogger::SetTransportRoute(
     const protocol::TransportRoute& route) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   transport_route_ = std::make_unique<protocol::TransportRoute>(route);
 }
 
@@ -202,6 +211,9 @@ ChromotingEvent::ConnectionType ClientTelemetryLogger::TranslateConnectionType(
 void ClientTelemetryLogger::FillEventContext(ChromotingEvent* event) const {
   event->SetEnum(ChromotingEvent::kModeKey, mode_);
   event->SetEnum(ChromotingEvent::kRoleKey, ChromotingEvent::Role::CLIENT);
+  if (auth_method_ != ChromotingEvent::AuthMethod::NOT_SET) {
+    event->SetEnum(ChromotingEvent::kAuthMethodKey, auth_method_);
+  }
   if (host_info_) {
     event->SetString(ChromotingEvent::kHostVersionKey,
                      host_info_->host_version);

@@ -47,6 +47,7 @@ void TelemetryLogWriter::SendPendingEntries() {
   std::unique_ptr<base::ListValue> events(new base::ListValue());
   while (!pending_entries_.empty()) {
     ChromotingEvent& entry = pending_entries_.front();
+    DCHECK(entry.IsDataValid());
     events->Append(entry.CopyDictionaryValue());
     entry.IncrementSendAttempts();
     sending_entries_.push_back(std::move(entry));
