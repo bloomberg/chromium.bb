@@ -11,7 +11,6 @@
 
 #include "base/component_export.h"
 #include "base/macros.h"
-#include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
 #include "device/fido/attested_credential_data.h"
 
@@ -58,22 +57,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorData {
 
   const base::Optional<AttestedCredentialData>& attested_data() const {
     return attested_data_;
-  }
-
-  bool obtained_user_presence() const {
-    return flags_ & base::strict_cast<uint8_t>(Flag::kTestOfUserPresence);
-  }
-
-  bool obtained_user_verification() const {
-    return flags_ & base::strict_cast<uint8_t>(Flag::kTestOfUserVerification);
-  }
-
-  bool attestation_credential_included() const {
-    return flags_ & base::strict_cast<uint8_t>(Flag::kAttestation);
-  }
-
-  bool extension_data_included() const {
-    return flags_ & base::strict_cast<uint8_t>(Flag::kExtensionDataIncluded);
   }
 
  private:
