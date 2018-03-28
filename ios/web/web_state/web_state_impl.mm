@@ -588,12 +588,18 @@ UIView* WebStateImpl::GetView() {
 }
 
 void WebStateImpl::WasShown() {
+  if (IsVisible())
+    return;
+
   [web_controller_ wasShown];
   for (auto& observer : observers_)
     observer.WasShown(this);
 }
 
 void WebStateImpl::WasHidden() {
+  if (!IsVisible())
+    return;
+
   [web_controller_ wasHidden];
   for (auto& observer : observers_)
     observer.WasHidden(this);
