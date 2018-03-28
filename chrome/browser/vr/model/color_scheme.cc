@@ -55,6 +55,9 @@ void InitializeColorSchemes() {
   normal_scheme.disc_button_colors.background = 0xCCB3B3B3;
   normal_scheme.disc_button_colors.background_hover = 0xCCE3E3E3;
   normal_scheme.disc_button_colors.background_down = 0xCCF3F3F3;
+  normal_scheme.web_vr_floor_edge = SK_ColorBLACK;
+  normal_scheme.web_vr_floor_center = 0xD9212121;
+  normal_scheme.web_vr_floor_grid = 0xD9212121;
   normal_scheme.loading_indicator_foreground = 0xFF2979FF;
   normal_scheme.loading_indicator_background = 0xFF454545;
   normal_scheme.exit_warning_foreground = SK_ColorWHITE;

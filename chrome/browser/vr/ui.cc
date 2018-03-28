@@ -195,7 +195,8 @@ void Ui::SetOmniboxSuggestions(
 
 bool Ui::CanSendWebVrVSync() {
   return model_->web_vr_enabled() &&
-         !model_->web_vr.awaiting_min_splash_screen_duration();
+         !model_->web_vr.awaiting_min_splash_screen_duration() &&
+         !model_->web_vr.showing_hosted_ui;
 }
 
 void Ui::ShowSoftInput(bool show) {
@@ -223,6 +224,7 @@ void Ui::SetAlertDialogEnabled(bool enabled,
                                ContentInputDelegate* delegate,
                                int width,
                                int height) {
+  model_->web_vr.showing_hosted_ui = enabled;
   model_->native_ui.hosted_ui_enabled = enabled;
   model_->native_ui.size_ratio =
       static_cast<float>(height) / static_cast<float>(width);
@@ -235,7 +237,7 @@ void Ui::SetAlertDialogSize(int width, int height) {
 }
 
 bool Ui::ShouldRenderWebVr() {
-  return model_->web_vr.has_produced_frames();
+  return model_->web_vr.presenting_web_vr();
 }
 
 void Ui::OnGlInitialized(
@@ -294,6 +296,11 @@ void Ui::OnAppButtonClicked() {
 
   if (model_->editing_web_input) {
     ShowSoftInput(false);
+    return;
+  }
+
+  if (model_->native_ui.hosted_ui_enabled) {
+    browser_->CloseHostedDialog();
     return;
   }
 

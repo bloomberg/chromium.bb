@@ -135,7 +135,7 @@ void VrTestContext::DrawFrame() {
   ui_->ui_renderer()->Draw(render_info);
 
   // This is required in order to show the WebVR toasts.
-  if (model_->web_vr.has_produced_frames()) {
+  if (model_->web_vr.presenting_web_vr()) {
     ui_->ui_renderer()->DrawWebVrOverlayForeground(render_info);
   }
 

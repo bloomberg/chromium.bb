@@ -16,6 +16,7 @@ static const char* g_ui_element_type_strings[] = {
     "kTypeButtonBackground",
     "kTypeButtonForeground",
     "kTypeButtonHitTarget",
+    "kTypeHostedUiBackplane",
     "kTypeScaledDepthAdjuster",
     "kTypeOmniboxSuggestionBackground",
     "kTypeOmniboxSuggestionLayout",

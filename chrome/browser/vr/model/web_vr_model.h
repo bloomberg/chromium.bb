@@ -36,7 +36,10 @@ struct WebVrModel {
   // modes.
   bool show_exit_toast = false;
   bool has_received_permissions = false;
-  bool has_produced_frames() const { return state == kWebVrPresenting; }
+  bool showing_hosted_ui = false;
+  bool presenting_web_vr() const {
+    return state == kWebVrPresenting && !showing_hosted_ui;
+  }
   bool awaiting_min_splash_screen_duration() const {
     return state == kWebVrAwaitingMinSplashScreenDuration;
   }
