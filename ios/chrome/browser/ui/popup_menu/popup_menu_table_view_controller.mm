@@ -20,7 +20,9 @@
 using base::UserMetricsAction;
 
 namespace {
-const CGFloat kFooterHeight = 30;
+const CGFloat kFooterHeight = 21;
+const CGFloat kPopupMenuVerticalInsets = 7;
+const CGFloat kScrollIndicatorVerticalInsets = 11;
 }  // namespace
 
 @implementation PopupMenuTableViewController
@@ -34,6 +36,10 @@ const CGFloat kFooterHeight = 30;
 - (void)viewDidLoad {
   self.styler.tableViewBackgroundColor = nil;
   [super viewDidLoad];
+  self.tableView.contentInset = UIEdgeInsetsMake(kPopupMenuVerticalInsets, 0,
+                                                 kPopupMenuVerticalInsets, 0);
+  self.tableView.scrollIndicatorInsets = UIEdgeInsetsMake(
+      kScrollIndicatorVerticalInsets, 0, kScrollIndicatorVerticalInsets, 0);
   self.tableView.rowHeight = UITableViewAutomaticDimension;
   self.tableView.sectionHeaderHeight = 0;
   self.tableView.separatorStyle = UITableViewCellSeparatorStyleNone;
