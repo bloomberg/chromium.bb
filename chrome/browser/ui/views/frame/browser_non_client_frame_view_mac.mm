@@ -52,7 +52,7 @@ int BrowserNonClientFrameViewMac::GetTopInset(bool restored) const {
 
 int BrowserNonClientFrameViewMac::GetTabStripRightInset() const {
   int inset = kTabstripRightInset;
-  views::View* profile_switcher_view = GetProfileSwitcherView();
+  views::View* profile_switcher_view = GetProfileSwitcherButton();
   if (profile_switcher_view) {
     inset += profile_switcher_view->GetPreferredSize().width();
   } else if (profile_indicator_icon()) {
@@ -86,7 +86,7 @@ gfx::Rect BrowserNonClientFrameViewMac::GetWindowBoundsForClientBounds(
 }
 
 int BrowserNonClientFrameViewMac::NonClientHitTest(const gfx::Point& point) {
-  views::View* profile_switcher_view = GetProfileSwitcherView();
+  views::View* profile_switcher_view = GetProfileSwitcherButton();
   if (profile_switcher_view) {
     gfx::Point point_in_switcher(point);
     views::View::ConvertPointToTarget(this, profile_switcher_view,
@@ -136,7 +136,7 @@ gfx::Size BrowserNonClientFrameViewMac::GetMinimumSize() const {
 
 void BrowserNonClientFrameViewMac::Layout() {
   DCHECK(browser_view());
-  views::View* profile_switcher_view = GetProfileSwitcherView();
+  views::View* profile_switcher_view = GetProfileSwitcherButton();
   if (profile_indicator_icon() && browser_view()->IsTabStripVisible()) {
     LayoutIncognitoButton();
     // Mac lays out the incognito icon on the right, as the stoplight

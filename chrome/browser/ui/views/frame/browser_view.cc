@@ -2628,8 +2628,11 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
     signin_metrics::AccessPoint access_point,
     bool focus_first_profile_button) {
 #if !defined(OS_CHROMEOS)
+  views::Button* avatar_button = toolbar_->avatar_button();
+  if (!avatar_button)
+    avatar_button = frame_->GetNewAvatarMenuButton();
   // Do not show avatar bubble if there is no avatar menu button.
-  if (!frame_->GetNewAvatarMenuButton())
+  if (!avatar_button)
     return;
 
   profiles::BubbleViewMode bubble_view_mode;
@@ -2639,9 +2642,8 @@ void BrowserView::ShowAvatarBubbleFromAvatarButton(
         bubble_view_mode, browser_.get(), access_point);
   } else {
     ProfileChooserView::ShowBubble(
-        bubble_view_mode, manage_accounts_params, access_point,
-        frame_->GetNewAvatarMenuButton(), nullptr, gfx::Rect(), browser(),
-        focus_first_profile_button);
+        bubble_view_mode, manage_accounts_params, access_point, avatar_button,
+        nullptr, gfx::Rect(), browser(), focus_first_profile_button);
     ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::ICON_AVATAR_BUBBLE);
   }
 #else
