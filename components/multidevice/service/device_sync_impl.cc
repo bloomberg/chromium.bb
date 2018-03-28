@@ -4,59 +4,35 @@
 
 #include "components/multidevice/service/device_sync_impl.h"
 
-namespace multidevice {
+namespace device_sync {
 
-// static
-DeviceSyncImpl::Factory* DeviceSyncImpl::Factory::factory_instance_ = nullptr;
+DeviceSyncImpl::DeviceSyncImpl() = default;
 
-// static
-std::unique_ptr<device_sync::mojom::DeviceSync>
-DeviceSyncImpl::Factory::NewInstance(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
-  if (!factory_instance_) {
-    factory_instance_ = new Factory();
-  }
-  return factory_instance_->BuildInstance(std::move(service_ref));
+DeviceSyncImpl::~DeviceSyncImpl() = default;
+
+void DeviceSyncImpl::BindRequest(mojom::DeviceSyncRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
-
-DeviceSyncImpl::Factory::~Factory() {}
-
-// static
-void DeviceSyncImpl::Factory::SetInstanceForTesting(Factory* factory) {
-  factory_instance_ = factory;
-}
-
-std::unique_ptr<device_sync::mojom::DeviceSync>
-DeviceSyncImpl::Factory::BuildInstance(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref) {
-  return base::WrapUnique(new DeviceSyncImpl(std::move(service_ref)));
-}
-
-DeviceSyncImpl::DeviceSyncImpl(
-    std::unique_ptr<service_manager::ServiceContextRef> service_ref)
-    : service_ref_(std::move(service_ref)) {}
-
-DeviceSyncImpl::~DeviceSyncImpl() {}
 
 void DeviceSyncImpl::ForceEnrollmentNow() {
-  observers_.ForAllPtrs([](device_sync::mojom::DeviceSyncObserver* observer) {
-    // TODO(hsuregan): Actually enroll observers, and pass the success/failure
-    // status to observer->OnEnrollmentFinished().
+  // TODO(khorimoto): Actually perform enrollment. Currently, we immediately
+  // alert observers that a successful enrollment occurred.
+  observers_.ForAllPtrs([](auto* observer) {
     observer->OnEnrollmentFinished(true /* success */);
   });
 }
 
 void DeviceSyncImpl::ForceSyncNow() {
-  observers_.ForAllPtrs([](device_sync::mojom::DeviceSyncObserver* observer) {
-    // TODO(hsuregan): Actually sync observers, and pass the success/failure
-    // status to observer->OnEnrollmentFinished().
-    observer->OnDevicesSynced(true /* success */);
-  });
+  // TODO(khorimoto): Actually perform a sync. Currently, we immediately
+  // alert observers that a successful sync occurred.
+  observers_.ForAllPtrs(
+      [](auto* observer) { observer->OnDevicesSynced(true /* success */); });
 }
 
-void DeviceSyncImpl::AddObserver(
-    device_sync::mojom::DeviceSyncObserverPtr observer) {
+void DeviceSyncImpl::AddObserver(mojom::DeviceSyncObserverPtr observer,
+                                 AddObserverCallback callback) {
   observers_.AddPtr(std::move(observer));
+  std::move(callback).Run();
 }
 
-}  // namespace multidevice
+}  // namespace device_sync

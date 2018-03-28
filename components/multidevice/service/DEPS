@@ -1,5 +1,6 @@
 include_rules = [
   "+components/cryptauth",
+  "+components/proximity_auth/logging",
   "+components/signin/core/browser",
   "+google_apis/gaia",
   "+mojo/public/cpp",
@@ -8,9 +9,3 @@ include_rules = [
   "+services/service_manager/public/cpp",
   "+components/cryptauth"
 ]
-
-specific_include_rules = {
-  "test_main\.cc": [
-    "+services/service_manager/public",
-  ]
-}
