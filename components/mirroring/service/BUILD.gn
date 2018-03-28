@@ -6,8 +6,6 @@ import("//testing/test.gni")
 
 source_set("service") {
   sources = [
-    "rtp_stream.cc",
-    "rtp_stream.h",
     "video_capture_client.cc",
     "video_capture_client.h",
   ]
@@ -17,20 +15,15 @@ source_set("service") {
   ]
 
   deps = [
-    "//media",
     "//media/capture/mojom:video_capture",
-    "//media/cast:common",
-    "//media/cast:sender",
     "//media/mojo/common:common",
     "//mojo/public/cpp/bindings",
-    "//ui/gfx",
   ]
 }
 
 source_set("unittests") {
   testonly = true
   sources = [
-    "rtp_stream_unittest.cc",
     "video_capture_client_unittest.cc",
   ]
 
@@ -38,11 +31,7 @@ source_set("unittests") {
     ":service",
     "//base",
     "//base/test:test_support",
-    "//media",
     "//media/capture/mojom:video_capture",
-    "//media/cast:common",
-    "//media/cast:sender",
-    "//media/cast:test_support",
     "//mojo/public/cpp/bindings",
     "//testing/gmock",
     "//testing/gtest",
