@@ -31,12 +31,11 @@ class WebWorkerFetchContext {
  public:
   virtual ~WebWorkerFetchContext() = default;
 
-  // Returns a raw pointer of a WaitableEvent which will be signaled from the
-  // main thread when the worker's GlobalScope is terminated, which will
-  // terminate sync loading requests on the worker thread.
-  // The raw pointer is valid only while the WebWorkerFetchContext is alive
-  // which is supposed to have the same lifetime as the worker's GlobalScope.
-  virtual base::WaitableEvent* GetTerminateSyncLoadEvent() = 0;
+  // Set a raw pointer of a WaitableEvent which will be signaled from the main
+  // thread when the worker's GlobalScope is terminated, which will terminate
+  // sync loading requests on the worker thread. It is guaranteed that the
+  // pointer is valid throughout the lifetime of this context.
+  virtual void SetTerminateSyncLoadEvent(base::WaitableEvent*) = 0;
 
   virtual void InitializeOnWorkerThread() = 0;
 

@@ -34,6 +34,9 @@ ThreadedMessagingProxyBase::ThreadedMessagingProxyBase(
       worker_inspector_proxy_(WorkerInspectorProxy::Create()),
       parent_frame_task_runners_(ParentFrameTaskRunners::Create(
           *ToDocument(execution_context_.Get())->GetFrame())),
+      terminate_sync_load_event_(
+          base::WaitableEvent::ResetPolicy::MANUAL,
+          base::WaitableEvent::InitialState::NOT_SIGNALED),
       keep_alive_(this) {
   DCHECK(IsParentContextThread());
   g_live_messaging_proxy_count++;
@@ -68,8 +71,8 @@ void ThreadedMessagingProxyBase::InitializeWorkerThread(
     std::unique_ptr<WebWorkerFetchContext> web_worker_fetch_context =
         web_frame->Client()->CreateWorkerFetchContext();
     DCHECK(web_worker_fetch_context);
-    terminate_sync_load_event_ =
-        web_worker_fetch_context->GetTerminateSyncLoadEvent();
+    web_worker_fetch_context->SetTerminateSyncLoadEvent(
+        &terminate_sync_load_event_);
     web_worker_fetch_context->SetApplicationCacheHostID(
         document->Fetcher()->Context().ApplicationCacheHostID());
     web_worker_fetch_context->SetIsOnSubframe(
@@ -144,10 +147,7 @@ void ThreadedMessagingProxyBase::TerminateGlobalScope() {
     return;
   asked_to_terminate_ = true;
 
-  if (terminate_sync_load_event_) {
-    terminate_sync_load_event_->Signal();
-    terminate_sync_load_event_ = nullptr;
-  }
+  terminate_sync_load_event_.Signal();
 
   if (worker_thread_)
     worker_thread_->Terminate();

@@ -25,22 +25,20 @@ ServiceWorkerFetchContextImpl::ServiceWorkerFetchContextImpl(
     : worker_script_url_(worker_script_url),
       url_loader_factory_info_(std::move(url_loader_factory_info)),
       service_worker_provider_id_(service_worker_provider_id),
-      throttle_provider_(std::move(throttle_provider)),
-      terminate_sync_load_event_(
-          base::WaitableEvent::ResetPolicy::MANUAL,
-          base::WaitableEvent::InitialState::NOT_SIGNALED) {}
+      throttle_provider_(std::move(throttle_provider)) {}
 
 ServiceWorkerFetchContextImpl::~ServiceWorkerFetchContextImpl() {}
 
-base::WaitableEvent*
-ServiceWorkerFetchContextImpl::GetTerminateSyncLoadEvent() {
-  return &terminate_sync_load_event_;
+void ServiceWorkerFetchContextImpl::SetTerminateSyncLoadEvent(
+    base::WaitableEvent* terminate_sync_load_event) {
+  DCHECK(!terminate_sync_load_event_);
+  terminate_sync_load_event_ = terminate_sync_load_event;
 }
 
 void ServiceWorkerFetchContextImpl::InitializeOnWorkerThread() {
   resource_dispatcher_ = std::make_unique<ResourceDispatcher>();
   resource_dispatcher_->set_terminate_sync_load_event(
-      &terminate_sync_load_event_);
+      terminate_sync_load_event_);
 
   url_loader_factory_ = network::SharedURLLoaderFactory::Create(
       std::move(url_loader_factory_info_));
