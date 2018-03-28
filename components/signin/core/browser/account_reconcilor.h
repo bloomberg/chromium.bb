@@ -121,6 +121,7 @@ class AccountReconcilor : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceLastKnownFirstAccount);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnverifiedAccountNoop);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, UnverifiedAccountMerge);
+  FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, HandleSigninDuringReconcile);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest, DiceMigrationAfterNoop);
   FRIEND_TEST_ALL_PREFIXES(AccountReconcilorTest,
                            DiceNoMigrationWhenTokensNotReady);
@@ -192,13 +193,15 @@ class AccountReconcilor : public KeyedService,
   // Used during periodic reconciliation.
   void StartReconcile();
   // |gaia_accounts| are the accounts in the Gaia cookie.
-  void FinishReconcile(const std::vector<std::string>& chrome_accounts,
+  void FinishReconcile(const std::string& primary_account,
+                       const std::vector<std::string>& chrome_accounts,
                        std::vector<gaia::ListedAccount>&& gaia_accounts);
   void AbortReconcile();
   void CalculateIfReconcileIsDone();
   void ScheduleStartReconcileIfChromeAccountsChanged();
-  // Revokes tokens for all accounts in chrome_accounts but primary_account_.
+  // Revokes tokens for all accounts in chrome_accounts but the primary account.
   void RevokeAllSecondaryTokens(
+      const std::string& primary_account,
       const std::vector<std::string>& chrome_accounts);
 
   // Returns the list of valid accounts from the TokenService.
@@ -274,7 +277,6 @@ class AccountReconcilor : public KeyedService,
 
   // Used during reconcile action.
   // These members are used to validate the tokens in OAuth2TokenService.
-  std::string primary_account_;
   std::vector<std::string> add_to_cookie_;
   bool chrome_accounts_changed_;
 
