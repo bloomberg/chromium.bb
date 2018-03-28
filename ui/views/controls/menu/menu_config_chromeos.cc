@@ -23,10 +23,6 @@ void MenuConfig::Init() {
   align_arrow_and_shortcut = true;
   offset_context_menus = true;
   corner_radius = 2;
-  touchable_corner_radius = 8;
-  touchable_menu_height = 36;
-  touchable_menu_width = 256;
-  vertical_touchable_menu_item_padding = 8;
 
   // In Ash, the border is provided by the shadow.
   use_outer_border = false;

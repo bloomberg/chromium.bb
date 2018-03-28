@@ -13,7 +13,7 @@
 namespace ash {
 namespace menu_utils {
 
-MenuItemList GetMojoMenuItemsFromModel(const ui::MenuModel* model) {
+MenuItemList GetMojoMenuItemsFromModel(ui::MenuModel* model) {
   MenuItemList items;
   if (!model)
     return items;
@@ -28,6 +28,9 @@ MenuItemList GetMojoMenuItemsFromModel(const ui::MenuModel* model) {
     item->radio_group_id = model->GetGroupIdAt(i);
     if (item->type == ui::MenuModel::TYPE_SUBMENU)
       item->submenu = GetMojoMenuItemsFromModel(model->GetSubmenuModelAt(i));
+    gfx::Image icon;
+    if (model->GetIconAt(i, &icon))
+      item->image = icon.AsImageSkia();
     items.push_back(std::move(item));
   }
   return items;

@@ -47,6 +47,9 @@ struct VIEWS_EXPORT MenuConfig {
   // Margins between the left of the item and the icon.
   int item_left_margin;
 
+  // Margins between the left of the touchable item and the icon.
+  int touchable_item_left_margin;
+
   // Padding between the label and submenu arrow.
   int label_to_arrow_padding;
 
@@ -55,6 +58,15 @@ struct VIEWS_EXPORT MenuConfig {
 
   // Padding between the icon and label.
   int icon_to_label_padding;
+
+  // Padding between the icon and label for touchable menu items.
+  int touchable_icon_to_label_padding;
+
+  // The icon size used for icons in touchable menu items.
+  int touchable_icon_size;
+
+  // The color used for icons in touchable menu items.
+  SkColor touchable_icon_color;
 
   // The space reserved for the check. The actual size of the image may be
   // different.

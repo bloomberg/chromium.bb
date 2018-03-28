@@ -117,8 +117,8 @@ void MenuHost::InitMenuHost(Widget* parent,
       submenu_->GetMenuItem()->GetMenuController();
   const MenuConfig& menu_config = MenuConfig::instance();
   bool rounded_border =
-      (menu_controller && menu_controller->use_touchable_layout()) ||
-      (menu_controller && menu_config.corner_radius > 0);
+      menu_controller && (menu_controller->use_touchable_layout() ||
+                          (menu_config.corner_radius > 0));
   bool bubble_border = submenu_->GetScrollViewContainer() &&
                        submenu_->GetScrollViewContainer()->HasBubbleBorder();
   params.shadow_type = bubble_border ? Widget::InitParams::SHADOW_TYPE_NONE

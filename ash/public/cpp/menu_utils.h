@@ -21,8 +21,7 @@ using SubmenuList = std::vector<std::unique_ptr<ui::MenuModel>>;
 // Gets a serialized list of mojo MenuItemPtr objects to transport a menu model.
 // NOTE: This does not support button items, some separator types, sublabels,
 // minor text, dynamic items, label fonts, accelerators, visibility, etc.
-ASH_PUBLIC_EXPORT MenuItemList
-GetMojoMenuItemsFromModel(const ui::MenuModel* model);
+ASH_PUBLIC_EXPORT MenuItemList GetMojoMenuItemsFromModel(ui::MenuModel* model);
 
 // Populates a simple menu model with a list of mojo menu items. This can be
 // considered as an inverse operation of |GetMojoMenuItemsFromModel|.
