@@ -152,7 +152,7 @@ class PlaceholderImage::SharedFont : public RefCounted<SharedFont> {
     if (g_instance_)
       return scoped_refptr<SharedFont>(g_instance_);
 
-    scoped_refptr<SharedFont> shared_font(new SharedFont());
+    scoped_refptr<SharedFont> shared_font(base::AdoptRef(new SharedFont()));
     g_instance_ = shared_font.get();
     return shared_font;
   }
