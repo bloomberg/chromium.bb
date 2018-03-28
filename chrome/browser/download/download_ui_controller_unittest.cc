@@ -19,15 +19,15 @@
 #include "chrome/browser/download/download_history.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "components/history/core/browser/download_row.h"
 #include "content/public/browser/download_item_utils.h"
-#include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using content::MockDownloadItem;
+using download::MockDownloadItem;
 using content::MockDownloadManager;
 using history::HistoryService;
 using testing::AnyNumber;

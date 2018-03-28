@@ -15,7 +15,7 @@
 #import "chrome/browser/ui/cocoa/download/download_item_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -25,20 +25,21 @@
 using ::testing::Return;
 using ::testing::AnyNumber;
 
-// Wraps a content::MockDownloadItem so it can be retained by the mock
+// Wraps a download::MockDownloadItem so it can be retained by the mock
 // DownloadItemController.
 @interface WrappedMockDownloadItem : NSObject {
  @private
-  std::unique_ptr<content::MockDownloadItem> download_;
+  std::unique_ptr<download::MockDownloadItem> download_;
 }
-- (id)initWithMockDownload:(std::unique_ptr<content::MockDownloadItem>)download;
+- (id)initWithMockDownload:
+    (std::unique_ptr<download::MockDownloadItem>)download;
 - (download::DownloadItem*)download;
-- (content::MockDownloadItem*)mockDownload;
+- (download::MockDownloadItem*)mockDownload;
 @end
 
 @implementation WrappedMockDownloadItem
 - (id)initWithMockDownload:
-    (std::unique_ptr<content::MockDownloadItem>)download {
+    (std::unique_ptr<download::MockDownloadItem>)download {
   if ((self = [super init])) {
     download_ = std::move(download);
   }
@@ -49,7 +50,7 @@ using ::testing::AnyNumber;
   return download_.get();
 }
 
-- (content::MockDownloadItem*)mockDownload {
+- (download::MockDownloadItem*)mockDownload {
   return download_.get();
 }
 @end
@@ -139,8 +140,8 @@ class DownloadShelfControllerTest : public CocoaProfileTest {
 };
 
 id DownloadShelfControllerTest::CreateItemController() {
-  std::unique_ptr<content::MockDownloadItem> download(
-      new ::testing::NiceMock<content::MockDownloadItem>);
+  std::unique_ptr<download::MockDownloadItem> download(
+      new ::testing::NiceMock<download::MockDownloadItem>);
   ON_CALL(*download.get(), GetOpened())
       .WillByDefault(Return(false));
   ON_CALL(*download.get(), GetState())

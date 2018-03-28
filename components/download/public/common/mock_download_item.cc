@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 
-namespace content {
+namespace download {
 
 MockDownloadItem::MockDownloadItem() {}
 
@@ -36,4 +36,4 @@ void MockDownloadItem::NotifyObserversDownloadUpdated() {
     observer.OnDownloadUpdated(this);
 }
 
-}
+}  // namespace download

@@ -13,7 +13,7 @@
 #import "chrome/browser/ui/cocoa/download/download_shelf_controller.h"
 #include "chrome/browser/ui/cocoa/test/cocoa_profile_test.h"
 #include "chrome/common/chrome_features.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 #import "third_party/ocmock/OCMock/OCMock.h"
@@ -46,7 +46,7 @@ class DownloadItemControllerTest : public CocoaProfileTest {
     CocoaProfileTest::SetUp();
     ASSERT_TRUE(browser());
 
-    download_item_.reset(new ::testing::NiceMock<content::MockDownloadItem>);
+    download_item_.reset(new ::testing::NiceMock<download::MockDownloadItem>);
     ON_CALL(*download_item_, GetState())
         .WillByDefault(Return(download::DownloadItem::IN_PROGRESS));
     ON_CALL(*download_item_, GetFullPath())
@@ -84,7 +84,7 @@ class DownloadItemControllerTest : public CocoaProfileTest {
   }
 
  protected:
-  std::unique_ptr<content::MockDownloadItem> download_item_;
+  std::unique_ptr<download::MockDownloadItem> download_item_;
   base::scoped_nsobject<DownloadShelfController> shelf_controller_;
   base::scoped_nsobject<DownloadItemController> item_controller_;
 };

@@ -41,6 +41,7 @@
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/download_danger_type.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
@@ -51,7 +52,6 @@
 #include "components/safe_browsing/proto/csd.pb.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/page_navigator.h"
-#include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "content/public/test/web_contents_tester.h"
@@ -208,7 +208,7 @@ class TestURLFetcherWatcher : public net::TestURLFetcherDelegateForTests {
   RunLoop run_loop_;
 };
 
-using NiceMockDownloadItem = NiceMock<content::MockDownloadItem>;
+using NiceMockDownloadItem = NiceMock<download::MockDownloadItem>;
 
 }  // namespace
 
@@ -2179,7 +2179,7 @@ MATCHER_P(OpenURLParamsWithContextValue, value, "") {
 // whose value is the DownloadDangerType.
 TEST_F(DownloadProtectionServiceTest, ShowDetailsForDownloadHasContext) {
   StrictMock<MockPageNavigator> mock_page_navigator;
-  StrictMock<content::MockDownloadItem> mock_download_item;
+  StrictMock<download::MockDownloadItem> mock_download_item;
 
   EXPECT_CALL(mock_download_item, GetDangerType())
       .WillOnce(Return(download::DOWNLOAD_DANGER_TYPE_DANGEROUS_HOST));

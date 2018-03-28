@@ -18,7 +18,7 @@
 #include "build/build_config.h"
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "chrome/browser/download/download_target_determiner.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "net/base/filename_util.h"
@@ -26,7 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using download::DownloadItem;
-using content::MockDownloadItem;
+using download::MockDownloadItem;
 using testing::AnyNumber;
 using testing::Return;
 using testing::ReturnRef;
@@ -149,7 +149,7 @@ DownloadPathReservationTrackerTest::GetLongNamePathInDownloadsDirectory(
           + suffix).c_str());
 }
 
-void SetDownloadItemState(content::MockDownloadItem* download_item,
+void SetDownloadItemState(download::MockDownloadItem* download_item,
                           download::DownloadItem::DownloadState state) {
   EXPECT_CALL(*download_item, GetState())
       .WillRepeatedly(Return(state));

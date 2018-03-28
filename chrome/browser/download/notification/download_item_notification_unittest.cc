@@ -22,8 +22,8 @@
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "content/public/browser/download_item_utils.h"
-#include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -62,7 +62,7 @@ class DownloadItemNotificationTest : public testing::Test {
         new DownloadNotificationManagerForProfile(profile_, nullptr));
 
     base::FilePath download_item_target_path(kDownloadItemTargetPathString);
-    download_item_.reset(new NiceMock<content::MockDownloadItem>());
+    download_item_.reset(new NiceMock<download::MockDownloadItem>());
     ON_CALL(*download_item_, GetId()).WillByDefault(Return(12345));
     ON_CALL(*download_item_, GetGuid())
         .WillByDefault(ReturnRefOfCopy(base::GenerateGUID()));
@@ -131,7 +131,7 @@ class DownloadItemNotificationTest : public testing::Test {
   std::unique_ptr<TestingProfileManager> profile_manager_;
   Profile* profile_;
 
-  std::unique_ptr<NiceMock<content::MockDownloadItem>> download_item_;
+  std::unique_ptr<NiceMock<download::MockDownloadItem>> download_item_;
   std::unique_ptr<DownloadNotificationManagerForProfile>
       download_notification_manager_;
   DownloadItemNotification* download_item_notification_;

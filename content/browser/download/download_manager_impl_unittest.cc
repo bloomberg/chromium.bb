@@ -29,16 +29,15 @@
 #include "components/download/public/common/download_interrupt_reasons.h"
 #include "components/download/public/common/download_item.h"
 #include "components/download/public/common/download_request_handle_interface.h"
+#include "components/download/public/common/mock_download_file.h"
 #include "content/browser/byte_stream.h"
 #include "content/browser/download/byte_stream_input_stream.h"
 #include "content/browser/download/download_item_factory.h"
 #include "content/browser/download/download_item_impl.h"
 #include "content/browser/download/download_item_impl_delegate.h"
-#include "content/browser/download/mock_download_file.h"
 #include "content/browser/download/mock_download_item_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/download_manager_delegate.h"
-#include "content/public/test/mock_download_item.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -298,8 +297,8 @@ class MockDownloadFileFactory
 
   // Overridden method from DownloadFileFactory
   MOCK_METHOD2(MockCreateFile,
-               MockDownloadFile*(const download::DownloadSaveInfo&,
-                                 download::InputStream*));
+               download::MockDownloadFile*(const download::DownloadSaveInfo&,
+                                           download::InputStream*));
 
   download::DownloadFile* CreateFile(
       std::unique_ptr<download::DownloadSaveInfo> save_info,
@@ -571,7 +570,7 @@ TEST_F(DownloadManagerTest, StartDownload) {
   EXPECT_CALL(GetMockDownloadManagerDelegate(),
               ApplicationClientIdForFileScanning())
       .WillRepeatedly(Return("client-id"));
-  MockDownloadFile* mock_file = new MockDownloadFile;
+  download::MockDownloadFile* mock_file = new download::MockDownloadFile;
   auto input_stream =
       std::make_unique<ByteStreamInputStream>(std::move(stream));
   EXPECT_CALL(*mock_download_file_factory_.get(),

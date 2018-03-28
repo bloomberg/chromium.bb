@@ -15,7 +15,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/test/base/testing_profile.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_web_ui.h"
@@ -23,7 +23,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using download::DownloadItem;
-using content::MockDownloadItem;
+using download::MockDownloadItem;
 using DownloadVector = std::vector<DownloadItem*>;
 using testing::_;
 using testing::Return;

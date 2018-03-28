@@ -110,6 +110,10 @@ source_set("test_support") {
   testonly = true
 
   sources = [
+    "mock_download_file.cc",
+    "mock_download_file.h",
+    "mock_download_item.cc",
+    "mock_download_item.h",
     "mock_input_stream.cc",
     "mock_input_stream.h",
   ]
@@ -118,5 +122,6 @@ source_set("test_support") {
     ":public",
     "//base",
     "//testing/gmock",
+    "//url",
   ]
 }

@@ -28,12 +28,12 @@
 #include "chrome/test/base/chrome_render_view_host_test_harness.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/download/public/common/download_interrupt_reasons.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/browser/download_item_utils.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_contents_delegate.h"
-#include "content/public/test/mock_download_item.h"
 #include "content/public/test/mock_download_manager.h"
 #include "content/public/test/test_renderer_host.h"
 #include "content/public/test/web_contents_tester.h"
@@ -220,7 +220,7 @@ class ChromeDownloadManagerDelegateTest
   void VerifyAndClearExpectations();
 
   // Creates MockDownloadItem and sets up default expectations.
-  std::unique_ptr<content::MockDownloadItem> CreateActiveDownloadItem(
+  std::unique_ptr<download::MockDownloadItem> CreateActiveDownloadItem(
       int32_t id);
 
   // Given the relative path |path|, returns the full path under the temporary
@@ -286,10 +286,10 @@ void ChromeDownloadManagerDelegateTest::VerifyAndClearExpectations() {
   ::testing::Mock::VerifyAndClearExpectations(delegate_.get());
 }
 
-std::unique_ptr<content::MockDownloadItem>
+std::unique_ptr<download::MockDownloadItem>
 ChromeDownloadManagerDelegateTest::CreateActiveDownloadItem(int32_t id) {
-  std::unique_ptr<content::MockDownloadItem> item(
-      new ::testing::NiceMock<content::MockDownloadItem>());
+  std::unique_ptr<download::MockDownloadItem> item(
+      new ::testing::NiceMock<download::MockDownloadItem>());
   ON_CALL(*item, GetDangerType())
       .WillByDefault(Return(download::DOWNLOAD_DANGER_TYPE_NOT_DANGEROUS));
   ON_CALL(*item, GetForcedFilePath())
@@ -407,7 +407,7 @@ PrefService* ChromeDownloadManagerDelegateTest::pref_service() {
 TEST_F(ChromeDownloadManagerDelegateTest, LastSavePath) {
   GURL download_url("http://example.com/foo.txt");
 
-  std::unique_ptr<content::MockDownloadItem> save_as_download =
+  std::unique_ptr<download::MockDownloadItem> save_as_download =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*save_as_download, GetURL())
       .Times(AnyNumber())
@@ -416,7 +416,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, LastSavePath) {
       .Times(AnyNumber())
       .WillRepeatedly(Return(DownloadItem::TARGET_DISPOSITION_PROMPT));
 
-  std::unique_ptr<content::MockDownloadItem> automatic_download =
+  std::unique_ptr<download::MockDownloadItem> automatic_download =
       CreateActiveDownloadItem(1);
   EXPECT_CALL(*automatic_download, GetURL())
       .Times(AnyNumber())
@@ -481,7 +481,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, ConflictAction) {
   const GURL kUrl("http://example.com/foo");
   const std::string kTargetDisposition("attachment; filename=\"foo.txt\"");
 
-  std::unique_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<download::MockDownloadItem> download_item =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(kUrl));
   EXPECT_CALL(*download_item, GetContentDisposition())
@@ -514,7 +514,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, MaybeDangerousContent) {
 
   GURL url("http://example.com/foo");
 
-  std::unique_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<download::MockDownloadItem> download_item =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(url));
   EXPECT_CALL(*download_item, GetTargetDisposition())
@@ -572,7 +572,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, CheckForFileExistence) {
       default_download_path().AppendASCII("bar");
   base::WriteFile(existing_path, kData, kDataLength);
 
-  std::unique_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<download::MockDownloadItem> download_item =
       CreateActiveDownloadItem(1);
   EXPECT_CALL(*download_item, GetTargetFilePath())
       .WillRepeatedly(ReturnRef(existing_path));
@@ -588,7 +588,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, BlockedByPolicy) {
   const GURL kUrl("http://example.com/foo");
   const std::string kTargetDisposition("attachment; filename=\"foo.txt\"");
 
-  std::unique_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<download::MockDownloadItem> download_item =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(kUrl));
   EXPECT_CALL(*download_item, GetContentDisposition())
@@ -866,7 +866,7 @@ INSTANTIATE_TEST_CASE_P(_,
 TEST_P(ChromeDownloadManagerDelegateTestWithSafeBrowsing, CheckClientDownload) {
   const SafeBrowsingTestParameters& kParameters = GetParam();
 
-  std::unique_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<download::MockDownloadItem> download_item =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*delegate(), GetDownloadProtectionService());
   EXPECT_CALL(*download_protection_service(), MockCheckClientDownload())
@@ -913,7 +913,7 @@ TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
   GURL download_url("http://untrusted.com/best-download-ever.exe");
   pref_service()->SetBoolean(prefs::kSafeBrowsingForTrustedSourcesEnabled,
                              false);
-  std::unique_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<download::MockDownloadItem> download_item =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(download_url));
 
@@ -940,7 +940,7 @@ TEST_F(ChromeDownloadManagerDelegateTestWithSafeBrowsing,
   GURL download_url("http://trusted.com/best-download-ever.exe");
   pref_service()->SetBoolean(prefs::kSafeBrowsingForTrustedSourcesEnabled,
                              false);
-  std::unique_ptr<content::MockDownloadItem> download_item =
+  std::unique_ptr<download::MockDownloadItem> download_item =
       CreateActiveDownloadItem(0);
   EXPECT_CALL(*download_item, GetURL()).WillRepeatedly(ReturnRef(download_url));
   EXPECT_CALL(*delegate(), GetDownloadProtectionService()).Times(0);
@@ -1046,7 +1046,7 @@ TEST_F(ChromeDownloadManagerDelegateTest, RequestConfirmation_Android) {
   AndroidDownloadInfobarCounter infobar_counter(web_contents());
 
   for (const auto& test_case : kTestCases) {
-    std::unique_ptr<content::MockDownloadItem> download_item =
+    std::unique_ptr<download::MockDownloadItem> download_item =
         CreateActiveDownloadItem(1);
     content::DownloadItemUtils::AttachInfo(
         download_item.get(), profile(),

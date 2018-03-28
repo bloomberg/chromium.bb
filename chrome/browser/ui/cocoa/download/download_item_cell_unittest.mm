@@ -8,7 +8,7 @@
 #include "base/macros.h"
 #include "chrome/browser/download/download_item_model.h"
 #import "chrome/browser/ui/cocoa/test/cocoa_test_helper.h"
-#include "content/public/test/mock_download_item.h"
+#include "components/download/public/common/mock_download_item.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
@@ -56,7 +56,7 @@ TEST_F(DownloadItemCellTest, ToggleStatusText) {
 }
 
 TEST_F(DownloadItemCellTest, IndeterminateProgress) {
-  testing::NiceMock<content::MockDownloadItem> item;
+  testing::NiceMock<download::MockDownloadItem> item;
   ON_CALL(item, IsPaused()).WillByDefault(Return(false));
   ON_CALL(item, PercentComplete()).WillByDefault(Return(-1));
   ON_CALL(item, GetState())
