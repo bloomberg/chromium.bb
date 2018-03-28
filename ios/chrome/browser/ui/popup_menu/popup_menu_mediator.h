@@ -7,6 +7,7 @@
 
 #import <UIKit/UIKit.h>
 
+@protocol BrowserCommands;
 @class PopupMenuTableViewController;
 class WebStateList;
 
@@ -31,6 +32,8 @@ typedef NS_ENUM(NSInteger, PopupMenuType) {
 @property(nonatomic, assign) WebStateList* webStateList;
 // The TableView to be configured with this mediator.
 @property(nonatomic, strong) PopupMenuTableViewController* popupMenu;
+// Dispatcher.
+@property(nonatomic, weak) id<BrowserCommands> dispatcher;
 
 // Disconnect the mediator.
 - (void)disconnect;

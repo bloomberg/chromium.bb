@@ -4,7 +4,11 @@
 
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_mediator.h"
 
+#include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/find_in_page/find_tab_helper.h"
+#import "ios/chrome/browser/ui/activity_services/canonical_url_retriever.h"
+#import "ios/chrome/browser/ui/commands/browser_commands.h"
+#import "ios/chrome/browser/ui/commands/reading_list_add_command.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_item.h"
 #import "ios/chrome/browser/ui/popup_menu/cells/popup_menu_tools_item.h"
 #import "ios/chrome/browser/ui/popup_menu/popup_menu_table_view_controller.h"
@@ -43,7 +47,9 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 }
 }
 
-@interface PopupMenuMediator () {
+@interface PopupMenuMediator ()<CRWWebStateObserver,
+                                PopupMenuTableViewControllerCommand,
+                                WebStateListObserving> {
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserver;
   std::unique_ptr<WebStateListObserverBridge> _webStateListObserver;
 }
@@ -73,6 +79,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 
 @synthesize items = _items;
 @synthesize popupMenu = _popupMenu;
+@synthesize dispatcher = _dispatcher;
 @synthesize type = _type;
 @synthesize webState = _webState;
 @synthesize webStateList = _webStateList;
@@ -205,6 +212,7 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
 - (void)setPopupMenu:(PopupMenuTableViewController*)popupMenu {
   _popupMenu = popupMenu;
   [_popupMenu setPopupMenuItems:self.items];
+  _popupMenu.commandHandler = self;
   if (self.webState) {
     [self updatePopupMenu];
   }
@@ -238,6 +246,27 @@ PopupMenuToolsItem* CreateTableViewItem(int titleID,
     self.specificItems = specificItems;
   }
   return _items;
+}
+
+#pragma mark - PopupMenuTableViewControllerCommand
+
+- (void)readPageLater {
+  if (!self.webState)
+    return;
+  // The mediator can be destroyed when this callback is executed. So it is not
+  // possible to use a weak self.
+  __weak id<BrowserCommands> weakDispatcher = self.dispatcher;
+  GURL visibleURL = self.webState->GetVisibleURL();
+  NSString* title = base::SysUTF16ToNSString(self.webState->GetTitle());
+  activity_services::RetrieveCanonicalUrl(self.webState, ^(const GURL& URL) {
+    const GURL& pageURL = !URL.is_empty() ? URL : visibleURL;
+    if (!pageURL.is_valid() || !pageURL.SchemeIsHTTPOrHTTPS())
+      return;
+
+    ReadingListAddCommand* command =
+        [[ReadingListAddCommand alloc] initWithURL:pageURL title:title];
+    [weakDispatcher addToReadingList:command];
+  });
 }
 
 #pragma mark - Popup updates (Private)

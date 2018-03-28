@@ -29,6 +29,7 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 
 @dynamic tableViewModel;
 @synthesize baseViewController = _baseViewController;
+@synthesize commandHandler = _commandHandler;
 @synthesize dispatcher = _dispatcher;
 
 #pragma mark - UIViewController
@@ -136,8 +137,7 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       break;
     case PopupMenuActionReadLater:
       base::RecordAction(UserMetricsAction("MobileMenuReadLater"));
-      // TODO(crbug.com/822703): Add action.
-      [self showNotImplementedAlert];
+      [self.commandHandler readPageLater];
       break;
     case PopupMenuActionFindInPage:
       base::RecordAction(UserMetricsAction("MobileMenuFindInPage"));
@@ -153,8 +153,8 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
       break;
     case PopupMenuActionSiteInformation:
       base::RecordAction(UserMetricsAction("MobileMenuSiteInformation"));
-      // TODO(crbug.com/822703): Add action.
-      [self showNotImplementedAlert];
+      [self.dispatcher
+          showPageInfoForOriginPoint:self.baseViewController.view.center];
       break;
     case PopupMenuActionReportIssue:
       base::RecordAction(UserMetricsAction("MobileMenuReportAnIssue"));
@@ -189,25 +189,6 @@ const CGFloat kScrollIndicatorVerticalInsets = 11;
 
   // Close the tools menu.
   [self.dispatcher dismissPopupMenu];
-}
-
-#pragma mark - Private
-
-// TODO(crbug.com/822703): Remove this.
-- (void)showNotImplementedAlert {
-  UIAlertController* alertController =
-      [UIAlertController alertControllerWithTitle:@"Not implemented yet."
-                                          message:nil
-                                   preferredStyle:UIAlertControllerStyleAlert];
-  UIAlertAction* alertAction =
-      [UIAlertAction actionWithTitle:@"OK"
-                               style:UIAlertActionStyleCancel
-                             handler:nil];
-
-  [alertController addAction:alertAction];
-  [self.baseViewController presentViewController:alertController
-                                        animated:YES
-                                      completion:nil];
 }
 
 @end
