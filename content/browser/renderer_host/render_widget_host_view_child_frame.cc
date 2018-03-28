@@ -318,6 +318,12 @@ gfx::Size RenderWidgetHostViewChildFrame::GetVisibleViewportSize() const {
   return GetViewBounds().size();
 }
 
+void RenderWidgetHostViewChildFrame::SetInsets(const gfx::Insets& insets) {
+  // Do nothing here. For subframes, the visual viewport corresponds to the main
+  // frame viewport size, so this request will be handled in SetInsets of the
+  // main frame's RenderWidgetHostView.
+}
+
 gfx::Vector2dF RenderWidgetHostViewChildFrame::GetLastScrollOffset() const {
   return last_scroll_offset_;
 }
