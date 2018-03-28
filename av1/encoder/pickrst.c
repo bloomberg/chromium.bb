@@ -1160,7 +1160,11 @@ static double search_rest_type(RestSearchCtxt *rsc, RestorationType rtype) {
 
 static int rest_tiles_in_plane(const AV1_COMMON *cm, int plane) {
   const RestorationInfo *rsi = &cm->rst_info[plane];
+#if CONFIG_SIMPLE_LRUNIT
+  return rsi->units_per_tile;
+#else
   return cm->tile_rows * cm->tile_cols * rsi->units_per_tile;
+#endif  // CONFIG_SIMPLE_LRUNIT
 }
 
 void av1_pick_filter_restoration(const YV12_BUFFER_CONFIG *src, AV1_COMP *cpi) {
