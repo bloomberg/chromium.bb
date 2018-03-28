@@ -208,8 +208,9 @@ TEST(IPCMessageTest, SSLInfo) {
   EXPECT_TRUE(IPC::ParamTraits<net::SSLInfo>::Read(&msg, &iter, &out));
 
   // Now verify they're equal.
-  ASSERT_TRUE(in.cert->Equals(out.cert.get()));
-  ASSERT_TRUE(in.unverified_cert->Equals(out.unverified_cert.get()));
+  ASSERT_TRUE(in.cert->EqualsIncludingChain(out.cert.get()));
+  ASSERT_TRUE(
+      in.unverified_cert->EqualsIncludingChain(out.unverified_cert.get()));
   ASSERT_EQ(in.security_bits, out.security_bits);
   ASSERT_EQ(in.key_exchange_group, out.key_exchange_group);
   ASSERT_EQ(in.connection_status, out.connection_status);
