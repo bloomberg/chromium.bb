@@ -15,13 +15,13 @@
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_default_negotiator.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
-#include "chrome/browser/sync/user_event_service_factory.h"
+#include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_browser_process.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/arc_prefs.h"
-#include "components/consent_auditor/consent_auditor.h"
+#include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/prefs/pref_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "components/user_manager/scoped_user_manager.h"
@@ -29,53 +29,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace arc {
-
-// TODO(jhorwich): Integrate with centralized FakeConsentAuditor.
-class FakeConsentAuditor : public consent_auditor::ConsentAuditor {
- public:
-  static std::unique_ptr<KeyedService> Build(content::BrowserContext* context) {
-    return std::make_unique<FakeConsentAuditor>(
-        Profile::FromBrowserContext(context));
-  }
-
-  explicit FakeConsentAuditor(Profile* profile)
-      : ConsentAuditor(
-            profile->GetPrefs(),
-            browser_sync::UserEventServiceFactory::GetForProfile(profile),
-            std::string(),
-            std::string()) {}
-  ~FakeConsentAuditor() override = default;
-
-  void RecordGaiaConsent(consent_auditor::Feature feature,
-                         const std::vector<int>& description_grd_ids,
-                         int confirmation_grd_id,
-                         consent_auditor::ConsentStatus status) override {
-    std::vector<int> ids = description_grd_ids;
-    ids.push_back(confirmation_grd_id);
-    recorded_id_vectors_.push_back(ids);
-    recorded_features_.push_back(feature);
-    recorded_statuses_.push_back(status);
-  }
-
-  const std::vector<std::vector<int>>& recorded_id_vectors() {
-    return recorded_id_vectors_;
-  }
-
-  const std::vector<consent_auditor::Feature>& recorded_features() {
-    return recorded_features_;
-  }
-
-  const std::vector<consent_auditor::ConsentStatus>& recorded_statuses() {
-    return recorded_statuses_;
-  }
-
- private:
-  std::vector<std::vector<int>> recorded_id_vectors_;
-  std::vector<consent_auditor::Feature> recorded_features_;
-  std::vector<consent_auditor::ConsentStatus> recorded_statuses_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeConsentAuditor);
-};
 
 class ArcTermsOfServiceDefaultNegotiatorTest
     : public BrowserWithTestWindowTest {
@@ -107,14 +60,14 @@ class ArcTermsOfServiceDefaultNegotiatorTest
   FakeArcSupport* fake_arc_support() { return fake_arc_support_.get(); }
   ArcTermsOfServiceNegotiator* negotiator() { return negotiator_.get(); }
 
-  FakeConsentAuditor* consent_auditor() {
-    return static_cast<FakeConsentAuditor*>(
+  consent_auditor::FakeConsentAuditor* consent_auditor() {
+    return static_cast<consent_auditor::FakeConsentAuditor*>(
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
   // BrowserWithTestWindowTest:
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {{ConsentAuditorFactory::GetInstance(), FakeConsentAuditor::Build}};
+    return {{ConsentAuditorFactory::GetInstance(), BuildFakeConsentAuditor}};
   }
 
  private:

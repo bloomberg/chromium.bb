@@ -11,6 +11,7 @@
 #include "base/test/user_action_tester.h"
 #include "base/values.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
+#include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/browser/profiles/profile_avatar_icon_util.h"
 #include "chrome/browser/signin/account_fetcher_service_factory.h"
 #include "chrome/browser/signin/account_tracker_service_factory.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/signin/fake_signin_manager_builder.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
-#include "chrome/browser/sync/user_event_service_factory.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/browser/ui/webui/signin/sync_confirmation_ui.h"
@@ -26,7 +26,7 @@
 #include "chrome/test/base/dialog_test_browser_window.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/browser_sync/profile_sync_service.h"
-#include "components/consent_auditor/consent_auditor.h"
+#include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/signin/core/browser/account_fetcher_service.h"
 #include "components/signin/core/browser/avatar_icon_util.h"
 #include "components/signin/core/browser/fake_account_fetcher_service.h"
@@ -101,39 +101,6 @@ class TestingOneClickSigninSyncStarter : public OneClickSigninSyncStarter {
   DISALLOW_COPY_AND_ASSIGN(TestingOneClickSigninSyncStarter);
 };
 
-// TODO(msramek): Extract this into "consent_auditor_test_utils" for reusability
-// and to remove unnecessary dependencies from this test.
-class FakeConsentAuditor : public consent_auditor::ConsentAuditor {
- public:
-  static std::unique_ptr<KeyedService> Build(content::BrowserContext* context) {
-    return std::make_unique<FakeConsentAuditor>(
-        Profile::FromBrowserContext(context));
-  }
-
-  FakeConsentAuditor(Profile* profile)
-      : ConsentAuditor(
-            profile->GetPrefs(),
-            browser_sync::UserEventServiceFactory::GetForProfile(profile),
-            std::string(),
-            std::string()) {}
-  ~FakeConsentAuditor() override {}
-
-  void RecordGaiaConsent(consent_auditor::Feature feature,
-                         const std::vector<int>& description_grd_ids,
-                         int confirmation_grd_id,
-                         consent_auditor::ConsentStatus status) override {
-    recorded_ids_ = description_grd_ids;
-    recorded_ids_.push_back(confirmation_grd_id);
-  }
-
-  const std::vector<int>& recorded_ids() { return recorded_ids_; }
-
- private:
-  std::vector<int> recorded_ids_;
-
-  DISALLOW_COPY_AND_ASSIGN(FakeConsentAuditor);
-};
-
 class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
  public:
   static const std::string kConsentText1;
@@ -206,8 +173,8 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     return &user_action_tester_;
   }
 
-  FakeConsentAuditor* consent_auditor() {
-    return static_cast<FakeConsentAuditor*>(
+  consent_auditor::FakeConsentAuditor* consent_auditor() {
+    return static_cast<consent_auditor::FakeConsentAuditor*>(
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
@@ -220,7 +187,7 @@ class SyncConfirmationHandlerTest : public BrowserWithTestWindowTest {
     return {{AccountFetcherServiceFactory::GetInstance(),
              FakeAccountFetcherServiceBuilder::BuildForTests},
             {SigninManagerFactory::GetInstance(), BuildFakeSigninManagerBase},
-            {ConsentAuditorFactory::GetInstance(), FakeConsentAuditor::Build}};
+            {ConsentAuditorFactory::GetInstance(), BuildFakeConsentAuditor}};
   }
 
   const std::unordered_map<std::string, int>& GetStringToGrdIdMap() {
@@ -420,8 +387,8 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirm) {
       "Signin_Signin_WithAdvancedSyncSettings"));
 
   // The corresponding string IDs get recorded.
-  std::vector<int> expected_ids = {1, 2, 4, 5};
-  EXPECT_EQ(expected_ids, consent_auditor()->recorded_ids());
+  std::vector<std::vector<int>> expected_id_vectors = {{1, 2, 4, 5}};
+  EXPECT_EQ(expected_id_vectors, consent_auditor()->recorded_id_vectors());
 }
 
 TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
@@ -459,6 +426,6 @@ TEST_F(SyncConfirmationHandlerTest, TestHandleConfirmWithAdvancedSyncSettings) {
                    "Signin_Signin_WithAdvancedSyncSettings"));
 
   // The corresponding string IDs get recorded.
-  std::vector<int> expected_ids = {2, 3, 5, 2};
-  EXPECT_EQ(expected_ids, consent_auditor()->recorded_ids());
+  std::vector<std::vector<int>> expected_id_vectors = {{2, 3, 5, 2}};
+  EXPECT_EQ(expected_id_vectors, consent_auditor()->recorded_id_vectors());
 }

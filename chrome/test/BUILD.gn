@@ -120,6 +120,7 @@ static_library("test_support") {
     "//components/autofill/core/browser:test_support",
     "//components/bookmarks/test",
     "//components/captive_portal:test_support",
+    "//components/consent_auditor:test_support",
     "//components/gcm_driver:test_support",
     "//components/gcm_driver/crypto:test_support",
     "//components/gcm_driver/instance_id:test_support",

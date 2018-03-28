@@ -4611,6 +4611,8 @@ static_library("test_support") {
     "browsing_data/mock_browsing_data_service_worker_helper.h",
     "browsing_data/mock_browsing_data_shared_worker_helper.cc",
     "browsing_data/mock_browsing_data_shared_worker_helper.h",
+    "consent_auditor/consent_auditor_test_utils.cc",
+    "consent_auditor/consent_auditor_test_utils.h",
     "download/download_test_file_activity_observer.cc",
     "download/download_test_file_activity_observer.h",
     "gcm/fake_gcm_profile_service.cc",

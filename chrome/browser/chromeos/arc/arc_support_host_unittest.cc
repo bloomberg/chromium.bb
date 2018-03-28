@@ -9,10 +9,10 @@
 #include "chrome/browser/chromeos/arc/extensions/fake_arc_support.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/consent_auditor/consent_auditor_factory.h"
-#include "chrome/browser/sync/user_event_service_factory.h"
+#include "chrome/browser/consent_auditor/consent_auditor_test_utils.h"
 #include "chrome/test/base/browser_with_test_window_test.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/consent_auditor/consent_auditor.h"
+#include "components/consent_auditor/fake_consent_auditor.h"
 #include "components/user_manager/scoped_user_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -59,32 +59,6 @@ class MockErrorDelegateNonStrict : public ArcSupportHost::ErrorDelegate {
 };
 
 using MockErrorDelegate = StrictMock<MockErrorDelegateNonStrict>;
-
-// TODO(jhorwich): Integrate with centralized FakeConsentAuditor.
-class FakeConsentAuditor : public consent_auditor::ConsentAuditor {
- public:
-  static std::unique_ptr<KeyedService> Build(content::BrowserContext* context) {
-    return std::make_unique<FakeConsentAuditor>(
-        Profile::FromBrowserContext(context));
-  }
-
-  explicit FakeConsentAuditor(Profile* profile)
-      : ConsentAuditor(
-            profile->GetPrefs(),
-            browser_sync::UserEventServiceFactory::GetForProfile(profile),
-            std::string(),
-            std::string()) {}
-
-  ~FakeConsentAuditor() override = default;
-
-  void RecordGaiaConsent(consent_auditor::Feature feature,
-                         const std::vector<int>& description_grd_ids,
-                         int confirmation_grd_id,
-                         consent_auditor::ConsentStatus status) override {}
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(FakeConsentAuditor);
-};
 
 class ArcSupportHostTest : public BrowserWithTestWindowTest {
  public:
@@ -140,14 +114,14 @@ class ArcSupportHostTest : public BrowserWithTestWindowTest {
                                             kFakeActiveDirectoryPrefix);
   }
 
-  FakeConsentAuditor* consent_auditor() {
-    return static_cast<FakeConsentAuditor*>(
+  consent_auditor::FakeConsentAuditor* consent_auditor() {
+    return static_cast<consent_auditor::FakeConsentAuditor*>(
         ConsentAuditorFactory::GetForProfile(profile()));
   }
 
   // BrowserWithTestWindowTest:
   TestingProfile::TestingFactories GetTestingFactories() override {
-    return {{ConsentAuditorFactory::GetInstance(), FakeConsentAuditor::Build}};
+    return {{ConsentAuditorFactory::GetInstance(), BuildFakeConsentAuditor}};
   }
 
  private:
