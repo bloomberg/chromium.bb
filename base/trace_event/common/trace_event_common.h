@@ -2,6 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef BASE_TRACE_EVENT_COMMON_TRACE_EVENT_COMMON_H_
+#define BASE_TRACE_EVENT_COMMON_TRACE_EVENT_COMMON_H_
+
 // This header file defines the set of trace_event macros without specifying
 // how the events actually get collected and stored. If you need to expose trace
 // events to some other universe, you can copy-and-paste this file as well as
@@ -1107,3 +1110,5 @@
 #define TRACE_EVENT_SCOPE_NAME_GLOBAL ('g')
 #define TRACE_EVENT_SCOPE_NAME_PROCESS ('p')
 #define TRACE_EVENT_SCOPE_NAME_THREAD ('t')
+
+#endif  // BASE_TRACE_EVENT_COMMON_TRACE_EVENT_COMMON_H_
