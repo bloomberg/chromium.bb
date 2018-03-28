@@ -496,7 +496,7 @@ ExtensionFunction::ResponseValue SessionsRestoreFunction::RestoreForeignSession(
 
   const sessions::SessionTab* tab = NULL;
   if (open_tabs->GetForeignTab(session_id.session_tag(),
-                               session_id.id(),
+                               SessionID::FromSerializedValue(session_id.id()),
                                &tab)) {
     TabStripModel* tab_strip = browser->tab_strip_model();
     content::WebContents* contents = tab_strip->GetActiveWebContents();

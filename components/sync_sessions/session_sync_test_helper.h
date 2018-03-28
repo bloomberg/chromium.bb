@@ -26,34 +26,34 @@ class SessionSyncTestHelper {
   static void BuildSessionSpecifics(const std::string& tag,
                                     sync_pb::SessionSpecifics* meta);
 
-  static void AddWindowSpecifics(int window_id,
-                                 const std::vector<int>& tab_list,
+  static void AddWindowSpecifics(SessionID window_id,
+                                 const std::vector<SessionID>& tab_list,
                                  sync_pb::SessionSpecifics* meta);
 
   static void VerifySyncedSession(
       const std::string& tag,
-      const std::vector<std::vector<SessionID::id_type>>& windows,
+      const std::vector<std::vector<SessionID>>& windows,
       const SyncedSession& session);
 
   // Build a SessionSpecifics object with a tab and sample data. Uses a
   // monotonically increasing variable to generate tab_node_ids and avoid
   // conflicts.
   void BuildTabSpecifics(const std::string& tag,
-                         int window_id,
-                         int tab_id,
+                         SessionID window_id,
+                         SessionID tab_id,
                          sync_pb::SessionSpecifics* tab_base);
 
   // Overload of BuildTabSpecifics to allow forcing a specific tab_node_id.
   // Typically only useful to test reusing tab_node_ids.
   void BuildTabSpecifics(const std::string& tag,
-                         int window_id,
-                         int tab_id,
+                         SessionID window_id,
+                         SessionID tab_id,
                          int tab_node_id,
                          sync_pb::SessionSpecifics* tab_base);
 
   sync_pb::SessionSpecifics BuildForeignSession(
       const std::string& tag,
-      const std::vector<SessionID::id_type>& tab_list,
+      const std::vector<SessionID>& tab_list,
       std::vector<sync_pb::SessionSpecifics>* tabs);
 
   void Reset();

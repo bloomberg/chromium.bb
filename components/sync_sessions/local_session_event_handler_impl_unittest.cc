@@ -48,11 +48,11 @@ const base::Time kTime4 = base::Time::FromInternalValue(140);
 const base::Time kTime5 = base::Time::FromInternalValue(150);
 const base::Time kTime6 = base::Time::FromInternalValue(190);
 
-const SessionID::id_type kWindowId1 = 1000001;
-const SessionID::id_type kWindowId2 = 1000002;
-const SessionID::id_type kTabId1 = 1000003;
-const SessionID::id_type kTabId2 = 1000004;
-const SessionID::id_type kTabId3 = 1000005;
+const SessionID kWindowId1 = SessionID::FromSerializedValue(1000001);
+const SessionID kWindowId2 = SessionID::FromSerializedValue(1000002);
+const SessionID kTabId1 = SessionID::FromSerializedValue(1000003);
+const SessionID kTabId2 = SessionID::FromSerializedValue(1000004);
+const SessionID kTabId3 = SessionID::FromSerializedValue(1000005);
 
 MATCHER_P3(MatchesHeader, session_tag, num_windows, num_tabs, "") {
   if (arg == nullptr) {
@@ -102,11 +102,11 @@ MATCHER_P4(MatchesTab, session_tag, window_id, tab_id, urls, "") {
     *result_listener << "which contains an unexpected session tag";
     return false;
   }
-  if (specifics.tab().window_id() != window_id) {
+  if (specifics.tab().window_id() != window_id.id()) {
     *result_listener << "which contains an unexpected window ID";
     return false;
   }
-  if (specifics.tab().tab_id() != tab_id) {
+  if (specifics.tab().tab_id() != tab_id.id()) {
     *result_listener << "which contains an unexpected tab ID";
     return false;
   }
@@ -181,20 +181,20 @@ class LocalSessionEventHandlerImplTest : public testing::Test {
   }
 
   TestSyncedWindowDelegate* AddWindow(
-      SessionID::id_type window_id = SessionID().id()) {
+      SessionID window_id = SessionID::NewUnique()) {
     return window_getter_.AddWindow(
         sync_pb::SessionWindow_BrowserType_TYPE_TABBED, window_id);
   }
 
-  TestSyncedTabDelegate* AddTab(SessionID::id_type window_id,
+  TestSyncedTabDelegate* AddTab(SessionID window_id,
                                 const std::string& url,
-                                SessionID::id_type tab_id = SessionID().id()) {
+                                SessionID tab_id = SessionID::NewUnique()) {
     TestSyncedTabDelegate* tab = window_getter_.AddTab(window_id, tab_id);
     tab->Navigate(url, base::Time::Now());
     return tab;
   }
 
-  TestSyncedTabDelegate* AddTabWithTime(SessionID::id_type window_id,
+  TestSyncedTabDelegate* AddTabWithTime(SessionID window_id,
                                         const std::string& url,
                                         base::Time time = base::Time::Now()) {
     TestSyncedTabDelegate* tab = window_getter_.AddTab(window_id);
@@ -236,8 +236,8 @@ TEST_F(LocalSessionEventHandlerImplTest, SetSessionTabFromDelegate) {
   InitHandler();
   handler_->SetSessionTabFromDelegateForTest(*tab, kTime4, &session_tab);
 
-  EXPECT_EQ(tab->GetWindowId(), session_tab.window_id.id());
-  EXPECT_EQ(tab->GetSessionId(), session_tab.tab_id.id());
+  EXPECT_EQ(tab->GetWindowId(), session_tab.window_id);
+  EXPECT_EQ(tab->GetSessionId(), session_tab.tab_id);
   EXPECT_EQ(0, session_tab.tab_visual_index);
   EXPECT_EQ(tab->GetCurrentEntryIndex(), session_tab.current_navigation_index);
   EXPECT_FALSE(session_tab.pinned);
@@ -347,8 +347,8 @@ TEST_F(LocalSessionEventHandlerImplTest, BlockedNavigations) {
   InitHandler();
   handler_->SetSessionTabFromDelegateForTest(*tab, kTime4, &session_tab);
 
-  EXPECT_EQ(tab->GetWindowId(), session_tab.window_id.id());
-  EXPECT_EQ(tab->GetSessionId(), session_tab.tab_id.id());
+  EXPECT_EQ(tab->GetWindowId(), session_tab.window_id);
+  EXPECT_EQ(tab->GetSessionId(), session_tab.tab_id);
   EXPECT_EQ(0, session_tab.tab_visual_index);
   EXPECT_EQ(0, session_tab.current_navigation_index);
   EXPECT_FALSE(session_tab.pinned);

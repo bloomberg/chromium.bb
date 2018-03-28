@@ -33,7 +33,7 @@ class BrowserLiveTabContext : public sessions::LiveTabContext {
 
   // Overridden from LiveTabContext:
   void ShowBrowserWindow() override;
-  const SessionID& GetSessionID() const override;
+  SessionID GetSessionID() const override;
   int GetTabCount() const override;
   int GetSelectedIndex() const override;
   std::string GetAppName() const override;

@@ -24,7 +24,7 @@ class TabModelSyncedWindowDelegatesGetter
   // sync_sessions::SyncedWindowDelegatesGetter:
   SyncedWindowDelegateMap GetSyncedWindowDelegates() override;
   const sync_sessions::SyncedWindowDelegate* FindById(
-      SessionID::id_type session_id) override;
+      SessionID session_id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(TabModelSyncedWindowDelegatesGetter);

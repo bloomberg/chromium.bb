@@ -57,7 +57,7 @@ struct SyncedSession {
   base::Time modified_time;
 
   // Map of windows that make up this session.
-  std::map<SessionID::id_type, std::unique_ptr<SyncedSessionWindow>> windows;
+  std::map<SessionID, std::unique_ptr<SyncedSessionWindow>> windows;
 
   // A tab node id is part of the identifier for the sync tab objects. Tab node
   // ids are not used for interacting with the model/browser tabs. However, when

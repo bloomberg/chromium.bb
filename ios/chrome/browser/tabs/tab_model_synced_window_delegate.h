@@ -25,13 +25,13 @@ class TabModelSyncedWindowDelegate : public sync_sessions::SyncedWindowDelegate,
   ~TabModelSyncedWindowDelegate() override;
 
   // Return the tab id for the tab at |index|.
-  SessionID::id_type GetTabIdAt(int index) const override;
+  SessionID GetTabIdAt(int index) const override;
   bool IsSessionRestoreInProgress() const override;
   bool ShouldSync() const override;
 
   // SyncedWindowDelegate:
   bool HasWindow() const override;
-  SessionID::id_type GetSessionId() const override;
+  SessionID GetSessionId() const override;
   int GetTabCount() const override;
   int GetActiveIndex() const override;
   bool IsApp() const override;

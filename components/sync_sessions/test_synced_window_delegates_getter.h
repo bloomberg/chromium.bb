@@ -26,8 +26,8 @@ namespace sync_sessions {
 class TestSyncedTabDelegate : public SyncedTabDelegate {
  public:
   TestSyncedTabDelegate(
-      SessionID::id_type window_id,
-      SessionID::id_type tab_id,
+      SessionID window_id,
+      SessionID tab_id,
       const base::RepeatingCallback<void(SyncedTabDelegate*)>& notify_cb);
   ~TestSyncedTabDelegate() override;
 
@@ -49,8 +49,8 @@ class TestSyncedTabDelegate : public SyncedTabDelegate {
       int i,
       sessions::SerializedNavigationEntry* serialized_entry) const override;
   int GetEntryCount() const override;
-  SessionID::id_type GetWindowId() const override;
-  SessionID::id_type GetSessionId() const override;
+  SessionID GetWindowId() const override;
+  SessionID GetSessionId() const override;
   bool IsBeingDestroyed() const override;
   std::string GetExtensionAppId() const override;
   bool ProfileIsSupervised() const override;
@@ -61,16 +61,16 @@ class TestSyncedTabDelegate : public SyncedTabDelegate {
   int GetSyncId() const override;
   void SetSyncId(int sync_id) override;
   bool ShouldSync(SyncSessionsClient* sessions_client) override;
-  SessionID::id_type GetSourceTabID() const override;
+  SessionID GetSourceTabID() const override;
 
  private:
-  const SessionID::id_type window_id_;
-  const SessionID::id_type tab_id_;
+  const SessionID window_id_;
+  const SessionID tab_id_;
   const base::RepeatingCallback<void(SyncedTabDelegate*)> notify_cb_;
 
   int current_entry_index_ = -1;
   bool is_supervised_ = false;
-  int sync_id_ = kInvalidTabID;
+  int sync_id_ = -1;
   std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
       blocked_navigations_;
   std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>
@@ -85,16 +85,16 @@ class TestSyncedTabDelegate : public SyncedTabDelegate {
 // memory. See SyncedTabDelegate::IsPlaceHolderTab for more info.
 class PlaceholderTabDelegate : public SyncedTabDelegate {
  public:
-  PlaceholderTabDelegate(SessionID::id_type tab_id, int sync_id);
+  PlaceholderTabDelegate(SessionID tab_id, int sync_id);
   ~PlaceholderTabDelegate() override;
 
   // SyncedTabDelegate overrides.
-  SessionID::id_type GetSessionId() const override;
+  SessionID GetSessionId() const override;
   int GetSyncId() const override;
   void SetSyncId(int sync_id) override;
   bool IsPlaceholderTab() const override;
   // Everything else is invalid to invoke as it depends on a valid WebContents.
-  SessionID::id_type GetWindowId() const override;
+  SessionID GetWindowId() const override;
   bool IsBeingDestroyed() const override;
   std::string GetExtensionAppId() const override;
   bool IsInitialBlankNavigation() const override;
@@ -110,18 +110,18 @@ class PlaceholderTabDelegate : public SyncedTabDelegate {
   const std::vector<std::unique_ptr<const sessions::SerializedNavigationEntry>>*
   GetBlockedNavigations() const override;
   bool ShouldSync(SyncSessionsClient* sessions_client) override;
-  SessionID::id_type GetSourceTabID() const override;
+  SessionID GetSourceTabID() const override;
 
  private:
-  const SessionID::id_type tab_id_;
-  int sync_id_ = kInvalidTabID;
+  const SessionID tab_id_;
+  int sync_id_ = -1;
 
   DISALLOW_COPY_AND_ASSIGN(PlaceholderTabDelegate);
 };
 
 class TestSyncedWindowDelegate : public SyncedWindowDelegate {
  public:
-  explicit TestSyncedWindowDelegate(SessionID::id_type window_id,
+  explicit TestSyncedWindowDelegate(SessionID window_id,
                                     sync_pb::SessionWindow_BrowserType type);
   ~TestSyncedWindowDelegate() override;
 
@@ -130,7 +130,7 @@ class TestSyncedWindowDelegate : public SyncedWindowDelegate {
 
   // SyncedWindowDelegate overrides.
   bool HasWindow() const override;
-  SessionID::id_type GetSessionId() const override;
+  SessionID GetSessionId() const override;
   int GetTabCount() const override;
   int GetActiveIndex() const override;
   bool IsApp() const override;
@@ -138,17 +138,17 @@ class TestSyncedWindowDelegate : public SyncedWindowDelegate {
   bool IsTypePopup() const override;
   bool IsTabPinned(const SyncedTabDelegate* tab) const override;
   SyncedTabDelegate* GetTabAt(int index) const override;
-  SessionID::id_type GetTabIdAt(int index) const override;
+  SessionID GetTabIdAt(int index) const override;
   bool IsSessionRestoreInProgress() const override;
   bool ShouldSync() const override;
 
  private:
-  const SessionID::id_type window_id_;
+  const SessionID window_id_;
   const sync_pb::SessionWindow_BrowserType window_type_;
 
   std::map<int, SyncedTabDelegate*> tab_delegates_;
   std::map<int, SyncedTabDelegate*> tab_overrides_;
-  std::map<int, SessionID::id_type> tab_id_overrides_;
+  std::map<int, SessionID> tab_id_overrides_;
 
   DISALLOW_COPY_AND_ASSIGN(TestSyncedWindowDelegate);
 };
@@ -161,17 +161,17 @@ class TestSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
   void ResetWindows();
   TestSyncedWindowDelegate* AddWindow(
       sync_pb::SessionWindow_BrowserType type,
-      SessionID::id_type window_id = SessionID().id());
+      SessionID window_id = SessionID::NewUnique());
   // Creates a new tab within the window specified by |window_id|. The newly
   // created tab's ID can be specified optionally. Returns the newly created
   // TestSyncedTabDelegate (not owned).
-  TestSyncedTabDelegate* AddTab(SessionID::id_type window_id,
-                                SessionID::id_type tab_id = SessionID().id());
+  TestSyncedTabDelegate* AddTab(SessionID window_id,
+                                SessionID tab_id = SessionID::NewUnique());
   LocalSessionEventRouter* router();
 
   // SyncedWindowDelegatesGetter overrides.
   SyncedWindowDelegateMap GetSyncedWindowDelegates() override;
-  const SyncedWindowDelegate* FindById(SessionID::id_type id) override;
+  const SyncedWindowDelegate* FindById(SessionID id) override;
 
  private:
   class DummyRouter : public LocalSessionEventRouter {

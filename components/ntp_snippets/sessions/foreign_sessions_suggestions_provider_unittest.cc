@@ -50,11 +50,12 @@ const char kUrl11[] = "http://www.fake11.com/";
 const char kTitle[] = "title is ignored";
 
 SessionWindow* GetOrCreateWindow(SyncedSession* session, int window_id) {
-  if (session->windows.find(window_id) == session->windows.end()) {
-    session->windows[window_id] = std::make_unique<SyncedSessionWindow>();
+  SessionID id = SessionID::FromSerializedValue(window_id);
+  if (session->windows.find(id) == session->windows.end()) {
+    session->windows[id] = std::make_unique<SyncedSessionWindow>();
   }
 
-  return &session->windows[window_id]->wrapped_window;
+  return &session->windows[id]->wrapped_window;
 }
 
 void AddTabToSession(SyncedSession* session,

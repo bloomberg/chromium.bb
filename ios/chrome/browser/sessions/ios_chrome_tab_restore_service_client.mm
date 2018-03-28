@@ -102,7 +102,8 @@ IOSChromeTabRestoreServiceClient::FindLiveTabContextWithID(
   return FindLiveTabContextWithCondition(base::Bind(
       [](SessionID::id_type desired_id, TabModel* tab_model) {
         DCHECK(tab_model.syncedWindowDelegate);
-        return tab_model.syncedWindowDelegate->GetSessionId() == desired_id;
+        return tab_model.syncedWindowDelegate->GetSessionId().id() ==
+               desired_id;
       },
       desired_id));
 }

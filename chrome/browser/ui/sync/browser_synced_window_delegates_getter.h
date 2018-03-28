@@ -24,8 +24,7 @@ class BrowserSyncedWindowDelegatesGetter
 
   // SyncedWindowDelegatesGetter implementation
   SyncedWindowDelegateMap GetSyncedWindowDelegates() override;
-  const sync_sessions::SyncedWindowDelegate* FindById(
-      SessionID::id_type id) override;
+  const sync_sessions::SyncedWindowDelegate* FindById(SessionID id) override;
 
  private:
   Profile* const profile_;

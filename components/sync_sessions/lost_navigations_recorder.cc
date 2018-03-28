@@ -39,7 +39,7 @@ void LostNavigationsRecorder::RecordChange(const syncer::SyncChange& change) {
     return;
   }
   sync_pb::SessionTab tab = session_specifics.tab();
-  id_type tab_id = tab.tab_id();
+  SessionID tab_id = SessionID::FromSerializedValue(tab.tab_id());
 
   IdSet& latest = latest_navigation_ids_[tab_id];
   latest.clear();
@@ -58,12 +58,12 @@ void LostNavigationsRecorder::RecordChange(const syncer::SyncChange& change) {
 }
 
 void LostNavigationsRecorder::DeleteTabs(const sync_pb::SessionHeader& header) {
-  IdSet new_tab_ids;
-  IdSet current_tab_ids;
+  std::set<SessionID> new_tab_ids;
+  std::set<SessionID> current_tab_ids;
   // Find the set of tab ids that are still there after the deletion.
   for (sync_pb::SessionWindow window : header.window()) {
-    for (id_type tab_id : window.tab()) {
-      new_tab_ids.insert(tab_id);
+    for (auto tab_id : window.tab()) {
+      new_tab_ids.insert(SessionID::FromSerializedValue(tab_id));
     }
   }
   for (auto pair : recorded_navigation_ids_) {
@@ -71,9 +71,9 @@ void LostNavigationsRecorder::DeleteTabs(const sync_pb::SessionHeader& header) {
   }
   // The set of deleted tabs is the difference between the set of tabs before
   // the pending change and the set of tabs following the pending change.
-  IdSet deleted_tabs =
-      base::STLSetDifference<IdSet>(current_tab_ids, new_tab_ids);
-  for (id_type tab_id : deleted_tabs) {
+  auto deleted_tabs =
+      base::STLSetDifference<std::set<SessionID>>(current_tab_ids, new_tab_ids);
+  for (SessionID tab_id : deleted_tabs) {
     recorded_navigation_ids_.erase(tab_id);
     latest_navigation_ids_.erase(tab_id);
     max_recorded_for_tab_.erase(tab_id);
@@ -118,7 +118,7 @@ void LostNavigationsRecorder::TransitionState(bool is_syncing,
 // recorded against what was actually synced.
 void LostNavigationsRecorder::ReconcileLostNavs() {
   for (auto pair : recorded_navigation_ids_) {
-    id_type tab_id = pair.first;
+    SessionID tab_id = pair.first;
     IdSet& latest = latest_navigation_ids_[tab_id];
     IdSet& recorded = recorded_navigation_ids_[tab_id];
     if (recorded.size() < 1) {

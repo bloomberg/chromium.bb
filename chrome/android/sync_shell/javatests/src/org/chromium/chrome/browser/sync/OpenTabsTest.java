@@ -244,9 +244,9 @@ public class OpenTabsTest {
 
     private SessionWindow makeSessionWindow(int numTabs) {
         SessionWindow.Builder windowBuilder =
-                SessionWindow.newBuilder().setWindowId(0).setSelectedTabIndex(0);
+                SessionWindow.newBuilder().setWindowId(1).setSelectedTabIndex(0);
         for (int i = 0; i < numTabs; i++) {
-            windowBuilder.addTab(i); // Updates |windowBuilder| internal state.
+            windowBuilder.addTab(i + 1); // Updates |windowBuilder| internal state.
         }
         return windowBuilder.build();
     }
@@ -270,7 +270,7 @@ public class OpenTabsTest {
                         .setSessionTag(tag)
                         .setTabNodeId(id)
                         .setTab(SessionTab.newBuilder()
-                                        .setTabId(id)
+                                        .setTabId(id + 1)
                                         .setCurrentNavigationIndex(0)
                                         .addNavigation(TabNavigation.newBuilder()
                                                                .setVirtualUrl(url)

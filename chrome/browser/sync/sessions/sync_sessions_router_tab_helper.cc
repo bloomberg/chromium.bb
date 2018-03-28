@@ -33,7 +33,7 @@ SyncSessionsRouterTabHelper::SyncSessionsRouterTabHelper(
     SyncSessionsWebContentsRouter* router)
     : content::WebContentsObserver(web_contents),
       router_(router),
-      source_tab_id_(kInvalidTabID) {}
+      source_tab_id_(SessionID::InvalidValue()) {}
 
 SyncSessionsRouterTabHelper::~SyncSessionsRouterTabHelper() {}
 
@@ -74,10 +74,11 @@ void SyncSessionsRouterTabHelper::DidOpenRequestedURL(
 
 void SyncSessionsRouterTabHelper::SetSourceTabIdForChild(
     content::WebContents* child_contents) {
-  SessionID::id_type source_tab_id = SessionTabHelper::IdForTab(web_contents());
+  SessionID source_tab_id = SessionID::FromSerializedValue(
+      SessionTabHelper::IdForTab(web_contents()));
   if (child_contents &&
       SyncSessionsRouterTabHelper::FromWebContents(child_contents) &&
-      child_contents != web_contents() && source_tab_id != kInvalidTabID) {
+      child_contents != web_contents() && source_tab_id.is_valid()) {
     SyncSessionsRouterTabHelper::FromWebContents(child_contents)
         ->set_source_tab_id(source_tab_id);
   }

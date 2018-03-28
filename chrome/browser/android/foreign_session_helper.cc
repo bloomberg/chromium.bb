@@ -287,7 +287,7 @@ jboolean ForeignSessionHelper::OpenForeignSessionTab(
   const sessions::SessionTab* session_tab;
 
   if (!open_tabs->GetForeignTab(ConvertJavaStringToUTF8(env, session_tag),
-                                session_tab_id,
+                                SessionID::FromSerializedValue(session_tab_id),
                                 &session_tab)) {
     LOG(ERROR) << "Failed to load foreign tab.";
     return false;

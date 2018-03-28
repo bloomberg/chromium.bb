@@ -34,7 +34,7 @@ sync_sessions::SyncedTabDelegate* BrowserSyncedWindowDelegate::GetTabAt(
       browser_->tab_strip_model()->GetWebContentsAt(index));
 }
 
-SessionID::id_type BrowserSyncedWindowDelegate::GetTabIdAt(int index) const {
+SessionID BrowserSyncedWindowDelegate::GetTabIdAt(int index) const {
   return GetTabAt(index)->GetSessionId();
 }
 
@@ -42,8 +42,8 @@ bool BrowserSyncedWindowDelegate::HasWindow() const {
   return browser_->window() != NULL;
 }
 
-SessionID::id_type BrowserSyncedWindowDelegate::GetSessionId() const {
-  return browser_->session_id().id();
+SessionID BrowserSyncedWindowDelegate::GetSessionId() const {
+  return browser_->session_id();
 }
 
 int BrowserSyncedWindowDelegate::GetTabCount() const {

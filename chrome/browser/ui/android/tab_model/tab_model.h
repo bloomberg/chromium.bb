@@ -39,8 +39,7 @@ class TabModel : public content::NotificationObserver {
   virtual Profile* GetProfile() const;
   virtual bool IsOffTheRecord() const;
   virtual sync_sessions::SyncedWindowDelegate* GetSyncedWindowDelegate() const;
-  virtual SessionID::id_type GetSessionId() const;
-  virtual const SessionID& SessionId() const;
+  virtual SessionID GetSessionId() const;
   virtual sessions::LiveTabContext* GetLiveTabContext() const;
 
   virtual int GetTabCount() const = 0;

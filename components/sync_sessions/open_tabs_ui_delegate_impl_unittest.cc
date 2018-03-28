@@ -25,12 +25,12 @@ using testing::Property;
 const char kSessionTag1[] = "foreign1";
 const char kSessionTag2[] = "foreign2";
 const char kSessionTag3[] = "foreign3";
-const SessionID::id_type kWindowId1 = 1;
-const SessionID::id_type kWindowId2 = 2;
-const SessionID::id_type kWindowId3 = 3;
-const SessionID::id_type kTabId1 = 111;
-const SessionID::id_type kTabId2 = 222;
-const SessionID::id_type kTabId3 = 333;
+const SessionID kWindowId1 = SessionID::FromSerializedValue(1);
+const SessionID kWindowId2 = SessionID::FromSerializedValue(2);
+const SessionID kWindowId3 = SessionID::FromSerializedValue(3);
+const SessionID kTabId1 = SessionID::FromSerializedValue(111);
+const SessionID kTabId2 = SessionID::FromSerializedValue(222);
+const SessionID kTabId3 = SessionID::FromSerializedValue(333);
 
 void IngnoreForeignSessionDeletion(const std::string& session_tag) {}
 
@@ -115,13 +115,14 @@ TEST_F(OpenTabsUIDelegateImplTest, ShouldSortTabs) {
 
   std::vector<const SessionTab*> tabs;
   EXPECT_TRUE(delegate_.GetForeignSessionTabs(kSessionTag1, &tabs));
-  EXPECT_THAT(tabs,
-              ElementsAre(Pointee(Field(&SessionTab::tab_id,
-                                        Property(&SessionID::id, kTabId1))),
-                          Pointee(Field(&SessionTab::tab_id,
-                                        Property(&SessionID::id, kTabId3))),
-                          Pointee(Field(&SessionTab::tab_id,
-                                        Property(&SessionID::id, kTabId2)))));
+  EXPECT_THAT(
+      tabs,
+      ElementsAre(Pointee(Field(&SessionTab::tab_id,
+                                Property(&SessionID::id, kTabId1.id()))),
+                  Pointee(Field(&SessionTab::tab_id,
+                                Property(&SessionID::id, kTabId3.id()))),
+                  Pointee(Field(&SessionTab::tab_id,
+                                Property(&SessionID::id, kTabId2.id())))));
 }
 
 TEST_F(OpenTabsUIDelegateImplTest, ShouldSkipNonPresentable) {

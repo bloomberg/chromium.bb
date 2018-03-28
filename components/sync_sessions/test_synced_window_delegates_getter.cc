@@ -18,8 +18,8 @@ const char kTitle[] = "title";
 }  // namespace
 
 TestSyncedTabDelegate::TestSyncedTabDelegate(
-    SessionID::id_type window_id,
-    SessionID::id_type tab_id,
+    SessionID window_id,
+    SessionID tab_id,
     const base::RepeatingCallback<void(SyncedTabDelegate*)>& notify_cb)
     : window_id_(window_id), tab_id_(tab_id), notify_cb_(notify_cb) {}
 
@@ -98,11 +98,11 @@ int TestSyncedTabDelegate::GetEntryCount() const {
   return entries_.size();
 }
 
-SessionID::id_type TestSyncedTabDelegate::GetWindowId() const {
+SessionID TestSyncedTabDelegate::GetWindowId() const {
   return window_id_;
 }
 
-SessionID::id_type TestSyncedTabDelegate::GetSessionId() const {
+SessionID TestSyncedTabDelegate::GetSessionId() const {
   return tab_id_;
 }
 
@@ -154,17 +154,16 @@ bool TestSyncedTabDelegate::ShouldSync(SyncSessionsClient* sessions_client) {
   return http_count > 0;
 }
 
-SessionID::id_type TestSyncedTabDelegate::GetSourceTabID() const {
-  return kInvalidTabID;
+SessionID TestSyncedTabDelegate::GetSourceTabID() const {
+  return SessionID::InvalidValue();
 }
 
-PlaceholderTabDelegate::PlaceholderTabDelegate(SessionID::id_type tab_id,
-                                               int sync_id)
+PlaceholderTabDelegate::PlaceholderTabDelegate(SessionID tab_id, int sync_id)
     : tab_id_(tab_id), sync_id_(sync_id) {}
 
 PlaceholderTabDelegate::~PlaceholderTabDelegate() = default;
 
-SessionID::id_type PlaceholderTabDelegate::GetSessionId() const {
+SessionID PlaceholderTabDelegate::GetSessionId() const {
   return tab_id_;
 }
 
@@ -180,9 +179,9 @@ bool PlaceholderTabDelegate::IsPlaceholderTab() const {
   return true;
 }
 
-SessionID::id_type PlaceholderTabDelegate::GetWindowId() const {
+SessionID PlaceholderTabDelegate::GetWindowId() const {
   NOTREACHED();
-  return 0;
+  return SessionID::InvalidValue();
 }
 
 bool PlaceholderTabDelegate::IsBeingDestroyed() const {
@@ -247,12 +246,12 @@ bool PlaceholderTabDelegate::ShouldSync(SyncSessionsClient* sessions_client) {
   return false;
 }
 
-SessionID::id_type PlaceholderTabDelegate::GetSourceTabID() const {
-  return kInvalidTabID;
+SessionID PlaceholderTabDelegate::GetSourceTabID() const {
+  return SessionID::InvalidValue();
 }
 
 TestSyncedWindowDelegate::TestSyncedWindowDelegate(
-    SessionID::id_type window_id,
+    SessionID window_id,
     sync_pb::SessionWindow_BrowserType type)
     : window_id_(window_id), window_type_(type) {}
 
@@ -267,7 +266,7 @@ bool TestSyncedWindowDelegate::HasWindow() const {
   return true;
 }
 
-SessionID::id_type TestSyncedWindowDelegate::GetSessionId() const {
+SessionID TestSyncedWindowDelegate::GetSessionId() const {
   return window_id_;
 }
 
@@ -302,10 +301,10 @@ SyncedTabDelegate* TestSyncedWindowDelegate::GetTabAt(int index) const {
   return nullptr;
 }
 
-SessionID::id_type TestSyncedWindowDelegate::GetTabIdAt(int index) const {
+SessionID TestSyncedWindowDelegate::GetTabIdAt(int index) const {
   SyncedTabDelegate* delegate = GetTabAt(index);
   if (!delegate)
-    return kInvalidTabID;
+    return SessionID::InvalidValue();
   return delegate->GetSessionId();
 }
 
@@ -328,7 +327,7 @@ void TestSyncedWindowDelegatesGetter::ResetWindows() {
 
 TestSyncedWindowDelegate* TestSyncedWindowDelegatesGetter::AddWindow(
     sync_pb::SessionWindow_BrowserType type,
-    SessionID::id_type window_id) {
+    SessionID window_id) {
   windows_.push_back(
       std::make_unique<TestSyncedWindowDelegate>(window_id, type));
   CHECK_EQ(window_id, windows_.back()->GetSessionId());
@@ -337,8 +336,8 @@ TestSyncedWindowDelegate* TestSyncedWindowDelegatesGetter::AddWindow(
 }
 
 TestSyncedTabDelegate* TestSyncedWindowDelegatesGetter::AddTab(
-    SessionID::id_type window_id,
-    SessionID::id_type tab_id) {
+    SessionID window_id,
+    SessionID tab_id) {
   tabs_.push_back(std::make_unique<TestSyncedTabDelegate>(
       window_id, tab_id,
       base::BindRepeating(&DummyRouter::NotifyNav,
@@ -366,7 +365,7 @@ TestSyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
 }
 
 const SyncedWindowDelegate* TestSyncedWindowDelegatesGetter::FindById(
-    SessionID::id_type id) {
+    SessionID id) {
   for (auto window_iter_pair : delegates_) {
     if (window_iter_pair.second->GetSessionId() == id)
       return window_iter_pair.second;

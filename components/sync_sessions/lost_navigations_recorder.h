@@ -23,7 +23,7 @@ namespace sync_sessions {
 // being reflected in the history page.
 class LostNavigationsRecorder : public syncer::LocalChangeObserver {
  public:
-  using id_type = SessionID::id_type;
+  using id_type = int32_t;
   using IdSet = std::set<id_type>;
   enum RecorderState { RECORDER_STATE_NOT_SYNCING, RECORDER_STATE_SYNCING };
 
@@ -46,11 +46,11 @@ class LostNavigationsRecorder : public syncer::LocalChangeObserver {
 
   // The set of all navigation ids we've observed for each tab_id since the last
   // sync.
-  std::map<id_type, IdSet> recorded_navigation_ids_;
+  std::map<SessionID, IdSet> recorded_navigation_ids_;
   // The set of navigation ids most recently recorded for each tab_id.
-  std::map<id_type, IdSet> latest_navigation_ids_;
+  std::map<SessionID, IdSet> latest_navigation_ids_;
   // The maximum navigation_id recorded for each tab_id.
-  std::map<id_type, id_type> max_recorded_for_tab_;
+  std::map<SessionID, id_type> max_recorded_for_tab_;
   DISALLOW_COPY_AND_ASSIGN(LostNavigationsRecorder);
 };
 };  // namespace sync_sessions

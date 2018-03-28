@@ -29,7 +29,7 @@ void BrowserLiveTabContext::ShowBrowserWindow() {
   browser_->window()->Show();
 }
 
-const SessionID& BrowserLiveTabContext::GetSessionID() const {
+SessionID BrowserLiveTabContext::GetSessionID() const {
   return browser_->session_id();
 }
 

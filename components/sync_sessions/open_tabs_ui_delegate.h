@@ -34,7 +34,7 @@ class OpenTabsUIDelegate {
   // session |tag|. Caller does NOT own the SessionTab object.
   // Returns true if the foreign session and tab were found, false otherwise.
   virtual bool GetForeignTab(const std::string& tag,
-                             SessionID::id_type tab_id,
+                             SessionID tab_id,
                              const sessions::SessionTab** tab) = 0;
 
   // Delete a foreign session and all its sync data.

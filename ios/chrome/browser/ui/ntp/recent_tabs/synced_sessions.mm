@@ -38,7 +38,7 @@ void AddTabToDistantSession(const sessions::SessionTab& session_tab,
         std::make_unique<synced_sessions::DistantTab>());
     synced_sessions::DistantTab& distant_tab = *distant_session->tabs.back();
     distant_tab.session_tag = session_tag;
-    distant_tab.tab_id = session_tab.tab_id.id();
+    distant_tab.tab_id = session_tab.tab_id;
     int index = session_tab.current_navigation_index;
     if (index < 0)
       index = 0;

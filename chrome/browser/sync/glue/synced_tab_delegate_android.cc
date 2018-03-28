@@ -25,19 +25,19 @@ SyncedTabDelegateAndroid::SyncedTabDelegateAndroid(TabAndroid* tab_android)
 
 SyncedTabDelegateAndroid::~SyncedTabDelegateAndroid() {}
 
-SessionID::id_type SyncedTabDelegateAndroid::GetWindowId() const {
+SessionID SyncedTabDelegateAndroid::GetWindowId() const {
   return tab_contents_delegate_->GetWindowId();
 }
 
-SessionID::id_type SyncedTabDelegateAndroid::GetSessionId() const {
-  return tab_android_->session_id().id();
+SessionID SyncedTabDelegateAndroid::GetSessionId() const {
+  return tab_android_->session_id();
 }
 
 bool SyncedTabDelegateAndroid::IsBeingDestroyed() const {
   return tab_contents_delegate_->IsBeingDestroyed();
 }
 
-SessionID::id_type SyncedTabDelegateAndroid::GetSourceTabID() const {
+SessionID SyncedTabDelegateAndroid::GetSourceTabID() const {
   return tab_contents_delegate_->GetSourceTabID();
 }
 

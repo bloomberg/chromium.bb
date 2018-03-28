@@ -38,7 +38,7 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
   ~MockSyncedWindowDelegate() override {}
 
   bool HasWindow() const override { return false; }
-  SessionID::id_type GetSessionId() const override { return 0; }
+  SessionID GetSessionId() const override { return SessionID::InvalidValue(); }
   int GetTabCount() const override { return 0; }
   int GetActiveIndex() const override { return 0; }
   bool IsApp() const override { return false; }
@@ -48,7 +48,9 @@ class MockSyncedWindowDelegate : public SyncedWindowDelegate {
     return false;
   }
   SyncedTabDelegate* GetTabAt(int index) const override { return nullptr; }
-  SessionID::id_type GetTabIdAt(int index) const override { return 0; }
+  SessionID GetTabIdAt(int index) const override {
+    return SessionID::InvalidValue();
+  }
 
   bool IsSessionRestoreInProgress() const override {
     return is_restore_in_progress_;
@@ -70,7 +72,7 @@ class MockSyncedWindowDelegatesGetter : public SyncedWindowDelegatesGetter {
     return delegates_;
   }
 
-  const SyncedWindowDelegate* FindById(SessionID::id_type id) override {
+  const SyncedWindowDelegate* FindById(SessionID id) override {
     return nullptr;
   }
 

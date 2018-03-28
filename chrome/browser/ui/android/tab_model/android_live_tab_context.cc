@@ -20,8 +20,8 @@ AndroidLiveTabContext::AndroidLiveTabContext(TabModel* tab_model)
 void AndroidLiveTabContext::ShowBrowserWindow() {
 }
 
-const SessionID& AndroidLiveTabContext::GetSessionID() const {
-  return tab_model_->SessionId();
+SessionID AndroidLiveTabContext::GetSessionID() const {
+  return tab_model_->GetSessionId();
 }
 
 int AndroidLiveTabContext::GetTabCount() const {

@@ -29,7 +29,7 @@ class SESSIONS_EXPORT LiveTabContext {
  public:
   // TODO(blundell): Rename.
   virtual void ShowBrowserWindow() = 0;
-  virtual const SessionID& GetSessionID() const = 0;
+  virtual SessionID GetSessionID() const = 0;
   virtual int GetTabCount() const = 0;
   virtual int GetSelectedIndex() const = 0;
   virtual std::string GetAppName() const = 0;

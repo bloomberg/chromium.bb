@@ -25,7 +25,7 @@ class BrowserSyncedWindowDelegate : public sync_sessions::SyncedWindowDelegate {
 
   // SyncedWindowDelegate:
   bool HasWindow() const override;
-  SessionID::id_type GetSessionId() const override;
+  SessionID GetSessionId() const override;
   int GetTabCount() const override;
   int GetActiveIndex() const override;
   bool IsApp() const override;
@@ -33,7 +33,7 @@ class BrowserSyncedWindowDelegate : public sync_sessions::SyncedWindowDelegate {
   bool IsTypePopup() const override;
   bool IsTabPinned(const sync_sessions::SyncedTabDelegate* tab) const override;
   sync_sessions::SyncedTabDelegate* GetTabAt(int index) const override;
-  SessionID::id_type GetTabIdAt(int index) const override;
+  SessionID GetTabIdAt(int index) const override;
   bool IsSessionRestoreInProgress() const override;
   bool ShouldSync() const override;
 

@@ -40,7 +40,7 @@ void TabRestoreServiceDelegateImplIOS::ShowBrowserWindow() {
   // shown.
 }
 
-const SessionID& TabRestoreServiceDelegateImplIOS::GetSessionID() const {
+SessionID TabRestoreServiceDelegateImplIOS::GetSessionID() const {
   return session_id_;
 }
 

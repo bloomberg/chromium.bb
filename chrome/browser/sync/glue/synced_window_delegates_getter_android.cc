@@ -26,8 +26,8 @@ SyncedWindowDelegatesGetterAndroid::GetSyncedWindowDelegates() {
 }
 
 const SyncedWindowDelegate* SyncedWindowDelegatesGetterAndroid::FindById(
-    SessionID::id_type session_id) {
-  TabModel* tab_model = TabModelList::FindTabModelWithId(session_id);
+    SessionID session_id) {
+  TabModel* tab_model = TabModelList::FindTabModelWithId(session_id.id());
 
   // In case we don't find the browser (e.g. for Developer Tools).
   return tab_model ? tab_model->GetSyncedWindowDelegate() : nullptr;
