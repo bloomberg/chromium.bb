@@ -252,17 +252,19 @@ SkColor GetOmniboxColor(OmniboxPart part,
       // This is a pre-lightened (or darkened) variant of the base text color.
       return dark ? gfx::kGoogleGrey400 : gfx::kGoogleGrey700;
 
+    case OmniboxPart::RESULTS_TEXT_INVISIBLE:
+      return SK_ColorTRANSPARENT;
+    case OmniboxPart::RESULTS_TEXT_NEGATIVE:
+      return dark ? gfx::kGoogleRedDark600 : gfx::kGoogleRed600;
+    case OmniboxPart::RESULTS_TEXT_POSITIVE:
+      return dark ? gfx::kGoogleGreenDark600 : gfx::kGoogleGreen600;
     case OmniboxPart::RESULTS_TEXT_URL:
-      // The darker blue doesn't appear in the Material spec.
-      return dark ? SkColorSetRGB(0x25, 0x81, 0xDF) : gfx::kGoogleBlue600;
+      return dark ? gfx::kGoogleBlueDark600 : gfx::kGoogleBlue600;
 
     // TODO(tapted): Add these.
     case OmniboxPart::LOCATION_BAR_CLEAR_ALL:
     case OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_BACKGROUND:
     case OmniboxPart::LOCATION_BAR_IME_AUTOCOMPLETE_TEXT:
-    case OmniboxPart::RESULTS_TEXT_INVISIBLE:
-    case OmniboxPart::RESULTS_TEXT_NEGATIVE:
-    case OmniboxPart::RESULTS_TEXT_POSITIVE:
       return GetLegacyColor(part, tint, state);
   }
   return gfx::kPlaceholderColor;
