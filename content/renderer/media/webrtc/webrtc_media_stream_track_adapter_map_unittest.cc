@@ -33,6 +33,10 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
 
   void TearDown() override { blink::WebHeap::CollectAllGarbageForTesting(); }
 
+  scoped_refptr<base::SingleThreadTaskRunner> signaling_thread() const {
+    return dependency_factory_->GetWebRtcSignalingThread();
+  }
+
   blink::WebMediaStreamTrack CreateLocalTrack(const std::string& id) {
     blink::WebMediaStreamSource web_source;
     web_source.Initialize(
@@ -53,7 +57,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
       webrtc::MediaStreamTrackInterface* webrtc_track) {
     DCHECK(main_thread_->BelongsToCurrentThread());
     std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> adapter;
-    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+    signaling_thread()->PostTask(
         FROM_HERE,
         base::BindOnce(&WebRtcMediaStreamTrackAdapterMapTest::
                            GetOrCreateRemoteTrackAdapterOnSignalingThread,
@@ -66,8 +70,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
   void GetOrCreateRemoteTrackAdapterOnSignalingThread(
       webrtc::MediaStreamTrackInterface* webrtc_track,
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef>* adapter) {
-    DCHECK(dependency_factory_->GetWebRtcSignalingThread()
-               ->BelongsToCurrentThread());
+    DCHECK(signaling_thread()->BelongsToCurrentThread());
     *adapter = map_->GetOrCreateRemoteTrackAdapter(webrtc_track);
   }
 
@@ -78,7 +81,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
     base::WaitableEvent waitable_event(
         base::WaitableEvent::ResetPolicy::MANUAL,
         base::WaitableEvent::InitialState::NOT_SIGNALED);
-    dependency_factory_->GetWebRtcSignalingThread()->PostTask(
+    signaling_thread()->PostTask(
         FROM_HERE, base::BindOnce(&WebRtcMediaStreamTrackAdapterMapTest::
                                       RunMessageLoopUntilIdleOnSignalingThread,
                                   base::Unretained(this), &waitable_event));
@@ -88,8 +91,7 @@ class WebRtcMediaStreamTrackAdapterMapTest : public ::testing::Test {
 
   void RunMessageLoopUntilIdleOnSignalingThread(
       base::WaitableEvent* waitable_event) {
-    DCHECK(dependency_factory_->GetWebRtcSignalingThread()
-               ->BelongsToCurrentThread());
+    DCHECK(signaling_thread()->BelongsToCurrentThread());
     base::RunLoop().RunUntilIdle();
     waitable_event->Signal();
   }
