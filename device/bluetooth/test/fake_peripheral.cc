@@ -181,19 +181,7 @@ bool FakePeripheral::IsConnecting() const {
 }
 
 device::BluetoothDevice::UUIDSet FakePeripheral::GetUUIDs() const {
-  // Since the advertisement packets use the DeviceUUIDs helper class and the
-  // pre-connected devices use the service_uuids_ data member, it is necessary
-  // to combine the two so that the chooser can properly filter out devices.
-  // This is a temporary workaround until the class can be successfully
-  // refactored to use DeviceUUIDs to manage the service UUIDs.
-  // TODO(https://crbug.com/824704): This override should be removed once the
-  // class is refactored.
-  device::BluetoothDevice::UUIDSet services;
-  std::set_union(service_uuids_.begin(), service_uuids_.end(),
-                 device_uuids_.GetUUIDs().begin(),
-                 device_uuids_.GetUUIDs().end(),
-                 std::inserter(services, services.begin()));
-  return services;
+  return service_uuids_;
 }
 
 bool FakePeripheral::ExpectingPinCode() const {
