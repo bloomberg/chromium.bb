@@ -2444,7 +2444,6 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'edgar',
       'elm',
       'eve',
-      'eve-arcnext',
       'falco',
       'fizz',
       'glados',
@@ -2515,6 +2514,7 @@ def CqBuilders(site_config, boards_dict, ge_build_config):
       'capri', # contact:ghines@
       'capri-zfpga', # contact:victoryang@
       'cobblepot', # contact:jkoleszar@
+      'eve-arcnext', # contact: ihf@ (crbug.com/826755)
       'fizz-accelerator', # contact:perley@
       'gale', # contact:mxt@ (crbug.com/794242, crbug.com/819287)
       'gonzo', # contact:icoolidge@
@@ -3243,7 +3243,6 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'coral',
       'cyan',
       'daisy_skate',
-      'eve-arcnext',
       'peach_pit',
       'peppy',
       'reef',
@@ -3256,6 +3255,7 @@ def ChromePfqBuilders(site_config, boards_dict, ge_build_config):
       'betty-arcnext',
       'bob',
       'caroline-arcnext',
+      'eve-arcnext',
       'hana',
       'kevin-arcnext',
       'nyan_big',
