@@ -6,7 +6,6 @@ if (!is_ios && !is_android) {
   source_set("unit_tests") {
     testonly = true
     deps = [
-      "//components/multidevice/service:multidevice_service_unittest",
       "//components/multidevice/service:unit_tests",
     ]
   }

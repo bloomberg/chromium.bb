@@ -103,6 +103,7 @@ interface DeviceSyncObserver {
   OnDevicesSynced(bool success);
 };
 
+// TODO(khorimoto): Flesh out API.
 interface DeviceSync {
   // Triggers an enrollment. Result of the enrollment will be relayed via the
   // OnEnrollmentFinished() observer function.
@@ -113,7 +114,5 @@ interface DeviceSync {
   ForceSyncNow();
 
   // Adds an Observer of this API.
-  AddObserver(DeviceSyncObserver observer);
-
-  // TODO(khorimoto): Flesh out API.
+  AddObserver(DeviceSyncObserver observer) => ();
 };
