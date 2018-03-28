@@ -14,6 +14,7 @@
 #include "content/renderer/media/webrtc/webrtc_media_stream_track_adapter_map.h"
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/WebKit/public/platform/WebRTCRtpSender.h"
+#include "third_party/WebKit/public/platform/WebRTCStats.h"
 #include "third_party/webrtc/api/peerconnectioninterface.h"
 #include "third_party/webrtc/api/rtpsenderinterface.h"
 #include "third_party/webrtc/rtc_base/scoped_ref_ptr.h"
@@ -27,13 +28,16 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
  public:
   static uintptr_t getId(const webrtc::RtpSenderInterface* webrtc_sender);
 
-  RTCRtpSender(scoped_refptr<base::SingleThreadTaskRunner> main_thread,
-               scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
-               scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
-               rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
-               blink::WebMediaStreamTrack web_track,
-               std::vector<blink::WebMediaStream> web_streams);
   RTCRtpSender(
+      scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
+      scoped_refptr<base::SingleThreadTaskRunner> main_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
+      scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
+      rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
+      blink::WebMediaStreamTrack web_track,
+      std::vector<blink::WebMediaStream> web_streams);
+  RTCRtpSender(
+      scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
       scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
       scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
@@ -59,6 +63,7 @@ class CONTENT_EXPORT RTCRtpSender : public blink::WebRTCRtpSender {
   std::unique_ptr<blink::WebRTCDTMFSenderHandler> GetDtmfSender()
       const override;
   std::unique_ptr<blink::WebRTCRtpParameters> GetParameters() const override;
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback>) override;
 
   webrtc::RtpSenderInterface* webrtc_sender() const;
   const webrtc::MediaStreamTrackInterface* webrtc_track() const;

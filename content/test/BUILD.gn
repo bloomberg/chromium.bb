@@ -409,6 +409,8 @@ jumbo_static_library("test_support") {
       "../renderer/media/webrtc/mock_peer_connection_impl.h",
       "../renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.cc",
       "../renderer/media/webrtc/mock_web_rtc_peer_connection_handler_client.h",
+      "../renderer/media/webrtc/test/webrtc_stats_report_obtainer.cc",
+      "../renderer/media/webrtc/test/webrtc_stats_report_obtainer.h",
     ]
 
     deps += [

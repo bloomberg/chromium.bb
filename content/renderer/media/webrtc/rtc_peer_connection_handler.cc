@@ -1796,8 +1796,8 @@ std::unique_ptr<blink::WebRTCRtpSender> RTCPeerConnectionHandler::AddTrack(
     return nullptr;
   DCHECK(FindSender(RTCRtpSender::getId(webrtc_sender)) == rtp_senders_.end());
   rtp_senders_.push_back(std::make_unique<RTCRtpSender>(
-      task_runner_, signaling_thread(), stream_adapter_map_,
-      std::move(webrtc_sender), std::move(track_adapter),
+      native_peer_connection_, task_runner_, signaling_thread(),
+      stream_adapter_map_, std::move(webrtc_sender), std::move(track_adapter),
       std::move(stream_adapters)));
   for (const auto& stream_ref : rtp_senders_.back()->stream_refs()) {
     if (GetLocalStreamUsageCount(rtp_senders_,

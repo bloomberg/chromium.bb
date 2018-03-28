@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "content/renderer/media/webrtc/rtc_dtmf_sender_handler.h"
 #include "content/renderer/media/webrtc/rtc_rtp_parameters.h"
+#include "content/renderer/media/webrtc/rtc_stats.h"
 
 namespace content {
 
@@ -31,13 +32,15 @@ class RTCRtpSender::RTCRtpSenderInternal
     : public base::RefCountedThreadSafe<RTCRtpSender::RTCRtpSenderInternal> {
  public:
   RTCRtpSenderInternal(
+      scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
       scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
       scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
       rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
       blink::WebMediaStreamTrack web_track,
       std::vector<blink::WebMediaStream> web_streams)
-      : main_thread_(std::move(main_thread)),
+      : native_peer_connection_(std::move(native_peer_connection)),
+        main_thread_(std::move(main_thread)),
         signaling_thread_(std::move(signaling_thread)),
         stream_map_(std::move(stream_map)),
         webrtc_sender_(std::move(webrtc_sender)) {
@@ -59,6 +62,7 @@ class RTCRtpSender::RTCRtpSenderInternal
   }
 
   RTCRtpSenderInternal(
+      scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
       scoped_refptr<base::SingleThreadTaskRunner> main_thread,
       scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
       scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
@@ -66,7 +70,8 @@ class RTCRtpSender::RTCRtpSenderInternal
       std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
       std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
           stream_refs)
-      : main_thread_(std::move(main_thread)),
+      : native_peer_connection_(std::move(native_peer_connection)),
+        main_thread_(std::move(main_thread)),
         signaling_thread_(std::move(signaling_thread)),
         stream_map_(std::move(stream_map)),
         webrtc_sender_(std::move(webrtc_sender)),
@@ -129,6 +134,14 @@ class RTCRtpSender::RTCRtpSenderInternal
         GetWebRTCRtpParameters(parameters));
   }
 
+  void GetStats(std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+    signaling_thread_->PostTask(
+        FROM_HERE,
+        base::BindOnce(
+            &RTCRtpSender::RTCRtpSenderInternal::GetStatsOnSignalingThread,
+            this, std::move(callback)));
+  }
+
   bool RemoveFromPeerConnection(webrtc::PeerConnectionInterface* pc) {
     if (!pc->RemoveTrack(webrtc_sender_))
       return false;
@@ -169,9 +182,17 @@ class RTCRtpSender::RTCRtpSenderInternal
     std::move(callback).Run(result);
   }
 
+  void GetStatsOnSignalingThread(
+      std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+    native_peer_connection_->GetStats(webrtc_sender_,
+                                      RTCStatsCollectorCallbackImpl::Create(
+                                          main_thread_, std::move(callback)));
+  }
+
+  const scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection_;
   const scoped_refptr<base::SingleThreadTaskRunner> main_thread_;
   const scoped_refptr<base::SingleThreadTaskRunner> signaling_thread_;
-  scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map_;
+  const scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map_;
   const rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender_;
   // The track adapter is the glue between blink and webrtc layer tracks.
   // Keeping a reference to the adapter ensures it is not disposed, as is
@@ -188,13 +209,15 @@ uintptr_t RTCRtpSender::getId(const webrtc::RtpSenderInterface* webrtc_sender) {
 }
 
 RTCRtpSender::RTCRtpSender(
+    scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
     scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
     rtc::scoped_refptr<webrtc::RtpSenderInterface> webrtc_sender,
     blink::WebMediaStreamTrack web_track,
     std::vector<blink::WebMediaStream> web_streams)
-    : internal_(new RTCRtpSenderInternal(std::move(main_thread),
+    : internal_(new RTCRtpSenderInternal(std::move(native_peer_connection),
+                                         std::move(main_thread),
                                          std::move(signaling_thread),
                                          std::move(stream_map),
                                          std::move(webrtc_sender),
@@ -202,6 +225,7 @@ RTCRtpSender::RTCRtpSender(
                                          std::move(web_streams))) {}
 
 RTCRtpSender::RTCRtpSender(
+    scoped_refptr<webrtc::PeerConnectionInterface> native_peer_connection,
     scoped_refptr<base::SingleThreadTaskRunner> main_thread,
     scoped_refptr<base::SingleThreadTaskRunner> signaling_thread,
     scoped_refptr<WebRtcMediaStreamAdapterMap> stream_map,
@@ -209,7 +233,8 @@ RTCRtpSender::RTCRtpSender(
     std::unique_ptr<WebRtcMediaStreamTrackAdapterMap::AdapterRef> track_ref,
     std::vector<std::unique_ptr<WebRtcMediaStreamAdapterMap::AdapterRef>>
         stream_refs)
-    : internal_(new RTCRtpSenderInternal(std::move(main_thread),
+    : internal_(new RTCRtpSenderInternal(std::move(native_peer_connection),
+                                         std::move(main_thread),
                                          std::move(signaling_thread),
                                          std::move(stream_map),
                                          std::move(webrtc_sender),
@@ -254,6 +279,11 @@ std::unique_ptr<blink::WebRTCDTMFSenderHandler> RTCRtpSender::GetDtmfSender()
 std::unique_ptr<blink::WebRTCRtpParameters> RTCRtpSender::GetParameters()
     const {
   return internal_->GetParameters();
+}
+
+void RTCRtpSender::GetStats(
+    std::unique_ptr<blink::WebRTCStatsReportCallback> callback) {
+  internal_->GetStats(std::move(callback));
 }
 
 webrtc::RtpSenderInterface* RTCRtpSender::webrtc_sender() const {
