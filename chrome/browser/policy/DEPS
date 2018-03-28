@@ -9,10 +9,6 @@ include_rules = [
   "+content/public/test",
 ]
 specific_include_rules = {
-  # TODO(mash): Remove. http://crbug.com/723876
-  "configuration_policy_handler_list_factory\.cc": [
-    "+ash/accessibility_types.h",
-  ],
   "policy_browsertest\.cc": [
     "+ash/shell.h",
   ]
