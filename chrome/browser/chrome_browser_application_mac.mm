@@ -248,8 +248,13 @@ void CancelTerminate() {
 - (void)sendEvent:(NSEvent*)event {
   TRACE_EVENT0("toplevel", "BrowserCrApplication::sendEvent");
   static crash_reporter::CrashKeyString<256> nseventKey("nsevent");
+  // Some NSEvents return a string with NUL in event.characters, see
+  // https://crbug.com/826908
+  NSString* eventDescription =
+      [[event description] stringByReplacingOccurrencesOfString:@"\0"
+                                                     withString:@"NULL"];
   crash_reporter::ScopedCrashKeyString scopedKey(
-      &nseventKey, base::SysNSStringToUTF8([event description]));
+      &nseventKey, base::SysNSStringToUTF8(eventDescription));
 
   base::mac::CallWithEHFrame(^{
     switch (event.type) {
