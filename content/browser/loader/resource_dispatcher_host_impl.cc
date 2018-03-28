@@ -141,9 +141,6 @@ static ResourceDispatcherHostImpl* g_resource_dispatcher_host;
 // The interval for calls to ResourceDispatcherHostImpl::UpdateLoadStates
 const int kUpdateLoadStatesIntervalMsec = 250;
 
-// The interval for calls to RecordOutstandingRequestsStats.
-const int kRecordOutstandingRequestsStatsIntervalSec = 60;
-
 // Maximum byte "cost" of all the outstanding requests for a renderer.
 // See declaration of |max_outstanding_requests_cost_per_process_| for details.
 // This bound is 25MB, which allows for around 6000 outstanding requests.
@@ -352,15 +349,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl(
                                 base::Unretained(this)));
 
   update_load_info_timer_ = std::make_unique<base::OneShotTimer>();
-
-  // Monitor per-tab outstanding requests only if OOPIF is not enabled, because
-  // the routing id doesn't represent tabs in OOPIF modes.
-  if (!SiteIsolationPolicy::UseDedicatedProcessesForAllSites() &&
-      !SiteIsolationPolicy::IsTopDocumentIsolationEnabled() &&
-      !SiteIsolationPolicy::AreIsolatedOriginsEnabled()) {
-    record_outstanding_requests_stats_timer_ =
-        std::make_unique<base::RepeatingTimer>();
-  }
 }
 
 // The default ctor is only used by unittests. It is reasonable to assume that
@@ -372,7 +360,6 @@ ResourceDispatcherHostImpl::ResourceDispatcherHostImpl()
 
 ResourceDispatcherHostImpl::~ResourceDispatcherHostImpl() {
   DCHECK(outstanding_requests_stats_map_.empty());
-  DCHECK(outstanding_requests_per_tab_map_.empty());
   DCHECK(g_resource_dispatcher_host);
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
   g_resource_dispatcher_host = nullptr;
@@ -603,13 +590,6 @@ bool ResourceDispatcherHostImpl::HandleExternalProtocol(ResourceLoader* loader,
 void ResourceDispatcherHostImpl::DidStartRequest(ResourceLoader* loader) {
   // Make sure we have the load state monitors running.
   MaybeStartUpdateLoadInfoTimer();
-  if (record_outstanding_requests_stats_timer_ &&
-      !record_outstanding_requests_stats_timer_->IsRunning()) {
-    record_outstanding_requests_stats_timer_->Start(
-        FROM_HERE,
-        TimeDelta::FromSeconds(kRecordOutstandingRequestsStatsIntervalSec),
-        this, &ResourceDispatcherHostImpl::RecordOutstandingRequestsStats);
-  }
 }
 
 void ResourceDispatcherHostImpl::DidReceiveRedirect(
@@ -714,11 +694,10 @@ void ResourceDispatcherHostImpl::OnShutdown() {
 
   pending_loaders_.clear();
 
-  // Make sure we shutdown the timers now, otherwise by the time our destructor
+  // Make sure we shutdown the timer now, otherwise by the time our destructor
   // runs if the timer is still running the Task is deleted twice (once by
   // the MessageLoop and the second time by RepeatingTimer).
   update_load_info_timer_.reset();
-  record_outstanding_requests_stats_timer_.reset();
 
   // Clear blocked requests if any left.
   // Note that we have to do this in 2 passes as we cannot call
@@ -1729,18 +1708,6 @@ void ResourceDispatcherHostImpl::UpdateOutstandingRequestsStats(
     outstanding_requests_stats_map_[info.GetChildID()] = stats;
 }
 
-void ResourceDispatcherHostImpl::IncrementOutstandingRequestsPerTab(
-    int count,
-    const ResourceRequestInfoImpl& info) {
-  auto key = std::make_pair(info.GetChildID(), info.GetRouteID());
-  OutstandingRequestsPerTabMap::iterator entry =
-      outstanding_requests_per_tab_map_.insert(std::make_pair(key, 0)).first;
-  entry->second += count;
-  DCHECK_GE(entry->second, 0);
-  if (entry->second == 0)
-    outstanding_requests_per_tab_map_.erase(entry);
-}
-
 ResourceDispatcherHostImpl::OustandingRequestsStats
 ResourceDispatcherHostImpl::IncrementOutstandingRequestsMemory(
     int count,
@@ -1776,8 +1743,6 @@ ResourceDispatcherHostImpl::IncrementOutstandingRequestsCount(
   DCHECK_GE(stats.num_requests, 0);
   UpdateOutstandingRequestsStats(*info, stats);
 
-  IncrementOutstandingRequestsPerTab(count, *info);
-
   if (num_in_flight_requests_ > largest_outstanding_request_count_seen_) {
     largest_outstanding_request_count_seen_ = num_in_flight_requests_;
     UMA_HISTOGRAM_COUNTS_1M(
@@ -1791,14 +1756,6 @@ ResourceDispatcherHostImpl::IncrementOutstandingRequestsCount(
     UMA_HISTOGRAM_COUNTS_1M(
         "Net.ResourceDispatcherHost.OutstandingRequests.PerProcess",
         largest_outstanding_request_per_process_count_seen_);
-  }
-
-  if (num_in_flight_requests_ > peak_outstanding_request_count_)
-    peak_outstanding_request_count_ = num_in_flight_requests_;
-
-  if (HasRequestsFromMultipleActiveTabs() &&
-      num_in_flight_requests_ > peak_outstanding_request_count_multitab_) {
-    peak_outstanding_request_count_multitab_ = num_in_flight_requests_;
   }
 
   return stats;
@@ -2433,23 +2390,6 @@ void ResourceDispatcherHostImpl::MaybeStartUpdateLoadInfoTimer() {
   }
 }
 
-void ResourceDispatcherHostImpl::RecordOutstandingRequestsStats() {
-  if (peak_outstanding_request_count_ != 0) {
-    UMA_HISTOGRAM_COUNTS_1M(
-        "Net.ResourceDispatcherHost.PeakOutstandingRequests",
-        peak_outstanding_request_count_);
-    peak_outstanding_request_count_ = num_in_flight_requests_;
-  }
-
-  if (peak_outstanding_request_count_multitab_ != 0) {
-    UMA_HISTOGRAM_COUNTS_1M(
-        "Net.ResourceDispatcherHost.PeakOutstandingRequests.MultiTabLoading",
-        peak_outstanding_request_count_multitab_);
-    peak_outstanding_request_count_multitab_ =
-        HasRequestsFromMultipleActiveTabs() ? num_in_flight_requests_ : 0;
-  }
-}
-
 void ResourceDispatcherHostImpl::BlockRequestsForRoute(
     const GlobalFrameRoutingId& global_routing_id) {
   DCHECK(io_thread_task_runner_->BelongsToCurrentThread());
@@ -2626,22 +2566,6 @@ ResourceDispatcherHostImpl::HandleDownloadStarted(
     }
   }
   return handler;
-}
-
-bool ResourceDispatcherHostImpl::HasRequestsFromMultipleActiveTabs() {
-  if (outstanding_requests_per_tab_map_.size() < 2)
-    return false;
-
-  int active_tabs = 0;
-  for (auto iter = outstanding_requests_per_tab_map_.begin();
-       iter != outstanding_requests_per_tab_map_.end(); ++iter) {
-    if (iter->second > 2) {
-      active_tabs++;
-      if (active_tabs >= 2)
-        return true;
-    }
-  }
-  return false;
 }
 
 void ResourceDispatcherHostImpl::RunAuthRequiredCallback(
