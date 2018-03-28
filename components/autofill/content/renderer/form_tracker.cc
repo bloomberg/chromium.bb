@@ -143,8 +143,10 @@ void FormTracker::FormControlDidChangeImpl(
 void FormTracker::DidCommitProvisionalLoad(bool is_new_navigation,
                                            bool is_same_document_navigation) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(form_tracker_sequence_checker_);
-  if (!is_same_document_navigation)
+  if (!is_same_document_navigation) {
+    ResetLastInteractedElements();
     return;
+  }
 
   FireSubmissionIfFormDisappear(SubmissionSource::SAME_DOCUMENT_NAVIGATION);
 }

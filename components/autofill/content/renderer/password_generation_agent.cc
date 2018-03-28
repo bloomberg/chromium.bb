@@ -181,6 +181,14 @@ void PasswordGenerationAgent::BindRequest(
   binding_.Bind(std::move(request));
 }
 
+void PasswordGenerationAgent::DidCommitProvisionalLoad(
+    bool /*is_new_navigation*/, bool is_same_document_navigation) {
+  if (is_same_document_navigation)
+    return;
+  generation_element_.Reset();
+  last_focused_password_element_.Reset();
+}
+
 void PasswordGenerationAgent::DidFinishDocumentLoad() {
   // Update stats for main frame navigation.
   if (!render_frame()->GetWebFrame()->Parent()) {
