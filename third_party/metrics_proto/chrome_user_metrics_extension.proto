@@ -9,6 +9,7 @@ option optimize_for = LITE_RUNTIME;
 option java_outer_classname = "ChromeUserMetricsExtensionProtos";
 option java_package = "org.chromium.components.metrics";
 
+
 package metrics;
 
 import "cast_logs.proto";
@@ -25,6 +26,7 @@ import "user_action_event.proto";
 
 // Next tag: 19
 message ChromeUserMetricsExtension {
+
   // The product (i.e. end user application) for a given UMA log.
   enum Product {
     // Google Chrome product family.
@@ -72,7 +74,7 @@ message ChromeUserMetricsExtension {
   repeated PrinterEventProto printer_event = 16;
 
   // Deprecated: use |sampled_profile| instead.
-  repeated PerfDataProto perf_data = 8 [deprecated = true];
+  repeated PerfDataProto perf_data = 8 [deprecated=true];
 
   // A list of all collected sample-based profiles since the last UMA upload.
   repeated SampledProfile sampled_profile = 11;

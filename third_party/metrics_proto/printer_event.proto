@@ -9,6 +9,7 @@ option optimize_for = LITE_RUNTIME;
 option java_outer_classname = "PrinterEventProtos";
 option java_package = "org.chromium.components.metrics";
 
+
 package metrics;
 
 // Stores information about a printer that a user is setting up/has attempted to

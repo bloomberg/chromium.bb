@@ -1426,6 +1426,8 @@ bool OmniboxEditModel::IsSpaceCharForAcceptingKeyword(wchar_t c) {
 OmniboxEventProto::PageClassification OmniboxEditModel::ClassifyPage() const {
   if (!client_->CurrentPageExists())
     return OmniboxEventProto::OTHER;
+  if (focus_source_ == SEARCH_BUTTON)
+    return OmniboxEventProto::SEARCH_BUTTON_AS_STARTING_FOCUS;
   if (client_->IsInstantNTP()) {
     // Note that we treat OMNIBOX as the source if focus_source_ is INVALID,
     // i.e., if input isn't actually in progress.
