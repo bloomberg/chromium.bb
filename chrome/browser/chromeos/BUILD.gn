@@ -43,6 +43,7 @@ source_set("chromeos") {
     ":attestation_proto",
     ":backdrop_wallpaper_proto",
     ":device_policy_remover_generated",
+    ":screen_brightness_event_proto",
     ":user_activity_event_proto",
     "//apps",
     "//ash",
@@ -1437,6 +1438,9 @@ source_set("chromeos") {
     "power/idle_action_warning_dialog_view.h",
     "power/idle_action_warning_observer.cc",
     "power/idle_action_warning_observer.h",
+    "power/ml/adaptive_screen_brightness_manager.cc",
+    "power/ml/adaptive_screen_brightness_manager.h",
+    "power/ml/adaptive_screen_brightness_ukm_logger.h",
     "power/ml/boot_clock.h",
     "power/ml/idle_event_notifier.cc",
     "power/ml/idle_event_notifier.h",
@@ -2031,6 +2035,7 @@ source_set("unit_tests") {
     "policy/user_cloud_policy_store_chromeos_unittest.cc",
     "power/cpu_data_collector_unittest.cc",
     "power/extension_event_observer_unittest.cc",
+    "power/ml/adaptive_screen_brightness_manager_unittest.cc",
     "power/ml/fake_boot_clock.cc",
     "power/ml/fake_boot_clock.h",
     "power/ml/idle_event_notifier_unittest.cc",
@@ -2182,6 +2187,12 @@ source_set("unit_tests") {
 proto_library("attestation_proto") {
   sources = [
     "attestation/attestation_key_payload.proto",
+  ]
+}
+
+proto_library("screen_brightness_event_proto") {
+  sources = [
+    "power/ml/screen_brightness_event.proto",
   ]
 }
 
