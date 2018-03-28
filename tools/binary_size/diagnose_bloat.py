@@ -782,6 +782,9 @@ def _CurrentGitHash(subrepo):
 
 def _SetRestoreFunc(subrepo):
   branch = _GitCmd(['rev-parse', '--abbrev-ref', 'HEAD'], subrepo)
+  # Happens when the repo didn't start on a named branch.
+  if branch == 'HEAD':
+    branch = _GitCmd(['rev-parse', 'HEAD'], subrepo)
   def _RestoreFunc():
     logging.warning('Restoring original git checkout')
     _GitCmd(['checkout', branch], subrepo)
