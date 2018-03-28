@@ -15,6 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
+#include "chrome/browser/ui/page_info/page_info_ui.h"
 #include "chrome/browser/ui/toolbar/chrome_toolbar_model_delegate.h"
 #include "chrome/browser/vr/assets_load_status.h"
 #include "chrome/browser/vr/content_input_delegate.h"
@@ -64,7 +65,8 @@ struct AutocompleteRequest;
 class VrShell : device::GvrGamepadDataProvider,
                 device::CardboardGamepadDataProvider,
                 VoiceResultDelegate,
-                public ChromeToolbarModelDelegate {
+                public ChromeToolbarModelDelegate,
+                public PageInfoUI {
  public:
   VrShell(JNIEnv* env,
           const base::android::JavaParamRef<jobject>& obj,
@@ -234,6 +236,12 @@ class VrShell : device::GvrGamepadDataProvider,
                       std::unique_ptr<Assets> assets,
                       const base::Version& component_version);
 
+  // PageInfoUI implementation.
+  void SetCookieInfo(const CookieInfoList& cookie_info_list) override;
+  void SetPermissionInfo(const PermissionInfoList& permission_info_list,
+                         ChosenObjectInfoList chosen_object_info_list) override;
+  void SetIdentityInfo(const IdentityInfo& identity_info) override;
+
   void AcceptDoffPromptForTesting(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& obj);
@@ -254,6 +262,9 @@ class VrShell : device::GvrGamepadDataProvider,
   void LoadAssets();
   void OnAssetsComponentReady();
   void OnAssetsComponentWaitTimeout();
+
+  void SetWebContents(content::WebContents* contents);
+  std::unique_ptr<PageInfo> CreatePageInfo();
 
   bool webvr_mode_ = false;
   bool web_vr_autopresentation_expected_ = false;

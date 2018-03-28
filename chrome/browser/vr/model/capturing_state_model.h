@@ -25,6 +25,8 @@ struct CapturingStateModel {
   bool bluetooth_potentially_connected = false;
 };
 
+typedef bool CapturingStateModel::*CapturingStateModelMemberPtr;
+
 }  // namespace vr
 
 #endif  // CHROME_BROWSER_VR_MODEL_CAPTURING_STATE_MODEL_H_

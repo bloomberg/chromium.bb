@@ -31,7 +31,10 @@
 #include "chrome/browser/component_updater/vr_assets_component_installer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
 #include "chrome/browser/media/webrtc/media_stream_capture_indicator.h"
+#include "chrome/browser/permissions/permission_manager.h"
+#include "chrome/browser/permissions/permission_result.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ssl/security_state_tab_helper.h"
 #include "chrome/browser/vr/assets_loader.h"
 #include "chrome/browser/vr/metrics/metrics_helper.h"
 #include "chrome/browser/vr/metrics/session_metrics_helper.h"
@@ -496,6 +499,9 @@ void VrShell::SetWebVrMode(JNIEnv* env,
   PostToGlThread(FROM_HERE,
                  base::BindOnce(&VrShellGl::SetWebVrMode,
                                 gl_thread_->GetVrShellGl(), enabled));
+  // We create and dispose a page info in order to get notifed of page
+  // permissions.
+  CreatePageInfo();
   ui_->SetWebVrMode(enabled, show_toast);
 
   if (!webvr_mode_ && !web_vr_autopresentation_expected_) {
@@ -586,6 +592,9 @@ void VrShell::CloseAlertDialog(
     const base::android::JavaParamRef<jobject>& obj) {
   PostToGlThread(FROM_HERE, base::BindOnce(&VrShellGl::DisableAlertDialog,
                                            gl_thread_->GetVrShellGl()));
+  // This will refresh our permissions after an alert is closed which should
+  // ensure that long press on the app button gives accurate results.
+  CreatePageInfo();
 }
 
 void VrShell::SetAlertDialogSize(
@@ -1075,12 +1084,62 @@ void VrShell::OnAssetsComponentWaitTimeout() {
   ui_->OnAssetsUnavailable();
 }
 
+void VrShell::SetCookieInfo(const CookieInfoList& cookie_info_list) {}
+
+void VrShell::SetPermissionInfo(const PermissionInfoList& permission_info_list,
+                                ChosenObjectInfoList chosen_object_info_list) {
+  // Here we'll check the current web contents for potentially in-use
+  // permissions. Accepting bluetooth is immersive mode  is not currently
+  // supported, so we will not check here. Also, the ability to cast is not a
+  // page-specific potentiality, so we will not check for this, either.
+  for (const auto& info : permission_info_list) {
+    switch (info.type) {
+      case CONTENT_SETTINGS_TYPE_GEOLOCATION:
+        capturing_state_.location_access_potentially_enabled =
+            info.setting == CONTENT_SETTING_ALLOW;
+        break;
+      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC:
+        capturing_state_.audio_capture_potentially_enabled =
+            info.setting == CONTENT_SETTING_ALLOW;
+        break;
+      case CONTENT_SETTINGS_TYPE_MEDIASTREAM_CAMERA:
+        capturing_state_.video_capture_potentially_enabled =
+            info.setting == CONTENT_SETTING_ALLOW;
+        break;
+      default:
+        break;
+    }
+  }
+}
+
+void VrShell::SetIdentityInfo(const IdentityInfo& identity_info) {}
+
 void VrShell::AcceptDoffPromptForTesting(
     JNIEnv* env,
     const base::android::JavaParamRef<jobject>& obj) {
   PostToGlThread(FROM_HERE,
                  base::BindOnce(&VrShellGl::AcceptDoffPromptForTesting,
                                 gl_thread_->GetVrShellGl()));
+}
+
+std::unique_ptr<PageInfo> VrShell::CreatePageInfo() {
+  if (!web_contents_)
+    return nullptr;
+
+  content::NavigationEntry* entry =
+      web_contents_->GetController().GetVisibleEntry();
+  if (!entry)
+    return nullptr;
+
+  SecurityStateTabHelper* helper =
+      SecurityStateTabHelper::FromWebContents(web_contents_);
+  security_state::SecurityInfo security_info;
+  helper->GetSecurityInfo(&security_info);
+
+  return std::make_unique<PageInfo>(
+      this, ProfileManager::GetActiveUserProfile(),
+      TabSpecificContentSettings::FromWebContents(web_contents_), web_contents_,
+      entry->GetVirtualURL(), security_info);
 }
 
 // ----------------------------------------------------------------------------
