@@ -176,6 +176,8 @@ class UnopenedDownloadsTracker : public web::DownloadTaskObserver {
   [self runConfirmationDialogWithTitle:title
                                message:message
                      completionHandler:^(BOOL confirmed) {
+                       UMA_HISTOGRAM_BOOLEAN("Download.IOSDownloadReplaced",
+                                             confirmed);
                        handler(confirmed ? kNewDownloadPolicyReplace
                                          : kNewDownloadPolicyDiscard);
                      }];
