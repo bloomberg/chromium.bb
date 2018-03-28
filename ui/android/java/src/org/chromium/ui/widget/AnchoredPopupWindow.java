@@ -21,6 +21,7 @@ import android.widget.PopupWindow.OnDismissListener;
 
 import org.chromium.base.ObserverList;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.ui.widget.popups.UiWidgetFactory;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -165,7 +166,7 @@ public class AnchoredPopupWindow implements OnTouchListener, RectProvider.Observ
             View contentView, RectProvider anchorRectProvider) {
         mContext = context;
         mRootView = rootView.getRootView();
-        mPopupWindow = new PopupWindow(mContext);
+        mPopupWindow = UiWidgetFactory.getInstance().createPopupWindow(mContext);
         mHandler = new Handler();
         mRectProvider = anchorRectProvider;
 

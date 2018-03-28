@@ -250,6 +250,7 @@ android_library("ui_full_java") {
     "java/src/org/chromium/ui/widget/TextViewWithLeading.java",
     "java/src/org/chromium/ui/widget/Toast.java",
     "java/src/org/chromium/ui/widget/ViewRectProvider.java",
+    "java/src/org/chromium/ui/widget/popups/UiWidgetFactory.java",
   ]
   deps = [
     ":ui_java_resources",
