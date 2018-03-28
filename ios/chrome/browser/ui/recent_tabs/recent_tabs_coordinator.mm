@@ -9,6 +9,7 @@
 #import "ios/chrome/browser/ui/ntp/recent_tabs/recent_tabs_handset_view_controller.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_mediator.h"
 #import "ios/chrome/browser/ui/recent_tabs/recent_tabs_table_view_controller.h"
+#import "ios/chrome/browser/ui/recent_tabs/recent_tabs_transitioning_delegate.h"
 #import "ios/chrome/browser/ui/table_view/table_container_view_controller.h"
 #import "ios/chrome/browser/ui/util/form_sheet_navigation_controller.h"
 #include "ios/chrome/grit/ios_strings.h"
@@ -29,6 +30,8 @@
 // ViewController being managed by this Coordinator.
 @property(nonatomic, strong)
     TableContainerViewController* recentTabsContainerViewController;
+@property(nonatomic, strong)
+    RecentTabsTransitioningDelegate* recentTabsTransitioningDelegate;
 @end
 
 @implementation RecentTabsCoordinator
@@ -38,6 +41,7 @@
 @synthesize mediator = _mediator;
 @synthesize recentTabsContainerViewController =
     _recentTabsContainerViewController;
+@synthesize recentTabsTransitioningDelegate = _recentTabsTransitioningDelegate;
 
 - (void)start {
   // Initialize and configure RecentTabsTableViewController.
@@ -84,7 +88,13 @@
   FormSheetNavigationController* navController =
       [[FormSheetNavigationController alloc]
           initWithRootViewController:self.recentTabsContainerViewController];
-  [navController setModalPresentationStyle:UIModalPresentationFormSheet];
+  self.recentTabsTransitioningDelegate =
+      [[RecentTabsTransitioningDelegate alloc] init];
+  [navController.navigationBar setBackgroundImage:[UIImage new]
+                                    forBarMetrics:UIBarMetricsDefault];
+  navController.navigationBar.translucent = NO;
+  navController.transitioningDelegate = self.recentTabsTransitioningDelegate;
+  [navController setModalPresentationStyle:UIModalPresentationCustom];
   [self.baseViewController presentViewController:navController
                                         animated:YES
                                       completion:nil];
@@ -101,6 +111,7 @@
       dismissViewControllerAnimated:YES
                          completion:self.completion];
   self.recentTabsContainerViewController = nil;
+  self.recentTabsTransitioningDelegate = nil;
   [self.mediator disconnect];
 }
 

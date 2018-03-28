@@ -32,6 +32,17 @@ source_set("styler") {
   ]
 }
 
+source_set("presentation") {
+  configs += [ "//build/config/compiler:enable_arc" ]
+  sources = [
+    "table_view_presentation_controller.h",
+    "table_view_presentation_controller.mm",
+  ]
+  deps = [
+    "//ios/chrome/browser/ui/util:constraints_ui",
+  ]
+}
+
 source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
