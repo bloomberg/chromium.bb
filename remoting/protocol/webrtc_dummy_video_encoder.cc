@@ -165,6 +165,7 @@ webrtc::EncodedImageCallback::Result WebrtcDummyVideoEncoder::SendEncodedFrame(
   encoded_image.playout_delay_.max_ms = 0;
   encoded_image.timing_.encode_start_ms = encode_started_time_ms;
   encoded_image.timing_.encode_finish_ms = encode_finished_time_ms;
+  encoded_image.content_type_ = webrtc::VideoContentType::SCREENSHARE;
 
   webrtc::CodecSpecificInfo codec_specific_info;
   memset(&codec_specific_info, 0, sizeof(codec_specific_info));
