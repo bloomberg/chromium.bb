@@ -16,6 +16,7 @@ PASS Setting 'outline-style' to a percent throws TypeError
 PASS Setting 'outline-style' to a time throws TypeError
 PASS Setting 'outline-style' to a number throws TypeError
 PASS Setting 'outline-style' to a position throws TypeError
+PASS Setting 'outline-style' to a URL throws TypeError
 PASS Setting 'outline-style' to a transform throws TypeError
 Harness: the test ran to completion.
 

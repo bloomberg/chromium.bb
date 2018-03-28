@@ -11,6 +11,7 @@ PASS Setting 'text-decoration-skip' to a percent throws TypeError
 PASS Setting 'text-decoration-skip' to a time throws TypeError
 PASS Setting 'text-decoration-skip' to a number throws TypeError
 PASS Setting 'text-decoration-skip' to a position throws TypeError
+PASS Setting 'text-decoration-skip' to a URL throws TypeError
 PASS Setting 'text-decoration-skip' to a transform throws TypeError
 FAIL 'text-decoration-skip' does not supported 'objects spaces' Failed to execute 'get' on 'StylePropertyMapReadOnly': Invalid propertyName: text-decoration-skip
 FAIL 'text-decoration-skip' does not supported 'leading-spaces trailing-spaces' Failed to execute 'get' on 'StylePropertyMapReadOnly': Invalid propertyName: text-decoration-skip

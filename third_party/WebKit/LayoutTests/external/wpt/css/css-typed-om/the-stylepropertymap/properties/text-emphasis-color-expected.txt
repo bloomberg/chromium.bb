@@ -7,6 +7,7 @@ PASS Setting 'text-emphasis-color' to a percent throws TypeError
 PASS Setting 'text-emphasis-color' to a time throws TypeError
 PASS Setting 'text-emphasis-color' to a number throws TypeError
 PASS Setting 'text-emphasis-color' to a position throws TypeError
+PASS Setting 'text-emphasis-color' to a URL throws TypeError
 PASS Setting 'text-emphasis-color' to a transform throws TypeError
 FAIL 'text-emphasis-color' does not supported 'red' Failed to execute 'get' on 'StylePropertyMapReadOnly': Invalid propertyName: text-emphasis-color
 FAIL 'text-emphasis-color' does not supported '#bbff00' Failed to execute 'get' on 'StylePropertyMapReadOnly': Invalid propertyName: text-emphasis-color

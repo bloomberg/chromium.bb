@@ -7,6 +7,7 @@ PASS Setting 'text-decoration-width' to a percent throws TypeError
 PASS Setting 'text-decoration-width' to a time throws TypeError
 PASS Setting 'text-decoration-width' to a number throws TypeError
 PASS Setting 'text-decoration-width' to a position throws TypeError
+PASS Setting 'text-decoration-width' to a URL throws TypeError
 PASS Setting 'text-decoration-width' to a transform throws TypeError
 Harness: the test ran to completion.
 

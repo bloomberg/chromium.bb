@@ -11,6 +11,7 @@ PASS Setting 'text-transform' to a percent throws TypeError
 PASS Setting 'text-transform' to a time throws TypeError
 PASS Setting 'text-transform' to a number throws TypeError
 PASS Setting 'text-transform' to a position throws TypeError
+PASS Setting 'text-transform' to a URL throws TypeError
 PASS Setting 'text-transform' to a transform throws TypeError
 Harness: the test ran to completion.
 

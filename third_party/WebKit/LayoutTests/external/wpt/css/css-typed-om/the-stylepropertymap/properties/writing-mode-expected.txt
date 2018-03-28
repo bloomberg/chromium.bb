@@ -11,6 +11,7 @@ PASS Setting 'writing-mode' to a percent throws TypeError
 PASS Setting 'writing-mode' to a time throws TypeError
 PASS Setting 'writing-mode' to a number throws TypeError
 PASS Setting 'writing-mode' to a position throws TypeError
+PASS Setting 'writing-mode' to a URL throws TypeError
 PASS Setting 'writing-mode' to a transform throws TypeError
 Harness: the test ran to completion.
 

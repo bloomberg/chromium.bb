@@ -11,6 +11,7 @@ PASS Setting 'overflow-x' to a percent throws TypeError
 PASS Setting 'overflow-x' to a time throws TypeError
 PASS Setting 'overflow-x' to a number throws TypeError
 PASS Setting 'overflow-x' to a position throws TypeError
+PASS Setting 'overflow-x' to a URL throws TypeError
 PASS Setting 'overflow-x' to a transform throws TypeError
 PASS Can set 'overflow-y' to CSS-wide keywords
 PASS Can set 'overflow-y' to var() references
@@ -24,6 +25,7 @@ PASS Setting 'overflow-y' to a percent throws TypeError
 PASS Setting 'overflow-y' to a time throws TypeError
 PASS Setting 'overflow-y' to a number throws TypeError
 PASS Setting 'overflow-y' to a position throws TypeError
+PASS Setting 'overflow-y' to a URL throws TypeError
 PASS Setting 'overflow-y' to a transform throws TypeError
 Harness: the test ran to completion.
 

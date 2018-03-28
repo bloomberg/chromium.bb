@@ -1793,6 +1793,8 @@
       svg: true,
       name_for_methods: "MarkerEndResource",
       converter: "ConvertFragmentIdentifier",
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "marker-mid",
@@ -1801,6 +1803,8 @@
       svg: true,
       name_for_methods: "MarkerMidResource",
       converter: "ConvertFragmentIdentifier",
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "marker-start",
@@ -1809,6 +1813,8 @@
       svg: true,
       name_for_methods: "MarkerStartResource",
       converter: "ConvertFragmentIdentifier",
+      keywords: ["none"],
+      typedom_types: ["Keyword"]
     },
     {
       name: "mask",
