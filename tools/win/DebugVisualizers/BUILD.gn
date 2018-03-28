@@ -21,22 +21,13 @@ import("//build/config/compiler/compiler.gni")
 assert(is_win)
 
 config("chrome") {
-  # TODO(tikuta): remove this condition if lld supports /NATVIS.
-  if (!use_lld) {
-    ldflags = [ "/NATVIS:" + rebase_path("chrome.natvis", root_build_dir) ]
-  }
+  ldflags = [ "/NATVIS:" + rebase_path("chrome.natvis", root_build_dir) ]
 }
 
 config("skia") {
-  # TODO(tikuta): remove this condition if lld supports /NATVIS.
-  if (!use_lld) {
-    ldflags = [ "/NATVIS:" + rebase_path("skia.natvis", root_build_dir) ]
-  }
+  ldflags = [ "/NATVIS:" + rebase_path("skia.natvis", root_build_dir) ]
 }
 
 config("webkit") {
-  # TODO(tikuta): remove this condition if lld supports /NATVIS.
-  if (!use_lld) {
-    ldflags = [ "/NATVIS:" + rebase_path("webkit.natvis", root_build_dir) ]
-  }
+  ldflags = [ "/NATVIS:" + rebase_path("webkit.natvis", root_build_dir) ]
 }
