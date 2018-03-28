@@ -63,8 +63,6 @@ class SimpleMHTMLPartsGenerationDelegate
  private:
   bool ShouldSkipResource(const WebURL&) final { return false; }
 
-  WebString GetContentID(WebFrame*) final { return WebString("<cid>"); }
-
   WebFrameSerializerCacheControlPolicy CacheControlPolicy() final {
     return WebFrameSerializerCacheControlPolicy::kNone;
   }

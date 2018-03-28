@@ -53,13 +53,6 @@ class WebFrameSerializer {
     // Used to deduplicate resources across multiple frames.
     virtual bool ShouldSkipResource(const WebURL&) = 0;
 
-    // Returns a Content-ID to be used for the given frame.
-    // See rfc2557 - section 8.3 - "Use of the Content-ID header and CID URLs".
-    // Format note - the returned string should be of the form "<foo@bar.com>"
-    // (i.e. the strings should include the angle brackets).  The method
-    // should return null WebString if the frame doesn't have a content-id.
-    virtual WebString GetContentID(WebFrame*) = 0;
-
     virtual WebFrameSerializerCacheControlPolicy CacheControlPolicy() = 0;
 
     virtual bool UseBinaryEncoding() = 0;

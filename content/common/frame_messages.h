@@ -88,9 +88,6 @@ using FrameMsg_GetSerializedHtmlWithLocalLinks_UrlMap =
 using FrameMsg_GetSerializedHtmlWithLocalLinks_FrameRoutingIdMap =
     std::map<int, base::FilePath>;
 
-using FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap =
-    std::map<int, std::string>;
-
 #endif  // INTERNAL_CONTENT_COMMON_FRAME_MESSAGES_H_
 
 #undef IPC_MESSAGE_EXPORT
@@ -605,12 +602,6 @@ IPC_STRUCT_BEGIN(FrameMsg_SerializeAsMHTML_Params)
 
   // Whether to detect problems while serializing.
   IPC_STRUCT_MEMBER(bool, mhtml_problem_detection)
-
-  // Frame to content-id map.
-  // Keys are routing ids of either RenderFrames or RenderFrameProxies.
-  // Values are MHTML content-ids - see WebFrameSerializer::generateMHTMLParts.
-  IPC_STRUCT_MEMBER(FrameMsg_SerializeAsMHTML_FrameRoutingIdToContentIdMap,
-                    frame_routing_id_to_content_id)
 
   // |digests_of_uris_to_skip| contains digests of uris of MHTML parts that
   // should be skipped.  This helps deduplicate mhtml parts across frames.
