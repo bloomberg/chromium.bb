@@ -28,7 +28,6 @@ public class DropdownPopupWindow implements AnchoredPopupWindow.LayoutObserver {
     private boolean mRtl;
     private int mInitialSelection = -1;
     private OnLayoutChangeListener mLayoutChangeListener;
-    private PopupWindow.OnDismissListener mOnDismissListener;
     private CharSequence mDescription;
     private AnchoredPopupWindow mAnchoredPopupWindow;
     ListAdapter mAdapter;
@@ -60,9 +59,7 @@ public class DropdownPopupWindow implements AnchoredPopupWindow.LayoutObserver {
         PopupWindow.OnDismissListener onDismissLitener = new PopupWindow.OnDismissListener() {
             @Override
             public void onDismiss() {
-                if (mOnDismissListener != null) {
-                    mOnDismissListener.onDismiss();
-                }
+                mAnchoredPopupWindow.dismiss();
                 mAnchorView.removeOnLayoutChangeListener(mLayoutChangeListener);
                 mAnchorView.setTag(null);
             }
@@ -145,7 +142,7 @@ public class DropdownPopupWindow implements AnchoredPopupWindow.LayoutObserver {
      * @param listener Listener that will be notified when the popup is dismissed.
      */
     public void setOnDismissListener(PopupWindow.OnDismissListener listener) {
-        mOnDismissListener = listener;
+        mAnchoredPopupWindow.addOnDismissListener(listener);
     }
 
     /**
