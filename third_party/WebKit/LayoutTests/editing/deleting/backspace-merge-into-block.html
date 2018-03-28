@@ -11,6 +11,7 @@ p {
 </style>
 <div id="log"></div>
 <script>
+const isMac = navigator.platform.indexOf('Mac') === 0;
 test(() => {
     assert_selection(
         '<div contenteditable="true"><h1>Heading 1:</h1>^<p>|paragraph was merged.</p></div>',
@@ -30,7 +31,11 @@ test(() => {
     assert_selection(
         '<div contenteditable="true"><table><tbody><tr><td>Table:</td></tr></tbody></table>^<p>|paragraph was merged.</p></div>',
         'delete',
-        '<div contenteditable="true"><table><tbody><tr><td>Table:|paragraph was merged.</td></tr></tbody></table></div>',
-        'Make a paragraph into a table');
+        isMac
+            ? '<div contenteditable="true"><table><tbody><tr><td>Table:|paragraph was merged.</td></tr></tbody></table></div>'
+            : '<div contenteditable="true"><table><tbody><tr><td>Table:</td></tr></tbody></table>|paragraph was merged.</div>',
+        isMac
+            ? 'Make a paragraph into a table'
+            : 'Do not merge paragraph into a table');
 }, 'merge into a block by backspace');
 </script>
