@@ -99,11 +99,13 @@ void WebSocket::Connect(const net::CompletionCallback& callback) {
   connect_callback_ = callback;
   int code = socket_->Connect(base::Bind(
       &WebSocket::OnSocketConnect, base::Unretained(this)));
+  VLOG(4) << "WebSocket::Connect code=" << net::ErrorToShortString(code);
   if (code != net::ERR_IO_PENDING)
     OnSocketConnect(code);
 }
 
 bool WebSocket::Send(const std::string& message) {
+  VLOG(4) << "WebSocket::Send " << message;
   CHECK(thread_checker_.CalledOnValidThread());
   if (state_ != OPEN)
     return false;
@@ -127,6 +129,9 @@ bool WebSocket::Send(const std::string& message) {
 }
 
 void WebSocket::OnSocketConnect(int code) {
+  VLOG(4) << "WebSocket::OnSocketConnect code="
+          << net::ErrorToShortString(code);
+
   if (code != net::OK) {
     VLOG(1) << "failed to connect to " << url_.HostNoBracketsPiece()
             << " (error " << code << ")";
@@ -148,6 +153,7 @@ void WebSocket::OnSocketConnect(int code) {
       url_.path().c_str(),
       url_.host().c_str(),
       sec_key_.c_str());
+  VLOG(4) << "WebSocket::OnSocketConnect handshake\n" << handshake;
   Write(handshake);
   Read();
 }
@@ -201,6 +207,7 @@ void WebSocket::Read() {
 
 void WebSocket::OnRead(int code) {
   if (code <= 0) {
+    VLOG(4) << "WebSocket::OnRead error " << net::ErrorToShortString(code);
     Close(code ? code : net::ERR_FAILED);
     return;
   }
@@ -215,6 +222,7 @@ void WebSocket::OnRead(int code) {
 }
 
 void WebSocket::OnReadDuringHandshake(const char* data, int len) {
+  VLOG(4) << "WebSocket::OnReadDuringHandshake\n" << std::string(data, len);
   handshake_response_ += std::string(data, len);
   int headers_end = net::HttpUtil::LocateEndOfHeaders(
       handshake_response_.data(), handshake_response_.size(), 0);
@@ -253,6 +261,7 @@ void WebSocket::OnReadDuringOpen(const char* data, int len) {
     if (buffer.get())
       next_message_ += std::string(buffer->data(), buffer->size());
     if (frame_chunks[i]->final_chunk) {
+      VLOG(4) << "WebSocket::OnReadDuringOpen " << next_message_;
       listener_->OnMessageReceived(next_message_);
       next_message_.clear();
     }

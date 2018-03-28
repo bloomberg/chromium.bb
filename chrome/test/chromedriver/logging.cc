@@ -281,7 +281,8 @@ bool InitLogging() {
   }
 
   // Turn on VLOG for chromedriver. This is parsed during logging::InitLogging.
-  cmd_line->AppendSwitchASCII("vmodule", "*/chrome/test/chromedriver/*=3");
+  if (!cmd_line->HasSwitch("vmodule"))
+    cmd_line->AppendSwitchASCII("vmodule", "*/chrome/test/chromedriver/*=3");
 
   logging::SetMinLogLevel(logging::LOG_WARNING);
   logging::SetLogItems(false,   // enable_process_id
