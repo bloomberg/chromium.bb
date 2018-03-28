@@ -40,7 +40,6 @@
 #include "core/css/StyleSheetContents.h"
 #include "core/css/resolver/MatchRequest.h"
 #include "core/dom/Document.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/html/HTMLStyleElement.h"
 #include "core/html_names.h"

@@ -27,7 +27,6 @@
 
 #include "core/css/StyleChangeReason.h"
 #include "core/dom/Document.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/IdTargetObserver.h"
 #include "core/dom/ShadowRoot.h"
@@ -82,7 +81,7 @@ inline SVGUseElement::SVGUseElement(Document& document)
 SVGUseElement* SVGUseElement::Create(Document& document) {
   // Always build a user agent #shadow-root for SVGUseElement.
   SVGUseElement* use = new SVGUseElement(document);
-  use->EnsureShadow().AddShadowRoot(*use, ShadowRootType::kClosed);
+  use->AttachShadowRootInternal(ShadowRootType::kClosed);
   return use;
 }
 

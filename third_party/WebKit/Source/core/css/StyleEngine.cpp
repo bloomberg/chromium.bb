@@ -42,7 +42,6 @@
 #include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/css/resolver/ViewportStyleResolver.h"
 #include "core/dom/Element.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ShadowRoot.h"

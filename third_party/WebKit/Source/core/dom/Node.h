@@ -47,7 +47,6 @@ class ComputedStyle;
 class ContainerNode;
 class Document;
 class Element;
-class ElementShadow;
 class Event;
 class EventDispatchHandlingState;
 class ExceptionState;
@@ -555,7 +554,7 @@ class CORE_EXPORT Node : public EventTarget {
         static_cast<NodeFlags>(kIsConnectedFlag | kIsInShadowTreeFlag));
   }
 
-  ElementShadow* ParentElementShadow() const;
+  ShadowRoot* ParentElementShadowRoot() const;
   bool IsInV1ShadowTree() const;
   bool IsInV0ShadowTree() const;
   bool IsChildOfV1ShadowHost() const;

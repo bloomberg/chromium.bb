@@ -44,10 +44,10 @@
 #include "core/dom/DocumentFragment.h"
 #include "core/dom/DocumentType.h"
 #include "core/dom/Element.h"
-#include "core/dom/ElementShadow.h"
 #include "core/dom/Node.h"
 #include "core/dom/PseudoElement.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/ShadowRootV0.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/Text.h"
 #include "core/dom/V0InsertionPoint.h"
@@ -1982,7 +1982,7 @@ void InspectorDOMAgent::DidPerformElementShadowDistribution(
 
   if (ShadowRoot* root = shadow_host->GetShadowRoot()) {
     const HeapVector<Member<V0InsertionPoint>>& insertion_points =
-        root->DescendantInsertionPoints();
+        root->V0().DescendantInsertionPoints();
     for (const auto& it : insertion_points) {
       V0InsertionPoint* insertion_point = it.Get();
       int insertion_point_id = document_node_to_id_map_->at(insertion_point);

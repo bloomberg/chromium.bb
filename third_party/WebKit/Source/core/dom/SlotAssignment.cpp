@@ -4,7 +4,6 @@
 
 #include "core/dom/SlotAssignment.h"
 
-#include "core/dom/ElementShadow.h"
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeTraversal.h"

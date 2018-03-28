@@ -14,6 +14,7 @@
 #include "core/css/parser/CSSParserContext.h"
 #include "core/dom/Document.h"
 #include "core/dom/NodeComputedStyle.h"
+#include "core/dom/ShadowRoot.h"
 #include "core/dom/ShadowRootInit.h"
 #include "core/dom/ViewportDescription.h"
 #include "core/frame/FrameTestHelpers.h"
