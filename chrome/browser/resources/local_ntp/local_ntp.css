@@ -81,12 +81,11 @@ button {
 }
 
 #ntp-contents {
-/*  margin: 0 auto;
-  text-align: -webkit-center;
-  width: var(--content-width);*/
   display: flex;
   flex-direction: column;
   height: 100%;
+  position: relative;
+  z-index: 1;
 }
 
 #logo,
