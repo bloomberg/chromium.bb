@@ -9,6 +9,7 @@
 
 #include <algorithm>
 #include <limits>
+#include <map>
 #include <set>
 #include <utility>
 #include <vector>
@@ -361,25 +362,32 @@ class RenderProcessMemoryDumpProvider
         this);
   }
 
-  void AddHost(RenderProcessHostImpl* host) { hosts_.insert(host); }
+  void AddHost(RenderProcessHostImpl* host) {
+    hosts_.emplace(host, base::Time::Now());
+  }
+
   void RemoveHost(RenderProcessHostImpl* host) { hosts_.erase(host); }
 
  private:
   // base::trace_event::MemoryDumpProvider:
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override {
-    for (auto* host : hosts_) {
+    for (auto& iter : hosts_) {
+      auto* host = iter.first;
       base::trace_event::MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(
           base::StringPrintf("mojo/render_process_host/0x%" PRIxPTR,
                              reinterpret_cast<uintptr_t>(host)));
       dump->AddScalar("is_initialized",
                       base::trace_event::MemoryAllocatorDump::kUnitsObjects,
                       host->is_initialized() ? 1 : 0);
+      dump->AddScalar("age",
+                      base::trace_event::MemoryAllocatorDump::kUnitsObjects,
+                      (base::Time::Now() - iter.second).InSeconds());
     }
     return true;
   }
 
-  std::set<RenderProcessHostImpl*> hosts_;
+  std::map<RenderProcessHostImpl*, base::Time> hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderProcessMemoryDumpProvider);
 };
