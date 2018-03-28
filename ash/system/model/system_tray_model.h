@@ -12,6 +12,7 @@
 
 namespace ash {
 
+class ClockModel;
 class EnterpriseDomainModel;
 class TracingModel;
 class UpdateModel;
@@ -37,6 +38,7 @@ class SystemTrayModel : public mojom::SystemTray {
                       mojom::UpdateType update_type) override;
   void SetUpdateOverCellularAvailableIconVisible(bool visible) override;
 
+  ClockModel* clock() { return clock_.get(); }
   EnterpriseDomainModel* enterprise_domain() {
     return enterprise_domain_.get();
   }
@@ -44,13 +46,13 @@ class SystemTrayModel : public mojom::SystemTray {
   UpdateModel* update_model() { return update_model_.get(); }
 
  private:
+  std::unique_ptr<ClockModel> clock_;
   std::unique_ptr<EnterpriseDomainModel> enterprise_domain_;
   std::unique_ptr<TracingModel> tracing_;
   std::unique_ptr<UpdateModel> update_model_;
 
   // TODO(tetsui): Add following as a sub-model of SystemTrayModel:
   // * BluetoothModel
-  // * ClockModel
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayModel);
 };

@@ -17,7 +17,6 @@
 namespace ash {
 
 class BluetoothObserver;
-class ClockObserver;
 class IMEObserver;
 class NetworkObserver;
 class NetworkPortalDetectorObserver;
@@ -41,14 +40,6 @@ class ASH_EXPORT SystemTrayNotifier {
   void RemoveBluetoothObserver(BluetoothObserver* observer);
   void NotifyRefreshBluetooth();
   void NotifyBluetoothDiscoveringChanged();
-
-  // Date and time.
-  void AddClockObserver(ClockObserver* observer);
-  void RemoveClockObserver(ClockObserver* observer);
-  void NotifyRefreshClock();
-  void NotifyDateFormatChanged();
-  void NotifySystemClockTimeUpdated();
-  void NotifySystemClockCanSetTimeChanged(bool can_set_time);
 
   // Input methods.
   void AddIMEObserver(IMEObserver* observer);
@@ -94,7 +85,6 @@ class ASH_EXPORT SystemTrayNotifier {
 
  private:
   base::ObserverList<BluetoothObserver> bluetooth_observers_;
-  base::ObserverList<ClockObserver> clock_observers_;
   base::ObserverList<IMEObserver> ime_observers_;
   base::ObserverList<NetworkObserver> network_observers_;
   base::ObserverList<NetworkPortalDetectorObserver>

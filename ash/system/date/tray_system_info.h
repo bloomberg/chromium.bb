@@ -18,7 +18,6 @@ class Label;
 }
 
 namespace ash {
-class SystemClockObserver;
 class SystemInfoDefaultView;
 
 namespace tray {
@@ -56,8 +55,6 @@ class ASH_EXPORT TraySystemInfo : public SystemTrayItem, public ClockObserver {
   tray::TimeView* tray_view_;
   SystemInfoDefaultView* default_view_;
   LoginStatus login_status_;
-
-  std::unique_ptr<SystemClockObserver> system_clock_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TraySystemInfo);
 };
