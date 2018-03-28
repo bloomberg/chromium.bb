@@ -7,6 +7,7 @@ package org.chromium.android_webview;
 import android.support.annotation.Nullable;
 import android.text.TextUtils;
 
+import org.chromium.base.TraceRecordMode;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -24,6 +25,11 @@ import java.util.List;
 @JNINamespace("android_webview")
 public class AwTracingController {
     private static final String TAG = "cr.AwTracingController";
+
+    public static final int RESULT_SUCCESS = 0;
+    public static final int RESULT_ALREADY_TRACING = 1;
+    public static final int RESULT_INVALID_CATEGORIES = 2;
+    public static final int RESULT_INVALID_MODE = 3;
 
     public static final int CATEGORIES_ALL = 0;
     public static final int CATEGORIES_ANDROID_WEBVIEW = 1;
@@ -61,7 +67,7 @@ public class AwTracingController {
 
     private OutputStream mOutputStream;
 
-    // TODO(timvolodine): consider caching a mIsTracing value for efficiency.
+    // TODO(timvolodine): consider caching mIsTracing value for efficiency.
     // boolean mIsTracing;
 
     public AwTracingController() {
@@ -69,14 +75,16 @@ public class AwTracingController {
     }
 
     // Start tracing
-    public void start(Collection<Integer> predefinedCategories,
+    public int start(Collection<Integer> predefinedCategories,
             Collection<String> customIncludedCategories, int mode) {
-        if (isTracing()) {
-            throw new IllegalArgumentException("Cannot start tracing: tracing is already enabled");
-        }
+        if (isTracing()) return RESULT_ALREADY_TRACING;
+        if (!isValid(customIncludedCategories)) return RESULT_INVALID_CATEGORIES;
+        if (!isValidMode(mode)) return RESULT_INVALID_MODE;
+
         String categoryFilter =
                 constructCategoryFilterString(predefinedCategories, customIncludedCategories);
         nativeStart(mNativeAwTracingController, categoryFilter, mode);
+        return RESULT_SUCCESS;
     }
 
     // Stop tracing and flush tracing data.
@@ -91,6 +99,8 @@ public class AwTracingController {
         return nativeIsTracing(mNativeAwTracingController);
     }
 
+    // Combines configuration bits into a category string usable by chromium.
+    // Assumes that customIncludedCategories have been validated using isValid() method.
     private String constructCategoryFilterString(
             Collection<Integer> predefinedCategories, Collection<String> customIncludedCategories) {
         // Make sure to remove any doubles in category patterns.
@@ -98,14 +108,7 @@ public class AwTracingController {
         for (int predefinedCategoriesIndex : predefinedCategories) {
             categoriesSet.addAll(PREDEFINED_CATEGORIES_LIST.get(predefinedCategoriesIndex));
         }
-        for (String categoryPattern : customIncludedCategories) {
-            if (isValidPattern(categoryPattern)) {
-                categoriesSet.add(categoryPattern);
-            } else {
-                throw new IllegalArgumentException(
-                        "category patterns starting with '-' or containing ',' are not allowed");
-            }
-        }
+        categoriesSet.addAll(customIncludedCategories);
         if (categoriesSet.isEmpty()) {
             // when no categories are specified -- exclude everything
             categoriesSet.add("-*");
@@ -113,9 +116,25 @@ public class AwTracingController {
         return TextUtils.join(",", categoriesSet);
     }
 
-    private boolean isValidPattern(String pattern) {
+    // Returns true if the given collection of categories is valid.
+    private static boolean isValid(Collection<String> customIncludedCategories) {
+        for (String categoryPattern : customIncludedCategories) {
+            if (!isValidPattern(categoryPattern)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static boolean isValidPattern(String pattern) {
         // do not allow 'excluded' patterns or comma separated strings
         return !pattern.startsWith("-") && !pattern.contains(",");
+    }
+
+    private static boolean isValidMode(int mode) {
+        // allow only two modes, to ensure limited memory usage.
+        return (mode == TraceRecordMode.RECORD_UNTIL_FULL
+                || mode == TraceRecordMode.RECORD_CONTINUOUSLY);
     }
 
     @CalledByNative
