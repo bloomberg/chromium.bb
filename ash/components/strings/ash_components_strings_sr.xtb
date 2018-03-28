@@ -3,6 +3,7 @@
 <translationbundle lang="sr">
 <translation id="104962181688258143">Отворите апликацију Датотеке</translation>
 <translation id="1126871238933253947">Пређите на претходно коришћени језик тастатуре.</translation>
+<translation id="1134347825771908369">Искључи звук</translation>
 <translation id="1195667586424773550">Превуците линк у траку за адресу картице</translation>
 <translation id="1204450209689312104">Отворите нови прозор у режиму без архивирања</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -27,6 +28,7 @@
 <translation id="2181097965834437145">Прикажите или сакријте траку са обележивачима</translation>
 <translation id="2185166372312820725">Идите на претходну картицу</translation>
 <translation id="2194790690264064655">Притисните <ph name="CTRL" /> и кликните на линк</translation>
+<translation id="2382644247745281995">Није подржано са актуелним распоредом тастатуре</translation>
 <translation id="2424073332829844142">Укључите или искључите тастер Caps Lock</translation>
 <translation id="2441202986792279177">Брзо прелазите са једног прозора на други</translation>
 <translation id="2478303094958140141">Укључите или искључите ChromeVox (говорне повратне информације)</translation>
@@ -55,6 +57,7 @@
 <translation id="353037708190149633">Сачувајте све отворене странице у тренутном прозору као обележиваче у новом директоријуму</translation>
 <translation id="355103131818127604">Отворите линк на новој картици у позадини</translation>
 <translation id="3649256019230929621">Смањивање прозора</translation>
+<translation id="3655154169297074232">Картице и прозори</translation>
 <translation id="3668361878347172356">Поновите последњу радњу</translation>
 <translation id="3720939646656082033">Отворите линк на новој картици и пређите на њу</translation>
 <translation id="3725795051337497754">Затворите тренутно отворену картицу</translation>
@@ -70,6 +73,8 @@
 <translation id="4123108089450197101">Сачувајте линк као обележивач</translation>
 <translation id="4141203561740478845">Истакните ред са траком за адресу</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> или <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Режим прегледа</translation>
+<translation id="4472417192667361414">Подешавања система и приказа</translation>
 <translation id="4556221320735744018">Прегледајте помоћ за тастерске пречице</translation>
 <translation id="4628718545549558538">Отворите област статуса (где је слика налога)</translation>
 <translation id="4642092649622328492">Направите делимичан снимак екрана</translation>
@@ -134,6 +139,7 @@
 <translation id="8130528849632411619">Идите на почетак документа</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> или <ph name="E" /></translation>
 <translation id="8234414138295101081">Ротирајте екран за 90 степени</translation>
+<translation id="826184564253127735">Приказивач тастерских пречица</translation>
 <translation id="836869401750819675">Отворите страницу Преузимања</translation>
 <translation id="8388247778047144397">Превуците линк у празну област на траци са картицама</translation>
 <translation id="8389638407792712197">Отворите нови прозор</translation>
@@ -152,6 +158,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> од 1 до 8</translation>
 <translation id="9041599225465145264">Налепите садржај из привремене меморије</translation>
 <translation id="9052808072970550123">Пређите на следећег корисника</translation>
+<translation id="9106898733795143799">Страница и веб-прегледач</translation>
 <translation id="9179672198516322668">Популарне пречице</translation>
 <translation id="93603345341560814">Притисните <ph name="SHIFT" /> и кликните на линк</translation>
 <translation id="945383118875625837">Превуците линк на траку са обележивачима</translation>

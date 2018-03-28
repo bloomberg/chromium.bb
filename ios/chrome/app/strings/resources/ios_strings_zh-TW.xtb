@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">地址 1</translation>
 <translation id="1545749641540134597">掃描 QR 圖碼</translation>
 <translation id="1580783302095112590">已傳送郵件。</translation>
+<translation id="1582732959743469162">目前所有下載進度都會因此停止。</translation>
 <translation id="1612730193129642006">顯示分頁方格</translation>
 <translation id="1644574205037202324">歷史紀錄</translation>
 <translation id="1646446875146297738">啟用「不追蹤」選項後，您的瀏覽流量會置入一項特定的要求，其作用則視網站是否回應要求，以及網站解讀要求的方式而定。
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">發生重大錯誤，我們將設法解決。</translation>
 <translation id="6342069812937806050">剛剛</translation>
 <translation id="6344783595350022745">清除文字</translation>
+<translation id="6346549652287021269">要開始進行新的下載作業嗎？</translation>
 <translation id="6362362396625799311">沒有已開啟的無痕式分頁</translation>
 <translation id="6374469231428023295">再試一次</translation>
 <translation id="6380866119319257197">如果您忘記通關密語，或是想變更這項設定，請<ph name="BEGIN_LINK" />重設同步功能<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">同步處理</translation>
 <translation id="7053983685419859001">封鎖</translation>
 <translation id="7062545763355031412">接受並切換帳戶</translation>
+<translation id="7102005569666697658">下載中… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">隱藏</translation>
 <translation id="7133798577887235672">完整名稱</translation>
 <translation id="7136892417564438900">無法使用相機</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">接受並登出</translation>
 <translation id="7772032839648071052">確認通關密語</translation>
 <translation id="780301667611848630">不用了，謝謝</translation>
+<translation id="7856733331829174190">無法下載</translation>
 <translation id="7859704718976024901">瀏覽紀錄</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">匯出密碼...</translation>
@@ -422,6 +426,7 @@
 <translation id="9083392325882095631">1 個項目</translation>
 <translation id="9100610230175265781">請提供通關密語</translation>
 <translation id="9148126808321036104">重新登入</translation>
+<translation id="915371508759614899">要取消下載嗎？</translation>
 <translation id="9157836665414082580">禁止顯示對話方塊</translation>
 <translation id="9188680907066685419">登出受管理的帳戶</translation>
 <translation id="9203116392574189331">Handoff</translation>

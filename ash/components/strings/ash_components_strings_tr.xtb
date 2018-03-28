@@ -3,6 +3,7 @@
 <translationbundle lang="tr">
 <translation id="104962181688258143">Dosyalar uygulamasını açar</translation>
 <translation id="1126871238933253947">Kullandığınız önceki klavye diline geçer</translation>
+<translation id="1134347825771908369">Sesi kapatın</translation>
 <translation id="1195667586424773550">Bağlantıyı sekmenin adres çubuğuna sürükleyin</translation>
 <translation id="1204450209689312104">Gizli modda yeni bir pencere açar</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Geçerli pencerenizdeki tüm açık sayfaları yeni bir klasörde yer işaretleri olarak kaydeder</translation>
 <translation id="355103131818127604">Bağlantıyı arka planda yeni bir sekmede açar</translation>
 <translation id="3649256019230929621">Pencereyi simge durumuna küçült</translation>
+<translation id="3655154169297074232">Sekmeler ve Pencereler</translation>
 <translation id="3668361878347172356">Son işleminizi yineler</translation>
 <translation id="3720939646656082033">Bağlantıyı yeni bir sekmede açar ve yeni sekmeye geçer</translation>
 <translation id="3725795051337497754">Geçerli sekmeyi kapatır</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Bağlantıyı yer işareti olarak kaydeder</translation>
 <translation id="4141203561740478845">Adres çubuğu satırını vurgular</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> veya <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Genel bakış modu</translation>
+<translation id="4472417192667361414">Sistem ve Görüntü Ayarları</translation>
 <translation id="4556221320735744018">Klavye Kısayolu Yardımcısı'nı gösterir</translation>
 <translation id="4628718545549558538">Hesap resminizin görüntülendiği durum alanını açar</translation>
 <translation id="4642092649622328492">Kısmi ekran görüntüsü alır</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Dokümanın başına gider</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> veya <ph name="E" /></translation>
 <translation id="8234414138295101081">Ekranı 90 derece döndürür</translation>
+<translation id="826184564253127735">Klavye Kısayolu Görüntüleyici</translation>
 <translation id="836869401750819675">İndirilenler sayfasını açar</translation>
 <translation id="8388247778047144397">Bağlantıyı sekme şeridindeki boş bir alana sürükleyin</translation>
 <translation id="8389638407792712197">Yeni pencere açar</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 ile 8 arasındaki tuşlar</translation>
 <translation id="9041599225465145264">Panodaki içeriği yapıştırır</translation>
 <translation id="9052808072970550123">Sonraki kullanıcıya geçer</translation>
+<translation id="9106898733795143799">Sayfa ve Web Tarayıcısı</translation>
 <translation id="9179672198516322668">Popüler Kısayollar</translation>
 <translation id="93603345341560814"><ph name="SHIFT" /> tuşuna basın ve bağlantıyı tıklayın</translation>
 <translation id="945383118875625837">Bağlantıyı yer işaretleri çubuğuna sürükleyin</translation>

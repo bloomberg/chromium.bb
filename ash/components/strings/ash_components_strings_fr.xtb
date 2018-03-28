@@ -3,6 +3,7 @@
 <translationbundle lang="fr">
 <translation id="104962181688258143">Ouvrir l'application Fichiers</translation>
 <translation id="1126871238933253947">Revenir à la langue du clavier que vous utilisiez auparavant.</translation>
+<translation id="1134347825771908369">Désactiver le son</translation>
 <translation id="1195667586424773550">Faites glisser le lien vers la barre d'adresse de l'onglet</translation>
 <translation id="1204450209689312104">Ouvrir une nouvelle fenêtre en mode navigation privée</translation>
 <translation id="1293699935367580298">Échap</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Enregistrer toutes les pages de la fenêtre active dans un nouveau dossier de favoris</translation>
 <translation id="355103131818127604">Ouvrir le lien dans un nouvel onglet en arrière-plan</translation>
 <translation id="3649256019230929621">Réduire la fenêtre</translation>
+<translation id="3655154169297074232">Onglets et fenêtres</translation>
 <translation id="3668361878347172356">Répéter la dernière action</translation>
 <translation id="3720939646656082033">Ouvrir le lien dans un nouvel onglet et basculer vers le nouvel onglet</translation>
 <translation id="3725795051337497754">Fermer l'onglet actif</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Enregistrer le lien dans les favoris</translation>
 <translation id="4141203561740478845">Mettre en surbrillance la ligne de la barre d'adresse</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> ou <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Mode de présentation</translation>
+<translation id="4472417192667361414">Paramètres du système et de l'affichage</translation>
 <translation id="4556221320735744018">Consulter l'aide relative aux raccourcis clavier</translation>
 <translation id="4628718545549558538">Ouvrir la zone d'état (là où se trouve la photo de votre compte)</translation>
 <translation id="4642092649622328492">Faire une capture d'écran partielle</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Accéder au début du document</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> ou <ph name="E" /></translation>
 <translation id="8234414138295101081">Faire pivoter l'écran de 90 degrés</translation>
+<translation id="826184564253127735">Visionneuse de raccourcis clavier</translation>
 <translation id="836869401750819675">Ouvrir la page "Téléchargements"</translation>
 <translation id="8388247778047144397">Faites glisser le lien vers une zone vierge de la barre d'onglets</translation>
 <translation id="8389638407792712197">Ouvrir une nouvelle fenêtre</translation>
@@ -152,8 +157,9 @@
 <translation id="8990356943438003669"><ph name="SEPARATOR" /><ph name="ALT" /> 1 à 8</translation>
 <translation id="9041599225465145264">Coller le contenu du Presse-papiers</translation>
 <translation id="9052808072970550123">Passer à l'utilisateur suivant</translation>
+<translation id="9106898733795143799">Page et navigateur Web</translation>
 <translation id="9179672198516322668">Raccourcis courants</translation>
-<translation id="93603345341560814">Appuyez sur <ph name="SHIFT" />, puis cliquez sur le lien</translation>
+<translation id="93603345341560814">Appuyez sur <ph name="SHIFT" />, puis cliquez sur un lien</translation>
 <translation id="945383118875625837">Faire glisser le lien vers la barre de favoris</translation>
 <translation id="98120814841227350">Accéder à la fin du document</translation>
 </translationbundle>

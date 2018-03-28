@@ -23,6 +23,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" />（HDMI / DP）</translation>
 <translation id="1510238584712386396">ランチャー</translation>
 <translation id="1525508553941733066">閉じる</translation>
+<translation id="1537254971476575106">拡大鏡（全画面）</translation>
 <translation id="15373452373711364">大きいマウス カーソル</translation>
 <translation id="1550523713251050646">クリックするとその他のオプションが表示されます</translation>
 <translation id="1567387640189251553">前回のパスワード入力時以降に別のキーボードが接続されました。キー入力が読み取られる可能性があります。</translation>
@@ -51,8 +52,10 @@
 <translation id="2049639323467105390">この端末は <ph name="DOMAIN" /> によって管理されています。</translation>
 <translation id="2050339315714019657">縦</translation>
 <translation id="2067602449040652523">キーボードの明るさ</translation>
+<translation id="2081529251031312395">$1 が後でログインすることは引き続き可能です。</translation>
 <translation id="2122028596993374965"><ph name="RECEIVER_NAME" /> への <ph name="TAB_NAME" /> のキャストを停止する</translation>
 <translation id="2127372758936585790">低電力の充電器</translation>
+<translation id="2135456203358955318">拡大鏡（ドッキング）</translation>
 <translation id="2144487987174258011">Adobe Flash Player を更新するには再起動してください</translation>
 <translation id="2208323208084708176">デスクトップ統合モード</translation>
 <translation id="2220572644011485463">PIN またはパスワード</translation>

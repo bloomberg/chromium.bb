@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Adres 1</translation>
 <translation id="1545749641540134597">QR-code scannen</translation>
 <translation id="1580783302095112590">E-mail verzonden.</translation>
+<translation id="1582732959743469162">Hiermee wordt de voortgang van de huidige download gestopt.</translation>
 <translation id="1612730193129642006">Tabbladraster weergeven</translation>
 <translation id="1644574205037202324">Geschiedenis</translation>
 <translation id="1646446875146297738">Als je 'Niet bijhouden' inschakelt, wordt hiervoor een verzoek opgenomen in je browseverkeer. Het resultaat daarvan hangt af van of een website reageert op het verzoek en hoe het verzoek wordt geïnterpreteerd.
@@ -284,6 +285,7 @@ Handoff moet ook zijn ingeschakeld in het gedeelte 'Algemeen' van 'Instellingen'
 <translation id="633809752005859102">Er is iets goed misgegaan. We gaan op zoek naar een oplossing.</translation>
 <translation id="6342069812937806050">Zojuist</translation>
 <translation id="6344783595350022745">Tekst wissen</translation>
+<translation id="6346549652287021269">Nieuwe download starten?</translation>
 <translation id="6362362396625799311">Geen incognitotabbladen</translation>
 <translation id="6374469231428023295">Opnieuw proberen</translation>
 <translation id="6380866119319257197">Als je je wachtwoordzin vergeet of deze instelling wilt wijzigen, <ph name="BEGIN_LINK" />stel je de synchronisatie opnieuw in<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7031882061095297553">Synchroniseren met</translation>
 <translation id="7053983685419859001">Blokkeren</translation>
 <translation id="7062545763355031412">Accepteren en account wijzigen</translation>
+<translation id="7102005569666697658">Downloaden… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Verbergen</translation>
 <translation id="7133798577887235672">Volledige naam</translation>
 <translation id="7136892417564438900">Camera is niet beschikbaar</translation>
@@ -360,6 +363,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="7769602470925380267">Accepteren en uitloggen</translation>
 <translation id="7772032839648071052">Bevestig de wachtwoordzin</translation>
 <translation id="780301667611848630">Nee, bedankt</translation>
+<translation id="7856733331829174190">Kan niet downloaden</translation>
 <translation id="7859704718976024901">Browsegeschiedenis</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Wachtwoorden exporteren...</translation>
@@ -422,6 +426,7 @@ Je gegevens zijn op <ph name="TIME" /> versleuteld met je wachtwoordzin voor syn
 <translation id="9083392325882095631">1 item</translation>
 <translation id="9100610230175265781">Wachtwoordzin vereist</translation>
 <translation id="9148126808321036104">Opnieuw inloggen</translation>
+<translation id="915371508759614899">Downloaden annuleren?</translation>
 <translation id="9157836665414082580">Dialoogvensters onderdrukken</translation>
 <translation id="9188680907066685419">Uitloggen van beheerd account</translation>
 <translation id="9203116392574189331">Handoff</translation>

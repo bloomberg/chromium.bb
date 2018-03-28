@@ -3,6 +3,7 @@
 <translationbundle lang="bn">
 <translation id="104962181688258143">ফাইল অ্যাপ খুলুন</translation>
 <translation id="1126871238933253947">আপনি যে কীবোর্ড ভাষা ব্যবহার করছিলেন সেটিতে পরিবর্তন করুন।</translation>
+<translation id="1134347825771908369">ভলিউম মিউট করুন</translation>
 <translation id="1195667586424773550">ট্যাব অ্যাড্রেস বারে লিঙ্কটি টেনে আনুন</translation>
 <translation id="1204450209689312104">ছদ্মবেশী মোডে একটি নতুন উইন্ডো খুলুন</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">আপনার বর্তমান উইন্ডোতে খোলা সমস্ত পৃষ্ঠা বুকমার্ক হিসেবে একটি নতুন ফোল্ডারে সেভ করুন</translation>
 <translation id="355103131818127604">ব্যাকগ্রাউন্ডে একটি নতুন ট্যাবে লিঙ্কটি খুলুন</translation>
 <translation id="3649256019230929621">উইন্ডো সংক্ষিপ্তায়ন করুন</translation>
+<translation id="3655154169297074232">ট্যাব এবং উইন্ডো</translation>
 <translation id="3668361878347172356">আপনার শেষ অ্যাকশনটি আবার করুন</translation>
 <translation id="3720939646656082033">একটি নতুন ট্যাবে লিঙ্কটি খুলুন এবং নতুন ট্যাবে পরিবর্তন করুন</translation>
 <translation id="3725795051337497754">বর্তমান ট্যাবটি বন্ধ করুন</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">লিঙ্কটি একটি বুকমার্ক হিসেবে সেভ করুন</translation>
 <translation id="4141203561740478845">অ্যাড্রেস বার সহ সারিটি হাইলাইট করুন</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> অথবা <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">এক নজরে দেখার মোড</translation>
+<translation id="4472417192667361414">সিস্টেম এবং ডিসপ্লে সেটিংস</translation>
 <translation id="4556221320735744018">কীবোর্ড শর্টকাট সহায়তাকারী দেখুন</translation>
 <translation id="4628718545549558538">স্ট্যাটাস এলাকা খুলুন (যেখানে আপনার অ্যাকাউন্টের ছবি দেখানো হয়)</translation>
 <translation id="4642092649622328492">আংশিক স্ক্রিনশট নিন</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">ডকুমেন্টের শুরুতে যান</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> অথবা <ph name="E" /></translation>
 <translation id="8234414138295101081">স্ক্রিনকে ৯০ ডিগ্রি ঘোরান</translation>
+<translation id="826184564253127735">কীবোর্ড শর্টকাট ভিউয়ার</translation>
 <translation id="836869401750819675">ডাউনলোড হওয়া পৃষ্ঠাটি খুলুন</translation>
 <translation id="8388247778047144397">ট্যাব বারের ফাঁকা অঞ্চলে একটি লিঙ্ক টেনে আনুন</translation>
 <translation id="8389638407792712197">নতুন উইন্ডো খুলুন</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> ১ থেকে ৮ পর্যন্ত</translation>
 <translation id="9041599225465145264">ক্লিপবোর্ড থেকে কন্টেন্ট পেস্ট করুন</translation>
 <translation id="9052808072970550123">পরের ব্যবহারকারী বেছে নিন</translation>
+<translation id="9106898733795143799">পৃষ্ঠা এবং ওয়েব ব্রাউজার</translation>
 <translation id="9179672198516322668">জনপ্রিয় শর্টকাট</translation>
 <translation id="93603345341560814"><ph name="SHIFT" /> টিপুন এবং একটি লিঙ্ক ক্লিক করুন</translation>
 <translation id="945383118875625837">বুকমার্ক বারে লিঙ্কটি টেনে আনুন</translation>

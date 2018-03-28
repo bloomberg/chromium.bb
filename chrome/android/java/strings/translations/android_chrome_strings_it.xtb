@@ -87,6 +87,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="1709438864123551175">Risparmio dati</translation>
 <translation id="1718835860248848330">Ultima ora</translation>
 <translation id="1729516292547892356">Per vedere contenuti di realtà virtuale, aggiorna Servizi Google VR</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Aggiornato <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Sincronizza i tuoi preferiti</translation>
 <translation id="17513872634828108">Schede aperte</translation>
 <translation id="1756600373018374892">Tocca questo pulsante per accedere velocemente alle tue schede.</translation>
@@ -170,7 +171,7 @@ Per poter utilizzare il Physical Web, devi attivare il Bluetooth e la geolocaliz
 <translation id="2498359688066513246">Guida e feedback</translation>
 <translation id="2501278716633472235">Indietro</translation>
 <translation id="2503472621226270518">Espandi il riquadro di navigazione</translation>
-<translation id="2512222046227390255">Compilazione automatica dei moduli</translation>
+<translation id="2512222046227390255">Compilare moduli automaticamente</translation>
 <translation id="2526148617758225454">La funzione Risparmio dati è attiva. Gestiscila nelle Impostazioni.</translation>
 <translation id="2532336938189706096">Visualizzazione web</translation>
 <translation id="2536728043171574184">È visualizzata una copia offline della pagina</translation>
@@ -784,6 +785,7 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="8200772114523450471">Riprendi</translation>
 <translation id="8209050860603202033">Apri immagine</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB per i download</translation>
+<translation id="8249310407154411074">Sposta in alto</translation>
 <translation id="8250920743982581267">Documenti</translation>
 <translation id="8260126382462817229">Prova ad accedere nuovamente</translation>
 <translation id="8261506727792406068">Elimina</translation>

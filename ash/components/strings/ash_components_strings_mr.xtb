@@ -3,6 +3,7 @@
 <translationbundle lang="mr">
 <translation id="104962181688258143">फायली अ‍ॅप उघडा</translation>
 <translation id="1126871238933253947">तुम्ही आधी वापरत असलेल्या कीबोर्डवर स्विच करा.</translation>
+<translation id="1134347825771908369">व्हॉल्यूम म्युट करा</translation>
 <translation id="1195667586424773550">लिंक ड्रॅग करून टॅबच्या अ‍ॅड्रेस बारवर आणा</translation>
 <translation id="1204450209689312104">एक नवीन विंडो गुप्त मोडमध्ये उघडा</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">एका नवीन फोल्डरमध्ये बुकमार्क म्हणून तुमच्या या विंडोमधील उघडलेली सर्व पेज सेव्ह करा</translation>
 <translation id="355103131818127604">बॅकग्राउंडला एका नवीन टॅबमध्ये लिंक उघडा</translation>
 <translation id="3649256019230929621">विंडो लहान करा</translation>
+<translation id="3655154169297074232">टॅब आणि विंडो</translation>
 <translation id="3668361878347172356">तुमची याआधीची क्रिया पुन्हा करा</translation>
 <translation id="3720939646656082033">लिंक एका नवीन टॅबमध्ये उघडा आणि नवीन टॅबवर स्विच करा</translation>
 <translation id="3725795051337497754">हा टॅब बंद करा</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">लिंक बुकमार्क म्हणून सेव्ह करा</translation>
 <translation id="4141203561740478845">पंक्ती अ‍ॅड्रेस बारने हायलाइट करा</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> किंवा <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">अवलोकन मोड</translation>
+<translation id="4472417192667361414">सिस्टम आणि प्रदर्शन सेटिंग्ज</translation>
 <translation id="4556221320735744018">कीबोर्ड शॉर्टकट मदतनीस पाहा</translation>
 <translation id="4628718545549558538">स्थिती क्षेत्र (जेथे तुमच्या खात्यावरील फोटो दिसतो) उघडा</translation>
 <translation id="4642092649622328492">अर्धा स्क्रीनशॉट घ्या</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">दस्तऐवजाच्या सुरूवातीला जा</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> किंवा <ph name="E" /></translation>
 <translation id="8234414138295101081">स्क्रीन ९० अंशात फिरवा</translation>
+<translation id="826184564253127735">कीबोर्ड शॉर्टकट दर्शक</translation>
 <translation id="836869401750819675">डाउनलोड पेज उघडा</translation>
 <translation id="8388247778047144397">टॅब स्ट्रिपवरील एका रिक्त भागावर एखादी लिंक ड्रॅग करा</translation>
 <translation id="8389638407792712197">नवीन विंडो उघडा</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> १ ते ८</translation>
 <translation id="9041599225465145264">क्लिपबोर्डवरून आशय पेस्ट करा</translation>
 <translation id="9052808072970550123">पुढील वापरकर्त्यावर स्विच करा</translation>
+<translation id="9106898733795143799">पृष्ठ आणि वेब ब्राउझर</translation>
 <translation id="9179672198516322668">लोकप्रिय शॉर्टकट</translation>
 <translation id="93603345341560814"><ph name="SHIFT" /> दाबा आणि लिंकवर क्लिक करा</translation>
 <translation id="945383118875625837">लिंक बुकमार्क बारवर ड्रॅग करा</translation>

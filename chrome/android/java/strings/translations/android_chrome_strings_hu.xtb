@@ -87,6 +87,7 @@ A Fizikai web használatához be kell kapcsolnia a Bluetooth funkciót és a hel
 <translation id="1709438864123551175">Adatforgalom-csökkentő</translation>
 <translation id="1718835860248848330">Az elmúlt órából</translation>
 <translation id="1729516292547892356">A virtuális valósággal kapcsolatos tartalmak megtekintéséhez frissítse a Google VR-szolgáltatásait</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Frissítve: <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Könyvjelzők szinkronizálása</translation>
 <translation id="17513872634828108">Megnyitott lapok</translation>
 <translation id="1756600373018374892">Koppintson erre a gombra lapjai gyors eléréséhez.</translation>
@@ -784,6 +785,7 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="8200772114523450471">Folytatás</translation>
 <translation id="8209050860603202033">Kép megnyitása</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB letöltve</translation>
+<translation id="8249310407154411074">Mozgatás az elejére</translation>
 <translation id="8250920743982581267">Dokumentumok</translation>
 <translation id="8260126382462817229">Próbáljon meg újra bejelentkezni</translation>
 <translation id="8261506727792406068">Törlés</translation>

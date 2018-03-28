@@ -58,6 +58,17 @@
 
       Selle reegli kasutamisel on kasutajale saadaval kõik printerid, v.a need, mille ID-d on selles reeglis loetletud.
       </translation>
+<translation id="1181881366217399113">
+      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
+      Kui reegel on lubatud, käitab iga komadega eraldatud loendis
+      nimetatud lähtekoht oma protsesse. See isoleerib ka alamdomeenide
+      nimetatud lähtekohad; nt aadressi https://example.com/ määramisel
+      isoleeritakse saidi https://example.com/ osana ka aadress
+      https://foo.example.com/.
+      Kui reegel on keelatud, jõustub saidi isoleerimise põhise protsessihalduse loogika.
+      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
+      Operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> on soovitatav seadistada ka seadmereegel <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> samale väärtusele. Kui kahes reeglis määratud väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
+      </translation>
 <translation id="1198465924256827162">Seadme oleku üleslaadimiste saatmise sagedus millisekundites.
 
       Kui see reegel on määramata, on vaikesagedus 3 tundi. Minimaalne
@@ -256,7 +267,15 @@
       Väärtuse vorming põhineb IANA ajavööndite andmebaasis olevatel nimedel (vt https://en.wikipedia.org/wiki/Tz_database). Täpsemalt tähendab see, et ajavööndite nimetused on kujul „manner/suurlinn” või „ookean/suurlinn”.
 
       Reegli määramisel keelatakse ajavööndi automaatne lahendamine seadme asukoha alusel. Samuti alistab see reegli SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Pilvepõhise reegli registreerimismärk lauaarvutis</translation>
 <translation id="1897365952389968758">Luba kõikidel saitidel JavaScripti käitamine</translation>
+<translation id="1906888171268104594">Määrab, kas kasutusmõõdikute teave ja diagnostikaandmed, sh krahhiaruanded, edastatakse Google'ile.
+
+      Kui reegli väärtuseks on määratud Tõene, edastab <ph name="PRODUCT_OS_NAME" /> kasutusmõõdikute teavet ja diagnostikaandmeid.
+
+      Kui reegli väärtuseks on määratud Väär, siis on mõõdikute teabe ja diagnostikaandmete edastamine keelatud.
+
+      Kui reegel on seadistamata, siis on mõõdikute teabe ja diagnostikaandmete edastamine haldamata seadmetes keelatud ja hallatud seadmetes lubatud.</translation>
 <translation id="193259052151668190">Eemaldatavate USB-seadmete lubatud üksuste loend</translation>
 <translation id="1933378685401357864">Taustapildi kujutis</translation>
 <translation id="1956493342242507974">Toitehalduse seadistamine sisselogimisekraanil operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" />.
@@ -417,6 +436,12 @@
 <translation id="2386362615870139244">Ekraani aktiveerimise lukustamise lubamine</translation>
 <translation id="2411817661175306360">Paroolikaitse hoiatus on välja lülitatud</translation>
 <translation id="2411919772666155530">Blokeerige märguanded nendel saitidel</translation>
+<translation id="2415979855753196119">Võimaldab teil juhtida ohus olevate paroolikaitse kontode märgistamise käivitamist. Ohus olevate paroolikaitse kontode märgistamine tähendab, et Google'it teavitatakse, kui kontot ähvardab kaaperdamise oht.
+
+      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOff”, ei käivitata ohus olevate paroolikaitse kontode märgistamist.
+      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPasswordReuse”, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutaja kasutab oma Google'i parooli saidil, mis ei kuulu lubatud saitide loendisse.
+      Kui reegli väärtuseks määratakse „PasswordProtectionRiskOnPhishingReuse”, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil.
+      Kui see reegel jäetakse määramata, käivitatakse ohus olevate paroolikaitse kontode märgistamine siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil, kuid kasutaja saab seda muuta.</translation>
 <translation id="2418507228189425036">Keelab brauseris <ph name="PRODUCT_NAME" /> sirvimisajaloo salvestamise ja takistab kasutajaid seadet muutmast.
 
       Kui seade on lubatud, ei salvestata sirvimisajalugu. Seade keelab ka vahelehtede sünkroonimise.
@@ -613,6 +638,12 @@
 
       Kui lubate selle seade, kasutab printimise eelvaade vaikesihtkohana operatsioonisüsteemi vaikeprinterit.</translation>
 <translation id="2867699958489427143">Mine tagasi ja jää sihtversioonile, kui operatsioonisüsteemi versioon on uuem kui sihtversioon. Protsessi käigus tehakse täielik Powerwash.</translation>
+<translation id="286802604195763750">Võimaldab teil juhtida paroolikaitse kontode hoiatuse käivitamist. Paroolikaitse hoiatab kasutajaid, kui nad kasutavad oma kaitstud parooli potentsiaalselt ohtlikel saitidel.
+
+      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOff”, siis paroolikaitse hoiatusi ei kuvata.
+      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOnPasswordReuse”, kuvatakse paroolikaitse hoiatused siis, kui kasutaja kasutab oma Google'i parooli saidil, mis ei kuulu lubatud saitide loendisse.
+      Kui reegli väärtuseks määratakse „PasswordProtectionWarningOnPhishingReuse”, kuvatakse paroolikaitse hoiatus siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil.
+      Kui see reegel jäetakse määramata, käivitatakse paroolikaitse hoiatus siis, kui kasutaja kasutab oma Google'i parooli andmepüügisaidil, kuid kasutaja saab seda muuta.</translation>
 <translation id="2872961005593481000">Lülita välja</translation>
 <translation id="2874209944580848064">Märkus Androidi rakendusi toetavate operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete kohta.</translation>
 <translation id="2877225735001246144">Keela CNAME-i otsing Kerberose autentimise läbirääkimisel</translation>
@@ -647,6 +678,17 @@
           Reegli väärtus tuleb määrata millisekundites. Väärtused tuleb kinnitada väiksematena kui ekraani väljalülitamise viiteaeg (kui see on määratud) ja jõudeoleku viiteaeg või nendega võrdsetena.</translation>
 <translation id="2987155890997901449">ARC lubamine</translation>
 <translation id="2987227569419001736">Web Bluetooth API kasutuse kontrollimine</translation>
+<translation id="2998886474614739865">
+      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
+      See reegel kehtib sisselogimisekraanil. Vaadake ka reeglit <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus. Kui väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
+      Kui reegel on lubatud, käitab iga komadega eraldatud loendis
+      nimetatud lähtekoht oma protsesse. See isoleerib ka
+      alamdomeenide nimetatud lähtekohad; nt aadressi https://example.com/
+      määramisel isoleeritakse saidi https://example.com/ osana ka aadress
+      https://foo.example.com/.
+      Kui reegel on keelatud, jõustub saidi isoleerimise põhise protsessihalduse loogika.
+      Kui reegel on seadistamata, kasutatakse sisselogimisekraanil platvormi saitide isoleerimise vaikeseadeid.
+      </translation>
 <translation id="3016255526521614822">Lisage lubatud rakenduste loendisse märkmete tegemise rakendused, mida <ph name="PRODUCT_OS_NAME" /> võib lukustuskuval näidata</translation>
 <translation id="3021562480854470924">Tagasiminekuks lubatud eelmiste versioonide arv</translation>
 <translation id="3030000825273123558">Luba mõõdikute aruandlus</translation>
@@ -752,6 +794,17 @@
 
           Kui selle reegli väärtuseks määratakse mõni täidetud string, kasutatakse seda stringi teenuse <ph name="PRODUCT_NAME" /> sihtkohana. Muul juhul on sihtkoha nimeks seadme nimi. Kui see reegel jäetakse määramata, on sihtkoha nimeks seadme nimi ja seadme omanik (või seadet haldava domeeni kasutaja) saab seda muuta. Nimi tohib olla maksimaalselt 24 tähemärki.</translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
+<translation id="3386001018488754001">
+      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
+      See reegel kehtib sisselogimisekraanil. Vaadake ka reeglit <ph name="SITE_PER_PROCESS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus. Kui väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
+      Soovitame teil vaadata reegli  IsolateOrigins seadet, et kasutada nii
+      isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit
+      IsolateOrigins saitide puhul, mille soovite isoleerida. Seade
+      SitePerProcess isoleerib kõik saidid.
+      Kui reegel on lubatud, käitab iga sait oma protsesse.
+      Kui reegel on keelatud, jõustub saidi isoleerimise põhise protsessihalduse loogika.
+      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
+      </translation>
 <translation id="3395348522300156660">Määrab printerid, mida kasutaja saab kasutada.
 
       Seda reeglit kasutatakse ainult siis, kui režiimis <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> on valitud väärtus <ph name="PRINTERS_WHITELIST" />
@@ -790,6 +843,10 @@
           Kui see reegel on määratud olekule Väär või seda pole määratud, siis toimub toitehalduse viivituste ja seansi pikkuse limiidi aktiveerimine kohe, kui seanss algab.</translation>
 <translation id="3478024346823118645">Kustuta kasutaja andmed väljalogimisel</translation>
 <translation id="348495353354674884">Luba virtuaalne klaviatuur</translation>
+<translation id="3487623755010328395">
+        Kui see reegel on määratud, üritab teenus <ph name="PRODUCT_NAME" /> end registreerida ja rakendada seotud  pilvepõhised reeglid kõikidele profiilidele.
+
+        Selle reegli väärtus on registreerimismärk, mille saab Google'i administraatorikonsoolilt.</translation>
 <translation id="3496296378755072552">Paroolihaldur</translation>
 <translation id="350443680860256679">ARC reegli seadistamine</translation>
 <translation id="3504791027627803580">Täpsustab pildiotsinguks kasutatava otsingumootori URL-i. Otsingupäringud saadetakse GET-meetodiga. Kui määratud on reegel DefaultSearchProviderImageURLPostParams, siis kasutab pildiotsingupäring POST-meetodit.
@@ -1376,6 +1433,17 @@
 
       Kui reeglit ei ole määratud või kui see on määratud tühjale stringile või kehtetule pordivahemikule, on WebRTC-l lubatud kasutada mis tahes saadaolevat kohalikku UDP-porti.</translation>
 <translation id="5290940294294002042">Määrake pistikprogrammide loend, mida kasutaja saab lubada või keelata</translation>
+<translation id="5301787427319106606">
+      MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
+      Soovitame teil vaadata reegli IsolateOrigins seadet, et kasutada nii
+      isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit
+      IsolateOrigins saitide puhul, mille soovite isoleerida. Seade
+      SitePerProcess isoleerib kõik saidid.
+      Kui reegel on lubatud, käitab iga sait oma protsesse.
+      Kui reegel on keelatud, jõustub saidi isoleerimise põhise protsessihalduse loogika.
+      Kui reegel on seadistamata, saab kasutaja seda seadet muuta.
+      Operatsioonisüsteemis <ph name="PRODUCT_OS_NAME" /> on soovitatav seadistada ka seadmereegel <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> samale väärtusele. Kui kahes reeglis määratud väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
+      </translation>
 <translation id="5302612588919538756">Selle reegli tugi on katkestatud, kaaluge selle asemel reegli SyncDisabled kasutamist.
 
       Lubab kasutajal teenusesse <ph name="PRODUCT_NAME" /> sisse logida.
@@ -1975,6 +2043,14 @@
 <translation id="706669471845501145">Luba saitidel töölauateatiste näitamine</translation>
 <translation id="7072208053150563108">Seadme parooli muutmise sagedus</translation>
 <translation id="7072406291414141328">Lubab võrgu ribalaiuse piiramise</translation>
+<translation id="7074513465313721551">Seadistage loend domeenidest, mida ohutu sirvimise funktsioon usaldab. See tähendab järgmist.
+      Ohutu sirvimise funktsioon ei kontrolli ohtlikke allikaid (nt andmepüük, pahavara või soovimatu tarkvara), kui nende URL-id ühtivad nende domeenidega.
+      Ohutu sirvimise funktsiooni allalaadimiskaitse teenus ei kontrolli nendel domeenidel hostitud allalaadimisi.
+      Ohutu sirvimise funktsiooni paroolikaitse teenus ei kontrolli parooli taaskasutamist, kui lehe URL ühtib nende domeenidega.
+
+      Kui see seade on lubatud, usaldab ohutu sirvimise funktsioon neid domeene.
+      Kui see seade on keelatud või seadistamata, siis rakendatakse ohutu sirvimise funktsiooni vaikekaitse kõikidele allikatele.
+      See reegel ei ole saadaval Windowsi eksemplarides, mis pole domeeniga <ph name="MS_AD_NAME" /> liitunud.</translation>
 <translation id="7079519252486108041">Blokeeri hüpikaknad nendel saitidel</translation>
 <translation id="7106631983877564505">Lubage operatsioonisüsteemiga <ph name="PRODUCT_OS_NAME" /> seadmete lukustamine, kui need on peatatud või tegevusetud.
 

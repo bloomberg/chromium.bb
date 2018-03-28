@@ -2,6 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="ru">
 <translation id="1065672644894730302">Не удается получить настройки. Некоторые функции могут быть недоступны, а изменения настроек не будут сохраняться.</translation>
+<translation id="1104942323762546749">Чтобы экспортировать пароли из Chromium, введите пароль своего аккаунта Windows.</translation>
 <translation id="1115445892567829615">Chromium не удалось синхронизировать данные. Обновите кодовую фразу в Sync.</translation>
 <translation id="113122355610423240">Chromium используется как браузер по умолчанию</translation>
 <translation id="1170115874949214249">Установите Chromium на телефон. Мы отправим SMS на номер, указанный в вашем аккаунте.</translation>
@@ -64,6 +65,7 @@
 <translation id="3155163173539279776">Перезапустить Chromium</translation>
 <translation id="3179665906251668410">Открыть ссылку в режиме инкогнито браузера Chromium</translation>
 <translation id="3190315855212034486">Произошел сбой Chromium. Перезапустить?</translation>
+<translation id="3229526316128325841">Вы собираетесь экспортировать пароли из Chromium.</translation>
 <translation id="3256316712990552818">Скопировано в Chromium</translation>
 <translation id="3258596308407688501">Chromium не может выполнять операции чтения и записи в своем каталоге: <ph name="USER_DATA_DIRECTORY" /></translation>
 <translation id="328888136576916638">Отсутствуют ключи API Google. Некоторые функции Chromium могут не работать.</translation>
@@ -97,6 +99,7 @@
 <translation id="4285930937574705105">Установка не удалась из-за неизвестной ошибки. Если Chromium продолжает работать, закройте его и повторите попытку.</translation>
 <translation id="4330585738697551178">Известно, что модуль с таким названием конфликтует с Chromium.</translation>
 <translation id="4407044323746248786">Закрыть Chromium?</translation>
+<translation id="4415566066719264597">Разрешить Chromium работать в фоновом режиме</translation>
 <translation id="4421155425831608516">Вход в Chromium отключен администратором устройства.</translation>
 <translation id="4423735387467980091">Настройка и управление Chromium</translation>
 <translation id="4449801103833300785">{0,plural, =1{Chromium перезапустится через 1 час}one{Chromium перезапустится через # час}few{Chromium перезапустится через # часа}many{Chromium перезапустится через # часов}other{Chromium перезапустится через # часа}}</translation>
@@ -160,6 +163,7 @@
 <translation id="6394232988457703198">Перезапустите Chromium</translation>
 <translation id="6400072781405947421">В работе Chromium могут возникать сбои, так как браузер больше не поддерживает Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">Chromium – браузер, который открывает веб-страницы и приложения за секунды. Он быстр, стабилен в работе и прост в использовании. Встроенная в Chromium защита от мошенничества и вредоносного ПО обеспечивает максимально безопасную работу в Интернете.</translation>
+<translation id="6457450909262716557">{SECONDS,plural, =1{Chromium перезапустится через 1 секунду}one{Chromium перезапустится через # секунду}few{Chromium перезапустится через # секунды}many{Chromium перезапустится через # секунд}other{Chromium перезапустится через # секунды}}</translation>
 <translation id="6475912303565314141">Кроме того, расширение изменило стартовую страницу Chromium.</translation>
 <translation id="6485906693002546646">Для синхронизации данных Chromium используется аккаунт <ph name="PROFILE_EMAIL" />. Изменить параметры синхронизации или отключить аккаунт можно в <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Удаление Chromium</translation>

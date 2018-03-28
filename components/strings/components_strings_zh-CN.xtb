@@ -427,6 +427,7 @@
 <translation id="4103249731201008433">设备序列号无效</translation>
 <translation id="410351446219883937">自动播放</translation>
 <translation id="4103763322291513355">请访问 &lt;strong&gt;chrome:// 政策&lt;/strong&gt;，查看列入黑名单的网址列表以及您的系统管理员强制要求执行的其他政策。</translation>
+<translation id="4110652170750985508">查看您的付款</translation>
 <translation id="4116663294526079822">在此网站上始终允许</translation>
 <translation id="4117700440116928470">政策范围不受支持。</translation>
 <translation id="4129401438321186435">{COUNT,plural, =1{1 项其他内容}other{# 项其他内容}}</translation>

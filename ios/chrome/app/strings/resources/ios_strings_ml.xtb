@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">വിലാസം 1</translation>
 <translation id="1545749641540134597">QR കോഡ് സ്‌കാൻ ചെയ്യുക</translation>
 <translation id="1580783302095112590">മെയിൽ അയച്ചു.</translation>
+<translation id="1582732959743469162">ഇത്, നിലവിലെ ഡൗൺലോഡിന്റെ എല്ലാ പുരോഗതിയും നിർത്തും.</translation>
 <translation id="1612730193129642006">ടാബ് ഗ്രിഡ് കാണിക്കുക</translation>
 <translation id="1644574205037202324">ചരിത്രം</translation>
 <translation id="1646446875146297738">നിങ്ങളുടെ ബ്രൗസിംഗ് ട്രാഫിക്കിൽ ഒരു അഭ്യർത്ഥന ഉൾപ്പെടുത്തുമെന്നാണ് "ട്രാക്ക് ചെയ്യരുത്" പ്രവർത്തനക്ഷമമാക്കുന്നതിലൂടെ അർത്ഥമാക്കുന്നത്. ഒരു വെബ്‌സൈറ്റ്, അഭ്യർത്ഥനയിന്മേൽ പ്രതികരിക്കുന്നോ എന്നതിനേയും അഭ്യർത്ഥന വ്യാഖ്യാനിക്കുന്നതെങ്ങനെ എന്നതിനേയും ആശ്രയിച്ചുള്ളതായിരിക്കും ഏതൊരു ഇഫക്റ്റും.
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">ശരിക്കും എന്തോ കുഴപ്പം സംഭവിച്ചു. ഞങ്ങൾ അത് പരിഹരിക്കും.</translation>
 <translation id="6342069812937806050">ഇപ്പോള്‍‌</translation>
 <translation id="6344783595350022745">വാചകം മായ്‌ക്കുക</translation>
+<translation id="6346549652287021269">പുതിയ ഡൗൺലോഡ് ആരംഭിക്കണോ?</translation>
 <translation id="6362362396625799311">ആൾമാറാട്ട ടാബുകളൊന്നുമില്ല</translation>
 <translation id="6374469231428023295">വീണ്ടും ശ്രമിക്കുക</translation>
 <translation id="6380866119319257197">നിങ്ങൾ പാസ്‌ഫ്രെയ്‌സ് മറന്നുപോയെങ്കിലോ ഈ ക്രമീകരണം മാറ്റണമെങ്കിലോ, <ph name="BEGIN_LINK" />സമന്വയം റീസെറ്റുചെയ്യുക<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">ഇതിലേക്ക് സമന്വയിപ്പിക്കുക</translation>
 <translation id="7053983685419859001">തടയുക</translation>
 <translation id="7062545763355031412">അംഗീകരിച്ചശേഷം, അക്കൗണ്ടുകൾ മാറുക</translation>
+<translation id="7102005569666697658">ഡൗൺലോഡ് ചെയ്യുന്നു… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">മറയ്ക്കുക</translation>
 <translation id="7133798577887235672">പൂർണ്ണമായ പേര്</translation>
 <translation id="7136892417564438900">ക്യാമറ ലഭ്യമല്ല</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">അംഗീകരിച്ചശേഷം, സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="7772032839648071052">പാസ്ഫ്രേസ് സ്ഥിരീകരിക്കുക</translation>
 <translation id="780301667611848630">വേണ്ട നന്ദി</translation>
+<translation id="7856733331829174190">ഡൗൺലോഡ് ചെയ്യാനായില്ല</translation>
 <translation id="7859704718976024901">ബ്രൗസിംഗ് ചരിത്രം</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">പാസ്‌വേഡുകൾ എക്‌സ്‌പോർട്ട് ചെയ്യുക...</translation>
@@ -422,6 +426,7 @@
 <translation id="9083392325882095631">ഒരു ഇനം</translation>
 <translation id="9100610230175265781">പാസ്‌ഫ്രെയ്‌സ് ആവശ്യമാണ്</translation>
 <translation id="9148126808321036104">വീണ്ടും പ്രവേശിക്കുക</translation>
+<translation id="915371508759614899">ഡൗൺലോഡ് റദ്ദാക്കണോ?</translation>
 <translation id="9157836665414082580">ഡയലോഗുകൾ നിയന്ത്രിക്കുക</translation>
 <translation id="9188680907066685419">മാനേജുചെയ്‌ത അക്കൗണ്ടിൽ നിന്ന് സൈൻ ഔട്ട് ചെയ്യുക</translation>
 <translation id="9203116392574189331">ഹാൻഡ്ഓഫ്</translation>

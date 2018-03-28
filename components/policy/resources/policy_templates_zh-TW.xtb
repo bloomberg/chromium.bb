@@ -58,6 +58,17 @@
 
       一旦設定了這項政策，除了本政策中列出的 ID 外，其他所有印表機皆可供使用者使用。
       </translation>
+<translation id="1181881366217399113">
+      注意：這項政策仍在實驗階段，可能導致服務中斷！
+      如果啟用這項政策，逗號分隔的清單中的已命名來源
+      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
+      例如，指定 https://example.com/
+      也會造成 https://foo.example.com/ 遭到隔離，
+      因為後者同樣屬於 https://example.com/ 網站。
+      如果停用這項政策，單一網站隔離程序管理邏輯就會生效。
+      如果未設定這項政策，使用者將可以變更這項設定。
+      在 <ph name="PRODUCT_OS_NAME" />上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
+      </translation>
 <translation id="1198465924256827162">裝置狀態上傳的傳送頻率 (以毫秒數為單位)。
 
       如未設定這項政策，預設頻率為 3 小時一次。可用頻率下限
@@ -248,7 +259,15 @@
       時區值格式是採用「IANA 時區資料庫」中訂定的時區名稱 (請參閱「https://en.wikipedia.org/wiki/Tz_database」)。基本上，大部分時區均依照「&lt;大陸&gt;/&lt;大城市&gt;」或「&lt;大洋&gt;/&lt;大城市&gt;」的格式定名。
 
       設定這項政策後，系統將全面停止依裝置位置資訊自動偵測時區，SystemTimezoneAutomaticDetection 政策也會遭到覆寫。</translation>
+<translation id="1888871729456797026">電腦上的雲端政策註冊憑證</translation>
 <translation id="1897365952389968758">允許所有網站執行 JavaScript</translation>
+<translation id="1906888171268104594">控制是否要將使用指標和診斷資料 (含當機報告) 回報給 Google。
+
+      如果設為 true，<ph name="PRODUCT_OS_NAME" />會回報使用指標和診斷資料。
+
+      如果設為 false，指標和診斷資料回報功能就會停用。
+
+      如果未設定，指標和診斷資料回報功能會在未受管理的裝置上停用，並且在受管理的裝置上啟用。</translation>
 <translation id="193259052151668190">卸離式 USB 裝置許可清單</translation>
 <translation id="1933378685401357864">桌布圖片</translation>
 <translation id="1956493342242507974">設置 <ph name="PRODUCT_OS_NAME" /> 登入畫面的電源管理設定。
@@ -403,6 +422,12 @@
 <translation id="2386362615870139244">允許使用螢幕喚醒鎖</translation>
 <translation id="2411817661175306360">密碼保護警告已關閉</translation>
 <translation id="2411919772666155530">封鎖這些網站的通知</translation>
+<translation id="2415979855753196119">讓你控制在哪種情況下觸發保護密碼的危險帳戶標記功能。這項功能會告知 Google 特定帳戶可能遭到入侵。
+
+      如果將這項政策設為「PasswordProtectionRiskOff」，就不會觸發保護密碼的危險帳戶標記功能。
+      如果將這項政策設為「PasswordProtectionRiskOnPasswordReuse」，當使用者在任何非許可的網站上重複使用 Google 密碼時，就會觸發保護密碼的危險帳戶標記功能。
+      如果將這項政策設為「PasswordProtectionRiskOnPhishingReuse」，當使用者在詐騙網站上重複使用 Google 密碼時，就會觸發保護密碼的危險帳戶標記功能。
+      如果未設定這項政策，當使用者在詐騙網站上重複使用 Google 密碼時，就會觸發保護密碼的危險帳戶標記功能，但使用者可以變更這項設定。</translation>
 <translation id="2418507228189425036">停用 <ph name="PRODUCT_NAME" /> 的瀏覽紀錄儲存功能，並禁止使用者變更這項設定。
 
       如果啟用這項設定，系統將不會儲存瀏覽紀錄 (分頁同步功能會一並遭到停用)。
@@ -588,6 +613,12 @@
 
       如果啟用這項設定，預覽列印會使用作業系統預設印表機做為預設目的地選擇。</translation>
 <translation id="2867699958489427143">如果作業系統比目標版本還新，則復原並維持在目標版本，並在作業過程中執行完整的 Powerwash。</translation>
+<translation id="286802604195763750">讓你控制密碼保護警告訊息的觸發設定。當使用者在疑似不安全的網站上重複使用受保護的密碼時，密碼保護功能會向使用者發出警示。
+
+      如果將這項政策設為「PasswordProtectionWarningOff」，系統就不會顯示密碼保護警告訊息。
+      如果將這項政策設為「PasswordProtectionWarningOnPasswordReuse」，當使用者在任何非許可的網站上重複使用 Google 密碼時，系統就會顯示密碼保護警告訊息。
+      如果將這項政策設為「PasswordProtectionWarningOnPhishingReuse」，當使用者在網路詐騙網站上重複使用 Google 密碼時，系統就會顯示密碼保護警告訊息。
+      如果未設定這項政策，當使用者在網路詐騙網站上重複使用 Google 密碼時，就會觸發密碼保護警告訊息，但使用者可以變更這項設定。</translation>
 <translation id="2872961005593481000">關閉</translation>
 <translation id="2874209944580848064">支援 Android 裝置的 <ph name="PRODUCT_OS_NAME" />裝置注意事項：</translation>
 <translation id="2877225735001246144">在交涉 Kerberos 驗證時，停用 CNAME 查詢</translation>
@@ -622,6 +653,17 @@
           指定政策值時需以毫秒為單位。該值需小於或等於螢幕關閉延遲時間 (如有設定) 和閒置延遲時間。</translation>
 <translation id="2987155890997901449">啟用 ARC</translation>
 <translation id="2987227569419001736">控制 Web Bluetooth API 使用權限</translation>
+<translation id="2998886474614739865">
+      注意：這項政策仍在實驗階段，可能導致服務中斷！
+      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
+      如果啟用這項政策，逗號分隔的清單中的已命名來源
+      就會以獨立程序執行。這也會隔離使用子網域名稱的來源；
+      例如，指定 https://example.com/
+      也會造成 https://foo.example.com/ 遭到隔離，
+      因為後者同樣屬於 https://example.com/ 網站。
+      如果停用這項政策，單一網站隔離程序管理邏輯就會生效。
+      如果未設定這項政策，登入畫面就會採用平台的預設網站隔離設定。
+      </translation>
 <translation id="3016255526521614822">將「<ph name="PRODUCT_OS_NAME" />」螢幕鎖定畫面允許的筆記應用程式加入許可清單</translation>
 <translation id="3021562480854470924">允許復原的重要事件數</translation>
 <translation id="3030000825273123558">啟用計量報告</translation>
@@ -725,6 +767,17 @@
 
           如果這項政策設為非空白字串，該字串就會成為「<ph name="PRODUCT_NAME" />」目的地的名稱，否則目的地名稱將會是裝置名稱。如果未設定這項政策，則目的地名稱會是裝置名稱，且裝置擁有者 (或裝置管理網域中的使用者) 可進行變更。名稱長度上限為 24 個字元。</translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
+<translation id="3386001018488754001">
+      注意：這項政策仍在實驗階段，可能導致服務中斷！
+      這項政策適用於登入畫面。另請查看適用於使用者工作階段的 <ph name="SITE_PER_PROCESS_POLICY_NAME" /> 政策。建議你為這兩項政策設定相同的值。如果兩者的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
+      為了儘可能減少隔離功能對使用者的影響，
+      建議你先查看 IsolateOrigins 政策設定，
+      瞭解如何使用 IsolateOrigins 設定需要隔離的網站清單。
+      SitePerProcess 這項設定會隔離所有網站。
+      如果啟用這項政策，每個網站就會以獨立程序執行。
+      如果停用這項政策，單一網站隔離程序管理邏輯就會生效。
+      如果未設定這項政策，使用者將可以變更這項設定。
+      </translation>
 <translation id="3395348522300156660">指定哪些印表機是可以使用的。
 
       只有在為 <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> 選擇 <ph name="PRINTERS_WHITELIST" /> 的情況下，這項政策才有作用
@@ -763,6 +816,9 @@
           如果這項政策設為 False 或未設定，系統會延遲管理電源，並且在工作階段開始後立即執行工作階段長度限制。</translation>
 <translation id="3478024346823118645">登出後清除使用者資料</translation>
 <translation id="348495353354674884">啟用虛擬鍵盤</translation>
+<translation id="3487623755010328395">
+        如果設定這項政策，<ph name="PRODUCT_NAME" /> 嘗試自動註冊，並且為所有設定檔套用相關聯的雲端政策。
+        這項政策的值是可從 Google 管理控制台擷取的註冊憑證。</translation>
 <translation id="3496296378755072552">密碼管理員</translation>
 <translation id="350443680860256679">設定 ARC</translation>
 <translation id="3504791027627803580">指定用來提供圖片搜尋的搜尋引擎網址。系統將使用 GET 方法傳送搜尋要求。如果設定 DefaultSearchProviderImageURLPostParams 政策，系統就會使用 POST 方法傳送圖片搜尋要求。
@@ -1320,6 +1376,17 @@
 
       如果未設定這項政策，或是將這項政策設為空白字串或無效的通訊埠範圍，WebRTC 即可使用任何可用的本機 UDP 通訊埠。</translation>
 <translation id="5290940294294002042">指定使用者可以任意啟用或停用的外掛程式清單</translation>
+<translation id="5301787427319106606">
+      注意：這項政策仍在實驗階段，可能導致服務中斷！
+      為了儘可能減少隔離功能對使用者的影響，
+      建議你先查看 IsolateOrigins 政策設定，
+      瞭解如何使用 IsolateOrigins 設定需要隔離的網站清單。
+      SitePerProcess 這項設定會隔離所有網站。
+      如果啟用這項政策，每個網站就會以獨立程序執行。
+      如果停用這項政策，單一網站隔離程序管理邏輯就會生效。
+      如果未設定這項政策，使用者將可以變更這項設定。
+      在 <ph name="PRODUCT_OS_NAME" />上，建議你也將 <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> 裝置政策設為相同的值。如果兩項政策指定的值不相符，在套用使用者政策指定的值的情況下，進入使用者工作階段時可能會發生延遲情況。
+      </translation>
 <translation id="5302612588919538756">這項政策已不適用，請考慮改用 SyncDisabled。
 
       允許使用者登入 <ph name="PRODUCT_NAME" />。
@@ -1875,6 +1942,14 @@
 <translation id="706669471845501145">允許網站顯示桌面通知</translation>
 <translation id="7072208053150563108">裝置密碼變更頻率</translation>
 <translation id="7072406291414141328">允許節流網路頻寬</translation>
+<translation id="7074513465313721551">設定安全瀏覽功能將信任的網域清單。也就是說：
+      如果危險資源 (例如網路詐騙軟體、惡意軟體或垃圾軟體) 的網址與這些網域相符，安全瀏覽功能就不會加以檢查。
+      安全瀏覽功能的下載保護服務不會檢查由這些網域所代管的下載內容。
+      如果網頁的網址與這些網域相符，安全瀏覽功能的密碼保護服務就不會檢查密碼重複使用情形。
+
+      如果啟用這項設定，安全瀏覽功能將信任這些網域。
+      如果停用或不指定這項設定，則會對所有資源套用預設的安全瀏覽保護機制。
+      這項設定不適用於未加入 <ph name="MS_AD_NAME" /> 網域的 Windows 執行個體。</translation>
 <translation id="7079519252486108041">封鎖這些網站的彈出式視窗</translation>
 <translation id="7106631983877564505">在 <ph name="PRODUCT_OS_NAME" /> 裝置進入閒置或暫停狀態時啟用鎖定功能。
 

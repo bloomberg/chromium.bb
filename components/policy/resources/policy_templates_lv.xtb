@@ -58,6 +58,17 @@
 
       Ja šī politika tiek izmantota, lietotājam ir pieejami visi printeri, izņemot tos, kuru identifikatori atbilst šajā politikā norādītajām vērtībām.
       </translation>
+<translation id="1181881366217399113">
+      PIEZĪME. Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
+      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai vietnei
+      tiks izpildīts atsevišķs process. Vietnes tiks arī izolētas pēc apakšdomēniem,
+      piemēram, norādot https://example.com/, tiks
+      izolēta arī vietne https://foo.example.com/ kā daļa no vietnes
+      https://example.com/.
+      Ja politika ir atspējota, tiks ievērota katras vietnes izolācijas procesa pārvaldības loģika.
+      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
+      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
+      </translation>
 <translation id="1198465924256827162">Ierīces statusa augšupielāžu sūtīšanas biežums milisekundēs.
 
       Ja šai politikai nav iestatīta vērtība, tiek lietots noklusējuma biežums:
@@ -256,7 +267,15 @@
       Vērtības formāts tiek rādīts atbilstoši IANA laika joslu datu bāzē (skatiet vietni https://en.wikipedia.org/wiki/Tz_database) norādītajiem laika joslu nosaukumiem. Lielākā daļa laika joslu tiek attēlotas formātā “kontinents/liela_pilsēta” vai “okeāns/liela_pilsēta”.
 
       Iestatot šo politiku, tiek pilnībā atspējota laika joslas noteikšana pēc ierīces atrašanās vietas. Tiek ignorēta arī politika SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">Mākoņa politikas reģistrācijas marķieris datorā</translation>
 <translation id="1897365952389968758">Atļaut visām vietnēm izpildīt JavaScript</translation>
+<translation id="1906888171268104594">Kontrolē to, vai lietojuma un diagnostikas dati, tostarp avāriju pārskati, tiek nosūtīti uzņēmumam Google.
+
+      Ja politikai ir iestatīta vērtība “True”, <ph name="PRODUCT_OS_NAME" /> nosūtīs lietojuma un diagnostikas datus.
+
+      Ja politikai ir iestatīta vērtība “False”, lietojuma un diagnostikas datu nosūtīšana tiks atspējota.
+
+      Ja politika nav konfigurēta, lietojuma un diagnostikas datu nosūtīšana tiks atspējota nepārvaldītās ierīcēs un iespējota pārvaldītās ierīcēs.</translation>
 <translation id="193259052151668190">Atvienojamo USB ierīču baltais saraksts</translation>
 <translation id="1933378685401357864">Fona tapetes attēls</translation>
 <translation id="1956493342242507974">Konfigurējiet barošanas pārvaldību operētājsistēmas <ph name="PRODUCT_OS_NAME" /> pieteikšanās ekrānā.
@@ -420,6 +439,12 @@
 <translation id="2386362615870139244">Atļauja bloķēt ekrāna aktivizēšanu</translation>
 <translation id="2411817661175306360">Paroles aizsardzības brīdinājums ir izslēgts.</translation>
 <translation id="2411919772666155530">Bloķēt paziņojumus šajās vietnēs</translation>
+<translation id="2415979855753196119">Izmantojot šo politiku, varat kontrolēt, kad aktivizēt atzīmes pievienošanu kontam par apdraudētu paroles aizsardzību. Pievienot kontam atzīmi par apdraudētu paroles aizsardzību nozīmē informēt Google, ka pastāv attiecīgā konta uzlaušanas risks.
+
+      Ja šai politikai ir iestatīta vērtība “PasswordProtectionRiskOff”, netiks aktivizēta atzīmes pievienošana kontam ar apdraudētu paroles aizsardzību.
+      Ja šai politikai ir iestatīta vērtība “PasswordProtectionRiskOnPasswordReuse”, atzīmes pievienošana kontam ar apdraudētu paroles aizsardzību tiks aktivizēta, kad lietotājs atkārtoti izmantos savu Google paroli baltajā sarakstā iekļautā vietnē.
+      Ja šai politikai ir iestatīta vērtība “PasswordProtectionRiskOnPhishingReuse”, atzīmes pievienošana kontam ar apdraudētu paroles aizsardzību tiks aktivizēta, kad lietotājs atkārtoti izmantos savu Google paroli pikšķerēšanas vietnē.
+      Ja šai politikai nav iestatīta vērtība, atzīmes pievienošana kontam ar apdraudētu paroles aizsardzību tiks aktivizēta, kad lietotājs atkārtoti izmantos savu Google paroli pikšķerēšanas vietnē, taču lietotājs varēs mainīt šo iestatījumu.</translation>
 <translation id="2418507228189425036">Atspējo pārlūka <ph name="PRODUCT_NAME" /> vēstures saglabāšanu un neļauj lietotājiem mainīt šo iestatījumu.
 
       Ja šis iestatījums ir iespējots, pārlūkošanas vēsture nav saglabāta. Ar šo iestatījumu arī tiek atspējota ciļņu sinhronizācija.
@@ -615,6 +640,12 @@
 
       Ja iespējosiet šo iestatījumu, drukas priekšskatījumā kā noklusējuma galamērķis tiks izmantots operētājsistēmas noklusējuma printeris.</translation>
 <translation id="2867699958489427143">Veikt atriti un paturēt mērķa versiju, ja OS versija ir jaunāka nekā mērķa versija. Vienlaikus pilnībā atiestatīt rūpnīcas datus ar funkciju Powerwash.</translation>
+<translation id="286802604195763750">Izmantojot šo politiku, varat kontrolēt, kad aktivizēt paroles brīdinājuma rādīšanu. Paroles aizsardzība brīdina lietotājus, ja tie atkārtoti izmanto savu aizsargāto paroli aizdomīgās vietnēs.
+
+      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOff”, netiks rādīts paroles aizsardzības brīdinājums.
+      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOnPasswordReuse”, paroles aizsardzības brīdinājums tiks rādīts, kad lietotājs atkārtoti izmantos Google paroli vietnē, kas nav iekļauta baltajā sarakstā.
+      Ja šai politikai ir iestatīta vērtība “PasswordProtectionWarningOnPhishingReuse”, paroles aizsardzības brīdinājums tiks rādīts, kad lietotājs atkārtoti izmantos savu Google paroli pikšķerēšanas vietnē.
+      Ja šai politikai nav iestatīta vērtība, paroles aizsardzības brīdinājuma rādīšana tiks aktivizēta, kad lietotājs atkārtoti izmantos savu Google paroli pikšķerēšanas vietnē, taču lietotājs varēs mainīt šo iestatījumu.</translation>
 <translation id="2872961005593481000">Beidzēt</translation>
 <translation id="2874209944580848064">Piezīme par <ph name="PRODUCT_OS_NAME" /> ierīcēm, kurās tiek atbalstītas Android lietotnes:</translation>
 <translation id="2877225735001246144">Atspējo CNAME atrašanu, kamēr notiek vienošanās par Kerberos autentifikāciju</translation>
@@ -649,6 +680,17 @@
           Politikas vērtību nedrīkst norādīt milisekundēs. Ir jānorāda vērtības, kas ir mazākas par aizkavi līdz ekrāna izslēgšanai (ja tāda ir iestatīta) un dīkstāvei vai kas ir vienādas ar to.</translation>
 <translation id="2987155890997901449">ARC iespējošana</translation>
 <translation id="2987227569419001736">Web Bluetooth API lietošanas pārvaldība</translation>
+<translation id="2998886474614739865">
+      PIEZĪME. Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
+      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
+      Ja politika ir iespējota, katrai komatatdalītā sarakstā norādītajai vietnei tiks
+      izpildīts atsevišķs process. Vietnes tiks arī izolētas pēc apakšdomēniem,
+      piemēram, norādot https://example.com/, tiks izolēta arī vietne
+      https://foo.example.com/ kā daļa no vietnes
+      https://example.com/.
+      Ja politika ir atspējota, tiks ievērota katras vietnes izolācijas procesa pārvaldības loģika.
+      Ja politika nav konfigurēta, pierakstīšanās ekrānam tiks izmantoti platformas noklusējuma vietnes izolācijas iestatījumi.
+      </translation>
 <translation id="3016255526521614822">Baltajā sarakstā iekļautas piezīmju lietotnes, kas ir atļautas <ph name="PRODUCT_OS_NAME" /> bloķēšanas ekrānā</translation>
 <translation id="3021562480854470924">Atritei atļauto atskaites punktu skaits</translation>
 <translation id="3030000825273123558">Iespējot metrikas ziņošanu</translation>
@@ -758,6 +800,17 @@
 
           Ja šai politikai tiks iestatīta virkne, kas nav tukša, šī virkne tiks izmantota kā <ph name="PRODUCT_NAME" /> galamērķa nosaukums. Pretējā gadījumā kā galamērķa nosaukums tiks izmantots ierīces nosaukums. Ja šī politika netiks iestatīta, kā galamērķa nosaukums tiks izmantots ierīces nosaukums un to varēs mainīt ierīces īpašnieks vai lietotājs no domēna, kurā ierīce tiek pārvaldīta. Nosaukuma garums nedrīkst pārsniegt 24 rakstzīmes.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
+<translation id="3386001018488754001">
+      PIEZĪME. Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
+      Šī politika attiecas uz pierakstīšanās ekrānu. Lūdzu, skatiet arī politiku <ph name="SITE_PER_PROCESS_POLICY_NAME" />, kas attiecas uz lietotāja sesiju. Ieteicams abām politikām iestatīt vienādu vērtību. Ja vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikas vērtība.
+      Ieteicams izmantot politikas IsolateOrigins iestatījumu ar izolējamo vietņu
+      sarakstu, lai gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties
+      izolēt, un ierobežotu ietekmi lietotājiem. Izmantojot iestatījumu
+      SitePerProcess, tiek izolētas visas vietnes.
+      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
+      Ja politika ir atspējota, tiks ievērota katras vietnes izolācijas procesa pārvaldības loģika.
+      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
+      </translation>
 <translation id="3395348522300156660">Norāda printerus, ko lietotājs var izmantot.
 
       Šī politika tiek izmantota tikai tad, ja parametram <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ir izvēlēta vērtība <ph name="PRINTERS_WHITELIST" />.
@@ -794,6 +847,10 @@ Ja šim iestatījumam ir izvēlēta vērtība “Izslēgts” vai vērtība nav 
           Ja politika nav iestatīta vai iestatījums ir “False” (aplams), jaudas pārvaldības aizkaves un sesijas ilguma ierobežojuma uzskaite tiek sākta nekavējoties pēc sesijas sākuma.</translation>
 <translation id="3478024346823118645">Notīrīt lietotāja datus izrakstīšanās brīdī</translation>
 <translation id="348495353354674884">Iespējot virtuālo tastatūru</translation>
+<translation id="3487623755010328395">
+        Ja šī politika ir iestatīta, <ph name="PRODUCT_NAME" /> mēģinās reģistrēties un lietot saistīto mākoņa politiku visiem profiliem.
+
+        Šīs politikas vērtība ir reģistrācijas marķieris, kuru var izgūt no Google Admin konsoles.</translation>
 <translation id="3496296378755072552">Paroļu pārvaldnieks</translation>
 <translation id="350443680860256679">ARC konfigurēšana</translation>
 <translation id="3504791027627803580">Norāda attēlu meklēšanai izmantotās meklētājprogrammas URL. Meklēšanas pieprasījumi tiks nosūtīti, izmantojot metodi GET. Ja ir iestatīta politika DefaultSearchProviderImageURLPostParams, attēlu meklēšanas pieprasījumi tiks nosūtīti, izmantojot metodi POST.
@@ -1386,6 +1443,17 @@ Ja šai politikai ir iestatīta vērtība “Nepatiesa”, netiek sniegta inform
 
       Ja politika nav iestatīta vai tā ir iestatīta uz tukšu virkni vai nederīgu portu diapazonu, saskarnei WebRTC ir atļauts izmantot jebkuru pieejamu lokālo UDP portu.</translation>
 <translation id="5290940294294002042">Norāda spraudņu sarakstu, kurus lietotājs var iespējot vai atspējot</translation>
+<translation id="5301787427319106606">
+      PIEZĪME. Šī politika ir eksperimentāla, un tās izmantošana var traucēt funkcionalitāti.
+      Ieteicams izmantot politikas IsolateOrigins iestatījumu ar izolējamo vietņu
+      sarakstu, lai gūtu vislabākos rezultātus, izolētu tikai vietnes, kuras vēlaties
+      izolēt, un ierobežotu ietekmi lietotājiem. Izmantojot iestatījumu
+      SitePerProcess, tiek izolētas visas vietnes.
+      Ja politika ir iespējota, katrai vietnei tiks izpildīts atsevišķs process.
+      Ja politika ir atspējota, tiks ievērota katras vietnes izolācijas procesa pārvaldības loģika.
+      Ja politika nav konfigurēta, lietotājs varēs mainīt šo iestatījumu.
+      Operētājsistēmā <ph name="PRODUCT_OS_NAME" /> ieteicams iestatīt to pašu vērtību arī ierīces politikai <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. Ja abās politikās norādītās vērtības neatbilst, atverot lietotāja sesiju, var rasties aizkave, kamēr tiek piemērota lietotāja politikā norādītā vērtība.
+      </translation>
 <translation id="5302612588919538756">Šī politika ir novecojusi. Tās vietā varat lietot politiku SyncDisabled.
 
       Ļauj lietotājam pierakstīties pārlūkā <ph name="PRODUCT_NAME" />.
@@ -1982,6 +2050,14 @@ Lietotāja fiziskās klātbūtnes noteikšanai tiek izmantota ierīces barošana
 <translation id="706669471845501145">Atļaut vietnēm rādīt paziņojumus darbvirsmā</translation>
 <translation id="7072208053150563108">Ierīces paroles nomaiņas biežums</translation>
 <translation id="7072406291414141328">Iespējo tīkla joslas platuma ierobežošanu</translation>
+<translation id="7074513465313721551">Tiek konfigurēts to domēnu saraksts, kuri būs uzticami drošajā pārlūkošanā. Tas nozīmē tālāk norādīto.
+      Drošajā pārlūkošanā netiks pārbaudīta bīstamu resursu (piemēram, pikšķerēšanas, ļaunprātīgas programmatūras vai nevēlamas programmatūras) klātbūtne vietnēs, kuru URL atbilst šiem domēniem.
+      Drošās pārlūkošanas lejupielāžu aizsardzības pakalpojumā netiks pārbaudītas lejupielādes, kas tiek mitinātas šajos domēnos.
+      Drošās pārlūkošanas paroļu aizsardzības pakalpojumā netiks pārbaudīta paroles atkārtota izmantošana, ja lapas URL atbilst šiem domēniem.
+
+      Ja šis iestatījums ir iespējots, drošajā pārlūkošanā šie domēni būs uzticami.
+      Ja šis iestatījums ir atspējots vai tam nav iestatīta vērtība, visiem resursiem tiks lietota noklusējuma drošās pārlūkošanas aizsardzība.
+      Šī politika nav pieejama Windows instancēs, kas nav pievienotas <ph name="MS_AD_NAME" /> domēnam.</translation>
 <translation id="7079519252486108041">Bloķēt uznirstošos logus šajās vietnēs</translation>
 <translation id="7106631983877564505">Blokatora iespējošana, ja <ph name="PRODUCT_OS_NAME" /> ierīces ir neaktīvas vai to darbība tiek apturēta.
 

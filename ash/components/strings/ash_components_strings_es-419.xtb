@@ -3,6 +3,7 @@
 <translationbundle lang="es-419">
 <translation id="104962181688258143">Abrir la app de Archivos</translation>
 <translation id="1126871238933253947">Cambiar al idioma de teclado anterior</translation>
+<translation id="1134347825771908369">Desactivar sonido</translation>
 <translation id="1195667586424773550">Arrastrar el vínculo a la barra de direcciones de la pestaña</translation>
 <translation id="1204450209689312104">Abrir una ventana nueva en modo de navegación incógnito</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Guardar todas las páginas abiertas en la ventana actual como marcadores en una nueva carpeta</translation>
 <translation id="355103131818127604">Abrir el vínculo en una nueva pestaña en segundo plano</translation>
 <translation id="3649256019230929621">Minimizar ventana</translation>
+<translation id="3655154169297074232">Pestañas y ventanas</translation>
 <translation id="3668361878347172356">Rehacer la última acción</translation>
 <translation id="3720939646656082033">Abrir el vínculo en una pestaña nueva y cambiar a esa pestaña</translation>
 <translation id="3725795051337497754">Cerrar la pestaña actual</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Guardar el vínculo en Favoritos</translation>
 <translation id="4141203561740478845">Destacar la fila con la barra de direcciones</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> o <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Modo de descripción general</translation>
+<translation id="4472417192667361414">Configuración del sistema y la pantalla</translation>
 <translation id="4556221320735744018">Mostrar el asistente de combinaciones de teclas</translation>
 <translation id="4628718545549558538">Abrir el área de estado (donde aparece la imagen de tu cuenta)</translation>
 <translation id="4642092649622328492">Realizar una captura de pantalla parcial</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Ir al principio del documento</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
 <translation id="8234414138295101081">Rotar la pantalla 90 grados</translation>
+<translation id="826184564253127735">Visualizador de combinaciones de teclas</translation>
 <translation id="836869401750819675">Abrir la página de descargas</translation>
 <translation id="8388247778047144397">Arrastra el vínculo al área en blanco de la barra de pestañas</translation>
 <translation id="8389638407792712197">Abrir una ventana nueva</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 a 8</translation>
 <translation id="9041599225465145264">Pegar el contenido del portapapeles</translation>
 <translation id="9052808072970550123">Cambiar al usuario siguiente</translation>
+<translation id="9106898733795143799">Página y navegador web</translation>
 <translation id="9179672198516322668">Combinaciones de teclas populares</translation>
 <translation id="93603345341560814">Presiona <ph name="SHIFT" /> y haz clic en un vínculo</translation>
 <translation id="945383118875625837">Arrastrar el vínculo a la barra de favoritos</translation>

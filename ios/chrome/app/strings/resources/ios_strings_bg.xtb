@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Адрес 1</translation>
 <translation id="1545749641540134597">Сканирайте код за бърза реакция</translation>
 <translation id="1580783302095112590">Пощата е изпратена.</translation>
+<translation id="1582732959743469162">Текущото изтегляне ще бъде прекратено.</translation>
 <translation id="1612730193129642006">Показване на мрежа с раздели</translation>
 <translation id="1644574205037202324">История</translation>
 <translation id="1646446875146297738">Активирането на „Do Not Track“ означава, че с трафика ви на сърфиране ще се включва заявка. Ефектите зависят от това, дали уебсайтът ще отговори на нея и как ще я изтълкува.
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">Нещо сериозно се обърка. Ще работим по него.</translation>
 <translation id="6342069812937806050">Току-що</translation>
 <translation id="6344783595350022745">Изчистване на текста</translation>
+<translation id="6346549652287021269">Да се стартира ли ново изтегляне?</translation>
 <translation id="6362362396625799311">Няма раздели в режим „инкогнито“</translation>
 <translation id="6374469231428023295">Нов опит</translation>
 <translation id="6380866119319257197">Ако забравите пропуска си или искате да промените тази настройка, <ph name="BEGIN_LINK" />нулирайте синхронизирането<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">Синхронизиране със</translation>
 <translation id="7053983685419859001">Блокиране</translation>
 <translation id="7062545763355031412">Приемане и превключване на профилите</translation>
+<translation id="7102005569666697658">Изтегля се… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Скриване</translation>
 <translation id="7133798577887235672">Име и фамилия</translation>
 <translation id="7136892417564438900">Няма достъп до камерата</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">Приемане и излизане от профила</translation>
 <translation id="7772032839648071052">Потвърдете пропуска</translation>
 <translation id="780301667611848630">Не, благодаря</translation>
+<translation id="7856733331829174190">Неуспешно изтегляне</translation>
 <translation id="7859704718976024901">История на сърфирането</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Експортиране на паролите...</translation>
@@ -422,6 +426,7 @@
 <translation id="9083392325882095631">1 елемент</translation>
 <translation id="9100610230175265781">Изисква се пропуск</translation>
 <translation id="9148126808321036104">Влезте отново</translation>
+<translation id="915371508759614899">Да се анулира ли изтеглянето?</translation>
 <translation id="9157836665414082580">Диалогови прозорци: Блокиране</translation>
 <translation id="9188680907066685419">Излизане от управляван профил</translation>
 <translation id="9203116392574189331">Handoff</translation>

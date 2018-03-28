@@ -87,6 +87,7 @@ Fiziksel Web'i kullanabilmeniz için Bluetooth ve Konum özelliklerinin açık o
 <translation id="1709438864123551175">Veri Tasarrufu</translation>
 <translation id="1718835860248848330">Son saat</translation>
 <translation id="1729516292547892356">Sanal gerçeklik içeriğini görüntülemek için Google VR Hizmetleri'ni güncelleyin</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> - Son Güncellenme: <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Yer işaretlerinizi senkronize edin</translation>
 <translation id="17513872634828108">Açık sekmeler</translation>
 <translation id="1756600373018374892">Sekmelerinize hızlı bir şekilde erişmek için bu düğmeye dokunun.</translation>
@@ -784,6 +785,7 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="8200772114523450471">Sürdür</translation>
 <translation id="8209050860603202033">Resmi aç</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB indirildi</translation>
+<translation id="8249310407154411074">En üste taşı</translation>
 <translation id="8250920743982581267">Dokümanlar</translation>
 <translation id="8260126382462817229">Tekrar oturum açmayı deneyin</translation>
 <translation id="8261506727792406068">Sil</translation>

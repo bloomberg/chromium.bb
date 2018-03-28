@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">1. ред за адресу</translation>
 <translation id="1545749641540134597">Скенирајте QR кôд</translation>
 <translation id="1580783302095112590">Имејл је послата.</translation>
+<translation id="1582732959743469162">На тај начин ћете потпуно зауставити тренутно преузимање.</translation>
 <translation id="1612730193129642006">Show Tab Grid (Прикажи координатну мрежу картице)</translation>
 <translation id="1644574205037202324">Историја</translation>
 <translation id="1646446875146297738">Омогућавање опције „Не прати“ значи да ће захтев бити укључен уз саобраћај прегледања. Све последице зависе од тога да ли веб-сајт одговара на захтев и како се захтев тумачи.
@@ -284,6 +285,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="633809752005859102">Нешто стварно није у реду. Порадићемо на томе.</translation>
 <translation id="6342069812937806050">Малопре</translation>
 <translation id="6344783595350022745">Обриши текст</translation>
+<translation id="6346549652287021269">Желите ли да започнете ново преузимање?</translation>
 <translation id="6362362396625799311">Нема картица без архивирања</translation>
 <translation id="6374469231428023295">Пробај поново</translation>
 <translation id="6380866119319257197">Ако заборавите приступну фразу или желите да промените ово подешавање, <ph name="BEGIN_LINK" />ресетујте синхронизацију<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7031882061095297553">Синхронизујте са</translation>
 <translation id="7053983685419859001">Блокирај</translation>
 <translation id="7062545763355031412">Прихватам, промени налог</translation>
+<translation id="7102005569666697658"><ph name="FILE_SIZE" /> се преузима…</translation>
 <translation id="7108338896283013870">Сакриј</translation>
 <translation id="7133798577887235672">Име и презиме</translation>
 <translation id="7136892417564438900">Камера је недоступна</translation>
@@ -360,6 +363,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="7769602470925380267">Прихватам, одјави ме</translation>
 <translation id="7772032839648071052">Потврди приступну фразу</translation>
 <translation id="780301667611848630">Не, хвала</translation>
+<translation id="7856733331829174190">Преузимање није успело</translation>
 <translation id="7859704718976024901">Историја прегледања</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Извези лозинке…</translation>
@@ -422,6 +426,7 @@ Handoff треба да се омогући у одељку General (Опште)
 <translation id="9083392325882095631">1 ставка</translation>
 <translation id="9100610230175265781">Потребна је приступна фраза</translation>
 <translation id="9148126808321036104">Пријави ме поново</translation>
+<translation id="915371508759614899">Желите ли да откажете преузимање?</translation>
 <translation id="9157836665414082580">Спречи дијалоге</translation>
 <translation id="9188680907066685419">Одјавите се са налога којим се управља</translation>
 <translation id="9203116392574189331">Handoff</translation>

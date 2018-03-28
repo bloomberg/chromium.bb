@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">చిరునామా 1</translation>
 <translation id="1545749641540134597">QR కోడ్‌ని స్కాన్ చేయండి</translation>
 <translation id="1580783302095112590">మెయిల్ పంపబడింది.</translation>
+<translation id="1582732959743469162">ఇది మీ ప్రస్తుత డౌన్‌లోడ్ యొక్క మొత్తం ప్రోగ్రెస్‌ని ఆపివేస్తుంది.</translation>
 <translation id="1612730193129642006">ట్యాబ్ గ్రిడ్‌ను చూపించండి</translation>
 <translation id="1644574205037202324">చరిత్ర</translation>
 <translation id="1646446875146297738">‘ట్రాక్ చేయవద్దు’ ప్రారంభించడం వలన మీ బ్రౌజింగ్ ట్రాఫిక్‌తో ఒక అభ్యర్థన చేర్చబడుతుంది. ప్రభావం ఏదైనా అభ్యర్థనకు వెబ్‌సైట్ ప్రతిస్పందించిందా లేదా మరియు అభ్యర్థన ఎలా వ్యాఖ్యానించబడింది అనేవాటిపై ఆధారపడి ఉంటుంది.
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">వాస్తవంగా ఏదో తప్పు జరిగింది. మేము దానిపై పని చేస్తాము.</translation>
 <translation id="6342069812937806050">ఇప్పుడే</translation>
 <translation id="6344783595350022745">వచనాన్ని క్లియర్ చేయి</translation>
+<translation id="6346549652287021269">కొత్త డౌన్‌లోడ్‌ని ప్రారంభించాలా?</translation>
 <translation id="6362362396625799311">అజ్ఞాత ట్యాబ్‌లు ఏవీ తెరిచి లేవు</translation>
 <translation id="6374469231428023295">మళ్లీ ప్రయత్నించు</translation>
 <translation id="6380866119319257197">మీరు మీ రహస్య పదబంధాన్ని మర్చిపోతే లేదా ఈ సెట్టింగ్‌ను మార్చాలనుకుంటే, <ph name="BEGIN_LINK" />సమకాలీకరణను రీసెట్ చేయండి<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">వీటికి సమకాలీకరించండి</translation>
 <translation id="7053983685419859001">నిరోధించు</translation>
 <translation id="7062545763355031412">అంగీకరిస్తున్నాను, ఖాతాలను మార్చు</translation>
+<translation id="7102005569666697658">డౌన్‌లోడ్ చేస్తోంది… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">దాచిపెట్టు</translation>
 <translation id="7133798577887235672">పూర్తి పేరు</translation>
 <translation id="7136892417564438900">కెమెరా అందుబాటులో లేదు</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">అంగీకరిస్తున్నాను, సైన్ అవుట్ చేయి</translation>
 <translation id="7772032839648071052">పాస్‌ఫ్రేజ్‌ని నిర్ధారించండి</translation>
 <translation id="780301667611848630">వద్దు , ధన్యవాదాలు</translation>
+<translation id="7856733331829174190">డౌన్‌లోడ్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="7859704718976024901">బ్రౌజింగ్ చరిత్ర</translation>
 <translation id="7938254975914653459">ఫేస్‌టైమ్</translation>
 <translation id="7939128259257418052">పాస్‌వర్డ్‌లను ఎగుమతి చేయి...</translation>
@@ -422,6 +426,7 @@
 <translation id="9083392325882095631">1 అంశం</translation>
 <translation id="9100610230175265781">రహస్య పదబంధం అవసరం</translation>
 <translation id="9148126808321036104">మళ్ళీ సైన్ ఇన్ చెయ్యండి</translation>
+<translation id="915371508759614899">డౌన్‌లోడ్‌ని రద్దు చేయాలా?</translation>
 <translation id="9157836665414082580">డైలాగ్‌లను కుదించు</translation>
 <translation id="9188680907066685419">నిర్వహిత ఖాతా నుండి సైన్ అవుట్ చేయండి</translation>
 <translation id="9203116392574189331">హ్యాండ్ఆఫ్</translation>

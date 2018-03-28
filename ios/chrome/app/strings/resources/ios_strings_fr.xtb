@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Adresse 1</translation>
 <translation id="1545749641540134597">Scanner le code QR</translation>
 <translation id="1580783302095112590">E-mail envoyé.</translation>
+<translation id="1582732959743469162">Cette action arrêtera le téléchargement en cours.</translation>
 <translation id="1612730193129642006">Afficher la grille d'onglets</translation>
 <translation id="1644574205037202324">Historique</translation>
 <translation id="1646446875146297738">Si vous activez la fonctionnalité "Interdire le suivi", une demande sera incluse dans le trafic de navigation. Le résultat dépend de l'obtention d'une réponse de la part du site Web, ainsi que de la façon dont celle-ci est interprétée.
@@ -284,6 +285,7 @@ Handoff doit également être activé dans la section "Général" des paramètre
 <translation id="633809752005859102">Une erreur importante s'est produite. Nous allons rechercher une solution.</translation>
 <translation id="6342069812937806050">À l'instant</translation>
 <translation id="6344783595350022745">Effacer le texte</translation>
+<translation id="6346549652287021269">Lancer un nouveau téléchargement ?</translation>
 <translation id="6362362396625799311">Aucun onglet de navigation privée</translation>
 <translation id="6374469231428023295">Réessayer</translation>
 <translation id="6380866119319257197">Si vous oubliez votre phrase secrète, ou pour modifier ce paramètre, <ph name="BEGIN_LINK" />réinitialisez la synchronisation<ph name="END_LINK" />.</translation>
@@ -325,6 +327,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7031882061095297553">Synchroniser avec</translation>
 <translation id="7053983685419859001">Bloquer</translation>
 <translation id="7062545763355031412">Accepter et changer de compte</translation>
+<translation id="7102005569666697658">Téléchargement… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Masquer</translation>
 <translation id="7133798577887235672">Nom complet</translation>
 <translation id="7136892417564438900">Appareil photo non disponible</translation>
@@ -360,6 +363,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="7769602470925380267">Accepter et se déconnecter</translation>
 <translation id="7772032839648071052">Confirmer la phrase secrète</translation>
 <translation id="780301667611848630">Non merci</translation>
+<translation id="7856733331829174190">Téléchargement impossible</translation>
 <translation id="7859704718976024901">Historique de navigation</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Export mots de passe…</translation>
@@ -422,6 +426,7 @@ Vos données ont été chiffrées avec votre phrase secrète de synchronisation 
 <translation id="9083392325882095631">1 élément</translation>
 <translation id="9100610230175265781">Veuillez saisir la phrase secrète.</translation>
 <translation id="9148126808321036104">Nouvelle connexion</translation>
+<translation id="915371508759614899">Annuler le téléchargement ?</translation>
 <translation id="9157836665414082580">Supprimer les boîtes de dialogue</translation>
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
 <translation id="9203116392574189331">Handoff</translation>

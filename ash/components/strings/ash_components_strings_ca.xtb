@@ -3,6 +3,7 @@
 <translationbundle lang="ca">
 <translation id="104962181688258143">Obre l'aplicació Fitxers</translation>
 <translation id="1126871238933253947">Canvia a l'idioma de teclat que has utilitzat anteriorment.</translation>
+<translation id="1134347825771908369">Desactiva el so</translation>
 <translation id="1195667586424773550">Arrossega l'enllaç a la barra d'adreces de la pestanya</translation>
 <translation id="1204450209689312104">Obre una finestra nova en mode d'incògnit</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Desa totes les pàgines obertes de la finestra actual a les adreces d'interès en una carpeta nova</translation>
 <translation id="355103131818127604">Obre l'enllaç en una pestanya nova en segon pla</translation>
 <translation id="3649256019230929621">Minimitza la finestra</translation>
+<translation id="3655154169297074232">Pestanyes i finestres</translation>
 <translation id="3668361878347172356">Refés la darrera acció</translation>
 <translation id="3720939646656082033">Obre l'enllaç en una pestanya nova i canvia a aquesta pestanya</translation>
 <translation id="3725795051337497754">Tanca la pestanya actual</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">Desa l'enllaç a les adreces d'interès</translation>
 <translation id="4141203561740478845">Destaca la fila on hi ha la barra d'adreces</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> o <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Mode de visió general</translation>
+<translation id="4472417192667361414">Configuració del sistema i de la pantalla</translation>
 <translation id="4556221320735744018">Consulta l'ajuda de les tecles de drecera</translation>
 <translation id="4628718545549558538">Obre l'àrea d'estat (on es mostra la imatge del compte)</translation>
 <translation id="4642092649622328492">Fes una captura de pantalla parcial</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Ves al principi del document</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> o <ph name="E" /></translation>
 <translation id="8234414138295101081">Gira la pantalla 90 graus</translation>
+<translation id="826184564253127735">Visualitzador de les tecles de drecera</translation>
 <translation id="836869401750819675">Obre la pàgina Baixades</translation>
 <translation id="8388247778047144397">Arrossega l'enllaç a una àrea buida de la barra de pestanyes</translation>
 <translation id="8389638407792712197">Obre una finestra nova</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> de l'1 al 8</translation>
 <translation id="9041599225465145264">Enganxa el contingut del porta-retalls</translation>
 <translation id="9052808072970550123">Canvia a l'usuari següent</translation>
+<translation id="9106898733795143799">Pàgines i navegador web</translation>
 <translation id="9179672198516322668">Dreceres populars</translation>
 <translation id="93603345341560814">Prem <ph name="SHIFT" /> i fes clic en un enllaç</translation>
 <translation id="945383118875625837">Arrossega l'enllaç a la barra d'adreces d'interès</translation>

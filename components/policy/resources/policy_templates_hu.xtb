@@ -58,6 +58,17 @@
 
       Ha használatban van a házirend, akkor a felhasználó minden nyomtatót használhat, kivéve azokat, amelyek azonosítója szerepel a házirend felsorolásában.
       </translation>
+<translation id="1181881366217399113">
+      MEGJEGYZÉS: Ez a házirend kísérleti állapotban van, és a funkciók helytelen működését okozhatja!
+      Ha a házirend engedélyezve van, a vesszővel tagolt listán lévő összes
+      megnevezett eredet a saját folyamatát futtatja. A megnevezett eredetek el is
+      különülnek aldomainek szerint; pl. a https://example.com/ megadásával a
+      https://foo.example.com/ webhely is el lesz szigetelve a
+      https://example.com/ webhely részeként.
+      Ha a házirend le van tiltva, akkor a webhelyenkénti elszigetelés folyamatkezelési logikája lép életbe.
+      Ha a házirend nincs konfigurálva, a felhasználó módosíthatja ezt a beállítást.
+      <ph name="PRODUCT_OS_NAME" /> rendszer alatt ajánlott ugyanerre az értékre beállítani a(z) <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> eszközházirendet. Ha a két házirend által meghatározott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni próbálja a felhasználói házirend által meghatározott értéket.
+      </translation>
 <translation id="1198465924256827162">Milyen gyakran küld állapotfrissítéseket az eszköz (ezredmásodpercben).
 
       Ha nem állítja be a házirendet, az alapértelmezett gyakoriság három óra.
@@ -247,7 +258,15 @@
       Az érték formátuma megfelel az időzónák „IANA Time Zone Database” adatbázisban (lásd: „https://en.wikipedia.org/wiki/Tz_database”) található neveinek. A legtöbb időzónára lehetséges „földrész/nagyváros” vagy „óceán/nagyváros” formátumban hivatkozni.
 
       A házirend beállítása teljesen letiltja az eszköz helye szerinti automatikus időzóna-meghatározást, továbbá felülírja a SystemTimezoneAutomaticDetection házirendet is.</translation>
+<translation id="1888871729456797026">A felhővel kapcsolatos házirend regisztrációs tokenje asztali számítógépen</translation>
 <translation id="1897365952389968758">JavaScript futtatásának engedélyezése minden webhelyen</translation>
+<translation id="1906888171268104594">Beállítja, hogy kapjon-e a Google jelentést a használati statisztikákról és diagnosztikai adatokról (például összeomlási jelentéseket).
+
+      Ha az értéke igaz, akkor a(z) <ph name="PRODUCT_OS_NAME" /> jelenti a használati statisztikákat és diagnosztikai adatokat.
+
+      Ha az értéke hamis, akkor a rendszer letiltja a használati statisztikák és diagnosztikai adatok jelentését.
+
+      Ha nincs beállítva, akkor a rendszer letiltja a használati és diagnosztikai adatok jelentését a nem felügyelt eszközökön, míg engedélyezi a felügyelt eszközökön.</translation>
 <translation id="193259052151668190">A leválasztható USB-eszközök engedélyezőlistája</translation>
 <translation id="1933378685401357864">Háttérkép</translation>
 <translation id="1956493342242507974">Energiagazdálkodás konfigurálása a bejelentkezési képernyőn a(z) <ph name="PRODUCT_OS_NAME" /> rendszerben.
@@ -402,6 +421,12 @@
 <translation id="2386362615870139244">Képernyőébresztés zárolásainak engedélyezése</translation>
 <translation id="2411817661175306360">A jelszóvédelemmel kapcsolatos figyelmeztetés kikapcsolva</translation>
 <translation id="2411919772666155530">Értesítések letiltása ezeken a webhelyeken</translation>
+<translation id="2415979855753196119">Ennek segítségével szabályozhatja a fiókvédelem veszélyeztetett fiók jelzőjének kiváltását. A fiókvédelem veszélyeztetett fiók jelzője tájékoztatja a Google-t arról, hogy a fiókot feltörés veszélye fenyegeti.
+
+      Ha a házirend értéke „PasswordProtectionRiskOff”, akkor a jelszóvédelem sosem váltja ki a veszélyeztetett fiók jelzőt.
+      Ha a házirend értéke „PasswordProtectionRiskOnPasswordReuse”, akkor a jelszóvédelem abban az esetben váltja ki a veszélyeztetett fiók jelzőt, ha a felhasználó az engedélyezőlistán nem szereplő webhelyen próbálja beállítani Google-jelszavát jelszóként.
+      Ha a házirend értéke „PasswordProtectionRiskOnPhishingReuse”, akkor a jelszóvédelem abban az esetben váltja ki a veszélyeztetett fiók jelzőt, ha a felhasználó adathalász webhelyen próbálja beállítani Google-jelszavát jelszóként.
+      Ha a házirend nincs beállítva, akkor a jelszóvédelem abban az esetben váltja ki a veszélyeztetett fiók jelzőt, ha a felhasználó adathalász webhelyen próbálja beállítani Google-jelszavát jelszóként, azonban a felhasználó módosíthatja ezt a viselkedést.</translation>
 <translation id="2418507228189425036">Letiltja a böngészési előzmények mentését a <ph name="PRODUCT_NAME" /> számára, és megakadályozza, hogy a felhasználók megváltoztassák ezt a beállítást.
 
       Ha ez a beállítás engedélyezve van, a rendszer nem menti a böngészési előzményeket. A beállítás a lapok szinkronizálását is letiltja.
@@ -587,6 +612,12 @@
 
       Ha engedélyezi ezt a beállítást, a nyomtatási előnézet az operációs rendszer alapértelmezett nyomtatóját használja alapértelmezettként.</translation>
 <translation id="2867699958489427143">Visszaállítás és a célverzió megtartása, ha az operációs rendszer verziója újabb a célverziónál. A folyamat során teljes powerwash műveletet végez.</translation>
+<translation id="286802604195763750">Lehetővé teszi a jelszóvédelmi figyelmeztetés kiváltásának szabályozását. A jelszóvédelem figyelmezteti a felhasználót, ha potenciálisan gyanús webhelyen próbálja beállítani védett jelszavát jelszóként.
+
+      Ha a házirend értéke „PasswordProtectionWarningOff”, akkor nem jelenik meg jelszóvédelmi figyelmeztetés.
+      Ha a házirend értéke „PasswordProtectionWarningOnPasswordReuse”, akkor a jelszóvédelmi figyelmeztetés abban az esetben jelenik meg, ha a felhasználó az engedélyezőlistán nem szereplő webhelyen próbálja meg beállítani Google-jelszavát jelszóként.
+      Ha a házirend értéke „PasswordProtectionWarningOnPhishingReuse”, akkor a jelszóvédelmi figyelmeztetés abban az esetben jelenik meg, ha a felhasználó adathalász webhelyen próbálja meg beállítani Google-jelszavát jelszóként.
+      Ha a házirend nincs beállítva, akkor a jelszóvédelmi figyelmeztetés abban az esetben jelenik meg, ha a felhasználó adathalász webhelyen próbálja meg beállítani Google-jelszavát jelszóként, azonban a felhasználó módosíthatja ezt a viselkedést.</translation>
 <translation id="2872961005593481000">Leállítás</translation>
 <translation id="2874209944580848064">Megjegyzés az Android-alkalmazásokat támogató <ph name="PRODUCT_OS_NAME" /> rendszerű eszközökhöz:</translation>
 <translation id="2877225735001246144">CNAME keresés tiltása a Kerberos hitelesítési tárgyalások során</translation>
@@ -621,6 +652,17 @@
           A házirend értékét ezredmásodpercben kell megadni. Az értéknek kisebbnek kell lennie a képernyő kikapcsolásának késleltetésénél (ha be van állítva) és a tétlenségi késleltetésnél.</translation>
 <translation id="2987155890997901449">ARC engedélyezése</translation>
 <translation id="2987227569419001736">A Web Bluetooth API használatának irányítása</translation>
+<translation id="2998886474614739865">
+      MEGJEGYZÉS: Ez a házirend kísérleti állapotban van, és a funkciók helytelen működését okozhatja!
+      Ez a házirend a bejelentkezési képernyőre vonatkozik. Ehhez hasonló a következő házirend, amely a felhasználói munkamenetre vonatkozik: <ph name="ISOLATE_ORIGINS_POLICY_NAME" />. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa be. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni igyekszik a felhasználói házirend által meghatározott értéket.
+      Ha a házirend engedélyezve van, a vesszővel tagolt listán lévő összes
+      megnevezett eredet a saját folyamatát futtatja. A megnevezett eredetek el is
+      különülnek aldomainek szerint; pl. a https://example.com/ megadásával a
+      https://foo.example.com/ webhely is el lesz szigetelve a
+      https://example.com/ webhely részeként.
+      Ha a házirend le van tiltva, akkor a webhelyenkénti elszigetelés folyamatkezelési logikája lép életbe.
+      Ha a házirend nincs beállítva, akkor a rendszer az operációs rendszer alapértelmezett webhely-elszigetelési beállításait fogja használni a bejelentkezési képernyőn.
+      </translation>
 <translation id="3016255526521614822">A(z) <ph name="PRODUCT_OS_NAME" /> lezárási képernyőjén engedélyezett jegyzetkészítő alkalmazások engedélyezőlistára tétele</translation>
 <translation id="3021562480854470924">A visszaállításnál engedélyezett mérföldkövek száma</translation>
 <translation id="3030000825273123558">Mutatók jelentéseinek engedélyezése</translation>
@@ -724,6 +766,17 @@
 
           Ha a házirend egy nem üres karakterláncként van meghatározva, akkor a rendszer azt a karakterláncot használja a(z) <ph name="PRODUCT_NAME" /> céljának neveként. Egyébként az eszköz neve lesz a cél neve. Ha a házirend nincs beállítva, a cél neve az eszköz neve lesz, az eszköz tulajdonosának (vagy az eszközt kezelő domain felhasználójának) pedig lehetősége lesz módosítani. A név hossza legfeljebb 24 karakter lehet.</translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
+<translation id="3386001018488754001">
+      MEGJEGYZÉS: Ez a házirend kísérleti állapotban van, és a funkciók helytelen működését okozhatja!
+      Ez a házirend a bejelentkezési képernyőre vonatkozik. Ehhez hasonló a következő házirend, amely a felhasználói munkamenetre vonatkozik: <ph name="SITE_PER_PROCESS_POLICY_NAME" />. Azt javasoljuk, hogy mindkét házirendet ugyanarra az értékre állítsa be. Ha az értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni igyekszik a felhasználói házirend által meghatározott értéket.
+      Ha szeretné használni az elszigetelést, mégis kisebb hatást gyakorolna a
+      felhasználókra, tekintse meg az IsolateOrigins házirend beállításait, melynek
+      listáján az elszigetelni kívánt webhelyek vannak. Ez a beállítás,
+      a SitePerProcess, az összes webhelyet elszigeteli.
+      Ha a házirend engedélyezve van, minden webhely a saját folyamatát futtatja.
+      Ha a házirend le van tiltva, akkor a webhelyenkénti elszigetelés folyamatkezelési logikája lép életbe.
+      Ha a házirend nincs konfigurálva, a felhasználó módosíthatja ezt a beállítást.
+      </translation>
 <translation id="3395348522300156660">Meghatározza, hogy mely nyomtatókat használhatja a felhasználó.
 
       A házirend csak akkor van használatban, ha a(z) <ph name="PRINTERS_WHITELIST" /> lehetőség van kiválasztva a(z) <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> házirendnél.
@@ -760,6 +813,10 @@
           Ha az irányelv értéke Hamis, vagy nincs beállítva, akkor az energiagazdálkodási késleltetések és a munkamenet hosszúsági korlátja rögtön egy munkamenet megkezdésekor elindul.</translation>
 <translation id="3478024346823118645">Felhasználói adatok törlése a kijelentkezésnél</translation>
 <translation id="348495353354674884">Virtuális billentyűzet engedélyezése</translation>
+<translation id="3487623755010328395">
+        Ha a házirend be van állítva, a <ph name="PRODUCT_NAME" /> megpróbálja regisztrálni magát, és alkalmazza a társított felhőházirendet az összes profilra.
+
+        A házirend értéke egy regisztrációs token, amelyet a Google Felügyeleti konzolból lehet lekérni.</translation>
 <translation id="3496296378755072552">Jelszókezelő</translation>
 <translation id="350443680860256679">Az ARC házirend konfigurálása</translation>
 <translation id="3504791027627803580">Megadja a képkereséshez használt keresőmotor URL-címét. A keresési kérelmet a rendszer a GET metódus segítségével továbbítja. Ha a DefaultSearchProviderImageURLPostParams házirend be van állítva, akkor a képkeresési kérelmek a POST metódust használják.
@@ -1315,6 +1372,17 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 
       Ha az irányelvet nem állítja be, vagy üres karakterláncot, illetve érvénytelen porttartományt ad meg, akkor a WebRTC bármelyik rendelkezésre álló helyi UDP-portot használhatja.</translation>
 <translation id="5290940294294002042">Adja meg a felhasználó által be- vagy kikapcsolható bővítmények listáját</translation>
+<translation id="5301787427319106606">
+      MEGJEGYZÉS: Ez a házirend kísérleti állapotban van, és a funkciók helytelen működését okozhatja!
+      Ha szeretné használni az elszigetelést, mégis kisebb hatást gyakorolna a
+      felhasználókra, tekintse meg az IsolateOrigins házirend beállításait, melynek
+      listáján az elszigetelni kívánt webhelyek vannak. Ez a beállítás,
+      a SitePerProcess, az összes webhelyet elszigeteli.
+      Ha a házirend engedélyezve van, minden webhely a saját folyamatát futtatja.
+      Ha a házirend le van tiltva, akkor a webhelyenkénti elszigetelés folyamatkezelési logikája lép életbe.
+      Ha a házirend nincs konfigurálva, a felhasználó módosíthatja ezt a beállítást.
+      <ph name="PRODUCT_OS_NAME" /> rendszer alatt ajánlott ugyanerre az értékre beállítani a(z) <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> eszközházirendet. Ha a két házirend által meghatározott értékek nem egyeznek, az késést okozhat a felhasználói munkamenetbe való belépés során, miközben a böngésző éppen alkalmazni igyekszik a felhasználói házirend által meghatározott értéket.
+      </translation>
 <translation id="5302612588919538756">Ez a házirend elavult, használja helyette a SyncDisabled házirendet.
 
       Lehetővé teszi, hogy a felhasználó bejelentkezzen a <ph name="PRODUCT_NAME" /> termékbe.
@@ -1873,6 +1941,14 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="706669471845501145">Megengedi a webhelyeknek, hogy értesítéseket jelenítsenek meg az asztalon</translation>
 <translation id="7072208053150563108">Gépi jelszó módosításának üteme</translation>
 <translation id="7072406291414141328">Hálózati sávszélesség szabályozásának engedélyezése</translation>
+<translation id="7074513465313721551">Azon domainek listájának megadása, amelyekben a Biztonságos Böngészés megbízik. Ez azt jelenti, hogy:
+      A Biztonságos Böngészés nem keres veszélyes forrásokat (pl. adathalász, rosszindulatú vagy kéretlen szoftvert), ha az URL megtalálható e domainek listáján.
+      A Biztonságos Böngészés letöltésvédelmi szolgáltatása nem ellenőrzi az e domaineken tárolt letöltéseket.
+      A Biztonságos Böngészés jelszóvédelmi szolgáltatása nem ellenőrzi a jelszavak újrafelhasználását, ha az URL megtalálható e domainek listáján.
+
+      Ha a beállítás engedélyezve van, a Biztonságos Böngészés megbízik ezekben a domainekben.
+      Ha a beállítás le van tiltva, vagy ha nincs konfigurálva, akkor az összes forrásra érvényes a Biztonságos Böngészés alapértelmezett védelme.
+      Ez a házirend nem áll rendelkezésre olyan Windows-példányokon, amelyek nem csatlakoztak <ph name="MS_AD_NAME" />-domainhez.</translation>
 <translation id="7079519252486108041">Előugró ablakok tiltása ezeken a webhelyeken</translation>
 <translation id="7106631983877564505">Lezárás engedélyezése, ha a <ph name="PRODUCT_OS_NAME" />-t futtató eszközök tétlenek, illetve felfüggesztett állapotban vannak.
 

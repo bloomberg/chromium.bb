@@ -58,6 +58,17 @@
 
       Si se usa esta política, se proporcionan todas las impresoras al usuario, excepto para los ID que se enumeran en esta política.
       </translation>
+<translation id="1181881366217399113">
+      NOTA: Esta política es experimental y puede provocar fallos.
+      Si se habilita la política, cada origen designado en una lista separada por
+      comas se ejecutará en su propio proceso. Esta acción también aislará los
+      sitios designados a partir de subdominios; p. ej., si se especifica
+      https://ejemplo.com/, también se aislará https://foo.ejemplo.com/ como parte
+      del sitio https://ejemplo.com/.
+      Si se inhabilita la política, se aplicará la lógica de administración del proceso previo de aislamiento por sitio.
+      Si esta política no se configura, el usuario podrá cambiar esta configuración.
+      En <ph name="PRODUCT_OS_NAME" />, se recomienda también configurar la política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> con el mismo valor. Si los valores de ambas políticas no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
+      </translation>
 <translation id="1198465924256827162">Frecuencia de envío de cargas de estado del dispositivo, en milisegundos.
 
       Si esta política no se establece, la frecuencia predeterminada es de 3 horas. La frecuencia mínima permitida es de 60 segundos.</translation>
@@ -247,7 +258,15 @@
       El formato del valor sigue los nombres de las zonas horarias en la "Base de datos de zonas horarias de la IANA" (consulta "https://en.wikipedia.org/wiki/Tz_database"). De forma específica, la mayoría de las zonas horarias pueden referirse como "continente/ciudad importante" u "océano/ciudad importante".
 
       Si estableces esta política, se inhabilita por completo la configuración de la zona horaria según la ubicación del dispositivo. También anula la política SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">El token de inscripción de la política de nube en la computadora de escritorio</translation>
 <translation id="1897365952389968758">Permitir que todos los sitios ejecuten JavaScript</translation>
+<translation id="1906888171268104594">Controla el envío de informes de errores, métricas de uso y datos de diagnóstico a Google.
+
+      Si el valor se establece como verdadero, <ph name="PRODUCT_OS_NAME" /> enviará informes sobre métricas de uso y datos de diagnóstico.
+
+      Si el valor se establece como falso, se inhabilitará el envío de datos de diagnóstico y métricas.
+
+      Si esta política no se configura, el envío de datos de diagnóstico y métricas se inhabilitará en los dispositivos no administrados y se inhabilitará en los dispositivos administrados.</translation>
 <translation id="193259052151668190">Lista blanca de dispositivos USB que se pueden separar</translation>
 <translation id="1933378685401357864">Imagen de fondo de pantalla</translation>
 <translation id="1956493342242507974">Configura la administración de energía en la pantalla de acceso en <ph name="PRODUCT_OS_NAME" />.
@@ -396,6 +415,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="2386362615870139244">Permitir bloqueos de activación de pantalla</translation>
 <translation id="2411817661175306360">La advertencia de la protección de la contraseña está desactivada</translation>
 <translation id="2411919772666155530">Bloquear notificaciones en estos sitios</translation>
+<translation id="2415979855753196119">Permite controlar la forma en la que un servicio de protección de contraseñas indica que la cuenta del usuario está en riesgo, es decir, informa a Google cuando la cuenta corre riesgo de ser vulnerada.
+
+      Si esta política se establece como "PasswordProtectionRiskOff", no se activa la marca de la protección de la contraseña que indica que la cuenta está en riesgo.
+      Si se establece como "PasswordProtectionRiskOnPasswordReuse", se activa dicha marca cuando el usuario vuelve a usar las contraseñas de Google en sitios que no están incluidos en la lista blanca.
+      Si se establece como "PasswordProtectionRiskOnPhishingReuse", se activa la marca cuando el usuario vuelve a usar las contraseñas de Google en sitios de suplantación de identidad (phishing).
+      Si no se establece, se activa la marca cuando el usuario vuelve a usar las contraseñas de Google en sitios de suplantación de identidad (phishing); pero el usuario puede cambiar la configuración.</translation>
 <translation id="2418507228189425036">Inhabilita el almacenamiento del historial de búsqueda en <ph name="PRODUCT_NAME" /> e impide que los usuarios cambien esta configuración.
 
       Si esta configuración se habilita, el historial de navegación no se guarda. También se inhabilita la sincronización de pestañas.
@@ -581,6 +606,12 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si habilitas esta configuración, Vista previa de impresión usará la impresora predeterminada del sistema operativo como la opción de destino predeterminada.</translation>
 <translation id="2867699958489427143">Implementa la reversión y mantiene la versión objetivo si la versión del sistema operativo es más reciente que la objetivo. Aplica la función Powerwash durante el proceso.</translation>
+<translation id="286802604195763750">Permite controlar la activación de advertencias de protección de contraseña. La protección de contraseña alerta a los usuarios cuando vuelven a usar su contraseña protegida en sitios posiblemente peligrosos.
+
+      Si esta política se establece como "PasswordProtectionWarningOff", no se mostrará la advertencia de protección de contraseña.
+      Si se establece como "PasswordProtectionWarningOnPasswordReuse", se mostrará la advertencia de protección de contraseña cuando el usuario vuelva a usar su contraseña de Google en un sitio que no está incluido en la lista blanca.
+      Si se establece como "PasswordProtectionRiskOnPhishingReuse", se mostrará la advertencia de protección de contraseña cuando el usuario vuelva a usar su contraseña de Google en un sitio de suplantación de identidad (phishing).
+      Si no se establece, se activará la advertencia de protección de contraseña cuando el usuario vuelva a usar su contraseña de Google en un sitio de suplantación de identidad (phishing); pero el usuario puede cambiar la configuración.</translation>
 <translation id="2872961005593481000">Cerrar</translation>
 <translation id="2874209944580848064">Nota para dispositivos <ph name="PRODUCT_OS_NAME" /> compatibles con apps de Android:</translation>
 <translation id="2877225735001246144">Inhabilitar la búsqueda de CNAME al negociar la autenticación de Kerberos</translation>
@@ -615,6 +646,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           El valor de la política debe especificarse en milisegundos. Los valores se establecerán para que sean inferiores o equivalentes a la demora de pantalla apagada (si está configurada) y la demora de inactividad.</translation>
 <translation id="2987155890997901449">Habilitar ARC</translation>
 <translation id="2987227569419001736">Controlar el uso de la API de Bluetooth web</translation>
+<translation id="2998886474614739865">
+      NOTA: Esta política es experimental y puede provocar fallos.
+      Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
+      Si se habilita la política, cada origen designado en una lista separada por
+      comas se ejecutará en su propio proceso. Esta acción también aislará
+      los orígenes designados a partir de subdominios; p. ej., al especificar
+      https://ejemplo.com/, también se aislará https://foo.ejemplo.com/ como parte
+      del sitio https://ejemplo.com/.
+      Si se inhabilita la política, se aplicará la lógica de administración del proceso de aislamiento por sitio.
+      Si no se configura, se usará la configuración predeterminada de aislamiento de sitios de la plataforma para la pantalla de acceso.
+      </translation>
 <translation id="3016255526521614822">Incluir en la lista blanca las apps para tomar notas que se permiten en la pantalla bloqueada de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Cantidad de hitos que se permiten en la reversión</translation>
 <translation id="3030000825273123558">Activar los informes estadísticos</translation>
@@ -716,6 +758,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
           Si esta política se establece con una string no vacía, esa string se usará como el nombre del destino de <ph name="PRODUCT_NAME" />. De lo contrario, el nombre del destino será el nombre del dispositivo. Si esta política no se establece, el nombre del destino será el nombre del dispositivo, y el propietario del dispositivo (o un usuario del dominio que administre el dispositivo) podrá cambiarlo. El nombre tiene un límite máximo de 24 caracteres.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de manera predeterminada</translation>
+<translation id="3386001018488754001">
+      NOTA: Esta política es experimiental y puede provocar fallos.
+      Esta política se aplica a la pantalla de acceso. Consulta también la política <ph name="SITE_PER_PROCESS_POLICY_NAME" />, que se aplica a la sesión de usuario. Se recomienda establecer ambas políticas en el mismo valor. Si los valores no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
+      Para revisar la configuración de la política IsolateOrigins a fin de aprovechar
+      el aislamiento y reducir el impacto que puedan sufrir los usuarios, utiliza
+      IsolateOrigins con una lista de los sitios que quieras aislar. Esta
+      configuración, SitePerProcess, aísla todos los sitios.
+      Si se habilita la política, cada sitio se ejecutará en su propio proceso.
+      Si se inhabilita, se aplicará la lógica de administración del proceso de aislamiento por sitio.
+      Si no se configura, el usuario podrá cambiar esta configuración.
+      </translation>
 <translation id="3395348522300156660">Especifica las impresoras que puede utilizar un usuario.
 
       Esta política solo se usa si se elige <ph name="PRINTERS_WHITELIST" /> para <ph name="DEVICE_PRINTERS_ACCESS_MODE" />
@@ -755,6 +808,10 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
           Si esta política no se establece o se establece en "False", las demoras de administración de energía y el límite de duración de la sesión se ejecutan tan pronto como comienza la sesión.</translation>
 <translation id="3478024346823118645">Eliminar los datos del usuario al salir</translation>
 <translation id="348495353354674884">Habilitar el teclado virtual</translation>
+<translation id="3487623755010328395">
+        Si se establece esta política, <ph name="PRODUCT_NAME" /> intentará registrarse y aplicar la política de nube asociada para todos los perfiles.
+
+        El valor de esta política es un token de inscripción que se puede obtener en la Consola del administrador de Google.</translation>
 <translation id="3496296378755072552">Administrador de contraseñas</translation>
 <translation id="350443680860256679">Configurar ARC</translation>
 <translation id="3504791027627803580">Especifica la URL del motor de búsqueda utilizado para proporcionar la búsqueda de imágenes. Las solicitudes de búsqueda se enviarán mediante el método GET. Si se establece la política DefaultSearchProviderImageURLPostParams, las solicitudes de búsqueda de imágenes utilizarán el método POST en su lugar.
@@ -1314,6 +1371,17 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 
       Si la política no se establece, se establece con un intervalo de puertos no válido o se deja como una cadena vacía, WebRTC puede usar cualquier puerto UDP local disponible.</translation>
 <translation id="5290940294294002042">Especificar una lista de complementos que el usuario puede habilitar o inhabilitar.</translation>
+<translation id="5301787427319106606">
+      NOTA: Esta política es experimental y puede provocar fallos.
+      Revisa la configuración de la política IsolateOrigins y utiliza esta política
+      con una lista de los sitios que quieras aislar para aprovechar el aislamiento
+      y reducir el impacto que puedan sufrir los usuarios. Esta configuración,
+      SitePerProcess, aísla todos los sitios.
+      Si se habilita la política, cada sitio se ejecutará en su propio proceso.
+      Si se inhabilita, se aplicará la lógica de administración del proceso de aislamiento por sitio.
+      Si no se configura, el usuario podrá cambiar esta configuración.
+      En <ph name="PRODUCT_OS_NAME" />, se recomienda también configurar la política de dispositivo <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> con el mismo valor. Si los valores de ambas políticas no coinciden, es posible que se produzca un retraso al ingresar una sesión de usuario mientras se aplica el valor especificado por la política del usuario.
+      </translation>
 <translation id="5302612588919538756">Esta política dejó de estar disponible; se debe considerar el uso de SyncDisabled en su lugar.
 
       Permite que el usuario acceda a <ph name="PRODUCT_NAME" />.
@@ -1870,6 +1938,14 @@ Si se selecciona "U2F_EXTENDED", el segundo factor integrado proporcionará func
 <translation id="706669471845501145">Permitir que los sitios muestren notificaciones de escritorio.</translation>
 <translation id="7072208053150563108">Frecuencia de cambio de la contraseña del dispositivo</translation>
 <translation id="7072406291414141328">Habilita la velocidad moderada del ancho de banda de la red</translation>
+<translation id="7074513465313721551">Configura la lista de dominios en los que confiará Navegación segura. Esto significa lo siguiente:
+      Navegación segura no revisará recursos peligrosos (p. ej., suplantación de identidad, software malicioso o software no deseado) si las URL coinciden con estos dominios.
+      El servicio de protección de descargas de Navegación segura no comprobará las descargas alojadas en estos dominios.
+      El servicio de protección de contraseñas de Navegación segura no comprobará si se vuelve a usar la contraseña cuando la URL de la página coincide con estos dominios.
+
+      Si se habilita esta configuración, Navegación segura confiará en estos dominios.
+      Si se inhabilita o no se establece, la protección de Navegación segura se aplica a todos los recursos.
+      Esta política no está disponible en instancias de Windows que no estén unidas a un dominio de <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloquear ventanas emergentes en estos sitios</translation>
 <translation id="7106631983877564505">Habilitar el bloqueo cuando los dispositivos <ph name="PRODUCT_OS_NAME" /> están inactivos o suspendidos
 

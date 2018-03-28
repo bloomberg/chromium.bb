@@ -61,6 +61,7 @@
 <translation id="2397416548179033562">Отображение меню Chrome</translation>
 <translation id="2429317896000329049">Google Chrome не удалось синхронизировать данные, поскольку служба Sync недоступна для вашего домена.</translation>
 <translation id="2446511512801740068">Для текущей версии Chrome доступно обновление. Оно будет установлено при перезапуске приложения.</translation>
+<translation id="2467438592969358367">Чтобы экспортировать пароли из Google Chrome, введите пароль своего аккаунта Windows.</translation>
 <translation id="2485422356828889247">Удалить</translation>
 <translation id="2534507159460261402">Google Pay (скопирована в Chrome)</translation>
 <translation id="2535429035253759792">Администратор просит перезапустить Chrome для установки обновления</translation>
@@ -134,6 +135,7 @@
 <translation id="4480040274068703980">Не удалось синхронизировать данные из-за ошибки входа в аккаунт.</translation>
 <translation id="4561051373932531560">В Google Chrome вы можете нажать на любой номер телефона и позвонить на него через Skype!</translation>
 <translation id="4567424176335768812">Вы вошли с помощью аккаунта <ph name="USER_EMAIL_ADDRESS" />. Ваши закладки, история и другие настройки теперь доступны на всех устройствах, где вы используете этот аккаунт.</translation>
+<translation id="4571503333518166079">Открыть настройки уведомлений Chrome</translation>
 <translation id="4600710005438004015">Не удалось установить последнюю версию Chrome, в которой добавлены новые функции и обновления системы безопасности.</translation>
 <translation id="4631713731678262610">Не показывать в меню Google Chrome</translation>
 <translation id="4633000520311261472">Чтобы обеспечить безопасность ваших данных, некоторые расширения Chrome были отключены, так как <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> не содержит сведений о них, то есть эти компоненты могли быть установлены без вашего ведома.</translation>
@@ -169,6 +171,7 @@
 <translation id="556024056938947818">Вводимые пароли будут отображаться в Google Chrome.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598">Chrome заблокировал файл <ph name="FILE_NAME" /> как потенциально опасный.</translation>
+<translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome перезапустится через 1 секунду}one{Google Chrome перезапустится через # секунду}few{Google Chrome перезапустится через # секунды}many{Google Chrome перезапустится через # секунд}other{Google Chrome перезапустится через # секунды}}</translation>
 <translation id="573759479754913123">О Chrome OS</translation>
 <translation id="5774845247549698882">Этот язык сейчас используется в Chrome OS</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>
@@ -197,6 +200,7 @@
 <translation id="6600954340915313787">Скопировано в Chrome</translation>
 <translation id="6634887557811630702">Вы используете самую новую версию Chrome.</translation>
 <translation id="6676384891291319759">Доступ в Интернет</translation>
+<translation id="6679975945624592337">Разрешить Google Chrome работать в фоновом режиме</translation>
 <translation id="677276454032249905">Закрыть Chrome?</translation>
 <translation id="683440813066116847">Разрешить в Google Chrome Canary передачу входящего трафика по протоколу mDNS</translation>
 <translation id="686561893457936865">Chrome всегда под рукой</translation>
@@ -250,6 +254,7 @@
 <translation id="8286862437124483331">Чтобы просмотреть пароли, введите пароль своего аккаунта Windows.</translation>
 <translation id="8290100596633877290">Произошел сбой Google Chrome. Перезапустить?</translation>
 <translation id="8342675569599923794">Chrome заблокировал этот файл как опасный.</translation>
+<translation id="840084489713044809">Вы собираетесь экспортировать пароли из Google Chrome.</translation>
 <translation id="8406086379114794905">Помогите сделать Chrome безопаснее</translation>
 <translation id="8439301513305169426">Chrome сохранит этот пароль в <ph name="SAVED_PASSWORD_LINK" />. Вам не нужно его запоминать.</translation>
 <translation id="8455999171311319804">Автоматически отправлять статистику использования и данные диагностики в Google, чтобы помочь улучшить Chrome OS (необязательно)</translation>

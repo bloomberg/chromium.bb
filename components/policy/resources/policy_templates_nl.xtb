@@ -58,6 +58,18 @@
 
       Als dit beleid wordt gebruikt, zijn alle printers beschikbaar voor de gebruiker, met uitzondering van de ID's die in dit beleid worden vermeld.
       </translation>
+<translation id="1181881366217399113">
+      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
+      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten in
+      een door komma's gescheiden lijst uitgevoerd in een eigen proces.
+      Hiermee worden ook herkomsten geïsoleerd die worden benoemd door
+      subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook
+      https://foo.example.com/ geïsoleerd als onderdeel van de site
+      https://example.com/.
+      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voor isolatie per site van kracht.
+      Als het beleid niet is ingesteld, kan de gebruiker deze instelling wijzigen.
+      Voor <ph name="PRODUCT_OS_NAME" /> is het raadzaam ook het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> in te stellen op dezelfde waarde. Als de waarden van twee beleidsregels niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt gestart terwijl de waarde van het gebruikersbeleid wordt toegepast.
+      </translation>
 <translation id="1198465924256827162">De frequentie, in milliseconden, waarmee uploads van de apparaatstatus worden verzonden.
 
       Als dit beleid niet is ingesteld, is de standaardfrequentie 3 uur. De minimaal toegestane frequentie is 60 seconden.</translation>
@@ -252,7 +264,15 @@
       De notatie van de waarde volgt de naamgeving van tijdzones in de 'IANA Time Zone Database' (zie https://en.wikipedia.org/wiki/Tz_database). Je kunt naar veel tijdzones verwijzen via 'continent/grote_stad' of 'oceaan/grote_stad'.
 
       Als je dit beleid instelt, wordt automatische bepaling van de tijdzone op basis van de apparaatlocatie volledig uitgeschakeld. Ook wordt het beleid SystemTimezoneAutomaticDetection overschreven.</translation>
+<translation id="1888871729456797026">De inschrijvingstoken van het cloudbeleid op een desktop</translation>
 <translation id="1897365952389968758">Alle sites toestaan JavaScript uit te voeren</translation>
+<translation id="1906888171268104594">Hiermee wordt beheerd of gebruiksstatistieken en diagnostische gegevens, waaronder crashrapporten, worden gerapporteerd aan Google.
+
+      Als dit beleid is ingesteld op true (waar), rapporteert <ph name="PRODUCT_OS_NAME" /> gebruiksstatistieken en diagnostische gegevens.
+
+      Als dit beleid is ingesteld op false (onwaar), wordt de rapportage van statistieken en diagnostische gegevens uitgeschakeld.
+
+      Als dit beleid niet is ingesteld, wordt de rapportage van statistieken en diagnostische gegevens op niet-beheerde apparaten uitgeschakeld en op beheerde apparaten ingeschakeld.</translation>
 <translation id="193259052151668190">Witte lijst met USB-apparaten die kunnen worden ontkoppeld</translation>
 <translation id="1933378685401357864">Achtergrondafbeelding</translation>
 <translation id="1956493342242507974">Energiebeheer configureren op het inlogscherm in <ph name="PRODUCT_OS_NAME" />.
@@ -415,6 +435,12 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 <translation id="2386362615870139244">Schermactiveringsvergrendeling toestaan</translation>
 <translation id="2411817661175306360">Waarschuwing voor wachtwoordbeveiliging is uitgeschakeld</translation>
 <translation id="2411919772666155530">Meldingen op deze sites blokkeren</translation>
+<translation id="2415979855753196119">Hiermee kun je de activering van accountmarkering wegens wachtwoordbeveiligingsrisico beheren. Accountmarkering wegens wachtwoordbeveiligingsrisico houdt in dat Google op de hoogte wordt gebracht dat dit account risico loopt om te worden gehackt.
+
+      Als dit beleid is ingesteld op PasswordProtectionRiskOff, wordt er geen accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd.
+      Als dit beleid is ingesteld op PasswordProtectionRiskOnPasswordReuse, wordt accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd wanneer de gebruiker het Google-wachtwoord hergebruikt op een site die niet op de witte lijst staat.
+      Als dit beleid is ingesteld op PasswordProtectionRiskOnPhishingReuse, wordt accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd wanneer de gebruiker het Google-wachtwoord hergebruikt op een phishingsite.
+      Als dit beleid niet is ingesteld, wordt accountmarkering wegens wachtwoordbeveiligingsrisico geactiveerd wanneer de gebruiker het Google-wachtwoord hergebruikt op een phishingsite, maar kan de gebruiker deze instelling wijzigen.</translation>
 <translation id="2418507228189425036">Hiermee wordt het opslaan van de browsergeschiedenis in <ph name="PRODUCT_NAME" /> uitgeschakeld en wordt voorkomen dat gebruikers deze instelling kunnen wijzigen.
 
       Als deze instelling is ingeschakeld, wordt de browsergeschiedenis niet opgeslagen. Met deze instelling wordt ook tabbladsynchronisatie uitgeschakeld.
@@ -610,6 +636,12 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 
       Als je deze instelling inschakelt, gebruikt Afdrukvoorbeeld de standaardprinter van het besturingssysteem als standaardbestemming.</translation>
 <translation id="2867699958489427143">Herstel en blijf op de doelversie als de OS-versie nieuwer is dan de doelversie. Doe een volledige powerwash tijdens het proces.</translation>
+<translation id="286802604195763750">Hiermee kun je de activering van een beveiligingswaarschuwing voor je wachtwoord beheren. Wachtwoordbeveiliging waarschuwt gebruikers wanneer ze hun beveiligde wachtwoord hergebruiken op potentieel verdachte sites.
+
+      Als dit beleid is ingesteld op PasswordProtectionWarningOff, wordt er geen waarschuwing voor wachtwoordbeveiliging weergegeven.
+      Als dit beleid is ingesteld op PasswordProtectionWarningOnPasswordReuse, wordt er een waarschuwing voor wachtwoordbeveiliging weergegeven wanneer de gebruiker het Google-wachtwoord hergebruikt op een site die niet op de witte lijst staat.
+      Als dit beleid is ingesteld op PasswordProtectionWarningOnPhishingReuse, wordt er een waarschuwing voor wachtwoordbeveiliging weergegeven wanneer de gebruiker het Google-wachtwoord hergebruikt op een phishingsite.
+      Als dit beleid niet is ingesteld, wordt er een waarschuwing voor wachtwoordbeveiliging geactiveerd wanneer de gebruiker het Google-wachtwoord hergebruikt op een phishingsite, maar kan de gebruiker deze instelling aanpassen.</translation>
 <translation id="2872961005593481000">Afsluiten</translation>
 <translation id="2874209944580848064">Opmerking voor <ph name="PRODUCT_OS_NAME" />-apparaten die Android-apps ondersteunen:</translation>
 <translation id="2877225735001246144">CNAME-lookup uitschakelen bij het verwerken van Kerberos-authenticatie</translation>
@@ -644,6 +676,18 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
           De beleidswaarde moet worden opgegeven in milliseconden. Waarden moeten lager zijn dan of gelijk zijn aan de vertraging van scherm uitschakelen (indien ingesteld) en de inactieve vertraging.</translation>
 <translation id="2987155890997901449">ARC inschakelen</translation>
 <translation id="2987227569419001736">Gebruik van de Web Bluetooth API beheren</translation>
+<translation id="2998886474614739865">
+      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
+      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels in te stellen op dezelfde waarde. Als de waarden niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt opgegeven terwijl de waarde van het gebruikersbeleid wordt toegepast.
+      Als het beleid is ingeschakeld, wordt elk van de benoemde herkomsten
+      in een door komma's gescheiden lijst uitgevoerd in een eigen proces.
+      Hiermee worden ook herkomsten geïsoleerd die worden benoemd door
+      subdomeinen. Als je bijvoorbeeld https://example.com/ opgeeft, wordt ook
+      https://foo.example.com/ geïsoleerd als onderdeel van de site
+      https://example.com/.
+      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voor isolatie per site van kracht.
+      Als het beleid niet is ingesteld, worden de standaardinstellingen van het platform voor site-isolatie gebruikt voor het inlogscherm.
+      </translation>
 <translation id="3016255526521614822">Notitie-apps die zijn toegestaan op het <ph name="PRODUCT_OS_NAME" />-vergrendelingsscherm toevoegen aan de witte lijst</translation>
 <translation id="3021562480854470924">Aantal mijlpalen dat rollback kan terugzetten</translation>
 <translation id="3030000825273123558">Rapportage van statistieken inschakelen</translation>
@@ -753,6 +797,17 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
 
           Als dit beleid is ingesteld op een niet-lege tekenreeks, wordt die tekenreeks gebruikt als de naam van de <ph name="PRODUCT_NAME" />-bestemming. Anders wordt de apparaatnaam gebruikt voor de bestemmingsnaam. Als dit beleid niet is ingesteld, is de naam van de bestemming de apparaatnaam en kan de eigenaar van het apparaat (of een gebruiker in het domein dat het apparaat beheert) deze naam wijzigen. De naam mag maximaal 24 tekens lang zijn.</translation>
 <translation id="3381968327636295719"> gebruiken</translation>
+<translation id="3386001018488754001">
+      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
+      Dit beleid is van toepassing op het inlogscherm. Zie ook het beleid <ph name="SITE_PER_PROCESS_POLICY_NAME" /> dat van toepassing is op de gebruikerssessie. Het is raadzaam beide beleidsregels in te stellen op dezelfde waarde. Als de waarden niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt opgegeven terwijl de waarde van het gebruikersbeleid wordt toegepast.
+      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik
+      te maken van beide functies (isolatie en beperkte impact voor gebruikers)
+      door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren.
+      Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
+      Als het beleid is ingeschakeld, wordt elke site uitgevoerd in een eigen proces.
+      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voor isolatie per site van kracht.
+      Als het beleid niet is ingesteld, kan de gebruiker deze instelling wijzigen.
+      </translation>
 <translation id="3395348522300156660">Hiermee worden de printers gespecificeerd die een gebruiker kan gebruiken.
 
       Dit beleid wordt alleen gebruikt als <ph name="PRINTERS_WHITELIST" /> is gekozen voor <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -791,6 +846,10 @@ Als het beleid niet is ingesteld, is de updatefunctionaliteit voor <ph name="TPM
           Als dit beleid is ingesteld op 'False', worden vertragingen in energiebeheer en de limiet voor sessielengte gestart bij het starten van de sessie.</translation>
 <translation id="3478024346823118645">Gebruikersgegevens wissen bij uitloggen</translation>
 <translation id="348495353354674884">Virtueel toetsenbord inschakelen</translation>
+<translation id="3487623755010328395">
+        Als dit beleid is ingesteld, probeert <ph name="PRODUCT_NAME" /> zichzelf te registreren en het bijbehorende cloudbeleid voor alle profielen toe te passen.
+
+        De waarde van dit beleid is een inschrijftoken die kan worden opgehaald via de Google Beheerdersconsole.</translation>
 <translation id="3496296378755072552">Wachtwoordbeheer</translation>
 <translation id="350443680860256679">ARC configureren</translation>
 <translation id="3504791027627803580">Specificeert de URL van de zoekmachine die wordt gebruikt om de functie voor zoeken naar afbeeldingen te leveren. Zoekopdrachten worden verzonden met de GET-methode. Als het beleid DefaultSearchProviderImageURLPostParams is ingesteld, gebruiken zoekopdrachten voor afbeeldingen in plaats daarvan de POST-methode.
@@ -1372,6 +1431,17 @@ Als dit beleid niet wordt ingesteld, worden apps en extensies automatisch geïns
 
       Als het beleid niet wordt ingesteld, of als dit wordt ingesteld voor een lege tekenreeks of een ongeldig poortbereik, kan WebRTC gebruikmaken van elke lokale UDP-poort.</translation>
 <translation id="5290940294294002042">Een lijst met plug-ins opgeven die de gebruiker kan in- of uitschakelen</translation>
+<translation id="5301787427319106606">
+      OPMERKING: Dit beleid is experimenteel en kan de functionaliteit verstoren.
+      Je kunt de beleidsinstelling IsolateOrigins bekijken om optimaal gebruik
+      te maken van beide functies (isolatie en beperkte impact voor gebruikers)
+      door IsolateOrigins te gebruiken met een lijst van de sites die je wilt isoleren.
+      Met deze instelling (SitePerProcess) worden alle sites geïsoleerd.
+      Als het beleid is ingeschakeld, wordt elke site uitgevoerd in een eigen proces.
+      Als het beleid is uitgeschakeld, wordt de procesbeheerlogica voor isolatie per site van kracht.
+      Als het beleid niet is ingesteld, kan de gebruiker deze instelling wijzigen.
+      Voor <ph name="PRODUCT_OS_NAME" /> is het raadzaam ook het apparaatbeleid <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> in te stellen op dezelfde waarde. Als de waarden van twee beleidsregels niet overeenkomen, treedt er mogelijk een vertraging op wanneer een gebruikerssessie wordt opgegeven terwijl de waarde van het gebruikersbeleid wordt toegepast.
+      </translation>
 <translation id="5302612588919538756">Dit beleid is verouderd. Je kunt in plaats hiervan SyncDisabled gebruiken.
 
       Hiermee wordt toegestaan dat de gebruiker inlogt bij <ph name="PRODUCT_NAME" />.
@@ -1961,6 +2031,14 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="706669471845501145">Sites toestaan bureaubladmeldingen weer te geven</translation>
 <translation id="7072208053150563108">Wijzigingsfrequentie van computerwachtwoord</translation>
 <translation id="7072406291414141328">Netwerkbandbreedtebeperking inschakelen</translation>
+<translation id="7074513465313721551">Stel de lijst met domeinen in die door Safe Browsing worden vertrouwd. Dit betekent het volgende:
+      Safe Browsing controleert niet op gevaarlijke bronnen (bijvoorbeeld phishing, malware of ongewenste software) als de URL's overeenkomen met deze domeinen.
+      De downloadbeveiligingsservice van Safe Browsing controleert geen downloads die worden gehost op deze domeinen.
+      De wachtwoordbeveiligingsservice van Safe Browsing controleert niet of een wachtwoord opnieuw wordt gebruikt als pagina-URL overeenkomt met deze domeinen.
+
+      Als deze instelling is ingeschakeld, worden deze domeinen door Safe Browsing vertrouwd.
+      Als deze instelling is uitgeschakeld of niet is ingesteld, wordt standaard de Safe Browsing-beveiliging toegepast op alle bronnen.
+      Dit beleid is niet beschikbaar op Windows-instanties die niet aan een <ph name="MS_AD_NAME" />-domein zijn gekoppeld.</translation>
 <translation id="7079519252486108041">Pop-ups blokkeren op deze sites</translation>
 <translation id="7106631983877564505">Hiermee wordt de vergrendeling ingeschakeld wanneer <ph name="PRODUCT_OS_NAME" />-apparaten inactief worden of overschakelen op de slaapstand.
 

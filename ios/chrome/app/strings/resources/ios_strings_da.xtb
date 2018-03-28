@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Adresse 1</translation>
 <translation id="1545749641540134597">Scan QR-kode</translation>
 <translation id="1580783302095112590">Email sendt.</translation>
+<translation id="1582732959743469162">Denne handling stopper den aktuelle download.</translation>
 <translation id="1612730193129642006">Vis fanegitter</translation>
 <translation id="1644574205037202324">Historik</translation>
 <translation id="1646446875146297738">Hvis du aktiverer "Spor ikke", medtages der en anmodning i din browsertrafik. Anmodningens virkning afhænger af, om et website reagerer på den, og hvordan anmodningen fortolkes.
@@ -284,6 +285,7 @@ Handoff skal være aktiveret i afsnittet Generelt i Indstillinger, og dine enhed
 <translation id="633809752005859102">Der gik noget helt galt. Vi arbejder på sagen.</translation>
 <translation id="6342069812937806050">Lige nu</translation>
 <translation id="6344783595350022745">Ryd tekst</translation>
+<translation id="6346549652287021269">Vil du starte en ny download?</translation>
 <translation id="6362362396625799311">Ingen inkognitofaner</translation>
 <translation id="6374469231428023295">Prøv igen</translation>
 <translation id="6380866119319257197">Hvis du glemmer din adgangssætning eller vil ændre denne indstilling, skal du <ph name="BEGIN_LINK" />nulstille synkroniseringen<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7031882061095297553">Synkroniser til</translation>
 <translation id="7053983685419859001">Bloker</translation>
 <translation id="7062545763355031412">Acceptér, og skift konto</translation>
+<translation id="7102005569666697658">Downloader… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Skjul</translation>
 <translation id="7133798577887235672">Fulde navn</translation>
 <translation id="7136892417564438900">Kameraet er ikke tilgængeligt</translation>
@@ -360,6 +363,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="7769602470925380267">Acceptér, og log ud</translation>
 <translation id="7772032839648071052">Bekræft adgangssætning</translation>
 <translation id="780301667611848630">Nej tak</translation>
+<translation id="7856733331829174190">Downloaden mislykkedes</translation>
 <translation id="7859704718976024901">Browserhistorik</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Eksportér adgangskoder…</translation>
@@ -422,6 +426,7 @@ Dine data blev krypteret med din adgangssætning til synkronisering d. <ph name=
 <translation id="9083392325882095631">1 element</translation>
 <translation id="9100610230175265781">Adgangssætning kræves</translation>
 <translation id="9148126808321036104">Log ind igen</translation>
+<translation id="915371508759614899">Vil du annullere downloaden?</translation>
 <translation id="9157836665414082580">Skjul dialogbokse</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
 <translation id="9203116392574189331">Handoff</translation>

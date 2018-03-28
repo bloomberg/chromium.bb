@@ -18,6 +18,8 @@
 <translation id="1668054258064581266">从Chromium移除您的帐号后，您可能需要重新加载已打开的标签页才能使其正常显示。</translation>
 <translation id="1688750314291223739">您可以设置同步以将个性化浏览器功能保存到网上，以便在任意计算机上的 Chromium 中使用这些功能。</translation>
 <translation id="1708666629004767631">Chromium 现已推出更安全的新版本。</translation>
+<translation id="1716051742506968">{0,plural, =0{有一项可用的 Chromium 更新}=1{有一项可用的 Chromium 更新}other{有一项可用的 Chromium 更新（已发布 # 天）}}</translation>
+<translation id="1766096484055239003">您的管理员要求您重新启动 Chromium 以应用一项更新</translation>
 <translation id="1774152462503052664">让 Chromium 在后台运行</translation>
 <translation id="1779356040007214683">为了提高 Chromium 的安全性，系统停用了一些未列在 <ph name="IDS_EXTENSION_WEB_STORE_TITLE" />中、可能是在您不知情的情况下添加的扩展程序。</translation>
 <translation id="1808667845054772817">重新安装Chromium</translation>
@@ -28,6 +30,7 @@
 <translation id="1967743265616885482">已发现一个同名的模块与 Chromium 存在冲突。</translation>
 <translation id="2008474315282236005">这会从这台设备上删除 1 项内容。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="2077129598763517140">使用硬件加速模式（如果可用）</translation>
+<translation id="2117378023188580026">您的管理员要求您重新启动 Chromium 以应用此项更新</translation>
 <translation id="2119636228670142020">关于 Chromium 操作系统(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium操作系统开放源代码许可</translation>
 <translation id="2241627712206172106">如果您与亲朋好友共用计算机，他们将能够使用单独的帐号进行浏览，并可随心所欲地设置Chromium。</translation>
@@ -107,6 +110,7 @@
 <translation id="4488554488975128561">通过允许自动向 Google 发送某些系统信息和网页内容以帮助检测危险应用和网站，您可助力我们提高 Chromium 的安全性和易用性。</translation>
 <translation id="4567424176335768812">您已使用 <ph name="USER_EMAIL_ADDRESS" /> 的身份登录。现在您可在已登录的所有设备上访问您的书签、历史记录和其他设置。</translation>
 <translation id="459535195905078186">Chromium 应用</translation>
+<translation id="4604377857208775795">{0,plural, =1{Chromium 将会在 1 分钟后重新启动}other{Chromium 将会在 # 分钟后重新启动}}</translation>
 <translation id="4621240073146040695">即将更新到最新版本！重新启动 Chromium 即可完成更新。</translation>
 <translation id="4677944499843243528">其他计算机 (<ph name="HOST_NAME" />) 的另一个 Chromium 进程 (<ph name="PROCESS_ID" />) 好像正在使用此个人资料。Chromium 已锁定此个人资料以防止其受损。如果您确定其他进程目前未使用此个人资料，请为其解锁并重新启动 Chromium。</translation>
 <translation id="469338717132742108">获取有关 Chromium 操作系统的帮助</translation>
@@ -166,6 +170,7 @@
 <translation id="6485906693002546646">您在使用<ph name="PROFILE_EMAIL" />同步自己的Chromium资料和数据。要更新您的同步偏好设置或在不登录Google帐号的情况下使用Chromium，请前往<ph name="SETTINGS_LINK" />部分。</translation>
 <translation id="6510925080656968729">卸载 Chromium</translation>
 <translation id="6598877126913850652">转到 Chromium 通知设置部分</translation>
+<translation id="6664239887951090350">{0,plural, =0{Chromium 将会立即重新启动}=1{Chromium 将会在 1 秒后重新启动}other{Chromium 将会在 # 秒后重新启动}}</translation>
 <translation id="6676384891291319759">访问互联网</translation>
 <translation id="6717134281241384636">您的个人资料来自更高版本的 Chromium，因此无法使用。
 
@@ -209,6 +214,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="761356813943268536">Chromium 正在使用您的摄像头和麦克风。</translation>
 <translation id="7617377681829253106">Chromium现在更好用了</translation>
 <translation id="7686590090926151193">Chromium 不是您的默认浏览器</translation>
+<translation id="7689606757190482937">在您的所有设备上同步并个性化 Chromium</translation>
 <translation id="7729447699958282447">由于您的网域停用了同步功能，Chromium无法同步您的数据。</translation>
 <translation id="7745317241717453663">这会从这台设备上删除您的浏览数据。如果日后想要检索您的数据，届时请以 <ph name="USER_EMAIL" /> 的身份登录 Chromium。</translation>
 <translation id="7747138024166251722">安装程序无法创建临时目录。请检查您是否有足够的磁盘空间和权限来安装该软件。</translation>
@@ -227,6 +233,7 @@ Chromium 无法恢复您的设置。</translation>
 <translation id="8222496066431494154">请在您的手机上安装 Chromium。我们会将一条短信发送到您帐号的辅助电话号码：<ph name="PHONE_NUMBER" /></translation>
 <translation id="8269379391216269538">帮助我们改进Chromium</translation>
 <translation id="8290862415967981663">此文件可能存在危险，因此 Chromium 已将其拦截。</translation>
+<translation id="8330519371938183845">登录即可在您的所有设备上同步并个性化 Chromium</translation>
 <translation id="8340674089072921962"><ph name="USER_EMAIL_ADDRESS" /> 之前使用的是 Chromium</translation>
 <translation id="8453117565092476964">安装程序归档损坏或无效。请重新下载 Chromium。</translation>
 <translation id="8493179195440786826">Chromium版本太旧</translation>

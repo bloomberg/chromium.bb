@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Dirección 1</translation>
 <translation id="1545749641540134597">Escanear código QR</translation>
 <translation id="1580783302095112590">Correo enviado</translation>
+<translation id="1582732959743469162">Esta acción detendrá el progreso de tu descarga actual.</translation>
 <translation id="1612730193129642006">Mostrar la cuadrícula de pestañas</translation>
 <translation id="1644574205037202324">Historial</translation>
 <translation id="1646446875146297738">Si habilitas la opción "No realizar seguimiento", se incluirá una solicitud con el tráfico de navegación. Los efectos dependerán de si algún sitio web responde a dicha solicitud y de cómo se interpreta.
@@ -284,6 +285,7 @@ Handoff también debe estar habilitado en la sección General de la configuraci�
 <translation id="633809752005859102">Se produjo un error. Trabajaremos para solucionarlo.</translation>
 <translation id="6342069812937806050">Recién</translation>
 <translation id="6344783595350022745">Borrar texto</translation>
+<translation id="6346549652287021269">¿Comenzar una descarga nueva?</translation>
 <translation id="6362362396625799311">No hay pestañas de incógnito</translation>
 <translation id="6374469231428023295">Volver a intentar</translation>
 <translation id="6380866119319257197">Si olvidas la frase de contraseña o quieres cambiar esta configuración, <ph name="BEGIN_LINK" />restablece la sincronización<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7031882061095297553">Sincronizar con</translation>
 <translation id="7053983685419859001">Bloquear</translation>
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
+<translation id="7102005569666697658">Descargando… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Ocultar</translation>
 <translation id="7133798577887235672">Nombre completo</translation>
 <translation id="7136892417564438900">La cámara no está disponible</translation>
@@ -360,6 +363,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="7769602470925380267">Aceptar y salir</translation>
 <translation id="7772032839648071052">Confirmar frase de contraseña</translation>
 <translation id="780301667611848630">No, gracias</translation>
+<translation id="7856733331829174190">No se pudo descargar</translation>
 <translation id="7859704718976024901">Historial de navegación</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Exportar contraseñas…</translation>
@@ -422,6 +426,7 @@ Tus datos se encriptaron con tu frase de contraseña para sincronización el <ph
 <translation id="9083392325882095631">1 elemento</translation>
 <translation id="9100610230175265781">Se necesita una frase de contraseña.</translation>
 <translation id="9148126808321036104">Accede nuevamente</translation>
+<translation id="915371508759614899">¿Deseas cancelar la descarga?</translation>
 <translation id="9157836665414082580">Suprimir diálogos</translation>
 <translation id="9188680907066685419">Salir de la cuenta administrada</translation>
 <translation id="9203116392574189331">Handoff</translation>

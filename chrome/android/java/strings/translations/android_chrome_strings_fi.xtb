@@ -87,6 +87,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="1709438864123551175">Data Saver</translation>
 <translation id="1718835860248848330">Viimeinen tunti</translation>
 <translation id="1729516292547892356">Jos haluat tarkastella virtuaalitodellisuussisältöä, päivitä Googlen VR-palvelut.</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – päivitettiin <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Synkronoi kirjanmerkit</translation>
 <translation id="17513872634828108">Avoimet välilehdet</translation>
 <translation id="1756600373018374892">Käytä välilehtiäsi kätevästi napauttamalla tätä painiketta.</translation>
@@ -170,7 +171,7 @@ Bluetooothin ja sijaintipalvelun on oltava päällä, jotta Fyysistä webiä voi
 <translation id="2498359688066513246">Ohjeet ja palaute</translation>
 <translation id="2501278716633472235">Takaisin</translation>
 <translation id="2503472621226270518">Laajenna navigaatiopaneeli</translation>
-<translation id="2512222046227390255">Lomakkeiden automaattinen täyttö</translation>
+<translation id="2512222046227390255">Täytä lomakkeet automaattisesti</translation>
 <translation id="2526148617758225454">Data Saver on käytössä. Hallinnoi sitä asetuksissa.</translation>
 <translation id="2532336938189706096">Verkkonäkymä</translation>
 <translation id="2536728043171574184">Näkyvissä on sivun offline-versio.</translation>
@@ -784,6 +785,7 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="8200772114523450471">Jatka</translation>
 <translation id="8209050860603202033">Avaa kuva</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> Gt ladattu</translation>
+<translation id="8249310407154411074">Siirrä ylimmäksi</translation>
 <translation id="8250920743982581267">Dokumentit</translation>
 <translation id="8260126382462817229">Yritä kirjautua uudelleen sisään.</translation>
 <translation id="8261506727792406068">Poista</translation>

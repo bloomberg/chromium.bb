@@ -3,6 +3,7 @@
 <translationbundle lang="nl">
 <translation id="104962181688258143">De app Bestanden openen</translation>
 <translation id="1126871238933253947">Schakelen tussen de eerdere toetsenbordtalen die je hebt gebruikt.</translation>
+<translation id="1134347825771908369">Volume dempen</translation>
 <translation id="1195667586424773550">Sleep de link naar de adresbalk van het tabblad</translation>
 <translation id="1204450209689312104">Een nieuw venster openen in de incognitomodus</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">Alle geopende pagina's in je huidige venster als bladwijzers opslaan in een nieuwe map</translation>
 <translation id="355103131818127604">De link openen op een nieuw tabblad op de achtergrond</translation>
 <translation id="3649256019230929621">Venster minimaliseren</translation>
+<translation id="3655154169297074232">Tabbladen en vensters</translation>
 <translation id="3668361878347172356">De laatste actie opnieuw uitvoeren</translation>
 <translation id="3720939646656082033">De link openen op een nieuw tabblad en naar het nieuwe tabblad schakelen</translation>
 <translation id="3725795051337497754">Het huidige tabblad sluiten</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">De link opslaan als bladwijzer</translation>
 <translation id="4141203561740478845">De rij met de adresbalk markeren</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> of <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Overzichtsmodus</translation>
+<translation id="4472417192667361414">Systeem- en weergave-instellingen</translation>
 <translation id="4556221320735744018">Help voor sneltoetsen openen</translation>
 <translation id="4628718545549558538">Het statusgedeelte openen (waar je accountafbeelding wordt weergegeven)</translation>
 <translation id="4642092649622328492">Gedeeltelijk screenshot maken</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">Naar het begin van het document gaan</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> of <ph name="E" /></translation>
 <translation id="8234414138295101081">Scherm 90 graden draaien</translation>
+<translation id="826184564253127735">Sneltoetsenviewer</translation>
 <translation id="836869401750819675">De pagina Downloads openen</translation>
 <translation id="8388247778047144397">Sleep de link naar een blanco gedeelte van de tabbladstrook</translation>
 <translation id="8389638407792712197">Nieuw venster openen</translation>
@@ -152,6 +157,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 tot en met 8</translation>
 <translation id="9041599225465145264">Content vanaf het klembord plakken</translation>
 <translation id="9052808072970550123">Overschakelen naar de volgende gebruiker</translation>
+<translation id="9106898733795143799">Pagina- en webbrowser</translation>
 <translation id="9179672198516322668">Populaire sneltoetsen</translation>
 <translation id="93603345341560814">Druk op <ph name="SHIFT" /> en klik op een link</translation>
 <translation id="945383118875625837">Link slepen naar bladwijzerbalk</translation>

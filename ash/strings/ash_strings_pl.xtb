@@ -23,6 +23,7 @@
 <translation id="1484102317210609525"><ph name="DEVICE_NAME" /> (HDMI/DP)</translation>
 <translation id="1510238584712386396">Program uruchamiający</translation>
 <translation id="1525508553941733066">ZAMKNIJ</translation>
+<translation id="1537254971476575106">Lupa pełnego ekranu</translation>
 <translation id="15373452373711364">Duży kursor myszy</translation>
 <translation id="1550523713251050646">Kliknij, by wyświetlić więcej opcji</translation>
 <translation id="1567387640189251553">Do urządzenia jest podłączona inna klawiatura niż przy ostatnim wpisywaniu hasła. Może ona próbować przechwycić naciskane klawisze.</translation>
@@ -51,8 +52,10 @@
 <translation id="2049639323467105390">To urządzenie jest zarządzane przez: <ph name="DOMAIN" />.</translation>
 <translation id="2050339315714019657">Pionowo</translation>
 <translation id="2067602449040652523">Jasność klawiatury</translation>
+<translation id="2081529251031312395">$1 może się wciąż zalogować później.</translation>
 <translation id="2122028596993374965">Zakończ przesyłanie karty <ph name="TAB_NAME" /> do: <ph name="RECEIVER_NAME" /></translation>
 <translation id="2127372758936585790">Ładowarka o małej mocy</translation>
+<translation id="2135456203358955318">Lupa zadokowana</translation>
 <translation id="2144487987174258011">Uruchom ponownie, by zaktualizować Adobe Flash Playera</translation>
 <translation id="2208323208084708176">Tryb ujednoliconego pulpitu</translation>
 <translation id="2220572644011485463">Kod PIN lub hasło</translation>

@@ -87,6 +87,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="1709438864123551175">Oszczędzanie danych</translation>
 <translation id="1718835860248848330">Ostatnia godzina</translation>
 <translation id="1729516292547892356">Aby oglądać treści rzeczywistości wirtualnej, zaktualizuj Usługi Google VR</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – zaktualizowano <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Synchronizuj swoje zakładki</translation>
 <translation id="17513872634828108">Otwarte karty</translation>
 <translation id="1756600373018374892">Kliknij ten przycisk, by uzyskać szybki dostęp do swoich kart.</translation>
@@ -170,7 +171,7 @@ Aby korzystać z internetu rzeczy, musisz włączyć Bluetooth i Lokalizację.</
 <translation id="2498359688066513246">Pomoc i opinie</translation>
 <translation id="2501278716633472235">Wróć</translation>
 <translation id="2503472621226270518">Rozwija panel użytkownika</translation>
-<translation id="2512222046227390255">Autouzupełnianie formularzy</translation>
+<translation id="2512222046227390255">Autouzupełniaj formularze</translation>
 <translation id="2526148617758225454">Oszczędzanie danych jest włączone. Możesz nim zarządzać w ustawieniach.</translation>
 <translation id="2532336938189706096">Widok sieci</translation>
 <translation id="2536728043171574184">Oglądasz kopię offline tej strony</translation>
@@ -784,6 +785,7 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="8200772114523450471">Wznów</translation>
 <translation id="8209050860603202033">Otwórz grafikę</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB pobranych plików</translation>
+<translation id="8249310407154411074">Przenieś na początek</translation>
 <translation id="8250920743982581267">Dokumenty</translation>
 <translation id="8260126382462817229">Spróbuj zalogować się jeszcze raz</translation>
 <translation id="8261506727792406068">Usuń</translation>

@@ -3,6 +3,7 @@
 <translationbundle lang="da">
 <translation id="104962181688258143">Åbn appen Filer</translation>
 <translation id="1126871238933253947">Skift til det forrige tastatursprog, du har brugt.</translation>
+<translation id="1134347825771908369">Slå lyden fra</translation>
 <translation id="1195667586424773550">Træk linket til adresselinjen på fanen</translation>
 <translation id="1204450209689312104">Åbn et nyt vindue i inkognitotilstand</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -27,6 +28,7 @@
 <translation id="2181097965834437145">Vis eller skjul bogmærkelinjen</translation>
 <translation id="2185166372312820725">Gå til forrige fane</translation>
 <translation id="2194790690264064655">Tryk på <ph name="CTRL" />, og klik på et link</translation>
+<translation id="2382644247745281995">Understøttes ikke med det nuværende tastaturlayout</translation>
 <translation id="2424073332829844142">Slå Caps Lock til og fra</translation>
 <translation id="2441202986792279177">Skift hurtigt mellem vinduer</translation>
 <translation id="2478303094958140141">Slå ChromeVox (oplæsning) til eller fra</translation>
@@ -55,6 +57,7 @@
 <translation id="353037708190149633">Gem alle åbne sider i dit nuværende vindue som bogmærker i en ny mappe</translation>
 <translation id="355103131818127604">Åbn linket på en ny fane i baggrunden</translation>
 <translation id="3649256019230929621">Minimer vinduet</translation>
+<translation id="3655154169297074232">Faner og vinduer</translation>
 <translation id="3668361878347172356">Gentag den sidste handling</translation>
 <translation id="3720939646656082033">Åbn linket i en ny fane, og skift til den nye fane</translation>
 <translation id="3725795051337497754">Luk den aktuelle fane</translation>
@@ -70,6 +73,8 @@
 <translation id="4123108089450197101">Gem linket som et bogmærke</translation>
 <translation id="4141203561740478845">Fremhæv rækken med adresselinjen</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> eller <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">Oversigt</translation>
+<translation id="4472417192667361414">System- og visningsindstillinger</translation>
 <translation id="4556221320735744018">Se Hjælp til tastaturgenveje</translation>
 <translation id="4628718545549558538">Åbn statusområdet (hvor dit kontobillede vises)</translation>
 <translation id="4642092649622328492">Tag et delvist screenshot</translation>
@@ -134,6 +139,7 @@
 <translation id="8130528849632411619">Gå til begyndelsen af dokumentet</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> eller <ph name="E" /></translation>
 <translation id="8234414138295101081">Roter skærmen 90 grader</translation>
+<translation id="826184564253127735">Visning af tastaturgenveje</translation>
 <translation id="836869401750819675">Åbn siden Downloads</translation>
 <translation id="8388247778047144397">Træk linket til et tomt område på fanelinjen</translation>
 <translation id="8389638407792712197">Åbn et nyt vindue</translation>
@@ -152,6 +158,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 til 8</translation>
 <translation id="9041599225465145264">Indsæt indholdet fra udklipsholderen</translation>
 <translation id="9052808072970550123">Skift til næste bruger</translation>
+<translation id="9106898733795143799">Side- og webbrowser</translation>
 <translation id="9179672198516322668">Populære genveje</translation>
 <translation id="93603345341560814">Tryk på <ph name="SHIFT" />, og klik på et link</translation>
 <translation id="945383118875625837">Træk linket til bogmærkelinjen</translation>

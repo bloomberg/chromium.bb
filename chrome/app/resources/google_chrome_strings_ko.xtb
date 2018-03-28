@@ -42,10 +42,12 @@
 <translation id="1873233029667955273">Chrome이 기본 브라우저로 설정되어 있지 않습니다</translation>
 <translation id="1874309113135274312">Chrome 베타(mDNS-In)</translation>
 <translation id="1877026089748256423">Chrome이 이전 버전임</translation>
+<translation id="2007150628464581396">{0,plural, =1{1분 후에 Chrome 다시 시작}other{#분 후에 Chrome 다시 시작}}</translation>
 <translation id="2063848847527508675">업데이트를 적용하려면 Chrome OS를 다시 시작해야 합니다.</translation>
 <translation id="2077129598763517140">가능한 경우 하드웨어 가속 사용</translation>
 <translation id="2084710999043359739">Chrome에 추가</translation>
 <translation id="2094919256425865063">Chrome을 종료하시겠습니까?</translation>
+<translation id="210890598424854131">{0,plural, =0{곧 Chrome 다시 시작}=1{1초 후에 Chrome 다시 시작}other{#초 후에 Chrome 다시 시작}}</translation>
 <translation id="2120620239521071941">항목 <ph name="ITEMS_COUNT" />개가 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2123055963409958220"><ph name="BEGIN_LINK" />현재 설정<ph name="END_LINK" />을 보고하여 Chrome 개선에 참여</translation>
 <translation id="216054706567564023">휴대전화에 Chrome을 설치하세요. 계정 복구 전화번호로 SMS를 보내 드리겠습니다.</translation>
@@ -66,6 +68,7 @@
 <translation id="2467438592969358367">Chrome에서 비밀번호를 내보내려고 합니다. 허용하려면 Windows 비밀번호를 입력하세요.</translation>
 <translation id="2485422356828889247">제거</translation>
 <translation id="2534507159460261402">Google Pay(Chrome에 복사됨)</translation>
+<translation id="2535429035253759792">관리자가 이 업데이트를 적용하려면 사용자가 Chrome을 다시 시작해야 하도록 설정했습니다.</translation>
 <translation id="2580411288591421699">현재 실행 중인 Chrome과 동일한 버전은 설치할 수 없습니다. Chrome을 닫고 다시 시도하세요.</translation>
 <translation id="2586406160782125153">인터넷 사용 기록이 기기에서 삭제됩니다. 나중에 데이터를 가져오려면 Chrome에 <ph name="USER_EMAIL" />(으)로 로그인하세요.</translation>
 <translation id="2588322182880276190">Chrome 로고</translation>
@@ -102,6 +105,7 @@
 <translation id="345171907106878721">Chrome에 본인 추가</translation>
 <translation id="3479552764303398839">나중에</translation>
 <translation id="3503306920980160878">이 사이트와 위치를 공유하려면 Chrome에 내 위치 액세스 권한이 있어야 합니다</translation>
+<translation id="3582972582564653026">모든 기기에서 Chrome을 동기화하고 맞춤설정을 이용하세요.</translation>
 <translation id="3612333635265770873">같은 이름의 모듈이 Chrome과 충돌하는 것으로 알려져 있습니다.</translation>
 <translation id="3622797965165704966">이제 Google 계정으로 공유 컴퓨터에서 Chrome을 손쉽게 사용할 수 있습니다.</translation>
 <translation id="3637702109597584617">Chrome OS <ph name="TERMS_OF_SERVICE_LINK" />서비스 약관<ph name="END_TERMS_OF_SERVICE_LINK" /></translation>
@@ -124,6 +128,7 @@
 <translation id="4149882025268051530">설치 프로그램이 보관 파일 압축 풀기에 실패했습니다. Chrome을 다시 다운로드하세요.</translation>
 <translation id="4251615635259297716">Chrome 데이터를 이 계정에 연결하시겠습니까?</translation>
 <translation id="4251625577313994583">iPhone에 Chrome 다운로드하기</translation>
+<translation id="4293420128516039005">Chrome에 로그인하여 모든 기기에서 동기화하고 맞춤설정을 이용하세요.</translation>
 <translation id="4309555186815777032">(Chrome을 <ph name="BEGIN_BUTTON" />다시 시작<ph name="END_BUTTON" />해야 함)</translation>
 <translation id="4328355335528187361">Chrome 개발자(mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS</translation>
@@ -267,6 +272,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8547799825197623713">Chrome 앱 런처 카나리아</translation>
 <translation id="8556340503434111824">이전보다 더 빨라진 Chrome 새 버전을 사용할 수 있습니다.</translation>
 <translation id="8568392309447938879">앱을 사용하려면 Chrome에 로그인해야 합니다. 로그인하면 Chrome이 기기 간에 앱, 북마크, 방문 기록, 비밀번호 및 기타 설정을 동기화할 수 있습니다.</translation>
+<translation id="859960207076826247">{0,plural, =0{Chrome 업데이트 출시}=1{Chrome 업데이트 출시}other{#일 이상 Chrome 업데이트가 이루어지지 않았음}}</translation>
 <translation id="8606668294522778825">Chrome에서 사용자에게 더 나은 인터넷 사용 환경을 제공하기 위해 웹 서비스를 사용할 수 있습니다. 원하는 경우 서비스를 사용 중지하실 수 있습니다. <ph name="BEGIN_LINK" />자세히 알아보기<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Chrome이 응답하지 않습니다. 다시 시작하시겠습니까?</translation>
 <translation id="8667808506758191620"><ph name="DEVICE_TYPE" />이(가) 최신 버전입니다.</translation>
@@ -274,6 +280,7 @@ Chrome에서 설정을 복구할 수 없습니다.</translation>
 <translation id="8679801911857917785">또한 Chrome을 시작할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="870251953148363156">Chrome 업데이트(&amp;G)</translation>
 <translation id="873133009373065397">Chrome에서 기본 브라우저를 확인하거나 설정할 수 없습니다.</translation>
+<translation id="8736674169840206667">관리자가 업데이트를 적용하려면 사용자가 Chrome을 다시 시작해야 하도록 설정했습니다.</translation>
 <translation id="8796108026289707191">지금 Chrome을 다시 시작해야 합니다.</translation>
 <translation id="8823341990149967727">Chrome이 이전 버전임</translation>
 <translation id="884296878221830158">또한 Chrome을 시작하거나 홈 버튼을 클릭할 때 표시되는 페이지를 설정합니다.</translation>

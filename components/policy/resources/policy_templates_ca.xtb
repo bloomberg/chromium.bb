@@ -58,6 +58,13 @@
 
       Si s'utilitza, l'usuari té accés a totes les impressores tret de les identificades en aquesta política.
       </translation>
+<translation id="1181881366217399113">
+      NOTA: aquesta política és experimental i pot tenir problemes de funcionalitat.
+      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, també s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/).
+      Si la política es desactiva, s'aplicarà la lògica de gestió de processos prèvia a la política d'aïllament de llocs web.
+      Si la política no es configura, l'usuari podrà canviar aquesta opció de configuració.
+      A <ph name="PRODUCT_OS_NAME" />, es recomana establir també el mateix valor a la política de dispositius <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari, mentre s'aplica el valor especificat per la política d'usuari.
+      </translation>
 <translation id="1198465924256827162">La freqüència, en mil·lisegons, amb què s'envien càrregues per informar sobre l'estat del dispositiu.
 
       Si aquesta política no s'estableix, s'envien cada 3 hores de manera
@@ -244,7 +251,15 @@
       El format del valor es regeix pels noms de les zones horàries que s'indiquen a la base de dades de zones horàries IANA (consulteu https://ca.wikipedia.org/wiki/Tz_database). En concret, la majoria de noms segueixen el format "continent/ciutat_gran" o "oceà/ciutat_gran".
 
       Si s'estableix aquesta política, es desactiva totalment l'opció de determinar la zona horària de manera automàtica segons la ubicació del dispositiu. També substitueix la política SystemTimezoneAutomaticDetection.</translation>
+<translation id="1888871729456797026">El testimoni d'inscripció de la política per al núvol en ordinadors</translation>
 <translation id="1897365952389968758">Permet que tots els llocs web executin JavaScript</translation>
+<translation id="1906888171268104594">Controla si es notifiquen a Google les mètriques d'ús i les dades de diagnòstic, inclosos els informes d'error.
+
+      Si s'estableix en "true", <ph name="PRODUCT_OS_NAME" /> informarà de les mètriques d'ús i de les dades de diagnòstic.
+
+      Si s'estableix en "false", es desactivaran els informes de mètriques i de dades de diagnòstic.
+
+      Si no es configura, els informes de mètriques i de dades de diagnòstic es desactivaran als dispositius no gestionats i s'activaran als dispositius gestionats.</translation>
 <translation id="193259052151668190">Llista blanca de dispositius USB que es poden separar</translation>
 <translation id="1933378685401357864">Imatge de fons de pantalla</translation>
 <translation id="1956493342242507974">Configuració de la gestió d'energia a la pantalla d'inici de <ph name="PRODUCT_OS_NAME" />
@@ -400,6 +415,12 @@
 <translation id="2386362615870139244">Permet els bloquejos d'activació de la pantalla</translation>
 <translation id="2411817661175306360">L'advertiment sobre la protecció de contrasenyes està desactivat</translation>
 <translation id="2411919772666155530">Bloqueja les notificacions d'aquests llocs</translation>
+<translation id="2415979855753196119">Permet controlar si s'activa el marcatge de la protecció de contrasenyes als comptes en perill, és a dir, si s'informa Google que el compte corre el risc que el pirategin.
+
+      Si aquesta política s'estableix en "PasswordProtectionRiskOff", no s'activarà el marcatge de la protecció de contrasenyes als comptes en perill.
+      Si aquesta política s'estableix en "PasswordProtectionRiskOnPasswordReuse", el marcatge de la protecció de contrasenyes als comptes en perill s'activarà quan l'usuari utilitzi la contrasenya de Google en un lloc web que no estigui inclòs a la llista blanca.
+      Si aquesta política s'estableix en "PasswordProtectionRiskOnPhishingReuse", el marcatge de la protecció de contrasenyes als comptes en perill s'activarà quan l'usuari utilitzi la contrasenya de Google en un lloc web de pesca.
+      Si aquesta política es deixa sense establir, el marcatge de la protecció de contrasenyes als comptes en perill s'activarà quan l'usuari utilitzi la contrasenya de Google en un lloc web de pesca, però l'usuari podrà canviar-ho.</translation>
 <translation id="2418507228189425036">Desactiva l'emmagatzematge de l'historial del navegador a <ph name="PRODUCT_NAME" /> i impedeix que els usuaris canviïn aquesta opció.
 
       Si aquesta opció s'activa, l'historial de navegació no es desa (i també es desactiva la sincronització de pestanyes).
@@ -585,6 +606,12 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
 
       Si actives aquesta opció de configuració, a Previsualització de la impressió s'utilitzarà la impressora predeterminada del sistema operatiu com a opció de destinació predeterminada.</translation>
 <translation id="2867699958489427143">Torna a la versió de destinació si la versió del sistema operatiu és més recent que la de destinació. Executa la funció Powerwash durant el procés.</translation>
+<translation id="286802604195763750">Et permet controlar l'activació d'un advertiment sobre la protecció de contrasenyes, que avisa els usuaris quan reutilitzen una contrasenya protegida en llocs web potencialment sospitosos.
+
+      Si aquesta política s'estableix en "PasswordProtectionWarningOff", no es mostrarà cap advertiment sobre la protecció de contrasenyes.
+      Si aquesta política s'estableix en "PasswordProtectionWarningOnPasswordReuse", l'advertiment sobre la protecció de contrasenyes es mostrarà quan l'usuari reutilitzi la contrasenya de Google en un lloc web que no es trobi a la llista blanca.
+      Si aquesta política s'estableix en "PasswordProtectionWarningOnPhishingReuse", l'advertiment sobre la protecció de contrasenyes es mostrarà quan l'usuari reutilitzi la contrasenya de Google en un lloc web de pesca.
+      Si aquesta política es deixa sense establir, l'advertiment sobre la protecció de contrasenyes s'activarà quan l'usuari reutilitzi la contrasenya de Google en un lloc web de pesca, però l'usuari podrà canviar-ho.</translation>
 <translation id="2872961005593481000">Apaga</translation>
 <translation id="2874209944580848064">Nota per als dispositius <ph name="PRODUCT_OS_NAME" /> que admeten aplicacions per a Android:</translation>
 <translation id="2877225735001246144">Desactiva la cerca de CNAME en negociar l'autenticació de Kerberos</translation>
@@ -619,6 +646,13 @@ Cada entrada de la llista especifica un identificador, que s'utilitza internamen
           El valor de la política s'ha d'indicar en mil·lisegons i es limita perquè sigui inferior o igual al retard de desactivació (si s'ha definit) i al retard d'inactivitat.</translation>
 <translation id="2987155890997901449">Activa ARC</translation>
 <translation id="2987227569419001736">Controla l'ús de l'API Web Bluetooth</translation>
+<translation id="2998886474614739865">
+      NOTA: aquesta política és experimental i pot tenir problemes de funcionalitat.
+      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> que s'aplica a la sessió d'usuari. Es recomana definir el mateix valor en totes dues polítiques. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari, mentre s'aplica el valor especificat per la política d'usuari.
+      Si la política s'activa, cadascun dels orígens indicats en una llista separada per comes s'executarà amb el seu propi procés. Així mateix, també s'aïllaran els orígens indicats per subdominis (per exemple, en especificar https://example.com/, l'adreça https://foo.example.com/ també s'aïllarà com a part del lloc web https://example.com/.
+      Si la política es desactiva, s'aplicarà la lògica de gestió de processos prèvia a la política d'aïllament de llocs web.
+      Si la política no es configura, a la pantalla d'inici de sessió s'utilitzarà la configuració d'aïllament del lloc web predeterminat a la plataforma.
+      </translation>
 <translation id="3016255526521614822">Afegeix a la llista blanca les aplicacions per prendre notes que es permeten a la pantalla de bloqueig de <ph name="PRODUCT_OS_NAME" /></translation>
 <translation id="3021562480854470924">Nombre de fites que es permeten a la reversió</translation>
 <translation id="3030000825273123558">Activa la creació d'informes de mètriques</translation>
@@ -723,6 +757,14 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
           Si aquesta política es defineix en una cadena que no sigui buida, aquesta cadena s'utilitzarà com a nom de la destinació de <ph name="PRODUCT_NAME" />. En cas contrari, el nom de la destinació serà el nom del dispositiu. Si aquesta política no es defineix, el nom de la destinació serà el nom del dispositiu i el propietari del dispositiu (o un usuari del domini que gestioni el dispositiu) podrà canviar-lo. El nom pot tenir 24 caràcters com a màxim.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
+<translation id="3386001018488754001">
+      NOTA: aquesta política és experimental i pot tenir problemes de funcionalitat.
+      Aquesta política s'aplica a la pantalla d'inici de sessió. Consulta també la política <ph name="SITE_PER_PROCESS_POLICY_NAME" /> que s'aplica a la sessió d'usuari. Es recomana definir el mateix valor en totes dues polítiques. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari, mentre s'aplica el valor especificat per la política d'usuari.
+      Pots utilitzar la política IsolateOrigins amb una llista dels llocs web que vols aïllar per treure el màxim partit de les dues opcions: aïllar llocs web i fer-ho amb el mínim impacte possible per als usuaris. L'opció SitePerProcess aïlla tots els llocs web.
+      Si la política s'activa, cada lloc web s'executarà amb el seu propi procés.
+      Si la política es desactiva, s'aplicarà la lògica de gestió de processos prèvia a la política d'aïllament de llocs web.
+      Si la política no es configura, l'usuari podrà canviar aquesta opció de configuració.
+      </translation>
 <translation id="3395348522300156660">Especifica les impressores que un usuari pot fer servir.
 
       Aquesta política només s'utilitza si se selecciona <ph name="PRINTERS_WHITELIST" /> per a <ph name="DEVICE_PRINTERS_ACCESS_MODE" />.
@@ -759,6 +801,10 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
           Si la política s'estableix com a False o no s'estableix, els retards de la gestió de l'energia i el límit de la durada de la sessió s'executen tan bon punt s'inicia la sessió.</translation>
 <translation id="3478024346823118645">Esborra les dades de l'usuari en tancar la sessió</translation>
 <translation id="348495353354674884">Activa el teclat virtual</translation>
+<translation id="3487623755010328395">
+        Si s'estableix aquesta política, <ph name="PRODUCT_NAME" /> provarà de registrar-se sense ajuda i d'aplicar en tots els perfils la política per al núvol associada.
+
+        El valor d'aquesta política és un testimoni d'inscripció que es pot recuperar de la Consola d'administració de Google.</translation>
 <translation id="3496296378755072552">Gestor de contrasenyes</translation>
 <translation id="350443680860256679">Configura ARC</translation>
 <translation id="3504791027627803580">Especifica l'URL del motor de cerca utilitzat per proporcionar la cerca d'imatges. Les sol·licituds de cerca s'enviaran mitjançant el mètode GET. Si la política DefaultSearchProviderImageURLPostParams està definida, les sol·licituds de cerca d'imatges utilitzaran el mètode POST.
@@ -1305,6 +1351,14 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
       Si la política no es defineix o es defineix a la cadena buida o en un interval de ports no vàlid, WebRTC pot fer servir qualsevol port UDP local disponible.</translation>
 <translation id="5290940294294002042">Especifica una llista dels connectors que l'usuari pot activar o desactivar</translation>
+<translation id="5301787427319106606">
+      NOTA: aquesta política és experimental i pot tenir problemes de funcionalitat.
+      Pots utilitzar la política IsolateOrigins amb una llista dels llocs web que vols aïllar per treure el màxim partit de les dues opcions: aïllar llocs web i fer-ho amb el mínim impacte possible per als usuaris. L'opció SitePerProcess aïlla tots els llocs web.
+      Si la política s'activa, cada lloc web s'executarà amb el seu propi procés.
+      Si la política es desactiva, s'aplicarà la lògica de gestió de processos prèvia a la política d'aïllament de llocs web.
+      Si la política no es configura, l'usuari podrà canviar aquesta opció de configuració.
+      A <ph name="PRODUCT_OS_NAME" />, es recomana establir també el mateix valor a la política de dispositius <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />. En cas contrari, pot haver-hi un retard en iniciar una sessió d'usuari, mentre s'aplica el valor especificat per la política d'usuari.
+      </translation>
 <translation id="5302612588919538756">Aquesta política està obsoleta; substituïu-la per SyncDisabled.
 
       Permet a l'usuari iniciar la sessió a <ph name="PRODUCT_NAME" />.
@@ -1852,6 +1906,14 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="706669471845501145">Permet que els llocs mostrin les notificacions d'escriptori</translation>
 <translation id="7072208053150563108">Freqüència de canvi de la contrasenya de l'ordinador</translation>
 <translation id="7072406291414141328">Activa l'acceleració de l'amplada de banda de la xarxa</translation>
+<translation id="7074513465313721551">Configura la llista de dominis en què Navegació segura confiarà. És a dir:
+      Navegació segura no cercarà recursos perillosos (per exemple, programari de pesca, maliciós o no desitjat) si els URL coincideixen amb aquests dominis.
+      El servei de protecció a l'hora de baixar contingut de Navegació segura no revisarà les baixades allotjades en aquests dominis.
+      El servei de protecció de contrasenyes de Navegació segura no cercarà la reutilització de contrasenyes si l'URL de la pàgina coincideix amb aquests dominis.
+
+      Si aquesta opció de configuració està activada, Navegació segura confiarà en aquests dominis.
+      Si aquesta opció de configuració està desactivada o no s'estableix, s'aplicarà la protecció predeterminada de Navegació segura a tots els recursos.
+      Aquesta política no està disponible en instàncies de Windows que no formin part d'un domini que pertanyi a <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Bloqueja les finestres emergents en aquests llocs</translation>
 <translation id="7106631983877564505">Permet activar el bloqueig quan els dispositius de <ph name="PRODUCT_OS_NAME" /> estiguin inactius o suspesos.
 

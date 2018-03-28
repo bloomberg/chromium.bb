@@ -87,6 +87,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="1709438864123551175">Économiseur de données</translation>
 <translation id="1718835860248848330">Dernière heure</translation>
 <translation id="1729516292547892356">Pour afficher des contenus de réalité virtuelle, mettez à jour les services Google VR</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – Dernière mise à jour : <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Synchroniser vos favoris</translation>
 <translation id="17513872634828108">Onglets ouverts</translation>
 <translation id="1756600373018374892">Appuyez sur ce bouton pour accéder rapidement à vos onglets.</translation>
@@ -170,7 +171,7 @@ Vous devez activer le Bluetooth et les services de localisation pour utiliser le
 <translation id="2498359688066513246">Aide et commentaires</translation>
 <translation id="2501278716633472235">Retour</translation>
 <translation id="2503472621226270518">Développer le panneau de navigation</translation>
-<translation id="2512222046227390255">Saisie auto des formulaires</translation>
+<translation id="2512222046227390255">Remplir form. automatiquement</translation>
 <translation id="2526148617758225454">L'Économiseur de données est activé. Vous pouvez le régler dans les paramètres.</translation>
 <translation id="2532336938189706096">Vue Web</translation>
 <translation id="2536728043171574184">Affichage d'une copie hors connexion de la page</translation>
@@ -784,6 +785,7 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="8200772114523450471">Reprendre</translation>
 <translation id="8209050860603202033">Ouvrir l'image</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> Go téléchargé(s)</translation>
+<translation id="8249310407154411074">Déplacer vers le haut</translation>
 <translation id="8250920743982581267">Documents</translation>
 <translation id="8260126382462817229">Essayez de vous connecter de nouveau à votre compte.</translation>
 <translation id="8261506727792406068">Supprimer</translation>

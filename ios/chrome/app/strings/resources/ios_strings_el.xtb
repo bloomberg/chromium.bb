@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">Διεύθυνση 1</translation>
 <translation id="1545749641540134597">Σάρωση κωδικού QR</translation>
 <translation id="1580783302095112590">Το μήνυμα εστάλη.</translation>
+<translation id="1582732959743469162">Αυτό θα σταματήσει όλη την πρόοδο για την τρέχουσα λήψη.</translation>
 <translation id="1612730193129642006">Εμφάνιση πλέγματος καρτελών</translation>
 <translation id="1644574205037202324">Ιστορικό</translation>
 <translation id="1646446875146297738">Η ενεργοποίηση της επιλογής "Χωρίς εντοπισμό" συνεπάγεται ότι θα περιλαμβάνεται ένα αίτημα με την επισκεψιμότητα περιηγήσής σας. Τυχόν αποτελέσματα σχετίζονται με το εάν ένας ιστότοπος ανταποκρίνεται στο αίτημα και με τον τόπο ερμηνείας του αιτήματος.
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">Κάτι δεν πήγε καλά. Θα προσπαθήσουμε να το επιδιορθώσουμε.</translation>
 <translation id="6342069812937806050">Πριν λίγο</translation>
 <translation id="6344783595350022745">Διαγραφή κειμένου</translation>
+<translation id="6346549652287021269">Να ξεκινήσει νέα λήψη;</translation>
 <translation id="6362362396625799311">Δεν υπάρχουν καρτέλες ανώνυμης περιήγησης</translation>
 <translation id="6374469231428023295">Δοκιμάστε ξανά</translation>
 <translation id="6380866119319257197">Εάν ξεχάσετε τη φράση πρόσβασής σας ή θέλετε να αλλάξετε αυτήν τη ρύθμιση, <ph name="BEGIN_LINK" />επαναφέρετε το συγχρονισμό<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">Συγχρονισμός με</translation>
 <translation id="7053983685419859001">Αποκλεισμός</translation>
 <translation id="7062545763355031412">Αποδοχή και εναλλαγή λογαριασμών</translation>
+<translation id="7102005569666697658">Λήψη… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">Απόκρυψη</translation>
 <translation id="7133798577887235672">Ονοματεπώνυμο</translation>
 <translation id="7136892417564438900">Η κάμερα δεν είναι διαθέσιμη</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">Αποδοχή και αποσύνδεση</translation>
 <translation id="7772032839648071052">Επιβεβαίωση φράσης πρόσβασης</translation>
 <translation id="780301667611848630">Όχι, ευχαριστώ</translation>
+<translation id="7856733331829174190">Δεν ήταν δυνατή η λήψη</translation>
 <translation id="7859704718976024901">Ιστορικό περιήγησης</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">Εξαγωγή κωδικών πρόσβασης…</translation>
@@ -422,6 +426,7 @@
 <translation id="9083392325882095631">1 στοιχείο</translation>
 <translation id="9100610230175265781">Απαιτείται φράση πρόσβασης</translation>
 <translation id="9148126808321036104">Συνδεθείτε ξανά</translation>
+<translation id="915371508759614899">Να ακυρωθεί η λήψη;</translation>
 <translation id="9157836665414082580">Απόκρυψη παραθύρων διαλόγου</translation>
 <translation id="9188680907066685419">Αποσύνδεση από διαχειριζόμενο λογαριασμό</translation>
 <translation id="9203116392574189331">Handoff</translation>

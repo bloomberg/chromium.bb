@@ -58,6 +58,13 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 
       Wenn diese Richtlinie verwendet wird, stehen dem Nutzer alle Drucker mit Ausnahme der Geräte zur Verfügung, deren IDs in dieser Richtlinie angegeben sind.
       </translation>
+<translation id="1181881366217399113">
+      HINWEIS: Diese Richtlinie ist experimentell und kann die Funktionalität beeinträchtigen.
+      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dadurch werden auch durch Subdomains benannte Ursprünge isoliert, z. B. wenn Sie https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
+      Wenn die Richtlinie deaktiviert ist, wird die Verwaltungslogik des Prozesses zur Isolierung einzelner Websites wirksam.
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
+      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> auch die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />" auf denselben Wert festzulegen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      </translation>
 <translation id="1198465924256827162">Mithilfe dieser Richtlinie wird in Millisekunden angegeben, wie oft Uploads mit dem Gerätestatus vorgenommen werden.
 
       Wenn die Richtlinie nicht konfiguriert ist, beträgt der Standardwert 3 Stunden.
@@ -242,7 +249,15 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
       Das Format des Werts richtet sich nach den Namen der Zeitzonen in der IANA-Zeitzonen-Datenbank (siehe "https://de.wikipedia.org/wiki/Zeitzonen-Datenbank"). Auf die meisten Zeitzonen kann über "Kontinent/Stadt" oder "Ozean/Stadt" verwiesen werden.
 
       Durch das Festlegen dieser Richtlinie wird die automatische Auflösung der Zeitzone nach Gerätestandort komplett deaktiviert und die Richtlinie "SystemTimezoneAutomaticDetection" überschrieben.</translation>
+<translation id="1888871729456797026">Das Registrierungstoken der Cloud-Richtlinie auf dem Desktop</translation>
 <translation id="1897365952389968758">Ausführung von JavaScript für alle Websites zulassen</translation>
+<translation id="1906888171268104594">Legt fest, ob Nutzungs- und Diagnosedaten, einschließlich Absturzberichten, an Google gesendet werden.
+
+      Im Falle von "true" werden Berichte mit Nutzungs- und Diagnosedaten von <ph name="PRODUCT_OS_NAME" /> gesendet.
+
+      Ist die Richtlinie auf "false" festgelegt, ist das Senden solcher Berichte deaktiviert.
+
+      Ist die Richtlinie nicht konfiguriert, ist das Senden solcher Berichte auf nicht verwalteten Geräten deaktiviert und auf verwalteten Geräten aktiviert.</translation>
 <translation id="193259052151668190">Whitelist mit trennbaren USB-Geräten</translation>
 <translation id="1933378685401357864">Hintergrundbild</translation>
 <translation id="1956493342242507974">Konfiguriert die Energieverwaltung auf dem Anmeldebildschirm in <ph name="PRODUCT_OS_NAME" />.
@@ -398,6 +413,12 @@ Wenn diese Richtlinie nicht konfiguriert wird, so wird das standardmäßige Cach
 <translation id="2386362615870139244">Bildschirm-Wakelocks zulassen</translation>
 <translation id="2411817661175306360">Passwortschutzwarnung ist ausgeschaltet</translation>
 <translation id="2411919772666155530">Benachrichtigungen auf diesen Websites blockieren</translation>
+<translation id="2415979855753196119">Mit dieser Richtlinie können Sie die Auslösung der Kontomeldung "Passwortschutz gefährdet" steuern. Durch diese Kontomeldung wird Google über das Risiko informiert, dass dieses Konto gehackt wird.
+
+      Wenn diese Richtlinie auf "PasswordProtectionRiskOff" festgelegt ist, wird die Kontomeldung "Passwortschutz gefährdet" nicht ausgelöst.
+      Wenn diese Richtlinie auf "PasswordProtectionRiskOnPasswordReuse" festgelegt ist, wird die Kontomeldung "Passwortschutz gefährdet" ausgelöst, wenn der Nutzer sein Google-Passwort auf einer Website wiederverwendet, die nicht auf der weißen Liste steht.
+      Wenn diese Richtlinie auf "PasswordProtectionRiskOnPhishingReuse" festgelegt ist, wird die Kontomeldung "Passwortschutz gefährdet" ausgelöst, wenn der Nutzer sein Google-Passwort auf einer Phishingwebsite wiederverwendet.
+      Wenn diese Richtlinie nicht konfiguriert ist, wird die Kontomeldung "Passwortschutz gefährdet" ausgelöst, wenn der Nutzer sein Google-Passwort auf einer Phishingwebsite wiederverwendet. Der Nutzer kann diese Einstellung jedoch ändern.</translation>
 <translation id="2418507228189425036">Deaktiviert das Speichern des Browserverlaufs in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern. 
 
       Wenn diese Einstellung aktiviert ist, wird der Browserverlauf nicht gespeichert. Mit dieser Einstellung wird auch die Tab-Synchronisierung deaktiviert.
@@ -583,6 +604,12 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 
       Ist diese Einstellung aktiviert, wird für die Druckvorschau der Standarddrucker des Betriebssystems als Standarddrucker ausgewählt.</translation>
 <translation id="2867699958489427143">Führen Sie ein Rollback durch und bleiben Sie bei der Zielversion, falls die Version des Betriebssystems neuer ist als die der Zielversion. Außerdem sollten Sie während des Vorgangs einen vollständigen Powerwash durchführen.</translation>
+<translation id="286802604195763750">Mit dieser Richtlinie können Sie die Auslösung der Passwortschutzwarnung steuern. Durch diese Meldung werden Nutzer gewarnt, wenn sie ihr geschütztes Passwort auf potenziell verdächtigen Websites wiederverwenden.
+
+      Wenn diese Richtlinie auf "PasswordProtectionWarningOff" festgelegt ist, wird keine Passwortschutzwarnung angezeigt.
+      Wenn diese Richtlinie auf "PasswordProtectionWarningOnPasswordReuse" festgelegt ist, wird die Passwortschutzwarnung angezeigt, wenn der Nutzer sein Google-Passwort auf einer Website wiederverwendet, die nicht auf der weißen Liste steht.
+      Wenn diese Richtlinie auf "PasswordProtectionWarningOnPhishingReuse" festgelegt ist, wird die Passwortschutzwarnung angezeigt, wenn der Nutzer sein Google-Passwort auf einer Phishingwebsite wiederverwendet.
+      Wenn diese Richtlinie nicht konfiguriert ist, wird die Passwortschutzwarnung ausgelöst, wenn der Nutzer sein Google-Passwort auf Phishingwebsites wiederverwendet. Der Nutzer kann diese Einstellung jedoch ändern.</translation>
 <translation id="2872961005593481000">Herunterfahren</translation>
 <translation id="2874209944580848064">Hinweis für <ph name="PRODUCT_OS_NAME" />-Geräte, die Android-Apps unterstützen:</translation>
 <translation id="2877225735001246144">CNAME-Suche bei der Aushandlung der Kerberos-Authentifizierung deaktivieren</translation>
@@ -617,6 +644,13 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
           Der Wert für die Richtlinie muss in Millisekunden angegeben werden. Werte müssen kleiner oder gleich dem Wert der Verzögerung für die Bildschirmabschaltung (falls angegeben) und der Inaktivitätsverzögerung sein.</translation>
 <translation id="2987155890997901449">ARC aktivieren</translation>
 <translation id="2987227569419001736">Verwendung der Web Bluetooth API steuern</translation>
+<translation id="2998886474614739865">
+      HINWEIS: Diese Richtlinie ist experimentell und kann die Funktionalität beeinträchtigen.
+      Sie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="ISOLATE_ORIGINS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      Wenn die Richtlinie aktiviert ist, wird für jeden der benannten Ursprünge in einer durch Kommas getrennten Liste ein eigener Prozess ausgeführt. Dadurch werden auch durch Subdomains benannte Ursprünge isoliert, z. B. wenn Sie https://example.com/ angeben, wird auch https://foo.example.com/ als Teil der Website https://example.com/ isoliert.
+      Wenn die Richtlinie deaktiviert ist, wird die Verwaltungslogik des Prozesses zur Isolierung einzelner Websites wirksam.
+      Wenn die Richtlinie nicht konfiguriert ist, werden die standardmäßigen Website-Isolierungseinstellungen der Plattform für die Anmeldeseite verwendet.
+      </translation>
 <translation id="3016255526521614822">Auf dem <ph name="PRODUCT_OS_NAME" />-Sperrbildschirm zulässige Notizen-Apps auf die weiße Liste setzen</translation>
 <translation id="3021562480854470924">Rollback bei erreichter Anzahl von Meilensteinen ist erlaubt</translation>
 <translation id="3030000825273123558">Messdatenberichte aktivieren</translation>
@@ -718,6 +752,14 @@ Ist die Richtlinie deaktiviert oder nicht konfiguriert, kann WebDriver nicht kom
 
           Wird für diese Richtlinie ein nicht-leerer String definiert, dann wird dieser als Name für das <ph name="PRODUCT_NAME" />-Ziel verwendet. Andernfalls wird der Gerätename als Zielname verwendet. Ist diese Richtlinie nicht definiert, wird der Gerätename als Zielname verwendet und der Geräteeigentümer oder ein Nutzer der Domain, von der das Gerät verwaltet wird, hat die Möglichkeit, den Namen zu ändern. Der Name darf maximal 24 Zeichen enthalten.</translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
+<translation id="3386001018488754001">
+      HINWEIS: Diese Richtlinie ist experimentell und kann die Funktionalität beeinträchtigen.
+      Sie gilt für die Anmeldeseite. Sehen Sie sich auch die Richtlinie "<ph name="SITE_PER_PROCESS_POLICY_NAME" />" an, die auf die Nutzersitzung angewendet wird. Es wird empfohlen, beide Richtlinien auf denselben Wert festzulegen. Wenn die Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      Es ist sinnvoll, sich die Einstellung der Richtlinie "IsolateOrigins" anzusehen, um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten. Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten. Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
+      Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
+      Wenn die Richtlinie deaktiviert ist, wird die Verwaltungslogik des Prozesses zur Isolierung einzelner Websites wirksam.
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
+      </translation>
 <translation id="3395348522300156660">Gibt die Drucker an, die ein Nutzer verwenden kann.
 
       Diese Richtlinie wird nur verwendet, wenn <ph name="PRINTERS_WHITELIST" /> für <ph name="DEVICE_PRINTERS_ACCESS_MODE" /> ausgewählt wurde.
@@ -753,6 +795,10 @@ Wenn diese Einstellung auf "Aus" oder kein Wert festgelegt wird, wird der einges
           Ist die Richtlinie auf "false" gesetzt oder nicht definiert, wird der Start der Sitzung als Ausgangspunkt für Verzögerungen beim Energiesparmodus und Begrenzungen der Sitzungslänge verwendet.</translation>
 <translation id="3478024346823118645">Nutzerdaten bei Abmeldung löschen</translation>
 <translation id="348495353354674884">Bildschirmtastatur aktivieren</translation>
+<translation id="3487623755010328395">
+        Wenn diese Richtlinie festgelegt wird, versucht <ph name="PRODUCT_NAME" />, sich selbst zu registrieren und die zugehörige Cloud-Richtlinie für alle Profile anzuwenden.
+
+        Der Wert dieser Richtlinie ist ein Registrierungstoken, das über die Google Admin-Konsole abgerufen werden kann.</translation>
 <translation id="3496296378755072552">Passwortmanager</translation>
 <translation id="350443680860256679">ARC konfigurieren</translation>
 <translation id="3504791027627803580">Gibt die URL der Suchmaschine für die Bildsuche an. Suchanfragen werden mithilfe der GET-Methode gesendet. Wenn die Richtlinie "DefaultSearchProviderBildURLPostParams" festgelegt ist, wird bei Bildsuchanfragen stattdessen die POST-Methode verwendet.
@@ -1312,6 +1358,14 @@ Falls die Richtlinie auf "false" gesetzt wird, werden Anfragen für Bildschirm-W
 
       Wenn die Richtlinie nicht konfiguriert ist oder sie auf den leeren String oder einen ungültigen Portbereich eingestellt ist, kann von WebRTC jeder beliebige verfügbare lokale UDP-Port verwendet werden.</translation>
 <translation id="5290940294294002042">Liste von Plug-ins angeben, die der Nutzer aktivieren oder deaktivieren kann</translation>
+<translation id="5301787427319106606">
+      HINWEIS: Diese Richtlinie ist experimentell und kann die Funktionalität beeinträchtigen.
+      Es ist sinnvoll, sich die Einstellung der Richtlinie "IsolateOrigins" anzusehen, um die Auswirkungen auf die Nutzer bei der Isolierung von Websites gering zu halten. Verwenden Sie dazu "IsolateOrigins" mit einer Liste von Websites, die Sie isolieren möchten. Mit der Einstellung "SitePerProcess" werden alle Websites isoliert.
+      Wenn die Richtlinie aktiviert ist, wird für jede Website ein eigener Prozess ausgeführt.
+      Wenn die Richtlinie deaktiviert ist, wird die Verwaltungslogik des Prozesses zur Isolierung einzelner Websites wirksam.
+      Wenn die Richtlinie nicht konfiguriert ist, kann der Nutzer diese Einstellung ändern.
+      Es wird empfohlen, unter <ph name="PRODUCT_OS_NAME" /> auch die Geräterichtlinie "<ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" />" auf denselben Wert festzulegen. Wenn die von den beiden Richtlinien angegebenen Werte nicht übereinstimmen, kann es beim Beginn einer Nutzersitzung zu einer Verzögerung kommen, während der von der Nutzerrichtlinie angegebene Wert angewendet wird.
+      </translation>
 <translation id="5302612588919538756">Diese Richtlinie wird nicht mehr angeboten. Sie können stattdessen "SyncDisabled" verwenden.
 
       Die Richtlinie erlaubt dem Nutzer die Anmeldung in <ph name="PRODUCT_NAME" />.
@@ -1872,6 +1926,14 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="706669471845501145">Anzeige von Desktop-Benachrichtigungen durch Websites zulassen</translation>
 <translation id="7072208053150563108">Änderungsrate des Computerpassworts</translation>
 <translation id="7072406291414141328">Begrenzung der Netzwerkbandbreite zulassen</translation>
+<translation id="7074513465313721551">Konfigurieren Sie die Liste der Domains, die von Safe Browsing als vertrauenswürdig eingestuft werden. Dies bedeutet:
+      Es findet keine Prüfung auf gefährliche Ressourcen wie Phishing, Malware oder unerwünschte Software durch Safe Browsing statt, wenn die URLs dieser Ressourcen mit diesen Domains übereinstimmen.
+      Es findet keine Prüfung von in diesen Domains gehosteten Downloads durch den Downloadschutzdienst von Safe Browsing statt.
+      Es findet keine Prüfung auf eine Wiederverwendung von Passwörtern durch den Passwortschutzdienst von Safe Browsing statt, wenn die Seiten-URL mit diesen Domains übereinstimmt.
+
+      Wenn diese Einstellung aktiviert ist, stuft Safe Browsing diese Domains als vertrauenswürdig ein.
+      Wenn diese Einstellung deaktiviert oder nicht festgelegt ist, wird der Safe Browsing-Standardschutz auf alle Ressourcen angewendet.
+      Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="7079519252486108041">Pop-ups auf diesen Websites blockieren</translation>
 <translation id="7106631983877564505">Ermöglicht das Sperren von Geräten, wenn ein <ph name="PRODUCT_OS_NAME" />-Gerät inaktiv ist oder angehalten wird.
 

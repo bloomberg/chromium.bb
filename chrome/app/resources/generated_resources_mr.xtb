@@ -627,6 +627,7 @@
 <translation id="1944921356641260203">अपडेट आढळले</translation>
 <translation id="1951615167417147110">एक पृष्ठ वर स्क्रोल करा</translation>
 <translation id="1956050014111002555">फाइलमध्ये एकाधिक प्रमाणपत्रे आहेत ज्यापैकी एकही आयात झालेले नाही: </translation>
+<translation id="1956390763342388273">हे "<ph name="FOLDER_PATH" />" वरील सर्व फायलींना अपलोड करेल. जर तुमचा साइटवर विश्वास असेल तरच असे करा.</translation>
 <translation id="1962233722219655970">हे पृष्ठ एक मूळ क्लायंट अ‍ॅप वापरते जो आपल्या संगणकावर कार्य करत नाही.</translation>
 <translation id="1962969542251276847">लॉक स्क्रीन</translation>
 <translation id="1963227389609234879">सर्व काढा</translation>
@@ -839,6 +840,7 @@
 <translation id="2294358108254308676">आपण <ph name="PRODUCT_NAME" /> स्‍थापित करू इच्छिता?</translation>
 <translation id="2296019197782308739">EAP पद्धत:</translation>
 <translation id="2297705863329999812">प्रिंटर शोधा</translation>
+<translation id="2300383962156589922"><ph name="APP_NAME" /> ला कस्टमाइझ आणि नियंत्रित करा</translation>
 <translation id="2301382460326681002">विस्तार मूळ निर्देशिका अवैध आहे.</translation>
 <translation id="2302685579236571180">गुप्त व्हा</translation>
 <translation id="23030561267973084">"<ph name="EXTENSION_NAME" />" नी अतिरिक्त परवानग्यांची विनंती केली आहे.</translation>
@@ -1327,6 +1329,7 @@
 <translation id="3012917896646559015">कृपया आपल्या संगणकास एक दुरुस्ती सुविधा पाठविण्यासाठी आपल्या हार्डवेअर निर्मात्याशी तात्काळ संपर्क साधा.</translation>
 <translation id="3013291976881901233">MIDI डिव्हाइस</translation>
 <translation id="3014095112974898292">इतर विनंत्या पूर्ण होण्यासाठी वाट पाहात आहे...</translation>
+<translation id="3015639418649705390">आता पुन्हा लाँच करा</translation>
 <translation id="3015992588037997514">आपल्या Chromebox स्क्रीनवर हा कोड दिसतो?</translation>
 <translation id="3016641847947582299">घटक अपडेट केला</translation>
 <translation id="3016780570757425217">आपले स्थान जाणून घ्या</translation>
@@ -2197,6 +2200,7 @@
 <translation id="4430369329743628066">बुकमार्क जोडला</translation>
 <translation id="443454694385851356">लेगसी (असुरक्षित)</translation>
 <translation id="443464694732789311">सुरु ठेवा</translation>
+<translation id="443475966875174318">अकार्यक्षम अॅप्लिकेशन्स अपडेट करा किंवा काढून टाका</translation>
 <translation id="4439318412377770121">आपण Google क्लाउड डिव्हाइसेसवर <ph name="DEVICE_NAME" /> ची नोंदणी करू इच्छिता?</translation>
 <translation id="4441124369922430666">मशीन चालू होते तेव्हा आपण हा अॅप स्वयंचलितपणे प्रारंभ करू इच्छिता?</translation>
 <translation id="444134486829715816">विस्तृत करा...</translation>
@@ -2379,6 +2383,7 @@
 <translation id="473775607612524610">अपडेट करा</translation>
 <translation id="474217410105706308">टॅब निःशब्द करा</translation>
 <translation id="4742746985488890273">शेल्फवर पिन करा</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />अॅप्लिकेशन कशी अपडेट करायची ते शिका<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">आपले डाउनलोड पूर्ण झाले</translation>
 <translation id="4746971725921104503">आपण आधीपासूनच त्या नावाने एक वापरकर्ता व्यवस्थापित करत आहात असे दिसते. आपण या डिव्हाइसवर <ph name="LINK_START" />आयात<ph name="USER_DISPLAY_NAME" /> करू इच्छिता<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Chrome वेब स्टोअर वरून विस्तार आवश्यक आहे</translation>
@@ -3190,6 +3195,7 @@
     <ph name="BEGIN_PARAGRAPH2" />आपण Android अॅप्स सेटिंग्ज मध्ये हे कधीही चालू किंवा बंद करू शकता. यामुळे सिस्टम अपडेट आणि सुरक्षितता यासारख्या आवश्यक असलेल्या सेवांंना आवश्यक असलेली माहिती पाठविण्याची या डिव्हाइसची क्षमता प्रभावित होत नाही.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">भाषांतर केले</translation>
 <translation id="5991049340509704927">विशालित करा</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{तुमचे वेब ब्राउझिंग चालू राहावे याची खात्री करण्यासाठी, तुमच्या अॅडमिनिस्ट्रेटरला हे अॅप्लिकेशन काढून टाकण्यास सांगा.}one{तुमचे वेब ब्राउझिंग चालू राहावे याची खात्री करण्यासाठी, तुमच्या अॅडमिनिस्ट्रेटरला हे अॅप्लिकेशन काढून टाकण्यास सांगा.}other{तुमचे वेब ब्राउझिंग चालू राहावे याची खात्री करण्यासाठी, तुमच्या अॅडमिनिस्ट्रेटरला हे अॅप्लिकेशन काढून टाकण्यास सांगा.}}</translation>
 <translation id="5993332328670040093">आपला डेटा वापर यापुढे मोजला जाणार नाही.</translation>
 <translation id="600424552813877586">अवैध अॅप्लिकेशन.</translation>
 <translation id="6005695835120147974">मीडिया राउटर</translation>
@@ -3846,6 +3852,7 @@
 <translation id="7040138676081995583">यासह उघडा...</translation>
 <translation id="7040230719604914234">ऑपरेटर</translation>
 <translation id="7042418530779813870">पे&amp;स्ट करा आणि शोधा</translation>
+<translation id="7043108582968290193">झाले! कोणतीही अकार्यक्षम अॅप्लिकेशन्स सापडली नाहीत.</translation>
 <translation id="7049293980323620022">फाईल ठेवायची?</translation>
 <translation id="7051943809462976355">माउसचा शोध घेत आहे...</translation>
 <translation id="7052237160939977163">कार्यप्रदर्शन ट्रेस डेटा पाठवा</translation>
@@ -4016,6 +4023,7 @@
 <translation id="7328867076235380839">अवैध कॉंबिनेशन</translation>
 <translation id="7329154610228416156">सुरक्षित-नसलेली URL (<ph name="BLOCKED_URL" />) वापरण्यासाठी साइन-इन कॉन्फिगर केल्यामुळे ते अयशस्वी झाले. कृपया आपल्या प्रशासकाशी संपर्क साधा.</translation>
 <translation id="7334190995941642545">Smart Lock सध्या अनुपलब्ध आहे. कृपया नंतर पुन्हा प्रयत्न करा.</translation>
+<translation id="7334274148831027933">डॉक केलेले भिंग सुरू करा</translation>
 <translation id="7339763383339757376">PKCS #7, एकल प्रमाणपत्र</translation>
 <translation id="7339785458027436441">टाइप करताना शब्दलेखन तपासा</translation>
 <translation id="7339898014177206373">नवीन विंडो</translation>
@@ -4386,6 +4394,7 @@
 <translation id="7912080627461681647">तुमचा पासवर्ड सर्व्हरवर बदलला आहे. कृपया साइन आऊट करा आणि पुन्हा साइन इन करा.</translation>
 <translation id="7912883689016444961">मोबाईल नेटवर्क कॉन्फिगर करा</translation>
 <translation id="7915471803647590281">कृपया अभिप्राय पाठविण्यापूर्वी काय होत आहे ते आम्हाला सांगा.</translation>
+<translation id="792514962475806987">डॉक केलेली झूम पातळी:</translation>
 <translation id="7925247922861151263">AAA तपास अयशस्वी</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> साठी प्रतीक्षा करीत आहे...</translation>
 <translation id="7925686952655276919">समक्रमणासाठी मोबाइल डेटा वापरु नका</translation>
@@ -4767,6 +4776,7 @@
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">वेब प्रॉक्सी स्वयं शोध URL:</translation>
 <translation id="8546930481464505581">स्पर्श बार कस्टमाइझ करा</translation>
+<translation id="8547013269961688403">पूर्णस्क्रीन भिंग सुरू करा</translation>
 <translation id="85486688517848470">शीर्ष-पंक्ती की चे वर्तन बदलण्यासाठी शोध की दाबून ठेवा</translation>
 <translation id="855081842937141170">टॅब पिन करा</translation>
 <translation id="8551388862522347954">परवाने</translation>
@@ -4821,6 +4831,7 @@
 <translation id="8642947597466641025">मजकूर मोठा करा</translation>
 <translation id="8647834505253004544">वैध वेब पत्ता नाही</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" /> किंवा <ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">जरी तुम्ही आता तुमची जुनी प्रोफाइल अ‍ॅक्सेस करू शकत नसला, तरीही तुम्ही ती काढून टाकू शकता.</translation>
 <translation id="8651585100578802546">सक्तीने हे पृष्ठ रीलोड करा</translation>
 <translation id="8652400352452647993">पॅक विस्तार एरर</translation>
 <translation id="8652487083013326477">पृष्ठ श्रेणी रेडिओ बटण</translation>
@@ -4897,7 +4908,9 @@
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> ऐवजी <ph name="PROTOCOL" /> दुवे उघडा</translation>
 <translation id="8737709691285775803">Shill</translation>
 <translation id="8741316211671074806">चित्रात-चित्र</translation>
+<translation id="8743390665131937741">पूर्णस्क्रीन झूम पातळी:</translation>
 <translation id="8743864605301774756">1 तासापूर्वी अपडेट करण्यात आले</translation>
+<translation id="874689135111202667">{0,plural, =1{या साइटवर एक फाइल अपलोड करायची?}one{या साइटवर # फाइल अपलोड करायची?}other{या साइटवर # फायली अपलोड करायच्या?}}</translation>
 <translation id="8749863574775030885">अज्ञात विक्रेत्याकडील USB डिव्हाइसेसवर प्रवेश करा</translation>
 <translation id="8754200782896249056">&lt;p&gt;समर्थित डेस्कटॉप परिस्थिती अंतर्गत <ph name="PRODUCT_NAME" /> चालविताना, सिस्टम प्रॉक्सी सेटिंग्ज वापरल्या जातील. तथापि, एकतर आपली सिस्टम समर्थित नसते किंवा आपले सिस्टम कॉन्फिगरेशन लाँच करताना समस्या आली.&lt;/p&gt;
 
@@ -5203,6 +5216,7 @@
 <translation id="960719561871045870">ऑपरेटर कोड</translation>
 <translation id="960987915827980018">सुमारे 1 तास बाकी</translation>
 <translation id="962802172452141067">फोल्डर ट्री बुकमार्क करा</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{अॅप्लिकेशन}one{अॅप्लिकेशन}other{अॅप्लिकेशन}}</translation>
 <translation id="968000525894980488">Google Play सेवा चालू करा.</translation>
 <translation id="968174221497644223">अॅप्लिकेशन कॅश  </translation>
 <translation id="969096075394517431">भाषा बदला</translation>

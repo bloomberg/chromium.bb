@@ -629,6 +629,7 @@
 <translation id="1944921356641260203">アップデートが見つかりました</translation>
 <translation id="1951615167417147110">1 ページ上にスクロールする</translation>
 <translation id="1956050014111002555">ファイルに含まれる複数の証明書のうち、いずれもインポートできませんでした:</translation>
+<translation id="1956390763342388273">「<ph name="FOLDER_PATH" />」のすべてのファイルがアップロードされます。この操作は、サイトを信頼できる場合にのみ行ってください。</translation>
 <translation id="1962233722219655970">このページは、お使いのパソコンでは動作しないネイティブ クライアント アプリを使用しています。</translation>
 <translation id="1962969542251276847">画面をロック</translation>
 <translation id="1963227389609234879">すべて削除</translation>
@@ -841,6 +842,7 @@
 <translation id="2294358108254308676"><ph name="PRODUCT_NAME" /> をインストールしますか？</translation>
 <translation id="2296019197782308739">EAP 方式:</translation>
 <translation id="2297705863329999812">プリンタを検索</translation>
+<translation id="2300383962156589922"><ph name="APP_NAME" /> のカスタマイズと制御</translation>
 <translation id="2301382460326681002">拡張機能のルート ディレクトリが無効です。</translation>
 <translation id="2302685579236571180">シークレット モード</translation>
 <translation id="23030561267973084">「<ph name="EXTENSION_NAME" />」が追加の許可をリクエストしています。</translation>
@@ -1329,6 +1331,7 @@
 <translation id="3012917896646559015">すぐにハードウェアの製造元に連絡し、パソコンを修理センターに送るよう手配してください。</translation>
 <translation id="3013291976881901233">MIDI デバイス</translation>
 <translation id="3014095112974898292">他のリクエストが完了するのを待っています...</translation>
+<translation id="3015639418649705390">今すぐ再起動</translation>
 <translation id="3015992588037997514">このコードが Chromebox の画面に表示されていますか？</translation>
 <translation id="3016641847947582299">コンポーネント更新完了</translation>
 <translation id="3016780570757425217">ユーザーの現在地の認識</translation>
@@ -2204,6 +2207,7 @@
 <translation id="4430369329743628066">ブックマークを追加しました</translation>
 <translation id="443454694385851356">以前の暗号化タイプ（安全ではありません）</translation>
 <translation id="443464694732789311">続行</translation>
+<translation id="443475966875174318">互換性のないアプリケーションの更新または削除</translation>
 <translation id="4439318412377770121"><ph name="DEVICE_NAME" /> を Google クラウド デバイスに登録しますか？</translation>
 <translation id="4441124369922430666">マシンの起動時にこのアプリを自動的に起動しますか？</translation>
 <translation id="444134486829715816">展開...</translation>
@@ -2386,6 +2390,7 @@
 <translation id="473775607612524610">アップデート</translation>
 <translation id="474217410105706308">タブをミュート</translation>
 <translation id="4742746985488890273">シェルフに固定</translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />アプリケーションの更新方法を確認<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">ダウンロードが完了しました</translation>
 <translation id="4746971725921104503">既にその名前でユーザーを管理しているようです。<ph name="LINK_START" />このデバイスに <ph name="USER_DISPLAY_NAME" /> をインポート<ph name="LINK_END" />してもよろしいですか？</translation>
 <translation id="4748762018725435655">Chrome ウェブストアから拡張機能を取得する必要があります</translation>
@@ -3196,6 +3201,7 @@
     <ph name="BEGIN_PARAGRAPH2" />Android アプリの設定でいつでもこの機能のオンとオフを切り替えることができます。この機能をオフにしても、端末でシステム アップデートやセキュリティなどの基本的なサービスを受けるために必要な情報の送信は行われます。<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990386583461751448">翻訳済み</translation>
 <translation id="5991049340509704927">拡大表示</translation>
+<translation id="599131315899248751">{NUM_APPLICATIONS,plural, =1{今後もウェブ ブラウジングを続けられるように、管理者にこのアプリケーションの削除を依頼してください。}other{今後もウェブ ブラウジングを続けられるように、管理者にこれらのアプリケーションの削除を依頼してください。}}</translation>
 <translation id="5993332328670040093">データ使用量はこれ以上測定されません。</translation>
 <translation id="600424552813877586">無効なアプリケーションです。</translation>
 <translation id="6005695835120147974">メディア ルーター</translation>
@@ -3851,6 +3857,7 @@
 <translation id="7040138676081995583">アプリケーションで開く...</translation>
 <translation id="7040230719604914234">携帯通信会社</translation>
 <translation id="7042418530779813870">貼り付けて検索(&amp;S)</translation>
+<translation id="7043108582968290193">完了しました。互換性のないアプリケーションは見つかりませんでした。</translation>
 <translation id="7049293980323620022">ファイルを保存しますか？</translation>
 <translation id="7051943809462976355">マウスを探しています...</translation>
 <translation id="7052237160939977163">パフォーマンス追跡データを送信する</translation>
@@ -4021,6 +4028,7 @@
 <translation id="7328867076235380839">無効な組み合わせです</translation>
 <translation id="7329154610228416156">保護されていない URL（<ph name="BLOCKED_URL" />）を使用するよう設定されているため、ログインできませんでした。管理者にお問い合わせください。</translation>
 <translation id="7334190995941642545">Smart Lock は現在ご利用いただけません。しばらくしてからもう一度お試しください。</translation>
+<translation id="7334274148831027933">拡大鏡（ドッキング）を有効にする</translation>
 <translation id="7339763383339757376">PKCS #7、単一の証明書</translation>
 <translation id="7339785458027436441">入力中にスペルチェック</translation>
 <translation id="7339898014177206373">新しいウィンドウ</translation>
@@ -4396,6 +4404,7 @@
 <translation id="7912080627461681647">サーバーでパスワードが変更されました。いったんログアウトして再度ログインしてください。</translation>
 <translation id="7912883689016444961">モバイル ネットワークを設定</translation>
 <translation id="7915471803647590281">フィードバックを送信する前に、問題の詳細を入力してください。</translation>
+<translation id="792514962475806987">ドッキング画面のズームレベル:</translation>
 <translation id="7925247922861151263">AAA を確認できませんでした</translation>
 <translation id="7925285046818567682"><ph name="HOST_NAME" /> を待機しています...</translation>
 <translation id="7925686952655276919">モバイル データを使用して同期しない</translation>
@@ -4777,6 +4786,7 @@
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">ウェブプロキシ自動検出 URL:</translation>
 <translation id="8546930481464505581">Touch Bar をカスタマイズ</translation>
+<translation id="8547013269961688403">拡大鏡（全画面）を有効にする</translation>
 <translation id="85486688517848470">キーボードの最上段にあるキーの動作を切り替えるには、検索キーを押したままにします</translation>
 <translation id="855081842937141170">タブを固定</translation>
 <translation id="8551388862522347954">ライセンス</translation>
@@ -4831,6 +4841,7 @@
 <translation id="8642947597466641025">テキストを拡大する</translation>
 <translation id="8647834505253004544">有効なウェブアドレスではありません</translation>
 <translation id="8648252583955599667"><ph name="GET_HELP_LINK" />または<ph name="RE_SCAN_LINK" /></translation>
+<translation id="8650543407998814195">古いプロフィールにアクセスすることはできませんが、削除することはできます。</translation>
 <translation id="8651585100578802546">ページを再読み込み</translation>
 <translation id="8652400352452647993">拡張機能のパッケージ化のエラー</translation>
 <translation id="8652487083013326477">ページ範囲のラジオボタン</translation>
@@ -4907,7 +4918,9 @@
 <translation id="8737685506611670901"><ph name="REPLACED_HANDLER_TITLE" /> の代わりに「<ph name="PROTOCOL" />」リンクを開く</translation>
 <translation id="8737709691285775803">サクラ</translation>
 <translation id="8741316211671074806">ピクチャー イン ピクチャー</translation>
+<translation id="8743390665131937741">全画面のズームレベル:</translation>
 <translation id="8743864605301774756">1 時間前に更新されました</translation>
+<translation id="874689135111202667">{0,plural, =1{1 個のファイルをこのサイトにアップロードしますか？}other{# 個のファイルをこのサイトにアップロードしますか？}}</translation>
 <translation id="8749863574775030885">不明なベンダーの USB デバイスへのアクセス</translation>
 <translation id="8754200782896249056">&lt;p&gt;<ph name="PRODUCT_NAME" /> をサポート対象のデスクトップ環境で実行するとシステムのプロキシ設定が使用されますが、お使いのシステムがサポートされていないか、システム設定の適用で問題が発生した可能性があります。&lt;/p&gt;
 
@@ -5212,6 +5225,7 @@
 <translation id="960719561871045870">事業者コード</translation>
 <translation id="960987915827980018">あと約 1 時間</translation>
 <translation id="962802172452141067">ブックマーク フォルダ ツリー</translation>
+<translation id="964439421054175458">{NUM_APLLICATIONS,plural, =1{アプリケーション}other{アプリケーション}}</translation>
 <translation id="968000525894980488">Google Play 開発者サービスを有効にします。</translation>
 <translation id="968174221497644223">アプリケーション キャッシュ</translation>
 <translation id="969096075394517431">言語を変更</translation>

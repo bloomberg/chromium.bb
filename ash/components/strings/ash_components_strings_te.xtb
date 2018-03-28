@@ -3,6 +3,7 @@
 <translationbundle lang="te">
 <translation id="104962181688258143">ఫైల్స్ యాప్‌ని తెరవండి</translation>
 <translation id="1126871238933253947">మీరు ఉపయోగించిన మునుపటి కీబోర్డ్ భాషకు మారండి.</translation>
+<translation id="1134347825771908369">వాల్యూమ్‌ను మ్యూట్ చేయండి</translation>
 <translation id="1195667586424773550">ట్యాబ్ యొక్క చిరునామా బార్‌లోకి లింక్‌ను లాగండి</translation>
 <translation id="1204450209689312104">కొత్త విండోని అజ్ఞాత మోడ్‌లో తెరవండి</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -55,6 +56,7 @@
 <translation id="353037708190149633">మీ ప్రస్తుత విండోలో తెరిచి ఉన్న అన్ని పేజీలను బుక్‌మార్క్‌ల వలె కొత్త ఫోల్డర్‌లో సేవ్ చేయండి</translation>
 <translation id="355103131818127604">లింక్‌ను కొత్త ట్యాబ్‌లో నేపథ్యంలో తెరవండి</translation>
 <translation id="3649256019230929621">విండోను కనిష్టీకరించు</translation>
+<translation id="3655154169297074232">ట్యాబ్‌లు &amp; విండోలు</translation>
 <translation id="3668361878347172356">మీ చివరి చర్యను మళ్లీ చేయండి</translation>
 <translation id="3720939646656082033">లింక్‌ని కొత్త ట్యాబ్‌లో తెరిచి, కొత్త ట్యాబ్‌కి మారండి</translation>
 <translation id="3725795051337497754">ప్రస్తుత ట్యాబ్‌ను మూసివేయండి</translation>
@@ -70,6 +72,8 @@
 <translation id="4123108089450197101">లింక్‌ను బుక్‌మార్క్ వలె సేవ్ చేయండి</translation>
 <translation id="4141203561740478845">చిరునామా బార్‌తో అడ్డు వరుసని హైలైట్ చేయండి</translation>
 <translation id="4148761611071495477"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="G" /> లేదా <ph name="ENTER" /></translation>
+<translation id="4240486403425279990">స్థూలదృష్టి మోడ్</translation>
+<translation id="4472417192667361414">సిస్టమ్ &amp; డిస్‌ప్లే సెట్టింగ్‌లు</translation>
 <translation id="4556221320735744018">కీబోర్డ్ షార్ట్‌కట్ హెల్పర్‌ని చూడండి</translation>
 <translation id="4628718545549558538">స్థితి ప్రాంతాన్ని తెరవండి (మీ ఖాతా చిత్రం కనిపించే స్థలం)</translation>
 <translation id="4642092649622328492">పాక్షిక స్క్రీన్‌షాట్ తీసుకోండి</translation>
@@ -134,6 +138,7 @@
 <translation id="8130528849632411619">పత్రం ప్రారంభం వద్దకు వెళ్లండి</translation>
 <translation id="8147954207400281792"><ph name="CTRL" /><ph name="SEPARATOR" /><ph name="K" /> లేదా <ph name="E" /></translation>
 <translation id="8234414138295101081">స్క్రీన్‌ని 90 డిగ్రీలు తిప్పండి</translation>
+<translation id="826184564253127735">కీబోర్డ్ షార్ట్‌కట్ వ్యూయర్</translation>
 <translation id="836869401750819675">డౌన్‌లోడ్‌ల పేజీని తెరవండి</translation>
 <translation id="8388247778047144397">లింక్‌ను ట్యాబ్ స్ట్రిప్‌లోని ఖాళీ ప్రాంతంలోకి లాగండి</translation>
 <translation id="8389638407792712197">కొత్త విండోని తెరవండి</translation>
@@ -152,8 +157,9 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> 1 నుండి 8</translation>
 <translation id="9041599225465145264">క్లిప్‌బోర్డ్ నుండి కంటెంట్‌ను అతికించండి</translation>
 <translation id="9052808072970550123">తదుపరి వినియోగదారుకు మారండి</translation>
+<translation id="9106898733795143799">పేజీ &amp; వెబ్ బ్రౌజర్</translation>
 <translation id="9179672198516322668">జనాదరణ పొందిన షార్ట్‌కట్‌లు</translation>
 <translation id="93603345341560814"><ph name="SHIFT" />ని నొక్కి, లింక్‌ని క్లిక్ చేయండి</translation>
 <translation id="945383118875625837">‌లింక్‌ని బుక్‌మార్క్‌ల బార్ వద్దకు లాగండి</translation>
-<translation id="98120814841227350">పత్రం ముగింపులోకి వెళ్లు</translation>
+<translation id="98120814841227350">పత్రం చివరకు వెళ్లు</translation>
 </translationbundle>

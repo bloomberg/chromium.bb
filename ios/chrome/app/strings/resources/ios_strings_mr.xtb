@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">पत्ता 1</translation>
 <translation id="1545749641540134597">QR कोड स्कॅन करा</translation>
 <translation id="1580783302095112590">मेल पाठवले.</translation>
+<translation id="1582732959743469162">हे तुमच्या सुरू असलेल्या डाउनलोडची पुढची सर्व प्रगती थांबवेल.</translation>
 <translation id="1612730193129642006">टॅब ग्रिड दाखवा</translation>
 <translation id="1644574205037202324">इतिहास</translation>
 <translation id="1646446875146297738">'Do Not Track' सक्षम करणे अर्थात आपल्या ब्राउझिंग रहदारीसह एक विनंती समाविष्ट‍ केली जाईल. कोणताही प्रभाव यावर अवलंबून असतो कि वेबसाइट विनंतीस प्रतिसाद देते किंवा नाही आणि विनंतीचा निष्कर्ष कसा काढला जातो.
@@ -285,6 +286,7 @@
 <translation id="633809752005859102">खरोखर काहीतरी चूक झाली. आम्ही त्यावर कार्य करू.</translation>
 <translation id="6342069812937806050">आत्ताच</translation>
 <translation id="6344783595350022745">मजकूर साफ करा</translation>
+<translation id="6346549652287021269">नवीन डाउनलोड सुरू करायचे?</translation>
 <translation id="6362362396625799311">कोणतेही गुप्त टॅब नाहीत</translation>
 <translation id="6374469231428023295">पुन्हा प्रयत्न करा</translation>
 <translation id="6380866119319257197">आपण आपला सांकेतिक वाक्यांश विसरल्यास किंवा हे सेटिंग बदलू इच्छित असल्यास, <ph name="BEGIN_LINK" />संकालन रीसेट करा<ph name="END_LINK" /></translation>
@@ -326,6 +328,7 @@
 <translation id="7031882061095297553">यावर संकालित करा</translation>
 <translation id="7053983685419859001">अवरोधित करा</translation>
 <translation id="7062545763355031412">स्वीकार करा आणि खाती स्विच करा</translation>
+<translation id="7102005569666697658">डाउनलोड होत आहे… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">लपवा</translation>
 <translation id="7133798577887235672">पूर्ण नाव</translation>
 <translation id="7136892417564438900">कॅमेरा अनुपलब्ध आहे</translation>
@@ -361,6 +364,7 @@
 <translation id="7769602470925380267">स्वीकार करा आणि साइन आउट करा</translation>
 <translation id="7772032839648071052">सांकेतिक वाक्यांशाची पुष्टी करा</translation>
 <translation id="780301667611848630">नाही, नको</translation>
+<translation id="7856733331829174190">डाउनलोड करता आले नाही</translation>
 <translation id="7859704718976024901">ब्राउझिंग इतिहास</translation>
 <translation id="7938254975914653459">फेसटाइम</translation>
 <translation id="7939128259257418052">पासवर्ड निर्यात करा...</translation>
@@ -423,6 +427,7 @@
 <translation id="9083392325882095631">1 आयटम</translation>
 <translation id="9100610230175265781">सांकेतिक वाक्यांश आवश्यक</translation>
 <translation id="9148126808321036104">पुन्हा साइन इन करा </translation>
+<translation id="915371508759614899">डाउनलोड रद्द करायचे?</translation>
 <translation id="9157836665414082580">संवाद दर्शवू नका</translation>
 <translation id="9188680907066685419">व्यवस्थापित केलेल्या खात्यामधून साइन आउट करा</translation>
 <translation id="9203116392574189331">Handoff</translation>

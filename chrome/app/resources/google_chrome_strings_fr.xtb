@@ -41,10 +41,12 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="1873233029667955273">Google Chrome n'est pas votre navigateur par défaut</translation>
 <translation id="1874309113135274312">Version bêta de Google Chrome (mDNS-In)</translation>
 <translation id="1877026089748256423">Version de Chrome obsolète</translation>
+<translation id="2007150628464581396">{0,plural, =1{Chrome va être relancé dans 1 minute}one{Chrome va être relancé dans # minute}other{Chrome va être relancé dans # minutes}}</translation>
 <translation id="2063848847527508675">Redémarrez Chrome OS pour appliquer la mise à jour.</translation>
 <translation id="2077129598763517140">Utiliser l'accélération matérielle (le cas échéant)</translation>
 <translation id="2084710999043359739">Ajouter à Chrome</translation>
 <translation id="2094919256425865063">Quitter Chrome quand même ?</translation>
+<translation id="210890598424854131">{0,plural, =0{Chrome va être relancé maintenant}=1{Chrome va être relancé dans 1 seconde}one{Chrome va être relancé dans # seconde}other{Chrome va être relancé dans # secondes}}</translation>
 <translation id="2120620239521071941">Cette action aura pour effet de supprimer <ph name="ITEMS_COUNT" /> éléments de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Aidez-nous à améliorer Chrome en nous signalant vos <ph name="BEGIN_LINK" />paramètres actuels<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Installez Chrome sur votre téléphone. Vous recevrez un SMS au numéro que vous avez indiqué pour la récupération de compte.</translation>
@@ -65,6 +67,7 @@ Si vous vous connectez quand même, toutes les informations Chrome, comme les fa
 <translation id="2467438592969358367">Google Chrome veut exporter vos mots de passe. Pour autoriser cette action, saisissez votre mot de passe Windows.</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
 <translation id="2534507159460261402">Google Pay (copiée dans Chrome)</translation>
+<translation id="2535429035253759792">Votre administrateur vous demande de relancer Chrome pour installer cette mise à jour</translation>
 <translation id="2580411288591421699">Impossible d'installer la version de Google Chrome qui est en cours d'exécution. Fermez Google Chrome et réessayez.</translation>
 <translation id="2586406160782125153">Cette action aura pour effet de supprimer vos données de navigation de cet appareil. Pour récupérer vos données ultérieurement, connectez-vous à Chrome en tant que <ph name="USER_EMAIL" />.</translation>
 <translation id="2588322182880276190">Logo Google Chrome</translation>
@@ -101,6 +104,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="345171907106878721">Ajouter un utilisateur à Chrome</translation>
 <translation id="3479552764303398839">Pas maintenant</translation>
 <translation id="3503306920980160878">Chrome a besoin d'accéder à votre position pour la partager avec ce site</translation>
+<translation id="3582972582564653026">Synchroniser et personnaliser Chrome sur vos appareils</translation>
 <translation id="3612333635265770873">Nous avons constaté qu'un module du même nom crée des conflits avec Google Chrome.</translation>
 <translation id="3622797965165704966">Il est désormais plus facile d'utiliser Chrome avec votre compte Google et sur des ordinateurs partagés.</translation>
 <translation id="3637702109597584617"><ph name="TERMS_OF_SERVICE_LINK" />Conditions d'utilisation<ph name="END_TERMS_OF_SERVICE_LINK" /> de Google Chrome OS</translation>
@@ -123,6 +127,7 @@ Pour obtenir plus d'informations, veuillez consulter votre compte de messagerie 
 <translation id="4149882025268051530">Échec de la décompression de l'archive par le programme d'installation. Veuillez télécharger de nouveau Google Chrome.</translation>
 <translation id="4251615635259297716">Associer vos données Chrome à ce compte ?</translation>
 <translation id="4251625577313994583">télécharger Chrome sur votre iPhone</translation>
+<translation id="4293420128516039005">Se connecter pour synchroniser et personnaliser Chrome sur vos appareils</translation>
 <translation id="4309555186815777032">(nécessite le <ph name="BEGIN_BUTTON" />redémarrage<ph name="END_BUTTON" /> de Chrome)</translation>
 <translation id="4328355335528187361">Google Chrome pour les développeurs (mDNS-In)</translation>
 <translation id="4331809312908958774">Chrome OS
@@ -267,6 +272,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8547799825197623713">Lanceur d'applications Chrome – Canary</translation>
 <translation id="8556340503434111824">Une nouvelle version de Google Chrome encore plus rapide est disponible.</translation>
 <translation id="8568392309447938879">Vous devez être connecté à Chrome pour utiliser les applications. Cela permet de synchroniser vos applications, vos favoris, votre historique, vos mots de passe et d'autres paramètres dans Chrome sur tous vos appareils.</translation>
+<translation id="859960207076826247">{0,plural, =0{Une mise à jour de Chrome est disponible}=1{Une mise à jour de Chrome est disponible}one{Une mise à jour de Chrome est disponible depuis # jour}other{Une mise à jour de Chrome est disponible depuis # jours}}</translation>
 <translation id="8606668294522778825">Google Chrome peut utiliser des services Web pour améliorer votre confort de navigation. Vous pouvez choisir de désactiver ces services. <ph name="BEGIN_LINK" />En savoir plus<ph name="END_LINK" /></translation>
 <translation id="8614913330719544658">Google Chrome ne répond pas. Voulez-vous le relancer maintenant ?</translation>
 <translation id="8667808506758191620">Votre <ph name="DEVICE_TYPE" /> est à jour.</translation>
@@ -274,6 +280,7 @@ Google Chrome ne peut pas récupérer vos paramètres.</translation>
 <translation id="8679801911857917785">Elle contrôle également la page qui s'affiche au démarrage de Chrome.</translation>
 <translation id="870251953148363156">Mettre à jour &amp;Google Chrome</translation>
 <translation id="873133009373065397">Impossible d'identifier ou de définir le navigateur par défaut avec Google Chrome</translation>
+<translation id="8736674169840206667">Votre administrateur exige que vous relanciez Chrome pour installer une mise à jour</translation>
 <translation id="8796108026289707191">Redémarrez Google Chrome maintenant</translation>
 <translation id="8823341990149967727">Version de Chrome obsolète</translation>
 <translation id="884296878221830158">Elle contrôle également la page qui s'affiche au démarrage de Chrome ou lorsque vous cliquez sur le bouton Accueil.</translation>

@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">地址第1行</translation>
 <translation id="1545749641540134597">扫描 QR 码</translation>
 <translation id="1580783302095112590">邮件已发送。</translation>
+<translation id="1582732959743469162">这会全面停止您正在执行的下载任务。</translation>
 <translation id="1612730193129642006">显示标签页网格</translation>
 <translation id="1644574205037202324">历史记录</translation>
 <translation id="1646446875146297738">如果您启用了"不跟踪"，您的浏览流量中将会包含一个请求。具体影响取决于网站是否回应该请求以及如何解读该请求。
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">出错了，我们马上处理。</translation>
 <translation id="6342069812937806050">刚刚</translation>
 <translation id="6344783595350022745">明文</translation>
+<translation id="6346549652287021269">开始执行新的下载任务？</translation>
 <translation id="6362362396625799311">没有隐身标签页</translation>
 <translation id="6374469231428023295">重试</translation>
 <translation id="6380866119319257197">如果您忘记了密码或想更改此设置，请<ph name="BEGIN_LINK" />重置同步设置<ph name="END_LINK" /></translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">同步到</translation>
 <translation id="7053983685419859001">禁止</translation>
 <translation id="7062545763355031412">接受并切换帐号</translation>
+<translation id="7102005569666697658">正在下载…<ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">隐藏</translation>
 <translation id="7133798577887235672">全称</translation>
 <translation id="7136892417564438900">无法使用相机</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">接受并退出</translation>
 <translation id="7772032839648071052">确认密码</translation>
 <translation id="780301667611848630">不用了，谢谢</translation>
+<translation id="7856733331829174190">无法下载</translation>
 <translation id="7859704718976024901">浏览记录</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">导出密码…</translation>
@@ -422,6 +426,7 @@
 <translation id="9083392325882095631">有1个书签</translation>
 <translation id="9100610230175265781">必须提供密码</translation>
 <translation id="9148126808321036104">重新登录</translation>
+<translation id="915371508759614899">取消下载？</translation>
 <translation id="9157836665414082580">禁止显示对话框</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
 <translation id="9203116392574189331">Handoff</translation>

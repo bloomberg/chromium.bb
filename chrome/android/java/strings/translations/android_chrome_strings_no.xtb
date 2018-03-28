@@ -87,6 +87,7 @@ Du må ha slått på Bluetooth og Posisjon for å bruke det fysiske nettet.</tra
 <translation id="1709438864123551175">Datasparing</translation>
 <translation id="1718835860248848330">Siste time</translation>
 <translation id="1729516292547892356">Du må oppdatere Google VR Services for å kunne se innhold for virtuell virkelighet.</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> – oppdatert <ph name="TIME_SINCE_UPDATE" /></translation>
 <translation id="1749561566933687563">Synkroniser bokmerkene dine</translation>
 <translation id="17513872634828108">Åpne faner</translation>
 <translation id="1756600373018374892">Trykk på denne knappen for å få rask tilgang til fanene dine.</translation>
@@ -784,6 +785,7 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="8200772114523450471">Fortsett</translation>
 <translation id="8209050860603202033">Åpne bildet</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB er lastet ned</translation>
+<translation id="8249310407154411074">Flytt til toppen</translation>
 <translation id="8250920743982581267">Dokumenter</translation>
 <translation id="8260126382462817229">Prøv å logge på igjen</translation>
 <translation id="8261506727792406068">Slett</translation>
