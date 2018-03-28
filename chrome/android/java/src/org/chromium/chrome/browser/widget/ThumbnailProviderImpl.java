@@ -122,7 +122,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
     public void getThumbnail(ThumbnailRequest request) {
         ThreadUtils.assertOnUiThread();
 
-        if (TextUtils.isEmpty(request.getFilePath()) || TextUtils.isEmpty(request.getContentId())) {
+        if (TextUtils.isEmpty(request.getContentId())) {
             return;
         }
 
@@ -188,7 +188,7 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
         Bitmap cachedBitmap =
                 getBitmapFromCache(mCurrentRequest.getContentId(), mCurrentRequest.getIconSize());
         if (cachedBitmap == null) {
-            mStorage.retrieveThumbnail(mCurrentRequest);
+            handleCacheMiss(mCurrentRequest);
         } else {
             // Send back the already-processed file.
             onThumbnailRetrieved(mCurrentRequest.getContentId(), cachedBitmap);
@@ -196,8 +196,28 @@ public class ThumbnailProviderImpl implements ThumbnailProvider, ThumbnailStorag
     }
 
     /**
+     * In the event of a cache miss from the in-memory cache, the thumbnail request is routed to one
+     * of the following :
+     * 1. May be the thumbnail request can directly provide the thumbnail.
+     * 2. Otherwise, the request is sent to {@link ThumbnailDiskStorage} which is a disk cache. If
+     * not found in disk cache, it would request the {@link ThumbnailGenerator} to generate a new
+     * thumbnail for the given file path.
+     * @param request Parameters that describe the thumbnail being retrieved
+     */
+    private void handleCacheMiss(ThumbnailProvider.ThumbnailRequest request) {
+        boolean providedByThumbnailRequest = request.getThumbnail(
+                bitmap -> onThumbnailRetrieved(request.getContentId(), bitmap));
+
+        if (!providedByThumbnailRequest) {
+            // Asynchronously process the file to make a thumbnail.
+            assert !TextUtils.isEmpty(request.getFilePath());
+            mStorage.retrieveThumbnail(request);
+        }
+    }
+
+    /**
      * Called when thumbnail is ready, retrieved from memory cache or by
-     * {@link ThumbnailDiskStorage}.
+     * {@link ThumbnailDiskStorage} or by {@link ThumbnailRequest#getThumbnail()}.
      * @param contentId Content ID for the thumbnail retrieved.
      * @param bitmap The thumbnail retrieved.
      */

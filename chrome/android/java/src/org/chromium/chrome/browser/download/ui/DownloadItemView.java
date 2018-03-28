@@ -20,10 +20,13 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
+import org.chromium.base.Callback;
 import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.download.items.OfflineContentAggregatorFactory;
+import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.util.FeatureUtilities;
 import org.chromium.chrome.browser.widget.ListMenuButton;
 import org.chromium.chrome.browser.widget.ListMenuButton.Item;
@@ -31,10 +34,8 @@ import org.chromium.chrome.browser.widget.MaterialProgressBar;
 import org.chromium.chrome.browser.widget.ThumbnailProvider;
 import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
-import org.chromium.components.offline_items_collection.ContentId;
+import org.chromium.components.offline_items_collection.OfflineItem;
 import org.chromium.components.offline_items_collection.OfflineItem.Progress;
-import org.chromium.components.offline_items_collection.OfflineItemVisuals;
-import org.chromium.components.offline_items_collection.VisualsCallback;
 import org.chromium.components.variations.VariationsAssociatedData;
 import org.chromium.ui.UiUtils;
 
@@ -204,6 +205,15 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     }
 
     @Override
+    public boolean getThumbnail(Callback<Bitmap> callback) {
+        if (!mItem.isOfflinePage()) return false;
+        OfflineContentAggregatorFactory.forProfile(Profile.getLastUsedProfile())
+                .getVisualsForItem(((OfflineItem) mItem.getItem()).id,
+                        (id, visuals) -> callback.onResult(visuals == null ? null : visuals.icon));
+        return true;
+    }
+
+    @Override
     public int getIconSize() {
         return mIconSize;
     }
@@ -235,9 +245,8 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         // immediately if the thumbnail is cached or asynchronously if it has to be fetched from a
         // remote source.
         mThumbnailBitmap = null;
-        if (item.isOfflinePage()) {
-            requestVisualsFromProvider(item);
-        } else if (fileType == DownloadFilter.FILTER_IMAGE && item.isComplete()) {
+        if (item.isOfflinePage()
+                || (fileType == DownloadFilter.FILTER_IMAGE && item.isComplete())) {
             thumbnailProvider.getThumbnail(this);
         } else {
             // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
@@ -312,18 +321,6 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private void setThumbnailBitmap(Bitmap thumbnail) {
         mThumbnailBitmap = thumbnail;
         updateIconView();
-    }
-
-    private void requestVisualsFromProvider(DownloadHistoryItemWrapper item) {
-        item.requestVisualsFromProvider(new VisualsCallback() {
-            @Override
-            public void onVisualsAvailable(ContentId id, OfflineItemVisuals visuals) {
-                if (visuals == null) return;
-
-                mThumbnailBitmap = visuals.icon;
-                updateIconView();
-            }
-        });
     }
 
     @Override
