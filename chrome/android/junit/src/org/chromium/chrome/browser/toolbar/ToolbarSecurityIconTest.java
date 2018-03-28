@@ -4,9 +4,7 @@
 package org.chromium.chrome.browser.toolbar;
 
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -44,18 +42,30 @@ public final class ToolbarSecurityIconTest {
     @Test
     public void testGetSecurityLevel() {
         assertEquals(ConnectionSecurityLevel.NONE,
-                ToolbarModelImpl.getSecurityLevel(null, !IS_OFFLINE_PAGE));
+                ToolbarModelImpl.getSecurityLevel(null, !IS_OFFLINE_PAGE, null));
         assertEquals(ConnectionSecurityLevel.NONE,
-                ToolbarModelImpl.getSecurityLevel(null, IS_OFFLINE_PAGE));
+                ToolbarModelImpl.getSecurityLevel(null, IS_OFFLINE_PAGE, null));
         assertEquals(ConnectionSecurityLevel.NONE,
-                ToolbarModelImpl.getSecurityLevel(mTab, IS_OFFLINE_PAGE));
+                ToolbarModelImpl.getSecurityLevel(mTab, IS_OFFLINE_PAGE, null));
 
         for (int securityLevel : SECURITY_LEVELS) {
-            doReturn(securityLevel).when(mTab).getSecurityLevel();
+            when(mTab.getSecurityLevel()).thenReturn(securityLevel);
             assertEquals("Wrong security level returned for " + securityLevel, securityLevel,
-                    ToolbarModelImpl.getSecurityLevel(mTab, !IS_OFFLINE_PAGE));
+                    ToolbarModelImpl.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, null));
         }
-        verify(mTab, times(SECURITY_LEVELS.length)).getSecurityLevel();
+
+        when(mTab.getSecurityLevel()).thenReturn(ConnectionSecurityLevel.SECURE);
+        assertEquals("Wrong security level returned for HTTPS publisher URL",
+                ConnectionSecurityLevel.SECURE,
+                ToolbarModelImpl.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "https://example.com"));
+        assertEquals("Wrong security level returned for HTTP publisher URL",
+                ConnectionSecurityLevel.HTTP_SHOW_WARNING,
+                ToolbarModelImpl.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, "http://example.com"));
+
+        when(mTab.getSecurityLevel()).thenReturn(ConnectionSecurityLevel.DANGEROUS);
+        assertEquals("Wrong security level returned for publisher URL on insecure page",
+                ConnectionSecurityLevel.DANGEROUS,
+                ToolbarModelImpl.getSecurityLevel(mTab, !IS_OFFLINE_PAGE, null));
     }
 
     @Test

@@ -49,10 +49,21 @@ public final class UrlFormatter {
     }
 
     /**
-     * @see formatUrlForDisplay(java.net.URI)
+     * @see #formatUrlForDisplay(URI)
      */
     public static String formatUrlForDisplay(String uri) {
         return nativeFormatUrlForDisplay(uri);
+    }
+
+    /**
+     * Builds a String representation of <code>uri</code> suitable for display to the user, omitting
+     * the scheme, the username and password, and trailing slash on a bare hostname.
+     * @param uri URI to format.
+     * @return Formatted URL.
+     * @see #formatUrlForDisplay(URI)
+     */
+    public static String formatUrlForDisplayOmitScheme(String uri) {
+        return nativeFormatUrlForDisplayOmitScheme(uri);
     }
 
     /**
@@ -85,6 +96,7 @@ public final class UrlFormatter {
 
     private static native String nativeFixupUrl(String url);
     private static native String nativeFormatUrlForDisplay(String url);
+    private static native String nativeFormatUrlForDisplayOmitScheme(String url);
     private static native String nativeFormatUrlForSecurityDisplay(String url);
     private static native String nativeFormatUrlForSecurityDisplayOmitScheme(String url);
 }

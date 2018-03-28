@@ -47,6 +47,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.IntentHandler;
 import org.chromium.chrome.browser.IntentHandler.ExternalAppId;
 import org.chromium.chrome.browser.KeyboardShortcuts;
@@ -1247,5 +1248,16 @@ public class CustomTabActivity extends ChromeActivity {
         }
 
         return super.requiresFirstRunToBeCompleted(intent);
+    }
+
+    @Override
+    public boolean canShowTrustedCdnPublisherUrl() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)) {
+            return false;
+        }
+
+        String publisherUrlPackage = mConnection.getTrustedCdnPublisherUrlPackage();
+        return publisherUrlPackage != null
+                && publisherUrlPackage.equals(mConnection.getClientPackageNameForSession(mSession));
     }
 }

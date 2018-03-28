@@ -245,6 +245,7 @@ public abstract class ChromeFeatureList {
     public static final String READER_MODE_IN_CCT = "ReaderModeInCCT";
     public static final String REMOVE_NAVIGATION_HISTORY = "RemoveNavigationHistory";
     public static final String SERVICE_WORKER_PAYMENT_APPS = "ServiceWorkerPaymentApps";
+    public static final String SHOW_TRUSTED_PUBLISHER_URL = "ShowTrustedPublisherURL";
     public static final String SITE_NOTIFICATION_CHANNELS = "SiteNotificationChannels";
     public static final String SOLE_INTEGRATION = "SoleIntegration";
     public static final String SOUND_CONTENT_SETTING = "SoundContentSetting";

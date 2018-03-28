@@ -49,6 +49,19 @@ static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForDisplay(
                JNI_UrlFormatter_ConvertJavaStringToGURL(env, url)));
 }
 
+static ScopedJavaLocalRef<jstring>
+JNI_UrlFormatter_FormatUrlForDisplayOmitScheme(
+    JNIEnv* env,
+    const JavaParamRef<jclass>& clazz,
+    const JavaParamRef<jstring>& url) {
+  return base::android::ConvertUTF16ToJavaString(
+      env, url_formatter::FormatUrl(
+               JNI_UrlFormatter_ConvertJavaStringToGURL(env, url),
+               url_formatter::kFormatUrlOmitDefaults |
+                   url_formatter::kFormatUrlOmitHTTPS,
+               net::UnescapeRule::SPACES, nullptr, nullptr, nullptr));
+}
+
 static ScopedJavaLocalRef<jstring> JNI_UrlFormatter_FormatUrlForSecurityDisplay(
     JNIEnv* env,
     const JavaParamRef<jclass>& clazz,
