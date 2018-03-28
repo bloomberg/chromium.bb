@@ -53,11 +53,17 @@ void PostWorkerTask(
 
 HistoryModelWorker::HistoryModelWorker(
     const base::WeakPtr<history::HistoryService>& history_service,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread)
-    : history_service_(history_service), ui_thread_(ui_thread) {
+    scoped_refptr<base::SingleThreadTaskRunner> ui_thread)
+    : history_service_(history_service),
+      ui_thread_(std::move(ui_thread)),
+      // base::OnTaskRunnerDeleter ensures that |cancelable_tracker_| is
+      // destroyed on the UI thread, even if |this| is deleted on a different
+      // thread. It is a requirement of base::CancelableTaskTracker to be
+      // constructed and deleted on the same sequence.
+      cancelable_tracker_(new base::CancelableTaskTracker,
+                          base::OnTaskRunnerDeleter(ui_thread_)) {
   CHECK(history_service.get());
   DCHECK(ui_thread_->BelongsToCurrentThread());
-  cancelable_tracker_.reset(new base::CancelableTaskTracker);
 }
 
 syncer::ModelSafeGroup HistoryModelWorker::GetModelSafeGroup() {
@@ -71,12 +77,7 @@ bool HistoryModelWorker::IsOnModelSequence() {
   return true;
 }
 
-HistoryModelWorker::~HistoryModelWorker() {
-  // The base::CancelableTaskTracker class is not thread-safe and must only be
-  // used from a single thread but the current object may not be destroyed from
-  // the UI thread, so delete it from the UI thread.
-  ui_thread_->DeleteSoon(FROM_HERE, cancelable_tracker_.release());
-}
+HistoryModelWorker::~HistoryModelWorker() = default;
 
 void HistoryModelWorker::ScheduleWork(base::OnceClosure work) {
   ui_thread_->PostTask(
