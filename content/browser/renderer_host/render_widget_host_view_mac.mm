@@ -603,10 +603,6 @@ void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
   }
 }
 
-gfx::Vector2dF RenderWidgetHostViewMac::GetLastScrollOffset() const {
-  return last_scroll_offset_;
-}
-
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
   return cocoa_view();
 }
@@ -1187,7 +1183,6 @@ void RenderWidgetHostViewMac::SubmitCompositorFrame(
   TRACE_EVENT0("browser", "RenderWidgetHostViewMac::OnSwapCompositorFrame");
 
   last_frame_root_background_color_ = frame.metadata.root_background_color;
-  last_scroll_offset_ = frame.metadata.root_scroll_offset;
 
   page_at_minimum_scale_ =
       frame.metadata.page_scale_factor == frame.metadata.min_page_scale_factor;

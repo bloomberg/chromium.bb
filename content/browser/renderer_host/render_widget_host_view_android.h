@@ -105,7 +105,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   void InitAsFullscreen(RenderWidgetHostView* reference_host_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
-  gfx::Vector2dF GetLastScrollOffset() const override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void Focus() override;
@@ -472,9 +471,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   std::unique_ptr<viz::FrameEvictor> frame_evictor_;
 
   bool observing_root_window_;
-
-  // The last scroll offset of the view.
-  gfx::Vector2dF last_scroll_offset_;
 
   bool controls_initialized_ = false;
   float prev_top_shown_pix_;

@@ -14,6 +14,7 @@ bool StructTraits<content::mojom::RenderFrameMetadataDataView,
     Read(content::mojom::RenderFrameMetadataDataView data,
          cc::RenderFrameMetadata* out) {
   out->root_background_color = data.root_background_color();
+  out->is_scroll_offset_at_top = data.is_scroll_offset_at_top();
   return data.ReadRootScrollOffset(&out->root_scroll_offset);
 }
 

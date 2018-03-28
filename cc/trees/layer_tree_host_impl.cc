@@ -1849,6 +1849,7 @@ RenderFrameMetadata LayerTreeHostImpl::MakeRenderFrameMetadata() {
   metadata.root_scroll_offset =
       gfx::ScrollOffsetToVector2dF(active_tree_->TotalScrollOffset());
   metadata.root_background_color = active_tree_->background_color();
+  metadata.is_scroll_offset_at_top = active_tree_->TotalScrollOffset().y() == 0;
   return metadata;
 }
 

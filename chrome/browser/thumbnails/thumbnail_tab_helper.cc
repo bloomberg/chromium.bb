@@ -285,7 +285,7 @@ void ThumbnailTabHelper::StartThumbnailCaptureIfNecessary(
     return;
   }
 
-  bool at_top = (view->GetLastScrollOffset().y() == 0);
+  bool at_top = view->IsScrollOffsetAtTop();
   bool load_completed = !web_contents()->IsLoading() && !load_interrupted_;
   thumbnailing_context_ = new ThumbnailingContext(url, at_top, load_completed);
 

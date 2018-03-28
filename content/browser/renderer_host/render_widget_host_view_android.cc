@@ -306,10 +306,6 @@ bool RenderWidgetHostViewAndroid::HasValidFrame() const {
   return true;
 }
 
-gfx::Vector2dF RenderWidgetHostViewAndroid::GetLastScrollOffset() const {
-  return last_scroll_offset_;
-}
-
 gfx::NativeView RenderWidgetHostViewAndroid::GetNativeView() const {
   return &view_;
 }
@@ -940,7 +936,6 @@ void RenderWidgetHostViewAndroid::SubmitCompositorFrame(
     return;
   }
 
-  last_scroll_offset_ = frame.metadata.root_scroll_offset;
   DCHECK(!frame.render_pass_list.empty());
 
   viz::RenderPass* root_pass = frame.render_pass_list.back().get();

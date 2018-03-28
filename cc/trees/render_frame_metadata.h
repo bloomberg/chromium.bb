@@ -30,6 +30,10 @@ class CC_EXPORT RenderFrameMetadata {
   bool operator==(const RenderFrameMetadata& other);
   bool operator!=(const RenderFrameMetadata& other);
 
+  // Indicates whether the scroll offset of the root layer is at top, i.e.,
+  // whether scroll_offset.y() == 0.
+  bool is_scroll_offset_at_top = true;
+
   // The background color of a CompositorFrame. It can be used for filling the
   // content area if the primary surface is unavailable and fallback is not
   // specified.

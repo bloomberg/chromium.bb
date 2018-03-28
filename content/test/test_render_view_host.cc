@@ -96,10 +96,6 @@ TestRenderWidgetHostView::~TestRenderWidgetHostView() {
     manager->InvalidateFrameSinkId(frame_sink_id_);
 }
 
-gfx::Vector2dF TestRenderWidgetHostView::GetLastScrollOffset() const {
-  return gfx::Vector2dF();
-}
-
 gfx::NativeView TestRenderWidgetHostView::GetNativeView() const {
 #if defined(USE_AURA)
   return window_.get();

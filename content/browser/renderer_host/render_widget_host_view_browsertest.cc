@@ -764,11 +764,7 @@ IN_PROC_BROWSER_TEST_P(CompositingRenderWidgetHostViewBrowserTestHiDPI,
   if (!ShouldContinueAfterTestURLLoad())
     return;
 
-  RenderWidgetHostViewBase* rwhv = GetRenderWidgetHostView();
-  gfx::Vector2dF scroll_offset = rwhv->GetLastScrollOffset();
-
-  EXPECT_EQ(scroll_offset.x(), 0);
-  EXPECT_EQ(scroll_offset.y(), kScrollAmount);
+  EXPECT_FALSE(GetRenderWidgetHostView()->IsScrollOffsetAtTop());
 }
 
 #if defined(OS_CHROMEOS)

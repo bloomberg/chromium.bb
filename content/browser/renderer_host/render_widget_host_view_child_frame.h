@@ -102,7 +102,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   gfx::Rect GetViewBounds() const override;
   gfx::Size GetVisibleViewportSize() const override;
   void SetInsets(const gfx::Insets& insets) override;
-  gfx::Vector2dF GetLastScrollOffset() const override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   void SetBackgroundColor(SkColor color) override;
@@ -251,10 +250,6 @@ class CONTENT_EXPORT RenderWidgetHostViewChildFrame
   void ClearCompositorSurfaceIfNecessary();
 
   void ProcessFrameSwappedCallbacks();
-
-  // The last scroll offset of the view.
-  gfx::Vector2dF last_scroll_offset_;
-
 
   // The ID for FrameSink associated with this view.
   viz::FrameSinkId frame_sink_id_;

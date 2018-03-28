@@ -526,10 +526,6 @@ void RenderWidgetHostViewAura::SetBounds(const gfx::Rect& rect) {
   InternalSetBounds(gfx::Rect(relative_origin, rect.size()));
 }
 
-gfx::Vector2dF RenderWidgetHostViewAura::GetLastScrollOffset() const {
-  return last_scroll_offset_;
-}
-
 gfx::NativeView RenderWidgetHostViewAura::GetNativeView() const {
   DCHECK(!is_mus_browser_plugin_guest_);
   return window_;
@@ -877,15 +873,6 @@ void RenderWidgetHostViewAura::SubmitCompositorFrame(
     viz::mojom::HitTestRegionListPtr hit_test_region_list) {
   DCHECK(delegated_frame_host_);
   TRACE_EVENT0("content", "RenderWidgetHostViewAura::OnSwapCompositorFrame");
-
-  last_scroll_offset_ = frame.metadata.root_scroll_offset;
-  if (IsUseZoomForDSFEnabled()) {
-    // With zoom-for-DSF Blink pixel coordinates are used and zoom is used to
-    // adjusts for the device scale factor. That's why last_scroll_offset_
-    // needs to be scaled to view coordinates.
-    // Without zoom-for-DSF the values are already in view coordinates.
-    last_scroll_offset_.Scale(1.0f / current_device_scale_factor_);
-  }
 
   delegated_frame_host_->SubmitCompositorFrame(
       local_surface_id, std::move(frame), std::move(hit_test_region_list));
@@ -1793,6 +1780,7 @@ void RenderWidgetHostViewAura::OnHostMovedInPixels(
 // RenderWidgetHostViewAura, RenderFrameMetadataProvider::Observer
 // implementation:
 void RenderWidgetHostViewAura::OnRenderFrameMetadataChanged() {
+  RenderWidgetHostViewBase::OnRenderFrameMetadataChanged();
   UpdateBackgroundColorFromRenderer(host()
                                         ->render_frame_metadata_provider()
                                         ->LastRenderFrameMetadata()
