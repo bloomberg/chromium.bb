@@ -30,34 +30,43 @@ BrowserCommandHandlerLinux::~BrowserCommandHandlerLinux() {
 
 void BrowserCommandHandlerLinux::OnMouseEvent(ui::MouseEvent* event) {
   // Handle standard Linux mouse buttons for going back and forward.
-  if (event->type() != ui::ET_MOUSE_PRESSED)
+  // Mouse press events trigger the navigations, while mouse release events are
+  // consumed and ignored so they aren't forwarded as unpaired events (which may
+  // trigger navigations as well)
+  bool mouse_pressed = (event->type() == ui::ET_MOUSE_PRESSED);
+  bool mouse_released = (event->type() == ui::ET_MOUSE_RELEASED);
+  if (!mouse_pressed && !mouse_released)
     return;
 
   // If extended mouse buttons are supported handle them in the renderer.
   if (base::FeatureList::IsEnabled(features::kExtendedMouseButtons))
     return;
 
-  bool back_button_pressed =
+  bool back_button_toggled =
       (event->changed_button_flags() == ui::EF_BACK_MOUSE_BUTTON);
-  bool forward_button_pressed =
+  bool forward_button_toggled =
       (event->changed_button_flags() == ui::EF_FORWARD_MOUSE_BUTTON);
-  if (!back_button_pressed && !forward_button_pressed)
+  if (!back_button_toggled && !forward_button_toggled)
     return;
 
   content::WebContents* contents =
       browser_view_->browser()->tab_strip_model()->GetActiveWebContents();
   if (!contents)
     return;
-  content::NavigationController& controller = contents->GetController();
-  if (back_button_pressed && controller.CanGoBack())
-    controller.GoBack();
-  else if (forward_button_pressed && controller.CanGoForward())
-    controller.GoForward();
 
-  // Always consume the event, whether a navigation was successful or not.
+  // Always consume the event, whether a navigation is successful or not.
   //
   // TODO(mustaq): Perhaps we should mark "handled" only for successful
   //   navigation above but a bug in the past didn't allow it:
   //   https://codereview.chromium.org/2763313002/#msg19
   event->SetHandled();
+
+  if (!mouse_pressed)
+    return;
+
+  content::NavigationController& controller = contents->GetController();
+  if (back_button_toggled && controller.CanGoBack())
+    controller.GoBack();
+  else if (forward_button_toggled && controller.CanGoForward())
+    controller.GoForward();
 }
