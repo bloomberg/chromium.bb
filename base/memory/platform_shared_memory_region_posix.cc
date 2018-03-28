@@ -31,6 +31,23 @@ struct ScopedPathUnlinkerTraits {
 using ScopedPathUnlinker =
     ScopedGeneric<const FilePath*, ScopedPathUnlinkerTraits>;
 
+bool CheckFDAccessMode(int fd, int expected_mode) {
+  int fd_status = fcntl(fd, F_GETFL);
+  if (fd_status == -1) {
+    DPLOG(ERROR) << "fcntl(" << fd << ", F_GETFL) failed";
+    return false;
+  }
+
+  int mode = fd_status & O_ACCMODE;
+  if (mode != expected_mode) {
+    DLOG(ERROR) << "Descriptor access mode (" << mode
+                << ") differs from expected (" << expected_mode << ")";
+    return false;
+  }
+
+  return true;
+}
+
 }  // namespace
 
 ScopedFDPair::ScopedFDPair() = default;
@@ -240,6 +257,27 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   return PlatformSharedMemoryRegion({std::move(fd), std::move(readonly_fd)},
                                     mode, size, UnguessableToken::Create());
 #endif  // !defined(OS_NACL)
+}
+
+bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
+    PlatformHandle handle,
+    Mode mode,
+    size_t size) {
+  if (!CheckFDAccessMode(handle.fd,
+                         mode == Mode::kReadOnly ? O_RDONLY : O_RDWR)) {
+    return false;
+  }
+
+  if (mode == Mode::kWritable)
+    return CheckFDAccessMode(handle.readonly_fd, O_RDONLY);
+
+  // The second descriptor must be invalid in kReadOnly and kUnsafe modes.
+  if (handle.readonly_fd != -1) {
+    DLOG(ERROR) << "The second descriptor must be invalid";
+    return false;
+  }
+
+  return true;
 }
 
 PlatformSharedMemoryRegion::PlatformSharedMemoryRegion(

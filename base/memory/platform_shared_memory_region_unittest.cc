@@ -192,6 +192,37 @@ TEST_F(PlatformSharedMemoryRegionTest, MapCurrentAndMaxProtectionSetCorrectly) {
 }
 #endif
 
+// Tests that platform handle permissions are checked correctly.
+TEST_F(PlatformSharedMemoryRegionTest,
+       CheckPlatformHandlePermissionsCorrespondToMode) {
+  using Mode = PlatformSharedMemoryRegion::Mode;
+  auto check = [](const PlatformSharedMemoryRegion& region,
+                  PlatformSharedMemoryRegion::Mode mode) {
+    return PlatformSharedMemoryRegion::
+        CheckPlatformHandlePermissionsCorrespondToMode(
+            region.GetPlatformHandle(), mode, region.GetSize());
+  };
+
+  // Check kWritable region.
+  PlatformSharedMemoryRegion region =
+      PlatformSharedMemoryRegion::CreateWritable(kRegionSize);
+  ASSERT_TRUE(region.IsValid());
+  EXPECT_TRUE(check(region, Mode::kWritable));
+
+  // Check kReadOnly region.
+  ASSERT_TRUE(region.ConvertToReadOnly());
+  EXPECT_TRUE(check(region, Mode::kReadOnly));
+
+  // Check kUnsafe region.
+  PlatformSharedMemoryRegion region2 =
+      PlatformSharedMemoryRegion::CreateUnsafe(kRegionSize);
+  ASSERT_TRUE(region2.IsValid());
+  EXPECT_TRUE(check(region2, Mode::kUnsafe));
+
+  // TODO(https://crbug.com/825177): add negative expectations once all
+  // platforms implement this check.
+}
+
 // Tests that it's impossible to create read-only platform shared memory region.
 TEST_F(PlatformSharedMemoryRegionTest, CreateReadOnlyRegionDeathTest) {
 #ifdef OFFICIAL_BUILD

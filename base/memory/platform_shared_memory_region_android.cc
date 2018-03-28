@@ -137,7 +137,6 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   if (size > static_cast<size_t>(std::numeric_limits<int>::max()))
     return {};
 
-  LOG(ERROR) << "Before CHECK";
   CHECK_NE(mode, Mode::kReadOnly) << "Creating a region in read-only mode will "
                                      "lead to this region being non-modifiable";
 
@@ -157,6 +156,27 @@ PlatformSharedMemoryRegion PlatformSharedMemoryRegion::Create(Mode mode,
   }
 
   return PlatformSharedMemoryRegion(std::move(fd), mode, size, guid);
+}
+
+bool PlatformSharedMemoryRegion::CheckPlatformHandlePermissionsCorrespondToMode(
+    PlatformHandle handle,
+    Mode mode,
+    size_t size) {
+  int prot = GetAshmemRegionProtectionMask(handle);
+  if (prot < 0)
+    return false;
+
+  bool is_read_only = (prot & PROT_WRITE) == 0;
+  bool expected_read_only = mode == Mode::kReadOnly;
+
+  if (is_read_only != expected_read_only) {
+    DLOG(ERROR) << "Ashmem region has a wrong protection mask: it is"
+                << (is_read_only ? " " : " not ") << "read-only but it should"
+                << (expected_read_only ? " " : " not ") << "be";
+    return false;
+  }
+
+  return true;
 }
 
 PlatformSharedMemoryRegion::PlatformSharedMemoryRegion(
