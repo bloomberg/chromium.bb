@@ -23,7 +23,7 @@ HostZoomLevelContext::HostZoomLevelContext(
 HostZoomLevelContext::~HostZoomLevelContext() {}
 
 void HostZoomLevelContext::DeleteOnCorrectThread() const {
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::UI) &&
+  if (BrowserThread::IsThreadInitialized(BrowserThread::UI) &&
       !BrowserThread::CurrentlyOn(BrowserThread::UI)) {
     BrowserThread::DeleteSoon(BrowserThread::UI, FROM_HERE, this);
     return;

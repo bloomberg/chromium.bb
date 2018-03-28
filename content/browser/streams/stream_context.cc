@@ -29,7 +29,7 @@ StreamContext* StreamContext::GetFor(BrowserContext* context) {
         kStreamContextKeyName,
         std::make_unique<UserDataAdapter<StreamContext>>(stream.get()));
     // Check first to avoid memory leak in unittests.
-    if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
+    if (BrowserThread::IsThreadInitialized(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
           base::BindOnce(&StreamContext::InitializeOnIOThread, stream));
@@ -51,7 +51,7 @@ void StreamContext::DeleteOnCorrectThread() const {
   // the current thread.
   // TODO(zork): Remove this custom deleter, and fix the leaks in all the
   // tests.
-  if (BrowserThread::IsMessageLoopValid(BrowserThread::IO) &&
+  if (BrowserThread::IsThreadInitialized(BrowserThread::IO) &&
       !BrowserThread::CurrentlyOn(BrowserThread::IO)) {
     BrowserThread::DeleteSoon(BrowserThread::IO, FROM_HERE, this);
     return;

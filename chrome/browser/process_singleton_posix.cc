@@ -1077,7 +1077,7 @@ bool ProcessSingleton::Create() {
   if (listen(sock, 5) < 0)
     NOTREACHED() << "listen failed: " << base::safe_strerror(errno);
 
-  DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
+  DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::IO));
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::BindOnce(&ProcessSingleton::LinuxWatcher::StartListening, watcher_,

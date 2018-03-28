@@ -300,18 +300,6 @@ std::string WebThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
 }
 
 // static
-bool WebThread::IsMessageLoopValid(ID identifier) {
-  if (!g_globals.IsCreated())
-    return false;
-
-  WebThreadGlobals& globals = g_globals.Get();
-  base::AutoLock lock(globals.lock);
-  DCHECK(identifier >= 0 && identifier < ID_COUNT);
-  return globals.threads[identifier] &&
-         globals.threads[identifier]->message_loop();
-}
-
-// static
 bool WebThread::PostTask(ID identifier,
                          const base::Location& from_here,
                          base::OnceClosure task) {

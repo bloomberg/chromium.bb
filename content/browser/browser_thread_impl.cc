@@ -274,12 +274,6 @@ std::string BrowserThread::GetDCheckCurrentlyOnErrorMessage(ID expected) {
   return result;
 }
 
-// static
-bool BrowserThread::IsMessageLoopValid(ID identifier) {
-  return IsThreadInitialized(identifier);
-}
-
-// static
 bool BrowserThread::PostTask(ID identifier,
                              const base::Location& from_here,
                              base::OnceClosure task) {

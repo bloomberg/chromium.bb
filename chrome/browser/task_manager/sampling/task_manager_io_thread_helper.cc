@@ -40,7 +40,7 @@ IoThreadHelperManager::~IoThreadHelperManager() {
   // registered as the UI thread.
   DCHECK(
       content::BrowserThread::CurrentlyOn(content::BrowserThread::UI) ||
-      !content::BrowserThread::IsMessageLoopValid(content::BrowserThread::UI));
+      !content::BrowserThread::IsThreadInitialized(content::BrowserThread::UI));
 
   content::BrowserThread::PostTask(
       content::BrowserThread::IO,

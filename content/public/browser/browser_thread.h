@@ -172,13 +172,6 @@ class CONTENT_EXPORT BrowserThread {
   // thread.  To DCHECK this, use the DCHECK_CURRENTLY_ON() macro above.
   static bool CurrentlyOn(ID identifier) WARN_UNUSED_RESULT;
 
-  // Deprecated: This is equivalent to IsThreadInitialized().
-  // Callable on any thread.  Returns whether the threads message loop is valid.
-  // If this returns false it means the thread is in the process of shutting
-  // down.
-  // TODO(gab): Replace callers with IsThreadInitialized().
-  static bool IsMessageLoopValid(ID identifier) WARN_UNUSED_RESULT;
-
   // If the current message loop is one of the known threads, returns true and
   // sets identifier to its ID.  Otherwise returns false.
   static bool GetCurrentThreadIdentifier(ID* identifier) WARN_UNUSED_RESULT;

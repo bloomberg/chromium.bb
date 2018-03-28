@@ -238,7 +238,7 @@ MediaStreamCaptureIndicator::~MediaStreamCaptureIndicator() {
   // invoke DoDevicesClosedOnUIThread().  In this case, usage_map_ won't be
   // empty like it should.
   DCHECK(usage_map_.empty() ||
-         !BrowserThread::IsMessageLoopValid(BrowserThread::UI));
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI));
 }
 
 std::unique_ptr<content::MediaStreamUI>

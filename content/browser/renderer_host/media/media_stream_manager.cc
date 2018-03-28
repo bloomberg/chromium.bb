@@ -201,7 +201,7 @@ bool CalledOnIOThread() {
   // Check if this function call is on the IO thread, except for unittests where
   // an IO thread might not have been created.
   return BrowserThread::CurrentlyOn(BrowserThread::IO) ||
-         !BrowserThread::IsMessageLoopValid(BrowserThread::IO);
+         !BrowserThread::IsThreadInitialized(BrowserThread::IO);
 }
 
 bool GetDeviceIDFromHMAC(const std::string& salt,

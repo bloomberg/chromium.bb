@@ -393,8 +393,8 @@ InProcessUtilityThreadHelper::InProcessUtilityThreadHelper()
 
 InProcessUtilityThreadHelper::~InProcessUtilityThreadHelper() {
   if (child_thread_count_) {
-    DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::UI));
-    DCHECK(BrowserThread::IsMessageLoopValid(BrowserThread::IO));
+    DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::UI));
+    DCHECK(BrowserThread::IsThreadInitialized(BrowserThread::IO));
     run_loop_.reset(new base::RunLoop);
     run_loop_->Run();
   }

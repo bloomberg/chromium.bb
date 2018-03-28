@@ -34,7 +34,7 @@ bool CalledOnUIThread() {
   // Ensure that these methods are called on the UI thread, except for unittests
   // where a UI thread might not have been created.
   return BrowserThread::CurrentlyOn(BrowserThread::UI) ||
-         !BrowserThread::IsMessageLoopValid(BrowserThread::UI);
+         !BrowserThread::IsThreadInitialized(BrowserThread::UI);
 }
 
 }  // namespace
