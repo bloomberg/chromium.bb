@@ -1314,9 +1314,9 @@ void PDFiumEngine::OnNewDataReceived() {
 }
 
 void PDFiumEngine::OnDocumentComplete() {
-  if (doc_) {
+  if (doc_)
     return FinishLoadingDocument();
-  }
+
   file_access_.m_FileLen = doc_loader_->GetDocumentSize();
   if (!fpdf_availability_) {
     fpdf_availability_ = FPDFAvail_Create(&file_availability_, &file_access_);
@@ -1337,7 +1337,8 @@ void PDFiumEngine::CancelBrowserDownload() {
 }
 
 void PDFiumEngine::FinishLoadingDocument() {
-  DCHECK(doc_loader_->IsDocumentComplete() && doc_);
+  DCHECK(doc_);
+  DCHECK(doc_loader_->IsDocumentComplete());
 
   LoadBody();
 
@@ -3091,7 +3092,8 @@ bool PDFiumEngine::TryLoadingDoc(const std::string& password,
 
 void PDFiumEngine::GetPasswordAndLoad() {
   getting_password_ = true;
-  DCHECK(!doc_ && FPDF_GetLastError() == FPDF_ERR_PASSWORD);
+  DCHECK(!doc_);
+  DCHECK_EQ(static_cast<unsigned long>(FPDF_ERR_PASSWORD), FPDF_GetLastError());
   client_->GetDocumentPassword(password_factory_.NewCallbackWithOutput(
       &PDFiumEngine::OnGetPasswordComplete));
 }
