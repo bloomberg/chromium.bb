@@ -155,10 +155,12 @@ void AwContentsMessageFilter::OnShouldOverrideUrlLoading(
   AwContentsClientBridge* client =
       AwContentsClientBridge::FromID(process_id_, render_frame_id);
   if (client) {
-    *ignore_navigation = client->ShouldOverrideUrlLoading(
-        url, has_user_gesture, is_redirect, is_main_frame);
-    // If the shouldOverrideUrlLoading call caused a java exception we should
-    // always return immediately here!
+    if (!client->ShouldOverrideUrlLoading(url, has_user_gesture, is_redirect,
+                                          is_main_frame, ignore_navigation)) {
+      // If the shouldOverrideUrlLoading call caused a java exception we should
+      // always return immediately here!
+      return;
+    }
   } else {
     LOG(WARNING) << "Failed to find the associated render view host for url: "
                  << url;
@@ -636,17 +638,20 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
     bool has_user_gesture,
     bool is_redirect,
     bool is_main_frame,
-    ui::PageTransition transition) {
+    ui::PageTransition transition,
+    bool* ignore_navigation) {
+  *ignore_navigation = false;
+
   // Only GETs can be overridden.
   if (request_method != "GET")
-    return false;
+    return true;
 
   bool application_initiated =
       browser_initiated || transition & ui::PAGE_TRANSITION_FORWARD_BACK;
 
   // Don't offer application-initiated navigations unless it's a redirect.
   if (application_initiated && !is_redirect)
-    return false;
+    return true;
 
   // For HTTP schemes, only top-level navigations can be overridden. Similarly,
   // WebView Classic lets app override only top level about:blank navigations.
@@ -658,20 +663,20 @@ bool AwContentBrowserClient::ShouldOverrideUrlLoading(
   if (!is_main_frame &&
       (gurl.SchemeIs(url::kHttpScheme) || gurl.SchemeIs(url::kHttpsScheme) ||
        gurl.SchemeIs(url::kAboutScheme)))
-    return false;
+    return true;
 
   WebContents* web_contents =
       WebContents::FromFrameTreeNodeId(frame_tree_node_id);
   if (web_contents == nullptr)
-    return false;
+    return true;
   AwContentsClientBridge* client_bridge =
       AwContentsClientBridge::FromWebContents(web_contents);
   if (client_bridge == nullptr)
-    return false;
+    return true;
 
   base::string16 url = base::UTF8ToUTF16(gurl.possibly_invalid_spec());
-  return client_bridge->ShouldOverrideUrlLoading(url, has_user_gesture,
-                                                 is_redirect, is_main_frame);
+  return client_bridge->ShouldOverrideUrlLoading(
+      url, has_user_gesture, is_redirect, is_main_frame, ignore_navigation);
 }
 
 bool AwContentBrowserClient::ShouldCreateTaskScheduler() {

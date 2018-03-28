@@ -84,7 +84,8 @@ class AwContentsClientBridge {
   bool ShouldOverrideUrlLoading(const base::string16& url,
                                 bool has_user_gesture,
                                 bool is_redirect,
-                                bool is_main_frame);
+                                bool is_main_frame,
+                                bool* ignore_navigation);
   void NewDownload(const GURL& url,
                    const std::string& user_agent,
                    const std::string& content_disposition,

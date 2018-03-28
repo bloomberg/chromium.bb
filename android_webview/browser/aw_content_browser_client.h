@@ -166,7 +166,8 @@ class AwContentBrowserClient : public content::ContentBrowserClient {
                                 bool has_user_gesture,
                                 bool is_redirect,
                                 bool is_main_frame,
-                                ui::PageTransition transition) override;
+                                ui::PageTransition transition,
+                                bool* ignore_navigation) override;
   bool ShouldCreateTaskScheduler() override;
   scoped_refptr<content::LoginDelegate> CreateLoginDelegate(
       net::AuthChallengeInfo* auth_info,

@@ -483,12 +483,19 @@ void NavigationRequest::BeginNavigation() {
 
 #if defined(OS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
-  bool should_override_url_loading =
-      GetContentClient()->browser()->ShouldOverrideUrlLoading(
+  bool should_override_url_loading = false;
+
+  if (!GetContentClient()->browser()->ShouldOverrideUrlLoading(
           frame_tree_node_->frame_tree_node_id(), browser_initiated_,
           request_params_.original_url, request_params_.original_method,
           common_params_.has_user_gesture, false,
-          frame_tree_node_->IsMainFrame(), common_params_.transition);
+          frame_tree_node_->IsMainFrame(), common_params_.transition,
+          &should_override_url_loading)) {
+    // A Java exception was thrown by the embedding application; we
+    // need to return from this task. Specifically, it's not safe from
+    // this point on to make any JNI calls.
+    return;
+  }
 
   // The content/ embedder might cause |this| to be deleted while
   // |ShouldOverrideUrlLoading| is called.
@@ -668,13 +675,18 @@ void NavigationRequest::OnRequestRedirected(
 #if defined(OS_ANDROID)
   base::WeakPtr<NavigationRequest> this_ptr(weak_factory_.GetWeakPtr());
 
-  bool should_override_url_loading =
-      GetContentClient()->browser()->ShouldOverrideUrlLoading(
+  bool should_override_url_loading = false;
+  if (!GetContentClient()->browser()->ShouldOverrideUrlLoading(
           frame_tree_node_->frame_tree_node_id(), browser_initiated_,
           redirect_info.new_url, redirect_info.new_method,
           // Redirects are always not counted as from user gesture.
           false, true, frame_tree_node_->IsMainFrame(),
-          common_params_.transition);
+          common_params_.transition, &should_override_url_loading)) {
+    // A Java exception was thrown by the embedding application; we
+    // need to return from this task. Specifically, it's not safe from
+    // this point on to make any JNI calls.
+    return;
+  }
 
   // The content/ embedder might cause |this| to be deleted while
   // |ShouldOverrideUrlLoading| is called.
