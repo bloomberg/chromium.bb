@@ -119,6 +119,11 @@ public class ModalDialogManager {
     private @ModalDialogType int mCurrentType;
 
     /**
+     * True if the current dialog is in the process of being dismissed.
+     */
+    private boolean mDismissingCurrentDialog;
+
+    /**
      * Constructor for initializing default {@link Presenter}.
      * @param defaultPresenter The default presenter to be used when no presenter specified.
      * @param defaultType The dialog type of the default presenter.
@@ -168,7 +173,8 @@ public class ModalDialogManager {
 
     /**
      * Dismiss the specified dialog. If the dialog is not currently showing, it will be removed from
-     * the pending dialog list.
+     * the pending dialog list. If the dialog is currently being dismissed this function does
+     * nothing.
      * @param dialog The dialog to be dismissed or removed from pending list.
      */
     public void dismissDialog(ModalDialogView dialog) {
@@ -184,9 +190,12 @@ public class ModalDialogManager {
 
         if (!isShowing()) return;
         assert dialog == mCurrentPresenter.getModalDialog();
+        if (mDismissingCurrentDialog) return;
+        mDismissingCurrentDialog = true;
         dialog.getController().onDismiss();
         mCurrentPresenter.setModalDialog(null, null);
         mCurrentPresenter = null;
+        mDismissingCurrentDialog = false;
         showNextDialog();
     }
 

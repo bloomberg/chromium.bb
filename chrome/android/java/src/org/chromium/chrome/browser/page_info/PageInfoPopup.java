@@ -55,6 +55,9 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ContentSettingsType;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
+import org.chromium.chrome.browser.modaldialog.ModalDialogManager;
+import org.chromium.chrome.browser.modaldialog.ModalDialogView;
+import org.chromium.chrome.browser.modaldialog.ModalDialogView.ButtonType;
 import org.chromium.chrome.browser.offlinepages.OfflinePageItem;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.omnibox.OmniboxUrlEmphasizer;
@@ -69,6 +72,8 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.ssl.SecurityStateModel;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
+import org.chromium.chrome.browser.vr_shell.OnExitVrRequestListener;
+import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.chrome.browser.widget.TintedDrawable;
 import org.chromium.components.location.LocationUtils;
 import org.chromium.components.security_state.ConnectionSecurityLevel;
@@ -92,7 +97,7 @@ import java.util.List;
 /**
  * Java side of Android implementation of the page info UI.
  */
-public class PageInfoPopup implements OnClickListener {
+public class PageInfoPopup implements OnClickListener, ModalDialogView.Controller {
     @Retention(RetentionPolicy.SOURCE)
     @IntDef({OPENED_FROM_MENU, OPENED_FROM_TOOLBAR, OPENED_FROM_VR})
     private @interface OpenedFromSource {}
@@ -263,12 +268,11 @@ public class PageInfoPopup implements OnClickListener {
     private static final int FADE_IN_DELAY_OFFSET = 20;
     private static final int CLOSE_CLEANUP_DELAY = 10;
 
-    private static final int MAX_TABLET_DIALOG_WIDTH_DP = 400;
+    private static final int MAX_MODAL_DIALOG_WIDTH_DP = 400;
 
     private final Context mContext;
     private final WindowAndroid mWindowAndroid;
     private final Tab mTab;
-    private final boolean mIsTablet;
 
     // A pointer to the C++ object for this UI.
     private long mNativePageInfoPopup;
@@ -286,7 +290,9 @@ public class PageInfoPopup implements OnClickListener {
     private final Button mOpenOnlineButton;
 
     // The dialog the container is placed in.
-    private final Dialog mDialog;
+    // mSheetDialog is set if the dialog appears as a sheet. Otherwise, mModalDialog is set.
+    private Dialog mSheetDialog;
+    private ModalDialogView mModalDialog;
 
     // Whether or not the popup should appear at the bottom of the screen.
     private final boolean mIsBottomPopup;
@@ -327,6 +333,9 @@ public class PageInfoPopup implements OnClickListener {
     // The intent associated with the instant app for this URL (or null if one does not exist).
     private Intent mInstantAppIntent;
 
+    // Observer for dismissing dialog if web contents get destroyed, navigate etc.
+    private WebContentsObserver mWebContentsObserver;
+
     /**
      * Creates the PageInfoPopup, but does not display it. Also initializes the corresponding
      * C++ object and saves a pointer to it.
@@ -342,7 +351,6 @@ public class PageInfoPopup implements OnClickListener {
         mTab = tab;
         mIsBottomPopup = mTab.getActivity().getBottomSheet() != null;
         mOfflinePageState = offlinePageState;
-        mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity);
 
         if (mOfflinePageState != NOT_OFFLINE_PAGE) {
             mOfflinePageCreationDate = offlinePageCreationDate;
@@ -467,63 +475,26 @@ public class PageInfoPopup implements OnClickListener {
             mInstantAppButton.setVisibility(View.GONE);
         }
 
-        // Create the dialog.
-        mDialog = new Dialog(mContext) {
-            private void superDismiss() {
-                super.dismiss();
-            }
-
-            @Override
-            public void dismiss() {
-                if (mIsTablet || mDismissWithoutAnimation) {
-                    // Dismiss the dialog without any custom animations on tablet.
-                    super.dismiss();
-                } else {
-                    Animator animator = createAllAnimations(false);
-                    animator.addListener(new AnimatorListenerAdapter() {
-                        @Override
-                        public void onAnimationEnd(Animator animation) {
-                            // onAnimationEnd is called during the final frame of the animation.
-                            // Delay the cleanup by a tiny amount to give this frame a chance to be
-                            // displayed before we destroy the dialog.
-                            mContainer.postDelayed(new Runnable() {
-                                @Override
-                                public void run() {
-                                    superDismiss();
-                                }
-                            }, CLOSE_CLEANUP_DELAY);
-                        }
-                    });
-                    animator.start();
-                }
-            }
-        };
-        mDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
-        mDialog.setCanceledOnTouchOutside(true);
-
         // On smaller screens, place the dialog at the top of the screen, and remove its border.
-        if (!mIsTablet) {
-            Window window = mDialog.getWindow();
-            window.setGravity(Gravity.TOP);
-            window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+        if (isSheet()) {
+            createSheetDialog();
         }
 
         // This needs to come after other member initialization.
         mNativePageInfoPopup = nativeInit(this, mTab.getWebContents());
-        final WebContentsObserver webContentsObserver =
-                new WebContentsObserver(mTab.getWebContents()) {
+        mWebContentsObserver = new WebContentsObserver(mTab.getWebContents()) {
             @Override
             public void navigationEntryCommitted() {
                 // If a navigation is committed (e.g. from in-page redirect), the data we're showing
                 // is stale so dismiss the dialog.
-                mDialog.dismiss();
+                dismissDialog();
             }
 
             @Override
             public void wasHidden() {
                 // The web contents were hidden (potentially by loading another URL via an intent),
                 // so dismiss the dialog).
-                mDialog.dismiss();
+                dismissDialog();
             }
 
             @Override
@@ -532,22 +503,9 @@ public class PageInfoPopup implements OnClickListener {
                 // Force the dialog to close immediately in case the destroy was from Chrome
                 // quitting.
                 mDismissWithoutAnimation = true;
-                mDialog.dismiss();
+                dismissDialog();
             }
         };
-        mDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-            @Override
-            public void onDismiss(DialogInterface dialog) {
-                assert mNativePageInfoPopup != 0;
-                webContentsObserver.destroy();
-                nativeDestroy(mNativePageInfoPopup);
-                mNativePageInfoPopup = 0;
-            }
-        });
-
-        if (mIsBottomPopup) {
-            mDialog.getWindow().getAttributes().gravity = Gravity.BOTTOM | Gravity.END;
-        }
 
         showDialog();
     }
@@ -764,9 +722,10 @@ public class PageInfoPopup implements OnClickListener {
      * Displays the PageInfoPopup.
      */
     private void showDialog() {
-        if (!mIsTablet) {
+        ScrollView dialogView;
+        if (isSheet()) {
             // On smaller screens, make the dialog fill the width of the screen.
-            ScrollView scrollView = new ScrollView(mContext) {
+            dialogView = new ScrollView(mContext) {
                 @Override
                 protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
                     int dialogMaxHeight = mTab.getHeight();
@@ -783,21 +742,12 @@ public class PageInfoPopup implements OnClickListener {
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 }
             };
-            scrollView.addView(mContainer);
-            mDialog.addContentView(scrollView, new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT));
-
-            // This must be called after addContentView, or it won't fully fill to the edge.
-            Window window = mDialog.getWindow();
-            window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.WRAP_CONTENT);
         } else {
             // On larger screens, make the dialog centered in the screen and have a maximum width.
-            ScrollView scrollView = new ScrollView(mContext) {
+            dialogView = new ScrollView(mContext) {
                 @Override
                 protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-                    final int maxDialogWidthInPx = (int) (MAX_TABLET_DIALOG_WIDTH_DP
+                    final int maxDialogWidthInPx = (int) (MAX_MODAL_DIALOG_WIDTH_DP
                             * mContext.getResources().getDisplayMetrics().density);
                     if (MeasureSpec.getSize(widthMeasureSpec) > maxDialogWidthInPx) {
                         widthMeasureSpec = MeasureSpec.makeMeasureSpec(maxDialogWidthInPx,
@@ -806,22 +756,36 @@ public class PageInfoPopup implements OnClickListener {
                     super.onMeasure(widthMeasureSpec, heightMeasureSpec);
                 }
             };
-
-            scrollView.addView(mContainer);
-            mDialog.addContentView(scrollView, new LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.WRAP_CONTENT,
-                    LinearLayout.LayoutParams.MATCH_PARENT));
         }
 
-        mDialog.show();
+        dialogView.addView(mContainer);
+
+        if (isSheet()) {
+            mSheetDialog.addContentView(dialogView,
+                    new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,
+                            LinearLayout.LayoutParams.MATCH_PARENT));
+
+            // This must be called after addContentView, or it won't fully fill to the edge.
+            Window window = mSheetDialog.getWindow();
+            window.setLayout(
+                    ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+            mSheetDialog.show();
+        } else {
+            ModalDialogView.Params params = new ModalDialogView.Params();
+            params.customView = dialogView;
+            params.cancelOnTouchOutside = true;
+            mModalDialog = new ModalDialogView(this, params);
+            mTab.getActivity().getModalDialogManager().showDialog(
+                    mModalDialog, ModalDialogManager.APP_MODAL);
+        }
     }
 
     /**
      * Dismiss the popup, and then run a task after the animation has completed (if there is one).
      */
     private void runAfterDismiss(Runnable task) {
-        mDialog.dismiss();
-        if (mIsTablet) {
+        dismissDialog();
+        if (!isSheet()) {
             task.run();
         } else {
             mContainer.postDelayed(task, FADE_DURATION + CLOSE_CLEANUP_DELAY);
@@ -859,16 +823,26 @@ public class PageInfoPopup implements OnClickListener {
             // Expand/collapse the displayed URL title.
             mUrlTitle.toggleTruncation();
         } else if (view == mConnectionMessage) {
-            runAfterDismiss(new Runnable() {
-                @Override
-                public void run() {
-                    if (!mTab.getWebContents().isDestroyed()) {
-                        recordAction(
-                                PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
-                        ConnectionInfoPopup.show(mContext, mTab.getWebContents());
+            // TODO(crbug.com/819883): Port the connection info popup to VR.
+            // TODO(crbug.com/826749): Track how often users encounter this via UMA.
+            if (VrShellDelegate.isInVr()) {
+                VrShellDelegate.requestToExitVr(new OnExitVrRequestListener() {
+                    @Override
+                    public void onSucceeded() {
+                        showConnectionInfoPopup();
                     }
-                }
-            });
+
+                    @Override
+                    public void onDenied() {}
+                });
+            } else {
+                runAfterDismiss(new Runnable() {
+                    @Override
+                    public void run() {
+                        showConnectionInfoPopup();
+                    }
+                });
+            }
         } else if (view.getId() == R.id.page_info_permission_row) {
             final Object intentOverride = view.getTag(R.id.permission_intent_override);
 
@@ -924,6 +898,28 @@ public class PageInfoPopup implements OnClickListener {
                     OfflinePageUtils.reload(mTab);
                 }
             });
+        }
+    }
+
+    @Override
+    public void onClick(@ButtonType int buttonType) {}
+
+    @Override
+    public void onCancel() {}
+
+    @Override
+    public void onDismiss() {
+        assert mNativePageInfoPopup != 0;
+        mWebContentsObserver.destroy();
+        nativeDestroy(mNativePageInfoPopup);
+        mNativePageInfoPopup = 0;
+    }
+
+    private void dismissDialog() {
+        if (isSheet()) {
+            mSheetDialog.dismiss();
+        } else {
+            mTab.getActivity().getModalDialogManager().dismissDialog(mModalDialog);
         }
     }
 
@@ -985,16 +981,16 @@ public class PageInfoPopup implements OnClickListener {
     /**
      * Create animations for showing/hiding the popup.
      *
-     * Tablets use the default Dialog fade-in instead of sliding in manually.
+     * On phones the dialog is slid in as a sheet. Otherwise, the default fade-in is used.
      */
     private Animator createAllAnimations(boolean isEnter) {
         AnimatorSet animation = new AnimatorSet();
         AnimatorSet.Builder builder = null;
         Animator startAnim;
 
-        if (mIsTablet) {
+        if (!isSheet()) {
             // The start time of the entire AnimatorSet is the start time of the first animation
-            // added to the Builder. We use a blank AnimatorSet on tablet as an easy way to
+            // added to the Builder. We use a blank AnimatorSet for modal dialogs as an easy way to
             // co-ordinate this start time.
             startAnim = new AnimatorSet();
         } else {
@@ -1033,6 +1029,68 @@ public class PageInfoPopup implements OnClickListener {
      */
     private boolean isShowingOfflinePage() {
         return mOfflinePageState != NOT_OFFLINE_PAGE;
+    }
+
+    private boolean isSheet() {
+        return !DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)
+                && !VrShellDelegate.isInVr();
+    }
+
+    private void createSheetDialog() {
+        mSheetDialog = new Dialog(mContext) {
+            private void superDismiss() {
+                super.dismiss();
+            }
+
+            @Override
+            public void dismiss() {
+                if (mDismissWithoutAnimation) {
+                    // Dismiss the modal dialogs without any custom animations.
+                    super.dismiss();
+                } else {
+                    Animator animator = createAllAnimations(false);
+                    animator.addListener(new AnimatorListenerAdapter() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            // onAnimationEnd is called during the final frame of the animation.
+                            // Delay the cleanup by a tiny amount to give this frame a chance to
+                            // be displayed before we destroy the dialog.
+                            mContainer.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    superDismiss();
+                                }
+                            }, CLOSE_CLEANUP_DELAY);
+                        }
+                    });
+                    animator.start();
+                }
+            }
+        };
+        mSheetDialog.requestWindowFeature(Window.FEATURE_NO_TITLE);
+        mSheetDialog.setCanceledOnTouchOutside(true);
+
+        Window window = mSheetDialog.getWindow();
+        window.setGravity(Gravity.TOP);
+        window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
+
+        mSheetDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+            @Override
+            public void onDismiss(DialogInterface dialog) {
+                PageInfoPopup.this.onDismiss();
+            }
+        });
+
+        if (mIsBottomPopup) {
+            mSheetDialog.getWindow().getAttributes().gravity = Gravity.BOTTOM | Gravity.END;
+        }
+    }
+
+    private void showConnectionInfoPopup() {
+        if (!mTab.getWebContents().isDestroyed()) {
+            recordAction(PageInfoAction.PAGE_INFO_SECURITY_DETAILS_OPENED);
+            ConnectionInfoPopup.show(mContext, mTab.getWebContents());
+        }
     }
 
     /**
