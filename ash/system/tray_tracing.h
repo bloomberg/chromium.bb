@@ -6,6 +6,7 @@
 #define ASH_SYSTEM_TRAY_TRACING_H_
 
 #include "ash/ash_export.h"
+#include "ash/system/model/tracing_model.h"
 #include "ash/system/tray/tray_image_item.h"
 #include "base/macros.h"
 
@@ -14,14 +15,6 @@ class View;
 }
 
 namespace ash {
-
-class ASH_EXPORT TracingObserver {
- public:
-  virtual ~TracingObserver() {}
-
-  // Notifies when tracing mode changes.
-  virtual void OnTracingModeChanged(bool value) = 0;
-};
 
 // This is the item that displays when users enable performance tracing at
 // chrome://slow.  It alerts them that this mode is running, and provides an
@@ -32,7 +25,7 @@ class TrayTracing : public TrayImageItem, public TracingObserver {
   ~TrayTracing() override;
 
  private:
-  void SetTrayIconVisible(bool visible);
+  void UpdateTrayIcon();
 
   // Overridden from TrayImageItem.
   bool GetInitialVisibility() override;
@@ -42,9 +35,7 @@ class TrayTracing : public TrayImageItem, public TracingObserver {
   void OnDetailedViewDestroyed() override;
 
   // Overridden from TracingObserver.
-  void OnTracingModeChanged(bool value) override;
-
-  views::View* default_;
+  void OnTracingModeChanged() override;
 
   DISALLOW_COPY_AND_ASSIGN(TrayTracing);
 };

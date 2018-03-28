@@ -9,6 +9,7 @@
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/actionable_view.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_controller.h"
@@ -71,30 +72,30 @@ class DefaultTracingView : public ActionableView {
 // ash::TrayTracing
 
 TrayTracing::TrayTracing(SystemTray* system_tray)
-    : TrayImageItem(system_tray, kSystemTrayTracingIcon, UMA_TRACING),
-      default_(nullptr) {
+    : TrayImageItem(system_tray, kSystemTrayTracingIcon, UMA_TRACING) {
   DCHECK(system_tray);
-  Shell::Get()->system_tray_notifier()->AddTracingObserver(this);
+  Shell::Get()->system_tray_model()->tracing()->AddObserver(this);
 }
 
 TrayTracing::~TrayTracing() {
-  Shell::Get()->system_tray_notifier()->RemoveTracingObserver(this);
+  Shell::Get()->system_tray_model()->tracing()->RemoveObserver(this);
 }
 
-void TrayTracing::SetTrayIconVisible(bool visible) {
-  if (tray_view())
-    tray_view()->SetVisible(visible);
+void TrayTracing::UpdateTrayIcon() {
+  if (!tray_view())
+    return;
+  tray_view()->SetVisible(
+      Shell::Get()->system_tray_model()->tracing()->is_tracing());
 }
 
 bool TrayTracing::GetInitialVisibility() {
-  return false;
+  return Shell::Get()->system_tray_model()->tracing()->is_tracing();
 }
 
 views::View* TrayTracing::CreateDefaultView(LoginStatus status) {
-  CHECK(default_ == nullptr);
-  if (tray_view() && tray_view()->visible())
-    default_ = new tray::DefaultTracingView(this);
-  return default_;
+  if (Shell::Get()->system_tray_model()->tracing()->is_tracing())
+    return new tray::DefaultTracingView(this);
+  return nullptr;
 }
 
 views::View* TrayTracing::CreateDetailedView(LoginStatus status) {
@@ -102,13 +103,12 @@ views::View* TrayTracing::CreateDetailedView(LoginStatus status) {
 }
 
 void TrayTracing::OnDefaultViewDestroyed() {
-  default_ = nullptr;
 }
 
 void TrayTracing::OnDetailedViewDestroyed() {}
 
-void TrayTracing::OnTracingModeChanged(bool value) {
-  SetTrayIconVisible(value);
+void TrayTracing::OnTracingModeChanged() {
+  UpdateTrayIcon();
 }
 
 }  // namespace ash

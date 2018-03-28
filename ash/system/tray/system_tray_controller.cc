@@ -8,6 +8,7 @@
 #include "ash/shell.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
+#include "ash/system/model/tracing_model.h"
 #include "ash/system/status_area_widget.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
@@ -191,13 +192,12 @@ void SystemTrayController::SetEnterpriseDisplayDomain(
     bool active_directory_managed) {
   Shell::Get()
       ->system_tray_model()
-      ->enterprise_domain()
       ->SetEnterpriseDisplayDomain(enterprise_display_domain,
                                    active_directory_managed);
 }
 
 void SystemTrayController::SetPerformanceTracingIconVisible(bool visible) {
-  Shell::Get()->system_tray_notifier()->NotifyTracingModeChanged(visible);
+  Shell::Get()->system_tray_model()->SetPerformanceTracingIconVisible(visible);
 }
 
 void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
