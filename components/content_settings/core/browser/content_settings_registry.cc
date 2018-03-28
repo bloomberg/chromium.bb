@@ -353,6 +353,14 @@ void ContentSettingsRegistry::Init() {
            WebsiteSettingsRegistry::DESKTOP |
                WebsiteSettingsRegistry::PLATFORM_ANDROID,
            ContentSettingsInfo::INHERIT_IN_INCOGNITO);
+
+  Register(CONTENT_SETTINGS_TYPE_USB_GUARD, "usb-guard", CONTENT_SETTING_ASK,
+           WebsiteSettingsInfo::UNSYNCABLE, WhitelistedSchemes(),
+           ValidSettings(CONTENT_SETTING_ASK, CONTENT_SETTING_BLOCK),
+           WebsiteSettingsInfo::TOP_LEVEL_ORIGIN_ONLY_SCOPE,
+           WebsiteSettingsRegistry::DESKTOP |
+               WebsiteSettingsRegistry::PLATFORM_ANDROID,
+           ContentSettingsInfo::INHERIT_IF_LESS_PERMISSIVE);
 }
 
 void ContentSettingsRegistry::Register(

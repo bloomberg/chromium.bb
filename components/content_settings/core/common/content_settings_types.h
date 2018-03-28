@@ -107,6 +107,11 @@ enum ContentSettingsType {
   // Used to store whether to allow a website to install a payment handler.
   CONTENT_SETTINGS_TYPE_PAYMENT_HANDLER,
 
+  // Content setting which stores whether to allow sites to ask for permission
+  // to access USB devices. If this is allowed specific device permissions are
+  // stored under CONTENT_SETTINGS_TYPE_USB_CHOOSER_DATA.
+  CONTENT_SETTINGS_TYPE_USB_GUARD,
+
   CONTENT_SETTINGS_NUM_TYPES,
 };
 

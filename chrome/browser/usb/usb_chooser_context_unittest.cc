@@ -4,9 +4,11 @@
 
 #include <vector>
 
+#include "chrome/browser/content_settings/host_content_settings_map_factory.h"
 #include "chrome/browser/usb/usb_chooser_context.h"
 #include "chrome/browser/usb/usb_chooser_context_factory.h"
 #include "chrome/test/base/testing_profile.h"
+#include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "device/base/mock_device_client.h"
 #include "device/usb/mock_usb_device.h"
@@ -212,4 +214,50 @@ TEST_F(UsbChooserContextTest, GrantPermissionInIncognito) {
     ASSERT_EQ(1u, all_origin_objects.size());
     EXPECT_TRUE(all_origin_objects[0]->incognito);
   }
+}
+
+TEST_F(UsbChooserContextTest, UsbGuardPermission) {
+  const GURL kFooOrigin("https://foo.com");
+  const GURL kBarOrigin("https://bar.com");
+  auto device =
+      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "Gizmo", "ABC123");
+  auto ephemeral_device =
+      base::MakeRefCounted<MockUsbDevice>(0, 0, "Google", "Gizmo", "");
+  device_client_.usb_service()->AddDevice(device);
+  device_client_.usb_service()->AddDevice(ephemeral_device);
+
+  auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+  map->SetContentSettingDefaultScope(kFooOrigin, kFooOrigin,
+                                     CONTENT_SETTINGS_TYPE_USB_GUARD,
+                                     std::string(), CONTENT_SETTING_BLOCK);
+
+  auto* store = UsbChooserContextFactory::GetForProfile(profile());
+  store->GrantDevicePermission(kFooOrigin, kFooOrigin, device->guid());
+  store->GrantDevicePermission(kFooOrigin, kFooOrigin,
+                               ephemeral_device->guid());
+  store->GrantDevicePermission(kBarOrigin, kBarOrigin, device->guid());
+  store->GrantDevicePermission(kBarOrigin, kBarOrigin,
+                               ephemeral_device->guid());
+
+  std::vector<std::unique_ptr<base::DictionaryValue>> objects =
+      store->GetGrantedObjects(kFooOrigin, kFooOrigin);
+  EXPECT_EQ(0u, objects.size());
+
+  objects = store->GetGrantedObjects(kBarOrigin, kBarOrigin);
+  EXPECT_EQ(2u, objects.size());
+
+  std::vector<std::unique_ptr<ChooserContextBase::Object>> all_origin_objects =
+      store->GetAllGrantedObjects();
+  for (const auto& object : all_origin_objects) {
+    EXPECT_EQ(object->requesting_origin, kBarOrigin);
+    EXPECT_EQ(object->embedding_origin, kBarOrigin);
+  }
+  EXPECT_EQ(2u, all_origin_objects.size());
+
+  EXPECT_FALSE(store->HasDevicePermission(kFooOrigin, kFooOrigin, device));
+  EXPECT_FALSE(
+      store->HasDevicePermission(kFooOrigin, kFooOrigin, ephemeral_device));
+  EXPECT_TRUE(store->HasDevicePermission(kBarOrigin, kBarOrigin, device));
+  EXPECT_TRUE(
+      store->HasDevicePermission(kBarOrigin, kBarOrigin, ephemeral_device));
 }
