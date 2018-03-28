@@ -426,7 +426,8 @@ TEST_F(RenderProcessHostUnitTest, DoNotReuseHostThatIsNeverSuitableForReuse) {
 }
 
 // Tests that RenderProcessHost reuse considers navigations correctly.
-TEST_F(RenderProcessHostUnitTest, ReuseNavigationProcess) {
+// Disabled for flakiness: see https://crbug.com/826595
+TEST_F(RenderProcessHostUnitTest, DISABLED_ReuseNavigationProcess) {
   const GURL kUrl1("http://foo.com");
   const GURL kUrl2("http://bar.com");
 
