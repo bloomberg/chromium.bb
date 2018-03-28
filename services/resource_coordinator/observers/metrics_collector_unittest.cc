@@ -35,27 +35,23 @@ class MAYBE_MetricsCollectorTest : public CoordinationUnitTestHarness {
 
   void SetUp() override {
     MetricsCollector* metrics_collector = new MetricsCollector();
-    ResourceCoordinatorClock::SetClockForTesting(
-        std::make_unique<base::SimpleTestTickClock>());
-    clock_ = static_cast<base::SimpleTestTickClock*>(
-        ResourceCoordinatorClock::GetClockForTesting());
+    ResourceCoordinatorClock::SetClockForTesting(&clock_);
 
     // Sets a valid starting time.
-    clock_->SetNowTicks(base::TimeTicks::Now());
+    clock_.SetNowTicks(base::TimeTicks::Now());
     coordination_unit_manager().RegisterObserver(
         base::WrapUnique(metrics_collector));
   }
 
   void TearDown() override {
-    clock_ = nullptr;
     ResourceCoordinatorClock::ResetClockForTesting();
   }
 
  protected:
-  void AdvanceClock(base::TimeDelta delta) { clock_->Advance(delta); }
+  void AdvanceClock(base::TimeDelta delta) { clock_.Advance(delta); }
 
   base::HistogramTester histogram_tester_;
-  base::SimpleTestTickClock* clock_ = nullptr;
+  base::SimpleTestTickClock clock_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MAYBE_MetricsCollectorTest);
