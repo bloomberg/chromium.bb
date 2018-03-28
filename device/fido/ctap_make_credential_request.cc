@@ -23,7 +23,13 @@ CtapMakeCredentialRequest::CtapMakeCredentialRequest(
       public_key_credential_params_(std::move(public_key_credential_params)) {}
 
 CtapMakeCredentialRequest::CtapMakeCredentialRequest(
+    const CtapMakeCredentialRequest& that) = default;
+
+CtapMakeCredentialRequest::CtapMakeCredentialRequest(
     CtapMakeCredentialRequest&& that) = default;
+
+CtapMakeCredentialRequest& CtapMakeCredentialRequest::operator=(
+    const CtapMakeCredentialRequest& that) = default;
 
 CtapMakeCredentialRequest& CtapMakeCredentialRequest::operator=(
     CtapMakeCredentialRequest&& that) = default;

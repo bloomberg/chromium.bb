@@ -68,6 +68,7 @@ class MockFidoDevice : public FidoDevice {
       CtapRequestCommand command,
       base::Optional<base::span<const uint8_t>> response,
       base::TimeDelta delay = base::TimeDelta());
+  void ExpectCtap2CommandWithoutResponse(CtapRequestCommand command);
 
   base::WeakPtr<FidoDevice> GetWeakPtr() override;
 

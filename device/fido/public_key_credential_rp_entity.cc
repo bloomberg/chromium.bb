@@ -12,7 +12,13 @@ PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(std::string rp_id)
     : rp_id_(std::move(rp_id)) {}
 
 PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(
+    const PublicKeyCredentialRpEntity& other) = default;
+
+PublicKeyCredentialRpEntity::PublicKeyCredentialRpEntity(
     PublicKeyCredentialRpEntity&& other) = default;
+
+PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::operator=(
+    const PublicKeyCredentialRpEntity& other) = default;
 
 PublicKeyCredentialRpEntity& PublicKeyCredentialRpEntity::operator=(
     PublicKeyCredentialRpEntity&& other) = default;

@@ -57,16 +57,16 @@ PublicKeyCredentialUserEntity::PublicKeyCredentialUserEntity(
     : user_id_(std::move(user_id)) {}
 
 PublicKeyCredentialUserEntity::PublicKeyCredentialUserEntity(
-    PublicKeyCredentialUserEntity&& other) = default;
+    const PublicKeyCredentialUserEntity& other) = default;
 
 PublicKeyCredentialUserEntity::PublicKeyCredentialUserEntity(
-    const PublicKeyCredentialUserEntity& other) = default;
-
-PublicKeyCredentialUserEntity& PublicKeyCredentialUserEntity::operator=(
     PublicKeyCredentialUserEntity&& other) = default;
 
 PublicKeyCredentialUserEntity& PublicKeyCredentialUserEntity::operator=(
     const PublicKeyCredentialUserEntity& other) = default;
+
+PublicKeyCredentialUserEntity& PublicKeyCredentialUserEntity::operator=(
+    PublicKeyCredentialUserEntity&& other) = default;
 
 PublicKeyCredentialUserEntity::~PublicKeyCredentialUserEntity() = default;
 

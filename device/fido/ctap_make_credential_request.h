@@ -30,7 +30,9 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
       PublicKeyCredentialRpEntity rp,
       PublicKeyCredentialUserEntity user,
       PublicKeyCredentialParams public_key_credential_params);
+  CtapMakeCredentialRequest(const CtapMakeCredentialRequest& that);
   CtapMakeCredentialRequest(CtapMakeCredentialRequest&& that);
+  CtapMakeCredentialRequest& operator=(const CtapMakeCredentialRequest& that);
   CtapMakeCredentialRequest& operator=(CtapMakeCredentialRequest&& that);
   ~CtapMakeCredentialRequest();
 
@@ -68,8 +70,6 @@ class COMPONENT_EXPORT(DEVICE_FIDO) CtapMakeCredentialRequest {
   base::Optional<std::vector<PublicKeyCredentialDescriptor>> exclude_list_;
   base::Optional<std::vector<uint8_t>> pin_auth_;
   base::Optional<uint8_t> pin_protocol_;
-
-  DISALLOW_COPY_AND_ASSIGN(CtapMakeCredentialRequest);
 };
 
 }  // namespace device
