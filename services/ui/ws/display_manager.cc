@@ -87,7 +87,6 @@ bool DisplayManager::SetDisplayConfiguration(
   }
 
   size_t primary_display_index = std::numeric_limits<size_t>::max();
-  bool found_internal_display = false;
 
   // Check the mirrors before potentially passing them to a unified display.
   base::flat_set<int64_t> mirror_ids;
@@ -108,7 +107,6 @@ bool DisplayManager::SetDisplayConfiguration(
       LOG(ERROR) << "SetDisplayConfiguration passed primary display in mirrors";
       return false;
     }
-    found_internal_display |= mirror.id() == internal_display_id;
   }
 
   base::flat_set<int64_t> display_ids;
@@ -124,7 +122,6 @@ bool DisplayManager::SetDisplayConfiguration(
     }
     if (display.id() == primary_display_id)
       primary_display_index = i;
-    found_internal_display |= display.id() == internal_display_id;
     Display* ws_display = GetDisplayById(display.id());
     if (!ws_display && display.id() != display::kUnifiedDisplayId) {
       LOG(ERROR) << "SetDisplayConfiguration passed unknown display id "
@@ -137,16 +134,8 @@ bool DisplayManager::SetDisplayConfiguration(
     return false;
   }
 
-  // Ignore a temporarily missing interal display during ash unified mode setup.
-  if (!found_internal_display &&
-      internal_display_id != display::kInvalidDisplayId &&
-      (displays.size() != 1 ||
-       displays[0].id() != display::kUnifiedDisplayId)) {
-    LOG(ERROR) << "SetDisplayConfiguration internal display id not in displays";
-    return false;
-  }
-
   // See comment in header as to why this doesn't use Display::SetInternalId().
+  // NOTE: the internal display might not be listed in |displays| or |mirrors|.
   internal_display_id_ = internal_display_id;
 
   display::DisplayList& display_list =
