@@ -5,10 +5,10 @@
 #ifndef CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_TRACKER_H_
 #define CHROME_BROWSER_UI_BLOCKED_CONTENT_POPUP_TRACKER_H_
 
-#include <memory>
-
 #include "base/macros.h"
+#include "base/optional.h"
 #include "base/time/time.h"
+#include "chrome/browser/ui/blocked_content/scoped_visibility_tracker.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -35,13 +35,19 @@ class PopupTracker : public content::WebContentsObserver,
   PopupTracker(content::WebContents* contents, content::WebContents* opener);
 
   // content::WebContentsObserver:
+  void WebContentsDestroyed() override;
   void DidFinishNavigation(
       content::NavigationHandle* navigation_handle) override;
   void OnVisibilityChanged(content::Visibility visibility) override;
 
-  // The |first_load_visibility_tracker_| tracks the time this WebContents is in
-  // the foreground for the duration of the first page load.
-  std::unique_ptr<ScopedVisibilityTracker> first_load_visibility_tracker_;
+  // Will be unset until the first navigation commits. Will be set to the total
+  // time the contents was visible at commit time.
+  base::Optional<base::TimeDelta> first_load_visible_time_start_;
+  // Will be unset until the second navigation commits. Is the total time the
+  // contents is visible while the first document is loading (after commit).
+  base::Optional<base::TimeDelta> first_load_visible_time_;
+
+  ScopedVisibilityTracker visibility_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(PopupTracker);
 };
