@@ -212,7 +212,7 @@ void CheckResponseStream(ScriptState* script_state,
       FetchDataLoader::CreateLoaderAsString(), client1);
   cloned_response->InternalBodyBuffer()->StartLoading(
       FetchDataLoader::CreateLoaderAsString(), client2);
-  blink::testing::RunPendingTasks();
+  blink::test::RunPendingTasks();
 }
 
 BodyStreamBuffer* CreateHelloWorldBuffer(ScriptState* script_state) {
@@ -313,7 +313,7 @@ TEST(ServiceWorkerResponseTest, BodyStreamBufferCloneError) {
       FetchDataLoader::CreateLoaderAsString(), client1);
   cloned_response->InternalBodyBuffer()->StartLoading(
       FetchDataLoader::CreateLoaderAsString(), client2);
-  blink::testing::RunPendingTasks();
+  blink::test::RunPendingTasks();
 }
 
 }  // namespace

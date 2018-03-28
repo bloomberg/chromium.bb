@@ -9,7 +9,7 @@
 #include "public/platform/WebURLLoaderMockFactory.h"
 
 namespace blink {
-namespace testing {
+namespace test {
 
 ScopedMockedURL::ScopedMockedURL(const WebURL& url) : url_(url) {}
 
@@ -24,5 +24,5 @@ ScopedMockedURLLoad::ScopedMockedURLLoad(const WebURL& full_url,
   URLTestHelpers::RegisterMockedURLLoad(full_url, file_path, mime_type);
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace blink

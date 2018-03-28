@@ -63,7 +63,7 @@ class ScreenWakeLockTest : public ::testing::Test {
 
     web_view_helper_.Initialize(&test_web_frame_client_);
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8("http://example.com/"), testing::CoreTestDataPath(),
+        WebString::FromUTF8("http://example.com/"), test::CoreTestDataPath(),
         WebString::FromUTF8("foo.html"));
     LoadFrame();
   }
@@ -71,7 +71,7 @@ class ScreenWakeLockTest : public ::testing::Test {
   void TearDown() override {
     platform_->GetURLLoaderMockFactory()
         ->UnregisterAllURLsAndClearMemoryCache();
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
   }
 
   void LoadFrame() {
@@ -103,7 +103,7 @@ class ScreenWakeLockTest : public ::testing::Test {
     DCHECK(GetScreen());
     ScreenWakeLock::setKeepAwake(*GetScreen(), keepAwake);
     // Let the notification sink through the mojo pipes.
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
   }
 
   void Show() {
@@ -111,7 +111,7 @@ class ScreenWakeLockTest : public ::testing::Test {
     web_view_helper_.GetWebView()->SetVisibilityState(
         mojom::blink::PageVisibilityState::kVisible, false);
     // Let the notification sink through the mojo pipes.
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
   }
 
   void Hide() {
@@ -119,7 +119,7 @@ class ScreenWakeLockTest : public ::testing::Test {
     web_view_helper_.GetWebView()->SetVisibilityState(
         mojom::blink::PageVisibilityState::kHidden, false);
     // Let the notification sink through the mojo pipes.
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
   }
 
   // Order of these members is important as we need to make sure that

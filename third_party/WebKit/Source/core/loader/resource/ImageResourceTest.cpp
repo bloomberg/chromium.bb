@@ -66,7 +66,7 @@
 
 namespace blink {
 
-using testing::ScopedMockedURLLoad;
+using test::ScopedMockedURLLoad;
 
 namespace {
 
@@ -165,7 +165,7 @@ constexpr char kSvgImage2[] =
 constexpr char kTestURL[] = "http://www.test.com/cancelTest.html";
 
 String GetTestFilePath() {
-  return testing::CoreTestDataPath("cancelTest.html");
+  return test::CoreTestDataPath("cancelTest.html");
 }
 
 constexpr char kSvgImageWithSubresource[] =
@@ -553,7 +553,7 @@ TEST(ImageResourceTest, CancelWithImageAndFinishObserver) {
 
   // ResourceFinishObserver is notified asynchronously.
   EXPECT_CALL(*finish_observer, NotifyFinished());
-  blink::testing::RunPendingTasks();
+  blink::test::RunPendingTasks();
 }
 
 TEST(ImageResourceTest, DecodedDataRemainsWhileHasClients) {
@@ -1003,7 +1003,7 @@ TEST(ImageResourceTest, SVGImageWithSubresource) {
 
   // After asynchronous tasks are executed, the loading of SVG document is
   // completed and ImageNotifyFinished() is called.
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(ResourceStatus::kCached,
             image_resource->GetContent()->GetContentStatus());
   EXPECT_EQ(2, observer->ImageChangedCount());
@@ -1244,7 +1244,7 @@ TEST(ImageResourceTest, Prune) {
 
   EXPECT_TRUE(image_resource->GetContent()->HasImage());
 
-  blink::testing::RunPendingTasks();
+  blink::test::RunPendingTasks();
   ASSERT_TRUE(image_resource->GetContent()->HasImage());
   EXPECT_FALSE(image_resource->GetContent()->GetImage()->IsNull());
   EXPECT_EQ(kJpegImageWidth, image_resource->GetContent()->GetImage()->width());

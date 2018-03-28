@@ -103,7 +103,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   observer->observe(target, exception_state);
 
   Compositor().BeginFrame();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
 
   // When document is not suspended, beginFrame() will generate notifications
@@ -112,7 +112,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
       ScrollOffset(0, 300), kProgrammaticScroll);
   Compositor().BeginFrame();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
 
   // When a document is suspended, beginFrame() will generate a notification,
@@ -123,7 +123,7 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
       ScrollOffset(0, 0), kProgrammaticScroll);
   Compositor().BeginFrame();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
   EXPECT_FALSE(observer->takeRecords(exception_state).IsEmpty());
 
@@ -132,11 +132,11 @@ TEST_F(IntersectionObserverTest, ResumePostsTask) {
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, 300), kProgrammaticScroll);
   Compositor().BeginFrame();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
   GetDocument().UnpauseScheduledTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 2);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 3);
 }
 
@@ -163,7 +163,7 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
   observer->observe(target, exception_state);
 
   Compositor().BeginFrame();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
 
   // If disconnect() is called while an observer has unsent notifications,
@@ -172,7 +172,7 @@ TEST_F(IntersectionObserverTest, DisconnectClearsNotifications) {
       ScrollOffset(0, 300), kProgrammaticScroll);
   Compositor().BeginFrame();
   observer->disconnect();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(observer_delegate->CallCount(), 1);
 }
 
@@ -213,14 +213,14 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   observer->observe(target, exception_state);
 
   Compositor().BeginFrame();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 1);
   EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
 
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, 600), kProgrammaticScroll);
   Compositor().BeginFrame();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 2);
   EXPECT_FALSE(observer_delegate->LastIntersectionRect().IsEmpty());
   EXPECT_EQ(FloatRect(200, 400, 100, 100),
@@ -229,7 +229,7 @@ TEST_F(IntersectionObserverTest, RootIntersectionWithForceZeroLayoutHeight) {
   GetDocument().View()->LayoutViewportScrollableArea()->SetScrollOffset(
       ScrollOffset(0, 1200), kProgrammaticScroll);
   Compositor().BeginFrame();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   ASSERT_EQ(observer_delegate->CallCount(), 3);
   EXPECT_TRUE(observer_delegate->LastIntersectionRect().IsEmpty());
 }

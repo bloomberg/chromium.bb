@@ -29,7 +29,7 @@ class DeferredLoadingTest : public SimTest {
   void CompositeFrame() {
     while (Compositor().NeedsBeginFrame()) {
       Compositor().BeginFrame();
-      testing::RunPendingTasks();
+      test::RunPendingTasks();
     }
   }
 

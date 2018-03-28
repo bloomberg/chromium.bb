@@ -21,7 +21,7 @@
 using ::testing::_;
 using ::testing::Return;
 
-using blink::testing::CreateTestFont;
+using blink::test::CreateTestFont;
 
 namespace blink {
 

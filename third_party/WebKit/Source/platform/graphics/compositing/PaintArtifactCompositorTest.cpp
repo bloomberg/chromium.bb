@@ -32,7 +32,7 @@
 
 namespace blink {
 
-using ::blink::testing::CreateOpacityOnlyEffect;
+using ::blink::test::CreateOpacityOnlyEffect;
 using ::testing::Pointee;
 
 PaintChunk::Id DefaultId() {

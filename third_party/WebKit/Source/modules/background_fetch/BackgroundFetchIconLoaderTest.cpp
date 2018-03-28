@@ -46,8 +46,8 @@ class BackgroundFetchIconLoaderTest : public PageTestBase {
   WebURL RegisterMockedURL(const String& file_name) {
     WebURL registered_url = URLTestHelpers::RegisterMockedURLLoadFromBase(
         kBackgroundFetchImageLoaderBaseUrl,
-        testing::CoreTestDataPath(kBackgroundFetchImageLoaderBaseDir),
-        file_name, "image/png");
+        test::CoreTestDataPath(kBackgroundFetchImageLoaderBaseDir), file_name,
+        "image/png");
     return registered_url;
   }
 

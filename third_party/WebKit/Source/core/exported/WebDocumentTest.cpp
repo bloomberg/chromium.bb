@@ -46,7 +46,7 @@ class WebDocumentTest : public ::testing::Test {
 void WebDocumentTest::SetUpTestCase() {
   URLTestHelpers::RegisterMockedURLLoad(
       ToKURL(std::string(kDefaultOrigin) + kManifestDummyFilePath),
-      testing::CoreTestDataPath(kManifestDummyFilePath));
+      test::CoreTestDataPath(kManifestDummyFilePath));
 }
 
 void WebDocumentTest::LoadURL(const std::string& url) {
@@ -202,7 +202,7 @@ KURL ToOriginB(const char* file) {
 }
 
 void RegisterMockedURLLoad(const KURL& url, const char* path) {
-  URLTestHelpers::RegisterMockedURLLoad(url, testing::CoreTestDataPath(path));
+  URLTestHelpers::RegisterMockedURLLoad(url, test::CoreTestDataPath(path));
 }
 
 }  // anonymous namespace

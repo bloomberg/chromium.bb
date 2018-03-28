@@ -41,10 +41,10 @@ TEST_F(WindowProxyTest, ReinitializedAfterNavigation) {
   )HTML");
 
   // Wait for the first data: URL to load
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   // Wait for the second data: URL to load.
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   ASSERT_GT(ConsoleMessages().size(), 0U);
   EXPECT_EQ("PASSED", ConsoleMessages()[0]);

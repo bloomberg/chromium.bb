@@ -251,7 +251,7 @@ class MediaControlsImplTest : public PageTestBase,
 
   void LoadMediaWithDuration(double duration) {
     MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
     WebTimeRange time_range(0.0, duration);
     WebMediaPlayer()->seekable_.Assign(&time_range, 1);
     MediaControls().MediaElement().DurationChanged(duration,
@@ -287,7 +287,7 @@ class MediaControlsImplTest : public PageTestBase,
 
   void ToggleOverflowMenu() {
     MediaControls().ToggleOverflowMenu();
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
   }
 
  private:
@@ -398,12 +398,12 @@ TEST_F(MediaControlsImplTest, CastButtonDisableRemotePlaybackAttr) {
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, true);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   ASSERT_FALSE(IsElementVisible(*cast_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, false);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   ASSERT_TRUE(IsElementVisible(*cast_button));
 }
 
@@ -447,12 +447,12 @@ TEST_F(MediaControlsImplTest, CastOverlayDisableRemotePlaybackAttr) {
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, true);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   ASSERT_FALSE(IsElementVisible(*cast_overlay_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disableremoteplaybackAttr, false);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   ASSERT_TRUE(IsElementVisible(*cast_overlay_button));
 }
 
@@ -507,7 +507,7 @@ TEST_F(MediaControlsImplTest, KeepControlsVisibleIfOverflowListVisible) {
 
   MediaControls().MediaElement().SetSrc("http://example.com");
   MediaControls().MediaElement().Play();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   MediaControls().MaybeShow();
   MediaControls().ToggleOverflowMenu();
@@ -526,7 +526,7 @@ TEST_F(MediaControlsImplTest, DownloadButtonDisplayed) {
   ASSERT_NE(nullptr, download_button);
 
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
 
   // Download button should normally be displayed.
@@ -542,7 +542,7 @@ TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedEmptyUrl) {
 
   // Download button should not be displayed when URL is empty.
   MediaControls().MediaElement().SetSrc("");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
   EXPECT_FALSE(IsElementVisible(*download_button));
 }
@@ -555,7 +555,7 @@ TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedInfiniteDuration) {
   ASSERT_NE(nullptr, download_button);
 
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   // Download button should not be displayed when duration is infinite.
   MediaControls().MediaElement().DurationChanged(
@@ -579,7 +579,7 @@ TEST_F(MediaControlsImplTest, DownloadButtonNotDisplayedHLS) {
 
   // Download button should not be displayed for HLS streams.
   MediaControls().MediaElement().SetSrc("https://example.com/foo.m3u8");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
   EXPECT_FALSE(IsElementVisible(*download_button));
 }
@@ -605,25 +605,25 @@ TEST_F(MediaControlsImplPictureInPictureTest, PictureInPictureButtonVisible) {
   ASSERT_FALSE(IsElementVisible(*picture_in_picture_button));
 
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
   ASSERT_TRUE(IsElementVisible(*picture_in_picture_button));
 
   MediaControls().MediaElement().SetSrc("");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
   ASSERT_FALSE(IsElementVisible(*picture_in_picture_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disablepictureinpictureAttr, true);
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
   ASSERT_FALSE(IsElementVisible(*picture_in_picture_button));
 
   MediaControls().MediaElement().SetBooleanAttribute(
       HTMLNames::disablepictureinpictureAttr, false);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   ASSERT_TRUE(IsElementVisible(*picture_in_picture_button));
 }
 
@@ -656,7 +656,7 @@ TEST_F(MediaControlsImplInProductHelpTest, DownloadButtonInProductHelp_Button) {
   button.SetLayoutObject(&layout_object);
 
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
   Play();
 
@@ -690,7 +690,7 @@ TEST_F(MediaControlsImplInProductHelpTest,
   // The in-product-help should not be shown while the controls are hidden.
   MediaControls().Hide();
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
   Play();
 
@@ -725,7 +725,7 @@ TEST_F(MediaControlsImplInProductHelpTest,
   // The in-product-help should not be shown while the button is hidden.
   layout_object.SetVisible(false);
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SimulateLoadedMetadata();
   Play();
 
@@ -779,17 +779,17 @@ TEST_F(MediaControlsImplTest, TimelineImmediatelyUpdatesCurrentTime) {
 
 TEST_F(MediaControlsImplTest, TimelineMetricsWidth) {
   MediaControls().MediaElement().SetSrc("https://example.com/foo.mp4");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   SetReady();
   EnsureSizing();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   MediaControlTimelineElement* timeline = TimelineElement();
   ASSERT_TRUE(IsElementVisible(*timeline));
   ASSERT_LT(0, timeline->getBoundingClientRect()->width());
 
   MediaControls().MediaElement().Play();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   GetHistogramTester().ExpectUniqueSample(
       "Media.Timeline.Width.InlineLandscape",
@@ -806,7 +806,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
   double duration = 540;  // 9 minutes
   LoadMediaWithDuration(duration);
   EnsureSizing();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
   DOMRect* timelineRect = TimelineElement()->getBoundingClientRect();
@@ -818,7 +818,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsClick) {
                             timelineRect->top() + timelineRect->height() / 2);
   MouseDownAt(trackCenter);
   MouseUpAt(trackCenter);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   EXPECT_LE(0.49 * duration, MediaControls().MediaElement().currentTime());
   EXPECT_GE(0.51 * duration, MediaControls().MediaElement().currentTime());
@@ -839,7 +839,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromCurrentPosition) {
   double duration = 540;  // 9 minutes
   LoadMediaWithDuration(duration);
   EnsureSizing();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
   DOMRect* timeline_rect = TimelineElement()->getBoundingClientRect();
@@ -875,7 +875,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragFromElsewhere) {
   double duration = 540;  // 9 minutes
   LoadMediaWithDuration(duration);
   EnsureSizing();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
   DOMRect* timelineRect = TimelineElement()->getBoundingClientRect();
@@ -912,7 +912,7 @@ TEST_F(MediaControlsImplTest, TimelineMetricsDragBackAndForth) {
   double duration = 540;  // 9 minutes
   LoadMediaWithDuration(duration);
   EnsureSizing();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   ASSERT_TRUE(IsElementVisible(*TimelineElement()));
   DOMRect* timelineRect = TimelineElement()->getBoundingClientRect();
@@ -961,7 +961,7 @@ TEST_F(MediaControlsImplTest, TimeIsCorrectlyFormatted) {
   double duration = 360600;  // Long enough to check each of the tests.
   LoadMediaWithDuration(duration);
   EnsureSizing();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   MediaControlCurrentTimeDisplayElement* current_display =
       GetCurrentTimeDisplayElement();
@@ -1093,7 +1093,7 @@ TEST_F(MediaControlsImplTest,
     EXPECT_FALSE(HasAvailabilityCallbacks(remote_playback));
   }
 
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   ThreadState::Current()->CollectAllGarbage();
 
@@ -1149,7 +1149,7 @@ TEST_F(MediaControlsImplTest, InfinityDurationChangeHidesDurationField) {
 
   MediaControls().MediaElement().DurationChanged(
       std::numeric_limits<double>::infinity(), false /* request_seek */);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   EXPECT_FALSE(duration_display->IsWanted());
   EXPECT_EQ(std::numeric_limits<double>::infinity(),
@@ -1238,7 +1238,7 @@ TEST_F(MediaControlsImplTest, CastOverlayDefaultHidesOnTimer) {
   // Starts playback because overlay never hides if paused.
   MediaControls().MediaElement().SetSrc("http://example.com");
   MediaControls().MediaElement().Play();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   SimulateHideMediaControlsTimerFired();
   EXPECT_FALSE(IsElementVisible(*cast_overlay_button));
@@ -1262,7 +1262,7 @@ TEST_F(MediaControlsImplTest, CastOverlayShowsOnSomeEvents) {
   // Starts playback because overlay never hides if paused.
   MediaControls().MediaElement().SetSrc("http://example.com");
   MediaControls().MediaElement().Play();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   SimulateRouteAvailable();
   SimulateHideMediaControlsTimerFired();

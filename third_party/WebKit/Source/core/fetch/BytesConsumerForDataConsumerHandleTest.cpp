@@ -118,7 +118,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeReadable) {
             consumer->GetPublicState());
 
   checkpoint.Call(1);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   checkpoint.Call(2);
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             consumer->GetPublicState());
@@ -143,7 +143,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeClosed) {
             consumer->GetPublicState());
 
   checkpoint.Call(1);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   checkpoint.Call(2);
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, consumer->GetPublicState());
 }
@@ -167,7 +167,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, BecomeErrored) {
             consumer->GetPublicState());
 
   checkpoint.Call(1);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   checkpoint.Call(2);
   EXPECT_EQ(BytesConsumer::PublicState::kErrored, consumer->GetPublicState());
 }
@@ -189,7 +189,7 @@ TEST_F(BytesConsumerForDataConsumerHandleTest, ClearClient) {
   consumer->ClearClient();
 
   checkpoint.Call(1);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   checkpoint.Call(2);
 }
 

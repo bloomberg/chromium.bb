@@ -113,7 +113,7 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
   void StopVirtualTimeAndExitRunLoop() {
     WebView().Scheduler()->SetVirtualTimePolicy(
         PageScheduler::VirtualTimePolicy::kPause);
-    testing::ExitRunLoop();
+    test::ExitRunLoop();
   }
 
   // Some task queues may have repeating v8 tasks that run forever so we impose
@@ -126,7 +126,7 @@ class ScrollbarsTestWithVirtualTimer : public ScrollbarsTest {
             &ScrollbarsTestWithVirtualTimer::StopVirtualTimeAndExitRunLoop,
             WTF::Unretained(this)),
         TimeDelta::FromMillisecondsD(delay_ms));
-    testing::EnterRunLoop();
+    test::EnterRunLoop();
   }
 };
 
@@ -1784,7 +1784,7 @@ TEST_P(ScrollbarsTest, AutosizeTest) {
 
   // Needs to dispatch the load event so FramViewAutoSizeInfo doesn't prevent
   // down-sizing.
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   LocalFrameView* frame_view = WebView().MainFrameImpl()->GetFrameView();
   ScrollableArea* layout_viewport = frame_view->LayoutViewportScrollableArea();

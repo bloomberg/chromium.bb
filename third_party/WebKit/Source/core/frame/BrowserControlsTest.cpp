@@ -94,7 +94,7 @@ class BrowserControlsTest : public ::testing::Test {
 
   void RegisterMockedHttpURLLoad(const std::string& file_name) {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
+        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
   }
 

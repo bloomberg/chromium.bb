@@ -59,7 +59,7 @@
 #include "public/web/WebWidgetClient.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::testing::RunPendingTasks;
+using blink::test::RunPendingTasks;
 
 namespace blink {
 
@@ -94,13 +94,13 @@ class TouchActionTest : public ::testing::Test {
  public:
   TouchActionTest() : base_url_("http://www.test.com/") {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
+        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         "touch-action-tests.css", "text/css");
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
+        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         "touch-action-tests.js", "text/javascript");
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
+        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         "white-1x1.png", "image/png");
   }
 
@@ -198,7 +198,7 @@ WebViewImpl* TouchActionTest::SetupTest(
     std::string file,
     TouchActionTrackingWebWidgetClient& client) {
   URLTestHelpers::RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
-                                                testing::CoreTestDataPath(),
+                                                test::CoreTestDataPath(),
                                                 WebString::FromUTF8(file));
   // Note that JavaScript must be enabled for shadow DOM tests.
   WebViewImpl* web_view = web_view_helper_.InitializeAndLoad(

@@ -12,14 +12,14 @@
 #include "platform/testing/UnitTestHelpers.h"
 
 namespace blink {
-namespace testing {
+namespace test {
 
 namespace {
 
 class TestFontSelector : public FontSelector {
  public:
   static TestFontSelector* Create(const String& path) {
-    scoped_refptr<SharedBuffer> font_buffer = testing::ReadFromFile(path);
+    scoped_refptr<SharedBuffer> font_buffer = test::ReadFromFile(path);
     String ots_parse_message;
     return new TestFontSelector(
         FontCustomPlatformData::Create(font_buffer.get(), ots_parse_message));
@@ -95,5 +95,5 @@ Font CreateTestFont(const AtomicString& family_name,
   return font;
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace blink

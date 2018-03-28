@@ -88,7 +88,7 @@ class ScriptStreamingTest : public ::testing::Test {
     // cannot fully control in what kind of chunks the data is passed to V8
     // (if V8 is not requesting more data between two appendData calls, it
     // will get both chunks together).
-    testing::YieldCurrentThread();
+    test::YieldCurrentThread();
   }
 
   void AppendPadding() {
@@ -107,11 +107,11 @@ class ScriptStreamingTest : public ::testing::Test {
 
   void ProcessTasksUntilStreamingComplete() {
     while (ScriptStreamerThread::Shared()->IsRunningTask()) {
-      testing::RunPendingTasks();
+      test::RunPendingTasks();
     }
     // Once more, because the "streaming complete" notification might only
     // now be in the task queue.
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
   }
 
   scoped_refptr<base::SingleThreadTaskRunner> loading_task_runner_;

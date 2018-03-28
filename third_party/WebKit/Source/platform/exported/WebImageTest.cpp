@@ -39,9 +39,9 @@
 namespace blink {
 
 static scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
-  String file_path = testing::CoreTestDataPath(file_name);
+  String file_path = test::CoreTestDataPath(file_name);
 
-  return testing::ReadFromFile(file_path);
+  return test::ReadFromFile(file_path);
 }
 
 TEST(WebImageTest, PNGImage) {

@@ -38,7 +38,7 @@ class ProgrammaticScrollTest : public ::testing::Test {
  protected:
   void RegisterMockedHttpURLLoad(const std::string& file_name) {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
+        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
   }
 
@@ -147,7 +147,7 @@ TEST_P(ProgrammaticScrollSimTest, NavigateToHash) {
 
   // Run pending tasks to fire the load event and close the document. This
   // should cause the document to scroll to the hash.
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   ScrollableArea* layout_viewport =
       GetDocument().View()->LayoutViewportScrollableArea();

@@ -313,7 +313,7 @@ class AnimationCompositorAnimationsTest : public RenderingTest {
   }
 
   void LoadTestData(const std::string& file_name) {
-    String testing_path = testing::BlinkRootDir();
+    String testing_path = test::BlinkRootDir();
     testing_path.append("/Source/core/animation/test_data/");
     WebURL url = URLTestHelpers::RegisterMockedURLLoadFromBase(
         WebString::FromUTF8(base_url_), testing_path,

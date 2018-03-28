@@ -361,7 +361,7 @@ TEST_F(BytesConsumerTeeTest,
 
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             src->GetPublicState());
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, src->GetPublicState());
   // Just for checking UAF.
   EXPECT_EQ('a', buffer[0]);
@@ -370,7 +370,7 @@ TEST_F(BytesConsumerTeeTest,
   EXPECT_EQ(0, client->NumOnStateChangeCalled());
   EXPECT_EQ(BytesConsumer::PublicState::kReadableOrWaiting,
             dest1->GetPublicState());
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(1, client->NumOnStateChangeCalled());
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
 }
@@ -394,7 +394,7 @@ TEST_F(BytesConsumerTeeTest,
   ASSERT_EQ(1u, available);
   EXPECT_EQ('a', buffer[0]);
 
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   // Just for checking UAF.
   EXPECT_EQ('a', buffer[0]);
   ASSERT_EQ(Result::kOk, dest1->EndRead(1));
@@ -404,7 +404,7 @@ TEST_F(BytesConsumerTeeTest,
   EXPECT_EQ(Result::kDone, dest1->BeginRead(&buffer, &available));
   EXPECT_EQ(0, client->NumOnStateChangeCalled());
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(0, client->NumOnStateChangeCalled());
   EXPECT_EQ(BytesConsumer::PublicState::kClosed, dest1->GetPublicState());
 }

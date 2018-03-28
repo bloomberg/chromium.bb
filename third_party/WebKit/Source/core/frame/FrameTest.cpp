@@ -35,7 +35,7 @@ class FrameTest : public PageTestBase {
           .GetProvisionalDocumentLoader()
           ->SetUserActivated();
     }
-    blink::testing::RunPendingTasks();
+    blink::test::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
   }
 

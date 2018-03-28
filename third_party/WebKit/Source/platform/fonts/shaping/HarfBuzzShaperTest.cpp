@@ -898,9 +898,9 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinCommonLigatures) {
   ligatures.common = FontDescription::kEnabledLigaturesState;
 
   // MEgalopolis Extra has a lot of ligatures which this test relies on.
-  Font testFont = blink::testing::CreateTestFont(
+  Font testFont = blink::test::CreateTestFont(
       "MEgalopolis",
-      blink::testing::PlatformTestDataPath(
+      blink::test::PlatformTestDataPath(
           "third_party/MEgalopolis/MEgalopolisExtra.woff"),
       16, &ligatures);
 
@@ -937,9 +937,9 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakPreviousLatinCommonLigatures) {
   ligatures.common = FontDescription::kEnabledLigaturesState;
 
   // MEgalopolis Extra has a lot of ligatures which this test relies on.
-  Font testFont = blink::testing::CreateTestFont(
+  Font testFont = blink::test::CreateTestFont(
       "MEgalopolis",
-      blink::testing::PlatformTestDataPath(
+      blink::test::PlatformTestDataPath(
           "third_party/MEgalopolis/MEgalopolisExtra.woff"),
       16, &ligatures);
 
@@ -977,9 +977,9 @@ TEST_F(HarfBuzzShaperTest, SafeToBreakLatinDiscretionaryLigatures) {
   ligatures.discretionary = FontDescription::kEnabledLigaturesState;
 
   // MEgalopolis Extra has a lot of ligatures which this test relies on.
-  Font testFont = blink::testing::CreateTestFont(
+  Font testFont = blink::test::CreateTestFont(
       "MEgalopolis",
-      blink::testing::PlatformTestDataPath(
+      blink::test::PlatformTestDataPath(
           "third_party/MEgalopolis/MEgalopolisExtra.woff"),
       16, &ligatures);
 

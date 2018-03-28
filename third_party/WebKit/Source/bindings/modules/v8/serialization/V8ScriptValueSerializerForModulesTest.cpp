@@ -302,11 +302,11 @@ T SubtleCryptoSync(ScriptState* script_state, PMF func, Args&&... args) {
       ToWebCryptoResult(script_state, WTF::BindRepeating(
                                           [](T* out, T result) {
                                             *out = result;
-                                            testing::ExitRunLoop();
+                                            test::ExitRunLoop();
                                           },
                                           WTF::Unretained(&result))),
       scheduler::GetSingleThreadTaskRunnerForTesting());
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
   return result;
 }
 

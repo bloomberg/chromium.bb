@@ -64,7 +64,7 @@ TEST_F(DataObjectTest, DataObjectObserver) {
   DataObjectObserver* observer2 = new DataObjectObserver;
   data_object_->AddObserver(observer2);
 
-  String file_path = testing::BlinkRootDir();
+  String file_path = test::BlinkRootDir();
   file_path.append("/Source/core/clipboard/DataObjectTest.cpp");
   data_object_->AddFilename(file_path, String(), String());
   EXPECT_EQ(2U, data_object_->length());
@@ -83,7 +83,7 @@ TEST_F(DataObjectTest, DataObjectObserver) {
 }
 
 TEST_F(DataObjectTest, addItemWithFilenameAndNoTitle) {
-  String file_path = testing::BlinkRootDir();
+  String file_path = test::BlinkRootDir();
   file_path.append("/Source/core/clipboard/DataObjectTest.cpp");
 
   data_object_->AddFilename(file_path, String(), String());
@@ -101,7 +101,7 @@ TEST_F(DataObjectTest, addItemWithFilenameAndNoTitle) {
 }
 
 TEST_F(DataObjectTest, addItemWithFilenameAndTitle) {
-  String file_path = testing::BlinkRootDir();
+  String file_path = test::BlinkRootDir();
   file_path.append("/Source/core/clipboard/DataObjectTest.cpp");
 
   data_object_->AddFilename(file_path, "name.cpp", String());
@@ -120,7 +120,7 @@ TEST_F(DataObjectTest, addItemWithFilenameAndTitle) {
 }
 
 TEST_F(DataObjectTest, fileSystemId) {
-  String file_path = testing::BlinkRootDir();
+  String file_path = test::BlinkRootDir();
   file_path.append("/Source/core/clipboard/DataObjectTest.cpp");
   KURL url;
 

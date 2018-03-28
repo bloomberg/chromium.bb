@@ -11,7 +11,7 @@
 #include "platform/graphics/paint/TransformPaintPropertyNode.h"
 
 namespace blink {
-namespace testing {
+namespace test {
 
 static inline scoped_refptr<EffectPaintPropertyNode> CreateOpacityOnlyEffect(
     scoped_refptr<const EffectPaintPropertyNode> parent,
@@ -32,7 +32,7 @@ static inline PaintChunkProperties DefaultPaintChunkProperties() {
   return default_properties;
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace blink
 
 #endif  // PaintPropertyTestHelpers_h

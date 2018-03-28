@@ -52,7 +52,7 @@
 using blink::URLTestHelpers::ToKURL;
 
 namespace blink {
-namespace testing {
+namespace test {
 
 class MHTMLLoadingTest : public ::testing::Test {
  public:
@@ -70,7 +70,7 @@ class MHTMLLoadingTest : public ::testing::Test {
                              const std::string& file_name) {
     URLTestHelpers::RegisterMockedURLLoad(
         ToKURL(url),
-        testing::CoreTestDataPath(WebString::FromUTF8("mhtml/" + file_name)),
+        test::CoreTestDataPath(WebString::FromUTF8("mhtml/" + file_name)),
         WebString::FromUTF8("multipart/related"));
   }
 
@@ -248,5 +248,5 @@ TEST_F(MHTMLLoadingTest, LoadMHTMLContainingSoftLineBreaks) {
       "AVeryLongID012345678901234567890123456789012345678901234567890End"));
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace blink

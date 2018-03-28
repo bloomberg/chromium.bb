@@ -58,7 +58,7 @@
 
 namespace blink {
 
-using blink::testing::RunPendingTasks;
+using blink::test::RunPendingTasks;
 
 class ViewportTest : public ::testing::Test {
  protected:
@@ -73,13 +73,13 @@ class ViewportTest : public ::testing::Test {
 
   void RegisterMockedHttpURLLoad(const std::string& file_name) {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
+        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
   }
 
   void RegisterMockedChromeURLLoad(const std::string& file_name) {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(chrome_url_), testing::CoreTestDataPath(),
+        WebString::FromUTF8(chrome_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
   }
 
@@ -3412,7 +3412,7 @@ class ViewportHistogramsTest : public SimTest {
     request.Complete(responseText);
 
     // Pump the task queue so the meta tag gets processed.
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
   }
 
   HistogramTester histogram_tester_;

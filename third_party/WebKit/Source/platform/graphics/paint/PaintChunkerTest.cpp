@@ -9,8 +9,8 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using ::blink::testing::CreateOpacityOnlyEffect;
-using ::blink::testing::DefaultPaintChunkProperties;
+using ::blink::test::CreateOpacityOnlyEffect;
+using ::blink::test::DefaultPaintChunkProperties;
 using ::testing::ElementsAre;
 
 namespace blink {

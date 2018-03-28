@@ -17,7 +17,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using blink::FrameTestHelpers::LoadFrame;
-using blink::testing::RunPendingTasks;
+using blink::test::RunPendingTasks;
 using blink::URLTestHelpers::RegisterMockedURLLoadFromBase;
 
 namespace blink {
@@ -93,7 +93,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
     std::string frame) {
   ImeRequestTrackingWebViewClient client;
   RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
-                                testing::CoreTestDataPath(),
+                                test::CoreTestDataPath(),
                                 WebString::FromUTF8(file_name));
   WebViewImpl* web_view =
       web_view_helper_.Initialize(nullptr, nullptr, &client);
@@ -113,7 +113,7 @@ void ImeOnFocusTest::RunImeOnFocusTest(
 
   if (!frame.empty()) {
     RegisterMockedURLLoadFromBase(WebString::FromUTF8(base_url_),
-                                  testing::CoreTestDataPath(),
+                                  test::CoreTestDataPath(),
                                   WebString::FromUTF8(frame));
     WebLocalFrame* child_frame =
         web_view->MainFrame()->FirstChild()->ToWebLocalFrame();

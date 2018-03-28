@@ -45,7 +45,7 @@
 using blink::URLTestHelpers::ToKURL;
 
 namespace blink {
-namespace testing {
+namespace test {
 
 namespace {
 
@@ -57,7 +57,7 @@ const char kEndOfDocumentBoundary[] = "--boundary-example--";
 class MHTMLArchiveTest : public ::testing::Test {
  public:
   MHTMLArchiveTest() {
-    file_path_ = testing::CoreTestDataPath("frameserializer/css/");
+    file_path_ = test::CoreTestDataPath("frameserializer/css/");
   }
 
  protected:
@@ -172,7 +172,7 @@ class MHTMLArchiveTest : public ::testing::Test {
  private:
   scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
     String file_path = file_path_ + file_name;
-    return testing::ReadFromFile(file_path);
+    return test::ReadFromFile(file_path);
   }
 
   String file_path_;
@@ -342,5 +342,5 @@ TEST_F(MHTMLArchiveTest, MHTMLFromScheme) {
   EXPECT_NE(nullptr, MHTMLArchive::Create(special_scheme_url, data.get()));
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace blink

@@ -45,7 +45,7 @@ class WorkletModuleResponsesMapTest : public ::testing::Test {
 TEST_F(WorkletModuleResponsesMapTest, Basic) {
   const KURL kUrl("https://example.com/module.js");
   URLTestHelpers::RegisterMockedURLLoad(
-      kUrl, testing::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl, test::CoreTestDataPath("module.js"), "text/javascript");
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call initiates a fetch request.
@@ -106,7 +106,7 @@ TEST_F(WorkletModuleResponsesMapTest, Isolation) {
   const KURL kUrl2("https://example.com/module?2.js");
   URLTestHelpers::RegisterMockedErrorURLLoad(kUrl1);
   URLTestHelpers::RegisterMockedURLLoad(
-      kUrl2, testing::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript");
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call for |kUrl1| initiates a fetch request.
@@ -175,9 +175,9 @@ TEST_F(WorkletModuleResponsesMapTest, Dispose) {
   const KURL kUrl1("https://example.com/module?1.js");
   const KURL kUrl2("https://example.com/module?2.js");
   URLTestHelpers::RegisterMockedURLLoad(
-      kUrl1, testing::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl1, test::CoreTestDataPath("module.js"), "text/javascript");
   URLTestHelpers::RegisterMockedURLLoad(
-      kUrl2, testing::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript");
   HeapVector<Member<ClientImpl>> clients;
 
   // An initial read call for |kUrl1| creates a placeholder entry and asks the

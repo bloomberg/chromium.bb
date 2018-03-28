@@ -61,7 +61,7 @@ void WaitForSignalTask(WorkerThread* worker_thread,
   // Notify the main thread that the debugger task is waiting for the signal.
   PostCrossThreadTask(
       *worker_thread->GetParentFrameTaskRunners()->Get(TaskType::kInternalTest),
-      FROM_HERE, CrossThreadBind(&testing::ExitRunLoop));
+      FROM_HERE, CrossThreadBind(&test::ExitRunLoop));
   waitable_event->Wait();
 }
 
@@ -250,7 +250,7 @@ TEST_F(WorkerThreadTest, AsyncTerminate_WhileTaskIsRunning) {
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
   // Wait until the forcible termination task runs.
-  testing::RunDelayedTasks(kDelay);
+  test::RunDelayedTasks(kDelay);
   worker_thread_->WaitForShutdownForTesting();
   EXPECT_EQ(ExitCode::kAsyncForciblyTerminated, GetExitCode());
 }
@@ -326,7 +326,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
       CrossThreadUnretained(&waitable_event)));
 
   // Wait for the debugger task.
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
   EXPECT_TRUE(worker_thread_->inspector_task_runner_->IsRunningTask());
 
   // Terminate() schedules a forcible termination task.
@@ -336,7 +336,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunningOnInitialization) {
 
   // Wait until the task runs. It shouldn't terminate the script execution
   // because of the running debugger task.
-  testing::RunDelayedTasks(kDelay);
+  test::RunDelayedTasks(kDelay);
   EXPECT_FALSE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 
@@ -368,7 +368,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
       CrossThreadUnretained(&waitable_event)));
 
   // Wait for the debugger task.
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
   EXPECT_TRUE(worker_thread_->inspector_task_runner_->IsRunningTask());
 
   // Terminate() schedules a forcible termination task.
@@ -378,7 +378,7 @@ TEST_F(WorkerThreadTest, Terminate_WhileDebuggerTaskIsRunning) {
 
   // Wait until the task runs. It shouldn't terminate the script execution
   // because of the running debugger task.
-  testing::RunDelayedTasks(kDelay);
+  test::RunDelayedTasks(kDelay);
   EXPECT_FALSE(IsForcibleTerminationTaskScheduled());
   EXPECT_EQ(ExitCode::kNotTerminated, GetExitCode());
 

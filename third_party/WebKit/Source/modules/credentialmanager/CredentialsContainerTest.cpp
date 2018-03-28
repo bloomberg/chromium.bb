@@ -43,15 +43,15 @@ class MockCredentialManager
     if (!binding_.is_bound())
       return;
 
-    binding_.set_connection_error_handler(WTF::Bind(&testing::ExitRunLoop));
-    testing::EnterRunLoop();
+    binding_.set_connection_error_handler(WTF::Bind(&test::ExitRunLoop));
+    test::EnterRunLoop();
   }
 
   void WaitForCallToGet() {
     if (get_callback_)
       return;
 
-    testing::EnterRunLoop();
+    test::EnterRunLoop();
   }
 
   void InvokeGetCallback() {
@@ -76,7 +76,7 @@ class MockCredentialManager
       const WTF::Vector<::blink::KURL>& federations,
       GetCallback callback) {
     get_callback_ = std::move(callback);
-    testing::ExitRunLoop();
+    test::ExitRunLoop();
   }
 
  private:

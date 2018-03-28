@@ -37,7 +37,7 @@ std::ostream& operator<<(std::ostream& os, const SkRect& rect) {
 namespace blink {
 namespace {
 
-using testing::CreateOpacityOnlyEffect;
+using test::CreateOpacityOnlyEffect;
 
 class PaintChunksToCcLayerTest : public ::testing::Test,
                                  private ScopedSlimmingPaintV2ForTest {

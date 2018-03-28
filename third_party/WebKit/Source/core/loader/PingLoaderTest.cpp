@@ -50,14 +50,14 @@ class PingLoaderTest : public PageTestBase {
     FrameLoadRequest request(nullptr, ResourceRequest(url),
                              SubstituteData(SharedBuffer::Create()));
     GetFrame().Loader().Load(request);
-    blink::testing::RunPendingTasks();
+    blink::test::RunPendingTasks();
     ASSERT_EQ(url.GetString(), GetDocument().Url().GetString());
   }
 
   const ResourceRequest& PingAndGetRequest(const KURL& ping_url) {
     KURL destination_url("http://navigation.destination");
     URLTestHelpers::RegisterMockedURLLoad(
-        ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
+        ping_url, test::CoreTestDataPath("bar.html"), "text/html");
     PingLoader::SendLinkAuditPing(&GetFrame(), ping_url, destination_url);
     const ResourceRequest& ping_request = client_->PingRequest();
     if (!ping_request.IsNull()) {
@@ -107,7 +107,7 @@ TEST_F(PingLoaderTest, LinkAuditPingPriority) {
 
   KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
-      ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
+      ping_url, test::CoreTestDataPath("bar.html"), "text/html");
   PingLoader::SendLinkAuditPing(&GetFrame(), ping_url, destination_url);
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   const ResourceRequest& request = client_->PingRequest();
@@ -121,7 +121,7 @@ TEST_F(PingLoaderTest, ViolationPriority) {
 
   KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
-      ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
+      ping_url, test::CoreTestDataPath("bar.html"), "text/html");
   PingLoader::SendViolationReport(&GetFrame(), ping_url,
                                   EncodedFormData::Create(),
                                   PingLoader::kXSSAuditorViolationReport);
@@ -137,7 +137,7 @@ TEST_F(PingLoaderTest, BeaconPriority) {
 
   KURL ping_url("https://localhost/bar.html");
   URLTestHelpers::RegisterMockedURLLoad(
-      ping_url, testing::CoreTestDataPath("bar.html"), "text/html");
+      ping_url, test::CoreTestDataPath("bar.html"), "text/html");
   PingLoader::SendBeacon(&GetFrame(), ping_url, "hello");
   Platform::Current()->GetURLLoaderMockFactory()->ServeAsynchronousRequests();
   const ResourceRequest& request = client_->PingRequest();

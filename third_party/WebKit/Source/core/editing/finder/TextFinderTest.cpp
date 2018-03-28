@@ -26,7 +26,7 @@
 #include "public/web/WebFindOptions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::testing::RunPendingTasks;
+using blink::test::RunPendingTasks;
 
 namespace blink {
 
