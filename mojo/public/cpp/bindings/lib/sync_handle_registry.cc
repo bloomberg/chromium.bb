@@ -128,9 +128,10 @@ bool SyncHandleRegistry::Wait(const bool* should_stop[], size_t count) {
 
   scoped_refptr<SyncHandleRegistry> preserver(this);
   while (true) {
-    for (size_t i = 0; i < count; ++i)
+    for (size_t i = 0; i < count; ++i) {
       if (*should_stop[i])
         return true;
+    }
 
     // TODO(yzshen): Theoretically it can reduce sync call re-entrancy if we
     // give priority to the handle that is waiting for sync response.

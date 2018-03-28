@@ -18,7 +18,7 @@
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/interface_endpoint_controller.h"
 #include "mojo/public/cpp/bindings/lib/may_auto_lock.h"
-#include "mojo/public/cpp/bindings/sync_event_watcher.h"
+#include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
 
 namespace mojo {
 namespace internal {
@@ -108,8 +108,8 @@ class MultiplexRouter::InterfaceEndpoint
     if (sync_message_event_signaled_)
       return;
     sync_message_event_signaled_ = true;
-    if (sync_message_event_)
-      sync_message_event_->Signal();
+    if (sync_watcher_)
+      sync_watcher_->SignalEvent();
   }
 
   void ResetSyncMessageSignal() {
@@ -117,8 +117,8 @@ class MultiplexRouter::InterfaceEndpoint
     if (!sync_message_event_signaled_)
       return;
     sync_message_event_signaled_ = false;
-    if (sync_message_event_)
-      sync_message_event_->Reset();
+    if (sync_watcher_)
+      sync_watcher_->ResetEvent();
   }
 
   // ---------------------------------------------------------------------------
@@ -136,7 +136,7 @@ class MultiplexRouter::InterfaceEndpoint
     DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
     EnsureSyncWatcherExists();
-    sync_watcher_->AllowWokenUpBySyncWatchOnSameThread();
+    sync_watcher_->AllowWokenUpBySyncWatchOnSameSequence();
   }
 
   bool SyncWatch(const bool* should_stop) override {
@@ -182,20 +182,12 @@ class MultiplexRouter::InterfaceEndpoint
     if (sync_watcher_)
       return;
 
-    {
-      MayAutoLock locker(&router_->lock_);
-      if (!sync_message_event_) {
-        sync_message_event_.emplace(
-            base::WaitableEvent::ResetPolicy::MANUAL,
-            base::WaitableEvent::InitialState::NOT_SIGNALED);
-        if (sync_message_event_signaled_)
-          sync_message_event_->Signal();
-      }
-    }
-    sync_watcher_.reset(
-        new SyncEventWatcher(&sync_message_event_.value(),
-                             base::Bind(&InterfaceEndpoint::OnSyncEventSignaled,
-                                        base::Unretained(this))));
+    MayAutoLock locker(&router_->lock_);
+    sync_watcher_ =
+        std::make_unique<SequenceLocalSyncEventWatcher>(base::BindRepeating(
+            &InterfaceEndpoint::OnSyncEventSignaled, base::Unretained(this)));
+    if (sync_message_event_signaled_)
+      sync_watcher_->SignalEvent();
   }
 
   // ---------------------------------------------------------------------------
@@ -223,18 +215,11 @@ class MultiplexRouter::InterfaceEndpoint
   // Not owned. It is null if no client is attached to this endpoint.
   InterfaceEndpointClient* client_;
 
-  // An event used to signal that sync messages are available. The event is
-  // initialized under the router's lock and remains unchanged afterwards. It
-  // may be accessed outside of the router's lock later.
-  base::Optional<base::WaitableEvent> sync_message_event_;
+  // Indicates whether the sync watcher should be signaled for this endpoint.
   bool sync_message_event_signaled_ = false;
 
-  // ---------------------------------------------------------------------------
-  // The following members are only valid while a client is attached. They are
-  // used exclusively on the client's sequence. They may be accessed outside of
-  // the router's lock.
-
-  std::unique_ptr<SyncEventWatcher> sync_watcher_;
+  // Guarded by the router's lock. Used to synchronously wait on replies.
+  std::unique_ptr<SequenceLocalSyncEventWatcher> sync_watcher_;
 
   DISALLOW_COPY_AND_ASSIGN(InterfaceEndpoint);
 };

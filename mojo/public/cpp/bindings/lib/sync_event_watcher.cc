@@ -4,6 +4,9 @@
 
 #include "mojo/public/cpp/bindings/sync_event_watcher.h"
 
+#include <algorithm>
+
+#include "base/containers/stack_container.h"
 #include "base/logging.h"
 
 namespace mojo {
@@ -27,7 +30,8 @@ void SyncEventWatcher::AllowWokenUpBySyncWatchOnSameThread() {
   IncrementRegisterCount();
 }
 
-bool SyncEventWatcher::SyncWatch(const bool* should_stop) {
+bool SyncEventWatcher::SyncWatch(const bool** stop_flags,
+                                 size_t num_stop_flags) {
   DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
   IncrementRegisterCount();
   if (!registered_) {
@@ -38,8 +42,14 @@ bool SyncEventWatcher::SyncWatch(const bool* should_stop) {
   // This object may be destroyed during the Wait() call. So we have to preserve
   // the boolean that Wait uses.
   auto destroyed = destroyed_;
-  const bool* should_stop_array[] = {should_stop, &destroyed->data};
-  bool result = registry_->Wait(should_stop_array, 2);
+
+  constexpr size_t kFlagStackCapacity = 4;
+  base::StackVector<const bool*, kFlagStackCapacity> should_stop_array;
+  should_stop_array.container().push_back(&destroyed->data);
+  std::copy(stop_flags, stop_flags + num_stop_flags,
+            std::back_inserter(should_stop_array.container()));
+  bool result = registry_->Wait(should_stop_array.container().data(),
+                                should_stop_array.container().size());
 
   // This object has been destroyed.
   if (destroyed->data)

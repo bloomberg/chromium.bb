@@ -36,11 +36,15 @@ class MOJO_CPP_BINDINGS_EXPORT SyncEventWatcher {
   // Waits on |event_| plus all other events and handles registered with this
   // sequence's SyncHandleRegistry, running callbacks synchronously for any
   // ready events and handles.
+  //
+  // |stop_flags| is treated as an array of |const bool*| with |num_stop_flags|
+  // entries.
+  //
   // This method:
-  //   - returns true when |should_stop| is set to true;
+  //   - returns true when any flag in |stop_flags| is set to |true|.
   //   - return false when any error occurs, including this object being
   //     destroyed during a callback.
-  bool SyncWatch(const bool* should_stop);
+  bool SyncWatch(const bool** stop_flags, size_t num_stop_flags);
 
  private:
   void IncrementRegisterCount();

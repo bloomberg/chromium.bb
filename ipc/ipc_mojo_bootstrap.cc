@@ -38,7 +38,7 @@
 #include "mojo/public/cpp/bindings/pipe_control_message_handler.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_handler_delegate.h"
 #include "mojo/public/cpp/bindings/pipe_control_message_proxy.h"
-#include "mojo/public/cpp/bindings/sync_event_watcher.h"
+#include "mojo/public/cpp/bindings/sequence_local_sync_event_watcher.h"
 
 namespace IPC {
 
@@ -463,8 +463,8 @@ class ChannelAssociatedGroupController
     void SignalSyncMessageEvent() {
       controller_->lock_.AssertAcquired();
 
-      if (sync_message_event_)
-        sync_message_event_->Signal();
+      if (sync_watcher_)
+        sync_watcher_->SignalEvent();
     }
 
     MessageWrapper PopSyncMessage(uint32_t id) {
@@ -487,7 +487,7 @@ class ChannelAssociatedGroupController
       DCHECK(task_runner_->RunsTasksInCurrentSequence());
 
       EnsureSyncWatcherExists();
-      sync_watcher_->AllowWokenUpBySyncWatchOnSameThread();
+      sync_watcher_->AllowWokenUpBySyncWatchOnSameSequence();
     }
 
     bool SyncWatch(const bool* should_stop) override {
@@ -519,45 +519,37 @@ class ChannelAssociatedGroupController
       scoped_refptr<Endpoint> keepalive(this);
       scoped_refptr<AssociatedGroupController> controller_keepalive(
           controller_);
+      base::AutoLock locker(controller_->lock_);
+      bool more_to_process = false;
+      if (!sync_messages_.empty()) {
+        MessageWrapper message_wrapper =
+            std::move(sync_messages_.front().second);
+        sync_messages_.pop();
 
-      bool reset_sync_watcher = false;
-      {
-        base::AutoLock locker(controller_->lock_);
-        bool more_to_process = false;
-        if (!sync_messages_.empty()) {
-          MessageWrapper message_wrapper =
-              std::move(sync_messages_.front().second);
-          sync_messages_.pop();
-
-          bool dispatch_succeeded;
-          mojo::InterfaceEndpointClient* client = client_;
-          {
-            base::AutoUnlock unlocker(controller_->lock_);
-            dispatch_succeeded =
-                client->HandleIncomingMessage(&message_wrapper.value());
-          }
-
-          if (!sync_messages_.empty())
-            more_to_process = true;
-
-          if (!dispatch_succeeded)
-            controller_->RaiseError();
+        bool dispatch_succeeded;
+        mojo::InterfaceEndpointClient* client = client_;
+        {
+          base::AutoUnlock unlocker(controller_->lock_);
+          dispatch_succeeded =
+              client->HandleIncomingMessage(&message_wrapper.value());
         }
 
-        if (!more_to_process)
-          sync_message_event_->Reset();
+        if (!sync_messages_.empty())
+          more_to_process = true;
 
-        // If there are no queued sync messages and the peer has closed, there
-        // there won't be incoming sync messages in the future.
-        reset_sync_watcher = !more_to_process && peer_closed_;
+        if (!dispatch_succeeded)
+          controller_->RaiseError();
       }
 
-      if (reset_sync_watcher) {
-        // If a SyncWatch() call (or multiple ones) of this interface endpoint
-        // is on the call stack, resetting the sync watcher will allow it to
-        // exit when the call stack unwinds to that frame.
+      if (!more_to_process)
+        sync_watcher_->ResetEvent();
+
+      // If there are no queued sync messages and the peer has closed, there
+      // there won't be incoming sync messages in the future. If any
+      // SyncWatch() calls are on the stack for this endpoint, resetting the
+      // watcher will allow them to exit as the stack undwinds.
+      if (!more_to_process && peer_closed_)
         sync_watcher_.reset();
-      }
     }
 
     void EnsureSyncWatcherExists() {
@@ -565,21 +557,12 @@ class ChannelAssociatedGroupController
       if (sync_watcher_)
         return;
 
-      {
-        base::AutoLock locker(controller_->lock_);
-        if (!sync_message_event_) {
-          sync_message_event_ = std::make_unique<base::WaitableEvent>(
-              base::WaitableEvent::ResetPolicy::MANUAL,
-              base::WaitableEvent::InitialState::NOT_SIGNALED);
-          if (peer_closed_ || !sync_messages_.empty())
-            SignalSyncMessageEvent();
-        }
-      }
-
-      sync_watcher_ = std::make_unique<mojo::SyncEventWatcher>(
-          sync_message_event_.get(),
-          base::Bind(&Endpoint::OnSyncMessageEventReady,
-                     base::Unretained(this)));
+      base::AutoLock locker(controller_->lock_);
+      sync_watcher_ = std::make_unique<mojo::SequenceLocalSyncEventWatcher>(
+          base::BindRepeating(&Endpoint::OnSyncMessageEventReady,
+                              base::Unretained(this)));
+      if (peer_closed_ || !sync_messages_.empty())
+        SignalSyncMessageEvent();
     }
 
     uint32_t GenerateSyncMessageId() {
@@ -598,8 +581,7 @@ class ChannelAssociatedGroupController
     base::Optional<mojo::DisconnectReason> disconnect_reason_;
     mojo::InterfaceEndpointClient* client_ = nullptr;
     scoped_refptr<base::SequencedTaskRunner> task_runner_;
-    std::unique_ptr<mojo::SyncEventWatcher> sync_watcher_;
-    std::unique_ptr<base::WaitableEvent> sync_message_event_;
+    std::unique_ptr<mojo::SequenceLocalSyncEventWatcher> sync_watcher_;
     base::queue<std::pair<uint32_t, MessageWrapper>> sync_messages_;
     uint32_t next_sync_message_id_ = 0;
 
