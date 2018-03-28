@@ -22,6 +22,8 @@ namespace switches {
 
 MEDIA_EXPORT extern const char kAudioBufferSize[];
 
+MEDIA_EXPORT extern const char kAudioServiceQuitTimeoutMs[];
+
 MEDIA_EXPORT extern const char kAutoplayPolicy[];
 
 MEDIA_EXPORT extern const char kDisableAudioOutput[];

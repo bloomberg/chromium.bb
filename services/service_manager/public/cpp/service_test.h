@@ -82,6 +82,10 @@ class ServiceTest : public testing::Test {
   // work.
   virtual std::unique_ptr<Service> CreateService();
 
+  // By default returns null, which means the global default is used. Override
+  // to customize.
+  virtual std::unique_ptr<base::Value> CreateCustomTestCatalog();
+
   // Call to set OnStart() metadata when GetService() is overridden.
   void OnStartCalled(Connector* connector,
                      const std::string& name,

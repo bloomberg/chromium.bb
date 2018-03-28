@@ -12,6 +12,10 @@ namespace switches {
 // Allow users to specify a custom buffer size for debugging purpose.
 const char kAudioBufferSize[] = "audio-buffer-size";
 
+// Set a timeout (in milliseconds) for the audio service to quit if there are no
+// client connections to it. If the value is zero the service never quits.
+const char kAudioServiceQuitTimeoutMs[] = "audio-service-quit-timeout-ms";
+
 // Command line flag name to set the autoplay policy.
 const char kAutoplayPolicy[] = "autoplay-policy";
 
