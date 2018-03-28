@@ -35,6 +35,8 @@ source_set("recent_tabs_ui") {
   sources = [
     "recent_tabs_table_view_controller.h",
     "recent_tabs_table_view_controller.mm",
+    "recent_tabs_transitioning_delegate.h",
+    "recent_tabs_transitioning_delegate.mm",
   ]
   deps = [
     "//base",
@@ -56,6 +58,7 @@ source_set("recent_tabs_ui") {
     "//ios/chrome/browser/ui/settings/sync_utils",
     "//ios/chrome/browser/ui/signin_interaction/public",
     "//ios/chrome/browser/ui/table_view",
+    "//ios/chrome/browser/ui/table_view:presentation",
     "//ios/chrome/browser/ui/util",
     "//ui/base",
   ]
