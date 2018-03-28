@@ -20,6 +20,7 @@
 #include "content/browser/background_fetch/storage/get_developer_ids_task.h"
 #include "content/browser/background_fetch/storage/get_registration_task.h"
 #include "content/browser/background_fetch/storage/mark_registration_for_deletion_task.h"
+#include "content/browser/background_fetch/storage/update_registration_ui_task.h"
 #include "content/browser/blob_storage/chrome_blob_storage_context.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/public/browser/browser_thread.h"
@@ -269,10 +270,21 @@ void BackgroundFetchDataManager::GetRegistration(
 }
 
 void BackgroundFetchDataManager::UpdateRegistrationUI(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
     const std::string& unique_id,
     const std::string& title,
     blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableBackgroundFetchPersistence)) {
+    AddDatabaseTask(
+        std::make_unique<background_fetch::UpdateRegistrationUITask>(
+            this, service_worker_registration_id, origin, unique_id, title,
+            std::move(callback)));
+    return;
+  }
 
   auto registrations_iter = registrations_.find(unique_id);
   if (registrations_iter == registrations_.end()) {  // Not found.

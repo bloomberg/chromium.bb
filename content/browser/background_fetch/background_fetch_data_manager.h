@@ -84,6 +84,8 @@ class CONTENT_EXPORT BackgroundFetchDataManager
 
   // Updates the UI values for a Background Fetch registration.
   void UpdateRegistrationUI(
+      int64_t service_worker_registration_id,
+      const url::Origin& origin,
       const std::string& unique_id,
       const std::string& title,
       blink::mojom::BackgroundFetchService::UpdateUICallback callback);

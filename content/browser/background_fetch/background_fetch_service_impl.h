@@ -43,7 +43,8 @@ class CONTENT_EXPORT BackgroundFetchServiceImpl
              const SkBitmap& icon,
              FetchCallback callback) override;
   void GetIconDisplaySize(GetIconDisplaySizeCallback callback) override;
-  void UpdateUI(const std::string& unique_id,
+  void UpdateUI(int64_t service_worker_registration_id,
+                const std::string& unique_id,
                 const std::string& title,
                 UpdateUICallback callback) override;
   void Abort(int64_t service_worker_registration_id,

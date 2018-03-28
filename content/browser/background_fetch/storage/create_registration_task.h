@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_task.h"
 #include "content/common/service_worker/service_worker_status_code.h"
 #include "content/common/service_worker/service_worker_types.h"
@@ -42,6 +43,8 @@ class CreateRegistrationTask : public DatabaseTask {
   void StoreRegistration();
 
   void DidStoreRegistration(ServiceWorkerStatusCode status);
+
+  proto::BackgroundFetchRegistration CreateRegistrationProto() const;
 
   BackgroundFetchRegistrationId registration_id_;
   std::vector<ServiceWorkerFetchRequest> requests_;

@@ -70,7 +70,9 @@ void BackgroundFetchBridge::UpdateUI(const String& developer_id,
                                      const String& unique_id,
                                      const String& title,
                                      UpdateUICallback callback) {
-  GetService()->UpdateUI(unique_id, title, std::move(callback));
+  GetService()->UpdateUI(
+      GetSupplementable()->WebRegistration()->RegistrationId(), unique_id,
+      title, std::move(callback));
 }
 
 void BackgroundFetchBridge::GetRegistration(const String& developer_id,
