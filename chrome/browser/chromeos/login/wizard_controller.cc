@@ -613,6 +613,14 @@ void WizardController::ShowArcTermsOfServiceScreen() {
     UpdateStatusAreaVisibilityForScreen(
         OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE);
     SetCurrentScreen(GetScreen(OobeScreen::SCREEN_ARC_TERMS_OF_SERVICE));
+    // Assistant Wizard also uses wizard for ARC opt-in, unlike other scenarios
+    // which use ArcSupport for now, because we're interested in only OOBE flow.
+    // Note that this part also needs to be updated on b/65861628.
+    // TODO(khmel): add unit test once we have support for OobeUI.
+    if (!host_->IsVoiceInteractionOobe()) {
+      ProfileManager::GetActiveUserProfile()->GetPrefs()->SetBoolean(
+          arc::prefs::kArcTermsShownInOobe, true);
+    }
   } else {
     ShowUserImageScreen();
   }
