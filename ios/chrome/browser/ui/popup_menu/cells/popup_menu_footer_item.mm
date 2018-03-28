@@ -9,7 +9,7 @@
 #endif
 
 namespace {
-const CGFloat kSeparatorHeight = 2;
+const CGFloat kSeparatorHeight = 1;
 const CGFloat kSeparatorMargin = 12;
 }  // namespace
 
@@ -42,7 +42,7 @@ const CGFloat kSeparatorMargin = 12;
   if (self) {
     UIView* separator = [[UIView alloc] init];
     separator.translatesAutoresizingMaskIntoConstraints = NO;
-    separator.backgroundColor = [UIColor lightGrayColor];
+    separator.backgroundColor = [UIColor colorWithWhite:0 alpha:0.05];
     [self.contentView addSubview:separator];
     [NSLayoutConstraint activateConstraints:@[
       [separator.heightAnchor constraintEqualToConstant:kSeparatorHeight],

@@ -12,8 +12,11 @@
 #endif
 
 namespace {
-const CGFloat kImageLength = 30;
-const CGFloat kMargin = 8;
+const CGFloat kImageLength = 28;
+const CGFloat kCellHeight = 44;
+const CGFloat kImageTextMargin = 11;
+const CGFloat kMargin = 15;
+const CGFloat kImageTopMargin = 8;
 }
 
 @implementation PopupMenuToolsItem
@@ -70,30 +73,29 @@ const CGFloat kMargin = 8;
   if (self) {
     _titleLabel = [[UILabel alloc] init];
     _titleLabel.numberOfLines = 0;
+    _titleLabel.font = [UIFont preferredFontForTextStyle:UIFontTextStyleBody];
     _titleLabel.translatesAutoresizingMaskIntoConstraints = NO;
 
     _imageView = [[UIImageView alloc] init];
     _imageView.translatesAutoresizingMaskIntoConstraints = NO;
-    [NSLayoutConstraint activateConstraints:@[
-      [_imageView.widthAnchor constraintEqualToConstant:kImageLength],
-      [_imageView.heightAnchor
-          constraintGreaterThanOrEqualToConstant:kImageLength],
-    ]];
 
     [self.contentView addSubview:_titleLabel];
     [self.contentView addSubview:_imageView];
 
-    AddSameConstraintsToSides(self.contentView, _titleLabel,
-                              LayoutSides::kTop | LayoutSides::kBottom);
-    AddSameConstraintsToSides(
-        self.contentView, _imageView,
-        LayoutSides::kTop | LayoutSides::kBottom | LayoutSides::kLeading);
-    [_imageView.trailingAnchor
-        constraintEqualToAnchor:_titleLabel.leadingAnchor]
-        .active = YES;
-    [_titleLabel.trailingAnchor
-        constraintEqualToAnchor:self.contentView.trailingAnchor
-                       constant:-kMargin]
+    ApplyVisualConstraintsWithMetrics(
+        @[
+          @"H:|-(margin)-[image(imageSize)]-(textImage)-[text]-(margin)-|",
+          @"V:|-(imageTopMargin)-[image(imageSize)]", @"V:|[text]|"
+        ],
+        @{@"image" : _imageView, @"text" : _titleLabel}, @{
+          @"margin" : @(kMargin),
+          @"imageSize" : @(kImageLength),
+          @"textImage" : @(kImageTextMargin),
+          @"imageTopMargin" : @(kImageTopMargin),
+        });
+
+    [self.contentView.heightAnchor
+        constraintGreaterThanOrEqualToConstant:kCellHeight]
         .active = YES;
   }
   return self;
@@ -101,7 +103,7 @@ const CGFloat kMargin = 8;
 
 + (CGSize)sizeForWidth:(CGFloat)width title:(NSString*)title {
   // This is not using a prototype cell and autolayout for performance reasons.
-  CGFloat nonTitleElementWidth = kImageLength + kMargin;
+  CGFloat nonTitleElementWidth = kImageLength + 2 * kMargin + kImageTextMargin;
   // The width should be enough to contain more than the image.
   DCHECK(width > nonTitleElementWidth);
 
@@ -128,8 +130,10 @@ const CGFloat kMargin = 8;
   [super setUserInteractionEnabled:userInteractionEnabled];
   if (userInteractionEnabled) {
     self.titleLabel.textColor = self.tintColor;
+    self.imageView.tintColor = self.tintColor;
   } else {
     self.titleLabel.textColor = [[self class] disabledColor];
+    self.imageView.tintColor = [[self class] disabledColor];
   }
 }
 

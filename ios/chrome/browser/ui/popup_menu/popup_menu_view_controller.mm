@@ -12,10 +12,9 @@
 #endif
 
 namespace {
-const CGFloat kCornerRadius = 15;
+const CGFloat kCornerRadius = 13;
 const CGFloat kShadowRadius = 10;
 const CGFloat kShadowOpacity = 0.3;
-const CGFloat kContentMargin = 8;
 const CGFloat kBlurBackgroundGreyScale = 0.98;
 const CGFloat kBlurBackgroundAlpha = 0.75;
 }  // namespace
@@ -49,7 +48,7 @@ const CGFloat kBlurBackgroundAlpha = 0.75;
   [self addChildViewController:content];
   content.view.translatesAutoresizingMaskIntoConstraints = NO;
   [self.contentContainer addSubview:content.view];
-  AddSameConstraints(self.contentContainer.layoutMarginsGuide, content.view);
+  AddSameConstraints(self.contentContainer, content.view);
   [content didMoveToParentViewController:self];
 }
 
@@ -82,8 +81,6 @@ const CGFloat kBlurBackgroundAlpha = 0.75;
   _contentContainer.layer.shadowRadius = kShadowRadius;
   _contentContainer.layer.shadowOpacity = kShadowOpacity;
   _contentContainer.translatesAutoresizingMaskIntoConstraints = NO;
-  _contentContainer.layoutMargins = UIEdgeInsetsMake(
-      kContentMargin, kContentMargin, kContentMargin, kContentMargin);
   // TODO(crbug.com/821765): Add update the shadow.
   [self.view addSubview:_contentContainer];
 }

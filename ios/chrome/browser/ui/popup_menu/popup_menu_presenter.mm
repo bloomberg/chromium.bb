@@ -51,7 +51,7 @@ const CGFloat kMinMargin = 16;
   // Set the frame of the table view to the maximum width to have the label
   // resizing correctly.
   CGRect frame = self.presentedViewController.view.frame;
-  frame.size.width = kMaxWidth - 2 * kMinMargin;
+  frame.size.width = kMaxWidth;
   self.presentedViewController.view.frame = frame;
   // It is necessary to do a first layout pass so the table view can size
   // itself.
