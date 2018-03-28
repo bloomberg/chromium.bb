@@ -186,6 +186,7 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
     return;
   }
 
+  WindowSelectorItem* item_to_snap = nullptr;
   if (!IsSelecting()) {
     aura::Window* active_window = wm::GetActiveWindow();
     // Do nothing if there are no active windows or less than two windows to
@@ -201,25 +202,27 @@ void WindowSelectorController::OnOverviewButtonTrayLongPressed(
       return;
     }
 
-    // If we are not in overview mode snap the window left and enter overview
-    // mode.
-    split_view_controller->SnapWindow(active_window, SplitViewController::LEFT);
+    // If we are not in overview mode, enter overview mode and then find the
+    // window item to snap.
     ToggleOverview();
-    base::RecordAction(base::UserMetricsAction(
-        "Tablet_LongPressOverviewButtonEnterSplitView"));
-    return;
-  }
-
-  // Currently in overview mode, with no snapped windows. Retrieve the first
-  // window selector item and attempt to snap that window.
-  DCHECK(window_selector_);
-  WindowSelectorItem* item_to_snap = nullptr;
-  WindowGrid* current_grid = window_selector_->GetGridWithRootWindow(
-      wm::GetRootWindowAt(event_location));
-  if (current_grid) {
-    const auto& windows = current_grid->window_list();
-    if (windows.size() > 1)
-      item_to_snap = windows[0].get();
+    DCHECK(window_selector_);
+    WindowGrid* current_grid =
+        window_selector_->GetGridWithRootWindow(active_window->GetRootWindow());
+    if (current_grid) {
+      item_to_snap =
+          current_grid->GetWindowSelectorItemContaining(active_window);
+    }
+  } else {
+    // Currently in overview mode, with no snapped windows. Retrieve the first
+    // window selector item and attempt to snap that window.
+    DCHECK(window_selector_);
+    WindowGrid* current_grid = window_selector_->GetGridWithRootWindow(
+        wm::GetRootWindowAt(event_location));
+    if (current_grid) {
+      const auto& windows = current_grid->window_list();
+      if (windows.size() > 1)
+        item_to_snap = windows[0].get();
+    }
   }
 
   // Do nothing if no item was retrieved, or if the retrieved item is
