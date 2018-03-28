@@ -126,7 +126,7 @@ void RecentDownloadSource::OnReadDirectory(
 
   for (const auto& entry : entries) {
     base::FilePath subpath = path.Append(entry.name);
-    if (entry.is_directory) {
+    if (entry.type == filesystem::mojom::FsFileType::DIRECTORY) {
       ScanDirectory(subpath);
     } else {
       storage::FileSystemURL url = BuildDownloadsURL(subpath);

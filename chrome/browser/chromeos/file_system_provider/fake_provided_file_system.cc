@@ -6,10 +6,12 @@
 
 #include <stddef.h>
 
+#include <memory>
 #include <utility>
 
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "net/base/io_buffer.h"
 
 namespace chromeos {
@@ -158,10 +160,11 @@ AbortCallback FakeProvidedFileSystem::ReadDirectory(
     const base::FilePath file_path = it->first;
     if (file_path == directory_path || directory_path.IsParent(file_path)) {
       const EntryMetadata* const metadata = it->second->metadata.get();
-      entry_list.push_back(storage::DirectoryEntry(
-          *metadata->name, *metadata->is_directory
-                               ? storage::DirectoryEntry::DIRECTORY
-                               : storage::DirectoryEntry::FILE));
+      entry_list.emplace_back(
+          base::FilePath(*metadata->name),
+          *metadata->is_directory
+              ? filesystem::mojom::FsFileType::DIRECTORY
+              : filesystem::mojom::FsFileType::REGULAR_FILE);
     }
   }
 

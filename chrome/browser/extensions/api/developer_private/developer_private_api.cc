@@ -6,7 +6,9 @@
 
 #include <stddef.h>
 #include <memory>
+#include <string>
 #include <utility>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -1381,7 +1383,7 @@ void DeveloperPrivateLoadDirectoryFunction::ReadDirectoryByFileSystemAPICb(
   pending_copy_operations_count_ += file_list.size();
 
   for (size_t i = 0; i < file_list.size(); ++i) {
-    if (file_list[i].is_directory) {
+    if (file_list[i].type == filesystem::mojom::FsFileType::DIRECTORY) {
       ReadDirectoryByFileSystemAPI(project_path.Append(file_list[i].name),
                                    destination_path.Append(file_list[i].name));
       continue;

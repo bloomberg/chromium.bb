@@ -7,6 +7,7 @@
 #include <string.h>
 
 #include <string>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/file_util.h"
@@ -236,8 +237,9 @@ void PepperInternalFileRefBackend::ReadDirectoryComplete(
       dir_path += '/';
 
     for (const auto& it : *accumulated_file_list) {
-      file_types.push_back(it.is_directory ? PP_FILETYPE_DIRECTORY
-                                           : PP_FILETYPE_REGULAR);
+      file_types.push_back(it.type == filesystem::mojom::FsFileType::DIRECTORY
+                               ? PP_FILETYPE_DIRECTORY
+                               : PP_FILETYPE_REGULAR);
 
       ppapi::FileRefCreateInfo info;
       info.file_system_type = fs_type_;

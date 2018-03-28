@@ -10,6 +10,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "components/storage_monitor/image_capture_device.h"
 #include "components/storage_monitor/image_capture_device_manager.h"
 #include "content/public/browser/browser_thread.h"
@@ -464,10 +465,10 @@ void MTPDeviceDelegateImplMac::NotifyReadDir() {
       base::FilePath relative_path;
       read_path.AppendRelativePath(file_paths_[i], &relative_path);
       base::File::Info info = file_info_[file_paths_[i].value()];
-      storage::DirectoryEntry entry;
-      entry.name = relative_path.value();
-      entry.is_directory = info.is_directory;
-      entry_list.push_back(entry);
+      entry_list.emplace_back(
+          std::move(relative_path),
+          info.is_directory ? filesystem::mojom::FsFileType::DIRECTORY
+                            : filesystem::mojom::FsFileType::REGULAR_FILE);
     }
 
     if (found_path) {

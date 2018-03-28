@@ -381,11 +381,11 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestGetFileInfo) {
   EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
 
   ASSERT_EQ(2U, file_list_.size());
-  EXPECT_FALSE(file_list_[0].is_directory);
-  EXPECT_EQ("name1", file_list_[0].name);
+  EXPECT_EQ(filesystem::mojom::FsFileType::REGULAR_FILE, file_list_[0].type);
+  EXPECT_EQ("name1", file_list_[0].name.value());
 
-  EXPECT_FALSE(file_list_[1].is_directory);
-  EXPECT_EQ("name2", file_list_[1].name);
+  EXPECT_EQ(filesystem::mojom::FsFileType::REGULAR_FILE, file_list_[1].type);
+  EXPECT_EQ("name2", file_list_[1].name.value());
 }
 
 TEST_F(MTPDeviceDelegateImplMacTest, TestDirectoriesAndSorting) {
@@ -410,13 +410,13 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDirectoriesAndSorting) {
   EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
 
   ASSERT_EQ(4U, file_list_.size());
-  EXPECT_EQ("dir1", file_list_[0].name);
-  EXPECT_EQ("dir2", file_list_[1].name);
-  EXPECT_FALSE(file_list_[2].is_directory);
-  EXPECT_EQ("name1", file_list_[2].name);
+  EXPECT_EQ("dir1", file_list_[0].name.value());
+  EXPECT_EQ("dir2", file_list_[1].name.value());
+  EXPECT_EQ(filesystem::mojom::FsFileType::REGULAR_FILE, file_list_[2].type);
+  EXPECT_EQ("name1", file_list_[2].name.value());
 
-  EXPECT_FALSE(file_list_[3].is_directory);
-  EXPECT_EQ("name2", file_list_[3].name);
+  EXPECT_EQ(filesystem::mojom::FsFileType::REGULAR_FILE, file_list_[3].type);
+  EXPECT_EQ("name2", file_list_[3].name.value());
 }
 
 TEST_F(MTPDeviceDelegateImplMacTest, SubDirectories) {
@@ -459,33 +459,33 @@ TEST_F(MTPDeviceDelegateImplMacTest, SubDirectories) {
 
   EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
   ASSERT_EQ(3U, file_list_.size());
-  EXPECT_TRUE(file_list_[0].is_directory);
-  EXPECT_EQ("dir1", file_list_[0].name);
-  EXPECT_TRUE(file_list_[1].is_directory);
-  EXPECT_EQ("dir2", file_list_[1].name);
-  EXPECT_FALSE(file_list_[2].is_directory);
-  EXPECT_EQ("name4", file_list_[2].name);
+  EXPECT_EQ(filesystem::mojom::FsFileType::DIRECTORY, file_list_[0].type);
+  EXPECT_EQ("dir1", file_list_[0].name.value());
+  EXPECT_EQ(filesystem::mojom::FsFileType::DIRECTORY, file_list_[1].type);
+  EXPECT_EQ("dir2", file_list_[1].name.value());
+  EXPECT_EQ(filesystem::mojom::FsFileType::REGULAR_FILE, file_list_[2].type);
+  EXPECT_EQ("name4", file_list_[2].name.value());
 
   EXPECT_EQ(base::File::FILE_OK,
             ReadDir(base::FilePath(kDevicePath).Append("dir1")));
   ASSERT_EQ(1U, file_list_.size());
-  EXPECT_FALSE(file_list_[0].is_directory);
-  EXPECT_EQ("name1", file_list_[0].name);
+  EXPECT_EQ(filesystem::mojom::FsFileType::REGULAR_FILE, file_list_[0].type);
+  EXPECT_EQ("name1", file_list_[0].name.value());
 
   EXPECT_EQ(base::File::FILE_OK,
             ReadDir(base::FilePath(kDevicePath).Append("dir2")));
   ASSERT_EQ(2U, file_list_.size());
-  EXPECT_FALSE(file_list_[0].is_directory);
-  EXPECT_EQ("name2", file_list_[0].name);
-  EXPECT_TRUE(file_list_[1].is_directory);
-  EXPECT_EQ("subdir", file_list_[1].name);
+  EXPECT_EQ(filesystem::mojom::FsFileType::REGULAR_FILE, file_list_[0].type);
+  EXPECT_EQ("name2", file_list_[0].name.value());
+  EXPECT_EQ(filesystem::mojom::FsFileType::DIRECTORY, file_list_[1].type);
+  EXPECT_EQ("subdir", file_list_[1].name.value());
 
   EXPECT_EQ(base::File::FILE_OK,
             ReadDir(base::FilePath(kDevicePath)
                     .Append("dir2").Append("subdir")));
   ASSERT_EQ(1U, file_list_.size());
-  EXPECT_FALSE(file_list_[0].is_directory);
-  EXPECT_EQ("name3", file_list_[0].name);
+  EXPECT_EQ(filesystem::mojom::FsFileType::REGULAR_FILE, file_list_[0].type);
+  EXPECT_EQ("name3", file_list_[0].name.value());
 
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             ReadDir(base::FilePath(kDevicePath)
@@ -517,7 +517,7 @@ TEST_F(MTPDeviceDelegateImplMacTest, TestDownload) {
 
   EXPECT_EQ(base::File::FILE_OK, ReadDir(base::FilePath(kDevicePath)));
   ASSERT_EQ(1U, file_list_.size());
-  ASSERT_EQ("filename", file_list_[0].name);
+  ASSERT_EQ("filename", file_list_[0].name.value());
 
   EXPECT_EQ(base::File::FILE_ERROR_NOT_FOUND,
             DownloadFile(base::FilePath("/ic:id/nonexist"),

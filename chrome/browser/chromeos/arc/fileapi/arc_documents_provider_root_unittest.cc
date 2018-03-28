@@ -22,12 +22,10 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/watcher_manager.h"
-#include "storage/common/fileapi/directory_entry.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
 
 using ChangeType = arc::ArcDocumentsProviderRoot::ChangeType;
-using storage::DirectoryEntry;
 using Document = arc::FakeFileSystemInstance::Document;
 using EntryList = storage::AsyncFileUtil::EntryList;
 

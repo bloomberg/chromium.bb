@@ -29,6 +29,7 @@
 #include "base/threading/thread_restrictions.h"
 #include "chrome/browser/media_galleries/chromeos/mtp_device_task_helper_map_service.h"
 #include "chrome/browser/media_galleries/chromeos/snapshot_file_details.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "net/base/io_buffer.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
@@ -1589,14 +1590,16 @@ void MTPDeviceDelegateImplLinux::OnDidReadDirectory(
 
   storage::AsyncFileUtil::EntryList file_list;
   for (const auto& mtp_entry : mtp_entries) {
-    storage::DirectoryEntry entry;
-    entry.name = mtp_entry.name;
-    entry.is_directory = mtp_entry.file_info.is_directory;
+    filesystem::mojom::DirectoryEntry entry;
+    entry.name = base::FilePath(mtp_entry.name);
+    entry.type = mtp_entry.file_info.is_directory
+                     ? filesystem::mojom::FsFileType::DIRECTORY
+                     : filesystem::mojom::FsFileType::REGULAR_FILE;
     file_list.push_back(entry);
 
     // Refresh the in memory tree.
-    dir_node->EnsureChildExists(entry.name, mtp_entry.file_id);
-    child_nodes_seen_.insert(entry.name);
+    dir_node->EnsureChildExists(entry.name.value(), mtp_entry.file_id);
+    child_nodes_seen_.insert(entry.name.value());
 
     // Add to |file_info_cache_|.
     file_info_cache_[dir_path.Append(entry.name)] = mtp_entry;

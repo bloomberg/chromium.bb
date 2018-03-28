@@ -14,9 +14,9 @@
 #include "base/files/file.h"
 #include "base/files/file_path.h"
 #include "base/process/process.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/storage_browser_export.h"
-#include "storage/common/fileapi/directory_entry.h"
 
 namespace base {
 class Time;
@@ -83,7 +83,7 @@ class FileSystemOperation {
       OpenFileCallback;
 
   // Used for ReadDirectoryCallback.
-  typedef std::vector<DirectoryEntry> FileEntryList;
+  typedef std::vector<filesystem::mojom::DirectoryEntry> FileEntryList;
 
   // Used for ReadDirectory(). |result| is the return code of the operation,
   // |file_list| is the list of files read, and |has_more| is true if some files

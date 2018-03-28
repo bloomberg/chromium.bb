@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -14,6 +15,7 @@
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/process/process.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "ipc/ipc_listener.h"
 #include "ipc/ipc_platform_file.h"
 #include "storage/common/fileapi/file_system_types.h"
@@ -24,7 +26,6 @@ class FilePath;
 }
 
 namespace storage {
-struct DirectoryEntry;
 struct FileSystemInfo;
 }
 
@@ -38,21 +39,24 @@ namespace content {
 class FileSystemDispatcher : public IPC::Listener {
  public:
   typedef base::Callback<void(base::File::Error error)> StatusCallback;
+  typedef base::Callback<void(const base::File::Info& file_info)>
+      MetadataCallback;
+  typedef base::Callback<void(const base::File::Info& file_info,
+                              const base::FilePath& platform_path,
+                              int request_id)>
+      CreateSnapshotFileCallback;
+
   typedef base::Callback<void(
-      const base::File::Info& file_info)> MetadataCallback;
-  typedef base::Callback<void(
-      const base::File::Info& file_info,
-      const base::FilePath& platform_path,
-      int request_id)> CreateSnapshotFileCallback;
-  typedef base::Callback<
-      void(const std::vector<storage::DirectoryEntry>& entries, bool has_more)>
+      const std::vector<filesystem::mojom::DirectoryEntry>& entries,
+      bool has_more)>
       ReadDirectoryCallback;
-  typedef base::Callback<void(
-      const std::string& name,
-      const GURL& root)> OpenFileSystemCallback;
+  typedef base::Callback<void(const std::string& name, const GURL& root)>
+      OpenFileSystemCallback;
   typedef base::Callback<void(const storage::FileSystemInfo& info,
                               const base::FilePath& file_path,
-                              bool is_directory)> ResolveURLCallback;
+                              bool is_directory)>
+      ResolveURLCallback;
+
   typedef base::Callback<void(int64_t bytes, bool complete)> WriteCallback;
   typedef base::Callback<void(base::PlatformFile file,
                               int file_open_id,
@@ -78,9 +82,7 @@ class FileSystemDispatcher : public IPC::Listener {
   void Copy(const GURL& src_path,
             const GURL& dest_path,
             const StatusCallback& callback);
-  void Remove(const GURL& path,
-              bool recursive,
-              const StatusCallback& callback);
+  void Remove(const GURL& path, bool recursive, const StatusCallback& callback);
   void ReadMetadata(const GURL& path,
                     const MetadataCallback& success_callback,
                     const StatusCallback& error_callback);
@@ -107,8 +109,7 @@ class FileSystemDispatcher : public IPC::Listener {
              int* request_id_out,
              const WriteCallback& success_callback,
              const StatusCallback& error_callback);
-  void Cancel(int request_id_to_cancel,
-              const StatusCallback& callback);
+  void Cancel(int request_id_to_cancel, const StatusCallback& callback);
   void TouchFile(const GURL& file_path,
                  const base::Time& last_access_time,
                  const base::Time& last_modified_time,
@@ -138,9 +139,10 @@ class FileSystemDispatcher : public IPC::Listener {
   void OnDidCreateSnapshotFile(int request_id,
                                const base::File::Info& file_info,
                                const base::FilePath& platform_path);
-  void OnDidReadDirectory(int request_id,
-                          const std::vector<storage::DirectoryEntry>& entries,
-                          bool has_more);
+  void OnDidReadDirectory(
+      int request_id,
+      const std::vector<filesystem::mojom::DirectoryEntry>& entries,
+      bool has_more);
   void OnDidFail(int request_id, base::File::Error error_code);
   void OnDidWrite(int request_id, int64_t bytes, bool complete);
 

@@ -15,6 +15,7 @@
 #include "base/containers/id_map.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/fileapi/file_system_operation.h"
 #include "storage/browser/fileapi/file_system_url.h"
@@ -269,7 +270,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
   void DidReadDirectory(const OperationHandle& handle,
                         const ReadDirectoryCallback& callback,
                         base::File::Error rv,
-                        std::vector<DirectoryEntry> entries,
+                        std::vector<filesystem::mojom::DirectoryEntry> entries,
                         bool has_more);
   void DidWrite(const OperationHandle& handle,
                 const WriteCallback& callback,

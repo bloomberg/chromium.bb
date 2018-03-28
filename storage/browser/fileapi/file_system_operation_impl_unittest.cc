@@ -8,6 +8,8 @@
 #include <stdint.h>
 
 #include <memory>
+#include <string>
+#include <utility>
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -21,6 +23,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/test/scoped_task_environment.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_context.h"
 #include "storage/browser/fileapi/file_system_file_util.h"
@@ -94,7 +97,7 @@ class FileSystemOperationImplTest
 
   const base::File::Info& info() const { return info_; }
   const base::FilePath& path() const { return path_; }
-  const std::vector<storage::DirectoryEntry>& entries() const {
+  const std::vector<filesystem::mojom::DirectoryEntry>& entries() const {
     return entries_;
   }
 
@@ -217,7 +220,7 @@ class FileSystemOperationImplTest
   void DidReadDirectory(base::RepeatingClosure closure,
                         base::File::Error* status,
                         base::File::Error actual,
-                        std::vector<storage::DirectoryEntry> entries,
+                        std::vector<filesystem::mojom::DirectoryEntry> entries,
                         bool /* has_more */) {
     entries_ = std::move(entries);
     *status = actual;
@@ -477,7 +480,7 @@ class FileSystemOperationImplTest
   // For post-operation status.
   base::File::Info info_;
   base::FilePath path_;
-  std::vector<storage::DirectoryEntry> entries_;
+  std::vector<filesystem::mojom::DirectoryEntry> entries_;
   scoped_refptr<ShareableFileReference> shareable_file_ref_;
 
   storage::MockFileChangeObserver change_observer_;
@@ -1019,10 +1022,10 @@ TEST_F(FileSystemOperationImplTest, TestReadDirSuccess) {
   EXPECT_EQ(2u, entries().size());
 
   for (size_t i = 0; i < entries().size(); ++i) {
-    if (entries()[i].is_directory)
-      EXPECT_EQ(FILE_PATH_LITERAL("child_dir"), entries()[i].name);
+    if (entries()[i].type == filesystem::mojom::FsFileType::DIRECTORY)
+      EXPECT_EQ(FILE_PATH_LITERAL("child_dir"), entries()[i].name.value());
     else
-      EXPECT_EQ(FILE_PATH_LITERAL("child_file"), entries()[i].name);
+      EXPECT_EQ(FILE_PATH_LITERAL("child_file"), entries()[i].name.value());
   }
   EXPECT_EQ(1, quota_manager_proxy()->notify_storage_accessed_count());
   EXPECT_TRUE(change_observer()->HasNoChange());

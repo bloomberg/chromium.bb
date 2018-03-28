@@ -15,6 +15,7 @@
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
 #include "chrome/browser/media_galleries/fileapi/media_path_filter.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"
@@ -567,11 +568,10 @@ base::File::Error NativeMediaFileUtil::ReadDirectorySync(
     if (!info.IsDirectory() && !media_path_filter_->Match(enum_path))
       continue;
 
-    storage::DirectoryEntry entry;
-    entry.is_directory = info.IsDirectory();
-    entry.name = enum_path.BaseName().value();
-
-    file_list->push_back(entry);
+    file_list->emplace_back(enum_path.BaseName(),
+                            info.IsDirectory()
+                                ? filesystem::mojom::FsFileType::DIRECTORY
+                                : filesystem::mojom::FsFileType::REGULAR_FILE);
   }
 
   return base::File::FILE_OK;

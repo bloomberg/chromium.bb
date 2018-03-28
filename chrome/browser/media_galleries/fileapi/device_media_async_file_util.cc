@@ -20,6 +20,7 @@
 #include "chrome/browser/media_galleries/fileapi/mtp_file_stream_reader.h"
 #include "chrome/browser/media_galleries/fileapi/native_media_file_util.h"
 #include "chrome/browser/media_galleries/fileapi/readahead_file_stream_reader.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_stream_reader.h"
@@ -261,8 +262,9 @@ DeviceMediaAsyncFileUtil::MediaPathFilterWrapper::FilterMediaEntries(
     const AsyncFileUtil::EntryList& file_list) {
   AsyncFileUtil::EntryList results;
   for (size_t i = 0; i < file_list.size(); ++i) {
-    const storage::DirectoryEntry& entry = file_list[i];
-    if (entry.is_directory || CheckFilePath(base::FilePath(entry.name))) {
+    const filesystem::mojom::DirectoryEntry& entry = file_list[i];
+    if (entry.type == filesystem::mojom::FsFileType::DIRECTORY ||
+        CheckFilePath(entry.name)) {
       results.push_back(entry);
     }
   }

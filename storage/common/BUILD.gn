@@ -15,8 +15,6 @@ component("common") {
     "database/database_connections.h",
     "database/database_identifier.cc",
     "database/database_identifier.h",
-    "fileapi/directory_entry.cc",
-    "fileapi/directory_entry.h",
     "fileapi/file_system_info.cc",
     "fileapi/file_system_info.h",
     "fileapi/file_system_mount_option.h",
@@ -38,6 +36,7 @@ component("common") {
   defines = [ "STORAGE_COMMON_IMPLEMENTATION" ]
 
   public_deps = [
+    "//components/services/filesystem/public/interfaces",
     "//services/network/public/mojom",
     "//third_party/WebKit/public:blink_headers",
   ]

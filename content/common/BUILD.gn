@@ -328,6 +328,7 @@ source_set("common") {
     "//build/util:webkit_version",
     "//cc/ipc",
     "//components/discardable_memory/common",
+    "//components/services/filesystem/public/interfaces",
     "//components/tracing",
     "//components/tracing:startup_tracing",
     "//components/viz/service",

@@ -14,11 +14,11 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_root_map.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_documents_provider_util.h"
 #include "chrome/browser/profiles/profile.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "content/public/browser/browser_thread.h"
 #include "storage/browser/blob/shareable_file_reference.h"
 #include "storage/browser/fileapi/file_system_operation_context.h"
 #include "storage/browser/fileapi/file_system_url.h"
-#include "storage/common/fileapi/directory_entry.h"
 
 using content::BrowserThread;
 
@@ -43,10 +43,12 @@ void OnReadDirectoryOnUIThread(
 
   storage::AsyncFileUtil::EntryList entries;
   entries.reserve(files.size());
-  for (const auto& file : files)
-    entries.emplace_back(file.name, file.is_directory
-                                        ? storage::DirectoryEntry::DIRECTORY
-                                        : storage::DirectoryEntry::FILE);
+  for (const auto& file : files) {
+    entries.emplace_back(base::FilePath(file.name),
+                         file.is_directory
+                             ? filesystem::mojom::FsFileType::DIRECTORY
+                             : filesystem::mojom::FsFileType::REGULAR_FILE);
+  }
 
   BrowserThread::PostTask(BrowserThread::IO, FROM_HERE,
                           base::BindOnce(std::move(callback), result, entries,

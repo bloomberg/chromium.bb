@@ -5,7 +5,9 @@
 #include "content/renderer/fileapi/webfilesystem_impl.h"
 
 #include <stddef.h>
+#include <string>
 #include <tuple>
+#include <vector>
 
 #include "base/bind.h"
 #include "base/lazy_instance.h"
@@ -15,12 +17,12 @@
 #include "base/synchronization/waitable_event.h"
 #include "base/threading/thread_local.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "content/common/fileapi/file_system_messages.h"
 #include "content/renderer/file_info_util.h"
 #include "content/renderer/fileapi/file_system_dispatcher.h"
 #include "content/renderer/fileapi/webfilewriter_impl.h"
 #include "content/renderer/render_thread_impl.h"
-#include "storage/common/fileapi/directory_entry.h"
 #include "storage/common/fileapi/file_system_util.h"
 #include "third_party/WebKit/public/platform/FilePathConversion.h"
 #include "third_party/WebKit/public/platform/WebFileInfo.h"
@@ -137,14 +139,16 @@ void DidReadMetadata(const base::File::Info& file_info,
   callbacks->DidReadMetadata(web_file_info);
 }
 
-void DidReadDirectory(const std::vector<storage::DirectoryEntry>& entries,
-                      bool has_more,
-                      WebFileSystemCallbacks* callbacks) {
+void DidReadDirectory(
+    const std::vector<filesystem::mojom::DirectoryEntry>& entries,
+    bool has_more,
+    WebFileSystemCallbacks* callbacks) {
   WebVector<WebFileSystemEntry> file_system_entries(entries.size());
   for (size_t i = 0; i < entries.size(); ++i) {
     file_system_entries[i].name =
         blink::FilePathToWebString(base::FilePath(entries[i].name));
-    file_system_entries[i].is_directory = entries[i].is_directory;
+    file_system_entries[i].is_directory =
+        entries[i].type == filesystem::mojom::FsFileType::DIRECTORY;
   }
   callbacks->DidReadDirectory(file_system_entries, has_more);
 }
@@ -279,7 +283,7 @@ void ReadDirectoryCallbackAdapter(
     const scoped_refptr<base::SingleThreadTaskRunner>& task_runner,
     int callbacks_id,
     WaitableCallbackResults* waitable_results,
-    const std::vector<storage::DirectoryEntry>& entries,
+    const std::vector<filesystem::mojom::DirectoryEntry>& entries,
     bool has_more) {
   CallbackFileSystemCallbacks(
       task_runner, callbacks_id, waitable_results,

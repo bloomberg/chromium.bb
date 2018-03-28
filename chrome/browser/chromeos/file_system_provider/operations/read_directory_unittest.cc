@@ -20,6 +20,7 @@
 #include "chrome/common/extensions/api/file_system_provider.h"
 #include "chrome/common/extensions/api/file_system_provider_capabilities/file_system_provider_capabilities_handler.h"
 #include "chrome/common/extensions/api/file_system_provider_internal.h"
+#include "components/services/filesystem/public/interfaces/types.mojom.h"
 #include "extensions/browser/event_router.h"
 #include "storage/browser/fileapi/async_file_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -208,9 +209,9 @@ TEST_F(FileSystemProviderOperationsReadDirectoryTest, OnSuccess) {
   EXPECT_EQ(base::File::FILE_OK, event->result());
 
   ASSERT_EQ(1u, event->entry_list().size());
-  const storage::DirectoryEntry entry = event->entry_list()[0];
-  EXPECT_FALSE(entry.is_directory);
-  EXPECT_EQ("blueberries.txt", entry.name);
+  const filesystem::mojom::DirectoryEntry entry = event->entry_list()[0];
+  EXPECT_EQ(entry.type, filesystem::mojom::FsFileType::REGULAR_FILE);
+  EXPECT_EQ("blueberries.txt", entry.name.value());
 }
 
 TEST_F(FileSystemProviderOperationsReadDirectoryTest,
