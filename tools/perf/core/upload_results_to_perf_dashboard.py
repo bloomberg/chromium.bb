@@ -12,16 +12,19 @@ import json
 import optparse
 import re
 import sys
+import urllib
 
 from core import results_dashboard
+
+
+RESULTS_LINK_PATH = '/report?masters=%s&bots=%s&tests=%s&rev=%s'
 
 
 def _GetMainRevision(commit_pos):
   """Return revision to use as the numerical x-value in the perf dashboard.
   This will be used as the value of "rev" in the data passed to
   results_dashboard.SendResults.
-  In order or priority, this function could return:
-    1. The value of "got_revision_cp" in build properties.
+  This function returns the value of "got_revision_cp" in build properties.
   """
   return int(re.search(r'{#(\d+)}', commit_pos).group(1))
 
@@ -43,23 +46,24 @@ def _GetDashboardJson(options):
     dashboard_json = results_dashboard.MakeListOfPoints(
       results, options.configuration_name, stripped_test_name,
       options.buildername, options.buildnumber, {},
-      _GetMachineGroup(options), revisions_dict=revisions)
+      _GetMachineGroup(options.perf_dashboard_machine_group,
+          options.is_luci_builder), revisions_dict=revisions)
   else:
     dashboard_json = results_dashboard.MakeDashboardJsonV1(
       results,
       revisions, stripped_test_name, options.configuration_name,
       options.buildername, options.buildnumber,
       {}, reference_build,
-      perf_dashboard_machine_group=_GetMachineGroup(options))
+      perf_dashboard_machine_group=_GetMachineGroup(
+          options.perf_dashboard_machine_group, options.is_luci_builder))
   return dashboard_json
 
-def _GetMachineGroup(options):
-  perf_dashboard_machine_group = options.perf_dashboard_machine_group
-  if options.is_luci_builder and not perf_dashboard_machine_group:
+def _GetMachineGroup(perf_dashboard_machine_group, is_luci_builder):
+  if is_luci_builder and not perf_dashboard_machine_group:
     raise ValueError(
         "Luci builder must set 'perf_dashboard_machine_group'. See "
         'bit.ly/perf-dashboard-machine-group for more details')
-  elif not options.is_luci_builder:
+  elif not is_luci_builder:
     # TODO(crbug.com/801289):
     # Remove this code path once all builders are converted to LUCI.
     # perf_dashboard_machine_group = chromium_utils.GetActiveMaster()
@@ -86,7 +90,8 @@ def _GetDashboardHistogramData(options):
       options.results_file, stripped_test_name,
       options.configuration_name, options.buildername, options.buildnumber,
       revisions, is_reference_build,
-      perf_dashboard_machine_group=_GetMachineGroup(options))
+      perf_dashboard_machine_group=_GetMachineGroup(
+          options.perf_dashboard_machine_group, options.is_luci_builder))
 
 
 def _CreateParser():
@@ -136,14 +141,23 @@ def main(args):
 
   if dashboard_json:
     if options.output_json_file:
-      with open(options.output_json_file, 'w') as output_file:
-        json.dump(dashboard_json, output_file,
-            indent=4, separators=(',', ': '))
+      json.dump(dashboard_json, options.output_json_file,
+          indent=4, separators=(',', ': '))
+
+    if options.output_json_dashboard_url:
+      # Dump dashboard url to file.
+      dashboard_url = GetDashboardUrl(options.name,
+          options.configuration_name, options.results_url,
+          options.got_revision_cp,
+          options.perf_dashboard_machine_group,
+          options.is_luci_builder)
+      with open(options.output_json_dashboard_url, 'w') as f:
+        json.dump(dashboard_url if dashboard_url else '', f)
+
     if not results_dashboard.SendResults(
         dashboard_json,
         options.results_url,
         options.tmp_dir,
-        options.output_json_dashboard_url,
         send_as_histograms=options.send_as_histograms,
         oauth_token=oauth_token):
       return 1
@@ -153,9 +167,25 @@ def main(args):
     return 1
   return 0
 
-
 if __name__ == '__main__':
   sys.exit(main((sys.argv[1:])))
+
+
+def GetDashboardUrl(name, configuration_name, results_url,
+    got_revision_cp, perf_dashboard_machine_group=None,
+    is_luci_builder=False):
+  """Optionally writes the dashboard url to a file
+    and returns a link to the dashboard.
+  """
+  name = name.replace('.reference', '')
+  dashboard_url = results_url + RESULTS_LINK_PATH % (
+      urllib.quote(_GetMachineGroup(perf_dashboard_machine_group,
+          is_luci_builder)),
+      urllib.quote(configuration_name),
+      urllib.quote(name),
+      _GetMainRevision(got_revision_cp))
+
+  return dashboard_url
 
 
 def _GetPerfDashboardRevisionsWithProperties(

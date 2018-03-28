@@ -22,10 +22,9 @@ import urllib2
 
 from core import path_util
 
-# The paths in the results dashboard URLs for sending and viewing results.
+# The paths in the results dashboard URLs for sending results.
 SEND_RESULTS_PATH = '/add_point'
 SEND_HISTOGRAMS_PATH = '/add_histograms'
-RESULTS_LINK_PATH = '/report?masters=%s&bots=%s&tests=%s&rev=%s'
 
 # CACHE_DIR/CACHE_FILENAME will be created in a tmp_dir to cache
 # results which need to be retried.
@@ -48,7 +47,7 @@ class SendResultsFatalException(SendResultException):
   pass
 
 
-def SendResults(data, url, tmp_dir, json_url_file=None,
+def SendResults(data, url, tmp_dir,
                 send_as_histograms=False, oauth_token=None):
   """Sends results to the Chrome Performance Dashboard.
 
@@ -76,13 +75,6 @@ def SendResults(data, url, tmp_dir, json_url_file=None,
 
   # Send all the results from this run and the previous cache to the dashboard.
   fatal_error, errors = _SendResultsFromCache(cache_file_name, url, oauth_token)
-
-  if json_url_file:
-    # Dump dashboard url to file.
-    dashboard_url = _DashboardUrl(url, data)
-    with open(json_url_file, 'w') as f:
-      json.dump(dashboard_url if dashboard_url else '', f)
-
 
   # Print any errors; if there was a fatal error, it should be an exception.
   for error in errors:
@@ -535,27 +527,3 @@ def _SendHistogramJson(url, histogramset_json, oauth_token):
           response.status, response.reason))
   except httplib2.HttpLib2Error:
     raise SendResultsRetryException(traceback.format_exc())
-
-def _DashboardUrl(url, data):
-  """Returns link to the dashboard if possible.
-
-  Args:
-    url: The Performance Dashboard URL, e.g. "https://chromeperf.appspot.com"
-    data: The data that's being sent to the dashboard.
-
-  Returns:
-    An annotation to print, or None.
-  """
-  if not data:
-    return None
-  if isinstance(data, list):
-    master, bot, test, revision = (
-        data[0]['master'], data[0]['bot'], data[0]['test'], data[0]['revision'])
-  else:
-    master, bot, test, revision = (
-        data['master'], data['bot'], data['chart_data']['benchmark_name'],
-        data['point_id'])
-  results_link = url + RESULTS_LINK_PATH % (
-      urllib.quote(master), urllib.quote(bot), urllib.quote(test.split('/')[0]),
-      revision)
-  return results_link
