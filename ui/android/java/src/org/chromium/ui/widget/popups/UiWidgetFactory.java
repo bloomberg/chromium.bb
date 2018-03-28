@@ -14,7 +14,7 @@ import android.widget.PopupWindow;
 public class UiWidgetFactory {
     private static UiWidgetFactory sFactory;
 
-    private UiWidgetFactory() {}
+    protected UiWidgetFactory() {}
 
     /**
      * returns a UiWidgetFactory.
