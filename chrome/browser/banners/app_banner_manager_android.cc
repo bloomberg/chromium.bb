@@ -360,8 +360,7 @@ InstallableStatusCode AppBannerManagerAndroid::QueryNativeApp(
   return NO_ERROR_DETECTED;
 }
 
-const base::string16 AppBannerManagerAndroid::GetAppNameForAmbientBadge()
-    const {
+base::string16 AppBannerManagerAndroid::GetAppName() const {
   if (native_app_data_.is_null()) {
     // Prefer the short name if it's available. It's guaranteed that at least
     // one of these is non-empty.
@@ -378,8 +377,8 @@ void AppBannerManagerAndroid::ShowAmbientBadge(bool is_installed) {
       InfoBarService::FromWebContents(web_contents());
   if (GetVisibleAmbientBadgeInfoBar(infobar_service) == nullptr) {
     InstallableAmbientBadgeInfoBarDelegate::Create(
-        web_contents(), GetWeakPtr(), GetAppNameForAmbientBadge(),
-        primary_icon_, manifest_.start_url, is_installed);
+        web_contents(), GetWeakPtr(), GetAppName(), primary_icon_,
+        manifest_.start_url, is_installed);
   }
 }
 
@@ -391,6 +390,12 @@ void AppBannerManagerAndroid::HideAmbientBadge() {
 
   if (ambient_badge_infobar)
     infobar_service->RemoveInfoBar(ambient_badge_infobar);
+}
+
+// static
+AppBannerManager* AppBannerManager::FromWebContents(
+    content::WebContents* web_contents) {
+  return AppBannerManagerAndroid::FromWebContents(web_contents);
 }
 
 // static

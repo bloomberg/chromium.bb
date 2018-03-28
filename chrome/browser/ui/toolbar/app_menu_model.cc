@@ -113,22 +113,19 @@ base::string16 GetUpgradeDialogMenuItemName() {
 
 // Returns the appropriate menu label for the IDC_CREATE_HOSTED_APP command.
 base::string16 GetCreateHostedAppMenuItemName(Browser* browser) {
-  bool installable_app = false;
-
-  if (browser->tab_strip_model() &&
-      browser->tab_strip_model()->GetActiveWebContents()) {
-    const banners::AppBannerManager::Installable installable =
-        banners::AppBannerManager::GetInstallable(
-            browser->tab_strip_model()->GetActiveWebContents());
-    if (installable ==
-        banners::AppBannerManager::Installable::INSTALLABLE_YES) {
-      installable_app = true;
+  if (browser->tab_strip_model()) {
+    WebContents* web_contents =
+        browser->tab_strip_model()->GetActiveWebContents();
+    if (web_contents) {
+      base::string16 app_name =
+          banners::AppBannerManager::GetInstallableAppName(web_contents);
+      if (!app_name.empty()) {
+        return l10n_util::GetStringFUTF16(IDS_INSTALL_TO_OS_LAUNCH_SURFACE,
+                                          app_name);
+      }
     }
   }
-
-  return l10n_util::GetStringUTF16(installable_app
-                                       ? IDS_INSTALL_TO_OS_LAUNCH_SURFACE
-                                       : IDS_ADD_TO_OS_LAUNCH_SURFACE);
+  return l10n_util::GetStringUTF16(IDS_ADD_TO_OS_LAUNCH_SURFACE);
 }
 
 }  // namespace

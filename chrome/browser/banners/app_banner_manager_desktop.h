@@ -24,16 +24,19 @@ class AppBannerManagerDesktop
  public:
   ~AppBannerManagerDesktop() override;
 
+  using content::WebContentsUserData<AppBannerManagerDesktop>::FromWebContents;
+
   static bool IsEnabled();
 
   // Turn off triggering on engagement notifications or navigates, for testing
   // purposes only.
   static void DisableTriggeringForTesting();
 
+ protected:
+  explicit AppBannerManagerDesktop(content::WebContents* web_contents);
+
  private:
   friend class content::WebContentsUserData<AppBannerManagerDesktop>;
-
-  explicit AppBannerManagerDesktop(content::WebContents* web_contents);
 
   // AppBannerManager overrides.
   void DidFinishCreatingBookmarkApp(
