@@ -18,14 +18,9 @@ import sys
 
 assert __name__ == '__main__'
 
-# If --output is provided, create specified empty file.
 parser = argparse.ArgumentParser()
 parser.add_argument('--output')
 args = parser.parse_args()
-if args.output:
-  with open(args.output, 'w') as output:
-    output.write('')
-
 
 # ROOT=//ui/file_manager/file_manager
 ROOT = os.path.abspath(os.path.join(sys.path[0], '../..'))
@@ -147,4 +142,10 @@ main_html = replaceline(main_html, 'foreground/js/main_scripts.js', [
     ('<link rel="import" href="../../../third_party/polymer/v1_0/'
      'components-chromium/polymer/polymer.html">')] + scripts)
 
-write('test.html', GENERATED_HTML + '\n'.join(main_html))
+test_html = GENERATED_HTML + '\n'.join(main_html)
+write('test.html', test_html)
+
+# If --output is provided, also create specified file.
+if args.output:
+  with open(args.output, 'w') as output:
+    output.write(test_html)

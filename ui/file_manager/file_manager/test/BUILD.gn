@@ -4,7 +4,8 @@
 
 action("create_test_main") {
   script = "//ui/file_manager/file_manager/test/scripts/create_test_main.py"
-  output = "$target_gen_dir/main.html"
+  output = "$target_gen_dir/../test.html"
+  deps = ["//ui/file_manager:resources"]
   args = [ "--output=" + rebase_path(output, root_build_dir) ]
   outputs = [
     output,
