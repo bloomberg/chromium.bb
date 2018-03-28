@@ -11,7 +11,7 @@
 
 namespace blink {
 
-namespace testing {
+namespace test {
 
 // Convenience classes that register a mocked URL on construction, and
 // unregister it on destruction. This prevent mocked URL from leaking to other
@@ -34,7 +34,7 @@ class ScopedMockedURLLoad : ScopedMockedURL {
   ~ScopedMockedURLLoad() override = default;
 };
 
-}  // namespace testing
+}  // namespace test
 
 }  // namespace blink
 

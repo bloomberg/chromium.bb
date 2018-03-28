@@ -50,7 +50,7 @@ class MockCanvasAsyncBlobCreator : public CanvasAsyncBlobCreator {
 };
 
 void MockCanvasAsyncBlobCreator::SignalAlternativeCodePathFinishedForTesting() {
-  testing::ExitRunLoop();
+  test::ExitRunLoop();
 }
 
 void MockCanvasAsyncBlobCreator::PostDelayedTaskToCurrentThread(
@@ -173,7 +173,7 @@ TEST_F(CanvasAsyncBlobCreatorTest,
               SignalTaskSwitchInStartTimeoutEventForTesting());
 
   AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 
   ::testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
   EXPECT_EQ(IdleTaskStatus::kIdleTaskSwitchedToImmediateTask,
@@ -191,7 +191,7 @@ TEST_F(CanvasAsyncBlobCreatorTest,
               SignalTaskSwitchInCompleteTimeoutEventForTesting());
 
   AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 
   ::testing::Mock::VerifyAndClearExpectations(AsyncBlobCreator());
   EXPECT_EQ(IdleTaskStatus::kIdleTaskSwitchedToImmediateTask,
@@ -205,7 +205,7 @@ TEST_F(CanvasAsyncBlobCreatorTest, IdleTaskFailedWhenStartTimeoutEventHappens) {
   PrepareMockCanvasAsyncBlobCreatorFail();
 
   AsyncBlobCreator()->ScheduleAsyncBlobCreation(true);
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 
   EXPECT_EQ(IdleTaskStatus::kIdleTaskFailed,
             AsyncBlobCreator()->GetIdleTaskStatus());

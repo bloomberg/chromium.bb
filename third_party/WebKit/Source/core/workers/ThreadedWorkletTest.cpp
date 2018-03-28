@@ -87,7 +87,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_FALSE(global_scope->DocumentSecurityOrigin()->IsUnique());
     PostCrossThreadTask(
         *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&testing::ExitRunLoop));
+        CrossThreadBind(&test::ExitRunLoop));
   }
 
   void TestContentSecurityPolicy() {
@@ -111,7 +111,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
 
     PostCrossThreadTask(
         *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&testing::ExitRunLoop));
+        CrossThreadBind(&test::ExitRunLoop));
   }
 
   // Emulates API use on ThreadedWorkletGlobalScope.
@@ -120,7 +120,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     GlobalScope()->CountFeature(feature);
     PostCrossThreadTask(
         *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&testing::ExitRunLoop));
+        CrossThreadBind(&test::ExitRunLoop));
   }
 
   // Emulates deprecated API use on ThreadedWorkletGlobalScope.
@@ -135,7 +135,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
 
     PostCrossThreadTask(
         *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&testing::ExitRunLoop));
+        CrossThreadBind(&test::ExitRunLoop));
   }
 
   void TestTaskRunner() {
@@ -145,7 +145,7 @@ class ThreadedWorkletThreadForTest : public WorkerThread {
     EXPECT_TRUE(task_runner->RunsTasksInCurrentSequence());
     PostCrossThreadTask(
         *GetParentFrameTaskRunners()->Get(TaskType::kInternalTest), FROM_HERE,
-        CrossThreadBind(&testing::ExitRunLoop));
+        CrossThreadBind(&test::ExitRunLoop));
   }
 
  private:
@@ -216,7 +216,7 @@ class ThreadedWorkletTest : public ::testing::Test {
   void TearDown() override {
     GetWorkerThread()->Terminate();
     GetWorkerThread()->WaitForShutdownForTesting();
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
     ThreadedWorkletThreadForTest::ClearSharedBackingThread();
     messaging_proxy_ = nullptr;
   }
@@ -244,7 +244,7 @@ TEST_F(ThreadedWorkletTest, SecurityOrigin) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBind(&ThreadedWorkletThreadForTest::TestSecurityOrigin,
                       CrossThreadUnretained(GetWorkerThread())));
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 }
 
 TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
@@ -262,7 +262,7 @@ TEST_F(ThreadedWorkletTest, ContentSecurityPolicy) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBind(&ThreadedWorkletThreadForTest::TestContentSecurityPolicy,
                       CrossThreadUnretained(GetWorkerThread())));
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 }
 
 TEST_F(ThreadedWorkletTest, UseCounter) {
@@ -278,7 +278,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBind(&ThreadedWorkletThreadForTest::CountFeature,
                       CrossThreadUnretained(GetWorkerThread()), kFeature1));
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature1));
 
   // API use should be reported to the Document only one time. See comments in
@@ -287,7 +287,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBind(&ThreadedWorkletThreadForTest::CountFeature,
                       CrossThreadUnretained(GetWorkerThread()), kFeature1));
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 
   // This feature is randomly selected from Deprecation::deprecationMessage().
   const WebFeature kFeature2 = WebFeature::kPrefixedStorageInfo;
@@ -299,7 +299,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBind(&ThreadedWorkletThreadForTest::CountDeprecation,
                       CrossThreadUnretained(GetWorkerThread()), kFeature2));
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
   EXPECT_TRUE(UseCounter::IsCounted(GetDocument(), kFeature2));
 
   // API use should be reported to the Document only one time. See comments in
@@ -308,7 +308,7 @@ TEST_F(ThreadedWorkletTest, UseCounter) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBind(&ThreadedWorkletThreadForTest::CountDeprecation,
                       CrossThreadUnretained(GetWorkerThread()), kFeature2));
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 }
 
 TEST_F(ThreadedWorkletTest, TaskRunner) {
@@ -318,7 +318,7 @@ TEST_F(ThreadedWorkletTest, TaskRunner) {
       *GetWorkerThread()->GetTaskRunner(TaskType::kInternalTest), FROM_HERE,
       CrossThreadBind(&ThreadedWorkletThreadForTest::TestTaskRunner,
                       CrossThreadUnretained(GetWorkerThread())));
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 }
 
 }  // namespace blink

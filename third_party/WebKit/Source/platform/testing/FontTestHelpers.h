@@ -12,7 +12,7 @@ namespace blink {
 
 class Font;
 
-namespace testing {
+namespace test {
 
 // Reads a font from a specified path, for use in unit tests only.
 Font CreateTestFont(const AtomicString& family_name,
@@ -20,7 +20,7 @@ Font CreateTestFont(const AtomicString& family_name,
                     float size,
                     const FontDescription::VariantLigatures* = nullptr);
 
-}  // namespace testing
+}  // namespace test
 }  // namespace blink
 
 #endif  // FontTestHelpers_h

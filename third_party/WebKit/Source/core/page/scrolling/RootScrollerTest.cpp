@@ -39,7 +39,7 @@
 #include "public/web/WebSettings.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::testing::RunPendingTasks;
+using blink::test::RunPendingTasks;
 using ::testing::Mock;
 
 namespace blink {
@@ -97,7 +97,7 @@ class RootScrollerTest : public ::testing::Test,
 
   void RegisterMockedHttpURLLoad(const std::string& file_name) {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), testing::CoreTestDataPath(),
+        WebString::FromUTF8(base_url_), test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
   }
 

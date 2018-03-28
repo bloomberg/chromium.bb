@@ -122,7 +122,7 @@ TEST(SerializedScriptValueTest, WireFormatVersion0ImageData) {
 
 TEST(SerializedScriptValueTest, UserSelectedFile) {
   V8TestingScope scope;
-  String file_path = testing::BlinkRootDir();
+  String file_path = test::BlinkRootDir();
   file_path.append(
       "/Source/bindings/core/v8/serialization/SerializedScriptValueTest.cpp");
   File* original_file = File::Create(file_path);

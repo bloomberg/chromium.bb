@@ -508,7 +508,7 @@ class ThreadedTesterBase {
           CrossThreadBind(ThreadFunc, CrossThreadUnretained(tester)));
     }
     while (tester->threads_to_finish_) {
-      testing::YieldCurrentThread();
+      test::YieldCurrentThread();
     }
     delete tester;
   }
@@ -592,7 +592,7 @@ class ThreadedHeapTester : public ThreadedTesterBase {
           if (!(i % 10)) {
             global_persistent = CreateGlobalPersistent(0x0ed0cabb);
           }
-          testing::YieldCurrentThread();
+          test::YieldCurrentThread();
         }
 
         if (gc_count < kGcPerThread) {
@@ -610,7 +610,7 @@ class ThreadedHeapTester : public ThreadedTesterBase {
         EXPECT_EQ(wrapper->Value(), 0x0bbac0de);
         EXPECT_EQ((*global_persistent)->Value(), 0x0ed0cabb);
       }
-      testing::YieldCurrentThread();
+      test::YieldCurrentThread();
     }
 
     ThreadState::DetachCurrentThread();
@@ -636,7 +636,7 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
         for (int i = 0; i < kNumberOfAllocations; i++) {
           weak_map->insert(static_cast<unsigned>(i), IntWrapper::Create(0));
           weak_map2.insert(static_cast<unsigned>(i), IntWrapper::Create(0));
-          testing::YieldCurrentThread();
+          test::YieldCurrentThread();
         }
 
         if (gc_count < kGcPerThread) {
@@ -654,7 +654,7 @@ class ThreadedWeaknessTester : public ThreadedTesterBase {
         EXPECT_TRUE(weak_map->IsEmpty());
         EXPECT_TRUE(weak_map2.IsEmpty());
       }
-      testing::YieldCurrentThread();
+      test::YieldCurrentThread();
     }
     ThreadState::DetachCurrentThread();
     AtomicDecrement(&threads_to_finish_);

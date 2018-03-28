@@ -84,7 +84,7 @@ void WorkerThreadFunc(
 
   thread->ShutdownOnBackingThread();
   PostCrossThreadTask(*main_thread_task_runner, FROM_HERE,
-                      CrossThreadBind(&testing::ExitRunLoop));
+                      CrossThreadBind(&test::ExitRunLoop));
 }
 
 TEST(DOMWrapperWorldTest, Basic) {
@@ -126,7 +126,7 @@ TEST(DOMWrapperWorldTest, Basic) {
       FROM_HERE,
       CrossThreadBind(&WorkerThreadFunc, CrossThreadUnretained(thread.get()),
                       std::move(main_thread_task_runner)));
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 
   // Worlds on the worker thread should not be visible from the main thread.
   EXPECT_TRUE(DOMWrapperWorld::NonMainWorldsExistInMainThread());

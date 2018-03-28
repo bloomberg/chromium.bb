@@ -169,7 +169,7 @@ class PrerenderingTest : public ::testing::Test {
 
   void Initialize(const char* base_url, const char* file_name) {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url), blink::testing::CoreTestDataPath(),
+        WebString::FromUTF8(base_url), blink::test::CoreTestDataPath(),
         WebString::FromUTF8(file_name));
     web_view_helper_.Initialize();
     web_view_helper_.GetWebView()->SetPrerendererClient(&prerenderer_client_);

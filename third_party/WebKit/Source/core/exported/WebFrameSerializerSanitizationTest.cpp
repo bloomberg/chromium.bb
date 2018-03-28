@@ -183,7 +183,7 @@ class WebFrameSerializerSanitizationTest : public ::testing::Test {
                                  const String& file_path,
                                  const String& mime_type = "image/png") {
     URLTestHelpers::RegisterMockedURLLoad(
-        url, testing::CoreTestDataPath(file_path.Utf8().data()), mime_type);
+        url, test::CoreTestDataPath(file_path.Utf8().data()), mime_type);
   }
 
   WebViewImpl* WebView() { return helper_.GetWebView(); }

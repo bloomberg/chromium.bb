@@ -29,7 +29,7 @@ SimTest::SimTest() : web_view_client_(compositor_), web_frame_client_(*this) {
 
 SimTest::~SimTest() {
   // Pump the message loop to process the load event.
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   Document::SetThreadedParsingEnabledForTesting(true);
   LayoutTestSupport::SetMockThemeEnabledForTest(false);

@@ -99,7 +99,7 @@ TEST_F(ContextMenuControllerTest, VideoNotLoaded) {
   Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
                   video->GetWebMediaPlayer()),
@@ -154,7 +154,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureEnabledVideoLoaded) {
   Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
                   video->GetWebMediaPlayer()),
@@ -209,7 +209,7 @@ TEST_F(ContextMenuControllerTest, PictureInPictureDisabledVideoLoaded) {
   Persistent<HTMLVideoElement> video = HTMLVideoElement::Create(*GetDocument());
   video->SetSrc(video_url);
   GetDocument()->body()->AppendChild(video);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   EXPECT_CALL(*static_cast<MockWebMediaPlayerForContextMenu*>(
                   video->GetWebMediaPlayer()),

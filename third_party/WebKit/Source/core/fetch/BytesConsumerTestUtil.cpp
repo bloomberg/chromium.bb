@@ -193,8 +193,8 @@ BytesConsumerTestUtil::TwoPhaseReader::Run() {
   OnStateChange();
   while (result_ != BytesConsumer::Result::kDone &&
          result_ != BytesConsumer::Result::kError)
-    testing::RunPendingTasks();
-  testing::RunPendingTasks();
+    test::RunPendingTasks();
+  test::RunPendingTasks();
   return std::make_pair(result_, std::move(data_));
 }
 

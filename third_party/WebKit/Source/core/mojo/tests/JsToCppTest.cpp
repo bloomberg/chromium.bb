@@ -50,27 +50,27 @@ const float kExpectedFloatNan = std::numeric_limits<float>::quiet_NaN();
 #define EXPECT_NAN(x) EXPECT_NE(x, x)
 
 String MojoBindingsScriptPath() {
-  String filepath = testing::ExecutableDir();
+  String filepath = test::ExecutableDir();
   filepath.append("/gen/mojo/public/js/mojo_bindings.js");
   return filepath;
 }
 
 String TestBindingsScriptPath() {
-  String filepath = testing::ExecutableDir();
+  String filepath = test::ExecutableDir();
   filepath.append(
       "/gen/third_party/WebKit/Source/core/mojo/tests/JsToCpp.mojom.js");
   return filepath;
 }
 
 String TestScriptPath() {
-  String filepath = testing::BlinkRootDir();
+  String filepath = test::BlinkRootDir();
   filepath.append("/Source/core/mojo/tests/JsToCppTest.js");
   return filepath;
 }
 
 v8::Local<v8::Value> ExecuteScript(const String& script_path,
                                    LocalFrame& frame) {
-  scoped_refptr<SharedBuffer> script_src = testing::ReadFromFile(script_path);
+  scoped_refptr<SharedBuffer> script_src = test::ReadFromFile(script_path);
   return frame.GetScriptController().ExecuteScriptInMainWorldAndReturnValue(
       ScriptSourceCode(String(script_src->Data(), script_src->size())));
 }
@@ -270,7 +270,7 @@ class PingCppSideConnection : public CppSideConnection {
 
   void PingResponse() override {
     got_message_ = true;
-    testing::ExitRunLoop();
+    test::ExitRunLoop();
   }
 
   bool DidSucceed() { return got_message_ && !mishandled_messages_; }
@@ -307,7 +307,7 @@ class EchoCppSideConnection : public CppSideConnection {
 
   void TestFinished() override {
     termination_seen_ = true;
-    testing::ExitRunLoop();
+    test::ExitRunLoop();
   }
 
   bool DidSucceed() {
@@ -338,7 +338,7 @@ class BitFlipCppSideConnection : public CppSideConnection {
 
   void TestFinished() override {
     termination_seen_ = true;
-    testing::ExitRunLoop();
+    test::ExitRunLoop();
   }
 
   bool DidSucceed() { return termination_seen_; }
@@ -362,7 +362,7 @@ class BackPointerCppSideConnection : public CppSideConnection {
 
   void TestFinished() override {
     termination_seen_ = true;
-    testing::ExitRunLoop();
+    test::ExitRunLoop();
   }
 
   bool DidSucceed() { return termination_seen_; }
@@ -399,7 +399,7 @@ class JsToCppTest : public ::testing::Test {
     V8ScriptRunner::CallFunction(
         start_fn.As<v8::Function>(), scope.GetExecutionContext(), global_proxy,
         WTF_ARRAY_LENGTH(args), args, scope.GetIsolate());
-    testing::EnterRunLoop();
+    test::EnterRunLoop();
   }
 };
 

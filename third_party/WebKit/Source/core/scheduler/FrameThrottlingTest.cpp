@@ -48,7 +48,7 @@ class FrameThrottlingTest : public SimTest, public PaintTestConfigurations {
   SimCanvas::Commands CompositeFrame() {
     auto commands = Compositor().BeginFrame();
     // Ensure intersection observer notifications get delivered.
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
     return commands;
   }
 
@@ -609,7 +609,7 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledFrame) {
   // and should not cause assert failure about
   // isAllowedToQueryCompositingState() in the throttled frame.
   GetDocument().View()->UpdateAllLifecyclePhases();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
             frame_element->contentDocument()->Lifecycle().GetState());
   // The fixed background in the throttled sub frame should not cause main
@@ -678,7 +678,7 @@ TEST_P(FrameThrottlingTest, ScrollingCoordinatorShouldSkipThrottledLayer) {
   // and should not cause assert failure about
   // isAllowedToQueryCompositingState() in the throttled frame.
   GetDocument().View()->UpdateAllLifecyclePhases();
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(DocumentLifecycle::kVisualUpdatePending,
             frame_element->contentDocument()->Lifecycle().GetState());
 }

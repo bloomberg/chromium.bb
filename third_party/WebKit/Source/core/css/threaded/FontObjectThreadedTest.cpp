@@ -19,7 +19,7 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::testing::CreateTestFont;
+using blink::test::CreateTestFont;
 
 namespace blink {
 
@@ -68,16 +68,14 @@ TSAN_TEST(FontObjectThreadedTest, GetDefaultFontData) {
 // This test passes by not crashing TSAN.
 TSAN_TEST(FontObjectThreadedTest, FontSelector) {
   RunOnThreads([]() {
-    Font font =
-        CreateTestFont("Ahem", testing::CoreTestDataPath("Ahem.ttf"), 16);
+    Font font = CreateTestFont("Ahem", test::CoreTestDataPath("Ahem.ttf"), 16);
   });
 }
 
 TSAN_TEST(FontObjectThreadedTest, TextIntercepts) {
   callbacks_per_thread_ = 10;
   RunOnThreads([]() {
-    Font font =
-        CreateTestFont("Ahem", testing::CoreTestDataPath("Ahem.ttf"), 16);
+    Font font = CreateTestFont("Ahem", test::CoreTestDataPath("Ahem.ttf"), 16);
     // A sequence of LATIN CAPITAL LETTER E WITH ACUTE and LATIN SMALL LETTER P
     // characters. E ACUTES are squares above the baseline in Ahem, while p's
     // are rectangles below the baseline.

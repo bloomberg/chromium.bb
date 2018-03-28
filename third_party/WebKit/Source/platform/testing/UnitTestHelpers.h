@@ -34,7 +34,7 @@ namespace blink {
 
 class SharedBuffer;
 
-namespace testing {
+namespace test {
 
 // Note: You may want to use TestingPlatformSupportWithMockScheduler to
 // provides runUntilIdle() method that can work with WebURLLoaderMockFactory.
@@ -78,7 +78,7 @@ class LineReader {
   size_t index_;
 };
 
-}  // namespace testing
+}  // namespace test
 }  // namespace blink
 
 #endif

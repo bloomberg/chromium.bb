@@ -53,7 +53,7 @@ class BindingSecurityCounterTest
     target.Complete(
         "<!DOCTYPE html>"
         "<script>window.opener.postMessage('yay', '*');</script>");
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
   }
 
   void LoadFrameAndAccessProperty(OriginDisposition which_origin,
@@ -84,7 +84,7 @@ class BindingSecurityCounterTest
     target.Complete(
         "<!DOCTYPE html>"
         "<script>window.top.postMessage('yay', '*');</script>");
-    testing::RunPendingTasks();
+    test::RunPendingTasks();
   }
 };
 

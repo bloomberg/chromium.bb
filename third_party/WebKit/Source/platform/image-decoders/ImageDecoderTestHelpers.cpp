@@ -15,19 +15,19 @@
 namespace blink {
 
 scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
-  String file_path = testing::BlinkRootDir();
+  String file_path = test::BlinkRootDir();
   file_path.append(file_name);
-  return testing::ReadFromFile(file_path);
+  return test::ReadFromFile(file_path);
 }
 
 scoped_refptr<SharedBuffer> ReadFile(const char* dir, const char* file_name) {
   StringBuilder file_path;
-  file_path.Append(testing::BlinkRootDir());
+  file_path.Append(test::BlinkRootDir());
   file_path.Append('/');
   file_path.Append(dir);
   file_path.Append('/');
   file_path.Append(file_name);
-  return testing::ReadFromFile(file_path.ToString());
+  return test::ReadFromFile(file_path.ToString());
 }
 
 unsigned HashBitmap(const SkBitmap& bitmap) {

@@ -39,7 +39,7 @@
 #include "public/platform/WebThread.h"
 
 namespace blink {
-namespace testing {
+namespace test {
 
 namespace {
 
@@ -131,5 +131,5 @@ bool LineReader::GetNextLine(std::string* line) {
   return true;
 }
 
-}  // namespace testing
+}  // namespace test
 }  // namespace blink

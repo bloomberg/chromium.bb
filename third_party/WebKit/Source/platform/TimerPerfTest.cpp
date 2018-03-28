@@ -55,7 +55,7 @@ TEST_F(TimerPerfTest, PostAndRunTimers) {
   base::ThreadTicks post_end = base::ThreadTicks::Now();
   measure_run_end.StartOneShot(TimeDelta(), FROM_HERE);
 
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 
   double posting_time = (post_end - post_start).InMicroseconds();
   double posting_time_us_per_call =
@@ -97,7 +97,7 @@ TEST_F(TimerPerfTest, PostThenCancelTenThousandTimers) {
   }
   base::ThreadTicks cancel_end = base::ThreadTicks::Now();
 
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 
   double posting_time = (post_end - post_start).InMicroseconds();
   double posting_time_us_per_call =

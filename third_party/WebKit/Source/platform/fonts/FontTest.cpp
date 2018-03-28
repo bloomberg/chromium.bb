@@ -10,13 +10,13 @@
 #include "platform/text/TextRun.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::testing::CreateTestFont;
+using blink::test::CreateTestFont;
 
 namespace blink {
 
 TEST(FontTest, TextIntercepts) {
   Font font =
-      CreateTestFont("Ahem", testing::PlatformTestDataPath("Ahem.woff"), 16);
+      CreateTestFont("Ahem", test::PlatformTestDataPath("Ahem.woff"), 16);
   // A sequence of LATIN CAPITAL LETTER E WITH ACUTE and LATIN SMALL LETTER P
   // characters. E ACUTES are squares above the baseline in Ahem, while p's
   // are rectangles below the baseline.

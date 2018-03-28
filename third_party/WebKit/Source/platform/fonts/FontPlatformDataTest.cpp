@@ -35,13 +35,13 @@
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using blink::testing::CreateTestFont;
+using blink::test::CreateTestFont;
 
 namespace blink {
 
 TEST(FontPlatformDataTest, AhemHasNoSpaceInLigaturesOrKerning) {
   Font font =
-      CreateTestFont("Ahem", testing::PlatformTestDataPath("Ahem.woff"), 16);
+      CreateTestFont("Ahem", test::PlatformTestDataPath("Ahem.woff"), 16);
   const FontPlatformData& platform_data = font.PrimaryFont()->PlatformData();
   TypesettingFeatures features = kKerning | kLigatures;
 
@@ -49,9 +49,9 @@ TEST(FontPlatformDataTest, AhemHasNoSpaceInLigaturesOrKerning) {
 }
 
 TEST(FontPlatformDataTest, AhemSpaceLigatureHasSpaceInLigaturesOrKerning) {
-  Font font = CreateTestFont(
-      "AhemSpaceLigature",
-      testing::PlatformTestDataPath("AhemSpaceLigature.woff"), 16);
+  Font font =
+      CreateTestFont("AhemSpaceLigature",
+                     test::PlatformTestDataPath("AhemSpaceLigature.woff"), 16);
   const FontPlatformData& platform_data = font.PrimaryFont()->PlatformData();
   TypesettingFeatures features = kKerning | kLigatures;
 
@@ -59,9 +59,9 @@ TEST(FontPlatformDataTest, AhemSpaceLigatureHasSpaceInLigaturesOrKerning) {
 }
 
 TEST(FontPlatformDataTest, AhemSpaceLigatureHasNoSpaceWithoutFontFeatures) {
-  Font font = CreateTestFont(
-      "AhemSpaceLigature",
-      testing::PlatformTestDataPath("AhemSpaceLigature.woff"), 16);
+  Font font =
+      CreateTestFont("AhemSpaceLigature",
+                     test::PlatformTestDataPath("AhemSpaceLigature.woff"), 16);
   const FontPlatformData& platform_data = font.PrimaryFont()->PlatformData();
   TypesettingFeatures features = 0;
 

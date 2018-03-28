@@ -79,9 +79,9 @@ class BitmapImageTest : public ::testing::Test {
   };
 
   static scoped_refptr<SharedBuffer> ReadFile(const char* file_name) {
-    String file_path = testing::BlinkRootDir();
+    String file_path = test::BlinkRootDir();
     file_path.append(file_name);
-    return testing::ReadFromFile(file_path);
+    return test::ReadFromFile(file_path);
   }
 
   // Accessors to BitmapImage's protected methods.

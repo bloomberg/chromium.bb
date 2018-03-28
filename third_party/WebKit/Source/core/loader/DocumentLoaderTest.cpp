@@ -26,7 +26,7 @@ class DocumentLoaderTest : public ::testing::Test {
     web_view_helper_.Initialize();
     URLTestHelpers::RegisterMockedURLLoad(
         URLTestHelpers::ToKURL("https://example.com/foo.html"),
-        testing::CoreTestDataPath("foo.html"));
+        test::CoreTestDataPath("foo.html"));
   }
 
   void TearDown() override {

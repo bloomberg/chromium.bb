@@ -82,7 +82,7 @@ void RunServeAsyncRequestsTask() {
     Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
         FROM_HERE, WTF::Bind(&RunServeAsyncRequestsTask));
   } else {
-    testing::ExitRunLoop();
+    test::ExitRunLoop();
   }
 }
 
@@ -140,7 +140,7 @@ void ReloadFrameBypassingCache(WebLocalFrame* frame) {
 void PumpPendingRequestsForFrameToLoad(WebFrame* frame) {
   Platform::Current()->CurrentThread()->GetTaskRunner()->PostTask(
       FROM_HERE, WTF::Bind(&RunServeAsyncRequestsTask));
-  testing::EnterRunLoop();
+  test::EnterRunLoop();
 }
 
 WebMouseEvent CreateMouseEvent(WebInputEvent::Type type,

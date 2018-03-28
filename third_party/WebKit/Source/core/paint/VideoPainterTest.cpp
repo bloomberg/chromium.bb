@@ -84,7 +84,7 @@ class VideoPainterTestForSPv2 : private ScopedSlimmingPaintV2ForTest,
 TEST_F(VideoPainterTestForSPv2, VideoLayerAppearsInLayerTree) {
   // Insert a <video> and allow it to begin loading.
   SetBodyInnerHTML("<video width=300 height=200 src=test.ogv>");
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   // Force the page to paint.
   GetDocument().View()->UpdateAllLifecyclePhases();

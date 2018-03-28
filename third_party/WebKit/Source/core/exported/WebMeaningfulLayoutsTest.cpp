@@ -132,7 +132,7 @@ TEST_F(WebMeaningfulLayoutsTest, FinishedParsingThenLoading) {
   image_resource.Complete("image data");
 
   // Pump the message loop to process the image loading task.
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   Compositor().BeginFrame();
 
@@ -157,7 +157,7 @@ TEST_F(WebMeaningfulLayoutsTest, WithIFrames) {
   iframe_resource.Complete("iframe data");
 
   // Pump the message loop to process the iframe loading task.
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
 
   Compositor().BeginFrame();
 
@@ -179,7 +179,7 @@ TEST_F(WebMeaningfulLayoutsTest,
   main_resource.Start();
   main_resource.Write("<DOCTYPE html><body><img src=\"test.svg\">");
   // Run pending tasks to initiate the request to test.svg.
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(0, WebViewClient().VisuallyNonEmptyLayoutCount());
 
   // We serve the SVG file and check visuallyNonEmptyLayoutCount() before

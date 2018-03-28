@@ -46,7 +46,7 @@ class WorkerModuleFetchCoordinatorTest : public ::testing::Test {
 TEST_F(WorkerModuleFetchCoordinatorTest, Fetch_OneShot) {
   const KURL kUrl("https://example.com/module.js");
   URLTestHelpers::RegisterMockedURLLoad(
-      kUrl, testing::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl, test::CoreTestDataPath("module.js"), "text/javascript");
 
   ClientImpl* client = new ClientImpl;
   Fetch(kUrl, client);
@@ -62,7 +62,7 @@ TEST_F(WorkerModuleFetchCoordinatorTest, Fetch_OneShot) {
 TEST_F(WorkerModuleFetchCoordinatorTest, Fetch_Repeat) {
   const KURL kUrl("https://example.com/module.js");
   URLTestHelpers::RegisterMockedURLLoad(
-      kUrl, testing::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl, test::CoreTestDataPath("module.js"), "text/javascript");
   HeapVector<Member<ClientImpl>> clients;
 
   clients.push_back(new ClientImpl);
@@ -106,7 +106,7 @@ TEST_F(WorkerModuleFetchCoordinatorTest, Isolation) {
   const KURL kUrl2("https://example.com/module.js?2");
   URLTestHelpers::RegisterMockedErrorURLLoad(kUrl1);
   URLTestHelpers::RegisterMockedURLLoad(
-      kUrl2, testing::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript");
   HeapVector<Member<ClientImpl>> clients;
 
   // Make fetch requests for |kUrl1| to be failed.
@@ -156,9 +156,9 @@ TEST_F(WorkerModuleFetchCoordinatorTest, Dispose) {
   const KURL kUrl1("https://example.com/module.js?1");
   const KURL kUrl2("https://example.com/module.js?2");
   URLTestHelpers::RegisterMockedURLLoad(
-      kUrl1, testing::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl1, test::CoreTestDataPath("module.js"), "text/javascript");
   URLTestHelpers::RegisterMockedURLLoad(
-      kUrl2, testing::CoreTestDataPath("module.js"), "text/javascript");
+      kUrl2, test::CoreTestDataPath("module.js"), "text/javascript");
   HeapVector<Member<ClientImpl>> clients;
 
   // Make some fetch requests.

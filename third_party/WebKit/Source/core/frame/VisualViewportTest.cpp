@@ -109,7 +109,7 @@ class VisualViewportTest : public ::testing::Test,
 
   void RegisterMockedHttpURLLoad(const std::string& fileName) {
     URLTestHelpers::RegisterMockedURLLoadFromBase(
-        WebString::FromUTF8(base_url_), blink::testing::CoreTestDataPath(),
+        WebString::FromUTF8(base_url_), blink::test::CoreTestDataPath(),
         WebString::FromUTF8(fileName));
   }
 
@@ -117,7 +117,7 @@ class VisualViewportTest : public ::testing::Test,
                                  const std::string& fileName) {
     URLTestHelpers::RegisterMockedURLLoad(
         ToKURL(url),
-        blink::testing::CoreTestDataPath(WebString::FromUTF8(fileName)));
+        blink::test::CoreTestDataPath(WebString::FromUTF8(fileName)));
   }
 
   WebViewImpl* WebView() const { return helper_.GetWebView(); }

@@ -98,6 +98,9 @@ _CONFIG = [
             # nested in the blink namespace.
             'internal::.+',
 
+            # Some test helpers live in the blink::test namespace.
+            'test::.+',
+
             # Blink uses Mojo, so it needs mojo::Binding, mojo::InterfacePtr, et
             # cetera, as well as generated Mojo bindings.
             # Note that the Mojo callback helpers are explicitly forbidden:

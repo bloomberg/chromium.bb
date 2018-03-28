@@ -19,9 +19,7 @@
 namespace blink {
 namespace {
 
-using namespace testing;
-
-class DrawingBufferSoftwareCompositingTest : public Test {
+class DrawingBufferSoftwareCompositingTest : public testing::Test {
  protected:
   void SetUp() override {
     IntSize initial_size(kInitialWidth, kInitialHeight);

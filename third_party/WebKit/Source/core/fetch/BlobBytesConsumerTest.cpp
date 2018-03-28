@@ -307,7 +307,7 @@ TEST_F(BlobBytesConsumerTest, ReadLastChunkBeforeDidFinishLoadingArrives) {
 
   consumer->DidReceiveResponse(0, ResourceResponse(), std::move(src));
   EXPECT_EQ(1, client->NumOnStateChangeCalled());
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(2, client->NumOnStateChangeCalled());
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
@@ -350,11 +350,11 @@ TEST_F(BlobBytesConsumerTest, ReadLastChunkAfterDidFinishLoadingArrives) {
 
   consumer->DidReceiveResponse(0, ResourceResponse(), std::move(src));
   EXPECT_EQ(1, client->NumOnStateChangeCalled());
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(2, client->NumOnStateChangeCalled());
 
   consumer->DidFinishLoading(0, 0);
-  testing::RunPendingTasks();
+  test::RunPendingTasks();
   EXPECT_EQ(2, client->NumOnStateChangeCalled());
 
   EXPECT_EQ(PublicState::kReadableOrWaiting, consumer->GetPublicState());
