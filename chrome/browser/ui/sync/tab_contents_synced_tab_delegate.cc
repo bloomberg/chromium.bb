@@ -54,12 +54,12 @@ TabContentsSyncedTabDelegate::TabContentsSyncedTabDelegate(
 
 TabContentsSyncedTabDelegate::~TabContentsSyncedTabDelegate() {}
 
-SessionID::id_type TabContentsSyncedTabDelegate::GetWindowId() const {
-  return SessionTabHelper::FromWebContents(web_contents_)->window_id().id();
+SessionID TabContentsSyncedTabDelegate::GetWindowId() const {
+  return SessionTabHelper::FromWebContents(web_contents_)->window_id();
 }
 
-SessionID::id_type TabContentsSyncedTabDelegate::GetSessionId() const {
-  return SessionTabHelper::FromWebContents(web_contents_)->session_id().id();
+SessionID TabContentsSyncedTabDelegate::GetSessionId() const {
+  return SessionTabHelper::FromWebContents(web_contents_)->session_id();
 }
 
 bool TabContentsSyncedTabDelegate::IsBeingDestroyed() const {
@@ -179,7 +179,7 @@ bool TabContentsSyncedTabDelegate::ShouldSync(
   return false;
 }
 
-SessionID::id_type TabContentsSyncedTabDelegate::GetSourceTabID() const {
+SessionID TabContentsSyncedTabDelegate::GetSourceTabID() const {
   sync_sessions::SyncSessionsRouterTabHelper* helper =
       sync_sessions::SyncSessionsRouterTabHelper::FromWebContents(
           web_contents_);

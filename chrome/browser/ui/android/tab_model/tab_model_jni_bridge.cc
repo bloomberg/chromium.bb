@@ -71,7 +71,8 @@ void TabModelJniBridge::TabAddedToModel(JNIEnv* env,
   // Tab#initialize() should have been called by now otherwise we can't push
   // the window id.
   TabAndroid* tab = TabAndroid::GetNativeTab(env, jtab);
-  if (tab) tab->SetWindowSessionID(GetSessionId());
+  if (tab)
+    tab->SetWindowSessionID(GetSessionId().id());
 }
 
 int TabModelJniBridge::GetTabCount() const {

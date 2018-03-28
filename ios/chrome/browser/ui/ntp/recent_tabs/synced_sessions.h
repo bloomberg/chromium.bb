@@ -32,7 +32,7 @@ struct DistantTab {
   // Uniquely identifies the distant session this DistantTab belongs to.
   std::string session_tag;
   // Uniquely identifies this tab in its distant session.
-  SessionID::id_type tab_id;
+  SessionID tab_id;
   // The title of the page shown in this DistantTab.
   base::string16 title;
   // The url shown in this DistantTab.

@@ -28,7 +28,7 @@ TabModelSyncedWindowDelegate::~TabModelSyncedWindowDelegate() {
   web_state_list_->RemoveObserver(this);
 }
 
-SessionID::id_type TabModelSyncedWindowDelegate::GetTabIdAt(int index) const {
+SessionID TabModelSyncedWindowDelegate::GetTabIdAt(int index) const {
   return GetTabAt(index)->GetSessionId();
 }
 
@@ -44,8 +44,8 @@ bool TabModelSyncedWindowDelegate::HasWindow() const {
   return true;
 }
 
-SessionID::id_type TabModelSyncedWindowDelegate::GetSessionId() const {
-  return session_id_.id();
+SessionID TabModelSyncedWindowDelegate::GetSessionId() const {
+  return session_id_;
 }
 
 int TabModelSyncedWindowDelegate::GetTabCount() const {

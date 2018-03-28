@@ -83,7 +83,7 @@ TabModel* TabModelList::FindTabModelWithId(
     SessionID::id_type desired_id) {
   for (TabModelList::const_iterator i = TabModelList::begin();
       i != TabModelList::end(); i++) {
-    if ((*i)->GetSessionId() == desired_id)
+    if ((*i)->GetSessionId().id() == desired_id)
       return *i;
   }
 

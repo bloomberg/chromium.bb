@@ -17,21 +17,25 @@ using testing::SizeIs;
 namespace sync_sessions {
 
 namespace {
-const int kTab1 = 15;
-const int kTab2 = 25;
+const SessionID kTab1 = SessionID::FromSerializedValue(15);
+const SessionID kTab2 = SessionID::FromSerializedValue(25);
 }  // namespace
 
 TEST(TaskTrackerTest, GetTabTasks) {
   TaskTracker task_tracker;
-  TabTasks* tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
   ASSERT_NE(tab_tasks, nullptr);
-  EXPECT_EQ(task_tracker.GetTabTasks(kTab1, kInvalidTabID), tab_tasks);
-  EXPECT_NE(task_tracker.GetTabTasks(kTab2, kInvalidTabID), tab_tasks);
+  EXPECT_EQ(task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue()),
+            tab_tasks);
+  EXPECT_NE(task_tracker.GetTabTasks(kTab2, SessionID::InvalidValue()),
+            tab_tasks);
 }
 
 TEST(TaskTrackerTest, CleanTabTasks) {
   TaskTracker task_tracker;
-  TabTasks* tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
   ASSERT_NE(tab_tasks, nullptr);
   ASSERT_FALSE(task_tracker.local_tab_tasks_map_.empty());
 
@@ -41,7 +45,8 @@ TEST(TaskTrackerTest, CleanTabTasks) {
 
 TEST(TaskTrackerTest, UpdateTasksWithMultipleClicks) {
   TaskTracker task_tracker;
-  TabTasks* tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
 
   tab_tasks->UpdateWithNavigation(1, ui::PageTransition::PAGE_TRANSITION_TYPED,
                                   100);
@@ -62,7 +67,8 @@ TEST(TaskTrackerTest, UpdateTasksWithMultipleClicks) {
 
 TEST(TaskTrackerTest, UpdateTasksWithMultipleClicksAndTypes) {
   TaskTracker task_tracker;
-  TabTasks* tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
 
   tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_LINK, 100);
   tab_tasks->UpdateWithNavigation(2, ui::PAGE_TRANSITION_LINK, 200);
@@ -84,7 +90,8 @@ TEST(TaskTrackerTest, UpdateTasksWithMultipleClicksAndTypes) {
 
 TEST(TaskTrackerTest, UpdateTasksWithBackforwards) {
   TaskTracker task_tracker;
-  TabTasks* tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
 
   tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_TYPED, 100);
   tab_tasks->UpdateWithNavigation(2, ui::PAGE_TRANSITION_LINK, 200);
@@ -113,7 +120,8 @@ TEST(TaskTrackerTest, UpdateTasksWithBackforwards) {
 
 TEST(TaskTrackerTest, UpdateWithNavigationsWithBackAndForkedNavigation) {
   TaskTracker task_tracker;
-  TabTasks* tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
   tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_LINK, 100);
   tab_tasks->UpdateWithNavigation(2, ui::PAGE_TRANSITION_LINK, 200);
   tab_tasks->UpdateWithNavigation(3, ui::PAGE_TRANSITION_LINK, 300);
@@ -129,7 +137,8 @@ TEST(TaskTrackerTest, UpdateWithNavigationsWithBackAndForkedNavigation) {
 
 TEST(TaskTrackerTest, LimitMaxNumberOfTasksPerTab) {
   TaskTracker task_tracker;
-  TabTasks* tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
 
   // Reaching max number of tasks for a tab.
   for (int i = 1; i <= kMaxNumTasksPerTab; i++) {
@@ -169,7 +178,7 @@ TEST(TaskTrackerTest, LimitMaxNumberOfTasksPerTab) {
 // navigation doesn't create loop in navigation chain.
 TEST(TaskTrackerTest, LoopInNavigationChain) {
   TaskTracker task_tracker;
-  TabTasks* tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* tasks = task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
   // Create a few navigations that would later be evicted.
   tasks->UpdateWithNavigation(1, ui::PageTransition::PAGE_TRANSITION_LINK, 1);
   tasks->UpdateWithNavigation(2, ui::PageTransition::PAGE_TRANSITION_LINK, 2);
@@ -192,7 +201,8 @@ TEST(TaskTrackerTest, LoopInNavigationChain) {
 
 TEST(TaskTrackerTest, CreateTabTasksFromSourceTab) {
   TaskTracker task_tracker;
-  TabTasks* source_tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* source_tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
   source_tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_LINK, 100);
   source_tab_tasks->UpdateWithNavigation(2, ui::PAGE_TRANSITION_LINK, 200);
   source_tab_tasks->UpdateWithNavigation(3, ui::PAGE_TRANSITION_TYPED, 300);
@@ -214,7 +224,8 @@ TEST(TaskTrackerTest, CreateTabTasksFromSourceTab) {
 
 TEST(TaskTrackerTest, CreateTabTasksFromSourceTabAfterGoingBack) {
   TaskTracker task_tracker;
-  TabTasks* source_tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* source_tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
   source_tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_LINK, 100);
   source_tab_tasks->UpdateWithNavigation(2, ui::PAGE_TRANSITION_LINK, 200);
   source_tab_tasks->UpdateWithNavigation(3, ui::PAGE_TRANSITION_TYPED, 300);
@@ -239,7 +250,8 @@ TEST(TaskTrackerTest, CreateTabTasksFromSourceTabAfterGoingBack) {
 TEST(TaskTrackerTest, CreateTabTasksFromSourceTabWithLimitedTaskNum) {
   TaskTracker task_tracker;
 
-  TabTasks* source_tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* source_tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
   // Adding max number of tasks to tab1.
   int nav_id = 1;
   for (; nav_id <= kMaxNumTasksPerTab; nav_id++) {
@@ -264,10 +276,12 @@ TEST(TaskTrackerTest, CreateTabTasksFromSourceTabWithLimitedTaskNum) {
 
 TEST(TaskTrackerTest, GetTabTasksWithNewSource) {
   TaskTracker task_tracker;
-  TabTasks* target_tab_tasks = task_tracker.GetTabTasks(kTab2, kInvalidTabID);
-  EXPECT_EQ(kInvalidTabID, target_tab_tasks->parent_tab_id());
+  TabTasks* target_tab_tasks =
+      task_tracker.GetTabTasks(kTab2, SessionID::InvalidValue());
+  EXPECT_EQ(SessionID::InvalidValue(), target_tab_tasks->parent_tab_id());
 
-  TabTasks* source_tab_tasks = task_tracker.GetTabTasks(kTab1, kInvalidTabID);
+  TabTasks* source_tab_tasks =
+      task_tracker.GetTabTasks(kTab1, SessionID::InvalidValue());
   source_tab_tasks->UpdateWithNavigation(1, ui::PAGE_TRANSITION_LINK, 100);
   source_tab_tasks->UpdateWithNavigation(2, ui::PAGE_TRANSITION_LINK, 200);
   source_tab_tasks->UpdateWithNavigation(3, ui::PAGE_TRANSITION_TYPED, 300);

@@ -41,7 +41,7 @@ class OpenTabsUIDelegateImpl : public OpenTabsUIDelegate {
       const std::string& tag,
       std::vector<const sessions::SessionWindow*>* windows) override;
   bool GetForeignTab(const std::string& tag,
-                     SessionID::id_type tab_id,
+                     SessionID tab_id,
                      const sessions::SessionTab** tab) override;
   bool GetForeignSessionTabs(
       const std::string& tag,

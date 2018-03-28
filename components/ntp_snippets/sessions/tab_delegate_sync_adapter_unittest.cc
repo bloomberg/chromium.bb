@@ -41,9 +41,7 @@ class MockOpenTabsUIDelegate : public OpenTabsUIDelegate {
                           scoped_refptr<RefCountedMemory>*));
   MOCK_METHOD1(GetAllForeignSessions, bool(std::vector<const SyncedSession*>*));
   MOCK_METHOD3(GetForeignTab,
-               bool(const std::string&,
-                    SessionID::id_type,
-                    const SessionTab**));
+               bool(const std::string&, SessionID, const SessionTab**));
   MOCK_METHOD1(DeleteForeignSession, void(const std::string&));
   MOCK_METHOD2(GetForeignSession,
                bool(const std::string&, std::vector<const SessionWindow*>*));

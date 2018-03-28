@@ -25,7 +25,7 @@ class SyncedWindowDelegate {
   virtual bool HasWindow() const = 0;
 
   // see Browser::session_id
-  virtual SessionID::id_type GetSessionId() const = 0;
+  virtual SessionID GetSessionId() const = 0;
 
   // see Browser::tab_count
   virtual int GetTabCount() const = 0;
@@ -51,7 +51,7 @@ class SyncedWindowDelegate {
   virtual SyncedTabDelegate* GetTabAt(int index) const = 0;
 
   // Return the tab id for the tab at |index|.
-  virtual SessionID::id_type GetTabIdAt(int index) const = 0;
+  virtual SessionID GetTabIdAt(int index) const = 0;
 
   // Return true if we are currently restoring sessions asynchronously.
   virtual bool IsSessionRestoreInProgress() const = 0;

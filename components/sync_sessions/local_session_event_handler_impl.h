@@ -102,8 +102,8 @@ class LocalSessionEventHandlerImpl : public LocalSessionEventHandler {
   // compares new_tab_id and new_window_id against the previously persisted tab
   // ID and window ID (from our TabNodePool) and updates them if either differs.
   void AssociateRestoredPlaceholderTab(const SyncedTabDelegate& tab_delegate,
-                                       SessionID::id_type new_tab_id,
-                                       SessionID::id_type new_window_id,
+                                       SessionID new_tab_id,
+                                       SessionID new_window_id,
                                        WriteBatch* batch);
 
   // Appends an ACTION_UPDATE for a sync tab entity onto |batch| to

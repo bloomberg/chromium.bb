@@ -242,7 +242,7 @@ bool GetLocalWindows(int index, ScopedWindowMap* local_windows) {
                 new_tab->navigations.begin());
       new_window->wrapped_window.tabs.push_back(std::move(new_tab));
     }
-    auto id = new_window->wrapped_window.window_id.id();
+    auto id = new_window->wrapped_window.window_id;
     (*local_windows)[id] = std::move(new_window);
   }
 

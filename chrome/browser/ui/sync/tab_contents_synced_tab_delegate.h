@@ -26,8 +26,8 @@ class TabContentsSyncedTabDelegate
   ~TabContentsSyncedTabDelegate() override;
 
   // SyncedTabDelegate:
-  SessionID::id_type GetWindowId() const override;
-  SessionID::id_type GetSessionId() const override;
+  SessionID GetWindowId() const override;
+  SessionID GetSessionId() const override;
   bool IsBeingDestroyed() const override;
   std::string GetExtensionAppId() const override;
   bool IsInitialBlankNavigation() const override;
@@ -46,7 +46,7 @@ class TabContentsSyncedTabDelegate
   int GetSyncId() const override;
   void SetSyncId(int sync_id) override;
   bool ShouldSync(sync_sessions::SyncSessionsClient* sessions_client) override;
-  SessionID::id_type GetSourceTabID() const override;
+  SessionID GetSourceTabID() const override;
 
  private:
   explicit TabContentsSyncedTabDelegate(content::WebContents* web_contents);

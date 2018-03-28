@@ -51,8 +51,8 @@ class SyncSessionsRouterTabHelper
   void SetSourceTabIdForChild(content::WebContents* child_contents);
 
   // Get the tab id of the tab responsible for creating the tab this helper
-  // corresponds to. Returns -1 if there is no such tab.
-  SessionID::id_type source_tab_id() const { return source_tab_id_; }
+  // corresponds to. Returns an invalid ID if there is no such tab.
+  SessionID source_tab_id() const { return source_tab_id_; }
 
  private:
   friend class content::WebContentsUserData<SyncSessionsRouterTabHelper>;
@@ -62,7 +62,7 @@ class SyncSessionsRouterTabHelper
 
   // Set the tab id of the tab reponsible for creating the tab this helper
   // corresponds to.
-  void set_source_tab_id(const SessionID::id_type id) { source_tab_id_ = id; }
+  void set_source_tab_id(SessionID id) { source_tab_id_ = id; }
 
   void NotifyRouter(bool page_load_completed = false);
 
@@ -74,7 +74,7 @@ class SyncSessionsRouterTabHelper
   // * From context menu, "Open link in new window".
   // * Ctrl-click.
   // * Click on a link with target='_blank'.
-  SessionID::id_type source_tab_id_;
+  SessionID source_tab_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSessionsRouterTabHelper);
 };

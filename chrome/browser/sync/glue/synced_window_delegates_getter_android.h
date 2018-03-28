@@ -25,8 +25,7 @@ class SyncedWindowDelegatesGetterAndroid
 
   // SyncedWindowDelegatesGetter implementation
   SyncedWindowDelegateMap GetSyncedWindowDelegates() override;
-  const sync_sessions::SyncedWindowDelegate* FindById(
-      SessionID::id_type id) override;
+  const sync_sessions::SyncedWindowDelegate* FindById(SessionID id) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedWindowDelegatesGetterAndroid);

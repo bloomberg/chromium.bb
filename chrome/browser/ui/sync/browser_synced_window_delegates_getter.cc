@@ -30,8 +30,8 @@ BrowserSyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
 }
 
 const sync_sessions::SyncedWindowDelegate*
-BrowserSyncedWindowDelegatesGetter::FindById(SessionID::id_type id) {
-  Browser* browser = chrome::FindBrowserWithID(id);
+BrowserSyncedWindowDelegatesGetter::FindById(SessionID id) {
+  Browser* browser = chrome::FindBrowserWithID(id.id());
   return (browser != nullptr) ? browser->synced_window_delegate() : nullptr;
 }
 

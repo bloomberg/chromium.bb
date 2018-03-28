@@ -42,12 +42,12 @@ IOSChromeSyncedTabDelegate::IOSChromeSyncedTabDelegate(web::WebState* web_state)
 
 IOSChromeSyncedTabDelegate::~IOSChromeSyncedTabDelegate() {}
 
-SessionID::id_type IOSChromeSyncedTabDelegate::GetWindowId() const {
-  return IOSChromeSessionTabHelper::FromWebState(web_state_)->window_id().id();
+SessionID IOSChromeSyncedTabDelegate::GetWindowId() const {
+  return IOSChromeSessionTabHelper::FromWebState(web_state_)->window_id();
 }
 
-SessionID::id_type IOSChromeSyncedTabDelegate::GetSessionId() const {
-  return IOSChromeSessionTabHelper::FromWebState(web_state_)->session_id().id();
+SessionID IOSChromeSyncedTabDelegate::GetSessionId() const {
+  return IOSChromeSessionTabHelper::FromWebState(web_state_)->session_id();
 }
 
 bool IOSChromeSyncedTabDelegate::IsBeingDestroyed() const {
@@ -56,8 +56,8 @@ bool IOSChromeSyncedTabDelegate::IsBeingDestroyed() const {
 
 // todo(pnoland): add logic to store and return the source tab id on ios.
 // http://crbug/695241
-SessionID::id_type IOSChromeSyncedTabDelegate::GetSourceTabID() const {
-  return sync_sessions::kInvalidTabID;
+SessionID IOSChromeSyncedTabDelegate::GetSourceTabID() const {
+  return SessionID::InvalidValue();
 }
 
 std::string IOSChromeSyncedTabDelegate::GetExtensionAppId() const {

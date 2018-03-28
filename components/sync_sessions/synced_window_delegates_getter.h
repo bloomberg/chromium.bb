@@ -19,7 +19,7 @@ class SyncedWindowDelegate;
 class SyncedWindowDelegatesGetter {
  public:
   using SyncedWindowDelegateMap =
-      std::map<SessionID::id_type, const SyncedWindowDelegate*>;
+      std::map<SessionID, const SyncedWindowDelegate*>;
 
   SyncedWindowDelegatesGetter();
   virtual ~SyncedWindowDelegatesGetter();
@@ -28,7 +28,7 @@ class SyncedWindowDelegatesGetter {
   virtual SyncedWindowDelegateMap GetSyncedWindowDelegates() = 0;
 
   // Find a SyncedWindowDelegate given its window's id.
-  virtual const SyncedWindowDelegate* FindById(SessionID::id_type id) = 0;
+  virtual const SyncedWindowDelegate* FindById(SessionID id) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(SyncedWindowDelegatesGetter);

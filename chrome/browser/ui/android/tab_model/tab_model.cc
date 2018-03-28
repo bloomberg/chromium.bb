@@ -61,11 +61,7 @@ sync_sessions::SyncedWindowDelegate* TabModel::GetSyncedWindowDelegate() const {
   return synced_window_delegate_.get();
 }
 
-SessionID::id_type TabModel::GetSessionId() const {
-  return session_id_.id();
-}
-
-const SessionID& TabModel::SessionId() const {
+SessionID TabModel::GetSessionId() const {
   return session_id_;
 }
 

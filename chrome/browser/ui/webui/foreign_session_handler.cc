@@ -178,7 +178,8 @@ void ForeignSessionHandler::OpenForeignSessionTab(
   // We don't actually care about |window_num|, this is just a sanity check.
   DCHECK_LT(kInvalidId, window_num);
   const ::sessions::SessionTab* tab;
-  if (!open_tabs->GetForeignTab(session_string_value, tab_id, &tab)) {
+  if (!open_tabs->GetForeignTab(session_string_value,
+                                SessionID::FromSerializedValue(tab_id), &tab)) {
     LOG(ERROR) << "Failed to load foreign tab.";
     return;
   }

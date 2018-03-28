@@ -113,8 +113,7 @@ TaskTracker::TaskTracker() {}
 
 TaskTracker::~TaskTracker() {}
 
-TabTasks* TaskTracker::GetTabTasks(SessionID::id_type tab_id,
-                                   SessionID::id_type parent_tab_id) {
+TabTasks* TaskTracker::GetTabTasks(SessionID tab_id, SessionID parent_tab_id) {
   DVLOG(1) << "Getting tab tasks for " << tab_id << " with parent "
            << parent_tab_id;
   // If an existing TabTasks exists, attempt to reuse it. The caveat is that if
@@ -124,7 +123,7 @@ TabTasks* TaskTracker::GetTabTasks(SessionID::id_type tab_id,
   // initial GetTabTasks is called, the parent id is not yet known, but it
   // becomes known at a later time.
   if (local_tab_tasks_map_.count(tab_id) > 0 &&
-      (parent_tab_id == kInvalidTabID ||
+      (!parent_tab_id.is_valid() ||
        local_tab_tasks_map_[tab_id]->parent_tab_id() == parent_tab_id)) {
     return local_tab_tasks_map_[tab_id].get();
   }
@@ -144,7 +143,7 @@ TabTasks* TaskTracker::GetTabTasks(SessionID::id_type tab_id,
   return local_tab_tasks_map_[tab_id].get();
 }
 
-void TaskTracker::CleanTabTasks(SessionID::id_type tab_id) {
+void TaskTracker::CleanTabTasks(SessionID tab_id) {
   auto iter = local_tab_tasks_map_.find(tab_id);
   if (iter != local_tab_tasks_map_.end())
     local_tab_tasks_map_.erase(iter);

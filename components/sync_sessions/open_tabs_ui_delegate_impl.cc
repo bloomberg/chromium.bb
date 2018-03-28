@@ -64,7 +64,7 @@ bool OpenTabsUIDelegateImpl::GetForeignSession(
 }
 
 bool OpenTabsUIDelegateImpl::GetForeignTab(const std::string& tag,
-                                           const SessionID::id_type tab_id,
+                                           const SessionID tab_id,
                                            const sessions::SessionTab** tab) {
   const sessions::SessionTab* synced_tab = nullptr;
   bool success = session_tracker_->LookupSessionTab(tag, tab_id, &synced_tab);

@@ -328,7 +328,9 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
       if (!open_tabs)
         return;
       const sessions::SessionTab* tab;
-      if (!open_tabs->GetForeignTab(item.session_tag, item.tab_id, &tab))
+      if (!open_tabs->GetForeignTab(item.session_tag,
+                                    SessionID::FromSerializedValue(item.tab_id),
+                                    &tab))
         return;
       if (tab->navigations.empty())
         return;

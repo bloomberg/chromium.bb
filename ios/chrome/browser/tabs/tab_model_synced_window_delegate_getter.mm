@@ -47,7 +47,7 @@ TabModelSyncedWindowDelegatesGetter::GetSyncedWindowDelegates() {
 }
 
 const sync_sessions::SyncedWindowDelegate*
-TabModelSyncedWindowDelegatesGetter::FindById(SessionID::id_type session_id) {
+TabModelSyncedWindowDelegatesGetter::FindById(SessionID session_id) {
   for (const auto& iter : GetSyncedWindowDelegates()) {
     if (session_id == iter.second->GetSessionId())
       return iter.second;

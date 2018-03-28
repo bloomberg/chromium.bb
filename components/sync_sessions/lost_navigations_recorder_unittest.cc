@@ -26,7 +26,6 @@ using syncer::syncable::WriteTransaction;
 
 namespace sync_sessions {
 namespace {
-using id_type = SessionID::id_type;
 
 const char kTab1SyncTag[] = "tab-YWRkcjHvv74=";
 const char kTab2SyncTag[] = "tab-2FyZDHvv74=";
@@ -45,7 +44,7 @@ class LostNavigationsRecorderTest : public testing::Test {
   LostNavigationsRecorder* recorder() { return &recorder_; }
 
   void AddNavigation(sync_pb::SessionSpecifics* tab_base,
-                     id_type id_override = -1) {
+                     int id_override = -1) {
     sync_pb::SessionTab* tab = tab_base->mutable_tab();
     sync_pb::TabNavigation* navigation = tab->add_navigation();
     navigation->set_page_transition(sync_pb::SyncEnums_PageTransition_TYPED);
@@ -124,7 +123,7 @@ class LostNavigationsRecorderTest : public testing::Test {
 
  private:
   base::MessageLoop message_loop;
-  id_type _id;
+  int _id;
   LostNavigationsRecorder recorder_;
   syncer::TestDirectorySetterUpper dir_maker_;
 };

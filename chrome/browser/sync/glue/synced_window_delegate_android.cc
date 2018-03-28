@@ -28,7 +28,7 @@ bool SyncedWindowDelegateAndroid::HasWindow() const {
   return !tab_model_->IsOffTheRecord();
 }
 
-SessionID::id_type SyncedWindowDelegateAndroid::GetSessionId() const {
+SessionID SyncedWindowDelegateAndroid::GetSessionId() const {
   return tab_model_->GetSessionId();
 }
 
@@ -63,9 +63,9 @@ SyncedTabDelegate* SyncedWindowDelegateAndroid::GetTabAt(int index) const {
   return tab ? tab->GetSyncedTabDelegate() : nullptr;
 }
 
-SessionID::id_type SyncedWindowDelegateAndroid::GetTabIdAt(int index) const {
+SessionID SyncedWindowDelegateAndroid::GetTabIdAt(int index) const {
   SyncedTabDelegate* tab = GetTabAt(index);
-  return tab ? tab->GetSessionId() : -1;
+  return tab ? tab->GetSessionId() : SessionID::InvalidValue();
 }
 
 bool SyncedWindowDelegateAndroid::IsSessionRestoreInProgress() const {
