@@ -74,7 +74,7 @@ class IDMap final {
   void Remove(KeyType id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     typename HashTable::iterator i = data_.find(id);
-    if (i == data_.end()) {
+    if (i == data_.end() || IsRemoved(id)) {
       NOTREACHED() << "Attempting to remove an item not in the list";
       return;
     }
@@ -93,8 +93,10 @@ class IDMap final {
     DCHECK(!check_on_null_data_ || new_data);
     typename HashTable::iterator i = data_.find(id);
     DCHECK(i != data_.end());
+    DCHECK(!IsRemoved(id));
 
-    std::swap(i->second, new_data);
+    using std::swap;
+    swap(i->second, new_data);
     return new_data;
   }
 
@@ -117,7 +119,7 @@ class IDMap final {
   T* Lookup(KeyType id) const {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     typename HashTable::const_iterator i = data_.find(id);
-    if (i == data_.end())
+    if (i == data_.end() || !i->second || IsRemoved(id))
       return nullptr;
     return &*i->second;
   }
@@ -178,6 +180,8 @@ class IDMap final {
 
     ReturnType* GetCurrentValue() const {
       DCHECK_CALLED_ON_VALID_SEQUENCE(map_->sequence_checker_);
+      if (!iter_->second || map_->IsRemoved(iter_->first))
+        return nullptr;
       return &*iter_->second;
     }
 
@@ -195,11 +199,8 @@ class IDMap final {
     }
 
     void SkipRemovedEntries() {
-      while (iter_ != map_->data_.end() &&
-             map_->removed_ids_.find(iter_->first) !=
-             map_->removed_ids_.end()) {
+      while (iter_ != map_->data_.end() && map_->IsRemoved(iter_->first))
         ++iter_;
-      }
     }
 
     IDMap<V, K>* map_;
@@ -223,14 +224,22 @@ class IDMap final {
   void AddWithIDInternal(V data, KeyType id) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!check_on_null_data_ || data);
-    DCHECK(data_.find(id) == data_.end()) << "Inserting duplicate item";
+    if (IsRemoved(id)) {
+      removed_ids_.erase(id);
+    } else {
+      DCHECK(data_.find(id) == data_.end()) << "Inserting duplicate item";
+    }
     data_[id] = std::move(data);
+  }
+
+  bool IsRemoved(KeyType key) const {
+    return removed_ids_.find(key) != removed_ids_.end();
   }
 
   void Compact() {
     DCHECK_EQ(0, iteration_depth_);
     for (const auto& i : removed_ids_)
-      Remove(i);
+      data_.erase(i);
     removed_ids_.clear();
   }
 
