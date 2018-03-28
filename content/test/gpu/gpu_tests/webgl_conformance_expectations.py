@@ -134,15 +134,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         bug=735483)
 
     # Passthrough command decoder / OpenGL
-    self.Fail('conformance/buffers/buffer-uninitialized.html',
-        ['passthrough', 'opengl'], bug=665521)
-    self.Fail('conformance/extensions/' +
-        'webgl-draw-buffers-framebuffer-unsupported.html',
-        ['passthrough', 'opengl'], bug=682745)
-    self.Fail('conformance/misc/uninitialized-test.html',
-        ['passthrough', 'opengl'], bug=1635) # angle bug ID
-    self.Fail('conformance/glsl/misc/shader-with-non-reserved-words.html',
-        ['passthrough', 'opengl'], bug=665521)
     self.Fail('conformance/renderbuffers/framebuffer-test.html',
         ['passthrough', 'opengl'], bug=665521)
     self.Fail('conformance/textures/canvas/*',
@@ -151,34 +142,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['passthrough', 'opengl'], bug=1932) # angle bug ID
     self.Fail('conformance/textures/webgl_canvas/*',
         ['passthrough', 'opengl'], bug=1932) # angle bug ID
-    self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
-        ['passthrough', 'opengl'], bug=665521)
-    self.Fail('conformance/textures/misc/copytexsubimage2d-subrects.html',
-        ['passthrough', 'opengl'], bug=665521)
-    self.Fail('conformance/textures/misc/copytexsubimage2d-large-partial-' +
-        'copy-corruption.html', ['passthrough', 'opengl'], bug=665521)
-    self.Fail('conformance/textures/misc/gl-teximage.html',
-        ['passthrough', 'opengl'], bug=665521)
-    self.Fail('conformance/textures/misc/texture-fakeblack.html',
-        ['passthrough', 'opengl'], bug=665521)
-    self.Fail('conformance/textures/misc/texture-mips.html',
-        ['passthrough', 'opengl'], bug=665518)
     self.Fail('conformance/extensions/oes-texture-float-with-canvas.html',
         ['passthrough', 'opengl'], bug=1932) # angle bug ID
-    self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
-        ['passthrough', 'opengl'], bug=2198) # angle bug ID
 
     # Passthrough command decoder / OpenGL / Intel
-    self.Fail('conformance/extensions/webgl-draw-buffers.html',
-        ['passthrough', 'opengl', 'intel'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
-        ['passthrough', 'opengl', 'intel'], bug=665521)
-    self.Fail('conformance/textures/misc/texture-attachment-formats.html',
         ['passthrough', 'opengl', 'intel'], bug=665521)
 
     # Passthrough command decoder / OpenGL / AMD
-    # self.Fail('conformance/extensions/ext-sRGB.html',
-    #     ['passthrough', 'opengl', 'amd'], bug=679696)
     self.Fail('conformance/extensions/webgl-draw-buffers.html',
         ['passthrough', 'opengl', 'amd', 'linux'], bug=1523) # angle bug ID
     self.Fail('conformance/glsl/constructors/glsl-construct-mat2.html',
@@ -217,16 +188,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win7', 'nvidia', 'passthrough', 'd3d11', 'debug'], bug=751849)
     self.Flaky('conformance/programs/program-test.html',
         ['win', 'nvidia', 'passthrough', 'd3d11'], bug=737016)
-
-    # Passthrough command decoder / Win / OpenGL / NVIDIA
-    self.Fail('conformance/renderbuffers/' +
-        'depth-renderbuffer-initialization.html',
-        ['win', 'passthrough', 'opengl', 'nvidia'], bug=794339)
-
-    # Passthrough command decoder / Win / OpenGL / Intel
-    self.Fail('conformance/renderbuffers/' +
-        'depth-renderbuffer-initialization.html',
-        ['win', 'passthrough', 'opengl', 'intel'], bug=794339)
 
     # Win failures
     # TODO(kbr): re-enable suppression for same test below once fixed.
@@ -331,10 +292,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', ('nvidia', 0x1cb3), 'opengl', 'passthrough'], bug=715001)
     self.Fail('conformance/textures/misc/texture-size.html',
         ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
-    self.Fail('conformance/extensions/webgl-compressed-texture-size-limit.html',
-        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
-    self.Fail('conformance/textures/misc/texture-size-limit.html',
-        ['win', ('nvidia', 0x1cb3), 'opengl'], bug=703779)
 
     # Mark ANGLE's OpenGL as flaky on Windows Nvidia
     self.Flaky('conformance/*', ['win', 'nvidia', 'opengl'], bug=582083)
@@ -353,18 +310,6 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Mark ANGLE's OpenGL as flaky on Windows Amd
     self.Flaky('conformance/*', ['win', 'amd', 'opengl'], bug=582083)
-
-    # Win / OpenGL / Intel failures
-    self.Fail('conformance/glsl/functions/glsl-function-normalize.html',
-        ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/glsl/misc/shader-struct-scope.html',
-        ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/uniforms/uniform-default-values.html',
-        ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
-    # self.Fail('conformance/glsl/bugs/sampler-struct-function-arg.html',
-    #     ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
-    self.Fail('conformance/glsl/variables/gl-pointcoord.html',
-        ['win10', 'intel', 'opengl'], bug=1007) # angle bug ID
 
     # Win / OpenGL / Intel HD 530 failures
     self.Fail('conformance/canvas/draw-webgl-to-canvas-test.html',
