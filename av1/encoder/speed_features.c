@@ -150,8 +150,6 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->two_pass_partition_search = 1;
     sf->prune_ext_partition_types_search = 1;
     sf->use_fast_interpolation_filter_search = 1;
-    // TODO(mfo): Activate feature once it gives positive results.
-    //   sf->use_hash_based_trellis = 1;
     sf->tx_type_search.skip_tx_search = 1;
     sf->adaptive_txb_search = 1;
     sf->use_intra_txb_hash = 1;
@@ -160,11 +158,37 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
 
   if (speed >= 2) {
     sf->gm_erroradv_type = GM_ERRORADV_TR_2;
+
+    sf->selective_ref_frame = 2;
+    sf->fast_cdef_search = 1;
+
+    sf->use_rd_breakout = 1;
+    sf->adaptive_rd_thresh = 1;
+    sf->mv.auto_mv_step_size = 1;
+    sf->mv.subpel_iters_per_step = 1;
+    sf->disable_filter_search_var_thresh = 100;
+    sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
+
+    sf->partition_search_breakout_rate_thr = 80;
+    sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
+    sf->allow_partition_search_skip = 1;
+    sf->disable_wedge_search_var_thresh = 100;
+    sf->fast_wedge_sign_estimate = 1;
+  }
+
+  if (speed >= 3) {
     sf->tx_size_search_method = USE_FAST_RD;
     sf->tx_type_search.fast_intra_tx_type_search = 1;
     sf->tx_type_search.fast_inter_tx_type_search = 1;
 
-    sf->selective_ref_frame = 2;
+    sf->selective_ref_frame = 3;
+
+    sf->tx_size_search_method = boosted ? USE_FULL_RD : USE_LARGESTALL;
+    sf->mode_search_skip_flags =
+        (cm->frame_type == KEY_FRAME)
+            ? 0
+            : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
+                  FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR;
 
     if ((cpi->twopass.fr_content_type == FC_GRAPHICS_ANIMATION) ||
         av1_internal_image_edge(cpi)) {
@@ -172,17 +196,12 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     } else {
       sf->use_square_partition_only = !frame_is_intra_only(cm);
     }
-    sf->fast_cdef_search = 1;
 
     sf->less_rectangular_check = 1;
 
-    sf->use_rd_breakout = 1;
-    sf->adaptive_motion_search = 1;
-    sf->mv.auto_mv_step_size = 1;
-    sf->adaptive_rd_thresh = 1;
-    sf->mv.subpel_iters_per_step = 1;
     sf->mode_skip_start = 10;
     sf->adaptive_pred_interp_filter = 1;
+    sf->adaptive_motion_search = 1;
 
     sf->recode_loop = ALLOW_RECODE_KFARFGF;
     sf->intra_y_mode_mask[TX_64X64] = INTRA_DC_H_V;
@@ -192,28 +211,7 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->intra_y_mode_mask[TX_16X16] = INTRA_DC_H_V;
     sf->intra_uv_mode_mask[TX_16X16] = UV_INTRA_DC_H_V_CFL;
 
-    sf->partition_search_breakout_rate_thr = 80;
-
-    // Use transform domain distortion.
-    // Note var-tx expt always uses pixel domain distortion.
     sf->use_transform_domain_distortion = 1;
-    sf->disable_wedge_search_var_thresh = 100;
-    sf->fast_wedge_sign_estimate = 1;
-  }
-
-  if (speed >= 3) {
-    sf->selective_ref_frame = 3;
-
-    sf->tx_size_search_method = boosted ? USE_FULL_RD : USE_LARGESTALL;
-    sf->mode_search_skip_flags =
-        (cm->frame_type == KEY_FRAME)
-            ? 0
-            : FLAG_SKIP_INTRA_DIRMISMATCH | FLAG_SKIP_INTRA_BESTINTER |
-                  FLAG_SKIP_COMP_BESTINTRA | FLAG_SKIP_INTRA_LOWVAR;
-    sf->disable_filter_search_var_thresh = 100;
-    sf->comp_inter_joint_search_thresh = BLOCK_SIZES_ALL;
-    sf->auto_min_max_partition_size = RELAXED_NEIGHBORING_MIN_MAX;
-    sf->allow_partition_search_skip = 1;
     sf->use_accurate_subpel_search = 0;
     sf->adaptive_rd_thresh = 2;
     sf->tx_type_search.prune_mode = PRUNE_2D_FAST;
