@@ -420,8 +420,10 @@ void VisibleSelectionTemplate<Strategy>::Trace(blink::Visitor* visitor) {
 
 template <typename Strategy>
 void VisibleSelectionTemplate<Strategy>::ShowTreeForThis() const {
-  if (!Start().AnchorNode())
+  if (!Start().AnchorNode()) {
+    LOG(INFO) << "\nselection is null";
     return;
+  }
   LOG(INFO) << "\n"
             << Start()
                    .AnchorNode()
