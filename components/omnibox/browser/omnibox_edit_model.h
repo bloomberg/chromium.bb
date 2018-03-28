@@ -50,12 +50,13 @@ enum class KeywordModeEntryMethod {
 
 class OmniboxEditModel {
  public:
-  // Did the Omnibox focus originate via the user clicking on the Omnibox or on
-  // the Fakebox?
+  // Did the Omnibox focus originate via the user clicking on the Omnibox, on
+  // the Fakebox or the Search button?
   enum FocusSource {
     INVALID = 0,
     OMNIBOX = 1,
-    FAKEBOX = 2
+    FAKEBOX = 2,
+    SEARCH_BUTTON = 3
   };
 
   struct State {
@@ -471,8 +472,8 @@ class OmniboxEditModel {
   OmniboxFocusState focus_state_;
 
   // Used to keep track whether the input currently in progress originated by
-  // focusing in the Omnibox or in the Fakebox. This will be INVALID if no input
-  // is in progress or the Omnibox is not focused.
+  // focusing in the Omnibox, Fakebox or Search button. This will be INVALID if
+  // no input is in progress or the Omnibox is not focused.
   FocusSource focus_source_;
 
   // The text representing the current URL for steady state display. This may

@@ -32962,6 +32962,7 @@ Called by update_net_trust_anchors.py.-->
   <int value="10" label="home screen"/>
   <int value="11" label="search app"/>
   <int value="12" label="maps app"/>
+  <int value="13" label="interaction starting with the search button"/>
 </enum>
 
 <enum name="OmniboxProviderAndResultType">

@@ -9,6 +9,7 @@ option optimize_for = LITE_RUNTIME;
 option java_outer_classname = "ExecutionContextProtos";
 option java_package = "org.chromium.components.metrics";
 
+
 package metrics;
 
 // Enums corresponding to the Chrome execution context in which data was
