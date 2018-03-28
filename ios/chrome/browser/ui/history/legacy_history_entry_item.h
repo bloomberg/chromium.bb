@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_ENTRY_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_ENTRY_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_ENTRY_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_ENTRY_ITEM_H_
 
 #include "components/history/core/browser/browsing_history_service.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
@@ -20,27 +20,28 @@ class ChromeBrowserState;
 @class FaviconView;
 @protocol FaviconViewProviderDelegate;
 class GURL;
-@class HistoryEntryItem;
+@class LegacyHistoryEntryItem;
 
 // Delegate for HistoryEntryItem. Handles actions invoked as custom
 // accessibility actions.
 @protocol HistoryEntryItemDelegate
 // Called when custom accessibility action to delete the entry is invoked.
-- (void)historyEntryItemDidRequestDelete:(HistoryEntryItem*)item;
+- (void)historyEntryItemDidRequestDelete:(LegacyHistoryEntryItem*)item;
 // Called when custom accessibility action to open the entry in a new tab is
 // invoked.
-- (void)historyEntryItemDidRequestOpenInNewTab:(HistoryEntryItem*)item;
+- (void)historyEntryItemDidRequestOpenInNewTab:(LegacyHistoryEntryItem*)item;
 // Called when custom accessibility action to open the entry in a new incognito
 // tab is invoked.
-- (void)historyEntryItemDidRequestOpenInNewIncognitoTab:(HistoryEntryItem*)item;
+- (void)historyEntryItemDidRequestOpenInNewIncognitoTab:
+    (LegacyHistoryEntryItem*)item;
 // Called when custom accessibility action to copy the entry's URL is invoked.
-- (void)historyEntryItemDidRequestCopy:(HistoryEntryItem*)item;
+- (void)historyEntryItemDidRequestCopy:(LegacyHistoryEntryItem*)item;
 // Called when the view associated with the HistoryEntryItem should be updated.
-- (void)historyEntryItemShouldUpdateView:(HistoryEntryItem*)item;
+- (void)historyEntryItemShouldUpdateView:(LegacyHistoryEntryItem*)item;
 @end
 
 // Model object for the cell that displays a history entry.
-@interface HistoryEntryItem : CollectionViewItem
+@interface LegacyHistoryEntryItem : CollectionViewItem
 
 // Text for the content view. Rendered at the top trailing the favicon.
 @property(nonatomic, copy) NSString* text;
@@ -65,12 +66,12 @@ class GURL;
 
 // HistoryEntryItems are equal if they have the same URL and
 // timestamp.
-- (BOOL)isEqualToHistoryEntryItem:(HistoryEntryItem*)item;
+- (BOOL)isEqualToHistoryEntryItem:(LegacyHistoryEntryItem*)item;
 
 @end
 
 // Cell that renders a history entry.
-@interface HistoryEntryCell : MDCCollectionViewCell
+@interface LegacyHistoryEntryCell : MDCCollectionViewCell
 
 // View for displaying the favicon for the history entry.
 @property(nonatomic, strong) UIView* faviconViewContainer;
@@ -83,4 +84,4 @@ class GURL;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_ENTRY_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_ENTRY_ITEM_H_

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/history/history_entry_item.h"
+#import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
 
 #include "base/i18n/time_formatting.h"
 #include "base/strings/sys_string_conversions.h"
@@ -25,31 +25,32 @@ const char kTestUrl2[] = "http://test2/";
 const char kTestTitle[] = "Test";
 }
 
-HistoryEntryItem* GetHistoryEntryItem(const GURL& url,
-                                      const char title[],
-                                      base::Time timestamp) {
+LegacyHistoryEntryItem* GetHistoryEntryItem(const GURL& url,
+                                            const char title[],
+                                            base::Time timestamp) {
   BrowsingHistoryService::HistoryEntry entry(
       BrowsingHistoryService::HistoryEntry::LOCAL_ENTRY, GURL(url),
       base::UTF8ToUTF16(title), timestamp, "", false, base::string16(), false);
-  HistoryEntryItem* item = [[HistoryEntryItem alloc] initWithType:0
-                                                     historyEntry:entry
-                                                     browserState:nil
-                                                         delegate:nil];
+  LegacyHistoryEntryItem* item =
+      [[LegacyHistoryEntryItem alloc] initWithType:0
+                                      historyEntry:entry
+                                      browserState:nil
+                                          delegate:nil];
   return item;
 }
 
-using HistoryEntryItemTest = PlatformTest;
+using LegacyHistoryEntryItemTest = PlatformTest;
 
 // Tests that -[HistoryEntryItem configureCell:] sets the cell's textLabel text
 // to the item title, the detailTextLabel text to the URL, and the timeLabel
 // text to the timestamp.
-TEST_F(HistoryEntryItemTest, ConfigureCell) {
+TEST_F(LegacyHistoryEntryItemTest, ConfigureCell) {
   base::Time timestamp = base::Time::Now();
-  HistoryEntryItem* item =
+  LegacyHistoryEntryItem* item =
       GetHistoryEntryItem(GURL(kTestUrl), kTestTitle, timestamp);
 
-  HistoryEntryCell* cell = [[[item cellClass] alloc] init];
-  EXPECT_TRUE([cell isMemberOfClass:[HistoryEntryCell class]]);
+  LegacyHistoryEntryCell* cell = [[[item cellClass] alloc] init];
+  EXPECT_TRUE([cell isMemberOfClass:[LegacyHistoryEntryCell class]]);
   [item configureCell:cell];
   EXPECT_NSEQ(base::SysUTF8ToNSString(kTestTitle), cell.textLabel.text);
   EXPECT_NSEQ(base::SysUTF8ToNSString(kTestUrl), cell.detailTextLabel.text);
@@ -59,17 +60,17 @@ TEST_F(HistoryEntryItemTest, ConfigureCell) {
 
 // Tests that -[HistoryItem isEqualToHistoryItem:] returns YES if the two items
 // have the same URL and timestamp, and NO otherwise.
-TEST_F(HistoryEntryItemTest, IsEqual) {
+TEST_F(LegacyHistoryEntryItemTest, IsEqual) {
   base::Time timestamp = base::Time::Now();
   base::Time timestamp2 = timestamp - base::TimeDelta::FromMinutes(1);
-  HistoryEntryItem* history_entry =
+  LegacyHistoryEntryItem* history_entry =
       GetHistoryEntryItem(GURL(kTestUrl), kTestTitle, timestamp);
-  HistoryEntryItem* same_entry =
+  LegacyHistoryEntryItem* same_entry =
       GetHistoryEntryItem(GURL(kTestUrl), kTestTitle, timestamp);
 
-  HistoryEntryItem* different_time_entry =
+  LegacyHistoryEntryItem* different_time_entry =
       GetHistoryEntryItem(GURL(kTestUrl), kTestTitle, timestamp2);
-  HistoryEntryItem* different_url_entry =
+  LegacyHistoryEntryItem* different_url_entry =
       GetHistoryEntryItem(GURL(kTestUrl2), kTestTitle, timestamp);
 
   EXPECT_TRUE([history_entry isEqualToHistoryEntryItem:same_entry]);

@@ -2,27 +2,27 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_ENTRIES_STATUS_ITEM_H_
-#define IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_ENTRIES_STATUS_ITEM_H_
+#ifndef IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_ENTRIES_STATUS_ITEM_H_
+#define IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_ENTRIES_STATUS_ITEM_H_
 
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_footer_item.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_item.h"
 
 class GURL;
-@class HistoryEntriesStatusItem;
+@class LegacyHistoryEntriesStatusItem;
 @class LabelLinkController;
 
 // Delegate HistoryEntriesStatusItem. Handles link taps on
 // HistoryEntriesStatusCell.
 @protocol HistoryEntriesStatusItemDelegate<NSObject>
 // Called when a link is pressed on a HistoryEntriesStatusCell.
-- (void)historyEntriesStatusItem:(HistoryEntriesStatusItem*)item
+- (void)historyEntriesStatusItem:(LegacyHistoryEntriesStatusItem*)item
                didRequestOpenURL:(const GURL&)URL;
 
 @end
 
 // Model item for HistoryEntriesStatusCell. Manages links added to the cell.
-@interface HistoryEntriesStatusItem : CollectionViewItem
+@interface LegacyHistoryEntriesStatusItem : CollectionViewItem
 // YES if messages should be hidden.
 @property(nonatomic, assign, getter=isHidden) BOOL hidden;
 // Delegate for HistoryEntriesStatusItem. Is notified when a link is pressed.
@@ -32,12 +32,12 @@ class GURL;
 // Cell for displaying status for history entry. Provides information on whether
 // local or synced entries or displays, and how to access other forms of
 // browsing history, if applicable.
-@interface HistoryEntriesStatusCell : CollectionViewFooterCell
+@interface LegacyHistoryEntriesStatusCell : CollectionViewFooterCell
 @end
 
-@interface HistoryEntriesStatusCell (Testing)
+@interface LegacyHistoryEntriesStatusCell (Testing)
 // Link controller for entries status message.
 @property(nonatomic, retain, readonly) LabelLinkController* labelLinkController;
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_ENTRIES_STATUS_ITEM_H_
+#endif  // IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_ENTRIES_STATUS_ITEM_H_

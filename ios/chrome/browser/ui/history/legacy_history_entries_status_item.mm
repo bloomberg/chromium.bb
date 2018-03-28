@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/history/history_entries_status_item.h"
+#import "ios/chrome/browser/ui/history/legacy_history_entries_status_item.h"
 
 #include "base/mac/foundation_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -23,11 +23,11 @@
 // Delegate for HistoryEntriesStatusCell.
 @protocol HistoryEntriesStatusCellDelegate<NSObject>
 // Notifies the delegate that |URL| should be opened.
-- (void)historyEntriesStatusCell:(HistoryEntriesStatusCell*)cell
+- (void)historyEntriesStatusCell:(LegacyHistoryEntriesStatusCell*)cell
                didRequestOpenURL:(const GURL&)URL;
 @end
 
-@interface HistoryEntriesStatusCell ()
+@interface LegacyHistoryEntriesStatusCell ()
 // Redeclare as readwrite.
 @property(nonatomic, strong, readwrite)
     LabelLinkController* labelLinkController;
@@ -38,18 +38,18 @@
 - (void)setLinkForBrowsingDataURL:(const GURL&)browsingDataURL;
 @end
 
-@interface HistoryEntriesStatusItem ()<HistoryEntriesStatusCellDelegate>
+@interface LegacyHistoryEntriesStatusItem ()<HistoryEntriesStatusCellDelegate>
 @end
 
-@implementation HistoryEntriesStatusItem
+@implementation LegacyHistoryEntriesStatusItem
 @synthesize delegate = _delegate;
 @synthesize hidden = _hidden;
 
 - (Class)cellClass {
-  return [HistoryEntriesStatusCell class];
+  return [LegacyHistoryEntriesStatusCell class];
 }
 
-- (void)configureCell:(HistoryEntriesStatusCell*)cell {
+- (void)configureCell:(LegacyHistoryEntriesStatusCell*)cell {
   [super configureCell:cell];
   [cell setDelegate:self];
   if (self.hidden) {
@@ -62,12 +62,13 @@
   }
 }
 
-- (void)historyEntriesStatusCell:(HistoryEntriesStatusCell*)cell
+- (void)historyEntriesStatusCell:(LegacyHistoryEntriesStatusCell*)cell
                didRequestOpenURL:(const GURL&)URL {
   [self.delegate historyEntriesStatusItem:self didRequestOpenURL:URL];
 }
 
-- (BOOL)isEqualToHistoryEntriesStatusItem:(HistoryEntriesStatusItem*)object {
+- (BOOL)isEqualToHistoryEntriesStatusItem:
+    (LegacyHistoryEntriesStatusItem*)object {
   return self.hidden == object.hidden;
 }
 
@@ -75,22 +76,23 @@
   if (self == object) {
     return YES;
   }
-  if (![object isKindOfClass:[HistoryEntriesStatusItem class]]) {
+  if (![object isKindOfClass:[LegacyHistoryEntriesStatusItem class]]) {
     return NO;
   }
   return [self
       isEqualToHistoryEntriesStatusItem:base::mac::ObjCCastStrict<
-                                            HistoryEntriesStatusItem>(object)];
+                                            LegacyHistoryEntriesStatusItem>(
+                                            object)];
 }
 
 @end
 
-@implementation HistoryEntriesStatusCell
+@implementation LegacyHistoryEntriesStatusCell
 @synthesize delegate = _delegate;
 @synthesize labelLinkController = _labelLinkController;
 
 - (void)setLinkForBrowsingDataURL:(const GURL&)browsingDataURL {
-  __weak HistoryEntriesStatusCell* weakSelf = self;
+  __weak LegacyHistoryEntriesStatusCell* weakSelf = self;
   self.labelLinkController = [[LabelLinkController alloc]
       initWithLabel:self.textLabel
              action:^(const GURL& URL) {

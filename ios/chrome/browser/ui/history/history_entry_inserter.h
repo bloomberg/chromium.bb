@@ -14,7 +14,7 @@ class Time;
 }
 @class CollectionViewModel;
 @class HistoryEntryInserter;
-@class HistoryEntryItem;
+@class LegacyHistoryEntryItem;
 
 // Delegate for HistoryEntryInserter. Provides callbacks for completion of item
 // and section insertion and deletion.
@@ -51,7 +51,7 @@ class Time;
 // History entries in the model are sorted from most to least recent, and
 // grouped into section by date. Duplicate entries are not inserted. Invokes
 // delegate callback when insertion is complete.
-- (void)insertHistoryEntryItem:(HistoryEntryItem*)item;
+- (void)insertHistoryEntryItem:(LegacyHistoryEntryItem*)item;
 
 // Returns section identifier for provided timestamp. Adds section for date if
 // not found, and invokes delegate callback.

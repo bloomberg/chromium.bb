@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/history/history_entries_status_item.h"
+#import "ios/chrome/browser/ui/history/legacy_history_entries_status_item.h"
 
 #import "base/test/ios/wait_util.h"
 #include "components/strings/grit/components_strings.h"
@@ -36,7 +36,7 @@
 @synthesize delegateCalledForSyncURL = _delegateCalledForSyncURL;
 @synthesize delegateCalledForBrowsingDataURL =
     _delegateCalledForBrowsingDataURL;
-- (void)historyEntriesStatusItem:(HistoryEntriesStatusItem*)item
+- (void)historyEntriesStatusItem:(LegacyHistoryEntriesStatusItem*)item
                didRequestOpenURL:(const GURL&)URL {
   GURL browsingDataURL(kHistoryMyActivityURL);
   if (URL == browsingDataURL) {
@@ -47,25 +47,27 @@
 
 namespace {
 
-using HistoryEntriesStatusItemTest = PlatformTest;
+using LegacyHistoryEntriesStatusItemTest = PlatformTest;
 
 // Tests that configuring a cell for HistoryEntriesStatusItem with hidden
 // property set to YES results in an empty label.
-TEST_F(HistoryEntriesStatusItemTest, TestHidden) {
-  HistoryEntriesStatusItem* item =
-      [[HistoryEntriesStatusItem alloc] initWithType:0];
+TEST_F(LegacyHistoryEntriesStatusItemTest, TestHidden) {
+  LegacyHistoryEntriesStatusItem* item =
+      [[LegacyHistoryEntriesStatusItem alloc] initWithType:0];
   item.hidden = YES;
-  HistoryEntriesStatusCell* cell = [[HistoryEntriesStatusCell alloc] init];
+  LegacyHistoryEntriesStatusCell* cell =
+      [[LegacyHistoryEntriesStatusCell alloc] init];
   [item configureCell:cell];
   EXPECT_FALSE(cell.textLabel.text);
 }
 
 // Tests that tapping on links on a configured cell invokes
 // the HistoryEntriesStatusItemDelegate method.
-TEST_F(HistoryEntriesStatusItemTest, TestDelegate) {
-  HistoryEntriesStatusItem* item =
-      [[HistoryEntriesStatusItem alloc] initWithType:0];
-  HistoryEntriesStatusCell* cell = [[HistoryEntriesStatusCell alloc] init];
+TEST_F(LegacyHistoryEntriesStatusItemTest, TestDelegate) {
+  LegacyHistoryEntriesStatusItem* item =
+      [[LegacyHistoryEntriesStatusItem alloc] initWithType:0];
+  LegacyHistoryEntriesStatusCell* cell =
+      [[LegacyHistoryEntriesStatusCell alloc] init];
   MockEntriesStatusItemDelegate* delegate =
       [[MockEntriesStatusItemDelegate alloc] init];
   item.delegate = delegate;

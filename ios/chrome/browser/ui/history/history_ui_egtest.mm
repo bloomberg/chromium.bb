@@ -16,7 +16,7 @@
 #include "ios/chrome/browser/chrome_url_constants.h"
 #import "ios/chrome/browser/ui/authentication/signin_earlgrey_utils.h"
 #import "ios/chrome/browser/ui/authentication/signin_promo_view.h"
-#import "ios/chrome/browser/ui/history/history_entry_item.h"
+#import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
 #import "ios/chrome/browser/ui/settings/settings_collection_view_controller.h"
 #include "ios/chrome/browser/ui/tools_menu/public/tools_menu_constants.h"
 #import "ios/chrome/browser/ui/tools_menu/tools_popup_controller.h"
@@ -62,7 +62,7 @@ id<GREYMatcher> HistoryEntry(const GURL& url, const std::string& title) {
   NSString* url_spec_text = base::SysUTF8ToNSString(url.spec());
   NSString* title_text = base::SysUTF8ToNSString(title);
 
-  MatchesBlock matches = ^BOOL(HistoryEntryCell* cell) {
+  MatchesBlock matches = ^BOOL(LegacyHistoryEntryCell* cell) {
     return [cell.textLabel.text isEqual:title_text] &&
            [cell.detailTextLabel.text isEqual:url_spec_text];
   };
@@ -75,7 +75,7 @@ id<GREYMatcher> HistoryEntry(const GURL& url, const std::string& title) {
   };
 
   return grey_allOf(
-      grey_kindOfClass([HistoryEntryCell class]),
+      grey_kindOfClass([LegacyHistoryEntryCell class]),
       [[GREYElementMatcherBlock alloc] initWithMatchesBlock:matches
                                            descriptionBlock:describe],
       grey_sufficientlyVisible(), nil);
@@ -439,7 +439,7 @@ id<GREYMatcher> ConfirmClearBrowsingDataButton() {
       assertWithMatcher:grey_notNil()];
 
   id<GREYMatcher> historyEntryMatcher =
-      grey_allOf(grey_kindOfClass([HistoryEntryCell class]),
+      grey_allOf(grey_kindOfClass([LegacyHistoryEntryCell class]),
                  grey_sufficientlyVisible(), nil);
   [[EarlGrey selectElementWithMatcher:historyEntryMatcher]
       assertWithMatcher:grey_nil()];
