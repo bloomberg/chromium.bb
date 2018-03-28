@@ -46,9 +46,8 @@ class FakeBluetoothChooser : public mojom::FakeBluetoothChooser,
 
   void WaitForEvents(uint32_t num_of_events,
                      WaitForEventsCallback callback) override;
-  void SelectPeripheral(const std::string& peripheral_address,
-                        SelectPeripheralCallback callback) override;
-  void Cancel(CancelCallback callback) override;
+  void SelectPeripheral(const std::string& peripheral_address) override;
+  void Cancel() override;
   void Rescan(RescanCallback callback) override;
 
   // BluetoothChooser overrides:
