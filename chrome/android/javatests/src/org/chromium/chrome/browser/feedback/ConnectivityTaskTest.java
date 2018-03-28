@@ -12,6 +12,7 @@ import android.support.test.filters.SmallTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
@@ -39,6 +40,8 @@ public class ConnectivityTaskTest {
     @Rule
     public ConnectivityCheckerTestRule mConnectivityCheckerTestRule =
             new ConnectivityCheckerTestRule();
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     private static final int RESULT_CHECK_INTERVAL_MS = 10;
 
@@ -183,17 +186,13 @@ public class ConnectivityTaskTest {
                                 null);
                     }
                 });
-        try {
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return task.isDone();
-                }
-            }, TIMEOUT_MS / 5, RESULT_CHECK_INTERVAL_MS);
-            Assert.fail("Should not be finished by now.");
-        } catch (AssertionError e) {
-            // TODO(tedchoc): This is horrible and should never timeout to determine success.
-        }
+        thrown.expect(AssertionError.class);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return task.isDone();
+            }
+        }, TIMEOUT_MS / 5, RESULT_CHECK_INTERVAL_MS);
         FeedbackData feedback = getResult(task);
         verifyConnections(feedback, ConnectivityCheckResult.UNKNOWN);
         Assert.assertEquals("The timeout value is wrong.", TIMEOUT_MS, feedback.getTimeoutMs());

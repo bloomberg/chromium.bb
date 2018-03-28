@@ -24,6 +24,7 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.ThreadUtils;
@@ -50,6 +51,8 @@ import java.util.concurrent.TimeoutException;
 public class ImeTest {
     @Rule
     public ImeActivityTestRule mRule = new ImeActivityTestRule();
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     @Before
     public void setUp() throws Exception {
@@ -707,18 +710,14 @@ public class ImeTest {
 
         mRule.detachPhysicalKeyboard();
 
-        try {
-            // We should not show soft keyboard here because focus has been lost.
-            CriteriaHelper.pollUiThread(new Criteria() {
-                @Override
-                public boolean isSatisfied() {
-                    return mRule.getInputMethodManagerWrapper().isShowWithoutHideOutstanding();
-                }
-            });
-            Assert.fail("Keyboard incorrectly showing");
-        } catch (AssertionError e) {
-            // TODO(tedchoc): This is horrible and should never timeout to determine success.
-        }
+        // We should not show soft keyboard here because focus has been lost.
+        thrown.expect(AssertionError.class);
+        CriteriaHelper.pollUiThread(new Criteria() {
+            @Override
+            public boolean isSatisfied() {
+                return mRule.getInputMethodManagerWrapper().isShowWithoutHideOutstanding();
+            }
+        });
     }
 
     @Test

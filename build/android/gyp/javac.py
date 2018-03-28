@@ -30,8 +30,6 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
   'CatchFail',
   # TODO(crbug.com/803485): Follow steps in bug.
   'JUnitAmbiguousTestClass',
-  # TODO(crbug.com/803486): Follow steps in bug.
-  'AssertionFailureIgnored',
   # TODO(crbug.com/803589): Follow steps in bug.
   'MissingFail',
   # Android platform default is always UTF-8.
@@ -90,6 +88,7 @@ ERRORPRONE_WARNINGS_TO_TURN_OFF = [
 ERRORPRONE_WARNINGS_TO_ERROR = [
   # Add warnings to this after fixing/suppressing all instances in our codebase.
   'ArgumentSelectionDefectChecker',
+  'AssertionFailureIgnored',
   'FloatingPointLiteralPrecision',
   'JavaLangClash',
   'MissingOverride',
