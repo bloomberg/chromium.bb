@@ -126,9 +126,7 @@ class CONTENT_EXPORT AuthenticatorImpl : public webauth::mojom::Authenticator {
   std::unique_ptr<device::U2fRequest> u2f_request_;
 
   // Support both HID and BLE.
-  base::flat_set<device::U2fTransportProtocol> protocols_ = {
-      device::U2fTransportProtocol::kUsbHumanInterfaceDevice,
-      device::U2fTransportProtocol::kBluetoothLowEnergy};
+  base::flat_set<device::U2fTransportProtocol> protocols_;
 
   MakeCredentialCallback make_credential_response_callback_;
   GetAssertionCallback get_assertion_response_callback_;
