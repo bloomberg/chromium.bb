@@ -236,10 +236,23 @@ void RegisterComponentsForUpdate() {
   component_updater::DeleteLegacyCRLSet(path);
 }
 
-// Used to update the current BVC mode if a new tab is added while the stack
-// view is being dimissed.  This is different than ApplicationMode in that it
-// can be set to |NONE| when not in use.
-enum class StackViewDismissalMode { NONE, NORMAL, INCOGNITO };
+// Used to update the current BVC mode if a new tab is added while the tab
+// switcher view is being dimissed.  This is different than ApplicationMode in
+// that it can be set to |NONE| when not in use.
+enum class TabSwitcherDismissalMode { NONE, NORMAL, INCOGNITO };
+
+// The style of tab switcher, with a utility function to fetch it.
+enum class TabSwitcherMode { STACK, TABLET_SWITCHER, GRID };
+
+TabSwitcherMode SwitcherMode() {
+  if (IsUIRefreshPhase1Enabled()) {
+    return TabSwitcherMode::GRID;
+  } else if (IsIPadIdiom()) {
+    return TabSwitcherMode::TABLET_SWITCHER;
+  } else {
+    return TabSwitcherMode::STACK;
+  }
+}
 
 // The delay, in seconds, for cleaning external files.
 const int kExternalFilesCleanupDelaySeconds = 60;
@@ -315,12 +328,12 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   // TabSwitcher object -- the stack view, tablet switcher, etc.
   id<TabSwitcher> _tabSwitcher;
 
-  // YES while animating the dismissal of stack view.
-  BOOL _dismissingStackView;
+  // YES while animating the dismissal of tab switcher.
+  BOOL _dismissingTabSwitcher;
 
   // If not NONE, the current BVC should be switched to this BVC on completion
-  // of stack view dismissal.
-  StackViewDismissalMode _modeToDisplayOnStackViewDismissal;
+  // of tab switcher dismissal.
+  TabSwitcherDismissalMode _modeToDisplayOnTabSwitcherDismissal;
 
   // If YES, the tab switcher is currently active.
   BOOL _tabSwitcherIsActive;
@@ -431,7 +444,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 // to the current UI, based on the |dismissModals| flag:
 // - If a modal dialog is showing and |dismissModals| is NO, the selected tab of
 // the main tab model will change in the background, but the view won't change.
-// - Otherwise, any modal view will be dismissed, the stack view will animate
+// - Otherwise, any modal view will be dismissed, the tab switcher will animate
 // out if it is showing, the target BVC will become active, and the new tab will
 // be shown.
 // If the current tab in |targetMode| is a NTP, it can be reused to open URL.
@@ -450,12 +463,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
          tabOpenedCompletion:(ProceduralBlock)tabOpenedCompletion;
 // Returns whether the restore infobar should be displayed.
 - (bool)mustShowRestoreInfobar;
-// Begins the process of dismissing the stack view with the given current model,
-// switching which BVC is suspended if necessary, but not updating the UI.
-- (void)beginDismissingStackViewWithCurrentModel:(TabModel*)tabModel;
-// Completes the process of dismissing the stack view, removing it from the
+// Begins the process of dismissing the tab switcher with the given current
+// model, switching which BVC is suspended if necessary, but not updating the
+// UI.
+- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel;
+// Completes the process of dismissing the tab switcher, removing it from the
 // screen and showing the appropriate BVC.
-- (void)finishDismissingStackView;
+- (void)finishDismissingTabSwitcher;
 // Sets up self.currentBVC for testing by closing existing tabs.
 - (void)setUpCurrentBVCForTesting;
 // Opens an url from a link in the settings UI.
@@ -843,14 +857,16 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)deleteIncognitoBrowserState {
   BOOL otrBVCIsCurrent = (self.currentBVC == self.otrBVC);
+  TabSwitcherMode mode = SwitcherMode();
 
-  // If the current BVC is the otr BVC, then the user should be in the card
-  // stack, this is not true for the iPad tab switcher.
-  DCHECK(IsIPadIdiom() || (!otrBVCIsCurrent || _tabSwitcherIsActive));
+  // If the stack view is in use,and the current BVC is the otr BVC, then the
+  // user should be in the tab switcher (the stack view).
+  DCHECK(mode != TabSwitcherMode::STACK ||
+         (!otrBVCIsCurrent || _tabSwitcherIsActive));
 
-  // We always clear the otr tab model on iPad.
+  // Always clear the OTR tab model for the tablet switcher.
   // Notify the _tabSwitcher that its otrBVC will be destroyed.
-  if (IsIPadIdiom() || _tabSwitcherIsActive)
+  if (mode == TabSwitcherMode::TABLET_SWITCHER || _tabSwitcherIsActive)
     [_tabSwitcher setOtrTabModel:nil];
 
   [_browserViewWrangler deleteIncognitoTabModelState];
@@ -859,9 +875,9 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     [self activateBVCAndMakeCurrentBVCPrimary];
   }
 
-  // Always set the new otr tab model on iPad with tab switcher enabled.
+  // Always set the new otr tab model for the tablet switcher.
   // Notify the _tabSwitcher with the new otrBVC.
-  if (IsIPadIdiom() || _tabSwitcherIsActive)
+  if (mode == TabSwitcherMode::TABLET_SWITCHER || _tabSwitcherIsActive)
     [_tabSwitcher setOtrTabModel:self.otrTabModel];
 }
 
@@ -896,7 +912,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
   if (!_mainCoordinator) {
     // Lazily create the main coordinator.
-    if (IsUIRefreshPhase1Enabled()) {
+    if (SwitcherMode() == TabSwitcherMode::GRID) {
       TabGridCoordinator* tabGridCoordinator =
           [[TabGridCoordinator alloc] initWithWindow:self.window
                           applicationCommandEndpoint:self];
@@ -1736,7 +1752,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   DCHECK(_browserViewWrangler);
   [_browserViewWrangler setCurrentBVC:bvc storageSwitcher:self];
 
-  if (!_dismissingStackView)
+  if (!_dismissingTabSwitcher)
     [self displayCurrentBVC];
 
   // Tell the BVC that was made current that it can use the web.
@@ -1768,7 +1784,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     return;
   }
 
-  if (IsIPadIdiom()) {
+  if (SwitcherMode() == TabSwitcherMode::TABLET_SWITCHER) {
     [self showTabSwitcher];
   } else {
     self.currentBVC = self.mainBVC;
@@ -1824,9 +1840,6 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   return self.currentBVC.browserState;
 }
 
-// NOTE: If you change this function, it may have an effect on the performance
-// of opening the stack view. Please make sure you also change the corresponding
-// code in StackViewControllerPerfTest::MainControllerShowTabSwitcher().
 - (void)showTabSwitcher {
   BrowserViewController* currentBVC = self.currentBVC;
   Tab* currentTab = [[currentBVC tabModel] currentTab];
@@ -1853,25 +1866,31 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   if (!_tabSwitcher) {
     _tabSwitcher = [self newTabSwitcher];
   } else {
-    // The StackViewController is kept in memory to avoid the performance hit of
-    // loading from the nib on next showing, but clears out its card models to
-    // release memory.  The tab models are required to rebuild the card stacks.
+    // Tab switcher implementations may need to rebuild state before being
+    // displayed.
     [_tabSwitcher restoreInternalStateWithMainTabModel:self.mainTabModel
                                            otrTabModel:self.otrTabModel
                                         activeTabModel:self.currentTabModel];
   }
   _tabSwitcherIsActive = YES;
   [_tabSwitcher setDelegate:self];
-  if (IsIPadIdiom()) {
-    TabSwitcherTransitionContext* transitionContext =
-        [TabSwitcherTransitionContext
-            tabSwitcherTransitionContextWithCurrent:currentBVC
-                                            mainBVC:self.mainBVC
-                                             otrBVC:self.otrBVC];
-    [_tabSwitcher setTransitionContext:transitionContext];
-  } else {
-    // User interaction is disabled when the stack controller is dismissed.
-    [[_tabSwitcher viewController].view setUserInteractionEnabled:YES];
+  switch (SwitcherMode()) {
+    case TabSwitcherMode::TABLET_SWITCHER: {
+      TabSwitcherTransitionContext* transitionContext =
+          [TabSwitcherTransitionContext
+              tabSwitcherTransitionContextWithCurrent:currentBVC
+                                              mainBVC:self.mainBVC
+                                               otrBVC:self.otrBVC];
+      [_tabSwitcher setTransitionContext:transitionContext];
+      break;
+    }
+    case TabSwitcherMode::STACK:
+      // User interaction is disabled when the stack controller is dismissed.
+      [[_tabSwitcher viewController].view setUserInteractionEnabled:YES];
+      break;
+    case TabSwitcherMode::GRID:
+      // Nothing to do in this case
+      break;
   }
 
   [self.viewControllerSwapper showTabSwitcher:_tabSwitcher completion:nil];
@@ -1922,14 +1941,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)dismissTabSwitcherWithoutAnimationInModel:(TabModel*)tabModel {
   DCHECK(_tabSwitcherIsActive);
-  DCHECK(!_dismissingStackView);
+  DCHECK(!_dismissingTabSwitcher);
   if ([_tabSwitcher respondsToSelector:@selector
                     (tabSwitcherDismissWithModel:animated:)]) {
     [self dismissModalDialogsWithCompletion:nil dismissOmnibox:YES];
     [_tabSwitcher tabSwitcherDismissWithModel:tabModel animated:NO];
   } else {
-    [self beginDismissingStackViewWithCurrentModel:tabModel];
-    [self finishDismissingStackView];
+    [self beginDismissingTabSwitcherWithCurrentModel:tabModel];
+    [self finishDismissingTabSwitcher];
   }
 }
 
@@ -1937,11 +1956,11 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 - (void)tabSwitcher:(id<TabSwitcher>)tabSwitcher
     shouldFinishWithActiveModel:(TabModel*)tabModel {
-  [self beginDismissingStackViewWithCurrentModel:tabModel];
+  [self beginDismissingTabSwitcherWithCurrentModel:tabModel];
 }
 
 - (void)tabSwitcherDismissTransitionDidEnd:(id<TabSwitcher>)tabSwitcher {
-  [self finishDismissingStackView];
+  [self finishDismissingTabSwitcher];
 }
 
 - (id<ToolbarOwner>)tabSwitcherTransitionToolbarOwner {
@@ -1953,13 +1972,13 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #pragma mark - TabSwitcherDelegate helper methods
 
-- (void)beginDismissingStackViewWithCurrentModel:(TabModel*)tabModel {
+- (void)beginDismissingTabSwitcherWithCurrentModel:(TabModel*)tabModel {
   DCHECK(tabModel == self.mainTabModel || tabModel == self.otrTabModel);
 
-  _dismissingStackView = YES;
+  _dismissingTabSwitcher = YES;
   // Prevent wayward touches from wreaking havoc while the stack view is being
-  // dismissed. Don't do this when the tab grid is used.
-  if (!IsUIRefreshPhase1Enabled()) {
+  // dismissed.
+  if (SwitcherMode() == TabSwitcherMode::STACK) {
     [[_tabSwitcher viewController].view setUserInteractionEnabled:NO];
   }
 
@@ -1968,14 +1987,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   self.currentBVC = targetBVC;
 
   // The call to set currentBVC above does not actually display the BVC, because
-  // _dismissingStackView is YES.  When the presentation experiment is enabled,
-  // force the BVC transition to start.
+  // _dismissingTabSwitcher is YES.  When the presentation experiment is
+  // enabled, force the BVC transition to start.
   if (TabSwitcherPresentsBVCEnabled()) {
     [self displayCurrentBVC];
   }
 }
 
-- (void)finishDismissingStackView {
+- (void)finishDismissingTabSwitcher {
   // The tab switcher presentation experiment modifies the app's VC hierarchy.
   // As a result, the "active" VC when the animation completes differs based on
   // the experiment state.
@@ -1993,18 +2012,17 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
               [_tabSwitcher viewController]);
   }
 
-  if (_modeToDisplayOnStackViewDismissal == StackViewDismissalMode::NORMAL) {
+  if (_modeToDisplayOnTabSwitcherDismissal ==
+      TabSwitcherDismissalMode::NORMAL) {
     self.currentBVC = self.mainBVC;
-  } else if (_modeToDisplayOnStackViewDismissal ==
-             StackViewDismissalMode::INCOGNITO) {
+  } else if (_modeToDisplayOnTabSwitcherDismissal ==
+             TabSwitcherDismissalMode::INCOGNITO) {
     self.currentBVC = self.otrBVC;
   }
 
-  _modeToDisplayOnStackViewDismissal = StackViewDismissalMode::NONE;
+  _modeToDisplayOnTabSwitcherDismissal = TabSwitcherDismissalMode::NONE;
 
-  // Displaying the current BVC dismisses the stack view.  When the tabswitcher
-  // presentation experiment is enabled, this call does nothing because the BVC
-  // is already presented.
+  // Displaying the current BVC dismisses the tab switcher.
   [self displayCurrentBVC];
 
   ProceduralBlock action = [self completionBlockForTriggeringAction:
@@ -2020,7 +2038,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   }
 
   _tabSwitcherIsActive = NO;
-  _dismissingStackView = NO;
+  _dismissingTabSwitcher = NO;
 }
 
 #pragma mark - BrowsingDataCommands
@@ -2230,14 +2248,14 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
   Tab* tab = nil;
   if (_tabSwitcherIsActive) {
-    // If the stack view is already being dismissed, simply add the tab and
-    // note that when the stack view finishes dismissing, the current BVC should
-    // be switched to be the main BVC if necessary.
-    if (_dismissingStackView) {
-      _modeToDisplayOnStackViewDismissal =
+    // If the tab switcher is already being dismissed, simply add the tab and
+    // note that when the tab switcher finishes dismissing, the current BVC
+    // should be switched to be the main BVC if necessary.
+    if (_dismissingTabSwitcher) {
+      _modeToDisplayOnTabSwitcherDismissal =
           targetMode == ApplicationMode::NORMAL
-              ? StackViewDismissalMode::NORMAL
-              : StackViewDismissalMode::INCOGNITO;
+              ? TabSwitcherDismissalMode::NORMAL
+              : TabSwitcherDismissalMode::INCOGNITO;
       tab = [targetBVC addSelectedTabWithURL:url
                                      atIndex:tabIndex
                                   transition:transition
@@ -2477,8 +2495,8 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
   UIView* lastView = self.viewControllerSwapper.activeViewController.view;
   DCHECK(lastView);
   CGFloat scale = 0.0;
-  // For screenshots of the Stack View we need to use a scale of 1.0 to avoid
-  // spending too much time since the Stack View can have lots of subviews.
+  // For screenshots of the tab switcher we need to use a scale of 1.0 to avoid
+  // spending too much time since the tab switcher can have lots of subviews.
   if (_tabSwitcherIsActive)
     scale = 1.0;
   return CaptureView(lastView, scale);
@@ -2507,40 +2525,35 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 
 #pragma mark - Experimental flag
 
-// Creates and returns a tab switcher object according to the current
-// experimental flags and device idioms:
-// - If the UI Refresh phase 1 flag is enabled, the TabGridController's
-//   TabSwitcher is returned.
-// - If the current device is an iPad, a new TabSwitcherController is returned.
-// - Otherwise, a new StackViewController is returned.
+// Creates and returns a tab switcher object according to the tab switcher stye.
 - (id<TabSwitcher>)newTabSwitcher {
-  if (IsUIRefreshPhase1Enabled()) {
-    DCHECK(_mainCoordinator)
-        << " Main coordinator not created when tab switcher needed.";
-    TabGridCoordinator* tabGridCoordinator =
-        base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
-    // Call -restoreInternalState so that the grid shows the correct panel.
-    [tabGridCoordinator.tabSwitcher
-        restoreInternalStateWithMainTabModel:self.mainTabModel
-                                 otrTabModel:self.otrTabModel
-                              activeTabModel:self.currentTabModel];
-    return tabGridCoordinator.tabSwitcher;
-  } else {
-    if (IsIPadIdiom()) {
+  switch (SwitcherMode()) {
+    case TabSwitcherMode::GRID: {
+      DCHECK(_mainCoordinator)
+          << " Main coordinator not created when tab switcher needed.";
+      TabGridCoordinator* tabGridCoordinator =
+          base::mac::ObjCCastStrict<TabGridCoordinator>(self.mainCoordinator);
+      // Call -restoreInternalState so that the grid shows the correct panel.
+      [tabGridCoordinator.tabSwitcher
+          restoreInternalStateWithMainTabModel:self.mainTabModel
+                                   otrTabModel:self.otrTabModel
+                                activeTabModel:self.currentTabModel];
+      return tabGridCoordinator.tabSwitcher;
+    }
+    case TabSwitcherMode::TABLET_SWITCHER:
       return [[TabSwitcherController alloc]
                 initWithBrowserState:_mainBrowserState
                         mainTabModel:self.mainTabModel
                          otrTabModel:self.otrTabModel
                       activeTabModel:self.currentTabModel
           applicationCommandEndpoint:self];
-    } else {
+    case TabSwitcherMode::STACK:
       return
           [[StackViewController alloc] initWithMainTabModel:self.mainTabModel
                                                 otrTabModel:self.otrTabModel
                                              activeTabModel:self.currentTabModel
                                  applicationCommandEndpoint:self];
     }
-  }
 }
 
 @end
@@ -2573,7 +2586,7 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
 }
 
 - (BOOL)dismissingTabSwitcher {
-  return _dismissingStackView;
+  return _dismissingTabSwitcher;
 }
 
 - (void)setStartupParametersWithURL:(const GURL&)launchURL {
