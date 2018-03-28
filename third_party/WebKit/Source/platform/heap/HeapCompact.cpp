@@ -315,6 +315,10 @@ bool HeapCompact::ShouldCompact(ThreadHeap* heap,
   if (stack_state == BlinkGC::kHeapPointersOnStack)
     return false;
 
+  // TODO(keishi): Should be enable after fixing the crashes.
+  if (marking_type == BlinkGC::kIncrementalMarking)
+    return false;
+
   // Compaction enable rules:
   //  - It's been a while since the last time.
   //  - "Considerable" amount of heap memory is bound up in freelist

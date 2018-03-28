@@ -83,6 +83,10 @@ uint8_t ThreadState::main_thread_state_storage_[sizeof(ThreadState)];
 
 const size_t kDefaultAllocatedObjectSizeThreshold = 100 * 1024;
 
+// Duration of one incremental marking step. Should be short enough that it
+// doesn't cause jank even though it is scheduled as a normal task.
+const double kIncrementalMarkingStepDurationInSeconds = 0.001;
+
 namespace {
 
 const char* GcReasonString(BlinkGC::GCReason reason) {
@@ -776,6 +780,7 @@ void ThreadState::SetGCState(GCState gc_state) {
       DCHECK(CheckThread());
       VERIFY_STATE_TRANSITION(
           gc_state_ == kNoGCScheduled || gc_state_ == kIdleGCScheduled ||
+          gc_state_ == kIncrementalMarkingStartScheduled ||
           gc_state_ == kPreciseGCScheduled || gc_state_ == kFullGCScheduled ||
           gc_state_ == kPageNavigationGCScheduled);
       CompleteSweep();
@@ -1227,24 +1232,51 @@ void ThreadState::InvokePreFinalizers() {
 void ThreadState::IncrementalMarkingStart() {
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Start";
+  CompleteSweep();
   AtomicPauseScope atomic_pause_scope(this);
+  RecursiveMutexLocker persistent_lock(
+      ProcessHeap::CrossThreadPersistentMutex());
+  MarkPhasePrologue(BlinkGC::kNoHeapPointersOnStack,
+                    BlinkGC::kIncrementalMarking, BlinkGC::kIdleGC);
+  MarkPhaseVisitRoots();
   Heap().EnableIncrementalMarkingBarrier();
   ScheduleIncrementalMarkingStep();
+  DCHECK(IsMarkingInProgress());
 }
 
 void ThreadState::IncrementalMarkingStep() {
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Step";
   AtomicPauseScope atomic_pause_scope(this);
-  ScheduleIncrementalMarkingFinalize();
+  DCHECK(IsMarkingInProgress());
+  RecursiveMutexLocker persistent_lock(
+      ProcessHeap::CrossThreadPersistentMutex());
+  bool complete = MarkPhaseAdvanceMarking(
+      CurrentTimeTicksInSeconds() + kIncrementalMarkingStepDurationInSeconds);
+  if (complete)
+    ScheduleIncrementalMarkingFinalize();
+  else
+    ScheduleIncrementalMarkingStep();
+  DCHECK(IsMarkingInProgress());
 }
 
 void ThreadState::IncrementalMarkingFinalize() {
   VLOG(2) << "[state:" << this << "] "
           << "IncrementalMarking: Finalize";
-  AtomicPauseScope atomic_pause_scope(this);
-  Heap().DisableIncrementalMarkingBarrier();
   SetGCState(kNoGCScheduled);
+  AtomicPauseScope atomic_pause_scope(this);
+  DCHECK(IsMarkingInProgress());
+  RecursiveMutexLocker persistent_lock(
+      ProcessHeap::CrossThreadPersistentMutex());
+  MarkPhaseVisitRoots();
+  bool complete =
+      MarkPhaseAdvanceMarking(std::numeric_limits<double>::infinity());
+  CHECK(complete);
+  Heap().DisableIncrementalMarkingBarrier();
+  MarkPhaseEpilogue(current_gc_data_.marking_type);
+  PreSweep(current_gc_data_.marking_type, BlinkGC::kLazySweeping);
+  DCHECK(IsSweepingInProgress());
+  DCHECK_EQ(GcState(), kNoGCScheduled);
 }
 
 void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
@@ -1260,6 +1292,13 @@ void ThreadState::CollectGarbage(BlinkGC::StackState stack_state,
 
   double start_total_collect_garbage_time =
       WTF::CurrentTimeTicksInMilliseconds();
+
+  if (IsMarkingInProgress()) {
+    // Set stack state in case we are starting a Conservative GC while
+    // incremental marking is in progress.
+    current_gc_data_.stack_state = stack_state;
+    IncrementalMarkingFinalize();
+  }
 
   CompleteSweep();
 
@@ -1369,9 +1408,6 @@ void ThreadState::MarkPhaseVisitRoots() {
   // StackFrameDepth should be disabled so we don't trace most of the object
   // graph in one incremental marking step.
   DCHECK(!Heap().GetStackFrameDepth().IsEnabled());
-  // Incremental marking is not supported for conservative GC.
-  if (current_gc_data_.stack_state == BlinkGC::kHeapPointersOnStack)
-    DCHECK_EQ(current_gc_data_.marking_type, BlinkGC::kAtomicMarking);
 
   // 1. Trace persistent roots.
   Heap().VisitPersistentRoots(current_gc_data_.visitor.get());
@@ -1410,6 +1446,8 @@ void ThreadState::MarkPhaseEpilogue(BlinkGC::MarkingType marking_type) {
   Heap().PostMarkingProcessing(visitor);
   Heap().WeakProcessing(visitor);
   Heap().DecommitCallbackStacks();
+
+  current_gc_data_.visitor.reset();
 
 #if BUILDFLAG(BLINK_HEAP_VERIFICATION)
   VerifyMarking(marking_type);
