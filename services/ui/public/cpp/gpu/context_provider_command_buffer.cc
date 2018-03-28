@@ -325,29 +325,32 @@ gpu::ContextResult ContextProviderCommandBuffer::BindToCurrentThread() {
       // The GLES2Implementation exposes the OpenGLES2 API, as well as the
       // gpu::ContextSupport interface.
       constexpr bool support_client_side_arrays = false;
+
+      std::unique_ptr<gpu::gles2::GLES2Implementation> gles2_impl;
       if (support_grcontext_) {
         // GLES2ImplementationWithGrContextSupport adds a bit of overhead, so
         // we only use it if grcontext_support was requested.
-        gles2_impl_ = std::make_unique<
+        gles2_impl = std::make_unique<
             skia_bindings::GLES2ImplementationWithGrContextSupport>(
             gles2_helper.get(), share_group, transfer_buffer_.get(),
             attributes_.bind_generates_resource,
             attributes_.lose_context_when_out_of_memory,
             support_client_side_arrays, command_buffer_.get());
       } else {
-        gles2_impl_ = std::make_unique<gpu::gles2::GLES2Implementation>(
+        gles2_impl = std::make_unique<gpu::gles2::GLES2Implementation>(
             gles2_helper.get(), share_group, transfer_buffer_.get(),
             attributes_.bind_generates_resource,
             attributes_.lose_context_when_out_of_memory,
             support_client_side_arrays, command_buffer_.get());
       }
-      bind_result_ = gles2_impl_->Initialize(memory_limits_);
+      bind_result_ = gles2_impl->Initialize(memory_limits_);
       if (bind_result_ != gpu::ContextResult::kSuccess) {
         DLOG(ERROR) << "Failed to initialize GLES2Implementation.";
         return bind_result_;
       }
 
-      impl_ = gles2_impl_.get();
+      impl_ = gles2_impl.get();
+      gles2_impl_ = std::move(gles2_impl);
       helper_ = std::move(gles2_helper);
     }
 
