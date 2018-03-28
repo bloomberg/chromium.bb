@@ -120,7 +120,7 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Called by a node when text or a text equivalent (e.g. alt) attribute is
   // changed.
   void TextChanged(LayoutObject*) override;
-  void TextChanged(AXObject*, Node* node_for_relation_update = nullptr);
+  void TextChanged(AXObject*, Node* optional_node = nullptr);
   // Called when a node has just been attached, so we can make sure we have the
   // right subclass of AXObject.
   void UpdateCacheAfterNodeIsAttached(Node*) override;
@@ -296,6 +296,10 @@ class MODULES_EXPORT AXObjectCacheImpl
   // Called when we get an updated AOM event listener permission value from
   // the browser.
   void OnPermissionStatusChange(mojom::PermissionStatus);
+
+  // When a <tr> or <td> is inserted or removed, the containing table may have
+  // gained or lost rows or columns.
+  void ContainingTableRowsOrColsMaybeChanged(Node*);
 
   // Must be called an entire subtree of accessible objects are no longer valid.
   void InvalidateTableSubtree(AXObject* subtree);
