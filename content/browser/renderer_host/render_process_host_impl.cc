@@ -1317,6 +1317,10 @@ RenderProcessHost* RenderProcessHostImpl::CreateRenderProcessHost(
 }
 
 // static
+const unsigned int RenderProcessHostImpl::kMaxFrameDepthForPriority =
+    std::numeric_limits<unsigned int>::max();
+
+// static
 RenderProcessHost* RenderProcessHostImpl::CreateOrUseSpareRenderProcessHost(
     BrowserContext* browser_context,
     StoragePartitionImpl* storage_partition_impl,
@@ -1352,7 +1356,7 @@ RenderProcessHostImpl::RenderProcessHostImpl(
       route_provider_binding_(this),
       visible_clients_(0),
       priority_({
-        blink::kLaunchingProcessIsBackgrounded,
+        blink::kLaunchingProcessIsBackgrounded, frame_depth_,
             blink::kLaunchingProcessIsBoostedForPendingView,
 #if defined(OS_ANDROID)
             ChildProcessImportance::NORMAL,
@@ -2375,6 +2379,10 @@ void RenderProcessHostImpl::UpdateClientPriority(PriorityClient* client) {
 
 int RenderProcessHostImpl::VisibleClientCount() const {
   return visible_clients_;
+}
+
+unsigned int RenderProcessHostImpl::GetFrameDepthForTesting() const {
+  return frame_depth_;
 }
 
 #if defined(OS_ANDROID)
@@ -3884,14 +3892,29 @@ void RenderProcessHostImpl::SuddenTerminationChanged(bool enabled) {
 
 void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
   int32_t new_visible_widgets_count = 0;
+  unsigned int new_frame_depth = kMaxFrameDepthForPriority;
 #if defined(OS_ANDROID)
   ChildProcessImportance new_effective_importance =
       ChildProcessImportance::NORMAL;
 #endif
   for (auto* client : priority_clients_) {
     Priority priority = client->GetPriority();
-    if (!priority.is_hidden)
+
+    // Compute the lowest depth of widgets with highest visibility priority.
+    // See comment on |frame_depth_| for more details.
+    if (priority.is_hidden) {
+      if (!new_visible_widgets_count) {
+        new_frame_depth = std::min(new_frame_depth, priority.frame_depth);
+      }
+    } else {
+      if (new_visible_widgets_count) {
+        new_frame_depth = std::min(new_frame_depth, priority.frame_depth);
+      } else {
+        new_frame_depth = priority.frame_depth;
+      }
       new_visible_widgets_count++;
+    }
+
 #if defined(OS_ANDROID)
     new_effective_importance =
         std::max(new_effective_importance, priority.importance);
@@ -3900,6 +3923,7 @@ void RenderProcessHostImpl::UpdateProcessPriorityInputs() {
 
   bool inputs_changed = new_visible_widgets_count != visible_clients_;
   visible_clients_ = new_visible_widgets_count;
+  frame_depth_ = new_frame_depth;
 #if defined(OS_ANDROID)
   inputs_changed =
       inputs_changed || new_effective_importance != effective_importance_;
@@ -3925,6 +3949,7 @@ void RenderProcessHostImpl::UpdateProcessPriority() {
     visible_clients_ == 0 && media_stream_count_ == 0 &&
         !base::CommandLine::ForCurrentProcess()->HasSwitch(
             switches::kDisableRendererBackgrounding),
+    frame_depth_,
     // boost_for_pending_views
     !!pending_views_,
 #if defined(OS_ANDROID)

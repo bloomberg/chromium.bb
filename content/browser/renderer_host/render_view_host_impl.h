@@ -151,7 +151,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
   // pending swap out or swapped out), according to its main frame
   // RenderFrameHost.
   bool is_active() const { return is_active_; }
-  void set_is_active(bool is_active) { is_active_ = is_active; }
+  void SetIsActive(bool is_active);
 
   // Tracks whether this RenderViewHost is swapped out, according to its main
   // frame RenderFrameHost.
@@ -241,6 +241,7 @@ class CONTENT_EXPORT RenderViewHostImpl : public RenderViewHost,
       const blink::WebMouseEvent& mouse_event) override;
   bool MayRenderWidgetForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) override;
+  bool ShouldContributePriorityToProcess() override;
 
   // IPC message handlers.
   void OnShowView(int route_id,

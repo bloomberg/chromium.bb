@@ -229,6 +229,9 @@ RenderViewHostImpl::RenderViewHostImpl(
   // make their way to the new renderer once its restarted.
   GetProcess()->EnableSendQueue();
 
+  if (!is_active_)
+    GetWidget()->UpdatePriority();
+
   if (ResourceDispatcherHostImpl::Get()) {
     BrowserThread::PostTask(
         BrowserThread::IO, FROM_HERE,
@@ -359,6 +362,13 @@ bool RenderViewHostImpl::CreateRenderView(
   PostRenderViewReady();
 
   return true;
+}
+
+void RenderViewHostImpl::SetIsActive(bool is_active) {
+  if (is_active_ == is_active)
+    return;
+  is_active_ = is_active;
+  GetWidget()->UpdatePriority();
 }
 
 bool RenderViewHostImpl::IsRenderViewLive() const {
@@ -906,6 +916,10 @@ bool RenderViewHostImpl::MayRenderWidgetForwardKeyboardEvent(
     return false;
   }
   return true;
+}
+
+bool RenderViewHostImpl::ShouldContributePriorityToProcess() {
+  return is_active_;
 }
 
 WebPreferences RenderViewHostImpl::GetWebkitPreferences() {

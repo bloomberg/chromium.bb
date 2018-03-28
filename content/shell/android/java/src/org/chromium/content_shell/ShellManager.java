@@ -120,8 +120,6 @@ public class ShellManager extends FrameLayout {
     private void removeShell(Shell shellView) {
         if (shellView == mActiveShell) mActiveShell = null;
         if (shellView.getParent() == null) return;
-        WebContents webContents = shellView.getWebContents();
-        if (webContents != null) webContents.onHide();
         shellView.setContentViewRenderView(null);
         removeView(shellView);
     }

@@ -420,7 +420,7 @@ void RenderFrameHostManager::DiscardUnusedFrame(
   // deleted below.  See https://crbug.com/627400.
   if (frame_tree_node_->IsMainFrame()) {
     rvh->set_main_frame_routing_id(MSG_ROUTING_NONE);
-    rvh->set_is_active(false);
+    rvh->SetIsActive(false);
     rvh->set_is_swapped_out(true);
   }
 
@@ -2169,7 +2169,7 @@ void RenderFrameHostManager::CommitPending() {
     if (!rvh->is_active())
       rvh->PostRenderViewReady();
 
-    rvh->set_is_active(true);
+    rvh->SetIsActive(true);
     rvh->set_is_swapped_out(false);
     old_render_frame_host->render_view_host()->set_main_frame_routing_id(
         MSG_ROUTING_NONE);

@@ -53,6 +53,10 @@ class CONTENT_EXPORT RenderWidgetHostOwnerDelegate {
   virtual bool MayRenderWidgetForwardKeyboardEvent(
       const NativeWebKeyboardEvent& key_event) = 0;
 
+  // Allow OwnerDelegate to control whether its RenderWidgetHost contributes
+  // priority to the RenderProcessHost.
+  virtual bool ShouldContributePriorityToProcess() = 0;
+
  protected:
   virtual ~RenderWidgetHostOwnerDelegate() {}
 };

@@ -55,6 +55,7 @@ static_assert(static_cast<int>(LAUNCH_RESULT_START) >
 
 struct ChildProcessLauncherPriority {
   bool background;
+  unsigned int frame_depth;
   bool boost_for_pending_views;
 #if defined(OS_ANDROID)
   ChildProcessImportance importance;
