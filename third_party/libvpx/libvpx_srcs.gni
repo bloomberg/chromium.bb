@@ -889,6 +889,7 @@ libvpx_srcs_x86_64_assembly = [
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_8t_ssse3.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_bilinear_sse2.asm",
   "//third_party/libvpx/source/libvpx/vpx_dsp/x86/vpx_subpixel_bilinear_ssse3.asm",
+  "//third_party/libvpx/source/libvpx/vpx_ports/emms_mmx.asm",
   "//third_party/libvpx/source/libvpx/vpx_ports/float_control_word.asm",
 ]
 libvpx_srcs_x86_64_mmx =
