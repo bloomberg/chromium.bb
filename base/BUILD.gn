@@ -3078,3 +3078,18 @@ fuzzer_test("utf_string_conversions_fuzzer") {
     "//base",
   ]
 }
+
+# TODO(dyaroshev): remove regression fuzzer, after we run it for a few days
+#                  and are confident that the transition was ok.
+fuzzer_test("utf_string_conversions_regression_fuzzer") {
+  sources = [
+    "strings/utf_string_conversions_regression_fuzzer.cc",
+    "strings/old_utf_string_conversions.cc",
+    "strings/old_utf_string_conversions.h",
+  ]
+  deps = [
+    ":base",
+  ]
+
+  libfuzzer_options = [ "max_len=32" ]
+}
