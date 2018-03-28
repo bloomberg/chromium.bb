@@ -114,6 +114,8 @@ class OmniboxPopupContentsViewTest
   void SetUpCommandLine(base::CommandLine* command_line) override {
     switch (GetParam()) {
       case ROUNDED:
+        // Set --top-chrome-md=material-touch-optimized to enable the ROUNDED
+        // style (which is the only supported style in that mode).
         command_line->AppendSwitchASCII(
             switches::kTopChromeMD,
             switches::kTopChromeMDMaterialTouchOptimized);
@@ -121,8 +123,12 @@ class OmniboxPopupContentsViewTest
       case NARROW:
         feature_list_.InitAndEnableFeature(
             omnibox::kUIExperimentNarrowDropdown);
-        break;
+        FALLTHROUGH;
       default:
+        // Cater for the touch-optimized UI being enabled by default by always
+        // setting --top-chrome-md=material (the current default).
+        command_line->AppendSwitchASCII(switches::kTopChromeMD,
+                                        switches::kTopChromeMDMaterial);
         break;
     }
   }

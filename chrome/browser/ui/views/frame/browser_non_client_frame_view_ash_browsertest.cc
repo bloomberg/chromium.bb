@@ -119,11 +119,10 @@ class TouchOptimizedUiParamTest : public BaseTest,
   ~TouchOptimizedUiParamTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    if (GetParam()) {
-      command_line->AppendSwitchASCII(
-          switches::kTopChromeMD, switches::kTopChromeMDMaterialTouchOptimized);
-    }
-
+    command_line->AppendSwitchASCII(
+        switches::kTopChromeMD,
+        GetParam() ? switches::kTopChromeMDMaterialTouchOptimized
+                   : switches::kTopChromeMDMaterial);
     BaseTest::SetUpCommandLine(command_line);
   }
 
