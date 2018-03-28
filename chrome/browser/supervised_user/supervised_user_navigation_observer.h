@@ -91,7 +91,7 @@ class SupervisedUserNavigationObserver
   // be called when an interstitial is no longer showing. This should be
   // enforced by the mojo caller.
   void GoBack() override;
-  void RequestPermission() override;
+  void RequestPermission(RequestPermissionCallback callback) override;
   void Feedback() override;
 
   // Owned by SupervisedUserService.

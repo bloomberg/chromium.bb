@@ -215,11 +215,12 @@ void SupervisedUserNavigationObserver::GoBack() {
     interstitial_->CommandReceived("\"back\"");
 }
 
-void SupervisedUserNavigationObserver::RequestPermission() {
+void SupervisedUserNavigationObserver::RequestPermission(
+    RequestPermissionCallback callback) {
   DCHECK(base::FeatureList::IsEnabled(
       features::kSupervisedUserCommittedInterstitials));
   if (interstitial_ && is_showing_interstitial_)
-    interstitial_->CommandReceived("\"request\"");
+    interstitial_->RequestPermission(std::move(callback));
 }
 
 void SupervisedUserNavigationObserver::Feedback() {

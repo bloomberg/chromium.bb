@@ -113,9 +113,11 @@ class SupervisedUserTest : public InProcessBrowserTest,
   }
 
   void SendAccessRequest(WebContents* tab) {
-    // TODO(carlosil): Have this perform a request once bindings for access
-    // requests are implemented for committed interstitials.
-    DCHECK(!AreCommittedInterstitialsEnabled());
+    if (AreCommittedInterstitialsEnabled()) {
+      tab->GetMainFrame()->ExecuteJavaScriptForTests(base::ASCIIToUTF16(
+          "supervisedUserErrorPageController.requestPermission()"));
+      return;
+    }
 
     InterstitialPage* interstitial_page = tab->GetInterstitialPage();
     ASSERT_TRUE(interstitial_page);
@@ -130,8 +132,8 @@ class SupervisedUserTest : public InProcessBrowserTest,
 
   void GoBack(WebContents* tab) {
     if (AreCommittedInterstitialsEnabled()) {
-      // TODO(carlosil): Have this perform a Go Back command once bindings for
-      // access requests are implemented for committed interstitials.
+      tab->GetMainFrame()->ExecuteJavaScriptForTests(
+          base::ASCIIToUTF16("supervisedUserErrorPageController.goBack()"));
       return;
     }
     InterstitialPage* interstitial_page = tab->GetInterstitialPage();
@@ -143,6 +145,13 @@ class SupervisedUserTest : public InProcessBrowserTest,
 
     // Simulate the click on the "back" button
     delegate->CommandReceived("\"back\"");
+  }
+
+  void GoBackAndWaitForNavigation(WebContents* tab) {
+    DCHECK(AreCommittedInterstitialsEnabled());
+    content::TestNavigationObserver observer(tab);
+    GoBack(tab);
+    observer.Wait();
   }
 
  protected:
@@ -244,11 +253,6 @@ INSTANTIATE_TEST_CASE_P(,
 // Navigates to a blocked URL.
 IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest,
                        SendAccessRequestOnBlockedURL) {
-  if (AreCommittedInterstitialsEnabled()) {
-    // TODO(carlosil): Remove this early return once bindings for Go Back and
-    // Access Request are implemented for committed interstitials.
-    return;
-  }
   GURL test_url("http://www.example.com/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -260,7 +264,10 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest,
 
   // TODO(sergiu): Properly check that the access request was sent here.
 
-  GoBack(tab);
+  if (AreCommittedInterstitialsEnabled())
+    GoBackAndWaitForNavigation(tab);
+  else
+    GoBack(tab);
 
   // Make sure that the tab is still there.
   EXPECT_EQ(tab, browser()->tab_strip_model()->GetActiveWebContents());
@@ -271,11 +278,6 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest,
 // Navigates to a blocked URL in a new tab. We expect the tab to be closed
 // automatically on pressing the "back" button on the interstitial.
 IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest, OpenBlockedURLInNewTab) {
-  if (AreCommittedInterstitialsEnabled()) {
-    // TODO(carlosil): Remove this early return once bindings for Go Back are
-    // implemented for committed interstitials.
-    return;
-  }
   TabStripModel* tab_strip = browser()->tab_strip_model();
   WebContents* prev_tab = tab_strip->GetActiveWebContents();
 
@@ -462,11 +464,12 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest, HistoryVisitRecorded) {
 
   ASSERT_TRUE(ShownPageIsInterstitial(browser()));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
-  GoBack(tab);
-  // For now, we don't check that we went back when CI are on, but the history
-  // check can still be done.
-  if (!AreCommittedInterstitialsEnabled())
-    EXPECT_EQ(allowed_url.spec(), tab->GetURL().spec());
+  if (AreCommittedInterstitialsEnabled())
+    GoBackAndWaitForNavigation(tab);
+  else
+    GoBack(tab);
+
+  EXPECT_EQ(allowed_url.spec(), tab->GetURL().spec());
   EXPECT_EQ(SupervisedUserURLFilter::ALLOW,
             filter->GetFilteringBehaviorForURL(allowed_url.GetWithEmptyPath()));
   EXPECT_EQ(SupervisedUserURLFilter::BLOCK,
@@ -480,12 +483,19 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest, HistoryVisitRecorded) {
   history::QueryResults results;
   QueryHistory(history_service, "", options, &results);
 
+  // With committed interstitials enabled, going back to the site is an actual
+  // back navigation (instead of just closing the interstitial), so the most
+  // recent history entry will be the allowed site, with non-committed
+  // interstitials, the most recent one will be the blocked one.
+  int allowed = AreCommittedInterstitialsEnabled() ? 0 : 1;
+  int blocked = AreCommittedInterstitialsEnabled() ? 1 : 0;
+
   // Check that the entries have the correct blocked_visit value.
   ASSERT_EQ(2u, results.size());
-  EXPECT_EQ(blocked_url.spec(), results[0].url().spec());
-  EXPECT_TRUE(results[0].blocked_visit());
-  EXPECT_EQ(allowed_url.spec(), results[1].url().spec());
-  EXPECT_FALSE(results[1].blocked_visit());
+  EXPECT_EQ(blocked_url.spec(), results[blocked].url().spec());
+  EXPECT_TRUE(results[blocked].blocked_visit());
+  EXPECT_EQ(allowed_url.spec(), results[allowed].url().spec());
+  EXPECT_FALSE(results[allowed].blocked_visit());
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserTest, GoBackOnDontProceed) {

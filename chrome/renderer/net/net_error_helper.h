@@ -8,14 +8,18 @@
 #include <memory>
 #include <string>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "build/build_config.h"
 #include "chrome/common/navigation_corrector.mojom.h"
 #include "chrome/common/network_diagnostics.mojom.h"
+#include "chrome/common/supervised_user_commands.mojom.h"
 #include "chrome/renderer/net/net_error_helper_core.h"
 #include "chrome/renderer/net/net_error_page_controller.h"
 #include "chrome/renderer/ssl/ssl_certificate_error_page_controller.h"
+#include "chrome/renderer/supervised_user/supervised_user_error_page_controller.h"
+#include "chrome/renderer/supervised_user/supervised_user_error_page_controller_delegate.h"
 #include "components/error_page/common/net_error_info.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "content/public/renderer/render_frame_observer.h"
@@ -51,6 +55,7 @@ class NetErrorHelper
       public NetErrorHelperCore::Delegate,
       public NetErrorPageController::Delegate,
       public SSLCertificateErrorPageController::Delegate,
+      public SupervisedUserErrorPageControllerDelegate,
       public chrome::mojom::NetworkDiagnosticsClient,
       public chrome::mojom::NavigationCorrector {
  public:
@@ -64,6 +69,11 @@ class NetErrorHelper
   // SSLCertificateErrorPageController::Delegate implementation
   void SendCommand(
       security_interstitials::SecurityInterstitialCommand command) override;
+
+  // SupervisedUserErrorPageControllerDelegate implementation
+  void GoBack() override;
+  void RequestPermission(base::OnceCallback<void(bool)> callback) override;
+  void Feedback() override;
 
   // RenderFrameObserver implementation.
   void DidStartProvisionalLoad(blink::WebDocumentLoader* loader) override;
@@ -161,15 +171,20 @@ class NetErrorHelper
   mojo::AssociatedBindingSet<chrome::mojom::NavigationCorrector>
       navigation_corrector_bindings_;
 
-  // Weak factories for vending weak pointers to a NetErrorPageController and
-  // a SSLCertificateErrorPageController. Weak pointers are invalidated on each
-  // commit, to prevent getting messages from Controllers used for the previous
-  // commit that haven't yet been cleaned up.
+  supervised_user::mojom::SupervisedUserCommandsAssociatedPtr
+      supervised_user_interface_;
+
+  // Weak factories for vending weak pointers to PageControllers. Weak
+  // pointers are invalidated on each commit, to prevent getting messages from
+  // Controllers used for the previous commit that haven't yet been cleaned up.
   base::WeakPtrFactory<NetErrorPageController::Delegate>
       weak_controller_delegate_factory_;
 
   base::WeakPtrFactory<SSLCertificateErrorPageController::Delegate>
       weak_ssl_error_controller_delegate_factory_;
+
+  base::WeakPtrFactory<SupervisedUserErrorPageControllerDelegate>
+      weak_supervised_user_error_controller_delegate_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NetErrorHelper);
 };
