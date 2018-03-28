@@ -6,11 +6,20 @@ package org.chromium.chrome.browser.offlinepages.downloads;
 
 import android.app.Activity;
 import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.net.Uri;
+import android.os.Bundle;
+import android.provider.Browser;
+import android.support.customtabs.CustomTabsIntent;
 
 import org.chromium.base.ApplicationStatus;
+import org.chromium.base.ContextUtils;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.chrome.browser.ChromeTabbedActivity;
+import org.chromium.chrome.browser.IntentHandler;
+import org.chromium.chrome.browser.LaunchIntentDispatcher;
 import org.chromium.chrome.browser.offlinepages.OfflinePageOrigin;
 import org.chromium.chrome.browser.offlinepages.OfflinePageUtils;
 import org.chromium.chrome.browser.profiles.Profile;
@@ -18,6 +27,9 @@ import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.document.AsyncTabCreationParams;
 import org.chromium.chrome.browser.tabmodel.document.TabDelegate;
+import org.chromium.content_public.browser.LoadUrlParams;
+
+import java.util.Map;
 
 /**
  * Serves as an interface between Download Home UI and offline page related items that are to be
@@ -28,7 +40,6 @@ public class OfflinePageDownloadBridge {
     private static OfflinePageDownloadBridge sInstance;
     private static boolean sIsTesting;
     private long mNativeOfflinePageDownloadBridge;
-    private boolean mIsLoaded;
 
     /**
      * @return An {@link OfflinePageDownloadBridge} instance singleton.  If one
@@ -54,27 +65,71 @@ public class OfflinePageDownloadBridge {
         if (mNativeOfflinePageDownloadBridge != 0) {
             nativeDestroy(mNativeOfflinePageDownloadBridge);
             mNativeOfflinePageDownloadBridge = 0;
-            mIsLoaded = false;
         }
     }
 
     /**
-     * 'Opens' the offline page identified by the given URL and offlineId.
-     * This is done by creating a new tab and navigating it to the saved local snapshot.
-     * No automatic redirection is happening based on the connection status.
-     * If the item with specified GUID is not found or can't be opened, nothing happens.
+     * 'Opens' the offline page identified by the given URL and offlineId by navigating to the saved
+     * local snapshot. No automatic redirection is happening based on the connection status. If the
+     * item with specified GUID is not found or can't be opened, nothing happens.
      */
     @CalledByNative
-    private static void openItem(String url, long offlineId) {
+    private static void openItem(final String url, final long offlineId, final boolean openInCct) {
         OfflinePageUtils.getLoadUrlParamsForOpeningOfflineVersion(url, offlineId, (params) -> {
             if (params == null) return;
-            ComponentName componentName = getComponentName();
-            AsyncTabCreationParams asyncParams = componentName == null
-                    ? new AsyncTabCreationParams(params)
-                    : new AsyncTabCreationParams(params, componentName);
-            final TabDelegate tabDelegate = new TabDelegate(false);
-            tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_CHROME_UI, Tab.INVALID_TAB_ID);
+            if (openInCct) {
+                openItemInCct(offlineId, params);
+            } else {
+                openItemInNewTab(offlineId, params);
+            }
         });
+    }
+
+    /**
+     * Opens the offline page identified by the given offlineId and the LoadUrlParams in a new tab.
+     */
+    private static void openItemInNewTab(long offlineId, LoadUrlParams params) {
+        ComponentName componentName = getComponentName();
+        AsyncTabCreationParams asyncParams = componentName == null
+                ? new AsyncTabCreationParams(params)
+                : new AsyncTabCreationParams(params, componentName);
+        final TabDelegate tabDelegate = new TabDelegate(false);
+        tabDelegate.createNewTab(asyncParams, TabLaunchType.FROM_CHROME_UI, Tab.INVALID_TAB_ID);
+    }
+
+    /**
+     * Opens the offline page identified by the given offlineId and the LoadUrlParams in a CCT.
+     */
+    private static void openItemInCct(long offlineId, LoadUrlParams params) {
+        final Context context;
+        if (ApplicationStatus.hasVisibleActivities()) {
+            context = ApplicationStatus.getLastTrackedFocusedActivity();
+        } else {
+            context = ContextUtils.getApplicationContext();
+        }
+
+        CustomTabsIntent.Builder builder = new CustomTabsIntent.Builder();
+        builder.setShowTitle(true);
+        builder.addDefaultShareMenuItem();
+
+        CustomTabsIntent customTabIntent = builder.build();
+        customTabIntent.intent.setData(Uri.parse(params.getUrl()));
+
+        Intent intent = LaunchIntentDispatcher.createCustomTabActivityIntent(
+                context, customTabIntent.intent);
+        intent.setPackage(context.getPackageName());
+        intent.putExtra(Browser.EXTRA_APPLICATION_ID, context.getPackageName());
+
+        IntentHandler.addTrustedIntentExtras(intent);
+        if (!(context instanceof Activity)) intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+        Bundle bundle = new Bundle();
+        for (Map.Entry<String, String> entry : params.getExtraHeaders().entrySet()) {
+            bundle.putString(entry.getKey(), entry.getValue());
+        }
+        intent.putExtra(Browser.EXTRA_HEADERS, bundle);
+
+        context.startActivity(intent);
     }
 
     /**
