@@ -291,6 +291,7 @@ core_idl_files =
                     "inspector/InspectorOverlayHost.idl",
                     "intersection_observer/IntersectionObserver.idl",
                     "intersection_observer/IntersectionObserverEntry.idl",
+                    "layout/custom/LayoutConstraints.idl",
                     "layout/custom/LayoutFragment.idl",
                     "layout/custom/LayoutFragmentRequest.idl",
                     "layout/custom/LayoutChild.idl",
