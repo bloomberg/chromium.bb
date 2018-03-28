@@ -21,4 +21,9 @@ message BackgroundFetchRegistration {
   optional string origin = 3;
 
   optional int64 creation_microseconds_since_unix_epoch = 4;
+
+  // The notification title provided by the developer. Can be updated by
+  // calling `BackgroundFetchUpdateEvent.updateUI`.
+  // https://wicg.github.io/background-fetch/#backgroundfetchupdateevent.
+  optional string title = 5;
 }

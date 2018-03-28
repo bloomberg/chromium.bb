@@ -7,7 +7,6 @@
 #include <utility>
 
 #include "base/strings/string_number_conversions.h"
-#include "content/browser/background_fetch/background_fetch.pb.h"
 #include "content/browser/background_fetch/storage/database_helpers.h"
 #include "content/browser/service_worker/service_worker_context_wrapper.h"
 #include "content/common/service_worker/service_worker_status_code.h"
@@ -69,12 +68,29 @@ void CreateRegistrationTask::DidGetUniqueId(
   }
 }
 
+proto::BackgroundFetchRegistration
+CreateRegistrationTask::CreateRegistrationProto() const {
+  int64_t registration_creation_microseconds_since_unix_epoch =
+      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
+
+  // First serialize per-registration (as opposed to per-request) data.
+  // TODO(crbug.com/757760): Serialize BackgroundFetchOptions as part of this.
+  proto::BackgroundFetchRegistration registration_proto;
+  registration_proto.set_unique_id(registration_->unique_id);
+  registration_proto.set_developer_id(registration_->developer_id);
+  registration_proto.set_origin(registration_id_.origin().Serialize());
+  registration_proto.set_creation_microseconds_since_unix_epoch(
+      registration_creation_microseconds_since_unix_epoch);
+
+  // TODO(crbug.com/826257): Write options to the proto.
+  registration_proto.set_title(options_.title);
+
+  return registration_proto;
+}
+
 void CreateRegistrationTask::StoreRegistration() {
   DCHECK(!registration_);
   DCHECK(!registration_id_.origin().unique());
-
-  int64_t registration_creation_microseconds_since_unix_epoch =
-      (base::Time::Now() - base::Time::UnixEpoch()).InMicroseconds();
 
   registration_ = std::make_unique<BackgroundFetchRegistration>();
   registration_->developer_id = registration_id_.developer_id();
@@ -88,16 +104,10 @@ void CreateRegistrationTask::StoreRegistration() {
   std::vector<std::pair<std::string, std::string>> entries;
   entries.reserve(requests_.size() * 2 + 1);
 
-  // First serialize per-registration (as opposed to per-request) data.
-  // TODO(crbug.com/757760): Serialize BackgroundFetchOptions as part of this.
-  proto::BackgroundFetchRegistration registration_proto;
-  registration_proto.set_unique_id(registration_->unique_id);
-  registration_proto.set_developer_id(registration_->developer_id);
-  registration_proto.set_origin(registration_id_.origin().Serialize());
-  registration_proto.set_creation_microseconds_since_unix_epoch(
-      registration_creation_microseconds_since_unix_epoch);
-  // TODO(delphick): Write options to the proto.
+  const proto::BackgroundFetchRegistration registration_proto =
+      CreateRegistrationProto();
   std::string serialized_registration_proto;
+
   if (!registration_proto.SerializeToString(&serialized_registration_proto)) {
     // TODO(crbug.com/780025): Log failures to UMA.
     std::move(callback_).Run(blink::mojom::BackgroundFetchError::STORAGE_ERROR,
@@ -105,6 +115,7 @@ void CreateRegistrationTask::StoreRegistration() {
     Finished();  // Destroys |this|.
     return;
   }
+
   entries.emplace_back(
       ActiveRegistrationUniqueIdKey(registration_id_.developer_id()),
       registration_id_.unique_id());
@@ -117,8 +128,9 @@ void CreateRegistrationTask::StoreRegistration() {
     entries.emplace_back(RequestKey(registration_id_.unique_id(), i),
                          "TODO: Serialize FetchAPIRequest as value");
     entries.emplace_back(
-        PendingRequestKey(registration_creation_microseconds_since_unix_epoch,
-                          registration_id_.unique_id(), i),
+        PendingRequestKey(
+            registration_proto.creation_microseconds_since_unix_epoch(),
+            registration_id_.unique_id(), i),
         std::string());
   }
 

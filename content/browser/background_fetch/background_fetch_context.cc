@@ -149,6 +149,8 @@ void BackgroundFetchContext::AddRegistrationObserver(
 }
 
 void BackgroundFetchContext::UpdateUI(
+    int64_t service_worker_registration_id,
+    const url::Origin& origin,
     const std::string& unique_id,
     const std::string& title,
     blink::mojom::BackgroundFetchService::UpdateUICallback callback) {
@@ -162,7 +164,7 @@ void BackgroundFetchContext::UpdateUI(
   }
 
   data_manager_.UpdateRegistrationUI(
-      unique_id, title,
+      service_worker_registration_id, origin, unique_id, title,
       base::BindOnce(&BackgroundFetchContext::DidUpdateStoredUI,
                      weak_factory_.GetWeakPtr(), unique_id, title,
                      std::move(callback)));
