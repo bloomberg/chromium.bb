@@ -54,6 +54,7 @@
 #include "core/editing/commands/FormatBlockCommand.h"
 #include "core/editing/commands/IndentOutdentCommand.h"
 #include "core/editing/commands/InsertCommands.h"
+#include "core/editing/commands/MoveCommands.h"
 #include "core/editing/commands/RemoveFormatCommand.h"
 #include "core/editing/commands/TypingCommand.h"
 #include "core/editing/commands/UnlinkCommand.h"
@@ -643,7 +644,7 @@ static EditingTriState StateTextWritingDirection(LocalFrame& frame,
              : EditingTriState::kFalse;
 }
 
-static unsigned VerticalScrollDistance(LocalFrame& frame) {
+unsigned MoveCommands::VerticalScrollDistance(LocalFrame& frame) {
   Element* focused_element = frame.GetDocument()->FocusedElement();
   if (!focused_element)
     return 0;
@@ -1121,78 +1122,78 @@ static bool ExecuteMakeTextWritingDirectionRightToLeft(LocalFrame& frame,
   return true;
 }
 
-static bool ExecuteMoveBackward(LocalFrame& frame,
-                                Event*,
-                                EditorCommandSource,
-                                const String&) {
+bool MoveCommands::ExecuteMoveBackward(LocalFrame& frame,
+                                       Event*,
+                                       EditorCommandSource,
+                                       const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kMove,
                            SelectionModifyDirection::kBackward,
                            TextGranularity::kCharacter, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveBackwardAndModifySelection(LocalFrame& frame,
-                                                  Event*,
-                                                  EditorCommandSource,
-                                                  const String&) {
+bool MoveCommands::ExecuteMoveBackwardAndModifySelection(LocalFrame& frame,
+                                                         Event*,
+                                                         EditorCommandSource,
+                                                         const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kBackward,
                            TextGranularity::kCharacter, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveDown(LocalFrame& frame,
-                            Event*,
-                            EditorCommandSource,
-                            const String&) {
+bool MoveCommands::ExecuteMoveDown(LocalFrame& frame,
+                                   Event*,
+                                   EditorCommandSource,
+                                   const String&) {
   return frame.Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
       TextGranularity::kLine, SetSelectionBy::kUser);
 }
 
-static bool ExecuteMoveDownAndModifySelection(LocalFrame& frame,
-                                              Event*,
-                                              EditorCommandSource,
-                                              const String&) {
+bool MoveCommands::ExecuteMoveDownAndModifySelection(LocalFrame& frame,
+                                                     Event*,
+                                                     EditorCommandSource,
+                                                     const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kForward,
                            TextGranularity::kLine, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveForward(LocalFrame& frame,
-                               Event*,
-                               EditorCommandSource,
-                               const String&) {
+bool MoveCommands::ExecuteMoveForward(LocalFrame& frame,
+                                      Event*,
+                                      EditorCommandSource,
+                                      const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kMove,
                            SelectionModifyDirection::kForward,
                            TextGranularity::kCharacter, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveForwardAndModifySelection(LocalFrame& frame,
-                                                 Event*,
-                                                 EditorCommandSource,
-                                                 const String&) {
+bool MoveCommands::ExecuteMoveForwardAndModifySelection(LocalFrame& frame,
+                                                        Event*,
+                                                        EditorCommandSource,
+                                                        const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kForward,
                            TextGranularity::kCharacter, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveLeft(LocalFrame& frame,
-                            Event*,
-                            EditorCommandSource,
-                            const String&) {
+bool MoveCommands::ExecuteMoveLeft(LocalFrame& frame,
+                                   Event*,
+                                   EditorCommandSource,
+                                   const String&) {
   return frame.Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kLeft,
       TextGranularity::kCharacter, SetSelectionBy::kUser);
 }
 
-static bool ExecuteMoveLeftAndModifySelection(LocalFrame& frame,
-                                              Event*,
-                                              EditorCommandSource,
-                                              const String&) {
+bool MoveCommands::ExecuteMoveLeftAndModifySelection(LocalFrame& frame,
+                                                     Event*,
+                                                     EditorCommandSource,
+                                                     const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kLeft,
                            TextGranularity::kCharacter, SetSelectionBy::kUser);
@@ -1200,7 +1201,7 @@ static bool ExecuteMoveLeftAndModifySelection(LocalFrame& frame,
 }
 
 // Returns true if selection is modified.
-bool ModifySelectionWithPageGranularity(
+bool MoveCommands::ModifySelectionWithPageGranularity(
     LocalFrame& frame,
     SelectionModifyAlteration alter,
     unsigned vertical_distance,
@@ -1231,10 +1232,10 @@ bool ModifySelectionWithPageGranularity(
   return true;
 }
 
-static bool ExecuteMovePageDown(LocalFrame& frame,
-                                Event*,
-                                EditorCommandSource,
-                                const String&) {
+bool MoveCommands::ExecuteMovePageDown(LocalFrame& frame,
+                                       Event*,
+                                       EditorCommandSource,
+                                       const String&) {
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
@@ -1243,10 +1244,10 @@ static bool ExecuteMovePageDown(LocalFrame& frame,
       SelectionModifyVerticalDirection::kDown);
 }
 
-static bool ExecuteMovePageDownAndModifySelection(LocalFrame& frame,
-                                                  Event*,
-                                                  EditorCommandSource,
-                                                  const String&) {
+bool MoveCommands::ExecuteMovePageDownAndModifySelection(LocalFrame& frame,
+                                                         Event*,
+                                                         EditorCommandSource,
+                                                         const String&) {
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
@@ -1255,10 +1256,10 @@ static bool ExecuteMovePageDownAndModifySelection(LocalFrame& frame,
       SelectionModifyVerticalDirection::kDown);
 }
 
-static bool ExecuteMovePageUp(LocalFrame& frame,
-                              Event*,
-                              EditorCommandSource,
-                              const String&) {
+bool MoveCommands::ExecuteMovePageUp(LocalFrame& frame,
+                                     Event*,
+                                     EditorCommandSource,
+                                     const String&) {
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
@@ -1267,10 +1268,10 @@ static bool ExecuteMovePageUp(LocalFrame& frame,
       SelectionModifyVerticalDirection::kUp);
 }
 
-static bool ExecuteMovePageUpAndModifySelection(LocalFrame& frame,
-                                                Event*,
-                                                EditorCommandSource,
-                                                const String&) {
+bool MoveCommands::ExecuteMovePageUpAndModifySelection(LocalFrame& frame,
+                                                       Event*,
+                                                       EditorCommandSource,
+                                                       const String&) {
   unsigned distance = VerticalScrollDistance(frame);
   if (!distance)
     return false;
@@ -1279,36 +1280,36 @@ static bool ExecuteMovePageUpAndModifySelection(LocalFrame& frame,
       SelectionModifyVerticalDirection::kUp);
 }
 
-static bool ExecuteMoveRight(LocalFrame& frame,
-                             Event*,
-                             EditorCommandSource,
-                             const String&) {
+bool MoveCommands::ExecuteMoveRight(LocalFrame& frame,
+                                    Event*,
+                                    EditorCommandSource,
+                                    const String&) {
   return frame.Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kRight,
       TextGranularity::kCharacter, SetSelectionBy::kUser);
 }
 
-static bool ExecuteMoveRightAndModifySelection(LocalFrame& frame,
-                                               Event*,
-                                               EditorCommandSource,
-                                               const String&) {
+bool MoveCommands::ExecuteMoveRightAndModifySelection(LocalFrame& frame,
+                                                      Event*,
+                                                      EditorCommandSource,
+                                                      const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kRight,
                            TextGranularity::kCharacter, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveToBeginningOfDocument(LocalFrame& frame,
-                                             Event*,
-                                             EditorCommandSource,
-                                             const String&) {
+bool MoveCommands::ExecuteMoveToBeginningOfDocument(LocalFrame& frame,
+                                                    Event*,
+                                                    EditorCommandSource,
+                                                    const String&) {
   frame.Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kBackward,
       TextGranularity::kDocumentBoundary, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveToBeginningOfDocumentAndModifySelection(
+bool MoveCommands::ExecuteMoveToBeginningOfDocumentAndModifySelection(
     LocalFrame& frame,
     Event*,
     EditorCommandSource,
@@ -1319,321 +1320,330 @@ static bool ExecuteMoveToBeginningOfDocumentAndModifySelection(
   return true;
 }
 
-static bool ExecuteMoveToBeginningOfLine(LocalFrame& frame,
-                                         Event*,
-                                         EditorCommandSource,
-                                         const String&) {
+bool MoveCommands::ExecuteMoveToBeginningOfLine(LocalFrame& frame,
+                                                Event*,
+                                                EditorCommandSource,
+                                                const String&) {
   frame.Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kBackward,
       TextGranularity::kLineBoundary, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveToBeginningOfLineAndModifySelection(LocalFrame& frame,
-                                                           Event*,
-                                                           EditorCommandSource,
-                                                           const String&) {
-  frame.Selection().Modify(
-      SelectionModifyAlteration::kExtend, SelectionModifyDirection::kBackward,
-      TextGranularity::kLineBoundary, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToBeginningOfParagraph(LocalFrame& frame,
-                                              Event*,
-                                              EditorCommandSource,
-                                              const String&) {
-  frame.Selection().Modify(
-      SelectionModifyAlteration::kMove, SelectionModifyDirection::kBackward,
-      TextGranularity::kParagraphBoundary, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToBeginningOfParagraphAndModifySelection(
+bool MoveCommands::ExecuteMoveToBeginningOfLineAndModifySelection(
     LocalFrame& frame,
     Event*,
     EditorCommandSource,
     const String&) {
   frame.Selection().Modify(
       SelectionModifyAlteration::kExtend, SelectionModifyDirection::kBackward,
-      TextGranularity::kParagraphBoundary, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToBeginningOfSentence(LocalFrame& frame,
-                                             Event*,
-                                             EditorCommandSource,
-                                             const String&) {
-  frame.Selection().Modify(
-      SelectionModifyAlteration::kMove, SelectionModifyDirection::kBackward,
-      TextGranularity::kSentenceBoundary, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToBeginningOfSentenceAndModifySelection(
-    LocalFrame& frame,
-    Event*,
-    EditorCommandSource,
-    const String&) {
-  frame.Selection().Modify(
-      SelectionModifyAlteration::kExtend, SelectionModifyDirection::kBackward,
-      TextGranularity::kSentenceBoundary, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToEndOfDocument(LocalFrame& frame,
-                                       Event*,
-                                       EditorCommandSource,
-                                       const String&) {
-  frame.Selection().Modify(
-      SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
-      TextGranularity::kDocumentBoundary, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToEndOfDocumentAndModifySelection(LocalFrame& frame,
-                                                         Event*,
-                                                         EditorCommandSource,
-                                                         const String&) {
-  frame.Selection().Modify(
-      SelectionModifyAlteration::kExtend, SelectionModifyDirection::kForward,
-      TextGranularity::kDocumentBoundary, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToEndOfSentence(LocalFrame& frame,
-                                       Event*,
-                                       EditorCommandSource,
-                                       const String&) {
-  frame.Selection().Modify(
-      SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
-      TextGranularity::kSentenceBoundary, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToEndOfSentenceAndModifySelection(LocalFrame& frame,
-                                                         Event*,
-                                                         EditorCommandSource,
-                                                         const String&) {
-  frame.Selection().Modify(
-      SelectionModifyAlteration::kExtend, SelectionModifyDirection::kForward,
-      TextGranularity::kSentenceBoundary, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToEndOfLine(LocalFrame& frame,
-                                   Event*,
-                                   EditorCommandSource,
-                                   const String&) {
-  frame.Selection().Modify(
-      SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
       TextGranularity::kLineBoundary, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveToEndOfLineAndModifySelection(LocalFrame& frame,
+bool MoveCommands::ExecuteMoveToBeginningOfParagraph(LocalFrame& frame,
                                                      Event*,
                                                      EditorCommandSource,
                                                      const String&) {
   frame.Selection().Modify(
+      SelectionModifyAlteration::kMove, SelectionModifyDirection::kBackward,
+      TextGranularity::kParagraphBoundary, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToBeginningOfParagraphAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
+  frame.Selection().Modify(
+      SelectionModifyAlteration::kExtend, SelectionModifyDirection::kBackward,
+      TextGranularity::kParagraphBoundary, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToBeginningOfSentence(LocalFrame& frame,
+                                                    Event*,
+                                                    EditorCommandSource,
+                                                    const String&) {
+  frame.Selection().Modify(
+      SelectionModifyAlteration::kMove, SelectionModifyDirection::kBackward,
+      TextGranularity::kSentenceBoundary, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToBeginningOfSentenceAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
+  frame.Selection().Modify(
+      SelectionModifyAlteration::kExtend, SelectionModifyDirection::kBackward,
+      TextGranularity::kSentenceBoundary, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToEndOfDocument(LocalFrame& frame,
+                                              Event*,
+                                              EditorCommandSource,
+                                              const String&) {
+  frame.Selection().Modify(
+      SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
+      TextGranularity::kDocumentBoundary, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToEndOfDocumentAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
+  frame.Selection().Modify(
+      SelectionModifyAlteration::kExtend, SelectionModifyDirection::kForward,
+      TextGranularity::kDocumentBoundary, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToEndOfSentence(LocalFrame& frame,
+                                              Event*,
+                                              EditorCommandSource,
+                                              const String&) {
+  frame.Selection().Modify(
+      SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
+      TextGranularity::kSentenceBoundary, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToEndOfSentenceAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
+  frame.Selection().Modify(
+      SelectionModifyAlteration::kExtend, SelectionModifyDirection::kForward,
+      TextGranularity::kSentenceBoundary, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToEndOfLine(LocalFrame& frame,
+                                          Event*,
+                                          EditorCommandSource,
+                                          const String&) {
+  frame.Selection().Modify(
+      SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
+      TextGranularity::kLineBoundary, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToEndOfLineAndModifySelection(LocalFrame& frame,
+                                                            Event*,
+                                                            EditorCommandSource,
+                                                            const String&) {
+  frame.Selection().Modify(
       SelectionModifyAlteration::kExtend, SelectionModifyDirection::kForward,
       TextGranularity::kLineBoundary, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveToEndOfParagraph(LocalFrame& frame,
-                                        Event*,
-                                        EditorCommandSource,
-                                        const String&) {
+bool MoveCommands::ExecuteMoveToEndOfParagraph(LocalFrame& frame,
+                                               Event*,
+                                               EditorCommandSource,
+                                               const String&) {
   frame.Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kForward,
       TextGranularity::kParagraphBoundary, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveToEndOfParagraphAndModifySelection(LocalFrame& frame,
-                                                          Event*,
-                                                          EditorCommandSource,
-                                                          const String&) {
+bool MoveCommands::ExecuteMoveToEndOfParagraphAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
   frame.Selection().Modify(
       SelectionModifyAlteration::kExtend, SelectionModifyDirection::kForward,
       TextGranularity::kParagraphBoundary, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveParagraphBackward(LocalFrame& frame,
-                                         Event*,
-                                         EditorCommandSource,
-                                         const String&) {
+bool MoveCommands::ExecuteMoveParagraphBackward(LocalFrame& frame,
+                                                Event*,
+                                                EditorCommandSource,
+                                                const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kMove,
                            SelectionModifyDirection::kBackward,
                            TextGranularity::kParagraph, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveParagraphBackwardAndModifySelection(LocalFrame& frame,
-                                                           Event*,
-                                                           EditorCommandSource,
-                                                           const String&) {
+bool MoveCommands::ExecuteMoveParagraphBackwardAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kBackward,
                            TextGranularity::kParagraph, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveParagraphForward(LocalFrame& frame,
-                                        Event*,
-                                        EditorCommandSource,
-                                        const String&) {
+bool MoveCommands::ExecuteMoveParagraphForward(LocalFrame& frame,
+                                               Event*,
+                                               EditorCommandSource,
+                                               const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kMove,
                            SelectionModifyDirection::kForward,
                            TextGranularity::kParagraph, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveParagraphForwardAndModifySelection(LocalFrame& frame,
-                                                          Event*,
-                                                          EditorCommandSource,
-                                                          const String&) {
+bool MoveCommands::ExecuteMoveParagraphForwardAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kForward,
                            TextGranularity::kParagraph, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveUp(LocalFrame& frame,
-                          Event*,
-                          EditorCommandSource,
-                          const String&) {
+bool MoveCommands::ExecuteMoveUp(LocalFrame& frame,
+                                 Event*,
+                                 EditorCommandSource,
+                                 const String&) {
   return frame.Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kBackward,
       TextGranularity::kLine, SetSelectionBy::kUser);
 }
 
-static bool ExecuteMoveUpAndModifySelection(LocalFrame& frame,
-                                            Event*,
-                                            EditorCommandSource,
-                                            const String&) {
+bool MoveCommands::ExecuteMoveUpAndModifySelection(LocalFrame& frame,
+                                                   Event*,
+                                                   EditorCommandSource,
+                                                   const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kBackward,
                            TextGranularity::kLine, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveWordBackward(LocalFrame& frame,
-                                    Event*,
-                                    EditorCommandSource,
-                                    const String&) {
+bool MoveCommands::ExecuteMoveWordBackward(LocalFrame& frame,
+                                           Event*,
+                                           EditorCommandSource,
+                                           const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kMove,
                            SelectionModifyDirection::kBackward,
                            TextGranularity::kWord, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveWordBackwardAndModifySelection(LocalFrame& frame,
-                                                      Event*,
-                                                      EditorCommandSource,
-                                                      const String&) {
+bool MoveCommands::ExecuteMoveWordBackwardAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kBackward,
                            TextGranularity::kWord, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveWordForward(LocalFrame& frame,
-                                   Event*,
-                                   EditorCommandSource,
-                                   const String&) {
+bool MoveCommands::ExecuteMoveWordForward(LocalFrame& frame,
+                                          Event*,
+                                          EditorCommandSource,
+                                          const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kMove,
                            SelectionModifyDirection::kForward,
                            TextGranularity::kWord, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveWordForwardAndModifySelection(LocalFrame& frame,
-                                                     Event*,
-                                                     EditorCommandSource,
-                                                     const String&) {
+bool MoveCommands::ExecuteMoveWordForwardAndModifySelection(LocalFrame& frame,
+                                                            Event*,
+                                                            EditorCommandSource,
+                                                            const String&) {
   frame.Selection().Modify(SelectionModifyAlteration::kExtend,
                            SelectionModifyDirection::kForward,
                            TextGranularity::kWord, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveWordLeft(LocalFrame& frame,
-                                Event*,
-                                EditorCommandSource,
-                                const String&) {
-  frame.Selection().Modify(SelectionModifyAlteration::kMove,
-                           SelectionModifyDirection::kLeft,
-                           TextGranularity::kWord, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveWordLeftAndModifySelection(LocalFrame& frame,
-                                                  Event*,
-                                                  EditorCommandSource,
-                                                  const String&) {
-  frame.Selection().Modify(SelectionModifyAlteration::kExtend,
-                           SelectionModifyDirection::kLeft,
-                           TextGranularity::kWord, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveWordRight(LocalFrame& frame,
-                                 Event*,
-                                 EditorCommandSource,
-                                 const String&) {
-  frame.Selection().Modify(SelectionModifyAlteration::kMove,
-                           SelectionModifyDirection::kRight,
-                           TextGranularity::kWord, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveWordRightAndModifySelection(LocalFrame& frame,
-                                                   Event*,
-                                                   EditorCommandSource,
-                                                   const String&) {
-  frame.Selection().Modify(SelectionModifyAlteration::kExtend,
-                           SelectionModifyDirection::kRight,
-                           TextGranularity::kWord, SetSelectionBy::kUser);
-  return true;
-}
-
-static bool ExecuteMoveToLeftEndOfLine(LocalFrame& frame,
+bool MoveCommands::ExecuteMoveWordLeft(LocalFrame& frame,
                                        Event*,
                                        EditorCommandSource,
                                        const String&) {
+  frame.Selection().Modify(SelectionModifyAlteration::kMove,
+                           SelectionModifyDirection::kLeft,
+                           TextGranularity::kWord, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveWordLeftAndModifySelection(LocalFrame& frame,
+                                                         Event*,
+                                                         EditorCommandSource,
+                                                         const String&) {
+  frame.Selection().Modify(SelectionModifyAlteration::kExtend,
+                           SelectionModifyDirection::kLeft,
+                           TextGranularity::kWord, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveWordRight(LocalFrame& frame,
+                                        Event*,
+                                        EditorCommandSource,
+                                        const String&) {
+  frame.Selection().Modify(SelectionModifyAlteration::kMove,
+                           SelectionModifyDirection::kRight,
+                           TextGranularity::kWord, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveWordRightAndModifySelection(LocalFrame& frame,
+                                                          Event*,
+                                                          EditorCommandSource,
+                                                          const String&) {
+  frame.Selection().Modify(SelectionModifyAlteration::kExtend,
+                           SelectionModifyDirection::kRight,
+                           TextGranularity::kWord, SetSelectionBy::kUser);
+  return true;
+}
+
+bool MoveCommands::ExecuteMoveToLeftEndOfLine(LocalFrame& frame,
+                                              Event*,
+                                              EditorCommandSource,
+                                              const String&) {
   frame.Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kLeft,
       TextGranularity::kLineBoundary, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveToLeftEndOfLineAndModifySelection(LocalFrame& frame,
-                                                         Event*,
-                                                         EditorCommandSource,
-                                                         const String&) {
+bool MoveCommands::ExecuteMoveToLeftEndOfLineAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
   frame.Selection().Modify(
       SelectionModifyAlteration::kExtend, SelectionModifyDirection::kLeft,
       TextGranularity::kLineBoundary, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveToRightEndOfLine(LocalFrame& frame,
-                                        Event*,
-                                        EditorCommandSource,
-                                        const String&) {
+bool MoveCommands::ExecuteMoveToRightEndOfLine(LocalFrame& frame,
+                                               Event*,
+                                               EditorCommandSource,
+                                               const String&) {
   frame.Selection().Modify(
       SelectionModifyAlteration::kMove, SelectionModifyDirection::kRight,
       TextGranularity::kLineBoundary, SetSelectionBy::kUser);
   return true;
 }
 
-static bool ExecuteMoveToRightEndOfLineAndModifySelection(LocalFrame& frame,
-                                                          Event*,
-                                                          EditorCommandSource,
-                                                          const String&) {
+bool MoveCommands::ExecuteMoveToRightEndOfLineAndModifySelection(
+    LocalFrame& frame,
+    Event*,
+    EditorCommandSource,
+    const String&) {
   frame.Selection().Modify(
       SelectionModifyAlteration::kExtend, SelectionModifyDirection::kRight,
       TextGranularity::kLineBoundary, SetSelectionBy::kUser);
@@ -2558,182 +2568,189 @@ static const EditorInternalCommand* InternalCommand(
        SupportedFromMenuOrKeyBinding, EnabledInRichlyEditableText,
        StateTextWritingDirectionRightToLeft, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveBackward, ExecuteMoveBackward,
+      {WebEditingCommandType::kMoveBackward, MoveCommands::ExecuteMoveBackward,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveBackwardAndModifySelection,
-       ExecuteMoveBackwardAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveDown, ExecuteMoveDown,
+       MoveCommands::ExecuteMoveBackwardAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveDown, MoveCommands::ExecuteMoveDown,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveDownAndModifySelection,
-       ExecuteMoveDownAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveForward, ExecuteMoveForward,
+       MoveCommands::ExecuteMoveDownAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveForward, MoveCommands::ExecuteMoveForward,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveForwardAndModifySelection,
-       ExecuteMoveForwardAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveLeft, ExecuteMoveLeft,
+       MoveCommands::ExecuteMoveForwardAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveLeft, MoveCommands::ExecuteMoveLeft,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveLeftAndModifySelection,
-       ExecuteMoveLeftAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMovePageDown, ExecuteMovePageDown,
+       MoveCommands::ExecuteMoveLeftAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMovePageDown, MoveCommands::ExecuteMovePageDown,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMovePageDownAndModifySelection,
-       ExecuteMovePageDownAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMovePageUp, ExecuteMovePageUp,
+       MoveCommands::ExecuteMovePageDownAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMovePageUp, MoveCommands::ExecuteMovePageUp,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMovePageUpAndModifySelection,
-       ExecuteMovePageUpAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
+       MoveCommands::ExecuteMovePageUpAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveParagraphBackward,
-       ExecuteMoveParagraphBackward, SupportedFromMenuOrKeyBinding,
-       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
+       MoveCommands::ExecuteMoveParagraphBackward,
+       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveParagraphBackwardAndModifySelection,
-       ExecuteMoveParagraphBackwardAndModifySelection,
+       MoveCommands::ExecuteMoveParagraphBackwardAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveParagraphForward,
-       ExecuteMoveParagraphForward, SupportedFromMenuOrKeyBinding,
+       MoveCommands::ExecuteMoveParagraphForward, SupportedFromMenuOrKeyBinding,
        EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveParagraphForwardAndModifySelection,
-       ExecuteMoveParagraphForwardAndModifySelection,
+       MoveCommands::ExecuteMoveParagraphForwardAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveRight, ExecuteMoveRight,
+      {WebEditingCommandType::kMoveRight, MoveCommands::ExecuteMoveRight,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveRightAndModifySelection,
-       ExecuteMoveRightAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
+       MoveCommands::ExecuteMoveRightAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToBeginningOfDocument,
-       ExecuteMoveToBeginningOfDocument, SupportedFromMenuOrKeyBinding,
-       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
+       MoveCommands::ExecuteMoveToBeginningOfDocument,
+       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToBeginningOfDocumentAndModifySelection,
-       ExecuteMoveToBeginningOfDocumentAndModifySelection,
+       MoveCommands::ExecuteMoveToBeginningOfDocumentAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToBeginningOfLine,
-       ExecuteMoveToBeginningOfLine, SupportedFromMenuOrKeyBinding,
-       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
+       MoveCommands::ExecuteMoveToBeginningOfLine,
+       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToBeginningOfLineAndModifySelection,
-       ExecuteMoveToBeginningOfLineAndModifySelection,
+       MoveCommands::ExecuteMoveToBeginningOfLineAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToBeginningOfParagraph,
-       ExecuteMoveToBeginningOfParagraph, SupportedFromMenuOrKeyBinding,
-       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
+       MoveCommands::ExecuteMoveToBeginningOfParagraph,
+       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToBeginningOfParagraphAndModifySelection,
-       ExecuteMoveToBeginningOfParagraphAndModifySelection,
+       MoveCommands::ExecuteMoveToBeginningOfParagraphAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToBeginningOfSentence,
-       ExecuteMoveToBeginningOfSentence, SupportedFromMenuOrKeyBinding,
+       MoveCommands::ExecuteMoveToBeginningOfSentence,
+       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveToBeginningOfSentenceAndModifySelection,
+       MoveCommands::ExecuteMoveToBeginningOfSentenceAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveToEndOfDocument,
+       MoveCommands::ExecuteMoveToEndOfDocument, SupportedFromMenuOrKeyBinding,
        EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveToBeginningOfSentenceAndModifySelection,
-       ExecuteMoveToBeginningOfSentenceAndModifySelection,
-       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveToEndOfDocument, ExecuteMoveToEndOfDocument,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToEndOfDocumentAndModifySelection,
-       ExecuteMoveToEndOfDocumentAndModifySelection,
+       MoveCommands::ExecuteMoveToEndOfDocumentAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveToEndOfLine, ExecuteMoveToEndOfLine,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveToEndOfLineAndModifySelection,
-       ExecuteMoveToEndOfLineAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
+      {WebEditingCommandType::kMoveToEndOfLine,
+       MoveCommands::ExecuteMoveToEndOfLine, SupportedFromMenuOrKeyBinding,
+       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveToEndOfLineAndModifySelection,
+       MoveCommands::ExecuteMoveToEndOfLineAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToEndOfParagraph,
-       ExecuteMoveToEndOfParagraph, SupportedFromMenuOrKeyBinding,
+       MoveCommands::ExecuteMoveToEndOfParagraph, SupportedFromMenuOrKeyBinding,
        EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToEndOfParagraphAndModifySelection,
-       ExecuteMoveToEndOfParagraphAndModifySelection,
+       MoveCommands::ExecuteMoveToEndOfParagraphAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveToEndOfSentence, ExecuteMoveToEndOfSentence,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveToEndOfSentence,
+       MoveCommands::ExecuteMoveToEndOfSentence, SupportedFromMenuOrKeyBinding,
+       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
+       CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToEndOfSentenceAndModifySelection,
-       ExecuteMoveToEndOfSentenceAndModifySelection,
+       MoveCommands::ExecuteMoveToEndOfSentenceAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveToLeftEndOfLine, ExecuteMoveToLeftEndOfLine,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
-       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveToLeftEndOfLine,
+       MoveCommands::ExecuteMoveToLeftEndOfLine, SupportedFromMenuOrKeyBinding,
+       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
+       CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToLeftEndOfLineAndModifySelection,
-       ExecuteMoveToLeftEndOfLineAndModifySelection,
+       MoveCommands::ExecuteMoveToLeftEndOfLineAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToRightEndOfLine,
-       ExecuteMoveToRightEndOfLine, SupportedFromMenuOrKeyBinding,
+       MoveCommands::ExecuteMoveToRightEndOfLine, SupportedFromMenuOrKeyBinding,
        EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveToRightEndOfLineAndModifySelection,
-       ExecuteMoveToRightEndOfLineAndModifySelection,
+       MoveCommands::ExecuteMoveToRightEndOfLineAndModifySelection,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveUp, ExecuteMoveUp,
+      {WebEditingCommandType::kMoveUp, MoveCommands::ExecuteMoveUp,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveUpAndModifySelection,
-       ExecuteMoveUpAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveWordBackward, ExecuteMoveWordBackward,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
+       MoveCommands::ExecuteMoveUpAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveWordBackward,
+       MoveCommands::ExecuteMoveWordBackward, SupportedFromMenuOrKeyBinding,
+       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
+       CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveWordBackwardAndModifySelection,
-       ExecuteMoveWordBackwardAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveWordForward, ExecuteMoveWordForward,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
+       MoveCommands::ExecuteMoveWordBackwardAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveWordForwardAndModifySelection,
-       ExecuteMoveWordForwardAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
+      {WebEditingCommandType::kMoveWordForward,
+       MoveCommands::ExecuteMoveWordForward, SupportedFromMenuOrKeyBinding,
+       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveWordLeft, ExecuteMoveWordLeft,
+      {WebEditingCommandType::kMoveWordForwardAndModifySelection,
+       MoveCommands::ExecuteMoveWordForwardAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveWordLeft, MoveCommands::ExecuteMoveWordLeft,
        SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kMoveWordLeftAndModifySelection,
-       ExecuteMoveWordLeftAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
-       CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveWordRight, ExecuteMoveWordRight,
-       SupportedFromMenuOrKeyBinding, EnabledInEditableText, StateNone,
+       MoveCommands::ExecuteMoveWordLeftAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
        ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
-      {WebEditingCommandType::kMoveWordRightAndModifySelection,
-       ExecuteMoveWordRightAndModifySelection, SupportedFromMenuOrKeyBinding,
-       EnabledVisibleSelection, StateNone, ValueStateOrNull, kNotTextInsertion,
+      {WebEditingCommandType::kMoveWordRight,
+       MoveCommands::ExecuteMoveWordRight, SupportedFromMenuOrKeyBinding,
+       EnabledInEditableText, StateNone, ValueStateOrNull, kNotTextInsertion,
        CanNotExecuteWhenDisabled},
+      {WebEditingCommandType::kMoveWordRightAndModifySelection,
+       MoveCommands::ExecuteMoveWordRightAndModifySelection,
+       SupportedFromMenuOrKeyBinding, EnabledVisibleSelection, StateNone,
+       ValueStateOrNull, kNotTextInsertion, CanNotExecuteWhenDisabled},
       {WebEditingCommandType::kOutdent, ExecuteOutdent, Supported,
        EnabledInRichlyEditableText, StateNone, ValueStateOrNull,
        kNotTextInsertion, CanNotExecuteWhenDisabled},
