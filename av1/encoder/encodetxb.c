@@ -1294,11 +1294,10 @@ static INLINE void update_coeff_general(
 }
 
 static INLINE void update_coeff_simple(
-    int *accu_rate, int64_t *accu_dist, int si, int eob, TX_SIZE tx_size,
-    TX_TYPE tx_type, int bwl, int64_t rdmult, int shift, const int16_t *dequant,
-    const int16_t *scan, const LV_MAP_COEFF_COST *txb_costs,
-    const tran_low_t *tcoeff, tran_low_t *qcoeff, tran_low_t *dqcoeff,
-    uint8_t *levels) {
+    int *accu_rate, int si, int eob, TX_SIZE tx_size, TX_TYPE tx_type, int bwl,
+    int64_t rdmult, int shift, const int16_t *dequant, const int16_t *scan,
+    const LV_MAP_COEFF_COST *txb_costs, const tran_low_t *tcoeff,
+    tran_low_t *qcoeff, tran_low_t *dqcoeff, uint8_t *levels) {
   const int dqv = dequant[1];
   (void)eob;
   // this simple version assume the coeff's scan_idx is not DC (scan_idx != 0)
@@ -1315,7 +1314,6 @@ static INLINE void update_coeff_simple(
     const tran_low_t tqc = tcoeff[ci];
     const tran_low_t dqc = dqcoeff[ci];
     const int64_t dist = get_coeff_dist(tqc, dqc, shift);
-    const int64_t dist0 = get_coeff_dist(tqc, 0, shift);
     const int rate = get_coeff_cost_simple(ci, abs_qc, coeff_ctx, txb_costs,
                                            bwl, tx_type, levels);
     const int64_t rd = RDCOST(rdmult, rate, dist);
@@ -1333,10 +1331,8 @@ static INLINE void update_coeff_simple(
       dqcoeff[ci] = dqc_low;
       levels[get_padded_idx(ci, bwl)] = AOMMIN(abs_qc_low, INT8_MAX);
       *accu_rate += rate_low;
-      *accu_dist += dist_low - dist0;
     } else {
       *accu_rate += rate;
-      *accu_dist += dist - dist0;
     }
   }
 }
@@ -1454,19 +1450,20 @@ static INLINE void update_coeff_eob(
   }
 }
 
-static INLINE void update_skip(int *accu_rate, int64_t *accu_dist, int *eob,
-                               int64_t rdmult, int skip_cost, int non_skip_cost,
-                               const int16_t *scan, tran_low_t *qcoeff,
-                               tran_low_t *dqcoeff) {
-  const int64_t rd = RDCOST(rdmult, *accu_rate + non_skip_cost, *accu_dist);
+static INLINE void update_skip(int *accu_rate, int64_t accu_dist, int *eob,
+                               int nz_num, int *nz_ci, int64_t rdmult,
+                               int skip_cost, int non_skip_cost,
+                               tran_low_t *qcoeff, tran_low_t *dqcoeff) {
+  const int64_t rd = RDCOST(rdmult, *accu_rate + non_skip_cost, accu_dist);
   const int64_t rd_new_eob = RDCOST(rdmult, skip_cost, 0);
   if (rd_new_eob < rd) {
-    for (int si = 0; si < *eob; ++si) {
-      const int ci = scan[si];
+    for (int i = 0; i < nz_num; ++i) {
+      const int ci = nz_ci[i];
       qcoeff[ci] = 0;
       dqcoeff[ci] = 0;
+      // no need to set up levels because this is the last step
+      // levels[get_padded_idx(ci, bwl)] = 0;
     }
-    *accu_dist = 0;
     *accu_rate = 0;
     *eob = 0;
   }
@@ -1553,21 +1550,26 @@ int av1_optimize_txb_new(const struct AV1_COMP *cpi, MACROBLOCK *x, int plane,
                      dqcoeff, levels);
   }
 
+  if (si == -1 && nz_num <= max_nz_num) {
+    update_skip(&accu_rate, accu_dist, &eob, nz_num, nz_ci, rdmult, skip_cost,
+                non_skip_cost, qcoeff, dqcoeff);
+  }
+
   for (; si >= 1; --si) {
-    update_coeff_simple(&accu_rate, &accu_dist, si, eob, tx_size, tx_type, bwl,
-                        rdmult, shift, dequant, scan, txb_costs, tcoeff, qcoeff,
+    update_coeff_simple(&accu_rate, si, eob, tx_size, tx_type, bwl, rdmult,
+                        shift, dequant, scan, txb_costs, tcoeff, qcoeff,
                         dqcoeff, levels);
   }
 
   // DC position
   if (si == 0) {
-    update_coeff_general(&accu_rate, &accu_dist, si, eob, tx_size, tx_type, bwl,
-                         height, rdmult, shift, txb_ctx->dc_sign_ctx, dequant,
-                         scan, txb_costs, tcoeff, qcoeff, dqcoeff, levels);
+    // no need to update accu_dist because it's not used after this point
+    int64_t dummy_dist = 0;
+    update_coeff_general(&accu_rate, &dummy_dist, si, eob, tx_size, tx_type,
+                         bwl, height, rdmult, shift, txb_ctx->dc_sign_ctx,
+                         dequant, scan, txb_costs, tcoeff, qcoeff, dqcoeff,
+                         levels);
   }
-
-  update_skip(&accu_rate, &accu_dist, &eob, rdmult, skip_cost, non_skip_cost,
-              scan, qcoeff, dqcoeff);
 
   const int tx_type_cost = av1_tx_type_cost(cm, x, xd, plane, tx_size, tx_type);
   if (eob == 0)
