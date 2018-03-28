@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/certificate_reporting/error_reporter.h"
+#include "chrome/browser/ssl/certificate_error_reporter.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -27,8 +27,6 @@
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/boringssl/src/include/openssl/curve25519.h"
-
-namespace certificate_reporting {
 
 namespace {
 
@@ -132,9 +130,9 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
   MockCertificateReportSender* mock_report_sender =
       new MockCertificateReportSender();
   GURL https_url(kDummyHttpsReportUri);
-  ErrorReporter https_reporter(https_url, server_public_key_,
-                               kServerPublicKeyTestVersion,
-                               base::WrapUnique(mock_report_sender));
+  CertificateErrorReporter https_reporter(https_url, server_public_key_,
+                                          kServerPublicKeyTestVersion,
+                                          base::WrapUnique(mock_report_sender));
   https_reporter.SendExtendedReportingReport(
       kDummyReport, base::Callback<void()>(),
       base::Callback<void(const GURL&, int, int)>());
@@ -145,9 +143,9 @@ TEST_F(ErrorReporterTest, ExtendedReportingSendReport) {
   MockCertificateReportSender* http_mock_report_sender =
       new MockCertificateReportSender();
   const GURL http_url(kDummyHttpReportUri);
-  ErrorReporter http_reporter(http_url, server_public_key_,
-                              kServerPublicKeyTestVersion,
-                              base::WrapUnique(http_mock_report_sender));
+  CertificateErrorReporter http_reporter(
+      http_url, server_public_key_, kServerPublicKeyTestVersion,
+      base::WrapUnique(http_mock_report_sender));
   http_reporter.SendExtendedReportingReport(
       kDummyReport, base::Callback<void()>(),
       base::Callback<void(const GURL&, int, int)>());
@@ -190,7 +188,7 @@ TEST_F(ErrorReporterTest, ErroredRequestCallsCallback) {
 
   const GURL report_uri(
       net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_CONNECTION_FAILED));
-  ErrorReporter reporter(&context, report_uri);
+  CertificateErrorReporter reporter(&context, report_uri);
 
   bool error_callback_called = false;
   bool success_callback_called = false;
@@ -216,7 +214,7 @@ TEST_F(ErrorReporterTest, SuccessfulRequestCallsCallback) {
 
   const GURL report_uri(
       net::URLRequestMockDataJob::GetMockHttpUrl("some data", 1));
-  ErrorReporter reporter(&context, report_uri);
+  CertificateErrorReporter reporter(&context, report_uri);
 
   bool error_callback_called = false;
   bool success_callback_called = false;
@@ -230,5 +228,3 @@ TEST_F(ErrorReporterTest, SuccessfulRequestCallsCallback) {
 }
 
 }  // namespace
-
-}  // namespace certificate_reporting

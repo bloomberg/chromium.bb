@@ -61,7 +61,7 @@ class TestSSLErrorNavigationThrottle : public SSLErrorNavigationThrottle {
             handle,
             certificate_reporting_test_utils::CreateMockSSLCertReporter(
                 base::Callback<void(const std::string&,
-                                    const certificate_reporting::
+                                    const chrome_browser_ssl::
                                         CertLoggerRequest_ChromeChannel)>(),
                 certificate_reporting_test_utils::CERT_REPORT_NOT_EXPECTED),
             base::Bind(&MockHandleSSLError, async_handle_ssl_error)),

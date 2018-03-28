@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/certificate_reporting/error_report.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 
 #include <vector>
 
@@ -21,16 +21,16 @@
 
 using network_time::NetworkTimeTracker;
 
-namespace certificate_reporting {
-
 namespace {
 
-void AddCertStatusToReportErrors(net::CertStatus cert_status,
-                                 CertLoggerRequest* report) {
+void AddCertStatusToReportErrors(
+    net::CertStatus cert_status,
+    chrome_browser_ssl::CertLoggerRequest* report) {
 #define COPY_CERT_STATUS(error) RENAME_CERT_STATUS(error, CERT_##error)
 #define RENAME_CERT_STATUS(status_error, logger_error) \
   if (cert_status & net::CERT_STATUS_##status_error)   \
-    report->add_cert_error(CertLoggerRequest::ERR_##logger_error);
+    report->add_cert_error(                            \
+        chrome_browser_ssl::CertLoggerRequest::ERR_##logger_error);
 
   COPY_CERT_STATUS(REVOKED)
   COPY_CERT_STATUS(INVALID)
@@ -65,11 +65,12 @@ bool CertificateChainToString(scoped_refptr<net::X509Certificate> cert,
 
 }  // namespace
 
-ErrorReport::ErrorReport() : cert_report_(new CertLoggerRequest()) {}
+CertificateErrorReport::CertificateErrorReport()
+    : cert_report_(new chrome_browser_ssl::CertLoggerRequest()) {}
 
-ErrorReport::ErrorReport(const std::string& hostname,
-                         const net::SSLInfo& ssl_info)
-    : cert_report_(new CertLoggerRequest()) {
+CertificateErrorReport::CertificateErrorReport(const std::string& hostname,
+                                               const net::SSLInfo& ssl_info)
+    : cert_report_(new chrome_browser_ssl::CertLoggerRequest()) {
   base::Time now = base::Time::Now();
   cert_report_->set_time_usec(now.ToInternalValue());
   cert_report_->set_hostname(hostname);
@@ -92,50 +93,55 @@ ErrorReport::ErrorReport(const std::string& hostname,
   AddCertStatusToReportErrors(ssl_info.cert_status, cert_report_.get());
 
 #if defined(OS_ANDROID)
-  CertLoggerFeaturesInfo* features_info = cert_report_->mutable_features_info();
+  chrome_browser_ssl::CertLoggerFeaturesInfo* features_info =
+      cert_report_->mutable_features_info();
   features_info->set_android_aia_fetching_status(
-      CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED);
+      chrome_browser_ssl::CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED);
 #endif
 }
 
-ErrorReport::~ErrorReport() {}
+CertificateErrorReport::~CertificateErrorReport() {}
 
-bool ErrorReport::InitializeFromString(const std::string& serialized_report) {
+bool CertificateErrorReport::InitializeFromString(
+    const std::string& serialized_report) {
   return cert_report_->ParseFromString(serialized_report);
 }
 
-bool ErrorReport::Serialize(std::string* output) const {
+bool CertificateErrorReport::Serialize(std::string* output) const {
   return cert_report_->SerializeToString(output);
 }
 
-void ErrorReport::SetInterstitialInfo(
+void CertificateErrorReport::SetInterstitialInfo(
     const InterstitialReason& interstitial_reason,
     const ProceedDecision& proceed_decision,
     const Overridable& overridable,
     const base::Time& interstitial_time) {
-  CertLoggerInterstitialInfo* interstitial_info =
+  chrome_browser_ssl::CertLoggerInterstitialInfo* interstitial_info =
       cert_report_->mutable_interstitial_info();
 
   switch (interstitial_reason) {
     case INTERSTITIAL_SSL:
       interstitial_info->set_interstitial_reason(
-          CertLoggerInterstitialInfo::INTERSTITIAL_SSL);
+          chrome_browser_ssl::CertLoggerInterstitialInfo::INTERSTITIAL_SSL);
       break;
     case INTERSTITIAL_CAPTIVE_PORTAL:
       interstitial_info->set_interstitial_reason(
-          CertLoggerInterstitialInfo::INTERSTITIAL_CAPTIVE_PORTAL);
+          chrome_browser_ssl::CertLoggerInterstitialInfo::
+              INTERSTITIAL_CAPTIVE_PORTAL);
       break;
     case INTERSTITIAL_CLOCK:
       interstitial_info->set_interstitial_reason(
-          CertLoggerInterstitialInfo::INTERSTITIAL_CLOCK);
+          chrome_browser_ssl::CertLoggerInterstitialInfo::INTERSTITIAL_CLOCK);
       break;
     case INTERSTITIAL_SUPERFISH:
       interstitial_info->set_interstitial_reason(
-          CertLoggerInterstitialInfo::INTERSTITIAL_SUPERFISH);
+          chrome_browser_ssl::CertLoggerInterstitialInfo::
+              INTERSTITIAL_SUPERFISH);
       break;
     case INTERSTITIAL_MITM_SOFTWARE:
       interstitial_info->set_interstitial_reason(
-          CertLoggerInterstitialInfo::INTERSTITIAL_MITM_SOFTWARE);
+          chrome_browser_ssl::CertLoggerInterstitialInfo::
+              INTERSTITIAL_MITM_SOFTWARE);
       break;
   }
 
@@ -145,89 +151,94 @@ void ErrorReport::SetInterstitialInfo(
       interstitial_time.ToInternalValue());
 }
 
-void ErrorReport::AddNetworkTimeInfo(
+void CertificateErrorReport::AddNetworkTimeInfo(
     const NetworkTimeTracker* network_time_tracker) {
-  CertLoggerFeaturesInfo* features_info = cert_report_->mutable_features_info();
-  CertLoggerFeaturesInfo::NetworkTimeQueryingInfo* network_time_info =
-      features_info->mutable_network_time_querying_info();
+  chrome_browser_ssl::CertLoggerFeaturesInfo* features_info =
+      cert_report_->mutable_features_info();
+  chrome_browser_ssl::CertLoggerFeaturesInfo::NetworkTimeQueryingInfo*
+      network_time_info = features_info->mutable_network_time_querying_info();
   network_time_info->set_network_time_queries_enabled(
       network_time_tracker->AreTimeFetchesEnabled());
   NetworkTimeTracker::FetchBehavior behavior =
       network_time_tracker->GetFetchBehavior();
-  CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::NetworkTimeFetchBehavior
-      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
-          NETWORK_TIME_FETCHES_UNKNOWN;
+  chrome_browser_ssl::CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
+      NetworkTimeFetchBehavior report_behavior =
+          chrome_browser_ssl::CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
+              NETWORK_TIME_FETCHES_UNKNOWN;
 
   switch (behavior) {
     case NetworkTimeTracker::FETCH_BEHAVIOR_UNKNOWN:
-      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
-          NETWORK_TIME_FETCHES_UNKNOWN;
+      report_behavior = chrome_browser_ssl::CertLoggerFeaturesInfo::
+          NetworkTimeQueryingInfo::NETWORK_TIME_FETCHES_UNKNOWN;
       break;
     case NetworkTimeTracker::FETCHES_IN_BACKGROUND_ONLY:
-      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
-          NETWORK_TIME_FETCHES_BACKGROUND_ONLY;
+      report_behavior = chrome_browser_ssl::CertLoggerFeaturesInfo::
+          NetworkTimeQueryingInfo::NETWORK_TIME_FETCHES_BACKGROUND_ONLY;
       break;
     case NetworkTimeTracker::FETCHES_ON_DEMAND_ONLY:
-      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
-          NETWORK_TIME_FETCHES_ON_DEMAND_ONLY;
+      report_behavior = chrome_browser_ssl::CertLoggerFeaturesInfo::
+          NetworkTimeQueryingInfo::NETWORK_TIME_FETCHES_ON_DEMAND_ONLY;
       break;
     case NetworkTimeTracker::FETCHES_IN_BACKGROUND_AND_ON_DEMAND:
-      report_behavior = CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
-          NETWORK_TIME_FETCHES_IN_BACKGROUND_AND_ON_DEMAND;
+      report_behavior =
+          chrome_browser_ssl::CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
+              NETWORK_TIME_FETCHES_IN_BACKGROUND_AND_ON_DEMAND;
       break;
   }
   network_time_info->set_network_time_query_behavior(report_behavior);
 }
 
-void ErrorReport::AddChromeChannel(version_info::Channel channel) {
+void CertificateErrorReport::AddChromeChannel(version_info::Channel channel) {
   switch (channel) {
     case version_info::Channel::STABLE:
       cert_report_->set_chrome_channel(
-          CertLoggerRequest::CHROME_CHANNEL_STABLE);
+          chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_STABLE);
       break;
 
     case version_info::Channel::BETA:
-      cert_report_->set_chrome_channel(CertLoggerRequest::CHROME_CHANNEL_BETA);
+      cert_report_->set_chrome_channel(
+          chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_BETA);
       break;
 
     case version_info::Channel::CANARY:
       cert_report_->set_chrome_channel(
-          CertLoggerRequest::CHROME_CHANNEL_CANARY);
+          chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_CANARY);
       break;
 
     case version_info::Channel::DEV:
-      cert_report_->set_chrome_channel(CertLoggerRequest::CHROME_CHANNEL_DEV);
+      cert_report_->set_chrome_channel(
+          chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_DEV);
       break;
 
     case version_info::Channel::UNKNOWN:
       cert_report_->set_chrome_channel(
-          CertLoggerRequest::CHROME_CHANNEL_UNKNOWN);
+          chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_UNKNOWN);
       break;
   }
 }
 
-void ErrorReport::SetIsEnterpriseManaged(bool is_enterprise_managed) {
+void CertificateErrorReport::SetIsEnterpriseManaged(
+    bool is_enterprise_managed) {
   cert_report_->set_is_enterprise_managed(is_enterprise_managed);
 }
 
-void ErrorReport::SetIsRetryUpload(bool is_retry_upload) {
+void CertificateErrorReport::SetIsRetryUpload(bool is_retry_upload) {
   cert_report_->set_is_retry_upload(is_retry_upload);
 }
 
-const std::string& ErrorReport::hostname() const {
+const std::string& CertificateErrorReport::hostname() const {
   return cert_report_->hostname();
 }
 
-CertLoggerRequest::ChromeChannel ErrorReport::chrome_channel() const {
+chrome_browser_ssl::CertLoggerRequest::ChromeChannel
+CertificateErrorReport::chrome_channel() const {
   return cert_report_->chrome_channel();
 }
 
-bool ErrorReport::is_enterprise_managed() const {
+bool CertificateErrorReport::is_enterprise_managed() const {
   return cert_report_->is_enterprise_managed();
 }
 
-bool ErrorReport::is_retry_upload() const {
+bool CertificateErrorReport::is_retry_upload() const {
   return cert_report_->is_retry_upload();
 }
-
-}  // namespace certificate_reporting

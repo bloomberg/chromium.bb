@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/certificate_reporting/error_report.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 
 #include <set>
 #include <string>
@@ -17,7 +17,7 @@
 #include "base/time/default_clock.h"
 #include "base/time/default_tick_clock.h"
 #include "build/build_config.h"
-#include "components/certificate_reporting/cert_logger.pb.h"
+#include "chrome/browser/ssl/cert_logger.pb.h"
 #include "components/network_time/network_time_test_utils.h"
 #include "components/prefs/testing_pref_service.h"
 #include "components/version_info/version_info.h"
@@ -38,8 +38,6 @@ using net::SSLInfo;
 using testing::UnorderedElementsAre;
 using testing::UnorderedElementsAreArray;
 
-namespace certificate_reporting {
-
 namespace {
 
 const char kDummyHostname[] = "dummy.hostname.com";
@@ -49,10 +47,11 @@ const char kTestCertFilename[] = "x509_verify_results.chain.pem";
 const net::CertStatus kCertStatus =
     net::CERT_STATUS_COMMON_NAME_INVALID | net::CERT_STATUS_REVOKED;
 
-const CertLoggerRequest::CertError kFirstReportedCertError =
-    CertLoggerRequest::ERR_CERT_COMMON_NAME_INVALID;
-const CertLoggerRequest::CertError kSecondReportedCertError =
-    CertLoggerRequest::ERR_CERT_REVOKED;
+const chrome_browser_ssl::CertLoggerRequest::CertError kFirstReportedCertError =
+    chrome_browser_ssl::CertLoggerRequest::ERR_CERT_COMMON_NAME_INVALID;
+const chrome_browser_ssl::CertLoggerRequest::CertError
+    kSecondReportedCertError =
+        chrome_browser_ssl::CertLoggerRequest::ERR_CERT_REVOKED;
 
 // Whether to include an unverified certificate chain in the test
 // SSLInfo. In production code, an unverified cert chain will not be
@@ -94,35 +93,34 @@ std::string GetPEMEncodedChain() {
 }
 
 void VerifyErrorReportSerialization(
-    const ErrorReport& report,
+    const CertificateErrorReport& report,
     const SSLInfo& ssl_info,
-    std::vector<CertLoggerRequest::CertError> cert_errors) {
+    std::vector<chrome_browser_ssl::CertLoggerRequest::CertError> cert_errors) {
   std::string serialized_report;
   ASSERT_TRUE(report.Serialize(&serialized_report));
 
-  CertLoggerRequest deserialized_report;
+  chrome_browser_ssl::CertLoggerRequest deserialized_report;
   ASSERT_TRUE(deserialized_report.ParseFromString(serialized_report));
   EXPECT_EQ(kDummyHostname, deserialized_report.hostname());
   EXPECT_EQ(GetPEMEncodedChain(), deserialized_report.cert_chain());
   EXPECT_EQ(GetPEMEncodedChain(), deserialized_report.unverified_cert_chain());
   EXPECT_EQ(1, deserialized_report.pin().size());
   EXPECT_EQ(kDummyFailureLog, deserialized_report.pin().Get(0));
-  EXPECT_EQ(
-      ssl_info.is_issued_by_known_root,
-      deserialized_report.is_issued_by_known_root());
+  EXPECT_EQ(ssl_info.is_issued_by_known_root,
+            deserialized_report.is_issued_by_known_root());
   EXPECT_THAT(deserialized_report.cert_error(),
               UnorderedElementsAreArray(cert_errors));
 }
 
-// Test that a serialized ErrorReport can be deserialized as
+// Test that a serialized CertificateErrorReport can be deserialized as
 // a CertLoggerRequest protobuf (which is the format that the receiving
 // server expects it in) with the right data in it.
 TEST(ErrorReportTest, SerializedReportAsProtobuf) {
   SSLInfo ssl_info;
   ASSERT_NO_FATAL_FAILURE(
       GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
-  ErrorReport report_known(kDummyHostname, ssl_info);
-  std::vector<CertLoggerRequest::CertError> cert_errors;
+  CertificateErrorReport report_known(kDummyHostname, ssl_info);
+  std::vector<chrome_browser_ssl::CertLoggerRequest::CertError> cert_errors;
   cert_errors.push_back(kFirstReportedCertError);
   cert_errors.push_back(kSecondReportedCertError);
   ASSERT_NO_FATAL_FAILURE(
@@ -130,7 +128,7 @@ TEST(ErrorReportTest, SerializedReportAsProtobuf) {
   // Test that both values for |is_issued_by_known_root| are serialized
   // correctly.
   ssl_info.is_issued_by_known_root = false;
-  ErrorReport report_unknown(kDummyHostname, ssl_info);
+  CertificateErrorReport report_unknown(kDummyHostname, ssl_info);
   ASSERT_NO_FATAL_FAILURE(
       VerifyErrorReportSerialization(report_unknown, ssl_info, cert_errors));
 }
@@ -143,16 +141,17 @@ TEST(ErrorReportTest, SerializedReportAsProtobufWithInterstitialInfo) {
   // above exercises the path where it does.)
   ASSERT_NO_FATAL_FAILURE(
       GetTestSSLInfo(EXCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
-  ErrorReport report(kDummyHostname, ssl_info);
+  CertificateErrorReport report(kDummyHostname, ssl_info);
 
   const base::Time interstitial_time = base::Time::Now();
-  report.SetInterstitialInfo(
-      ErrorReport::INTERSTITIAL_CLOCK, ErrorReport::USER_PROCEEDED,
-      ErrorReport::INTERSTITIAL_OVERRIDABLE, interstitial_time);
+  report.SetInterstitialInfo(CertificateErrorReport::INTERSTITIAL_CLOCK,
+                             CertificateErrorReport::USER_PROCEEDED,
+                             CertificateErrorReport::INTERSTITIAL_OVERRIDABLE,
+                             interstitial_time);
 
   ASSERT_TRUE(report.Serialize(&serialized_report));
 
-  CertLoggerRequest deserialized_report;
+  chrome_browser_ssl::CertLoggerRequest deserialized_report;
   ASSERT_TRUE(deserialized_report.ParseFromString(serialized_report));
   EXPECT_EQ(kDummyHostname, deserialized_report.hostname());
   EXPECT_EQ(GetPEMEncodedChain(), deserialized_report.cert_chain());
@@ -160,13 +159,12 @@ TEST(ErrorReportTest, SerializedReportAsProtobufWithInterstitialInfo) {
   EXPECT_EQ(1, deserialized_report.pin().size());
   EXPECT_EQ(kDummyFailureLog, deserialized_report.pin().Get(0));
 
-  EXPECT_EQ(CertLoggerInterstitialInfo::INTERSTITIAL_CLOCK,
+  EXPECT_EQ(chrome_browser_ssl::CertLoggerInterstitialInfo::INTERSTITIAL_CLOCK,
             deserialized_report.interstitial_info().interstitial_reason());
   EXPECT_EQ(true, deserialized_report.interstitial_info().user_proceeded());
   EXPECT_EQ(true, deserialized_report.interstitial_info().overridable());
-  EXPECT_EQ(
-      ssl_info.is_issued_by_known_root,
-      deserialized_report.is_issued_by_known_root());
+  EXPECT_EQ(ssl_info.is_issued_by_known_root,
+            deserialized_report.is_issued_by_known_root());
 
   EXPECT_THAT(
       deserialized_report.cert_error(),
@@ -183,11 +181,11 @@ TEST(ErrorReportTest, ParseSerializedReport) {
   SSLInfo ssl_info;
   ASSERT_NO_FATAL_FAILURE(
       GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
-  ErrorReport report(kDummyHostname, ssl_info);
+  CertificateErrorReport report(kDummyHostname, ssl_info);
   EXPECT_EQ(kDummyHostname, report.hostname());
   ASSERT_TRUE(report.Serialize(&serialized_report));
 
-  ErrorReport parsed;
+  CertificateErrorReport parsed;
   ASSERT_TRUE(parsed.InitializeFromString(serialized_report));
   EXPECT_EQ(report.hostname(), parsed.hostname());
 }
@@ -198,10 +196,10 @@ TEST(ErrorReportTest, CertificateTransparencyError) {
   ASSERT_NO_FATAL_FAILURE(
       GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info,
                      net::CERT_STATUS_CERTIFICATE_TRANSPARENCY_REQUIRED));
-  ErrorReport report_known(kDummyHostname, ssl_info);
-  std::vector<CertLoggerRequest::CertError> cert_errors;
-  cert_errors.push_back(
-      CertLoggerRequest::ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
+  CertificateErrorReport report_known(kDummyHostname, ssl_info);
+  std::vector<chrome_browser_ssl::CertLoggerRequest::CertError> cert_errors;
+  cert_errors.push_back(chrome_browser_ssl::CertLoggerRequest::
+                            ERR_CERTIFICATE_TRANSPARENCY_REQUIRED);
   ASSERT_NO_FATAL_FAILURE(
       VerifyErrorReportSerialization(report_known, ssl_info, cert_errors));
 }
@@ -231,20 +229,20 @@ TEST(ErrorReportTest, NetworkTimeQueryingFeatureInfo) {
   SSLInfo ssl_info;
   ASSERT_NO_FATAL_FAILURE(
       GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
-  ErrorReport report(kDummyHostname, ssl_info);
+  CertificateErrorReport report(kDummyHostname, ssl_info);
   report.AddNetworkTimeInfo(&network_time_tracker);
   std::string serialized_report;
   ASSERT_TRUE(report.Serialize(&serialized_report));
 
   // Check that the report contains the network time querying feature
   // information.
-  CertLoggerRequest parsed;
+  chrome_browser_ssl::CertLoggerRequest parsed;
   ASSERT_TRUE(parsed.ParseFromString(serialized_report));
   EXPECT_TRUE(parsed.features_info()
                   .network_time_querying_info()
                   .network_time_queries_enabled());
-  EXPECT_EQ(CertLoggerFeaturesInfo::NetworkTimeQueryingInfo::
-                NETWORK_TIME_FETCHES_ON_DEMAND_ONLY,
+  EXPECT_EQ(chrome_browser_ssl::CertLoggerFeaturesInfo::
+                NetworkTimeQueryingInfo::NETWORK_TIME_FETCHES_ON_DEMAND_ONLY,
             parsed.features_info()
                 .network_time_querying_info()
                 .network_time_query_behavior());
@@ -253,15 +251,18 @@ TEST(ErrorReportTest, NetworkTimeQueryingFeatureInfo) {
 TEST(ErrorReportTest, TestChromeChannelIncluded) {
   struct ChannelTestCase {
     version_info::Channel channel;
-    CertLoggerRequest::ChromeChannel expected_channel;
+    chrome_browser_ssl::CertLoggerRequest::ChromeChannel expected_channel;
   } kTestCases[] = {
       {version_info::Channel::UNKNOWN,
-       CertLoggerRequest::CHROME_CHANNEL_UNKNOWN},
-      {version_info::Channel::DEV, CertLoggerRequest::CHROME_CHANNEL_DEV},
-      {version_info::Channel::CANARY, CertLoggerRequest::CHROME_CHANNEL_CANARY},
-      {version_info::Channel::BETA, CertLoggerRequest::CHROME_CHANNEL_BETA},
+       chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_UNKNOWN},
+      {version_info::Channel::DEV,
+       chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_DEV},
+      {version_info::Channel::CANARY,
+       chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_CANARY},
+      {version_info::Channel::BETA,
+       chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_BETA},
       {version_info::Channel::STABLE,
-       CertLoggerRequest::CHROME_CHANNEL_STABLE}};
+       chrome_browser_ssl::CertLoggerRequest::CHROME_CHANNEL_STABLE}};
 
   // Create a report, set its channel value and check if we
   // get back test_case.expected_channel.
@@ -269,13 +270,13 @@ TEST(ErrorReportTest, TestChromeChannelIncluded) {
     SSLInfo ssl_info;
     ASSERT_NO_FATAL_FAILURE(
         GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
-    ErrorReport report(kDummyHostname, ssl_info);
+    CertificateErrorReport report(kDummyHostname, ssl_info);
 
     report.AddChromeChannel(test_case.channel);
     std::string serialized_report;
     ASSERT_TRUE(report.Serialize(&serialized_report));
 
-    CertLoggerRequest parsed;
+    chrome_browser_ssl::CertLoggerRequest parsed;
     ASSERT_TRUE(parsed.ParseFromString(serialized_report));
     EXPECT_EQ(test_case.expected_channel, parsed.chrome_channel());
   }
@@ -291,13 +292,13 @@ TEST(ErrorReportTest, TestIsEnterpriseManagedPopulatedOnWindows) {
   SSLInfo ssl_info;
   ASSERT_NO_FATAL_FAILURE(
       GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
-  ErrorReport report(kDummyHostname, ssl_info);
+  CertificateErrorReport report(kDummyHostname, ssl_info);
 
   report.SetIsEnterpriseManaged(true);
   std::string serialized_report;
   ASSERT_TRUE(report.Serialize(&serialized_report));
 
-  CertLoggerRequest parsed;
+  chrome_browser_ssl::CertLoggerRequest parsed;
   ASSERT_TRUE(parsed.ParseFromString(serialized_report));
   EXPECT_EQ(true, parsed.is_enterprise_managed());
 }
@@ -310,16 +311,15 @@ TEST(ErrorReportTest, AndroidAIAFetchingFeatureEnabled) {
   SSLInfo ssl_info;
   ASSERT_NO_FATAL_FAILURE(
       GetTestSSLInfo(INCLUDE_UNVERIFIED_CERT_CHAIN, &ssl_info, kCertStatus));
-  ErrorReport report(kDummyHostname, ssl_info);
+  CertificateErrorReport report(kDummyHostname, ssl_info);
   std::string serialized_report;
   ASSERT_TRUE(report.Serialize(&serialized_report));
-  CertLoggerRequest parsed;
+  chrome_browser_ssl::CertLoggerRequest parsed;
   ASSERT_TRUE(parsed.ParseFromString(serialized_report));
-  EXPECT_EQ(CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED,
-            parsed.features_info().android_aia_fetching_status());
+  EXPECT_EQ(
+      chrome_browser_ssl::CertLoggerFeaturesInfo::ANDROID_AIA_FETCHING_ENABLED,
+      parsed.features_info().android_aia_fetching_status());
 }
 #endif
 
 }  // namespace
-
-}  // namespace certificate_reporting

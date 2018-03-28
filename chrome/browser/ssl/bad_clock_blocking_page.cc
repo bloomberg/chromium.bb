@@ -70,7 +70,7 @@ BadClockBlockingPage::BadClockBlockingPage(
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
     : SSLBlockingPageBase(
           web_contents,
-          certificate_reporting::ErrorReport::INTERSTITIAL_CLOCK,
+          CertificateErrorReport::INTERSTITIAL_CLOCK,
           ssl_info,
           request_url,
           std::move(ssl_cert_reporter),

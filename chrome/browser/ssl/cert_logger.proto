@@ -19,7 +19,7 @@ syntax = "proto2";
 // Chrome requires this.
 option optimize_for = LITE_RUNTIME;
 
-package certificate_reporting;
+package chrome_browser_ssl;
 
 // Protocol types
 

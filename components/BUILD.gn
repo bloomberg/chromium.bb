@@ -188,7 +188,6 @@ test("components_unittests") {
       "//components/autofill/content/renderer:unit_tests",
       "//components/cast_certificate:unit_tests",
       "//components/cast_channel:unit_tests",
-      "//components/certificate_reporting:unit_tests",
       "//components/certificate_transparency:unit_tests",
       "//components/contextual_search:unit_tests",
       "//components/crash/content/app:unit_tests",

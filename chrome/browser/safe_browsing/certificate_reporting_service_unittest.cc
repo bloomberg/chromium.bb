@@ -20,8 +20,8 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/test_safe_browsing_service.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/certificate_reporting/error_report.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -73,7 +73,7 @@ std::string MakeReport(const std::string& hostname) {
   net::SSLInfo ssl_info;
   ssl_info.cert = ssl_info.unverified_cert = CreateFakeCert();
 
-  certificate_reporting::ErrorReport report(hostname, ssl_info);
+  CertificateErrorReport report(hostname, ssl_info);
   std::string serialized_report;
   EXPECT_TRUE(report.Serialize(&serialized_report));
   return serialized_report;
@@ -83,7 +83,7 @@ void CheckReport(const CertificateReportingService::Report& report,
                  const std::string& expected_hostname,
                  bool expected_is_retry_upload,
                  const base::Time& expected_creation_time) {
-  certificate_reporting::ErrorReport error_report;
+  CertificateErrorReport error_report;
   EXPECT_TRUE(error_report.InitializeFromString(report.serialized_report));
   EXPECT_EQ(expected_hostname, error_report.hostname());
   EXPECT_EQ(expected_is_retry_upload, error_report.is_retry_upload());
@@ -222,8 +222,8 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
 
   const GURL kFailureURL =
       net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_SSL_PROTOCOL_ERROR);
-  certificate_reporting::ErrorReporter* certificate_error_reporter =
-      new certificate_reporting::ErrorReporter(
+  CertificateErrorReporter* certificate_error_reporter =
+      new CertificateErrorReporter(
           url_request_context_getter()->GetURLRequestContext(), kFailureURL);
 
   CertificateReportingService::BoundedReportList* list =
@@ -231,8 +231,7 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
 
   // Create a reporter with retries enabled.
   CertificateReportingService::Reporter reporter(
-      std::unique_ptr<certificate_reporting::ErrorReporter>(
-          certificate_error_reporter),
+      std::unique_ptr<CertificateErrorReporter>(certificate_error_reporter),
       std::unique_ptr<CertificateReportingService::BoundedReportList>(list),
       clock.get(), base::TimeDelta::FromSeconds(100),
       true /* retries_enabled */);
@@ -318,8 +317,8 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
 
   const GURL kFailureURL =
       net::URLRequestFailedJob::GetMockHttpsUrl(net::ERR_SSL_PROTOCOL_ERROR);
-  certificate_reporting::ErrorReporter* certificate_error_reporter =
-      new certificate_reporting::ErrorReporter(
+  CertificateErrorReporter* certificate_error_reporter =
+      new CertificateErrorReporter(
           url_request_context_getter()->GetURLRequestContext(), kFailureURL);
 
   CertificateReportingService::BoundedReportList* list =
@@ -327,8 +326,7 @@ TEST_F(CertificateReportingServiceReporterOnIOThreadTest,
 
   // Create a reporter with retries disabled.
   CertificateReportingService::Reporter reporter(
-      std::unique_ptr<certificate_reporting::ErrorReporter>(
-          certificate_error_reporter),
+      std::unique_ptr<CertificateErrorReporter>(certificate_error_reporter),
       std::unique_ptr<CertificateReportingService::BoundedReportList>(list),
       clock.get(), base::TimeDelta::FromSeconds(100),
       false /* retries_enabled */);

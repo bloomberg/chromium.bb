@@ -16,13 +16,13 @@
 #include "chrome/browser/safe_browsing/certificate_reporting_service_factory.h"
 #include "chrome/browser/safe_browsing/certificate_reporting_service_test_utils.h"
 #include "chrome/browser/ssl/cert_report_helper.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "chrome/browser/ssl/certificate_reporting_test_utils.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/base/in_process_browser_test.h"
 #include "chrome/test/base/ui_test_utils.h"
-#include "components/certificate_reporting/error_report.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "components/variations/variations_params_manager.h"
@@ -204,7 +204,7 @@ class CertificateReportingServiceBrowserTest
                     const std::string type) {
     std::set<std::string> received_hostnames;
     for (const std::string& serialized_report : received_reports) {
-      certificate_reporting::ErrorReport report;
+      CertificateErrorReport report;
       ASSERT_TRUE(report.InitializeFromString(serialized_report));
       received_hostnames.insert(report.hostname());
     }
