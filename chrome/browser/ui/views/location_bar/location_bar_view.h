@@ -13,6 +13,7 @@
 #include "base/compiler_specific.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
+#include "base/scoped_observer.h"
 #include "chrome/browser/extensions/extension_context_menu_model.h"
 #include "chrome/browser/ui/location_bar/location_bar.h"
 #include "chrome/browser/ui/omnibox/chrome_omnibox_edit_controller.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/ui/views/location_bar/bubble_icon_view.h"
 #include "chrome/browser/ui/views/location_bar/content_setting_image_view.h"
 #include "chrome/browser/ui/views/omnibox/omnibox_view_views.h"
+#include "components/omnibox/browser/omnibox_popup_model_observer.h"
 #include "components/prefs/pref_member.h"
 #include "components/security_state/core/security_state.h"
 #include "components/zoom/zoom_event_manager_observer.h"
@@ -41,6 +43,8 @@ class KeywordHintView;
 class LocationIconView;
 class ManagePasswordsIconViews;
 enum class OmniboxPart;
+class OmniboxPopupModel;
+class OmniboxPopupView;
 enum class OmniboxTint;
 class Profile;
 class SelectedKeywordView;
@@ -75,7 +79,8 @@ class LocationBarView : public LocationBar,
                         public zoom::ZoomEventManagerObserver,
                         public views::ButtonListener,
                         public ContentSettingImageView::Delegate,
-                        public BubbleIconView::Delegate {
+                        public BubbleIconView::Delegate,
+                        public OmniboxPopupModelObserver {
  public:
   class Delegate {
    public:
@@ -266,6 +271,9 @@ class LocationBarView : public LocationBar,
   // Returns the thickness of any visible edge, in pixels.
   int GetHorizontalEdgeThickness() const;
 
+  // Updates the background on a theme change, or dropdown state change.
+  void RefreshBackground();
+
   // Updates |location_icon_view_| based on the current state and theme.
   void RefreshLocationIcon();
 
@@ -306,6 +314,9 @@ class LocationBarView : public LocationBar,
 
   // Returns true if the location icon text should be animated.
   bool ShouldAnimateLocationIconTextVisibilityChange() const;
+
+  // Gets the OmniboxPopupView associated with the model in |omnibox_view_|.
+  OmniboxPopupView* GetOmniboxPopupView();
 
   // LocationBar:
   GURL GetDestinationURL() const override;
@@ -355,6 +366,9 @@ class LocationBarView : public LocationBar,
 
   // DropdownBarHostDelegate:
   void SetFocusAndSelection(bool select_all) override;
+
+  // OmniboxPopupModelObserver:
+  void OnOmniboxPopupShownOrHidden() override;
 
   // Returns the total amount of space reserved above or below the content,
   // which is the vertical edge thickness plus the padding next to it.
@@ -447,6 +461,8 @@ class LocationBarView : public LocationBar,
   // whether to animate security level transitions.
   security_state::SecurityLevel last_update_security_level_ =
       security_state::NONE;
+
+  ScopedObserver<OmniboxPopupModel, LocationBarView> popup_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarView);
 };
