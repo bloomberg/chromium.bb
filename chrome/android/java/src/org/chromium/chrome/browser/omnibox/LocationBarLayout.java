@@ -786,8 +786,6 @@ public class LocationBarLayout extends FrameLayout
                 }
             }
         });
-
-        mUrlBar.setSelectAllOnFocus(true);
     }
 
     @Override
@@ -1044,6 +1042,21 @@ public class LocationBarLayout extends FrameLayout
     }
 
     /**
+     * Updates the omnibox text selection when focused. When displaying a query in the omnibox,
+     * we want to move the cursor to the end of the search terms to more easily refine the search,
+     * and when displaying a URL we select all.
+     */
+    private void updateFocusedUrlBarSelection() {
+        if (!mUrlBar.hasFocus()) return;
+
+        if (mToolbarDataProvider.isDisplayingQueryTerms()) {
+            mUrlBar.setSelection(mUrlBar.getText().length());
+        } else {
+            selectAll();
+        }
+    }
+
+    /**
      * Triggered when the URL input field has gained or lost focus.
      * @param hasFocus Whether the URL field has gained focus.
      */
@@ -1051,14 +1064,13 @@ public class LocationBarLayout extends FrameLayout
         mUrlHasFocus = hasFocus;
         updateButtonVisibility();
         updateNavigationButton();
+
         if (hasFocus) {
             if (mNativeInitialized) RecordUserAction.record("FocusLocation");
             String editingText = mToolbarDataProvider.getEditingText();
             if (editingText == null
                     || !setUrlBarText(mToolbarDataProvider.getCurrentUrl(), editingText)) {
                 mUrlBar.deEmphasizeUrl();
-            } else if (editingText != null) {
-                mUrlBar.selectAll();
             }
 
             // Explicitly tell InputMethodManager that the url bar is focused before any callbacks
@@ -1078,6 +1090,7 @@ public class LocationBarLayout extends FrameLayout
                 setUrlToPageUrl();
                 emphasizeUrl();
             }
+
             // Moving focus away from UrlBar(EditText) to a non-editable focus holder, such as
             // ToolbarPhone, won't automatically hide keyboard app, but restart it with TYPE_NULL,
             // which will result in a visual glitch. Also, currently, we do not allow moving focus
@@ -1089,14 +1102,12 @@ public class LocationBarLayout extends FrameLayout
             if (imm.isActive(mUrlBar)) imm.hideSoftInputFromWindow(getWindowToken(), 0, null);
         }
 
-        if (mToolbarDataProvider.isUsingBrandColor()) {
-            updateVisualsForState();
-            if (mUrlHasFocus) mUrlBar.selectAll();
-        }
+        if (mToolbarDataProvider.isUsingBrandColor()) updateVisualsForState();
 
         changeLocationBarIcon();
         updateVerboseStatusVisibility();
         updateLocationBarIconContainerVisibility();
+        updateFocusedUrlBarSelection();
         mUrlBar.setCursorVisible(hasFocus);
 
         if (!mUrlFocusedWithoutAnimations) handleUrlFocusAnimation(hasFocus);
@@ -1940,8 +1951,8 @@ public class LocationBarLayout extends FrameLayout
         }
 
         setUrlBarText(query, null);
-        mUrlBar.setSelection(0, mUrlBar.getText().length());
         setUrlBarFocus(true);
+        selectAll();
         stopAutocomplete(false);
         if (mToolbarDataProvider.hasTab()) {
             mAutocomplete.start(mToolbarDataProvider.getProfile(),
