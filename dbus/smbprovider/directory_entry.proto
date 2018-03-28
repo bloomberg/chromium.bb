@@ -207,3 +207,11 @@ message GetSharesOptionsProto {
   // Url of the server containing the shares. (e.g. "smb://192.168.0.1")
   optional string server_url = 1;
 }
+
+// Used for passing inputs into SmbProvider.Remount().
+message RemountOptionsProto {
+  // Path of the share to be remounted. (e.g. "smb://192.168.0.1/testshare")
+  optional string path = 1;
+  // ID to assign to the mount.
+  optional int32 mount_id = 2;
+}
