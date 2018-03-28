@@ -25,6 +25,7 @@
 #include "components/history/core/browser/history_service.h"
 #include "components/image_fetcher/core/image_decoder.h"
 #include "components/image_fetcher/core/image_fetcher.h"
+#include "components/image_fetcher/core/mock_image_decoder.h"
 #include "components/image_fetcher/core/mock_image_fetcher.h"
 #include "components/image_fetcher/core/request_metadata.h"
 #include "net/traffic_annotation/network_traffic_annotation_test_helper.h"
@@ -48,14 +49,7 @@ using ::testing::ReturnArg;
 
 namespace ntp_tiles {
 namespace {
-
-class MockImageDecoder : public image_fetcher::ImageDecoder {
- public:
-  MOCK_METHOD3(DecodeImage,
-               void(const std::string& image_data,
-                    const gfx::Size& desired_image_frame_size,
-                    const image_fetcher::ImageDecodedCallback& callback));
-};
+using MockImageDecoder = image_fetcher::MockImageDecoder;
 
 // This class provides methods to inject an image resource where a real resource
 // would be necessary otherwise. All other methods have return values that allow

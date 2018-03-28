@@ -27,11 +27,13 @@ static_library("core") {
 static_library("test_support") {
   testonly = true
   sources = [
+    "mock_image_decoder.cc",
+    "mock_image_decoder.h",
     "mock_image_fetcher.cc",
     "mock_image_fetcher.h",
   ]
 
-  deps = [
+  public_deps = [
     ":core",
     "//testing/gmock",
   ]
