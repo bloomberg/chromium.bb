@@ -130,12 +130,6 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
   // false for failure.
   static bool CloseFileIfValid(base::File& file, int64_t* file_size);
 
-  // Creates a new map with values (content ids) the same as in
-  // |frame_tree_node_to_content_id_| map, but with the keys translated from
-  // frame_tree_node_id into a |site_instance|-specific routing_id.
-  std::map<int, std::string> CreateFrameRoutingIdToContentId(
-      SiteInstance* site_instance);
-
   // Id used to map renderer responses to jobs.
   // See also MHTMLGenerationManager::id_to_job_ map.
   const int job_id_;
@@ -162,10 +156,6 @@ class MHTMLGenerationManager::Job : public RenderProcessHostObserver {
 
   // The handle to the file the MHTML is saved to for the browser process.
   base::File browser_file_;
-
-  // Map from frames to content ids (see WebFrameSerializer::generateMHTMLParts
-  // for more details about what "content ids" are and how they are used).
-  std::map<int, std::string> frame_tree_node_to_content_id_;
 
   // MIME multipart boundary to use in the MHTML doc.
   const std::string mhtml_boundary_marker_;
@@ -226,28 +216,6 @@ MHTMLGenerationManager::Job::~Job() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 
-std::map<int, std::string>
-MHTMLGenerationManager::Job::CreateFrameRoutingIdToContentId(
-    SiteInstance* site_instance) {
-  std::map<int, std::string> result;
-  for (const auto& it : frame_tree_node_to_content_id_) {
-    int ftn_id = it.first;
-    const std::string& content_id = it.second;
-
-    FrameTreeNode* ftn = FrameTreeNode::GloballyFindByID(ftn_id);
-    if (!ftn)
-      continue;
-
-    int routing_id =
-        ftn->render_manager()->GetRoutingIdForSiteInstance(site_instance);
-    if (routing_id == MSG_ROUTING_NONE)
-      continue;
-
-    result[routing_id] = content_id;
-  }
-  return result;
-}
-
 MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
   DCHECK(browser_file_.IsValid());
   DCHECK(!pending_frame_tree_node_ids_.empty());
@@ -278,8 +246,6 @@ MhtmlSaveStatus MHTMLGenerationManager::Job::SendToNextRenderFrame() {
 
   ipc_params.destination_file = IPC::GetPlatformFileForTransit(
       browser_file_.GetPlatformFile(), false);  // |close_source_handle|.
-  ipc_params.frame_routing_id_to_content_id =
-      CreateFrameRoutingIdToContentId(rfh->GetSiteInstance());
 
   // Send the IPC asking the renderer to serialize the frame.
   DCHECK_EQ(FrameTreeNode::kFrameTreeNodeInvalidId,
@@ -357,11 +323,6 @@ void MHTMLGenerationManager::Job::AddFrame(RenderFrameHost* render_frame_host) {
   auto* rfhi = static_cast<RenderFrameHostImpl*>(render_frame_host);
   int frame_tree_node_id = rfhi->frame_tree_node()->frame_tree_node_id();
   pending_frame_tree_node_ids_.push(frame_tree_node_id);
-
-  std::string guid = base::GenerateGUID();
-  std::string content_id = base::StringPrintf("<frame-%d-%s@mhtml.blink>",
-                                              frame_tree_node_id, guid.c_str());
-  frame_tree_node_to_content_id_[frame_tree_node_id] = content_id;
 }
 
 void MHTMLGenerationManager::Job::RenderProcessHostDestroyed(
