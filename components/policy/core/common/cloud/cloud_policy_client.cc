@@ -4,6 +4,8 @@
 
 #include "components/policy/core/common/cloud/cloud_policy_client.h"
 
+#include "build/build_config.h"
+
 #include <utility>
 
 #include "base/bind.h"
@@ -12,6 +14,7 @@
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/stl_util.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
 #include "components/policy/core/common/cloud/signing_service.h"
 #include "google_apis/gaia/gaia_constants.h"
@@ -42,7 +45,8 @@ DeviceMode TranslateProtobufDeviceMode(
 
 bool IsChromePolicy(const std::string& type) {
   return type == dm_protocol::kChromeDevicePolicyType ||
-         type == dm_protocol::kChromeUserPolicyType;
+         type == dm_protocol::kChromeUserPolicyType ||
+         type == dm_protocol::kChromeMachineLevelUserCloudPolicyType;
 }
 
 LicenseType TranslateLicenseType(em::LicenseType type) {
@@ -225,6 +229,33 @@ void CloudPolicyClient::RegisterWithCertificate(
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
+void CloudPolicyClient::RegisterWithToken(const std::string& token,
+                                          const std::string& client_id) {
+  DCHECK(service_);
+  DCHECK(!token.empty());
+  DCHECK(!client_id.empty());
+  DCHECK(!is_registered());
+
+  SetClientId(client_id);
+
+  policy_fetch_request_job_.reset(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_TOKEN_ENROLLMENT, GetRequestContext()));
+  policy_fetch_request_job_->SetEnrollmentToken(token);
+  policy_fetch_request_job_->SetClientID(client_id_);
+
+  enterprise_management::RegisterBrowserRequest* request =
+      policy_fetch_request_job_->GetRequest()
+          ->mutable_register_browser_request();
+  request->set_machine_name(GetMachineName());
+
+  policy_fetch_request_job_->SetRetryCallback(base::Bind(
+      &CloudPolicyClient::OnRetryRegister, weak_ptr_factory_.GetWeakPtr()));
+
+  policy_fetch_request_job_->Start(
+      base::Bind(&CloudPolicyClient::OnRegisterCompleted,
+                 weak_ptr_factory_.GetWeakPtr()));
+}
+
 void CloudPolicyClient::OnRegisterWithCertificateRequestSigned(bool success,
     em::SignedData signed_data) {
   if (!success) {
@@ -396,6 +427,28 @@ void CloudPolicyClient::UploadDeviceStatus(
       base::AdaptCallbackForRepeating(base::BindOnce(
           &CloudPolicyClient::OnReportUploadCompleted,
           weak_ptr_factory_.GetWeakPtr(), request_job.get(), callback));
+
+  request_jobs_.push_back(std::move(request_job));
+  request_jobs_.back()->Start(job_callback);
+}
+
+void CloudPolicyClient::UploadChromeDesktopReport(
+    const em::ChromeDesktopReportRequest& chrome_desktop_report,
+    const CloudPolicyClient::StatusCallback& callback) {
+  CHECK(is_registered());
+  std::unique_ptr<DeviceManagementRequestJob> request_job(service_->CreateJob(
+      DeviceManagementRequestJob::TYPE_CHROME_DESKTOP_REPORT,
+      GetRequestContext()));
+
+  request_job->SetDMToken(dm_token_);
+  request_job->SetClientID(client_id_);
+
+  em::DeviceManagementRequest* request = request_job->GetRequest();
+  *request->mutable_chrome_desktop_report_request() = chrome_desktop_report;
+
+  const DeviceManagementRequestJob::Callback job_callback =
+      base::Bind(&CloudPolicyClient::OnReportUploadCompleted,
+                 weak_ptr_factory_.GetWeakPtr(), request_job.get(), callback);
 
   request_jobs_.push_back(std::move(request_job));
   request_jobs_.back()->Start(job_callback);

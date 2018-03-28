@@ -123,6 +123,7 @@ void CloudPolicyService::OnStoreLoaded(CloudPolicyStore* store) {
   if (!policy_timestamp.is_null() && !old_timestamp.is_null() &&
       policy_timestamp != old_timestamp) {
     const base::TimeDelta age = policy_timestamp - old_timestamp;
+    // TODO(zmin): add UMA for new policy type.
     if (policy_type_ == dm_protocol::kChromeUserPolicyType) {
       UMA_HISTOGRAM_CUSTOM_COUNTS("Enterprise.PolicyUpdatePeriod.User",
                                   age.InDays(), 1, 1000, 100);

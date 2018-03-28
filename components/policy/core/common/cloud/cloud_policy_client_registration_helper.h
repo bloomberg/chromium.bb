@@ -49,6 +49,12 @@ class POLICY_EXPORT CloudPolicyClientRegistrationHelper
       const std::string& account_id,
       const base::Closure& callback);
 
+  // Starts the device registration with an token enrollment process.
+  // |callback| is invoked when the registration is complete.
+  void StartRegistrationWithEnrollmentToken(const std::string& token,
+                                            const std::string& client_id,
+                                            const base::Closure& callback);
+
 #if !defined(OS_ANDROID)
   // Starts the client registration process. The |login_refresh_token| is used
   // to mint a new token for the userinfo and DM services.
