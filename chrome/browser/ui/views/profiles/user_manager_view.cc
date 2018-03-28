@@ -50,9 +50,9 @@ namespace {
 
 // An open User Manager window. There can only be one open at a time. This
 // is reset to NULL when the window is closed.
-UserManagerView* instance_ = nullptr;
-base::Closure* user_manager_shown_callback_for_testing_ = nullptr;
-bool instance_under_construction_ = false;
+UserManagerView* g_user_manager_view = nullptr;
+base::Closure* g_user_manager_shown_callback_for_testing = nullptr;
+bool g_is_user_manager_view_under_construction = false;
 }  // namespace
 
 // Delegate---------------------------------------------------------------
@@ -146,16 +146,16 @@ void UserManager::Show(
   DCHECK(profile_path_to_focus != ProfileManager::GetGuestProfilePath());
 
   ProfileMetrics::LogProfileOpenMethod(ProfileMetrics::OPEN_USER_MANAGER);
-  if (instance_) {
+  if (g_user_manager_view) {
     // If we are showing the User Manager after locking a profile, change the
     // active profile to Guest.
     profiles::SetActiveProfileToGuestIfLocked();
 
     // Note the time we started opening the User Manager.
-    instance_->set_user_manager_started_showing(base::Time::Now());
+    g_user_manager_view->set_user_manager_started_showing(base::Time::Now());
 
     // If there's a user manager window open already, just activate it.
-    instance_->GetWidget()->Activate();
+    g_user_manager_view->GetWidget()->Activate();
     return;
   }
 
@@ -163,7 +163,7 @@ void UserManager::Show(
   // Because creating the System profile is asynchronous, it's possible for
   // there to then be multiple pending operations and eventually multiple
   // User Managers.
-  if (instance_under_construction_)
+  if (g_is_user_manager_view_under_construction)
     return;
 
   // Create the system profile, if necessary, and open the user manager
@@ -175,7 +175,7 @@ void UserManager::Show(
       base::Bind(&UserManagerView::OnSystemProfileCreated,
                  base::Passed(base::WrapUnique(user_manager)),
                  base::Owned(new base::AutoReset<bool>(
-                     &instance_under_construction_, true))));
+                     &g_is_user_manager_view_under_construction, true))));
 }
 
 // static
@@ -185,8 +185,8 @@ void UserManager::Hide() {
     return UserManager::HideCocoa();
   }
 #endif
-  if (instance_)
-    instance_->GetWidget()->Close();
+  if (g_user_manager_view)
+    g_user_manager_view->GetWidget()->Close();
 }
 
 // static
@@ -197,7 +197,8 @@ bool UserManager::IsShowing() {
   }
 #endif
 
-  return instance_ ? instance_->GetWidget()->IsActive() : false;
+  return g_user_manager_view ? g_user_manager_view->GetWidget()->IsActive()
+                             : false;
 }
 
 // static
@@ -208,14 +209,14 @@ void UserManager::OnUserManagerShown() {
   }
 #endif
 
-  if (instance_) {
-    instance_->LogTimeToOpen();
-    if (user_manager_shown_callback_for_testing_) {
-      if (!user_manager_shown_callback_for_testing_->is_null())
-        user_manager_shown_callback_for_testing_->Run();
+  if (g_user_manager_view) {
+    g_user_manager_view->LogTimeToOpen();
+    if (g_user_manager_shown_callback_for_testing) {
+      if (!g_user_manager_shown_callback_for_testing->is_null())
+        g_user_manager_shown_callback_for_testing->Run();
 
-      delete user_manager_shown_callback_for_testing_;
-      user_manager_shown_callback_for_testing_ = nullptr;
+      delete g_user_manager_shown_callback_for_testing;
+      g_user_manager_shown_callback_for_testing = nullptr;
     }
   }
 }
@@ -228,8 +229,8 @@ void UserManager::AddOnUserManagerShownCallbackForTesting(
     return UserManager::AddOnUserManagerShownCallbackForTestingCocoa(callback);
   }
 #endif
-  DCHECK(!user_manager_shown_callback_for_testing_);
-  user_manager_shown_callback_for_testing_ = new base::Closure(callback);
+  DCHECK(!g_user_manager_shown_callback_for_testing);
+  g_user_manager_shown_callback_for_testing = new base::Closure(callback);
 }
 
 // static
@@ -240,7 +241,7 @@ base::FilePath UserManager::GetSigninProfilePath() {
   }
 #endif
 
-  return instance_->GetSigninProfilePath();
+  return g_user_manager_view->GetSigninProfilePath();
 }
 
 // UserManagerProfileDialog
@@ -275,8 +276,8 @@ void UserManagerProfileDialog::ShowReauthDialogWithProfilePath(
   // knows which profile to load and update the credentials.
   GURL url = signin::GetReauthURLWithEmailForDialog(
       signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason, email);
-  instance_->SetSigninProfilePath(profile_path);
-  instance_->ShowDialog(browser_context, email, url);
+  g_user_manager_view->SetSigninProfilePath(profile_path);
+  g_user_manager_view->ShowDialog(browser_context, email, url);
 }
 
 // static
@@ -296,10 +297,10 @@ void UserManagerProfileDialog::ShowSigninDialog(
   DCHECK(reason ==
              signin_metrics::Reason::REASON_FORCED_SIGNIN_PRIMARY_ACCOUNT ||
          reason == signin_metrics::Reason::REASON_SIGNIN_PRIMARY_ACCOUNT);
-  instance_->SetSigninProfilePath(profile_path);
+  g_user_manager_view->SetSigninProfilePath(profile_path);
   GURL url = signin::GetPromoURLForDialog(
       signin_metrics::AccessPoint::ACCESS_POINT_USER_MANAGER, reason, true);
-  instance_->ShowDialog(browser_context, std::string(), url);
+  g_user_manager_view->ShowDialog(browser_context, std::string(), url);
 }
 
 void UserManagerProfileDialog::ShowDialogAndDisplayErrorMessage(
@@ -316,9 +317,9 @@ void UserManagerProfileDialog::ShowDialogAndDisplayErrorMessage(
   // The error occurred before sign in happened, reset |signin_profile_path_|
   // so that the error page will show the error message that is assoicated with
   // the system profile.
-  instance_->SetSigninProfilePath(base::FilePath());
-  instance_->ShowDialog(browser_context, std::string(),
-                        GURL(chrome::kChromeUISigninErrorURL));
+  g_user_manager_view->SetSigninProfilePath(base::FilePath());
+  g_user_manager_view->ShowDialog(browser_context, std::string(),
+                                  GURL(chrome::kChromeUISigninErrorURL));
 }
 
 // static
@@ -330,8 +331,8 @@ void UserManagerProfileDialog::DisplayErrorMessage() {
 #endif
 
   // This method should only be called if the user manager is already showing.
-  DCHECK(instance_);
-  instance_->DisplayErrorMessage();
+  DCHECK(g_user_manager_view);
+  g_user_manager_view->DisplayErrorMessage();
 }
 
 // static
@@ -342,8 +343,8 @@ void UserManagerProfileDialog::HideDialog() {
   }
 #endif
 
-  if (instance_ && instance_->GetWidget()->IsVisible())
-    instance_->HideDialog();
+  if (g_user_manager_view && g_user_manager_view->GetWidget()->IsVisible())
+    g_user_manager_view->HideDialog();
 }
 
 // UserManagerView -------------------------------------------------------------
@@ -371,9 +372,10 @@ void UserManagerView::OnSystemProfileCreated(
   // active profile to Guest.
   profiles::SetActiveProfileToGuestIfLocked();
 
-  DCHECK(!instance_);
-  instance_ = instance.release();  // |instance_| takes over ownership.
-  instance_->Init(system_profile, GURL(url));
+  DCHECK(!g_user_manager_view);
+  g_user_manager_view =
+      instance.release();  // |g_user_manager_view| takes over ownership.
+  g_user_manager_view->Init(system_profile, GURL(url));
 }
 
 void UserManagerView::ShowDialog(content::BrowserContext* browser_context,
@@ -384,7 +386,7 @@ void UserManagerView::ShowDialog(content::BrowserContext* browser_context,
   // WebView's lifetime is managed by the delegate.
   delegate_ = new UserManagerProfileDialogDelegate(
       this, new views::WebView(browser_context), email, url);
-  gfx::NativeView parent = instance_->GetWidget()->GetNativeView();
+  gfx::NativeView parent = g_user_manager_view->GetWidget()->GetNativeView();
   views::DialogDelegate::CreateDialogWidget(delegate_, nullptr, parent);
   delegate_->GetWidget()->Show();
 }
@@ -516,8 +518,8 @@ void UserManagerView::WindowClosing() {
   // Now that the window is closed, we can allow a new one to be opened.
   // (WindowClosing comes in asynchronously from the call to Close() and we
   // may have already opened a new instance).
-  if (instance_ == this)
-    instance_ = NULL;
+  if (g_user_manager_view == this)
+    g_user_manager_view = NULL;
 }
 
 bool UserManagerView::ShouldUseCustomFrame() const {

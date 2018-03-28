@@ -59,7 +59,7 @@ using content::OpenURLParams;
 using content::WebContents;
 
 // If non-null there is a drag underway.
-static TabDragController* instance_ = NULL;
+static TabDragController* g_tab_drag_controller = NULL;
 
 namespace {
 
@@ -219,12 +219,12 @@ TabDragController::TabDragController()
       attach_index_(-1),
       window_finder_(std::make_unique<WindowFinder>()),
       weak_factory_(this) {
-  instance_ = this;
+  g_tab_drag_controller = this;
 }
 
 TabDragController::~TabDragController() {
-  if (instance_ == this)
-    instance_ = NULL;
+  if (g_tab_drag_controller == this)
+    g_tab_drag_controller = NULL;
 
   if (move_loop_widget_) {
     if (added_observer_to_move_loop_widget_)
@@ -308,13 +308,13 @@ void TabDragController::Init(TabStrip* source_tabstrip,
 
 // static
 bool TabDragController::IsAttachedTo(const TabStrip* tab_strip) {
-  return (instance_ && instance_->active() &&
-          instance_->attached_tabstrip() == tab_strip);
+  return (g_tab_drag_controller && g_tab_drag_controller->active() &&
+          g_tab_drag_controller->attached_tabstrip() == tab_strip);
 }
 
 // static
 bool TabDragController::IsActive() {
-  return instance_ && instance_->active();
+  return g_tab_drag_controller && g_tab_drag_controller->active();
 }
 
 void TabDragController::SetMoveBehavior(MoveBehavior behavior) {
