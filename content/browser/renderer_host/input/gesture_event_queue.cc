@@ -55,15 +55,11 @@ bool GestureEventQueue::QueueEvent(
     return false;
   }
 
-  // fling_controller_ is in charge of handling GFS events from touchpad and
-  // touchscreen sources. In these cases instead of queuing the GFS event to be
-  // sent to the renderer, the controller processes the fling and generates
+  // fling_controller_ is in charge of handling GFS events and the events are
+  // not sent to the renderer, the controller processes the fling and generates
   // fling progress events (wheel events for touchpad and GSU events for
-  // touchscreen) which are handled normally.
-  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart &&
-      (gesture_event.event.SourceDevice() == blink::kWebGestureDeviceTouchpad ||
-       gesture_event.event.SourceDevice() ==
-           blink::kWebGestureDeviceTouchscreen)) {
+  // touchscreen and autoscroll) which are handled normally.
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingStart) {
     fling_controller_.ProcessGestureFlingStart(gesture_event);
     fling_in_progress_ = true;
     return false;
@@ -71,8 +67,7 @@ bool GestureEventQueue::QueueEvent(
 
   // If the GestureFlingStart event is processed by the fling_controller_, the
   // GestureFlingCancel event should be the same.
-  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel &&
-      fling_controller_.fling_in_progress()) {
+  if (gesture_event.event.GetType() == WebInputEvent::kGestureFlingCancel) {
     fling_controller_.ProcessGestureFlingCancel(gesture_event);
     fling_in_progress_ = false;
     return false;

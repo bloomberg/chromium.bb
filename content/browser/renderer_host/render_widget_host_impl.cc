@@ -1269,8 +1269,7 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
       }
 
       is_in_touchpad_gesture_fling_ = true;
-    } else if (gesture_event.SourceDevice() ==
-               blink::WebGestureDevice::kWebGestureDeviceTouchscreen) {
+    } else {
       DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
 
       // The FlingController handles GFS with touchscreen source and sends GSU
@@ -1278,10 +1277,6 @@ void RenderWidgetHostImpl::ForwardGestureEventWithLatencyInfo(
       // is_in_gesture_scroll must stay true till the fling progress is
       // finished. Then the FlingController will generate and send a GSE which
       // shows the end of a scroll sequence and resets is_in_gesture_scroll_.
-    } else {
-      // Autoscroll fling is still handled on renderer.
-      DCHECK(is_in_gesture_scroll_[gesture_event.SourceDevice()]);
-      is_in_gesture_scroll_[gesture_event.SourceDevice()] = false;
     }
   }
 
@@ -2195,7 +2190,8 @@ void RenderWidgetHostImpl::OnAutoscrollStart(const gfx::PointF& position) {
       blink::kWebGestureDeviceSyntheticAutoscroll);
   scroll_begin.SetPositionInWidget(position);
 
-  input_router_->SendGestureEvent(GestureEventWithLatencyInfo(scroll_begin));
+  ForwardGestureEventWithLatencyInfo(
+      scroll_begin, ui::LatencyInfo(ui::SourceEventType::OTHER));
 }
 
 void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
@@ -2205,7 +2201,8 @@ void RenderWidgetHostImpl::OnAutoscrollFling(const gfx::Vector2dF& velocity) {
   event.data.fling_start.velocity_x = velocity.x();
   event.data.fling_start.velocity_y = velocity.y();
 
-  input_router_->SendGestureEvent(GestureEventWithLatencyInfo(event));
+  ForwardGestureEventWithLatencyInfo(
+      event, ui::LatencyInfo(ui::SourceEventType::OTHER));
 }
 
 void RenderWidgetHostImpl::OnAutoscrollEnd() {
@@ -2213,12 +2210,9 @@ void RenderWidgetHostImpl::OnAutoscrollEnd() {
       WebInputEvent::kGestureFlingCancel,
       blink::kWebGestureDeviceSyntheticAutoscroll);
   cancel_event.data.fling_cancel.prevent_boosting = true;
-  input_router_->SendGestureEvent(GestureEventWithLatencyInfo(cancel_event));
 
-  WebGestureEvent end_event = SyntheticWebGestureEventBuilder::Build(
-      WebInputEvent::kGestureScrollEnd,
-      blink::kWebGestureDeviceSyntheticAutoscroll);
-  input_router_->SendGestureEvent(GestureEventWithLatencyInfo(end_event));
+  ForwardGestureEventWithLatencyInfo(
+      cancel_event, ui::LatencyInfo(ui::SourceEventType::OTHER));
 }
 
 TouchEmulator* RenderWidgetHostImpl::GetTouchEmulator() {

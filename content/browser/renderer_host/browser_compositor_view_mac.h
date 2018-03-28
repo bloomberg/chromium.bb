@@ -27,7 +27,7 @@ class RecyclableCompositorMac;
 class BrowserCompositorMacClient {
  public:
   virtual SkColor BrowserCompositorMacGetGutterColor() const = 0;
-  virtual void BrowserCompositorMacOnBeginFrame() = 0;
+  virtual void BrowserCompositorMacOnBeginFrame(base::TimeTicks frame_time) = 0;
   virtual void OnFrameTokenChanged(uint32_t frame_token) = 0;
   virtual void DidReceiveFirstFrameAfterNavigation() = 0;
   virtual void DestroyCompositorForShutdown() = 0;
