@@ -11,6 +11,7 @@
 #include "modules/peerconnection/RTCErrorUtil.h"
 #include "modules/peerconnection/RTCPeerConnection.h"
 #include "modules/peerconnection/RTCRtpParameters.h"
+#include "modules/peerconnection/WebRTCStatsReportCallbackResolver.h"
 #include "platform/peerconnection/RTCVoidRequest.h"
 #include "public/platform/WebRTCDTMFSenderHandler.h"
 
@@ -147,6 +148,13 @@ ScriptPromise RTCRtpSender::setParameters(ScriptState* script_state,
   return ScriptPromise::RejectWithDOMException(
       script_state,
       DOMException::Create(kNotSupportedError, "Method not implemented"));
+}
+
+ScriptPromise RTCRtpSender::getStats(ScriptState* script_state) {
+  ScriptPromiseResolver* resolver = ScriptPromiseResolver::Create(script_state);
+  ScriptPromise promise = resolver->Promise();
+  sender_->GetStats(WebRTCStatsReportCallbackResolver::Create(resolver));
+  return promise;
 }
 
 WebRTCRtpSender* RTCRtpSender::web_sender() {

@@ -5401,6 +5401,7 @@ interface RTCRtpSender
     getter track
     method constructor
     method getParameters
+    method getStats
     method replaceTrack
     method setParameters
 interface RTCSessionDescription

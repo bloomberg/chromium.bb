@@ -10,5 +10,6 @@ interface RTCRtpSender {
     [RuntimeEnabled=RTCRtpSenderParameters] RTCRtpParameters getParameters();
     [Measure, CallWith=ScriptState] Promise<void> replaceTrack(MediaStreamTrack? withTrack);
     [Measure] readonly attribute RTCDTMFSender? dtmf;
+    [RuntimeEnabled=RTCPeerConnectionGetStatsSelector, CallWith=ScriptState] Promise<RTCStatsReport> getStats();
     // TODO(hbos): Implement the rest of RTCRtpSender, https://crbug.com/700916.
 };
