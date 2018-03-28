@@ -96,7 +96,7 @@ class ASH_EXPORT StatusAreaWidget : public views::Widget,
 
   // Overridden from views::Widget:
   const ui::NativeTheme* GetNativeTheme() const override;
-  void OnNativeWidgetActivationChanged(bool active) override;
+  bool OnNativeWidgetActivationChanged(bool active) override;
 
   // ShelfBackgroundAnimatorObserver:
   void UpdateShelfItemBackground(SkColor color) override;

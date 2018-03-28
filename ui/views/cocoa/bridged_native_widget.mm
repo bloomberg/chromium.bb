@@ -976,7 +976,8 @@ void BridgedNativeWidget::OnBackingPropertiesChanged() {
 
 void BridgedNativeWidget::OnWindowKeyStatusChangedTo(bool is_key) {
   Widget* widget = native_widget_mac()->GetWidget();
-  widget->OnNativeWidgetActivationChanged(is_key);
+  if (!widget->OnNativeWidgetActivationChanged(is_key))
+    return;
   // The contentView is the BridgedContentView hosting the views::RootView. The
   // focus manager will already know if a native subview has focus.
   if ([window_ contentView] == [window_ firstResponder]) {

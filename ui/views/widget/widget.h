@@ -789,7 +789,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   bool CanActivate() const override;
   bool IsAlwaysRenderAsActive() const override;
   void SetAlwaysRenderAsActive(bool always_render_as_active) override;
-  void OnNativeWidgetActivationChanged(bool active) override;
+  bool OnNativeWidgetActivationChanged(bool active) override;
   void OnNativeFocus() override;
   void OnNativeBlur() override;
   void OnNativeWidgetVisibilityChanging(bool visible) override;
@@ -858,6 +858,7 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   friend class ButtonTest;
   friend class TextfieldTest;
   friend class ViewAuraTest;
+  friend void DisableActivationChangeHandlingForTests();
 
   // Persists the window's restored position and "show" state using the
   // window delegate.
@@ -882,6 +883,8 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
   // Returns the Views whose layers are parented directly to the Widget's
   // layer.
   const View::Views& GetViewsWithLayers();
+
+  static bool g_disable_activation_change_handling_;
 
   internal::NativeWidgetPrivate* native_widget_;
 

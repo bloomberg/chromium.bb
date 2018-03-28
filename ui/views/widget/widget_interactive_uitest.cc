@@ -845,8 +845,9 @@ class WidgetActivationTest : public Widget {
 
   ~WidgetActivationTest() override {}
 
-  void OnNativeWidgetActivationChanged(bool active) override {
+  bool OnNativeWidgetActivationChanged(bool active) override {
     active_ = active;
+    return true;
   }
 
   bool active() const { return active_; }
