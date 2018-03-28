@@ -38,6 +38,7 @@ class RTCRtpSender final : public ScriptWrappable {
   RTCDTMFSender* dtmf();
   void getParameters(RTCRtpParameters&);
   ScriptPromise setParameters(ScriptState*, const RTCRtpParameters&);
+  ScriptPromise getStats(ScriptState*);
 
   WebRTCRtpSender* web_sender();
   // Sets the track. This must be called when the |WebRTCRtpSender| has its

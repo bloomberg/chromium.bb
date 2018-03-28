@@ -983,6 +983,10 @@
       status: "stable",
     },
     {
+      name: "RTCPeerConnectionGetStatsSelector",
+      status: "experimental",
+    },
+    {
       name: "RtcPeerConnectionId",
       origin_trial_feature_name: "RtcPeerConnectionId",
       status: "experimental",
