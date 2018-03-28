@@ -128,21 +128,20 @@ SSLBlockingPage::SSLBlockingPage(
     std::unique_ptr<ChromeMetricsHelper> metrics_helper,
     bool is_superfish,
     const base::Callback<void(content::CertificateRequestResultType)>& callback)
-    : SSLBlockingPageBase(
-          web_contents,
-          is_superfish
-              ? certificate_reporting::ErrorReport::INTERSTITIAL_SUPERFISH
-              : certificate_reporting::ErrorReport::INTERSTITIAL_SSL,
-          ssl_info,
-          request_url,
-          std::move(ssl_cert_reporter),
-          overridable,
-          time_triggered,
-          std::make_unique<SSLErrorControllerClient>(
-              web_contents,
-              ssl_info,
-              request_url,
-              std::move(metrics_helper))),
+    : SSLBlockingPageBase(web_contents,
+                          is_superfish
+                              ? CertificateErrorReport::INTERSTITIAL_SUPERFISH
+                              : CertificateErrorReport::INTERSTITIAL_SSL,
+                          ssl_info,
+                          request_url,
+                          std::move(ssl_cert_reporter),
+                          overridable,
+                          time_triggered,
+                          std::make_unique<SSLErrorControllerClient>(
+                              web_contents,
+                              ssl_info,
+                              request_url,
+                              std::move(metrics_helper))),
       callback_(callback),
       ssl_info_(ssl_info),
       overridable_(overridable),

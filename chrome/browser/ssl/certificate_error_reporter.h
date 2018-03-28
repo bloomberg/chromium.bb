@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORTER_H_
-#define COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORTER_H_
+#ifndef CHROME_BROWSER_SSL_CERTIFICATE_ERROR_REPORTER_H_
+#define CHROME_BROWSER_SSL_CERTIFICATE_ERROR_REPORTER_H_
 
 #include <stdint.h>
 
@@ -20,27 +20,26 @@ namespace net {
 class URLRequestContext;
 }
 
-namespace certificate_reporting {
-
 // Provides functionality for sending reports about invalid SSL
 // certificate chains to a report collection server.
-class ErrorReporter {
+class CertificateErrorReporter {
  public:
   // Creates a certificate error reporter that will send certificate
   // error reports to |upload_url|, using |request_context| as the
   // context for the reports.
-  ErrorReporter(net::URLRequestContext* request_context,
-                const GURL& upload_url);
+  CertificateErrorReporter(net::URLRequestContext* request_context,
+                           const GURL& upload_url);
 
   // Allows tests to use a server public key with known private key and
   // a mock ReportSender. |server_public_key| must outlive
   // the ErrorReporter.
-  ErrorReporter(const GURL& upload_url,
-                const uint8_t server_public_key[/* 32 */],
-                const uint32_t server_public_key_version,
-                std::unique_ptr<net::ReportSender> certificate_report_sender);
+  CertificateErrorReporter(
+      const GURL& upload_url,
+      const uint8_t server_public_key[/* 32 */],
+      const uint32_t server_public_key_version,
+      std::unique_ptr<net::ReportSender> certificate_report_sender);
 
-  virtual ~ErrorReporter();
+  virtual ~CertificateErrorReporter();
 
   // Sends a certificate report to the report collection server. The
   // |serialized_report| is expected to be a serialized protobuf
@@ -52,7 +51,7 @@ class ErrorReporter {
   // opt-in, only sending reports for certain hostnames, checking for
   // incognito mode, etc.).
   //
-  // On some platforms (but not all), ErrorReporter can use
+  // On some platforms (but not all), CertificateErrorReporter can use
   // an HTTP endpoint to send encrypted extended reporting reports. On
   // unsupported platforms, callers must send extended reporting reports
   // over SSL.
@@ -79,9 +78,7 @@ class ErrorReporter {
   const uint8_t* server_public_key_;
   const uint32_t server_public_key_version_;
 
-  DISALLOW_COPY_AND_ASSIGN(ErrorReporter);
+  DISALLOW_COPY_AND_ASSIGN(CertificateErrorReporter);
 };
 
-}  // namespace certificate_reporting
-
-#endif  // COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORTER_H_
+#endif  // CHROME_BROWSER_SSL_CERTIFICATE_ERROR_REPORTER_H_

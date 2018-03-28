@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/macros.h"
-#include "components/certificate_reporting/error_report.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "components/security_interstitials/core/controller_client.h"
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
@@ -42,15 +42,15 @@ class CertReportHelper {
   static const char kFinchGroupDontShowDontSend[];
   static const char kFinchParamName[];
 
-  CertReportHelper(std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
-                   content::WebContents* web_contents,
-                   const GURL& request_url,
-                   const net::SSLInfo& ssl_info,
-                   certificate_reporting::ErrorReport::InterstitialReason
-                       interstitial_reason,
-                   bool overridable,
-                   const base::Time& interstitial_time,
-                   security_interstitials::MetricsHelper* metrics_helper);
+  CertReportHelper(
+      std::unique_ptr<SSLCertReporter> ssl_cert_reporter,
+      content::WebContents* web_contents,
+      const GURL& request_url,
+      const net::SSLInfo& ssl_info,
+      CertificateErrorReport::InterstitialReason interstitial_reason,
+      bool overridable,
+      const base::Time& interstitial_time,
+      security_interstitials::MetricsHelper* metrics_helper);
 
   virtual ~CertReportHelper();
 
@@ -96,7 +96,7 @@ class CertReportHelper {
   // The SSLInfo used in this helper's report.
   const net::SSLInfo ssl_info_;
   // The reason for the interstitial, included in this helper's report.
-  certificate_reporting::ErrorReport::InterstitialReason interstitial_reason_;
+  CertificateErrorReport::InterstitialReason interstitial_reason_;
   // True if the user was given the option to proceed through the
   // certificate chain error being reported.
   bool overridable_;
@@ -108,8 +108,8 @@ class CertReportHelper {
   // HandleReportingCommands() before FinishCertCollection(), then act as if the
   // user did not proceed for reporting purposes -- e.g. closing the tab without
   // taking an action on the interstitial is counted as not proceeding.
-  certificate_reporting::ErrorReport::ProceedDecision user_action_ =
-      certificate_reporting::ErrorReport::USER_DID_NOT_PROCEED;
+  CertificateErrorReport::ProceedDecision user_action_ =
+      CertificateErrorReport::USER_DID_NOT_PROCEED;
 
   DISALLOW_COPY_AND_ASSIGN(CertReportHelper);
 };

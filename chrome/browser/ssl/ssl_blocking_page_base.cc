@@ -10,7 +10,7 @@
 
 SSLBlockingPageBase::SSLBlockingPageBase(
     content::WebContents* web_contents,
-    certificate_reporting::ErrorReport::InterstitialReason interstitial_reason,
+    CertificateErrorReport::InterstitialReason interstitial_reason,
     const net::SSLInfo& ssl_info,
     const GURL& request_url,
     std::unique_ptr<SSLCertReporter> ssl_cert_reporter,

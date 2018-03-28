@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORT_H_
-#define COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORT_H_
+#ifndef CHROME_BROWSER_SSL_CERTIFICATE_ERROR_REPORT_H_
+#define CHROME_BROWSER_SSL_CERTIFICATE_ERROR_REPORT_H_
 
 #include <memory>
 #include <string>
 
-#include "components/certificate_reporting/cert_logger.pb.h"
+#include "chrome/browser/ssl/cert_logger.pb.h"
 #include "components/version_info/version_info.h"
 
 namespace base {
@@ -23,13 +23,9 @@ namespace net {
 class SSLInfo;
 }  // namespace net
 
-namespace certificate_reporting {
-
-class CertLoggerRequest;
-
 // This class builds and serializes reports for invalid SSL certificate
-// chains, intended to be sent with ErrorReporter.
-class ErrorReport {
+// chains, intended to be sent with CertificateErrorReporter.
+class CertificateErrorReport {
  public:
   // Describes the type of interstitial that the user was shown for the
   // error that this report represents. Gets mapped to
@@ -50,13 +46,14 @@ class ErrorReport {
   enum Overridable { INTERSTITIAL_OVERRIDABLE, INTERSTITIAL_NOT_OVERRIDABLE };
 
   // Constructs an empty report.
-  ErrorReport();
+  CertificateErrorReport();
 
   // Constructs a report for the given |hostname| using the SSL
   // properties in |ssl_info|.
-  ErrorReport(const std::string& hostname, const net::SSLInfo& ssl_info);
+  CertificateErrorReport(const std::string& hostname,
+                         const net::SSLInfo& ssl_info);
 
-  ~ErrorReport();
+  ~CertificateErrorReport();
 
   // Initializes an empty report by parsing the given serialized
   // report. |serialized_report| should be a serialized
@@ -88,7 +85,7 @@ class ErrorReport {
   const std::string& hostname() const;
 
   // Gets the Chrome channel attached to this report.
-  CertLoggerRequest::ChromeChannel chrome_channel() const;
+  chrome_browser_ssl::CertLoggerRequest::ChromeChannel chrome_channel() const;
 
   // Returns true if the device that issued the report is a managed device.
   bool is_enterprise_managed() const;
@@ -97,9 +94,7 @@ class ErrorReport {
   bool is_retry_upload() const;
 
  private:
-  std::unique_ptr<CertLoggerRequest> cert_report_;
+  std::unique_ptr<chrome_browser_ssl::CertLoggerRequest> cert_report_;
 };
 
-}  // namespace certificate_reporting
-
-#endif  // COMPONENTS_CERTIFICATE_REPORTING_CERTIFICATE_ERROR_REPORT_H_
+#endif  // CHROME_BROWSER_SSL_CERTIFICATE_ERROR_REPORT_H_

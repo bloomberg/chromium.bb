@@ -6,7 +6,7 @@
 
 #include "base/strings/string_piece.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "components/certificate_reporting/error_report.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "components/encrypted_messages/encrypted_message.pb.h"
 #include "components/encrypted_messages/message_encrypter.h"
 #include "content/public/browser/browser_thread.h"
@@ -104,7 +104,7 @@ void RequestObserver::Wait(unsigned int num_events_to_wait_for) {
 void RequestObserver::OnRequest(const std::string& serialized_report,
                                 ReportSendingResult report_type) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  certificate_reporting::ErrorReport report;
+  CertificateErrorReport report;
   EXPECT_TRUE(report.InitializeFromString(serialized_report));
 
   switch (report_type) {

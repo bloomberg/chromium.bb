@@ -15,7 +15,7 @@
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
-#include "components/certificate_reporting/error_reporter.h"
+#include "chrome/browser/ssl/certificate_error_reporter.h"
 #include "components/keyed_service/core/keyed_service.h"
 #include "net/url_request/url_request_context_getter.h"
 
@@ -123,12 +123,11 @@ class CertificateReportingService : public KeyedService {
   // Class that handles report uploads and implements the upload retry logic.
   class Reporter {
    public:
-    Reporter(
-        std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter_,
-        std::unique_ptr<BoundedReportList> retry_list,
-        base::Clock* const clock,
-        base::TimeDelta report_ttl,
-        bool retries_enabled);
+    Reporter(std::unique_ptr<CertificateErrorReporter> error_reporter_,
+             std::unique_ptr<BoundedReportList> retry_list,
+             base::Clock* const clock,
+             base::TimeDelta report_ttl,
+             bool retries_enabled);
     ~Reporter();
 
     // Sends a report. If the send fails, the report will be added to the retry
@@ -156,7 +155,7 @@ class CertificateReportingService : public KeyedService {
     // Called when a report upload is successful.
     void SuccessCallback(int report_id);
 
-    std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter_;
+    std::unique_ptr<CertificateErrorReporter> error_reporter_;
     std::unique_ptr<BoundedReportList> retry_list_;
     base::Clock* const clock_;
     // Maximum age of a queued report. Reports older than this are discarded in

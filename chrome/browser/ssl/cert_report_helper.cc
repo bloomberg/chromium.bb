@@ -60,7 +60,7 @@ CertReportHelper::CertReportHelper(
     content::WebContents* web_contents,
     const GURL& request_url,
     const net::SSLInfo& ssl_info,
-    certificate_reporting::ErrorReport::InterstitialReason interstitial_reason,
+    CertificateErrorReport::InterstitialReason interstitial_reason,
     bool overridable,
     const base::Time& interstitial_time,
     security_interstitials::MetricsHelper* metrics_helper)
@@ -130,10 +130,10 @@ void CertReportHelper::HandleReportingCommands(
           safe_browsing::SBER_OPTIN_SITE_SECURITY_INTERSTITIAL);
       break;
     case security_interstitials::CMD_PROCEED:
-      user_action_ = certificate_reporting::ErrorReport::USER_PROCEEDED;
+      user_action_ = CertificateErrorReport::USER_PROCEEDED;
       break;
     case security_interstitials::CMD_DONT_PROCEED:
-      user_action_ = certificate_reporting::ErrorReport::USER_DID_NOT_PROCEED;
+      user_action_ = CertificateErrorReport::USER_DID_NOT_PROCEED;
       break;
     default:
       // Other commands can be ignored.
@@ -158,7 +158,7 @@ void CertReportHelper::FinishCertCollection() {
     return;
 
   std::string serialized_report;
-  certificate_reporting::ErrorReport report(request_url_.host(), ssl_info_);
+  CertificateErrorReport report(request_url_.host(), ssl_info_);
 
   report.AddNetworkTimeInfo(g_browser_process->network_time_tracker());
 
@@ -174,9 +174,8 @@ void CertReportHelper::FinishCertCollection() {
 
   report.SetInterstitialInfo(
       interstitial_reason_, user_action_,
-      overridable_
-          ? certificate_reporting::ErrorReport::INTERSTITIAL_OVERRIDABLE
-          : certificate_reporting::ErrorReport::INTERSTITIAL_NOT_OVERRIDABLE,
+      overridable_ ? CertificateErrorReport::INTERSTITIAL_OVERRIDABLE
+                   : CertificateErrorReport::INTERSTITIAL_NOT_OVERRIDABLE,
       interstitial_time_);
 
   if (!report.Serialize(&serialized_report)) {

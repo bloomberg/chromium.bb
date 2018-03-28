@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/certificate_reporting/error_reporter.h"
+#include "chrome/browser/ssl/certificate_error_reporter.h"
 
 #include <stddef.h>
 
@@ -17,8 +17,6 @@
 #include "components/encrypted_messages/message_encrypter.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 #include "net/url_request/report_sender.h"
-
-namespace certificate_reporting {
 
 namespace {
 
@@ -72,15 +70,17 @@ constexpr net::NetworkTrafficAnnotationTag kTrafficAnnotation =
 
 }  // namespace
 
-ErrorReporter::ErrorReporter(net::URLRequestContext* request_context,
-                             const GURL& upload_url)
-    : ErrorReporter(upload_url,
-                    kServerPublicKey,
-                    kServerPublicKeyVersion,
-                    std::make_unique<net::ReportSender>(request_context,
-                                                        kTrafficAnnotation)) {}
+CertificateErrorReporter::CertificateErrorReporter(
+    net::URLRequestContext* request_context,
+    const GURL& upload_url)
+    : CertificateErrorReporter(
+          upload_url,
+          kServerPublicKey,
+          kServerPublicKeyVersion,
+          std::make_unique<net::ReportSender>(request_context,
+                                              kTrafficAnnotation)) {}
 
-ErrorReporter::ErrorReporter(
+CertificateErrorReporter::CertificateErrorReporter(
     const GURL& upload_url,
     const uint8_t server_public_key[/* 32 */],
     const uint32_t server_public_key_version,
@@ -93,9 +93,9 @@ ErrorReporter::ErrorReporter(
   DCHECK(!upload_url.is_empty());
 }
 
-ErrorReporter::~ErrorReporter() {}
+CertificateErrorReporter::~CertificateErrorReporter() {}
 
-void ErrorReporter::SendExtendedReportingReport(
+void CertificateErrorReporter::SendExtendedReportingReport(
     const std::string& serialized_report,
     const base::Callback<void()>& success_callback,
     const base::Callback<void(const GURL&, int, int)>& error_callback) {
@@ -125,5 +125,3 @@ void ErrorReporter::SendExtendedReportingReport(
                                    serialized_encrypted_report,
                                    success_callback, error_callback);
 }
-
-}  // namespace certificate_reporting

@@ -10,7 +10,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "components/certificate_reporting/error_report.h"
+#include "chrome/browser/ssl/certificate_error_report.h"
 #include "components/prefs/pref_service.h"
 #include "components/safe_browsing/common/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
@@ -93,7 +93,7 @@ CertificateReportingService::BoundedReportList::items() const {
 }
 
 CertificateReportingService::Reporter::Reporter(
-    std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter,
+    std::unique_ptr<CertificateErrorReporter> error_reporter,
     std::unique_ptr<BoundedReportList> retry_list,
     base::Clock* clock,
     base::TimeDelta report_ttl,
@@ -132,7 +132,7 @@ void CertificateReportingService::Reporter::SendPending() {
     if (!report.is_retried) {
       // If this is the first retry, deserialize the report, set its retry bit
       // and serialize again.
-      certificate_reporting::ErrorReport error_report;
+      CertificateErrorReport error_report;
       CHECK(error_report.InitializeFromString(report.serialized_report));
       error_report.SetIsRetryUpload(true);
       CHECK(error_report.Serialize(&report.serialized_report));
@@ -318,7 +318,7 @@ void CertificateReportingService::ResetOnIOThread(
     reporter_.reset();
     return;
   }
-  std::unique_ptr<certificate_reporting::ErrorReporter> error_reporter;
+  std::unique_ptr<CertificateErrorReporter> error_reporter;
   if (server_public_key) {
     // Only used in tests.
     net::NetworkTrafficAnnotationTag traffic_annotation =
@@ -343,11 +343,11 @@ void CertificateReportingService::ResetOnIOThread(
     )");
     std::unique_ptr<net::ReportSender> report_sender(
         new net::ReportSender(url_request_context, traffic_annotation));
-    error_reporter.reset(new certificate_reporting::ErrorReporter(
+    error_reporter.reset(new CertificateErrorReporter(
         GURL(kExtendedReportingUploadUrl), server_public_key,
         server_public_key_version, std::move(report_sender)));
   } else {
-    error_reporter.reset(new certificate_reporting::ErrorReporter(
+    error_reporter.reset(new CertificateErrorReporter(
         url_request_context, GURL(kExtendedReportingUploadUrl)));
   }
   reporter_.reset(

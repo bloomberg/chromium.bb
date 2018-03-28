@@ -2534,6 +2534,8 @@ test("unit_tests") {
     "../browser/signin/signin_tracker_unittest.cc",
     "../browser/signin/test_signin_client_builder.cc",
     "../browser/signin/test_signin_client_builder.h",
+    "../browser/ssl/certificate_error_report_unittest.cc",
+    "../browser/ssl/certificate_error_reporter_unittest.cc",
     "../browser/ssl/chrome_expect_ct_reporter_unittest.cc",
     "../browser/ssl/insecure_sensitive_input_driver_unittest.cc",
     "../browser/ssl/security_state_tab_helper_unittest.cc",
