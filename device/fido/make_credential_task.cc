@@ -15,9 +15,12 @@ namespace device {
 MakeCredentialTask::MakeCredentialTask(
     FidoDevice* device,
     CtapMakeCredentialRequest request_parameter,
+    AuthenticatorSelectionCriteria authenticator_selection_criteria,
     MakeCredentialTaskCallback callback)
     : FidoTask(device),
       request_parameter_(std::move(request_parameter)),
+      authenticator_selection_criteria_(
+          std::move(authenticator_selection_criteria)),
       callback_(std::move(callback)),
       weak_factory_(this) {}
 
@@ -31,6 +34,12 @@ void MakeCredentialTask::StartTask() {
 }
 
 void MakeCredentialTask::MakeCredential() {
+  if (!CheckIfAuthenticatorSelectionCriteriaAreSatisfied()) {
+    std::move(callback_).Run(CtapDeviceResponseCode::kCtap2ErrOther,
+                             base::nullopt);
+    return;
+  }
+
   device()->DeviceTransact(
       request_parameter_.EncodeAsCBOR(),
       base::BindOnce(&MakeCredentialTask::OnCtapMakeCredentialResponseReceived,
@@ -56,6 +65,46 @@ void MakeCredentialTask::OnCtapMakeCredentialResponseReceived(
 
   std::move(callback_).Run(GetResponseCode(*device_response),
                            ReadCTAPMakeCredentialResponse(*device_response));
+}
+
+bool MakeCredentialTask::CheckIfAuthenticatorSelectionCriteriaAreSatisfied() {
+  using AuthenticatorAttachment =
+      AuthenticatorSelectionCriteria::AuthenticatorAttachment;
+  using UvRequirement =
+      AuthenticatorSelectionCriteria::UserVerificationRequirement;
+  using UvAvailability =
+      AuthenticatorSupportedOptions::UserVerificationAvailability;
+
+  // U2F authenticators are non-platform devices that do not support resident
+  // key or user verification.
+  const auto& device_info = device()->device_info();
+  if (!device_info) {
+    return !authenticator_selection_criteria_.require_resident_key() &&
+           authenticator_selection_criteria_.user_verification_requirement() !=
+               UvRequirement::kRequired &&
+           authenticator_selection_criteria_.authenticator_attachement() !=
+               AuthenticatorAttachment::kPlatform;
+  }
+
+  const auto& options = device_info->options();
+  if ((authenticator_selection_criteria_.authenticator_attachement() ==
+           AuthenticatorAttachment::kPlatform &&
+       !options.is_platform_device()) ||
+      (authenticator_selection_criteria_.authenticator_attachement() ==
+           AuthenticatorAttachment::kCrossPlatform &&
+       options.is_platform_device())) {
+    return false;
+  }
+
+  if (authenticator_selection_criteria_.require_resident_key() &&
+      !options.supports_resident_key()) {
+    return false;
+  }
+
+  return authenticator_selection_criteria_.user_verification_requirement() !=
+             UvRequirement::kRequired ||
+         options.user_verification_availability() ==
+             UvAvailability::kSupportedAndConfigured;
 }
 
 }  // namespace device

@@ -11,6 +11,7 @@
 #include "base/component_export.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
+#include "device/fido/authenticator_selection_criteria.h"
 #include "device/fido/ctap_make_credential_request.h"
 #include "device/fido/fido_constants.h"
 #include "device/fido/fido_request_handler.h"
@@ -35,6 +36,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
       service_manager::Connector* connector,
       const base::flat_set<U2fTransportProtocol>& protocols,
       CtapMakeCredentialRequest request_parameter,
+      AuthenticatorSelectionCriteria authenticator_criteria,
       RegisterResponseCallback completion_callback);
   ~MakeCredentialRequestHandler() override;
 
@@ -52,7 +54,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) MakeCredentialRequestHandler
 
   CtapMakeCredentialRequest request_parameter_;
   RegisterResponseCallback completion_callback_;
-
+  AuthenticatorSelectionCriteria authenticator_selection_criteria_;
   base::WeakPtrFactory<MakeCredentialRequestHandler> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(MakeCredentialRequestHandler);

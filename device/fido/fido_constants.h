@@ -209,6 +209,8 @@ extern const std::array<uint8_t, 32> kBogusChallenge;
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kResidentKeyMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUserVerificationMapKey[];
 COMPONENT_EXPORT(DEVICE_FIDO) extern const char kUserPresenceMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kClientPinMapKey[];
+COMPONENT_EXPORT(DEVICE_FIDO) extern const char kPlatformDeviceMapKey[];
 
 // HID transport specific constants.
 COMPONENT_EXPORT(DEVICE_FIDO) extern const size_t kHidPacketSize;

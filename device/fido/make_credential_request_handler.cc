@@ -20,10 +20,13 @@ MakeCredentialRequestHandler::MakeCredentialRequestHandler(
     service_manager::Connector* connector,
     const base::flat_set<U2fTransportProtocol>& protocols,
     CtapMakeCredentialRequest request_parameter,
+    AuthenticatorSelectionCriteria authenticator_selection_criteria,
     RegisterResponseCallback completion_callback)
     : FidoRequestHandler(connector, protocols),
       request_parameter_(std::move(request_parameter)),
       completion_callback_(std::move(completion_callback)),
+      authenticator_selection_criteria_(
+          std::move(authenticator_selection_criteria)),
       weak_factory_(this) {}
 
 MakeCredentialRequestHandler::~MakeCredentialRequestHandler() = default;
@@ -31,7 +34,7 @@ MakeCredentialRequestHandler::~MakeCredentialRequestHandler() = default;
 std::unique_ptr<FidoTask> MakeCredentialRequestHandler::CreateTaskForNewDevice(
     FidoDevice* device) {
   return std::make_unique<MakeCredentialTask>(
-      device, request_parameter_,
+      device, request_parameter_, authenticator_selection_criteria_,
       base::BindOnce(&MakeCredentialRequestHandler::DispatchResponse,
                      weak_factory_.GetWeakPtr(), device));
 }

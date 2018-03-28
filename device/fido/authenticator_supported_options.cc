@@ -30,9 +30,9 @@ AuthenticatorSupportedOptions::SetSupportsResidentKey(
 }
 
 AuthenticatorSupportedOptions&
-AuthenticatorSupportedOptions::SetUserVerificationRequired(
-    bool user_verification_required) {
-  user_verification_required_ = user_verification_required;
+AuthenticatorSupportedOptions::SetUserVerificationAvailability(
+    UserVerificationAvailability user_verification_availability) {
+  user_verification_availability_ = user_verification_availability;
   return *this;
 }
 
@@ -44,8 +44,9 @@ AuthenticatorSupportedOptions::SetUserPresenceRequired(
 }
 
 AuthenticatorSupportedOptions&
-AuthenticatorSupportedOptions::SetClientPinStored(bool client_pin_stored) {
-  client_pin_stored_ = client_pin_stored;
+AuthenticatorSupportedOptions::SetClientPinAvailability(
+    ClientPinAvailability client_pin_availability) {
+  client_pin_availability_ = client_pin_availability;
   return *this;
 }
 

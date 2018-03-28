@@ -179,15 +179,14 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
     response.SetExtensions(std::move(extensions));
   }
 
+  AuthenticatorSupportedOptions options;
   it = response_map.find(CBOR(4));
   if (it != response_map.end()) {
     if (!it->second.is_map())
       return base::nullopt;
 
     const auto& option_map = it->second.GetMap();
-    AuthenticatorSupportedOptions options;
-
-    auto option_map_it = option_map.find(CBOR("plat"));
+    auto option_map_it = option_map.find(CBOR(kPlatformDeviceMapKey));
     if (option_map_it != option_map.end()) {
       if (!option_map_it->second.is_bool())
         return base::nullopt;
@@ -195,7 +194,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       options.SetIsPlatformDevice(option_map_it->second.GetBool());
     }
 
-    option_map_it = option_map.find(CBOR("rk"));
+    option_map_it = option_map.find(CBOR(kResidentKeyMapKey));
     if (option_map_it != option_map.end()) {
       if (!option_map_it->second.is_bool())
         return base::nullopt;
@@ -203,7 +202,7 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       options.SetSupportsResidentKey(option_map_it->second.GetBool());
     }
 
-    option_map_it = option_map.find(CBOR("up"));
+    option_map_it = option_map.find(CBOR(kUserPresenceMapKey));
     if (option_map_it != option_map.end()) {
       if (!option_map_it->second.is_bool())
         return base::nullopt;
@@ -211,20 +210,36 @@ base::Optional<AuthenticatorGetInfoResponse> ReadCTAPGetInfoResponse(
       options.SetUserPresenceRequired(option_map_it->second.GetBool());
     }
 
-    option_map_it = option_map.find(CBOR("uv"));
+    option_map_it = option_map.find(CBOR(kUserVerificationMapKey));
     if (option_map_it != option_map.end()) {
       if (!option_map_it->second.is_bool())
         return base::nullopt;
 
-      options.SetUserVerificationRequired(option_map_it->second.GetBool());
+      if (option_map_it->second.GetBool()) {
+        options.SetUserVerificationAvailability(
+            AuthenticatorSupportedOptions::UserVerificationAvailability::
+                kSupportedAndConfigured);
+      } else {
+        options.SetUserVerificationAvailability(
+            AuthenticatorSupportedOptions::UserVerificationAvailability::
+                kSupportedButNotConfigured);
+      }
     }
 
-    option_map_it = option_map.find(CBOR("client_pin"));
+    option_map_it = option_map.find(CBOR(kClientPinMapKey));
     if (option_map_it != option_map.end()) {
       if (!option_map_it->second.is_bool())
         return base::nullopt;
 
-      options.SetClientPinStored(option_map_it->second.GetBool());
+      if (option_map_it->second.GetBool()) {
+        options.SetClientPinAvailability(
+            AuthenticatorSupportedOptions::ClientPinAvailability::
+                kSupportedAndPinSet);
+      } else {
+        options.SetClientPinAvailability(
+            AuthenticatorSupportedOptions::ClientPinAvailability::
+                kSupportedButPinNotSet);
+      }
     }
     response.SetOptions(std::move(options));
   }

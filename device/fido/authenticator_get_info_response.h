@@ -47,9 +47,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   const base::Optional<std::vector<std::string>>& extensions() const {
     return extensions_;
   }
-  const base::Optional<AuthenticatorSupportedOptions>& options() const {
-    return options_;
-  }
+  const AuthenticatorSupportedOptions& options() const { return options_; }
 
  private:
   std::vector<std::string> versions_;
@@ -57,7 +55,7 @@ class COMPONENT_EXPORT(DEVICE_FIDO) AuthenticatorGetInfoResponse {
   base::Optional<uint8_t> max_msg_size_;
   base::Optional<std::vector<uint8_t>> pin_protocols_;
   base::Optional<std::vector<std::string>> extensions_;
-  base::Optional<AuthenticatorSupportedOptions> options_;
+  AuthenticatorSupportedOptions options_;
 
   DISALLOW_COPY_AND_ASSIGN(AuthenticatorGetInfoResponse);
 };
