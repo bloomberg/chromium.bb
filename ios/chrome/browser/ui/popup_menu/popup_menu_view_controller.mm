@@ -16,7 +16,7 @@ const CGFloat kCornerRadius = 13;
 const CGFloat kShadowRadius = 10;
 const CGFloat kShadowOpacity = 0.3;
 const CGFloat kBlurBackgroundGreyScale = 0.98;
-const CGFloat kBlurBackgroundAlpha = 0.75;
+const CGFloat kBlurBackgroundAlpha = 0.95;
 }  // namespace
 
 @interface PopupMenuViewController ()<UIGestureRecognizerDelegate>
