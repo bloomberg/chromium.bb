@@ -17,6 +17,7 @@
 #include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/optional.h"
 #include "base/time/time.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/core/common/remote_commands/remote_command_job.h"
@@ -144,6 +145,11 @@ class POLICY_EXPORT CloudPolicyClient {
       const std::string& requisition,
       const std::string& current_state_key);
 
+  // Attempts to enroll with the device management service using an enrollment
+  // token. Results in a registration change or error notification.
+  virtual void RegisterWithToken(const std::string& token,
+                                 const std::string& client_id);
+
   // Sets information about a policy invalidation. Subsequent fetch operations
   // will use the given info, and callers can use fetched_invalidation_version
   // to determine which version of policy was fetched.
@@ -189,6 +195,14 @@ class POLICY_EXPORT CloudPolicyClient {
   virtual void UploadDeviceStatus(
       const enterprise_management::DeviceStatusReportRequest* device_status,
       const enterprise_management::SessionStatusReportRequest* session_status,
+      const StatusCallback& callback);
+
+  // Uploads Chrome Desktop report to the server. As above, the client must be
+  // in a registered state. |chrome_desktop_report| will be included in the
+  // upload request. The |callback| will be called when the operation completes.
+  virtual void UploadChromeDesktopReport(
+      const enterprise_management::ChromeDesktopReportRequest&
+          chrome_desktop_report,
       const StatusCallback& callback);
 
   // Uploads a report on the status of app push-installs. The client must be in

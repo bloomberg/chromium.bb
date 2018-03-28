@@ -17,6 +17,8 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/message_loop/message_loop.h"
+#include "build/build_config.h"
+#include "components/policy/core/common/cloud/cloud_policy_util.h"
 #include "components/policy/core/common/cloud/mock_cloud_policy_client.h"
 #include "components/policy/core/common/cloud/mock_device_management_service.h"
 #include "components/policy/core/common/cloud/mock_signing_service.h"
@@ -55,6 +57,12 @@ const char kAssetId[] = "fake-asset-id";
 const char kLocation[] = "fake-location";
 const char kGcmID[] = "fake-gcm-id";
 const char kPackageName[] = "com.example.app";
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    defined(OS_LINUX) && !defined(OS_CHROMEOS)
+const char kEnrollmentToken[] = "enrollment_token";
+#endif
+
 const int64_t kAgeOfCommand = 123123123;
 const int64_t kLastCommandId = 123456789;
 const int64_t kTimestamp = 987654321;
@@ -148,6 +156,13 @@ class CloudPolicyClientTest : public testing::Test {
     registration_response_.mutable_register_response()->
         set_device_management_token(kDMToken);
 
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    defined(OS_LINUX) && !defined(OS_CHROMEOS)
+    em::RegisterBrowserRequest* enrollment_request =
+        enrollment_token_request_.mutable_register_browser_request();
+    enrollment_request->set_machine_name(policy::GetMachineName());
+#endif
+
     unregistration_request_.mutable_unregister_request();
     unregistration_response_.mutable_unregister_response();
     upload_machine_certificate_request_.mutable_cert_upload_request()
@@ -164,6 +179,8 @@ class CloudPolicyClientTest : public testing::Test {
 
     upload_status_request_.mutable_device_status_report_request();
     upload_status_request_.mutable_session_status_report_request();
+
+    chrome_desktop_report_request_.mutable_chrome_desktop_report_request();
 
     remote_command_request_.mutable_remote_command_request()
         ->set_last_command_unique_id(kLastCommandId);
@@ -279,6 +296,17 @@ class CloudPolicyClientTest : public testing::Test {
         .WillOnce(SaveArg<4>(&client_id_));
   }
 
+  void ExpectEnrollmentTokenBasedRegistration() {
+    EXPECT_CALL(service_,
+                CreateJob(DeviceManagementRequestJob::TYPE_TOKEN_ENROLLMENT,
+                          request_context_))
+        .WillOnce(service_.SucceedJob(registration_response_));
+    EXPECT_CALL(service_, StartJob(dm_protocol::kValueRequestTokenEnrollment,
+                                   std::string(), std::string(), std::string(),
+                                   _, MatchProto(enrollment_token_request_)))
+        .WillOnce(SaveArg<4>(&client_id_));
+  }
+
   void ExpectPolicyFetch(const std::string& dm_token) {
     EXPECT_CALL(service_,
                 CreateJob(DeviceManagementRequestJob::TYPE_POLICY_FETCH,
@@ -320,6 +348,18 @@ class CloudPolicyClientTest : public testing::Test {
                 StartJob(dm_protocol::kValueRequestUploadStatus,
                          std::string(), std::string(), kDMToken,
                          client_id_, MatchProto(upload_status_request_)));
+  }
+
+  void ExpectChromeDesktopReport() {
+    EXPECT_CALL(
+        service_,
+        CreateJob(DeviceManagementRequestJob::TYPE_CHROME_DESKTOP_REPORT,
+                  request_context_))
+        .WillOnce(service_.SucceedJob(chrome_desktop_report_response_));
+    EXPECT_CALL(service_,
+                StartJob(dm_protocol::kValueRequestChromeDesktopReport,
+                         std::string(), std::string(), kDMToken, client_id_,
+                         MatchProto(chrome_desktop_report_request_)));
   }
 
   void ExpectFetchRemoteCommands() {
@@ -418,11 +458,13 @@ class CloudPolicyClientTest : public testing::Test {
   // Request protobufs used as expectations for the client requests.
   em::DeviceManagementRequest registration_request_;
   em::DeviceManagementRequest cert_based_registration_request_;
+  em::DeviceManagementRequest enrollment_token_request_;
   em::DeviceManagementRequest policy_request_;
   em::DeviceManagementRequest unregistration_request_;
   em::DeviceManagementRequest upload_machine_certificate_request_;
   em::DeviceManagementRequest upload_enrollment_certificate_request_;
   em::DeviceManagementRequest upload_status_request_;
+  em::DeviceManagementRequest chrome_desktop_report_request_;
   em::DeviceManagementRequest remote_command_request_;
   em::DeviceManagementRequest attribute_update_permission_request_;
   em::DeviceManagementRequest attribute_update_request_;
@@ -435,6 +477,7 @@ class CloudPolicyClientTest : public testing::Test {
   em::DeviceManagementResponse unregistration_response_;
   em::DeviceManagementResponse upload_certificate_response_;
   em::DeviceManagementResponse upload_status_response_;
+  em::DeviceManagementResponse chrome_desktop_report_response_;
   em::DeviceManagementResponse remote_command_response_;
   em::DeviceManagementResponse attribute_update_permission_response_;
   em::DeviceManagementResponse attribute_update_response_;
@@ -480,6 +523,26 @@ TEST_F(CloudPolicyClientTest, SetupRegistrationAndPolicyFetch) {
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
   CheckPolicyResponse();
 }
+
+#if defined(OS_WIN) || defined(OS_MACOSX) || \
+    defined(OS_LINUX) && !defined(OS_CHROMEOS)
+TEST_F(CloudPolicyClientTest, RegistrationWithTokenAndPolicyFetch) {
+  ExpectEnrollmentTokenBasedRegistration();
+  EXPECT_CALL(observer_, OnRegistrationStateChanged(_));
+  EXPECT_CALL(device_dmtoken_callback_observer_, OnDeviceDMTokenRequested(_))
+      .WillOnce(Return(kDeviceDMToken));
+  client_->RegisterWithToken(kEnrollmentToken, "device_id");
+  EXPECT_TRUE(client_->is_registered());
+  EXPECT_FALSE(client_->GetPolicyFor(policy_type_, std::string()));
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+
+  ExpectPolicyFetch(kDMToken);
+  EXPECT_CALL(observer_, OnPolicyFetched(_));
+  client_->FetchPolicy();
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+  CheckPolicyResponse();
+}
+#endif
 
 TEST_F(CloudPolicyClientTest, RegistrationAndPolicyFetch) {
   ExpectRegistration(kOAuthToken);
@@ -946,6 +1009,19 @@ TEST_F(CloudPolicyClientTest, UploadStatusWhilePolicyFetchActive) {
   CheckPolicyResponse();
 
   upload_status_job->SendResponse(DM_STATUS_SUCCESS, upload_status_response_);
+  EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
+}
+
+TEST_F(CloudPolicyClientTest, UploadChromeDesktopReport) {
+  Register();
+
+  ExpectChromeDesktopReport();
+  EXPECT_CALL(callback_observer_, OnCallbackComplete(true)).Times(1);
+  CloudPolicyClient::StatusCallback callback =
+      base::Bind(&MockStatusCallbackObserver::OnCallbackComplete,
+                 base::Unretained(&callback_observer_));
+  em::ChromeDesktopReportRequest chrome_desktop_report;
+  client_->UploadChromeDesktopReport(chrome_desktop_report, callback);
   EXPECT_EQ(DM_STATUS_SUCCESS, client_->status());
 }
 
