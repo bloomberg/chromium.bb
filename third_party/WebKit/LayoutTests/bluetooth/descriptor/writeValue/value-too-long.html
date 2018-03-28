@@ -6,20 +6,14 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  return setBluetoothFakeAdapter('DisconnectingHealthThermometerAdapter')
-    .then(() => requestDeviceWithTrustedClick({
-      filters: [{services: ['health_thermometer']}]}))
-    .then(device => device.gatt.connect())
-    .then(gattServer => gattServer.getPrimaryService('health_thermometer'))
-    .then(service => service.getCharacteristic('measurement_interval'))
-    .then(characteristic => characteristic.getDescriptor(user_description.name))
-    .then(descriptor => {
-      return assert_promise_rejects_with_message(
+const test_desc = 'Trying to write more than 512 bytes should return an error.';
+const expected = new DOMException(
+    'Value can\'t exceed 512 bytes.', 'InvalidModificationError');
+
+bluetooth_test(() => getUserDescriptionDescriptor()
+    .then(({descriptor}) => assert_promise_rejects_with_message(
         descriptor.writeValue(new Uint8Array(513 /* length */)),
-        new DOMException(
-          'Value can\'t exceed 512 bytes.', 'InvalidModificationError'),
-        'Value passed was too long.');
-    })
-    }, 'Trying to write more than 512 bytes should return an error.');
+        expected,
+        'Value passed was too long.')),
+    test_desc);
 </script>
