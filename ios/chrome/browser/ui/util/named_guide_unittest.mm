@@ -85,11 +85,15 @@ TEST_F(NamedGuideTest, TestConstrainedView) {
 
   NamedGuide* guide = [[NamedGuide alloc] initWithName:test_guide];
   [view addLayoutGuide:guide];
+  ASSERT_FALSE(guide.constrained);
 
   // Set the constrained view to the subviews and verify that the layout frame
   // is updated.
   for (UIView* subview in view.subviews) {
+    guide.constrainedView = nil;
+    EXPECT_FALSE(guide.constrained);
     guide.constrainedView = subview;
+    EXPECT_TRUE(guide.constrained);
     VerifyLayoutFrame(guide, subview.frame);
   }
 }
@@ -105,11 +109,13 @@ TEST_F(NamedGuideTest, TestConstrainedFrame) {
 
   NamedGuide* guide = [[NamedGuide alloc] initWithName:test_guide];
   [view addLayoutGuide:guide];
+  ASSERT_FALSE(guide.constrained);
 
   // Test updating the guide's |constrainedFrame| to the lower left corner.
   const CGRect kLowerLeftCorner = CGRectMake(0, 50, 50, 50);
   guide.constrainedFrame = kLowerLeftCorner;
   VerifyLayoutFrame(guide, kLowerLeftCorner);
+  EXPECT_TRUE(guide.constrained);
 
   // Tests that updating the view's size stretches the layout frame such that
   // it remains the lower left quadrant.
@@ -148,4 +154,27 @@ TEST_F(NamedGuideTest, TestConstrainedViewFrameMutex) {
   guide.constrainedView = childView;
   EXPECT_TRUE(CGRectIsNull(guide.constrainedFrame));
   VerifyLayoutFrame(guide, childView.frame);
+}
+
+// Tests that a NamedGuide resets its constraints if its constrained view is
+// removed from its owning view's hierarchy.
+TEST_F(NamedGuideTest, TestRemoveConstrainedView) {
+  GuideName* test_guide = @"NamedGuideTest";
+
+  UIWindow* window =
+      [[UIWindow alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  UIView* view = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 100, 100)];
+  [window addSubview:view];
+  UIView* subview = [[UIView alloc] initWithFrame:view.bounds];
+  [view addSubview:subview];
+
+  NamedGuide* guide = [[NamedGuide alloc] initWithName:test_guide];
+  [view addLayoutGuide:guide];
+  ASSERT_FALSE(guide.constrained);
+
+  guide.constrainedView = subview;
+  EXPECT_TRUE(guide.constrained);
+  [subview removeFromSuperview];
+  EXPECT_FALSE(guide.constrained);
+  EXPECT_FALSE(guide.constrainedView);
 }
