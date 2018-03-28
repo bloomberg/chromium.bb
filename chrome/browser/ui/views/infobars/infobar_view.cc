@@ -9,6 +9,7 @@
 #include <utility>
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/themes/theme_properties.h"
 #include "chrome/browser/ui/infobar_container_delegate.h"
 #include "chrome/browser/ui/views/harmony/chrome_layout_provider.h"
 #include "chrome/browser/ui/views/harmony/chrome_typography.h"
@@ -19,7 +20,9 @@
 #include "components/vector_icons/vector_icons.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/accessibility/ax_node_data.h"
+#include "ui/base/class_property.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
@@ -41,15 +44,27 @@
 
 // Helpers --------------------------------------------------------------------
 
+// Used to mark children that are Labels, so we can update their background
+// colors on a theme change.
+enum class LabelType {
+  kNone,
+  kLabel,
+  kLink,
+};
+DEFINE_UI_CLASS_PROPERTY_TYPE(LabelType);
+
 namespace {
+
+DEFINE_UI_CLASS_PROPERTY_KEY(LabelType, kLabelType, LabelType::kNone);
+
+// IDs of the colors to use for infobar elements.
+constexpr int kBackgroundColor =
+    ThemeProperties::COLOR_DETACHED_BOOKMARK_BAR_BACKGROUND;
+constexpr int kTextColor = ThemeProperties::COLOR_BOOKMARK_TEXT;
 
 bool SortLabelsByDecreasingWidth(views::Label* label_1, views::Label* label_2) {
   return label_1->GetPreferredSize().width() >
       label_2->GetPreferredSize().width();
-}
-
-constexpr SkColor GetInfobarTextColor() {
-  return SK_ColorBLACK;
 }
 
 int GetElementSpacing() {
@@ -89,8 +104,6 @@ InfoBarView::InfoBarView(std::unique_ptr<infobars::InfoBarDelegate> delegate)
 
   child_container_->SetPaintToLayer();
   child_container_->layer()->SetMasksToBounds(true);
-  child_container_->SetBackground(
-      views::CreateSolidBackground(infobars::InfoBar::kBackgroundColor));
 }
 
 const infobars::InfoBarContainer::Delegate* InfoBarView::container_delegate()
@@ -108,30 +121,18 @@ InfoBarView::~InfoBarView() {
 
 views::Label* InfoBarView::CreateLabel(const base::string16& text) const {
   views::Label* label = new views::Label(text, CONTEXT_BODY_TEXT_LARGE);
-  label->SizeToPreferredSize();
-  label->SetBackgroundColor(background()->get_color());
-  label->SetEnabledColor(GetInfobarTextColor());
-  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-  label->SetProperty(
-      views::kMarginsKey,
-      new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_TOAST_LABEL_VERTICAL),
-                      0));
+  SetLabelDetails(label);
+  label->SetEnabledColor(GetColor(kTextColor));
+  label->SetProperty(kLabelType, LabelType::kLabel);
   return label;
 }
 
 views::Link* InfoBarView::CreateLink(const base::string16& text,
                                      views::LinkListener* listener) const {
   views::Link* link = new views::Link(text, CONTEXT_BODY_TEXT_LARGE);
-  link->SizeToPreferredSize();
-  link->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  SetLabelDetails(link);
   link->set_listener(listener);
-  link->SetBackgroundColor(background()->get_color());
-  link->SetProperty(
-      views::kMarginsKey,
-      new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
-                          DISTANCE_TOAST_LABEL_VERTICAL),
-                      0));
+  link->SetProperty(kLabelType, LabelType::kLink);
   return link;
 }
 
@@ -193,7 +194,7 @@ void InfoBarView::ViewHierarchyChanged(
 
     close_button_ = views::CreateVectorImageButton(this);
     views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
-                                  GetInfobarTextColor());
+                                  GetColor(kTextColor));
     close_button_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_ACCNAME_CLOSE));
     close_button_->SetFocusForPlatform();
@@ -215,6 +216,33 @@ void InfoBarView::ViewHierarchyChanged(
     height = std::max(height, child->height() + margin_height);
   }
   SetBarTargetHeight(height + InfoBarContainerDelegate::kSeparatorLineHeight);
+}
+
+void InfoBarView::OnThemeChanged() {
+  const SkColor background_color = GetColor(kBackgroundColor);
+  child_container_->SetBackground(
+      views::CreateSolidBackground(background_color));
+
+  const SkColor text_color = GetColor(kTextColor);
+  if (close_button_) {
+    views::SetImageFromVectorIcon(close_button_, vector_icons::kClose16Icon,
+                                  text_color);
+  }
+
+  for (int i = 0; i < child_container_->child_count(); ++i) {
+    View* child = child_container_->child_at(i);
+    LabelType label_type = child->GetProperty(kLabelType);
+    if (label_type != LabelType::kNone) {
+      auto* label = static_cast<views::Label*>(child);
+      label->SetBackgroundColor(background_color);
+      if (label_type == LabelType::kLabel)
+        label->SetEnabledColor(text_color);
+    }
+  }
+}
+
+void InfoBarView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
+  OnThemeChanged();
 }
 
 void InfoBarView::ButtonPressed(views::Button* sender,
@@ -342,4 +370,22 @@ bool InfoBarView::DoesIntersectRect(const View* target,
   gfx::Rect non_arrow_bounds = GetLocalBounds();
   non_arrow_bounds.Inset(0, arrow_height(), 0, 0);
   return rect.Intersects(non_arrow_bounds);
+}
+
+SkColor InfoBarView::GetColor(int id) const {
+  const auto* theme_provider = GetThemeProvider();
+  // When there's no theme provider, this color will never be used; it will be
+  // reset due to the OnNativeThemeChanged() override.
+  return theme_provider ? theme_provider->GetColor(id) : gfx::kPlaceholderColor;
+}
+
+void InfoBarView::SetLabelDetails(views::Label* label) const {
+  label->SizeToPreferredSize();
+  label->SetBackgroundColor(GetColor(kBackgroundColor));
+  label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+  label->SetProperty(
+      views::kMarginsKey,
+      new gfx::Insets(ChromeLayoutProvider::Get()->GetDistanceMetric(
+                          DISTANCE_TOAST_LABEL_VERTICAL),
+                      0));
 }

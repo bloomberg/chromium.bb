@@ -14,16 +14,10 @@
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/skia_paint_util.h"
+#include "ui/views/bubble/bubble_border.h"
 #include "ui/views/view_targeter.h"
 
 namespace {
-
-// The content shadow is drawn in two stages. A darker, shorter shadow is
-// blended with a taller, lighter shadow. The heights are in dp.
-const int kSmallShadowHeight = 1;
-const int kLargeShadowHeight = 3;
-const SkAlpha kSmallShadowAlpha = 0x33;
-const SkAlpha kLargeShadowAlpha = 0x1A;
 
 class ContentShadow : public views::View {
  public:
@@ -35,24 +29,19 @@ class ContentShadow : public views::View {
 
  protected:
   // views::View:
+  gfx::Size CalculatePreferredSize() const override {
+    return gfx::Size(0,
+                     views::BubbleBorder::GetBorderAndShadowInsets().height());
+  }
   void OnPaint(gfx::Canvas* canvas) override {
-    // The first shader (small shadow) blurs from 0 to kSmallShadowHeight.
-    cc::PaintFlags flags;
-    flags.setShader(gfx::CreateGradientShader(
-        0, kSmallShadowHeight, SkColorSetA(SK_ColorBLACK, kSmallShadowAlpha),
-        SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT)));
-    gfx::Rect small_shadow_bounds = GetLocalBounds();
-    small_shadow_bounds.set_height(kSmallShadowHeight);
-    canvas->DrawRect(small_shadow_bounds, flags);
+    // Outdent the sides to make the shadow appear uniform in the corners.
+    gfx::RectF container_bounds(parent()->GetLocalBounds());
+    View::ConvertRectToTarget(parent(), this, &container_bounds);
+    container_bounds.Inset(-views::BubbleBorder::kShadowBlur, 0);
 
-    // The second shader (large shadow) is solid from 0 to kSmallShadowHeight
-    // (blending with the first shader) and then blurs from kSmallShadowHeight
-    // to kLargeShadowHeight.
-    flags.setShader(gfx::CreateGradientShader(
-        kSmallShadowHeight, height(),
-        SkColorSetA(SK_ColorBLACK, kLargeShadowAlpha),
-        SkColorSetA(SK_ColorBLACK, SK_AlphaTRANSPARENT)));
-    canvas->DrawRect(GetLocalBounds(), flags);
+    views::BubbleBorder::DrawBorderAndShadow(
+        gfx::RectFToSkRect(container_bounds), &cc::PaintCanvas::drawRect,
+        canvas);
   }
 
  private:
@@ -114,20 +103,13 @@ void InfoBarContainerView::Layout() {
     top += child_height;
   }
 
-  content_shadow_->SetBounds(0, top, width(), kLargeShadowHeight);
+  content_shadow_->SetBounds(0, top, width(),
+                             content_shadow_->GetPreferredSize().height());
 }
 
 void InfoBarContainerView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
   node_data->role = ax::mojom::Role::kGroup;
   node_data->SetName(l10n_util::GetStringUTF8(IDS_ACCNAME_INFOBAR_CONTAINER));
-}
-
-void InfoBarContainerView::OnNativeThemeChanged(const ui::NativeTheme* theme) {
-  // Infobars must be redrawn when the NativeTheme changes because
-  // they have a border with color COLOR_TOOLBAR_BOTTOM_SEPARATOR,
-  // which might have changed.
-  for (int i = 0; i < child_count(); ++i)
-    child_at(i)->SchedulePaint();
 }
 
 void InfoBarContainerView::PlatformSpecificAddInfoBar(

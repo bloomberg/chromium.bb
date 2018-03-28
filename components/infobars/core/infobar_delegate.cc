@@ -43,7 +43,7 @@ gfx::Image InfoBarDelegate::GetIcon() const {
   const gfx::VectorIcon& vector_icon = GetVectorIcon();
   if (!vector_icon.is_empty()) {
     return gfx::Image(
-        gfx::CreateVectorIcon(vector_icon, 16, gfx::kGoogleBlue500));
+        gfx::CreateVectorIcon(vector_icon, 20, gfx::kGoogleBlue500));
   }
 #endif
 

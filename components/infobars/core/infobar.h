@@ -41,8 +41,6 @@ class InfoBar : public gfx::AnimationDelegate {
   typedef InfoBar AddedDetails;
   typedef std::pair<InfoBar*, bool> RemovedDetails;
 
-  static constexpr SkColor kBackgroundColor = SK_ColorWHITE;
-
   explicit InfoBar(std::unique_ptr<InfoBarDelegate> delegate);
   ~InfoBar() override;
 
