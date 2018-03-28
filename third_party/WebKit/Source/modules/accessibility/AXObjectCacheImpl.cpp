@@ -39,6 +39,9 @@
 #include "core/html/HTMLAreaElement.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/html/HTMLImageElement.h"
+#include "core/html/HTMLTableCellElement.h"
+#include "core/html/HTMLTableElement.h"
+#include "core/html/HTMLTableRowElement.h"
 #include "core/html/canvas/HTMLCanvasElement.h"
 #include "core/html/forms/HTMLInputElement.h"
 #include "core/html/forms/HTMLLabelElement.h"
@@ -538,6 +541,28 @@ AXObject* AXObjectCacheImpl::GetOrCreate(AccessibilityRole role) {
   return obj;
 }
 
+ContainerNode* FindParentTable(Node* node) {
+  ContainerNode* parent = node->parentNode();
+  while (parent && !IsHTMLTableElement(*parent))
+    parent = parent->parentNode();
+  return parent;
+}
+
+void AXObjectCacheImpl::ContainingTableRowsOrColsMaybeChanged(Node* node) {
+  // Any containing table must recompute its rows and columns on insertion or
+  // removal of a <tr> or <td>.
+  // Get parent table from DOM, because AXObject/layout tree are incomplete.
+  ContainerNode* containing_table = nullptr;
+  if (IsHTMLTableCellElement(node) || IsHTMLTableRowElement(node))
+    containing_table = FindParentTable(node);
+
+  if (containing_table) {
+    AXObject* ax_table = Get(containing_table);
+    if (ax_table)
+      ax_table->SetNeedsToUpdateChildren();
+  }
+}
+
 void AXObjectCacheImpl::InvalidateTableSubtree(AXObject* subtree) {
   if (!subtree)
     return;
@@ -731,13 +756,14 @@ void AXObjectCacheImpl::ChildrenChanged(AccessibleNode* accessible_node) {
     ChildrenChanged(object, object->GetNode());
 }
 
-void AXObjectCacheImpl::ChildrenChanged(AXObject* obj,
-                                        Node* node_for_relation_update) {
+void AXObjectCacheImpl::ChildrenChanged(AXObject* obj, Node* optional_node) {
   if (obj)
     obj->ChildrenChanged();
 
-  if (node_for_relation_update)
-    relation_cache_->UpdateRelatedTree(node_for_relation_update);
+  if (optional_node) {
+    ContainingTableRowsOrColsMaybeChanged(optional_node);
+    relation_cache_->UpdateRelatedTree(optional_node);
+  }
 }
 
 void AXObjectCacheImpl::NotificationPostTimerFired(TimerBase*) {
