@@ -92,9 +92,15 @@ class WidgetShrinkAnimation : public gfx::AnimationDelegate {
   WidgetShrinkAnimation(views::Widget* widget, const gfx::Rect& initial_bounds)
       : widget_(widget),
         size_animation_(this),
+        start_height_(0),
         target_bounds_(initial_bounds) {}
 
   void SetTargetBounds(const gfx::Rect& bounds) {
+    // Animate based on the last height set on the Widget. Don't query the
+    // Widget itself since it may be rounded to pixel coordinates on some scale
+    // factors.
+    start_height_ = GetHeightFromAnimation();
+
     // If we're animating and our target height changes, reset the animation.
     // NOTE: If we just reset blindly on _every_ update, then when the user
     // types rapidly we could get "stuck" trying repeatedly to animate shrinking
@@ -103,36 +109,41 @@ class WidgetShrinkAnimation : public gfx::AnimationDelegate {
       size_animation_.Reset();
     target_bounds_ = bounds;
 
-    // Animate the popup shrinking, but don't animate growing larger since
-    // that would make the popup feel less responsive.
-    start_bounds_ = widget_->GetWindowBoundsInScreen();
-    if (target_bounds_.height() < start_bounds_.height())
+    // Animate the popup shrinking, but don't animate growing larger since that
+    // would make the popup feel less responsive.
+    if (target_bounds_.height() < start_height_) {
       size_animation_.Show();
-    else
-      start_bounds_ = target_bounds_;
-
-    widget_->SetBounds(start_bounds_);
+      AnimationProgressed(&size_animation_);
+    } else {
+      widget_->SetBounds(target_bounds_);
+    }
   }
 
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override {
-    gfx::Rect current_frame_bounds = start_bounds_;
-    int total_height_delta = target_bounds_.height() - start_bounds_.height();
-    // Round |current_height_delta| away from zero instead of truncating so we
-    // won't leave single white pixels at the bottom of the popup when animating
-    // very small height differences. Note the delta is negative.
-    int current_height_delta = static_cast<int>(
-        size_animation_.GetCurrentValue() * total_height_delta - 0.5);
-    current_frame_bounds.set_height(current_frame_bounds.height() +
-                                    current_height_delta);
+    gfx::Rect current_frame_bounds = target_bounds_;
+    current_frame_bounds.set_height(GetHeightFromAnimation());
     widget_->SetBounds(current_frame_bounds);
   }
 
  private:
+  int GetHeightFromAnimation() const {
+    if (!size_animation_.is_animating())
+      return target_bounds_.height();
+
+    // Round |current_height_delta| away from zero instead of truncating so we
+    // won't leave single white pixels at the bottom of the popup when animating
+    // very small height differences. Note the delta is negative.
+    int total_height_delta = target_bounds_.height() - start_height_;
+    return start_height_ +
+           static_cast<int>(
+               size_animation_.GetCurrentValue() * total_height_delta - 0.5);
+  }
+
   views::Widget* widget_;  // Weak. Owns |this|.
 
   gfx::SlideAnimation size_animation_;
-  gfx::Rect start_bounds_;
+  int start_height_;
   gfx::Rect target_bounds_;
 
   DISALLOW_COPY_AND_ASSIGN(WidgetShrinkAnimation);
