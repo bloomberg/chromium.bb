@@ -21,12 +21,13 @@
   var node =
       ElementsTestRunner.nodeWithId('inner', node => TestRunner.cssModel.cachedMatchedCascadeForNode(node).then(step1));
   function step1(matchedStyles) {
+    var inlineStyle = matchedStyles.nodeStyles()[0];
     var namePrompt = new Elements.StylesSidebarPane.CSSPropertyPrompt(
-        SDK.cssMetadata().allProperties(), matchedStyles.cssVariables(), null, true);
+        SDK.cssMetadata().allProperties(), matchedStyles.availableCSSVariables(inlineStyle), null, true);
     var valuePrompt = valuePromptFor('color');
     function valuePromptFor(name) {
       return new Elements.StylesSidebarPane.CSSPropertyPrompt(
-          SDK.cssMetadata().propertyValues(name), matchedStyles.cssVariables(), null, false);
+          SDK.cssMetadata().propertyValues(name), matchedStyles.availableCSSVariables(inlineStyle), null, false);
     }
     TestRunner.runTestSuite([
       function testEmptyName(next) {

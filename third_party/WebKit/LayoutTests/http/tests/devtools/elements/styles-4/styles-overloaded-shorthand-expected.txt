@@ -15,7 +15,7 @@ element.style { ()
     font-size: 1.2em;
     line-height: 1;
     font-family: "Arial", sans-serif;
-    margin: 10px;
+/-- overloaded --/     margin: 10px;
     /-- overloaded --/     margin-top: 10px;
     /-- overloaded --/     margin-right: 10px;
     /-- overloaded --/     margin-bottom: 10px;
