@@ -186,7 +186,7 @@ public class VrShellDelegate
     private boolean mPaused;
     private boolean mStopped;
     private boolean mVisible;
-    private int mRestoreSystemUiVisibilityFlag = -1;
+    private boolean mRestoreSystemUiVisibility = false;
     private Integer mRestoreOrientation = null;
     private long mNativeVrShellDelegate;
     private boolean mRequestedWebVr;
@@ -571,6 +571,10 @@ public class VrShellDelegate
     public static void maybeHandleVrIntentPreNative(ChromeActivity activity, Intent intent) {
         if (!VrIntentUtils.isVrIntent(intent)) return;
 
+        // If we're already in VR, nothing to do here.
+        if (sInstance != null && sInstance.mInVr) return;
+        if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
+
         // We add a black overlay view so that we can show black while the VR UI is loading.
         // Note that this alone isn't sufficient to prevent 2D UI from showing when
         // auto-presenting WebVR. See comment about the custom animation in {@link
@@ -578,13 +582,6 @@ public class VrShellDelegate
         // TODO(crbug.com/775574): This hack doesn't really work to hide the 2D UI on Samsung
         // devices since Chrome gets paused and we prematurely remove the overlay.
         if (sInstance == null || !sInstance.mInVr) addBlackOverlayViewForActivity(activity);
-
-        // If we're already in VR, or launching from an internal intent, we don't want to set system
-        // ui visibility here, or we'll incorrectly restore window mode later.
-        if (sInstance != null && (sInstance.mInVr || sInstance.mInternalIntentUsedToStartVr)) {
-            return;
-        }
-        if (DEBUG_LOGS) Log.i(TAG, "maybeHandleVrIntentPreNative: preparing for transition");
 
         // Enable VR mode and hide system UI. We do this here so we don't get kicked out of
         // VR mode and to prevent seeing a flash of system UI.
@@ -1210,7 +1207,8 @@ public class VrShellDelegate
         mEnterVrOnStartup = false;
         // We remove the VR-specific system UI flags here so that the system UI shows up properly
         // when Chrome is resumed in non-VR mode.
-        mActivity.getWindow().getDecorView().setSystemUiVisibility(0);
+        assert mRestoreSystemUiVisibility;
+        restoreWindowMode();
 
         boolean launched = mVrDaydreamApi.launchVrHomescreen();
         assert launched;
@@ -1223,6 +1221,10 @@ public class VrShellDelegate
     }
 
     private void onNewIntentWithNativeInternal(ChromeActivity activity, Intent intent) {
+        // We set the the system UI in maybeHandleVrIntentPreNative, so make sure we restore it when
+        // we exit VR, or cancel VR entry.
+        mRestoreSystemUiVisibility = true;
+
         // Nothing to do if we were launched by an internal intent.
         if (mInternalIntentUsedToStartVr) {
             mInternalIntentUsedToStartVr = false;
@@ -1321,15 +1323,8 @@ public class VrShellDelegate
 
         // Hide system UI.
         int flags = mActivity.getWindow().getDecorView().getSystemUiVisibility();
-        if (mRestoreSystemUiVisibilityFlag == -1) {
-            mRestoreSystemUiVisibilityFlag = flags;
-            // We may have hidden the system UI earlier so that we don't see it when Chrome is
-            // started in VR mode. So we should not restore to the flags we added after exiting VR
-            // mode. This has the issue that if we hide it for another reason before entering VR
-            // mode, we always show it after exiting VR mode, which is probably okay.
-            if (mEnterVrOnStartup) mRestoreSystemUiVisibilityFlag &= ~VR_SYSTEM_UI_FLAGS;
-        }
-        mActivity.getWindow().getDecorView().setSystemUiVisibility(VR_SYSTEM_UI_FLAGS);
+        mActivity.getWindow().getDecorView().setSystemUiVisibility(flags | VR_SYSTEM_UI_FLAGS);
+        mRestoreSystemUiVisibility = true;
     }
 
     private void restoreWindowMode() {
@@ -1341,11 +1336,11 @@ public class VrShellDelegate
         mRestoreOrientation = null;
 
         // Restore system UI visibility.
-        if (mRestoreSystemUiVisibilityFlag != -1) {
-            mActivity.getWindow().getDecorView().setSystemUiVisibility(
-                    mRestoreSystemUiVisibilityFlag);
+        if (mRestoreSystemUiVisibility) {
+            int flags = mActivity.getWindow().getDecorView().getSystemUiVisibility();
+            mActivity.getWindow().getDecorView().setSystemUiVisibility(flags & ~VR_SYSTEM_UI_FLAGS);
         }
-        mRestoreSystemUiVisibilityFlag = -1;
+        mRestoreSystemUiVisibility = false;
         if (mActivity.getCompositorViewHolder() != null) {
             mActivity.getCompositorViewHolder().onExitVr();
         }
