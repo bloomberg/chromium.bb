@@ -304,7 +304,8 @@ Profile* ProfileHelper::GetProfileByUser(const user_manager::User* user) {
   if (!user_to_profile_for_testing_.empty()) {
     std::map<const user_manager::User*, Profile*>::const_iterator it =
         user_to_profile_for_testing_.find(user);
-    return it == user_to_profile_for_testing_.end() ? NULL : it->second;
+    if (it != user_to_profile_for_testing_.end())
+      return it->second;
   }
 
   if (!user->is_profile_created())
@@ -324,7 +325,8 @@ Profile* ProfileHelper::GetProfileByUserUnsafe(const user_manager::User* user) {
   if (!user_to_profile_for_testing_.empty()) {
     std::map<const user_manager::User*, Profile*>::const_iterator it =
         user_to_profile_for_testing_.find(user);
-    return it == user_to_profile_for_testing_.end() ? NULL : it->second;
+    if (it != user_to_profile_for_testing_.end())
+      return it->second;
   }
 
   Profile* profile = NULL;
