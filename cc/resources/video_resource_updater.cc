@@ -621,12 +621,13 @@ void VideoResourceUpdater::CopyHardwarePlane(
   const gfx::Size output_plane_resource_size = video_frame->coded_size();
   // The copy needs to be a direct transfer of pixel data, so we use an RGBA8
   // target to avoid loss of precision or dropping any alpha component.
-  const viz::ResourceFormat copy_target_format = viz::ResourceFormat::RGBA_8888;
+  constexpr viz::ResourceFormat copy_resource_format =
+      viz::ResourceFormat::RGBA_8888;
 
   const int no_unique_id = 0;
   const int no_plane_index = -1;  // Do not recycle referenced textures.
   PlaneResource* plane_resource = RecycleOrAllocateResource(
-      output_plane_resource_size, copy_target_format, resource_color_space,
+      output_plane_resource_size, copy_resource_format, resource_color_space,
       no_unique_id, no_plane_index);
   HardwarePlaneResource* hardware_resource = plane_resource->AsHardware();
   hardware_resource->add_ref();
@@ -649,10 +650,12 @@ void VideoResourceUpdater::CopyHardwarePlane(
   SyncTokenClientImpl client(gl, gpu::SyncToken());
   gpu::SyncToken sync_token = video_frame->UpdateReleaseSyncToken(&client);
 
-  auto transfer_resource = viz::TransferableResource::MakeGL(
+  auto transferable_resource = viz::TransferableResource::MakeGL(
       hardware_resource->mailbox(), GL_LINEAR, GL_TEXTURE_2D, sync_token);
-  transfer_resource.color_space = resource_color_space;
-  external_resources->resources.push_back(std::move(transfer_resource));
+  transferable_resource.color_space = resource_color_space;
+  transferable_resource.format = copy_resource_format;
+  transferable_resource.buffer_format = viz::BufferFormat(copy_resource_format);
+  external_resources->resources.push_back(std::move(transferable_resource));
 
   external_resources->release_callbacks.push_back(base::BindOnce(
       &VideoResourceUpdater::RecycleResource, weak_ptr_factory_.GetWeakPtr(),
@@ -866,28 +869,31 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
       plane_resource->SetUniqueId(video_frame->unique_id(), 0);
     }
 
+    viz::TransferableResource transferable_resource;
     if (software_compositor()) {
       SoftwarePlaneResource* software_resource = plane_resource->AsSoftware();
       external_resources.type = VideoFrameResourceType::RGBA_PREMULTIPLIED;
-      external_resources.resources.push_back(
-          viz::TransferableResource::MakeSoftware(
-              software_resource->shared_bitmap_id(), 0 /* sequence_number */,
-              software_resource->resource_size(),
-              plane_resource->resource_format()));
+      transferable_resource = viz::TransferableResource::MakeSoftware(
+          software_resource->shared_bitmap_id(), 0 /* sequence_number */,
+          software_resource->resource_size(),
+          plane_resource->resource_format());
     } else {
       HardwarePlaneResource* hardware_resource = plane_resource->AsHardware();
       external_resources.type = VideoFrameResourceType::RGBA;
       gpu::SyncToken sync_token;
       GenerateCompositorSyncToken(context_provider_->ContextGL(), &sync_token);
-      external_resources.resources.push_back(
-          viz::TransferableResource::MakeGLOverlay(
-              hardware_resource->mailbox(), GL_LINEAR,
-              hardware_resource->texture_target(), sync_token,
-              hardware_resource->resource_size(),
-              hardware_resource->overlay_candidate()));
+      transferable_resource = viz::TransferableResource::MakeGLOverlay(
+          hardware_resource->mailbox(), GL_LINEAR,
+          hardware_resource->texture_target(), sync_token,
+          hardware_resource->resource_size(),
+          hardware_resource->overlay_candidate());
     }
 
-    external_resources.resources.back().color_space = output_color_space;
+    transferable_resource.color_space = output_color_space;
+    transferable_resource.format = viz::ResourceFormat::RGBA_8888;
+    transferable_resource.buffer_format =
+        viz::BufferFormat(viz::ResourceFormat::RGBA_8888);
+    external_resources.resources.push_back(std::move(transferable_resource));
     external_resources.release_callbacks.push_back(base::BindOnce(
         &VideoResourceUpdater::RecycleResource, weak_ptr_factory_.GetWeakPtr(),
         plane_resource->plane_resource_id()));
@@ -1024,12 +1030,15 @@ VideoFrameExternalResources VideoResourceUpdater::CreateForSoftwarePlanes(
 
   for (size_t i = 0; i < plane_resources.size(); ++i) {
     HardwarePlaneResource* plane_resource = plane_resources[i]->AsHardware();
-    auto transfer_resource = viz::TransferableResource::MakeGLOverlay(
+    auto transferable_resource = viz::TransferableResource::MakeGLOverlay(
         plane_resource->mailbox(), GL_LINEAR, plane_resource->texture_target(),
         sync_token, plane_resource->resource_size(),
         plane_resource->overlay_candidate());
-    transfer_resource.color_space = output_color_space;
-    external_resources.resources.push_back(std::move(transfer_resource));
+    transferable_resource.color_space = output_color_space;
+    transferable_resource.format = output_resource_format;
+    transferable_resource.buffer_format =
+        viz::BufferFormat(output_resource_format);
+    external_resources.resources.push_back(std::move(transferable_resource));
     external_resources.release_callbacks.push_back(base::BindOnce(
         &VideoResourceUpdater::RecycleResource, weak_ptr_factory_.GetWeakPtr(),
         plane_resource->plane_resource_id()));
