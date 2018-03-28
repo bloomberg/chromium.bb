@@ -181,6 +181,10 @@ class VRDisplay final : public EventTargetWithInlineData,
   device::mojom::blink::VRPosePtr frame_pose_;
   device::mojom::blink::VRPosePtr pending_pose_;
 
+  // Set to true between OnActivate and RequestPresent to indicate that we're in
+  // a display activation state.
+  bool in_display_activate_ = false;
+
   // This frame ID is vr-specific and is used to track when frames arrive at the
   // VR compositor so that it knows which poses to use, when to apply bounds
   // updates, etc.

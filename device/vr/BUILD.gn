@@ -35,9 +35,11 @@ if (enable_vr) {
 
     deps += [
       "//base",
+      "//components/ukm:ukm",
       "//gpu/ipc/common:interfaces",
       "//mojo/public/cpp/bindings",
       "//services/device/public/cpp/generic_sensor",
+      "//services/metrics/public/cpp:ukm_builders",
       "//services/service_manager/public/cpp",
       "//ui/display",
       "//ui/gfx",

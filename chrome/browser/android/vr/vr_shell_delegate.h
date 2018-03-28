@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "chrome/browser/android/vr/vr_core_info.h"
 #include "chrome/browser/vr/content_input_delegate.h"
+#include "chrome/browser/vr/metrics/session_metrics_helper.h"
 #include "device/vr/android/gvr/gvr_delegate_provider.h"
 #include "device/vr/public/mojom/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/libraries/headers/vr/gvr/capi/include/gvr_types.h"
@@ -52,6 +53,9 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void SetPresentResult(JNIEnv* env,
                         const base::android::JavaParamRef<jobject>& obj,
                         jboolean success);
+  void RecordVrStartAction(JNIEnv* env,
+                           const base::android::JavaParamRef<jobject>& obj,
+                           jint start_action);
   void DisplayActivate(JNIEnv* env,
                        const base::android::JavaParamRef<jobject>& obj);
   void OnPause(JNIEnv* env, const base::android::JavaParamRef<jobject>& obj);
@@ -94,6 +98,7 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   VrShell* vr_shell_ = nullptr;
   base::OnceCallback<void(bool)> on_present_result_callback_;
   bool pending_successful_present_request_ = false;
+  base::Optional<PageSessionStartAction> pending_vr_start_action_;
 
   base::CancelableClosure clear_activate_task_;
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;

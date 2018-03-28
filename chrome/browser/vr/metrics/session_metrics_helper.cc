@@ -282,6 +282,35 @@ void SessionMetricsHelper::UpdateMode() {
     SetVrMode(mode);
 }
 
+void SessionMetricsHelper::RecordVrStartAction(PageSessionStartAction action) {
+  if (!page_session_tracker_ || mode_ == Mode::kNoVr) {
+    pending_page_session_start_action_ = action;
+  } else {
+    MaybeSetPageSessionStartAction(action);
+  }
+
+  // TODO(offenwanger): Add UMA logging here.
+}
+
+void SessionMetricsHelper::ReportRequestPresent() {
+  // If we're not in VR, log this as an entry into VR from 2D.
+  if (mode_ == Mode::kNoVr) {
+    RecordVrStartAction(PageSessionStartAction::kPresentationRequest);
+    // TODO(offenwanger): Record entered presentation from 2D.
+  }
+  // TODO(offenwanger): Else record entered presentation from VR.
+}
+
+void SessionMetricsHelper::MaybeSetPageSessionStartAction(
+    PageSessionStartAction action) {
+  DCHECK(page_session_tracker_);
+  if (action == PageSessionStartAction::kHeadsetActivation ||
+      action == PageSessionStartAction::kPresentationRequest) {
+    page_session_tracker_->ukm_entry()->SetEnteredVROnPageReason(
+        static_cast<int>(action));
+  }
+}
+
 void SessionMetricsHelper::SetWebVREnabled(bool is_webvr_presenting) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
@@ -381,6 +410,10 @@ void SessionMetricsHelper::OnEnterAnyVr() {
       std::make_unique<SessionTracker<ukm::builders::XR_PageSession>>(
           std::make_unique<ukm::builders::XR_PageSession>(
               ukm::GetSourceIdForWebContentsDocument(web_contents())));
+  if (pending_page_session_start_action_) {
+    MaybeSetPageSessionStartAction(*pending_page_session_start_action_);
+    pending_page_session_start_action_ = base::nullopt;
+  }
 }
 
 void SessionMetricsHelper::OnExitAllVr() {
@@ -558,6 +591,10 @@ void SessionMetricsHelper::DidFinishNavigation(
         std::make_unique<SessionTracker<ukm::builders::XR_PageSession>>(
             std::make_unique<ukm::builders::XR_PageSession>(
                 ukm::GetSourceIdForWebContentsDocument(web_contents())));
+    if (pending_page_session_start_action_) {
+      MaybeSetPageSessionStartAction(*pending_page_session_start_action_);
+      pending_page_session_start_action_ = base::nullopt;
+    }
 
     // Check that the completed navigation is indeed the one that was requested
     // by either voice or omnibox entry, in case the requested navigation was

@@ -95,6 +95,12 @@ void VrShellDelegate::SetDelegate(VrShell* vr_shell,
     pending_successful_present_request_ = false;
     base::ResetAndReturn(&on_present_result_callback_).Run(true);
   }
+
+  if (pending_vr_start_action_) {
+    vr_shell_->RecordVrStartAction(*pending_vr_start_action_);
+    pending_vr_start_action_ = base::nullopt;
+  }
+
   JNIEnv* env = AttachCurrentThread();
   std::unique_ptr<VrCoreInfo> vr_core_info = MakeVrCoreInfo(env);
   VrMetricsUtil::LogGvrVersionForVrViewerType(viewer_type, *vr_core_info);
@@ -120,6 +126,20 @@ void VrShellDelegate::SetPresentResult(JNIEnv* env,
   CHECK(!on_present_result_callback_.is_null());
   base::ResetAndReturn(&on_present_result_callback_)
       .Run(static_cast<bool>(success));
+}
+
+void VrShellDelegate::RecordVrStartAction(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    jint start_action) {
+  if (!vr_shell_) {
+    pending_vr_start_action_ =
+        static_cast<PageSessionStartAction>(start_action);
+    return;
+  }
+
+  vr_shell_->RecordVrStartAction(
+      static_cast<PageSessionStartAction>(start_action));
 }
 
 void VrShellDelegate::OnPresentResult(

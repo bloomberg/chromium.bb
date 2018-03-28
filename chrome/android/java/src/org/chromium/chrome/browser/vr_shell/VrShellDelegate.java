@@ -281,6 +281,14 @@ public class VrShellDelegate
             setVrModeEnabled(sInstance.mActivity, true);
             if (DEBUG_LOGS) Log.i(TAG, "VrBroadcastReceiver onReceive");
 
+            if (!sInstance.mRequestedWebVr && !sInstance.mEnterVrOnStartup) {
+                // If we didn't request WebVR then we're not coming from a request present call.
+                // If we didn't set mEnterVrOnStartup this isn't an intent from another app.
+                // Therefore we can assume this was triggered by NFC.
+                sInstance.nativeRecordVrStartAction(sInstance.mNativeVrShellDelegate,
+                        PageSessionStartAction.HEADSET_ACTIVATION);
+            }
+
             // We add a black overlay view so that we can show black while the VR UI is loading.
             if (!sInstance.mInVr) addBlackOverlayViewForActivity(sInstance.mActivity);
 
@@ -1209,6 +1217,8 @@ public class VrShellDelegate
         mDonSucceeded = true;
         mInVrAtChromeLaunch = true;
 
+        nativeRecordVrStartAction(mNativeVrShellDelegate, PageSessionStartAction.INTENT_LAUNCH);
+
         if (!mPaused) enterVrAfterDon();
     }
 
@@ -1222,6 +1232,8 @@ public class VrShellDelegate
         // We assume that the user is already in VR mode when launched for auto-presentation.
         mDonSucceeded = true;
         mInVrAtChromeLaunch = true;
+
+        nativeRecordVrStartAction(mNativeVrShellDelegate, PageSessionStartAction.DEEP_LINKED_APP);
     }
 
     private void onEnterVrUnsupported() {
@@ -2044,6 +2056,7 @@ public class VrShellDelegate
     private native long nativeInit();
     private static native void nativeOnLibraryAvailable();
     private native void nativeSetPresentResult(long nativeVrShellDelegate, boolean result);
+    private native void nativeRecordVrStartAction(long nativeVrShellDelegate, int startAction);
     private native void nativeDisplayActivate(long nativeVrShellDelegate);
     private native void nativeOnPause(long nativeVrShellDelegate);
     private native void nativeOnResume(long nativeVrShellDelegate);
