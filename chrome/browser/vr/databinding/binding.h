@@ -131,14 +131,14 @@ class Binding : public BindingBase {
   std::make_unique<Binding<T>>(                                               \
       base::BindRepeating([](M* model) { return Get; }, base::Unretained(m)), \
       #Get,                                                                   \
-      base::BindRepeating([](V* view, const T& value) { Set; },               \
+      base::BindRepeating([](V* view, T const& value) { Set; },               \
                           base::Unretained(v)),                               \
       #Set)
 #else
 #define VR_BIND(T, M, m, Get, V, v, Set)                                      \
   std::make_unique<Binding<T>>(                                               \
       base::BindRepeating([](M* model) { return Get; }, base::Unretained(m)), \
-      base::BindRepeating([](V* view, const T& value) { Set; },               \
+      base::BindRepeating([](V* view, T const& value) { Set; },               \
                           base::Unretained(v)))
 #endif
 

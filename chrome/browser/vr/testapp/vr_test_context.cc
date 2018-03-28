@@ -402,9 +402,14 @@ void VrTestContext::CreateFakeVoiceSearchResult() {
 
 void VrTestContext::CycleWebVrModes() {
   switch (model_->web_vr.state) {
-    case kWebVrNoTimeoutPending:
+    case kWebVrNoTimeoutPending: {
       ui_->SetWebVrMode(true, false);
+      CapturingStateModel capturing_state;
+      capturing_state.bluetooth_connected = true;
+      capturing_state.location_access_enabled = true;
+      ui_->SetCapturingState(capturing_state);
       break;
+    }
     case kWebVrAwaitingMinSplashScreenDuration:
       break;
     case kWebVrAwaitingFirstFrame:

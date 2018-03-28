@@ -21,6 +21,7 @@ struct IndicatorSpec {
   int potential_resource_string;
   bool CapturingStateModel::*signal;
   bool CapturingStateModel::*potential_signal;
+  bool is_url;
 };
 
 std::vector<IndicatorSpec> GetIndicatorSpecs();
