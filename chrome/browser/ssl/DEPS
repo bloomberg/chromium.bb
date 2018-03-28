@@ -1,5 +1,6 @@
 include_rules = [
   "+components/captive_portal",
+  "+components/certificate_transparency",
   "+components/wifi",
 ]
 

@@ -144,6 +144,36 @@ class SafeBrowsingURLRequestContext;
 
 namespace {
 
+net::CertVerifier* g_cert_verifier_for_testing = nullptr;
+
+// A CertVerifier that forwards all requests to |g_cert_verifier_for_testing|.
+// This is used to allow IOThread to have its own
+// std::unique_ptr<net::CertVerifier> while forwarding calls to the static
+// verifier.
+class WrappedTestingCertVerifier : public net::CertVerifier {
+ public:
+  ~WrappedTestingCertVerifier() override = default;
+
+  // CertVerifier implementation
+  int Verify(const RequestParams& params,
+             net::CRLSet* crl_set,
+             net::CertVerifyResult* verify_result,
+             const net::CompletionCallback& callback,
+             std::unique_ptr<Request>* out_req,
+             const net::NetLogWithSource& net_log) override {
+    verify_result->Reset();
+    if (!g_cert_verifier_for_testing)
+      return net::ERR_FAILED;
+    return g_cert_verifier_for_testing->Verify(params, crl_set, verify_result,
+                                               callback, out_req, net_log);
+  }
+  bool SupportsOCSPStapling() override {
+    if (!g_cert_verifier_for_testing)
+      return false;
+    return g_cert_verifier_for_testing->SupportsOCSPStapling();
+  }
+};
+
 #if defined(OS_MACOSX)
 void ObserveKeychainEvents() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -594,6 +624,11 @@ void IOThread::RegisterPrefs(PrefRegistrySimple* registry) {
 #endif
 }
 
+// static
+void IOThread::SetCertVerifierForTesting(net::CertVerifier* cert_verifier) {
+  g_cert_verifier_for_testing = cert_verifier;
+}
+
 void IOThread::UpdateServerWhitelist() {
   globals_->http_auth_preferences->SetServerWhitelist(
       auth_server_whitelist_.GetValue());
@@ -759,16 +794,20 @@ void IOThread::ConstructSystemRequestContext() {
   builder->set_host_resolver(std::move(host_resolver));
 
   std::unique_ptr<net::CertVerifier> cert_verifier;
+  if (g_cert_verifier_for_testing) {
+    cert_verifier = std::make_unique<WrappedTestingCertVerifier>();
+  } else {
 #if defined(OS_CHROMEOS)
-  // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
-  cert_verifier = std::make_unique<net::CachingCertVerifier>(
-      std::make_unique<net::MultiThreadedCertVerifier>(
-          base::MakeRefCounted<chromeos::CertVerifyProcChromeOS>()));
+    // Creates a CertVerifyProc that doesn't allow any profile-provided certs.
+    cert_verifier = std::make_unique<net::CachingCertVerifier>(
+        std::make_unique<net::MultiThreadedCertVerifier>(
+            base::MakeRefCounted<chromeos::CertVerifyProcChromeOS>()));
 #else
-  cert_verifier = std::make_unique<net::CachingCertVerifier>(
-      std::make_unique<net::MultiThreadedCertVerifier>(
-          net::CertVerifyProc::CreateDefault()));
+    cert_verifier = std::make_unique<net::CachingCertVerifier>(
+        std::make_unique<net::MultiThreadedCertVerifier>(
+            net::CertVerifyProc::CreateDefault()));
 #endif
+  }
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   builder->SetCertVerifier(

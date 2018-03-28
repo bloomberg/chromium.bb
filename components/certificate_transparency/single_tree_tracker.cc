@@ -55,38 +55,6 @@ namespace certificate_transparency {
 
 namespace {
 
-// Enum indicating whether an SCT can be checked for inclusion and if not,
-// the reason it cannot.
-//
-// Note: The numeric values are used within a histogram and should not change
-// or be re-assigned.
-enum SCTCanBeCheckedForInclusion {
-  // If the SingleTreeTracker does not have a valid STH, then a valid STH is
-  // first required to evaluate whether the SCT can be checked for inclusion
-  // or not.
-  VALID_STH_REQUIRED = 0,
-
-  // If the STH does not cover the SCT (the timestamp in the SCT is greater than
-  // MMD + timestamp in the STH), then a newer STH is needed.
-  NEWER_STH_REQUIRED = 1,
-
-  // When an SCT is observed, if the SingleTreeTracker instance has a valid STH
-  // and the STH covers the SCT (the timestamp in the SCT is less than MMD +
-  // timestamp in the STH), then it can be checked for inclusion.
-  CAN_BE_CHECKED = 2,
-
-  // This SCT was not audited because the queue of pending entries was
-  // full.
-  NOT_AUDITED_QUEUE_FULL = 3,
-
-  // This SCT was not audited because no DNS lookup was done when first
-  // visiting the website that supplied it. It could compromise the user's
-  // privacy to do an inclusion check over DNS in this scenario.
-  NOT_AUDITED_NO_DNS_LOOKUP = 4,
-
-  SCT_CAN_BE_CHECKED_MAX
-};
-
 // Measure how often clients encounter very new SCTs, by measuring whether an
 // SCT can be checked for inclusion upon first observation.
 void LogCanBeCheckedForInclusionToUMA(

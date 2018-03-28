@@ -44,6 +44,10 @@ unit tests.
      This is an X.509 v1 certificate that omits the version field. Used to
      test that the certificate version gets the default value v1.
 
+- comodo.pem : A certificate chain for comodo.com which contains signed
+	    certificate timestamps that conform to Chrome's Certificate Transparency
+			policy as of December 2017.
+
 - ct-test-embedded-cert.pem
 - ct-test-embedded-with-intermediate-chain.pem
 - ct-test-embedded-with-intermediate-preca-chain.pem
