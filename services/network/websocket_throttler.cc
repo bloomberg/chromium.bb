@@ -39,7 +39,8 @@ void WebSocketPerProcessThrottler::PendingConnection::OnCompleteHandshake() {
   throttler_ = nullptr;
 }
 
-WebSocketPerProcessThrottler::WebSocketPerProcessThrottler() {}
+WebSocketPerProcessThrottler::WebSocketPerProcessThrottler()
+    : weak_factory_(this) {}
 WebSocketPerProcessThrottler::~WebSocketPerProcessThrottler() {}
 
 base::TimeDelta WebSocketPerProcessThrottler::CalculateDelay() const {
@@ -55,7 +56,7 @@ base::TimeDelta WebSocketPerProcessThrottler::CalculateDelay() const {
 
 WebSocketPerProcessThrottler::PendingConnection
 WebSocketPerProcessThrottler::IssuePendingConnectionTracker() {
-  return PendingConnection(AsWeakPtr());
+  return PendingConnection(weak_factory_.GetWeakPtr());
 }
 
 bool WebSocketPerProcessThrottler::IsClean() const {
