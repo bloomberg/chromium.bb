@@ -4,4 +4,4 @@
 # found in the LICENSE file.
 set -eu
 readonly bindir=$(cd "$(dirname "$(readlink -f "$0")")"; pwd)
-exec "$bindir/venv_python" -m chromite.scripts.sysmon "$@"
+exec "$bindir/python_venv" -m chromite.scripts.sysmon "$@"
