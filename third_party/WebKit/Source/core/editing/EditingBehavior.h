@@ -107,6 +107,14 @@ class CORE_EXPORT EditingBehavior {
     return type_ == kEditingMacBehavior;
   }
 
+  // On Mac, backspacing at the start of a blocks merges with the
+  // previous table block, as we do with regular blocks. On other
+  // platforms backspace event does nothing if the block above is a
+  // table, but allows mergin otherwise.
+  bool ShouldMergeContentWithTablesOnBackspace() const {
+    return type_ == kEditingMacBehavior;
+  }
+
   // Support for global selections, used on platforms like the X Window
   // System that treat selection as a type of clipboard.
   bool SupportsGlobalSelection() const {
