@@ -267,6 +267,19 @@ message GetTpmStatusReply {
   extend BaseReply {
     optional GetTpmStatusReply reply = 1006;
   }
+
+  message Identity {
+    // The identity features.
+    optional int32 features = 1;
+  }
+
+  message IdentityCertificate {
+    // The identity that is enrolled.
+    optional int32 identity = 1;
+    // The Privacy CA that the identity is enrolled with.
+    optional int32 aca = 2;
+  }
+
   // Whether a TPM is enabled on the system.
   optional bool enabled = 1;
   // Whether the TPM has been owned.
@@ -298,6 +311,10 @@ message GetTpmStatusReply {
   optional bool boot_lockbox_finalized = 14;
   // Whether the current PCR values show a verified boot.
   optional bool verified_boot_measured = 15;
+  // List of identities and their identity features.
+  repeated Identity identities = 16;
+  // List of identity certificates.
+  map<int32, IdentityCertificate> identity_certificates = 17;
 }
 
 message GetEndorsementInfoRequest {
