@@ -525,6 +525,7 @@ class JSONTestResultsMerger(JSONMerger):
             ':builder_name$',
             ':build_number$',
             ':chromium_revision$',
+            ':flag_name$',
             ':has_pretty_patch$',
             ':has_wdiff$',
             ':path_delimiter$',

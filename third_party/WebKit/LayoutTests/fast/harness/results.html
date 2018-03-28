@@ -173,9 +173,16 @@ p, h2, h3, h4 {
   color: #4F8A10;
   margin-left: 5px;
 }
+
+#flag-toolbar {
+  display: inline-block;
+}
+#flag-toolbar.hidden {
+  display: none;
+}
 </style>
 <body>
-<h3>Test run summary <span id="builder_name"></span></h3>
+<h3>Test run summary <span id="builder_name"></span> <span class="flag_name"></span></h3>
 
 <div id="right-toolbar">
   <a id="help_button" href="javascript:GUI.toggleVisibility('help')">help</a>
@@ -302,6 +309,16 @@ TestResult(CRASH) + TextExpectation(Failure) => [ Failure <b>Crash</b> ]</pre>
     <button onclick="javascript:Query.query('Flagged', Filters.flagged, true)">
       Flagged
     </button>
+    <div id="flag-toolbar" class="hidden">
+      <button onclick="javascript:Query.query('Flag failures', Filters.flagFailure, true)">
+        <span class="flag_name"></span> failures
+        <span id="count_flagfailure"></span>
+      </button>
+      <button onclick="javascript:Query.query('Flag failures', Filters.flagPass, true)">
+        <span class="flag_name"></span> passes
+        <span id="count_flagpass"></span>
+      </button>
+    </div>
   </div>
   <div id="filters">
     <span class="fix-width">Filters</span>
@@ -401,7 +418,7 @@ class Traversal {
   }
 
   _helper(node, path, filter, action) {
-    if ("actual" in node) {
+    if (GUI.isTest(node)) {
       this.testCount++;
       if (filter(node, path)) {
         this.filteredCount++;
@@ -894,6 +911,7 @@ const Query = {
     document.querySelector("#progress").style.width = "1%";
     document.querySelector("#copy_report").disabled = true;
     document.querySelector("#copy_single_line").disabled = true;
+        document.querySelector("#report_count").innerText = "";
     let traversal = new Traversal(globalResults.tests);
     let chunkSize = 1000;
     let index = 0;
@@ -936,34 +954,37 @@ const Filters = {
   unexpectedPass: test => {
     return !Filters.containsPass(test.expectedMap) && Filters.containsPass(test.actualMap);
   },
-  regression: test => {
-    if (Filters.containsPass(test.actualMap))
+  regressionFromExpectedMap: (finalResult, expectedMap) => {
+    if (expectedMap.has("NEEDSMANUALREBASELINE")
+        || expectedMap.has("NEEDSREBASELINE")
+        || expectedMap.has("WONTFIX"))
       return false;
-    if (test.expectedMap.has("NEEDSMANUALREBASELINE")
-        || test.expectedMap.has("NEEDSREBASELINE")
-        || test.expectedMap.has("WONTFIX"))
-      return false;
-    switch (test.actualFinal) {
+    switch (finalResult) {
       case "SKIP":
         return false;
       case "CRASH":
       case "TIMEOUT":
       case "LEAK":
-        if (test.expectedMap.has(test.actualFinal))
+        if (expectedMap.has(finalResult))
           return false;
         break;
       case "TEXT":
       case "IMAGE":
       case "IMAGE+TEXT":
-        if (test.expectedMap.has("FAIL"))
+        if (expectedMap.has("FAIL"))
           return false;
         break;
       case "MISSING":
         break;
       default:
-        console.error("Unexpected test result", est.actualMap.keys().next().value);
+        console.error("Unexpected test result", finalResult);
       }
     return true;
+  },
+  regression: test => {
+    if (Filters.containsPass(test.actualMap))
+      return false;
+    return Filters.regressionFromExpectedMap(test.actualFinal, test.expectedMap);
   },
   notpass: test => test.actualFinal != "PASS" && test.expected != "WONTFIX",
   actual: tag => {  // Returns comparator for tag.
@@ -974,7 +995,40 @@ const Filters = {
   wontfix: test => test.expected == "WONTFIX",
   all: _ => true,
   flaky: test => test.actualMap.size > 1,
-  flagged: test => test.flagged
+  flagged: test => test.flagged,
+  flagFailure: test => { // Tests that are failing, but expected to pass in base.
+    if (Filters.containsPass(test.actualMap))
+      return false;
+    if (test.expectedMap.has("NEEDSMANUALREBASELINE")
+        || test.expectedMap.has("NEEDSREBASELINE")
+        || test.expectedMap.has("WONTFIX"))
+      return false;
+    let baseMap = test.flagMap ? test.baseMap : test.expectedMap;
+    switch (test.actualFinal) {
+      case "SKIP":
+        return false;
+      case "CRASH":
+      case "TIMEOUT":
+      case "LEAK":
+        if (baseMap && baseMap.has(test.actualFinal))
+          return false;
+        break;
+      case "TEXT":
+      case "IMAGE":
+      case "IMAGE+TEXT":
+        if (baseMap && baseMap.has("FAIL"))
+          return false;
+        break;
+      case "MISSING":
+        break;
+      default:
+        console.error("Unexpected test result", test.actualFinal);
+      }
+    return true;
+  },
+  flagPass: test => {
+    return test.baseMap && (Filters.containsPass(test.actualMap) && !Filters.containsPass(test.baseMap));
+  }
 }; // Filters
 
 // Event handling, initialization.
@@ -993,15 +1047,20 @@ const GUI = {
     document.querySelector("#button_regressions").click();
   },
 
+  hasBaseExpectations : false,
+
+  isTest: function(o) {
+    return "actual" in o;
+  },
+
   convertToMap: function(o) {
-    if ("actual" in o)
+    if (GUI.isTest(o))
       return o;
     else {
       let map = new Map();
       var keys = Object.keys(o).sort((a, b) => {
-        let a_isTest = "actual" in o[a];
-        let b_isTest = "actual" in o[b];
-        if (a_isTest == b_isTest)
+        let a_isTest = GUI.isTest(o[a]);
+        if (a_isTest == GUI.isTest(o[b]))
           return a < b ? -1 : +(a > b);
         return a_isTest ? -1 : 1;
       });
@@ -1019,9 +1078,12 @@ const GUI = {
     // - test.expectPath, full path to test
     // - test.actualMap, map of actual results
     // - test.actualFinal, last result
-    // - test.expectedMap, maps of expected results
+    // - test.expectedMap, maps of all expected results
+    // - test.baseMap, map of base expected results. Can be undefined.
+    // - test.flagMap, map of flag expected results. Can be undefined.
     // For all crashing tests without crash_site, set crash_site to "Can't identify".
     let nextId = 1;
+    let baseCount = 0;
     t.traverse(
       test => true,
       (test, path) => {
@@ -1039,6 +1101,16 @@ const GUI = {
         }
         if (test.actualMap.has("CRASH") && !test["crash_site"]) {
           test["crash_site"] = "Can't identify";
+        }
+        if ("base_expectations" in test) {
+          GUI.hasBaseExpectations = true;
+          baseCount++;
+          test.baseMap = new Map();
+          test.base_expectations.forEach( result => test.baseMap.set(result, true));
+        }
+        if ("flag_expectations" in test) {
+          test.flagMap = new Map();
+          test.flag_expectations.forEach( result => test.flagMap.set(result, true));
         }
       }
     );
@@ -1291,6 +1363,8 @@ const GUI = {
       "count_testexpectations": 0,
       "count_flaky": 0,
       "count_all": 0,
+      "count_flagfailure": 0,
+      "count_flagpass" : 0
     };
     var t = new Traversal(fullResults.tests);
     t.traverse( test => {
@@ -1303,6 +1377,10 @@ const GUI = {
         counts.count_testexpectations++;
       if (Filters.flaky(test))
         counts.count_flaky++;
+      if (Filters.flagFailure(test))
+        counts.count_flagfailure++;
+      if (Filters.flagPass(test))
+        counts.count_flagpass++;
     });
     console.assert(
         counts.count_regressions == fullResults.num_regressions,
@@ -1312,6 +1390,17 @@ const GUI = {
       document.querySelector("#" + p).innerText = counts[p];
 
     document.querySelector("#summary_total").innerText = counts.count_all;
+    if (!GUI.hasBaseExpectations)
+      document.querySelector("#flag-toolbar").classList.add("hidden");
+    else {
+      document.querySelector("#flag-toolbar").classList.remove("hidden");
+      let flagName = fullResults.flag_name || "";
+      flagName = flagName.replace('/', '')
+        .replace('enable-blink-features', '').replace('=', '');
+      Array.from(document.querySelectorAll(".flag_name")).forEach( el => {
+        el.innerText = flagName;
+      });
+    }
   },
 
   getExpectation: function(el) {

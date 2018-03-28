@@ -243,9 +243,16 @@ def summarize_results(port_obj, expectations, initial_results,
         if result.has_stderr:
             test_dict['has_stderr'] = True
 
-        bugs = expectations.model().get_expectation_line(test_name).bugs
+        expectation_line = expectations.model().get_expectation_line(test_name)
+        bugs = expectation_line.bugs
         if bugs:
             test_dict['bugs'] = bugs
+        if expectation_line.flag_expectations:
+            test_dict['flag_expectations'] = expectation_line.flag_expectations
+
+        base_expectations = expectation_line.base_expectations
+        if base_expectations:
+            test_dict['base_expectations'] = base_expectations
 
         if result.reftest_type:
             test_dict.update(reftest_type=list(result.reftest_type))
@@ -320,6 +327,7 @@ def summarize_results(port_obj, expectations, initial_results,
     if port_obj.get_option('order') == 'random':
         results['random_order_seed'] = port_obj.get_option('seed')
     results['path_delimiter'] = '/'
+    results['flag_name'] = expectations.model().get_flag_name()
 
     # Don't do this by default since it takes >100ms.
     # It's only used for rebaselining and uploading data to the flakiness dashboard.
