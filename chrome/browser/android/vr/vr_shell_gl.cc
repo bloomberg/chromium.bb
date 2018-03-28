@@ -468,14 +468,18 @@ void VrShellGl::OnSwapContents(int new_content_id) {
 void VrShellGl::EnableAlertDialog(ContentInputForwarder* input_forwarder,
                                   int width,
                                   int height) {
+  showing_vr_dialog_ = true;
   vr_dialog_.reset(new VrDialog(width, height));
   vr_dialog_->SetEventForwarder(input_forwarder);
   ui_->SetAlertDialogEnabled(true, vr_dialog_.get(), width, height);
+  ScheduleOrCancelWebVrFrameTimeout();
 }
 
 void VrShellGl::DisableAlertDialog() {
+  showing_vr_dialog_ = false;
   ui_->SetAlertDialogEnabled(false, nullptr, 0, 0);
   vr_dialog_ = nullptr;
+  ScheduleOrCancelWebVrFrameTimeout();
 }
 
 void VrShellGl::SetAlertDialogSize(int width, int height) {
@@ -549,7 +553,7 @@ void VrShellGl::ScheduleOrCancelWebVrFrameTimeout() {
   // TODO(mthiesse): We should also timeout after the initial frame to prevent
   // bad experiences, but we have to be careful to handle things like splash
   // screens correctly. For now just ensure we receive a first frame.
-  if (!web_vr_mode_ || webvr_frames_received_ > 0) {
+  if (!web_vr_mode_ || webvr_frames_received_ > 0 || showing_vr_dialog_) {
     if (!webvr_frame_timeout_.IsCancelled())
       webvr_frame_timeout_.Cancel();
     if (!webvr_spinner_timeout_.IsCancelled())

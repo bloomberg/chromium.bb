@@ -727,7 +727,6 @@ public class VrShellImpl
      */
     @Override
     public void setDialogView(View view) {
-        if (getWebVrModeEnabled()) return;
         if (view == null) return;
         assert mVrUiViewContainer.getChildCount() == 0;
         mVrUiViewContainer.addView(view);
@@ -747,7 +746,6 @@ public class VrShellImpl
      */
     @Override
     public void setDialogSize(int width, int height) {
-        if (getWebVrModeEnabled()) return;
         nativeSetAlertDialogSize(mNativeVrShell, width, height);
     }
 
@@ -756,23 +754,6 @@ public class VrShellImpl
      */
     @Override
     public void initVrDialog(int width, int height) {
-        if (getWebVrModeEnabled()) {
-            if (mVrBrowsingEnabled) {
-                mDelegate.exitWebVRPresent();
-            } else {
-                // TODO (asimjour): We should be able to show the dialogs in webvr. But for now,
-                // we close the dialog. Closing the dialog cannot happen in the show() method,
-                // therefore we have to post task the call to Presenter to close the dialog.
-                ThreadUtils.postOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        mVrModalPresenter.closeCurrentDialog();
-                    }
-                });
-                return;
-            }
-        }
-
         nativeSetAlertDialog(mNativeVrShell, width, height);
         mAndroidDialogGestureTarget =
                 new AndroidUiGestureTarget(mVrUiViewContainer.getInputTarget(), 1.0f,

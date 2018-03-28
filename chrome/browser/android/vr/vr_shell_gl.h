@@ -335,6 +335,7 @@ class VrShellGl : public device::mojom::VRPresentationProvider {
   ControllerModel controller_model_;
 
   std::unique_ptr<VrDialog> vr_dialog_;
+  bool showing_vr_dialog_ = false;
 
   bool last_should_send_webvr_vsync_ = false;
 

@@ -472,8 +472,9 @@ TEST_F(UiTest, WebVrSplashScreenHiddenWhenTimeoutImminent) {
   ui_->OnWebVrTimeoutImminent();
   EXPECT_TRUE(RunFor(MsToDelta(10)));
 
-  VerifyOnlyElementsVisible("Timeout imminent",
-                            {kWebVrTimeoutSpinner, kWebVrBackground});
+  VerifyOnlyElementsVisible(
+      "Timeout imminent",
+      {kWebVrTimeoutSpinner, kWebVrBackground, kWebVrFloor});
 }
 
 TEST_F(UiTest, AppButtonClickForAutopresentation) {
@@ -483,6 +484,22 @@ TEST_F(UiTest, AppButtonClickForAutopresentation) {
   EXPECT_CALL(*browser_, ExitPresent()).Times(0);
   EXPECT_CALL(*browser_, ExitFullscreen()).Times(0);
   ui_->OnAppButtonClicked();
+}
+
+TEST_F(UiTest, HostedUiInWebVr) {
+  CreateScene(kNotInCct, kInWebVr);
+  VerifyVisibility({kWebVrHostedUi, kWebVrFloor}, false);
+  EXPECT_TRUE(ui_->CanSendWebVrVSync());
+
+  ui_->SetAlertDialogEnabled(true, nullptr, 0, 0);
+  EXPECT_FALSE(ui_->CanSendWebVrVSync());
+  OnBeginFrame();
+  VerifyVisibility({kWebVrHostedUi, kWebVrBackground, kWebVrFloor}, true);
+
+  ui_->SetAlertDialogEnabled(false, nullptr, 0, 0);
+  EXPECT_TRUE(ui_->CanSendWebVrVSync());
+  OnBeginFrame();
+  VerifyVisibility({kWebVrHostedUi, kWebVrFloor}, false);
 }
 
 TEST_F(UiTest, UiUpdatesForFullscreenChanges) {
@@ -1331,7 +1348,7 @@ TEST_F(UiTest, RepositionHostedUi) {
 
   Repositioner* repositioner = static_cast<Repositioner*>(
       scene_->GetUiElementByName(k2dBrowsingRepositioner));
-  UiElement* hosted_ui = scene_->GetUiElementByName(kHostedUi);
+  UiElement* hosted_ui = scene_->GetUiElementByName(k2dBrowsingHostedUi);
 
   OnBeginFrame();
   gfx::Transform original = hosted_ui->world_space_transform();

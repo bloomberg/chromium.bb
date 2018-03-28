@@ -16,6 +16,7 @@ enum UiElementType {
   kTypeButtonBackground,
   kTypeButtonForeground,
   kTypeButtonHitTarget,
+  kTypeHostedUiBackplane,
   kTypeScaledDepthAdjuster,
   kTypeOmniboxSuggestionBackground,
   kTypeOmniboxSuggestionLayout,

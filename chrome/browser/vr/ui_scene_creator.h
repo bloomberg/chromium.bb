@@ -59,7 +59,7 @@ class UiSceneCreator {
   void CreateWebVrTimeoutScreen();
   void CreateController();
   void CreateKeyboard();
-  void CreateHostedUi();
+  void Create2dBrowsingHostedUi();
 
   UiBrowserInterface* browser_;
   UiScene* scene_;

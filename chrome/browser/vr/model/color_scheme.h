@@ -60,6 +60,9 @@ struct ColorScheme {
   SkColor ceiling;
   SkColor floor_grid;
   SkColor web_vr_background;
+  SkColor web_vr_floor_center;
+  SkColor web_vr_floor_edge;
+  SkColor web_vr_floor_grid;
 
   ButtonColors disc_button_colors;
 
