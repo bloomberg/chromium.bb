@@ -268,6 +268,10 @@ bool PendingProfiles::TryProfileMerge(const ProfilesState& profile_state,
     // Make a copy of the sample so we can update its module indexes.
     StackSamplingProfiler::Sample sample = base_sample;
     for (StackSamplingProfiler::Frame& frame : sample.frames) {
+      if (frame.module_index ==
+          base::StackSamplingProfiler::Frame::kUnknownModuleIndex) {
+        continue;
+      }
       const auto& module = from_profile.modules[frame.module_index];
       auto it = module_id_to_index.find(module.id);
       if (it == module_id_to_index.end()) {
