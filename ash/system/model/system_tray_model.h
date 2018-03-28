@@ -14,6 +14,7 @@ namespace ash {
 
 class EnterpriseDomainModel;
 class TracingModel;
+class UpdateModel;
 
 // Top level model of SystemTray.
 // TODO(tetsui): Eventually migrate all of the mojom::SystemTray implementation
@@ -39,12 +40,13 @@ class SystemTrayModel : public mojom::SystemTray {
   EnterpriseDomainModel* enterprise_domain() {
     return enterprise_domain_.get();
   }
-
   TracingModel* tracing() { return tracing_.get(); }
+  UpdateModel* update_model() { return update_model_.get(); }
 
  private:
   std::unique_ptr<EnterpriseDomainModel> enterprise_domain_;
   std::unique_ptr<TracingModel> tracing_;
+  std::unique_ptr<UpdateModel> update_model_;
 
   // TODO(tetsui): Add following as a sub-model of SystemTrayModel:
   // * BluetoothModel

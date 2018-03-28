@@ -6,13 +6,15 @@
 
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/tracing_model.h"
+#include "ash/system/model/update_model.h"
 #include "base/logging.h"
 
 namespace ash {
 
 SystemTrayModel::SystemTrayModel()
     : enterprise_domain_(std::make_unique<EnterpriseDomainModel>()),
-      tracing_(std::make_unique<TracingModel>()) {}
+      tracing_(std::make_unique<TracingModel>()),
+      update_model_(std::make_unique<UpdateModel>()) {}
 
 SystemTrayModel::~SystemTrayModel() = default;
 
@@ -46,11 +48,12 @@ void SystemTrayModel::SetPerformanceTracingIconVisible(bool visible) {
 void SystemTrayModel::ShowUpdateIcon(mojom::UpdateSeverity severity,
                                      bool factory_reset_required,
                                      mojom::UpdateType update_type) {
-  NOTIMPLEMENTED();
+  update_model()->SetUpdateAvailable(severity, factory_reset_required,
+                                     update_type);
 }
 
 void SystemTrayModel::SetUpdateOverCellularAvailableIconVisible(bool visible) {
-  NOTIMPLEMENTED();
+  update_model()->SetUpdateOverCellularAvailable(visible);
 }
 
 }  // namespace ash

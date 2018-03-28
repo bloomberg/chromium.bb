@@ -203,27 +203,14 @@ void SystemTrayController::SetPerformanceTracingIconVisible(bool visible) {
 void SystemTrayController::ShowUpdateIcon(mojom::UpdateSeverity severity,
                                           bool factory_reset_required,
                                           mojom::UpdateType update_type) {
-  // Show the icon on all displays.
-  for (RootWindowController* root : Shell::GetAllRootWindowControllers()) {
-    ash::SystemTray* tray = root->GetSystemTray();
-    // External monitors might not have a tray yet.
-    if (!tray)
-      continue;
-    tray->tray_update()->ShowUpdateIcon(severity, factory_reset_required,
-                                        update_type);
-  }
+  Shell::Get()->system_tray_model()->ShowUpdateIcon(
+      severity, factory_reset_required, update_type);
 }
 
 void SystemTrayController::SetUpdateOverCellularAvailableIconVisible(
     bool visible) {
-  // Show the icon on all displays.
-  for (auto* root_window_controller : Shell::GetAllRootWindowControllers()) {
-    ash::SystemTray* tray = root_window_controller->GetSystemTray();
-    // External monitors might not have a tray yet.
-    if (!tray)
-      continue;
-    tray->tray_update()->SetUpdateOverCellularAvailableIconVisible(visible);
-  }
+  Shell::Get()->system_tray_model()->SetUpdateOverCellularAvailableIconVisible(
+      visible);
 }
 
 }  // namespace ash
