@@ -12,6 +12,7 @@ import android.support.test.filters.SmallTest;
 import org.junit.Assert;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -29,6 +30,8 @@ import java.util.List;
 public class MissingNativeLibraryTest {
     @Rule
     public CronetSmokeTestRule mRule = new CronetSmokeTestRule();
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     /**
      * If the ".so" file is missing, instantiating the Cronet engine should throw an exception.
@@ -38,16 +41,8 @@ public class MissingNativeLibraryTest {
     public void testExceptionWhenSoFileIsAbsent() throws Exception {
         ExperimentalCronetEngine.Builder builder =
                 new ExperimentalCronetEngine.Builder(InstrumentationRegistry.getTargetContext());
-        try {
-            builder.build();
-            Assert.fail("Expected exception since the shared library '.so' file is absent");
-        } catch (Throwable t) {
-            // Find the root cause.
-            while (t.getCause() != null) {
-                t = t.getCause();
-            }
-            Assert.assertEquals(UnsatisfiedLinkError.class, t.getClass());
-        }
+        thrown.expect(UnsatisfiedLinkError.class);
+        builder.build();
     }
 
     /**

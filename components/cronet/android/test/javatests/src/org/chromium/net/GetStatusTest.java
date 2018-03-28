@@ -17,6 +17,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 import org.junit.runner.RunWith;
 
 import org.chromium.base.test.BaseJUnit4ClassRunner;
@@ -41,6 +42,8 @@ import java.util.concurrent.Executors;
 public class GetStatusTest {
     @Rule
     public final CronetTestRule mTestRule = new CronetTestRule();
+    @Rule
+    public ExpectedException thrown = ExpectedException.none();
 
     private CronetTestFramework mTestFramework;
 
@@ -143,25 +146,9 @@ public class GetStatusTest {
             // Expected because LoadState.WAITING_FOR_APPCACHE is not mapped.
         }
 
-        try {
-            UrlRequestBase.convertLoadState(-1);
-            fail();
-        } catch (AssertionError e) {
-            // Expected.
-        } catch (IllegalArgumentException e) {
-            // If assertions are disabled, an IllegalArgumentException should be thrown.
-            assertEquals("No request status found.", e.getMessage());
-        }
-
-        try {
-            UrlRequestBase.convertLoadState(16);
-            fail();
-        } catch (AssertionError e) {
-            // Expected.
-        } catch (IllegalArgumentException e) {
-            // If assertions are disabled, an IllegalArgumentException should be thrown.
-            assertEquals("No request status found.", e.getMessage());
-        }
+        thrown.expect(Throwable.class);
+        UrlRequestBase.convertLoadState(-1);
+        UrlRequestBase.convertLoadState(16);
     }
 
     @Test
