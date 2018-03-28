@@ -480,6 +480,12 @@ void ChromotingSession::Core::ConnectOnNetworkThread() {
     client_->set_protocol_config(std::move(protocol_config));
   }
 #endif  // defined(ENABLE_WEBRTC_REMOTING_CLIENT)
+  if (session_context_->info.pairing_id.length() &&
+      session_context_->info.pairing_secret.length()) {
+    session_context_->logger->SetAuthMethod(
+        ChromotingEvent::AuthMethod::PINLESS);
+  }
+
   protocol::ClientAuthenticationConfig client_auth_config;
   client_auth_config.host_id = session_context_->info.host_id;
   client_auth_config.pairing_client_id = session_context_->info.pairing_id;
@@ -530,7 +536,7 @@ void ChromotingSession::Core::HandleOnSecretFetched(
     const std::string secret) {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
-  // TODO(yuweih): Track authentication method here.
+  session_context_->logger->SetAuthMethod(ChromotingEvent::AuthMethod::PIN);
 
   callback.Run(secret);
 }
@@ -570,7 +576,8 @@ void ChromotingSession::Core::HandleOnThirdPartyTokenFetched(
     const std::string& shared_secret) {
   DCHECK(network_task_runner()->BelongsToCurrentThread());
 
-  // TODO(yuweih): Track authentication method here.
+  session_context_->logger->SetAuthMethod(
+      ChromotingEvent::AuthMethod::THIRD_PARTY);
 
   callback.Run(token, shared_secret);
 }
