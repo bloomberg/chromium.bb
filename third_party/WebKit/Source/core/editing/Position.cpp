@@ -672,8 +672,10 @@ String PositionTemplate<Strategy>::ToAnchorTypeAndOffsetString() const {
 
 template <typename Strategy>
 void PositionTemplate<Strategy>::ShowTreeForThis() const {
-  if (!AnchorNode())
+  if (!AnchorNode()) {
+    LOG(INFO) << "\nposition is null";
     return;
+  }
   LOG(INFO) << "\n"
             << AnchorNode()->ToTreeStringForThis().Utf8().data()
             << ToAnchorTypeAndOffsetString().Utf8().data();
@@ -681,8 +683,10 @@ void PositionTemplate<Strategy>::ShowTreeForThis() const {
 
 template <typename Strategy>
 void PositionTemplate<Strategy>::ShowTreeForThisInFlatTree() const {
-  if (!AnchorNode())
+  if (!AnchorNode()) {
+    LOG(INFO) << "\nposition is null";
     return;
+  }
   LOG(INFO) << "\n"
             << AnchorNode()->ToFlatTreeStringForThis().Utf8().data()
             << ToAnchorTypeAndOffsetString().Utf8().data();
