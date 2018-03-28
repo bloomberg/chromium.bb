@@ -447,12 +447,15 @@ INTRA_PRED_TEST(SSE2_2, TX_4X8, aom_dc_predictor_4x8_sse2,
 #if HAVE_SSSE3
 INTRA_PRED_TEST(SSSE3_1, TX_4X4, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_4x4_ssse3, aom_smooth_predictor_4x4_ssse3,
-                aom_smooth_v_predictor_4x4_ssse3, NULL)
+                aom_smooth_v_predictor_4x4_ssse3,
+                aom_smooth_h_predictor_4x4_ssse3)
 INTRA_PRED_TEST(SSSE3_2, TX_4X8, NULL, NULL, NULL, NULL, NULL, NULL,
                 aom_paeth_predictor_4x8_ssse3, aom_smooth_predictor_4x8_ssse3,
-                aom_smooth_v_predictor_4x8_ssse3, NULL)
+                aom_smooth_v_predictor_4x8_ssse3,
+                aom_smooth_h_predictor_4x8_ssse3)
 INTRA_PRED_TEST(SSSE3_3, TX_4X16, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-                NULL, aom_smooth_v_predictor_4x16_ssse3, NULL)
+                NULL, aom_smooth_v_predictor_4x16_ssse3,
+                aom_smooth_h_predictor_4x16_ssse3)
 #endif  // HAVE_SSSE3
 
 #if HAVE_DSPR2
