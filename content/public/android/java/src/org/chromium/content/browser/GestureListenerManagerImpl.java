@@ -177,7 +177,7 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
 
     @CalledByNative
     private void onScrollBeginEventAck() {
-        setTouchScrollInProgress(false);
+        setTouchScrollInProgress(true);
         for (mIterator.rewind(); mIterator.hasNext();) {
             mIterator.next().onScrollStarted(verticalScrollOffset(), verticalScrollExtent());
         }
