@@ -7,8 +7,6 @@
 #include <memory>
 #include <utility>
 
-#include "ash/shell.h"
-#include "ash/system/toast/toast_manager.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/singleton.h"
 #include "base/stl_util.h"
@@ -346,19 +344,6 @@ void ArcNotificationManager::SendNotificationToggleExpansionOnChrome(
 
 void ArcNotificationManager::Shutdown() {
   get_app_id_callback_.Reset();
-}
-
-void ArcNotificationManager::OnToastPosted(mojom::ArcToastDataPtr data) {
-  const base::string16 text16(
-      base::UTF8ToUTF16(data->text.has_value() ? *data->text : std::string()));
-  const base::string16 dismiss_text16(base::UTF8ToUTF16(
-      data->dismiss_text.has_value() ? *data->dismiss_text : std::string()));
-  ash::Shell::Get()->toast_manager()->Show(
-      ash::ToastData(data->id, text16, data->duration, dismiss_text16));
-}
-
-void ArcNotificationManager::OnToastCancelled(mojom::ArcToastDataPtr data) {
-  ash::Shell::Get()->toast_manager()->Cancel(data->id);
 }
 
 bool ArcNotificationManager::ShouldIgnoreNotification(
