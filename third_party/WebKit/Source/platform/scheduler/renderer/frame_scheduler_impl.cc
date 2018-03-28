@@ -119,6 +119,11 @@ FrameSchedulerImpl::FrameSchedulerImpl(
                             &tracing_controller_,
                             YesNoStateToString),
       active_connection_count_(0),
+      has_active_connection_(false,
+                             "FrameScheduler.HasActiveConnection",
+                             this,
+                             &tracing_controller_,
+                             YesNoStateToString),
       weak_factory_(this) {
   DCHECK_EQ(throttling_state_, CalculateThrottlingState());
 }
@@ -151,7 +156,7 @@ FrameSchedulerImpl::~FrameSchedulerImpl() {
   if (parent_page_scheduler_) {
     parent_page_scheduler_->Unregister(this);
 
-    if (active_connection_count_)
+    if (has_active_connection())
       parent_page_scheduler_->OnConnectionUpdated();
   }
 }
@@ -430,6 +435,7 @@ WebScopedVirtualTimePauser FrameSchedulerImpl::CreateWebScopedVirtualTimePauser(
 
 void FrameSchedulerImpl::DidOpenActiveConnection() {
   ++active_connection_count_;
+  has_active_connection_ = static_cast<bool>(active_connection_count_);
   if (parent_page_scheduler_)
     parent_page_scheduler_->OnConnectionUpdated();
 }
@@ -437,6 +443,7 @@ void FrameSchedulerImpl::DidOpenActiveConnection() {
 void FrameSchedulerImpl::DidCloseActiveConnection() {
   DCHECK_GT(active_connection_count_, 0);
   --active_connection_count_;
+  has_active_connection_ = static_cast<bool>(active_connection_count_);
   if (parent_page_scheduler_)
     parent_page_scheduler_->OnConnectionUpdated();
 }

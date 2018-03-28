@@ -85,7 +85,7 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   scoped_refptr<TaskQueue> ControlTaskQueue();
   void SetPageVisibility(PageVisibilityState page_visibility);
 
-  bool has_active_connection() const { return active_connection_count_; }
+  bool has_active_connection() const { return has_active_connection_; }
 
   void OnTraceLogEnabled() { tracing_controller_.OnTraceLogEnabled(); }
 
@@ -172,8 +172,9 @@ class PLATFORM_EXPORT FrameSchedulerImpl : public FrameScheduler {
   TraceableState<FrameOriginType, kTracingCategoryNameInfo> frame_origin_type_;
   StateTracer<kTracingCategoryNameInfo> url_tracer_;
   // |task_queue_throttled_| is false if |throttleable_task_queue_| is absent.
-  TraceableState<bool, kTracingCategoryNameDebug> task_queue_throttled_;
+  TraceableState<bool, kTracingCategoryNameInfo> task_queue_throttled_;
   int active_connection_count_;
+  TraceableState<bool, kTracingCategoryNameInfo> has_active_connection_;
 
   base::WeakPtrFactory<FrameSchedulerImpl> weak_factory_;
 
