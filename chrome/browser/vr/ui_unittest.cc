@@ -116,13 +116,6 @@ void VerifyButtonColor(DiscButton* button,
   EXPECT_EQ(button->background()->center_color(), background_color);
 }
 
-Prompt* GetPromptFromPromptRoot(UiElement* root) {
-  DCHECK(root->type() == kTypeScaledDepthAdjuster);
-  auto& backplane = root->children().front();
-  auto& shadow = backplane->children().front();
-  return static_cast<Prompt*>(shadow->children().front().get());
-}
-
 }  // namespace
 
 TEST_F(UiTest, ToastStateTransitions) {
@@ -656,27 +649,6 @@ TEST_F(UiTest, UiUpdatesForHidingExitPrompt) {
   VerifyOnlyElementsVisible("Prompt invisible", kElementsVisibleInBrowsing);
 }
 
-TEST_F(UiTest, BackplaneClickTriggersOnExitPrompt) {
-  CreateScene(kNotInCct, kNotInWebVr);
-
-  // Initial state.
-  VerifyOnlyElementsVisible("Initial", kElementsVisibleInBrowsing);
-  ui_->ShowExitVrPrompt(UiUnsupportedMode::kUnhandledPageInfo);
-
-  VerifyVisibility(kElementsVisibleWithExitPrompt, true);
-  EXPECT_EQ(NumVisibleInTree(k2dBrowsingForeground), 0);
-
-  // Click on backplane should trigger UI browser interface but not close
-  // prompt.
-  EXPECT_CALL(*browser_,
-              OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_NONE,
-                                   UiUnsupportedMode::kUnhandledPageInfo));
-  auto& backplane = scene_->GetUiElementByName(kExitPrompt)->children().front();
-  backplane->OnButtonUp(gfx::PointF());
-
-  VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
-}
-
 TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
   CreateScene(kNotInCct, kNotInWebVr);
 
@@ -689,8 +661,7 @@ TEST_F(UiTest, PrimaryButtonClickTriggersOnExitPrompt) {
   EXPECT_CALL(*browser_,
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_STAY,
                                    UiUnsupportedMode::kUnhandledPageInfo));
-  static_cast<Prompt*>(
-      GetPromptFromPromptRoot(scene_->GetUiElementByName(kExitPrompt)))
+  static_cast<Prompt*>(scene_->GetUiElementByName(kExitPrompt))
       ->ClickPrimaryButtonForTesting();
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }
@@ -708,8 +679,7 @@ TEST_F(UiTest, SecondaryButtonClickTriggersOnExitPrompt) {
               OnExitVrPromptResult(ExitVrPromptChoice::CHOICE_EXIT,
                                    UiUnsupportedMode::kUnhandledPageInfo));
 
-  static_cast<Prompt*>(
-      GetPromptFromPromptRoot(scene_->GetUiElementByName(kExitPrompt)))
+  static_cast<Prompt*>(scene_->GetUiElementByName(kExitPrompt))
       ->ClickSecondaryButtonForTesting();
   VerifyOnlyElementsVisible("Prompt cleared", kElementsVisibleInBrowsing);
 }

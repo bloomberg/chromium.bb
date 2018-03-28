@@ -104,7 +104,6 @@ static const char* g_ui_element_name_strings[] = {
     "kExitWarningBackground",
     "kExitPrompt",
     "kAudioPermissionPrompt",
-    "kAudioPermissionPromptShadow",
     "kAudioPermissionPromptBackplane",
     "kPermissionDialogBackplane",
     "kWebVrUrlToastTransientParent",

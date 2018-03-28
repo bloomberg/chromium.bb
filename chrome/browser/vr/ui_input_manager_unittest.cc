@@ -449,8 +449,7 @@ TEST_F(UiInputManagerContentTest, AudioPermissionPromptHitTesting) {
   // Even if the reticle is over the URL bar, the backplane should be in front
   // and should be hit.
   ASSERT_NE(0, reticle_model.target_element_id);
-  auto& backplane =
-      scene_->GetUiElementByName(kAudioPermissionPrompt)->children().front();
+  auto* backplane = scene_->GetUiElementByName(kAudioPermissionPromptBackplane);
   EXPECT_EQ(backplane->type(), kTypePromptBackplane);
   EXPECT_EQ(backplane->id(), reticle_model.target_element_id);
 }
