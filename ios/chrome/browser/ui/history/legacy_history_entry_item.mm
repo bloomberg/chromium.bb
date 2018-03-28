@@ -14,6 +14,7 @@
 #include "ios/chrome/browser/favicon/ios_chrome_large_icon_service_factory.h"
 #import "ios/chrome/browser/ui/history/favicon_view.h"
 #import "ios/chrome/browser/ui/history/favicon_view_provider.h"
+#import "ios/chrome/browser/ui/history/history_entry_item_delegate.h"
 #include "ios/chrome/browser/ui/rtl_geometry.h"
 #import "ios/chrome/browser/ui/util/constraints_ui_util.h"
 #include "ios/chrome/grit/ios_strings.h"
