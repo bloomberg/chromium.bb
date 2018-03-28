@@ -78,21 +78,26 @@ void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
   }
 
 // Declare size-specific wrappers for all valid CfL sizes.
-#define CFL_SUBSAMPLE_FUNCTIONS(arch, sub, bd) \
-  CFL_SUBSAMPLE(arch, sub, bd, 4, 4)           \
-  CFL_SUBSAMPLE(arch, sub, bd, 8, 8)           \
-  CFL_SUBSAMPLE(arch, sub, bd, 16, 16)         \
-  CFL_SUBSAMPLE(arch, sub, bd, 32, 32)         \
-  CFL_SUBSAMPLE(arch, sub, bd, 4, 8)           \
-  CFL_SUBSAMPLE(arch, sub, bd, 8, 4)           \
-  CFL_SUBSAMPLE(arch, sub, bd, 8, 16)          \
-  CFL_SUBSAMPLE(arch, sub, bd, 16, 8)          \
-  CFL_SUBSAMPLE(arch, sub, bd, 16, 32)         \
-  CFL_SUBSAMPLE(arch, sub, bd, 32, 16)         \
-  CFL_SUBSAMPLE(arch, sub, bd, 4, 16)          \
-  CFL_SUBSAMPLE(arch, sub, bd, 16, 4)          \
-  CFL_SUBSAMPLE(arch, sub, bd, 8, 32)          \
-  CFL_SUBSAMPLE(arch, sub, bd, 32, 8)
+#define CFL_SUBSAMPLE_FUNCTIONS(arch, sub, bd)                            \
+  CFL_SUBSAMPLE(arch, sub, bd, 4, 4)                                      \
+  CFL_SUBSAMPLE(arch, sub, bd, 8, 8)                                      \
+  CFL_SUBSAMPLE(arch, sub, bd, 16, 16)                                    \
+  CFL_SUBSAMPLE(arch, sub, bd, 32, 32)                                    \
+  CFL_SUBSAMPLE(arch, sub, bd, 4, 8)                                      \
+  CFL_SUBSAMPLE(arch, sub, bd, 8, 4)                                      \
+  CFL_SUBSAMPLE(arch, sub, bd, 8, 16)                                     \
+  CFL_SUBSAMPLE(arch, sub, bd, 16, 8)                                     \
+  CFL_SUBSAMPLE(arch, sub, bd, 16, 32)                                    \
+  CFL_SUBSAMPLE(arch, sub, bd, 32, 16)                                    \
+  CFL_SUBSAMPLE(arch, sub, bd, 4, 16)                                     \
+  CFL_SUBSAMPLE(arch, sub, bd, 16, 4)                                     \
+  CFL_SUBSAMPLE(arch, sub, bd, 8, 32)                                     \
+  CFL_SUBSAMPLE(arch, sub, bd, 32, 8)                                     \
+  cfl_subsample_##bd##_fn cfl_get_luma_subsampling_##sub##_##bd##_##arch( \
+      TX_SIZE tx_size) {                                                  \
+    CFL_SUBSAMPLE_FUNCTION_ARRAY(arch, sub, bd)                           \
+    return subfn_##sub[tx_size];                                          \
+  }
 
 // Declare an architecture-specific array of function pointers for size-specific
 // wrappers.
@@ -121,13 +126,9 @@ void cfl_subsample_hbd_null(const uint16_t *input, int input_stride,
 
 // The RTCD script does not support passing in the an array, so we wrap it in
 // this function.
-#define CFL_GET_SUBSAMPLE_FUNCTION(arch)                        \
-  CFL_SUBSAMPLE_FUNCTIONS(arch, 420, lbd)                       \
-  cfl_subsample_lbd_fn cfl_get_luma_subsampling_420_lbd_##arch( \
-      TX_SIZE tx_size) {                                        \
-    CFL_SUBSAMPLE_FUNCTION_ARRAY(arch, 420, lbd)                \
-    return subfn_420[tx_size];                                  \
-  }
+#define CFL_GET_SUBSAMPLE_FUNCTION(arch)  \
+  CFL_SUBSAMPLE_FUNCTIONS(arch, 420, lbd) \
+  CFL_SUBSAMPLE_FUNCTIONS(arch, 422, lbd)
 
 // Null function used for invalid tx_sizes
 static INLINE void cfl_subtract_average_null(int16_t *pred_buf_q3) {

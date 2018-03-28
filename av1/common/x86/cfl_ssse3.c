@@ -78,6 +78,54 @@ static INLINE void cfl_luma_subsampling_420_lbd_ssse3(const uint8_t *input,
   } while (pred_buf_q3 < end);
 }
 
+/**
+ * Adds 2 pixels (in a 2x1 grid) and multiplies them by 4. Resulting in a more
+ * precise version of a box filter 4:2:2 pixel subsampling in Q3.
+ *
+ * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the
+ * active area is specified using width and height.
+ *
+ * Note: We don't need to worry about going over the active area, as long as we
+ * stay inside the CfL prediction buffer.
+ */
+static INLINE void cfl_luma_subsampling_422_lbd_ssse3(const uint8_t *input,
+                                                      int input_stride,
+                                                      int16_t *pred_buf_q3,
+                                                      int width, int height) {
+  const __m128i fours = _mm_set1_epi8(4);
+  const int16_t *end = pred_buf_q3 + height * CFL_BUF_LINE;
+  const int luma_stride = input_stride;
+  __m128i top, next_top, top_16x8, next_top_16x8;
+  do {
+    switch (width) {
+      case 4: top = _mm_cvtsi32_si128(*((int *)input)); break;
+      case 8: top = _mm_loadl_epi64((__m128i *)input); break;
+      case 16: top = _mm_loadu_si128((__m128i *)input); break;
+      case 32:
+        top = _mm_loadu_si128((__m128i *)input);
+        next_top = _mm_loadu_si128((__m128i *)(input + 16));
+        break;
+      default: assert(0);
+    }
+    top_16x8 = _mm_maddubs_epi16(top, fours);
+    if (width == 32) {
+      next_top_16x8 = _mm_maddubs_epi16(next_top, fours);
+    }
+    switch (width) {
+      case 4: *((int *)pred_buf_q3) = _mm_cvtsi128_si32(top_16x8); break;
+      case 8: _mm_storel_epi64((__m128i *)pred_buf_q3, top_16x8); break;
+      case 16: _mm_storeu_si128((__m128i *)pred_buf_q3, top_16x8); break;
+      case 32:
+        _mm_storeu_si128((__m128i *)pred_buf_q3, top_16x8);
+        _mm_storeu_si128((__m128i *)(pred_buf_q3 + 8), next_top_16x8);
+        break;
+      default: assert(0);
+    }
+    input += luma_stride;
+    pred_buf_q3 += CFL_BUF_LINE;
+  } while (pred_buf_q3 < end);
+}
+
 CFL_GET_SUBSAMPLE_FUNCTION(ssse3)
 
 static INLINE __m128i predict_unclipped(const __m128i *input, __m128i alpha_q12,

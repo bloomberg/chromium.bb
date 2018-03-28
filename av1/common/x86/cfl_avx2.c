@@ -16,6 +16,36 @@
 
 #include "av1/common/x86/cfl_simd.h"
 
+#define CFL_GET_SUBSAMPLE_FUNCTION_AVX2(sub, bd)                           \
+  CFL_SUBSAMPLE(avx2, sub, bd, 32, 32)                                     \
+  CFL_SUBSAMPLE(avx2, sub, bd, 32, 16)                                     \
+  CFL_SUBSAMPLE(avx2, sub, bd, 32, 8)                                      \
+  cfl_subsample_##bd##_fn cfl_get_luma_subsampling_##sub##_##bd##_avx2(    \
+      TX_SIZE tx_size) {                                                   \
+    static const cfl_subsample_##bd##_fn subfn_##sub[TX_SIZES_ALL] = {     \
+      subsample_##bd##_##sub##_4x4_ssse3,   /* 4x4 */                      \
+      subsample_##bd##_##sub##_8x8_ssse3,   /* 8x8 */                      \
+      subsample_##bd##_##sub##_16x16_ssse3, /* 16x16 */                    \
+      subsample_##bd##_##sub##_32x32_avx2,  /* 32x32 */                    \
+      cfl_subsample_##bd##_null,            /* 64x64 (invalid CFL size) */ \
+      subsample_##bd##_##sub##_4x8_ssse3,   /* 4x8 */                      \
+      subsample_##bd##_##sub##_8x4_ssse3,   /* 8x4 */                      \
+      subsample_##bd##_##sub##_8x16_ssse3,  /* 8x16 */                     \
+      subsample_##bd##_##sub##_16x8_ssse3,  /* 16x8 */                     \
+      subsample_##bd##_##sub##_16x32_ssse3, /* 16x32 */                    \
+      subsample_##bd##_##sub##_32x16_avx2,  /* 32x16 */                    \
+      cfl_subsample_##bd##_null,            /* 32x64 (invalid CFL size) */ \
+      cfl_subsample_##bd##_null,            /* 64x32 (invalid CFL size) */ \
+      subsample_##bd##_##sub##_4x16_ssse3,  /* 4x16  */                    \
+      subsample_##bd##_##sub##_16x4_ssse3,  /* 16x4  */                    \
+      subsample_##bd##_##sub##_8x32_ssse3,  /* 8x32  */                    \
+      subsample_##bd##_##sub##_32x8_avx2,   /* 32x8  */                    \
+      cfl_subsample_##bd##_null,            /* 16x64 (invalid CFL size) */ \
+      cfl_subsample_##bd##_null,            /* 64x16 (invalid CFL size) */ \
+    };                                                                     \
+    return subfn_##sub[tx_size];                                           \
+  }
+
 /**
  * Adds 4 pixels (in a 2x2 grid) and multiplies them by 2. Resulting in a more
  * precise version of a box filter 4:2:0 pixel subsampling in Q3.
@@ -51,34 +81,35 @@ static void cfl_luma_subsampling_420_lbd_avx2(const uint8_t *input,
   } while ((row += CFL_BUF_LINE_I256) < row_end);
 }
 
-CFL_SUBSAMPLE(avx2, 420, lbd, 32, 32)
-CFL_SUBSAMPLE(avx2, 420, lbd, 32, 16)
-CFL_SUBSAMPLE(avx2, 420, lbd, 32, 8)
+CFL_GET_SUBSAMPLE_FUNCTION_AVX2(420, lbd)
 
-cfl_subsample_lbd_fn cfl_get_luma_subsampling_420_lbd_avx2(TX_SIZE tx_size) {
-  static const cfl_subsample_lbd_fn subfn_420[TX_SIZES_ALL] = {
-    subsample_lbd_420_4x4_ssse3,   /* 4x4 */
-    subsample_lbd_420_8x8_ssse3,   /* 8x8 */
-    subsample_lbd_420_16x16_ssse3, /* 16x16 */
-    subsample_lbd_420_32x32_avx2,  /* 32x32 */
-    cfl_subsample_lbd_null,        /* 64x64 (invalid CFL size) */
-    subsample_lbd_420_4x8_ssse3,   /* 4x8 */
-    subsample_lbd_420_8x4_ssse3,   /* 8x4 */
-    subsample_lbd_420_8x16_ssse3,  /* 8x16 */
-    subsample_lbd_420_16x8_ssse3,  /* 16x8 */
-    subsample_lbd_420_16x32_ssse3, /* 16x32 */
-    subsample_lbd_420_32x16_avx2,  /* 32x16 */
-    cfl_subsample_lbd_null,        /* 32x64 (invalid CFL size) */
-    cfl_subsample_lbd_null,        /* 64x32 (invalid CFL size) */
-    subsample_lbd_420_4x16_ssse3,  /* 4x16  */
-    subsample_lbd_420_16x4_ssse3,  /* 16x4  */
-    subsample_lbd_420_8x32_ssse3,  /* 8x32  */
-    subsample_lbd_420_32x8_avx2,   /* 32x8  */
-    cfl_subsample_lbd_null,        /* 16x64 (invalid CFL size) */
-    cfl_subsample_lbd_null,        /* 64x16 (invalid CFL size) */
-  };
-  return subfn_420[tx_size];
+/**
+ * Adds 2 pixels (in a 2x1 grid) and multiplies them by 4. Resulting in a more
+ * precise version of a box filter 4:2:2 pixel subsampling in Q3.
+ *
+ * The CfL prediction buffer is always of size CFL_BUF_SQUARE. However, the
+ * active area is specified using width and height.
+ *
+ * Note: We don't need to worry about going over the active area, as long as we
+ * stay inside the CfL prediction buffer.
+ */
+static void cfl_luma_subsampling_422_lbd_avx2(const uint8_t *input,
+                                              int input_stride,
+                                              int16_t *pred_buf_q3, int width,
+                                              int height) {
+  (void)width;                                // Forever 32
+  const __m256i fours = _mm256_set1_epi8(4);  // Thirty two fours
+  __m256i *row = (__m256i *)pred_buf_q3;
+  const __m256i *row_end = row + height * CFL_BUF_LINE_I256;
+  do {
+    __m256i top = _mm256_loadu_si256((__m256i *)input);
+    __m256i top_16x16 = _mm256_maddubs_epi16(top, fours);
+    _mm256_storeu_si256(row, top_16x16);
+    input += input_stride;
+  } while ((row += CFL_BUF_LINE_I256) < row_end);
 }
+
+CFL_GET_SUBSAMPLE_FUNCTION_AVX2(422, lbd)
 
 static INLINE __m256i predict_unclipped(const __m256i *input, __m256i alpha_q12,
                                         __m256i alpha_sign, __m256i dc_q0) {
@@ -136,8 +167,8 @@ cfl_predict_lbd_fn get_predict_lbd_fn_avx2(TX_SIZE tx_size) {
     cfl_predict_lbd_null,    /* 16x64 (invalid CFL size) */
     cfl_predict_lbd_null,    /* 64x16 (invalid CFL size) */
   };
-  /* Modulo TX_SIZES_ALL to ensure that an attacker won't be able to
-              */ /* index the function pointer array out of bounds. */
+  // Modulo TX_SIZES_ALL to ensure that an attacker won't be able to index the
+  // function pointer array out of bounds.
   return pred[tx_size % TX_SIZES_ALL];
 }
 

@@ -31,6 +31,21 @@ using libaom_test::ACMRandom;
       make_tuple(TX_16X32, &function), make_tuple(TX_32X8, &function), \
       make_tuple(TX_32X16, &function), make_tuple(TX_32X32, &function)
 
+#define ALL_CFL_TX_SIZES_SUBSAMPLE(fun420, fun422)                            \
+  make_tuple(TX_4X4, &fun420, &fun422), make_tuple(TX_4X8, &fun420, &fun422), \
+      make_tuple(TX_4X16, &fun420, &fun422),                                  \
+      make_tuple(TX_8X4, &fun420, &fun422),                                   \
+      make_tuple(TX_8X8, &fun420, &fun422),                                   \
+      make_tuple(TX_8X16, &fun420, &fun422),                                  \
+      make_tuple(TX_8X32, &fun420, &fun422),                                  \
+      make_tuple(TX_16X4, &fun420, &fun422),                                  \
+      make_tuple(TX_16X8, &fun420, &fun422),                                  \
+      make_tuple(TX_16X16, &fun420, &fun422),                                 \
+      make_tuple(TX_16X32, &fun420, &fun422),                                 \
+      make_tuple(TX_32X8, &fun420, &fun422),                                  \
+      make_tuple(TX_32X16, &fun420, &fun422),                                 \
+      make_tuple(TX_32X32, &fun420, &fun422)
+
 namespace {
 
 template <typename A>
@@ -187,7 +202,8 @@ TEST_P(CFLSubAvgTest, DISABLED_SubAvgSpeedTest) {
 }
 
 typedef cfl_subsample_lbd_fn (*get_subsample_fn)(TX_SIZE tx_size);
-typedef ::testing::tuple<TX_SIZE, get_subsample_fn> subsample_param;
+typedef ::testing::tuple<TX_SIZE, get_subsample_fn, get_subsample_fn>
+    subsample_param;
 class CFLSubsampleTest : public ::testing::TestWithParam<subsample_param>,
                          public CFLTestWithData<uint8_t> {
  public:
@@ -196,12 +212,16 @@ class CFLSubsampleTest : public ::testing::TestWithParam<subsample_param>,
   virtual void SetUp() {
     CFLTest::init(::testing::get<0>(this->GetParam()));
     fun_420 = ::testing::get<1>(this->GetParam())(tx_size);
+    fun_422 = ::testing::get<2>(this->GetParam())(tx_size);
     fun_420_ref = cfl_get_luma_subsampling_420_lbd_c(tx_size);
+    fun_422_ref = cfl_get_luma_subsampling_422_lbd_c(tx_size);
   }
 
  protected:
   cfl_subsample_lbd_fn fun_420;
+  cfl_subsample_lbd_fn fun_422;
   cfl_subsample_lbd_fn fun_420_ref;
+  cfl_subsample_lbd_fn fun_422_ref;
 
   void subsampleTest(cfl_subsample_lbd_fn fun, cfl_subsample_lbd_fn fun_ref,
                      int sub_width, int sub_height) {
@@ -249,6 +269,14 @@ TEST_P(CFLSubsampleTest, Subsample420Test) {
 
 TEST_P(CFLSubsampleTest, DISABLED_Subsample420SpeedTest) {
   subsampleSpeedTest(fun_420, fun_420_ref);
+}
+
+TEST_P(CFLSubsampleTest, Subsample422Test) {
+  subsampleTest(fun_422, fun_422_ref, width >> 1, height);
+}
+
+TEST_P(CFLSubsampleTest, DISABLED_Subsample422SpeedTest) {
+  subsampleSpeedTest(fun_422, fun_422_ref);
 }
 
 typedef cfl_predict_lbd_fn (*get_predict_fn)(TX_SIZE tx_size);
@@ -360,8 +388,9 @@ INSTANTIATE_TEST_CASE_P(SSE2, CFLSubAvgTest,
 
 #if HAVE_SSSE3
 
-const subsample_param subsample_sizes_ssse3[] = { ALL_CFL_TX_SIZES(
-    cfl_get_luma_subsampling_420_lbd_ssse3) };
+const subsample_param subsample_sizes_ssse3[] = { ALL_CFL_TX_SIZES_SUBSAMPLE(
+    cfl_get_luma_subsampling_420_lbd_ssse3,
+    cfl_get_luma_subsampling_422_lbd_ssse3) };
 
 const predict_param predict_sizes_ssse3[] = { ALL_CFL_TX_SIZES(
     get_predict_lbd_fn_ssse3) };
@@ -383,8 +412,9 @@ INSTANTIATE_TEST_CASE_P(SSSE3, CFLPredictHBDTest,
 const sub_avg_param sub_avg_sizes_avx2[] = { ALL_CFL_TX_SIZES(
     get_subtract_average_fn_avx2) };
 
-const subsample_param subsample_sizes_avx2[] = { ALL_CFL_TX_SIZES(
-    cfl_get_luma_subsampling_420_lbd_avx2) };
+const subsample_param subsample_sizes_avx2[] = { ALL_CFL_TX_SIZES_SUBSAMPLE(
+    cfl_get_luma_subsampling_420_lbd_avx2,
+    cfl_get_luma_subsampling_422_lbd_avx2) };
 
 const predict_param predict_sizes_avx2[] = { ALL_CFL_TX_SIZES(
     get_predict_lbd_fn_avx2) };
@@ -409,8 +439,9 @@ INSTANTIATE_TEST_CASE_P(AVX2, CFLPredictHBDTest,
 const sub_avg_param sub_avg_sizes_neon[] = { ALL_CFL_TX_SIZES(
     get_subtract_average_fn_neon) };
 
-const subsample_param subsample_sizes_neon[] = { ALL_CFL_TX_SIZES(
-    cfl_get_luma_subsampling_420_lbd_neon) };
+const subsample_param subsample_sizes_neon[] = { ALL_CFL_TX_SIZES_SUBSAMPLE(
+    cfl_get_luma_subsampling_420_lbd_neon,
+    cfl_get_luma_subsampling_422_lbd_neon) };
 
 INSTANTIATE_TEST_CASE_P(NEON, CFLSubAvgTest,
                         ::testing::ValuesIn(sub_avg_sizes_neon));
