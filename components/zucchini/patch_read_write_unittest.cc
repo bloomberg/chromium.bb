@@ -484,8 +484,6 @@ TEST(EnsemblePatchTest, RawPatch) {
       0x98, 0xBA, 0xDC, 0xFE,  // new_size
       0x44, 0x55, 0x66, 0x77,  // new_crc
 
-      0,    0,    0,    0,  // kRawPatch
-
       1,    0,    0,    0,  // number of element
 
       0x01, 0,    0,    0,     // old_offset
@@ -513,14 +511,11 @@ TEST(EnsemblePatchTest, RawPatch) {
   EXPECT_EQ(0xFEDCBA98U, header.new_size);
   EXPECT_EQ(0x77665544U, header.new_crc);
 
-  EXPECT_EQ(PatchType::kRawPatch, ensemble_patch_reader.patch_type());
-
   const std::vector<PatchElementReader>& elements =
       ensemble_patch_reader.elements();
   EXPECT_EQ(size_t(1), elements.size());
 
   EnsemblePatchWriter ensemble_patch_writer(header);
-  ensemble_patch_writer.SetPatchType(PatchType::kRawPatch);
   PatchElementWriter patch_element_writer(elements[0].element_match());
   patch_element_writer.SetEquivalenceSink({});
   patch_element_writer.SetExtraDataSink({});
@@ -538,7 +533,6 @@ TEST(EnsemblePatchTest, CheckFile) {
       0xDF, 0x13, 0xE4, 0x10,  // old_crc
       0x03, 0x00, 0x00, 0x00,  // new_size
       0xDC, 0xF7, 0x00, 0x40,  // new_crc
-      2,    0,    0,    0,     // kEnsemblePatch
 
       1,    0,    0,    0,  // number of element
 
@@ -579,7 +573,6 @@ TEST(EnsemblePatchTest, InvalidMagic) {
       0x00, 0x11, 0x22, 0x33,  // old_crc
       0x03, 0x00, 0x00, 0x00,  // new_size
       0x44, 0x55, 0x66, 0x77,  // new_crc
-      0,    0,    0,    0,     // kRawPatch
 
       1,    0,    0,    0,  // number of element
 

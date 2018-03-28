@@ -239,8 +239,6 @@ class EnsemblePatchWriter {
   EnsemblePatchWriter(ConstBufferView old_image, ConstBufferView new_image);
   ~EnsemblePatchWriter();
 
-  void SetPatchType(PatchType patch_type) { patch_type_ = patch_type; }
-
   // Reserves space for |count| patch elements.
   void ReserveElements(size_t count) { elements_.reserve(count); }
 
@@ -264,7 +262,6 @@ class EnsemblePatchWriter {
 
  private:
   PatchHeader header_;
-  PatchType patch_type_ = PatchType::kUnrecognisedPatch;
   std::vector<PatchElementWriter> elements_;
   offset_t current_dst_offset_ = 0;
 
