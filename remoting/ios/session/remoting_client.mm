@@ -64,7 +64,6 @@ static void ResolveFeedbackDataCallback(
   remoting::ChromotingClientRuntime* _runtime;
   std::unique_ptr<remoting::RemotingClientSessonDelegate> _sessonDelegate;
   ClientSessionDetails* _sessionDetails;
-  // Call _secretFetchedCallback on the network thread.
   remoting::protocol::SecretFetchedCallback _secretFetchedCallback;
   std::unique_ptr<remoting::RendererProxy> _renderer;
   std::unique_ptr<remoting::GestureInterpreter> _gestureInterpreter;
@@ -131,39 +130,6 @@ static void ResolveFeedbackDataCallback(
         showMessage:[MDCSnackbarMessage messageWithText:@"Using WebRTC"]];
   }
 
-  remoting::protocol::ClientAuthenticationConfig client_auth_config;
-  client_auth_config.host_id = info.host_id;
-  client_auth_config.pairing_client_id = info.pairing_id;
-  client_auth_config.pairing_secret = info.pairing_secret;
-
-  // ChromotingClient keeps strong reference to |client_auth_config| through its
-  // lifetime.
-  __weak RemotingClient* weakSelf = self;
-  client_auth_config.fetch_secret_callback = base::BindBlockArc(
-      ^(bool pairing_supported, const remoting::protocol::SecretFetchedCallback&
-                                    secret_fetched_callback) {
-        RemotingClient* strongSelf = weakSelf;
-        if (!strongSelf) {
-          return;
-        }
-        strongSelf->_secretFetchedCallback = secret_fetched_callback;
-        strongSelf->_sessionDetails.state = SessionPinPrompt;
-
-        // Notification will be received on the thread they are posted, so we
-        // need to post the notification on UI thread.
-        strongSelf->_runtime->ui_task_runner()->PostTask(
-            FROM_HERE, base::BindBlockArc(^() {
-              [NSNotificationCenter.defaultCenter
-                  postNotificationName:kHostSessionStatusChanged
-                                object:weakSelf
-                              userInfo:@{
-                                kSessionDetails : strongSelf->_sessionDetails,
-                                kSessionSupportsPairing :
-                                    [NSNumber numberWithBool:pairing_supported],
-                              }];
-            }));
-      });
-
   _audioPlayer = remoting::AudioPlayerIos::CreateAudioPlayer(
       _runtime->audio_task_runner());
 
@@ -173,7 +139,7 @@ static void ResolveFeedbackDataCallback(
   _session.reset(new remoting::ChromotingSession(
       _sessonDelegate->GetWeakPtr(), [_displayHandler CreateCursorShapeStub],
       [_displayHandler CreateVideoRenderer],
-      _audioPlayer->GetAudioStreamConsumer(), info, client_auth_config));
+      _audioPlayer->GetAudioStreamConsumer(), info));
   _renderer = [_displayHandler CreateRendererProxy];
   _gestureInterpreter.reset(
       new remoting::GestureInterpreter(_renderer.get(), _session.get()));
@@ -218,12 +184,7 @@ static void ResolveFeedbackDataCallback(
   }
 
   if (_secretFetchedCallback) {
-    remoting::protocol::SecretFetchedCallback callback = _secretFetchedCallback;
-    _runtime->network_task_runner()->PostTask(
-        FROM_HERE, base::BindBlockArc(^{
-          callback.Run(base::SysNSStringToUTF8(pin));
-        }));
-    _secretFetchedCallback.Reset();
+    std::move(_secretFetchedCallback).Run(base::SysNSStringToUTF8(pin));
   }
 }
 
@@ -323,14 +284,45 @@ static void ResolveFeedbackDataCallback(
                                  secret:(NSString*)secret {
   remoting::HostPairingInfo info = remoting::HostPairingInfo::GetPairingInfo(
       GetCurrentUserId(), base::SysNSStringToUTF8(host));
-  info.set_pairing_id(base::SysNSStringToUTF8(pairingId));
-  info.set_pairing_secret(base::SysNSStringToUTF8(secret));
+  std::string utf8PairingId = base::SysNSStringToUTF8(pairingId);
+  std::string utf8Secret = base::SysNSStringToUTF8(secret);
+  if (utf8PairingId == info.pairing_id() &&
+      utf8Secret == info.pairing_secret()) {
+    // The pairing has not been changed so we can return early.
+    return;
+  }
+
+  info.set_pairing_id(utf8PairingId);
+  info.set_pairing_secret(utf8Secret);
   info.Save();
+}
+
+- (void)
+fetchSecretWithPairingSupported:(BOOL)pairingSupported
+                       callback:
+                           (const remoting::protocol::SecretFetchedCallback&)
+                               secretFetchedCallback {
+  _secretFetchedCallback = secretFetchedCallback;
+  _sessionDetails.state = SessionPinPrompt;
+
+  // Clear pairing credentials if they exist (which are no longer valid).
+  [self commitPairingCredentialsForHost:self.hostInfo.hostId id:@"" secret:@""];
+
+  [NSNotificationCenter.defaultCenter
+      postNotificationName:kHostSessionStatusChanged
+                    object:self
+                  userInfo:@{
+                    kSessionDetails : _sessionDetails,
+                    kSessionSupportsPairing : @(pairingSupported),
+                  }];
 }
 
 - (void)fetchThirdPartyTokenForUrl:(NSString*)tokenUrl
                           clientId:(NSString*)clientId
-                             scope:(NSString*)scope {
+                            scopes:(NSString*)scopes
+                          callback:(const remoting::protocol::
+                                        ThirdPartyTokenFetchedCallback&)
+                                       tokenFetchedCallback {
   // Not supported for iOS yet.
   _sessionDetails.state = SessionFailed;
   _sessionDetails.error = SessionErrorThirdPartyAuthNotSupported;

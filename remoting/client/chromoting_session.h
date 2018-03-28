@@ -42,7 +42,8 @@ class ChromotingClientRuntime;
 // session instance.
 class ChromotingSession : public ClientInputInjector {
  public:
-  // All methods of the delegate are called on the UI threads.
+  // All methods of the delegate are called on the UI thread. Callbacks should
+  // also be invoked on the UI thread too.
   class Delegate {
    public:
     virtual ~Delegate() {}
@@ -58,11 +59,21 @@ class ChromotingSession : public ClientInputInjector {
                                           const std::string& id,
                                           const std::string& secret) = 0;
 
+    // Notifies the user interface that the user needs to enter a PIN. The
+    // current authentication attempt is put on hold until |callback| is
+    // invoked.
+    virtual void FetchSecret(
+        bool pairing_supported,
+        const protocol::SecretFetchedCallback& secret_fetched_callback) = 0;
+
     // Pops up a third party login page to fetch token required for
     // authentication.
-    virtual void FetchThirdPartyToken(const std::string& token_url,
-                                      const std::string& client_id,
-                                      const std::string& scope) = 0;
+    virtual void FetchThirdPartyToken(
+        const std::string& token_url,
+        const std::string& client_id,
+        const std::string& scopes,
+        const protocol::ThirdPartyTokenFetchedCallback&
+            token_fetched_callback) = 0;
 
     // Pass on the set of negotiated capabilities to the client.
     virtual void SetCapabilities(const std::string& capabilities) = 0;
@@ -77,13 +88,11 @@ class ChromotingSession : public ClientInputInjector {
       base::OnceCallback<void(std::unique_ptr<FeedbackData>)>;
 
   // Initiates a connection with the specified host.
-  ChromotingSession(
-      base::WeakPtr<ChromotingSession::Delegate> delegate,
-      std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
-      std::unique_ptr<protocol::VideoRenderer> video_renderer,
-      base::WeakPtr<protocol::AudioStub> audio_player,
-      const ConnectToHostInfo& info,
-      const protocol::ClientAuthenticationConfig& client_auth_config);
+  ChromotingSession(base::WeakPtr<ChromotingSession::Delegate> delegate,
+                    std::unique_ptr<protocol::CursorShapeStub> cursor_stub,
+                    std::unique_ptr<protocol::VideoRenderer> video_renderer,
+                    base::WeakPtr<protocol::AudioStub> audio_player,
+                    const ConnectToHostInfo& info);
 
   ~ChromotingSession() override;
 
@@ -103,12 +112,6 @@ class ChromotingSession : public ClientInputInjector {
   // will be returned, otherwise feedback for current session (either still
   // connected or already disconnected) will be returned.
   void GetFeedbackData(GetFeedbackDataCallback callback) const;
-
-  // Called by the client when the token is fetched. Can be called on any
-  // thread.
-  // TODO(yuweih): Refactor this with ChromotingClientRuntime::token_getter.
-  void HandleOnThirdPartyTokenFetched(const std::string& token,
-                                      const std::string& shared_secret);
 
   // Requests pairing between the host and client for PIN-less authentication.
   void RequestPairing(const std::string& device_name);

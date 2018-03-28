@@ -19,7 +19,6 @@ namespace remoting {
 class AudioPlayerAndroid;
 class ChromotingClientRuntime;
 class JniGlDisplayHandler;
-class JniPairingSecretFetcher;
 
 struct ConnectToHostInfo;
 
@@ -54,11 +53,19 @@ class JniClient : public ChromotingSession::Delegate {
                                 const std::string& id,
                                 const std::string& secret) override;
 
+  // Notifies the user interface that the user needs to enter a PIN. The current
+  // authentication attempt is put on hold until |callback| is invoked.
+  void FetchSecret(
+      bool pairing_supported,
+      const protocol::SecretFetchedCallback& secret_fetched_callback) override;
+
   // Pops up a third party login page to fetch token required for
   // authentication. Call on UI thread.
-  void FetchThirdPartyToken(const std::string& token_url,
-                            const std::string& client_id,
-                            const std::string& scope) override;
+  void FetchThirdPartyToken(
+      const std::string& token_url,
+      const std::string& client_id,
+      const std::string& scopes,
+      const protocol::ThirdPartyTokenFetchedCallback& callback) override;
 
   // Pass on the set of negotiated capabilities to the client.
   void SetCapabilities(const std::string& capabilities) override;
@@ -156,8 +163,10 @@ class JniClient : public ChromotingSession::Delegate {
   std::unique_ptr<JniGlDisplayHandler> display_handler_;
   std::unique_ptr<AudioPlayerAndroid> audio_player_;
 
-  // Deleted on UI thread.
-  std::unique_ptr<JniPairingSecretFetcher> secret_fetcher_;
+  std::string host_id_;
+
+  protocol::SecretFetchedCallback secret_fetched_callback_;
+  protocol::ThirdPartyTokenFetchedCallback third_party_token_fetched_callback_;
 
   // Deleted on Network thread.
   std::unique_ptr<ChromotingSession> session_;
