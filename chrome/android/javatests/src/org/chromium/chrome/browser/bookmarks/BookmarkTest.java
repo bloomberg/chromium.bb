@@ -50,7 +50,6 @@ import org.chromium.components.bookmarks.BookmarkId;
 import org.chromium.components.bookmarks.BookmarkType;
 import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.test.util.UiRestriction;
 
 import java.util.ArrayList;
@@ -117,7 +116,7 @@ public class BookmarkTest {
     }
 
     private void openBookmarkManager() throws InterruptedException {
-        if (DeviceFormFactor.isTablet()) {
+        if (mActivityTestRule.getActivity().isTablet()) {
             mActivityTestRule.loadUrl(UrlConstants.BOOKMARKS_URL);
             mItemsContainer =
                     (RecyclerView) mActivityTestRule.getActivity().findViewById(R.id.recycler_view);

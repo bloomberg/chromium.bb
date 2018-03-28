@@ -79,7 +79,7 @@ class SnackbarView {
     SnackbarView(Activity activity, OnClickListener listener, Snackbar snackbar,
             @Nullable ViewGroup parentView) {
         mActivity = activity;
-        mIsTablet = DeviceFormFactor.isTablet();
+        mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity);
 
         if (parentView == null) {
             mOriginalParent = findParentView(activity);

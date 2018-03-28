@@ -26,14 +26,14 @@ public class DisplayAndroid {
         /**
          * Called whenever the screen orientation changes.
          *
-         * @param orientation One of Surface.ROTATION_* values.
+         * @param rotation One of Surface.ROTATION_* values.
          */
         void onRotationChanged(int rotation);
 
         /**
          * Called whenever the screen density changes.
          *
-         * @param screen density, aka Density Independent Pixel scale.
+         * @param dipScale Density Independent Pixel scale.
          */
         void onDIPScaleChanged(float dipScale);
     }

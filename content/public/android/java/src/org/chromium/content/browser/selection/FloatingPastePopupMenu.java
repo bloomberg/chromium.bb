@@ -81,7 +81,7 @@ public class FloatingPastePopupMenu implements PastePopupMenu {
         }
 
         private void createPasteMenu(ActionMode mode, Menu menu) {
-            mode.setTitle(DeviceFormFactor.isTablet()
+            mode.setTitle(DeviceFormFactor.isNonMultiDisplayContextOnTablet(mContext)
                             ? mContext.getString(R.string.actionbar_textselection_title)
                             : null);
             mode.setSubtitle(null);

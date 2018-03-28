@@ -24,6 +24,7 @@ import org.chromium.android_webview.AwScrollOffsetManager;
 import org.chromium.android_webview.test.AwActivityTestRule.PopupInfo;
 import org.chromium.android_webview.test.util.AwTestTouchUtils;
 import org.chromium.android_webview.test.util.CommonResources;
+import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.android_webview.test.util.JavascriptEventObserver;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
@@ -34,7 +35,6 @@ import org.chromium.content_public.browser.GestureListenerManager;
 import org.chromium.content_public.browser.GestureStateListener;
 import org.chromium.content_public.common.UseZoomForDSFPolicy;
 import org.chromium.net.test.util.TestWebServer;
-import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -317,7 +317,8 @@ public class AndroidScrollIntegrationTest {
         AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
+
         final int targetScrollXCss = 233;
         final int targetScrollYCss = 322;
         final int targetScrollXPix = (int) Math.ceil(targetScrollXCss * deviceDIPScale);
@@ -355,7 +356,7 @@ public class AndroidScrollIntegrationTest {
         AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
         final int targetScrollXCss = 132;
         final int targetScrollYCss = 243;
         final int targetScrollXPix = (int) Math.floor(targetScrollXCss * deviceDIPScale);
@@ -387,7 +388,7 @@ public class AndroidScrollIntegrationTest {
         AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
         final int targetScrollXCss = 132;
         final int targetScrollYCss = 243;
         final int targetScrollXPix = (int) Math.floor(targetScrollXCss * deviceDIPScale);
@@ -419,7 +420,7 @@ public class AndroidScrollIntegrationTest {
         AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
         final int targetScrollXCss = 132;
         final int targetScrollYCss = 243;
         final int targetScrollXPix = (int) Math.floor(targetScrollXCss * deviceDIPScale);
@@ -471,7 +472,7 @@ public class AndroidScrollIntegrationTest {
         final int targetScrollYPix = dragStepSize * dragSteps;
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
         final int maxScrollXPix = 101;
         final int maxScrollYPix = 211;
         // Make sure we can't hit these values simply as a result of scrolling.
@@ -696,7 +697,7 @@ public class AndroidScrollIntegrationTest {
         AwActivityTestRule.enableJavaScriptOnUiThread(testContainerView.getAwContents());
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
         final int targetScrollYCss = 243;
         final int targetScrollYPix = (int) Math.ceil(targetScrollYCss * deviceDIPScale);
 

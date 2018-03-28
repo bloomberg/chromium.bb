@@ -46,7 +46,6 @@ import android.view.ViewGroup;
 import android.view.ViewStub;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.FrameLayout;
-import android.widget.FrameLayout.LayoutParams;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -159,6 +158,7 @@ public class LocationBarLayout extends FrameLayout
     protected TintedImageButton mDeleteButton;
     protected TintedImageButton mMicButton;
     protected UrlBar mUrlBar;
+    private final boolean mIsTablet;
 
     /** A handle to the bottom sheet for chrome home. */
     protected BottomSheet mBottomSheet;
@@ -688,9 +688,8 @@ public class LocationBarLayout extends FrameLayout
 
         mNavigationButton = (ImageView) findViewById(R.id.navigation_button);
         assert mNavigationButton != null : "Missing navigation type view.";
-
-        mNavigationButtonType = DeviceFormFactor.isTablet() ? NavigationButtonType.PAGE
-                                                            : NavigationButtonType.EMPTY;
+        mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
+        mNavigationButtonType = mIsTablet ? NavigationButtonType.PAGE : NavigationButtonType.EMPTY;
 
         mSecurityButton = (TintedImageButton) findViewById(R.id.security_button);
         mSecurityIconResource = 0;
@@ -935,16 +934,15 @@ public class LocationBarLayout extends FrameLayout
     }
 
     @LocationBarButtonType private int getLocationBarButtonToShow() {
-        boolean isTablet = DeviceFormFactor.isTablet();
-
         // The navigation icon type is only applicable on tablets.  While smaller form factors do
         // not have an icon visible to the user when the URL is focused, BUTTON_TYPE_NONE is not
         // returned as it will trigger an undesired jump during the animation as it attempts to
         // hide the icon.
-        if (mUrlHasFocus && isTablet) return BUTTON_TYPE_NAVIGATION_ICON;
+        if (mUrlHasFocus && mIsTablet) return BUTTON_TYPE_NAVIGATION_ICON;
 
-        return mToolbarDataProvider.shouldShowSecurityIcon() ? BUTTON_TYPE_SECURITY_ICON
-                                                             : BUTTON_TYPE_NONE;
+        return mToolbarDataProvider.getSecurityIconResource(mIsTablet) != 0
+                ? BUTTON_TYPE_SECURITY_ICON
+                : BUTTON_TYPE_NONE;
     }
 
     private void changeLocationBarIcon() {
@@ -1319,13 +1317,12 @@ public class LocationBarLayout extends FrameLayout
 
     // Updates the navigation button based on the URL string
     private void updateNavigationButton() {
-        boolean isTablet = DeviceFormFactor.isTablet();
         NavigationButtonType type = NavigationButtonType.EMPTY;
-        if (isTablet && !mSuggestionItems.isEmpty()) {
+        if (mIsTablet && !mSuggestionItems.isEmpty()) {
             // If there are suggestions showing, show the icon for the default suggestion.
             type = suggestionTypeToNavigationButtonType(
                     mSuggestionItems.get(0).getSuggestion());
-        } else if (isTablet) {
+        } else if (mIsTablet) {
             type = NavigationButtonType.PAGE;
         }
 
@@ -1375,9 +1372,7 @@ public class LocationBarLayout extends FrameLayout
     @Override
     public void updateSecurityIcon() {
         @DrawableRes
-        int id = !mToolbarDataProvider.shouldShowSecurityIcon()
-                ? 0
-                : mToolbarDataProvider.getSecurityIconResource();
+        int id = mToolbarDataProvider.getSecurityIconResource(mIsTablet);
         if (id == 0) {
             mSecurityButton.setImageDrawable(null);
         } else {
@@ -1437,7 +1432,7 @@ public class LocationBarLayout extends FrameLayout
      * @param buttonType The type of navigation button to be shown.
      */
     private void setNavigationButtonType(NavigationButtonType buttonType) {
-        if (!DeviceFormFactor.isTablet()) return;
+        if (!mIsTablet) return;
         switch (buttonType) {
             case PAGE:
                 Drawable page = ApiCompatibilityUtils.getDrawable(
@@ -2637,7 +2632,7 @@ public class LocationBarLayout extends FrameLayout
 
     @Override
     public boolean mustQueryUrlBarLocationForSuggestions() {
-        return DeviceFormFactor.isTablet();
+        return mIsTablet;
     }
 
     /**

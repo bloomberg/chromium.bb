@@ -54,7 +54,6 @@ import org.chromium.chrome.browser.vr_shell.VrShellDelegate;
 import org.chromium.content_public.browser.NavigationController;
 import org.chromium.content_public.browser.NavigationEntry;
 import org.chromium.net.NetworkChangeNotifier;
-import org.chromium.ui.base.DeviceFormFactor;
 import org.chromium.ui.mojom.WindowOpenDisposition;
 
 import java.net.URI;
@@ -80,6 +79,7 @@ public class NewTabPage
     private final NewTabPageView mNewTabPageView;
     private final NewTabPageManagerImpl mNewTabPageManager;
     private final TileGroup.Delegate mTileGroupDelegate;
+    private final boolean mIsTablet;
 
     private TabObserver mTabObserver;
     private boolean mSearchProviderHasLogo;
@@ -293,6 +293,7 @@ public class NewTabPage
                                                     : R.color.ntp_bg);
         mThemeColor = ApiCompatibilityUtils.getColor(
                 activity.getResources(), R.color.default_primary_color);
+        mIsTablet = activity.isTablet();
         TemplateUrlService.getInstance().addObserver(this);
 
         mTabObserver = new EmptyTabObserver() {
@@ -368,9 +369,7 @@ public class NewTabPage
     }
 
     private boolean isInSingleUrlBarMode() {
-        if (DeviceFormFactor.isTablet()) return false;
-        if (FeatureUtilities.isChromeHomeEnabled()) return false;
-        return mSearchProviderHasLogo;
+        return !mIsTablet && !FeatureUtilities.isChromeHomeEnabled() && mSearchProviderHasLogo;
     }
 
     private void updateSearchProviderHasLogo() {

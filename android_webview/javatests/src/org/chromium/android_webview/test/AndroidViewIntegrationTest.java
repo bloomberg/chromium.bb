@@ -24,7 +24,6 @@ import org.chromium.android_webview.test.util.CommonResources;
 import org.chromium.android_webview.test.util.GraphicsTestUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
-import org.chromium.ui.display.DisplayAndroid;
 
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -311,8 +310,7 @@ public class AndroidViewIntegrationTest {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
-
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
         final int contentHeightCss = 180;
 
         // In wrap-content mode the AwLayoutSizer will size the view to be as wide as the parent
@@ -338,9 +336,7 @@ public class AndroidViewIntegrationTest {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
-
-        final int contentWidthCss = 142;
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
         final int contentHeightCss = 180;
 
         // In wrap-content mode the AwLayoutSizer will size the view to be as wide as the parent
@@ -367,9 +363,7 @@ public class AndroidViewIntegrationTest {
         assertZeroHeight(testContainerView);
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
-
-        final int contentWidthCss = 142;
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
         final int contentHeightCss = 180;
 
         final int expectedWidthCss =
@@ -394,7 +388,7 @@ public class AndroidViewIntegrationTest {
         final AwContents awContents = testContainerView.getAwContents();
 
         final double deviceDIPScale =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext()).getDipScale();
+                GraphicsTestUtils.dipScaleForContext(testContainerView.getContext());
         final int physicalWidth = 600;
         final int spanWidth = 42;
         final int expectedWidthCss =

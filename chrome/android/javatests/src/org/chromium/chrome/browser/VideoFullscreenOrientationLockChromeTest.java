@@ -30,7 +30,6 @@ import org.chromium.content.browser.test.util.DOMUtils;
 import org.chromium.content.browser.test.util.JavaScriptUtils;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.media.MediaSwitches;
-import org.chromium.ui.base.DeviceFormFactor;
 
 import java.util.concurrent.TimeoutException;
 
@@ -110,7 +109,7 @@ public class VideoFullscreenOrientationLockChromeTest {
     @Feature({"VideoFullscreenOrientationLock"})
     @RetryOnFailure // The final waitForContentsFullscreenState(false) is flaky - crbug.com/711005.
     public void testUnlockWithDownloadViewerActivity() throws Exception {
-        if (DeviceFormFactor.isTablet()) {
+        if (mActivityTestRule.getActivity().isTablet()) {
             return;
         }
 

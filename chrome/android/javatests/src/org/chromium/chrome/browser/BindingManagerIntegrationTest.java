@@ -41,7 +41,6 @@ import org.chromium.content.browser.test.util.TouchCommon;
 import org.chromium.content_public.browser.ChildProcessImportance;
 import org.chromium.content_public.browser.LoadUrlParams;
 import org.chromium.net.test.EmbeddedTestServer;
-import org.chromium.ui.base.DeviceFormFactor;
 
 /**
  * Integration tests for the BindingManager API. This test plants a mock BindingManager
@@ -188,8 +187,8 @@ public class BindingManagerIntegrationTest {
         ChromeTabUtils.waitForTabPageLoaded(tabs[1], mTestServer.getURL(FILE_PATH));
 
         // Wait for the new tab animations on phones to finish.
-        if (!DeviceFormFactor.isTablet()) {
-            final ChromeActivity activity = mActivityTestRule.getActivity();
+        final ChromeActivity activity = mActivityTestRule.getActivity();
+        if (!activity.isTablet()) {
             CriteriaHelper.pollUiThread(new Criteria("Did not finish animation") {
                 @Override
                 public boolean isSatisfied() {
@@ -252,8 +251,8 @@ public class BindingManagerIntegrationTest {
         ChromeTabUtils.waitForTabPageLoaded(tabs[1], mTestServer.getURL(FILE_PATH));
 
         // Wait for the new tab animations on phones to finish.
-        if (!DeviceFormFactor.isTablet()) {
-            final ChromeActivity activity = mActivityTestRule.getActivity();
+        final ChromeActivity activity = mActivityTestRule.getActivity();
+        if (!activity.isTablet()) {
             CriteriaHelper.pollUiThread(new Criteria("Did not finish animation") {
                 @Override
                 public boolean isSatisfied() {

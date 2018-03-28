@@ -214,8 +214,7 @@ public class StripLayoutHelper implements StripLayoutTab.StripLayoutTabDelegate 
         mTabMenu.setWidth(menuWidth);
         mTabMenu.setModal(true);
 
-        int screenWidthDp = context.getResources().getConfiguration().screenWidthDp;
-        mShouldCascadeTabs = screenWidthDp >= DeviceFormFactor.MINIMUM_TABLET_WIDTH_DP;
+        mShouldCascadeTabs = DeviceFormFactor.isNonMultiDisplayContextOnTablet(context);
         mStripStacker = mShouldCascadeTabs ? mCascadingStripStacker : mScrollingStripStacker;
         mIsFirstLayoutPass = true;
     }

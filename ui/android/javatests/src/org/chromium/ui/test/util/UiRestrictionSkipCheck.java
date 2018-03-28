@@ -7,6 +7,7 @@ package org.chromium.ui.test.util;
 import android.content.Context;
 import android.text.TextUtils;
 
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.RestrictionSkipCheck;
 import org.chromium.ui.base.DeviceFormFactor;
 
@@ -20,14 +21,13 @@ public class UiRestrictionSkipCheck extends RestrictionSkipCheck {
 
     @Override
     protected boolean restrictionApplies(String restriction) {
-        if (TextUtils.equals(restriction, UiRestriction.RESTRICTION_TYPE_PHONE)
-                && DeviceFormFactor.isTablet()) {
-            return true;
+        boolean phoneOnly = TextUtils.equals(restriction, UiRestriction.RESTRICTION_TYPE_PHONE);
+        boolean tabletOnly = TextUtils.equals(restriction, UiRestriction.RESTRICTION_TYPE_TABLET);
+        if (!phoneOnly && !tabletOnly) {
+            return false;
         }
-        if (TextUtils.equals(restriction, UiRestriction.RESTRICTION_TYPE_TABLET)
-                && !DeviceFormFactor.isTablet()) {
-            return true;
-        }
-        return false;
+        boolean isTablet =
+                ThreadUtils.runOnUiThreadBlockingNoException(() -> DeviceFormFactor.isTablet());
+        return phoneOnly && isTablet || tabletOnly && !isTablet;
     }
 }

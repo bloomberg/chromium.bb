@@ -38,6 +38,7 @@ import org.chromium.android_webview.test.util.JSUtils;
 import org.chromium.android_webview.test.util.VideoTestUtil;
 import org.chromium.android_webview.test.util.VideoTestWebServer;
 import org.chromium.base.Callback;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.CommandLineFlags;
 import org.chromium.base.test.util.DisabledTest;
@@ -53,6 +54,7 @@ import org.chromium.content_public.common.ContentUrlConstants;
 import org.chromium.net.test.EmbeddedTestServer;
 import org.chromium.net.test.util.TestWebServer;
 import org.chromium.ui.display.DisplayAndroid;
+import org.chromium.ui.display.DisplayUtil;
 
 import java.io.File;
 import java.util.concurrent.TimeUnit;
@@ -964,9 +966,7 @@ public class AwSettingsTest {
         }
 
         protected String getData() {
-            DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(mContext);
-            int displayWidth =
-                    (int) (displayAndroid.getDisplayWidth() / displayAndroid.getDipScale());
+            int displayWidth = calcDisplayWidthDp(mContext);
             int layoutWidth = (int) (displayWidth * 2.5f); // Use 2.5 as autosizing layout tests do.
             StringBuilder sb = new StringBuilder();
             sb.append("<html>"
@@ -1482,10 +1482,7 @@ public class AwSettingsTest {
             loadDataSync(getData());
             final int reportedClientWidth = Integer.parseInt(getTitleOnUiThread());
             if (value) {
-                final DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(mContext);
-                // The clientWidth is subject to pixel snapping.
-                final int displayWidth = (int) Math.ceil(
-                        displayAndroid.getDisplayWidth() / displayAndroid.getDipScale());
+                int displayWidth = calcDisplayWidthDp(mContext);
                 Assert.assertEquals(displayWidth, reportedClientWidth);
             } else {
                 Assert.assertEquals(3000, reportedClientWidth);
@@ -1506,6 +1503,13 @@ public class AwSettingsTest {
                     + "  <div id='testDiv' style='height:100%;'></div> "
                     + "</body></html>";
         }
+    }
+
+    public static int calcDisplayWidthDp(Context context) {
+        return ThreadUtils.runOnUiThreadBlockingNoException(() -> {
+            DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(context);
+            return DisplayUtil.pxToDp(displayAndroid, displayAndroid.getDisplayWidth());
+        });
     }
 
     // The test verifies that JavaScript is disabled upon WebView
@@ -2585,9 +2589,7 @@ public class AwSettingsTest {
                 pageTemplate,
                 "<meta name='viewport' content='width=" + viewportTagSpecifiedWidth + "' />");
 
-        DisplayAndroid displayAndroid = DisplayAndroid.getNonMultiDisplay(
-                testContainer.getContext());
-        int displayWidth = (int) (displayAndroid.getDisplayWidth() / displayAndroid.getDipScale());
+        int displayWidth = calcDisplayWidthDp(testContainer.getContext());
 
         settings.setJavaScriptEnabled(true);
         Assert.assertFalse(settings.getUseWideViewPort());
@@ -2667,9 +2669,7 @@ public class AwSettingsTest {
         AwSettings settings = mActivityTestRule.getAwSettingsOnUiThread(awContents);
         settings.setBuiltInZoomControls(true);
 
-        DisplayAndroid displayAndroid =
-                DisplayAndroid.getNonMultiDisplay(testContainerView.getContext());
-        int displayWidth = (int) (displayAndroid.getDisplayWidth() / displayAndroid.getDipScale());
+        int displayWidth = calcDisplayWidthDp(testContainerView.getContext());
         int layoutWidth = displayWidth * 2;
         final String page = "<html>"
                 + "<head><meta name='viewport' content='width=" + layoutWidth + "'>"

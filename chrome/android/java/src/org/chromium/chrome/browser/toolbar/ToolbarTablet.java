@@ -583,7 +583,7 @@ public class ToolbarTablet
         // moved into the menu so that the location bar is usable. The buttons must be shown
         // in onMeasure() so that the location bar gets measured and laid out correctly.
         setToolbarButtonsVisible(MeasureSpec.getSize(widthMeasureSpec)
-                >= DeviceFormFactor.getMinimumTabletWidthPx(getContext()));
+                >= DeviceFormFactor.getNonMultiDisplayMinimumTabletWidthPx(getContext()));
 
         super.onMeasure(widthMeasureSpec, heightMeasureSpec);
     }

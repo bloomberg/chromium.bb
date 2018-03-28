@@ -268,6 +268,7 @@ public class PageInfoPopup implements OnClickListener {
     private final Context mContext;
     private final WindowAndroid mWindowAndroid;
     private final Tab mTab;
+    private final boolean mIsTablet;
 
     // A pointer to the C++ object for this UI.
     private long mNativePageInfoPopup;
@@ -341,6 +342,7 @@ public class PageInfoPopup implements OnClickListener {
         mTab = tab;
         mIsBottomPopup = mTab.getActivity().getBottomSheet() != null;
         mOfflinePageState = offlinePageState;
+        mIsTablet = DeviceFormFactor.isNonMultiDisplayContextOnTablet(activity);
 
         if (mOfflinePageState != NOT_OFFLINE_PAGE) {
             mOfflinePageCreationDate = offlinePageCreationDate;
@@ -473,7 +475,7 @@ public class PageInfoPopup implements OnClickListener {
 
             @Override
             public void dismiss() {
-                if (DeviceFormFactor.isTablet() || mDismissWithoutAnimation) {
+                if (mIsTablet || mDismissWithoutAnimation) {
                     // Dismiss the dialog without any custom animations on tablet.
                     super.dismiss();
                 } else {
@@ -500,7 +502,7 @@ public class PageInfoPopup implements OnClickListener {
         mDialog.setCanceledOnTouchOutside(true);
 
         // On smaller screens, place the dialog at the top of the screen, and remove its border.
-        if (!DeviceFormFactor.isTablet()) {
+        if (!mIsTablet) {
             Window window = mDialog.getWindow();
             window.setGravity(Gravity.TOP);
             window.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
@@ -762,7 +764,7 @@ public class PageInfoPopup implements OnClickListener {
      * Displays the PageInfoPopup.
      */
     private void showDialog() {
-        if (!DeviceFormFactor.isTablet()) {
+        if (!mIsTablet) {
             // On smaller screens, make the dialog fill the width of the screen.
             ScrollView scrollView = new ScrollView(mContext) {
                 @Override
@@ -819,7 +821,7 @@ public class PageInfoPopup implements OnClickListener {
      */
     private void runAfterDismiss(Runnable task) {
         mDialog.dismiss();
-        if (DeviceFormFactor.isTablet()) {
+        if (mIsTablet) {
             task.run();
         } else {
             mContainer.postDelayed(task, FADE_DURATION + CLOSE_CLEANUP_DELAY);
@@ -990,7 +992,7 @@ public class PageInfoPopup implements OnClickListener {
         AnimatorSet.Builder builder = null;
         Animator startAnim;
 
-        if (DeviceFormFactor.isTablet()) {
+        if (mIsTablet) {
             // The start time of the entire AnimatorSet is the start time of the first animation
             // added to the Builder. We use a blank AnimatorSet on tablet as an easy way to
             // co-ordinate this start time.
