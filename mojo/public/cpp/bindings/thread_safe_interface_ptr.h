@@ -152,7 +152,8 @@ class ThreadSafeForwarder : public MessageReceiverWithResponder {
     bool event_signaled = false;
     SyncEventWatcher watcher(&response->event,
                              base::Bind(assign_true, &event_signaled));
-    watcher.SyncWatch(&event_signaled);
+    const bool* stop_flags[] = {&event_signaled};
+    watcher.SyncWatch(stop_flags, 1);
 
     {
       base::AutoLock l(sync_calls->lock);
