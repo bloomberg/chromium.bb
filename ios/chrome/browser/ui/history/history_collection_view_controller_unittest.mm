@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/history/history_collection_view_controller.h"
+#import "ios/chrome/browser/ui/history/legacy_history_collection_view_controller.h"
 
 #include <memory>
 
@@ -65,15 +65,15 @@ std::unique_ptr<KeyedService> BuildMockSyncSetupService(
 
 }  // namespace
 
-@interface HistoryCollectionViewController (
+@interface LegacyHistoryCollectionViewController (
     Testing)<BrowsingHistoryDriverDelegate>
 - (void)didPressClearBrowsingBar;
 @end
 
-class HistoryCollectionViewControllerTest : public BlockCleanupTest {
+class LegacyHistoryCollectionViewControllerTest : public BlockCleanupTest {
  public:
-  HistoryCollectionViewControllerTest() {}
-  ~HistoryCollectionViewControllerTest() override {}
+  LegacyHistoryCollectionViewControllerTest() {}
+  ~LegacyHistoryCollectionViewControllerTest() override {}
 
   void SetUp() override {
     BlockCleanupTest::SetUp();
@@ -88,10 +88,11 @@ class HistoryCollectionViewControllerTest : public BlockCleanupTest {
     sync_setup_service_mock_ = static_cast<SyncSetupServiceMock*>(
         SyncSetupServiceFactory::GetForBrowserState(mock_browser_state_.get()));
     mock_delegate_ = [OCMockObject
-        niceMockForProtocol:@protocol(HistoryCollectionViewControllerDelegate)];
+        niceMockForProtocol:@protocol(
+                                LegacyHistoryCollectionViewControllerDelegate)];
     mock_url_loader_ = [OCMockObject niceMockForProtocol:@protocol(UrlLoader)];
     history_collection_view_controller_ =
-        [[HistoryCollectionViewController alloc]
+        [[LegacyHistoryCollectionViewController alloc]
             initWithLoader:mock_url_loader_
               browserState:mock_browser_state_.get()
                   delegate:mock_delegate_];
@@ -117,15 +118,15 @@ class HistoryCollectionViewControllerTest : public BlockCleanupTest {
   web::TestWebThreadBundle thread_bundle_;
   id<UrlLoader> mock_url_loader_;
   std::unique_ptr<TestChromeBrowserState> mock_browser_state_;
-  id<HistoryCollectionViewControllerDelegate> mock_delegate_;
-  HistoryCollectionViewController* history_collection_view_controller_;
+  id<LegacyHistoryCollectionViewControllerDelegate> mock_delegate_;
+  LegacyHistoryCollectionViewController* history_collection_view_controller_;
   bool privacy_settings_opened_;
   SyncSetupServiceMock* sync_setup_service_mock_;
-  DISALLOW_COPY_AND_ASSIGN(HistoryCollectionViewControllerTest);
+  DISALLOW_COPY_AND_ASSIGN(LegacyHistoryCollectionViewControllerTest);
 };
 
 // Tests that isEmpty property returns NO after entries have been received.
-TEST_F(HistoryCollectionViewControllerTest, IsEmpty) {
+TEST_F(LegacyHistoryCollectionViewControllerTest, IsEmpty) {
   QueryHistory({{GURL(kTestUrl1), Time::Now()}});
   EXPECT_FALSE([history_collection_view_controller_ isEmpty]);
 }
@@ -134,7 +135,7 @@ TEST_F(HistoryCollectionViewControllerTest, IsEmpty) {
 // HISTORY_DELETE_DIRECTIVES is enabled, and sync_returned is false.
 // This ensures that when HISTORY_DELETE_DIRECTIVES is disabled,
 // only local device history items are shown.
-TEST_F(HistoryCollectionViewControllerTest, IsNotEmptyWhenSyncEnabled) {
+TEST_F(LegacyHistoryCollectionViewControllerTest, IsNotEmptyWhenSyncEnabled) {
   EXPECT_CALL(*sync_setup_service_mock_, IsSyncEnabled())
       .WillRepeatedly(testing::Return(true));
   EXPECT_CALL(*sync_setup_service_mock_,
@@ -147,7 +148,7 @@ TEST_F(HistoryCollectionViewControllerTest, IsNotEmptyWhenSyncEnabled) {
 
 // Tests adding two entries to history from the same day, then deleting the
 // first of them results in one history entry in the collection.
-TEST_F(HistoryCollectionViewControllerTest, DeleteSingleEntry) {
+TEST_F(LegacyHistoryCollectionViewControllerTest, DeleteSingleEntry) {
   QueryHistory(
       {{GURL(kTestUrl1), Time::Now()}, {GURL(kTestUrl2), Time::Now()}});
 
@@ -166,7 +167,7 @@ TEST_F(HistoryCollectionViewControllerTest, DeleteSingleEntry) {
 
 // Tests that adding two entries to history from the same day then deleting
 // both of them results in only the header section in the collection.
-TEST_F(HistoryCollectionViewControllerTest, DeleteMultipleEntries) {
+TEST_F(LegacyHistoryCollectionViewControllerTest, DeleteMultipleEntries) {
   QueryHistory(
       {{GURL(kTestUrl1), Time::Now()}, {GURL(kTestUrl2), Time::Now()}});
 
@@ -191,7 +192,7 @@ TEST_F(HistoryCollectionViewControllerTest, DeleteMultipleEntries) {
 
 // Tests that adding two entries to history from different days then deleting
 // both of them results in only the header section in the collection.
-TEST_F(HistoryCollectionViewControllerTest, DeleteMultipleSections) {
+TEST_F(LegacyHistoryCollectionViewControllerTest, DeleteMultipleSections) {
   QueryHistory({{GURL(kTestUrl1), Time::Now() - TimeDelta::FromDays(1)},
                 {GURL(kTestUrl2), Time::Now()}});
 

@@ -9,8 +9,8 @@
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/collection_view/cells/collection_view_text_item.h"
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
-#import "ios/chrome/browser/ui/history/history_entry_item.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
+#import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
 #include "url/gurl.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -45,16 +45,15 @@
   return self;
 }
 
-
-- (void)insertHistoryEntryItem:(HistoryEntryItem*)item {
+- (void)insertHistoryEntryItem:(LegacyHistoryEntryItem*)item {
   NSInteger sectionIdentifier =
       [self sectionIdentifierForTimestamp:item.timestamp];
 
   NSComparator objectComparator = ^(id obj1, id obj2) {
-    HistoryEntryItem* firstObject =
-        base::mac::ObjCCastStrict<HistoryEntryItem>(obj1);
-    HistoryEntryItem* secondObject =
-        base::mac::ObjCCastStrict<HistoryEntryItem>(obj2);
+    LegacyHistoryEntryItem* firstObject =
+        base::mac::ObjCCastStrict<LegacyHistoryEntryItem>(obj1);
+    LegacyHistoryEntryItem* secondObject =
+        base::mac::ObjCCastStrict<LegacyHistoryEntryItem>(obj2);
     if ([firstObject isEqualToHistoryEntryItem:secondObject])
       return NSOrderedSame;
 

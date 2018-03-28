@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/ui/history/history_entry_item.h"
+#import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
 
 #include "base/i18n/time_formatting.h"
 #import "base/mac/foundation_util.h"
@@ -57,10 +57,10 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
 }
 }  // namespace
 
-#pragma mark - HistoryEntryItem
+#pragma mark - LegacyHistoryEntryItem
 
-@interface HistoryEntryItem ()<FaviconViewProviderDelegate> {
-  // Delegate for HistoryEntryItem.
+@interface LegacyHistoryEntryItem ()<FaviconViewProviderDelegate> {
+  // Delegate for LegacyHistoryEntryItem.
   __weak id<HistoryEntryItemDelegate> _delegate;
 }
 
@@ -80,7 +80,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
 - (BOOL)copyURL;
 @end
 
-@implementation HistoryEntryItem
+@implementation LegacyHistoryEntryItem
 
 @synthesize faviconViewProvider = _faviconViewProvider;
 @synthesize text = _text;
@@ -96,7 +96,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
                     delegate:(id<HistoryEntryItemDelegate>)delegate {
   self = [super initWithType:type];
   if (self) {
-    self.cellClass = [HistoryEntryCell class];
+    self.cellClass = [LegacyHistoryEntryCell class];
     favicon::LargeIconService* largeIconService =
         IOSChromeLargeIconServiceFactory::GetForBrowserState(browserState);
     _faviconViewProvider =
@@ -121,7 +121,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
   return nil;
 }
 
-- (BOOL)isEqualToHistoryEntryItem:(HistoryEntryItem*)item {
+- (BOOL)isEqualToHistoryEntryItem:(LegacyHistoryEntryItem*)item {
   return item && item.URL == _URL && item.timestamp == _timestamp;
 }
 
@@ -129,7 +129,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
   if (self == object)
     return YES;
 
-  if (![object isMemberOfClass:[HistoryEntryItem class]])
+  if (![object isMemberOfClass:[LegacyHistoryEntryItem class]])
     return NO;
 
   return [self isEqualToHistoryEntryItem:object];
@@ -189,7 +189,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
   return YES;
 }
 
-- (void)configureCell:(HistoryEntryCell*)cell {
+- (void)configureCell:(LegacyHistoryEntryCell*)cell {
   [super configureCell:cell];
 
   // Set favicon view and constraints.
@@ -216,9 +216,9 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
 
 @end
 
-#pragma mark - HistoryEntryCell
+#pragma mark - LegacyHistoryEntryCell
 
-@interface HistoryEntryCell ()
+@interface LegacyHistoryEntryCell ()
 
 // Redeclare as readwrite.
 @property(nonatomic, readwrite, strong) UILabel* textLabel;
@@ -226,7 +226,7 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
 @property(nonatomic, readwrite, strong) UILabel* timeLabel;
 @end
 
-@implementation HistoryEntryCell
+@implementation LegacyHistoryEntryCell
 
 @synthesize faviconViewContainer = _faviconViewContainer;
 @synthesize textLabel = _textLabel;
@@ -236,7 +236,6 @@ NSString* FormattedTitle(const base::string16& title, const GURL& url) {
 - (id)initWithFrame:(CGRect)frame {
   self = [super initWithFrame:frame];
   if (self) {
-
     _faviconViewContainer = [[UIView alloc] initWithFrame:CGRectZero];
 
     _textLabel = [[UILabel alloc] initWithFrame:CGRectZero];

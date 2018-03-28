@@ -11,14 +11,8 @@ source_set("history") {
     "favicon_view.mm",
     "favicon_view_provider.h",
     "favicon_view_provider.mm",
-    "history_collection_view_controller.h",
-    "history_collection_view_controller.mm",
-    "history_entries_status_item.h",
-    "history_entries_status_item.mm",
     "history_entry_inserter.h",
     "history_entry_inserter.mm",
-    "history_entry_item.h",
-    "history_entry_item.mm",
     "history_panel_view_controller.h",
     "history_panel_view_controller.mm",
     "history_search_view.h",
@@ -29,6 +23,12 @@ source_set("history") {
     "history_util.mm",
     "ios_browsing_history_driver.h",
     "ios_browsing_history_driver.mm",
+    "legacy_history_collection_view_controller.h",
+    "legacy_history_collection_view_controller.mm",
+    "legacy_history_entries_status_item.h",
+    "legacy_history_entries_status_item.mm",
+    "legacy_history_entry_item.h",
+    "legacy_history_entry_item.mm",
   ]
   deps = [
     ":history_base_feature",
@@ -99,10 +99,10 @@ source_set("unit_tests") {
   sources = [
     "favicon_view_provider_unittest.mm",
     "history_collection_view_controller_unittest.mm",
-    "history_entries_status_item_unittest.mm",
     "history_entry_inserter_unittest.mm",
-    "history_entry_item_unittest.mm",
     "history_search_view_controller_unittest.mm",
+    "legacy_history_entries_status_item_unittest.mm",
+    "legacy_history_entry_item_unittest.mm",
   ]
   deps = [
     ":history",

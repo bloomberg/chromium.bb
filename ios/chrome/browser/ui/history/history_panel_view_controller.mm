@@ -11,8 +11,8 @@
 #include "components/strings/grit/components_strings.h"
 #import "ios/chrome/browser/ui/commands/application_commands.h"
 #import "ios/chrome/browser/ui/history/clear_browsing_bar.h"
-#import "ios/chrome/browser/ui/history/history_collection_view_controller.h"
 #import "ios/chrome/browser/ui/history/history_search_view_controller.h"
+#import "ios/chrome/browser/ui/history/legacy_history_collection_view_controller.h"
 #import "ios/chrome/browser/ui/icons/chrome_icon.h"
 #import "ios/chrome/browser/ui/keyboard/UIKeyCommand+Chrome.h"
 #import "ios/chrome/browser/ui/material_components/utils.h"
@@ -35,10 +35,10 @@ CGFloat kShadowOpacity = 0.2f;
 }  // namespace
 
 @interface HistoryPanelViewController ()<
-    HistoryCollectionViewControllerDelegate,
+    LegacyHistoryCollectionViewControllerDelegate,
     HistorySearchViewControllerDelegate> {
   // Controller for collection view that displays history entries.
-  HistoryCollectionViewController* _historyCollectionController;
+  LegacyHistoryCollectionViewController* _historyCollectionController;
   // Bar at the bottom of the history panel the displays options for entry
   // deletion, including "Clear Browsing Data..." which takes the user to
   // Privacy settings, or "Edit" for entering a mode for deleting individual
@@ -95,9 +95,10 @@ CGFloat kShadowOpacity = 0.2f;
   self = [super initWithNibName:nil bundle:nil];
   if (self) {
     _historyCollectionController =
-        [[HistoryCollectionViewController alloc] initWithLoader:loader
-                                                   browserState:browserState
-                                                       delegate:self];
+        [[LegacyHistoryCollectionViewController alloc]
+            initWithLoader:loader
+              browserState:browserState
+                  delegate:self];
     _dispatcher = dispatcher;
 
     // Configure modal presentation.
@@ -266,13 +267,13 @@ CGFloat kShadowOpacity = 0.2f;
 #pragma mark - HistoryCollectionViewControllerDelegate
 
 - (void)historyCollectionViewController:
-            (HistoryCollectionViewController*)collectionViewcontroller
+            (LegacyHistoryCollectionViewController*)collectionViewcontroller
               shouldCloseWithCompletion:(ProceduralBlock)completionHandler {
   [self closeHistoryWithCompletion:completionHandler];
 }
 
 - (void)historyCollectionViewController:
-            (HistoryCollectionViewController*)controller
+            (LegacyHistoryCollectionViewController*)controller
                       didScrollToOffset:(CGPoint)offset {
   // Display a shadow on the header when the collection is scrolled.
   MDCFlexibleHeaderView* headerView = _appBar.headerViewController.headerView;
@@ -281,7 +282,7 @@ CGFloat kShadowOpacity = 0.2f;
 }
 
 - (void)historyCollectionViewControllerDidChangeEntries:
-    (HistoryCollectionViewController*)controller {
+    (LegacyHistoryCollectionViewController*)controller {
   // Reconfigure the navigation and clear browsing bars to reflect currently
   // displayed entries.
   [self configureNavigationBar];
@@ -289,7 +290,7 @@ CGFloat kShadowOpacity = 0.2f;
 }
 
 - (void)historyCollectionViewControllerDidChangeEntrySelection:
-    (HistoryCollectionViewController*)controller {
+    (LegacyHistoryCollectionViewController*)controller {
   // Reconfigure the clear browsing bar to reflect current availability of
   // entries for deletion.
   [self configureClearBrowsingBar];

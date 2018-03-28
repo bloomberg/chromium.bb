@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_COLLECTION_VIEW_CONTROLLER_H_
-#define IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_COLLECTION_VIEW_CONTROLLER_H_
+#ifndef IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_COLLECTION_VIEW_CONTROLLER_H_
+#define IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_COLLECTION_VIEW_CONTROLLER_H_
 
 #import "ios/chrome/browser/ui/collection_view/collection_view_controller.h"
 
@@ -13,29 +13,29 @@ namespace ios {
 class ChromeBrowserState;
 }
 
-@class HistoryCollectionViewController;
+@class LegacyHistoryCollectionViewController;
 @protocol UrlLoader;
 
 // Delegate for the history collection view controller.
-@protocol HistoryCollectionViewControllerDelegate<NSObject>
+@protocol LegacyHistoryCollectionViewControllerDelegate<NSObject>
 // Notifies the delegate that history should be dismissed.
 - (void)historyCollectionViewController:
-            (HistoryCollectionViewController*)controller
+            (LegacyHistoryCollectionViewController*)controller
               shouldCloseWithCompletion:(ProceduralBlock)completionHandler;
 // Notifies the delegate that the collection view has scrolled to |offset|.
 - (void)historyCollectionViewController:
-            (HistoryCollectionViewController*)controller
+            (LegacyHistoryCollectionViewController*)controller
                       didScrollToOffset:(CGPoint)offset;
 // Notifies the delegate that history entries have been loaded or changed.
 - (void)historyCollectionViewControllerDidChangeEntries:
-    (HistoryCollectionViewController*)controller;
+    (LegacyHistoryCollectionViewController*)controller;
 // Notifies the delegate that history entries have been selected or deselected.
 - (void)historyCollectionViewControllerDidChangeEntrySelection:
-    (HistoryCollectionViewController*)controller;
+    (LegacyHistoryCollectionViewController*)controller;
 @end
 
 // View controller for displaying a collection of history entries.
-@interface HistoryCollectionViewController : CollectionViewController
+@interface LegacyHistoryCollectionViewController : CollectionViewController
 // YES if the collection view is in editing mode. Setting |editing| turns
 // editing mode on or off accordingly.
 @property(nonatomic, assign, getter=isEditing) BOOL editing;
@@ -46,10 +46,10 @@ class ChromeBrowserState;
 // YES if the collection view has selected entries while in editing mode.
 @property(nonatomic, assign, readonly) BOOL hasSelectedEntries;
 
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState
-                      delegate:
-                          (id<HistoryCollectionViewControllerDelegate>)delegate
+- (instancetype)
+initWithLoader:(id<UrlLoader>)loader
+  browserState:(ios::ChromeBrowserState*)browserState
+      delegate:(id<LegacyHistoryCollectionViewControllerDelegate>)delegate
     NS_DESIGNATED_INITIALIZER;
 - (instancetype)initWithLayout:(UICollectionViewLayout*)layout
                          style:(CollectionViewControllerStyle)style
@@ -65,4 +65,4 @@ class ChromeBrowserState;
 
 @end
 
-#endif  // IOS_CHROME_BROWSER_UI_HISTORY_HISTORY_COLLECTION_VIEW_CONTROLLER_H_
+#endif  // IOS_CHROME_BROWSER_UI_HISTORY_LEGACY_HISTORY_COLLECTION_VIEW_CONTROLLER_H_

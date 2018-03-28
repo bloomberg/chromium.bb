@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/ui/history/history_collection_view_controller.h"
+#include "ios/chrome/browser/ui/history/legacy_history_collection_view_controller.h"
 
 #import <MobileCoreServices/MobileCoreServices.h>
 
@@ -37,11 +37,11 @@
 #import "ios/chrome/browser/ui/collection_view/collection_view_model.h"
 #import "ios/chrome/browser/ui/context_menu/context_menu_coordinator.h"
 #import "ios/chrome/browser/ui/history/history_base_feature.h"
-#include "ios/chrome/browser/ui/history/history_entries_status_item.h"
 #include "ios/chrome/browser/ui/history/history_entry_inserter.h"
-#import "ios/chrome/browser/ui/history/history_entry_item.h"
 #include "ios/chrome/browser/ui/history/history_util.h"
 #include "ios/chrome/browser/ui/history/ios_browsing_history_driver.h"
+#include "ios/chrome/browser/ui/history/legacy_history_entries_status_item.h"
+#import "ios/chrome/browser/ui/history/legacy_history_entry_item.h"
 #import "ios/chrome/browser/ui/url_loader.h"
 #import "ios/chrome/browser/ui/util/pasteboard_util.h"
 #import "ios/chrome/browser/ui/util/top_view_controller.h"
@@ -75,10 +75,11 @@ const int kMaxFetchCount = 100;
 const CGFloat kSeparatorInset = 10;
 }
 
-@interface HistoryCollectionViewController ()<HistoryEntriesStatusItemDelegate,
-                                              HistoryEntryInserterDelegate,
-                                              HistoryEntryItemDelegate,
-                                              BrowsingHistoryDriverDelegate> {
+@interface LegacyHistoryCollectionViewController ()<
+    HistoryEntriesStatusItemDelegate,
+    HistoryEntryInserterDelegate,
+    HistoryEntryItemDelegate,
+    BrowsingHistoryDriverDelegate> {
   // Abstraction to communicate with HistoryService and WebHistoryService.
   std::unique_ptr<BrowsingHistoryService> _browsingHistoryService;
   // Provides dependencies and funnels callbacks from BrowsingHistoryService.
@@ -86,7 +87,7 @@ const CGFloat kSeparatorInset = 10;
   // The main browser state. Not owned by HistoryCollectionViewController.
   ios::ChromeBrowserState* _browserState;
   // Backing ivar for delegate property.
-  __weak id<HistoryCollectionViewControllerDelegate> _delegate;
+  __weak id<LegacyHistoryCollectionViewControllerDelegate> _delegate;
   // Backing ivar for URLLoader property.
   __weak id<UrlLoader> _URLLoader;
   // Closure to request next page of history.
@@ -96,8 +97,9 @@ const CGFloat kSeparatorInset = 10;
 // Object to manage insertion of history entries into the collection view model.
 @property(nonatomic, strong) HistoryEntryInserter* entryInserter;
 // Delegate for the history collection view.
-@property(nonatomic, weak, readonly) id<HistoryCollectionViewControllerDelegate>
-    delegate;
+@property(nonatomic, weak, readonly)
+    id<LegacyHistoryCollectionViewControllerDelegate>
+        delegate;
 // UrlLoader for navigating to history entries.
 @property(nonatomic, weak, readonly) id<UrlLoader> URLLoader;
 // The current query for visible history entries.
@@ -150,7 +152,7 @@ const CGFloat kSeparatorInset = 10;
 - (void)openURLInNewIncognitoTab:(const GURL&)URL;
 @end
 
-@implementation HistoryCollectionViewController
+@implementation LegacyHistoryCollectionViewController
 
 @synthesize searching = _searching;
 @synthesize entryInserter = _entryInserter;
@@ -163,10 +165,10 @@ const CGFloat kSeparatorInset = 10;
 @synthesize finishedLoading = _finishedLoading;
 @synthesize filterQueryResult = _filterQueryResult;
 
-- (instancetype)initWithLoader:(id<UrlLoader>)loader
-                  browserState:(ios::ChromeBrowserState*)browserState
-                      delegate:(id<HistoryCollectionViewControllerDelegate>)
-                                   delegate {
+- (instancetype)
+initWithLoader:(id<UrlLoader>)loader
+  browserState:(ios::ChromeBrowserState*)browserState
+      delegate:(id<LegacyHistoryCollectionViewControllerDelegate>)delegate {
   UICollectionViewLayout* layout = [[MDCCollectionViewFlowLayout alloc] init];
   self =
       [super initWithLayout:layout style:CollectionViewControllerStyleDefault];
@@ -260,8 +262,9 @@ const CGFloat kSeparatorInset = 10;
   NSArray* deletedIndexPaths = self.collectionView.indexPathsForSelectedItems;
   std::vector<BrowsingHistoryService::HistoryEntry> entries;
   for (NSIndexPath* indexPath in deletedIndexPaths) {
-    HistoryEntryItem* object = base::mac::ObjCCastStrict<HistoryEntryItem>(
-        [self.collectionViewModel itemAtIndexPath:indexPath]);
+    LegacyHistoryEntryItem* object =
+        base::mac::ObjCCastStrict<LegacyHistoryEntryItem>(
+            [self.collectionViewModel itemAtIndexPath:indexPath]);
     BrowsingHistoryService::HistoryEntry entry;
     entry.url = object.URL;
     entry.all_timestamps.insert(object.timestamp.ToInternalValue());
@@ -271,7 +274,7 @@ const CGFloat kSeparatorInset = 10;
   [self removeSelectedItemsFromCollection];
 }
 
-- (id<HistoryCollectionViewControllerDelegate>)delegate {
+- (id<LegacyHistoryCollectionViewControllerDelegate>)delegate {
   return _delegate;
 }
 
@@ -289,7 +292,7 @@ const CGFloat kSeparatorInset = 10;
 
 #pragma mark - HistoryEntriesStatusItemDelegate
 
-- (void)historyEntriesStatusItem:(HistoryEntriesStatusItem*)item
+- (void)historyEntriesStatusItem:(LegacyHistoryEntriesStatusItem*)item
                didRequestOpenURL:(const GURL&)URL {
   [self openURLInNewTab:URL];
 }
@@ -313,13 +316,13 @@ const CGFloat kSeparatorInset = 10;
       deleteSections:[NSIndexSet indexSetWithIndex:sectionIndex]];
 }
 
-#pragma mark - HistoryEntryItemDelegate
+#pragma mark - LegacyHistoryEntryItemDelegate
 
-- (void)historyEntryItemDidRequestOpen:(HistoryEntryItem*)item {
+- (void)historyEntryItemDidRequestOpen:(LegacyHistoryEntryItem*)item {
   [self openURL:item.URL];
 }
 
-- (void)historyEntryItemDidRequestDelete:(HistoryEntryItem*)item {
+- (void)historyEntryItemDidRequestDelete:(LegacyHistoryEntryItem*)item {
   NSInteger sectionIdentifier =
       [self.entryInserter sectionIdentifierForTimestamp:item.timestamp];
   if ([self.collectionViewModel
@@ -335,20 +338,20 @@ const CGFloat kSeparatorInset = 10;
   }
 }
 
-- (void)historyEntryItemDidRequestCopy:(HistoryEntryItem*)item {
+- (void)historyEntryItemDidRequestCopy:(LegacyHistoryEntryItem*)item {
   StoreURLInPasteboard(item.URL);
 }
 
-- (void)historyEntryItemDidRequestOpenInNewTab:(HistoryEntryItem*)item {
+- (void)historyEntryItemDidRequestOpenInNewTab:(LegacyHistoryEntryItem*)item {
   [self openURLInNewTab:item.URL];
 }
 
 - (void)historyEntryItemDidRequestOpenInNewIncognitoTab:
-    (HistoryEntryItem*)item {
+    (LegacyHistoryEntryItem*)item {
   [self openURLInNewIncognitoTab:item.URL];
 }
 
-- (void)historyEntryItemShouldUpdateView:(HistoryEntryItem*)item {
+- (void)historyEntryItemShouldUpdateView:(LegacyHistoryEntryItem*)item {
   NSInteger sectionIdentifier =
       [self.entryInserter sectionIdentifierForTimestamp:item.timestamp];
   // If the item is still in the model, reconfigure it.
@@ -405,11 +408,11 @@ const CGFloat kSeparatorInset = 10;
       // There should always be at least a header section present.
       DCHECK([[self collectionViewModel] numberOfSections]);
       for (const BrowsingHistoryService::HistoryEntry& entry : results) {
-        HistoryEntryItem* item =
-            [[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
-                                      historyEntry:entry
-                                      browserState:_browserState
-                                          delegate:self];
+        LegacyHistoryEntryItem* item =
+            [[LegacyHistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
+                                            historyEntry:entry
+                                            browserState:_browserState
+                                                delegate:self];
         [resultsItems addObject:item];
       }
       [self.delegate historyCollectionViewControllerDidChangeEntries:self];
@@ -427,7 +430,7 @@ const CGFloat kSeparatorInset = 10;
       // Wait to insert until after the deletions are done, this is needed
       // because performBatchUpdates processes deletion indexes first, and then
       // inserts.
-      for (HistoryEntryItem* item in resultsItems) {
+      for (LegacyHistoryEntryItem* item in resultsItems) {
         [self.entryInserter insertHistoryEntryItem:item];
       }
     }
@@ -442,11 +445,11 @@ const CGFloat kSeparatorInset = 10;
       // There should always be at least a header section present.
       DCHECK([[self collectionViewModel] numberOfSections]);
       for (const BrowsingHistoryService::HistoryEntry& entry : results) {
-        HistoryEntryItem* item =
-            [[HistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
-                                      historyEntry:entry
-                                      browserState:_browserState
-                                          delegate:self];
+        LegacyHistoryEntryItem* item =
+            [[LegacyHistoryEntryItem alloc] initWithType:ItemTypeHistoryEntry
+                                            historyEntry:entry
+                                            browserState:_browserState
+                                                delegate:self];
         [self.entryInserter insertHistoryEntryItem:item];
         if ([self isSearching] || self.filterQueryResult) {
           [filterResults addObject:item];
@@ -557,8 +560,9 @@ const CGFloat kSeparatorInset = 10;
   if (self.isEditing) {
     [self.delegate historyCollectionViewControllerDidChangeEntrySelection:self];
   } else {
-    HistoryEntryItem* item = base::mac::ObjCCastStrict<HistoryEntryItem>(
-        [self.collectionViewModel itemAtIndexPath:indexPath]);
+    LegacyHistoryEntryItem* item =
+        base::mac::ObjCCastStrict<LegacyHistoryEntryItem>(
+            [self.collectionViewModel itemAtIndexPath:indexPath]);
     [self openURL:item.URL];
     if (self.isSearching) {
       base::RecordAction(
@@ -665,8 +669,9 @@ const CGFloat kSeparatorInset = 10;
                          : l10n_util::GetNSString(IDS_HISTORY_NO_RESULTS);
     entriesStatusItem = noResultsItem;
   } else if (self.shouldShowNoticeAboutOtherFormsOfBrowsingHistory) {
-    HistoryEntriesStatusItem* historyEntriesStatusItem =
-        [[HistoryEntriesStatusItem alloc] initWithType:ItemTypeEntriesStatus];
+    LegacyHistoryEntriesStatusItem* historyEntriesStatusItem =
+        [[LegacyHistoryEntriesStatusItem alloc]
+            initWithType:ItemTypeEntriesStatus];
     historyEntriesStatusItem.delegate = self;
     historyEntriesStatusItem.hidden = self.isSearching;
     entriesStatusItem = historyEntriesStatusItem;
@@ -761,8 +766,8 @@ const CGFloat kSeparatorInset = 10;
       NSArray* items = [self.collectionViewModel
           itemsInSectionWithIdentifier:sectionIdentifier];
       for (id item in items) {
-        HistoryEntryItem* historyItem =
-            base::mac::ObjCCastStrict<HistoryEntryItem>(item);
+        LegacyHistoryEntryItem* historyItem =
+            base::mac::ObjCCastStrict<LegacyHistoryEntryItem>(item);
         if (![entries containsObject:historyItem]) {
           NSIndexPath* indexPath =
               [self.collectionViewModel indexPathForItem:historyItem];
@@ -827,10 +832,11 @@ const CGFloat kSeparatorInset = 10;
           isEqual:[NSIndexPath indexPathForItem:0 inSection:0]])
     return;
 
-  HistoryEntryItem* entry = base::mac::ObjCCastStrict<HistoryEntryItem>(
-      [self.collectionViewModel itemAtIndexPath:touchedItemIndexPath]);
+  LegacyHistoryEntryItem* entry =
+      base::mac::ObjCCastStrict<LegacyHistoryEntryItem>(
+          [self.collectionViewModel itemAtIndexPath:touchedItemIndexPath]);
 
-  __weak HistoryCollectionViewController* weakSelf = self;
+  __weak LegacyHistoryCollectionViewController* weakSelf = self;
   web::ContextMenuParams params;
   params.location = touchLocation;
   params.view = self.collectionView;
