@@ -63,6 +63,7 @@ class Service : public service_manager::Service,
 
   // ash::mojom::SessionActivationObserver overrides:
   void OnSessionActivated(bool activated) override;
+  void OnLockStateChanged(bool locked) override;
 
   void RequestAccessToken();
 
@@ -78,6 +79,8 @@ class Service : public service_manager::Service,
 
   void AddAshSessionObserver();
 
+  void UpdateListeningState();
+
   service_manager::BinderRegistry registry_;
 
   mojo::BindingSet<mojom::Assistant> bindings_;
@@ -91,6 +94,11 @@ class Service : public service_manager::Service,
   AccountId account_id_;
   std::unique_ptr<AssistantManagerService> assistant_manager_service_;
   std::unique_ptr<base::OneShotTimer> token_refresh_timer_;
+
+  // Whether the current user session is active.
+  bool session_active_ = false;
+  // Whether the lock screen is on.
+  bool locked_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(Service);
 };

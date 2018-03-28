@@ -26,6 +26,8 @@ class SessionActivationObserverHolder {
 
   void NotifyActiveSessionChanged(const AccountId& from, const AccountId& to);
 
+  void NotifyLockStateChanged(bool locked);
+
  private:
   using ObserverSet = mojo::InterfacePtrSet<mojom::SessionActivationObserver>;
   std::map<AccountId, std::unique_ptr<ObserverSet>> observer_map_;
