@@ -17,10 +17,13 @@
 #include "ash/app_list/model/search/search_model.h"
 #include "ash/ash_export.h"
 #include "ash/public/interfaces/app_list.mojom.h"
+#include "ash/shell_observer.h"
+#include "base/scoped_observer.h"
 #include "components/sync/model/string_ordinal.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "mojo/public/cpp/bindings/interface_ptr_set.h"
 #include "ui/app_list/app_list_constants.h"
+#include "ui/keyboard/keyboard_controller_observer.h"
 
 namespace ui {
 class MouseWheelEvent;
@@ -35,8 +38,11 @@ namespace ash {
 // Ash's AppListController owns the AppListModel and implements interface
 // functions that allow Chrome to modify and observe the Shelf and AppListModel
 // state.
-class ASH_EXPORT AppListControllerImpl : public mojom::AppListController,
-                                         public app_list::AppListModelObserver {
+class ASH_EXPORT AppListControllerImpl
+    : public mojom::AppListController,
+      public app_list::AppListModelObserver,
+      public ash::ShellObserver,
+      public keyboard::KeyboardControllerObserver {
  public:
   using AppListItemMetadataPtr = mojom::AppListItemMetadataPtr;
   AppListControllerImpl();
@@ -136,6 +142,15 @@ class ASH_EXPORT AppListControllerImpl : public mojom::AppListController,
 
   void FlushForTesting();
 
+  // ash::ShellObserver
+  void OnVirtualKeyboardStateChanged(bool activated,
+                                     aura::Window* root_window) override;
+
+  // KeyboardControllerObserver
+  void OnKeyboardAvailabilityChanged(const bool is_available) override;
+
+  bool onscreen_keyboard_shown() const { return onscreen_keyboard_shown_; }
+
  private:
   syncer::StringOrdinal GetOemFolderPos();
   std::unique_ptr<app_list::AppListItem> CreateAppListItem(
@@ -155,6 +170,13 @@ class ASH_EXPORT AppListControllerImpl : public mojom::AppListController,
   // Token to view map for classic/mus ash (i.e. non-mash).
   std::unique_ptr<app_list::AnswerCardContentsRegistry>
       answer_card_contents_registry_;
+
+  ScopedObserver<keyboard::KeyboardController,
+                 keyboard::KeyboardControllerObserver>
+      keyboard_observer_;
+
+  // Whether the on-screen keyboard is shown.
+  bool onscreen_keyboard_shown_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(AppListControllerImpl);
 };
