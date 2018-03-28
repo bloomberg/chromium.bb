@@ -35,6 +35,7 @@ import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.UrlConstants;
 import org.chromium.chrome.browser.ntp.cards.NewTabPageRecyclerView;
@@ -90,7 +91,7 @@ import java.util.concurrent.TimeoutException;
 @RunWith(ParameterizedRunner.class)
 @ParameterAnnotations.UseRunnerDelegate(ChromeJUnit4RunnerDelegate.class)
 @CommandLineFlags.Add(ChromeSwitches.DISABLE_FIRST_RUN_EXPERIENCE)
-@DisableFeatures("NetworkPrediction")
+@DisableFeatures({"NetworkPrediction", ChromeFeatureList.NTP_ARTICLE_SUGGESTIONS_EXPANDABLE_HEADER})
 @RetryOnFailure
 public class NewTabPageTest {
     @Rule
