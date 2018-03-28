@@ -69,6 +69,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -77,8 +78,7 @@ import java.util.Set;
  */
 @JNINamespace("vr")
 public class VrShellDelegate
-        implements ApplicationStatus.ActivityStateListener, View.OnSystemUiVisibilityChangeListener,
-                   ScreenOrientationDelegate {
+        implements View.OnSystemUiVisibilityChangeListener, ScreenOrientationDelegate {
     public static final int VR_SYSTEM_UI_FLAGS = View.SYSTEM_UI_FLAG_LAYOUT_STABLE
             | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
             | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -143,6 +143,9 @@ public class VrShellDelegate
 
     private static VrShellDelegate sInstance;
     private static VrBroadcastReceiver sVrBroadcastReceiver;
+    private static VrLifecycleObserver sVrLifecycleObserver;
+    private static VrClassesWrapper sVrClassesWrapper;
+    private static Set<Activity> sVrModeEnabledActivitys = new HashSet<>();
     private static boolean sRegisteredDaydreamHook;
     private static boolean sAddedBlackOverlayView;
     private static boolean sRegisteredVrAssetsComponent;
@@ -157,7 +160,6 @@ public class VrShellDelegate
     // How often to prompt the user to enter VR feedback.
     private int mFeedbackFrequency;
 
-    private final VrClassesWrapper mVrClassesWrapper;
     private VrShell mVrShell;
     private VrDaydreamApi mVrDaydreamApi;
     private Boolean mIsDaydreamCurrentViewer;
@@ -232,10 +234,31 @@ public class VrShellDelegate
         void onExitVr();
     }
 
+    private static final class VrLifecycleObserver
+            implements ApplicationStatus.ActivityStateListener {
+        @Override
+        public void onActivityStateChange(Activity activity, int newState) {
+            switch (newState) {
+                case ActivityState.DESTROYED:
+                    if (sVrBroadcastReceiver != null
+                            && sVrBroadcastReceiver.targetActivity().get() == activity) {
+                        sVrBroadcastReceiver.unregister();
+                        sVrBroadcastReceiver = null;
+                    }
+                    sVrModeEnabledActivitys.remove(activity);
+                    break;
+                default:
+                    break;
+            }
+            if (sInstance != null) sInstance.onActivityStateChange(activity, newState);
+        }
+    }
+
     private static final class VrBroadcastReceiver extends BroadcastReceiver {
         private final WeakReference<ChromeActivity> mTargetActivity;
 
         public VrBroadcastReceiver(ChromeActivity activity) {
+            ensureLifecycleObserverInitialized();
             mTargetActivity = new WeakReference<ChromeActivity>(activity);
         }
 
@@ -255,7 +278,7 @@ public class VrShellDelegate
             sInstance.mDonSucceeded = true;
             sInstance.mProbablyInDon = false;
             sInstance.mExpectPauseOrDonSucceeded.removeCallbacksAndMessages(null);
-            sInstance.mVrClassesWrapper.setVrModeEnabled(sInstance.mActivity, true);
+            setVrModeEnabled(sInstance.mActivity, true);
             if (DEBUG_LOGS) Log.i(TAG, "VrBroadcastReceiver onReceive");
 
             // We add a black overlay view so that we can show black while the VR UI is loading.
@@ -585,7 +608,7 @@ public class VrShellDelegate
 
         // Enable VR mode and hide system UI. We do this here so we don't get kicked out of
         // VR mode and to prevent seeing a flash of system UI.
-        getVrClassesWrapper().setVrModeEnabled(activity, true);
+        setVrModeEnabled(activity, true);
         activity.getWindow().addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         activity.getWindow().getDecorView().setSystemUiVisibility(VR_SYSTEM_UI_FLAGS);
     }
@@ -593,8 +616,17 @@ public class VrShellDelegate
     /**
      * Asynchronously enable VR mode.
      */
-    public static void setVrModeEnabled(Activity activity) {
-        getVrClassesWrapper().setVrModeEnabled(activity, true);
+    public static void setVrModeEnabled(Activity activity, boolean enabled) {
+        ensureLifecycleObserverInitialized();
+        if (enabled) {
+            if (sVrModeEnabledActivitys.contains(activity)) return;
+            getVrClassesWrapper().setVrModeEnabled(activity, true);
+            sVrModeEnabledActivitys.add(activity);
+        } else {
+            if (!sVrModeEnabledActivitys.contains(activity)) return;
+            getVrClassesWrapper().setVrModeEnabled(activity, false);
+            sVrModeEnabledActivitys.remove(activity);
+        }
     }
 
     @CalledByNative
@@ -611,7 +643,7 @@ public class VrShellDelegate
         VrClassesWrapper wrapper = getVrClassesWrapper();
         if (wrapper == null) return null;
         ThreadUtils.assertOnUiThread();
-        sInstance = new VrShellDelegate(activity, wrapper);
+        sInstance = new VrShellDelegate(activity);
         return sInstance;
     }
 
@@ -655,12 +687,12 @@ public class VrShellDelegate
      * time.
      */
     protected static VrClassesWrapper getVrClassesWrapper() {
-        if (sInstance != null) return sInstance.mVrClassesWrapper;
-        return createVrClassesWrapper();
+        if (sVrClassesWrapper == null) sVrClassesWrapper = createVrClassesWrapper();
+        return sVrClassesWrapper;
     }
 
     @SuppressWarnings("unchecked")
-    /* package */ static VrClassesWrapper createVrClassesWrapper() {
+    private static VrClassesWrapper createVrClassesWrapper() {
         try {
             Class<? extends VrClassesWrapper> vrClassesBuilderClass =
                     (Class<? extends VrClassesWrapper>) Class.forName(
@@ -808,13 +840,6 @@ public class VrShellDelegate
         return getVrClassesWrapper() != null;
     }
 
-    private static void onActivityDestroyed(Activity activity) {
-        if (sVrBroadcastReceiver == null) return;
-        if (sVrBroadcastReceiver.targetActivity().get() != activity) return;
-        sVrBroadcastReceiver.unregister();
-        sVrBroadcastReceiver = null;
-    }
-
     private static void addBlackOverlayViewForActivity(ChromeActivity activity) {
         if (sAddedBlackOverlayView) return;
         FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
@@ -919,9 +944,14 @@ public class VrShellDelegate
                 activity.getString(R.string.no_thanks), true /* autoExpire  */);
     }
 
-    protected VrShellDelegate(ChromeActivity activity, VrClassesWrapper wrapper) {
+    private static void ensureLifecycleObserverInitialized() {
+        if (sVrLifecycleObserver != null) return;
+        sVrLifecycleObserver = new VrLifecycleObserver();
+        ApplicationStatus.registerStateListenerForAllActivities(sVrLifecycleObserver);
+    }
+
+    protected VrShellDelegate(ChromeActivity activity) {
         mActivity = activity;
-        mVrClassesWrapper = wrapper;
         // If an activity isn't resumed at the point, it must have been paused.
         mPaused = ApplicationStatus.getStateForActivity(activity) != ActivityState.RESUMED;
         mStopped = ApplicationStatus.getStateForActivity(activity) == ActivityState.STOPPED;
@@ -930,19 +960,15 @@ public class VrShellDelegate
         mNativeVrShellDelegate = nativeInit();
         mFeedbackFrequency = VrFeedbackStatus.getFeedbackFrequency();
         mExpectPauseOrDonSucceeded = new Handler();
-        ApplicationStatus.registerStateListenerForAllActivities(this);
+        ensureLifecycleObserverInitialized();
         if (!mPaused) onResume();
         sInstance = this;
     }
 
-    @Override
     public void onActivityStateChange(Activity activity, int newState) {
         switch (newState) {
             case ActivityState.DESTROYED:
-                if (activity == mActivity) {
-                    destroy();
-                    onActivityDestroyed(activity);
-                }
+                if (activity == mActivity) destroy();
                 break;
             case ActivityState.PAUSED:
                 if (activity == mActivity) onPause();
@@ -980,14 +1006,14 @@ public class VrShellDelegate
         if (mActivity == activity) return;
         mActivity = activity;
         if (mVrDaydreamApi != null) mVrDaydreamApi.close();
-        mVrDaydreamApi = mVrClassesWrapper.createVrDaydreamApi(mActivity);
+        mVrDaydreamApi = getVrClassesWrapper().createVrDaydreamApi(mActivity);
     }
 
     private void maybeUpdateVrSupportLevel() {
         // If we're on Daydream support level, Chrome will get restarted by Android in response to
         // VrCore being updated/downgraded, so we don't need to check.
         if (mVrSupportLevel == VrSupportLevel.VR_DAYDREAM) return;
-        if (mVrClassesWrapper == null) return;
+        if (getVrClassesWrapper() == null) return;
         int version = getVrCorePackageVersion();
         // If VrCore package hasn't changed, no need to update.
         if (version == mCachedVrCorePackageVersion) return;
@@ -1010,7 +1036,7 @@ public class VrShellDelegate
      */
     // TODO(bshe): Find a place to call this function again, i.e. page refresh or onResume.
     private void updateVrSupportLevel(Integer vrCorePackageVersion) {
-        if (mVrClassesWrapper == null) {
+        if (getVrClassesWrapper() == null) {
             mVrSupportLevel = VrSupportLevel.VR_NOT_AVAILABLE;
             return;
         }
@@ -1018,10 +1044,10 @@ public class VrShellDelegate
         mCachedVrCorePackageVersion = vrCorePackageVersion;
 
         if (mVrCoreVersionChecker == null) {
-            mVrCoreVersionChecker = mVrClassesWrapper.createVrCoreVersionChecker();
+            mVrCoreVersionChecker = getVrClassesWrapper().createVrCoreVersionChecker();
         }
         if (mVrDaydreamApi == null) {
-            mVrDaydreamApi = mVrClassesWrapper.createVrDaydreamApi(mActivity);
+            mVrDaydreamApi = getVrClassesWrapper().createVrDaydreamApi(mActivity);
         }
         int supportLevel = getVrSupportLevel(
                 mVrDaydreamApi, mVrCoreVersionChecker, mActivity.getActivityTab());
@@ -1120,7 +1146,7 @@ public class VrShellDelegate
             return;
         }
         mInVr = true;
-        mVrClassesWrapper.setVrModeEnabled(mActivity, true);
+        setVrModeEnabled(mActivity, true);
 
         setWindowModeForVr();
         boolean donSuceeded = mDonSucceeded;
@@ -1231,9 +1257,7 @@ public class VrShellDelegate
             return;
         }
 
-        // TODO(ymalik): We should cache whether or not VR mode is set so we don't set it
-        // needlessly.
-        mVrClassesWrapper.setVrModeEnabled(mActivity, true);
+        setVrModeEnabled(mActivity, true);
 
         // TODO(ymalik): This should use isTrustedAutopresentIntent once the Daydream Home change
         // that adds the autopresent intent extra rolls out on most devices. This will allow us to
@@ -1724,7 +1748,7 @@ public class VrShellDelegate
         mDonSucceeded = false;
         maybeSetPresentResult(false, false);
         if (!mShowingDaydreamDoff) {
-            mVrClassesWrapper.setVrModeEnabled(mActivity, false);
+            setVrModeEnabled(mActivity, false);
             restoreWindowMode();
         }
     }
@@ -1757,7 +1781,7 @@ public class VrShellDelegate
         mVrShell.pause();
         removeVrViews();
         destroyVrShell();
-        if (disableVrMode) mVrClassesWrapper.setVrModeEnabled(mActivity, false);
+        if (disableVrMode) setVrModeEnabled(mActivity, false);
 
         promptForFeedbackIfNeeded(stayingInChrome);
 
@@ -1897,13 +1921,13 @@ public class VrShellDelegate
 
     protected boolean createVrShell() {
         assert mVrShell == null;
-        if (mVrClassesWrapper == null) return false;
+        if (getVrClassesWrapper() == null) return false;
         if (mActivity.getCompositorViewHolder() == null) return false;
         TabModelSelector tabModelSelector = mActivity.getTabModelSelector();
         if (tabModelSelector == null) return false;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
-            mVrShell = mVrClassesWrapper.createVrShell(mActivity, this, tabModelSelector);
+            mVrShell = getVrClassesWrapper().createVrShell(mActivity, this, tabModelSelector);
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }
@@ -2014,7 +2038,6 @@ public class VrShellDelegate
         if (mNativeVrShellDelegate != 0) nativeDestroy(mNativeVrShellDelegate);
         if (mVrDaydreamApi != null) mVrDaydreamApi.close();
         mNativeVrShellDelegate = 0;
-        ApplicationStatus.unregisterActivityStateListener(this);
         sInstance = null;
     }
 

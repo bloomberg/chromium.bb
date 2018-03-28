@@ -27,7 +27,7 @@ public class TestVrShellDelegate extends VrShellDelegate {
     private boolean mDisableVrBrowsing;
 
     protected TestVrShellDelegate(ChromeActivity activity) {
-        super(activity, VrShellDelegate.getVrClassesWrapper());
+        super(activity);
     }
 
     public static void createTestVrShellDelegate(final ChromeActivity activity) {

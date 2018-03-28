@@ -36,7 +36,7 @@ public class VrFirstRunActivity extends Activity {
 
         recordFreHistogram();
 
-        VrClassesWrapper wrapper = VrShellDelegate.createVrClassesWrapper();
+        VrClassesWrapper wrapper = VrShellDelegate.getVrClassesWrapper();
         if (wrapper == null) {
             showFre();
             return;
@@ -47,7 +47,7 @@ public class VrFirstRunActivity extends Activity {
         // works, but there's still a race every now and then that causes Chrome to crash and
         // that's why we have a timeout below before we call DOFF. Redundantly setting VR mode
         // here ensures that this never happens for users running the latest version of VrCore.
-        wrapper.setVrModeEnabled(this, true);
+        VrShellDelegate.setVrModeEnabled(this, true);
         mApi = wrapper.createVrDaydreamApi(this);
         try {
             if (!mApi.isDaydreamCurrentViewer()) {

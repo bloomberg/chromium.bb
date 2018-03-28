@@ -72,7 +72,7 @@ public class VrMainActivity extends Activity {
             // We don't set VrMode for the launcher in the manifest because that causes weird things
             // to happen when you send a VR intent to Chrome from a non-VR app, so we need to set it
             // here.
-            VrShellDelegate.setVrModeEnabled(this);
+            VrShellDelegate.setVrModeEnabled(this, true);
 
             // Daydream likes to remove the Daydream category from explicit intents for some reason.
             // Since only implicit intents with the Daydream category can be routed here, it's safe
