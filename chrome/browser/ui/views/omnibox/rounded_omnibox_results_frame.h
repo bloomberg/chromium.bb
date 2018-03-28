@@ -40,10 +40,12 @@ class RoundedOmniboxResultsFrame : public views::View {
   // Fixed layout constants.
   const gfx::Insets content_insets_;
   const int location_bar_height_;
+  const int separator_inset_;
 
   std::unique_ptr<ui::LayerOwner> contents_mask_;
 
   views::View* top_background_ = nullptr;
+  views::View* separator_ = nullptr;
   views::View* contents_ = nullptr;
   views::View* contents_host_ = nullptr;
 
