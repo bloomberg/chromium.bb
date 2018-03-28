@@ -376,30 +376,50 @@ PREDEFINED_PAGE_CLASSES = [
 ]
 
 
-def AddPagesToPageSet(page_set):
+def AddPagesToPageSet(
+    page_set,
+    shared_page_state_class=shared_page_state.SharedMobilePageState,
+    name_func=lambda name: name,
+    extra_browser_args=None):
   # Add pages with predefined classes that contain custom navigation logic.
   for page_class, page_name in PREDEFINED_PAGE_CLASSES:
-    page_set.AddStory(page_class(page_set=page_set, name=page_name))
+    page_set.AddStory(
+        page_class(
+            page_set=page_set,
+            shared_page_state_class=shared_page_state_class,
+            name=name_func(page_name),
+            extra_browser_args=extra_browser_args))
 
   # Add pages with custom tags.
   for page_url, page_name in FASTPATH_URLS:
     page_set.AddStory(
         KeyMobileSitesSmoothPage(
-            url=page_url, page_set=page_set, name=page_name, tags=['fastpath']))
+            url=page_url,
+            page_set=page_set,
+            shared_page_state_class=shared_page_state_class,
+            name=name_func(page_name),
+            tags=['fastpath'],
+            extra_browser_args=extra_browser_args))
 
   # Why: Wikipedia page with a delayed scroll start
   page_set.AddStory(
       KeyMobileSitesSmoothPage(
           url='http://en.wikipedia.org/wiki/Wikipedia',
           page_set=page_set,
-          name='wikipedia_delayed_scroll_start',
-          action_on_load_complete=True))
+          shared_page_state_class=shared_page_state_class,
+          name=name_func('wikipedia_delayed_scroll_start'),
+          action_on_load_complete=True,
+          extra_browser_args=extra_browser_args))
 
   # Add simple pages with no custom navigation logic or tags.
   for page_url, page_name in URLS_LIST:
     page_set.AddStory(
         KeyMobileSitesSmoothPage(
-            url=page_url, page_set=page_set, name=page_name))
+            url=page_url,
+            page_set=page_set,
+            shared_page_state_class=shared_page_state_class,
+            name=name_func(page_name),
+            extra_browser_args=extra_browser_args))
 
 
 class KeyMobileSitesSmoothPageSet(story.StorySet):

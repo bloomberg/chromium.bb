@@ -26,6 +26,11 @@ def _CreatePageClassWithSmoothInteractions(page_cls):
 
   return DerivedSmoothPage
 
+class Top25SmoothPage(top_pages.TopPages):
+
+  def RunPageInteractions(self, action_runner):
+    action_runner.Wait(1)
+    _IssueMarkerAndScroll(action_runner, self.story_set.scroll_forever)
 
 class GmailSmoothPage(top_pages.GmailPage):
   """ Why: productivity, top google properties """
@@ -94,73 +99,81 @@ class ESPNSmoothPage(top_pages.ESPNPage):
           action_runner.ScrollPage(direction='down', left_start_ratio=0.1)
 
 
-def AddPagesToPageSet(page_set):
-  shared_page_state_class = shared_page_state.SharedDesktopPageState
+_SMOOTH_PAGE_CLASSES = [
+  (GmailSmoothPage, 'gmail'),
+  (GoogleCalendarSmoothPage, 'google_calendar'),
+  (GoogleDocSmoothPage, 'google_docs'),
+  (ESPNSmoothPage, 'espn'),
+]
 
-  smooth_page_classes = [
-      (GmailSmoothPage, 'gmail'),
-      (GoogleCalendarSmoothPage, 'google_calendar'),
-      (GoogleDocSmoothPage, 'google_docs'),
-      (ESPNSmoothPage, 'espn'),
-  ]
 
-  for page_class, page_name in smooth_page_classes:
+_NON_SMOOTH_PAGE_CLASSES = [
+  (top_pages.GoogleWebSearchPage, 'google_web_search'),
+  (top_pages.GoogleImageSearchPage, 'google_image_search'),
+  (top_pages.GooglePlusPage, 'google_plus'),
+  (top_pages.YoutubePage, 'youtube'),
+  (top_pages.BlogspotPage, 'blogspot'),
+  (top_pages.WordpressPage, 'wordpress'),
+  (top_pages.FacebookPage, 'facebook'),
+  (top_pages.LinkedinPage, 'linkedin'),
+  (top_pages.WikipediaPage, 'wikipedia'),
+  (top_pages.TwitterPage, 'twitter'),
+  (top_pages.PinterestPage, 'pinterest'),
+  (top_pages.WeatherPage, 'weather.com'),
+  (top_pages.YahooGamesPage, 'yahoo_games'),
+]
+
+
+_PAGE_URLS = [
+  # Why: #1 news worldwide (Alexa global)
+  ('http://news.yahoo.com', 'yahoo_news'),
+  # Why: #2 news worldwide
+  ('http://www.cnn.com', 'cnn'),
+  # Why: #1 world commerce website by visits; #3 commerce in the US by
+  # time spent
+  ('http://www.amazon.com', 'amazon'),
+  # Why: #1 commerce website by time spent by users in US
+  ('http://www.ebay.com', 'ebay'),
+  # Why: #1 Alexa recreation
+  ('http://booking.com', 'booking.com'),
+  # Why: #1 Alexa reference
+  ('http://answers.yahoo.com', 'yahoo_answers'),
+  # Why: #1 Alexa sports
+  ('http://sports.yahoo.com/', 'yahoo_sports'),
+  # Why: top tech blog
+  ('http://techcrunch.com', 'techcrunch'),
+]
+
+
+def AddPagesToPageSet(
+    page_set,
+    shared_page_state_class=shared_page_state.SharedDesktopPageState,
+    name_func=lambda name: name,
+    extra_browser_args=None):
+  for page_class, page_name in _SMOOTH_PAGE_CLASSES:
     page_set.AddStory(
         page_class(
             page_set=page_set,
             shared_page_state_class=shared_page_state_class,
-            name=page_name))
+            name=name_func(page_name),
+            extra_browser_args=extra_browser_args))
 
-  non_smooth_page_classes = [
-      (top_pages.GoogleWebSearchPage, 'google_web_search'),
-      (top_pages.GoogleImageSearchPage, 'google_image_search'),
-      (top_pages.GooglePlusPage, 'google_plus'),
-      (top_pages.YoutubePage, 'youtube'),
-      (top_pages.BlogspotPage, 'blogspot'),
-      (top_pages.WordpressPage, 'wordpress'),
-      (top_pages.FacebookPage, 'facebook'),
-      (top_pages.LinkedinPage, 'linkedin'),
-      (top_pages.WikipediaPage, 'wikipedia'),
-      (top_pages.TwitterPage, 'twitter'),
-      (top_pages.PinterestPage, 'pinterest'),
-      (top_pages.WeatherPage, 'weather.com'),
-      (top_pages.YahooGamesPage, 'yahoo_games'),
-  ]
-
-  for page_class, page_name in non_smooth_page_classes:
+  for page_class, page_name in _NON_SMOOTH_PAGE_CLASSES:
     page_set.AddStory(
         _CreatePageClassWithSmoothInteractions(page_class)(
             page_set=page_set,
             shared_page_state_class=shared_page_state_class,
-            name=page_name))
+            name=name_func(page_name),
+            extra_browser_args=extra_browser_args))
 
-  other_urls = [
-      # Why: #1 news worldwide (Alexa global)
-      ('http://news.yahoo.com', 'yahoo_news'),
-      # Why: #2 news worldwide
-      ('http://www.cnn.com', 'cnn'),
-      # Why: #1 world commerce website by visits; #3 commerce in the US by
-      # time spent
-      ('http://www.amazon.com', 'amazon'),
-      # Why: #1 commerce website by time spent by users in US
-      ('http://www.ebay.com', 'ebay'),
-      # Why: #1 Alexa recreation
-      ('http://booking.com', 'booking.com'),
-      # Why: #1 Alexa reference
-      ('http://answers.yahoo.com', 'yahoo_answers'),
-      # Why: #1 Alexa sports
-      ('http://sports.yahoo.com/', 'yahoo_sports'),
-      # Why: top tech blog
-      ('http://techcrunch.com', 'techcrunch'),
-  ]
-
-  for page_url, page_name in other_urls:
+  for page_url, page_name in _PAGE_URLS:
     page_set.AddStory(
-        _CreatePageClassWithSmoothInteractions(top_pages.TopPages)(
+        Top25SmoothPage(
             url=page_url,
             page_set=page_set,
             shared_page_state_class=shared_page_state_class,
-            name=page_name))
+            name=name_func(page_name),
+            extra_browser_args=extra_browser_args))
 
 
 class Top25SmoothPageSet(story.StorySet):
