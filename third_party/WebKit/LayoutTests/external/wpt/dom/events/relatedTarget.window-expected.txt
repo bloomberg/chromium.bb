@@ -1,0 +1,10 @@
+This is a testharness.js-based test.
+PASS Reset if target pointed to a shadow tree
+FAIL Reset if relatedTarget pointed to a shadow tree assert_equals: expected null but got object "[object XMLHttpRequest]"
+PASS Reset if target pointed to a shadow tree pre-dispatch
+FAIL Reset if relatedTarget pointed to a shadow tree pre-dispatch assert_equals: expected Element node <body><div id="log"></div>
+<script src="/dom/events/relat... but got DocumentFragment node with 2 children
+FAIL Reset targets on early return assert_false: expected false got true
+FAIL Reset targets before activation behavior assert_equals: expected null but got Element node <input type="checkbox"></input>
+Harness: the test ran to completion.
+
