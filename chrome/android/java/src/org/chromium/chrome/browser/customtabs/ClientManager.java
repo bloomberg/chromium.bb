@@ -401,8 +401,19 @@ class ClientManager {
             int relation, Origin origin, boolean initializePostMessageChannel) {
         SessionParams params = mSessionParams.get(session);
         if (params == null || TextUtils.isEmpty(params.getPackageName())) return false;
-        OriginVerificationListener listener = null;
-        if (initializePostMessageChannel) listener = params.postMessageHandler;
+
+        OriginVerificationListener listener = (packageName, verifiedOrigin, verified) -> {
+            assert origin.equals(verifiedOrigin);
+
+            CustomTabsCallback callback = getCallbackForSession(session);
+            if (callback != null) {
+                callback.onRelationshipValidationResult(relation, origin.uri(), verified, null);
+            }
+            if (initializePostMessageChannel) {
+                params.postMessageHandler.onOriginVerified(packageName, verifiedOrigin, verified);
+            }
+        };
+
         params.originVerifier = new OriginVerifier(listener, params.getPackageName(), relation);
         ThreadUtils.runOnUiThread(() -> { params.originVerifier.start(origin); });
         if (relation == CustomTabsService.RELATION_HANDLE_ALL_URLS
