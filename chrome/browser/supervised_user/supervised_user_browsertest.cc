@@ -86,6 +86,10 @@ class InterstitialPageObserver : public content::WebContentsObserver {
   base::Closure callback_;
 };
 
+// TODO(carlosil): These tests can be turned into regular (non-parameterized)
+// tests once committed interstitials are the only code path, special cases for
+// committed/non-committed interstitials should also be cleaned up.
+
 // Tests filtering for supervised users.
 class SupervisedUserTest : public InProcessBrowserTest,
                            public testing::WithParamInterface<bool> {
@@ -308,11 +312,6 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest, OpenBlockedURLInNewTab) {
 // navigation is blocked before it commits). The expected behavior is the same
 // though: the tab should be closed when going back.
 IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockNewTabAfterLoading) {
-  if (AreCommittedInterstitialsEnabled()) {
-    // TODO(carlosil): Remove this early return once blocking on filter list
-    // changes is working for committed interstitials.
-    return;
-  }
   TabStripModel* tab_strip = browser()->tab_strip_model();
   WebContents* prev_tab = tab_strip->GetActiveWebContents();
 
@@ -328,6 +327,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockNewTabAfterLoading) {
 
   {
     // Block the current URL.
+    // TODO(carlosil): Remove this run_loop once Committed interstitials are the
+    // only code path.
     base::RunLoop run_loop;
     InterstitialPageObserver interstitial_observer(tab, run_loop.QuitClosure());
 
@@ -343,7 +344,12 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockNewTabAfterLoading) {
     ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
               filter->GetFilteringBehaviorForURL(test_url));
 
-    content::RunThisRunLoop(&run_loop);
+    if (AreCommittedInterstitialsEnabled()) {
+      content::TestNavigationObserver observer(tab);
+      observer.Wait();
+    } else {
+      content::RunThisRunLoop(&run_loop);
+    }
 
     // Check that we got the interstitial.
     ASSERT_TRUE(ShownPageIsInterstitial(browser()));
@@ -366,13 +372,6 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockNewTabAfterLoading) {
 // Tests that we don't end up canceling an interstitial (thereby closing the
 // whole tab) by attempting to show a second one above it.
 IN_PROC_BROWSER_TEST_P(SupervisedUserTest, DontShowInterstitialTwice) {
-  if (AreCommittedInterstitialsEnabled()) {
-    // TODO(carlosil): This test also requires blocking on URL Filter changes to
-    // work, but we also need to decide if it is required for Committed
-    // Interstitials, since showing an interstitial on top of another wouldn't
-    // cause the tab to close as OnDontProceed is not called in that case.
-    return;
-  }
   TabStripModel* tab_strip = browser()->tab_strip_model();
 
   // Open URL in a new tab.
@@ -399,7 +398,12 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, DontShowInterstitialTwice) {
   ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
             filter->GetFilteringBehaviorForURL(test_url));
 
-  content::RunThisRunLoop(&run_loop);
+  if (AreCommittedInterstitialsEnabled()) {
+    content::TestNavigationObserver observer(tab);
+    observer.Wait();
+  } else {
+    content::RunThisRunLoop(&run_loop);
+  }
 
   // Check that we got the interstitial.
   ASSERT_TRUE(ShownPageIsInterstitial(browser()));
@@ -464,6 +468,7 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest, HistoryVisitRecorded) {
 
   ASSERT_TRUE(ShownPageIsInterstitial(browser()));
   WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+
   if (AreCommittedInterstitialsEnabled())
     GoBackAndWaitForNavigation(tab);
   else
@@ -499,11 +504,6 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserBlockModeTest, HistoryVisitRecorded) {
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserTest, GoBackOnDontProceed) {
-  if (AreCommittedInterstitialsEnabled()) {
-    // TODO(carlosil): Remove this early return once blocking on filter list
-    // changes, and Go Back command are working for committed interstitials.
-    return;
-  }
   // We start out at the initial navigation.
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
@@ -531,15 +531,17 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, GoBackOnDontProceed) {
   ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
             filter->GetFilteringBehaviorForURL(test_url));
 
-  message_loop_runner->Run();
-
-  InterstitialPage* interstitial_page = web_contents->GetInterstitialPage();
-  ASSERT_TRUE(interstitial_page);
+  if (AreCommittedInterstitialsEnabled()) {
+    content::TestNavigationObserver observer(web_contents);
+    observer.Wait();
+  } else {
+    message_loop_runner->Run();
+  }
 
   content::WindowedNotificationObserver observer(
       content::NOTIFICATION_LOAD_STOP,
       content::NotificationService::AllSources());
-  interstitial_page->DontProceed();
+  GoBack(web_contents);
   observer.Wait();
 
   // We should have gone back to the initial navigation.
@@ -547,11 +549,6 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, GoBackOnDontProceed) {
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserTest, ClosingBlockedTabDoesNotCrash) {
-  if (AreCommittedInterstitialsEnabled()) {
-    // TODO(carlosil): Remove this early return once blocking on filter list
-    // changes is working for committed interstitials.
-    return;
-  }
   WebContents* web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
   ASSERT_EQ(0, web_contents->GetController().GetCurrentEntryIndex());
@@ -592,11 +589,6 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, ClosingBlockedTabDoesNotCrash) {
 }
 
 IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockThenUnblock) {
-  if (AreCommittedInterstitialsEnabled()) {
-    // TODO(carlosil): Remove this early return once blocking on filter list
-    // changes is working for committed interstitials.
-    return;
-  }
   GURL test_url("http://www.example.com/simple.html");
   ui_test_utils::NavigateToURL(browser(), test_url);
 
@@ -611,6 +603,8 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockThenUnblock) {
   SupervisedUserSettingsService* supervised_user_settings_service =
       SupervisedUserSettingsServiceFactory::GetForProfile(
           browser()->profile());
+  // TODO(carlosil): Remove this run_loop once Committed interstitials are the
+  // only code path.
   base::RunLoop run_loop;
   InterstitialPageObserver observer(web_contents, run_loop.QuitClosure());
   supervised_user_settings_service->SetLocalSetting(
@@ -621,7 +615,12 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockThenUnblock) {
   ASSERT_EQ(SupervisedUserURLFilter::BLOCK,
             filter->GetFilteringBehaviorForURL(test_url));
 
-  content::RunThisRunLoop(&run_loop);
+  if (AreCommittedInterstitialsEnabled()) {
+    content::TestNavigationObserver observer(web_contents);
+    observer.Wait();
+  } else {
+    content::RunThisRunLoop(&run_loop);
+  }
   ASSERT_TRUE(ShownPageIsInterstitial(browser()));
 
   dict = std::make_unique<base::DictionaryValue>();
@@ -630,6 +629,11 @@ IN_PROC_BROWSER_TEST_P(SupervisedUserTest, BlockThenUnblock) {
       supervised_users::kContentPackManualBehaviorHosts, std::move(dict));
   ASSERT_EQ(SupervisedUserURLFilter::ALLOW,
             filter->GetFilteringBehaviorForURL(test_url));
+
+  if (AreCommittedInterstitialsEnabled()) {
+    content::TestNavigationObserver observer(web_contents);
+    observer.Wait();
+  }
 
   ASSERT_EQ(test_url, web_contents->GetURL());
 
