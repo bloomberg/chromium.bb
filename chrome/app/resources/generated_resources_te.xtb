@@ -346,7 +346,6 @@
     విశ్వసించకుంటే, మీ <ph name="LINK_START" />ప్రాక్సీ సెట్టింగ్‌ల<ph name="LINK_END" />ను సర్దుబాటు చేయండి.</translation>
 <translation id="1511388193702657997">మీ వెబ్ పాస్‌వర్డ్‌లను సేవ్ చేసే సదుపాయం అందిస్తుంది</translation>
 <translation id="1512210426710821809">దీనిని చర్యరద్దు చేయడానికి <ph name="IDS_SHORT_PRODUCT_OS_NAME" />ని రీ-ఇన్‌స్టాల్ చేయడమే ఏకైక మార్గం</translation>
-<translation id="1514215615641002767">డెస్క్‌టాప్‌కి జోడించండి</translation>
 <translation id="151501797353681931">Safari నుండి దిగుమతి చేయబడింది</translation>
 <translation id="1515163294334130951">ప్రారంభించండి</translation>
 <translation id="1521442365706402292">సర్టిఫికెట్‌లను నిర్వహించు</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">దీనిని <ph name="CHROME_WEB_STORE" /> నుండి మాత్రమే జోడించవచ్చు</translation>
 <translation id="1877520246462554164">ప్రమాణీకరణ టోకెన్‌ని పొందడం విఫలమైంది. దయచేసి సైన్ అవుట్ చేసి, సైన్ ఇన్ చేసిన తర్వాత మళ్లీ ప్రయత్నించండి.</translation>
 <translation id="1878524442024357078">మీ కంప్యూటర్‌ను ప్రాప్యత చేయడం కోసం ప్లగిన్‌ను ఉపయోగించడానికి సైట్‌లు ఏవీ అనుమతించవద్దు</translation>
-<translation id="1879449842763884566">అప్లికేషన్‌లకు ఇన్‌స్టాల్ చేయి...</translation>
 <translation id="1880905663253319515">ప్రమాణపత్రం "<ph name="CERTIFICATE_NAME" />"ని తొలగించాలా?</translation>
 <translation id="1886996562706621347">ప్రోటోకాల్స్‌కు డిఫాల్ట్ హ్యాండ్లర్‌లుగా కావడం కోసం అడగటానికి సైట్‌లను అనుమతించండి (సిఫార్సు చేయబడింది)</translation>
 <translation id="1887442540531652736">సైన్ ఇన్ ఎర్రర్</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">మీ PINని నమోదు చేయండి</translation>
 <translation id="241082044617551207">తెలియని ప్లగిన్</translation>
 <translation id="2413749388954403953">బుక్‌మార్క్‌ల వినియోగదారు ఇంటర్‌ఫేస్‌ను మార్చడం</translation>
-<translation id="2415294094132942411">డెస్క్‌టాప్‌కి జోడించు...</translation>
 <translation id="2422426094670600218">&lt;పేరులేని&gt;</translation>
 <translation id="2423578206845792524">చిత్రాన్ని ఇలా సే&amp;వ్ చెయ్యి...</translation>
 <translation id="2424091190911472304">ఎల్లప్పుడూ <ph name="ORIGIN" />లో అమలు చేయి</translation>
@@ -942,7 +939,6 @@
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" కోసం మీడియా-ఫైల్ అనుమతులు</translation>
 <translation id="247949520305900375">ఆడియోను భాగస్వామ్యం చేయి</translation>
 <translation id="2480868415629598489">మీరు కాపీ చేసి, అతికించే డేటాను సవరించడం</translation>
-<translation id="2481332092278989943">అరకు జోడించండి</translation>
 <translation id="2482878487686419369">ప్రకటనలు</translation>
 <translation id="2485056306054380289">సర్వర్ CA యోగ్యతాపత్రం:</translation>
 <translation id="2485422356828889247">వ్యవస్థాపనను తీసివెయ్యి</translation>
@@ -1056,7 +1052,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> వ్యవస్థాపనను పూర్తి చేయలేక పోయింది, కానీ దీని డిస్క్ చిత్రం నుండి అమలు చేయడానికి కొనసాగుతుంది.</translation>
 <translation id="2635176084534510129">మెరుగైన కంటెంట్ సూచనలు మరియు మెరుగైన అనువాదం వంటి మరింత వ్యక్తిగతీకరించిన అనుభవాలను పొందండి</translation>
 <translation id="2635276683026132559">సంతకం చేస్తోంది</translation>
-<translation id="2635926034288331400">అప్లికేషన్‌లకు ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="2636625531157955190">చిత్రాన్ని Chrome ప్రాప్యత చేయడం సాధ్యపడదు.</translation>
 <translation id="2638087589890736295">సమకాలీకరణను ప్రారంభించడానికి రహస్య పదబంధం అవసరం</translation>
 <translation id="2638286699381354126">నవీకరణ...</translation>
@@ -1524,7 +1519,6 @@
 <translation id="3308852433423051161">Google సహాయకం లోడ్ అవుతోంది...</translation>
 <translation id="3309747692199697901">ఎల్లప్పుడూ అన్ని సైట్‌ల్లో అమలు చేయి</translation>
 <translation id="3312424061798279731">ప్రారంభించబడిన భాషలు</translation>
-<translation id="3312903956926554846">డెస్క్‌టాప్‌కు ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="3313590242757056087">పర్యవేక్షించబడే వినియోగదారు వీక్షించగల వెబ్‌సైట్‌లను సెట్ చేయడానికి, మీరు <ph name="MANAGEMENT_URL" />ను సందర్శించి
     పరిమితులు మరియు సెట్టింగ్‌లను కాన్ఫిగర్ చేయవచ్చు.
     మీరు డిఫాల్ట్ సెట్టింగ్‌లను మార్చకుంటే, <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@
 <translation id="3511528412952710609">స్వల్పం</translation>
 <translation id="3514373592552233661">ఒకటి కంటే ఎక్కువ నెట్‌వర్క్‌లు అందుబాటులో ఉంటే, తెలిసిన ఇతర నెట్‌వర్క్‌ల కంటే ప్రాధాన్య నెట్‌వర్క్‌లకు ప్రాధాన్యత ఇవ్వబడుతుంది</translation>
 <translation id="3523642406908660543">మీ కంప్యూటర్‌ను ప్రాప్యత చేయడానికి సైట్ ప్లగిన్‌ను ఉపయోగించాలనుకున్నప్పుడు అడగండి (సిఫార్సు చేయబడింది)</translation>
-<translation id="3525897975040424366">అరకు ఇన్‌స్టాల్ చేయండి</translation>
 <translation id="3527085408025491307">ఫోల్డర్</translation>
 <translation id="3527276236624876118"><ph name="USER_DISPLAY_NAME" /> అనే పేరుగల పర్యవేక్షించబడే వినియోగదారు సృష్టించబడ్డారు.</translation>
 <translation id="3528033729920178817">ఈ పేజీ మీ స్థానాన్ని ట్రాక్ చేస్తోంది.</translation>
@@ -1964,7 +1957,6 @@
 <translation id="3968261067169026421">నెట్‌వర్క్‌ని సెటప్ చేయడం సాధ్యపడలేదు</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">గణిస్తోంది...</translation>
-<translation id="3972711570620097483">అరకు ఇన్‌స్టాల్ చేయి...</translation>
 <translation id="3974195870082915331">పాస్‌వర్డ్ చూపించడానికి క్లిక్ చేయండి</translation>
 <translation id="3975222297214566386">ఇన్‌పుట్ ఎంపికల బబుల్</translation>
 <translation id="397703832102027365">పూర్తి చేస్తోంది...</translation>
@@ -2541,7 +2533,6 @@
 <translation id="4967749818080339523">ఖాతాను ఎంచుకోండి</translation>
 <translation id="496888482094675990">ఫైల్‌ల అనువర్తనం మీరు Google డిస్క్, బాహ్య నిల్వ లేదా మీ Chrome OS పరికరంలో సేవ్ చేసిన ఫైల్‌లకు శీఘ్ర ప్రాప్యతను అందిస్తుంది.</translation>
 <translation id="4969785127455456148">ఆల్బమ్</translation>
-<translation id="4970738541803285369">డెస్క్‌టాప్‌కు ఇన్‌స్టాల్ చేయి...</translation>
 <translation id="4971412780836297815">పూర్తవగానే తెరువు</translation>
 <translation id="4972129977812092092">ప్రింటర్‌ను సవరించండి</translation>
 <translation id="497287958838527945">Google Pay ఉపయోగించే క్రెడిట్ కార్డ్‌లు మరియు చిరునామాలు.</translation>
@@ -3045,7 +3036,6 @@
 <translation id="5750324801516359607">దూరంగా ఉండాలి</translation>
 <translation id="5751545372099101699">అర అంశం 4</translation>
 <translation id="5752453871435543420">Chrome OS Cloud బ్యాకప్</translation>
-<translation id="5754903485544371559">అనువర్తనాలకు జోడించు...</translation>
 <translation id="5756163054456765343">స&amp;హాయ కేంద్రం</translation>
 <translation id="5759728514498647443">మీరు <ph name="APP_NAME" /> ద్వారా ముద్రించడానికి పంపే పత్రాలు <ph name="APP_NAME" /> ద్వారా చదవబడతాయి.</translation>
 <translation id="5763751966069581670">USB పరికరాలు కనుగొనబడలేదు</translation>
@@ -3182,7 +3172,6 @@
 <translation id="5959471481388474538">నెట్‌వర్క్ అందుబాటులో లేదు</translation>
 <translation id="5963026469094486319">థీమ్‌లను పొందండి</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> మిగిలి ఉన్నాయి)</translation>
-<translation id="5965403572731919803">అరకు జోడించు...</translation>
 <translation id="5965661248935608907">ఇది మీరు హోమ్ బటన్‌ను క్లిక్ చేసేటప్పుడు లేదా ఓమ్నిపెట్టె నుండి శోధించేటప్పుడు చూపబడే పేజీని కూడా నియంత్రిస్తుంది.</translation>
 <translation id="5971037678316050792">బ్లూటూత్ అడాప్టర్ స్థితిని మరియు జత చేసే విధానాన్ని నియంత్రించడానికి అనుమతి</translation>
 <translation id="5972017421290582825">MIDI సెట్టింగ్‌లను నిర్వహించండి...</translation>
@@ -3213,7 +3202,6 @@
 <translation id="6015796118275082299">సంవత్సరం</translation>
 <translation id="6016551720757758985">మునుపటి సంస్కరణకు తిరిగి మార్చేలా పవర్‌వాష్‌ను నిర్ధారించండి</translation>
 <translation id="6016972670657536680">భాష మరియు కీబోర్డ్‌ను ఎంచుకోండి బటన్‌. ప్రస్తుతం ఎంచుకున్న భాష <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">అనువర్తనాలకు జోడించండి</translation>
 <translation id="6019169947004469866">కత్తిరించు</translation>
 <translation id="6020431688553761150">మీకు ఈ వనరుని ప్రాప్యత చేయడానికి సర్వర్ అధికారం ఇవ్వలేదు.</translation>
 <translation id="602251597322198729">ఈ సైట్ బహుళ ఫైళ్లను డౌన్‌లోడ్ చెయ్యడానికి ప్రయత్నిస్తుంది. మీరు దీనిని అనుమతించదలిచారా?</translation>

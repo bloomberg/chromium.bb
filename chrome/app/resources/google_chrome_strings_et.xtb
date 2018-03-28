@@ -44,7 +44,7 @@
 <translation id="2063848847527508675">Chrome OS tuleb värskenduse rakendamiseks taaskäivitada.</translation>
 <translation id="2077129598763517140">Kasuta võimaluse korral riistvarakiirendust</translation>
 <translation id="2084710999043359739">Chrome'i lisamine</translation>
-<translation id="2094919256425865063">Kas väljuda Chrome'is ikkagi?</translation>
+<translation id="2094919256425865063">Kas väljuda Chrome'ist ikkagi?</translation>
 <translation id="210890598424854131">{0,plural, =0{Chrome käivitatakse kohe uuesti}=1{Chrome käivitatakse uuesti 1 sekundi pärast}other{Chrome käivitatakse uuesti # sekundi pärast}}</translation>
 <translation id="2120620239521071941">See kustutab sellest seadmest <ph name="ITEMS_COUNT" /> üksust. Hiljem oma andmete toomiseks logige Chrome'i sisse kasutajana <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Aidake Chrome paremaks muuta, teavitades meid <ph name="BEGIN_LINK" />praegustest seadetest<ph name="END_LINK" /></translation>
@@ -204,8 +204,8 @@ Mõned funktsioonid ei pruugi saadaval olla. Määrake muu profiilikataloog või
 <translation id="6600954340915313787">Chrome'i kopeeritud</translation>
 <translation id="6634887557811630702">Google Chrome on ajakohane.</translation>
 <translation id="6676384891291319759">Pääs Internetti</translation>
-<translation id="6679975945624592337">Luba Google Chrome'i töötamine taustal</translation>
-<translation id="677276454032249905">Kas väljuda Chrome'is ikkagi?</translation>
+<translation id="6679975945624592337">Luba Google Chrome'il taustal töötada</translation>
+<translation id="677276454032249905">Kas väljuda Chrome'ist ikkagi?</translation>
 <translation id="683440813066116847">Sissetuleku reegel Google Chrome Canaryle mDNS-liikluse lubamiseks.</translation>
 <translation id="686561893457936865">Võtke Chrome kõikjale kaasa</translation>
 <translation id="6885412569789873916">Chrome'i beetaversiooni rakendused</translation>

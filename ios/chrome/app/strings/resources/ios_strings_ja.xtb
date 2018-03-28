@@ -38,6 +38,7 @@
 <translation id="1540800554400757039">住所1行目</translation>
 <translation id="1545749641540134597">QR コードをスキャンします</translation>
 <translation id="1580783302095112590">メールを送信しました。</translation>
+<translation id="1582732959743469162">この操作を行うと、現在進行中のダウンロードは停止します。</translation>
 <translation id="1612730193129642006">タブをグリッド表示</translation>
 <translation id="1644574205037202324">履歴</translation>
 <translation id="1646446875146297738">「トラッキング拒否」を有効にすると、リクエストが閲覧トラフィックに組み込まれます。その効果は、ウェブサイトがそのリクエストに応じるかどうか、およびそのリクエストがどのように解釈されるかによって異なります。
@@ -284,6 +285,7 @@
 <translation id="633809752005859102">エラーが発生しました。原因を調査します。</translation>
 <translation id="6342069812937806050">たった今</translation>
 <translation id="6344783595350022745">テキストを消去</translation>
+<translation id="6346549652287021269">新たにダウンロードを開始しますか？</translation>
 <translation id="6362362396625799311">シークレット タブはありません</translation>
 <translation id="6374469231428023295">再試行</translation>
 <translation id="6380866119319257197">パスフレーズを忘れた場合や、この設定を変更する場合は、<ph name="BEGIN_LINK" />同期をリセット<ph name="END_LINK" />します</translation>
@@ -325,6 +327,7 @@
 <translation id="7031882061095297553">同期先</translation>
 <translation id="7053983685419859001">ブロック</translation>
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
+<translation id="7102005569666697658">ダウンロードしています… <ph name="FILE_SIZE" /></translation>
 <translation id="7108338896283013870">非表示</translation>
 <translation id="7133798577887235672">氏名</translation>
 <translation id="7136892417564438900">カメラを使用できません</translation>
@@ -360,6 +363,7 @@
 <translation id="7769602470925380267">同意してログアウトする</translation>
 <translation id="7772032839648071052">パスフレーズの確認</translation>
 <translation id="780301667611848630">いいえ</translation>
+<translation id="7856733331829174190">ダウンロードできませんでした</translation>
 <translation id="7859704718976024901">閲覧履歴</translation>
 <translation id="7938254975914653459">FaceTime</translation>
 <translation id="7939128259257418052">パスワードをエクスポート...</translation>
@@ -422,6 +426,7 @@
 <translation id="9083392325882095631">1個のアイテム</translation>
 <translation id="9100610230175265781">パスフレーズを入力してください</translation>
 <translation id="9148126808321036104">もう一度ログインする</translation>
+<translation id="915371508759614899">ダウンロードをキャンセルしますか？</translation>
 <translation id="9157836665414082580">ダイアログを表示しない</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
 <translation id="9203116392574189331">Handoff</translation>

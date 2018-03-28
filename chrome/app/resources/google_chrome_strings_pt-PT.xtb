@@ -171,7 +171,7 @@ Para obter mais instruções, verifique o seu email em <ph name="ACCOUNT_EMAIL" 
 <translation id="556024056938947818">O Google Chrome está a tentar mostrar palavras-passe.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> pode ser perigoso, por isso o Chrome bloqueou-o.</translation>
-<translation id="5715063361988620182">{SECONDS,plural, =1{O Google Chrome irá reiniciar dentro de 1 segundo}other{O Google Chrome irá reiniciar dentro de # segundos}}</translation>
+<translation id="5715063361988620182">{SECONDS,plural, =1{O Google Chrome será reiniciado dentro de 1 segundo}other{O Google Chrome será reiniciado dentro de # segundos}}</translation>
 <translation id="573759479754913123">Acerca do Chrome OS</translation>
 <translation id="5774845247549698882">O Chrome OS é apresentado neste idioma</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> – Google Chrome Canary</translation>

@@ -346,7 +346,6 @@
     serveur proxy, réglez vos <ph name="LINK_START" />paramètres de proxy<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Proposer d'enregistrer mes mots de passe Web</translation>
 <translation id="1512210426710821809">La seule façon d'annuler cette action consiste à réinstaller <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Ajouter au bureau</translation>
 <translation id="151501797353681931">Importés depuis Safari</translation>
 <translation id="1515163294334130951">Lancer</translation>
 <translation id="1521442365706402292">Gérer les certificats</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Cet élément doit être installé depuis le <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Échec de l'obtention du jeton d'authentification. Veuillez vous déconnecter, puis vous reconnecter, ou bien réessayez.</translation>
 <translation id="1878524442024357078">N'autoriser aucun site à utiliser un plug-in pour accéder à mon ordinateur</translation>
-<translation id="1879449842763884566">Installer dans "Applications"…</translation>
 <translation id="1880905663253319515">Supprimer le certificat "<ph name="CERTIFICATE_NAME" />" ?</translation>
 <translation id="1886996562706621347">Permettre aux sites de demander l'autorisation de devenir gestionnaires par défaut des protocoles (recommandé)</translation>
 <translation id="1887442540531652736">Erreur de connexion</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Saisissez votre code.</translation>
 <translation id="241082044617551207">Plug-in inconnu</translation>
 <translation id="2413749388954403953">Modifier l'interface utilisateur des favoris</translation>
-<translation id="2415294094132942411">Ajouter au bureau…</translation>
 <translation id="2422426094670600218">&lt;sans nom&gt;</translation>
 <translation id="2423578206845792524">En&amp;registrer l'image sous...</translation>
 <translation id="2424091190911472304">Toujours exécuter pour <ph name="ORIGIN" /></translation>
@@ -942,7 +939,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="2478176599153288112">Autorisations de fichier média pour "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Partager le contenu audio</translation>
 <translation id="2480868415629598489">Modifier les données que vous copiez-collez</translation>
-<translation id="2481332092278989943">Ajouter à l'étagère</translation>
 <translation id="2482878487686419369">Notifications</translation>
 <translation id="2485056306054380289">Certificat de l'autorité de certification du serveur :</translation>
 <translation id="2485422356828889247">Désinstaller</translation>
@@ -1056,7 +1052,6 @@ Je ne pense pas que ce site devrait être bloqué.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> n'a pas pu terminer l'installation, mais va poursuivre son exécution à partir de son image disque.</translation>
 <translation id="2635176084534510129">Bénéficiez d'expériences personnalisées, telles que de meilleures recommandations de contenus ou un fonctionnement plus intelligent de Google Traduction</translation>
 <translation id="2635276683026132559">Signature</translation>
-<translation id="2635926034288331400">Installer dans "Applications"</translation>
 <translation id="2636625531157955190">Impossible d'accéder à l'image avec Google Chrome.</translation>
 <translation id="2638087589890736295">Veuillez saisir la phrase secrète pour lancer la synchronisation</translation>
 <translation id="2638286699381354126">Mettre à jour...</translation>
@@ -1524,7 +1519,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3308852433423051161">Chargement de l'Assistant Google…</translation>
 <translation id="3309747692199697901">Toujours exécuter pour tous les sites</translation>
 <translation id="3312424061798279731">Langues activées</translation>
-<translation id="3312903956926554846">Installer sur le bureau</translation>
 <translation id="3313590242757056087">Pour définir les sites Web que l'utilisateur supervisé peut consulter, vous pouvez configurer des restrictions
     et des paramètres sur le site <ph name="MANAGEMENT_URL" />.
     Si vous conservez les paramètres par défaut, <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Pour en savoir plus, consultez notre <ph name="BEGIN_LINK" />Centre d'aide<ph na
 <translation id="3511528412952710609">Courte</translation>
 <translation id="3514373592552233661">Les réseaux préférés priment sur les autres réseaux connus lorsque plusieurs réseaux sont disponibles</translation>
 <translation id="3523642406908660543">Me demander lorsqu'un plug-in doit être utilisé pour qu'un site puisse accéder à mon ordinateur (recommandé)</translation>
-<translation id="3525897975040424366">Installer sur l'étagère</translation>
 <translation id="3527085408025491307">Dossier</translation>
 <translation id="3527276236624876118">L'utilisateur supervisé <ph name="USER_DISPLAY_NAME" /> a été créé.</translation>
 <translation id="3528033729920178817">Cette page suit votre position géographique.</translation>
@@ -1964,7 +1957,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="3968261067169026421">Impossible de configurer le réseau</translation>
 <translation id="3970114302595058915">Identifiant</translation>
 <translation id="397105322502079400">Calcul en cours…</translation>
-<translation id="3972711570620097483">Installer sur l'étagère…</translation>
 <translation id="3974195870082915331">Cliquer pour afficher le mot de passe</translation>
 <translation id="3975222297214566386">Info-bulle sur les options de saisie</translation>
 <translation id="397703832102027365">Finalisation en cours…</translation>
@@ -2541,7 +2533,6 @@ Souhaitez-vous lancer <ph name="CONTROL_PANEL_APPLET_NAME" /> ?</translation>
 <translation id="4967749818080339523">Sélectionner un compte</translation>
 <translation id="496888482094675990">L'application Fichiers vous permet d'accéder rapidement aux fichiers que vous avez enregistrés dans Google Drive, sur un périphérique de stockage externe ou sur votre appareil Chrome OS.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Installer sur le bureau…</translation>
 <translation id="4971412780836297815">Ouvrir une fois le téléchargement terminé</translation>
 <translation id="4972129977812092092">Modifier l'imprimante</translation>
 <translation id="497287958838527945">Cartes de crédit et adresses utilisées dans Google Pay.</translation>
@@ -3046,7 +3037,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5750324801516359607">Éloigné</translation>
 <translation id="5751545372099101699">Élément d'étagère 4</translation>
 <translation id="5752453871435543420">Sauvegarde Cloud de Chrome OS</translation>
-<translation id="5754903485544371559">Ajouter au dossier "Applications"</translation>
 <translation id="5756163054456765343">C&amp;entre d'aide</translation>
 <translation id="5759728514498647443">Les documents envoyés pour impression via "<ph name="APP_NAME" />" sont lisibles avec "<ph name="APP_NAME" />"</translation>
 <translation id="5763751966069581670">Aucun appareil USB détecté</translation>
@@ -3183,7 +3173,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="5959471481388474538">Réseau indisponible</translation>
 <translation id="5963026469094486319">Obtenir d'autres thèmes</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (pic : <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Ajouter à l'étagère…</translation>
 <translation id="5965661248935608907">Elle contrôle également la page qui s'affiche lorsque vous cliquez sur le bouton Accueil ou lorsque vous effectuez une recherche dans l'omnibox.</translation>
 <translation id="5971037678316050792">Contrôler l'état et l'association de l'adaptateur Bluetooth</translation>
 <translation id="5972017421290582825">Gérer les paramètres MIDI…</translation>
@@ -3214,7 +3203,6 @@ Assurez-vous de ne pas dévoiler d'informations sensibles.</translation>
 <translation id="6015796118275082299">Année</translation>
 <translation id="6016551720757758985">Confirmer la réinitialisation Powerwash et rétablir la version précédente</translation>
 <translation id="6016972670657536680">Bouton de sélection de la langue et du clavier. Langue actuellement sélectionnée : <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Ajouter au dossier "Applications"</translation>
 <translation id="6019169947004469866">Recadrer</translation>
 <translation id="6020431688553761150">Vous ne disposez pas des autorisations serveur nécessaires pour accéder à cette ressource.</translation>
 <translation id="602251597322198729">Ce site tente de télécharger plusieurs fichiers. Voulez-vous autoriser le chargement ?</translation>

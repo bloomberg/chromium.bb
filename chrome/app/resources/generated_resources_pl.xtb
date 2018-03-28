@@ -346,7 +346,6 @@
     być używany, zmień <ph name="LINK_START" />jego ustawienia<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Proponuj zapisywanie haseł internetowych</translation>
 <translation id="1512210426710821809">Jedynym sposobem cofnięcia tej czynności jest ponowna instalacja systemu <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Dodaj do pulpitu</translation>
 <translation id="151501797353681931">Zaimportowane z przeglądarki Safari</translation>
 <translation id="1515163294334130951">Uruchom</translation>
 <translation id="1521442365706402292">Zarządzaj certyfikatami</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Możesz to pobrać tylko z <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Nie udało się uzyskać tokenu uwierzytelnienia. Wyloguj się, a potem zaloguj się jeszcze raz, by ponowić próbę.</translation>
 <translation id="1878524442024357078">Nie zezwalaj żadnym stronom na dostęp do komputera przez wtyczkę</translation>
-<translation id="1879449842763884566">Zainstaluj w Programach…</translation>
 <translation id="1880905663253319515">Czy usunąć certyfikat „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="1886996562706621347">Zezwalaj witrynom, by mogły prosić o ustawienie ich jako domyślnego modułu obsługi protokołu (zalecane)</translation>
 <translation id="1887442540531652736">Błąd logowania</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Wpisz kod PIN</translation>
 <translation id="241082044617551207">Nieznana wtyczka</translation>
 <translation id="2413749388954403953">Zmiana interfejsu zakładek</translation>
-<translation id="2415294094132942411">Dodaj do pulpitu...</translation>
 <translation id="2422426094670600218">&lt;bez nazwy&gt;</translation>
 <translation id="2423578206845792524">Zapisz gra&amp;fikę jako...</translation>
 <translation id="2424091190911472304">Zawsze uruchamiaj na <ph name="ORIGIN" /></translation>
@@ -942,7 +939,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="2478176599153288112">Uprawnienia pliku multimedialnego dla rozszerzenia „<ph name="EXTENSION" />”</translation>
 <translation id="247949520305900375">Udostępnij dźwięk</translation>
 <translation id="2480868415629598489">Modyfikowanie danych, które kopiujesz i wklejasz</translation>
-<translation id="2481332092278989943">Dodaj do półki</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
 <translation id="2485056306054380289">Certyfikat CA serwera:</translation>
 <translation id="2485422356828889247">Odinstaluj</translation>
@@ -1056,7 +1052,6 @@ Ta strona nie powinna być zablokowana.</translation>
 <translation id="263325223718984101">Nie można ukończyć instalacji produktu <ph name="PRODUCT_NAME" />. Będzie on nadal uruchamiany z obrazu dysku.</translation>
 <translation id="2635176084534510129">Korzystaj z bardziej spersonalizowanych funkcji takich jak lepsze sugerowanie treści i inteligentniejszy Tłumacz</translation>
 <translation id="2635276683026132559">Podpisywanie</translation>
-<translation id="2635926034288331400">Zainstaluj w Programach</translation>
 <translation id="2636625531157955190">Chrome nie może otworzyć obrazu.</translation>
 <translation id="2638087589890736295">Wpisz hasło, by rozpocząć synchronizację</translation>
 <translation id="2638286699381354126">Aktualizuj</translation>
@@ -1524,7 +1519,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3308852433423051161">Ładuję Asystenta Google...</translation>
 <translation id="3309747692199697901">Zawsze uruchamiaj na wszystkich stronach</translation>
 <translation id="3312424061798279731">Włączone języki</translation>
-<translation id="3312903956926554846">Zainstaluj na pulpicie</translation>
 <translation id="3313590242757056087">Aby określić, jakie strony będzie mógł przeglądać użytkownik nadzorowany,
     skonfiguruj ograniczenia i ustawienia na <ph name="MANAGEMENT_URL" />.
     Jeśli nie zmienisz ustawień domyślnych, użytkownik <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3511528412952710609">Krótkie</translation>
 <translation id="3514373592552233661">Jeśli będzie dostępnych więcej sieci, sieci preferowane będą wybierane przed innymi znanymi sieciami</translation>
 <translation id="3523642406908660543">Pytaj, gdy strona chce uzyskać dostęp do komputera przez wtyczkę (zalecane)</translation>
-<translation id="3525897975040424366">Zainstaluj na półce</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3527276236624876118">Użytkownik nadzorowany o nazwie <ph name="USER_DISPLAY_NAME" /> został utworzony.</translation>
 <translation id="3528033729920178817">Ta strona śledzi Twoją lokalizację.</translation>
@@ -1964,7 +1957,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="3968261067169026421">Nie udało się skonfigurować sieci</translation>
 <translation id="3970114302595058915">Identyfikator</translation>
 <translation id="397105322502079400">Obliczanie...</translation>
-<translation id="3972711570620097483">Zainstaluj na półce…</translation>
 <translation id="3974195870082915331">Kliknij, aby pokazać hasło</translation>
 <translation id="3975222297214566386">Dymek opcji wejścia</translation>
 <translation id="397703832102027365">Kończę...</translation>
@@ -2541,7 +2533,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="4967749818080339523">Wybierz konto</translation>
 <translation id="496888482094675990">Aplikacja Pliki daje szybki dostęp do plików zapisanych na Dysku Google, urządzeniu z Chrome OS lub w pamięci zewnętrznej.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Zainstaluj na pulpicie…</translation>
 <translation id="4971412780836297815">Otwórz po zakończeniu</translation>
 <translation id="4972129977812092092">Edytuj drukarkę</translation>
 <translation id="497287958838527945">Karty kredytowe i adresy z Google Pay.</translation>
@@ -3045,7 +3036,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="5750324801516359607">Daleko</translation>
 <translation id="5751545372099101699">4 element na półce</translation>
 <translation id="5752453871435543420">Kopia zapasowa Chrome OS w chmurze</translation>
-<translation id="5754903485544371559">Dodaj do Aplikacji...</translation>
 <translation id="5756163054456765343">C&amp;entrum pomocy</translation>
 <translation id="5759728514498647443">Dokumenty wysłane do drukowania z aplikacji <ph name="APP_NAME" /> można odczytać w aplikacji <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nie znaleziono urządzeń USB</translation>
@@ -3182,7 +3172,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="5959471481388474538">Sieć niedostępna</translation>
 <translation id="5963026469094486319">Pobierz motywy</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> w szczycie)</translation>
-<translation id="5965403572731919803">Dodaj do półki...</translation>
 <translation id="5965661248935608907">Kontroluje także to, jaka strona wyświetla się po kliknięciu przycisku strony startowej lub wyszukiwaniu w omniboksie.</translation>
 <translation id="5971037678316050792">Kontrolowanie stanu adaptera Bluetooth i parowania</translation>
 <translation id="5972017421290582825">Zarządzaj ustawieniami MIDI...</translation>
@@ -3213,7 +3202,6 @@ Więcej informacji znajduje się w naszym <ph name="BEGIN_LINK" />Centrum pomocy
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016551720757758985">Potwierdzanie wykonania funkcji Powerwash z przywróceniem poprzedniej wersji</translation>
 <translation id="6016972670657536680">Przycisk wybierania języka i klawiatury. Obecnie jest wybrany język <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Dodaj do Aplikacji</translation>
 <translation id="6019169947004469866">Przytnij</translation>
 <translation id="6020431688553761150">Serwer nie zezwolił Ci na dostęp do tego zasobu.</translation>
 <translation id="602251597322198729">Witryna próbuje pobrać wiele plików. Czy chcesz na to zezwolić?</translation>

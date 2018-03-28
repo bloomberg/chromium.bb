@@ -345,7 +345,6 @@
     В противном случае измените <ph name="LINK_START" />настройки прокси-сервера<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Предлагать сохранять пароли для сайтов</translation>
 <translation id="1512210426710821809">Чтобы отменить это действие, необходимо переустановить <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
-<translation id="1514215615641002767">Добавить на рабочий стол</translation>
 <translation id="151501797353681931">Импортированные из Safari</translation>
 <translation id="1515163294334130951">Запустить</translation>
 <translation id="1521442365706402292">Настроить сертификаты</translation>
@@ -587,7 +586,6 @@
 <translation id="1875387611427697908">Это приложение или расширение можно установить только из сервиса "<ph name="CHROME_WEB_STORE" />".</translation>
 <translation id="1877520246462554164">Не удалось получить токен аутентификации. Чтобы повторить попытку, выйдите из аккаунта и войдите снова.</translation>
 <translation id="1878524442024357078">Запретить сайтам использовать плагин для доступа к компьютеру</translation>
-<translation id="1879449842763884566">Установить в "Программы"...</translation>
 <translation id="1880905663253319515">Удалить сертификат <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="1886996562706621347">Разрешить запросы на установку обработчиков протоколов (рекомендуется)</translation>
 <translation id="1887442540531652736">Ошибка входа</translation>
@@ -902,7 +900,6 @@
 <translation id="2408955596600435184">Введите PIN-код</translation>
 <translation id="241082044617551207">Неизвестный плагин</translation>
 <translation id="2413749388954403953">Изменение пользовательского интерфейса закладок</translation>
-<translation id="2415294094132942411">Добавить на рабочий стол...</translation>
 <translation id="2422426094670600218">&lt;без имени&gt;</translation>
 <translation id="2423578206845792524">Со&amp;хранить картинку как...</translation>
 <translation id="2424091190911472304">Всегда запускать на <ph name="ORIGIN" /></translation>
@@ -941,7 +938,6 @@
 <translation id="2478176599153288112"><ph name="EXTENSION" />: доступ к медиафайлам</translation>
 <translation id="247949520305900375">Общий доступ к аудио</translation>
 <translation id="2480868415629598489">Изменение копируемых и вставляемых данных</translation>
-<translation id="2481332092278989943">Добавить на панель запуска</translation>
 <translation id="2482878487686419369">Уведомления</translation>
 <translation id="2485056306054380289">Сертификат сервера ЦС:</translation>
 <translation id="2485422356828889247">Удалить</translation>
@@ -1057,7 +1053,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> не может завершить установку, однако продолжит работу со своего образа на диске.</translation>
 <translation id="2635176084534510129">Получайте рекомендации, точные переводы и другой персональный контент.</translation>
 <translation id="2635276683026132559">Подпись</translation>
-<translation id="2635926034288331400">Установить в "Программы"</translation>
 <translation id="2636625531157955190">У Chrome нет доступа к изображению.</translation>
 <translation id="2638087589890736295">Чтобы начать синхронизацию, введите кодовую фразу</translation>
 <translation id="2638286699381354126">Обновить</translation>
@@ -1525,7 +1520,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3308852433423051161">Загрузка Google Ассистента…</translation>
 <translation id="3309747692199697901">Запускать всегда</translation>
 <translation id="3312424061798279731">Добавленные языки</translation>
-<translation id="3312903956926554846">Установить на компьютер</translation>
 <translation id="3313590242757056087">Указать список сайтов, которые может посещать контролируемый пользователь, а также задать настройки и
     ограничения можно на странице <ph name="MANAGEMENT_URL" />.
     Если не изменить настройки по умолчанию, пользователь <ph name="USER_DISPLAY_NAME" />
@@ -1664,7 +1658,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3511528412952710609">Короткая</translation>
 <translation id="3514373592552233661">Если доступно несколько сохраненных сетей, сначала будут выбраны предпочитаемые</translation>
 <translation id="3523642406908660543">Предупреждать, что сайт пытается использовать плагин для доступа к компьютеру (рекомендуется)</translation>
-<translation id="3525897975040424366">Установить на панель запуска</translation>
 <translation id="3527085408025491307">Папка</translation>
 <translation id="3527276236624876118">Создан контролируемый профиль: <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Эта страница отслеживает ваше местоположение.</translation>
@@ -1965,7 +1958,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3968261067169026421">Не удалось настроить сеть</translation>
 <translation id="3970114302595058915">Идентификатор</translation>
 <translation id="397105322502079400">Вычисление…</translation>
-<translation id="3972711570620097483">Установить на панель запуска...</translation>
 <translation id="3974195870082915331">Нажмите, чтобы показать пароль</translation>
 <translation id="3975222297214566386">Всплывающая подсказка с параметрами ввода</translation>
 <translation id="397703832102027365">Завершение…</translation>
@@ -2542,7 +2534,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="4967749818080339523">Выберите аккаунт</translation>
 <translation id="496888482094675990">С помощью приложения "Файлы" можно быстро открыть документы с Google Диска, устройства под управлением Chrome OS или из внешнего хранилища.</translation>
 <translation id="4969785127455456148">Альбом</translation>
-<translation id="4970738541803285369">Установить на компьютер...</translation>
 <translation id="4971412780836297815">Открыть по завершении</translation>
 <translation id="4972129977812092092">Настройка принтера</translation>
 <translation id="497287958838527945">Кредитные карты и адреса из Google Pay</translation>
@@ -3046,7 +3037,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5750324801516359607">Далеко</translation>
 <translation id="5751545372099101699">4-й объект на панели запуска</translation>
 <translation id="5752453871435543420">Резервное копирование в облаке Chrome</translation>
-<translation id="5754903485544371559">Добавить к приложениям</translation>
 <translation id="5756163054456765343">Справочный &amp;центр</translation>
 <translation id="5759728514498647443">"<ph name="APP_NAME" />" может читать документы, отправленные на печать через приложение "<ph name="APP_NAME" />".</translation>
 <translation id="5763751966069581670">USB-устройства не найдены</translation>
@@ -3183,7 +3173,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="5959471481388474538">Сеть недоступна</translation>
 <translation id="5963026469094486319">Выбрать тему</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (макс. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Добавить на панель запуска...</translation>
 <translation id="5965661248935608907">Кроме того, расширение изменило страницу, которая отображается при нажатии кнопки "Главная страница", и поисковую систему, используемую по умолчанию при вводе запроса в омнибокс.</translation>
 <translation id="5971037678316050792">Контроль состояния адаптера Bluetooth и сопряжения</translation>
 <translation id="5972017421290582825">Настройки MIDI…</translation>
@@ -3214,7 +3203,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="6015796118275082299">Год</translation>
 <translation id="6016551720757758985">Подтверждение Powerwash и возврата к предыдущей версии</translation>
 <translation id="6016972670657536680">Выберите язык и клавишу. Текущий язык: <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Добавить к приложениям</translation>
 <translation id="6019169947004469866">Кадрирование</translation>
 <translation id="6020431688553761150">Сервер не разрешил вам доступ к этому ресурсу.</translation>
 <translation id="602251597322198729">Этот сайт пытается скачать несколько файлов. Разрешить?</translation>

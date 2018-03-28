@@ -1242,7 +1242,7 @@ Mens selve politikken understøttes på ovenstående platforme, kan den funktion
       Sørg for, at din side til ændring af adgangskode følger retningslinjerne på https://www.chromium.org/developers/design-documents/create-amazing-password-forms, så <ph name="PRODUCT_NAME" /> registrerer det nye fingeraftryk som adgangskode på korrekt vis på den pågældende side til ændring af adgangskode.
 
       Hvis denne indstilling er aktiveret, sender tjenesten til adgangskodebeskyttelse brugerne videre til denne webadresse, så de kan ændre deres adgangskoder, hvis de er blevet udsat for phishing.
-      Hvis denne indstilling er deaktiveret eller ikke er angivet, sender tjenesten til adgangskodebeskyttelse brugerne videre til https://myaccounts.google.com, så de kan ændres deres adgangskoder.
+      Hvis denne indstilling er deaktiveret eller ikke er angivet, sender tjenesten til adgangskodebeskyttelse brugerne videre til https://myaccounts.google.com, så de kan ændre deres adgangskoder.
       Politikken er ikke tilgængelig i Windows-forekomster, der ikke er tilknyttet et <ph name="MS_AD_NAME" />-domæne.</translation>
 <translation id="4869787217450099946">Angiver om aktiveringslåse for skærm er tilladt. Der kan anmodes om aktiveringslåse vha. Power Management Extension API.
 

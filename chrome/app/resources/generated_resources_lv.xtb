@@ -346,7 +346,6 @@
     pielāgojiet <ph name="LINK_START" />starpniekservera iestatījumus<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Piedāvāt saglabāt tīmekļa paroles</translation>
 <translation id="1512210426710821809">Šo darbību var atsaukt, tikai atkārtoti instalējot <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Pievienošana darbvirsmai</translation>
 <translation id="151501797353681931">Importēts no Safari</translation>
 <translation id="1515163294334130951">Palaist</translation>
 <translation id="1521442365706402292">Pārvaldīt sertifikātus</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">To var pievienot tikai no veikala <ph name="CHROME_WEB_STORE" />.</translation>
 <translation id="1877520246462554164">Neizdevās iegūt autentifikācijas pilnvaru. Lai mēģinātu vēlreiz, izrakstieties un vēlreiz pierakstieties.</translation>
 <translation id="1878524442024357078">Neļaut nevienai vietnei izmantot spraudni, lai piekļūtu datoram</translation>
-<translation id="1879449842763884566">Instalēt sadaļā Applications (Lietojumprogrammas)...</translation>
 <translation id="1880905663253319515">Vai dzēst sertifikātu “<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="1886996562706621347">Ļaut vietnēm lūgt kļūt par protokolu noklusējuma apdarinātājiem (ieteicams)</translation>
 <translation id="1887442540531652736">Pierakstīšanās kļūda</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Ievadiet PIN kodu</translation>
 <translation id="241082044617551207">Nezināms spraudnis</translation>
 <translation id="2413749388954403953">Mainīt grāmatzīmju lietotāja saskarni</translation>
-<translation id="2415294094132942411">Pievienot darbvirsmai...</translation>
 <translation id="2422426094670600218">&lt;bez nosaukuma&gt;</translation>
 <translation id="2423578206845792524">Saglabāt attēlu kā ...</translation>
 <translation id="2424091190911472304">Vienmēr palaist vietnē <ph name="ORIGIN" /></translation>
@@ -942,7 +939,6 @@ Es uzskatu, ka šai vietnei nav jābūt bloķētai.</translation>
 <translation id="2478176599153288112">Multivides faila atļaujas paplašinājumam “<ph name="EXTENSION" />”</translation>
 <translation id="247949520305900375">Kopīgot audio</translation>
 <translation id="2480868415629598489">Modificēt datus, kurus jūs kopējat un ielīmējat</translation>
-<translation id="2481332092278989943">Pievienošana plauktam</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
 <translation id="2485056306054380289">Servera CA sertifikāts:</translation>
 <translation id="2485422356828889247">Atinstalēt</translation>
@@ -1056,7 +1052,6 @@ Es uzskatu, ka šai vietnei nav jābūt bloķētai.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> nevarēja pabeigt instalēšanu, tomēr turpinās izpildīties no diska attēla.</translation>
 <translation id="2635176084534510129">Iegūstiet personalizētas iespējas, piemēram, labākus satura ieteikumus un Tulkotāja rezultātus.</translation>
 <translation id="2635276683026132559">Parakstīšana</translation>
-<translation id="2635926034288331400">Instalēt sadaļā Applications (Lietojumprogrammas)</translation>
 <translation id="2636625531157955190">Pārlūkprogrammā Chrome nevar piekļūt attēlam.</translation>
 <translation id="2638087589890736295">Lai sāktu sinhronizāciju, ievadiet ieejas frāzi.</translation>
 <translation id="2638286699381354126">Atjaunināt...</translation>
@@ -1524,7 +1519,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3308852433423051161">Notiek Google asistenta ielāde…</translation>
 <translation id="3309747692199697901">Vienmēr palaist visās vietnēs</translation>
 <translation id="3312424061798279731">Iespējotās valodas</translation>
-<translation id="3312903956926554846">Instalēt darbvirsmā</translation>
 <translation id="3313590242757056087">Lai iestatītu, kuras vietnes var skatīt uzraudzītais lietotājs, konfigurējiet ierobežojumus
     un iestatījumus, apmeklējot vietni <ph name="MANAGEMENT_URL" />.
     Ja nemainīsiet noklusējuma iestatījumus, lietotājs <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Plašāku informāciju skatiet mūsu <ph name="BEGIN_LINK" />palīdzības centr�
 <translation id="3511528412952710609">Īsa</translation>
 <translation id="3514373592552233661">Ja būs pieejami vairāki tīkli, priekšroka tiks dota vēlamajiem tīkliem.</translation>
 <translation id="3523642406908660543">Vaicāt, ja vietne vēlas izmantot spraudni, lai piekļūtu datoram (ieteicams)</translation>
-<translation id="3525897975040424366">Instalēt plauktā</translation>
 <translation id="3527085408025491307">Mape</translation>
 <translation id="3527276236624876118">Ir izveidots uzraudzīts lietotājs <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Šī lapa izseko jūsu atrašanās vietu.</translation>
@@ -1964,7 +1957,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="3968261067169026421">Nevarēja iestatīt tīklu</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Aprēķina...</translation>
-<translation id="3972711570620097483">Instalēt plauktā...</translation>
 <translation id="3974195870082915331">Noklikšķiniet, lai rādītu paroli</translation>
 <translation id="3975222297214566386">Ievades opciju burbulis</translation>
 <translation id="397703832102027365">Notiek pabeigšana...</translation>
@@ -2541,7 +2533,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="4967749818080339523">Atlasiet kontu</translation>
 <translation id="496888482094675990">Izmantojot lietotni Faili, varat ērti piekļūt failiem, kas saglabāti Google diskā, ārējā krātuvē vai Chrome OS ierīcē.</translation>
 <translation id="4969785127455456148">Albums</translation>
-<translation id="4970738541803285369">Instalēt darbvirsmā...</translation>
 <translation id="4971412780836297815">Atvērt, kad pabeigta</translation>
 <translation id="4972129977812092092">Printera rediģēšana</translation>
 <translation id="497287958838527945">Kredītkartes un adreses no pakalpojuma Google Pay</translation>
@@ -3045,7 +3036,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5750324801516359607">Tālu</translation>
 <translation id="5751545372099101699">4. plaukta vienums</translation>
 <translation id="5752453871435543420">Chrome OS dublēšana mākonī</translation>
-<translation id="5754903485544371559">Pievienot lietojumprogrammām...</translation>
 <translation id="5756163054456765343">P&amp;alīdzības centrs</translation>
 <translation id="5759728514498647443">Dokumenti, kurus sūtāt drukāšanai, izmantojot lietotni <ph name="APP_NAME" />, var tikt lasīti lietotnē <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nav atrasta neviena USB ierīce</translation>
@@ -3182,7 +3172,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="5959471481388474538">Tīkls nav pieejams.</translation>
 <translation id="5963026469094486319">Iegūt motīvus</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (maks. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Pievienot plauktam...</translation>
 <translation id="5965661248935608907">Tas nosaka arī to, kāda lapa tiks rādīta, kad noklikšķināsiet uz pogas “Sākums” vai meklēsiet, izmantojot universālo lodziņu.</translation>
 <translation id="5971037678316050792">Kontrolēt Bluetooth adaptera statusu un savienošanu pārī</translation>
 <translation id="5972017421290582825">Pārvaldīt MIDI iestatījumus...</translation>
@@ -3213,7 +3202,6 @@ Vai vēlaties palaist rīku <ph name="CONTROL_PANEL_APPLET_NAME" />?</translatio
 <translation id="6015796118275082299">Gads</translation>
 <translation id="6016551720757758985">Apstiprinājums funkcijas Powerwash lietošanai, lai atjaunotu ierīcē iepriekšējo programmatūras versiju</translation>
 <translation id="6016972670657536680">Atlasiet valodas un tastatūras pogu. Pašlaik atlasītā valoda: <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Pievienošana lietojumprogrammām</translation>
 <translation id="6019169947004469866">Apgriezt</translation>
 <translation id="6020431688553761150">Jums netika piešķirta servera pilnvara piekļūt šim resursam.</translation>
 <translation id="602251597322198729">No šīs vietnes mēģina lejupielādēt vairākus failus. Vai atļaut?</translation>

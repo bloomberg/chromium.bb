@@ -797,7 +797,7 @@
 <translation id="3386001018488754001">
       MÄRKUS. See reegel on katseline ja funktsioonid ei pruugi töötada.
       See reegel kehtib sisselogimisekraanil. Vaadake ka reeglit <ph name="SITE_PER_PROCESS_POLICY_NAME" />, mis kehtib kasutajaseansi puhul. Soovitatav on mõlemale reeglile määrata sama väärtus. Kui väärtused ei ühti, võib kasutajareegliga määratud väärtuse rakendamisel esineda kasutajaseanssi sisenemisel viivitusi.
-      Soovitame teil vaadata reegli  IsolateOrigins seadet, et kasutada nii
+      Soovitame teil vaadata reegli IsolateOrigins seadet, et kasutada nii
       isoleerimist kui ka piirata mõju kasutajate jaoks, kasutades reeglit
       IsolateOrigins saitide puhul, mille soovite isoleerida. Seade
       SitePerProcess isoleerib kõik saidid.
@@ -844,7 +844,7 @@
 <translation id="3478024346823118645">Kustuta kasutaja andmed väljalogimisel</translation>
 <translation id="348495353354674884">Luba virtuaalne klaviatuur</translation>
 <translation id="3487623755010328395">
-        Kui see reegel on määratud, üritab teenus <ph name="PRODUCT_NAME" /> end registreerida ja rakendada seotud  pilvepõhised reeglid kõikidele profiilidele.
+        Kui see reegel on määratud, üritab teenus <ph name="PRODUCT_NAME" /> end registreerida ja rakendada seotud pilvepõhised reeglid kõikidele profiilidele.
 
         Selle reegli väärtus on registreerimismärk, mille saab Google'i administraatorikonsoolilt.</translation>
 <translation id="3496296378755072552">Paroolihaldur</translation>
@@ -2045,8 +2045,8 @@
 <translation id="7072406291414141328">Lubab võrgu ribalaiuse piiramise</translation>
 <translation id="7074513465313721551">Seadistage loend domeenidest, mida ohutu sirvimise funktsioon usaldab. See tähendab järgmist.
       Ohutu sirvimise funktsioon ei kontrolli ohtlikke allikaid (nt andmepüük, pahavara või soovimatu tarkvara), kui nende URL-id ühtivad nende domeenidega.
-      Ohutu sirvimise funktsiooni allalaadimiskaitse teenus ei kontrolli nendel domeenidel hostitud allalaadimisi.
-      Ohutu sirvimise funktsiooni paroolikaitse teenus ei kontrolli parooli taaskasutamist, kui lehe URL ühtib nende domeenidega.
+      Ohutu sirvimise funktsiooni allalaadimiskaitseteenus ei kontrolli nendel domeenidel hostitud allalaadimisi.
+      Ohutu sirvimise funktsiooni paroolikaitseteenus ei kontrolli parooli taaskasutamist, kui lehe URL ühtib nende domeenidega.
 
       Kui see seade on lubatud, usaldab ohutu sirvimise funktsioon neid domeene.
       Kui see seade on keelatud või seadistamata, siis rakendatakse ohutu sirvimise funktsiooni vaikekaitse kõikidele allikatele.

@@ -343,7 +343,6 @@
 <translation id="1510785804673676069">Wenn Sie einen Proxy-Server verwenden, überprüfen Sie Ihre Proxy-Einstellungen oder erkundigen Sie sich bei Ihrem Netzwerkadministrator, ob der Proxy-Server funktioniert. Wenn Sie keinen Proxy-Server verwenden möchten, ändern Sie Ihre <ph name="LINK_START" />Proxy-Einstellungen<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Speicherung Ihrer Webpasswörter anbieten</translation>
 <translation id="1512210426710821809">Dies kann nur durch eine Neuinstallation von <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> rückgängig gemacht werden</translation>
-<translation id="1514215615641002767">Zu Desktop hinzufügen</translation>
 <translation id="151501797353681931">Von Safari importiert</translation>
 <translation id="1515163294334130951">Starten</translation>
 <translation id="1521442365706402292">Zertifikate verwalten</translation>
@@ -585,7 +584,6 @@
 <translation id="1875387611427697908">Dieser Artikel kann nur über den <ph name="CHROME_WEB_STORE" /> hinzugefügt werden</translation>
 <translation id="1877520246462554164">Authentifizierungs-Token konnte nicht abgerufen werden. Bitte melden Sie sich ab und dann wieder an, um es noch einmal zu versuchen.</translation>
 <translation id="1878524442024357078">Verwendung von Plug-ins für den Zugriff auf Ihren Computer für keine Website zulassen</translation>
-<translation id="1879449842763884566">In "Programme" installieren...</translation>
 <translation id="1880905663253319515">Zertifikat "<ph name="CERTIFICATE_NAME" />" löschen?</translation>
 <translation id="1886996562706621347">Registrierung von Websites als Standard-Handler für Protokolle zulassen (empfohlen)</translation>
 <translation id="1887442540531652736">Fehler bei der Anmeldung</translation>
@@ -900,7 +898,6 @@
 <translation id="2408955596600435184">PIN eingeben</translation>
 <translation id="241082044617551207">Unbekanntes Plug-in</translation>
 <translation id="2413749388954403953">Benutzeroberfläche für Lesezeichen ändern</translation>
-<translation id="2415294094132942411">Zu Desktop hinzufügen...</translation>
 <translation id="2422426094670600218">&lt;unbenannt&gt;</translation>
 <translation id="2423578206845792524">Bi&amp;ld speichern unter...</translation>
 <translation id="2424091190911472304">Auf <ph name="ORIGIN" /> immer ausführen</translation>
@@ -939,7 +936,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="2478176599153288112">Mediendatei-Berechtigungen für "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Audio freigeben</translation>
 <translation id="2480868415629598489">Daten ändern, die Sie kopieren und einfügen</translation>
-<translation id="2481332092278989943">Zu Ablage hinzufügen</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
 <translation id="2485056306054380289">CA-Serverzertifikat:</translation>
 <translation id="2485422356828889247">Deinstallieren</translation>
@@ -1052,7 +1048,6 @@ Ich glaube nicht, dass diese Website blockiert werden sollte.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> konnte die Installation nicht abschließen, wird jedoch weiterhin über das Datenträgerabbild ausgeführt.</translation>
 <translation id="2635176084534510129">Genießen Sie personalisierte Erlebnisse, wie bessere Inhaltsempfehlungen und Übersetzungen</translation>
 <translation id="2635276683026132559">Signatur</translation>
-<translation id="2635926034288331400">In "Programme" installieren</translation>
 <translation id="2636625531157955190">Chrome kann nicht auf das Bild zugreifen.</translation>
 <translation id="2638087589890736295">Geben Sie Ihre Passphrase ein, um die Synchronisierung zu starten</translation>
 <translation id="2638286699381354126">Aktualisieren...</translation>
@@ -1520,7 +1515,6 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3308852433423051161">Google Assistant wird geladen...</translation>
 <translation id="3309747692199697901">Immer auf allen Websites ausführen</translation>
 <translation id="3312424061798279731">Aktivierte Sprachen</translation>
-<translation id="3312903956926554846">Auf dem Desktop installieren</translation>
 <translation id="3313590242757056087">Zum Auswählen der Websites, die der betreute Nutzer besuchen kann,
     können Sie unter <ph name="MANAGEMENT_URL" /> Beschränkungen und Einstellungen festlegen.
     Wenn Sie die Standardeinstellungen nicht ändern, kann <ph name="USER_DISPLAY_NAME" />
@@ -1659,7 +1653,6 @@ Mehr dazu erfahren Sie in <ph name="BEGIN_LINK" />unserer Hilfe<ph name="END_LIN
 <translation id="3511528412952710609">Kurz</translation>
 <translation id="3514373592552233661">Bevorzugte Netzwerke werden gegenüber anderen bekannten Netzwerken vorgezogen, wenn mehr als eines verfügbar ist</translation>
 <translation id="3523642406908660543">Nachfragen, wenn eine Website ein Plug-in für den Zugriff auf Ihren Computer verwenden möchte (empfohlen)</translation>
-<translation id="3525897975040424366">In der Ablage installieren</translation>
 <translation id="3527085408025491307">Ordner</translation>
 <translation id="3527276236624876118">Ein betreuter Nutzer mit dem Namen <ph name="USER_DISPLAY_NAME" /> wurde erstellt.</translation>
 <translation id="3528033729920178817">Diese Seite verfolgt Ihren Standort.</translation>
@@ -1960,7 +1953,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="3968261067169026421">Netzwerk konnte nicht eingerichtet werden</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Wird berechnet...</translation>
-<translation id="3972711570620097483">In der Ablage installieren...</translation>
 <translation id="3974195870082915331">Hier klicken, um Passwort anzuzeigen</translation>
 <translation id="3975222297214566386">Infofeld für Eingabeoptionen</translation>
 <translation id="397703832102027365">Aktualisierung wird abgeschlossen...</translation>
@@ -2537,7 +2529,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="4967749818080339523">Konto auswählen</translation>
 <translation id="496888482094675990">Mit der App "Dateien" erhalten Sie schnellen Zugriff auf Dateien, die Sie in Google Drive, auf externen Speichermedien oder auf Ihrem Chrome OS-Gerät gespeichert haben.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Auf dem Desktop installieren...</translation>
 <translation id="4971412780836297815">Nach abgeschlossenem Download öffnen</translation>
 <translation id="4972129977812092092">Druckerinformationen bearbeiten</translation>
 <translation id="497287958838527945">Kreditkarten und Adressen aus Google Pay.</translation>
@@ -3041,7 +3032,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5750324801516359607">Weit entfernt</translation>
 <translation id="5751545372099101699">Ablageartikel 4</translation>
 <translation id="5752453871435543420">Chrome OS-Cloud-Sicherung</translation>
-<translation id="5754903485544371559">Zu Anwendungen hinzufügen...</translation>
 <translation id="5756163054456765343">H&amp;ilfe</translation>
 <translation id="5759728514498647443">Dokumente, die Sie über <ph name="APP_NAME" /> zum Druck senden, können von <ph name="APP_NAME" /> gelesen werden.</translation>
 <translation id="5763751966069581670">Keine USB-Geräte gefunden</translation>
@@ -3178,7 +3168,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="5959471481388474538">Netzwerk nicht verfügbar</translation>
 <translation id="5963026469094486319">Designs abrufen</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (Spitzenwert <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Zu Ablage hinzufügen...</translation>
 <translation id="5965661248935608907">Die Erweiterung legt auch fest, welche Seite bei der Suche über die Omnibox angezeigt wird oder wenn Sie auf die Schaltfläche "Startseite" klicken.</translation>
 <translation id="5971037678316050792">Bluetooth-Adapterstatus und -Kopplung steuern</translation>
 <translation id="5972017421290582825">MIDI-Einstellungen verwalten...</translation>
@@ -3209,7 +3198,6 @@ Möchten Sie <ph name="CONTROL_PANEL_APPLET_NAME" /> starten?</translation>
 <translation id="6015796118275082299">Jahr</translation>
 <translation id="6016551720757758985">Powerwash und Zurücksetzen auf vorherige Version bestätigen</translation>
 <translation id="6016972670657536680">Wählen Sie die Sprache und die Taste aus. Die derzeit ausgewählte Sprache ist <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Zu Anwendungen hinzufügen</translation>
 <translation id="6019169947004469866">Zuschneiden</translation>
 <translation id="6020431688553761150">Sie wurden vom Server nicht für den Zugriff auf diese Ressource autorisiert.</translation>
 <translation id="602251597322198729">Die Website versucht, mehrere Dateien herunterzuladen. Möchten Sie dies zulassen?</translation>

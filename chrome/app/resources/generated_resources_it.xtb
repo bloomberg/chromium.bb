@@ -346,7 +346,6 @@
     server proxy, modifica le <ph name="LINK_START" />impostazioni del proxy<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Richiedi di salvare le tue password web</translation>
 <translation id="1512210426710821809">L'unico modo per annullare questa operazione è reinstallare <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Aggiungi al desktop</translation>
 <translation id="151501797353681931">Importati da Safari</translation>
 <translation id="1515163294334130951">Avvia</translation>
 <translation id="1521442365706402292">Gestisci certificati</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">È possibile aggiungerla soltanto dal <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Recupero del token di autenticazione non riuscito. Esci e accedi nuovamente per riprovare.</translation>
 <translation id="1878524442024357078">Non consentire ai siti di utilizzare un plug-in per accedere al tuo computer</translation>
-<translation id="1879449842763884566">Installa in Applicazioni...</translation>
 <translation id="1880905663253319515">Eliminare il certificato "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Consenti ai siti di chiedere di diventare gestori predefiniti dei protocolli (consigliata)</translation>
 <translation id="1887442540531652736">Errore di accesso</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Inserisci il codice PIN</translation>
 <translation id="241082044617551207">Plug-in sconosciuto</translation>
 <translation id="2413749388954403953">Modifica dell'interfaccia utente dei Preferiti</translation>
-<translation id="2415294094132942411">Aggiungi al desktop...</translation>
 <translation id="2422426094670600218">&lt;senza nome&gt;</translation>
 <translation id="2423578206845792524">Sa&amp;lva immagine con nome...</translation>
 <translation id="2424091190911472304">Esegui sempre su <ph name="ORIGIN" /></translation>
@@ -942,7 +939,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="2478176599153288112">Autorizzazioni file multimediali per "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Condividi audio</translation>
 <translation id="2480868415629598489">Modifica dei dati copiati e incollati</translation>
-<translation id="2481332092278989943">Aggiungi a shelf</translation>
 <translation id="2482878487686419369">Notifiche</translation>
 <translation id="2485056306054380289">Certificato CA del server:</translation>
 <translation id="2485422356828889247">Disinstalla</translation>
@@ -1055,7 +1051,6 @@ Non credo che questo sito debba essere bloccato.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> non è stato in grado di completare l'installazione ma continuerà a essere eseguito dall'immagine disco.</translation>
 <translation id="2635176084534510129">Vivi esperienze più personalizzate, ad esempio grazie a suggerimenti di contenuti migliori e al servizio Traduttore più efficiente.</translation>
 <translation id="2635276683026132559">Firma</translation>
-<translation id="2635926034288331400">Installa in Applicazioni</translation>
 <translation id="2636625531157955190">Chrome non riesce ad accedere all'immagine.</translation>
 <translation id="2638087589890736295">Passphrase obbligatoria per avviare la sincronizzazione</translation>
 <translation id="2638286699381354126">Aggiorna...</translation>
@@ -1523,7 +1518,6 @@ I dati di accesso del tuo account sono obsoleti.</translation>
 <translation id="3308852433423051161">Caricamento dell'Assistente Google...</translation>
 <translation id="3309747692199697901">Esegui sempre su tutti i siti</translation>
 <translation id="3312424061798279731">Lingue attive</translation>
-<translation id="3312903956926554846">Installa sul desktop</translation>
 <translation id="3313590242757056087">Per impostare i siti web che l'utente supervisionato può visualizzare, puoi configurare limitazioni e impostazioni visitando il sito all'indirizzo <ph name="MANAGEMENT_URL" />.
 Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> può visitare tutti i siti sul Web.</translation>
 <translation id="3313622045786997898">Valore firma certificato</translation>
@@ -1660,7 +1654,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3511528412952710609">Breve</translation>
 <translation id="3514373592552233661">Le reti preferite avranno precedenza su altre reti note se ne sono disponibili più di una</translation>
 <translation id="3523642406908660543">Chiedi conferma quando un sito vuole utilizzare un plug-in per accedere al tuo computer (opzione consigliata)</translation>
-<translation id="3525897975040424366">Installa nella shelf</translation>
 <translation id="3527085408025491307">Cartella</translation>
 <translation id="3527276236624876118">È stato creato un utente supervisionato di nome <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Questa pagina sta monitorando la tua posizione.</translation>
@@ -1961,7 +1954,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="3968261067169026421">Impossibile configurare la rete</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Calcolo in corso...</translation>
-<translation id="3972711570620097483">Installa nella shelf...</translation>
 <translation id="3974195870082915331">Fai clic per visualizzare la password</translation>
 <translation id="3975222297214566386">Inserisci fumetto di opzioni</translation>
 <translation id="397703832102027365">Finalizzazione in corso...</translation>
@@ -2538,7 +2530,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="4967749818080339523">Seleziona un account</translation>
 <translation id="496888482094675990">L'app File consente di accedere rapidamente ai file salvati in Google Drive, nella memoria esterna o sul tuo dispositivo Chrome OS.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Installa sul desktop...</translation>
 <translation id="4971412780836297815">Apri al termine</translation>
 <translation id="4972129977812092092">Modifica stampante</translation>
 <translation id="497287958838527945">Carte di credito e indirizzi che utilizzano Google Pay.</translation>
@@ -2942,7 +2933,7 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5582839680698949063">Menu principale</translation>
 <translation id="5583640892426849032">Backspace</translation>
 <translation id="5585118885427931890">Impossibile creare la cartella Preferiti.</translation>
-<translation id="558563010977877295">Apri una pagina specifica o un insieme di pagine</translation>
+<translation id="558563010977877295">Apri una pagina o un insieme di pagine specifiche</translation>
 <translation id="5585912436068747822">Formattazione non riuscita</translation>
 <translation id="5588033542900357244">(<ph name="RATING_COUNT" />)</translation>
 <translation id="558918721941304263">Caricamento app...</translation>
@@ -3041,7 +3032,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5750324801516359607">Lontano</translation>
 <translation id="5751545372099101699">Elemento 4 della shelf</translation>
 <translation id="5752453871435543420">Backup nella cloud Chrome OS</translation>
-<translation id="5754903485544371559">Aggiungi ad Applicazioni...</translation>
 <translation id="5756163054456765343">Centro assistenza</translation>
 <translation id="5759728514498647443">I documenti inviati alla stampante tramite <ph name="APP_NAME" /> possono essere letti da <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nessun dispositivo USB trovato</translation>
@@ -3178,7 +3168,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="5959471481388474538">Rete non disponibile</translation>
 <translation id="5963026469094486319">Scegli un tema</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (picco di <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Aggiungi a shelf...</translation>
 <translation id="5965661248935608907">Controlla anche la pagina visualizzata quando fai clic sul pulsante Pagina iniziale o quando esegui ricerche dalla Omnibox.</translation>
 <translation id="5971037678316050792">Controllo dello stato e dell'accoppiamento dell'adattatore Bluetooth</translation>
 <translation id="5972017421290582825">Gestisci impostazioni MIDI...</translation>
@@ -3209,7 +3198,6 @@ Se non modifichi le impostazioni predefinite, <ph name="USER_DISPLAY_NAME" /> pu
 <translation id="6015796118275082299">Anno</translation>
 <translation id="6016551720757758985">Se confermi il Powerwash viene ripristinata la versione precedente</translation>
 <translation id="6016972670657536680">Pulsante di selezione della lingua e della tastiera. La lingua attualmente selezionata è: <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Aggiungi ad Applicazioni</translation>
 <translation id="6019169947004469866">Ritaglia</translation>
 <translation id="6020431688553761150">Il server non ti ha autorizzato ad accedere a questa risorsa.</translation>
 <translation id="602251597322198729">Questo sito sta tentando di scaricare più file. Consentire l'operazione?</translation>

@@ -59,7 +59,7 @@
       Hvis denne regelen brukes, får brukeren tilgang til alle skrivere – unntatt eventuelle ID-er som er oppført i denne regelen.
       </translation>
 <translation id="1181881366217399113">
-      MERK: Denne regelen er på forsøksstadiet og kan føre til at funksjonaliteten ikke fungerer som den skal.
+      MERK: Denne regelen er på forsøksstadiet, noe som kan føre til at funksjonaliteten ikke fungerer som den skal.
       Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i
       kommadelte lister i sine egne prosesser. Da isoleres også
       opprinnelser som har navn basert på underdomener. Hvis for eksempel
@@ -67,7 +67,7 @@
       en del av nettstedet https://example.com/.
       Hvis regelen er deaktivert, gjelder logikken for administrering av nettstedsisolering på prosessbasis.
       Hvis regelen ikke er konfigurert, kan brukeren endre denne innstillingen.
-      I <ph name="PRODUCT_OS_NAME" /> bør du også angi enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" /> til samme verdi. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
+      I <ph name="PRODUCT_OS_NAME" /> bør du også angi samme verdi for enhetsinnstillingene <ph name="DEVICE_LOGIN_SCREEN_ISOLATE_ORIGINS_POLICY_NAME" />. Hvis verdiene som er angitt av de to reglene, ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
       </translation>
 <translation id="1198465924256827162">Hvor ofte opplastinger av enhetsstatusen sendes, i millisekunder.
 
@@ -668,7 +668,7 @@
 <translation id="2987155890997901449">Slå på ARC</translation>
 <translation id="2987227569419001736">Kontrollér bruken av Web Bluetooth API</translation>
 <translation id="2998886474614739865">
-      MERK: Denne regelen er på forsøksstadiet og kan føre til at funksjonaliteten ikke fungerer som den skal.
+      MERK: Denne regelen er på forsøksstadiet, noe som kan føre til at funksjonaliteten ikke fungerer som den skal.
       Denne regelen gjelder for påloggingsskjermen. Se også regelen <ph name="ISOLATE_ORIGINS_POLICY_NAME" />, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
       Hvis regelen er aktivert, kjøres alle navngitte opprinnelser i kommadelte
       lister i sine egne prosesser. Da isoleres også opprinnelser som har navn som er
@@ -777,7 +777,7 @@
           Hvis denne innstillingen er satt til en streng som ikke er tom, brukes denne strengen som navnet på destinasjonen for <ph name="PRODUCT_NAME" />. Ellers blir enhetsnavnet angitt som destinasjonsnavnet. Hvis denne innstillingen ikke er satt til noen verdi, blir enhetsnavnet angitt som destinasjonsnavnet, og eieren av enheten (eller en bruker fra domenet som administrerer enheten) kan endre det. Navnet er begrenset til 24 tegn.</translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
 <translation id="3386001018488754001">
-      MERK: Denne regelen er på forsøksstadiet og kan føre til at funksjonaliteten ikke fungerer som den skal.
+      MERK: Denne regelen er på forsøksstadiet, noe som kan føre til at funksjonaliteten ikke fungerer som den skal.
       Denne regelen gjelder for påloggingsskjermen. Se også regelen <ph name="SITE_PER_PROCESS_POLICY_NAME" />, som gjelder for brukerøkten. Vi anbefaler å bruke den samme verdien for begge reglene. Hvis verdiene ikke samsvarer, kan det oppstå en forsinkelse ved start av en brukerøkt mens verdien som er angitt av brukerinnstillingene, blir brukt.
       Det kan være lurt å endre innstillingen for IsolateOrigins-regelen
       for å få det beste fra begge verdener – isolering og begrenset
@@ -1134,7 +1134,7 @@
       Hvis denne retningslinjen ikke angis, kan brukeren velge om denne knappen skal vises.</translation>
 <translation id="4485425108474077672">Konfigurer nettadressen for Ny fane-siden</translation>
 <translation id="4492287494009043413">Deaktiver mulighet til å ta skjermdumper</translation>
-<translation id="4497968613298501984">Konfigurer listen over nettadresser for bedriftspålogging (bare HTTP- og HTTPS-protokoller). Fingeravtrykk for passord registreres på disse nettadressene og brukes til å gjenkjenne gjenbruk av passord.
+<translation id="4497968613298501984">Konfigurer listen over påloggingsadresser for bedrifter (bare HTTP- og HTTPS-protokoller). Fingeravtrykk for passord registreres på disse nettadressene og brukes til å gjenkjenne gjenbruk av passord.
       Denne innstillingen bør bare brukes av GSuite-brukere som bruker et SSO/SAML-system.
       For at <ph name="PRODUCT_NAME" /> skal registrere fingeravtrykk for passord riktig, må du påse at påloggingssidene følger retningslinjene på https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
@@ -1403,7 +1403,7 @@
       Hvis regelen ikke er konfigurert, eller hvis den er angitt som en tom streng eller et ugyldig portområde, kan WebRTC bruke alle tilgjengelige lokale UDP-porter.</translation>
 <translation id="5290940294294002042">Angi en liste over programtillegg som brukeren kan aktivere eller deaktivere</translation>
 <translation id="5301787427319106606">
-      MERK: Denne regelen er på forsøksstadiet og kan føre til at funksjonaliteten ikke fungerer som den skal!
+      MERK: Denne regelen er på forsøksstadiet, noe som kan føre til at funksjonaliteten ikke fungerer som den skal!
       Det kan være lurt å endre innstillingen for IsolateOrigins-regelen for å få
       det beste fra begge verdener – isolering og begrenset innvirkning for brukere –
       ved å bruke IsolateOrigins sammen med en liste over nettstedene du vil isolere.
@@ -2007,9 +2007,9 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7072208053150563108">Endringsfrekvens for maskinpassord</translation>
 <translation id="7072406291414141328">Slår på reduksjon av båndbredde for nettverk</translation>
 <translation id="7074513465313721551">Konfigurer listen over domener som Safe Browsing skal stole på. Dette betyr at
-     Safe Browsing ikke ser etter skadelige ressurser (f.eks. nettfisking, skadelig programvare og uønsket programvare) hvis nettadressene deres samsvarer med disse domenene
-      Safe Browsing-tjenesten for nedlastingsbeskyttelse ikke kontrollerer nedlastinger fra disse domenene
-      Safe Browsing-tjenesten for passordbeskyttelse ikke kontrollerer gjenbruk av passord for sider med nettadresser som samsvarer med disse domenene
+     Safe Browsing ikke ser etter skadelige ressurser (f.eks. nettfisking, skadelig programvare og uønsket programvare) hvis nettadressene deres samsvarer med disse domenene.
+      Safe Browsing-tjenesten for nedlastingsbeskyttelse kontrollerer ikke nedlastinger fra disse domenene.
+      Safe Browsing-tjenesten for passordbeskyttelse kontrollerer ikke gjenbruk av passord for sider med nettadresser som samsvarer med disse domenene.
 
       Hvis denne innstillingen er aktivert, stoler Safe Browsing på disse domenene.
       Hvis denne innstillingen er deaktivert, brukes standard Safe Browsing-beskyttelse for alle ressurser.

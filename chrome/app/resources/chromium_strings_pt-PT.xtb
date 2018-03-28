@@ -165,7 +165,7 @@
 <translation id="6394232988457703198">Deve reiniciar o Chromium agora.</translation>
 <translation id="6400072781405947421">O Chromium pode não funcionar corretamente, uma vez que já não é suportado no Mac OS X 10.9.</translation>
 <translation id="6403826409255603130">O Chromium é um navegador de internet que executa páginas Web e aplicações à velocidade da luz. É rápido, estável e fácil de utilizar. Navegue na Web com mais segurança, com proteção contra programas maliciosos e phishing integrada no Chromium.</translation>
-<translation id="6457450909262716557">{SECONDS,plural, =1{O Chromium irá reiniciar dentro de 1 segundo}other{O Chromium irá reiniciar dentro de # segundos}}</translation>
+<translation id="6457450909262716557">{SECONDS,plural, =1{O Chromium será reiniciado dentro de 1 segundo}other{O Chromium será reiniciado dentro de # segundos}}</translation>
 <translation id="6475912303565314141">Também controla a página apresentada quando inicia o Chromium.</translation>
 <translation id="6485906693002546646">Está a utilizar <ph name="PROFILE_EMAIL" /> para sincronizar os seus conteúdos do Chromium. Para atualizar a preferência de sincronização ou utilizar o Chromium sem uma Conta Google, aceda a <ph name="SETTINGS_LINK" />.</translation>
 <translation id="6510925080656968729">Desinstalar o Chromium</translation>

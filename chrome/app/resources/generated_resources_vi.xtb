@@ -347,7 +347,6 @@
     máy chủ proxy, hãy điều chỉnh <ph name="LINK_START" />cài đặt proxy<ph name="LINK_END" /> của bạn.</translation>
 <translation id="1511388193702657997">Đề xuất lưu mật khẩu web của bạn</translation>
 <translation id="1512210426710821809">Cách duy nhất để hoàn tác hành động này là cài đặt lại <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
-<translation id="1514215615641002767">Thêm vào màn hình</translation>
 <translation id="151501797353681931">Đã nhập Từ Safari</translation>
 <translation id="1515163294334130951">Chạy</translation>
 <translation id="1521442365706402292">Quản lý chứng chỉ</translation>
@@ -589,7 +588,6 @@
 <translation id="1875387611427697908">Chỉ có thể thêm ứng dụng/tiện ích này từ <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Không nhận được mã thông báo xác thực. Vui lòng đăng xuất rồi đăng nhập lại để thử lại.</translation>
 <translation id="1878524442024357078">Không cho phép bất kỳ trang web nào sử dụng plugin để truy cập vào máy tính của bạn</translation>
-<translation id="1879449842763884566">Cài đặt vào thư mục Ứng dụng...</translation>
 <translation id="1880905663253319515">Xóa chứng chỉ "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Cho phép các trang web yêu cầu trở thành trình xử lý mặc định cho giao thức (nên chọn)</translation>
 <translation id="1887442540531652736">Lỗi đăng nhập</translation>
@@ -904,7 +902,6 @@
 <translation id="2408955596600435184">Nhập mã PIN của bạn</translation>
 <translation id="241082044617551207">Plugin không rõ</translation>
 <translation id="2413749388954403953">Thay đổi giao diện người dùng của dấu trang</translation>
-<translation id="2415294094132942411">Thêm vào máy tính để bàn...</translation>
 <translation id="2422426094670600218">&lt;không có tên&gt;</translation>
 <translation id="2423578206845792524">Lưu &amp;hình ảnh thành...</translation>
 <translation id="2424091190911472304">Luôn chạy trên <ph name="ORIGIN" /></translation>
@@ -943,7 +940,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="2478176599153288112">Quyền của tệp phương tiện cho "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Chia sẻ âm thanh</translation>
 <translation id="2480868415629598489">Sửa đổi dữ liệu bạn sao chép và dán</translation>
-<translation id="2481332092278989943">Thêm vào giá</translation>
 <translation id="2482878487686419369">Thông báo</translation>
 <translation id="2485056306054380289">Chứng chỉ CA máy chủ:</translation>
 <translation id="2485422356828889247">Gỡ cài đặt</translation>
@@ -1057,7 +1053,6 @@ Tôi không cho rằng nên chặn trang web này!</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> không thể hoàn tất cài đặt nhưng sẽ tiếp tục chạy từ hình ảnh đĩa của trình duyệt này.</translation>
 <translation id="2635176084534510129">Tận hưởng trải nghiệm cá nhân hóa hơn, chẳng hạn như đề xuất nội dung phù hợp hơn và Dịch thông minh hơn</translation>
 <translation id="2635276683026132559">Ký</translation>
-<translation id="2635926034288331400">Cài đặt vào thư mục Ứng dụng</translation>
 <translation id="2636625531157955190">Chrome không thể truy cập hình ảnh.</translation>
 <translation id="2638087589890736295">Yêu cầu cụm mật khẩu để bắt đầu đồng bộ hóa</translation>
 <translation id="2638286699381354126">Cập nhật...</translation>
@@ -1525,7 +1520,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3308852433423051161">Đang tải Trợ lý Google...</translation>
 <translation id="3309747692199697901">Luôn chạy trên tất cả các trang web</translation>
 <translation id="3312424061798279731">Ngôn ngữ đã bật</translation>
-<translation id="3312903956926554846">Cài đặt vào màn hình</translation>
 <translation id="3313590242757056087">Để đặt các trang web mà người dùng bị giám sát có thể xem, bạn có thể định cấu hình
     các giới hạn và cài đặt bằng cách truy cập <ph name="MANAGEMENT_URL" />.
     Nếu bạn không thay đổi cài đặt mặc định, <ph name="USER_DISPLAY_NAME" />
@@ -1664,7 +1658,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3511528412952710609">Độ trễ ngắn</translation>
 <translation id="3514373592552233661">Mạng ưa thích sẽ được ưu tiên hơn so với các mạng đã biết khác nếu có nhiều mạng</translation>
 <translation id="3523642406908660543">Hỏi khi một trang web muốn sử dụng plugin để truy cập vào máy tính của bạn (được khuyến nghị)</translation>
-<translation id="3525897975040424366">Cài đặt vào giá</translation>
 <translation id="3527085408025491307">Thư mục</translation>
 <translation id="3527276236624876118">Đã tạo người dùng được giám sát có tên <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Trang này đang theo dõi vị trí của bạn.</translation>
@@ -1965,7 +1958,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="3968261067169026421">Không thể thiết lập mạng</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Đang tính...</translation>
-<translation id="3972711570620097483">Cài đặt vào giá...</translation>
 <translation id="3974195870082915331">Nhấp để hiển thị mật khẩu</translation>
 <translation id="3975222297214566386">Bong bóng tùy chọn nhập</translation>
 <translation id="397703832102027365">Đang hoàn tất...</translation>
@@ -2542,7 +2534,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="4967749818080339523">Chọn tài khoản</translation>
 <translation id="496888482094675990">Ứng dụng Tệp cho phép truy cập nhanh các tệp mà bạn đã lưu trên Google Drive, bộ nhớ ngoài hoặc thiết bị Chrome OS của bạn.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Cài đặt vào màn hình...</translation>
 <translation id="4971412780836297815">Mở khi hoàn tất</translation>
 <translation id="4972129977812092092">Chỉnh sửa máy in</translation>
 <translation id="497287958838527945">Thẻ tín dụng và địa chỉ sử dụng Google Pay.</translation>
@@ -3046,7 +3037,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="5750324801516359607">Xa</translation>
 <translation id="5751545372099101699">Mục giá 4</translation>
 <translation id="5752453871435543420">Sao lưu Chrome OS Cloud</translation>
-<translation id="5754903485544371559">Thêm vào Ứng dụng...</translation>
 <translation id="5756163054456765343">Trung tâm trợ g&amp;iúp</translation>
 <translation id="5759728514498647443">Tài liệu bạn gửi để in qua <ph name="APP_NAME" /> có thể đọc được bằng <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Không tìm thấy thiết bị USB nào</translation>
@@ -3183,7 +3173,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="5959471481388474538">Không có mạng</translation>
 <translation id="5963026469094486319">Tải chủ đề</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (tối đa <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Thêm vào giá...</translation>
 <translation id="5965661248935608907">Tiện ích này cũng điều khiển trang nào được hiển thị khi bạn nhấp vào nút Trang chủ hoặc tìm kiếm từ Thanh địa chỉ.</translation>
 <translation id="5971037678316050792">Kiểm soát ghép nối và trạng thái bộ đổi nguồn Bluetooth</translation>
 <translation id="5972017421290582825">Quản lý cài đặt MIDI...</translation>
@@ -3214,7 +3203,6 @@ Tạo người dùng được giám sát sẽ không tạo Tài khoản Google, 
 <translation id="6015796118275082299">Năm</translation>
 <translation id="6016551720757758985">Xác nhận Powerwash quay lại phiên bản trước</translation>
 <translation id="6016972670657536680">Chọn nút bàn phím và ngôn ngữ. Ngôn ngữ hiện được chọn là <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Thêm vào Ứng dụng</translation>
 <translation id="6019169947004469866">Cắt</translation>
 <translation id="6020431688553761150">Máy chủ không cho phép bạn truy cập vào tài nguyên này.</translation>
 <translation id="602251597322198729">Trang web này đang cố tải xuống nhiều tệp. Bạn có muốn thực hiện việc tải xuống này không?</translation>

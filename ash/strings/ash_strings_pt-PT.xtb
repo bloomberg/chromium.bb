@@ -170,7 +170,7 @@
 <translation id="4804818685124855865">Desligar</translation>
 <translation id="4849058404725798627">Realçar objeto com foco do teclado</translation>
 <translation id="4872237917498892622">Alt + Pesquisar ou Shift</translation>
-<translation id="4890187583552566966">O Assistente do Google foi desativado pelo administrador.</translation>
+<translation id="4890187583552566966">O Assistente Google foi desativado pelo administrador.</translation>
 <translation id="4895488851634969361">A bateria está carregada.</translation>
 <translation id="4905614135390995787">O atalho para ativar/desativar o Modo de alto contraste foi alterado. Utilize <ph name="NEW_SHORTCUT" /> em vez de <ph name="OLD_SHORTCUT" />.</translation>
 <translation id="4918086044614829423">Aceitar</translation>
@@ -289,12 +289,12 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="7658239707568436148">Cancelar</translation>
 <translation id="7692480393933218409">A carregar os dispositivos USB-C ligados</translation>
 <translation id="776344839111254542">Clique para ver os detalhes da atualização</translation>
-<translation id="7796353162336583443">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã ou utilizar o Assistente do Google, o ponteiro de laser ou a lupa.</translation>
+<translation id="7796353162336583443">Toque no botão da caneta stylus na prateleira para tirar uma nota, criar uma captura de ecrã ou utilizar o Assistente Google, o ponteiro de laser ou a lupa.</translation>
 <translation id="7798302898096527229">Prima Pesquisar ou Shift para cancelar.</translation>
 <translation id="7814236020522506259"><ph name="HOUR" /> e <ph name="MINUTE" /></translation>
 <translation id="7829386189513694949">Sinal forte</translation>
 <translation id="7904094684485781019">O gestor desta conta removeu a permissão de início de sessão integrado.</translation>
-<translation id="7933084174919150729">O Assistente do Google está disponível apenas no perfil principal.</translation>
+<translation id="7933084174919150729">O Assistente Google está disponível apenas no perfil principal.</translation>
 <translation id="79341161159229895">Conta gerida por <ph name="FIRST_PARENT_EMAIL" /> e <ph name="SECOND_PARENT_EMAIL" />.</translation>
 <translation id="7977927628060636163">A pesquisar redes móveis...</translation>
 <translation id="7982789257301363584">Rede</translation>
@@ -338,7 +338,7 @@ Utilize esta funcionalidade apenas com contas fidedignas.</translation>
 <translation id="8850991929411075241">Pesquisa+Esc</translation>
 <translation id="8870509716567206129">A aplicação não é compatível com o ecrã dividido.</translation>
 <translation id="8878886163241303700">Ecrã alargado</translation>
-<translation id="8921624153894383499">O Assistente do Google não fala este idioma.</translation>
+<translation id="8921624153894383499">O Assistente Google não fala este idioma.</translation>
 <translation id="8938800817013097409">Dispositivo USB-C (porta traseira direita)</translation>
 <translation id="8940956008527784070">Bateria fraca (<ph name="PERCENTAGE" />%)</translation>
 <translation id="8995603266996330174">Gerido por <ph name="DOMAIN" /></translation>

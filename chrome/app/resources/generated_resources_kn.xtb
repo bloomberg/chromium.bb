@@ -343,7 +343,6 @@
        ಪ್ರಾಕ್ಸಿ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು<ph name="LINK_END" /> ಸರಿಹೊಂದಿಸಿ.</translation>
 <translation id="1511388193702657997">ನಿಮ್ಮ ವೆಬ್ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಉಳಿಸುವ ಸೂಚನೆ</translation>
 <translation id="1512210426710821809">ಇದನ್ನು ರದ್ದುಗೊಳಿಸಲು ಇರುವ ಏಕೈಕ ಮಾರ್ಗವೆಂದರೆ <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ಅನ್ನು ಮರುಸ್ಥಾಪಿಸುವುದು</translation>
-<translation id="1514215615641002767">ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಸೇರಿಸಿ</translation>
 <translation id="151501797353681931">Safari ಯಿಂದ ಆಮದು ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="1515163294334130951">ಪ್ರಾರಂಭಿಸು</translation>
 <translation id="1521442365706402292">ಪ್ರಮಾಣಪತ್ರಗಳನ್ನು ನಿರ್ವಹಿಸಿ</translation>
@@ -585,7 +584,6 @@
 <translation id="1875387611427697908"><ph name="CHROME_WEB_STORE" /> ಮೂಲಕ ಮಾತ್ರ ಇದನ್ನು ಸೇರಿಸಬಹುದಾಗಿದೆ</translation>
 <translation id="1877520246462554164">ದೃಢೀಕರಣ ಟೋಕನ್ ಪಡೆಯಲು ವಿಫಲವಾಗಿದೆ. ಸೈನ್ ಔಟ್ ಆಗಿ ಮತ್ತೆ ಸೈನ್ ಇನ್ ಆಗಿ ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="1878524442024357078">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಪ್ರವೇಶಿಸಲು ಯಾವುದೇ ಸೈಟ್‌ಗಳಿಗೆ ಪ್ಲಗಿನ್ ಬಳಸಲು ಅನುಮತಿಸಬೇಡಿ</translation>
-<translation id="1879449842763884566">ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ...</translation>
 <translation id="1880905663253319515">"<ph name="CERTIFICATE_NAME" />" ಪ್ರಮಾಣಪತ್ರವನ್ನು ಅಳಿಸುವುದೆ?</translation>
 <translation id="1886996562706621347">ಪ್ರೊಟೋಕಾಲ್‌ಗಳಿಗಾಗಿ ಡಿಫಾಲ್ಟ್ ಹ್ಯಾಂಡ್ಲರ್‌‌ಗಳಾಗಲು ಸೈಟ್‌ಗಳನ್ನು ಅನುಮತಿಸಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="1887442540531652736">ಸೈನ್‌ ಇನ್‌ ದೋಷ</translation>
@@ -900,7 +898,6 @@
 <translation id="2408955596600435184">ನಿಮ್ಮ ಪಿನ್ ನಮೂದಿಸಿ</translation>
 <translation id="241082044617551207">ಅಪರಿಚಿತ ಪ್ಲಗ್-ಇನ್</translation>
 <translation id="2413749388954403953">ಬುಕ್‌ಮಾರ್ಕ್‌ಗಳ ಬಳಕೆದಾರರ ಇಂಟರ್ಫೇಸ್ ಬದಲಾಯಿಸಿ</translation>
-<translation id="2415294094132942411">ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಸೇರಿಸು...</translation>
 <translation id="2422426094670600218">&lt;ಹೆಸರಿಸದಿರುವುದು&gt;</translation>
 <translation id="2423578206845792524">ಇದರಂತೆ ಇಮೇಜ್ ಅನ್ನು ಉ&amp;ಳಿಸಿ...</translation>
 <translation id="2424091190911472304">ಯಾವಾಗಲೂ <ph name="ORIGIN" /> ನಲ್ಲಿ ರನ್ ಮಾಡಿ</translation>
@@ -939,7 +936,6 @@
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" ಗಾಗಿ ಮಾಧ್ಯಮ-ಫೈಲ್ ಒಪ್ಪಿಗೆಗಳು</translation>
 <translation id="247949520305900375">ಆಡಿಯೊ ಹಂಚಿಕೊಳ್ಳಿ</translation>
 <translation id="2480868415629598489">ನೀವು ನಕಲಿಸಿದ ಮತ್ತು ಅಂಟಿಸಿದ ಡೇಟಾವನ್ನು ಮಾರ್ಪಡಿಸಿ</translation>
-<translation id="2481332092278989943">ಶೆಲ್ಫ್‌ಗೆ ಸೇರಿಸು</translation>
 <translation id="2482878487686419369">ಸೂಚನೆಗಳು</translation>
 <translation id="2485056306054380289">ಸರ್ವರ್ CA ಪ್ರಮಾಣಪತ್ರ:</translation>
 <translation id="2485422356828889247">ಅಸ್ಥಾಪಿಸು</translation>
@@ -1053,7 +1049,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ಸ್ಥಾಪನೆಯನ್ನು ಪೂರ್ಣಗೊಳಿಸಲಾಗಲಿಲ್ಲ, ಆದರೆ ಇದರ ಡಿಸ್ಕ್ ಇಮೇಜ್‌ನಿಂದ ಚಾಲನೆಗೊಳ್ಳುವುದನ್ನು ಮುಂದುವರಿಸುತ್ತದೆ.</translation>
 <translation id="2635176084534510129">ಉತ್ತಮ ವಿಷಯದ ಸಲಹೆಗಳು ಮತ್ತು ಅತ್ಯುತ್ತಮ ಅನುವಾದಗಳಂತಹ ಇನ್ನಷ್ಟು ವೈಯಕ್ತೀಕರಿಸಲಾದ ಅನುಭವಗಳನ್ನು ಪಡೆಯಿರಿ</translation>
 <translation id="2635276683026132559">ಸಹಿ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
-<translation id="2635926034288331400">ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="2636625531157955190">Chrome ಚಿತ್ರವನ್ನು ಪ್ರವೇಶಿಸುವುದಿಲ್ಲ.</translation>
 <translation id="2638087589890736295">ಸಿಂಕ್ ಪ್ರಾರಂಭಿಸಲು ಪಾಸ್‌ಫ್ರೇಸ್ ಅಗತ್ಯವಿದೆ</translation>
 <translation id="2638286699381354126">ಅಪ್‌ಡೇಟ್‌‌...</translation>
@@ -1521,7 +1516,6 @@
 <translation id="3308852433423051161">Google ಸಹಾಯಕವನ್ನು ಲೋಡ್‌ ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="3309747692199697901">ಯಾವಾಗಲೂ ಎಲ್ಲಾ ಸೈಟ್‌ಗಳಲ್ಲಿ ರನ್ ಮಾಡು</translation>
 <translation id="3312424061798279731">ಸಕ್ರಿಯಗೊಳಿಸಲಾದ ಭಾಷೆಗಳು</translation>
-<translation id="3312903956926554846">ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಿ</translation>
 <translation id="3313590242757056087">ಯಾವ ವೆಬ್‌ಸೈಟ್‌ಗಳನ್ನು ಮೇಲ್ವಿಚಾರಣೆ ಬಳಕೆದಾರರು ವೀಕ್ಷಿಸಬಹುದು ಎಂಬುದನ್ನು ಹೊಂದಿಸಲು, ನೀವು <ph name="MANAGEMENT_URL" /> ಗೆ ಭೇಟಿ ನೀಡುವುದರ ಮೂಲಕ ನಿರ್ಬಂಧಗಳು ಮತ್ತು
     ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಕಾನ್ಫಿಗರ್ ಮಾಡಬಹುದು.
     ಒಂದು ವೇಳೆ ನೀವು ಡಿಫಾಲ್ಟ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಬದಲಾವಣೆ ಮಾಡದಿದ್ದರೆ, <ph name="USER_DISPLAY_NAME" />
@@ -1660,7 +1654,6 @@
 <translation id="3511528412952710609">ಶಾರ್ಟ್‌</translation>
 <translation id="3514373592552233661">ಒಂದಕ್ಕಿಂತ ಹೆಚ್ಚು ಲಭ್ಯವಿರುವಾಗ ತಿಳಿದಿರುವ ಇತರ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗಿಂತ ಆದ್ಯತೆಯ ನೆಟ್‌ವರ್ಕ್‌ಗಳಿಗೆ ಆದ್ಯತೆ ನೀಡಲಾಗುತ್ತದೆ</translation>
 <translation id="3523642406908660543">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್ ಪ್ರವೇಶಿಸಲು ಸೈಟ್ ಪ್ಲಗ್ಇನ್ ಬಳಸಲು ಬಯಸಿದಾಗ ಕೇಳಿ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
-<translation id="3525897975040424366">ಶೆಲ್ಫ್‌ಗೆ ಇನ್‌ಸ್ಟಾಲ್ ಮಾಡಿ</translation>
 <translation id="3527085408025491307">ಫೋಲ್ಡರ್</translation>
 <translation id="3527276236624876118"><ph name="USER_DISPLAY_NAME" /> ಎಂಬ ಹೆಸರಿನ ಮೇಲ್ವಿಚಾರಣೆ ಬಳಕೆದಾರರನ್ನು ರಚಿಸಲಾಗಿದೆ.</translation>
 <translation id="3528033729920178817">ಈ ಪುಟವು ನಿಮ್ಮ ಸ್ಥಳವನ್ನು ನಿಗಾ ಇರಿಸುತ್ತಿದೆ.</translation>
@@ -1960,7 +1953,6 @@
 <translation id="3968261067169026421">ನೆಟ್‌ವರ್ಕ್ ಹೊಂದಿಸಲು ಸಾಧ್ಯವಾಗಲಿಲ್ಲ</translation>
 <translation id="3970114302595058915">ಐಡಿ</translation>
 <translation id="397105322502079400">ಎಣಿಸಲಾಗುತ್ತಿದೆ...</translation>
-<translation id="3972711570620097483">ಶೆಲ್ಫ್‌ಗೆ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಿ...</translation>
 <translation id="3974195870082915331">ಪಾಸ್‌ವರ್ಡ್ ತೋರಿಸಲು ಕ್ಲಿಕ್ ಮಾಡಿ</translation>
 <translation id="3975222297214566386">ಇನ್‌ಪುಟ್ ಆಯ್ಕೆಗಳ ಬಬಲ್</translation>
 <translation id="397703832102027365">ಅಂತಿಮಗೊಳಿಸಲಾಗುತ್ತಿದೆ...</translation>
@@ -2538,7 +2530,6 @@
 <translation id="4967749818080339523">ಖಾತೆಯನ್ನು ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="496888482094675990">Google ಡ್ರೈವ್‌, ಬಾಹ್ಯ ಸಂಗ್ರಹಣೆ, ಅಥವಾ ನಿಮ್ಮ Chrome OS ಸಾಧನದಲ್ಲಿ ನೀವು ಉಳಿಸಲಾದ ಫೈಲ್‌ಗಳಿಗೆ ಫೈಲ್‌ಗಳ ಅಪ್ಲಿಕೇಶನ್‌ ತ್ವರಿತ ಪ್ರವೇಶವನ್ನು ಒದಗಿಸುತ್ತದೆ.</translation>
 <translation id="4969785127455456148">ಆಲ್ಬಮ್</translation>
-<translation id="4970738541803285369">ಡೆಸ್ಕ್‌ಟಾಪ್‌ಗೆ ಇನ್‌ಸ್ಟಾಲ್‌ ಮಾಡಿ...</translation>
 <translation id="4971412780836297815">ಮುಗಿಸಿದಾಗ ತೆರೆಯಿರಿ</translation>
 <translation id="4972129977812092092">ಪ್ರಿಂಟರ್‌ ಅನ್ನು ಎಡಿಟ್‌ ಮಾಡಿ</translation>
 <translation id="497287958838527945">Google Pay ಬಳಸುವ ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು ಮತ್ತು ವಿಳಾಸಗಳು.</translation>
@@ -3044,7 +3035,6 @@
 <translation id="5750324801516359607">ದೂರದಲ್ಲಿದೆ</translation>
 <translation id="5751545372099101699">ಶೆಲ್ಫ್ ಐಟಂ 4</translation>
 <translation id="5752453871435543420">Chrome OS ಮೇಘ ಬ್ಯಾಕಪ್</translation>
-<translation id="5754903485544371559">ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ ಸೇರಿಸು...</translation>
 <translation id="5756163054456765343">ಸ&amp;ಹಾಯ ಕೇಂದ್ರ</translation>
 <translation id="5759728514498647443">ನೀವು <ph name="APP_NAME" /> ಮೂಲಕ ಪ್ರಿಂಟ್ ಮಾಡಲು ಕಳುಹಿಸುವ ಡಾಕ್ಯುಮೆಂಟ್‌ಗಳನ್ನು <ph name="APP_NAME" /> ಮೂಲಕ ಓದಬಹುದಾಗಿದೆ.</translation>
 <translation id="5763751966069581670">ಯಾವುದೇ USB ಸಾಧನಗಳು ಕಂಡುಬಂದಿಲ್ಲ</translation>
@@ -3181,7 +3171,6 @@
 <translation id="5959471481388474538">ನೆಟ್‌ವರ್ಕ್ ಲಭ್ಯವಿಲ್ಲ</translation>
 <translation id="5963026469094486319">ಥೀಮ್‌ಗಳನ್ನು ಪಡೆ</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> ಪೀಕ್)</translation>
-<translation id="5965403572731919803">ಶೆಲ್ಫ್‌ಗೆ ಸೇರಿಸು...</translation>
 <translation id="5965661248935608907">ನೀವು ಮುಖಪುಟ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ಅಥವಾ ಓಮ್ನಿಬಾಕ್ಸ್‌ನಿಂದ ಹುಡುಕಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
 <translation id="5971037678316050792">ಬ್ಲೂಟೂತ್‌ ಅಡಾಪ್ಟರ್ ಸ್ಥಿತಿ ಮತ್ತು ಜೋಡಿಸುವಿಕೆಯನ್ನು ನಿಯಂತ್ರಿಸು</translation>
 <translation id="5972017421290582825">MIDI ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
@@ -3211,7 +3200,6 @@
 <translation id="6015796118275082299">ವರ್ಷ</translation>
 <translation id="6016551720757758985">ಹಿಂದಿನ ಆವೃತ್ತಿಗೆ ಹಿಂತಿರುಗುವ ಮೂಲಕ ಪವರ್‌ವಾಶ್‌ ಅನ್ನು ದೃಢೀಕರಿಸಿ</translation>
 <translation id="6016972670657536680">ಭಾಷೆ ಮತ್ತು ಕೀಬೋರ್ಡ್ ಬಟನ್ ಅನ್ನು ಆಯ್ಕೆಮಾಡಿ. ಪ್ರಸ್ತುತ ಆಯ್ಕೆಮಾಡಿದ ಭಾಷೆ <ph name="LANGUAGE" /> ಇದಾಗಿದೆ.</translation>
-<translation id="6017981840202692187">ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ ಸೇರಿಸಿ</translation>
 <translation id="6019169947004469866">ಕ್ರಾಪ್</translation>
 <translation id="6020431688553761150">ಈ ಸಂಪನ್ಮೂಲವನ್ನು ಪ್ರವೇಶಿಸಲು ನಿಮಗೆ ಸರ್ವರ್ ದೃಢೀಕರಿಸಿಲ್ಲ.</translation>
 <translation id="602251597322198729">ಬಹು ಫೈಲ್ಗಳನ್ನು ಡೌನ್ಲೋಡ್ ಮಾಡಲು ಈ ಸೈಟ್ ಪ್ರಯತ್ನಿಸುತ್ತಿದೆ. ನೀವು ಇದನ್ನು ಅನುಮತಿಸಲು ಬಯಸುತ್ತೀರಾ?</translation>

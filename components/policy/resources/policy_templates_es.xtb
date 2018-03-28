@@ -1153,7 +1153,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
 <translation id="4485425108474077672">Configurar la URL de la página Nueva pestaña</translation>
 <translation id="4492287494009043413">Inhabilitar la realización de capturas de pantalla</translation>
 <translation id="4497968613298501984">Configura la lista de las URL de acceso empresarial (solo esquemas HTTP y HTTPS). En estas URL se capturará la huella digital de la contraseña, que se utilizará para detectar si se reutiliza la contraseña.
-      Solo deben utilizar esta opción los usuarios de G Suite con sistemas SSO/SMAL.
+      Solo deben utilizar esta opción los usuarios de G Suite con sistemas SSO/SAML.
       Para que <ph name="PRODUCT_NAME" /> capture correctamente las huellas digitales de las contraseñas, tus páginas de inicio de sesión deben seguir las directrices incluidas en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Si se habilita esta opción, el servicio de protección de contraseña capturará la huella digital de la contraseña en estas URL para detectar si la contraseña se reutiliza.
@@ -1278,7 +1278,7 @@ Si esta política está configurada, el usuario no puede cambiarla y el acceso d
       Si esta política se deja en blanco o no se establece, cualquier usuario podrá iniciar sesión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Permitir modo de pantalla completa</translation>
 <translation id="4868249328547841081">Configura la URL de cambio de contraseñas (solo esquemas HTTP y HTTPS). El servicio de protección de contraseña enviará a los usuarios a esta URL para cambiar sus contraseñas si han sufrido un ataque de phishing.
-      Solo deben utilizar esta opción los usuarios de G Suite con sistemas SSO/SMAL.
+      Solo deben utilizar esta opción los usuarios de G Suite con sistemas SSO/SAML.
       Para que <ph name="PRODUCT_NAME" /> capture correctamente la nueva huella digital de la contraseña en esta página de cambio de contraseña, la página debe seguir las directrices incluidas en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Si se habilita esta opción, el servicio de protección de contraseña enviará a los usuarios a esta URL para cambiar sus contraseñas si han sufrido un ataque de phishing.

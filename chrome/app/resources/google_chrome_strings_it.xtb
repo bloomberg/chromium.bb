@@ -172,7 +172,7 @@ Per ulteriori informazioni, controlla l'email all'indirizzo <ph name="ACCOUNT_EM
 <translation id="556024056938947818">Google Chrome sta cercando di visualizzare le password.</translation>
 <translation id="5566025111015594046">Google Chrome (mDNS-In)</translation>
 <translation id="565744775970812598"><ph name="FILE_NAME" /> potrebbe essere pericoloso, pertanto è stato bloccato da Chrome.</translation>
-<translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome sarà riavviato tra 1 secondo}other{Google Chrome sarà riavviato tra # secondi}}</translation>
+<translation id="5715063361988620182">{SECONDS,plural, =1{Google Chrome si riavvierà tra 1 secondo}other{Google Chrome si riavvierà tra # secondi}}</translation>
 <translation id="573759479754913123">Informazioni su Chrome OS</translation>
 <translation id="5774845247549698882">Chrome OS è visualizzato in questa lingua</translation>
 <translation id="5795887333006832406"><ph name="PAGE_TITLE" /> - Google Chrome Canary</translation>

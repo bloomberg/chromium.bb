@@ -343,7 +343,6 @@
 <translation id="1510785804673676069">如果您使用的是代理服务器，请检查您的代理设置，或与网络管理员核实代理服务器是否运转正常。如果您认为自己使用的不是代理服务器，请调整您的<ph name="LINK_START" />代理设置<ph name="LINK_END" />。</translation>
 <translation id="1511388193702657997">询问是否保存您在网页上输入的密码</translation>
 <translation id="1512210426710821809">要想撤消此操作，唯一的方法是重新安装 <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">添加到桌面</translation>
 <translation id="151501797353681931">从 Safari 中导入</translation>
 <translation id="1515163294334130951">启动</translation>
 <translation id="1521442365706402292">管理证书</translation>
@@ -585,7 +584,6 @@
 <translation id="1875387611427697908">只能通过<ph name="CHROME_WEB_STORE" />添加此项内容</translation>
 <translation id="1877520246462554164">未能获取身份验证令牌。请退出并重新登录，然后重试。</translation>
 <translation id="1878524442024357078">不允许任何网站使用插件访问您的计算机</translation>
-<translation id="1879449842763884566">安装到“应用”文件夹…</translation>
 <translation id="1880905663253319515">要删除证书“<ph name="CERTIFICATE_NAME" />”吗？</translation>
 <translation id="1886996562706621347">允许网站要求成为协议的默认处理程序（推荐）</translation>
 <translation id="1887442540531652736">登录错误</translation>
@@ -900,7 +898,6 @@
 <translation id="2408955596600435184">输入您的 PIN 码</translation>
 <translation id="241082044617551207">未知插件</translation>
 <translation id="2413749388954403953">更改书签界面</translation>
-<translation id="2415294094132942411">添加到桌面…</translation>
 <translation id="2422426094670600218">&lt;未命名&gt;</translation>
 <translation id="2423578206845792524">图片另存为(&amp;V)...</translation>
 <translation id="2424091190911472304">在 <ph name="ORIGIN" /> 上始终运行</translation>
@@ -939,7 +936,6 @@
 <translation id="2478176599153288112">“<ph name="EXTENSION" />”的媒体文件权限</translation>
 <translation id="247949520305900375">分享音频</translation>
 <translation id="2480868415629598489">修改您复制和粘贴的数据</translation>
-<translation id="2481332092278989943">添加到任务栏</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2485056306054380289">服务器CA证书：</translation>
 <translation id="2485422356828889247">卸载</translation>
@@ -1052,7 +1048,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" />无法完成安装，但是会通过其磁盘映像继续运行。</translation>
 <translation id="2635176084534510129">畅享更合乎个人需求的体验，如更理想的内容建议和更智能的翻译服务</translation>
 <translation id="2635276683026132559">签名</translation>
-<translation id="2635926034288331400">安装到“应用”文件夹</translation>
 <translation id="2636625531157955190">Chrome 无法访问这张图片。</translation>
 <translation id="2638087589890736295">必须输入密码才能开始同步</translation>
 <translation id="2638286699381354126">更新...</translation>
@@ -1520,7 +1515,6 @@
 <translation id="3308852433423051161">正在加载 Google 智能助理…</translation>
 <translation id="3309747692199697901">在所有网站上始终运行</translation>
 <translation id="3312424061798279731">已启用的语言</translation>
-<translation id="3312903956926554846">安装到桌面</translation>
 <translation id="3313590242757056087">要设置受监管用户可以浏览哪些网站，您可以转到 <ph name="MANAGEMENT_URL" /> 配置限制和设置。
 如果您不更改默认设置，<ph name="USER_DISPLAY_NAME" />将可以浏览网络上的所有网站。</translation>
 <translation id="3313622045786997898">证书签名值</translation>
@@ -1657,7 +1651,6 @@
 <translation id="3511528412952710609">短</translation>
 <translation id="3514373592552233661">如果有多个网络可供使用，首选网络将优先于其他已知网络</translation>
 <translation id="3523642406908660543">当网站要使用插件访问您的计算机时询问您（推荐）</translation>
-<translation id="3525897975040424366">安装到任务栏</translation>
 <translation id="3527085408025491307">文件夹</translation>
 <translation id="3527276236624876118">已创建名为“<ph name="USER_DISPLAY_NAME" />”的受监管用户。</translation>
 <translation id="3528033729920178817">此网页正在跟踪您的位置。</translation>
@@ -1957,7 +1950,6 @@
 <translation id="3968261067169026421">无法设置网络</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">正在计算...</translation>
-<translation id="3972711570620097483">安装到任务栏…</translation>
 <translation id="3974195870082915331">点击可显示密码</translation>
 <translation id="3975222297214566386">输入法选项气泡</translation>
 <translation id="397703832102027365">正在完成...</translation>
@@ -2534,7 +2526,6 @@
 <translation id="4967749818080339523">选择帐号</translation>
 <translation id="496888482094675990">通过“文件”应用，您可以快速存取自己保存在Google云端硬盘、外部存储设备和Chrome操作系统设备上的文件。</translation>
 <translation id="4969785127455456148">专辑</translation>
-<translation id="4970738541803285369">安装到桌面…</translation>
 <translation id="4971412780836297815">完成后打开</translation>
 <translation id="4972129977812092092">修改打印机</translation>
 <translation id="497287958838527945">Google Pay 中存储的信用卡和地址信息。</translation>
@@ -3032,7 +3023,6 @@
 <translation id="5750324801516359607">远</translation>
 <translation id="5751545372099101699">栏中第 4 项</translation>
 <translation id="5752453871435543420">Chrome 操作系统云端备份</translation>
-<translation id="5754903485544371559">添加到“应用”文件夹…</translation>
 <translation id="5756163054456765343">帮助中心(&amp;E)</translation>
 <translation id="5759728514498647443">您通过“<ph name="APP_NAME" />”发送以进行打印的文档可由“<ph name="APP_NAME" />”读取。</translation>
 <translation id="5763751966069581670">未找到任何 USB 设备</translation>
@@ -3169,7 +3159,6 @@
 <translation id="5959471481388474538">网络不可用</translation>
 <translation id="5963026469094486319">获取主题背景</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> 个（峰值：<ph name="NUM_KILOBYTES_LIVE" />）</translation>
-<translation id="5965403572731919803">添加到任务栏…</translation>
 <translation id="5965661248935608907">它还能够控制您点击“主页”按钮后或通过多功能框进行搜索时系统显示的页面。</translation>
 <translation id="5971037678316050792">控制蓝牙适配器状态和配对</translation>
 <translation id="5972017421290582825">管理 MIDI 设置…</translation>
@@ -3200,7 +3189,6 @@
 <translation id="6015796118275082299">年</translation>
 <translation id="6016551720757758985">确认 Powerwash 是否将设备还原到之前的版本</translation>
 <translation id="6016972670657536680">用于选择语言和输入法的按钮。当前选择的语言是“<ph name="LANGUAGE" />”。</translation>
-<translation id="6017981840202692187">添加到“应用”文件夹</translation>
 <translation id="6019169947004469866">裁剪</translation>
 <translation id="6020431688553761150">服务器未授予您访问此资源的权限。</translation>
 <translation id="602251597322198729">此网站试图下载多个文件。是否允许此操作？</translation>

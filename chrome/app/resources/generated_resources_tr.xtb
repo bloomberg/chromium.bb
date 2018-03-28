@@ -346,7 +346,6 @@
         düşünüyorsanız <ph name="LINK_START" />proxy ayarlarınızı<ph name="LINK_END" /> yapılandırın.</translation>
 <translation id="1511388193702657997">Web şifrelerinizin kaydedilmesi önerilir</translation>
 <translation id="1512210426710821809">Bunu geri almanın tek yolu <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> sistemini yeniden yüklemektir</translation>
-<translation id="1514215615641002767">Masaüstüne ekleyin</translation>
 <translation id="151501797353681931">Safari'den Aktarıldı</translation>
 <translation id="1515163294334130951">Başlat</translation>
 <translation id="1521442365706402292">Sertifikaları yönet</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Bu yalnızca <ph name="CHROME_WEB_STORE" /> kullanılarak eklenebilir</translation>
 <translation id="1877520246462554164">Kimlik doğrulama jetonu alınamadı. Tekrar denemek için lütfen oturumu kapatıp sonra yeniden oturum açın.</translation>
 <translation id="1878524442024357078">Hiçbir sitenin bilgisayarıma erişmek için eklenti kullanmasına izin verme</translation>
-<translation id="1879449842763884566">Uygulamalar'a yükle...</translation>
 <translation id="1880905663253319515">"<ph name="CERTIFICATE_NAME" />" sertifikası silinsin mi?</translation>
 <translation id="1886996562706621347">Sitelerin, protokoller için varsayılan işleyiciler olmasını sormasına izin ver (önerilir)</translation>
 <translation id="1887442540531652736">Oturum açma hatası</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">PIN'inizi girin</translation>
 <translation id="241082044617551207">Bilinmeyen eklenti</translation>
 <translation id="2413749388954403953">Yer işaretleri kullanıcı arayüzünü değiştirme</translation>
-<translation id="2415294094132942411">Masaüstüne ekle...</translation>
 <translation id="2422426094670600218">&lt;adsız&gt;</translation>
 <translation id="2423578206845792524">Res&amp;mi farklı kaydet...</translation>
 <translation id="2424091190911472304"><ph name="ORIGIN" /> sitesinde her zaman çalıştır</translation>
@@ -942,7 +939,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" için Medya Dosya İzinleri</translation>
 <translation id="247949520305900375">Sesi paylaş</translation>
 <translation id="2480868415629598489">Kopyaladığınız ve yapıştırdığınız verileri değiştirme</translation>
-<translation id="2481332092278989943">Rafa ekleyin</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
 <translation id="2485056306054380289">Sunucu CA sertifikası:</translation>
 <translation id="2485422356828889247">Yüklemeyi Kaldır</translation>
@@ -1056,7 +1052,6 @@ Bu sitenin engellenmesi gerektiğini düşünmüyorum!</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> yükleme işlemini tamamlayamadı, ancak disk görüntüsünden çalışmaya devam edecek.</translation>
 <translation id="2635176084534510129">Daha akıllı Çeviri ve daha iyi içerik önerileri gibi daha kişiselleştirilmiş deneyimler edinin</translation>
 <translation id="2635276683026132559">İmzalama</translation>
-<translation id="2635926034288331400">Uygulamalar'a Yükleyin</translation>
 <translation id="2636625531157955190">Chrome resme erişemiyor.</translation>
 <translation id="2638087589890736295">Senkronizasyonu başlatmak için parola gerekiyor</translation>
 <translation id="2638286699381354126">Güncelle...</translation>
@@ -1524,7 +1519,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3308852433423051161">Google Asistan yükleniyor...</translation>
 <translation id="3309747692199697901">Tüm sitelerde her zaman çalıştır</translation>
 <translation id="3312424061798279731">Etkin diller</translation>
-<translation id="3312903956926554846">Masaüstüne yükleme</translation>
 <translation id="3313590242757056087">Denetlenen kullanıcının hangi web sitelerini görebileceğini belirlemek için kısıtlamaları
     ve ayarları yapılandırmak üzere <ph name="MANAGEMENT_URL" /> adresini ziyaret edebilirsiniz.
     Varsayılan ayarları değiştirmezseniz, <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3511528412952710609">Kısa</translation>
 <translation id="3514373592552233661">Birden fazla ağ kullanılabilir olduğunda, bilinen ağlar arasında tercih edilen ağlar seçilir</translation>
 <translation id="3523642406908660543">Bir site, bilgisayarıma erişmek için eklenti kullanmak istediğinde bana sor (önerilen)</translation>
-<translation id="3525897975040424366">Rafa yükleme</translation>
 <translation id="3527085408025491307">Klasör</translation>
 <translation id="3527276236624876118"><ph name="USER_DISPLAY_NAME" /> adlı denetlenen bir kullanıcı oluşturuldu.</translation>
 <translation id="3528033729920178817">Bu sayfa konumunuzu izliyor.</translation>
@@ -1964,7 +1957,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="3968261067169026421">Ağ ayarlanamadı</translation>
 <translation id="3970114302595058915">Kimlik</translation>
 <translation id="397105322502079400">Hesaplanııyor...</translation>
-<translation id="3972711570620097483">Rafa yükle...</translation>
 <translation id="3974195870082915331">Şifreyi göstermek için tıklayın</translation>
 <translation id="3975222297214566386">Giriş seçenekleri balonu</translation>
 <translation id="397703832102027365">Sonlandırılıyor...</translation>
@@ -2541,7 +2533,6 @@ Daha fazla bilgi için <ph name="BEGIN_LINK" />Yardım Merkezimizi<ph name="END_
 <translation id="4967749818080339523">Bir hesap seçin</translation>
 <translation id="496888482094675990">Dosyalar uygulaması; Google Drive'a, harici depolama birimine veya Chrome OS cihazınıza kaydettiğiniz dosyalara hızlı bir şekilde erişebilmenizi sağlar.</translation>
 <translation id="4969785127455456148">Albüm</translation>
-<translation id="4970738541803285369">Masaüstüne yükle...</translation>
 <translation id="4971412780836297815">İşlem tamamlandığında aç</translation>
 <translation id="4972129977812092092">Yazıcı bilgilerini düzenleyin</translation>
 <translation id="497287958838527945">Google Pay'i kullanan kredi kartları ve adresler.</translation>
@@ -3046,7 +3037,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5750324801516359607">Uzak</translation>
 <translation id="5751545372099101699">Raf öğesi 4</translation>
 <translation id="5752453871435543420">Chrome OS Bulut yedekleme</translation>
-<translation id="5754903485544371559">Uygulamalara ekle...</translation>
 <translation id="5756163054456765343">Y&amp;ardım merkezi</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> aracılığıyla yazdırılmaları için gönderdiğiniz dokümanlar <ph name="APP_NAME" /> tarafından okunabilir.</translation>
 <translation id="5763751966069581670">USB cihazı bulunamadı</translation>
@@ -3183,7 +3173,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="5959471481388474538">Ağ kullanılamıyor</translation>
 <translation id="5963026469094486319">Tema al</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (en yüksek <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Rafa ekle...</translation>
 <translation id="5965661248935608907">Ayrıca Ana Sayfa düğmesini tıkladığınızda veya Çok Amaçlı Adres Çubuğu'ndan arama yaptığınızda gösterilecek sayfayı da denetler.</translation>
 <translation id="5971037678316050792">Bluetooth adaptörü durumunu ve eşlemeyi kontrol etme</translation>
 <translation id="5972017421290582825">MIDI ayarlarını yönet...</translation>
@@ -3214,7 +3203,6 @@ Hassas bilgileri vermediğinizden emin olun.</translation>
 <translation id="6015796118275082299">Yıl</translation>
 <translation id="6016551720757758985">Bir önceki sürüme geri dönüşü sağlayan Powerwash işlemini onaylayın</translation>
 <translation id="6016972670657536680">Dil ve klavye düğmesini seçin. Şu anda seçili dil: <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Uygulamalara ekleyin</translation>
 <translation id="6019169947004469866">Kırp</translation>
 <translation id="6020431688553761150">Sunucu, bu kaynağa erişmeniz için yetki vermedi.</translation>
 <translation id="602251597322198729">Bu site birden çok dosyayı indirmeye çalışıyor. Buna izin vermek istiyor musunuz?</translation>

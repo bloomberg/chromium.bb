@@ -346,7 +346,6 @@
         आपल्या <ph name="LINK_START" />प्रॉक्सी सेटिंग्ज<ph name="LINK_END" /> समायोजित करा.</translation>
 <translation id="1511388193702657997">आपले वेब पासवर्ड जतन करण्याचा ऑफर देते</translation>
 <translation id="1512210426710821809">हे पहिल्यासारखे करण्‍याचा एकमेव मार्ग म्‍हणजे <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> पुन्हा इन्‍स्‍टॉल करणे.</translation>
-<translation id="1514215615641002767">डेस्कटॉपवर जोडा</translation>
 <translation id="151501797353681931">Safari मधून आयात केलेले</translation>
 <translation id="1515163294334130951">लाँच करा</translation>
 <translation id="1521442365706402292">प्रमाणपत्रे व्यवस्थापित करा</translation>
@@ -587,7 +586,6 @@
 <translation id="1875387611427697908">हे केवळ <ph name="CHROME_WEB_STORE" /> वरून जोडले जाऊ शकते</translation>
 <translation id="1877520246462554164">प्रमाणीकरण टोकन मिळविण्यात अयशस्वी. कृपया साइन आउट करा नंतर पुन्हा प्रयत्न करण्यासाठी साइन इन करा.</translation>
 <translation id="1878524442024357078">आपल्या संगणकावर प्रवेश करण्यासाठी कोणत्याही साइटना प्लगिन वापरण्याची अनुमती देऊ नका</translation>
-<translation id="1879449842763884566">अ‍ॅप्लिकेशनवर इंस्टॉल करा...</translation>
 <translation id="1880905663253319515">प्रमाणपत्र "<ph name="CERTIFICATE_NAME" />" हटवायचे?</translation>
 <translation id="1886996562706621347">प्रोटोकॉलकरिता डीफॉल्ट हँडलर होण्यासाठी साइटना विचारण्याची अनुमती द्या</translation>
 <translation id="1887442540531652736">साइन-इन एरर</translation>
@@ -902,7 +900,6 @@
 <translation id="2408955596600435184">आपला पिन प्रविष्‍ट करा</translation>
 <translation id="241082044617551207">अज्ञात प्लगिन</translation>
 <translation id="2413749388954403953">बुकमार्क वापरकर्ता इंटरफेस बदला</translation>
-<translation id="2415294094132942411">डेस्कटॉपवर जोडा...</translation>
 <translation id="2422426094670600218">&lt;अनामित&gt;</translation>
 <translation id="2423578206845792524">म्हणून प्रतिमा ज&amp;तन करा...</translation>
 <translation id="2424091190911472304">नेहमी <ph name="ORIGIN" /> वर चालवा</translation>
@@ -941,7 +938,6 @@
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" साठी मीडिया-फाईल परवानग्या</translation>
 <translation id="247949520305900375">ऑडिओ शेअर करा</translation>
 <translation id="2480868415629598489">आपण कॉपी आणि पेस्ट करता तो डेटा सुधारित करा</translation>
-<translation id="2481332092278989943">शेल्फमध्ये जोडा</translation>
 <translation id="2482878487686419369">सूचना</translation>
 <translation id="2485056306054380289">सर्व्हर CA प्रमाणपत्र:</translation>
 <translation id="2485422356828889247">अनइन्स्टॉल करणे</translation>
@@ -1055,7 +1051,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> स्थापना पूर्ण करू शकत नाही, परंतु ते त्याच्या डिस्क प्रतिमेवरून चालत राहील.</translation>
 <translation id="2635176084534510129">आणखी पर्सनलाइझ अनुभव मिळवा. जसे की अधिक चांगल्या आशय सूचना आणि अधिक स्मार्ट भाषांतर</translation>
 <translation id="2635276683026132559">साइन करत आहे</translation>
-<translation id="2635926034288331400">अ‍ॅप्लिकेशनवर इंस्टॉल करा</translation>
 <translation id="2636625531157955190">Chrome प्रतिमेवर प्रवेश करू शकत नाही.</translation>
 <translation id="2638087589890736295">संकालन प्रारंभ करण्यासाठी सांकेतिक वाक्यांश आवश्यक आहे</translation>
 <translation id="2638286699381354126">अपडेट करा...</translation>
@@ -1519,7 +1514,6 @@
 <translation id="3308852433423051161">Google साहाय्यक लोड करत आहे...</translation>
 <translation id="3309747692199697901">नेहमी सर्व साइटवर चालवा</translation>
 <translation id="3312424061798279731">सक्षम केलेल्या भाषा</translation>
-<translation id="3312903956926554846">डेस्कटॉपवर इंस्टॉल करा</translation>
 <translation id="3313590242757056087">पर्यवेक्षी वापरकर्ता कोणत्या वेबसाइट पाहू शकतो हे सेट करण्यासाठी, आपण
     <ph name="MANAGEMENT_URL" /> ला भेट देऊन प्रतिबंध आणि सेटिंग्ज कॉन्फिगर करू शकता.
     आपण डीफॉल्ट सेटिंग्ज बदलत नसल्यास, 
@@ -1659,7 +1653,6 @@
 <translation id="3511528412952710609">लहान</translation>
 <translation id="3514373592552233661">एका पेक्षा जास्त नेटवर्क उपलब्ध असल्यास इतर ज्ञात नेटवर्क ऐवजी प्राधान्यीकृत नेटवर्कना प्राधान्य दिले जाईल</translation>
 <translation id="3523642406908660543">एखादी साइट आपल्या संगणकावर प्रवेश करण्यासाठी प्लगिन वापरू इच्छिते तेव्हा विचारा (शिफारस केलेले)</translation>
-<translation id="3525897975040424366">शेल्फवर इंस्टॉल करा</translation>
 <translation id="3527085408025491307">फोल्डर</translation>
 <translation id="3527276236624876118"><ph name="USER_DISPLAY_NAME" /> नावाचा एक पर्यवेक्षी वापरकर्ता तयार केला गेला आहे.</translation>
 <translation id="3528033729920178817">हे पृष्ठ आपले स्थान ट्रॅक करत आहे.</translation>
@@ -1959,7 +1952,6 @@
 <translation id="3968261067169026421">नेटवर्क सेट करणे शक्य झाले नाही</translation>
 <translation id="3970114302595058915">आयडी</translation>
 <translation id="397105322502079400">गणना करत आहे...</translation>
-<translation id="3972711570620097483">शेल्फवर इंस्टॉल करा...</translation>
 <translation id="3974195870082915331">पासवर्ड दर्शविण्यासाठी क्लिक करा</translation>
 <translation id="3975222297214566386">इनपुट पर्याय फुगा</translation>
 <translation id="397703832102027365">पूर्ण करीत आहे...</translation>
@@ -2535,7 +2527,6 @@
 <translation id="4967749818080339523">एक खाते निवडा</translation>
 <translation id="496888482094675990">फायली अॅप आपण Google ड्राइव्हवर, बाह्य संचयनावर किंवा आपल्या Chrome OS डिव्हाइसेसवर जतन केलेल्या फायलींना द्रुत प्रवेश प्रदान करतो.</translation>
 <translation id="4969785127455456148">अल्बम</translation>
-<translation id="4970738541803285369">डेस्कटॉपवर इंस्टॉल करा...</translation>
 <translation id="4971412780836297815">पूर्ण झाल्यानंतर उघडा</translation>
 <translation id="4972129977812092092">प्रिंटर संपादित करा</translation>
 <translation id="497287958838527945">Google Pay वापरून क्रेडिट कार्ड आणि पत्ते.</translation>
@@ -3040,7 +3031,6 @@
 <translation id="5750324801516359607">दूर आहे</translation>
 <translation id="5751545372099101699">शेल्‍फ आयटम 4</translation>
 <translation id="5752453871435543420">Chrome OS क्लाउड बॅकअप</translation>
-<translation id="5754903485544371559">अनुप्रयोगांवर जोडा...</translation>
 <translation id="5756163054456765343">म&amp;दत केंद्र</translation>
 <translation id="5759728514498647443">आपण <ph name="APP_NAME" /> द्वारे प्रिंट करण्यासाठी पाठविलेले दस्तऐवज <ph name="APP_NAME" /> द्वारे वाचले जाऊ शकतात.</translation>
 <translation id="5763751966069581670">कोणतेही USB डिव्हाइस सापडले नाहीत</translation>
@@ -3177,7 +3167,6 @@
 <translation id="5959471481388474538">नेटवर्क उपलब्ध नाही</translation>
 <translation id="5963026469094486319">थीम मिळवा</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> सर्वोच्च)</translation>
-<translation id="5965403572731919803">शेल्फमध्ये जोडा...</translation>
 <translation id="5965661248935608907">आपण होम बटण क्लिक करता किंवा ओम्निबॉक्समधून शोध घेता तेव्हा कोणते पृष्ठ दर्शविले जाते हे देखील हे नियंत्रित करते.</translation>
 <translation id="5971037678316050792">Bluetooth अडाप्टर स्थिती आणि जोडणी नियंत्रित करा</translation>
 <translation id="5972017421290582825">MIDI सेटिंग्ज व्यवस्थापित करा...</translation>
@@ -3208,7 +3197,6 @@
 <translation id="6015796118275082299">वर्ष</translation>
 <translation id="6016551720757758985">मागील आवृत्तीवर परत येऊन Powerwash ची पुष्टी करा</translation>
 <translation id="6016972670657536680">भाषा आणि कीबोर्ड बटण निवडा. सध्या निवडलेली भाषा <ph name="LANGUAGE" /> आहे.</translation>
-<translation id="6017981840202692187">अनुप्रयोगांवर जोडा</translation>
 <translation id="6019169947004469866">क्रॉप करा</translation>
 <translation id="6020431688553761150">या संसाधनावर प्रवेश करण्यासाठी सर्व्हरने आपल्याला अधिकृत केले नाही.</translation>
 <translation id="602251597322198729">ही साइट एकाधिक फाइल्स डाउनलोड करण्याचा प्रयत्न करीत आहे. आपण यास परवानगी देऊ इच्छिता काय?</translation>

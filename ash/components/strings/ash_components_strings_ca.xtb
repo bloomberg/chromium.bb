@@ -28,6 +28,7 @@
 <translation id="2181097965834437145">Mostra o amaga la barra d'adreces d'interès</translation>
 <translation id="2185166372312820725">Ves a la pestanya anterior</translation>
 <translation id="2194790690264064655">Prem <ph name="CTRL" /> i fes clic en un enllaç</translation>
+<translation id="2382644247745281995">No és compatible amb la disposició actual del teclat</translation>
 <translation id="2424073332829844142">Activa i desactiva el bloqueig de majúscules</translation>
 <translation id="2441202986792279177">Canvia de finestra ràpidament</translation>
 <translation id="2478303094958140141">Activa o desactiva ChromeVox (comentaris de veu)</translation>
@@ -157,7 +158,7 @@
 <translation id="8990356943438003669"><ph name="ALT" /><ph name="SEPARATOR" /> de l'1 al 8</translation>
 <translation id="9041599225465145264">Enganxa el contingut del porta-retalls</translation>
 <translation id="9052808072970550123">Canvia a l'usuari següent</translation>
-<translation id="9106898733795143799">Pàgines i navegador web</translation>
+<translation id="9106898733795143799">Pàgina i navegador web</translation>
 <translation id="9179672198516322668">Dreceres populars</translation>
 <translation id="93603345341560814">Prem <ph name="SHIFT" /> i fes clic en un enllaç</translation>
 <translation id="945383118875625837">Arrossega l'enllaç a la barra d'adreces d'interès</translation>

@@ -1090,11 +1090,11 @@ Wird die Richtlinie auf "false" gesetzt oder nicht konfiguriert, wird kein Zerti
 <translation id="4485425108474077672">URL für "Neuer Tab"-Seite konfigurieren</translation>
 <translation id="4492287494009043413">Aufnahme von Screenshots deaktivieren</translation>
 <translation id="4497968613298501984">Mit dieser Richtlinie wird die Liste der URLs für die Unternehmensanmeldung konfiguriert (nur HTTP- und HTTPS-Schemas). Der Fingerabdruck für die Autorisierung wird unter diesen URLs registriert und für die Prüfung der Wiederverwendung des Passworts genutzt.
-      Die Einstellung sollte nur von G Suite-Nutzern verwendet werden, die ein SSO- oder SAML-System nutzen.
+      Die Einstellung sollte nur von G Suite-Nutzern verwendet werden, die ein SSO/SAML-System nutzen.
       Stellen Sie sicher, dass Ihre Anmeldeseiten den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
 
       Wenn diese Einstellung aktiviert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung auf diesen URLs, der dann zur Prüfung der Wiederverwendung des Passworts genutzt wird.
-      Falls diese Einstellung deaktiviert oder nicht konfiguriert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung nur auf https://accounts.google.com.
+      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, erfasst der Passwortschutzdienst den Fingerabdruck zur Autorisierung nur auf https://accounts.google.com.
       Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="450537894712826981">Konfiguriert die Cache-Größe, die <ph name="PRODUCT_NAME" /> zum Speichern von Mediendateien im Cache auf dem Datenträger verwendet.
 
@@ -1213,12 +1213,12 @@ alle Proxy-Optionen, die in der Eingabeaufforderung angegeben werden.
 
       Werden diese Richtlinien weder festgelegt noch ausgefüllt, kann sich jeder Nutzer in <ph name="PRODUCT_NAME" /> anmelden.</translation>
 <translation id="4858735034935305895">Vollbildmodus zulassen</translation>
-<translation id="4868249328547841081">Mit dieser Richtlinie wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer werden vom Passwortschutzdienst an diese URL weitergeleitet. Hier können sie ihr Passwort ändern, wenn sie Opfer eines Phishingangriffs geworden sind.
-      Die Einstellung sollte nur von G Suite-Nutzern verwendet werden, die ein SSO- oder SAML-System nutzen.
+<translation id="4868249328547841081">Mit dieser Richtlinie wird die URL zur Passwortänderung konfiguriert (nur HTTP- und HTTPS-Schemas). Nutzer, die Opfer eines Phishingangriffs geworden sind, werden vom Passwortschutzdienst an diese URL weitergeleitet, damit sie ihr Passwort ändern können.
+      Die Einstellung sollte nur von G Suite-Nutzern verwendet werden, die ein SSO-/SAML-System nutzen.
       Stellen Sie sicher, dass Ihre Anmeldeseiten den Richtlinien unter https://www.chromium.org/developers/design-documents/create-amazing-password-forms entsprechen, damit Fingerabdrücke zur Autorisierung in <ph name="PRODUCT_NAME" /> richtig erfasst werden können.
 
-      Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer an diese URL weiter. Hier können sie ihr Passwort ändern, wenn sie Opfer eines Phishingangriffs geworden sind.
-      Falls diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccounts.google.com weiter. Hier können sie ihr Passwort ändern.
+      Wenn diese Einstellung aktiviert ist, leitet der Passwortschutzdienst Nutzer, die Opfer eines Phishingangriffs geworden sind, an diese URL weiter, damit sie ihr Passwort ändern können.
+      Wenn diese Einstellung deaktiviert oder nicht konfiguriert ist, leitet der Passwortschutzdienst Nutzer an https://myaccounts.google.com weiter, damit sie ihr Passwort ändern können.
       Diese Richtlinie ist nur in Windows-Instanzen verfügbar, die mit einer <ph name="MS_AD_NAME" />-Domain verbunden sind.</translation>
 <translation id="4869787217450099946">Gibt an, ob Bildschirm-Wakelocks zulässig sind. Bildschirm-Wakelocks können von Erweiterungen über die Power Management Extension API angefordert werden.
 

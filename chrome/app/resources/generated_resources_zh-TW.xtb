@@ -346,7 +346,6 @@
     <ph name="LINK_START" />Proxy 設定<ph name="LINK_END" />。</translation>
 <translation id="1511388193702657997">詢問是否儲存您的網路密碼</translation>
 <translation id="1512210426710821809">如要復原這個動作，唯一的辦法是重新安裝 <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">加到桌面</translation>
 <translation id="151501797353681931">由 Safari 匯入</translation>
 <translation id="1515163294334130951">啟動</translation>
 <translation id="1521442365706402292">管理憑證</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">只能從 <ph name="CHROME_WEB_STORE" /> 新增</translation>
 <translation id="1877520246462554164">無法取得驗證憑證。請先登出，然後重新登入再試一次。</translation>
 <translation id="1878524442024357078">禁止任何網站使用外掛程式存取您的電腦</translation>
-<translation id="1879449842763884566">安裝到「應用程式」...</translation>
 <translation id="1880905663253319515">要刪除憑證「<ph name="CERTIFICATE_NAME" />」嗎？</translation>
 <translation id="1886996562706621347">允許網站要求成為通訊協定的預設處理常式 (建議)</translation>
 <translation id="1887442540531652736">登入錯誤</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">請輸入你的 PIN 碼</translation>
 <translation id="241082044617551207">不明的外掛程式</translation>
 <translation id="2413749388954403953">變更書籤使用者介面</translation>
-<translation id="2415294094132942411">加到桌面...</translation>
 <translation id="2422426094670600218">&lt;未命名&gt;</translation>
 <translation id="2423578206845792524">另存圖檔(&amp;V)...</translation>
 <translation id="2424091190911472304">一律在 <ph name="ORIGIN" /> 執行</translation>
@@ -942,7 +939,6 @@
 <translation id="2478176599153288112">「<ph name="EXTENSION" />」的媒體檔案權限</translation>
 <translation id="247949520305900375">分享音訊</translation>
 <translation id="2480868415629598489">修改你複製和貼上的資料</translation>
-<translation id="2481332092278989943">加到檔案櫃</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2485056306054380289">伺服器 CA 憑證：</translation>
 <translation id="2485422356828889247">解除安裝</translation>
@@ -1056,7 +1052,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> 無法完成安裝，但會繼續透過磁碟映像執行。</translation>
 <translation id="2635176084534510129">享有個人化程度更高的體驗，例如更符合需求的內容建議，以及更精準的翻譯</translation>
 <translation id="2635276683026132559">簽署</translation>
-<translation id="2635926034288331400">安裝到「應用程式」</translation>
 <translation id="2636625531157955190">Chrome 無法存取這張圖片。</translation>
 <translation id="2638087589890736295">必須輸入通關密語，才能開始進行同步處理</translation>
 <translation id="2638286699381354126">更新...</translation>
@@ -1524,7 +1519,6 @@
 <translation id="3308852433423051161">正在載入 Google 個人助理…</translation>
 <translation id="3309747692199697901">一律在所有網站上執行</translation>
 <translation id="3312424061798279731">已啟用的語言</translation>
-<translation id="3312903956926554846">安裝到桌面</translation>
 <translation id="3313590242757056087">如要設定受監管的使用者可瀏覽哪些網站，你可以前往 <ph name="MANAGEMENT_URL" /> 
     修改限制與設定。
     如果你並未變更預設設定，那麼 <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@
 <translation id="3511528412952710609">短</translation>
 <translation id="3514373592552233661">如有多個可用網路，慣用網路的優先使用順序高於其他已知網路</translation>
 <translation id="3523642406908660543">在網站要使用外掛程式存取您的電腦時，必須先詢問您 (建議使用)</translation>
-<translation id="3525897975040424366">安裝到檔案櫃</translation>
 <translation id="3527085408025491307">資料夾</translation>
 <translation id="3527276236624876118">已建立名為「<ph name="USER_DISPLAY_NAME" />」的受監管使用者。</translation>
 <translation id="3528033729920178817">這個網頁正在追蹤你的位置。</translation>
@@ -1963,7 +1956,6 @@
 <translation id="3968261067169026421">無法設定網路</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">計算中…</translation>
-<translation id="3972711570620097483">安裝到檔案櫃...</translation>
 <translation id="3974195870082915331">按這裡顯示密碼</translation>
 <translation id="3975222297214566386">輸入選項方塊</translation>
 <translation id="397703832102027365">即將完成...</translation>
@@ -2540,7 +2532,6 @@
 <translation id="4967749818080339523">請選取帳戶</translation>
 <translation id="496888482094675990">「檔案」應用程式可供快速存取你存放在 Google 雲端硬碟、外部儲存空間或 Chrome 作業系統裝置中的檔案。</translation>
 <translation id="4969785127455456148">相簿</translation>
-<translation id="4970738541803285369">安裝到桌面...</translation>
 <translation id="4971412780836297815">完成後開啟</translation>
 <translation id="4972129977812092092">編輯印表機資訊</translation>
 <translation id="497287958838527945">使用 Google Pay 儲存的信用卡和地址資訊。</translation>
@@ -3043,7 +3034,6 @@
 <translation id="5750324801516359607">遠</translation>
 <translation id="5751545372099101699">檔案櫃項目 4</translation>
 <translation id="5752453871435543420">Chrome 作業系統雲端備份</translation>
-<translation id="5754903485544371559">加到「應用程式」資料夾...</translation>
 <translation id="5756163054456765343">說明中心(&amp;E)</translation>
 <translation id="5759728514498647443">「<ph name="APP_NAME" />」可以讀取您透過「<ph name="APP_NAME" />」傳送的待列印文件。</translation>
 <translation id="5763751966069581670">找不到 USB 裝置</translation>
@@ -3180,7 +3170,6 @@
 <translation id="5959471481388474538">網路無法使用</translation>
 <translation id="5963026469094486319">下載主題</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> 個 (最多 <ph name="NUM_KILOBYTES_LIVE" /> 個)</translation>
-<translation id="5965403572731919803">加到檔案櫃...</translation>
 <translation id="5965661248935608907">這個擴充功能也會控管你點選 [首頁] 按鈕或使用網址列搜尋時所顯示的網頁。</translation>
 <translation id="5971037678316050792">控制藍牙介面卡狀態與連線配對功能</translation>
 <translation id="5972017421290582825">管理 MIDI 設定...</translation>
@@ -3211,7 +3200,6 @@
 <translation id="6015796118275082299">年</translation>
 <translation id="6016551720757758985">確認執行 Powerwash 並還原至上一個版本</translation>
 <translation id="6016972670657536680">請選取語言和鍵盤按鈕。目前選取的語言為<ph name="LANGUAGE" />。</translation>
-<translation id="6017981840202692187">加到「應用程式」資料夾</translation>
 <translation id="6019169947004469866">裁剪</translation>
 <translation id="6020431688553761150">伺服器未授予你這個資源的存取權。</translation>
 <translation id="602251597322198729">此網站試圖下載多個檔案，請問你要允許下載嗎？</translation>

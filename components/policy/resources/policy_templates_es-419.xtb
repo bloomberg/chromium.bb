@@ -1229,7 +1229,7 @@ Esta política no se aplica a las aplicaciones de kiosko; estas se migran de for
 <translation id="4858735034935305895">Permitir el modo de pantalla completa</translation>
 <translation id="4868249328547841081">Configura la URL de cambio de contraseña (solo esquemas HTTP y HTTPS). El servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que hayan sufrido un ataque de suplantación de identidad (phishing).
       Solo los usuarios de GSuite con un sistema de SSO/SAML deben usar esta configuración.
-      Para que <ph name="PRODUCT_NAME" /> capture la nueva huella digital de contraseña correctamente en esta página de cambio de contraseña, asegúrate de que esta cumpla con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      Para que <ph name="PRODUCT_NAME" /> capture la nueva huella digital de contraseña correctamente en esta página de cambio de contraseña, asegúrate de que la página cumpla con los lineamientos que se indican en https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Si se habilita esta configuración, el servicio de protección de contraseñas enviará a los usuarios a esta URL para que cambien sus contraseñas en el caso de que hayan sufrido un ataque de suplantación de identidad (phishing).
       Si se inhabilita esta configuración o no se establece, el servicio de protección de contraseñas enviará a los usuarios a https://myaccounts.google.com para que cambien sus contraseñas.

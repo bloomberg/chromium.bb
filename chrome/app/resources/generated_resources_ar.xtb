@@ -347,7 +347,6 @@
         خادم وكيل، فعليك بتعديل <ph name="LINK_START" />إعدادات الخادم الوكيل<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">عرض حفظ كلمات مرور الويب</translation>
 <translation id="1512210426710821809">الوسيلة الوحيدة للتراجع عن هذا الإجراء هي إعادة تثبيت <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">إضافة إلى سطح المكتب</translation>
 <translation id="151501797353681931">‏تم الاستيراد من Safari</translation>
 <translation id="1515163294334130951">تشغيل</translation>
 <translation id="1521442365706402292">تنظيم الشهادات</translation>
@@ -589,7 +588,6 @@
 <translation id="1875387611427697908">لا يمكن إضافة ذلك إلا من <ph name="CHROME_WEB_STORE" />.</translation>
 <translation id="1877520246462554164">تعذّر الحصول على الرمز المميز للمصادقة. يُرجى الخروج ثم تسجيل الدخول مرّة أخرى لإعادة المحاولة.</translation>
 <translation id="1878524442024357078">عدم السماح لأي من مواقع الويب باستخدام مكونات إضافية للوصول إلى جهاز الكمبيوتر</translation>
-<translation id="1879449842763884566">جارٍ التثبيت إلى مجلد التطبيقات...</translation>
 <translation id="1880905663253319515">هل تريد حذف الشهادة "<ph name="CERTIFICATE_NAME" />"؟</translation>
 <translation id="1886996562706621347">السماح للمواقع بأن تطلب أن تصبح معالجات افتراضية للبروتوكولات (مستحسن)</translation>
 <translation id="1887442540531652736">خطأ في تسجيل الدخول</translation>
@@ -904,7 +902,6 @@
 <translation id="2408955596600435184">إدخال رقم التعريف الشخصي</translation>
 <translation id="241082044617551207">مكوّن إضافي غير محدّد</translation>
 <translation id="2413749388954403953">تغيير واجهة المستخدم للإشارات المرجعية</translation>
-<translation id="2415294094132942411">إضافة إلى سطح المكتب...</translation>
 <translation id="2422426094670600218">&lt;unnamed&gt;</translation>
 <translation id="2423578206845792524">حف&amp;ظ الصورة باسم...</translation>
 <translation id="2424091190911472304">تشغيل على <ph name="ORIGIN" /> دائمًا</translation>
@@ -943,7 +940,6 @@
 <translation id="2478176599153288112">أذونات ملف الوسائط لـ "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">مشاركة الصوت</translation>
 <translation id="2480868415629598489">تعديل البيانات التي يتم نسخها ولصقها</translation>
-<translation id="2481332092278989943">إضافة إلى الرف</translation>
 <translation id="2482878487686419369">الاشعارات</translation>
 <translation id="2485056306054380289">‏شهادة المرجع المصدق (CA) للخادم:</translation>
 <translation id="2485422356828889247">إزالة التثبيت</translation>
@@ -1056,7 +1052,6 @@
 <translation id="263325223718984101">تعذر على <ph name="PRODUCT_NAME" /> إكمال التثبيت، ولكن ستتم متابعة تشغيله من صورته على القرص.</translation>
 <translation id="2635176084534510129">الحصول على تجارب أكثر تخصيصًا، مثل اقتراحات محتوى أفضل وترجمة أذكى</translation>
 <translation id="2635276683026132559">التوقيع</translation>
-<translation id="2635926034288331400">تثبيت إلى مجلد التطبيقات</translation>
 <translation id="2636625531157955190">‏لا يستطيع Chrome الدخول إلى الصورة.</translation>
 <translation id="2638087589890736295">عبارة المرور مطلوبة لبدء المزامنة</translation>
 <translation id="2638286699381354126">تحديث...</translation>
@@ -1524,7 +1519,6 @@
 <translation id="3308852433423051161">‏جارٍ تحميل مساعد Google...</translation>
 <translation id="3309747692199697901">تشغيل على جميع المواقع دائمًا</translation>
 <translation id="3312424061798279731">اللغات التي تم تمكينها</translation>
-<translation id="3312903956926554846">التثبيت إلى سطح المكتب</translation>
 <translation id="3313590242757056087">لتعيين مواقع الويب التي يُمكن للمستخدم الذي يخضع للإشراف عرضها، يُمكنك تهيئة القيود والإعدادات عن طريق الانتقال إلى<ph name="MANAGEMENT_URL" />.
     وفي حالة عدم تغيير الإعدادات الافتراضية، <ph name="USER_DISPLAY_NAME" />
     يُمكنك تصفح جميع المواقع على الويب.</translation>
@@ -1662,7 +1656,6 @@
 <translation id="3511528412952710609">قصير</translation>
 <translation id="3514373592552233661">سيتم تفضيل الشبكات المُفضّلَة على الشبكات الأخرى المعروفة في حالة توافر أكثر من شبكة</translation>
 <translation id="3523642406908660543">طلب الإذن في حالة محاولة أحد مواقع الويب الوصول إلى جهاز الكمبيوتر باستخدام مكون إضافي (موصى به)</translation>
-<translation id="3525897975040424366">التثبيت إلى الرف</translation>
 <translation id="3527085408025491307">المجلد</translation>
 <translation id="3527276236624876118">تمّ إنشاء مستخدم يخضع للإشراف تحت اسم <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">هذه الصفحة تتتبع موقعك.</translation>
@@ -1960,7 +1953,6 @@
 <translation id="3968261067169026421">تعذَّر إعداد الشبكة</translation>
 <translation id="3970114302595058915">رقم التعريف</translation>
 <translation id="397105322502079400">جارٍ الحساب...</translation>
-<translation id="3972711570620097483">جارٍ التثبيت إلى الرف...</translation>
 <translation id="3974195870082915331">انقر لإظهار كلمة المرور</translation>
 <translation id="3975222297214566386">فقاعة تفسيرية لخيارات الإدخال</translation>
 <translation id="397703832102027365">جارٍ الإنهاء...</translation>
@@ -2537,7 +2529,6 @@
 <translation id="4967749818080339523">تحديد حساب</translation>
 <translation id="496888482094675990">‏يوفر تطبيق الملفات وصولاً سريعًا إلى الملفات التي حفظتها على Google Drive، أو سعة التخزين الخارجي، أو جهاز نظام التشغيل Chrome.</translation>
 <translation id="4969785127455456148">الألبوم</translation>
-<translation id="4970738541803285369">جارٍ التثبيت إلى سطح المكتب...</translation>
 <translation id="4971412780836297815">فتح عند اكتمال التنزيل</translation>
 <translation id="4972129977812092092">تعديل الطابعة</translation>
 <translation id="497287958838527945">‏بطاقات الائتمان والعناوين باستخدام Google Pay.</translation>
@@ -3040,7 +3031,6 @@
 <translation id="5750324801516359607">بعيد</translation>
 <translation id="5751545372099101699">بند الرف 4</translation>
 <translation id="5752453871435543420">‏النسخ الاحتياطي في السحاب عبر نظام التشغيل Chrome</translation>
-<translation id="5754903485544371559">إضافة إلى التطبيقات...</translation>
 <translation id="5756163054456765343">مركز المساعدة</translation>
 <translation id="5759728514498647443">يمكن قراءة المستندات التي ترسلها إلى الطباعة عبر <ph name="APP_NAME" /> بواسطة <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">‏لم يتم العثور على أي أجهزة USB</translation>
@@ -3177,7 +3167,6 @@
 <translation id="5959471481388474538">الشبكة غير متاحة</translation>
 <translation id="5963026469094486319">الحصول على مظاهر</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> في الذروة)</translation>
-<translation id="5965403572731919803">إضافة إلى الرف...</translation>
 <translation id="5965661248935608907">كما أنها تتحكم في الصفحة التي تظهر عند النقر على زر الصفحة الرئيسية أو إجراء بحث من المربع متعدد الاستخدامات.</translation>
 <translation id="5971037678316050792">التحكم في حالة محول بلوتوث وإقرانه</translation>
 <translation id="5972017421290582825">‏إدارة إعدادات MIDI...</translation>
@@ -3208,7 +3197,6 @@
 <translation id="6015796118275082299">عام</translation>
 <translation id="6016551720757758985">‏تأكيد Powerwash بالعودة إلى الإصدار السابق</translation>
 <translation id="6016972670657536680">حدّد اللغة وزر لوحة المفاتيح. اللغة المحددة حاليًا هي <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">إضافة إلى التطبيقات</translation>
 <translation id="6019169947004469866">الاقتصاص</translation>
 <translation id="6020431688553761150">لا يسمح لك الخادم بالوصول إلى هذا المورد.</translation>
 <translation id="602251597322198729">يحاول هذا الموقع تنزيل ملفات متعددة. هل تريد السماح بهذا الإجراء؟</translation>

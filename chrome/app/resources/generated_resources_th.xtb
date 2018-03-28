@@ -346,7 +346,6 @@
     พร็อกซีเซิร์ฟเวอร์อยู่ ให้ปรับ<ph name="LINK_START" />การตั้งค่าพร็อกซี<ph name="LINK_END" /></translation>
 <translation id="1511388193702657997">เสนอการบันทึกรหัสผ่านเว็บของคุณ</translation>
 <translation id="1512210426710821809">วิธีเดียวที่จะยกเลิกการทำงานนี้คือการติดตั้ง <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> ใหม่</translation>
-<translation id="1514215615641002767">เพิ่มไปยังเดสก์ท็อป</translation>
 <translation id="151501797353681931">นำเข้าจาก Safari</translation>
 <translation id="1515163294334130951">เริ่มต้น</translation>
 <translation id="1521442365706402292">จัดการใบรับรอง</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">ต้องเพิ่มจาก <ph name="CHROME_WEB_STORE" /> เท่านั้น</translation>
 <translation id="1877520246462554164">ไม่ได้รับโทเค็นการตรวจสอบสิทธิ์ โปรดออกจากระบบแล้วลงชื่อเข้าใช้อีกครั้งเพื่อลองอีกครั้ง</translation>
 <translation id="1878524442024357078">ไม่อนุญาตให้เว็บไซต์ทั้งหมดใช้ปลั๊กอินเพื่อเข้าถึงคอมพิวเตอร์ของคุณ</translation>
-<translation id="1879449842763884566">ติดตั้งลงในแอปพลิเคชัน...</translation>
 <translation id="1880905663253319515">ลบใบรับรอง "<ph name="CERTIFICATE_NAME" />" หรือไม่</translation>
 <translation id="1886996562706621347">อนุญาตให้ไซต์แจ้งขอเป็นเครื่องจัดการเริ่มต้นสำหรับโปรโตคอล (แนะนำ)</translation>
 <translation id="1887442540531652736">ข้อผิดพลาดในการลงชื่อเข้าใช้</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">ป้อน PIN ของคุณ</translation>
 <translation id="241082044617551207">ปลั๊กอินที่ไม่รู้จัก</translation>
 <translation id="2413749388954403953">เปลี่ยนอินเทอร์เฟซผู้ใช้ของบุ๊กมาร์ก</translation>
-<translation id="2415294094132942411">เพิ่มลงในเดสก์ท็อป...</translation>
 <translation id="2422426094670600218">&lt;ไม่มีชื่อ&gt;</translation>
 <translation id="2423578206845792524">&amp;บันทึกรูปภาพเป็น...</translation>
 <translation id="2424091190911472304">เรียกใช้บน <ph name="ORIGIN" /> เสมอ</translation>
@@ -942,7 +939,6 @@
 <translation id="2478176599153288112">สิทธิ์ไฟล์สื่อสำหรับ "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">แชร์เสียง</translation>
 <translation id="2480868415629598489">แก้ไขข้อมูลที่คุณคัดลอกและวาง</translation>
-<translation id="2481332092278989943">เพิ่มลงในชั้นวาง</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
 <translation id="2485056306054380289">ใบรับรอง CA ของเซิร์ฟเวอร์:</translation>
 <translation id="2485422356828889247">ถอนการติดตั้ง</translation>
@@ -1056,7 +1052,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ไม่สามารถติดตั้งให้เสร็จสมบูรณ์ แต่จะเรียกใช้จากดิสก์อิมเมจต่อไป</translation>
 <translation id="2635176084534510129">รับประสบการณ์ที่เป็นคุณมากขึ้น เช่น การแนะนำเนื้อหาที่ดีขึ้นและ "แปลภาษา" ที่ฉลาดขึ้น</translation>
 <translation id="2635276683026132559">การเซ็นชื่อ</translation>
-<translation id="2635926034288331400">ติดตั้งลงในแอปพลิเคชัน</translation>
 <translation id="2636625531157955190">Chrome ไม่สามารถเข้าถึงภาพ</translation>
 <translation id="2638087589890736295">ต้องระบุรหัสผ่านเพื่อเริ่มการซิงค์</translation>
 <translation id="2638286699381354126">อัปเดต...</translation>
@@ -1524,7 +1519,6 @@
 <translation id="3308852433423051161">กำลังโหลด Google Assistant...</translation>
 <translation id="3309747692199697901">เรียกใช้บนทุกเว็บไซต์เสมอ</translation>
 <translation id="3312424061798279731">ภาษาที่เปิดใช้</translation>
-<translation id="3312903956926554846">ติดตั้งลงในเดสก์ท็อป</translation>
 <translation id="3313590242757056087">ในการตั้งค่าว่าผู้ใช้ภายใต้การดูแลสามารถดูเว็บไซต์ใดได้บ้าง คุณสามารถกำหนดค่าข้อจำกัด
     และการตั้งค่าโดยไปที่ <ph name="MANAGEMENT_URL" />
     หากคุณไม่ได้เปลี่ยนการตั้งค่าเริ่มต้น <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@
 <translation id="3511528412952710609">น้อย</translation>
 <translation id="3514373592552233661">ระบบจะเลือกเครือข่ายที่ต้องการแทนเครือข่ายที่รู้จักอื่นๆ หากมีเครือข่ายที่รู้จักมากกว่า 1 เครือข่าย</translation>
 <translation id="3523642406908660543">ถามเมื่อเว็บไซต์ต้องการใช้ปลั๊กอินเพื่อเข้าถึงคอมพิวเตอร์ของคุณ (แนะนำ)</translation>
-<translation id="3525897975040424366">ติดตั้งในชั้นวาง</translation>
 <translation id="3527085408025491307">โฟลเดอร์</translation>
 <translation id="3527276236624876118">ผู้ใช้ภายใต้การดูแลชื่อ <ph name="USER_DISPLAY_NAME" /> ได้ถูกสร้างขึ้น</translation>
 <translation id="3528033729920178817">หน้าเว็บนี้กำลังติดตามตำแหน่งของคุณอยู่</translation>
@@ -1964,7 +1957,6 @@
 <translation id="3968261067169026421">ไม่สามารถตั้งค่าเครือข่าย</translation>
 <translation id="3970114302595058915">รหัส</translation>
 <translation id="397105322502079400">กำลังคำนวณ...</translation>
-<translation id="3972711570620097483">ติดตั้งในชั้นวาง...</translation>
 <translation id="3974195870082915331">คลิกเพื่อแสดงรหัสผ่าน</translation>
 <translation id="3975222297214566386">ลูกโป่งตัวเลือกการป้อนข้อมูล</translation>
 <translation id="397703832102027365">กำลังสิ้นสุดการทำงาน...</translation>
@@ -2541,7 +2533,6 @@
 <translation id="4967749818080339523">เลือกบัญชี</translation>
 <translation id="496888482094675990">แอป Files มอบการเข้าถึงไฟล์ที่คุณบันทึกไว้ใน Google ไดรฟ์ พื้นที่เก็บข้อมูลภายนอก หรืออุปกรณ์ Chrome OS ของคุณอย่างรวดเร็ว</translation>
 <translation id="4969785127455456148">อัลบั้ม</translation>
-<translation id="4970738541803285369">ติดตั้งลงในเดสก์ท็อป...</translation>
 <translation id="4971412780836297815">เปิดเมื่อเสร็จสิ้น</translation>
 <translation id="4972129977812092092">แก้ไขเครื่องพิมพ์</translation>
 <translation id="497287958838527945">ใช้ข้อมูลบัตรเครดิตและที่อยู่จาก Google Pay</translation>
@@ -3045,7 +3036,6 @@
 <translation id="5750324801516359607">ไกล</translation>
 <translation id="5751545372099101699">รายการชั้นวาง 4</translation>
 <translation id="5752453871435543420">ข้อมูลสำรองในระบบคลาวด์ของ Chrome OS</translation>
-<translation id="5754903485544371559">เพิ่มลงในแอปพลิเคชัน...</translation>
 <translation id="5756163054456765343">ศู&amp;นย์ช่วยเหลือ</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> สามารถอ่านเอกสารที่คุณส่งไปพิมพ์ผ่าน <ph name="APP_NAME" /> ได้</translation>
 <translation id="5763751966069581670">ไม่พบอุปกรณ์ USB</translation>
@@ -3182,7 +3172,6 @@
 <translation id="5959471481388474538">เครือข่ายไม่สามารถใช้งานได้</translation>
 <translation id="5963026469094486319">ดูธีม</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (สูงสุด <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">เพิ่มลงในชั้นวาง...</translation>
 <translation id="5965661248935608907">อีกทั้งยังควบคุมหน้าที่จะแสดงเมื่อคุณคลิกปุ่ม "หน้าแรก" หรือทำการค้นหาจากแถบอเนกประสงค์</translation>
 <translation id="5971037678316050792">ควบคุมสถานะและการจับคู่อะแดปเตอร์บลูทูธ</translation>
 <translation id="5972017421290582825">จัดการการตั้งค่า MIDI...</translation>
@@ -3213,7 +3202,6 @@
 <translation id="6015796118275082299">ปี</translation>
 <translation id="6016551720757758985">ยืนยัน Powerwash และเปลี่ยนกลับเป็นเวอร์ชันก่อนหน้า</translation>
 <translation id="6016972670657536680">เลือกปุ่มภาษาและแป้นพิมพ์ ภาษาที่เลือกอยู่ในขณะนี้คือ <ph name="LANGUAGE" /></translation>
-<translation id="6017981840202692187">เพิ่มไปยังแอปพลิเคชัน</translation>
 <translation id="6019169947004469866">ตัด</translation>
 <translation id="6020431688553761150">เซิร์ฟเวอร์ไม่อนุมัติให้คุณเข้าถึงทรัพยากรนี้</translation>
 <translation id="602251597322198729">ไซต์นี้พยายามดาวน์โหลดไฟล์หลายไฟล์ คุณจะอนุญาตหรือไม่</translation>
