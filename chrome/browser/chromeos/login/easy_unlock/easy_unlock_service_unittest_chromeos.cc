@@ -56,7 +56,8 @@ const char kSecondaryGaiaId[] = "2222222222";
 class MockEasyUnlockNotificationController
     : public chromeos::EasyUnlockNotificationController {
  public:
-  MockEasyUnlockNotificationController() {}
+  MockEasyUnlockNotificationController()
+      : EasyUnlockNotificationController(nullptr) {}
   ~MockEasyUnlockNotificationController() override {}
 
   // EasyUnlockNotificationController:

@@ -84,7 +84,7 @@ const char kKeyDevices[] = "devices";
 EasyUnlockServiceRegular::EasyUnlockServiceRegular(Profile* profile)
     : EasyUnlockServiceRegular(
           profile,
-          EasyUnlockNotificationController::Create(profile)) {}
+          std::make_unique<EasyUnlockNotificationController>(profile)) {}
 
 EasyUnlockServiceRegular::EasyUnlockServiceRegular(
     Profile* profile,

@@ -891,8 +891,6 @@ source_set("chromeos") {
     "login/easy_unlock/easy_unlock_metrics.h",
     "login/easy_unlock/easy_unlock_notification_controller.cc",
     "login/easy_unlock/easy_unlock_notification_controller.h",
-    "login/easy_unlock/easy_unlock_notification_controller_chromeos.cc",
-    "login/easy_unlock/easy_unlock_notification_controller_chromeos.h",
     "login/easy_unlock/easy_unlock_reauth.cc",
     "login/easy_unlock/easy_unlock_reauth.h",
     "login/easy_unlock/easy_unlock_refresh_keys_operation.cc",
