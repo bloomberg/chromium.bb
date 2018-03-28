@@ -1111,7 +1111,7 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 <translation id="4492287494009043413">Wyłącza tworzenie zrzutów ekranu</translation>
 <translation id="4497968613298501984">Konfigurowanie listy adresów URL stron logowania aplikacji firmowych (tylko schematy HTTP i HTTPS). Na tych stronach będzie rejestrowany odcisk cyfrowy hasła służący do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
       Tego ustawienia powinni używać tylko użytkownicy G Suite korzystający z systemu SSO/SAML.
-      Aby <ph name="PRODUCT_NAME" /> poprawnie rejestrował odciski cyfrowe haseł, strony logowania powinny być zgodne z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
+      Jeśli <ph name="PRODUCT_NAME" /> ma poprawnie rejestrować odciski cyfrowe haseł, strony logowania powinny być zgodne z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
 
       Jeśli to ustawienie jest włączone, usługa ochrony haseł będzie rejestrować na tych stronach odciski cyfrowe haseł służące do wykrywania przypadków użycia tego samego hasła w różnych miejscach.
       Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł rejestruje odciski cyfrowe haseł tylko na stronie https://accounts.google.com
@@ -1228,9 +1228,9 @@ Zwykle ta zasada jest wyłączona w celu ochrony przed phishingiem. W przypadku 
 
       Jeśli ta zasada pozostanie nieustawiona lub pusta, każdy użytkownik będzie mógł zalogować się w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Zezwalaj na tryb pełnoekranowy</translation>
-<translation id="4868249328547841081">Skonfiguruj adres URL do zmiany hasła (tylko schematy HTTP i HTTPS). Usługa ochrony haseł będzie kierować użytkowników na stronę pod tym adresem URL, by zmienili hasło, gdy staną się ofiarami phishingu.
+<translation id="4868249328547841081">Konfigurowanie adresu URL do zmiany hasła (tylko schematy HTTP i HTTPS). Usługa ochrony haseł będzie kierować użytkowników na stronę pod tym adresem URL, by zmienili hasło, gdy staną się ofiarami phishingu.
       Tego ustawienia powinni używać tylko użytkownicy G Suite korzystający z systemu SSO/SAML.
-      Aby <ph name="PRODUCT_NAME" /> poprawnie rejestrował odciski cyfrowe nowych haseł na tej stronie zmiany hasła, powinna ona być zgodna z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
+      Jeśli <ph name="PRODUCT_NAME" /> ma poprawnie rejestrować odciski cyfrowe nowych haseł na stronie zmiany hasła, powinna ona być zgodna z wytycznymi podanymi na stronie https://www.chromium.org/developers/design-documents/create-amazing-password-forms
 
       Jeśli to ustawienie jest włączone, usługa ochrony haseł kieruje użytkowników na stronę pod tym adresem URL, by zmienili hasło, gdy staną się ofiarami phishingu.
       Jeśli to ustawienie jest wyłączone lub nieskonfigurowane, usługa ochrony haseł kieruje użytkowników na stronę https://myaccounts.google.com, by zmienili hasło.

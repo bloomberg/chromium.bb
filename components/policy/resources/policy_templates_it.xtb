@@ -1196,9 +1196,9 @@ Viene visualizzato un errore appropriato se un utente tenta di accedere con un n
 
 Se questa norma non viene impostata o viene lasciata vuota, qualsiasi utente potrà accedere a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="4858735034935305895">Consenti modalità a schermo intero</translation>
-<translation id="4868249328547841081">Configura l'URL di modifica della password (solo modelli HTTP e HTTPS). Il servizio di protezione tramite password invia gli utenti a questo URL per modificare le password se queste sono state oggetto di phishing.
+<translation id="4868249328547841081">Configura l'URL di modifica della password (solo schemi HTTP e HTTPS). Il servizio di protezione tramite password invia gli utenti a questo URL per modificare le password se queste sono state oggetto di phishing.
       Questa impostazione deve essere usata solo da utenti G Suite che adoperano un sistema SSO/SMAL.
-      Affinché <ph name="PRODUCT_NAME" /> possa acquisire correttamente le impronte digitali delle password, assicurati che la pagina di modifica della password rispetti le linee guida all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
+      Affinché <ph name="PRODUCT_NAME" /> possa acquisire correttamente l'impronta digitale della nuova password in questa pagina di modifica della password, assicurati che la pagina di modifica della password che stai utilizzando rispetti le linee guida all'indirizzo https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 
       Se questa impostazione è attiva, il servizio di protezione tramite password invia gli utenti a questo URL per modificare le password se queste sono state oggetto di phishing.
       Se questa impostazione è disattivata o non configurata, il servizio di protezione tramite password invia gli utenti alla pagina https://myaccounts.google.com per modificare la password.

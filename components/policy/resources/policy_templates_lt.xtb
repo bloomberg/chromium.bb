@@ -1285,7 +1285,7 @@
 
       Jei ši politika nenustatyta arba jos laukas tuščias, tada bet kuris naudotojas gali prisijungti prie „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="4858735034935305895">Leisti viso ekrano režimą</translation>
-<translation id="4868249328547841081">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus siunčiami šiuo URL, kad pakeistų slaptažodžius, jei buvo sukčiaujama.
+<translation id="4868249328547841081">Konfigūruojamas slaptažodžio keitimo URL (tik HTTP ir HTTPS schemos). Naudojant slaptažodžio apsaugos paslaugą naudotojai bus nukreipiami šiuo URL, kad pakeistų slaptažodžius, jei buvo sukčiaujama.
       Šį nustatymą turėtų naudoti tik „GSuite“ naudotojai, naudojantys sistemą SSO / SMAL.
       Kad „<ph name="PRODUCT_NAME" />“ tinkamai užfiksuotų naujo slaptažodžio kontrolinį kodą šiame slaptažodžio keitimo puslapyje, įsitikinkite, kad slaptažodžio keitimo puslapyje laikomasi šių gairių: https://www.chromium.org/developers/design-documents/create-amazing-password-forms.
 

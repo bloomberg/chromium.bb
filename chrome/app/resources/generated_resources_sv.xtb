@@ -346,7 +346,6 @@
     proxyserver ändrar du <ph name="LINK_START" />proxyinställningarna<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Erbjud att spara webblösenord</translation>
 <translation id="1512210426710821809">Du kan endast ångra det här genom att installera om <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
-<translation id="1514215615641002767">Lägg till på skrivbordet</translation>
 <translation id="151501797353681931">Importerat från Safari</translation>
 <translation id="1515163294334130951">Starta</translation>
 <translation id="1521442365706402292">Hantera certifikat</translation>
@@ -587,7 +586,6 @@
 <translation id="1875387611427697908">Kan endast installeras från <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Det gick inte att hämta autentiseringstoken. Försök igen genom att logga ut och sedan logga in igen.</translation>
 <translation id="1878524442024357078">Tillåt inte några webbplatser att använda en plugin för få åtkomst till datorn</translation>
-<translation id="1879449842763884566">Installeras i Appar …</translation>
 <translation id="1880905663253319515">Vill du ta bort certifikatet <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="1886996562706621347">Tillåt att webbplatser begär att bli standardhanterare för protokoll (rekommenderas)</translation>
 <translation id="1887442540531652736">Inloggningsfel</translation>
@@ -902,7 +900,6 @@
 <translation id="2408955596600435184">Ange din pinkod</translation>
 <translation id="241082044617551207">Okänt pluginprogram</translation>
 <translation id="2413749388954403953">Ändra användargränssnittet för bokmärken</translation>
-<translation id="2415294094132942411">Lägg till på skrivbordet …</translation>
 <translation id="2422426094670600218">&lt;namnlös&gt;</translation>
 <translation id="2423578206845792524">S&amp;para bild som...</translation>
 <translation id="2424091190911472304">Kör alltid på <ph name="ORIGIN" /></translation>
@@ -941,7 +938,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="2478176599153288112">Mediefilsbehörigheter för <ph name="EXTENSION" /></translation>
 <translation id="247949520305900375">Dela ljud</translation>
 <translation id="2480868415629598489">Ändra data som du kopierar och klistrar in</translation>
-<translation id="2481332092278989943">Lägg till på hyllan</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
 <translation id="2485056306054380289">Server CA-certifikat:</translation>
 <translation id="2485422356828889247">Avinstallera</translation>
@@ -1055,7 +1051,6 @@ Jag tycker inte att den här webbplatsen ska blockeras!</translation>
 <translation id="263325223718984101">Installationen av <ph name="PRODUCT_NAME" /> kunde inte slutföras, men programmet kommer att fortsätta köras från diskavbildningen.</translation>
 <translation id="2635176084534510129">Få mer anpassade upplevelser, till exempel bättre förslag på innehåll och ett smartare Google Översätt</translation>
 <translation id="2635276683026132559">Signering</translation>
-<translation id="2635926034288331400">Installera i Appar</translation>
 <translation id="2636625531157955190">Chrome har inte åtkomst till bilden.</translation>
 <translation id="2638087589890736295">Lösenfras krävs för att starta synkroniseringen</translation>
 <translation id="2638286699381354126">Uppdatera ...</translation>
@@ -1523,7 +1518,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3308852433423051161">Google Assistent läses in …</translation>
 <translation id="3309747692199697901">Kör alltid på alla webbplatser</translation>
 <translation id="3312424061798279731">Aktiverade språk</translation>
-<translation id="3312903956926554846">Installera på skrivbordet</translation>
 <translation id="3313590242757056087">Om du vill ange vilka webbplatser som den kontrollerade användaren får besöka, kan du ange begränsningar
     och inställningar genom att besöka <ph name="MANAGEMENT_URL" />.
     Om du inte ändrar standardinställningarna kan <ph name="USER_DISPLAY_NAME" />
@@ -1662,7 +1656,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3511528412952710609">Kort</translation>
 <translation id="3514373592552233661">Prioriterade nätverk väljs före andra kända nätverk när det finns flera nätverk tillgängliga</translation>
 <translation id="3523642406908660543">Fråga om en webbplats försöker använda en plugin för att få åtkomst till datorn (rekommenderas)</translation>
-<translation id="3525897975040424366">Installera på hyllan</translation>
 <translation id="3527085408025491307">Mapp</translation>
 <translation id="3527276236624876118">En kontrollerad användare med namnet <ph name="USER_DISPLAY_NAME" /> har skapats.</translation>
 <translation id="3528033729920178817">Sidan spårar din plats.</translation>
@@ -1963,7 +1956,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="3968261067169026421">Det gick inte att konfigurera nätverket</translation>
 <translation id="3970114302595058915">Id</translation>
 <translation id="397105322502079400">Beräknar ...</translation>
-<translation id="3972711570620097483">Installera på hyllan …</translation>
 <translation id="3974195870082915331">Klicka om du vill visa lösenordet</translation>
 <translation id="3975222297214566386">Bubbla för inmatningsalternativ</translation>
 <translation id="397703832102027365">Slutför ...</translation>
@@ -2540,7 +2532,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="4967749818080339523">Välj ett konto</translation>
 <translation id="496888482094675990">Med appen Filer kommer du snabbt åt filer som du har sparat på Google Drive, externa lagringsenheter eller din Chrome OS-enhet.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Installera på skrivbordet …</translation>
 <translation id="4971412780836297815">Öppna när nedladdningen är klar</translation>
 <translation id="4972129977812092092">Redigera skrivare</translation>
 <translation id="497287958838527945">Kreditkort och adresser som används med Google Pay.</translation>
@@ -3044,7 +3035,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="5750324801516359607">Långt</translation>
 <translation id="5751545372099101699">Hyllobjekt 4</translation>
 <translation id="5752453871435543420">Säkerhetskopiering i molnet för Chrome OS</translation>
-<translation id="5754903485544371559">Lägg till i Appar …</translation>
 <translation id="5756163054456765343">Hjälpc&amp;enter</translation>
 <translation id="5759728514498647443">Dokument som du skickar till utskrift via <ph name="APP_NAME" /> kan läsas av <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Inga USB-enheter hittades</translation>
@@ -3181,7 +3171,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="5959471481388474538">Nätverket är inte tillgängligt</translation>
 <translation id="5963026469094486319">Hämta teman</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> som mest)</translation>
-<translation id="5965403572731919803">Lägg till på hyllan …</translation>
 <translation id="5965661248935608907">Det styr också vilken sida som visas när du klickar på knappen Startsida eller söker i adressfältet.</translation>
 <translation id="5971037678316050792">Styr status och koppling för Bluetooth-adaptern</translation>
 <translation id="5972017421290582825">Hantera MIDI-inställningar ...</translation>
@@ -3212,7 +3201,6 @@ Besök vårt <ph name="BEGIN_LINK" />hjälpcenter<ph name="END_LINK" /> om du vi
 <translation id="6015796118275082299">År</translation>
 <translation id="6016551720757758985">Bekräfta återställningen till den tidigare versionen med Powerwash</translation>
 <translation id="6016972670657536680">Knapp för att välja språk och tangentbord. Nuvarande språkinställning: <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Lägg till i Appar</translation>
 <translation id="6019169947004469866">Beskär</translation>
 <translation id="6020431688553761150">Servern auktoriserade inte din åtkomst till den här resursen.</translation>
 <translation id="602251597322198729">Den här webbplatsen försöker ladda ned flera filer. Vill du tillåta detta?</translation>

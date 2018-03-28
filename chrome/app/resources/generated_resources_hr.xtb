@@ -346,7 +346,6 @@
     proxy poslužitelj, prilagodite svoje <ph name="LINK_START" />postavke proxy poslužitelja<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Nudi spremanje vaših zaporki za web</translation>
 <translation id="1512210426710821809">To možete poništiti jedino tako da ponovo instalirate <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Dodavanje na radnu površinu</translation>
 <translation id="151501797353681931">Uvezeno iz preglednika Safari</translation>
 <translation id="1515163294334130951">Pokreni</translation>
 <translation id="1521442365706402292">Upravljanje potvrdama</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Može se dodati jedino s usluge <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Dohvaćanje oznake za autentifikaciju nije uspjelo. Odjavite se pa se opet prijavite da biste pokušali ponovo.</translation>
 <translation id="1878524442024357078">Ne dopusti nijednoj web-lokaciji upotrebu dodatka za pristup mom računalu</translation>
-<translation id="1879449842763884566">Instaliraj u Aplikacije...</translation>
 <translation id="1880905663253319515">Izbrisati certifikat "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Dopusti web-lokacijama traženje dopuštenja da postanu zadani rukovatelji za protokole (preporučeno)</translation>
 <translation id="1887442540531652736">Pogreška prijave</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Unesite PIN</translation>
 <translation id="241082044617551207">Nepoznati dodatak</translation>
 <translation id="2413749388954403953">promijeniti korisničko sučelje oznaka</translation>
-<translation id="2415294094132942411">Dodaj na radnu površinu...</translation>
 <translation id="2422426094670600218">&lt;bez naziva&gt;</translation>
 <translation id="2423578206845792524">Sp&amp;remi sliku kao...</translation>
 <translation id="2424091190911472304">Uvijek pokreni na <ph name="ORIGIN" /></translation>
@@ -942,7 +939,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="2478176599153288112">Dozvole medijske datoteke za proširenje "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Podijeli zvuk</translation>
 <translation id="2480868415629598489">izmjenjivati podatke koje kopirate i lijepite</translation>
-<translation id="2481332092278989943">Dodavanje na policu</translation>
 <translation id="2482878487686419369">Obavijesti</translation>
 <translation id="2485056306054380289">CA certifikat poslužitelja:</translation>
 <translation id="2485422356828889247">Deinstaliraj</translation>
@@ -1056,7 +1052,6 @@ Mislim da ta web-lokacija ne bi trebala biti blokirana!</translation>
 <translation id="263325223718984101">Program <ph name="PRODUCT_NAME" /> nije uspio dovršiti instalaciju, ali nastavit će rad iz diskovne slike.</translation>
 <translation id="2635176084534510129">Uživajte u prilagođenijem doživljaju, primjerice boljim prijedlozima sadržaja i pametnijem Prevoditelju</translation>
 <translation id="2635276683026132559">Potpisivanje</translation>
-<translation id="2635926034288331400">Instaliraj u Aplikacije</translation>
 <translation id="2636625531157955190">Chrome ne može pristupiti slici.</translation>
 <translation id="2638087589890736295">Za pokretanje sinkronizacije potrebna je šifra</translation>
 <translation id="2638286699381354126">Ažuriraj...</translation>
@@ -1524,7 +1519,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3308852433423051161">Učitavanje Google asistenta...</translation>
 <translation id="3309747692199697901">Uvijek pokreni na svim web-lokacijama</translation>
 <translation id="3312424061798279731">Omogućeni jezici</translation>
-<translation id="3312903956926554846">Instaliraj na računalo</translation>
 <translation id="3313590242757056087">Da biste odredili koje web-lokacije nadzirani korisnik može gledati, možete
     konfigurirati ograničenja i postavke tako što ćete posjetiti <ph name="MANAGEMENT_URL" />.
     Ako ne promijenite zadane postavke, <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3511528412952710609">Kratko</translation>
 <translation id="3514373592552233661">Preferirane mreže imat će prednost pred ostalim poznatim mrežama ako je dostupno više mreža</translation>
 <translation id="3523642406908660543">Pitaj me kad web-lokacija želi upotrijebiti dodatak za pristup mom računalu (preporučeno)</translation>
-<translation id="3525897975040424366">Instaliraj na policu</translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3527276236624876118">Izrađen je nadzirani korisnik pod imenom <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Ova stranica prati vašu lokaciju.</translation>
@@ -1964,7 +1957,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="3968261067169026421">Postavljanje mreže nije uspjelo</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Izračun u tijeku…</translation>
-<translation id="3972711570620097483">Instaliraj na policu...</translation>
 <translation id="3974195870082915331">Kliknite za prikaz zaporke</translation>
 <translation id="3975222297214566386">Oblačić s opcijama unosa</translation>
 <translation id="397703832102027365">Dovršavanje...</translation>
@@ -2541,7 +2533,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="4967749818080339523">Odaberite račun</translation>
 <translation id="496888482094675990">Aplikacija Datoteke pruža brzi pristup datotekama spremljenima na Google disku, u vanjskoj pohrani ili na uređaju s OS-om Chrome.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Instaliraj na računalo...</translation>
 <translation id="4971412780836297815">Otvori nakon dovršetka</translation>
 <translation id="4972129977812092092">Uredite pisač</translation>
 <translation id="497287958838527945">Kreditne kartice i adrese s Google Paya.</translation>
@@ -3045,7 +3036,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="5750324801516359607">Daleko</translation>
 <translation id="5751545372099101699">Stavka police 4</translation>
 <translation id="5752453871435543420">Sigurnosno kopiranje u oblaku OS-a Chrome</translation>
-<translation id="5754903485544371559">Dodaj u Aplikacije...</translation>
 <translation id="5756163054456765343">Centar za pomoć</translation>
 <translation id="5759728514498647443">Dokumente koje šaljete za ispis putem aplikacije <ph name="APP_NAME" /> može čitati aplikacija <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nije pronađen nijedan USB uređaj</translation>
@@ -3182,7 +3172,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="5959471481388474538">Mreža nije dostupna</translation>
 <translation id="5963026469094486319">Nabavi teme</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (najviše <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Dodaj na policu...</translation>
 <translation id="5965661248935608907">Upravlja i time koja se stranica prikazuje kada se klikne gumb Početna ili prilikom pretraživanja putem višenamjenskog okvira.</translation>
 <translation id="5971037678316050792">upravljati stanjem i uparivanjem Bluetootha</translation>
 <translation id="5972017421290582825">Upravljanje postavkama MIDI uređaja...</translation>
@@ -3213,7 +3202,6 @@ Više informacija potražite u našem <ph name="BEGIN_LINK" />centru za pomoć<p
 <translation id="6015796118275082299">Godina</translation>
 <translation id="6016551720757758985">Potvrda Powerwasha uz povratak na prethodnu verziju</translation>
 <translation id="6016972670657536680">Gumb za odabir jezika i tipkovnice. Trenutačno je odabran <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Dodavanje u Aplikacije</translation>
 <translation id="6019169947004469866">Obreži</translation>
 <translation id="6020431688553761150">Poslužitelj vas nije ovlastio za pristup ovom resursu.</translation>
 <translation id="602251597322198729">Ova web lokacija pokušava preuzeti više datoteka. Želite li to dopustiti?</translation>

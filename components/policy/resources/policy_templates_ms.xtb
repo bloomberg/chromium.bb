@@ -679,7 +679,7 @@
 <translation id="2987227569419001736">Kawal penggunaan API Bluetooth Web</translation>
 <translation id="2998886474614739865">
       NOTA: Dasar ini masih dalam percubaan dan mungkin menjejaskan fungsian!
-      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasukkan sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
+      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="ISOLATE_ORIGINS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
       Jika dasar didayakan, setiap tempat asal yang dinamakan dalam
       senarai yang dipisahkan koma akan dijalankan dalam prosesnya sendiri.
       Tindakan ini turut mengasingkan tempat asal yang dinamakan mengikut
@@ -800,7 +800,7 @@
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3386001018488754001">
       NOTA: Dasar ini masih dalam percubaan dan mungkin menjejaskan fungsian!
-      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="SITE_PER_PROCESS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasukkan sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
+      Dasar ini digunakan pada skrin log masuk. Sila lihat dasar <ph name="SITE_PER_PROCESS_POLICY_NAME" /> juga yang digunakan pada sesi pengguna. Anda disyorkan untuk menetapkan kedua-dua dasar pada nilai yang sama. Jika nilai tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
       Anda mungkin mahu meneliti tetapan dasar IsolateOrigins untuk
       memanfaatkan kedua-dua keadaan, pengasingan dan kesan yang
       terhad untuk pengguna, dengan menggunakan IsolateOrigins dengan
@@ -1452,7 +1452,7 @@
       Jika dasar ini didayakan, setiap tapak akan menjalankan proses masing-masing.
       Jika dasar ini dilumpuhkan, logik pengurusan proses Pengasingan setiap Tapak akan dikuatkuasakan.
       Jika dasar ini tidak dikonfigurasi, pengguna boleh mengubah tetapan ini.
-      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan untuk turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> pada nilai yang sama. Jika nilai yang dinyatakan oleh kedua-dua dasar tidak sepadan, kelewatan mungkin berlaku apabila memasukkan sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
+      Pada <ph name="PRODUCT_OS_NAME" />, anda disyorkan untuk turut menetapkan dasar peranti <ph name="DEVICE_LOGIN_SCREEN_SITE_PER_PROCESS_POLICY_NAME" /> pada nilai yang sama. Jika nilai yang dinyatakan oleh kedua-dua dasar tidak sepadan, kelewatan mungkin berlaku apabila memasuki sesi pengguna semasa nilai yang dinyatakan oleh dasar pengguna sedang digunakan.
       </translation>
 <translation id="5302612588919538756">Dasar ini ditamatkan, sebaliknya pertimbangkan untuk menggunakan SyncDisabled.
 
@@ -2057,7 +2057,7 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
       Perkhidmatan perlindungan muat turun Safe Browsing tidak akan menyemak muat turun yang dihoskan pada domain ini.
       Perkhidmatan perlindungan kata laluan Safe Browsing tidak akan meyemak pemasukan semula kata laluan jika URL halaman tersebut sepadan dengan domain ini.
 
-      Jika tetapan ini didayakan, maka Safe Browsing akan memparcayai domain ini.
+      Jika tetapan ini didayakan, maka Safe Browsing akan mempercayai domain ini.
       Jika tetapan ini dilumpuhkan atau tidak ditetapkan, maka perlindungan Safe Browsing lalai akan digunakan pada semua sumber.
       Dasar ini tidak tersedia pada tika Windows yang tidak dihubungkan ke domain <ph name="MS_AD_NAME" />.</translation>
 <translation id="7079519252486108041">Sekat pop muncul pada tapak ini</translation>

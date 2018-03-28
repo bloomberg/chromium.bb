@@ -343,7 +343,6 @@
 <translation id="1510785804673676069">Ако користите прокси сервер, проверите подешавања проксија или контактирајте администратора мреже да бисте проверили да ли прокси сервер функционише. Ако не сматрате да треба да користите прокси сервер, прилагодите <ph name="LINK_START" />подешавања проксија<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Нуди чување веб-лозинки</translation>
 <translation id="1512210426710821809">Једини начин да ово опозовете је да поново инсталирате <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Додајте на радну површину</translation>
 <translation id="151501797353681931">Увоз из прегледача Safari</translation>
 <translation id="1515163294334130951">Покрени</translation>
 <translation id="1521442365706402292">Управљај сертификатима</translation>
@@ -585,7 +584,6 @@
 <translation id="1875387611427697908">Ово може да се дода само из услуге <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Преузимање токена за потврду идентитета није успело. Одјавите се, па се поново пријавите да бисте пробали поново.</translation>
 <translation id="1878524442024357078">Не дозвољавај ниједном сајту да приступа рачунару помоћу додатне компоненте</translation>
-<translation id="1879449842763884566">Инсталирај у Апликације...</translation>
 <translation id="1880905663253319515">Желите да избришете сертификат „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="1886996562706621347">Дозволи сајтовима да захтевају да постану подразумевани обрађивачи за протоколе (препоручено)</translation>
 <translation id="1887442540531652736">Грешка при пријављивању</translation>
@@ -900,7 +898,6 @@
 <translation id="2408955596600435184">Унесите PIN</translation>
 <translation id="241082044617551207">Непозната додатна компонента</translation>
 <translation id="2413749388954403953">Мењање корисничког интерфејса обележивача</translation>
-<translation id="2415294094132942411">Додај на радну површину...</translation>
 <translation id="2422426094670600218">&lt;неименована&gt;</translation>
 <translation id="2423578206845792524">Са&amp;чувај слику као...</translation>
 <translation id="2424091190911472304">Увек покрећи на <ph name="ORIGIN" /></translation>
@@ -939,7 +936,6 @@
 <translation id="2478176599153288112">Дозволе за медијске датотеке за „<ph name="EXTENSION" />“</translation>
 <translation id="247949520305900375">Дели звук</translation>
 <translation id="2480868415629598489">Мењање података које прекопирате</translation>
-<translation id="2481332092278989943">Додајте на полицу</translation>
 <translation id="2482878487686419369">Обавештења</translation>
 <translation id="2485056306054380289">CA сертификат сервера:</translation>
 <translation id="2485422356828889247">Деинсталирај</translation>
@@ -1052,7 +1048,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> није могао да доврши инсталацију, али ће наставити да се покреће са слике диска.</translation>
 <translation id="2635176084534510129">Пронађите персонализованије доживљаје, као што су бољи предлози за садржај и паметнији Преводилац</translation>
 <translation id="2635276683026132559">Потписивање</translation>
-<translation id="2635926034288331400">Инсталирај у Апликације</translation>
 <translation id="2636625531157955190">Chrome не може да приступи слици.</translation>
 <translation id="2638087589890736295">За почетак синхронизације је потребна приступна фраза</translation>
 <translation id="2638286699381354126">Ажурирај...</translation>
@@ -1520,7 +1515,6 @@
 <translation id="3308852433423051161">Google помоћник се учитава...</translation>
 <translation id="3309747692199697901">Увек покрећи на свим сајтовима</translation>
 <translation id="3312424061798279731">Омогућени језици</translation>
-<translation id="3312903956926554846">Инсталирај на радну површину</translation>
 <translation id="3313590242757056087">Да бисте подесили које веб-сајтове може да прегледа корисник под надзором, можете да конфигуришете ограничења
     и подешавања тако што ћете посетити <ph name="MANAGEMENT_URL" />.
     Ако не промените подразумевана подешавања, <ph name="USER_DISPLAY_NAME" />
@@ -1659,7 +1653,6 @@
 <translation id="3511528412952710609">Кратко</translation>
 <translation id="3514373592552233661">Жељене мреже ће имати приоритет у односу на друге познате мреже ако је доступно више њих</translation>
 <translation id="3523642406908660543">Питај када сајт жели да приступи мом рачунару помоћу додатне компоненте (препоручено)</translation>
-<translation id="3525897975040424366">Инсталирај на полицу</translation>
 <translation id="3527085408025491307">Директоријум</translation>
 <translation id="3527276236624876118">Направљен је корисник под надзором по имену <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Ова страница прати локацију на којој се налазите.</translation>
@@ -1960,7 +1953,6 @@
 <translation id="3968261067169026421">Подешавање мреже није успело</translation>
 <translation id="3970114302595058915">ИД</translation>
 <translation id="397105322502079400">Израчунавање...</translation>
-<translation id="3972711570620097483">Инсталирај на полицу...</translation>
 <translation id="3974195870082915331">Кликните да бисте приказали лозинку</translation>
 <translation id="3975222297214566386">Облачић за опције уноса</translation>
 <translation id="397703832102027365">Довршавање...</translation>
@@ -2537,7 +2529,6 @@
 <translation id="4967749818080339523">Изаберите налог</translation>
 <translation id="496888482094675990">Апликација Датотеке пружа брз приступ датотекама које сте сачували на Google диску, у спољној меморији или на Chrome ОС уређају.</translation>
 <translation id="4969785127455456148">Албум</translation>
-<translation id="4970738541803285369">Инсталирај на радну површину...</translation>
 <translation id="4971412780836297815">Отвори када буде довршено</translation>
 <translation id="4972129977812092092">Измените штампач</translation>
 <translation id="497287958838527945">Кредитне картице и адресе из Google Pay-а.</translation>
@@ -3043,7 +3034,6 @@
 <translation id="5750324801516359607">Далеко</translation>
 <translation id="5751545372099101699">4. ставка на полици</translation>
 <translation id="5752453871435543420">Резервне копије у клауду за Chrome ОС</translation>
-<translation id="5754903485544371559">Додај у Апликације...</translation>
 <translation id="5756163054456765343">Ц&amp;ентар за помоћ</translation>
 <translation id="5759728514498647443">Документе које шаљете на штампање преко <ph name="APP_NAME" /> може да чита <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Није пронађен ниједан USB уређај</translation>
@@ -3180,7 +3170,6 @@
 <translation id="5959471481388474538">Мрежа није доступна</translation>
 <translation id="5963026469094486319">Набави теме</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (највише <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Додај на полицу...</translation>
 <translation id="5965661248935608907">Контролише и страницу која се приказује када кликнете на дугме Почетна или претражујете из омнибокса.</translation>
 <translation id="5971037678316050792">Контрола стања и упаривања Bluetooth адаптера</translation>
 <translation id="5972017421290582825">Управљај MIDI подешавањима...</translation>
@@ -3211,7 +3200,6 @@
 <translation id="6015796118275082299">Година</translation>
 <translation id="6016551720757758985">Потврђивање Powerwash-а уз враћање на претходну верзију</translation>
 <translation id="6016972670657536680">Дугме за избор језика и тастатуре. Тренутно изабрани језик је <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Додајте у Апликације</translation>
 <translation id="6019169947004469866">Опсеци</translation>
 <translation id="6020431688553761150">Сервер вас није овластио да приступате овом ресурсу.</translation>
 <translation id="602251597322198729">Овај сајт покушава да преузме више датотека. Желите ли да дозволите то?</translation>

@@ -43,7 +43,7 @@
 <translation id="2077129598763517140">Bruk maskinvareakselerasjon når det er tilgjengelig</translation>
 <translation id="2084710999043359739">Legg til i Chrome</translation>
 <translation id="2094919256425865063">Vil du avslutte Chrome likevel?</translation>
-<translation id="210890598424854131">{0,plural, =0{Chrome startes på nytt nå}=1{Chrome startes på nytt om 1 sekund}other{Chrome startes på nytt om # sekunder}}</translation>
+<translation id="210890598424854131">{0,plural, =0{Chrome starter på nytt nå}=1{Chrome starter på nytt om 1 sekund}other{Chrome starter på nytt om # sekunder}}</translation>
 <translation id="2120620239521071941">Dette sletter <ph name="ITEMS_COUNT" /> elementer fra denne enheten. For å hente dataene dine igjen senere må du logge på Chrome som <ph name="USER_EMAIL" />.</translation>
 <translation id="2123055963409958220">Bidra til å gjøre Chrome bedre ved å rapportere de <ph name="BEGIN_LINK" />nåværende innstillingene<ph name="END_LINK" /></translation>
 <translation id="216054706567564023">Installer Chrome på telefonen din. Vi sender en SMS til telefonnummeret ditt for kontogjenoppretting.</translation>

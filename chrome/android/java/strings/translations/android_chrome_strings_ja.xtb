@@ -87,6 +87,7 @@
 <translation id="1709438864123551175">データセーバー</translation>
 <translation id="1718835860248848330">1 時間以内</translation>
 <translation id="1729516292547892356">バーチャル リアリティ コンテンツを表示するには、Google VR サービスを更新してください</translation>
+<translation id="1733116627827457509"><ph name="FILE_SIZE" /> - <ph name="TIME_SINCE_UPDATE" />に更新</translation>
 <translation id="1749561566933687563">ブックマークの同期</translation>
 <translation id="17513872634828108">開いているタブ</translation>
 <translation id="1756600373018374892">このボタンをタップして簡単にタブに移動できます。</translation>
@@ -784,6 +785,7 @@
 <translation id="8200772114523450471">再開</translation>
 <translation id="8209050860603202033">画像を開く</translation>
 <translation id="8220488350232498290"><ph name="GIGABYTES" /> GB をダウンロードで使用中</translation>
+<translation id="8249310407154411074">一番上に移動</translation>
 <translation id="8250920743982581267">ドキュメント</translation>
 <translation id="8260126382462817229">もう一度ログインしてみてください</translation>
 <translation id="8261506727792406068">削除</translation>

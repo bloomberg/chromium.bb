@@ -347,7 +347,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
    upravte svá <ph name="LINK_START" />nastavení proxy serveru<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Nabízet uložení hesel</translation>
 <translation id="1512210426710821809">Jediný způsob, jak tuto akci vrátit zpět, je přeinstalovat systém <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
-<translation id="1514215615641002767">Přidat na plochu</translation>
 <translation id="151501797353681931">Importováno z prohlížeče Safari</translation>
 <translation id="1515163294334130951">Spustit</translation>
 <translation id="1521442365706402292">Správa certifikátů</translation>
@@ -589,7 +588,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="1875387611427697908">Lze přidat pouze ze stránek <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Nepodařilo se získat ověřovací token. Chcete-li to zkusit znovu, odhlaste se a poté se znovu přihlaste.</translation>
 <translation id="1878524442024357078">Žádným webům přístup do počítače pomocí pluginu nepovolovat</translation>
-<translation id="1879449842763884566">Instalovat do složky Aplikace...</translation>
 <translation id="1880905663253319515">Smazat certifikát <ph name="CERTIFICATE_NAME" />?</translation>
 <translation id="1886996562706621347">Povolit dotazy stránek, zda je chcete použít jako výchozí obslužný nástroj protokolů (doporučeno)</translation>
 <translation id="1887442540531652736">Chyba přihlášení</translation>
@@ -904,7 +902,6 @@ Na následující obrazovce prosím zadejte zpětnou vazbu, která nám problém
 <translation id="2408955596600435184">Zadejte PIN</translation>
 <translation id="241082044617551207">Neznámý plugin</translation>
 <translation id="2413749388954403953">Změnit uživatelské rozhraní záložek</translation>
-<translation id="2415294094132942411">Přidat na plochu...</translation>
 <translation id="2422426094670600218">&lt;bez názvu&gt;</translation>
 <translation id="2423578206845792524">Uložit o&amp;brázek jako...</translation>
 <translation id="2424091190911472304">Vždy spouštět na webu <ph name="ORIGIN" /></translation>
@@ -943,7 +940,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="2478176599153288112">Oprávnění souborů médií pro rozšíření <ph name="EXTENSION" /></translation>
 <translation id="247949520305900375">Sdílet zvuk</translation>
 <translation id="2480868415629598489">Upravovat data, která kopírujete a vkládáte</translation>
-<translation id="2481332092278989943">Přidat na poličku</translation>
 <translation id="2482878487686419369">Oznámení</translation>
 <translation id="2485056306054380289">Certif. CA serveru:</translation>
 <translation id="2485422356828889247">Odinstalovat</translation>
@@ -1057,7 +1053,6 @@ Tento web by podle mě neměl být blokován.</translation>
 <translation id="263325223718984101">Aplikace <ph name="PRODUCT_NAME" /> nemůže dokončit svou instalaci, ale bude se i nadále spouštět z bitové kopie disku.</translation>
 <translation id="2635176084534510129">Získejte přizpůsobenější prostředí, jako jsou lepší návrhy obsahu a chytřejší Překladač</translation>
 <translation id="2635276683026132559">Podepisování</translation>
-<translation id="2635926034288331400">Instalovat do složky Aplikace</translation>
 <translation id="2636625531157955190">Chrome nemůže přistupovat k obrázku.</translation>
 <translation id="2638087589890736295">K zahájení synchronizace je potřeba heslová fráze.</translation>
 <translation id="2638286699381354126">Aktualizovat...</translation>
@@ -1525,7 +1520,6 @@ Další informace naleznete v <ph name="BEGIN_LINK" />centru nápovědy<ph name
 <translation id="3308852433423051161">Načítání Asistenta Google...</translation>
 <translation id="3309747692199697901">Vždy spouštět na všech webech</translation>
 <translation id="3312424061798279731">Povolené jazyky</translation>
-<translation id="3312903956926554846">Instalovat na plochu</translation>
 <translation id="3313590242757056087">Na adrese <ph name="MANAGEMENT_URL" /> můžete nakonfigurovat, které weby si dozorovaný uživatel může zobrazit.
 Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /> bude moci prohlížet všechny weby na internetu.</translation>
 <translation id="3313622045786997898">Hodnota podpisu certifikátu</translation>
@@ -1662,7 +1656,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3511528412952710609">Krátká</translation>
 <translation id="3514373592552233661">V případě, že bude k dispozici více než jedna síť, budou před ostatními známými sítěmi upřednostněny preferované sítě</translation>
 <translation id="3523642406908660543">Dotázat se, pokud chce web použít plugin k přístupu do počítače (doporučeno)</translation>
-<translation id="3525897975040424366">Instalovat do poličky</translation>
 <translation id="3527085408025491307">Složka</translation>
 <translation id="3527276236624876118">Dozorovaný uživatel <ph name="USER_DISPLAY_NAME" /> byl vytvořen.</translation>
 <translation id="3528033729920178817">Tato stránka sleduje vaši polohu.</translation>
@@ -1962,7 +1955,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="3968261067169026421">Síť se nepodařilo nastavit</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Probíhá výpočet…</translation>
-<translation id="3972711570620097483">Instalovat do poličky...</translation>
 <translation id="3974195870082915331">Kliknutím zobrazíte heslo</translation>
 <translation id="3975222297214566386">Bublina s možnostmi vstupu</translation>
 <translation id="397703832102027365">Dokončování...</translation>
@@ -2539,7 +2531,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="4967749818080339523">Vyberte účet</translation>
 <translation id="496888482094675990">Aplikace Soubory umožňuje rychlý přístup k souborům, které jste uložili na Disk Google, externí úložiště nebo zařízení se systémem Chrome OS.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Instalovat na plochu...</translation>
 <translation id="4971412780836297815">Po dokončení otevřít</translation>
 <translation id="4972129977812092092">Úprava tiskárny</translation>
 <translation id="497287958838527945">Platební karty a adresy pomocí služby Google Pay</translation>
@@ -3042,7 +3033,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5750324801516359607">Daleko</translation>
 <translation id="5751545372099101699">Položka č. 4 v poličce</translation>
 <translation id="5752453871435543420">Zálohování Chrome OS do cloudu</translation>
-<translation id="5754903485544371559">Přidat do aplikací...</translation>
 <translation id="5756163054456765343">C&amp;entrum nápovědy</translation>
 <translation id="5759728514498647443">Dokumenty odeslané k tisku prostřednictvím aplikace <ph name="APP_NAME" /> lze číst v aplikaci <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nebyla nalezena žádná zařízení USB</translation>
@@ -3179,7 +3169,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="5959471481388474538">Síť není k dispozici</translation>
 <translation id="5963026469094486319">Získat motivy</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (maximum: <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Přidat na poličku...</translation>
 <translation id="5965661248935608907">Také řídí, která stránka se zobrazí, když kliknete na tlačítko Domovská stránka nebo budete vyhledávat v omniboxu.</translation>
 <translation id="5971037678316050792">Ovládání stavu a párování adaptéru Bluetooth</translation>
 <translation id="5972017421290582825">Spravovat nastavení MIDI...</translation>
@@ -3210,7 +3199,6 @@ Pokud nezměníte výchozí nastavení, uživatel <ph name="USER_DISPLAY_NAME" /
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016551720757758985">Potvrďte obnovení pomocí funkce Powerwash a návrat k předchozí verzi aplikace</translation>
 <translation id="6016972670657536680">Tlačítko pro výběr jazyka a klávesnice. Aktuálně je vybrána <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Přidat do aplikací</translation>
 <translation id="6019169947004469866">Oříznout</translation>
 <translation id="6020431688553761150">Server vám neudělil oprávnění k používání tohoto zdroje.</translation>
 <translation id="602251597322198729">Stránky se snaží stáhnout několik souborů. Chcete akci povolit?</translation>

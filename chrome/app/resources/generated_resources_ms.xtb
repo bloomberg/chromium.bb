@@ -346,7 +346,6 @@
         pelayan proksi, laraskan <ph name="LINK_START" />tetapan proksi<ph name="LINK_END" /> anda.</translation>
 <translation id="1511388193702657997">Tawaran untuk menyimpan kata laluan web anda</translation>
 <translation id="1512210426710821809">Satu-satunya cara hendak membuat asal tindakan ini ialah dengan memasang semula <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Tambahkan pada desktop</translation>
 <translation id="151501797353681931">Dimport Daripada Safari</translation>
 <translation id="1515163294334130951">Lancarkan</translation>
 <translation id="1521442365706402292">Uruskan sijil</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Item ini hanya boleh ditambahkan daripada <ph name="CHROME_WEB_STORE" />.</translation>
 <translation id="1877520246462554164">Gagal mendapatkan token pengesahan. Sila log keluar, kemudian log masuk semula untuk mencuba lagi.</translation>
 <translation id="1878524442024357078">Jangan benarkan mana-mana tapak menggunakan pemalam untuk mengakses komputer anda</translation>
-<translation id="1879449842763884566">Pasang pada Applications...</translation>
 <translation id="1880905663253319515">Padamkan sijil "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Benarkan tapak meminta untuk menjadi pengendali lalai untuk protokol (disyorkan)</translation>
 <translation id="1887442540531652736">Ralat log masuk</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Masukkan PIN anda</translation>
 <translation id="241082044617551207">Pemalam tidak diketahui</translation>
 <translation id="2413749388954403953">Ubah antara muka pengguna penanda halaman</translation>
-<translation id="2415294094132942411">Tambahkan pada desktop...</translation>
 <translation id="2422426094670600218">&lt;tiada nama&gt;</translation>
 <translation id="2423578206845792524">Si&amp;mpan imej sebagai...</translation>
 <translation id="2424091190911472304">Sentiasa Jalankan pada <ph name="ORIGIN" /></translation>
@@ -942,7 +939,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="2478176599153288112">Kebenaran Fail Media untuk "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Kongsi audio</translation>
 <translation id="2480868415629598489">Ubah suai data yang anda salin dan tampal</translation>
-<translation id="2481332092278989943">Tambahkan pada rak</translation>
 <translation id="2482878487686419369">Pemberitahuan</translation>
 <translation id="2485056306054380289">Sijil CA pelayan:</translation>
 <translation id="2485422356828889247">Nyahpasang</translation>
@@ -1057,7 +1053,6 @@ Saya tidak fikir tapak web ini perlu disekat!</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> tidak dapat melengkapkan pemasangan, tetapi akan terus dijalankan daripada imej cakeranya.</translation>
 <translation id="2635176084534510129">Dapatkan pengalaman yang lebih diperibadikan, seperti cadangan kandungan yang lebih baik dan Terjemah yang lebih pintar</translation>
 <translation id="2635276683026132559">Melog</translation>
-<translation id="2635926034288331400">Pasang pada Applications</translation>
 <translation id="2636625531157955190">Chrome tidak dapat mengakses imej.</translation>
 <translation id="2638087589890736295">Ungkapan laluan diperlukan untuk memulakan penyegerakan</translation>
 <translation id="2638286699381354126">Kemas kini...</translation>
@@ -1525,7 +1520,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3308852433423051161">Memuatkan Google Assistant...</translation>
 <translation id="3309747692199697901">Sentiasa Jalankan pada Semua Tapak</translation>
 <translation id="3312424061798279731">Bahasa yang didayakan</translation>
-<translation id="3312903956926554846">Pasang pada desktop</translation>
 <translation id="3313590242757056087">Untuk menetapkan tapak web yang boleh dilihat oleh pengguna diselia,
     anda boleh mengkonfigurasi sekatan dan tetapan dengan melawati <ph name="MANAGEMENT_URL" />.
     Jika anda tidak mengubah tetapan lalai, <ph name="USER_DISPLAY_NAME" />
@@ -1664,7 +1658,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3511528412952710609">Pendek</translation>
 <translation id="3514373592552233661">Rangkaian pilihan akan diutamakan berbanding rangkaian lain yang diketahui jika terdapat lebih daripada satu rangkaian</translation>
 <translation id="3523642406908660543">Tanya apabila tapak ingin menggunakan pemalam untuk mengakses komputer anda (disyorkan)</translation>
-<translation id="3525897975040424366">Pasang pada rak</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3527276236624876118">Pengguna yang diselia bernama <ph name="USER_DISPLAY_NAME" /> telah dihasilkan.</translation>
 <translation id="3528033729920178817">Halaman ini menjejaki lokasi anda.</translation>
@@ -1965,7 +1958,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="3968261067169026421">Tidak dapat menyediakan rangkaian</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Mengira...</translation>
-<translation id="3972711570620097483">Pasang pada rak...</translation>
 <translation id="3974195870082915331">Klik untuk menunjukkan kata laluan</translation>
 <translation id="3975222297214566386">Gelembung pilihan input</translation>
 <translation id="397703832102027365">Menyelesaikan...</translation>
@@ -2542,7 +2534,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="4967749818080339523">Pilih akaun</translation>
 <translation id="496888482094675990">Apl Fail memberikan akses pantas kepada fail yang telah anda simpan di Google Drive, storan luaran atau peranti OS Chrome anda.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Pasang pada desktop...</translation>
 <translation id="4971412780836297815">Buka apabila selesai</translation>
 <translation id="4972129977812092092">Edit pencetak</translation>
 <translation id="497287958838527945">Kad kredit dan alamat yang menggunakan Google Pay.</translation>
@@ -3046,7 +3037,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="5750324801516359607">Jauh</translation>
 <translation id="5751545372099101699">Item rak 4</translation>
 <translation id="5752453871435543420">Sandaran Awan OS Chrome</translation>
-<translation id="5754903485544371559">Tambahkan pada Aplikasi...</translation>
 <translation id="5756163054456765343">P&amp;usat bantuan</translation>
 <translation id="5759728514498647443">Dokumen yang anda hantar untuk dicetak melalui <ph name="APP_NAME" /> boleh dibaca oleh <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Tiada peranti USB ditemui</translation>
@@ -3183,7 +3173,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="5959471481388474538">Rangkaian tak tersedia</translation>
 <translation id="5963026469094486319">Dapatkan tema</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> puncak)</translation>
-<translation id="5965403572731919803">Tambahkan pada rak...</translation>
 <translation id="5965661248935608907">Sambungan turut mengawal halaman yang ditunjukkan apabila anda mengklik butang Laman Utama atau membuat carian dari Kotak Omni.</translation>
 <translation id="5971037678316050792">Kawal keadaan dan gandingan penyesuai Bluetooth</translation>
 <translation id="5972017421290582825">Urus tetapan MIDI...</translation>
@@ -3214,7 +3203,6 @@ Untuk mendapatkan maklumat lanjut, lawati <ph name="BEGIN_LINK" />Pusat Bantuan<
 <translation id="6015796118275082299">Tahun</translation>
 <translation id="6016551720757758985">Sahkan Powerwash dengan kembali ke versi terdahulu</translation>
 <translation id="6016972670657536680">Pilih bahasa dan butang papan kekunci. Bahasa yang dipilih pada masa ini ialah <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Tambahkan pada Aplikasi</translation>
 <translation id="6019169947004469866">Pangkas</translation>
 <translation id="6020431688553761150">Pelayan tidak membenarkan anda mengakses sumber ini.</translation>
 <translation id="602251597322198729">Tapak ini mencuba untuk memuat turun berbilang fail. Adakah anda mahu membenarkan ini?</translation>

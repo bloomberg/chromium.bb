@@ -18,6 +18,8 @@
 <translation id="1668054258064581266">Chromium からアカウントを削除したら、場合によっては開いているタブを再読み込みして変更を反映させる必要があります。</translation>
 <translation id="1688750314291223739">同期を設定すると、パーソナライズされたブラウザ機能をウェブ上に保存して、どのパソコンの Chromium からでも使用できるようになります。</translation>
 <translation id="1708666629004767631">Chromium がさらに安全になりました。最新バージョンをぜひお試しください。</translation>
+<translation id="1716051742506968">{0,plural, =0{Chromium のアップデートが利用可能です}=1{Chromium のアップデートが利用可能です}other{Chromium のアップデートが利用可能になってから # 日経過しています}}</translation>
+<translation id="1766096484055239003">管理者が、アップデートを適用するために Chromium を再起動するよう求めています</translation>
 <translation id="1774152462503052664">Chromium をバックグラウンドで実行する</translation>
 <translation id="1779356040007214683">Chromium をより安全にご利用いただくため、<ph name="IDS_EXTENSION_WEB_STORE_TITLE" />で提供していない一部の拡張機能を無効にしました。これらは知らないうちに追加された可能性があります。</translation>
 <translation id="1808667845054772817">Chromium を再インストール</translation>
@@ -28,6 +30,7 @@
 <translation id="1967743265616885482">同じ名前のモジュールは Chromium と競合することがわかっています。</translation>
 <translation id="2008474315282236005">この端末から 1 件の項目を削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="2077129598763517140">ハードウェア アクセラレーションが使用可能な場合は使用する</translation>
+<translation id="2117378023188580026">管理者が、このアップデートを適用するために Chromium を再起動するよう求めています</translation>
 <translation id="2119636228670142020">Chromium OS について(&amp;C)</translation>
 <translation id="2158734852934720349">Chromium OS オープンソース ライセンス</translation>
 <translation id="2241627712206172106">パソコンを共有している場合、友だちや家族はそれぞれ Chromium を自分専用のブラウザとして自分用の設定をして使うことができます。</translation>
@@ -107,6 +110,7 @@
 <translation id="4488554488975128561">危険なアプリやサイトの検出に役立てるために一部のシステム情報やページのコンテンツを Google に自動送信して、Chromium の安全性と利便性の向上にご協力ください。</translation>
 <translation id="4567424176335768812"><ph name="USER_EMAIL_ADDRESS" /> としてログインしています。ログインしているすべてのデバイスで、ブックマーク、履歴、その他の設定にアクセスできます。</translation>
 <translation id="459535195905078186">Chromium アプリ</translation>
+<translation id="4604377857208775795">{0,plural, =1{Chromium は 1 分後に再起動されます}other{Chromium は # 分後に再起動されます}}</translation>
 <translation id="4621240073146040695">Chromium を再起動して更新を完了してください。</translation>
 <translation id="4677944499843243528">プロフィールは、別のコンピュータ（<ph name="HOST_NAME" />）の別の Chromium プロセス（<ph name="PROCESS_ID" />）で使用されているようです。Chromium はプロフィールが破損しないようにプロフィールをロックしています。他のプロセスがこのプロフィールを使用していないことが確実であれば、プロフィールのロックを解除して Chromium を再起動できます。</translation>
 <translation id="469338717132742108">Chromium OS のヘルプを見る</translation>
@@ -166,6 +170,7 @@
 <translation id="6485906693002546646">Chromium データの同期に <ph name="PROFILE_EMAIL" /> を使用しています。同期設定を更新する、または Google アカウントなしで Chromium を使用するには、<ph name="SETTINGS_LINK" /> にアクセスしてください。</translation>
 <translation id="6510925080656968729">Chromium をアンインストール</translation>
 <translation id="6598877126913850652">Chromium の通知設定に移動</translation>
+<translation id="6664239887951090350">{0,plural, =0{Chromium は今すぐ再起動されます}=1{Chromium は 1 秒後に再起動されます}other{Chromium は # 秒後に再起動されます}}</translation>
 <translation id="6676384891291319759">インターネットにアクセス</translation>
 <translation id="6717134281241384636">バージョンが新しい Chromium のプロフィールは使用できません。
 
@@ -209,6 +214,7 @@
 <translation id="761356813943268536">Chromium がカメラとマイクを使用しています。</translation>
 <translation id="7617377681829253106">進化する Chromium</translation>
 <translation id="7686590090926151193">Chromium はデフォルトのブラウザとして設定されていません</translation>
+<translation id="7689606757190482937">同期してカスタマイズした Chromium をどの端末でも使用できます</translation>
 <translation id="7729447699958282447">お使いのドメインでは同期を利用できないため、Chromium はデータを同期できませんでした。</translation>
 <translation id="7745317241717453663">この端末から閲覧データを削除します。後でデータを取得するには、<ph name="USER_EMAIL" /> として Chromium にログインしてください。</translation>
 <translation id="7747138024166251722">インストーラーの一時ディレクトリを作成できませんでした。ディスクの空き領域とソフトウェアのインストール許可があることを確認してください。</translation>
@@ -227,6 +233,7 @@
 <translation id="8222496066431494154">Chromium をスマートフォンにインストールしませんか。お客様のアカウント再設定用の電話番号（<ph name="PHONE_NUMBER" />）に、Google より SMS をお送りします。</translation>
 <translation id="8269379391216269538">Chromium の品質向上にご協力ください</translation>
 <translation id="8290862415967981663">このファイルは危険なファイルの可能性があるため、Chromium でブロックしました。</translation>
+<translation id="8330519371938183845">ログインすると、同期してカスタマイズした Chromium をどの端末でも使用できます</translation>
 <translation id="8340674089072921962">Chromium の前回の使用者は <ph name="USER_EMAIL_ADDRESS" /> です</translation>
 <translation id="8453117565092476964">インストーラ アーカイブが壊れているか無効です。Chromium をダウンロードし直してください。</translation>
 <translation id="8493179195440786826">Chromium は古いバージョンです</translation>

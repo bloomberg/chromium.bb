@@ -346,7 +346,6 @@
     nemali, upravte svoje <ph name="LINK_START" />nastavenia servera proxy<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Ponúkať uloženie hesiel webových stránok</translation>
 <translation id="1512210426710821809">Jediný spôsob, ako to vrátiť späť, je zopakovať inštaláciu systému <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Pridať na plochu</translation>
 <translation id="151501797353681931">Importované zo Safari</translation>
 <translation id="1515163294334130951">Spustiť</translation>
 <translation id="1521442365706402292">Spravovať certifikáty</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Dá sa pridať iba zo služby <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Nepodarilo sa získať token na overenie totožnosti. Odhláste sa, potom sa opäť prihláste a skúste to znova.</translation>
 <translation id="1878524442024357078">Nepovoliť žiadnym stránkam používať doplnok na prístup do počítača</translation>
-<translation id="1879449842763884566">Inštalovať do aplikácií...</translation>
 <translation id="1880905663253319515">Odstrániť certifikát „<ph name="CERTIFICATE_NAME" />“?</translation>
 <translation id="1886996562706621347">Povoliť webovým stránkam požiadať o nastavenie za predvolené obslužné nástroje protokolov (odporúčané)</translation>
 <translation id="1887442540531652736">Chyba prihlásenia.</translation>
@@ -904,7 +902,6 @@ dotyku</translation>
 <translation id="2408955596600435184">Zadajte kód PIN</translation>
 <translation id="241082044617551207">Neznámy doplnok</translation>
 <translation id="2413749388954403953">Zmeniť používateľské rozhranie záložiek</translation>
-<translation id="2415294094132942411">Pridať na plochu...</translation>
 <translation id="2422426094670600218">&lt;bez názvu&gt;</translation>
 <translation id="2423578206845792524">Uložiť &amp;obrázok ako...</translation>
 <translation id="2424091190911472304">Vždy spustiť na webe <ph name="ORIGIN" /></translation>
@@ -943,7 +940,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="2478176599153288112">Povolenia súborov médií pre rozšírenie <ph name="EXTENSION" /></translation>
 <translation id="247949520305900375">Zdieľať zvuk</translation>
 <translation id="2480868415629598489">Upravovať dáta, ktoré kopírujete a prilepujete</translation>
-<translation id="2481332092278989943">Pridať na poličku</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
 <translation id="2485056306054380289">Certifikát CA servera:</translation>
 <translation id="2485422356828889247">Odinštalovať</translation>
@@ -1056,7 +1052,6 @@ Tieto webové stránky by podľa mňa nemali byť blokované.</translation>
 <translation id="263325223718984101">Inštaláciu prehliadača <ph name="PRODUCT_NAME" /> sa nepodarilo dokončiť, ale bude sa naďalej spúšťať z jeho obrazu disku.</translation>
 <translation id="2635176084534510129">Získajte prispôsobenejšie prostredia, napríklad lepšie návrhy obsahu a inteligentnejší Prekladač.</translation>
 <translation id="2635276683026132559">Podpísanie</translation>
-<translation id="2635926034288331400">Inštalovať do aplikácií</translation>
 <translation id="2636625531157955190">Prehliadač Chrome nemôže získať prístup k obrazu.</translation>
 <translation id="2638087589890736295">Spustenie synchronizácie vyžaduje prístupovú frázu</translation>
 <translation id="2638286699381354126">Aktualizovať...</translation>
@@ -1524,7 +1519,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3308852433423051161">Načítava sa Asistent Google…</translation>
 <translation id="3309747692199697901">Vždy spustiť na všetkých stránkach</translation>
 <translation id="3312424061798279731">Povolené jazyky</translation>
-<translation id="3312903956926554846">Inštalovať na plochu</translation>
 <translation id="3313590242757056087">Ak chcete nastaviť, ktoré stránky môže kontrolovaný používateľ zobraziť, môžete na stránke <ph name="MANAGEMENT_URL" /> nakonfigurovať
     obmedzenia a nastavenia.
     Ak nezmeníte predvolené nastavenia, používateľ <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3511528412952710609">Krátke</translation>
 <translation id="3514373592552233661">Ak je k dispozícii viac sietí, uprednostní sa preferovaná sieť pred ostatnými známymi sieťami</translation>
 <translation id="3523642406908660543">Opýtať sa, keď budú chcieť stránky použiť doplnok na prístup do počítača (odporúčané)</translation>
-<translation id="3525897975040424366">Inštalovať na poličku</translation>
 <translation id="3527085408025491307">Priečinok</translation>
 <translation id="3527276236624876118">Vytvoril sa kontrolovaný používateľ s názvom <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Táto stránka sleduje vašu polohu.</translation>
@@ -1964,7 +1957,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="3968261067169026421">Sieť sa nepodarilo nastaviť</translation>
 <translation id="3970114302595058915">Identifikátor</translation>
 <translation id="397105322502079400">Prebieha výpočet...</translation>
-<translation id="3972711570620097483">Inštalovať na poličku…</translation>
 <translation id="3974195870082915331">Kliknutím zobrazíte heslo</translation>
 <translation id="3975222297214566386">Bublina s možnosťami vstupu</translation>
 <translation id="397703832102027365">Prebieha dokončovanie...</translation>
@@ -2541,7 +2533,6 @@ Pri vytvorení kontrolovaného používateľa sa nevytvorí účet Google a jeh
 <translation id="4967749818080339523">Vyberte účet</translation>
 <translation id="496888482094675990">Aplikácia Súbory poskytuje rýchly prístup k súborom, ktoré ste uložili na Disk Google, do externého úložiska alebo do zariadenia so systémom OS Chrome.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Inštalovať na plochu…</translation>
 <translation id="4971412780836297815">Otvoriť po stiahnutí</translation>
 <translation id="4972129977812092092">Úprava tlačiarne</translation>
 <translation id="497287958838527945">Kreditné karty a adresy pomocou služby Google Pay</translation>
@@ -3045,7 +3036,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5750324801516359607">Ďaleko</translation>
 <translation id="5751545372099101699">4. položka na poličke</translation>
 <translation id="5752453871435543420">Chrome OS – záloha v cloude</translation>
-<translation id="5754903485544371559">Pridať do priečinka Aplikácie...</translation>
 <translation id="5756163054456765343">Centrum pomoci</translation>
 <translation id="5759728514498647443">Dokumenty odoslané na tlač prostredníctvom aplikácie <ph name="APP_NAME" /> môžete čítať pomocou aplikácie <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nenašli sa žiadne zariadenia USB</translation>
@@ -3182,7 +3172,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="5959471481388474538">Sieť je nedostupná</translation>
 <translation id="5963026469094486319">Získať motívy</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (maximum: <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Pridať na poličku...</translation>
 <translation id="5965661248935608907">Tiež určuje, ktorá stránka sa zobrazí po kliknutí na tlačidlo Domovská stránka alebo pri vyhľadávaní pomocou všeobecného poľa.</translation>
 <translation id="5971037678316050792">Ovládanie stavu a párovania adaptéra Bluetooth</translation>
 <translation id="5972017421290582825">Spravovať nastavenia rozhrania MIDI...</translation>
@@ -3213,7 +3202,6 @@ s ostatnými, a to všetko na jednom mieste.<ph name="MARKUP_9" /></translatio
 <translation id="6015796118275082299">Rok</translation>
 <translation id="6016551720757758985">Potvrdenie obnovenia Powerwash s návratom k predchádzajúcej verzii</translation>
 <translation id="6016972670657536680">Tlačidlo pre výber jazyka a klávesnice. Aktuálne je vybratý jazyk <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Pridať do priečinka Aplikácie</translation>
 <translation id="6019169947004469866">Orezať</translation>
 <translation id="6020431688553761150">Server vám neudelil autorizáciu na používanie tohto zdroja.</translation>
 <translation id="602251597322198729">Stránka sa pokúša stiahnuť viacero súborov. Chcete to povoliť?</translation>

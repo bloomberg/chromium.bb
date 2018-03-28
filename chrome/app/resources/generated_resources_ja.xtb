@@ -347,7 +347,6 @@
     場合は、<ph name="LINK_START" />プロキシ設定<ph name="LINK_END" />を調整してください。</translation>
 <translation id="1511388193702657997">ウェブ パスワードの保存を確認します</translation>
 <translation id="1512210426710821809">この設定を元に戻すには、<ph name="IDS_SHORT_PRODUCT_OS_NAME" /> の再インストールが必要になります</translation>
-<translation id="1514215615641002767">デスクトップに追加</translation>
 <translation id="151501797353681931">Safari からのインポート</translation>
 <translation id="1515163294334130951">起動</translation>
 <translation id="1521442365706402292">証明書の管理</translation>
@@ -589,7 +588,6 @@
 <translation id="1875387611427697908">これは <ph name="CHROME_WEB_STORE" /> からのみ追加できます</translation>
 <translation id="1877520246462554164">認証トークンを取得できませんでした。いったんログアウトして再度ログインし、もう一度お試しください。</translation>
 <translation id="1878524442024357078">すべてのサイトに対し、プラグインを使用してパソコンにアクセスすることを禁止する</translation>
-<translation id="1879449842763884566">「アプリケーション」にインストール...</translation>
 <translation id="1880905663253319515">証明書「<ph name="CERTIFICATE_NAME" />」を削除しますか？</translation>
 <translation id="1886996562706621347">サイトからのプロトコルのデフォルト ハンドラとしての登録要求を許可する（推奨）</translation>
 <translation id="1887442540531652736">ログインエラー</translation>
@@ -904,7 +902,6 @@
 <translation id="2408955596600435184">PIN を入力してください</translation>
 <translation id="241082044617551207">不明なプラグイン</translation>
 <translation id="2413749388954403953">ブックマークのユーザー インターフェースの変更</translation>
-<translation id="2415294094132942411">デスクトップに追加...</translation>
 <translation id="2422426094670600218">&lt;名前なし&gt;</translation>
 <translation id="2423578206845792524">名前を付けて画像を保存(&amp;V)...</translation>
 <translation id="2424091190911472304"><ph name="ORIGIN" /> で常に実行</translation>
@@ -943,7 +940,6 @@
 <translation id="2478176599153288112">「<ph name="EXTENSION" />」のメディアファイル権限</translation>
 <translation id="247949520305900375">音声を共有する</translation>
 <translation id="2480868415629598489">コピーして貼り付けるデータの修正</translation>
-<translation id="2481332092278989943">シェルフに追加</translation>
 <translation id="2482878487686419369">通知</translation>
 <translation id="2485056306054380289">サーバー CA 証明書:</translation>
 <translation id="2485422356828889247">アンインストール</translation>
@@ -1057,7 +1053,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> のインストールを完了できませんでした。ただし、今後もディスク イメージから実行できます。</translation>
 <translation id="2635176084534510129">おすすめコンテンツや翻訳などを、より自分に合った方法で利用できるようになります</translation>
 <translation id="2635276683026132559">署名</translation>
-<translation id="2635926034288331400">「アプリケーション」にインストール</translation>
 <translation id="2636625531157955190">Chrome から画像にアクセスできません。</translation>
 <translation id="2638087589890736295">同期を開始するには、パスフレーズが必要です</translation>
 <translation id="2638286699381354126">更新...</translation>
@@ -1525,7 +1520,6 @@
 <translation id="3308852433423051161">Google アシスタントを読み込んでいます...</translation>
 <translation id="3309747692199697901">すべてのサイトで常に実行</translation>
 <translation id="3312424061798279731">有効な言語</translation>
-<translation id="3312903956926554846">デスクトップにインストール</translation>
 <translation id="3313590242757056087">監視対象ユーザーがどのウェブサイトを閲覧できるかを設定するには、
     管理者が <ph name="MANAGEMENT_URL" /> で制限と設定を指定します。
     管理者がデフォルト設定を変更しない場合は、<ph name="USER_DISPLAY_NAME" /> さんは
@@ -1664,7 +1658,6 @@
 <translation id="3511528412952710609">短い</translation>
 <translation id="3514373592552233661">複数のネットワークを利用できる場合に、優先ネットワークを他の既知のネットワークより優先します</translation>
 <translation id="3523642406908660543">サイトがプラグインを使用してパソコンにアクセスしようとしたときに確認する（推奨）</translation>
-<translation id="3525897975040424366">シェルフにインストール</translation>
 <translation id="3527085408025491307">フォルダ</translation>
 <translation id="3527276236624876118"><ph name="USER_DISPLAY_NAME" /> という名前の監視対象ユーザーが作成されました。</translation>
 <translation id="3528033729920178817">このページはあなたの現在地を追跡しています。</translation>
@@ -1965,7 +1958,6 @@
 <translation id="3968261067169026421">ネットワークを設定できませんでした</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">計算しています...</translation>
-<translation id="3972711570620097483">シェルフにインストール...</translation>
 <translation id="3974195870082915331">クリックしてパスワードを表示する</translation>
 <translation id="3975222297214566386">入力オプションのふきだし</translation>
 <translation id="397703832102027365">最終処理中...</translation>
@@ -2542,7 +2534,6 @@
 <translation id="4967749818080339523">アカウントを選択してください</translation>
 <translation id="496888482094675990">ファイル アプリを使えば、Google ドライブ、外部ストレージ、Chrome OS デバイスに保存したファイルにすぐにアクセスできます。</translation>
 <translation id="4969785127455456148">アルバム</translation>
-<translation id="4970738541803285369">デスクトップにインストール...</translation>
 <translation id="4971412780836297815">完了後に開く</translation>
 <translation id="4972129977812092092">プリンタの編集</translation>
 <translation id="497287958838527945">Google Pay のクレジット カードと住所</translation>
@@ -3046,7 +3037,6 @@
 <translation id="5750324801516359607">遠い</translation>
 <translation id="5751545372099101699">シェルフ アイテム 4</translation>
 <translation id="5752453871435543420">Chrome OS のクラウド バックアップ</translation>
-<translation id="5754903485544371559">アプリケーションに追加...</translation>
 <translation id="5756163054456765343">ヘルプセンター(&amp;E)</translation>
 <translation id="5759728514498647443">「<ph name="APP_NAME" />」を使用して印刷に送信したドキュメントは「<ph name="APP_NAME" />」で読めます。</translation>
 <translation id="5763751966069581670">USB デバイスが見つかりませんでした</translation>
@@ -3183,7 +3173,6 @@
 <translation id="5959471481388474538">ネットワークは利用できません</translation>
 <translation id="5963026469094486319">テーマを取得</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" />（最大 <ph name="NUM_KILOBYTES_LIVE" />）</translation>
-<translation id="5965403572731919803">シェルフに追加...</translation>
 <translation id="5965661248935608907">この拡張機能では、ホーム ボタンのクリック時、またはアドレスバーからの検索時に表示されるページも制御されます。</translation>
 <translation id="5971037678316050792">Bluetooth アダプタの状態とペア設定の制御</translation>
 <translation id="5972017421290582825">MIDI の設定を管理...</translation>
@@ -3214,7 +3203,6 @@
 <translation id="6015796118275082299">年</translation>
 <translation id="6016551720757758985">Powerwash を実行して以前のバージョンに戻すことを確認</translation>
 <translation id="6016972670657536680">言語とキーボードのボタンを選択します。現在選択している言語は <ph name="LANGUAGE" /> です。</translation>
-<translation id="6017981840202692187">アプリケーションに追加</translation>
 <translation id="6019169947004469866">トリミング</translation>
 <translation id="6020431688553761150">このリソースへのアクセスがサーバーで認証されませんでした。</translation>
 <translation id="602251597322198729">このサイトは複数のファイルをダウンロードしようとしています。許可しますか？</translation>

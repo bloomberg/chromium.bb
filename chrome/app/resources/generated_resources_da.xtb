@@ -346,7 +346,6 @@
     proxyserver, skal du justere dine <ph name="LINK_START" />proxyindstillinger<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Tilbyd at gemme dine adgangskoder fra nettet</translation>
 <translation id="1512210426710821809">Den eneste måde at fortryde dette på er ved at geninstallere <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Føj til skrivebordet</translation>
 <translation id="151501797353681931">Importeret fra Safari</translation>
 <translation id="1515163294334130951">Start</translation>
 <translation id="1521442365706402292">Administrer certifikater</translation>
@@ -585,7 +584,6 @@
 <translation id="1875387611427697908">Denne kan kun tilføjes via <ph name="CHROME_WEB_STORE" />.</translation>
 <translation id="1877520246462554164">Der kunne ikke hentes noget godkendelsestoken. Log ud, og log derefter ind igen for at prøve igen.</translation>
 <translation id="1878524442024357078">Tillad ikke, at et website anvender et plugin til at få adgang til din computer</translation>
-<translation id="1879449842763884566">Installer under Programmer...</translation>
 <translation id="1880905663253319515">Slet certifikatet "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Tillad, at websites må bede om at håndtere protokoller som standard (anbefales)</translation>
 <translation id="1887442540531652736">Loginfejl</translation>
@@ -900,7 +898,6 @@
 <translation id="2408955596600435184">Angiv din pinkode</translation>
 <translation id="241082044617551207">Ukendt plugin</translation>
 <translation id="2413749388954403953">Rediger brugergrænsefladen for bogmærker</translation>
-<translation id="2415294094132942411">Føj til skrivebordet...</translation>
 <translation id="2422426094670600218">&lt;ikke navngivet&gt;</translation>
 <translation id="2423578206845792524">&amp;Gem billede som...</translation>
 <translation id="2424091190911472304">Kør altid på <ph name="ORIGIN" /></translation>
@@ -939,7 +936,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="2478176599153288112">Mediefiltilladelser for "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Del lyd</translation>
 <translation id="2480868415629598489">Redigere data, du kopierer og indsætter</translation>
-<translation id="2481332092278989943">Føj til hylden</translation>
 <translation id="2482878487686419369">Underretninger</translation>
 <translation id="2485056306054380289">Serverens CA-certifikat:</translation>
 <translation id="2485422356828889247">Afinstaller</translation>
@@ -1054,7 +1050,6 @@ Jeg synes ikke, dette website skal blokeres.</translation>
 <translation id="263325223718984101">Installationen af <ph name="PRODUCT_NAME" /> kunne ikke gennemføres, men vil fortsætte kørslen fra dets diskbillede.</translation>
 <translation id="2635176084534510129">Få mere personligt tilpassede oplevelser, f.eks. bedre indholdsforslag and smartere Oversæt</translation>
 <translation id="2635276683026132559">Signering</translation>
-<translation id="2635926034288331400">Installer under Programmer</translation>
 <translation id="2636625531157955190">Chrome kan ikke få adgang til billedet.</translation>
 <translation id="2638087589890736295">Indtast adgangssætningen for at påbegynde synkroniseringen.</translation>
 <translation id="2638286699381354126">Opdater...</translation>
@@ -1524,7 +1519,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3308852433423051161">Indlæser Google Assistent...</translation>
 <translation id="3309747692199697901">Kør altid på alle websites</translation>
 <translation id="3312424061798279731">Aktiverede sprog</translation>
-<translation id="3312903956926554846">Installer på computeren</translation>
 <translation id="3313590242757056087">Du kan angive, hvilke websites den administrerede bruger skal kunne se, ved at konfigurere begrænsninger
     og indstillinger på <ph name="MANAGEMENT_URL" />.
     Hvis du ikke ændrer standardindstillingerne, kan <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Få flere oplysninger i <ph name="BEGIN_LINK" />Hjælp<ph name="END_LINK" />.</t
 <translation id="3511528412952710609">Kort</translation>
 <translation id="3514373592552233661">Foretrukne netværk prioriteres frem for andre kendte netværk, hvis der er mere end ét tilgængeligt netværk</translation>
 <translation id="3523642406908660543">Spørg om tilladelse, når et website ønsker at anvende et plugin til at få adgang til din computer (anbefales)</translation>
-<translation id="3525897975040424366">Installer på hylden</translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3527276236624876118">En administreret bruger ved navn <ph name="USER_DISPLAY_NAME" /> er blevet oprettet.</translation>
 <translation id="3528033729920178817">Denne side sporer din placering.</translation>
@@ -1964,7 +1957,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="3968261067169026421">Netværket kunne ikke konfigureres</translation>
 <translation id="3970114302595058915">Id</translation>
 <translation id="397105322502079400">Beregner...</translation>
-<translation id="3972711570620097483">Installer på hylden...</translation>
 <translation id="3974195870082915331">Klik for at vise adgangskode</translation>
 <translation id="3975222297214566386">Boble med indtastningsmuligheder</translation>
 <translation id="397703832102027365">Afslutter...</translation>
@@ -2541,7 +2533,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="4967749818080339523">Vælg en konto</translation>
 <translation id="496888482094675990">Appen Filer giver hurtig adgang til filer, som du har gemt i Google Drev, på et eksternt lager eller på din Chrome OS-enhed.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Installer på computer...</translation>
 <translation id="4971412780836297815">Åbn, når den er gennemført</translation>
 <translation id="4972129977812092092">Rediger printer</translation>
 <translation id="497287958838527945">Kreditkort og adresser fra Google Pay.</translation>
@@ -3045,7 +3036,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5750324801516359607">Langt væk</translation>
 <translation id="5751545372099101699">Hyldeelement 4</translation>
 <translation id="5752453871435543420">Sikkerhedskopiering i skyen for Chrome OS</translation>
-<translation id="5754903485544371559">Føj til apps...</translation>
 <translation id="5756163054456765343">H&amp;jælp</translation>
 <translation id="5759728514498647443">De dokumenter, du sender til udskrift via <ph name="APP_NAME" />, kan læses af <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Der blev ikke fundet nogen USB-enheder</translation>
@@ -3182,7 +3172,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="5959471481388474538">Netværket er ikke tilgængeligt</translation>
 <translation id="5963026469094486319">Hent temaer</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (maks. <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Føj til hylden...</translation>
 <translation id="5965661248935608907">Den styrer også, hvilken side der vises, når du klikker på knappen Startside eller søger via omnifeltet.</translation>
 <translation id="5971037678316050792">Kontrollere tilstand og parring af Bluetooth-adaptere</translation>
 <translation id="5972017421290582825">Administrer MIDI-indstillinger...</translation>
@@ -3213,7 +3202,6 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="6015796118275082299">År</translation>
 <translation id="6016551720757758985">Bekræft Powerwash med nulstilling til forrige version</translation>
 <translation id="6016972670657536680">Vælg sprog og tastaturknap. <ph name="LANGUAGE" /> er i øjeblikket valgt som sprog.</translation>
-<translation id="6017981840202692187">Føj til apps</translation>
 <translation id="6019169947004469866">Beskær</translation>
 <translation id="6020431688553761150">Serveren godkendte dig ikke til at få adgang til denne ressource.</translation>
 <translation id="602251597322198729">Dette website forsøger at downloade flere filer. Vil du tillade dette?</translation>

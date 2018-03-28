@@ -360,7 +360,7 @@
 <translation id="3542684924769048008">Utilitzar la contrasenya per a:</translation>
 <translation id="3549644494707163724">Encripta totes les dades sincronitzades amb la teva frase de contrasenya de sincronització</translation>
 <translation id="3556433843310711081">El teu gestor te'l pot desbloquejar</translation>
-<translation id="3566021033012934673">La vostra connexió no és privada</translation>
+<translation id="3566021033012934673">La connexió no és privada</translation>
 <translation id="3574305903863751447"><ph name="CITY" />, <ph name="STATE" /> <ph name="COUNTRY" /></translation>
 <translation id="3576616784287504635">Una pàgina inserida a <ph name="SITE" /> diu</translation>
 <translation id="358285529439630156">S'accepten targetes de crèdit i de prepagament.</translation>
@@ -1037,7 +1037,7 @@
 <translation id="9103872766612412690"><ph name="SITE" /> utilitza normalment l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chromium ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chromium ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="9106062320799175032">Afegeix una adreça de facturació</translation>
 <translation id="910908805481542201">Ajuda'm a solucionar-ho</translation>
-<translation id="9128870381267983090">Connecteu-vos a la xarxa</translation>
+<translation id="9128870381267983090">Connecta't a la xarxa</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9137248913990643158">Obre Chrome i inicia-hi la sessió abans d'utilitzar aquesta aplicació.</translation>
 <translation id="9148088599418889305">Tria un mètode d'enviament</translation>

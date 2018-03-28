@@ -346,7 +346,6 @@
     ng proxy server, ayusin ang iyong <ph name="LINK_START" />mga setting ng proxy<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Mag-alok na i-save ang iyong mga password sa web</translation>
 <translation id="1512210426710821809">Ang tanging paraan upang ma-undo ito ay muling i-install ang <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Idagdag sa desktop</translation>
 <translation id="151501797353681931">Na-import Mula sa Safari</translation>
 <translation id="1515163294334130951">Ilunsad</translation>
 <translation id="1521442365706402292">Pamahalaan ang mga sertipiko</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Maaari lang itong idagdag mula sa <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Hindi nakuha ang token sa pag-authenticate. Mag-sign out at muling mag-sign in upang subukang muli.</translation>
 <translation id="1878524442024357078">Huwag pahintulutan ang anumang mga site na gumamit ng plugin upang i-access ang iyong computer</translation>
-<translation id="1879449842763884566">I-install sa Mga Application...</translation>
 <translation id="1880905663253319515">Tanggalin ang certificate na "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Payagan ang mga site na hilinging maging default na mga handler para sa mga protocol (inirerekomenda)</translation>
 <translation id="1887442540531652736">Error sa pag-sign in</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Ilagay ang iyong PIN</translation>
 <translation id="241082044617551207">Hindi kilalang plugin</translation>
 <translation id="2413749388954403953">Baguhin ang user interface ng mga bookmark</translation>
-<translation id="2415294094132942411">Idagdag sa desktop...</translation>
 <translation id="2422426094670600218">&lt;unnamed&gt;</translation>
 <translation id="2423578206845792524">I-sa&amp;ve ang larawan bilang...</translation>
 <translation id="2424091190911472304">Patakbuhin sa <ph name="ORIGIN" /> sa Lahat ng Pagkakataon</translation>
@@ -942,7 +939,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="2478176599153288112">Mga Pahintulot sa Media-File para sa "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Ibahagi ang audio</translation>
 <translation id="2480868415629598489">Baguhin ang data na kinokopya at pine-paste mo</translation>
-<translation id="2481332092278989943">Idagdag sa shelf</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
 <translation id="2485056306054380289">Certificate ng server CA:</translation>
 <translation id="2485422356828889247">I-uninstall</translation>
@@ -1056,7 +1052,6 @@ Sa palagay ko, hindi dapat i-block ang site na ito!</translation>
 <translation id="263325223718984101">Hindi makumpleto ng <ph name="PRODUCT_NAME" /> ang pag-install, ngunit patuloy na gagana mula sa larawan ng disk nito.</translation>
 <translation id="2635176084534510129">Magkaroon ng mga mas naka-personalize na karanasan, gaya ng mas maiinam na suhestyon sa content at mas mahusay na Translate</translation>
 <translation id="2635276683026132559">Paglagda</translation>
-<translation id="2635926034288331400">I-install sa Mga Application</translation>
 <translation id="2636625531157955190">Hindi ma-access ng Chrome ang larawan.</translation>
 <translation id="2638087589890736295">Kinakailangan ang passphrase upang masimulan ang pag-sync</translation>
 <translation id="2638286699381354126">I-update...</translation>
@@ -1524,7 +1519,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="3308852433423051161">Nilo-load ang Google Assistant...</translation>
 <translation id="3309747692199697901">Patakbuhin sa Lahat ng Site sa Lahat ng Pagkakataon</translation>
 <translation id="3312424061798279731">Mga naka-enable na wika</translation>
-<translation id="3312903956926554846">I-install sa desktop</translation>
 <translation id="3313590242757056087">Upang itakda kung aling mga website ang maaring tingnan ng pinangangasiwaang user, maisasaayos mo ang mga paghihigpit
     at setting sa pamamagitan ng pagbisita sa <ph name="MANAGEMENT_URL" />.
     Kung hindi mo babaguhin ang mga default na setting, maba-browse ni <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="3511528412952710609">Maikli</translation>
 <translation id="3514373592552233661">Mas pipiliin ang mga gustong network kaysa sa iba pang kilalang network kung may mahigit sa isang available</translation>
 <translation id="3523642406908660543">Magtanong kapag gusto ng isang site na gumamit ng plugin upang i-access ang iyong computer (inirerekomenda)</translation>
-<translation id="3525897975040424366">I-install sa shelf</translation>
 <translation id="3527085408025491307">Folder</translation>
 <translation id="3527276236624876118">Nagawa na ang isang pinangangasiwaang user na may pangalang <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Sinusubaybayan ng pahinang ito ang iyong lokasyon.</translation>
@@ -1964,7 +1957,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="3968261067169026421">Hindi ma-set up ang network</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Kinakalkula...</translation>
-<translation id="3972711570620097483">I-install sa shelf...</translation>
 <translation id="3974195870082915331">I-click upang ipakita ang password</translation>
 <translation id="3975222297214566386">Bubble ng mga opsyon sa input</translation>
 <translation id="397703832102027365">Tinatapos...</translation>
@@ -2541,7 +2533,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="4967749818080339523">Pumili ng isang account</translation>
 <translation id="496888482094675990">Nagbibigay ang Files app ng mabilisang access sa mga file na nai-save mo sa Google Drive, external na storage o sa iyong Chrome OS device.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">I-install sa desktop...</translation>
 <translation id="4971412780836297815">Buksan kapag tapos na</translation>
 <translation id="4972129977812092092">I-edit ang printer</translation>
 <translation id="497287958838527945">Mga credit card at address na gumagamit ng Google Pay.</translation>
@@ -3045,7 +3036,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="5750324801516359607">Malayo</translation>
 <translation id="5751545372099101699">Item 4 sa shelf</translation>
 <translation id="5752453871435543420">Backup sa Chrome OS Cloud</translation>
-<translation id="5754903485544371559">Idagdag sa Mga Application...</translation>
 <translation id="5756163054456765343">Help center</translation>
 <translation id="5759728514498647443">Ang mga dokumentong ipinadadala mo upang i-print sa pamamagitan ng <ph name="APP_NAME" /> ay maaaring buksan ng <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Walang nahanap na USB device</translation>
@@ -3182,7 +3172,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="5959471481388474538">Hindi available ang network</translation>
 <translation id="5963026469094486319">Kumuha ng mga tema</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> ang pinakamataas)</translation>
-<translation id="5965403572731919803">Idagdag sa shelf...</translation>
 <translation id="5965661248935608907">Kinokontrol din nito kung anong pahina ang ipinapakita kapag na-click mo ang button ng Home o naghanap mula sa Omnibox.</translation>
 <translation id="5971037678316050792">Kontrolin ang estado at pagpapares ng Bluetooth adapter</translation>
 <translation id="5972017421290582825">Pamahalaan ang mga setting ng MIDI...</translation>
@@ -3213,7 +3202,6 @@ Para sa higit pang impormasyon, bisitahin ang aming <ph name="BEGIN_LINK" />Help
 <translation id="6015796118275082299">Taon</translation>
 <translation id="6016551720757758985">Kumpirmahin ang Powerwash na maaaring bumalik sa dating bersyon</translation>
 <translation id="6016972670657536680">Button ng pumili ng wika at keyboard. Ang kasalukuyang napiling wika ay <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Idagdag sa Mga Application</translation>
 <translation id="6019169947004469866">I-crop</translation>
 <translation id="6020431688553761150">Hindi ka pinahintulutan ng server na i-access ang mapagkukunang ito.</translation>
 <translation id="602251597322198729">Tinatangka ng site na ito na mag-download ng maramihang file. Nais mo ba itong payagan?</translation>

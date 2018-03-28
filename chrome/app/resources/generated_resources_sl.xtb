@@ -347,7 +347,6 @@
         uporabljati, prilagodite <ph name="LINK_START" />nastavitve proxyja<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Prikaži možnost shranjevanja spletnih gesel</translation>
 <translation id="1512210426710821809">To lahko razveljavite samo tako, da znova namestite <ph name="IDS_SHORT_PRODUCT_OS_NAME" />.</translation>
-<translation id="1514215615641002767">Dodajanje na namizje</translation>
 <translation id="151501797353681931">Uvoženo iz Safarija</translation>
 <translation id="1515163294334130951">Zagon</translation>
 <translation id="1521442365706402292">Upravljanje certifikatov</translation>
@@ -589,7 +588,6 @@
 <translation id="1875387611427697908">To je mogoče dodati samo z mesta <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Ni bilo mogoče dobiti žetona za preverjanje pristnosti. Odjavite se, nato se ponovno prijavite in poskusite znova.</translation>
 <translation id="1878524442024357078">Ne dovoli spletnim mestom, da z vtičnikom dostopajo do računalnika</translation>
-<translation id="1879449842763884566">Namestitev v mapo Applications ...</translation>
 <translation id="1880905663253319515">Ali želite izbrisati potrdilo »<ph name="CERTIFICATE_NAME" />«?</translation>
 <translation id="1886996562706621347">Dovoli spletnim mestom, da zahtevajo, da postanejo privzete rutine za obravnavo protokolov (priporočeno)</translation>
 <translation id="1887442540531652736">Napaka pri prijavi</translation>
@@ -904,7 +902,6 @@
 <translation id="2408955596600435184">Vnos kode PIN</translation>
 <translation id="241082044617551207">Neznani vtičnik</translation>
 <translation id="2413749388954403953">Spreminjanje uporabniškega vmesnika za zaznamke</translation>
-<translation id="2415294094132942411">Dodaj na namizje ...</translation>
 <translation id="2422426094670600218">&lt;neimenovano&gt;</translation>
 <translation id="2423578206845792524">Sh&amp;rani sliko kot ...</translation>
 <translation id="2424091190911472304">Vedno izvajaj na spletnem mestu <ph name="ORIGIN" /></translation>
@@ -943,7 +940,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="2478176599153288112">Dovoljenja za predstavnostne datoteke za razširitev »<ph name="EXTENSION" />«</translation>
 <translation id="247949520305900375">Skupna raba zvoka</translation>
 <translation id="2480868415629598489">Spreminjanje podatkov, ki jih kopirate in prilepite</translation>
-<translation id="2481332092278989943">Dodajanje na polico</translation>
 <translation id="2482878487686419369">Obvestila</translation>
 <translation id="2485056306054380289">Overjeno strežniško potrdilo</translation>
 <translation id="2485422356828889247">Odstranjevanje</translation>
@@ -1057,7 +1053,6 @@ To spletno mesto ne sme biti blokirano.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ni mogel končati namestitve, a se bo še vedno izvajal s posnetka diska.</translation>
 <translation id="2635176084534510129">Zagotovite si bolj prilagojene izkušnje, kot so boljši predlogi vsebine in pametnejši prevodi</translation>
 <translation id="2635276683026132559">Podpisovanje</translation>
-<translation id="2635926034288331400">Namestitev v mapo Applications</translation>
 <translation id="2636625531157955190">Chrome ne more dostopati do slike.</translation>
 <translation id="2638087589890736295">Če želite začeti sinhronizacijo, morate vnesti geslo</translation>
 <translation id="2638286699381354126">Posodobi ...</translation>
@@ -1525,7 +1520,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3308852433423051161">Nalaganje Pomočnika Google ...</translation>
 <translation id="3309747692199697901">Vedno izvajaj na vseh spletnih mestih</translation>
 <translation id="3312424061798279731">Omogočeni jeziki</translation>
-<translation id="3312903956926554846">Namestitev na namizje</translation>
 <translation id="3313590242757056087">Če želite nastaviti, katera spletna mesta si lahko ogleda zaščiteni uporabnik, lahko na strani <ph name="MANAGEMENT_URL" />
     določite omejitve in nastavitve.
     Če ne spremenite privzetih nastavitev,
@@ -1664,7 +1658,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3511528412952710609">Kratka</translation>
 <translation id="3514373592552233661">Če je na voljo več kot eno omrežje, bodo pred drugimi znanimi omrežji prednostno izbrana prednostna omrežja</translation>
 <translation id="3523642406908660543">Vprašaj, ko želi spletno mesto z vtičnikom dostopati do računalnika (priporočeno)</translation>
-<translation id="3525897975040424366">Namestitev na polico</translation>
 <translation id="3527085408025491307">Mapa</translation>
 <translation id="3527276236624876118">Ustvarjen je zaščiteni uporabnik <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Ta spletna stran sledi vaši lokaciji.</translation>
@@ -1965,7 +1958,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="3968261067169026421">Omrežja ni bilo mogoče nastaviti</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Izračunavanje …</translation>
-<translation id="3972711570620097483">Namesti na polico ...</translation>
 <translation id="3974195870082915331">Kliknite, če želite prikazati geslo</translation>
 <translation id="3975222297214566386">Oblaček z možnostmi vnosa</translation>
 <translation id="397703832102027365">Dokončanje ...</translation>
@@ -2542,7 +2534,6 @@ Z ustvarjanjem zaščitenega uporabnika ne ustvarite Google Računa, njegovi zaz
 <translation id="4967749818080339523">Izberite račun</translation>
 <translation id="496888482094675990">Aplikacija Datoteke omogoča hiter dostop do datotek, ki ste jih shranili v Googlu Drive, v zunanji shrambi ali v napravi s sistemom Chrome OS.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Namesti na namizje ...</translation>
 <translation id="4971412780836297815">Odpri, ko je končano</translation>
 <translation id="4972129977812092092">Urejanje tiskalnika</translation>
 <translation id="497287958838527945">Kreditne kartice in naslovi z Googlom Play.</translation>
@@ -3047,7 +3038,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5750324801516359607">Daleč</translation>
 <translation id="5751545372099101699">Element na polici 4</translation>
 <translation id="5752453871435543420">Varnostna kopija sistema Chrome OS v oblaku</translation>
-<translation id="5754903485544371559">Dodajanje aplikacijam ...</translation>
 <translation id="5756163054456765343">Center za pomoč</translation>
 <translation id="5759728514498647443">Dokumente, ki jih pošljete v tiskanje v aplikaciji <ph name="APP_NAME" />, lahko prebere aplikacija <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Najdena ni bila nobena naprava USB</translation>
@@ -3184,7 +3174,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="5959471481388474538">Omrežje ni na voljo</translation>
 <translation id="5963026469094486319">Več tem</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (največ <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Dodaj na polico ...</translation>
 <translation id="5965661248935608907">Določa tudi, katera stran je prikazana, ko kliknete gumb za domačo stran ali iščete v naslovni vrstici.</translation>
 <translation id="5971037678316050792">Nadzor nad stanjem vmesnika Bluetooth in seznanjanjem</translation>
 <translation id="5972017421290582825">Upravljanje nastavitev za MIDI ...</translation>
@@ -3215,7 +3204,6 @@ Poskrbite, da ne boste razkrili morebitnih občutljivih podatkov.</translation>
 <translation id="6015796118275082299">Leto</translation>
 <translation id="6016551720757758985">Potrdite, da želite izvesti Powerwash in povrniti prejšnjo različico.</translation>
 <translation id="6016972670657536680">Gumb za izbiro jezika in tipkovnice. Trenutno izbran jezik je <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Dodajanje aplikacijam</translation>
 <translation id="6019169947004469866">Obreži</translation>
 <translation id="6020431688553761150">Strežnik vas ni pooblastil za dostop do tega vira.</translation>
 <translation id="602251597322198729">Ta stran poskuša prenesti več datotek. Ali želite to dovoliti?</translation>

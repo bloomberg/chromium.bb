@@ -346,7 +346,6 @@
     moet gebruiken, pas je je <ph name="LINK_START" />proxyinstellingen<ph name="LINK_END" /> aan.</translation>
 <translation id="1511388193702657997">Aanbieden om je internetwachtwoorden op te slaan</translation>
 <translation id="1512210426710821809">Je kunt dit alleen ongedaan maken door <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> opnieuw te installeren</translation>
-<translation id="1514215615641002767">Toevoegen aan bureaublad</translation>
 <translation id="151501797353681931">Geïmporteerd uit Safari</translation>
 <translation id="1515163294334130951">Starten</translation>
 <translation id="1521442365706402292">Certificaten beheren</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Dit pakket kan alleen worden toegevoegd via de <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Ophalen van verificatietoken is mislukt. Log uit en weer in om het opnieuw te proberen.</translation>
 <translation id="1878524442024357078">Sites niet toestaan een plug-in te gebruiken om toegang te krijgen tot je computer</translation>
-<translation id="1879449842763884566">Installeren in Programma's...</translation>
 <translation id="1880905663253319515">Certificaat '<ph name="CERTIFICATE_NAME" />' verwijderen?</translation>
 <translation id="1886996562706621347">Websites laten vragen of je ze als de standaardhandler voor protocollen wilt instellen (aanbevolen)</translation>
 <translation id="1887442540531652736">Fout bij inloggen</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Je pincode opgeven</translation>
 <translation id="241082044617551207">Onbekende plug-in</translation>
 <translation id="2413749388954403953">De gebruikersinterface voor bladwijzers wijzigen</translation>
-<translation id="2415294094132942411">Toevoegen aan bureaublad...</translation>
 <translation id="2422426094670600218">&lt;naamloos&gt;</translation>
 <translation id="2423578206845792524">Af&amp;beelding opslaan als...</translation>
 <translation id="2424091190911472304">Altijd uitvoeren voor <ph name="ORIGIN" /></translation>
@@ -942,7 +939,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="2478176599153288112">Mediabestandsrechten voor '<ph name="EXTENSION" />'</translation>
 <translation id="247949520305900375">Audio delen</translation>
 <translation id="2480868415629598489">Gegevens aanpassen die je kopieert en plakt</translation>
-<translation id="2481332092278989943">Toevoegen aan plank</translation>
 <translation id="2482878487686419369">Meldingen</translation>
 <translation id="2485056306054380289">CA-certificaat van server:</translation>
 <translation id="2485422356828889247">Installatie ongedaan maken</translation>
@@ -1056,7 +1052,6 @@ Ik denk niet dat deze site moet worden geblokkeerd.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> kan de installatie niet voltooien, maar wordt nog steeds uitgevoerd via de schijfkopie.</translation>
 <translation id="2635176084534510129">Ontvang meer gepersonaliseerde functies, zoals betere suggesties voor content en slimmere vertalingen van Google Translate</translation>
 <translation id="2635276683026132559">Ondertekening</translation>
-<translation id="2635926034288331400">Installeren in Programma's</translation>
 <translation id="2636625531157955190">Chrome heeft geen toegang tot de afbeelding.</translation>
 <translation id="2638087589890736295">Wachtwoordzin vereist om de synchronisatie te starten</translation>
 <translation id="2638286699381354126">Updaten...</translation>
@@ -1524,7 +1519,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3308852433423051161">Google Assistent laden...</translation>
 <translation id="3309747692199697901">Altijd uitvoeren voor alle sites</translation>
 <translation id="3312424061798279731">Ingeschakelde talen</translation>
-<translation id="3312903956926554846">Installeren op bureaublad</translation>
 <translation id="3313590242757056087">Als je wilt instellen welke websites de gebruiker met beperkte rechten kan weergeven, kun je beperkingen en instellingen
     configureren op <ph name="MANAGEMENT_URL" />.
     Als je de standaardinstellingen niet wilt wijzigen, kan <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3511528412952710609">Kort</translation>
 <translation id="3514373592552233661">Voorkeursnetwerken krijgen de voorkeur boven andere netwerken als er meer dan één netwerk beschikbaar is</translation>
 <translation id="3523642406908660543">Goedkeuring vragen wanneer een site een plug-in wil gebruiken om toegang tot je computer te krijgen (aanbevolen)</translation>
-<translation id="3525897975040424366">Installeren op plank</translation>
 <translation id="3527085408025491307">Map</translation>
 <translation id="3527276236624876118">Een gebruiker met beperkte rechten met de naam <ph name="USER_DISPLAY_NAME" /> is gemaakt.</translation>
 <translation id="3528033729920178817">Deze pagina houdt je locatie bij.</translation>
@@ -1964,7 +1957,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="3968261067169026421">Kan netwerk niet instellen</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Berekenen...</translation>
-<translation id="3972711570620097483">Installeren op plank...</translation>
 <translation id="3974195870082915331">Klik om het wachtwoord weer te geven</translation>
 <translation id="3975222297214566386">Ballon voor invoeropties</translation>
 <translation id="397703832102027365">Wordt voltooid...</translation>
@@ -2541,7 +2533,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="4967749818080339523">Een account selecteren</translation>
 <translation id="496888482094675990">De app Bestanden biedt snelle toegang tot bestanden die je op Google Drive, externe opslag of je Chrome OS-apparaat hebt opgeslagen.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Installeren op bureaublad...</translation>
 <translation id="4971412780836297815">Openen wanneer gereed</translation>
 <translation id="4972129977812092092">Printer bewerken</translation>
 <translation id="497287958838527945">Creditcards en adressen die Google Pay gebruiken.</translation>
@@ -3046,7 +3037,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="5750324801516359607">Veraf</translation>
 <translation id="5751545372099101699">Plankartikel 4</translation>
 <translation id="5752453871435543420">Cloudback-up van Chrome OS</translation>
-<translation id="5754903485544371559">Toevoegen aan Apps...</translation>
 <translation id="5756163054456765343">H&amp;elpcentrum</translation>
 <translation id="5759728514498647443">Documenten die je via <ph name="APP_NAME" /> verzendt om af te drukken, kunnen door <ph name="APP_NAME" /> worden gelezen.</translation>
 <translation id="5763751966069581670">Geen USB-apparaten gevonden</translation>
@@ -3183,7 +3173,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="5959471481388474538">Netwerk niet beschikbaar</translation>
 <translation id="5963026469094486319">Thema's ophalen</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> piek)</translation>
-<translation id="5965403572731919803">Toevoegen aan plank...</translation>
 <translation id="5965661248935608907">Hiermee wordt ook gecontroleerd welke pagina wordt weergegeven wanneer je op de knop 'Homepage' klikt of vanuit de omnibox zoekt.</translation>
 <translation id="5971037678316050792">Status van Bluetooth-adapter en Bluetooth-koppeling beheren</translation>
 <translation id="5972017421290582825">MIDI-instellingen beheren...</translation>
@@ -3214,7 +3203,6 @@ Ga naar ons <ph name="BEGIN_LINK" />Helpcentrum<ph name="END_LINK" /> voor meer 
 <translation id="6015796118275082299">Jaar</translation>
 <translation id="6016551720757758985">Powerwash bevestigen met herstel van eerdere versie</translation>
 <translation id="6016972670657536680">Knop 'Taal en toetsenbord selecteren'. De momenteel geselecteerde taal is <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Toevoegen aan Apps</translation>
 <translation id="6019169947004469866">Bijsnijden</translation>
 <translation id="6020431688553761150">De server heeft je niet geautoriseerd voor toegang tot deze resource.</translation>
 <translation id="602251597322198729">Deze site probeert meerdere bestanden te downloaden. Wil je dit toestaan?</translation>

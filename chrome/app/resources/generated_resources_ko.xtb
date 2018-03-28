@@ -347,7 +347,6 @@
     <ph name="LINK_START" />프록시 설정<ph name="LINK_END" />을 조정하세요.</translation>
 <translation id="1511388193702657997">웹 비밀번호를 저장하도록 제안</translation>
 <translation id="1512210426710821809">이 작업을 실행취소하려면 <ph name="IDS_SHORT_PRODUCT_OS_NAME" />을(를) 다시 설치해야 합니다</translation>
-<translation id="1514215615641002767">바탕화면에 추가</translation>
 <translation id="151501797353681931">Safari에서 가져온 북마크</translation>
 <translation id="1515163294334130951">실행</translation>
 <translation id="1521442365706402292">인증서 관리</translation>
@@ -589,7 +588,6 @@
 <translation id="1875387611427697908">이 프로그램은 <ph name="CHROME_WEB_STORE" />에서만 추가할 수 있습니다</translation>
 <translation id="1877520246462554164">인증 토큰을 가져오지 못했습니다. 로그아웃한 다음 다시 로그인하여 다시 시도해 주세요.</translation>
 <translation id="1878524442024357078">사이트에서 플러그인을 사용하여 내 컴퓨터에 액세스하도록 허용하지 않음</translation>
-<translation id="1879449842763884566">응용 프로그램에 설치...</translation>
 <translation id="1880905663253319515">인증서 '<ph name="CERTIFICATE_NAME" />'을(를) 삭제하시겠습니까?</translation>
 <translation id="1886996562706621347">사이트에서 프로토콜 기본 핸들러로 사용할지 여부를 묻도록 허용(권장)</translation>
 <translation id="1887442540531652736">로그인 오류</translation>
@@ -904,7 +902,6 @@
 <translation id="2408955596600435184">PIN 입력</translation>
 <translation id="241082044617551207">알 수 없는 플러그인</translation>
 <translation id="2413749388954403953">북마크 사용자 인터페이스 변경</translation>
-<translation id="2415294094132942411">데스크톱에 추가...</translation>
 <translation id="2422426094670600218">&lt;unnamed&gt;</translation>
 <translation id="2423578206845792524">이미지를 다른 이름으로 저장(&amp;V)...</translation>
 <translation id="2424091190911472304">항상 <ph name="ORIGIN" />에서 실행</translation>
@@ -943,7 +940,6 @@
 <translation id="2478176599153288112">'<ph name="EXTENSION" />'의 미디어 파일 권한</translation>
 <translation id="247949520305900375">오디오 공유</translation>
 <translation id="2480868415629598489">복사하고 붙여넣는 데이터 수정</translation>
-<translation id="2481332092278989943">실행기에 추가</translation>
 <translation id="2482878487686419369">알림</translation>
 <translation id="2485056306054380289">서버 CA 인증서:</translation>
 <translation id="2485422356828889247">제거</translation>
@@ -1057,7 +1053,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" />에서 설치를 완료하지 못했지만 디스크 이미지에서 계속 실행됩니다.</translation>
 <translation id="2635176084534510129">더 나은 콘텐츠 추천 및 더 스마트한 번역과 같은 맞춤설정 환경을 더 많이 받아보세요</translation>
 <translation id="2635276683026132559">서명</translation>
-<translation id="2635926034288331400">응용 프로그램에 설치</translation>
 <translation id="2636625531157955190">Chrome에서 이미지에 액세스할 수 없습니다.</translation>
 <translation id="2638087589890736295">동기화를 시작하려면 암호가 필요합니다.</translation>
 <translation id="2638286699381354126">업데이트...</translation>
@@ -1525,7 +1520,6 @@
 <translation id="3308852433423051161">Google 어시스턴트 로드 중...</translation>
 <translation id="3309747692199697901">항상 모든 사이트에서 실행</translation>
 <translation id="3312424061798279731">사용 설정된 언어</translation>
-<translation id="3312903956926554846">데스크톱에 설치</translation>
 <translation id="3313590242757056087">관리 대상 사용자가 볼 수 있는 웹사이트를 설정하려면
     <ph name="MANAGEMENT_URL" /> 페이지에 방문하여 제한사항 및 설정을 지정할 수 있습니다.
     기본 설정을 변경하지 않으면 <ph name="USER_DISPLAY_NAME" />님이
@@ -1664,7 +1658,6 @@
 <translation id="3511528412952710609">짧게</translation>
 <translation id="3514373592552233661">두 개 이상의 네트워크를 사용할 수 있는 경우 기본 설정된 네트워크가 다른 알려진 네트워크보다 우선 사용됩니다.</translation>
 <translation id="3523642406908660543">사이트에서 플러그인을 사용하여 내 컴퓨터에 액세스하려 할 때 확인(권장)</translation>
-<translation id="3525897975040424366">실행기에 설치</translation>
 <translation id="3527085408025491307">폴더</translation>
 <translation id="3527276236624876118"><ph name="USER_DISPLAY_NAME" />(으)로 이름이 지정된 관리 대상 사용자가 생성되었습니다.</translation>
 <translation id="3528033729920178817">이 페이지에서는 사용자 위치를 추적합니다.</translation>
@@ -1965,7 +1958,6 @@
 <translation id="3968261067169026421">네트워크를 설정할 수 없음</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">계산 중...</translation>
-<translation id="3972711570620097483">실행기에 설치...</translation>
 <translation id="3974195870082915331">
 비밀번호를 표시하려면 클릭하세요.</translation>
 <translation id="3975222297214566386">입력 옵션 도움말 풍선</translation>
@@ -2541,7 +2533,6 @@
 <translation id="4967749818080339523">계정 선택</translation>
 <translation id="496888482094675990">파일 앱을 사용하면 Google 드라이브, 외부 저장소, Chrome OS 기기에 저장한 파일에 신속하게 액세스할 수 있습니다.</translation>
 <translation id="4969785127455456148">앨범</translation>
-<translation id="4970738541803285369">데스크톱에 설치...</translation>
 <translation id="4971412780836297815">완료되면 열기</translation>
 <translation id="4972129977812092092">프린터 수정</translation>
 <translation id="497287958838527945">Google Pay에 사용되는 신용카드 및 주소</translation>
@@ -3045,7 +3036,6 @@
 <translation id="5750324801516359607">멀리 있음</translation>
 <translation id="5751545372099101699">서가 항목 4</translation>
 <translation id="5752453871435543420">Chrome OS 클라우드 백업</translation>
-<translation id="5754903485544371559">애플리케이션 폴더에 추가...</translation>
 <translation id="5756163054456765343">고객센터(H)</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" />을(를) 통해 인쇄하려고 전송한 문서를 <ph name="APP_NAME" />에서 읽을 수 있습니다.</translation>
 <translation id="5763751966069581670">USB 기기를 찾을 수 없습니다.</translation>
@@ -3182,7 +3172,6 @@
 <translation id="5959471481388474538">네트워크에 연결할 수 없음</translation>
 <translation id="5963026469094486319">테마 추가</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" />(최대 <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">실행기에 추가...</translation>
 <translation id="5965661248935608907">또한 홈 버튼을 클릭하거나 검색주소창에서 검색할 때 표시되는 페이지를 설정합니다.</translation>
 <translation id="5971037678316050792">블루투스 어댑터 상태 및 페어링을 제어합니다.</translation>
 <translation id="5972017421290582825">MIDI 설정 관리...</translation>
@@ -3213,7 +3202,6 @@
 <translation id="6015796118275082299">연도</translation>
 <translation id="6016551720757758985">이전 버전으로 돌아가서 Powerwash 확인</translation>
 <translation id="6016972670657536680">언어 및 키보드 버튼을 선택하세요. 현재 선택된 언어는 <ph name="LANGUAGE" />입니다.</translation>
-<translation id="6017981840202692187">애플리케이션 폴더에 추가</translation>
 <translation id="6019169947004469866">자르기</translation>
 <translation id="6020431688553761150">서버에서 승인하지 않아 이 리소스에 액세스할 수 없습니다.</translation>
 <translation id="602251597322198729">사이트에서 여러 개의 파일을 다운로드하려 하고 있습니다. 허용하시겠습니까?</translation>

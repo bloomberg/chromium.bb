@@ -3,7 +3,7 @@
 <translationbundle lang="ko">
 <translation id="104962181688258143">파일 앱 열기</translation>
 <translation id="1126871238933253947">이전에 사용한 키보드 언어로 전환</translation>
-<translation id="1134347825771908369">볼륨 음소거</translation>
+<translation id="1134347825771908369">음소거</translation>
 <translation id="1195667586424773550">링크를 탭의 검색주소창으로 드래그하세요.</translation>
 <translation id="1204450209689312104">시크릿 모드로 새 창 열기</translation>
 <translation id="1293699935367580298">Esc</translation>
@@ -28,6 +28,7 @@
 <translation id="2181097965834437145">북마크바 표시 또는 숨기기</translation>
 <translation id="2185166372312820725">이전 탭으로 이동</translation>
 <translation id="2194790690264064655"><ph name="CTRL" />을 누른 상태에서 링크를 클릭</translation>
+<translation id="2382644247745281995">현재 키보드 레이아웃에서는 지원되지 않습니다.</translation>
 <translation id="2424073332829844142">Caps Lock 켜고 끄기</translation>
 <translation id="2441202986792279177">창 간에 빠르게 전환</translation>
 <translation id="2478303094958140141">ChromeVox(음성 피드백) 사용 또는 사용 중지</translation>

@@ -346,7 +346,6 @@
     utilizați un server proxy, modificați <ph name="LINK_START" />setările de proxy<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Oferă salvarea parolelor web</translation>
 <translation id="1512210426710821809">Singura modalitate de anulare este să reinstalezi <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Adaugă pe desktop</translation>
 <translation id="151501797353681931">Importate din Safari</translation>
 <translation id="1515163294334130951">Lansați</translation>
 <translation id="1521442365706402292">Gestionează certificatele</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Aceasta poate fi adăugată numai din <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Nu s-a putut obține indicativul de autentificare. Pentru a reîncerca, deconectează-te și conectează-te din nou.</translation>
 <translation id="1878524442024357078">Nu permite niciunui site să folosească pluginuri pentru a accesa computerul</translation>
-<translation id="1879449842763884566">Instalează în Aplicații...</translation>
 <translation id="1880905663253319515">Șterge certificatul „<ph name="CERTIFICATE_NAME" />”?</translation>
 <translation id="1886996562706621347">Permiteți site-urilor să solicite să devină handlere prestabilite pentru protocoale (recomandat)</translation>
 <translation id="1887442540531652736">Eroare de conectare</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Introdu codul PIN</translation>
 <translation id="241082044617551207">Plugin necunoscut</translation>
 <translation id="2413749388954403953">Modifică interfața de utilizare pentru marcaje</translation>
-<translation id="2415294094132942411">Adaugă pe desktop...</translation>
 <translation id="2422426094670600218">&lt;fără nume&gt;</translation>
 <translation id="2423578206845792524">Sal&amp;vează imaginea ca...</translation>
 <translation id="2424091190911472304">Rulează întotdeauna pe <ph name="ORIGIN" /></translation>
@@ -942,7 +939,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="2478176599153288112">Permisiuni privind fișierele media pentru „<ph name="EXTENSION" />”</translation>
 <translation id="247949520305900375">Trimite conținutul audio</translation>
 <translation id="2480868415629598489">Modifică datele pe care le copiezi și le inserezi</translation>
-<translation id="2481332092278989943">Adaugă pe raft</translation>
 <translation id="2482878487686419369">Notificări</translation>
 <translation id="2485056306054380289">Certificat CA server:</translation>
 <translation id="2485422356828889247">Dezinstalează</translation>
@@ -1056,7 +1052,6 @@ Nu cred că acest site ar trebui blocat!</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> nu a putut finaliza instalarea, dar va continua să ruleze de pe imaginea de pe disc.</translation>
 <translation id="2635176084534510129">Obține mai multe experiențe personalizate, cum ar fi sugestii mai bune privind conținutul și un serviciu Traducere mai inteligent</translation>
 <translation id="2635276683026132559">Semnare</translation>
-<translation id="2635926034288331400">Instalează în Aplicații</translation>
 <translation id="2636625531157955190">Chrome nu poate accesa imaginea.</translation>
 <translation id="2638087589890736295">Pentru a începe sincronizarea este necesară expresia de acces</translation>
 <translation id="2638286699381354126">Actualizați...</translation>
@@ -1524,7 +1519,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3308852433423051161">Se încarcă Asistentul Google...</translation>
 <translation id="3309747692199697901">Rulează întotdeauna pe toate site-urile</translation>
 <translation id="3312424061798279731">Limbi activate</translation>
-<translation id="3312903956926554846">Instalează pe computer</translation>
 <translation id="3313590242757056087">Pentru a configura site-urile web pe care le poate accesa utilizatorul monitorizat, puteți aplica restricții
     și setări accesând <ph name="MANAGEMENT_URL" />.
     Dacă nu modificați setările implicite, <ph name="USER_DISPLAY_NAME" />
@@ -1663,7 +1657,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3511528412952710609">Scurtă</translation>
 <translation id="3514373592552233661">Dacă sunt disponibile mai multe rețele, vor fi folosite cele preferate</translation>
 <translation id="3523642406908660543">Întreabă-mă atunci când un site vrea să folosească un plugin să-mi acceseze computerul (recomandat).</translation>
-<translation id="3525897975040424366">Instalează pe raft</translation>
 <translation id="3527085408025491307">Dosar</translation>
 <translation id="3527276236624876118">A fost creat un utilizator monitorizat, cu numele <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Această pagină îți urmărește locația.</translation>
@@ -1964,7 +1957,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="3968261067169026421">Această rețea nu a putut fi configurată</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Se calculează...</translation>
-<translation id="3972711570620097483">Instalează pe raft...</translation>
 <translation id="3974195870082915331">Faceți clic pentru a afișa parola</translation>
 <translation id="3975222297214566386">Balonul cu opțiunile de introducere a textului</translation>
 <translation id="397703832102027365">Se finalizează...</translation>
@@ -2541,7 +2533,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="4967749818080339523">Selectează un cont</translation>
 <translation id="496888482094675990">Aplicația Fișiere oferă acces rapid la fișierele pe care le-ai salvat în Google Drive, în spațiul de stocare extern sau pe dispozitivul cu sistem de operare Chrome.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Instalează pe computer...</translation>
 <translation id="4971412780836297815">Deschide când s-a finalizat</translation>
 <translation id="4972129977812092092">Editează imprimanta</translation>
 <translation id="497287958838527945">Carduri de credit și adrese care folosesc Google Pay.</translation>
@@ -3045,7 +3036,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="5750324801516359607">Departe</translation>
 <translation id="5751545372099101699">Elementul 4 din raft</translation>
 <translation id="5752453871435543420">Backup în cloud pentru sistemul de operare Chrome</translation>
-<translation id="5754903485544371559">Adaugă în Aplicații...</translation>
 <translation id="5756163054456765343">C&amp;entrul de ajutor</translation>
 <translation id="5759728514498647443">Documentele pe care le trimiți prin <ph name="APP_NAME" /> pentru a fi printate pot fi citite de <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Nu s-au găsit dispozitive USB</translation>
@@ -3182,7 +3172,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="5959471481388474538">Rețea indisponibilă</translation>
 <translation id="5963026469094486319">Descarcă teme</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (maximum <ph name="NUM_KILOBYTES_LIVE" />)</translation>
-<translation id="5965403572731919803">Adaugă pe raft...</translation>
 <translation id="5965661248935608907">Stabilește și ce pagină se afișează când dați clic pe butonul Pagină de pornire sau când căutați din caseta polivalentă.</translation>
 <translation id="5971037678316050792">Controlează starea și conectarea adaptorului Bluetooth</translation>
 <translation id="5972017421290582825">Gestionați setările MIDI...</translation>
@@ -3213,7 +3202,6 @@ Pentru mai multe informații, accesează <ph name="BEGIN_LINK" />Centrul de ajut
 <translation id="6015796118275082299">An</translation>
 <translation id="6016551720757758985">Confirmă Powerwash cu revenire la versiunea anterioară</translation>
 <translation id="6016972670657536680">Butonul pentru selectarea limbii și a tastaturii. Limba selectată în prezent este <ph name="LANGUAGE" />.</translation>
-<translation id="6017981840202692187">Adaugă în Aplicații</translation>
 <translation id="6019169947004469866">Decupați</translation>
 <translation id="6020431688553761150">Serverul nu te-a autorizat să accesezi această resursă.</translation>
 <translation id="602251597322198729">Acest site încearcă să descarce mai multe fișiere. Permite această operație?</translation>

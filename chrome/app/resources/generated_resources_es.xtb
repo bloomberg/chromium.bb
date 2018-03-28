@@ -346,7 +346,6 @@
     usar un servidor proxy, cambia tu <ph name="LINK_START" />configuración de proxy<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Preguntar si quieres guardar tus contraseñas web</translation>
 <translation id="1512210426710821809">La única forma de deshacer esta acción es volver a instalar <ph name="IDS_SHORT_PRODUCT_OS_NAME" /></translation>
-<translation id="1514215615641002767">Añadir al escritorio</translation>
 <translation id="151501797353681931">Importado desde Safari</translation>
 <translation id="1515163294334130951">Iniciar</translation>
 <translation id="1521442365706402292">Gestionar certificados</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">Este elemento solo se puede añadir desde <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">No se ha podido obtener el token de autenticación. Cierra la sesión y vuelve a iniciarla para intentarlo de nuevo.</translation>
 <translation id="1878524442024357078">No permitir que ningún sitio utilice un complemento para acceder a tu ordenador</translation>
-<translation id="1879449842763884566">Instalar en Aplicaciones...</translation>
 <translation id="1880905663253319515">¿Quieres eliminar el certificado "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">Permitir que los sitios web se conviertan en controladores de protocolos predeterminados (recomendado)</translation>
 <translation id="1887442540531652736">No se ha podido iniciar sesión</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">Introduce tu PIN</translation>
 <translation id="241082044617551207">Complemento desconocido</translation>
 <translation id="2413749388954403953">Cambiar la interfaz de usuario de marcadores</translation>
-<translation id="2415294094132942411">Añadir al escritorio...</translation>
 <translation id="2422426094670600218">&lt;sin nombre&gt;</translation>
 <translation id="2423578206845792524">Guar&amp;dar imagen como...</translation>
 <translation id="2424091190911472304">Ejecutar siempre en <ph name="ORIGIN" /></translation>
@@ -942,7 +939,6 @@ No creo que este sitio deba bloquearse</translation>
 <translation id="2478176599153288112">Permisos de archivos multimedia para "<ph name="EXTENSION" />"</translation>
 <translation id="247949520305900375">Compartir audio</translation>
 <translation id="2480868415629598489">Modificar los datos que se copian y se pegan</translation>
-<translation id="2481332092278989943">Añadir a la estantería</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
 <translation id="2485056306054380289">Certific. CA servidor:</translation>
 <translation id="2485422356828889247">Desinstalar</translation>
@@ -1056,7 +1052,6 @@ y su configuración no se sincronizan en otros dispositivos con la función de s
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> no ha podido completar la instalación, pero se seguirá ejecutando desde la imagen de disco.</translation>
 <translation id="2635176084534510129">Disfruta de una experiencia más personalizada, como mejores sugerencias de contenido y un servicio de traducción más inteligente</translation>
 <translation id="2635276683026132559">Firma</translation>
-<translation id="2635926034288331400">Instalar en Aplicaciones</translation>
 <translation id="2636625531157955190">Chrome no puede acceder a la imagen.</translation>
 <translation id="2638087589890736295">Se necesita una frase de contraseña para iniciar la sincronización</translation>
 <translation id="2638286699381354126">Actualizar...</translation>
@@ -1526,7 +1521,6 @@ Para obtener más información, accede a nuestro <ph name="BEGIN_LINK" />Centro 
 <translation id="3308852433423051161">Cargando el Asistente de Google...</translation>
 <translation id="3309747692199697901">Ejecutar siempre en todos los sitios</translation>
 <translation id="3312424061798279731">Idiomas habilitados</translation>
-<translation id="3312903956926554846">Instalar en el escritorio</translation>
 <translation id="3313590242757056087">Para definir los sitios web que puede ver el usuario supervisado, puedes configurar restricciones y opciones en la página <ph name="MANAGEMENT_URL" />.
 Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> podrá navegar por todos los sitios de la Web.</translation>
 <translation id="3313622045786997898">Valor de firma de certificados</translation>
@@ -1663,7 +1657,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3511528412952710609">Breve</translation>
 <translation id="3514373592552233661">Las redes preferidas se utilizarán en lugar de otras redes conocidas si hay más de una disponible</translation>
 <translation id="3523642406908660543">Preguntar cuando un sitio quiera utilizar un complemento para acceder a tu ordenador (recomendado)</translation>
-<translation id="3525897975040424366">Instalar en la estanteria</translation>
 <translation id="3527085408025491307">Carpeta</translation>
 <translation id="3527276236624876118">Se ha creado un usuario supervisado denominado <ph name="USER_DISPLAY_NAME" />.</translation>
 <translation id="3528033729920178817">Esta página está realizando un seguimiento de tu ubicación.</translation>
@@ -1963,7 +1956,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3968261067169026421">No se ha podido configurar la red</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Calculando...</translation>
-<translation id="3972711570620097483">Instalar en la estantería...</translation>
 <translation id="3974195870082915331">Haz clic para mostrar la contraseña</translation>
 <translation id="3975222297214566386">Cuadro de opciones de entrada</translation>
 <translation id="397703832102027365">Finalizando...</translation>
@@ -2540,7 +2532,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="4967749818080339523">Seleccionar una cuenta</translation>
 <translation id="496888482094675990">La aplicación Archivos permite acceder rápidamente a los archivos que has guardado en Google Drive, en un almacenamiento externo o en tu dispositivo Chrome OS.</translation>
 <translation id="4969785127455456148">Álbum</translation>
-<translation id="4970738541803285369">Instalar en el escritorio...</translation>
 <translation id="4971412780836297815">Abrir al finalizar</translation>
 <translation id="4972129977812092092">Editar impresora</translation>
 <translation id="497287958838527945">Tarjetas de crédito y direcciones con Google Pay.</translation>
@@ -3043,7 +3034,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="5750324801516359607">Lejos</translation>
 <translation id="5751545372099101699">Elemento 4 de la estantería</translation>
 <translation id="5752453871435543420">Copia de seguridad en la nube de Chrome OS</translation>
-<translation id="5754903485544371559">Añadir a Aplicaciones...</translation>
 <translation id="5756163054456765343">C&amp;entro de ayuda</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" /> puede leer los documentos que envías para imprimirse a través de <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">No se ha encontrado ningún dispositivo USB</translation>
@@ -3180,7 +3170,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="5959471481388474538">Red no disponible</translation>
 <translation id="5963026469094486319">Buscar temas</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> máximo)</translation>
-<translation id="5965403572731919803">Añadir a estantería...</translation>
 <translation id="5965661248935608907">También controla qué página se muestra al hacer clic en el botón Página de inicio o al hacer búsquedas desde el omnibox.</translation>
 <translation id="5971037678316050792">Controlar el estado y la vinculación del adaptador de Bluetooth</translation>
 <translation id="5972017421290582825">Administrar configuración de MIDI...</translation>
@@ -3211,7 +3200,6 @@ Exponente público (<ph name="PUBLIC_EXPONENT_NUM_BITS" /> bits):
 <translation id="6015796118275082299">Año</translation>
 <translation id="6016551720757758985">Confirmar Powerwash para volver a la versión anterior</translation>
 <translation id="6016972670657536680">Botón para seleccionar el idioma y el teclado (actualmente: <ph name="LANGUAGE" />).</translation>
-<translation id="6017981840202692187">Añadir a Aplicaciones</translation>
 <translation id="6019169947004469866">Recortar</translation>
 <translation id="6020431688553761150">El servidor no te ha autorizado a acceder a este recurso.</translation>
 <translation id="602251597322198729">Este sitio está intentando descargar varios archivos. ¿Aceptar?</translation>

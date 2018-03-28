@@ -343,7 +343,6 @@
 <translation id="1510785804673676069">Hvis du bruker en mellomtjener, må du sjekke mellomtjenerinnstillingene eller ta kontakt med nettverksadministratoren for å kontrollere at mellomtjeneren fungerer. Hvis du ikke vil bruke en mellomtjener, kan du endre <ph name="LINK_START" />mellomtjenerinnstillingene<ph name="LINK_END" />.</translation>
 <translation id="1511388193702657997">Tilbud om å lagre passordene du bruker på nettet</translation>
 <translation id="1512210426710821809">Den eneste måten du kan angre dette på, er å installere <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> på nytt</translation>
-<translation id="1514215615641002767">Legg til på skrivebordet</translation>
 <translation id="151501797353681931">Importert fra Safari</translation>
 <translation id="1515163294334130951">Start</translation>
 <translation id="1521442365706402292">Administrer sertifikater</translation>
@@ -585,7 +584,6 @@
 <translation id="1875387611427697908">Dette kan bare legges til fra <ph name="CHROME_WEB_STORE" /></translation>
 <translation id="1877520246462554164">Kunne ikke hente autentiseringstokenet. Logg av og på igjen for å prøve på nytt.</translation>
 <translation id="1878524442024357078">Ikke la noen nettsteder bruke programtillegg for å få tilgang til datamaskinen din</translation>
-<translation id="1879449842763884566">Installer i Programmer</translation>
 <translation id="1880905663253319515">Vil du slette sertifikatet «<ph name="CERTIFICATE_NAME" />»?</translation>
 <translation id="1886996562706621347">Tillat at nettsteder kan be om å bli standardbehandlere for protokoller (anbefalt)</translation>
 <translation id="1887442540531652736">Påloggingsfeil</translation>
@@ -900,7 +898,6 @@
 <translation id="2408955596600435184">Skriv inn PIN-koden din</translation>
 <translation id="241082044617551207">Ukjent programtillegg</translation>
 <translation id="2413749388954403953">endre brukergrensesnittet for bokmerker</translation>
-<translation id="2415294094132942411">Legg til på skrivebordet</translation>
 <translation id="2422426094670600218">&lt;uten navn&gt;</translation>
 <translation id="2423578206845792524">Lagre &amp;bildet som...</translation>
 <translation id="2424091190911472304">Kjør alltid på <ph name="ORIGIN" /></translation>
@@ -939,7 +936,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2478176599153288112">Mediafilrettigheter for «<ph name="EXTENSION" />»</translation>
 <translation id="247949520305900375">Del lyd</translation>
 <translation id="2480868415629598489">endre data du kopierer og limer inn</translation>
-<translation id="2481332092278989943">Legg til på hyllen</translation>
 <translation id="2482878487686419369">Varsler</translation>
 <translation id="2485056306054380289">Tjenerens CA-sertifikat:</translation>
 <translation id="2485422356828889247">Avinstaller</translation>
@@ -1052,7 +1048,6 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> kan ikke fullføre installeringen, men vil fortsette å kjøre fra diskavbildningen.</translation>
 <translation id="2635176084534510129">Få opplevelser med et mer personlig preg, for eksempel bedre innholdsforslag og smartere Oversetter</translation>
 <translation id="2635276683026132559">Signering</translation>
-<translation id="2635926034288331400">Installer i Programmer</translation>
 <translation id="2636625531157955190">Chrome kan ikke få tilgang til bildet.</translation>
 <translation id="2638087589890736295">Det kreves en passordfrase for å starte synkroniseringen</translation>
 <translation id="2638286699381354126">Oppdater</translation>
@@ -1229,7 +1224,7 @@ Jeg tror ikke det er nødvendig å blokkere dette nettstedet.</translation>
 <translation id="2867768963760577682">Åpne som festet fane</translation>
 <translation id="2868746137289129307">Denne utvidelsen er utdatert og avslått av bedriftsretningslinjene. Den kan slås på automatisk når en nyere versjon er tilgjengelig.</translation>
 <translation id="2870560284913253234">Nettsted</translation>
-<translation id="2870909136778269686">Oppdaterer ...</translation>
+<translation id="2870909136778269686">Oppdaterer …</translation>
 <translation id="2871813825302180988">Denne kontoen er allerede i bruk på denne enheten.</translation>
 <translation id="2872353916818027657">Bytt hovedskjerm</translation>
 <translation id="287286579981869940">Legg til <ph name="PROVIDER_NAME" /></translation>
@@ -1520,7 +1515,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3308852433423051161">Laster inn Google-assistenten …</translation>
 <translation id="3309747692199697901">Kjør alltid på alle nettsteder</translation>
 <translation id="3312424061798279731">Språk som er slått på</translation>
-<translation id="3312903956926554846">Installer på skrivebordet</translation>
 <translation id="3313590242757056087">For å angi hvilke nettsteder den administrerte brukeren kan bruke, kan du konfigurere begrensninger og innstillinger ved å gå til <ph name="MANAGEMENT_URL" />.
     Hvis du ikke endrer standardinnstillingene, kan <ph name="USER_DISPLAY_NAME" />
     surfe på hele nettet.</translation>
@@ -1658,7 +1652,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3511528412952710609">Kort</translation>
 <translation id="3514373592552233661">Foretrukne nettverk prioriteres fremfor andre kjente nettverk hvis mer enn ett nettverk er tilgjengelig</translation>
 <translation id="3523642406908660543">Spør når et nettsted ønsker å bruke et programtillegg for å få tilgang til datamaskinen (anbefales)</translation>
-<translation id="3525897975040424366">Installer i hyllen</translation>
 <translation id="3527085408025491307">Mappe</translation>
 <translation id="3527276236624876118">En administrert bruker med navnet <ph name="USER_DISPLAY_NAME" /> er opprettet.</translation>
 <translation id="3528033729920178817">Denne siden sporer posisjonen din.</translation>
@@ -1957,7 +1950,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="3968261067169026421">Kunne ikke konfigurere nettverket</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">Beregner …</translation>
-<translation id="3972711570620097483">Installer i hyllen</translation>
 <translation id="3974195870082915331">Klikk for å vise passord</translation>
 <translation id="3975222297214566386">Boble for valg av inndata</translation>
 <translation id="397703832102027365">Fullfører …</translation>
@@ -2382,7 +2374,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="473775607612524610">Oppdater</translation>
 <translation id="474217410105706308">Slå av lyden for fanen</translation>
 <translation id="4742746985488890273">Fest til hyllen</translation>
-<translation id="4743260470722568160"><ph name="BEGIN_LINK" />Finn ut mer om hvordan du oppdaterer programmer<ph name="END_LINK" /></translation>
+<translation id="4743260470722568160"><ph name="BEGIN_LINK" />Finn ut hvordan du oppdaterer programmer<ph name="END_LINK" /></translation>
 <translation id="4744574733485822359">Nedlastingen din er fullført</translation>
 <translation id="4746971725921104503">Det kan virke som om du allerede administrerer en bruker med det navnet. Ville du <ph name="LINK_START" />importere <ph name="USER_DISPLAY_NAME" /> til denne enheten<ph name="LINK_END" />?</translation>
 <translation id="4748762018725435655">Krever utvidelse fra Chrome Nettmarked</translation>
@@ -2534,7 +2526,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="4967749818080339523">Velg en konto</translation>
 <translation id="496888482094675990">Med Filer-appen får du rask tilgang til filer du har lagret på Google Disk, eksterne langringsenheter eller Chrome OS-enheten din.</translation>
 <translation id="4969785127455456148">Album</translation>
-<translation id="4970738541803285369">Installer på skrivebordet</translation>
 <translation id="4971412780836297815">Åpne når ferdig</translation>
 <translation id="4972129977812092092">Endre skriveren</translation>
 <translation id="497287958838527945">Kredittkort og adresser ved bruk av Google Pay.</translation>
@@ -3037,7 +3028,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="5750324801516359607">Langt unna</translation>
 <translation id="5751545372099101699">Hylleelement 4</translation>
 <translation id="5752453871435543420">Skybaserte sikkerhetskopier for Chrome OS</translation>
-<translation id="5754903485544371559">Legg til i Programmer</translation>
 <translation id="5756163054456765343">&amp;Brukerstøtte</translation>
 <translation id="5759728514498647443">Dokumenter du sender til utskrift via <ph name="APP_NAME" />, kan leses av <ph name="APP_NAME" />.</translation>
 <translation id="5763751966069581670">Fant ingen USB-enheter</translation>
@@ -3174,7 +3164,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="5959471481388474538">Nettverket er utilgjengelig</translation>
 <translation id="5963026469094486319">Hent temaer</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> toppverdi)</translation>
-<translation id="5965403572731919803">Legg til på hyllen</translation>
 <translation id="5965661248935608907">Den styrer også hvilken side som vises når du klikker på Startside-knappen eller søker fra multifunksjonsfeltet.</translation>
 <translation id="5971037678316050792">kontrollere statusen og tilkoblingen for Bluetooth-adapteren</translation>
 <translation id="5972017421290582825">Administrer MIDI-innstillinger</translation>
@@ -3205,7 +3194,6 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="6015796118275082299">År</translation>
 <translation id="6016551720757758985">Bekreft kjøring av Powerwash, som tilbakestiller enheten til forrige versjon</translation>
 <translation id="6016972670657536680">Velg språk- og tastaturknappen. Det valgte språket er for øyeblikket <ph name="LANGUAGE" /></translation>
-<translation id="6017981840202692187">Legg til i Programmer</translation>
 <translation id="6019169947004469866">Beskjær</translation>
 <translation id="6020431688553761150">Tjeneren autoriserte ikke tilgang til denne ressursen for deg.</translation>
 <translation id="602251597322198729">Dette nettstedet forsøker å laste ned flere filer. Vil du tillate dette?</translation>
@@ -3847,7 +3835,7 @@ Du finner mer informasjon i <ph name="BEGIN_LINK" />brukerstøtten<ph name="END_
 <translation id="7040138676081995583">Åpne med</translation>
 <translation id="7040230719604914234">Operatør</translation>
 <translation id="7042418530779813870">Lim inn og &amp;søk</translation>
-<translation id="7043108582968290193">Ferdig! Finner ingen inkomptatible programmer.</translation>
+<translation id="7043108582968290193">Ferdig! Fant ingen inkomptatible programmer.</translation>
 <translation id="7049293980323620022">Vil du beholde filen?</translation>
 <translation id="7051943809462976355">Søker etter musen …</translation>
 <translation id="7052237160939977163">Send ytelsessporingsdata</translation>

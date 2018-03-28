@@ -343,7 +343,6 @@
 <translation id="1510785804673676069">જો તમે પ્રોક્સી સર્વરનો ઉપયોગ કરી રહ્યાં છો, તો તમારી પ્રોક્સી સેટિંગ્સ તપાસો અથવા પ્રોક્સી સર્વર કામ કરી રહ્યું છે તેની ખાતરી કરવા માટે તમારા નેટવર્ક વ્યવસ્થાપકનો સંપર્ક કરો. જો તમે માનતા નથી કે તમે પ્રોક્સી સર્વરનો ઉપયોગ કરતા હોવા જોઈએ, તો તમારી <ph name="LINK_START" />પ્રોક્સી સેટિંગ્સ<ph name="LINK_END" />ને વ્યવસ્થિત કરો.</translation>
 <translation id="1511388193702657997">તમારા વેબ પાસવર્ડ્સને સાચવવાની ઓફર કરો</translation>
 <translation id="1512210426710821809">આને રદ કરવાની એકમાત્ર રીત છે <ph name="IDS_SHORT_PRODUCT_OS_NAME" />ને ફરીથી ઇન્સ્ટૉલ કરવી</translation>
-<translation id="1514215615641002767">ડેસ્કટૉપ પર ઉમેરો</translation>
 <translation id="151501797353681931">સફારીમાંથી આયાત કરેલું</translation>
 <translation id="1515163294334130951">શરૂ કરો</translation>
 <translation id="1521442365706402292">પ્રમાણપત્રો મેનેજ કરો</translation>
@@ -584,7 +583,6 @@
 <translation id="1875387611427697908">આ ફક્ત <ph name="CHROME_WEB_STORE" />માંથી જ ઉમેરી શકાશે</translation>
 <translation id="1877520246462554164">પ્રમાણીકરણ ટોકન મેળવવામાં નિષ્ફળ થયાં. કૃપા કરીને ફરીથી પ્રયાસ કરવા સાઇન આઉટ કરો પછી ફરીથી સાઇન ઇન કરો.</translation>
 <translation id="1878524442024357078">તમારા કમ્પ્યુટરને ઍક્સેસ કરવા માટે કોઈપણ સાઇટ્સને પ્લગિનનો ઉપયોગ કરવાની મંજૂરી આપશો નહીં</translation>
-<translation id="1879449842763884566">ઍપ્લિકેશનોમાં ઇન્સ્ટૉલ કરો…</translation>
 <translation id="1880905663253319515">પ્રમાણપત્ર "<ph name="CERTIFICATE_NAME" />" કાઢી નાખીએ?</translation>
 <translation id="1886996562706621347">પ્રોટોકૉલ્સ માટે ડિફૉલ્ટ હેન્ડલર્સ બનવા માટે સાઇટને પૂછવાની મંજૂરી આપો (ભલામણ કરેલ)</translation>
 <translation id="1887442540531652736">સાઇન-ઇનમાં ભૂલ</translation>
@@ -899,7 +897,6 @@
 <translation id="2408955596600435184">તમારો PIN દાખલ કરો</translation>
 <translation id="241082044617551207">અજ્ઞાત પ્લગિન</translation>
 <translation id="2413749388954403953">બુકમાર્ક્સ વપરાશકર્તા ઇન્ટરફેસ બદલો</translation>
-<translation id="2415294094132942411">ડેસ્કટૉપ પર ઉમેરો ...</translation>
 <translation id="2422426094670600218">&lt;અનામાંકિત&gt;</translation>
 <translation id="2423578206845792524">છબીને આ રૂપે સા&amp;ચવો...</translation>
 <translation id="2424091190911472304">હંમેશાં <ph name="ORIGIN" /> પર શરૂ કરો</translation>
@@ -938,7 +935,6 @@
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" માટે મીડિયા-ફાઇલ પરવાનગીઓ</translation>
 <translation id="247949520305900375">ઑડિઓ શેર કરો</translation>
 <translation id="2480868415629598489">તમે કૉપિ અને પેસ્ટ કરો છો તે ડેટાને સંશોધિત કરો</translation>
-<translation id="2481332092278989943">શેલ્ફ પર ઉમેરો</translation>
 <translation id="2482878487686419369">સૂચનાઓ</translation>
 <translation id="2485056306054380289">સર્વર CA પ્રમાણપત્ર:</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટોલ કરો</translation>
@@ -1052,7 +1048,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ઇન્સ્ટોલેશન પૂર્ણ કરી શક્યું નથી, પરંતુ તેની ડિસ્ક છબીથી ચાલુ રહી શકે છે.</translation>
 <translation id="2635176084534510129">વધુ વ્યક્તિગત અનુભવો મેળવો, જેવા કે બહેતર કન્ટેન્ટ સૂચનો અને વધુ સારા અનુવાદ</translation>
 <translation id="2635276683026132559">સાઇનિંગ</translation>
-<translation id="2635926034288331400">ઍપ્લિકેશનોમાં ઇન્સ્ટૉલ કરો</translation>
 <translation id="2636625531157955190">Chrome છબી ઍક્સેસ કરી શકતું નથી.</translation>
 <translation id="2638087589890736295">સમન્વયનને પ્રારંભ કરવા માટે પાસફ્રેઝ આવશ્યક</translation>
 <translation id="2638286699381354126">અપડેટ કરો...</translation>
@@ -1520,7 +1515,6 @@
 <translation id="3308852433423051161">Google સહાયક લોડ કરી રહ્યાં છીએ...</translation>
 <translation id="3309747692199697901">હંમેશાં બધી સાઇટ્સ પર ચલાવો</translation>
 <translation id="3312424061798279731">સક્ષમ કરેલ ભાષાઓ</translation>
-<translation id="3312903956926554846">ડેસ્કટૉપ પર ઇન્સ્ટૉલ કરો</translation>
 <translation id="3313590242757056087">નિરીક્ષણ કરેલ વપરાશકર્તા કઈ વેબસાઇટ્સ જોઈ શકે છે તે સેટ કરવા માટે, તમે પ્રતિબંધો અને
     સેટિંગ્સને <ph name="MANAGEMENT_URL" /> ની મુલાકાત લઈને ગોઠવી શકો છો.
     જો તમે ડિફોલ્ટ સેટિંગ્સ બદલતા નથી, તો <ph name="USER_DISPLAY_NAME" />
@@ -1659,7 +1653,6 @@
 <translation id="3511528412952710609">ટૂંકુ</translation>
 <translation id="3514373592552233661">એક કરતાં વધુ જાણીતા નેટવર્ક ઉપલબ્ધ હોવા પર પસંદગીના નેટવર્કને અન્ય જાણીતા નેટવર્ક પર પ્રાથમિકતા આપવામાં આવશે</translation>
 <translation id="3523642406908660543">જ્યારે કોઈ સાઇટ તમારા કમ્પ્યુટરને ઍક્સેસ કરવા માટે પ્લગિનનો ઉપયોગ કરવા માગે, તો પૂછો (ભલામણ કરેલ)</translation>
-<translation id="3525897975040424366">શેલ્ફ પર ઇન્સ્ટૉલ કરો</translation>
 <translation id="3527085408025491307">ફોલ્ડર</translation>
 <translation id="3527276236624876118"><ph name="USER_DISPLAY_NAME" /> નામનો નિરીક્ષણ કરેલ વપરાશકર્તા બનાવવામાં આવ્યો.</translation>
 <translation id="3528033729920178817">આ પૃષ્ઠ તમારા સ્થાનને ટ્રૅક કરી રહ્યું છે.</translation>
@@ -1960,7 +1953,6 @@
 <translation id="3968261067169026421">નેટવર્ક સેટ કરી શકાયું નથી</translation>
 <translation id="3970114302595058915">ID</translation>
 <translation id="397105322502079400">ગણના કરી રહ્યું છે...</translation>
-<translation id="3972711570620097483">શેલ્ફ પર ઇન્સ્ટૉલ કરો…</translation>
 <translation id="3974195870082915331">પાસવર્ડ બતાવવા માટે ક્લિક કરો</translation>
 <translation id="3975222297214566386">ઇનપુટ વિકલ્પો પરપોટો</translation>
 <translation id="397703832102027365">ફાઇનલ કરી રહ્યું છે...</translation>
@@ -2537,7 +2529,6 @@
 <translation id="4967749818080339523">એકાઉન્ટ પસંદ કરો</translation>
 <translation id="496888482094675990">ફાઇલ્સ ઍપ્લિકેશન તમે Google ડ્રાઇવ, બાહ્ય સ્ટોરેજ અથવા તમારા Chrome OS ઉપકરણ પર સાચવી છે તે ફાઇલોની ઝડપી ઍક્સેસ પ્રદાન કરે છે.</translation>
 <translation id="4969785127455456148">આલ્બમ</translation>
-<translation id="4970738541803285369">ડેસ્કટૉપ પર ઇન્સ્ટૉલ કરો…</translation>
 <translation id="4971412780836297815">પૂર્ણ થાય ત્યારે ખોલો</translation>
 <translation id="4972129977812092092">પ્રિન્ટર સંપાદિત કરો</translation>
 <translation id="497287958838527945">Google Pay નો ઉપયોગ કરતા ક્રેડિટ કાર્ડ અને સરનામાં.</translation>
@@ -3042,7 +3033,6 @@
 <translation id="5750324801516359607">દૂર</translation>
 <translation id="5751545372099101699">શેલ્ફ આઇટમ 4</translation>
 <translation id="5752453871435543420">Chrome OS મેઘ બેકઅપ</translation>
-<translation id="5754903485544371559">એપ્લિકેશન્સમાં ઉમેરો ...</translation>
 <translation id="5756163054456765343">સ&amp;હાય કેન્દ્ર</translation>
 <translation id="5759728514498647443">તમે <ph name="APP_NAME" /> મારફતે છાપવા માટે મોકલેલા દસ્તાવેજો <ph name="APP_NAME" /> દ્વારા વાંચી શકાય છે.</translation>
 <translation id="5763751966069581670">કોઈ USB ઉપકરણ મળ્યું નથી</translation>
@@ -3179,7 +3169,6 @@
 <translation id="5959471481388474538">નેટવર્ક ઉપલબ્ધ નથી</translation>
 <translation id="5963026469094486319">થીમ્સ મેળવો</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> પિક)</translation>
-<translation id="5965403572731919803">શેલ્ફ પર ઉમેરો...</translation>
 <translation id="5965661248935608907">જ્યારે તમે હોમ બટન ક્લિક કરો અથવા ઑમ્નિબૉક્સ પરથી શોધ કરો ત્યારે કયું પૃષ્ઠ બતાવવામાં આવે તે તેનું પણ નિયંત્રણ કરે છે.</translation>
 <translation id="5971037678316050792">Bluetooth એડેપ્ટર સ્થિતિ અને જોડીનું નિયંત્રણ કરો</translation>
 <translation id="5972017421290582825">MIDI સેટિંગ્સનું સંચાલન કરો...</translation>
@@ -3210,7 +3199,6 @@
 <translation id="6015796118275082299">વર્ષ</translation>
 <translation id="6016551720757758985">અગાઉના સંસ્કરણ પર પાછા ફરવાની સાથે Powerwash ની પુષ્ટિ કરો</translation>
 <translation id="6016972670657536680">ભાષા અને કીબોર્ડ બટન પસંદ કરો. હાલમાં પસંદ કરેલ ભાષા <ph name="LANGUAGE" /> છે.</translation>
-<translation id="6017981840202692187">એપ્લિકેશન્સમાં ઉમેરો</translation>
 <translation id="6019169947004469866">ક્રોપ</translation>
 <translation id="6020431688553761150">સર્વરે આ સાધનને ઍક્સેસ કરવા માટે તમને અધિકૃત કર્યા નથી.</translation>
 <translation id="602251597322198729">આ સાઇટ બહુવિધ ફાઇલો ડાઉનલોડ કરવાનો પ્રયાસ કરી રહી છે. તમે આને પરવાનગી આપવા માંગો છો?</translation>
@@ -4774,7 +4762,7 @@
 <translation id="8546541260734613940">[*.]example.com</translation>
 <translation id="854655314928502177">વેબ પ્રોક્સી સ્વતઃ શોધ URL:</translation>
 <translation id="8546930481464505581">ટચ બારને કસ્ટમાઇઝ કરો</translation>
-<translation id="8547013269961688403">પૂર્ણસ્ક્રીન બૃહદદર્શક ચાલુ કરો</translation>
+<translation id="8547013269961688403">પૂર્ણસ્ક્રીન મૅગ્નિફાયર ચાલુ કરો</translation>
 <translation id="85486688517848470">ટોચની-પંક્તિ કીની વર્તણૂંક બદલવા માટે શોધ કી દબાવી રાખો</translation>
 <translation id="855081842937141170">ટૅબ પિન કરો</translation>
 <translation id="8551388862522347954">લાઇસેંસીસ</translation>

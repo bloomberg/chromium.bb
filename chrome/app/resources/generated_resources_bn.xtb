@@ -347,7 +347,6 @@
 ব্যবহার করছেন, তাহলে আপনার <ph name="LINK_START" />প্রক্সি সেটিংস<ph name="LINK_END" /> এর সামঞ্জস্য করুন৷</translation>
 <translation id="1511388193702657997">আপনার ওয়েব পাসওয়ার্ডগুলি সংরক্ষণের প্রস্তাব দেয়</translation>
 <translation id="1512210426710821809">এটি আগের অবস্থায় ফিরিয়ে আনার একমাত্র উপায় হল <ph name="IDS_SHORT_PRODUCT_OS_NAME" /> আবার ইনস্টল করা।</translation>
-<translation id="1514215615641002767">ডেস্কটপে যোগ করুন</translation>
 <translation id="151501797353681931">Safari থেকে আমদানি করা</translation>
 <translation id="1515163294334130951">লঞ্চ করুন</translation>
 <translation id="1521442365706402292">শংসাপত্রগুলি পরিচালনা করুন</translation>
@@ -588,7 +587,6 @@
 <translation id="1875387611427697908">এটি কেবলমাত্র <ph name="CHROME_WEB_STORE" /> থেকেই যোগ করা যেতে পারে</translation>
 <translation id="1877520246462554164">প্রমাণীকরণ টোকেন পাওয়া যায়নি। অনুগ্রহ করে সাইন-আউট করে আবার সাইন-ইন করুন, তারপরে আবার চেষ্টা করুন।</translation>
 <translation id="1878524442024357078">আপনার কম্পিউটারটি অ্যাক্সেস করার জন্য একটি প্ল্যাগ ইন ব্যবহার করতে যে কোনো সাইটকে মঞ্জুরি দেবেন না</translation>
-<translation id="1879449842763884566">অ্যাপ্লিকেশন ইনস্টল করুন...</translation>
 <translation id="1880905663253319515">শংসাপত্র মুছবেন "<ph name="CERTIFICATE_NAME" />"?</translation>
 <translation id="1886996562706621347">সাইটগুলিকে প্রোটোকলের জন্য ডিফল্ট পরিচালক হতে জিজ্ঞাসা করার অনুমতি দেয় (প্রস্তাবিত)</translation>
 <translation id="1887442540531652736">সাইন-ইন করার সময় সমস্যা হয়েছে</translation>
@@ -903,7 +901,6 @@
 <translation id="2408955596600435184">আপনার পিন লিখুন</translation>
 <translation id="241082044617551207">অজানা প্ল্যাগ ইন</translation>
 <translation id="2413749388954403953">বুকমার্ক ইউজার ইন্টারফেস পরিবর্তন করুন</translation>
-<translation id="2415294094132942411">ডেস্কটপে যুক্ত করুন...</translation>
 <translation id="2422426094670600218">&lt;নামবিহীন&gt;</translation>
 <translation id="2423578206845792524">এই রূপে ছবি সং&amp;রক্ষণ করুন...</translation>
 <translation id="2424091190911472304">সর্বদা <ph name="ORIGIN" /> এ চালু রাখুন</translation>
@@ -942,7 +939,6 @@
 <translation id="2478176599153288112">"<ph name="EXTENSION" />" এর জন্য মিডিয়া-ফাইলের অনুমতি</translation>
 <translation id="247949520305900375">অডিও ভাগ করুন</translation>
 <translation id="2480868415629598489">আপনি যে ডেটা কপি করে আটকান তা সংশোধন করুন</translation>
-<translation id="2481332092278989943">শেল্ফে যোগ করুন</translation>
 <translation id="2482878487686419369">বিজ্ঞপ্তিগুলি</translation>
 <translation id="2485056306054380289">সার্ভার CA শংসাপত্র:</translation>
 <translation id="2485422356828889247">আনইনস্টল</translation>
@@ -1057,7 +1053,6 @@
 <translation id="263325223718984101"><ph name="PRODUCT_NAME" /> ইনস্টলেশন সম্পূর্ণ করতে পারেনি, তবে এটির ডিস্ক ছবি থেকে চালনা চলতে থাকবে৷</translation>
 <translation id="2635176084534510129">আরও ব্যক্তিগত অভিজ্ঞতা পান, যেমন ভালো কন্টেন্টের পরামর্শ এবং আরও স্মার্ট অনুবাদ</translation>
 <translation id="2635276683026132559">স্বাক্ষর করা</translation>
-<translation id="2635926034288331400">অ্যাপ্লিকেশন ইনস্টল করুন</translation>
 <translation id="2636625531157955190">Chrome এই ছবিটি অ্যাক্সেস করতে পারে না৷</translation>
 <translation id="2638087589890736295">সিঙ্ক শুরু করতে পাসফ্রেজ প্রয়োজন</translation>
 <translation id="2638286699381354126">আপডেট...</translation>
@@ -1525,7 +1520,6 @@
 <translation id="3308852433423051161">Google সহায়ক লোড হচ্ছে...</translation>
 <translation id="3309747692199697901">সর্বদা সমস্ত সাইটে চালু রাখুন</translation>
 <translation id="3312424061798279731">সক্ষম করা ভাষাগুলি</translation>
-<translation id="3312903956926554846">ডেস্কটপে ইনস্টল করুন</translation>
 <translation id="3313590242757056087">তত্ত্বাবধানে থাকা ব্যবহারকারী কোন ওয়েবসাইটগুলি দেখতে পাবেন তা সেট করতে, আপনি <ph name="MANAGEMENT_URL" /> এ গিয়ে বিধিনিষেধ এবং সেটিংস কনফিগার করতে পারেন৷ আপনি যদি ডিফল্ট সেটিংস পরিবর্তন না করেন, তাহলে <ph name="USER_DISPLAY_NAME" /> ওয়েবে সমস্ত সাইটে ব্রাউজ করতে পারবেন৷</translation>
 <translation id="3313622045786997898">শংসাপত্র স্বাক্ষর মান</translation>
 <translation id="3315158641124845231"><ph name="PRODUCT_NAME" /> লুকান</translation>
@@ -1661,7 +1655,6 @@
 <translation id="3511528412952710609">স্বল্পস্থায়ী</translation>
 <translation id="3514373592552233661">একাধিক নেটওয়ার্ক উপলব্ধ থাকলে, পছন্দের নেটওয়ার্ককে অন্যান্য পরিচিত নেটওয়ার্কগুলির থেকে অগ্রাধিকার দেওয়া হবে</translation>
 <translation id="3523642406908660543">আপনার কম্পিউটার অ্যাক্সেস করার জন্য যখন কোনো সাইট কোনো প্ল্যাগ ইন ব্যবহার করতে চায় তখন জিজ্ঞাসা করবে (প্রস্তাবিত)</translation>
-<translation id="3525897975040424366">শেল্ফ এ ইনস্টল করুন</translation>
 <translation id="3527085408025491307">ফোল্ডার</translation>
 <translation id="3527276236624876118"><ph name="USER_DISPLAY_NAME" />নামের একটি তত্ত্বাবধান করা ব্যবহারকারী তৈরি করা হয়েছে৷</translation>
 <translation id="3528033729920178817">এই পৃষ্ঠাটি আপনার অবস্থান নির্ণয় করছে৷</translation>
@@ -1961,7 +1954,6 @@
 <translation id="3968261067169026421">নেটওয়ার্ক সেট আপ করা যায়নি</translation>
 <translation id="3970114302595058915">আইডি</translation>
 <translation id="397105322502079400">গণনা করা হচ্ছে...</translation>
-<translation id="3972711570620097483">শেল্ফ ইনস্টল করুন...</translation>
 <translation id="3974195870082915331">পাসওয়ার্ড দেখাতে ক্লিক করুন</translation>
 <translation id="3975222297214566386">ইনপুট বিকল্পের বুদবুদ</translation>
 <translation id="397703832102027365">চূড়ান্ত হচ্ছে...</translation>
@@ -2538,7 +2530,6 @@
 <translation id="4967749818080339523">একটি অ্যাকাউন্ট বেছে নিন</translation>
 <translation id="496888482094675990">Google ড্রাইভ, বহিরাগত সঞ্চয়স্থান অথবা আপনার Chrome OS ডিভাইসে আপনি যে ফাইলগুলি সংরক্ষণ করেছেন ফাইল অ্যাপ্লিকেশান সেগুলিতে দ্রুত অ্যাক্সেস প্রদান করে।</translation>
 <translation id="4969785127455456148">অ্যালবাম</translation>
-<translation id="4970738541803285369">ডেস্কটপে ইনস্টল করুন...</translation>
 <translation id="4971412780836297815">সম্পন্ন হলে খুলুন</translation>
 <translation id="4972129977812092092">প্রিন্টার এডিট করুন</translation>
 <translation id="497287958838527945">Google Pay ব্যবহার করে এমন ক্রেডিট কার্ড ও ঠিকানা।</translation>
@@ -3041,7 +3032,6 @@
 <translation id="5750324801516359607">দূরে</translation>
 <translation id="5751545372099101699">তাকের আইটেম নম্বর ৪</translation>
 <translation id="5752453871435543420">Chrome OS ক্লাউড ব্যাকআপ</translation>
-<translation id="5754903485544371559">অ্যাপ্লিকেশানগুলিতে যোগ করুন...</translation>
 <translation id="5756163054456765343">সহায়তা কেন্দ্র</translation>
 <translation id="5759728514498647443"><ph name="APP_NAME" />-এর দ্বারা প্রিন্ট করার জন্য আপনার পাঠানো দস্তাবেজগুলি <ph name="APP_NAME" />-এর মাধ্যমে পঠন করা যায়৷</translation>
 <translation id="5763751966069581670">কোনও USB ডিভাইস খুঁজে পাওয়া যায়নি</translation>
@@ -3178,7 +3168,6 @@
 <translation id="5959471481388474538">নেটওয়ার্ক উপলব্ধ নয়</translation>
 <translation id="5963026469094486319">থিমগুলি পান</translation>
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> পিক)</translation>
-<translation id="5965403572731919803">শেল্ফে যোগ করুন...</translation>
 <translation id="5965661248935608907">আপনি হোম বোতাম ক্লিক করলে বা Omnibox থেকে অনুসন্ধান করলে কোন পৃষ্ঠাটি দেখানো হবে তাও এটি নিয়ন্ত্রণ করে।</translation>
 <translation id="5971037678316050792">ব্লুটুথ অ্যাডাপ্টারের স্থিতি ও যুক্ত করা নিয়ন্ত্রণ করে</translation>
 <translation id="5972017421290582825">MIDI সেটিংস পরিচালনা করুন...</translation>
@@ -3209,7 +3198,6 @@
 <translation id="6015796118275082299">বছর</translation>
 <translation id="6016551720757758985">পূর্ববর্তী সংস্করণে ফিরে যাওয়া সহ পাওয়ারওয়াশ নিশ্চিত করুন</translation>
 <translation id="6016972670657536680">ভাষা এবং কীবোর্ড বোতাম বেছে নিন। বর্তমানে নির্বাচিত ভাষা হলো <ph name="LANGUAGE" />।</translation>
-<translation id="6017981840202692187">অ্যাপ্লিকেশানগুলিতে যোগ করুন</translation>
 <translation id="6019169947004469866">ক্রপ</translation>
 <translation id="6020431688553761150">সার্ভার আপনাকে এই রিসোর্স অ্যাক্সেস করার অনুমতি দেয়নি।</translation>
 <translation id="602251597322198729">এই সাইটটি একাধিক ফাইল ডাউনলোডের প্রয়াস করছে৷ আপনি কি এটি মঞ্জুরি দিতে চান?</translation>
