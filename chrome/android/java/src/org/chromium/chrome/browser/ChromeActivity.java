@@ -341,12 +341,16 @@ public abstract class ChromeActivity extends AsyncInitializationActivity
             mAssistStatusHandler.updateAssistState();
         }
 
-        // If a user had ALLOW_LOW_END_DEVICE_UI explicitly set to false then we manually override
-        // SysUtils.isLowEndDevice() with a switch so that they continue to see the normal UI. This
-        // is only the case for grandfathered-in svelte users. We no longer do so for newer users.
-        if (!ChromePreferenceManager.getInstance().getAllowLowEndDeviceUi()) {
-            CommandLine.getInstance().appendSwitch(
-                    BaseSwitches.DISABLE_LOW_END_DEVICE_MODE);
+        // This check is only applicable for JB since in KK svelte was supported from the start.
+        // See https://crbug.com/826460 for context.
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+            // If a user had ALLOW_LOW_END_DEVICE_UI explicitly set to false then we manually
+            // override SysUtils.isLowEndDevice() with a switch so that they continue to see the
+            // normal UI. This is only the case for grandfathered-in svelte users. We no longer do
+            // so for newer users.
+            if (!ChromePreferenceManager.getInstance().getAllowLowEndDeviceUi()) {
+                CommandLine.getInstance().appendSwitch(BaseSwitches.DISABLE_LOW_END_DEVICE_MODE);
+            }
         }
 
         AccessibilityManager manager = (AccessibilityManager)
