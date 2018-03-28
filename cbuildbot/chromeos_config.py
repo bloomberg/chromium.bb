@@ -1930,6 +1930,17 @@ def ToolchainBuilders(site_config, boards_dict, ge_build_config):
       board_configs,
       site_config.templates.llvm_next_toolchain,
   )
+  site_config.Add(
+      'llvm-clang-tidy-toolchain',
+      site_config.templates.toolchain,
+      site_config.templates.no_hwtest_builder,
+      description='Full release build with LLVM toolchain, with clang-tidy)',
+      chrome_sdk=False,
+      # Run clang-tidy specific stages.
+      builder_class_name='clang_tidy_builders.ClangTidyBuilder',
+      useflags=append_useflags(['clang_tidy']),
+      boards=['kahlee'],
+  )
 
 def PreCqBuilders(site_config, boards_dict, ge_build_config):
   """Create all build configs associated with the PreCQ.

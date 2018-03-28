@@ -7,6 +7,7 @@
 
 from __future__ import print_function
 
+import datetime
 import glob
 import itertools
 import json
@@ -22,6 +23,7 @@ from chromite.cbuildbot import prebuilts
 from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import gs
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import path_util
@@ -791,3 +793,67 @@ class GenerateSysrootStage(generic_stages.BoardSpecificBuilderStage,
   def PerformStage(self):
     with self.ArtifactUploader(self._upload_queue, archive=False):
       self._GenerateSysroot()
+
+# This stage generates and uploads the clang-tidy warnings files for the
+# build, for all the packages built in build packages stage with
+# WITH_TIDY=1.
+class GenerateTidyWarningsStage(generic_stages.BoardSpecificBuilderStage,
+                                generic_stages.ArchivingStageMixin):
+  """Generate and upload the warnings files for the board."""
+
+  CLANG_TIDY_TAR = 'clang_tidy_warnings.tar.xz'
+  GS_URL = 'gs://chromeos-clang-tidy-artifacts/clang-tidy-1/'
+
+  def __init__(self, *args, **kwargs):
+    super(GenerateTidyWarningsStage, self).__init__(*args, **kwargs)
+    self._upload_queue = multiprocessing.Queue()
+
+  def _GetListOfFilesToProcess(self):
+    """Find the list of build log files that contain clang tidy warnings"""
+    logs_dir = '/tmp/clang-tidy-logs/%s' % self._current_board
+    cmd = ['find', logs_dir, '-name', '"*.log"']
+    file_list = cros_build_lib.RunCommand(cmd, cwd=self._build_root,
+                                          enter_chroot=True,
+                                          capture_output=True)
+    files = file_list.split('\n')
+    return files
+
+  def _UploadTidyWarnings(self, path, tar_file):
+    """Upload the warnings tarball to the clang-tidy gs bucket."""
+    gs_context = gs.GSContext()
+    filename = os.path.join(path, tar_file)
+
+    debug = self._run.debug
+    if debug:
+      logging.info('Debug run: not uploading tarball.')
+      logging.info('If this were not a debug run, would upload %s to %s.',
+                   filename, self.GS_URL)
+      return
+
+    try:
+      logging.info('Uploading tarball %s to %s', filename, self.GS_URL)
+      gs_context.CopyInto(filename, self.GS_URL)
+    except:
+      logging.info('Error: Unable to upload tarball %s to %s', filename,
+                   self.GS_URL)
+      raise
+
+  def _GenerateTidyWarnings(self):
+    """Generate and upload the tidy warnings files for the board."""
+    assert self.archive_path.startswith(self._build_root)
+    files = self._GetListOfFilesToProcess()
+    timestamp = datetime.datetime.strftime(datetime.datetime.now(), '%Y%m%d')
+    clang_tidy_tarball = "%s.%s.%s" % (self._current_board, timestamp,
+                                       self.CLANG_TIDY_TAR)
+    in_chroot_path = path_util.ToChrootPath(self.archive_path)
+    cmd = ['cros_generate_tidy_warnings', '--out-file', clang_tidy_tarball,
+           '--out-dir', in_chroot_path, '--board', self._current_board,
+           '--files',
+           ' '.join(files)]
+    cros_build_lib.RunCommand(cmd, cwd=self._build_root, enter_chroot=True)
+    self._UploadTidyWarnings(in_chroot_path, clang_tidy_tarball)
+    self._upload_queue.put([clang_tidy_tarball])
+
+  def PerformStage(self):
+    with self.ArtifactUploader(self._upload_queue, archive=False):
+      self._GenerateTidyWarnings()
