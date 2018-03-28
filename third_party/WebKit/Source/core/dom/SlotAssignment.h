@@ -48,15 +48,14 @@ class SlotAssignment final : public GarbageCollected<SlotAssignment> {
 
   bool FindHostChildBySlotName(const AtomicString& slot_name) const;
 
-  void SetNeedsAssignmentRecalc() {
-    DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
-    needs_assignment_recalc_ = true;
-  }
+  void SetNeedsAssignmentRecalc();
 
   // For Incremental Shadow DOM
   void RecalcAssignmentNg();
 
   void Trace(blink::Visitor*);
+
+  bool NeedsAssignmentRecalc() const { return needs_assignment_recalc_; }
 
  private:
   explicit SlotAssignment(ShadowRoot& owner);

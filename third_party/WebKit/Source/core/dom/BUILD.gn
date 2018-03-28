@@ -300,6 +300,8 @@ blink_core_sources("dom") {
     "events/WindowEventContext.h",
     "ng/flat_tree_traversal_ng.cc",
     "ng/flat_tree_traversal_ng.h",
+    "ng/slot_assignment_engine.cc",
+    "ng/slot_assignment_engine.h",
     "trustedtypes/TrustedHTML.cpp",
     "trustedtypes/TrustedHTML.h",
     "trustedtypes/TrustedScriptURL.cpp",

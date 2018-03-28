@@ -94,6 +94,7 @@
 #include "core/dom/ProcessingInstruction.h"
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/dom/ShadowRoot.h"
+#include "core/dom/SlotAssignment.h"
 #include "core/dom/StaticNodeList.h"
 #include "core/dom/TransformSource.h"
 #include "core/dom/TreeWalker.h"
@@ -103,6 +104,7 @@
 #include "core/dom/events/Event.h"
 #include "core/dom/events/EventListener.h"
 #include "core/dom/events/ScopedEventQueue.h"
+#include "core/dom/ng/slot_assignment_engine.h"
 #include "core/dom/trustedtypes/TrustedHTML.h"
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/FrameSelection.h"
@@ -2117,7 +2119,13 @@ void Document::UpdateStyleAndLayoutTree() {
   DocumentAnimations::UpdateAnimationTimingIfNeeded(*this);
   EvaluateMediaQueryListIfNeeded();
   UpdateUseShadowTreesIfNeeded();
+
+  // For V0 Shadow DOM or V1 Shadow DOM without IncrementalShadowDOM
   UpdateDistribution();
+
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+    GetSlotAssignmentEngine().RecalcSlotAssignments();
+
   UpdateActiveStyle();
   UpdateStyleInvalidationIfNeeded();
 
@@ -7287,6 +7295,7 @@ void Document::Trace(blink::Visitor* visitor) {
   visitor->Trace(property_registry_);
   visitor->Trace(network_state_observer_);
   visitor->Trace(policy_);
+  visitor->Trace(slot_assignment_engine_);
   Supplementable<Document>::Trace(visitor);
   TreeScope::Trace(visitor);
   ContainerNode::Trace(visitor);
@@ -7331,6 +7340,12 @@ bool Document::CurrentFrameHadRAF() const {
 bool Document::NextFrameHasPendingRAF() const {
   return scripted_animation_controller_ &&
          scripted_animation_controller_->NextFrameHasPendingRAF();
+}
+
+SlotAssignmentEngine& Document::GetSlotAssignmentEngine() {
+  if (!slot_assignment_engine_)
+    slot_assignment_engine_ = SlotAssignmentEngine::Create();
+  return *slot_assignment_engine_;
 }
 
 void Document::TraceWrappers(const ScriptWrappableVisitor* visitor) const {

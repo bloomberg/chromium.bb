@@ -171,6 +171,7 @@ class SecurityOrigin;
 class SelectorQueryCache;
 class SerializedScriptValue;
 class Settings;
+class SlotAssignmentEngine;
 class SnapCoordinator;
 class StringOrDictionary;
 class StyleEngine;
@@ -1423,6 +1424,8 @@ class CORE_EXPORT Document : public ContainerNode,
   void AddComputedStyleMapItem(Element*, StylePropertyMapReadOnly*);
   StylePropertyMapReadOnly* RemoveComputedStyleMapItem(Element*);
 
+  SlotAssignmentEngine& GetSlotAssignmentEngine();
+
  protected:
   Document(const DocumentInit&, DocumentClassFlags = kDefaultDocumentClass);
 
@@ -1816,6 +1819,8 @@ class CORE_EXPORT Document : public ContainerNode,
   bool needs_to_record_ukm_outlive_time_;
 
   Member<Policy> policy_;
+
+  Member<SlotAssignmentEngine> slot_assignment_engine_;
 };
 
 extern template class CORE_EXTERN_TEMPLATE_EXPORT Supplement<Document>;
