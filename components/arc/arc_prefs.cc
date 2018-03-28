@@ -34,6 +34,8 @@ const char kArcEnabled[] = "arc.enabled";
 const char kArcPolicyComplianceReported[] = "arc.policy_compliance_reported";
 // A preference that indicates that user accepted PlayStore terms.
 const char kArcTermsAccepted[] = "arc.terms.accepted";
+// A preference that indicates that ToS was shown in OOBE flow.
+const char kArcTermsShownInOobe[] = "arc.terms.shown_in_oobe";
 // A preference to keep user's consent to use location service.
 const char kArcLocationServiceEnabled[] = "arc.location_service.enabled";
 // A preference to keep list of Android packages and their infomation.
@@ -96,6 +98,7 @@ void RegisterProfilePrefs(PrefRegistrySimple* registry) {
   registry->RegisterBooleanPref(kArcPolicyComplianceReported, false);
   registry->RegisterBooleanPref(kArcSignedIn, false);
   registry->RegisterBooleanPref(kArcTermsAccepted, false);
+  registry->RegisterBooleanPref(kArcTermsShownInOobe, false);
   registry->RegisterBooleanPref(kArcVoiceInteractionValuePropAccepted, false);
   registry->RegisterBooleanPref(kSmsConnectEnabled, true);
   registry->RegisterBooleanPref(kVoiceInteractionContextEnabled, false);

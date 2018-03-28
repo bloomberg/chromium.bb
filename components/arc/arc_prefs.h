@@ -20,6 +20,7 @@ ARC_EXPORT extern const char kArcDataRemoveRequested[];
 ARC_EXPORT extern const char kArcEnabled[];
 ARC_EXPORT extern const char kArcPolicyComplianceReported[];
 ARC_EXPORT extern const char kArcTermsAccepted[];
+ARC_EXPORT extern const char kArcTermsShownInOobe[];
 ARC_EXPORT extern const char kArcLocationServiceEnabled[];
 ARC_EXPORT extern const char kArcPackages[];
 ARC_EXPORT extern const char kArcPaiStarted[];
