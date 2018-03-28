@@ -21,6 +21,7 @@ import("//remoting/remoting_enable.gni")
 import("//third_party/openh264/openh264_args.gni")
 import("//tools/ipc_fuzzer/ipc_fuzzer.gni")
 import("//ui/base/ui_features.gni")
+import("//ui/webui/webui_features.gni")
 import("//ui/ozone/ozone.gni")
 import("//v8/gni/v8.gni")
 import("//v8/snapshot_toolchain.gni")
@@ -87,6 +88,10 @@ group("gn_all") {
       "//tools/metrics:metrics_metadata",
       "//ui/gfx:gfx_unittests",
     ]
+  }
+
+  if (closure_compile) {
+    deps += [ ":webui_closure_compile" ]
   }
 
   if (!is_ios && !is_android && !is_chromecast && !is_fuchsia) {
@@ -1153,7 +1158,7 @@ template("assert_valid_out_dir") {
       "Do not use a platform name in your output directory (found \"$root_build_dir\"). http://crbug.com/548283")
 }
 
-if (!is_win) {
+if (closure_compile) {
   group("webui_closure_compile") {
     data_deps = [
       "chrome/browser/resources/engagement:closure_compile",

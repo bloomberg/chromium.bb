@@ -5,7 +5,7 @@
 import("//build/config/jumbo.gni")
 import("//tools/grit/grit_rule.gni")
 import("//tools/grit/repack.gni")
-import("//ui/base/ui_features.gni")
+import("//ui/webui/webui_features.gni")
 
 group("resources") {
   public_deps = [

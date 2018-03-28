@@ -20,11 +20,6 @@ declare_args() {
   # Set to true to if mus (aka the UI service) is enabled. Use the features kMus
   # (or kMash in chrome code) to start in mus/mash.
   enable_mus = is_chromeos
-
-  # Optimize parts of Chrome's UI written with web technologies (HTML/CSS/JS)
-  # for runtime performance purposes. This does more work at compile time for
-  # speed benefits at runtime (so we skip in debug builds).
-  optimize_webui = !is_debug
 }
 
 enable_hidpi = is_mac || is_win || is_linux
