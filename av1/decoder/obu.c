@@ -556,9 +556,18 @@ void av1_decode_frame_from_obus(struct AV1Decoder *pbi, const uint8_t *data,
     }
 
     // Check that the signalled OBU size matches the actual amount of data read
-    if (decoded_payload_size != payload_size) {
+    if (decoded_payload_size > payload_size) {
       cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
       return;
+    }
+
+    // If there are extra padding bytes, they should all be zero
+    while (decoded_payload_size < payload_size) {
+      uint8_t padding_byte = data[decoded_payload_size++];
+      if (padding_byte != 0) {
+        cm->error.error_code = AOM_CODEC_CORRUPT_FRAME;
+        return;
+      }
     }
 
     data += payload_size;
