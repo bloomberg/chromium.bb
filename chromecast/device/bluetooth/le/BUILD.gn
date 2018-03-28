@@ -23,8 +23,6 @@ cast_source_set("le") {
     "//base",
     "//chromecast/base",
     "//chromecast/device/bluetooth/shlib",
-    "//chromecast/internal/base",
-    "//chromecast/internal/public",
     "//chromecast/public",
   ]
 }
@@ -40,9 +38,9 @@ cast_source_set("unittests") {
     ":le",
     "//base",
     "//base/test:test_support",
+    "//chromecast/device/bluetooth:test_support",
+    "//chromecast/device/bluetooth:util",
     "//chromecast/device/bluetooth/shlib:mock_shlib",
-    "//chromecast/internal/device/bluetooth:bluetooth_util",
-    "//chromecast/internal/device/bluetooth:test_support",
     "//chromecast/public",
     "//testing/gmock",
     "//testing/gtest",
