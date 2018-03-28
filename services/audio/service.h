@@ -37,7 +37,8 @@ class Service : public service_manager::Service {
    public:
     virtual ~AudioManagerAccessor() {}
 
-    // Must be called before destruction.
+    // Must be called before destruction to cleanly shut down AudioManager.
+    // Service must ensure AudioManager is not called after that.
     virtual void Shutdown() = 0;
 
     // Returns a pointer to AudioManager.
@@ -67,8 +68,8 @@ class Service : public service_manager::Service {
   void MaybeRequestQuitDelayed();
   void MaybeRequestQuit();
 
-  // Thread it runs on should be the same as the main thread of AudioManager
-  // provided by AudioManagerAccessor.
+  // The thread Service runs on should be the same as the main thread of
+  // AudioManager provided by AudioManagerAccessor.
   THREAD_CHECKER(thread_checker_);
 
   // The members below should outlive |ref_factory_|.

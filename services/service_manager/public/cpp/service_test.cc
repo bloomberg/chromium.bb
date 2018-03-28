@@ -48,6 +48,10 @@ std::unique_ptr<Service> ServiceTest::CreateService() {
   return std::make_unique<ServiceTestClient>(this);
 }
 
+std::unique_ptr<base::Value> ServiceTest::CreateCustomTestCatalog() {
+  return nullptr;
+}
+
 void ServiceTest::OnStartCalled(Connector* connector,
                                 const std::string& name,
                                 const std::string& user_id) {
@@ -59,8 +63,8 @@ void ServiceTest::OnStartCalled(Connector* connector,
 
 void ServiceTest::SetUp() {
   background_service_manager_ =
-      std::make_unique<service_manager::BackgroundServiceManager>(nullptr,
-                                                                  nullptr);
+      std::make_unique<service_manager::BackgroundServiceManager>(
+          nullptr, CreateCustomTestCatalog());
 
   // Create the service manager connection. We don't proceed until we get our
   // Service's OnStart() method is called.

@@ -8,6 +8,21 @@ import("//services/service_manager/public/service_manifest.gni")
 import("//services/service_manager/public/tools/test/service_test.gni")
 import("//testing/test.gni")
 
+# Currently standalone service binaries are not supported on Android or iOS.
+standalone_supported = !(is_android || is_ios)
+
+service("audio") {
+  sources = [
+    "service_main.cc",
+  ]
+
+  deps = [
+    ":lib",
+    "//services/audio/public/cpp",
+    "//services/audio/public/mojom",
+  ]
+}
+
 service_manifest("manifest") {
   name = "audio"
   source = "manifest.json"
@@ -21,6 +36,8 @@ source_set("lib") {
     "in_process_audio_manager_accessor.h",
     "output_stream.cc",
     "output_stream.h",
+    "owning_audio_manager_accessor.cc",
+    "owning_audio_manager_accessor.h",
     "service.cc",
     "service.h",
     "service_factory.cc",
@@ -57,6 +74,7 @@ source_set("tests") {
   ]
 
   deps = [
+    ":audio",
     ":lib",
     "//base/test:test_support",
     "//media:test_support",
@@ -70,8 +88,18 @@ source_set("tests") {
     "//testing/gmock",
     "//testing/gtest",
   ]
+
+  if (standalone_supported) {
+    sources += [ "test/standalone_service_test.cc" ]
+    deps += [ ":standalone_unittest_catalog_source" ]
+  }
+
+  data_deps = [
+    ":audio",
+  ]
 }
 
+# Embedded tests support.
 service_manifest("unittest_manifest") {
   name = "audio_unittests"
   source = "test/service_unittest_manifest.json"
@@ -81,4 +109,22 @@ service_manifest("unittest_manifest") {
 catalog("tests_catalog") {
   testonly = true
   embedded_services = [ ":unittest_manifest" ]
+}
+
+# Standalone tests support.
+if (standalone_supported) {
+  service_manifest("standalone_unittest_manifest") {
+    name = "audio_unittests"
+    source = "test/service_unittest_manifest.json"
+  }
+
+  catalog("standalone_unittest_catalog") {
+    embedded_services = [ ":standalone_unittest_manifest" ]
+    standalone_services = [ ":manifest" ]
+  }
+
+  catalog_cpp_source("standalone_unittest_catalog_source") {
+    catalog = ":standalone_unittest_catalog"
+    generated_function_name = "audio::CreateStandaloneUnittestCatalog"
+  }
 }
