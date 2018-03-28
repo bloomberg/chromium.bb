@@ -75,8 +75,8 @@ class CONTENT_EXPORT RenderWidgetHostView {
   // screen space.
   virtual void SetBounds(const gfx::Rect& rect) = 0;
 
-  // Retrieves the last known scroll position.
-  virtual gfx::Vector2dF GetLastScrollOffset() const = 0;
+  // Indicates whether the scroll offset of the view is at top.
+  virtual bool IsScrollOffsetAtTop() const = 0;
 
   // Sets a flag that indicates if it is in virtual reality mode.
   virtual void SetIsInVR(bool is_in_vr) = 0;

@@ -104,7 +104,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
   void InitAsChild(gfx::NativeView parent_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
-  gfx::Vector2dF GetLastScrollOffset() const override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   ui::TextInputClient* GetTextInputClient() override;
@@ -625,9 +624,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAura
 #endif
 
   bool has_snapped_to_boundary_;
-
-  // The last scroll offset of the view.
-  gfx::Vector2dF last_scroll_offset_;
 
   // The last selection bounds reported to the view.
   gfx::SelectionBound selection_start_;

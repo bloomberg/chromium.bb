@@ -16,6 +16,10 @@ struct RenderFrameMetadata {
   // Scroll offset of the root layer. This optional parameter is only sent
   // during tests.
   gfx.mojom.Vector2dF? root_scroll_offset;
+
+  // Indicates whether the scroll offset of the root layer is at top, i.e.,
+  // whether scroll_offset.y() == 0.
+  bool is_scroll_offset_at_top;
 };
 
 // This interface is provided by the renderer. It can optionally enable

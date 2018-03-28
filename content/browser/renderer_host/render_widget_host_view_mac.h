@@ -94,7 +94,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
   void InitAsChild(gfx::NativeView parent_view) override;
   void SetSize(const gfx::Size& size) override;
   void SetBounds(const gfx::Rect& rect) override;
-  gfx::Vector2dF GetLastScrollOffset() const override;
   gfx::NativeView GetNativeView() const override;
   gfx::NativeViewAccessible GetNativeViewAccessible() override;
   bool HasFocus() const override;
@@ -395,9 +394,6 @@ class CONTENT_EXPORT RenderWidgetHostViewMac
 
   // Whether it's allowed to pause waiting for a new frame.
   bool allow_pause_for_resize_or_repaint_;
-
-  // The last scroll offset of the view.
-  gfx::Vector2dF last_scroll_offset_;
 
   // True when this view acts as a platform view hack for a
   // RenderWidgetHostViewGuest.

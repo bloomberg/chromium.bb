@@ -1024,8 +1024,8 @@ IN_PROC_BROWSER_TEST_P(SitePerProcessHitTestBrowserTest,
 
   WaitForChildFrameSurfaceReady(child_node->current_frame_host());
 
-  ASSERT_EQ(gfx::Vector2dF(), rwhv_root->GetLastScrollOffset());
-  ASSERT_EQ(gfx::Vector2dF(), rwhv_child->GetLastScrollOffset());
+  ASSERT_TRUE(rwhv_root->IsScrollOffsetAtTop());
+  ASSERT_TRUE(rwhv_child->IsScrollOffsetAtTop());
 
   RenderWidgetHostInputEventRouter* router =
       static_cast<WebContentsImpl*>(shell()->web_contents())

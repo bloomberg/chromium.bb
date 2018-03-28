@@ -24,6 +24,10 @@ struct StructTraits<content::mojom::RenderFrameMetadataDataView,
     return metadata.root_scroll_offset;
   }
 
+  static bool is_scroll_offset_at_top(const cc::RenderFrameMetadata& metadata) {
+    return metadata.is_scroll_offset_at_top;
+  }
+
   static bool Read(content::mojom::RenderFrameMetadataDataView data,
                    cc::RenderFrameMetadata* out);
 };

@@ -127,6 +127,7 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   viz::mojom::FrameSinkVideoCapturerPtr CreateVideoCapturer() override;
   void FocusedNodeTouched(bool editable) override;
   void GetScreenInfo(ScreenInfo* screen_info) const override;
+  bool IsScrollOffsetAtTop() const override;
   float GetDeviceScaleFactor() const final;
   TouchSelectionControllerClientManager*
   GetTouchSelectionControllerClientManager() override;
@@ -559,6 +560,10 @@ class CONTENT_EXPORT RenderWidgetHostViewBase
   // indicates what the change in position of the mouse would be had it not been
   // locked.
   bool mouse_locked_ = false;
+
+  // Indicates whether the scroll offset of the root layer is at top, i.e.,
+  // whether scroll_offset.y() == 0.
+  bool is_scroll_offset_at_top_ = true;
 
   // The scale factor of the display the renderer is currently on.
   float current_device_scale_factor_;

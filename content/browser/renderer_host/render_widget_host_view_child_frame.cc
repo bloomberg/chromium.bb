@@ -324,10 +324,6 @@ void RenderWidgetHostViewChildFrame::SetInsets(const gfx::Insets& insets) {
   // main frame's RenderWidgetHostView.
 }
 
-gfx::Vector2dF RenderWidgetHostViewChildFrame::GetLastScrollOffset() const {
-  return last_scroll_offset_;
-}
-
 gfx::NativeView RenderWidgetHostViewChildFrame::GetNativeView() const {
   // TODO(ekaramad): To accomodate MimeHandlerViewGuest while embedded inside
   // OOPIF-webview, we need to return the native view to be used by
@@ -611,7 +607,6 @@ void RenderWidgetHostViewChildFrame::SubmitCompositorFrame(
   DCHECK(!enable_viz_);
   TRACE_EVENT0("content",
                "RenderWidgetHostViewChildFrame::OnSwapCompositorFrame");
-  last_scroll_offset_ = frame.metadata.root_scroll_offset;
   current_surface_size_ = frame.size_in_pixels();
   current_surface_scale_factor_ = frame.device_scale_factor();
 
