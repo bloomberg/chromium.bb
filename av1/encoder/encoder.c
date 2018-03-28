@@ -35,9 +35,7 @@
 #include "av1/encoder/encodetxb.h"
 #include "av1/encoder/ethread.h"
 #include "av1/encoder/firstpass.h"
-#if CONFIG_HASH_ME
 #include "av1/encoder/hash_motion.h"
-#endif
 #include "av1/encoder/mbgraph.h"
 #include "av1/encoder/picklpf.h"
 #include "av1/encoder/pickrst.h"
@@ -2928,12 +2926,10 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 #endif  // CONFIG_INTERNAL_STATS
 
   av1_remove_common(cm);
-#if CONFIG_HASH_ME
   for (i = 0; i < FRAME_BUFFERS; ++i) {
     av1_hash_table_destroy(&cm->buffer_pool->frame_bufs[i].hash_table);
   }
   if (cpi->sf.use_hash_based_trellis) hbt_destroy();
-#endif  // CONFIG_HASH_ME
   av1_free_ref_frame_buffers(cm->buffer_pool);
   aom_free(cpi);
 
@@ -3734,13 +3730,11 @@ static void init_ref_frame_bufs(AV1_COMMON *cm) {
     cm->ref_frame_map[i] = INVALID_IDX;
     pool->frame_bufs[i].ref_count = 0;
   }
-#if CONFIG_HASH_ME
   if (cm->seq_params.force_screen_content_tools) {
     for (i = 0; i < FRAME_BUFFERS; ++i) {
       av1_hash_table_init(&pool->frame_bufs[i].hash_table);
     }
   }
-#endif
 }
 
 static void check_initial_width(AV1_COMP *cpi, int use_highbitdepth,
@@ -5918,7 +5912,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     if (Pass0Encode(cpi, size, dest, 0, frame_flags) != AOM_CODEC_OK)
       return AOM_CODEC_ERROR;
   }
-#if CONFIG_HASH_ME
   if (oxcf->pass != 1 && cpi->common.allow_screen_content_tools) {
 #if CONFIG_AMVR
     cpi->previous_hash_table = &cm->cur_frame->hash_table;
@@ -5938,8 +5931,6 @@ int av1_get_compressed_data(AV1_COMP *cpi, unsigned int *frame_flags,
     }
 #endif
   }
-
-#endif
 
   if (!cm->large_scale_tile) {
     cm->frame_contexts[cm->new_fb_idx] = *cm->fc;

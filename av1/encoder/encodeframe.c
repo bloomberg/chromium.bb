@@ -4050,7 +4050,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
     cm->allow_intrabc = 0;
   }
 
-#if CONFIG_HASH_ME
   if (cpi->oxcf.pass != 1 && av1_use_hash_me(cm)) {
     // add to hash table
     const int pic_width = cpi->source->y_crop_width;
@@ -4122,7 +4121,6 @@ static void encode_frame_internal(AV1_COMP *cpi) {
       }
     }
   }
-#endif
 
   for (i = 0; i < MAX_SEGMENTS; ++i) {
     const int qindex = cm->seg.enabled

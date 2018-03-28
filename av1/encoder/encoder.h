@@ -649,7 +649,6 @@ static INLINE int get_ref_frame_buf_idx(const AV1_COMP *cpi,
   return (map_idx != INVALID_IDX) ? cm->ref_frame_map[map_idx] : INVALID_IDX;
 }
 
-#if CONFIG_HASH_ME
 // TODO(huisu@google.com, youzhou@microsoft.com): enable hash-me for HBD.
 static INLINE int av1_use_hash_me(const AV1_COMMON *const cm) {
   return cm->allow_screen_content_tools;
@@ -663,7 +662,6 @@ static INLINE hash_table *av1_get_ref_frame_hash_map(
              ? &cm->buffer_pool->frame_bufs[buf_idx].hash_table
              : NULL;
 }
-#endif
 
 static INLINE YV12_BUFFER_CONFIG *get_ref_frame_buffer(
     const AV1_COMP *cpi, MV_REFERENCE_FRAME ref_frame) {

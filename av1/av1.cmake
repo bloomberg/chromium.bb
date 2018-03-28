@@ -463,14 +463,12 @@ set(AOM_AV1_COMMON_INTRIN_SSE4_1
       ${AOM_AV1_COMMON_INTRIN_SSE4_1}
       "${AOM_ROOT}/av1/common/x86/highbd_warp_plane_sse4.c")
 
-if (CONFIG_HASH_ME)
   set(AOM_AV1_ENCODER_SOURCES
       ${AOM_AV1_ENCODER_SOURCES}
       "${AOM_ROOT}/av1/encoder/hash_motion.h"
       "${AOM_ROOT}/av1/encoder/hash_motion.c"
       "${AOM_ROOT}/third_party/vector/vector.h"
       "${AOM_ROOT}/third_party/vector/vector.c")
-endif ()
 
   set(AOM_AV1_COMMON_SOURCES
       ${AOM_AV1_COMMON_SOURCES}

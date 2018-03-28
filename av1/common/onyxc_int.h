@@ -28,10 +28,7 @@
 #include "av1/common/restoration.h"
 #include "av1/common/tile_common.h"
 #include "av1/common/odintrin.h"
-#if CONFIG_HASH_ME
-// TODO(youzhou@microsoft.com): Encoder only. Move it out of common
 #include "av1/encoder/hash_motion.h"
-#endif
 #if CONFIG_FILM_GRAIN
 #include "aom_dsp/grain_synthesis.h"
 #include "aom_dsp/grain_table.h"
@@ -136,9 +133,7 @@ typedef struct {
 #endif
   aom_codec_frame_buffer_t raw_frame_buffer;
   YV12_BUFFER_CONFIG buf;
-#if CONFIG_HASH_ME
   hash_table hash_table;
-#endif
   uint8_t intra_only;
   FRAME_TYPE frame_type;
   // The Following variables will only be used in frame parallel decode.

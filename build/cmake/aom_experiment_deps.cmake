@@ -14,11 +14,6 @@ set(AOM_BUILD_CMAKE_AOM_EXPERIMENT_DEPS_CMAKE_ 1)
 # Adjusts CONFIG_* CMake variables to address conflicts between active AV1
 # experiments.
 macro (fix_experiment_configs)
-  if (CONFIG_AMVR)
-    if (NOT CONFIG_HASH_ME)
-      change_config_and_warn(CONFIG_HASH_ME 1 CONFIG_AMVR)
-    endif ()
-  endif ()
 
   if (CONFIG_ANALYZER)
     if (NOT CONFIG_INSPECTION)
