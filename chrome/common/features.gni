@@ -14,6 +14,7 @@ import("//net/features.gni")
 import("//ppapi/buildflags/buildflags.gni")
 import("//printing/features/features.gni")
 import("//ui/base/ui_features.gni")
+import("//ui/webui/webui_features.gni")
 
 assert(!is_ios, "Chromium/iOS shouldn't use anything in //chrome")
 
