@@ -1762,7 +1762,7 @@ public class LocationBarLayout extends FrameLayout
     protected Drawable getSuggestionPopupBackground() {
         int omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_BG_COLOR;
         int omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_BG_COLOR;
-        if (FeatureUtilities.isChromeModernDesignEnabled()) {
+        if (useModernDesign()) {
             omniboxResultsColorForNonIncognito = OMNIBOX_RESULTS_CHROME_HOME_MODERN_BG_COLOR;
             omniboxResultsColorForIncognito = OMNIBOX_INCOGNITO_RESULTS_CHROME_HOME_MODERN_BG_COLOR;
         }
