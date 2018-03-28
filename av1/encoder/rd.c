@@ -463,13 +463,6 @@ void av1_fill_coeff_costs(MACROBLOCK *x, FRAME_CONTEXT *fc,
           default: pcdf = fc->eob_flag_cdf1024[plane][ctx]; break;
         }
         av1_cost_tokens_from_cdf(pcost->eob_cost[ctx], pcdf, NULL);
-#if 0
-            printf("[%d, %d, %d]: ", eob_multi_size, plane, ctx);
-            for (int i = 0; i < 5; i++) {
-              printf("(%d, %d, %d) ", i, pcost->eob_cost[ctx][i], pcdf[i]);
-            }
-            printf("\n");
-#endif
       }
     }
   }

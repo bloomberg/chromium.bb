@@ -150,10 +150,8 @@ static void set_good_speed_features_framesize_independent(AV1_COMP *cpi,
     sf->two_pass_partition_search = 1;
     sf->prune_ext_partition_types_search = 1;
     sf->use_fast_interpolation_filter_search = 1;
-#if 0   // CONFIG_HASH_ME
     // TODO(mfo): Activate feature once it gives positive results.
-    sf->use_hash_based_trellis = 1;
-#endif  // CONFIG_HASH_ME
+    //   sf->use_hash_based_trellis = 1;
     sf->tx_type_search.skip_tx_search = 1;
     sf->adaptive_txb_search = 1;
     sf->use_intra_txb_hash = 1;

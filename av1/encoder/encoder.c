@@ -93,12 +93,6 @@ FILE *yuv_rec_file;
 #define FILE_NAME_LEN 100
 #endif
 
-#if 0
-FILE *framepsnr;
-FILE *kf_list;
-FILE *keyfile;
-#endif
-
 #if CONFIG_INTERNAL_STATS
 typedef enum { Y, U, V, ALL } STAT_TYPE;
 #endif  // CONFIG_INTERNAL_STATS
@@ -2509,11 +2503,6 @@ AV1_COMP *av1_create_compressor(AV1EncoderConfig *oxcf,
   yuv_rec_file = fopen("rec.yuv", "wb");
 #endif
 
-#if 0
-  framepsnr = fopen("framepsnr.stt", "a");
-  kf_list = fopen("kf_list.stt", "w");
-#endif
-
   if (oxcf->pass == 1) {
     av1_init_first_pass(cpi);
   } else if (oxcf->pass == 2) {
@@ -2872,17 +2861,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
     }
 
 #endif
-
-#if 0
-    {
-      printf("\n_pick_loop_filter_level:%d\n", cpi->time_pick_lpf / 1000);
-      printf("\n_frames recive_data encod_mb_row compress_frame  Total\n");
-      printf("%6d %10ld %10ld %10ld %10ld\n", cpi->common.current_video_frame,
-             cpi->time_receive_data / 1000, cpi->time_encode_sb_row / 1000,
-             cpi->time_compress_data / 1000,
-             (cpi->time_receive_data + cpi->time_compress_data) / 1000);
-    }
-#endif
   }
 
   for (t = 0; t < cpi->num_workers; ++t) {
@@ -2938,18 +2916,6 @@ void av1_remove_compressor(AV1_COMP *cpi) {
 #endif
 #ifdef OUTPUT_YUV_REC
   fclose(yuv_rec_file);
-#endif
-#if 0
-
-  if (keyfile)
-    fclose(keyfile);
-
-  if (framepsnr)
-    fclose(framepsnr);
-
-  if (kf_list)
-    fclose(kf_list);
-
 #endif
 }
 
@@ -5054,10 +5020,6 @@ static int encode_frame_to_data_rate(AV1_COMP *cpi, size_t *size, uint8_t *dest,
   cm->last_frame_type = cm->frame_type;
 
   av1_rc_postencode_update(cpi, *size);
-
-#if 0
-  output_frame_level_debug_stats(cpi);
-#endif
 
   if (cm->frame_type == KEY_FRAME) {
     // Tell the caller that the frame was coded as a key frame

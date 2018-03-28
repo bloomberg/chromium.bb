@@ -2171,11 +2171,6 @@ static int rd_try_subblock(const AV1_COMP *const cpi, ThreadData *td,
   const int64_t spent_rdcost = is_first ? 0 : sum_rdc->rdcost;
   const int64_t rdcost_remaining = best_rdc->rdcost - spent_rdcost;
 
-#if 0
-  // NOTE: For debug - turn off the reuse of the rd pick mode results.
-  if (this_ctx->rd_mode_is_ready == 1) this_ctx->rd_mode_is_ready = 0;
-#endif  // 0
-
   rd_pick_sb_modes(cpi, tile_data, x, mi_row, mi_col, this_rdc,
                    RTS_X_RATE_NOCOEF_ARG partition, subsize, this_ctx,
                    rdcost_remaining);
@@ -3933,15 +3928,6 @@ static void enforce_max_ref_frames(AV1_COMP *cpi) {
     const MV_REFERENCE_FRAME ref_frame_to_disable = earliest_ref_frames[0];
 #endif  // USE_RF_LEVEL_TO_ENFORCE
 #undef USE_RF_LEVEL_TO_ENFORCE
-
-#if 0
-    printf("===Enforce: Frame_offset=%d, earliest refs: %d-%d(%d,%4.2f) and "
-           "%d-%d(%d,%4.2f), ref_frame_to_disable=%d\n",
-           cm->frame_offset, earliest_ref_frames[0], min_ref_offset,
-           ref_rf_level[0], ref_rf_deltas[0], earliest_ref_frames[1],
-           second_min_ref_offset, ref_rf_level[1], ref_rf_deltas[1],
-           ref_frame_to_disable);
-#endif  // 0
 
     switch (ref_frame_to_disable) {
       case LAST_FRAME: cpi->ref_frame_flags &= ~AOM_LAST_FLAG; break;

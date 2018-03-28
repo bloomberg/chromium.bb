@@ -175,11 +175,6 @@ void test_cdef_speed(int bsize, int iterations, cdef_filter_block_func cdef,
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
 
-#if 0
-  std::cout << "[          ] C time = " << ref_elapsed_time / 1000
-            << " ms, SIMD time = " << elapsed_time / 1000 << " ms" << std::endl;
-#endif
-
   EXPECT_GT(ref_elapsed_time, elapsed_time)
       << "Error: CDEFSpeedTest, SIMD slower than C." << std::endl
       << "C time: " << ref_elapsed_time << " us" << std::endl
@@ -266,11 +261,6 @@ void test_finddir_speed(int (*finddir)(const uint16_t *img, int stride,
   test_finddir(finddir, finddir);
   aom_usec_timer_mark(&timer);
   int elapsed_time = (int)aom_usec_timer_elapsed(&timer);
-
-#if 0
-  std::cout << "[          ] C time = " << ref_elapsed_time / 1000
-            << " ms, SIMD time = " << elapsed_time / 1000 << " ms" << std::endl;
-#endif
 
   EXPECT_GT(ref_elapsed_time, elapsed_time)
       << "Error: CDEFFindDirSpeedTest, SIMD slower than C." << std::endl

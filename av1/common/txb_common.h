@@ -516,21 +516,17 @@ static INLINE int get_nz_map_ctx_from_stats(
   ctx = AOMMIN(ctx, 4);
   switch (tx_class) {
     case TX_CLASS_2D: {
-#if 0
-    // This is the algorithm to generate table av1_nz_map_ctx_offset[].
-    const int width = tx_size_wide[tx_size];
-    const int height = tx_size_high[tx_size];
-    if (width < height) {
-      if (row < 2) return 11 + ctx;
-    } else if (width > height) {
-      if (col < 2) return 16 + ctx;
-    }
-
-    if (row + col < 2) return ctx + 1;
-    if (row + col < 4) return 5 + ctx + 1;
-
-    return 21 + ctx;
-#endif
+      // This is the algorithm to generate av1_nz_map_ctx_offset[][]
+      //   const int width = tx_size_wide[tx_size];
+      //   const int height = tx_size_high[tx_size];
+      //   if (width < height) {
+      //     if (row < 2) return 11 + ctx;
+      //   } else if (width > height) {
+      //     if (col < 2) return 16 + ctx;
+      //   }
+      //   if (row + col < 2) return ctx + 1;
+      //   if (row + col < 4) return 5 + ctx + 1;
+      //   return 21 + ctx;
       return ctx + av1_nz_map_ctx_offset[tx_size][coeff_idx];
     }
     case TX_CLASS_HORIZ: {
@@ -641,6 +637,17 @@ static INLINE void get_txb_ctx(const BLOCK_SIZE plane_bsize,
     if (plane_bsize == txsize_to_bsize[tx_size]) {
       txb_ctx->txb_skip_ctx = 0;
     } else {
+      // This is the algorithm to generate table skip_contexts[min][max].
+      //    if (!max)
+      //      txb_skip_ctx = 1;
+      //    else if (!min)
+      //      txb_skip_ctx = 2 + (max > 3);
+      //    else if (max <= 3)
+      //      txb_skip_ctx = 4;
+      //    else if (min <= 3)
+      //      txb_skip_ctx = 5;
+      //    else
+      //      txb_skip_ctx = 6;
       static const uint8_t skip_contexts[5][5] = { { 1, 2, 2, 2, 3 },
                                                    { 1, 4, 4, 4, 5 },
                                                    { 1, 4, 4, 4, 5 },
@@ -663,19 +670,6 @@ static INLINE void get_txb_ctx(const BLOCK_SIZE plane_bsize,
       const int max = AOMMIN(top | left, 4);
       const int min = AOMMIN(AOMMIN(top, left), 4);
 
-#if 0
-      // This is the algorithm to generate table skip_contexts[].
-      if (!max)
-        txb_ctx->txb_skip_ctx = 1;
-      else if (!min)
-        txb_ctx->txb_skip_ctx = 2 + (max > 3);
-      else if (max <= 3)
-        txb_ctx->txb_skip_ctx = 4;
-      else if (min <= 3)
-        txb_ctx->txb_skip_ctx = 5;
-      else
-        txb_ctx->txb_skip_ctx = 6;
-#endif
       txb_ctx->txb_skip_ctx = skip_contexts[min][max];
     }
   } else {

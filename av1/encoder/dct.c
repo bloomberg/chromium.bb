@@ -24,18 +24,14 @@
 
 static INLINE void range_check(const tran_low_t *input, const int size,
                                const int bit) {
-#if 0  // CONFIG_COEFFICIENT_RANGE_CHECKING
-// TODO(angiebird): the range_check is not used because the bit range
-// in fdct# is not correct. Since we are going to merge in a new version
-// of fdct# from nextgenv2, we won't fix the incorrect bit range now.
+  (void)input;
+  (void)size;
+  (void)bit;
+#if CONFIG_COEFFICIENT_RANGE_CHECKING
   int i;
   for (i = 0; i < size; ++i) {
     assert(abs(input[i]) < (1 << bit));
   }
-#else
-  (void)input;
-  (void)size;
-  (void)bit;
 #endif
 }
 

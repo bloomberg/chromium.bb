@@ -9687,14 +9687,6 @@ PALETTE_EXIT:
       best_mode_skippable = (x->skip_mode_sse == 0);
 
       x->skip = 1;
-#if 0
-      // TODO(zoeliu): To investigate why following cause performance drop.
-      for (i = 0; i < num_planes; ++i) {
-        memset(x->blk_skip[i], x->skip, sizeof(uint8_t) * ctx->num_4x4_blk);
-        memcpy(ctx->blk_skip[i], x->blk_skip[i],
-               sizeof(uint8_t) * ctx->num_4x4_blk);
-      }
-#endif  // 0
     }
   }
 
