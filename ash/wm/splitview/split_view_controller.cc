@@ -529,6 +529,14 @@ void SplitViewController::OnPostWindowStateTypeChange(
     EndOverview();
   } else if (window_state->IsMinimized()) {
     OnSnappedWindowMinimizedOrDestroyed(window_state->window());
+    // Insert the minimized window back to overview if split view mode is ended
+    // because of the minimization of the window, but overview mode is still
+    // active at the moment.
+    if (!IsSplitViewModeActive() &&
+        Shell::Get()->window_selector_controller()->IsSelecting()) {
+      Shell::Get()->window_selector_controller()->window_selector()->AddItem(
+          window_state->window());
+    }
   }
 }
 
