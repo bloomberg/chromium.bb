@@ -19,10 +19,6 @@
 #include "extensions/browser/pref_names.h"
 #include "extensions/common/extension.h"
 
-#if defined(OS_CHROMEOS)
-#include "ash/shell.h"
-#endif
-
 namespace extensions {
 namespace {
 

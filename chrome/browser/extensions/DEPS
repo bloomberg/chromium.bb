@@ -33,10 +33,6 @@ specific_include_rules = {
   "extension_protocols_unittest\.cc": [
     "+services/network/test",
   ],
-  "launch_util\.cc": [
-    # TODO(mash): Remove. http://crbug.com/678705
-    "+ash/shell.h",
-  ],
   "zipfile_installer_unittest.cc": [
     "+services/data_decoder",
   ],

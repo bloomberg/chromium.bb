@@ -7,7 +7,6 @@
 #include <utility>
 #include <vector>
 
-#include "ash/accelerators/accelerator_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
 #include "base/bind.h"

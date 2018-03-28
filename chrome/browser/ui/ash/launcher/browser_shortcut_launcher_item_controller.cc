@@ -11,7 +11,6 @@
 #include "ash/public/cpp/shelf_model.h"
 #include "ash/public/cpp/window_properties.h"
 #include "ash/resources/grit/ash_resources.h"
-#include "ash/shelf/shelf_context_menu_model.h"
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"

@@ -4,7 +4,6 @@
 
 #include "chrome/browser/ui/ash/system_tray_client.h"
 
-#include "ash/login_status.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/public/interfaces/constants.mojom.h"
 #include "ash/shell.h"
