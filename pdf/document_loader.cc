@@ -315,14 +315,20 @@ void DocumentLoader::DidRead(int32_t result) {
     DCHECK(!chunk_.chunk_data);
     chunk_.chunk_index = chunk_stream_.GetChunkIndex(start_pos);
   }
-  if (!SaveChunkData(buffer_, result))
+  if (!SaveBuffer(buffer_, result))
     return ReadMore();
   if (IsDocumentComplete())
     return ReadComplete();
   return ContinueDownload();
 }
 
-bool DocumentLoader::SaveChunkData(char* input, uint32_t input_size) {
+bool DocumentLoader::SaveBuffer(char* input, uint32_t input_size) {
+  const uint32_t document_size = GetDocumentSize();
+  if (document_size != 0) {
+    // If the HTTP server sends more data than expected, then truncate
+    // |input_size| to the expected size.
+    input_size = std::min(document_size - bytes_received_, input_size);
+  }
   bytes_received_ += input_size;
   bool chunk_saved = false;
   bool loading_pending_request = pending_requests_.Contains(chunk_.chunk_index);
@@ -336,13 +342,10 @@ bool DocumentLoader::SaveChunkData(char* input, uint32_t input_size) {
            new_chunk_data_len);
     chunk_.data_size += new_chunk_data_len;
     if (chunk_.data_size == DataStream::kChunkSize ||
-        GetDocumentSize() == EndOfCurrentChunk()) {
-      chunk_stream_.SetChunkData(chunk_.chunk_index,
-                                 std::move(chunk_.chunk_data));
+        document_size == EndOfCurrentChunk()) {
       pending_requests_.Subtract(
           gfx::Range(chunk_.chunk_index, chunk_.chunk_index + 1));
-      chunk_.data_size = 0;
-      ++chunk_.chunk_index;
+      SaveChunkData();
       chunk_saved = true;
     }
 
@@ -365,12 +368,23 @@ bool DocumentLoader::SaveChunkData(char* input, uint32_t input_size) {
   return true;
 }
 
+void DocumentLoader::SaveChunkData() {
+  chunk_stream_.SetChunkData(chunk_.chunk_index, std::move(chunk_.chunk_data));
+  chunk_.data_size = 0;
+  ++chunk_.chunk_index;
+}
+
 uint32_t DocumentLoader::EndOfCurrentChunk() const {
   return chunk_.chunk_index * DataStream::kChunkSize + chunk_.data_size;
 }
 
 void DocumentLoader::ReadComplete() {
-  if (GetDocumentSize() == 0) {
+  if (GetDocumentSize() != 0) {
+    // If there is remaining data in |chunk_|, then save whatever can be saved.
+    // e.g. In the underrun case.
+    if (chunk_.data_size != 0)
+      SaveChunkData();
+  } else {
     uint32_t eof = EndOfCurrentChunk();
     if (!chunk_stream_.filled_chunks().IsEmpty()) {
       eof = std::max(
@@ -378,10 +392,8 @@ void DocumentLoader::ReadComplete() {
           eof);
     }
     SetDocumentSize(eof);
-    if (eof == EndOfCurrentChunk()) {
-      chunk_stream_.SetChunkData(chunk_.chunk_index,
-                                 std::move(chunk_.chunk_data));
-    }
+    if (eof == EndOfCurrentChunk())
+      SaveChunkData();
   }
   loader_.reset();
   if (IsDocumentComplete()) {
