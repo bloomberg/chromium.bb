@@ -14,7 +14,6 @@ static_library("proximity_auth") {
     "bluetooth_low_energy_setup_connection_finder.h",
     "bluetooth_util.cc",
     "bluetooth_util.h",
-    "bluetooth_util_chromeos.cc",
     "messenger.h",
     "messenger_impl.cc",
     "messenger_impl.h",
