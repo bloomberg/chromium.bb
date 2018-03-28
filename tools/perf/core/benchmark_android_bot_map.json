@@ -44,8 +44,7 @@
   "14": {
     "benchmarks": [
       "dromaeo",
-      "smoothness.simple_mobile_sites",
-      "v8.detached_context_age_in_gc"
+      "smoothness.simple_mobile_sites"
     ]
   },
   "15": {

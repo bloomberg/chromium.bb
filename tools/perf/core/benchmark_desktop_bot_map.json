@@ -51,8 +51,7 @@
     "benchmarks": [
       "dromaeo",
       "smoothness.gpu_rasterization.polymer",
-      "smoothness.tough_webgl_cases",
-      "v8.detached_context_age_in_gc"
+      "smoothness.tough_webgl_cases"
     ]
   },
   "15": {
