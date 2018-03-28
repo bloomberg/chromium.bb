@@ -26,7 +26,7 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
  public:
   explicit HistoryModelWorker(
       const base::WeakPtr<history::HistoryService>& history_service,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread);
+      scoped_refptr<base::SingleThreadTaskRunner> ui_thread);
 
   // syncer::ModelSafeWorker implementation.
   syncer::ModelSafeGroup GetModelSafeGroup() override;
@@ -44,7 +44,8 @@ class HistoryModelWorker : public syncer::ModelSafeWorker {
 
   // Helper object to make sure we don't leave tasks running on the history
   // thread.
-  std::unique_ptr<base::CancelableTaskTracker> cancelable_tracker_;
+  const std::unique_ptr<base::CancelableTaskTracker, base::OnTaskRunnerDeleter>
+      cancelable_tracker_;
 
   DISALLOW_COPY_AND_ASSIGN(HistoryModelWorker);
 };
