@@ -18,7 +18,7 @@
 
 ## Core Teams and Work
 
-  * **[Speed tracks](speed_tracks.md)**: Most of the speed 
+  * **[Speed tracks](speed_tracks.md)**: Most of the speed
     work on Chrome is organized into these tracks.
   * **[Chrome Speed Operations](chrome_speed_operations.md)**: provides the
     benchmarks, infrastructure, and releasing oversight to track regressions.
@@ -27,9 +27,9 @@
     * Benchmark-specific discussion: benchmarking-dev@chromium.org
     <!--- TODO: Requests for new benchmarks: chrome-benchmarking-request mailing list link -->
     * Performance dashboard, bisect, try jobs: speed-services-dev@chromium.org
-  * **[Chrome Speed Metrics](https://docs.google.com/document/d/1wBT5fauGf8bqW2Wcg2A5Z-3_ZvgPhE8fbp1Xe6xfGRs/edit#heading=h.8ieoiiwdknwt)**: provides a set of high-quality metrics that represent real-world user experience, and exposes these metrics to both Chrome and Web Developers.
+  * **Chrome Speed Metrics**: provides a set of high-quality metrics that represent real-world user experience, and exposes these metrics to both Chrome and Web Developers.
     * General discussion: progressive-web-metrics@chromium.org
-    * The actual metrics: [tracking](https://docs.google.com/spreadsheets/d/1gY5hkKPp8RNVqmOw1d-bo-f9EXLqtq4wa3Z7Q8Ek9Tk/edit#gid=0)
+    * The actual metrics: [speed launch metrics survey.](https://docs.google.com/document/d/1Ww487ZskJ-xBmJGwPO-XPz_QcJvw-kSNffm0nPhVpj8/edit#heading=h.2uunmi119swk)
 
 ## For Googlers
 
