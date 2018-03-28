@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_H_
-#define MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_H_
+#ifndef MEDIA_CAST_TEST_MOCK_CAST_TRANSPORT_H_
+#define MEDIA_CAST_TEST_MOCK_CAST_TRANSPORT_H_
 
 #include <stdint.h>
 
@@ -47,4 +47,4 @@ class MockCastTransport : public CastTransport {
 }  // namespace cast
 }  // namespace media
 
-#endif  // MEDIA_CAST_NET_MOCK_CAST_TRANSPORT_H_
+#endif  // MEDIA_CAST_TEST_MOCK_CAST_TRANSPORT_H_
