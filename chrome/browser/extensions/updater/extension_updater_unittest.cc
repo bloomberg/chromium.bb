@@ -303,7 +303,7 @@ class MockService : public TestExtensionService {
  public:
   explicit MockService(TestExtensionPrefs* prefs)
       : prefs_(prefs),
-        pending_extension_manager_(&profile_),
+        pending_extension_manager_(prefs->profile()),
         downloader_delegate_override_(NULL) {}
 
   ~MockService() override {}
@@ -314,10 +314,10 @@ class MockService : public TestExtensionService {
     return &pending_extension_manager_;
   }
 
-  Profile* profile() { return &profile_; }
+  Profile* profile() { return prefs_->profile(); }
 
   net::URLRequestContextGetter* request_context() {
-    return profile_.GetRequestContext();
+    return profile()->GetRequestContext();
   }
 
   ExtensionPrefs* extension_prefs() { return prefs_->prefs(); }
@@ -367,7 +367,6 @@ class MockService : public TestExtensionService {
 
  protected:
   TestExtensionPrefs* const prefs_;
-  TestingProfile profile_;
   PendingExtensionManager pending_extension_manager_;
 
  private:

@@ -246,4 +246,11 @@ void RegisterPrefs(PrefRegistrySimple* registry) {
   PersistedData::RegisterPrefs(registry);
 }
 
+// This function has the exact same implementation as RegisterPrefs. We have
+// this implementation here to make the intention more clear that is local user
+// profile access is needed.
+void RegisterProfilePrefs(PrefRegistrySimple* registry) {
+  PersistedData::RegisterPrefs(registry);
+}
+
 }  // namespace update_client

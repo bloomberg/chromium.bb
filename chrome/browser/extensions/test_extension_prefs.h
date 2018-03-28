@@ -44,6 +44,7 @@ class TestExtensionPrefs {
   virtual ~TestExtensionPrefs();
 
   ExtensionPrefs* prefs();
+  TestingProfile* profile();
 
   PrefService* pref_service();
   const scoped_refptr<user_prefs::PrefRegistrySyncable>& pref_registry();

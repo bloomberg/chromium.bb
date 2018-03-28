@@ -109,6 +109,9 @@ void UpdateDataProvider::RunInstallCallback(
     const std::string& public_key,
     const base::FilePath& unpacked_dir,
     UpdateClientCallback update_client_callback) {
+  VLOG(3) << "UpdateDataProvider::RunInstallCallback " << extension_id << " "
+          << public_key;
+
   if (!browser_context_) {
     base::PostTaskWithTraits(
         FROM_HERE, {base::TaskPriority::BACKGROUND, base::MayBlock()},
