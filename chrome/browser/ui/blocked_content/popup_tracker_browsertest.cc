@@ -29,8 +29,11 @@
 #include "ui/events/keycodes/dom/dom_key.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 
-const char kPopupEngagement[] =
+const char kPopupFirstDocumentEngagement[] =
     "ContentSettings.Popups.FirstDocumentEngagementTime2";
+const char kPopupEngagement[] = "ContentSettings.Popups.EngagementTime";
+const char kPopupGestureClose[] =
+    "ContentSettings.Popups.EngagementTime.GestureClose";
 
 class PopupTrackerBrowserTest : public InProcessBrowserTest {
  public:
@@ -49,10 +52,13 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, NoPopup_NoTracker) {
   EXPECT_FALSE(PopupTracker::FromWebContents(
       browser()->tab_strip_model()->GetActiveWebContents()));
 
+  tester.ExpectTotalCount(kPopupFirstDocumentEngagement, 0);
   tester.ExpectTotalCount(kPopupEngagement, 0);
+  tester.ExpectTotalCount(kPopupGestureClose, 0);
 }
 
-IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, WindowOpenPopup_HasTracker) {
+IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest,
+                       WindowOpenPopup_HasTracker_GestureClose) {
   base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(),
                                embedded_test_server()->GetURL("/title1.html"));
@@ -70,12 +76,16 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, WindowOpenPopup_HasTracker) {
       browser()->tab_strip_model()->GetActiveWebContents()));
 
   // Close the popup and check metric.
+  int active_index = browser()->tab_strip_model()->active_index();
   content::WebContentsDestroyedWatcher destroyed_watcher(
-      browser()->tab_strip_model()->GetActiveWebContents());
-  browser()->tab_strip_model()->CloseAllTabs();
+      browser()->tab_strip_model()->GetWebContentsAt(active_index));
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      active_index, TabStripModel::CLOSE_USER_GESTURE);
   destroyed_watcher.Wait();
 
+  tester.ExpectTotalCount(kPopupFirstDocumentEngagement, 1);
   tester.ExpectTotalCount(kPopupEngagement, 1);
+  tester.ExpectTotalCount(kPopupGestureClose, 1);
 }
 
 // OpenURLFromTab goes through a different code path than traditional popups
@@ -112,6 +122,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, ControlClick_HasTracker) {
       Profile::FromBrowserContext(new_contents->GetBrowserContext()));
   destroyed_watcher.Wait();
 
+  tester.ExpectTotalCount(kPopupFirstDocumentEngagement, 1);
   tester.ExpectTotalCount(kPopupEngagement, 1);
 }
 
@@ -143,6 +154,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, ShiftClick_HasTracker) {
       Profile::FromBrowserContext(new_contents->GetBrowserContext()));
   destroyed_watcher.Wait();
 
+  tester.ExpectTotalCount(kPopupFirstDocumentEngagement, 1);
   tester.ExpectTotalCount(kPopupEngagement, 1);
 }
 
@@ -173,6 +185,7 @@ IN_PROC_BROWSER_TEST_F(PopupTrackerBrowserTest, WhitelistedPopup_HasTracker) {
   browser()->tab_strip_model()->CloseAllTabs();
   destroyed_watcher.Wait();
 
+  tester.ExpectTotalCount(kPopupFirstDocumentEngagement, 1);
   tester.ExpectTotalCount(kPopupEngagement, 1);
 }
 
