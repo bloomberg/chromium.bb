@@ -561,6 +561,8 @@ component("ash") {
     "system/model/system_tray_model.h",
     "system/model/tracing_model.cc",
     "system/model/tracing_model.h",
+    "system/model/update_model.cc",
+    "system/model/update_model.h",
     "system/network/network_feature_pod_button.cc",
     "system/network/network_feature_pod_button.h",
     "system/network/network_feature_pod_controller.cc",
