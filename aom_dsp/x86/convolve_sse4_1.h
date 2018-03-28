@@ -31,7 +31,6 @@ static INLINE void mult_add_store(CONV_BUF_TYPE *const dst,
   _mm_store_si128((__m128i *)dst, d);
 }
 
-#if CONFIG_LOWPRECISION_BLEND
 static INLINE __m128i highbd_comp_avg_sse4_1(const __m128i *const data_ref_0,
                                              const __m128i *const res_unsigned,
                                              const __m128i *const wt0,
@@ -50,6 +49,5 @@ static INLINE __m128i highbd_comp_avg_sse4_1(const __m128i *const data_ref_0,
   }
   return res;
 }
-#endif
 
 #endif  // _AOM_DSP_X86_TXFM_COMMON_INTRIN_H_

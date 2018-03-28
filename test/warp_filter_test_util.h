@@ -23,7 +23,6 @@
 #include "av1/common/mv.h"
 #include "av1/common/common_data.h"
 
-#if CONFIG_LOWPRECISION_BLEND
 namespace libaom_test {
 
 void generate_warped_model(libaom_test::ACMRandom *rnd, int32_t *mat,
@@ -96,5 +95,4 @@ class AV1HighbdWarpFilterTest
 
 }  // namespace libaom_test
 
-#endif
 #endif  // TEST_WARP_FILTER_TEST_UTIL_H_

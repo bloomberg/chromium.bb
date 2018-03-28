@@ -158,7 +158,6 @@ class TestImage {
   std::vector<CONV_BUF_TYPE> dst_16_data_;
 };
 
-#if CONFIG_LOWPRECISION_BLEND
 template <typename Pixel>
 void FillEdge(ACMRandom *rnd, int num_pixels, int bd, bool trash, Pixel *data) {
   if (!trash) {
@@ -526,5 +525,4 @@ INSTANTIATE_TEST_CASE_P(
                        ::testing::ValuesIn(kBlockDim),
                        ::testing::ValuesIn(kNTaps), ::testing::ValuesIn(kNTaps),
                        ::testing::Bool(), ::testing::ValuesIn(kBDs)));
-#endif
 }  // namespace

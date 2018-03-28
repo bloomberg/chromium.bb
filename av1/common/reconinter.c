@@ -32,14 +32,6 @@
 #define USE_PRECOMPUTED_WEDGE_MASK 1
 #define USE_PRECOMPUTED_WEDGE_SIGN 1
 
-#if !CONFIG_LOWPRECISION_BLEND
-static INLINE int get_compound_post_rounding_bits(
-    const ConvolveParams *conv_params) {
-  assert(conv_params->is_compound);
-  return 2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1;
-}
-#endif
-
 // This function will determine whether or not to create a warped
 // prediction.
 static INLINE int allow_warp(const MODE_INFO *const mi,
@@ -362,20 +354,11 @@ void build_compound_seg_mask_highbd(uint8_t *mask, SEG_MASK_TYPE mask_type,
 #elif COMPOUND_SEGMENT_TYPE == 1
 #define DIFF_FACTOR 16
 
-#if CONFIG_LOWPRECISION_BLEND
 static void diffwtd_mask_d32(uint8_t *mask, int which_inverse, int mask_base,
                              const CONV_BUF_TYPE *src0, int src0_stride,
                              const CONV_BUF_TYPE *src1, int src1_stride,
                              BLOCK_SIZE sb_type, int h, int w,
-                             ConvolveParams *conv_params, int bd)
-#else
-static void diffwtd_mask_d32(uint8_t *mask, int which_inverse, int mask_base,
-                             const int32_t *src0, int src0_stride,
-                             const int32_t *src1, int src1_stride,
-                             BLOCK_SIZE sb_type, int h, int w,
-                             ConvolveParams *conv_params, int bd)
-#endif
-{
+                             ConvolveParams *conv_params, int bd) {
   int round =
       2 * FILTER_BITS - conv_params->round_0 - conv_params->round_1 + (bd - 8);
   int i, j, m, diff;
@@ -391,19 +374,10 @@ static void diffwtd_mask_d32(uint8_t *mask, int which_inverse, int mask_base,
   }
 }
 
-#if CONFIG_LOWPRECISION_BLEND
 static void build_compound_seg_mask_d16(
     uint8_t *mask, SEG_MASK_TYPE mask_type, const CONV_BUF_TYPE *src0,
     int src0_stride, const CONV_BUF_TYPE *src1, int src1_stride,
-    BLOCK_SIZE sb_type, int h, int w, ConvolveParams *conv_params, int bd)
-#else
-static void build_compound_seg_mask_d32(uint8_t *mask, SEG_MASK_TYPE mask_type,
-                                        const int32_t *src0, int src0_stride,
-                                        const int32_t *src1, int src1_stride,
-                                        BLOCK_SIZE sb_type, int h, int w,
-                                        ConvolveParams *conv_params, int bd)
-#endif
-{
+    BLOCK_SIZE sb_type, int h, int w, ConvolveParams *conv_params, int bd) {
   switch (mask_type) {
     case DIFFWTD_38:
       diffwtd_mask_d32(mask, 0, 38, src0, src0_stride, src1, src1_stride,
@@ -627,7 +601,6 @@ void av1_init_wedge_masks() {
   init_wedge_masks();
 }
 
-#if CONFIG_LOWPRECISION_BLEND
 static void build_masked_compound_no_round(
     uint8_t *dst, int dst_stride, const CONV_BUF_TYPE *src0, int src0_stride,
     const CONV_BUF_TYPE *src1, int src1_stride,
@@ -647,21 +620,6 @@ static void build_masked_compound_no_round(
                                  src1_stride, mask, block_size_wide[sb_type], h,
                                  w, subh, subw, conv_params);
 }
-#else   // CONFIG_LOWPRECISION_BLEND
-static void build_masked_compound_no_round(
-    CONV_BUF_TYPE *dst, int dst_stride, const CONV_BUF_TYPE *src0,
-    int src0_stride, const CONV_BUF_TYPE *src1, int src1_stride,
-    const INTERINTER_COMPOUND_DATA *const comp_data, BLOCK_SIZE sb_type, int h,
-    int w) {
-  // Derive subsampling from h and w passed in. May be refactored to
-  // pass in subsampling factors directly.
-  const int subh = (2 << mi_size_high_log2[sb_type]) == h;
-  const int subw = (2 << mi_size_wide_log2[sb_type]) == w;
-  const uint8_t *mask = av1_get_compound_type_mask(comp_data, sb_type);
-  aom_blend_a64_d32_mask(dst, dst_stride, src0, src0_stride, src1, src1_stride,
-                         mask, block_size_wide[sb_type], h, w, subh, subw);
-}
-#endif  // CONFIG_LOWPRECISION_BLEND
 
 static void build_masked_compound(
     uint8_t *dst, int dst_stride, const uint8_t *src0, int src0_stride,
@@ -713,14 +671,7 @@ void av1_make_masked_inter_predictor(
 // a temporary buffer, then will blend that temporary buffer with that from
 // the other reference.
 //
-#if CONFIG_LOWPRECISION_BLEND
 #define INTER_PRED_BYTES_PER_PIXEL 2
-#else
-// The predictions are at 32-bits, so we'll need 32 bits per
-// pixel. Otherwise, we'll need up to 16 bits per pixel if
-// CONFIG_HIGHBITDEPTH or just 8 otherwise.
-#define INTER_PRED_BYTES_PER_PIXEL 4
-#endif
 
   DECLARE_ALIGNED(32, uint8_t,
                   tmp_buf[INTER_PRED_BYTES_PER_PIXEL * MAX_SB_SQUARE]);
@@ -733,13 +684,8 @@ void av1_make_masked_inter_predictor(
   const int tmp_buf_stride = MAX_SB_SIZE;
   CONV_BUF_TYPE *org_dst = conv_params->dst;
   int org_dst_stride = conv_params->dst_stride;
-#if CONFIG_LOWPRECISION_BLEND
   CONV_BUF_TYPE *tmp_buf16 = (CONV_BUF_TYPE *)tmp_buf;
   conv_params->dst = tmp_buf16;
-#else
-  CONV_BUF_TYPE *tmp_buf32 = (CONV_BUF_TYPE *)tmp_buf;
-  conv_params->dst = tmp_buf32;
-#endif
   conv_params->dst_stride = tmp_buf_stride;
   assert(conv_params->do_average == 0);
 
@@ -750,25 +696,13 @@ void av1_make_masked_inter_predictor(
                            xd, can_use_previous);
 
   if (!plane && comp_data.interinter_compound_type == COMPOUND_SEG) {
-#if CONFIG_LOWPRECISION_BLEND
     build_compound_seg_mask_d16(
         comp_data.seg_mask, comp_data.mask_type, org_dst, org_dst_stride,
         tmp_buf16, tmp_buf_stride, mi->mbmi.sb_type, h, w, conv_params, xd->bd);
-#else
-    build_compound_seg_mask_d32(
-        comp_data.seg_mask, comp_data.mask_type, org_dst, org_dst_stride,
-        tmp_buf32, tmp_buf_stride, mi->mbmi.sb_type, h, w, conv_params, xd->bd);
-#endif
   }
-#if CONFIG_LOWPRECISION_BLEND
   build_masked_compound_no_round(dst, dst_stride, org_dst, org_dst_stride,
                                  tmp_buf16, tmp_buf_stride, &comp_data,
                                  mi->mbmi.sb_type, h, w, conv_params, xd);
-#else
-  build_masked_compound_no_round(org_dst, org_dst_stride, org_dst,
-                                 org_dst_stride, tmp_buf32, tmp_buf_stride,
-                                 &comp_data, mi->mbmi.sb_type, h, w);
-#endif
 }
 
 // TODO(sarahparker) av1_highbd_build_inter_predictor and
@@ -956,11 +890,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
       for (idx = 0; idx < b8_w; idx += b4_w) {
         MB_MODE_INFO *this_mbmi = &xd->mi[row * xd->mi_stride + col]->mbmi;
         is_compound = has_second_ref(this_mbmi);
-#if CONFIG_LOWPRECISION_BLEND
         DECLARE_ALIGNED(32, CONV_BUF_TYPE, tmp_dst[8 * 8]);
-#else
-        DECLARE_ALIGNED(32, int32_t, tmp_dst[8 * 8]);
-#endif
         int tmp_dst_stride = 8;
         assert(w < 8 || h < 8);
         ConvolveParams conv_params = get_conv_params_no_round(
@@ -1064,11 +994,7 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
     uint8_t *const dst = dst_buf->buf + dst_buf->stride * y + x;
     uint8_t *pre[2];
     SubpelParams subpel_params[2];
-#if CONFIG_LOWPRECISION_BLEND
     DECLARE_ALIGNED(32, uint16_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
-#else
-    DECLARE_ALIGNED(32, int32_t, tmp_dst[MAX_SB_SIZE * MAX_SB_SIZE]);
-#endif
     for (ref = 0; ref < 1 + is_compound; ++ref) {
       const struct scale_factors *const sf =
           is_intrabc ? &cm->sf_identity : &xd->block_refs[ref]->sf;
@@ -1164,20 +1090,6 @@ static INLINE void build_inter_predictors(const AV1_COMMON *cm, MACROBLOCKD *xd,
             plane, ref, mi, build_for_obmc, subpel_params[ref].xs,
             subpel_params[ref].ys, xd, cm->allow_warped_motion);
     }
-
-#if !CONFIG_LOWPRECISION_BLEND
-    // TODO(angiebird): This part needs optimization
-    if (conv_params.is_compound) {
-      assert(conv_params.dst != NULL);
-      int round_bits = get_compound_post_rounding_bits(&conv_params);
-      if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH)
-        av1_highbd_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride,
-                                     w, h, round_bits, xd->bd);
-      else
-        av1_convolve_rounding(tmp_dst, MAX_SB_SIZE, dst, dst_buf->stride, w, h,
-                              round_bits);
-    }
-#endif
   }
 }
 

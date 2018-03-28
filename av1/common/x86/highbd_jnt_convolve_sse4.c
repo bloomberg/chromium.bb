@@ -16,7 +16,6 @@
 #include "aom_dsp/x86/convolve_sse2.h"
 #include "aom_dsp/x86/convolve_sse4_1.h"
 
-#if CONFIG_LOWPRECISION_BLEND
 void av1_highbd_jnt_convolve_y_sse4_1(
     const uint16_t *src, int src_stride, uint16_t *dst0, int dst_stride0, int w,
     int h, InterpFilterParams *filter_params_x,
@@ -381,4 +380,3 @@ void av1_highbd_jnt_convolve_x_sse4_1(
     }
   }
 }
-#endif

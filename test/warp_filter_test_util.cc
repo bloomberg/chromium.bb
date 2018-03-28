@@ -78,7 +78,6 @@ void generate_warped_model(libaom_test::ACMRandom *rnd, int32_t *mat,
 }
 
 namespace AV1WarpFilter {
-#if CONFIG_LOWPRECISION_BLEND
 ::testing::internal::ParamGenerator<WarpTestParam> BuildParams(
     warp_affine_func filter) {
   const WarpTestParam params[] = {
@@ -244,11 +243,9 @@ void AV1WarpFilterTest::RunCheckOutput(warp_affine_func test_impl) {
   delete[] dsta;
   delete[] dstb;
 }
-#endif
 }  // namespace AV1WarpFilter
 
 namespace AV1HighbdWarpFilter {
-#if CONFIG_LOWPRECISION_BLEND
 ::testing::internal::ParamGenerator<HighbdWarpTestParam> BuildParams(
     highbd_warp_affine_func filter) {
   const HighbdWarpTestParam params[] = {
@@ -432,6 +429,5 @@ void AV1HighbdWarpFilterTest::RunCheckOutput(
   delete[] dsta;
   delete[] dstb;
 }
-#endif
 }  // namespace AV1HighbdWarpFilter
 }  // namespace libaom_test

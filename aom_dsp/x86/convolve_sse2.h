@@ -75,7 +75,6 @@ static INLINE __m128i convolve_hi_y(const __m128i *const s,
   return convolve(ss, coeffs);
 }
 
-#if CONFIG_LOWPRECISION_BLEND
 static INLINE __m128i comp_avg(const __m128i *const data_ref_0,
                                const __m128i *const res_unsigned,
                                const __m128i *const wt,
@@ -118,7 +117,5 @@ static INLINE __m128i highbd_convolve_rounding_sse2(
 
   return res_round;
 }
-
-#endif
 
 #endif

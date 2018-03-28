@@ -10,7 +10,6 @@
  */
 #include "third_party/googletest/src/googletest/include/gtest/gtest.h"
 #include "test/warp_filter_test_util.h"
-#if CONFIG_LOWPRECISION_BLEND
 using libaom_test::ACMRandom;
 using libaom_test::AV1HighbdWarpFilter::AV1HighbdWarpFilterTest;
 using libaom_test::AV1WarpFilter::AV1WarpFilterTest;
@@ -35,4 +34,3 @@ INSTANTIATE_TEST_CASE_P(SSE4_1, AV1HighbdWarpFilterTest,
 
 #endif  // HAVE_SSE4_1
 }  // namespace
-#endif  // CONFIG_LOWPRECISION_BLEND

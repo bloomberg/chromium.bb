@@ -134,7 +134,6 @@ static INLINE void add_store_aligned_256(CONV_BUF_TYPE *const dst,
   _mm256_store_si256((__m256i *)dst, d);
 }
 
-#if CONFIG_LOWPRECISION_BLEND
 static INLINE __m256i comp_avg(const __m256i *const data_ref_0,
                                const __m256i *const res_unsigned,
                                const __m256i *const wt,
@@ -195,23 +194,5 @@ static INLINE __m256i highbd_convolve_rounding(
 
   return res_round;
 }
-#else
-static INLINE void mult_add_store_aligned_256(CONV_BUF_TYPE *const dst,
-                                              const __m256i *const res,
-                                              const __m256i *const wt0,
-                                              const __m256i *const wt1,
-                                              const int do_average) {
-  __m256i d;
-  if (do_average) {
-    d = _mm256_load_si256((__m256i *)dst);
-    d = _mm256_add_epi32(_mm256_mullo_epi32(d, *wt0),
-                         _mm256_mullo_epi32(*res, *wt1));
-    d = _mm256_srai_epi32(d, DIST_PRECISION_BITS);
-  } else {
-    d = *res;
-  }
-  _mm256_store_si256((__m256i *)dst, d);
-}
-#endif
 
 #endif

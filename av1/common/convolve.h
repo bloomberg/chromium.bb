@@ -17,11 +17,7 @@
 extern "C" {
 #endif
 
-#if CONFIG_LOWPRECISION_BLEND
 typedef uint16_t CONV_BUF_TYPE;
-#else
-typedef int32_t CONV_BUF_TYPE;
-#endif
 typedef struct ConvolveParams {
   int ref;
   int do_average;
@@ -36,15 +32,9 @@ typedef struct ConvolveParams {
   int bck_offset;
 } ConvolveParams;
 
-#if CONFIG_LOWPRECISION_BLEND
 #define ROUND0_BITS 3
 #define COMPOUND_ROUND1_BITS 7
 #define WIENER_ROUND0_BITS 3
-#else
-#define ROUND0_BITS 5
-#define COMPOUND_ROUND1_BITS 0
-#define WIENER_ROUND0_BITS 5
-#endif  // CONFIG_LOWPRECISION_BLEND
 
 #define WIENER_CLAMP_LIMIT(r0, bd) (1 << ((bd) + 1 + FILTER_BITS - r0))
 
@@ -92,7 +82,6 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
   assert(IMPLIES(do_average, is_compound));
   conv_params.is_compound = is_compound;
   conv_params.round_0 = ROUND0_BITS;
-#if CONFIG_LOWPRECISION_BLEND
   conv_params.round_1 = is_compound ? COMPOUND_ROUND1_BITS
                                     : 2 * FILTER_BITS - conv_params.round_0;
   const int intbufrange = bd + FILTER_BITS - conv_params.round_0 + 2;
@@ -101,10 +90,6 @@ static INLINE ConvolveParams get_conv_params_no_round(int ref, int do_average,
     conv_params.round_0 += intbufrange - 16;
     if (!is_compound) conv_params.round_1 -= intbufrange - 16;
   }
-#else
-  (void)bd;
-  conv_params.round_1 = 0;
-#endif  // CONFIG_LOWPRECISION_BLEND
   // TODO(yunqing): The following dst should only be valid while
   // is_compound = 1;
   conv_params.dst = dst;
