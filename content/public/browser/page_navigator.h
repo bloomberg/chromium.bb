@@ -113,6 +113,10 @@ struct CONTENT_EXPORT OpenURLParams {
   // that attribute.
   base::Optional<std::string> suggested_filename;
 
+  // Indicates that the navigation should happen in an app window if
+  // possible, i.e. if an app for the URL is installed.
+  bool open_app_window_if_possible;
+
  private:
   OpenURLParams();
 };

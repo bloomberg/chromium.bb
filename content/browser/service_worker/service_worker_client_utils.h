@@ -45,7 +45,11 @@ void FocusWindowClient(ServiceWorkerProviderHost* provider_host,
                        ClientCallback callback);
 
 // Opens a new window and navigates it to |url|. |callback| is called with the
-// window's client information on completion.
+// window's client information on completion. If |type| is NEW_TAB_WINDOW, we
+// will open a new app window, if there is an app installed that has |url| in
+// its scope. What an "installed app" is depends on the embedder of content. In
+// Chrome's case, it is an installed Progressive Web App. If there is no such
+// app, we will open a new foreground tab instead.
 void OpenWindow(const GURL& url,
                 const GURL& script_url,
                 int worker_process_id,

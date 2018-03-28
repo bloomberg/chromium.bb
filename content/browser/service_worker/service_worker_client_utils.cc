@@ -230,6 +230,7 @@ void OpenWindowOnUI(
           ? WindowOpenDisposition::NEW_POPUP
           : WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui::PAGE_TRANSITION_AUTO_TOPLEVEL, true /* is_renderer_initiated */);
+  params.open_app_window_if_possible = type == WindowType::NEW_TAB_WINDOW;
 
   GetContentClient()->browser()->OpenURL(
       browser_context, params,
