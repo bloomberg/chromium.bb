@@ -76,7 +76,6 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "ash/shell.h"
 #include "chromeos/chromeos_switches.h"
 #endif
 

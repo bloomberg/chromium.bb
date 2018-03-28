@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "ash/public/cpp/scale_utility.h"
-#include "ash/shell.h"
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/memory/singleton.h"
