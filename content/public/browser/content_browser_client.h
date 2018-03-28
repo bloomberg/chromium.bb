@@ -1032,6 +1032,14 @@ class CONTENT_EXPORT ContentBrowserClient {
 
 #if defined(OS_ANDROID)
   // Only used by Android WebView.
+  // Returns:
+  //   true  - The check was successfully performed without throwing a
+  //           Java exception. |*ignore_navigation| is set to the
+  //           result of the check in this case.
+  //   false - A Java exception was thrown. It is no longer safe to
+  //           make JNI calls, because of the uncleared exception.
+  //           Callers should return to the message loop as soon as
+  //           possible, so that the exception can be rethrown.
   virtual bool ShouldOverrideUrlLoading(int frame_tree_node_id,
                                         bool browser_initiated,
                                         const GURL& gurl,
@@ -1039,7 +1047,8 @@ class CONTENT_EXPORT ContentBrowserClient {
                                         bool has_user_gesture,
                                         bool is_redirect,
                                         bool is_main_frame,
-                                        ui::PageTransition transition);
+                                        ui::PageTransition transition,
+                                        bool* ignore_navigation);
 #endif
 
   // Called on IO or UI thread to determine whether or not to allow load and
