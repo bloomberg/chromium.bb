@@ -6,23 +6,41 @@
 <script src="../../../external/wpt/bluetooth/resources/bluetooth-helpers.js"></script>
 <script>
 'use strict';
-bluetooth_test(() => {
-  setBluetoothManualChooser(true);
+const test_desc = 'The chooser should display newly detected devices.';
+let fake_central, fake_chooser;
 
-  let requestDevicePromise =
-    setBluetoothFakeAdapter('DeviceEventAdapter')
-      .then(() => requestDeviceWithTrustedClick({
-        filters: [{services: ['glucose']}]}));
-  return getBluetoothManualChooserEvents(4).then(events => {
-    assert_equals(events[0], 'chooser-opened(file://)');
-    assert_equals(events[1], 'discovering');
-    let idsByName = new AddDeviceEventSet();
-    idsByName.assert_add_device_event(events[2]);
-    assert_true(idsByName.has('New Glucose Device'));
-    assert_equals(events[3], 'discovery-idle');
-    sendBluetoothManualChooserEvent(
-      'selected', idsByName.get('New Glucose Device'));
-    return requestDevicePromise;
-  });
-});
+bluetooth_test(() => navigator.bluetooth.test.simulateCentral({
+  state: 'powered-on',
+})
+    .then(_ => fake_central = _)
+    .then(() => navigator.bluetooth.test.getManualChooser())
+    .then(_ => fake_chooser = _)
+    .then(() => {
+      // 1. Open the chooser.
+      let requestDevicePromise = requestDeviceWithTrustedClick({
+        filters: [{services: ['health_thermometer']}]
+      });
+
+      // We can only simulate advertisements after the chooser is opened and a
+      // scan is active. There are currently no events to signal that the
+      // chooser is opened , so we wait a second before we try to simulate an
+      // advertisement.
+      // TODO(https://crbug.com/719827): Once the chooser can send events,
+      // replace this with a promise that resolves when the chooser sends the
+      // 'chooser-opened' and 'discovering' events.
+      // 2. Send the advertisement packet to central.
+      setTimeout(() => fake_central.simulateAdvertisementReceived(
+          health_thermometer_ad_packet)
+          // 3. Select the device on the chooser.
+          .then(fake_peripheral => fake_chooser.selectPeripheral(
+              fake_peripheral)),
+          1000);
+
+      return requestDevicePromise;
+    })
+    // 4. Check that the device and advertisement packet have the same name.
+    .then(device => assert_equals(
+        device.name,
+        health_thermometer_ad_packet.scanRecord.name)),
+    test_desc);
 </script>
