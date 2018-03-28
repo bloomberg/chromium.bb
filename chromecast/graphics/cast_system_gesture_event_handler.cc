@@ -18,11 +18,11 @@ namespace {
 
 // The number of pixels from the very left or right of the screen to consider as
 // a valid origin for the left or right swipe gesture.
-constexpr int kSideGestureStartWidth = 10;
+constexpr int kSideGestureStartWidth = 35;
 
 // The number of pixels from the very top or bottom of the screen to consider as
 // a valid origin for the top or bottom swipe gesture.
-constexpr int kSideGestureStartHeight = 10;
+constexpr int kSideGestureStartHeight = 35;
 
 }  // namespace
 
