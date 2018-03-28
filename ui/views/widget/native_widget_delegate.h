@@ -56,7 +56,8 @@ class VIEWS_EXPORT NativeWidgetDelegate {
   virtual bool IsAlwaysRenderAsActive() const = 0;
 
   // Called when the activation state of a window has changed.
-  virtual void OnNativeWidgetActivationChanged(bool active) = 0;
+  // Returns true if this event should be handled.
+  virtual bool OnNativeWidgetActivationChanged(bool active) = 0;
 
   // Called when native focus moves from one native view to another.
   virtual void OnNativeFocus() = 0;

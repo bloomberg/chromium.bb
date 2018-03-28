@@ -348,7 +348,8 @@ void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
 }
 
 void DesktopNativeWidgetAura::HandleActivationChanged(bool active) {
-  native_widget_delegate_->OnNativeWidgetActivationChanged(active);
+  if (!native_widget_delegate_->OnNativeWidgetActivationChanged(active))
+    return;
   wm::ActivationClient* activation_client =
       wm::GetActivationClient(host_->window());
   if (!activation_client)

@@ -544,6 +544,10 @@ jumbo_static_library("browsertest_support") {
     deps += [ "//content/public/browser" ]
   }
 
+  if (use_aura && toolkit_views) {
+    deps += [ "//ui/views" ]
+  }
+
   configs += [ "//v8:external_startup_data" ]
 }
 

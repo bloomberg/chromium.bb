@@ -84,6 +84,9 @@ void NotifyCaretBoundsChanged(ui::InputMethod* input_method) {
 
 }  // namespace
 
+// static
+bool Widget::g_disable_activation_change_handling_ = false;
+
 // A default implementation of WidgetDelegate, used by Widget when no
 // WidgetDelegate is supplied.
 class DefaultWidgetDelegate : public WidgetDelegate {
@@ -1033,7 +1036,10 @@ bool Widget::IsAlwaysRenderAsActive() const {
   return always_render_as_active_;
 }
 
-void Widget::OnNativeWidgetActivationChanged(bool active) {
+bool Widget::OnNativeWidgetActivationChanged(bool active) {
+  if (g_disable_activation_change_handling_)
+    return false;
+
   // On windows we may end up here before we've completed initialization (from
   // an WM_NCACTIVATE). If that happens the WidgetDelegate likely doesn't know
   // the Widget and will crash attempting to access it.
@@ -1045,6 +1051,8 @@ void Widget::OnNativeWidgetActivationChanged(bool active) {
 
   if (non_client_view())
     non_client_view()->frame_view()->ActivationChanged(active);
+
+  return true;
 }
 
 void Widget::OnNativeFocus() {

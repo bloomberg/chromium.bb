@@ -23,4 +23,7 @@ specific_include_rules = {
     "+third_party/iaccessible2",
     "+ui/base/resource/resource_bundle.h",
   ],
+  "content_browser_test.cc": [
+    "+ui/views/test/widget_test_api.h"
+  ],
 }

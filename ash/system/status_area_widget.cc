@@ -191,10 +191,12 @@ const ui::NativeTheme* StatusAreaWidget::GetNativeTheme() const {
   return ui::NativeThemeDarkAura::instance();
 }
 
-void StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
-  Widget::OnNativeWidgetActivationChanged(active);
+bool StatusAreaWidget::OnNativeWidgetActivationChanged(bool active) {
+  if (!Widget::OnNativeWidgetActivationChanged(active))
+    return false;
   if (active)
     status_area_widget_delegate_->SetPaneFocusAndFocusDefault();
+  return true;
 }
 
 void StatusAreaWidget::UpdateShelfItemBackground(SkColor color) {
