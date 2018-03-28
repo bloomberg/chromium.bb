@@ -230,6 +230,10 @@ void HTMLSlotElement::AppendDistributedNodesFrom(const HTMLSlotElement& other) {
 
 void HTMLSlotElement::ClearAssignedNodes() {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+  // TODO(hayato): Avoid uncondional LazyReattach
+  for (const auto& node : assigned_nodes_)
+    node->LazyReattachIfAttached();
+
   assigned_nodes_.clear();
 }
 

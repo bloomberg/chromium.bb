@@ -9,6 +9,7 @@
 #include "core/dom/NodeTraversal.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/V0InsertionPoint.h"
+#include "core/dom/ng/slot_assignment_engine.h"
 #include "core/html/HTMLDetailsElement.h"
 #include "core/html/HTMLSlotElement.h"
 #include "core/html/forms/HTMLOptGroupElement.h"
@@ -203,6 +204,15 @@ SlotAssignment::SlotAssignment(ShadowRoot& owner)
   DCHECK(owner.IsV1());
 }
 
+void SlotAssignment::SetNeedsAssignmentRecalc() {
+  DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
+  needs_assignment_recalc_ = true;
+  if (owner_->isConnected()) {
+    owner_->GetDocument().GetSlotAssignmentEngine().AddShadowRootNeedingRecalc(
+        *owner_);
+  }
+}
+
 void SlotAssignment::RecalcAssignmentNg() {
   DCHECK(RuntimeEnabledFeatures::IncrementalShadowDOMEnabled());
 
@@ -227,6 +237,8 @@ void SlotAssignment::RecalcAssignmentNg() {
   for (Node& child : NodeTraversal::ChildrenOf(owner_->host())) {
     if (!child.IsSlotable())
       continue;
+    // TODO(hayato): Avoid unconditional LazyReattach
+    child.LazyReattachIfAttached();
 
     HTMLSlotElement* slot = nullptr;
     if (!is_user_agent) {
@@ -241,6 +253,18 @@ void SlotAssignment::RecalcAssignmentNg() {
 
     if (slot)
       slot->AppendAssignedNode(child);
+  }
+
+  // TODO(hayato): Avoid unconditional LazyReattach
+  for (Member<HTMLSlotElement> slot : Slots()) {
+    for (Node& child : NodeTraversal::ChildrenOf(*slot))
+      child.LazyReattachIfAttached();
+  }
+
+  if (owner_->isConnected()) {
+    owner_->GetDocument()
+        .GetSlotAssignmentEngine()
+        .RemoveShadowRootNeedingRecalc(*owner_);
   }
 }
 

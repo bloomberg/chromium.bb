@@ -38,6 +38,7 @@
 #include "core/dom/Text.h"
 #include "core/dom/V0InsertionPoint.h"
 #include "core/dom/WhitespaceAttacher.h"
+#include "core/dom/ng/slot_assignment_engine.h"
 #include "core/dom/trustedtypes/TrustedHTML.h"
 #include "core/editing/serializers/Serialization.h"
 #include "core/html/HTMLContentElement.h"
@@ -193,6 +194,9 @@ Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
   if (!insertion_point->isConnected())
     return kInsertionDone;
 
+  if (RuntimeEnabledFeatures::IncrementalShadowDOMEnabled())
+    GetDocument().GetSlotAssignmentEngine().Connected(*this);
+
   // FIXME: When parsing <video controls>, insertedInto() is called many times
   // without invoking removedFrom.  For now, we check
   // m_registeredWithParentShadowroot. We would like to
@@ -211,6 +215,8 @@ Node::InsertionNotificationRequest ShadowRoot::InsertedInto(
 
 void ShadowRoot::RemovedFrom(ContainerNode* insertion_point) {
   if (insertion_point->isConnected()) {
+    if (NeedsSlotAssignmentRecalc())
+      GetDocument().GetSlotAssignmentEngine().Disconnected(*this);
     GetDocument().GetStyleEngine().ShadowRootRemovedFromDocument(this);
     if (registered_with_parent_shadow_root_) {
       ShadowRoot* root = host().ContainingShadowRoot();
@@ -235,6 +241,10 @@ void ShadowRoot::SetNeedsAssignmentRecalc() {
   if (!slot_assignment_)
     return;
   return slot_assignment_->SetNeedsAssignmentRecalc();
+}
+
+bool ShadowRoot::NeedsSlotAssignmentRecalc() const {
+  return slot_assignment_ && slot_assignment_->NeedsAssignmentRecalc();
 }
 
 void ShadowRoot::ChildrenChanged(const ChildrenChange& change) {

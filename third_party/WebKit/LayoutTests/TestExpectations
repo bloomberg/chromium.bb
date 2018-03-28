@@ -524,35 +524,7 @@ crbug.com/635619 virtual/layout_ng/external/wpt/css/CSS2/positioning/position-re
 
 # ====== IncrementalShadowDOM-only failures from here ======
 
-crbug.com/822679 virtual/incremental-shadow-dom/external/wpt/css/css-scoping/shadow-fallback-dynamic-002.html [ Crash Failure ]
-crbug.com/822679 virtual/incremental-shadow-dom/external/wpt/css/css-scoping/shadow-fallback-dynamic-003.html [ Crash Failure ]
-crbug.com/822679 virtual/incremental-shadow-dom/external/wpt/css/css-scoping/shadow-fallback-dynamic-005.html [ Crash Failure ]
-
 crbug.com/776656 virtual/incremental-shadow-dom/external/wpt/shadow-dom/untriaged/styles/test-003.html [ Failure ]
-
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-1-and-click.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-1.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-10-and-click.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-10.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-2-and-click.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-2.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-3-and-click.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-3.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-5.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-6-and-click.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-6.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-7-and-click.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-7.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-8-and-click.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-add-summary-8.html [ Crash Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-remove-summary-1-and-click.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-remove-summary-1.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-remove-summary-2-and-click.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-remove-summary-2.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-remove-summary-4-and-click.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-remove-summary-4.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-remove-summary-5-and-click.html [ Failure ]
-crbug.com/776656 virtual/incremental-shadow-dom/html/details_summary/details-remove-summary-5.html [ Failure ]
 
 # ====== IncrementalShadowDOM-only failures until here ======
 
@@ -1726,7 +1698,6 @@ crbug.com/626703 external/wpt/css/css-transitions/transition-property-025.html [
 crbug.com/626703 external/wpt/css/css-transitions/transition-property-013.html [ Skip ]
 crbug.com/626703 [ Mac10.11 ] external/wpt/payment-request/show-method-postmessage-manual.https.html [ Skip ]
 crbug.com/626703 [ Linux Mac10.10 Mac10.12 Mac10.13 Retina Win ] external/wpt/payment-request/show-method-postmessage-manual.https.html [ Skip ]
-crbug.com/626703 virtual/incremental-shadow-dom/external/wpt/css/css-scoping/shadow-fallback-dynamic-001.html [ Failure ]
 crbug.com/626703 [ Android ] virtual/media-gpu-accelerated/external/wpt/media-source/mediasource-config-change-mp4-av-framesize.html [ Crash ]
 crbug.com/626703 external/wpt/payment-request/payment-request-show-method-manual.https.html [ Skip ]
 crbug.com/626703 external/wpt/payment-request/payment-request-abort-method-manual.https.html [ Skip ]

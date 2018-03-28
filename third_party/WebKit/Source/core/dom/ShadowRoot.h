@@ -110,6 +110,7 @@ class CORE_EXPORT ShadowRoot final : public DocumentFragment, public TreeScope {
   void RemovedFrom(ContainerNode*) override;
 
   void SetNeedsAssignmentRecalc();
+  bool NeedsSlotAssignmentRecalc() const;
 
   ShadowRootV0& V0() const;
 
