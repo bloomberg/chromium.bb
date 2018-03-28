@@ -35,11 +35,14 @@ class CancellationHelper {
     decoder_->Decode(buffer, decode_cb);
   }
 
-  void Reset() {
+  void Reset(const base::Closure& reset_cb) {
     // OffloadableVideoDecoders are required to have a synchronous Reset(), so
-    // we don't need to wait for the Reset to complete.
+    // we don't need to wait for the Reset to complete. Despite this, we don't
+    // want to run |reset_cb| before we've reset the cancellation flag or the
+    // client may end up issuing another Reset() before this code runs.
     decoder_->Reset(base::DoNothing());
     cancellation_flag_.reset(new base::AtomicFlag());
+    reset_cb.Run();
   }
 
   OffloadableVideoDecoder* decoder() const { return decoder_.get(); }
@@ -170,17 +173,14 @@ void OffloadingVideoDecoder::Reset(const base::Closure& reset_cb) {
 
   base::Closure bound_reset_cb = BindToCurrentLoop(reset_cb);
   if (!offload_task_runner_) {
-    helper_->Reset();
+    helper_->Reset(bound_reset_cb);
   } else {
     helper_->Cancel();
     offload_task_runner_->PostTask(
-        FROM_HERE, base::BindOnce(&CancellationHelper::Reset,
-                                  base::Unretained(helper_.get())));
+        FROM_HERE,
+        base::BindOnce(&CancellationHelper::Reset,
+                       base::Unretained(helper_.get()), bound_reset_cb));
   }
-
-  // No need to wait for this to complete since all offloadable decoders are
-  // required to have a synchronous Reset().
-  bound_reset_cb.Run();
 }
 
 int OffloadingVideoDecoder::GetMaxDecodeRequests() const {
