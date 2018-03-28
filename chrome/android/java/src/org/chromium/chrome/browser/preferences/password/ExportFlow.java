@@ -10,12 +10,10 @@ import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.support.annotation.IntDef;
 import android.support.annotation.Nullable;
 import android.support.v7.app.AlertDialog;
-import android.text.TextUtils;
 
 import org.chromium.base.ContentUriUtils;
 import org.chromium.base.ContextUtils;
@@ -25,9 +23,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.ui.widget.Toast;
 
-import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -40,10 +36,8 @@ import java.util.concurrent.TimeUnit;
  * Internally, the flow is represented by the following calls:
  * (1)  {@link #startExporting}, which triggers both preparing of stored passwords in the background
  *      and reauthentication of the user.
- * (2a) {@link #shareSerializedPasswords}, which is part of the preparation of passwords. It is
- *      invoked when the native code sends the serialised passwords in CSV format. This method
- *      continues with saving that data into a cache file and producing a sharing URI ({@link
- *      mExportFileUri}) for that file.
+ * (2a) {@link #shareSerializedPasswords}, which is the final part of the preparation of passwords
+ *      which otherwise runs in the native code.
  * (2b) {@link #exportAfterReauth} is the user-visible next step after reauthentication. It displays
  *      a warning dialog, requesting the user to confirm that they indeed want to export the
  *      passwords.
@@ -130,9 +124,11 @@ public class ExportFlow {
 
     /**
      * The number of password entries contained in the most recent serialized data for password
-     * export.
+     * export. The null value indicates that serialization has not completed since the last request
+     * (or there was no request at all).
      */
-    private int mEntriesCount;
+    @Nullable
+    private Integer mEntriesCount;
 
     // Histogram values for "PasswordManager.Android.ExportPasswordsProgressBarUsage". Never remove
     // or reuse them, only add new ones if needed (and update PROGRESS_COUNT), to keep past and
@@ -241,7 +237,9 @@ public class ExportFlow {
                 mExportFileUri = Uri.parse(uriString);
             }
         }
-        mEntriesCount = savedInstanceState.getInt(SAVED_STATE_ENTRIES_COUNT);
+        if (savedInstanceState.containsKey(SAVED_STATE_ENTRIES_COUNT)) {
+            mEntriesCount = savedInstanceState.getInt(SAVED_STATE_ENTRIES_COUNT);
+        }
     }
 
     /**
@@ -254,68 +252,22 @@ public class ExportFlow {
     }
 
     /**
-     * An encapsulation of a URI and an error string, used by the processing in
-     * exportPasswordsIntoFile.
+     * A helper method which processes the signal that serialized passwords have been stored in the
+     * temporary file. It produces a sharing URI for that file, logs some metrics and continues the
+     * flow.
      */
-    private static class ExportResult {
-        /** URI representing a successful result. It is invalid when the result is an error.*/
-        public final Uri mUri;
+    private void shareSerializedPasswords() {
+        // Don't display any UI if the user cancelled the export in the meantime.
+        if (mExportState == EXPORT_STATE_INACTIVE) return;
 
-        /** The description of an error result. Null if the result is a success. */
-        @Nullable
-        public final String mError;
+        // Record the time it took to read and serialise the passwords. This
+        // excludes the time to write them into a file, to be consistent with
+        // desktop (where writing is blocked on the user choosing a file
+        // destination).
+        RecordHistogram.recordMediumTimesHistogram("PasswordManager.TimeReadingExportedPasswords",
+                System.currentTimeMillis() - mExportPreparationStart, TimeUnit.MILLISECONDS);
 
-        /** Constructs the successful result: a valid URI and no error. */
-        public ExportResult(Uri uri) {
-            assert uri != null && !uri.equals(Uri.EMPTY);
-            mUri = uri;
-            mError = null;
-        }
-
-        /** Constructs the failed result: an empty URI and a non-empty error string. */
-        public ExportResult(String error) {
-            assert !TextUtils.isEmpty(error);
-            mUri = Uri.EMPTY;
-            mError = error;
-        }
-    }
-
-    /**
-     * A helper method which first fires an {@link AsyncTask} to turn the string with serialized
-     * passwords into a cache file with a shareable URI, and then, depending on success, either
-     * calls the code for firing the share intent or displays an error.
-     * @param serializedPasswords A string with a CSV representation of the user's passwords.
-     */
-    private void shareSerializedPasswords(byte[] serializedPasswords) {
-        AsyncTask<byte[], Void, ExportResult> task = new AsyncTask<byte[], Void, ExportResult>() {
-            @Override
-            protected ExportResult doInBackground(byte[]... serializedPasswords) {
-                assert serializedPasswords.length == 1;
-                // Record the time it took to read and serialise the passwords. This excludes the
-                // time to write them into a file, to be consistent with desktop (where writing is
-                // blocked on the user choosing a file destination).
-                RecordHistogram.recordMediumTimesHistogram(
-                        "PasswordManager.TimeReadingExportedPasswords",
-                        System.currentTimeMillis() - mExportPreparationStart,
-                        TimeUnit.MILLISECONDS);
-                return exportPasswordsIntoFile(serializedPasswords[0]);
-            }
-
-            @Override
-            protected void onPostExecute(ExportResult result) {
-                // Don't display any UI if the user cancelled the export in the meantime.
-                if (mExportState == EXPORT_STATE_INACTIVE) return;
-
-                if (result.mError != null) {
-                    showExportErrorAndAbort(R.string.save_password_preferences_export_tips,
-                            result.mError, R.string.try_again, EXPORT_RESULT_WRITE_FAILED);
-                } else {
-                    mExportFileUri = result.mUri;
-                    tryExporting();
-                }
-            }
-        };
-        task.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, serializedPasswords);
+        tryExporting();
     }
 
     /** Starts the password export flow.
@@ -333,13 +285,22 @@ public class ExportFlow {
         // fails the reauthentication, the serialised passwords will simply get ignored when
         // they arrive.
         mExportPreparationStart = System.currentTimeMillis();
+
+        String tempFileName = createTempFileName();
+        // Empty string means an error was reported and the flow aborted.
+        if (tempFileName.isEmpty()) return;
+
+        mEntriesCount = null;
         PasswordManagerHandlerProvider.getInstance().getPasswordManagerHandler().serializePasswords(
-                new ByteArrayIntCallback() {
-                    @Override
-                    public void onResult(byte[] byteArray, int number) {
-                        mEntriesCount = number;
-                        shareSerializedPasswords(byteArray);
-                    }
+                tempFileName,
+                (Integer entriesCount)
+                        -> {
+                    mEntriesCount = entriesCount;
+                    shareSerializedPasswords();
+                },
+                (String errorMessage) -> {
+                    showExportErrorAndAbort(R.string.save_password_preferences_export_tips,
+                            errorMessage, R.string.try_again, EXPORT_RESULT_WRITE_FAILED);
                 });
         if (!ReauthenticationManager.isScreenLockSetUp(
                     mDelegate.getActivity().getApplicationContext())) {
@@ -421,7 +382,7 @@ public class ExportFlow {
      */
     private void tryExporting() {
         if (mExportState != EXPORT_STATE_CONFIRMED) return;
-        if (mExportFileUri == null) {
+        if (mEntriesCount == null) {
             // The serialization has not finished. Until this finishes, a progress bar is
             // displayed with an option to cancel the export.
             ProgressBarDialogFragment progressBarDialogFragment = new ProgressBarDialogFragment();
@@ -524,12 +485,12 @@ public class ExportFlow {
     }
 
     /**
-     * This method saves the contents of |serializedPasswords| into a temporary file and returns a
-     * sharing URI for it. In case of failure, returns EMPTY. It should only be run on the
-     * background thread of an AsyncTask, because it does I/O operations.
-     * @param serializedPasswords A byte array with serialized passwords in CSV format
+     * This method returns a name of a temporary file in the cache directory. The name is unique and
+     * {@link File#deleteOnExit} is called on the file. If creating the file name fails, an error is
+     * shown and the export flow aborted. This method also derives a sharing URI from the file name.
+     * @return The name of the temporary file or an empty string on error.
      */
-    private ExportResult exportPasswordsIntoFile(byte[] serializedPasswords) {
+    private String createTempFileName() {
         // First ensure that the PASSWORDS_CACHE_DIR cache directory exists.
         File passwordsDir =
                 new File(ContextUtils.getApplicationContext().getCacheDir() + PASSWORDS_CACHE_DIR);
@@ -540,20 +501,21 @@ public class ExportFlow {
         try {
             tempFile = File.createTempFile("pwd-export", ".csv", passwordsDir);
         } catch (IOException e) {
-            return new ExportResult(e.getMessage());
+            showExportErrorAndAbort(R.string.save_password_preferences_export_tips, e.getMessage(),
+                    R.string.try_again, EXPORT_RESULT_WRITE_FAILED);
+            return "";
         }
         tempFile.deleteOnExit();
-        try (BufferedOutputStream outputStream =
-                        new BufferedOutputStream(new FileOutputStream(tempFile))) {
-            outputStream.write(serializedPasswords);
-        } catch (IOException e) {
-            return new ExportResult(e.getMessage());
-        }
+
         try {
-            return new ExportResult(ContentUriUtils.getContentUriFromFile(tempFile));
+            mExportFileUri = ContentUriUtils.getContentUriFromFile(tempFile);
         } catch (IllegalArgumentException e) {
-            return new ExportResult(e.getMessage());
+            showExportErrorAndAbort(R.string.save_password_preferences_export_tips, e.getMessage(),
+                    R.string.try_again, EXPORT_RESULT_WRITE_FAILED);
+            return "";
         }
+
+        return tempFile.getPath();
     }
 
     /**
@@ -618,7 +580,9 @@ public class ExportFlow {
      */
     public void onSaveInstanceState(Bundle outState) {
         outState.putInt(SAVED_STATE_EXPORT_STATE, mExportState);
-        outState.putInt(SAVED_STATE_ENTRIES_COUNT, mEntriesCount);
+        if (mEntriesCount != null) {
+            outState.putInt(SAVED_STATE_ENTRIES_COUNT, mEntriesCount);
+        }
         if (mExportFileUri != null) {
             outState.putString(SAVED_STATE_EXPORT_FILE_URI, mExportFileUri.toString());
         }
