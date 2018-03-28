@@ -27,9 +27,7 @@ AccountSelectFillData::~AccountSelectFillData() = default;
 
 void AccountSelectFillData::Add(
     const autofill::PasswordFormFillData& form_data) {
-  std::pair<base::string16, base::string16> key(form_data.name,
-                                                form_data.username_field.name);
-  auto iter_ok = forms_.insert(std::make_pair(key, FormInfo()));
+  auto iter_ok = forms_.insert(std::make_pair(form_data.name, FormInfo()));
   FormInfo& form_info = iter_ok.first->second;
   form_info.origin = form_data.origin;
   form_info.action = form_data.action;
@@ -65,19 +63,26 @@ bool AccountSelectFillData::Empty() const {
 
 bool AccountSelectFillData::IsSuggestionsAvailable(
     const base::string16& form_name,
-    const base::string16& field_identifier) const {
-  return GetFormInfo(form_name, field_identifier) != nullptr;
+    const base::string16& field_identifier,
+    bool is_password_field) const {
+  return GetFormInfo(form_name, field_identifier, is_password_field) != nullptr;
 }
 
 std::vector<UsernameAndRealm> AccountSelectFillData::RetrieveSuggestions(
     const base::string16& form_name,
-    const base::string16& field_identifier) const {
-  last_requested_form_ = GetFormInfo(form_name, field_identifier);
+    const base::string16& field_identifier,
+    bool is_password_field) const {
+  last_requested_form_ =
+      GetFormInfo(form_name, field_identifier, is_password_field);
   DCHECK(last_requested_form_);
+  if (is_password_field)
+    last_requested_password_field_ = field_identifier;
+  else
+    last_requested_password_field_.clear();
   std::vector<UsernameAndRealm> result;
-  for (const Credential& credential : credentials_) {
+  for (const Credential& credential : credentials_)
     result.push_back({credential.username, credential.realm});
-  }
+
   return result;
 }
 
@@ -100,17 +105,23 @@ std::unique_ptr<FillData> AccountSelectFillData::GetFillData(
   result->action = last_requested_form_->action;
   result->username_element = last_requested_form_->username_element;
   result->username_value = credential.username;
-  result->password_element = last_requested_form_->password_element;
+  result->password_element = last_requested_password_field_.empty()
+                                 ? last_requested_form_->password_element
+                                 : last_requested_password_field_;
   result->password_value = credential.password;
   return result;
 }
 
 const FormInfo* AccountSelectFillData::GetFormInfo(
     const base::string16& form_name,
-    const base::string16& field_identifier) const {
-  std::pair<base::string16, base::string16> key(form_name, field_identifier);
-  auto it = forms_.find(key);
-  return it == forms_.end() ? nullptr : &it->second;
+    const base::string16& field_identifier,
+    bool is_password_field) const {
+  auto it = forms_.find(form_name);
+  if (it == forms_.end())
+    return nullptr;
+  return is_password_field || it->second.username_element == field_identifier
+             ? &it->second
+             : nullptr;
 }
 
 }  // namespace  password_manager

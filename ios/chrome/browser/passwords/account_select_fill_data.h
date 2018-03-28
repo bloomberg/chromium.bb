@@ -80,13 +80,15 @@ class AccountSelectFillData {
   // Returns whether suggestions are available for field with name
   // |field_name| which is in the form with name |form_name|.
   bool IsSuggestionsAvailable(const base::string16& form_name,
-                              const base::string16& field_identifier) const;
+                              const base::string16& field_identifier,
+                              bool is_password_field) const;
 
   // Returns suggestions for field with name |field_name| which is in the form
   // with name |form_name|.
   std::vector<UsernameAndRealm> RetrieveSuggestions(
       const base::string16& form_name,
-      const base::string16& field_identifier) const;
+      const base::string16& field_identifier,
+      bool is_password_field) const;
 
   // Returns data for password form filling based on |username| chosen by the
   // user.
@@ -97,18 +99,28 @@ class AccountSelectFillData {
  private:
   // Keeps data about all known forms. The key is the pair (form_name, username
   // field_name).
-  std::map<std::pair<base::string16, base::string16>, FormInfo> forms_;
+  std::map<base::string16, FormInfo> forms_;
 
   // Keeps all known credentials.
   std::vector<Credential> credentials_;
 
   // Mutable because it's updated from RetrieveSuggestions, which is logically
   // should be const.
+  // Keeps information about last form that was requested in
+  // RetrieveSuggestions.
   mutable const FormInfo* last_requested_form_ = nullptr;
+  // Keeps id of the last requested field if it was password otherwise the empty
+  // string.
+  mutable base::string16 last_requested_password_field_;
 
-  // Helper method for receiving FormInfo from |forms_| by key lookup.
+  // Returns form information from |forms_| that has form name |form_name|.
+  // If |is_password_field| == false and |field_identifier| is not equal to
+  // form username_element null is returned. If |is_password_field| == true then
+  // |field_identifier| is ignored. That corresponds to the logic, that
+  // suggestions should be shown on any password fields.
   const FormInfo* GetFormInfo(const base::string16& form_name,
-                              const base::string16& field_identifier) const;
+                              const base::string16& field_identifier,
+                              bool is_password_field) const;
 
   DISALLOW_COPY_AND_ASSIGN(AccountSelectFillData);
 };
