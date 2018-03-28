@@ -78,10 +78,6 @@ class ChromeLauncherController
 
   // Returns the single ChromeLauncherController instance.
   static ChromeLauncherController* instance() { return instance_; }
-  // TODO(crbug.com/654622): Remove this when tests are fixed.
-  static void set_instance_for_test(ChromeLauncherController* instance) {
-    instance_ = instance;
-  }
 
   ChromeLauncherController(Profile* profile, ash::ShelfModel* model);
   ~ChromeLauncherController() override;

@@ -333,6 +333,15 @@ void SelectItem(ash::ShelfItemDelegate* delegate) {
                          ash::LAUNCH_FROM_UNKNOWN, base::DoNothing());
 }
 
+// Helper that waits for idle and extracts the bitmap from the last updated item
+// in shelf controller.
+SkBitmap GetLastItemImage(TestShelfController* shelf_controller) {
+  base::RunLoop().RunUntilIdle();
+  const SkBitmap* bitmap = shelf_controller->last_item().image.bitmap();
+  CHECK(bitmap);
+  return *bitmap;
+}
+
 }  // namespace
 
 // A test ChromeLauncherController subclass that uses TestShelfController.
@@ -1985,8 +1994,6 @@ TEST_P(ChromeLauncherControllerMultiProfileWithArcTest, ArcMultiUser) {
   SendListOfArcApps();
 
   InitLauncherController();
-  // TODO(crbug.com/654622): This test breaks with a non-null static instance.
-  ChromeLauncherController::set_instance_for_test(nullptr);
 
   SetLauncherControllerHelper(new TestLauncherControllerHelper);
 
@@ -2354,6 +2361,10 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcAppPinOptOutOptIn) {
 TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
   InitLauncherController();
 
+  TestShelfController* shelf_controller =
+      launcher_controller_->test_shelf_controller();
+  ASSERT_TRUE(shelf_controller);
+
   ArcAppIcon::DisableSafeDecodingForTesting();
 
   // Register fake ARC apps.
@@ -2388,36 +2399,55 @@ TEST_P(ChromeLauncherControllerWithArcTest, ArcCustomAppIcon) {
       model_->GetShelfItemDelegate(ash::ShelfID(arc_app_id));
   ASSERT_TRUE(item_delegate);
 
+  const SkBitmap default_icon = GetLastItemImage(shelf_controller);
+
   // No custom icon set. Acitivating windows should not change icon.
-  EXPECT_FALSE(item_delegate->image_set_by_controller());
   window1->Activate();
-  EXPECT_FALSE(item_delegate->image_set_by_controller());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
+                                         GetLastItemImage(shelf_controller)));
   window2->Activate();
-  EXPECT_FALSE(item_delegate->image_set_by_controller());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
+                                         GetLastItemImage(shelf_controller)));
 
   // Set custom icon on active item. Icon should change to custom.
   arc_test_.app_instance()->SendTaskDescription(2, std::string(), png_data);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_TRUE(item_delegate->image_set_by_controller());
+  const SkBitmap custom_icon = GetLastItemImage(shelf_controller);
+  EXPECT_FALSE(gfx::test::AreBitmapsEqual(default_icon, custom_icon));
 
   // Switch back to the item without custom icon. Icon should be changed to
   // default.
   window1->Activate();
-  EXPECT_FALSE(item_delegate->image_set_by_controller());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
+                                         GetLastItemImage(shelf_controller)));
+
   // Test that setting an invalid icon should not change custom icon.
   arc_test_.app_instance()->SendTaskDescription(1, std::string(), png_data);
-  EXPECT_TRUE(item_delegate->image_set_by_controller());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
+                                         GetLastItemImage(shelf_controller)));
   arc_test_.app_instance()->SendTaskDescription(1, std::string(),
                                                 invalid_png_data);
-  EXPECT_TRUE(item_delegate->image_set_by_controller());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
+                                         GetLastItemImage(shelf_controller)));
 
   // Check window removing with active custom icon. Reseting custom icon of
   // inactive window doesn't reset shelf icon.
   arc_test_.app_instance()->SendTaskDescription(2, std::string(),
                                                 std::string());
-  EXPECT_TRUE(item_delegate->image_set_by_controller());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
+                                         GetLastItemImage(shelf_controller)));
+  // Set custom icon back to validate closing active window later.
+  arc_test_.app_instance()->SendTaskDescription(2, std::string(), png_data);
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
+                                         GetLastItemImage(shelf_controller)));
+
+  // Reseting custom icon of active window resets shelf icon.
+  arc_test_.app_instance()->SendTaskDescription(1, std::string(),
+                                                std::string());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(default_icon,
+                                         GetLastItemImage(shelf_controller)));
   window1->CloseNow();
-  EXPECT_FALSE(item_delegate->image_set_by_controller());
+  EXPECT_TRUE(gfx::test::AreBitmapsEqual(custom_icon,
+                                         GetLastItemImage(shelf_controller)));
 }
 
 // Check that with multi profile V1 apps are properly added / removed from the
@@ -4196,14 +4226,22 @@ TEST_P(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON));
   EXPECT_TRUE(arc::IsArcPlayStoreEnabledForProfile(profile()));
   EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
+
+  ash::ShelfItemDelegate* item_delegate =
+      model_->GetShelfItemDelegate(ash::ShelfID(app_id));
+  ASSERT_TRUE(item_delegate);
   EXPECT_TRUE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
+  EXPECT_FALSE(item_delegate->image_set_by_controller());
 
   std::string window_app_id("org.chromium.arc.1");
   CreateArcWindow(window_app_id);
   arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_default_apps()[0],
                                             std::string());
   EXPECT_TRUE(launcher_controller_->GetItem(ash::ShelfID(app_id)));
+  item_delegate = model_->GetShelfItemDelegate(ash::ShelfID(app_id));
+  ASSERT_TRUE(item_delegate);
   EXPECT_FALSE(launcher_controller_->GetArcDeferredLauncher()->HasApp(app_id));
+  EXPECT_TRUE(item_delegate->image_set_by_controller());
 }
 
 TEST_P(ChromeLauncherControllerArcDefaultAppsTest, PlayStoreDeferredLaunch) {

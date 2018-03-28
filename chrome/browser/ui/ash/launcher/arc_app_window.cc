@@ -5,12 +5,14 @@
 #include "chrome/browser/ui/ash/launcher/arc_app_window.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_icon.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_item_controller.h"
 #include "components/exo/shell_surface_base.h"
 #include "extensions/common/constants.h"
+#include "ui/app_list/app_list_constants.h"
 #include "ui/aura/window.h"
 #include "ui/gfx/codec/png_codec.h"
 #include "ui/gfx/image/image_skia_operations.h"
@@ -20,11 +22,15 @@
 ArcAppWindow::ArcAppWindow(int task_id,
                            const arc::ArcAppShelfId& app_shelf_id,
                            views::Widget* widget,
-                           ArcAppWindowLauncherController* owner)
+                           ArcAppWindowLauncherController* owner,
+                           Profile* profile)
     : task_id_(task_id),
       app_shelf_id_(app_shelf_id),
       widget_(widget),
-      owner_(owner) {}
+      owner_(owner),
+      profile_(profile) {
+  SetDefaultAppIcon();
+}
 
 ArcAppWindow::~ArcAppWindow() {
   ImageDecoder::Cancel(this);
@@ -48,7 +54,8 @@ void ArcAppWindow::SetDescription(
     GetNativeWindow()->SetTitle(base::UTF8ToUTF16(title));
   ImageDecoder::Cancel(this);
   if (unsafe_icon_data_png.empty()) {
-    SetIcon(gfx::ImageSkia());
+    // Reset custom icon. Switch back to default.
+    SetDefaultAppIcon();
     return;
   }
 
@@ -161,6 +168,20 @@ void ArcAppWindow::SetAlwaysOnTop(bool always_on_top) {
   NOTREACHED();
 }
 
+void ArcAppWindow::OnIconUpdated(ArcAppIcon* icon) {
+  SetIcon(icon->image_skia());
+}
+
+void ArcAppWindow::SetDefaultAppIcon() {
+  if (!app_icon_) {
+    app_icon_ = std::make_unique<ArcAppIcon>(
+        profile_, app_shelf_id_.ToString(), app_list::kGridIconDimension, this);
+  }
+  // Apply default image now and in case icon is updated then OnIconUpdated()
+  // will be called additionally.
+  OnIconUpdated(app_icon_.get());
+}
+
 void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
   if (!exo::ShellSurfaceBase::GetMainSurface(GetNativeWindow())) {
     // Support unit tests where we don't have exo system initialized.
@@ -177,6 +198,8 @@ void ArcAppWindow::SetIcon(const gfx::ImageSkia& icon) {
 }
 
 void ArcAppWindow::OnImageDecoded(const SkBitmap& decoded_image) {
+  // Use the custom icon and stop observing updates.
+  app_icon_.reset();
   SetIcon(gfx::ImageSkiaOperations::CreateResizedImage(
       gfx::ImageSkia(gfx::ImageSkiaRep(decoded_image, 1.0f)),
       skia::ImageOperations::RESIZE_BEST,

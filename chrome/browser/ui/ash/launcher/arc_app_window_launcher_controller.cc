@@ -280,7 +280,7 @@ void ArcAppWindowLauncherController::AttachControllerToWindowIfNeeded(
   DCHECK(widget);
   DCHECK(!info->app_window());
   info->set_app_window(std::make_unique<ArcAppWindow>(
-      task_id, info->app_shelf_id(), widget, this));
+      task_id, info->app_shelf_id(), widget, this, observed_profile_));
   info->app_window()->SetDescription(info->title(), info->icon_data_png());
   RegisterApp(info);
   DCHECK(info->app_window()->controller());
