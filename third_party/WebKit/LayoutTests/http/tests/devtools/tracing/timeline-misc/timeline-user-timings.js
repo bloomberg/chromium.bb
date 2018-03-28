@@ -68,14 +68,11 @@
   }
 
   function testEventTree(type) {
+    const flameChart = timeline._flameChart._mainFlameChart;
+    flameChart._selectGroup(flameChart._rawTimelineData.groups.findIndex(group => group.name === 'User Timing'));
     TestRunner.addResult('');
     TestRunner.addResult(type);
     const tree = getTreeView(type);
-    const options = tree._threadSelector.options();
-    TestRunner.addResult('Number of options >= 2: ' + (options.length >= 2));
-    TestRunner.addResult('Option #2 title: ' + options[1].title);
-    tree._currentThreadSetting.set('1');
-
     const rootNode = tree._dataGrid.rootNode();
     for (const node of rootNode.children)
       printEventTree(1, node._profileNode, node._treeView);
