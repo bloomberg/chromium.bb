@@ -402,15 +402,16 @@ std::unique_ptr<UiElement> CreateSnackbar(
 
 std::pair<std::unique_ptr<UiElement>, Prompt*> CreatePrompt(
     UiElementName name,
+    UiElementName backplane_name,
     Model* model,
     int content_message_id,
     const gfx::VectorIcon& icon,
     int primary_button_message_id,
     int secondary_button_message_id,
     const Prompt::PromptCallback& result_callback) {
-  std::unique_ptr<Prompt> prompt = std::make_unique<Prompt>(
-      1024, content_message_id, icon, primary_button_message_id,
-      secondary_button_message_id, result_callback);
+  auto prompt = Create<Prompt>(name, kPhaseForeground, 1024, content_message_id,
+                               icon, primary_button_message_id,
+                               secondary_button_message_id, result_callback);
   auto* prompt_ptr = prompt.get();
   prompt->SetDrawPhase(kPhaseForeground);
   prompt->SetTranslate(0, 0, kPromptShadowOffsetDMM);
@@ -431,7 +432,7 @@ std::pair<std::unique_ptr<UiElement>, Prompt*> CreatePrompt(
 
   // Place an invisible but hittable plane behind the exit prompt, to keep the
   // reticle roughly planar with the content if near content.
-  auto backplane = Create<InvisibleHitTarget>(kNone, kPhaseForeground);
+  auto backplane = Create<InvisibleHitTarget>(backplane_name, kPhaseForeground);
   backplane->SetType(kTypePromptBackplane);
   backplane->SetSize(kBackplaneSize, kBackplaneSize);
   backplane->SetTranslate(0, kPromptVerticalOffsetDMM, 0);
@@ -446,7 +447,7 @@ std::pair<std::unique_ptr<UiElement>, Prompt*> CreatePrompt(
   shadow->AddChild(std::move(prompt));
   backplane->AddChild(std::move(shadow));
 
-  auto scaler = Create<ScaledDepthAdjuster>(name, kPhaseNone, kPromptDistance);
+  auto scaler = Create<ScaledDepthAdjuster>(kNone, kPhaseNone, kPromptDistance);
   scaler->SetType(kTypeScaledDepthAdjuster);
   scaler->AddChild(std::move(backplane));
   scaler->set_contributes_to_parent_bounds(false);
@@ -2599,7 +2600,7 @@ void UiSceneCreator::CreatePrompts() {
       base::Unretained(model_), base::Unretained(browser_));
   // Create audio permission prompt.
   auto prompt = CreatePrompt(
-      kAudioPermissionPrompt, model_,
+      kAudioPermissionPrompt, kAudioPermissionPromptBackplane, model_,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_DESCRIPTION, vector_icons::kMicIcon,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON, prompt_callback);
@@ -2612,7 +2613,7 @@ void UiSceneCreator::CreatePrompts() {
   // Create keyboard update prompt. Note that we re-use the same button texts as
   // the audio permission prompt.
   prompt = CreatePrompt(
-      kUpdateKeyboardPrompt, model_, IDS_VR_UPDATE_KEYBOARD_PROMPT,
+      kUpdateKeyboardPrompt, kNone, model_, IDS_VR_UPDATE_KEYBOARD_PROMPT,
       vector_icons::kInfoOutlineIcon,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_CONTINUE_BUTTON,
       IDS_VR_SHELL_AUDIO_PERMISSION_PROMPT_ABORT_BUTTON, prompt_callback);
@@ -2640,10 +2641,10 @@ void UiSceneCreator::CreatePrompts() {
         model->active_modal_prompt_type = kModalPromptTypeNone;
       },
       base::Unretained(model_), base::Unretained(browser_));
-  prompt =
-      CreatePrompt(kExitPrompt, model_, IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION,
-                   vector_icons::kInfoOutlineIcon, IDS_OK,
-                   IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON, prompt_callback);
+  prompt = CreatePrompt(
+      kExitPrompt, kNone, model_, IDS_VR_SHELL_EXIT_PROMPT_DESCRIPTION,
+      vector_icons::kInfoOutlineIcon, IDS_OK,
+      IDS_VR_SHELL_EXIT_PROMPT_EXIT_VR_BUTTON, prompt_callback);
   VR_BIND_VISIBILITY(
       prompt.first,
       model->active_modal_prompt_type != kModalPromptTypeNone &&

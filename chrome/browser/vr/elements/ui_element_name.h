@@ -103,7 +103,6 @@ enum UiElementName {
   kExitWarningBackground,
   kExitPrompt,
   kAudioPermissionPrompt,
-  kAudioPermissionPromptShadow,
   kAudioPermissionPromptBackplane,
   kPermissionDialogBackplane,
   kWebVrUrlToastTransientParent,
