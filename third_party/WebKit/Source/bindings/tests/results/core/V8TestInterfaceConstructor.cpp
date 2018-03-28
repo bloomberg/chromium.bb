@@ -157,6 +157,7 @@ static void constructor2(const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
     V8SetReturnValue(info, wrapper);
+
     return;
   }
   optionalUSVStringArg = NativeValueTraits<IDLUSVStringBase<kTreatNullAndUndefinedAsNullString>>::NativeValue(info.GetIsolate(), info[7], exceptionState);
@@ -221,6 +222,7 @@ static void constructor3(const v8::FunctionCallbackInfo<v8::Value>& info) {
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructor::wrapperTypeInfo, wrapper);
     V8SetReturnValue(info, wrapper);
+
     return;
   }
   optArg = info[1];
@@ -405,6 +407,7 @@ static void V8TestInterfaceConstructorConstructorCallback(const v8::FunctionCall
     v8::Local<v8::Object> wrapper = info.Holder();
     wrapper = impl->AssociateWithWrapper(info.GetIsolate(), &V8TestInterfaceConstructorConstructor::wrapperTypeInfo, wrapper);
     V8SetReturnValue(info, wrapper);
+
     return;
   }
   optArg = info[1];

@@ -468,6 +468,7 @@ void V8TestInterfacePartial::installV8TestInterfaceTemplate(
   V8DOMConfiguration::InstallConstants(
       isolate, interfaceTemplate, prototypeTemplate,
       V8TestInterfaceConstants, WTF_ARRAY_LENGTH(V8TestInterfaceConstants));
+
   V8DOMConfiguration::InstallMethods(
       isolate, world, instanceTemplate, prototypeTemplate, interfaceTemplate,
       signature, V8TestInterfaceMethods, WTF_ARRAY_LENGTH(V8TestInterfaceMethods));
