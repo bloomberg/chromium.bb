@@ -4109,4 +4109,55 @@ TEST_F(SplitViewWindowSelectorTest, EventsOnOverviewTitleBar) {
   EXPECT_TRUE(wm::IsActiveWindow(window1.get()));
 }
 
+// Test that when splitview mode is active, minimizing one of the snapped window
+// will insert the minimized window back to overview mode if overview mode is
+// active at the moment.
+TEST_F(SplitViewWindowSelectorTest, InsertMinimizedWindowBackToOverview) {
+  const gfx::Rect bounds(400, 400);
+  std::unique_ptr<aura::Window> window1(CreateWindow(bounds));
+  std::unique_ptr<aura::Window> window2(CreateWindow(bounds));
+
+  ToggleOverview();
+
+  const int grid_index = 0;
+  WindowSelectorItem* selector_item1 =
+      GetWindowItemForWindow(grid_index, window1.get());
+  DragWindowTo(selector_item1, gfx::Point(0, 0));
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::LEFT_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  EXPECT_TRUE(IsSelecting());
+
+  // Minimize |window1| will put |window1| back to overview grid.
+  wm::GetWindowState(window1.get())->Minimize();
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(GetWindowItemForWindow(grid_index, window1.get()));
+
+  // Now snap both |window1| and |window2|.
+  selector_item1 = GetWindowItemForWindow(grid_index, window1.get());
+  DragWindowTo(selector_item1, gfx::Point(0, 0));
+  wm::ActivateWindow(window2.get());
+  EXPECT_FALSE(IsSelecting());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::BOTH_SNAPPED);
+  EXPECT_EQ(split_view_controller()->left_window(), window1.get());
+  EXPECT_EQ(split_view_controller()->right_window(), window2.get());
+
+  // Minimize |window1| will open overview and put |window1| to overview grid.
+  wm::GetWindowState(window1.get())->Minimize();
+  EXPECT_TRUE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_EQ(split_view_controller()->state(),
+            SplitViewController::RIGHT_SNAPPED);
+  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(GetWindowItemForWindow(grid_index, window1.get()));
+
+  // Minimize |window2| also put |window2| to overview grid.
+  wm::GetWindowState(window2.get())->Minimize();
+  EXPECT_FALSE(split_view_controller()->IsSplitViewModeActive());
+  EXPECT_TRUE(IsSelecting());
+  EXPECT_TRUE(GetWindowItemForWindow(grid_index, window1.get()));
+  EXPECT_TRUE(GetWindowItemForWindow(grid_index, window2.get()));
+}
+
 }  // namespace ash
