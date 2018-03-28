@@ -8,7 +8,8 @@
 #include "ash/shell.h"
 #include "ash/system/date/date_view.h"
 #include "ash/system/date/system_info_default_view.h"
-#include "ash/system/system_clock_observer.h"
+#include "ash/system/model/clock_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/system_tray.h"
 #include "ash/system/tray/system_tray_notifier.h"
 #include "ash/system/tray/tray_item_view.h"
@@ -19,13 +20,12 @@ TraySystemInfo::TraySystemInfo(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_DATE),
       tray_view_(nullptr),
       default_view_(nullptr),
-      login_status_(LoginStatus::NOT_LOGGED_IN),
-      system_clock_observer_(new SystemClockObserver()) {
-  Shell::Get()->system_tray_notifier()->AddClockObserver(this);
+      login_status_(LoginStatus::NOT_LOGGED_IN) {
+  Shell::Get()->system_tray_model()->clock()->AddObserver(this);
 }
 
 TraySystemInfo::~TraySystemInfo() {
-  Shell::Get()->system_tray_notifier()->RemoveClockObserver(this);
+  Shell::Get()->system_tray_model()->clock()->RemoveObserver(this);
 }
 
 const tray::TimeView* TraySystemInfo::GetTimeTrayForTesting() const {
@@ -58,7 +58,8 @@ views::View* TraySystemInfo::CreateDefaultView(LoginStatus status) {
   // Save the login status we created the view with.
   login_status_ = status;
 
-  OnSystemClockCanSetTimeChanged(system_clock_observer_->can_set_time());
+  OnSystemClockCanSetTimeChanged(
+      Shell::Get()->system_tray_model()->clock()->can_set_time());
   return default_view_;
 }
 

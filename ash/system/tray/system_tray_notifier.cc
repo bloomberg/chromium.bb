@@ -5,7 +5,6 @@
 #include "ash/system/tray/system_tray_notifier.h"
 
 #include "ash/system/bluetooth/bluetooth_observer.h"
-#include "ash/system/date/clock_observer.h"
 #include "ash/system/ime/ime_observer.h"
 #include "ash/system/network/network_observer.h"
 #include "ash/system/network/network_portal_detector_observer.h"
@@ -37,34 +36,6 @@ void SystemTrayNotifier::NotifyRefreshBluetooth() {
 void SystemTrayNotifier::NotifyBluetoothDiscoveringChanged() {
   for (auto& observer : bluetooth_observers_)
     observer.OnBluetoothDiscoveringChanged();
-}
-
-void SystemTrayNotifier::AddClockObserver(ClockObserver* observer) {
-  clock_observers_.AddObserver(observer);
-}
-
-void SystemTrayNotifier::RemoveClockObserver(ClockObserver* observer) {
-  clock_observers_.RemoveObserver(observer);
-}
-
-void SystemTrayNotifier::NotifyRefreshClock() {
-  for (auto& observer : clock_observers_)
-    observer.Refresh();
-}
-
-void SystemTrayNotifier::NotifyDateFormatChanged() {
-  for (auto& observer : clock_observers_)
-    observer.OnDateFormatChanged();
-}
-
-void SystemTrayNotifier::NotifySystemClockTimeUpdated() {
-  for (auto& observer : clock_observers_)
-    observer.OnSystemClockTimeUpdated();
-}
-
-void SystemTrayNotifier::NotifySystemClockCanSetTimeChanged(bool can_set_time) {
-  for (auto& observer : clock_observers_)
-    observer.OnSystemClockCanSetTimeChanged(can_set_time);
 }
 
 void SystemTrayNotifier::AddIMEObserver(IMEObserver* observer) {

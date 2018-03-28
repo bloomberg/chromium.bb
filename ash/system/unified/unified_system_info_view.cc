@@ -9,6 +9,7 @@
 #include "ash/strings/grit/ash_strings.h"
 #include "ash/system/date/clock_observer.h"
 #include "ash/system/enterprise/enterprise_domain_observer.h"
+#include "ash/system/model/clock_model.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/system_tray_model.h"
 #include "ash/system/power/power_status.h"
@@ -70,11 +71,11 @@ DateView::DateView() : label_(new views::Label) {
   label_->SetEnabledColor(kUnifiedMenuTextColor);
   Update();
 
-  Shell::Get()->system_tray_notifier()->AddClockObserver(this);
+  Shell::Get()->system_tray_model()->clock()->AddObserver(this);
 }
 
 DateView::~DateView() {
-  Shell::Get()->system_tray_notifier()->RemoveClockObserver(this);
+  Shell::Get()->system_tray_model()->clock()->RemoveObserver(this);
 }
 
 void DateView::Update() {

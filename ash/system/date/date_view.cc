@@ -6,6 +6,8 @@
 
 #include "ash/shell.h"
 #include "ash/strings/grit/ash_strings.h"
+#include "ash/system/model/clock_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/tray/system_tray_controller.h"
 #include "ash/system/tray/tray_constants.h"
 #include "ash/system/tray/tray_popup_item_style.h"
@@ -83,7 +85,8 @@ void BaseDateTimeView::GetAccessibleNodeData(ui::AXNodeData* node_data) {
 
 BaseDateTimeView::BaseDateTimeView(SystemTrayItem* owner)
     : ActionableView(owner, TrayPopupInkDropStyle::INSET_BOUNDS),
-      hour_type_(Shell::Get()->system_tray_controller()->hour_clock_type()) {
+      hour_type_(
+          Shell::Get()->system_tray_model()->clock()->hour_clock_type()) {
   SetTimer(base::Time::Now());
   SetFocusBehavior(FocusBehavior::NEVER);
 }
@@ -158,7 +161,7 @@ void DateView::SetAction(DateAction action) {
 }
 
 void DateView::UpdateTimeFormat() {
-  hour_type_ = Shell::Get()->system_tray_controller()->hour_clock_type();
+  hour_type_ = Shell::Get()->system_tray_model()->clock()->hour_clock_type();
   UpdateText();
 }
 
@@ -198,7 +201,7 @@ TimeView::TimeView(ClockLayout clock_layout) : BaseDateTimeView(nullptr) {
 TimeView::~TimeView() = default;
 
 void TimeView::UpdateTimeFormat() {
-  hour_type_ = Shell::Get()->system_tray_controller()->hour_clock_type();
+  hour_type_ = Shell::Get()->system_tray_model()->clock()->hour_clock_type();
   UpdateText();
 }
 

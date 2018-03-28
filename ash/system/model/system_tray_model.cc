@@ -4,6 +4,7 @@
 
 #include "ash/system/model/system_tray_model.h"
 
+#include "ash/system/model/clock_model.h"
 #include "ash/system/model/enterprise_domain_model.h"
 #include "ash/system/model/tracing_model.h"
 #include "ash/system/model/update_model.h"
@@ -12,7 +13,8 @@
 namespace ash {
 
 SystemTrayModel::SystemTrayModel()
-    : enterprise_domain_(std::make_unique<EnterpriseDomainModel>()),
+    : clock_(std::make_unique<ClockModel>()),
+      enterprise_domain_(std::make_unique<EnterpriseDomainModel>()),
       tracing_(std::make_unique<TracingModel>()),
       update_model_(std::make_unique<UpdateModel>()) {}
 
@@ -31,7 +33,7 @@ void SystemTrayModel::SetPrimaryTrayVisible(bool visible) {
 }
 
 void SystemTrayModel::SetUse24HourClock(bool use_24_hour) {
-  NOTIMPLEMENTED();
+  clock()->SetUse24HourClock(use_24_hour);
 }
 
 void SystemTrayModel::SetEnterpriseDisplayDomain(

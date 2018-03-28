@@ -32,6 +32,8 @@
 #include "ash/system/ime/tray_ime_chromeos.h"
 #include "ash/system/keyboard_brightness/tray_keyboard_brightness.h"
 #include "ash/system/media_security/multi_profile_media_tray_item.h"
+#include "ash/system/model/clock_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/system/network/tray_network.h"
 #include "ash/system/network/tray_vpn.h"
 #include "ash/system/night_light/tray_night_light.h"
@@ -554,7 +556,7 @@ void SystemTray::UpdateWebNotifications() {
 base::string16 SystemTray::GetAccessibleTimeString(
     const base::Time& now) const {
   base::HourClockType hour_type =
-      Shell::Get()->system_tray_controller()->hour_clock_type();
+      Shell::Get()->system_tray_model()->clock()->hour_clock_type();
   return base::TimeFormatTimeOfDayWithHourClockType(now, hour_type,
                                                     base::kKeepAmPm);
 }

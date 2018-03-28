@@ -11,7 +11,8 @@
 #include "ash/root_window_controller.h"
 #include "ash/session/session_controller.h"
 #include "ash/shell.h"
-#include "ash/system/tray/system_tray_notifier.h"
+#include "ash/system/model/clock_model.h"
+#include "ash/system/model/system_tray_model.h"
 #include "ash/wallpaper/wallpaper_widget_controller.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/lock_state_observer.h"
@@ -286,7 +287,7 @@ void PowerEventObserver::SuspendDone(const base::TimeDelta& sleep_duration) {
   // here: http://crbug.com/692193
   if (Shell::GetAshConfig() != Config::MASH)
     Shell::Get()->display_configurator()->ResumeDisplays();
-  Shell::Get()->system_tray_notifier()->NotifyRefreshClock();
+  Shell::Get()->system_tray_model()->clock()->NotifyRefreshClock();
 
   // If the suspend request was being blocked while waiting for the lock
   // animation to complete, clear the blocker since the suspend has already
