@@ -3038,10 +3038,8 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
                       "mypassword");
 }
 
-// TODO(crbug.com/804398): Flaky.
 // Check that the internals page contains logs from the renderer.
-IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
-                       DISABLED_InternalsPage_Renderer) {
+IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase, InternalsPage_Renderer) {
   // Open the internals page.
   ui_test_utils::NavigateToURLWithDisposition(
       browser(), GURL("chrome://password-manager-internals"),
@@ -3049,22 +3047,27 @@ IN_PROC_BROWSER_TEST_F(PasswordManagerBrowserTestBase,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* internals_web_contents = WebContents();
 
-  // Open some page with a HTML form.
+  // The renderer is supposed to ask whether logging is available. To avoid
+  // race conditions between the answer "Logging is available" arriving from
+  // the browser and actual logging callsites reached in the renderer, open
+  // first an arbitrary page to ensure that the renderer queries the
+  // availability of logging and has enough time to receive the answer.
   ui_test_utils::NavigateToURLWithDisposition(
-      browser(), embedded_test_server()->GetURL("/password/password_form.html"),
+      browser(), embedded_test_server()->GetURL("/password/done.html"),
       WindowOpenDisposition::NEW_FOREGROUND_TAB,
       ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   content::WebContents* forms_web_contents =
       browser()->tab_strip_model()->GetActiveWebContents();
 
-  // The renderer queries the availability of logging on start-up. However, it
-  // can take too long to propagate that message from the browser back to the
-  // renderer. The renderer might have attempted logging in the meantime.
-  // Therefore the page with the form is reloaded to increase the likelihood
-  // that the availability query was answered before the logging during page
-  // load.
+  // Now navigate to another page, containing some forms, so that the renderer
+  // attempts to log. It should be a different page than the current one,
+  // because just reloading the current one sometimes confused the Wait() call
+  // and lead to timeouts (https://crbug.com/804398).
   NavigationObserver observer(forms_web_contents);
-  forms_web_contents->ReloadFocusedFrame(false);
+  ui_test_utils::NavigateToURLWithDisposition(
+      browser(), embedded_test_server()->GetURL("/password/password_form.html"),
+      WindowOpenDisposition::CURRENT_TAB,
+      ui_test_utils::BROWSER_TEST_WAIT_FOR_NAVIGATION);
   observer.Wait();
 
   std::string find_logs =
