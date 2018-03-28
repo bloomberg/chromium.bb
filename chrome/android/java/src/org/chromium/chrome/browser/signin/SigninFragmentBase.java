@@ -4,24 +4,36 @@
 
 package org.chromium.chrome.browser.signin;
 
-import android.annotation.SuppressLint;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.os.SystemClock;
 import android.support.annotation.Nullable;
 import android.support.annotation.StringRes;
 import android.support.v4.app.Fragment;
-import android.support.v7.content.res.AppCompatResources;
+import android.support.v7.app.AlertDialog;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import org.chromium.base.Log;
+import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.base.metrics.RecordUserAction;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.consent_auditor.ConsentAuditorFeature;
+import org.chromium.chrome.browser.externalauth.UserRecoverableErrorHandler;
+import org.chromium.components.signin.AccountManagerDelegateException;
+import org.chromium.components.signin.AccountManagerFacade;
+import org.chromium.components.signin.AccountManagerResult;
+import org.chromium.components.signin.AccountsChangeObserver;
+import org.chromium.components.signin.GmsAvailabilityException;
+import org.chromium.components.signin.GmsJustUpdatedException;
 import org.chromium.ui.text.NoUnderlineClickableSpan;
 import org.chromium.ui.text.SpanApplier;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
 
 /**
  * This fragment implements sign-in screen with account picker and descriptions of signin-related
@@ -37,13 +49,27 @@ public abstract class SigninFragmentBase extends Fragment {
     private static final String ARGUMENT_ACCESS_POINT = "SigninFragmentBase.AccessPoint";
 
     private @SigninAccessPoint int mSigninAccessPoint;
+    // TODO(https://crbug.com/814728): Pass this as Fragment argument.
+    private boolean mAllowAccountSelection = true;
 
     private SigninView mView;
     private ConsentTextTracker mConsentTextTracker;
     private @StringRes int mCancelButtonTextId = R.string.cancel;
-    // TODO(https://crbug.com/814728): Implement account picker and set these variables.
+
+    private boolean mPreselectedAccount;
     private String mSelectedAccountName;
     private boolean mIsDefaultAccountSelected;
+    private AccountsChangeObserver mAccountsChangedObserver;
+    private ProfileDataCache.Observer mProfileDataCacheObserver;
+    private ProfileDataCache mProfileDataCache;
+    private List<String> mAccountNames;
+    private boolean mResumed;
+    // TODO(https://crbug.com/814728): Ignore button clicks if GMS reported an error.
+    private boolean mHasGmsError;
+
+    private UserRecoverableErrorHandler.ModalDialog mGooglePlayServicesUpdateErrorHandler;
+    private AlertDialog mGmsIsUpdatingDialog;
+    private long mGmsIsUpdatingDialogShowTime;
 
     /**
      * Creates an argument bundle to start AccountSigninView from the account selection page.
@@ -53,6 +79,11 @@ public abstract class SigninFragmentBase extends Fragment {
         Bundle result = new Bundle();
         result.putInt(ARGUMENT_ACCESS_POINT, accessPoint);
         return result;
+    }
+
+    protected SigninFragmentBase() {
+        mAccountsChangedObserver = this::triggerUpdateAccounts;
+        mProfileDataCacheObserver = (String accountId) -> updateProfileData();
     }
 
     /**
@@ -86,6 +117,12 @@ public abstract class SigninFragmentBase extends Fragment {
         initAccessPoint(arguments.getInt(ARGUMENT_ACCESS_POINT, -1));
 
         mConsentTextTracker = new ConsentTextTracker(getResources());
+
+        mProfileDataCache = new ProfileDataCache(getActivity(),
+                getResources().getDimensionPixelSize(R.dimen.signin_account_image_size));
+
+        // TODO(https://crbug.com/814728): Disable controls until account is preselected.
+        mPreselectedAccount = false;
     }
 
     private void initAccessPoint(@SigninAccessPoint int accessPoint) {
@@ -103,6 +140,13 @@ public abstract class SigninFragmentBase extends Fragment {
                 || accessPoint == SigninAccessPoint.SIGNIN_PROMO) {
             mCancelButtonTextId = R.string.no_thanks;
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        dismissGmsErrorDialog();
+        dismissGmsUpdatingDialog();
     }
 
     @Override
@@ -125,8 +169,6 @@ public abstract class SigninFragmentBase extends Fragment {
         });
 
         updateConsentText();
-        updateProfileData();
-
         return mView;
     }
 
@@ -162,15 +204,15 @@ public abstract class SigninFragmentBase extends Fragment {
                 });
     }
 
-    // TODO(https://crbug.com/814728): Get real profile data and remove SuppressLint.
-    @SuppressLint("SetTextI18n")
     private void updateProfileData() {
-        Drawable avatar =
-                AppCompatResources.getDrawable(getActivity(), R.drawable.logo_avatar_anonymous);
-        mView.getAccountImageView().setImageDrawable(avatar);
-        mConsentTextTracker.setTextNonRecordable(mView.getAccountNameView(), "John Doe");
+        if (mSelectedAccountName == null) return;
+        DisplayableProfileData profileData =
+                mProfileDataCache.getProfileDataOrDefault(mSelectedAccountName);
+        mView.getAccountImageView().setImageDrawable(profileData.getImage());
         mConsentTextTracker.setTextNonRecordable(
-                mView.getAccountEmailView(), "john.doe@example.com");
+                mView.getAccountNameView(), profileData.getFullNameOrEmail());
+        mConsentTextTracker.setTextNonRecordable(
+                mView.getAccountEmailView(), profileData.getAccountName());
     }
 
     private void showAcceptButton() {
@@ -191,5 +233,136 @@ public abstract class SigninFragmentBase extends Fragment {
     private void recordConsent(TextView confirmationView) {
         mConsentTextTracker.recordConsent(
                 ConsentAuditorFeature.CHROME_SYNC, confirmationView, mView);
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mResumed = true;
+        AccountManagerFacade.get().addObserver(mAccountsChangedObserver);
+        mProfileDataCache.addObserver(mProfileDataCacheObserver);
+        triggerUpdateAccounts();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mResumed = false;
+        mProfileDataCache.removeObserver(mProfileDataCacheObserver);
+        AccountManagerFacade.get().removeObserver(mAccountsChangedObserver);
+    }
+
+    private void selectAccount(String accountName, boolean isDefaultAccount) {
+        mSelectedAccountName = accountName;
+        mIsDefaultAccountSelected = isDefaultAccount;
+        mProfileDataCache.update(Collections.singletonList(mSelectedAccountName));
+        updateProfileData();
+
+        // TODO(https://crbug.com/814728): Update selected account in account picker.
+    }
+
+    private void triggerUpdateAccounts() {
+        AccountManagerFacade.get().getGoogleAccountNames(this::updateAccounts);
+    }
+
+    private void updateAccounts(AccountManagerResult<List<String>> maybeAccountNames) {
+        if (!mResumed) return;
+
+        mAccountNames = getAccountNames(maybeAccountNames);
+        mHasGmsError = mAccountNames == null;
+        if (mAccountNames == null) return;
+
+        if (mAccountNames.isEmpty()) {
+            // TODO(https://crbug.com/814728): Hide account picker and change accept button text.
+            mSelectedAccountName = null;
+            return;
+        }
+
+        if (!mPreselectedAccount) {
+            selectAccount(mAccountNames.get(0), true);
+            mPreselectedAccount = true;
+        }
+
+        if (mSelectedAccountName != null && mAccountNames.contains(mSelectedAccountName)) return;
+
+        // No selected account
+        if (!mAllowAccountSelection) {
+            onSigninRefused();
+            return;
+        }
+        // TODO(https://crbug.com/814728): Cancel ConfirmSyncDataStateMachine.
+
+        selectAccount(mAccountNames.get(0), true);
+        // TODO(https://crbug.com/814728): Show account picker.
+    }
+
+    @Nullable
+    private List<String> getAccountNames(AccountManagerResult<List<String>> maybeAccountNames) {
+        try {
+            List<String> result = maybeAccountNames.get();
+            dismissGmsErrorDialog();
+            dismissGmsUpdatingDialog();
+            return result;
+        } catch (GmsAvailabilityException e) {
+            dismissGmsUpdatingDialog();
+            if (e.isUserResolvableError()) {
+                showGmsErrorDialog(e.getGmsAvailabilityReturnCode());
+            } else {
+                Log.e(TAG, "Unresolvable GmsAvailabilityException.", e);
+            }
+            return null;
+        } catch (GmsJustUpdatedException e) {
+            dismissGmsErrorDialog();
+            showGmsUpdatingDialog();
+            return null;
+        } catch (AccountManagerDelegateException e) {
+            Log.e(TAG, "Unknown exception from AccountManagerFacade.", e);
+            dismissGmsErrorDialog();
+            dismissGmsUpdatingDialog();
+            return null;
+        }
+    }
+
+    private void showGmsErrorDialog(int gmsErrorCode) {
+        if (mGooglePlayServicesUpdateErrorHandler != null
+                && mGooglePlayServicesUpdateErrorHandler.isShowing()) {
+            return;
+        }
+        boolean cancelable = !SigninManager.get().isForceSigninEnabled();
+        mGooglePlayServicesUpdateErrorHandler =
+                new UserRecoverableErrorHandler.ModalDialog(getActivity(), cancelable);
+        mGooglePlayServicesUpdateErrorHandler.handleError(getActivity(), gmsErrorCode);
+    }
+
+    private void showGmsUpdatingDialog() {
+        if (mGmsIsUpdatingDialog != null) {
+            return;
+        }
+        // TODO(https://crbug.com/814728): Use DialogFragment here.
+        mGmsIsUpdatingDialog = new AlertDialog.Builder(getActivity())
+                                       .setCancelable(false)
+                                       .setView(R.layout.updating_gms_progress_view)
+                                       .create();
+        mGmsIsUpdatingDialog.show();
+        mGmsIsUpdatingDialogShowTime = SystemClock.elapsedRealtime();
+    }
+
+    private void dismissGmsErrorDialog() {
+        if (mGooglePlayServicesUpdateErrorHandler == null) {
+            return;
+        }
+        mGooglePlayServicesUpdateErrorHandler.cancelDialog();
+        mGooglePlayServicesUpdateErrorHandler = null;
+    }
+
+    private void dismissGmsUpdatingDialog() {
+        if (mGmsIsUpdatingDialog == null) {
+            return;
+        }
+        mGmsIsUpdatingDialog.dismiss();
+        mGmsIsUpdatingDialog = null;
+        RecordHistogram.recordTimesHistogram("Signin.AndroidGmsUpdatingDialogShownTime",
+                SystemClock.elapsedRealtime() - mGmsIsUpdatingDialogShowTime,
+                TimeUnit.MILLISECONDS);
     }
 }
