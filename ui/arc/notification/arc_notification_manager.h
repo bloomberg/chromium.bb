@@ -65,8 +65,6 @@ class ArcNotificationManager
   void OnNotificationPosted(mojom::ArcNotificationDataPtr data) override;
   void OnNotificationUpdated(mojom::ArcNotificationDataPtr data) override;
   void OnNotificationRemoved(const std::string& key) override;
-  void OnToastPosted(mojom::ArcToastDataPtr data) override;
-  void OnToastCancelled(mojom::ArcToastDataPtr data) override;
 
   // Methods called from ArcNotificationItem:
   void SendNotificationRemovedFromChrome(const std::string& key);
