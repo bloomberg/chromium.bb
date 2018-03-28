@@ -614,7 +614,7 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   const PointerDetails& pointer_details() const { return pointer_details_; }
 
  private:
-  FRIEND_TEST_ALL_PREFIXES(EventTest, DoubleClickRequiresRelease);
+  FRIEND_TEST_ALL_PREFIXES(EventTest, DoubleClickRequiresUniqueTimestamp);
   FRIEND_TEST_ALL_PREFIXES(EventTest, SingleClickRightLeft);
 
   // Returns the repeat count based on the previous mouse click, if it is
@@ -627,12 +627,8 @@ class EVENTS_EXPORT MouseEvent : public LocatedEvent {
   // See description above getter for details.
   int changed_button_flags_;
 
+  // The most recent user-generated MouseEvent, used to detect double clicks.
   static MouseEvent* last_click_event_;
-
-  // We can create a MouseEvent for a native event more than once. We set this
-  // to true when the next event either has a different timestamp or we see a
-  // release signalling that the press (click) event was completed.
-  static bool last_click_complete_;
 
   // Structure for holding pointer details for implementing PointerEvents API.
   PointerDetails pointer_details_;

@@ -88,112 +88,107 @@ TEST(EventTest, ClickCount) {
 
 TEST(EventTest, RepeatedClick) {
   const gfx::Point origin(0, 0);
-  MouseEvent mouse_ev1(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(), 0,
-                       0);
-  MouseEvent mouse_ev2(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(), 0,
-                       0);
-  LocatedEventTestApi test_ev1(&mouse_ev1);
-  LocatedEventTestApi test_ev2(&mouse_ev2);
+  MouseEvent event1(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(), 0, 0);
+  MouseEvent event2(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(), 0, 0);
+  LocatedEventTestApi test_event1(&event1);
+  LocatedEventTestApi test_event2(&event2);
 
   base::TimeTicks start = base::TimeTicks();
   base::TimeTicks soon = start + base::TimeDelta::FromMilliseconds(1);
   base::TimeTicks later = start + base::TimeDelta::FromMilliseconds(1000);
 
-  // Same event.
-  test_ev1.set_location(gfx::Point(0, 0));
-  test_ev2.set_location(gfx::Point(1, 0));
-  test_ev1.set_time_stamp(start);
-  test_ev2.set_time_stamp(start);
-  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev2));
-  MouseEvent mouse_ev3(mouse_ev1);
-  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev3));
+  // Same time stamp (likely the same native event).
+  test_event1.set_location(gfx::Point(0, 0));
+  test_event2.set_location(gfx::Point(1, 0));
+  test_event1.set_time_stamp(start);
+  test_event2.set_time_stamp(start);
+  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(event1, event2));
+  MouseEvent mouse_ev3(event1);
+  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(event1, mouse_ev3));
 
   // Close point.
-  test_ev1.set_location(gfx::Point(0, 0));
-  test_ev2.set_location(gfx::Point(1, 0));
-  test_ev1.set_time_stamp(start);
-  test_ev2.set_time_stamp(soon);
-  EXPECT_TRUE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev2));
+  test_event1.set_location(gfx::Point(0, 0));
+  test_event2.set_location(gfx::Point(1, 0));
+  test_event1.set_time_stamp(start);
+  test_event2.set_time_stamp(soon);
+  EXPECT_TRUE(MouseEvent::IsRepeatedClickEvent(event1, event2));
 
   // Too far.
-  test_ev1.set_location(gfx::Point(0, 0));
-  test_ev2.set_location(gfx::Point(10, 0));
-  test_ev1.set_time_stamp(start);
-  test_ev2.set_time_stamp(soon);
-  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev2));
+  test_event1.set_location(gfx::Point(0, 0));
+  test_event2.set_location(gfx::Point(10, 0));
+  test_event1.set_time_stamp(start);
+  test_event2.set_time_stamp(soon);
+  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(event1, event2));
 
   // Too long a time between clicks.
-  test_ev1.set_location(gfx::Point(0, 0));
-  test_ev2.set_location(gfx::Point(0, 0));
-  test_ev1.set_time_stamp(start);
-  test_ev2.set_time_stamp(later);
-  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(mouse_ev1, mouse_ev2));
+  test_event1.set_location(gfx::Point(0, 0));
+  test_event2.set_location(gfx::Point(0, 0));
+  test_event1.set_time_stamp(start);
+  test_event2.set_time_stamp(later);
+  EXPECT_FALSE(MouseEvent::IsRepeatedClickEvent(event1, event2));
 }
 
-// Tests that an event only increases the click count and gets marked as a
-// double click if a release event was seen for the previous click. This
-// prevents the same PRESSED event from being processed twice:
-// http://crbug.com/389162
-TEST(EventTest, DoubleClickRequiresRelease) {
-  const gfx::Point origin1(0, 0);
-  const gfx::Point origin2(100, 0);
-  std::unique_ptr<MouseEvent> ev;
-  base::TimeTicks start = base::TimeTicks();
-  base::TimeTicks soon = start + base::TimeDelta::FromMilliseconds(1);
+// Tests that re-processing the same mouse press event (detected by timestamp)
+// does not yield a double click event: http://crbug.com/389162
+TEST(EventTest, DoubleClickRequiresUniqueTimestamp) {
+  const gfx::Point point(0, 0);
+  base::TimeTicks time1 = base::TimeTicks();
+  base::TimeTicks time2 = time1 + base::TimeDelta::FromMilliseconds(1);
 
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin1, origin1, EventTimeForNow(),
-                          0, 0));
-  ev->set_time_stamp(start);
-  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin1, origin1, EventTimeForNow(),
-                          0, 0));
-  ev->set_time_stamp(start);
-  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
+  // Re-processing the same press doesn't yield a double-click.
+  MouseEvent event(ET_MOUSE_PRESSED, point, point, time1, 0, 0);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  // Processing a press with the same timestamp doesn't yield a double-click.
+  event = MouseEvent(ET_MOUSE_PRESSED, point, point, time1, 0, 0);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  // Processing a press with a later timestamp does yield a double-click.
+  event = MouseEvent(ET_MOUSE_PRESSED, point, point, time2, 0, 0);
+  EXPECT_EQ(2, MouseEvent::GetRepeatCount(event));
+  MouseEvent::ResetLastClickForTest();
 
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin2, origin2, EventTimeForNow(),
-                          0, 0));
-  ev->set_time_stamp(start);
-  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin2, origin2,
-                          EventTimeForNow(), 0, 0));
-  ev->set_time_stamp(start);
-  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin2, origin2, EventTimeForNow(),
-                          0, 0));
-  ev->set_time_stamp(soon);
-  EXPECT_EQ(2, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin2, origin2,
-                          EventTimeForNow(), 0, 0));
-  ev->set_time_stamp(soon);
-  EXPECT_EQ(2, MouseEvent::GetRepeatCount(*ev));
+  // Test processing a double press and release sequence with one timestamp.
+  event = MouseEvent(ET_MOUSE_PRESSED, point, point, time1, 0, 0);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  event = MouseEvent(ET_MOUSE_RELEASED, point, point, time1, 0, 0);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  event = MouseEvent(ET_MOUSE_PRESSED, point, point, time1, 0, 0);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  event = MouseEvent(ET_MOUSE_RELEASED, point, point, time1, 0, 0);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  MouseEvent::ResetLastClickForTest();
+
+  // Test processing a double press and release sequence with two timestamps.
+  event = MouseEvent(ET_MOUSE_PRESSED, point, point, time1, 0, 0);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  event = MouseEvent(ET_MOUSE_RELEASED, point, point, time1, 0, 0);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  event = MouseEvent(ET_MOUSE_PRESSED, point, point, time2, 0, 0);
+  EXPECT_EQ(2, MouseEvent::GetRepeatCount(event));
+  event = MouseEvent(ET_MOUSE_RELEASED, point, point, time2, 0, 0);
+  EXPECT_EQ(2, MouseEvent::GetRepeatCount(event));
   MouseEvent::ResetLastClickForTest();
 }
 
-// Tests that clicking right and then left clicking does not generate a double
-// click.
+// Tests that right clicking, then left clicking does not yield double clicks.
 TEST(EventTest, SingleClickRightLeft) {
-  const gfx::Point origin(0, 0);
-  std::unique_ptr<MouseEvent> ev;
-  base::TimeTicks start = base::TimeTicks();
-  base::TimeTicks soon = start + base::TimeDelta::FromMilliseconds(1);
+  const gfx::Point point(0, 0);
+  base::TimeTicks time1 = base::TimeTicks();
+  base::TimeTicks time2 = time1 + base::TimeDelta::FromMilliseconds(1);
+  base::TimeTicks time3 = time1 + base::TimeDelta::FromMilliseconds(2);
 
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(),
-                          ui::EF_RIGHT_MOUSE_BUTTON,
-                          ui::EF_RIGHT_MOUSE_BUTTON));
-  ev->set_time_stamp(start);
-  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(),
-                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  ev->set_time_stamp(start);
-  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_RELEASED, origin, origin, EventTimeForNow(),
-                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  ev->set_time_stamp(start);
-  EXPECT_EQ(1, MouseEvent::GetRepeatCount(*ev));
-  ev.reset(new MouseEvent(ET_MOUSE_PRESSED, origin, origin, EventTimeForNow(),
-                          ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON));
-  ev->set_time_stamp(soon);
-  EXPECT_EQ(2, MouseEvent::GetRepeatCount(*ev));
+  MouseEvent event(ET_MOUSE_PRESSED, point, point, time1,
+                   ui::EF_RIGHT_MOUSE_BUTTON, ui::EF_RIGHT_MOUSE_BUTTON);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  event = MouseEvent(ET_MOUSE_PRESSED, point, point, time2,
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  event = MouseEvent(ET_MOUSE_RELEASED, point, point, time2,
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(1, MouseEvent::GetRepeatCount(event));
+  event = MouseEvent(ET_MOUSE_PRESSED, point, point, time3,
+                     ui::EF_LEFT_MOUSE_BUTTON, ui::EF_LEFT_MOUSE_BUTTON);
+  EXPECT_EQ(2, MouseEvent::GetRepeatCount(event));
   MouseEvent::ResetLastClickForTest();
 }
 
