@@ -129,7 +129,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)setDataSource:
     (id<PaymentItemsDisplayViewControllerDataSource>)dataSource {
   _dataSource = dataSource;
-  [_payButton setEnabled:[_dataSource canPay]];
 }
 
 #pragma mark - CollectionViewController methods
@@ -137,6 +136,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)loadModel {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
+
+  [_payButton setEnabled:[_dataSource canPay]];
 
   // Add the total entry.
   [model addSectionWithIdentifier:SectionIdentifierPayment];

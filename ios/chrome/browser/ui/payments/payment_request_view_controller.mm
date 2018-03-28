@@ -160,7 +160,6 @@ typedef NS_ENUM(NSInteger, ItemType) {
 
 - (void)setDataSource:(id<PaymentRequestViewControllerDataSource>)dataSource {
   _dataSource = dataSource;
-  [_payButton setEnabled:[_dataSource canPay]];
 }
 
 - (void)setCancellable:(BOOL)cancellable {
@@ -174,6 +173,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
 - (void)loadModel {
   [super loadModel];
   CollectionViewModel* model = self.collectionViewModel;
+
+  [_payButton setEnabled:[_dataSource canPay]];
 
   // Summary section.
   [model addSectionWithIdentifier:SectionIdentifierSummary];
@@ -381,6 +382,9 @@ typedef NS_ENUM(NSInteger, ItemType) {
     case ItemTypeSummaryPageInfo:
       // Selecting the page info item should not trigger an action.
       break;
+    case ItemTypeSpinner:
+      // Selecting the page info item should not trigger an action.
+      break;
     default:
       NOTREACHED();
       break;
@@ -411,7 +415,8 @@ typedef NS_ENUM(NSInteger, ItemType) {
   // the total so there should not be an ink ripple. The footer and the page
   // info items should also not have a ripple.
   if ((type == ItemTypeSummaryTotal && ![_dataSource hasPaymentItems]) ||
-      type == ItemTypeFooterText || type == ItemTypeSummaryPageInfo) {
+      type == ItemTypeFooterText || type == ItemTypeSummaryPageInfo ||
+      type == ItemTypeSpinner) {
     return YES;
   } else {
     return NO;

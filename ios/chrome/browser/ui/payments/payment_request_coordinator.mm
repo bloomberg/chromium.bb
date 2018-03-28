@@ -188,14 +188,18 @@ requestFullCreditCard:(const autofill::CreditCard&)card
 - (void)updatePaymentDetails:(payments::PaymentDetails)paymentDetails {
   _paymentRequest->UpdatePaymentDetails(paymentDetails);
 
+  // If the view controller is in pending state, set the pending state to false
+  // which causes the entire view to refresh. Return early after that.
+  if (_pending) {
+    [self setPending:false];
+    return;
+  }
+
   [self updatePaymentSummaryItem];
 
-  // If there are no available shipping options, reset the previously selected
-  // shipping address. Otherwise, if a shipping address had been selected, set
-  // it as the selected shipping address.
-  if (_paymentRequest->shipping_options().empty())
-    _paymentRequest->set_selected_shipping_profile(nullptr);
-  else if (_pendingShippingAddress) {
+  // If a shipping address had been selected, and merchant can ship to that
+  // address, set it as the selected shipping address.
+  if (_pendingShippingAddress && !_paymentRequest->shipping_options().empty()) {
     _paymentRequest->set_selected_shipping_profile(_pendingShippingAddress);
   }
   _pendingShippingAddress = nil;

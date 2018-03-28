@@ -540,6 +540,12 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
 }
 
 - (BOOL)handleRequestShow:(const base::DictionaryValue&)message {
+  bool waitForShowPromise;
+  if (!message.GetBoolean("waitForShowPromise", &waitForShowPromise)) {
+    LOG(ERROR) << "JS message parameter 'waitForShowPromise' is missing";
+    return NO;
+  }
+
   std::string errorMessage;
   payments::PaymentRequest* paymentRequest =
       [self paymentRequestFromMessage:message errorMessage:&errorMessage];
@@ -649,6 +655,14 @@ paymentRequestFromMessage:(const base::DictionaryValue&)message
   [_paymentRequestCoordinator setDelegate:self];
 
   [_paymentRequestCoordinator start];
+
+  if (waitForShowPromise) {
+    // Disable the UI and display the spinner.
+    [_paymentRequestCoordinator setPending:waitForShowPromise];
+
+    [self setUnblockEventQueueTimer];
+    [self setUpdateEventTimeoutTimer];
+  }
 
   return YES;
 }

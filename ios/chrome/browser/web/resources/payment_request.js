@@ -171,6 +171,30 @@ var SerializedPaymentResponse;
   /** @const {number} */
   __gCrWeb['paymentRequestManager'].MAX_LIST_SIZE = 1024;
 
+  /** @const {number} */
+  __gCrWeb['paymentRequestManager'].SHOW_PROMISE_TIMEOUT_MS =
+      10000;  // 10 seconds.
+
+  /**
+   * Returns a Promise that either resolves with the result of the passed in
+   * Promise or rejects after the given duration.
+   * @param {number} duration Duration after which the returned promise rejects.
+   * @param {!Promise} promise Promise that must settle in the given duration.
+   * @return {!Promise}
+   */
+  __gCrWeb['paymentRequestManager'].settleOrTimeout = function(
+      duration, promise) {
+    // Create a Promise that rejects in |duration| milliseconds.
+    var timeout = new Promise(function(resolve, reject) {
+      window.setTimeout(function() {
+        reject('Timed out after ' + duration + 'milliseconds.')
+      }, duration);
+    });
+
+    // Return a race between the timeout Promise and the passed in Promise.
+    return Promise.race([promise, timeout]);
+  };
+
   /**
    * Validates a PaymentCurrencyAmount which is used to supply monetary amounts.
    * https://w3c.github.io/payment-request/#dfn-valid-decimal-monetary-value
@@ -695,20 +719,42 @@ var SerializedPaymentResponse;
    */
   __gCrWeb['paymentRequestManager'].updateEvent = null;
 
+
   /**
-   * Handles invocation of updateWith() on the updateEvent object. Updates the
-   * payment details. Throws an error if |detailsOrPromise| is not a valid
-   * instance of window.PaymentDetails or it is a promise that does not fulfill
-   * with a valid one.
+   * Handles invocation of updateWith() on the updateEvent object.
    * @param {!Promise<!window.PaymentDetails>|!window.PaymentDetails}
    *     detailsOrPromise
    * @throws {DOMException}
-   * @suppress {checkTypes} Required for DOMException's constructor.
    */
-  __gCrWeb['paymentRequestManager'].updateWith = function(detailsOrPromise) {
+  __gCrWeb['paymentRequestManager'].updateEventUpdateWith = function(
+      detailsOrPromise) {
     if (!this || this != __gCrWeb['paymentRequestManager'].updateEvent)
       return;
 
+    // if |detailsOrPromise| is not an instance of a Promise, wrap it in a
+    // Promise that fulfills with |detailsOrPromise|.
+    if (!detailsOrPromise || !(detailsOrPromise.then instanceof Function) ||
+        !(detailsOrPromise.catch instanceof Function)) {
+      detailsOrPromise = Promise.resolve(detailsOrPromise);
+    }
+
+    __gCrWeb['paymentRequestManager']
+        .updateWith(detailsOrPromise)
+        .then(function() {
+          __gCrWeb['paymentRequestManager'].updateEvent = null;
+        });
+  };
+
+  /**
+   * Updates the payment details. Throws an error if |detailsPromise| is not a
+   * valid instance of window.PaymentDetails.
+   * @param {!Promise<!window.PaymentDetails>} detailsPromise
+   * @return {!Promise} A completion Promise that is always resolved whether
+   *     detailsPromise is resolved or rejected.
+   * @throws {DOMException}
+   * @suppress {checkTypes} Required for DOMException's constructor.
+   */
+  __gCrWeb['paymentRequestManager'].updateWith = function(detailsPromise) {
     if (!__gCrWeb['paymentRequestManager'].pendingRequest ||
         __gCrWeb['paymentRequestManager'].pendingRequest.state !=
             PaymentRequestState.INTERACTIVE) {
@@ -717,7 +763,7 @@ var SerializedPaymentResponse;
 
     if (__gCrWeb['paymentRequestManager'].pendingRequest.updating) {
       throw new DOMException(
-          'Failed to execute \'updateWith\' on \'PaymentRequestUpdateEvent\'' +
+          'Failed to update PaymentRequest details' +
               ': \'Cannot update details twice',
           'InvalidStateError');
     }
@@ -729,14 +775,7 @@ var SerializedPaymentResponse;
     };
     __gCrWeb.message.invokeOnHost(message);
 
-    // if |detailsOrPromise| is not an instance of a Promise, wrap it in a
-    // Promise that fulfills with |detailsOrPromise|.
-    if (!detailsOrPromise || !(detailsOrPromise.then instanceof Function) ||
-        !(detailsOrPromise.catch instanceof Function)) {
-      detailsOrPromise = Promise.resolve(detailsOrPromise);
-    }
-
-    detailsOrPromise
+    return detailsPromise
         .then(function(paymentDetails) {
           if (!paymentDetails)
             throw new TypeError(
@@ -755,15 +794,12 @@ var SerializedPaymentResponse;
           __gCrWeb.message.invokeOnHost(message);
 
           __gCrWeb['paymentRequestManager'].pendingRequest.updating = false;
-          __gCrWeb['paymentRequestManager'].updateEvent = null;
         })
         .catch(function() {
           var message = {
             'command': 'paymentRequest.requestAbort',
           };
           __gCrWeb.message.invokeOnHost(message);
-
-          __gCrWeb['paymentRequestManager'].updateEvent = null;
         });
   };
 
@@ -920,8 +956,9 @@ var SerializedPaymentResponse;
     __gCrWeb['paymentRequestManager'].updateEvent = new Event(
         'shippingoptionchange', {'bubbles': true, 'cancelable': false});
 
-    Object.defineProperty(__gCrWeb['paymentRequestManager'].updateEvent,
-        'updateWith', {value: __gCrWeb['paymentRequestManager'].updateWith});
+    Object.defineProperty(
+        __gCrWeb['paymentRequestManager'].updateEvent, 'updateWith',
+        {value: __gCrWeb['paymentRequestManager'].updateEventUpdateWith});
 
     // setTimeout() is used in order to return immediately. Otherwise the
     // dispatchEvent call waits for all event handlers to return, which could
@@ -951,8 +988,9 @@ var SerializedPaymentResponse;
     __gCrWeb['paymentRequestManager'].updateEvent = new Event(
         'shippingaddresschange', {'bubbles': true, 'cancelable': false});
 
-    Object.defineProperty(__gCrWeb['paymentRequestManager'].updateEvent,
-        'updateWith', {value: __gCrWeb['paymentRequestManager'].updateWith});
+    Object.defineProperty(
+        __gCrWeb['paymentRequestManager'].updateEvent, 'updateWith',
+        {value: __gCrWeb['paymentRequestManager'].updateEventUpdateWith});
 
     // setTimeout() is used in order to return immediately. Otherwise the
     // dispatchEvent call waits for all event handlers to return, which could
@@ -1156,12 +1194,16 @@ PaymentRequest.prototype.shippingOption = null;
 PaymentRequest.prototype.shippingType = null;
 
 /**
- * Presents the PaymentRequest UI to the user.
+ * Presents the PaymentRequest UI to the user. If |opt_detailsPromise| is a
+ * valid Promise, disables the UI and waits until the Promise settles. If the
+ * Promise is resolved with valid payment details, enables the UI with the new
+ * details. Otherwise, the request is aborted.
+ * @param {Promise<!window.PaymentDetails>=} opt_detailsPromise
  * @return {!Promise<PaymentResponse>} A promise to notify the caller
  *     whether the user accepted or rejected the request.
  * @suppress {checkTypes} Required for DOMException's constructor.
  */
-PaymentRequest.prototype.show = function() {
+PaymentRequest.prototype.show = function(opt_detailsPromise) {
   if (!(this instanceof PaymentRequest)) {
     return Promise.reject(new DOMException(
         'show() must be called on an instance of PaymentRequest.',
@@ -1184,12 +1226,32 @@ PaymentRequest.prototype.show = function() {
       new __gCrWeb.PromiseResolver();
   this.state = PaymentRequestState.INTERACTIVE;
 
+  var waitForShowPromise = false;
+
+  // if |opt_detailsPromise| is an instance of Promise, the UI should be
+  // disabled until the Promise is settled.
+  if (opt_detailsPromise && opt_detailsPromise.then instanceof Function &&
+      opt_detailsPromise.catch instanceof Function) {
+    waitForShowPromise = true;
+  }
+
   var message = {
     'command': 'paymentRequest.requestShow',
     'payment_request':
         __gCrWeb['paymentRequestManager'].serializePaymentRequest(this),
+    'waitForShowPromise': waitForShowPromise,
   };
   __gCrWeb.message.invokeOnHost(message);
+
+  // if |opt_detailsPromise| is an instance of Promise, update the payment
+  // details with it. The UI will be re-enabled with the new details or the flow
+  // will be aborted depending on how this Promise settles.
+  if (waitForShowPromise) {
+    __gCrWeb['paymentRequestManager'].updateWith(
+        __gCrWeb['paymentRequestManager'].settleOrTimeout(
+            __gCrWeb['paymentRequestManager'].SHOW_PROMISE_TIMEOUT_MS,
+            opt_detailsPromise));
+  }
 
   return __gCrWeb['paymentRequestManager'].requestPromiseResolver.promise;
 };

@@ -364,8 +364,8 @@ class PaymentRequest : public PaymentOptionsProvider,
   // in |web_payment_request_|.
   void PopulateAvailableShippingOptions();
 
-  // Sets the selected shipping option, if any.
-  void SetSelectedShippingOption();
+  // Sets the selected shipping option and profile, if any.
+  void SetSelectedShippingOptionAndProfile();
 
   // Records the number of suggestions shown for contact, shipping and payment
   // instrument in the JourneyLogger.
