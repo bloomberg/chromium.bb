@@ -16,6 +16,7 @@ import shutil
 import subprocess
 import sys
 import tempfile
+import zipfile
 
 import archive
 import describe
@@ -29,11 +30,20 @@ _TEST_DATA_DIR = os.path.join(_SCRIPT_DIR, 'testdata')
 _TEST_OUTPUT_DIR = os.path.join(_TEST_DATA_DIR, 'mock_output_directory')
 _TEST_TOOL_PREFIX = os.path.join(
     os.path.abspath(_TEST_DATA_DIR), 'mock_toolchain', '')
+_TEST_APK_ROOT_DIR = os.path.join(_TEST_DATA_DIR, 'mock_apk')
 _TEST_MAP_PATH = os.path.join(_TEST_DATA_DIR, 'test.map')
-_TEST_PAK_PATH = os.path.join(_TEST_OUTPUT_DIR, 'en-US.pak')
-_TEST_PAK_INFO_PATH = os.path.join(_TEST_OUTPUT_DIR, 'en-US.pak.info')
-_TEST_ELF_PATH = os.path.join(_TEST_OUTPUT_DIR, 'elf')  # Dynamically created
+_TEST_PAK_INFO_PATH = os.path.join(
+    _TEST_OUTPUT_DIR, 'size-info/test.apk.pak.info')
 _TEST_ELF_FILE_BEGIN = os.path.join(_TEST_OUTPUT_DIR, 'elf.begin')
+_TEST_APK_PAK_PATH = os.path.join(_TEST_APK_ROOT_DIR, 'assets/en-US.pak')
+
+# The following files are dynamically created.
+_TEST_ELF_PATH = os.path.join(_TEST_OUTPUT_DIR, 'elf')
+_TEST_APK_PATH = os.path.join(_TEST_OUTPUT_DIR, 'test.apk')
+
+# Generated file paths relative to apk
+_TEST_APK_SO_PATH = 'test.so'
+_TEST_APK_DEX_PATH = 'test.dex'
 
 update_goldens = False
 
@@ -102,24 +112,45 @@ class IntegrationTest(unittest.TestCase):
   maxDiff = None  # Don't trucate diffs in errors.
   cached_size_info = {}
 
+  @staticmethod
+  def _CreateBlankData(power_of_two):
+    data = '\0'
+    for _ in range(power_of_two):
+      data = data + data
+    return data
+
+  @staticmethod
+  def _SafeRemoveFiles(file_names):
+    for file_name in file_names:
+      if os.path.exists(file_name):
+        os.remove(file_name)
+
   @classmethod
   def setUpClass(cls):
     shutil.copy(_TEST_ELF_FILE_BEGIN, _TEST_ELF_PATH)
+    # Exactly 128MB of data (2^27), extra bytes will be accounted in overhead.
     with open(_TEST_ELF_PATH, 'a') as elf_file:
-      data = '0'
-      # Exactly 128MB of data (2^27), extra bytes will be accounted in overhead.
-      for _ in range(27):
-        data = data + data
-      elf_file.write(data)
+      elf_file.write(IntegrationTest._CreateBlankData(27))
+    with zipfile.ZipFile(_TEST_APK_PATH, 'w') as apk_file:
+      apk_file.write(_TEST_ELF_PATH, _TEST_APK_SO_PATH)
+      pak_rel_path = os.path.relpath(_TEST_APK_PAK_PATH, _TEST_APK_ROOT_DIR)
+      apk_file.write(_TEST_APK_PAK_PATH, pak_rel_path)
+      # Exactly 8MB of data (2^23).
+      apk_file.writestr(
+          _TEST_APK_DEX_PATH, IntegrationTest._CreateBlankData(23))
 
   @classmethod
   def tearDownClass(cls):
-    os.remove(_TEST_ELF_PATH)
+    IntegrationTest._SafeRemoveFiles([
+      _TEST_ELF_PATH,
+      _TEST_APK_PATH,
+    ])
 
   def _CloneSizeInfo(self, use_output_directory=True, use_elf=True,
-                     use_pak=False):
+                     use_apk=False, use_pak=False):
     assert not use_elf or use_output_directory
-    cache_key = (use_output_directory, use_elf, use_pak)
+    assert not (use_apk and use_pak)
+    cache_key = (use_output_directory, use_elf, use_apk, use_pak)
     if cache_key not in IntegrationTest.cached_size_info:
       elf_path = _TEST_ELF_PATH if use_elf else None
       output_directory = _TEST_OUTPUT_DIR if use_output_directory else None
@@ -127,28 +158,33 @@ class IntegrationTest(unittest.TestCase):
       # Override for testing. Lower the bar for compacting symbols, to allow
       # smaller test cases to be created.
       knobs.max_same_name_alias_count = 3
+      apk_path = None
+      apk_so_path = None
+      if use_apk:
+        apk_path = _TEST_APK_PATH
+        apk_so_path = _TEST_APK_SO_PATH
+      pak_files = None
+      pak_info_file = None
       if use_pak:
-        section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
-            map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
-            elf_path=elf_path, output_directory=output_directory,
-            pak_files=[_TEST_PAK_PATH], pak_info_file=_TEST_PAK_INFO_PATH,
-            knobs=knobs)
-      else:
-        section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
-            map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
-            elf_path=elf_path, output_directory=output_directory, knobs=knobs)
+        pak_files = [_TEST_APK_PAK_PATH]
+        pak_info_file = _TEST_PAK_INFO_PATH
       metadata = None
       if use_elf:
         with _AddMocksToPath():
           metadata = archive.CreateMetadata(
-              _TEST_MAP_PATH, elf_path, None, _TEST_TOOL_PREFIX,
+              _TEST_MAP_PATH, elf_path, apk_path, _TEST_TOOL_PREFIX,
               output_directory)
+      section_sizes, raw_symbols = archive.CreateSectionSizesAndSymbols(
+          map_path=_TEST_MAP_PATH, tool_prefix=_TEST_TOOL_PREFIX,
+          elf_path=elf_path, output_directory=output_directory,
+          apk_path=apk_path, apk_so_path=apk_so_path, metadata=metadata,
+          pak_files=pak_files, pak_info_file=pak_info_file, knobs=knobs)
       IntegrationTest.cached_size_info[cache_key] = archive.CreateSizeInfo(
           section_sizes, raw_symbols, metadata=metadata)
     return copy.deepcopy(IntegrationTest.cached_size_info[cache_key])
 
   def _DoArchive(self, archive_path, use_output_directory=True, use_elf=True,
-                 use_pak=False, debug_measures=False):
+                 use_apk=False, use_pak=False, debug_measures=False):
     args = [archive_path, '--map-file', _TEST_MAP_PATH]
     if use_output_directory:
       # Let autodetection find output_directory when --elf-file is used.
@@ -158,22 +194,25 @@ class IntegrationTest(unittest.TestCase):
       args += ['--no-source-paths']
     if use_elf:
       args += ['--elf-file', _TEST_ELF_PATH]
+    if use_apk:
+      args += ['--apk-file', _TEST_APK_PATH]
     if use_pak:
-      args += ['--pak-file', _TEST_PAK_PATH,
+      args += ['--pak-file', _TEST_APK_PAK_PATH,
                '--pak-info-file', _TEST_PAK_INFO_PATH]
     _RunApp('archive', args, debug_measures=debug_measures)
 
   def _DoArchiveTest(self, use_output_directory=True, use_elf=True,
-                     use_pak=False, debug_measures=False):
+                     use_apk=False, use_pak=False, debug_measures=False):
     with tempfile.NamedTemporaryFile(suffix='.size') as temp_file:
       self._DoArchive(
           temp_file.name, use_output_directory=use_output_directory,
-          use_elf=use_elf, use_pak=use_pak, debug_measures=debug_measures)
+          use_elf=use_elf, use_apk=use_apk, use_pak=use_pak,
+          debug_measures=debug_measures)
       size_info = archive.LoadAndPostProcessSizeInfo(temp_file.name)
     # Check that saving & loading is the same as directly parsing.
     expected_size_info = self._CloneSizeInfo(
         use_output_directory=use_output_directory, use_elf=use_elf,
-        use_pak=use_pak)
+        use_apk=use_apk, use_pak=use_pak)
     self.assertEquals(expected_size_info.metadata, size_info.metadata)
     # Don't cluster.
     expected_size_info.symbols = expected_size_info.raw_symbols
@@ -203,7 +242,11 @@ class IntegrationTest(unittest.TestCase):
     return self._DoArchiveTest()
 
   @_CompareWithGolden()
-  def test_Archive_Pak(self):
+  def test_Archive_Apk(self):
+    return self._DoArchiveTest(use_apk=True)
+
+  @_CompareWithGolden()
+  def test_Archive_Pak_Files(self):
     return self._DoArchiveTest(use_pak=True)
 
   @_CompareWithGolden(name='Archive_Elf')

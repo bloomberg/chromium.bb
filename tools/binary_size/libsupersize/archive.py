@@ -799,7 +799,7 @@ def _ParseApkElfSectionSize(section_sizes, metadata, apk_elf_result):
         apk_section_sizes['%s (unpacked)' % packed_section_name] = (
             section_sizes.get(packed_section_name))
     return apk_section_sizes, elf_overhead_size
-  return section_sizes
+  return section_sizes, 0
 
 
 def _ParseDexSymbols(section_sizes, apk_path, output_directory):
@@ -826,6 +826,7 @@ def _ParseApkOtherSymbols(section_sizes, apk_path):
             models.SECTION_OTHER, zip_info.compress_size,
             object_path=path, full_name=os.path.basename(zip_info.filename)))
   overhead_size = os.path.getsize(apk_path) - zip_info_total
+  assert overhead_size >= 0, 'Apk overhead must be non-negative'
   zip_overhead_symbol = models.Symbol(
       models.SECTION_OTHER, overhead_size, full_name='Overhead: APK file')
   apk_symbols.append(zip_overhead_symbol)
@@ -851,7 +852,7 @@ def _FindPakSymbolsFromApk(apk_path, output_directory, knobs):
         total_uncompressed_size += zip_info.file_size
         compression_ratio = knobs.pak_compression_ratio
       _ComputePakFileSymbols(
-          os.path.relpath(zip_info.filename, output_directory), contents,
+          zip_info.filename, contents,
           res_info, symbols_by_id, compression_ratio=compression_ratio)
     if total_uncompressed_size > 0:
       actual_ratio = (
@@ -891,7 +892,7 @@ def _CalculateElfOverhead(section_sizes, elf_path):
 def CreateSectionSizesAndSymbols(
       map_path=None, tool_prefix=None, output_directory=None, elf_path=None,
       apk_path=None, track_string_literals=True, metadata=None,
-      apk_elf_result=None, pak_files=None, pak_info_file=None,
+      apk_so_path=None, pak_files=None, pak_info_file=None,
       knobs=SectionSizeKnobs()):
   """Creates sections sizes and symbols for a SizeInfo.
 
@@ -905,6 +906,11 @@ def CreateSectionSizesAndSymbols(
     track_string_literals: Whether to break down "** merge string" sections into
         smaller symbols (requires output_directory).
   """
+  if apk_path and elf_path:
+    # Extraction takes around 1 second, so do it in parallel.
+    apk_elf_result = concurrent.ForkAndCall(
+        _ElfInfoFromApk, (apk_path, apk_so_path, tool_prefix))
+
   source_mapper = None
   elf_object_paths = None
   if output_directory:
@@ -927,8 +933,9 @@ def CreateSectionSizesAndSymbols(
   if apk_path:
     pak_symbols_by_id = _FindPakSymbolsFromApk(apk_path, output_directory,
                                                knobs)
-    section_sizes, elf_overhead_size = _ParseApkElfSectionSize(
-        section_sizes, metadata, apk_elf_result)
+    if elf_path:
+      section_sizes, elf_overhead_size = _ParseApkElfSectionSize(
+          section_sizes, metadata, apk_elf_result)
     raw_symbols.extend(
         _ParseDexSymbols(section_sizes, apk_path, output_directory))
     raw_symbols.extend(_ParseApkOtherSymbols(section_sizes, apk_path))
@@ -1152,17 +1159,11 @@ def Run(args, parser):
   metadata = CreateMetadata(map_path, elf_path, apk_path, tool_prefix,
                             output_directory)
 
-  apk_elf_result = None
-  if apk_path and elf_path:
-    # Extraction takes around 1 second, so do it in parallel.
-    apk_elf_result = concurrent.ForkAndCall(
-        _ElfInfoFromApk, (apk_path, apk_so_path, tool_prefix))
-
   section_sizes, raw_symbols = CreateSectionSizesAndSymbols(
       map_path=map_path, tool_prefix=tool_prefix, elf_path=elf_path,
       apk_path=apk_path, output_directory=output_directory,
       track_string_literals=args.track_string_literals,
-      metadata=metadata, apk_elf_result=apk_elf_result,
+      metadata=metadata, apk_so_path=apk_so_path,
       pak_files=args.pak_file, pak_info_file=args.pak_info_file)
   size_info = CreateSizeInfo(
       section_sizes, raw_symbols, metadata=metadata, normalize_names=False)
