@@ -4,21 +4,25 @@
 
 #include "extensions/browser/updater/update_service.h"
 
-#include <map>
-#include <utility>
-
 #include "base/bind.h"
 #include "base/files/file_util.h"
+#include "base/metrics/histogram_macros.h"
+#include "components/update_client/crx_update_item.h"
 #include "components/update_client/update_client_errors.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/notification_details.h"
+#include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/extension_system.h"
 #include "extensions/browser/extensions_browser_client.h"
+#include "extensions/browser/notification_types.h"
+#include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/extension_update_data.h"
 #include "extensions/browser/updater/update_data_provider.h"
 #include "extensions/browser/updater/update_service_factory.h"
 #include "extensions/common/extension_features.h"
+#include "extensions/common/extension_updater_uma.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/manifest_url_handlers.h"
 
@@ -29,6 +33,15 @@ namespace {
 void SendUninstallPingCompleteCallback(update_client::Error error) {}
 
 }  // namespace
+
+UpdateService::InProgressUpdate::InProgressUpdate(base::OnceClosure cb)
+    : callback(std::move(cb)) {}
+UpdateService::InProgressUpdate::~InProgressUpdate() = default;
+
+UpdateService::InProgressUpdate::InProgressUpdate(
+    UpdateService::InProgressUpdate&& other) = default;
+UpdateService::InProgressUpdate& UpdateService::InProgressUpdate::operator=(
+    UpdateService::InProgressUpdate&& other) = default;
 
 // static
 UpdateService* UpdateService::Get(content::BrowserContext* context) {
@@ -71,13 +84,64 @@ void UpdateService::OnEvent(Events event, const std::string& extension_id) {
   VLOG(2) << "UpdateService::OnEvent " << static_cast<int>(event) << " "
           << extension_id;
 
-  // When no update is found, a previous update check might have queued an
-  // update for this extension because it was in use at the time. We should
-  // ask for the install of the queued update now if it's ready.
-  if (event == Events::COMPONENT_NOT_UPDATED) {
-    ExtensionSystem::Get(browser_context_)
-        ->FinishDelayedInstallationIfReady(extension_id,
-                                           true /*install_immediately*/);
+  bool complete_event = false;
+  switch (event) {
+    case Events::COMPONENT_UPDATED:
+      complete_event = true;
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.ExtensionUpdaterUpdateResults",
+          ExtensionUpdaterUpdateResult::UPDATE_SUCCESS,
+          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      break;
+    case Events::COMPONENT_UPDATE_ERROR:
+      complete_event = true;
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.ExtensionUpdaterUpdateResults",
+          ExtensionUpdaterUpdateResult::UPDATE_ERROR,
+          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      break;
+    case Events::COMPONENT_NOT_UPDATED:
+      complete_event = true;
+      UMA_HISTOGRAM_ENUMERATION(
+          "Extensions.ExtensionUpdaterUpdateResults",
+          ExtensionUpdaterUpdateResult::NO_UPDATE,
+          ExtensionUpdaterUpdateResult::UPDATE_RESULT_COUNT);
+      // When no update is found, a previous update check might have queued an
+      // update for this extension because it was in use at the time. We should
+      // ask for the install of the queued update now if it's ready.
+      ExtensionSystem::Get(browser_context_)
+          ->FinishDelayedInstallationIfReady(extension_id,
+                                             true /*install_immediately*/);
+      break;
+    case Events::COMPONENT_UPDATE_FOUND: {
+      UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateFoundCount",
+                               1);
+      update_client::CrxUpdateItem update_item;
+      if (update_client_->GetCrxUpdateState(extension_id, &update_item)) {
+        VLOG(3) << "UpdateService::OnEvent COMPONENT_UPDATE_FOUND: "
+                << extension_id << " " << update_item.next_version.GetString();
+        UpdateDetails update_info(extension_id, update_item.next_version);
+        content::NotificationService::current()->Notify(
+            extensions::NOTIFICATION_EXTENSION_UPDATE_FOUND,
+            content::NotificationService::AllBrowserContextsAndSources(),
+            content::Details<UpdateDetails>(&update_info));
+      }
+      break;
+    }
+    case Events::COMPONENT_CHECKING_FOR_UPDATES:
+    case Events::COMPONENT_WAIT:
+    case Events::COMPONENT_UPDATE_READY:
+    case Events::COMPONENT_UPDATE_DOWNLOADING:
+      break;
+  }
+
+  if (complete_event) {
+    // The update check for |extension_id| has completed, thus it can be
+    // removed from all in-progress update checks.
+    DCHECK(updating_extension_ids_.count(extension_id) > 0);
+    updating_extension_ids_.erase(extension_id);
+    for (auto& update : in_progress_updates_)
+      update.pending_extension_ids.erase(extension_id);
   }
 }
 
@@ -101,51 +165,87 @@ UpdateService::~UpdateService() {
 }
 
 void UpdateService::StartUpdateCheck(
-    const ExtensionUpdateCheckParams& update_params) {
+    const ExtensionUpdateCheckParams& update_params,
+    base::OnceClosure callback) {
   DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+  DCHECK(!update_params.update_info.empty());
+
   VLOG(2) << "UpdateService::StartUpdateCheck";
 
   if (!ExtensionsBrowserClient::Get()->IsBackgroundUpdateAllowed()) {
     VLOG(1) << "UpdateService - Extension update not allowed.";
+    if (!callback.is_null())
+      std::move(callback).Run();
     return;
   }
 
+  in_progress_updates_.push_back(InProgressUpdate(std::move(callback)));
+  InProgressUpdate& update = in_progress_updates_.back();
+
   ExtensionUpdateDataMap update_data;
-  std::vector<std::string> extension_ids;
+  // |extension_ids_to_update| stores the extension IDs from the new update
+  // check request that are not being updated at the moment.
+  std::vector<std::string> extension_ids_to_update;
   for (const auto& update_info : update_params.update_info) {
     const std::string& extension_id = update_info.first;
-    if (updating_extensions_.find(extension_id) != updating_extensions_.end())
+
+    update.pending_extension_ids.insert(extension_id);
+    if (updating_extension_ids_.count(extension_id) > 0)
       continue;
 
-    updating_extensions_.insert(extension_id);
-    extension_ids.push_back(extension_id);
+    updating_extension_ids_.insert(extension_id);
+    extension_ids_to_update.push_back(extension_id);
 
     ExtensionUpdateData data = update_info.second;
-    if (data.install_source.empty() &&
-        update_params.priority == ExtensionUpdateCheckParams::FOREGROUND) {
+    if (data.is_corrupt_reinstall) {
+      data.install_source = "reinstall";
+    } else if (data.install_source.empty() &&
+               update_params.priority ==
+                   ExtensionUpdateCheckParams::FOREGROUND) {
       data.install_source = "ondemand";
     }
     update_data.insert(std::make_pair(extension_id, data));
   }
-  if (extension_ids.empty())
+
+  UMA_HISTOGRAM_COUNTS_100("Extensions.ExtensionUpdaterUpdateCalls",
+                           extension_ids_to_update.size());
+
+  // If all extension IDs are being updated by previous update check requests,
+  // there's no need to update these extensions again.
+  if (extension_ids_to_update.empty())
     return;
 
   update_client_->Update(
-      extension_ids,
+      extension_ids_to_update,
       base::BindOnce(&UpdateDataProvider::GetData, update_data_provider_,
                      std::move(update_data)),
-      false,
+      update_params.priority == ExtensionUpdateCheckParams::FOREGROUND,
       base::BindOnce(&UpdateService::UpdateCheckComplete,
-                     weak_ptr_factory_.GetWeakPtr(), extension_ids));
+                     weak_ptr_factory_.GetWeakPtr()));
 }
 
-void UpdateService::UpdateCheckComplete(
-    const std::vector<std::string>& extension_ids,
-    update_client::Error error) {
-  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+void UpdateService::UpdateCheckComplete(update_client::Error error) {
   VLOG(2) << "UpdateService::UpdateCheckComplete";
-  for (const std::string& extension_id : extension_ids)
-    updating_extensions_.erase(extension_id);
+  DCHECK_CALLED_ON_VALID_THREAD(thread_checker_);
+
+  // There must be at least one in-progress update (the one that just
+  // finished).
+  DCHECK(!in_progress_updates_.empty());
+  // And that the first update should have all of its pendings finished.
+  DCHECK(in_progress_updates_[0].pending_extension_ids.empty());
+
+  // Find all updates that have finished and remove them from the list.
+  in_progress_updates_.erase(
+      std::remove_if(in_progress_updates_.begin(), in_progress_updates_.end(),
+                     [](InProgressUpdate& update) {
+                       if (!update.pending_extension_ids.empty())
+                         return false;
+                       VLOG(2) << "UpdateComplete";
+                       if (!update.callback.is_null())
+                         std::move(update.callback).Run();
+                       return true;
+                     }),
+      in_progress_updates_.end());
 }
 
 }  // namespace extensions

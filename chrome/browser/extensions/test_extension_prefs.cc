@@ -20,6 +20,7 @@
 #include "base/values.h"
 #include "chrome/browser/extensions/chrome_app_sorting.h"
 #include "chrome/browser/extensions/test_extension_system.h"
+#include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/prefs/pref_service_syncable_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "components/crx_file/id_util.h"
@@ -83,6 +84,10 @@ ExtensionPrefs* TestExtensionPrefs::prefs() {
   return ExtensionPrefs::Get(&profile_);
 }
 
+TestingProfile* TestExtensionPrefs::profile() {
+  return &profile_;
+}
+
 PrefService* TestExtensionPrefs::pref_service() {
   return pref_service_.get();
 }
@@ -94,7 +99,7 @@ TestExtensionPrefs::pref_registry() {
 
 void TestExtensionPrefs::ResetPrefRegistry() {
   pref_registry_ = new user_prefs::PrefRegistrySyncable;
-  ExtensionPrefs::RegisterProfilePrefs(pref_registry_.get());
+  RegisterUserProfilePrefs(pref_registry_.get());
 }
 
 void TestExtensionPrefs::RecreateExtensionPrefs() {

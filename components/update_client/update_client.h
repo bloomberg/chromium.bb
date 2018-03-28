@@ -395,6 +395,12 @@ scoped_refptr<UpdateClient> UpdateClientFactory(
 // contains a PrefService.
 void RegisterPrefs(PrefRegistrySimple* registry);
 
+// This must be called prior to the construction of any Configurator that
+// needs access to local user profiles.
+// This function is mostly used for ExtensionUpdater, which requires update
+// info from user profiles.
+void RegisterProfilePrefs(PrefRegistrySimple* registry);
+
 }  // namespace update_client
 
 #endif  // COMPONENTS_UPDATE_CLIENT_UPDATE_CLIENT_H_

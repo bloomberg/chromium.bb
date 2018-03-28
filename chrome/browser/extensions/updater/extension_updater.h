@@ -26,6 +26,7 @@
 #include "extensions/browser/updater/extension_downloader.h"
 #include "extensions/browser/updater/extension_downloader_delegate.h"
 #include "extensions/browser/updater/manifest_fetch_data.h"
+#include "extensions/browser/updater/update_service.h"
 #include "url/gurl.h"
 
 class ExtensionServiceInterface;
@@ -37,22 +38,25 @@ namespace extensions {
 class ExtensionCache;
 class ExtensionPrefs;
 class ExtensionSet;
+struct ExtensionUpdateCheckParams;
 class ExtensionUpdaterTest;
 
 // A class for doing auto-updates of installed Extensions. Used like this:
 //
-// ExtensionUpdater* updater = new ExtensionUpdater(my_extensions_service,
-//                                                  extension_prefs,
-//                                                  pref_service,
-//                                                  profile,
-//                                                  update_frequency_secs,
-//                                                  downloader_factory);
+// std::unique_ptr<ExtensionUpdater> updater =
+//    std::make_unique<ExtensionUpdater>(my_extensions_service,
+//                                       extension_prefs,
+//                                       pref_service,
+//                                       profile,
+//                                       update_frequency_secs,
+//                                       downloader_factory);
 // updater->Start();
 // ....
 // updater->Stop();
 class ExtensionUpdater : public ExtensionDownloaderDelegate,
                          public content::NotificationObserver {
  public:
+  // TODO(mxnguyen): Change FinishedCallback to base::OnceClosure.
   typedef base::Closure FinishedCallback;
 
   struct CheckParams {
@@ -146,13 +150,15 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
 
   struct InProgressCheck {
     InProgressCheck();
-    InProgressCheck(const InProgressCheck& other);
     ~InProgressCheck();
 
     bool install_immediately;
+    bool awaiting_update_service;
     FinishedCallback callback;
     // The ids of extensions that have in-progress update checks.
-    std::list<std::string> in_progress_ids_;
+    std::set<std::string> in_progress_ids_;
+
+    DISALLOW_COPY_AND_ASSIGN(InProgressCheck);
   };
 
   // Ensure that we have a valid ExtensionDownloader instance referenced by
@@ -173,7 +179,8 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   void AddToDownloader(const ExtensionSet* extensions,
                        const std::list<std::string>& pending_ids,
                        int request_id,
-                       ManifestFetchData::FetchPriority fetch_priority);
+                       ManifestFetchData::FetchPriority fetch_priority,
+                       ExtensionUpdateCheckParams* update_check_params);
 
   // BaseTimer::ReceiverMethod callback.
   void TimerFired();
@@ -216,6 +223,9 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
   // Send a notification if we're finished updating.
   void NotifyIfFinished(int request_id);
 
+  // |udpate_service_| will execute this function on finish.
+  void OnUpdateServiceFinished(int request_id);
+
   void ExtensionCheckFinished(const std::string& extension_id,
                               const FinishedCallback& callback);
 
@@ -231,6 +241,13 @@ class ExtensionUpdater : public ExtensionDownloaderDelegate,
 
   // Fetches the crx files for the extensions that have an available update.
   std::unique_ptr<ExtensionDownloader> downloader_;
+
+  // Update service is responsible for updating Webstore extensions.
+  // Note that |UpdateService| is a KeyedService class, which can only be
+  // created through a |KeyedServiceFactory| singleton, thus |update_service_|
+  // will be freed by the same factory singleton before the browser is
+  // shutdown.
+  UpdateService* update_service_;
 
   base::OneShotTimer timer_;
   int frequency_seconds_;
