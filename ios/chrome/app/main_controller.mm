@@ -2014,7 +2014,10 @@ void MainControllerAuthenticationServiceDelegate::ClearBrowsingData(
     action();
   }
 
-  [_tabSwitcher setDelegate:nil];
+  // The tab grid is long-lived and its delegate should not be reset.
+  if (!IsUIRefreshPhase1Enabled()) {
+    [_tabSwitcher setDelegate:nil];
+  }
 
   _tabSwitcherIsActive = NO;
   _dismissingStackView = NO;
