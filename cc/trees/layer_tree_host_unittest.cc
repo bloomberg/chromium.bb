@@ -1268,12 +1268,11 @@ class LayerTreeHostTestEarlyDamageCheckStops : public LayerTreeHostTest {
   int damaged_frame_limit_;
 };
 
-// Flaky on Win7 Tests (dbg)(1). https://crbug.com/813578
-#if !defined(OS_WIN)
 // This behavior is specific to Android WebView, which only uses
 // multi-threaded compositor.
-MULTI_THREAD_TEST_F(LayerTreeHostTestEarlyDamageCheckStops);
-#endif
+// Flaky on Win7 Tests (dbg)(1). https://crbug.com/813578
+// Flaky on linux_chromium_tsan_rel_ng. https://crbug.com/822473
+// MULTI_THREAD_TEST_F(LayerTreeHostTestEarlyDamageCheckStops);
 
 // Verify CanDraw() is false until first commit.
 class LayerTreeHostTestCantDrawBeforeCommit : public LayerTreeHostTest {
