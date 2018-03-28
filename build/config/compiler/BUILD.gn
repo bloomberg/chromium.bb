@@ -2096,6 +2096,9 @@ config("minimal_symbols") {
       # TODO(thakis): Consider making clang emit DW_AT_linkage_name in -g1 mode;
       #               failing that consider doing this on non-Android too.
       cflags += [ "-fdebug-info-for-profiling" ]
+      if (strip_debug_info) {
+        ldflags += [ "-Wl,--strip-debug" ]
+      }
     }
 
     # Note: -gsplit-dwarf implicitly turns on -g2 with clang, so don't pass it.
@@ -2122,18 +2125,6 @@ config("default_symbols") {
   } else {
     assert(false)
   }
-
-  # This config is removed by base unittests apk.
-  if (is_android && is_clang && strip_debug_info) {
-    configs += [ ":strip_debug" ]
-  }
-}
-
-config("strip_debug") {
-  if (!defined(ldflags)) {
-    ldflags = []
-  }
-  ldflags += [ "-Wl,--strip-debug" ]
 }
 
 if (is_ios || is_mac) {
