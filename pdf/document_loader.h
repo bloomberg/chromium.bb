@@ -99,7 +99,8 @@ class DocumentLoader {
   // Called when we complete server request.
   void ReadComplete();
 
-  bool SaveChunkData(char* input, uint32_t input_size);
+  bool SaveBuffer(char* input, uint32_t input_size);
+  void SaveChunkData();
 
   uint32_t EndOfCurrentChunk() const;
 
