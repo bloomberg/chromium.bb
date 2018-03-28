@@ -1319,6 +1319,7 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/vr_shell/VrModalPresenter.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrShell.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrDialogManager.java",
+  "java/src/org/chromium/chrome/browser/vr_shell/VrUiWidgetFactory.java",
   "java/src/org/chromium/chrome/browser/vr_shell/VrViewContainer.java",
   "java/src/org/chromium/chrome/browser/webapps/ActivityAssigner.java",
   "java/src/org/chromium/chrome/browser/webapps/AddToHomescreenDialog.java",
