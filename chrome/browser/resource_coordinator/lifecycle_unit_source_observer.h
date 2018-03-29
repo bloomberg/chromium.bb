@@ -9,20 +9,17 @@ namespace resource_coordinator {
 
 class LifecycleUnit;
 
-// Interface to be notified when LifecycleUnits are created and destroyed.
-//
-// An observer doesn't own a LifecycleUnit* received via this interface. An
-// observer can safely use a LifecycleUnit* received via this interface until it
-// is notified that it will be destroyed (OnLifecycleUnitDestroyed()).
+// Interface to be notified when LifecycleUnits are created.
 class LifecycleUnitSourceObserver {
  public:
   virtual ~LifecycleUnitSourceObserver() = default;
 
   // Invoked immediately after a LifecycleUnit is created.
+  //
+  // The observer doesn't own |lifecycle_unit|. To use |lifecycle_unit| beyond
+  // this method invocation, register a LifecycleUnitObserver to be notified of
+  // its destruction.
   virtual void OnLifecycleUnitCreated(LifecycleUnit* lifecycle_unit) = 0;
-
-  // Invoked just before a LifecycleUnit is destroyed.
-  virtual void OnLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit) = 0;
 };
 
 }  // namespace resource_coordinator

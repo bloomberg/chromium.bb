@@ -24,12 +24,11 @@ class LifecycleUnitSourceBase : public LifecycleUnitSource {
   void RemoveObserver(LifecycleUnitSourceObserver* observer) override;
 
  protected:
-  // Notifies observers that a LifecycleUnit was created / destroyed.
+  // Notifies observers that a LifecycleUnit was created.
   void NotifyLifecycleUnitCreated(LifecycleUnit* lifecycle_unit);
-  void NotifyLifecycleUnitDestroyed(LifecycleUnit* lifecycle_unit);
 
  private:
-  // Observers notified when a LifecycleUnit is created or destroyed.
+  // Observers notified when a LifecycleUnit is created.
   base::ObserverList<LifecycleUnitSourceObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(LifecycleUnitSourceBase);

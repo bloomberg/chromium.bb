@@ -9,6 +9,7 @@
 #include "base/macros.h"
 #include "base/test/simple_test_tick_clock.h"
 #include "build/build_config.h"
+#include "chrome/browser/resource_coordinator/lifecycle_unit_observer.h"
 #include "chrome/browser/resource_coordinator/lifecycle_unit_source_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_observer.h"
 #include "chrome/browser/resource_coordinator/tab_lifecycle_unit.h"
@@ -46,7 +47,6 @@ class MockLifecycleUnitSourceObserver : public LifecycleUnitSourceObserver {
   MockLifecycleUnitSourceObserver() = default;
 
   MOCK_METHOD1(OnLifecycleUnitCreated, void(LifecycleUnit*));
-  MOCK_METHOD1(OnLifecycleUnitDestroyed, void(LifecycleUnit*));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockLifecycleUnitSourceObserver);
@@ -63,6 +63,21 @@ class MockTabLifecycleObserver : public TabLifecycleObserver {
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockTabLifecycleObserver);
+};
+
+class MockLifecycleUnitObserver : public LifecycleUnitObserver {
+ public:
+  MockLifecycleUnitObserver() = default;
+
+  MOCK_METHOD1(OnLifecycleUnitStateChanged,
+               void(LifecycleUnit* lifecycle_unit));
+  MOCK_METHOD2(OnLifecycleUnitVisibilityChanged,
+               void(LifecycleUnit* lifecycle_unit,
+                    content::Visibility visibility));
+  MOCK_METHOD1(OnLifecycleUnitDestroyed, void(LifecycleUnit* lifecycle_unit));
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MockLifecycleUnitObserver);
 };
 
 bool IsFocused(LifecycleUnit* lifecycle_unit) {
@@ -86,11 +101,7 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
   }
 
   void TearDown() override {
-    // Expect notifications when tabs are closed.
-    EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(testing::_))
-        .Times(tab_strip_model_->count());
     tab_strip_model_->CloseAllTabs();
-
     tab_strip_model_.reset();
     ChromeRenderViewHostTestHarness::TearDown();
   }
@@ -188,13 +199,24 @@ class TabLifecycleUnitSourceTest : public ChromeRenderViewHostTestHarness {
     EXPECT_TRUE(source_.GetTabLifecycleUnitExternal(third_web_contents));
 
     // Expect notifications when tabs are closed.
-    EXPECT_CALL(source_observer_,
-                OnLifecycleUnitDestroyed(first_lifecycle_unit));
-    EXPECT_CALL(source_observer_,
-                OnLifecycleUnitDestroyed(second_lifecycle_unit));
-    EXPECT_CALL(source_observer_,
-                OnLifecycleUnitDestroyed(third_lifecycle_unit));
-    tab_strip_model_->CloseAllTabs();
+    CloseTabsAndExpectNotifications(
+        tab_strip_model_.get(),
+        {first_lifecycle_unit, second_lifecycle_unit, third_lifecycle_unit});
+  }
+
+  void CloseTabsAndExpectNotifications(
+      TabStripModel* tab_strip_model,
+      std::vector<LifecycleUnit*> lifecycle_units) {
+    std::vector<std::unique_ptr<testing::StrictMock<MockLifecycleUnitObserver>>>
+        observers;
+    for (LifecycleUnit* lifecycle_unit : lifecycle_units) {
+      observers.emplace_back(
+          std::make_unique<testing::StrictMock<MockLifecycleUnitObserver>>());
+      lifecycle_unit->AddObserver(observers.back().get());
+      EXPECT_CALL(*observers.back().get(),
+                  OnLifecycleUnitDestroyed(lifecycle_unit));
+    }
+    tab_strip_model->CloseAllTabs();
   }
 
   TabLifecycleUnitSource source_;
@@ -250,10 +272,8 @@ TEST_F(TabLifecycleUnitSourceTest, SwitchTabInFocusedTabStrip) {
             second_lifecycle_unit->GetSortKey().last_focused_time);
 
   // Expect notifications when tabs are closed.
-  EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
-  EXPECT_CALL(source_observer_,
-              OnLifecycleUnitDestroyed(second_lifecycle_unit));
-  tab_strip_model_->CloseAllTabs();
+  CloseTabsAndExpectNotifications(
+      tab_strip_model_.get(), {first_lifecycle_unit, second_lifecycle_unit});
 }
 
 TEST_F(TabLifecycleUnitSourceTest, CloseTabInFocusedTabStrip) {
@@ -264,15 +284,16 @@ TEST_F(TabLifecycleUnitSourceTest, CloseTabInFocusedTabStrip) {
 
   // Close the second tab. The first tab should be focused.
   test_clock_.Advance(kShortDelay);
-  EXPECT_CALL(source_observer_,
-              OnLifecycleUnitDestroyed(second_lifecycle_unit));
+  testing::StrictMock<MockLifecycleUnitObserver> second_observer;
+  second_lifecycle_unit->AddObserver(&second_observer);
+  EXPECT_CALL(second_observer, OnLifecycleUnitDestroyed(second_lifecycle_unit));
   tab_strip_model_->CloseWebContentsAt(1, 0);
   testing::Mock::VerifyAndClear(&source_observer_);
   EXPECT_TRUE(IsFocused(first_lifecycle_unit));
 
   // Expect notifications when tabs are closed.
-  EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
-  tab_strip_model_->CloseAllTabs();
+  CloseTabsAndExpectNotifications(tab_strip_model_.get(),
+                                  {first_lifecycle_unit});
 }
 
 TEST_F(TabLifecycleUnitSourceTest, ReplaceWebContents) {
@@ -298,10 +319,8 @@ TEST_F(TabLifecycleUnitSourceTest, ReplaceWebContents) {
   delete original_web_contents;
 
   // Expect notifications when tabs are closed.
-  EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(first_lifecycle_unit));
-  EXPECT_CALL(source_observer_,
-              OnLifecycleUnitDestroyed(second_lifecycle_unit));
-  tab_strip_model_->CloseAllTabs();
+  CloseTabsAndExpectNotifications(
+      tab_strip_model_.get(), {first_lifecycle_unit, second_lifecycle_unit});
 }
 
 TEST_F(TabLifecycleUnitSourceTest, DetachWebContents) {
@@ -334,9 +353,8 @@ TEST_F(TabLifecycleUnitSourceTest, DetachWebContents) {
   EXPECT_EQ(LifecycleUnit::State::DISCARDED, first_lifecycle_unit->GetState());
 
   // Expect a notification when the tab is closed.
-  EXPECT_CALL(source_observer_, OnLifecycleUnitDestroyed(testing::_))
-      .Times(other_tab_strip_model.count());
-  other_tab_strip_model.CloseAllTabs();
+  CloseTabsAndExpectNotifications(&other_tab_strip_model,
+                                  {first_lifecycle_unit});
 }
 
 // Tab discarding is tested here rather than in TabLifecycleUnitTest because
