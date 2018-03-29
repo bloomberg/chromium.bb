@@ -2129,6 +2129,9 @@ void RenderWidgetHostViewAndroid::OnStylusSelectBegin(float x0,
                                                       float x1,
                                                       float y1) {
   SetTextHandlesHiddenForStylus(true);
+  // TODO(ajith.v) Refactor the event names as this is not really handle drag,
+  // but currently we use same for long press drag selection as well.
+  OnSelectionEvent(ui::SELECTION_HANDLE_DRAG_STARTED);
   SelectBetweenCoordinates(gfx::PointF(x0, y0), gfx::PointF(x1, y1));
 }
 
@@ -2138,7 +2141,9 @@ void RenderWidgetHostViewAndroid::OnStylusSelectUpdate(float x, float y) {
 
 void RenderWidgetHostViewAndroid::OnStylusSelectEnd(float x, float y) {
   SetTextHandlesHiddenForStylus(false);
-  ShowContextMenuAtPoint(gfx::Point(x, y), ui::MENU_SOURCE_STYLUS);
+  // TODO(ajith.v) Refactor the event names as this is not really handle drag,
+  // but currently we use same for long press drag selection as well.
+  OnSelectionEvent(ui::SELECTION_HANDLE_DRAG_STOPPED);
 }
 
 void RenderWidgetHostViewAndroid::OnStylusSelectTap(base::TimeTicks time,
