@@ -4,12 +4,14 @@
 
 #include <set>
 #include <string>
+#include <tuple>
 #include <vector>
 
 #include "ash/accelerators/accelerator_table.h"
 #include "ash/components/shortcut_viewer/keyboard_shortcut_item.h"
 #include "ash/components/shortcut_viewer/keyboard_shortcut_viewer_metadata.h"
 #include "base/macros.h"
+#include "base/md5.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
 #include "chrome/browser/ui/views/accelerator_table.h"
@@ -17,14 +19,86 @@
 
 namespace {
 
+// The total number of Ash accelerators.
+constexpr int kAshAcceleratorsTotalNum = 98;
+// The hash of Ash accelerators.
+constexpr char kAshAcceleratorsHash[] = "71c96531d7639ba0ecf255a59546c243";
+// The total number of Chrome accelerators (available on Chrome OS).
+constexpr int kChromeAcceleratorsTotalNum = 91;
+// The hash of Chrome accelerators (available on Chrome OS).
+constexpr char kChromeAcceleratorsHash[] = "cde825b73b85f0ff34a1ff78086e61c8";
+
+const char* BooleanToString(bool value) {
+  return value ? "true" : "false";
+}
+
+std::string ModifiersToString(int modifiers) {
+  return base::StringPrintf("shift=%s control=%s alt=%s search=%s",
+                            BooleanToString(modifiers & ui::EF_SHIFT_DOWN),
+                            BooleanToString(modifiers & ui::EF_CONTROL_DOWN),
+                            BooleanToString(modifiers & ui::EF_ALT_DOWN),
+                            BooleanToString(modifiers & ui::EF_COMMAND_DOWN));
+}
+
+std::string AshAcceleratorDataToString(
+    const ash::AcceleratorData& accelerator) {
+  return base::StringPrintf("trigger_on_press=%s keycode=%d action=%d ",
+                            BooleanToString(accelerator.trigger_on_press),
+                            accelerator.keycode, accelerator.action) +
+         ModifiersToString(accelerator.modifiers);
+}
+
+std::string ChromeAcceleratorMappingToString(
+    const AcceleratorMapping& accelerator) {
+  return base::StringPrintf("keycode=%d command_id=%d ", accelerator.keycode,
+                            accelerator.command_id) +
+         ModifiersToString(accelerator.modifiers);
+}
+
+struct AshAcceleratorDataCmp {
+  bool operator()(const ash::AcceleratorData& lhs,
+                  const ash::AcceleratorData& rhs) {
+    return std::tie(lhs.trigger_on_press, lhs.keycode, lhs.modifiers) <
+           std::tie(rhs.trigger_on_press, rhs.keycode, rhs.modifiers);
+  }
+};
+
+struct ChromeAcceleratorMappingCmp {
+  bool operator()(const AcceleratorMapping& lhs,
+                  const AcceleratorMapping& rhs) {
+    return std::tie(lhs.keycode, lhs.modifiers) <
+           std::tie(rhs.keycode, rhs.modifiers);
+  }
+};
+
+std::string HashAshAcceleratorData(
+    const std::vector<ash::AcceleratorData> accelerators) {
+  base::MD5Context context;
+  base::MD5Init(&context);
+  for (const auto& accelerator : accelerators)
+    base::MD5Update(&context, AshAcceleratorDataToString(accelerator));
+
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &context);
+  return MD5DigestToBase16(digest);
+}
+
+std::string HashChromeAcceleratorMapping(
+    const std::vector<AcceleratorMapping> accelerators) {
+  base::MD5Context context;
+  base::MD5Init(&context);
+  for (const auto& accelerator : accelerators)
+    base::MD5Update(&context, ChromeAcceleratorMappingToString(accelerator));
+
+  base::MD5Digest digest;
+  base::MD5Final(&digest, &context);
+  return MD5DigestToBase16(digest);
+}
+
 std::string AcceleratorIdToString(
     const keyboard_shortcut_viewer::AcceleratorId& accelerator_id) {
-  return base::StringPrintf(
-      "keycode=%d shift=%s control=%s alt=%s search=%s", accelerator_id.keycode,
-      (accelerator_id.modifiers & ui::EF_SHIFT_DOWN) ? "true" : "false",
-      (accelerator_id.modifiers & ui::EF_CONTROL_DOWN) ? "true" : "false",
-      (accelerator_id.modifiers & ui::EF_ALT_DOWN) ? "true" : "false",
-      (accelerator_id.modifiers & ui::EF_COMMAND_DOWN) ? "true" : "false");
+  return base::StringPrintf("keycode=%d ", accelerator_id.keycode) +
+         ModifiersToString(accelerator_id.modifiers);
 }
 
 std::string AcceleratorIdsToString(
@@ -117,4 +191,54 @@ TEST_F(KeyboardShortcutViewerMetadataTest,
           << AcceleratorIdsToString(shortcut_item.accelerator_ids);
     }
   }
+}
+
+// Test that modifying Ash/Chrome accelerator should update
+// KeyboardShortcutViewerMetadata. (https://crbug.com/826037).
+// 1. If you are adding/deleting/modifying shortcuts, please also
+//    add/delete/modify the corresponding strings and items to the list of
+//    KeyboardShortcutItem.
+// 2. Please update the number and hash value of Ash/Chrome accelerators (these
+//    available on Chrome OS) on the top of this file. The new number and hash
+//    value will be provided in the test output.
+// 3. If there is no corrensponding item in the Keyboard Shortcut Viewer, please
+//    consider adding the shortcut to it or only update 2.
+TEST_F(KeyboardShortcutViewerMetadataTest,
+       ModifyAcceleratorShouldUpdateMetadata) {
+  std::vector<ash::AcceleratorData> ash_accelerators;
+  std::vector<AcceleratorMapping> chrome_accelerators;
+  for (size_t i = 0; i < ash::kAcceleratorDataLength; ++i)
+    ash_accelerators.emplace_back(ash::kAcceleratorData[i]);
+  for (const auto& accel_mapping : GetAcceleratorList())
+    chrome_accelerators.emplace_back(accel_mapping);
+
+  const char kCommonMessage[] =
+      "If you are modifying Chrome OS available shortcuts, please update "
+      "Keyboard Shortcut Viewer shortcuts and the following value(s) on the "
+      "top of this file:\n";
+  const int ash_accelerators_number = ash_accelerators.size();
+  EXPECT_TRUE(ash_accelerators_number == kAshAcceleratorsTotalNum)
+      << kCommonMessage
+      << "kAshAcceleratorsTotalNum=" << ash_accelerators_number << "\n";
+
+  std::stable_sort(ash_accelerators.begin(), ash_accelerators.end(),
+                   AshAcceleratorDataCmp());
+  const std::string ash_accelerators_hash =
+      HashAshAcceleratorData(ash_accelerators);
+  EXPECT_TRUE(ash_accelerators_hash == kAshAcceleratorsHash)
+      << kCommonMessage << "kAshAcceleratorsHash=\"" << ash_accelerators_hash
+      << "\"\n";
+
+  const int chrome_accelerators_number = chrome_accelerators.size();
+  EXPECT_TRUE(chrome_accelerators_number == kChromeAcceleratorsTotalNum)
+      << kCommonMessage
+      << "kChromeAcceleratorsTotalNum=" << chrome_accelerators_number << "\n";
+
+  std::stable_sort(chrome_accelerators.begin(), chrome_accelerators.end(),
+                   ChromeAcceleratorMappingCmp());
+  const std::string chrome_accelerators_hash =
+      HashChromeAcceleratorMapping(chrome_accelerators);
+  EXPECT_TRUE(chrome_accelerators_hash == kChromeAcceleratorsHash)
+      << kCommonMessage << "kChromeAcceleratorsHash=\""
+      << chrome_accelerators_hash << "\"\n";
 }
