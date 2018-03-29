@@ -256,7 +256,7 @@ class ShieldButton : public views::Button {
           listener()->HandleReleaseEvent(location);
           break;
         case ui::ET_GESTURE_TAP:
-          listener()->ActivateDraggedWindow(location);
+          listener()->ActivateDraggedWindow();
           break;
         case ui::ET_GESTURE_END:
           listener()->ResetDraggedWindowGesture();
@@ -963,54 +963,27 @@ float WindowSelectorItem::GetItemScale(const gfx::Size& size) {
 
 void WindowSelectorItem::HandlePressEvent(
     const gfx::Point& location_in_screen) {
-  // Check the y position instead of using GetBoundsInScreen().Contains() so
-  // that it includes the image, close button and invisible margins.
-  tap_down_event_on_title_ = base::nullopt;
-  if (IsNewOverviewUi() &&
-      location_in_screen.y() < background_view_->GetBoundsInScreen().bottom()) {
-    tap_down_event_on_title_ = base::make_optional(location_in_screen);
-    return;
-  }
-
   StartDrag();
   window_selector_->InitiateDrag(this, location_in_screen);
 }
 
 void WindowSelectorItem::HandleReleaseEvent(
     const gfx::Point& location_in_screen) {
-  if (tap_down_event_on_title_) {
-    SelectWindowIfBelowDistanceThreshold(location_in_screen);
-    return;
-  }
-
   EndDrag();
   window_selector_->CompleteDrag(this, location_in_screen);
 }
 
 void WindowSelectorItem::HandleDragEvent(const gfx::Point& location_in_screen) {
-  if (tap_down_event_on_title_)
-    return;
-
   window_selector_->Drag(this, location_in_screen);
 }
 
-void WindowSelectorItem::ActivateDraggedWindow(
-    const gfx::Point& location_in_screen) {
-  if (tap_down_event_on_title_) {
-    SelectWindowIfBelowDistanceThreshold(location_in_screen);
-    return;
-  }
-
+void WindowSelectorItem::ActivateDraggedWindow() {
   DCHECK_EQ(this, window_selector_->window_drag_controller()->item());
   window_selector_->ActivateDraggedWindow();
 }
 
 void WindowSelectorItem::ResetDraggedWindowGesture() {
   OnSelectorItemDragEnded();
-
-  if (tap_down_event_on_title_)
-    return;
-
   DCHECK_EQ(this, window_selector_->window_drag_controller()->item());
   window_selector_->ResetDraggedWindowGesture();
 }
@@ -1327,16 +1300,6 @@ void WindowSelectorItem::FadeOut(std::unique_ptr<views::Widget> widget) {
   window_selector_->delegate()->AddDelayedAnimationObserver(
       std::move(observer));
   widget_ptr->SetOpacity(0.f);
-}
-
-void WindowSelectorItem::SelectWindowIfBelowDistanceThreshold(
-    const gfx::Point& event_location) {
-  DCHECK(tap_down_event_on_title_.has_value());
-
-  const gfx::Vector2d distance =
-      event_location - tap_down_event_on_title_.value();
-  if (distance.Length() < OverviewWindowDragController::kMinimumDragOffset)
-    window_selector_->SelectWindow(this);
 }
 
 gfx::SlideAnimation* WindowSelectorItem::GetBackgroundViewAnimation() {

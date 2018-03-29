@@ -182,7 +182,7 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   void HandlePressEvent(const gfx::Point& location_in_screen);
   void HandleReleaseEvent(const gfx::Point& location_in_screen);
   void HandleDragEvent(const gfx::Point& location_in_screen);
-  void ActivateDraggedWindow(const gfx::Point& location_in_screen);
+  void ActivateDraggedWindow();
   void ResetDraggedWindowGesture();
 
   // Sets the bounds of the window shadow. If |bounds_in_screen| is nullopt,
@@ -308,11 +308,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // when the item is selected.
   bool selected_;
 
-  // Has a value if last seen tap down event was on the title bar. Behavior of
-  // subsequent drags/tap up differ if the original event was on the overview
-  // title.
-  base::Optional<gfx::Point> tap_down_event_on_title_;
-
   // A widget that covers the |transform_window_|. The widget has
   // |caption_container_view_| as its contents view. The widget is backed by a
   // NOT_DRAWN layer since most of its surface is transparent.
@@ -372,8 +367,6 @@ class ASH_EXPORT WindowSelectorItem : public views::ButtonListener,
   // |item_widget_|. Done here instead of on the original window because of the
   // rounded edges mask applied on entering overview window.
   std::unique_ptr<ui::Shadow> shadow_;
-
-  bool event_on_title_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(WindowSelectorItem);
 };
