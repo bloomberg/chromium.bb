@@ -423,7 +423,7 @@ cr.define('settings_people_page_sync_page', function() {
       test('FirstTimeSetupNotification', function() {
         assertTrue(!!syncPage.$.toast);
         assertFalse(syncPage.$.toast.open);
-        syncPage.setupInProgress = true;
+        syncPage.syncStatus = {setupInProgress: true};
         Polymer.dom.flush();
         assertTrue(syncPage.$.toast.open);
 
@@ -433,6 +433,20 @@ cr.define('settings_people_page_sync_page', function() {
             .then(abort => {
               assertTrue(abort);
             });
+      });
+
+      test('ShowAccountRow', function() {
+        assertFalse(!!syncPage.$$('settings-sync-account-control'));
+        syncPage.diceEnabled = true;
+        Polymer.dom.flush();
+        assertFalse(!!syncPage.$$('settings-sync-account-control'));
+        syncPage.unifiedConsentEnabled = true;
+        syncPage.syncStatus = {signinAllowed: false, syncSystemEnabled: false};
+        Polymer.dom.flush();
+        assertFalse(!!syncPage.$$('settings-sync-account-control'));
+        syncPage.syncStatus = {signinAllowed: true, syncSystemEnabled: true};
+        Polymer.dom.flush();
+        assertTrue(!!syncPage.$$('settings-sync-account-control'));
       });
     }
   });

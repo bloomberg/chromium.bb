@@ -302,9 +302,11 @@
                 unifiedConsentEnabled_)]]">
           <settings-sync-page
 <if expr="not chromeos">
-              setup-in-progress="[[syncStatus.setupInProgress]]"
+              dice-enabled="[[diceEnabled_]]"
 </if>
-          ></settings-sync-page>
+              unified-consent-enabled="[[unifiedConsentEnabled_]]"
+              sync-status="[[syncStatus]]">
+          </settings-sync-page>
         </settings-subpage>
       </template>
 <if expr="chromeos">

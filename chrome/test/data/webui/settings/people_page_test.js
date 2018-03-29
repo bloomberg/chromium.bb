@@ -4,8 +4,11 @@
 
 cr.define('settings_people_page', function() {
   suite('ProfileInfoTests', function() {
+    /** @type {SettingsPeoplePageElement} */
     let peoplePage = null;
+    /** @type {settings.ProfileInfoBrowserProxy} */
     let browserProxy = null;
+    /** @type {settings.SyncBrowserProxy} */
     let syncBrowserProxy = null;
 
     suiteSetup(function() {
@@ -71,8 +74,11 @@ cr.define('settings_people_page', function() {
 
   if (!cr.isChromeOS) {
     suite('SyncStatusTests', function() {
+      /** @type {SettingsPeoplePageElement} */
       let peoplePage = null;
+      /** @type {settings.SyncBrowserProxy} */
       let browserProxy = null;
+      /** @type {settings.ProfileInfoBrowserProxy} */
       let profileInfoBrowserProxy = null;
 
       suiteSetup(function() {
@@ -341,8 +347,11 @@ cr.define('settings_people_page', function() {
     });
 
     suite('DiceUITest', function() {
+      /** @type {SettingsPeoplePageElement} */
       let peoplePage = null;
+      /** @type {settings.SyncBrowserProxy} */
       let browserProxy = null;
+      /** @type {settings.ProfileInfoBrowserProxy} */
       let profileInfoBrowserProxy = null;
 
       suiteSetup(function() {
@@ -422,8 +431,11 @@ cr.define('settings_people_page', function() {
   }
 
   suite('UnifiedConsentUITest', function() {
+    /** @type {SettingsPeoplePageElement} */
     let peoplePage = null;
+    /** @type {settings.SyncBrowserProxy} */
     let browserProxy = null;
+    /** @type {settings.ProfileInfoBrowserProxy} */
     let profileInfoBrowserProxy = null;
 
     suiteSetup(function() {
