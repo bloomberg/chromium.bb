@@ -4,7 +4,9 @@
 
 #include "chrome/browser/android/contextual_suggestions/contextual_suggestions_bridge.h"
 
+#include "base/android/callback_android.h"
 #include "base/android/jni_string.h"
+#include "base/callback.h"
 #include "chrome/browser/ntp_snippets/contextual_content_suggestions_service_factory.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
@@ -14,6 +16,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using Cluster = ntp_snippets::ContextualContentSuggestionsService::Cluster;
 
@@ -21,18 +24,17 @@ namespace contextual_suggestions {
 
 static jlong JNI_ContextualSuggestionsBridge_Init(
     JNIEnv* env,
-    const JavaParamRef<jobject>& j_bridge,
+    const JavaParamRef<jobject>& obj,
     const JavaParamRef<jobject>& j_profile) {
   ContextualSuggestionsBridge* contextual_suggestions_bridge =
-      new ContextualSuggestionsBridge(env, j_bridge, j_profile);
+      new ContextualSuggestionsBridge(env, j_profile);
   return reinterpret_cast<intptr_t>(contextual_suggestions_bridge);
 }
 
 ContextualSuggestionsBridge::ContextualSuggestionsBridge(
     JNIEnv* env,
-    const JavaParamRef<jobject>& j_bridge,
     const JavaParamRef<jobject>& j_profile)
-    : bridge_(env, j_bridge), weak_ptr_factory_(this) {
+    : weak_ptr_factory_(this) {
   Profile* profile = ProfileAndroid::FromProfileAndroid(j_profile);
   contextual_content_suggestions_service_ =
       ContextualContentSuggestionsServiceFactory::GetForProfile(profile);
@@ -43,6 +45,21 @@ ContextualSuggestionsBridge::~ContextualSuggestionsBridge() {}
 void ContextualSuggestionsBridge::Destroy(JNIEnv* env,
                                           const JavaParamRef<jobject>& obj) {
   delete this;
+}
+
+void ContextualSuggestionsBridge::FetchSuggestions(
+    JNIEnv* env,
+    const JavaParamRef<jobject>& obj,
+    const JavaParamRef<jstring>& j_url,
+    const JavaParamRef<jobject>& j_callback) {
+  if (contextual_content_suggestions_service_ == nullptr)
+    return;
+
+  GURL url(ConvertJavaStringToUTF8(env, j_url));
+  contextual_content_suggestions_service_->FetchContextualSuggestionClusters(
+      url, base::BindOnce(&ContextualSuggestionsBridge::OnSuggestionsAvailable,
+                          weak_ptr_factory_.GetWeakPtr(),
+                          ScopedJavaGlobalRef<jobject>(j_callback)));
 }
 
 void ContextualSuggestionsBridge::FetchSuggestionImage(
@@ -57,11 +74,16 @@ void ContextualSuggestionsBridge::FetchSuggestionFavicon(
     const JavaParamRef<jstring>& j_suggestion_id,
     const JavaParamRef<jobject>& j_callback) {}
 
+void ContextualSuggestionsBridge::ClearState(JNIEnv* env,
+                                             const JavaParamRef<jobject>& obj) {
+}
+
 void ContextualSuggestionsBridge::ReportEvent(JNIEnv* env,
                                               const JavaParamRef<jobject>& obj,
                                               jint j_event_id) {}
 
 void ContextualSuggestionsBridge::OnSuggestionsAvailable(
+    ScopedJavaGlobalRef<jobject> j_callback,
     std::vector<Cluster> clusters) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> j_clusters =
@@ -83,13 +105,7 @@ void ContextualSuggestionsBridge::OnSuggestionsAvailable(
           suggestion.optional_image_dominant_color().value_or(0));
     }
   }
-  Java_ContextualSuggestionsBridge_onSuggestionsAvailable(env, bridge_,
-                                                          j_clusters);
-}
-
-void ContextualSuggestionsBridge::OnStateCleared() {
-  JNIEnv* env = AttachCurrentThread();
-  Java_ContextualSuggestionsBridge_onStateCleared(env, bridge_);
+  RunCallbackAndroid(j_callback, j_clusters);
 }
 
 }  // namespace contextual_suggestions

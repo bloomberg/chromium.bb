@@ -38,18 +38,6 @@ class ContextualContentSuggestionsService : public KeyedService {
     DISALLOW_COPY_AND_ASSIGN(Cluster);
   };
 
-  // Delegate for UI to hook into contextual suggestions service.
-  class Delegate {
-   public:
-    virtual ~Delegate() = default;
-
-    // Sends the new suggestions to the delegate, when they are available.
-    virtual void OnSuggestionsAvailable(std::vector<Cluster> clusters) = 0;
-    // Informs the delegate that user has switched to another tab or clobbered
-    // the current tab, therefore the UI state should be cleared.
-    virtual void OnStateCleared() = 0;
-  };
-
   ContextualContentSuggestionsService(
       std::unique_ptr<ContextualSuggestionsFetcher>
           contextual_suggestions_fetcher,
@@ -63,9 +51,17 @@ class ContextualContentSuggestionsService : public KeyedService {
                               const GURL& url,
                               std::vector<ContentSuggestion> suggestions)>;
 
+  using FetchContextualSuggestionClustersCallback =
+      base::OnceCallback<void(std::vector<Cluster> clusters)>;
+
   // Asynchronously fetches contextual suggestions for the given URL.
   void FetchContextualSuggestions(const GURL& url,
                                   FetchContextualSuggestionsCallback callback);
+
+  // Asynchronously fetches contextual suggestions for the given URL.
+  void FetchContextualSuggestionClusters(
+      const GURL& url,
+      FetchContextualSuggestionClustersCallback callback);
 
   // Fetches an image for a given contextual suggestion ID.
   // Asynchronous if cache or network is queried.
@@ -78,6 +74,10 @@ class ContextualContentSuggestionsService : public KeyedService {
       const GURL& url,
       FetchContextualSuggestionsCallback callback,
       Status status,
+      ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions);
+
+  void DidFetchContextualSuggestionsCluster(
+      FetchContextualSuggestionClustersCallback callback,
       ContextualSuggestionsFetcher::OptionalSuggestions fetched_suggestions);
 
   // Cache for images of contextual suggestions, needed by CachedImageFetcher.
