@@ -2,14 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/multidevice/service/cryptauth_enroller_factory_impl.h"
+#include "chromeos/services/device_sync/cryptauth_enroller_factory_impl.h"
 
 #include <memory>
 
+#include "chromeos/services/device_sync/cryptauth_client_factory_impl.h"
 #include "components/cryptauth/cryptauth_enroller_impl.h"
-#include "components/multidevice/service/cryptauth_client_factory_impl.h"
 
-namespace multidevice {
+namespace chromeos {
+
+namespace device_sync {
 
 CryptAuthEnrollerFactoryImpl::CryptAuthEnrollerFactoryImpl(
     identity::IdentityManager* identity_manager,
@@ -31,4 +33,6 @@ CryptAuthEnrollerFactoryImpl::CreateInstance() {
       secure_message_delegate_factory_->CreateSecureMessageDelegate());
 }
 
-}  // namespace multidevice
+}  // namespace device_sync
+
+}  // namespace chromeos

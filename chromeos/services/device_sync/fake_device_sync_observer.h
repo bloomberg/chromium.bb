@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MULTIDEVICE_SERVICE_FAKE_DEVICE_SYNC_OBSERVER_H_
-#define COMPONENTS_MULTIDEVICE_SERVICE_FAKE_DEVICE_SYNC_OBSERVER_H_
+#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_DEVICE_SYNC_OBSERVER_H_
+#define CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_DEVICE_SYNC_OBSERVER_H_
 
 #include "base/macros.h"
-#include "components/multidevice/service/public/interfaces/device_sync.mojom.h"
+#include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
+
+namespace chromeos {
 
 namespace device_sync {
 
@@ -53,11 +55,13 @@ class FakeDeviceSyncObserver : public device_sync::mojom::DeviceSyncObserver {
   size_t num_sync_success_events_ = 0u;
   size_t num_sync_failure_events_ = 0u;
 
-  mojo::BindingSet<device_sync::mojom::DeviceSyncObserver> bindings_;
+  mojo::BindingSet<mojom::DeviceSyncObserver> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(FakeDeviceSyncObserver);
 };
 
 }  // namespace device_sync
 
-#endif  // COMPONENTS_MULTIDEVICE_SERVICE_FAKE_DEVICE_SYNC_OBSERVER_H_
+}  // namespace chromeos
+
+#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_FAKE_DEVICE_SYNC_OBSERVER_H_

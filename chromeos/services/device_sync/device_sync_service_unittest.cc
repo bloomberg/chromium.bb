@@ -6,12 +6,14 @@
 
 #include "base/run_loop.h"
 #include "base/test/scoped_task_environment.h"
-#include "components/multidevice/service/device_sync_service.h"
-#include "components/multidevice/service/fake_device_sync_observer.h"
-#include "components/multidevice/service/public/interfaces/constants.mojom.h"
-#include "components/multidevice/service/public/interfaces/device_sync.mojom.h"
+#include "chromeos/services/device_sync/device_sync_service.h"
+#include "chromeos/services/device_sync/fake_device_sync_observer.h"
+#include "chromeos/services/device_sync/public/mojom/constants.mojom.h"
+#include "chromeos/services/device_sync/public/mojom/device_sync.mojom.h"
 #include "services/service_manager/public/cpp/test/test_connector_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace chromeos {
 
 namespace device_sync {
 
@@ -52,14 +54,13 @@ class DeviceSyncServiceTest : public testing::Test {
             std::make_unique<DeviceSyncService>());
   }
 
-  device_sync::mojom::DeviceSync* GetDeviceSync() {
+  mojom::DeviceSync* GetDeviceSync() {
     if (!device_sync_) {
       EXPECT_EQ(nullptr, connector_);
 
       // Create the Connector and bind it to |device_sync_|.
       connector_ = connector_factory_->CreateConnector();
-      connector_->BindInterface(device_sync::mojom::kServiceName,
-                                &device_sync_);
+      connector_->BindInterface(mojom::kServiceName, &device_sync_);
 
       // Set |fake_device_sync_observer_|.
       CallAddObserver();
@@ -116,7 +117,7 @@ class DeviceSyncServiceTest : public testing::Test {
   std::unique_ptr<service_manager::Connector> connector_;
 
   std::unique_ptr<FakeDeviceSyncObserver> fake_device_sync_observer_;
-  device_sync::mojom::DeviceSyncPtr device_sync_;
+  mojom::DeviceSyncPtr device_sync_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceSyncServiceTest);
 };
@@ -142,3 +143,5 @@ TEST_F(DeviceSyncServiceTest, TestForceSync) {
 }
 
 }  // namespace device_sync
+
+}  // namespace chromeos

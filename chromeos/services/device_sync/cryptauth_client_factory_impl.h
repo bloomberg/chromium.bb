@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MULTIDEVICE_CRYPTAUTH_CLIENT_FACTORY_IMPL
-#define COMPONENTS_MULTIDEVICE_CRYPTAUTH_CLIENT_FACTORY_IMPL
+#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_CLIENT_FACTORY_IMPL_H_
+#define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_CLIENT_FACTORY_IMPL_H_
 
 #include "base/memory/ref_counted.h"
 #include "components/cryptauth/cryptauth_client.h"
@@ -17,7 +17,9 @@ namespace net {
 class URLRequestContextGetter;
 }  // namespace net
 
-namespace multidevice {
+namespace chromeos {
+
+namespace device_sync {
 
 // CryptAuthClientFactory implementation which utilizes IdentityManager.
 class CryptAuthClientFactoryImpl : public cryptauth::CryptAuthClientFactory {
@@ -37,6 +39,8 @@ class CryptAuthClientFactoryImpl : public cryptauth::CryptAuthClientFactory {
   const cryptauth::DeviceClassifier device_classifier_;
 };
 
-}  // namespace multidevice
+}  // namespace device_sync
 
-#endif  // COMPONENTS_MULTIDEVICE_CRYPTAUTH_CLIENT_FACTORY_IMPL
+}  // namespace chromeos
+
+#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_CLIENT_FACTORY_IMPL_H_

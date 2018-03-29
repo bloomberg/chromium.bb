@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef COMPONENTS_MULTIDEVICE_CRYPTAUTH_ACCESS_TOKEN_FETCHER_IMPL
-#define COMPONENTS_MULTIDEVICE_CRYPTAUTH_ACCESS_TOKEN_FETCHER_IMPL
+#ifndef CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_TOKEN_FETCHER_IMPL_H_
+#define CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_TOKEN_FETCHER_IMPL_H_
 
 #include <memory>
 #include <vector>
@@ -17,7 +17,9 @@ class IdentityManager;
 class PrimaryAccountAccessTokenFetcher;
 }  // namespace identity
 
-namespace multidevice {
+namespace chromeos {
+
+namespace device_sync {
 
 // CryptAuthAccessTokenFetcher implementation which utilizes IdentityManager.
 class CryptAuthAccessTokenFetcherImpl
@@ -44,6 +46,8 @@ class CryptAuthAccessTokenFetcherImpl
   base::WeakPtrFactory<CryptAuthAccessTokenFetcherImpl> weak_ptr_factory_;
 };
 
-}  // namespace multidevice
+}  // namespace device_sync
 
-#endif  // COMPONENTS_MULTIDEVICE_CRYPTAUTH_ACCESS_TOKEN_FETCHER_IMPL
+}  // namespace chromeos
+
+#endif  // CHROMEOS_SERVICES_DEVICE_SYNC_CRYPTAUTH_TOKEN_FETCHER_IMPL_H_

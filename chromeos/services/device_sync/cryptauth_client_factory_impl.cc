@@ -2,12 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/multidevice/service/cryptauth_client_factory_impl.h"
+#include "chromeos/services/device_sync/cryptauth_client_factory_impl.h"
 
+#include "chromeos/services/device_sync/cryptauth_token_fetcher_impl.h"
 #include "components/cryptauth/cryptauth_client_impl.h"
-#include "components/multidevice/service/cryptauth_token_fetcher_impl.h"
 
-namespace multidevice {
+namespace chromeos {
+
+namespace device_sync {
 
 CryptAuthClientFactoryImpl::CryptAuthClientFactoryImpl(
     identity::IdentityManager* identity_manager,
@@ -27,4 +29,6 @@ CryptAuthClientFactoryImpl::CreateInstance() {
       url_request_context_, device_classifier_);
 }
 
-}  // namespace multidevice
+}  // namespace device_sync
+
+}  // namespace chromeos

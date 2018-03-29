@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/multidevice/service/fake_device_sync_observer.h"
+#include "chromeos/services/device_sync/fake_device_sync_observer.h"
+
+namespace chromeos {
 
 namespace device_sync {
 
@@ -41,3 +43,5 @@ void FakeDeviceSyncObserver::OnDevicesSynced(bool success) {
 }
 
 }  // namespace device_sync
+
+}  // namespace chromeos

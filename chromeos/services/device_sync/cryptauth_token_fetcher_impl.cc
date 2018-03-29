@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "components/multidevice/service/cryptauth_token_fetcher_impl.h"
+#include "chromeos/services/device_sync/cryptauth_token_fetcher_impl.h"
 
 #include <set>
 
 #include "services/identity/public/cpp/identity_manager.h"
 
-namespace multidevice {
+namespace chromeos {
+
+namespace device_sync {
 
 namespace {
 
@@ -68,4 +70,6 @@ void CryptAuthAccessTokenFetcherImpl::OnAccessTokenFetched(
                                                        : std::string());
 }
 
-}  // namespace multidevice
+}  // namespace device_sync
+
+}  // namespace chromeos
