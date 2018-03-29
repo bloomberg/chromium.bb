@@ -53,6 +53,8 @@ bool FindBadConstructsAction::ParseArgs(const CompilerInstance& instance,
       // TODO(tsepez): Enable this by default once http://crbug.com/356815
       // and http://crbug.com/356816 are fixed.
       options_.check_enum_last_value = true;
+    } else if (args[i] == "no-realpath") {
+      options_.no_realpath = true;
     } else if (args[i] == "check-ipc") {
       options_.check_ipc = true;
     } else {
