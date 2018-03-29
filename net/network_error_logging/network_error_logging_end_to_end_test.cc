@@ -4,8 +4,10 @@
 
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/test/values_test_util.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -52,7 +54,8 @@ class HungHttpResponse : public test_server::HttpResponse {
 class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
  protected:
   NetworkErrorLoggingEndToEndTest()
-      : test_server_(test_server::EmbeddedTestServer::TYPE_HTTPS),
+      : main_task_runner_(base::ThreadTaskRunnerHandle::Get()),
+        test_server_(test_server::EmbeddedTestServer::TYPE_HTTPS),
         upload_should_hang_(false),
         upload_received_(false) {
     // Make report delivery happen instantly.
@@ -81,6 +84,10 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
         &NetworkErrorLoggingEndToEndTest::HandleReportRequest,
         base::Unretained(this)));
     EXPECT_TRUE(test_server_.Start());
+  }
+
+  ~NetworkErrorLoggingEndToEndTest() override {
+    EXPECT_TRUE(test_server_.ShutdownAndWaitUntilComplete());
   }
 
   GURL GetConfigureURL() { return test_server_.GetURL(kConfigurePath); }
@@ -123,14 +130,11 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
     if (request.relative_url != kReportPath)
       return nullptr;
 
-    EXPECT_FALSE(upload_received_);
-    upload_received_ = true;
-
     EXPECT_TRUE(request.has_content);
-    upload_content_ = request.content;
-
-    if (!upload_closure_.is_null())
-      std::move(upload_closure_).Run();
+    main_task_runner_->PostTask(
+        FROM_HERE,
+        base::BindOnce(&NetworkErrorLoggingEndToEndTest::OnUploadReceived,
+                       base::Unretained(this), request.content));
 
     if (upload_should_hang_)
       return std::make_unique<HungHttpResponse>();
@@ -141,13 +145,20 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
     return std::move(response);
   }
 
+  void OnUploadReceived(std::string content) {
+    upload_received_ = true;
+    upload_content_ = content;
+    upload_run_loop_.Quit();
+  }
+
+  scoped_refptr<base::SingleThreadTaskRunner> main_task_runner_;
   std::unique_ptr<URLRequestContext> url_request_context_;
   test_server::EmbeddedTestServer test_server_;
 
   bool upload_should_hang_;
   bool upload_received_;
   std::string upload_content_;
-  base::OnceClosure upload_closure_;
+  base::RunLoop upload_run_loop_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(NetworkErrorLoggingEndToEndTest);
@@ -155,30 +166,24 @@ class NetworkErrorLoggingEndToEndTest : public ::testing::Test {
 
 TEST_F(NetworkErrorLoggingEndToEndTest, ReportNetworkError) {
   TestDelegate configure_delegate;
+  configure_delegate.set_quit_on_complete(false);
   auto configure_request = url_request_context_->CreateRequest(
       GetConfigureURL(), DEFAULT_PRIORITY, &configure_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
   configure_request->set_method("GET");
   configure_request->Start();
-  base::RunLoop().Run();
-  EXPECT_TRUE(configure_request->status().is_success());
 
   TestDelegate fail_delegate;
+  fail_delegate.set_quit_on_complete(false);
   auto fail_request = url_request_context_->CreateRequest(
       GetFailURL(), DEFAULT_PRIORITY, &fail_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
   fail_request->set_method("GET");
   fail_request->Start();
-  base::RunLoop().Run();
-  EXPECT_EQ(URLRequestStatus::FAILED, fail_request->status().status());
-  EXPECT_EQ(ERR_EMPTY_RESPONSE, fail_request->status().error());
 
-  if (!upload_received_) {
-    base::RunLoop run_loop;
-    upload_closure_ = run_loop.QuitClosure();
-    run_loop.Run();
-  }
+  upload_run_loop_.Run();
 
+  EXPECT_TRUE(upload_received_);
   auto reports = base::test::ParseJson(upload_content_);
 
   base::ListValue* reports_list;
@@ -199,26 +204,26 @@ TEST_F(NetworkErrorLoggingEndToEndTest, ReportNetworkError) {
 
 // Make sure an upload that is in progress at shutdown does not crash.
 // This verifies that https://crbug.com/792978 is fixed.
-// Disabled due to frequent timeouts - see https://crbug.com/820950 .
-TEST_F(NetworkErrorLoggingEndToEndTest, DISABLED_UploadAtShutdown) {
+TEST_F(NetworkErrorLoggingEndToEndTest, UploadAtShutdown) {
   upload_should_hang_ = true;
 
   TestDelegate configure_delegate;
+  configure_delegate.set_quit_on_complete(false);
   auto configure_request = url_request_context_->CreateRequest(
       GetConfigureURL(), DEFAULT_PRIORITY, &configure_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
   configure_request->set_method("GET");
   configure_request->Start();
-  base::RunLoop().Run();
-  EXPECT_TRUE(configure_request->status().is_success());
 
   TestDelegate fail_delegate;
+  fail_delegate.set_quit_on_complete(false);
   auto fail_request = url_request_context_->CreateRequest(
       GetFailURL(), DEFAULT_PRIORITY, &fail_delegate,
       TRAFFIC_ANNOTATION_FOR_TESTS);
   fail_request->set_method("GET");
   fail_request->Start();
-  base::RunLoop().RunUntilIdle();
+
+  upload_run_loop_.Run();
 
   // Let Reporting and NEL shut down with the upload still pending to see if
   // they crash.
