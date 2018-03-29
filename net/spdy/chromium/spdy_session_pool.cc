@@ -149,17 +149,10 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
       net_log.AddEvent(
           NetLogEventType::HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION,
           it->second->net_log().source().ToEventParametersCallback());
-    } else {
-      if (!enable_ip_based_pooling) {
-        // Remove session from available sessions and from aliases, and remove
-        // key from the session's pooled alias set, so that a new session can be
-        // created with this |key|.
-        it->second->RemovePooledAlias(key);
-        UnmapKey(key);
-        RemoveAliases(key);
-        return base::WeakPtr<SpdySession>();
-      }
+      return it->second;
+    }
 
+    if (enable_ip_based_pooling) {
       UMA_HISTOGRAM_ENUMERATION("Net.SpdySessionGet",
                                 FOUND_EXISTING_FROM_IP_POOL,
                                 SPDY_SESSION_GET_MAX);
@@ -167,8 +160,16 @@ base::WeakPtr<SpdySession> SpdySessionPool::FindAvailableSession(
           NetLogEventType::
               HTTP2_SESSION_POOL_FOUND_EXISTING_SESSION_FROM_IP_POOL,
           it->second->net_log().source().ToEventParametersCallback());
+      return it->second;
     }
-    return it->second;
+
+    // Remove session from available sessions and from aliases, and remove
+    // key from the session's pooled alias set, so that a new session can be
+    // created with this |key|.
+    it->second->RemovePooledAlias(key);
+    UnmapKey(key);
+    RemoveAliases(key);
+    return base::WeakPtr<SpdySession>();
   }
 
   if (!enable_ip_based_pooling)

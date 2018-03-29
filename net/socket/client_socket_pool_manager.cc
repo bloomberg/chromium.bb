@@ -4,6 +4,8 @@
 
 #include "net/socket/client_socket_pool_manager.h"
 
+#include <memory>
+
 #include "base/logging.h"
 #include "base/strings/stringprintf.h"
 #include "net/base/load_flags.h"
@@ -41,8 +43,8 @@ static_assert(arraysize(g_max_sockets_per_pool) ==
 // be the same as the limit for ws. Also note that Firefox uses a limit of 200.
 // See http://crbug.com/486800
 int g_max_sockets_per_group[] = {
-  6,  // NORMAL_SOCKET_POOL
-  255 // WEBSOCKET_SOCKET_POOL
+    6,   // NORMAL_SOCKET_POOL
+    255  // WEBSOCKET_SOCKET_POOL
 };
 
 static_assert(arraysize(g_max_sockets_per_group) ==
@@ -87,7 +89,7 @@ int InitSocketPoolHelper(ClientSocketPoolManager::SocketGroupType group_type,
   scoped_refptr<SOCKSSocketParams> socks_params;
   std::unique_ptr<HostPortPair> proxy_host_port;
 
-  bool using_ssl = group_type == ClientSocketPoolManager::SSL_GROUP;
+  const bool using_ssl = group_type == ClientSocketPoolManager::SSL_GROUP;
   HostPortPair origin_host_port = endpoint;
 
   if (!using_ssl && session->params().testing_fixed_http_port != 0) {

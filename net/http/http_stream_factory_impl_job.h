@@ -224,8 +224,6 @@ class HttpStreamFactoryImpl::Job {
 
   std::unique_ptr<HttpStream> ReleaseStream() { return std::move(stream_); }
 
-  void SetStream(HttpStream* http_stream) { stream_.reset(http_stream); }
-
   std::unique_ptr<BidirectionalStreamImpl> ReleaseBidirectionalStream() {
     return std::move(bidirectional_stream_impl_);
   }

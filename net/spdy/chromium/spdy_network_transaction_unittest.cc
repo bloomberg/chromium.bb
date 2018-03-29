@@ -4613,10 +4613,9 @@ TEST_F(SpdyNetworkTransactionTest, ProxyConnect) {
       CreateMockRead(resp, 3), CreateMockRead(body, 4),
       MockRead(ASYNC, 0, 0, 5),
   };
-  auto data = std::make_unique<SequencedSocketData>(reads, arraysize(reads),
-                                                    writes, arraysize(writes));
+  SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));
 
-  helper.AddData(data.get());
+  helper.AddData(&data);
   TestCompletionCallback callback;
 
   int rv = trans->Start(&request_, callback.callback(), log_);
@@ -4723,8 +4722,8 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
       MockRead(ASYNC, 0, 5)  // EOF
   };
 
-  auto data_proxy = std::make_unique<SequencedSocketData>(
-      reads2, arraysize(reads2), writes2, arraysize(writes2));
+  SequencedSocketData data_proxy(reads2, arraysize(reads2), writes2,
+                                 arraysize(writes2));
 
   // Create another request to www.example.org, but this time through a proxy.
   request_.method = "GET";
@@ -4736,7 +4735,7 @@ TEST_F(SpdyNetworkTransactionTest, DirectConnectProxyReconnect) {
                                            std::move(session_deps_proxy));
 
   helper_proxy.RunPreTestSetup();
-  helper_proxy.AddData(data_proxy.get());
+  helper_proxy.AddData(&data_proxy);
 
   HttpNetworkTransaction* trans_proxy = helper_proxy.trans();
   TestCompletionCallback callback_proxy;

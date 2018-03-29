@@ -296,8 +296,6 @@ class NET_EXPORT_PRIVATE HttpNetworkTransaction
   // Returns true if this transaction is for a WebSocket handshake
   bool ForWebSocketHandshake() const;
 
-  void SetStream(HttpStream* stream);
-
   void CopyConnectionAttemptsFromStreamRequest();
 
   // Returns true if response "Content-Encoding" headers respect

@@ -31,6 +31,7 @@
 #include "net/log/net_log.h"
 #include "net/log/net_log_event_type.h"
 #include "net/log/net_log_source_type.h"
+#include "net/socket/next_proto.h"
 #include "net/ssl/ssl_cert_request_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/redirect_util.h"
@@ -701,7 +702,7 @@ void URLRequest::CancelWithSSLError(int error, const SSLInfo& ssl_info) {
 }
 
 int URLRequest::DoCancel(int error, const SSLInfo& ssl_info) {
-  DCHECK(error < 0);
+  DCHECK_LT(error, 0);
   // If cancelled while calling a delegate, clear delegate info.
   if (calling_delegate_) {
     LogUnblocked();

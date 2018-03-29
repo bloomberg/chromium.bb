@@ -12207,9 +12207,10 @@ TEST_F(HttpNetworkTransactionTest, UseOriginNotAlternativeForProxy) {
 
   TestNetLog net_log;
 
-  session_deps_.proxy_resolution_service = std::make_unique<ProxyResolutionService>(
-      std::move(proxy_config_service), std::move(proxy_resolver_factory),
-      &net_log);
+  session_deps_.proxy_resolution_service =
+      std::make_unique<ProxyResolutionService>(
+          std::move(proxy_config_service), std::move(proxy_resolver_factory),
+          &net_log);
 
   session_deps_.net_log = &net_log;
 
@@ -13334,7 +13335,8 @@ TEST_F(HttpNetworkTransactionTest, GenerateAuthToken) {
           ProxyResolutionService::CreateFixed(test_config.proxy_url,
                                               TRAFFIC_ANNOTATION_FOR_TESTS);
     } else {
-      session_deps_.proxy_resolution_service = ProxyResolutionService::CreateDirect();
+      session_deps_.proxy_resolution_service =
+          ProxyResolutionService::CreateDirect();
     }
 
     HttpRequestInfo request;
@@ -13427,7 +13429,8 @@ TEST_F(HttpNetworkTransactionTest, MultiRoundAuth) {
   HttpAuthHandlerMock::Factory* auth_factory(
       new HttpAuthHandlerMock::Factory());
   session_deps_.http_auth_handler_factory.reset(auth_factory);
-  session_deps_.proxy_resolution_service = ProxyResolutionService::CreateDirect();
+  session_deps_.proxy_resolution_service =
+      ProxyResolutionService::CreateDirect();
   session_deps_.host_resolver->rules()->AddRule("www.example.com", "10.0.0.1");
   session_deps_.host_resolver->set_synchronous_mode(true);
 
@@ -15774,10 +15777,9 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
   // Use a separate test instance for the separate SpdySession that will be
   // created.
   SpdyTestUtil spdy_util_2;
-  auto spdy1_data = std::make_unique<SequencedSocketData>(
-      spdy1_reads, arraysize(spdy1_reads), spdy1_writes,
-      arraysize(spdy1_writes));
-  session_deps_.socket_factory->AddSocketDataProvider(spdy1_data.get());
+  SequencedSocketData spdy1_data(spdy1_reads, arraysize(spdy1_reads),
+                                 spdy1_writes, arraysize(spdy1_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy1_data);
 
   SpdySerializedFrame host2_req(
       spdy_util_2.ConstructSpdyGet("https://www.b.com", 1, DEFAULT_PRIORITY));
@@ -15792,10 +15794,9 @@ TEST_F(HttpNetworkTransactionTest, CloseIdleSpdySessionToOpenNewOne) {
       MockRead(SYNCHRONOUS, ERR_IO_PENDING, 3),
   };
 
-  auto spdy2_data = std::make_unique<SequencedSocketData>(
-      spdy2_reads, arraysize(spdy2_reads), spdy2_writes,
-      arraysize(spdy2_writes));
-  session_deps_.socket_factory->AddSocketDataProvider(spdy2_data.get());
+  SequencedSocketData spdy2_data(spdy2_reads, arraysize(spdy2_reads),
+                                 spdy2_writes, arraysize(spdy2_writes));
+  session_deps_.socket_factory->AddSocketDataProvider(&spdy2_data);
 
   MockWrite http_write[] = {
     MockWrite("GET / HTTP/1.1\r\n"
@@ -17169,9 +17170,6 @@ void AddWebSocketHeaders(HttpRequestHeaders* headers) {
 }  // namespace
 
 TEST_F(HttpNetworkTransactionTest, CreateWebSocketHandshakeStream) {
-  // The same logic needs to be tested for both ws: and wss: schemes, but this
-  // test is already parameterised on NextProto, so it uses a loop to verify
-  // that the different schemes work.
   std::string test_cases[] = {"ws://www.example.org/",
                               "wss://www.example.org/"};
   for (size_t i = 0; i < arraysize(test_cases); ++i) {
