@@ -19,6 +19,7 @@
 
 namespace blink {
 
+class CSSStyleSheet;
 class CustomElementRegistry;
 class ExceptionState;
 class ScriptState;
@@ -33,6 +34,7 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
   ScriptCustomElementDefinitionBuilder(
       ScriptState*,
       CustomElementRegistry*,
+      CSSStyleSheet*,
       const ScriptValue& constructor_script_value,
       ExceptionState&);
   ~ScriptCustomElementDefinitionBuilder() = default;
@@ -49,6 +51,7 @@ class CORE_EXPORT ScriptCustomElementDefinitionBuilder
 
   scoped_refptr<ScriptState> script_state_;
   Member<CustomElementRegistry> registry_;
+  const Member<CSSStyleSheet> default_style_sheet_;
   v8::Local<v8::Value> constructor_value_;
   v8::Local<v8::Object> constructor_;
   v8::Local<v8::Object> prototype_;

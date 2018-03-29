@@ -9,11 +9,13 @@
 #include "base/macros.h"
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/V8BindingForCore.h"
+#include "core/css/CSSStyleSheetInit.h"
 #include "core/dom/Document.h"
 #include "core/dom/Element.h"
 #include "core/dom/ElementDefinitionOptions.h"
 #include "core/dom/ShadowRoot.h"
 #include "core/dom/ShadowRootInit.h"
+#include "core/html/HTMLElement.h"
 #include "core/html/custom/CEReactionsScope.h"
 #include "core/html/custom/CustomElementDefinition.h"
 #include "core/html/custom/CustomElementDefinitionBuilder.h"
@@ -436,6 +438,21 @@ TEST_F(CustomElementRegistryTest, lookupCustomElementDefinition) {
   // look up undefined customized built-in element
   definition = Registry().DefinitionFor(CustomElementDescriptor("a-a", "div"));
   EXPECT_EQ(nullptr, definition) << "a-a, div should not be registered";
+}
+
+TEST_F(CustomElementRegistryTest, defineCustomElementWithStyle) {
+  RuntimeEnabledFeatures::SetConstructableStylesheetsEnabled(true);
+  NonThrowableExceptionState should_not_throw;
+  ElementDefinitionOptions options;
+  CSSStyleSheet* sheet =
+      CSSStyleSheet::Create(GetDocument(), ":host { color: red; }",
+                            CSSStyleSheetInit(), should_not_throw);
+  options.setStyle(sheet);
+  TestCustomElementDefinitionBuilder builder(sheet);
+  CustomElementDefinition* definition_a =
+      Registry().define("a-a", builder, options, should_not_throw);
+  EXPECT_EQ(definition_a, Registry().DefinitionForName("a-a"));
+  EXPECT_EQ(sheet, Registry().DefinitionForName("a-a")->DefaultStyleSheet());
 }
 
 // TODO(dominicc): Add tests which adjust the "is" attribute when type

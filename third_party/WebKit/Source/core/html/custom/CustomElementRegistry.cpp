@@ -109,8 +109,12 @@ CustomElementDefinition* CustomElementRegistry::define(
     const ScriptValue& constructor,
     const ElementDefinitionOptions& options,
     ExceptionState& exception_state) {
-  ScriptCustomElementDefinitionBuilder builder(script_state, this, constructor,
-                                               exception_state);
+  CSSStyleSheet* style_sheet = nullptr;
+  if (RuntimeEnabledFeatures::CustomElementDefaultStyleEnabled() &&
+      options.hasStyle())
+    style_sheet = options.style();
+  ScriptCustomElementDefinitionBuilder builder(script_state, this, style_sheet,
+                                               constructor, exception_state);
   return define(name, builder, options, exception_state);
 }
 

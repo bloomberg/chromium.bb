@@ -5,6 +5,7 @@
 #include "core/html/custom/CustomElementDefinition.h"
 
 #include "bindings/core/v8/ExceptionState.h"
+#include "core/css/CSSStyleSheet.h"
 #include "core/dom/Attr.h"
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
@@ -27,16 +28,24 @@ CustomElementDefinition::CustomElementDefinition(
 
 CustomElementDefinition::CustomElementDefinition(
     const CustomElementDescriptor& descriptor,
+    CSSStyleSheet* default_style_sheet)
+    : descriptor_(descriptor), default_style_sheet_(default_style_sheet) {}
+
+CustomElementDefinition::CustomElementDefinition(
+    const CustomElementDescriptor& descriptor,
+    CSSStyleSheet* default_style_sheet,
     const HashSet<AtomicString>& observed_attributes)
     : descriptor_(descriptor),
       observed_attributes_(observed_attributes),
       has_style_attribute_changed_callback_(
-          observed_attributes.Contains(HTMLNames::styleAttr.LocalName())) {}
+          observed_attributes.Contains(HTMLNames::styleAttr.LocalName())),
+      default_style_sheet_(default_style_sheet) {}
 
 CustomElementDefinition::~CustomElementDefinition() = default;
 
 void CustomElementDefinition::Trace(blink::Visitor* visitor) {
   visitor->Trace(construction_stack_);
+  visitor->Trace(default_style_sheet_);
 }
 
 static String ErrorMessageForConstructorResult(Element* element,
