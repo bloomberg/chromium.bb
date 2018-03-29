@@ -33,7 +33,6 @@ import org.chromium.content_public.browser.ActionModeCallbackHelper;
 import org.chromium.content_public.browser.ContentViewCore;
 import org.chromium.content_public.browser.ContentViewCore.InternalAccessDelegate;
 import org.chromium.content_public.browser.WebContents;
-import org.chromium.content_public.browser.WebContentsObserver;
 import org.chromium.device.gamepad.GamepadList;
 import org.chromium.ui.base.EventForwarder;
 import org.chromium.ui.base.ViewAndroidDelegate;
@@ -42,8 +41,6 @@ import org.chromium.ui.base.WindowAndroid;
 import org.chromium.ui.display.DisplayAndroid;
 import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 
-import java.lang.ref.WeakReference;
-
 /**
  * Implementation of the interface {@ContentViewCore}.
  */
@@ -51,51 +48,12 @@ import java.lang.ref.WeakReference;
 public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObserver {
     private static final String TAG = "cr_ContentViewCore";
 
-    /**
-     * A {@link WebContentsObserver} that listens to frame navigation events.
-     */
-    private static class ContentViewWebContentsObserver extends WebContentsObserver {
-        // Using a weak reference avoids cycles that might prevent GC of WebView's WebContents.
-        private final WeakReference<ContentViewCoreImpl> mWeakContentViewCore;
-
-        ContentViewWebContentsObserver(ContentViewCoreImpl contentViewCore) {
-            super(contentViewCore.getWebContents());
-            mWeakContentViewCore = new WeakReference<ContentViewCoreImpl>(contentViewCore);
-        }
-
-        @Override
-        public void didFinishNavigation(String url, boolean isInMainFrame, boolean isErrorPage,
-                boolean hasCommitted, boolean isSameDocument, boolean isFragmentNavigation,
-                Integer pageTransition, int errorCode, String errorDescription,
-                int httpStatusCode) {
-            if (hasCommitted && isInMainFrame && !isSameDocument) {
-                resetPopupsAndInput();
-            }
-        }
-
-        @Override
-        public void renderProcessGone(boolean wasOomProtected) {
-            resetPopupsAndInput();
-            ContentViewCoreImpl contentViewCore = mWeakContentViewCore.get();
-            if (contentViewCore == null) return;
-            contentViewCore.getImeAdapter().resetAndHideKeyboard();
-        }
-
-        private void resetPopupsAndInput() {
-            ContentViewCoreImpl contentViewCore = mWeakContentViewCore.get();
-            if (contentViewCore == null) return;
-            contentViewCore.hidePopupsAndClearSelection();
-            contentViewCore.getGestureListenerManager().resetScrollInProgress();
-        }
-    }
-
     private Context mContext;
     private final ObserverList<WindowEventObserver> mWindowEventObservers = new ObserverList<>();
 
     private ViewGroup mContainerView;
     private InternalAccessDelegate mContainerViewInternals;
     private WebContentsImpl mWebContents;
-    private WebContentsObserver mWebContentsObserver;
     private WindowAndroid mWindowAndroid;
 
     // Native pointer to C++ ContentViewCore object which will be set by nativeInit().
@@ -226,7 +184,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         addWindowAndroidChangedObserver(textSuggestionHost);
 
         SelectPopup.create(mContext, mWebContents, containerView);
-        mWebContentsObserver = new ContentViewWebContentsObserver(this);
 
         mWindowEventObservers.addObserver(controller);
         mWindowEventObservers.addObserver(getGestureListenerManager());
@@ -346,8 +303,6 @@ public class ContentViewCoreImpl implements ContentViewCore, DisplayAndroidObser
         if (mNativeContentViewCore != 0) {
             nativeOnJavaContentViewCoreDestroyed(mNativeContentViewCore);
         }
-        mWebContentsObserver.destroy();
-        mWebContentsObserver = null;
         ImeAdapterImpl imeAdapter = getImeAdapter();
         imeAdapter.resetAndHideKeyboard();
         imeAdapter.removeEventObserver(getSelectionPopupController());

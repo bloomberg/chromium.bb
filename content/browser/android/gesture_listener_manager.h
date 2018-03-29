@@ -22,6 +22,7 @@ class Vector2dF;
 
 namespace content {
 
+class NavigationHandle;
 class WebContentsImpl;
 
 // Native class for GestureListenerManagerImpl.
@@ -56,7 +57,15 @@ class GestureListenerManager : public RenderWidgetHostConnector {
       RenderWidgetHostViewAndroid* old_rwhva,
       RenderWidgetHostViewAndroid* new_rhwva) override;
 
+  void OnNavigationFinished(NavigationHandle* navigation_handle);
+  void OnRenderProcessGone();
+
  private:
+  class ResetScrollObserver;
+
+  void ResetPopupsAndInput(bool render_process_gone);
+
+  std::unique_ptr<ResetScrollObserver> reset_scroll_observer_;
   WebContentsImpl* web_contents_;
 
   // A weak reference to the Java GestureListenerManager object.

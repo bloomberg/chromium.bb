@@ -12,6 +12,7 @@ import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.TraceEvent;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+import org.chromium.content.browser.input.ImeAdapterImpl;
 import org.chromium.content.browser.selection.SelectionPopupControllerImpl;
 import org.chromium.content.browser.webcontents.WebContentsImpl;
 import org.chromium.content.browser.webcontents.WebContentsUserData;
@@ -218,6 +219,16 @@ public class GestureListenerManagerImpl implements GestureListenerManager, Windo
     private void onLongPressAck() {
         mContainerView.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
         for (mIterator.rewind(); mIterator.hasNext();) mIterator.next().onLongPress();
+    }
+
+    @CalledByNative
+    private void resetPopupsAndInput(boolean renderProcessGone) {
+        PopupController.hidePopupsAndClearSelection(mWebContents);
+        resetScrollInProgress();
+        if (renderProcessGone) {
+            ImeAdapterImpl imeAdapter = ImeAdapterImpl.fromWebContents(mWebContents);
+            if (imeAdapter != null) imeAdapter.resetAndHideKeyboard();
+        }
     }
 
     @CalledByNative
