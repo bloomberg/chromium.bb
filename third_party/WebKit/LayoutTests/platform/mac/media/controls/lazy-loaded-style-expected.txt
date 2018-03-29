@@ -37,8 +37,8 @@ layer at (283,292) size 93x0
   LayoutBlockFlow (relative positioned) {DIV} at (-18,1) size 93.28x0
 layer at (301,291) size 57x2
   LayoutBlockFlow (positioned) {DIV} at (18,-1) size 57.28x2 [bgcolor=#DADADA]
-layer at (116,291) size 116x2
-  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 116x2 [bgcolor=#5A5A5A]
+layer at (116,291) size 117x2
+  LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 117x2 [bgcolor=#5A5A5A]
 layer at (116,291) size 0x2
   LayoutBlockFlow (positioned) zI: 1 {DIV} at (0,0) size 0x2 [bgcolor=#4285F4]
 layer at (301,291) size 0x2

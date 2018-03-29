@@ -302,30 +302,30 @@ cols=1000 clientWidth=5017
 
 Trebuchet MS
 input
-size=1 clientWidth=16
-size=2 clientWidth=22
-size=3 clientWidth=28
-size=4 clientWidth=34
-size=5 clientWidth=40
-size=10 clientWidth=70
+size=1 clientWidth=35
+size=2 clientWidth=40
+size=3 clientWidth=45
+size=4 clientWidth=50
+size=5 clientWidth=55
+size=10 clientWidth=80
 size=20 clientWidth=130
-size=50 clientWidth=310
-size=100 clientWidth=610
-size=500 clientWidth=3010
-size=1000 clientWidth=6010
+size=50 clientWidth=280
+size=100 clientWidth=530
+size=500 clientWidth=2530
+size=1000 clientWidth=5030
 
 textarea
-cols=1 clientWidth=23
-cols=2 clientWidth=29
-cols=3 clientWidth=35
-cols=4 clientWidth=41
-cols=5 clientWidth=47
-cols=10 clientWidth=77
-cols=20 clientWidth=137
-cols=50 clientWidth=317
-cols=100 clientWidth=617
-cols=500 clientWidth=3017
-cols=1000 clientWidth=6017
+cols=1 clientWidth=22
+cols=2 clientWidth=27
+cols=3 clientWidth=32
+cols=4 clientWidth=37
+cols=5 clientWidth=42
+cols=10 clientWidth=67
+cols=20 clientWidth=117
+cols=50 clientWidth=267
+cols=100 clientWidth=517
+cols=500 clientWidth=2517
+cols=1000 clientWidth=5017
 
 Verdana
 input
