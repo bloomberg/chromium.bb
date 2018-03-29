@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/offline_pages/prefetch/prefetch_importer_impl.h"
+#include "components/offline_pages/core/prefetch/prefetch_importer_impl.h"
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
@@ -12,12 +12,7 @@
 #include "base/task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
-#include "chrome/browser/offline_pages/offline_page_model_factory.h"
-#include "chrome/browser/offline_pages/offline_page_utils.h"
-#include "chrome/common/chrome_constants.h"
 #include "components/offline_pages/core/offline_page_model.h"
-#include "components/offline_pages/core/prefetch/prefetch_item.h"
-#include "content/public/browser/browser_context.h"
 #include "url/gurl.h"
 
 namespace offline_pages {
@@ -59,19 +54,20 @@ void ReportPageImportResult(PageImportResult result) {
 void MoveFile(const base::FilePath& src_path,
               const base::FilePath& dest_path,
               base::TaskRunner* task_runner,
-              const base::Callback<void(bool)>& callback) {
+              base::OnceCallback<void(bool)> callback) {
   bool success = base::Move(src_path, dest_path);
-  task_runner->PostTask(FROM_HERE, base::Bind(callback, success));
+  task_runner->PostTask(FROM_HERE,
+                        base::BindOnce(std::move(callback), success));
 }
 
 }  // namespace
 
 PrefetchImporterImpl::PrefetchImporterImpl(
     PrefetchDispatcher* dispatcher,
-    content::BrowserContext* context,
+    OfflinePageModel* offline_page_model,
     scoped_refptr<base::TaskRunner> background_task_runner)
     : PrefetchImporter(dispatcher),
-      context_(context),
+      offline_page_model_(offline_page_model),
       background_task_runner_(background_task_runner),
       weak_ptr_factory_(this) {}
 
@@ -82,15 +78,11 @@ void PrefetchImporterImpl::ImportArchive(const PrefetchArchiveInfo& archive) {
 
   // The target file name will be auto generated based on GUID to prevent any
   // name collision.
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(context_);
-  DCHECK(offline_page_model);
-
-  base::FilePath archives_dir = offline_page_model->GetInternalArchiveDirectory(
-      archive.client_id.name_space);
-  base::FilePath dest_path =
-      archives_dir.Append(base::GenerateGUID())
-          .AddExtension(OfflinePageUtils::kMHTMLExtension);
+  base::FilePath archives_dir =
+      offline_page_model_->GetInternalArchiveDirectory(
+          archive.client_id.name_space);
+  base::FilePath dest_path = archives_dir.AppendASCII(base::GenerateGUID())
+                                 .AddExtension(FILE_PATH_LITERAL("mhtml"));
 
   // For PrefetchArchiveInfo, |url| is the original URL while
   // |final_archived_url| is the last committed URL which is set to empty when
@@ -121,10 +113,11 @@ void PrefetchImporterImpl::ImportArchive(const PrefetchArchiveInfo& archive) {
   // file move operation should be done on background thread.
   background_task_runner_->PostTask(
       FROM_HERE,
-      base::Bind(&MoveFile, archive.file_path, dest_path,
-                 base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
-                 base::Bind(&PrefetchImporterImpl::OnMoveFileDone,
-                            weak_ptr_factory_.GetWeakPtr(), offline_page)));
+      base::BindOnce(
+          &MoveFile, archive.file_path, dest_path,
+          base::RetainedRef(base::ThreadTaskRunnerHandle::Get()),
+          base::BindOnce(&PrefetchImporterImpl::OnMoveFileDone,
+                         weak_ptr_factory_.GetWeakPtr(), offline_page)));
 }
 
 void PrefetchImporterImpl::MarkImportCompleted(int64_t offline_id) {
@@ -144,13 +137,9 @@ void PrefetchImporterImpl::OnMoveFileDone(const OfflinePageItem& offline_page,
     return;
   }
 
-  OfflinePageModel* offline_page_model =
-      OfflinePageModelFactory::GetForBrowserContext(context_);
-  DCHECK(offline_page_model);
-
-  offline_page_model->AddPage(offline_page,
-                              base::Bind(&PrefetchImporterImpl::OnPageAdded,
-                                         weak_ptr_factory_.GetWeakPtr()));
+  offline_page_model_->AddPage(
+      offline_page, base::BindRepeating(&PrefetchImporterImpl::OnPageAdded,
+                                        weak_ptr_factory_.GetWeakPtr()));
 }
 
 void PrefetchImporterImpl::OnPageAdded(AddPageResult result,
