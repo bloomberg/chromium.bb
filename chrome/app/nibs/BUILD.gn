@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 import("//build/config/mac/rules.gni")
+import("//ui/base/ui_features.gni")
 
 assert(is_mac)
 
@@ -12,16 +13,6 @@ translated_xibs = [
   "BookmarkBubble.xib",
   "BookmarkEditor.xib",
   "BookmarkNameFolder.xib",
-  "CollectedCookies.xib",
-  "ContentBlockedCookies.xib",
-  "ContentBlockedDownloads.xib",
-  "ContentBlockedGeolocation.xib",
-  "ContentBlockedMIDISysEx.xib",
-  "ContentBlockedMedia.xib",
-  "ContentBlockedMixedScript.xib",
-  "ContentBlockedPopups.xib",
-  "ContentBlockedSimple.xib",
-  "ContentProtocolHandlers.xib",
   "CookieDetailsView.xib",
   "DownloadItem.xib",
   "DownloadShelf.xib",
@@ -38,6 +29,21 @@ translated_xibs = [
   "TaskManager.xib",
   "Toolbar.xib",
 ]
+
+if (!mac_views_browser) {
+  translated_xibs += [
+    "CollectedCookies.xib",
+    "ContentBlockedCookies.xib",
+    "ContentBlockedDownloads.xib",
+    "ContentBlockedGeolocation.xib",
+    "ContentBlockedMIDISysEx.xib",
+    "ContentBlockedMedia.xib",
+    "ContentBlockedMixedScript.xib",
+    "ContentBlockedPopups.xib",
+    "ContentBlockedSimple.xib",
+    "ContentProtocolHandlers.xib",
+  ]
+}
 
 untranslated_xibs = [
   "BookmarkBarFolderWindow.xib",

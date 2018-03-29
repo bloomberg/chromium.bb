@@ -7,7 +7,6 @@
 #include <memory>
 
 #include "chrome/browser/ui/cocoa/browser_dialogs_views_mac.h"
-#import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
 #import "chrome/browser/ui/cocoa/hung_renderer_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/passwords_bubble_cocoa.h"
 #import "chrome/browser/ui/cocoa/profiles/profile_signin_confirmation_dialog_cocoa.h"
@@ -15,6 +14,10 @@
 #include "chrome/browser/ui/sync/profile_signin_confirmation_helper.h"
 #include "content/public/browser/web_contents.h"
 #include "ui/base/ui_features.h"
+
+#if !BUILDFLAG(MAC_VIEWS_BROWSER)
+#import "chrome/browser/ui/cocoa/content_settings/collected_cookies_mac.h"
+#endif
 
 #if !BUILDFLAG(MAC_VIEWS_BROWSER)
 // static
@@ -51,8 +54,12 @@ gfx::NativeView TabDialogsCocoa::GetDialogParentView() const {
 }
 
 void TabDialogsCocoa::ShowCollectedCookies() {
+#if BUILDFLAG(MAC_VIEWS_BROWSER)
+  NOTREACHED() << "MacViewsBrowser builds can't use Cocoa dialogs";
+#else
   // Deletes itself on close.
   new CollectedCookiesMac(web_contents_);
+#endif
 }
 
 void TabDialogsCocoa::ShowHungRendererDialog(
