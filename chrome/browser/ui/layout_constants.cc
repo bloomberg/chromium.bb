@@ -97,10 +97,12 @@ int GetLayoutConstant(LayoutConstant constant) {
 #else
       return 0;
 #endif
-    case TOOLBAR_ELEMENT_PADDING:
-      return hybrid ? 8 : 0;
+    case TOOLBAR_ELEMENT_PADDING: {
+      constexpr int kElementPadding[] = {0, 8, 0, 4};
+      return kElementPadding[mode];
+    }
     case TOOLBAR_STANDARD_SPACING: {
-      constexpr int kSpacings[] = {4, 8, 12, 4};
+      constexpr int kSpacings[] = {4, 8, 12, 8};
       return kSpacings[mode];
     }
   }
