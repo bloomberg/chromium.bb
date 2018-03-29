@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/containers/circular_deque.h"
 #include "base/files/scoped_file.h"
+#include "base/fuchsia/scoped_zx_handle.h"
 #include "base/location.h"
 #include "base/logging.h"
 #include "base/macros.h"

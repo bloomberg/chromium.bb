@@ -5,6 +5,7 @@
 #include "media/audio/fuchsia/audio_output_stream_fuchsia.h"
 
 #include <media/audio.h>
+#include <zircon/syscalls.h>
 
 #include "media/audio/fuchsia/audio_manager_fuchsia.h"
 #include "media/base/audio_sample_types.h"
