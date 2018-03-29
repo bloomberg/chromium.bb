@@ -8,8 +8,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback_forward.h"
 #include "base/strings/string16.h"
 #include "build/buildflag.h"
+#include "chrome/browser/ui/webui/signin/dice_turn_sync_on_helper.h"
 #include "components/signin/core/browser/account_info.h"
 #include "components/signin/core/browser/signin_buildflags.h"
 #include "components/signin/core/browser/signin_metrics.h"
@@ -64,6 +66,23 @@ std::vector<AccountInfo> GetAccountsForDicePromos(Profile* profile);
 // only supports the policy value that matches [^@]+@[a-zA-Z0-9\-.]+(\\E)?\$?$.
 // Also, the parser does not validate the policy value.
 std::string GetAllowedDomain(std::string signin_pattern);
+
+namespace internal {
+// Same as |EnableSync| but with a callback that creates a
+// DiceTurnSyncOnHelper so that it can be unit tested.
+void EnableSync(
+    Browser* browser,
+    const AccountInfo& account,
+    signin_metrics::AccessPoint access_point,
+    base::OnceCallback<
+        void(Profile* profile,
+             Browser* browser,
+             signin_metrics::AccessPoint signin_access_point,
+             signin_metrics::Reason signin_reason,
+             const std::string& account_id,
+             DiceTurnSyncOnHelper::SigninAbortedMode signin_aborted_mode)>
+        create_dice_turn_sync_on_helper_callback);
+}  // namespace internal
 
 }  // namespace signin_ui_util
 
