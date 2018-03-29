@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #import "base/mac/scoped_nsobject.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_decoration.h"
 #import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
 #import "chrome/browser/ui/cocoa/location_bar/manage_passwords_decoration.h"
@@ -47,7 +48,8 @@ class BubbleAnchorHelper final : public views::WidgetObserver {
 
   // Whether offset from the left of the parent window is fixed.
   bool IsMinXFixed() const {
-    return views::BubbleBorder::is_arrow_on_left(bubble_->arrow());
+    return cocoa_l10n_util::ShouldDoExperimentalRTLLayout() !=
+           views::BubbleBorder::is_arrow_on_left(bubble_->arrow());
   }
 
   // Re-positions |bubble_| so that the offset to the parent window at
