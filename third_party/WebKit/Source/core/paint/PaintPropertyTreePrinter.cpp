@@ -174,6 +174,7 @@ void UpdateDebugNames(const LayoutObject& object,
                "SvgLocalToBorderBoxTransform", object);
   SetDebugName(properties.ScrollTranslation(), "ScrollTranslation", object);
   SetDebugName(properties.FragmentClip(), "FragmentClip", object);
+  SetDebugName(properties.ClipPathClip(), "ClipPathClip", object);
   SetDebugName(properties.MaskClip(), "MaskClip", object);
   SetDebugName(properties.CssClip(), "CssClip", object);
   SetDebugName(properties.CssClipFixedPosition(), "CssClipFixedPosition",
@@ -186,6 +187,7 @@ void UpdateDebugNames(const LayoutObject& object,
   SetDebugName(properties.Effect(), "Effect", object);
   SetDebugName(properties.Filter(), "Filter", object);
   SetDebugName(properties.Mask(), "Mask", object);
+  SetDebugName(properties.ClipPath(), "ClipPath", object);
   SetDebugName(properties.Scroll(), "Scroll", object);
 }
 
