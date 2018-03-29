@@ -179,6 +179,7 @@ void ResourceDispatcher::OnReceivedResponse(
 
   if (!IsResourceTypeFrame(request_info->resource_type)) {
     request_info->mime_type = response_head.mime_type;
+    request_info->network_accessed = response_head.network_accessed;
     NotifySubresourceStarted(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,
                              request_info->response_url,
@@ -274,6 +275,7 @@ void ResourceDispatcher::OnRequestComplete(
   if (request_info->parsed_ip.IsValid())
     resource_load_info->ip = request_info->parsed_ip;
   resource_load_info->mime_type = request_info->mime_type;
+  resource_load_info->network_accessed = request_info->network_accessed;
   resource_load_info->was_cached = status.exists_in_cache;
   NotifyResourceLoadComplete(RenderThreadImpl::DeprecatedGetMainTaskRunner(),
                              request_info->render_frame_id,
