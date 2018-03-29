@@ -13,6 +13,7 @@
 #include "build/buildflag.h"
 #include "chrome/browser/banners/app_banner_infobar_delegate_desktop.h"
 #include "chrome/browser/chrome_notification_types.h"
+#include "chrome/browser/data_use_measurement/page_load_capping/page_load_capping_infobar_delegate.h"
 #include "chrome/browser/devtools/devtools_infobar_delegate.h"
 #include "chrome/browser/extensions/api/debugger/extension_dev_tools_infobar.h"
 #include "chrome/browser/extensions/api/messaging/incognito_connectability_infobar_delegate.h"
@@ -272,6 +273,7 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       {"data_reduction_proxy_preview",
        IBD::DATA_REDUCTION_PROXY_PREVIEW_INFOBAR_DELEGATE},
       {"automation", IBD::AUTOMATION_INFOBAR_DELEGATE},
+      {"page_load_capping", IBD::PAGE_LOAD_CAPPING_INFOBAR_DELEGATE},
   };
   auto id = kIdentifiers.find(name);
   expected_identifiers_.push_back((id == kIdentifiers.end()) ? IBD::INVALID
@@ -450,6 +452,10 @@ void InfoBarUiTest::ShowUi(const std::string& name) {
       AutomationInfoBarDelegate::Create();
       break;
 
+    case IBD::PAGE_LOAD_CAPPING_INFOBAR_DELEGATE:
+      PageLoadCappingInfoBarDelegate::Create(1 * 1024 * 1024, GetWebContents());
+      break;
+
     default:
       break;
   }
@@ -608,6 +614,10 @@ IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_translate) {
 #endif
 
 IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_data_reduction_proxy_preview) {
+  ShowAndVerifyUi();
+}
+
+IN_PROC_BROWSER_TEST_F(InfoBarUiTest, InvokeUi_page_load_capping) {
   ShowAndVerifyUi();
 }
 

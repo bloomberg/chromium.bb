@@ -63,10 +63,11 @@ class InfoBarService : public infobars::InfoBarManager,
       std::unique_ptr<ConfirmInfoBarDelegate> delegate);
 #endif
 
+ protected:
+  explicit InfoBarService(content::WebContents* web_contents);
+
  private:
   friend class content::WebContentsUserData<InfoBarService>;
-
-  explicit InfoBarService(content::WebContents* web_contents);
 
   // InfoBarManager:
   int GetActiveEntryID() override;
