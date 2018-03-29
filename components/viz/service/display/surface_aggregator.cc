@@ -536,12 +536,12 @@ void SurfaceAggregator::ReportMissingFallbackSurface(
   // If the fallback surface is unavailable then that's an error.
   std::stringstream error_stream;
   error_stream << fallback_surface_id;
-#if DCHECK_IS_ON()
   std::string frame_sink_debug_label(
       manager_->GetFrameSinkDebugLabel(fallback_surface_id.frame_sink_id()));
+  // Add the debug label, if available, to the error log to help diagnose a
+  // misbehaving client.
   if (!frame_sink_debug_label.empty())
     error_stream << " [" << frame_sink_debug_label << "]";
-#endif
   if (!fallback_surface) {
     error_stream << " is missing during aggregation";
     ++uma_stats_.missing_surface;
