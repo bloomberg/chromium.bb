@@ -46,7 +46,7 @@ HistoryMenuBridge::HistoryItem::HistoryItem()
     : icon_requested(false),
       icon_task_id(base::CancelableTaskTracker::kBadTaskId),
       menu_item(nil),
-      session_id(0) {}
+      session_id(SessionID::InvalidValue()) {}
 
 HistoryMenuBridge::HistoryItem::HistoryItem(const HistoryItem& copy)
     : title(copy.title),

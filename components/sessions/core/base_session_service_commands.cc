@@ -29,15 +29,24 @@ void WriteStringToPickle(base::Pickle& pickle,
   }
 }
 
+bool ReadSessionIdFromPickle(base::PickleIterator* iterator, SessionID* id) {
+  SessionID::id_type value;
+  if (!iterator->ReadInt(&value)) {
+    return false;
+  }
+  *id = SessionID::FromSerializedValue(value);
+  return true;
+}
+
 }  // namespace
 
 std::unique_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
-    SessionID::id_type command_id,
-    SessionID::id_type tab_id,
+    SessionCommand::id_type command_id,
+    SessionID tab_id,
     const sessions::SerializedNavigationEntry& navigation) {
   // Use pickle to handle marshalling.
   base::Pickle pickle;
-  pickle.WriteInt(tab_id);
+  pickle.WriteInt(tab_id.id());
   // We only allow navigations up to 63k (which should be completely
   // reasonable).
   static const size_t max_state_size =
@@ -48,12 +57,12 @@ std::unique_ptr<SessionCommand> CreateUpdateTabNavigationCommand(
 }
 
 std::unique_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
-    SessionID::id_type command_id,
-    SessionID::id_type tab_id,
+    SessionCommand::id_type command_id,
+    SessionID tab_id,
     const std::string& extension_id) {
   // Use pickle to handle marshalling.
   base::Pickle pickle;
-  pickle.WriteInt(tab_id);
+  pickle.WriteInt(tab_id.id());
 
   // Enforce a max for ids. They should never be anywhere near this size.
   static const SessionCommand::size_type max_id_size =
@@ -68,12 +77,12 @@ std::unique_ptr<SessionCommand> CreateSetTabExtensionAppIDCommand(
 }
 
 std::unique_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
-    SessionID::id_type command_id,
-    SessionID::id_type tab_id,
+    SessionCommand::id_type command_id,
+    SessionID tab_id,
     const std::string& user_agent_override) {
   // Use pickle to handle marshalling.
   base::Pickle pickle;
-  pickle.WriteInt(tab_id);
+  pickle.WriteInt(tab_id.id());
 
   // Enforce a max for the user agent length.  They should never be anywhere
   // near this size.
@@ -90,12 +99,12 @@ std::unique_ptr<SessionCommand> CreateSetTabUserAgentOverrideCommand(
 }
 
 std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
-    SessionID::id_type command_id,
-    SessionID::id_type window_id,
+    SessionCommand::id_type command_id,
+    SessionID window_id,
     const std::string& app_name) {
   // Use pickle to handle marshalling.
   base::Pickle pickle;
-  pickle.WriteInt(window_id);
+  pickle.WriteInt(window_id.id());
 
   // Enforce a max for ids. They should never be anywhere near this size.
   static const SessionCommand::size_type max_id_size =
@@ -112,45 +121,49 @@ std::unique_ptr<SessionCommand> CreateSetWindowAppNameCommand(
 bool RestoreUpdateTabNavigationCommand(
     const SessionCommand& command,
     sessions::SerializedNavigationEntry* navigation,
-    SessionID::id_type* tab_id) {
+    SessionID* tab_id) {
   std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
   base::PickleIterator iterator(*pickle);
-  return iterator.ReadInt(tab_id) && navigation->ReadFromPickle(&iterator);
+  return ReadSessionIdFromPickle(&iterator, tab_id) &&
+         navigation->ReadFromPickle(&iterator);
 }
 
 bool RestoreSetTabExtensionAppIDCommand(const SessionCommand& command,
-                                        SessionID::id_type* tab_id,
+                                        SessionID* tab_id,
                                         std::string* extension_app_id) {
   std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 
   base::PickleIterator iterator(*pickle);
-  return iterator.ReadInt(tab_id) && iterator.ReadString(extension_app_id);
+  return ReadSessionIdFromPickle(&iterator, tab_id) &&
+         iterator.ReadString(extension_app_id);
 }
 
 bool RestoreSetTabUserAgentOverrideCommand(const SessionCommand& command,
-                                           SessionID::id_type* tab_id,
+                                           SessionID* tab_id,
                                            std::string* user_agent_override) {
   std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 
   base::PickleIterator iterator(*pickle);
-  return iterator.ReadInt(tab_id) && iterator.ReadString(user_agent_override);
+  return ReadSessionIdFromPickle(&iterator, tab_id) &&
+         iterator.ReadString(user_agent_override);
 }
 
 bool RestoreSetWindowAppNameCommand(const SessionCommand& command,
-                                    SessionID::id_type* window_id,
+                                    SessionID* window_id,
                                     std::string* app_name) {
   std::unique_ptr<base::Pickle> pickle(command.PayloadAsPickle());
   if (!pickle.get())
     return false;
 
   base::PickleIterator iterator(*pickle);
-  return iterator.ReadInt(window_id) && iterator.ReadString(app_name);
+  return ReadSessionIdFromPickle(&iterator, window_id) &&
+         iterator.ReadString(app_name);
 }
 
 }  // namespace sessions

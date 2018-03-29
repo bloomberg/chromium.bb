@@ -32,7 +32,7 @@ void JNI_RecentlyClosedBridge_AddTabToList(
   const sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(tab.current_navigation_index);
   Java_RecentlyClosedBridge_pushTab(
-      env, jtabs_list, tab.id,
+      env, jtabs_list, tab.id.id(),
       ConvertUTF16ToJavaString(env, current_navigation.title()),
       ConvertUTF8ToJavaString(env, current_navigation.virtual_url().spec()));
 }
@@ -99,7 +99,8 @@ jboolean RecentlyClosedTabsBridge::OpenRecentlyClosedTab(
   // Find and remove the corresponding tab entry from TabRestoreService.
   // We take ownership of the returned tab.
   std::unique_ptr<sessions::TabRestoreService::Tab> tab_entry(
-      tab_restore_service_->RemoveTabEntryById(recent_tab_id));
+      tab_restore_service_->RemoveTabEntryById(
+          SessionID::FromSerializedValue(recent_tab_id)));
   if (!tab_entry)
     return false;
 

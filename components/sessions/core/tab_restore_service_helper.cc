@@ -37,9 +37,8 @@ void TabRestoreServiceHelper::Observer::OnClearEntries() {}
 void TabRestoreServiceHelper::Observer::OnNavigationEntriesDeleted() {}
 
 void TabRestoreServiceHelper::Observer::OnRestoreEntryById(
-    SessionID::id_type id,
-    Entries::const_iterator entry_iterator) {
-}
+    SessionID id,
+    Entries::const_iterator entry_iterator) {}
 
 void TabRestoreServiceHelper::Observer::OnAddEntry() {}
 
@@ -243,7 +242,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreMostRecentEntry(
 }
 
 std::unique_ptr<TabRestoreService::Tab>
-TabRestoreServiceHelper::RemoveTabEntryById(SessionID::id_type id) {
+TabRestoreServiceHelper::RemoveTabEntryById(SessionID id) {
   auto it = GetEntryIteratorById(id);
   if (it == entries_.end())
     return nullptr;
@@ -258,7 +257,7 @@ TabRestoreServiceHelper::RemoveTabEntryById(SessionID::id_type id) {
 
 std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
     LiveTabContext* context,
-    SessionID::id_type id,
+    SessionID id,
     WindowOpenDisposition disposition) {
   Entries::iterator entry_iterator = GetEntryIteratorById(id);
   if (entry_iterator == entries_.end()) {
@@ -315,7 +314,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
         }
         // All the window's tabs had the same former browser_id.
         if (auto browser_id = window.tabs[0]->browser_id) {
-          UpdateTabBrowserIDs(browser_id, context->GetSessionID().id());
+          UpdateTabBrowserIDs(browser_id, context->GetSessionID());
         }
       } else {
         // Restore a single tab from the window. Find the tab that matches the
@@ -343,7 +342,7 @@ std::vector<LiveTab*> TabRestoreServiceHelper::RestoreEntryById(
             // any one is restored, it goes into the same window as the tab
             // being restored now.
             UpdateTabBrowserIDs(restored_tab_browser_id,
-                                context->GetSessionID().id());
+                                context->GetSessionID());
             for (auto& tab_j : window.tabs)
               tab_j->browser_id = context->GetSessionID().id();
           }
@@ -417,7 +416,7 @@ void TabRestoreServiceHelper::PruneEntries() {
 }
 
 TabRestoreService::Entries::iterator
-TabRestoreServiceHelper::GetEntryIteratorById(SessionID::id_type id) {
+TabRestoreServiceHelper::GetEntryIteratorById(SessionID id) {
   for (Entries::iterator i = entries_.begin(); i != entries_.end(); ++i) {
     if ((*i)->id == id)
       return i;
@@ -545,7 +544,8 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
   } else {
     // We only respect the tab's original browser if there's no disposition.
     if (disposition == WindowOpenDisposition::UNKNOWN && tab.browser_id) {
-      context = client_->FindLiveTabContextWithID(tab.browser_id);
+      context = client_->FindLiveTabContextWithID(
+          SessionID::FromSerializedValue(tab.browser_id));
     }
 
     int tab_index = -1;
@@ -559,7 +559,7 @@ LiveTabContext* TabRestoreServiceHelper::RestoreTab(
       context = client_->CreateLiveTabContext(
           std::string(), gfx::Rect(), ui::SHOW_STATE_NORMAL, std::string());
       if (tab.browser_id)
-        UpdateTabBrowserIDs(tab.browser_id, context->GetSessionID().id());
+        UpdateTabBrowserIDs(tab.browser_id, context->GetSessionID());
     }
 
     // Place the tab at the end if the tab index is no longer valid or
@@ -638,12 +638,12 @@ bool TabRestoreServiceHelper::FilterEntry(const Entry& entry) {
 }
 
 void TabRestoreServiceHelper::UpdateTabBrowserIDs(SessionID::id_type old_id,
-                                                  SessionID::id_type new_id) {
+                                                  SessionID new_id) {
   for (const auto& entry : entries_) {
     if (entry->type == TabRestoreService::TAB) {
       auto& tab = static_cast<Tab&>(*entry);
       if (tab.browser_id == old_id)
-        tab.browser_id = new_id;
+        tab.browser_id = new_id.id();
     }
   }
 }

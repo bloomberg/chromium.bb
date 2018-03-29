@@ -50,7 +50,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
 
     // Invoked before the entry is restored. |entry_iterator| points to the
     // entry corresponding to the session identified by |id|.
-    virtual void OnRestoreEntryById(SessionID::id_type id,
+    virtual void OnRestoreEntryById(SessionID id,
                                     Entries::const_iterator entry_iterator);
 
     // Invoked after an entry was added.
@@ -86,9 +86,9 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
 
   const Entries& entries() const;
   std::vector<LiveTab*> RestoreMostRecentEntry(LiveTabContext* context);
-  std::unique_ptr<Tab> RemoveTabEntryById(SessionID::id_type id);
+  std::unique_ptr<Tab> RemoveTabEntryById(SessionID id);
   std::vector<LiveTab*> RestoreEntryById(LiveTabContext* context,
-                                         SessionID::id_type id,
+                                         SessionID id,
                                          WindowOpenDisposition disposition);
   bool IsRestoring() const;
 
@@ -112,7 +112,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   // identifies a Window, then its iterator position will be returned. If it
   // identifies a tab, then the iterator position of the Window in which the Tab
   // resides is returned.
-  Entries::iterator GetEntryIteratorById(SessionID::id_type id);
+  Entries::iterator GetEntryIteratorById(SessionID id);
 
   // From base::trace_event::MemoryDumpProvider
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
@@ -170,8 +170,7 @@ class SESSIONS_EXPORT TabRestoreServiceHelper
   bool FilterEntry(const Entry& entry);
 
   // Finds tab entries with the old browser_id and sets it to the new one.
-  void UpdateTabBrowserIDs(SessionID::id_type old_id,
-                           SessionID::id_type new_id);
+  void UpdateTabBrowserIDs(SessionID::id_type old_id, SessionID new_id);
 
   // Gets the current time. This uses the time_factory_ if there is one.
   base::Time TimeNow() const;

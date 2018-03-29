@@ -39,10 +39,10 @@ class SESSIONS_EXPORT PersistentTabRestoreService : public TabRestoreService {
   const Entries& entries() const override;
   std::vector<LiveTab*> RestoreMostRecentEntry(
       LiveTabContext* context) override;
-  std::unique_ptr<Tab> RemoveTabEntryById(SessionID::id_type id) override;
+  std::unique_ptr<Tab> RemoveTabEntryById(SessionID id) override;
   std::vector<LiveTab*> RestoreEntryById(
       LiveTabContext* context,
-      SessionID::id_type id,
+      SessionID id,
       WindowOpenDisposition disposition) override;
   void LoadTabsFromLastSession() override;
   bool IsLoaded() const override;

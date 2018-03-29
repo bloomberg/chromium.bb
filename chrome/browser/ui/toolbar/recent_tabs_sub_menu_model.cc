@@ -151,16 +151,13 @@ enum RecentTabAction {
 // the navigation information of a local or other devices' tab required to
 // restore the tab.
 struct RecentTabsSubMenuModel::TabNavigationItem {
-  TabNavigationItem() : tab_id(-1) {}
+  TabNavigationItem() : tab_id(SessionID::InvalidValue()) {}
 
   TabNavigationItem(const std::string& session_tag,
-                    const SessionID::id_type& tab_id,
+                    SessionID tab_id,
                     const base::string16& title,
                     const GURL& url)
-      : session_tag(session_tag),
-        tab_id(tab_id),
-        title(title),
-        url(url) {}
+      : session_tag(session_tag), tab_id(tab_id), title(title), url(url) {}
 
   // For use by std::set for sorting.
   bool operator<(const TabNavigationItem& other) const {
@@ -169,7 +166,7 @@ struct RecentTabsSubMenuModel::TabNavigationItem {
 
   // Empty for local tabs, non-empty for other devices' tabs.
   std::string session_tag;
-  SessionID::id_type tab_id;  // -1 for invalid, >= 0 otherwise.
+  SessionID tab_id;  // Might be invalid.
   base::string16 title;
   GURL url;
 };
@@ -313,7 +310,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
     TabNavigationItems* tab_items = NULL;
     int tab_items_idx = CommandIdToTabVectorIndex(command_id, &tab_items);
     const TabNavigationItem& item = (*tab_items)[tab_items_idx];
-    DCHECK(item.tab_id > -1 && item.url.is_valid());
+    DCHECK(item.tab_id.is_valid() && item.url.is_valid());
 
     if (item.session_tag.empty()) {  // Restore tab of local session.
       if (service && context) {
@@ -328,9 +325,7 @@ void RecentTabsSubMenuModel::ExecuteCommand(int command_id, int event_flags) {
       if (!open_tabs)
         return;
       const sessions::SessionTab* tab;
-      if (!open_tabs->GetForeignTab(item.session_tag,
-                                    SessionID::FromSerializedValue(item.tab_id),
-                                    &tab))
+      if (!open_tabs->GetForeignTab(item.session_tag, item.tab_id, &tab))
         return;
       if (tab->navigations.empty())
         return;
@@ -536,7 +531,7 @@ void RecentTabsSubMenuModel::BuildTabsFromOtherDevices() {
   DCHECK_GT(GetItemCount(), 0);
 }
 
-void RecentTabsSubMenuModel::BuildLocalTabItem(int session_id,
+void RecentTabsSubMenuModel::BuildLocalTabItem(SessionID session_id,
                                                const base::string16& title,
                                                const GURL& url,
                                                int curr_model_index) {
@@ -551,10 +546,9 @@ void RecentTabsSubMenuModel::BuildLocalTabItem(int session_id,
   local_tab_navigation_items_.push_back(item);
 }
 
-void RecentTabsSubMenuModel::BuildLocalWindowItem(
-    const SessionID::id_type& window_id,
-    int num_tabs,
-    int curr_model_index) {
+void RecentTabsSubMenuModel::BuildLocalWindowItem(SessionID window_id,
+                                                  int num_tabs,
+                                                  int curr_model_index) {
   int command_id = WindowVectorIndexToCommandId(local_window_items_.size());
   // See comments in BuildLocalEntries() about usage of InsertItem*At().
   InsertItemAt(curr_model_index, command_id, l10n_util::GetPluralStringFUTF16(
@@ -573,8 +567,7 @@ void RecentTabsSubMenuModel::BuildOtherDevicesTabItem(
     const sessions::SessionTab& tab) {
   const sessions::SerializedNavigationEntry& current_navigation =
       tab.navigations.at(tab.normalized_navigation_index());
-  TabNavigationItem item(session_tag, tab.tab_id.id(),
-                         current_navigation.title(),
+  TabNavigationItem item(session_tag, tab.tab_id, current_navigation.title(),
                          current_navigation.virtual_url());
   int command_id = TabVectorIndexToCommandId(
       other_devices_tab_navigation_items_.size(),

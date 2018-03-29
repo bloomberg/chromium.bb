@@ -14,11 +14,10 @@ TabRestoreService::TimeFactory::~TimeFactory() {}
 
 // Entry ----------------------------------------------------------------------
 
-// ID of the next Entry.
-static SessionID::id_type next_entry_id = 1;
-
 TabRestoreService::Entry::~Entry() = default;
-TabRestoreService::Entry::Entry(Type type) : id(next_entry_id++), type(type) {}
+
+TabRestoreService::Entry::Entry(Type type)
+    : id(SessionID::NewUnique()), type(type) {}
 
 size_t TabRestoreService::Entry::EstimateMemoryUsage() const {
   return 0;

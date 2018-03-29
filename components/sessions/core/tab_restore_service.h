@@ -58,7 +58,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
 
     // Unique id for this entry. The id is guaranteed to be unique for a
     // session.
-    SessionID::id_type id;
+    SessionID id;
 
     // The type of the entry.
     const Type type;
@@ -186,7 +186,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
       LiveTabContext* context) = 0;
 
   // Removes the Tab with id |id| from the list and returns it.
-  virtual std::unique_ptr<Tab> RemoveTabEntryById(SessionID::id_type id) = 0;
+  virtual std::unique_ptr<Tab> RemoveTabEntryById(SessionID id) = 0;
 
   // Restores an entry by id. If there is no entry with an id matching |id|,
   // this does nothing. If |context| is NULL, this creates a new window for the
@@ -196,7 +196,7 @@ class SESSIONS_EXPORT TabRestoreService : public KeyedService {
   // tab(s).
   virtual std::vector<LiveTab*> RestoreEntryById(
       LiveTabContext* context,
-      SessionID::id_type id,
+      SessionID id,
       WindowOpenDisposition disposition) = 0;
 
   // Loads the tabs and previous session. This does nothing if the tabs

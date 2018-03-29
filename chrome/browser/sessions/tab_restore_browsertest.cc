@@ -523,7 +523,7 @@ IN_PROC_BROWSER_TEST_F(TabRestoreTest, RestoreTabFromClosedWindowByID) {
   EXPECT_EQ(3u, tabs.size());
 
   // Find the Tab to restore.
-  SessionID::id_type tab_id_to_restore = 0;
+  SessionID tab_id_to_restore = SessionID::InvalidValue();
   bool found_tab_to_restore = false;
   for (const auto& tab_ptr : tabs) {
     auto& tab = *tab_ptr;

@@ -33,7 +33,7 @@ struct SessionWindow;
 // The second parameter is the id of the window that was last active.
 using GetLastSessionCallback =
     base::Callback<void(std::vector<std::unique_ptr<SessionWindow>>,
-                        SessionID::id_type)>;
+                        SessionID)>;
 
 // A client interface that needs to be supplied to the tab restore service by
 // the embedder.
@@ -56,8 +56,7 @@ class SESSIONS_EXPORT TabRestoreServiceClient {
 
   // Returns the LiveTabContext instance that is associated with |desired_id|,
   // or null if there is no such instance.
-  virtual LiveTabContext* FindLiveTabContextWithID(
-      SessionID::id_type desired_id) = 0;
+  virtual LiveTabContext* FindLiveTabContextWithID(SessionID desired_id) = 0;
 
   // Returns whether a given URL should be tracked for restoring.
   virtual bool ShouldTrackURLForRestore(const GURL& url) = 0;
