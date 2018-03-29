@@ -1413,12 +1413,16 @@ uploading your change for review.  These are checked by presubmit scripts.
 
 <enum name="ArcOptInAction">
   <summary>Defines Arc OptIn actions</summary>
-  <int value="0" label="Opted Out"/>
-  <int value="1" label="Opted In"/>
+  <int value="0" label="DEPRECATED: Opted Out"/>
+  <int value="1" label="DEPRECATED: Opted In"/>
   <int value="2" label="DEPRECATED: Notification accepted"/>
   <int value="3" label="DEPRECATED: Notification declined"/>
   <int value="4" label="DEPRECATED: Notification timed out"/>
   <int value="5" label="Retry after OptIn failure"/>
+  <int value="6" label="Opted In from OOBE"/>
+  <int value="7" label="Opted Out from OOBE"/>
+  <int value="8" label="Opted In from session"/>
+  <int value="9" label="Opted Out from session"/>
 </enum>
 
 <enum name="ArcOptInCancel">

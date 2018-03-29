@@ -305,7 +305,7 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
     // it less weird that a browser window pops up.
     const bool suppress_play_store_app =
         !IsPlayStoreAvailable() || IsArcOptInVerificationDisabled() ||
-        IsRobotAccountMode() || oobe_start_ ||
+        IsRobotAccountMode() || oobe_or_assistant_wizard_start_ ||
         (IsArcPlayStoreEnabledPreferenceManagedForProfile(profile_) &&
          AreArcAllOptInPreferencesIgnorableForProfile(profile_));
     if (!suppress_play_store_app) {
@@ -607,7 +607,8 @@ bool ArcSessionManager::RequestEnableImpl() {
     return false;
   }
 
-  oobe_start_ = IsArcOobeOptInActive();
+  oobe_or_assistant_wizard_start_ =
+      IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive();
 
   PrefService* const prefs = profile_->GetPrefs();
 
@@ -670,7 +671,7 @@ void ArcSessionManager::RequestDisable() {
     return;
   }
 
-  oobe_start_ = false;
+  oobe_or_assistant_wizard_start_ = false;
   directly_started_ = false;
   enable_requested_ = false;
   scoped_opt_in_tracker_.reset();
@@ -737,7 +738,7 @@ void ArcSessionManager::MaybeStartTermsOfServiceNegotiation() {
     return;
   }
 
-  if (IsArcOobeOptInActive()) {
+  if (IsArcOobeOptInActive() || IsArcOptInWizardForAssistantActive()) {
     VLOG(1) << "Use OOBE negotiator.";
     terms_of_service_negotiator_ =
         std::make_unique<ArcTermsOfServiceOobeNegotiator>();
