@@ -11,6 +11,7 @@
 #import "content/browser/renderer_host/popup_window_mac.h"
 #import "content/browser/renderer_host/render_widget_host_view_cocoa.h"
 #include "content/browser/renderer_host/render_widget_host_view_mac.h"
+#include "content/common/cursors/webcursor.h"
 #import "skia/ext/skia_utils_mac.h"
 #import "ui/base/cocoa/animation_utils.h"
 #include "ui/display/display_observer.h"
@@ -41,6 +42,11 @@ class RenderWidgetHostViewNSViewBridgeLocal
   void SetBackgroundColor(SkColor color) override;
   void SetVisible(bool visible) override;
   void SetTooltipText(const base::string16& display_text) override;
+  void SetMarkedRange(const gfx::Range& range) override;
+  void ClearMarkedText() override;
+  void SetSelectedRange(const gfx::Range& range) override;
+  void SetShowingContextMenu(bool showing) override;
+  void DisplayCursor(const WebCursor& cursor) override;
 
  private:
   bool IsPopup() const {
@@ -192,6 +198,31 @@ void RenderWidgetHostViewNSViewBridgeLocal::SetTooltipText(
   [cocoa_view_ setToolTipAtMousePoint:tooltip_nsstring];
 }
 
+void RenderWidgetHostViewNSViewBridgeLocal::SetMarkedRange(
+    const gfx::Range& range) {
+  [cocoa_view_ setMarkedRange:range.ToNSRange()];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::ClearMarkedText() {
+  [cocoa_view_ cancelComposition];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::SetSelectedRange(
+    const gfx::Range& range) {
+  [cocoa_view_ setSelectedRange:range.ToNSRange()];
+  // Updates markedRange when there is no marked text so that retrieving
+  // markedRange immediately after calling setMarkdText: returns the current
+  // caret position.
+  if (![cocoa_view_ hasMarkedText]) {
+    [cocoa_view_ setMarkedRange:range.ToNSRange()];
+  }
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::SetShowingContextMenu(
+    bool showing) {
+  [cocoa_view_ setShowingContextMenu:showing];
+}
+
 void RenderWidgetHostViewNSViewBridgeLocal::OnDisplayMetricsChanged(
     const display::Display& display,
     uint32_t changed_metrics) {
@@ -199,6 +230,12 @@ void RenderWidgetHostViewNSViewBridgeLocal::OnDisplayMetricsChanged(
   // NSWindowDidChangeBackingPropertiesNotification (some of these calls
   // will be redundant).
   [cocoa_view_ updateScreenProperties];
+}
+
+void RenderWidgetHostViewNSViewBridgeLocal::DisplayCursor(
+    const WebCursor& cursor) {
+  WebCursor non_const_cursor = cursor;
+  [cocoa_view_ updateCursor:non_const_cursor.GetNativeCursor()];
 }
 
 }  // namespace

@@ -78,6 +78,9 @@ struct DidOverscrollParams;
   // Is YES if the cursor is hidden by key events.
   BOOL cursorHidden_;
 
+  // Controlled by setShowingContextMenu.
+  BOOL showingContextMenu_;
+
   // Set during -setFrame to avoid spamming client_ with origin and size
   // changes.
   BOOL inSetFrame_;
@@ -222,6 +225,8 @@ struct DidOverscrollParams;
 // Query the display::Display from the view's NSWindow's NSScreen and forward
 // it to the RenderWidgetHostNSViewClient (only if the screen is non-nil).
 - (void)updateScreenProperties;
+// Indicate if the embedding WebContents is showing a web content context menu.
+- (void)setShowingContextMenu:(BOOL)showing;
 
 // Methods previously marked as private.
 - (id)initWithClient:

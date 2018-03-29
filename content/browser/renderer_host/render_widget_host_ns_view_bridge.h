@@ -15,12 +15,14 @@
 #include "third_party/skia/include/core/SkColor.h"
 
 namespace gfx {
+class Range;
 class Rect;
-}
+}  // namespace gfx
 
 namespace content {
 
 class RenderWidgetHostNSViewClient;
+class WebCursor;
 
 // The interface through which RenderWidgetHostViewMac is to manipulate its
 // corresponding NSView (potentially in another process).
@@ -61,6 +63,17 @@ class RenderWidgetHostNSViewBridge {
 
   // Call the -[NSView setToolTipAtMousePoint] method.
   virtual void SetTooltipText(const base::string16& display_text) = 0;
+
+  // Set or clear the marked and selected range.
+  virtual void SetMarkedRange(const gfx::Range& range) = 0;
+  virtual void ClearMarkedText() = 0;
+  virtual void SetSelectedRange(const gfx::Range& range) = 0;
+
+  // Indicate if the WebContext is showing a context menu.
+  virtual void SetShowingContextMenu(bool showing) = 0;
+
+  // Set the cursor type to display.
+  virtual void DisplayCursor(const WebCursor& cursor) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostNSViewBridge);
