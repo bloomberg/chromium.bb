@@ -6,6 +6,7 @@ import("//build/config/ios/rules.gni")
 import("//build/config/mac/base_rules.gni")
 import("//build/mac/tweak_info_plist.gni")
 import("//ios/build/chrome_build.gni")
+import("//ios/build/config.gni")
 import("//ios/public/provider/chrome/browser/build_config.gni")
 import("//services/service_manager/public/service_manifest.gni")
 
@@ -310,6 +311,8 @@ ios_app_bundle("chrome") {
     extra_substitutions += [ "ENCRYPTION_EXPORT_COMPLIANCE_CODE=" +
                              ios_encryption_export_compliance_code ]
   }
+
+  assert_no_deps = ios_assert_no_deps + ios_chrome_extra_assert_no_deps
 }
 
 if (current_toolchain == default_toolchain) {

@@ -28,6 +28,10 @@ declare_args() {
   # List of plist templates to merge when generating EarlGrey tests
   # entitlements.
   ios_egtests_entitlements_additions = []
+
+  # Overridable list of dependencies that are forbidden for
+  # //ios/chrome/app:chrome target.
+  ios_chrome_extra_assert_no_deps = []
 }
 
 # Configure whether breakpad support is enabled.
