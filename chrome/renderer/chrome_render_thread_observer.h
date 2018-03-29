@@ -44,15 +44,12 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
     return visited_link_slave_.get();
   }
 
-  bool is_online() { return online_; }
-
  private:
   // content::RenderThreadObserver:
   void RegisterMojoInterfaces(
       blink::AssociatedInterfaceRegistry* associated_interfaces) override;
   void UnregisterMojoInterfaces(
       blink::AssociatedInterfaceRegistry* associated_interfaces) override;
-  void NetworkStateChanged(bool online) override;
 
   // chrome::mojom::RendererConfiguration:
   void SetInitialConfiguration(bool is_incognito_process) override;
@@ -63,9 +60,6 @@ class ChromeRenderThreadObserver : public content::RenderThreadObserver,
 
   void OnRendererConfigurationAssociatedRequest(
       chrome::mojom::RendererConfigurationAssociatedRequest request);
-
-  // Is the browser online? The a priori assumption.
-  bool online_ = true;
 
   static bool is_incognito_process_;
   std::unique_ptr<content::ResourceDispatcherDelegate> resource_delegate_;

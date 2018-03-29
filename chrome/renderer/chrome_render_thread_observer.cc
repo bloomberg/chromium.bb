@@ -187,10 +187,6 @@ void ChromeRenderThreadObserver::UnregisterMojoInterfaces(
       chrome::mojom::RendererConfiguration::Name_);
 }
 
-void ChromeRenderThreadObserver::NetworkStateChanged(bool online) {
-  online_ = online;
-}
-
 void ChromeRenderThreadObserver::SetInitialConfiguration(
     bool is_incognito_process) {
   is_incognito_process_ = is_incognito_process;
