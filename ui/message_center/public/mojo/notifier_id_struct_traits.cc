@@ -3,8 +3,6 @@
 // found in the LICENSE file.
 
 #include "ui/message_center/public/mojo/notifier_id_struct_traits.h"
-
-#include "mojo/common/common_custom_types_struct_traits.h"
 #include "url/mojom/url_gurl_mojom_traits.h"
 
 namespace mojo {

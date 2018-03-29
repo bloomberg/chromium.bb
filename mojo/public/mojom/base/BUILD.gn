@@ -12,6 +12,8 @@ mojom_component("base") {
     "file_error.mojom",
     "file_info.mojom",
     "file_path.mojom",
+    "memory_allocator_dump_cross_process_uid.mojom",
+    "process_id.mojom",
     "ref_counted_memory.mojom",
     "string16.mojom",
     "text_direction.mojom",

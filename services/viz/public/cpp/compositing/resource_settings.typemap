@@ -9,7 +9,6 @@ traits_headers = [
 ]
 deps = [
   "//cc",
-  "//mojo/common:struct_traits",
   "//ui/gfx/mojo",
 ]
 sources = [

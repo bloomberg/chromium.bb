@@ -5,7 +5,7 @@
 module resource_coordinator.mojom;
 
 import "services/resource_coordinator/public/mojom/coordination_unit.mojom";
-import "mojo/common/process_id.mojom";
+import "mojo/public/mojom/base/process_id.mojom";
 import "mojo/public/mojom/base/time.mojom";
 
 struct PageInfo {
@@ -16,7 +16,7 @@ struct PageInfo {
 };
 
 struct ProcessInfo {
-  mojo.common.mojom.ProcessId pid;
+  mojo_base.mojom.ProcessId pid;
   array<PageInfo> page_infos;
   mojo_base.mojom.Time? launch_time;
 };

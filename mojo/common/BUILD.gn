@@ -14,8 +14,6 @@ group("common") {
 
 mojom("common_custom_types") {
   sources = [
-    "memory_allocator_dump_cross_process_uid.mojom",
-    "process_id.mojom",
     "values.mojom",
   ]
 
@@ -56,7 +54,6 @@ test("mojo_common_unittests") {
   deps = [
     ":common",
     ":common_custom_types",
-    ":struct_traits",
     ":test_common_custom_types",
     "//base",
     "//base/test:test_support",
@@ -71,21 +68,6 @@ test("mojo_common_unittests") {
   sources = [
     "common_custom_types_unittest.cc",
     "data_pipe_drainer_unittest.cc",
-  ]
-}
-
-source_set("struct_traits") {
-  sources = [
-    "common_custom_types_struct_traits.cc",
-    "common_custom_types_struct_traits.h",
-  ]
-  deps = [
-    ":common_custom_types_shared_cpp_sources",
-    "//base",
-    "//mojo/public/cpp/system",
-  ]
-  public_deps = [
-    "//base:i18n",
   ]
 }
 

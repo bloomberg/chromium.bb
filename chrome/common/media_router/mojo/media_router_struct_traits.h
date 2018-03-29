@@ -11,7 +11,6 @@
 #include "chrome/common/media_router/issue.h"
 #include "chrome/common/media_router/mojo/media_router.mojom.h"
 #include "chrome/common/media_router/route_request_result.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
 #include "net/base/ip_endpoint.h"
 
 namespace mojo {

@@ -9,7 +9,6 @@
 #include "base/strings/string16.h"
 #include "content/common/content_export.h"
 #include "content/public/common/platform_notification_data.h"
-#include "mojo/common/common_custom_types_struct_traits.h"
 #include "mojo/public/cpp/base/string16_mojom_traits.h"
 #include "mojo/public/cpp/bindings/struct_traits.h"
 #include "skia/public/interfaces/bitmap_skbitmap_struct_traits.h"

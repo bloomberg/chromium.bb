@@ -8,7 +8,6 @@ traits_headers = [ "//gpu/ipc/common/gpu_preferences_struct_traits.h" ]
 public_deps = [
   "//gpu/command_buffer/service",
   "//media:media_buildflags",
-  "//mojo/common:struct_traits",
 ]
 type_mappings = [
   "gpu.mojom.GpuPreferences=gpu::GpuPreferences",
