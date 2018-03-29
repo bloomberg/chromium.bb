@@ -124,7 +124,10 @@ void AssistantManagerServiceImpl::OnOpenUrl(const std::string& url) {
 }
 
 void AssistantManagerServiceImpl::OnSpeechLevelUpdated(
-    const float speech_level) {}
+    const float speech_level) {
+  subscribers_.ForAllPtrs(
+      [&speech_level](auto* ptr) { ptr->OnSpeechLevelUpdated(speech_level); });
+}
 
 }  // namespace assistant
 }  // namespace chromeos

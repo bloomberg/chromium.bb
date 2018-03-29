@@ -41,6 +41,11 @@ void AshAssistantController::OnTextResponse(const std::string& response) {
   NOTIMPLEMENTED();
 }
 
+void AshAssistantController::OnSpeechLevelUpdated(float speech_level) {
+  // TODO(dmblack): Handle.
+  NOTIMPLEMENTED();
+}
+
 void AshAssistantController::OnOpenUrlResponse(const GURL& url) {
   Shell::Get()->shell_delegate()->OpenUrlFromArc(url);
 }

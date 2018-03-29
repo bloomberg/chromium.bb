@@ -26,6 +26,9 @@ class AshAssistantController
   void OnTextResponse(const std::string& response) override;
   void OnOpenUrlResponse(const GURL& url) override;
 
+  // Assistant got a speech level update in dB.
+  void OnSpeechLevelUpdated(float speech_level) override;
+
   // mojom::AshAssistantController:
   void SetAssistant(
       chromeos::assistant::mojom::AssistantPtr assistant) override;

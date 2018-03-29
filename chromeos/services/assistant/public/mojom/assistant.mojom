@@ -22,14 +22,17 @@ interface Assistant {
 // untrusted third-party content. Subscriber implementations must be sure to
 // handle the response data appropriately.
 interface AssistantEventSubscriber {
-  // Assistant's got Html response from server.
+  // Assistant got Html response from server.
   OnHtmlResponse(string response);
 
-  // Assistant's got text response from server.
+  // Assistant got text response from server.
   OnTextResponse(string response);
 
-  // Assistant's got open URL response from server.
+  // Assistant got open URL response from server.
   OnOpenUrlResponse(url.mojom.Url url);
+
+  // Assistant got an instantaneous speech level update in dB.
+  OnSpeechLevelUpdated(float speech_level);
 };
 
 // Platform connection to assistant.
