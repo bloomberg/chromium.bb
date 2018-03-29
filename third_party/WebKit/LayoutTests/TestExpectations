@@ -3375,3 +3375,5 @@ crbug.com/754986 media/video-transformed.html [ Pass Failure ]
 
 # Sheriff 2018-03-29
 crbug.com/827088 bluetooth/requestDevice/chooser/new-scan-device-added.html [ Pass Crash ]
+crbug.com/827209 [ Win7 ] fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
+crbug.com/827209 [ Win7 ] virtual/mouseevent_fractional/fast/events/middleClickAutoscroll-latching.html [ Pass Failure ]
