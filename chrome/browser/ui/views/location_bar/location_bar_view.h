@@ -257,6 +257,9 @@ class LocationBarView : public LocationBar,
   // Returns the height available for text within location bar decorations.
   static int GetAvailableDecorationTextHeight();
 
+  void OnOmniboxFocused();
+  void OnOmniboxBlurred();
+
  private:
   FRIEND_TEST_ALL_PREFIXES(SecurityIndicatorTest, CheckIndicatorText);
   using ContentSettingViews = std::vector<ContentSettingImageView*>;

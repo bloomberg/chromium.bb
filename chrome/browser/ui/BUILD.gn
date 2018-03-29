@@ -2780,6 +2780,8 @@ split_static_library("ui") {
       "views/chrome_browser_main_extra_parts_views.h",
       "views/chrome_constrained_window_views_client.cc",
       "views/chrome_constrained_window_views_client.h",
+      "views/chrome_platform_style.cc",
+      "views/chrome_platform_style.h",
       "views/chrome_views_delegate.cc",
       "views/chrome_views_delegate.h",
       "views/collected_cookies_views.cc",
@@ -3304,6 +3306,10 @@ split_static_library("ui") {
         "views/status_icons/status_tray_linux.cc",
         "views/status_icons/status_tray_linux.h",
       ]
+    }
+
+    if (is_mac) {
+      sources += [ "views/chrome_platform_style_mac.mm" ]
     }
 
     if (is_win) {

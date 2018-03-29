@@ -913,6 +913,9 @@ void OmniboxViewViews::OnFocus() {
         ->OnOmniboxFocused();
   }
 #endif
+
+  if (location_bar_view_)
+    location_bar_view_->OnOmniboxFocused();
 }
 
 void OmniboxViewViews::OnBlur() {
@@ -964,6 +967,8 @@ void OmniboxViewViews::OnBlur() {
   if (location_bar_view_) {
     if (model()->is_keyword_hint())
       location_bar_view_->Layout();
+
+    location_bar_view_->OnOmniboxBlurred();
 
     // The location bar needs to repaint without a focus ring.
     location_bar_view_->SchedulePaint();
