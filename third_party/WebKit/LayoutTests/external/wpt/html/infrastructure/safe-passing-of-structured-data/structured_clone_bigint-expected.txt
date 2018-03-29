@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL 2.7 Safe passing of structured data Uncaught SyntaxError: Invalid or unexpected token
-Harness: the test ran to completion.
-

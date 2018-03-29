@@ -13,11 +13,15 @@ function globalInterfaceListing(globalObject, propertyNamesInGlobal, platformSpe
 // objects have, so exercising them in a Blink test doesn't make sense.
 //
 // If new builtins are added, please update this list along with the one in
-// LayoutTests/http/tests/serviceworker/webexposed/resources/global-interface-listing-worker.js
+// LayoutTests/http/tests/worklet/webexposed/resources/global-interface-listing-worklet.js
 var jsBuiltins = new Set([
     'Array',
     'ArrayBuffer',
+    'BigInt',
+    'BigInt64Array',
+    'BigUint64Array',
     'Boolean',
+    'DataView',
     'Date',
     'Error',
     'EvalError',

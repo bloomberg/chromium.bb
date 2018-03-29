@@ -21,7 +21,11 @@ var globals = [];
 var js_builtins = new Set([
     'Array',
     'ArrayBuffer',
+    'BigInt',
+    'BigInt64Array',
+    'BigUint64Array',
     'Boolean',
+    'DataView',
     'Date',
     'Error',
     'EvalError',
