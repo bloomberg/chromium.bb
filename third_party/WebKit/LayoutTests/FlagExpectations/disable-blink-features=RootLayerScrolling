@@ -1847,7 +1847,6 @@ crbug.com/626703 external/wpt/webaudio/the-audio-api/the-audioparam-interface/re
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-audioparam-interface/retrospective-setValueAtTime.html [ Timeout ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-audioparam-interface/retrospective-setValueCurveAtTime.html [ Timeout ]
 crbug.com/626703 external/wpt/webaudio/the-audio-api/the-mediaelementaudiosourcenode-interface/mediaElementAudioSourceToScriptProcessorTest.html [ Timeout ]
-crbug.com/626703 [ Mac10.13 ] external/wpt/webauthn/interfaces.https.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setLocalDescription-rollback.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription.html [ Timeout ]
 crbug.com/626703 external/wpt/webrtc/RTCPeerConnection-setRemoteDescription-rollback.html [ Timeout ]

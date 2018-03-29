@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Untitled Uncaught PasswordCredentialData inherits CredentialData, but PasswordCredentialData is not an interface.
+Harness: the test ran to completion.
+

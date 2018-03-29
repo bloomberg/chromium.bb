@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test IDL implementation of Orientation Sensor promise_test: Unhandled rejection with value: object "CustomEventInit inherits EventInit, but CustomEventInit is not an interface."
+Harness: the test ran to completion.
+

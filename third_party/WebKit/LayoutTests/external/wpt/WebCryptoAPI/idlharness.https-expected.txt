@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL IDL check of WebCrypto Uncaught RsaKeyGenParams inherits Algorithm, but RsaKeyGenParams is not an interface.
+Harness: the test ran to completion.
+

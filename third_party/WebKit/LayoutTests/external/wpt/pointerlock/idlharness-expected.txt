@@ -1,26 +1,4 @@
 This is a testharness.js-based test.
-PASS Element interface: operation requestPointerLock()
-PASS Unscopable handled correctly for requestPointerLock() on Element
-PASS Element interface: window.document.documentElement must inherit property "requestPointerLock()" with the proper type
-PASS Document interface: attribute onpointerlockchange
-PASS Unscopable handled correctly for onpointerlockchange property on Document
-PASS Document interface: attribute onpointerlockerror
-PASS Unscopable handled correctly for onpointerlockerror property on Document
-PASS Document interface: attribute pointerLockElement
-PASS Unscopable handled correctly for pointerLockElement property on Document
-PASS Document interface: operation exitPointerLock()
-PASS Unscopable handled correctly for exitPointerLock() on Document
-FAIL Document interface: window.document must inherit property "onpointerlockchange" with the proper type Unrecognized type EventHandler
-FAIL Document interface: window.document must inherit property "onpointerlockerror" with the proper type Unrecognized type EventHandler
-PASS Document interface: window.document must inherit property "pointerLockElement" with the proper type
-PASS Document interface: window.document must inherit property "exitPointerLock()" with the proper type
-PASS MouseEvent interface: attribute movementX
-PASS Unscopable handled correctly for movementX property on MouseEvent
-PASS MouseEvent interface: attribute movementY
-PASS Unscopable handled correctly for movementY property on MouseEvent
-PASS MouseEvent interface: new MouseEvent('mousemove') must inherit property "movementX" with the proper type
-PASS MouseEvent interface: new MouseEvent('mousemove') must inherit property "movementY" with the proper type
-PASS MouseEvent interface: new MouseEvent('pointerlockchange') must inherit property "movementX" with the proper type
-PASS MouseEvent interface: new MouseEvent('pointerlockchange') must inherit property "movementY" with the proper type
+FAIL Pointer Lock IDL tests Uncaught Partial dictionary MouseEventInit with no original dictionary
 Harness: the test ran to completion.
 

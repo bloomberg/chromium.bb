@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Test IDL implementation of WebXR API promise_test: Unhandled rejection with value: object "Partial dictionary WebGLContextAttributes with no original dictionary"
+Harness: the test ran to completion.
+
