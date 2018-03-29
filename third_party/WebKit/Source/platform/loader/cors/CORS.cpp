@@ -74,12 +74,15 @@ WTF::Optional<network::mojom::CORSError> CheckAccess(
     const HTTPHeaderMap& response_header,
     network::mojom::FetchCredentialsMode credentials_mode,
     const SecurityOrigin& origin) {
+  std::unique_ptr<SecurityOrigin::PrivilegeData> privilege =
+      origin.CreatePrivilegeData();
   return network::cors::CheckAccess(
       response_url, response_status_code,
       GetHeaderValue(response_header, HTTPNames::Access_Control_Allow_Origin),
       GetHeaderValue(response_header,
                      HTTPNames::Access_Control_Allow_Credentials),
-      credentials_mode, origin.ToUrlOrigin());
+      credentials_mode, origin.ToUrlOrigin(),
+      !privilege->block_local_access_from_local_origin_);
 }
 
 WTF::Optional<network::mojom::CORSError> CheckRedirectLocation(

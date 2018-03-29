@@ -12,6 +12,7 @@
 #include "net/http/http_request_headers.h"
 #include "url/gurl.h"
 #include "url/origin.h"
+#include "url/url_constants.h"
 #include "url/url_util.h"
 
 namespace {
@@ -40,6 +41,18 @@ std::string ExtractMIMETypeFromMediaType(const std::string& media_type) {
   return std::string();
 }
 
+// url::Origin::Serialize() serializes all Origins with a 'file' scheme to
+// 'file://', but it isn't desirable for CORS check. Returns 'null' instead to
+// be aligned with HTTP Origin header calculation in Blink SecurityOrigin.
+// |allow_file_origin| is used to realize a behavior change that
+// the --allow-file-access-from-files command-line flag needs.
+// TODO(mkwst): Generalize and move to url/Origin.
+std::string Serialize(const url::Origin& origin, bool allow_file_origin) {
+  if (!allow_file_origin && origin.scheme() == url::kFileScheme)
+    return "null";
+  return origin.Serialize();
+}
+
 }  // namespace
 
 namespace network {
@@ -64,7 +77,8 @@ base::Optional<mojom::CORSError> CheckAccess(
     const base::Optional<std::string>& allow_origin_header,
     const base::Optional<std::string>& allow_credentials_header,
     mojom::FetchCredentialsMode credentials_mode,
-    const url::Origin& origin) {
+    const url::Origin& origin,
+    bool allow_file_origin) {
   if (!response_status_code)
     return mojom::CORSError::kInvalidResponse;
 
@@ -84,7 +98,7 @@ base::Optional<mojom::CORSError> CheckAccess(
       return mojom::CORSError::kWildcardOriginNotAllowed;
   } else if (!allow_origin_header) {
     return mojom::CORSError::kMissingAllowOriginHeader;
-  } else if (*allow_origin_header != origin.Serialize()) {
+  } else if (*allow_origin_header != Serialize(origin, allow_file_origin)) {
     // We do not use url::Origin::IsSameOriginWith() here for two reasons below.
     //  1. Allow "null" to match here. The latest spec does not have a clear
     //     information about this (https://fetch.spec.whatwg.org/#cors-check),
