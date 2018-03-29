@@ -9,4 +9,4 @@
 #endif
 
 const base::Feature kITunesLinksStoreKitHandling{
-    "ITunesLinksStoreKitHandling", base::FEATURE_DISABLED_BY_DEFAULT};
+    "ITunesLinksStoreKitHandling", base::FEATURE_ENABLED_BY_DEFAULT};
