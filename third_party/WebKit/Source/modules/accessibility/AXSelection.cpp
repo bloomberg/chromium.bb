@@ -77,10 +77,13 @@ AXSelection::AXSelection() : base_(), extent_() {
 bool AXSelection::IsValid() const {
   if (!base_.IsValid() || !extent_.IsValid())
     return false;
+
   // We don't support selections that span across documents.
   if (base_.ContainerObject()->GetDocument() !=
-      extent_.ContainerObject()->GetDocument())
+      extent_.ContainerObject()->GetDocument()) {
     return false;
+  }
+
   DCHECK(!base_.ContainerObject()->GetDocument()->NeedsLayoutTreeUpdate());
 #if DCHECK_IS_ON()
   DCHECK_EQ(base_.ContainerObject()->GetDocument()->DomTreeVersion(),

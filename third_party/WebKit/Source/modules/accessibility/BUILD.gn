@@ -48,6 +48,8 @@ blink_modules_sources("accessibility") {
     "AXProgressIndicator.h",
     "AXRadioInput.cpp",
     "AXRadioInput.h",
+    "AXRange.cpp",
+    "AXRange.h",
     "AXRelationCache.cpp",
     "AXRelationCache.h",
     "AXSVGRoot.cpp",

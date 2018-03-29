@@ -236,6 +236,7 @@ jumbo_source_set("unit_tests") {
     "accessibility/AXObjectCacheTest.cpp",
     "accessibility/AXObjectTest.cpp",
     "accessibility/AXPositionTest.cpp",
+    "accessibility/AXRangeTest.cpp",
     "accessibility/AXSelectionTest.cpp",
     "accessibility/AccessibilityObjectModelTest.cpp",
     "accessibility/testing/AccessibilityTest.cpp",
