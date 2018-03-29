@@ -63,5 +63,5 @@ void ExtensionPopupAura::OnWindowActivated(
   // [de]activation events when activating widgets in its own root window.
   // This additional check handles those cases. See: http://crbug.com/320889
   if (gained_active == anchor_widget()->GetNativeWindow())
-    OnAnchorWindowActivation();
+    CloseUnlessUnderInspection();
 }

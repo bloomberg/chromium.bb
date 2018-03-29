@@ -155,7 +155,7 @@ void ExtensionPopup::AddedToWidget() {
 void ExtensionPopup::OnWidgetActivationChanged(views::Widget* widget,
                                                bool active) {
   if (active && widget == anchor_widget())
-    OnAnchorWindowActivation();
+    CloseUnlessUnderInspection();
 }
 
 void ExtensionPopup::ActiveTabChanged(content::WebContents* old_contents,
@@ -165,7 +165,7 @@ void ExtensionPopup::ActiveTabChanged(content::WebContents* old_contents,
   GetWidget()->Close();
 }
 
-void ExtensionPopup::OnAnchorWindowActivation() {
+void ExtensionPopup::CloseUnlessUnderInspection() {
   if (!inspect_with_devtools_)
     GetWidget()->Close();
 }
