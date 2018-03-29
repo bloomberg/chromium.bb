@@ -711,6 +711,16 @@ public class OfflinePageBridge {
     }
 
     /**
+     * Tries to acquire the storage access permssion if not yet.
+     *
+     * @param webContents Contents of the page to check.
+     * @param callback Callback to notify the result.
+     */
+    public void acquireFileAccessPermission(WebContents webContents, Callback<Boolean> callback) {
+        nativeAcquireFileAccessPermission(mNativeOfflinePageBridge, webContents, callback);
+    }
+
+    /**
      * Allows setting the offline bookmarks feature as enabled or disabled for testing. This is
      * required for tests that don't load the native binary otherwise UnsatisfiedLinkError sadness
      * will occur.
@@ -860,4 +870,6 @@ public class OfflinePageBridge {
             long nativeOfflinePageBridge, WebContents webContents);
     private native void nativeGetLoadUrlParamsForOpeningMhtmlFileOrContent(
             long nativeOfflinePageBridge, String url, Callback<LoadUrlParams> callback);
+    private native void nativeAcquireFileAccessPermission(
+            long nativeOfflinePageBridge, WebContents webContents, Callback<Boolean> callback);
 }

@@ -202,6 +202,12 @@ void ValidateFileCallback(const ScopedJavaGlobalRef<jobject>& j_callback_obj,
   GetLaunchUrlByOfflineIdCallback(j_callback_obj, launch_url.spec());
 }
 
+void AcquireFileAccessPermissionCallback(
+    const ScopedJavaGlobalRef<jobject>& j_callback_obj,
+    bool granted) {
+  base::android::RunCallbackAndroid(j_callback_obj, granted);
+}
+
 ScopedJavaLocalRef<jobjectArray> JNI_SavePageRequest_CreateJavaSavePageRequests(
     JNIEnv* env,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
@@ -946,6 +952,23 @@ void OfflinePageBridge::GetPageBySizeAndDigestDone(
   }
   GetLaunchUrlBySizeAndDigestCallback(j_callback_obj, launch_url,
                                       extra_headers);
+}
+
+void OfflinePageBridge::AcquireFileAccessPermission(
+    JNIEnv* env,
+    const base::android::JavaParamRef<jobject>& obj,
+    const base::android::JavaParamRef<jobject>& j_web_contents,
+    const base::android::JavaParamRef<jobject>& j_callback_obj) {
+  ScopedJavaGlobalRef<jobject> j_callback_ref(j_callback_obj);
+  content::WebContents* web_contents =
+      content::WebContents::FromJavaWebContents(j_web_contents);
+  if (!web_contents) {
+    AcquireFileAccessPermissionCallback(j_callback_ref, false);
+    return;
+  }
+  OfflinePageUtils::AcquireFileAccessPermission(
+      web_contents,
+      base::Bind(&AcquireFileAccessPermissionCallback, j_callback_ref));
 }
 
 void OfflinePageBridge::NotifyIfDoneLoading() const {

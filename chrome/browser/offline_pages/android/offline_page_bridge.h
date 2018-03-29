@@ -212,6 +212,12 @@ class OfflinePageBridge : public OfflinePageModel::Observer,
       const base::android::JavaParamRef<jobject>& obj,
       const base::android::JavaParamRef<jobject>& j_web_contents);
 
+  void AcquireFileAccessPermission(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& obj,
+      const base::android::JavaParamRef<jobject>& j_web_contents,
+      const base::android::JavaParamRef<jobject>& j_callback_obj);
+
  private:
   void GetPageByOfflineIdDone(
       const base::android::ScopedJavaGlobalRef<jobject>& j_callback_obj,
