@@ -1700,5 +1700,36 @@ TEST(SoftwareImageDecodeCacheTest, SizeSubrectingIsHandled) {
   cache.UnrefImage(draw_image);
 }
 
+TEST(SoftwareImageDecodeCacheTest, EmptyTargetSizeDecode) {
+  // Tests that requesting an empty sized decode followed by an original sized
+  // decode returns no decoded images. This is a regression test. See
+  // crbug.com/802976.
+
+  TestSoftwareImageDecodeCache cache;
+  bool is_decomposable = true;
+  SkFilterQuality quality = kLow_SkFilterQuality;
+
+  // Populate the cache with an original sized decode.
+  auto paint_image = CreateDiscardablePaintImage(
+      gfx::Size(100, 100), DefaultColorSpace().ToSkColorSpace());
+  DrawImage draw_image(paint_image, SkIRect::MakeWH(100, 100), quality,
+                       CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable),
+                       PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  DecodedDrawImage decoded_draw_image =
+      cache.GetDecodedImageForDraw(draw_image);
+  EXPECT_TRUE(decoded_draw_image.image());
+  cache.DrawWithImageFinished(draw_image, decoded_draw_image);
+
+  // Ask for another decode, this time with an empty subrect.
+  DrawImage empty_draw_image(
+      paint_image, SkIRect::MakeEmpty(), quality,
+      CreateMatrix(SkSize::Make(1.f, 1.f), is_decomposable),
+      PaintImage::kDefaultFrameIndex, DefaultColorSpace());
+  DecodedDrawImage empty_decoded_draw_image =
+      cache.GetDecodedImageForDraw(empty_draw_image);
+  EXPECT_FALSE(empty_decoded_draw_image.image());
+  cache.DrawWithImageFinished(empty_draw_image, empty_decoded_draw_image);
+}
+
 }  // namespace
 }  // namespace cc

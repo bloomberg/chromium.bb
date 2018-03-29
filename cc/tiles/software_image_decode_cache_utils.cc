@@ -170,7 +170,7 @@ SoftwareImageDecodeCacheUtils::CacheKey::FromDrawImage(const DrawImage& image,
   // If the target size is empty, then we'll be skipping the decode anyway, so
   // the filter quality doesn't matter. Early out instead.
   if (target_size.IsEmpty()) {
-    return CacheKey(frame_key, kOriginal, false, src_rect, target_size,
+    return CacheKey(frame_key, kSubrectAndScale, false, src_rect, target_size,
                     image.target_color_space());
   }
 

@@ -510,8 +510,12 @@ DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
   cache_entry->mark_used();
 
   DecodeImageIfNecessary(key, paint_image, cache_entry);
+  auto decoded_image = cache_entry->image();
+  if (!decoded_image)
+    return DecodedDrawImage();
+
   auto decoded_draw_image =
-      DecodedDrawImage(cache_entry->image(), cache_entry->src_rect_offset(),
+      DecodedDrawImage(std::move(decoded_image), cache_entry->src_rect_offset(),
                        GetScaleAdjustment(key), GetDecodedFilterQuality(key),
                        cache_entry->is_budgeted);
   return decoded_draw_image;
