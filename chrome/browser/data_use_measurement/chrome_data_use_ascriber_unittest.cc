@@ -11,7 +11,6 @@
 #include "base/run_loop.h"
 #include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
-#include "chrome/browser/data_use_measurement/page_load_capping/chrome_page_load_capping_features.h"
 #include "components/data_use_measurement/core/data_use_recorder.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -96,10 +95,6 @@ class ChromeDataUseAscriberTest : public testing::Test {
         /*is_async=*/true, content::PREVIEWS_OFF,
         /*navigation_ui_data*/ nullptr);
     return request;
-  }
-
-  DataUseAscriber::PageLoadObserver* page_load_capping_observer() {
-    return ascriber_->page_capping_observer_.get();
   }
 
  private:
@@ -459,11 +454,6 @@ TEST_F(ChromeDataUseAscriberTest, FailedMainFrameNavigation) {
 }
 
 TEST_F(ChromeDataUseAscriberTest, PageLoadObserverNotified) {
-  // Make sure that the page load capping observer does not DCHECK.
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {page_load_capping::features::kDetectingHeavyPages}, {});
-
   CreateAscriber();
   // TODO(rajendrant): Handle PlzNavigate (http://crbug/664233).
   MockPageLoadObserver mock_observer;
@@ -577,19 +567,6 @@ TEST_F(ChromeDataUseAscriberTest, PageLoadObserverForErrorPageValidatedURL) {
   ascriber()->OnUrlRequestDestroyed(request.get());
 
   EXPECT_EQ(0u, recorders().size());
-}
-
-// Verify that the page load capping observer is only created when the feature
-// is enabled.
-TEST_F(ChromeDataUseAscriberTest, CappingObserverNeedsFeature) {
-  CreateAscriber();
-  EXPECT_FALSE(page_load_capping_observer());
-  base::test::ScopedFeatureList feature_list;
-  feature_list.InitWithFeatures(
-      {page_load_capping::features::kDetectingHeavyPages}, {});
-
-  CreateAscriber();
-  EXPECT_TRUE(page_load_capping_observer());
 }
 
 }  // namespace data_use_measurement

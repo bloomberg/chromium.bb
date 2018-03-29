@@ -30,6 +30,7 @@
 #include "chrome/browser/page_load_metrics/observers/noscript_preview_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/offline_page_previews_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/omnibox_suggestion_used_page_load_metrics_observer.h"
+#include "chrome/browser/page_load_metrics/observers/page_capping_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/prerender_page_load_metrics_observer.h"
 #include "chrome/browser/page_load_metrics/observers/previews_ukm_observer.h"
 #include "chrome/browser/page_load_metrics/observers/protocol_page_load_metrics_observer.h"
@@ -107,6 +108,8 @@ void PageLoadMetricsEmbedder::RegisterObservers(
     tracker->AddObserver(
         std::make_unique<
             previews::OfflinePagePreviewsPageLoadMetricsObserver>());
+    tracker->AddObserver(
+        std::make_unique<PageCappingPageLoadMetricsObserver>());
     tracker->AddObserver(std::make_unique<previews::PreviewsUKMObserver>());
     tracker->AddObserver(
         std::make_unique<ServiceWorkerPageLoadMetricsObserver>());

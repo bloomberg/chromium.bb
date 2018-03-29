@@ -149,6 +149,7 @@ class InfoBarDelegate {
     SURVEY_INFOBAR_ANDROID = 78,
     NEAR_OOM_INFOBAR_ANDROID = 79,
     INSTALLABLE_AMBIENT_BADGE_INFOBAR_DELEGATE = 80,
+    PAGE_LOAD_CAPPING_INFOBAR_DELEGATE = 81,
   };
 
   // Describes navigation events, used to decide whether infobars should be
