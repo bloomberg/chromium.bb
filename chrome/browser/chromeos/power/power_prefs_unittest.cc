@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/power/power_prefs.h"
 
+#include <memory>
 #include <string>
 #include <utility>
 #include <vector>
@@ -13,6 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -26,6 +28,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "chrome/test/base/testing_profile_manager.h"
 #include "chromeos/dbus/fake_power_manager_client.h"
+#include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_manager/policy.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/pref_registry/pref_registry_syncable.h"
@@ -66,10 +69,18 @@ class PowerPrefsTest : public testing::Test {
   bool GetExpectedAllowScreenWakeLocksForProfile(Profile* profile) const;
   bool GetCurrentAllowScreenWakeLocks() const;
 
+  // Notify |power_prefs_| about various events.
+  void NotifySessionStarted();
+  void NotifyProfileDestroyed(Profile* profile);
+  void NotifyLockStateChanged(Profile* profile, ScreenLockState state);
+  void NotifyLoginOrLockScreenShown();
+  void NotifyScreenIdleOffChanged(bool off);
+
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfileManager profile_manager_;
-  PowerPolicyController* power_policy_controller_;     // Not owned.
+  PowerPolicyController* power_policy_controller_ = nullptr;  // Not owned.
   std::unique_ptr<FakePowerManagerClient> fake_power_manager_client_;
+  base::SimpleTestTickClock tick_clock_;
 
   std::unique_ptr<PowerPrefs> power_prefs_;
 
@@ -78,9 +89,7 @@ class PowerPrefsTest : public testing::Test {
 
 PowerPrefsTest::PowerPrefsTest()
     : profile_manager_(TestingBrowserProcess::GetGlobal()),
-      power_policy_controller_(NULL),
-      fake_power_manager_client_(new FakePowerManagerClient) {
-}
+      fake_power_manager_client_(std::make_unique<FakePowerManagerClient>()) {}
 
 void PowerPrefsTest::SetUp() {
   testing::Test::SetUp();
@@ -90,7 +99,13 @@ void PowerPrefsTest::SetUp() {
 
   ASSERT_TRUE(profile_manager_.SetUp());
 
-  power_prefs_.reset(new PowerPrefs(power_policy_controller_));
+  power_prefs_ = std::make_unique<PowerPrefs>(power_policy_controller_,
+                                              fake_power_manager_client_.get());
+
+  // Advance the clock an arbitrary amount of time so it won't report zero.
+  tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
+  power_prefs_->set_tick_clock_for_test(&tick_clock_);
+
   EXPECT_FALSE(GetProfile());
   EXPECT_EQ(PowerPolicyController::GetPolicyDebugString(
                 power_manager::PowerManagementPolicy()),
@@ -138,13 +153,13 @@ std::string PowerPrefsTest::GetExpectedPowerPolicyForProfile(
       prefs->GetInteger(prefs::kPowerBatteryIdleDelayMs));
   expected_policy.set_ac_idle_action(
       static_cast<power_manager::PowerManagementPolicy_Action>(
-            prefs->GetInteger(prefs::kPowerAcIdleAction)));
+          prefs->GetInteger(prefs::kPowerAcIdleAction)));
   expected_policy.set_battery_idle_action(
       static_cast<power_manager::PowerManagementPolicy_Action>(
-            prefs->GetInteger(prefs::kPowerBatteryIdleAction)));
+          prefs->GetInteger(prefs::kPowerBatteryIdleAction)));
   expected_policy.set_lid_closed_action(
       static_cast<power_manager::PowerManagementPolicy_Action>(
-            prefs->GetInteger(prefs::kPowerLidClosedAction)));
+          prefs->GetInteger(prefs::kPowerLidClosedAction)));
   expected_policy.set_use_audio_activity(
       prefs->GetBoolean(prefs::kPowerUseAudioActivity));
   expected_policy.set_use_video_activity(
@@ -175,6 +190,38 @@ bool PowerPrefsTest::GetExpectedAllowScreenWakeLocksForProfile(
   return profile->GetPrefs()->GetBoolean(prefs::kPowerAllowScreenWakeLocks);
 }
 
+void PowerPrefsTest::NotifySessionStarted() {
+  power_prefs_->Observe(chrome::NOTIFICATION_SESSION_STARTED,
+                        content::Source<PowerPrefsTest>(this),
+                        content::NotificationService::NoDetails());
+}
+
+void PowerPrefsTest::NotifyProfileDestroyed(Profile* profile) {
+  power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,
+                        content::Source<Profile>(profile),
+                        content::NotificationService::NoDetails());
+}
+
+void PowerPrefsTest::NotifyLockStateChanged(Profile* profile,
+                                            ScreenLockState state) {
+  bool locked = (state == LOCKED);
+  power_prefs_->Observe(chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
+                        content::Source<Profile>(profile),
+                        content::Details<bool>(&locked));
+}
+
+void PowerPrefsTest::NotifyLoginOrLockScreenShown() {
+  power_prefs_->Observe(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
+                        content::Source<PowerPrefsTest>(this),
+                        content::NotificationService::NoDetails());
+}
+
+void PowerPrefsTest::NotifyScreenIdleOffChanged(bool off) {
+  power_manager::ScreenIdleState proto;
+  proto.set_off(off);
+  fake_power_manager_client_->SendScreenIdleStateChanged(proto);
+}
+
 TEST_F(PowerPrefsTest, LoginScreen) {
   // Set up login profile.
   std::unique_ptr<sync_preferences::TestingPrefServiceSyncable>
@@ -188,10 +235,7 @@ TEST_F(PowerPrefsTest, LoginScreen) {
       profile_manager_.CreateTestingProfile(chrome::kInitialProfile));
 
   // Inform power_prefs_ that the login screen is being shown.
-  power_prefs_->Observe(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                        content::Source<PowerPrefsTest>(this),
-                        content::NotificationService::NoDetails());
-
+  NotifyLoginOrLockScreenShown();
   EXPECT_EQ(login_profile, GetProfile());
   EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, UNLOCKED),
             GetCurrentPowerPolicy());
@@ -201,12 +245,9 @@ TEST_F(PowerPrefsTest, LoginScreen) {
   TestingProfile* other_profile =
       profile_manager_.CreateTestingProfile("other");
 
-  // Inform power_prefs_ that an unrelated profile has been destroyed.
-  power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,
-                        content::Source<Profile>(other_profile),
-                        content::NotificationService::NoDetails());
-
-  // Verify that the login profile's power prefs are still being used.
+  // Inform power_prefs_ that an unrelated profile has been destroyed and verify
+  // that the login profile's power prefs are still being used.
+  NotifyProfileDestroyed(other_profile);
   EXPECT_EQ(login_profile, GetProfile());
   EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, UNLOCKED),
             GetCurrentPowerPolicy());
@@ -214,27 +255,18 @@ TEST_F(PowerPrefsTest, LoginScreen) {
             GetCurrentAllowScreenWakeLocks());
 
   // Lock the screen and check that the expected delays are used.
-  bool screen_is_locked = true;
-  power_prefs_->Observe(chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-                        content::Source<Profile>(login_profile),
-                        content::Details<bool>(&screen_is_locked));
+  NotifyLockStateChanged(login_profile, LOCKED);
   EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, LOCKED),
             GetCurrentPowerPolicy());
 
   // Unlock the screen.
-  screen_is_locked = false;
-  power_prefs_->Observe(chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED,
-                        content::Source<Profile>(login_profile),
-                        content::Details<bool>(&screen_is_locked));
+  NotifyLockStateChanged(login_profile, UNLOCKED);
   EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, UNLOCKED),
             GetCurrentPowerPolicy());
 
   // Inform power_prefs_ that the login profile has been destroyed.
-  power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,
-                        content::Source<Profile>(login_profile),
-                        content::NotificationService::NoDetails());
-
   // The login profile's prefs should still be used.
+  NotifyProfileDestroyed(login_profile);
   EXPECT_FALSE(GetProfile());
   EXPECT_EQ(GetExpectedPowerPolicyForProfile(login_profile, UNLOCKED),
             GetCurrentPowerPolicy());
@@ -290,10 +322,7 @@ void PowerPrefsUserSessionTest::SetUp() {
 }
 
 TEST_F(PowerPrefsUserSessionTest, Basic) {
-  // Inform power_prefs_ that a session has started.
-  power_prefs_->Observe(chrome::NOTIFICATION_SESSION_STARTED,
-                        content::Source<PowerPrefsTest>(this),
-                        content::NotificationService::NoDetails());
+  NotifySessionStarted();
 
   EXPECT_EQ(user_profile_, GetProfile());
   EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile_, UNLOCKED),
@@ -302,9 +331,7 @@ TEST_F(PowerPrefsUserSessionTest, Basic) {
             GetCurrentAllowScreenWakeLocks());
 
   // Inform power_prefs_ that an unrelated profile has been destroyed.
-  power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,
-                        content::Source<Profile>(second_user_profile_),
-                        content::NotificationService::NoDetails());
+  NotifyProfileDestroyed(second_user_profile_);
 
   // Verify that the user profile's power prefs are still being used.
   EXPECT_EQ(user_profile_, GetProfile());
@@ -314,9 +341,7 @@ TEST_F(PowerPrefsUserSessionTest, Basic) {
             GetCurrentAllowScreenWakeLocks());
 
   // Simulate the login screen coming up as part of screen locking.
-  power_prefs_->Observe(chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
-                        content::Source<PowerPrefsTest>(this),
-                        content::NotificationService::NoDetails());
+  NotifyLoginOrLockScreenShown();
 
   // Verify that power policy didn't revert to login screen settings.
   EXPECT_EQ(user_profile_, GetProfile());
@@ -327,9 +352,7 @@ TEST_F(PowerPrefsUserSessionTest, Basic) {
 
   // Inform power_prefs_ that the session has ended and the user profile has
   // been destroyed.
-  power_prefs_->Observe(chrome::NOTIFICATION_PROFILE_DESTROYED,
-                        content::Source<Profile>(user_profile_),
-                        content::NotificationService::NoDetails());
+  NotifyProfileDestroyed(user_profile_);
 
   // The user profile's prefs should still be used.
   EXPECT_FALSE(GetProfile());
@@ -337,12 +360,34 @@ TEST_F(PowerPrefsUserSessionTest, Basic) {
             GetCurrentPowerPolicy());
 }
 
-TEST_F(PowerPrefsUserSessionTest, DisabledLockScreen) {
-  // Inform power_prefs_ that a session has started.
-  power_prefs_->Observe(chrome::NOTIFICATION_SESSION_STARTED,
-                        content::Source<PowerPrefsTest>(this),
-                        content::NotificationService::NoDetails());
+TEST_F(PowerPrefsUserSessionTest, AvoidLockDelaysAfterInactivity) {
+  NotifySessionStarted();
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile_, UNLOCKED),
+            GetCurrentPowerPolicy());
 
+  // If the screen was already off due to inactivity when it was locked, we
+  // should continue using the unlocked delays.
+  NotifyScreenIdleOffChanged(true);
+  tick_clock_.Advance(base::TimeDelta::FromSeconds(5));
+  NotifyLockStateChanged(user_profile_, LOCKED);
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile_, UNLOCKED),
+            GetCurrentPowerPolicy());
+
+  // If the screen turns on while still locked, we should switch to the locked
+  // delays.
+  tick_clock_.Advance(base::TimeDelta::FromSeconds(5));
+  NotifyScreenIdleOffChanged(false);
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile_, LOCKED),
+            GetCurrentPowerPolicy());
+
+  tick_clock_.Advance(base::TimeDelta::FromSeconds(5));
+  NotifyLockStateChanged(user_profile_, UNLOCKED);
+  EXPECT_EQ(GetExpectedPowerPolicyForProfile(user_profile_, UNLOCKED),
+            GetCurrentPowerPolicy());
+}
+
+TEST_F(PowerPrefsUserSessionTest, DisabledLockScreen) {
+  NotifySessionStarted();
   EXPECT_EQ(user_profile_, GetProfile());
 
   // Verify that the power policy actions are set to default values initially.

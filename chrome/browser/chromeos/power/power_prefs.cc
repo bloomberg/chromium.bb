@@ -10,12 +10,14 @@
 #include "base/bind_helpers.h"
 #include "base/callback.h"
 #include "base/logging.h"
+#include "base/time/default_tick_clock.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/common/pref_names.h"
+#include "chromeos/dbus/power_manager/idle.pb.h"
 #include "chromeos/dbus/power_policy_controller.h"
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "components/prefs/pref_change_registrar.h"
@@ -26,10 +28,15 @@
 
 namespace chromeos {
 
-PowerPrefs::PowerPrefs(PowerPolicyController* power_policy_controller)
+PowerPrefs::PowerPrefs(PowerPolicyController* power_policy_controller,
+                       PowerManagerClient* power_manager_client)
     : power_policy_controller_(power_policy_controller),
-      profile_(NULL),
-      screen_is_locked_(false) {
+      power_manager_client_observer_(this),
+      tick_clock_(base::DefaultTickClock::GetInstance()) {
+  DCHECK(power_manager_client);
+  DCHECK(power_policy_controller_);
+  DCHECK(tick_clock_);
+
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_LOGIN_OR_LOCK_WEBUI_VISIBLE,
                               content::NotificationService::AllSources());
@@ -42,10 +49,10 @@ PowerPrefs::PowerPrefs(PowerPolicyController* power_policy_controller)
   notification_registrar_.Add(this,
                               chrome::NOTIFICATION_PROFILE_DESTROYED,
                               content::NotificationService::AllSources());
+  power_manager_client_observer_.Add(power_manager_client);
 }
 
-PowerPrefs::~PowerPrefs() {
-}
+PowerPrefs::~PowerPrefs() = default;
 
 // static
 void PowerPrefs::RegisterUserProfilePrefs(
@@ -69,6 +76,21 @@ void PowerPrefs::RegisterLoginProfilePrefs(
                                 PowerPolicyController::ACTION_SHUT_DOWN);
 }
 
+void PowerPrefs::ScreenIdleStateChanged(
+    const power_manager::ScreenIdleState& proto) {
+  const bool already_off = !screen_idle_off_time_.is_null();
+  if (proto.off() == already_off)
+    return;
+
+  screen_idle_off_time_ =
+      proto.off() ? tick_clock_->NowTicks() : base::TimeTicks();
+
+  // If the screen is locked and we're no longer idle, we may need to switch to
+  // the lock-based delays.
+  if (!screen_lock_time_.is_null() && !proto.off())
+    UpdatePowerPolicyFromPrefs();
+}
+
 void PowerPrefs::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
@@ -80,12 +102,16 @@ void PowerPrefs::Observe(int type,
         SetProfile(ProfileHelper::GetSigninProfile());
       break;
     }
-    case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED:
-      // Update the policy in case different delays have been set for the lock
-      // screen.
-      screen_is_locked_ = *content::Details<bool>(details).ptr();
-      UpdatePowerPolicyFromPrefs();
+    case chrome::NOTIFICATION_SCREEN_LOCK_STATE_CHANGED: {
+      const bool locked = *content::Details<bool>(details).ptr();
+      const bool already_locked = !screen_lock_time_.is_null();
+      if (locked != already_locked) {
+        screen_lock_time_ =
+            locked ? tick_clock_->NowTicks() : base::TimeTicks();
+        UpdatePowerPolicyFromPrefs();
+      }
       break;
+    }
     case chrome::NOTIFICATION_SESSION_STARTED:
       // Update |profile_| when entering a session.
       SetProfile(ProfileManager::GetPrimaryUserProfile());
@@ -138,14 +164,24 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
     return;
   }
 
+  // It's possible to end up in a situation where a shortened lock-screen idle
+  // delay would cause the system to suspend immediately as soon as the screen
+  // is locked due to inactivity; see https://crbug.com/807861 for the gory
+  // details. To avoid this, don't switch to the shorter delays immediately when
+  // the screen is locked automatically (as indicated by the screen having been
+  // previously turned off for inactivity).
+  bool use_lock_delays = !screen_lock_time_.is_null() &&
+                         (screen_idle_off_time_.is_null() ||
+                          screen_idle_off_time_ > screen_lock_time_);
+
   const PrefService* prefs = pref_change_registrar_->prefs();
   PowerPolicyController::PrefValues values;
   values.ac_screen_dim_delay_ms =
-      prefs->GetInteger(screen_is_locked_ ? prefs::kPowerLockScreenDimDelayMs :
-          prefs::kPowerAcScreenDimDelayMs);
+      prefs->GetInteger(use_lock_delays ? prefs::kPowerLockScreenDimDelayMs
+                                        : prefs::kPowerAcScreenDimDelayMs);
   values.ac_screen_off_delay_ms =
-      prefs->GetInteger(screen_is_locked_ ? prefs::kPowerLockScreenOffDelayMs :
-          prefs::kPowerAcScreenOffDelayMs);
+      prefs->GetInteger(use_lock_delays ? prefs::kPowerLockScreenOffDelayMs
+                                        : prefs::kPowerAcScreenOffDelayMs);
   values.ac_screen_lock_delay_ms =
       prefs->GetInteger(prefs::kPowerAcScreenLockDelayMs);
   values.ac_idle_warning_delay_ms =
@@ -153,11 +189,11 @@ void PowerPrefs::UpdatePowerPolicyFromPrefs() {
   values.ac_idle_delay_ms =
       prefs->GetInteger(prefs::kPowerAcIdleDelayMs);
   values.battery_screen_dim_delay_ms =
-      prefs->GetInteger(screen_is_locked_ ? prefs::kPowerLockScreenDimDelayMs :
-          prefs::kPowerBatteryScreenDimDelayMs);
+      prefs->GetInteger(use_lock_delays ? prefs::kPowerLockScreenDimDelayMs
+                                        : prefs::kPowerBatteryScreenDimDelayMs);
   values.battery_screen_off_delay_ms =
-      prefs->GetInteger(screen_is_locked_ ? prefs::kPowerLockScreenOffDelayMs :
-          prefs::kPowerBatteryScreenOffDelayMs);
+      prefs->GetInteger(use_lock_delays ? prefs::kPowerLockScreenOffDelayMs
+                                        : prefs::kPowerBatteryScreenOffDelayMs);
   values.battery_screen_lock_delay_ms =
       prefs->GetInteger(prefs::kPowerBatteryScreenLockDelayMs);
   values.battery_idle_warning_delay_ms =

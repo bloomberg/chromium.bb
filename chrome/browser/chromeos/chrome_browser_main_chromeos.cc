@@ -798,7 +798,9 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
     WizardController::SetZeroDelays();
   }
 
-  power_prefs_.reset(new PowerPrefs(PowerPolicyController::Get()));
+  power_prefs_ = std::make_unique<PowerPrefs>(
+      PowerPolicyController::Get(),
+      DBusThreadManager::Get()->GetPowerManagerClient());
 
   arc_kiosk_app_manager_.reset(new ArcKioskAppManager());
 
