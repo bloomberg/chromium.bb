@@ -104,8 +104,6 @@ source_set("net") {
     "net/rtp/rtp_sender.h",
     "net/udp_packet_pipe.cc",
     "net/udp_packet_pipe.h",
-    "net/udp_socket_client.cc",
-    "net/udp_socket_client.h",
     "net/udp_transport_impl.cc",
     "net/udp_transport_impl.h",
     "net/udp_transport_interface.h",
@@ -117,7 +115,6 @@ source_set("net") {
     "//media/mojo/common",
     "//mojo/public/cpp/system",
     "//net",
-    "//services/network/public/mojom",
   ]
 
   public_deps = [
@@ -320,7 +317,6 @@ test("cast_unittests") {
     "net/rtp/rtp_packetizer_unittest.cc",
     "net/rtp/rtp_parser_unittest.cc",
     "net/udp_packet_pipe_unittest.cc",
-    "net/udp_socket_client_unittest.cc",
     "net/udp_transport_unittest.cc",
     "receiver/audio_decoder_unittest.cc",
     "receiver/frame_receiver_unittest.cc",
@@ -351,7 +347,6 @@ test("cast_unittests") {
     "//media/test:run_all_unittests",
     "//mojo/public/cpp/bindings",
     "//net",
-    "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
     "//third_party/opus",

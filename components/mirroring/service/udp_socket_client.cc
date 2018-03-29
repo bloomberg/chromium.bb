@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "media/cast/net/udp_socket_client.h"
+#include "components/mirroring/service/udp_socket_client.h"
 
 #include "base/callback.h"
-#include "media/cast/net/udp_packet_pipe.h"
 #include "net/base/address_family.h"
 #include "net/traffic_annotation/network_traffic_annotation.h"
 
-namespace media {
-namespace cast {
+namespace mirroring {
 
 namespace {
 
@@ -62,7 +60,7 @@ UdpSocketClient::UdpSocketClient(const net::IPEndPoint& remote_endpoint,
 
 UdpSocketClient::~UdpSocketClient() {}
 
-bool UdpSocketClient::SendPacket(cast::PacketRef packet,
+bool UdpSocketClient::SendPacket(media::cast::PacketRef packet,
                                  const base::RepeatingClosure& cb) {
   DVLOG(3) << __func__;
   DCHECK(resume_send_callback_.is_null());
@@ -102,7 +100,7 @@ int64_t UdpSocketClient::GetBytesSent() {
 }
 
 void UdpSocketClient::StartReceiving(
-    const cast::PacketReceiverCallbackWithStatus& packet_receiver) {
+    const media::cast::PacketReceiverCallbackWithStatus& packet_receiver) {
   DVLOG(1) << __func__;
   packet_receiver_callback_ = packet_receiver;
   network::mojom::UDPSocketReceiverPtr udp_socket_receiver;
@@ -162,10 +160,9 @@ void UdpSocketClient::OnReceived(
   }
   if (result != net::OK)
     return;
-  std::unique_ptr<cast::Packet> packet(
-      new cast::Packet(data->begin(), data->end()));
+  std::unique_ptr<media::cast::Packet> packet(
+      new media::cast::Packet(data->begin(), data->end()));
   packet_receiver_callback_.Run(std::move(packet));
 }
 
-}  // namespace cast
-}  // namespace media
+}  // namespace mirroring
