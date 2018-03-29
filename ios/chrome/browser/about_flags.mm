@@ -42,6 +42,7 @@
 #include "ios/chrome/browser/chrome_switches.h"
 #include "ios/chrome/browser/drag_and_drop/drag_and_drop_flag.h"
 #include "ios/chrome/browser/ios_chrome_flag_descriptions.h"
+#include "ios/chrome/browser/itunes_links/itunes_links_flag.h"
 #include "ios/chrome/browser/mailto/features.h"
 #include "ios/chrome/browser/ssl/captive_portal_features.h"
 #include "ios/chrome/browser/ui/external_search/features.h"
@@ -269,6 +270,10 @@ const flags_ui::FeatureEntry kFeatureEntries[] = {
     {"search-icon-toggle", flag_descriptions::kSearchIconToggleName,
      flag_descriptions::kSearchIconToggleDescription, flags_ui::kOsIos,
      MULTI_VALUE_TYPE(kSearchButtonIconChoices)},
+    {"itunes-links-store-kit-handling",
+     flag_descriptions::kITunesLinksStoreKitHandlingName,
+     flag_descriptions::kITunesLinksStoreKitHandlingDescription,
+     flags_ui::kOsIos, FEATURE_VALUE_TYPE(kITunesLinksStoreKitHandling)},
     {"unified-consent", flag_descriptions::kUnifiedConsentName,
      flag_descriptions::kUnifiedConsentDescription, flags_ui::kOsIos,
      FEATURE_VALUE_TYPE(signin::kUnifiedConsent)},

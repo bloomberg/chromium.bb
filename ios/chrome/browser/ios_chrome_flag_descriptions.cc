@@ -66,6 +66,11 @@ const char kInProductHelpDemoModeDescription[] =
     "an individual promotion causes that promotion but no other promotions to "
     "occur.";
 
+const char kITunesLinksStoreKitHandlingName[] = "Store kit for ITunes links";
+const char kITunesLinksStoreKitHandlingDescription[] =
+    "When enabled, opening itunes product links will be handled using the "
+    "store kit.";
+
 const char kMailtoHandlingWithGoogleUIName[] = "Mailto Handling with Google UI";
 const char kMailtoHandlingWithGoogleUIDescription[] =
     "When enabled, tapping mailto: links will open a contextual menu to allow "

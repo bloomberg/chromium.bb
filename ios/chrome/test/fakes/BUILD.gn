@@ -17,11 +17,14 @@ source_set("fakes") {
     "fake_download_manager_tab_helper_delegate.mm",
     "fake_pass_kit_tab_helper_delegate.h",
     "fake_pass_kit_tab_helper_delegate.mm",
+    "fake_store_kit_launcher.h",
+    "fake_store_kit_launcher.mm",
   ]
 
   deps = [
     "//base",
     "//ios/chrome/browser/download",
+    "//ios/chrome/browser/store_kit",
     "//ios/chrome/browser/ui/download",
     "//ios/chrome/browser/ui/presenters",
     "//ios/web/public",
