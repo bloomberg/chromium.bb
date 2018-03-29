@@ -313,6 +313,8 @@ void LoginHandler::NotifyAuthNeeded() {
 }
 
 void LoginHandler::ReleaseSoon() {
+  CHECK(content::BrowserThread::CurrentlyOn(BrowserThread::UI));
+
   if (release_soon_has_been_called_) {
     return;
   } else {
