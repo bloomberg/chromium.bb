@@ -30,6 +30,7 @@
 #include "core/editing/EditingBoundary.h"
 #include "core/editing/Forward.h"
 #include "core/events/InputEvent.h"
+#include "platform/geometry/FloatQuad.h"
 #include "platform/text/TextDirection.h"
 #include "platform/wtf/Forward.h"
 #include "platform/wtf/text/CharacterNames.h"
@@ -53,6 +54,7 @@ class Document;
 class Element;
 class HTMLElement;
 class HTMLSpanElement;
+struct LocalCaretRect;
 class Node;
 class Pasteboard;
 
@@ -357,6 +359,12 @@ size_t ComputeDistanceToLeftGraphemeBoundary(const Position&);
 // If current position is at grapheme boundary, return 0; otherwise, return the
 // distance to its nearest right grapheme boundary.
 size_t ComputeDistanceToRightGraphemeBoundary(const Position&);
+
+// -------------------------------------------------------------------------
+// LocalCaretRect conversions
+// -------------------------------------------------------------------------
+
+FloatQuad LocalToAbsoluteQuadOf(const LocalCaretRect&);
 
 // -------------------------------------------------------------------------
 // Events
