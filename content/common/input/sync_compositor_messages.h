@@ -123,10 +123,11 @@ IPC_MESSAGE_ROUTED1(SyncCompositorMsg_ComputeScroll, base::TimeTicks)
 IPC_MESSAGE_ROUTED1(SyncCompositorMsg_DemandDrawHwAsync,
                     content::SyncCompositorDemandDrawHwParams)
 
-IPC_SYNC_MESSAGE_ROUTED1_3(SyncCompositorMsg_DemandDrawHw,
+IPC_SYNC_MESSAGE_ROUTED1_4(SyncCompositorMsg_DemandDrawHw,
                            content::SyncCompositorDemandDrawHwParams,
                            content::SyncCompositorCommonRendererParams,
                            uint32_t /* layer_tree_frame_sink_id */,
+                           uint32_t /* metadata_version */,
                            base::Optional<viz::CompositorFrame>)
 
 IPC_SYNC_MESSAGE_ROUTED1_2(SyncCompositorMsg_SetSharedMemory,
@@ -136,9 +137,10 @@ IPC_SYNC_MESSAGE_ROUTED1_2(SyncCompositorMsg_SetSharedMemory,
 
 IPC_MESSAGE_ROUTED0(SyncCompositorMsg_ZeroSharedMemory)
 
-IPC_SYNC_MESSAGE_ROUTED1_2(SyncCompositorMsg_DemandDrawSw,
+IPC_SYNC_MESSAGE_ROUTED1_3(SyncCompositorMsg_DemandDrawSw,
                            content::SyncCompositorDemandDrawSwParams,
                            content::SyncCompositorCommonRendererParams,
+                           uint32_t /* metadata_version */,
                            base::Optional<viz::CompositorFrameMetadata>)
 
 IPC_SYNC_MESSAGE_ROUTED2_1(SyncCompositorMsg_ZoomBy,
@@ -174,8 +176,9 @@ IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_UpdateState,
 IPC_MESSAGE_ROUTED1(SyncCompositorHostMsg_BeginFrameResponse,
                     content::SyncCompositorCommonRendererParams)
 
-IPC_MESSAGE_ROUTED2(SyncCompositorHostMsg_ReturnFrame,
+IPC_MESSAGE_ROUTED3(SyncCompositorHostMsg_ReturnFrame,
                     uint32_t /* layer_tree_frame_sink_id */,
+                    uint32_t /* metadata_version */,
                     base::Optional<viz::CompositorFrame>)
 
 // Sent by renderer to request a SyncCompositorMsg_BeginFrame message for

@@ -78,27 +78,31 @@ void SynchronousCompositorProxyChromeIPC::OnDemandDrawSw(
 void SynchronousCompositorProxyChromeIPC::SendDemandDrawHwAsyncReply(
     const SyncCompositorCommonRendererParams& common_renderer_params,
     uint32_t layer_tree_frame_sink_id,
+    uint32_t metadata_version,
     base::Optional<viz::CompositorFrame> frame) {
-  Send(new SyncCompositorHostMsg_ReturnFrame(routing_id_,
-                                             layer_tree_frame_sink_id, frame));
+  Send(new SyncCompositorHostMsg_ReturnFrame(
+      routing_id_, layer_tree_frame_sink_id, metadata_version, frame));
 }
 
 void SynchronousCompositorProxyChromeIPC::SendDemandDrawHwReply(
     IPC::Message* reply_message,
     const SyncCompositorCommonRendererParams& common_renderer_params,
     uint32_t layer_tree_frame_sink_id,
+    uint32_t metadata_version,
     base::Optional<viz::CompositorFrame> frame) {
   SyncCompositorMsg_DemandDrawHw::WriteReplyParams(
-      reply_message, common_renderer_params, layer_tree_frame_sink_id, frame);
+      reply_message, common_renderer_params, layer_tree_frame_sink_id,
+      metadata_version, frame);
   Send(reply_message);
 }
 
 void SynchronousCompositorProxyChromeIPC::SendDemandDrawSwReply(
     IPC::Message* reply_message,
     const SyncCompositorCommonRendererParams& common_renderer_params,
+    uint32_t metadata_version,
     base::Optional<viz::CompositorFrameMetadata> metadata) {
   SyncCompositorMsg_DemandDrawSw::WriteReplyParams(
-      reply_message, common_renderer_params, metadata);
+      reply_message, common_renderer_params, metadata_version, metadata);
   Send(reply_message);
 }
 

@@ -60,6 +60,7 @@ void SynchronousCompositorSyncCallBridge::RemoteClosedOnIOThread() {
 
 bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
     int layer_tree_frame_sink_id,
+    uint32_t metadata_version,
     base::Optional<viz::CompositorFrame> compositor_frame) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   base::AutoLock lock(lock_);
@@ -77,7 +78,8 @@ bool SynchronousCompositorSyncCallBridge::ReceiveFrameOnIOThread(
         BrowserThread::UI, FROM_HERE,
         base::BindOnce(&SynchronousCompositorSyncCallBridge::
                            ProcessFrameMetadataOnUIThread,
-                       this, compositor_frame->metadata.Clone()));
+                       this, metadata_version,
+                       compositor_frame->metadata.Clone()));
     frame_ptr->frame.reset(new viz::CompositorFrame);
     *frame_ptr->frame = std::move(*compositor_frame);
   }
@@ -186,10 +188,11 @@ void SynchronousCompositorSyncCallBridge::VSyncCompleteOnUIThread() {
 }
 
 void SynchronousCompositorSyncCallBridge::ProcessFrameMetadataOnUIThread(
+    uint32_t metadata_version,
     viz::CompositorFrameMetadata metadata) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (host_)
-    host_->UpdateFrameMetaData(std::move(metadata));
+    host_->UpdateFrameMetaData(metadata_version, std::move(metadata));
 }
 
 void SynchronousCompositorSyncCallBridge::UnregisterSyncCallBridgeOnIOThread(

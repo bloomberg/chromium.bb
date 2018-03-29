@@ -73,7 +73,8 @@ class SynchronousCompositorHost : public SynchronousCompositor,
 
   // Called by SynchronousCompositorSyncCallBridge.
   int routing_id() const { return routing_id_; }
-  void UpdateFrameMetaData(viz::CompositorFrameMetadata frame_metadata);
+  void UpdateFrameMetaData(uint32_t version,
+                           viz::CompositorFrameMetadata frame_metadata);
 
   // Called when the mojo channel should be created.
   void InitMojo();
@@ -151,6 +152,7 @@ class SynchronousCompositorHost : public SynchronousCompositor,
   bool need_animate_scroll_;
   uint32_t need_invalidate_count_;
   uint32_t did_activate_pending_tree_count_;
+  uint32_t frame_metadata_version_ = 0u;
 
   scoped_refptr<SynchronousCompositorSyncCallBridge> bridge_;
 

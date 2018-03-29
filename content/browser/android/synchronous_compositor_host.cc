@@ -57,10 +57,11 @@ class SynchronousCompositorLegacyChromeIPC
       const content::SyncCompositorDemandDrawHwParams& draw_params,
       content::SyncCompositorCommonRendererParams* out_result,
       uint32_t* out_layer_tree_frame_sink_id,
+      uint32_t* out_metadata_version,
       base::Optional<viz::CompositorFrame>* out_frame) override {
     return sender_->Send(new SyncCompositorMsg_DemandDrawHw(
         routing_id_, draw_params, out_result, out_layer_tree_frame_sink_id,
-        out_frame));
+        out_metadata_version, out_frame));
   }
 
   void DemandDrawHw(const SyncCompositorDemandDrawHwParams& params,
@@ -84,9 +85,11 @@ class SynchronousCompositorLegacyChromeIPC
   bool DemandDrawSw(
       const content::SyncCompositorDemandDrawSwParams& draw_params,
       content::SyncCompositorCommonRendererParams* out_result,
+      uint32_t* out_metadata_version,
       base::Optional<viz::CompositorFrameMetadata>* out_meta_data) override {
     return sender_->Send(new SyncCompositorMsg_DemandDrawSw(
-        routing_id_, draw_params, out_result, out_meta_data));
+        routing_id_, draw_params, out_result, out_metadata_version,
+        out_meta_data));
   }
 
   void DemandDrawSw(const SyncCompositorDemandDrawSwParams& params,
@@ -179,9 +182,10 @@ class SynchronousCompositorControlHost
 
   // SynchronousCompositorControlHost overrides.
   void ReturnFrame(uint32_t layer_tree_frame_sink_id,
+                   uint32_t metadata_version,
                    base::Optional<viz::CompositorFrame> frame) override {
     if (!bridge_->ReceiveFrameOnIOThread(layer_tree_frame_sink_id,
-                                         std::move(frame))) {
+                                         metadata_version, std::move(frame))) {
       bad_message::ReceivedBadMessage(
           process_id_, bad_message::SYNC_COMPOSITOR_NO_FUTURE_FRAME);
     }
@@ -320,6 +324,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
                                           viewport_rect_for_tile_priority,
                                           transform_for_tile_priority);
   uint32_t layer_tree_frame_sink_id;
+  uint32_t metadata_version = 0u;
   base::Optional<viz::CompositorFrame> compositor_frame;
   SyncCompositorCommonRendererParams common_renderer_params;
 
@@ -330,7 +335,7 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
     if (!IsReadyForSynchronousCall() ||
         !GetSynchronousCompositor()->DemandDrawHw(
             params, &common_renderer_params, &layer_tree_frame_sink_id,
-            &compositor_frame)) {
+            &metadata_version, &compositor_frame)) {
       return SynchronousCompositor::Frame();
     }
   }
@@ -344,12 +349,19 @@ SynchronousCompositor::Frame SynchronousCompositorHost::DemandDrawHw(
   frame.frame.reset(new viz::CompositorFrame);
   frame.layer_tree_frame_sink_id = layer_tree_frame_sink_id;
   *frame.frame = std::move(*compositor_frame);
-  UpdateFrameMetaData(frame.frame->metadata.Clone());
+  UpdateFrameMetaData(metadata_version, frame.frame->metadata.Clone());
   return frame;
 }
 
 void SynchronousCompositorHost::UpdateFrameMetaData(
+    uint32_t version,
     viz::CompositorFrameMetadata frame_metadata) {
+  // Ignore if |frame_metadata_version_| is newer than |version|. This
+  // comparison takes into account when the unsigned int wraps.
+  if ((frame_metadata_version_ - version) < 0x80000000) {
+    return;
+  }
+  frame_metadata_version_ = version;
   rwhva_->SynchronousFrameMetadata(std::move(frame_metadata));
 }
 
@@ -379,14 +391,15 @@ bool SynchronousCompositorHost::DemandDrawSwInProc(SkCanvas* canvas) {
   base::Optional<viz::CompositorFrameMetadata> metadata;
   ScopedSetSkCanvas set_sk_canvas(canvas);
   SyncCompositorDemandDrawSwParams params;  // Unused.
+  uint32_t metadata_version = 0u;
   if (!IsReadyForSynchronousCall() ||
       !GetSynchronousCompositor()->DemandDrawSw(params, &common_renderer_params,
-                                                &metadata))
+                                                &metadata_version, &metadata))
     return false;
   if (!metadata)
     return false;
   UpdateState(common_renderer_params);
-  UpdateFrameMetaData(std::move(*metadata));
+  UpdateFrameMetaData(metadata_version, std::move(*metadata));
   return true;
 }
 
@@ -439,6 +452,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
     return false;
 
   base::Optional<viz::CompositorFrameMetadata> metadata;
+  uint32_t metadata_version = 0u;
   SyncCompositorCommonRendererParams common_renderer_params;
   {
     mojo::SyncCallRestrictions::ScopedAllowSyncCall allow_sync_call;
@@ -446,7 +460,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
         allow_base_sync_primitives;
     if (!IsReadyForSynchronousCall() ||
         !GetSynchronousCompositor()->DemandDrawSw(
-            params, &common_renderer_params, &metadata)) {
+            params, &common_renderer_params, &metadata_version, &metadata)) {
       return false;
     }
   }
@@ -455,7 +469,7 @@ bool SynchronousCompositorHost::DemandDrawSw(SkCanvas* canvas) {
     return false;
 
   UpdateState(common_renderer_params);
-  UpdateFrameMetaData(std::move(*metadata));
+  UpdateFrameMetaData(metadata_version, std::move(*metadata));
 
   SkBitmap bitmap;
   if (!bitmap.installPixels(info, software_draw_shm_->shm.memory(), stride))

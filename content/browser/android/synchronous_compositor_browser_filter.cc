@@ -56,9 +56,10 @@ bool SynchronousCompositorBrowserFilter::ReceiveFrame(
   }
 
   int frame_sink_id = std::get<0>(param);
-  base::Optional<viz::CompositorFrame>& compositor_frame = std::get<1>(param);
+  uint32_t metadata_version = std::get<1>(param);
+  base::Optional<viz::CompositorFrame>& compositor_frame = std::get<2>(param);
 
-  if (!itr->second->ReceiveFrameOnIOThread(frame_sink_id,
+  if (!itr->second->ReceiveFrameOnIOThread(frame_sink_id, metadata_version,
                                            std::move(compositor_frame))) {
     bad_message::ReceivedBadMessage(this, bad_message::SCO_INVALID_ARGUMENT);
   }

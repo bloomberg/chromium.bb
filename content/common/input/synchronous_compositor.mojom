@@ -41,6 +41,7 @@ interface SynchronousCompositor {
   DemandDrawHw(SyncCompositorDemandDrawHwParams draw_params) =>
       (SyncCompositorCommonRendererParams result,
        uint32 layer_tree_frame_sink_id,
+       uint32 metadata_version,
        viz.mojom.CompositorFrame? frame);
 
   // Synchronously sets the shared memory used for resourceless software
@@ -53,6 +54,7 @@ interface SynchronousCompositor {
   // Synchronously does a software based draw.
   [Sync] DemandDrawSw(SyncCompositorDemandDrawSwParams draw_params) =>
       (SyncCompositorCommonRendererParams result,
+       uint32 metadata_version,
        viz.mojom.CompositorFrameMetadata? meta_data);
 
   // Zero out the shared memory. This is necessary since most of the time,
@@ -110,6 +112,7 @@ interface SynchronousCompositorHost {
 interface SynchronousCompositorControlHost {
   // Response from DrawHwAsync.
   ReturnFrame(uint32 layer_tree_frame_sink_id,
+              uint32 metadata_version,
               viz.mojom.CompositorFrame? frame);
 
   // Response from BeginFrame.

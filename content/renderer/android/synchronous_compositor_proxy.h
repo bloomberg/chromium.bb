@@ -92,7 +92,8 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
       const content::SyncCompositorCommonRendererParams&) = 0;
   virtual void SendDemandDrawHwAsyncReply(
       const content::SyncCompositorCommonRendererParams&,
-      uint32_t,
+      uint32_t layer_tree_frame_sink_id,
+      uint32_t metadata_version,
       base::Optional<viz::CompositorFrame>) = 0;
 
   DemandDrawHwCallback hardware_draw_reply_;
@@ -103,6 +104,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
 
  private:
   void DoDemandDrawSw(const SyncCompositorDemandDrawSwParams& params);
+  uint32_t NextMetadataVersion();
 
   struct SharedMemoryWithSize;
 
@@ -128,6 +130,7 @@ class SynchronousCompositorProxy : public ui::SynchronousInputHandler,
   bool need_animate_scroll_;
   uint32_t need_invalidate_count_;
   uint32_t did_activate_pending_tree_count_;
+  uint32_t metadata_version_ = 0u;
 
   DISALLOW_COPY_AND_ASSIGN(SynchronousCompositorProxy);
 };

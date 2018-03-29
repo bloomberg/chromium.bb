@@ -15,8 +15,10 @@ SynchronousCompositorProxyMojo::~SynchronousCompositorProxyMojo() {}
 void SynchronousCompositorProxyMojo::SendDemandDrawHwAsyncReply(
     const content::SyncCompositorCommonRendererParams&,
     uint32_t layer_tree_frame_sink_id,
+    uint32_t metadata_version,
     base::Optional<viz::CompositorFrame> frame) {
-  control_host_->ReturnFrame(layer_tree_frame_sink_id, std::move(frame));
+  control_host_->ReturnFrame(layer_tree_frame_sink_id, metadata_version,
+                             std::move(frame));
 }
 
 void SynchronousCompositorProxyMojo::SendBeginFrameResponse(
