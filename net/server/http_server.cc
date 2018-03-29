@@ -298,8 +298,7 @@ int HttpServer::HandleReadResult(HttpConnection* connection, int rv) {
           content_length > kMaxBodySize) {
         SendResponse(connection->id(),
                      HttpServerResponseInfo::CreateFor500(
-                         "request content-length too big or unknown: " +
-                         request.GetHeaderValue(kContentLength)),
+                         "request content-length too big or unknown."),
                      kHttpServerErrorResponseTrafficAnnotation);
         Close(connection->id());
         return ERR_CONNECTION_CLOSED;
