@@ -1071,10 +1071,25 @@ def validate_tests(waterfall, waterfall_file, benchmark_file):
 # We will only be generating one entry per isolate in the new world.
 # Right now this is simply adding and/or updating chromium.perf.fyi.json
 # until migration is complete.  See crbug.com/757933 for more info.
+#
+# To add a new isolate, add an entry to the 'tests' section.  Supported
+# values in this json are:
+# isolate: the name of the isolate you are trigger
+# test_suite: name of the test suite if different than the isolate
+#     that you want to show up as the test name
+# extra_args: args that need to be passed to the script target
+#     of the isolate you are running.
+# shards: shard indices that you want the isolate to run on.  If omitted
+#     will run on all shards.
 NEW_PERF_RECIPE_FYI_TESTERS = {
   'testers' : {
     'One Buildbot Step Test Builder': {
-      'isolate': 'telemetry_perf_tests_experimental',
+      'tests': [
+        {
+          'isolate': 'telemetry_perf_tests_experimental',
+          'extra_args': ['--xvfb'],
+        }
+      ],
       'platform': 'linux',
       'dimension': {
         'pool': 'Chrome-perf-fyi',
@@ -1088,7 +1103,17 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       ],
     },
     'Mac 10.12 Laptop Low End': {
-      'isolate': 'performance_test_suite',
+      'tests': [
+        {
+          'isolate': 'performance_test_suite',
+        },
+        {
+          'isolate': 'load_library_perf_tests_v2',
+          'test_suite_name': 'load_library_perf_tests',
+          'extra_args': ["--non-telemetry=true"],
+          'shards': [0]
+        }
+      ],
       'platform': 'mac',
       'dimension': {
         'pool': 'Chrome-perf-fyi',
@@ -1106,7 +1131,12 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
       ],
     },
     'Android Go': {
-      'isolate': 'performance_test_suite',
+      'tests': [
+        {
+          'name': 'performance_test_suite',
+          'isolate': 'performance_test_suite',
+        }
+      ],
       'platform': 'android',
       'dimension': {
         'pool': 'chrome.tests.perf-fyi',
@@ -1124,11 +1154,20 @@ NEW_PERF_RECIPE_FYI_TESTERS = {
 }
 
 
-def add_common_test_properties(test, tester_config):
+def add_common_test_properties(test_entry, tester_config, test_spec):
   dimensions = []
+  index = 0
   for device_id in tester_config['device_ids']:
-    dimensions.append({'id': device_id})
-  test['trigger_script'] = {
+    run_on_shard = True
+    if test_spec.get('shards', False):
+      # If specific shards are specified, only generate
+      # a entry for the specified shards
+      if index not in test_spec['shards']:
+        run_on_shard = False
+    if run_on_shard:
+      dimensions.append({'id': device_id})
+    index = index + 1
+  test_entry['trigger_script'] = {
       'script': '//testing/trigger_scripts/perf_device_trigger.py',
       'args': [
           '--multiple-trigger-configs',
@@ -1137,7 +1176,7 @@ def add_common_test_properties(test, tester_config):
           'True'
       ],
   }
-  test['merge'] = {
+  test_entry['merge'] = {
       'script': '//tools/perf/process_perf_results.py',
       'args': [
         '--service-account-file',
@@ -1147,7 +1186,7 @@ def add_common_test_properties(test, tester_config):
   return len(dimensions)
 
 
-def generate_performance_test_suite(tester_config):
+def generate_performance_test(tester_config, test):
   # First determine the browser that you need based on the tester
   browser_name = ''
   # For trybot testing we always use the reference build
@@ -1166,30 +1205,35 @@ def generate_performance_test_suite(tester_config):
 
   test_args = [
     '-v',
-    '--xvfb',
     '--browser=%s' % browser_name
   ]
+  test_args += test.get('extra_args', [])
 
   # Appending testing=true if we only want to run a subset of benchmarks
   # for quicker testing
   if tester_config.get('testing', False):
     test_args.append('--testing=true')
 
-  isolate_name = tester_config['isolate']
+  isolate_name = test['isolate']
   if browser_name == 'android-webview':
     test_args.append(
         '--webview-embedder-apk=../../out/Release/apks/SystemWebViewShell.apk')
     isolate_name = 'telemetry_perf_webview_tests'
 
+  # Check to see if the name is different than the isolate
+  test_suite = isolate_name
+  if test.get('test_suite', False):
+    test_suite = test['test_suite']
+
   result = {
     'args': test_args,
     'isolate_name': isolate_name,
-    'name': isolate_name,
+    'name': test_suite,
     'override_compile_targets': [
       isolate_name
     ]
   }
-  shards = add_common_test_properties(result, tester_config)
+  shards = add_common_test_properties(result, tester_config, test)
   result['swarming'] = {
     # Always say this is true regardless of whether the tester
     # supports swarming. It doesn't hurt.
@@ -1220,7 +1264,9 @@ def load_and_update_new_recipe_json():
     # what we have listed here
     testers = NEW_PERF_RECIPE_FYI_TESTERS
     for tester, tester_config in testers['testers'].iteritems():
-      isolated_scripts = [generate_performance_test_suite(tester_config)]
+      isolated_scripts = []
+      for test in tester_config['tests']:
+        isolated_scripts.append(generate_performance_test(tester_config, test))
       tests[tester] = {
         'isolated_scripts': sorted(isolated_scripts, key=lambda x: x['name'])
       }
