@@ -14,11 +14,12 @@ import java.lang.annotation.RetentionPolicy;
  */
 class PropertyKey {
     /** The unique identifiers for properties held in the model. */
-    @IntDef({CLOSE_BUTTON_ON_CLICK_LISTENER, TITLE})
+    @IntDef({CLOSE_BUTTON_ON_CLICK_LISTENER, TITLE, TOOLBAR_SHADOW_VISIBILITY})
     @Retention(RetentionPolicy.SOURCE)
     @interface Key {}
     static final int CLOSE_BUTTON_ON_CLICK_LISTENER = 0;
     static final int TITLE = 1;
+    static final int TOOLBAR_SHADOW_VISIBILITY = 2;
 
     @Key
     Integer mKey;

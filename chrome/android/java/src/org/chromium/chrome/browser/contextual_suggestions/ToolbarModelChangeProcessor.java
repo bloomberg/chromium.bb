@@ -30,6 +30,9 @@ class ToolbarModelChangeProcessor implements PropertyObserver<PropertyKey> {
                 case PropertyKey.TITLE:
                     view.setTitle(model.getTitle());
                     break;
+                case PropertyKey.TOOLBAR_SHADOW_VISIBILITY:
+                    view.setShadowVisibility(model.getToolbarShadowVisibility());
+                    break;
                 default:
                     assert false;
             }
