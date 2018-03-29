@@ -75,19 +75,6 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
   };
 
   /**
-   * Returns a canonical action for |formElement|. It works the same as upstream
-   * function GetCanonicalActionForForm.
-   * @param {HTMLFormElement} formElement
-   * @return {string} Canonical action.
-   */
-  var getCanonicalActionForForm_ = function(formElement) {
-    var raw_action = formElement.getAttribute('action') || '';
-    var absolute_url =
-        __gCrWeb.common.absoluteURL(formElement.ownerDocument, raw_action);
-    return __gCrWeb.common.removeQueryAndReferenceFromURL(absolute_url);
-  };
-
-  /**
    * If |form| has no submit elements and exactly 1 button that button
    * is assumed to be a submit button. This function adds onSubmitButtonClick_
    * as a handler for touchend event of this button. Touchend event is used as
@@ -174,9 +161,9 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    */
   __gCrWeb['getPasswordFormDataAsString'] = function(identifier) {
     var el = getPasswordFormElement_(window, identifier);
-    if (!el) return 'noPasswordsFound';
+    if (!el) return '{}';
     var formData = __gCrWeb.getPasswordFormData(el);
-    if (!formData) return 'noPasswordsFound';
+    if (!formData) return '{}';
     return __gCrWeb.stringify(formData);
   };
 
@@ -187,10 +174,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * This is a public function invoked by Chrome. There is no information
    * passed to this function that the page does not have access to anyway.
    *
-   * @param {!Object.<string, *>} formData Dictionary of parameters,
-   *    including:
-   *      'action': <string> The form action URL;
-   *      'fields': {Array.{Object.<string, string>}} Field name/value pairs;
+   * @param {AutofillFormData} formData Form data.
    * @param {string} username The username to fill.
    * @param {string} password The password to fill.
    * @param {string=} opt_normalizedOrigin The origin URL to compare to.
@@ -213,7 +197,7 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * finds that form on the page and fills in the specified username
    * and password.
    *
-   * @param {Object} formData Form data.
+   * @param {AutofillFormData} formData Form data.
    * @param {string} username The username to fill.
    * @param {string} password The password to fill.
    * @param {Window} win A window or a frame containing formData.
@@ -228,10 +212,9 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
 
     for (var i = 0; i < forms.length; i++) {
       var form = forms[i];
-      var normalizedFormAction =
-          opt_normalizedOrigin || getCanonicalActionForForm_(form);
+      var normalizedFormAction = opt_normalizedOrigin ||
+          __gCrWeb.fill.getCanonicalActionForForm(form);
       if (formData.action != normalizedFormAction) continue;
-
       var inputs = getFormInputElements_(form);
       var usernameInput =
           findInputByFieldIdentifier_(inputs, formData.fields[0].name);
@@ -309,54 +292,11 @@ if (__gCrWeb && !__gCrWeb['fillPasswordForm']) {
    * @return {Object} Object of data from formElement.
    */
   __gCrWeb.getPasswordFormData = function(formElement) {
-    var inputs = getFormInputElements_(formElement);
-
-    var fields = [];
-    var passwords = [];
-    var firstPasswordIndex = 0;
-    for (var j = 0; j < inputs.length; j++) {
-      var input = inputs[j];
-
-      fields.push({
-        'element': __gCrWeb.form.getFieldIdentifier(input),
-        'type': input.type
-      });
-
-      if (!input.disabled && input.type == 'password') {
-        if (passwords.length == 0) {
-          firstPasswordIndex = j;
-        }
-        passwords.push({
-          'element': __gCrWeb.form.getFieldIdentifier(input),
-          'value': input.value
-        });
-      }
-    }
-
-    if (passwords.length == 0) return null;
-
-    var usernameElement = '';
-    var usernameValue = '';
-    for (var j = firstPasswordIndex - 1; j >= 0; j--) {
-      var input = inputs[j];
-      if (!input.disabled && __gCrWeb.common.isTextField(input)) {
-        usernameElement = __gCrWeb.form.getFieldIdentifier(input);
-        usernameValue = input.value;
-        break;
-      }
-    }
-
-    var origin = __gCrWeb.common.removeQueryAndReferenceFromURL(
-        formElement.ownerDocument.location.href);
-
-    return {
-      'action': getCanonicalActionForForm_(formElement),
-      'name': __gCrWeb.form.getFormIdentifier(formElement),
-      'origin': origin,
-      'fields': fields,
-      'usernameElement': usernameElement,
-      'usernameValue': usernameValue,
-      'passwords': passwords
-    };
+      var extractMask = __gCrWeb.fill.EXTRACT_MASK_VALUE;
+      var formData = {}
+      var ok = __gCrWeb.fill.webFormElementToFormData(
+        window, formElement,  null /* formControlElement */,
+        extractMask, formData, null /* field */);
+      return ok ? formData : null;
   };
 }

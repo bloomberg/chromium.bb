@@ -320,6 +320,7 @@ std::unique_ptr<PasswordForm> FormParser::Parse(const FormData& form_data,
   result->origin = form_data.origin;
   result->signon_realm = form_data.origin.GetOrigin().spec();
   result->action = form_data.action;
+  result->form_data = form_data;
 
   // Try to parse with autocomplete attributes.
   auto autocomplete_parse_result = ParseUsingAutocomplete(fields);

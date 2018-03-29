@@ -4,7 +4,7 @@
 
 // This file provides methods used to fill forms in JavaScript.
 
-goog.module('__crWeb.fill');
+goog.provide('__crWeb.fill');
 
 /**
  * @typedef {{
@@ -420,6 +420,19 @@ __gCrWeb.fill.createAndDispatchHTMLEvent = function(
   element.dispatchEvent(changeEvent);
 };
 
+ /**
+  * Returns a canonical action for |formElement|. It works the same as upstream
+  * function GetCanonicalActionForForm.
+  * @param {HTMLFormElement} formElement
+  * @return {string} Canonical action.
+  */
+__gCrWeb.fill.getCanonicalActionForForm = function(formElement) {
+  var rawAction = formElement.getAttribute('action') || "";
+  var absoluteUrl = __gCrWeb.common.absoluteURL(
+     formElement.ownerDocument, rawAction);
+  return __gCrWeb.common.removeQueryAndReferenceFromURL(absoluteUrl);
+};
+
 /**
  * Extracts fields from |controlElements| with |extractMask| to |formFields|.
  * The extracted fields are also placed in |elementArray|.
@@ -605,7 +618,7 @@ function matchLabelsAndFields_(
  *     will be processed.
  * @param {number} extractMask Mask controls what data is extracted from
  *     formElement.
- * @param {AutofillFormData} form Form to fill in the AutofillFormData
+ * @param {Object} form Form to fill in the AutofillFormData
  *     information of formElement.
  * @param {?AutofillFormFieldData} field Field to fill in the form field
  *     information of formControlElement.
@@ -704,7 +717,7 @@ __gCrWeb.fill.formOrFieldsetsToFormData = function(
  *     formElment, the FormField of which will be returned in field.
  * @param {number} extractMask Mask controls what data is extracted from
  *     formElement.
- * @param {AutofillFormData} form Form to fill in the AutofillFormData
+ * @param {Object} form Form to fill in the AutofillFormData
  *     information of formElement.
  * @param {?AutofillFormFieldData} field Field to fill in the form field
  *     information of formControlElement.
@@ -720,8 +733,7 @@ __gCrWeb.fill.webFormElementToFormData = function(
   form['name'] = __gCrWeb.form.getFormIdentifier(formElement);
   form['origin'] =
       __gCrWeb.common.removeQueryAndReferenceFromURL(frame.location.href);
-  form['action'] = __gCrWeb.common.absoluteURL(
-      frame.document, formElement.getAttribute('action'));
+  form['action'] = __gCrWeb.fill.getCanonicalActionForForm(formElement);
 
   // Note different from form_autofill_util.cc version of this method, which
   // computes |form.action| using document.completeURL(form_element.action())
@@ -1883,6 +1895,5 @@ __gCrWeb.fill.webFormControlElementToFormField = function(
   }
   field['value'] = value;
 };
-
 
 }());  // End of anonymous object
