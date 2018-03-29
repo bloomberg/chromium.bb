@@ -29,7 +29,7 @@ class ErrorResilienceTestLarge
  protected:
   ErrorResilienceTestLarge()
       : EncoderTest(GET_PARAM(0)), psnr_(0.0), nframes_(0), mismatch_psnr_(0.0),
-        mismatch_nframes_(0), encoding_mode_(GET_PARAM(1)) {
+        mismatch_nframes_(0), encoding_mode_(GET_PARAM(1)), allow_mismatch_(0) {
     Reset();
   }
 
@@ -127,11 +127,14 @@ class ErrorResilienceTestLarge
   }
 
   virtual void MismatchHook(const aom_image_t *img1, const aom_image_t *img2) {
-    double mismatch_psnr = compute_psnr(img1, img2);
-    mismatch_psnr_ += mismatch_psnr;
-    ++mismatch_nframes_;
-    // std::cout << "Mismatch frame psnr: " << mismatch_psnr << "\n";
-    ::libaom_test::EncoderTest::MismatchHook(img1, img2);
+    if (allow_mismatch_) {
+      double mismatch_psnr = compute_psnr(img1, img2);
+      mismatch_psnr_ += mismatch_psnr;
+      ++mismatch_nframes_;
+      // std::cout << "Mismatch frame psnr: " << mismatch_psnr << "\n";
+    } else {
+      ::libaom_test::EncoderTest::MismatchHook(img1, img2);
+    }
   }
 
   virtual void DecompressedFrameHook(const aom_image_t &img,
@@ -185,6 +188,7 @@ class ErrorResilienceTestLarge
   unsigned int GetEncodedFrames() { return nframes_; }
   unsigned int GetDecodedFrames() { return decoded_nframes_; }
 
+  void SetAllowMismatch(int allow) { allow_mismatch_ = allow; }
   void SetPatternSwitch(int frame_switch) { pattern_switch_ = frame_switch; }
 
  private:
@@ -203,6 +207,7 @@ class ErrorResilienceTestLarge
   unsigned int error_resilient_frames_[kMaxErrorResilientFrames];
   unsigned int nomfmv_frames_[kMaxNoMFMVFrames];
   libaom_test::TestMode encoding_mode_;
+  int allow_mismatch_;
 };
 
 TEST_P(ErrorResilienceTestLarge, OnVersusOff) {
@@ -267,7 +272,52 @@ TEST_P(ErrorResilienceTestLarge, DropFramesWithoutRecovery) {
   std::cout << "             Decoded frames: " << GetDecodedFrames() << "\n";
   std::cout << "             Mismatch frames: " << GetMismatchFrames() << "\n";
   EXPECT_EQ(GetEncodedFrames() - GetDecodedFrames(), num_droppable_frames);
-  EXPECT_EQ(GetMismatchFrames(), (unsigned int)0);
+}
+
+// Check for ParseAbility property of an error-resilient frame.
+// Encode a frame in error-resilient mode (E-frame), and disallow all
+// subsequent frames from using MFMV. If frames are dropped before the
+// E frame, all frames starting from the E frame should be parse-able.
+TEST_P(ErrorResilienceTestLarge, ParseAbilityTest) {
+  const aom_rational timebase = { 33333333, 1000000000 };
+  cfg_.g_timebase = timebase;
+  cfg_.rc_target_bitrate = 500;
+  // TODO(sarahparker, debargha): Make control setting work correctly for
+  // lag_in_frames > 0
+  cfg_.g_lag_in_frames = 0;
+
+  init_flags_ = AOM_CODEC_USE_PSNR;
+
+  libaom_test::I420VideoSource video("hantro_collage_w352h288.yuv", 352, 288,
+                                     timebase.den, timebase.num, 0, 15);
+
+  cfg_.kf_mode = AOM_KF_DISABLED;
+
+  SetAllowMismatch(1);
+
+  // Set an arbitrary error resilient (E) frame
+  unsigned int num_error_resilient_frames = 1;
+  unsigned int error_resilient_frame_list[] = { 6 };
+  SetErrorResilientFrames(num_error_resilient_frames,
+                          error_resilient_frame_list);
+  // Set all frames after the error resilient frame to not allow MFMV
+  unsigned int num_nomfmv_frames = 8;
+  unsigned int nomfmv_frame_list[] = { 7, 8, 9, 10, 11, 12, 13, 14 };
+  SetNoMFMVFrames(num_nomfmv_frames, nomfmv_frame_list);
+
+  // Set a few frames before the E frame that are lost (not decoded)
+  unsigned int num_error_frames = 3;
+  unsigned int error_frame_list[] = { 3, 4, 5 };
+  SetErrorFrames(num_error_frames, error_frame_list);
+
+  ASSERT_NO_FATAL_FAILURE(RunLoop(&video));
+  std::cout << "             Encoded frames: " << GetEncodedFrames() << "\n";
+  std::cout << "             Decoded frames: " << GetDecodedFrames() << "\n";
+  std::cout << "             Mismatch frames: " << GetMismatchFrames() << "\n";
+  EXPECT_EQ(GetEncodedFrames() - GetDecodedFrames(), num_error_frames);
+  // All frames following the E-frame and the E-frame are expected to have
+  // mismatches, but still be parse-able.
+  EXPECT_EQ(GetMismatchFrames(), num_nomfmv_frames + 1);
 }
 
 AV1_INSTANTIATE_TEST_CASE(ErrorResilienceTestLarge, NONREALTIME_TEST_MODES);
