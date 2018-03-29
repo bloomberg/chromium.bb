@@ -128,11 +128,8 @@ NSString* const kXCallbackURLHost = @"x-callback-url";
            (id<UIViewControllerTransitionCoordinator>)coordinator {
   [super viewWillTransitionToSize:size withTransitionCoordinator:coordinator];
 
-  BOOL isCompact = NO;
-  if (@available(iOS 10, *)) {
-    isCompact = [self.extensionContext widgetActiveDisplayMode] ==
-                NCWidgetDisplayModeCompact;
-  }
+  BOOL isCompact = [self.extensionContext widgetActiveDisplayMode] ==
+                   NCWidgetDisplayModeCompact;
 
   [coordinator
       animateAlongsideTransition:^(
