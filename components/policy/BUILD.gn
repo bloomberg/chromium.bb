@@ -308,7 +308,7 @@ component("chrome_settings_proto_generated_compile") {
   testonly = true
   public_deps = [
     ":chrome_settings_proto_generated_compile_proto",
-    ":cloud_policy_proto_generated_compile_proto",
+    ":cloud_policy_proto_generated_compile",
   ]
 }
 proto_library("chrome_settings_proto_generated_compile_proto") {
@@ -319,14 +319,14 @@ proto_library("chrome_settings_proto_generated_compile_proto") {
   ]
 
   proto_out_dir = "components/policy/proto"
-  cc_generator_options = "dllexport_decl=POLICY_PROTO_EXPORT:"
+  cc_generator_options = "dllexport_decl=POLICY_CHROME_SETTINGS_PROTO_EXPORT:"
   cc_include = "components/policy/proto/policy_proto_export.h"
   component_build_force_source_set = true
-  defines = [ "POLICY_PROTO_COMPILATION" ]
+  defines = [ "POLICY_CHROME_SETTINGS_PROTO_COMPILATION" ]
 
   deps = [
     ":cloud_policy_code_generate",
-    ":cloud_policy_proto_generated_compile_proto",
+    ":cloud_policy_proto_generated_compile",
   ]
 }
 
