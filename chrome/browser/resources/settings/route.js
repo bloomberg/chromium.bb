@@ -89,6 +89,7 @@
  *   SITE_SETTINGS_UNSANDBOXED_PLUGINS: (undefined|!settings.Route),
  *   SITE_SETTINGS_USB_DEVICES: (undefined|!settings.Route),
  *   SITE_SETTINGS_ZOOM_LEVELS: (undefined|!settings.Route),
+ *   SMB_SHARES: (undefined|!settings.Route),
  *   STORAGE: (undefined|!settings.Route),
  *   STYLUS: (undefined|!settings.Route),
  *   SYNC: (undefined|!settings.Route),
@@ -366,6 +367,9 @@ cr.define('settings', function() {
 
       if (pageVisibility.downloads !== false) {
         r.DOWNLOADS = r.ADVANCED.createSection('/downloads', 'downloads');
+        // <if expr="chromeos">
+        r.SMB_SHARES = r.DOWNLOADS.createChild('/smbShares');
+        // </if>
       }
 
       r.PRINTING = r.ADVANCED.createSection('/printing', 'printing');

@@ -776,15 +776,27 @@ void AddDeviceStrings(content::WebUIDataSource* html_source) {
 
 void AddDownloadsStrings(content::WebUIDataSource* html_source) {
   LocalizedString localized_strings[] = {
-      {"downloadsPageTitle", IDS_SETTINGS_DOWNLOADS},
-      {"downloadLocation", IDS_SETTINGS_DOWNLOAD_LOCATION},
-      {"changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION},
-      {"promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD},
-      {"disconnectGoogleDriveAccount", IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE},
-      {"openFileTypesAutomatically",
-       IDS_SETTINGS_OPEN_FILE_TYPES_AUTOMATICALLY}};
+    {"downloadsPageTitle", IDS_SETTINGS_DOWNLOADS},
+    {"downloadLocation", IDS_SETTINGS_DOWNLOAD_LOCATION},
+    {"changeDownloadLocation", IDS_SETTINGS_CHANGE_DOWNLOAD_LOCATION},
+    {"promptForDownload", IDS_SETTINGS_PROMPT_FOR_DOWNLOAD},
+    {"disconnectGoogleDriveAccount", IDS_SETTINGS_DISCONNECT_GOOGLE_DRIVE},
+    {"openFileTypesAutomatically", IDS_SETTINGS_OPEN_FILE_TYPES_AUTOMATICALLY},
+#if defined(OS_CHROMEOS)
+    {"smbSharesTitle", IDS_SETTINGS_DOWNLOADS_SMB_SHARES},
+    {"smbSharesLearnMoreLabel",
+     IDS_SETTINGS_DOWNLOADS_SMB_SHARES_LEARN_MORE_LABEL},
+    {"addSmbShare", IDS_SETTINGS_DOWNLOADS_SMB_SHARES_ADD_SHARE},
+    {"smbShareUrl", IDS_SETTINGS_DOWNLOADS_ADD_SHARE_URL},
+#endif
+  };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+
+#if defined(OS_CHROMEOS)
+  html_source->AddBoolean("enableNativeSmbSetting",
+                          base::FeatureList::IsEnabled(features::kNativeSmb));
+#endif
 }
 
 #if defined(OS_WIN) && defined(GOOGLE_CHROME_BUILD)
