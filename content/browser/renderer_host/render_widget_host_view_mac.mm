@@ -73,77 +73,6 @@ using blink::WebGestureEvent;
 
 @end
 
-@interface RenderWidgetPopupWindow : NSWindow {
-   // The event tap that allows monitoring of all events, to properly close with
-   // a click outside the bounds of the window.
-  id clickEventTap_;
-}
-@end
-
-@implementation RenderWidgetPopupWindow
-
-- (id)initWithContentRect:(NSRect)contentRect
-                styleMask:(NSUInteger)windowStyle
-                  backing:(NSBackingStoreType)bufferingType
-                    defer:(BOOL)deferCreation {
-  if (self = [super initWithContentRect:contentRect
-                              styleMask:windowStyle
-                                backing:bufferingType
-                                  defer:deferCreation]) {
-    [self setBackgroundColor:[NSColor clearColor]];
-    [self startObservingClicks];
-  }
-  return self;
-}
-
-- (void)close {
-  [self stopObservingClicks];
-  [super close];
-}
-
-// Gets called when the menubar is clicked.
-// Needed because the local event monitor doesn't see the click on the menubar.
-- (void)beganTracking:(NSNotification*)notification {
-  [self close];
-}
-
-// Install the callback.
-- (void)startObservingClicks {
-  clickEventTap_ = [NSEvent addLocalMonitorForEventsMatchingMask:NSAnyEventMask
-      handler:^NSEvent* (NSEvent* event) {
-          if ([event window] == self)
-            return event;
-          NSEventType eventType = [event type];
-          if (eventType == NSLeftMouseDown || eventType == NSRightMouseDown)
-            [self close];
-          return event;
-  }];
-
-  NSNotificationCenter* notificationCenter =
-      [NSNotificationCenter defaultCenter];
-  [notificationCenter addObserver:self
-         selector:@selector(beganTracking:)
-             name:NSMenuDidBeginTrackingNotification
-           object:[NSApp mainMenu]];
-}
-
-// Remove the callback.
-- (void)stopObservingClicks {
-  if (!clickEventTap_)
-    return;
-
-  [NSEvent removeMonitor:clickEventTap_];
-   clickEventTap_ = nil;
-
-  NSNotificationCenter* notificationCenter =
-      [NSNotificationCenter defaultCenter];
-  [notificationCenter removeObserver:self
-                name:NSMenuDidBeginTrackingNotification
-              object:[NSApp mainMenu]];
-}
-
-@end
-
 namespace content {
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -353,26 +282,7 @@ void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
   // This path is used by the time/date picker.
-  bool activatable = popup_type_ == blink::kWebPopupTypeNone;
-  [cocoa_view() setCloseOnDeactivate:YES];
-  [cocoa_view() setCanBeKeyView:activatable ? YES : NO];
-
-  popup_window_.reset([[RenderWidgetPopupWindow alloc]
-      initWithContentRect:gfx::ScreenRectToNSRect(pos)
-                styleMask:NSBorderlessWindowMask
-                  backing:NSBackingStoreBuffered
-                    defer:NO]);
-  [popup_window_ setLevel:NSPopUpMenuWindowLevel];
-  [popup_window_ setReleasedWhenClosed:NO];
-  [popup_window_ makeKeyAndOrderFront:nil];
-  [[popup_window_ contentView] addSubview:cocoa_view()];
-  [cocoa_view() setFrame:[[popup_window_ contentView] bounds]];
-  [cocoa_view() setAutoresizingMask:NSViewWidthSizable | NSViewHeightSizable];
-  [[NSNotificationCenter defaultCenter]
-      addObserver:cocoa_view()
-         selector:@selector(popupWindowWillClose:)
-             name:NSWindowWillCloseNotification
-           object:popup_window_];
+  ns_view_bridge_->InitAsPopup(pos, popup_type_);
 }
 
 // This function creates the fullscreen window and hides the dock and menubar if
@@ -567,44 +477,7 @@ void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
 }
 
 void RenderWidgetHostViewMac::SetBounds(const gfx::Rect& rect) {
-  // |rect.size()| is view coordinates, |rect.origin| is screen coordinates,
-  // TODO(thakis): fix, http://crbug.com/73362
-
-  // During the initial creation of the RenderWidgetHostView in
-  // WebContentsImpl::CreateRenderViewForRenderManager, SetSize is called with
-  // an empty size. In the Windows code flow, it is not ignored because
-  // subsequent sizing calls from the OS flow through TCVW::WasSized which calls
-  // SetSize() again. On Cocoa, we rely on the Cocoa view struture and resizer
-  // flags to keep things sized properly. On the other hand, if the size is not
-  // empty then this is a valid request for a pop-up.
-  if (rect.size().IsEmpty())
-    return;
-
-  // Ignore the position of |rect| for non-popup rwhvs. This is because
-  // background tabs do not have a window, but the window is required for the
-  // coordinate conversions. Popups are always for a visible tab.
-  //
-  // Note: If |cocoa_view_| has been removed from the view hierarchy, it's still
-  // valid for resizing to be requested (e.g., during tab capture, to size the
-  // view to screen-capture resolution). In this case, simply treat the view as
-  // relative to the screen.
-  BOOL isRelativeToScreen =
-      IsPopup() || ![[cocoa_view() superview] isKindOfClass:[BaseView class]];
-  if (isRelativeToScreen) {
-    // The position of |rect| is screen coordinate system and we have to
-    // consider Cocoa coordinate system is upside-down and also multi-screen.
-    NSRect frame = gfx::ScreenRectToNSRect(rect);
-    if (IsPopup())
-      [popup_window_ setFrame:frame display:YES];
-    else
-      [cocoa_view() setFrame:frame];
-  } else {
-    BaseView* superview = static_cast<BaseView*>([cocoa_view() superview]);
-    gfx::Rect rect2 = [superview flipNSRectToRect:[cocoa_view() frame]];
-    rect2.set_width(rect.width());
-    rect2.set_height(rect.height());
-    [cocoa_view() setFrame:[superview flipRectToNSRect:rect2]];
-  }
+  ns_view_bridge_->SetBounds(rect);
 }
 
 gfx::NativeView RenderWidgetHostViewMac::GetNativeView() const {
@@ -779,17 +652,11 @@ void RenderWidgetHostViewMac::Destroy() {
   // FrameSinkIds registered with RenderWidgetHostInputEventRouter
   // have already been cleared when RenderWidgetHostViewBase notified its
   // observers of our impending destruction.
-  [[NSNotificationCenter defaultCenter]
-      removeObserver:cocoa_view()
-                name:NSWindowWillCloseNotification
-              object:popup_window_];
 
   // We've been told to destroy.
   if (ns_view_bridge_)
     ns_view_bridge_->Destroy();
   ns_view_bridge_.reset();
-  [popup_window_ close];
-  popup_window_.autorelease();
 
   [fullscreen_window_manager_ exitFullscreenMode];
   fullscreen_window_manager_.reset();
@@ -945,10 +812,6 @@ void RenderWidgetHostViewMac::SetShowingContextMenu(bool showing) {
   web_event.SetModifiers(web_event.GetModifiers() |
                          WebInputEvent::kRelativeMotionEvent);
   ForwardMouseEvent(web_event);
-}
-
-bool RenderWidgetHostViewMac::IsPopup() const {
-  return popup_type_ != blink::kWebPopupTypeNone;
 }
 
 void RenderWidgetHostViewMac::CopyFromSurface(
