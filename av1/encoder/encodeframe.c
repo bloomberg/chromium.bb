@@ -4347,6 +4347,21 @@ void av1_encode_frame(AV1_COMP *cpi) {
 #if CONFIG_EXPLICIT_ORDER_HINT
   cm->frame_offset %= (1 << (cm->seq_params.order_hint_bits_minus1 + 1));
 #endif  // CONFIG_EXPLICIT_ORDER_HINT
+
+  // Make sure segment_id is no larger than last_active_segid.
+  if (cm->seg.enabled && cm->seg.update_map) {
+    const int mi_rows = cm->mi_rows;
+    const int mi_cols = cm->mi_cols;
+    const int last_active_segid = cm->seg.last_active_segid;
+    uint8_t *map = cpi->segmentation_map;
+    for (int mi_row = 0; mi_row < mi_rows; ++mi_row) {
+      for (int mi_col = 0; mi_col < mi_cols; ++mi_col) {
+        map[mi_col] = AOMMIN(map[mi_col], last_active_segid);
+      }
+      map += mi_cols;
+    }
+  }
+
   av1_setup_frame_buf_refs(cm);
   if (cpi->sf.selective_ref_frame >= 2) enforce_max_ref_frames(cpi);
   av1_setup_frame_sign_bias(cm);
