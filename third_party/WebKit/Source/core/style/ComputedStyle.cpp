@@ -1488,14 +1488,12 @@ LineLogicalSide ComputedStyle::GetTextEmphasisLineLogicalSide() const {
 }
 
 CSSAnimationData& ComputedStyle::AccessAnimations() {
-  DCHECK(!AnimationPropertiesLocked());
   if (!AnimationsInternal())
     SetAnimationsInternal(CSSAnimationData::Create());
   return *AnimationsInternal();
 }
 
 CSSTransitionData& ComputedStyle::AccessTransitions() {
-  DCHECK(!AnimationPropertiesLocked());
   if (!TransitionsInternal())
     SetTransitionsInternal(CSSTransitionData::Create());
   return *TransitionsInternal();
