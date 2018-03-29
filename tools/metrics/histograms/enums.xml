@@ -32415,10 +32415,8 @@ Called by update_net_trust_anchors.py.-->
     window.open was called, when audio is detected, etc.
   </int>
   <int value="5" label="Loading failed (retriable)">
-    The attempt resulted in a retriable loading failure. This may be because we
-    found a network error or a page error (i.e. 404 pages will also result in an
-    Loading Failed). Because fickle networks make network errors unreliable, an
-    incorrectly typed URL will also result in retriable loading failure.
+    The attempt resulted in a retriable loading failure. The system or Chrome
+    encountered an error (e.g. render killed, WebContents destroyed).
   </int>
   <int value="6" label="Save failed">
     The attempt failed because save did not succeed.
@@ -32459,6 +32457,16 @@ Called by update_net_trust_anchors.py.-->
   </int>
   <int value="16" label="Browser killed">
     The browser was killed for reasons such as OOM, swiped out, or crashed.
+  </int>
+  <int value="19" label="Loading failed (retriable, net error)">
+    The attempt resulted in a retriable loading failure. We encountered a
+    network error (e.g. NETWORK_CHANGED, TIMED_OUT). Because fickle networks
+    make network errors unreliable, an incorrectly typed URL will also result in
+    retriable loading failure.
+  </int>
+  <int value="20" label="Loading failed (retriable, HTTP error)">
+    The attempt resulted in a retriable loading failure. We encountered an error
+    page (e.g. 404 page).
   </int>
 </enum>
 

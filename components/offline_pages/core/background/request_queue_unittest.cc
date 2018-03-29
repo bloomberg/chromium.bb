@@ -523,8 +523,9 @@ TEST_F(RequestQueueTest, MarkAttemptCompleted) {
   ClearResults();
 
   queue()->MarkAttemptCompleted(
-      kRequestId, base::Bind(&RequestQueueTest::UpdateRequestsDone,
-                             base::Unretained(this)));
+      kRequestId, FailState::CANNOT_DOWNLOAD,
+      base::Bind(&RequestQueueTest::UpdateRequestsDone,
+                 base::Unretained(this)));
   PumpLoop();
 
   ASSERT_TRUE(update_requests_result());

@@ -600,7 +600,8 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnErrorPage) {
   PumpLoop();
 
   EXPECT_TRUE(completion_callback_called());
-  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NET_ERROR,
+            request_status());
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, FailsOnInternetDisconnected) {
@@ -624,7 +625,8 @@ TEST_F(BackgroundLoaderOfflinerTest, FailsOnInternetDisconnected) {
   PumpLoop();
 
   EXPECT_TRUE(completion_callback_called());
-  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED, request_status());
+  EXPECT_EQ(Offliner::RequestStatus::LOADING_FAILED_NET_ERROR,
+            request_status());
 }
 
 TEST_F(BackgroundLoaderOfflinerTest, DoesNotCrashWithNullResponseHeaders) {

@@ -193,6 +193,18 @@ bool IsSingleSuccessResult(const UpdateRequestsResult* result) {
          result->item_statuses.at(0).second == ItemActionStatus::SUCCESS;
 }
 
+FailState RequestStatusToFailState(Offliner::RequestStatus request_status) {
+  if (request_status == Offliner::RequestStatus::SAVED ||
+      request_status == Offliner::RequestStatus::SAVED_ON_LAST_RETRY) {
+    return FailState::NO_FAILURE;
+  } else if (request_status ==
+             Offliner::RequestStatus::LOADING_FAILED_NET_ERROR) {
+    return FailState::NETWORK_INSTABILITY;
+  } else {
+    return FailState::CANNOT_DOWNLOAD;
+  }
+}
+
 }  // namespace
 
 RequestCoordinator::SavePageLaterParams::SavePageLaterParams()
@@ -1052,7 +1064,7 @@ void RequestCoordinator::UpdateRequestForCompletedAttempt(
     // If we failed, but are not over the limit, update the request in the
     // queue.
     queue_->MarkAttemptCompleted(
-        request.request_id(),
+        request.request_id(), RequestStatusToFailState(status),
         base::Bind(&RequestCoordinator::MarkAttemptDone,
                    weak_ptr_factory_.GetWeakPtr(), request.request_id(),
                    request.client_id().name_space));
@@ -1066,6 +1078,8 @@ bool RequestCoordinator::ShouldTryNextRequest(
     case Offliner::RequestStatus::SAVE_FAILED:
     case Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED:
     case Offliner::RequestStatus::LOADING_FAILED:
+    case Offliner::RequestStatus::LOADING_FAILED_NET_ERROR:
+    case Offliner::RequestStatus::LOADING_FAILED_HTTP_ERROR:
     case Offliner::RequestStatus::LOADING_FAILED_NO_RETRY:
     case Offliner::RequestStatus::LOADING_FAILED_DOWNLOAD:
     case Offliner::RequestStatus::DOWNLOAD_THROTTLED:

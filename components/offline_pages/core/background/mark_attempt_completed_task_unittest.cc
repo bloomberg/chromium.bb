@@ -92,7 +92,7 @@ TEST_F(MarkAttemptCompletedTaskTest, MarkAttemptCompletedWhenExists) {
   AddStartedItemToStore(&store);
 
   MarkAttemptCompletedTask task(
-      &store, kRequestId1,
+      &store, kRequestId1, FailState::CANNOT_DOWNLOAD,
       base::Bind(&MarkAttemptCompletedTaskTest::ChangeRequestsStateCallback,
                  base::Unretained(this)));
 
@@ -116,7 +116,7 @@ TEST_F(MarkAttemptCompletedTaskTest, MarkAttemptCompletedWhenItemMissing) {
   AddStartedItemToStore(&store);
   // Try to mark request 2 (not in the store).
   MarkAttemptCompletedTask task(
-      &store, kRequestId2,
+      &store, kRequestId2, FailState::CANNOT_DOWNLOAD,
       base::Bind(&MarkAttemptCompletedTaskTest::ChangeRequestsStateCallback,
                  base::Unretained(this)));
   task.Run();

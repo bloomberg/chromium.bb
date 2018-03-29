@@ -42,7 +42,8 @@ class SavePageRequest {
   void MarkAttemptStarted(const base::Time& start_time);
 
   // Marks attempt as completed and clears |last_attempt_time_|.
-  void MarkAttemptCompleted();
+  // Updates the |fail_state_|.
+  void MarkAttemptCompleted(FailState fail_state);
 
   // Marks attempt as aborted. This will change the state of an OFFLINING
   // request to be AVAILABLE.  It will not change the state of a PAUSED request.
@@ -142,6 +143,9 @@ class SavePageRequest {
   // The app package origin of this save page request. Empty if cannot be
   // determined or Chrome.
   std::string request_origin_;
+
+  // Helper method to update the |fail_state_| of a request.
+  void UpdateFailState(FailState fail_state);
 };
 
 }  // namespace offline_pages

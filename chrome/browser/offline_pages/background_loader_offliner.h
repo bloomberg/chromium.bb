@@ -99,7 +99,12 @@ class BackgroundLoaderOffliner
   friend class BackgroundLoaderOfflinerTest;
 
   enum SaveState { NONE, SAVING, DELETE_AFTER_SAVE };
-  enum PageLoadState { SUCCESS, RETRIABLE, NONRETRIABLE };
+  enum PageLoadState {
+    SUCCESS,
+    RETRIABLE_NET_ERROR,
+    RETRIABLE_HTTP_ERROR,
+    NONRETRIABLE
+  };
 
   // Called when the page has been saved.
   void OnPageSaved(SavePageResult save_result, int64_t offline_id);

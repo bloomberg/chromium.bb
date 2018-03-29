@@ -112,9 +112,10 @@ void RequestQueue::MarkAttemptAborted(int64_t request_id,
 }
 
 void RequestQueue::MarkAttemptCompleted(int64_t request_id,
+                                        FailState fail_state,
                                         const UpdateCallback& callback) {
-  std::unique_ptr<Task> task(
-      new MarkAttemptCompletedTask(store_.get(), request_id, callback));
+  std::unique_ptr<Task> task(new MarkAttemptCompletedTask(
+      store_.get(), request_id, fail_state, callback));
   task_queue_.AddTask(std::move(task));
 }
 

@@ -49,6 +49,10 @@ static std::string OfflinerRequestStatusToString(
       return "LOADING_FAILED_DOWNLOAD";
     case Offliner::DOWNLOAD_THROTTLED:
       return "DOWNLOAD_THROTTLED";
+    case Offliner::LOADING_FAILED_NET_ERROR:
+      return "LOADING_FAILED_NET_ERROR";
+    case Offliner::LOADING_FAILED_HTTP_ERROR:
+      return "LOADING_FAILED_HTTP_ERROR";
     default:
       NOTREACHED();
       return std::to_string(static_cast<int>(request_status));
