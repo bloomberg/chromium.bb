@@ -53,6 +53,10 @@
 #include "url/gurl.h"
 #include "url/scheme_host_port.h"
 
+namespace crypto {
+class ECPrivateKey;
+}
+
 namespace net {
 
 namespace test {
