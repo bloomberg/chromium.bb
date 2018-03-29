@@ -63,12 +63,10 @@ extern "C" {
 
 #define NUM_PING_PONG_BUFFERS 2
 
-#if CONFIG_OPERATING_POINTS
 #define MAX_NUM_TEMPORAL_LAYERS 8
 #define MAX_NUM_SPATIAL_LAYERS 4
 #define MAX_NUM_OPERATING_POINTS \
   MAX_NUM_TEMPORAL_LAYERS + MAX_NUM_SPATIAL_LAYERS
-#endif
 
 // TODO(jingning): Turning this on to set up transform coefficient
 // processing timer.
@@ -223,14 +221,12 @@ typedef struct SequenceHeader {
                            //     enabled for that frame.
   int enable_cdef;         // To turn on/off CDEF
   int enable_restoration;  // To turn on/off loop restoration
-#if CONFIG_OPERATING_POINTS
   int operating_point_idc[MAX_NUM_OPERATING_POINTS];
   int level[MAX_NUM_OPERATING_POINTS];
   int decoder_rate_model_param_present_flag[MAX_NUM_OPERATING_POINTS];
   int decode_to_display_rate_ratio[MAX_NUM_OPERATING_POINTS];
   int initial_display_delay[MAX_NUM_OPERATING_POINTS];
   int extra_frame_buffers[MAX_NUM_OPERATING_POINTS];
-#endif  // CONFIG_OPERATING_POINTS
 } SequenceHeader;
 
 typedef struct AV1Common {
