@@ -1276,7 +1276,6 @@ CrSettingsMenuTest.prototype = {
 
   /** @override */
   extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
-    'test_util.js',
     'settings_menu_test.js',
   ]),
 };

@@ -92,6 +92,5 @@ Polymer({
   onExtensionsLinkClick_: function() {
     chrome.metricsPrivate.recordUserAction(
         'SettingsMenu_ExtensionsLinkClicked');
-    this.fire('external-link-click');
   },
 });
