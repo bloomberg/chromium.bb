@@ -554,6 +554,9 @@ void BlinkTestController::OnTestFinishedInSecondaryRenderer() {
 
 void BlinkTestController::OnInitiateCaptureDump(
     bool capture_navigation_history) {
+  if (test_phase_ != DURING_TEST)
+    return;
+
   if (capture_navigation_history) {
     RenderFrameHost* main_rfh = main_window_->web_contents()->GetMainFrame();
     for (auto* window : Shell::windows()) {
