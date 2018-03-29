@@ -32,11 +32,11 @@ CastKeySystem DecryptContextImpl::GetKeySystem() {
 }
 
 bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer,
-                                 uint8_t* output,
+                                 uint8_t* opaque_handle,
                                  size_t data_offset) {
   bool called = false;
   bool success = false;
-  DecryptAsync(buffer, output, data_offset,
+  DecryptAsync(buffer, opaque_handle, data_offset, false /* clear_output */,
                base::BindOnce(&BufferDecryptCB, &called, &success));
   CHECK(called) << "Sync Decrypt isn't supported";
 
@@ -44,8 +44,9 @@ bool DecryptContextImpl::Decrypt(CastDecoderBuffer* buffer,
 }
 
 void DecryptContextImpl::DecryptAsync(CastDecoderBuffer* buffer,
-                                      uint8_t* output,
+                                      uint8_t* output_or_handle,
                                       size_t data_offset,
+                                      bool clear_output,
                                       DecryptCB decrypt_cb) {
   std::move(decrypt_cb).Run(false);
 }

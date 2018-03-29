@@ -75,7 +75,8 @@ DecoderBufferClear::ToMediaBuffer() const {
 void DecryptDecoderBuffer(scoped_refptr<DecoderBufferBase> buffer,
                           DecryptContextImpl* decrypt_ctxt,
                           BufferDecryptedCB buffer_decrypted_cb) {
-  decrypt_ctxt->DecryptAsync(buffer.get(), buffer->writable_data(), 0,
+  decrypt_ctxt->DecryptAsync(buffer.get(), buffer->writable_data(),
+                             0 /* data_offset */, true /* clear_output */,
                              base::BindOnce(&OnBufferDecrypted, buffer,
                                             std::move(buffer_decrypted_cb)));
 }
