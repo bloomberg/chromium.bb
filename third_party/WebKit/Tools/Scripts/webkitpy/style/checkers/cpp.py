@@ -223,33 +223,6 @@ def _rfind_in_lines(regex, lines, start_position, not_found_position):
         current_line = lines[current_row]
 
 
-def _convert_to_lower_with_underscores(text):
-    """Converts all text strings in camelCase or PascalCase to lowers with underscores."""
-
-    # First add underscores before any capital letter followed by a lower case letter
-    # as long as it is in a word.
-    # (This put an underscore before Password but not P and A in WPAPassword).
-    text = sub(r'(?<=[A-Za-z0-9])([A-Z])(?=[a-z])', r'_\1', text)
-
-    # Next add underscores before capitals at the end of words if it was
-    # preceded by lower case letter or number.
-    # (This puts an underscore before A in isA but not A in CBA).
-    text = sub(r'(?<=[a-z0-9])([A-Z])(?=\b)', r'_\1', text)
-
-    # Next add underscores when you have a capital letter which is followed by a capital letter
-    # but is not proceeded by one. (This puts an underscore before A in 'WordADay').
-    text = sub(r'(?<=[a-z0-9])([A-Z][A-Z_])', r'_\1', text)
-
-    return text.lower()
-
-
-def _create_acronym(text):
-    """Creates an acronym for the given text."""
-    # Removes all lower case letters except those starting words.
-    text = sub(r'(?<!\b)[a-z]', '', text)
-    return text.upper()
-
-
 def up_to_unmatched_closing_paren(s):
     """Splits a string into two parts up to first unmatched ')'.
 
@@ -317,21 +290,6 @@ class Position(object):
         return self.row.__cmp__(other.row) or self.column.__cmp__(other.column)
 
 
-class Parameter(object):
-    """Information about one function parameter."""
-
-    def __init__(self, parameter, parameter_name_index, row):
-        self.type = parameter[:parameter_name_index].strip()
-        # Remove any initializers from the parameter name (e.g. int i = 5).
-        self.name = sub(r'=.*', '', parameter[parameter_name_index:]).strip()
-        self.row = row
-
-    @memoized
-    def lower_with_underscores_name(self):
-        """Returns the parameter name in the lower with underscores format."""
-        return _convert_to_lower_with_underscores(self.name)
-
-
 class SingleLineView(object):
     """Converts multiple lines into a single line (with line breaks replaced by a
        space) to allow for easier searching.
@@ -363,90 +321,6 @@ class SingleLineView(object):
         # during the join).
         self._row_lengths = [len(line) + 1 for line in trimmed_lines]
         self._starting_row = start_position.row
-
-    def convert_column_to_row(self, single_line_column_number):
-        """Convert the column number from the single line into the original
-        line number.
-
-        Special cases:
-        * Columns in the added spaces are considered part of the previous line.
-        * Columns beyond the end of the line are consider part the last line
-        in the view.
-        """
-        total_columns = 0
-        row_offset = 0
-        while (row_offset < len(self._row_lengths) - 1 and
-               single_line_column_number >= total_columns + self._row_lengths[row_offset]):
-            total_columns += self._row_lengths[row_offset]
-            row_offset += 1
-        return self._starting_row + row_offset
-
-
-def create_skeleton_parameters(all_parameters):
-    """Converts a parameter list to a skeleton version.
-
-    The skeleton only has one word for the parameter name, one word for the type,
-    and commas after each parameter and only there. Everything in the skeleton
-    remains in the same columns as the original.
-    """
-    all_simplifications = (
-        # Remove template parameters, function declaration parameters, etc.
-        r'(<[^<>]*?>)|(\([^\(\)]*?\))|(\{[^\{\}]*?\})',
-        # Remove all initializers.
-        r'=[^,]*',
-        # Remove :: and everything before it.
-        r'[^,]*::',
-        # Remove modifiers like &, *.
-        r'[&*]',
-        # Remove const modifiers.
-        r'\bconst\s+(?=[A-Za-z])',
-        # Remove numerical modifiers like long.
-        r'\b(unsigned|long|short)\s+(?=unsigned|long|short|int|char|double|float)')
-
-    skeleton_parameters = all_parameters
-    for simplification in all_simplifications:
-        skeleton_parameters = iteratively_replace_matches_with_char(simplification, ' ', skeleton_parameters)
-    # If there are any parameters, then add a , after the last one to
-    # make a regular pattern of a , following every parameter.
-    if skeleton_parameters.strip():
-        skeleton_parameters += ','
-    return skeleton_parameters
-
-
-def find_parameter_name_index(skeleton_parameter):
-    """Determines where the parameter name starts given the skeleton parameter."""
-    # The first space from the right in the simplified parameter is where the parameter
-    # name starts unless the first space is before any content in the simplified parameter.
-    before_name_index = skeleton_parameter.rstrip().rfind(' ')
-    if before_name_index != -1 and skeleton_parameter[:before_name_index].strip():
-        return before_name_index + 1
-    return len(skeleton_parameter)
-
-
-def parameter_list(elided_lines, start_position, end_position):
-    """Generator for a function's parameters."""
-    # Create new positions that omit the outer parenthesis of the parameters.
-    start_position = Position(row=start_position.row, column=start_position.column + 1)
-    end_position = Position(row=end_position.row, column=end_position.column - 1)
-    single_line_view = SingleLineView(elided_lines, start_position, end_position)
-    skeleton_parameters = create_skeleton_parameters(single_line_view.single_line)
-    end_index = -1
-
-    while True:
-        # Find the end of the next parameter.
-        start_index = end_index + 1
-        end_index = skeleton_parameters.find(',', start_index)
-
-        # No comma means that all parameters have been parsed.
-        if end_index == -1:
-            return
-        row = single_line_view.convert_column_to_row(end_index)
-
-        # Parse the parameter into a type and parameter name.
-        skeleton_parameter = skeleton_parameters[start_index:end_index]
-        name_offset = find_parameter_name_index(skeleton_parameter)
-        parameter = single_line_view.single_line[start_index:end_index]
-        yield Parameter(parameter, name_offset, row)
 
 
 class _FunctionState(object):
@@ -497,15 +371,6 @@ class _FunctionState(object):
                 clean_lines.elided, parameter_end_position, body_start_position).single_line
             self.is_pure = bool(match(r'\s*=\s*0\s*', characters_after_parameters))
         self._clean_lines = clean_lines
-        self._parameter_list = None
-
-    def parameter_list(self):
-        if not self._parameter_list:
-            # Store the final result as a tuple since that is immutable.
-            self._parameter_list = tuple(parameter_list(self._clean_lines.elided,
-                                                        self.parameter_start_position, self.parameter_end_position))
-
-        return self._parameter_list
 
     def count(self, line_number):
         """Count line in current function body."""
@@ -1467,68 +1332,6 @@ def check_for_function_lengths(clean_lines, line_number, function_state, error):
             function_state.check(error, line_number)
     elif not match(r'^\s*$', line):
         function_state.count(line_number)  # Count non-blank/non-comment lines.
-
-
-def _check_parameter_name_against_text(parameter, text, error):
-    """Checks to see if the parameter name is contained within the text.
-
-    Return false if the check failed (i.e. an error was produced).
-    """
-
-    # Treat 'lower with underscores' as a canonical form because it is
-    # case insensitive while still retaining word breaks. (This ensures that
-    # 'elate' doesn't look like it is duplicating of 'NateLate'.)
-    canonical_parameter_name = parameter.lower_with_underscores_name()
-
-    # Appends "object" to all text to catch variables that did the same (but only
-    # do this when the parameter name is more than a single character to avoid
-    # flagging 'b' which may be an ok variable when used in an rgba function).
-    if len(canonical_parameter_name) > 1:
-        text = sub(r'(\w)\b', r'\1Object', text)
-    canonical_text = _convert_to_lower_with_underscores(text)
-
-    # Used to detect cases like ec for ExceptionCode.
-    acronym = _create_acronym(text).lower()
-    if canonical_text.find(canonical_parameter_name) != -1 or acronym.find(canonical_parameter_name) != -1:
-        info_url = 'https://chromium.googlesource.com/chromium/src/+/master/styleguide/c++/blink-c++.md' + \
-                   '#Leave-obvious-parameter-names-out-of-function-declarations'
-        error(parameter.row, 'readability/parameter_name', 5,
-              'The parameter name "%s" adds no information, so it should be removed. See %s.' % (parameter.name, info_url))
-        return False
-    return True
-
-
-def check_function_definition(filename, file_extension, clean_lines, line_number, function_state, error):
-    """Check that function definitions for style issues.
-
-    Specifically, check that parameter names in declarations add information.
-
-    Args:
-       filename: Filename of the file that is being processed.
-       file_extension: The current file extension, without the leading dot.
-       clean_lines: A CleansedLines instance containing the file.
-       line_number: The number of the line to check.
-       function_state: Current function name and lines in body so far.
-       error: The function to call with any errors found.
-    """
-    if line_number != function_state.body_start_position.row:
-        return
-
-    parameter_list = function_state.parameter_list()
-    for parameter in parameter_list:
-        # Do checks specific to function declarations and parameter names.
-        if not function_state.is_declaration or not parameter.name:
-            continue
-
-        # Check the parameter name against the function name for single parameter set functions.
-        if len(parameter_list) == 1 and match('set[A-Z]', function_state.current_function):
-            trimmed_function_name = function_state.current_function[len('set'):]
-            if not _check_parameter_name_against_text(parameter, trimmed_function_name, error):
-                continue  # Since an error was noted for this name, move to the next parameter.
-
-        # Check the parameter name against the type.
-        if not _check_parameter_name_against_text(parameter, parameter.type, error):
-            continue  # Since an error was noted for this name, move to the next parameter.
 
 
 def check_pass_ptr_usage(clean_lines, line_number, function_state, error):
@@ -2787,7 +2590,6 @@ def process_line(filename, file_extension,
         return
     if match(r'\s*\b__asm\b', raw_lines[line]):  # Ignore asm lines as they format differently.
         return
-    check_function_definition(filename, file_extension, clean_lines, line, function_state, error)
     check_pass_ptr_usage(clean_lines, line, function_state, error)
     check_style(clean_lines, line, file_state, error)
     check_language(filename, clean_lines, line, file_extension, include_state,
@@ -2861,7 +2663,6 @@ class CppChecker(object):
         'readability/fn_size',
         # TODO(dcheng): Turn on the clang plugin checks and remove this.
         'readability/inheritance',
-        'readability/parameter_name',
         'readability/pass_ptr',
         'readability/utf8',
         'runtime/arrays',
