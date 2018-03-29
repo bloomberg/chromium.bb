@@ -743,7 +743,7 @@ test("content_browsertests") {
     "../browser/frame_host/render_frame_host_impl_browsertest.cc",
     "../browser/frame_host/render_frame_host_manager_browsertest.cc",
     "../browser/frame_host/render_frame_message_filter_browsertest.cc",
-    "../browser/generic_sensor_browsertest.cc",
+    "../browser/generic_sensor/generic_sensor_browsertest.cc",
     "../browser/gpu/gpu_ipc_browsertests.cc",
     "../browser/gpu/in_process_gpu_thread_browsertests.cc",
     "../browser/indexed_db/indexed_db_browsertest.cc",
