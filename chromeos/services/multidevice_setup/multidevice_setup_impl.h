@@ -14,34 +14,33 @@
 
 namespace chromeos {
 
-namespace multidevice {
+namespace multidevice_setup {
 
 // Concrete MultiDeviceSetup implementation.
-class MultiDeviceSetupImpl : public multidevice_setup::mojom::MultiDeviceSetup {
+class MultiDeviceSetupImpl : public mojom::MultiDeviceSetup {
  public:
   MultiDeviceSetupImpl();
   ~MultiDeviceSetupImpl() override;
 
   // Binds a request to this implementation. Should be called each time that the
   // service receives a request.
-  void BindRequest(multidevice_setup::mojom::MultiDeviceSetupRequest request);
+  void BindRequest(mojom::MultiDeviceSetupRequest request);
 
-  // multidevice_setup::mojom::MultiDeviceSetup:
-  void SetObserver(
-      multidevice_setup::mojom::MultiDeviceSetupObserverPtr presenter,
-      SetObserverCallback callback) override;
+  // mojom::MultiDeviceSetup:
+  void SetObserver(mojom::MultiDeviceSetupObserverPtr presenter,
+                   SetObserverCallback callback) override;
   void TriggerEventForDebugging(
-      multidevice_setup::mojom::EventTypeForDebugging type,
+      mojom::EventTypeForDebugging type,
       TriggerEventForDebuggingCallback callback) override;
 
  private:
-  multidevice_setup::mojom::MultiDeviceSetupObserverPtr observer_;
-  mojo::BindingSet<multidevice_setup::mojom::MultiDeviceSetup> bindings_;
+  mojom::MultiDeviceSetupObserverPtr observer_;
+  mojo::BindingSet<mojom::MultiDeviceSetup> bindings_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupImpl);
 };
 
-}  // namespace multidevice
+}  // namespace multidevice_setup
 
 }  // namespace chromeos
 

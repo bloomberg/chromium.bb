@@ -8,19 +8,17 @@
 
 namespace chromeos {
 
-namespace multidevice {
+namespace multidevice_setup {
 
 namespace {
 
-using EventType = multidevice_setup::mojom::EventTypeForDebugging;
-
-std::string EventTypeEnumToString(EventType type) {
+std::string EventTypeEnumToString(mojom::EventTypeForDebugging type) {
   switch (type) {
-    case EventType::kNewUserPotentialHostExists:
+    case mojom::EventTypeForDebugging::kNewUserPotentialHostExists:
       return "kNewUserPotentialHostExists";
-    case EventType::kExistingUserConnectedHostSwitched:
+    case mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched:
       return "kExistingUserConnectedHostSwitched";
-    case EventType::kExistingUserNewChromebookAdded:
+    case mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded:
       return "kExistingUserNewChromebookAdded";
     default:
       NOTREACHED();
@@ -34,13 +32,12 @@ MultiDeviceSetupImpl::MultiDeviceSetupImpl() = default;
 
 MultiDeviceSetupImpl::~MultiDeviceSetupImpl() = default;
 
-void MultiDeviceSetupImpl::BindRequest(
-    multidevice_setup::mojom::MultiDeviceSetupRequest request) {
+void MultiDeviceSetupImpl::BindRequest(mojom::MultiDeviceSetupRequest request) {
   bindings_.AddBinding(this, std::move(request));
 }
 
 void MultiDeviceSetupImpl::SetObserver(
-    multidevice_setup::mojom::MultiDeviceSetupObserverPtr observer,
+    mojom::MultiDeviceSetupObserverPtr observer,
     SetObserverCallback callback) {
   if (observer_.is_bound()) {
     PA_LOG(ERROR) << "SetObserver() called when a MultiDeviceSetupObserver was "
@@ -54,7 +51,7 @@ void MultiDeviceSetupImpl::SetObserver(
 }
 
 void MultiDeviceSetupImpl::TriggerEventForDebugging(
-    EventType type,
+    mojom::EventTypeForDebugging type,
     TriggerEventForDebuggingCallback callback) {
   PA_LOG(INFO) << "TriggerEventForDebugging(" << EventTypeEnumToString(type)
                << ") called.";
@@ -67,13 +64,13 @@ void MultiDeviceSetupImpl::TriggerEventForDebugging(
   }
 
   switch (type) {
-    case EventType::kNewUserPotentialHostExists:
+    case mojom::EventTypeForDebugging::kNewUserPotentialHostExists:
       observer_->OnPotentialHostExistsForNewUser();
       break;
-    case EventType::kExistingUserConnectedHostSwitched:
+    case mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched:
       observer_->OnConnectedHostSwitchedForExistingUser();
       break;
-    case EventType::kExistingUserNewChromebookAdded:
+    case mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded:
       observer_->OnNewChromebookAddedForExistingUser();
       break;
     default:
@@ -83,6 +80,6 @@ void MultiDeviceSetupImpl::TriggerEventForDebugging(
   std::move(callback).Run(true /* success */);
 }
 
-}  // namespace multidevice
+}  // namespace multidevice_setup
 
 }  // namespace chromeos

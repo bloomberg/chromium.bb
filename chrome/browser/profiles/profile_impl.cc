@@ -1129,10 +1129,11 @@ void ProfileImpl::RegisterInProcessServices(StaticServiceMap* services) {
     info.task_runner = base::ThreadTaskRunnerHandle::Get();
     info.factory = base::BindRepeating([] {
       return std::unique_ptr<service_manager::Service>(
-          std::make_unique<chromeos::multidevice::MultiDeviceSetupService>());
+          std::make_unique<
+              chromeos::multidevice_setup::MultiDeviceSetupService>());
     });
     services->insert(
-        std::make_pair(multidevice_setup::mojom::kServiceName, info));
+        std::make_pair(chromeos::multidevice_setup::mojom::kServiceName, info));
   }
 #endif
 

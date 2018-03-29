@@ -16,9 +16,7 @@
 
 namespace chromeos {
 
-namespace multidevice {
-
-using EventType = multidevice_setup::mojom::EventTypeForDebugging;
+namespace multidevice_setup {
 
 class MultiDeviceSetupServiceTest : public testing::Test {
  protected:
@@ -33,14 +31,13 @@ class MultiDeviceSetupServiceTest : public testing::Test {
             std::make_unique<MultiDeviceSetupService>());
   }
 
-  multidevice_setup::mojom::MultiDeviceSetup* GetMultiDeviceSetup() {
+  mojom::MultiDeviceSetup* GetMultiDeviceSetup() {
     if (!multidevice_setup_) {
       EXPECT_EQ(nullptr, connector_);
 
       // Create the Connector and bind it to |multidevice_setup_|.
       connector_ = connector_factory_->CreateConnector();
-      connector_->BindInterface(multidevice_setup::mojom::kServiceName,
-                                &multidevice_setup_);
+      connector_->BindInterface(mojom::kServiceName, &multidevice_setup_);
 
       // Set |fake_multidevice_setup_observer_|.
       CallSetObserver();
@@ -63,7 +60,7 @@ class MultiDeviceSetupServiceTest : public testing::Test {
     run_loop.Run();
   }
 
-  void CallTriggerEventForDebugging(EventType type) {
+  void CallTriggerEventForDebugging(mojom::EventTypeForDebugging type) {
     base::RunLoop run_loop;
     GetMultiDeviceSetup()->TriggerEventForDebugging(
         type, base::BindRepeating(
@@ -92,14 +89,15 @@ class MultiDeviceSetupServiceTest : public testing::Test {
 
   std::unique_ptr<FakeMultiDeviceSetupObserver>
       fake_multidevice_setup_observer_;
-  multidevice_setup::mojom::MultiDeviceSetupPtr multidevice_setup_;
+  mojom::MultiDeviceSetupPtr multidevice_setup_;
 
   DISALLOW_COPY_AND_ASSIGN(MultiDeviceSetupServiceTest);
 };
 
 TEST_F(MultiDeviceSetupServiceTest,
        TriggerEventForDebugging_kNewUserPotentialHostExists) {
-  CallTriggerEventForDebugging(EventType::kNewUserPotentialHostExists);
+  CallTriggerEventForDebugging(
+      mojom::EventTypeForDebugging::kNewUserPotentialHostExists);
 
   EXPECT_EQ(1u,
             fake_multidevice_setup_observer()->num_new_user_events_handled());
@@ -107,7 +105,8 @@ TEST_F(MultiDeviceSetupServiceTest,
 
 TEST_F(MultiDeviceSetupServiceTest,
        TriggerEventForDebugging_kExistingUserConnectedHostSwitched) {
-  CallTriggerEventForDebugging(EventType::kExistingUserConnectedHostSwitched);
+  CallTriggerEventForDebugging(
+      mojom::EventTypeForDebugging::kExistingUserConnectedHostSwitched);
 
   EXPECT_EQ(1u, fake_multidevice_setup_observer()
                     ->num_existing_user_host_switched_events_handled());
@@ -115,12 +114,13 @@ TEST_F(MultiDeviceSetupServiceTest,
 
 TEST_F(MultiDeviceSetupServiceTest,
        TriggerEventForDebugging_kExistingUserNewChromebookAdded) {
-  CallTriggerEventForDebugging(EventType::kExistingUserNewChromebookAdded);
+  CallTriggerEventForDebugging(
+      mojom::EventTypeForDebugging::kExistingUserNewChromebookAdded);
 
   EXPECT_EQ(1u, fake_multidevice_setup_observer()
                     ->num_existing_user_chromebook_added_events_handled());
 }
 
-}  // namespace multidevice
+}  // namespace multidevice_setup
 
 }  // namespace chromeos

@@ -4,7 +4,9 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "multidevice_setup" : [ "multidevice_setup::mojom::MultiDeviceSetup" ]
+        "multidevice_setup" : [
+          "chromeos::multidevice_setup::mojom::MultiDeviceSetup"
+        ]
       }
     }
   }

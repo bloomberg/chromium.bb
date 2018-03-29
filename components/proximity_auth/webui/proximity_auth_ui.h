@@ -17,8 +17,9 @@ namespace proximity_auth {
 class ProximityAuthClient;
 
 // The WebUI controller for chrome://proximity-auth.
-class ProximityAuthUI : public ui::MojoWebUIController<
-                            multidevice_setup::mojom::MultiDeviceSetup> {
+class ProximityAuthUI
+    : public ui::MojoWebUIController<
+          chromeos::multidevice_setup::mojom::MultiDeviceSetup> {
  public:
   // Note: |web_ui| and |delegate| are not owned by this instance and must
   // outlive this instance.
@@ -27,8 +28,8 @@ class ProximityAuthUI : public ui::MojoWebUIController<
 
  protected:
   // ui::MojoWebUIController overrides:
-  void BindUIHandler(
-      multidevice_setup::mojom::MultiDeviceSetupRequest request) override;
+  void BindUIHandler(chromeos::multidevice_setup::mojom::MultiDeviceSetupRequest
+                         request) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(ProximityAuthUI);
