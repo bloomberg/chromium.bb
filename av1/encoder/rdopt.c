@@ -1899,6 +1899,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   int64_t best_rd = INT64_MAX;
   uint16_t best_eob = 0;
   TX_TYPE best_tx_type = DCT_DCT;
+  TX_TYPE last_tx_type = TX_TYPES;
   const int txk_type_idx =
       av1_get_txk_type_index(plane_bsize, blk_row, blk_col);
   av1_invalid_rd_stats(best_rd_stats);
@@ -2021,6 +2022,7 @@ static int64_t search_txk_type(const AV1_COMP *cpi, MACROBLOCK *x, int plane,
   for (TX_TYPE tx_type = txk_start; tx_type <= txk_end; ++tx_type) {
     if (!allowed_tx_mask[tx_type]) continue;
     if (plane == 0) mbmi->txk_type[txk_type_idx] = tx_type;
+    last_tx_type = tx_type;
     const SCAN_ORDER *scan_order = get_scan(tx_size, tx_type);
     RD_STATS this_rd_stats;
     av1_invalid_rd_stats(&this_rd_stats);
@@ -2104,15 +2106,19 @@ RECON_INTRA:
        blk_col + tx_size_wide_unit[tx_size] < mi_size_wide[plane_bsize])) {
     // intra mode needs decoded result such that the next transform block
     // can use it for prediction.
-    if (!cpi->optimize_seg_arr[mbmi->segment_id]) {
-      av1_xform_quant(
-          cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
-          USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
-    } else {
-      av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
-                      tx_size, AV1_XFORM_QUANT_FP);
-      av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
-                     tx_size, a, l, 1, &rate_cost);
+    // if the last search tx_type is the best tx_type, we don't need to
+    // do this again
+    if (best_tx_type != last_tx_type) {
+      if (!cpi->optimize_seg_arr[mbmi->segment_id]) {
+        av1_xform_quant(
+            cm, x, plane, block, blk_row, blk_col, plane_bsize, tx_size,
+            USE_B_QUANT_NO_TRELLIS ? AV1_XFORM_QUANT_B : AV1_XFORM_QUANT_FP);
+      } else {
+        av1_xform_quant(cm, x, plane, block, blk_row, blk_col, plane_bsize,
+                        tx_size, AV1_XFORM_QUANT_FP);
+        av1_optimize_b(cpi, x, plane, blk_row, blk_col, block, plane_bsize,
+                       tx_size, a, l, 1, &rate_cost);
+      }
     }
 
     av1_inverse_transform_block_facade(xd, plane, block, blk_row, blk_col,
