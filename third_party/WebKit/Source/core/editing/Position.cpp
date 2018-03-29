@@ -168,7 +168,7 @@ Node* PositionTemplate<Strategy>::ComputeContainerNode() const {
 template <typename Strategy>
 static int MinOffsetForNode(Node* anchor_node, int offset) {
   if (anchor_node->IsCharacterDataNode())
-    return std::min(offset, anchor_node->MaxCharacterOffset());
+    return std::min(offset, static_cast<int>(ToCharacterData(anchor_node)->length()));
 
   int new_offset = 0;
   for (Node* node = Strategy::FirstChild(*anchor_node);
@@ -510,7 +510,7 @@ PositionTemplate<Strategy> PositionTemplate<Strategy>::AfterNode(
 template <typename Strategy>
 int PositionTemplate<Strategy>::LastOffsetInNode(const Node& node) {
   return node.IsCharacterDataNode()
-             ? node.MaxCharacterOffset()
+             ? static_cast<int>(ToCharacterData(node).length())
              : static_cast<int>(Strategy::CountChildren(node));
 }
 

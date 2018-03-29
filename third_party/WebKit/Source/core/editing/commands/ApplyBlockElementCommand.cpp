@@ -219,7 +219,7 @@ static bool IsNewLineAtPosition(const Position& position) {
   Node* text_node = position.ComputeContainerNode();
   int offset = position.OffsetInContainerNode();
   if (!text_node || !text_node->IsTextNode() || offset < 0 ||
-      offset >= text_node->MaxCharacterOffset())
+      offset >= static_cast<int>(ToText(text_node)->length()))
     return false;
 
   DummyExceptionStateForTesting exception_state;
@@ -298,7 +298,7 @@ void ApplyBlockElementCommand::RangeForParagraphSplittingTextNodesIfNeeded(
     // Include \n at the end of line if we're at an empty paragraph
     if (end_style->PreserveNewline() && start == end &&
         end.OffsetInContainerNode() <
-            end.ComputeContainerNode()->MaxCharacterOffset()) {
+            static_cast<int>(ToText(end.ComputeContainerNode())->length())) {
       int end_offset = end.OffsetInContainerNode();
       // TODO(yosin) We should use |PositionMoveType::CodePoint| for
       // |previousPositionOf()|.
@@ -316,7 +316,7 @@ void ApplyBlockElementCommand::RangeForParagraphSplittingTextNodesIfNeeded(
     if (end_style->UserModify() != EUserModify::kReadOnly &&
         !end_style->CollapseWhiteSpace() && end.OffsetInContainerNode() &&
         end.OffsetInContainerNode() <
-            end.ComputeContainerNode()->MaxCharacterOffset()) {
+            static_cast<int>(ToText(end.ComputeContainerNode())->length())) {
       Text* end_container = ToText(end.ComputeContainerNode());
       SplitTextNode(end_container, end.OffsetInContainerNode());
       GetDocument().UpdateStyleAndLayoutTree();

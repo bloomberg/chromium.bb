@@ -456,7 +456,7 @@ DocumentMarkerController::MarkersIntersectingRange(
 
       const unsigned start_offset =
           node == range_start_container ? range_start_offset : 0;
-      const unsigned max_character_offset = node.MaxCharacterOffset();
+      const unsigned max_character_offset = ToCharacterData(node).length();
       const unsigned end_offset =
           node == range_end_container ? range_end_offset : max_character_offset;
 

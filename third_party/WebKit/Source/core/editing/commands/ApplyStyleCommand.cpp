@@ -107,7 +107,7 @@ bool IsEmptyFontTag(
 
 static bool OffsetIsBeforeLastNodeOffset(int offset, Node* anchor_node) {
   if (anchor_node->IsCharacterDataNode())
-    return offset < anchor_node->MaxCharacterOffset();
+    return offset < static_cast<int>(ToCharacterData(anchor_node)->length());
   int current_offset = 0;
   for (Node* node = NodeTraversal::FirstChild(*anchor_node);
        node && current_offset < offset;
@@ -1442,10 +1442,12 @@ void ApplyStyleCommand::RemoveInlineStyle(EditingStyle* style,
   // removing the style from this node. e.g. if pushDownStart was at
   // Position("hello", 5) in <b>hello<div>world</div></b>, we want
   // Position("world", 0) instead.
+  const unsigned push_down_start_offset =
+      push_down_start.ComputeOffsetInContainerNode();
   Node* push_down_start_container = push_down_start.ComputeContainerNode();
   if (push_down_start_container && push_down_start_container->IsTextNode() &&
-      push_down_start.ComputeOffsetInContainerNode() ==
-          push_down_start_container->MaxCharacterOffset())
+      push_down_start_offset ==
+          ToText(push_down_start_container)->length())
     push_down_start = NextVisuallyDistinctCandidate(push_down_start);
 
   // TODO(editing-dev): Use of updateStyleAndLayoutIgnorePendingStylesheets
