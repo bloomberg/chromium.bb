@@ -18,6 +18,12 @@ struct CapturingStateModel {
   bool location_access_enabled = false;
   bool bluetooth_connected = false;
 
+  bool background_audio_capture_enabled = false;
+  bool background_video_capture_enabled = false;
+  bool background_screen_capture_enabled = false;
+  bool background_location_access_enabled = false;
+  bool background_bluetooth_connected = false;
+
   bool audio_capture_potentially_enabled = false;
   bool video_capture_potentially_enabled = false;
   bool screen_capture_potentially_enabled = false;

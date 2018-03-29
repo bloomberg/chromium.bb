@@ -49,6 +49,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/render_widget_host.h"
 #include "content/public/browser/render_widget_host_iterator.h"
@@ -920,17 +921,23 @@ void VrShell::PollCapturingState() {
       FROM_HERE, poll_capturing_state_task_.callback(),
       kPollCapturingStateInterval);
 
-  int num_tabs_capturing_audio = 0;
-  int num_tabs_capturing_video = 0;
-  int num_tabs_capturing_screen = 0;
-  int num_tabs_bluetooth_connected = 0;
   scoped_refptr<MediaStreamCaptureIndicator> indicator =
       MediaCaptureDevicesDispatcher::GetInstance()
           ->GetMediaStreamCaptureIndicator();
 
+  capturing_state_.audio_capture_enabled = false;
+  capturing_state_.video_capture_enabled = false;
+  capturing_state_.screen_capture_enabled = false;
+  capturing_state_.bluetooth_connected = false;
+  capturing_state_.background_audio_capture_enabled = false;
+  capturing_state_.background_video_capture_enabled = false;
+  capturing_state_.background_screen_capture_enabled = false;
+  capturing_state_.background_bluetooth_connected = false;
+
   std::unique_ptr<content::RenderWidgetHostIterator> widgets(
       content::RenderWidgetHost::GetRenderWidgetHosts());
   while (content::RenderWidgetHost* rwh = widgets->GetNextHost()) {
+    bool is_foreground = rwh->GetProcess()->VisibleClientCount() > 0;
     content::RenderViewHost* rvh = content::RenderViewHost::From(rwh);
     if (!rvh)
       continue;
@@ -940,22 +947,34 @@ void VrShell::PollCapturingState() {
       continue;
     if (web_contents->GetRenderViewHost() != rvh)
       continue;
+
     // Because a WebContents can only have one current RVH at a time, there will
     // be no duplicate WebContents here.
-    if (indicator->IsCapturingAudio(web_contents))
-      num_tabs_capturing_audio++;
-    if (indicator->IsCapturingVideo(web_contents))
-      num_tabs_capturing_video++;
-    if (indicator->IsBeingMirrored(web_contents))
-      num_tabs_capturing_screen++;
-    if (web_contents->IsConnectedToBluetoothDevice())
-      num_tabs_bluetooth_connected++;
+    if (indicator->IsCapturingAudio(web_contents)) {
+      if (is_foreground)
+        capturing_state_.audio_capture_enabled = true;
+      else
+        capturing_state_.background_audio_capture_enabled = true;
+    }
+    if (indicator->IsCapturingVideo(web_contents)) {
+      if (is_foreground)
+        capturing_state_.video_capture_enabled = true;
+      else
+        capturing_state_.background_video_capture_enabled = true;
+    }
+    if (indicator->IsBeingMirrored(web_contents)) {
+      if (is_foreground)
+        capturing_state_.screen_capture_enabled = true;
+      else
+        capturing_state_.background_screen_capture_enabled = true;
+    }
+    if (web_contents->IsConnectedToBluetoothDevice()) {
+      if (is_foreground)
+        capturing_state_.bluetooth_connected = true;
+      else
+        capturing_state_.background_bluetooth_connected = true;
+    }
   }
-
-  capturing_state_.audio_capture_enabled = num_tabs_capturing_audio > 0;
-  capturing_state_.video_capture_enabled = num_tabs_capturing_video > 0;
-  capturing_state_.screen_capture_enabled = num_tabs_capturing_screen > 0;
-  capturing_state_.bluetooth_connected = num_tabs_bluetooth_connected > 0;
 
   geolocation_config_->IsHighAccuracyLocationBeingCaptured(base::BindRepeating(
       [](VrShell* shell, BrowserUiInterface* ui,

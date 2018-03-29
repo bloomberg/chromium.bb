@@ -185,12 +185,15 @@ TEST_F(UiTest, CaptureToasts) {
   EXPECT_FALSE(IsVisible(kExclusiveScreenToast));
 
   for (auto& spec : GetIndicatorSpecs()) {
-    for (int i = 0; i < 2; ++i) {
+    for (int i = 0; i < 3; ++i) {
       ui_->SetWebVrMode(true, true);
       ui_->OnWebVrFrameAvailable();
 
       CapturingStateModel state;
       state.*spec.signal = i == 0;
+      // High accuracy location cannot be used in a background tab.
+      state.*spec.background_signal =
+          i == 1 && spec.name != kLocationAccessIndicator;
       state.*spec.potential_signal = true;
 
       ui_->SetCapturingState(state);

@@ -14,12 +14,27 @@
 namespace vr {
 
 struct IndicatorSpec {
+  IndicatorSpec(UiElementName name,
+                UiElementName webvr_name,
+                const gfx::VectorIcon& icon,
+                int resource_string,
+                int background_resource_string,
+                int potential_resource_string,
+                bool CapturingStateModel::*signal,
+                bool CapturingStateModel::*background_signal,
+                bool CapturingStateModel::*potential_signal,
+                bool is_url);
+  IndicatorSpec(const IndicatorSpec& other);
+  ~IndicatorSpec();
+
   UiElementName name;
   UiElementName webvr_name;
   const gfx::VectorIcon& icon;
   int resource_string;
+  int background_resource_string;
   int potential_resource_string;
   bool CapturingStateModel::*signal;
+  bool CapturingStateModel::*background_signal;
   bool CapturingStateModel::*potential_signal;
   bool is_url;
 };
