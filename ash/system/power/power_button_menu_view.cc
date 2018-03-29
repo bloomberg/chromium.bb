@@ -55,7 +55,8 @@ void PowerButtonMenuView::ScheduleShowHideAnimation(bool show) {
   animation.AddObserver(this);
   animation.SetTweenType(show ? gfx::Tween::EASE_IN
                               : gfx::Tween::FAST_OUT_LINEAR_IN);
-  animation.SetTransitionDuration(kMenuAnimationDuration);
+  animation.SetTransitionDuration(
+      base::TimeDelta::FromMilliseconds(kAnimationTimeoutMs));
 
   layer()->SetOpacity(show ? 1.0f : 0.f);
 
