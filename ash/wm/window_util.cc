@@ -37,6 +37,7 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/view.h"
 #include "ui/views/widget/widget.h"
+#include "ui/wm/core/coordinate_conversion.h"
 #include "ui/wm/core/easy_resize_window_targeter.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
@@ -144,6 +145,12 @@ bool MoveWindowToDisplay(aura::Window* window, int64_t display_id) {
     return false;
   }
   aura::Window* root = Shell::GetRootWindowForDisplayId(display_id);
+  // Update restore bounds to target root window.
+  if (window_state->HasRestoreBounds()) {
+    gfx::Rect restore_bounds = window_state->GetRestoreBoundsInParent();
+    ::wm::ConvertRectToScreen(root, &restore_bounds);
+    window_state->SetRestoreBoundsInScreen(restore_bounds);
+  }
   return root && MoveWindowToRoot(window, root);
 }
 
