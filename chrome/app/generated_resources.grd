@@ -1922,36 +1922,38 @@ are declared in build/common.gypi.
         </message>
       </if>
       <!-- Bookmark app bubble -->
-      <if expr="chromeos">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the shelf.">
-          Add to shelf
+      <if expr="use_titlecase">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble for adding a bookmark app shortcut to the operating system.">
+          Create Shortcut?
+        </message>
+        <message name="IDS_CREATE_SHORTCUTS_BUTTON_LABEL" desc="In Title Case: Text for button that adds a bookmark app shortcut to the operating system.">
+          Create
         </message>
       </if>
-      <if expr="is_macosx">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble adding a bookmark app to the Applications Folder on Mac. Note `Applications` should match the name that appears under Favourites in Finder on macOS.">
-          Add to Applications
+      <if expr="not use_titlecase">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app shortcut to the operating system.">
+          Create shortcut?
         </message>
-      </if>
-      <if expr="not chromeos and not is_macosx">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for adding a bookmark app to the desktop.">
-          Add to desktop
+        <message name="IDS_CREATE_SHORTCUTS_BUTTON_LABEL" desc="Text for button that adds a bookmark app shortcut to the operating system.">
+          Create
         </message>
       </if>
 
       <!-- "Install web app" confirmation bubble -->
-      <if expr="chromeos">
-        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for installing a web app to the shelf.">
-          Add to shelf?
+      <if expr="use_titlecase">
+        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble for installing a web app to the operating system.">
+          Install App?
+        </message>
+        <message name="IDS_INSTALL_PWA_BUTTON_LABEL" desc="In Title Case: Text for button that installs a web app to the operating system.">
+          Install
         </message>
       </if>
-      <if expr="is_macosx">
-        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="In Title Case: Title of the bubble for installing a web app to the Applications Folder on Mac. Note `Applications` should match the name that appears under Favourites in Finder on macOS.">
-          Add to Applications?
+      <if expr="not use_titlecase">
+        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for installing a web app to the operating system.">
+          Install app?
         </message>
-      </if>
-      <if expr="not chromeos and not is_macosx">
-        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE_BUBBLE_TITLE" desc="Title of the bubble for installing a web app to the desktop.">
-          Add to desktop?
+        <message name="IDS_INSTALL_PWA_BUTTON_LABEL" desc="Text for button that installs a web app to the operating system.">
+          Install
         </message>
       </if>
 
@@ -1979,36 +1981,26 @@ are declared in build/common.gypi.
       </if>
 
       <!-- "Create application shortcuts" menu item -->
-      <if expr="chromeos">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for adding a bookmark app to the shelf.">
-          Add to shelf...
+      <if expr="use_titlecase">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="In Title Case: Menu text for adding a bookmark app shortcut to the operating system.">
+          Create Shortcut...
         </message>
       </if>
-      <if expr="is_macosx">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="In Title Case: Button text for adding a bookmark app to the Applications Folder. Note `Applications` should match the name that appears under Favourites in Finder on macOS">
-          Add to Applications...
-        </message>
-      </if>
-      <if expr="not chromeos and not is_macosx">
-        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Button text for adding a bookmark app to the desktop.">
-          Add to desktop...
+      <if expr="not use_titlecase">
+        <message name="IDS_ADD_TO_OS_LAUNCH_SURFACE" desc="Menu text for adding a bookmark app shortcut to the operating system.">
+          Create shortcut...
         </message>
       </if>
 
       <!-- "Install web app" menu item -->
-      <if expr="chromeos">
-        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE" desc="Button text for installing a web app to the shelf.">
-          Add <ph name="APP">$1<ex>Gmail</ex></ph> to shelf...
+      <if expr="use_titlecase">
+        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE" desc="In Title Case: Menu text for installing a web app to the operating system.">
+          Install <ph name="APP">$1<ex>Gmail</ex></ph>...
         </message>
       </if>
-      <if expr="is_macosx">
-        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE" desc="In Title Case: Button text for installing a web app to the Applications Folder. Note `Applications` should match the name that appears under Favourites in Finder on macOS">
-          Add <ph name="APP">$1<ex>Gmail</ex></ph> to Applications...
-        </message>
-      </if>
-      <if expr="not chromeos and not is_macosx">
-        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE" desc="Button text for installing a web app to the desktop.">
-          Add <ph name="APP">$1<ex>Gmail</ex></ph> to desktop...
+      <if expr="not use_titlecase">
+        <message name="IDS_INSTALL_TO_OS_LAUNCH_SURFACE" desc="Menu text for installing a web app to the operating system.">
+          Install <ph name="APP">$1<ex>Gmail</ex></ph>...
         </message>
       </if>
 
@@ -2077,7 +2069,7 @@ are declared in build/common.gypi.
         </if>
         <if expr="not is_macosx">
           <message name="IDS_APPLICATION_INFO_CREATE_SHORTCUTS_BUTTON_TEXT" desc="In Title Case: Text for the button that opens the dialog to create shortcuts for the app.">
-          Create Shortcuts...
+            Create Shortcuts...
           </message>
         </if>
       </if>

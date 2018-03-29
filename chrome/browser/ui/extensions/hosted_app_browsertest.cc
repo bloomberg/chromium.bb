@@ -692,11 +692,8 @@ IN_PROC_BROWSER_TEST_P(HostedAppPWAOnlyTest, InstallToShelfContainsAppName) {
   EXPECT_TRUE(app_menu_model->GetModelAndIndexForCommandId(
       IDC_CREATE_HOSTED_APP, &model, &index));
   EXPECT_EQ(app_menu_model.get(), model);
-  // Just test the beginning of the string as the end is platform dependent.
-  base::string16 expected_prefix =
-      base::UTF8ToUTF16("Add Manifest test app to ");
-  EXPECT_EQ(model->GetLabelAt(index).substr(0, expected_prefix.size()),
-            expected_prefix);
+  EXPECT_EQ(model->GetLabelAt(index),
+            base::UTF8ToUTF16("Install Manifest test app\xE2\x80\xA6"));
 }
 
 // Tests that mixed content is not loaded inside PWA windows.

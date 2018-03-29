@@ -82,8 +82,9 @@ bool PWAConfirmationView::Accept() {
 
 base::string16 PWAConfirmationView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ? IDS_ADD
-                                                                  : IDS_CANCEL);
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
+                                       ? IDS_INSTALL_PWA_BUTTON_LABEL
+                                       : IDS_CANCEL);
 }
 
 namespace {
