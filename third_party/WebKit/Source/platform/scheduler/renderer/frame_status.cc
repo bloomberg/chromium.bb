@@ -4,7 +4,7 @@
 
 #include "platform/scheduler/renderer/frame_status.h"
 
-#include "platform/FrameScheduler.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/scheduler/renderer/page_scheduler.h"
 
 namespace blink {

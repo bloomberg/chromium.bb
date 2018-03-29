@@ -20,9 +20,9 @@
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/WindowPerformance.h"
 #include "platform/CrossThreadFunctional.h"
-#include "platform/FrameScheduler.h"
 #include "platform/Histogram.h"
 #include "platform/instrumentation/tracing/TraceEvent.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "public/platform/WebLayerTreeView.h"
 
 namespace blink {

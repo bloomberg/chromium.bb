@@ -6,8 +6,8 @@
 #define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_RENDERER_PAGE_SCHEDULER_H_
 
 #include <memory>
-#include "platform/FrameScheduler.h"
 #include "platform/PlatformExport.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/wtf/Functional.h"
 #include "platform/wtf/text/WTFString.h"
 #include "public/platform/BlameContext.h"

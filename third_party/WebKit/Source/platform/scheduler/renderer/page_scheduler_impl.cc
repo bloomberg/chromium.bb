@@ -8,13 +8,13 @@
 #include "base/metrics/field_trial_params.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
-#include "platform/FrameScheduler.h"
 #include "platform/runtime_enabled_features.h"
 #include "platform/scheduler/base/virtual_time_domain.h"
 #include "platform/scheduler/child/default_params.h"
 #include "platform/scheduler/common/throttling/budget_pool.h"
+#include "platform/scheduler/main_thread/frame_scheduler_impl.h"
+#include "platform/scheduler/public/frame_scheduler.h"
 #include "platform/scheduler/renderer/auto_advancing_virtual_time_domain.h"
-#include "platform/scheduler/renderer/frame_scheduler_impl.h"
 #include "platform/scheduler/renderer/renderer_scheduler_impl.h"
 
 namespace blink {

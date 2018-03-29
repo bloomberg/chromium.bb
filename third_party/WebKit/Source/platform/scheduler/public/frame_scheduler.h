@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef FrameScheduler_h
-#define FrameScheduler_h
+#ifndef THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_PUBLIC_FRAME_SCHEDULER_H_
+#define THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_PUBLIC_FRAME_SCHEDULER_H_
 
 #include <memory>
 
@@ -177,4 +177,4 @@ class FrameScheduler {
 
 }  // namespace blink
 
-#endif  // FrameScheduler_h
+#endif  // THIRD_PARTY_WEBKIT_SOURCE_PLATFORM_SCHEDULER_PUBLIC_FRAME_SCHEDULER_H_
