@@ -16,6 +16,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/scoped_feature_list.h"
+#include "base/test/user_action_tester.h"
 #include "build/build_config.h"
 #include "components/password_manager/core/browser/form_fetcher_impl.h"
 #include "components/password_manager/core/browser/mock_password_store.h"
@@ -533,6 +534,8 @@ TEST_F(PasswordManagerTest, DontSaveAlreadySavedCredential) {
   EXPECT_THAT(form_manager_to_save->pending_credentials(),
               FormMatches(incomplete_match));
 
+  base::UserActionTester user_action_tester;
+
   // The user completes typing the credential. No fallback should be available,
   // because the credential is already in the store.
   EXPECT_CALL(client_, ShowManualFallbackForSavingPtr(_, false, true)).Times(0);
@@ -547,6 +550,8 @@ TEST_F(PasswordManagerTest, DontSaveAlreadySavedCredential) {
   observed.clear();
   manager()->OnPasswordFormsParsed(&driver_, observed);
   manager()->OnPasswordFormsRendered(&driver_, observed, true);
+  EXPECT_EQ(1,
+            user_action_tester.GetActionCount("PasswordManager_LoginPassed"));
 }
 
 TEST_F(PasswordManagerTest, FormSeenThenLeftPage) {
