@@ -71,15 +71,6 @@ const char kProxyServer[] = "proxy-server";
 // so exposing it too widely can be a security risk.
 const char kRemoteDebuggingAddress[] = "remote-debugging-address";
 
-// The given value is the fd of a socket already opened by the parent process.
-// This allows automation to provide a listening socket for clients to connect
-// to before chrome is fully fired up. In particular, a parent process can
-// open the port, exec headles chrome, and connect to the devtools port
-// immediately. Waiting for chrome to be ready is then handled by the first
-// read from the port, which will block until chrome is ready. No polling is
-// needed.
-const char kRemoteDebuggingSocketFd[] = "remote-debugging-socket-fd";
-
 // Runs a read-eval-print loop that allows the user to evaluate Javascript
 // expressions.
 const char kRepl[] = "repl";

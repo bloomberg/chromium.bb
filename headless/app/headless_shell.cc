@@ -604,24 +604,12 @@ bool HeadlessShell::RemoteDebuggingEnabled() const {
   const base::CommandLine& command_line =
       *base::CommandLine::ForCurrentProcess();
   return (command_line.HasSwitch(switches::kRemoteDebuggingPort) ||
-          command_line.HasSwitch(switches::kRemoteDebuggingSocketFd));
+          command_line.HasSwitch(switches::kRemoteDebuggingPipe));
 }
 
 bool ValidateCommandLine(const base::CommandLine& command_line) {
-#if !defined(OS_POSIX)
-  if (command_line.HasSwitch(switches::kRemoteDebuggingSocketFd)) {
-    LOG(ERROR) << "Remote-debugging-socket can't be set on non-Posix systems";
-    return false;
-  }
-#endif
-  if (command_line.HasSwitch(switches::kRemoteDebuggingPort) &&
-      command_line.HasSwitch(switches::kRemoteDebuggingSocketFd)) {
-    LOG(ERROR) << "Remote-debugging-port and remote-debugging-socket "
-               << "can't both be set.";
-    return false;
-  }
   if (!command_line.HasSwitch(switches::kRemoteDebuggingPort) &&
-      !command_line.HasSwitch(switches::kRemoteDebuggingSocketFd)) {
+      !command_line.HasSwitch(switches::kRemoteDebuggingPipe)) {
     if (command_line.GetArgs().size() <= 1)
       return true;
     LOG(ERROR) << "Open multiple tabs is only supported when "
@@ -738,8 +726,7 @@ int HeadlessShellMain(int argc, const char** argv) {
         command_line.GetSwitchValuePath(switches::kCrashDumpsDir));
   }
 
-  // Enable devtools if requested, either by specifying a port (and optional
-  // address), or by specifying the fd of an already-open socket.
+  // Enable devtools if requested, by specifying a port (and optional address).
   if (command_line.HasSwitch(::switches::kRemoteDebuggingPort)) {
     std::string address = kUseLocalHostForDevToolsHttpServer;
     if (command_line.HasSwitch(switches::kRemoteDebuggingAddress)) {
@@ -762,17 +749,9 @@ int HeadlessShellMain(int argc, const char** argv) {
     const net::HostPortPair endpoint(address,
                                      base::checked_cast<uint16_t>(parsed_port));
     builder.EnableDevToolsServer(endpoint);
-  } else if (command_line.HasSwitch(switches::kRemoteDebuggingSocketFd)) {
-    int parsed_fd;
-    std::string fd_str =
-        command_line.GetSwitchValueASCII(switches::kRemoteDebuggingSocketFd);
-    if (!base::StringToInt(fd_str, &parsed_fd) ||
-        !base::IsValueInRangeForNumericType<size_t>(parsed_fd)) {
-      LOG(ERROR) << "Invalid devtools server socket fd";
-      return EXIT_FAILURE;
-    }
-    builder.EnableDevToolsServer(base::checked_cast<size_t>(parsed_fd));
   }
+  if (command_line.HasSwitch(::switches::kRemoteDebuggingPipe))
+    builder.EnableDevToolsPipe();
 
   if (command_line.HasSwitch(switches::kProxyServer)) {
     std::string proxy_server =
