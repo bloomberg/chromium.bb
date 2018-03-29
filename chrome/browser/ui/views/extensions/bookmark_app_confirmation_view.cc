@@ -129,8 +129,9 @@ bool BookmarkAppConfirmationView::Accept() {
 
 base::string16 BookmarkAppConfirmationView::GetDialogButtonLabel(
     ui::DialogButton button) const {
-  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK ? IDS_ADD
-                                                                  : IDS_CANCEL);
+  return l10n_util::GetStringUTF16(button == ui::DIALOG_BUTTON_OK
+                                       ? IDS_CREATE_SHORTCUTS_BUTTON_LABEL
+                                       : IDS_CANCEL);
 }
 
 bool BookmarkAppConfirmationView::IsDialogButtonEnabled(
