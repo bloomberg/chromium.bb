@@ -3290,7 +3290,7 @@ crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/img-png-mislabe
 crbug.com/802835 external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
 crbug.com/802835 virtual/outofblink-cors/external/wpt/fetch/corb/script-html-correctly-labeled.tentative.sub.html [ Failure ]
 
-crbug.com/813704 [ Win7 Mac ] http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
+crbug.com/813704 http/tests/images/png-partial-load-as-document.html [ Failure Pass ]
 
 crbug.com/806645 [ Win7 ] http/tests/devtools/elements/elements-panel-rewrite-href.js [ Failure Pass ]
 
