@@ -50,6 +50,11 @@ void FakePageTimingSender::PageTimingValidator::UpdateExpectPageLoadFeatures(
   expected_features_.insert(feature);
 }
 
+void FakePageTimingSender::PageTimingValidator::
+    UpdateExpectPageLoadCssProperties(int css_property_id) {
+  expected_css_properties_.insert(css_property_id);
+}
+
 void FakePageTimingSender::PageTimingValidator::VerifyExpectedFeatures() const {
   ASSERT_EQ(actual_features_.size(), expected_features_.size());
   std::vector<blink::mojom::WebFeature> diff;
@@ -66,6 +71,25 @@ void FakePageTimingSender::PageTimingValidator::VerifyExpectedFeatures() const {
       << "More features are actually observed than expected";
 }
 
+void FakePageTimingSender::PageTimingValidator::VerifyExpectedCssProperties()
+    const {
+  ASSERT_EQ(actual_css_properties_.size(), expected_css_properties_.size());
+  std::vector<int> diff;
+  std::set_difference(actual_css_properties_.begin(),
+                      actual_css_properties_.end(),
+                      expected_css_properties_.begin(),
+                      expected_css_properties_.end(), diff.begin());
+  EXPECT_TRUE(diff.empty())
+      << "Expected more CSS properties than the actual features observed";
+
+  std::set_difference(expected_css_properties_.begin(),
+                      expected_css_properties_.end(),
+                      actual_css_properties_.begin(),
+                      actual_css_properties_.end(), diff.begin());
+  EXPECT_TRUE(diff.empty())
+      << "More CSS Properties are actually observed than expected";
+}
+
 void FakePageTimingSender::PageTimingValidator::UpdateTiming(
     const mojom::PageLoadTimingPtr& timing,
     const mojom::PageLoadMetadataPtr& metadata,
@@ -76,8 +100,16 @@ void FakePageTimingSender::PageTimingValidator::UpdateTiming(
         << "Feature " << feature << "has been sent more than once";
     actual_features_.insert(feature);
   }
+  for (const auto css_property_id : new_features->css_properties) {
+    EXPECT_EQ(actual_css_properties_.find(css_property_id),
+              actual_css_properties_.end())
+        << "CSS Property ID " << css_property_id
+        << "has been sent more than once";
+    actual_css_properties_.insert(css_property_id);
+  }
   VerifyExpectedTimings();
   VerifyExpectedFeatures();
+  VerifyExpectedCssProperties();
 }
 
 }  // namespace page_load_metrics

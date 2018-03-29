@@ -50,10 +50,16 @@ class FakePageTimingSender : public PageTimingSender {
     // PageLoad features that are expected to be sent through SendTiming()
     // should be passed via UpdateExpectedPageLoadFeatures.
     void UpdateExpectPageLoadFeatures(const blink::mojom::WebFeature feature);
+    // PageLoad CSS properties that are expected to be sent through SendTiming()
+    // should be passed via UpdateExpectedPageLoadCSSProperties.
+    void UpdateExpectPageLoadCssProperties(int css_property_id);
 
     // Forces verification that actual features sent through SendTiming match
     // expected features provided via ExpectPageLoadFeatures.
     void VerifyExpectedFeatures() const;
+    // Forces verification that actual CSS properties sent through SendTiming
+    // match expected CSS properties provided via ExpectPageLoadCSSProperties.
+    void VerifyExpectedCssProperties() const;
 
     const std::vector<mojom::PageLoadTimingPtr>& expected_timings() const {
       return expected_timings_;
@@ -71,6 +77,8 @@ class FakePageTimingSender : public PageTimingSender {
     std::vector<mojom::PageLoadTimingPtr> actual_timings_;
     std::set<blink::mojom::WebFeature> expected_features_;
     std::set<blink::mojom::WebFeature> actual_features_;
+    std::set<int> expected_css_properties_;
+    std::set<int> actual_css_properties_;
     DISALLOW_COPY_AND_ASSIGN(PageTimingValidator);
   };
 
