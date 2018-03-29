@@ -1201,59 +1201,6 @@ bool IsVisuallyEquivalentCandidate(const PositionInFlatTree& position) {
 }
 
 template <typename Strategy>
-static IntRect AbsoluteCaretBoundsOfAlgorithm(
-    const VisiblePositionTemplate<Strategy>& visible_position) {
-  DCHECK(visible_position.IsValid()) << visible_position;
-  const LocalCaretRect& caret_rect =
-      LocalCaretRectOfPosition(visible_position.ToPositionWithAffinity());
-  if (caret_rect.IsEmpty())
-    return IntRect();
-  return LocalToAbsoluteQuadOf(caret_rect).EnclosingBoundingBox();
-}
-
-IntRect AbsoluteCaretBoundsOf(const VisiblePosition& visible_position) {
-  return AbsoluteCaretBoundsOfAlgorithm<EditingStrategy>(visible_position);
-}
-
-// TODO(editing-dev): This function does pretty much the same thing as
-// |AbsoluteCaretBoundsOf()|. Consider merging them.
-IntRect AbsoluteCaretRectOfPosition(const PositionWithAffinity& position,
-                                    LayoutUnit* extra_width_to_end_of_line) {
-  const LocalCaretRect local_caret_rect =
-      LocalCaretRectOfPosition(position, extra_width_to_end_of_line);
-  if (!local_caret_rect.layout_object)
-    return IntRect();
-
-  const IntRect local_rect = PixelSnappedIntRect(local_caret_rect.rect);
-  return local_rect == IntRect()
-             ? IntRect()
-             : local_caret_rect.layout_object
-                   ->LocalToAbsoluteQuad(FloatRect(local_rect))
-                   .EnclosingBoundingBox();
-}
-
-template <typename Strategy>
-static IntRect AbsoluteSelectionBoundsOfAlgorithm(
-    const VisiblePositionTemplate<Strategy>& visible_position) {
-  DCHECK(visible_position.IsValid()) << visible_position;
-  const LocalCaretRect& caret_rect =
-      LocalSelectionRectOfPosition(visible_position.ToPositionWithAffinity());
-  if (caret_rect.IsEmpty())
-    return IntRect();
-  return LocalToAbsoluteQuadOf(caret_rect).EnclosingBoundingBox();
-}
-
-IntRect AbsoluteSelectionBoundsOf(const VisiblePosition& visible_position) {
-  return AbsoluteSelectionBoundsOfAlgorithm<EditingStrategy>(visible_position);
-}
-
-IntRect AbsoluteCaretBoundsOf(
-    const VisiblePositionInFlatTree& visible_position) {
-  return AbsoluteCaretBoundsOfAlgorithm<EditingInFlatTreeStrategy>(
-      visible_position);
-}
-
-template <typename Strategy>
 static VisiblePositionTemplate<Strategy> SkipToEndOfEditingBoundary(
     const VisiblePositionTemplate<Strategy>& pos,
     const PositionTemplate<Strategy>& anchor) {

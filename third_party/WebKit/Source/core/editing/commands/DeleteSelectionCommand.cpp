@@ -33,6 +33,7 @@
 #include "core/editing/EditingUtilities.h"
 #include "core/editing/Editor.h"
 #include "core/editing/EphemeralRange.h"
+#include "core/editing/LocalCaretRect.h"
 #include "core/editing/RelocatablePosition.h"
 #include "core/editing/SelectionTemplate.h"
 #include "core/editing/VisiblePosition.h"
