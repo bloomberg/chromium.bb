@@ -1161,7 +1161,12 @@ void PrintPreviewHandler::SendPagePreviewReady(int page_index,
 }
 
 void PrintPreviewHandler::OnPrintPreviewCancelled() {
-  if (preview_callbacks_.empty() || !IsJavascriptAllowed()) {
+  if (!IsJavascriptAllowed()) {
+    BadMessageReceived();
+    return;
+  }
+
+  if (preview_callbacks_.empty()) {
     BadMessageReceived();
     return;
   }
