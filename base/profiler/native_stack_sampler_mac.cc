@@ -13,6 +13,7 @@
 #include <mach/kern_return.h>
 #include <mach/mach.h>
 #include <mach/thread_act.h>
+#include <mach/vm_map.h>
 #include <pthread.h>
 #include <sys/resource.h>
 #include <sys/syslimits.h>
@@ -95,6 +96,18 @@ std::string GetUniqueId(const void* module_addr) {
   return std::string();
 }
 
+// Returns the size of the _TEXT segment of the module loaded at |module_addr|.
+size_t GetModuleTextSize(const void* module_addr) {
+  const mach_header_64* mach_header =
+      reinterpret_cast<const mach_header_64*>(module_addr);
+  DCHECK_EQ(MH_MAGIC_64, mach_header->magic);
+
+  unsigned long module_size;
+  getsegmentdata(mach_header, SEG_TEXT, &module_size);
+
+  return module_size;
+}
+
 // Gets the index for the Module containing |instruction_pointer| in
 // |modules|, adding it if it's not already present. Returns
 // StackSamplingProfiler::Frame::kUnknownModuleIndex if no Module can be
@@ -122,16 +135,11 @@ size_t GetModuleIndex(const uintptr_t instruction_pointer,
       base::FilePath(inf.dli_fname));
   modules->push_back(module);
 
-  const mach_header_64* mach_header =
-      reinterpret_cast<const mach_header_64*>(inf.dli_fbase);
-  DCHECK_EQ(MH_MAGIC_64, mach_header->magic);
-
-  unsigned long module_size;
-  getsegmentdata(mach_header, SEG_TEXT, &module_size);
-  uintptr_t base_module_address = reinterpret_cast<uintptr_t>(mach_header);
+  uintptr_t base_module_address = reinterpret_cast<uintptr_t>(inf.dli_fbase);
   size_t index = modules->size() - 1;
-  profile_module_index->emplace_back(base_module_address,
-                                     base_module_address + module_size, index);
+  profile_module_index->emplace_back(
+      base_module_address,
+      base_module_address + GetModuleTextSize(inf.dli_fbase), index);
   return index;
 }
 
@@ -226,6 +234,39 @@ uint32_t GetFrameOffset(int compact_unwind_info) {
   return (
       (compact_unwind_info >> __builtin_ctz(UNWIND_X86_64_RBP_FRAME_OFFSET)) &
       (((1 << __builtin_popcount(UNWIND_X86_64_RBP_FRAME_OFFSET))) - 1));
+}
+
+// True if the unwind from |leaf_frame_rip| may trigger a crash bug in
+// unw_init_local. If so, the stack walk should be aborted at the leaf frame.
+bool MayTriggerUnwInitLocalCrash(uint64_t leaf_frame_rip) {
+  // The issue here is a bug in unw_init_local that, in some unwinds, results in
+  // attempts to access memory at the address immediately following the address
+  // range of the library. When the library is the last of the mapped libraries
+  // that address is in a different memory region. Starting with 10.13.4 beta
+  // releases it appears that this region is sometimes either unmapped or mapped
+  // without read access, resulting in crashes on the attempted access. It's not
+  // clear what circumstances result in this situation; attempts to reproduce on
+  // a 10.13.4 beta did not trigger the issue.
+  //
+  // The workaround is to check if the memory address that would be accessed is
+  // readable, and if not, abort the stack walk before calling unw_init_local.
+  // As of 2018/03/19 about 0.1% of non-idle stacks on the UI and GPU main
+  // threads have a leaf frame in the last library. Since the issue appears to
+  // only occur some of the time it's expected that the quantity of lost samples
+  // will be lower than 0.1%, possibly significantly lower.
+  //
+  // TODO(lgrey): Add references above to LLVM/Radar bugs on unw_init_local once
+  // filed.
+  Dl_info info;
+  if (dladdr(reinterpret_cast<const void*>(leaf_frame_rip), &info) == 0)
+    return false;
+  uint64_t unused;
+  vm_size_t size = sizeof(unused);
+  return vm_read_overwrite(current_task(),
+                           reinterpret_cast<vm_address_t>(info.dli_fbase) +
+                               GetModuleTextSize(info.dli_fbase),
+                           sizeof(unused),
+                           reinterpret_cast<vm_address_t>(&unused), &size) != 0;
 }
 
 // Walks the stack represented by |unwind_context|, calling back to the provided
@@ -557,11 +598,20 @@ void NativeStackSamplerMac::SuspendThreadAndRecordStack(
   auto* current_modules = current_modules_;
   auto* profile_module_index = &profile_module_index_;
 
-  // Unwinding sigtramp remotely is very fragile. It's a complex DWARF unwind
-  // that needs to restore the entire thread context which was saved by the
-  // kernel when the interrupt occurred. Bail instead of risking a crash.
+  // Check for two execution cases where we're unable to unwind, and if found,
+  // record the first frame and and bail:
+  //
+  // 1. In sigtramp: Unwinding this from another thread is very fragile. It's a
+  // complex DWARF unwind that needs to restore the entire thread context which
+  // was saved by the kernel when the interrupt occurred.
+  //
+  // 2. In the last mapped module and the memory past the module is
+  // inaccessible: unw_init_local has a bug where it attempts to access the
+  // memory immediately after the module, resulting in crashes. See
+  // MayTriggerUnwInitLocalCrash for details.
   uintptr_t ip = thread_state.__rip;
-  if (ip >= sigtramp_start_ && ip < sigtramp_end_) {
+  if ((ip >= sigtramp_start_ && ip < sigtramp_end_) ||
+      MayTriggerUnwInitLocalCrash(ip)) {
     sample->frames.emplace_back(
         ip, GetModuleIndex(ip, current_modules, profile_module_index));
     return;
