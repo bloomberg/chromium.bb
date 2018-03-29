@@ -105,9 +105,8 @@ class IDMap final {
     if (iteration_depth_ == 0) {
       data_.clear();
     } else {
-      for (typename HashTable::iterator i = data_.begin();
-           i != data_.end(); ++i)
-        removed_ids_.insert(i->first);
+      removed_ids_.reserve(data_.size());
+      removed_ids_.insert(KeyIterator(data_.begin()), KeyIterator(data_.end()));
     }
   }
 
@@ -211,6 +210,27 @@ class IDMap final {
   typedef Iterator<const T> const_iterator;
 
  private:
+  // Transforms a map iterator to an iterator on the keys of the map.
+  // Used by Clear() to populate |removed_ids_| in bulk.
+  struct KeyIterator : std::iterator<std::forward_iterator_tag, KeyType> {
+    using inner_iterator = typename HashTable::iterator;
+    inner_iterator iter_;
+
+    KeyIterator(inner_iterator iter) : iter_(iter) {}
+    KeyType operator*() const { return iter_->first; }
+    KeyIterator& operator++() {
+      ++iter_;
+      return *this;
+    }
+    KeyIterator operator++(int) { return KeyIterator(iter_++); }
+    bool operator==(const KeyIterator& other) const {
+      return iter_ == other.iter_;
+    }
+    bool operator!=(const KeyIterator& other) const {
+      return iter_ != other.iter_;
+    }
+  };
+
   KeyType AddInternal(V data) {
     DCHECK_CALLED_ON_VALID_SEQUENCE(sequence_checker_);
     DCHECK(!check_on_null_data_ || data);
