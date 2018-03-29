@@ -2637,6 +2637,12 @@ const char kEnableStylusVirtualKeyboardDescription[] =
     "If enabled, tapping with a stylus will show the handwriting virtual "
     "keyboard.";
 
+const char kEnableFullscreenHandwritingVirtualKeyboardName[] =
+    "Enable full screen handwriting virtual keyboard";
+const char kEnableFullscreenHandwritingVirtualKeyboardDescription[] =
+    "If enabled, the handwriting virtual keyboard will allow user to write "
+    "anywhere on the screen";
+
 const char kEnableUnifiedMultiDeviceSettingsName[] =
     "Enable unified MultiDevice settings";
 const char kEnableUnifiedMultiDeviceSettingsDescription[] =

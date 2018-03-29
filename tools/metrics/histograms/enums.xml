@@ -26865,6 +26865,8 @@ from previous Chrome versions.
   <int value="665409384"
       label="AutofillToolkitViewsCreditCardDialogsMac:enabled"/>
   <int value="679931272" label="DcheckIsFatal:enabled"/>
+  <int value="680070635"
+      label="enable-fullscreen-handwriting-virtual-keyboard:disabled"/>
   <int value="682549212" label="ash-enable-cursor-motion-blur"/>
   <int value="684806628" label="TranslateLanguageByULP:disabled"/>
   <int value="685916283" label="enable-zip-archiver-on-file-manager"/>
@@ -26909,6 +26911,8 @@ from previous Chrome versions.
   <int value="766898398" label="sampling-heap-profiler"/>
   <int value="772272625" label="simplify-https-indicator"/>
   <int value="772348426" label="AffiliationBasedMatching:enabled"/>
+  <int value="772360813"
+      label="enable-fullscreen-handwriting-virtual-keyboard:enabled"/>
   <int value="773919225" label="disable-office-editing-component-extension"/>
   <int value="777667507" label="DesktopPWAsLinkCapturing:enabled"/>
   <int value="779086132" label="enable-data-reduction-proxy-alt"/>
