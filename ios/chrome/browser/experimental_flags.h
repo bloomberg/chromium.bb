@@ -54,6 +54,9 @@ bool IsNewClearBrowsingDataUIEnabled();
 // Whether a new version of FeedbackKit is the preferred feedback UI provider.
 bool IsNewFeedbackKitEnabled();
 
+// Whether SSOService is configured for new version of FeedbackKit.
+bool IsNewFeedbackKitEnabledWithSSOService();
+
 // Whether the 3rd party keyboard omnibox workaround is enabled.
 bool IsThirdPartyKeyboardWorkaroundEnabled();
 

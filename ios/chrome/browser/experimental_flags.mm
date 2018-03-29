@@ -117,6 +117,10 @@ bool IsNewFeedbackKitEnabled() {
   return base::FeatureList::IsEnabled(kFeedbackKitV2);
 }
 
+bool IsNewFeedbackKitEnabledWithSSOService() {
+  return base::FeatureList::IsEnabled(kFeedbackKitV2WithSSOService);
+}
+
 bool IsThirdPartyKeyboardWorkaroundEnabled() {
   // Check if the experimental flag is forced on or off.
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();

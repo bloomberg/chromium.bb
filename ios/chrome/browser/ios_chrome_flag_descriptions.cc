@@ -53,6 +53,10 @@ const char kExternalSearchDescription[] = "Enable support for External Search.";
 
 const char kFeedbackKitV2Name[] = "FeedbackKit V2";
 const char kFeedbackKitV2Description[] = "Enable use of FeedbackKit V2.";
+const char kFeedbackKitV2WithSSOServiceName[] =
+    "FeedbackKit V2 with SSOService configured for FeedbackKit";
+const char kFeedbackKitV2WithSSOServiceDescription[] =
+    "Send SSOService with configuration for FeedbackKit V2.";
 
 const char kHistoryBatchUpdatesFilterName[] = "History Single Batch Filtering";
 const char kHistoryBatchUpdatesFilterDescription[] =
