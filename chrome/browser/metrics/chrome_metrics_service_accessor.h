@@ -129,7 +129,6 @@ class ChromeMetricsServiceAccessor : public metrics::MetricsServiceAccessor {
   friend class safe_browsing::SRTGlobalError;
   friend class safe_browsing::SafeBrowsingService;
   friend class safe_browsing::SafeBrowsingUIManager;
-  friend void SyzyASANRegisterExperiment(const char*, const char*);
   friend class ChromeMetricsServiceClient;
   friend class ChromePasswordManagerClient;
   friend class NavigationMetricsRecorder;

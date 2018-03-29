@@ -5,6 +5,7 @@
 #ifndef CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 #define CONTENT_PUBLIC_COMMON_URL_CONSTANTS_H_
 
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "url/url_constants.h"
@@ -66,14 +67,17 @@ CONTENT_EXPORT extern const char kChromeUIPpapiFlashHangURL[];
 #if defined(OS_ANDROID)
 CONTENT_EXPORT extern const char kChromeUIGpuJavaCrashURL[];
 #endif
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+#if defined(ADDRESS_SANITIZER)
 CONTENT_EXPORT extern const char kChromeUICrashHeapOverflowURL[];
 CONTENT_EXPORT extern const char kChromeUICrashHeapUnderflowURL[];
 CONTENT_EXPORT extern const char kChromeUICrashUseAfterFreeURL[];
-#endif
-#if defined(SYZYASAN)
+#if defined(OS_WIN)
 CONTENT_EXPORT extern const char kChromeUICrashCorruptHeapBlockURL[];
 CONTENT_EXPORT extern const char kChromeUICrashCorruptHeapURL[];
+#endif  // OS_WIN
+#endif  // ADDRESS_SANITIZER
+
+#if DCHECK_IS_ON()
 CONTENT_EXPORT extern const char kChromeUICrashDcheckURL[];
 #endif
 

@@ -115,31 +115,25 @@ config("compiler") {
     cflags += [ "/Brepro" ]
   }
 
+  # TODO(siggi): Is this of any use anymore?
   # /PROFILE ensures that the PDB file contains FIXUP information (growing the
-  # PDB file by about 5%) but does not otherwise alter the output binary. This
-  # information is used by the Syzygy optimization tool when decomposing the
-  # release image. It is enabled for syzyasan builds and opportunistically for
-  # other builds where it is not prohibited (not supported when incrementally
-  # linking, or using /debug:fastlink).
-  if (is_syzyasan) {
-    assert(!is_win_fastlink)
-    ldflags = [ "/PROFILE" ]
-  } else {
-    if (!is_debug && !is_component_build) {
-      if (is_win_fastlink && !use_lld) {
-        # /PROFILE implies the following linker flags. Therefore if we are
-        # skipping /PROFILE because it is incompatible with /DEBUG:FASTLINK
-        # we should explicitly add these flags in order to avoid unintended
-        # consequences such as larger binaries.
-        ldflags = [
-          "/OPT:REF",
-          "/OPT:ICF",
-          "/INCREMENTAL:NO",
-          "/FIXED:NO",
-        ]
-      } else {
-        ldflags = [ "/PROFILE" ]
-      }
+  # PDB file by about 5%) but does not otherwise alter the output binary. It is
+  # enabled opportunistically for builds where it is not prohibited (not
+  # supported when incrementally linking, or using /debug:fastlink).
+  if (!is_debug && !is_component_build) {
+    if (is_win_fastlink && !use_lld) {
+      # /PROFILE implies the following linker flags. Therefore if we are
+      # skipping /PROFILE because it is incompatible with /DEBUG:FASTLINK
+      # we should explicitly add these flags in order to avoid unintended
+      # consequences such as larger binaries.
+      ldflags = [
+        "/OPT:REF",
+        "/OPT:ICF",
+        "/INCREMENTAL:NO",
+        "/FIXED:NO",
+      ]
+    } else {
+      ldflags = [ "/PROFILE" ]
     }
   }
 
@@ -485,9 +479,9 @@ if (use_lld) {
   incremental_linking_on_switch += [ "/OPT:NOREF" ]
 }
 
-# Disable incremental linking for syzyasan, enable for debug builds and all
-# component builds - any builds where performance is not job one.
-if ((is_debug || is_component_build) && !is_syzyasan) {
+# Enable incremental linking for debug builds and all component builds - any
+# builds where performance is not job one.
+if (is_debug || is_component_build) {
   default_incremental_linking_switch = incremental_linking_on_switch
 } else {
   default_incremental_linking_switch = incremental_linking_off_switch

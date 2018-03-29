@@ -4,6 +4,7 @@
 
 #include "content/public/common/url_utils.h"
 
+#include "base/logging.h"
 #include "build/build_config.h"
 #include "content/common/url_schemes.h"
 #include "content/public/common/browser_side_navigation_policy.h"
@@ -81,7 +82,7 @@ bool IsRendererDebugURL(const GURL& url) {
     return true;
   }
 
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+#if defined(ADDRESS_SANITIZER)
   if (url == kChromeUICrashHeapOverflowURL ||
       url == kChromeUICrashHeapUnderflowURL ||
       url == kChromeUICrashUseAfterFreeURL) {
@@ -89,9 +90,14 @@ bool IsRendererDebugURL(const GURL& url) {
   }
 #endif
 
-#if defined(SYZYASAN)
+#if DCHECK_IS_ON()
+  if (url == kChromeUICrashDcheckURL)
+    return true;
+#endif
+
+#if defined(OS_WIN) && defined(ADDRESS_SANITIZER)
   if (url == kChromeUICrashCorruptHeapBlockURL ||
-      url == kChromeUICrashCorruptHeapURL || url == kChromeUICrashDcheckURL) {
+      url == kChromeUICrashCorruptHeapURL) {
     return true;
   }
 #endif

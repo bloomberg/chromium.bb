@@ -15,7 +15,7 @@ ChromeBrowserMainExtraPartsProfiling::~ChromeBrowserMainExtraPartsProfiling() =
 
 void ChromeBrowserMainExtraPartsProfiling::ServiceManagerConnectionStarted(
     content::ServiceManagerConnection* connection) {
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+#if defined(ADDRESS_SANITIZER)
   // Memory sanitizers are using large memory shadow to keep track of memory
   // state. Using memlog and memory sanitizers at the same time is slowing down
   // user experience, causing the browser to be barely responsive. In theory,

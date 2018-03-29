@@ -10,11 +10,12 @@
 
 #include "base/base_export.h"
 #include "base/compiler_specific.h"
+#include "build/build_config.h"
 
 namespace base {
 namespace debug {
 
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+#if defined(ADDRESS_SANITIZER)
 
 // Generates an heap buffer overflow.
 BASE_EXPORT NOINLINE void AsanHeapOverflow();
@@ -25,12 +26,9 @@ BASE_EXPORT NOINLINE void AsanHeapUnderflow();
 // Generates an use after free.
 BASE_EXPORT NOINLINE void AsanHeapUseAfterFree();
 
-#endif  // ADDRESS_SANITIZER || SYZYASAN
-
 // The "corrupt-block" and "corrupt-heap" classes of bugs is specific to
-// SyzyASan.
-#if defined(SYZYASAN) && defined(COMPILER_MSVC)
-
+// Windows.
+#if defined(OS_WIN)
 // Corrupts a memory block and makes sure that the corruption gets detected when
 // we try to free this block.
 BASE_EXPORT NOINLINE void AsanCorruptHeapBlock();
@@ -39,7 +37,8 @@ BASE_EXPORT NOINLINE void AsanCorruptHeapBlock();
 // crash occur.
 BASE_EXPORT NOINLINE void AsanCorruptHeap();
 
-#endif  // SYZYASAN && COMPILER_MSVC
+#endif  // OS_WIN
+#endif  // ADDRESS_SANITIZER
 
 }  // namespace debug
 }  // namespace base

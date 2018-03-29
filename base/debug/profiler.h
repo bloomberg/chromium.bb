@@ -35,9 +35,6 @@ BASE_EXPORT bool BeingProfiled();
 // Reset profiling after a fork, which disables timers.
 BASE_EXPORT void RestartProfilingAfterFork();
 
-// Returns true iff this executable is instrumented with the Syzygy profiler.
-BASE_EXPORT bool IsBinaryInstrumented();
-
 // Returns true iff this executable supports profiling.
 BASE_EXPORT bool IsProfilingSupported();
 

@@ -52,8 +52,7 @@ namespace {
 // For MSan the slowdown depends heavily on the value of msan_track_origins GYP
 // flag. The multiplier below corresponds to msan_track_origins=1.
 constexpr int kTimeoutMultiplier = 6;
-#elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
-    defined(SYZYASAN)
+#elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
 constexpr int kTimeoutMultiplier = 2;
 #else
 constexpr int kTimeoutMultiplier = 1;

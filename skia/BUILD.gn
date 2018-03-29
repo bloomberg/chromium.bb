@@ -640,14 +640,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
     visibility = [ ":skia_opts" ]
   }
   skia_source_set("skia_opts_hsw") {
-    # SyzyAsan doesn't support the AVX2 and F16C instructions.
-    if (!is_syzyasan) {
-      sources = skia_opts.hsw_sources
-    } else {
-      sources = [
-        "ext/SkOpts_hsw_stub.cc",
-      ]
-    }
+    sources = skia_opts.hsw_sources
     if (!is_win) {
       cflags = [
         "-mavx2",
@@ -657,7 +650,7 @@ if (current_cpu == "x86" || current_cpu == "x64") {
         "-mfma",
       ]
     }
-    if (is_win && !is_syzyasan) {
+    if (is_win) {
       cflags = [ "/arch:AVX2" ]
     }
     visibility = [ ":skia_opts" ]

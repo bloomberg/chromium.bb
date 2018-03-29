@@ -851,7 +851,7 @@ NOINLINE void ExhaustMemory() {
   } while (ptr);
 }
 
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+#if defined(ADDRESS_SANITIZER)
 NOINLINE void MaybeTriggerAsanError(const GURL& url) {
   // NOTE(rogerm): We intentionally perform an invalid heap access here in
   //     order to trigger an Address Sanitizer (ASAN) error report.
@@ -867,7 +867,7 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
     LOG(ERROR) << "Intentionally causing ASAN heap use-after-free"
                << " because user navigated to " << url.spec();
     base::debug::AsanHeapUseAfterFree();
-#if defined(SYZYASAN)
+#if defined(OS_WIN)
   } else if (url == kChromeUICrashCorruptHeapBlockURL) {
     LOG(ERROR) << "Intentionally causing ASAN corrupt heap block"
                << " because user navigated to " << url.spec();
@@ -876,15 +876,10 @@ NOINLINE void MaybeTriggerAsanError(const GURL& url) {
     LOG(ERROR) << "Intentionally causing ASAN corrupt heap"
                << " because user navigated to " << url.spec();
     base::debug::AsanCorruptHeap();
-  } else if (url == kChromeUICrashDcheckURL) {
-    LOG(ERROR) << "Intentionally DCHECKING because user navigated to "
-               << url.spec();
-
-    DCHECK(false) << "Intentional DCHECK.";
-#endif
+#endif  // OS_WIN
   }
 }
-#endif  // ADDRESS_SANITIZER || SYZYASAN
+#endif  // ADDRESS_SANITIZER
 
 // Returns true if the URL is a debug URL, false otherwise. These URLs do not
 // commit, though they are intentionally left in the address bar above the
@@ -931,9 +926,18 @@ void HandleChromeDebugURL(const GURL& url) {
     CHECK(false);
   }
 
-#if defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+#if DCHECK_IS_ON()
+  if (url == kChromeUICrashDcheckURL) {
+    LOG(ERROR) << "Intentionally causing DCHECK because user navigated to "
+               << url.spec();
+
+    DCHECK(false) << "Intentional DCHECK.";
+  }
+#endif
+
+#if defined(ADDRESS_SANITIZER)
   MaybeTriggerAsanError(url);
-#endif  // ADDRESS_SANITIZER || SYZYASAN
+#endif  // ADDRESS_SANITIZER
 }
 
 struct RenderFrameImpl::PendingFileChooser {

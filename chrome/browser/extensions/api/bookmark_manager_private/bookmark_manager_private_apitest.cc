@@ -26,13 +26,7 @@
 using bookmarks::BookmarkModel;
 using bookmarks::BookmarkNode;
 
-// Times out on win syzyasan, http://crbug.com/166026
-#if defined(SYZYASAN)
-#define MAYBE_BookmarkManager DISABLED_BookmarkManager
-#else
-#define MAYBE_BookmarkManager BookmarkManager
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_BookmarkManager) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, BookmarkManager) {
   // Add managed bookmarks.
   Profile* profile = browser()->profile();
   BookmarkModel* model = BookmarkModelFactory::GetForBrowserContext(profile);

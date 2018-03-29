@@ -4,8 +4,6 @@
 
 static_library("child") {
   sources = [
-    "child_profiling.cc",
-    "child_profiling.h",
     "pdf_child_init.cc",
     "pdf_child_init.h",
     "v8_breakpad_support_win.cc",

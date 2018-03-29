@@ -1293,6 +1293,8 @@ hooks = [
     ],
   },
   # Pull the Syzygy binaries, used for optimization and instrumentation.
+  # Remove this as soon as the zap_timestamp.exe utility is no longer used.
+  # See https://crbug.com/821764#c3.
   {
     'name': 'syzygy-binaries',
     'pattern': '.',

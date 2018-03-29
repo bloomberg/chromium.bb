@@ -43,8 +43,7 @@ void InitializeTimeout(const char* switch_name, int min_value, int* value) {
   // ASan/Win has not been optimized yet, give it a higher
   // timeout multiplier. See http://crbug.com/412471
   constexpr int kTimeoutMultiplier = 3;
-#elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
-    defined(SYZYASAN)
+#elif defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER)
   constexpr int kTimeoutMultiplier = 2;
 #else
   constexpr int kTimeoutMultiplier = 1;

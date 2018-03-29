@@ -1491,72 +1491,12 @@ void ChromeBrowserMainParts::PostProfileInit() {
     chrome_extra_parts_[i]->PostProfileInit();
 }
 
-#if defined(SYZYASAN)
-
-// This function must be in the global namespace as it needs to be friended
-// by ChromeMetricsServiceAccessor.
-void SyzyASANRegisterExperiment(const char* name, const char* group) {
-  ChromeMetricsServiceAccessor::RegisterSyntheticFieldTrial(name, group);
-}
-
-namespace {
-
-void WINAPI SyzyASANExperimentCallback(const char* name, const char* group) {
-  // Indirect through the function above, so that the friend declaration doesn't
-  // need the ugly calling convention.
-  SyzyASANRegisterExperiment(name, group);
-}
-
-void SetupSyzyASAN() {
-  typedef VOID(WINAPI* SyzyASANExperimentCallbackFn)(const char* name,
-                                                     const char* group);
-  typedef VOID(WINAPI* SyzyASANEnumExperimentsFn)(SyzyASANExperimentCallbackFn);
-  HMODULE syzyasan_handle = ::GetModuleHandle(L"syzyasan_rtl.dll");
-  if (!syzyasan_handle)
-    return;
-
-  // Export the SyzyASAN experiments as synthetic field trials.
-  SyzyASANEnumExperimentsFn syzyasan_enum_experiments =
-      reinterpret_cast<SyzyASANEnumExperimentsFn>(
-            ::GetProcAddress(syzyasan_handle, "asan_EnumExperiments"));
-  if (syzyasan_enum_experiments) {
-    syzyasan_enum_experiments(&SyzyASANExperimentCallback);
-  }
-
-  // Enable the deferred free mechanism in the syzyasan module, which helps the
-  // performance by deferring some work on the critical path to a background
-  // thread. Note that this is now enabled by default, the feature is kept as a
-  // kill switch.
-  if (base::FeatureList::IsEnabled(features::kSyzyasanDeferredFree)) {
-    typedef VOID(WINAPI * SyzyasanEnableDeferredFreeThreadFunc)(VOID);
-    bool success = false;
-    SyzyasanEnableDeferredFreeThreadFunc syzyasan_enable_deferred_free =
-        reinterpret_cast<SyzyasanEnableDeferredFreeThreadFunc>(
-            ::GetProcAddress(syzyasan_handle,
-                             "asan_EnableDeferredFreeThread"));
-    if (syzyasan_enable_deferred_free) {
-      syzyasan_enable_deferred_free();
-      success = true;
-    }
-    UMA_HISTOGRAM_BOOLEAN("Syzyasan.DeferredFreeWasEnabled", success);
-  }
-}
-
-}  // namespace
-
-#endif  // SYZYASAN
-
-
 void ChromeBrowserMainParts::PreBrowserStart() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreBrowserStart");
   for (size_t i = 0; i < chrome_extra_parts_.size(); ++i)
     chrome_extra_parts_[i]->PreBrowserStart();
 
   three_d_observer_.reset(new ThreeDAPIObserver());
-
-#if defined(SYZYASAN)
-  SetupSyzyASAN();
-#endif
 
 // Start the tab manager here so that we give the most amount of time for the
 // other services to start up before we start adjusting the oom priority.
@@ -2210,23 +2150,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   restart_last_session_ = browser_shutdown::ShutdownPreThreadsStop();
   browser_process_->StartTearDown();
-
-#if defined(SYZYASAN)
-  // Disable the deferred free mechanism in the syzyasan module. This is needed
-  // to avoid a potential crash when the syzyasan module is unloaded.
-  if (base::FeatureList::IsEnabled(features::kSyzyasanDeferredFree)) {
-    typedef VOID(WINAPI * SyzyasanDisableDeferredFreeThreadFunc)(VOID);
-    HMODULE syzyasan_handle = ::GetModuleHandle(L"syzyasan_rtl.dll");
-    if (syzyasan_handle) {
-      SyzyasanDisableDeferredFreeThreadFunc syzyasan_disable_deferred_free =
-          reinterpret_cast<SyzyasanDisableDeferredFreeThreadFunc>(
-              ::GetProcAddress(syzyasan_handle,
-                               "asan_DisableDeferredFreeThread"));
-      if (syzyasan_disable_deferred_free)
-        syzyasan_disable_deferred_free();
-    }
-  }
-#endif  // defined(SYZYASAN)
 #endif  // defined(OS_ANDROID)
 }
 

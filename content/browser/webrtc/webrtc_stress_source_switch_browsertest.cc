@@ -17,7 +17,7 @@ namespace content {
 
 namespace {
 #if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
-    defined(SYZYASAN) || defined(MEMORY_SANITIZER)
+    defined(MEMORY_SANITIZER)
 static const int kTestDurationSecs = 2;
 static const int kNumPeerConnections = 3;
 #else

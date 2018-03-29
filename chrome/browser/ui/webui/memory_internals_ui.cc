@@ -77,7 +77,7 @@ std::string GetMessageString() {
           "Memory logging must be manually enabled for each process via "
           "chrome://memory-internals.");
   }
-#elif defined(ADDRESS_SANITIZER) || defined(SYZYASAN)
+#elif defined(ADDRESS_SANITIZER)
   return "Memory logging is not available in this build because a memory "
          "sanitizer is running.";
 #else

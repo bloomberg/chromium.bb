@@ -352,7 +352,7 @@ void BrowserGpuChannelHostFactory::RestartTimeout() {
     return;
 
 #if defined(ADDRESS_SANITIZER) || defined(THREAD_SANITIZER) || \
-    defined(SYZYASAN) || defined(CYGPROFILE_INSTRUMENTATION)
+    defined(CYGPROFILE_INSTRUMENTATION)
   constexpr int64_t kGpuChannelTimeoutInSeconds = 40;
 #else
   // The GPU watchdog timeout is 15 seconds (1.5x the kGpuTimeout value due to

@@ -125,13 +125,7 @@ class ExtensionContextMenuApiTest : public ExtensionApiTest {
   DISALLOW_COPY_AND_ASSIGN(ExtensionContextMenuApiTest);
 };
 
-// Times out on win syzyasan, http://crbug.com/166026
-#if defined(SYZYASAN)
-#define MAYBE_ContextMenus DISABLED_ContextMenus
-#else
-#define MAYBE_ContextMenus ContextMenus
-#endif
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, MAYBE_ContextMenus) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, ContextMenus) {
   ASSERT_TRUE(RunExtensionTest("context_menus/basics")) << message_;
   ASSERT_TRUE(RunExtensionTest("context_menus/no_perms")) << message_;
   ASSERT_TRUE(RunExtensionTest("context_menus/item_ids")) << message_;

@@ -562,14 +562,6 @@ const base::Feature kSysInternals{"SysInternals",
                                   base::FEATURE_DISABLED_BY_DEFAULT};
 #endif
 
-#if defined(SYZYASAN)
-// Enable the deferred free mechanism in the syzyasan module, which helps the
-// performance by deferring some work on the critical path to a background
-// thread.
-const base::Feature kSyzyasanDeferredFree{"SyzyasanDeferredFree",
-                                          base::FEATURE_ENABLED_BY_DEFAULT};
-#endif
-
 // Enable TopSites to source and sort its site data using site engagement.
 const base::Feature kTopSitesFromSiteEngagement{
     "TopSitesFromSiteEngagement", base::FEATURE_DISABLED_BY_DEFAULT};

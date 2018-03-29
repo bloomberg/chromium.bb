@@ -46,11 +46,6 @@ declare_args() {
   # standard system libraries. Set this flag to build the libraries from source.
   use_locally_built_instrumented_libraries = false
 
-  # Enable building with SyzyAsan which can find certain types of memory
-  # errors. Only works on Windows. See
-  # https://github.com/google/syzygy/wiki/SyzyASanHowTo
-  is_syzyasan = false
-
   # Compile with Control Flow Integrity to protect virtual calls and casts.
   # See http://clang.llvm.org/docs/ControlFlowIntegrity.html
   #
@@ -119,7 +114,6 @@ if (current_toolchain != default_toolchain) {
   is_cfi = false
   is_lsan = false
   is_msan = false
-  is_syzyasan = false
   is_tsan = false
   is_ubsan = false
   is_ubsan_null = false
