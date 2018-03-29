@@ -4855,4 +4855,25 @@ Installing the <ph name="APP_NAME">$2<ex>Terminal</ex></ph> will download <ph na
   <message name="IDS_CROSTINI_INSTALLER_INSTALLING" desc="Text shown in the Crostini installer dialog while the 'Terminal' is installing.">
     Installing <ph name="APP_NAME">$1<ex>Terminal</ex></ph>...
   </message>
+  <message name="IDS_CROSTINI_INSTALLER_ERROR_TITLE" desc="Title of the Crostini installer when an error occurs.">
+    Error installing <ph name="APP_NAME">$1<ex>Terminal</ex></ph>...
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_COMPLETE" desc="Text shown in the Crostini installer dialog when installation is complete.">
+    Finished installing <ph name="APP_NAME">$1<ex>Terminal</ex></ph>.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_LOAD_TERMINA_ERROR" desc="Text shown in the Crostini installer dialog when the 'Termina' component fails to load">
+    ERROR: Failed to load Termina component.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_START_CONCIERGE_ERROR" desc="Text shown in the Crostini installer dialog when the 'Concierge' client fails to start">
+    ERROR: Failed to start Concierge client.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_CREATE_DISK_IMAGE_ERROR" desc="Text shown in the Crostini installer dialog when the failing to create the disk image">
+    ERROR: Failed to create disk image.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_START_TERMINA_VM_ERROR" desc="Text shown in the Crostini installer dialog when the 'Termina VM' fails to start">
+    ERROR: Failed to start Termina VM.
+  </message>
+  <message name="IDS_CROSTINI_INSTALLER_START_CONTAINER_ERROR" desc="Text shown in the Crostini installer dialog when the container fails to start inside the 'Termina VM'">
+    ERROR: Failed to start container inside Termina VM.
+  </message>
 </grit-part>

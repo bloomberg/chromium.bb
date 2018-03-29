@@ -20,4 +20,10 @@ std::string CreateCrostiniAppId(const std::string& window_app_id);
 
 // Returns true if the app_id is a Crostini app ID.
 bool IsCrostiniAppId(const std::string& app_id);
+
+constexpr char kCrostiniDefaultVmName[] = "termina";
+constexpr char kCrostiniDefaultContainerName[] = "penguin";
+constexpr char kCrostiniCroshBuiltinAppId[] =
+    "nkoccljplnhpfnfiajclkommnmllphnl";
+
 #endif  // CHROME_BROWSER_UI_APP_LIST_CROSTINI_CROSTINI_UTIL_H_

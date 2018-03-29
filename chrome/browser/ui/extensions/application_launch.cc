@@ -180,56 +180,6 @@ ui::WindowShowState DetermineWindowShowState(
   return ui::SHOW_STATE_DEFAULT;
 }
 
-WebContents* OpenApplicationWindow(const AppLaunchParams& params,
-                                   const GURL& url) {
-  Profile* const profile = params.profile;
-  const Extension* const extension = GetExtension(params);
-
-  std::string app_name = extension ?
-      web_app::GenerateApplicationNameFromExtensionId(extension->id()) :
-      web_app::GenerateApplicationNameFromURL(url);
-
-  gfx::Rect initial_bounds;
-  if (!params.override_bounds.IsEmpty()) {
-    initial_bounds = params.override_bounds;
-  } else if (extension) {
-    initial_bounds.set_width(
-        extensions::AppLaunchInfo::GetLaunchWidth(extension));
-    initial_bounds.set_height(
-        extensions::AppLaunchInfo::GetLaunchHeight(extension));
-  }
-
-  // TODO(erg): AppLaunchParams should pass through the user_gesture from the
-  // extension system here.
-  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
-      app_name, true /* trusted_source */, initial_bounds, profile, true));
-
-  browser_params.initial_show_state = DetermineWindowShowState(profile,
-                                                               params.container,
-                                                               extension);
-
-  Browser* browser = new Browser(browser_params);
-  ui::PageTransition transition =
-      (extension ? ui::PAGE_TRANSITION_AUTO_BOOKMARK
-                 : ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
-
-  NavigateParams nav_params(browser, url, transition);
-  nav_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-  nav_params.opener = params.opener;
-  Navigate(&nav_params);
-
-  WebContents* web_contents = nav_params.target_contents;
-  extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
-      browser->hosted_app_controller(), web_contents);
-
-  browser->window()->Show();
-
-  // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
-  //                focus explicitly.
-  web_contents->SetInitialFocus();
-  return web_contents;
-}
-
 WebContents* OpenApplicationTab(const AppLaunchParams& launch_params,
                            const GURL& url) {
   const Extension* extension = GetExtension(launch_params);
@@ -386,6 +336,56 @@ WebContents* OpenEnabledApplication(const AppLaunchParams& params) {
 
 WebContents* OpenApplication(const AppLaunchParams& params) {
   return OpenEnabledApplication(params);
+}
+
+WebContents* OpenApplicationWindow(const AppLaunchParams& params,
+                                   const GURL& url) {
+  Profile* const profile = params.profile;
+  const Extension* const extension = GetExtension(params);
+
+  std::string app_name =
+      extension
+          ? web_app::GenerateApplicationNameFromExtensionId(extension->id())
+          : web_app::GenerateApplicationNameFromURL(url);
+
+  gfx::Rect initial_bounds;
+  if (!params.override_bounds.IsEmpty()) {
+    initial_bounds = params.override_bounds;
+  } else if (extension) {
+    initial_bounds.set_width(
+        extensions::AppLaunchInfo::GetLaunchWidth(extension));
+    initial_bounds.set_height(
+        extensions::AppLaunchInfo::GetLaunchHeight(extension));
+  }
+
+  // TODO(erg): AppLaunchParams should pass through the user_gesture from the
+  // extension system here.
+  Browser::CreateParams browser_params(Browser::CreateParams::CreateForApp(
+      app_name, true /* trusted_source */, initial_bounds, profile, true));
+
+  browser_params.initial_show_state =
+      DetermineWindowShowState(profile, params.container, extension);
+
+  Browser* browser = new Browser(browser_params);
+  ui::PageTransition transition =
+      (extension ? ui::PAGE_TRANSITION_AUTO_BOOKMARK
+                 : ui::PAGE_TRANSITION_AUTO_TOPLEVEL);
+
+  NavigateParams nav_params(browser, url, transition);
+  nav_params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+  nav_params.opener = params.opener;
+  Navigate(&nav_params);
+
+  WebContents* web_contents = nav_params.target_contents;
+  extensions::HostedAppBrowserController::SetAppPrefsForWebContents(
+      browser->hosted_app_controller(), web_contents);
+
+  browser->window()->Show();
+
+  // TODO(jcampan): http://crbug.com/8123 we should not need to set the initial
+  //                focus explicitly.
+  web_contents->SetInitialFocus();
+  return web_contents;
 }
 
 void OpenApplicationWithReenablePrompt(const AppLaunchParams& params) {

@@ -25,6 +25,10 @@ void OpenApplicationWithReenablePrompt(const AppLaunchParams& params);
 // Open the application in a way specified by |params|.
 content::WebContents* OpenApplication(const AppLaunchParams& params);
 
+// Open the application in a way specified by |params| in a new window.
+content::WebContents* OpenApplicationWindow(const AppLaunchParams& params,
+                                            const GURL& url);
+
 // Open |url| in an app shortcut window.
 // There are two kinds of app shortcuts: Shortcuts to a URL,
 // and shortcuts that open an installed application.  This function
