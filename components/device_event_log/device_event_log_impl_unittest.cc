@@ -111,6 +111,14 @@ class DeviceEventLogTest : public testing::Test {
     AddNetworkEntry(kFileName, 0, level, event);
   }
 
+  void AddTestEventWithTimestamp(LogLevel level,
+                                 const std::string& event,
+                                 base::Time time) {
+    impl_->AddEntryWithTimestampForTesting(kFileName, 0, kDefaultType, level,
+                                           event, time);
+    task_runner_->RunUntilIdle();
+  }
+
   void AddEventType(LogType type, const std::string& event) {
     impl_->AddEntry(kFileName, 0, type, kDefaultLevel, event);
     task_runner_->RunUntilIdle();
@@ -288,6 +296,41 @@ TEST_F(DeviceEventLogTest, TestType) {
       "Network: event6\n");
   EXPECT_EQ(all_events, GetLogStringForType("network,power"));
   EXPECT_EQ(all_events, GetLogStringForType(""));
+}
+
+TEST_F(DeviceEventLogTest, TestClear) {
+  AddTestEvent(LOG_LEVEL_EVENT, "event1");
+  AddTestEvent(LOG_LEVEL_EVENT, "event2");
+  AddTestEvent(LOG_LEVEL_EVENT, "event3");
+  AddTestEvent(LOG_LEVEL_EVENT, "event4");
+
+  std::string out = GetLogString(OLDEST_FIRST, "", LOG_LEVEL_EVENT, 0);
+  EXPECT_EQ(4u, CountLines(out));
+
+  impl_->Clear(base::Time(), base::Time::Max());
+
+  out = GetLogString(OLDEST_FIRST, "", LOG_LEVEL_EVENT, 0);
+  EXPECT_EQ(0u, CountLines(out));
+}
+
+TEST_F(DeviceEventLogTest, TestClearRange) {
+  AddTestEventWithTimestamp(LOG_LEVEL_EVENT, "event1",
+                            base::Time() + base::TimeDelta::FromSeconds(1));
+  AddTestEventWithTimestamp(LOG_LEVEL_EVENT, "event2",
+                            base::Time() + base::TimeDelta::FromSeconds(2));
+  AddTestEventWithTimestamp(LOG_LEVEL_EVENT, "event3",
+                            base::Time() + base::TimeDelta::FromSeconds(3));
+  AddTestEventWithTimestamp(LOG_LEVEL_EVENT, "event4",
+                            base::Time() + base::TimeDelta::FromSeconds(4));
+
+  EXPECT_EQ("event1\nevent2\nevent3\nevent4\n",
+            GetLogString(OLDEST_FIRST, "", LOG_LEVEL_EVENT, 0));
+
+  impl_->Clear(base::Time() + base::TimeDelta::FromSeconds(2),
+               base::Time() + base::TimeDelta::FromSeconds(3));
+
+  EXPECT_EQ("event1\nevent4\n",
+            GetLogString(OLDEST_FIRST, "", LOG_LEVEL_EVENT, 0));
 }
 
 }  // namespace device_event_log

@@ -77,6 +77,11 @@ std::string GetAsString(StringOrder order,
                                          max_events);
 }
 
+void Clear(const base::Time& begin, const base::Time& end) {
+  if (g_device_event_log)
+    g_device_event_log->Clear(begin, end);
+}
+
 namespace internal {
 
 DeviceEventLogInstance::DeviceEventLogInstance(const char* file,

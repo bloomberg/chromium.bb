@@ -164,6 +164,10 @@ std::string DEVICE_EVENT_LOG_EXPORT GetAsString(StringOrder order,
                                                 LogLevel max_level,
                                                 size_t max_events);
 
+// Clear entries from the device event log between the given times.
+void DEVICE_EVENT_LOG_EXPORT Clear(const base::Time& begin,
+                                   const base::Time& end);
+
 DEVICE_EVENT_LOG_EXPORT extern const LogLevel kDefaultLogLevel;
 
 namespace internal {

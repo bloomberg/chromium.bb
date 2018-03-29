@@ -64,6 +64,7 @@
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_compression_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_settings.h"
+#include "components/device_event_log/device_event_log.h"
 #include "components/domain_reliability/service.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/language/core/browser/url_language_histogram.h"
@@ -675,6 +676,8 @@ void ChromeBrowsingDataRemoverDelegate::RemoveEmbedderData(
             CreatePendingTaskCompletionClosure());
       }
     }
+
+    device_event_log::Clear(delete_begin_, delete_end_);
   }
 
   //////////////////////////////////////////////////////////////////////////////
