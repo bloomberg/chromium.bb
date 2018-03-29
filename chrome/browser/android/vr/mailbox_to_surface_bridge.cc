@@ -14,11 +14,12 @@
 #include "content/public/browser/android/compositor.h"
 #include "content/public/browser/browser_thread.h"
 #include "gpu/GLES2/gl2extchromium.h"
+#include "gpu/command_buffer/client/context_support.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
-#include "gpu/command_buffer/common/sync_token.h"
 #include "gpu/ipc/client/gpu_channel_host.h"
+#include "gpu/ipc/common/gpu_memory_buffer_impl_android_hardware_buffer.h"
 #include "gpu/ipc/common/gpu_surface_tracker.h"
 #include "services/ui/public/cpp/gpu/context_provider_command_buffer.h"
 #include "ui/gl/android/surface_texture.h"
@@ -152,12 +153,12 @@ MailboxToSurfaceBridge::~MailboxToSurfaceBridge() {
   DVLOG(1) << __FUNCTION__;
 }
 
-bool MailboxToSurfaceBridge::IsReady() {
-  return context_provider_ && gl_;
+bool MailboxToSurfaceBridge::IsConnected() {
+  return context_provider_ && gl_ && context_support_;
 }
 
 bool MailboxToSurfaceBridge::IsGpuWorkaroundEnabled(int32_t workaround) {
-  DCHECK(IsReady());
+  DCHECK(IsConnected());
 
   return context_provider_->GetGpuFeatureInfo().IsWorkaroundEnabled(workaround);
 }
@@ -178,13 +179,19 @@ void MailboxToSurfaceBridge::OnContextAvailable(
   }
 
   gl_ = context_provider_->ContextGL();
+  context_support_ = context_provider_->ContextSupport();
 
   if (!gl_) {
     DLOG(ERROR) << "Did not get a GL context";
     return;
   }
+  if (!context_support_) {
+    DLOG(ERROR) << "Did not get a ContextSupport";
+    return;
+  }
   InitializeRenderer();
 
+  DVLOG(1) << __FUNCTION__ << ": Context ready";
   if (on_initialized_) {
     base::ResetAndReturn(&on_initialized_).Run();
   }
@@ -256,7 +263,7 @@ void MailboxToSurfaceBridge::CreateSurface(
 }
 
 void MailboxToSurfaceBridge::ResizeSurface(int width, int height) {
-  if (!IsReady()) {
+  if (!IsConnected()) {
     // We're not initialized yet, save the requested size for later.
     needs_resize_ = true;
     resize_width_ = width;
@@ -271,13 +278,14 @@ void MailboxToSurfaceBridge::ResizeSurface(int width, int height) {
 
 bool MailboxToSurfaceBridge::CopyMailboxToSurfaceAndSwap(
     const gpu::MailboxHolder& mailbox) {
-  if (!IsReady()) {
+  if (!IsConnected()) {
     // We may not have a context yet, i.e. due to surface initialization
     // being incomplete. This is not an error, but we obviously can't draw
     // yet. TODO(klausw): change the caller to defer this until we are ready.
     return false;
   }
 
+  TRACE_EVENT0("gpu", __FUNCTION__);
   if (needs_resize_) {
     ResizeSurface(resize_width_, resize_height_);
     needs_resize_ = false;
@@ -288,6 +296,97 @@ bool MailboxToSurfaceBridge::CopyMailboxToSurfaceAndSwap(
   gl_->DeleteTextures(1, &sourceTexture);
   gl_->SwapBuffers();
   return true;
+}
+
+void MailboxToSurfaceBridge::GenSyncToken(gpu::SyncToken* out_sync_token) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  DCHECK(IsConnected());
+  gl_->GenSyncTokenCHROMIUM(out_sync_token->GetData());
+}
+
+void MailboxToSurfaceBridge::WaitForClientGpuFence(gfx::GpuFence* gpu_fence) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  DCHECK(IsConnected());
+  GLuint id = gl_->CreateClientGpuFenceCHROMIUM(gpu_fence->AsClientGpuFence());
+  gl_->WaitGpuFenceCHROMIUM(id);
+  gl_->DestroyGpuFenceCHROMIUM(id);
+}
+
+void MailboxToSurfaceBridge::CreateGpuFence(
+    const gpu::SyncToken& sync_token,
+    base::OnceCallback<void(std::unique_ptr<gfx::GpuFence>)> callback) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  DCHECK(IsConnected());
+  gl_->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
+  GLuint id = gl_->CreateGpuFenceCHROMIUM();
+  context_support_->GetGpuFence(id, std::move(callback));
+  gl_->DestroyGpuFenceCHROMIUM(id);
+}
+
+void MailboxToSurfaceBridge::GenerateMailbox(gpu::Mailbox& out_mailbox) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  DCHECK(IsConnected());
+  gl_->GenMailboxCHROMIUM(out_mailbox.name);
+}
+
+uint32_t MailboxToSurfaceBridge::CreateMailboxTexture(
+    const gpu::Mailbox& mailbox) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  DCHECK(IsConnected());
+
+  GLuint tex = 0;
+  gl_->GenTextures(1, &tex);
+  gl_->BindTexture(GL_TEXTURE_2D, tex);
+
+  gl_->ProduceTextureDirectCHROMIUM(tex, mailbox.name);
+
+  return tex;
+}
+
+void MailboxToSurfaceBridge::DestroyMailboxTexture(const gpu::Mailbox& mailbox,
+                                                   uint32_t texture_id) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  DCHECK(IsConnected());
+
+  // Associating with texture ID 0 unbinds the previous binding without
+  // creating a new one.
+  gl_->ProduceTextureDirectCHROMIUM(0, mailbox.name);
+  GLuint tex = texture_id;
+  gl_->DeleteTextures(1, &tex);
+}
+
+uint32_t MailboxToSurfaceBridge::BindSharedBufferImage(
+    const gfx::GpuMemoryBufferHandle& handle,
+    const gfx::Size& size,
+    gfx::BufferFormat format,
+    gfx::BufferUsage usage,
+    uint32_t texture_id) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  DCHECK(IsConnected());
+
+  auto buffer = gpu::GpuMemoryBufferImplAndroidHardwareBuffer::CreateFromHandle(
+      handle, size, format, usage,
+      gpu::GpuMemoryBufferImpl::DestructionCallback());
+
+  auto img = gl_->CreateImageCHROMIUM(buffer->AsClientBuffer(), size.width(),
+                                      size.height(), GL_RGBA);
+
+  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
+  gl_->BindTexImage2DCHROMIUM(GL_TEXTURE_2D, img);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+
+  return img;
+}
+
+void MailboxToSurfaceBridge::UnbindSharedBuffer(GLuint image_id,
+                                                GLuint texture_id) {
+  TRACE_EVENT0("gpu", __FUNCTION__);
+  DCHECK(IsConnected());
+
+  gl_->BindTexture(GL_TEXTURE_2D, texture_id);
+  gl_->ReleaseTexImage2DCHROMIUM(GL_TEXTURE_2D, image_id);
+  gl_->BindTexture(GL_TEXTURE_2D, 0);
+  gl_->DestroyImageCHROMIUM(image_id);
 }
 
 void MailboxToSurfaceBridge::DestroyContext() {
@@ -370,7 +469,7 @@ void MailboxToSurfaceBridge::InitializeRenderer() {
 }
 
 void MailboxToSurfaceBridge::DrawQuad(unsigned int texture_handle) {
-  DCHECK(IsReady());
+  DCHECK(IsConnected());
 
   // We're redrawing over the entire viewport, but it's generally more
   // efficient on mobile tiling GPUs to clear anyway as a hint that
