@@ -169,32 +169,30 @@ TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
 // OnInstrumentDetailsError() function of the delegate.
 TEST_F(PaymentRequestIOSPaymentInstrumentLauncherTest,
        LaunchIOSPaymentInstrument_MalformedUniversalLink) {
-  if (base::ios::IsRunningOnIOS10OrLater()) {
-    std::unique_ptr<web::TestNavigationManager> navigation_manager =
-        std::make_unique<web::TestNavigationManager>();
-    web_state_.SetNavigationManager(std::move(navigation_manager));
+  std::unique_ptr<web::TestNavigationManager> navigation_manager =
+      std::make_unique<web::TestNavigationManager>();
+  web_state_.SetNavigationManager(std::move(navigation_manager));
 
-    WebPaymentRequest web_payment_request =
-        payment_request_test_util::CreateTestWebPaymentRequest();
-    autofill::TestPersonalDataManager personal_data_manager;
-    TestPaymentRequest payment_request(web_payment_request,
-                                       chrome_browser_state_.get(), &web_state_,
-                                       &personal_data_manager);
+  WebPaymentRequest web_payment_request =
+      payment_request_test_util::CreateTestWebPaymentRequest();
+  autofill::TestPersonalDataManager personal_data_manager;
+  TestPaymentRequest payment_request(web_payment_request,
+                                     chrome_browser_state_.get(), &web_state_,
+                                     &personal_data_manager);
 
-    FakePaymentInstrumentDelegate instrument_delegate;
-    IOSPaymentInstrumentLauncher launcher;
+  FakePaymentInstrumentDelegate instrument_delegate;
+  IOSPaymentInstrumentLauncher launcher;
 
-    EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
-    EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
+  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
+  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
 
-    GURL malformed_link = GURL("http://bad-link.com");
-    launcher.LaunchIOSPaymentInstrument(&payment_request, &web_state_,
-                                        malformed_link, &instrument_delegate);
-    instrument_delegate.RunLoop();
+  GURL malformed_link = GURL("http://bad-link.com");
+  launcher.LaunchIOSPaymentInstrument(&payment_request, &web_state_,
+                                      malformed_link, &instrument_delegate);
+  instrument_delegate.RunLoop();
 
-    EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
-    EXPECT_TRUE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
-  }
+  EXPECT_FALSE(instrument_delegate.WasOnInstrumentDetailsReadyCalled());
+  EXPECT_TRUE(instrument_delegate.WasOnInstrumentDetailsErrorCalled());
 }
 
 // Tests that if the response from the payment app is not a valid JSON
