@@ -10,7 +10,7 @@
 #include "base/single_thread_task_runner.h"
 #include "platform/scheduler/child/task_runner_impl.h"
 #include "platform/scheduler/child/worker_scheduler.h"
-#include "platform/scheduler/renderer/page_scheduler.h"
+#include "platform/scheduler/public/page_scheduler.h"
 
 namespace blink {
 namespace scheduler {
