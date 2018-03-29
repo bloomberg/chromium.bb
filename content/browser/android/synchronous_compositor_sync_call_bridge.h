@@ -83,6 +83,7 @@ class SynchronousCompositorSyncCallBridge
 
   // Receive a frame. Return false if the corresponding frame wasn't found.
   bool ReceiveFrameOnIOThread(int frame_sink_id,
+                              uint32_t metadata_version,
                               base::Optional<viz::CompositorFrame>);
 
   // Receive a BeginFrameResponse. Returns true if handling the response was
@@ -113,7 +114,8 @@ class SynchronousCompositorSyncCallBridge
   void VSyncCompleteOnUIThread();
 
   // Process metadata.
-  void ProcessFrameMetadataOnUIThread(viz::CompositorFrameMetadata metadata);
+  void ProcessFrameMetadataOnUIThread(uint32_t metadata_version,
+                                      viz::CompositorFrameMetadata metadata);
 
   void UnregisterSyncCallBridgeOnIOThread(
       scoped_refptr<SynchronousCompositorBrowserFilter> filter);

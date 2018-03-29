@@ -35,7 +35,8 @@ class SynchronousCompositorProxyChromeIPC : public SynchronousCompositorProxy {
       const content::SyncCompositorCommonRendererParams&) final;
   void SendDemandDrawHwAsyncReply(
       const content::SyncCompositorCommonRendererParams&,
-      uint32_t,
+      uint32_t layer_tree_frame_sink_id,
+      uint32_t metadata_version,
       base::Optional<viz::CompositorFrame>) final;
 
  private:
@@ -57,10 +58,12 @@ class SynchronousCompositorProxyChromeIPC : public SynchronousCompositorProxy {
       IPC::Message* reply_message,
       const SyncCompositorCommonRendererParams& common_renderer_params,
       uint32_t layer_tree_frame_sink_id,
+      uint32_t metadata_version,
       base::Optional<viz::CompositorFrame> frame);
   void SendDemandDrawSwReply(
       IPC::Message* reply_message,
       const SyncCompositorCommonRendererParams& common_renderer_params,
+      uint32_t metadata_version,
       base::Optional<viz::CompositorFrameMetadata> metadata);
   void ZoomByReply(SyncCompositorCommonRendererParams* output_params,
                    const SyncCompositorCommonRendererParams& params);

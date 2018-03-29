@@ -30,7 +30,8 @@ class SynchronousCompositorProxyMojo : public SynchronousCompositorProxy {
       const content::SyncCompositorCommonRendererParams&) final;
   void SendDemandDrawHwAsyncReply(
       const content::SyncCompositorCommonRendererParams&,
-      uint32_t,
+      uint32_t layer_tree_frame_sink_id,
+      uint32_t metadata_version,
       base::Optional<viz::CompositorFrame>) final;
 
  private:
