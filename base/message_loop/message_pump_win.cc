@@ -9,6 +9,7 @@
 
 #include <limits>
 
+#include "base/debug/alias.h"
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/metrics/histogram_macros.h"
@@ -209,6 +210,9 @@ void MessagePumpForUI::WaitForWork() {
     if (delay < 0)  // Negative value means no timers waiting.
       delay = INFINITE;
 
+    // Tell the optimizer to retain these values to simplify analyzing hangs.
+    base::debug::Alias(&delay);
+    base::debug::Alias(&wait_flags);
     DWORD result = MsgWaitForMultipleObjectsEx(0, nullptr, delay, QS_ALLINPUT,
                                                wait_flags);
 
@@ -311,6 +315,8 @@ void MessagePumpForUI::RescheduleTimer() {
     if (delay_msec < USER_TIMER_MINIMUM)
       delay_msec = USER_TIMER_MINIMUM;
 
+    // Tell the optimizer to retain these values to simplify analyzing hangs.
+    base::debug::Alias(&delay_msec);
     // Create a WM_TIMER event that will wake us up to check for any pending
     // timers (in case we are running within a nested, external sub-pump).
     UINT_PTR ret = SetTimer(message_window_.hwnd(), 0, delay_msec, nullptr);
@@ -510,6 +516,8 @@ void MessagePumpForIO::WaitForWork() {
   if (timeout < 0)  // Negative value means no timers waiting.
     timeout = INFINITE;
 
+  // Tell the optimizer to retain these values to simplify analyzing hangs.
+  base::debug::Alias(&timeout);
   WaitForIOCompletion(timeout, nullptr);
 }
 
