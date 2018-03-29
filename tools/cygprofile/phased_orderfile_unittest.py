@@ -1,3 +1,4 @@
+#!/usr/bin/env vpython
 # Copyright 2018 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
@@ -77,3 +78,7 @@ class PhasedOrderfileTestCase(unittest.TestCase):
                           opo([], [], [130, 140]),
                           opo([10], [20, 30], [])],
                          phaser._GetOrderfilePhaseOffsets())
+
+
+if __name__ == "__main__":
+  unittest.main()
