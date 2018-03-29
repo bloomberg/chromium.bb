@@ -41,5 +41,5 @@ void CrostiniAppItem::Activate(int event_flags) {
   //   return;
   // }
 
-  CrostiniInstallerView::Show(this);
+  CrostiniInstallerView::Show(this, profile());
 }
