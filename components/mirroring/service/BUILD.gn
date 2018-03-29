@@ -8,6 +8,8 @@ source_set("service") {
   sources = [
     "rtp_stream.cc",
     "rtp_stream.h",
+    "udp_socket_client.cc",
+    "udp_socket_client.h",
     "video_capture_client.cc",
     "video_capture_client.h",
   ]
@@ -20,9 +22,12 @@ source_set("service") {
     "//media",
     "//media/capture/mojom:video_capture",
     "//media/cast:common",
+    "//media/cast:net",
     "//media/cast:sender",
     "//media/mojo/common:common",
     "//mojo/public/cpp/bindings",
+    "//net",
+    "//services/network/public/mojom",
     "//ui/gfx",
   ]
 }
@@ -30,7 +35,10 @@ source_set("service") {
 source_set("unittests") {
   testonly = true
   sources = [
+    "fake_network_service.cc",
+    "fake_network_service.h",
     "rtp_stream_unittest.cc",
+    "udp_socket_client_unittest.cc",
     "video_capture_client_unittest.cc",
   ]
 
@@ -41,9 +49,12 @@ source_set("unittests") {
     "//media",
     "//media/capture/mojom:video_capture",
     "//media/cast:common",
+    "//media/cast:net",
     "//media/cast:sender",
     "//media/cast:test_support",
     "//mojo/public/cpp/bindings",
+    "//net",
+    "//services/network/public/mojom",
     "//testing/gmock",
     "//testing/gtest",
   ]

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MEDIA_CAST_NET_UDP_SOCKET_CLIENT_H_
-#define MEDIA_CAST_NET_UDP_SOCKET_CLIENT_H_
+#ifndef COMPONENTS_MIRRORING_SERVICE_UDP_SOCKET_CLIENT_H_
+#define COMPONENTS_MIRRORING_SERVICE_UDP_SOCKET_CLIENT_H_
 
 #include "base/callback.h"
 #include "media/cast/net/cast_transport_config.h"
@@ -12,8 +12,7 @@
 #include "services/network/public/mojom/network_service.mojom.h"
 #include "services/network/public/mojom/udp_socket.mojom.h"
 
-namespace media {
-namespace cast {
+namespace mirroring {
 
 // This class implements a UDP packet transport that can send/receive UDP
 // packets to/from |remote_endpoint_| through a UDPSocket that implements
@@ -21,7 +20,7 @@ namespace cast {
 // |remote_endpoint_| when StartReceiving() is called. Sending/Receiving ends
 // when StopReceiving() is called or this class is destructed. |error_callback|
 // will be called if the UDPSocket is failed to be created or connected.
-class UdpSocketClient final : public PacketTransport,
+class UdpSocketClient final : public media::cast::PacketTransport,
                               public network::mojom::UDPSocketReceiver {
  public:
   UdpSocketClient(const net::IPEndPoint& remote_endpoint,
@@ -30,12 +29,12 @@ class UdpSocketClient final : public PacketTransport,
 
   ~UdpSocketClient() override;
 
-  // cast::PacketTransport implementations.
-  bool SendPacket(cast::PacketRef packet,
+  // media::cast::PacketTransport implementations.
+  bool SendPacket(media::cast::PacketRef packet,
                   const base::RepeatingClosure& cb) override;
   int64_t GetBytesSent() override;
-  void StartReceiving(
-      const cast::PacketReceiverCallbackWithStatus& packet_receiver) override;
+  void StartReceiving(const media::cast::PacketReceiverCallbackWithStatus&
+                          packet_receiver) override;
   void StopReceiving() override;
 
   // network::mojom::UDPSocketReceiver implementation.
@@ -62,7 +61,7 @@ class UdpSocketClient final : public PacketTransport,
 
   // The callback to deliver the received packets to the packet parser. Set
   // when StartReceiving() is called.
-  cast::PacketReceiverCallbackWithStatus packet_receiver_callback_;
+  media::cast::PacketReceiverCallbackWithStatus packet_receiver_callback_;
 
   network::mojom::UDPSocketPtr udp_socket_;
 
@@ -88,7 +87,6 @@ class UdpSocketClient final : public PacketTransport,
   DISALLOW_COPY_AND_ASSIGN(UdpSocketClient);
 };
 
-}  // namespace cast
-}  // namespace media
+}  // namespace mirroring
 
-#endif  // MEDIA_CAST_NET_UDP_SOCKET_CLIENT_H_
+#endif  // COMPONENTS_MIRRORING_SERVICE_UDP_SOCKET_CLIENT_H_
