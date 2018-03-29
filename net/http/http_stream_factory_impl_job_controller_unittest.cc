@@ -4,6 +4,8 @@
 
 #include "net/http/http_stream_factory_impl_job_controller.h"
 
+#include <algorithm>
+#include <list>
 #include <string>
 #include <utility>
 #include <vector>
@@ -162,6 +164,11 @@ class HttpStreamFactoryImplJobPeer {
   static void SetShouldReconsiderProxy(HttpStreamFactoryImpl::Job* job) {
     job->should_reconsider_proxy_ = true;
   }
+
+  static void SetStream(HttpStreamFactoryImpl::Job* job,
+                        std::unique_ptr<HttpStream> http_stream) {
+    job->stream_ = std::move(http_stream);
+  }
 };
 
 class JobControllerPeer {
@@ -234,7 +241,8 @@ class HttpStreamFactoryImplJobControllerTest : public ::testing::Test {
       std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
           ProxyResolutionService::CreateFixedFromPacResult(
               "HTTPS myproxy.org:443", TRAFFIC_ANNOTATION_FOR_TESTS);
-      session_deps_.proxy_resolution_service = std::move(proxy_resolution_service);
+      session_deps_.proxy_resolution_service =
+          std::move(proxy_resolution_service);
     }
     session_deps_.net_log = net_log_.bound().net_log();
     HttpNetworkSession::Params params =
@@ -432,10 +440,12 @@ class JobControllerReconsiderProxyAfterErrorTest
     : public HttpStreamFactoryImplJobControllerTest,
       public ::testing::WithParamInterface<::testing::tuple<bool, int>> {
  public:
-  void Initialize(std::unique_ptr<ProxyResolutionService> proxy_resolution_service,
-                  std::unique_ptr<ProxyDelegate> proxy_delegate) {
+  void Initialize(
+      std::unique_ptr<ProxyResolutionService> proxy_resolution_service,
+      std::unique_ptr<ProxyDelegate> proxy_delegate) {
     session_deps_.proxy_delegate = std::move(proxy_delegate);
-    session_deps_.proxy_resolution_service = std::move(proxy_resolution_service);
+    session_deps_.proxy_resolution_service =
+        std::move(proxy_resolution_service);
     session_ = std::make_unique<HttpNetworkSession>(
         SpdySessionDependencies::CreateSessionParams(&session_deps_),
         SpdySessionDependencies::CreateSessionContext(&session_deps_));
@@ -480,7 +490,8 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   TestProxyDelegate* test_proxy_delegate_raw = test_proxy_delegate.get();
 
   // Before starting the test, verify that there are no proxies marked as bad.
-  ASSERT_TRUE(proxy_resolution_service->proxy_retry_info().empty()) << mock_error;
+  ASSERT_TRUE(proxy_resolution_service->proxy_retry_info().empty())
+      << mock_error;
 
   StaticSocketDataProvider socket_data_proxy_main_job;
   socket_data_proxy_main_job.set_connect_data(MockConnect(ASYNC, mock_error));
@@ -528,7 +539,8 @@ TEST_P(JobControllerReconsiderProxyAfterErrorTest, ReconsiderProxyAfterError) {
   request_info.method = "GET";
   request_info.url = GURL("http://www.example.com");
 
-  Initialize(std::move(proxy_resolution_service), std::move(test_proxy_delegate));
+  Initialize(std::move(proxy_resolution_service),
+             std::move(test_proxy_delegate));
   EXPECT_EQ(set_alternative_proxy_server,
             test_proxy_delegate_raw->alternative_proxy_server().is_quic());
 
@@ -582,7 +594,8 @@ TEST_F(JobControllerReconsiderProxyAfterErrorTest,
   test_proxy_delegate->set_alternative_proxy_server(
       ProxyServer::FromPacString("QUIC myproxy.org:443"));
 
-  Initialize(std::move(proxy_resolution_service), std::move(test_proxy_delegate));
+  Initialize(std::move(proxy_resolution_service),
+             std::move(test_proxy_delegate));
 
   // Enable delayed TCP and set time delay for waiting job.
   QuicStreamFactory* quic_stream_factory = session_->quic_stream_factory();
@@ -842,12 +855,12 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, AltJobSucceedsMainJobDestroyed) {
   EXPECT_FALSE(JobControllerPeer::main_job_is_blocked(job_controller_));
 
   // Make |alternative_job| succeed.
-  HttpStream* http_stream =
-      new HttpBasicStream(std::make_unique<ClientSocketHandle>(), false, false);
+  auto http_stream = std::make_unique<HttpBasicStream>(
+      std::make_unique<ClientSocketHandle>(), false, false);
+  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
 
-  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream));
-
-  job_factory_.alternative_job()->SetStream(http_stream);
+  HttpStreamFactoryImplJobPeer::SetStream(job_factory_.alternative_job(),
+                                          std::move(http_stream));
   job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
 
   base::RunLoop().RunUntilIdle();
@@ -986,9 +999,10 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   EXPECT_TRUE(job_controller_->alternative_job());
 
   // Make |alternative_job| succeed.
-  HttpStream* http_stream =
-      new HttpBasicStream(std::make_unique<ClientSocketHandle>(), false, false);
-  job_factory_.alternative_job()->SetStream(http_stream);
+  auto http_stream = std::make_unique<HttpBasicStream>(
+      std::make_unique<ClientSocketHandle>(), false, false);
+  HttpStreamFactoryImplJobPeer::SetStream(job_factory_.alternative_job(),
+                                          std::move(http_stream));
   // This should not call request_delegate_::OnStreamReady.
   job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
   // Make sure that controller does not leak.
@@ -1029,12 +1043,12 @@ TEST_F(HttpStreamFactoryImplJobControllerTest,
   base::RunLoop().RunUntilIdle();
 
   // Make |alternative_job| succeed.
-  HttpStream* http_stream =
-      new HttpBasicStream(std::make_unique<ClientSocketHandle>(), false, false);
+  auto http_stream = std::make_unique<HttpBasicStream>(
+      std::make_unique<ClientSocketHandle>(), false, false);
+  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
 
-  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream));
-
-  job_factory_.alternative_job()->SetStream(http_stream);
+  HttpStreamFactoryImplJobPeer::SetStream(job_factory_.alternative_job(),
+                                          std::move(http_stream));
   job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
 
   // |alternative_job| succeeds and should report status to Request.
@@ -1164,12 +1178,14 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, GetLoadStateAfterMainJobFailed) {
   job_controller_->GetLoadState();
 
   // |alternative_job| succeeds and should report status to Request.
-  HttpStream* http_stream =
-      new HttpBasicStream(std::make_unique<ClientSocketHandle>(), false, false);
-  job_factory_.alternative_job()->SetStream(http_stream);
+  auto http_stream = std::make_unique<HttpBasicStream>(
+      std::make_unique<ClientSocketHandle>(), false, false);
+  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream.get()));
 
-  EXPECT_CALL(request_delegate_, OnStreamReadyImpl(_, _, http_stream));
+  HttpStreamFactoryImplJobPeer::SetStream(job_factory_.alternative_job(),
+                                          std::move(http_stream));
   job_controller_->OnStreamReady(job_factory_.alternative_job(), SSLConfig());
+
   request_.reset();
   EXPECT_TRUE(HttpStreamFactoryImplPeer::IsJobControllerDeleted(factory_));
 }
@@ -1389,7 +1405,8 @@ TEST_F(HttpStreamFactoryImplJobControllerTest, ResumeMainJobLaterCanceled) {
       base::test::ScopedTaskEnvironment::MainThreadType::MOCK_TIME);
   std::unique_ptr<ProxyResolutionService> proxy_resolution_service =
       ProxyResolutionService::CreateDirect();
-  ProxyResolutionService* proxy_resolution_service_raw = proxy_resolution_service.get();
+  ProxyResolutionService* proxy_resolution_service_raw =
+      proxy_resolution_service.get();
   session_deps_.proxy_resolution_service = std::move(proxy_resolution_service);
 
   // Using hanging resolver will cause the alternative job to hang indefinitely.

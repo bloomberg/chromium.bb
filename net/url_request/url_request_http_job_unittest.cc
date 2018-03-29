@@ -30,6 +30,7 @@
 #include "net/log/test_net_log_entry.h"
 #include "net/log/test_net_log_util.h"
 #include "net/net_buildflags.h"
+#include "net/socket/next_proto.h"
 #include "net/socket/socket_test_util.h"
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
