@@ -45,6 +45,7 @@ import org.chromium.chrome.test.ChromeJUnit4ClassRunner;
 import org.chromium.chrome.test.util.browser.Features;
 import org.chromium.components.url_formatter.UrlFormatter;
 import org.chromium.net.test.util.TestWebServer;
+import org.chromium.ui.base.DeviceFormFactor;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -150,13 +151,25 @@ public class TrustedCdnPublisherUrlTest {
         mScreenShooter.shoot("trustedPublisherUrlRtl");
     }
 
+    private int getDefaultSecurityIcon() {
+        // On tablets an info icon is shown for ConnectionSecurityLevel.NONE pages,
+        // on smaller form factors nothing.
+        if (DeviceFormFactor.isNonMultiDisplayContextOnTablet(
+                    InstrumentationRegistry.getTargetContext())) {
+            return org.chromium.chrome.R.drawable.omnibox_info;
+        }
+
+        return 0;
+    }
+
     @Test
     @SmallTest
     @Feature({"UiCatalogue"})
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
     public void testUntrustedClient() throws Exception {
-        runTrustedCdnPublisherUrlTest("https://example.com/test", "com.someoneelse.bla", null, 0);
+        runTrustedCdnPublisherUrlTest(
+                "https://example.com/test", "com.someoneelse.bla", null, getDefaultSecurityIcon());
     }
 
     @Test
@@ -165,7 +178,7 @@ public class TrustedCdnPublisherUrlTest {
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
     public void testNoHeader() throws Exception {
-        runTrustedCdnPublisherUrlTest(null, "com.example.test", null, 0);
+        runTrustedCdnPublisherUrlTest(null, "com.example.test", null, getDefaultSecurityIcon());
     }
 
     @Test
@@ -174,7 +187,8 @@ public class TrustedCdnPublisherUrlTest {
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
     public void testMalformedHeader() throws Exception {
-        runTrustedCdnPublisherUrlTest("garbage", "com.example.test", null, 0);
+        runTrustedCdnPublisherUrlTest(
+                "garbage", "com.example.test", null, getDefaultSecurityIcon());
     }
 
     @Test
@@ -183,7 +197,8 @@ public class TrustedCdnPublisherUrlTest {
     @Features.DisableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     @OverrideTrustedCdn
     public void testDisabled() throws Exception {
-        runTrustedCdnPublisherUrlTest("https://example.com/test", "com.example.test", null, 0);
+        runTrustedCdnPublisherUrlTest(
+                "https://example.com/test", "com.example.test", null, getDefaultSecurityIcon());
     }
 
     @Test
@@ -192,7 +207,8 @@ public class TrustedCdnPublisherUrlTest {
     @Features.EnableFeatures(ChromeFeatureList.SHOW_TRUSTED_PUBLISHER_URL)
     // No @OverrideTrustedCdn
     public void testUntrustedCdn() throws Exception {
-        runTrustedCdnPublisherUrlTest("https://example.com/test", "com.example.test", null, 0);
+        runTrustedCdnPublisherUrlTest(
+                "https://example.com/test", "com.example.test", null, getDefaultSecurityIcon());
     }
     // TODO(bauerb): Test an insecure HTTPS connection.
 
