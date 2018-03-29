@@ -149,6 +149,10 @@ source_set("sandbox_linux_unittests_sources") {
       "seccomp-bpf/trap_unittest.cc",
     ]
     deps += [ ":bpf_dsl_golden" ]
+
+    if (is_android) {
+      sources += [ "seccomp-bpf-helpers/baseline_policy_android_unittest.cc" ]
+    }
   }
   if (compile_credentials) {
     sources += [
