@@ -192,35 +192,35 @@ public:
   // interface named in |interface_name|. That object's CreateProperties()
   // method will be used to create instances of dbus::PropertySet* when
   // required.
-  void RegisterInterface(const std::string& interface_name,
-                         Interface* interface);
+  virtual void RegisterInterface(const std::string& interface_name,
+                                 Interface* interface);
 
   // Unregister the implementation class for the D-Bus interface named in
   // |interface_name|, objects and properties of this interface will be
   // ignored.
-  void UnregisterInterface(const std::string& interface_name);
+  virtual void UnregisterInterface(const std::string& interface_name);
 
   // Returns a list of object paths, in an undefined order, of objects known
   // to this manager.
-  std::vector<ObjectPath> GetObjects();
+  virtual std::vector<ObjectPath> GetObjects();
 
   // Returns the list of object paths, in an undefined order, of objects
   // implementing the interface named in |interface_name| known to this manager.
-  std::vector<ObjectPath> GetObjectsWithInterface(
+  virtual std::vector<ObjectPath> GetObjectsWithInterface(
       const std::string& interface_name);
 
   // Returns a ObjectProxy pointer for the given |object_path|. Unlike
   // the equivalent method on Bus this will return NULL if the object
   // manager has not been informed of that object's existence.
-  ObjectProxy* GetObjectProxy(const ObjectPath& object_path);
+  virtual ObjectProxy* GetObjectProxy(const ObjectPath& object_path);
 
   // Returns a PropertySet* pointer for the given |object_path| and
   // |interface_name|, or NULL if the object manager has not been informed of
   // that object's existence or the interface's properties. The caller should
   // cast the returned pointer to the appropriate type, e.g.:
   //   static_cast<Properties*>(GetProperties(object_path, my_interface));
-  PropertySet* GetProperties(const ObjectPath& object_path,
-                             const std::string& interface_name);
+  virtual PropertySet* GetProperties(const ObjectPath& object_path,
+                                     const std::string& interface_name);
 
   // Instructs the object manager to refresh its list of managed objects;
   // automatically called by the D-Bus thread manager, there should never be
