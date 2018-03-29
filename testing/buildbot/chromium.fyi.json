@@ -4074,9 +4074,7 @@
       {
         "args": [
           "--xvfb",
-          "--extra-browser-args=--enable-features=VizDisplayCompositor",
-          "--skip=contrib.cluster_telemetry.screenshot_unittest.ScreenshotUnitTest.testScreenshot",
-          "--skip=measurements.tab_switching_unittest.TabSwitchingUnittest.testTabSwitching"
+          "--extra-browser-args=--enable-features=VizDisplayCompositor"
         ],
         "isolate_name": "telemetry_perf_unittests",
         "name": "telemetry_perf_unittests_viz",
@@ -4096,12 +4094,7 @@
       },
       {
         "args": [
-          "--extra-browser-args=--enable-features=VizDisplayCompositor",
-          "--skip=telemetry.internal.actions.scroll_unittest.ScrollActionTest.testWheelScrollDistanceWhileZoomed",
-          "--skip=telemetry.internal.backends.chrome_inspector.inspector_page_unittest.InspectorPageTest.testCaptureScreenshot",
-          "--skip=telemetry.internal.backends.chrome.tab_list_backend_unittest.TabListBackendTest.testNewTab",
-          "--skip=telemetry.internal.browser.tab_unittest.GpuTabTest.testScreenshot",
-          "--skip=telemetry.page.cache_temperature_unittest.CacheTemperatureTests.testEnsureHotAfterColdRun"
+          "--extra-browser-args=--enable-features=VizDisplayCompositor"
         ],
         "isolate_name": "telemetry_unittests",
         "name": "telemetry_unittests_viz",
