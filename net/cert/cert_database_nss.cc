@@ -5,13 +5,11 @@
 #include "net/cert/cert_database.h"
 
 #include "base/observer_list_threadsafe.h"
-#include "crypto/nss_util.h"
 
 namespace net {
 
 CertDatabase::CertDatabase()
     : observer_list_(new base::ObserverListThreadSafe<Observer>) {
-  crypto::EnsureNSSInit();
 }
 
 CertDatabase::~CertDatabase() = default;
