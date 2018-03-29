@@ -156,6 +156,7 @@ void FormParserTest::CheckTestData(
           EXPECT_TRUE(parsed_form)
               << "The form is expected to be parsed successfully";
       } else if (!expected_indices.IsEmpty() && parsed_form) {
+        EXPECT_TRUE(form_data.SameFormAs(parsed_form->form_data));
         CheckPasswordFormFields(*parsed_form, form_data, expected_indices);
       } else {
         // Expected and parsed results are empty, everything is ok.

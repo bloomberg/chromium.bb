@@ -287,217 +287,6 @@ class PasswordControllerTest : public ChromeWebTest {
   MockPasswordManagerClient* weak_client_;
 };
 
-struct PasswordFormTestData {
-  const char* const page_location;
-  const char* const json_string;
-  const char* const expected_origin;
-  const char* const expected_action;
-  const char* const expected_username_element;
-  const char* const expected_username_value;
-  const char* const expected_new_password_element;
-  const char* const expected_new_password_value;
-  const char* const expected_old_password_element;
-  const char* const expected_old_password_value;
-};
-
-// Check that given a serialization of a PasswordForm, the controller is able
-// to create the corresponding PasswordForm object.
-TEST_F(PasswordControllerTest, PopulatePasswordFormWithDictionary) {
-  // clang-format off
-  PasswordFormTestData test_data[] = {
-    // One username element, one password element.  URLs contain extra
-    // parts: username/password, query, reference, which are all expected
-    // to be stripped off. The password is recognized as an old password.
-    {
-      "http://john:doe@fakedomain.com/foo/bar?baz=quz#foobar",
-      "{ \"action\": \"http://fakedomain.com/foo/some/action\","
-          "\"usernameElement\": \"account\","
-          "\"usernameValue\": \"fakeaccount\","
-          "\"name\": \"signup\","
-          "\"origin\": \"http://john:doe@fakedomain.com/foo/bar\","
-          "\"passwords\": ["
-              "{ \"element\": \"secret\"," "\"value\": \"fakesecret\" },"
-          "]}",
-      "http://fakedomain.com/foo/bar",
-      "http://fakedomain.com/foo/some/action",
-      "account",
-      "fakeaccount",
-      "",
-      "",
-      "secret",
-      "fakesecret",
-    },
-    // One username element, one password element. Population should fail
-    // due to an origin mismatch.
-    {
-      "http://john:doe@fakedomain.com/foo/bar?baz=quz#foobar",
-      "{ \"action\": \"\","
-          "\"usernameElement\": \"account\","
-          "\"usernameValue\": \"fakeaccount\","
-          "\"name\": \"signup\","
-          "\"origin\": \"http://john:doe@realdomainipromise.com/foo/bar\","
-          "\"passwords\": ["
-              "{ \"element\": \"secret\"," "\"value\": \"fakesecret\" },"
-          "]}",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-      "",
-    },
-    // One username element, two password elements.  Since both password
-    // values are the same, we are assuming that the webpage asked the user
-    // to enter the password twice for confirmation.
-    {
-      "http://fakedomain.com/foo",
-      "{ \"action\": \"http://anotherdomain.com/some_action\","
-          "\"usernameElement\": \"account\","
-          "\"usernameValue\": \"fakeaccount\","
-          "\"name\": \"signup\","
-          "\"origin\": \"http://fakedomain.com/foo\","
-          "\"passwords\": ["
-              "{ \"element\": \"secret\"," "\"value\": \"fakesecret\" },"
-              "{ \"element\": \"confirm\"," "\"value\": \"fakesecret\" },"
-          "]}",
-      "http://fakedomain.com/foo",
-      "http://anotherdomain.com/some_action",
-      "account",
-      "fakeaccount",
-      "secret",
-      "fakesecret",
-      "",
-      "",
-    },
-    // One username element, two password elements.  The password
-    // values are different, so we are assuming that the webpage asked the user
-    // to enter the old password and new password.
-    {
-      "http://fakedomain.com/foo",
-      "{ \"action\": \"http://fakedomain.com/foo\","
-          "\"usernameElement\": \"account\","
-          "\"usernameValue\": \"fakeaccount\","
-          "\"name\": \"signup\","
-          "\"origin\": \"http://fakedomain.com/foo\","
-          "\"passwords\": ["
-              "{ \"element\": \"old\"," "\"value\": \"oldsecret\" },"
-              "{ \"element\": \"new\"," "\"value\": \"newsecret\" },"
-          "]}",
-      "http://fakedomain.com/foo",
-      "http://fakedomain.com/foo",
-      "account",
-      "fakeaccount",
-      "new",
-      "newsecret",
-      "old",
-      "oldsecret",
-    },
-    // One username element, three password elements.  All passwords
-    // are the same. Password population should fail because this configuration
-    // does not make sense.
-    {
-      "http://fakedomain.com",
-      "{ \"action\": \"http://fakedomain.com/\","
-          "\"usernameElement\": \"account\","
-          "\"usernameValue\": \"fakeaccount\","
-          "\"name\": \"signup\","
-          "\"origin\": \"http://fakedomain.com/foo\","
-          "\"passwords\": ["
-              "{ \"element\": \"pass1\"," "\"value\": \"word\" },"
-              "{ \"element\": \"pass2\"," "\"value\": \"word\" },"
-              "{ \"element\": \"pass3\"," "\"value\": \"word\" },"
-          "]}",
-      "http://fakedomain.com/",
-      "http://fakedomain.com/",
-      "account",
-      "fakeaccount",
-      "",
-      "",
-      "",
-      "",
-    },
-    // One username element, three password elements.  Two passwords are
-    // the same followed by a different one.  Assuming that the duplicated
-    // password is the old one.
-    {
-      "http://fakedomain.com",
-      "{ \"action\": \"http://fakedomain.com/\","
-          "\"usernameElement\": \"account\","
-          "\"usernameValue\": \"fakeaccount\","
-          "\"name\": \"signup\","
-          "\"origin\": \"http://fakedomain.com/foo\","
-          "\"passwords\": ["
-              "{ \"element\": \"pass1\"," "\"value\": \"word1\" },"
-              "{ \"element\": \"pass2\"," "\"value\": \"word1\" },"
-              "{ \"element\": \"pass3\"," "\"value\": \"word3\" },"
-          "]}",
-      "http://fakedomain.com/",
-      "http://fakedomain.com/",
-      "account",
-      "fakeaccount",
-      "pass3",
-      "word3",
-      "pass1",
-      "word1",
-    },
-    // One username element, three password elements.  A password is
-    // follwed by two duplicate ones.  Assuming that the duplicated
-    // password is the new one.
-    {
-      "http://fakedomain.com",
-      "{ \"action\": \"http://fakedomain.com/\","
-          "\"usernameElement\": \"account\","
-          "\"usernameValue\": \"fakeaccount\","
-          "\"name\": \"signup\","
-          "\"origin\": \"http://fakedomain.com/foo\","
-          "\"passwords\": ["
-              "{ \"element\": \"pass1\"," "\"value\": \"word1\" },"
-              "{ \"element\": \"pass2\"," "\"value\": \"word2\" },"
-              "{ \"element\": \"pass3\"," "\"value\": \"word2\" },"
-          "]}",
-      "http://fakedomain.com/",
-      "http://fakedomain.com/",
-      "account",
-      "fakeaccount",
-      "pass2",
-      "word2",
-      "pass1",
-      "word1",
-    },
-  };
-  // clang-format on
-
-  for (const PasswordFormTestData& data : test_data) {
-    SCOPED_TRACE(testing::Message()
-                 << "for page_location=" << data.page_location
-                 << " and json_string=" << data.json_string);
-    std::unique_ptr<base::Value> json_data(
-        base::JSONReader::Read(data.json_string, true));
-    const base::DictionaryValue* json_dict = nullptr;
-    ASSERT_TRUE(json_data->GetAsDictionary(&json_dict));
-    PasswordForm form;
-    [passwordController_ getPasswordForm:&form
-                          fromDictionary:json_dict
-                                 pageURL:GURL(data.page_location)];
-    EXPECT_STREQ(data.expected_origin, form.origin.spec().c_str());
-    EXPECT_STREQ(data.expected_action, form.action.spec().c_str());
-    EXPECT_EQ(base::ASCIIToUTF16(data.expected_username_element),
-              form.username_element);
-    EXPECT_EQ(base::ASCIIToUTF16(data.expected_username_value),
-              form.username_value);
-    EXPECT_EQ(base::ASCIIToUTF16(data.expected_new_password_element),
-              form.new_password_element);
-    EXPECT_EQ(base::ASCIIToUTF16(data.expected_new_password_value),
-              form.new_password_value);
-    EXPECT_EQ(base::ASCIIToUTF16(data.expected_old_password_element),
-              form.password_element);
-    EXPECT_EQ(base::ASCIIToUTF16(data.expected_old_password_value),
-              form.password_value);
-  }
-};
-
 struct FindPasswordFormTestData {
   NSString* html_string;
   const bool expected_form_found;
@@ -548,7 +337,7 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
           "<input type='text' name='user4' disabled='disabled'>"
           "<input type='password' name='pass4'>"
           "</form>",
-      true, "", "pass4"
+      true, "user4", "pass4"
     },
     // Username element has autocomplete='off'.
     {
@@ -566,29 +355,21 @@ TEST_F(PasswordControllerTest, FLAKY_FindPasswordFormsInView) {
           "</form>",
       false, nullptr, nullptr
     },
-    // Disabled password element.
-    {
-      @"<form>"
-          "<input type='text' name='user7'>"
-          "<input type='password' name='pass7' disabled='disabled'>"
-          "</form>",
-      false, nullptr, nullptr
-    },
     // Password element has autocomplete='off'.
     {
       @"<form>"
-          "<input type='text' name='user8'>"
-          "<input type='password' name='pass8' AUTOCOMPLETE='OFF'>"
+          "<input type='text' name='user7'>"
+          "<input type='password' name='pass7' AUTOCOMPLETE='OFF'>"
           "</form>",
-      true, "user8", "pass8"
+      true, "user7", "pass7"
     },
     // Form element has autocomplete='off'.
     {
       @"<form autocomplete='off'>"
-          "<input type='text' name='user9'>"
-          "<input type='password' name='pass9'>"
+          "<input type='text' name='user8'>"
+          "<input type='password' name='pass8'>"
           "</form>",
-      true, "user9", "pass9"
+      true, "user8", "pass8"
     },
   };
   // clang-format on
@@ -636,12 +417,12 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
     // Two forms with no explicit names.
     {
       @"<form action='javascript:;'>"
-          "<input type='text' name='user1'>"
-          "<input type='password' name='pass1'>"
+          "<input type='text' name='user1' value='user1'>"
+          "<input type='password' name='pass1' value='pw1'>"
           "</form>"
           "<form action='javascript:;'>"
-          "<input type='text' name='user2'>"
-          "<input type='password' name='pass2'>"
+          "<input type='text' name='user2' value='user2'>"
+          "<input type='password' name='pass2' value='pw2'>"
           "<input type='submit' id='s2'>"
           "</form>",
       @"document.getElementById('s2').click()",
@@ -650,13 +431,13 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
     // Two forms with explicit names.
     {
       @"<form name='test2a' action='javascript:;'>"
-          "<input type='text' name='user1'>"
-          "<input type='password' name='pass1'>"
+          "<input type='text' name='user1' value='user1'>"
+          "<input type='password' name='pass1' value='pw1'>"
           "<input type='submit' id='s1'>"
           "</form>"
-          "<form name='test2b' action='javascript:;'>"
+          "<form name='test2b' action='javascript:;' value='user2'>"
           "<input type='text' name='user2'>"
-          "<input type='password' name='pass2'>"
+          "<input type='password' name='pass2' value='pw2'>"
           "</form>",
       @"document.getElementById('s1').click()",
       0, true, "user1"
@@ -664,8 +445,8 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
     // No password forms.
     {
       @"<form action='javascript:;'>"
-          "<input type='text' name='user1'>"
-          "<input type='text' name='pass1'>"
+          "<input type='text' name='user1' value='user1'>"
+          "<input type='text' name='pass1' value='text1'>"
           "<input type='submit' id='s1'>"
           "</form>",
       @"document.getElementById('s1').click()",
@@ -674,8 +455,8 @@ TEST_F(PasswordControllerTest, FLAKY_GetSubmittedPasswordForm) {
     // Form with quotes in the form and field names.
     {
       @"<form name=\"foo'\" action='javascript:;'>"
-          "<input type='text' name=\"user1'\">"
-          "<input type='password' id='s1' name=\"pass1'\">"
+          "<input type='text' name=\"user1'\" value='user1'>"
+          "<input type='password' id='s1' name=\"pass1'\" value='pw2'>"
           "</form>",
       @"document.getElementById('s1').click()",
       0, true, "user1'"
@@ -1334,64 +1115,6 @@ TEST_F(PasswordControllerTest, SelectingSuggestionShouldFillPasswordForm) {
         WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^bool() {
           return block_was_called;
         }));
-  }
-}
-
-// Tests with invalid inputs.
-TEST_F(PasswordControllerTest, CheckIncorrectData) {
-  // clang-format off
-  std::string invalid_data[] = {
-    "{}",
-
-    "{  \"usernameValue\": \"fakeaccount\","
-       "\"passwords\": ["
-         "{ \"element\": \"secret\"," "\"value\": \"fakesecret\" },"
-       "]}",
-
-    "{  \"usernameElement\": \"account\","
-       "\"passwords\": ["
-         "{ \"element\": \"secret\"," "\"value\": \"fakesecret\" },"
-       "]}",
-
-    "{  \"usernameElement\": \"account\","
-       "\"usernameValue\": \"fakeaccount\","
-    "}",
-
-    "{  \"usernameElement\": \"account\","
-       "\"usernameValue\": \"fakeaccount\","
-       "\"passwords\": {},"
-    "}",
-
-    "{  \"usernameElement\": \"account\","
-       "\"usernameValue\": \"fakeaccount\","
-       "\"passwords\": ["
-       "]}",
-
-    "{  \"usernameElement\": \"account\","
-       "\"usernameValue\": \"fakeaccount\","
-       "\"passwords\": ["
-         "{ \"value\": \"fakesecret\" },"
-       "]}",
-
-    "{  \"usernameElement\": \"account\","
-       "\"usernameValue\": \"fakeaccount\","
-       "\"passwords\": ["
-         "{ \"element\": \"secret\" },"
-       "]}",
-  };
-  // clang-format on
-
-  for (const std::string& data : invalid_data) {
-    SCOPED_TRACE(testing::Message() << "for data=" << data);
-    std::unique_ptr<base::Value> json_data(base::JSONReader::Read(data, true));
-    const base::DictionaryValue* json_dict = nullptr;
-    ASSERT_TRUE(json_data->GetAsDictionary(&json_dict));
-    PasswordForm form;
-    BOOL res =
-        [passwordController_ getPasswordForm:&form
-                              fromDictionary:json_dict
-                                     pageURL:GURL("https://www.foo.com/")];
-    EXPECT_FALSE(res);
   }
 }
 

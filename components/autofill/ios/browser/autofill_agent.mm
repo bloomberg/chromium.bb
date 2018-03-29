@@ -33,6 +33,7 @@
 #include "components/autofill/core/common/form_data.h"
 #include "components/autofill/core/common/form_field_data.h"
 #include "components/autofill/ios/browser/autofill_driver_ios.h"
+#include "components/autofill/ios/browser/autofill_util.h"
 #import "components/autofill/ios/browser/form_suggestion.h"
 #import "components/autofill/ios/browser/js_autofill_manager.h"
 #include "components/prefs/pref_service.h"
@@ -114,20 +115,6 @@ void GetFormAndField(autofill::FormData* form,
     minimumRequiredFieldsCount:(NSUInteger)requiredFieldsCount
                        pageURL:(const GURL&)pageURL
              completionHandler:(FetchFormsCompletionHandler)completionHandler;
-
-// Processes the JSON form data extracted from the page into the format expected
-// by AutofillManager and fills it in |formsData|.
-// |formsData| cannot be nil.
-// |filtered| and |formName| limit the field that will be returned in
-// |formData|. See
-// |fetchFormsFiltered:withName:minimumRequiredFieldsCount:pageURL:
-// completionHandler:| for details.
-// Returns a BOOL indicating the success value and the vector of form data.
-- (BOOL)getExtractedFormsData:(FormDataVector*)formsData
-                     fromJSON:(NSString*)formJSON
-                     filtered:(BOOL)filtered
-                     formName:(const base::string16&)formName
-                      pageURL:(const GURL&)pageURL;
 
 // Processes the JSON form data extracted from the page when form activity is
 // detected and informs the AutofillManager.
@@ -263,72 +250,6 @@ void GetFormAndField(autofill::FormData* form,
       ->autofill_manager();
 }
 
-// Extracts a single form field from the JSON dictionary into a FormFieldData
-// object.
-// Returns NO if the field could not be extracted.
-- (BOOL)extractFormField:(const base::DictionaryValue&)field
-             asFieldData:(autofill::FormFieldData*)fieldData {
-  if (!field.GetString("name", &fieldData->name) ||
-      !field.GetString("identifier", &fieldData->id) ||
-      !field.GetString("form_control_type", &fieldData->form_control_type)) {
-    return NO;
-  }
-
-  // Optional fields.
-  field.GetString("label", &fieldData->label);
-  field.GetString("value", &fieldData->value);
-  field.GetString("autocomplete_attribute", &fieldData->autocomplete_attribute);
-
-  int maxLength;
-  if (field.GetInteger("max_length", &maxLength))
-    fieldData->max_length = maxLength;
-
-  field.GetBoolean("is_autofilled", &fieldData->is_autofilled);
-
-  // TODO(crbug.com/427614): Extract |is_checked|.
-  bool isCheckable = false;
-  field.GetBoolean("is_checkable", &isCheckable);
-  autofill::SetCheckStatus(fieldData, isCheckable, false);
-
-  field.GetBoolean("is_focusable", &fieldData->is_focusable);
-  field.GetBoolean("should_autocomplete", &fieldData->should_autocomplete);
-
-  // ROLE_ATTRIBUTE_OTHER is the default value. The only other value as of this
-  // writing is ROLE_ATTRIBUTE_PRESENTATION.
-  int role;
-  if (field.GetInteger("role", &role) &&
-      role == autofill::AutofillField::ROLE_ATTRIBUTE_PRESENTATION) {
-    fieldData->role = autofill::AutofillField::ROLE_ATTRIBUTE_PRESENTATION;
-  }
-
-  // TODO(crbug.com/427614): Extract |text_direction|.
-
-  // Load option values where present.
-  const base::ListValue* optionValues;
-  if (field.GetList("option_values", &optionValues)) {
-    for (const auto& optionValue : *optionValues) {
-      base::string16 value;
-      if (optionValue.GetAsString(&value))
-        fieldData->option_values.push_back(value);
-    }
-  }
-
-  // Load option contents where present.
-  const base::ListValue* optionContents;
-  if (field.GetList("option_contents", &optionContents)) {
-    for (const auto& optionContent : *optionContents) {
-      base::string16 content;
-      if (optionContent.GetAsString(&content))
-        fieldData->option_contents.push_back(content);
-    }
-  }
-
-  if (fieldData->option_values.size() != fieldData->option_contents.size())
-    return NO;  // Option values and contents lists should match 1-1.
-
-  return YES;
-}
-
 - (void)notifyAutofillManager:(autofill::AutofillManager*)autofillManager
                   ofFormsSeen:(const FormDataVector&)forms {
   DCHECK(autofillManager);
@@ -360,106 +281,15 @@ void GetFormAndField(autofill::FormData* form,
   // Necessary so the values can be used inside a block.
   base::string16 formNameCopy = formName;
   GURL pageURLCopy = pageURL;
-  __weak AutofillAgent* weakSelf = self;
   [jsAutofillManager_
       fetchFormsWithMinimumRequiredFieldsCount:requiredFieldsCount
                              completionHandler:^(NSString* formJSON) {
                                std::vector<autofill::FormData> formData;
-                               BOOL success =
-                                   [weakSelf getExtractedFormsData:&formData
-                                                          fromJSON:formJSON
-                                                          filtered:filtered
-                                                          formName:formNameCopy
-                                                           pageURL:pageURLCopy];
+                               bool success = autofill::ExtractFormsData(
+                                   formJSON, filtered, formNameCopy,
+                                   pageURLCopy, &formData);
                                completionHandler(success, formData);
                              }];
-}
-
-- (BOOL)getExtractedFormsData:(FormDataVector*)formsData
-                     fromJSON:(NSString*)formJSON
-                     filtered:(BOOL)filtered
-                     formName:(const base::string16&)formName
-                      pageURL:(const GURL&)pageURL {
-  DCHECK(formsData);
-  // Convert JSON string to JSON object |dataJson|.
-  int errorCode = 0;
-  std::string errorMessage;
-  std::unique_ptr<base::Value> dataJson(base::JSONReader::ReadAndReturnError(
-      base::SysNSStringToUTF8(formJSON), base::JSON_PARSE_RFC, &errorCode,
-      &errorMessage));
-  if (errorCode) {
-    LOG(WARNING) << "JSON parse error in form extraction: "
-                 << errorMessage.c_str();
-    return NO;
-  }
-
-  // Returned data should be a list of forms.
-  const base::ListValue* formsList;
-  if (!dataJson->GetAsList(&formsList))
-    return NO;
-
-  // Iterate through all the extracted forms and copy the data from JSON into
-  // AutofillManager structures.
-  for (const auto& formDict : *formsList) {
-    // Each form list entry should be a JSON dictionary.
-    const base::DictionaryValue* formData;
-    if (!formDict.GetAsDictionary(&formData))
-      return NO;
-
-    // Form data is copied into a FormData object field-by-field.
-    autofill::FormData form;
-    if (!formData->GetString("name", &form.name))
-      return NO;
-    if (filtered && formName != form.name)
-      continue;
-
-    // Origin is mandatory.
-    base::string16 origin;
-    if (!formData->GetString("origin", &origin))
-      return NO;
-
-    // Use GURL object to verify origin of host page URL.
-    form.origin = GURL(origin);
-    if (form.origin.GetOrigin() != pageURL.GetOrigin()) {
-      LOG(WARNING) << "Form extraction aborted due to same origin policy";
-      return NO;
-    }
-
-    // main_frame_origin is used for logging UKM.
-    form.main_frame_origin = url::Origin::Create(pageURL);
-
-    // Action is optional.
-    base::string16 action;
-    formData->GetString("action", &action);
-    form.action = GURL(action);
-
-    // Is form tag is optional.
-    bool is_form_tag;
-    if (formData->GetBoolean("is_form_tag", &is_form_tag))
-      form.is_form_tag = is_form_tag;
-
-    // Is formless checkout tag is optional.
-    bool is_formless_checkout;
-    if (formData->GetBoolean("is_formless_checkout", &is_formless_checkout))
-      form.is_formless_checkout = is_formless_checkout;
-
-    // Field list (mandatory) is extracted.
-    const base::ListValue* fieldsList;
-    if (!formData->GetList("fields", &fieldsList))
-      return NO;
-    for (const auto& fieldDict : *fieldsList) {
-      const base::DictionaryValue* field;
-      autofill::FormFieldData fieldData;
-      if (fieldDict.GetAsDictionary(&field) &&
-          [self extractFormField:*field asFieldData:&fieldData]) {
-        form.fields.push_back(fieldData);
-      } else {
-        return NO;
-      }
-    }
-    formsData->push_back(form);
-  }
-  return YES;
 }
 
 - (NSArray*)processSuggestions:(NSArray*)suggestions {
