@@ -183,7 +183,7 @@ bool DumpObu(const uint8_t *data, int length, int *obu_overhead_bytes) {
     aom_uleb_decode(data + consumed + obu_header_size, remaining, &obu_size,
                     &length_field_size);
     current_obu_length = static_cast<int>(obu_size);
-    consumed += obu_header_size + length_field_size + current_obu_length;
+    consumed += obu_header_size + (int)length_field_size + current_obu_length;
     printf("      length:      %d\n",
            static_cast<int>(obu_header_size + length_field_size +
                             current_obu_length));
