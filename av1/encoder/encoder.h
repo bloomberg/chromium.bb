@@ -226,6 +226,8 @@ typedef struct AV1EncoderConfig {
    */
   unsigned int error_resilient_mode;
 
+  unsigned int s_frame_mode;
+
   /* Bitfield defining the parallel decoding mode where the
    * decoding in successive frames may be conducted in parallel
    * just by decoding the frame headers.

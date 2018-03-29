@@ -323,6 +323,16 @@ enum aome_enc_control_id {
    */
   AV1E_SET_ERROR_RESILIENT_MODE,
 
+  /*!\brief Codec control function to enable s_frame_mode
+   *
+   * AV1 has a bitstream feature to designate certain frames as S-frames,
+   * from where we can switch to a different stream,
+   * even though the reference buffers may not be exactly identical.
+   *
+   * By default, this feature is off.
+   */
+  AV1E_SET_S_FRAME_MODE,
+
   /*!\brief Codec control function to set adaptive quantization mode.
    *
    * AV1 has a segment based feature that allows encoder to adaptively change
@@ -1035,6 +1045,9 @@ AOM_CTRL_USE_TYPE(AV1E_SET_FRAME_PARALLEL_DECODING, unsigned int)
 
 AOM_CTRL_USE_TYPE(AV1E_SET_ERROR_RESILIENT_MODE, unsigned int)
 #define AOM_CTRL_AV1E_SET_ERROR_RESILIENT_MODE
+
+AOM_CTRL_USE_TYPE(AV1E_SET_S_FRAME_MODE, unsigned int)
+#define AOM_CTRL_AV1E_SET_S_FRAME_MODE
 
 AOM_CTRL_USE_TYPE(AV1E_SET_AQ_MODE, unsigned int)
 #define AOM_CTRL_AV1E_SET_AQ_MODE
