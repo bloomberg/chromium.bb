@@ -15,7 +15,6 @@
 
 #include "base/containers/queue.h"
 #include "base/macros.h"
-#include "base/memory/linked_ptr.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/synchronization/waitable_event.h"
@@ -416,7 +415,7 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
 
   struct BitstreamBufferRef;
   // Input queue of stream buffers coming from the client.
-  base::queue<linked_ptr<BitstreamBufferRef>> decoder_input_queue_;
+  base::queue<std::unique_ptr<BitstreamBufferRef>> decoder_input_queue_;
   // BitstreamBuffer currently being processed.
   std::unique_ptr<BitstreamBufferRef> decoder_current_bitstream_buffer_;
 

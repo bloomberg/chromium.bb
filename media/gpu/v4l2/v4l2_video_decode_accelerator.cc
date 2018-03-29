@@ -793,8 +793,7 @@ void V4L2VideoDecodeAccelerator::DecodeTask(
     return;
   }
 
-  decoder_input_queue_.push(
-      linked_ptr<BitstreamBufferRef>(bitstream_record.release()));
+  decoder_input_queue_.push(std::move(bitstream_record));
   decoder_decode_buffer_tasks_scheduled_++;
   DecodeBufferTask();
 }
@@ -817,14 +816,14 @@ void V4L2VideoDecodeAccelerator::DecodeBufferTask() {
       // We're waiting for a new buffer -- exit without scheduling a new task.
       return;
     }
-    linked_ptr<BitstreamBufferRef>& buffer_ref = decoder_input_queue_.front();
-    if (decoder_delay_bitstream_buffer_id_ == buffer_ref->input_id) {
+    if (decoder_delay_bitstream_buffer_id_ ==
+        decoder_input_queue_.front()->input_id) {
       // We're asked to delay decoding on this and subsequent buffers.
       return;
     }
 
     // Setup to use the next buffer.
-    decoder_current_bitstream_buffer_.reset(buffer_ref.release());
+    decoder_current_bitstream_buffer_ = std::move(decoder_input_queue_.front());
     decoder_input_queue_.pop();
     const auto& shm = decoder_current_bitstream_buffer_->shm;
     if (shm) {
@@ -1615,9 +1614,8 @@ void V4L2VideoDecodeAccelerator::FlushTask() {
   DCHECK(!decoder_flushing_);
 
   // Queue up an empty buffer -- this triggers the flush.
-  decoder_input_queue_.push(
-      linked_ptr<BitstreamBufferRef>(new BitstreamBufferRef(
-          decode_client_, decode_task_runner_, nullptr, kFlushBufferId)));
+  decoder_input_queue_.push(std::make_unique<BitstreamBufferRef>(
+      decode_client_, decode_task_runner_, nullptr, kFlushBufferId));
   decoder_flushing_ = true;
   SendPictureReady();  // Send all pending PictureReady.
 

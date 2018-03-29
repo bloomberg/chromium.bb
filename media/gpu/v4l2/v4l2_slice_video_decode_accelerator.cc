@@ -1359,8 +1359,7 @@ void V4L2SliceVideoDecodeAccelerator::DecodeTask(
   }
   DVLOGF(4) << "mapped at=" << bitstream_record->shm->memory();
 
-  decoder_input_queue_.push(
-      linked_ptr<BitstreamBufferRef>(bitstream_record.release()));
+  decoder_input_queue_.push(std::move(bitstream_record));
 
   ScheduleDecodeBufferTaskIfNeeded();
 }
@@ -1372,8 +1371,7 @@ bool V4L2SliceVideoDecodeAccelerator::TrySetNewBistreamBuffer() {
   if (decoder_input_queue_.empty())
     return false;
 
-  decoder_current_bitstream_buffer_.reset(
-      decoder_input_queue_.front().release());
+  decoder_current_bitstream_buffer_ = std::move(decoder_input_queue_.front());
   decoder_input_queue_.pop();
 
   if (decoder_current_bitstream_buffer_->input_id == kFlushBufferId) {
@@ -1936,9 +1934,8 @@ void V4L2SliceVideoDecodeAccelerator::FlushTask() {
   DCHECK(decoder_thread_task_runner_->BelongsToCurrentThread());
 
   // Queue an empty buffer which - when reached - will trigger flush sequence.
-  decoder_input_queue_.push(
-      linked_ptr<BitstreamBufferRef>(new BitstreamBufferRef(
-          decode_client_, decode_task_runner_, nullptr, kFlushBufferId)));
+  decoder_input_queue_.push(std::make_unique<BitstreamBufferRef>(
+      decode_client_, decode_task_runner_, nullptr, kFlushBufferId));
 
   ScheduleDecodeBufferTaskIfNeeded();
 }
