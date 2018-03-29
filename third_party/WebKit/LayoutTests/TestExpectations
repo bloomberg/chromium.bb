@@ -3371,4 +3371,4 @@ crbug.com/825733 [ Win7 ] media/color-profile-video-seek-filter.html [ Pass Time
 crbug.com/754986 media/video-transformed.html [ Pass Failure ]
 
 # Sheriff 2018-03-29
-crbug.com/827088 [ Mac ] bluetooth/requestDevice/chooser/new-scan-device-added.html [ Pass Crash ]
+crbug.com/827088 bluetooth/requestDevice/chooser/new-scan-device-added.html [ Pass Crash ]
