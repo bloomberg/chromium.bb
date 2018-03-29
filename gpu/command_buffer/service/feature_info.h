@@ -227,7 +227,7 @@ class GPU_GLES2_EXPORT FeatureInfo : public base::RefCounted<FeatureInfo> {
   FeatureFlags feature_flags_;
 
   // Flags for Workarounds.
-  const GpuDriverBugWorkarounds workarounds_;
+  GpuDriverBugWorkarounds workarounds_;
 
   bool ext_color_buffer_float_available_ = false;
   bool ext_color_buffer_half_float_available_ = false;

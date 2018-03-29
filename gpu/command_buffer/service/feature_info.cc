@@ -257,6 +257,15 @@ void FeatureInfo::Initialize(ContextType context_type,
   disallowed_features_ = disallowed_features;
   context_type_ = context_type;
   is_passthrough_cmd_decoder_ = is_passthrough_cmd_decoder;
+  switch (context_type) {
+    case CONTEXT_TYPE_WEBGL1:
+    case CONTEXT_TYPE_OPENGLES2:
+      break;
+    default:
+      // https://crbug.com/826509
+      workarounds_.use_client_side_arrays_for_stream_buffers = false;
+      break;
+  }
   InitializeFeatures();
 }
 
