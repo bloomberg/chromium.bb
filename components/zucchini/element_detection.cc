@@ -8,6 +8,7 @@
 
 #include "base/logging.h"
 #include "components/zucchini/disassembler.h"
+#include "components/zucchini/disassembler_dex.h"
 #include "components/zucchini/disassembler_no_op.h"
 #include "components/zucchini/disassembler_win32.h"
 
@@ -36,6 +37,12 @@ std::unique_ptr<Disassembler> MakeDisassemblerWithoutFallback(
       return disasm;
   }
 
+  if (DisassemblerDex::QuickDetect(image)) {
+    auto disasm = Disassembler::Make<DisassemblerDex>(image);
+    if (disasm && disasm->size() >= kMinProgramSize)
+      return disasm;
+  }
+
   return nullptr;
 }
 
@@ -46,6 +53,8 @@ std::unique_ptr<Disassembler> MakeDisassemblerOfType(ConstBufferView image,
       return Disassembler::Make<DisassemblerWin32X86>(image);
     case kExeTypeWin32X64:
       return Disassembler::Make<DisassemblerWin32X64>(image);
+    case kExeTypeDex:
+      return Disassembler::Make<DisassemblerDex>(image);
     case kExeTypeNoOp:
       return Disassembler::Make<DisassemblerNoOp>(image);
     default:
