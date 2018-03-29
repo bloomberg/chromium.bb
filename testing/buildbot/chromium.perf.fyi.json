@@ -4,7 +4,6 @@
       {
         "args": [
           "-v",
-          "--xvfb",
           "--browser=android-chromium"
         ],
         "isolate_name": "performance_test_suite",
@@ -452,7 +451,50 @@
       {
         "args": [
           "-v",
-          "--xvfb",
+          "--browser=release",
+          "--non-telemetry=true"
+        ],
+        "isolate_name": "load_library_perf_tests_v2",
+        "merge": {
+          "args": [
+            "--service-account-file",
+            "/creds/service_accounts/service-account-chromium-perf-histograms.json"
+          ],
+          "script": "//tools/perf/process_perf_results.py"
+        },
+        "name": "load_library_perf_tests_v2",
+        "override_compile_targets": [
+          "load_library_perf_tests_v2"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:1626",
+              "os": "Mac-10.12",
+              "pool": "Chrome-perf-fyi"
+            }
+          ],
+          "expiration": 36000,
+          "hard_timeout": 36000,
+          "ignore_task_failure": false,
+          "io_timeout": 1800,
+          "shards": 1,
+          "upload_test_results": true
+        },
+        "trigger_script": {
+          "args": [
+            "--multiple-trigger-configs",
+            "[{\"id\": \"build195-a9\"}]",
+            "--multiple-dimension-script-verbose",
+            "True"
+          ],
+          "script": "//testing/trigger_scripts/perf_device_trigger.py"
+        }
+      },
+      {
+        "args": [
+          "-v",
           "--browser=release"
         ],
         "isolate_name": "performance_test_suite",
@@ -532,8 +574,8 @@
       {
         "args": [
           "-v",
-          "--xvfb",
           "--browser=reference",
+          "--xvfb",
           "--testing=true"
         ],
         "isolate_name": "telemetry_perf_tests_experimental",

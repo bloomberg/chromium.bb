@@ -1076,6 +1076,9 @@
       "../../tools/perf/run_benchmark",
     ],
   },
+  # Perf is in the middle of refactoring their recipe.  crbug.com/757933
+  # These isolates are the new targets for the refactor and will replace
+  # the old ones when migration is complete.
   "performance_test_suite": {
     "label": "//chrome/test:performance_test_suite",
     "type": "script",
@@ -1144,6 +1147,15 @@
     "label": "//chrome/test:load_library_perf_tests",
     "type": "script",
     "script": "//testing/scripts/run_gtest_perf_test.py",
+    "args": [
+      "load_library_perf_tests",
+      "--test-launcher-print-test-stdio=always"
+    ],
+  },
+  "load_library_perf_tests_v2": {
+    "label": "//chrome/test:load_library_perf_tests",
+    "type": "script",
+    "script": "//testing/scripts/run_performance_tests.py",
     "args": [
       "load_library_perf_tests",
       "--test-launcher-print-test-stdio=always"
