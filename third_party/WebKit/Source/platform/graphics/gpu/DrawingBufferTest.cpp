@@ -164,7 +164,7 @@ TEST_F(DrawingBufferTest, VerifyResizingProperlyAffectsResources) {
 
   // Produce one resource at size 100x100.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   VerifyStateWasRestored();
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
@@ -177,7 +177,7 @@ TEST_F(DrawingBufferTest, VerifyResizingProperlyAffectsResources) {
 
   // Produce a resource at this size.
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   EXPECT_EQ(alternate_size, gl_->MostRecentlyProducedSize());
   VerifyStateWasRestored();
@@ -191,7 +191,7 @@ TEST_F(DrawingBufferTest, VerifyResizingProperlyAffectsResources) {
 
   // Prepare another resource and verify that it's the correct size.
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   VerifyStateWasRestored();
@@ -199,7 +199,7 @@ TEST_F(DrawingBufferTest, VerifyResizingProperlyAffectsResources) {
   // Prepare one final resource and verify that it's the correct size.
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   VerifyStateWasRestored();
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
@@ -224,17 +224,17 @@ TEST_F(DrawingBufferTest, VerifyDestructionCompleteAfterAllResourceReleased) {
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   drawing_buffer_->ClearFramebuffers(GL_STENCIL_BUFFER_BIT);
   VerifyStateWasRestored();
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource1,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource1,
                                                            &release_callback1));
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   drawing_buffer_->ClearFramebuffers(GL_DEPTH_BUFFER_BIT);
   VerifyStateWasRestored();
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource2,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource2,
                                                            &release_callback2));
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   drawing_buffer_->ClearFramebuffers(GL_COLOR_BUFFER_BIT);
   VerifyStateWasRestored();
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource3,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource3,
                                                            &release_callback3));
 
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
@@ -268,15 +268,15 @@ TEST_F(DrawingBufferTest, verifyDrawingBufferStaysAliveIfResourcesAreLost) {
   std::unique_ptr<viz::SingleReleaseCallback> release_callback3;
 
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource1,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource1,
                                                            &release_callback1));
   VerifyStateWasRestored();
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource2,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource2,
                                                            &release_callback2));
   VerifyStateWasRestored();
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource3,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource3,
                                                            &release_callback3));
   VerifyStateWasRestored();
 
@@ -310,13 +310,13 @@ TEST_F(DrawingBufferTest, VerifyOnlyOneRecycledResourceMustBeKept) {
 
   // Produce resources.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource1,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource1,
                                                            &release_callback1));
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource2,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource2,
                                                            &release_callback2));
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource3,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource3,
                                                            &release_callback3));
 
   // Release resources by specific order; 1, 3, 2.
@@ -333,7 +333,7 @@ TEST_F(DrawingBufferTest, VerifyOnlyOneRecycledResourceMustBeKept) {
   std::unique_ptr<viz::SingleReleaseCallback> recycled_release_callback1;
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(
-      &recycled_resource1, &recycled_release_callback1));
+      nullptr, &recycled_resource1, &recycled_release_callback1));
   EXPECT_EQ(resource2.mailbox_holder.mailbox,
             recycled_resource1.mailbox_holder.mailbox);
 
@@ -342,7 +342,7 @@ TEST_F(DrawingBufferTest, VerifyOnlyOneRecycledResourceMustBeKept) {
   std::unique_ptr<viz::SingleReleaseCallback> recycled_release_callback2;
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
   EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(
-      &recycled_resource2, &recycled_release_callback2));
+      nullptr, &recycled_resource2, &recycled_release_callback2));
   EXPECT_NE(resource1.mailbox_holder.mailbox,
             recycled_resource2.mailbox_holder.mailbox);
   EXPECT_NE(resource2.mailbox_holder.mailbox,
@@ -363,7 +363,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly) {
   // Produce resources.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
   EXPECT_EQ(gpu::SyncToken(), gl_->MostRecentlyWaitedSyncToken());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   // PrepareTransferableResource() does not wait for any sync point.
   EXPECT_EQ(gpu::SyncToken(), gl_->MostRecentlyWaitedSyncToken());
@@ -375,7 +375,7 @@ TEST_F(DrawingBufferTest, verifyInsertAndWaitSyncTokenCorrectly) {
   EXPECT_EQ(gpu::SyncToken(), gl_->MostRecentlyWaitedSyncToken());
 
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   // m_drawingBuffer waits for the sync point when recycling in
   // PrepareTransferableResource().
@@ -435,7 +435,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id1)).Times(1);
   // Produce one resource at size 100x100.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
@@ -460,7 +460,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id3)).Times(1);
   // Produce a resource at this size.
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   EXPECT_EQ(alternate_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
@@ -484,7 +484,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   EXPECT_CALL(*gl_, BindTexImage2DMock(image_id5)).Times(1);
   // Prepare another resource and verify that it's the correct size.
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
@@ -494,7 +494,7 @@ TEST_F(DrawingBufferImageChromiumTest, VerifyResizingReallocatesImages) {
   // Prepare one final resource and verify that it's the correct size.
   release_callback->Run(gpu::SyncToken(), false /* lostResource */);
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
   EXPECT_EQ(initial_size, gl_->MostRecentlyProducedSize());
   EXPECT_TRUE(resource.is_overlay_candidate);
@@ -523,7 +523,7 @@ TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
   EXPECT_CALL(*gl_, BindTexImage2DMock(_)).Times(1);
   IntSize initial_size(kInitialWidth, kInitialHeight);
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource1,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource1,
                                                            &release_callback1));
   EXPECT_TRUE(resource1.is_overlay_candidate);
   testing::Mock::VerifyAndClearExpectations(gl_);
@@ -533,7 +533,7 @@ TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
   // still be provided, but this time with allowOverlay = false.
   gl_->SetCreateImageChromiumFail(true);
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource2,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource2,
                                                            &release_callback2));
   EXPECT_FALSE(resource2.is_overlay_candidate);
   VerifyStateWasRestored();
@@ -543,7 +543,7 @@ TEST_F(DrawingBufferImageChromiumTest, AllocationFailure) {
   EXPECT_CALL(*gl_, BindTexImage2DMock(_)).Times(1);
   gl_->SetCreateImageChromiumFail(false);
   EXPECT_TRUE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource3,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource3,
                                                            &release_callback3));
   EXPECT_TRUE(resource3.is_overlay_candidate);
   testing::Mock::VerifyAndClearExpectations(gl_);
@@ -715,7 +715,7 @@ TEST_F(DrawingBufferTest, VerifySetIsHiddenProperlyAffectsMailboxes) {
 
   // Produce resources.
   EXPECT_FALSE(drawing_buffer_->MarkContentsChanged());
-  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(&resource,
+  EXPECT_TRUE(drawing_buffer_->PrepareTransferableResource(nullptr, &resource,
                                                            &release_callback));
 
   gpu::SyncToken wait_sync_token;

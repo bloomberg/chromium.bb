@@ -23,7 +23,8 @@ scoped_refptr<TextureLayer> TextureLayer::CreateForMailbox(
   return scoped_refptr<TextureLayer>(new TextureLayer(client));
 }
 
-TextureLayer::TextureLayer(TextureLayerClient* client) : client_(client) {}
+TextureLayer::TextureLayer(TextureLayerClient* client)
+    : client_(client), weak_ptr_factory_(this) {}
 
 TextureLayer::~TextureLayer() = default;
 
@@ -154,6 +155,15 @@ void TextureLayer::SetLayerTreeHost(LayerTreeHost* host) {
     // commit is called complete.
     SetNextCommitWaitsForActivation();
   }
+  if (host) {
+    // When attached to a new LayerTreHost, all previously registered
+    // SharedBitmapIds will need to be re-sent to the new TextureLayerImpl
+    // representing this layer on the compositor thread.
+    to_register_bitmaps_.insert(
+        std::make_move_iterator(registered_bitmaps_.begin()),
+        std::make_move_iterator(registered_bitmaps_.end()));
+    registered_bitmaps_.clear();
+  }
   Layer::SetLayerTreeHost(host);
 }
 
@@ -166,7 +176,8 @@ bool TextureLayer::Update() {
   if (client_) {
     viz::TransferableResource resource;
     std::unique_ptr<viz::SingleReleaseCallback> release_callback;
-    if (client_->PrepareTransferableResource(&resource, &release_callback)) {
+    if (client_->PrepareTransferableResource(this, &resource,
+                                             &release_callback)) {
       // Already within a commit, no need to do another one immediately.
       bool requires_commit = false;
       SetTransferableResourceInternal(resource, std::move(release_callback),
@@ -210,6 +221,49 @@ void TextureLayer::PushPropertiesTo(LayerImpl* layer) {
                                            std::move(release_callback));
     needs_set_resource_ = false;
   }
+  for (auto& pair : to_register_bitmaps_)
+    texture_layer->RegisterSharedBitmapId(pair.first, pair.second);
+  // Store the registered SharedBitmapIds in case we get a new TextureLayerImpl,
+  // in a new tree, to re-send them to.
+  registered_bitmaps_.insert(
+      std::make_move_iterator(to_register_bitmaps_.begin()),
+      std::make_move_iterator(to_register_bitmaps_.end()));
+  to_register_bitmaps_.clear();
+  for (const auto& id : to_unregister_bitmap_ids_)
+    texture_layer->UnregisterSharedBitmapId(id);
+  to_unregister_bitmap_ids_.clear();
+}
+
+SharedBitmapIdRegistration TextureLayer::RegisterSharedBitmapId(
+    const viz::SharedBitmapId& id,
+    scoped_refptr<CrossThreadSharedBitmap> bitmap) {
+  DCHECK(to_register_bitmaps_.find(id) == to_register_bitmaps_.end());
+  DCHECK(registered_bitmaps_.find(id) == registered_bitmaps_.end());
+  to_register_bitmaps_[id] = std::move(bitmap);
+  base::Erase(to_unregister_bitmap_ids_, id);
+  // This does not SetNeedsCommit() to be as lazy as possible. Notifying a
+  // SharedBitmapId is not needed until it is used, and using it will require
+  // a commit, so we can wait for that commit before forwarding the
+  // notification instead of forcing it to happen as a side effect of this
+  // method.
+  SetNeedsPushProperties();
+  return SharedBitmapIdRegistration(weak_ptr_factory_.GetWeakPtr(), id);
+}
+
+void TextureLayer::UnregisterSharedBitmapId(viz::SharedBitmapId id) {
+  // If we didn't get to sending the registration to the compositor thread yet,
+  // just remove it.
+  to_register_bitmaps_.erase(id);
+  // Since we also track all previously sent registrations, we must remove that
+  // to in order to prevent re-registering on another LayerTreeHost.
+  registered_bitmaps_.erase(id);
+
+  to_unregister_bitmap_ids_.push_back(id);
+  // Unregistering a SharedBitmapId needs to happen eventually to prevent
+  // leaking the SharedMemory in the display compositor. But this attempts to be
+  // lazy and not force a commit prematurely, so just requests a
+  // PushPropertiesTo() without requesting a commit.
+  SetNeedsPushProperties();
 }
 
 TextureLayer::TransferableResourceHolder::MainThreadReference::

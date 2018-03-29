@@ -43,6 +43,17 @@ VIZ_COMMON_EXPORT mojo::ScopedSharedBufferHandle DuplicateAndCloseMappedBitmap(
     const gfx::Size& size,
     ResourceFormat format);
 
+// Similar to DuplicateAndCloseMappedBitmap(), but to be used in cases where the
+// SharedMemory will have to be duplicated more than once. In that case the
+// handle must be kept valid, so it can not be closed. Beware this will keep an
+// open file handle on posix systems, which may contribute to surpassing handle
+// limits.
+VIZ_COMMON_EXPORT
+mojo::ScopedSharedBufferHandle DuplicateWithoutClosingMappedBitmap(
+    const base::SharedMemory* memory,
+    const gfx::Size& size,
+    ResourceFormat format);
+
 }  // namespace bitmap_allocation
 
 }  // namespace viz

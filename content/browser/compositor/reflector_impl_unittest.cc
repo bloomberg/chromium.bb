@@ -181,7 +181,8 @@ class ReflectorImplTest : public testing::Test {
       reflector_->RemoveMirroringLayer(mirroring_layer_.get());
     viz::TransferableResource resource;
     std::unique_ptr<viz::SingleReleaseCallback> release;
-    if (mirroring_layer_->PrepareTransferableResource(&resource, &release)) {
+    if (mirroring_layer_->PrepareTransferableResource(nullptr, &resource,
+                                                      &release)) {
       release->Run(gpu::SyncToken(), false);
     }
     compositor_.reset();

@@ -605,6 +605,7 @@ bool Canvas2DLayerBridge::Restore() {
 }
 
 bool Canvas2DLayerBridge::PrepareTransferableResource(
+    cc::SharedBitmapIdRegistrar* bitmap_registrar,
     viz::TransferableResource* out_resource,
     std::unique_ptr<viz::SingleReleaseCallback>* out_release_callback) {
   if (destruction_in_progress_) {

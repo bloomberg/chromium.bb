@@ -1026,6 +1026,7 @@ size_t Layer::GetApproximateUnsharedMemoryUsage() const {
 }
 
 bool Layer::PrepareTransferableResource(
+    cc::SharedBitmapIdRegistrar* bitmap_registar,
     viz::TransferableResource* resource,
     std::unique_ptr<viz::SingleReleaseCallback>* release_callback) {
   if (!transfer_release_callback_)

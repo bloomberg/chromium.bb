@@ -556,6 +556,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
 
   // cc::TextureLayerClient implementation.
   bool PrepareTransferableResource(
+      cc::SharedBitmapIdRegistrar* bitmap_registrar,
       viz::TransferableResource* transferable_resource,
       std::unique_ptr<viz::SingleReleaseCallback>* release_callback) override;
 

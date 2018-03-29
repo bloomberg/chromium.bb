@@ -115,9 +115,6 @@ bool TestSharedBitmapManager::ChildAllocatedSharedBitmap(
 
 void TestSharedBitmapManager::ChildDeletedSharedBitmap(
     const SharedBitmapId& id) {
-  // The bitmap id should previously have been given to
-  // ChildAllocatedSharedBitmap().
-  DCHECK_EQ(notified_set_.count(id), 1u);
   notified_set_.erase(id);
   bitmap_map_.erase(id);
   owned_map_.erase(id);
