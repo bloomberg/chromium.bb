@@ -319,11 +319,18 @@ void HandleReadError(const base::FilePath& pref_filename,
     }
 
     if (message_id) {
-      BrowserThread::PostTask(
-          BrowserThread::UI, FROM_HERE,
-          base::BindOnce(&ShowProfileErrorDialog, ProfileErrorType::PREFERENCES,
-                         message_id,
-                         sql::GetCorruptFileDiagnosticsInfo(pref_filename)));
+      auto show_profile_error_dialog = base::BindOnce(
+          &ShowProfileErrorDialog, ProfileErrorType::PREFERENCES, message_id,
+          sql::GetCorruptFileDiagnosticsInfo(pref_filename));
+      if (BrowserThread::IsThreadInitialized(BrowserThread::UI)) {
+        BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
+                                std::move(show_profile_error_dialog));
+      } else {
+        // In early startup (e.g. on error loading Local State before most
+        // browser pieces are up), the only option is to show the dialog
+        // synchronously.
+        std::move(show_profile_error_dialog).Run();
+      }
     }
 #else
     // On ChromeOS error screen with message about broken local state
