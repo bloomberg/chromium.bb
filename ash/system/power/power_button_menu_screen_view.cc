@@ -72,8 +72,8 @@ class PowerButtonMenuScreenView::PowerButtonMenuBackgroundView
     animation.AddObserver(this);
     animation.SetTweenType(show ? gfx::Tween::EASE_IN_2
                                 : gfx::Tween::FAST_OUT_LINEAR_IN);
-    animation.SetTransitionDuration(base::TimeDelta::FromMilliseconds(
-        PowerButtonMenuView::kAnimationTimeoutMs));
+    animation.SetTransitionDuration(
+        PowerButtonMenuView::kMenuAnimationDuration);
 
     layer()->SetOpacity(show ? kPowerButtonMenuOpacity : 0.f);
   }
